@@ -1,0 +1,116 @@
+openapi: 3.0.3
+info:
+  title: Codefolio API
+  description: |
+    Source of truth for the Codefolio HTTP API. The sbt-openapi-codegen plugin
+    reads this file and emits tapir `Endpoint` descriptions plus case classes
+    into the cross-compiled `shared` module under package `codefolio.shared.api`.
+    Both server and client compile against the generated code, so a schema
+    change here breaks both sides until they're updated.
+
+    The skeleton wires three stores end-to-end:
+      * Postgres  — persistent visit counter
+      * Redis     — caches the Greeting payload for ~10s; `cached` reports hit/miss
+      * MongoDB   — append-only log of every /api/hello call (see /api/recent)
+  version: 0.1.0
+
+servers:
+  - url: /
+    description: Same-origin (server serves both API and frontend statics in production)
+
+paths:
+  /api/hello:
+    get:
+      operationId: getHello
+      summary: |
+        Return the running visit counter, also caching the result in Redis and
+        appending the call to a MongoDB event log.
+      responses:
+        '200':
+          description: Greeting payload
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Greeting'
+
+  /api/recent:
+    get:
+      operationId: getRecent
+      summary: Most recent /api/hello calls, read from MongoDB.
+      responses:
+        '200':
+          description: Recent call log entries (newest first)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RecentCalls'
+
+  /api/health:
+    get:
+      operationId: getHealth
+      summary: Liveness check — 200 if every backing store is reachable.
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HealthStatus'
+
+components:
+  schemas:
+    Greeting:
+      type: object
+      required: [message, visits, cached]
+      properties:
+        message:
+          type: string
+          description: Greeting text rendered by the frontend.
+          example: Hello from ZIO + Postgres
+        visits:
+          type: integer
+          format: int64
+          description: Total times the /api/hello endpoint has been hit (read from Postgres).
+          example: 42
+        cached:
+          type: boolean
+          description: True if the response came from the Redis cache; false on a cold read from Postgres.
+          example: false
+
+    HelloEvent:
+      type: object
+      required: [timestampEpochMs, visits]
+      properties:
+        timestampEpochMs:
+          type: integer
+          format: int64
+          description: When the call was logged, milliseconds since epoch (set server-side).
+          example: 1714485600000
+        visits:
+          type: integer
+          format: int64
+          description: The visit-counter value recorded for this call.
+          example: 42
+
+    RecentCalls:
+      type: object
+      required: [entries]
+      properties:
+        entries:
+          type: array
+          items:
+            $ref: '#/components/schemas/HelloEvent'
+
+    HealthStatus:
+      type: object
+      required: [status, postgres, redis, mongo]
+      properties:
+        status:
+          type: string
+          example: ok
+        postgres:
+          type: boolean
+        redis:
+          type: boolean
+        mongo:
+          type: boolean
