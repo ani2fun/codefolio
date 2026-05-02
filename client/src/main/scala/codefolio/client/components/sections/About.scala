@@ -1,84 +1,80 @@
 package codefolio.client.components.sections
 
+import codefolio.client.components.ui.Section
 import japgolly.scalajs.react.*
 import japgolly.scalajs.react.vdom.html_<^.*
 
 object About:
 
-  /** Helper for the photo grid: an image + a translucent blue overlay on
-    * top, both rounded. Mirrors the original `<Image fill />` + overlay div
-    * pattern — without next/image's layout=fill we use absolute positioning
-    * inside a relatively-positioned parent.
-    */
+  /**
+   * Helper for the photo grid: image + translucent overlay, both rounded. `gridArea` (the row/col span
+   * utilities) is per-instance, so it stays inline; everything else lives in `.about__photo*` BEM classes.
+   */
   private def photoTile(
       gridArea: String,
       src: String,
       alt: String,
-      objectFit: Boolean = true
+      noFit: Boolean = false
   ): VdomNode =
     <.div(
-      ^.className := s"relative $gridArea",
+      ^.className := s"about__photo $gridArea",
       <.img(
-        ^.src := src,
-        ^.alt := alt,
+        ^.src               := src,
+        ^.alt               := alt,
         VdomAttr("loading") := "lazy",
-        ^.className :=
-          (if objectFit then "absolute inset-0 w-full h-full object-cover rounded-lg"
-           else "w-full h-full object-cover rounded-lg")
+        ^.className         := (if noFit then "about__photo-img--no-fit" else "about__photo-img")
       ),
-      <.div(^.className := "inset-0 bg-blue-200 dark:bg-blue-600 opacity-50 rounded-lg")
+      <.div(^.className := "about__photo-overlay")
     )
 
   val Component = ScalaFnComponent[Unit] { _ =>
-    <.section(
-      ^.id := "about",
-      ^.className := "min-h-screen px-8 rounded-lg shadow-md pt-32 scroll-mt-24",
+    Section("about", "about")(
       <.div(
-        ^.className := "w-full grid grid-cols-1 lg:grid-cols-10 gap-8",
+        ^.className := "about__layout",
         // Left: prose
         <.div(
-          ^.className := "col-span-full lg:col-span-6 flex flex-col justify-center",
-          <.h2(^.className := "text-3xl md:text-5xl font-bold text-blue-700 mb-6", "About"),
+          ^.className := "about__prose",
+          <.h2(^.className := "about__title", "About"),
           <.p(
-            ^.className := "text-gray-700 mb-6 text-lg md:text-2xl leading-relaxed dark:text-gray-300",
+            ^.className := "about__paragraph",
             "Backend-leaning Software Engineer with ",
-            <.span(^.className := "text-blue-700 font-semibold", "ten years"),
+            <.span(^.className := "about__emphasis--semibold", "ten years"),
             " on production systems. At ",
-            <.span(^.className := "font-bold text-blue-700", "Disneyland Paris"),
-            " I co-led a pilot that turned into a multi-million-euro replacement of the legacy marketing platform. At ",
-            <.span(^.className := "font-bold text-blue-700", "Audi"),
-            " I built the labeling pipeline behind their autonomous-driving model training."
+            <.span(^.className := "about__emphasis", "Disneyland Paris"),
+            " I co-led a pilot that turned into a multi-million-euro replacement of the legacy marketing platform. For client ",
+            <.span(^.className := "about__emphasis", "Audi"),
+            " I worked on the core team responsible for building a labeling pipeline that supported autonomous-driving model training."
           ),
           <.p(
-            ^.className := "text-gray-700 mb-6 text-lg md:text-2xl leading-relaxed dark:text-gray-300",
+            ^.className := "about__paragraph",
             "Currently at ",
-            <.span(^.className := "text-green-700 font-bold", "Europcar International"),
+            <.span(^.className := "about__emphasis--green", "Europcar International"),
             ", building the customer authentication and account lifecycle on Kotlin and Spring Boot, plus the wider reservation platform around it. Day-to-day in Java, Kotlin, Scala, Kafka, PostgreSQL, and AWS/GCP."
           ),
           <.p(
-            ^.className := "text-gray-700 mb-6 text-lg md:text-2xl leading-relaxed dark:text-gray-300",
+            ^.className := "about__paragraph",
             "Outside work I run a small four-node ",
-            <.span(^.className := "font-bold text-blue-700", "K3s cluster"),
+            <.span(^.className := "about__emphasis", "K3s cluster"),
             " on commodity hardware at home and self-host my own services on it — including this site. I also maintain an open-source ",
-            <.span(^.className := "font-bold text-blue-700", "Gradle plugin"),
+            <.span(^.className := "about__emphasis", "Gradle plugin"),
             " on the official Plugin Portal for publishing JVM artefacts to Maven Central, and I'm wrapping up the ",
-            <.span(^.className := "font-bold text-blue-700", "Diplôme Data Engineer"),
+            <.span(^.className := "about__emphasis", "Diplôme Data Engineer"),
             " (RNCP Niveau 7) at Sorbonne University / DataScientest."
           ),
           <.p(
-            ^.className := "text-gray-700 mb-6 text-base md:text-xl leading-relaxed dark:text-gray-400",
+            ^.className := "about__paragraph about__paragraph--small",
             "Master's in Information Technology from ",
-            <.span(^.className := "font-semibold", "ISEP Paris"),
+            <.span(^.className := "about__emphasis--neutral", "ISEP Paris"),
             " (Grande École). B.E. in Electronics & Telecommunications from the ",
-            <.span(^.className := "font-semibold", "University of Mumbai"),
+            <.span(^.className := "about__emphasis--neutral", "University of Mumbai"),
             "."
           )
         ),
         // Right: 4-image collage
         <.div(
-          ^.className := "col-span-full lg:col-span-4",
+          ^.className := "about__collage",
           <.div(
-            ^.className := "grid grid-cols-8 grid-rows-8 gap-2",
+            ^.className := "about__collage-grid",
             photoTile(
               "row-start-2 row-span-3 col-start-2 col-span-3",
               "/img/portfolio/image1.webp",
@@ -98,7 +94,7 @@ object About:
               "row-start-6 row-span-2 col-start-5 col-span-2",
               "/img/portfolio/image4.webp",
               "Image 4",
-              objectFit = false
+              noFit = true
             )
           )
         )

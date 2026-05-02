@@ -1,24 +1,24 @@
 # codefolio
 
-A fullstack Scala personal portfolio + interactive knowledge base. Frontend
+A fullstack Scala personal portfolio + interactive Cortex. Frontend
 is **Scala.js + scalajs-react** (with a small TypeScript helper module
 hosting the unified/remark/rehype markdown pipeline), backend is **ZIO +
 zio-http + tapir**, the API contract is **OpenAPI-first** with code
 generation, and everything runs in **Docker Compose**.
 
-> **New here?** The full engineering tour lives in the knowledge base
+> **New here?** The full engineering tour lives in the Cortex
 > itself. After `./bin/dev`, open
-> <http://localhost:5173/knowledge/codefolio-onboarding/overview> for a
+> <http://localhost:5173/cortex/codefolio-onboarding/overview> for a
 > walk-through of the architecture, the request lifecycle, the markdown
 > pipeline, and how to extend the project. The chapters are also
 > readable as plain markdown under
-> [`content/knowledge/codefolio-onboarding/`](content/knowledge/codefolio-onboarding/).
+> [`content/cortex/codefolio-onboarding/`](content/cortex/codefolio-onboarding/).
 
 ## What's inside
 
 - **Portfolio landing page** — Hero, About, Experience (tab picker),
-  Projects, Certifications timeline, Knowledge Base preview, Footer.
-- **Knowledge base** — `/knowledge` lists books; `/knowledge/<book>/<chapter>`
+  Projects, Certifications timeline, Cortex preview, Footer.
+- **Cortex** — `/cortex` lists books; `/cortex/<book>/<chapter>`
   renders markdown with KaTeX math, mermaid + D2 diagrams, GFM tables, and
   *runnable* code blocks. The markdown pipeline lives in TypeScript
   (`client/src/markdown/render.ts`) and is invoked from Scala.js through a
@@ -103,7 +103,8 @@ cd client && npm install && npm run dev
 | `PISTON_URL` | Piston API base (production); when set, used for languages Piston supports | unset |
 | `CODE_RUNNER_URL` | Local Code Runner base (Judge0 submissions API protocol) | unset (`http://code-runner:2358` in compose) |
 | `CODE_RUNNER_AUTHN_TOKEN` | Optional `X-Auth-Token` for the local runner | unset |
-| `KNOWLEDGE_ROOT` | On-disk root of the knowledge content tree | `./content/knowledge` (in the prod image: `/app/content/knowledge`) |
+| `CORTEX_ROOT` | On-disk root of the Cortex content tree | `./content/cortex` (in the prod image: `/app/content/cortex`) |
+| `CORTEX_AUTO_RELOAD` | Re-walk the content tree on every index request when its mtime changes (drop a folder, refresh the page). Off in prod where content is baked into the image. | `true` |
 
 If neither `PISTON_URL` nor `CODE_RUNNER_URL` is configured, `/api/run`
 returns 503 with a hint to set one of them.
@@ -116,31 +117,80 @@ returns 503 with a hint to set one of them.
 | `/api/recent` | GET | Last 10 `/api/hello` calls, newest first (from Mongo). |
 | `/api/health` | GET | 200 if all three stores are reachable. |
 | `/api/run` | POST | Execute a code snippet via Piston / Code Runner. |
-| `/api/knowledge/index` | GET | List books + chapter refs. |
-| `/api/knowledge/{book}/{chapter}` | GET | Frontmatter + raw markdown + prev/next slugs for one chapter. |
+| `/api/cortex/index` | GET | List books + chapter refs. |
+| `/api/cortex/{book}/{chapter}` | GET | Frontmatter + raw markdown + prev/next slugs for one chapter. |
 | `/docs` | GET | Swagger UI |
-| `/`, `/knowledge/...`, `/demo`, `/blogs`, `/assets/*`, `/img/*`, `/certificates/*`, `/Aniket-Kakde-CV-EN.pdf` | GET | Static / SPA-fallback content. |
+| `/`, `/cortex/...`, `/demo`, `/blogs`, `/assets/*`, `/img/*`, `/certificates/*`, `/Aniket-Kakde-CV-EN.pdf` | GET | Static / SPA-fallback content. |
 
 ## Adding content
 
 ### A new book / chapter
 
-1. Drop a directory under `content/knowledge/` named with the book's slug.
-2. Add a `meta.json` for the book listing its chapters in reading order.
-3. Add chapter `*.md` files. The frontmatter shape is small:
+Cortex is **convention over configuration** — the on-disk layout under
+`content/cortex/` *is* the index. There is no central manifest. Every
+top-level directory is a book; nested directories become collapsible
+sidebar sections; `.md` files are chapters.
+
+```
+content/cortex/
+└── <book-slug>/                 ← every immediate subdir is a book
+    ├── book.json                ← OPTIONAL — title/description/tags/estMins overrides
+    ├── 01-overview.md           ← chapter at the book root
+    └── 02-foundations/          ← directory = section (renders as a sidebar group)
+        ├── _section.json        ← OPTIONAL — `{ "title": "Foundations" }`
+        ├── 01-introduction.md
+        └── 02-deeper/           ← nest as deep as you want (capped at 6 levels)
+            └── 01-details.md
+```
+
+To add a new book:
+
+1. **Make a directory** under `content/cortex/`. The dirname is the
+   book's slug — must match `[a-z0-9_-]+` and shows up at
+   `/cortex/<book-slug>/...`.
+2. **Drop in `.md` files** (and optionally subdirectories for sections).
+   Use a numeric prefix on filenames + dirnames to control ordering —
+   `01-`, `02-`, … the prefix is stripped before display. Without a
+   prefix, entries fall back to alphabetic order.
+3. **(Optional) `book.json`** at the book root — overrides any of:
+   ```json
+   { "title": "My Book", "description": "...", "tags": ["x"], "estimatedReadingMinutes": 30 }
+   ```
+   Without it the title is humanised from the dirname.
+4. **(Optional) `_section.json`** in any section dir to pretty-up the
+   sidebar header: `{ "title": "Foundations" }`. Without it the title is
+   humanised from the dirname (`01-foundations` → `Foundations`).
+5. **(Optional) chapter frontmatter** for a custom title/summary:
    ```markdown
    ---
    title: My Chapter
    summary: Optional one-liner shown above the body.
-   group: Foundations
    ---
 
    ## Section heading
    ...
    ```
-4. Reference the book from the root `content/knowledge/meta.json`.
-5. Restart the server (the index is cached in memory). The new chapter
-   shows up at `/knowledge/<book-slug>/<chapter-slug>`.
+   Without frontmatter, the title falls back to the first `# H1` in the
+   body, then to the humanised filename.
+
+The chapter slug is derived deterministically from its path: e.g.
+`<book>/01-data-structures/02-arrays/03-traversal.md` →
+`/cortex/<book>/data-structures-arrays-traversal`. Slug collisions are
+caught at index-load time and surfaced as a server error listing the
+duplicates — rename one of the colliding segments.
+
+In dev (`CORTEX_AUTO_RELOAD=true`, the default) the server watches
+file mtimes and rebuilds its in-memory index automatically, so dropping
+a folder and refreshing the browser is enough. In prod the index is
+cached after first request — redeploy to pick up changes.
+
+### A one-shot import (e.g. an mdbook tree)
+
+[`scripts/import_dsa.py`](scripts/import_dsa.py) is a worked example:
+it walks an external mdbook source, mirrors its directory tree under
+`content/cortex/`, rewrites cross-chapter links to cortex URLs, and
+auto-tags every Piston-supported fenced code block with ` run` so it
+becomes executable. Adapt it (or copy it) for similar imports.
 
 ### A new runnable language
 
@@ -149,6 +199,36 @@ Edit `server/.../runner/Languages.scala` to add an entry to
 matching alias mapping in `client/src/markdown/runtime.ts` (Prism alias
 table). For Piston-only languages, also add a row to `Piston.scala`'s
 `pistonLanguage` map.
+
+## Frontend styling — Tailwind v4 + BEM
+
+Tailwind v4 is configured CSS-first (no `tailwind.config.ts`, no
+`postcss.config.mjs`). The single entry point is
+[`client/tailwind.css`](client/tailwind.css), which:
+
+- imports Tailwind v4 via `@import "tailwindcss"`
+- declares the Scala.js linker output as a `@source` so classes emitted
+  into the linked JS make it into the CSS bundle
+- defines the shadcn HSL theme variables and bakes them into utilities
+  with `@theme inline`
+- restores v3's centered `container` behavior with a small
+  `@utility container { margin-inline: auto; }` override
+- imports per-component BEM stylesheets
+
+Every section / component className is extracted into a
+`.block__element--modifier` rule under
+[`client/src/styles/sections/`](client/src/styles/sections/) (page-level
+sections like Hero, About, Experience) or
+[`client/src/styles/components/`](client/src/styles/components/)
+(cross-section primitives — cortex-reader shells, diagrams, the
+runnable-code editor). Each file is wrapped in `@layer components { ... }`
+so utilities applied at the call site (`^.className := "experience pt-40"`)
+still win on conflict — same model the project already relies on.
+
+The Scala companion to this is
+[`Section`](client/src/main/scala/codefolio/client/components/ui/Section.scala) —
+a tiny primitive every home-page section uses to set its `id` (for
+hash-link nav) and apply its BEM block class.
 
 ## Common sbt commands
 
@@ -224,23 +304,23 @@ curl -X POST http://localhost:8080/api/run \
   -H 'Content-Type: application/json' \
   -d '{"language":"python","source":"print(2+2)"}'
 
-# List knowledge-base books
-curl http://localhost:8080/api/knowledge/index
+# List Cortex books
+curl http://localhost:8080/api/cortex/index
 
 # Fetch one chapter (raw markdown + frontmatter)
-curl http://localhost:8080/api/knowledge/distributed-systems/introduction
+curl http://localhost:8080/api/cortex/distributed-systems/introduction
 ```
 
 In the browser:
 
 - <http://localhost:5173/> — landing page
-- <http://localhost:5173/knowledge> — book index
-- <http://localhost:5173/knowledge/distributed-systems/introduction> — chapter reader (markdown + mermaid + D2 + KaTeX + runnable code)
+- <http://localhost:5173/cortex> — book index
+- <http://localhost:5173/cortex/distributed-systems/introduction> — chapter reader (markdown + mermaid + D2 + KaTeX + runnable code)
 - <http://localhost:5173/demo> — kept Hello demo
 
 ## Stack
 
 Scala 3 · sbt · ZIO 2 · zio-http · tapir · Postgres · Liquibase · Redis
-(Lettuce) · MongoDB · Scala.js · scalajs-react · Vite · Tailwind v3 ·
+(Lettuce) · MongoDB · Scala.js · scalajs-react · Vite · Tailwind v4 ·
 unified · remark · rehype · shiki · mermaid · @terrastruct/d2 · KaTeX ·
 Prism · react-simple-code-editor.

@@ -18,7 +18,7 @@
     "description": "Four-node K3s cluster on commodity hardware sitting at home. Hands-on with the full delivery path — packaging, deployment, networking, observability — for the services I actually use, including this site and the notebook below."
   },
   {
-    "name": "Technical knowledge base (mdBook)",
+    "name": "Technical notebook (mdBook)",
     "tags": [
       "mdBook",
       "Rust",

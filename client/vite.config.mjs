@@ -1,17 +1,18 @@
 import { defineConfig } from "vite";
+import tailwindcss from "@tailwindcss/vite";
 import scalaJSPlugin from "@scala-js/vite-plugin-scalajs";
 import path from "node:path";
 
 export default defineConfig({
   plugins: [
+    // Tailwind v4 runs through @tailwindcss/vite. PostCSS is no longer in the loop.
+    tailwindcss(),
     scalaJSPlugin({
       // sbt root is the parent dir (this `client/` is a sub-project).
       cwd: "..",
       // sbt module name — must match `lazy val client` in build.sbt.
       projectID: "client",
     }),
-    // Tailwind v3 runs through PostCSS, configured in postcss.config.mjs;
-    // Vite picks PostCSS up automatically. No Vite plugin needed.
   ],
 
   resolve: {

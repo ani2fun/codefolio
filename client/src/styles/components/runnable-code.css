@@ -1,0 +1,101 @@
+@layer components {
+    /* Runnable code block (rcb) - editable code editor + Run/Cancel/Reset + output, plus
+       the tabbed group that hosts multiple language variants.
+       Blocks: .rcb (single block), .rcg (tabbed group) */
+
+    /* ─── Single block ───────────────────────────────────────────── */
+    .rcb {
+        @apply my-6 rounded-lg border border-border overflow-hidden;
+    }
+    .rcb__header {
+        @apply flex items-center justify-between gap-2 px-3 py-2 border-b border-border bg-muted/40;
+    }
+    .rcb__language-label {
+        @apply text-xs font-medium text-muted-foreground;
+    }
+    .rcb__controls {
+        @apply flex items-center gap-2;
+    }
+    .rcb__button {
+        @apply inline-flex items-center gap-1.5 rounded-md border border-border
+               px-2 py-1 text-xs font-semibold hover:bg-accent;
+    }
+    .rcb__button--cancel {
+        @apply px-3;
+    }
+    .rcb__button--run {
+        /* Override base border + background — the Run button is the primary action. */
+        @apply rounded-md bg-primary text-primary-foreground border-transparent
+               px-3 py-1 text-xs font-semibold hover:bg-primary/90 hover:bg-primary/90;
+    }
+    .rcb__button-icon {
+        @apply h-3 w-3;
+    }
+    .rcb__editor {
+        @apply bg-[#2d2d2d] text-zinc-100;
+    }
+    .rcb__editor-textarea {
+        @apply focus:outline-hidden;
+    }
+
+    .rcb__output {
+        @apply border-t border-border bg-muted/50 px-4 py-3 text-sm font-mono;
+    }
+    .rcb__loading {
+        @apply flex items-center gap-2 text-muted-foreground;
+    }
+    .rcb__loading-icon {
+        @apply h-3.5 w-3.5 animate-spin;
+    }
+    .rcb__error {
+        @apply whitespace-pre-wrap text-destructive text-xs;
+    }
+    .rcb__result {
+        @apply space-y-2;
+    }
+    .rcb__status-row {
+        @apply flex flex-wrap items-center gap-2 text-xs;
+    }
+    .rcb__status {
+        @apply inline-flex items-center rounded px-1.5 py-0.5 font-semibold;
+    }
+    .rcb__status--ok {
+        @apply bg-emerald-500/15 text-emerald-700 dark:text-emerald-400;
+    }
+    .rcb__status--err {
+        @apply bg-rose-500/15 text-rose-700 dark:text-rose-400;
+    }
+    .rcb__status-meta {
+        @apply text-muted-foreground;
+    }
+    .rcb__details-summary {
+        @apply cursor-pointer text-xs text-muted-foreground;
+    }
+    .rcb__details-pre--compile {
+        @apply mt-1 whitespace-pre-wrap text-xs text-amber-700 dark:text-amber-400;
+    }
+    .rcb__details-pre--stderr {
+        @apply mt-1 whitespace-pre-wrap text-xs text-rose-700 dark:text-rose-400;
+    }
+    .rcb__stdout {
+        @apply whitespace-pre-wrap text-xs text-foreground!;
+    }
+    .rcb__no-output {
+        @apply text-xs text-muted-foreground italic;
+    }
+
+    /* ─── Tabbed group ───────────────────────────────────────────── */
+    .rcg {
+        @apply my-6 rounded-lg border border-border overflow-hidden;
+    }
+    .rcg__tablist {
+        @apply flex border-b border-border bg-muted/40 overflow-x-auto;
+    }
+    .rcg__tab {
+        @apply px-4 py-2 text-xs font-semibold whitespace-nowrap border-b-2 transition-colors
+               border-transparent text-muted-foreground hover:text-foreground;
+    }
+    .rcg__tab--active {
+        @apply border-primary text-foreground;
+    }
+}

@@ -1,0 +1,87 @@
+@layer components {
+    /* Experience — tabbed work history.
+       Block: .experience
+       Elements: __title, __layout, __rail, __rail-list, __rail-item,
+                 __pane, __empty, __details, __position, __company,
+                 __time, __summary, __bullets, __bullet, __results,
+                 __results-title, __results-list, __results-item,
+                 __stack-label, __stack-row, __tech-tag
+       Modifiers: --active on __rail-item */
+
+    .experience {
+        @apply px-8 py-16 rounded-lg shadow-md font-sans scroll-mt-24;
+    }
+    .experience__title {
+        @apply text-3xl md:text-5xl font-bold text-center text-blue-700 mb-12;
+    }
+    .experience__layout {
+        @apply flex flex-col md:flex-row md:h-[calc(70vh-8rem)] gap-8;
+    }
+
+    .experience__rail {
+        @apply md:flex-none md:w-1/4 lg:w-1/5 rounded-md border-2 border-blue-600 dark:border-gray-50 overflow-x-auto md:overflow-y-auto;
+    }
+    .experience__rail-list {
+        @apply flex flex-row md:flex-col min-w-max md:min-w-0;
+    }
+    .experience__rail-item {
+        @apply cursor-pointer flex flex-col items-center justify-center
+               md:text-xl lg:text-2xl text-center py-4 px-4 font-semibold whitespace-nowrap
+               text-blue-900 dark:text-gray-50
+               hover:bg-blue-400 hover:text-gray-50
+               dark:hover:bg-blue-600 dark:hover:text-gray-50;
+    }
+    .experience__rail-item--active {
+        /* Override the resting text/background while keeping hover behavior. */
+        @apply bg-blue-700 text-gray-50 dark:bg-blue-600 dark:text-gray-50;
+    }
+
+    .experience__pane {
+        @apply flex-1 rounded-md border-2 border-blue-500 dark:border-gray-50 p-4 overflow-y-auto;
+    }
+    .experience__empty {
+        /* No styling beyond the default <p>; here for selector parity. */
+    }
+
+    .experience__position {
+        /* Original markup used `text-2sm` at <md, which is not a Tailwind
+           utility — v3 silently dropped it; v4 errors via @apply. Preserved
+           the (effectively no-op) base size by omitting it; md+ unchanged. */
+        @apply md:text-3xl font-bold pb-2;
+    }
+    .experience__company {
+        @apply text-sm md:text-2xl text-blue-600 font-semibold hover:text-gray-600;
+    }
+    .experience__time {
+        @apply text-sm md:text-xl text-rose-500 font-sans font-semibold pt-2;
+    }
+    .experience__summary {
+        @apply pt-4 pb-4 text-sm md:text-2xl;
+    }
+    .experience__bullets {
+        @apply list-disc pl-8 text-sm md:text-xl;
+    }
+    .experience__bullet {
+        @apply p-2;
+    }
+
+    .experience__results {
+        @apply mt-4 border-l-4 border-rose-400 dark:border-rose-500 bg-rose-50 dark:bg-rose-950/30 rounded-r-md p-3 md:p-4;
+    }
+    .experience__results-title {
+        @apply text-sm md:text-lg font-bold uppercase tracking-wide text-rose-600 dark:text-rose-300 mb-2;
+    }
+    .experience__results-list {
+        @apply list-disc pl-6 text-sm md:text-xl space-y-2 text-gray-800 dark:text-gray-100;
+    }
+
+    .experience__stack-label {
+        @apply p-2 pt-6 font-bold;
+    }
+    .experience__stack-row {
+        @apply flex flex-wrap;
+    }
+    .experience__tech-tag {
+        @apply m-1 px-2 py-1 text-sm rounded text-blue-900 bg-blue-200 dark:text-gray-50 dark:bg-blue-600;
+    }
+}

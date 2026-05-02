@@ -9,7 +9,6 @@ import scala.scalajs.js
 
 object Footer:
 
-  // Heart, LinkedIn, GitHub paths — same as portfolio-app's inline SVGs.
   private val heartPathD =
     "M12,21.35L10.55,20.03C5.4,15.36 2,12.27 2,8.5C2,5.41 4.42,3 7.5,3C9.24,3 10.91,3.81 12,5.08C13.09,3.81 14.76,3 16.5,3C19.58,3 22,5.41 22,8.5C22,12.27 18.6,15.36 13.45,20.03L12,21.35Z"
 
@@ -21,17 +20,15 @@ object Footer:
 
   private def socialIcon(href: String, title: String, pathD: String): VdomNode =
     <.a(
-      ^.href := href,
-      ^.rel := "noopener noreferrer",
-      ^.target := "_blank",
-      ^.className :=
-        "hover:scale-125 mx-2 text-gray-700 dark:text-gray-300 hover:text-blue-500 " +
-          "dark:hover:text-blue-300 transition-transform duration-100",
+      ^.href      := href,
+      ^.rel       := "noopener noreferrer",
+      ^.target    := "_blank",
+      ^.className := "footer__social-link",
       svg_<^.<.svg(
         VdomAttr("role") := "img",
         svg_<^.^.viewBox := "0 0 24 24",
-        ^.className := "custom-icon w-8 h-8",
-        svg_<^.^.xmlns := "http://www.w3.org/2000/svg",
+        ^.className      := "footer__social-icon",
+        svg_<^.^.xmlns   := "http://www.w3.org/2000/svg",
         svg_<^.<.title(title),
         svg_<^.<.path(svg_<^.^.fill := "currentColor", svg_<^.^.d := pathD)
       )
@@ -41,28 +38,25 @@ object Footer:
     val year = new js.Date().getFullYear().toInt
 
     <.footer(
-      ^.className := "container sticky top-[100vh] md:p-12 p-5 rounded-lg shadow-md",
+      ^.className := "footer container",
       <.div(
-        ^.className := "flex flex-auto place-content-between pt-5",
+        ^.className := "footer__row",
         <.div(
-          ^.className := "items-center max-md:hidden text-xl font-semibold",
+          ^.className := "footer__credit",
           "Made with",
           svg_<^.<.svg(
-            svg_<^.^.xmlns := "http://www.w3.org/2000/svg",
+            svg_<^.^.xmlns   := "http://www.w3.org/2000/svg",
             svg_<^.^.viewBox := "0 0 24 24",
-            ^.className :=
-              "custom-icon w-8 h-8 inline-block hover:animate-pulse text-rose-600 hover:text-gray-50 mx-1",
+            ^.className      := "footer__credit-icon",
             svg_<^.<.path(svg_<^.^.fill := "currentColor", svg_<^.^.d := heartPathD)
           ),
           s"in Paris by Aniket © $year"
         ),
-        <.div(^.className := "hidden md:items-center", ToggleMode.Component()),
+        <.div(^.className := "footer__toggle", ToggleMode.Component()),
         <.div(
-          ^.className := "items-center",
+          ^.className := "footer__socials",
           <.div(
-            ^.className :=
-              "flex flex-row col-span-full md:col-span-3 justify-center md:justify-end " +
-                "order-2 md:order-3 my-4 md:my-0",
+            ^.className := "footer__social-row",
             socialIcon("https://www.linkedin.com/in/aniketkakde/", "LinkedIn", linkedInPathD),
             socialIcon("https://github.com/ani2fun", "GitHub", githubPathD)
           )

@@ -1,0 +1,195 @@
+@layer components {
+    /* Cortex reader — sidebar | main | TOC layout shells.
+       Blocks: .cortex-reader-layout, .cortex-reader-breadcrumb, .cortex-reader-pager, .cortex-reader-sidebar, .cortex-reader-toc, .cortex-reader-toc-mobile */
+
+    /* ─── Layout (3-column reader) ───────────────────────────────── */
+    .cortex-reader-layout {
+        @apply grid grid-cols-1 lg:grid-cols-[280px_minmax(0,1fr)]
+               xl:grid-cols-[280px_minmax(0,1fr)_240px] gap-0 max-w-[1400px] mx-auto;
+    }
+    .cortex-reader-layout__main {
+        @apply px-5 md:px-10 py-10 min-w-0;
+    }
+
+    /* ─── Breadcrumb ─────────────────────────────────────────────── */
+    .cortex-reader-breadcrumb {
+        @apply text-xs text-muted-foreground mb-6;
+    }
+    .cortex-reader-breadcrumb__list {
+        @apply flex flex-wrap items-center gap-1.5;
+    }
+    .cortex-reader-breadcrumb__link {
+        @apply hover:text-primary;
+    }
+    .cortex-reader-breadcrumb__separator {
+        @apply h-3 w-3;
+    }
+    .cortex-reader-breadcrumb__current {
+        @apply text-foreground font-medium truncate;
+    }
+
+    /* ─── Pager (prev/next chapter) ──────────────────────────────── */
+    /* Always two columns — even on mobile — so prev/next live side-by-side
+       instead of stacking. Smaller padding + gap on narrow screens keeps
+       them readable. */
+    .cortex-reader-pager {
+        @apply mt-12 pt-6 border-t border-border grid grid-cols-2 gap-2 sm:gap-4;
+    }
+    .cortex-reader-pager__card {
+        /* `group` is added literally in markup so group-hover: works on children. */
+        @apply rounded-lg border border-border p-3 sm:p-4 hover:border-primary transition-colors min-w-0;
+    }
+    .cortex-reader-pager__card--next {
+        @apply text-right col-start-2;
+    }
+    .cortex-reader-pager__label {
+        @apply flex items-center gap-1 text-xs text-muted-foreground mb-1;
+    }
+    .cortex-reader-pager__label--next {
+        @apply justify-end;
+    }
+    .cortex-reader-pager__label-icon {
+        @apply h-3 w-3;
+    }
+    .cortex-reader-pager__title {
+        @apply block font-semibold text-foreground group-hover:text-primary truncate;
+    }
+
+    /* ─── Scroll-to-top floating button ──────────────────────────── */
+    .scroll-to-top {
+        @apply fixed bottom-5 right-5 z-40 rounded-full bg-primary text-primary-foreground
+               p-3 shadow-lg transition-opacity duration-200 hover:opacity-90;
+    }
+    .scroll-to-top--hidden {
+        @apply opacity-0 pointer-events-none;
+    }
+    .scroll-to-top--visible {
+        @apply opacity-100;
+    }
+    .scroll-to-top__icon {
+        @apply h-5 w-5;
+    }
+
+    /* ─── Sidebar (chapters) ─────────────────────────────────────── */
+    .cortex-reader-sidebar__open-button {
+        @apply lg:hidden fixed bottom-5 left-5 z-40 rounded-full bg-primary text-primary-foreground p-3 shadow-lg;
+    }
+    .cortex-reader-sidebar__open-icon {
+        @apply h-5 w-5;
+    }
+    .cortex-reader-sidebar__drawer-overlay {
+        @apply lg:hidden fixed inset-0 z-50 bg-black/40;
+    }
+    .cortex-reader-sidebar__drawer-panel {
+        @apply absolute left-0 top-0 h-full w-[85%] max-w-sm overflow-y-auto bg-background border-r border-border;
+    }
+    .cortex-reader-sidebar__close-button {
+        @apply absolute top-4 right-4 text-muted-foreground;
+    }
+    .cortex-reader-sidebar__close-icon {
+        @apply h-5 w-5;
+    }
+    .cortex-reader-sidebar__desktop {
+        @apply hidden lg:block sticky top-20 self-start max-h-[calc(100vh-5rem)]
+               overflow-y-auto border-r border-border;
+    }
+    .cortex-reader-sidebar__inner {
+        @apply flex flex-col gap-6 p-6;
+    }
+    .cortex-reader-sidebar__back {
+        @apply text-xs uppercase tracking-wider text-muted-foreground hover:text-primary;
+    }
+    .cortex-reader-sidebar__title {
+        @apply mt-2 text-lg font-bold leading-snug text-foreground;
+    }
+    .cortex-reader-sidebar__description {
+        @apply mt-1 text-xs text-muted-foreground leading-relaxed;
+    }
+    /* Recursive sidebar tree. The top-level <ul> is `__tree`; sections nest
+       arbitrarily deep via <details>/<summary>; leaves are chapter links.
+       Indentation is depth-driven (rules below) so the tree stays scannable
+       even for deeply nested books like the DSA import. */
+    .cortex-reader-sidebar__tree {
+        @apply space-y-1 list-none;
+    }
+    .cortex-reader-sidebar__section {
+        @apply list-none;
+    }
+    .cortex-reader-sidebar__section-details {
+        @apply list-none;
+    }
+    .cortex-reader-sidebar__section-details > summary::-webkit-details-marker { display: none; }
+    .cortex-reader-sidebar__section-details > summary { list-style: none; }
+    .cortex-reader-sidebar__section-summary {
+        @apply flex items-center gap-1 cursor-pointer select-none py-1
+               text-xs font-bold uppercase tracking-wider text-foreground
+               hover:text-primary;
+    }
+    .cortex-reader-sidebar__section-summary::before {
+        content: "▸";
+        @apply inline-block w-3 text-muted-foreground transition-transform;
+    }
+    .cortex-reader-sidebar__section-details[open] > .cortex-reader-sidebar__section-summary::before {
+        transform: rotate(90deg);
+    }
+    .cortex-reader-sidebar__section-name {
+        @apply flex-1 truncate;
+    }
+    .cortex-reader-sidebar__section-children {
+        @apply list-none ml-3 mt-1 space-y-1 border-l border-border pl-2;
+    }
+    .cortex-reader-sidebar__section--depth-0 > .cortex-reader-sidebar__section-details > .cortex-reader-sidebar__section-summary {
+        @apply mt-3;
+    }
+    .cortex-reader-sidebar__chapter-item {
+        @apply list-none;
+    }
+    .cortex-reader-sidebar__chapter-link {
+        @apply block -ml-px border-l-2 pl-3 py-1.5 text-sm transition-colors
+               border-transparent text-muted-foreground hover:text-foreground hover:border-border;
+    }
+    .cortex-reader-sidebar__chapter-link--active {
+        @apply border-primary text-primary font-semibold bg-primary/5;
+    }
+
+    /* ─── Right-rail TOC (xl+) ───────────────────────────────────── */
+    .cortex-reader-toc {
+        @apply hidden xl:block sticky top-20 self-start max-h-[calc(100vh-5rem)] overflow-y-auto p-6;
+    }
+    .cortex-reader-toc__heading {
+        @apply text-xs font-bold uppercase tracking-wider text-foreground mb-3;
+    }
+    .cortex-reader-toc__list {
+        @apply space-y-1.5 border-l border-border;
+    }
+    .cortex-reader-toc__link {
+        @apply block -ml-px border-l-2 pl-3 py-1 text-xs transition-colors
+               border-transparent text-muted-foreground hover:text-foreground;
+    }
+    .cortex-reader-toc__link--active {
+        @apply border-primary text-primary font-semibold;
+    }
+
+    /* ─── Mobile collapsible TOC (below xl) ──────────────────────── */
+    .cortex-reader-toc-mobile {
+        @apply xl:hidden mb-8 rounded-lg border border-border;
+    }
+    .cortex-reader-toc-mobile__toggle {
+        @apply w-full flex items-center justify-between px-4 py-3 text-sm font-semibold;
+    }
+    .cortex-reader-toc-mobile__label {
+        @apply flex items-center gap-2;
+    }
+    .cortex-reader-toc-mobile__chevron {
+        @apply h-4 w-4 transition-transform;
+    }
+    .cortex-reader-toc-mobile__chevron--open {
+        @apply rotate-180;
+    }
+    .cortex-reader-toc-mobile__list {
+        @apply px-4 pb-3 space-y-1.5 border-t border-border pt-3;
+    }
+    .cortex-reader-toc-mobile__link {
+        @apply text-sm text-muted-foreground hover:text-primary;
+    }
+}

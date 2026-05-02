@@ -3,13 +3,14 @@ package codefolio.client.util
 import japgolly.scalajs.react.*
 import org.scalajs.dom
 
-/** Tiny effect helper: set `document.title` on mount and reset to a default
-  * on unmount. Use from any page component:
-  *
-  * {{{
-  * .useEffectOnMountBy(_ => PageTitle.set("Knowledge Base — Aniket Kakde"))
-  * }}}
-  */
+/**
+ * Tiny effect helper: set `document.title` on mount and reset to a default on unmount. Use from any page
+ * component:
+ *
+ * {{{
+ * .useEffectOnMountBy(_ => PageTitle.set("Cortex — Aniket Kakde"))
+ * }}}
+ */
 object PageTitle:
 
   val Default: String = "Aniket Kakde — Backend-leaning Software Engineer"

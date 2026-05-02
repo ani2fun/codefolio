@@ -13,6 +13,7 @@ import "prismjs/components/prism-c";
 import "prismjs/components/prism-cpp";
 import "prismjs/components/prism-go";
 import "prismjs/components/prism-java";
+import "prismjs/components/prism-kotlin";
 import "prismjs/components/prism-javascript";
 import "prismjs/components/prism-python";
 import "prismjs/components/prism-rust";
@@ -38,6 +39,8 @@ const PRISM_BY_ALIAS: Record<string, string> = {
   golang: "go",
   rust: "rust",
   rs: "rust",
+  kotlin: "kotlin",
+  kt: "kotlin",
   typescript: "typescript",
   ts: "typescript",
   javascript: "javascript",

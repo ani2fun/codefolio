@@ -12,20 +12,19 @@ import org.scalajs.dom
  * Sticky top nav with desktop pill menu and mobile drawer.
  *
  * Hash-link anchors (`/#about`, `/#experience`, …) scroll to the matching `id` if the section is already in
- * the DOM. If we're on a non-home route (e.g. `/knowledge/...`), we fall back to a real URL navigation —
+ * the DOM. If we're on a non-home route (e.g. `/cortex/...`), we fall back to a real URL navigation —
  * [[codefolio.client.pages.HomePage]]'s `useEffectOnMountBy` reads the URL fragment after mount and scrolls.
  */
 object Header:
 
   final case class Props(ctl: RouterCtl[Page])
 
-  /** Menu items shown in both the desktop bar and the mobile drawer. */
   private val menuLinks: List[(String, String)] = List(
     "/#about"          -> "About",
     "/#experience"     -> "Experience",
     "/#projects"       -> "Projects",
     "/#certifications" -> "Certifications",
-    "/#knowledge"      -> "Knowledge Base"
+    "/#cortex"         -> "Cortex"
   )
 
   /**
@@ -49,7 +48,7 @@ object Header:
   val Component =
     ScalaFnComponent
       .withHooks[Props]
-      .useState(false) // mobile menuOpen
+      .useState(false)
       .render { (props, menuOpenS) =>
         val toggleMenu = menuOpenS.modState(!_)
 
@@ -61,7 +60,7 @@ object Header:
             ^.key := hash,
             <.a(
               ^.href      := hash,
-              ^.className := "font-semibold hover:text-primary dark:hover:text-primary",
+              ^.className := "header__drawer-link",
               ^.onClick ==> ((e: ReactEventFromInput) =>
                 e.preventDefaultCB >> menuOpenS.setState(false) >> goToAnchor(hash)
               ),
@@ -71,61 +70,43 @@ object Header:
 
         def desktopLink(hash: String, label: String): VdomNode =
           <.a(
-            ^.key  := hash,
-            ^.href := hash,
-            ^.className :=
-              "px-2 lg:px-3 py-2 hover:bg-primary dark:hover:bg-primary hover:text-gray-50 " +
-                "text-base lg:text-xl font-semibold rounded",
+            ^.key       := hash,
+            ^.href      := hash,
+            ^.className := "header__link",
             ^.onClick ==> linkClick(hash),
             label
           )
 
         <.header(
-          ^.className := "fixed top-0 left-0 right-0 z-50 bg-white dark:bg-background shadow-md opacity-95",
+          ^.className := "header",
           <.nav(
-            ^.className := "container mx-auto p-5 flex justify-between items-center",
-            // Site title (desktop)
+            ^.className := "header__nav container",
             <.a(
-              ^.href := "/#hero",
-              ^.className :=
-                "hidden md:block text-lg md:text-2xl lg:text-3xl font-bold text-primary dark:text-primary",
+              ^.href      := "/#hero",
+              ^.className := "header__title",
               ^.onClick ==> linkClick("/#hero"),
               "Aniket Kakde"
             ),
-            // Mobile theme toggle
-            <.div(^.className := "block md:hidden", ToggleMode.Component()),
-            // Desktop menu links
+            <.div(^.className := "header__toggle--mobile", ToggleMode.Component()),
             <.div(
-              ^.className := "hidden md:flex md:space-x-2 lg:space-x-5",
+              ^.className := "header__menu",
               menuLinks.toTagMod((hash, label) => desktopLink(hash, label))
             ),
-            // Desktop theme toggle
-            <.div(^.className := "hidden md:flex", ToggleMode.Component()),
-            // Mobile burger button
+            <.div(^.className := "header__toggle--desktop", ToggleMode.Component()),
             <.button(
-              ^.className  := "md:hidden",
+              ^.className  := "header__burger",
               ^.aria.label := (if menuOpenS.value then "Close menu" else "Open menu"),
               ^.onClick --> toggleMenu,
               if menuOpenS.value then
-                LucideIcons.X(
-                  LucideIcons.withClass(
-                    "w-10 h-10 text-primary dark:text-primary hover:text-rose-500"
-                  )
-                )
-              else
-                LucideIcons.Menu(
-                  LucideIcons.withClass(
-                    "w-10 h-10 text-primary dark:text-primary hover:text-rose-500"
-                  )
-                )
+                LucideIcons.X(LucideIcons.withClass("header__burger-icon"))
+              else LucideIcons.Menu(LucideIcons.withClass("header__burger-icon"))
             )
           ),
-          // Mobile drawer
           if menuOpenS.value then
             <.nav(
-              ^.className := "md:hidden",
+              ^.className := "header__drawer",
               <.ul(
-                ^.className := "flex flex-col items-left space-y-5 bg-white dark:bg-background p-5",
+                ^.className := "header__drawer-list",
                 menuLinks.toTagMod((hash, label) => mobileLink(hash, label))
               )
             )

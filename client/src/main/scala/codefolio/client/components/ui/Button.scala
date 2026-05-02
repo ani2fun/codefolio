@@ -1,13 +1,12 @@
 package codefolio.client.components.ui
 
-/** Reimplementation of portfolio-app's shadcn `Button` primitive — the CVA
-  * variant table, ported to a Scala enum. We don't expose a React component
-  * wrapper; call sites just use `<.button(^.className := Button.classes(...))`
-  * which matches scalajs-react's idiom and avoids an extra layer.
-  *
-  * Drop the original `asChild` (Radix Slot) escape hatch — portfolio-app
-  * doesn't actually use it.
-  */
+/**
+ * Reimplementation of portfolio-app's shadcn `Button` primitive — the CVA variant table, ported to a Scala
+ * enum. We don't expose a React component wrapper; call sites just use `<.button(^.className :=
+ * Button.classes(...))` which matches scalajs-react's idiom and avoids an extra layer.
+ *
+ * Drop the original `asChild` (Radix Slot) escape hatch — portfolio-app doesn't actually use it.
+ */
 object Button:
 
   enum Variant:
@@ -19,17 +18,17 @@ object Button:
   private val baseClasses =
     "inline-flex items-center justify-center whitespace-nowrap rounded-md text-sm font-medium " +
       "ring-offset-background transition-colors " +
-      "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 " +
+      "focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 " +
       "disabled:pointer-events-none disabled:opacity-50"
 
   private def variantCls(v: Variant): String = v match
     case Variant.Default     => "bg-primary text-primary-foreground hover:bg-primary/90"
     case Variant.Destructive => "bg-destructive text-destructive-foreground hover:bg-destructive/90"
-    case Variant.Outline     =>
+    case Variant.Outline =>
       "border border-input bg-background hover:bg-accent hover:text-accent-foreground"
-    case Variant.Secondary   => "bg-secondary text-secondary-foreground hover:bg-secondary/80"
-    case Variant.Ghost       => "hover:bg-accent hover:text-accent-foreground"
-    case Variant.Link        => "text-primary underline-offset-4 hover:underline"
+    case Variant.Secondary => "bg-secondary text-secondary-foreground hover:bg-secondary/80"
+    case Variant.Ghost     => "hover:bg-accent hover:text-accent-foreground"
+    case Variant.Link      => "text-primary underline-offset-4 hover:underline"
 
   private def sizeCls(s: Size): String = s match
     case Size.Default => "h-10 px-4 py-2"

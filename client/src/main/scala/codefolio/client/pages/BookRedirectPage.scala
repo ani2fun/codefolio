@@ -8,10 +8,10 @@ import org.scalajs.dom
 import scala.scalajs.concurrent.JSExecutionContext.Implicits.queue
 import scala.util.{Failure, Success}
 
-/** `/knowledge/<book>` → fetch the index, look up the book, redirect via
-  * `history.replaceState` to its first chapter. Falls back to a clear error
-  * message if the book is unknown.
-  */
+/**
+ * `/cortex/<book>` → fetch the index, look up the book, redirect via `history.replaceState` to its first
+ * chapter. Falls back to a clear error message if the book is unknown.
+ */
 object BookRedirectPage:
 
   val Component =
@@ -20,12 +20,12 @@ object BookRedirectPage:
       .useState(Option.empty[String]) // error
       .useEffectOnMountBy { (book, errS) =>
         Callback {
-          ApiClient.getKnowledgeIndex.onComplete {
+          ApiClient.getCortexIndex.onComplete {
             case Success(idx) =>
               idx.books.find(_.slug == book) match
                 case Some(b) if b.chapters.nonEmpty =>
                   // Use replaceState so the back button doesn't bounce here.
-                  val target = s"/knowledge/$book/${b.chapters.head.slug}"
+                  val target = s"/cortex/$book/${b.chapters.head.slug}"
                   dom.window.location.replace(target)
                 case Some(_) =>
                   errS
@@ -55,9 +55,9 @@ object BookRedirectPage:
                 <.p(
                   ^.className := "mt-4 text-sm",
                   <.a(
-                    ^.href := "/knowledge",
+                    ^.href      := "/cortex",
                     ^.className := "text-primary hover:underline",
-                    "← Back to Knowledge Base"
+                    "← Back to Cortex"
                   )
                 )
               )

@@ -1,21 +1,22 @@
 package codefolio.client.components.sections
 
+import codefolio.client.components.ui.Section
 import codefolio.client.data.PortfolioData
 import japgolly.scalajs.react.*
 import japgolly.scalajs.react.vdom.html_<^.*
 
 import scala.scalajs.js
 
-/** Tabbed experience section. Left rail lists company short names; clicking
-  * one shows the position, dates, summary, bullet points, optional results
-  * panel, and tech-tag list on the right.
-  */
+/**
+ * Tabbed experience section. Left rail lists company short names; clicking one shows the position, dates,
+ * summary, bullet points, optional results panel, and tech-tag list on the right.
+ */
 object Experience:
 
   val Component =
     ScalaFnComponent
       .withHooks[Unit]
-      .useState(0) // selected index
+      .useState(0)
       .render { (_, selectedS) =>
         val items = PortfolioData.experience
         val total = items.length
@@ -24,46 +25,33 @@ object Experience:
           else if selectedS.value >= total then 0
           else selectedS.value
 
-        <.section(
-          ^.id := "experience",
-          ^.className := "px-8 py-16 rounded-lg shadow-md font-sans scroll-mt-24",
-          <.h2(
-            ^.className := "text-3xl md:text-5xl font-bold text-center text-blue-700 mb-12",
-            "Experience"
-          ),
+        Section("experience", "experience")(
+          <.h2(^.className := "experience__title", "Experience"),
           <.div(
-            ^.className := "flex flex-col md:flex-row md:h-[calc(70vh-8rem)] gap-8",
-            // Left rail
+            ^.className := "experience__layout",
             <.div(
-              ^.className := "md:flex-none md:w-1/4 lg:w-1/5 rounded-md border-2 border-blue-600 dark:border-gray-50 overflow-x-auto md:overflow-y-auto",
+              ^.className := "experience__rail",
               <.ul(
-                ^.className := "flex flex-row md:flex-col min-w-max md:min-w-0",
+                ^.className := "experience__rail-list",
                 items.zipWithIndex.toList.toTagMod { case (exp, idx) =>
                   val active = idx == selectedIdx
-                  val activeCls =
-                    if active then "bg-blue-700 text-gray-50 dark:bg-blue-600 dark:text-gray-50"
-                    else "text-blue-900 dark:text-gray-50"
+                  val cls =
+                    if active then "experience__rail-item experience__rail-item--active"
+                    else "experience__rail-item"
                   <.li(
-                    ^.key := exp.company.short,
-                    ^.className :=
-                      "cursor-pointer flex flex-col items-center justify-center " +
-                        "md:text-xl lg:text-2xl text-center py-4 px-4 font-semibold whitespace-nowrap " +
-                        "hover:bg-blue-400 hover:text-gray-50 " +
-                        "dark:hover:bg-blue-600 dark:hover:text-gray-50 " +
-                        activeCls,
+                    ^.key       := exp.company.short,
+                    ^.className := cls,
                     ^.onClick --> selectedS.setState(idx),
                     exp.company.short
                   )
                 }
               )
             ),
-            // Right pane
             <.div(
-              ^.className := "flex-1 rounded-md border-2 border-blue-500 dark:border-gray-50 p-4 overflow-y-auto",
+              ^.className := "experience__pane",
               if selectedIdx < 0 then
-                <.p("Select a company to see the experience details.")
-              else
-                renderDetails(items(selectedIdx))
+                <.p(^.className := "experience__empty", "Select a company to see the experience details.")
+              else renderDetails(items(selectedIdx))
             )
           )
         )
@@ -71,34 +59,22 @@ object Experience:
 
   private def renderDetails(exp: PortfolioData.Experience): VdomNode =
     <.div(
-      <.h2(^.className := "text-2sm md:text-3xl font-bold pb-2", exp.position),
-      <.a(
-        ^.href := exp.company.url,
-        ^.className := "text-sm md:text-2xl text-blue-600 font-semibold hover:text-gray-600",
-        exp.company.name
-      ),
-      <.p(
-        ^.className := "text-sm md:text-xl text-rose-500 font-sans font-semibold pt-2",
-        exp.time
-      ),
-      <.p(^.className := "pt-4 pb-4 text-sm md:text-2xl", exp.description),
+      <.h2(^.className := "experience__position", exp.position),
+      <.a(^.href       := exp.company.url, ^.className := "experience__company", exp.company.name),
+      <.p(^.className  := "experience__time", exp.time),
+      <.p(^.className  := "experience__summary", exp.description),
       <.ul(
-        ^.className := "list-disc pl-8 text-sm md:text-xl",
+        ^.className := "experience__bullets",
         exp.items.toList.zipWithIndex.toTagMod { case (text, idx) =>
-          <.li(^.key := idx, ^.className := "p-2", text)
+          <.li(^.key := idx, ^.className := "experience__bullet", text)
         }
       ),
       renderResults(exp.results),
-      <.p(^.className := "p-2 pt-6 font-bold", "Stack:"),
+      <.p(^.className := "experience__stack-label", "Stack:"),
       <.div(
-        ^.className := "flex flex-wrap",
+        ^.className := "experience__stack-row",
         exp.leveragedKnowledgeIn.toList.toTagMod { tech =>
-          <.span(
-            ^.key := tech,
-            ^.className :=
-              "m-1 px-2 py-1 text-sm rounded text-blue-900 bg-blue-200 dark:text-gray-50 dark:bg-blue-600",
-            tech
-          )
+          <.span(^.key := tech, ^.className := "experience__tech-tag", tech)
         }
       )
     )
@@ -108,16 +84,10 @@ object Experience:
     if results.isEmpty then EmptyVdom
     else
       <.div(
-        ^.className :=
-          "mt-4 border-l-4 border-rose-400 dark:border-rose-500 bg-rose-50 dark:bg-rose-950/30 rounded-r-md p-3 md:p-4",
-        <.p(
-          ^.className :=
-            "text-sm md:text-lg font-bold uppercase tracking-wide text-rose-600 dark:text-rose-300 mb-2",
-          "Results"
-        ),
+        ^.className := "experience__results",
+        <.p(^.className := "experience__results-title", "Results"),
         <.ul(
-          ^.className :=
-            "list-disc pl-6 text-sm md:text-xl space-y-2 text-gray-800 dark:text-gray-100",
+          ^.className := "experience__results-list",
           results.zipWithIndex.toTagMod { case (res, idx) => <.li(^.key := idx, res) }
         )
       )

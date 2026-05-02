@@ -1,0 +1,54 @@
+@layer components {
+    /* Projects — responsive card grid.
+       Block: .projects
+       Elements: __title, __grid, __card, __image, __body, __icon-row,
+                 __icon-link, __icon-svg, __name, __description,
+                 __tag-row, __tag
+       Modifiers: --open on __icon-link (open-in-new variant) */
+
+    .projects {
+        @apply min-h-screen rounded-lg shadow-md md:p-10 p-2 pt-24 md:pt-28 scroll-mt-24;
+    }
+    .projects__title {
+        @apply text-3xl md:text-5xl font-bold text-center text-blue-700 mb-12;
+    }
+    .projects__grid {
+        @apply grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8;
+    }
+    .projects__card {
+        @apply relative flex flex-col dark:bg-slate-300 rounded-lg shadow-md overflow-hidden;
+    }
+    .projects__image {
+        @apply w-full h-48 object-cover;
+    }
+    .projects__body {
+        @apply p-6 flex flex-col flex-1;
+    }
+    .projects__icon-row {
+        @apply flex;
+    }
+    .projects__icon-link {
+        @apply hover:scale-125 text-gray-700 dark:text-black hover:text-blue-800 dark:hover:text-blue-600 transition-transform duration-100;
+    }
+    .projects__icon-link--open {
+        /* Open-in-new variant — same color hooks as base, plus right margin. */
+        @apply mr-3 hover:text-blue-600 dark:hover:text-blue-600;
+    }
+    .projects__icon-svg {
+        /* `custom-icon` was a hook class with no CSS definition — dropped
+           since v4 @apply rejects unknown utilities. */
+        @apply w-7 h-7;
+    }
+    .projects__name {
+        @apply pt-6 text-xl font-semibold text-blue-700;
+    }
+    .projects__description {
+        @apply text-gray-700 mt-2 flex-1;
+    }
+    .projects__tag-row {
+        @apply flex flex-wrap mt-4;
+    }
+    .projects__tag {
+        @apply m-1 px-2 py-1 text-xs rounded text-blue-900 bg-blue-200 dark:text-gray-50 dark:bg-blue-600;
+    }
+}

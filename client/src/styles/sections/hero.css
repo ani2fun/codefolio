@@ -1,0 +1,43 @@
+@layer components {
+    /* Hero — full-viewport landing section.
+       Block: .hero
+       Elements: __inner, __title, __title-name, __byline*, __cta-row, __cta
+       Modifiers: --primary, --secondary on .hero__cta */
+
+    .hero {
+        @apply min-h-screen flex items-center justify-center px-8 rounded-lg shadow-md;
+    }
+    .hero__inner {
+        @apply text-center;
+    }
+    .hero__title {
+        @apply text-lg md:text-4xl font-semibold text-gray-900 dark:text-gray-100 relative mb-6;
+    }
+    .hero__title-name {
+        @apply block text-3xl md:text-6xl font-bold mt-3 text-blue-700 dark:text-blue-700;
+    }
+    .hero__byline {
+        @apply text-lg md:text-3xl mt-2 md:mt-8 text-gray-700 dark:text-gray-300 max-w-4xl mx-auto;
+    }
+    .hero__byline-strong {
+        @apply font-bold text-blue-600 dark:text-blue-400;
+    }
+    .hero__byline-secondary {
+        @apply text-sm md:text-2xl;
+    }
+    .hero__byline-tertiary {
+        @apply text-sm md:text-xl text-gray-600 dark:text-gray-400;
+    }
+    .hero__cta-row {
+        @apply mt-8 flex flex-col md:flex-row justify-center gap-4;
+    }
+    .hero__cta {
+        @apply font-semibold border-2 border-blue-600 py-2 px-6 rounded-md transition duration-300;
+    }
+    .hero__cta--primary {
+        @apply bg-blue-600 text-gray-50 hover:bg-gray-50 hover:text-slate-900;
+    }
+    .hero__cta--secondary {
+        @apply dark:bg-gray-100 dark:hover:bg-gray-900 text-blue-900 hover:text-gray-50 hover:bg-sky-400;
+    }
+}

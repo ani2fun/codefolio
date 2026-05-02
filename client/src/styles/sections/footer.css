@@ -1,0 +1,38 @@
+@layer components {
+    /* Footer — sticky-to-bottom site footer with social links + theme toggle.
+       Block: .footer
+       Elements: __row, __credit, __credit-icon, __toggle, __socials,
+                 __social-link, __social-icon */
+
+    .footer {
+        /* `container` is added literally in markup — v4's container utility
+           carries embedded breakpoint media queries that @apply can't expand. */
+        @apply sticky top-[100vh] md:p-12 p-5 rounded-lg shadow-md;
+    }
+    .footer__row {
+        @apply flex flex-auto place-content-between pt-5;
+    }
+    .footer__credit {
+        @apply items-center max-md:hidden text-xl font-semibold;
+    }
+    .footer__credit-icon {
+        @apply w-8 h-8 inline-block hover:animate-pulse text-rose-600 hover:text-gray-50 mx-1;
+    }
+    .footer__toggle {
+        @apply hidden md:items-center;
+    }
+    .footer__socials {
+        @apply items-center;
+    }
+    .footer__social-row {
+        @apply flex flex-row col-span-full md:col-span-3 justify-center md:justify-end
+               order-2 md:order-3 my-4 md:my-0;
+    }
+    .footer__social-link {
+        @apply hover:scale-125 mx-2 text-gray-700 dark:text-gray-300 hover:text-blue-500
+               dark:hover:text-blue-300 transition-transform duration-100;
+    }
+    .footer__social-icon {
+        @apply w-8 h-8;
+    }
+}

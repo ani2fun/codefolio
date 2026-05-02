@@ -1,11 +1,11 @@
 package codefolio.client.pages
 
 import codefolio.client.api.ApiClient
-import codefolio.client.components.knowledge.{
+import codefolio.client.components.cortex.{
   ChapterContent,
-  KnowledgeBreadcrumb,
-  KnowledgePager,
-  KnowledgeReaderLayout,
+  CortexBreadcrumb,
+  CortexPager,
+  CortexReaderLayout,
   MobileToc
 }
 import codefolio.client.markdown.MarkdownRenderer
@@ -17,18 +17,19 @@ import japgolly.scalajs.react.vdom.html_<^.*
 import scala.scalajs.concurrent.JSExecutionContext.Implicits.queue
 import scala.util.{Failure, Success}
 
-/** Reads `/api/knowledge/{book}/{chapter}`, runs the markdown through the
-  * client-side pipeline, and lays out the result with sidebar + breadcrumb
-  * + TOC + pager.
-  */
+/**
+ * Reads `/api/cortex/{book}/{chapter}`, runs the markdown through the client-side pipeline, and lays out the
+ * result with sidebar + breadcrumb + TOC + pager.
+ */
 object ChapterPage:
 
   final case class Props(book: String, chapter: String)
 
-  /** Combined fetch + render state. We keep both stages so the UI can show
-    * a loading spinner while the API is in flight or the renderer is busy.
-    */
-  private final case class Loaded(payload: ChapterPayload, render: MarkdownRenderer.Result)
+  /**
+   * Combined fetch + render state. We keep both stages so the UI can show a loading spinner while the API is
+   * in flight or the renderer is busy.
+   */
+  final private case class Loaded(payload: ChapterPayload, render: MarkdownRenderer.Result)
 
   val Component =
     ScalaFnComponent
@@ -38,10 +39,11 @@ object ChapterPage:
         val (book, chapter) = deps
         Callback {
           state.setState(None).runNow()
-          val fut = for
-            payload <- ApiClient.getKnowledgeChapter(book, chapter)
-            rendered <- MarkdownRenderer.render(payload.raw)
-          yield Loaded(payload, rendered)
+          val fut =
+            for
+              payload  <- ApiClient.getCortexChapter(book, chapter)
+              rendered <- MarkdownRenderer.render(payload.raw)
+            yield Loaded(payload, rendered)
           fut.onComplete {
             case Success(loaded) =>
               state.setState(Some(Right(loaded))).runNow()
@@ -69,9 +71,9 @@ object ChapterPage:
               <.p(
                 ^.className := "mt-4 text-sm",
                 <.a(
-                  ^.href := "/knowledge",
+                  ^.href      := "/cortex",
                   ^.className := "text-primary hover:underline",
-                  "← Back to Knowledge Base"
+                  "← Back to Cortex"
                 )
               )
             )
@@ -81,7 +83,7 @@ object ChapterPage:
 
   private def renderLoaded(loaded: Loaded): VdomNode =
     val payload = loaded.payload
-    val toc = loaded.render.toc
+    val toc     = loaded.render.toc
 
     val prev: Option[ChapterRef] =
       payload.prevSlug.flatMap(s => payload.book.chapters.find(_.slug == s))
@@ -90,8 +92,8 @@ object ChapterPage:
 
     val content: VdomNode =
       <.div(
-        KnowledgeBreadcrumb.Component(
-          KnowledgeBreadcrumb.Props(
+        CortexBreadcrumb.Component(
+          CortexBreadcrumb.Props(
             bookSlug = payload.book.slug,
             bookTitle = payload.book.title,
             chapterTitle = payload.frontmatter.title
@@ -111,15 +113,15 @@ object ChapterPage:
           .getOrElse(EmptyVdom),
         MobileToc.Component(MobileToc.Props(toc)),
         ChapterContent.Component(ChapterContent.Props(loaded.render)),
-        KnowledgePager.Component(
-          KnowledgePager.Props(payload.book.slug, prev, next)
+        CortexPager.Component(
+          CortexPager.Props(payload.book.slug, prev, next)
         )
       )
 
     <.div(
       ^.className := "pt-20",
-      KnowledgeReaderLayout.Component(
-        KnowledgeReaderLayout.Props(
+      CortexReaderLayout.Component(
+        CortexReaderLayout.Props(
           book = payload.book,
           activeChapterSlug = payload.chapter.slug,
           toc = toc,

@@ -21,6 +21,11 @@ node_modules
 .env
 .env.*
 CLAUDE.md
+AGENTS.md
+CODEX_CONTEXT.md
+DEEPENING.md
+INTERFACE-DESIGN.md
+LANGUAGE.md
 .claude
 README.md
 *.log

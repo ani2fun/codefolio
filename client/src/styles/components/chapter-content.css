@@ -1,0 +1,29 @@
+@layer components {
+    /* ChapterContent — the rendered <article> wrapper. The Tailwind Typography
+       (prose) plugin drives most of the look; we only override the headings'
+       scroll offset and the <pre>/<img> defaults so that runnable code and
+       images don't collide with the plugin's spacing. */
+
+    .chapter-content {
+        @apply prose prose-blue dark:prose-invert max-w-none
+               prose-headings:scroll-mt-28 prose-pre:p-0 prose-pre:bg-transparent
+               prose-pre:border-0 prose-img:my-0;
+    }
+
+    /* Inline code: rehype-pretty-code is bypassed for inline nodes, so we
+       own the full look. A muted chip keeps it readable in both themes. */
+    .chapter-content :not(pre) > code {
+        @apply rounded px-1.5 py-0.5 bg-muted text-foreground font-mono text-[0.875em];
+    }
+
+    /* D2 embeds Markdown labels inside SVG <foreignObject> nodes. Those nodes
+       live under the article, so our inline-code chip rule would otherwise
+       override D2's own SVG-scoped theme colors in dark mode. Keep not-prose
+       islands isolated from article-level inline-code styling. */
+    .chapter-content .not-prose :not(pre) > code {
+        color: inherit !important;
+        background-color: var(--color-neutral-muted, #eef1f8) !important;
+        padding: 0.2em 0.4em !important;
+        border-radius: 6px !important;
+    }
+}

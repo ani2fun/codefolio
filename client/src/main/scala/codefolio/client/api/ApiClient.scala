@@ -3,8 +3,8 @@ package codefolio.client.api
 import codefolio.shared.api.Endpoints
 import codefolio.shared.api.Endpoints.{
   ChapterPayload,
+  CortexIndex,
   Greeting,
-  KnowledgeIndex,
   RecentCalls,
   RunRequest,
   RunResponse
@@ -16,21 +16,20 @@ import sttp.tapir.client.sttp.SttpClientInterpreter
 import scala.concurrent.{ExecutionContext, Future}
 import scala.scalajs.concurrent.JSExecutionContext
 
-/** Typed HTTP client built **from the same tapir endpoints** the server
-  * implements. Single source of truth = `api/openapi.yaml` → codegen →
-  * `Endpoints.scala` → consumed here.
-  *
-  * Each public method (e.g. [[runCode]]) follows the same shape:
-  *   1. `SttpClientInterpreter().toRequestThrowDecodeFailures(endpoint, baseUri)`
-  *      gives a function `Request => sttp.client3.Request[Either[Unit, Response], Any]`.
-  *   2. `backend.send(req)` runs the request through the browser's `fetch`.
-  *   3. The `Either[Unit, Response]` body becomes a `Future[Response]` —
-  *      Right = success, Left = the server returned a non-2xx that tapir
-  *      doesn't know how to interpret as the success type.
-  *
-  * The base URI is intentionally `None` (relative URLs). See the comment
-  * on `baseUri` below — `Some(uri"")` would crash at runtime.
-  */
+/**
+ * Typed HTTP client built **from the same tapir endpoints** the server implements. Single source of truth =
+ * `api/openapi.yaml` → codegen → `Endpoints.scala` → consumed here.
+ *
+ * Each public method (e.g. [[runCode]]) follows the same shape:
+ *   1. `SttpClientInterpreter().toRequestThrowDecodeFailures(endpoint, baseUri)` gives a function `Request =>
+ *      sttp.client3.Request[Either[Unit, Response], Any]`. 2. `backend.send(req)` runs the request through
+ *      the browser's `fetch`. 3. The `Either[Unit, Response]` body becomes a `Future[Response]` — Right =
+ *      success, Left = the server returned a non-2xx that tapir doesn't know how to interpret as the success
+ *      type.
+ *
+ * The base URI is intentionally `None` (relative URLs). See the comment on `baseUri` below — `Some(uri"")`
+ * would crash at runtime.
+ */
 object ApiClient:
 
   private given ExecutionContext = JSExecutionContext.queue
@@ -52,13 +51,12 @@ object ApiClient:
   private val runRequest: RunRequest => sttp.client3.Request[Either[Unit, RunResponse], Any] =
     SttpClientInterpreter().toRequestThrowDecodeFailures(Endpoints.runCode, baseUri)
 
-  private val knowledgeIndexRequest:
-      Unit => sttp.client3.Request[Either[Unit, KnowledgeIndex], Any] =
-    SttpClientInterpreter().toRequestThrowDecodeFailures(Endpoints.getKnowledgeIndex, baseUri)
+  private val cortexIndexRequest: Unit => sttp.client3.Request[Either[Unit, CortexIndex], Any] =
+    SttpClientInterpreter().toRequestThrowDecodeFailures(Endpoints.getCortexIndex, baseUri)
 
-  private val knowledgeChapterRequest:
-      ((String, String)) => sttp.client3.Request[Either[Unit, ChapterPayload], Any] =
-    SttpClientInterpreter().toRequestThrowDecodeFailures(Endpoints.getKnowledgeChapter, baseUri)
+  private val cortexChapterRequest
+      : ((String, String)) => sttp.client3.Request[Either[Unit, ChapterPayload], Any] =
+    SttpClientInterpreter().toRequestThrowDecodeFailures(Endpoints.getCortexChapter, baseUri)
 
   // ---- Hello demo ----------------------------------------------------------
 
@@ -85,21 +83,21 @@ object ApiClient:
         case Left(_)  => Future.failed(RuntimeException(s"Run failed (${res.code.code})"))
     }
 
-  // ---- Knowledge -----------------------------------------------------------
+  // ---- Cortex --------------------------------------------------------------
 
-  def getKnowledgeIndex: Future[KnowledgeIndex] =
-    backend.send(knowledgeIndexRequest(())).flatMap { res =>
+  def getCortexIndex: Future[CortexIndex] =
+    backend.send(cortexIndexRequest(())).flatMap { res =>
       res.body match
         case Right(idx) => Future.successful(idx)
-        case Left(_)    =>
-          Future.failed(RuntimeException(s"Failed to fetch knowledge index (${res.code.code})"))
+        case Left(_) =>
+          Future.failed(RuntimeException(s"Failed to fetch Cortex index (${res.code.code})"))
     }
 
-  def getKnowledgeChapter(book: String, chapter: String): Future[ChapterPayload] =
-    backend.send(knowledgeChapterRequest((book, chapter))).flatMap { res =>
+  def getCortexChapter(book: String, chapter: String): Future[ChapterPayload] =
+    backend.send(cortexChapterRequest((book, chapter))).flatMap { res =>
       res.body match
         case Right(payload) => Future.successful(payload)
-        case Left(_)        =>
+        case Left(_) =>
           Future.failed(
             RuntimeException(s"Failed to fetch chapter $book/$chapter (${res.code.code})")
           )

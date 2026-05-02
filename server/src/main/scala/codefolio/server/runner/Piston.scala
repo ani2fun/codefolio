@@ -8,14 +8,14 @@ import java.net.URI
 import java.net.http.{HttpClient, HttpRequest, HttpResponse}
 import java.nio.charset.StandardCharsets
 
-/** Port of `portfolio-app/src/lib/piston.ts`. Talks the Piston API
-  * (`/api/v2/execute`); used in production where Piston-the-public-service
-  * runs the snippet. Status IDs in the returned `RunResult` follow the
-  * Judge0 convention (3 = Accepted, 6 = Compilation Error, 11 = Runtime
-  * Error) so the same UI maps both backends without a switch.
-  *
-  * Piston doesn't expose `time` / `memory`, so they're left as `None`.
-  */
+/**
+ * Port of `portfolio-app/src/lib/piston.ts`. Talks the Piston API (`/api/v2/execute`); used in production
+ * where Piston-the-public-service runs the snippet. Status IDs in the returned `RunResult` follow the Judge0
+ * convention (3 = Accepted, 6 = Compilation Error, 11 = Runtime Error) so the same UI maps both backends
+ * without a switch.
+ *
+ * Piston doesn't expose `time` / `memory`, so they're left as `None`.
+ */
 object Piston:
 
   /** Map our canonical (Judge0) language ID to the string Piston wants. */
@@ -27,16 +27,17 @@ object Piston:
     54 -> "c++",
     60 -> "go",
     73 -> "rust",
+    78 -> "kotlin",
     74 -> "typescript",
     63 -> "javascript",
     82 -> "sqlite3"
   )
 
-  /** Whether Piston supports a given language at all. SQL is special: route
-    * lib called it sqlite3 here but Piston historically lacks a sqlite
-    * runtime — keep the entry, let the handler discover the 400 from
-    * upstream, and prefer Code Runner when both are configured.
-    */
+  /**
+   * Whether Piston supports a given language at all. SQL is special: route lib called it sqlite3 here but
+   * Piston historically lacks a sqlite runtime — keep the entry, let the handler discover the 400 from
+   * upstream, and prefer Code Runner when both are configured.
+   */
   def supports(langId: Int): Boolean = pistonLanguage.contains(langId)
 
   /** Execute via Piston; returns `RunResult` mirroring Judge0's shape. */
@@ -90,21 +91,21 @@ object Piston:
   private def quote(s: String): String =
     val sb = new StringBuilder("\"")
     s.foreach {
-      case '"'  => sb.append("\\\"")
-      case '\\' => sb.append("\\\\")
-      case '\b' => sb.append("\\b")
-      case '\f' => sb.append("\\f")
-      case '\n' => sb.append("\\n")
-      case '\r' => sb.append("\\r")
-      case '\t' => sb.append("\\t")
+      case '"'           => sb.append("\\\"")
+      case '\\'          => sb.append("\\\\")
+      case '\b'          => sb.append("\\b")
+      case '\f'          => sb.append("\\f")
+      case '\n'          => sb.append("\\n")
+      case '\r'          => sb.append("\\r")
+      case '\t'          => sb.append("\\t")
       case c if c < 0x20 => sb.append(f"\\u${c.toInt}%04x")
-      case c    => sb.append(c)
+      case c             => sb.append(c)
     }
     sb.append('"').toString
 
-  /** Convert a Piston response body to our RunResult. Mirrors the status
-    * mapping in piston.ts.
-    */
+  /**
+   * Convert a Piston response body to our RunResult. Mirrors the status mapping in piston.ts.
+   */
   private def parseResult(body: String): RunResult =
     val json = parse(body) match
       case Right(j) => j

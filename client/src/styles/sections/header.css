@@ -1,0 +1,53 @@
+@layer components {
+    /* Header — sticky top nav with desktop pill menu and mobile drawer.
+       Block: .header
+       Elements: __nav, __title, __toggle, __toggle--mobile, __toggle--desktop,
+                 __menu, __link, __burger, __burger-icon, __drawer, __drawer-list,
+                 __drawer-link */
+
+    .header {
+        @apply fixed top-0 left-0 right-0 z-50 bg-white dark:bg-background shadow-md opacity-95;
+    }
+    .header__nav {
+        /* `container` is added literally in markup — v4's container utility
+           carries embedded breakpoint media queries that @apply can't expand. */
+        @apply p-5 flex justify-between items-center;
+    }
+    .header__title {
+        @apply hidden md:block text-lg md:text-2xl lg:text-3xl font-bold text-primary dark:text-primary;
+    }
+    .header__toggle {
+        /* No styling on its own — the variants below decide visibility. */
+    }
+    .header__toggle--mobile {
+        @apply block md:hidden;
+    }
+    .header__toggle--desktop {
+        @apply hidden md:flex;
+    }
+    .header__menu {
+        @apply hidden md:flex md:space-x-2 lg:space-x-5;
+    }
+    .header__link {
+        @apply px-2 lg:px-3 py-2 hover:bg-primary dark:hover:bg-primary hover:text-gray-50
+               text-base lg:text-xl font-semibold rounded;
+    }
+    .header__burger {
+        @apply md:hidden;
+    }
+    .header__burger-icon {
+        @apply w-10 h-10 text-primary dark:text-primary hover:text-rose-500;
+    }
+    .header__drawer {
+        @apply md:hidden;
+    }
+    .header__drawer-list {
+        /* `items-left` was the original — not a Tailwind utility, v3 silently
+           ignored it; v4 errors. Replaced with `items-start` (its intended
+           equivalent) to keep the drawer items left-aligned. */
+        @apply flex flex-col items-start space-y-5 bg-white dark:bg-background p-5;
+    }
+    .header__drawer-link {
+        @apply font-semibold hover:text-primary dark:hover:text-primary;
+    }
+}

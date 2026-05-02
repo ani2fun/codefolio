@@ -14,6 +14,9 @@ const RUNTIMES = {
   54: { ext: "script.cpp", compile: ["g++",  "-O2", "script.cpp", "-o", "prog"],         run: ["./prog"] },
   60: { ext: "script.go",  run:     ["go",   "run", "script.go"] },
   62: { ext: "Main.java",  compile: ["javac", "Main.java"],  run: ["java", "-cp", ".", "Main"] },
+  73: { ext: "main.rs",    compile: ["rustc", "-O", "main.rs", "-o", "prog"],          run: ["./prog"], compileTimeoutMs: 30_000 },
+  78: { ext: "Main.kt",    compile: ["sh", "-c", "kotlinc -include-runtime -d Main.jar Main.kt 2>&1"], run: ["java", "-jar", "Main.jar"], compileTimeoutMs: 60_000 },
+  81: { ext: "Main.scala", run:     ["scala-cli", "run", "Main.scala", "--quiet", "--server=false"], runTimeoutMs: 90_000 },
   82: { ext: "script.sql", run:     ["sh", "-c", "sqlite3 :memory: < script.sql"] },
 };
 
@@ -101,7 +104,9 @@ const server = http.createServer((req, res) => {
       writeFileSync(join(dir, lang.ext), source, "utf8");
 
       if (lang.compile) {
-        const r = await runProcess(lang.compile[0], lang.compile.slice(1), dir, "", 15_000);
+        // Some compilers (kotlinc, rustc, scalac) need more headroom than gcc/javac.
+        const compileTimeout = lang.compileTimeoutMs ?? 15_000;
+        const r = await runProcess(lang.compile[0], lang.compile.slice(1), dir, "", compileTimeout);
         if (r.code !== 0) {
           status = STATUS.COMPILE_ERROR;
           compileOut = r.stderr || r.out;
@@ -109,7 +114,8 @@ const server = http.createServer((req, res) => {
       }
 
       if (status === STATUS.ACCEPTED) {
-        const r = await runProcess(lang.run[0], lang.run.slice(1), dir, stdin, 10_000);
+        const runTimeout = lang.runTimeoutMs ?? 10_000;
+        const r = await runProcess(lang.run[0], lang.run.slice(1), dir, stdin, runTimeout);
         stdout = r.out;
         stderr = r.err;
         if (r.timedOut) status = STATUS.TLE;

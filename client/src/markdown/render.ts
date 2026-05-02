@@ -27,7 +27,7 @@ import { visit } from "unist-util-visit";
 import { fromHtml } from "hast-util-from-html";
 import { defaultHandlers } from "mdast-util-to-hast";
 
-import type { Root, Code, Image, Paragraph } from "mdast";
+import type { Root, Code, Html, Image, Paragraph } from "mdast";
 import type { Element, ElementContent, Root as HastRoot, Text } from "hast";
 import type { State } from "mdast-util-to-hast";
 
@@ -48,6 +48,7 @@ const RUNNABLE_LANGUAGES: LanguageInfo[] = [
   { id: 54, label: "C++ (GCC 9.2)", aliases: ["cpp", "c++", "cxx"] },
   { id: 60, label: "Go 1.13", aliases: ["go", "golang"] },
   { id: 73, label: "Rust 1.40", aliases: ["rust", "rs"] },
+  { id: 78, label: "Kotlin 1.9", aliases: ["kotlin", "kt"] },
   { id: 74, label: "TypeScript 3.7", aliases: ["typescript", "ts"] },
   { id: 63, label: "JavaScript (Node.js 12)", aliases: ["javascript", "js", "node"] },
   { id: 82, label: "SQL (SQLite 3.27)", aliases: ["sql", "sqlite"] },
@@ -60,6 +61,169 @@ for (const lang of RUNNABLE_LANGUAGES) {
 
 const resolveLanguage = (lang: string | null | undefined): LanguageInfo | null =>
   lang ? aliasIndex.get(lang.toLowerCase()) ?? null : null;
+
+// ---- D2 array traversal slideshow expansion -----------------------------
+//
+// Markdown authors can write one compact marker instead of duplicating the
+// same array diagram across every traversal frame:
+//
+//   <div class="d2-array-traversal"
+//        data-caption="..."
+//        data-rows="2"
+//        data-cols="3"
+//        data-values="value1, value2, value3, value4, value5, value6"></div>
+//
+// This expands to a normal `.d2-slides` marker plus generated D2 code nodes.
+
+const isD2ArrayTraversalMarker = (node: unknown): node is Html =>
+  !!node &&
+  typeof node === "object" &&
+  (node as { type?: unknown }).type === "html" &&
+  /<div\b[^>]*class=(["'])[^"']*\bd2-array-traversal\b[^"']*\1/i.test((node as Html).value);
+
+const parsePositiveInt = (raw: string | null, fallback: number): number => {
+  const n = raw ? parseInt(raw, 10) : Number.NaN;
+  return Number.isFinite(n) && n > 0 ? n : fallback;
+};
+
+const d2MdText = (s: string): string => s.replace(/\|/g, "\\|").replace(/`/g, "\\`");
+
+interface ArrayTraversalConfig {
+  caption: string | null;
+  rows: number;
+  cols: number;
+  values: string[];
+}
+
+const parseArrayTraversalConfig = (marker: Html): ArrayTraversalConfig => {
+  const rows = parsePositiveInt(htmlAttr(marker.value, "data-rows"), 2);
+  const cols = parsePositiveInt(htmlAttr(marker.value, "data-cols"), 3);
+  const total = rows * cols;
+  const rawValues = htmlAttr(marker.value, "data-values") ?? "";
+  const values = rawValues
+    .split(",")
+    .map((s) => s.trim())
+    .filter(Boolean);
+
+  return {
+    caption: htmlAttr(marker.value, "data-caption"),
+    rows,
+    cols,
+    values:
+      values.length === total ? values : Array.from({ length: total }, (_, i) => `value${i + 1}`),
+  };
+};
+
+const cellLabel = (index: number, cols: number): string => {
+  const row = Math.floor(index / cols);
+  const col = index % cols;
+  return `[${row},${col}]`;
+};
+
+const cellStyle = (index: number, active: number | null, done: boolean): string => {
+  if (done || (active !== null && index < active)) {
+    return ' {style.fill: "#dcfce7"; style.stroke: "#16a34a"}';
+  }
+  if (active === index) {
+    return ' {style.fill: "#fde68a"; style.stroke: "#d97706"}';
+  }
+  return "";
+};
+
+const arrayD2 = (
+  title: string,
+  cfg: ArrayTraversalConfig,
+  active: number | null,
+  done = false
+): string => {
+  const cells = cfg.values
+    .map((value, i) => {
+      const id = `cell${i}`;
+      return [
+        `  ${id}: |md`,
+        `    \`${cellLabel(i, cfg.cols)}\` ${d2MdText(value)}`,
+        `  |${cellStyle(i, active, done)}`,
+      ].join("\n");
+    })
+    .join("\n");
+
+  return [
+    `arr: "${title}" {`,
+    `  grid-rows: ${cfg.rows}`,
+    "  grid-gap: 0",
+    cells,
+    "}",
+  ].join("\n");
+};
+
+const stateD2 = (cfg: ArrayTraversalConfig, active: number, done = false): string => {
+  const row = Math.floor(active / cfg.cols);
+  const col = active % cfg.cols;
+  const reset = row > 0 && col === 0 && !done ? "\n\n  inner loop reset" : "";
+  const doneLine = done ? "\n\n  ✓ done" : "";
+  const title = done
+    ? `Traversal complete — visited all ${cfg.values.length} cells`
+    : `Visit arr[${row}][${col}]`;
+
+  return [
+    "direction: right",
+    "",
+    "state: |md",
+    `  **row** = ${row}`,
+    "",
+    `  **column** = ${col}${reset}${doneLine}`,
+    "|",
+    "",
+    arrayD2(title, cfg, done ? null : active, done),
+  ].join("\n");
+};
+
+const d2ArrayTraversalSlides = (marker: Html): Array<Html | Code> => {
+  const cfg = parseArrayTraversalConfig(marker);
+  const captionAttr = cfg.caption ? ` data-caption="${escapeHtmlAttr(cfg.caption)}"` : "";
+  const slideMarker: Html = { type: "html", value: `<div class="d2-slides"${captionAttr}>` };
+  const ready: Code = {
+    type: "code",
+    lang: "d2",
+    meta: null,
+    value: arrayD2(`Ready to traverse the ${cfg.rows} × ${cfg.cols} array`, cfg, null),
+  };
+  const visits: Code[] = cfg.values.map((_, i) => ({
+    type: "code",
+    lang: "d2",
+    meta: null,
+    value: stateD2(cfg, i),
+  }));
+  const complete: Code = {
+    type: "code",
+    lang: "d2",
+    meta: null,
+    value: stateD2(cfg, cfg.values.length - 1, true),
+  };
+
+  return [slideMarker, ready, ...visits, complete];
+};
+
+const remarkExpandD2ArrayTraversal: Plugin<[], Root> = () => (tree) => {
+  const walk = (parent: { children?: unknown[] } | null) => {
+    if (!parent || !Array.isArray(parent.children)) return;
+
+    const out: unknown[] = [];
+    for (const node of parent.children) {
+      if (isD2ArrayTraversalMarker(node)) out.push(...d2ArrayTraversalSlides(node));
+      else out.push(node);
+    }
+
+    parent.children = out;
+    for (const child of parent.children) {
+      if (child && typeof child === "object" && "children" in (child as object)) {
+        walk(child as { children?: unknown[] });
+      }
+    }
+  };
+
+  walk(tree as { children?: unknown[] });
+};
 
 // ---- D2 pre-pass --------------------------------------------------------
 //
@@ -89,6 +253,118 @@ const remarkRenderD2: Plugin<[], Root> = () => async (tree) => {
       data.d2Error = err instanceof Error ? err.message : "D2 render failed";
     }
   }
+};
+
+const isD2SlidesMarker = (node: unknown): node is Html =>
+  !!node &&
+  typeof node === "object" &&
+  (node as { type?: unknown }).type === "html" &&
+  /<div\b[^>]*class=(["'])[^"']*\bd2-slides\b[^"']*\1/i.test((node as Html).value);
+
+const isClosingDiv = (node: unknown): node is Html =>
+  !!node &&
+  typeof node === "object" &&
+  (node as { type?: unknown }).type === "html" &&
+  /^<\/div>\s*$/i.test((node as Html).value.trim());
+
+const htmlAttr = (html: string, name: string): string | null => {
+  const re = new RegExp(`\\b${name}\\s*=\\s*(["'])(.*?)\\1`, "i");
+  return html.match(re)?.[2] ?? null;
+};
+
+const escapeHtmlAttr = (s: string): string =>
+  s
+    .replace(/&/g, "&amp;")
+    .replace(/"/g, "&quot;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;");
+
+const escapeHtmlText = (s: string): string =>
+  s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+
+const d2SlideHtml = (node: Code): string => {
+  const data = node.data as { d2Svg?: string; d2Error?: string } | undefined;
+  if (data?.d2Svg) return data.d2Svg;
+  if (data?.d2Error) {
+    return [
+      '<div class="d2-error">',
+      '<p class="d2-error-title">D2 render error</p>',
+      `<pre>${escapeHtmlText(data.d2Error)}</pre>`,
+      "</div>",
+    ].join("");
+  }
+  return "";
+};
+
+const buildD2SlidesHtml = (marker: Html, slides: Code[]): string => {
+  const caption = htmlAttr(marker.value, "data-caption");
+  const captionAttr = caption ? ` data-caption="${escapeHtmlAttr(caption)}"` : "";
+  const body = slides
+    .map((slide, i) => {
+      const html = d2SlideHtml(slide);
+      return `<div class="d2-slide" data-slide-index="${i}">${html}</div>`;
+    })
+    .join("");
+  return `<div class="d2-slides not-prose"${captionAttr}>${body}</div>`;
+};
+
+// Groups:
+//   <div class="d2-slides" ...>
+//
+//   ```d2
+//   ...
+//   ```
+//   ```d2
+//   ...
+//   ```
+//
+// into one slideshow placeholder. The imported source currently lacks the
+// closing </div> because the legacy import script stripped standalone closing
+// divs, so this pass intentionally stops at the first non-D2 node too.
+const remarkGroupD2Slides: Plugin<[], Root> = () => (tree) => {
+  const walk = (parent: { children?: unknown[] } | null) => {
+    if (!parent || !Array.isArray(parent.children)) return;
+    const out: unknown[] = [];
+    let i = 0;
+
+    while (i < parent.children.length) {
+      const node = parent.children[i];
+
+      if (isD2SlidesMarker(node)) {
+        const slides: Code[] = [];
+        let j = i + 1;
+
+        while (j < parent.children.length) {
+          const child = parent.children[j] as Code | Html;
+          if (child.type === "code" && child.lang === "d2") {
+            slides.push(child);
+            j++;
+          } else {
+            break;
+          }
+        }
+
+        if (slides.length > 0) {
+          const next = parent.children[j];
+          out.push({ type: "html", value: buildD2SlidesHtml(node, slides) } satisfies Html);
+          i = isClosingDiv(next) ? j + 1 : j;
+          continue;
+        }
+      }
+
+      out.push(node);
+      i++;
+    }
+
+    parent.children = out;
+    for (const child of parent.children) {
+      if (child && typeof child === "object" && "children" in (child as object)) {
+        walk(child as { children?: unknown[] });
+      }
+    }
+  };
+
+  walk(tree as { children?: unknown[] });
 };
 
 // ---- Runnable-group merge -----------------------------------------------
@@ -177,6 +453,8 @@ const remarkUnwrapImages: Plugin<[], Root> = () => (tree) => {
 // Routes:
 //   ```d2     → <div class="d2-diagram">{rendered SVG}</div>
 //                (or .d2-error for compile failures)
+//   <div class="d2-slides"> + D2 fences
+//              → <div class="d2-slides"><div class="d2-slide">...</div>...</div>
 //   ```mermaid → <div class="mermaid-block" data-mermaid-source="...">  (placeholder)
 //   ```<lang> run → <div class="runnable-code" data-...>                (placeholder)
 //   merged group → <div class="runnable-group" data-tabs="...">         (placeholder)
@@ -199,7 +477,7 @@ const codeHandler = (state: State, node: Code): Element | undefined => {
     return {
       type: "element",
       tagName: "div",
-      properties: { className: ["d2-diagram"] },
+      properties: { className: ["d2-diagram", "not-prose"] },
       children: fragment.children as ElementContent[],
     };
   }
@@ -207,7 +485,7 @@ const codeHandler = (state: State, node: Code): Element | undefined => {
     return {
       type: "element",
       tagName: "div",
-      properties: { className: ["d2-error"] },
+      properties: { className: ["d2-error", "not-prose"] },
       children: [
         {
           type: "element",
@@ -324,7 +602,9 @@ export async function renderChapter(source: string): Promise<RenderResult> {
     .use(remarkParse)
     .use(remarkGfm)
     .use(remarkMath)
+    .use(remarkExpandD2ArrayTraversal)
     .use(remarkRenderD2)
+    .use(remarkGroupD2Slides)
     .use(remarkGroupRunnable)
     .use(remarkUnwrapImages)
     .use(remarkRehype, {
@@ -334,6 +614,14 @@ export async function renderChapter(source: string): Promise<RenderResult> {
       allowDangerousHtml: true,
     })
     .use(rehypeSlug)
+    // Strip the leading h1 — ChapterPage already renders the title as a
+    // page-level <h1>. Chapters that have no h1 are unaffected.
+    .use((() => (tree: HastRoot) => {
+      const idx = tree.children.findIndex(
+        (c) => c.type === "element" && (c as Element).tagName === "h1"
+      );
+      if (idx !== -1) tree.children.splice(idx, 1);
+    }) as Plugin<[], HastRoot>)
     .use(rehypeAutolinkHeadings, {
       behavior: "append",
       properties: {
@@ -353,6 +641,7 @@ export async function renderChapter(source: string): Promise<RenderResult> {
       theme: "github-dark",
       keepBackground: true,
       defaultLang: "plaintext",
+      bypassInlineCode: true,
     })
     .use(rehypeStringify, { allowDangerousHtml: true });
 

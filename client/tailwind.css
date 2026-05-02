@@ -1,115 +1,154 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+/* ─── Tailwind v4 entry ──────────────────────────────────────────── */
+@import "tailwindcss";
+@plugin "@tailwindcss/typography";
 
-/* Customised CSS Classes */
-.top-nav-bar-links {
-    @apply font-semibold hover:text-primary dark:hover:text-primary transition
+/* Source paths. v4 auto-scans the project tree but skips .gitignore'd dirs.
+   The Scala.js linker output is gitignored — declare it explicitly so the
+   classes emitted into the linked JS make it into the CSS bundle. */
+@source "../client/target/scala-3.6.2/codefolio-client-fastopt";
+@source "../client/target/scala-3.6.2/codefolio-client-opt";
+
+/* Dark-mode variant: trigger on `.dark` ancestor (set by the index.html
+   bootstrap script on <html>). Canonical shadcn-v4 form. */
+@custom-variant dark (&:is(.dark *));
+
+/* shadcn HSL channels — kept in :root and .dark as raw CSS variables. */
+:root {
+    --background: 0 0% 100%;
+    --foreground: 222.2 84% 4.9%;
+    --card: 0 0% 100%;
+    --card-foreground: 222.2 84% 4.9%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 222.2 84% 4.9%;
+    --primary: 221.2 83.2% 53.3%;
+    --primary-foreground: 210 40% 98%;
+    --secondary: 210 40% 96.1%;
+    --secondary-foreground: 222.2 47.4% 11.2%;
+    --muted: 210 40% 96.1%;
+    --muted-foreground: 215.4 16.3% 46.9%;
+    --accent: 210 40% 96.1%;
+    --accent-foreground: 222.2 47.4% 11.2%;
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 210 40% 98%;
+    --border: 214.3 31.8% 91.4%;
+    --input: 214.3 31.8% 91.4%;
+    --ring: 221.2 83.2% 53.3%;
+    --radius: 0.75rem;
+}
+.dark {
+    --background: 221.2 50% 5%;
+    --foreground: 210 40% 98%;
+    --card: 222.2 84% 4.9%;
+    --card-foreground: 210 40% 98%;
+    --popover: 222.2 84% 4.9%;
+    --popover-foreground: 210 40% 98%;
+    --primary: 217.2 91.2% 59.8%;
+    --primary-foreground: 222.2 47.4% 11.2%;
+    --secondary: 217.2 32.6% 17.5%;
+    --secondary-foreground: 210 40% 98%;
+    --muted: 217.2 32.6% 17.5%;
+    --muted-foreground: 215 20.2% 65.1%;
+    --accent: 217.2 32.6% 17.5%;
+    --accent-foreground: 210 40% 98%;
+    --destructive: 0 62.8% 30.6%;
+    --destructive-foreground: 210 40% 98%;
+    --border: 217.2 32.6% 17.5%;
+    --input: 217.2 32.6% 17.5%;
+    --ring: 224.3 76.3% 48%;
 }
 
-/* Knowledge Base — heading anchor link */
-.heading-anchor {
-    @apply ml-2 text-muted-foreground opacity-0 transition-opacity no-underline;
-}
-.prose h1:hover .heading-anchor,
-.prose h2:hover .heading-anchor,
-.prose h3:hover .heading-anchor,
-.prose h4:hover .heading-anchor {
-    @apply opacity-100;
-}
-.heading-anchor-icon {
-    @apply text-primary;
+/* @theme inline: bake hsl(var(...)) into each utility. Without `inline`,
+   utilities emit var() references that re-resolve in cascade contexts where
+   utility specificity should win — `inline` avoids that footgun. */
+@theme inline {
+    --color-background: hsl(var(--background));
+    --color-foreground: hsl(var(--foreground));
+    --color-card: hsl(var(--card));
+    --color-card-foreground: hsl(var(--card-foreground));
+    --color-popover: hsl(var(--popover));
+    --color-popover-foreground: hsl(var(--popover-foreground));
+    --color-primary: hsl(var(--primary));
+    --color-primary-foreground: hsl(var(--primary-foreground));
+    --color-secondary: hsl(var(--secondary));
+    --color-secondary-foreground: hsl(var(--secondary-foreground));
+    --color-muted: hsl(var(--muted));
+    --color-muted-foreground: hsl(var(--muted-foreground));
+    --color-accent: hsl(var(--accent));
+    --color-accent-foreground: hsl(var(--accent-foreground));
+    --color-destructive: hsl(var(--destructive));
+    --color-destructive-foreground: hsl(var(--destructive-foreground));
+    --color-border: hsl(var(--border));
+    --color-input: hsl(var(--input));
+    --color-ring: hsl(var(--ring));
+
+    --radius-lg: var(--radius);
+    --radius-md: calc(var(--radius) - 2px);
+    --radius-sm: calc(var(--radius) - 4px);
 }
 
-/* Runnable code editor — keep Prism's token colors but prevent its font/line-height
-   overrides on `code[class*="language-"]` from drifting the cursor off the textarea. */
-.rsce-editor code[class*="language-"] {
-    font-family: inherit !important;
-    font-size: inherit !important;
-    line-height: inherit !important;
-}
-
-/* Knowledge Base — code block reset (rehype-pretty-code provides its own bg).
-   Exclude aria-hidden pres (react-simple-code-editor's highlight layer) so their
-   inline padding isn't zeroed out, which would offset the cursor from the text. */
-.prose pre:not([aria-hidden]) {
-    @apply !p-0 !bg-transparent !border-0;
-}
-.prose pre > code {
-    @apply block p-4;
-    counter-reset: line;
-}
-.prose pre code [data-line] {
-    @apply px-4 border-l-2 border-transparent;
-}
-.prose code {
-    @apply before:content-none after:content-none;
-}
-
-/* SHADCN UI - Theme auto generated */
-/* THEME COLORS: https://ui.shadcn.com/themes or https://zippystarter.com/tools/shadcn-ui-theme-generator*/
+/* v4 default-style restoration. Default border color flipped from gray-200
+   to currentColor; restore the shadcn border default. */
 @layer base {
-    :root {
-        --background: 0 0% 100%;
-        --foreground: 222.2 84% 4.9%;
-        --card: 0 0% 100%;
-        --card-foreground: 222.2 84% 4.9%;
-        --popover: 0 0% 100%;
-        --popover-foreground: 222.2 84% 4.9%;
-        --primary: 221.2 83.2% 53.3%;
-        --primary-foreground: 210 40% 98%;
-        --secondary: 210 40% 96.1%;
-        --secondary-foreground: 222.2 47.4% 11.2%;
-        --muted: 210 40% 96.1%;
-        --muted-foreground: 215.4 16.3% 46.9%;
-        --accent: 210 40% 96.1%;
-        --accent-foreground: 222.2 47.4% 11.2%;
-        --destructive: 0 84.2% 60.2%;
-        --destructive-foreground: 210 40% 98%;
-        --border: 214.3 31.8% 91.4%;
-        --input: 214.3 31.8% 91.4%;
-        --ring: 221.2 83.2% 53.3%;
-        --radius: 0.75rem;
+    *,
+    ::after,
+    ::before,
+    ::backdrop,
+    ::file-selector-button {
+        border-color: hsl(var(--border));
     }
-
-    .dark {
-        --background: 221.2 50% 5%;
-        --foreground: 210 40% 98%;
-        --card: 222.2 84% 4.9%;
-        --card-foreground: 210 40% 98%;
-        --popover: 222.2 84% 4.9%;
-        --popover-foreground: 210 40% 98%;
-        --primary: 217.2 91.2% 59.8%;
-        --primary-foreground: 222.2 47.4% 11.2%;
-        --secondary: 217.2 32.6% 17.5%;
-        --secondary-foreground: 210 40% 98%;
-        --muted: 217.2 32.6% 17.5%;
-        --muted-foreground: 215 20.2% 65.1%;
-        --accent: 217.2 32.6% 17.5%;
-        --accent-foreground: 210 40% 98%;
-        --destructive: 0 62.8% 30.6%;
-        --destructive-foreground: 210 40% 98%;
-        --border: 217.2 32.6% 17.5%;
-        --input: 217.2 32.6% 17.5%;
-        --ring: 224.3 76.3% 48%;
-    }
-}
-
-@layer base {
-    * {
-        @apply border-border;
-    }
-
-    /* Smooth scrolling only on the scrolling root element. Putting it on
-       `*` (as we used to) made every nested scroll-container smooth too,
-       which fights with focus auto-scrolls and editor-cursor positioning.
-       The `!important` keeps it stable when downstream prose styles try
-       to reset it. */
-    html {
-        @apply !scroll-smooth;
-    }
-
+    html { scroll-behavior: smooth !important; }
     body {
-        @apply bg-background text-foreground;
+        background-color: hsl(var(--background));
+        color: hsl(var(--foreground));
     }
 }
+
+/* v4 strips margin:auto from the default `container` utility (v3's
+   theme.container.center config is gone). Restore the v3 behavior so every
+   <main className="container"> callsite stays centered without per-call
+   `mx-auto`. Padding stays per-section — Hero/About each set their own px-8. */
+@utility container {
+    margin-inline: auto;
+}
+
+/* ─── Existing custom rules (re-homed under @layer components) ──── */
+@layer components {
+    .top-nav-bar-links {
+        @apply font-semibold hover:text-primary dark:hover:text-primary transition;
+    }
+
+    .heading-anchor {
+        @apply ml-2 text-muted-foreground opacity-0 transition-opacity no-underline;
+    }
+    .prose h1:hover .heading-anchor,
+    .prose h2:hover .heading-anchor,
+    .prose h3:hover .heading-anchor,
+    .prose h4:hover .heading-anchor { @apply opacity-100; }
+    .heading-anchor-icon { @apply text-primary; }
+
+    .rsce-editor code[class*="language-"] {
+        font-family: inherit !important;
+        font-size: inherit !important;
+        line-height: inherit !important;
+    }
+
+    /* v4 rename: the `!` modifier moved from prefix to suffix. */
+    .prose pre:not([aria-hidden]) { @apply p-0! bg-transparent! border-0!; }
+    .prose pre > code { @apply block p-4; counter-reset: line; }
+    .prose pre code [data-line] { @apply px-4 border-l-2 border-transparent; }
+    .chapter-content code { @apply before:content-none! after:content-none!; }
+}
+
+/* ─── BEM blocks ─────────────────────────────────────────────────── */
+@import "./src/styles/sections/hero.css";
+@import "./src/styles/sections/about.css";
+@import "./src/styles/sections/experience.css";
+@import "./src/styles/sections/projects.css";
+@import "./src/styles/sections/certifications.css";
+@import "./src/styles/sections/cortex.css";
+@import "./src/styles/sections/header.css";
+@import "./src/styles/sections/footer.css";
+@import "./src/styles/components/cortex-reader.css";
+@import "./src/styles/components/diagrams.css";
+@import "./src/styles/components/runnable-code.css";
+@import "./src/styles/components/chapter-content.css";

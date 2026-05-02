@@ -2,7 +2,7 @@
 //
 // `render.ts` pulls in unified + ~25 remark/rehype plugins + shiki + d2 +
 // katex + mermaid — together a few MB of JS + WASM. Most pages of the SPA
-// (home, knowledge index, demo) never need any of it. We hide the static
+// (home, Cortex index, demo) never need any of it. We hide the static
 // `@JSImport("@markdown/render", "renderChapter")` from Scala.js behind a
 // dynamic `import("./render")` so the whole pipeline lands in its own
 // chunk that browsers only fetch when a chapter page mounts.

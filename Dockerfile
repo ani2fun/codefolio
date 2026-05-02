@@ -23,7 +23,7 @@ COPY api      api
 COPY shared   shared
 COPY server   server
 COPY client   client
-# Knowledge-base markdown content. Read by the server at /api/knowledge/*.
+# Cortex markdown content. Read by the server at /api/cortex/*.
 COPY content  content
 
 # Build the backend (creates server/target/universal/stage with launcher) and
@@ -45,11 +45,11 @@ WORKDIR /app
 COPY --from=builder /build/server/target/universal/stage /app
 # Frontend bundle: served by the zio-http static fallback.
 COPY --from=builder /build/client/dist /app/static
-# Knowledge-base content: read by the server at /api/knowledge/*.
+# Cortex content: read by the server at /api/cortex/*.
 COPY --from=builder /build/content     /app/content
 
 ENV STATIC_DIR=/app/static
-ENV KNOWLEDGE_ROOT=/app/content/knowledge
+ENV CORTEX_ROOT=/app/content/cortex
 ENV PORT=8080
 EXPOSE 8080
 
