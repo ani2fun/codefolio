@@ -65,10 +65,10 @@ for port_info in "$SERVER_PORT:server" "$VITE_PORT:vite"; do
   fi
 done
 
-# ---- 2. Backing stores: Postgres + Redis + MongoDB ----------------------
+# ---- 2. Backing stores: Postgres + Redis + MongoDB + Code Runner --------
 
-log "starting backing stores (db redis mongo)"
-docker compose up -d --remove-orphans db redis mongo
+log "starting backing stores (db redis mongo code-runner)"
+docker compose up -d --remove-orphans db redis mongo code-runner
 
 for svc in db redis mongo; do
   log "waiting for $svc to be healthy…"
@@ -78,6 +78,10 @@ for svc in db redis mongo; do
     sleep 1
   done
 done
+
+# code-runner has no healthcheck; just confirm the container is up.
+log "code-runner reachable at http://127.0.0.1:2358 (Judge0-API-compatible)"
+export CODE_RUNNER_URL="${CODE_RUNNER_URL:-http://localhost:2358}"
 
 # ---- 3. Frontend deps (one-time) ----------------------------------------
 
@@ -108,5 +112,6 @@ log "  ZIO server (API + Swagger): http://localhost:${SERVER_PORT}  /docs"
 log "  Postgres:                   localhost:5432  (user/pass: codefolio)"
 log "  Redis:                      localhost:6379"
 log "  MongoDB:                    localhost:27017 (db: codefolio)"
+log "  Code Runner:                localhost:2358 (POST /submissions/?base64_encoded=true&wait=true)"
 
 wait "${PIDS[@]}"

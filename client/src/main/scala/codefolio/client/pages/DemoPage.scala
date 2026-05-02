@@ -1,6 +1,7 @@
-package codefolio.client.components
+package codefolio.client.pages
 
 import codefolio.client.api.ApiClient
+import codefolio.client.util.PageTitle
 import codefolio.shared.api.Endpoints.{Greeting, HelloEvent, RecentCalls}
 import japgolly.scalajs.react.*
 import japgolly.scalajs.react.vdom.html_<^.*
@@ -9,7 +10,14 @@ import scala.scalajs.concurrent.JSExecutionContext.Implicits.queue
 import scala.scalajs.js
 import scala.util.{Failure, Success}
 
-object Hello:
+/** The Hello-counter demo page, kept as-is from the original codefolio
+  * skeleton — it exercises Postgres (visit counter), Redis (cache), and
+  * MongoDB (recent log) end-to-end. Useful as a smoke test that the
+  * persistence layer still works after each migration phase.
+  *
+  * Mounted at /demo; the home route ("/") hosts the migrated portfolio.
+  */
+object DemoPage:
 
   final private case class State(
       greeting: Option[Either[String, Greeting]],
@@ -24,6 +32,9 @@ object Hello:
       .withHooks[Unit]
       .useState(State.empty)
       .useEffectOnMountBy { (_, state) =>
+        // Set the per-page title so the browser tab reflects the demo,
+        // not the default home-page title.
+        val titleC = PageTitle.set("Demo — Aniket Kakde")
         // Fetch greeting + recent log in parallel.
         val helloC = Callback.future {
           ApiClient.getHello.transform {
@@ -37,14 +48,18 @@ object Hello:
             case Failure(e) => Success(state.modState(_.copy(recent = Some(Left(e.getMessage)))))
           }
         }
-        helloC >> recentC
+        titleC >> helloC >> recentC
       }
       .render { (_, state) =>
-        <.div(
-          ^.className := "min-h-screen bg-slate-50 flex items-center justify-center px-4 py-8",
+        <.main(
+          ^.className := "min-h-[60vh] bg-slate-50 dark:bg-slate-900 flex items-center justify-center px-4 py-8",
           <.div(
-            ^.className := "bg-white shadow-xl rounded-2xl p-8 max-w-xl w-full space-y-6",
-            <.h1(^.className := "text-3xl font-bold text-slate-900", "Codefolio"),
+            ^.className := "bg-white dark:bg-slate-800 shadow-xl rounded-2xl p-8 max-w-xl w-full space-y-6",
+            <.h1(^.className := "text-3xl font-bold text-slate-900 dark:text-slate-50", "Codefolio Demo"),
+            <.p(
+              ^.className := "text-sm text-slate-500 dark:text-slate-400",
+              "Postgres + Redis + MongoDB integration smoke test."
+            ),
             renderGreeting(state.value.greeting),
             renderRecent(state.value.recent)
           )
@@ -53,15 +68,21 @@ object Hello:
 
   private def renderGreeting(g: Option[Either[String, Greeting]]): VdomNode =
     <.section(
-      ^.className := "border-t border-slate-100 pt-4",
-      <.h2(^.className := "text-sm font-semibold uppercase tracking-wide text-slate-500 mb-2", "Greeting"),
+      ^.className := "border-t border-slate-100 dark:border-slate-700 pt-4",
+      <.h2(
+        ^.className := "text-sm font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400 mb-2",
+        "Greeting"
+      ),
       g match
         case None            => <.p(^.className := "text-slate-500", "Loading…")
         case Some(Left(err)) => <.p(^.className := "text-red-600", s"Error: $err")
         case Some(Right(gr)) =>
           <.div(
-            <.p(^.className := "text-lg text-slate-800", gr.message),
-            <.p(^.className := "text-sm text-slate-500 mt-1", s"Visit count: ${gr.visits}"),
+            <.p(^.className := "text-lg text-slate-800 dark:text-slate-200", gr.message),
+            <.p(
+              ^.className := "text-sm text-slate-500 dark:text-slate-400 mt-1",
+              s"Visit count: ${gr.visits}"
+            ),
             <.p(
               ^.className := (if gr.cached then "text-xs text-amber-600 mt-1"
                               else "text-xs text-emerald-600 mt-1"),
@@ -73,9 +94,9 @@ object Hello:
 
   private def renderRecent(r: Option[Either[String, RecentCalls]]): VdomNode =
     <.section(
-      ^.className := "border-t border-slate-100 pt-4",
+      ^.className := "border-t border-slate-100 dark:border-slate-700 pt-4",
       <.h2(
-        ^.className := "text-sm font-semibold uppercase tracking-wide text-slate-500 mb-2",
+        ^.className := "text-sm font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400 mb-2",
         "Recent calls (MongoDB)"
       ),
       r match
@@ -83,10 +104,13 @@ object Hello:
         case Some(Left(err)) => <.p(^.className := "text-red-600", s"Error: $err")
         case Some(Right(rc)) =>
           if rc.entries.isEmpty then
-            <.p(^.className := "text-slate-400 italic", "No entries yet — refresh after the first call.")
+            <.p(
+              ^.className := "text-slate-400 italic",
+              "No entries yet — refresh after the first call."
+            )
           else
             <.ul(
-              ^.className := "text-sm text-slate-700 space-y-1",
+              ^.className := "text-sm text-slate-700 dark:text-slate-300 space-y-1",
               rc.entries.toTagMod { (e: HelloEvent) =>
                 <.li(
                   ^.key := s"${e.timestampEpochMs}-${e.visits}",

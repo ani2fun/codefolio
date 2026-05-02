@@ -1,9 +1,38 @@
 <!doctype html>
-<html lang="en">
+<html lang="en" suppressHydrationWarning>
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Codefolio</title>
+    <title>Aniket Kakde — Backend-leaning Software Engineer</title>
+    <meta name="description" content="Backend-leaning Software Engineer based in Paris. Ten years on production systems at Europcar, Audi, Dassault, and Disneyland Paris — Java, Kotlin, Scala, Kafka, PostgreSQL, AWS/GCP." />
+    <meta name="keywords" content="Aniket Kakde, software engineer, backend, Kotlin, Java, Scala, Spring Boot, Kafka, PostgreSQL, AWS, GCP, Kubernetes, Paris" />
+    <link rel="icon" href="/img/portfolio/favicon.webp" />
+
+    <!-- Open Graph -->
+    <meta property="og:title" content="Aniket Kakde — Backend-leaning Software Engineer" />
+    <meta property="og:description" content="Ten years on production systems at Europcar, Audi, Dassault, and Disneyland Paris. Backend on the JVM, with the occasional foray into infra and frontends." />
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content="https://kakde.eu" />
+    <meta property="og:image" content="/img/portfolio/og-image.webp" />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:image:alt" content="Aniket Kakde — Software Engineer" />
+
+    <!--
+      Theme bootstrap. Runs synchronously *before* any module script so the
+      `dark` class is set on <html> before first paint, avoiding a flash of
+      the wrong theme. Keeps the same precedence as next-themes:
+      explicit user choice > system preference > light default.
+    -->
+    <script>
+      (function () {
+        try {
+          var t = localStorage.getItem("theme");
+          var dark = t === "dark" || (!t && window.matchMedia("(prefers-color-scheme: dark)").matches);
+          document.documentElement.classList.toggle("dark", dark);
+        } catch (_) {}
+      })();
+    </script>
   </head>
   <body>
     <div id="root"></div>

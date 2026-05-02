@@ -38,12 +38,25 @@ services:
       timeout: 5s
       retries: 10
 
+  # Lightweight ARM64-friendly code execution sandbox. Speaks the Judge0
+  # submissions API (`POST /submissions/?base64_encoded=true&wait=true&...`)
+  # so the same handler talks to both this and a hosted Piston instance.
+  # No process-level sandboxing — local development only.
+  code-runner:
+    build:
+      context: ./runner
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    ports:
+      - "127.0.0.1:2358:2358"
+
   app:
     build: .
     depends_on:
       db:    { condition: service_healthy }
       redis: { condition: service_healthy }
       mongo: { condition: service_healthy }
+      code-runner: { condition: service_started }
     environment:
       DB_URL:      jdbc:postgresql://db:5432/codefolio
       DB_USER:     codefolio
@@ -53,6 +66,11 @@ services:
       MONGO_DB:    codefolio
       STATIC_DIR:  /app/static
       PORT:        "8080"
+      # Local dev defaults to the code-runner container; override PISTON_URL
+      # in production to a self-hosted Piston (`/api/v2/execute` shape).
+      PISTON_URL:              ${PISTON_URL:-}
+      CODE_RUNNER_URL:         ${CODE_RUNNER_URL:-http://code-runner:2358}
+      CODE_RUNNER_AUTHN_TOKEN: ${CODE_RUNNER_AUTHN_TOKEN:-}
     ports:
       - "8080:8080"
 

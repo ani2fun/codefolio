@@ -1,6 +1,6 @@
 import { defineConfig } from "vite";
 import scalaJSPlugin from "@scala-js/vite-plugin-scalajs";
-import tailwindcss from "@tailwindcss/vite";
+import path from "node:path";
 
 export default defineConfig({
   plugins: [
@@ -10,8 +10,21 @@ export default defineConfig({
       // sbt module name — must match `lazy val client` in build.sbt.
       projectID: "client",
     }),
-    tailwindcss(),
+    // Tailwind v3 runs through PostCSS, configured in postcss.config.mjs;
+    // Vite picks PostCSS up automatically. No Vite plugin needed.
   ],
+
+  resolve: {
+    alias: {
+      // `@data` → `client/src/data`. Lets the Scala.js client `@JSImport` the
+      // TypeScript bridge and JSON files without brittle relative paths into
+      // the linker output directory.
+      "@data":     path.resolve(import.meta.dirname, "src/data"),
+      // `@markdown` → `client/src/markdown`. Same idea, for the Prism +
+      // markdown-pipeline TS helpers Scala.js calls into.
+      "@markdown": path.resolve(import.meta.dirname, "src/markdown"),
+    },
+  },
 
   server: {
     port: 5173,
@@ -25,5 +38,25 @@ export default defineConfig({
   build: {
     outDir: "dist",
     emptyOutDir: true,
+    // Bundle-size hygiene: peel the heavy markdown-pipeline deps into their
+    // own chunks so the home-page entry doesn't ship them. Browsers fetch
+    // them on demand when the chapter page first lands.
+    rollupOptions: {
+      output: {
+        manualChunks(id) {
+          if (id.includes("node_modules")) {
+            if (id.includes("/shiki") || id.includes("/@shikijs/")) return "shiki";
+            if (id.includes("/mermaid")) return "mermaid";
+            if (id.includes("/@terrastruct/d2")) return "d2";
+            if (id.includes("/katex")) return "katex";
+            if (id.includes("/prismjs")) return "prismjs";
+          }
+          return null;
+        },
+      },
+    },
+    // Quiet the warning at 800 KB; the manual-chunked vendor splits above
+    // are intentionally large but lazily loaded.
+    chunkSizeWarningLimit: 800,
   },
 });

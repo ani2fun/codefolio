@@ -1,1 +1,115 @@
-@import "tailwindcss";
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Customised CSS Classes */
+.top-nav-bar-links {
+    @apply font-semibold hover:text-primary dark:hover:text-primary transition
+}
+
+/* Knowledge Base — heading anchor link */
+.heading-anchor {
+    @apply ml-2 text-muted-foreground opacity-0 transition-opacity no-underline;
+}
+.prose h1:hover .heading-anchor,
+.prose h2:hover .heading-anchor,
+.prose h3:hover .heading-anchor,
+.prose h4:hover .heading-anchor {
+    @apply opacity-100;
+}
+.heading-anchor-icon {
+    @apply text-primary;
+}
+
+/* Runnable code editor — keep Prism's token colors but prevent its font/line-height
+   overrides on `code[class*="language-"]` from drifting the cursor off the textarea. */
+.rsce-editor code[class*="language-"] {
+    font-family: inherit !important;
+    font-size: inherit !important;
+    line-height: inherit !important;
+}
+
+/* Knowledge Base — code block reset (rehype-pretty-code provides its own bg).
+   Exclude aria-hidden pres (react-simple-code-editor's highlight layer) so their
+   inline padding isn't zeroed out, which would offset the cursor from the text. */
+.prose pre:not([aria-hidden]) {
+    @apply !p-0 !bg-transparent !border-0;
+}
+.prose pre > code {
+    @apply block p-4;
+    counter-reset: line;
+}
+.prose pre code [data-line] {
+    @apply px-4 border-l-2 border-transparent;
+}
+.prose code {
+    @apply before:content-none after:content-none;
+}
+
+/* SHADCN UI - Theme auto generated */
+/* THEME COLORS: https://ui.shadcn.com/themes or https://zippystarter.com/tools/shadcn-ui-theme-generator*/
+@layer base {
+    :root {
+        --background: 0 0% 100%;
+        --foreground: 222.2 84% 4.9%;
+        --card: 0 0% 100%;
+        --card-foreground: 222.2 84% 4.9%;
+        --popover: 0 0% 100%;
+        --popover-foreground: 222.2 84% 4.9%;
+        --primary: 221.2 83.2% 53.3%;
+        --primary-foreground: 210 40% 98%;
+        --secondary: 210 40% 96.1%;
+        --secondary-foreground: 222.2 47.4% 11.2%;
+        --muted: 210 40% 96.1%;
+        --muted-foreground: 215.4 16.3% 46.9%;
+        --accent: 210 40% 96.1%;
+        --accent-foreground: 222.2 47.4% 11.2%;
+        --destructive: 0 84.2% 60.2%;
+        --destructive-foreground: 210 40% 98%;
+        --border: 214.3 31.8% 91.4%;
+        --input: 214.3 31.8% 91.4%;
+        --ring: 221.2 83.2% 53.3%;
+        --radius: 0.75rem;
+    }
+
+    .dark {
+        --background: 221.2 50% 5%;
+        --foreground: 210 40% 98%;
+        --card: 222.2 84% 4.9%;
+        --card-foreground: 210 40% 98%;
+        --popover: 222.2 84% 4.9%;
+        --popover-foreground: 210 40% 98%;
+        --primary: 217.2 91.2% 59.8%;
+        --primary-foreground: 222.2 47.4% 11.2%;
+        --secondary: 217.2 32.6% 17.5%;
+        --secondary-foreground: 210 40% 98%;
+        --muted: 217.2 32.6% 17.5%;
+        --muted-foreground: 215 20.2% 65.1%;
+        --accent: 217.2 32.6% 17.5%;
+        --accent-foreground: 210 40% 98%;
+        --destructive: 0 62.8% 30.6%;
+        --destructive-foreground: 210 40% 98%;
+        --border: 217.2 32.6% 17.5%;
+        --input: 217.2 32.6% 17.5%;
+        --ring: 224.3 76.3% 48%;
+    }
+}
+
+@layer base {
+    * {
+        @apply border-border;
+    }
+
+    /* Smooth scrolling only on the scrolling root element. Putting it on
+       `*` (as we used to) made every nested scroll-container smooth too,
+       which fights with focus auto-scrolls and editor-cursor positioning.
+       The `!important` keeps it stable when downstream prose styles try
+       to reset it. */
+    html {
+        @apply !scroll-smooth;
+    }
+
+    body {
+        @apply bg-background text-foreground;
+    }
+}

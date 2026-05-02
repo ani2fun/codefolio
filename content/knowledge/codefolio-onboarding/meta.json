@@ -1,0 +1,38 @@
+{
+    "title": "Codefolio Onboarding",
+    "description": "An engineer's tour of this codebase — what each module does, how requests flow end-to-end, and how to extend the project. Read this before opening a PR.",
+    "tags": ["onboarding", "architecture", "scala", "scala.js"],
+    "estimatedReadingMinutes": 30,
+    "chapters": [
+        {
+            "slug": "overview",
+            "title": "Overview",
+            "group": "Start here"
+        },
+        {
+            "slug": "repository-tour",
+            "title": "Repository Tour",
+            "group": "Start here"
+        },
+        {
+            "slug": "request-lifecycle",
+            "title": "Request Lifecycle",
+            "group": "How it works"
+        },
+        {
+            "slug": "markdown-pipeline",
+            "title": "The Markdown Pipeline",
+            "group": "How it works"
+        },
+        {
+            "slug": "local-development",
+            "title": "Local Development",
+            "group": "Working on it"
+        },
+        {
+            "slug": "extending",
+            "title": "Extending the Project",
+            "group": "Working on it"
+        }
+    ]
+}

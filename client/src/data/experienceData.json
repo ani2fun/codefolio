@@ -1,0 +1,164 @@
+[
+  {
+    "position": "Software Engineer — Backend",
+    "company": {
+      "short": "Europcar",
+      "name": "Europcar International (Paris, France)",
+      "url": "https://www.europcar.com/"
+    },
+    "time": "August 2022 – Present",
+    "description": "Working on the customer authentication and account lifecycle for both consumer and partner channels, plus the wider reservation platform around it.",
+    "items": [
+      "Built the customer authentication and account lifecycle on Kotlin/Spring Boot with Keycloak / Red Hat SSO — account creation, email verification, password reset, login, logout, account recovery, profile updates, account deletion, and email-based MFA.",
+      "Built the token and API-security layer — JWT issuance and validation, refresh-token rotation, token introspection, silent token renewal, and API gateway integration.",
+      "Set up the B2B identity surface — partner and corporate account provisioning, with role and permission management inside partner organisations — running through a single Keycloak instance shared with B2C.",
+      "Worked across the wider reservation platform alongside the auth work — Kotlin microservices on Spring Boot, hexagonal/DDD, deployed on AWS through GitLab CI/CD.",
+      "Rewrote slow PostgreSQL queries on the auth and account services and added composite indexes where lookups were doing full table scans."
+    ],
+    "results": [
+      "Modernised the team's Gradle build setup with multi-level CI caching, cutting build times by ~50% (≈12 min → ≈5 min) — pattern adopted as the internal reference by 3+ adjacent JVM teams.",
+      "Authored a C4-model architecture POC using Structurizr DSL and presented it to the team as a proposal for living architecture documentation; adopted by individual developers interested in learning the DSL."
+    ],
+    "leveragedKnowledgeIn": [
+      "Kotlin",
+      "Java",
+      "Spring Boot",
+      "Keycloak",
+      "OAuth2 / OIDC",
+      "JWT",
+      "PostgreSQL",
+      "Kafka",
+      "AWS",
+      "GitLab CI/CD",
+      "Gradle",
+      "Structurizr",
+      "Hexagonal / DDD"
+    ]
+  },
+  {
+    "position": "Software Engineer P.II",
+    "company": {
+      "short": "Dassault",
+      "name": "Dassault Systèmes (Paris, France)",
+      "url": "https://www.3ds.com/"
+    },
+    "time": "March 2022 – July 2022",
+    "description": "Short engagement building a data quality tool that scanned Dassault's global online sales and product-referential systems for missing fields, broken references, and inconsistent values across millions of records.",
+    "items": [
+      "Started as a Python + SQL prototype on the internal stack, then rewrote it as a Java/Spring Boot service so it could plug into the regular release pipeline.",
+      "Worked with business analysts to turn vague data-quality rules into concrete checks the release process could run on its own."
+    ],
+    "results": [],
+    "leveragedKnowledgeIn": [
+      "Java",
+      "Spring Boot",
+      "Python",
+      "SQL",
+      "Oracle"
+    ]
+  },
+  {
+    "position": "Software Consultant — Full-stack (Remote)",
+    "company": {
+      "short": "Audi AG",
+      "name": "Audi AG, Ingolstadt — via Lunatech SAS",
+      "url": "https://www.audi.com/"
+    },
+    "time": "August 2018 – December 2021",
+    "description": "Built an in-house labeling platform that produced ground-truth video data for Audi's autonomous-driving model training. Worked remotely from Paris on a fast-growing team.",
+    "items": [
+      "Set the backend architecture early on, applying Play Framework's architectural patterns to the Akka-HTTP codebase to give it the structure and conventions a fast-growing team would need.",
+      "Wrote the React + ScalaJS frontends used by the labelers, wired directly into the labeling backend.",
+      "Set up role-based access with Forgerock IAM across the labeling tools and admin surfaces.",
+      "Packaged services in Docker, ran them on GKE, and integrated with Cloud TPU and Cloud AI Platform so model predictions could be used to pre-label data and speed up annotation."
+    ],
+    "results": [
+      "That early architectural call paid off as the team grew — multiple developers came onto the project later and could ship features quickly without spending time fighting the codebase or relitigating structure."
+    ],
+    "leveragedKnowledgeIn": [
+      "Scala",
+      "ScalaJS",
+      "Akka-HTTP",
+      "Play Framework",
+      "React",
+      "Kafka",
+      "Elasticsearch",
+      "Forgerock IAM",
+      "Docker",
+      "GKE",
+      "GCP",
+      "Argo Workflows"
+    ]
+  },
+  {
+    "position": "Software Consultant — Backend (On-site)",
+    "company": {
+      "short": "Disney",
+      "name": "Disneyland Paris — via Lunatech SAS",
+      "url": "https://www.disneylandparis.com/"
+    },
+    "time": "January 2017 – August 2018",
+    "description": "Co-led the technical pilot for D4th, the new marketing platform integrating Tridion CMS with the Disneyland Paris public site (~10 million annual visitors).",
+    "items": [
+      "The pilot landed well enough that Disney funded a multi-million-euro programme on the back of it to fully replace the legacy marketing application.",
+      "Wrote supporting microservices for browser push notifications and the SOAP integration with the older internal systems."
+    ],
+    "results": [
+      "Took on GitLab CI/CD setup and production deployment myself, even though both were outside my original scope — figured out the existing infrastructure, ran the initial deployments, and handed it off cleanly when a more experienced infra engineer joined."
+    ],
+    "leveragedKnowledgeIn": [
+      "Java",
+      "Scala",
+      "Play Framework",
+      "Tridion CMS",
+      "SOAP",
+      "GitLab CI/CD",
+      "Microservices"
+    ]
+  },
+  {
+    "position": "Software Consultant — Full-stack (Remote)",
+    "company": {
+      "short": "UPS",
+      "name": "UPS France — via Lunatech SAS",
+      "url": "https://www.ups.com/"
+    },
+    "time": "August 2016 – January 2017",
+    "description": "Worked remotely on a B2B shipment-lifecycle platform — new features, maintenance, and day-to-day operations.",
+    "items": [
+      "Added a Quartz-based scheduler that pushed automated reports to operations so delivery issues could be caught earlier.",
+      "Deployed to AWS EC2 and handled day-to-day production: log analysis and incident triage."
+    ],
+    "results": [],
+    "leveragedKnowledgeIn": [
+      "Java",
+      "Quartz",
+      "AWS EC2",
+      "Linux"
+    ]
+  },
+  {
+    "position": "Software Developer Intern",
+    "company": {
+      "short": "Nokia",
+      "name": "Nokia Bell Labs (formerly Alcatel-Lucent) — Paris, France",
+      "url": "https://www.bell-labs.com/"
+    },
+    "time": "July 2014 – December 2014",
+    "description": "Internship in the research division working on video-quality estimation and streaming protocols.",
+    "items": [
+      "Built a video-quality estimation tool in Java implementing the ITU-T P.1201.1 model.",
+      "Analysed streaming traffic with Wireshark and tcpdump as part of research into QUIC, HTTP/2, and H.264."
+    ],
+    "results": [],
+    "leveragedKnowledgeIn": [
+      "Java",
+      "ITU-T P.1201.1",
+      "Wireshark",
+      "tcpdump",
+      "QUIC",
+      "HTTP/2",
+      "H.264"
+    ]
+  }
+]

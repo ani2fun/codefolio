@@ -32,6 +32,7 @@ Thumbs.db
 
 # Claude / agent context (not committed)
 CLAUDE.md
+AGENTS.md
 .claude/
 
 # Logs

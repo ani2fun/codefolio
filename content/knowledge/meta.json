@@ -1,0 +1,18 @@
+{
+    "books": [
+        {
+            "slug": "codefolio-onboarding",
+            "title": "Codefolio Onboarding",
+            "description": "An engineer's tour of this codebase — what each module does, how requests flow end-to-end, and how to extend the project. Read this before opening a PR.",
+            "tags": ["onboarding", "architecture", "scala", "scala.js"],
+            "estimatedReadingMinutes": 30
+        },
+        {
+            "slug": "distributed-systems",
+            "title": "Distributed Systems Notes",
+            "description": "Field notes from books and courses on distributed systems — consistency, replication, the CAP theorem, and the seminal papers behind modern infra.",
+            "tags": ["system design", "backend", "distributed"],
+            "estimatedReadingMinutes": 25
+        }
+    ]
+}
