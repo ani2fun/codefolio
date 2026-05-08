@@ -1,7 +1,3 @@
----
-title: "2. Traversal in Doubly Linked Lists"
----
-
 # 2. Traversal in Doubly Linked Lists
 
 ## The Hook
@@ -54,6 +50,15 @@ flowchart LR
 <p align="center"><strong>Forward traversal using the <code>next</code> pointer — start at <code>head</code>, follow <code>current.next</code> on each iteration, stop when <code>current</code> becomes <code>null</code>.</strong></p>
 
 Given below is the code implementation of forward traversal in a doubly linked list, shown in two equivalent forms — a `for` loop that puts initialisation, condition, and advance on a single line, and a `while` loop that spreads them out for clarity.
+
+
+```pseudocode
+# Forward walk from the head.
+current ← head
+while current is not null:
+    # ... process current.val ...
+    current ← current.next                             # advance forward; null at tail
+```
 
 ```python run
 # Python idiom — `while` is the canonical form for pointer-walking
@@ -114,20 +119,6 @@ while (current != null) {
 }
 ```
 
-```javascript run
-// for loop
-for (let current = head; current !== null; current = current.next) {
-    // ... do something with current.val ...
-}
-
-// while loop
-let current = head;
-while (current !== null) {
-    // ... do something with current.val ...
-    current = current.next;
-}
-```
-
 ```typescript run
 // for loop
 for (let current: ListNode | null = head; current !== null; current = current.next) {
@@ -153,15 +144,6 @@ current := head
 for current != nil {
     // ... do something with current.Val ...
     current = current.Next
-}
-```
-
-```kotlin run
-// while loop is idiomatic for pointer walks in Kotlin
-var current = head
-while (current != null) {
-    // ... do something with current.`val` ...
-    current = current.next
 }
 ```
 
@@ -205,6 +187,15 @@ flowchart LR
 <p align="center"><strong>Reverse traversal using the <code>prev</code> pointer — start at <code>tail</code>, follow <code>current.prev</code> on each iteration, stop when <code>current</code> becomes <code>null</code> (i.e. when we walk past the head).</strong></p>
 
 Given below is the code implementation of reverse traversal — note how it is the *mirror image* of the forward version, swapping `head ↔ tail` and `next ↔ prev`.
+
+
+```pseudocode
+# Backward walk from the tail — only possible because each node has a `prev` pointer.
+current ← tail
+while current is not null:
+    # ... process current.val ...
+    current ← current.prev                             # advance backward; null at head
+```
 
 ```python run
 # Reverse walk — start at tail, follow prev
@@ -264,20 +255,6 @@ while (current != null) {
 }
 ```
 
-```javascript run
-// for loop
-for (let current = tail; current !== null; current = current.prev) {
-    // ... do something with current.val ...
-}
-
-// while loop
-let current = tail;
-while (current !== null) {
-    // ... do something with current.val ...
-    current = current.prev;
-}
-```
-
 ```typescript run
 // for loop
 for (let current: ListNode | null = tail; current !== null; current = current.prev) {
@@ -303,14 +280,6 @@ current := tail
 for current != nil {
     // ... do something with current.Val ...
     current = current.Prev
-}
-```
-
-```kotlin run
-var current = tail
-while (current != null) {
-    // ... do something with current.`val` ...
-    current = current.prev
 }
 ```
 
@@ -374,6 +343,17 @@ flowchart LR
 <p align="center"><strong>The "lookahead" trick — print the value first, then look at <code>current.next</code> to decide whether a comma follows. The tail node is the only one whose <code>next</code> is <code>null</code>, and it is the only one that does not get a trailing comma.</strong></p>
 
 ## The Solution
+
+
+```pseudocode
+function nodeExpedition(head):
+    current ← head
+    while current is not null:
+        print current.val
+        if current.next is not null:
+            print ", "
+        current ← current.next
+```
 
 ```python run
 class ListNode:
@@ -447,21 +427,6 @@ class Solution {
 }
 ```
 
-```javascript run
-class Solution {
-    nodeExpedition(head) {
-        let current = head;                              // Start at head
-        while (current !== null) {                       // Walk until past the tail
-            process.stdout.write(String(current.val));   // Print without trailing newline
-            if (current.next !== null) {                 // Not the tail?
-                process.stdout.write(", ");              //   → emit separator
-            }
-            current = current.next;                      // Advance forward
-        }
-    }
-}
-```
-
 ```typescript run
 class Solution {
     nodeExpedition(head: ListNode | null): void {
@@ -486,21 +451,6 @@ func nodeExpedition(head *ListNode) {
             fmt.Print(", ")               //   → emit separator
         }
         current = current.Next            // Advance forward
-    }
-}
-```
-
-```kotlin run
-class Solution {
-    fun nodeExpedition(head: ListNode?) {
-        var current = head                // Start at head
-        while (current != null) {         // Walk until past the tail
-            print(current.`val`)          // Print value (no newline)
-            if (current.next != null) {   // Not the tail?
-                print(", ")               //   → emit separator
-            }
-            current = current.next        // Advance forward
-        }
     }
 }
 ```
@@ -578,6 +528,18 @@ flowchart LR
 
 ## The Solution
 
+
+```pseudocode
+# Same expedition, but starting at the tail and walking backward.
+function nodeExpeditionII(tail):
+    current ← tail
+    while current is not null:
+        print current.val
+        if current.prev is not null:
+            print ", "
+        current ← current.prev
+```
+
 ```python run
 class Solution:
     def node_expedition_ii(self, tail: ListNode) -> None:
@@ -646,21 +608,6 @@ class Solution {
 }
 ```
 
-```javascript run
-class Solution {
-    nodeExpeditionII(tail) {
-        let current = tail;                              // Start at tail
-        while (current !== null) {                       // Walk until past the head
-            process.stdout.write(String(current.val));
-            if (current.prev !== null) {                 // Not the head?
-                process.stdout.write(", ");
-            }
-            current = current.prev;                      // Advance backward
-        }
-    }
-}
-```
-
 ```typescript run
 class Solution {
     nodeExpeditionII(tail: ListNode | null): void {
@@ -685,21 +632,6 @@ func nodeExpeditionII(tail *ListNode) {
             fmt.Print(", ")
         }
         current = current.Prev            // Advance backward
-    }
-}
-```
-
-```kotlin run
-class Solution {
-    fun nodeExpeditionII(tail: ListNode?) {
-        var current = tail
-        while (current != null) {
-            print(current.`val`)
-            if (current.prev != null) {
-                print(", ")
-            }
-            current = current.prev        // Advance backward
-        }
     }
 }
 ```
@@ -779,6 +711,17 @@ flowchart LR
 
 ## The Solution
 
+
+```pseudocode
+# Search backwards from the tail. First match wins.
+function nodeSearch(tail, data):
+    current ← tail
+    while current is not null:
+        if current.val = data: return current
+        current ← current.prev
+    return null
+```
+
 ```python run
 class Solution:
     def node_search(self, tail: ListNode, data: int) -> ListNode | None:
@@ -847,21 +790,6 @@ class Solution {
 }
 ```
 
-```javascript run
-class Solution {
-    nodeSearch(tail, data) {
-        let current = tail;
-        while (current !== null) {
-            if (current.val === data) {       // First match wins
-                return current;
-            }
-            current = current.prev;
-        }
-        return null;
-    }
-}
-```
-
 ```typescript run
 class Solution {
     nodeSearch(tail: ListNode | null, data: number): ListNode | null {
@@ -887,21 +815,6 @@ func nodeSearch(tail *ListNode, data int) *ListNode {
         current = current.Prev
     }
     return nil
-}
-```
-
-```kotlin run
-class Solution {
-    fun nodeSearch(tail: ListNode?, data: Int): ListNode? {
-        var current = tail
-        while (current != null) {
-            if (current.`val` == data) {     // First match wins
-                return current
-            }
-            current = current.prev
-        }
-        return null
-    }
 }
 ```
 

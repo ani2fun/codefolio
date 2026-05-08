@@ -1,7 +1,3 @@
----
-title: "17. Pattern: Simultaneous Traversal"
----
-
 # 17. Pattern: Simultaneous Traversal
 
 ## The Hook
@@ -84,6 +80,15 @@ flowchart TB
 
 The "are these two trees identical?" template — the simplest member of the family.
 
+
+```pseudocode
+function identical(a, b):
+    if a = null AND b = null: return true    # both absent → match
+    if a = null OR  b = null: return false   # exactly one absent → mismatch
+    if a.val ≠ b.val:         return false
+    return identical(a.left, b.left) AND identical(a.right, b.right)
+```
+
 ```python run
 from typing import Optional
 
@@ -134,15 +139,6 @@ def identical(a: TreeNode, b: TreeNode): Boolean = {
 }
 ```
 
-```javascript run
-function identical(a, b) {
-    if (!a && !b)        return true;
-    if (!a ||  !b)       return false;
-    if (a.val !== b.val) return false;
-    return identical(a.left, b.left) && identical(a.right, b.right);
-}
-```
-
 ```typescript run
 function identical(a: TreeNode | null, b: TreeNode | null): boolean {
     if (!a && !b)        return true;
@@ -158,15 +154,6 @@ func identical(a, b *TreeNode) bool {
     if a == nil || b == nil { return false }
     if a.Val != b.Val { return false }
     return identical(a.Left, b.Left) && identical(a.Right, b.Right)
-}
-```
-
-```kotlin run
-fun identical(a: TreeNode?, b: TreeNode?): Boolean {
-    if (a == null && b == null) return true
-    if (a == null || b == null) return false
-    if (a.value != b.value)     return false
-    return identical(a.left, b.left) && identical(a.right, b.right)
 }
 ```
 
@@ -248,6 +235,18 @@ flowchart TB
 
 ## Solution
 
+
+```pseudocode
+function isSymmetric(root):
+    function mirror(a, b):
+        if a = null AND b = null: return true
+        if a = null OR  b = null: return false
+        if a.val ≠ b.val:         return false
+        return mirror(a.left, b.right) AND mirror(a.right, b.left)   # swapped children
+    if root = null: return true
+    return mirror(root.left, root.right)
+```
+
 ```python run
 def is_symmetric(root):
     def mirror(a, b):
@@ -303,18 +302,6 @@ def isSymmetric(root: TreeNode): Boolean = {
 }
 ```
 
-```javascript run
-function isSymmetric(root) {
-    function mirror(a, b) {
-        if (!a && !b)        return true;
-        if (!a ||  !b)       return false;
-        if (a.val !== b.val) return false;
-        return mirror(a.left, b.right) && mirror(a.right, b.left);
-    }
-    return !root || mirror(root.left, root.right);
-}
-```
-
 ```typescript run
 function isSymmetric(root: TreeNode | null): boolean {
     function mirror(a: TreeNode | null, b: TreeNode | null): boolean {
@@ -338,18 +325,6 @@ func isSymmetric(root *TreeNode) bool {
     }
     if root == nil { return true }
     return mirror(root.Left, root.Right)
-}
-```
-
-```kotlin run
-fun isSymmetric(root: TreeNode?): Boolean {
-    fun mirror(a: TreeNode?, b: TreeNode?): Boolean {
-        if (a == null && b == null) return true
-        if (a == null || b == null) return false
-        if (a.value != b.value)     return false
-        return mirror(a.left, b.right) && mirror(a.right, b.left)
-    }
-    return root == null || mirror(root.left, root.right)
 }
 ```
 
@@ -381,6 +356,14 @@ Combine two patterns: an *outer* recursion walking A (looking for a place where 
 The complexity is **O(|A| · |B|)** worst case — every node in A might be the start of an identical-check that walks the whole of B. Faster O(|A| + |B|) algorithms exist using string-hashing on serialised trees, but the naive recursive version is the right interview answer for clarity.
 
 ## Solution
+
+
+```pseudocode
+function isSubtree(rootA, rootB):
+    if rootA = null: return rootB = null
+    if identical(rootA, rootB): return true
+    return isSubtree(rootA.left, rootB) OR isSubtree(rootA.right, rootB)
+```
 
 ```python run
 def is_subtree(root_a, root_b):
@@ -421,14 +404,6 @@ def isSubtree(rootA: TreeNode, rootB: TreeNode): Boolean = {
 }
 ```
 
-```javascript run
-function isSubtree(rootA, rootB) {
-    if (!rootA) return rootB === null;
-    if (identical(rootA, rootB)) return true;
-    return isSubtree(rootA.left, rootB) || isSubtree(rootA.right, rootB);
-}
-```
-
 ```typescript run
 function isSubtree(rootA: TreeNode | null, rootB: TreeNode | null): boolean {
     if (!rootA) return rootB === null;
@@ -442,14 +417,6 @@ func isSubtree(rootA, rootB *TreeNode) bool {
     if rootA == nil { return rootB == nil }
     if identical(rootA, rootB) { return true }
     return isSubtree(rootA.Left, rootB) || isSubtree(rootA.Right, rootB)
-}
-```
-
-```kotlin run
-fun isSubtree(rootA: TreeNode?, rootB: TreeNode?): Boolean {
-    if (rootA == null) return rootB == null
-    if (identical(rootA, rootB)) return true
-    return isSubtree(rootA.left, rootB) || isSubtree(rootA.right, rootB)
 }
 ```
 
@@ -476,6 +443,17 @@ pub fn is_subtree(root_a: &Option<Box<TreeNode>>, root_b: &Option<Box<TreeNode>>
 A *constructive* simultaneous traversal — instead of returning a verdict, return a *new node* built from the two inputs at each step.
 
 ## Solution
+
+
+```pseudocode
+function mergeTrees(a, b):
+    if a = null: return b
+    if b = null: return a
+    n ← TreeNode(a.val + b.val)
+    n.left  ← mergeTrees(a.left,  b.left)
+    n.right ← mergeTrees(a.right, b.right)
+    return n
+```
 
 ```python run
 def merge_trees(a, b):
@@ -532,17 +510,6 @@ def mergeTrees(a: TreeNode, b: TreeNode): TreeNode = {
 }
 ```
 
-```javascript run
-function mergeTrees(a, b) {
-    if (!a) return b;
-    if (!b) return a;
-    const n = new TreeNode(a.val + b.val);
-    n.left  = mergeTrees(a.left,  b.left);
-    n.right = mergeTrees(a.right, b.right);
-    return n;
-}
-```
-
 ```typescript run
 function mergeTrees(a: TreeNode | null, b: TreeNode | null): TreeNode | null {
     if (!a) return b;
@@ -561,17 +528,6 @@ func mergeTrees(a, b *TreeNode) *TreeNode {
     n := &TreeNode{Val: a.Val + b.Val}
     n.Left  = mergeTrees(a.Left,  b.Left)
     n.Right = mergeTrees(a.Right, b.Right)
-    return n
-}
-```
-
-```kotlin run
-fun mergeTrees(a: TreeNode?, b: TreeNode?): TreeNode? {
-    if (a == null) return b
-    if (b == null) return a
-    val n = TreeNode(a.value + b.value)
-    n.left  = mergeTrees(a.left,  b.left)
-    n.right = mergeTrees(a.right, b.right)
     return n
 }
 ```

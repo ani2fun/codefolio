@@ -1,7 +1,3 @@
----
-title: "Dynamic Programming"
----
-
 # Dynamic Programming
 
 Use this page as the chapter map for dynamic programming. Work through the guides in order when learning the topic for the first time, or jump directly to a named pattern for revision.

@@ -1,7 +1,3 @@
----
-title: "6. Pattern: Reversal"
----
-
 # 6. Pattern: Reversal
 
 ## The Hook
@@ -146,6 +142,20 @@ The algorithm below summarizes the reversal of the entire linked list in-place.
 
 The full-list reversal in all ten languages. Each version is the same three-pointer loop — `previous`, `current`, `next` — differing only in language syntax.
 
+
+```pseudocode
+# In-place reversal of a singly linked list. O(n) time, O(1) space.
+function reverse(head):
+    previous ← null                                    # reversed prefix's head
+    current ← head                                     # the walker
+    while current is not null:
+        nxt ← current.next                             # save forward link BEFORE clobbering
+        current.next ← previous                        # flip the pointer backward
+        previous ← current
+        current ← nxt
+    return previous                                     # when current is null, previous is the new head
+```
+
 ```python run
 from typing import Optional
 
@@ -230,20 +240,6 @@ object Solution {
 }
 ```
 
-```javascript run
-function reverse(head) {
-    let previous = null;                    // behind current
-    let current  = head;                    // the walker
-    while (current !== null) {
-        const next = current.next;          // save forward link
-        current.next = previous;            // flip backward
-        previous = current;
-        current  = next;
-    }
-    return previous;                        // new head
-}
-```
-
 ```typescript run
 function reverse(head: ListNode | null): ListNode | null {
     let previous: ListNode | null = null;
@@ -274,22 +270,6 @@ func reverse(head *ListNode) *ListNode {
         current  = next
     }
     return previous                         // new head
-}
-```
-
-```kotlin run
-class Solution {
-    fun reverse(head: ListNode?): ListNode? {
-        var previous: ListNode? = null      // behind current
-        var current:  ListNode? = head      // walker
-        while (current != null) {
-            val next = current.next         // save forward link
-            current.next = previous         // flip backward
-            previous = current
-            current  = next
-        }
-        return previous                     // new head
-    }
 }
 ```
 
@@ -468,6 +448,22 @@ The algorithm given below summarizes the linked list reversal between start and 
 
 Segment reversal in all ten languages. The skeleton is the same three-pointer loop as full-list reversal — with two tweaks: initialise `previous` to `rightBound` (so the reversed tail points to the correct successor automatically) and stop when `current == rightBound` instead of `null`.
 
+
+```pseudocode
+# Reverse a segment [start..end]. `previous` is seeded with end.next (the post-segment suffix)
+# so the reversed tail's next pointer naturally connects to the rest of the list.
+function reverse(start, end):
+    rightBound ← end.next                              # cache BEFORE reversing
+    previous ← rightBound
+    current ← start
+    while current ≠ rightBound:
+        nxt ← current.next
+        current.next ← previous
+        previous ← current
+        current ← nxt
+    return previous                                     # new head of the reversed segment (was `end`)
+```
+
 ```python run
 from typing import Optional
 
@@ -559,21 +555,6 @@ object Solution {
 }
 ```
 
-```javascript run
-function reverse(start, end) {
-    const rightBound = end.next;                  // cache before flipping
-    let   previous   = rightBound;
-    let   current    = start;
-    while (current !== rightBound) {
-        const next = current.next;                // save forward link
-        current.next = previous;                  // flip backward
-        previous = current;
-        current  = next;
-    }
-    return previous;                              // new segment head
-}
-```
-
 ```typescript run
 function reverse(start: ListNode, end: ListNode): ListNode {
     const rightBound: ListNode | null = end.next;
@@ -606,23 +587,6 @@ func reverseSegment(start, end *ListNode) *ListNode {
         current  = next
     }
     return previous                               // new segment head
-}
-```
-
-```kotlin run
-class Solution {
-    fun reverse(start: ListNode, end: ListNode): ListNode {
-        val rightBound: ListNode? = end.next      // cache before flipping
-        var previous:   ListNode? = rightBound
-        var current:    ListNode? = start
-        while (current !== rightBound) {
-            val next = current!!.next             // save forward link
-            current.next = previous               // flip backward
-            previous = current
-            current  = next
-        }
-        return previous!!                         // new segment head
-    }
 }
 ```
 
@@ -750,6 +714,20 @@ flowchart TB
 
 The implementation of the reversal algorithm to reverse the entire list, in all ten languages:
 
+
+```pseudocode
+# Same algorithm as `reverse` above — re-listed under the standard public name.
+function reverseAList(head):
+    previous ← null
+    current ← head
+    while current is not null:
+        nxt ← current.next
+        current.next ← previous
+        previous ← current
+        current ← nxt
+    return previous
+```
+
 ```python run
 from typing import Optional
 
@@ -835,20 +813,6 @@ object Solution {
 }
 ```
 
-```javascript run
-function reverseAList(head) {
-    let previous = null;
-    let current  = head;
-    while (current !== null) {
-        const next = current.next;              // save forward link
-        current.next = previous;                // flip backward
-        previous = current;
-        current  = next;
-    }
-    return previous;                            // new head
-}
-```
-
 ```typescript run
 function reverseAList(head: ListNode | null): ListNode | null {
     let previous: ListNode | null = null;
@@ -874,22 +838,6 @@ func reverseAList(head *ListNode) *ListNode {
         current  = next
     }
     return previous                             // new head
-}
-```
-
-```kotlin run
-class Solution {
-    fun reverseAList(head: ListNode?): ListNode? {
-        var previous: ListNode? = null
-        var current:  ListNode? = head
-        while (current != null) {
-            val next = current.next             // save forward link
-            current.next = previous             // flip backward
-            previous = current
-            current  = next
-        }
-        return previous                         // new head
-    }
 }
 ```
 
@@ -933,6 +881,20 @@ You need to reverse the list in place.
 > -   **Output:** \[10, 3, 7, 5\]
 
 ## Solution
+
+
+```pseudocode
+# Same iterative reversal — re-listed once more for the demo's full driver.
+function reverseAList(head):
+    current ← head
+    previous ← null
+    while current is not null:
+        nextNode ← current.next                        # save next before we overwrite it
+        current.next ← previous                        # redirect arrow backward
+        previous ← current                             # advance previous to current
+        current ← nextNode                             # step forward through the original list
+    return previous                                     # old tail is the new head
+```
 
 ```python run
 class ListNode:
@@ -1141,42 +1103,6 @@ object ReverseAList {
 }
 ```
 
-```javascript run
-class ListNode {
-  constructor(val, next = null) {
-    this.val = val;
-    this.next = next;
-  }
-}
-
-function reverseAList(head) {
-  let current = head;
-  let previous = null; // Will become the new tail
-
-  while (current !== null) {
-    const next = current.next; // Save next before breaking the link
-    current.next = previous;   // Flip the arrow
-    previous = current;        // Advance previous
-    current = next;            // Step forward
-  }
-
-  return previous; // Old tail is the new head
-}
-
-function printList(head) {
-  const parts = [];
-  while (head) { parts.push(head.val); head = head.next; }
-  console.log(parts.join(" -> "));
-}
-
-// [5, 7, 3, 10] -> [10, 3, 7, 5]
-const n1 = new ListNode(5); const n2 = new ListNode(7);
-const n3 = new ListNode(3); const n4 = new ListNode(10);
-n1.next = n2; n2.next = n3; n3.next = n4;
-
-printList(reverseAList(n1)); // 10 -> 3 -> 7 -> 5
-```
-
 ```typescript run
 class ListNode {
   constructor(public val: number, public next: ListNode | null = null) {}
@@ -1255,40 +1181,6 @@ func main() {
 }
 ```
 
-```kotlin run
-class ListNode(var `val`: Int, var next: ListNode? = null)
-
-fun reverseAList(head: ListNode?): ListNode? {
-    var current = head
-    var previous: ListNode? = null // Grows backward into reversed list
-
-    while (current != null) {
-        val next = current.next   // Save next before overwriting
-        current.next = previous   // Flip the arrow
-        previous = current        // Advance previous
-        current = next            // Step forward
-    }
-
-    return previous // Old tail is the new head
-}
-
-fun printList(head: ListNode?) {
-    var cur = head
-    val parts = mutableListOf<String>()
-    while (cur != null) { parts.add(cur.`val`.toString()); cur = cur.next }
-    println(parts.joinToString(" -> "))
-}
-
-fun main() {
-    // [5, 7, 3, 10] -> [10, 3, 7, 5]
-    val n1 = ListNode(5); val n2 = ListNode(7)
-    val n3 = ListNode(3); val n4 = ListNode(10)
-    n1.next = n2; n2.next = n3; n3.next = n4
-
-    printList(reverseAList(n1)) // 10 -> 3 -> 7 -> 5
-}
-```
-
 ```rust run
 #[derive(Debug)]
 struct ListNode {
@@ -1357,6 +1249,23 @@ You need to reverse the list in place.
 > -   **Output:** \[7, 5, 3, 10\]
 
 ## Solution
+
+
+```pseudocode
+# Reverse the first k nodes; stitch the original head (now the segment's tail) to the suffix.
+function reverseFirstKNodes(head, k):
+    if k ≤ 0 OR head is null: return head
+    previous ← null; current ← head
+    count ← 0
+    while current is not null AND count < k:
+        nxt ← current.next
+        current.next ← previous
+        previous ← current
+        current ← nxt
+        count ← count + 1
+    head.next ← current                                # original head is now the segment's tail
+    return previous                                     # k-th original node is the new head
+```
 
 ```python run
 from typing import Optional
@@ -1483,27 +1392,6 @@ object Solution {
 }
 ```
 
-```javascript run
-function reverseFirstKNodes(head, k) {
-    if (k <= 0 || head === null) return head;
-
-    let previous = null;
-    let current  = head;
-    let count = 0;
-
-    while (current !== null && count < k) {
-        const next = current.next;
-        current.next = previous;
-        previous = current;
-        current  = next;
-        count++;
-    }
-
-    head.next = current;          // stitch
-    return previous;
-}
-```
-
 ```typescript run
 function reverseFirstKNodes(head: ListNode | null, k: number): ListNode | null {
     if (k <= 0 || head === null) return head;
@@ -1548,29 +1436,6 @@ func reverseFirstKNodes(head *ListNode, k int) *ListNode {
 }
 ```
 
-```kotlin run
-class Solution {
-    fun reverseFirstKNodes(head: ListNode?, k: Int): ListNode? {
-        if (k <= 0 || head == null) return head
-
-        var previous: ListNode? = null
-        var current:  ListNode? = head
-        var count = 0
-
-        while (current != null && count < k) {
-            val next = current.next
-            current.next = previous
-            previous = current
-            current  = next
-            count++
-        }
-
-        head.next = current      // stitch
-        return previous
-    }
-}
-```
-
 ```rust run
 fn reverse_first_k_nodes(mut head: Option<Box<ListNode>>, k: i32) -> Option<Box<ListNode>> {
     if k <= 0 || head.is_none() { return head; }
@@ -1612,6 +1477,36 @@ You need to reverse the list in place.
 > -   **Output:** \[5, 7, 10, 3\]
 
 ## Solution
+
+
+```pseudocode
+# Reverse the LAST k nodes by walking to the (length − k − 1)-th node, then reversing the tail.
+function length(head):
+    n ← 0
+    while head is not null:
+        n ← n + 1
+        head ← head.next
+    return n
+
+function reverseAll(head):
+    previous ← null; current ← head
+    while current is not null:
+        nxt ← current.next
+        current.next ← previous
+        previous ← current
+        current ← nxt
+    return previous
+
+function reverseLastKNodes(head, k):
+    if k ≤ 0 OR head is null: return head
+    n ← length(head)
+    if k ≥ n: return reverseAll(head)
+    current ← head
+    repeat (n − k − 1) times:
+        current ← current.next
+    current.next ← reverseAll(current.next)            # reverse the suffix; reattach
+    return head
+```
 
 ```python run
 from typing import Optional
@@ -1770,27 +1665,6 @@ object Solution {
 }
 ```
 
-```javascript run
-function reverseLastKNodes(head, k) {
-    if (k <= 0 || head === null) return head;
-
-    function length(h) { let n = 0; while (h) { n++; h = h.next; } return n; }
-    function reverseAll(h) {
-        let prev = null, cur = h;
-        while (cur) { const nxt = cur.next; cur.next = prev; prev = cur; cur = nxt; }
-        return prev;
-    }
-
-    const len = length(head);
-    if (k >= len) return reverseAll(head);
-
-    let cur = head;
-    for (let i = 0; i < len - k - 1; i++) cur = cur.next;
-    cur.next = reverseAll(cur.next);
-    return head;
-}
-```
-
 ```typescript run
 function reverseLastKNodes(head: ListNode | null, k: number): ListNode | null {
     if (k <= 0 || head === null) return head;
@@ -1851,30 +1725,6 @@ func reverseLastKNodes(head *ListNode, k int) *ListNode {
 }
 ```
 
-```kotlin run
-class Solution {
-    private fun length(h: ListNode?): Int {
-        var n = 0; var cur = h
-        while (cur != null) { n++; cur = cur.next }
-        return n
-    }
-    private fun reverseAll(h: ListNode?): ListNode? {
-        var prev: ListNode? = null; var cur = h
-        while (cur != null) { val nxt = cur.next; cur.next = prev; prev = cur; cur = nxt }
-        return prev
-    }
-    fun reverseLastKNodes(head: ListNode?, k: Int): ListNode? {
-        if (k <= 0 || head == null) return head
-        val len = length(head)
-        if (k >= len) return reverseAll(head)
-        var cur = head
-        for (i in 0 until len - k - 1) cur = cur!!.next
-        cur!!.next = reverseAll(cur.next)
-        return head
-    }
-}
-```
-
 ```rust run
 fn reverse_last_k_nodes(mut head: Option<Box<ListNode>>, k: i32) -> Option<Box<ListNode>> {
     if k <= 0 || head.is_none() { return head; }
@@ -1930,6 +1780,35 @@ Given the **head** of a singly linked list and two integers **left** and **
 > -   **Explanation:** After reversing the first node of the list, the list becomes \[5\].
 
 ## Solution
+
+
+```pseudocode
+# Reverse arbitrary positions [left..right] (1-indexed). Stitch the leftBound to the new head of the segment.
+function reverseSegment(start, end):
+    rightBound ← end.next
+    previous ← rightBound; current ← start
+    while current ≠ rightBound:
+        nxt ← current.next
+        current.next ← previous
+        previous ← current
+        current ← nxt
+    return previous
+
+function nodeAt(head, position):
+    cur ← head
+    repeat (position − 1) times:
+        cur ← cur.next
+    return cur
+
+function reverseTheGivenSegment(head, left, right):
+    if head is null OR head.next is null OR left = right: return head
+    end ← nodeAt(head, right)
+    if left = 1:
+        return reverseSegment(head, end)               # segment starts at head — new head is segment head
+    leftBound ← nodeAt(head, left − 1)
+    leftBound.next ← reverseSegment(leftBound.next, end)
+    return head
+```
 
 ```python run
 from typing import Optional
@@ -2089,35 +1968,6 @@ object Solution {
 }
 ```
 
-```javascript run
-function reverseTheGivenSegment(head, left, right) {
-    if (head === null || head.next === null || left === right) return head;
-
-    const nodeAt = (h, pos) => {
-        let cur = h;
-        for (let i = 1; i < pos; i++) cur = cur.next;
-        return cur;
-    };
-    const reverseSegment = (start, end) => {
-        const rightBound = end.next;
-        let prev = rightBound, cur = start;
-        while (cur !== rightBound) {
-            const nxt = cur.next;
-            cur.next = prev;
-            prev = cur; cur = nxt;
-        }
-        return prev;
-    };
-
-    const end = nodeAt(head, right);
-    if (left === 1) return reverseSegment(head, end);
-
-    const leftBound = nodeAt(head, left - 1);
-    leftBound.next = reverseSegment(leftBound.next, end);
-    return head;
-}
-```
-
 ```typescript run
 function reverseTheGivenSegment(head: ListNode | null, left: number, right: number): ListNode | null {
     if (head === null || head.next === null || left === right) return head;
@@ -2179,35 +2029,6 @@ func reverseTheGivenSegment(head *ListNode, left, right int) *ListNode {
     leftBound := nodeAt(head, left-1)
     leftBound.Next = reverseSegment(leftBound.Next, end)
     return head
-}
-```
-
-```kotlin run
-class Solution {
-    private fun nodeAt(head: ListNode, position: Int): ListNode {
-        var cur = head
-        for (i in 1 until position) cur = cur.next!!
-        return cur
-    }
-    private fun reverseSegment(start: ListNode, end: ListNode): ListNode {
-        val rightBound = end.next
-        var prev: ListNode? = rightBound
-        var cur:  ListNode? = start
-        while (cur !== rightBound) {
-            val nxt = cur!!.next
-            cur.next = prev
-            prev = cur; cur = nxt
-        }
-        return prev!!
-    }
-    fun reverseTheGivenSegment(head: ListNode?, left: Int, right: Int): ListNode? {
-        if (head == null || head.next == null || left == right) return head
-        val end = nodeAt(head, right)
-        if (left == 1) return reverseSegment(head, end)
-        val leftBound = nodeAt(head, left - 1)
-        leftBound.next = reverseSegment(leftBound.next!!, end)
-        return head
-    }
 }
 ```
 

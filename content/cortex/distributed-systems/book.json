@@ -1,6 +1,0 @@
-{
-    "title": "Distributed Systems Notes",
-    "description": "Field notes from books and courses on distributed systems — consistency, replication, the CAP theorem, and the seminal papers behind modern infra.",
-    "tags": ["system design", "backend", "distributed"],
-    "estimatedReadingMinutes": 25
-}

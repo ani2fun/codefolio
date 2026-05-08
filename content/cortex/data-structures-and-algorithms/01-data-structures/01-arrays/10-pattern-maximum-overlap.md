@@ -1,7 +1,3 @@
----
-title: "10. Pattern: Maximum Overlap"
----
-
 # 10. Pattern: Maximum Overlap
 
 This section takes the line-sweep idea one step further. In the previous chapter you *merged* overlapping intervals; here you'll **count** them. How many events are active at the same time? Which moment is the busiest? How many servers do you need to run every job? These questions sound different — but under the hood, they're the same mechanical sweep with a counter riding on top.
@@ -433,6 +429,29 @@ Our generic implementation returns `0` when `maxOverlap < 2`. Later problems (li
 
 The generic function below returns the peak concurrent count, collapsing `0` and `1` to `0` under the strict-overlap convention.
 
+
+```pseudocode
+# Sweep line. Each interval emits a 's' (open) and 'e' (close) event.
+# Sort tagged points; 'e' < 's' on ties so touching intervals DON'T overlap.
+function maximumOverlap(intervals):
+    points ← empty list
+    for each (s, e) in intervals:
+        append (s, 's') to points
+        append (e, 'e') to points
+    sort points ascending (with 'e' tiebreaking before 's')
+
+    overlap ← 0
+    maxOverlap ← 0
+    for each (coord, tag) in points:
+        if tag = 's':
+            overlap ← overlap + 1                     # an interval just opened
+            maxOverlap ← max(maxOverlap, overlap)
+        else:
+            overlap ← overlap − 1                     # an interval just closed
+    if maxOverlap > 1: return maxOverlap              # need ≥ 2 intervals for "overlap"
+    return 0
+```
+
 ```python run
 from typing import List, Tuple
 
@@ -594,34 +613,6 @@ object Solution {
 }
 ```
 
-```javascript run
-function maximumOverlap(intervals) {
-    // Each interval → two tagged points. Tag 0 = end, 1 = start — end wins ties.
-    const points = [];
-    for (const [s, e] of intervals) {
-        points.push([s, 1]);   // start event
-        points.push([e, 0]);   // end event
-    }
-
-    // Sort by coord; break ties by tag (end before start)
-    points.sort((a, b) => a[0] - b[0] || a[1] - b[1]);
-
-    let overlap = 0, maxOverlap = 0;
-    for (const [, tag] of points) {
-        if (tag === 1) {
-            overlap++;
-            if (overlap > maxOverlap) maxOverlap = overlap;
-        } else {
-            overlap--;
-        }
-    }
-    return maxOverlap > 1 ? maxOverlap : 0;
-}
-
-console.log(maximumOverlap([[1, 4], [2, 6], [3, 5]]));   // 3
-console.log(maximumOverlap([[1, 3], [3, 5]]));           // 0 (touching)
-```
-
 ```typescript run
 function maximumOverlap(intervals: number[][]): number {
     // Point record: [coord, tag] where tag 0 = end, 1 = start (end sorts first)
@@ -688,31 +679,6 @@ func maximumOverlap(intervals [][]int) int {
 
 func main() {
     fmt.Println(maximumOverlap([][]int{{1, 4}, {2, 6}, {3, 5}})) // 3
-}
-```
-
-```kotlin run
-fun maximumOverlap(intervals: Array<IntArray>): Int {
-    // Tag 0 = end, tag 1 = start; end wins ties so touching intervals stay non-overlapping.
-    val points = mutableListOf<IntArray>()
-    for (iv in intervals) {
-        points.add(intArrayOf(iv[0], 1))
-        points.add(intArrayOf(iv[1], 0))
-    }
-
-    points.sortWith(compareBy({ it[0] }, { it[1] }))
-
-    var overlap = 0
-    var maxOverlap = 0
-    for (p in points) {
-        if (p[1] == 1) {
-            overlap++
-            if (overlap > maxOverlap) maxOverlap = overlap
-        } else {
-            overlap--
-        }
-    }
-    return if (maxOverlap > 1) maxOverlap else 0
 }
 ```
 
@@ -868,7 +834,7 @@ meetings: "4 meeting windows" {
 }
 
 rooms: "Assign each meeting to a room" {
-  grid-columns: 1
+  grid-rows: 2
   grid-gap: 8
   r1: "Room A: [0,30]" {style.fill: "#dcfce7"; style.stroke: "#16a34a"}
   r2: "Room B: [5,10] → [15,20] → [25,40]" {style.fill: "#dbeafe"; style.stroke: "#3b82f6"}
@@ -929,6 +895,26 @@ flowchart TB
 ### Implementation — Minimum Meeting Rooms (Template Version)
 
 We rename `overlap` to `rooms` and `maxOverlap` to `minRooms` (it reads more naturally), and we **drop** the "collapse 1 → 0" rule: a single meeting legitimately needs one room.
+
+
+```pseudocode
+# Same sweep as maximumOverlap, but here the peak concurrency is the answer (no > 1 guard).
+function minimumMeetingRooms(meetings):
+    points ← empty list
+    for each (s, e) in meetings:
+        append (s, 's') to points
+        append (e, 'e') to points
+    sort points ascending (with 'e' tiebreaking before 's')
+
+    rooms ← 0; minRooms ← 0
+    for each (_, tag) in points:
+        if tag = 's':
+            rooms ← rooms + 1
+            minRooms ← max(minRooms, rooms)
+        else:
+            rooms ← rooms − 1
+    return minRooms
+```
 
 ```python run
 from typing import List
@@ -1064,28 +1050,6 @@ object Solution {
 }
 ```
 
-```javascript run
-function minimumMeetingRooms(meetings) {
-    const points = [];
-    for (const [s, e] of meetings) {
-        points.push([s, 1]);   // start event
-        points.push([e, 0]);   // end event
-    }
-    points.sort((a, b) => a[0] - b[0] || a[1] - b[1]);
-
-    let rooms = 0, minRooms = 0;
-    for (const [, tag] of points) {
-        if (tag === 1) {
-            rooms++;
-            if (rooms > minRooms) minRooms = rooms;
-        } else rooms--;
-    }
-    return minRooms;
-}
-
-console.log(minimumMeetingRooms([[0, 30], [5, 10], [15, 20]]));   // 2
-```
-
 ```typescript run
 function minimumMeetingRooms(meetings: number[][]): number {
     const points: [number, number][] = [];
@@ -1143,26 +1107,6 @@ func minimumMeetingRooms(meetings [][]int) int {
 
 func main() {
     fmt.Println(minimumMeetingRooms([][]int{{0, 30}, {5, 10}, {15, 20}})) // 2
-}
-```
-
-```kotlin run
-fun minimumMeetingRooms(meetings: Array<IntArray>): Int {
-    val points = mutableListOf<IntArray>()
-    for (m in meetings) {
-        points.add(intArrayOf(m[0], 1))
-        points.add(intArrayOf(m[1], 0))
-    }
-    points.sortWith(compareBy({ it[0] }, { it[1] }))
-
-    var rooms = 0; var minRooms = 0
-    for (p in points) {
-        if (p[1] == 1) {
-            rooms++
-            if (rooms > minRooms) minRooms = rooms
-        } else rooms--
-    }
-    return minRooms
 }
 ```
 
@@ -1339,6 +1283,28 @@ flowchart TB
 
 ## The Solution
 
+
+```pseudocode
+# Same algorithm, with explicit empty-input guard and "update peak only on opens" optimisation.
+function minimumMeetingRooms(meetings):
+    if meetings is empty: return 0
+    points ← empty list
+    for each (s, e) in meetings:
+        append (s, 's') to points
+        append (e, 'e') to points
+    sort points ascending (with 'e' tiebreaking before 's')
+
+    rooms ← 0; minRooms ← 0
+    for each (_, tag) in points:
+        if tag = 's':
+            rooms ← rooms + 1
+            if rooms > minRooms:                      # closes can only decrease — don't bother
+                minRooms ← rooms
+        else:
+            rooms ← rooms − 1
+    return minRooms
+```
+
 ```python run
 from typing import List
 
@@ -1481,31 +1447,6 @@ object Solution {
 }
 ```
 
-```javascript run
-function minimumMeetingRooms(meetings) {
-    if (meetings.length === 0) return 0;
-
-    const points = [];
-    for (const [s, e] of meetings) {
-        points.push([s, 1]);
-        points.push([e, 0]);
-    }
-    points.sort((a, b) => a[0] - b[0] || a[1] - b[1]);
-
-    let rooms = 0, minRooms = 0;
-    for (const [, tag] of points) {
-        if (tag === 1) {
-            rooms++;
-            if (rooms > minRooms) minRooms = rooms;
-        } else rooms--;
-    }
-    return minRooms;
-}
-
-console.log(minimumMeetingRooms([[0, 30], [5, 10], [15, 20]]));   // 2
-console.log(minimumMeetingRooms([[1, 5], [5, 10]]));              // 1 (touching = share)
-```
-
 ```typescript run
 function minimumMeetingRooms(meetings: number[][]): number {
     if (meetings.length === 0) return 0;
@@ -1568,27 +1509,6 @@ func minimumMeetingRooms(meetings [][]int) int {
 
 func main() {
     fmt.Println(minimumMeetingRooms([][]int{{0, 30}, {5, 10}, {15, 20}})) // 2
-}
-```
-
-```kotlin run
-fun minimumMeetingRooms(meetings: Array<IntArray>): Int {
-    if (meetings.isEmpty()) return 0
-    val points = mutableListOf<IntArray>()
-    for (m in meetings) {
-        points.add(intArrayOf(m[0], 1))
-        points.add(intArrayOf(m[1], 0))
-    }
-    points.sortWith(compareBy({ it[0] }, { it[1] }))
-
-    var rooms = 0; var minRooms = 0
-    for (p in points) {
-        if (p[1] == 1) {
-            rooms++
-            if (rooms > minRooms) minRooms = rooms
-        } else rooms--
-    }
-    return minRooms
 }
 ```
 
@@ -1873,6 +1793,30 @@ A subtle but important point: **the evicted interval is "erased from history"** 
 
 The implementation below uses a **max-heap** (via negation in languages without one built in). Crucially, the "expire ended intervals" step uses the current interval's start as the threshold and uses **strict `<=`** to drop touching-ended intervals — keeping the non-overlap convention.
 
+
+```pseudocode
+# Remove the fewest intervals so concurrency stays ≤ k. Sweep + max-heap of currently-kept end-times.
+function removeIntervals(intervals, k):
+    if intervals is empty:
+        return 0
+    if k ≤ 0:
+        return length(intervals)                      # nothing allowed → remove all
+
+    sort intervals by start ascending
+    heap ← empty max-heap of end-times
+    removals ← 0
+
+    for each (s, e) in intervals:
+        # Expire intervals that ended at or before s.
+        while heap is not empty AND heap.top ≤ s:
+            heap.pop
+        heap.push(e)                                  # tentatively keep the new interval
+        if size(heap) > k:                            # over capacity — evict the latest-ending one
+            heap.pop                                  # max-heap top = largest end → best victim
+            removals ← removals + 1
+    return removals
+```
+
 ```python run
 from typing import List
 import heapq
@@ -2067,61 +2011,6 @@ object Solution {
 }
 ```
 
-```javascript run
-// Minimal binary max-heap keyed on numeric end times
-class MaxHeap {
-    constructor() { this.a = []; }
-    get size() { return this.a.length; }
-    peek() { return this.a[0]; }
-    push(v) {
-        this.a.push(v);
-        let i = this.a.length - 1;
-        while (i > 0) {
-            const p = (i - 1) >> 1;
-            if (this.a[p] >= this.a[i]) break;
-            [this.a[p], this.a[i]] = [this.a[i], this.a[p]];
-            i = p;
-        }
-    }
-    pop() {
-        const top = this.a[0];
-        const last = this.a.pop();
-        if (this.a.length > 0) {
-            this.a[0] = last;
-            let i = 0, n = this.a.length;
-            while (true) {
-                const l = 2 * i + 1, r = 2 * i + 2;
-                let best = i;
-                if (l < n && this.a[l] > this.a[best]) best = l;
-                if (r < n && this.a[r] > this.a[best]) best = r;
-                if (best === i) break;
-                [this.a[i], this.a[best]] = [this.a[best], this.a[i]];
-                i = best;
-            }
-        }
-        return top;
-    }
-}
-
-function removeIntervals(intervals, k) {
-    if (intervals.length === 0) return 0;
-    if (k <= 0) return intervals.length;
-
-    intervals.sort((a, b) => a[0] - b[0]);
-    const heap = new MaxHeap();
-    let removals = 0;
-
-    for (const [s, e] of intervals) {
-        while (heap.size > 0 && heap.peek() <= s) heap.pop();   // expire
-        heap.push(e);
-        if (heap.size > k) { heap.pop(); removals++; }           // evict max end
-    }
-    return removals;
-}
-
-console.log(removeIntervals([[1, 4], [2, 5], [3, 6], [7, 9]], 2));   // 1
-```
-
 ```typescript run
 class MaxHeap {
     private a: number[] = [];
@@ -2223,27 +2112,6 @@ func removeIntervals(intervals [][]int, k int) int {
 
 func main() {
     fmt.Println(removeIntervals([][]int{{1, 4}, {2, 5}, {3, 6}, {7, 9}}, 2)) // 1
-}
-```
-
-```kotlin run
-import java.util.PriorityQueue
-
-fun removeIntervals(intervals: Array<IntArray>, k: Int): Int {
-    if (intervals.isEmpty()) return 0
-    if (k <= 0) return intervals.size
-
-    intervals.sortBy { it[0] }
-    val heap = PriorityQueue<Int>(compareByDescending { it })   // max-heap
-    var removals = 0
-
-    for (iv in intervals) {
-        val s = iv[0]; val e = iv[1]
-        while (heap.isNotEmpty() && heap.peek() <= s) heap.poll()   // expire
-        heap.offer(e)
-        if (heap.size > k) { heap.poll(); removals++ }               // evict max
-    }
-    return removals
 }
 ```
 
@@ -2524,6 +2392,32 @@ Concretely, the easiest implementation iterates with an index `i` and uses `poin
 
 ## The Solution
 
+
+```pseudocode
+# Find the [start, end] window with the highest concurrent-interval count.
+function busiestInterval(intervals):
+    if intervals is empty: return empty list
+    points ← empty list
+    for each (s, e) in intervals:
+        append (s, 's') to points
+        append (e, 'e') to points
+    sort points ascending (with 'e' tiebreaking before 's')
+
+    count ← 0; maxCount ← 0
+    busiest ← [0, 0]
+    for i from 0 to length(points) − 1:
+        (coord, tag) ← points[i]
+        if tag = 's':
+            count ← count + 1
+            if count > maxCount:                      # strict > — first window at the peak wins ties
+                maxCount ← count
+                busiest[0] ← coord
+                busiest[1] ← points[i + 1].coord      # peak ends at the very next event
+        else:
+            count ← count − 1
+    return busiest
+```
+
 ```python run
 from typing import List
 
@@ -2699,38 +2593,6 @@ object Solution {
 }
 ```
 
-```javascript run
-function busiestInterval(intervals) {
-    if (intervals.length === 0) return [];
-
-    const points = [];
-    for (const [s, e] of intervals) {
-        points.push([s, 1]);
-        points.push([e, 0]);
-    }
-    points.sort((a, b) => a[0] - b[0] || a[1] - b[1]);
-
-    let count = 0, maxCount = 0;
-    const busiest = [0, 0];
-
-    for (let i = 0; i < points.length; i++) {
-        const [coord, tag] = points[i];
-        if (tag === 1) {
-            count++;
-            if (count > maxCount) {
-                maxCount = count;
-                busiest[0] = coord;
-                busiest[1] = points[i + 1][0];   // next event's coord
-            }
-        } else count--;
-    }
-    return busiest;
-}
-
-console.log(busiestInterval([[1, 4], [2, 6], [3, 5]]));   // [3, 4]
-console.log(busiestInterval([[1, 10], [2, 3], [5, 7]]));  // [2, 3]
-```
-
 ```typescript run
 function busiestInterval(intervals: number[][]): number[] {
     if (intervals.length === 0) return [];
@@ -2804,35 +2666,6 @@ func busiestInterval(intervals [][]int) []int {
 
 func main() {
     fmt.Println(busiestInterval([][]int{{1, 4}, {2, 6}, {3, 5}})) // [3 4]
-}
-```
-
-```kotlin run
-fun busiestInterval(intervals: Array<IntArray>): IntArray {
-    if (intervals.isEmpty()) return intArrayOf()
-
-    val points = mutableListOf<IntArray>()
-    for (iv in intervals) {
-        points.add(intArrayOf(iv[0], 1))
-        points.add(intArrayOf(iv[1], 0))
-    }
-    points.sortWith(compareBy({ it[0] }, { it[1] }))
-
-    var count = 0; var maxCount = 0
-    val busiest = intArrayOf(0, 0)
-
-    for (i in points.indices) {
-        val p = points[i]
-        if (p[1] == 1) {
-            count++
-            if (count > maxCount) {
-                maxCount = count
-                busiest[0] = p[0]
-                busiest[1] = points[i + 1][0]
-            }
-        } else count--
-    }
-    return busiest
 }
 ```
 
@@ -3115,6 +2948,25 @@ A neat implementation trick: store each event as `(coord, delta)` where `delta =
 
 ## The Solution
 
+
+```pseudocode
+# Each task contributes a SIGNED load (+ at start, − at end). Sweep summing deltas; track max.
+function peakResource(tasks):
+    if tasks is empty: return 0
+    events ← empty list
+    for each (s, e, load) in tasks:
+        append (s, +load) to events                   # start: add load
+        append (e, −load) to events                   # end:   remove load
+    sort events ascending (negative deltas before positive on ties → ends before starts)
+
+    curLoad ← 0; peakLoad ← 0
+    for each (_, delta) in events:
+        curLoad ← curLoad + delta
+        if curLoad > peakLoad:                        # only add-events can push past the peak
+            peakLoad ← curLoad
+    return peakLoad
+```
+
 ```python run
 from typing import List
 
@@ -3249,29 +3101,6 @@ object Solution {
 }
 ```
 
-```javascript run
-function peakResource(tasks) {
-    if (tasks.length === 0) return 0;
-
-    const events = [];
-    for (const [s, e, load] of tasks) {
-        events.push([s,  load]);    // +load at start
-        events.push([e, -load]);    // -load at end
-    }
-    events.sort((a, b) => a[0] - b[0] || a[1] - b[1]);   // negative delta first on ties
-
-    let curLoad = 0, peakLoad = 0;
-    for (const [, delta] of events) {
-        curLoad += delta;
-        if (curLoad > peakLoad) peakLoad = curLoad;
-    }
-    return peakLoad;
-}
-
-console.log(peakResource([[1, 4, 3], [2, 6, 2], [3, 5, 1]]));   // 6
-console.log(peakResource([[1, 10, 5], [2, 3, 10]]));            // 15
-```
-
 ```typescript run
 function peakResource(tasks: number[][]): number {
     if (tasks.length === 0) return 0;
@@ -3328,26 +3157,6 @@ func peakResource(tasks [][]int) int {
 
 func main() {
     fmt.Println(peakResource([][]int{{1, 4, 3}, {2, 6, 2}, {3, 5, 1}})) // 6
-}
-```
-
-```kotlin run
-fun peakResource(tasks: Array<IntArray>): Int {
-    if (tasks.isEmpty()) return 0
-
-    val events = mutableListOf<IntArray>()
-    for (t in tasks) {
-        events.add(intArrayOf(t[0],  t[2]))
-        events.add(intArrayOf(t[1], -t[2]))
-    }
-    events.sortWith(compareBy({ it[0] }, { it[1] }))
-
-    var cur = 0; var peak = 0
-    for (ev in events) {
-        cur += ev[1]
-        if (cur > peak) peak = cur
-    }
-    return peak
 }
 ```
 

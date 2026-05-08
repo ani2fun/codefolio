@@ -15,7 +15,7 @@
         @apply text-3xl md:text-5xl font-bold text-center text-blue-700 mb-3;
     }
     .certifications__subtitle {
-        @apply text-center text-gray-600 dark:text-gray-400 mb-10 text-sm md:text-base;
+        @apply text-center text-gray-700 dark:text-gray-200 mb-10 text-sm md:text-base;
     }
     .certifications__timeline {
         @apply relative max-w-3xl mx-auto pl-10 md:pl-16;
@@ -54,7 +54,7 @@
         @apply text-xs md:text-sm font-bold text-rose-500 uppercase tracking-wide;
     }
     .certifications__length {
-        @apply text-xs text-gray-500 dark:text-gray-400;
+        @apply text-xs text-gray-600 dark:text-gray-300;
     }
 
     .certifications__card {
@@ -72,7 +72,7 @@
         @apply flex flex-wrap items-baseline gap-x-2 mb-1;
     }
     .certifications__issuer {
-        @apply text-[11px] md:text-xs uppercase tracking-wider text-gray-600 dark:text-gray-400 font-semibold;
+        @apply text-[11px] md:text-xs uppercase tracking-wider text-gray-700 dark:text-gray-300 font-semibold;
     }
     .certifications__name {
         @apply text-base md:text-lg font-bold text-blue-900 dark:text-gray-50 leading-snug mb-1.5
@@ -83,7 +83,7 @@
                bg-rose-500 text-white font-semibold uppercase tracking-wide;
     }
     .certifications__description {
-        @apply text-xs md:text-sm text-gray-700 dark:text-gray-300 mb-2.5 leading-relaxed;
+        @apply text-xs md:text-sm text-gray-800 dark:text-gray-100 mb-2.5 leading-relaxed;
     }
     .certifications__footer {
         @apply flex flex-wrap items-center gap-1.5;

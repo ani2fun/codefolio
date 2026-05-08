@@ -1,7 +1,3 @@
----
-title: "12. Pattern: Range Postorder"
----
-
 # 12. Pattern: Range Postorder
 
 ## The Hook
@@ -80,6 +76,20 @@ Because the work happens *after* the children's results come back. The recursive
 >   - Return `f(left, right, node)`.
 
 ## Generic template
+
+
+```pseudocode
+function processRange(node, low, high):
+    if node is null: return 0
+    if node.val < low:                           # BST prune: entire left is out of range
+        return processRange(node.right, low, high)
+    if node.val > high:                          # BST prune: entire right is out of range
+        return processRange(node.left, low, high)
+    # Both children may contribute — collect their results first (postorder)
+    left  ← processRange(node.left,  low, high)
+    right ← processRange(node.right, low, high)
+    return f(left, right, node.val)              # combine children + this node
+```
 
 ```python run
 class Solution:
@@ -160,21 +170,6 @@ object Solution {
 }
 ```
 
-```javascript run
-class Solution {
-  f(left, right, val) { return left + right + val; }
-
-  processRange(node, low, high) {
-    if (node === null)        return 0;                                                                                    // empty
-    if (node.val < low)       return this.processRange(node.right, low, high);                                              // prune left
-    if (node.val > high)      return this.processRange(node.left,  low, high);                                              // prune right
-    const left  = this.processRange(node.left,  low, high);
-    const right = this.processRange(node.right, low, high);
-    return this.f(left, right, node.val);                                                                                  // combine
-  }
-}
-```
-
 ```typescript run
 class Solution {
   f(left: number, right: number, v: number): number { return left + right + v; }
@@ -200,21 +195,6 @@ func processRange(node *TreeNode, low, high int) int {
     left  := processRange(node.Left,  low, high)
     right := processRange(node.Right, low, high)
     return f(left, right, node.Val)                                                                                            // combine
-}
-```
-
-```kotlin run
-class Solution {
-    private fun f(left: Int, right: Int, v: Int) = left + right + v
-
-    fun processRange(node: TreeNode?, low: Int, high: Int): Int {
-        if (node == null)         return 0                                                                                       // empty
-        if (node.`val` < low)     return processRange(node.right, low, high)                                                     // prune left
-        if (node.`val` > high)    return processRange(node.left,  low, high)                                                     // prune right
-        val left  = processRange(node.left,  low, high)
-        val right = processRange(node.right, low, high)
-        return f(left, right, node.`val`)                                                                                        // combine
-    }
 }
 ```
 
@@ -290,6 +270,18 @@ Given the **root** of a BST and a range `[low, high]`, update each in-range node
 Every in-range node accumulates `leftSum + rightSum + originalVal` and writes that back into `node.val`. The recursion returns the same total to its parent so parents can do the same.
 
 ## The Solution
+
+
+```pseudocode
+function rangeSummation(root, low, high):
+    if root is null: return 0
+    if root.val < low: return rangeSummation(root.right, low, high)  # prune left
+    if root.val > high: return rangeSummation(root.left, low, high)  # prune right
+    leftSum  ← rangeSummation(root.left,  low, high)
+    rightSum ← rangeSummation(root.right, low, high)
+    root.val ← root.val + leftSum + rightSum  # overwrite with subtree total
+    return root.val
+```
 
 ```python run
 class Solution:
@@ -382,24 +374,6 @@ object Solution {
 }
 ```
 
-```javascript run
-class Solution {
-  rangeSummationHelper(root, low, high) {
-    if (root === null)        return 0;
-    if (root.val < low)       return this.rangeSummationHelper(root.right, low, high);
-    if (root.val > high)      return this.rangeSummationHelper(root.left,  low, high);
-    const leftSum  = this.rangeSummationHelper(root.left,  low, high);
-    const rightSum = this.rangeSummationHelper(root.right, low, high);
-    root.val += leftSum + rightSum;
-    return root.val;
-  }
-
-  rangeSummation(root, low, high) {
-    this.rangeSummationHelper(root, low, high);
-  }
-}
-```
-
 ```typescript run
 class Solution {
   rangeSummationHelper(root: TreeNode | null, low: number, high: number): number {
@@ -431,24 +405,6 @@ func rangeSummationHelper(root *TreeNode, low, high int) int {
 
 func rangeSummation(root *TreeNode, low, high int) {
     rangeSummationHelper(root, low, high)
-}
-```
-
-```kotlin run
-class Solution {
-    fun rangeSummationHelper(root: TreeNode?, low: Int, high: Int): Int {
-        if (root == null)         return 0
-        if (root.`val` < low)     return rangeSummationHelper(root.right, low, high)
-        if (root.`val` > high)    return rangeSummationHelper(root.left,  low, high)
-        val leftSum  = rangeSummationHelper(root.left,  low, high)
-        val rightSum = rangeSummationHelper(root.right, low, high)
-        root.`val` += leftSum + rightSum
-        return root.`val`
-    }
-
-    fun rangeSummation(root: TreeNode?, low: Int, high: Int) {
-        rangeSummationHelper(root, low, high)
-    }
 }
 ```
 
@@ -539,6 +495,20 @@ flowchart TB
 <p align="center"><strong>Range <code>[2, 5]</code> excludes <code>1</code> and <code>6</code>. The longest path through in-range nodes is <code>3 → 2 → 4 → 5</code>, diameter <code>3</code>.</strong></p>
 
 ## The Solution
+
+
+```pseudocode
+diameter ← 0
+
+function rangeDiameter(root, low, high):   # returns height of in-range subtree
+    if root is null: return 0
+    if root.val < low: return rangeDiameter(root.right, low, high)  # prune left
+    if root.val > high: return rangeDiameter(root.left, low, high)  # prune right
+    leftH  ← rangeDiameter(root.left,  low, high)
+    rightH ← rangeDiameter(root.right, low, high)
+    diameter ← max(diameter, leftH + rightH)   # path through this node
+    return max(leftH, rightH) + 1              # height of this subtree
+```
 
 ```python run
 class Solution:
@@ -653,26 +623,6 @@ class Solution {
 }
 ```
 
-```javascript run
-class Solution {
-  rangeDiameterHelper(root, low, high) {
-    if (root === null)         return 0;
-    if (root.val < low)        return this.rangeDiameterHelper(root.right, low, high);
-    if (root.val > high)       return this.rangeDiameterHelper(root.left,  low, high);
-    const leftH  = this.rangeDiameterHelper(root.left,  low, high);
-    const rightH = this.rangeDiameterHelper(root.right, low, high);
-    this.diameter = Math.max(this.diameter, leftH + rightH);
-    return Math.max(leftH, rightH) + 1;
-  }
-
-  rangeDiameter(root, low, high) {
-    this.diameter = 0;
-    this.rangeDiameterHelper(root, low, high);
-    return this.diameter;
-  }
-}
-```
-
 ```typescript run
 class Solution {
   diameter = 0;
@@ -713,28 +663,6 @@ func rangeDiameter(root *TreeNode, low, high int) int {
     s := &rangeDiamState{}
     s.helper(root, low, high)
     return s.diameter
-}
-```
-
-```kotlin run
-class Solution {
-    private var diameter = 0
-
-    private fun helper(root: TreeNode?, low: Int, high: Int): Int {
-        if (root == null)         return 0
-        if (root.`val` < low)     return helper(root.right, low, high)
-        if (root.`val` > high)    return helper(root.left,  low, high)
-        val leftH  = helper(root.left,  low, high)
-        val rightH = helper(root.right, low, high)
-        diameter = maxOf(diameter, leftH + rightH)
-        return maxOf(leftH, rightH) + 1
-    }
-
-    fun rangeDiameter(root: TreeNode?, low: Int, high: Int): Int {
-        diameter = 0
-        helper(root, low, high)
-        return diameter
-    }
 }
 ```
 
@@ -793,6 +721,20 @@ Given the **root** of a BST and a range `[low, high]`, replace the value of each
 Same skeleton as range summation, but instead of returning the sum of in-range descendants, return the *count of in-range leaves*. A leaf returns `1`; an internal in-range node returns `leftLeaves + rightLeaves` and overwrites its own value with that count.
 
 ## The Solution
+
+
+```pseudocode
+function rangeLeaves(root, low, high):   # returns count of in-range leaves below
+    if root is null: return 0
+    if root.val < low: return rangeLeaves(root.right, low, high)  # prune left
+    if root.val > high: return rangeLeaves(root.left, low, high)  # prune right
+    if root.left is null AND root.right is null:
+        return 1                          # in-range leaf
+    leftLeaves  ← rangeLeaves(root.left,  low, high)
+    rightLeaves ← rangeLeaves(root.right, low, high)
+    root.val ← leftLeaves + rightLeaves  # overwrite internal node with leaf count
+    return root.val
+```
 
 ```python run
 class Solution:
@@ -892,25 +834,6 @@ object Solution {
 }
 ```
 
-```javascript run
-class Solution {
-  rangeLeavesHelper(root, low, high) {
-    if (root === null)         return 0;
-    if (root.val < low)        return this.rangeLeavesHelper(root.right, low, high);
-    if (root.val > high)       return this.rangeLeavesHelper(root.left,  low, high);
-    if (root.left === null && root.right === null) return 1;                                                                                       // leaf
-    const leftLeaves  = this.rangeLeavesHelper(root.left,  low, high);
-    const rightLeaves = this.rangeLeavesHelper(root.right, low, high);
-    root.val = leftLeaves + rightLeaves;
-    return root.val;
-  }
-
-  rangeLeaves(root, low, high) {
-    this.rangeLeavesHelper(root, low, high);
-  }
-}
-```
-
 ```typescript run
 class Solution {
   rangeLeavesHelper(root: TreeNode | null, low: number, high: number): number {
@@ -944,25 +867,6 @@ func rangeLeavesHelper(root *TreeNode, low, high int) int {
 
 func rangeLeaves(root *TreeNode, low, high int) {
     rangeLeavesHelper(root, low, high)
-}
-```
-
-```kotlin run
-class Solution {
-    fun rangeLeavesHelper(root: TreeNode?, low: Int, high: Int): Int {
-        if (root == null)         return 0
-        if (root.`val` < low)     return rangeLeavesHelper(root.right, low, high)
-        if (root.`val` > high)    return rangeLeavesHelper(root.left,  low, high)
-        if (root.left == null && root.right == null) return 1                                                                                            // leaf
-        val leftLeaves  = rangeLeavesHelper(root.left,  low, high)
-        val rightLeaves = rangeLeavesHelper(root.right, low, high)
-        root.`val` = leftLeaves + rightLeaves
-        return root.`val`
-    }
-
-    fun rangeLeaves(root: TreeNode?, low: Int, high: Int) {
-        rangeLeavesHelper(root, low, high)
-    }
 }
 ```
 
@@ -1025,6 +929,20 @@ The same pruning rules drive a *structural rewrite*:
 The `return` value is the new root of *this* subtree after trimming, which the caller wires back into its own children pointers — exactly the same shape as the recursive insertion idiom we used in lesson 5.
 
 ## The Solution
+
+
+```pseudocode
+function rangeExclusiveTrim(root, low, high):
+    if root is null: return null
+    if root.val < low:                              # node + left subtree all out of range
+        return rangeExclusiveTrim(root.right, low, high)
+    if root.val > high:                             # node + right subtree all out of range
+        return rangeExclusiveTrim(root.left, low, high)
+    # In range — keep this node, but trim its children
+    root.left  ← rangeExclusiveTrim(root.left,  low, high)
+    root.right ← rangeExclusiveTrim(root.right, low, high)
+    return root
+```
 
 ```python run
 class Solution:
@@ -1094,17 +1012,6 @@ object Solution {
 }
 ```
 
-```javascript run
-function rangeExclusiveTrim(root, low, high) {
-  if (root === null)        return null;
-  if (root.val < low)       return rangeExclusiveTrim(root.right, low, high);
-  if (root.val > high)      return rangeExclusiveTrim(root.left,  low, high);
-  root.left  = rangeExclusiveTrim(root.left,  low, high);
-  root.right = rangeExclusiveTrim(root.right, low, high);
-  return root;
-}
-```
-
 ```typescript run
 function rangeExclusiveTrim(root: TreeNode | null, low: number, high: number): TreeNode | null {
   if (root === null)        return null;
@@ -1124,19 +1031,6 @@ func rangeExclusiveTrim(root *TreeNode, low, high int) *TreeNode {
     root.Left  = rangeExclusiveTrim(root.Left,  low, high)
     root.Right = rangeExclusiveTrim(root.Right, low, high)
     return root
-}
-```
-
-```kotlin run
-class Solution {
-    fun rangeExclusiveTrim(root: TreeNode?, low: Int, high: Int): TreeNode? {
-        if (root == null)         return null
-        if (root.`val` < low)     return rangeExclusiveTrim(root.right, low, high)
-        if (root.`val` > high)    return rangeExclusiveTrim(root.left,  low, high)
-        root.left  = rangeExclusiveTrim(root.left,  low, high)
-        root.right = rangeExclusiveTrim(root.right, low, high)
-        return root
-    }
 }
 ```
 

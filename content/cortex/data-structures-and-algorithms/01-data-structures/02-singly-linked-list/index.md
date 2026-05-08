@@ -1,7 +1,3 @@
----
-title: "Singly Linked List"
----
-
 # Singly Linked List
 
 Use this page as the chapter map for singly linked list. The guides are ordered from fundamentals into common problem-solving patterns and design practice.

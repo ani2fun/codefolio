@@ -2,9 +2,9 @@ package codefolio.client.components.cortex
 
 import codefolio.client.components.icons.LucideIcons
 import codefolio.client.markdown.MarkdownRenderer
+import codefolio.client.util.HashScroll
 import japgolly.scalajs.react.*
 import japgolly.scalajs.react.vdom.html_<^.*
-import org.scalajs.dom
 
 import scala.scalajs.js
 
@@ -51,20 +51,9 @@ object MobileToc:
                       .asInstanceOf[js.Object],
                     <.a(
                       ^.href := s"#${item.slug}",
-                      ^.onClick ==> { (e: ReactMouseEvent) =>
-                        // Same pattern as CortexToc: bypass Router intercept,
-                        // scroll manually, push the hash. Then close the
-                        // mobile TOC.
-                        Callback {
-                          val el = dom.document.getElementById(item.slug)
-                          if el != null then
-                            e.preventDefault()
-                            e.stopPropagation()
-                            val opts = js.Dynamic.literal(behavior = "instant", block = "start")
-                            el.asInstanceOf[js.Dynamic].scrollIntoView(opts)
-                            dom.window.history.replaceState(null, "", s"#${item.slug}")
-                        } >> openS.setState(false)
-                      },
+                      ^.onClick ==> ((e: ReactMouseEvent) =>
+                        HashScroll.onHashLinkClick(e, item.slug) >> openS.setState(false)
+                      ),
                       ^.className := "cortex-reader-toc-mobile__link",
                       item.text
                     )

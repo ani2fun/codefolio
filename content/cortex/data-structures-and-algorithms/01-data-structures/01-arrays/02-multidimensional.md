@@ -1,7 +1,3 @@
----
-title: "2. Multidimensional arrays"
----
-
 # 2. Multidimensional arrays
 
 This section extends the array model to grids and matrix-like structures while introducing row-major and column-major traversal.
@@ -24,6 +20,8 @@ This section extends the array model to grids and matrix-like structures while i
 
 # Understanding the Problem
 
+> **Course:** DSA › Arrays › Multidimensional Arrays
+
 A 1D array fixed the "too many variables" problem. But the moment your data has **two natural axes** — classes and students, rows and columns, pixels in a row and pixels in a column — a single 1D array stops scaling. You end up naming arrays the same way you used to name variables, and the original problem comes back through the side door.
 
 Let's see exactly where the wall is.
@@ -37,7 +35,7 @@ We'll build on the student ages example from before. This time, consider a scena
 The natural first instinct: create four separate integer arrays of size 60, one per class.
 
 ```d2
-arrays: {
+school: {
   grid-rows: 4
   grid-columns: 2
   grid-gap: 0
@@ -63,8 +61,8 @@ Four classes, four arrays. Manageable — barely.
 This approach works for a small number of classes, but what if there were **12 classes** instead of four? We'd need 12 separate arrays. While this technically solves the problem, storing and managing so many arrays across multiple variables would be cumbersome. This would bring us back to square one and undermine the very purpose of using arrays.
 
 ```d2
-arrays: {
-  grid-columns: 6
+school: {
+  grid-rows: 2
   grid-gap: 12
   c1: class1
   c2: class2
@@ -79,8 +77,8 @@ arrays: {
   c11: class11
   c12: class12
 }
-arrays.c12.style.fill: "#fee2e2"
-arrays.c12.style.stroke: "#ef4444"
+school.c12.style.fill: "#fee2e2"
+school.c12.style.stroke: "#ef4444"
 ```
 
 <p align="center"><strong>Creating 12 arrays to store the ages of students in 12 classes — one per variable.</strong></p>
@@ -122,6 +120,8 @@ When you find yourself naming arrays `data1`, `data2`, `data3`... you need a mul
 
 # Defining Dimensions for Arrays
 
+> **Course:** DSA › Arrays › Multidimensional Arrays
+
 The fix is to add a second axis. But what is an "axis," and how does the language know which value you mean when there are now two of them? In this section we'll define **dimension**, see how rows and columns map to two indices, and write the first 2D array in Python.
 
 ---
@@ -152,7 +152,7 @@ one: "1D Array — 1 axis" {
 
 two: "2D Array — 2 axes" {
   grid: {
-    grid-columns: 3
+    grid-rows: 3
     grid-gap: 0
     r0c0: "[0][0]"
     r0c1: "[0][1]"
@@ -180,7 +180,7 @@ A 2D array is defined by two numbers:
 
 ```d2
 grid: "4 × 5 grid" {
-  grid-columns: 5
+  grid-rows: 4
   grid-gap: 0
   r0c0: "[0][0]"
   r0c1: "[0][1]"
@@ -279,6 +279,20 @@ flowchart LR
 ---
 
 ## Declaring a 2D Array in Python
+
+
+```pseudocode
+rows ← 4
+cols ← 5
+ages ← (rows × cols) grid of zeros        # each inner row is a fresh copy
+
+ages[0][0] ← 6
+ages[1][2] ← 8
+ages[3][4] ← 10
+
+for rowIndex from 0 to rows − 1:
+    print "Class " + rowIndex + ": " + ages[rowIndex]
+```
 
 ```python run
 from typing import List
@@ -397,24 +411,6 @@ object Main extends App {
 }
 ```
 
-```javascript run
-const rows = 4;
-const cols = 5;
-
-// Array.from with a factory function — each row is built independently (no shared refs).
-const ages = Array.from({ length: rows }, () => new Array(cols).fill(0));
-
-ages[0][0] = 6;
-ages[1][2] = 8;
-ages[3][4] = 10;
-
-console.log("Class 1, Student 3:", ages[1][2]);   // → 8
-
-for (let rowIndex = 0; rowIndex < rows; rowIndex++) {
-    console.log(`Class ${rowIndex}:`, ages[rowIndex]);
-}
-```
-
 ```typescript run
 const rows: number = 4;
 const cols: number = 5;
@@ -455,27 +451,6 @@ func main() {
 
     for rowIndex := 0; rowIndex < rows; rowIndex++ {
         fmt.Printf("Class %d: %v\n", rowIndex, ages[rowIndex])
-    }
-}
-```
-
-```kotlin run
-fun main() {
-    val rows = 4
-    val cols = 5
-
-    // Array(rows) { IntArray(cols) } — the lambda runs once per row, yielding
-    // independent inner arrays (mirrors Python's list-comprehension form).
-    val ages = Array(rows) { IntArray(cols) }
-
-    ages[0][0] = 6
-    ages[1][2] = 8
-    ages[3][4] = 10
-
-    println("Class 1, Student 3: ${ages[1][2]}")   // → 8
-
-    for (rowIndex in 0 until rows) {
-        println("Class $rowIndex: ${ages[rowIndex].toList()}")
     }
 }
 ```
@@ -526,6 +501,8 @@ When your data has two levels of grouping (classes → students, rows → column
 
 # Exploring a Possible Solution
 
+> **Course:** DSA › Arrays › Multidimensional Arrays
+
 We've seen *where* a single-dimensional array fails. Now we need a structure that scales with the depth of the data — one axis per level of grouping, no matter how deep — and the trick that makes it work is one of the most reused recursive ideas in programming.
 
 ---
@@ -571,7 +548,7 @@ size -> arr: "" {style.stroke-dash: 3}
 
 ```d2
 grid: {
-  grid-columns: 4
+  grid-rows: 4
   grid-gap: 0
   r0c0: value1
   r0c1: value2
@@ -600,7 +577,7 @@ grid: {
 direction: right
 
 L0: "Layer 0  (a full size2 × size1 grid)" {
-  grid-columns: 4
+  grid-rows: 3
   grid-gap: 0
   a: value1
   b: value2
@@ -616,7 +593,7 @@ L0: "Layer 0  (a full size2 × size1 grid)" {
   l: valueN
 }
 L1: "Layer 1  (a full size2 × size1 grid)" {
-  grid-columns: 4
+  grid-rows: 3
   grid-gap: 0
   a: value1
   b: value2
@@ -812,6 +789,8 @@ Each new dimension is an outer array that holds the previous structure as its it
 
 # Overview of Supported Operations
 
+> **Course:** DSA › Arrays › Multidimensional
+
 A 2D array supports the same four operations as a 1D array — **create, access, modify, traverse** — with one twist: every operation now takes one *more* index per dimension. The mechanics carry over almost verbatim, so the time you've spent on 1D arrays already pays for most of this section.
 
 ---
@@ -822,7 +801,7 @@ Almost all major programming languages support adding more dimensions to a regul
 
 ```d2
 arr: {
-  grid-columns: 3
+  grid-rows: 3
   grid-gap: 0
   a: value1
   b: value2
@@ -839,6 +818,16 @@ arr: {
 <p align="center"><strong>Creating a multidimensional array of fixed size and datatype.</strong></p>
 
 Higher-level languages like Python and JavaScript inherently provide a **list** instead of a raw array. A list has a dynamic size and can store elements of different types — so the programmer doesn't need to provide a size when declaring or initializing a multidimensional array.
+
+
+```pseudocode
+numbers2d ← [[1, 2, 3], [4, 5, 6]]                          # 2D = list of lists
+numbers3d ← [[[1, 2], [3, 4], [5, 6]],
+             [[7, 8], [9, 10], [11, 12]]]                    # 3D = list of lists of lists
+
+print numbers2d
+print numbers3d
+```
 
 ```python run
 from typing import List
@@ -957,22 +946,6 @@ object Main extends App {
 }
 ```
 
-```javascript run
-// JavaScript arrays nest with no separate type declaration.
-const numbers2d = [
-    [1, 2, 3],
-    [4, 5, 6]
-];
-
-const numbers3d = [
-    [ [1, 2], [3, 4], [5, 6] ],
-    [ [7, 8], [9, 10], [11, 12] ]
-];
-
-console.log("2D array:", numbers2d);
-console.log("3D array:", numbers3d);
-```
-
 ```typescript run
 // number[][] and number[][][] make the shape explicit at the type level.
 const numbers2d: number[][] = [
@@ -1011,24 +984,6 @@ func main() {
 }
 ```
 
-```kotlin run
-fun main() {
-    // arrayOf nests naturally; each level produces an Array of arrays.
-    val numbers2d: Array<IntArray> = arrayOf(
-        intArrayOf(1, 2, 3),
-        intArrayOf(4, 5, 6)
-    )
-
-    val numbers3d: Array<Array<IntArray>> = arrayOf(
-        arrayOf(intArrayOf(1, 2), intArrayOf(3, 4), intArrayOf(5, 6)),
-        arrayOf(intArrayOf(7, 8), intArrayOf(9, 10), intArrayOf(11, 12))
-    )
-
-    println("2D array: " + numbers2d.map { it.toList() })
-    println("3D array first layer: " + numbers3d[0].map { it.toList() })
-}
-```
-
 ```rust run
 fn main() {
     // Fixed-size nested arrays — the type carries every dimension's length.
@@ -1058,7 +1013,7 @@ We can access data items in a multidimensional array just like a regular array �
 
 ```d2
 arr: {
-  grid-columns: 3
+  grid-rows: 3
   grid-gap: 0
   a: |md
     `[0,0]` value1
@@ -1098,6 +1053,18 @@ The pattern generalises naturally:
 - **N-D:** keep chaining `[index]` for each additional dimension
 
 Different programming languages have different syntax, but the underlying access mechanism is the same.
+
+
+```pseudocode
+numbers2d ← [[1, 2, 3], [4, 5, 6]]
+print numbers2d[0][0]                                       # 1
+print numbers2d[1][2]                                       # 6 — chain [] per dimension
+
+numbers3d ← [[[1, 2], [3, 4], [5, 6]],
+             [[7, 8], [9, 10], [11, 12]]]
+print numbers3d[0][1][1]                                    # 4
+print numbers3d[1][2][0]                                    # 11
+```
 
 ```python run
 from typing import List
@@ -1211,24 +1178,6 @@ object Main extends App {
 }
 ```
 
-```javascript run
-const numbers2d = [
-    [1, 2, 3],
-    [4, 5, 6]
-];
-
-console.log("Element at (0,0):", numbers2d[0][0]);  // → 1
-console.log("Element at (1,2):", numbers2d[1][2]);  // → 6
-
-const numbers3d = [
-    [ [1, 2], [3, 4], [5, 6] ],
-    [ [7, 8], [9, 10], [11, 12] ]
-];
-
-console.log("Element at (0,1,1):", numbers3d[0][1][1]);  // → 4
-console.log("Element at (1,2,0):", numbers3d[1][2][0]);  // → 11
-```
-
 ```typescript run
 const numbers2d: number[][] = [
     [1, 2, 3],
@@ -1271,27 +1220,6 @@ func main() {
 }
 ```
 
-```kotlin run
-fun main() {
-    val numbers2d = arrayOf(
-        intArrayOf(1, 2, 3),
-        intArrayOf(4, 5, 6)
-    )
-
-    // arr[i][j] chains the indexer once per dimension.
-    println("Element at (0,0): ${numbers2d[0][0]}")  // → 1
-    println("Element at (1,2): ${numbers2d[1][2]}")  // → 6
-
-    val numbers3d = arrayOf(
-        arrayOf(intArrayOf(1, 2), intArrayOf(3, 4), intArrayOf(5, 6)),
-        arrayOf(intArrayOf(7, 8), intArrayOf(9, 10), intArrayOf(11, 12))
-    )
-
-    println("Element at (0,1,1): ${numbers3d[0][1][1]}")  // → 4
-    println("Element at (1,2,0): ${numbers3d[1][2][0]}")  // → 11
-}
-```
-
 ```rust run
 fn main() {
     let numbers2d: [[i32; 3]; 2] = [
@@ -1323,7 +1251,7 @@ We can modify data items in a multidimensional array in place, just like a regul
 
 ```d2
 arr: {
-  grid-columns: 3
+  grid-rows: 3
   grid-gap: 0
   a: |md
     `[0,0]` value1
@@ -1360,6 +1288,17 @@ arr.i.style.stroke: "#d97706"
 ```
 
 <p align="center"><strong>Multidimensional array elements can be modified using indices for all dimensions (highlighted = being updated).</strong></p>
+
+
+```pseudocode
+numbers2d ← [[1, 2, 3], [4, 5, 6]]
+numbers2d[1][1] ← 60                                        # in-place overwrite
+
+numbers3d ← [[[1, 2], [3, 4], [5, 6]],
+             [[7, 8], [9, 10], [11, 12]]]
+numbers3d[0][1][1] ← 40
+numbers3d[1][1][1] ← 110
+```
 
 ```python run
 from typing import List
@@ -1490,25 +1429,6 @@ object Main extends App {
 }
 ```
 
-```javascript run
-const numbers2d = [
-    [1, 2, 3],
-    [4, 5, 6]
-];
-
-numbers2d[1][1] = 60;
-console.log("Modified 2D array:", numbers2d);
-
-const numbers3d = [
-    [ [1, 2], [3, 4], [5, 6] ],
-    [ [7, 8], [9, 10], [11, 12] ]
-];
-
-numbers3d[0][1][1] = 40;
-numbers3d[1][1][1] = 110;
-console.log("Modified 3D array:", numbers3d);
-```
-
 ```typescript run
 const numbers2d: number[][] = [
     [1, 2, 3],
@@ -1553,27 +1473,6 @@ func main() {
 }
 ```
 
-```kotlin run
-fun main() {
-    val numbers2d = arrayOf(
-        intArrayOf(1, 2, 3),
-        intArrayOf(4, 5, 6)
-    )
-
-    numbers2d[1][1] = 60
-    println("Modified 2D array: " + numbers2d.map { it.toList() })
-
-    val numbers3d = arrayOf(
-        arrayOf(intArrayOf(1, 2), intArrayOf(3, 4), intArrayOf(5, 6)),
-        arrayOf(intArrayOf(7, 8), intArrayOf(9, 10), intArrayOf(11, 12))
-    )
-
-    numbers3d[0][1][1] = 40
-    numbers3d[1][1][1] = 110
-    println("3D[0][1][1] = ${numbers3d[0][1][1]}, 3D[1][1][1] = ${numbers3d[1][1][1]}")
-}
-```
-
 ```rust run
 fn main() {
     // Mutability is required to update slots.
@@ -1607,12 +1506,236 @@ To traverse a multidimensional array, we need **nested loops** — one loop for 
 
 > *Before stepping through the slideshow — for a 2 × 3 array with rows 0–1 and columns 0–2, write down the order in which a `for row in ...: for col in ...:` loop visits each cell. Six cells, predict the sequence, then run the slideshow to check.*
 
-<div
-  class="d2-array-traversal"
-  data-caption="Step through nested-loop traversal of a 2 × 3 array."
-  data-rows="2"
-  data-cols="3"
-  data-values="value1, value2, value3, value4, value5, value6"></div>
+<div class="d2-slides" data-caption="Step through nested-loop traversal of a 2 × 3 array — use ◀ ▶ to advance frame-by-frame.">
+
+```d2
+arr: "Ready to traverse the 2 × 3 array" {
+  grid-rows: 2
+  grid-gap: 0
+  a: |md
+    `[0,0]` value1
+  |
+  b: |md
+    `[0,1]` value2
+  |
+  c: |md
+    `[0,2]` value3
+  |
+  d: |md
+    `[1,0]` value4
+  |
+  e: |md
+    `[1,1]` value5
+  |
+  f: |md
+    `[1,2]` value6
+  |
+}
+```
+
+```d2
+direction: right
+
+state: |md
+  **row** = 0
+
+  **column** = 0
+|
+
+arr: "Visit arr[0][0]" {
+  grid-rows: 2
+  grid-gap: 0
+  a: |md
+    `[0,0]` value1
+  | {style.fill: "#fde68a"; style.stroke: "#d97706"}
+  b: |md
+    `[0,1]` value2
+  |
+  c: |md
+    `[0,2]` value3
+  |
+  d: |md
+    `[1,0]` value4
+  |
+  e: |md
+    `[1,1]` value5
+  |
+  f: |md
+    `[1,2]` value6
+  |
+}
+```
+
+```d2
+direction: right
+
+state: |md
+  **row** = 0
+
+  **column** = 1
+|
+
+arr: "Visit arr[0][1]" {
+  grid-rows: 2
+  grid-gap: 0
+  a: |md
+    `[0,0]` value1
+  | {style.fill: "#dcfce7"; style.stroke: "#16a34a"}
+  b: |md
+    `[0,1]` value2
+  | {style.fill: "#fde68a"; style.stroke: "#d97706"}
+  c: |md
+    `[0,2]` value3
+  |
+  d: |md
+    `[1,0]` value4
+  |
+  e: |md
+    `[1,1]` value5
+  |
+  f: |md
+    `[1,2]` value6
+  |
+}
+```
+
+```d2
+direction: right
+
+state: |md
+  **row** = 0
+
+  **column** = 2
+|
+
+arr: "Visit arr[0][2]" {
+  grid-rows: 2
+  grid-gap: 0
+  a: |md
+    `[0,0]` value1
+  | {style.fill: "#dcfce7"; style.stroke: "#16a34a"}
+  b: |md
+    `[0,1]` value2
+  | {style.fill: "#dcfce7"; style.stroke: "#16a34a"}
+  c: |md
+    `[0,2]` value3
+  | {style.fill: "#fde68a"; style.stroke: "#d97706"}
+  d: |md
+    `[1,0]` value4
+  |
+  e: |md
+    `[1,1]` value5
+  |
+  f: |md
+    `[1,2]` value6
+  |
+}
+```
+
+```d2
+direction: right
+
+state: |md
+  **row** = 1
+
+  **column** = 0
+
+  inner loop reset
+|
+
+arr: "Visit arr[1][0]" {
+  grid-rows: 2
+  grid-gap: 0
+  a: |md
+    `[0,0]` value1
+  | {style.fill: "#dcfce7"; style.stroke: "#16a34a"}
+  b: |md
+    `[0,1]` value2
+  | {style.fill: "#dcfce7"; style.stroke: "#16a34a"}
+  c: |md
+    `[0,2]` value3
+  | {style.fill: "#dcfce7"; style.stroke: "#16a34a"}
+  d: |md
+    `[1,0]` value4
+  | {style.fill: "#fde68a"; style.stroke: "#d97706"}
+  e: |md
+    `[1,1]` value5
+  |
+  f: |md
+    `[1,2]` value6
+  |
+}
+```
+
+```d2
+direction: right
+
+state: |md
+  **row** = 1
+
+  **column** = 1
+|
+
+arr: "Visit arr[1][1]" {
+  grid-rows: 2
+  grid-gap: 0
+  a: |md
+    `[0,0]` value1
+  | {style.fill: "#dcfce7"; style.stroke: "#16a34a"}
+  b: |md
+    `[0,1]` value2
+  | {style.fill: "#dcfce7"; style.stroke: "#16a34a"}
+  c: |md
+    `[0,2]` value3
+  | {style.fill: "#dcfce7"; style.stroke: "#16a34a"}
+  d: |md
+    `[1,0]` value4
+  | {style.fill: "#dcfce7"; style.stroke: "#16a34a"}
+  e: |md
+    `[1,1]` value5
+  | {style.fill: "#fde68a"; style.stroke: "#d97706"}
+  f: |md
+    `[1,2]` value6
+  |
+}
+```
+
+```d2
+direction: right
+
+state: |md
+  **row** = 1
+
+  **column** = 2
+
+  ✓ done
+|
+
+arr: "Traversal complete — visited all 6 cells" {
+  grid-rows: 2
+  grid-gap: 0
+  a: |md
+    `[0,0]` value1
+  | {style.fill: "#dcfce7"; style.stroke: "#16a34a"}
+  b: |md
+    `[0,1]` value2
+  | {style.fill: "#dcfce7"; style.stroke: "#16a34a"}
+  c: |md
+    `[0,2]` value3
+  | {style.fill: "#dcfce7"; style.stroke: "#16a34a"}
+  d: |md
+    `[1,0]` value4
+  | {style.fill: "#dcfce7"; style.stroke: "#16a34a"}
+  e: |md
+    `[1,1]` value5
+  | {style.fill: "#dcfce7"; style.stroke: "#16a34a"}
+  f: |md
+    `[1,2]` value6
+  | {style.fill: "#dcfce7"; style.stroke: "#16a34a"}
+}
+```
+
+</div>
 
 ```mermaid
 ---
@@ -1636,6 +1759,21 @@ flowchart LR
 ```
 
 <p align="center"><strong>Traversing a 2D array requires two nested loops — one per dimension.</strong></p>
+
+
+```pseudocode
+numbers2d ← [[1, 2, 3], [4, 5, 6]]
+
+# Style 1 — index-based (when you need (i, j) themselves).
+for i from 0 to length(numbers2d) − 1:
+    for j from 0 to length(numbers2d[i]) − 1:
+        print numbers2d[i][j]
+
+# Style 2 — for-each (when only the values matter).
+for each row in numbers2d:
+    for each value in row:
+        print value
+```
 
 ```python run
 from typing import List
@@ -1767,29 +1905,6 @@ object Main extends App {
 }
 ```
 
-```javascript run
-const numbers2d = [
-    [1, 2, 3],
-    [4, 5, 6]
-];
-
-// Style 1 — index-based.
-console.log("2D array traversal (index-based):");
-for (let i = 0; i < numbers2d.length; i++) {
-    let line = "";
-    for (let j = 0; j < numbers2d[i].length; j++) {
-        line += numbers2d[i][j] + " ";
-    }
-    console.log(line);
-}
-
-// Style 2 — for...of.
-console.log("2D array traversal (for-each):");
-for (const row of numbers2d) {
-    console.log(row.join(" "));
-}
-```
-
 ```typescript run
 const numbers2d: number[][] = [
     [1, 2, 3],
@@ -1844,29 +1959,6 @@ func main() {
 }
 ```
 
-```kotlin run
-fun main() {
-    val numbers2d = arrayOf(
-        intArrayOf(1, 2, 3),
-        intArrayOf(4, 5, 6)
-    )
-
-    // Style 1 — index-based.
-    println("2D array traversal (index-based):")
-    for (i in numbers2d.indices) {
-        for (j in numbers2d[i].indices) print("${numbers2d[i][j]} ")
-        println()
-    }
-
-    // Style 2 — for-each.
-    println("2D array traversal (for-each):")
-    for (row in numbers2d) {
-        for (value in row) print("$value ")
-        println()
-    }
-}
-```
-
 ```rust run
 fn main() {
     let numbers2d: [[i32; 3]; 2] = [
@@ -1896,6 +1988,18 @@ fn main() {
 
 
 For a 3D array, just add one more nesting level:
+
+
+```pseudocode
+numbers3d ← [[[1, 2], [3, 4], [5, 6]],
+             [[7, 8], [9, 10], [11, 12]]]
+
+# Three nested loops — one per dimension.
+for each matrix in numbers3d:
+    for each row in matrix:
+        for each value in row:
+            print value
+```
 
 ```python run
 from typing import List
@@ -1998,23 +2102,6 @@ object Main extends App {
 }
 ```
 
-```javascript run
-const numbers3d = [
-    [ [1, 2], [3, 4], [5, 6] ],
-    [ [7, 8], [9, 10], [11, 12] ]
-];
-
-console.log("3D array traversal:");
-for (const matrix of numbers3d) {
-    let line = "";
-    for (const row of matrix) {
-        for (const value of row) line += value + " ";
-        line += "  ";
-    }
-    console.log(line);
-}
-```
-
 ```typescript run
 const numbers3d: number[][][] = [
     [ [1, 2], [3, 4], [5, 6] ],
@@ -2052,24 +2139,6 @@ func main() {
             fmt.Print("  ")
         }
         fmt.Println()
-    }
-}
-```
-
-```kotlin run
-fun main() {
-    val numbers3d = arrayOf(
-        arrayOf(intArrayOf(1, 2), intArrayOf(3, 4), intArrayOf(5, 6)),
-        arrayOf(intArrayOf(7, 8), intArrayOf(9, 10), intArrayOf(11, 12))
-    )
-
-    println("3D array traversal:")
-    for (matrix in numbers3d) {
-        for (row in matrix) {
-            for (value in row) print("$value ")
-            print("  ")
-        }
-        println()
     }
 }
 ```
@@ -2115,6 +2184,8 @@ Access and modify are **O(1)** — the CPU computes the exact memory address fro
 ***
 
 # Internal mechanics of multidimensional arrays
+
+> **Course:** DSA › Arrays › Multidimensional Arrays
 
 A 2D array is a *logical* picture — rows and columns sitting in a grid. Memory is **physically** a 1D ribbon of bytes. There is no "second axis" inside the chip. So either the picture is a lie, or the language is doing arithmetic behind the scenes to flatten one onto the other. (Spoiler: it's the second one.)
 
@@ -2360,6 +2431,18 @@ The memory ribbon therefore fills up in this exact sequence:
 
 You can verify this yourself — run the code below and watch the order elements are visited:
 
+
+```pseudocode
+arr ← [[10, 20, 30, 40],
+       [50, 60, 70, 80],
+       [90, 11, 12, 13]]
+
+# Rows outer (slow), columns inner (fast) — matches row-major memory layout.
+for i from 0 to 2:
+    for j from 0 to 3:
+        print "arr[" + i + "][" + j + "] = " + arr[i][j]
+```
+
 ```python run
 arr = [
     [10, 20, 30, 40],  # Row 0
@@ -2448,21 +2531,6 @@ object Main extends App {
 }
 ```
 
-```javascript run
-const arr = [
-    [10, 20, 30, 40],
-    [50, 60, 70, 80],
-    [90, 11, 12, 13]
-];
-
-console.log("Row-major traversal order:");
-for (let i = 0; i < 3; i++) {
-    for (let j = 0; j < 4; j++) {
-        console.log(`arr[${i}][${j}] = ${arr[i][j]}`);
-    }
-}
-```
-
 ```typescript run
 const arr: number[][] = [
     [10, 20, 30, 40],
@@ -2494,23 +2562,6 @@ func main() {
     for i := 0; i < 3; i++ {
         for j := 0; j < 4; j++ {
             fmt.Printf("arr[%d][%d] = %d\n", i, j, arr[i][j])
-        }
-    }
-}
-```
-
-```kotlin run
-fun main() {
-    val arr = arrayOf(
-        intArrayOf(10, 20, 30, 40),
-        intArrayOf(50, 60, 70, 80),
-        intArrayOf(90, 11, 12, 13)
-    )
-
-    println("Row-major traversal order:")
-    for (i in 0 until 3) {
-        for (j in 0 until 4) {
-            println("arr[$i][$j] = ${arr[i][j]}")
         }
     }
 }
@@ -2614,6 +2665,19 @@ address = 1000 + 9 × 4  =  1036
 Verify by counting: Row 0 → offsets 0–3 · Row 1 → offsets 4–7 · Row 2 → offsets 8–11.
 The element at `[2][1]` is the 2nd element (j=1) inside Row 2, which starts at offset 8. So offset = 8 + 1 = **9**. ✓
 
+
+```pseudocode
+# Address formula for a 3 × 4 row-major array. arr[i][j] = base + (i × numCols + j) × elementSize.
+baseAddress ← 1000
+elementSize ← 4
+numCols ← 4                                           # row stride
+
+i ← 2; j ← 1
+offset ← i × numCols + j                              # skip i rows, walk j columns
+address ← baseAddress + offset × elementSize          # offset = 9, address = 1036
+print "arr[" + i + "][" + j + "] is at offset " + offset + ", address " + address
+```
+
 ```python run
 # Reproduce the address formula by hand for a 3 x 4 array.
 base_address = 1000
@@ -2695,18 +2759,6 @@ object Main extends App {
 }
 ```
 
-```javascript run
-const baseAddress = 1000;
-const elementSize = 4;
-const numCols = 4;
-
-const i = 2, j = 1;
-
-const offset  = i * numCols + j;
-const address = baseAddress + offset * elementSize;
-console.log(`arr[${i}][${j}] is at offset ${offset}, memory address ${address}`);
-```
-
 ```typescript run
 const baseAddress: number = 1000;
 const elementSize: number = 4;
@@ -2734,21 +2786,6 @@ func main() {
     offset  := i*numCols + j
     address := baseAddress + offset*elementSize
     fmt.Printf("arr[%d][%d] is at offset %d, memory address %d\n", i, j, offset, address)
-}
-```
-
-```kotlin run
-fun main() {
-    val baseAddress = 1000
-    val elementSize = 4
-    val numCols = 4
-
-    val i = 2
-    val j = 1
-
-    val offset  = i * numCols + j
-    val address = baseAddress + offset * elementSize
-    println("arr[$i][$j] is at offset $offset, memory address $address")
 }
 ```
 
@@ -2975,6 +3012,22 @@ mem: {
 
 Notice the pattern: Layer 0 occupies addresses 2–22, Layer 1 occupies 26–46. Within each layer, Row 0 comes first, Row 1 second. Within each row, the column index climbs 0→1→2.
 
+
+```pseudocode
+# Walk every element of a 2 × 2 × 3 row-major 3D array, printing offset + address.
+# D3 is outermost (slowest), D1 is innermost (fastest) → offset increases by exactly 1 per step.
+base ← 2
+elementSize ← 4
+D3 ← 2; D2 ← 2; D1 ← 3
+
+for i3 from 0 to D3 − 1:
+    for i2 from 0 to D2 − 1:
+        for i1 from 0 to D1 − 1:
+            offset  ← i3 × (D2 × D1) + i2 × D1 + i1
+            address ← base + offset × elementSize
+            print "[" + i3 + "][" + i2 + "][" + i1 + "] offset=" + offset + " address=" + address
+```
+
 ```python run
 # Print offset + address of every element in a 2 x 2 x 3 row-major array.
 base = 2
@@ -3077,24 +3130,6 @@ object Main extends App {
 }
 ```
 
-```javascript run
-const base = 2;
-const elementSize = 4;
-const [D3, D2, D1] = [2, 2, 3];
-
-console.log("Index            Offset  Address");
-console.log("--------------------------------");
-for (let i3 = 0; i3 < D3; i3++) {
-    for (let i2 = 0; i2 < D2; i2++) {
-        for (let i1 = 0; i1 < D1; i1++) {
-            const offset  = i3 * (D2 * D1) + i2 * D1 + i1;
-            const address = base + offset * elementSize;
-            console.log(`[${i3}][${i2}][${i1}]          ${String(offset).padStart(6)}    ${String(address).padStart(6)}`);
-        }
-    }
-}
-```
-
 ```typescript run
 const base: number = 2;
 const elementSize: number = 4;
@@ -3131,26 +3166,6 @@ func main() {
                 offset  := i3*(D2*D1) + i2*D1 + i1
                 address := base + offset*elementSize
                 fmt.Printf("[%d][%d][%d]          %6d    %6d\n", i3, i2, i1, offset, address)
-            }
-        }
-    }
-}
-```
-
-```kotlin run
-fun main() {
-    val base = 2
-    val elementSize = 4
-    val D3 = 2; val D2 = 2; val D1 = 3
-
-    println("%-16s %6s %8s".format("Index", "Offset", "Address"))
-    println("--------------------------------")
-    for (i3 in 0 until D3) {
-        for (i2 in 0 until D2) {
-            for (i1 in 0 until D1) {
-                val offset  = i3 * (D2 * D1) + i2 * D1 + i1
-                val address = base + offset * elementSize
-                println("[$i3][$i2][$i1]          %6d    %6d".format(offset, address))
             }
         }
     }
@@ -3234,6 +3249,21 @@ flowchart LR
 <p align="center"><strong>Calculating the base address for <code>array[0][0][2]</code> (offset 2, address 10) and <code>array[1][1][2]</code> (offset 11, address 46) using the subscript operator formula.</strong></p>
 
 Cross-check against the memory layout diagram above: `array[0][0][2]` is at address **10** ✓ and `array[1][1][2]` is the very last element at address **46** ✓.
+
+
+```pseudocode
+# 3D subscript: array[i3][i2][i1] = base + (i3 × D2 × D1 + i2 × D1 + i1) × elementSize.
+base ← 2
+elementSize ← 4
+D2 ← 2; D1 ← 3                                          # one layer = D2 × D1 slots
+
+function addressOf(i3, i2, i1):
+    offset ← i3 × (D2 × D1) + i2 × D1 + i1
+    return (base + offset × elementSize, offset)
+
+print addressOf(0, 0, 2)                                # (10, 2)
+print addressOf(1, 1, 2)                                # (46, 11)
+```
 
 ```python run
 # Reproduce the subscript operator for a 2 x 2 x 3 row-major array.
@@ -3337,23 +3367,6 @@ object Main extends App {
 }
 ```
 
-```javascript run
-const BASE = 2;
-const SIZE = 4;
-const D2   = 2;
-const D1   = 3;
-
-function addressOf(i3, i2, i1) {
-    const offset = i3 * (D2 * D1) + i2 * D1 + i1;
-    return [BASE + offset * SIZE, offset];
-}
-
-let [addr, offset] = addressOf(0, 0, 2);
-console.log(`array[0][0][2] → offset=${offset}, address=${addr}`);
-[addr, offset] = addressOf(1, 1, 2);
-console.log(`array[1][1][2] → offset=${offset}, address=${addr}`);
-```
-
 ```typescript run
 const BASE: number = 2;
 const SIZE: number = 4;
@@ -3391,25 +3404,6 @@ func main() {
     fmt.Printf("array[0][0][2] → offset=%d, address=%d\n", offset, addr)
     addr, offset = addressOf(1, 1, 2)
     fmt.Printf("array[1][1][2] → offset=%d, address=%d\n", offset, addr)
-}
-```
-
-```kotlin run
-const val BASE = 2
-const val SIZE = 4
-const val D2   = 2
-const val D1   = 3
-
-fun addressOf(i3: Int, i2: Int, i1: Int): Pair<Int, Int> {
-    val offset = i3 * (D2 * D1) + i2 * D1 + i1
-    return Pair(BASE + offset * SIZE, offset)
-}
-
-fun main() {
-    var (addr, offset) = addressOf(0, 0, 2)
-    println("array[0][0][2] → offset=$offset, address=$addr")
-    val r = addressOf(1, 1, 2)
-    println("array[1][1][2] → offset=${r.second}, address=${r.first}")
 }
 ```
 
@@ -3625,6 +3619,18 @@ flowchart TB
 
 ## Solution
 
+
+```pseudocode
+function rowMajorTraversal(matrix):
+    if matrix is empty: return empty list
+    rows ← length(matrix); cols ← length(matrix[0])
+    path ← empty list
+    for row from 0 to rows − 1:                         # rows outer (slow), cols inner (fast)
+        for col from 0 to cols − 1:
+            append matrix[row][col] to path
+    return path
+```
+
 ```python run
 from typing import List
 
@@ -3749,25 +3755,6 @@ object Main extends App {
 }
 ```
 
-```javascript run
-function rowMajorTraversal(matrix) {
-    const path = [];
-    if (!matrix.length) return path;
-    const rows = matrix.length, cols = matrix[0].length;
-    for (let row = 0; row < rows; row++) {
-        for (let col = 0; col < cols; col++) {
-            path.push(matrix[row][col]);
-        }
-    }
-    return path;
-}
-
-console.log("Example 1:", rowMajorTraversal([[1,2,3],[4,5,6],[7,8,9]]));
-console.log("Example 2:", rowMajorTraversal([[3,2,1,7],[0,6,3,2]]));
-console.log("Example 3:", rowMajorTraversal([[1]]));
-console.log("Empty:    ", rowMajorTraversal([]));
-```
-
 ```typescript run
 function rowMajorTraversal(matrix: number[][]): number[] {
     const path: number[] = [];
@@ -3811,26 +3798,6 @@ func main() {
     fmt.Println("Example 2:", rowMajorTraversal([][]int{{3,2,1,7},{0,6,3,2}}))
     fmt.Println("Example 3:", rowMajorTraversal([][]int{{1}}))
     fmt.Println("Empty:    ", rowMajorTraversal([][]int{}))
-}
-```
-
-```kotlin run
-fun rowMajorTraversal(matrix: Array<IntArray>): List<Int> {
-    if (matrix.isEmpty()) return emptyList()
-    val path = mutableListOf<Int>()
-    for (row in matrix.indices) {
-        for (col in matrix[row].indices) {
-            path.add(matrix[row][col])
-        }
-    }
-    return path
-}
-
-fun main() {
-    println("Example 1: " + rowMajorTraversal(arrayOf(intArrayOf(1,2,3), intArrayOf(4,5,6), intArrayOf(7,8,9))))
-    println("Example 2: " + rowMajorTraversal(arrayOf(intArrayOf(3,2,1,7), intArrayOf(0,6,3,2))))
-    println("Example 3: " + rowMajorTraversal(arrayOf(intArrayOf(1))))
-    println("Empty:     " + rowMajorTraversal(emptyArray()))
 }
 ```
 
@@ -3954,7 +3921,7 @@ Here's the same 3×4 logical grid:
 
 ```d2
 grid: {
-  grid-columns: 4
+  grid-rows: 3
   grid-gap: 0
   a: |md
     `[0][0]` = **10**
@@ -4167,6 +4134,21 @@ Column-major offset = 2 × 3 + 1 = 7  → address 1028
 
 The same logical element `arr[1][2]` lives at **different memory addresses** depending on the storage order. This is why mixing row-major and column-major code (e.g., calling a Fortran library from C) requires explicit transposition.
 
+
+```pseudocode
+# Same arr[1][2] — different offsets depending on storage order.
+# Multiplier is the stride in the dimension you're skipping.
+base ← 1000
+elementSize ← 4
+numRows ← 3; numCols ← 4
+
+i ← 1; j ← 2
+rowMajorOffset ← i × numCols + j                        # skip i rows, walk j columns
+colMajorOffset ← j × numRows + i                        # skip j cols, walk i rows
+print "Row-major:    address=" + (base + rowMajorOffset × elementSize)
+print "Column-major: address=" + (base + colMajorOffset × elementSize)
+```
+
 ```python run
 # Same arr[1][2] — different addresses depending on storage order.
 base = 1000
@@ -4261,20 +4243,6 @@ object Main extends App {
 }
 ```
 
-```javascript run
-const base = 1000;
-const elementSize = 4;
-const numRows = 3, numCols = 4;
-const i = 1, j = 2;
-
-const rowMajorOffset = i * numCols + j;
-const colMajorOffset = j * numRows + i;
-
-console.log(`arr[${i}][${j}]`);
-console.log(`  Row-major:    offset=${rowMajorOffset}, address=${base + rowMajorOffset * elementSize}`);
-console.log(`  Column-major: offset=${colMajorOffset}, address=${base + colMajorOffset * elementSize}`);
-```
-
 ```typescript run
 const base: number = 1000;
 const elementSize: number = 4;
@@ -4308,24 +4276,6 @@ func main() {
         rowMajorOffset, base+rowMajorOffset*elementSize)
     fmt.Printf("  Column-major: offset=%d, address=%d\n",
         colMajorOffset, base+colMajorOffset*elementSize)
-}
-```
-
-```kotlin run
-fun main() {
-    val base = 1000
-    val elementSize = 4
-    val numRows = 3
-    val numCols = 4
-    val i = 1
-    val j = 2
-
-    val rowMajorOffset = i * numCols + j
-    val colMajorOffset = j * numRows + i
-
-    println("arr[$i][$j]")
-    println("  Row-major:    offset=$rowMajorOffset, address=${base + rowMajorOffset * elementSize}")
-    println("  Column-major: offset=$colMajorOffset, address=${base + colMajorOffset * elementSize}")
 }
 ```
 
@@ -4566,6 +4516,21 @@ mem: {
 
 Notice how adjacent slots in memory always differ only in their D₃ index (0 or 1). That's the signature of D₃ moving fastest.
 
+
+```pseudocode
+# Column-major: nesting flipped vs row-major. D1 is OUTERMOST (slowest), D3 INNERMOST (fastest).
+base ← 2
+elementSize ← 4
+D3 ← 2; D2 ← 2; D1 ← 3
+
+for i1 from 0 to D1 − 1:
+    for i2 from 0 to D2 − 1:
+        for i3 from 0 to D3 − 1:
+            offset  ← i1 × (D2 × D3) + i2 × D3 + i3
+            address ← base + offset × elementSize
+            print "[" + i3 + "][" + i2 + "][" + i1 + "] offset=" + offset + " address=" + address
+```
+
 ```python run
 # Column-major offsets + addresses for a 2 x 2 x 3 array.
 base = 2
@@ -4664,23 +4629,6 @@ object Main extends App {
 }
 ```
 
-```javascript run
-const base = 2, elementSize = 4;
-const [D3, D2, D1] = [2, 2, 3];
-
-console.log("Index            Offset  Address");
-console.log("--------------------------------");
-for (let i1 = 0; i1 < D1; i1++) {
-    for (let i2 = 0; i2 < D2; i2++) {
-        for (let i3 = 0; i3 < D3; i3++) {
-            const offset  = i1 * (D2 * D3) + i2 * D3 + i3;
-            const address = base + offset * elementSize;
-            console.log(`[${i3}][${i2}][${i1}]          ${String(offset).padStart(6)}    ${String(address).padStart(6)}`);
-        }
-    }
-}
-```
-
 ```typescript run
 const base: number = 2, elementSize: number = 4;
 const [D3, D2, D1]: [number, number, number] = [2, 2, 3];
@@ -4715,26 +4663,6 @@ func main() {
                 offset  := i1*(D2*D3) + i2*D3 + i3
                 address := base + offset*elementSize
                 fmt.Printf("[%d][%d][%d]          %6d    %6d\n", i3, i2, i1, offset, address)
-            }
-        }
-    }
-}
-```
-
-```kotlin run
-fun main() {
-    val base = 2
-    val elementSize = 4
-    val D3 = 2; val D2 = 2; val D1 = 3
-
-    println("%-16s %6s %8s".format("Index", "Offset", "Address"))
-    println("--------------------------------")
-    for (i1 in 0 until D1) {
-        for (i2 in 0 until D2) {
-            for (i3 in 0 until D3) {
-                val offset  = i1 * (D2 * D3) + i2 * D3 + i3
-                val address = base + offset * elementSize
-                println("[$i3][$i2][$i1]          %6d    %6d".format(offset, address))
             }
         }
     }
@@ -4832,6 +4760,21 @@ Now compare these offsets with the row-major results from the previous chapter:
 
 `array[1][1][2]` lands at offset 11 in *both* orderings — because it's the last element regardless of how you count. `array[0][0][2]`, however, is at offset 2 in row-major (early) but offset 8 in column-major (late). The storage order completely reshuffles the positions.
 
+
+```pseudocode
+# Compare row-major and column-major offsets for the same (i3, i2, i1).
+D3 ← 2; D2 ← 2; D1 ← 3
+
+function rowMajorOffset(i3, i2, i1):
+    return i3 × (D2 × D1) + i2 × D1 + i1
+
+function colMajorOffset(i3, i2, i1):
+    return i1 × (D2 × D3) + i2 × D3 + i3
+
+for each (i3, i2, i1) in [(0, 0, 2), (1, 1, 2)]:
+    print "row-major=" + rowMajorOffset(i3, i2, i1) + ", col-major=" + colMajorOffset(i3, i2, i1)
+```
+
 ```python run
 # Same (i3, i2, i1), two orderings → typically two offsets.
 D3, D2, D1 = 2, 2, 3
@@ -4923,16 +4866,6 @@ object Main extends App {
 }
 ```
 
-```javascript run
-const [D3, D2, D1] = [2, 2, 3];
-const rowMajor = (i3, i2, i1) => i3 * (D2 * D1) + i2 * D1 + i1;
-const colMajor = (i3, i2, i1) => i1 * (D2 * D3) + i2 * D3 + i3;
-
-for (const [i3, i2, i1] of [[0,0,2], [1,1,2]]) {
-    console.log(`array[${i3}][${i2}][${i1}]: row-major offset=${rowMajor(i3,i2,i1)}, col-major offset=${colMajor(i3,i2,i1)}`);
-}
-```
-
 ```typescript run
 const [D3, D2, D1]: [number, number, number] = [2, 2, 3];
 const rowMajor = (i3: number, i2: number, i1: number): number => i3 * (D2 * D1) + i2 * D1 + i1;
@@ -4960,21 +4893,6 @@ func main() {
         i3, i2, i1 := c[0], c[1], c[2]
         fmt.Printf("array[%d][%d][%d]: row-major offset=%d, col-major offset=%d\n",
             i3, i2, i1, rowMajor(i3,i2,i1), colMajor(i3,i2,i1))
-    }
-}
-```
-
-```kotlin run
-const val D3 = 2
-const val D2 = 2
-const val D1 = 3
-
-fun rowMajor(i3: Int, i2: Int, i1: Int) = i3 * (D2 * D1) + i2 * D1 + i1
-fun colMajor(i3: Int, i2: Int, i1: Int) = i1 * (D2 * D3) + i2 * D3 + i3
-
-fun main() {
-    for ((i3, i2, i1) in listOf(Triple(0,0,2), Triple(1,1,2))) {
-        println("array[$i3][$i2][$i1]: row-major offset=${rowMajor(i3,i2,i1)}, col-major offset=${colMajor(i3,i2,i1)}")
     }
 }
 ```
@@ -5216,6 +5134,18 @@ The one critical change vs. row-major: **`col` is the outer loop variable, `row`
 
 ## Solution
 
+
+```pseudocode
+function columnMajorTraversal(matrix):
+    if matrix is empty: return empty list
+    rows ← length(matrix); cols ← length(matrix[0])
+    path ← empty list
+    for col from 0 to cols − 1:                         # cols outer (slow), rows inner (fast)
+        for row from 0 to rows − 1:
+            append matrix[row][col] to path
+    return path
+```
+
 ```python run
 from typing import List
 
@@ -5339,25 +5269,6 @@ object Main extends App {
 }
 ```
 
-```javascript run
-function columnMajorTraversal(matrix) {
-    const path = [];
-    if (!matrix.length) return path;
-    const rows = matrix.length, cols = matrix[0].length;
-    for (let col = 0; col < cols; col++) {
-        for (let row = 0; row < rows; row++) {
-            path.push(matrix[row][col]);
-        }
-    }
-    return path;
-}
-
-console.log("Example 1:", columnMajorTraversal([[1,2,3],[4,5,6],[7,8,9]]));
-console.log("Example 2:", columnMajorTraversal([[3,2,1,7],[0,6,3,2]]));
-console.log("Example 3:", columnMajorTraversal([[1]]));
-console.log("Empty:    ", columnMajorTraversal([]));
-```
-
 ```typescript run
 function columnMajorTraversal(matrix: number[][]): number[] {
     const path: number[] = [];
@@ -5401,28 +5312,6 @@ func main() {
     fmt.Println("Example 2:", columnMajorTraversal([][]int{{3,2,1,7},{0,6,3,2}}))
     fmt.Println("Example 3:", columnMajorTraversal([][]int{{1}}))
     fmt.Println("Empty:    ", columnMajorTraversal([][]int{}))
-}
-```
-
-```kotlin run
-fun columnMajorTraversal(matrix: Array<IntArray>): List<Int> {
-    if (matrix.isEmpty()) return emptyList()
-    val rows = matrix.size
-    val cols = matrix[0].size
-    val path = mutableListOf<Int>()
-    for (col in 0 until cols) {
-        for (row in 0 until rows) {
-            path.add(matrix[row][col])
-        }
-    }
-    return path
-}
-
-fun main() {
-    println("Example 1: " + columnMajorTraversal(arrayOf(intArrayOf(1,2,3), intArrayOf(4,5,6), intArrayOf(7,8,9))))
-    println("Example 2: " + columnMajorTraversal(arrayOf(intArrayOf(3,2,1,7), intArrayOf(0,6,3,2))))
-    println("Example 3: " + columnMajorTraversal(arrayOf(intArrayOf(1))))
-    println("Empty:     " + columnMajorTraversal(emptyArray()))
 }
 ```
 
@@ -5475,6 +5364,20 @@ Trace through `[[3, 2, 1, 7], [0, 6, 3, 2]]`:
 ---
 
 ## Row-Major vs Column-Major — The Full Comparison
+
+
+```pseudocode
+# Same indexing — only the loop nesting differs. The outer loop variable changes slowest.
+matrix ← [[1, 2, 3], [4, 5, 6], [7, 8, 9]]
+rows ← length(matrix)
+cols ← length(matrix[0])
+
+rowMajor ← [matrix[r][c] for r from 0 to rows − 1, then for c from 0 to cols − 1]   # r outer
+colMajor ← [matrix[r][c] for c from 0 to cols − 1, then for r from 0 to rows − 1]   # c outer
+
+print rowMajor                                          # [1, 2, 3, 4, 5, 6, 7, 8, 9]
+print colMajor                                          # [1, 4, 7, 2, 5, 8, 3, 6, 9]
+```
 
 ```python run
 # Same matrix, same indexing — only the loop order differs.
@@ -5568,22 +5471,6 @@ object Main extends App {
 }
 ```
 
-```javascript run
-const matrix = [[1,2,3],[4,5,6],[7,8,9]];
-const rows = matrix.length, cols = matrix[0].length;
-
-const rowMajor = [];
-for (let r = 0; r < rows; r++)
-    for (let c = 0; c < cols; c++) rowMajor.push(matrix[r][c]);
-
-const colMajor = [];
-for (let c = 0; c < cols; c++)
-    for (let r = 0; r < rows; r++) colMajor.push(matrix[r][c]);
-
-console.log("Row-major:    ", rowMajor);
-console.log("Column-major: ", colMajor);
-```
-
 ```typescript run
 const matrix: number[][] = [[1,2,3],[4,5,6],[7,8,9]];
 const rows = matrix.length, cols = matrix[0].length;
@@ -5625,23 +5512,6 @@ func main() {
 
     fmt.Println("Row-major:    ", rowMajor)
     fmt.Println("Column-major: ", colMajor)
-}
-```
-
-```kotlin run
-fun main() {
-    val matrix = arrayOf(intArrayOf(1,2,3), intArrayOf(4,5,6), intArrayOf(7,8,9))
-    val rows = matrix.size
-    val cols = matrix[0].size
-
-    val rowMajor = mutableListOf<Int>()
-    for (r in 0 until rows) for (c in 0 until cols) rowMajor.add(matrix[r][c])
-
-    val colMajor = mutableListOf<Int>()
-    for (c in 0 until cols) for (r in 0 until rows) colMajor.add(matrix[r][c])
-
-    println("Row-major:    $rowMajor")
-    println("Column-major: $colMajor")
 }
 ```
 

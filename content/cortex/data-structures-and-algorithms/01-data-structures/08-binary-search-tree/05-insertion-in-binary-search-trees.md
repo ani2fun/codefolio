@@ -1,7 +1,3 @@
----
-title: "5. Insertion in Binary Search Trees"
----
-
 # 5. Insertion in Binary Search Trees
 
 ## The Hook
@@ -150,6 +146,18 @@ You must do this **recursively**.
 
 ## The Solution
 
+
+```pseudocode
+function recursiveInsert(root, data):
+    if root is null:
+        return new TreeNode(data)     # empty slot — this is exactly where data belongs
+    if data < root.val:
+        root.left ← recursiveInsert(root.left, data)   # BST rule: smaller goes left
+    else:
+        root.right ← recursiveInsert(root.right, data) # equal-or-greater goes right
+    return root                       # re-attach the (possibly new) subtree to the parent
+```
+
 ```python run
 class Solution:
     def recursive_insertion(self, root, data):
@@ -224,17 +232,6 @@ object Solution {
 }
 ```
 
-```javascript run
-function recursiveInsertion(root, data) {
-  if (root === null) return new TreeNode(data);                                    // empty slot
-  if (data < root.val)
-    root.left  = recursiveInsertion(root.left,  data);                             // BST rule: left
-  else
-    root.right = recursiveInsertion(root.right, data);                             //          right
-  return root;                                                                     // re-attach
-}
-```
-
 ```typescript run
 function recursiveInsertion(root: TreeNode | null, data: number): TreeNode {
   if (root === null) return new TreeNode(data);                                    // empty slot
@@ -257,19 +254,6 @@ func recursiveInsertion(root *TreeNode, data int) *TreeNode {
         root.Right = recursiveInsertion(root.Right, data)                          //          right
     }
     return root                                                                    // re-attach
-}
-```
-
-```kotlin run
-class Solution {
-    fun recursiveInsertion(root: TreeNode?, data: Int): TreeNode {
-        if (root == null) return TreeNode(data)                                       // empty slot
-        if (data < root.`val`)
-            root.left  = recursiveInsertion(root.left,  data)                          // BST rule: left
-        else
-            root.right = recursiveInsertion(root.right, data)                          //          right
-        return root                                                                    // re-attach
-    }
 }
 ```
 
@@ -383,6 +367,26 @@ You must do this **iteratively**.
 > - **Output:** `[10, 8, 14, 5, 9, 12, 17]`
 
 ## The Solution
+
+
+```pseudocode
+function iterativeInsert(root, data):
+    newNode ← new TreeNode(data)
+    if root is null:
+        return newNode                # empty tree — new node becomes root
+    cur ← root
+    while true:
+        if data < cur.val:
+            if cur.left is null:
+                cur.left ← newNode   # found the empty slot on the left
+                return root
+            cur ← cur.left           # not null — keep descending
+        else:
+            if cur.right is null:
+                cur.right ← newNode  # found the empty slot on the right
+                return root
+            cur ← cur.right          # not null — keep descending
+```
 
 ```python run
 class Solution:
@@ -512,28 +516,6 @@ object Solution {
 }
 ```
 
-```javascript run
-function iterativeInsertion(root, data) {
-  if (root === null) return new TreeNode(data);                                            // empty tree
-  let current = root;
-  while (true) {
-    if (data < current.val) {                                                              // go left
-      if (current.left === null) {                                                         // empty slot
-        current.left = new TreeNode(data);
-        return root;
-      }
-      current = current.left;                                                              // descend left
-    } else {                                                                               // go right
-      if (current.right === null) {                                                        // empty slot
-        current.right = new TreeNode(data);
-        return root;
-      }
-      current = current.right;                                                             // descend right
-    }
-  }
-}
-```
-
 ```typescript run
 function iterativeInsertion(root: TreeNode | null, data: number): TreeNode {
   if (root === null) return new TreeNode(data);                                              // empty tree
@@ -573,30 +555,6 @@ func iterativeInsertion(root *TreeNode, data int) *TreeNode {
                 return root
             }
             current = current.Right                                                              // descend right
-        }
-    }
-}
-```
-
-```kotlin run
-class Solution {
-    fun iterativeInsertion(root: TreeNode?, data: Int): TreeNode {
-        if (root == null) return TreeNode(data)                                                    // empty tree
-        var current = root
-        while (true) {
-            if (data < current.`val`) {                                                            // go left
-                if (current.left == null) {                                                        // empty slot
-                    current.left = TreeNode(data)
-                    return root
-                }
-                current = current.left!!                                                           // descend left
-            } else {                                                                               // go right
-                if (current.right == null) {                                                       // empty slot
-                    current.right = TreeNode(data)
-                    return root
-                }
-                current = current.right!!                                                          // descend right
-            }
         }
     }
 }

@@ -1,7 +1,3 @@
----
-title: "3. Linked-List Implementation of Binary Trees"
----
-
 # 3. Linked-List Implementation of Binary Trees
 
 ## The Hook
@@ -107,6 +103,22 @@ n: TreeNode {
 
 Most of the rest of this chapter assumes the type definitions below. Each version exposes the same three fields and provides a small constructor. We follow the LeetCode-style convention used across the chapter: optional left/right that default to `null`.
 
+
+```pseudocode
+structure TreeNode:
+    val   ← integer
+    left  ← TreeNode or null
+    right ← TreeNode or null
+
+# Build a small tree:
+#       1
+#      / \
+#     2   3
+root ← TreeNode(val=1,
+                left=TreeNode(val=2),
+                right=TreeNode(val=3))
+```
+
 ```python run
 class TreeNode:
     def __init__(self, val: int = 0, left: 'TreeNode | None' = None, right: 'TreeNode | None' = None):
@@ -194,19 +206,6 @@ object Main extends App {
 }
 ```
 
-```javascript run
-class TreeNode {
-    constructor(val = 0, left = null, right = null) {
-        this.val   = val;
-        this.left  = left;
-        this.right = right;
-    }
-}
-
-const root = new TreeNode(1, new TreeNode(2), new TreeNode(3));
-console.log(root.val, root.left.val, root.right.val);
-```
-
 ```typescript run
 class TreeNode {
     val:   number;
@@ -235,19 +234,6 @@ type TreeNode struct {
 func main() {
     root := &TreeNode{Val: 1, Left: &TreeNode{Val: 2}, Right: &TreeNode{Val: 3}}
     fmt.Println(root.Val, root.Left.Val, root.Right.Val)
-}
-```
-
-```kotlin run
-class TreeNode(
-    var value: Int             = 0,
-    var left:  TreeNode? = null,
-    var right: TreeNode? = null
-)
-
-fun main() {
-    val root = TreeNode(1, TreeNode(2), TreeNode(3))
-    println("${root.value} ${root.left?.value} ${root.right?.value}")
 }
 ```
 
@@ -299,7 +285,7 @@ The constructor only creates *one* node at a time. To build a tree, allocate the
 
 Step by step:
 
-```python run
+```python
 # 1. allocate the leaves first (no children to wire)
 n4 = TreeNode(4)
 n5 = TreeNode(5)

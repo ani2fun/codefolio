@@ -1,7 +1,3 @@
----
-title: "8. Pattern: Variable sized sliding window"
----
-
 # 8. Pattern: Variable sized sliding window
 
 This section covers window problems where the window expands and shrinks dynamically based on the condition being tracked.
@@ -359,6 +355,23 @@ The four adaptations you make when solving a specific problem:
 
 Given below is the generic code implementation of the variable-sized sliding window technique on an array `arr`, using `start` and `end` as the boundaries of the window.
 
+
+```pseudocode
+# Generic variable-window template. Predicates `shouldContract` / `shouldExpand` are
+# problem-specific. Often `shouldContract` is a `while` loop, not just an `if`.
+function variableSlidingWindow(arr):
+    start ← 0; end ← 0
+    aggregate ← 0
+    while end < length(arr):
+        aggregate ← fAdd(aggregate, arr[end])         # 1. add arr[end]
+        process(aggregate)                            # 2. record this window's answer
+        if shouldContract():                          # 3. shrink (use `while` if needed)
+            aggregate ← fRemove(aggregate, arr[start])
+            start ← start + 1
+        if shouldExpand():                            # 4. extend right
+            end ← end + 1
+```
+
 ```python run
 from typing import List
 
@@ -508,31 +521,6 @@ object Main extends App {
 }
 ```
 
-```javascript run
-const fAdd    = (agg, x) => agg + x;
-const fRemove = (agg, x) => agg - x;
-const process = (agg)    => { /* problem-specific */ };
-
-const shouldContract = false;
-const shouldExpand   = true;
-
-function variableSlidingWindow(arr) {
-    let start = 0, end = 0, aggregate = 0;
-    while (end < arr.length) {
-        aggregate = fAdd(aggregate, arr[end]);
-        process(aggregate);
-        if (shouldContract) {
-            aggregate = fRemove(aggregate, arr[start]);
-            start++;
-        }
-        if (shouldExpand) end++;
-    }
-}
-
-variableSlidingWindow([1, 2, 3, 4]);
-console.log("Template ran.");
-```
-
 ```typescript run
 const fAdd    = (agg: number, x: number): number => agg + x;
 const fRemove = (agg: number, x: number): number => agg - x;
@@ -588,35 +576,6 @@ func variableSlidingWindow(arr []int) {
 func main() {
     variableSlidingWindow([]int{1, 2, 3, 4})
     fmt.Println("Template ran.")
-}
-```
-
-```kotlin run
-fun fAdd(agg: Int, x: Int) = agg + x
-fun fRemove(agg: Int, x: Int) = agg - x
-fun process(agg: Int) { /* problem-specific */ }
-
-val shouldContract = false
-val shouldExpand   = true
-
-fun variableSlidingWindow(arr: IntArray) {
-    var start = 0
-    var end = 0
-    var aggregate = 0
-    while (end < arr.size) {
-        aggregate = fAdd(aggregate, arr[end])
-        process(aggregate)
-        if (shouldContract) {
-            aggregate = fRemove(aggregate, arr[start])
-            start++
-        }
-        if (shouldExpand) end++
-    }
-}
-
-fun main() {
-    variableSlidingWindow(intArrayOf(1, 2, 3, 4))
-    println("Template ran.")
 }
 ```
 
@@ -829,6 +788,19 @@ i3: "Outer loop i=3: all subarrays starting at index 3" {
 
 <p align="center"><strong>Brute force checks every subarray — N(N+1)/2 total. For each outer position <code>i</code>, the inner loop extends <code>j</code> rightward accumulating the sum. Every subarray is evaluated explicitly.</strong></p>
 
+
+```pseudocode
+# Brute force — every subarray (i, j). O(n²).
+function maxSubarraySumBrute(arr):
+    maxSum ← −∞
+    for i from 0 to length(arr) − 1:
+        currentSum ← 0
+        for j from i to length(arr) − 1:
+            currentSum ← currentSum + arr[j]
+            maxSum ← max(maxSum, currentSum)
+    return maxSum
+```
+
 ```python run
 from typing import List
 
@@ -929,22 +901,6 @@ object Main extends App {
 }
 ```
 
-```javascript run
-function maxSubarraySumBrute(arr) {
-    let maxSum = -Infinity;
-    for (let i = 0; i < arr.length; i++) {
-        let current = 0;
-        for (let j = i; j < arr.length; j++) {
-            current += arr[j];
-            maxSum = Math.max(maxSum, current);
-        }
-    }
-    return maxSum;
-}
-
-console.log(maxSubarraySumBrute([-2, 1, -3, 4, -1, 2, 1, -5, 4]));
-```
-
 ```typescript run
 function maxSubarraySumBrute(arr: number[]): number {
     let maxSum = -Infinity;
@@ -985,24 +941,6 @@ func maxSubarraySumBrute(arr []int) int {
 
 func main() {
     fmt.Println(maxSubarraySumBrute([]int{-2, 1, -3, 4, -1, 2, 1, -5, 4}))
-}
-```
-
-```kotlin run
-fun maxSubarraySumBrute(arr: IntArray): Int {
-    var maxSum = Int.MIN_VALUE
-    for (i in arr.indices) {
-        var current = 0
-        for (j in i until arr.size) {
-            current += arr[j]
-            if (current > maxSum) maxSum = current
-        }
-    }
-    return maxSum
-}
-
-fun main() {
-    println(maxSubarraySumBrute(intArrayOf(-2, 1, -3, 4, -1, 2, 1, -5, 4)))
 }
 ```
 
@@ -1073,6 +1011,26 @@ flowchart TB
 ```
 
 <p align="center"><strong>The variable-sized sliding window skips all subarrays starting between <code>start+1</code> and <code>end</code>, and all subarrays starting at <code>start</code> and ending beyond <code>end</code>. Two resets occur — at <code>end=1</code> and <code>end=3</code> — discarding all subarrays rooted in those negative prefixes.</strong></p>
+
+
+```pseudocode
+# Kadane's algorithm — sliding-window form. O(n).
+# If the running sum goes negative, restart fresh at the next element.
+function maxSubarraySum(arr):
+    n ← length(arr)
+    if n = 0: return 0
+    current ← arr[0]                              # seed with arr[0] for all-negative inputs
+    maxSum  ← arr[0]
+    end ← 1
+    while end < n:
+        if current < 0:
+            current ← arr[end]                    # negative prefix only hurts — restart
+        else:
+            current ← current + arr[end]
+        maxSum ← max(maxSum, current)
+        end ← end + 1
+    return maxSum
+```
 
 ```python run
 from typing import List
@@ -1192,22 +1150,6 @@ object Main extends App {
 }
 ```
 
-```javascript run
-function maxSubarraySum(arr) {
-    if (arr.length === 0) return 0;
-    let current = arr[0], maxSum = arr[0];
-    for (let end = 1; end < arr.length; end++) {
-        current = (current < 0) ? arr[end] : current + arr[end];
-        maxSum = Math.max(maxSum, current);
-    }
-    return maxSum;
-}
-
-console.log(maxSubarraySum([-2, 1, -3, 4, -1, 2, 1, -5, 4]));
-console.log(maxSubarraySum([-3, -1, -2]));
-console.log(maxSubarraySum([1]));
-```
-
 ```typescript run
 function maxSubarraySum(arr: number[]): number {
     if (arr.length === 0) return 0;
@@ -1252,25 +1194,6 @@ func main() {
     fmt.Println(maxSubarraySum([]int{-2, 1, -3, 4, -1, 2, 1, -5, 4}))
     fmt.Println(maxSubarraySum([]int{-3, -1, -2}))
     fmt.Println(maxSubarraySum([]int{1}))
-}
-```
-
-```kotlin run
-fun maxSubarraySum(arr: IntArray): Int {
-    if (arr.isEmpty()) return 0
-    var current = arr[0]
-    var maxSum  = arr[0]
-    for (end in 1 until arr.size) {
-        current = if (current < 0) arr[end] else current + arr[end]
-        if (current > maxSum) maxSum = current
-    }
-    return maxSum
-}
-
-fun main() {
-    println(maxSubarraySum(intArrayOf(-2, 1, -3, 4, -1, 2, 1, -5, 4)))
-    println(maxSubarraySum(intArrayOf(-3, -1, -2)))
-    println(maxSubarraySum(intArrayOf(1)))
 }
 ```
 
@@ -1605,6 +1528,22 @@ If you guessed Kadane's algorithm from the identification section, you've alread
 
 ## The Solution
 
+
+```pseudocode
+# Longest run of consecutive 1s. On a 0, leap `start` past it in one move.
+function findMaxConsecutiveOnes(arr):
+    n ← length(arr)
+    if n = 0: return 0
+    start ← 0; end ← 0; maxLen ← 0
+    while end < n:
+        if arr[end] = 0:
+            start ← end + 1                       # window resets to position past the 0
+        else:
+            maxLen ← max(maxLen, end − start + 1)
+        end ← end + 1
+    return maxLen
+```
+
 ```python run
 from typing import List
 
@@ -1727,26 +1666,6 @@ object Main extends App {
 }
 ```
 
-```javascript run
-function findMaxConsecutiveOnes(arr) {
-    const n = arr.length;
-    if (n === 0) return 0;
-    let start = 0, end = 0, maxLen = 0;
-    while (end < n) {
-        if (arr[end] === 0) start = end + 1;
-        else                maxLen = Math.max(maxLen, end - start + 1);
-        end++;
-    }
-    return maxLen;
-}
-
-console.log(findMaxConsecutiveOnes([1, 1, 0, 1, 1, 1, 0, 1]));
-console.log(findMaxConsecutiveOnes([0, 0, 0]));
-console.log(findMaxConsecutiveOnes([1, 1, 1, 1]));
-console.log(findMaxConsecutiveOnes([1]));
-console.log(findMaxConsecutiveOnes([]));
-```
-
 ```typescript run
 function findMaxConsecutiveOnes(arr: number[]): number {
     const n = arr.length;
@@ -1795,29 +1714,6 @@ func main() {
     fmt.Println(findMaxConsecutiveOnes([]int{1, 1, 1, 1}))
     fmt.Println(findMaxConsecutiveOnes([]int{1}))
     fmt.Println(findMaxConsecutiveOnes([]int{}))
-}
-```
-
-```kotlin run
-fun findMaxConsecutiveOnes(arr: IntArray): Int {
-    if (arr.isEmpty()) return 0
-    var start = 0
-    var end = 0
-    var maxLen = 0
-    while (end < arr.size) {
-        if (arr[end] == 0) start = end + 1
-        else               maxLen = maxOf(maxLen, end - start + 1)
-        end++
-    }
-    return maxLen
-}
-
-fun main() {
-    println(findMaxConsecutiveOnes(intArrayOf(1, 1, 0, 1, 1, 1, 0, 1)))
-    println(findMaxConsecutiveOnes(intArrayOf(0, 0, 0)))
-    println(findMaxConsecutiveOnes(intArrayOf(1, 1, 1, 1)))
-    println(findMaxConsecutiveOnes(intArrayOf(1)))
-    println(findMaxConsecutiveOnes(intArrayOf()))
 }
 ```
 
@@ -1941,6 +1837,25 @@ It would contract immediately, leaving the window empty (`start = end + 1`), rec
 ---
 
 ## The Solution
+
+
+```pseudocode
+# Longest subarray of positive ints whose product is strictly less than k.
+# `while` because one expansion may force several contractions.
+function longestSubarrayWithProductLessThanK(arr, k):
+    n ← length(arr)
+    if n = 0 OR k ≤ 1: return 0                   # positives can't make a product < 1
+    start ← 0; end ← 0
+    product ← 1; maxLen ← 0
+    while end < n:
+        product ← product × arr[end]
+        while product ≥ k AND start ≤ end:
+            product ← product ÷ arr[start]
+            start ← start + 1
+        maxLen ← max(maxLen, end − start + 1)
+        end ← end + 1
+    return maxLen
+```
 
 ```python run
 from typing import List
@@ -2089,31 +2004,6 @@ object Main extends App {
 }
 ```
 
-```javascript run
-function longestSubarrayWithProductLessThanK(arr, k) {
-    const n = arr.length;
-    if (n === 0 || k <= 1) return 0;
-    let start = 0, end = 0, maxLen = 0;
-    let product = 1;
-    while (end < n) {
-        product *= arr[end];
-        while (product >= k && start <= end) {
-            product = Math.floor(product / arr[start]);
-            start++;
-        }
-        maxLen = Math.max(maxLen, end - start + 1);
-        end++;
-    }
-    return maxLen;
-}
-
-console.log(longestSubarrayWithProductLessThanK([1, 2, 3, 4], 10));
-console.log(longestSubarrayWithProductLessThanK([10, 5, 2, 6], 100));
-console.log(longestSubarrayWithProductLessThanK([1, 2, 3], 1));
-console.log(longestSubarrayWithProductLessThanK([1, 1, 1], 2));
-console.log(longestSubarrayWithProductLessThanK([100, 100, 100], 50));
-```
-
 ```typescript run
 function longestSubarrayWithProductLessThanK(arr: number[], k: number): number {
     const n = arr.length;
@@ -2172,35 +2062,6 @@ func main() {
     fmt.Println(longestSubarrayWithProductLessThanK([]int{1, 2, 3}, 1))
     fmt.Println(longestSubarrayWithProductLessThanK([]int{1, 1, 1}, 2))
     fmt.Println(longestSubarrayWithProductLessThanK([]int{100, 100, 100}, 50))
-}
-```
-
-```kotlin run
-fun longestSubarrayWithProductLessThanK(arr: IntArray, k: Int): Int {
-    val n = arr.size
-    if (n == 0 || k <= 1) return 0
-    var start = 0
-    var end = 0
-    var product = 1L
-    var maxLen = 0
-    while (end < n) {
-        product *= arr[end]
-        while (product >= k && start <= end) {
-            product /= arr[start]
-            start++
-        }
-        if (end - start + 1 > maxLen) maxLen = end - start + 1
-        end++
-    }
-    return maxLen
-}
-
-fun main() {
-    println(longestSubarrayWithProductLessThanK(intArrayOf(1, 2, 3, 4), 10))
-    println(longestSubarrayWithProductLessThanK(intArrayOf(10, 5, 2, 6), 100))
-    println(longestSubarrayWithProductLessThanK(intArrayOf(1, 2, 3), 1))
-    println(longestSubarrayWithProductLessThanK(intArrayOf(1, 1, 1), 2))
-    println(longestSubarrayWithProductLessThanK(intArrayOf(100, 100, 100), 50))
 }
 ```
 
@@ -2339,6 +2200,22 @@ If you said "the first element", you already caught the edge case. Using `0` wou
 
 ## The Solution
 
+
+```pseudocode
+# Kadane in compact for-loop form.
+function maxSubarraySum(arr):
+    n ← length(arr)
+    if n = 0: return 0
+    current ← arr[0]; maxSum ← arr[0]
+    for end from 1 to n − 1:
+        if current < 0:
+            current ← arr[end]
+        else:
+            current ← current + arr[end]
+        maxSum ← max(maxSum, current)
+    return maxSum
+```
+
 ```python run
 from typing import List
 
@@ -2455,24 +2332,6 @@ object Main extends App {
 }
 ```
 
-```javascript run
-function maxSubarraySum(arr) {
-    if (arr.length === 0) return 0;
-    let current = arr[0], maxSum = arr[0];
-    for (let end = 1; end < arr.length; end++) {
-        current = (current < 0) ? arr[end] : current + arr[end];
-        maxSum = Math.max(maxSum, current);
-    }
-    return maxSum;
-}
-
-console.log(maxSubarraySum([-2, 1, -3, 4, -1, 2, 1, -5, 4]));
-console.log(maxSubarraySum([1]));
-console.log(maxSubarraySum([-3, -1, -2]));
-console.log(maxSubarraySum([5, 4, -1, 7, 8]));
-console.log(maxSubarraySum([-1]));
-```
-
 ```typescript run
 function maxSubarraySum(arr: number[]): number {
     if (arr.length === 0) return 0;
@@ -2521,27 +2380,6 @@ func main() {
     fmt.Println(maxSubarraySum([]int{-3, -1, -2}))
     fmt.Println(maxSubarraySum([]int{5, 4, -1, 7, 8}))
     fmt.Println(maxSubarraySum([]int{-1}))
-}
-```
-
-```kotlin run
-fun maxSubarraySum(arr: IntArray): Int {
-    if (arr.isEmpty()) return 0
-    var current = arr[0]
-    var maxSum  = arr[0]
-    for (end in 1 until arr.size) {
-        current = if (current < 0) arr[end] else current + arr[end]
-        if (current > maxSum) maxSum = current
-    }
-    return maxSum
-}
-
-fun main() {
-    println(maxSubarraySum(intArrayOf(-2, 1, -3, 4, -1, 2, 1, -5, 4)))
-    println(maxSubarraySum(intArrayOf(1)))
-    println(maxSubarraySum(intArrayOf(-3, -1, -2)))
-    println(maxSubarraySum(intArrayOf(5, 4, -1, 7, 8)))
-    println(maxSubarraySum(intArrayOf(-1)))
 }
 ```
 
@@ -2665,6 +2503,23 @@ And here is the payoff: set `k = 0`, and this code becomes **identical in behavi
 ---
 
 ## The Solution
+
+
+```pseudocode
+# Longest run of 1s achievable by flipping at most k zeros.
+# Window invariant: at most k zeros inside [start, end].
+function longestOnesWithKFlips(arr, k):
+    n ← length(arr)
+    if n = 0: return 0
+    start ← 0; zeros ← 0; maxLen ← 0
+    for end from 0 to n − 1:
+        if arr[end] = 0: zeros ← zeros + 1        # 0 costs one flip
+        while zeros > k:                           # over budget — shrink from the left
+            if arr[start] = 0: zeros ← zeros − 1
+            start ← start + 1
+        maxLen ← max(maxLen, end − start + 1)
+    return maxLen
+```
 
 ```python run
 from typing import List
@@ -2801,29 +2656,6 @@ object Main extends App {
 }
 ```
 
-```javascript run
-function longestOnesWithKFlips(arr, k) {
-    const n = arr.length;
-    if (n === 0) return 0;
-    let start = 0, zeros = 0, maxLen = 0;
-    for (let end = 0; end < n; end++) {
-        if (arr[end] === 0) zeros++;
-        while (zeros > k) {
-            if (arr[start] === 0) zeros--;
-            start++;
-        }
-        maxLen = Math.max(maxLen, end - start + 1);
-    }
-    return maxLen;
-}
-
-console.log(longestOnesWithKFlips([1, 1, 0, 0, 1, 1, 1, 0, 1], 2));
-console.log(longestOnesWithKFlips([1, 0, 1, 1, 0, 1], 1));
-console.log(longestOnesWithKFlips([0, 0, 0], 0));
-console.log(longestOnesWithKFlips([1, 1, 1], 5));
-console.log(longestOnesWithKFlips([0, 0, 1, 1, 0, 0, 1, 1, 1], 3));
-```
-
 ```typescript run
 function longestOnesWithKFlips(arr: number[], k: number): number {
     const n = arr.length;
@@ -2881,32 +2713,6 @@ func main() {
     fmt.Println(longestOnesWithKFlips([]int{0, 0, 0}, 0))
     fmt.Println(longestOnesWithKFlips([]int{1, 1, 1}, 5))
     fmt.Println(longestOnesWithKFlips([]int{0, 0, 1, 1, 0, 0, 1, 1, 1}, 3))
-}
-```
-
-```kotlin run
-fun longestOnesWithKFlips(arr: IntArray, k: Int): Int {
-    if (arr.isEmpty()) return 0
-    var start = 0
-    var zeros = 0
-    var maxLen = 0
-    for (end in arr.indices) {
-        if (arr[end] == 0) zeros++
-        while (zeros > k) {
-            if (arr[start] == 0) zeros--
-            start++
-        }
-        if (end - start + 1 > maxLen) maxLen = end - start + 1
-    }
-    return maxLen
-}
-
-fun main() {
-    println(longestOnesWithKFlips(intArrayOf(1, 1, 0, 0, 1, 1, 1, 0, 1), 2))
-    println(longestOnesWithKFlips(intArrayOf(1, 0, 1, 1, 0, 1), 1))
-    println(longestOnesWithKFlips(intArrayOf(0, 0, 0), 0))
-    println(longestOnesWithKFlips(intArrayOf(1, 1, 1), 5))
-    println(longestOnesWithKFlips(intArrayOf(0, 0, 1, 1, 0, 0, 1, 1, 1), 3))
 }
 ```
 

@@ -1,7 +1,3 @@
----
-title: "Graph"
----
-
 # Graph
 
 Use this page as the chapter map for graph. The guides are ordered from fundamentals into common problem-solving patterns and design practice.

@@ -1,7 +1,3 @@
----
-title: "1. Introduction to Binary Search Trees"
----
-
 # 1. Introduction to Binary Search Trees
 
 ## The Hook

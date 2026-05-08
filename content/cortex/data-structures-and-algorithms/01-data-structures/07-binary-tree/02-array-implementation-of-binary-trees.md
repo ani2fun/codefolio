@@ -1,7 +1,3 @@
----
-title: "2. Array Implementation of Binary Trees"
----
-
 # 2. Array Implementation of Binary Trees
 
 ## The Hook

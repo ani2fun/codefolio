@@ -1,7 +1,3 @@
----
-title: "10. Max-flow min-cut theorem"
----
-
 # 10. Max-flow min-cut theorem
 
 This lesson teaches you to answer "given a network of pipes with capacities, what's the most water (or traffic, or data, or merchandise) we can push through it?" — and reveals the deep, beautiful theorem that links the answer to the **weakest link** in the network.
@@ -283,6 +279,37 @@ Without reverse edges, you'd have to be clever about which augmenting path to ch
 We use a **2D residual matrix** `residual[u][v]` instead of an adjacency list — it makes adding reverse edges and updating residuals trivial (just two cell updates per edge per push). For each iteration we DFS from source to sink, find the path's bottleneck, and update.
 
 The graph is given as an adjacency list of `(neighbour, capacity)` pairs.
+
+
+```pseudocode
+function dfs(residual, visited, path, node, sink):
+    add node to visited
+    append node to path
+    if node = sink: return true
+    for neighbor from 0 to N−1:
+        if neighbor is not in visited AND residual[node][neighbor] > 0:
+            if dfs(residual, visited, path, neighbor, sink):
+                return true
+    pop from path
+    return false
+
+function maxFlow(graph, source, sink):
+    residual ← N×N matrix of 0
+    for u in graph:
+        for (v, cap) in graph[u]:
+            residual[u][v] ← cap
+    total ← 0
+    while true:
+        visited ← empty set
+        path ← empty list
+        if NOT dfs(residual, visited, path, source, sink): break
+        bottleneck ← min residual[path[i]][path[i+1]] for consecutive pairs
+        for each consecutive (u, v) in path:
+            residual[u][v] ← residual[u][v] − bottleneck
+            residual[v][u] ← residual[v][u] + bottleneck
+        total ← total + bottleneck
+    return total
+```
 
 ```python run
 from typing import List, Tuple
@@ -591,50 +618,6 @@ object Main extends App {
 }
 ```
 
-```javascript run
-class Solution {
-    dfs(residual, visited, path, node, sink) {
-        visited.add(node); path.push(node);
-        if (node === sink) return true;
-        for (let n = 0; n < residual.length; n++) {
-            if (!visited.has(n) && residual[node][n] > 0) {
-                if (this.dfs(residual, visited, path, n, sink)) return true;
-            }
-        }
-        path.pop();
-        return false;
-    }
-
-    maxFlow(graph, source, sink) {
-        const n = graph.length;
-        const residual = Array.from({length: n}, () => Array(n).fill(0));
-        for (let u = 0; u < n; u++)
-            for (const [v, cap] of graph[u]) residual[u][v] = cap;
-
-        let total = 0;
-        while (true) {
-            const visited = new Set();
-            const path = [];
-            if (!this.dfs(residual, visited, path, source, sink)) break;
-            let pathFlow = Infinity;
-            for (let i = 0; i < path.length - 1; i++)
-                pathFlow = Math.min(pathFlow, residual[path[i]][path[i+1]]);
-            for (let i = 0; i < path.length - 1; i++) {
-                residual[path[i]][path[i+1]] -= pathFlow;
-                residual[path[i+1]][path[i]] += pathFlow;
-            }
-            total += pathFlow;
-        }
-        return total;
-    }
-}
-
-const graph = [
-    [[1,10],[2,10]], [[2,2],[3,4],[4,8]], [[4,9]],
-    [[5,10]], [[3,6],[5,10]], []];
-console.log(new Solution().maxFlow(graph, 0, 5));
-```
-
 ```typescript run
 class Solution {
     dfs(residual: number[][], visited: Set<number>, path: number[],
@@ -744,56 +727,6 @@ func main() {
         {{1, 10}, {2, 10}}, {{2, 2}, {3, 4}, {4, 8}}, {{4, 9}},
         {{5, 10}}, {{3, 6}, {5, 10}}, {}}
     fmt.Println(maxFlow(g, 0, 5))
-}
-```
-
-```kotlin run
-class Solution {
-    fun dfs(residual: Array<IntArray>, visited: MutableSet<Int>,
-            path: MutableList<Int>, node: Int, sink: Int): Boolean {
-        visited.add(node); path.add(node)
-        if (node == sink) return true
-        for (neighbour in residual.indices) {
-            if (neighbour !in visited && residual[node][neighbour] > 0) {
-                if (dfs(residual, visited, path, neighbour, sink)) return true
-            }
-        }
-        path.removeAt(path.size - 1)
-        return false
-    }
-
-    fun maxFlow(graph: List<List<IntArray>>, source: Int, sink: Int): Int {
-        val n = graph.size
-        val residual = Array(n) { IntArray(n) }
-        for (u in 0 until n) for (e in graph[u]) residual[u][e[0]] = e[1]
-
-        var total = 0
-        while (true) {
-            val visited = mutableSetOf<Int>()
-            val path = mutableListOf<Int>()
-            if (!dfs(residual, visited, path, source, sink)) break
-            var pathFlow = Int.MAX_VALUE
-            for (i in 0 until path.size - 1)
-                pathFlow = minOf(pathFlow, residual[path[i]][path[i + 1]])
-            for (i in 0 until path.size - 1) {
-                residual[path[i]][path[i + 1]] -= pathFlow
-                residual[path[i + 1]][path[i]] += pathFlow
-            }
-            total += pathFlow
-        }
-        return total
-    }
-}
-
-fun main() {
-    val g = listOf(
-        listOf(intArrayOf(1, 10), intArrayOf(2, 10)),
-        listOf(intArrayOf(2, 2), intArrayOf(3, 4), intArrayOf(4, 8)),
-        listOf(intArrayOf(4, 9)),
-        listOf(intArrayOf(5, 10)),
-        listOf(intArrayOf(3, 6), intArrayOf(5, 10)),
-        listOf())
-    println(Solution().maxFlow(g, 0, 5))
 }
 ```
 

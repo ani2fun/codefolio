@@ -1,7 +1,3 @@
----
-title: "4. Iterative Searching in Binary Search Trees"
----
-
 # 4. Iterative Searching in Binary Search Trees
 
 ## The Hook
@@ -109,6 +105,19 @@ Given the **root** of a binary search tree and a **target** value, return the no
 
 ## The Solution
 
+
+```pseudocode
+function iterativeSearch(root, target):
+    while root is NOT null:
+        if root.val = target:
+            return root
+        if target < root.val:
+            root ← root.left
+        else:
+            root ← root.right
+    return null
+```
+
 ```python run
 class Solution:
     def iterative_search(self, root, target):
@@ -174,16 +183,6 @@ object Solution {
 }
 ```
 
-```javascript run
-function iterativeSearch(root, target) {
-  while (root !== null) {                                                    // walk down
-    if (root.val === target) return root;                                    // match
-    root = (target < root.val) ? root.left : root.right;                     // BST rule
-  }
-  return null;                                                               // not found
-}
-```
-
 ```typescript run
 function iterativeSearch(root: TreeNode | null, target: number): TreeNode | null {
   while (root !== null) {                                                    // walk down
@@ -207,19 +206,6 @@ func iterativeSearch(root *TreeNode, target int) *TreeNode {
         }
     }
     return nil                                                                // not found
-}
-```
-
-```kotlin run
-class Solution {
-    fun iterativeSearch(root: TreeNode?, target: Int): TreeNode? {
-        var cur = root
-        while (cur != null) {                                                  // walk down
-            if (cur.`val` == target) return cur                                // match
-            cur = if (target < cur.`val`) cur.left else cur.right              // BST rule
-        }
-        return null                                                            // not found
-    }
 }
 ```
 
@@ -317,6 +303,16 @@ Given the **root** of a binary search tree, return the node with the minimum val
 
 ## The Solution
 
+
+```pseudocode
+function iterativelyFindMinimum(root):
+    if root is null:
+        return null
+    while root.left is NOT null:
+        root ← root.left
+    return root
+```
+
 ```python run
 class Solution:
     def iteratively_find_minimum(self, root):
@@ -368,14 +364,6 @@ object Solution {
 }
 ```
 
-```javascript run
-function iterativelyFindMinimum(root) {
-  if (root === null) return null;                        // empty tree
-  while (root.left !== null) root = root.left;           // walk to leftmost
-  return root;
-}
-```
-
 ```typescript run
 function iterativelyFindMinimum(root: TreeNode | null): TreeNode | null {
   if (root === null) return null;                        // empty tree
@@ -391,17 +379,6 @@ func iterativelyFindMinimum(root *TreeNode) *TreeNode {
         root = root.Left
     }
     return root
-}
-```
-
-```kotlin run
-class Solution {
-    fun iterativelyFindMinimum(root: TreeNode?): TreeNode? {
-        if (root == null) return null                      // empty tree
-        var cur = root
-        while (cur.left != null) cur = cur.left!!          // walk to leftmost
-        return cur
-    }
 }
 ```
 
@@ -489,6 +466,16 @@ Given the **root** of a binary search tree, return the node with the maximum val
 
 ## The Solution
 
+
+```pseudocode
+function iterativelyFindMaximum(root):
+    if root is null:
+        return null
+    while root.right is NOT null:
+        root ← root.right
+    return root
+```
+
 ```python run
 class Solution:
     def iteratively_find_maximum(self, root):
@@ -540,14 +527,6 @@ object Solution {
 }
 ```
 
-```javascript run
-function iterativelyFindMaximum(root) {
-  if (root === null) return null;                            // empty tree
-  while (root.right !== null) root = root.right;             // walk to rightmost
-  return root;
-}
-```
-
 ```typescript run
 function iterativelyFindMaximum(root: TreeNode | null): TreeNode | null {
   if (root === null) return null;                            // empty tree
@@ -563,17 +542,6 @@ func iterativelyFindMaximum(root *TreeNode) *TreeNode {
         root = root.Right
     }
     return root
-}
-```
-
-```kotlin run
-class Solution {
-    fun iterativelyFindMaximum(root: TreeNode?): TreeNode? {
-        if (root == null) return null                          // empty tree
-        var cur = root
-        while (cur.right != null) cur = cur.right!!            // walk to rightmost
-        return cur
-    }
 }
 ```
 
@@ -666,6 +634,19 @@ Given the **root** of a binary search tree and a **target**, return the node tha
 > - **Output:** `9`
 
 ## The Solution
+
+
+```pseudocode
+function iterativelyFindLowerBound(root, target):
+    lbNode ← null
+    while root is NOT null:
+        if target ≤ root.val:
+            lbNode ← root
+            root ← root.left
+        else:
+            root ← root.right
+    return lbNode
+```
 
 ```python run
 class Solution:
@@ -765,24 +746,6 @@ object Solution {
 }
 ```
 
-```javascript run
-function iterativelyFindLowerBound(root, target) {
-  let lowerBoundNode = null;                                                      // best so far
-  while (root !== null) {
-    if (target < root.val) {                                                      // node ≥ target
-      lowerBoundNode = root;                                                      //   candidate
-      root = root.left;                                                           //   tighten
-    } else if (root.val === target) {                                             // exact match
-      lowerBoundNode = root;
-      break;
-    } else {                                                                      // node < target
-      root = root.right;                                                          //   search right
-    }
-  }
-  return lowerBoundNode;
-}
-```
-
 ```typescript run
 function iterativelyFindLowerBound(root: TreeNode | null, target: number): TreeNode | null {
   let lowerBoundNode: TreeNode | null = null;                                      // best so far
@@ -816,29 +779,6 @@ func iterativelyFindLowerBound(root *TreeNode, target int) *TreeNode {
         }
     }
     return lowerBoundNode
-}
-```
-
-```kotlin run
-class Solution {
-    fun iterativelyFindLowerBound(root: TreeNode?, target: Int): TreeNode? {
-        var cur = root
-        var lowerBoundNode: TreeNode? = null                                          // best so far
-        while (cur != null) {
-            when {
-                target < cur.`val` -> {                                                // node ≥ target
-                    lowerBoundNode = cur                                                //   candidate
-                    cur = cur.left                                                      //   tighten
-                }
-                cur.`val` == target -> {                                                // exact match
-                    lowerBoundNode = cur
-                    return lowerBoundNode
-                }
-                else -> cur = cur.right                                                 // node < target
-            }
-        }
-        return lowerBoundNode
-    }
 }
 ```
 
@@ -951,6 +891,19 @@ Given the **root** of a binary search tree and a **target**, return the node tha
 
 ## The Solution
 
+
+```pseudocode
+function iterativelyFindUpperBound(root, target):
+    ubNode ← null
+    while root is NOT null:
+        if target < root.val:
+            ubNode ← root
+            root ← root.left
+        else:
+            root ← root.right   # equality not a candidate for upper bound
+    return ubNode
+```
+
 ```python run
 class Solution:
     def iteratively_find_upper_bound(self, root, target):
@@ -1032,21 +985,6 @@ object Solution {
 }
 ```
 
-```javascript run
-function iterativelyFindUpperBound(root, target) {
-  let upperBoundNode = null;                                                                // best so far
-  while (root !== null) {
-    if (target < root.val) {                                                                // node > target
-      upperBoundNode = root;                                                                //   candidate
-      root = root.left;                                                                     //   tighten
-    } else {
-      root = root.right;                                                                    // node ≤ target → go right
-    }
-  }
-  return upperBoundNode;
-}
-```
-
 ```typescript run
 function iterativelyFindUpperBound(root: TreeNode | null, target: number): TreeNode | null {
   let upperBoundNode: TreeNode | null = null;                                                 // best so far
@@ -1074,22 +1012,6 @@ func iterativelyFindUpperBound(root *TreeNode, target int) *TreeNode {
         }
     }
     return upperBoundNode
-}
-```
-
-```kotlin run
-class Solution {
-    fun iterativelyFindUpperBound(root: TreeNode?, target: Int): TreeNode? {
-        var cur = root
-        var upperBoundNode: TreeNode? = null                                                      // best so far
-        while (cur != null) {
-            if (target < cur.`val`) {                                                             // node > target
-                upperBoundNode = cur                                                              //   candidate
-                cur = cur.left                                                                    //   tighten
-            } else cur = cur.right                                                                // node ≤ target → go right
-        }
-        return upperBoundNode
-    }
 }
 ```
 
@@ -1194,6 +1116,20 @@ Why is the descent direction safe? Because of the BST property. Suppose you're a
 
 ## The Solution
 
+
+```pseudocode
+function closestValue(root, target):
+    closest ← root.val
+    while root is NOT null:
+        if |root.val − target| < |closest − target|:
+            closest ← root.val
+        if target < root.val:
+            root ← root.left
+        else:
+            root ← root.right
+    return closest
+```
+
 ```python run
 class Solution:
     def closest_value(self, root, target: float) -> int:
@@ -1270,19 +1206,6 @@ object Solution {
 }
 ```
 
-```javascript run
-function closestValue(root, target) {
-  let closest = root.val;                                                       // root non-null
-  while (root !== null) {
-    if (Math.abs(root.val - target) < Math.abs(closest - target)) {
-      closest = root.val;                                                       // new best
-    }
-    root = (target < root.val) ? root.left : root.right;                        // BST descent
-  }
-  return closest;
-}
-```
-
 ```typescript run
 function closestValue(root: TreeNode | null, target: number): number {
   let closest = root!.val;                                                      // root non-null
@@ -1312,25 +1235,6 @@ func closestValue(root *TreeNode, target float64) int {
         }
     }
     return closest
-}
-```
-
-```kotlin run
-import kotlin.math.abs
-
-class Solution {
-    fun closestValue(root: TreeNode?, target: Double): Int {
-        var cur = root!!                                                            // root non-null per spec
-        var closest = cur.`val`
-        var node: TreeNode? = cur
-        while (node != null) {
-            if (abs(node.`val` - target) < abs(closest - target)) {
-                closest = node.`val`                                                // new best
-            }
-            node = if (target < node.`val`) node.left else node.right               // BST descent
-        }
-        return closest
-    }
 }
 ```
 

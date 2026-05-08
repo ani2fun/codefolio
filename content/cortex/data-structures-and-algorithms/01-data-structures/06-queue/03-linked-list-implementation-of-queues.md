@@ -1,7 +1,3 @@
----
-title: "3. Linked-List Implementation of Queues"
----
-
 # 3. Linked-List Implementation of Queues
 
 ## The Hook
@@ -148,6 +144,22 @@ n: ListNode {
 
 The class encapsulates `head`, `tail`, `currentSize`, and `capacity`, exposing the same six operations as the array version.
 
+
+```pseudocode
+function Queue(capacity):
+    head        ← null    # front pointer
+    tail        ← null    # back pointer
+    currentSize ← 0
+    cap         ← capacity
+
+function size(queue):    stub
+function empty(queue):   stub
+function front(queue):   stub
+function back(queue):    stub
+function enqueue(queue, val): stub
+function dequeue(queue): stub
+```
+
 ```python run
 class _ListNode:
     __slots__ = ('val', 'next')
@@ -290,30 +302,6 @@ object Main extends App {
 }
 ```
 
-```javascript run
-class _ListNode {
-    constructor(val) { this.val = val; this.next = null; }
-}
-
-class Queue {
-    constructor(capacity) {
-        this.capacity     = capacity;
-        this.head         = null;
-        this.tail         = null;
-        this.currentSize  = 0;
-    }
-    size()        { return 0; }
-    empty()       { return true; }
-    front()       { return -1; }
-    back()        { return -1; }
-    enqueue(val)  { return false; }
-    dequeue()     { return -1; }
-}
-
-const q = new Queue(4);
-console.log("created queue with capacity 4");
-```
-
 ```typescript run
 class _ListNode {
     val: number;
@@ -366,28 +354,6 @@ func (q *Queue) Dequeue() int  { return -1 }
 func main() {
     q := NewQueue(4)
     fmt.Println("created queue with capacity", q.capacity)
-}
-```
-
-```kotlin run
-class Queue(private val capacity: Int) {
-    private class Node(val value: Int, var next: Node? = null)
-
-    private var head: Node?    = null
-    private var tail: Node?    = null
-    private var currentSize    = 0
-
-    fun size():    Int     = 0
-    fun empty():   Boolean = true
-    fun front():   Int     = -1
-    fun back():    Int     = -1
-    fun enqueue(v: Int): Boolean = false
-    fun dequeue(): Int     = -1
-}
-
-fun main() {
-    val q = Queue(4)
-    println("created queue with capacity 4")
 }
 ```
 
@@ -444,6 +410,12 @@ We've established the invariant — `currentSize` is updated on every enqueue an
 
 ## Implementation
 
+
+```pseudocode
+function size(queue):
+    return queue.currentSize
+```
+
 ```python run
 def size(self):
     return self.current_size
@@ -465,20 +437,12 @@ int size() { return currentSize; }
 def size: Int = currSize
 ```
 
-```javascript run
-size() { return this.currentSize; }
-```
-
 ```typescript run
 size(): number { return this.currentSize; }
 ```
 
 ```go run
 func (q *Queue) Size() int { return q.currentSize }
-```
-
-```kotlin run
-fun size(): Int = currentSize
 ```
 
 ```rust run
@@ -514,6 +478,12 @@ pub fn size(&self) -> usize { self.current_size }
 
 ## Implementation
 
+
+```pseudocode
+function empty(queue):
+    return size(queue) = 0
+```
+
 ```python run
 def empty(self):
     return self.size() == 0
@@ -535,20 +505,12 @@ bool empty() { return size() == 0; }
 def empty: Boolean = size == 0
 ```
 
-```javascript run
-empty() { return this.size() === 0; }
-```
-
 ```typescript run
 empty(): boolean { return this.size() === 0; }
 ```
 
 ```go run
 func (q *Queue) Empty() bool { return q.Size() == 0 }
-```
-
-```kotlin run
-fun empty(): Boolean = size() == 0
 ```
 
 ```rust run
@@ -604,6 +566,13 @@ note -> n1
 
 ## Implementation
 
+
+```pseudocode
+function front(queue):
+    if empty(queue): return −1
+    return queue.head.val
+```
+
 ```python run
 def front(self):
     if self.empty(): return -1
@@ -628,10 +597,6 @@ int front() { return empty() ? -1 : head->val; }
 def front: Int = if (empty) -1 else head.value
 ```
 
-```javascript run
-front() { return this.empty() ? -1 : this.head.val; }
-```
-
 ```typescript run
 front(): number { return this.empty() ? -1 : this.head!.val; }
 ```
@@ -641,10 +606,6 @@ func (q *Queue) Front() int {
     if q.Empty() { return -1 }
     return q.head.val
 }
-```
-
-```kotlin run
-fun front(): Int = if (empty()) -1 else head!!.value
 ```
 
 ```rust run
@@ -702,6 +663,13 @@ note -> n3
 
 ## Implementation
 
+
+```pseudocode
+function back(queue):
+    if empty(queue): return −1
+    return queue.tail.val
+```
+
 ```python run
 def back(self):
     if self.empty(): return -1
@@ -726,10 +694,6 @@ int back() { return empty() ? -1 : tail->val; }
 def back: Int = if (empty) -1 else tail.value
 ```
 
-```javascript run
-back() { return this.empty() ? -1 : this.tail.val; }
-```
-
 ```typescript run
 back(): number { return this.empty() ? -1 : this.tail!.val; }
 ```
@@ -739,10 +703,6 @@ func (q *Queue) Back() int {
     if q.Empty() { return -1 }
     return q.tail.val
 }
-```
-
-```kotlin run
-fun back(): Int = if (empty()) -1 else tail!!.value
 ```
 
 ```rust run
@@ -820,6 +780,19 @@ flowchart TB
 > -   **Step 5:** Increment `currentSize` and return `true`.
 
 ## Implementation
+
+
+```pseudocode
+function enqueue(queue, val):
+    if queue.currentSize = queue.capacity: return false
+    node ← new ListNode(val)
+    if queue.head = null:
+        queue.head ← node; queue.tail ← node   # first item: set both pointers
+    else:
+        queue.tail.next ← node; queue.tail ← node
+    queue.currentSize ← queue.currentSize + 1
+    return true
+```
 
 ```python run
 def enqueue(self, val):
@@ -900,22 +873,6 @@ def enqueue(v: Int): Boolean = {
 }
 ```
 
-```javascript run
-enqueue(val) {
-    if (this.currentSize === this.capacity) return false;
-    const node = new _ListNode(val);
-    if (this.head === null) {
-        this.head = node;
-        this.tail = node;
-    } else {
-        this.tail.next = node;
-        this.tail      = node;
-    }
-    this.currentSize++;
-    return true;
-}
-```
-
 ```typescript run
 enqueue(val: number): boolean {
     if (this.currentSize === this.capacity) return false;
@@ -944,22 +901,6 @@ func (q *Queue) Enqueue(val int) bool {
         q.tail      = n
     }
     q.currentSize++
-    return true
-}
-```
-
-```kotlin run
-fun enqueue(v: Int): Boolean {
-    if (currentSize == capacity) return false
-    val n = Node(v)
-    if (head == null) {
-        head = n
-        tail = n
-    } else {
-        tail!!.next = n
-        tail        = n
-    }
-    currentSize++
     return true
 }
 ```
@@ -1051,6 +992,17 @@ flowchart TB
 
 ## Implementation
 
+
+```pseudocode
+function dequeue(queue):
+    if empty(queue): return −1
+    val        ← queue.head.val
+    queue.head ← queue.head.next
+    if queue.head = null: queue.tail ← null   # last item removed; reset tail too
+    queue.currentSize ← queue.currentSize − 1
+    return val
+```
+
 ```python run
 def dequeue(self):
     if self.empty(): return -1
@@ -1110,17 +1062,6 @@ def dequeue: Int = {
 }
 ```
 
-```javascript run
-dequeue() {
-    if (this.empty()) return -1;
-    const val = this.head.val;
-    this.head = this.head.next;
-    if (this.head === null) this.tail = null;
-    this.currentSize--;
-    return val;
-}
-```
-
 ```typescript run
 dequeue(): number {
     if (this.empty()) return -1;
@@ -1140,17 +1081,6 @@ func (q *Queue) Dequeue() int {
     if q.head == nil { q.tail = nil }
     q.currentSize--
     return val
-}
-```
-
-```kotlin run
-fun dequeue(): Int {
-    if (empty()) return -1
-    val v = head!!.value
-    head  = head!!.next
-    if (head == null) tail = null
-    currentSize--
-    return v
 }
 ```
 
@@ -1256,6 +1186,34 @@ t -> n3
 > | `empty()` | `false` | `head→3→8, tail→8` |
 
 ## Solution
+
+
+```pseudocode
+function Queue(capacity):
+    head ← null; tail ← null; currentSize ← 0; cap ← capacity
+
+function size(queue):    return queue.currentSize
+function empty(queue):   return queue.currentSize = 0
+function front(queue):   if empty(queue): return −1  else return queue.head.val
+function back(queue):    if empty(queue): return −1  else return queue.tail.val
+
+function enqueue(queue, val):
+    if queue.currentSize = queue.capacity: return false
+    node ← new ListNode(val)
+    if queue.head = null: queue.head ← node
+    else:                 queue.tail.next ← node
+    queue.tail ← node
+    queue.currentSize ← queue.currentSize + 1
+    return true
+
+function dequeue(queue):
+    if empty(queue): return −1
+    val        ← queue.head.val
+    queue.head ← queue.head.next
+    if queue.head = null: queue.tail ← null
+    queue.currentSize ← queue.currentSize − 1
+    return val
+```
 
 ```python run
 class _ListNode:
@@ -1497,50 +1455,6 @@ object Main extends App {
 }
 ```
 
-```javascript run
-class _ListNode {
-    constructor(val) { this.val = val; this.next = null; }
-}
-
-class Queue {
-    constructor(capacity) {
-        this.capacity     = capacity;
-        this.head         = null;
-        this.tail         = null;
-        this.currentSize  = 0;
-    }
-    size()  { return this.currentSize; }
-    empty() { return this.currentSize === 0; }
-    front() { return this.empty() ? -1 : this.head.val; }
-    back()  { return this.empty() ? -1 : this.tail.val; }
-    enqueue(v) {
-        if (this.currentSize === this.capacity) return false;
-        const node = new _ListNode(v);
-        if (this.head === null) this.head = node;
-        else                    this.tail.next = node;
-        this.tail = node;
-        this.currentSize++;
-        return true;
-    }
-    dequeue() {
-        if (this.empty()) return -1;
-        const v   = this.head.val;
-        this.head = this.head.next;
-        if (this.head === null) this.tail = null;
-        this.currentSize--;
-        return v;
-    }
-}
-
-const q = new Queue(2);
-console.log(q.enqueue(2), q.back());
-console.log(q.enqueue(3), q.front());
-console.log(q.empty());
-console.log(q.dequeue(), q.front());
-console.log(q.enqueue(8), q.enqueue(9));
-console.log(q.empty());
-```
-
 ```typescript run
 class _ListNode {
     val: number;
@@ -1631,47 +1545,6 @@ func main() {
     fmt.Println(q.Dequeue(), q.Front())
     fmt.Println(q.Enqueue(8), q.Enqueue(9))
     fmt.Println(q.Empty())
-}
-```
-
-```kotlin run
-class Queue(private val capacity: Int) {
-    private class Node(val value: Int, var next: Node? = null)
-
-    private var head: Node?    = null
-    private var tail: Node?    = null
-    private var currentSize    = 0
-
-    fun size():  Int     = currentSize
-    fun empty(): Boolean = currentSize == 0
-    fun front(): Int     = if (empty()) -1 else head!!.value
-    fun back():  Int     = if (empty()) -1 else tail!!.value
-    fun enqueue(v: Int): Boolean {
-        if (currentSize == capacity) return false
-        val n = Node(v)
-        if (head == null) head = n else tail!!.next = n
-        tail = n
-        currentSize++
-        return true
-    }
-    fun dequeue(): Int {
-        if (empty()) return -1
-        val v = head!!.value
-        head  = head!!.next
-        if (head == null) tail = null
-        currentSize--
-        return v
-    }
-}
-
-fun main() {
-    val q = Queue(2)
-    println("${q.enqueue(2)} ${q.back()}")
-    println("${q.enqueue(3)} ${q.front()}")
-    println(q.empty())
-    println("${q.dequeue()} ${q.front()}")
-    println("${q.enqueue(8)} ${q.enqueue(9)}")
-    println(q.empty())
 }
 ```
 

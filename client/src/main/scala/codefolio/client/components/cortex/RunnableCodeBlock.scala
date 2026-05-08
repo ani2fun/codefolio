@@ -3,6 +3,8 @@ package codefolio.client.components.cortex
 import codefolio.client.api.ApiClient
 import codefolio.client.components.icons.LucideIcons
 import codefolio.shared.api.Endpoints.{RunRequest, RunResult}
+import codefolio.shared.runner.CodeExecutor
+import codefolio.shared.runner.CodeExecutor.RunState
 import japgolly.scalajs.react.*
 import japgolly.scalajs.react.vdom.html_<^.*
 
@@ -13,17 +15,16 @@ import scala.scalajs.js.annotation.JSImport
 import scala.util.{Failure, Success}
 
 /**
- * Port of `portfolio-app/src/components/knowledge/RunnableCodeBlock.tsx`.
- *
- * Renders an editable code editor + Run/Cancel/Reset controls + an output panel. Posts to /api/run via
- * [[ApiClient.runCode]] and shows the Judge0-shaped result. Mirrors the original look-and-feel closely.
+ * Renders an editable code editor + Run/Cancel/Reset controls + an output panel. State machine lives in
+ * [[CodeExecutor]] (shared module — testable on the JVM); this file owns the React surface only:
+ * `useStateBy(...)`, callback wiring, and presentation.
  *
  * `bare = true` skips the outer card wrapper (used by RunnableCodeGroup, which provides its own);
  * `hideLanguageLabel = true` hides the in-header language name (the group renders it as a tab instead).
  *
- * The `runId` counter doesn't actually cancel the in-flight HTTP request (sttp's FetchBackend has no signal
- * hook); it only discards late results for stale runs. That's good enough as long as `tag` is computed from
- * the **post-modState** state, not the render-time snapshot.
+ * The `RunHandle` issued by `CodeExecutor.started` doesn't actually cancel the in-flight HTTP request (sttp's
+ * FetchBackend has no signal hook); it only discards late results for stale runs. See
+ * `CodeExecutor.completed` for the filter.
  */
 object RunnableCodeBlock:
 
@@ -55,61 +56,38 @@ object RunnableCodeBlock:
 
   private val StatusOk = 3
 
-  private enum RunState:
-    case Idle, Running, Done
-
-  final private case class State(
-      code: String,
-      runState: RunState,
-      result: Option[RunResult],
-      error: Option[String],
-      runId: Long
-  )
-
-  private object State:
-    def initial(source: String): State = State(source, RunState.Idle, None, None, 0L)
-
   private given ExecutionContext = JSExecutionContext.queue
 
   val Component =
     ScalaFnComponent
       .withHooks[Props]
-      .useStateBy(p => State.initial(p.source))
+      .useStateBy(p => CodeExecutor.initial(p.source))
       .render { (props, st) =>
         val s     = st.value
-        val dirty = s.code != props.source
+        val dirty = CodeExecutor.isDirty(s, props.source)
 
         val minHeight =
           val lines = math.max(props.source.split("\n").length, 5)
           math.min(lines * 22 + 24, 600)
 
         val resetCb: Callback =
-          st.modState(_ => State.initial(props.source))
+          st.modState(_ => CodeExecutor.reset(props.source))
 
         val cancelCb: Callback =
-          st.modState(prev => prev.copy(runState = RunState.Idle, runId = prev.runId + 1))
+          st.modState(CodeExecutor.cancel)
 
         def runCb: Callback = Callback.suspend {
-          val codeAtRun = st.value.code
-          val tag       = st.value.runId + 1
-          st.modState(_.copy(
-            runState = RunState.Running,
-            error = None,
-            result = None,
-            runId = tag
-          )) >> Callback {
+          val snapshot  = st.value
+          val codeAtRun = snapshot.code
+          val nextState = CodeExecutor.started(snapshot)
+          val handle    = nextState.runId
+          st.modState(_ => nextState) >> Callback {
             val req = RunRequest(props.language, codeAtRun, None)
             ApiClient.runCode(req).onComplete {
               case Success(resp) =>
-                st.modState { current =>
-                  if current.runId != tag then current
-                  else current.copy(runState = RunState.Done, result = Some(resp.result))
-                }.runNow()
+                st.modState(prev => CodeExecutor.completed(prev, handle, resp.result)).runNow()
               case Failure(err) =>
-                st.modState { current =>
-                  if current.runId != tag then current
-                  else current.copy(runState = RunState.Done, error = Some(err.getMessage))
-                }.runNow()
+                st.modState(prev => CodeExecutor.failed(prev, handle, err.getMessage)).runNow()
             }
           }
         }
@@ -159,7 +137,8 @@ object RunnableCodeBlock:
 
         val editorProps = (new js.Object).asInstanceOf[EditorProps]
         editorProps.value = s.code
-        editorProps.onValueChange = (next: String) => st.modState(_.copy(code = next)).runNow()
+        editorProps.onValueChange = (next: String) =>
+          st.modState(prev => CodeExecutor.setCode(prev, next)).runNow()
         editorProps.highlight = (c: String) => highlightWithPrism(c, props.language)
         editorProps.padding = 16
         editorProps.tabSize = 4

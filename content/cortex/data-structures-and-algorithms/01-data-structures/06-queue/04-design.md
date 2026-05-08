@@ -1,7 +1,3 @@
----
-title: "4. Design"
----
-
 # 4. Design
 
 ## The Hook
@@ -110,6 +106,32 @@ The cleanest fix is to **maintain a separate `backVal` field** that is overwritt
 > O(N) — you'd have to either pour outStack back into inStack (and then back again to preserve dequeue order) or peek at outStack's bottom by popping everything off into a temporary stack. The single-integer cache sidesteps that whole problem.
 
 ## Solution
+
+
+```pseudocode
+function Queue(capacity):
+    inStack ← empty stack; outStack ← empty stack
+    backVal ← −1; cap ← capacity
+
+function size(queue):    return size(inStack) + size(outStack)
+function empty(queue):   return size(queue) = 0
+function back(queue):    if empty(queue): return −1  else return queue.backVal
+function front(queue):
+    if empty(queue): return −1
+    if outStack empty:
+        while inStack not empty: push outStack, pop inStack  # pour reverses order
+    return top of outStack
+
+function enqueue(queue, val):
+    if size(queue) = cap: return false
+    push inStack, val; backVal ← val; return true
+
+function dequeue(queue):
+    if empty(queue): return −1
+    if outStack empty:
+        while inStack not empty: push outStack, pop inStack
+    return pop outStack
+```
 
 ```python run
 class Queue:
@@ -336,46 +358,6 @@ object Main extends App {
 }
 ```
 
-```javascript run
-class Queue {
-    constructor(capacity) {
-        this.capacity = capacity;
-        this.inStack  = [];
-        this.outStack = [];
-        this.backVal  = -1;
-    }
-    size()  { return this.inStack.length + this.outStack.length; }
-    empty() { return this.size() === 0; }
-    back()  { return this.empty() ? -1 : this.backVal; }
-    front() {
-        if (this.empty()) return -1;
-        if (this.outStack.length === 0)
-            while (this.inStack.length) this.outStack.push(this.inStack.pop());
-        return this.outStack[this.outStack.length - 1];
-    }
-    enqueue(v) {
-        if (this.size() === this.capacity) return false;
-        this.inStack.push(v);
-        this.backVal = v;
-        return true;
-    }
-    dequeue() {
-        if (this.empty()) return -1;
-        if (this.outStack.length === 0)
-            while (this.inStack.length) this.outStack.push(this.inStack.pop());
-        return this.outStack.pop();
-    }
-}
-
-const q = new Queue(2);
-console.log(q.enqueue(2), q.back());
-console.log(q.enqueue(3), q.front());
-console.log(q.empty());
-console.log(q.dequeue(), q.front());
-console.log(q.enqueue(8), q.enqueue(9));
-console.log(q.empty());
-```
-
 ```typescript run
 class Queue {
     private capacity: number;
@@ -469,44 +451,6 @@ func main() {
     fmt.Println(q.Dequeue(), q.Front())
     fmt.Println(q.Enqueue(8), q.Enqueue(9))
     fmt.Println(q.Empty())
-}
-```
-
-```kotlin run
-class Queue(private val capacity: Int) {
-    private val inStack  = ArrayDeque<Int>()
-    private val outStack = ArrayDeque<Int>()
-    private var backVal  = -1
-
-    fun size():  Int     = inStack.size + outStack.size
-    fun empty(): Boolean = size() == 0
-    fun back():  Int     = if (empty()) -1 else backVal
-    fun front(): Int {
-        if (empty()) return -1
-        if (outStack.isEmpty())
-            while (inStack.isNotEmpty()) outStack.addLast(inStack.removeLast())
-        return outStack.last()
-    }
-    fun enqueue(v: Int): Boolean {
-        if (size() == capacity) return false
-        inStack.addLast(v); backVal = v; return true
-    }
-    fun dequeue(): Int {
-        if (empty()) return -1
-        if (outStack.isEmpty())
-            while (inStack.isNotEmpty()) outStack.addLast(inStack.removeLast())
-        return outStack.removeLast()
-    }
-}
-
-fun main() {
-    val q = Queue(2)
-    println("${q.enqueue(2)} ${q.back()}")
-    println("${q.enqueue(3)} ${q.front()}")
-    println(q.empty())
-    println("${q.dequeue()} ${q.front()}")
-    println("${q.enqueue(8)} ${q.enqueue(9)}")
-    println(q.empty())
 }
 ```
 
@@ -640,6 +584,29 @@ flowchart TB
 > Yes — the "lazy" mirror works too. Push by simple enqueue (O(1)). To pop, rotate all but the last element from `q1` into `q2`, then dequeue the lone remaining element from `q1` (that's the most recent push), then swap. Both designs are correct; you choose based on which operation you expect to dominate. We pick *push-heavy O(N)* here because it makes `top()` also cheap.
 
 ## Solution
+
+
+```pseudocode
+function Stack(capacity):
+    q1 ← empty queue; q2 ← empty queue; currSize ← 0; cap ← capacity
+
+function size(stack):    return stack.currSize
+function empty(stack):   return stack.currSize = 0
+function top(stack):     if empty(stack): return −1  else return front of q1
+
+function push(stack, val):
+    if stack.currSize = cap: return false
+    enqueue q2, val                          # new item lands at back of q2
+    while q1 not empty: enqueue q2, dequeue q1   # move old items behind it
+    swap q1 and q2                           # q1 now has newest item at front
+    stack.currSize ← stack.currSize + 1
+    return true
+
+function pop(stack):
+    if empty(stack): return −1
+    stack.currSize ← stack.currSize − 1
+    return dequeue q1
+```
 
 ```python run
 from collections import deque
@@ -843,41 +810,6 @@ object Main extends App {
 }
 ```
 
-```javascript run
-class Stack {
-    constructor(capacity) {
-        this.capacity = capacity;
-        this.q1       = [];
-        this.q2       = [];
-        this.currSize = 0;
-    }
-    size()  { return this.currSize; }
-    empty() { return this.currSize === 0; }
-    top()   { return this.empty() ? -1 : this.q1[0]; }
-    push(v) {
-        if (this.currSize === this.capacity) return false;
-        this.q2.push(v);
-        while (this.q1.length) this.q2.push(this.q1.shift());
-        [this.q1, this.q2] = [this.q2, this.q1];
-        this.currSize++;
-        return true;
-    }
-    pop() {
-        if (this.empty()) return -1;
-        this.currSize--;
-        return this.q1.shift();
-    }
-}
-
-const s = new Stack(2);
-console.log(s.push(2), s.push(3));
-console.log(s.top());
-console.log(s.empty());
-console.log(s.pop(), s.top());
-console.log(s.push(8), s.push(9));
-console.log(s.empty());
-```
-
 ```typescript run
 class Stack {
     private capacity: number;
@@ -953,41 +885,6 @@ func main() {
     fmt.Println(s.Pop(), s.Top())
     fmt.Println(s.Push(8), s.Push(9))
     fmt.Println(s.Empty())
-}
-```
-
-```kotlin run
-class Stack(private val capacity: Int) {
-    private var q1       = ArrayDeque<Int>()
-    private var q2       = ArrayDeque<Int>()
-    private var currSize = 0
-
-    fun size():  Int     = currSize
-    fun empty(): Boolean = currSize == 0
-    fun top():   Int     = if (empty()) -1 else q1.first()
-    fun push(v: Int): Boolean {
-        if (currSize == capacity) return false
-        q2.addLast(v)
-        while (q1.isNotEmpty()) q2.addLast(q1.removeFirst())
-        val t = q1; q1 = q2; q2 = t
-        currSize++
-        return true
-    }
-    fun pop(): Int {
-        if (empty()) return -1
-        currSize--
-        return q1.removeFirst()
-    }
-}
-
-fun main() {
-    val s = Stack(2)
-    println("${s.push(2)} ${s.push(3)}")
-    println(s.top())
-    println(s.empty())
-    println("${s.pop()} ${s.top()}")
-    println("${s.push(8)} ${s.push(9)}")
-    println(s.empty())
 }
 ```
 
@@ -1098,6 +995,27 @@ flowchart TB
 > **Why size − 1, not size?** After enqueueing `v`, the queue has `size` items, with `v` at the back and the rest in their old order ahead of it. Rotating `size − 1` times moves the `size − 1` *non-v* items to behind `v`, leaving `v` at the front. Rotate `size` times and you've gone all the way around — `v` is back at the back, defeating the purpose.
 
 ## Solution
+
+
+```pseudocode
+function Stack(capacity):
+    q ← empty queue; cap ← capacity
+
+function size(stack):    return size(q)
+function empty(stack):   return q is empty
+function top(stack):     if empty(stack): return −1  else return front of q
+
+function push(stack, val):
+    if size(q) = cap: return false
+    enqueue q, val                               # val lands at back
+    for i from 1 to size(q) − 1:
+        enqueue q, dequeue q                     # rotate: val moves to front
+    return true
+
+function pop(stack):
+    if empty(stack): return −1
+    return dequeue q
+```
 
 ```python run
 from collections import deque
@@ -1272,33 +1190,6 @@ object Main extends App {
 }
 ```
 
-```javascript run
-class Stack {
-    constructor(capacity) {
-        this.capacity = capacity;
-        this.q        = [];
-    }
-    size()  { return this.q.length; }
-    empty() { return this.q.length === 0; }
-    top()   { return this.empty() ? -1 : this.q[0]; }
-    push(v) {
-        if (this.q.length === this.capacity) return false;
-        this.q.push(v);
-        for (let i = 0; i < this.q.length - 1; i++) this.q.push(this.q.shift());
-        return true;
-    }
-    pop() { return this.empty() ? -1 : this.q.shift(); }
-}
-
-const s = new Stack(2);
-console.log(s.push(2), s.push(3));
-console.log(s.top());
-console.log(s.empty());
-console.log(s.pop(), s.top());
-console.log(s.push(8), s.push(9));
-console.log(s.empty());
-```
-
 ```typescript run
 class Stack {
     private capacity: number;
@@ -1364,34 +1255,6 @@ func main() {
     fmt.Println(s.Pop(), s.Top())
     fmt.Println(s.Push(8), s.Push(9))
     fmt.Println(s.Empty())
-}
-```
-
-```kotlin run
-class Stack(private val capacity: Int) {
-    private val q = ArrayDeque<Int>()
-
-    fun size():  Int     = q.size
-    fun empty(): Boolean = q.isEmpty()
-    fun top():   Int     = if (empty()) -1 else q.first()
-    fun push(v: Int): Boolean {
-        if (q.size == capacity) return false
-        q.addLast(v)
-        val n = q.size - 1
-        repeat(n) { q.addLast(q.removeFirst()) }
-        return true
-    }
-    fun pop(): Int = if (empty()) -1 else q.removeFirst()
-}
-
-fun main() {
-    val s = Stack(2)
-    println("${s.push(2)} ${s.push(3)}")
-    println(s.top())
-    println(s.empty())
-    println("${s.pop()} ${s.top()}")
-    println("${s.push(8)} ${s.push(9)}")
-    println(s.empty())
 }
 ```
 

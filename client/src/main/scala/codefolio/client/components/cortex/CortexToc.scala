@@ -1,6 +1,7 @@
 package codefolio.client.components.cortex
 
 import codefolio.client.markdown.MarkdownRenderer
+import codefolio.client.util.HashScroll
 import japgolly.scalajs.react.*
 import japgolly.scalajs.react.vdom.html_<^.*
 import org.scalajs.dom
@@ -71,25 +72,7 @@ object CortexToc:
                   <.a(
                     ^.href      := s"#${item.slug}",
                     ^.className := cls,
-                    ^.onClick ==> { (e: ReactMouseEvent) =>
-                      // Bypass scalajs-react Router's link interception (it
-                      // sees `#anchor` as a URL change and rebuilds the route
-                      // before the browser performs the default anchor
-                      // scroll). Scroll manually + push the hash to history.
-                      Callback {
-                        val el = dom.document.getElementById(item.slug)
-                        if el != null then
-                          e.preventDefault()
-                          e.stopPropagation()
-                          // `behavior: 'instant'` overrides the page-wide
-                          // `scroll-behavior: smooth` CSS — without this,
-                          // the smooth scroll gets cancelled by the click's
-                          // hashchange-driven re-render before it finishes.
-                          val opts = js.Dynamic.literal(behavior = "instant", block = "start")
-                          el.asInstanceOf[js.Dynamic].scrollIntoView(opts)
-                          dom.window.history.replaceState(null, "", s"#${item.slug}")
-                      }
-                    },
+                    ^.onClick ==> ((e: ReactMouseEvent) => HashScroll.onHashLinkClick(e, item.slug)),
                     item.text
                   )
                 )

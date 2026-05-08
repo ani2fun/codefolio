@@ -101,8 +101,11 @@ lazy val server = (project in file("server"))
       // Redis (cache) and MongoDB (event log). Both Java drivers wrapped in
       // ZIO blocking effects, matching the JDBC pattern used for Postgres.
       "io.lettuce"  % "lettuce-core"        % lettuceV,
-      "org.mongodb" % "mongodb-driver-sync" % mongoV
-    )
+      "org.mongodb" % "mongodb-driver-sync" % mongoV,
+      "dev.zio"    %% "zio-test"            % zioV % Test,
+      "dev.zio"    %% "zio-test-sbt"        % zioV % Test
+    ),
+    testFrameworks += new TestFramework("zio.test.sbt.ZTestFramework")
   )
 
 // ---- client --------------------------------------------------------------

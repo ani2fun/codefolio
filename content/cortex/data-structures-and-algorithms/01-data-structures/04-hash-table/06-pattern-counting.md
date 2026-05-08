@@ -1,7 +1,3 @@
----
-title: "6. Pattern: Counting"
----
-
 # 6. Pattern: Counting
 
 ## The Hook
@@ -96,6 +92,15 @@ A subtle but important point: the counting technique *rarely* solves a problem o
 
 The generic counting helper — one function we'll lean on in every problem in this lesson.
 
+
+```pseudocode
+function count_frequency(s):
+    frequency ← empty Map: char → int
+    for ch in s:
+        frequency[ch] ← frequency[ch] + 1
+    return frequency
+```
+
 ```python run
 from collections import defaultdict
 
@@ -177,16 +182,6 @@ object Main extends App {
 }
 ```
 
-```javascript run
-function countFrequency(s) {
-    const frequency = new Map();
-    for (const ch of s) frequency.set(ch, (frequency.get(ch) || 0) + 1);
-    return frequency;
-}
-
-console.log(countFrequency("abacba"));   // Map { 'a' => 3, 'b' => 2, 'c' => 1 }
-```
-
 ```typescript run
 function countFrequency(s: string): Map<string, number> {
     const frequency = new Map<string, number>();
@@ -209,13 +204,6 @@ func countFrequency(s string) map[rune]int {
 }
 
 func main() { fmt.Println(countFrequency("abacba")) }
-```
-
-```kotlin run
-fun countFrequency(s: String): Map<Char, Int> =
-    s.groupingBy { it }.eachCount()
-
-fun main() { println(countFrequency("abacba")) }
 ```
 
 ```rust run
@@ -308,6 +296,18 @@ flowchart LR
 ```
 
 <p align="center"><strong>Brute-force flow — nested loops compare every character to every other, giving O(N²) time. Acceptable for tiny strings, prohibitive for anything realistic.</strong></p>
+
+
+```pseudocode
+function first_non_repeating_brute(s):
+    for i from 0 to length(s) − 1:
+        repeated ← false
+        for j from 0 to length(s) − 1:
+            if i ≠ j AND s[i] = s[j]:
+                repeated ← true; break
+        if NOT repeated: return i
+    return -1
+```
 
 ```python run
 def first_non_repeating_brute(s: str) -> int:
@@ -413,23 +413,6 @@ object Main extends App {
 }
 ```
 
-```javascript run
-function firstNonRepeatingBrute(s) {
-    for (let i = 0; i < s.length; i++) {
-        let repeated = false;
-        for (let j = 0; j < s.length; j++) {
-            if (i !== j && s[i] === s[j]) { repeated = true; break; }
-        }
-        if (!repeated) return i;
-    }
-    return -1;
-}
-
-console.log(firstNonRepeatingBrute("codeintuition"),
-            firstNonRepeatingBrute("aaabcd"),
-            firstNonRepeatingBrute("aaabbccdd"));   // 0 3 -1
-```
-
 ```typescript run
 function firstNonRepeatingBrute(s: string): number {
     for (let i = 0; i < s.length; i++) {
@@ -467,23 +450,6 @@ func main() {
     fmt.Println(firstNonRepeatingBrute("codeintuition"),
                 firstNonRepeatingBrute("aaabcd"),
                 firstNonRepeatingBrute("aaabbccdd"))   // 0 3 -1
-}
-```
-
-```kotlin run
-fun firstNonRepeatingBrute(s: String): Int {
-    for (i in s.indices) {
-        var repeated = false
-        for (j in s.indices) {
-            if (i != j && s[i] == s[j]) { repeated = true; break }
-        }
-        if (!repeated) return i
-    }
-    return -1
-}
-
-fun main() {
-    println("${firstNonRepeatingBrute("codeintuition")} ${firstNonRepeatingBrute("aaabcd")} ${firstNonRepeatingBrute("aaabbccdd")}")
 }
 ```
 
@@ -539,6 +505,15 @@ flowchart LR
 ```
 
 <p align="center"><strong>Counting solution — first build the freq map (one pass), then walk <code>s</code> a second time looking up each character. Two linear passes total: O(N).</strong></p>
+
+
+```pseudocode
+function first_non_repeating(s):
+    frequency ← count_frequency(s)
+    for i from 0 to length(s) − 1:
+        if frequency[s[i]] = 1: return i
+    return -1
+```
 
 ```python run
 from collections import defaultdict
@@ -629,18 +604,6 @@ object Main extends App {
 }
 ```
 
-```javascript run
-function firstNonRepeating(s) {
-    const freq = new Map();
-    for (const ch of s) freq.set(ch, (freq.get(ch) || 0) + 1);
-    for (let i = 0; i < s.length; i++) if (freq.get(s[i]) === 1) return i;
-    return -1;
-}
-console.log(firstNonRepeating("codeintuition"),
-            firstNonRepeating("aaabcd"),
-            firstNonRepeating("aaabbccdd"));
-```
-
 ```typescript run
 function firstNonRepeating(s: string): number {
     const freq = new Map<string, number>();
@@ -669,18 +632,6 @@ func main() {
     fmt.Println(firstNonRepeating("codeintuition"),
                 firstNonRepeating("aaabcd"),
                 firstNonRepeating("aaabbccdd"))
-}
-```
-
-```kotlin run
-fun firstNonRepeating(s: String): Int {
-    val freq = s.groupingBy { it }.eachCount()
-    for (i in s.indices) if (freq[s[i]] == 1) return i
-    return -1
-}
-
-fun main() {
-    println("${firstNonRepeating("codeintuition")} ${firstNonRepeating("aaabcd")} ${firstNonRepeating("aaabbccdd")}")
 }
 ```
 
@@ -743,6 +694,15 @@ Given a string `s`, find and return the index of the first non-repeating charact
 ## Solution
 
 Two passes: build the frequency map, then re-walk to find the first frequency-1 character.
+
+
+```pseudocode
+function first_non_repeating_character(s):
+    freq ← count_frequency(s)
+    for i from 0 to length(s) − 1:
+        if freq[s[i]] = 1: return i
+    return -1
+```
 
 ```python run
 from collections import defaultdict
@@ -828,18 +788,6 @@ object Main extends App {
 }
 ```
 
-```javascript run
-function firstNonRepeatingCharacter(s) {
-    const freq = new Map();
-    for (const ch of s) freq.set(ch, (freq.get(ch) || 0) + 1);
-    for (let i = 0; i < s.length; i++) if (freq.get(s[i]) === 1) return i;
-    return -1;
-}
-console.log(firstNonRepeatingCharacter("codeintuition"),
-            firstNonRepeatingCharacter("aaabcd"),
-            firstNonRepeatingCharacter("aaabbccdd"));
-```
-
 ```typescript run
 function firstNonRepeatingCharacter(s: string): number {
     const freq = new Map<string, number>();
@@ -866,18 +814,6 @@ func main() {
     fmt.Println(firstNonRepeatingCharacter("codeintuition"),
                 firstNonRepeatingCharacter("aaabcd"),
                 firstNonRepeatingCharacter("aaabbccdd"))
-}
-```
-
-```kotlin run
-fun firstNonRepeatingCharacter(s: String): Int {
-    val freq = s.groupingBy { it }.eachCount()
-    for (i in s.indices) if (freq[s[i]] == 1) return i
-    return -1
-}
-
-fun main() {
-    println("${firstNonRepeatingCharacter("codeintuition")} ${firstNonRepeatingCharacter("aaabcd")} ${firstNonRepeatingCharacter("aaabbccdd")}")
 }
 ```
 
@@ -948,6 +884,16 @@ flowchart LR
 <p align="center"><strong>Constructibility — the s2 frequency map is the "available letters" pool. Walking s1 consumes from the pool. If you ever try to consume a letter that's exhausted, the build fails.</strong></p>
 
 ## Solution
+
+
+```pseudocode
+function constructibility_check(s1, s2):
+    pool ← count_frequency(s2)
+    for ch in s1:
+        if pool[ch] = 0: return false
+        pool[ch] ← pool[ch] − 1
+    return true
+```
 
 ```python run
 from collections import Counter
@@ -1047,22 +993,6 @@ object Main extends App {
 }
 ```
 
-```javascript run
-function constructibilityCheck(s1, s2) {
-    const pool = new Map();
-    for (const ch of s2) pool.set(ch, (pool.get(ch) || 0) + 1);
-    for (const ch of s1) {
-        const n = pool.get(ch) || 0;
-        if (n === 0) return false;
-        pool.set(ch, n - 1);
-    }
-    return true;
-}
-console.log(constructibilityCheck("somenote", "enetomoselse"),
-            constructibilityCheck("thief", "hifacqet"),
-            constructibilityCheck("alpha", "beta"));
-```
-
 ```typescript run
 function constructibilityCheck(s1: string, s2: string): boolean {
     const pool = new Map<string, number>();
@@ -1096,25 +1026,6 @@ func main() {
     fmt.Println(constructibilityCheck("somenote", "enetomoselse"),
                 constructibilityCheck("thief", "hifacqet"),
                 constructibilityCheck("alpha", "beta"))
-}
-```
-
-```kotlin run
-fun constructibilityCheck(s1: String, s2: String): Boolean {
-    val pool = HashMap<Char, Int>()
-    for (ch in s2) pool[ch] = (pool[ch] ?: 0) + 1
-    for (ch in s1) {
-        val n = pool[ch] ?: 0
-        if (n == 0) return false
-        pool[ch] = n - 1
-    }
-    return true
-}
-
-fun main() {
-    println(constructibilityCheck("somenote", "enetomoselse"))
-    println(constructibilityCheck("thief", "hifacqet"))
-    println(constructibilityCheck("alpha", "beta"))
 }
 ```
 
@@ -1170,6 +1081,13 @@ Anagrams have the same length and the same character frequency map. Build the fr
 > *Mental shortcut* — anagram checking is "does the multiset match?". The frequency map *is* the multiset.
 
 ## Solution
+
+
+```pseudocode
+function anagram_checker(s, p):
+    if length(s) ≠ length(p): return false
+    return count_frequency(s) = count_frequency(p)
+```
 
 ```python run
 from collections import Counter
@@ -1261,23 +1179,6 @@ object Main extends App {
 }
 ```
 
-```javascript run
-function anagramChecker(s, p) {
-    if (s.length !== p.length) return false;
-    const freq = new Map();
-    for (const ch of s) freq.set(ch, (freq.get(ch) || 0) + 1);
-    for (const ch of p) {
-        const n = (freq.get(ch) || 0) - 1;
-        if (n < 0) return false;
-        freq.set(ch, n);
-    }
-    return true;
-}
-console.log(anagramChecker("codeintuition", "cdoenoitiutni"),
-            anagramChecker("abc", "ade"),
-            anagramChecker("abcdef", "dfecba"));
-```
-
 ```typescript run
 function anagramChecker(s: string, p: string): boolean {
     if (s.length !== p.length) return false;
@@ -1313,26 +1214,6 @@ func main() {
     fmt.Println(anagramChecker("codeintuition", "cdoenoitiutni"),
                 anagramChecker("abc", "ade"),
                 anagramChecker("abcdef", "dfecba"))
-}
-```
-
-```kotlin run
-fun anagramChecker(s: String, p: String): Boolean {
-    if (s.length != p.length) return false
-    val freq = HashMap<Char, Int>()
-    for (ch in s) freq[ch] = (freq[ch] ?: 0) + 1
-    for (ch in p) {
-        val n = (freq[ch] ?: 0) - 1
-        if (n < 0) return false
-        freq[ch] = n
-    }
-    return true
-}
-
-fun main() {
-    println(anagramChecker("codeintuition", "cdoenoitiutni"))
-    println(anagramChecker("abc", "ade"))
-    println(anagramChecker("abcdef", "dfecba"))
 }
 ```
 
@@ -1412,6 +1293,18 @@ flowchart LR
 <p align="center"><strong>Build palindrome — every even-frequency character contributes fully; odd-frequency characters contribute (count − 1); a single bonus +1 for the optional middle character.</strong></p>
 
 ## Solution
+
+
+```pseudocode
+function build_palindrome(s):
+    freq ← count_frequency(s)
+    length ← 0; has_odd ← false
+    for c in values(freq):
+        if c mod 2 = 0: length ← length + c
+        else: length ← length + c − 1; has_odd ← true
+    if has_odd: return length + 1
+    return length
+```
 
 ```python run
 from collections import Counter
@@ -1512,22 +1405,6 @@ object Main extends App {
 }
 ```
 
-```javascript run
-function buildPalindrome(s) {
-    const freq = new Map();
-    for (const ch of s) freq.set(ch, (freq.get(ch) || 0) + 1);
-    let length = 0, hasOdd = false;
-    for (const c of freq.values()) {
-        if (c % 2 === 0) length += c;
-        else             { length += c - 1; hasOdd = true; }
-    }
-    return length + (hasOdd ? 1 : 0);
-}
-console.log(buildPalindrome("AaAaBbBbc"),
-            buildPalindrome("abbd"),
-            buildPalindrome("abc"));
-```
-
 ```typescript run
 function buildPalindrome(s: string): number {
     const freq = new Map<string, number>();
@@ -1562,24 +1439,6 @@ func main() {
     fmt.Println(buildPalindrome("AaAaBbBbc"),
                 buildPalindrome("abbd"),
                 buildPalindrome("abc"))
-}
-```
-
-```kotlin run
-fun buildPalindrome(s: String): Int {
-    val freq = s.groupingBy { it }.eachCount()
-    var length = 0; var hasOdd = false
-    for (c in freq.values) {
-        if (c % 2 == 0) length += c
-        else            { length += c - 1; hasOdd = true }
-    }
-    return if (hasOdd) length + 1 else length
-}
-
-fun main() {
-    println(buildPalindrome("AaAaBbBbc"))
-    println(buildPalindrome("abbd"))
-    println(buildPalindrome("abc"))
 }
 ```
 
@@ -1666,6 +1525,16 @@ flowchart LR
 <p align="center"><strong>Cluster anagrams — the canonical form (sorted letters or letter-frequency tuple) is the same for every anagram, so anagrams collide into the same hash-map bucket. The buckets <em>are</em> the groups.</strong></p>
 
 ## Solution
+
+
+```pseudocode
+function cluster_anagrams(strs):
+    groups ← empty Map: string → list
+    for s in strs:
+        key ← sorted characters of s joined as string
+        append s to groups[key]
+    return values(groups)
+```
 
 ```python run
 from collections import defaultdict
@@ -1773,19 +1642,6 @@ object Main extends App {
 }
 ```
 
-```javascript run
-function clusterAnagrams(strs) {
-    const groups = new Map();
-    for (const s of strs) {
-        const key = [...s].sort().join('');
-        if (!groups.has(key)) groups.set(key, []);
-        groups.get(key).push(s);
-    }
-    return [...groups.values()];
-}
-console.log(clusterAnagrams(["abc","cab","def","dfe","hij"]));
-```
-
 ```typescript run
 function clusterAnagrams(strs: string[]): string[][] {
     const groups = new Map<string, string[]>();
@@ -1823,16 +1679,6 @@ func clusterAnagrams(strs []string) [][]string {
 
 func main() {
     fmt.Println(clusterAnagrams([]string{"abc","cab","def","dfe","hij"}))
-}
-```
-
-```kotlin run
-fun clusterAnagrams(strs: List<String>): List<List<String>> =
-    strs.groupBy { it.toCharArray().sorted().joinToString("") }
-        .values.toList()
-
-fun main() {
-    println(clusterAnagrams(listOf("abc","cab","def","dfe","hij")))
 }
 ```
 

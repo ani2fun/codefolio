@@ -1,7 +1,3 @@
----
-title: "1. Introduction to graphs"
----
-
 # 1. Introduction to graphs
 
 This section introduces the **graph** — the data structure that powers Google Maps, Facebook's friend suggestions, the dependency resolver in `npm`, and almost every "find the best route / connection / order" problem you will ever meet.
@@ -155,16 +151,16 @@ Now add airfare to each connection. Where does the price live in your linked-lis
 ```d2
 direction: right
 
-flights: Flight + Fare {
+flights: "Flight + Fare" {
   grid-rows: 6
   grid-columns: 1
   grid-gap: 0
-  f1: "A ↔ B   $100"
-  f2: "A ↔ C   $200"
-  f3: "B ↔ D   $150"
-  f4: "C ↔ D   $250"
-  f5: "C ↔ E   $300"
-  f6: "D ↔ F   $400"
+  f1: "A ↔ B   \$100"
+  f2: "A ↔ C   \$200"
+  f3: "B ↔ D   \$150"
+  f4: "C ↔ D   \$250"
+  f5: "C ↔ E   \$300"
+  f6: "D ↔ F   \$400"
 }
 ```
 

@@ -1,7 +1,3 @@
----
-title: "14. Pattern: Level-Order Traversal"
----
-
 # 14. Pattern: Level-Order Traversal
 
 ## The Hook
@@ -96,6 +92,24 @@ q=[]"]
 ## Generic pattern in 10 languages
 
 The "list each level's values" template — the simplest member of the family.
+
+
+```pseudocode
+function levels(root):
+    if root = null: return empty list
+    out ← empty list
+    q   ← empty queue; enqueue root to q
+    while q is not empty:
+        levelSize ← size of q
+        level     ← empty list
+        for _ from 1 to levelSize:
+            n ← dequeue from q
+            append n.val to level
+            if n.left  ≠ null: enqueue n.left  to q
+            if n.right ≠ null: enqueue n.right to q
+        append level to out
+    return out
+```
 
 ```python run
 from collections import deque
@@ -209,26 +223,6 @@ def levels(root: TreeNode): List[List[Int]] = {
 }
 ```
 
-```javascript run
-function levels(root) {
-    const out = [];
-    if (!root) return out;
-    const q = [root];
-    while (q.length) {
-        const levelSize = q.length;
-        const level = [];
-        for (let i = 0; i < levelSize; i++) {
-            const n = q.shift();
-            level.push(n.val);
-            if (n.left)  q.push(n.left);
-            if (n.right) q.push(n.right);
-        }
-        out.push(level);
-    }
-    return out;
-}
-```
-
 ```typescript run
 function levels(root: TreeNode | null): number[][] {
     const out: number[][] = [];
@@ -264,26 +258,6 @@ func levels(root *TreeNode) [][]int {
             if n.Right != nil { q = append(q, n.Right) }
         }
         out = append(out, level)
-    }
-    return out
-}
-```
-
-```kotlin run
-fun levels(root: TreeNode?): List<List<Int>> {
-    val out = mutableListOf<List<Int>>()
-    if (root == null) return out
-    val q = ArrayDeque<TreeNode>(); q.addLast(root)
-    while (q.isNotEmpty()) {
-        val levelSize = q.size
-        val level = mutableListOf<Int>()
-        repeat(levelSize) {
-            val n = q.removeFirst()
-            level += n.value
-            n.left ?.let { q.addLast(it) }
-            n.right?.let { q.addLast(it) }
-        }
-        out += level
     }
     return out
 }
@@ -345,6 +319,22 @@ Anti-pattern: if there's no notion of "level" in the question (path sums, subtre
 Apply the template directly: at the top of each outer-loop iteration, accumulate `levelSum = 0`; in the inner loop, add each node's value; after the inner loop, append `levelSum` to the output.
 
 ## Solution
+
+
+```pseudocode
+function levelSum(root):
+    if root = null: return empty list
+    out ← empty list; q ← empty queue; enqueue root to q
+    while q is not empty:
+        sz ← size of q; s ← 0
+        for _ from 1 to sz:
+            n ← dequeue from q
+            s ← s + n.val
+            if n.left  ≠ null: enqueue n.left  to q
+            if n.right ≠ null: enqueue n.right to q
+        append s to out
+    return out
+```
 
 ```python run
 def level_sum(root):
@@ -439,25 +429,6 @@ def levelSum(root: TreeNode): List[Int] = {
 }
 ```
 
-```javascript run
-function levelSum(root) {
-    const out = [];
-    if (!root) return out;
-    const q = [root];
-    while (q.length) {
-        let sz = q.length, s = 0;
-        for (let i = 0; i < sz; i++) {
-            const n = q.shift();
-            s += n.val;
-            if (n.left)  q.push(n.left);
-            if (n.right) q.push(n.right);
-        }
-        out.push(s);
-    }
-    return out;
-}
-```
-
 ```typescript run
 function levelSum(root: TreeNode | null): number[] {
     const out: number[] = [];
@@ -496,25 +467,6 @@ func levelSum(root *TreeNode) []int {
 }
 ```
 
-```kotlin run
-fun levelSum(root: TreeNode?): List<Int> {
-    if (root == null) return emptyList()
-    val out = mutableListOf<Int>()
-    val q = ArrayDeque<TreeNode>(); q.addLast(root)
-    while (q.isNotEmpty()) {
-        val sz = q.size; var s = 0
-        repeat(sz) {
-            val n = q.removeFirst()
-            s += n.value
-            n.left ?.let { q.addLast(it) }
-            n.right?.let { q.addLast(it) }
-        }
-        out += s
-    }
-    return out
-}
-```
-
 ```rust run
 pub fn level_sum(root: &Option<Box<TreeNode>>) -> Vec<i32> {
     let mut out = Vec::new();
@@ -544,6 +496,21 @@ pub fn level_sum(root: &Option<Box<TreeNode>>) -> Vec<i32> {
 Same shape as level-sum, but instead of recording every level we just *overwrite* a single `levelSum` variable each iteration. After the loop ends, `levelSum` holds the sum of the deepest level. (Note: every node on the deepest level is a leaf.)
 
 ## Solution
+
+
+```pseudocode
+function deepestLeavesSum(root):
+    if root = null: return 0
+    q ← empty queue; enqueue root to q; s ← 0
+    while q is not empty:
+        s ← 0                              # reset each level; last iteration = deepest
+        for _ from 1 to size of q:
+            n ← dequeue from q
+            s ← s + n.val
+            if n.left  ≠ null: enqueue n.left  to q
+            if n.right ≠ null: enqueue n.right to q
+    return s
+```
 
 ```python run
 def deepest_leaves_sum(root):
@@ -630,23 +597,6 @@ def deepestLeavesSum(root: TreeNode): Int = {
 }
 ```
 
-```javascript run
-function deepestLeavesSum(root) {
-    if (!root) return 0;
-    const q = [root]; let s = 0;
-    while (q.length) {
-        const sz = q.length; s = 0;
-        for (let i = 0; i < sz; i++) {
-            const n = q.shift();
-            s += n.val;
-            if (n.left)  q.push(n.left);
-            if (n.right) q.push(n.right);
-        }
-    }
-    return s;
-}
-```
-
 ```typescript run
 function deepestLeavesSum(root: TreeNode | null): number {
     if (!root) return 0;
@@ -675,23 +625,6 @@ func deepestLeavesSum(root *TreeNode) int {
             s += n.Val
             if n.Left  != nil { q = append(q, n.Left) }
             if n.Right != nil { q = append(q, n.Right) }
-        }
-    }
-    return s
-}
-```
-
-```kotlin run
-fun deepestLeavesSum(root: TreeNode?): Int {
-    if (root == null) return 0
-    val q = ArrayDeque<TreeNode>(); q.addLast(root); var s = 0
-    while (q.isNotEmpty()) {
-        val sz = q.size; s = 0
-        repeat(sz) {
-            val n = q.removeFirst()
-            s += n.value
-            n.left ?.let { q.addLast(it) }
-            n.right?.let { q.addLast(it) }
         }
     }
     return s
@@ -765,6 +698,22 @@ flowchart LR
 <p align="center"><strong>Completeness check — enqueue every child including nulls. Walk the resulting queue; once you've seen a null, no real node may follow. The left tree fails because node 5 follows a null.</strong></p>
 
 ## Solution
+
+
+```pseudocode
+function isComplete(root):
+    if root = null: return true
+    q ← empty queue; enqueue root to q; seenNull ← false
+    while q is not empty:
+        n ← dequeue from q
+        if n = null:
+            seenNull ← true
+        else:
+            if seenNull: return false   # non-null after null → gap → not complete
+            enqueue n.left  to q        # enqueue even if null (sentinel check)
+            enqueue n.right to q
+    return true
+```
 
 ```python run
 def is_complete(root):
@@ -852,22 +801,6 @@ def isComplete(root: TreeNode): Boolean = {
 }
 ```
 
-```javascript run
-function isComplete(root) {
-    if (!root) return true;
-    const q = [root]; let seenNull = false;
-    while (q.length) {
-        const n = q.shift();
-        if (n === null) seenNull = true;
-        else {
-            if (seenNull) return false;
-            q.push(n.left); q.push(n.right);
-        }
-    }
-    return true;
-}
-```
-
 ```typescript run
 function isComplete(root: TreeNode | null): boolean {
     if (!root) return true;
@@ -894,23 +827,6 @@ func isComplete(root *TreeNode) bool {
         if n == nil { seenNull = true; continue }
         if seenNull { return false }
         q = append(q, n.Left, n.Right)
-    }
-    return true
-}
-```
-
-```kotlin run
-fun isComplete(root: TreeNode?): Boolean {
-    if (root == null) return true
-    val q = ArrayDeque<TreeNode?>(); q.addLast(root)
-    var seenNull = false
-    while (q.isNotEmpty()) {
-        val n = q.removeFirst()
-        if (n == null) seenNull = true
-        else {
-            if (seenNull) return false
-            q.addLast(n.left); q.addLast(n.right)
-        }
     }
     return true
 }
@@ -946,6 +862,24 @@ pub fn is_complete(root: &Option<Box<TreeNode>>) -> bool {
 Same template, but pre-allocate the level array and *write into it from either end* depending on a `reverse` boolean that flips each iteration. Avoids per-level reversal at the cost of one extra index.
 
 ## Solution
+
+
+```pseudocode
+function zigzagTraversal(root):
+    if root = null: return empty list
+    out ← empty list; q ← empty queue; enqueue root to q; reverse ← false
+    while q is not empty:
+        sz    ← size of q
+        level ← array of size sz
+        for i from 0 to sz − 1:
+            n ← dequeue from q
+            level[sz − 1 − i if reverse else i] ← n.val   # fill from end on odd levels
+            if n.left  ≠ null: enqueue n.left  to q
+            if n.right ≠ null: enqueue n.right to q
+        append level to out
+        reverse ← NOT reverse
+    return out
+```
 
 ```python run
 def zigzag_traversal(root):
@@ -1035,27 +969,6 @@ def zigzagTraversal(root: TreeNode): List[List[Int]] = {
 }
 ```
 
-```javascript run
-function zigzagTraversal(root) {
-    const out = [];
-    if (!root) return out;
-    const q = [root]; let reverse = false;
-    while (q.length) {
-        const sz = q.length;
-        const level = new Array(sz);
-        for (let i = 0; i < sz; i++) {
-            const n = q.shift();
-            level[reverse ? sz - 1 - i : i] = n.val;
-            if (n.left)  q.push(n.left);
-            if (n.right) q.push(n.right);
-        }
-        out.push(level);
-        reverse = !reverse;
-    }
-    return out;
-}
-```
-
 ```typescript run
 function zigzagTraversal(root: TreeNode | null): number[][] {
     const out: number[][] = [];
@@ -1100,28 +1013,6 @@ func zigzagTraversal(root *TreeNode) [][]int {
 }
 ```
 
-```kotlin run
-fun zigzagTraversal(root: TreeNode?): List<List<Int>> {
-    if (root == null) return emptyList()
-    val out = mutableListOf<List<Int>>()
-    val q = ArrayDeque<TreeNode>(); q.addLast(root)
-    var reverse = false
-    while (q.isNotEmpty()) {
-        val sz = q.size
-        val level = IntArray(sz)
-        for (i in 0 until sz) {
-            val n = q.removeFirst()
-            level[if (reverse) sz - 1 - i else i] = n.value
-            n.left ?.let { q.addLast(it) }
-            n.right?.let { q.addLast(it) }
-        }
-        out += level.toList()
-        reverse = !reverse
-    }
-    return out
-}
-```
-
 ```rust run
 pub fn zigzag_traversal(root: &Option<Box<TreeNode>>) -> Vec<Vec<i32>> {
     let mut out = Vec::new();
@@ -1156,6 +1047,24 @@ pub fn zigzag_traversal(root: &Option<Box<TreeNode>>) -> Vec<Vec<i32>> {
 Augment the BFS so each enqueued item carries *both* the node and its parent. As we walk a level, look for the two target values; if both are found on the same level *and* they have different parents, return `true`. If only one is found on a level, they're not at the same depth, return `false`.
 
 ## Solution
+
+
+```pseudocode
+function cousinCheck(root, valA, valB):
+    if root = null: return false
+    q ← empty queue; enqueue (root, null) to q   # (node, parent) pairs
+    while q is not empty:
+        sz ← size of q; pa ← null; pb ← null
+        for _ from 1 to sz:
+            (n, p) ← dequeue from q
+            if n.val = valA: pa ← p
+            if n.val = valB: pb ← p
+            if n.left  ≠ null: enqueue (n.left,  n) to q
+            if n.right ≠ null: enqueue (n.right, n) to q
+        if pa ≠ null AND pb ≠ null: return pa ≠ pb   # same depth, different parents
+        if pa ≠ null OR  pb ≠ null: return false      # different depths
+    return false
+```
 
 ```python run
 def cousin_check(root, val_a, val_b):
@@ -1263,27 +1172,6 @@ def cousinCheck(root: TreeNode, valA: Int, valB: Int): Boolean = {
 }
 ```
 
-```javascript run
-function cousinCheck(root, valA, valB) {
-    if (!root) return false;
-    const q = [[root, null]];
-    while (q.length) {
-        const sz = q.length;
-        let pa = null, pb = null;
-        for (let i = 0; i < sz; i++) {
-            const [n, p] = q.shift();
-            if (n.val === valA) pa = p;
-            if (n.val === valB) pb = p;
-            if (n.left)  q.push([n.left,  n]);
-            if (n.right) q.push([n.right, n]);
-        }
-        if (pa && pb) return pa !== pb;
-        if (pa || pb) return false;
-    }
-    return false;
-}
-```
-
 ```typescript run
 function cousinCheck(root: TreeNode | null, valA: number, valB: number): boolean {
     if (!root) return false;
@@ -1323,28 +1211,6 @@ func cousinCheck(root *TreeNode, valA, valB int) bool {
         }
         if pa != nil && pb != nil { return pa != pb }
         if pa != nil || pb != nil { return false }
-    }
-    return false
-}
-```
-
-```kotlin run
-fun cousinCheck(root: TreeNode?, valA: Int, valB: Int): Boolean {
-    if (root == null) return false
-    data class NP(val n: TreeNode, val p: TreeNode?)
-    val q = ArrayDeque<NP>(); q.addLast(NP(root, null))
-    while (q.isNotEmpty()) {
-        val sz = q.size
-        var pa: TreeNode? = null; var pb: TreeNode? = null
-        repeat(sz) {
-            val cur = q.removeFirst()
-            if (cur.n.value == valA) pa = cur.p
-            if (cur.n.value == valB) pb = cur.p
-            cur.n.left ?.let { q.addLast(NP(it, cur.n)) }
-            cur.n.right?.let { q.addLast(NP(it, cur.n)) }
-        }
-        if (pa != null && pb != null) return pa !== pb
-        if (pa != null || pb != null) return false
     }
     return false
 }

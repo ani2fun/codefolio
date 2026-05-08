@@ -1,57 +1,16 @@
 package codefolio.client.components.sections
 
+import codefolio.client.components.icons.LucideIcons
 import codefolio.client.components.ui.Section
 import codefolio.client.data.PortfolioData
 import japgolly.scalajs.react.*
 import japgolly.scalajs.react.vdom.html_<^.*
-import japgolly.scalajs.react.vdom.svg_<^
 
 /**
  * Vertical timeline of diplomas and course certificates. Highlighted entries (e.g. the Diploma) get a star
  * marker and a subtly shaded card background.
  */
 object Certifications:
-
-  private def starMarker: VdomNode =
-    svg_<^.<.svg(
-      ^.className      := "certifications__marker-icon",
-      svg_<^.^.viewBox := "0 0 24 24",
-      svg_<^.^.fill    := "currentColor",
-      svg_<^.^.xmlns   := "http://www.w3.org/2000/svg",
-      svg_<^.<.path(
-        svg_<^.^.d :=
-          "M12 2l2.39 4.84L19.78 7.7l-3.89 3.79.92 5.36L12 14.27l-4.81 2.58.92-5.36L4.22 7.7l5.39-.86L12 2z"
-      )
-    )
-
-  private def trophyMarker: VdomNode =
-    svg_<^.<.svg(
-      ^.className             := "certifications__marker-icon",
-      svg_<^.^.viewBox        := "0 0 24 24",
-      svg_<^.^.fill           := "none",
-      svg_<^.^.stroke         := "currentColor",
-      svg_<^.^.strokeWidth    := 2.5,
-      svg_<^.^.strokeLinecap  := "round",
-      svg_<^.^.strokeLinejoin := "round",
-      svg_<^.^.xmlns          := "http://www.w3.org/2000/svg",
-      svg_<^.<.circle(svg_<^.^.cx := 12, svg_<^.^.cy := 8, svg_<^.^.r := 6),
-      svg_<^.<.path(svg_<^.^.d    := "M15.477 12.89L17 22l-5-3-5 3 1.523-9.11")
-    )
-
-  private def viewArrow: VdomNode =
-    svg_<^.<.svg(
-      ^.className      := "certifications__view-arrow",
-      svg_<^.^.viewBox := "0 0 24 24",
-      svg_<^.^.fill    := "none",
-      svg_<^.^.xmlns   := "http://www.w3.org/2000/svg",
-      svg_<^.<.path(
-        svg_<^.^.d              := "M14 3h7v7M10 14L21 3M21 14v7h-7M3 10V3h7",
-        svg_<^.^.stroke         := "currentColor",
-        svg_<^.^.strokeWidth    := 2,
-        svg_<^.^.strokeLinecap  := "round",
-        svg_<^.^.strokeLinejoin := "round"
-      )
-    )
 
   val Component = ScalaFnComponent[Unit] { _ =>
     val items   = PortfolioData.certifications.toList
@@ -76,6 +35,11 @@ object Certifications:
           val cardCls =
             if cert.highlight then "certifications__card certifications__card--highlight group"
             else "certifications__card group"
+          val markerIcon =
+            if cert.highlight then
+              LucideIcons.Star(LucideIcons.withClass("certifications__marker-icon [fill:currentColor]"))
+            else
+              LucideIcons.Trophy(LucideIcons.withClass("certifications__marker-icon"))
 
           <.div(
             ^.key       := idx,
@@ -83,7 +47,7 @@ object Certifications:
             <.div(
               ^.className   := markerCls,
               ^.aria.hidden := true,
-              if cert.highlight then starMarker else trophyMarker
+              markerIcon
             ),
             <.div(
               ^.className := "certifications__meta",
@@ -111,7 +75,11 @@ object Certifications:
                 cert.tags.toList.toTagMod { tag =>
                   <.span(^.key := tag, ^.className := "certifications__tag", tag)
                 },
-                <.span(^.className := "certifications__view", "View", viewArrow)
+                <.span(
+                  ^.className := "certifications__view",
+                  "View",
+                  LucideIcons.Maximize2(LucideIcons.withClass("certifications__view-arrow"))
+                )
               )
             )
           )

@@ -1,7 +1,3 @@
----
-title: "1. Introduction to Stacks"
----
-
 # 1. Introduction to Stacks
 
 ## The Hook

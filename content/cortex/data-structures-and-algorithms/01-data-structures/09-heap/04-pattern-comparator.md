@@ -1,7 +1,3 @@
----
-title: "4. Pattern: Comparator"
----
-
 # 4. Pattern: Comparator
 
 ## The Hook
@@ -86,6 +82,23 @@ ordering: a < b  iff  a.x < b.x  OR  (a.x == b.x AND a.y < b.y)
 Two flavours: a min-heap (smallest `Entry` on top) and a max-heap (largest on top).
 
 ### min-heap
+
+
+```pseudocode
+# A custom min-heap entry ordered first by x, then by y.
+class Entry:
+    x: integer
+    y: integer
+    function lessThan(other):
+        if self.x ≠ other.x: return self.x < other.x
+        return self.y < other.y
+
+# Usage: push Entry objects onto a min-heap that uses lessThan as the comparator.
+heap ← empty min-heap(comparator = Entry.lessThan)
+push Entry(2, 7) onto heap
+push Entry(1, 9) onto heap
+top ← pop from heap          # Entry(1, 9) — smallest by (x, then y)
+```
 
 ```python run
 import heapq
@@ -183,46 +196,6 @@ object Demo {
 }
 ```
 
-```javascript run
-// JavaScript has no built-in priority queue. Use the MinHeap class from lesson 3,
-// generalised to take a comparator returning -1 / 0 / 1 (or a − b).
-class MinHeap {
-  constructor(cmp) { this.cmp = cmp; this.h = []; }
-  push(v) {
-    this.h.push(v);
-    let i = this.h.length - 1;
-    while (i > 0) {
-      const p = (i - 1) >> 1;
-      if (this.cmp(this.h[p], this.h[i]) > 0) { [this.h[p], this.h[i]] = [this.h[i], this.h[p]]; i = p; }
-      else break;
-    }
-  }
-  pop() {
-    const top = this.h[0]; const last = this.h.pop();
-    if (this.h.length) {
-      this.h[0] = last;
-      let i = 0; const n = this.h.length;
-      while (true) {
-        const l = 2*i+1, r = 2*i+2; let s = i;
-        if (l < n && this.cmp(this.h[l], this.h[s]) < 0) s = l;
-        if (r < n && this.cmp(this.h[r], this.h[s]) < 0) s = r;
-        if (s === i) break;
-        [this.h[i], this.h[s]] = [this.h[s], this.h[i]];
-        i = s;
-      }
-    }
-    return top;
-  }
-  size() { return this.h.length; }
-  peek() { return this.h[0]; }
-}
-
-const minHeap = new MinHeap((a, b) => a.x - b.x || a.y - b.y);
-minHeap.push({x: 2, y: 7});
-minHeap.push({x: 1, y: 9});
-const top = minHeap.peek();      // {x: 1, y: 9}
-```
-
 ```typescript run
 type Entry = { x: number; y: number };
 
@@ -289,20 +262,6 @@ func demo() {
     heap.Push(h, Entry{2, 7})
     heap.Push(h, Entry{1, 9})
     _ = (*h)[0]                                                                // Entry{1, 9}
-}
-```
-
-```kotlin run
-import java.util.PriorityQueue
-
-data class Entry(val x: Int, val y: Int)
-
-fun demo() {
-    // compareBy returns a Comparator with the natural (asc) ordering on the chosen keys.
-    val minHeap = PriorityQueue(compareBy<Entry> { it.x }.thenBy { it.y })
-    minHeap.add(Entry(2, 7))
-    minHeap.add(Entry(1, 9))
-    val top = minHeap.peek()                                                     // Entry(1, 9)
 }
 ```
 
@@ -424,6 +383,18 @@ The comparator is "compare by frequency, ascending" (for a min-heap of size K �
 
 ## The Solution
 
+
+```pseudocode
+function kMostFrequentElements(arr, k):
+    freq ← frequency map of arr
+    heap ← empty min-heap ordered by frequency  # smallest frequency on top
+    for each (value, f) in freq:
+        push (f, value) onto heap
+        if size(heap) > k:
+            pop from heap              # evict the least-frequent of the current top-K
+    return [value for (_, value) in heap]
+```
+
 ```python run
 from collections import Counter
 import heapq
@@ -533,20 +504,6 @@ object Solution {
 }
 ```
 
-```javascript run
-function kMostFrequentElements(arr, k) {
-  const freq = new Map();
-  for (const v of arr) freq.set(v, (freq.get(v) || 0) + 1);
-  // Min-heap by .freq using the generic MinHeap from earlier.
-  const heap = new MinHeap((a, b) => a.freq - b.freq);
-  for (const [value, f] of freq) {
-    heap.push({ value, freq: f });
-    if (heap.size() > k) heap.pop();
-  }
-  return heap.h.map(e => e.value);
-}
-```
-
 ```typescript run
 function kMostFrequentElements(arr: number[], k: number): number[] {
   const freq = new Map<number, number>();
@@ -586,24 +543,6 @@ func kMostFrequentElements(arr []int, k int) []int {
     out := make([]int, 0, h.Len())
     for _, e := range *h { out = append(out, e.Value) }
     return out
-}
-```
-
-```kotlin run
-import java.util.PriorityQueue
-
-class Solution {
-    fun kMostFrequentElements(arr: IntArray, k: Int): List<Int> {
-        val freq = HashMap<Int, Int>()
-        for (v in arr) freq.merge(v, 1, Int::plus)
-        // Min-heap by frequency.
-        val heap = PriorityQueue<Pair<Int, Int>>(compareBy { it.second })
-        for ((value, f) in freq) {
-            heap.add(value to f)
-            if (heap.size > k) heap.poll()
-        }
-        return heap.map { it.first }
-    }
 }
 ```
 
@@ -682,6 +621,23 @@ flowchart LR
 The comparator is "compare by sum, ascending". The pair record carries `(sum, i, j)` so we can recover the actual values.
 
 ## The Solution
+
+
+```pseudocode
+function kSmallestSumPairs(arr1, arr2, k):
+    heap ← min-heap ordered by sum, containing (sum, i, j)
+    visited ← empty set
+    push (arr1[0] + arr2[0], 0, 0) onto heap; add (0, 0) to visited
+    result ← []
+    while heap is NOT empty AND length(result) < k:
+        (s, i, j) ← pop from heap
+        append [arr1[i], arr2[j]] to result
+        if i+1 < length(arr1) AND (i+1, j) NOT in visited:
+            push (arr1[i+1] + arr2[j], i+1, j); add (i+1, j) to visited
+        if j+1 < length(arr2) AND (i, j+1) NOT in visited:
+            push (arr1[i] + arr2[j+1], i, j+1); add (i, j+1) to visited
+    return result
+```
 
 ```python run
 import heapq
@@ -800,32 +756,6 @@ object Solution {
 }
 ```
 
-```javascript run
-function kSmallestSumPairs(arr1, arr2, k) {
-  const n = arr1.length, m = arr2.length;
-  if (n === 0 || m === 0 || k === 0) return [];
-  const heap = new MinHeap((a, b) => a.sum - b.sum);
-  const visited = new Set();
-  const key = (i, j) => i * 1e6 + j;                                                                                                                    // 32-bit pack
-  heap.push({ sum: arr1[0] + arr2[0], i: 0, j: 0 });
-  visited.add(key(0, 0));
-  const result = [];
-  while (heap.size() > 0 && result.length < k) {
-    const { i, j } = heap.pop();
-    result.push([arr1[i], arr2[j]]);
-    if (i + 1 < n && !visited.has(key(i + 1, j))) {
-      heap.push({ sum: arr1[i + 1] + arr2[j], i: i + 1, j });
-      visited.add(key(i + 1, j));
-    }
-    if (j + 1 < m && !visited.has(key(i, j + 1))) {
-      heap.push({ sum: arr1[i] + arr2[j + 1], i, j: j + 1 });
-      visited.add(key(i, j + 1));
-    }
-  }
-  return result;
-}
-```
-
 ```typescript run
 function kSmallestSumPairs(arr1: number[], arr2: number[], k: number): number[][] {
   const n = arr1.length, m = arr2.length;
@@ -888,33 +818,6 @@ func kSmallestSumPairs(arr1, arr2 []int, k int) [][]int {
 }
 ```
 
-```kotlin run
-import java.util.PriorityQueue
-
-class Solution {
-    fun kSmallestSumPairs(arr1: IntArray, arr2: IntArray, k: Int): List<List<Int>> {
-        val n = arr1.size; val m = arr2.size
-        if (n == 0 || m == 0 || k == 0) return emptyList()
-        // (sum, i, j)
-        val heap = PriorityQueue<IntArray>(compareBy { it[0] })
-        val visited = HashSet<Long>()
-        fun key(i: Int, j: Int) = i.toLong() shl 32 or j.toLong()
-        heap.add(intArrayOf(arr1[0] + arr2[0], 0, 0))
-        visited.add(key(0, 0))
-        val result = mutableListOf<List<Int>>()
-        while (heap.isNotEmpty() && result.size < k) {
-            val (_, i, j) = heap.poll()
-            result.add(listOf(arr1[i], arr2[j]))
-            if (i + 1 < n && visited.add(key(i + 1, j)))
-                heap.add(intArrayOf(arr1[i + 1] + arr2[j], i + 1, j))
-            if (j + 1 < m && visited.add(key(i, j + 1)))
-                heap.add(intArrayOf(arr1[i] + arr2[j + 1], i, j + 1))
-        }
-        return result
-    }
-}
-```
-
 ```rust run
 use std::collections::{BinaryHeap, HashSet};
 use std::cmp::Reverse;
@@ -969,6 +872,21 @@ This is **Top-K-smallest by distance**, applied to a tree traversal. We walk the
 The comparator: "compare by distance, descending" (so the farthest is on top of the max-heap).
 
 ## The Solution
+
+
+```pseudocode
+function kClosestValues(root, target, k):
+    heap ← empty max-heap ordered by distance to target
+    function inorder(node):
+        if node is null: return
+        inorder(node.left)
+        d ← |node.val − target|
+        push (d, node.val) onto heap
+        if size(heap) > k: pop from heap   # evict the farthest
+        inorder(node.right)
+    inorder(root)
+    return [value for (_, value) in heap]
+```
 
 ```python run
 import heapq
@@ -1078,24 +996,6 @@ object Solution {
 }
 ```
 
-```javascript run
-function kClosestValues(root, target, k) {
-  // Max-heap by distance: top is the farthest of the kept values.
-  const heap = new (class extends MinHeap {
-    constructor() { super((a, b) => b.dist - a.dist); }       // invert → max-heap
-  })();
-  function inorder(node) {
-    if (node === null) return;
-    inorder(node.left);
-    heap.push({ dist: Math.abs(node.val - target), value: node.val });
-    if (heap.size() > k) heap.pop();
-    inorder(node.right);
-  }
-  inorder(root);
-  return heap.h.map(e => e.value);
-}
-```
-
 ```typescript run
 function kClosestValues(root: TreeNode | null, target: number, k: number): number[] {
   type Item = { dist: number; value: number };
@@ -1140,27 +1040,6 @@ func kClosestValues(root *TreeNode, target float64, k int) []int {
     out := make([]int, 0, h.Len())
     for _, e := range *h { out = append(out, e.Value) }
     return out
-}
-```
-
-```kotlin run
-import java.util.PriorityQueue
-import kotlin.math.abs
-
-class Solution {
-    fun kClosestValues(root: TreeNode?, target: Double, k: Int): List<Int> {
-        val heap = PriorityQueue<DoubleArray>(compareByDescending { it[0] })                                                                             // max-heap by distance
-        fun inorder(node: TreeNode?) {
-            if (node == null) return
-            inorder(node.left)
-            val d = abs(node.`val` - target)
-            heap.add(doubleArrayOf(d, node.`val`.toDouble()))
-            if (heap.size > k) heap.poll()
-            inorder(node.right)
-        }
-        inorder(root)
-        return heap.map { it[1].toInt() }
-    }
 }
 ```
 
@@ -1251,6 +1130,28 @@ flowchart LR
 <p align="center"><strong>K-way merge with a sliding window. The min-heap tracks the smallest, an external <code>maxValue</code> tracks the largest, and their difference is the current candidate range.</strong></p>
 
 ## The Solution
+
+
+```pseudocode
+function kArraysSmallestRange(arr):
+    k ← length(arr)
+    heap ← empty min-heap of (value, listIdx, elemIdx)
+    runningMax ← −∞
+    for i from 0 to k−1:
+        push (arr[i][0], i, 0) onto heap
+        runningMax ← max(runningMax, arr[i][0])
+    bestRange ← [−1, −1]; bestWidth ← +∞
+    while size(heap) = k:        # loop until any list is exhausted
+        (value, i, j) ← pop from heap
+        if runningMax − value < bestWidth:
+            bestWidth ← runningMax − value
+            bestRange ← [value, runningMax]
+        if j+1 < length(arr[i]):
+            nextVal ← arr[i][j+1]
+            push (nextVal, i, j+1) onto heap
+            runningMax ← max(runningMax, nextVal)
+    return bestRange
+```
 
 ```python run
 import heapq
@@ -1381,31 +1282,6 @@ object Solution {
 }
 ```
 
-```javascript run
-function kArraysSmallestRange(arr) {
-  const k = arr.length;
-  const heap = new MinHeap((a, b) => a.value - b.value);
-  let maxValue = -Infinity;
-  for (let i = 0; i < k; i++) {
-    if (arr[i].length > 0) {
-      heap.push({ value: arr[i][0], listIdx: i, elementIdx: 0 });
-      if (arr[i][0] > maxValue) maxValue = arr[i][0];
-    }
-  }
-  let best = [-1, -1], width = Infinity;
-  while (heap.size() === k) {
-    const t = heap.pop();
-    if (maxValue - t.value < width) { width = maxValue - t.value; best = [t.value, maxValue]; }
-    if (t.elementIdx + 1 < arr[t.listIdx].length) {
-      const nv = arr[t.listIdx][t.elementIdx + 1];
-      heap.push({ value: nv, listIdx: t.listIdx, elementIdx: t.elementIdx + 1 });
-      if (nv > maxValue) maxValue = nv;
-    }
-  }
-  return best;
-}
-```
-
 ```typescript run
 function kArraysSmallestRange(arr: number[][]): number[] {
   const k = arr.length;
@@ -1468,36 +1344,6 @@ func kArraysSmallestRange(arr [][]int) []int {
 }
 ```
 
-```kotlin run
-import java.util.PriorityQueue
-
-class Solution {
-    fun kArraysSmallestRange(arr: Array<IntArray>): IntArray {
-        val k = arr.size
-        // (value, listIdx, elementIdx)
-        val heap = PriorityQueue<IntArray>(compareBy { it[0] })
-        var maxValue = Int.MIN_VALUE
-        for (i in 0 until k) {
-            if (arr[i].isNotEmpty()) {
-                heap.add(intArrayOf(arr[i][0], i, 0))
-                maxValue = maxOf(maxValue, arr[i][0])
-            }
-        }
-        var rs = -1; var re = -1; var width = Int.MAX_VALUE
-        while (heap.size == k) {
-            val (value, i, j) = heap.poll()
-            if (maxValue - value < width) { width = maxValue - value; rs = value; re = maxValue }
-            if (j + 1 < arr[i].size) {
-                val nv = arr[i][j + 1]
-                heap.add(intArrayOf(nv, i, j + 1))
-                maxValue = maxOf(maxValue, nv)
-            }
-        }
-        return intArrayOf(rs, re)
-    }
-}
-```
-
 ```rust run
 use std::collections::BinaryHeap;
 use std::cmp::Reverse;
@@ -1554,6 +1400,20 @@ The textbook K-way merge: at every step, the next node of the merged list is the
 The comparator is "compare list nodes by value, ascending".
 
 ## The Solution
+
+
+```pseudocode
+function kWayListMerge(lists):
+    heap ← empty min-heap ordered by node.val
+    for each head in lists:
+        if head is NOT null: push head onto heap
+    dummy ← new ListNode(0); tail ← dummy
+    while heap is NOT empty:
+        node ← pop from heap
+        tail.next ← node; tail ← node
+        if node.next is NOT null: push node.next onto heap
+    return dummy.next
+```
 
 ```python run
 import heapq
@@ -1649,21 +1509,6 @@ object Solution {
 }
 ```
 
-```javascript run
-function kWayListMerge(lists) {
-  const heap = new MinHeap((a, b) => a.val - b.val);
-  for (const head of lists) if (head !== null) heap.push(head);
-  const dummy = new ListNode(0); let tail = dummy;
-  while (heap.size() > 0) {
-    const node = heap.pop();
-    tail.next = node;
-    tail = node;
-    if (node.next !== null) heap.push(node.next);
-  }
-  return dummy.next;
-}
-```
-
 ```typescript run
 function kWayListMerge(lists: Array<ListNode | null>): ListNode | null {
   const heap = new MinHeap<ListNode>((a, b) => a.val - b.val);
@@ -1701,25 +1546,6 @@ func kWayListMerge(lists []*ListNode) *ListNode {
         if node.Next != nil { heap.Push(h, node.Next) }
     }
     return dummy.Next
-}
-```
-
-```kotlin run
-import java.util.PriorityQueue
-
-class Solution {
-    fun kWayListMerge(lists: Array<ListNode?>): ListNode? {
-        val heap = PriorityQueue<ListNode>(compareBy { it.`val` })
-        for (head in lists) if (head != null) heap.add(head)
-        val dummy = ListNode(0); var tail = dummy
-        while (heap.isNotEmpty()) {
-            val node = heap.poll()
-            tail.next = node
-            tail = node
-            if (node.next != null) heap.add(node.next)
-        }
-        return dummy.next
-    }
 }
 ```
 

@@ -1,10 +1,10 @@
 package codefolio.server
 
-import codefolio.server.cache.RedisCache
+import codefolio.server.codeRunPipeline.CodeRunPipeline
 import codefolio.server.config.AppConfig
-import codefolio.server.db.{DataSource, Migrations, VisitsRepo}
-import codefolio.server.eventlog.HelloEventLog
-import codefolio.server.handlers.{CodeRunHandler, CortexHandler, HelloHandler}
+import codefolio.server.cortexPipeline.CortexPipeline
+import codefolio.server.db.{DataSource, Migrations}
+import codefolio.server.helloPipeline.HelloPipeline
 import org.slf4j.bridge.SLF4JBridgeHandler
 import zio.*
 import zio.config.typesafe.TypesafeConfigProvider
@@ -52,15 +52,12 @@ object Main extends ZIOAppDefault:
 
     program
       .provide(
-        AppConfig.live,      // reads `application.conf` + env vars
-        DataSource.live,     // HikariCP pool over Postgres
-        VisitsRepo.live,     // Hello demo: row updates + counter reads
-        RedisCache.live,     // Hello demo: 10s TTL cache for /api/hello
-        HelloEventLog.live,  // Hello demo: append-only Mongo log
-        HelloHandler.live,   // /api/hello, /api/recent, /api/health
-        CodeRunHandler.live, // /api/run (Piston / Code Runner)
-        CortexHandler.live,  // /api/cortex/*
-        HttpApp.live         // tapir + zio-http + static + SPA fallback
+        AppConfig.live,       // reads `application.conf` + env vars
+        DataSource.live,      // HikariCP pool over Postgres
+        HelloPipeline.live,   // /api/hello, /api/recent, /api/health (Postgres + Redis + Mongo)
+        CodeRunPipeline.live, // /api/run (Piston / Code Runner)
+        CortexPipeline.live,  // /api/cortex/*
+        HttpApp.live          // tapir + zio-http + static + SPA fallback
       )
 
   // Type alias kept short to make the `run` signature read cleanly above.

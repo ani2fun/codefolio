@@ -1,7 +1,3 @@
----
-title: "7. Pattern: Reversal"
----
-
 # 7. Pattern: Reversal
 
 ## The Hook
@@ -72,6 +68,16 @@ For *in-place* reversal of an array, the destination is the same array — pass 
 > -   **Step 3:** Iterate over the output positions (or write to the result); for each, pop the stack and write the popped value.
 
 ## Implementation — generic array reverser
+
+
+```pseudocode
+function reverseViaStack(arr):
+    stack ← empty stack
+    for each x in arr: push x           # pass 1: load
+    for i from 0 to length(arr) − 1:
+        arr[i] ← pop()                  # pass 2: unload in reverse
+    return arr
+```
 
 ```python run
 def reverse_via_stack(arr: list) -> list:
@@ -144,16 +150,6 @@ object Main extends App {
 }
 ```
 
-```javascript run
-function reverseViaStack(arr) {
-    const st = [];
-    for (const x of arr) st.push(x);
-    for (let i = 0; i < arr.length; i++) arr[i] = st.pop();
-    return arr;
-}
-console.log(reverseViaStack([1,2,3,4,5]));
-```
-
 ```typescript run
 function reverseViaStack(arr: number[]): number[] {
     const st: number[] = [];
@@ -178,18 +174,6 @@ func main() {
     a := []int{1,2,3,4,5}
     reverseViaStack(a)
     fmt.Println(a)
-}
-```
-
-```kotlin run
-fun reverseViaStack(arr: IntArray): IntArray {
-    val st = ArrayDeque<Int>()
-    for (x in arr) st.addLast(x)
-    for (i in arr.indices) arr[i] = st.removeLast()
-    return arr
-}
-fun main() {
-    println(reverseViaStack(intArrayOf(1,2,3,4,5)).toList())
 }
 ```
 
@@ -273,6 +257,14 @@ inp -> out: "pop, push"
 
 ## Solution
 
+
+```pseudocode
+function stackInversion(s):
+    out ← empty stack
+    while s is not empty: push pop(s) onto out
+    return out
+```
+
 ```python run
 def stack_inversion(s: list) -> list:
     """s is a list used as a stack (last element is the top)."""
@@ -352,16 +344,6 @@ object Main extends App {
 }
 ```
 
-```javascript run
-function stackInversion(s) {
-    const out = [];
-    while (s.length) out.push(s.pop());
-    return out;
-}
-const s = [9, 5, 1, 2];   // top = last element = 2
-console.log(stackInversion(s));   // [2, 1, 5, 9] (top = last = 9)
-```
-
 ```typescript run
 function stackInversion(s: number[]): number[] {
     const out: number[] = [];
@@ -386,19 +368,6 @@ func stackInversion(s []int) []int {
 }
 func main() {
     fmt.Println(stackInversion([]int{9, 5, 1, 2}))
-}
-```
-
-```kotlin run
-fun stackInversion(s: ArrayDeque<Int>): ArrayDeque<Int> {
-    val out = ArrayDeque<Int>()
-    while (s.isNotEmpty()) out.addLast(s.removeLast())
-    return out
-}
-fun main() {
-    val s = ArrayDeque<Int>()
-    for (x in intArrayOf(9, 5, 1, 2)) s.addLast(x)
-    println(stackInversion(s))
 }
 ```
 
@@ -434,6 +403,16 @@ Given a string `s`, return its reverse using a stack.
 ## Solution
 
 The textbook two-pass: push every character, then pop until empty into a result string.
+
+
+```pseudocode
+function reverseString(s):
+    stack ← empty stack
+    for each ch in s: push ch
+    out ← empty list
+    while stack not empty: append pop() to out
+    return join(out)
+```
 
 ```python run
 def reverse_string(s: str) -> str:
@@ -517,18 +496,6 @@ object Main extends App {
 }
 ```
 
-```javascript run
-function reverseString(s) {
-    const st = [];
-    for (const ch of s) st.push(ch);
-    let out = "";
-    while (st.length) out += st.pop();
-    return out;
-}
-console.log(reverseString("abcdefgh"));
-console.log(reverseString("c"));
-```
-
 ```typescript run
 function reverseString(s: string): string {
     const st: string[] = [];
@@ -555,20 +522,6 @@ func reverseString(s string) string {
 func main() {
     fmt.Println(reverseString("abcdefgh"))
     fmt.Println(reverseString("c"))
-}
-```
-
-```kotlin run
-fun reverseString(s: String): String {
-    val st = ArrayDeque<Char>()
-    for (ch in s) st.addLast(ch)
-    val out = StringBuilder()
-    while (st.isNotEmpty()) out.append(st.removeLast())
-    return out.toString()
-}
-fun main() {
-    println(reverseString("abcdefgh"))
-    println(reverseString("c"))
 }
 ```
 
@@ -604,6 +557,14 @@ Given an integer array `arr`, reverse its elements **in place** using a stack. D
 ## Solution
 
 Same recipe; the destination is the input array itself. Pass 1 pushes; pass 2 overwrites positions 0..n−1 with stack pops.
+
+
+```pseudocode
+function reverseArray(arr):
+    stack ← empty stack
+    for each x in arr: push x
+    for i from 0 to length(arr) − 1: arr[i] ← pop()
+```
 
 ```python run
 def reverse_array(arr: list) -> None:
@@ -674,16 +635,6 @@ object Main extends App {
 }
 ```
 
-```javascript run
-function reverseArray(arr) {
-    const st = [];
-    for (const x of arr) st.push(x);
-    for (let i = 0; i < arr.length; i++) arr[i] = st.pop();
-}
-const a = [1,2,3,4,5,6]; reverseArray(a); console.log(a);
-const b = [];             reverseArray(b); console.log(b);
-```
-
 ```typescript run
 function reverseArray(arr: number[]): void {
     const st: number[] = [];
@@ -705,17 +656,6 @@ func reverseArray(arr []int) {
 }
 func main() {
     a := []int{1,2,3,4,5,6}; reverseArray(a); fmt.Println(a)
-}
-```
-
-```kotlin run
-fun reverseArray(arr: IntArray) {
-    val st = ArrayDeque<Int>()
-    for (x in arr) st.addLast(x)
-    for (i in arr.indices) arr[i] = st.removeLast()
-}
-fun main() {
-    val a = intArrayOf(1,2,3,4,5,6); reverseArray(a); println(a.toList())
 }
 ```
 
@@ -771,6 +711,17 @@ flowchart LR
 <p align="center"><strong>Reverse word order — push <em>whole words</em>, not characters; the stack reverses their order, while each word's internal letters are untouched. The unit of reversal is whatever you push.</strong></p>
 
 ## Solution
+
+
+```pseudocode
+function reverseWordOrder(s):
+    words ← split s on whitespace
+    stack ← empty stack
+    for each w in words: push w
+    out ← empty list
+    while stack not empty: append pop() to out
+    return join(out, " ")
+```
 
 ```python run
 def reverse_word_order(s: str) -> str:
@@ -871,17 +822,6 @@ object Main extends App {
 }
 ```
 
-```javascript run
-function reverseWordOrder(s) {
-    const st = s.trim().split(/\s+/);
-    const out = [];
-    while (st.length) out.push(st.pop());
-    return out.join(' ');
-}
-console.log(reverseWordOrder("This is a string"));
-console.log(reverseWordOrder("abc"));
-```
-
 ```typescript run
 function reverseWordOrder(s: string): string {
     const st = s.trim().split(/\s+/);
@@ -911,21 +851,6 @@ func reverseWordOrder(s string) string {
 func main() {
     fmt.Println(reverseWordOrder("This is a string"))
     fmt.Println(reverseWordOrder("abc"))
-}
-```
-
-```kotlin run
-fun reverseWordOrder(s: String): String {
-    val words = s.trim().split(Regex("\\s+"))
-    val st = ArrayDeque<String>()
-    for (w in words) st.addLast(w)
-    val out = mutableListOf<String>()
-    while (st.isNotEmpty()) out.add(st.removeLast())
-    return out.joinToString(" ")
-}
-fun main() {
-    println(reverseWordOrder("This is a string"))
-    println(reverseWordOrder("abc"))
 }
 ```
 

@@ -1,7 +1,3 @@
----
-title: "1. Introduction to Queues"
----
-
 # 1. Introduction to Queues
 
 ## The Hook

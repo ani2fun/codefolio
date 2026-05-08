@@ -1,7 +1,3 @@
----
-title: "11. Pattern: Postorder Traversal (Stateful)"
----
-
 # 11. Pattern: Postorder Traversal (Stateful)
 
 ## The Hook
@@ -88,6 +84,20 @@ flowchart TB
 
 The template — diameter of a tree, since it's the canonical example.
 
+
+```pseudocode
+function diameter(root):
+    best ← 0                            # global state updated during traversal
+    function height(node):
+        if node = null: return 0
+        l ← height(node.left)
+        r ← height(node.right)
+        best ← max(best, l + r)         # diameter through this node = left height + right height
+        return 1 + max(l, r)            # height returned to parent
+    height(root)
+    return best
+```
+
 ```python run
 from typing import Optional
 
@@ -156,19 +166,6 @@ def diameter(root: TreeNode): Int = {
 }
 ```
 
-```javascript run
-function diameter(root) {
-    let best = 0;
-    function height(n) {
-        if (!n) return 0;
-        const l = height(n.left), r = height(n.right);
-        best = Math.max(best, l + r);
-        return 1 + Math.max(l, r);
-    }
-    height(root); return best;
-}
-```
-
 ```typescript run
 function diameter(root: TreeNode | null): number {
     let best = 0;
@@ -195,19 +192,6 @@ func diameter(root *TreeNode) int {
     }
     height(root)
     return best
-}
-```
-
-```kotlin run
-fun diameter(root: TreeNode?): Int {
-    var best = 0
-    fun height(n: TreeNode?): Int {
-        if (n == null) return 0
-        val l = height(n.left); val r = height(n.right)
-        best = maxOf(best, l + r)
-        return 1 + maxOf(l, r)
-    }
-    height(root); return best
 }
 ```
 
@@ -268,6 +252,19 @@ The implementation is exactly the generic template. The lesson here is *what to 
 Each subtree returns its sum (so the parent can compute its own); along the way, each call updates a global counter if `node.val == leftSum + rightSum`.
 
 ## Solution
+
+
+```pseudocode
+function descendantsSumCount(root):
+    count ← 0
+    function sum_(n):
+        if n = null: return 0
+        l ← sum_(n.left); r ← sum_(n.right)
+        if n.val = l + r: count ← count + 1   # node equals sum of its descendants
+        return n.val + l + r
+    sum_(root)
+    return count
+```
 
 ```python run
 def descendants_sum_count(root):
@@ -331,19 +328,6 @@ def descendantsSumCount(root: TreeNode): Int = {
 }
 ```
 
-```javascript run
-function descendantsSumCount(root) {
-    let count = 0;
-    function go(n) {
-        if (!n) return 0;
-        const l = go(n.left), r = go(n.right);
-        if (n.val === l + r) count++;
-        return n.val + l + r;
-    }
-    go(root); return count;
-}
-```
-
 ```typescript run
 function descendantsSumCount(root: TreeNode | null): number {
     let count = 0;
@@ -368,19 +352,6 @@ func descendantsSumCount(root *TreeNode) int {
         return n.Val + l + r
     }
     go_(root); return count
-}
-```
-
-```kotlin run
-fun descendantsSumCount(root: TreeNode?): Int {
-    var count = 0
-    fun go(n: TreeNode?): Int {
-        if (n == null) return 0
-        val l = go(n.left); val r = go(n.right)
-        if (n.value == l + r) count++
-        return n.value + l + r
-    }
-    go(root); return count
 }
 ```
 
@@ -415,6 +386,19 @@ The trick: at every node, define *excess* = `(coins received from below) + node.
 So sum `|leftExcess|` and `|rightExcess|` at every node — that's the total moves through this node's two outgoing edges to its children.
 
 ## Solution
+
+
+```pseudocode
+function distributeCoins(root):
+    moves ← 0
+    function excess(n):
+        if n = null: return 0
+        l ← excess(n.left); r ← excess(n.right)
+        moves ← moves + |l| + |r|   # each unit of excess flowing through an edge costs 1 move
+        return l + r + n.val − 1    # excess at this node (positive = surplus, negative = deficit)
+    excess(root)
+    return moves
+```
 
 ```python run
 def distribute_coins(root):
@@ -476,19 +460,6 @@ def distributeCoins(root: TreeNode): Int = {
 }
 ```
 
-```javascript run
-function distributeCoins(root) {
-    let moves = 0;
-    function excess(n) {
-        if (!n) return 0;
-        const l = excess(n.left), r = excess(n.right);
-        moves += Math.abs(l) + Math.abs(r);
-        return l + r + n.val - 1;
-    }
-    excess(root); return moves;
-}
-```
-
 ```typescript run
 function distributeCoins(root: TreeNode | null): number {
     let moves = 0;
@@ -515,19 +486,6 @@ func distributeCoins(root *TreeNode) int {
     }
     excess(root)
     return moves
-}
-```
-
-```kotlin run
-fun distributeCoins(root: TreeNode?): Int {
-    var moves = 0
-    fun excess(n: TreeNode?): Int {
-        if (n == null) return 0
-        val l = excess(n.left); val r = excess(n.right)
-        moves += kotlin.math.abs(l) + kotlin.math.abs(r)
-        return l + r + n.value - 1
-    }
-    excess(root); return moves
 }
 ```
 
@@ -560,6 +518,22 @@ pub fn distribute_coins(root: &Option<Box<TreeNode>>) -> i32 {
 Each call returns its subtree sum (so the parent can compute its own); along the way, increment a frequency map and update a `maxFreq` tracker. After the recursion, scan the frequency map for entries equal to `maxFreq`.
 
 ## Solution
+
+
+```pseudocode
+function mostFrequentSubtreeSum(root):
+    if root = null: return empty list
+    freq  ← empty Map: sum → count
+    maxF  ← 0
+    function go(n):
+        if n = null: return 0
+        s ← n.val + go(n.left) + go(n.right)
+        freq[s] ← freq[s] + 1
+        if freq[s] > maxF: maxF ← freq[s]
+        return s
+    go(root)
+    return all keys k in freq where freq[k] = maxF
+```
 
 ```python run
 def most_frequent_subtree_sum(root):
@@ -639,25 +613,6 @@ def mostFrequentSubtreeSum(root: TreeNode): List[Int] = {
 }
 ```
 
-```javascript run
-function mostFrequentSubtreeSum(root) {
-    if (!root) return [];
-    const freq = new Map(); let maxFreq = 0;
-    function go(n) {
-        if (!n) return 0;
-        const s = n.val + go(n.left) + go(n.right);
-        const c = (freq.get(s) || 0) + 1;
-        freq.set(s, c);
-        if (c > maxFreq) maxFreq = c;
-        return s;
-    }
-    go(root);
-    const out = [];
-    for (const [k, v] of freq) if (v === maxFreq) out.push(k);
-    return out;
-}
-```
-
 ```typescript run
 function mostFrequentSubtreeSum(root: TreeNode | null): number[] {
     if (!root) return [];
@@ -699,23 +654,6 @@ func mostFrequentSubtreeSum(root *TreeNode) []int {
 }
 ```
 
-```kotlin run
-fun mostFrequentSubtreeSum(root: TreeNode?): List<Int> {
-    if (root == null) return emptyList()
-    val freq = HashMap<Int, Int>(); var maxFreq = 0
-    fun go(n: TreeNode?): Int {
-        if (n == null) return 0
-        val s = n.value + go(n.left) + go(n.right)
-        val c = (freq[s] ?: 0) + 1
-        freq[s] = c
-        if (c > maxFreq) maxFreq = c
-        return s
-    }
-    go(root)
-    return freq.filterValues { it == maxFreq }.keys.toList()
-}
-```
-
 ```rust run
 use std::collections::HashMap;
 fn mfs_go(node: &Option<Box<TreeNode>>, freq: &mut HashMap<i32, i32>, mx: &mut i32) -> i32 {
@@ -747,6 +685,21 @@ pub fn most_frequent_subtree_sum(root: &Option<Box<TreeNode>>) -> Vec<i32> {
 Same shape as diameter, with one twist: the height contribution from a child only counts if the child has the same value as the current node.
 
 ## Solution
+
+
+```pseudocode
+function longestMonotonicPath(root):
+    best ← 0
+    function go(n):
+        if n = null: return 0
+        l ← go(n.left); r ← go(n.right)
+        la ← l + 1 if n.left  ≠ null AND n.left.val  = n.val else 0
+        ra ← r + 1 if n.right ≠ null AND n.right.val = n.val else 0
+        best ← max(best, la + ra)   # longest path through this node
+        return max(la, ra)          # longest arm returned to parent
+    go(root)
+    return best
+```
 
 ```python run
 def longest_monotonic_path(root):
@@ -818,21 +771,6 @@ def longestMonotonicPath(root: TreeNode): Int = {
 }
 ```
 
-```javascript run
-function longestMonotonicPath(root) {
-    let best = 0;
-    function go(n) {
-        if (!n) return 0;
-        const l = go(n.left), r = go(n.right);
-        const la = (n.left  && n.left.val  === n.val) ? l + 1 : 0;
-        const ra = (n.right && n.right.val === n.val) ? r + 1 : 0;
-        best = Math.max(best, la + ra);
-        return Math.max(la, ra);
-    }
-    go(root); return best;
-}
-```
-
 ```typescript run
 function longestMonotonicPath(root: TreeNode | null): number {
     let best = 0;
@@ -863,21 +801,6 @@ func longestMonotonicPath(root *TreeNode) int {
         return ra
     }
     go_(root); return best
-}
-```
-
-```kotlin run
-fun longestMonotonicPath(root: TreeNode?): Int {
-    var best = 0
-    fun go(n: TreeNode?): Int {
-        if (n == null) return 0
-        val l = go(n.left); val r = go(n.right)
-        val la = if (n.left  != null && n.left!!.value  == n.value) l + 1 else 0
-        val ra = if (n.right != null && n.right!!.value == n.value) r + 1 else 0
-        best = maxOf(best, la + ra)
-        return maxOf(la, ra)
-    }
-    go(root); return best
 }
 ```
 
@@ -912,6 +835,22 @@ pub fn longest_monotonic_path(root: &Option<Box<TreeNode>>) -> i32 {
 Each call returns whether *its* subtree is mono-valued; along the way, increment a global counter when it is. A subtree is mono-valued iff: both children's subtrees are mono-valued, *and* both children (if they exist) have the same value as the current node.
 
 ## Solution
+
+
+```pseudocode
+function monotonicSubtreeCount(root):
+    count ← 0
+    function go(n):
+        if n = null: return true
+        lOk ← go(n.left); rOk ← go(n.right)
+        if NOT lOk OR NOT rOk: return false   # subtree already broken
+        if n.left  ≠ null AND n.left.val  ≠ n.val: return false
+        if n.right ≠ null AND n.right.val ≠ n.val: return false
+        count ← count + 1
+        return true
+    go(root)
+    return count
+```
 
 ```python run
 def monotonic_subtree_count(root):
@@ -988,21 +927,6 @@ def monotonicSubtreeCount(root: TreeNode): Int = {
 }
 ```
 
-```javascript run
-function monotonicSubtreeCount(root) {
-    let count = 0;
-    function go(n) {
-        if (!n) return true;
-        const lOk = go(n.left), rOk = go(n.right);
-        if (!lOk || !rOk) return false;
-        if (n.left  && n.left.val  !== n.val) return false;
-        if (n.right && n.right.val !== n.val) return false;
-        count++; return true;
-    }
-    go(root); return count;
-}
-```
-
 ```typescript run
 function monotonicSubtreeCount(root: TreeNode | null): number {
     let count = 0;
@@ -1031,21 +955,6 @@ func monotonicSubtreeCount(root *TreeNode) int {
         count++; return true
     }
     go_(root); return count
-}
-```
-
-```kotlin run
-fun monotonicSubtreeCount(root: TreeNode?): Int {
-    var count = 0
-    fun go(n: TreeNode?): Boolean {
-        if (n == null) return true
-        val lOk = go(n.left); val rOk = go(n.right)
-        if (!lOk || !rOk) return false
-        if (n.left  != null && n.left!!.value  != n.value) return false
-        if (n.right != null && n.right!!.value != n.value) return false
-        count++; return true
-    }
-    go(root); return count
 }
 ```
 
@@ -1083,6 +992,23 @@ This problem is interesting because it combines *both* preorder push-pop *and* p
 This is a hybrid pattern, but it's traditionally taught with the postorder patterns because the *answer accumulates* upward like the others.
 
 ## Solution
+
+
+```pseudocode
+function pathSumCount(root, target):
+    prefix ← Map: {0 → 1}    # empty prefix has sum 0
+    answer ← 0
+    function go(n, run):
+        if n = null: return
+        run ← run + n.val
+        answer ← answer + prefix.get(run − target, default 0)   # how many earlier prefixes make a valid subpath
+        prefix[run] ← prefix.get(run, 0) + 1
+        go(n.left, run); go(n.right, run)
+        prefix[run] ← prefix[run] − 1   # undo on backtrack
+        if prefix[run] = 0: remove run from prefix
+    go(root, 0)
+    return answer
+```
 
 ```python run
 def path_sum_count(root, target):
@@ -1159,22 +1085,6 @@ def pathSumCount(root: TreeNode, target: Int): Int = {
 }
 ```
 
-```javascript run
-function pathSumCount(root, target) {
-    const prefix = new Map([[0, 1]]); let answer = 0;
-    function go(n, run) {
-        if (!n) return;
-        run += n.val;
-        answer += prefix.get(run - target) || 0;
-        prefix.set(run, (prefix.get(run) || 0) + 1);
-        go(n.left, run); go(n.right, run);
-        const c = prefix.get(run) - 1;
-        if (c === 0) prefix.delete(run); else prefix.set(run, c);
-    }
-    go(root, 0); return answer;
-}
-```
-
 ```typescript run
 function pathSumCount(root: TreeNode | null, target: number): number {
     const prefix = new Map<number, number>([[0, 1]]); let answer = 0;
@@ -1206,23 +1116,6 @@ func pathSumCount(root *TreeNode, target int) int {
         if prefix[run] == 0 { delete(prefix, run) }
     }
     go_(root, 0); return answer
-}
-```
-
-```kotlin run
-fun pathSumCount(root: TreeNode?, target: Int): Int {
-    val prefix = HashMap<Int, Int>(); prefix[0] = 1
-    var answer = 0
-    fun go(n: TreeNode?, run: Int) {
-        if (n == null) return
-        val newRun = run + n.value
-        answer += prefix[newRun - target] ?: 0
-        prefix[newRun] = (prefix[newRun] ?: 0) + 1
-        go(n.left,  newRun); go(n.right, newRun)
-        val c = prefix[newRun]!! - 1
-        if (c == 0) prefix.remove(newRun) else prefix[newRun] = c
-    }
-    go(root, 0); return answer
 }
 ```
 

@@ -1,0 +1,13 @@
+# Part 5 — Application architecture
+
+> **How the pieces fit together** — and when the answer is "stop adding pieces".
+
+## Lessons
+
+27. [Monoliths, microservices, and modular monoliths](/cortex/system-design/application-architecture-monoliths-microservices-modular-monoliths)
+28. [API design — REST, gRPC, GraphQL](/cortex/system-design/application-architecture-api-design)
+29. [Service discovery and service mesh](/cortex/system-design/application-architecture-service-discovery-and-mesh)
+30. [Authentication and authorization](/cortex/system-design/application-architecture-authn-authz)
+31. [Multi-tenancy](/cortex/system-design/application-architecture-multi-tenancy)
+
+> **Status:** stubs. Wave 4 of the build plan.

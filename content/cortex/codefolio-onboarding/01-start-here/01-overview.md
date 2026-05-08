@@ -74,6 +74,8 @@ Three things to keep in your head as you navigate the code:
 
 ## What this guide covers
 
+The book is in two halves. The first half is a tour: what's where, how a request flows, how to run and extend it. Read it once, top to bottom, and you'll know enough to ship a change.
+
 | Chapter | What you'll learn |
 | --- | --- |
 | [Repository Tour](./repository-tour) | Module layout; the OpenAPI codegen flow; what each top-level directory is for. |
@@ -82,4 +84,13 @@ Three things to keep in your head as you navigate the code:
 | [Local Development](./local-development) | `bin/dev`, sbt quirks, env vars, and the foot-guns we've already stepped on. |
 | [Extending the Project](./extending) | Add a Cortex chapter; add an API endpoint; add a runnable language. |
 
-If you read those five chapters end-to-end you should be able to make almost any change confidently. If something here is wrong or unclear, fix it — this book lives in the same repo as the code it describes.
+The second half is a **deep dive** — a per-library tour of the stack. For each library we picked, it tells you what it buys us, what we considered instead, and what breaks if you change it. Useful as a learning resource if you're new to the Scala mono-repo stack, and as a reference when you're choosing between competing alternatives in your own project.
+
+| Chapter | What you'll learn |
+| --- | --- |
+| [Server Stack](./server-stack) | ZIO 2, tapir, circe, HikariCP, Lettuce, Mongo sync, Liquibase — and why each. |
+| [Client Stack](./client-stack) | Scala.js, the scalajs-react hook builder, sttp + FetchBackend, the JS interop boundary. |
+| [Shared & Codegen](./shared-and-codegen) | The cross-project, the OpenAPI codegen plugin, what gets generated and how. |
+| [Build Toolchain](./build-toolchain) | sbt plugins, Vite, Tailwind v4, scalafmt, the Dockerfile, and `bin/dev`. |
+
+If you read all nine chapters end-to-end you should be able to make almost any change confidently — and explain *why* the project is the way it is. If something here is wrong or unclear, fix it — this book lives in the same repo as the code it describes.

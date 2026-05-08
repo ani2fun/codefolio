@@ -1,7 +1,3 @@
----
-title: "15. Pattern: Level-Order Traversal (Columns)"
----
-
 # 15. Pattern: Level-Order Traversal (Columns)
 
 ## The Hook
@@ -87,6 +83,22 @@ The trick: when we visit a node and its column is **not yet** in the map, record
 > Not directly. DFS visits nodes in *recursion order*, not depth order, so the first node DFS hits in column −1 isn't necessarily the topmost. You'd need to remember each node's *depth* and only update the per-column entry when you find a *shallower* node — which is more work than just using BFS, where the first arrival is automatically the topmost.
 
 ## Solution
+
+
+```pseudocode
+function topView(root):
+    if root = null: return empty list
+    cols ← empty sorted Map: column → value
+    q    ← empty queue; enqueue (root, 0) to q
+    minC ← 0; maxC ← 0
+    while q is not empty:
+        (n, c) ← dequeue from q
+        if c not in cols: cols[c] ← n.val      # first arrival = topmost node in this column
+        minC ← min(minC, c); maxC ← max(maxC, c)
+        if n.left  ≠ null: enqueue (n.left,  c − 1) to q
+        if n.right ≠ null: enqueue (n.right, c + 1) to q
+    return [cols[c] for c from minC to maxC]
+```
 
 ```python run
 from collections import deque
@@ -185,26 +197,6 @@ def topView(root: TreeNode): List[Int] = {
 }
 ```
 
-```javascript run
-function topView(root) {
-    if (!root) return [];
-    const cols = new Map();      // c -> val (insertion order ≠ column order)
-    let minC = 0, maxC = 0;
-    const q = [[root, 0]];
-    while (q.length) {
-        const [n, c] = q.shift();
-        if (!cols.has(c)) cols.set(c, n.val);
-        if (c < minC) minC = c;
-        if (c > maxC) maxC = c;
-        if (n.left)  q.push([n.left,  c - 1]);
-        if (n.right) q.push([n.right, c + 1]);
-    }
-    const out = [];
-    for (let c = minC; c <= maxC; c++) if (cols.has(c)) out.push(cols.get(c));
-    return out;
-}
-```
-
 ```typescript run
 function topView(root: TreeNode | null): number[] {
     if (!root) return [];
@@ -248,21 +240,6 @@ func topView(root *TreeNode) []int {
 }
 ```
 
-```kotlin run
-fun topView(root: TreeNode?): List<Int> {
-    if (root == null) return emptyList()
-    val cols = sortedMapOf<Int, Int>()
-    val q = ArrayDeque<Pair<TreeNode, Int>>(); q.addLast(root to 0)
-    while (q.isNotEmpty()) {
-        val (n, c) = q.removeFirst()
-        if (c !in cols) cols[c] = n.value
-        n.left ?.let { q.addLast(it to c - 1) }
-        n.right?.let { q.addLast(it to c + 1) }
-    }
-    return cols.values.toList()
-}
-```
-
 ```rust run
 use std::collections::{BTreeMap, VecDeque};
 
@@ -299,6 +276,22 @@ Trick: instead of "first wins" (`putIfAbsent`), use "**last wins**" (`put` uncon
 The implementation is *one line* different from top view: replace the `if c not in cols` guard with an unconditional `cols[c] = n.val`. Apply that one change to each of the 10 implementations above and you have bottom view.
 
 ## Solution
+
+
+```pseudocode
+function bottomView(root):
+    if root = null: return empty list
+    cols ← empty sorted Map: column → value
+    q    ← empty queue; enqueue (root, 0) to q
+    minC ← 0; maxC ← 0
+    while q is not empty:
+        (n, c) ← dequeue from q
+        cols[c] ← n.val                           # unconditional overwrite: last = bottommost
+        minC ← min(minC, c); maxC ← max(maxC, c)
+        if n.left  ≠ null: enqueue (n.left,  c − 1) to q
+        if n.right ≠ null: enqueue (n.right, c + 1) to q
+    return [cols[c] for c from minC to maxC]
+```
 
 ```python run
 def bottom_view(root):
@@ -382,25 +375,6 @@ def bottomView(root: TreeNode): List[Int] = {
 }
 ```
 
-```javascript run
-function bottomView(root) {
-    if (!root) return [];
-    const cols = new Map(); let minC = 0, maxC = 0;
-    const q = [[root, 0]];
-    while (q.length) {
-        const [n, c] = q.shift();
-        cols.set(c, n.val);                            // overwrite
-        if (c < minC) minC = c;
-        if (c > maxC) maxC = c;
-        if (n.left)  q.push([n.left,  c - 1]);
-        if (n.right) q.push([n.right, c + 1]);
-    }
-    const out = [];
-    for (let c = minC; c <= maxC; c++) if (cols.has(c)) out.push(cols.get(c));
-    return out;
-}
-```
-
 ```typescript run
 function bottomView(root: TreeNode | null): number[] {
     if (!root) return [];
@@ -441,21 +415,6 @@ func bottomView(root *TreeNode) []int {
 }
 ```
 
-```kotlin run
-fun bottomView(root: TreeNode?): List<Int> {
-    if (root == null) return emptyList()
-    val cols = sortedMapOf<Int, Int>()
-    val q = ArrayDeque<Pair<TreeNode, Int>>(); q.addLast(root to 0)
-    while (q.isNotEmpty()) {
-        val (n, c) = q.removeFirst()
-        cols[c] = n.value
-        n.left ?.let { q.addLast(it to c - 1) }
-        n.right?.let { q.addLast(it to c + 1) }
-    }
-    return cols.values.toList()
-}
-```
-
 ```rust run
 pub fn bottom_view(root: &Option<Box<TreeNode>>) -> Vec<i32> {
     if root.is_none() { return Vec::new(); }
@@ -481,6 +440,22 @@ pub fn bottom_view(root: &Option<Box<TreeNode>>) -> Vec<i32> {
 Trick: instead of storing one value per column (top or bottom view), *append* to a list per column. BFS top-to-bottom order means the per-column list is already sorted top-to-bottom for free.
 
 ## Solution
+
+
+```pseudocode
+function verticalTraversal(root):
+    if root = null: return empty list
+    cols ← empty sorted Map: column → list
+    q    ← empty queue; enqueue (root, 0) to q
+    minC ← 0; maxC ← 0
+    while q is not empty:
+        (n, c) ← dequeue from q
+        append n.val to cols[c]                   # collect all nodes per column
+        minC ← min(minC, c); maxC ← max(maxC, c)
+        if n.left  ≠ null: enqueue (n.left,  c − 1) to q
+        if n.right ≠ null: enqueue (n.right, c + 1) to q
+    return [cols[c] for c from minC to maxC]
+```
 
 ```python run
 def vertical_traversal(root):
@@ -549,26 +524,6 @@ def verticalTraversal(root: TreeNode): List[List[Int]] = {
 }
 ```
 
-```javascript run
-function verticalTraversal(root) {
-    if (!root) return [];
-    const cols = new Map(); let minC = 0, maxC = 0;
-    const q = [[root, 0]];
-    while (q.length) {
-        const [n, c] = q.shift();
-        if (!cols.has(c)) cols.set(c, []);
-        cols.get(c).push(n.val);
-        if (c < minC) minC = c;
-        if (c > maxC) maxC = c;
-        if (n.left)  q.push([n.left,  c - 1]);
-        if (n.right) q.push([n.right, c + 1]);
-    }
-    const out = [];
-    for (let c = minC; c <= maxC; c++) if (cols.has(c)) out.push(cols.get(c));
-    return out;
-}
-```
-
 ```typescript run
 function verticalTraversal(root: TreeNode | null): number[][] {
     if (!root) return [];
@@ -607,21 +562,6 @@ func verticalTraversal(root *TreeNode) [][]int {
     out := make([][]int, 0, len(keys))
     for _, k := range keys { out = append(out, cols[k]) }
     return out
-}
-```
-
-```kotlin run
-fun verticalTraversal(root: TreeNode?): List<List<Int>> {
-    if (root == null) return emptyList()
-    val cols = sortedMapOf<Int, MutableList<Int>>()
-    val q = ArrayDeque<Pair<TreeNode, Int>>(); q.addLast(root to 0)
-    while (q.isNotEmpty()) {
-        val (n, c) = q.removeFirst()
-        cols.getOrPut(c) { mutableListOf() } += n.value
-        n.left ?.let { q.addLast(it to c - 1) }
-        n.right?.let { q.addLast(it to c + 1) }
-    }
-    return cols.values.map { it.toList() }
 }
 ```
 
@@ -681,6 +621,22 @@ flowchart TB
 <p align="center"><strong>Diagonal traversal — same-color nodes share a diagonal. The blue diagonal <code>(1, 3, 7)</code> stays "right" the whole way. Going left jumps to a new diagonal.</strong></p>
 
 ## Solution
+
+
+```pseudocode
+function diagonalTraversal(root):
+    if root = null: return empty list
+    diags ← empty sorted Map: diagonal → list
+    q     ← empty queue; enqueue (root, 0) to q
+    maxD  ← 0
+    while q is not empty:
+        (n, d) ← dequeue from q
+        append n.val to diags[d]
+        maxD ← max(maxD, d)
+        if n.left  ≠ null: enqueue (n.left,  d + 1) to q   # left edge → new diagonal
+        if n.right ≠ null: enqueue (n.right, d)     to q   # right edge → same diagonal
+    return [diags[d] for d from 0 to maxD]
+```
 
 ```python run
 def diagonal_traversal(root):
@@ -750,25 +706,6 @@ def diagonalTraversal(root: TreeNode): List[List[Int]] = {
 }
 ```
 
-```javascript run
-function diagonalTraversal(root) {
-    if (!root) return [];
-    const diags = new Map(); let maxD = 0;
-    const q = [[root, 0]];
-    while (q.length) {
-        const [n, d] = q.shift();
-        if (!diags.has(d)) diags.set(d, []);
-        diags.get(d).push(n.val);
-        if (d > maxD) maxD = d;
-        if (n.left)  q.push([n.left,  d + 1]);
-        if (n.right) q.push([n.right, d]);
-    }
-    const out = [];
-    for (let d = 0; d <= maxD; d++) if (diags.has(d)) out.push(diags.get(d));
-    return out;
-}
-```
-
 ```typescript run
 function diagonalTraversal(root: TreeNode | null): number[][] {
     if (!root) return [];
@@ -806,21 +743,6 @@ func diagonalTraversal(root *TreeNode) [][]int {
     out := make([][]int, 0, len(keys))
     for _, k := range keys { out = append(out, diags[k]) }
     return out
-}
-```
-
-```kotlin run
-fun diagonalTraversal(root: TreeNode?): List<List<Int>> {
-    if (root == null) return emptyList()
-    val diags = sortedMapOf<Int, MutableList<Int>>()
-    val q = ArrayDeque<Pair<TreeNode, Int>>(); q.addLast(root to 0)
-    while (q.isNotEmpty()) {
-        val (n, d) = q.removeFirst()
-        diags.getOrPut(d) { mutableListOf() } += n.value
-        n.left ?.let { q.addLast(it to d + 1) }
-        n.right?.let { q.addLast(it to d) }
-    }
-    return diags.values.map { it.toList() }
 }
 ```
 

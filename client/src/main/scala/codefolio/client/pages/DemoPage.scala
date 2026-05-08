@@ -1,86 +1,76 @@
 package codefolio.client.pages
 
 import codefolio.client.api.ApiClient
-import codefolio.client.util.PageTitle
+import codefolio.client.util.{AsyncFetch, AsyncResult, PageTitle}
 import codefolio.shared.api.Endpoints.{Greeting, HelloEvent, RecentCalls}
 import japgolly.scalajs.react.*
 import japgolly.scalajs.react.vdom.html_<^.*
 
 import scala.scalajs.concurrent.JSExecutionContext.Implicits.queue
 import scala.scalajs.js
-import scala.util.{Failure, Success}
 
-/** The Hello-counter demo page, kept as-is from the original codefolio
-  * skeleton — it exercises Postgres (visit counter), Redis (cache), and
-  * MongoDB (recent log) end-to-end. Useful as a smoke test that the
-  * persistence layer still works after each migration phase.
-  *
-  * Mounted at /demo; the home route ("/") hosts the migrated portfolio.
-  */
+/**
+ * The Hello-counter demo page, kept as-is from the original codefolio skeleton — it exercises Postgres (visit
+ * counter), Redis (cache), and MongoDB (recent log) end-to-end. Useful as a smoke test that the persistence
+ * layer still works after each migration phase.
+ *
+ * Mounted at /demo; the home route ("/") hosts the migrated portfolio.
+ */
 object DemoPage:
-
-  final private case class State(
-      greeting: Option[Either[String, Greeting]],
-      recent: Option[Either[String, RecentCalls]]
-  )
-
-  private object State:
-    val empty: State = State(None, None)
 
   val Component =
     ScalaFnComponent
       .withHooks[Unit]
-      .useState(State.empty)
-      .useEffectOnMountBy { (_, state) =>
-        // Set the per-page title so the browser tab reflects the demo,
-        // not the default home-page title.
-        val titleC = PageTitle.set("Demo — Aniket Kakde")
-        // Fetch greeting + recent log in parallel.
-        val helloC = Callback.future {
-          ApiClient.getHello.transform {
-            case Success(g) => Success(state.modState(_.copy(greeting = Some(Right(g)))))
-            case Failure(e) => Success(state.modState(_.copy(greeting = Some(Left(e.getMessage)))))
-          }
-        }
-        val recentC = Callback.future {
-          ApiClient.getRecent.transform {
-            case Success(r) => Success(state.modState(_.copy(recent = Some(Right(r)))))
-            case Failure(e) => Success(state.modState(_.copy(recent = Some(Left(e.getMessage)))))
-          }
-        }
-        titleC >> helloC >> recentC
+      .useState(AsyncFetch.initial[Greeting])
+      .useState(AsyncFetch.initial[RecentCalls])
+      .useEffectOnMountBy { (_, greetingS, recentS) =>
+        PageTitle.set("Demo — Aniket Kakde") >>
+          AsyncFetch.run(
+            setState = greetingS.setState,
+            fetch = ApiClient.getHello,
+            errorPrefix = "Failed to fetch greeting"
+          ) >>
+          AsyncFetch.run(
+            setState = recentS.setState,
+            fetch = ApiClient.getRecent,
+            errorPrefix = "Failed to fetch recent calls"
+          )
       }
-      .render { (_, state) =>
+      .render { (_, greetingS, recentS) =>
         <.main(
           ^.className := "min-h-[60vh] bg-slate-50 dark:bg-slate-900 flex items-center justify-center px-4 py-8",
           <.div(
             ^.className := "bg-white dark:bg-slate-800 shadow-xl rounded-2xl p-8 max-w-xl w-full space-y-6",
             <.h1(^.className := "text-3xl font-bold text-slate-900 dark:text-slate-50", "Codefolio Demo"),
             <.p(
-              ^.className := "text-sm text-slate-500 dark:text-slate-400",
+              ^.className := "text-sm text-slate-600 dark:text-slate-300",
               "Postgres + Redis + MongoDB integration smoke test."
             ),
-            renderGreeting(state.value.greeting),
-            renderRecent(state.value.recent)
+            renderGreeting(greetingS.value),
+            renderRecent(recentS.value)
           )
         )
       }
 
-  private def renderGreeting(g: Option[Either[String, Greeting]]): VdomNode =
+  private val cardLoading: VdomNode =
+    <.p(^.className := "text-slate-600 dark:text-slate-300", "Loading…")
+
+  private def cardError(message: String): VdomNode =
+    <.p(^.className := "text-red-600", s"Error: $message")
+
+  private def renderGreeting(g: AsyncResult[Greeting]): VdomNode =
     <.section(
       ^.className := "border-t border-slate-100 dark:border-slate-700 pt-4",
       <.h2(
-        ^.className := "text-sm font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400 mb-2",
+        ^.className := "text-sm font-semibold uppercase tracking-wide text-slate-600 dark:text-slate-300 mb-2",
         "Greeting"
       ),
-      g match
-        case None            => <.p(^.className := "text-slate-500", "Loading…")
-        case Some(Left(err)) => <.p(^.className := "text-red-600", s"Error: $err")
-        case Some(Right(gr)) =>
+      g.render(
+        loaded = gr =>
           <.div(
             <.p(^.className := "text-lg text-slate-800 dark:text-slate-200", gr.message),
             <.p(
-              ^.className := "text-sm text-slate-500 dark:text-slate-400 mt-1",
+              ^.className := "text-sm text-slate-600 dark:text-slate-300 mt-1",
               s"Visit count: ${gr.visits}"
             ),
             <.p(
@@ -89,36 +79,44 @@ object DemoPage:
               if gr.cached then "↺ served from Redis cache"
               else "✓ fresh read from Postgres"
             )
-          )
+          ),
+        loading = cardLoading,
+        errored = cardError
+      )
     )
 
-  private def renderRecent(r: Option[Either[String, RecentCalls]]): VdomNode =
+  private def renderRecent(r: AsyncResult[RecentCalls]): VdomNode =
     <.section(
       ^.className := "border-t border-slate-100 dark:border-slate-700 pt-4",
       <.h2(
-        ^.className := "text-sm font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400 mb-2",
+        ^.className := "text-sm font-semibold uppercase tracking-wide text-slate-600 dark:text-slate-300 mb-2",
         "Recent calls (MongoDB)"
       ),
-      r match
-        case None            => <.p(^.className := "text-slate-500", "Loading…")
-        case Some(Left(err)) => <.p(^.className := "text-red-600", s"Error: $err")
-        case Some(Right(rc)) =>
+      r.render(
+        loaded = rc =>
           if rc.entries.isEmpty then
             <.p(
-              ^.className := "text-slate-400 italic",
+              ^.className := "text-slate-600 dark:text-slate-300 italic",
               "No entries yet — refresh after the first call."
             )
           else
             <.ul(
-              ^.className := "text-sm text-slate-700 dark:text-slate-300 space-y-1",
+              ^.className := "text-sm text-slate-800 dark:text-slate-100 space-y-1",
               rc.entries.toTagMod { (e: HelloEvent) =>
                 <.li(
                   ^.key := s"${e.timestampEpochMs}-${e.visits}",
-                  <.span(^.className := "text-slate-400 mr-2", formatTime(e.timestampEpochMs)),
+                  <.span(
+                    ^.className := "text-slate-600 dark:text-slate-300 mr-2",
+                    formatTime(e.timestampEpochMs)
+                  ),
                   <.span(s"visits=${e.visits}")
                 )
               }
             )
+        ,
+        loading = cardLoading,
+        errored = cardError
+      )
     )
 
   private def formatTime(epochMs: Long): String =

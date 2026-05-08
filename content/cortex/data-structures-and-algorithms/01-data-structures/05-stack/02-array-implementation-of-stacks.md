@@ -1,7 +1,3 @@
----
-title: "2. Array Implementation of Stacks"
----
-
 # 2. Array Implementation of Stacks
 
 ## The Hook
@@ -185,6 +181,36 @@ cls: "Stack class" {
 
 ## Stack class — skeleton
 
+
+```pseudocode
+function Stack(capacity):
+    arr      ← empty list of capacity slots
+    topIndex ← −1      # −1 means empty
+    cap      ← capacity
+
+function size(stack):
+    return stack.topIndex + 1
+
+function empty(stack):
+    return stack.topIndex = −1
+
+function top(stack):
+    if empty(stack): return −1
+    return stack.arr[stack.topIndex]
+
+function push(stack, val):
+    if stack.topIndex = stack.cap − 1: return false
+    stack.topIndex ← stack.topIndex + 1
+    stack.arr[stack.topIndex] ← val
+    return true
+
+function pop(stack):
+    if empty(stack): return −1
+    val ← stack.arr[stack.topIndex]
+    stack.topIndex ← stack.topIndex − 1
+    return val
+```
+
 ```python run
 class Stack:
     def __init__(self, capacity: int):
@@ -300,24 +326,6 @@ object Main extends App {
 }
 ```
 
-```javascript run
-class Stack {
-    constructor(capacity) {
-        this.capacity = capacity;
-        this.arr      = new Array(capacity).fill(0);
-        this.topIndex = -1;
-    }
-    size()  { return 0; }
-    empty() { return true; }
-    top()   { return -1; }
-    push(val) { return false; }
-    pop()   { return -1; }
-}
-
-const s = new Stack(4);
-console.log("created stack with capacity 4");
-```
-
 ```typescript run
 class Stack {
     protected capacity: number;
@@ -363,23 +371,6 @@ func (s *Stack) Pop()   int  { return -1 }
 func main() {
     s := NewStack(4)
     fmt.Printf("created stack with capacity %d\n", s.capacity)
-}
-```
-
-```kotlin run
-open class Stack(protected val capacity: Int) {
-    protected val arr      = IntArray(capacity)
-    protected var topIndex = -1
-
-    open fun size():  Int     = 0
-    open fun empty(): Boolean = true
-    open fun top():   Int     = -1
-    open fun push(v: Int): Boolean = false
-    open fun pop():   Int     = -1
-}
-
-fun main() {
-    val s = Stack(4); println("created stack with capacity 4")
 }
 ```
 
@@ -450,6 +441,12 @@ e3 -> s3
 
 ## Implementation
 
+
+```pseudocode
+function size(stack):
+    return stack.topIndex + 1
+```
+
 ```python run
 class Stack:
     def __init__(self, capacity):
@@ -507,14 +504,6 @@ class Stack(val capacity: Int) {
 object Main extends App { println(new Stack(4).size) }
 ```
 
-```javascript run
-class Stack {
-    constructor(c) { this.capacity = c; this.arr = new Array(c).fill(0); this.topIndex = -1; }
-    size() { return this.topIndex + 1; }
-}
-console.log(new Stack(4).size());   // 0
-```
-
 ```typescript run
 class Stack {
     protected capacity: number; protected arr: number[]; protected topIndex: number;
@@ -533,14 +522,6 @@ func NewStack(c int) *Stack { return &Stack{make([]int, c), c, -1} }
 func (s *Stack) Size() int  { return s.topIndex + 1 }
 
 func main() { fmt.Println(NewStack(4).Size()) }
-```
-
-```kotlin run
-open class Stack(protected val capacity: Int) {
-    protected val arr = IntArray(capacity); protected var topIndex = -1
-    open fun size() = topIndex + 1
-}
-fun main() { println(Stack(4).size()) }
 ```
 
 ```rust run
@@ -590,6 +571,12 @@ flowchart LR
 > -   **Step 1:** Return `topIndex == -1`.
 
 ## Implementation
+
+
+```pseudocode
+function empty(stack):
+    return stack.topIndex = −1
+```
 
 ```python run
 class Stack:
@@ -643,14 +630,6 @@ class Stack(val capacity: Int) {
 object Main extends App { println(new Stack(4).empty) }
 ```
 
-```javascript run
-class Stack {
-    constructor(c){ this.capacity=c; this.arr=new Array(c).fill(0); this.topIndex=-1; }
-    empty(){ return this.topIndex === -1; }
-}
-console.log(new Stack(4).empty());
-```
-
 ```typescript run
 class Stack {
     protected capacity: number; protected arr: number[]; protected topIndex: number;
@@ -668,14 +647,6 @@ func NewStack(c int) *Stack { return &Stack{make([]int, c), c, -1} }
 func (s *Stack) Empty() bool { return s.topIndex == -1 }
 
 func main() { fmt.Println(NewStack(4).Empty()) }
-```
-
-```kotlin run
-open class Stack(protected val capacity: Int) {
-    protected val arr = IntArray(capacity); protected var topIndex = -1
-    open fun empty() = topIndex == -1
-}
-fun main() { println(Stack(4).empty()) }
 ```
 
 ```rust run
@@ -733,6 +704,13 @@ flowchart LR
 
 ## Implementation
 
+
+```pseudocode
+function top(stack):
+    if empty(stack): return −1
+    return stack.arr[stack.topIndex]
+```
+
 ```python run
 class Stack:
     def __init__(self, c): self.capacity, self.arr, self.top_idx = c, [0]*c, -1
@@ -784,14 +762,6 @@ class Stack(val capacity: Int) {
 }
 ```
 
-```javascript run
-class Stack {
-    constructor(c){ this.capacity=c; this.arr=new Array(c).fill(0); this.topIndex=-1; }
-    empty(){ return this.topIndex === -1; }
-    top(){ return this.empty() ? -1 : this.arr[this.topIndex]; }
-}
-```
-
 ```typescript run
 class Stack {
     protected capacity: number; protected arr: number[]; protected topIndex: number;
@@ -806,14 +776,6 @@ package main
 type Stack struct{ arr []int; capacity, topIndex int }
 func (s *Stack) Empty() bool { return s.topIndex == -1 }
 func (s *Stack) Top() int    { if s.Empty() { return -1 }; return s.arr[s.topIndex] }
-```
-
-```kotlin run
-open class Stack(protected val capacity: Int) {
-    protected val arr = IntArray(capacity); protected var topIndex = -1
-    open fun empty() = topIndex == -1
-    open fun top()   = if (empty()) -1 else arr[topIndex]
-}
 ```
 
 ```rust run
@@ -871,6 +833,15 @@ flowchart LR
 > -   **Step 2:** Increment `topIndex`, set `arr[topIndex] = val`, return `true`.
 
 ## Implementation
+
+
+```pseudocode
+function push(stack, val):
+    if stack.topIndex = stack.cap − 1: return false
+    stack.topIndex ← stack.topIndex + 1
+    stack.arr[stack.topIndex] ← val
+    return true
+```
 
 ```python run
 class Stack:
@@ -955,19 +926,6 @@ object Main extends App {
 }
 ```
 
-```javascript run
-class Stack {
-    constructor(c){ this.capacity=c; this.arr=new Array(c).fill(0); this.topIndex=-1; }
-    push(val){
-        if (this.topIndex === this.capacity - 1) return false;
-        this.arr[++this.topIndex] = val;
-        return true;
-    }
-}
-const s = new Stack(2);
-console.log(s.push(7), s.push(9), s.push(11));
-```
-
 ```typescript run
 class Stack {
     protected capacity: number; protected arr: number[]; protected topIndex: number;
@@ -997,21 +955,6 @@ func (s *Stack) Push(val int) bool {
 func main() {
     s := NewStack(2)
     fmt.Println(s.Push(7), s.Push(9), s.Push(11))
-}
-```
-
-```kotlin run
-open class Stack(protected val capacity: Int) {
-    protected val arr = IntArray(capacity); protected var topIndex = -1
-    open fun push(v: Int): Boolean {
-        if (topIndex == capacity - 1) return false
-        arr[++topIndex] = v
-        return true
-    }
-}
-fun main() {
-    val s = Stack(2)
-    println("${s.push(7)} ${s.push(9)} ${s.push(11)}")
 }
 ```
 
@@ -1078,6 +1021,15 @@ flowchart LR
 > -   **Step 2:** Return `arr[topIndex--]` (read at old top, then decrement).
 
 ## Implementation
+
+
+```pseudocode
+function pop(stack):
+    if empty(stack): return −1
+    val ← stack.arr[stack.topIndex]
+    stack.topIndex ← stack.topIndex − 1
+    return val
+```
 
 ```python run
 class Stack:
@@ -1183,22 +1135,6 @@ object Main extends App {
 }
 ```
 
-```javascript run
-class Stack {
-    constructor(c){ this.capacity=c; this.arr=new Array(c).fill(0); this.topIndex=-1; }
-    empty(){ return this.topIndex === -1; }
-    push(v){ if (this.topIndex === this.capacity - 1) return false; this.arr[++this.topIndex] = v; return true; }
-    pop(){
-        if (this.empty()) return -1;
-        const v = this.arr[this.topIndex]; this.topIndex--;
-        return v;
-    }
-}
-const s = new Stack(3);
-s.push(1); s.push(2); s.push(3);
-console.log(s.pop(), s.pop(), s.pop(), s.pop());
-```
-
 ```typescript run
 class Stack {
     protected capacity: number; protected arr: number[]; protected topIndex: number;
@@ -1232,20 +1168,6 @@ func main() {
     s := NewStack(3)
     s.Push(1); s.Push(2); s.Push(3)
     fmt.Println(s.Pop(), s.Pop(), s.Pop(), s.Pop())
-}
-```
-
-```kotlin run
-open class Stack(protected val capacity: Int) {
-    protected val arr = IntArray(capacity); protected var topIndex = -1
-    open fun empty() = topIndex == -1
-    open fun push(v: Int): Boolean { if (topIndex == capacity - 1) return false; arr[++topIndex] = v; return true }
-    open fun pop():  Int { if (empty()) return -1; val v = arr[topIndex]; topIndex--; return v }
-}
-fun main() {
-    val s = Stack(3)
-    s.push(1); s.push(2); s.push(3)
-    println("${s.pop()} ${s.pop()} ${s.pop()} ${s.pop()}")
 }
 ```
 
@@ -1303,6 +1225,30 @@ Implement a `Stack` class with the operations from this lesson, backed by an arr
 ## Solution
 
 The full implementation is exactly what we built incrementally above, in 10 languages.
+
+
+```pseudocode
+function Stack(capacity):
+    arr      ← empty list of capacity slots
+    topIndex ← −1
+    cap      ← capacity
+
+function size(stack):    return stack.topIndex + 1
+function empty(stack):   return stack.topIndex = −1
+function top(stack):     if empty(stack): return −1  else return stack.arr[stack.topIndex]
+
+function push(stack, val):
+    if stack.topIndex = stack.cap − 1: return false
+    stack.topIndex ← stack.topIndex + 1
+    stack.arr[stack.topIndex] ← val
+    return true
+
+function pop(stack):
+    if empty(stack): return −1
+    val ← stack.arr[stack.topIndex]
+    stack.topIndex ← stack.topIndex − 1
+    return val
+```
 
 ```python run
 class Stack:
@@ -1456,32 +1402,6 @@ object Main extends App {
 }
 ```
 
-```javascript run
-class Stack {
-    constructor(capacity) {
-        this.capacity = capacity;
-        this.arr      = new Array(capacity).fill(0);
-        this.topIndex = -1;
-    }
-    size()  { return this.topIndex + 1; }
-    empty() { return this.topIndex === -1; }
-    top()   { return this.empty() ? -1 : this.arr[this.topIndex]; }
-    push(v) {
-        if (this.topIndex === this.capacity - 1) return false;
-        this.arr[++this.topIndex] = v; return true;
-    }
-    pop()   { return this.empty() ? -1 : this.arr[this.topIndex--]; }
-}
-
-const s = new Stack(2);
-console.log(s.push(2), s.push(3));
-console.log(s.top(), s.empty());
-console.log(s.pop());
-console.log(s.top());
-console.log(s.push(8), s.push(9));
-console.log(s.empty());
-```
-
 ```typescript run
 class Stack {
     private capacity: number;
@@ -1537,32 +1457,6 @@ func main() {
     fmt.Println(s.Top())
     fmt.Println(s.Push(8), s.Push(9))
     fmt.Println(s.Empty())
-}
-```
-
-```kotlin run
-class Stack(private val capacity: Int) {
-    private val arr      = IntArray(capacity)
-    private var topIndex = -1
-
-    fun size():  Int     = topIndex + 1
-    fun empty(): Boolean = topIndex == -1
-    fun top():   Int     = if (empty()) -1 else arr[topIndex]
-    fun push(v: Int): Boolean {
-        if (topIndex == capacity - 1) return false
-        arr[++topIndex] = v; return true
-    }
-    fun pop():   Int     = if (empty()) -1 else arr[topIndex--]
-}
-
-fun main() {
-    val s = Stack(2)
-    println("${s.push(2)} ${s.push(3)}")
-    println("${s.top()} ${s.empty()}")
-    println(s.pop())
-    println(s.top())
-    println("${s.push(8)} ${s.push(9)}")
-    println(s.empty())
 }
 ```
 
@@ -1685,6 +1579,34 @@ Initial sentinels:
 > top1 = 5, top2 = 6 (still its empty sentinel). push2 checks `top2 - 1 <= top1` → `5 <= 5` → true → reject. The array is fully consumed by stack 1, so stack 2 has no room. The check is exactly the same shape as a single-stack "full" check, generalised to the meeting point of two stacks.
 
 ## Solution
+
+
+```pseudocode
+function TwoStack(capacity):
+    arr  ← empty list of capacity slots
+    top1 ← −1           # stack 1 grows right from index 0
+    top2 ← capacity     # stack 2 grows left from capacity−1
+
+function push1(ts, val):
+    if ts.top1 + 1 ≥ ts.top2: return false   # stacks would collide
+    ts.top1 ← ts.top1 + 1
+    ts.arr[ts.top1] ← val
+    return true
+
+function push2(ts, val):
+    if ts.top2 − 1 ≤ ts.top1: return false
+    ts.top2 ← ts.top2 − 1
+    ts.arr[ts.top2] ← val
+    return true
+
+function pop1(ts):
+    if ts.top1 < 0: return −1
+    val ← ts.arr[ts.top1]; ts.top1 ← ts.top1 − 1; return val
+
+function pop2(ts):
+    if ts.top2 = length(ts.arr): return −1
+    val ← ts.arr[ts.top2]; ts.top2 ← ts.top2 + 1; return val
+```
 
 ```python run
 class TwoStack:
@@ -1862,30 +1784,6 @@ object Main extends App {
 }
 ```
 
-```javascript run
-class TwoStack {
-    constructor(capacity) {
-        this.capacity = capacity;
-        this.arr      = new Array(capacity).fill(0);
-        this.t1       = -1;
-        this.t2       = capacity;
-    }
-    top1()  { return this.t1 === -1            ? -1 : this.arr[this.t1]; }
-    top2()  { return this.t2 === this.capacity ? -1 : this.arr[this.t2]; }
-    push1(v){ if (this.t1 + 1 >= this.t2) return false; this.arr[++this.t1] = v; return true; }
-    push2(v){ if (this.t2 - 1 <= this.t1) return false; this.arr[--this.t2] = v; return true; }
-    pop1()  { return this.t1 === -1            ? -1 : this.arr[this.t1--]; }
-    pop2()  { return this.t2 === this.capacity ? -1 : this.arr[this.t2++]; }
-}
-
-const s = new TwoStack(6);
-console.log(s.push1(2), s.push2(3));
-console.log(s.pop1(),   s.pop2());
-console.log(s.top1(),   s.top2());
-console.log(s.push1(8), s.push1(9));
-console.log(s.top1());
-```
-
 ```typescript run
 class TwoStack {
     private capacity: number;
@@ -1946,30 +1844,6 @@ func main() {
     fmt.Println(s.Top1(),   s.Top2())
     fmt.Println(s.Push1(8), s.Push1(9))
     fmt.Println(s.Top1())
-}
-```
-
-```kotlin run
-class TwoStack(private val capacity: Int) {
-    private val arr = IntArray(capacity)
-    private var t1  = -1
-    private var t2  = capacity
-
-    fun top1(): Int = if (t1 == -1)        -1 else arr[t1]
-    fun top2(): Int = if (t2 == capacity)  -1 else arr[t2]
-    fun push1(v: Int): Boolean { if (t1 + 1 >= t2) return false; arr[++t1] = v; return true }
-    fun push2(v: Int): Boolean { if (t2 - 1 <= t1) return false; arr[--t2] = v; return true }
-    fun pop1(): Int = if (t1 == -1)        -1 else arr[t1--]
-    fun pop2(): Int = if (t2 == capacity)  -1 else arr[t2++]
-}
-
-fun main() {
-    val s = TwoStack(6)
-    println("${s.push1(2)} ${s.push2(3)}")
-    println("${s.pop1()} ${s.pop2()}")
-    println("${s.top1()} ${s.top2()}")
-    println("${s.push1(8)} ${s.push1(9)}")
-    println(s.top1())
 }
 ```
 

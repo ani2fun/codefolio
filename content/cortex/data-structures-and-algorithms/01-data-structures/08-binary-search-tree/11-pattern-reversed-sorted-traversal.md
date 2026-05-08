@@ -1,7 +1,3 @@
----
-title: "11. Pattern: Reversed Sorted Traversal"
----
-
 # 11. Pattern: Reversed Sorted Traversal
 
 ## The Hook
@@ -78,6 +74,23 @@ Same structure as the sorted-traversal template, with the recursive calls swappe
 > - **Step 4:** `reverseInorder(node.left)`.
 
 ## Generic template
+
+
+```pseudocode
+aggregate ← 0
+
+function reverseInorder(node):
+    if node is null: return
+    reverseInorder(node.right)                  # 1. larger values first (descending)
+    output ← f(node.val)                        # 2. process current node
+    aggregate ← g(aggregate, output)            # 3. fold into running state
+    reverseInorder(node.left)                   # 4. smaller values
+
+function callingFunction(root):
+    aggregate ← 0
+    reverseInorder(root)
+    return aggregate
+```
 
 ```python run
 class Solution:
@@ -187,25 +200,6 @@ class Solution {
 }
 ```
 
-```javascript run
-class Solution {
-  callingFunction(root) {
-    this.aggregate = 0;
-    this.reverseInorder(root);
-    return this.aggregate;
-  }
-  reverseInorder(node) {
-    if (node === null) return;
-    this.reverseInorder(node.right);                                                          // larger first
-    const output = this.f(node.val);                                                          // process
-    this.aggregate = this.g(this.aggregate, output);                                          // fold
-    this.reverseInorder(node.left);                                                           // smaller next
-  }
-  f(v) { return v; }
-  g(agg, out) { return agg + out; }
-}
-```
-
 ```typescript run
 class Solution {
   aggregate: number = 0;
@@ -246,28 +240,6 @@ func callingFunction(root *TreeNode) int {
     s := &genericState{}
     s.reverseInorder(root)
     return s.aggregate
-}
-```
-
-```kotlin run
-class Solution {
-    private var aggregate = 0
-
-    fun callingFunction(root: TreeNode?): Int {
-        aggregate = 0
-        reverseInorder(root)
-        return aggregate
-    }
-
-    private fun reverseInorder(node: TreeNode?) {
-        if (node == null) return
-        reverseInorder(node.right)                                                                   // larger first
-        val output = f(node.`val`)                                                                   // process
-        aggregate = g(aggregate, output)                                                             // fold
-        reverseInorder(node.left)                                                                    // smaller next
-    }
-    private fun f(v: Int)                = v
-    private fun g(agg: Int, out: Int)    = agg + out
 }
 ```
 
@@ -373,6 +345,23 @@ Walk the tree in reverse in-order. The first node visited (the largest) gets ran
 
 ## The Solution
 
+
+```pseudocode
+rank ← 1
+
+function walk(node):
+    if node is null: return
+    walk(node.right)          # visit larger values first
+    node.val ← rank           # overwrite value with its rank (1 = largest)
+    rank ← rank + 1
+    walk(node.left)
+
+function rankNodes(root):
+    rank ← 1
+    walk(root)
+    return root
+```
+
 ```python run
 class Solution:
     def __init__(self):
@@ -469,23 +458,6 @@ class Solution {
 }
 ```
 
-```javascript run
-class Solution {
-  rankNodes(root) {
-    this.rank = 1;
-    this._walk(root);
-    return root;
-  }
-
-  _walk(node) {
-    if (node === null) return;
-    this._walk(node.right);                                                                              // larger first
-    node.val = this.rank++;                                                                              // assign + increment
-    this._walk(node.left);
-  }
-}
-```
-
 ```typescript run
 class Solution {
   rank: number = 1;
@@ -520,26 +492,6 @@ func rankNodes(root *TreeNode) *TreeNode {
     s := &rankState{rank: 1}
     s.walk(root)
     return root
-}
-```
-
-```kotlin run
-class Solution {
-    private var rank = 1
-
-    private fun walk(node: TreeNode?) {
-        if (node == null) return
-        walk(node.right)                                                                                       // larger first
-        node.`val` = rank
-        rank += 1
-        walk(node.left)
-    }
-
-    fun rankNodes(root: TreeNode?): TreeNode? {
-        rank = 1
-        walk(root)
-        return root
-    }
 }
 ```
 
@@ -592,6 +544,29 @@ Given the **root** of a binary search tree and an integer `k`, return the k-th l
 Walk reverse in-order; the k-th node visited is the k-th largest. Critically — **stop traversing the moment the answer is found**, so the cost is O(h + k), not O(n).
 
 ## The Solution
+
+
+```pseudocode
+count ← 0
+result ← 0
+found ← false
+
+function reverseInOrder(root, k):
+    if root is null OR found: return
+    reverseInOrder(root.right, k)           # visit larger values first
+    if found: return
+    count ← count + 1
+    if count = k:                           # this is the k-th largest
+        result ← root.val
+        found ← true
+        return
+    reverseInOrder(root.left, k)
+
+function kthLargestElement(root, k):
+    count ← 0; result ← 0; found ← false
+    reverseInOrder(root, k)
+    return result
+```
 
 ```python run
 class Solution:
@@ -710,25 +685,6 @@ class Solution {
 }
 ```
 
-```javascript run
-class Solution {
-  reverseInOrder(root, k) {
-    if (root === null || this.found) return;
-    this.reverseInOrder(root.right, k);
-    if (this.found) return;
-    this.count++;
-    if (this.count === k) { this.result = root.val; this.found = true; return; }                                        // hit
-    this.reverseInOrder(root.left, k);
-  }
-
-  kthLargestElement(root, k) {
-    this.count = 0; this.result = 0; this.found = false;
-    this.reverseInOrder(root, k);
-    return this.result;
-  }
-}
-```
-
 ```typescript run
 class Solution {
   count = 0; result = 0; found = false;
@@ -769,29 +725,6 @@ func kthLargestElement(root *TreeNode, k int) int {
     s := &kthLargestState{}
     s.reverseInOrder(root, k)
     return s.result
-}
-```
-
-```kotlin run
-class Solution {
-    private var count = 0
-    private var result = 0
-    private var found = false
-
-    private fun reverseInOrder(root: TreeNode?, k: Int) {
-        if (root == null || found) return
-        reverseInOrder(root.right, k)
-        if (found) return
-        count += 1
-        if (count == k) { result = root.`val`; found = true; return }                                                          // hit
-        reverseInOrder(root.left, k)
-    }
-
-    fun kthLargestElement(root: TreeNode?, k: Int): Int {
-        count = 0; result = 0; found = false
-        reverseInOrder(root, k)
-        return result
-    }
 }
 ```
 
@@ -852,6 +785,23 @@ Reverse in-order visits nodes from largest to smallest. Maintain a running `sum`
 By the time we visit a node, `sum` already contains the total of every strictly larger node we've already passed *plus* the current node — exactly the value the problem asks for.
 
 ## The Solution
+
+
+```pseudocode
+runningSum ← 0
+
+function walk(node):
+    if node is null: return
+    walk(node.right)                    # accumulate larger values first
+    runningSum ← runningSum + node.val
+    node.val ← runningSum              # overwrite with "sum of all greater-or-equal values"
+    walk(node.left)
+
+function enrichedSumTree(root):
+    runningSum ← 0
+    walk(root)
+    return root
+```
 
 ```python run
 class Solution:
@@ -952,24 +902,6 @@ class Solution {
 }
 ```
 
-```javascript run
-class Solution {
-  enrichedSumTree(root) {
-    this.sum = 0;
-    this._walk(root);
-    return root;
-  }
-
-  _walk(node) {
-    if (node === null) return;
-    this._walk(node.right);                                                                                                          // larger first
-    this.sum += node.val;
-    node.val  = this.sum;
-    this._walk(node.left);
-  }
-}
-```
-
 ```typescript run
 class Solution {
   sum: number = 0;
@@ -1005,26 +937,6 @@ func enrichedSumTree(root *TreeNode) *TreeNode {
     s := &sumState{}
     s.walk(root)
     return root
-}
-```
-
-```kotlin run
-class Solution {
-    private var sum = 0
-
-    private fun walk(node: TreeNode?) {
-        if (node == null) return
-        walk(node.right)                                                                                                                     // larger first
-        sum += node.`val`
-        node.`val` = sum
-        walk(node.left)
-    }
-
-    fun enrichedSumTree(root: TreeNode?): TreeNode? {
-        sum = 0
-        walk(root)
-        return root
-    }
 }
 ```
 
@@ -1101,6 +1013,27 @@ So:
 The "save the original first" detail is the trap that catches careless implementations.
 
 ## The Solution
+
+
+```pseudocode
+prevVal ← 0
+hasPrev ← false
+
+function walk(node):
+    if node is null: return
+    walk(node.right)                                   # visit larger value first
+    original ← node.val                                # capture before possible overwrite
+    if hasPrev AND prevVal ≠ 0 AND prevVal mod node.val = 0:
+        node.val ← 0                                   # just-larger value is a multiple of this → zero it
+    prevVal ← original                                 # always store the unmodified value
+    hasPrev ← true
+    walk(node.left)
+
+function multipleReplacement(root):
+    prevVal ← 0; hasPrev ← false
+    walk(root)
+    return root
+```
 
 ```python run
 class Solution:
@@ -1220,27 +1153,6 @@ class Solution {
 }
 ```
 
-```javascript run
-class Solution {
-  multipleReplacement(root) {
-    this.prevVal = 0;
-    this.hasPrev = false;
-    this._walk(root);
-    return root;
-  }
-
-  _walk(node) {
-    if (node === null) return;
-    this._walk(node.right);                                                                                                                                  // larger first
-    const original = node.val;
-    if (this.hasPrev && this.prevVal !== 0 && this.prevVal % node.val === 0) node.val = 0;
-    this.prevVal = original;
-    this.hasPrev = true;
-    this._walk(node.left);
-  }
-}
-```
-
 ```typescript run
 class Solution {
   prevVal: number = 0;
@@ -1286,29 +1198,6 @@ func multipleReplacement(root *TreeNode) *TreeNode {
     s := &multReplaceState{}
     s.walk(root)
     return root
-}
-```
-
-```kotlin run
-class Solution {
-    private var prevVal = 0
-    private var hasPrev = false
-
-    private fun walk(node: TreeNode?) {
-        if (node == null) return
-        walk(node.right)                                                                                                                                          // larger first
-        val original = node.`val`
-        if (hasPrev && prevVal != 0 && prevVal % node.`val` == 0) node.`val` = 0
-        prevVal = original
-        hasPrev = true
-        walk(node.left)
-    }
-
-    fun multipleReplacement(root: TreeNode?): TreeNode? {
-        prevVal = 0; hasPrev = false
-        walk(root)
-        return root
-    }
 }
 ```
 

@@ -8,6 +8,24 @@
         @apply prose prose-blue dark:prose-invert max-w-none
                prose-headings:scroll-mt-28 prose-pre:p-0 prose-pre:bg-transparent
                prose-pre:border-0 prose-img:my-0;
+        --tw-prose-body: #1f2937;
+        --tw-prose-headings: #030712;
+        --tw-prose-lead: #1f2937;
+        --tw-prose-links: #1d4ed8;
+        --tw-prose-bold: #030712;
+        --tw-prose-counters: #4b5563;
+        --tw-prose-bullets: #4b5563;
+        --tw-prose-quotes: #1f2937;
+        --tw-prose-captions: #4b5563;
+        --tw-prose-invert-body: #f3f4f6;
+        --tw-prose-invert-headings: #ffffff;
+        --tw-prose-invert-lead: #f3f4f6;
+        --tw-prose-invert-links: #93c5fd;
+        --tw-prose-invert-bold: #ffffff;
+        --tw-prose-invert-counters: #d1d5db;
+        --tw-prose-invert-bullets: #d1d5db;
+        --tw-prose-invert-quotes: #f3f4f6;
+        --tw-prose-invert-captions: #d1d5db;
     }
 
     /* Inline code: rehype-pretty-code is bypassed for inline nodes, so we

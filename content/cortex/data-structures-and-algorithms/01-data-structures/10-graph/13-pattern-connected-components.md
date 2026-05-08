@@ -1,7 +1,3 @@
----
-title: "13. Pattern: Connected components"
----
-
 # 13. Pattern: Connected components
 
 This lesson teaches you the **connected-components pattern** — the recipe for finding, counting, or summarising the disjoint pieces of an undirected graph (or grid).
@@ -163,6 +159,26 @@ The "visitable" twist makes the problem more interesting: nodes with `values[i] 
 - *Visitability filter*: only descend into neighbours where `values[neighbour] > 0`.
 
 ## The Solution
+
+
+```pseudocode
+function dfs(graph, node, values, visited, component):
+    add node to visited
+    append node to component
+    for neighbor in graph[node]:
+        if neighbor is not in visited AND values[neighbor] > 0:
+            dfs(graph, neighbor, values, visited, component)
+
+function connectedComponents(graph, values):
+    visited ← empty set
+    components ← empty list
+    for node from 0 to N−1:
+        if values[node] > 0 AND node is not in visited:
+            component ← empty list
+            dfs(graph, node, values, visited, component)
+            append component to components
+    return components
+```
 
 ```python run
 from typing import List, Set
@@ -357,32 +373,6 @@ object Main extends App {
 }
 ```
 
-```javascript run
-class Solution {
-    dfs(graph, node, values, visited, component) {
-        visited.add(node); component.push(node);
-        for (const n of graph[node])
-            if (!visited.has(n) && values[n] > 0) this.dfs(graph, n, values, visited, component);
-    }
-
-    connectedComponents(graph, values) {
-        const visited = new Set(); const components = [];
-        for (let node = 0; node < graph.length; node++) {
-            if (values[node] > 0 && !visited.has(node)) {
-                const component = [];
-                this.dfs(graph, node, values, visited, component);
-                components.push(component);
-            }
-        }
-        return components;
-    }
-}
-
-const graph = [[1], [0, 2], [1, 3], [2, 4], [3, 5], [4, 6], [5]];
-const values = [1, 0, 1, 0, 1, 0, 1];
-console.log(new Solution().connectedComponents(graph, values));
-```
-
 ```typescript run
 class Solution {
     dfs(graph: number[][], node: number, values: number[],
@@ -445,36 +435,6 @@ func main() {
 }
 ```
 
-```kotlin run
-class Solution {
-    fun dfs(graph: List<List<Int>>, node: Int, values: IntArray,
-            visited: MutableSet<Int>, component: MutableList<Int>) {
-        visited.add(node); component.add(node)
-        for (n in graph[node])
-            if (n !in visited && values[n] > 0) dfs(graph, n, values, visited, component)
-    }
-
-    fun connectedComponents(graph: List<List<Int>>, values: IntArray): List<List<Int>> {
-        val visited = mutableSetOf<Int>()
-        val components = mutableListOf<List<Int>>()
-        for (node in graph.indices) {
-            if (values[node] > 0 && node !in visited) {
-                val component = mutableListOf<Int>()
-                dfs(graph, node, values, visited, component)
-                components.add(component)
-            }
-        }
-        return components
-    }
-}
-
-fun main() {
-    val g = listOf(listOf(1), listOf(0, 2), listOf(1, 3), listOf(2, 4), listOf(3, 5), listOf(4, 6), listOf(5))
-    val v = intArrayOf(1, 0, 1, 0, 1, 0, 1)
-    println(Solution().connectedComponents(g, v))
-}
-```
-
 ```rust run
 fn dfs(graph: &[Vec<usize>], node: usize, values: &[i32],
        visited: &mut Vec<bool>, component: &mut Vec<usize>) {
@@ -534,6 +494,27 @@ Explanation: Component {0, 1, 4} has min(2, 5, 7) = 2.
 The DFS now *returns* the component min instead of building a list. That's a small but important variation: the per-component aggregate doesn't need to be a parameter — it can be the function's return value.
 
 ## The Solution
+
+
+```pseudocode
+function dfs(graph, node, visited, values):
+    add node to visited
+    minSoFar ← values[node]
+    for neighbor in graph[node]:
+        if neighbor is not in visited:
+            childMin ← dfs(graph, neighbor, visited, values)
+            if childMin < minSoFar:
+                minSoFar ← childMin
+    return minSoFar
+
+function sumOfMinimums(graph, values):
+    visited ← empty set
+    total ← 0
+    for node from 0 to N−1:
+        if node is not in visited:
+            total ← total + dfs(graph, node, visited, values)
+    return total
+```
 
 ```python run
 from typing import List, Set
@@ -700,30 +681,6 @@ object Main extends App {
 }
 ```
 
-```javascript run
-class Solution {
-    dfs(graph, node, visited, values) {
-        visited.add(node);
-        let minSoFar = values[node];
-        for (const n of graph[node]) {
-            if (!visited.has(n)) minSoFar = Math.min(minSoFar, this.dfs(graph, n, visited, values));
-        }
-        return minSoFar;
-    }
-
-    sumOfMinimums(graph, values) {
-        const visited = new Set();
-        let total = 0;
-        for (let node = 0; node < graph.length; node++) {
-            if (!visited.has(node)) total += this.dfs(graph, node, visited, values);
-        }
-        return total;
-    }
-}
-
-console.log(new Solution().sumOfMinimums([[1], [0, 4], [3], [2], [1]], [2, 5, 1, 6, 7]));
-```
-
 ```typescript run
 class Solution {
     dfs(graph: number[][], node: number, visited: Set<number>, values: number[]): number {
@@ -781,30 +738,6 @@ func sumOfMinimums(graph [][]int, values []int) int {
 func main() {
     g := [][]int{{1}, {0, 4}, {3}, {2}, {1}}
     fmt.Println(sumOfMinimums(g, []int{2, 5, 1, 6, 7}))
-}
-```
-
-```kotlin run
-class Solution {
-    fun dfs(graph: List<List<Int>>, node: Int, visited: MutableSet<Int>, values: IntArray): Int {
-        visited.add(node)
-        var minSoFar = values[node]
-        for (n in graph[node])
-            if (n !in visited) minSoFar = minOf(minSoFar, dfs(graph, n, visited, values))
-        return minSoFar
-    }
-
-    fun sumOfMinimums(graph: List<List<Int>>, values: IntArray): Int {
-        val visited = mutableSetOf<Int>()
-        var total = 0
-        for (node in graph.indices) if (node !in visited) total += dfs(graph, node, visited, values)
-        return total
-    }
-}
-
-fun main() {
-    val g = listOf(listOf(1), listOf(0, 4), listOf(3), listOf(2), listOf(1))
-    println(Solution().sumOfMinimums(g, intArrayOf(2, 5, 1, 6, 7)))
 }
 ```
 
@@ -866,6 +799,26 @@ The grid is just a graph in disguise. Each cell is a node. Each "is-adjacent" re
 The 8-direction array is the only structural change from grid traversal in lesson 5.
 
 ## The Solution
+
+
+```pseudocode
+function dfs(grid, r, c, visited):   # 8-direction DFS
+    visited[r][c] ← true
+    for each (dr, dc) in DIRS_8:
+        nr, nc ← r+dr, c+dc
+        if isValid(grid, nr, nc) AND NOT visited[nr][nc]:
+            dfs(grid, nr, nc, visited)
+
+function islandCount(grid):
+    visited ← rows×cols matrix of false
+    count ← 0
+    for r from 0 to rows−1:
+        for c from 0 to cols−1:
+            if grid[r][c] = 1 AND NOT visited[r][c]:
+                dfs(grid, r, c, visited)
+                count ← count + 1   # one DFS init = one island
+    return count
+```
 
 ```python run
 from typing import List
@@ -1065,39 +1018,6 @@ object Main extends App {
 }
 ```
 
-```javascript run
-const DIRS_8 = [[-1, 0], [-1, 1], [0, 1], [1, 1],
-                [1, 0], [1, -1], [0, -1], [-1, -1]];
-
-class Solution {
-    isValid(grid, r, c) {
-        return r >= 0 && r < grid.length && c >= 0 && c < grid[0].length && grid[r][c] === 1;
-    }
-
-    dfs(grid, r, c, visited) {
-        visited[r][c] = true;
-        for (const [dr, dc] of DIRS_8) {
-            const nr = r + dr, nc = c + dc;
-            if (this.isValid(grid, nr, nc) && !visited[nr][nc]) this.dfs(grid, nr, nc, visited);
-        }
-    }
-
-    islandCount(grid) {
-        if (grid.length === 0) return 0;
-        const rows = grid.length, cols = grid[0].length;
-        const visited = Array.from({length: rows}, () => Array(cols).fill(false));
-        let count = 0;
-        for (let r = 0; r < rows; r++)
-            for (let c = 0; c < cols; c++)
-                if (grid[r][c] === 1 && !visited[r][c]) { this.dfs(grid, r, c, visited); count++; }
-        return count;
-    }
-}
-
-const grid = [[1, 1, 0, 0], [0, 0, 1, 1], [1, 0, 1, 1], [1, 0, 0, 0]];
-console.log(new Solution().islandCount(grid));
-```
-
 ```typescript run
 const DIRS_8: [number, number][] = [[-1, 0], [-1, 1], [0, 1], [1, 1],
                                     [1, 0], [1, -1], [0, -1], [-1, -1]];
@@ -1181,41 +1101,6 @@ func main() {
 }
 ```
 
-```kotlin run
-val DIRS_8 = arrayOf(intArrayOf(-1, 0), intArrayOf(-1, 1), intArrayOf(0, 1), intArrayOf(1, 1),
-                     intArrayOf(1, 0), intArrayOf(1, -1), intArrayOf(0, -1), intArrayOf(-1, -1))
-
-class Solution {
-    fun isValid(grid: Array<IntArray>, r: Int, c: Int): Boolean =
-        r in grid.indices && c in grid[0].indices && grid[r][c] == 1
-
-    fun dfs(grid: Array<IntArray>, r: Int, c: Int, visited: Array<BooleanArray>) {
-        visited[r][c] = true
-        for (d in DIRS_8) {
-            val nr = r + d[0]; val nc = c + d[1]
-            if (isValid(grid, nr, nc) && !visited[nr][nc]) dfs(grid, nr, nc, visited)
-        }
-    }
-
-    fun islandCount(grid: Array<IntArray>): Int {
-        if (grid.isEmpty()) return 0
-        val rows = grid.size; val cols = grid[0].size
-        val visited = Array(rows) { BooleanArray(cols) }
-        var count = 0
-        for (r in 0 until rows)
-            for (c in 0 until cols)
-                if (grid[r][c] == 1 && !visited[r][c]) { dfs(grid, r, c, visited); count++ }
-        return count
-    }
-}
-
-fun main() {
-    val grid = arrayOf(intArrayOf(1, 1, 0, 0), intArrayOf(0, 0, 1, 1),
-                       intArrayOf(1, 0, 1, 1), intArrayOf(1, 0, 0, 0))
-    println(Solution().islandCount(grid))
-}
-```
-
 ```rust run
 const DIRS_8: [(i32, i32); 8] = [
     (-1, 0), (-1, 1), (0, 1), (1, 1),
@@ -1282,6 +1167,28 @@ Output: 6
 The key change: DFS now **returns the size** of the component instead of just side-effecting visited.
 
 ## The Solution
+
+
+```pseudocode
+function dfs(grid, r, c, visited):   # 8-direction DFS, returns island size
+    visited[r][c] ← true
+    size ← 1
+    for each (dr, dc) in DIRS_8:
+        nr, nc ← r+dr, c+dc
+        if isValid(grid, nr, nc) AND NOT visited[nr][nc]:
+            size ← size + dfs(grid, nr, nc, visited)
+    return size
+
+function sizeOfLargestIsland(grid):
+    visited ← rows×cols matrix of false
+    largest ← 0
+    for r from 0 to rows−1:
+        for c from 0 to cols−1:
+            if grid[r][c] = 1 AND NOT visited[r][c]:
+                size ← dfs(grid, r, c, visited)
+                if size > largest: largest ← size
+    return largest
+```
 
 ```python run
 from typing import List
@@ -1483,42 +1390,6 @@ object Main extends App {
 }
 ```
 
-```javascript run
-const DIRS_8 = [[-1, 0], [-1, 1], [0, 1], [1, 1],
-                [1, 0], [1, -1], [0, -1], [-1, -1]];
-
-class Solution {
-    isValid(g, r, c) {
-        return r >= 0 && r < g.length && c >= 0 && c < g[0].length && g[r][c] === 1;
-    }
-
-    dfs(g, r, c, visited) {
-        visited[r][c] = true;
-        let size = 1;
-        for (const [dr, dc] of DIRS_8) {
-            const nr = r + dr, nc = c + dc;
-            if (this.isValid(g, nr, nc) && !visited[nr][nc]) size += this.dfs(g, nr, nc, visited);
-        }
-        return size;
-    }
-
-    sizeOfLargestIsland(g) {
-        if (g.length === 0) return 0;
-        const rows = g.length, cols = g[0].length;
-        const visited = Array.from({length: rows}, () => Array(cols).fill(false));
-        let largest = 0;
-        for (let r = 0; r < rows; r++)
-            for (let c = 0; c < cols; c++)
-                if (g[r][c] === 1 && !visited[r][c])
-                    largest = Math.max(largest, this.dfs(g, r, c, visited));
-        return largest;
-    }
-}
-
-const grid = [[1, 1, 0, 0], [0, 0, 1, 1], [1, 0, 1, 1], [1, 0, 0, 0]];
-console.log(new Solution().sizeOfLargestIsland(grid));
-```
-
 ```typescript run
 const DIRS_8: [number, number][] = [[-1, 0], [-1, 1], [0, 1], [1, 1],
                                     [1, 0], [1, -1], [0, -1], [-1, -1]];
@@ -1606,44 +1477,6 @@ func sizeOfLargestIsland(g [][]int) int {
 func main() {
     grid := [][]int{{1, 1, 0, 0}, {0, 0, 1, 1}, {1, 0, 1, 1}, {1, 0, 0, 0}}
     fmt.Println(sizeOfLargestIsland(grid))
-}
-```
-
-```kotlin run
-val DIRS_8L = arrayOf(intArrayOf(-1, 0), intArrayOf(-1, 1), intArrayOf(0, 1), intArrayOf(1, 1),
-                      intArrayOf(1, 0), intArrayOf(1, -1), intArrayOf(0, -1), intArrayOf(-1, -1))
-
-class Solution {
-    fun isValid(g: Array<IntArray>, r: Int, c: Int): Boolean =
-        r in g.indices && c in g[0].indices && g[r][c] == 1
-
-    fun dfs(g: Array<IntArray>, r: Int, c: Int, visited: Array<BooleanArray>): Int {
-        visited[r][c] = true
-        var size = 1
-        for (d in DIRS_8L) {
-            val nr = r + d[0]; val nc = c + d[1]
-            if (isValid(g, nr, nc) && !visited[nr][nc]) size += dfs(g, nr, nc, visited)
-        }
-        return size
-    }
-
-    fun sizeOfLargestIsland(g: Array<IntArray>): Int {
-        if (g.isEmpty()) return 0
-        val rows = g.size; val cols = g[0].size
-        val visited = Array(rows) { BooleanArray(cols) }
-        var largest = 0
-        for (r in 0 until rows)
-            for (c in 0 until cols)
-                if (g[r][c] == 1 && !visited[r][c])
-                    largest = maxOf(largest, dfs(g, r, c, visited))
-        return largest
-    }
-}
-
-fun main() {
-    val grid = arrayOf(intArrayOf(1, 1, 0, 0), intArrayOf(0, 0, 1, 1),
-                       intArrayOf(1, 0, 1, 1), intArrayOf(1, 0, 0, 0))
-    println(Solution().sizeOfLargestIsland(grid))
 }
 ```
 

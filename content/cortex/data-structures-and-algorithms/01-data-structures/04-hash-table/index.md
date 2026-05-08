@@ -1,7 +1,3 @@
----
-title: "Hash Table"
----
-
 # Hash Table
 
 Use this page as the chapter map for hash table. The guides are ordered from fundamentals into common problem-solving patterns and design practice.

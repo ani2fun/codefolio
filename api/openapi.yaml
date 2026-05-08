@@ -71,6 +71,8 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/CortexIndex'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
 
   /api/cortex/{book}/{chapter}:
     get:
@@ -97,6 +99,10 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ChapterPayload'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
 
   /api/run:
     post:
@@ -118,8 +124,54 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/RunResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '413':
+          $ref: '#/components/responses/PayloadTooLarge'
+        '502':
+          $ref: '#/components/responses/BadGateway'
+        '503':
+          $ref: '#/components/responses/ServiceUnavailable'
 
 components:
+  responses:
+    BadRequest:
+      description: Request could not be processed by the server.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ApiError'
+    PayloadTooLarge:
+      description: Request payload exceeds a server-side limit.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ApiError'
+    NotFound:
+      description: Requested resource was not found.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ApiError'
+    BadGateway:
+      description: Upstream execution backend failed.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ApiError'
+    ServiceUnavailable:
+      description: Required backend is not configured or unavailable.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ApiError'
+    InternalServerError:
+      description: Internal server error.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ApiError'
+
   schemas:
     Greeting:
       type: object

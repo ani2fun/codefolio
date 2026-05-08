@@ -9,8 +9,8 @@ import codefolio.shared.api.Endpoints.{
   RunRequest,
   RunResponse
 }
-import sttp.client3.{FetchBackend, SttpBackend}
-import sttp.model.Uri
+import sttp.client3.{FetchBackend, Request, SttpBackend}
+import sttp.model.{StatusCode, Uri}
 import sttp.tapir.client.sttp.SttpClientInterpreter
 
 import scala.concurrent.{ExecutionContext, Future}
@@ -48,57 +48,52 @@ object ApiClient:
   private val recentRequest: Unit => sttp.client3.Request[Either[Unit, RecentCalls], Any] =
     SttpClientInterpreter().toRequestThrowDecodeFailures(Endpoints.getRecent, baseUri)
 
-  private val runRequest: RunRequest => sttp.client3.Request[Either[Unit, RunResponse], Any] =
+  private val runRequest: RunRequest => Request[Either[Endpoints.ApiError, RunResponse], Any] =
     SttpClientInterpreter().toRequestThrowDecodeFailures(Endpoints.runCode, baseUri)
 
-  private val cortexIndexRequest: Unit => sttp.client3.Request[Either[Unit, CortexIndex], Any] =
+  private val cortexIndexRequest: Unit => Request[Either[Endpoints.ApiError, CortexIndex], Any] =
     SttpClientInterpreter().toRequestThrowDecodeFailures(Endpoints.getCortexIndex, baseUri)
 
   private val cortexChapterRequest
-      : ((String, String)) => sttp.client3.Request[Either[Unit, ChapterPayload], Any] =
+      : ((String, String)) => Request[Either[Endpoints.ApiError, ChapterPayload], Any] =
     SttpClientInterpreter().toRequestThrowDecodeFailures(Endpoints.getCortexChapter, baseUri)
+
+  private def send[I, E, O](
+      build: I => Request[Either[E, O], Any],
+      input: I,
+      failureMessage: (StatusCode, E) => String
+  ): Future[O] =
+    backend.send(build(input)).flatMap { res =>
+      res.body match
+        case Right(value) => Future.successful(value)
+        case Left(error)  => Future.failed(RuntimeException(failureMessage(res.code, error)))
+    }
+
+  private def statusOnly(message: String): (StatusCode, Unit) => String =
+    (code, _) => s"$message (${code.code})"
+
+  private def apiError(message: String): (StatusCode, Endpoints.ApiError) => String =
+    (code, error) =>
+      val detail = error.detail.filter(_.nonEmpty).map(d => s": $d").getOrElse("")
+      s"$message (${code.code}): ${error.error}$detail"
 
   // ---- Hello demo ----------------------------------------------------------
 
   def getHello: Future[Greeting] =
-    backend.send(helloRequest(())).flatMap { res =>
-      res.body match
-        case Right(g) => Future.successful(g)
-        case Left(_)  => Future.failed(RuntimeException("Failed to fetch greeting"))
-    }
+    send(helloRequest, (), statusOnly("Failed to fetch greeting"))
 
   def getRecent: Future[RecentCalls] =
-    backend.send(recentRequest(())).flatMap { res =>
-      res.body match
-        case Right(r) => Future.successful(r)
-        case Left(_)  => Future.failed(RuntimeException("Failed to fetch recent calls"))
-    }
+    send(recentRequest, (), statusOnly("Failed to fetch recent calls"))
 
   // ---- Code execution ------------------------------------------------------
 
   def runCode(req: RunRequest): Future[RunResponse] =
-    backend.send(runRequest(req)).flatMap { res =>
-      res.body match
-        case Right(r) => Future.successful(r)
-        case Left(_)  => Future.failed(RuntimeException(s"Run failed (${res.code.code})"))
-    }
+    send(runRequest, req, apiError("Run failed"))
 
   // ---- Cortex --------------------------------------------------------------
 
   def getCortexIndex: Future[CortexIndex] =
-    backend.send(cortexIndexRequest(())).flatMap { res =>
-      res.body match
-        case Right(idx) => Future.successful(idx)
-        case Left(_) =>
-          Future.failed(RuntimeException(s"Failed to fetch Cortex index (${res.code.code})"))
-    }
+    send(cortexIndexRequest, (), apiError("Failed to fetch Cortex index"))
 
   def getCortexChapter(book: String, chapter: String): Future[ChapterPayload] =
-    backend.send(cortexChapterRequest((book, chapter))).flatMap { res =>
-      res.body match
-        case Right(payload) => Future.successful(payload)
-        case Left(_) =>
-          Future.failed(
-            RuntimeException(s"Failed to fetch chapter $book/$chapter (${res.code.code})")
-          )
-    }
+    send(cortexChapterRequest, (book, chapter), apiError(s"Failed to fetch chapter $book/$chapter"))

@@ -1,7 +1,3 @@
----
-title: "12. Pattern: Depth-first search"
----
-
 # 12. Pattern: Depth-first search
 
 This lesson teaches you the DFS **pattern** — the family of problems where you need to enumerate, score, or filter every path from a source through some destination. Once you can recognise the pattern, the implementation writes itself.
@@ -173,6 +169,26 @@ Output: [[0, 4]]
 - `f⁻¹`: pop last element from current path list on exit.
 
 ## The Solution
+
+
+```pseudocode
+function dfs(graph, node, path, paths, inPath):
+    add node to inPath
+    append node to path
+    if node = last node in graph:
+        append copy of path to paths   # reached destination
+    else:
+        for neighbor in graph[node]:
+            if neighbor is not in inPath:
+                dfs(graph, neighbor, path, paths, inPath)
+    pop from path
+    remove node from inPath
+
+function sourceToTargetPaths(graph):
+    paths ← empty list
+    dfs(graph, 0, empty list, paths, empty set)
+    return paths
+```
 
 ```python run
 from typing import List, Set
@@ -351,27 +367,6 @@ object Main extends App {
 }
 ```
 
-```javascript run
-class Solution {
-    dfs(graph, node, path, paths, inPath) {
-        inPath.add(node); path.push(node);
-        if (node === graph.length - 1) paths.push([...path]);
-        else for (const n of graph[node])
-            if (!inPath.has(n)) this.dfs(graph, n, path, paths, inPath);
-        path.pop();
-        inPath.delete(node);
-    }
-
-    sourceToTargetPaths(graph) {
-        const paths = [];
-        this.dfs(graph, 0, [], paths, new Set());
-        return paths;
-    }
-}
-
-console.log(new Solution().sourceToTargetPaths([[1, 2], [4], [3, 4], [4], []]));
-```
-
 ```typescript run
 class Solution {
     dfs(graph: number[][], node: number, path: number[],
@@ -424,30 +419,6 @@ func sourceToTargetPaths(graph [][]int) [][]int {
 
 func main() {
     fmt.Println(sourceToTargetPaths([][]int{{1, 2}, {4}, {3, 4}, {4}, {}}))
-}
-```
-
-```kotlin run
-class Solution {
-    fun dfs(graph: List<List<Int>>, node: Int,
-            path: MutableList<Int>, paths: MutableList<List<Int>>,
-            inPath: MutableSet<Int>) {
-        inPath.add(node); path.add(node)
-        if (node == graph.size - 1) paths.add(path.toList())
-        else for (n in graph[node]) if (n !in inPath) dfs(graph, n, path, paths, inPath)
-        path.removeAt(path.size - 1)
-        inPath.remove(node)
-    }
-
-    fun sourceToTargetPaths(graph: List<List<Int>>): List<List<Int>> {
-        val paths = mutableListOf<List<Int>>()
-        dfs(graph, 0, mutableListOf(), paths, mutableSetOf())
-        return paths
-    }
-}
-
-fun main() {
-    println(Solution().sourceToTargetPaths(listOf(listOf(1, 2), listOf(4), listOf(3, 4), listOf(4), listOf())))
 }
 ```
 
@@ -504,6 +475,26 @@ Output: [[0,1,4,3], [0,3]]
 The only twist from the previous problem is the running edge-weight sum carried alongside the path.
 
 ## The Solution
+
+
+```pseudocode
+function dfs(graph, node, dest, curSum, target, path, paths, inPath):
+    add node to inPath
+    append node to path
+    if node = dest AND curSum = target:
+        append copy of path to paths   # sum-matching path found
+    else:
+        for (neighbor, weight) in graph[node]:
+            if neighbor is not in inPath:
+                dfs(graph, neighbor, dest, curSum+weight, target, path, paths, inPath)
+    pop from path
+    remove node from inPath
+
+function targetPaths(graph, source, dest, target):
+    paths ← empty list
+    dfs(graph, source, dest, 0, target, empty list, paths, empty set)
+    return paths
+```
 
 ```python run
 from typing import List, Tuple, Set
@@ -698,28 +689,6 @@ object Main extends App {
 }
 ```
 
-```javascript run
-class Solution {
-    dfs(graph, node, dest, curSum, target, path, paths, inPath) {
-        inPath.add(node); path.push(node);
-        if (node === dest && curSum === target) paths.push([...path]);
-        else for (const [n, w] of graph[node])
-            if (!inPath.has(n)) this.dfs(graph, n, dest, curSum + w, target, path, paths, inPath);
-        path.pop();
-        inPath.delete(node);
-    }
-
-    targetPaths(graph, source, dest, target) {
-        const paths = [];
-        this.dfs(graph, source, dest, 0, target, [], paths, new Set());
-        return paths;
-    }
-}
-
-const g = [[[1,2],[3,5]], [[4,2]], [[4,1]], [[2,2]], [[3,1]]];
-console.log(new Solution().targetPaths(g, 0, 3, 5));
-```
-
 ```typescript run
 class Solution {
     dfs(graph: [number, number][][], node: number, dest: number, curSum: number, target: number,
@@ -775,36 +744,6 @@ func targetPaths(graph [][][2]int, source, dest, target int) [][]int {
 func main() {
     g := [][][2]int{{{1, 2}, {3, 5}}, {{4, 2}}, {{4, 1}}, {{2, 2}}, {{3, 1}}}
     fmt.Println(targetPaths(g, 0, 3, 5))
-}
-```
-
-```kotlin run
-class Solution {
-    fun dfs(graph: List<List<IntArray>>, node: Int, dest: Int, curSum: Int, target: Int,
-            path: MutableList<Int>, paths: MutableList<List<Int>>, inPath: MutableSet<Int>) {
-        inPath.add(node); path.add(node)
-        if (node == dest && curSum == target) paths.add(path.toList())
-        else for (e in graph[node])
-            if (e[0] !in inPath) dfs(graph, e[0], dest, curSum + e[1], target, path, paths, inPath)
-        path.removeAt(path.size - 1)
-        inPath.remove(node)
-    }
-
-    fun targetPaths(graph: List<List<IntArray>>, source: Int, dest: Int, target: Int): List<List<Int>> {
-        val paths = mutableListOf<List<Int>>()
-        dfs(graph, source, dest, 0, target, mutableListOf(), paths, mutableSetOf())
-        return paths
-    }
-}
-
-fun main() {
-    val g = listOf(
-        listOf(intArrayOf(1, 2), intArrayOf(3, 5)),
-        listOf(intArrayOf(4, 2)),
-        listOf(intArrayOf(4, 1)),
-        listOf(intArrayOf(2, 2)),
-        listOf(intArrayOf(3, 1)))
-    println(Solution().targetPaths(g, 0, 3, 5))
 }
 ```
 
@@ -867,6 +806,26 @@ The only twist: the destination check now requires `path.length == N`.
 It's tractable because we're enumerating, not deciding existence faster than brute force. DFS with the "in_path" pruning has worst case O(N!) in pathological cases — but for typical small graphs (N ≤ ~20) it's fast enough. The intractability shows up when N gets larger; below that, DFS is the only sane approach.
 
 ## The Solution
+
+
+```pseudocode
+function dfs(graph, node, dest, path, paths, inPath):
+    add node to inPath
+    append node to path
+    if node = dest AND length of inPath = N:
+        append copy of path to paths   # every vertex visited → Hamiltonian path
+    else:
+        for neighbor in graph[node]:
+            if neighbor is not in inPath:
+                dfs(graph, neighbor, dest, path, paths, inPath)
+    pop from path
+    remove node from inPath
+
+function hamiltonianPaths(graph, source, dest):
+    paths ← empty list
+    dfs(graph, source, dest, empty list, paths, empty set)
+    return paths
+```
 
 ```python run
 from typing import List, Set
@@ -1042,27 +1001,6 @@ object Main extends App {
 }
 ```
 
-```javascript run
-class Solution {
-    dfs(graph, node, dest, path, paths, inPath) {
-        inPath.add(node); path.push(node);
-        if (node === dest && inPath.size === graph.length) paths.push([...path]);
-        else for (const n of graph[node])
-            if (!inPath.has(n)) this.dfs(graph, n, dest, path, paths, inPath);
-        path.pop();
-        inPath.delete(node);
-    }
-
-    hamiltonianPaths(graph, source, dest) {
-        const paths = [];
-        this.dfs(graph, source, dest, [], paths, new Set());
-        return paths;
-    }
-}
-
-console.log(new Solution().hamiltonianPaths([[1, 2], [0, 2, 3], [0, 1, 3], [1, 2]], 0, 3));
-```
-
 ```typescript run
 class Solution {
     dfs(graph: number[][], node: number, dest: number,
@@ -1116,29 +1054,6 @@ func hamiltonianPaths(graph [][]int, source, dest int) [][]int {
 
 func main() {
     fmt.Println(hamiltonianPaths([][]int{{1, 2}, {0, 2, 3}, {0, 1, 3}, {1, 2}}, 0, 3))
-}
-```
-
-```kotlin run
-class Solution {
-    fun dfs(graph: List<List<Int>>, node: Int, dest: Int,
-            path: MutableList<Int>, paths: MutableList<List<Int>>, inPath: MutableSet<Int>) {
-        inPath.add(node); path.add(node)
-        if (node == dest && inPath.size == graph.size) paths.add(path.toList())
-        else for (n in graph[node]) if (n !in inPath) dfs(graph, n, dest, path, paths, inPath)
-        path.removeAt(path.size - 1)
-        inPath.remove(node)
-    }
-
-    fun hamiltonianPaths(graph: List<List<Int>>, source: Int, dest: Int): List<List<Int>> {
-        val paths = mutableListOf<List<Int>>()
-        dfs(graph, source, dest, mutableListOf(), paths, mutableSetOf())
-        return paths
-    }
-}
-
-fun main() {
-    println(Solution().hamiltonianPaths(listOf(listOf(1, 2), listOf(0, 2, 3), listOf(0, 1, 3), listOf(1, 2)), 0, 3))
 }
 ```
 
@@ -1196,6 +1111,23 @@ Explanation: Cycles 0 → 1 → 3 → 2 → 0 and 0 → 2 → 3 → 1 → 0 both
 The only structural difference from previous problems: there's no explicit "destination reached → record" branch. Instead, the cycle-completion check is *inline* with the neighbour iteration — when we find a neighbour that's the source and the path qualifies, we increment the counter.
 
 ## The Solution
+
+
+```pseudocode
+function dfs(graph, node, source, dest, inPath, cycleCount):
+    add node to inPath
+    for neighbor in graph[node]:
+        if neighbor is not in inPath:
+            dfs(graph, neighbor, source, dest, inPath, cycleCount)
+        else if neighbor = source AND length of inPath > 2 AND dest is in inPath:
+            cycleCount ← cycleCount + 1   # closed a valid cycle through dest
+    remove node from inPath
+
+function simpleCycles(graph, source, dest):
+    cycles ← 0
+    dfs(graph, source, source, dest, empty set, cycles)
+    return cycles
+```
 
 ```python run
 from typing import List, Set
@@ -1354,28 +1286,6 @@ object Main extends App {
 }
 ```
 
-```javascript run
-class Solution {
-    constructor() { this.cycles = 0; }
-    dfs(graph, node, source, dest, inPath) {
-        inPath.add(node);
-        for (const n of graph[node]) {
-            if (!inPath.has(n)) this.dfs(graph, n, source, dest, inPath);
-            else if (n === source && inPath.size > 2 && inPath.has(dest)) this.cycles++;
-        }
-        inPath.delete(node);
-    }
-
-    simpleCycles(graph, source, dest) {
-        this.cycles = 0;
-        this.dfs(graph, source, source, dest, new Set());
-        return this.cycles;
-    }
-}
-
-console.log(new Solution().simpleCycles([[1, 2], [0, 2, 3], [0, 1, 3], [1, 2]], 0, 3));
-```
-
 ```typescript run
 class Solution {
     cycles = 0;
@@ -1428,30 +1338,6 @@ func simpleCycles(graph [][]int, source, dest int) int {
 
 func main() {
     fmt.Println(simpleCycles([][]int{{1, 2}, {0, 2, 3}, {0, 1, 3}, {1, 2}}, 0, 3))
-}
-```
-
-```kotlin run
-class Solution {
-    var cycles = 0
-    fun dfs(graph: List<List<Int>>, node: Int, source: Int, dest: Int, inPath: MutableSet<Int>) {
-        inPath.add(node)
-        for (n in graph[node]) {
-            if (n !in inPath) dfs(graph, n, source, dest, inPath)
-            else if (n == source && inPath.size > 2 && dest in inPath) cycles++
-        }
-        inPath.remove(node)
-    }
-
-    fun simpleCycles(graph: List<List<Int>>, source: Int, dest: Int): Int {
-        cycles = 0
-        dfs(graph, source, source, dest, mutableSetOf())
-        return cycles
-    }
-}
-
-fun main() {
-    println(Solution().simpleCycles(listOf(listOf(1, 2), listOf(0, 2, 3), listOf(0, 1, 3), listOf(1, 2)), 0, 3))
 }
 ```
 

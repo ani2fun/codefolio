@@ -1,7 +1,3 @@
----
-title: "4. Recursive Traversals in Binary Trees"
----
-
 # 4. Recursive Traversals in Binary Trees
 
 ## The Hook
@@ -170,6 +166,19 @@ Preorder shows up wherever you need to *emit a parent before its children*:
 
 Three lines, mirroring the algorithm.
 
+
+```pseudocode
+function preorder(root):
+    out ← empty list
+    function walk(node):
+        if node = null: return
+        append node.val to out       # V
+        walk(node.left)              # L
+        walk(node.right)             # R
+    walk(root)
+    return out
+```
+
 ```python run
 from typing import List, Optional
 
@@ -298,26 +307,6 @@ object Main extends App {
 }
 ```
 
-```javascript run
-class TreeNode {
-    constructor(val = 0, left = null, right = null) { this.val = val; this.left = left; this.right = right; }
-}
-
-function preorder(root) {
-    const out = [];
-    (function walk(n) {
-        if (!n) return;
-        out.push(n.val);
-        walk(n.left);
-        walk(n.right);
-    })(root);
-    return out;
-}
-
-const root = new TreeNode(1, new TreeNode(2, new TreeNode(4)), new TreeNode(3, null, new TreeNode(7)));
-console.log(preorder(root));
-```
-
 ```typescript run
 class TreeNode {
     val: number;
@@ -371,27 +360,6 @@ func main() {
         Left:  &TreeNode{Val: 2, Left: &TreeNode{Val: 4}},
         Right: &TreeNode{Val: 3, Right: &TreeNode{Val: 7}}}
     fmt.Println(preorder(root))
-}
-```
-
-```kotlin run
-class TreeNode(var value: Int, var left: TreeNode? = null, var right: TreeNode? = null)
-
-fun preorder(root: TreeNode?): List<Int> {
-    val out = mutableListOf<Int>()
-    fun walk(n: TreeNode?) {
-        if (n == null) return
-        out += n.value
-        walk(n.left)
-        walk(n.right)
-    }
-    walk(root)
-    return out
-}
-
-fun main() {
-    val root = TreeNode(1, TreeNode(2, TreeNode(4)), TreeNode(3, null, TreeNode(7)))
-    println(preorder(root))
 }
 ```
 
@@ -499,6 +467,19 @@ Inorder also shows up in:
 
 Same shape as preorder; only the order of `visit` and the left recursion swap.
 
+
+```pseudocode
+function inorder(root):
+    out ← empty list
+    function walk(n):
+        if n = null: return
+        walk(n.left)             # L
+        append n.val to out      # V
+        walk(n.right)            # R
+    walk(root)
+    return out
+```
+
 ```python run
 def inorder(root):
     out = []
@@ -556,19 +537,6 @@ def inorder(root: TreeNode): List[Int] = {
 }
 ```
 
-```javascript run
-function inorder(root) {
-    const out = [];
-    (function walk(n) {
-        if (!n) return;
-        walk(n.left);
-        out.push(n.val);
-        walk(n.right);
-    })(root);
-    return out;
-}
-```
-
 ```typescript run
 function inorder(root: TreeNode | null): number[] {
     const out: number[] = [];
@@ -595,19 +563,6 @@ func inorder(root *TreeNode) []int {
     }
     walk(root)
     return out
-}
-```
-
-```kotlin run
-fun inorder(root: TreeNode?): List<Int> {
-    val out = mutableListOf<Int>()
-    fun walk(n: TreeNode?) {
-        if (n == null) return
-        walk(n.left)
-        out += n.value
-        walk(n.right)
-    }
-    walk(root); return out
 }
 ```
 
@@ -694,6 +649,19 @@ Postorder is what you use whenever a node's *result depends on its children's re
 
 ## Implementation
 
+
+```pseudocode
+function postorder(root):
+    out ← empty list
+    function walk(n):
+        if n = null: return
+        walk(n.left)             # L
+        walk(n.right)            # R
+        append n.val to out      # V
+    walk(root)
+    return out
+```
+
 ```python run
 def postorder(root):
     out = []
@@ -751,19 +719,6 @@ def postorder(root: TreeNode): List[Int] = {
 }
 ```
 
-```javascript run
-function postorder(root) {
-    const out = [];
-    (function walk(n) {
-        if (!n) return;
-        walk(n.left);
-        walk(n.right);
-        out.push(n.val);
-    })(root);
-    return out;
-}
-```
-
 ```typescript run
 function postorder(root: TreeNode | null): number[] {
     const out: number[] = [];
@@ -790,19 +745,6 @@ func postorder(root *TreeNode) []int {
     }
     walk(root)
     return out
-}
-```
-
-```kotlin run
-fun postorder(root: TreeNode?): List<Int> {
-    val out = mutableListOf<Int>()
-    fun walk(n: TreeNode?) {
-        if (n == null) return
-        walk(n.left)
-        walk(n.right)
-        out += n.value
-    }
-    walk(root); return out
 }
 ```
 

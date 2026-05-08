@@ -1,7 +1,3 @@
----
-title: "11. Design"
----
-
 # 11. Design
 
 ## The Hook
@@ -103,6 +99,37 @@ The four operations needed:
 Every step above is O(1). The doubly-linked list is essential — a singly-linked list would make "remove arbitrary node by reference" O(N) (you'd need the predecessor).
 
 ## Solution
+
+
+```pseudocode
+class Node: key, val, prev, next
+
+class LRUCache(capacity):
+    map ← empty Map: Int → Node   # key → node
+    head, tail ← sentinel nodes; head.next ← tail; tail.prev ← head
+
+    function _remove(node):
+        node.prev.next ← node.next; node.next.prev ← node.prev
+
+    function _add_front(node):
+        node.prev ← head; node.next ← head.next
+        head.next.prev ← node; head.next ← node
+
+    function get(key):
+        if key is not in map: return −1
+        _remove(map[key]); _add_front(map[key])   # promote to MRU
+        return map[key].val
+
+    function put(key, value):
+        if key is in map:
+            map[key].val ← value
+            _remove(map[key]); _add_front(map[key]); return
+        if size(map) = capacity:
+            lru ← tail.prev          # least-recently-used = just before tail
+            _remove(lru); remove lru.key from map
+        node ← new Node(key, value)
+        _add_front(node); map[key] ← node
+```
 
 ```python run
 class _Node:
@@ -363,36 +390,6 @@ object Main extends App {
 }
 ```
 
-```javascript run
-class LRUCache {
-    constructor(capacity) {
-        this.capacity = capacity;
-        // JS Map preserves insertion order — we use that for recency.
-        this.map = new Map();
-    }
-    get(key) {
-        if (!this.map.has(key)) return -1;
-        const v = this.map.get(key);
-        // Re-insert to bump recency to the most-recent end.
-        this.map.delete(key); this.map.set(key, v);
-        return v;
-    }
-    put(key, value) {
-        if (this.map.has(key)) this.map.delete(key);
-        else if (this.map.size === this.capacity)
-            this.map.delete(this.map.keys().next().value);   // evict oldest
-        this.map.set(key, value);
-    }
-}
-
-const c = new LRUCache(2);
-c.put(1, 10); c.put(2, 20);
-console.log(c.get(1));   // 10
-c.put(3, 30);
-console.log(c.get(1));   // 10
-console.log(c.get(2));   // -1
-```
-
 ```typescript run
 class LRUCache {
     private capacity: number;
@@ -463,27 +460,6 @@ func main() {
     fmt.Println(c.Get(1))    // 10
     c.Put(3, 30)
     fmt.Println(c.Get(1), c.Get(2))   // 10 -1
-}
-```
-
-```kotlin run
-class LRUCache(private val capacity: Int) {
-    // accessOrder = true makes LinkedHashMap a near-LRU on its own.
-    private val map = object : LinkedHashMap<Int, Int>(capacity, 0.75f, true) {
-        override fun removeEldestEntry(eldest: MutableMap.MutableEntry<Int, Int>) =
-            size > capacity
-    }
-    fun get(key: Int): Int = map[key] ?: -1
-    fun put(key: Int, value: Int) { map[key] = value }
-}
-
-fun main() {
-    val c = LRUCache(2)
-    c.put(1, 10); c.put(2, 20)
-    println(c.get(1))   // 10
-    c.put(3, 30)
-    println(c.get(1))   // 10
-    println(c.get(2))   // -1
 }
 ```
 
@@ -621,6 +597,28 @@ before -> swap -> after
 <p align="center"><strong>RandomisedSet remove — swap target with tail (O(1)), pop tail (O(1)), update the swapped element's index in the map (O(1)). The set's contents are correct; the order changed, but the set didn't care about order anyway.</strong></p>
 
 ## Solution
+
+
+```pseudocode
+class RandomisedSet:
+    values ← empty list       # contiguous array of values
+    index  ← empty Map        # value → its position in values
+
+    function insert(val):
+        if val is in index: return false
+        index[val] ← length(values); append val to values
+        return true
+
+    function remove(val):
+        if val is not in index: return false
+        i ← index[val]; last ← values[length(values) − 1]
+        values[i] ← last; index[last] ← i   # fill gap with last element
+        remove last element from values; remove val from index
+        return true
+
+    function getRandom():
+        return values[random integer in [0, length(values) − 1)]
+```
 
 ```python run
 import random
@@ -829,37 +827,6 @@ object Main extends App {
 }
 ```
 
-```javascript run
-class RandomisedSet {
-    constructor() {
-        this.values = [];
-        this.index  = new Map();
-    }
-    insert(val) {
-        if (this.index.has(val)) return false;
-        this.index.set(val, this.values.length);
-        this.values.push(val);
-        return true;
-    }
-    remove(val) {
-        if (!this.index.has(val)) return false;
-        const i = this.index.get(val);
-        const last = this.values[this.values.length - 1];
-        this.values[i] = last; this.index.set(last, i);
-        this.values.pop(); this.index.delete(val);
-        return true;
-    }
-    getRandom() {
-        return this.values[Math.floor(Math.random() * this.values.length)];
-    }
-}
-
-const s = new RandomisedSet();
-console.log(s.insert(2), s.insert(4), s.insert(6));
-console.log(s.remove(2));
-console.log(s.getRandom());
-```
-
 ```typescript run
 class RandomisedSet {
     private values: number[] = [];
@@ -928,36 +895,6 @@ func main() {
     fmt.Println(s.Insert(2), s.Insert(4), s.Insert(6))
     fmt.Println(s.Remove(2))
     fmt.Println(s.GetRandom())
-}
-```
-
-```kotlin run
-import kotlin.random.Random
-
-class RandomisedSet {
-    private val values = mutableListOf<Int>()
-    private val index  = HashMap<Int, Int>()
-
-    fun insert(v: Int): Boolean {
-        if (v in index) return false
-        index[v] = values.size; values.add(v); return true
-    }
-    fun remove(v: Int): Boolean {
-        val i = index[v] ?: return false
-        val last = values.last()
-        values[i] = last; index[last] = i
-        values.removeAt(values.size - 1); index.remove(v)
-        return true
-    }
-    fun getRandom(): Int = values[Random.nextInt(values.size)]
-}
-
-fun main() {
-    val s = RandomisedSet()
-    println(s.insert(2)); println(s.insert(4)); println(s.insert(6))
-    println(s.remove(2))
-    val r = s.getRandom()
-    println("$r (4 or 6)")
 }
 ```
 

@@ -14,7 +14,7 @@ object DataSource:
         cfg <- ZIO.service[AppConfig]
         ds <- ZIO.acquireRelease(
           ZIO.attemptBlocking {
-            val hc = HikariConfig()
+            val hc: HikariConfig = HikariConfig()
             hc.setJdbcUrl(cfg.db.url)
             hc.setUsername(cfg.db.user)
             hc.setPassword(cfg.db.password)

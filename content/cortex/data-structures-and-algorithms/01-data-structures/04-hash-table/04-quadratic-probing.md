@@ -1,7 +1,3 @@
----
-title: "4. Quadratic Probing"
----
-
 # 4. Quadratic Probing
 
 ## The Hook
@@ -163,6 +159,17 @@ rec: A single Record {
 
 <p align="center"><strong>Quadratic-probing record — exactly the same shape as linear probing's record. The only difference between the two schemes is in <em>how</em> the probe sequence walks the array.</strong></p>
 
+
+```pseudocode
+enum RecordType: EMPTY = 0, DELETED = 1, OCCUPIED = 2
+
+class Record:
+    state: RecordType
+    key: integer
+    value: integer
+    # default: state = EMPTY
+```
+
 ```python run
 from enum import Enum
 
@@ -247,23 +254,6 @@ object Main extends App {
 }
 ```
 
-```javascript run
-const RecordType = Object.freeze({ EMPTY: 0, DELETED: 1, OCCUPIED: 2 });
-
-class Record {
-    constructor(key, value) {
-        if (key !== undefined && value !== undefined) {
-            this.state = RecordType.OCCUPIED; this.key = key; this.value = value;
-        } else {
-            this.state = RecordType.EMPTY;    this.key = 0;   this.value = 0;
-        }
-    }
-}
-
-const r = new Record(7, 100);
-console.log(r.state, r.key, r.value);
-```
-
 ```typescript run
 enum RecordType { EMPTY, DELETED, OCCUPIED }
 
@@ -295,20 +285,6 @@ type Record struct { State RecordType; Key, Value int }
 func main() {
     r := Record{State: OCCUPIED, Key: 7, Value: 100}
     fmt.Println(r.State, r.Key, r.Value)
-}
-```
-
-```kotlin run
-enum class RecordType { EMPTY, DELETED, OCCUPIED }
-
-class Record(
-    var state: RecordType = RecordType.EMPTY,
-    var key:   Int        = 0,
-    var value: Int        = 0,
-) { constructor(k: Int, v: Int) : this(RecordType.OCCUPIED, k, v) }
-
-fun main() {
-    val r = Record(7, 100); println("${r.state} ${r.key} ${r.value}")
 }
 ```
 
@@ -406,6 +382,21 @@ cls: MyHashTable class {
 <p align="center"><strong>The quadratic-probing class adds two private fields (a and b) on top of the linear-probing class. Everything else — the array, the hash function, the public API — is unchanged.</strong></p>
 
 ## Implementation
+
+
+```pseudocode
+class MyHashTable:
+    capacity: integer
+    a: integer   # quadratic coefficient
+    b: integer   # linear coefficient
+    table: array of Record(state=EMPTY)
+
+    function _hash(key): return key mod capacity
+    function _quad_offset(i): return a·i² + b·i
+    function search(key): ...
+    function insert(key, value): ...
+    function remove(key): ...
+```
 
 ```python run
 from enum import Enum
@@ -553,35 +544,6 @@ object Main extends App {
 }
 ```
 
-```javascript run
-const RecordType = Object.freeze({ EMPTY: 0, DELETED: 1, OCCUPIED: 2 });
-
-class Record {
-    constructor(key, value) {
-        if (key !== undefined && value !== undefined) {
-            this.state = RecordType.OCCUPIED; this.key = key; this.value = value;
-        } else {
-            this.state = RecordType.EMPTY;    this.key = 0;   this.value = 0;
-        }
-    }
-}
-
-class MyHashTable {
-    constructor(capacity, a = 1, b = 0) {
-        this.capacity = capacity; this.a = a; this.b = b;
-        this.table = Array.from({ length: capacity }, () => new Record());
-    }
-    _hash(key) { return key % this.capacity; }
-
-    search(key)        { return -1;    }
-    insert(key, value) { return false; }
-    remove(key)        {                }
-}
-
-const h = new MyHashTable(7, 1, 0);
-console.log("table created with capacity 7, a=1, b=0");
-```
-
 ```typescript run
 enum RecordType { EMPTY, DELETED, OCCUPIED }
 
@@ -641,34 +603,6 @@ func (h *MyHashTable) Remove(key int)                     {              }
 func main() {
     h := newTable(7, 1, 0)
     fmt.Printf("table created with capacity %d, a=%d, b=%d\n", h.capacity, h.a, h.b)
-}
-```
-
-```kotlin run
-enum class RecordType { EMPTY, DELETED, OCCUPIED }
-
-class Record(
-    var state: RecordType = RecordType.EMPTY,
-    var key:   Int        = 0,
-    var value: Int        = 0,
-) { constructor(k: Int, v: Int) : this(RecordType.OCCUPIED, k, v) }
-
-open class MyHashTable(
-    protected val capacity: Int,
-    protected val a:        Int = 1,
-    protected val b:        Int = 0,
-) {
-    protected val table: Array<Record> = Array(capacity) { Record() }
-    protected fun hash(key: Int): Int  = key % capacity
-
-    open fun search(key: Int): Int                  = -1
-    open fun insert(key: Int, value: Int): Boolean  = false
-    open fun remove(key: Int): Unit                 = Unit
-}
-
-fun main() {
-    val h = MyHashTable(7, 1, 0)
-    println("table created with capacity 7, a=1, b=0")
 }
 ```
 
@@ -746,6 +680,22 @@ Like linear probing, hitting `EMPTY` proves the key was never inserted (or it wo
 After `capacity` iterations, give up.
 
 ## Implementation
+
+
+```pseudocode
+function _quad_offset(i): return a·i² + b·i
+
+function _probe_for_occupied(key, start):
+    for i from 0 to capacity − 1:
+        idx ← (start + _quad_offset(i)) mod capacity
+        if table[idx].state = EMPTY: return -1
+        if table[idx].state = OCCUPIED AND table[idx].key = key: return idx
+    return -1
+
+function search(key):
+    idx ← _probe_for_occupied(key, _hash(key))
+    if idx = -1: return -1 else: return table[idx].value
+```
 
 ```python run
 from enum import Enum
@@ -946,47 +896,6 @@ object Main extends App {
 }
 ```
 
-```javascript run
-const RecordType = Object.freeze({ EMPTY: 0, DELETED: 1, OCCUPIED: 2 });
-
-class Record {
-    constructor(key, value) {
-        if (key !== undefined && value !== undefined) {
-            this.state = RecordType.OCCUPIED; this.key = key; this.value = value;
-        } else {
-            this.state = RecordType.EMPTY;    this.key = 0;   this.value = 0;
-        }
-    }
-}
-
-class MyHashTable {
-    constructor(capacity, a = 1, b = 0) {
-        this.capacity = capacity; this.a = a; this.b = b;
-        this.table = Array.from({ length: capacity }, () => new Record());
-    }
-    _hash(key) { return key % this.capacity; }
-    _quadOffset(i) { return this.a * i * i + this.b * i; }
-
-    _probeForOccupied(key, start) {
-        for (let i = 0; i < this.capacity; i++) {
-            const idx = (start + this._quadOffset(i)) % this.capacity;
-            const s   = this.table[idx];
-            if (s.state === RecordType.EMPTY) return -1;
-            if (s.state === RecordType.OCCUPIED && s.key === key) return idx;
-        }
-        return -1;
-    }
-
-    search(key) {
-        const idx = this._probeForOccupied(key, this._hash(key));
-        return idx === -1 ? -1 : this.table[idx].value;
-    }
-}
-
-const h = new MyHashTable(7, 1, 0);
-console.log(h.search(13));   // -1
-```
-
 ```typescript run
 enum RecordType { EMPTY, DELETED, OCCUPIED }
 
@@ -1064,45 +973,6 @@ func (h *MyHashTable) Search(key int) int {
 func main() {
     h := newTable(7, 1, 0)
     fmt.Println(h.Search(13))   // -1
-}
-```
-
-```kotlin run
-enum class RecordType { EMPTY, DELETED, OCCUPIED }
-
-class Record(
-    var state: RecordType = RecordType.EMPTY,
-    var key: Int = 0, var value: Int = 0,
-) { constructor(k: Int, v: Int) : this(RecordType.OCCUPIED, k, v) }
-
-open class MyHashTable(
-    protected val capacity: Int,
-    protected val a:        Int = 1,
-    protected val b:        Int = 0,
-) {
-    protected val table: Array<Record> = Array(capacity) { Record() }
-    protected fun hash(key: Int): Int = key % capacity
-    protected fun quadOffset(i: Int): Int = a * i * i + b * i
-
-    protected fun probeForOccupied(key: Int, start: Int): Int {
-        for (i in 0 until capacity) {
-            val idx = (start + quadOffset(i)) % capacity
-            val s   = table[idx]
-            if (s.state == RecordType.EMPTY) return -1
-            if (s.state == RecordType.OCCUPIED && s.key == key) return idx
-        }
-        return -1
-    }
-
-    open fun search(key: Int): Int {
-        val idx = probeForOccupied(key, hash(key))
-        return if (idx == -1) -1 else table[idx].value
-    }
-}
-
-fun main() {
-    val h = MyHashTable(7, 1, 0)
-    println(h.search(13))   // -1
 }
 ```
 
@@ -1204,6 +1074,23 @@ flowchart LR
 <p align="center"><strong>Insert with a new key — the quadratic probe walks past the colliding occupied slot and lands on the first free slot, where the record is placed.</strong></p>
 
 ## Implementation
+
+
+```pseudocode
+function _probe_for_free(start):
+    for i from 0 to capacity − 1:
+        idx ← (start + _quad_offset(i)) mod capacity
+        if table[idx].state ≠ OCCUPIED: return idx
+    return -1
+
+function insert(key, value):
+    start ← _hash(key)
+    occ ← _probe_for_occupied(key, start)
+    if occ ≠ -1: table[occ].value ← value; return true
+    free ← _probe_for_free(start)
+    if free = -1: return false
+    table[free] ← Record(key, value, OCCUPIED); return true
+```
 
 ```python run
 from enum import Enum
@@ -1474,64 +1361,6 @@ object Main extends App {
 }
 ```
 
-```javascript run
-const RecordType = Object.freeze({ EMPTY: 0, DELETED: 1, OCCUPIED: 2 });
-
-class Record {
-    constructor(key, value) {
-        if (key !== undefined && value !== undefined) {
-            this.state = RecordType.OCCUPIED; this.key = key; this.value = value;
-        } else {
-            this.state = RecordType.EMPTY;    this.key = 0;   this.value = 0;
-        }
-    }
-}
-
-class MyHashTable {
-    constructor(capacity, a = 1, b = 0) {
-        this.capacity = capacity; this.a = a; this.b = b;
-        this.table = Array.from({ length: capacity }, () => new Record());
-    }
-    _hash(key) { return key % this.capacity; }
-    _quadOffset(i) { return this.a * i * i + this.b * i; }
-
-    _probeForOccupied(key, start) {
-        for (let i = 0; i < this.capacity; i++) {
-            const idx = (start + this._quadOffset(i)) % this.capacity;
-            const s   = this.table[idx];
-            if (s.state === RecordType.EMPTY) return -1;
-            if (s.state === RecordType.OCCUPIED && s.key === key) return idx;
-        }
-        return -1;
-    }
-    _probeForFree(start) {
-        for (let i = 0; i < this.capacity; i++) {
-            const idx = (start + this._quadOffset(i)) % this.capacity;
-            if (this.table[idx].state !== RecordType.OCCUPIED) return idx;
-        }
-        return -1;
-    }
-
-    search(key) {
-        const idx = this._probeForOccupied(key, this._hash(key));
-        return idx === -1 ? -1 : this.table[idx].value;
-    }
-    insert(key, value) {
-        const start = this._hash(key);
-        const occ = this._probeForOccupied(key, start);
-        if (occ !== -1) { this.table[occ].value = value; return true; }
-        const free = this._probeForFree(start);
-        if (free === -1) return false;
-        this.table[free] = new Record(key, value);
-        return true;
-    }
-}
-
-const h = new MyHashTable(7, 1, 0);
-h.insert(1, 10); h.insert(8, 80); h.insert(15, 150);
-console.log(h.search(1), h.search(8), h.search(15));
-```
-
 ```typescript run
 enum RecordType { EMPTY, DELETED, OCCUPIED }
 
@@ -1641,59 +1470,6 @@ func main() {
     h := newTable(7, 1, 0)
     h.Insert(1, 10); h.Insert(8, 80); h.Insert(15, 150)
     fmt.Println(h.Search(1), h.Search(8), h.Search(15))
-}
-```
-
-```kotlin run
-enum class RecordType { EMPTY, DELETED, OCCUPIED }
-
-class Record(
-    var state: RecordType = RecordType.EMPTY,
-    var key: Int = 0, var value: Int = 0,
-) { constructor(k: Int, v: Int) : this(RecordType.OCCUPIED, k, v) }
-
-open class MyHashTable(
-    protected val capacity: Int,
-    protected val a:        Int = 1,
-    protected val b:        Int = 0,
-) {
-    protected val table: Array<Record> = Array(capacity) { Record() }
-    protected fun hash(key: Int): Int  = key % capacity
-    protected fun quadOffset(i: Int): Int = a * i * i + b * i
-
-    protected fun probeForOccupied(key: Int, start: Int): Int {
-        for (i in 0 until capacity) {
-            val idx = (start + quadOffset(i)) % capacity
-            val s   = table[idx]
-            if (s.state == RecordType.EMPTY) return -1
-            if (s.state == RecordType.OCCUPIED && s.key == key) return idx
-        }
-        return -1
-    }
-    protected fun probeForFree(start: Int): Int {
-        for (i in 0 until capacity) {
-            val idx = (start + quadOffset(i)) % capacity
-            if (table[idx].state != RecordType.OCCUPIED) return idx
-        }
-        return -1
-    }
-
-    open fun search(key: Int): Int {
-        val idx = probeForOccupied(key, hash(key))
-        return if (idx == -1) -1 else table[idx].value
-    }
-    open fun insert(key: Int, value: Int): Boolean {
-        val start = hash(key); val occ = probeForOccupied(key, start)
-        if (occ != -1) { table[occ].value = value; return true }
-        val free = probeForFree(start); if (free == -1) return false
-        table[free] = Record(key, value); return true
-    }
-}
-
-fun main() {
-    val h = MyHashTable(7, 1, 0)
-    h.insert(1, 10); h.insert(8, 80); h.insert(15, 150)
-    println("${h.search(1)} ${h.search(8)} ${h.search(15)}")
 }
 ```
 
@@ -1811,6 +1587,14 @@ flowchart LR
 <p align="center"><strong>Quadratic-probing delete — same end result as linear probing, just with a quadratic step. The DELETED tombstone keeps the probe chain walkable for any record placed past this slot during inserts.</strong></p>
 
 ## Implementation
+
+
+```pseudocode
+function remove(key):
+    idx ← _probe_for_occupied(key, _hash(key))
+    if idx ≠ -1:
+        table[idx].state ← DELETED   # tombstone
+```
 
 ```python run
 from enum import Enum
@@ -2101,67 +1885,6 @@ object Main extends App {
 }
 ```
 
-```javascript run
-const RecordType = Object.freeze({ EMPTY: 0, DELETED: 1, OCCUPIED: 2 });
-
-class Record {
-    constructor(key, value) {
-        if (key !== undefined && value !== undefined) {
-            this.state = RecordType.OCCUPIED; this.key = key; this.value = value;
-        } else {
-            this.state = RecordType.EMPTY;    this.key = 0;   this.value = 0;
-        }
-    }
-}
-
-class MyHashTable {
-    constructor(capacity, a = 1, b = 0) {
-        this.capacity = capacity; this.a = a; this.b = b;
-        this.table = Array.from({ length: capacity }, () => new Record());
-    }
-    _hash(key) { return key % this.capacity; }
-    _quadOffset(i) { return this.a * i * i + this.b * i; }
-
-    _probeForOccupied(key, start) {
-        for (let i = 0; i < this.capacity; i++) {
-            const idx = (start + this._quadOffset(i)) % this.capacity;
-            const s   = this.table[idx];
-            if (s.state === RecordType.EMPTY) return -1;
-            if (s.state === RecordType.OCCUPIED && s.key === key) return idx;
-        }
-        return -1;
-    }
-    _probeForFree(start) {
-        for (let i = 0; i < this.capacity; i++) {
-            const idx = (start + this._quadOffset(i)) % this.capacity;
-            if (this.table[idx].state !== RecordType.OCCUPIED) return idx;
-        }
-        return -1;
-    }
-
-    search(key) {
-        const idx = this._probeForOccupied(key, this._hash(key));
-        return idx === -1 ? -1 : this.table[idx].value;
-    }
-    insert(key, value) {
-        const start = this._hash(key);
-        const occ = this._probeForOccupied(key, start);
-        if (occ !== -1) { this.table[occ].value = value; return true; }
-        const free = this._probeForFree(start); if (free === -1) return false;
-        this.table[free] = new Record(key, value); return true;
-    }
-    remove(key) {
-        const idx = this._probeForOccupied(key, this._hash(key));
-        if (idx !== -1) this.table[idx].state = RecordType.DELETED;
-    }
-}
-
-const h = new MyHashTable(7, 1, 0);
-h.insert(1, 10); h.insert(8, 80); h.insert(15, 150);
-h.remove(8);
-console.log(h.search(15), h.search(8));   // 150 -1
-```
-
 ```typescript run
 enum RecordType { EMPTY, DELETED, OCCUPIED }
 
@@ -2276,62 +1999,6 @@ func main() {
     h.Insert(1, 10); h.Insert(8, 80); h.Insert(15, 150)
     h.Remove(8)
     fmt.Println(h.Search(15), h.Search(8))   // 150 -1
-}
-```
-
-```kotlin run
-enum class RecordType { EMPTY, DELETED, OCCUPIED }
-
-class Record(
-    var state: RecordType = RecordType.EMPTY,
-    var key: Int = 0, var value: Int = 0,
-) { constructor(k: Int, v: Int) : this(RecordType.OCCUPIED, k, v) }
-
-open class MyHashTable(
-    protected val capacity: Int, protected val a: Int = 1, protected val b: Int = 0,
-) {
-    protected val table: Array<Record> = Array(capacity) { Record() }
-    protected fun hash(key: Int): Int = key % capacity
-    protected fun quadOffset(i: Int): Int = a * i * i + b * i
-
-    protected fun probeForOccupied(key: Int, start: Int): Int {
-        for (i in 0 until capacity) {
-            val idx = (start + quadOffset(i)) % capacity
-            val s = table[idx]
-            if (s.state == RecordType.EMPTY) return -1
-            if (s.state == RecordType.OCCUPIED && s.key == key) return idx
-        }
-        return -1
-    }
-    protected fun probeForFree(start: Int): Int {
-        for (i in 0 until capacity) {
-            val idx = (start + quadOffset(i)) % capacity
-            if (table[idx].state != RecordType.OCCUPIED) return idx
-        }
-        return -1
-    }
-
-    open fun search(key: Int): Int {
-        val idx = probeForOccupied(key, hash(key))
-        return if (idx == -1) -1 else table[idx].value
-    }
-    open fun insert(key: Int, value: Int): Boolean {
-        val start = hash(key); val occ = probeForOccupied(key, start)
-        if (occ != -1) { table[occ].value = value; return true }
-        val free = probeForFree(start); if (free == -1) return false
-        table[free] = Record(key, value); return true
-    }
-    open fun remove(key: Int) {
-        val idx = probeForOccupied(key, hash(key))
-        if (idx != -1) table[idx].state = RecordType.DELETED
-    }
-}
-
-fun main() {
-    val h = MyHashTable(7, 1, 0)
-    h.insert(1, 10); h.insert(8, 80); h.insert(15, 150)
-    h.remove(8)
-    println("${h.search(15)} ${h.search(8)}")   // 150 -1
 }
 ```
 
@@ -2468,6 +2135,32 @@ cons: Constraints {
 ## Solution
 
 The full 10-language implementation. Note that the `Math.floorMod`-style guard `((x % n) + n) % n` is used in the Java/Go/Rust versions to ensure non-negative indices even if `start + offset` overflows or produces a negative value during arithmetic.
+
+
+```pseudocode
+class MyHashTable:
+    function _hash(key): return key mod capacity
+    function _quad(i): return a·i² + b·i
+
+    function search(key):
+        idx ← _probe_for_occupied(key, _hash(key))
+        if idx = -1: return -1 else: return table[idx].value
+
+    function insert(key, value):
+        occ ← _probe_for_occupied(key, _hash(key))
+        if occ ≠ -1: table[occ].value ← value; return true
+        free ← _probe_for_free(_hash(key))
+        if free = -1: return false
+        table[free] ← Record(key, value, OCCUPIED); return true
+
+    function remove(key):
+        idx ← _probe_for_occupied(key, _hash(key))
+        if idx ≠ -1: table[idx].state ← DELETED
+
+    function getKeyAtIndex(index):
+        if table[index].state = OCCUPIED: return table[index].key
+        return -1
+```
 
 ```python run
 from enum import Enum
@@ -2788,75 +2481,6 @@ object Main extends App {
 }
 ```
 
-```javascript run
-const RecordType = Object.freeze({ EMPTY: 0, DELETED: 1, OCCUPIED: 2 });
-
-class Record {
-    constructor(key, value) {
-        if (key !== undefined && value !== undefined) {
-            this.state = RecordType.OCCUPIED; this.key = key; this.value = value;
-        } else {
-            this.state = RecordType.EMPTY;    this.key = 0;   this.value = 0;
-        }
-    }
-}
-
-class MyHashTable {
-    constructor(capacity, a, b) {
-        this.capacity = capacity; this.a = a; this.b = b;
-        this.table = Array.from({ length: capacity }, () => new Record());
-    }
-    _hash(key) { return ((key % this.capacity) + this.capacity) % this.capacity; }
-    _quad(i)   { return this.a * i * i + this.b * i; }
-    _wrap(x)   { return ((x % this.capacity) + this.capacity) % this.capacity; }
-
-    _probeForOccupied(key, start) {
-        for (let i = 0; i < this.capacity; i++) {
-            const idx = this._wrap(start + this._quad(i));
-            const s   = this.table[idx];
-            if (s.state === RecordType.EMPTY) return -1;
-            if (s.state === RecordType.OCCUPIED && s.key === key) return idx;
-        }
-        return -1;
-    }
-    _probeForFree(start) {
-        for (let i = 0; i < this.capacity; i++) {
-            const idx = this._wrap(start + this._quad(i));
-            if (this.table[idx].state !== RecordType.OCCUPIED) return idx;
-        }
-        return -1;
-    }
-
-    search(key) {
-        const idx = this._probeForOccupied(key, this._hash(key));
-        return idx === -1 ? -1 : this.table[idx].value;
-    }
-    insert(key, value) {
-        const start = this._hash(key);
-        const occ = this._probeForOccupied(key, start);
-        if (occ !== -1) { this.table[occ].value = value; return true; }
-        const free = this._probeForFree(start); if (free === -1) return false;
-        this.table[free] = new Record(key, value); return true;
-    }
-    remove(key) {
-        const idx = this._probeForOccupied(key, this._hash(key));
-        if (idx !== -1) this.table[idx].state = RecordType.DELETED;
-    }
-    getKeyAtIndex(index) {
-        if (index < 0 || index >= this.capacity) return -1;
-        const s = this.table[index];
-        return s.state === RecordType.OCCUPIED ? s.key : -1;
-    }
-}
-
-const h = new MyHashTable(3, 2, 3);
-h.insert(1, 2); h.insert(2, 4); console.log(h.search(1));
-h.insert(1, 3); console.log(h.search(1));
-h.insert(2, 5);
-console.log(h.search(2), h.search(3));
-console.log(h.getKeyAtIndex(0));
-```
-
 ```typescript run
 enum RecordType { EMPTY, DELETED, OCCUPIED }
 
@@ -2988,70 +2612,6 @@ func main() {
     h.Insert(2, 5)
     fmt.Println(h.Search(2), h.Search(3))
     fmt.Println(h.GetKeyAtIndex(0))
-}
-```
-
-```kotlin run
-enum class RecordType { EMPTY, DELETED, OCCUPIED }
-
-class Record(
-    var state: RecordType = RecordType.EMPTY,
-    var key: Int = 0, var value: Int = 0,
-) { constructor(k: Int, v: Int) : this(RecordType.OCCUPIED, k, v) }
-
-open class MyHashTable(
-    protected val capacity: Int, protected val a: Int, protected val b: Int,
-) {
-    protected val table: Array<Record> = Array(capacity) { Record() }
-    protected fun wrap(x: Int): Int = Math.floorMod(x, capacity)
-    protected fun hash(key: Int): Int = wrap(key)
-    protected fun quad(i: Int): Int   = a * i * i + b * i
-
-    protected fun probeForOccupied(key: Int, start: Int): Int {
-        for (i in 0 until capacity) {
-            val idx = wrap(start + quad(i))
-            val s = table[idx]
-            if (s.state == RecordType.EMPTY) return -1
-            if (s.state == RecordType.OCCUPIED && s.key == key) return idx
-        }
-        return -1
-    }
-    protected fun probeForFree(start: Int): Int {
-        for (i in 0 until capacity) {
-            val idx = wrap(start + quad(i))
-            if (table[idx].state != RecordType.OCCUPIED) return idx
-        }
-        return -1
-    }
-
-    open fun search(key: Int): Int {
-        val idx = probeForOccupied(key, hash(key))
-        return if (idx == -1) -1 else table[idx].value
-    }
-    open fun insert(key: Int, value: Int): Boolean {
-        val start = hash(key); val occ = probeForOccupied(key, start)
-        if (occ != -1) { table[occ].value = value; return true }
-        val free = probeForFree(start); if (free == -1) return false
-        table[free] = Record(key, value); return true
-    }
-    open fun remove(key: Int) {
-        val idx = probeForOccupied(key, hash(key))
-        if (idx != -1) table[idx].state = RecordType.DELETED
-    }
-    fun getKeyAtIndex(index: Int): Int {
-        if (index < 0 || index >= capacity) return -1
-        val s = table[index]
-        return if (s.state == RecordType.OCCUPIED) s.key else -1
-    }
-}
-
-fun main() {
-    val h = MyHashTable(3, 2, 3)
-    h.insert(1, 2); h.insert(2, 4); println(h.search(1))
-    h.insert(1, 3); println(h.search(1))
-    h.insert(2, 5)
-    println("${h.search(2)} ${h.search(3)}")
-    println(h.getKeyAtIndex(0))
 }
 ```
 

@@ -4,18 +4,18 @@ import codefolio.client.api.ApiClient
 import codefolio.client.components.cortex.{
   ChapterContent,
   CortexBreadcrumb,
+  CortexErrorView,
   CortexPager,
   CortexReaderLayout,
   MobileToc
 }
 import codefolio.client.markdown.MarkdownRenderer
-import codefolio.client.util.PageTitle
+import codefolio.client.util.{AsyncFetch, PageTitle}
 import codefolio.shared.api.Endpoints.{ChapterPayload, ChapterRef}
 import japgolly.scalajs.react.*
 import japgolly.scalajs.react.vdom.html_<^.*
 
 import scala.scalajs.concurrent.JSExecutionContext.Implicits.queue
-import scala.util.{Failure, Success}
 
 /**
  * Reads `/api/cortex/{book}/{chapter}`, runs the markdown through the client-side pipeline, and lays out the
@@ -26,59 +26,38 @@ object ChapterPage:
   final case class Props(book: String, chapter: String)
 
   /**
-   * Combined fetch + render state. We keep both stages so the UI can show a loading spinner while the API is
-   * in flight or the renderer is busy.
+   * Combined fetch + render bundle. We keep both stages so the UI shows loading until both the API call and
+   * the markdown renderer have finished.
    */
   final private case class Loaded(payload: ChapterPayload, render: MarkdownRenderer.Result)
 
   val Component =
     ScalaFnComponent
       .withHooks[Props]
-      .useState(Option.empty[Either[String, Loaded]])
+      .useState(AsyncFetch.initial[Loaded])
       .useEffectWithDepsBy((props, _) => (props.book, props.chapter)) { (_, state) => deps =>
         val (book, chapter) = deps
-        Callback {
-          state.setState(None).runNow()
-          val fut =
+        AsyncFetch.run(
+          setState = state.setState,
+          fetch =
             for
               payload  <- ApiClient.getCortexChapter(book, chapter)
               rendered <- MarkdownRenderer.render(payload.raw)
-            yield Loaded(payload, rendered)
-          fut.onComplete {
-            case Success(loaded) =>
-              state.setState(Some(Right(loaded))).runNow()
-              PageTitle
-                .set(s"${loaded.payload.frontmatter.title} — ${loaded.payload.book.title}")
-                .runNow()
-            case Failure(t) =>
-              state
-                .setState(Some(Left(Option(t.getMessage).getOrElse("Failed to load chapter"))))
-                .runNow()
-          }
-        }
+            yield Loaded(payload, rendered),
+          errorPrefix = s"Failed to load $book/$chapter",
+          onLoaded = loaded =>
+            PageTitle.set(s"${loaded.payload.frontmatter.title} — ${loaded.payload.book.title}")
+        )
       }
       .render { (props, state) =>
-        state.value match
-          case None =>
-            <.main(
-              ^.className := "container mx-auto py-24 text-center text-muted-foreground",
-              s"Loading ${props.book}/${props.chapter}…"
-            )
-          case Some(Left(msg)) =>
-            <.main(
-              ^.className := "container mx-auto py-16 text-center",
-              <.p(^.className := "text-destructive font-semibold", msg),
-              <.p(
-                ^.className := "mt-4 text-sm",
-                <.a(
-                  ^.href      := "/cortex",
-                  ^.className := "text-primary hover:underline",
-                  "← Back to Cortex"
-                )
-              )
-            )
-          case Some(Right(loaded)) =>
-            renderLoaded(loaded)
+        state.value.render(
+          loaded = renderLoaded,
+          loading = <.main(
+            ^.className := "container mx-auto py-24 text-center text-muted-foreground",
+            s"Loading ${props.book}/${props.chapter}…"
+          ),
+          errored = msg => <.main(^.className := "container mx-auto py-16 text-center", CortexErrorView(msg))
+        )
       }
 
   private def renderLoaded(loaded: Loaded): VdomNode =

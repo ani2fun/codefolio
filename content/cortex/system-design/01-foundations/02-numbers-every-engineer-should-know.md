@@ -1,0 +1,254 @@
+# 2. Numbers every engineer should know
+
+## TL;DR
+> Memory is fast. Disk is slow. Network is slower. *Cross-region* network is *much* slower. Every system-design conversation that does not start with these four sentences and a calibrated sense of "how much faster" is just vibes. By the end of this lesson you will be able to ballpark — to within 2× — how long any computer operation takes, on demand, without looking it up.
+
+## 1. Motivation
+
+In **2009**, Jeff Dean — the Google engineer who, among other things, built MapReduce, BigTable, Spanner, and TensorFlow — gave a talk at Stanford called *Designs, Lessons and Advice from Building Large Distributed Systems*. On slide 24 he put up a small table called **["Numbers everyone should know"](http://highscalability.com/numbers-everyone-should-know)**. It listed how long each kind of operation takes — from an L1 cache reference to a packet round-trip across the Atlantic.
+
+That slide changed how a generation of engineers thought about systems. Not because the numbers were new — every CPU architect knew them — but because *application engineers* did not. People were happily writing code that did 10,000 round-trips to a database for a single page load and then wondering why the page was slow.
+
+Jeff's table told them, *to within an order of magnitude*, exactly why.
+
+The version below is the modern (2025) update. Memorise the order-of-magnitude column. The exact nanoseconds drift; the orders of magnitude do not.
+
+## 2. Intuition (Analogy)
+
+The numbers feel abstract because nanoseconds and microseconds and milliseconds all sound similar. They are not. They differ by *factors of a thousand*.
+
+The trick that makes them stick: **scale a 1-nanosecond L1 cache hit to feel like 1 second**, and rescale every other operation by the same factor. Now you are reasoning in human time — seconds, hours, days, years — and you can *feel* how much slower each layer is.
+
+| Operation | Real time | If 1 ns = 1 second… |
+|---|---|---|
+| L1 cache reference | 1 ns | **1 second** |
+| Branch mispredict | 3 ns | 3 seconds |
+| L2 cache reference | 4 ns | 4 seconds |
+| Mutex lock/unlock | 17 ns | 17 seconds |
+| L3 cache reference | 40 ns | 40 seconds |
+| Main memory reference | 100 ns | **1 minute 40 seconds** |
+| Compress 1 KB with Snappy | 2 µs | 33 minutes |
+| Send 1 KB over a 1 Gbps network | 10 µs | 2 hours 47 minutes |
+| Random read from SSD | 16 µs | 4 hours 27 minutes |
+| Read 1 MB sequentially from RAM | 4 µs | 1 hour |
+| Round-trip within same datacentre | 500 µs | **5 days 19 hours** |
+| Read 1 MB sequentially from SSD | 1 ms | 11 days |
+| Round-trip from California to Netherlands | 150 ms | **4 years 9 months** |
+| Read 1 MB sequentially from a spinning disk | 5 ms | 2 months |
+| Disk seek (spinning) | 4 ms | **1 month 18 days** |
+
+> Sources: Peter Norvig's [original interpretation](http://norvig.com/21-days.html#answers) of Jeff Dean's numbers; Aleksey Shipilëv's [updated 2020 measurements](https://shipilev.net/blog/2020/jvm-anatomy-quark-31-spinlocks/) for modern hardware; AWS / Cloudflare published cross-region RTT numbers.
+
+Memorise just *three* of those rows and the rest become deducible:
+
+> 1 ns ≈ **L1 cache** (1 second on the human scale)
+> 100 ns ≈ **main memory** (~minute on the human scale)
+> 100 ms ≈ **cross-continent network** (~year on the human scale)
+
+That is the whole curriculum of this lesson, in three lines. Everything else is interpolation.
+
+## 3. Formal Definition
+
+**Latency** is the time elapsed from "I asked" to "I got the first byte of the answer". It is what a single user experiences and what a stopwatch measures.
+
+The numbers in the table are **medians** for *typical* operations on *typical* modern hardware. Specific values vary by:
+
+- **CPU** — server-class chips have larger caches and faster memory.
+- **Storage class** — NVMe is 5–10× faster than SATA SSD; spinning disk is 10–100× slower than SSD; tape is *seconds* to first byte.
+- **Network conditions** — same-rack RTT can be 50 µs; same-DC ~500 µs; same-region ~1 ms; cross-region 30–250 ms.
+- **Operation size** — bigger payloads dominate by *bandwidth*, not latency. The latency table assumes ≤ 1 KB; bandwidth gets its own treatment below.
+
+Two related numbers you will need for the rest of the track:
+
+| Quantity | Modern value (2025) | Notes |
+|---|---|---|
+| Datacentre 10 Gbps NIC bandwidth | ~1.25 GB/s | "How much can leave one server per second?" |
+| Modern NVMe SSD sequential read | ~7 GB/s | A single disk can saturate a 10 G NIC |
+| Modern DDR5 memory bandwidth | ~50 GB/s | RAM is roughly 10× faster than disk |
+| Cross-region inter-AZ bandwidth | ~10 Gbps | Internal AWS / GCP backbone |
+
+The bandwidth column matters because **a 1 GB transfer** does not take 10 µs (the latency of one packet) — it takes ~800 ms over a 10 Gbps link, dominated by bandwidth, not latency. Latency × concurrency = throughput. We will use this exact relationship in [Lesson 5 — Little's Law](./05-latency-throughput-usl.md).
+
+## 4. Worked Example
+
+A junior engineer says:
+
+> "I added a feature that sends one HTTP call to a microservice for each item in the user's shopping cart, then displays the page. It is slow. Why?"
+
+You ask: how many items? They say: ten. You ask: where is the microservice? They say: same region but different cluster.
+
+You can answer **the why** without running anything. Each round-trip across the cluster is roughly 2 ms (1 ms each way + serialisation + connection setup if not pooled). Ten of them in series is **20 ms**. That alone is not bad.
+
+But you also know the connection pool is probably empty (cold lambdas, anyone?), so the first call also pays a TLS handshake — easily 100 ms more. So the *first* page load is **~120 ms** of pure waiting.
+
+You ask: in production, how often does the cart have 50 items? They say: about 20% of the time. Now the math is:
+
+| Cart size | Round-trips | Latency budget | User experience |
+|---|---|---|---|
+| 1 item | 1 | ~2 ms | Snappy |
+| 10 items | 10 | ~20 ms | Imperceptible |
+| 50 items | 50 | ~100 ms | Just noticeable |
+| 200 items (power user) | 200 | **~400 ms** | "Why is the cart slow?" |
+
+The fix is one of the standard four:
+
+1. **Batch:** one HTTP call with 50 IDs in the body, not 50 calls.
+2. **Parallel:** fire all calls concurrently; latency drops to ≈ slowest single call.
+3. **Cache:** if items are read-mostly, hit a 100-ns memory cache instead of a 2-ms network call.
+4. **Avoid:** does the page actually need every detail of every item, or could you defer the rare ones?
+
+You did all of this without writing code, without running benchmarks, and without consulting the microservice team. You did it because **you knew the numbers**.
+
+That is the entire point of this lesson.
+
+## 5. Build It
+
+Calibrate yourself on your own laptop. Run this once and *write down* the actual numbers you see — they will become your reference for the rest of the track.
+
+```python run
+import time
+import statistics
+
+# We measure each operation many times to defeat noise from interrupts, GC, etc.
+
+def measure(label, fn, repeats=10_000):
+    # Warm up — fill caches, JIT (Pyodide / CPython has none, but doesn't hurt)
+    for _ in range(1_000):
+        fn()
+    samples = []
+    for _ in range(repeats):
+        t0 = time.perf_counter_ns()
+        fn()
+        samples.append(time.perf_counter_ns() - t0)
+    median_ns = statistics.median(samples)
+    p99_ns    = statistics.quantiles(samples, n=100)[98]   # 99th percentile
+    print(f"{label:<32} median={median_ns:>8} ns   p99={p99_ns:>8} ns")
+
+# 1. Trivial work — basically the loop overhead. Set the floor.
+measure("noop (loop floor)", lambda: None)
+
+# 2. L1-ish: tiny tuple unpack
+small = (1, 2, 3)
+measure("tuple unpack",        lambda: (small[0], small[1], small[2]))
+
+# 3. Memory access via Python list — bigger than L1, hits L2/L3
+big = list(range(1_000_000))
+measure("list index (1 M list)", lambda: big[500_000])
+
+# 4. Hash lookup — small dict
+d = {i: i for i in range(1000)}
+measure("dict lookup",          lambda: d[500])
+
+# 5. Sequential scan over 1 MB-ish data — bandwidth-bound
+buf = bytes(1_000_000)
+measure("scan 1 MB bytes",      lambda: sum(buf), repeats=200)
+
+# 6. Print the takeaways
+print("\nTakeaways:")
+print(f"- A noop loop iteration on this machine is ~50–500 ns; that is your floor.")
+print(f"- A 1-MB scan is bandwidth-bound; expect ~1 ms per MB on RAM, ~5 ms on SSD.")
+print(f"- p99 / median ratio reveals tail latency. Ratios > 5x mean GC/preemption is a thing.")
+```
+
+**Now break it.** Increase the list size to `100_000_000`. Notice the median jumps. Why? *Because you stopped fitting in L3.* You just *measured* the cache hierarchy on your own laptop. Senior engineers do this regularly — not because they need the exact numbers but because they need to *see* the cliff between cache and main memory, and between memory and disk, in their own data.
+
+For network-tier numbers (which Pyodide cannot measure from inside the browser), use this from a real terminal:
+
+```bash
+# Same-region cloud RTT — adjust hostname to your nearest cloud region
+ping -c 20 cloudflare.com | tail -3
+
+# Cross-continent RTT — pick a host on the other side of the world
+ping -c 20 www.scaleway.com | tail -3
+
+# Disk read bandwidth (Linux/macOS)
+dd if=/dev/zero of=/tmp/bench bs=1M count=1024 status=progress 2>&1 | tail -2
+```
+
+Write down the three numbers you get. You will reference them every time anyone asks "is this design feasible?" for the rest of your career.
+
+## 6. Trade-offs & Complexity
+
+| Layer | Latency | Throughput per device | Cost per GB-month | When to use |
+|---|---|---|---|---|
+| **CPU register** | ~0.3 ns | — | — | Hot loop variables only |
+| **L1 cache** | 1 ns | ~50 GB/s | — | The compiler chose this; you do not |
+| **L2/L3 cache** | 4–40 ns | ~30 GB/s | — | Tight inner loops |
+| **DRAM** | 100 ns | ~50 GB/s | $5 / GB-mo | Hot data, working set |
+| **NVMe SSD** | 16–100 µs | ~7 GB/s | $0.10 / GB-mo | Warm data; durable; primary DB |
+| **Network (same DC)** | ~500 µs | ~1 GB/s per NIC | — | Microservice calls, cache fetches |
+| **Spinning disk** | ~4 ms | ~150 MB/s | $0.03 / GB-mo | Cold storage, archives |
+| **Network (cross-region)** | 30–250 ms | ~1 GB/s | $0.02 / GB transferred | Disaster recovery, replication |
+| **Object storage (S3)** | ~50 ms | virtually unbounded with parallelism | $0.023 / GB-mo | Blobs, backups, data lake |
+
+**The rule of the table:** every row down is roughly 10–100× *slower* than the row above, and roughly 10–100× *cheaper per GB*. Picking the right row is mostly about asking "what is my access pattern?" and matching it.
+
+A small table is also worth memorising: the **ratios** of bandwidth between RAM, SSD, and network at modern speeds. They tell you *which one bottlenecks first* in any pipeline.
+
+| Pair | Ratio (modern hardware, ballpark) |
+|---|---|
+| RAM vs NVMe SSD | RAM is ~7× faster |
+| NVMe SSD vs 10 G NIC | SSD is ~6× faster |
+| 10 G NIC vs spinning disk | NIC is ~7× faster |
+| Same-DC RTT vs cross-region RTT | Cross-region is **~300× slower** |
+
+That last one is why "just put the database in the other region" is almost never the right answer to a latency problem.
+
+## 7. Edge Cases & Failure Modes
+
+- **Confusing latency with bandwidth.** A 1-ms RTT does not mean you can transfer 1 GB in 1 ms. It means *the first byte* shows up after 1 ms; the rest is bandwidth-bound. *(See: every "why is my big file upload slow over fast network?" thread on the internet.)*
+- **Quoting medians when only tails matter.** If 1% of your requests are 100× slower than the median, your *user* experiences the tail every fifth page load (a page with 100 dependent calls hits the 99th-percentile call ~once). [The Tail at Scale (Dean & Barroso, 2013)](https://research.google/pubs/the-tail-at-scale/) is required reading.
+- **Optimising L1 cache when network is the bottleneck.** A 100 ns memory access embedded inside a 100 ms cross-region call is *one millionth* of the latency. Senior engineers triage where the time actually goes *before* optimising.
+- **Forgetting that a "fast" disk is still ~10,000× slower than RAM.** This is why caching exists. This is also why "we made the database faster" hits a wall — the disk is still the disk.
+- **Trusting cloud "best-case" latencies.** Vendors quote *un-loaded* RTT. Loaded systems queue. A "1 ms" service can take 50 ms when its CPU is 90% utilised. We will quantify this in [Lesson 5 — Little's Law](./05-latency-throughput-usl.md).
+- **Comparing wall-clock from different machines.** Same code, different CPU, can be 10× different. Always measure on the hardware you will run on.
+- **Forgetting cold caches.** First-request latency is dominated by everything that *should* have been hot but was not — DNS, TLS handshake, JIT, page cache, CDN warm-up. Every system has a "first 30 seconds" pathology. Production load tests should always include cold-start measurement.
+
+## 8. Practice
+
+> **Exercise 1 — Estimate without running.**
+> A user uploads a 5 MB image. Your service stores it in S3 (50 ms latency, ~100 MB/s bandwidth from the same region) and writes a row in Postgres. Estimate the total time for one upload, *without* running anything. Then identify *which* component is the bottleneck.
+>
+> <details>
+> <summary>Solution</summary>
+>
+> The 5 MB upload to S3 is bandwidth-bound: 5 MB / 100 MB/s = **50 ms** of transfer time, *plus* the ~50 ms RTT to issue the request = **~100 ms total** for S3.
+>
+> The Postgres write is a same-region RTT plus serialisation plus fsync — call it **5 ms**.
+>
+> If done **sequentially**, the user waits ~105 ms. The bottleneck is the S3 transfer, dominated by *bandwidth*, not latency.
+>
+> The 1% senior insight: parallelise the Postgres write with a placeholder row and update it on S3 success — get the user response down to ~5 ms while the upload completes in the background.
+>
+> </details>
+
+> **Exercise 2 — Spot the latency lie.**
+> A vendor claims "sub-millisecond writes". You read the small print: this is "single-region" with "fire-and-forget" writes. Translate that to honest English. What is the *durability* implication? What does the latency look like for *durable cross-region* writes on the same product?
+>
+> <details>
+> <summary>Solution</summary>
+>
+> "Sub-millisecond fire-and-forget" means: the write returns success *as soon as the closest in-region node has it in memory*, before durability is confirmed and before any other replica has seen it.
+>
+> If that node crashes within milliseconds (entirely possible), the write is lost — even though the client got a "success".
+>
+> An honest *durable* write goes to disk *and* a quorum of replicas. Same-region durable writes are typically 5–15 ms. *Cross-region* durable writes are bounded by the cross-region RTT — 30–250 ms — and that is a hard physics limit, not an engineering one.
+>
+> </details>
+
+> **Exercise 3 — Build the table for your own machine.**
+> Run the calibration script in section 5. Add a row for "git clone of a 100 MB repo over your home internet". Compare to your in-region datacentre numbers. By what factor is your home internet slower? *(This is why CDNs exist.)*
+
+## In the Wild
+
+- **[Jeff Dean — Designs, Lessons and Advice from Building Large Distributed Systems](https://research.google/pubs/designs-lessons-and-advice-from-building-large-distributed-systems/)** (2009) — the talk that launched the table.
+
+- **[Peter Norvig — Teach Yourself Programming in Ten Years (Answers section)](http://norvig.com/21-days.html#answers)** — the most-cited public reproduction of Jeff Dean's table, with Norvig's own annotations.
+
+- **[Aleksey Shipilëv — JVM Anatomy Quarks](https://shipilev.net/jvm/anatomy-quarks/)** — modern updates to the same numbers, measured on contemporary hardware. Especially useful for JVM-ecosystem engineers.
+
+- **[Cloudflare — How fast is your network really?](https://blog.cloudflare.com/network-performance-update-birthday-week-2024/)** (2024) — a real-world measurement of CDN-edge-to-origin latency across the globe. Useful as ground truth for "cross-continent RTT" claims.
+
+---
+
+**Next:** the *combinatorial* skill that turns these numbers into design decisions — back-of-envelope estimation. By the end of [Lesson 3](./03-back-of-envelope-estimation.md), you will be able to estimate the QPS, storage, and bandwidth of any system in 5 minutes, with nothing but multiplication. → [Lesson 3 — Back-of-envelope estimation](./03-back-of-envelope-estimation.md)

@@ -1,7 +1,3 @@
----
-title: "11. Pattern: Merge"
----
-
 # 11. Pattern: Merge
 
 ## The Hook
@@ -133,6 +129,22 @@ The algorithm given below summarizes the linked list merge technique for two lis
 
 Given below is the generic code implementation to merge two lists into a single list based on the outcome of a function `f`.
 
+
+```pseudocode
+# Generic merge template. `pickA` decides which side wins each step.
+function mergeLists(headA, headB, pickA):
+    dummy ← new ListNode; tail ← dummy
+    curA ← headA; curB ← headB
+    while curA is not null AND curB is not null:
+        if pickA(curA, curB):
+            tail.next ← curA; curA ← curA.next
+        else:
+            tail.next ← curB; curB ← curB.next
+        tail ← tail.next
+    tail.next ← curA if curA is not null else curB        # splice the leftover suffix in O(1)
+    return dummy.next
+```
+
 ```python run
 from typing import Callable, Optional
 
@@ -240,22 +252,6 @@ object Solution {
 }
 ```
 
-```javascript run
-function mergeLists(headA, headB, pickA) {
-    const dummy = new ListNode();
-    let tail = dummy;
-
-    let cA = headA, cB = headB;
-    while (cA !== null && cB !== null) {
-        if (pickA(cA, cB)) { tail.next = cA; cA = cA.next; }
-        else                { tail.next = cB; cB = cB.next; }
-        tail = tail.next;
-    }
-    tail.next = (cA !== null) ? cA : cB;
-    return dummy.next;
-}
-```
-
 ```typescript run
 function mergeLists(headA: ListNode | null, headB: ListNode | null,
                    pickA: (a: ListNode, b: ListNode) => boolean): ListNode | null {
@@ -290,25 +286,6 @@ func mergeLists(headA, headB *ListNode, pickA func(*ListNode, *ListNode) bool) *
     }
     if cA != nil { tail.Next = cA } else { tail.Next = cB }
     return dummy.Next
-}
-```
-
-```kotlin run
-class Solution {
-    fun mergeLists(headA: ListNode?, headB: ListNode?,
-                   pickA: (ListNode, ListNode) -> Boolean): ListNode? {
-        val dummy = ListNode(0)
-        var tail: ListNode = dummy
-
-        var cA = headA; var cB = headB
-        while (cA != null && cB != null) {
-            if (pickA(cA, cB)) { tail.next = cA; cA = cA.next }
-            else                { tail.next = cB; cB = cB.next }
-            tail = tail.next!!
-        }
-        tail.next = cA ?: cB
-        return dummy.next
-    }
 }
 ```
 
@@ -486,6 +463,21 @@ flowchart TB
 
 The implementation of the merge list solution is given as follows.
 
+
+```pseudocode
+function mergeAlternateNodes(headA, headB):
+    dummy ← new ListNode; tail ← dummy
+    cA ← headA; cB ← headB
+    takeFromA ← true
+    while cA is not null AND cB is not null:
+        if takeFromA: tail.next ← cA; cA ← cA.next
+        else:         tail.next ← cB; cB ← cB.next
+        tail ← tail.next
+        takeFromA ← NOT takeFromA
+    tail.next ← cA if cA is not null else cB
+    return dummy.next
+```
+
 ```python run
 from typing import Optional
 
@@ -580,22 +572,6 @@ object Solution {
 }
 ```
 
-```javascript run
-function mergeAlternateNodes(headA, headB) {
-    const dummy = new ListNode();
-    let tail = dummy, cA = headA, cB = headB;
-    let takeFromA = true;
-    while (cA !== null && cB !== null) {
-        if (takeFromA) { tail.next = cA; cA = cA.next; }
-        else            { tail.next = cB; cB = cB.next; }
-        tail      = tail.next;
-        takeFromA = !takeFromA;
-    }
-    tail.next = (cA !== null) ? cA : cB;
-    return dummy.next;
-}
-```
-
 ```typescript run
 function mergeAlternateNodes(headA: ListNode | null, headB: ListNode | null): ListNode | null {
     const dummy = new ListNode(0);
@@ -626,24 +602,6 @@ func mergeAlternateNodes(headA, headB *ListNode) *ListNode {
     }
     if cA != nil { tail.Next = cA } else { tail.Next = cB }
     return dummy.Next
-}
-```
-
-```kotlin run
-class Solution {
-    fun mergeAlternateNodes(headA: ListNode?, headB: ListNode?): ListNode? {
-        val dummy = ListNode(0); var tail: ListNode = dummy
-        var cA = headA; var cB = headB
-        var takeFromA = true
-        while (cA != null && cB != null) {
-            if (takeFromA) { tail.next = cA; cA = cA.next }
-            else            { tail.next = cB; cB = cB.next }
-            tail      = tail.next!!
-            takeFromA = !takeFromA
-        }
-        tail.next = cA ?: cB
-        return dummy.next
-    }
 }
 ```
 
@@ -714,6 +672,21 @@ You should take the first node of the first list (with the head as headA) as the
 
 ## Solution
 
+
+```pseudocode
+function mergeAlternateNodes(headA, headB):
+    dummy ← new ListNode; tail ← dummy
+    cA ← headA; cB ← headB
+    takeFromA ← true
+    while cA is not null AND cB is not null:
+        if takeFromA: tail.next ← cA; cA ← cA.next
+        else:         tail.next ← cB; cB ← cB.next
+        tail ← tail.next
+        takeFromA ← NOT takeFromA
+    tail.next ← cA if cA is not null else cB
+    return dummy.next
+```
+
 ```python run
 from typing import Optional
 
@@ -808,22 +781,6 @@ object Solution {
 }
 ```
 
-```javascript run
-function mergeAlternateNodes(headA, headB) {
-    const dummy = new ListNode();
-    let tail = dummy, cA = headA, cB = headB;
-    let takeFromA = true;
-    while (cA !== null && cB !== null) {
-        if (takeFromA) { tail.next = cA; cA = cA.next; }
-        else            { tail.next = cB; cB = cB.next; }
-        tail      = tail.next;
-        takeFromA = !takeFromA;
-    }
-    tail.next = (cA !== null) ? cA : cB;
-    return dummy.next;
-}
-```
-
 ```typescript run
 function mergeAlternateNodes(headA: ListNode | null, headB: ListNode | null): ListNode | null {
     const dummy = new ListNode(0);
@@ -854,24 +811,6 @@ func mergeAlternateNodes(headA, headB *ListNode) *ListNode {
     }
     if cA != nil { tail.Next = cA } else { tail.Next = cB }
     return dummy.Next
-}
-```
-
-```kotlin run
-class Solution {
-    fun mergeAlternateNodes(headA: ListNode?, headB: ListNode?): ListNode? {
-        val dummy = ListNode(0); var tail: ListNode = dummy
-        var cA = headA; var cB = headB
-        var takeFromA = true
-        while (cA != null && cB != null) {
-            if (takeFromA) { tail.next = cA; cA = cA.next }
-            else            { tail.next = cB; cB = cB.next }
-            tail      = tail.next!!
-            takeFromA = !takeFromA
-        }
-        tail.next = cA ?: cB
-        return dummy.next
-    }
 }
 ```
 
@@ -932,6 +871,22 @@ Given the heads of two sorted linked lists **headA** and **headB**, write a fun
 > -   **Explanation:** After merging the list in sorted order, the resulting list will be \[1, 2, 3, 4, 5, 6, 7\].
 
 ## Solution
+
+
+```pseudocode
+# Merge two ASCENDING-sorted lists. Pick the smaller head each step.
+function mergeSortedLists(headA, headB):
+    dummy ← new ListNode; tail ← dummy
+    cA ← headA; cB ← headB
+    while cA is not null AND cB is not null:
+        if cA.val ≤ cB.val:
+            tail.next ← cA; cA ← cA.next
+        else:
+            tail.next ← cB; cB ← cB.next
+        tail ← tail.next
+    tail.next ← cA if cA is not null else cB
+    return dummy.next
+```
 
 ```python run
 from typing import Optional
@@ -1017,20 +972,6 @@ object Solution {
 }
 ```
 
-```javascript run
-function mergeSortedLists(headA, headB) {
-    const dummy = new ListNode();
-    let tail = dummy, cA = headA, cB = headB;
-    while (cA !== null && cB !== null) {
-        if (cA.val <= cB.val) { tail.next = cA; cA = cA.next; }
-        else                   { tail.next = cB; cB = cB.next; }
-        tail = tail.next;
-    }
-    tail.next = (cA !== null) ? cA : cB;
-    return dummy.next;
-}
-```
-
 ```typescript run
 function mergeSortedLists(headA: ListNode | null, headB: ListNode | null): ListNode | null {
     const dummy = new ListNode(0);
@@ -1057,22 +998,6 @@ func mergeSortedLists(headA, headB *ListNode) *ListNode {
     }
     if cA != nil { tail.Next = cA } else { tail.Next = cB }
     return dummy.Next
-}
-```
-
-```kotlin run
-class Solution {
-    fun mergeSortedLists(headA: ListNode?, headB: ListNode?): ListNode? {
-        val dummy = ListNode(0); var tail: ListNode = dummy
-        var cA = headA; var cB = headB
-        while (cA != null && cB != null) {
-            if (cA.`val` <= cB.`val`) { tail.next = cA; cA = cA.next }
-            else                       { tail.next = cB; cB = cB.next }
-            tail = tail.next!!
-        }
-        tail.next = cA ?: cB
-        return dummy.next
-    }
 }
 ```
 
@@ -1132,6 +1057,31 @@ Given the heads of two sorted linked lists, **headA** and **headB**, write a 
 > -   **Explanation:** After merging the lists in descending order, the resulting list will be \[7, 6, 5, 4, 3, 2, 1\].
 
 ## Solution
+
+
+```pseudocode
+# Merge two DESCENDING-sorted lists into a descending result. Reverse both → ascending lists,
+# then pick the LARGER head each step.
+function reverse(head):
+    prev ← null; cur ← head
+    while cur is not null:
+        nxt ← cur.next
+        cur.next ← prev
+        prev ← cur; cur ← nxt
+    return prev
+
+function mergeSortedListsII(headA, headB):
+    a ← reverse(headA); b ← reverse(headB)
+    dummy ← new ListNode; tail ← dummy
+    while a is not null AND b is not null:
+        if a.val ≥ b.val:
+            tail.next ← a; a ← a.next
+        else:
+            tail.next ← b; b ← b.next
+        tail ← tail.next
+    tail.next ← a if a is not null else b
+    return dummy.next
+```
 
 ```python run
 from typing import Optional
@@ -1247,26 +1197,6 @@ object Solution {
 }
 ```
 
-```javascript run
-function mergeSortedListsII(headA, headB) {
-    const reverse = h => {
-        let prev = null, cur = h;
-        while (cur !== null) { const nxt = cur.next; cur.next = prev; prev = cur; cur = nxt; }
-        return prev;
-    };
-    let a = reverse(headA), b = reverse(headB);
-    const dummy = new ListNode();
-    let tail = dummy;
-    while (a !== null && b !== null) {
-        if (a.val >= b.val) { tail.next = a; a = a.next; }
-        else                 { tail.next = b; b = b.next; }
-        tail = tail.next;
-    }
-    tail.next = (a !== null) ? a : b;
-    return dummy.next;
-}
-```
-
 ```typescript run
 function mergeSortedListsII(headA: ListNode | null, headB: ListNode | null): ListNode | null {
     const reverse = (h: ListNode | null): ListNode | null => {
@@ -1304,27 +1234,6 @@ func mergeSortedListsII(headA, headB *ListNode) *ListNode {
     }
     if a != nil { tail.Next = a } else { tail.Next = b }
     return dummy.Next
-}
-```
-
-```kotlin run
-class Solution {
-    private fun reverse(h: ListNode?): ListNode? {
-        var prev: ListNode? = null; var cur = h
-        while (cur != null) { val nxt = cur.next; cur.next = prev; prev = cur; cur = nxt }
-        return prev
-    }
-    fun mergeSortedListsII(headA: ListNode?, headB: ListNode?): ListNode? {
-        var a = reverse(headA); var b = reverse(headB)
-        val dummy = ListNode(0); var tail: ListNode = dummy
-        while (a != null && b != null) {
-            if (a.`val` >= b.`val`) { tail.next = a; a = a.next }
-            else                     { tail.next = b; b = b.next }
-            tail = tail.next!!
-        }
-        tail.next = a ?: b
-        return dummy.next
-    }
 }
 ```
 
@@ -1397,6 +1306,24 @@ Given **heads** of two non-empty singly linked lists **headA** and **headB**, re
 > -   **Explanation:** Adding 0 to 0 gives 0. Therefore, the output list will be \[0\].
 
 ## Solution
+
+
+```pseudocode
+# Add two numbers stored as linked lists (least-significant digit first). Carry-propagating loop.
+# Loop stops only when BOTH inputs are exhausted AND there's no pending carry.
+function listAddition(headA, headB):
+    dummy ← new ListNode; tail ← dummy
+    cA ← headA; cB ← headB
+    carry ← 0
+    while cA is not null OR cB is not null OR carry > 0:
+        s ← carry
+        if cA is not null: s ← s + cA.val; cA ← cA.next
+        if cB is not null: s ← s + cB.val; cB ← cB.next
+        carry ← s ÷ 10
+        tail.next ← new ListNode(s mod 10)
+        tail ← tail.next
+    return dummy.next
+```
 
 ```python run
 from typing import Optional
@@ -1496,23 +1423,6 @@ object Solution {
 }
 ```
 
-```javascript run
-function listAddition(headA, headB) {
-    const dummy = new ListNode();
-    let tail = dummy;
-    let cA = headA, cB = headB, carry = 0;
-    while (cA !== null || cB !== null || carry > 0) {
-        let s = carry;
-        if (cA !== null) { s += cA.val; cA = cA.next; }
-        if (cB !== null) { s += cB.val; cB = cB.next; }
-        carry     = Math.floor(s / 10);
-        tail.next = new ListNode(s % 10);
-        tail      = tail.next;
-    }
-    return dummy.next;
-}
-```
-
 ```typescript run
 function listAddition(headA: ListNode | null, headB: ListNode | null): ListNode | null {
     const dummy = new ListNode(0);
@@ -1545,24 +1455,6 @@ func listAddition(headA, headB *ListNode) *ListNode {
         tail      = tail.Next
     }
     return dummy.Next
-}
-```
-
-```kotlin run
-class Solution {
-    fun listAddition(headA: ListNode?, headB: ListNode?): ListNode? {
-        val dummy = ListNode(0); var tail: ListNode = dummy
-        var cA = headA; var cB = headB; var carry = 0
-        while (cA != null || cB != null || carry > 0) {
-            var s = carry
-            if (cA != null) { s += cA.`val`; cA = cA.next }
-            if (cB != null) { s += cB.`val`; cB = cB.next }
-            carry     = s / 10
-            tail.next = ListNode(s % 10)
-            tail      = tail.next!!
-        }
-        return dummy.next
-    }
 }
 ```
 

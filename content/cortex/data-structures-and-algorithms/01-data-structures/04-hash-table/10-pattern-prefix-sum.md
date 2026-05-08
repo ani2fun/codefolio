@@ -1,7 +1,3 @@
----
-title: "10. Pattern: Prefix Sum"
----
-
 # 10. Pattern: Prefix Sum
 
 ## The Hook
@@ -110,6 +106,19 @@ The base case `map[0] = -1` is what handles "the entire prefix from index 0 sums
 ## Implementation
 
 A concrete example: count how many subarrays sum to K (a closely related variant of the longest-subarray problem from Lesson 9).
+
+
+```pseudocode
+function count_subarrays_with_sum_k(arr, k):
+    seen ← empty Map: Int → Int; seen[0] ← 1   # empty-prefix base case
+    prefix ← 0; count ← 0
+    for x in arr:
+        prefix ← prefix + x
+        # earlier occurrences of (prefix − k) each mark a valid subarray end
+        count ← count + seen[prefix − k]
+        seen[prefix] ← seen[prefix] + 1
+    return count
+```
 
 ```python run
 from collections import defaultdict
@@ -239,21 +248,6 @@ object Main extends App {
 }
 ```
 
-```javascript run
-function countSubarraysWithSumK(arr, k) {
-    const seen = new Map(); seen.set(0, 1);
-    let prefix = 0, count = 0;
-    for (const x of arr) {
-        prefix += x;
-        count += seen.get(prefix - k) || 0;
-        seen.set(prefix, (seen.get(prefix) || 0) + 1);
-    }
-    return count;
-}
-console.log(countSubarraysWithSumK([1,1,1], 2));
-console.log(countSubarraysWithSumK([3,4,7,2,-3,1,4,2], 7));
-```
-
 ```typescript run
 function countSubarraysWithSumK(arr: number[], k: number): number {
     const seen = new Map<number, number>(); seen.set(0, 1);
@@ -287,24 +281,6 @@ func countSubarraysWithSumK(arr []int, k int) int {
 func main() {
     fmt.Println(countSubarraysWithSumK([]int{1,1,1}, 2))
     fmt.Println(countSubarraysWithSumK([]int{3,4,7,2,-3,1,4,2}, 7))
-}
-```
-
-```kotlin run
-fun countSubarraysWithSumK(arr: IntArray, k: Int): Int {
-    val seen = HashMap<Int, Int>(); seen[0] = 1
-    var prefix = 0; var count = 0
-    for (x in arr) {
-        prefix += x
-        count += seen[prefix - k] ?: 0
-        seen[prefix] = (seen[prefix] ?: 0) + 1
-    }
-    return count
-}
-
-fun main() {
-    println(countSubarraysWithSumK(intArrayOf(1,1,1), 2))
-    println(countSubarraysWithSumK(intArrayOf(3,4,7,2,-3,1,4,2), 7))
 }
 ```
 
@@ -429,6 +405,17 @@ Compute the total `T = sum(arr)`. Walk left to right with a running `leftSum`. A
 
 ## Solution
 
+
+```pseudocode
+function first_equilibrium_point(arr):
+    total ← sum of arr; left ← 0
+    for i from 0 to length(arr) − 1:
+        # right sum = total − left − arr[i]
+        if left = total − left − arr[i]: return i
+        left ← left + arr[i]
+    return −1
+```
+
 ```python run
 def first_equilibrium_point(arr):
     total = sum(arr); left = 0
@@ -524,21 +511,6 @@ object Main extends App {
 }
 ```
 
-```javascript run
-function firstEquilibriumPoint(arr) {
-    const total = arr.reduce((a, b) => a + b, 0);
-    let left = 0;
-    for (let i = 0; i < arr.length; i++) {
-        if (left === total - left - arr[i]) return i;
-        left += arr[i];
-    }
-    return -1;
-}
-console.log(firstEquilibriumPoint([1,3,5,2,2]));
-console.log(firstEquilibriumPoint([5,5,5,5,5]));
-console.log(firstEquilibriumPoint([1,3,5,10]));
-```
-
 ```typescript run
 function firstEquilibriumPoint(arr: number[]): number {
     const total = arr.reduce((a, b) => a + b, 0);
@@ -571,23 +543,6 @@ func main() {
     fmt.Println(firstEquilibriumPoint([]int{1,3,5,2,2}))
     fmt.Println(firstEquilibriumPoint([]int{5,5,5,5,5}))
     fmt.Println(firstEquilibriumPoint([]int{1,3,5,10}))
-}
-```
-
-```kotlin run
-fun firstEquilibriumPoint(arr: IntArray): Int {
-    val total = arr.sum(); var left = 0
-    for (i in arr.indices) {
-        if (left == total - left - arr[i]) return i
-        left += arr[i]
-    }
-    return -1
-}
-
-fun main() {
-    println(firstEquilibriumPoint(intArrayOf(1,3,5,2,2)))
-    println(firstEquilibriumPoint(intArrayOf(5,5,5,5,5)))
-    println(firstEquilibriumPoint(intArrayOf(1,3,5,10)))
 }
 ```
 
@@ -680,6 +635,16 @@ product: "product = prefix * suffix" {
 <p align="center"><strong>Self-excluded product — prefix product holds "everything before me", suffix product holds "everything after me", and their pointwise product is the answer. The technique is prefix-sum's multiplicative cousin.</strong></p>
 
 ## Solution
+
+
+```pseudocode
+function self_excluded_array_product(arr):
+    n ← length(arr)
+    prefix ← list of n ones; suffix ← list of n ones
+    for i from 1 to n − 1: prefix[i] ← prefix[i−1] × arr[i−1]
+    for i from n−2 down to 0: suffix[i] ← suffix[i+1] × arr[i+1]
+    return [prefix[i] × suffix[i] for i from 0 to n−1]
+```
 
 ```python run
 def self_excluded_array_product(arr):
@@ -779,20 +744,6 @@ object Main extends App {
 }
 ```
 
-```javascript run
-function selfExcludedArrayProduct(arr) {
-    const n = arr.length;
-    const prefix = new Array(n).fill(1);
-    const suffix = new Array(n).fill(1);
-    for (let i = 1; i < n; i++) prefix[i] = prefix[i-1] * arr[i-1];
-    for (let i = n-2; i >= 0; i--) suffix[i] = suffix[i+1] * arr[i+1];
-    return prefix.map((p, i) => p * suffix[i]);
-}
-console.log(selfExcludedArrayProduct([1,2,3,4]));
-console.log(selfExcludedArrayProduct([2,3,0]));
-console.log(selfExcludedArrayProduct([3,4]));
-```
-
 ```typescript run
 function selfExcludedArrayProduct(arr: number[]): number[] {
     const n = arr.length;
@@ -825,22 +776,6 @@ func main() {
     fmt.Println(selfExcludedArrayProduct([]int{1,2,3,4}))
     fmt.Println(selfExcludedArrayProduct([]int{2,3,0}))
     fmt.Println(selfExcludedArrayProduct([]int{3,4}))
-}
-```
-
-```kotlin run
-fun selfExcludedArrayProduct(arr: IntArray): IntArray {
-    val n = arr.size
-    val prefix = IntArray(n) { 1 }; val suffix = IntArray(n) { 1 }
-    for (i in 1 until n) prefix[i] = prefix[i-1] * arr[i-1]
-    for (i in n-2 downTo 0)   suffix[i] = suffix[i+1] * arr[i+1]
-    return IntArray(n) { i -> prefix[i] * suffix[i] }
-}
-
-fun main() {
-    println(selfExcludedArrayProduct(intArrayOf(1,2,3,4)).toList())
-    println(selfExcludedArrayProduct(intArrayOf(2,3,0)).toList())
-    println(selfExcludedArrayProduct(intArrayOf(3,4)).toList())
 }
 ```
 
@@ -886,6 +821,20 @@ The encoding trick: **0 → −1, 1 → +1**. Now "equal 0s and 1s" becomes "sub
 The `prefixSumIndex[0] = -1` base case handles subarrays starting at index 0.
 
 ## Solution
+
+
+```pseudocode
+function balanced_binary_subarray(arr):
+    first_index ← empty Map; first_index[0] ← −1   # base case
+    prefix ← 0; max_len ← 0
+    for i from 0 to length(arr) − 1:
+        prefix ← prefix + (−1 if arr[i] = 0 else 1)  # encode 0→−1, 1→+1
+        if prefix is in first_index:
+            max_len ← max(max_len, i − first_index[prefix])
+        else:
+            first_index[prefix] ← i
+    return max_len
+```
 
 ```python run
 def balanced_binary_subarray(arr):
@@ -1008,24 +957,6 @@ object Main extends App {
 }
 ```
 
-```javascript run
-function balancedBinarySubarray(arr) {
-    const firstIndex = new Map(); firstIndex.set(0, -1);
-    let prefix = 0, max = 0;
-    for (let i = 0; i < arr.length; i++) {
-        prefix += (arr[i] === 0 ? -1 : 1);
-        if (firstIndex.has(prefix))
-            max = Math.max(max, i - firstIndex.get(prefix));
-        else
-            firstIndex.set(prefix, i);
-    }
-    return max;
-}
-console.log(balancedBinarySubarray([1,0,1,1,1,0,0]));   // 6
-console.log(balancedBinarySubarray([0,0,1,1,0]));       // 4
-console.log(balancedBinarySubarray([1,1,1,1]));         // 0
-```
-
 ```typescript run
 function balancedBinarySubarray(arr: number[]): number {
     const firstIndex = new Map<number, number>(); firstIndex.set(0, -1);
@@ -1063,26 +994,6 @@ func main() {
     fmt.Println(balancedBinarySubarray([]int{1,0,1,1,1,0,0}))
     fmt.Println(balancedBinarySubarray([]int{0,0,1,1,0}))
     fmt.Println(balancedBinarySubarray([]int{1,1,1,1}))
-}
-```
-
-```kotlin run
-fun balancedBinarySubarray(arr: IntArray): Int {
-    val firstIndex = HashMap<Int, Int>(); firstIndex[0] = -1
-    var prefix = 0; var max = 0
-    for (i in arr.indices) {
-        prefix += if (arr[i] == 0) -1 else 1
-        val j = firstIndex[prefix]
-        if (j != null) { if (i - j > max) max = i - j }
-        else firstIndex[prefix] = i
-    }
-    return max
-}
-
-fun main() {
-    println(balancedBinarySubarray(intArrayOf(1,0,1,1,1,0,0)))
-    println(balancedBinarySubarray(intArrayOf(0,0,1,1,0)))
-    println(balancedBinarySubarray(intArrayOf(1,1,1,1)))
 }
 ```
 
@@ -1137,6 +1048,19 @@ Same prefix-sum trick. Two indices `i < j` with `P[i] == P[j+1]` means `arr[i..j
 The base case `prefixSumIndices[0] = [-1]` lets us catch zero-sum subarrays that start at index 0.
 
 ## Solution
+
+
+```pseudocode
+function zero_sum_subarrays(arr):
+    indices ← empty Map: Int → list; indices[0] ← [−1]
+    prefix ← 0; out ← empty list
+    for i from 0 to length(arr) − 1:
+        prefix ← prefix + arr[i]
+        if prefix is in indices:
+            for j in indices[prefix]: append [j+1, i] to out
+        append i to indices[prefix]
+    return out
+```
 
 ```python run
 from collections import defaultdict
@@ -1247,22 +1171,6 @@ object Main extends App {
 }
 ```
 
-```javascript run
-function zeroSumSubarrays(arr) {
-    const indices = new Map(); indices.set(0, [-1]);
-    let prefix = 0; const out = [];
-    for (let i = 0; i < arr.length; i++) {
-        prefix += arr[i];
-        if (indices.has(prefix))
-            for (const j of indices.get(prefix)) out.push([j + 1, i]);
-        if (!indices.has(prefix)) indices.set(prefix, []);
-        indices.get(prefix).push(i);
-    }
-    return out;
-}
-console.log(zeroSumSubarrays([6,3,-1,-3,4,-2,2,4,6,-12,-7]));
-```
-
 ```typescript run
 function zeroSumSubarrays(arr: number[]): number[][] {
     const indices = new Map<number, number[]>(); indices.set(0, [-1]);
@@ -1299,25 +1207,6 @@ func zeroSumSubarrays(arr []int) [][]int {
 
 func main() {
     fmt.Println(zeroSumSubarrays([]int{6,3,-1,-3,4,-2,2,4,6,-12,-7}))
-}
-```
-
-```kotlin run
-fun zeroSumSubarrays(arr: IntArray): List<Pair<Int, Int>> {
-    val indices = HashMap<Int, MutableList<Int>>()
-    indices[0] = mutableListOf(-1)
-    var prefix = 0
-    val out = mutableListOf<Pair<Int, Int>>()
-    for (i in arr.indices) {
-        prefix += arr[i]
-        indices[prefix]?.forEach { j -> out.add(j + 1 to i) }
-        indices.getOrPut(prefix) { mutableListOf() }.add(i)
-    }
-    return out
-}
-
-fun main() {
-    println(zeroSumSubarrays(intArrayOf(6,3,-1,-3,4,-2,2,4,6,-12,-7)))
 }
 ```
 

@@ -1,7 +1,3 @@
----
-title: "3. Adjacency list representation"
----
-
 # 3. Adjacency list representation
 
 This lesson covers the **adjacency list** — the representation that fits the way most graphs in the real world actually look. By the end you'll know exactly why this is the default choice for graph problems, and you'll be able to convert freely between matrix and list whenever the problem demands it.
@@ -250,6 +246,16 @@ flowchart LR
 
 <p align="center"><strong>Two-step build. Each edge appends one entry to each of its two endpoint's lists.</strong></p>
 
+
+```pseudocode
+function createGraph(nodes, edges):
+    adj ← array of N empty lists
+    for each (u, v) in edges:
+        append v to adj[u]
+        append u to adj[v]   # undirected: both directions
+    return adj
+```
+
 ```python run
 from typing import List
 
@@ -389,24 +395,6 @@ object Main extends App {
 }
 ```
 
-```javascript run
-function createGraph(nodes, edges) {
-    // Same trap as Python: do NOT use Array(n).fill([]) — every slot would
-    // point to the same array. Use a factory.
-    const adj = Array.from({length: nodes}, () => []);
-
-    for (const [u, v] of edges) {
-        adj[u].push(v);
-        adj[v].push(u);
-    }
-    return adj;
-}
-
-const edges = [[0,1],[0,2],[1,2],[1,3],[2,4],[3,4]];
-const adj = createGraph(5, edges);
-adj.forEach((neighbours, i) => console.log(`${i}: ${neighbours.join(", ")}`));
-```
-
 ```typescript run
 function createGraph(nodes: number, edges: number[][]): number[][] {
     const adj: number[][] = Array.from({length: nodes}, () => []);
@@ -444,26 +432,6 @@ func main() {
     for i, n := range adj {
         fmt.Printf("%d: %v\n", i, n)
     }
-}
-```
-
-```kotlin run
-fun createGraph(nodes: Int, edges: Array<IntArray>): Array<MutableList<Int>> {
-    // Array(n) {...} builds N independent MutableLists.
-    val adj = Array(nodes) { mutableListOf<Int>() }
-
-    for (e in edges) {
-        adj[e[0]].add(e[1])
-        adj[e[1]].add(e[0])
-    }
-    return adj
-}
-
-fun main() {
-    val edges = arrayOf(intArrayOf(0,1), intArrayOf(0,2), intArrayOf(1,2),
-                        intArrayOf(1,3), intArrayOf(2,4), intArrayOf(3,4))
-    val adj = createGraph(5, edges)
-    adj.forEachIndexed { i, n -> println("$i: $n") }
 }
 ```
 
@@ -533,6 +501,16 @@ list: "Weighted adjacency list" {
 ```
 
 <p align="center"><strong>Each inner list now stores <code>(neighbour, weight)</code> pairs. The graph structure is unchanged; we've simply enriched what every neighbour entry carries.</strong></p>
+
+
+```pseudocode
+function createWeightedGraph(nodes, edges):
+    adj ← array of N empty lists
+    for each (u, v, w) in edges:
+        append (v, w) to adj[u]
+        append (u, w) to adj[v]   # undirected: both directions
+    return adj
+```
 
 ```python run
 from typing import List, Tuple
@@ -670,21 +648,6 @@ object Main extends App {
 }
 ```
 
-```javascript run
-function createWeightedGraph(nodes, edges) {
-    const adj = Array.from({length: nodes}, () => []);
-    for (const [u, v, w] of edges) {
-        adj[u].push([v, w]);
-        adj[v].push([u, w]);
-    }
-    return adj;
-}
-
-const edges = [[0,1,5],[0,2,2],[1,2,1],[1,3,7],[2,4,4],[3,4,3]];
-const adj = createWeightedGraph(5, edges);
-adj.forEach((n, i) => console.log(`${i}: ${JSON.stringify(n)}`));
-```
-
 ```typescript run
 type Edge = [number, number];   // [to, weight]
 
@@ -724,26 +687,6 @@ func main() {
     for i, n := range adj {
         fmt.Printf("%d: %v\n", i, n)
     }
-}
-```
-
-```kotlin run
-data class Edge(val to: Int, val weight: Int)
-
-fun createWeightedGraph(nodes: Int, edges: Array<IntArray>): Array<MutableList<Edge>> {
-    val adj = Array(nodes) { mutableListOf<Edge>() }
-    for (e in edges) {
-        adj[e[0]].add(Edge(e[1], e[2]))
-        adj[e[1]].add(Edge(e[0], e[2]))
-    }
-    return adj
-}
-
-fun main() {
-    val edges = arrayOf(intArrayOf(0,1,5), intArrayOf(0,2,2), intArrayOf(1,2,1),
-                        intArrayOf(1,3,7), intArrayOf(2,4,4), intArrayOf(3,4,3))
-    val adj = createWeightedGraph(5, edges)
-    adj.forEachIndexed { i, n -> println("$i: $n") }
 }
 ```
 
@@ -820,6 +763,16 @@ approach2: "Approach 2: nodes as objects" {
 <p align="center"><strong>Two equivalent ways to attach per-node data. Both store the same information; the choice is about ergonomics.</strong></p>
 
 Here's the **node-as-object** approach in all 10 languages — it's the more general one because it scales naturally as the per-node payload grows.
+
+
+```pseudocode
+function createGraph(nodeData, edges):
+    nodes ← list of Node(data, empty list) for each item in nodeData
+    for each (u, v, w) in edges:
+        append (v, w) to nodes[u].adj
+        append (u, w) to nodes[v].adj   # undirected: both directions
+    return nodes
+```
 
 ```python run
 from dataclasses import dataclass, field
@@ -993,26 +946,6 @@ object Main extends App {
 }
 ```
 
-```javascript run
-class Node {
-    constructor(data) { this.data = data; this.adj = []; }
-}
-
-function createGraph(nodeData, edges) {
-    const nodes = nodeData.map(d => new Node(d));
-    for (const [u, v, w] of edges) {
-        nodes[u].adj.push([v, w]);
-        nodes[v].adj.push([u, w]);
-    }
-    return nodes;
-}
-
-const cities = ["Bangalore", "Tokyo", "Paris", "NYC", "London"];
-const edges  = [[0,1,5],[0,2,2],[1,2,1],[1,3,7],[2,4,4],[3,4,3]];
-const g = createGraph(cities, edges);
-g.forEach((n, i) => console.log(`${i} (${n.data}): ${JSON.stringify(n.adj)}`));
-```
-
 ```typescript run
 class Node {
     data: string;
@@ -1065,28 +998,6 @@ func main() {
     for i, n := range g {
         fmt.Printf("%d (%s): %v\n", i, n.Data, n.Adj)
     }
-}
-```
-
-```kotlin run
-data class Edge(val to: Int, val weight: Int)
-data class Node(val data: String, val adj: MutableList<Edge> = mutableListOf())
-
-fun createGraph(nodeData: Array<String>, edges: Array<IntArray>): Array<Node> {
-    val nodes = Array(nodeData.size) { Node(nodeData[it]) }
-    for (e in edges) {
-        nodes[e[0]].adj.add(Edge(e[1], e[2]))
-        nodes[e[1]].adj.add(Edge(e[0], e[2]))
-    }
-    return nodes
-}
-
-fun main() {
-    val cities = arrayOf("Bangalore", "Tokyo", "Paris", "NYC", "London")
-    val edges = arrayOf(intArrayOf(0,1,5), intArrayOf(0,2,2), intArrayOf(1,2,1),
-                        intArrayOf(1,3,7), intArrayOf(2,4,4), intArrayOf(3,4,3))
-    val g = createGraph(cities, edges)
-    g.forEachIndexed { i, n -> println("$i (${n.data}): ${n.adj}") }
 }
 ```
 
@@ -1209,6 +1120,16 @@ That's literally it. No clever insight — just don't share references.
 
 ## The Solution
 
+
+```pseudocode
+function cloneAdjacencyList(adjList):
+    cloned ← array of N empty lists
+    for i from 0 to N−1:
+        for each neighbor in adjList[i]:
+            append neighbor to cloned[i]   # copy IDs into fresh inner list
+    return cloned
+```
+
 ```python run
 from typing import List
 from copy import deepcopy
@@ -1328,16 +1249,6 @@ object Main extends App {
 }
 ```
 
-```javascript run
-function cloneAdjacencyList(adjList) {
-    // [...row] spreads each inner array into a brand-new array — fresh allocation, same values.
-    return adjList.map(row => [...row]);
-}
-
-const adj = [[1, 3], [4], [4], [2], [3]];
-console.log(cloneAdjacencyList(adj));
-```
-
 ```typescript run
 function cloneAdjacencyList(adjList: number[][]): number[][] {
     return adjList.map(row => [...row]);
@@ -1365,18 +1276,6 @@ func cloneAdjacencyList(adj [][]int) [][]int {
 func main() {
     adj := [][]int{{1, 3}, {4}, {4}, {2}, {3}}
     fmt.Println(cloneAdjacencyList(adj))
-}
-```
-
-```kotlin run
-fun cloneAdjacencyList(adj: List<List<Int>>): List<MutableList<Int>> {
-    // toMutableList() makes a fresh MutableList per row.
-    return adj.map { it.toMutableList() }
-}
-
-fun main() {
-    val adj = listOf(listOf(1, 3), listOf(4), listOf(4), listOf(2), listOf(3))
-    println(cloneAdjacencyList(adj))
 }
 ```
 
@@ -1439,6 +1338,17 @@ flowchart LR
 <p align="center"><strong>One row of the input list directly populates one row of the output matrix.</strong></p>
 
 ## The Solution
+
+
+```pseudocode
+function adjListToMatrix(adjList):
+    n ← length of adjList
+    matrix ← N×N matrix of zeros
+    for i from 0 to N−1:
+        for each j in adjList[i]:
+            matrix[i][j] ← 1   # directed: only (i → j), not reverse
+    return matrix
+```
 
 ```python run
 from typing import List
@@ -1550,20 +1460,6 @@ object Main extends App {
 }
 ```
 
-```javascript run
-function adjListToMatrix(adjList) {
-    const n = adjList.length;
-    const matrix = Array.from({length: n}, () => Array(n).fill(0));
-
-    for (let i = 0; i < n; i++)
-        for (const j of adjList[i]) matrix[i][j] = 1;
-    return matrix;
-}
-
-const adj = [[1, 3], [4], [4], [2], [3]];
-adjListToMatrix(adj).forEach(r => console.log(r.join(" ")));
-```
-
 ```typescript run
 function adjListToMatrix(adjList: number[][]): number[][] {
     const n = adjList.length;
@@ -1602,20 +1498,6 @@ func main() {
     for _, r := range adjListToMatrix(adj) {
         fmt.Println(r)
     }
-}
-```
-
-```kotlin run
-fun adjListToMatrix(adjList: List<List<Int>>): Array<IntArray> {
-    val n = adjList.size
-    val m = Array(n) { IntArray(n) }
-    for (i in 0 until n) for (j in adjList[i]) m[i][j] = 1
-    return m
-}
-
-fun main() {
-    val adj = listOf(listOf(1, 3), listOf(4), listOf(4), listOf(2), listOf(3))
-    adjListToMatrix(adj).forEach { println(it.toList()) }
 }
 ```
 
@@ -1687,6 +1569,18 @@ flowchart LR
 <p align="center"><strong>For each row, the adjacency list is just the indices where the cell is 1.</strong></p>
 
 ## The Solution
+
+
+```pseudocode
+function matrixToAdjList(matrix):
+    n ← number of rows in matrix
+    adjList ← array of N empty lists
+    for i from 0 to N−1:
+        for j from 0 to N−1:
+            if matrix[i][j] = 1:
+                append j to adjList[i]   # edge i → j exists
+    return adjList
+```
 
 ```python run
 from typing import List
@@ -1810,20 +1704,6 @@ object Main extends App {
 }
 ```
 
-```javascript run
-function matrixToAdjList(matrix) {
-    const n = matrix.length;
-    const adj = Array.from({length: n}, () => []);
-    for (let i = 0; i < n; i++)
-        for (let j = 0; j < n; j++)
-            if (matrix[i][j] === 1) adj[i].push(j);
-    return adj;
-}
-
-const matrix = [[0,1,0,1,0],[0,0,0,0,1],[0,0,0,0,1],[0,0,1,0,0],[0,0,0,1,0]];
-console.log(matrixToAdjList(matrix));
-```
-
 ```typescript run
 function matrixToAdjList(matrix: number[][]): number[][] {
     const n = matrix.length;
@@ -1860,24 +1740,6 @@ func main() {
     matrix := [][]int{
         {0,1,0,1,0}, {0,0,0,0,1}, {0,0,0,0,1}, {0,0,1,0,0}, {0,0,0,1,0}}
     fmt.Println(matrixToAdjList(matrix))
-}
-```
-
-```kotlin run
-fun matrixToAdjList(matrix: Array<IntArray>): List<MutableList<Int>> {
-    val n = matrix.size
-    val adj = List(n) { mutableListOf<Int>() }
-    for (i in 0 until n)
-        for (j in 0 until n)
-            if (matrix[i][j] == 1) adj[i].add(j)
-    return adj
-}
-
-fun main() {
-    val matrix = arrayOf(
-        intArrayOf(0,1,0,1,0), intArrayOf(0,0,0,0,1), intArrayOf(0,0,0,0,1),
-        intArrayOf(0,0,1,0,0), intArrayOf(0,0,0,1,0))
-    println(matrixToAdjList(matrix))
 }
 ```
 

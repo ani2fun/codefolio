@@ -1,7 +1,3 @@
----
-title: "9. All pairs shortest path"
----
-
 # 9. All pairs shortest path
 
 This lesson teaches you the **all-pairs shortest path** problem — what's the shortest distance between *every* pair of nodes? — and the surprisingly elegant 4-line algorithm (Floyd-Warshall) that solves it.
@@ -231,6 +227,24 @@ Final matrix:
 
 The graph is given as an adjacency list of `(neighbour, weight)` pairs. We initialise the distance matrix from the adjacency list, then run the triple loop.
 
+
+```pseudocode
+function floydWarshall(graph):
+    dist ← N×N matrix of ∞
+    for i from 0 to N−1:
+        dist[i][i] ← 0           # distance to self is zero
+    for u from 0 to N−1:
+        for (v, w) in graph[u]:
+            dist[u][v] ← w        # direct edges
+    # triple loop — k MUST be outermost
+    for k from 0 to N−1:
+        for s from 0 to N−1:
+            for t from 0 to N−1:
+                if dist[s][k] + dist[k][t] < dist[s][t]:
+                    dist[s][t] ← dist[s][k] + dist[k][t]
+    return dist
+```
+
 ```python run
 from typing import List, Tuple
 
@@ -406,28 +420,6 @@ object Main extends App {
 }
 ```
 
-```javascript run
-const INF = Infinity;
-
-function floydWarshall(graph) {
-    const n = graph.length;
-    const d = Array.from({length: n}, () => Array(n).fill(INF));
-    for (let i = 0; i < n; i++) d[i][i] = 0;
-    for (let u = 0; u < n; u++)
-        for (const [v, w] of graph[u]) d[u][v] = w;
-
-    for (let k = 0; k < n; k++)
-        for (let s = 0; s < n; s++)
-            for (let t = 0; t < n; t++)
-                if (d[s][k] + d[k][t] < d[s][t])
-                    d[s][t] = d[s][k] + d[k][t];
-    return d;
-}
-
-const graph = [[[1,3],[3,7]], [[2,1]], [[3,2]], [[0,6]]];
-console.log(floydWarshall(graph));
-```
-
 ```typescript run
 const INF = Infinity;
 
@@ -495,32 +487,6 @@ func main() {
     for _, r := range floydWarshall(g) {
         fmt.Println(r)
     }
-}
-```
-
-```kotlin run
-fun floydWarshall(graph: List<List<IntArray>>): Array<IntArray> {
-    val n = graph.size
-    val INF = Int.MAX_VALUE / 2
-    val d = Array(n) { IntArray(n) { INF } }
-    for (i in 0 until n) d[i][i] = 0
-    for (u in 0 until n) for (e in graph[u]) d[u][e[0]] = e[1]
-
-    for (k in 0 until n)
-        for (s in 0 until n)
-            for (t in 0 until n)
-                if (d[s][k] + d[k][t] < d[s][t])
-                    d[s][t] = d[s][k] + d[k][t]
-    return d
-}
-
-fun main() {
-    val g = listOf(
-        listOf(intArrayOf(1, 3), intArrayOf(3, 7)),
-        listOf(intArrayOf(2, 1)),
-        listOf(intArrayOf(3, 2)),
-        listOf(intArrayOf(0, 6)))
-    floydWarshall(g).forEach { println(it.toList()) }
 }
 ```
 

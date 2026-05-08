@@ -53,6 +53,10 @@ object LucideIcons:
   @js.native @JSImport("lucide-react", "ListTree") private object ListTreeRaw         extends js.Object
   @js.native @JSImport("lucide-react", "ArrowLeft") private object ArrowLeftRaw       extends js.Object
   @js.native @JSImport("lucide-react", "ArrowUp") private object ArrowUpRaw           extends js.Object
+  @js.native @JSImport("lucide-react", "Heart") private object HeartRaw               extends js.Object
+  @js.native @JSImport("lucide-react", "Star") private object StarRaw                 extends js.Object
+  @js.native @JSImport("lucide-react", "Trophy") private object TrophyRaw             extends js.Object
+  @js.native @JSImport("lucide-react", "ExternalLink") private object ExternalLinkRaw extends js.Object
 
   // ---- Components (call as Sun(withClass("h-5 w-5"))) --------------------
 
@@ -77,3 +81,7 @@ object LucideIcons:
   val ListTree     = JsComponent[IconProps, Children.None, Null](ListTreeRaw)
   val ArrowLeft    = JsComponent[IconProps, Children.None, Null](ArrowLeftRaw)
   val ArrowUp      = JsComponent[IconProps, Children.None, Null](ArrowUpRaw)
+  val Heart        = JsComponent[IconProps, Children.None, Null](HeartRaw)
+  val Star         = JsComponent[IconProps, Children.None, Null](StarRaw)
+  val Trophy       = JsComponent[IconProps, Children.None, Null](TrophyRaw)
+  val ExternalLink = JsComponent[IconProps, Children.None, Null](ExternalLinkRaw)

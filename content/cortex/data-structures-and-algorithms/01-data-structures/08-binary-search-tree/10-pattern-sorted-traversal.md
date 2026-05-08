@@ -1,7 +1,3 @@
----
-title: "10. Pattern: Sorted Traversal"
----
-
 # 10. Pattern: Sorted Traversal
 
 ## The Hook
@@ -85,6 +81,23 @@ Put them inside the standard recursive in-order template, with the running state
 The reason this template works on every "sorted traversal" problem is that the **order of `f` calls is exactly the sorted order of values**. So whatever invariant you want to maintain about a sorted sequence, you maintain it with a single previous-pointer or running accumulator.
 
 ## Generic template
+
+
+```pseudocode
+aggregate ← 0
+
+function inorder(node):
+    if node is null: return
+    inorder(node.left)                          # 1. visit left subtree (ascending)
+    output ← f(node.val)                        # 2. process current node
+    aggregate ← g(aggregate, output)            # 3. fold output into running state
+    inorder(node.right)                         # 4. visit right subtree
+
+function callingFunction(root):
+    aggregate ← 0
+    inorder(root)
+    return aggregate
+```
 
 ```python run
 class Solution:
@@ -191,26 +204,6 @@ class Solution {
 }
 ```
 
-```javascript run
-class Solution {
-  callingFunction(root) {
-    this.aggregate = 0;
-    this.inorder(root);
-    return this.aggregate;
-  }
-
-  inorder(node) {
-    if (node === null) return;
-    this.inorder(node.left);                                     // 1. left subtree
-    const output = this.f(node.val);                             // 2. process node
-    this.aggregate = this.g(this.aggregate, output);             // 3. fold
-    this.inorder(node.right);                                    // 4. right subtree
-  }
-  f(v) { return v; }
-  g(agg, out) { return agg + out; }
-}
-```
-
 ```typescript run
 class Solution {
   aggregate: number = 0;
@@ -251,28 +244,6 @@ func callingFunction(root *TreeNode) int {
     s := &genericState{}
     s.inorder(root)
     return s.aggregate
-}
-```
-
-```kotlin run
-class Solution {
-    private var aggregate = 0
-
-    fun callingFunction(root: TreeNode?): Int {
-        aggregate = 0
-        inorder(root)
-        return aggregate
-    }
-
-    private fun inorder(node: TreeNode?) {
-        if (node == null) return
-        inorder(node.left)                                                // 1. left subtree
-        val output = f(node.`val`)                                        // 2. process node
-        aggregate = g(aggregate, output)                                  // 3. fold
-        inorder(node.right)                                               // 4. right subtree
-    }
-    private fun f(v: Int)                = v
-    private fun g(agg: Int, out: Int)    = agg + out
 }
 ```
 
@@ -383,6 +354,24 @@ Given the **root** of a binary search tree, return the lowest absolute variance 
 
 ## The Solution
 
+
+```pseudocode
+minDiff ← +∞
+prevNode ← null
+
+function inorder(root):
+    if root is null: return
+    inorder(root.left)
+    if prevNode is NOT null:
+        minDiff ← min(minDiff, root.val − prevNode.val)  # gap to previous in-order node
+    prevNode ← root
+    inorder(root.right)
+
+function lowestAbsoluteVariance(root):
+    inorder(root)
+    return minDiff
+```
+
 ```python run
 class Solution:
     def __init__(self):
@@ -492,30 +481,6 @@ class Solution {
 }
 ```
 
-```javascript run
-class Solution {
-  constructor() {
-    this.minDiff = Number.MAX_SAFE_INTEGER;
-    this.prevNode = null;
-  }
-
-  inorder(root) {
-    if (root === null) return;
-    this.inorder(root.left);
-    if (this.prevNode !== null) {
-      this.minDiff = Math.min(this.minDiff, root.val - this.prevNode.val);
-    }
-    this.prevNode = root;
-    this.inorder(root.right);
-  }
-
-  lowestAbsoluteVariance(root) {
-    this.inorder(root);
-    return this.minDiff;
-  }
-}
-```
-
 ```typescript run
 class Solution {
   minDiff = Number.MAX_SAFE_INTEGER;
@@ -559,26 +524,6 @@ func lowestAbsoluteVariance(root *TreeNode) int {
     s := &minDiffState{minDiff: int(^uint(0) >> 1), prevNode: nil}
     s.inorder(root)
     return s.minDiff
-}
-```
-
-```kotlin run
-class Solution {
-    private var minDiff = Int.MAX_VALUE
-    private var prevNode: TreeNode? = null
-
-    private fun inorder(root: TreeNode?) {
-        if (root == null) return
-        inorder(root.left)
-        if (prevNode != null) minDiff = minOf(minDiff, root.`val` - prevNode!!.`val`)
-        prevNode = root
-        inorder(root.right)
-    }
-
-    fun lowestAbsoluteVariance(root: TreeNode?): Int {
-        inorder(root)
-        return minDiff
-    }
 }
 ```
 
@@ -641,6 +586,25 @@ A valid BST has a **strictly increasing** in-order traversal. So this is just: w
 This is dramatically simpler than the recursive `(min, max)` bounds technique you may have seen — the in-order trick reduces tree validity to *list monotonicity*, which is a one-liner.
 
 ## The Solution
+
+
+```pseudocode
+isValid ← true
+prevNode ← null
+
+function inorder(root):
+    if root is null OR NOT isValid: return
+    inorder(root.left)
+    if prevNode is NOT null AND root.val ≤ prevNode.val:
+        isValid ← false   # in-order sequence must be strictly increasing
+        return
+    prevNode ← root
+    inorder(root.right)
+
+function bstValidator(root):
+    inorder(root)
+    return isValid
+```
 
 ```python run
 class Solution:
@@ -757,31 +721,6 @@ class Solution {
 }
 ```
 
-```javascript run
-class Solution {
-  constructor() {
-    this.isValid = true;
-    this.prevNode = null;
-  }
-
-  inorder(root) {
-    if (root === null || !this.isValid) return;
-    this.inorder(root.left);
-    if (this.prevNode !== null && root.val <= this.prevNode.val) {
-      this.isValid = false;
-      return;
-    }
-    this.prevNode = root;
-    this.inorder(root.right);
-  }
-
-  bstValidator(root) {
-    this.inorder(root);
-    return this.isValid;
-  }
-}
-```
-
 ```typescript run
 class Solution {
   isValid = true;
@@ -826,29 +765,6 @@ func bstValidator(root *TreeNode) bool {
     s := &bstValidatorState{isValid: true, prevNode: nil}
     s.inorder(root)
     return s.isValid
-}
-```
-
-```kotlin run
-class Solution {
-    private var isValid = true
-    private var prevNode: TreeNode? = null
-
-    private fun inorder(root: TreeNode?) {
-        if (root == null || !isValid) return
-        inorder(root.left)
-        if (prevNode != null && root.`val` <= prevNode!!.`val`) {
-            isValid = false
-            return
-        }
-        prevNode = root
-        inorder(root.right)
-    }
-
-    fun bstValidator(root: TreeNode?): Boolean {
-        inorder(root)
-        return isValid
-    }
 }
 ```
 
@@ -902,6 +818,20 @@ Given the **root** of a binary search tree, return a sorted array containing the
 This is the canonical use of the pattern: **f** = "append `node.val` to the result list", **g** = identity. The in-order order *is* the sorted order, so emission == sorted output.
 
 ## The Solution
+
+
+```pseudocode
+function inorder(root, result):
+    if root is null: return
+    inorder(root.left, result)
+    append root.val to result          # emit values in ascending order
+    inorder(root.right, result)
+
+function bstToSortedArray(root):
+    result ← []
+    inorder(root, result)
+    return result
+```
 
 ```python run
 class Solution:
@@ -991,21 +921,6 @@ object Solution {
 }
 ```
 
-```javascript run
-function inorderCollect(root, result) {
-  if (root === null) return;
-  inorderCollect(root.left, result);
-  result.push(root.val);
-  inorderCollect(root.right, result);
-}
-
-function bstToSortedArray(root) {
-  const result = [];
-  inorderCollect(root, result);
-  return result;
-}
-```
-
 ```typescript run
 function inorderCollect(root: TreeNode | null, result: number[]): void {
   if (root === null) return;
@@ -1033,23 +948,6 @@ func bstToSortedArray(root *TreeNode) []int {
     result := []int{}
     inorderCollect(root, &result)
     return result
-}
-```
-
-```kotlin run
-class Solution {
-    private fun inorder(root: TreeNode?, result: MutableList<Int>) {
-        if (root == null) return
-        inorder(root.left, result)
-        result.add(root.`val`)
-        inorder(root.right, result)
-    }
-
-    fun bstToSortedArray(root: TreeNode?): List<Int> {
-        val result = mutableListOf<Int>()
-        inorder(root, result)
-        return result
-    }
 }
 ```
 
@@ -1138,6 +1036,30 @@ flowchart LR
 <p align="center"><strong>The result of running the in-order walk over <code>[4, 2, 5, 1, 3, null, 6]</code>: <code>1 ↔ 2 ↔ 3 ↔ 4 ↔ 5 ↔ 6</code>. The original BST nodes have been re-wired in place.</strong></p>
 
 ## The Solution
+
+
+```pseudocode
+head ← null
+tail ← null
+
+function inorder(root):
+    if root is null: return
+    inorder(root.left)
+    if tail is NOT null:
+        tail.right ← root   # next pointer of the previous DLL tail
+        root.left ← tail    # prev pointer of the new DLL tail
+    else:
+        head ← root         # first node visited becomes the DLL head
+        root.left ← null
+    tail ← root
+    inorder(root.right)
+
+function bstToSortedDLL(root):
+    if root is null: return null
+    inorder(root)
+    tail.right ← null       # terminate the DLL
+    return head
+```
 
 ```python run
 class Solution:
@@ -1279,36 +1201,6 @@ class Solution {
 }
 ```
 
-```javascript run
-class Solution {
-  constructor() {
-    this.head = null;
-    this.tail = null;
-  }
-
-  inorder(root) {
-    if (root === null) return;
-    this.inorder(root.left);
-    if (this.tail !== null) {
-      this.tail.right = root;
-      root.left       = this.tail;
-    } else {
-      this.head = root;
-      root.left = null;
-    }
-    this.tail = root;
-    this.inorder(root.right);
-  }
-
-  bstToSortedDll(root) {
-    if (root === null) return null;
-    this.inorder(root);
-    if (this.tail !== null) this.tail.right = null;
-    return this.head;
-  }
-}
-```
-
 ```typescript run
 class Solution {
   head: TreeNode | null = null;
@@ -1362,34 +1254,6 @@ func bstToSortedDll(root *TreeNode) *TreeNode {
     s.inorder(root)
     if s.tail != nil { s.tail.Right = nil }
     return s.head
-}
-```
-
-```kotlin run
-class Solution {
-    private var head: TreeNode? = null
-    private var tail: TreeNode? = null
-
-    private fun inorder(root: TreeNode?) {
-        if (root == null) return
-        inorder(root.left)
-        if (tail != null) {
-            tail!!.right = root
-            root.left    = tail
-        } else {
-            head      = root
-            root.left = null
-        }
-        tail = root
-        inorder(root.right)
-    }
-
-    fun bstToSortedDll(root: TreeNode?): TreeNode? {
-        if (root == null) return null
-        inorder(root)
-        if (tail != null) tail!!.right = null
-        return head
-    }
 }
 ```
 

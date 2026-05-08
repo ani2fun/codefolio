@@ -1,7 +1,3 @@
----
-title: "Queue"
----
-
 # Queue
 
 Use this page as the chapter map for queue. The guides are ordered from fundamentals into common problem-solving patterns and design practice.

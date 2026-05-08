@@ -1,7 +1,3 @@
----
-title: "1. Introduction to Heaps"
----
-
 # 1. Introduction to Heaps
 
 ## The Hook
@@ -666,6 +662,19 @@ The root has no parent, so we use `-∞` as a sentinel — it's smaller than any
 
 ## The Solution
 
+
+```pseudocode
+function isValidHeap(root, parentVal):
+    if root is null: return true           # empty subtree is trivially valid
+    if root.val < parentVal: return false  # min-heap rule: child must be ≥ parent
+    return isValidHeap(root.left,  root.val)
+       AND isValidHeap(root.right, root.val)
+
+function treeHeapValidator(root):
+    if root is null: return true
+    return isValidHeap(root, −∞)           # −∞ sentinel so root passes unconditionally
+```
+
 ```python run
 class Solution:
     def is_valid_heap(self, root, parent_val):
@@ -753,22 +762,6 @@ object Solution {
 }
 ```
 
-```javascript run
-class Solution {
-  isValidHeap(root, parentVal) {
-    if (root === null) return true;                                                                                                                    // empty subtree
-    if (root.val < parentVal) return false;                                                                                                            // min-heap violation
-    return this.isValidHeap(root.left,  root.val)
-        && this.isValidHeap(root.right, root.val);
-  }
-
-  treeHeapValidator(root) {
-    if (root === null) return true;
-    return this.isValidHeap(root, Number.NEGATIVE_INFINITY);                                                                                           // -∞ sentinel
-  }
-}
-```
-
 ```typescript run
 class Solution {
   isValidHeap(root: TreeNode | null, parentVal: number): boolean {
@@ -797,21 +790,6 @@ func isValidHeap(root *TreeNode, parentVal int) bool {
 func treeHeapValidator(root *TreeNode) bool {
     if root == nil { return true }
     return isValidHeap(root, math.MinInt32)                                                                                                              // -∞ sentinel
-}
-```
-
-```kotlin run
-class Solution {
-    private fun isValidHeap(root: TreeNode?, parentVal: Int): Boolean {
-        if (root == null) return true                                                                                                                     // empty subtree
-        if (root.`val` < parentVal) return false                                                                                                          // min-heap violation
-        return isValidHeap(root.left,  root.`val`) && isValidHeap(root.right, root.`val`)
-    }
-
-    fun treeHeapValidator(root: TreeNode?): Boolean {
-        if (root == null) return true
-        return isValidHeap(root, Int.MIN_VALUE)                                                                                                           // -∞ sentinel
-    }
 }
 ```
 

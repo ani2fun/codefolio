@@ -1,7 +1,3 @@
----
-title: "9. Pattern: Preorder Traversal (Stateful)"
----
-
 # 9. Pattern: Preorder Traversal (Stateful)
 
 ## The Hook
@@ -90,6 +86,20 @@ The same pattern label applies to all three because they share the structural fe
 
 We'll show the **push-pop** flavour as the canonical generic — it's the strictest and the one most likely to bite you. The other two flavours are simpler restrictions of this template.
 
+
+```pseudocode
+function statefulPreorder(root):
+    state ← empty list                  # shared, mutable path state
+    function go(node):
+        if node = null: return
+        push node.val to state           # enter: extend the current path
+        # use state to process node ...
+        go(node.left)
+        go(node.right)
+        pop from state                   # exit: restore path for the parent
+    go(root)
+```
+
 ```python run
 from typing import List, Optional
 
@@ -161,19 +171,6 @@ def statefulPreorder(node: TreeNode): Unit = {
 }
 ```
 
-```javascript run
-function statefulPreorder(root) {
-    const state = [];
-    function go(n) {
-        if (!n) return;
-        state.push(n.val);                       // push
-        go(n.left); go(n.right);
-        state.pop();                              // pop
-    }
-    go(root);
-}
-```
-
 ```typescript run
 function statefulPreorder(root: TreeNode | null): void {
     const state: number[] = [];
@@ -198,19 +195,6 @@ func statefulPreorder(root *TreeNode) {
         state = state[:len(state)-1]             // pop
     }
     go_(root)
-}
-```
-
-```kotlin run
-fun statefulPreorder(root: TreeNode?) {
-    val state = mutableListOf<Int>()
-    fun go(n: TreeNode?) {
-        if (n == null) return
-        state += n.value                          // push
-        go(n.left); go(n.right)
-        state.removeAt(state.size - 1)            // pop
-    }
-    go(root)
 }
 ```
 
@@ -291,6 +275,22 @@ flowchart TB
 <p align="center"><strong>Duplicates in path — at every node, check the frequency map: if the current value already has count ≥ 1, we've found a duplicate. Push on entry, pop on exit, count anything that was already there.</strong></p>
 
 ## Solution
+
+
+```pseudocode
+function duplicatesInPath(root):
+    freq   ← empty Map: value → count
+    result ← 0
+    function go(n):
+        if n = null: return
+        if freq[n.val] > 0: result ← result + 1   # n.val already on current path
+        freq[n.val] ← freq[n.val] + 1
+        go(n.left); go(n.right)
+        freq[n.val] ← freq[n.val] − 1             # undo on backtrack
+        if freq[n.val] = 0: remove n.val from freq
+    go(root)
+    return result
+```
 
 ```python run
 def duplicates_in_path(root):
@@ -374,21 +374,6 @@ def duplicatesInPath(root: TreeNode): Int = {
 }
 ```
 
-```javascript run
-function duplicatesInPath(root) {
-    const freq = new Map(); let dup = 0;
-    function go(n) {
-        if (!n) return;
-        if ((freq.get(n.val) || 0) > 0) dup++;
-        freq.set(n.val, (freq.get(n.val) || 0) + 1);
-        go(n.left); go(n.right);
-        const c = freq.get(n.val) - 1;
-        if (c === 0) freq.delete(n.val); else freq.set(n.val, c);
-    }
-    go(root); return dup;
-}
-```
-
 ```typescript run
 function duplicatesInPath(root: TreeNode | null): number {
     const freq = new Map<number, number>(); let dup = 0;
@@ -417,21 +402,6 @@ func duplicatesInPath(root *TreeNode) int {
         if freq[n.Val] == 0 { delete(freq, n.Val) }
     }
     go_(root); return dup
-}
-```
-
-```kotlin run
-fun duplicatesInPath(root: TreeNode?): Int {
-    val freq = HashMap<Int, Int>(); var dup = 0
-    fun go(n: TreeNode?) {
-        if (n == null) return
-        if ((freq[n.value] ?: 0) > 0) dup++
-        freq[n.value] = (freq[n.value] ?: 0) + 1
-        go(n.left); go(n.right)
-        val c = freq[n.value]!! - 1
-        if (c == 0) freq.remove(n.value) else freq[n.value] = c
-    }
-    go(root); return dup
 }
 ```
 
@@ -465,6 +435,23 @@ pub fn duplicates_in_path(root: &Option<Box<TreeNode>>) -> i32 {
 This is the **monotone witnesses** flavour. The state is two integers, `min` and `secondMin`, both shared across the recursion. Each visit either improves `min` (and demotes the old min to `secondMin`) or improves `secondMin`. No push/pop needed — once we've seen a smaller value, that's a global fact, not a path-local one.
 
 ## Solution
+
+
+```pseudocode
+function findSecondMinimum(root):
+    if root = null: return −1
+    min ← root.val; secondMin ← −1
+    function go(n):
+        if n = null: return
+        v ← n.val
+        if v < min:
+            secondMin ← min; min ← v
+        else if v > min AND (secondMin = −1 OR v < secondMin):
+            secondMin ← v
+        go(n.left); go(n.right)
+    go(root)
+    return secondMin
+```
 
 ```python run
 def find_second_minimum(root):
@@ -547,21 +534,6 @@ def findSecondMinimum(root: TreeNode): Int = {
 }
 ```
 
-```javascript run
-function findSecondMinimum(root) {
-    if (!root) return -1;
-    let minV = root.val, secV = -1;
-    function go(n) {
-        if (!n) return;
-        const v = n.val;
-        if (v < minV)        { secV = minV; minV = v; }
-        else if (v > minV && (secV === -1 || v < secV)) secV = v;
-        go(n.left); go(n.right);
-    }
-    go(root); return secV;
-}
-```
-
 ```typescript run
 function findSecondMinimum(root: TreeNode | null): number {
     if (!root) return -1;
@@ -590,21 +562,6 @@ func findSecondMinimum(root *TreeNode) int {
         go_(n.Left); go_(n.Right)
     }
     go_(root); return secV
-}
-```
-
-```kotlin run
-fun findSecondMinimum(root: TreeNode?): Int {
-    if (root == null) return -1
-    var minV = root.value; var secV = -1
-    fun go(n: TreeNode?) {
-        if (n == null) return
-        val v = n.value
-        if (v < minV)         { secV = minV; minV = v }
-        else if (v > minV && (secV == -1 || v < secV)) secV = v
-        go(n.left); go(n.right)
-    }
-    go(root); return secV
 }
 ```
 
@@ -670,6 +627,19 @@ flowchart TB
 <p align="center"><strong>Left view — recurse left-first; the first node visited at each new level is the leftmost. The state is a single counter that ratchets forward each time we see a deeper level.</strong></p>
 
 ## Solution
+
+
+```pseudocode
+function leftView(root):
+    out ← empty list
+    function go(n, level):
+        if n = null: return
+        if level = length(out): append n.val to out   # first node at this depth
+        go(n.left,  level + 1)                        # left-first ensures leftmost wins
+        go(n.right, level + 1)
+    go(root, 0)
+    return out
+```
 
 ```python run
 def left_view(root):
@@ -738,19 +708,6 @@ def leftView(root: TreeNode): List[Int] = {
 }
 ```
 
-```javascript run
-function leftView(root) {
-    const out = [];
-    function go(n, level) {
-        if (!n) return;
-        if (level === out.length) out.push(n.val);
-        go(n.left,  level + 1);
-        go(n.right, level + 1);
-    }
-    go(root, 0); return out;
-}
-```
-
 ```typescript run
 function leftView(root: TreeNode | null): number[] {
     const out: number[] = [];
@@ -775,19 +732,6 @@ func leftView(root *TreeNode) []int {
         go_(n.Right, level + 1)
     }
     go_(root, 0); return out
-}
-```
-
-```kotlin run
-fun leftView(root: TreeNode?): List<Int> {
-    val out = mutableListOf<Int>()
-    fun go(n: TreeNode?, level: Int) {
-        if (n == null) return
-        if (level == out.size) out += n.value
-        go(n.left,  level + 1)
-        go(n.right, level + 1)
-    }
-    go(root, 0); return out
 }
 ```
 
@@ -816,6 +760,19 @@ pub fn left_view(root: &Option<Box<TreeNode>>) -> Vec<i32> {
 The trick is *identical* to the left view, with one swap: recurse **right before left**. The first node visited at each new level is now the rightmost.
 
 ## Solution
+
+
+```pseudocode
+function rightView(root):
+    out ← empty list
+    function go(n, level):
+        if n = null: return
+        if level = length(out): append n.val to out   # first node at this depth
+        go(n.right, level + 1)                        # right-first ensures rightmost wins
+        go(n.left,  level + 1)
+    go(root, 0)
+    return out
+```
 
 ```python run
 def right_view(root):
@@ -880,19 +837,6 @@ def rightView(root: TreeNode): List[Int] = {
 }
 ```
 
-```javascript run
-function rightView(root) {
-    const out = [];
-    function go(n, level) {
-        if (!n) return;
-        if (level === out.length) out.push(n.val);
-        go(n.right, level + 1);
-        go(n.left,  level + 1);
-    }
-    go(root, 0); return out;
-}
-```
-
 ```typescript run
 function rightView(root: TreeNode | null): number[] {
     const out: number[] = [];
@@ -917,19 +861,6 @@ func rightView(root *TreeNode) []int {
         go_(n.Left,  level + 1)
     }
     go_(root, 0); return out
-}
-```
-
-```kotlin run
-fun rightView(root: TreeNode?): List<Int> {
-    val out = mutableListOf<Int>()
-    fun go(n: TreeNode?, level: Int) {
-        if (n == null) return
-        if (level == out.size) out += n.value
-        go(n.right, level + 1)
-        go(n.left,  level + 1)
-    }
-    go(root, 0); return out
 }
 ```
 

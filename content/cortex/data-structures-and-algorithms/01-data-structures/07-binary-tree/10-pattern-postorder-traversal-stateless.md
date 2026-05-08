@@ -1,7 +1,3 @@
----
-title: "10. Pattern: Postorder Traversal (Stateless)"
----
-
 # 10. Pattern: Postorder Traversal (Stateless)
 
 ## The Hook
@@ -76,6 +72,15 @@ flowchart TB
 
 Below is a "sum of all node values" template — illustrative; substitute the right base case and combine for your problem.
 
+
+```pseudocode
+function statelessPostorder(node):
+    if node = null: return 0        # base case — adapt for each problem
+    left  ← statelessPostorder(node.left)
+    right ← statelessPostorder(node.right)
+    return left + right + node.val  # combine — adapt for each problem
+```
+
 ```python run
 from typing import Optional
 
@@ -126,15 +131,6 @@ def statelessPostorder(n: TreeNode): Int = {
 }
 ```
 
-```javascript run
-function statelessPostorder(n) {
-    if (!n) return 0;
-    const left  = statelessPostorder(n.left);
-    const right = statelessPostorder(n.right);
-    return left + right + n.val;
-}
-```
-
 ```typescript run
 function statelessPostorder(n: TreeNode | null): number {
     if (!n) return 0;
@@ -148,13 +144,6 @@ function statelessPostorder(n: TreeNode | null): number {
 func statelessPostorder(n *TreeNode) int {
     if n == nil { return 0 }
     return statelessPostorder(n.Left) + statelessPostorder(n.Right) + n.Val
-}
-```
-
-```kotlin run
-fun statelessPostorder(n: TreeNode?): Int {
-    if (n == null) return 0
-    return statelessPostorder(n.left) + statelessPostorder(n.right) + n.value
 }
 ```
 
@@ -200,6 +189,14 @@ Base case: empty tree contributes 0. Leaf returns its own value. Internal node r
 
 ## Solution
 
+
+```pseudocode
+function sumOfLeaves(root):
+    if root = null: return 0
+    if root.left = null AND root.right = null: return root.val   # leaf
+    return sumOfLeaves(root.left) + sumOfLeaves(root.right)
+```
+
 ```python run
 def sum_of_leaves(root):
     if root is None: return 0
@@ -240,14 +237,6 @@ def sumOfLeaves(root: TreeNode): Int = {
 }
 ```
 
-```javascript run
-function sumOfLeaves(root) {
-    if (!root) return 0;
-    if (!root.left && !root.right) return root.val;
-    return sumOfLeaves(root.left) + sumOfLeaves(root.right);
-}
-```
-
 ```typescript run
 function sumOfLeaves(root: TreeNode | null): number {
     if (!root) return 0;
@@ -261,14 +250,6 @@ func sumOfLeaves(root *TreeNode) int {
     if root == nil { return 0 }
     if root.Left == nil && root.Right == nil { return root.Val }
     return sumOfLeaves(root.Left) + sumOfLeaves(root.Right)
-}
-```
-
-```kotlin run
-fun sumOfLeaves(root: TreeNode?): Int {
-    if (root == null) return 0
-    if (root.left == null && root.right == null) return root.value
-    return sumOfLeaves(root.left) + sumOfLeaves(root.right)
 }
 ```
 
@@ -294,6 +275,13 @@ Base case: empty tree has height 0 (under the *node-counting* convention used in
 > **Note on conventions:** This problem uses the *node-counting* convention (empty = 0, single node = 1). Lesson 1 used the *edge-counting* convention (empty = -1, single node = 0). Both are common; *always read the problem carefully* and pick base cases that make the recurrence consistent.
 
 ## Solution
+
+
+```pseudocode
+function height(root):
+    if root = null: return 0
+    return 1 + max(height(root.left), height(root.right))
+```
 
 ```python run
 def height(root):
@@ -328,13 +316,6 @@ def height(root: TreeNode): Int =
   if (root == null) 0 else 1 + math.max(height(root.left), height(root.right))
 ```
 
-```javascript run
-function height(root) {
-    if (!root) return 0;
-    return 1 + Math.max(height(root.left), height(root.right));
-}
-```
-
 ```typescript run
 function height(root: TreeNode | null): number {
     if (!root) return 0;
@@ -349,11 +330,6 @@ func height(root *TreeNode) int {
     if l > r { return 1 + l }
     return 1 + r
 }
-```
-
-```kotlin run
-fun height(root: TreeNode?): Int =
-    if (root == null) 0 else 1 + maxOf(height(root.left), height(root.right))
 ```
 
 ```rust run
@@ -403,6 +379,13 @@ flowchart TB
 
 ## Solution
 
+
+```pseudocode
+function maximumPathSum(root):
+    if root = null: return 0
+    return root.val + max(maximumPathSum(root.left), maximumPathSum(root.right))
+```
+
 ```python run
 def maximum_path_sum(root):
     if root is None: return 0
@@ -437,13 +420,6 @@ def maximumPathSum(root: TreeNode): Int =
   if (root == null) 0 else root.value + math.max(maximumPathSum(root.left), maximumPathSum(root.right))
 ```
 
-```javascript run
-function maximumPathSum(root) {
-    if (!root) return 0;
-    return root.val + Math.max(maximumPathSum(root.left), maximumPathSum(root.right));
-}
-```
-
 ```typescript run
 function maximumPathSum(root: TreeNode | null): number {
     if (!root) return 0;
@@ -458,11 +434,6 @@ func maximumPathSum(root *TreeNode) int {
     if l > r { return root.Val + l }
     return root.Val + r
 }
-```
-
-```kotlin run
-fun maximumPathSum(root: TreeNode?): Int =
-    if (root == null) 0 else root.value + maxOf(maximumPathSum(root.left), maximumPathSum(root.right))
 ```
 
 ```rust run
@@ -489,6 +460,15 @@ Three cases at each node:
 - Both children present → recurse and require both subtrees full.
 
 ## Solution
+
+
+```pseudocode
+function isFull(root):
+    if root = null: return true
+    if root.left = null AND root.right = null: return true   # leaf is trivially full
+    if root.left = null OR  root.right = null: return false  # exactly one child → not full
+    return isFull(root.left) AND isFull(root.right)
+```
 
 ```python run
 def is_full(root):
@@ -534,15 +514,6 @@ def isFull(root: TreeNode): Boolean = {
 }
 ```
 
-```javascript run
-function isFull(root) {
-    if (!root) return true;
-    if (!root.left && !root.right) return true;
-    if (!root.left ||  !root.right) return false;
-    return isFull(root.left) && isFull(root.right);
-}
-```
-
 ```typescript run
 function isFull(root: TreeNode | null): boolean {
     if (!root) return true;
@@ -558,15 +529,6 @@ func isFull(root *TreeNode) bool {
     if root.Left == nil && root.Right == nil { return true }
     if root.Left == nil || root.Right == nil { return false }
     return isFull(root.Left) && isFull(root.Right)
-}
-```
-
-```kotlin run
-fun isFull(root: TreeNode?): Boolean {
-    if (root == null) return true
-    if (root.left == null && root.right == null) return true
-    if (root.left == null || root.right == null) return false
-    return isFull(root.left) && isFull(root.right)
 }
 ```
 
@@ -599,6 +561,22 @@ A clean two-pass approach:
 A one-pass approach also exists (return both `(isPerfect, height)` from each call), but that's the *stateful* postorder pattern from the next lesson. The two-pass version below is pure stateless.
 
 ## Solution
+
+
+```pseudocode
+function isPerfect(root):
+    if root = null: return true
+    # step 1: measure depth of leftmost leaf (1-indexed)
+    depth ← 0; n ← root
+    while n ≠ null: depth ← depth + 1; n ← n.left
+    # step 2: every leaf must be at that depth; every internal node must have 2 children
+    function go(node, level):
+        if node = null: return true
+        if node.left = null AND node.right = null: return level = depth
+        if node.left = null OR  node.right = null: return false
+        return go(node.left, level + 1) AND go(node.right, level + 1)
+    return go(root, 1)
+```
 
 ```python run
 def is_perfect(root):
@@ -678,21 +656,6 @@ def isPerfect(root: TreeNode): Boolean = {
 }
 ```
 
-```javascript run
-function isPerfect(root) {
-    if (!root) return true;
-    let depth = 0;
-    for (let n = root; n; n = n.left) depth++;
-    function go(n, level) {
-        if (!n) return true;
-        if (!n.left && !n.right) return level === depth;
-        if (!n.left || !n.right) return false;
-        return go(n.left, level + 1) && go(n.right, level + 1);
-    }
-    return go(root, 1);
-}
-```
-
 ```typescript run
 function isPerfect(root: TreeNode | null): boolean {
     if (!root) return true;
@@ -721,21 +684,6 @@ func isPerfect(root *TreeNode) bool {
         return go_(n.Left, level + 1) && go_(n.Right, level + 1)
     }
     return go_(root, 1)
-}
-```
-
-```kotlin run
-fun isPerfect(root: TreeNode?): Boolean {
-    if (root == null) return true
-    var depth = 0; var n: TreeNode? = root
-    while (n != null) { depth++; n = n.left }
-    fun go(node: TreeNode?, level: Int): Boolean {
-        if (node == null) return true
-        if (node.left == null && node.right == null) return level == depth
-        if (node.left == null || node.right == null) return false
-        return go(node.left, level + 1) && go(node.right, level + 1)
-    }
-    return go(root, 1)
 }
 ```
 
@@ -803,6 +751,20 @@ flowchart TB
 <p align="center"><strong>Collect leaves by height — every node ends up in the bucket matching its <em>height</em>. Bucket 0 is the originals; bucket 1 is the leaves after peeling; etc. One postorder pass and we're done.</strong></p>
 
 ## Solution
+
+
+```pseudocode
+function collectLeaves(root):
+    out ← empty list of lists
+    function go(n):
+        if n = null: return −1
+        h ← 1 + max(go(n.left), go(n.right))   # height of this subtree (leaf=0)
+        if h = length(out): append empty list to out
+        append n.val to out[h]
+        return h
+    go(root)
+    return out
+```
 
 ```python run
 def collect_leaves(root):
@@ -880,21 +842,6 @@ def collectLeaves(root: TreeNode): List[List[Int]] = {
 }
 ```
 
-```javascript run
-function collectLeaves(root) {
-    const out = [];
-    function go(n) {
-        if (!n) return -1;
-        const h = 1 + Math.max(go(n.left), go(n.right));
-        if (h === out.length) out.push([]);
-        out[h].push(n.val);
-        return h;
-    }
-    go(root);
-    return out;
-}
-```
-
 ```typescript run
 function collectLeaves(root: TreeNode | null): number[][] {
     const out: number[][] = [];
@@ -924,21 +871,6 @@ func collectLeaves(root *TreeNode) [][]int {
         return h
     }
     go_(root)
-    return out
-}
-```
-
-```kotlin run
-fun collectLeaves(root: TreeNode?): List<List<Int>> {
-    val out = mutableListOf<MutableList<Int>>()
-    fun go(n: TreeNode?): Int {
-        if (n == null) return -1
-        val h = 1 + maxOf(go(n.left), go(n.right))
-        if (h == out.size) out += mutableListOf<Int>()
-        out[h] += n.value
-        return h
-    }
-    go(root)
     return out
 }
 ```

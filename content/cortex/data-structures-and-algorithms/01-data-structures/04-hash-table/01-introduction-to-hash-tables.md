@@ -1,7 +1,3 @@
----
-title: "1. Introduction to Hash Tables"
----
-
 # 1. Introduction to Hash Tables
 
 ## The Hook
@@ -191,7 +187,7 @@ key: |md
 hf: hash function {shape: oval}
 
 arr: internal array {
-  grid-columns: 1
+  grid-rows: 4
   grid-gap: 0
   a0: |md
     **[0]**
@@ -228,7 +224,7 @@ When we draw a hash table on paper or talk about it in interviews, we don't usua
 
 ```d2
 table: {
-  grid-columns: 2
+  grid-rows: 5
   grid-gap: 0
   hk: "**Key**" {style.fill: "#fef9c3"; style.stroke: "#d97706"}
   hv: "**Value**" {style.fill: "#fef9c3"; style.stroke: "#d97706"}
@@ -420,7 +416,7 @@ The classic example is the **modulo function**, `f(x) = x mod m`. If your keys a
 direction: right
 
 keys: Domain (12 keys) {
-  grid-columns: 4
+  grid-rows: 3
   grid-gap: 8
   k1: k1
   k2: k2

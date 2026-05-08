@@ -1,7 +1,3 @@
----
-title: "7. Pattern: Two Pointers"
----
-
 # 7. Pattern: Two Pointers
 
 ## The Hook
@@ -109,6 +105,21 @@ flowchart LR
 
 The skeleton below is the template every problem in this lesson specialises. Read it once, then watch how each problem changes only the *condition* and the *what to do at each step*.
 
+
+```pseudocode
+function two_pointer(head, tail):
+    if head = null OR tail = null OR head = tail OR head.next = tail:
+        return
+    left ← head
+    right ← tail
+    while left ≠ right AND left.prev ≠ right:
+        # problem-specific work on (left, right)
+        if should_move_left:
+            left ← left.next
+        if should_move_right:
+            right ← right.prev
+```
+
 ```python run
 """
 Definition for doubly-linked list.
@@ -212,21 +223,6 @@ class Solution {
 }
 ```
 
-```javascript run
-function twoPointer(head, tail) {
-    // Trivial cases — empty, single, or adjacent
-    if (!head || !tail || head === tail || head.next === tail) return;
-
-    let left = head, right = tail;
-    while (left !== right && left.prev !== right) {     // Meet OR cross
-        // --- Problem-specific work on (left, right) ---
-
-        if (shouldMoveLeft)  left  = left.next;
-        if (shouldMoveRight) right = right.prev;
-    }
-}
-```
-
 ```typescript run
 function twoPointer(head: ListNode | null, tail: ListNode | null): void {
     // Trivial cases — empty, single, or adjacent
@@ -254,24 +250,6 @@ func twoPointer(head, tail *ListNode) {
 
         if shouldMoveLeft  { left  = left.Next }
         if shouldMoveRight { right = right.Prev }
-    }
-}
-```
-
-```kotlin run
-class Solution {
-    fun twoPointer(head: ListNode?, tail: ListNode?) {
-        // Trivial cases — empty, single, or adjacent
-        if (head == null || tail == null || head == tail || head.next == tail) return
-
-        var left  = head
-        var right = tail
-        while (left != right && left?.prev != right) {   // Meet OR cross
-            // --- Problem-specific work on (left, right) ---
-
-            if (shouldMoveLeft)  left  = left?.next
-            if (shouldMoveRight) right = right?.prev
-        }
     }
 }
 ```
@@ -378,7 +356,7 @@ flowchart TB
 
 The reference C++ implementation (we'll see all 10 languages in the dedicated Two Sum section below):
 
-```cpp run
+```cpp
 class Solution {
 public:
     vector<vector<int>> twoSum(ListNode *head, ListNode *tail, int target) {
@@ -458,6 +436,21 @@ flowchart TB
 
 ## The Solution
 
+
+```pseudocode
+function palindrome_number(head, tail):
+    if head = null OR head = tail:
+        return true
+    left ← head
+    right ← tail
+    while left ≠ right AND left.prev ≠ right:
+        if left.val ≠ right.val:
+            return false
+        left ← left.next
+        right ← right.prev
+    return true
+```
+
 ```python run
 class Solution:
     def palindrome_number(self, head, tail):
@@ -535,21 +528,6 @@ class Solution {
 }
 ```
 
-```javascript run
-class Solution {
-    palindromeNumber(head, tail) {
-        if (!head || head === tail) return true;
-        let left = head, right = tail;
-        while (left && right && left !== right && left.prev !== right) {
-            if (left.val !== right.val) return false;
-            left  = left.next;
-            right = right.prev;
-        }
-        return true;
-    }
-}
-```
-
 ```typescript run
 class Solution {
     palindromeNumber(head: ListNode | null, tail: ListNode | null): boolean {
@@ -576,22 +554,6 @@ func palindromeNumber(head, tail *ListNode) bool {
         right = right.Prev
     }
     return true
-}
-```
-
-```kotlin run
-class Solution {
-    fun palindromeNumber(head: ListNode?, tail: ListNode?): Boolean {
-        if (head == null || head == tail) return true
-        var left  = head
-        var right = tail
-        while (left != null && right != null && left != right && left.prev != right) {
-            if (left.value != right.value) return false
-            left  = left.next
-            right = right.prev
-        }
-        return true
-    }
 }
 ```
 
@@ -711,6 +673,27 @@ flowchart TB
 <p align="center"><strong>Two Sum on a sorted DLL — pointers converge, sum drives every decision, no node is ever revisited.</strong></p>
 
 ## The Solution
+
+
+```pseudocode
+function two_sum(head, tail, target):
+    if head = null OR head.next = null:
+        return empty list
+    result ← empty list
+    left ← head
+    right ← tail
+    while left.val < right.val:
+        s ← left.val + right.val
+        if s = target:
+            append [left.val, right.val] to result
+            left ← left.next
+            right ← right.prev
+        else if s < target:
+            left ← left.next
+        else:
+            right ← right.prev
+    return result
+```
 
 ```python run
 from typing import Optional, List
@@ -838,29 +821,6 @@ class Solution {
 }
 ```
 
-```javascript run
-class Solution {
-    twoSum(head, tail, target) {
-        if (!head || !head.next) return [];
-        const result = [];
-        let left = head, right = tail;
-        while (left && right && left.val < right.val) {
-            const sum = left.val + right.val;
-            if (sum === target) {
-                result.push([left.val, right.val]);
-                left  = left.next;
-                right = right.prev;
-            } else if (sum < target) {
-                left  = left.next;
-            } else {
-                right = right.prev;
-            }
-        }
-        return result;
-    }
-}
-```
-
 ```typescript run
 class Solution {
     twoSum(head: ListNode | null, tail: ListNode | null, target: number): number[][] {
@@ -904,30 +864,6 @@ func twoSum(head, tail *ListNode, target int) [][]int {
         }
     }
     return result
-}
-```
-
-```kotlin run
-class Solution {
-    fun twoSum(head: ListNode?, tail: ListNode?, target: Int): List<List<Int>> {
-        if (head == null || head.next == null) return emptyList()
-        val result = mutableListOf<List<Int>>()
-        var left  = head
-        var right = tail
-        while (left != null && right != null && left.value < right.value) {
-            val sum = left.value + right.value
-            when {
-                sum == target -> {
-                    result.add(listOf(left.value, right.value))
-                    left  = left.next
-                    right = right.prev
-                }
-                sum < target  -> left  = left.next
-                else          -> right = right.prev
-            }
-        }
-        return result
-    }
 }
 ```
 
@@ -1032,6 +968,37 @@ flowchart TB
 > Answer: without skipping, `(L=2, R=2)` matches, both move inward, match again, etc. — we'd record `[2,2]` multiple times. The skip ensures we land on the *next distinct* values on both sides.
 
 ## The Solution
+
+
+```pseudocode
+function _skip_left(left, right):
+    while left.next ≠ null AND left ≠ right AND left.val = left.next.val:
+        left ← left.next
+    return left.next
+
+function _skip_right(left, right):
+    while right.prev ≠ null AND left ≠ right AND right.val = right.prev.val:
+        right ← right.prev
+    return right.prev
+
+function duplicate_aware_two_sum(head, tail, target):
+    if head = null OR head.next = null:
+        return empty list
+    result ← empty list
+    left ← head
+    right ← tail
+    while left ≠ right AND left.val ≤ right.val:
+        s ← left.val + right.val
+        if s = target:
+            append [left.val, right.val] to result
+            left ← _skip_left(left, right)
+            right ← _skip_right(left, right)
+        else if s < target:
+            left ← left.next
+        else:
+            right ← right.prev
+    return result
+```
 
 ```python run
 from typing import Optional, List
@@ -1214,34 +1181,6 @@ class Solution {
 }
 ```
 
-```javascript run
-class Solution {
-    skipLeft(left, right) {
-        while (left && left.next && left !== right && left.val === left.next.val) left = left.next;
-        return left.next;
-    }
-    skipRight(left, right) {
-        while (right && right.prev && left !== right && right.val === right.prev.val) right = right.prev;
-        return right.prev;
-    }
-    duplicateAwareTwoSum(head, tail, target) {
-        if (!head || !head.next) return [];
-        const result = [];
-        let left = head, right = tail;
-        while (left && right && left !== right && left.val <= right.val) {
-            const sum = left.val + right.val;
-            if (sum === target) {
-                result.push([left.val, right.val]);
-                left  = this.skipLeft(left, right);
-                right = this.skipRight(left, right);
-            } else if (sum < target) left = left.next;
-            else right = right.prev;
-        }
-        return result;
-    }
-}
-```
-
 ```typescript run
 class Solution {
     private skipLeft(left: ListNode | null, right: ListNode | null): ListNode | null {
@@ -1302,44 +1241,6 @@ func duplicateAwareTwoSum(head, tail *ListNode, target int) [][]int {
         }
     }
     return result
-}
-```
-
-```kotlin run
-class Solution {
-    private fun skipLeft(left0: ListNode?, right: ListNode?): ListNode? {
-        var left = left0
-        while (left != null && left.next != null && left != right && left.value == left.next!!.value) {
-            left = left.next
-        }
-        return left?.next
-    }
-    private fun skipRight(left: ListNode?, right0: ListNode?): ListNode? {
-        var right = right0
-        while (right != null && right.prev != null && left != right && right.value == right.prev!!.value) {
-            right = right.prev
-        }
-        return right?.prev
-    }
-    fun duplicateAwareTwoSum(head: ListNode?, tail: ListNode?, target: Int): List<List<Int>> {
-        if (head == null || head.next == null) return emptyList()
-        val result = mutableListOf<List<Int>>()
-        var left  = head
-        var right = tail
-        while (left != null && right != null && left != right && left.value <= right.value) {
-            val sum = left.value + right.value
-            when {
-                sum == target -> {
-                    result.add(listOf(left.value, right.value))
-                    left  = skipLeft(left, right)
-                    right = skipRight(left, right)
-                }
-                sum < target  -> left  = left.next
-                else          -> right = right.prev
-            }
-        }
-        return result
-    }
 }
 ```
 
@@ -1442,6 +1343,35 @@ flowchart TB
 <p align="center"><strong>Approximate 3-Sum — outer loop fixes one node, inner two-pointer searches the rest. The "closest" tracker survives across iterations.</strong></p>
 
 ## The Solution
+
+
+```pseudocode
+function _closest_two_sum(index_node, tail, target):
+    left ← index_node.next
+    right ← tail
+    closest_sum ← +∞
+    while left ≠ right AND left.prev ≠ right:
+        s ← index_node.val + left.val + right.val
+        if |s − target| < |closest_sum − target|:
+            closest_sum ← s
+        if s = target:
+            return s
+        else if s < target:
+            left ← left.next
+        else:
+            right ← right.prev
+    return closest_sum
+
+function approximate_three_sum(head, tail, target):
+    closest_sum ← +∞
+    current ← head
+    while current ≠ null AND current.next ≠ null:
+        s ← _closest_two_sum(current, tail, target)
+        if |s − target| < |closest_sum − target|:
+            closest_sum ← s
+        current ← current.next
+    return closest_sum
+```
 
 ```python run
 import sys
@@ -1588,33 +1518,6 @@ class Solution {
 }
 ```
 
-```javascript run
-class Solution {
-    closestTwoSum(indexNode, tail, target) {
-        let left = indexNode.next, right = tail;
-        let closestSum = Number.MAX_SAFE_INTEGER;
-        while (left && right && left !== right && left.prev !== right) {
-            const sum = indexNode.val + left.val + right.val;
-            if (Math.abs(sum - target) < Math.abs(closestSum - target)) closestSum = sum;
-            if (sum === target) return sum;
-            else if (sum < target) left = left.next;
-            else right = right.prev;
-        }
-        return closestSum;
-    }
-    approximateThreeSum(head, tail, target) {
-        let closestSum = Number.MAX_SAFE_INTEGER;
-        let current = head;
-        while (current && current.next) {
-            const s = this.closestTwoSum(current, tail, target);
-            if (Math.abs(s - target) < Math.abs(closestSum - target)) closestSum = s;
-            current = current.next;
-        }
-        return closestSum;
-    }
-}
-```
-
 ```typescript run
 class Solution {
     private closestTwoSum(indexNode: ListNode, tail: ListNode | null, target: number): number {
@@ -1671,37 +1574,6 @@ func approximateThreeSum(head, tail *ListNode, target int) int {
         cur = cur.Next
     }
     return closest
-}
-```
-
-```kotlin run
-import kotlin.math.abs
-class Solution {
-    private fun closestTwoSum(indexNode: ListNode, tail: ListNode?, target: Int): Int {
-        var left  = indexNode.next
-        var right = tail
-        var closest = Int.MAX_VALUE
-        while (left != null && right != null && left != right && left.prev != right) {
-            val sum = indexNode.value + left.value + right.value
-            if (abs(sum - target) < abs(closest - target)) closest = sum
-            when {
-                sum == target -> return sum
-                sum <  target -> left  = left.next
-                else          -> right = right.prev
-            }
-        }
-        return closest
-    }
-    fun approximateThreeSum(head: ListNode?, tail: ListNode?, target: Int): Int {
-        var closest = Int.MAX_VALUE
-        var current = head
-        while (current != null && current.next != null) {
-            val s = closestTwoSum(current, tail, target)
-            if (abs(s - target) < abs(closest - target)) closest = s
-            current = current.next
-        }
-        return closest
-    }
 }
 ```
 

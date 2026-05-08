@@ -1,6 +1,7 @@
 package codefolio.client
 
 import codefolio.client.pages.*
+import codefolio.shared.AppRoutes
 import japgolly.scalajs.react.extra.router.*
 
 /**
@@ -44,19 +45,19 @@ object Router:
     val rules =
       trimSlashes
         | staticRoute(root, Page.Home) ~> render(HomePage.Component())
-        | staticRoute("cortex", Page.CortexIndex) ~> render(CortexIndexPage.Component())
+        | staticRoute(AppRoutes.Cortex, Page.CortexIndex) ~> render(CortexIndexPage.Component())
         // /cortex/{book}/{chapter} — the chapter reader.
-        | dynamicRouteCT(("cortex" / seg / seg).caseClass[Page.Chapter]) ~>
+        | dynamicRouteCT((AppRoutes.Cortex / seg / seg).caseClass[Page.Chapter]) ~>
         dynRender((p: Page.Chapter) => ChapterPage.Component(ChapterPage.Props(p.book, p.chapter)))
         // /cortex/{book} — redirect to the book's first chapter (handled
         // imperatively inside BookRedirectPage; the router treats it as a
         // normal page and the page does the navigation on mount).
-        | dynamicRouteCT(("cortex" / seg).caseClass[Page.BookRedirect]) ~>
+        | dynamicRouteCT((AppRoutes.Cortex / seg).caseClass[Page.BookRedirect]) ~>
         dynRender((p: Page.BookRedirect) => BookRedirectPage.Component(p.book))
-        | staticRoute("blogs", Page.Blogs) ~> render(BlogsPlaceholderPage.Component())
-        | dynamicRouteCT(("blogs" / seg).caseClass[Page.BlogPost]) ~>
+        | staticRoute(AppRoutes.Blogs, Page.Blogs) ~> render(BlogsPlaceholderPage.Component())
+        | dynamicRouteCT((AppRoutes.Blogs / seg).caseClass[Page.BlogPost]) ~>
         dynRender((_: Page.BlogPost) => BlogsPlaceholderPage.Component())
-        | staticRoute("demo", Page.Demo) ~> render(DemoPage.Component())
+        | staticRoute(AppRoutes.Demo, Page.Demo) ~> render(DemoPage.Component())
 
     rules
       // The router library parses from `window.location.href`, so the path it

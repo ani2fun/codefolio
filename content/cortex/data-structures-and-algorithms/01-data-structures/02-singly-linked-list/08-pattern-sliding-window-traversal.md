@@ -1,7 +1,3 @@
----
-title: "8. Pattern: Sliding Window Traversal"
----
-
 # 8. Pattern: Sliding Window Traversal
 
 ## The Hook
@@ -152,6 +148,20 @@ The algorithm given below outlines the sliding window traversal technique for a 
 
 Given below is the generic code implementation of the fixed-size sliding window traversal technique on a linked list with window size `k` using references `start` and `end` as the boundaries of the window.
 
+
+```pseudocode
+# Two pointers k apart on a linked list. Phase 1 sets the gap; Phase 2 slides both forward.
+function slidingWindowTraversal(head, k):
+    start ← head; end ← head
+    for i from 1 to k:                                 # Phase 1 — establish a k-step gap
+        if end is null: return                         # list shorter than k
+        end ← end.next
+    while end is not null:                             # Phase 2 — slide
+        # ... problem-specific work on (start, end) ...
+        start ← start.next
+        end ← end.next
+```
+
 ```python run
 from typing import Optional
 
@@ -266,25 +276,6 @@ object Solution {
 }
 ```
 
-```javascript run
-function slidingWindowTraversal(head, k) {
-    let start = head, end = head;
-
-    // Phase 1 — offset end by k hops
-    for (let i = 0; i < k; i++) {
-        if (end === null) return;
-        end = end.next;
-    }
-
-    // Phase 2 — slide in lockstep
-    while (end !== null) {
-        // Apply problem-specific operation on start and end here.
-        start = start.next;
-        end   = end.next;
-    }
-}
-```
-
 ```typescript run
 function slidingWindowTraversal(head: ListNode | null, k: number): void {
     let start: ListNode | null = head;
@@ -323,26 +314,6 @@ func slidingWindowTraversal(head *ListNode, k int) {
         // Apply problem-specific operation on start and end here.
         start = start.Next
         end   = end.Next
-    }
-}
-```
-
-```kotlin run
-class Solution {
-    fun slidingWindowTraversal(head: ListNode?, k: Int) {
-        var start = head
-        var end   = head
-
-        for (i in 0 until k) {
-            if (end == null) return
-            end = end.next
-        }
-
-        while (end != null) {
-            // Apply problem-specific operation on start and end here.
-            start = start!!.next
-            end   = end.next
-        }
     }
 }
 ```
@@ -480,6 +451,21 @@ flowchart TB
 
 The implementation of the brute force solution is given as follows.
 
+
+```pseudocode
+# Two-pass approach: first count length, then walk to the (length − k − 1)-th node.
+function trimNthNode(head, k):
+    if head is null: return null
+    length ← 0; cur ← head
+    while cur is not null: length ← length + 1; cur ← cur.next
+    if k = length: return head.next                    # head is the k-th from end
+    prev ← head
+    for i from 1 to (length − k − 1):
+        prev ← prev.next
+    prev.next ← prev.next.next                         # splice out the target
+    return head
+```
+
 ```python run
 from typing import Optional
 
@@ -591,24 +577,6 @@ object Solution {
 }
 ```
 
-```javascript run
-function trimNthNode(head, k) {
-    if (!head) return null;
-
-    let length = 0;
-    for (let cur = head; cur !== null; cur = cur.next) length++;
-
-    if (k === length) return head.next;
-
-    const prevIndex = length - k - 1;
-    let prev = head;
-    for (let i = 0; i < prevIndex; i++) prev = prev.next;
-
-    prev.next = prev.next.next;
-    return head;
-}
-```
-
 ```typescript run
 function trimNthNode(head: ListNode | null, k: number): ListNode | null {
     if (!head) return null;
@@ -642,26 +610,6 @@ func trimNthNode(head *ListNode, k int) *ListNode {
 
     prev.Next = prev.Next.Next
     return head
-}
-```
-
-```kotlin run
-class Solution {
-    fun trimNthNode(head: ListNode?, k: Int): ListNode? {
-        if (head == null) return null
-
-        var length = 0
-        var cur: ListNode? = head
-        while (cur != null) { length++; cur = cur.next }
-
-        if (k == length) return head.next
-
-        val prevIndex = length - k - 1
-        var prev = head
-        for (i in 0 until prevIndex) prev = prev!!.next
-        prev!!.next = prev.next!!.next
-        return head
-    }
 }
 ```
 
@@ -778,6 +726,25 @@ flowchart TB
 <p align="center"><strong>Single-pass algorithm for removing the <code>k</code>-th node from the end — offset the two pointers by <code>k − 1</code>, slide until the end hits the tail, splice at <code>start</code>.</strong></p>
 
 The implementation of the sliding window traversal solution is given as follows.
+
+
+```pseudocode
+# Single-pass trim of the k-th node from the end. Offset end by k − 1, then slide both pointers.
+function trimNthNode(head, k):
+    if head is null: return null
+    end ← head
+    for i from 1 to k − 1:
+        if end is null: return head
+        end ← end.next
+    if end.next is null: return head.next             # head itself is the target
+    prev ← null; start ← head
+    while end.next is not null:
+        end ← end.next
+        prev ← start
+        start ← start.next
+    prev.next ← start.next                            # splice out
+    return head
+```
 
 ```python run
 from typing import Optional
@@ -917,30 +884,6 @@ object Solution {
 }
 ```
 
-```javascript run
-function trimNthNode(head, k) {
-    if (!head) return null;
-
-    let end = head;
-    for (let i = 1; i < k; i++) {
-        if (end === null) return head;
-        end = end.next;
-    }
-
-    if (end.next === null) return head.next;
-
-    let prev = null, start = head;
-    while (end.next !== null) {
-        end = end.next;
-        prev = start;
-        start = start.next;
-    }
-
-    prev.next = start.next;
-    return head;
-}
-```
-
 ```typescript run
 function trimNthNode(head: ListNode | null, k: number): ListNode | null {
     if (!head) return null;
@@ -987,33 +930,6 @@ func trimNthNode(head *ListNode, k int) *ListNode {
 
     prev.Next = start.Next
     return head
-}
-```
-
-```kotlin run
-class Solution {
-    fun trimNthNode(head: ListNode?, k: Int): ListNode? {
-        if (head == null) return null
-
-        var end: ListNode? = head
-        for (i in 1 until k) {
-            if (end == null) return head
-            end = end.next
-        }
-
-        if (end!!.next == null) return head.next
-
-        var prev: ListNode? = null
-        var start: ListNode? = head
-        while (end!!.next != null) {
-            end = end.next
-            prev = start
-            start = start!!.next
-        }
-
-        prev!!.next = start!!.next
-        return head
-    }
 }
 ```
 
@@ -1076,6 +992,27 @@ Given the **head** of a singly linked list and a positive integer **k**, writ
 > -   **Explanation:** There are no contiguous nodes of length 4 because the list has only 3 nodes, so we return -1.
 
 ## Solution
+
+
+```pseudocode
+# Maximum sum of any k consecutive nodes. Standard fixed-window sum on a linked list.
+function kMaximumSum(head, k):
+    if head is null OR k ≤ 0: return −1
+    window ← 0; end ← head; count ← 0
+    while end is not null AND count < k:               # seed the window with the first k nodes
+        window ← window + end.val
+        end ← end.next
+        count ← count + 1
+    if count < k: return −1                            # list shorter than k
+    maxSum ← window
+    start ← head
+    while end is not null:
+        window ← window + end.val − start.val          # slide: add new, drop old
+        maxSum ← max(maxSum, window)
+        start ← start.next
+        end ← end.next
+    return maxSum
+```
 
 ```python run
 from typing import Optional
@@ -1217,31 +1154,6 @@ object Solution {
 }
 ```
 
-```javascript run
-function kMaximumSum(head, k) {
-    if (!head || k <= 0) return -1;
-
-    let window = 0, count = 0;
-    let end = head;
-    while (end !== null && count < k) {
-        window += end.val;
-        end = end.next;
-        count++;
-    }
-    if (count < k) return -1;
-
-    let maxSum = window;
-    let start = head;
-    while (end !== null) {
-        window += end.val - start.val;
-        if (window > maxSum) maxSum = window;
-        start = start.next;
-        end   = end.next;
-    }
-    return maxSum;
-}
-```
-
 ```typescript run
 function kMaximumSum(head: ListNode | null, k: number): number {
     if (!head || k <= 0) return -1;
@@ -1289,34 +1201,6 @@ func kMaximumSum(head *ListNode, k int) int {
         end   = end.Next
     }
     return maxSum
-}
-```
-
-```kotlin run
-class Solution {
-    fun kMaximumSum(head: ListNode?, k: Int): Int {
-        if (head == null || k <= 0) return -1
-
-        var window = 0
-        var count  = 0
-        var end: ListNode? = head
-        while (end != null && count < k) {
-            window += end.`val`
-            end = end.next
-            count++
-        }
-        if (count < k) return -1
-
-        var maxSum = window
-        var start: ListNode? = head
-        while (end != null) {
-            window += end.`val` - start!!.`val`
-            if (window > maxSum) maxSum = window
-            start = start.next
-            end   = end.next
-        }
-        return maxSum
-    }
 }
 ```
 
@@ -1369,6 +1253,25 @@ Given the **head** of a singly linked list and a non-negative integer **N**, 
 > -   **Explanation:** The first node from the last is only 1. After removing it, we are left with an empty list.
 
 ## Solution
+
+
+```pseudocode
+# Same single-pass trim as above — re-listed as the canonical solution to the Example 2 case.
+function trimNthNode(head, k):
+    if head is null: return null
+    end ← head
+    for i from 1 to k − 1:
+        if end is null: return head
+        end ← end.next
+    if end.next is null: return head.next
+    prev ← null; start ← head
+    while end.next is not null:
+        end ← end.next
+        prev ← start
+        start ← start.next
+    prev.next ← start.next
+    return head
+```
 
 ```python run
 from typing import Optional
@@ -1508,30 +1411,6 @@ object Solution {
 }
 ```
 
-```javascript run
-function trimNthNode(head, k) {
-    if (!head) return null;
-
-    let end = head;
-    for (let i = 1; i < k; i++) {
-        if (end === null) return head;
-        end = end.next;
-    }
-
-    if (end.next === null) return head.next;
-
-    let prev = null, start = head;
-    while (end.next !== null) {
-        end = end.next;
-        prev = start;
-        start = start.next;
-    }
-
-    prev.next = start.next;
-    return head;
-}
-```
-
 ```typescript run
 function trimNthNode(head: ListNode | null, k: number): ListNode | null {
     if (!head) return null;
@@ -1578,33 +1457,6 @@ func trimNthNode(head *ListNode, k int) *ListNode {
 
     prev.Next = start.Next
     return head
-}
-```
-
-```kotlin run
-class Solution {
-    fun trimNthNode(head: ListNode?, k: Int): ListNode? {
-        if (head == null) return null
-
-        var end: ListNode? = head
-        for (i in 1 until k) {
-            if (end == null) return head
-            end = end.next
-        }
-
-        if (end!!.next == null) return head.next
-
-        var prev: ListNode? = null
-        var start: ListNode? = head
-        while (end!!.next != null) {
-            end = end.next
-            prev = start
-            start = start!!.next
-        }
-
-        prev!!.next = start!!.next
-        return head
-    }
 }
 ```
 
@@ -1661,6 +1513,37 @@ Swapping of data is not allowed. Only references should be changed. You can assu
 > -   **Explanation:** After swapping the 5th node from the start and the 5th node from the end, the list becomes \[5, 2, 3, 4, 1\].
 
 ## Solution
+
+
+```pseudocode
+# Swap the n-th node from the start with the n-th node from the end.
+# Locate both nodes (and their predecessors) in one pass via the cursor trick.
+function swapNthNodes(head, n):
+    if head is null OR head.next is null: return head
+
+    nthStart ← head; prevStart ← null
+    cursor ← head
+    for i from 1 to n − 1:                             # advance to nth-from-start
+        prevStart ← nthStart
+        nthStart ← nthStart.next
+        cursor ← cursor.next
+
+    nthEnd ← head; prevEnd ← null
+    while cursor is not null AND cursor.next is not null:    # slide → nthEnd ends at nth-from-end
+        prevEnd ← nthEnd
+        nthEnd ← nthEnd.next
+        cursor ← cursor.next
+
+    return swapNodes(head, prevStart, nthStart, prevEnd, nthEnd)
+
+function swapNodes(head, prevA, a, prevB, b):
+    if prevA is not null: prevA.next ← b
+    else:                 head ← b                     # a was the head
+    if prevB is not null: prevB.next ← a
+    else:                 head ← a
+    swap a.next and b.next                             # swap the forward links
+    return head
+```
 
 ```python run
 from typing import Optional
@@ -1817,31 +1700,6 @@ object Solution {
 }
 ```
 
-```javascript run
-function swapNthNodes(head, n) {
-    if (!head || !head.next) return head;
-
-    const swapNodes = (h, prevA, a, prevB, b) => {
-        if (prevA !== null) prevA.next = b; else h = b;
-        if (prevB !== null) prevB.next = a; else h = a;
-        const tmp = a.next; a.next = b.next; b.next = tmp;
-        return h;
-    };
-
-    let nthStart = head, prevStart = null, cursor = head;
-    for (let i = 1; i < n; i++) {
-        prevStart = nthStart; nthStart = nthStart.next; cursor = cursor.next;
-    }
-
-    let nthEnd = head, prevEnd = null;
-    while (cursor !== null && cursor.next !== null) {
-        prevEnd = nthEnd; nthEnd = nthEnd.next; cursor = cursor.next;
-    }
-
-    return swapNodes(head, prevStart, nthStart, prevEnd, nthEnd);
-}
-```
-
 ```typescript run
 function swapNthNodes(head: ListNode | null, n: number): ListNode | null {
     if (!head || !head.next) return head;
@@ -1896,37 +1754,6 @@ func swapNthNodes(head *ListNode, n int) *ListNode {
     }
 
     return swapNodes(head, prevStart, nthStart, prevEnd, nthEnd)
-}
-```
-
-```kotlin run
-class Solution {
-    private fun swapNodes(headIn: ListNode, prevA: ListNode?, a: ListNode, prevB: ListNode?, b: ListNode): ListNode {
-        var head = headIn
-        if (prevA != null) prevA.next = b else head = b
-        if (prevB != null) prevB.next = a else head = a
-        val tmp = a.next; a.next = b.next; b.next = tmp
-        return head
-    }
-
-    fun swapNthNodes(head: ListNode?, n: Int): ListNode? {
-        if (head == null || head.next == null) return head
-
-        var nthStart: ListNode = head
-        var prevStart: ListNode? = null
-        var cursor: ListNode = head
-        for (i in 1 until n) {
-            prevStart = nthStart; nthStart = nthStart.next!!; cursor = cursor.next!!
-        }
-
-        var nthEnd: ListNode = head
-        var prevEnd: ListNode? = null
-        while (cursor.next != null) {
-            prevEnd = nthEnd; nthEnd = nthEnd.next!!; cursor = cursor.next!!
-        }
-
-        return swapNodes(head, prevStart, nthStart, prevEnd, nthEnd)
-    }
 }
 ```
 
@@ -1991,6 +1818,31 @@ Given the **head** of a singly linked list and a non-negative integer **k**, 
 > **1st rotation:** \[2, 0, 1\] **2nd rotation:** \[1, 2, 0\] **3rd rotation:** \[0, 1, 2\] **4th rotation:** \[2, 0, 1\]
 
 ## Solution
+
+
+```pseudocode
+# Left-rotate by k. Find the k-th-from-end node, split there, wrap the original tail to the old head.
+function kRotations(head, k):
+    if head is null OR head.next is null OR k = 0: return head
+
+    length ← 0; cur ← head
+    while cur is not null: length ← length + 1; cur ← cur.next
+    k ← k mod length                                   # rotating by length is a no-op
+    if k = 0: return head
+
+    cursor ← head
+    for i from 1 to k − 1:                             # offset cursor by k − 1
+        cursor ← cursor.next
+    kthFromEnd ← head; prevToKth ← null
+    while cursor is not null AND cursor.next is not null:
+        prevToKth ← kthFromEnd
+        kthFromEnd ← kthFromEnd.next
+        cursor ← cursor.next
+
+    prevToKth.next ← null                              # split the list
+    cursor.next ← head                                 # old tail wraps to old head
+    return kthFromEnd                                  # new head is the k-th from end
+```
 
 ```python run
 from typing import Optional
@@ -2137,31 +1989,6 @@ object Solution {
 }
 ```
 
-```javascript run
-function kRotations(head, k) {
-    if (!head || !head.next || k === 0) return head;
-
-    let length = 0;
-    for (let cur = head; cur !== null; cur = cur.next) length++;
-    k %= length;
-    if (k === 0) return head;
-
-    let cursor = head;
-    for (let i = 1; i < k; i++) cursor = cursor.next;
-
-    let kthFromEnd = head, prevToKth = null;
-    while (cursor !== null && cursor.next !== null) {
-        prevToKth = kthFromEnd;
-        kthFromEnd = kthFromEnd.next;
-        cursor = cursor.next;
-    }
-
-    prevToKth.next = null;
-    cursor.next = head;
-    return kthFromEnd;
-}
-```
-
 ```typescript run
 function kRotations(head: ListNode | null, k: number): ListNode | null {
     if (!head || !head.next || k === 0) return head;
@@ -2213,35 +2040,6 @@ func kRotations(head *ListNode, k int) *ListNode {
 }
 ```
 
-```kotlin run
-class Solution {
-    fun kRotations(head: ListNode?, kIn: Int): ListNode? {
-        if (head == null || head.next == null || kIn == 0) return head
-
-        var length = 0
-        var cur: ListNode? = head
-        while (cur != null) { length++; cur = cur.next }
-        val k = kIn % length
-        if (k == 0) return head
-
-        var cursor: ListNode = head
-        for (i in 1 until k) cursor = cursor.next!!
-
-        var kthFromEnd: ListNode = head
-        var prevToKth: ListNode? = null
-        while (cursor.next != null) {
-            prevToKth = kthFromEnd
-            kthFromEnd = kthFromEnd.next!!
-            cursor = cursor.next!!
-        }
-
-        prevToKth!!.next = null
-        cursor.next = head
-        return kthFromEnd
-    }
-}
-```
-
 ```rust run
 fn k_rotations(head: Option<Box<ListNode>>, k: i32) -> Option<Box<ListNode>> {
     if head.is_none() || k == 0 { return head; }
@@ -2289,6 +2087,7 @@ fn k_rotations(head: Option<Box<ListNode>>, k: i32) -> Option<Box<ListNode>> {
     }
 }
 ```
+
 
 
 ***

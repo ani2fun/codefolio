@@ -1,7 +1,3 @@
----
-title: "2. Array Implementation of Heaps"
----
-
 # 2. Array Implementation of Heaps
 
 ## The Hook
@@ -252,6 +248,20 @@ flowchart LR
 
 ## Implementation
 
+
+```pseudocode
+function upHeapify(heap, index):
+    parent ← (index − 1) / 2
+    while index > 0 AND heap[parent] < heap[index]:
+        swap heap[index] and heap[parent]
+        index ← parent
+        parent ← (index − 1) / 2
+
+function insert(heap, val):
+    append val to heap               # preserves completeness
+    upHeapify(heap, length(heap) − 1) # restore ordering property
+```
+
 ```python run
 class MaxHeap:
     def __init__(self):
@@ -378,29 +388,6 @@ class MaxHeap {
 }
 ```
 
-```javascript run
-class MaxHeap {
-  constructor() { this.heap = []; }
-
-  swap(i, j) { [this.heap[i], this.heap[j]] = [this.heap[j], this.heap[i]]; }
-
-  // Restore the max-heap property going UP from `index`. Used after insert.
-  upHeapify(index) {
-    let parent = Math.floor((index - 1) / 2);
-    while (index > 0 && this.heap[parent] < this.heap[index]) {
-      this.swap(index, parent);
-      index = parent;
-      parent = Math.floor((index - 1) / 2);
-    }
-  }
-
-  insert(val) {
-    this.heap.push(val);                                                              // append
-    this.upHeapify(this.heap.length - 1);                                              // sift up
-  }
-}
-```
-
 ```typescript run
 class MaxHeap {
   heap: number[] = [];
@@ -442,32 +429,6 @@ func (h *MaxHeap) upHeapify(index int) {
 func (h *MaxHeap) Insert(val int) {
     h.data = append(h.data, val)                                                          // append
     h.upHeapify(len(h.data) - 1)                                                          // sift up
-}
-```
-
-```kotlin run
-class MaxHeap {
-    val heap = mutableListOf<Int>()
-
-    private fun swap(i: Int, j: Int) {
-        val t = heap[i]; heap[i] = heap[j]; heap[j] = t
-    }
-
-    // Restore the max-heap property going UP from `index`. Used after insert.
-    private fun upHeapify(start: Int) {
-        var index = start
-        var parent = (index - 1) / 2
-        while (index > 0 && heap[parent] < heap[index]) {
-            swap(index, parent)
-            index = parent
-            parent = (index - 1) / 2
-        }
-    }
-
-    fun insert(v: Int) {
-        heap.add(v)                                                                          // append
-        upHeapify(heap.size - 1)                                                              // sift up
-    }
 }
 ```
 
@@ -630,6 +591,27 @@ flowchart LR
 <p align="center"><strong>The down-heapify loop. At each step pick the larger of the two children and swap if it beats the parent.</strong></p>
 
 ## Implementation
+
+
+```pseudocode
+function downHeapify(heap, index):
+    n ← length(heap)
+    while true:
+        largest ← index
+        left  ← 2 * index + 1
+        right ← 2 * index + 2
+        if left  < n AND heap[left]  > heap[largest]: largest ← left
+        if right < n AND heap[right] > heap[largest]: largest ← right
+        if largest = index: return           # heap rule satisfied
+        swap heap[index] and heap[largest]
+        index ← largest
+
+function remove(heap, index):
+    heap[index] ← heap[length(heap) − 1]   # overwrite target with last value
+    remove last element from heap
+    if index < length(heap):
+        downHeapify(heap, index)            # restore ordering from the replaced slot
+```
 
 ```python run
 class MaxHeap:
@@ -836,44 +818,6 @@ class MaxHeap {
 }
 ```
 
-```javascript run
-class MaxHeap {
-  constructor() { this.heap = []; }
-  swap(i, j) { [this.heap[i], this.heap[j]] = [this.heap[j], this.heap[i]]; }
-
-  upHeapify(index) {
-    let parent = Math.floor((index - 1) / 2);
-    while (index > 0 && this.heap[parent] < this.heap[index]) {
-      this.swap(index, parent);
-      index = parent;
-      parent = Math.floor((index - 1) / 2);
-    }
-  }
-
-  downHeapify(index) {
-    const n = this.heap.length;
-    while (true) {
-      let largest = index;
-      const left = 2 * index + 1, right = 2 * index + 2;
-      if (left  < n && this.heap[left]  > this.heap[largest]) largest = left;
-      if (right < n && this.heap[right] > this.heap[largest]) largest = right;
-      if (largest === index) return;
-      this.swap(index, largest);
-      index = largest;
-    }
-  }
-
-  insert(val) { this.heap.push(val); this.upHeapify(this.heap.length - 1); }
-
-  remove(index) {
-    const last = this.heap.length - 1;
-    this.heap[index] = this.heap[last];
-    this.heap.pop();
-    if (index < this.heap.length) this.downHeapify(index);
-  }
-}
-```
-
 ```typescript run
 class MaxHeap {
   heap: number[] = [];
@@ -947,44 +891,6 @@ func (h *MaxHeap) Remove(index int) {
     h.data[index] = h.data[last]
     h.data = h.data[:last]
     if index < len(h.data) { h.downHeapify(index) }
-}
-```
-
-```kotlin run
-class MaxHeap {
-    val heap = mutableListOf<Int>()
-
-    private fun swap(i: Int, j: Int) { val t = heap[i]; heap[i] = heap[j]; heap[j] = t }
-
-    private fun upHeapify(start: Int) {
-        var index = start
-        var parent = (index - 1) / 2
-        while (index > 0 && heap[parent] < heap[index]) {
-            swap(index, parent); index = parent; parent = (index - 1) / 2
-        }
-    }
-
-    private fun downHeapify(start: Int) {
-        var index = start
-        val n = heap.size
-        while (true) {
-            var largest = index
-            val left = 2 * index + 1; val right = 2 * index + 2
-            if (left  < n && heap[left]  > heap[largest]) largest = left
-            if (right < n && heap[right] > heap[largest]) largest = right
-            if (largest == index) return
-            swap(index, largest); index = largest
-        }
-    }
-
-    fun insert(v: Int) { heap.add(v); upHeapify(heap.size - 1) }
-
-    fun remove(index: Int) {
-        val last = heap.size - 1
-        heap[index] = heap[last]
-        heap.removeAt(last)
-        if (index < heap.size) downHeapify(index)
-    }
 }
 ```
 
@@ -1079,6 +985,13 @@ flowchart LR
 
 ## Implementation
 
+
+```pseudocode
+function peek(heap):
+    if heap is empty: return null
+    return heap[0]          # root is always the maximum — O(1) read
+```
+
 ```python run
 class MaxHeap:
     def __init__(self):
@@ -1132,16 +1045,6 @@ class MaxHeap {
 }
 ```
 
-```javascript run
-class MaxHeap {
-  constructor() { this.heap = []; }
-  peek() {
-    if (this.heap.length === 0) return null;                       // empty
-    return this.heap[0];                                           // root is the max
-  }
-}
-```
-
 ```typescript run
 class MaxHeap {
   heap: number[] = [];
@@ -1158,13 +1061,6 @@ type MaxHeap struct{ data []int }
 func (h *MaxHeap) Peek() (int, bool) {
     if len(h.data) == 0 { return 0, false }                          // empty
     return h.data[0], true                                           // root is the max
-}
-```
-
-```kotlin run
-class MaxHeap {
-    val heap = mutableListOf<Int>()
-    fun peek(): Int? = if (heap.isEmpty()) null else heap[0]          // root is the max
 }
 ```
 
@@ -1278,6 +1174,18 @@ flowchart TB
 <p align="center"><strong>Extract: pull the root <code>50</code>, move <code>15</code> to the root, sift down twice. The new max <code>40</code> is now at the top.</strong></p>
 
 ## Implementation
+
+
+```pseudocode
+function extract(heap):
+    if heap is empty: return null
+    top ← heap[0]                       # save the root (maximum)
+    last ← remove last element from heap
+    if heap is NOT empty:
+        heap[0] ← last                  # move the tail to the root
+        downHeapify(heap, 0)            # sift down to restore ordering
+    return top
+```
 
 ```python run
 class MaxHeap:
@@ -1418,37 +1326,6 @@ class MaxHeap {
 }
 ```
 
-```javascript run
-class MaxHeap {
-  constructor() { this.heap = []; }
-  swap(i, j) { [this.heap[i], this.heap[j]] = [this.heap[j], this.heap[i]]; }
-
-  downHeapify(index) {
-    const n = this.heap.length;
-    while (true) {
-      let largest = index;
-      const left = 2 * index + 1, right = 2 * index + 2;
-      if (left  < n && this.heap[left]  > this.heap[largest]) largest = left;
-      if (right < n && this.heap[right] > this.heap[largest]) largest = right;
-      if (largest === index) return;
-      this.swap(index, largest);
-      index = largest;
-    }
-  }
-
-  extract() {
-    if (this.heap.length === 0) return null;
-    const top = this.heap[0];
-    const last = this.heap.pop();
-    if (this.heap.length > 0) {
-      this.heap[0] = last;
-      this.downHeapify(0);
-    }
-    return top;
-  }
-}
-```
-
 ```typescript run
 class MaxHeap {
   heap: number[] = [];
@@ -1506,34 +1383,6 @@ func (h *MaxHeap) Extract() (int, bool) {
         h.downHeapify(0)
     }
     return top, true
-}
-```
-
-```kotlin run
-class MaxHeap {
-    val heap = mutableListOf<Int>()
-
-    private fun swap(i: Int, j: Int) { val t = heap[i]; heap[i] = heap[j]; heap[j] = t }
-
-    private fun downHeapify(start: Int) {
-        var index = start; val n = heap.size
-        while (true) {
-            var largest = index
-            val left = 2 * index + 1; val right = 2 * index + 2
-            if (left  < n && heap[left]  > heap[largest]) largest = left
-            if (right < n && heap[right] > heap[largest]) largest = right
-            if (largest == index) return
-            swap(index, largest); index = largest
-        }
-    }
-
-    fun extract(): Int? {
-        if (heap.isEmpty()) return null
-        val top = heap[0]
-        val last = heap.removeAt(heap.size - 1)
-        if (heap.isNotEmpty()) { heap[0] = last; downHeapify(0) }
-        return top
-    }
 }
 ```
 
@@ -1675,6 +1524,17 @@ flowchart TB
 
 ## Implementation
 
+
+```pseudocode
+function construct(arr):
+    heap ← arr
+    n ← length(heap)
+    # Skip leaves (index ≥ n/2); process internal nodes bottom-up so every
+    # subtree is a valid heap before we heapify its parent.
+    for i from n/2 − 1 down to 0:
+        downHeapify(heap, i, n)
+```
+
 ```python run
 class MaxHeap:
     def __init__(self):
@@ -1797,31 +1657,6 @@ class MaxHeap {
 }
 ```
 
-```javascript run
-class MaxHeap {
-  constructor() { this.heap = []; }
-  swap(i, j) { [this.heap[i], this.heap[j]] = [this.heap[j], this.heap[i]]; }
-
-  downHeapify(index, n) {
-    while (true) {
-      let largest = index;
-      const left = 2 * index + 1, right = 2 * index + 2;
-      if (left  < n && this.heap[left]  > this.heap[largest]) largest = left;
-      if (right < n && this.heap[right] > this.heap[largest]) largest = right;
-      if (largest === index) return;
-      this.swap(index, largest);
-      index = largest;
-    }
-  }
-
-  construct(arr) {
-    this.heap = arr;
-    const n = this.heap.length;
-    for (let i = Math.floor(n / 2) - 1; i >= 0; i--) this.downHeapify(i, n);
-  }
-}
-```
-
 ```typescript run
 class MaxHeap {
   heap: number[] = [];
@@ -1867,32 +1702,6 @@ func (h *MaxHeap) Construct(arr []int) {
     n := len(h.data)
     for i := n/2 - 1; i >= 0; i-- {
         h.downHeapifyN(i, n)
-    }
-}
-```
-
-```kotlin run
-class MaxHeap {
-    var heap = IntArray(0)
-
-    private fun swap(i: Int, j: Int) { val t = heap[i]; heap[i] = heap[j]; heap[j] = t }
-
-    private fun downHeapify(start: Int, n: Int) {
-        var index = start
-        while (true) {
-            var largest = index
-            val left = 2 * index + 1; val right = 2 * index + 2
-            if (left  < n && heap[left]  > heap[largest]) largest = left
-            if (right < n && heap[right] > heap[largest]) largest = right
-            if (largest == index) return
-            swap(index, largest); index = largest
-        }
-    }
-
-    fun construct(arr: IntArray) {
-        heap = arr
-        val n = heap.size
-        for (i in n / 2 - 1 downTo 0) downHeapify(i, n)
     }
 }
 ```
@@ -2000,6 +1809,23 @@ flowchart LR
 <p align="center"><strong>Min-to-max conversion is just bottom-up max-heapification of the same array. O(n).</strong></p>
 
 ## The Solution
+
+
+```pseudocode
+function maxHeapify(arr, n, index):   # down-heapify using > (max-heap ordering)
+    while true:
+        largest ← index
+        left ← 2 * index + 1; right ← 2 * index + 2
+        if left  < n AND arr[left]  > arr[largest]: largest ← left
+        if right < n AND arr[right] > arr[largest]: largest ← right
+        if largest = index: return
+        swap arr[index] and arr[largest]; index ← largest
+
+function minHeapToMaxHeap(arr):
+    n ← length(arr)
+    for i from n/2 − 1 down to 0:
+        maxHeapify(arr, n, i)          # bottom-up rebuild with max ordering
+```
 
 ```python run
 class Solution:
@@ -2109,27 +1935,6 @@ object Solution {
 }
 ```
 
-```javascript run
-class Solution {
-  maxHeapify(arr, n, index) {
-    while (true) {
-      let largest = index;
-      const left = 2 * index + 1, right = 2 * index + 2;
-      if (left  < n && arr[left]  > arr[largest]) largest = left;
-      if (right < n && arr[right] > arr[largest]) largest = right;
-      if (largest === index) return;
-      [arr[index], arr[largest]] = [arr[largest], arr[index]];
-      index = largest;
-    }
-  }
-
-  minHeapToMaxHeap(arr) {
-    const n = arr.length;
-    for (let i = Math.floor(n / 2) - 1; i >= 0; i--) this.maxHeapify(arr, n, i);
-  }
-}
-```
-
 ```typescript run
 class Solution {
   maxHeapify(arr: number[], n: number, index: number): void {
@@ -2167,29 +1972,6 @@ func maxHeapifyArr(arr []int, n, index int) {
 func minHeapToMaxHeap(arr []int) {
     n := len(arr)
     for i := n/2 - 1; i >= 0; i-- { maxHeapifyArr(arr, n, i) }
-}
-```
-
-```kotlin run
-class Solution {
-    private fun swap(arr: IntArray, i: Int, j: Int) { val t = arr[i]; arr[i] = arr[j]; arr[j] = t }
-
-    fun maxHeapify(arr: IntArray, n: Int, start: Int) {
-        var index = start
-        while (true) {
-            var largest = index
-            val left = 2 * index + 1; val right = 2 * index + 2
-            if (left  < n && arr[left]  > arr[largest]) largest = left
-            if (right < n && arr[right] > arr[largest]) largest = right
-            if (largest == index) return
-            swap(arr, index, largest); index = largest
-        }
-    }
-
-    fun minHeapToMaxHeap(arr: IntArray) {
-        val n = arr.size
-        for (i in n / 2 - 1 downTo 0) maxHeapify(arr, n, i)
-    }
 }
 ```
 
@@ -2242,6 +2024,23 @@ Mirror image: given an array `arr` that is the array representation of a **max h
 Same as the previous problem — just flip the comparator. Bottom-up `min_heapify` walks internal nodes from `n/2 − 1` to `0`, picking the **smaller** child each step.
 
 ## The Solution
+
+
+```pseudocode
+function minHeapify(arr, n, index):   # down-heapify using < (min-heap ordering)
+    while true:
+        smallest ← index
+        left ← 2 * index + 1; right ← 2 * index + 2
+        if left  < n AND arr[left]  < arr[smallest]: smallest ← left
+        if right < n AND arr[right] < arr[smallest]: smallest ← right
+        if smallest = index: return
+        swap arr[index] and arr[smallest]; index ← smallest
+
+function maxHeapToMinHeap(arr):
+    n ← length(arr)
+    for i from n/2 − 1 down to 0:
+        minHeapify(arr, n, i)          # bottom-up rebuild with min ordering
+```
 
 ```python run
 class Solution:
@@ -2350,27 +2149,6 @@ object Solution {
 }
 ```
 
-```javascript run
-class Solution {
-  minHeapify(arr, n, index) {
-    while (true) {
-      let smallest = index;
-      const left = 2 * index + 1, right = 2 * index + 2;
-      if (left  < n && arr[left]  < arr[smallest]) smallest = left;
-      if (right < n && arr[right] < arr[smallest]) smallest = right;
-      if (smallest === index) return;
-      [arr[index], arr[smallest]] = [arr[smallest], arr[index]];
-      index = smallest;
-    }
-  }
-
-  maxHeapToMinHeap(arr) {
-    const n = arr.length;
-    for (let i = Math.floor(n / 2) - 1; i >= 0; i--) this.minHeapify(arr, n, i);
-  }
-}
-```
-
 ```typescript run
 class Solution {
   minHeapify(arr: number[], n: number, index: number): void {
@@ -2408,29 +2186,6 @@ func minHeapifyArr(arr []int, n, index int) {
 func maxHeapToMinHeap(arr []int) {
     n := len(arr)
     for i := n/2 - 1; i >= 0; i-- { minHeapifyArr(arr, n, i) }
-}
-```
-
-```kotlin run
-class Solution {
-    private fun swap(arr: IntArray, i: Int, j: Int) { val t = arr[i]; arr[i] = arr[j]; arr[j] = t }
-
-    fun minHeapify(arr: IntArray, n: Int, start: Int) {
-        var index = start
-        while (true) {
-            var smallest = index
-            val left = 2 * index + 1; val right = 2 * index + 2
-            if (left  < n && arr[left]  < arr[smallest]) smallest = left
-            if (right < n && arr[right] < arr[smallest]) smallest = right
-            if (smallest == index) return
-            swap(arr, index, smallest); index = smallest
-        }
-    }
-
-    fun maxHeapToMinHeap(arr: IntArray) {
-        val n = arr.size
-        for (i in n / 2 - 1 downTo 0) minHeapify(arr, n, i)
-    }
 }
 ```
 

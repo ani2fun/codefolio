@@ -1,7 +1,3 @@
----
-title: "Binary Tree"
----
-
 # Binary Tree
 
 Use this page as the chapter map for binary tree. The guides are ordered from fundamentals into common problem-solving patterns and design practice.

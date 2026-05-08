@@ -1,7 +1,3 @@
----
-title: "Stack"
----
-
 # Stack
 
 Use this page as the chapter map for stack. The guides are ordered from fundamentals into common problem-solving patterns and design practice.

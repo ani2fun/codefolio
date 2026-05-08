@@ -1,7 +1,3 @@
----
-title: "6. Pattern: Reversal (Subproblem)"
----
-
 # 6. Pattern: Reversal (Subproblem)
 
 ## The Hook
@@ -213,6 +209,48 @@ flowchart TB
 ### The implementation
 
 The structure is dead simple: a `findLength` helper, a `getNodeAtPosition` helper, the lesson-5 `reverse(start, end)` helper, and a thin driver that picks segments and tracks the new head.
+
+
+```pseudocode
+# Reverse k-sized segments throughout a DLL. Uses the standard segment-reversal helper.
+function findLength(head):
+    length ← 0
+    while head is not null: length ← length + 1; head ← head.next
+    return length
+
+function getNodeAtPosition(head, position):
+    current ← head
+    for i from 1 to position − 1:
+        if current is null: break
+        current ← current.next
+    return current
+
+function reverse(start, end):
+    if start is null OR start = end: return
+    leftBound ← start.prev
+    rightBound ← end.next if end is not null else null
+    current ← start
+    while current ≠ rightBound:
+        nextNode ← current.next                        # save before swap
+        swap current.prev and current.next             # the reversal
+        current ← nextNode
+    start.next ← rightBound
+    if rightBound is not null: rightBound.prev ← start
+    end.prev ← leftBound
+    if leftBound is not null: leftBound.next ← end
+
+function reverseKSegments(head, k):
+    if head is null OR head.next is null OR k = 1: return head
+    start ← head
+    totalSegments ← findLength(head) ÷ k                # floor — drop the short tail
+    for i from 1 to totalSegments:
+        end ← getNodeAtPosition(start, k)
+        reverse(start, end)
+        if end is not null AND end.prev is null:        # first segment owns the new head
+            head ← end
+        start ← start.next                              # `start` is now the segment tail
+    return head
+```
 
 ```python run
 """
@@ -476,51 +514,6 @@ class Solution {
 }
 ```
 
-```javascript run
-class Solution {
-    findLength(head) {
-        let length = 0;
-        while (head !== null) { length++; head = head.next; }
-        return length;
-    }
-
-    getNodeAtPosition(head, position) {
-        let current = head;
-        for (let i = 1; i < position; ++i) current = current.next;
-        return current;
-    }
-
-    reverse(start, end) {
-        if (start === null || start === end) return;
-        const leftBound  = start.prev;
-        const rightBound = end.next;
-        let current = start;
-        while (current !== rightBound) {
-            const next = current.next;       // Save before swap
-            [current.prev, current.next] = [current.next, current.prev];
-            current = next;
-        }
-        start.next = rightBound;
-        if (rightBound) rightBound.prev = start;
-        end.prev = leftBound;
-        if (leftBound)  leftBound.next  = end;
-    }
-
-    reverseKSegments(head, k) {
-        if (head === null || head.next === null || k === 1) return head;
-        let start = head;
-        const totalSegments = Math.floor(this.findLength(head) / k);
-        for (let i = 0; i < totalSegments; i++) {
-            const end = this.getNodeAtPosition(start, k);
-            this.reverse(start, end);
-            if (end.prev === null) head = end;    // First segment owns the head
-            start = start.next;
-        }
-        return head;
-    }
-}
-```
-
 ```typescript run
 class Solution {
     findLength(head: ListNode | null): number {
@@ -617,53 +610,6 @@ func reverseKSegments(head *ListNode, k int) *ListNode {
         start = start.Next
     }
     return head
-}
-```
-
-```kotlin run
-class Solution {
-    fun findLength(head: ListNode?): Int {
-        var length = 0; var h = head
-        while (h != null) { length++; h = h.next }
-        return length
-    }
-
-    fun getNodeAtPosition(head: ListNode?, position: Int): ListNode? {
-        var current = head
-        for (i in 1 until position) current = current?.next
-        return current
-    }
-
-    fun reverse(start: ListNode?, end: ListNode?) {
-        if (start == null || start == end) return
-        val leftBound  = start.prev
-        val rightBound = end?.next
-        var current: ListNode? = start
-        while (current != rightBound) {
-            val next = current?.next                     // Save before swap
-            val tmp  = current?.prev
-            current?.prev = current?.next
-            current?.next = tmp
-            current = next
-        }
-        start.next = rightBound
-        if (rightBound != null) rightBound.prev = start
-        end?.prev = leftBound
-        if (leftBound  != null) leftBound.next  = end
-    }
-
-    fun reverseKSegments(head: ListNode?, k: Int): ListNode? {
-        if (head == null || head.next == null || k == 1) return head
-        var h = head; var start: ListNode? = head
-        val totalSegments = findLength(head) / k
-        for (i in 0 until totalSegments) {
-            val end = getNodeAtPosition(start, k)
-            reverse(start, end)
-            if (end?.prev == null) h = end                // First segment owns head
-            start = start?.next
-        }
-        return h
-    }
 }
 ```
 
@@ -816,6 +762,21 @@ flowchart TB
 <p align="center"><strong>The Pairwise Strategy — same template as <code>reverseKSegments</code>, with the window hard-pinned to 2.</strong></p>
 
 ## The Solution
+
+
+```pseudocode
+# k = 2 specialisation of reverseKSegments → swap consecutive pairs.
+function pairwiseSwap(head):
+    if head is null OR head.next is null: return head
+    start ← head
+    while start is not null AND start.next is not null:
+        end ← start.next                                # k = 2: end is one hop
+        reverse(start, end)
+        if end.prev is null:                            # first pair owns the new head
+            head ← end
+        start ← start.next                              # `start` is now the segment tail
+    return head
+```
 
 ```python run
 from typing import Optional
@@ -980,37 +941,6 @@ class Solution {
 }
 ```
 
-```javascript run
-class Solution {
-    reverse(start, end) {
-        if (start === null || start === end) return;
-        const leftBound = start.prev, rightBound = end.next;
-        let current = start;
-        while (current !== rightBound) {
-            const next = current.next;
-            [current.prev, current.next] = [current.next, current.prev];
-            current = next;
-        }
-        start.next = rightBound;
-        if (rightBound) rightBound.prev = start;
-        end.prev = leftBound;
-        if (leftBound)  leftBound.next  = end;
-    }
-
-    pairwiseSwap(head) {
-        if (head === null || head.next === null) return head;
-        let start = head;
-        while (start !== null && start.next !== null) {
-            const end = start.next;           // k=2
-            this.reverse(start, end);
-            if (end.prev === null) head = end;
-            start = start.next;
-        }
-        return head;
-    }
-}
-```
-
 ```typescript run
 class Solution {
     reverse(start: ListNode | null, end: ListNode | null): void {
@@ -1069,40 +999,6 @@ func pairwiseSwap(head *ListNode) *ListNode {
         start = start.Next
     }
     return head
-}
-```
-
-```kotlin run
-class Solution {
-    fun reverse(start: ListNode?, end: ListNode?) {
-        if (start == null || start == end) return
-        val leftBound  = start.prev
-        val rightBound = end?.next
-        var current: ListNode? = start
-        while (current != rightBound) {
-            val next = current?.next
-            val tmp  = current?.prev
-            current?.prev = current?.next
-            current?.next = tmp
-            current = next
-        }
-        start.next = rightBound
-        if (rightBound != null) rightBound.prev = start
-        end?.prev = leftBound
-        if (leftBound  != null) leftBound.next  = end
-    }
-
-    fun pairwiseSwap(head: ListNode?): ListNode? {
-        if (head == null || head.next == null) return head
-        var h = head; var start: ListNode? = head
-        while (start != null && start.next != null) {
-            val end = start.next                  // k=2
-            reverse(start, end)
-            if (end?.prev == null) h = end
-            start = start?.next
-        }
-        return h
-    }
 }
 ```
 
@@ -1259,6 +1155,22 @@ flowchart TB
 > Answer: `length / k = 1` group, the entire list. After one `reverse(1, 5)`: `[5, 4, 3, 2, 1]`. Head promoted because `end.prev == null`. The "fractional tail" rule reduces to "no tail" when `k` divides `length` exactly.
 
 ## The Solution
+
+
+```pseudocode
+# Same `reverseKSegments` algorithm — re-listed compactly with helpers.
+function reverseKSegments(head, k):
+    if head is null OR head.next is null OR k = 1: return head
+    start ← head
+    totalSegments ← findLength(head) ÷ k
+    for i from 1 to totalSegments:
+        end ← getNodeAtPosition(start, k)
+        reverse(start, end)
+        if end is not null AND end.prev is null:
+            head ← end
+        start ← start.next
+    return head
+```
 
 ```python run
 from typing import Optional
@@ -1431,36 +1343,6 @@ class Solution {
 }
 ```
 
-```javascript run
-class Solution {
-    findLength(h) { let n = 0; while (h) { n++; h = h.next; } return n; }
-    getNodeAtPosition(h, p) { let c = h; for (let i = 1; i < p; i++) c = c.next; return c; }
-    reverse(start, end) {
-        if (start === null || start === end) return;
-        let lb = start.prev, rb = end.next, cur = start;
-        while (cur !== rb) {
-            const nxt = cur.next;
-            [cur.prev, cur.next] = [cur.next, cur.prev];
-            cur = nxt;
-        }
-        start.next = rb; if (rb) rb.prev = start;
-        end.prev   = lb; if (lb) lb.next  = end;
-    }
-    reverseKSegments(head, k) {
-        if (head === null || head.next === null || k === 1) return head;
-        let start = head;
-        const total = Math.floor(this.findLength(head) / k);
-        for (let i = 0; i < total; i++) {
-            const end = this.getNodeAtPosition(start, k);
-            this.reverse(start, end);
-            if (end.prev === null) head = end;
-            start = start.next;
-        }
-        return head;
-    }
-}
-```
-
 ```typescript run
 class Solution {
     findLength(h: ListNode | null): number { let n = 0; while (h) { n++; h = h.next; } return n; }
@@ -1524,41 +1406,6 @@ func reverseKSegments(head *ListNode, k int) *ListNode {
         start = start.Next
     }
     return head
-}
-```
-
-```kotlin run
-class Solution {
-    fun findLength(head: ListNode?): Int {
-        var n = 0; var h = head
-        while (h != null) { n++; h = h.next }; return n
-    }
-    fun getNodeAtPosition(head: ListNode?, p: Int): ListNode? {
-        var c = head; for (i in 1 until p) c = c?.next; return c
-    }
-    fun reverse(start: ListNode?, end: ListNode?) {
-        if (start == null || start == end) return
-        val lb = start.prev; val rb = end?.next
-        var cur: ListNode? = start
-        while (cur != rb) {
-            val nxt = cur?.next; val tmp = cur?.prev
-            cur?.prev = cur?.next; cur?.next = tmp; cur = nxt
-        }
-        start.next = rb; if (rb != null) rb.prev = start
-        end?.prev = lb; if (lb != null) lb.next  = end
-    }
-    fun reverseKSegments(head: ListNode?, k: Int): ListNode? {
-        if (head == null || head.next == null || k == 1) return head
-        var h = head; var start: ListNode? = head
-        val total = findLength(head) / k
-        for (i in 0 until total) {
-            val end = getNodeAtPosition(start, k)
-            reverse(start, end)
-            if (end?.prev == null) h = end
-            start = start?.next
-        }
-        return h
-    }
 }
 ```
 
@@ -1729,6 +1576,24 @@ flowchart TB
 <p align="center"><strong>The Increasing-Group Strategy — same skeleton as K-segments with two new bookkeeping lines: shrink <code>length</code>, grow <code>groupSize</code>.</strong></p>
 
 ## The Solution
+
+
+```pseudocode
+function reverseIncreasingGroups(head):
+    if head is null OR head.next is null: return head
+    start ← head
+    length ← findLength(head)
+    groupSize ← 1
+    while length ≥ groupSize:
+        end ← getNodeAtPosition(start, groupSize)
+        reverse(start, end)
+        if end AND end.prev is null:   # first group reversed — end is now the new head
+            head ← end
+        start ← start.next            # advance into next group
+        length ← length − groupSize
+        groupSize ← groupSize + 1
+    return head
+```
 
 ```python run
 from typing import Optional
@@ -1915,39 +1780,6 @@ class Solution {
 }
 ```
 
-```javascript run
-class Solution {
-    findLength(h) { let n = 0; while (h) { n++; h = h.next; } return n; }
-    getNodeAtPosition(h, p) { let c = h; for (let i = 1; i < p; i++) c = c.next; return c; }
-    reverse(start, end) {
-        if (start === null || start === end) return;
-        let lb = start.prev, rb = end.next, cur = start;
-        while (cur !== rb) {
-            const nxt = cur.next;
-            [cur.prev, cur.next] = [cur.next, cur.prev];
-            cur = nxt;
-        }
-        start.next = rb; if (rb) rb.prev = start;
-        end.prev   = lb; if (lb) lb.next  = end;
-    }
-    reverseIncreasingGroups(head) {
-        if (head === null || head.next === null) return head;
-        let start = head;
-        let length = this.findLength(head);
-        let groupSize = 1;
-        while (length >= groupSize) {
-            const end = this.getNodeAtPosition(start, groupSize);
-            this.reverse(start, end);
-            if (end.prev === null) head = end;
-            start = start.next;
-            length    -= groupSize;
-            groupSize += 1;
-        }
-        return head;
-    }
-}
-```
-
 ```typescript run
 class Solution {
     findLength(h: ListNode | null): number { let n = 0; while (h) { n++; h = h.next; } return n; }
@@ -1999,39 +1831,6 @@ func reverseIncreasingGroups(head *ListNode) *ListNode {
         groupSize += 1
     }
     return head
-}
-```
-
-```kotlin run
-class Solution {
-    fun reverseIncreasingGroups(head: ListNode?): ListNode? {
-        if (head == null || head.next == null) return head
-        var h = head; var start: ListNode? = head
-        var length = findLength(head); var groupSize = 1
-        while (length >= groupSize) {
-            val end = getNodeAtPosition(start, groupSize)
-            reverse(start, end)
-            if (end?.prev == null) h = end
-            start = start?.next
-            length    -= groupSize
-            groupSize += 1
-        }
-        return h
-    }
-    // findLength, getNodeAtPosition, reverse — same as previous problems
-    fun findLength(head: ListNode?): Int { var n = 0; var h = head; while (h != null) { n++; h = h.next }; return n }
-    fun getNodeAtPosition(head: ListNode?, p: Int): ListNode? { var c = head; for (i in 1 until p) c = c?.next; return c }
-    fun reverse(start: ListNode?, end: ListNode?) {
-        if (start == null || start == end) return
-        val lb = start.prev; val rb = end?.next
-        var cur: ListNode? = start
-        while (cur != rb) {
-            val nxt = cur?.next; val tmp = cur?.prev
-            cur?.prev = cur?.next; cur?.next = tmp; cur = nxt
-        }
-        start.next = rb; if (rb != null) rb.prev = start
-        end?.prev = lb; if (lb != null) lb.next  = end
-    }
 }
 ```
 
@@ -2209,6 +2008,25 @@ flowchart TB
 <p align="center"><strong>The Alternating Strategy — the only branch is "reverse vs skip". Both paths end in the same advance-and-toggle.</strong></p>
 
 ## The Solution
+
+
+```pseudocode
+function reverseAlternateSegments(head, k):
+    if head is null OR head.next is null OR k = 1: return head
+    shouldReverse ← true
+    start ← head
+    totalSegments ← findLength(head) / k
+    for i from 0 to totalSegments − 1:
+        end ← getNodeAtPosition(start, k)
+        if shouldReverse:
+            reverse(start, end)
+            if end AND end.prev is null: head ← end   # first reversed segment owns head
+        else:
+            start ← end                               # skip: walk past the un-reversed segment
+        start ← start.next
+        shouldReverse ← NOT shouldReverse
+    return head
+```
 
 ```python run
 from typing import Optional
@@ -2397,42 +2215,6 @@ class Solution {
 }
 ```
 
-```javascript run
-class Solution {
-    findLength(h) { let n = 0; while (h) { n++; h = h.next; } return n; }
-    getNodeAtPosition(h, p) { let c = h; for (let i = 1; i < p; i++) c = c.next; return c; }
-    reverse(start, end) {
-        if (start === null || start === end) return;
-        let lb = start.prev, rb = end.next, cur = start;
-        while (cur !== rb) {
-            const nxt = cur.next;
-            [cur.prev, cur.next] = [cur.next, cur.prev];
-            cur = nxt;
-        }
-        start.next = rb; if (rb) rb.prev = start;
-        end.prev   = lb; if (lb) lb.next  = end;
-    }
-    reverseAlternateSegments(head, k) {
-        if (head === null || head.next === null || k === 1) return head;
-        let shouldReverse = true;                        // First segment IS reversed
-        let start = head;
-        const total = Math.floor(this.findLength(head) / k);
-        for (let i = 0; i < total; i++) {
-            const end = this.getNodeAtPosition(start, k);
-            if (shouldReverse) {
-                this.reverse(start, end);
-                if (end.prev === null) head = end;
-            } else {
-                start = end;                              // Skip past
-            }
-            start = start.next;
-            shouldReverse = !shouldReverse;
-        }
-        return head;
-    }
-}
-```
-
 ```typescript run
 class Solution {
     findLength(h: ListNode | null): number { let n = 0; while (h) { n++; h = h.next; } return n; }
@@ -2490,42 +2272,6 @@ func reverseAlternateSegments(head *ListNode, k int) *ListNode {
         shouldReverse = !shouldReverse
     }
     return head
-}
-```
-
-```kotlin run
-class Solution {
-    fun reverseAlternateSegments(head: ListNode?, k: Int): ListNode? {
-        if (head == null || head.next == null || k == 1) return head
-        var h = head; var start: ListNode? = head
-        var shouldReverse = true
-        val total = findLength(head) / k
-        for (i in 0 until total) {
-            val end = getNodeAtPosition(start, k)
-            if (shouldReverse) {
-                reverse(start, end)
-                if (end?.prev == null) h = end
-            } else {
-                start = end
-            }
-            start = start?.next
-            shouldReverse = !shouldReverse
-        }
-        return h
-    }
-    fun findLength(head: ListNode?): Int { var n = 0; var h = head; while (h != null) { n++; h = h.next }; return n }
-    fun getNodeAtPosition(head: ListNode?, p: Int): ListNode? { var c = head; for (i in 1 until p) c = c?.next; return c }
-    fun reverse(start: ListNode?, end: ListNode?) {
-        if (start == null || start == end) return
-        val lb = start.prev; val rb = end?.next
-        var cur: ListNode? = start
-        while (cur != rb) {
-            val nxt = cur?.next; val tmp = cur?.prev
-            cur?.prev = cur?.next; cur?.next = tmp; cur = nxt
-        }
-        start.next = rb; if (rb != null) rb.prev = start
-        end?.prev = lb; if (lb != null) lb.next  = end
-    }
 }
 ```
 

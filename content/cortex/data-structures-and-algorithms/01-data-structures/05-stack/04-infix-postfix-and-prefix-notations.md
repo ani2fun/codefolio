@@ -1,7 +1,3 @@
----
-title: "4. Infix, Postfix, and Prefix Notations"
----
-
 # 4. Infix, Postfix, and Prefix Notations
 
 ## The Hook

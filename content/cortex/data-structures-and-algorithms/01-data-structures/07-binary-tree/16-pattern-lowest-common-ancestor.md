@@ -1,7 +1,3 @@
----
-title: "16. Pattern: Lowest Common Ancestor"
----
-
 # 16. Pattern: Lowest Common Ancestor
 
 ## The Hook
@@ -88,6 +84,17 @@ flowchart TB
 
 ## Generic pattern in 10 languages
 
+
+```pseudocode
+function lca(root, a, b):
+    if root = null:        return null
+    if root = a OR root = b: return root   # found one target — propagate it up
+    left  ← lca(root.left,  a, b)
+    right ← lca(root.right, a, b)
+    if left ≠ null AND right ≠ null: return root   # both sides hit → this IS the LCA
+    return left if left ≠ null else right
+```
+
 ```python run
 from typing import Optional
 
@@ -148,17 +155,6 @@ def lca(root: TreeNode, a: TreeNode, b: TreeNode): TreeNode = {
 }
 ```
 
-```javascript run
-function lca(root, a, b) {
-    if (!root)             return null;
-    if (root === a || root === b) return root;
-    const left  = lca(root.left,  a, b);
-    const right = lca(root.right, a, b);
-    if (left && right) return root;
-    return left || right;
-}
-```
-
 ```typescript run
 function lca(root: TreeNode | null, a: TreeNode, b: TreeNode): TreeNode | null {
     if (!root)             return null;
@@ -179,17 +175,6 @@ func lca(root, a, b *TreeNode) *TreeNode {
     if left != nil && right != nil { return root }
     if left != nil { return left }
     return right
-}
-```
-
-```kotlin run
-fun lca(root: TreeNode?, a: TreeNode, b: TreeNode): TreeNode? {
-    if (root == null)             return null
-    if (root === a || root === b) return root
-    val left  = lca(root.left,  a, b)
-    val right = lca(root.right, a, b)
-    if (left != null && right != null) return root
-    return left ?: right
 }
 ```
 
@@ -255,6 +240,19 @@ This adds one O(N) pre-pass, keeping overall complexity at O(N).
 
 ## Solution
 
+
+```pseudocode
+function exists(root, target):
+    if root = null:    return false
+    if root = target:  return true
+    return exists(root.left, target) OR exists(root.right, target)
+
+function lcaII(root, a, b):
+    if root = null OR a = null OR b = null: return null
+    if NOT exists(root, a) OR NOT exists(root, b): return null
+    return lca(root, a, b)
+```
+
 ```python run
 def exists(root, target):
     if root is None: return False
@@ -319,19 +317,6 @@ def lcaII(root: TreeNode, a: TreeNode, b: TreeNode): TreeNode = {
 }
 ```
 
-```javascript run
-function exists(root, target) {
-    if (!root)             return false;
-    if (root === target)   return true;
-    return exists(root.left, target) || exists(root.right, target);
-}
-function lcaII(root, a, b) {
-    if (!root || !a || !b)                                       return null;
-    if (!exists(root, a) || !exists(root, b))                    return null;
-    return lca(root, a, b);
-}
-```
-
 ```typescript run
 function exists(root: TreeNode | null, target: TreeNode): boolean {
     if (!root)             return false;
@@ -354,19 +339,6 @@ func exists(root, target *TreeNode) bool {
 func lcaII(root, a, b *TreeNode) *TreeNode {
     if root == nil || a == nil || b == nil { return nil }
     if !exists(root, a) || !exists(root, b) { return nil }
-    return lca(root, a, b)
-}
-```
-
-```kotlin run
-fun exists(root: TreeNode?, target: TreeNode): Boolean {
-    if (root == null)     return false
-    if (root === target)  return true
-    return exists(root.left, target) || exists(root.right, target)
-}
-fun lcaII(root: TreeNode?, a: TreeNode?, b: TreeNode?): TreeNode? {
-    if (root == null || a == null || b == null)                 return null
-    if (!exists(root, a) || !exists(root, b))                   return null
     return lca(root, a, b)
 }
 ```
@@ -394,6 +366,20 @@ pub fn lca_ii<'a>(root: &'a Option<Box<TreeNode>>, a: i32, b: i32) -> Option<&'a
 Generalise the algorithm: instead of "is this node `A` or `B`?", check "is this node *in the set of targets*?". Use a hash set for O(1) lookup. The combine logic stays exactly the same.
 
 ## Solution
+
+
+```pseudocode
+function randomLCA(root, nodes):
+    targetSet ← set of all nodes
+    function go(n):
+        if n = null: return null
+        if n in targetSet: return n
+        left  ← go(n.left)
+        right ← go(n.right)
+        if left ≠ null AND right ≠ null: return n
+        return left if left ≠ null else right
+    return go(root)
+```
 
 ```python run
 def random_lca(root, nodes):
@@ -458,21 +444,6 @@ def randomLCA(root: TreeNode, nodes: List[TreeNode]): TreeNode = {
 }
 ```
 
-```javascript run
-function randomLCA(root, nodes) {
-    const set = new Set(nodes);
-    function go(n) {
-        if (!n)             return null;
-        if (set.has(n))     return n;
-        const left  = go(n.left);
-        const right = go(n.right);
-        if (left && right) return n;
-        return left || right;
-    }
-    return go(root);
-}
-```
-
 ```typescript run
 function randomLCA(root: TreeNode | null, nodes: TreeNode[]): TreeNode | null {
     const set = new Set(nodes);
@@ -506,21 +477,6 @@ func randomLCA(root *TreeNode, nodes []*TreeNode) *TreeNode {
 }
 ```
 
-```kotlin run
-fun randomLCA(root: TreeNode?, nodes: List<TreeNode>): TreeNode? {
-    val set = nodes.toHashSet()
-    fun go(n: TreeNode?): TreeNode? {
-        if (n == null)        return null
-        if (n in set)         return n
-        val left  = go(n.left)
-        val right = go(n.right)
-        if (left != null && right != null) return n
-        return left ?: right
-    }
-    return go(root)
-}
-```
-
 ```rust run
 use std::collections::HashSet;
 pub fn random_lca<'a>(root: &'a Option<Box<TreeNode>>, targets: &HashSet<i32>) -> Option<&'a Box<TreeNode>> {
@@ -549,6 +505,23 @@ Two-pass: first do a level-order traversal to find the deepest leaves; then run 
 A more elegant *one-pass* solution exists using the stateful postorder pattern from lesson 11 — return `(deepest depth, LCA so far)` from each subtree, and combine at each node. We'll stick with the two-pass version for clarity; the one-pass version is a good exercise.
 
 ## Solution
+
+
+```pseudocode
+function deepestLCA(root):
+    if root = null: return null
+    # Pass 1: BFS to collect deepest leaves
+    q ← empty queue; enqueue root to q; deepest ← empty list
+    while q is not empty:
+        deepest ← snapshot of q
+        nxt ← empty queue
+        for n in deepest:
+            if n.left  ≠ null: enqueue n.left  to nxt
+            if n.right ≠ null: enqueue n.right to nxt
+        q ← nxt
+    # Pass 2: N-node LCA over the deepest leaves
+    return randomLCA(root, deepest)
+```
 
 ```python run
 from collections import deque
@@ -637,23 +610,6 @@ def deepestLCA(root: TreeNode): TreeNode = {
 }
 ```
 
-```javascript run
-function deepestLCA(root) {
-    if (!root) return null;
-    let q = [root]; let deepest = [];
-    while (q.length) {
-        deepest = q.slice();
-        const nxt = [];
-        for (const n of deepest) {
-            if (n.left)  nxt.push(n.left);
-            if (n.right) nxt.push(n.right);
-        }
-        q = nxt;
-    }
-    return randomLCA(root, deepest);
-}
-```
-
 ```typescript run
 function deepestLCA(root: TreeNode | null): TreeNode | null {
     if (!root) return null;
@@ -682,24 +638,6 @@ func deepestLCA(root *TreeNode) *TreeNode {
         for _, n := range deepest {
             if n.Left  != nil { nxt = append(nxt, n.Left) }
             if n.Right != nil { nxt = append(nxt, n.Right) }
-        }
-        q = nxt
-    }
-    return randomLCA(root, deepest)
-}
-```
-
-```kotlin run
-fun deepestLCA(root: TreeNode?): TreeNode? {
-    if (root == null) return null
-    var q = mutableListOf<TreeNode>(root)
-    var deepest: List<TreeNode> = emptyList()
-    while (q.isNotEmpty()) {
-        deepest = q.toList()
-        val nxt = mutableListOf<TreeNode>()
-        for (n in deepest) {
-            n.left ?.let { nxt += it }
-            n.right?.let { nxt += it }
         }
         q = nxt
     }
@@ -754,6 +692,28 @@ flowchart TB
 <p align="center"><strong>Distance between 4 and 7 — LCA is 1; 4 is 2 edges down, 7 is 2 edges down. Total path length = 2 + 2 = <strong>4 edges</strong>.</strong></p>
 
 ## Solution
+
+
+```pseudocode
+function distanceBetweenNodes(root, valA, valB):
+    function lcaByVal(n):
+        if n = null: return null
+        if n.val = valA OR n.val = valB: return n
+        l ← lcaByVal(n.left); r ← lcaByVal(n.right)
+        if l ≠ null AND r ≠ null: return n
+        return l if l ≠ null else r
+    function depth(n, val, d):
+        if n = null: return −1
+        if n.val = val: return d
+        l ← depth(n.left, val, d + 1)
+        if l ≠ −1: return l
+        return depth(n.right, val, d + 1)
+    ancestor ← lcaByVal(root)
+    if ancestor = null: return −1
+    da ← depth(ancestor, valA, 0); db ← depth(ancestor, valB, 0)
+    if da = −1 OR db = −1: return −1
+    return da + db
+```
 
 ```python run
 def distance_between_nodes(root, val_a, val_b):
@@ -854,28 +814,6 @@ def distanceBetweenNodes(root: TreeNode, a: Int, b: Int): Int = {
 }
 ```
 
-```javascript run
-function distanceBetweenNodes(root, a, b) {
-    function lcaByVal(n) {
-        if (!n)                          return null;
-        if (n.val === a || n.val === b)  return n;
-        const l = lcaByVal(n.left), r = lcaByVal(n.right);
-        if (l && r) return n;
-        return l || r;
-    }
-    function depth(n, v, d) {
-        if (!n)         return -1;
-        if (n.val === v) return d;
-        const l = depth(n.left, v, d + 1); if (l !== -1) return l;
-        return depth(n.right, v, d + 1);
-    }
-    if (!root) return -1;
-    const l = lcaByVal(root); if (!l) return -1;
-    const da = depth(l, a, 0), db = depth(l, b, 0);
-    return (da === -1 || db === -1) ? -1 : da + db;
-}
-```
-
 ```typescript run
 function distanceBetweenNodes(root: TreeNode | null, a: number, b: number): number {
     function lcaByVal(n: TreeNode | null): TreeNode | null {
@@ -921,28 +859,6 @@ func distanceBetweenNodes(root *TreeNode, a, b int) int {
     da := depth(l, a, 0); db := depth(l, b, 0)
     if da == -1 || db == -1 { return -1 }
     return da + db
-}
-```
-
-```kotlin run
-fun distanceBetweenNodes(root: TreeNode?, a: Int, b: Int): Int {
-    fun lcaByVal(n: TreeNode?): TreeNode? {
-        if (n == null)                          return null
-        if (n.value == a || n.value == b)       return n
-        val l = lcaByVal(n.left); val r = lcaByVal(n.right)
-        if (l != null && r != null) return n
-        return l ?: r
-    }
-    fun depth(n: TreeNode?, v: Int, d: Int): Int {
-        if (n == null)         return -1
-        if (n.value == v)      return d
-        val l = depth(n.left,  v, d + 1); if (l != -1) return l
-        return depth(n.right, v, d + 1)
-    }
-    if (root == null) return -1
-    val l = lcaByVal(root); if (l == null) return -1
-    val da = depth(l, a, 0); val db = depth(l, b, 0)
-    return if (da == -1 || db == -1) -1 else da + db
 }
 ```
 

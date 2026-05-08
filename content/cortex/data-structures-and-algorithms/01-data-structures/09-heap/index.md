@@ -1,7 +1,3 @@
----
-title: "Heap"
----
-
 # Heap
 
 Use this page as the chapter map for heap. The guides are ordered from fundamentals into common problem-solving patterns and design practice.

@@ -1,7 +1,3 @@
----
-title: "Doubly Linked List"
----
-
 # Doubly Linked List
 
 Use this page as the chapter map for doubly linked list. The guides are ordered from fundamentals into common problem-solving patterns and design practice.

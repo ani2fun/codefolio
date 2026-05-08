@@ -1,11 +1,11 @@
 {
-    "title": "Data Structure and Algorithms",
-    "description": "A guided tour of core data structures and algorithms — adapted from the homelab note-book project. Includes Mermaid and D2 diagrams plus runnable code samples in multiple languages.",
+    "title": "Data Structures and Algorithms",
+    "description": "A guided tour of core data structures and algorithms — adapted from the homelab note-book project. Each guide opens with a 🧠 pseudocode reference, then explores the model, operations, common patterns, and design problems.",
     "tags": [
         "computer-science",
         "data-structures",
         "algorithms",
         "dsa"
     ],
-    "estimatedReadingMinutes": 600
+    "estimatedReadingMinutes": 720
 }

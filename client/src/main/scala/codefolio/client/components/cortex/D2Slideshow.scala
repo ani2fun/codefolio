@@ -25,8 +25,11 @@ object D2Slideshow:
   val Component =
     ScalaFnComponent
       .withHooks[Props]
-      .useState(0)
-      .useState(false)
+      // Each .useState(initial) is the Scala equivalent of React's `const [x, setX] = useState(initial)`.
+      // The literal fixes both the initial value and the inferred type, and the hook is threaded
+      // positionally into every later block — flipping the order would flip the render parameters.
+      .useState(0)     // indexS  : current slide cursor
+      .useState(false) // playingS: auto-advance flag toggled by the Play/Pause button
       .useRefBy(_ => Option.empty[Int])
       .useEffectWithDepsBy((props, indexS, playingS, _) =>
         (props.slides.length, indexS.value, playingS.value)

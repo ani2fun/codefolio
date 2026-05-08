@@ -1,7 +1,3 @@
----
-title: "4. Deletion in Doubly Linked Lists"
----
-
 # 4. Deletion in Doubly Linked Lists
 
 ## The Hook
@@ -145,6 +141,16 @@ flowchart TB
 
 When implementing the logic for deleting the first node, we consider all three cases and write the code for each in conditional blocks.
 
+
+```pseudocode
+function deleteFirstNode(head):
+    if head is null: return null                       # empty list
+    if head.next is null: return null                  # single node — list becomes empty
+    head ← head.next                                   # slide head forward
+    head.prev ← null                                   # new head has no predecessor
+    return head
+```
+
 ```python run
 class Solution:
     def delete_first_node(self, head):
@@ -220,20 +226,6 @@ class Solution {
 }
 ```
 
-```javascript run
-class Solution {
-    deleteFirstNode(head) {
-        if (head === null)        return null;          // Case 1: empty
-        if (head.next === null)   return null;          // Case 2: single node
-        let nodeToDelete = head;                        // Save before clobber
-        head        = head.next;                        // Slide forward
-        head.prev   = null;                             // New head has no predecessor
-        nodeToDelete = null;                            // Drop reference for GC
-        return head;
-    }
-}
-```
-
 ```typescript run
 class Solution {
     deleteFirstNode(head: ListNode | null): ListNode | null {
@@ -257,20 +249,6 @@ func deleteFirstNode(head *ListNode) *ListNode {
     head.Prev = nil                                     // New head has no predecessor
     _ = nodeToDelete                                    // Go GC will reclaim
     return head
-}
-```
-
-```kotlin run
-class Solution {
-    fun deleteFirstNode(head: ListNode?): ListNode? {
-        if (head == null)        return null            // Case 1: empty
-        if (head.next == null)   return null            // Case 2: single node
-        var nodeToDelete: ListNode? = head              // Save before clobber
-        val newHead = head.next!!
-        newHead.prev = null                             // No predecessor
-        nodeToDelete = null                             // Drop ref
-        return newHead
-    }
 }
 ```
 
@@ -328,6 +306,16 @@ Output: [7, 3, 10]
 ```
 
 ## The Solution
+
+
+```pseudocode
+function deleteFirstNode(head):
+    if head is null: return null
+    if head.next is null: return null                  # single-node list
+    head ← head.next
+    head.prev ← null
+    return head
+```
 
 ```python run
 class Solution:
@@ -392,18 +380,6 @@ class Solution {
 }
 ```
 
-```javascript run
-class Solution {
-    deleteFirstNode(head) {
-        if (head === null)       return null;
-        if (head.next === null)  return null;
-        head      = head.next;
-        head.prev = null;
-        return head;
-    }
-}
-```
-
 ```typescript run
 class Solution {
     deleteFirstNode(head: ListNode | null): ListNode | null {
@@ -423,18 +399,6 @@ func deleteFirstNode(head *ListNode) *ListNode {
     head      = head.Next
     head.Prev = nil
     return head
-}
-```
-
-```kotlin run
-class Solution {
-    fun deleteFirstNode(head: ListNode?): ListNode? {
-        if (head == null)       return null
-        if (head.next == null)  return null
-        val newHead = head.next!!
-        newHead.prev = null
-        return newHead
-    }
 }
 ```
 
@@ -573,6 +537,17 @@ flowchart TB
 
 ## Implementation
 
+
+```pseudocode
+# DLL's payoff — backward slide via tail.prev is O(1) (no traversal needed).
+function deleteLastNode(tail):
+    if tail is null: return null
+    if tail.prev is null: return null                  # single-node list
+    tail ← tail.prev                                   # slide backward
+    tail.next ← null                                   # new tail has no successor
+    return tail
+```
+
 ```python run
 class Solution:
     def delete_last_node(self, tail):
@@ -640,20 +615,6 @@ class Solution {
 }
 ```
 
-```javascript run
-class Solution {
-    deleteLastNode(tail) {
-        if (tail === null)       return null;
-        if (tail.prev === null)  return null;
-        let nodeToDelete = tail;
-        tail      = tail.prev;
-        tail.next = null;
-        nodeToDelete = null;
-        return tail;
-    }
-}
-```
-
 ```typescript run
 class Solution {
     deleteLastNode(tail: ListNode | null): ListNode | null {
@@ -675,18 +636,6 @@ func deleteLastNode(tail *ListNode) *ListNode {
     tail      = tail.Prev
     tail.Next = nil
     return tail
-}
-```
-
-```kotlin run
-class Solution {
-    fun deleteLastNode(tail: ListNode?): ListNode? {
-        if (tail == null)       return null
-        if (tail.prev == null)  return null
-        val newTail = tail.prev!!
-        newTail.next = null
-        return newTail
-    }
 }
 ```
 
@@ -739,6 +688,16 @@ Output: [5, 7, 3]
 ```
 
 ## The Solution
+
+
+```pseudocode
+function deleteLastNode(tail):
+    if tail is null: return null
+    if tail.prev is null: return null
+    tail ← tail.prev
+    tail.next ← null
+    return tail
+```
 
 ```python run
 class Solution:
@@ -803,18 +762,6 @@ class Solution {
 }
 ```
 
-```javascript run
-class Solution {
-    deleteLastNode(tail) {
-        if (tail === null)       return null;
-        if (tail.prev === null)  return null;
-        tail      = tail.prev;
-        tail.next = null;
-        return tail;
-    }
-}
-```
-
 ```typescript run
 class Solution {
     deleteLastNode(tail: ListNode | null): ListNode | null {
@@ -834,18 +781,6 @@ func deleteLastNode(tail *ListNode) *ListNode {
     tail      = tail.Prev
     tail.Next = nil
     return tail
-}
-```
-
-```kotlin run
-class Solution {
-    fun deleteLastNode(tail: ListNode?): ListNode? {
-        if (tail == null)       return null
-        if (tail.prev == null)  return null
-        val newTail = tail.prev!!
-        newTail.next = null
-        return newTail
-    }
 }
 ```
 
@@ -1012,6 +947,28 @@ flowchart LR
 
 ## Implementation
 
+
+```pseudocode
+function deleteNodeWithGivenData(head, data):
+    if head is null: return null
+    if head.val = data:                                # head matches
+        head ← head.next
+        if head is not null:
+            head.prev ← null                           # new head has no predecessor
+        return head
+
+    current ← head.next                                # skip head — already checked
+    while current is not null AND current.val ≠ data:
+        current ← current.next
+    if current is null: return head                    # not found
+
+    # Splice `current` out — both directions thanks to prev pointer.
+    current.prev.next ← current.next
+    if current.next is not null:                       # current may be the tail
+        current.next.prev ← current.prev
+    return head
+```
+
 ```python run
 class Solution:
     def delete_node_with_given_data(self, head, data):
@@ -1133,27 +1090,6 @@ class Solution {
 }
 ```
 
-```javascript run
-class Solution {
-    deleteNodeWithGivenData(head, data) {
-        if (head === null) return null;
-        if (head.val === data) {                          // Case 2: head matches
-            head = head.next;
-            if (head !== null) head.prev = null;
-            return head;
-        }
-        let current = head.next;
-        while (current !== null && current.val !== data) {
-            current = current.next;
-        }
-        if (current === null) return head;                // Case 4: not found
-        current.prev.next = current.next;
-        if (current.next !== null) current.next.prev = current.prev;
-        return head;
-    }
-}
-```
-
 ```typescript run
 class Solution {
     deleteNodeWithGivenData(head: ListNode | null, data: number): ListNode | null {
@@ -1191,25 +1127,6 @@ func deleteNodeWithGivenData(head *ListNode, data int) *ListNode {
     current.Prev.Next = current.Next
     if current.Next != nil { current.Next.Prev = current.Prev }
     return head
-}
-```
-
-```kotlin run
-class Solution {
-    fun deleteNodeWithGivenData(head: ListNode?, data: Int): ListNode? {
-        if (head == null) return null
-        if (head.`val` == data) {
-            val newHead = head.next
-            if (newHead != null) newHead.prev = null
-            return newHead
-        }
-        var current = head.next
-        while (current != null && current.`val` != data) current = current.next
-        if (current == null) return head
-        current.prev!!.next = current.next
-        if (current.next != null) current.next!!.prev = current.prev
-        return head
-    }
 }
 ```
 
@@ -1295,6 +1212,24 @@ Output: [5, 7, 10]
 ```
 
 ## The Solution
+
+
+```pseudocode
+function deleteNodeWithGivenData(head, data):
+    if head is null: return null
+    if head.val = data:
+        head ← head.next
+        if head is not null: head.prev ← null
+        return head
+    current ← head.next
+    while current is not null AND current.val ≠ data:
+        current ← current.next
+    if current is null: return head
+    current.prev.next ← current.next
+    if current.next is not null:
+        current.next.prev ← current.prev
+    return head
+```
 
 ```python run
 class Solution:
@@ -1398,25 +1333,6 @@ class Solution {
 }
 ```
 
-```javascript run
-class Solution {
-    deleteNodeWithGivenData(head, data) {
-        if (head === null) return null;
-        if (head.val === data) {
-            head = head.next;
-            if (head !== null) head.prev = null;
-            return head;
-        }
-        let current = head.next;
-        while (current !== null && current.val !== data) current = current.next;
-        if (current === null) return head;
-        current.prev.next = current.next;
-        if (current.next !== null) current.next.prev = current.prev;
-        return head;
-    }
-}
-```
-
 ```typescript run
 class Solution {
     deleteNodeWithGivenData(head: ListNode | null, data: number): ListNode | null {
@@ -1450,25 +1366,6 @@ func deleteNodeWithGivenData(head *ListNode, data int) *ListNode {
     current.Prev.Next = current.Next
     if current.Next != nil { current.Next.Prev = current.Prev }
     return head
-}
-```
-
-```kotlin run
-class Solution {
-    fun deleteNodeWithGivenData(head: ListNode?, data: Int): ListNode? {
-        if (head == null) return null
-        if (head.`val` == data) {
-            val newHead = head.next
-            if (newHead != null) newHead.prev = null
-            return newHead
-        }
-        var current = head.next
-        while (current != null && current.`val` != data) current = current.next
-        if (current == null) return head
-        current.prev!!.next = current.next
-        if (current.next != null) current.next!!.prev = current.prev
-        return head
-    }
 }
 ```
 
@@ -1509,6 +1406,28 @@ Output: [5, 7, 10]
 This is the *plural* sibling of the previous problem. The trick is two-phase: first peel off any matching nodes from the front (the head can match repeatedly — `[3, 3, 3, 5]` with `data = 3` should leave `[5]`), then walk the rest with two pointers (`previous` and `current`), splicing out each match in O(1) per match.
 
 ## The Solution
+
+
+```pseudocode
+# Two-phase. Phase 1: peel matches from the front. Phase 2: skip matching runs in the interior.
+function deleteNodesWithGivenData(head, data):
+    while head is not null AND head.val = data:        # phase 1
+        head ← head.next
+        if head is not null: head.prev ← null
+    if head is null: return null
+
+    previous ← head
+    current ← head.next
+    while current is not null:
+        while current is not null AND current.val = data:
+            current ← current.next                     # skip a run of matches
+        previous.next ← current                        # bridge over the deleted run
+        if current is not null:
+            current.prev ← previous                    # mirror the back-link
+            previous ← current
+            current ← current.next
+    return head
+```
 
 ```python run
 class Solution:
@@ -1644,30 +1563,6 @@ class Solution {
 }
 ```
 
-```javascript run
-class Solution {
-    deleteNodesWithGivenData(head, data) {
-        while (head !== null && head.val === data) {
-            head = head.next;
-            if (head !== null) head.prev = null;
-        }
-        if (head === null) return null;
-        let previous = head;
-        let current  = head.next;
-        while (current !== null) {
-            while (current !== null && current.val === data) current = current.next;
-            previous.next = current;
-            if (current !== null) {
-                current.prev = previous;
-                previous = current;
-                current  = current.next;
-            }
-        }
-        return head;
-    }
-}
-```
-
 ```typescript run
 class Solution {
     deleteNodesWithGivenData(head: ListNode | null, data: number): ListNode | null {
@@ -1711,31 +1606,6 @@ func deleteNodesWithGivenData(head *ListNode, data int) *ListNode {
         }
     }
     return head
-}
-```
-
-```kotlin run
-class Solution {
-    fun deleteNodesWithGivenData(head: ListNode?, data: Int): ListNode? {
-        var h = head
-        while (h != null && h.`val` == data) {
-            h = h.next
-            if (h != null) h.prev = null
-        }
-        if (h == null) return null
-        var previous = h
-        var current  = h.next
-        while (current != null) {
-            while (current != null && current.`val` == data) current = current.next
-            previous.next = current
-            if (current != null) {
-                current.prev = previous
-                previous = current
-                current  = current.next
-            }
-        }
-        return h
-    }
 }
 ```
 
@@ -1865,6 +1735,18 @@ flowchart TB
 
 ## Implementation
 
+
+```pseudocode
+function deleteNodeAfterTheGivenNode(head, node):
+    if head is null: return null
+    if node is null OR node.next is null: return head    # nothing after given
+    target ← node.next
+    node.next ← target.next                              # bridge given → grand-successor
+    if target.next is not null:
+        target.next.prev ← node                          # mirror
+    return head
+```
+
 ```python run
 class Solution:
     def delete_node_after_the_given_node(self, head, node):
@@ -1938,19 +1820,6 @@ class Solution {
 }
 ```
 
-```javascript run
-class Solution {
-    deleteNodeAfterTheGivenNode(head, node) {
-        if (head === null) return null;
-        if (node === null || node.next === null) return head;
-        const target = node.next;
-        node.next = target.next;
-        if (target.next !== null) target.next.prev = node;
-        return head;
-    }
-}
-```
-
 ```typescript run
 class Solution {
     deleteNodeAfterTheGivenNode(head: ListNode | null, node: ListNode | null): ListNode | null {
@@ -1972,19 +1841,6 @@ func deleteNodeAfterTheGivenNode(head, node *ListNode) *ListNode {
     node.Next = target.Next
     if target.Next != nil { target.Next.Prev = node }
     return head
-}
-```
-
-```kotlin run
-class Solution {
-    fun deleteNodeAfterTheGivenNode(head: ListNode?, node: ListNode?): ListNode? {
-        if (head == null) return null
-        if (node == null || node.next == null) return head
-        val target = node.next!!
-        node.next = target.next
-        if (target.next != null) target.next!!.prev = node
-        return head
-    }
 }
 ```
 
@@ -2039,6 +1895,19 @@ Output: [5, 7, 10]
 ```
 
 ## The Solution
+
+
+```pseudocode
+# Compact form — same algorithm.
+function deleteNodeAfterTheGivenNode(head, node):
+    if head is null: return null
+    if node is null OR node.next is null: return head
+    target ← node.next
+    node.next ← target.next
+    if target.next is not null:
+        target.next.prev ← node
+    return head
+```
 
 ```python run
 class Solution:
@@ -2105,19 +1974,6 @@ class Solution {
 }
 ```
 
-```javascript run
-class Solution {
-    deleteNodeAfterTheGivenNode(head, node) {
-        if (head === null) return null;
-        if (node === null || node.next === null) return head;
-        const target = node.next;
-        node.next = target.next;
-        if (target.next !== null) target.next.prev = node;
-        return head;
-    }
-}
-```
-
 ```typescript run
 class Solution {
     deleteNodeAfterTheGivenNode(head: ListNode | null, node: ListNode | null): ListNode | null {
@@ -2139,19 +1995,6 @@ func deleteNodeAfterTheGivenNode(head, node *ListNode) *ListNode {
     node.Next = target.Next
     if target.Next != nil { target.Next.Prev = node }
     return head
-}
-```
-
-```kotlin run
-class Solution {
-    fun deleteNodeAfterTheGivenNode(head: ListNode?, node: ListNode?): ListNode? {
-        if (head == null) return null
-        if (node == null || node.next == null) return head
-        val target = node.next!!
-        node.next = target.next
-        if (target.next != null) target.next!!.prev = node
-        return head
-    }
 }
 ```
 
@@ -2315,6 +2158,23 @@ flowchart TB
 
 ## Implementation
 
+
+```pseudocode
+# In a DLL, the predecessor is `node.prev` — O(1) access. Splice it out.
+function deleteNodeBeforeTheGivenNode(head, node):
+    if head is null OR node is null: return head
+    if node = head: return head                          # nothing before head
+    if head.next = node:                                 # given is the second node — old head is the target
+        head ← head.next
+        head.prev ← null
+        return head
+    target ← node.prev
+    node.prev ← target.prev                              # given's prev jumps over target
+    if target.prev is not null:
+        target.prev.next ← node                          # mirror — pre-predecessor's next
+    return head
+```
+
 ```python run
 class Solution:
     def delete_node_before_the_given_node(self, head, node):
@@ -2417,24 +2277,6 @@ class Solution {
 }
 ```
 
-```javascript run
-class Solution {
-    deleteNodeBeforeTheGivenNode(head, node) {
-        if (head === null || node === null) return head;
-        if (node === head) return head;
-        if (head.next === node) {
-            head      = head.next;
-            head.prev = null;
-            return head;
-        }
-        const target = node.prev;
-        node.prev = target.prev;
-        if (target.prev !== null) target.prev.next = node;
-        return head;
-    }
-}
-```
-
 ```typescript run
 class Solution {
     deleteNodeBeforeTheGivenNode(head: ListNode | null, node: ListNode | null): ListNode | null {
@@ -2466,24 +2308,6 @@ func deleteNodeBeforeTheGivenNode(head, node *ListNode) *ListNode {
     node.Prev = target.Prev
     if target.Prev != nil { target.Prev.Next = node }
     return head
-}
-```
-
-```kotlin run
-class Solution {
-    fun deleteNodeBeforeTheGivenNode(head: ListNode?, node: ListNode?): ListNode? {
-        if (head == null || node == null) return head
-        if (node === head) return head
-        if (head.next === node) {
-            val newHead = head.next!!
-            newHead.prev = null
-            return newHead
-        }
-        val target = node.prev!!
-        node.prev = target.prev
-        if (target.prev != null) target.prev!!.next = node
-        return head
-    }
 }
 ```
 
@@ -2543,6 +2367,23 @@ Output: [5, 3, 10]
 ```
 
 ## The Solution
+
+
+```pseudocode
+# Compact form — same algorithm.
+function deleteNodeBeforeTheGivenNode(head, node):
+    if head is null OR node is null: return head
+    if node = head: return head
+    if head.next = node:
+        head ← head.next
+        head.prev ← null
+        return head
+    target ← node.prev
+    node.prev ← target.prev
+    if target.prev is not null:
+        target.prev.next ← node
+    return head
+```
 
 ```python run
 class Solution:
@@ -2638,24 +2479,6 @@ class Solution {
 }
 ```
 
-```javascript run
-class Solution {
-    deleteNodeBeforeTheGivenNode(head, node) {
-        if (head === null || node === null) return head;
-        if (node === head) return head;
-        if (head.next === node) {
-            head      = head.next;
-            head.prev = null;
-            return head;
-        }
-        const target = node.prev;
-        node.prev = target.prev;
-        if (target.prev !== null) target.prev.next = node;
-        return head;
-    }
-}
-```
-
 ```typescript run
 class Solution {
     deleteNodeBeforeTheGivenNode(head: ListNode | null, node: ListNode | null): ListNode | null {
@@ -2687,24 +2510,6 @@ func deleteNodeBeforeTheGivenNode(head, node *ListNode) *ListNode {
     node.Prev = target.Prev
     if target.Prev != nil { target.Prev.Next = node }
     return head
-}
-```
-
-```kotlin run
-class Solution {
-    fun deleteNodeBeforeTheGivenNode(head: ListNode?, node: ListNode?): ListNode? {
-        if (head == null || node == null) return head
-        if (node === head) return head
-        if (head.next === node) {
-            val newHead = head.next!!
-            newHead.prev = null
-            return newHead
-        }
-        val target = node.prev!!
-        node.prev = target.prev
-        if (target.prev != null) target.prev!!.next = node
-        return head
-    }
 }
 ```
 
@@ -2844,6 +2649,20 @@ flowchart TB
 
 ## Implementation
 
+
+```pseudocode
+# DLL's signature operation — delete a given node in O(1) using its prev pointer.
+function deleteTheGivenNode(head, node):
+    if head is null OR node is null: return head
+    if node = head:                                    # given is head — slide head forward
+        head ← head.next
+        if head is not null: head.prev ← null
+        return head
+    if node.prev is not null: node.prev.next ← node.next      # bridge prev → next
+    if node.next is not null: node.next.prev ← node.prev      # mirror back-link
+    return head
+```
+
 ```python run
 class Solution:
     def delete_the_given_node(self, head, node):
@@ -2934,22 +2753,6 @@ class Solution {
 }
 ```
 
-```javascript run
-class Solution {
-    deleteTheGivenNode(head, node) {
-        if (head === null || node === null) return head;
-        if (node === head) {
-            head = head.next;
-            if (head !== null) head.prev = null;
-            return head;
-        }
-        if (node.prev !== null) node.prev.next = node.next;
-        if (node.next !== null) node.next.prev = node.prev;
-        return head;
-    }
-}
-```
-
 ```typescript run
 class Solution {
     deleteTheGivenNode(head: ListNode | null, node: ListNode | null): ListNode | null {
@@ -2977,22 +2780,6 @@ func deleteTheGivenNode(head, node *ListNode) *ListNode {
     if node.Prev != nil { node.Prev.Next = node.Next }
     if node.Next != nil { node.Next.Prev = node.Prev }
     return head
-}
-```
-
-```kotlin run
-class Solution {
-    fun deleteTheGivenNode(head: ListNode?, node: ListNode?): ListNode? {
-        if (head == null || node == null) return head
-        if (node === head) {
-            val newHead = head.next
-            if (newHead != null) newHead.prev = null
-            return newHead
-        }
-        if (node.prev != null) node.prev!!.next = node.next
-        if (node.next != null) node.next!!.prev = node.prev
-        return head
-    }
 }
 ```
 
@@ -3048,6 +2835,20 @@ Output: [5, 3, 10]
 ```
 
 ## The Solution
+
+
+```pseudocode
+# Compact form — same O(1) splice.
+function deleteTheGivenNode(head, node):
+    if head is null OR node is null: return head
+    if node = head:
+        head ← head.next
+        if head is not null: head.prev ← null
+        return head
+    if node.prev is not null: node.prev.next ← node.next
+    if node.next is not null: node.next.prev ← node.prev
+    return head
+```
 
 ```python run
 class Solution:
@@ -3133,22 +2934,6 @@ class Solution {
 }
 ```
 
-```javascript run
-class Solution {
-    deleteTheGivenNode(head, node) {
-        if (head === null || node === null) return head;
-        if (node === head) {
-            head = head.next;
-            if (head !== null) head.prev = null;
-            return head;
-        }
-        if (node.prev !== null) node.prev.next = node.next;
-        if (node.next !== null) node.next.prev = node.prev;
-        return head;
-    }
-}
-```
-
 ```typescript run
 class Solution {
     deleteTheGivenNode(head: ListNode | null, node: ListNode | null): ListNode | null {
@@ -3176,22 +2961,6 @@ func deleteTheGivenNode(head, node *ListNode) *ListNode {
     if node.Prev != nil { node.Prev.Next = node.Next }
     if node.Next != nil { node.Next.Prev = node.Prev }
     return head
-}
-```
-
-```kotlin run
-class Solution {
-    fun deleteTheGivenNode(head: ListNode?, node: ListNode?): ListNode? {
-        if (head == null || node == null) return head
-        if (node === head) {
-            val newHead = head.next
-            if (newHead != null) newHead.prev = null
-            return newHead
-        }
-        if (node.prev != null) node.prev!!.next = node.next
-        if (node.next != null) node.next!!.prev = node.prev
-        return head
-    }
 }
 ```
 
@@ -3354,6 +3123,24 @@ flowchart LR
 
 ## Implementation
 
+
+```pseudocode
+function deleteNodeAtGivenDistance(head, X):
+    if head is null: return null
+    if X = 0:                                          # delete first node
+        head ← head.next
+        if head is not null: head.prev ← null
+        return head
+    current ← head; counter ← 0
+    while current is not null AND counter < X:
+        current ← current.next
+        counter ← counter + 1
+    if current is null: return head                    # X out of range
+    if current.prev is not null: current.prev.next ← current.next      # splice current out
+    if current.next is not null: current.next.prev ← current.prev
+    return head
+```
+
 ```python run
 class Solution:
     def delete_node_at_given_distance(self, head, X):
@@ -3478,28 +3265,6 @@ class Solution {
 }
 ```
 
-```javascript run
-class Solution {
-    deleteNodeAtGivenDistance(head, X) {
-        if (head === null) return null;
-        if (X === 0) {
-            head = head.next;
-            if (head !== null) head.prev = null;
-            return head;
-        }
-        let current = head, counter = 0;
-        while (current !== null && counter < X) {
-            current = current.next;
-            counter++;
-        }
-        if (current === null) return head;
-        if (current.prev !== null) current.prev.next = current.next;
-        if (current.next !== null) current.next.prev = current.prev;
-        return head;
-    }
-}
-```
-
 ```typescript run
 class Solution {
     deleteNodeAtGivenDistance(head: ListNode | null, X: number): ListNode | null {
@@ -3541,29 +3306,6 @@ func deleteNodeAtGivenDistance(head *ListNode, X int) *ListNode {
     if current.Prev != nil { current.Prev.Next = current.Next }
     if current.Next != nil { current.Next.Prev = current.Prev }
     return head
-}
-```
-
-```kotlin run
-class Solution {
-    fun deleteNodeAtGivenDistance(head: ListNode?, X: Int): ListNode? {
-        if (head == null) return null
-        if (X == 0) {
-            val newHead = head.next
-            if (newHead != null) newHead.prev = null
-            return newHead
-        }
-        var current: ListNode? = head
-        var counter = 0
-        while (current != null && counter < X) {
-            current = current.next
-            counter++
-        }
-        if (current == null) return head
-        if (current.prev != null) current.prev!!.next = current.next
-        if (current.next != null) current.next!!.prev = current.prev
-        return head
-    }
 }
 ```
 
@@ -3644,6 +3386,25 @@ Output: [5, 3, 10]
 ```
 
 ## The Solution
+
+
+```pseudocode
+# Compact form — same algorithm.
+function deleteNodeAtGivenDistance(head, X):
+    if head is null: return null
+    if X = 0:
+        head ← head.next
+        if head is not null: head.prev ← null
+        return head
+    current ← head; counter ← 0
+    while current is not null AND counter < X:
+        current ← current.next
+        counter ← counter + 1
+    if current is null: return head
+    if current.prev is not null: current.prev.next ← current.next
+    if current.next is not null: current.next.prev ← current.prev
+    return head
+```
 
 ```python run
 class Solution:
@@ -3752,25 +3513,6 @@ class Solution {
 }
 ```
 
-```javascript run
-class Solution {
-    deleteNodeAtGivenDistance(head, X) {
-        if (head === null) return null;
-        if (X === 0) {
-            head = head.next;
-            if (head !== null) head.prev = null;
-            return head;
-        }
-        let current = head, counter = 0;
-        while (current !== null && counter < X) { current = current.next; counter++; }
-        if (current === null) return head;
-        if (current.prev !== null) current.prev.next = current.next;
-        if (current.next !== null) current.next.prev = current.prev;
-        return head;
-    }
-}
-```
-
 ```typescript run
 class Solution {
     deleteNodeAtGivenDistance(head: ListNode | null, X: number): ListNode | null {
@@ -3806,26 +3548,6 @@ func deleteNodeAtGivenDistance(head *ListNode, X int) *ListNode {
     if current.Prev != nil { current.Prev.Next = current.Next }
     if current.Next != nil { current.Next.Prev = current.Prev }
     return head
-}
-```
-
-```kotlin run
-class Solution {
-    fun deleteNodeAtGivenDistance(head: ListNode?, X: Int): ListNode? {
-        if (head == null) return null
-        if (X == 0) {
-            val newHead = head.next
-            if (newHead != null) newHead.prev = null
-            return newHead
-        }
-        var current: ListNode? = head
-        var counter = 0
-        while (current != null && counter < X) { current = current.next; counter++ }
-        if (current == null) return head
-        if (current.prev != null) current.prev!!.next = current.next
-        if (current.next != null) current.next!!.prev = current.prev
-        return head
-    }
 }
 ```
 

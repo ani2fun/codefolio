@@ -1,7 +1,3 @@
----
-title: "3. Pattern: Two pointers"
----
-
 # 3. Pattern: Two pointers
 
 This section introduces the direct-application version of the two-pointer pattern and walks through representative problems.
@@ -133,6 +129,22 @@ The specific "work" and "step size" in steps 2.1–2.3 change per problem. Every
 ---
 
 ## Generic Implementation
+
+
+```pseudocode
+# Generic two-pointer template. Customise the four hooks for the actual problem.
+function twoPointer(arr):
+    left ← 0
+    right ← length(arr) − 1
+    while left < right:
+        leftVal  ← arr[left]
+        rightVal ← arr[right]
+        # ... problem-specific work (swap, compare, accumulate, …) ...
+        if shouldMoveLeft(leftVal, rightVal):
+            left ← left + leftStep(leftVal, rightVal)
+        if shouldMoveRight(leftVal, rightVal):
+            right ← right − rightStep(leftVal, rightVal)
+```
 
 ```python run
 from typing import List
@@ -289,33 +301,6 @@ object Main extends App {
 }
 ```
 
-```javascript run
-class Solution {
-    twoPointer(arr) {
-        let left = 0;
-        let right = arr.length - 1;
-
-        while (left < right) {
-            const leftVal  = arr[left];
-            const rightVal = arr[right];
-
-            // Problem-specific work goes here.
-
-            if (this.shouldMoveLeft(leftVal, rightVal))  left  += this.leftStep(leftVal, rightVal);
-            if (this.shouldMoveRight(leftVal, rightVal)) right -= this.rightStep(leftVal, rightVal);
-        }
-    }
-    shouldMoveLeft(lv, rv)  { return true; }
-    shouldMoveRight(lv, rv) { return true; }
-    leftStep(lv, rv)  { return 1; }
-    rightStep(lv, rv) { return 1; }
-}
-
-const arr = [1, 2, 3, 4, 5, 6, 7];
-new Solution().twoPointer(arr);
-console.log("Done — customise the template above to solve a real problem!");
-```
-
 ```typescript run
 class Solution {
     twoPointer(arr: number[]): void {
@@ -378,35 +363,6 @@ func main() {
     arr := []int{1, 2, 3, 4, 5, 6, 7}
     Solution{}.twoPointer(arr)
     fmt.Println("Done — customise the template above to solve a real problem!")
-}
-```
-
-```kotlin run
-class Solution {
-    fun twoPointer(arr: IntArray) {
-        var left = 0
-        var right = arr.size - 1
-
-        while (left < right) {
-            val leftVal  = arr[left]
-            val rightVal = arr[right]
-
-            // Problem-specific work goes here.
-
-            if (shouldMoveLeft(leftVal, rightVal))  left  += leftStep(leftVal, rightVal)
-            if (shouldMoveRight(leftVal, rightVal)) right -= rightStep(leftVal, rightVal)
-        }
-    }
-    fun shouldMoveLeft(lv: Int, rv: Int) = true
-    fun shouldMoveRight(lv: Int, rv: Int) = true
-    fun leftStep(lv: Int, rv: Int) = 1
-    fun rightStep(lv: Int, rv: Int) = 1
-}
-
-fun main() {
-    val arr = intArrayOf(1, 2, 3, 4, 5, 6, 7)
-    Solution().twoPointer(arr)
-    println("Done — customise the template above to solve a real problem!")
 }
 ```
 
@@ -600,6 +556,18 @@ TEMP -> BACK: pass 2 — forwards copy
 
 <p align="center"><strong>Brute-force reversal — two full passes and O(n) extra space for the temp array.</strong></p>
 
+
+```pseudocode
+# Brute force — copy backwards into a buffer, then back. O(n) time, O(n) extra space.
+function reverse(arr):
+    n ← length(arr)
+    temp ← list of n zeros
+    for i from n − 1 down to 0:                           # pass 1: copy reversed
+        temp[n − 1 − i] ← arr[i]
+    for i from 0 to n − 1:                                # pass 2: copy back
+        arr[i] ← temp[i]
+```
+
 ```python run
 from typing import List
 
@@ -705,21 +673,6 @@ object Main extends App {
 }
 ```
 
-```javascript run
-class BruteForce {
-    reverse(arr) {
-        const n = arr.length;
-        const temp = new Array(n);
-        for (let i = n - 1; i >= 0; i--) temp[n - 1 - i] = arr[i];
-        for (let i = 0; i < n; i++) arr[i] = temp[i];
-    }
-}
-
-const arr = [1, 2, 3, 4, 5];
-new BruteForce().reverse(arr);
-console.log(arr);
-```
-
 ```typescript run
 class BruteForce {
     reverse(arr: number[]): void {
@@ -755,23 +708,6 @@ func main() {
     arr := []int{1, 2, 3, 4, 5}
     reverseBrute(arr)
     fmt.Println(arr)
-}
-```
-
-```kotlin run
-class BruteForce {
-    fun reverse(arr: IntArray) {
-        val n = arr.size
-        val temp = IntArray(n)
-        for (i in n - 1 downTo 0) temp[n - 1 - i] = arr[i]
-        for (i in 0 until n) arr[i] = temp[i]
-    }
-}
-
-fun main() {
-    val arr = intArrayOf(1, 2, 3, 4, 5)
-    BruteForce().reverse(arr)
-    println(arr.toList())
 }
 ```
 
@@ -841,6 +777,18 @@ flowchart TB
 ```
 
 <p align="center"><strong>Two-pointer reversal on <code>[1, 2, 3, 4, 5]</code> — two swaps close the gap from both ends; the middle element needs no swap.</strong></p>
+
+
+```pseudocode
+# In-place reverse via two pointers — swap mirror pairs, march inward.
+function reverse(arr):
+    left ← 0
+    right ← length(arr) − 1
+    while left < right:                                   # odd-length: middle stays put
+        swap arr[left] and arr[right]
+        left ← left + 1
+        right ← right − 1
+```
 
 ```python run
 from typing import List
@@ -983,28 +931,6 @@ object Main extends App {
 }
 ```
 
-```javascript run
-class Solution {
-    reverse(arr) {
-        let left = 0;
-        let right = arr.length - 1;
-        while (left < right) {
-            [arr[left], arr[right]] = [arr[right], arr[left]];   // destructuring swap
-            left++;
-            right--;
-        }
-    }
-}
-
-const arr = [1, 2, 3, 4, 5];
-new Solution().reverse(arr);
-console.log(arr);
-
-const arr2 = [1, 2, 3, 4];
-new Solution().reverse(arr2);
-console.log(arr2);
-```
-
 ```typescript run
 class Solution {
     reverse(arr: number[]): void {
@@ -1049,32 +975,6 @@ func main() {
     arr2 := []int{1, 2, 3, 4}
     reverseArr(arr2)
     fmt.Println(arr2)
-}
-```
-
-```kotlin run
-class Solution {
-    fun reverse(arr: IntArray) {
-        var left = 0
-        var right = arr.size - 1
-        while (left < right) {
-            val tmp = arr[left]
-            arr[left]  = arr[right]
-            arr[right] = tmp
-            left++
-            right--
-        }
-    }
-}
-
-fun main() {
-    val arr = intArrayOf(1, 2, 3, 4, 5)
-    Solution().reverse(arr)
-    println(arr.toList())
-
-    val arr2 = intArrayOf(1, 2, 3, 4)
-    Solution().reverse(arr2)
-    println(arr2.toList())
 }
 ```
 
@@ -1339,6 +1239,18 @@ Every box is checked with nothing extra needed. This is the purest direct applic
 
 ## Solution
 
+
+```pseudocode
+# Same shape as array reverse — applied to a character list.
+function flipCharacters(chars):
+    left ← 0
+    right ← length(chars) − 1
+    while left < right:
+        swap chars[left] and chars[right]
+        left ← left + 1
+        right ← right − 1
+```
+
 ```python run
 from typing import List
 
@@ -1484,29 +1396,6 @@ object Main extends App {
 }
 ```
 
-```javascript run
-class Solution {
-    flipCharacters(chars) {
-        let left = 0;
-        let right = chars.length - 1;
-        while (left < right) {
-            [chars[left], chars[right]] = [chars[right], chars[left]];
-            left++;
-            right--;
-        }
-    }
-}
-
-const c1 = ['h','e','l','l','o'];
-new Solution().flipCharacters(c1); console.log(c1);
-
-const c2 = ['A','B','C','D'];
-new Solution().flipCharacters(c2); console.log(c2);
-
-const c3 = ['X'];
-new Solution().flipCharacters(c3); console.log(c3);
-```
-
 ```typescript run
 class Solution {
     flipCharacters(chars: string[]): void {
@@ -1553,33 +1442,6 @@ func main() {
 
     c3 := []byte{'X'}
     flipCharacters(c3); fmt.Println(string(c3))
-}
-```
-
-```kotlin run
-class Solution {
-    fun flipCharacters(chars: CharArray) {
-        var left = 0
-        var right = chars.size - 1
-        while (left < right) {
-            val tmp = chars[left]
-            chars[left]  = chars[right]
-            chars[right] = tmp
-            left++
-            right--
-        }
-    }
-}
-
-fun main() {
-    val c1 = charArrayOf('h','e','l','l','o')
-    Solution().flipCharacters(c1); println(c1.toList())
-
-    val c2 = charArrayOf('A','B','C','D')
-    Solution().flipCharacters(c2); println(c2.toList())
-
-    val c3 = charArrayOf('X')
-    Solution().flipCharacters(c3); println(c3.toList())
 }
 ```
 
@@ -1808,6 +1670,20 @@ This early-exit property makes two-pointer palindrome checking efficient in prac
 
 ## Solution
 
+
+```pseudocode
+# Palindrome check — pointers march inward; first mismatch fails.
+function isPalindrome(s):
+    left ← 0
+    right ← length(s) − 1
+    while left < right:
+        if s[left] ≠ s[right]:
+            return false
+        left ← left + 1
+        right ← right − 1
+    return true
+```
+
 ```python run
 class Solution:
     def is_palindrome(self, s: str) -> bool:
@@ -1937,29 +1813,6 @@ object Main extends App {
 }
 ```
 
-```javascript run
-class Solution {
-    isPalindrome(s) {
-        let left = 0;
-        let right = s.length - 1;
-        while (left < right) {
-            if (s[left] !== s[right]) return false;
-            left++;
-            right--;
-        }
-        return true;
-    }
-}
-
-const sol = new Solution();
-console.log(sol.isPalindrome("racecar"));
-console.log(sol.isPalindrome("hello"));
-console.log(sol.isPalindrome("abcba"));
-console.log(sol.isPalindrome("a"));
-console.log(sol.isPalindrome("ab"));
-console.log(sol.isPalindrome("aa"));
-```
-
 ```typescript run
 class Solution {
     isPalindrome(s: string): boolean {
@@ -2007,31 +1860,6 @@ func main() {
     fmt.Println(isPalindrome("a"))
     fmt.Println(isPalindrome("ab"))
     fmt.Println(isPalindrome("aa"))
-}
-```
-
-```kotlin run
-class Solution {
-    fun isPalindrome(s: String): Boolean {
-        var left = 0
-        var right = s.length - 1
-        while (left < right) {
-            if (s[left] != s[right]) return false
-            left++
-            right--
-        }
-        return true
-    }
-}
-
-fun main() {
-    val sol = Solution()
-    println(sol.isPalindrome("racecar"))
-    println(sol.isPalindrome("hello"))
-    println(sol.isPalindrome("abcba"))
-    println(sol.isPalindrome("a"))
-    println(sol.isPalindrome("ab"))
-    println(sol.isPalindrome("aa"))
 }
 ```
 
@@ -2239,6 +2067,25 @@ This is a direct application with one variation: each pointer doesn't step by ex
 
 ## Solution
 
+
+```pseudocode
+VOWELS ← Set of {'a','e','i','o','u','A','E','I','O','U'}
+
+# Reverse only the vowels — non-vowels stay in place.
+function vowelExchange(s):
+    chars ← list of characters of s
+    left ← 0
+    right ← length(chars) − 1
+    while left < right:
+        while left < right AND chars[left]  is not in VOWELS: left  ← left + 1
+        while left < right AND chars[right] is not in VOWELS: right ← right − 1
+        if left < right:
+            swap chars[left] and chars[right]
+            left ← left + 1
+            right ← right − 1
+    return chars joined as a string
+```
+
 ```python run
 class Solution:
     def vowel_exchange(self, s: str) -> str:
@@ -2401,34 +2248,6 @@ object Main extends App {
 }
 ```
 
-```javascript run
-class Solution {
-    isVowel(c) { return "aeiouAEIOU".includes(c); }
-
-    vowelExchange(s) {
-        const chars = s.split("");
-        let left = 0, right = chars.length - 1;
-        while (left < right) {
-            while (left < right && !this.isVowel(chars[left]))  left++;
-            while (left < right && !this.isVowel(chars[right])) right--;
-            if (left < right) {
-                [chars[left], chars[right]] = [chars[right], chars[left]];
-                left++;
-                right--;
-            }
-        }
-        return chars.join("");
-    }
-}
-
-const sol = new Solution();
-console.log(sol.vowelExchange("hello"));
-console.log(sol.vowelExchange("leetcode"));
-console.log(sol.vowelExchange("bcdfg"));
-console.log(sol.vowelExchange("aeiou"));
-console.log(sol.vowelExchange("a"));
-```
-
 ```typescript run
 class Solution {
     isVowel(c: string): boolean { return "aeiouAEIOU".includes(c); }
@@ -2494,39 +2313,6 @@ func main() {
     fmt.Println(vowelExchange("bcdfg"))
     fmt.Println(vowelExchange("aeiou"))
     fmt.Println(vowelExchange("a"))
-}
-```
-
-```kotlin run
-class Solution {
-    private val vowels = "aeiouAEIOU".toSet()
-
-    fun vowelExchange(s: String): String {
-        val chars = s.toCharArray()
-        var left = 0
-        var right = chars.size - 1
-        while (left < right) {
-            while (left < right && chars[left]  !in vowels) left++
-            while (left < right && chars[right] !in vowels) right--
-            if (left < right) {
-                val tmp = chars[left]
-                chars[left]  = chars[right]
-                chars[right] = tmp
-                left++
-                right--
-            }
-        }
-        return String(chars)
-    }
-}
-
-fun main() {
-    val sol = Solution()
-    println(sol.vowelExchange("hello"))
-    println(sol.vowelExchange("leetcode"))
-    println(sol.vowelExchange("bcdfg"))
-    println(sol.vowelExchange("aeiou"))
-    println(sol.vowelExchange("a"))
 }
 ```
 
@@ -2739,6 +2525,30 @@ The outer scan that finds word boundaries is bookkeeping — once a `[word_start
 
 ## Solution
 
+
+```pseudocode
+# Reverse each word in place; word boundaries are spaces.
+function reverseWords(s):
+    chars ← list of characters of s
+    n ← length(chars)
+    i ← 0
+    while i < n:
+        if chars[i] = ' ':
+            i ← i + 1
+            continue
+        wordStart ← i
+        while i < n AND chars[i] ≠ ' ':
+            i ← i + 1
+        wordEnd ← i − 1
+        # Two-pointer reverse within [wordStart, wordEnd].
+        left ← wordStart; right ← wordEnd
+        while left < right:
+            swap chars[left] and chars[right]
+            left ← left + 1
+            right ← right − 1
+    return chars joined as a string
+```
+
 ```python run
 from typing import List
 
@@ -2913,35 +2723,6 @@ object Main extends App {
 }
 ```
 
-```javascript run
-class Solution {
-    reverseWords(s) {
-        const chars = s.split("");
-        const n = chars.length;
-        let i = 0;
-        while (i < n) {
-            if (chars[i] === ' ') { i++; continue; }
-            const wordStart = i;
-            while (i < n && chars[i] !== ' ') i++;
-            let left = wordStart, right = i - 1;
-            while (left < right) {
-                [chars[left], chars[right]] = [chars[right], chars[left]];
-                left++;
-                right--;
-            }
-        }
-        return chars.join("");
-    }
-}
-
-const sol = new Solution();
-console.log(sol.reverseWords("the sky"));
-console.log(sol.reverseWords("hello world"));
-console.log(sol.reverseWords("hello"));
-console.log(sol.reverseWords("a b c"));
-console.log("'" + sol.reverseWords("") + "'");
-```
-
 ```typescript run
 class Solution {
     reverseWords(s: string): string {
@@ -3008,40 +2789,6 @@ func main() {
     fmt.Println(reverseWords("hello"))
     fmt.Println(reverseWords("a b c"))
     fmt.Println("'" + reverseWords("") + "'")
-}
-```
-
-```kotlin run
-class Solution {
-    fun reverseWords(s: String): String {
-        val chars = s.toCharArray()
-        val n = chars.size
-        var i = 0
-        while (i < n) {
-            if (chars[i] == ' ') { i++; continue }
-            val wordStart = i
-            while (i < n && chars[i] != ' ') i++
-            var left = wordStart
-            var right = i - 1
-            while (left < right) {
-                val tmp = chars[left]
-                chars[left]  = chars[right]
-                chars[right] = tmp
-                left++
-                right--
-            }
-        }
-        return String(chars)
-    }
-}
-
-fun main() {
-    val sol = Solution()
-    println(sol.reverseWords("the sky"))
-    println(sol.reverseWords("hello world"))
-    println(sol.reverseWords("hello"))
-    println(sol.reverseWords("a b c"))
-    println("'${sol.reverseWords("")}'")
 }
 ```
 
@@ -3260,6 +3007,20 @@ Reverse Segments is structurally identical to Flip Characters — the only diffe
 
 ## Solution
 
+
+```pseudocode
+function reverseSegment(arr, l, r):                       # in-place reverse arr[l..r]
+    left ← l; right ← r
+    while left < right:
+        swap arr[left] and arr[right]
+        left ← left + 1
+        right ← right − 1
+
+function reverseSegments(arr, segments):
+    for each (l, r) in segments:
+        reverseSegment(arr, l, r)
+```
+
 ```python run
 from typing import List, Tuple
 
@@ -3436,31 +3197,6 @@ object Main extends App {
 }
 ```
 
-```javascript run
-class Solution {
-    reverseSegment(arr, l, r) {
-        let left = l, right = r;
-        while (left < right) {
-            [arr[left], arr[right]] = [arr[right], arr[left]];
-            left++;
-            right--;
-        }
-    }
-    reverseSegments(arr, segments) {
-        for (const [l, r] of segments) this.reverseSegment(arr, l, r);
-    }
-}
-
-const sol = new Solution();
-
-const a1 = [1,2,3,4,5,6,7,8];
-sol.reverseSegments(a1, [[0,3],[4,7]]); console.log(a1);
-
-const a2 = [1,2,3,4,5]; sol.reverseSegments(a2, [[1,3]]); console.log(a2);
-const a3 = [1,2,3,4,5]; sol.reverseSegments(a3, [[0,4]]); console.log(a3);
-const a4 = [1,2,3];     sol.reverseSegments(a4, [[1,1]]); console.log(a4);
-```
-
 ```typescript run
 class Solution {
     reverseSegment(arr: number[], l: number, r: number): void {
@@ -3513,35 +3249,6 @@ func main() {
     a2 := []int{1,2,3,4,5}; reverseSegments(a2, [][2]int{{1,3}}); fmt.Println(a2)
     a3 := []int{1,2,3,4,5}; reverseSegments(a3, [][2]int{{0,4}}); fmt.Println(a3)
     a4 := []int{1,2,3};     reverseSegments(a4, [][2]int{{1,1}}); fmt.Println(a4)
-}
-```
-
-```kotlin run
-class Solution {
-    fun reverseSegment(arr: IntArray, l: Int, r: Int) {
-        var left = l
-        var right = r
-        while (left < right) {
-            val tmp = arr[left]
-            arr[left]  = arr[right]
-            arr[right] = tmp
-            left++
-            right--
-        }
-    }
-    fun reverseSegments(arr: IntArray, segments: List<Pair<Int, Int>>) {
-        for ((l, r) in segments) reverseSegment(arr, l, r)
-    }
-}
-
-fun main() {
-    val sol = Solution()
-    val a1 = intArrayOf(1,2,3,4,5,6,7,8)
-    sol.reverseSegments(a1, listOf(0 to 3, 4 to 7)); println(a1.toList())
-
-    val a2 = intArrayOf(1,2,3,4,5); sol.reverseSegments(a2, listOf(1 to 3)); println(a2.toList())
-    val a3 = intArrayOf(1,2,3,4,5); sol.reverseSegments(a3, listOf(0 to 4)); println(a3.toList())
-    val a4 = intArrayOf(1,2,3);     sol.reverseSegments(a4, listOf(1 to 1)); println(a4.toList())
 }
 ```
 
@@ -3778,6 +3485,33 @@ This reuses `reverse_segment(arr, l, r)` from the previous lesson twice.
 
 ## Solution
 
+
+```pseudocode
+# The three-reversal trick: reverse all, then reverse each word → words land in reverse order
+# while keeping their internal letter order intact.
+function reverse(chars, l, r):
+    while l < r:
+        swap chars[l] and chars[r]
+        l ← l + 1; r ← r − 1
+
+function reverseWordOrder(s):
+    chars ← list of characters of s
+    n ← length(chars)
+
+    reverse(chars, 0, n − 1)                              # step 1: reverse whole string
+
+    i ← 0                                                  # step 2: reverse each word in place
+    while i < n:
+        if chars[i] = ' ':
+            i ← i + 1
+            continue
+        wordStart ← i
+        while i < n AND chars[i] ≠ ' ':
+            i ← i + 1
+        reverse(chars, wordStart, i − 1)
+    return chars joined as a string
+```
+
 ```python run
 from typing import List
 
@@ -3960,38 +3694,6 @@ object Main extends App {
 }
 ```
 
-```javascript run
-class Solution {
-    reverse(chars, l, r) {
-        while (l < r) {
-            [chars[l], chars[r]] = [chars[r], chars[l]];
-            l++;
-            r--;
-        }
-    }
-
-    reverseWordOrder(s) {
-        const chars = s.split("");
-        const n = chars.length;
-        this.reverse(chars, 0, n - 1);                // Step 1
-        let i = 0;
-        while (i < n) {                                // Step 2
-            if (chars[i] === ' ') { i++; continue; }
-            const wordStart = i;
-            while (i < n && chars[i] !== ' ') i++;
-            this.reverse(chars, wordStart, i - 1);
-        }
-        return chars.join("");
-    }
-}
-
-const sol = new Solution();
-console.log(sol.reverseWordOrder("the sky is blue"));
-console.log(sol.reverseWordOrder("hello world"));
-console.log(sol.reverseWordOrder("hello"));
-console.log(sol.reverseWordOrder("a good example"));
-```
-
 ```typescript run
 class Solution {
     reverse(chars: string[], l: number, r: number): void {
@@ -4061,44 +3763,6 @@ func main() {
     fmt.Println(reverseWordOrder("hello world"))
     fmt.Println(reverseWordOrder("hello"))
     fmt.Println(reverseWordOrder("a good example"))
-}
-```
-
-```kotlin run
-class Solution {
-    private fun reverse(chars: CharArray, l0: Int, r0: Int) {
-        var l = l0
-        var r = r0
-        while (l < r) {
-            val tmp = chars[l]
-            chars[l] = chars[r]
-            chars[r] = tmp
-            l++
-            r--
-        }
-    }
-
-    fun reverseWordOrder(s: String): String {
-        val chars = s.toCharArray()
-        val n = chars.size
-        reverse(chars, 0, n - 1)                      // Step 1
-        var i = 0
-        while (i < n) {                                // Step 2
-            if (chars[i] == ' ') { i++; continue }
-            val wordStart = i
-            while (i < n && chars[i] != ' ') i++
-            reverse(chars, wordStart, i - 1)
-        }
-        return String(chars)
-    }
-}
-
-fun main() {
-    val sol = Solution()
-    println(sol.reverseWordOrder("the sky is blue"))
-    println(sol.reverseWordOrder("hello world"))
-    println(sol.reverseWordOrder("hello"))
-    println(sol.reverseWordOrder("a good example"))
 }
 ```
 

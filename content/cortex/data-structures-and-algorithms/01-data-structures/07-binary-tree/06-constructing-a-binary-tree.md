@@ -1,7 +1,3 @@
----
-title: "6. Constructing a Binary Tree"
----
-
 # 6. Constructing a Binary Tree
 
 ## The Hook
@@ -236,6 +232,22 @@ flowchart TB
 
 ## Implementation
 
+
+```pseudocode
+function buildPreIn(preorder, inorder):
+    pos ← Map: value → index built from inorder   # O(1) root lookup
+    preIdx ← 0
+    function build(inStart, inEnd):
+        if inStart > inEnd: return null
+        rootVal ← preorder[preIdx]; preIdx ← preIdx + 1
+        node ← TreeNode(rootVal)
+        idx  ← pos[rootVal]                        # split inorder at root
+        node.left  ← build(inStart, idx − 1)
+        node.right ← build(idx + 1, inEnd)
+        return node
+    return build(0, length(inorder) − 1)
+```
+
 ```python run
 from typing import List, Optional
 
@@ -396,31 +408,6 @@ object Main extends App {
 }
 ```
 
-```javascript run
-class TreeNode {
-    constructor(val = 0, left = null, right = null) { this.val = val; this.left = left; this.right = right; }
-}
-
-function buildPreIn(preorder, inorder) {
-    const pos = new Map();
-    inorder.forEach((v, i) => pos.set(v, i));
-    let preIdx = 0;
-    function build(inStart, inEnd) {
-        if (inStart > inEnd) return null;
-        const rootVal = preorder[preIdx++];
-        const node = new TreeNode(rootVal);
-        const idx  = pos.get(rootVal);
-        node.left  = build(inStart, idx - 1);
-        node.right = build(idx + 1, inEnd);
-        return node;
-    }
-    return build(0, inorder.length - 1);
-}
-
-const root = buildPreIn([1, 2, 4, 3, 7], [4, 2, 1, 3, 7]);
-console.log(root.val, root.left.val, root.right.val);
-```
-
 ```typescript run
 class TreeNode {
     val: number;
@@ -483,31 +470,6 @@ func buildPreIn(preorder, inorder []int) *TreeNode {
 func main() {
     root := buildPreIn([]int{1, 2, 4, 3, 7}, []int{4, 2, 1, 3, 7})
     fmt.Println(root.Val, root.Left.Val, root.Right.Val)
-}
-```
-
-```kotlin run
-class TreeNode(var value: Int, var left: TreeNode? = null, var right: TreeNode? = null)
-
-fun buildPreIn(preorder: IntArray, inorder: IntArray): TreeNode? {
-    val pos = HashMap<Int, Int>(inorder.size)
-    inorder.forEachIndexed { i, v -> pos[v] = i }
-    var preIdx = 0
-    fun build(inStart: Int, inEnd: Int): TreeNode? {
-        if (inStart > inEnd) return null
-        val rootVal = preorder[preIdx++]
-        val n = TreeNode(rootVal)
-        val idx = pos[rootVal]!!
-        n.left  = build(inStart, idx - 1)
-        n.right = build(idx + 1, inEnd)
-        return n
-    }
-    return build(0, inorder.size - 1)
-}
-
-fun main() {
-    val root = buildPreIn(intArrayOf(1, 2, 4, 3, 7), intArrayOf(4, 2, 1, 3, 7))
-    println("${root?.value} ${root?.left?.value} ${root?.right?.value}")
 }
 ```
 
@@ -604,6 +566,22 @@ Result is the same tree as before — pre+in and post+in *both* uniquely reconst
 ## Implementation
 
 We'll show the Python and Java versions in full; for the rest, the only difference from the pre+in versions is `preIdx++` becomes `postIdx--` and the recursion order swaps right-then-left. Adapt mechanically.
+
+
+```pseudocode
+function buildPostIn(postorder, inorder):
+    pos     ← Map: value → index built from inorder
+    postIdx ← length(postorder) − 1
+    function build(inStart, inEnd):
+        if inStart > inEnd: return null
+        rootVal ← postorder[postIdx]; postIdx ← postIdx − 1
+        node ← TreeNode(rootVal)
+        idx  ← pos[rootVal]
+        node.right ← build(idx + 1, inEnd)         # right first (post-order reads right before left)
+        node.left  ← build(inStart, idx − 1)
+        return node
+    return build(0, length(inorder) − 1)
+```
 
 ```python run
 def build_post_in(postorder, inorder):
@@ -718,24 +696,6 @@ def buildPostIn(postorder: Array[Int], inorder: Array[Int]): TreeNode = {
 }
 ```
 
-```javascript run
-function buildPostIn(postorder, inorder) {
-    const pos = new Map();
-    inorder.forEach((v, i) => pos.set(v, i));
-    let postIdx = postorder.length - 1;
-    function build(inStart, inEnd) {
-        if (inStart > inEnd) return null;
-        const rootVal = postorder[postIdx--];
-        const node = new TreeNode(rootVal);
-        const idx  = pos.get(rootVal);
-        node.right = build(idx + 1, inEnd);      // right first
-        node.left  = build(inStart, idx - 1);
-        return node;
-    }
-    return build(0, inorder.length - 1);
-}
-```
-
 ```typescript run
 function buildPostIn(postorder: number[], inorder: number[]): TreeNode | null {
     const pos = new Map<number, number>();
@@ -771,24 +731,6 @@ func buildPostIn(postorder, inorder []int) *TreeNode {
         return n
     }
     return build(0, len(inorder) - 1)
-}
-```
-
-```kotlin run
-fun buildPostIn(postorder: IntArray, inorder: IntArray): TreeNode? {
-    val pos = HashMap<Int, Int>(inorder.size)
-    inorder.forEachIndexed { i, v -> pos[v] = i }
-    var postIdx = postorder.size - 1
-    fun build(inStart: Int, inEnd: Int): TreeNode? {
-        if (inStart > inEnd) return null
-        val rootVal = postorder[postIdx--]
-        val n = TreeNode(rootVal)
-        val idx = pos[rootVal]!!
-        n.right = build(idx + 1, inEnd)         // right first
-        n.left  = build(inStart, idx - 1)
-        return n
-    }
-    return build(0, inorder.size - 1)
 }
 ```
 
