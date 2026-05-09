@@ -51,7 +51,11 @@ object RunnableCodeBlock:
       source: String,
       languageLabel: Option[String] = None,
       bare: Boolean = false,
-      hideLanguageLabel: Boolean = false
+      hideLanguageLabel: Boolean = false,
+      // false → display-only tab (e.g. pseudocode). Suppresses Run/Reset/Cancel
+      // controls, the output panel, and swaps the editable editor for a static
+      // syntax-highlighted <pre>.
+      runnable: Boolean = true
   )
 
   private val StatusOk = 3
@@ -97,73 +101,97 @@ object RunnableCodeBlock:
             e.preventDefaultCB >> runCb
           else Callback.empty
 
-        val header =
-          <.div(
-            ^.className := "rcb__header",
-            <.span(
-              ^.className := "rcb__language-label",
-              if props.hideLanguageLabel then "" else props.languageLabel.getOrElse(props.language)
-            ),
+        val labelText =
+          if props.hideLanguageLabel then "" else props.languageLabel.getOrElse(props.language)
+
+        // Display-only tabs (pseudocode) drop the Run/Cancel/Reset controls and
+        // the output panel, and swap the editable editor for a static <pre>
+        // with the same Prism highlighting hook (which falls back to
+        // escapeHtml for unknown grammars — fine for pseudocode).
+        val header: VdomNode =
+          if !props.runnable then
+            if props.hideLanguageLabel then EmptyVdom
+            else
+              <.div(
+                ^.className := "rcb__header",
+                <.span(^.className := "rcb__language-label", labelText)
+              )
+          else
             <.div(
-              ^.className := "rcb__controls",
-              if dirty && s.runState != RunState.Running then
-                <.button(
-                  ^.tpe := "button",
-                  ^.onClick --> resetCb,
-                  ^.className := "rcb__button",
-                  LucideIcons.RotateCcw(LucideIcons.withClass("rcb__button-icon")),
-                  "Reset"
-                )
-              else EmptyVdom,
-              if s.runState == RunState.Running then
-                <.button(
-                  ^.tpe := "button",
-                  ^.onClick --> cancelCb,
-                  ^.className := "rcb__button rcb__button--cancel",
-                  LucideIcons.Square(LucideIcons.withClass("rcb__button-icon")),
-                  "Cancel"
-                )
-              else
-                <.button(
-                  ^.tpe   := "button",
-                  ^.title := "Run (⌘+Enter)",
-                  ^.onClick --> runCb,
-                  ^.className := "rcb__button rcb__button--run",
-                  LucideIcons.Play(LucideIcons.withClass("rcb__button-icon")),
-                  "Run"
-                )
+              ^.className := "rcb__header",
+              <.span(^.className := "rcb__language-label", labelText),
+              <.div(
+                ^.className := "rcb__controls",
+                if dirty && s.runState != RunState.Running then
+                  <.button(
+                    ^.tpe := "button",
+                    ^.onClick --> resetCb,
+                    ^.className := "rcb__button",
+                    LucideIcons.RotateCcw(LucideIcons.withClass("rcb__button-icon")),
+                    "Reset"
+                  )
+                else EmptyVdom,
+                if s.runState == RunState.Running then
+                  <.button(
+                    ^.tpe := "button",
+                    ^.onClick --> cancelCb,
+                    ^.className := "rcb__button rcb__button--cancel",
+                    LucideIcons.Square(LucideIcons.withClass("rcb__button-icon")),
+                    "Cancel"
+                  )
+                else
+                  <.button(
+                    ^.tpe   := "button",
+                    ^.title := "Run (⌘+Enter)",
+                    ^.onClick --> runCb,
+                    ^.className := "rcb__button rcb__button--run",
+                    LucideIcons.Play(LucideIcons.withClass("rcb__button-icon")),
+                    "Run"
+                  )
+              )
             )
-          )
 
-        val editorProps = (new js.Object).asInstanceOf[EditorProps]
-        editorProps.value = s.code
-        editorProps.onValueChange = (next: String) =>
-          st.modState(prev => CodeExecutor.setCode(prev, next)).runNow()
-        editorProps.highlight = (c: String) => highlightWithPrism(c, props.language)
-        editorProps.padding = 16
-        editorProps.tabSize = 4
-        editorProps.insertSpaces = true
-        editorProps.textareaClassName = "rcb__editor-textarea"
-        editorProps.style = js.Dynamic
-          .literal(
-            fontFamily =
-              "ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, \"Liberation Mono\", \"Courier New\", monospace",
-            fontSize = 13,
-            lineHeight = 1.6,
-            minHeight = minHeight
-          )
-          .asInstanceOf[js.Object]
+        val editor: VdomNode =
+          if !props.runnable then
+            // `not-prose` is required: .chapter-content is a `prose` container,
+            // and Tailwind Typography forces `padding: 0; background: transparent`
+            // (with !important) on every descendant <pre> so rehype-pretty-code
+            // blocks can style themselves. Opt out so the editor styling wins.
+            <.pre(
+              ^.className               := "rcb__editor rcb__editor--static not-prose",
+              ^.style                   := js.Dynamic.literal(minHeight = minHeight).asInstanceOf[js.Object],
+              ^.dangerouslySetInnerHtml := s"<code>${highlightWithPrism(props.source, props.language)}</code>"
+            )
+          else
+            val editorProps = (new js.Object).asInstanceOf[EditorProps]
+            editorProps.value = s.code
+            editorProps.onValueChange = (next: String) =>
+              st.modState(prev => CodeExecutor.setCode(prev, next)).runNow()
+            editorProps.highlight = (c: String) => highlightWithPrism(c, props.language)
+            editorProps.padding = 16
+            editorProps.tabSize = 4
+            editorProps.insertSpaces = true
+            editorProps.textareaClassName = "rcb__editor-textarea"
+            editorProps.style = js.Dynamic
+              .literal(
+                fontFamily =
+                  "ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, \"Liberation Mono\", \"Courier New\", monospace",
+                fontSize = 13,
+                lineHeight = 1.6,
+                minHeight = minHeight
+              )
+              .asInstanceOf[js.Object]
 
-        val editor =
-          <.div(
-            ^.className := "rsce-editor rcb__editor",
-            ^.style     := js.Dynamic.literal(minHeight = minHeight).asInstanceOf[js.Object],
-            ^.onKeyDown ==> onKeyDown,
-            Editor(editorProps)
-          )
+            <.div(
+              ^.className := "rsce-editor rcb__editor",
+              ^.style     := js.Dynamic.literal(minHeight = minHeight).asInstanceOf[js.Object],
+              ^.onKeyDown ==> onKeyDown,
+              Editor(editorProps)
+            )
 
         val output: VdomNode =
-          if s.runState == RunState.Idle && s.result.isEmpty && s.error.isEmpty then EmptyVdom
+          if !props.runnable then EmptyVdom
+          else if s.runState == RunState.Idle && s.result.isEmpty && s.error.isEmpty then EmptyVdom
           else
             <.div(
               ^.className := "rcb__output",

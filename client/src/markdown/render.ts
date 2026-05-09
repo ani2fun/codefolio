@@ -38,20 +38,59 @@ interface LanguageInfo {
   id: number;
   label: string;
   aliases: string[];
+  // false for display-only tab languages (e.g. pseudocode) — they join a tab
+  // group without needing a `run` meta marker and the client suppresses Run
+  // controls for them.
+  runnable: boolean;
 }
 
+// Each label leads with an emoji icon (mascot / brand colour) so tab strips
+// and in-block headers are scannable at a glance. The icon is part of the
+// label string — propagates to both `RunnableTabNode.languageLabel` and the
+// `data-language-label` attribute on lone runnable-code placeholders.
 const RUNNABLE_LANGUAGES: LanguageInfo[] = [
-  { id: 71, label: "Python 3.8", aliases: ["python", "py", "python3"] },
-  { id: 62, label: "Java 13 (OpenJDK)", aliases: ["java"] },
-  { id: 81, label: "Scala 2.13", aliases: ["scala"] },
-  { id: 50, label: "C (GCC 9.2)", aliases: ["c"] },
-  { id: 54, label: "C++ (GCC 9.2)", aliases: ["cpp", "c++", "cxx"] },
-  { id: 60, label: "Go 1.13", aliases: ["go", "golang"] },
-  { id: 73, label: "Rust 1.40", aliases: ["rust", "rs"] },
-  { id: 78, label: "Kotlin 1.9", aliases: ["kotlin", "kt"] },
-  { id: 74, label: "TypeScript 3.7", aliases: ["typescript", "ts"] },
-  { id: 63, label: "JavaScript (Node.js 12)", aliases: ["javascript", "js", "node"] },
-  { id: 82, label: "SQL (SQLite 3.27)", aliases: ["sql", "sqlite"] },
+  {
+    id: 0,
+    label: "🧠 Pseudocode",
+    aliases: ["pseudocode", "pseudo"],
+    runnable: false,
+  },
+  {
+    id: 71,
+    label: "🐍 Python 3.8",
+    aliases: ["python", "py", "python3"],
+    runnable: true,
+  },
+  { id: 62, label: "☕ Java 13 (OpenJDK)", aliases: ["java"], runnable: true },
+  { id: 81, label: "🌀 Scala 2.13", aliases: ["scala"], runnable: true },
+  { id: 50, label: "🔧 C (GCC 9.2)", aliases: ["c"], runnable: true },
+  {
+    id: 54,
+    label: "➕ C++ (GCC 9.2)",
+    aliases: ["cpp", "c++", "cxx"],
+    runnable: true,
+  },
+  { id: 60, label: "🐹 Go 1.13", aliases: ["go", "golang"], runnable: true },
+  { id: 73, label: "🦀 Rust 1.40", aliases: ["rust", "rs"], runnable: true },
+  { id: 78, label: "💜 Kotlin 1.9", aliases: ["kotlin", "kt"], runnable: true },
+  {
+    id: 74,
+    label: "🔷 TypeScript 3.7",
+    aliases: ["typescript", "ts"],
+    runnable: true,
+  },
+  {
+    id: 63,
+    label: "🟨 JavaScript (Node.js 12)",
+    aliases: ["javascript", "js", "node"],
+    runnable: true,
+  },
+  {
+    id: 82,
+    label: "🗄️ SQL (SQLite 3.27)",
+    aliases: ["sql", "sqlite"],
+    runnable: true,
+  },
 ];
 
 const aliasIndex = new Map<string, LanguageInfo>();
@@ -59,8 +98,10 @@ for (const lang of RUNNABLE_LANGUAGES) {
   for (const a of lang.aliases) aliasIndex.set(a.toLowerCase(), lang);
 }
 
-const resolveLanguage = (lang: string | null | undefined): LanguageInfo | null =>
-  lang ? aliasIndex.get(lang.toLowerCase()) ?? null : null;
+const resolveLanguage = (
+  lang: string | null | undefined,
+): LanguageInfo | null =>
+  lang ? (aliasIndex.get(lang.toLowerCase()) ?? null) : null;
 
 // ---- D2 array traversal slideshow expansion -----------------------------
 //
@@ -79,14 +120,17 @@ const isD2ArrayTraversalMarker = (node: unknown): node is Html =>
   !!node &&
   typeof node === "object" &&
   (node as { type?: unknown }).type === "html" &&
-  /<div\b[^>]*class=(["'])[^"']*\bd2-array-traversal\b[^"']*\1/i.test((node as Html).value);
+  /<div\b[^>]*class=(["'])[^"']*\bd2-array-traversal\b[^"']*\1/i.test(
+    (node as Html).value,
+  );
 
 const parsePositiveInt = (raw: string | null, fallback: number): number => {
   const n = raw ? parseInt(raw, 10) : Number.NaN;
   return Number.isFinite(n) && n > 0 ? n : fallback;
 };
 
-const d2MdText = (s: string): string => s.replace(/\|/g, "\\|").replace(/`/g, "\\`");
+const d2MdText = (s: string): string =>
+  s.replace(/\|/g, "\\|").replace(/`/g, "\\`");
 
 interface ArrayTraversalConfig {
   caption: string | null;
@@ -110,7 +154,9 @@ const parseArrayTraversalConfig = (marker: Html): ArrayTraversalConfig => {
     rows,
     cols,
     values:
-      values.length === total ? values : Array.from({ length: total }, (_, i) => `value${i + 1}`),
+      values.length === total
+        ? values
+        : Array.from({ length: total }, (_, i) => `value${i + 1}`),
   };
 };
 
@@ -120,7 +166,11 @@ const cellLabel = (index: number, cols: number): string => {
   return `[${row},${col}]`;
 };
 
-const cellStyle = (index: number, active: number | null, done: boolean): string => {
+const cellStyle = (
+  index: number,
+  active: number | null,
+  done: boolean,
+): string => {
   if (done || (active !== null && index < active)) {
     return ' {style.fill: "#dcfce7"; style.stroke: "#16a34a"}';
   }
@@ -134,7 +184,7 @@ const arrayD2 = (
   title: string,
   cfg: ArrayTraversalConfig,
   active: number | null,
-  done = false
+  done = false,
 ): string => {
   const cells = cfg.values
     .map((value, i) => {
@@ -156,7 +206,11 @@ const arrayD2 = (
   ].join("\n");
 };
 
-const stateD2 = (cfg: ArrayTraversalConfig, active: number, done = false): string => {
+const stateD2 = (
+  cfg: ArrayTraversalConfig,
+  active: number,
+  done = false,
+): string => {
   const row = Math.floor(active / cfg.cols);
   const col = active % cfg.cols;
   const reset = row > 0 && col === 0 && !done ? "\n\n  inner loop reset" : "";
@@ -180,13 +234,22 @@ const stateD2 = (cfg: ArrayTraversalConfig, active: number, done = false): strin
 
 const d2ArrayTraversalSlides = (marker: Html): Array<Html | Code> => {
   const cfg = parseArrayTraversalConfig(marker);
-  const captionAttr = cfg.caption ? ` data-caption="${escapeHtmlAttr(cfg.caption)}"` : "";
-  const slideMarker: Html = { type: "html", value: `<div class="d2-slides"${captionAttr}>` };
+  const captionAttr = cfg.caption
+    ? ` data-caption="${escapeHtmlAttr(cfg.caption)}"`
+    : "";
+  const slideMarker: Html = {
+    type: "html",
+    value: `<div class="d2-slides"${captionAttr}>`,
+  };
   const ready: Code = {
     type: "code",
     lang: "d2",
     meta: null,
-    value: arrayD2(`Ready to traverse the ${cfg.rows} × ${cfg.cols} array`, cfg, null),
+    value: arrayD2(
+      `Ready to traverse the ${cfg.rows} × ${cfg.cols} array`,
+      cfg,
+      null,
+    ),
   };
   const visits: Code[] = cfg.values.map((_, i) => ({
     type: "code",
@@ -210,13 +273,18 @@ const remarkExpandD2ArrayTraversal: Plugin<[], Root> = () => (tree) => {
 
     const out: unknown[] = [];
     for (const node of parent.children) {
-      if (isD2ArrayTraversalMarker(node)) out.push(...d2ArrayTraversalSlides(node));
+      if (isD2ArrayTraversalMarker(node))
+        out.push(...d2ArrayTraversalSlides(node));
       else out.push(node);
     }
 
     parent.children = out;
     for (const child of parent.children) {
-      if (child && typeof child === "object" && "children" in (child as object)) {
+      if (
+        child &&
+        typeof child === "object" &&
+        "children" in (child as object)
+      ) {
         walk(child as { children?: unknown[] });
       }
     }
@@ -259,7 +327,9 @@ const isD2SlidesMarker = (node: unknown): node is Html =>
   !!node &&
   typeof node === "object" &&
   (node as { type?: unknown }).type === "html" &&
-  /<div\b[^>]*class=(["'])[^"']*\bd2-slides\b[^"']*\1/i.test((node as Html).value);
+  /<div\b[^>]*class=(["'])[^"']*\bd2-slides\b[^"']*\1/i.test(
+    (node as Html).value,
+  );
 
 const isClosingDiv = (node: unknown): node is Html =>
   !!node &&
@@ -298,7 +368,9 @@ const d2SlideHtml = (node: Code): string => {
 
 const buildD2SlidesHtml = (marker: Html, slides: Code[]): string => {
   const caption = htmlAttr(marker.value, "data-caption");
-  const captionAttr = caption ? ` data-caption="${escapeHtmlAttr(caption)}"` : "";
+  const captionAttr = caption
+    ? ` data-caption="${escapeHtmlAttr(caption)}"`
+    : "";
   const body = slides
     .map((slide, i) => {
       const html = d2SlideHtml(slide);
@@ -346,7 +418,10 @@ const remarkGroupD2Slides: Plugin<[], Root> = () => (tree) => {
 
         if (slides.length > 0) {
           const next = parent.children[j];
-          out.push({ type: "html", value: buildD2SlidesHtml(node, slides) } satisfies Html);
+          out.push({
+            type: "html",
+            value: buildD2SlidesHtml(node, slides),
+          } satisfies Html);
           i = isClosingDiv(next) ? j + 1 : j;
           continue;
         }
@@ -358,7 +433,11 @@ const remarkGroupD2Slides: Plugin<[], Root> = () => (tree) => {
 
     parent.children = out;
     for (const child of parent.children) {
-      if (child && typeof child === "object" && "children" in (child as object)) {
+      if (
+        child &&
+        typeof child === "object" &&
+        "children" in (child as object)
+      ) {
         walk(child as { children?: unknown[] });
       }
     }
@@ -378,13 +457,24 @@ interface RunnableTabNode {
   language: string;
   languageLabel: string;
   source: string;
+  runnable: boolean;
 }
 
-const isRunnableCode = (node: { type: string; lang?: string | null; meta?: string | null }) => {
+// True when a code fence should join a tab group. Runnable languages still
+// require the `run` marker (today's behaviour); display-only languages like
+// pseudocode opt in by language alone, so chapter authors don't have to write
+// ` ```pseudocode run` everywhere.
+const isRunnableCode = (node: {
+  type: string;
+  lang?: string | null;
+  meta?: string | null;
+}) => {
   if (node.type !== "code") return false;
+  const lang = resolveLanguage(node.lang ?? null);
+  if (!lang) return false;
+  if (!lang.runnable) return true;
   const meta = typeof node.meta === "string" ? node.meta : "";
-  if (!/\brun\b/.test(meta)) return false;
-  return resolveLanguage(node.lang ?? null) !== null;
+  return /\brun\b/.test(meta);
 };
 
 const remarkGroupRunnable: Plugin<[], Root> = () => (tree) => {
@@ -393,7 +483,9 @@ const remarkGroupRunnable: Plugin<[], Root> = () => (tree) => {
     const out: unknown[] = [];
     let i = 0;
     while (i < parent.children.length) {
-      const node = parent.children[i] as Code & { data?: Record<string, unknown> };
+      const node = parent.children[i] as Code & {
+        data?: Record<string, unknown>;
+      };
       if (isRunnableCode(node)) {
         let j = i;
         const tabs: RunnableTabNode[] = [];
@@ -405,11 +497,14 @@ const remarkGroupRunnable: Plugin<[], Root> = () => (tree) => {
             language: sibling.lang ?? "",
             languageLabel: lang.label,
             source: sibling.value,
+            runnable: lang.runnable,
           });
           j++;
         }
         if (tabs.length > 1) {
-          const first = parent.children[i] as Code & { data?: Record<string, unknown> };
+          const first = parent.children[i] as Code & {
+            data?: Record<string, unknown>;
+          };
           first.data = { ...(first.data ?? {}), runnableTabs: tabs };
           out.push(first);
           i = j;
@@ -421,7 +516,11 @@ const remarkGroupRunnable: Plugin<[], Root> = () => (tree) => {
     }
     parent.children = out;
     for (const child of parent.children) {
-      if (child && typeof child === "object" && "children" in (child as object)) {
+      if (
+        child &&
+        typeof child === "object" &&
+        "children" in (child as object)
+      ) {
         walk(child as { children?: unknown[] });
       }
     }
@@ -531,7 +630,7 @@ const codeHandler = (state: State, node: Code): Element | undefined => {
 
   if (runRequested && node.lang) {
     const lang = resolveLanguage(node.lang);
-    if (lang) {
+    if (lang && lang.runnable) {
       return {
         type: "element",
         tagName: "div",
@@ -560,30 +659,40 @@ export interface TocEntry {
   text: string;
 }
 
-const collectText = (node: Element | Text | ElementContent | undefined): string => {
+const collectText = (
+  node: Element | Text | ElementContent | undefined,
+): string => {
   if (!node) return "";
   if (node.type === "text") return (node as Text).value;
   if (node.type === "element") {
     const el = node as Element;
     // Skip rehype-autolink-headings appended <span class="heading-anchor-icon">.
     const cls = el.properties?.className;
-    const list = Array.isArray(cls) ? cls : typeof cls === "string" ? cls.split(" ") : [];
-    if (list.includes("heading-anchor") || list.includes("heading-anchor-icon")) return "";
+    const list = Array.isArray(cls)
+      ? cls
+      : typeof cls === "string"
+        ? cls.split(" ")
+        : [];
+    if (list.includes("heading-anchor") || list.includes("heading-anchor-icon"))
+      return "";
     return (el.children ?? []).map(collectText).join("");
   }
   return "";
 };
 
-const rehypeCollectToc = (collector: TocEntry[]): Plugin<[], HastRoot> => () => (tree) => {
-  visit(tree, "element", (node: Element) => {
-    if (!/^h[1-6]$/.test(node.tagName)) return;
-    const depth = parseInt(node.tagName[1], 10);
-    const id = node.properties?.id;
-    const slug = typeof id === "string" ? id : "";
-    if (!slug) return;
-    collector.push({ depth, slug, text: collectText(node) });
-  });
-};
+const rehypeCollectToc =
+  (collector: TocEntry[]): Plugin<[], HastRoot> =>
+  () =>
+  (tree) => {
+    visit(tree, "element", (node: Element) => {
+      if (!/^h[1-6]$/.test(node.tagName)) return;
+      const depth = parseInt(node.tagName[1], 10);
+      const id = node.properties?.id;
+      const slug = typeof id === "string" ? id : "";
+      if (!slug) return;
+      collector.push({ depth, slug, text: collectText(node) });
+    });
+  };
 
 // ---- Public API ---------------------------------------------------------
 
@@ -618,7 +727,7 @@ export async function renderChapter(source: string): Promise<RenderResult> {
     // page-level <h1>. Chapters that have no h1 are unaffected.
     .use((() => (tree: HastRoot) => {
       const idx = tree.children.findIndex(
-        (c) => c.type === "element" && (c as Element).tagName === "h1"
+        (c) => c.type === "element" && (c as Element).tagName === "h1",
       );
       if (idx !== -1) tree.children.splice(idx, 1);
     }) as Plugin<[], HastRoot>)

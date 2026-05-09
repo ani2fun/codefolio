@@ -13,7 +13,13 @@ import japgolly.scalajs.react.vdom.html_<^.*
  */
 object RunnableCodeGroup:
 
-  final case class Tab(language: String, languageLabel: String, source: String)
+  final case class Tab(
+      language: String,
+      languageLabel: String,
+      source: String,
+      runnable: Boolean = true
+  )
+
   final case class Props(tabs: List[Tab])
 
   val Component =
@@ -25,7 +31,12 @@ object RunnableCodeGroup:
         else if props.tabs.sizeIs == 1 then
           val only = props.tabs.head
           RunnableCodeBlock.Component(
-            RunnableCodeBlock.Props(only.language, only.source, Some(only.languageLabel))
+            RunnableCodeBlock.Props(
+              only.language,
+              only.source,
+              Some(only.languageLabel),
+              runnable = only.runnable
+            )
           )
         else
           val active = if activeS.value >= props.tabs.size then 0 else activeS.value
@@ -60,7 +71,8 @@ object RunnableCodeGroup:
                     source = tab.source,
                     languageLabel = Some(tab.languageLabel),
                     bare = true,
-                    hideLanguageLabel = true
+                    hideLanguageLabel = true,
+                    runnable = tab.runnable
                   )
                 )
               )

@@ -1,0 +1,11 @@
+# Heap
+
+Use this page as the chapter map for heap. The guides are ordered from fundamentals into common problem-solving patterns and design practice.
+
+## Guides
+
+- [Introduction to Heaps](/cortex/data-structures-and-algorithms/trees-heap-introduction-to-heaps)
+- [Array Implementation of Heaps](/cortex/data-structures-and-algorithms/trees-heap-array-implementation-of-heaps)
+- [Pattern: Top K Elements](/cortex/data-structures-and-algorithms/trees-heap-pattern-top-k-elements)
+- [Pattern: Comparator](/cortex/data-structures-and-algorithms/trees-heap-pattern-comparator)
+- [Design](/cortex/data-structures-and-algorithms/trees-heap-design)

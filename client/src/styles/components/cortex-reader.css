@@ -5,7 +5,7 @@
     /* ─── Layout (3-column reader) ───────────────────────────────── */
     .cortex-reader-layout {
         @apply grid grid-cols-1 lg:grid-cols-[280px_minmax(0,1fr)]
-               xl:grid-cols-[280px_minmax(0,1fr)_240px] gap-0 max-w-[1400px] mx-auto;
+               xl:grid-cols-[280px_minmax(0,1fr)_64px] gap-0 max-w-[1400px] mx-auto;
     }
     .cortex-reader-layout__main {
         @apply px-5 md:px-10 py-10 min-w-0;
@@ -152,9 +152,48 @@
         @apply border-primary text-primary font-semibold bg-primary/5;
     }
 
-    /* ─── Right-rail TOC (xl+) ───────────────────────────────────── */
+    /* ─── Right-rail TOC minimap (xl+) ───────────────────────────────
+       The visible aside is a slim rail of horizontal-line ticks. The
+       full heading list lives in `__panel`, which sits absolutely
+       positioned to the left of the rail and is hidden until the aside
+       is hovered/focus-within. The aside is `relative` so the absolute
+       panel anchors to it; it must NOT have overflow:hidden/auto, or
+       the panel would clip. */
     .cortex-reader-toc {
-        @apply hidden xl:block sticky top-20 self-start max-h-[calc(100vh-5rem)] overflow-y-auto p-6;
+        @apply hidden xl:flex sticky top-20 self-start max-h-[calc(100vh-5rem)]
+               py-6 pr-3 justify-end relative;
+    }
+    .cortex-reader-toc__rail {
+        @apply flex flex-col gap-2.5 items-end overflow-y-auto max-h-full;
+    }
+    /* Rail ticks all have the same width because the rail only contains
+       top-level sections (one heading depth, computed in CortexToc). */
+    .cortex-reader-toc__tick {
+        @apply block h-px w-6 bg-muted-foreground/40 transition-all duration-150;
+    }
+    .cortex-reader-toc__tick:hover {
+        @apply bg-foreground;
+    }
+    /* Active tick — replaces the line with an open circle. Must come
+       after the base rule so it overrides h-px / w-6 / bg. */
+    .cortex-reader-toc__tick--active {
+        @apply h-2 w-2 rounded-full bg-transparent border-[1.5px] border-muted-foreground;
+    }
+    .cortex-reader-toc__tick--active:hover {
+        @apply border-foreground bg-transparent;
+    }
+    /* Hover-revealed panel. `right-full` flushes its right edge against
+       the rail's left edge so there's no gap to traverse (which would
+       cause hover flicker). Internal padding gives breathing room. */
+    .cortex-reader-toc__panel {
+        @apply absolute right-full top-4 w-64 max-h-[calc(100vh-7rem)] overflow-y-auto
+               p-4 rounded-md bg-background border border-border shadow-lg z-30
+               opacity-0 pointer-events-none translate-x-2
+               transition-all duration-150;
+    }
+    .cortex-reader-toc:hover .cortex-reader-toc__panel,
+    .cortex-reader-toc:focus-within .cortex-reader-toc__panel {
+        @apply opacity-100 pointer-events-auto translate-x-0;
     }
     .cortex-reader-toc__heading {
         @apply text-xs font-bold uppercase tracking-wider text-foreground mb-3;

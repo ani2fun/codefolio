@@ -181,10 +181,14 @@ object ChapterContent:
       val decoded = js.Dynamic.global.decodeURIComponent(encoded).asInstanceOf[String]
       val parsed  = js.JSON.parse(decoded).asInstanceOf[js.Array[js.Dynamic]]
       parsed.toList.map { obj =>
+        // `runnable` is optional — defaults to true so older payloads / future
+        // tabs that omit the field still get a runnable tab.
+        val runnable = obj.runnable.asInstanceOf[js.UndefOr[Boolean]].toOption.getOrElse(true)
         RunnableCodeGroup.Tab(
           language = obj.language.asInstanceOf[String],
           languageLabel = obj.languageLabel.asInstanceOf[String],
-          source = obj.source.asInstanceOf[String]
+          source = obj.source.asInstanceOf[String],
+          runnable = runnable
         )
       }
     }

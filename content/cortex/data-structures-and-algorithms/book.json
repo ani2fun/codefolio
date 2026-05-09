@@ -1,11 +1,13 @@
 {
     "title": "Data Structures and Algorithms",
-    "description": "A guided tour of core data structures and algorithms — adapted from the homelab note-book project. Each guide opens with a 🧠 pseudocode reference, then explores the model, operations, common patterns, and design problems.",
+    "description": "A senior-engineer-grade DSA curriculum: 11 modules from asymptotic analysis to the production data structures inside Postgres, Linux, Redis, and Git. Every chapter ships with five-language code (pseudocode, Python, Java, Scala, C), edge cases, production-reality references, and a hint-driven practice ladder.",
     "tags": [
         "computer-science",
         "data-structures",
         "algorithms",
-        "dsa"
+        "dsa",
+        "interview-prep",
+        "systems"
     ],
-    "estimatedReadingMinutes": 720
+    "estimatedReadingMinutes": 1400
 }
