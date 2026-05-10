@@ -60,6 +60,7 @@
         font-style: italic;
         font-size: 1.06em;
         color: hsl(var(--foreground));
+        letter-spacing: 0.05em;
     }
 
     /* ─── Breadcrumb ─────────────────────────────────────────────── */
@@ -365,6 +366,7 @@
         font-family: var(--font-display);
         font-style: italic;
         color: hsl(var(--foreground) / 0.85);
+        letter-spacing: 0.05em;
     }
 
     /* ─── Right-rail TOC minimap (xl+) ───────────────────────────────

@@ -19,12 +19,27 @@ object Header:
 
   final case class Props(ctl: RouterCtl[Page])
 
-  private val menuLinks: List[(String, String)] = List(
-    "/#work"       -> "Work",
-    "/#about"      -> "About",
-    "/#experience" -> "Experience",
-    "/#projects"   -> "Projects",
-    "/#cortex"     -> "Cortex"
+  /**
+   * One nav-bar entry. Two flavours:
+   *
+   *   - [[HashLink]] — `/#about`, `/#cortex`, etc. Scrolls to the matching `id` on the home page; falls back
+   *     to `location.assign` when triggered from a non-home route.
+   *   - [[RouteLink]] — `/blogs`. Real top-level route navigated via `RouterCtl.setRouteEH(page)` so we stay
+   *     SPA-internal (no full reload).
+   */
+  sealed private trait MenuLink:
+    def label: String
+
+  final private case class HashLink(hash: String, label: String)              extends MenuLink
+  final private case class RouteLink(page: Page, href: String, label: String) extends MenuLink
+
+  private val menuLinks: List[MenuLink] = List(
+    HashLink("/#work", "Work"),
+    HashLink("/#about", "About"),
+    HashLink("/#experience", "Experience"),
+    HashLink("/#projects", "Projects"),
+    RouteLink(Page.CortexIndex, "/cortex", "Cortex"),
+    RouteLink(Page.Blogs, "/blogs", "Blog")
   )
 
   /**
@@ -55,27 +70,52 @@ object Header:
         def linkClick(hash: String): ReactEventFromInput => Callback =
           (e: ReactEventFromInput) => e.preventDefaultCB >> goToAnchor(hash)
 
-        def mobileLink(hash: String, label: String): VdomNode =
-          <.li(
-            ^.key := hash,
+        def routeClick(page: Page): ReactEventFromInput => Callback =
+          (e: ReactEventFromInput) => e.preventDefaultCB >> props.ctl.set(page)
+
+        def desktopLink(link: MenuLink): VdomNode = link match
+          case HashLink(hash, label) =>
             <.a(
+              ^.key       := hash,
               ^.href      := hash,
-              ^.className := "header__drawer-link",
-              ^.onClick ==> ((e: ReactEventFromInput) =>
-                e.preventDefaultCB >> menuOpenS.setState(false) >> goToAnchor(hash)
-              ),
+              ^.className := "header__link",
+              ^.onClick ==> linkClick(hash),
               label
             )
-          )
+          case RouteLink(page, href, label) =>
+            <.a(
+              ^.key       := href,
+              ^.href      := href,
+              ^.className := "header__link",
+              ^.onClick ==> routeClick(page),
+              label
+            )
 
-        def desktopLink(hash: String, label: String): VdomNode =
-          <.a(
-            ^.key       := hash,
-            ^.href      := hash,
-            ^.className := "header__link",
-            ^.onClick ==> linkClick(hash),
-            label
-          )
+        def mobileLink(link: MenuLink): VdomNode = link match
+          case HashLink(hash, label) =>
+            <.li(
+              ^.key := hash,
+              <.a(
+                ^.href      := hash,
+                ^.className := "header__drawer-link",
+                ^.onClick ==> ((e: ReactEventFromInput) =>
+                  e.preventDefaultCB >> menuOpenS.setState(false) >> goToAnchor(hash)
+                ),
+                label
+              )
+            )
+          case RouteLink(page, href, label) =>
+            <.li(
+              ^.key := href,
+              <.a(
+                ^.href      := href,
+                ^.className := "header__drawer-link",
+                ^.onClick ==> ((e: ReactEventFromInput) =>
+                  e.preventDefaultCB >> menuOpenS.setState(false) >> props.ctl.set(page)
+                ),
+                label
+              )
+            )
 
         <.header(
           ^.className := "header",
@@ -90,7 +130,7 @@ object Header:
             ),
             <.div(
               ^.className := "header__menu",
-              menuLinks.toTagMod((hash, label) => desktopLink(hash, label))
+              menuLinks.toTagMod(desktopLink)
             ),
             <.div(
               ^.className := "header__actions",
@@ -116,7 +156,7 @@ object Header:
               ^.className := "header__drawer",
               <.ul(
                 ^.className := "header__drawer-list",
-                menuLinks.toTagMod((hash, label) => mobileLink(hash, label))
+                menuLinks.toTagMod(mobileLink)
               )
             )
           else EmptyVdom

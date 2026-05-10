@@ -1,6 +1,14 @@
 package codefolio.client.pages
 
-import codefolio.client.components.sections.{About, Certifications, Cortex, Experience, Hero, Projects, SelectedWork}
+import codefolio.client.components.sections.{
+  About,
+  Certifications,
+  Cortex,
+  Experience,
+  Hero,
+  Projects,
+  SelectedWork
+}
 import codefolio.client.util.PageTitle
 import japgolly.scalajs.react.*
 import japgolly.scalajs.react.vdom.html_<^.*
@@ -35,7 +43,6 @@ object HomePage:
           About.Component(),
           Experience.Component(),
           Projects.Component(),
-          Certifications.Component(),
-          Cortex.Component()
+          Certifications.Component()
         )
       }

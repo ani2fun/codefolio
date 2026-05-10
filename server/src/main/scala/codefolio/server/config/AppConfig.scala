@@ -36,6 +36,14 @@ final case class RunnerConfig(
  */
 final case class CortexConfig(root: String, autoReload: Boolean)
 
+/**
+ * Path to the blog content tree. Default `./content/blogs` relative to the working directory. Each immediate
+ * `*.md` file under the root is a single post; the slug is the filename without `.md`. `autoReload` checks
+ * the maximum mtime of files under the root on every index request and rebuilds the cached index if anything
+ * changed — same pattern as Cortex. Disable in prod by setting `BLOG_AUTO_RELOAD=false`.
+ */
+final case class BlogConfig(root: String, autoReload: Boolean)
+
 final case class AppConfig(
     port: Int,
     staticDir: String,
@@ -43,7 +51,8 @@ final case class AppConfig(
     redis: RedisConfig,
     mongo: MongoConfig,
     runner: RunnerConfig,
-    cortex: CortexConfig
+    cortex: CortexConfig,
+    blog: BlogConfig
 )
 
 object AppConfig:

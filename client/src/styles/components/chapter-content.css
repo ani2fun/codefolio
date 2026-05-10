@@ -60,6 +60,7 @@
         font-style: italic;
         font-size: 1.04em;
         color: hsl(var(--foreground));
+        letter-spacing: 0.05em;
     }
     /* Bold uses font-weight 600 (medium-bold), not the plugin's 700. */
     .chapter-content strong {

@@ -87,7 +87,7 @@
         font-family: var(--font-display);
         font-style: italic;
         font-weight: 400;
-        letter-spacing: 0.03em;
+        letter-spacing: 0.05em;
         color: hsl(var(--foreground));
     }
 

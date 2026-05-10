@@ -1,5 +1,6 @@
 package codefolio.server.http
 
+import codefolio.server.blogPipeline.BlogFailure
 import codefolio.server.codeRunPipeline.RunFailure
 import codefolio.server.cortexPipeline.CortexFailure
 import codefolio.server.helloPipeline.HelloFailure
@@ -13,7 +14,7 @@ object ApiErrors:
    * handler error types are added to this union and to the match in [[toHttp]] — the compiler flags missing
    * cases at the call site.
    */
-  type HandlerFailure = RunFailure | CortexFailure | HelloFailure
+  type HandlerFailure = RunFailure | CortexFailure | HelloFailure | BlogFailure
 
   def toHttp(failure: HandlerFailure): (StatusCode, ApiError) = failure match
     case RunFailure.BadInput(error, hint) =>
@@ -42,3 +43,11 @@ object ApiErrors:
     case HelloFailure.RecentUnavailable(detail) =>
       StatusCode.ServiceUnavailable ->
         ApiError(error = "Recent calls unavailable", detail = detail, hint = None)
+    case BlogFailure.NotFound =>
+      StatusCode.NotFound -> ApiError(error = "Not found", detail = None, hint = None)
+    case BlogFailure.IO(detail) =>
+      StatusCode.InternalServerError ->
+        ApiError(error = "Blog IO error", detail = Some(detail), hint = None)
+    case BlogFailure.IndexInvalid(detail) =>
+      StatusCode.InternalServerError ->
+        ApiError(error = "Blog index is invalid", detail = Some(detail), hint = None)

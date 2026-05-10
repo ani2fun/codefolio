@@ -2,6 +2,8 @@ package codefolio.client.api
 
 import codefolio.shared.api.Endpoints
 import codefolio.shared.api.Endpoints.{
+  BlogIndex,
+  BlogPostPayload,
   ChapterPayload,
   CortexIndex,
   Greeting,
@@ -58,6 +60,12 @@ object ApiClient:
       : ((String, String)) => Request[Either[Endpoints.ApiError, ChapterPayload], Any] =
     SttpClientInterpreter().toRequestThrowDecodeFailures(Endpoints.getCortexChapter, baseUri)
 
+  private val blogIndexRequest: Unit => Request[Either[Endpoints.ApiError, BlogIndex], Any] =
+    SttpClientInterpreter().toRequestThrowDecodeFailures(Endpoints.getBlogIndex, baseUri)
+
+  private val blogPostRequest: String => Request[Either[Endpoints.ApiError, BlogPostPayload], Any] =
+    SttpClientInterpreter().toRequestThrowDecodeFailures(Endpoints.getBlogPost, baseUri)
+
   private def send[I, E, O](
       build: I => Request[Either[E, O], Any],
       input: I,
@@ -97,3 +105,11 @@ object ApiClient:
 
   def getCortexChapter(book: String, chapter: String): Future[ChapterPayload] =
     send(cortexChapterRequest, (book, chapter), apiError(s"Failed to fetch chapter $book/$chapter"))
+
+  // ---- Blog ----------------------------------------------------------------
+
+  def getBlogIndex: Future[BlogIndex] =
+    send(blogIndexRequest, (), apiError("Failed to fetch blog index"))
+
+  def getBlogPost(slug: String): Future[BlogPostPayload] =
+    send(blogPostRequest, slug, apiError(s"Failed to fetch blog post $slug"))

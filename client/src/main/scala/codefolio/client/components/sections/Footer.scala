@@ -9,9 +9,8 @@ import scala.scalajs.js
 /**
  * Footer — "Let's talk." block + two link columns + meta line.
  *
- * Mirrors the design system prototype's `.ftr` layout. The meta line
- * carries the homelab one-liner and the version stamp; the prototype's
- * "v2.0 · paris ⌁ {year}" pattern is preserved.
+ * Mirrors the design system prototype's `.ftr` layout. The meta line carries the homelab one-liner and the
+ * version stamp; the prototype's "v2.0 · paris ⌁ {year}" pattern is preserved.
  */
 object Footer:
 
@@ -19,8 +18,8 @@ object Footer:
     <.a(
       ^.href      := href,
       ^.className := "footer__col-link",
-      (if external then TagMod(^.rel := "noopener noreferrer", ^.target := "_blank")
-       else TagMod.empty),
+      if external then TagMod(^.rel := "noopener noreferrer", ^.target := "_blank")
+      else TagMod.empty,
       label,
       if external then <.span(^.className := "footer__col-link-arrow", " ↗") else EmptyVdom
     )
@@ -38,7 +37,11 @@ object Footer:
           <.p(
             ^.className := "footer__sub",
             "Senior backend roles, JVM ecosystems, identity and platforms. Reach me at ",
-            <.a(^.href := "mailto:a.r.kakde@gmail.com", ^.className := "footer__sub-link", "a.r.kakde@gmail.com"),
+            <.a(
+              ^.href      := "mailto:a.r.kakde@gmail.com",
+              ^.className := "footer__sub-link",
+              "a.r.kakde@gmail.com"
+            ),
             "."
           )
         ),
@@ -60,7 +63,7 @@ object Footer:
             <.div(
               ^.className := "footer__col-list",
               metaLink("/cortex", "Cortex"),
-              metaLink("https://notebook.kakde.eu", "Notebook", external = true),
+              metaLink("/blogs", "Blog"),
               metaLink("/Aniket-Kakde-CV-EN.pdf", "CV (PDF)")
             )
           )
@@ -75,7 +78,7 @@ object Footer:
         <.div(
           ^.className := "footer__meta-right",
           <.span(^.className := "footer__meta-version", s"v2.0 · paris · $year"),
-          <.div(^.className := "footer__meta-toggle", ToggleMode.Component())
+          <.div(^.className  := "footer__meta-toggle", ToggleMode.Component())
         )
       )
     )

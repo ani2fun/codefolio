@@ -197,9 +197,11 @@
 @import "./src/styles/sections/projects.css";
 @import "./src/styles/sections/certifications.css";
 @import "./src/styles/sections/cortex.css";
+@import "./src/styles/sections/blog.css";
 @import "./src/styles/sections/header.css";
 @import "./src/styles/sections/footer.css";
 @import "./src/styles/components/cortex-reader.css";
 @import "./src/styles/components/diagrams.css";
 @import "./src/styles/components/runnable-code.css";
 @import "./src/styles/components/chapter-content.css";
+@import "./src/styles/components/blog-post.css";

@@ -1,7 +1,16 @@
 package codefolio.server
 
+import codefolio.server.blogPipeline.BlogPipeline
 import codefolio.server.codeRunPipeline.CodeRunPipeline
-import codefolio.server.config.{AppConfig, CortexConfig, DbConfig, MongoConfig, RedisConfig, RunnerConfig}
+import codefolio.server.config.{
+  AppConfig,
+  BlogConfig,
+  CortexConfig,
+  DbConfig,
+  MongoConfig,
+  RedisConfig,
+  RunnerConfig
+}
 import codefolio.server.cortexPipeline.CortexPipeline
 import codefolio.server.db.{DataSource, Migrations}
 import codefolio.server.helloPipeline.HelloPipeline
@@ -50,14 +59,21 @@ object Main extends ZIOAppDefault:
   // than a fully-formed `AppConfig` for every layer they wire.
   private val dbCfg: ZLayer[AppConfig, Nothing, DbConfig] =
     ZLayer.fromFunction((c: AppConfig) => c.db)
+
   private val redisCfg: ZLayer[AppConfig, Nothing, RedisConfig] =
     ZLayer.fromFunction((c: AppConfig) => c.redis)
+
   private val mongoCfg: ZLayer[AppConfig, Nothing, MongoConfig] =
     ZLayer.fromFunction((c: AppConfig) => c.mongo)
+
   private val runnerCfg: ZLayer[AppConfig, Nothing, RunnerConfig] =
     ZLayer.fromFunction((c: AppConfig) => c.runner)
+
   private val cortexCfg: ZLayer[AppConfig, Nothing, CortexConfig] =
     ZLayer.fromFunction((c: AppConfig) => c.cortex)
+
+  private val blogCfg: ZLayer[AppConfig, Nothing, BlogConfig] =
+    ZLayer.fromFunction((c: AppConfig) => c.blog)
 
   override def run: ZIO[Any, Throwable, Unit] =
     // Run schema migrations *before* binding the HTTP port — if they fail
@@ -73,10 +89,12 @@ object Main extends ZIOAppDefault:
         mongoCfg,             // AppConfig → MongoConfig
         runnerCfg,            // AppConfig → RunnerConfig
         cortexCfg,            // AppConfig → CortexConfig
+        blogCfg,              // AppConfig → BlogConfig
         DataSource.live,      // HikariCP pool over Postgres
         HelloPipeline.live,   // /api/hello, /api/recent, /api/health (Postgres + Redis + Mongo)
         CodeRunPipeline.live, // /api/run (Piston / Code Runner)
         CortexPipeline.live,  // /api/cortex/*
+        BlogPipeline.live,    // /api/blogs/*
         HttpApp.live          // tapir + zio-http + static + SPA fallback
       )
 

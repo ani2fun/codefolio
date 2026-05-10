@@ -1,5 +1,6 @@
 package codefolio.server
 
+import codefolio.server.blogPipeline.BlogPipeline
 import codefolio.server.codeRunPipeline.CodeRunPipeline
 import codefolio.server.config.AppConfig
 import codefolio.server.cortexPipeline.CortexPipeline
@@ -20,17 +21,22 @@ trait HttpApp:
 
 object HttpApp:
 
-  val live: ZLayer[AppConfig & HelloPipeline & CodeRunPipeline & CortexPipeline, Nothing, HttpApp] =
-    ZLayer.fromFunction(HttpAppLive(_, _, _, _))
+  val live: ZLayer[
+    AppConfig & HelloPipeline & CodeRunPipeline & CortexPipeline & BlogPipeline,
+    Nothing,
+    HttpApp
+  ] =
+    ZLayer.fromFunction(HttpAppLive(_, _, _, _, _))
 
 final private class HttpAppLive(
     cfg: AppConfig,
     helloPipeline: HelloPipeline,
     codeRun: CodeRunPipeline,
-    cortex: CortexPipeline
+    cortex: CortexPipeline,
+    blog: BlogPipeline
 ) extends HttpApp:
 
-  private val apiRoutes    = ApiRoutes.routes(helloPipeline, codeRun, cortex)
+  private val apiRoutes    = ApiRoutes.routes(helloPipeline, codeRun, cortex, blog)
   private val staticRoutes = StaticRoutes.from(cfg.staticDir)
 
   override def serve: Task[Unit] =

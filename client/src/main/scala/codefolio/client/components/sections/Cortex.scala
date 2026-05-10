@@ -12,6 +12,8 @@ import japgolly.scalajs.react.vdom.html_<^.*
 import scala.scalajs.concurrent.JSExecutionContext.Implicits.queue
 
 /**
+ * TO DO: REMOVE THIS COMPONENT and IT's RELEVANT COMMENTED CSS CLASSES.
+ *
  * Home-page preview of the Cortex — first 6 books from the `/api/cortex/index` endpoint, with a "Browse all"
  * CTA below. Card markup itself lives in `BookGrid`; this component owns the section heading, the limit, and
  * the CTA.

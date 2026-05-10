@@ -54,9 +54,9 @@ object Router:
         // normal page and the page does the navigation on mount).
         | dynamicRouteCT((AppRoutes.Cortex / seg).caseClass[Page.BookRedirect]) ~>
         dynRender((p: Page.BookRedirect) => BookRedirectPage.Component(p.book))
-        | staticRoute(AppRoutes.Blogs, Page.Blogs) ~> render(BlogsPlaceholderPage.Component())
+        | staticRoute(AppRoutes.Blogs, Page.Blogs) ~> render(BlogIndexPage.Component())
         | dynamicRouteCT((AppRoutes.Blogs / seg).caseClass[Page.BlogPost]) ~>
-        dynRender((_: Page.BlogPost) => BlogsPlaceholderPage.Component())
+        dynRender((p: Page.BlogPost) => BlogPostPage.Component(BlogPostPage.Props(p.slug)))
         | staticRoute(AppRoutes.Demo, Page.Demo) ~> render(DemoPage.Component())
 
     rules

@@ -104,6 +104,50 @@ paths:
         '500':
           $ref: '#/components/responses/InternalServerError'
 
+  /api/blogs/index:
+    get:
+      operationId: getBlogIndex
+      summary: |
+        List every published blog post — title, summary, publish date, tags,
+        eyebrow, read minutes. Sorted descending by `publishedAt`.
+        The server walks `content/blogs/*.md` once, caches the result, and
+        invalidates on mtime bump (when `BLOG_AUTO_RELOAD=true`).
+      responses:
+        '200':
+          description: Blog index
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BlogIndex'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  /api/blogs/{slug}:
+    get:
+      operationId: getBlogPost
+      summary: |
+        Return the raw markdown body + frontmatter + prev/next slugs for one
+        blog post. The client renders the markdown via the same JS pipeline
+        used for Cortex chapters (`allowDangerousHtml: true`, so the rich
+        HTML blocks embedded in the post survive untouched).
+      parameters:
+        - name: slug
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Blog post payload
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BlogPostPayload'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
   /api/run:
     post:
       operationId: runCode
@@ -414,6 +458,116 @@ components:
           $ref: '#/components/schemas/ChapterRef'
         frontmatter:
           $ref: '#/components/schemas/ChapterFrontmatter'
+        raw:
+          type: string
+        prevSlug:
+          type: string
+          nullable: true
+        nextSlug:
+          type: string
+          nullable: true
+
+    BlogMetaItem:
+      type: object
+      required: [label, value]
+      description: |
+        A single label/value pair shown in the blog post hero meta strip
+        (e.g. "Read Time" / "15 min"). Free-form text; renders as a
+        column of small caps + value.
+      properties:
+        label:
+          type: string
+          example: Read Time
+        value:
+          type: string
+          example: 15 min
+
+    BlogSummary:
+      type: object
+      required: [slug, title, summary, publishedAt]
+      description: |
+        Summary card for a single blog post — used by the blog index list
+        and the prev/next pager. Excludes the markdown body.
+      properties:
+        slug:
+          type: string
+          example: l-reuteri-yogurt
+        title:
+          type: string
+        summary:
+          type: string
+        publishedAt:
+          type: string
+          description: ISO-8601 date (YYYY-MM-DD) the post was first published.
+          example: "2026-05-10"
+        tags:
+          type: array
+          items: { type: string }
+          nullable: true
+        readMinutes:
+          type: integer
+          format: int32
+          nullable: true
+        eyebrow:
+          type: string
+          nullable: true
+          description: Short topical label shown above the post title.
+          example: "Gut Health · Fermented Foods"
+
+    BlogIndex:
+      type: object
+      required: [posts]
+      properties:
+        posts:
+          type: array
+          items:
+            $ref: '#/components/schemas/BlogSummary'
+
+    BlogPostFrontmatter:
+      type: object
+      required: [title, publishedAt]
+      description: |
+        Frontmatter extracted from the post's `.md` file. Carries everything
+        the post hero needs to render — title, summary, eyebrow, the
+        meta-strip pairs ("Active Prep / 10 min"), and read minutes.
+      properties:
+        title:
+          type: string
+        summary:
+          type: string
+          nullable: true
+        publishedAt:
+          type: string
+        tags:
+          type: array
+          items: { type: string }
+          nullable: true
+        readMinutes:
+          type: integer
+          format: int32
+          nullable: true
+        eyebrow:
+          type: string
+          nullable: true
+        meta:
+          type: array
+          items:
+            $ref: '#/components/schemas/BlogMetaItem'
+          nullable: true
+
+    BlogPostPayload:
+      type: object
+      required: [post, frontmatter, raw]
+      description: |
+        Full payload for one blog post. `raw` is the markdown body with
+        frontmatter stripped; the client renders it via the same `unified`
+        pipeline as Cortex chapters. `prevSlug` / `nextSlug` walk the
+        index in publish-date order; null at the ends.
+      properties:
+        post:
+          $ref: '#/components/schemas/BlogSummary'
+        frontmatter:
+          $ref: '#/components/schemas/BlogPostFrontmatter'
         raw:
           type: string
         prevSlug:

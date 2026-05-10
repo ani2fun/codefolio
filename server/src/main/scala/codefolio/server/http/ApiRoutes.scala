@@ -1,11 +1,14 @@
 package codefolio.server.http
 
+import codefolio.server.blogPipeline.BlogPipeline
 import codefolio.server.codeRunPipeline.CodeRunPipeline
 import codefolio.server.cortexPipeline.CortexPipeline
 import codefolio.server.helloPipeline.HelloPipeline
 import codefolio.shared.api.Endpoints
 import codefolio.shared.api.Endpoints.{
   ApiError,
+  BlogIndex,
+  BlogPostPayload,
   ChapterPayload,
   CortexIndex,
   Greeting,
@@ -29,9 +32,10 @@ object ApiRoutes:
   def routes(
       helloPipeline: HelloPipeline,
       codeRun: CodeRunPipeline,
-      cortex: CortexPipeline
+      cortex: CortexPipeline,
+      blog: BlogPipeline
   ): Routes[Any, Response] =
-    val endpoints = serverEndpoints(helloPipeline, codeRun, cortex)
+    val endpoints = serverEndpoints(helloPipeline, codeRun, cortex, blog)
     val swaggerEndpoints =
       SwaggerInterpreter()
         .fromServerEndpoints[Task](endpoints, "Codefolio API", "0.1.0")
@@ -41,7 +45,8 @@ object ApiRoutes:
   private def serverEndpoints(
       helloPipeline: HelloPipeline,
       codeRun: CodeRunPipeline,
-      cortex: CortexPipeline
+      cortex: CortexPipeline,
+      blog: BlogPipeline
   ): List[ZServerEndpoint[Any, Any]] =
 
     val apiErrorOut = statusCode and jsonBody[ApiError]
@@ -99,11 +104,31 @@ object ApiRoutes:
           cortex.chapter(book, chapter).mapError(ApiErrors.toHttp)
         }
 
+    val blogIndexEndpoint: ZServerEndpoint[Any, Any] =
+      endpoint.get
+        .in("api" / "blogs" / "index")
+        .errorOut(apiErrorOut)
+        .out(jsonBody[BlogIndex])
+        .zServerLogic { _ =>
+          blog.index.mapError(ApiErrors.toHttp)
+        }
+
+    val blogPostEndpoint: ZServerEndpoint[Any, Any] =
+      endpoint.get
+        .in("api" / "blogs" / path[String]("slug"))
+        .errorOut(apiErrorOut)
+        .out(jsonBody[BlogPostPayload])
+        .zServerLogic { slug =>
+          blog.post(slug).mapError(ApiErrors.toHttp)
+        }
+
     List(
       helloEndpoint,
       recentEndpoint,
       healthEndpoint,
       runEndpoint,
       cortexIndexEndpoint,
-      cortexChapterEndpoint
+      cortexChapterEndpoint,
+      blogIndexEndpoint,
+      blogPostEndpoint
     )

@@ -16,7 +16,7 @@
     .cortex {
         @apply py-24 px-6 scroll-mt-24 border-t border-border/60;
     }
-    .cortex__inner {
+    /* .cortex__inner {
         @apply max-w-6xl mx-auto;
     }
     .cortex__eyebrow {
@@ -62,7 +62,7 @@
     }
     .cortex__pulse-text {
         @apply text-[11px] font-mono tracking-wide text-muted-foreground;
-    }
+    } */
 
     /* ── Card grid (rendered by BookGrid) ─────────────────────────── */
     .cortex__grid {
