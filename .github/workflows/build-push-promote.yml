@@ -17,7 +17,7 @@ permissions:
 env:
   IMAGE_REPO: ghcr.io/ani2fun/codefolio
   INFRA_REPO: ani2fun/infra
-  INFRA_KUSTOMIZATION_FILE: deploy/codefolio/overlays/prod/kustomization.yaml
+  INFRA_KUSTOMIZATION_FILE: deploy/apps/codefolio/overlays/prod/kustomization.yaml
 
 jobs:
   build-push-promote:
