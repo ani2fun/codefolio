@@ -284,6 +284,129 @@ object Solution {
 
 ***
 
+# Memorize
+
+The high-leverage facts to commit to long-term memory — atomic enough for an Anki card, concrete enough to recall under pressure or during production debugging. KMP is a procedural algorithm; if you can write the failure-function build and the match loop cold, you can solve every literal-pattern problem in linear time.
+
+## Quick recall
+
+Click any question to reveal the answer.
+
+<details>
+<summary><strong>Q:</strong> Total time complexity of KMP matching of pattern <code>P</code> (length <code>m</code>) in text <code>T</code> (length <code>n</code>)?</summary>
+
+**A:** `O(n + m)`. The failure-function build is `O(m)`; the match loop is `O(n)`.
+
+</details>
+
+<details>
+<summary><strong>Q:</strong> Worst-case time of naive substring matching?</summary>
+
+**A:** `O(nm)`. KMP beats this by a factor of `min(n, m)`.
+
+</details>
+
+<details>
+<summary><strong>Q:</strong> What does <code>pi[i]</code> represent in the failure function?</summary>
+
+**A:** The length of the longest *proper* prefix of `P[0..i]` that is also a suffix of `P[0..i]`. *Proper* means strictly shorter than `P[0..i]`.
+
+</details>
+
+<details>
+<summary><strong>Q:</strong> What does the failure function tell you on a mismatch?</summary>
+
+**A:** How much of the matched prefix you can keep without restarting the comparison from `j = 0`.
+
+</details>
+
+<details>
+<summary><strong>Q:</strong> Why are both the build and the match loop <code>O(m)</code> and <code>O(n)</code> respectively, despite the inner <code>while</code>?</summary>
+
+**A:** Amortised: `j` (or `k`) is incremented at most `n` (or `m`) times across the whole loop; each `while` iteration *decreases* it; total iterations ≤ total increments.
+
+</details>
+
+<details>
+<summary><strong>Q:</strong> What's <code>pi[0]</code>?</summary>
+
+**A:** `0`. A single-character prefix has no proper prefix-suffix overlap.
+
+</details>
+
+<details>
+<summary><strong>Q:</strong> After matching the entire pattern (<code>j == m</code>), what do you set <code>j</code> to in order to find <em>overlapping</em> matches?</summary>
+
+**A:** `j = pi[m - 1]`. Setting `j = 0` would skip overlapping occurrences.
+
+</details>
+
+<details>
+<summary><strong>Q:</strong> Compute <code>pi</code> for <code>P = "AABAACAABAA"</code>.</summary>
+
+**A:** `[0, 1, 0, 1, 2, 0, 1, 2, 3, 4, 5]`.
+
+</details>
+
+<details>
+<summary><strong>Q:</strong> Sibling algorithm with the same <code>O(n + m)</code> cost via a different array?</summary>
+
+**A:** Z-algorithm. The Z-array stores prefix-match lengths starting at each index.
+
+</details>
+
+<details>
+<summary><strong>Q:</strong> Generalisation to multi-pattern matching?</summary>
+
+**A:** Aho-Corasick — KMP failure function on a trie of patterns.
+
+</details>
+
+## Code template
+
+```python
+def build_failure(P):
+    """O(m) — pi[i] = longest proper prefix of P[0..i] that is also a suffix."""
+    m = len(P)
+    pi = [0] * m
+    k = 0
+    for i in range(1, m):
+        while k > 0 and P[k] != P[i]:
+            k = pi[k - 1]                       # fall back
+        if P[k] == P[i]:
+            k += 1
+        pi[i] = k
+    return pi
+
+def kmp_match(T, P):
+    """O(n + m) — return all starting indices where P occurs in T."""
+    pi = build_failure(P)
+    n, m = len(T), len(P)
+    matches, j = [], 0
+    for i in range(n):
+        while j > 0 and T[i] != P[j]:
+            j = pi[j - 1]                       # fall back
+        if T[i] == P[j]:
+            j += 1
+        if j == m:
+            matches.append(i - m + 1)
+            j = pi[j - 1]                       # for overlapping; set 0 for non-overlapping
+    return matches
+```
+
+## Pattern triggers
+
+- **Find this substring in this string** → `string.find` for a one-shot; KMP if you'll repeat or analyse the pattern
+- **Repeated substring pattern — does `S` equal `(sub)ᵏ`?** → KMP failure function: yes iff `n` is divisible by `n − pi[n-1]` and `pi[n-1] > 0`
+- **Shortest palindrome by adding chars in front** → KMP on `s + '#' + reverse(s)`; answer length is `pi[len-1]`
+- **Stream matches against many fixed patterns** → Aho-Corasick (KMP generalised to a trie)
+- **Find pattern with at most one wildcard** → KMP variant or two passes
+- **Period of a string** → `n − pi[n-1]` is the shortest period; or use Z-array (`Z[p] + p ≥ n`)
+- **Longest border / longest prefix that's also a suffix** → `pi[n-1]` directly
+- **Substring search that beats `O(nm)`** → KMP, Z, or Rabin-Karp depending on whether you also need rolling hash
+
+***
+
 # Cross-links
 
 - **Prerequisite:** [Naive String Matching](/cortex/data-structures-and-algorithms/strings-string-matching-naive) — the floor KMP beats.

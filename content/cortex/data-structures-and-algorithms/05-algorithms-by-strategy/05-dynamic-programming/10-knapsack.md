@@ -19,8 +19,6 @@ By the end of this lesson you'll know the **0/1 knapsack** recurrence (`dp[i][w]
 
 # The 0/1 Knapsack Problem
 
-> **Course:** DSA › Algorithms › Dynamic Programming › Knapsack
-
 You are given `n` items where item `i` has weight `weights[i]` and value `values[i]`, and a knapsack with capacity `capacity`. Each item is either picked entirely or skipped — no fractions. Maximise total value subject to total weight `≤ capacity`.
 
 ```d2
@@ -65,8 +63,6 @@ Portfolio selection (each project has a cost and a return, total budget bounded)
 ***
 
 # Optimal Substructure — Include or Exclude
-
-> **Course:** DSA › Algorithms › Dynamic Programming › Knapsack
 
 Consider items `0..i` and remaining capacity `c`. Two scenarios for item `i`:
 
@@ -139,8 +135,6 @@ Two cases by fit; when fit allows, two choices by value. Always recurse on `i - 
 
 # Top-Down vs Bottom-Up
 
-> **Course:** DSA › Algorithms › Dynamic Programming › Knapsack
-
 Two ways to compute the same recurrence:
 
 **Top-down (memoization).** Recurse from `(n - 1, capacity)`; cache each `(i, c)` result on first compute, return the cache on later visits. Lazy: only the states actually reached get computed.
@@ -189,8 +183,6 @@ Bottom-up is the canonical knapsack form. The `(n + 1)` shift makes the empty-it
 ***
 
 # 0/1 Knapsack — The Algorithm
-
-> **Course:** DSA › Algorithms › Dynamic Programming › Knapsack
 
 ## The Problem
 
@@ -464,8 +456,6 @@ Same `O(n × capacity)` time; `O(capacity)` space. Beautiful and the standard in
 
 # 0/1 Knapsack II — Recovering Which Items
 
-> **Course:** DSA › Algorithms › Dynamic Programming › Knapsack
-
 The standard knapsack returns just the *value*. But often we want the actual *set of items* — the burglar wants to know *what* to grab, not just how much they're worth. We can recover the selection by *backtracking* through the DP table after it's filled.
 
 ## The Idea
@@ -722,8 +712,6 @@ The 1D rolling-array trick from earlier *cannot* directly reconstruct the path �
 
 # Unbounded Knapsack — Items With Unlimited Copies
 
-> **Course:** DSA › Algorithms › Dynamic Programming › Knapsack
-
 In **unbounded** knapsack, each item type is available in unlimited supply — pick item `i` once, twice, or a hundred times. The recurrence shifts by *one index*: when including, you stay at item `i` (item is still available) instead of moving to `i - 1`.
 
 ```
@@ -906,8 +894,6 @@ The direction is the *opposite* of the 0/1 1D form. Direction = semantics, in th
 ***
 
 # Bounded Knapsack — Items With Count Limits
-
-> **Course:** DSA › Algorithms › Dynamic Programming › Knapsack
 
 In **bounded** knapsack, each item `i` comes with a count `counts[i]` — you can take it 0, 1, 2, ..., up to `counts[i]` times. This sits between 0/1 (`counts[i] = 1`) and unbounded (`counts[i] = ∞`).
 

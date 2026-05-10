@@ -16,8 +16,6 @@ By the end of this lesson you'll know the **Longest Common Substring** recurrenc
 
 # Substring vs Subsequence — The One-Operator Difference
 
-> **Course:** DSA › Algorithms › Dynamic Programming › LCSubstr
-
 A **substring** is a contiguous slice of a string — every character is adjacent to its neighbour in the original. A **subsequence** allows skipping. Same character set; different rule on skips.
 
 ```d2
@@ -108,8 +106,6 @@ LCSubstr's recurrence is LCS's with mismatch's `max(...)` swapped for `0`. The a
 
 # The Recurrence
 
-> **Course:** DSA › Algorithms › Dynamic Programming › LCSubstr
-
 `dp(i, j)` = length of the longest common substring **ending at indices `i` in `s1` and `j` in `s2`**.
 
 ```
@@ -131,8 +127,6 @@ Match → extend the diagonal predecessor. Mismatch → reset to 0. Answer = max
 ***
 
 # Top-Down Solution (Memoization)
-
-> **Course:** DSA › Algorithms › Dynamic Programming › LCSubstr
 
 The recursive function returns the LCSubstr ending at `(i, j)`. Because the answer might end anywhere, the caller iterates over all `(i, j)` and takes the max.
 
@@ -298,8 +292,6 @@ class Solution {
 
 # Bottom-Up Solution (Tabulation)
 
-> **Course:** DSA › Algorithms › Dynamic Programming › LCSubstr
-
 The same `(m+1) × (n+1)` shift as LCS — `i` and `j` count characters, not index them. The recurrence becomes `dp[i][j] = dp[i-1][j-1] + 1` when `s1[i-1] == s2[j-1]`, else 0. Track the running max.
 
 ```d2
@@ -442,8 +434,6 @@ class Solution {
 ***
 
 # Longest Common Substring
-
-> **Course:** DSA › Algorithms › Dynamic Programming › LCSubstr
 
 The actual problem: return the *substring*, not just its length. Two extra trackers — the maximum length seen and the index where it ends — let us slice the result out of `s1` after the table is built.
 

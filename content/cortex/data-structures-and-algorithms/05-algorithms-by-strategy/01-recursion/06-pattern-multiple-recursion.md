@@ -19,8 +19,6 @@ This is multiple recursion. It's the pattern behind Fibonacci, behind branching 
 
 # Understanding Multiple Recursion
 
-> **Course:** DSA › Algorithms › Recursion › Multiple Recursion
-
 A function exhibits **multiple recursion** when its body contains **two or more recursive calls**. The call tree branches at every node — instead of a thin line of frames, you get a fanned-out tree, often with a tree-shaped explosion of subproblems.
 
 The simplest example is Fibonacci's classical recursive form:
@@ -301,8 +299,6 @@ Multiple recursion = head recursion with `k ≥ 2` recursive calls per frame. Th
 
 # Identifying Multiple Recursion
 
-> **Course:** DSA › Algorithms › Recursion › Multiple Recursion
-
 Three diagnostic questions decide whether a problem is a multiple-recursion candidate.
 
 | # | Question | If "yes," multiple recursion fits because... |
@@ -361,8 +357,6 @@ Three checks — multiple subproblems, fold-style combine, enough base cases —
 ***
 
 # Fibonacci Number
-
-> **Course:** DSA › Algorithms › Recursion › Multiple Recursion
 
 The reference problem of multiple recursion. The recurrence is one line; the naive implementation crashes on `n = 50`.
 
@@ -619,8 +613,6 @@ Naive Fibonacci is the textbook trap of multiple recursion: a one-line definitio
 
 # Zigzag Sequence
 
-> **Course:** DSA › Algorithms › Recursion › Multiple Recursion
-
 A three-call recurrence with alternating signs. The combine step does subtraction *and* addition, in a fixed pattern.
 
 ---
@@ -850,8 +842,6 @@ Zigzag is multiple recursion with a wider branching factor than Fibonacci. The c
 ***
 
 # Climb Stairs
-
-> **Course:** DSA › Algorithms › Recursion › Multiple Recursion
 
 The branching factor varies. Each frame makes one recursive call per allowed step size — so a 5-element step set produces a 5-way recursion.
 
@@ -1089,8 +1079,6 @@ Climb-stairs is multiple recursion with input-dependent branching factor. The pa
 ***
 
 # Catalan Number
-
-> **Course:** DSA › Algorithms › Recursion › Multiple Recursion
 
 The hardest of the four. The branching factor is `n` itself — the recurrence sums over `i = 0..n-1` of `C(i) * C(n-1-i)`. The combine multiplies and sums.
 

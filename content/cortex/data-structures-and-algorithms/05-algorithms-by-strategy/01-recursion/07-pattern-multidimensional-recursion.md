@@ -19,8 +19,6 @@ This is multidimensional recursion. It's the bridge into 2D dynamic programming 
 
 # Understanding Multidimensional Recursion
 
-> **Course:** DSA › Algorithms › Recursion › Multidimensional Recursion
-
 A recursion is **multidimensional** when its input is described by **two or more parameters**, each of which can be reduced independently. The recursive call doesn't just shrink one number — it might shrink one parameter, the other parameter, or both at once.
 
 The simplest example is the binomial coefficient `C(n, k)`:
@@ -269,8 +267,6 @@ Multidimensional recursion = multiple recursion with a multi-axis state space. E
 
 # Identifying Multidimensional Recursion
 
-> **Course:** DSA › Algorithms › Recursion › Multidimensional Recursion
-
 Three diagnostic questions:
 
 | # | Question | If "yes," multidimensional recursion fits because... |
@@ -332,8 +328,6 @@ Three checks — multiple shrinkable parameters, axis-aware reductions, and base
 ***
 
 # Binomial Coefficient
-
-> **Course:** DSA › Algorithms › Recursion › Multidimensional Recursion
 
 Pascal's triangle, recursion-style. The recurrence `C(n, k) = C(n-1, k-1) + C(n-1, k)` is one of the cleanest 2D recurrences in mathematics.
 
@@ -566,8 +560,6 @@ Binomial coefficient is the canonical 2D recurrence — clean, symmetric, with t
 
 # Lattice Paths
 
-> **Course:** DSA › Algorithms › Recursion › Multidimensional Recursion
-
 The same recurrence as binomial coefficient, dressed up as grid navigation. Useful for both intuition (it's the same math) and contrast (the *interpretation* matters).
 
 ---
@@ -778,8 +770,6 @@ Lattice paths is binomial coefficient with a geometric interpretation: every pat
 ***
 
 # Ackermann Function
-
-> **Course:** DSA › Algorithms › Recursion › Multidimensional Recursion
 
 The Ackermann function is famous in computability theory as an example of a function that *is* computable but *isn't* primitive recursive — meaning it can't be implemented with bounded `for` loops. Its recursion is so wild that even small inputs produce astronomical numbers.
 
@@ -1007,8 +997,6 @@ Ackermann is multidimensional recursion's wildest example. Its existence proves 
 ***
 
 # Egg Dropping
-
-> **Course:** DSA › Algorithms › Recursion › Multidimensional Recursion
 
 The classic interview problem. Two parameters (eggs, floors), a recursive optimisation, multiple base cases, and a recursion structure that screams "memoise me."
 

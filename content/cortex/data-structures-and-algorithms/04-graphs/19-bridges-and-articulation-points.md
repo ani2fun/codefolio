@@ -367,6 +367,113 @@ object Solution {
 
 ***
 
+# Memorize
+
+The high-leverage facts to commit to long-term memory — atomic enough for an Anki card, concrete enough to recall under pressure or during production debugging. Bridges and articulation points share Tarjan's lowlink machinery; they differ by *one character* in the criterion.
+
+## Quick recall
+
+Click any question to reveal the answer.
+
+<details>
+<summary><strong>Q:</strong> Define a bridge.</summary>
+
+**A:** An edge whose removal disconnects the graph (increases the number of connected components).
+
+</details>
+
+<details>
+<summary><strong>Q:</strong> Define an articulation point.</summary>
+
+**A:** A vertex whose removal (with all its incident edges) disconnects the graph.
+
+</details>
+
+<details>
+<summary><strong>Q:</strong> Bridge criterion?</summary>
+
+**A:** A tree edge `(u, v)` (with `v` discovered from `u`) is a bridge iff `low[v] > disc[u]`. The subtree under `v` has no back-edge to `u` or above.
+
+</details>
+
+<details>
+<summary><strong>Q:</strong> Articulation criterion (non-root vertex)?</summary>
+
+**A:** A non-root `u` is an articulation point iff some tree-child `v` has `low[v] ≥ disc[u]`. The subtree under `v` can't bypass `u`.
+
+</details>
+
+<details>
+<summary><strong>Q:</strong> When is the DFS root an articulation point?</summary>
+
+**A:** Iff it has ≥ 2 tree children. Removing it disconnects those children's subtrees.
+
+</details>
+
+<details>
+<summary><strong>Q:</strong> Bridge vs articulation criterion — what's the one-character difference?</summary>
+
+**A:** Bridge: `low[v] > disc[u]` (strict). Articulation: `low[v] ≥ disc[u]` (non-strict). That's the entire algorithmic difference.
+
+</details>
+
+<details>
+<summary><strong>Q:</strong> Time complexity?</summary>
+
+**A:** `O(V + E)`. Single DFS pass with `disc` and `low` arrays.
+
+</details>
+
+<details>
+<summary><strong>Q:</strong> Multi-edge gotcha?</summary>
+
+**A:** Two distinct edges between the same pair of vertices: neither is a bridge (one is a backup for the other). Track parent *edge* (by ID), not parent *vertex*, when traversing.
+
+</details>
+
+## Code template
+
+```python
+def find_bridges_and_articulations(n, adj):
+    disc = [-1] * n
+    low = [-1] * n
+    is_art = [False] * n
+    bridges = []
+    timer = [0]
+
+    def dfs(u, parent):
+        disc[u] = low[u] = timer[0]; timer[0] += 1
+        children = 0
+        for v in adj[u]:
+            if v == parent: continue
+            if disc[v] == -1:
+                children += 1
+                dfs(v, u)
+                low[u] = min(low[u], low[v])
+                if low[v] > disc[u]:           bridges.append((u, v))
+                if parent != -1 and low[v] >= disc[u]: is_art[u] = True
+            else:
+                low[u] = min(low[u], disc[v])
+        if parent == -1 and children >= 2:
+            is_art[u] = True
+
+    for v in range(n):
+        if disc[v] == -1: dfs(v, -1)
+    return bridges, [v for v in range(n) if is_art[v]]
+```
+
+## Pattern triggers
+
+- **"Single point of failure in a network"** → bridge or articulation point
+- **"Critical infrastructure edges/nodes"** → same
+- **"Strength of weak ties" (sociology)** → bridges in the friendship graph
+- **"Modules whose removal breaks the system"** → articulation points in the dependency graph
+- **"2-edge-connected components"** → run bridge-finding, remove bridges; residual components are 2-edge-connected
+- **"Biconnected components"** → run articulation-point finding; pieces are biconnected components
+- **"Network reliability after one failure"** → enumerate bridges; system is robust if there are none
+
+***
+
 # Cross-links
 
 - **Prerequisites:** [Graph Traversal](/cortex/data-structures-and-algorithms/graphs-traversing-a-graph), [SCC](/cortex/data-structures-and-algorithms/graphs-strongly-connected-components) (the lowlink trick).

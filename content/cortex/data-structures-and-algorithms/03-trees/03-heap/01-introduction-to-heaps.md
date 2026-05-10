@@ -824,6 +824,127 @@ Once these feel automatic, you've internalised every move in the heap toolkit �
 
 ***
 
+# Memorize
+
+The high-leverage facts to commit to long-term memory — atomic enough for an Anki card, concrete enough to recall under pressure or during production debugging. Reading the chapter once builds understanding; cementing the items below is what makes recall fast.
+
+## Quick Recall
+
+Click any question to reveal the answer.
+
+<details>
+<summary><strong>Q:</strong> Worst-case complexity of <code>heap.extract()</code>?</summary>
+
+**A:** O(log n). Sift-down walks one root-to-leaf path.
+
+</details>
+
+<details>
+<summary><strong>Q:</strong> Worst-case complexity of <code>heap.insert(x)</code>?</summary>
+
+**A:** O(log n). Sift-up walks one leaf-to-root path.
+
+</details>
+
+<details>
+<summary><strong>Q:</strong> Worst-case complexity of <code>heap.peek()</code>?</summary>
+
+**A:** O(1). Read the root.
+
+</details>
+
+<details>
+<summary><strong>Q:</strong> Cost of building a heap from an array of <code>n</code> items?</summary>
+
+**A:** O(n) via bottom-up heapify. The naive insert-one-by-one approach is O(n log n).
+
+</details>
+
+<details>
+<summary><strong>Q:</strong> Cost of <code>heap.delete(arbitrary value)</code> (not the root)?</summary>
+
+**A:** O(n). Heaps aren't searchable; the find is linear, the structural fix is O(log n).
+
+</details>
+
+<details>
+<summary><strong>Q:</strong> What invariant must every heap node satisfy?</summary>
+
+**A:** Parent has higher priority than both children. (Nothing about left vs right — that's a BST rule.)
+
+</details>
+
+<details>
+<summary><strong>Q:</strong> How is a binary heap stored in memory?</summary>
+
+**A:** Flat array. Parent of index `i` is `(i-1)/2`; left child is `2i+1`; right child is `2i+2`.
+
+</details>
+
+<details>
+<summary><strong>Q:</strong> How do you implement a max-heap with Python's <code>heapq</code> (which is min-heap only)?</summary>
+
+**A:** Negate keys on push and pop, or push `(-priority, value)` tuples.
+
+</details>
+
+<details>
+<summary><strong>Q:</strong> Is Java's <code>PriorityQueue</code> thread-safe?</summary>
+
+**A:** No. Use `PriorityBlockingQueue` for concurrent producers.
+
+</details>
+
+<details>
+<summary><strong>Q:</strong> Why does Linux's CFS scheduler use an RB-tree, not a heap, when both are O(log n)?</summary>
+
+**A:** Heaps don't support ordered iteration or lookup-by-key. CFS needs both — to pick the leftmost task and to migrate tasks to other CPUs.
+
+</details>
+
+## Code Template
+
+```python
+import heapq
+
+# Min-heap (default)
+h = []
+heapq.heappush(h, x)        # O(log n)
+top = h[0]                  # O(1) peek
+top = heapq.heappop(h)      # O(log n)
+
+# Max-heap via negation
+heapq.heappush(h, -x)
+top = -h[0]
+top = -heapq.heappop(h)
+
+# Build from existing list — O(n), not O(n log n)
+heapq.heapify(arr)
+
+# Top-K largest from a stream — O(n log k)
+heap = []
+for x in stream:
+    heapq.heappush(heap, x)
+    if len(heap) > k:
+        heapq.heappop(heap)
+# heap holds the k largest; heap[0] is the smallest of them.
+```
+
+## Pattern Triggers
+
+- **Top K largest elements** → min-heap of size K
+- **Top K smallest elements** → max-heap of size K
+- **Streaming median** → two heaps: max-heap of lower half + min-heap of upper half
+- **Merge K sorted lists / streams** → min-heap with one entry per list
+- **Schedule the next event by timestamp** → min-heap keyed by time
+- **Pick the next-most-urgent task** → priority queue (heap)
+- **Reorganise so no two adjacent items are equal** → max-heap by frequency, *park* the used element for one round
+- **Dijkstra's shortest path** → min-heap of `(distance, vertex)` frontier
+- **K-th largest element in a stream** → min-heap of size K; root is the answer
+- **Optimal merge cost / Huffman tree** → min-heap of frequencies; pop two, push their sum
+
+***
+
 # Cross-Links
 
 - **Prerequisite:** [Binary Tree](/cortex/data-structures-and-algorithms/trees-binary-tree-introduction-to-binary-trees) — the tree-shape vocabulary (root, height, completeness) used throughout this chapter.

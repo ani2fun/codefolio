@@ -186,6 +186,93 @@ class Solution {
 
 ***
 
+# Memorize
+
+The high-leverage facts to commit to long-term memory — atomic enough for an Anki card, concrete enough to recall under pressure or during production debugging. The trie is small but its applications are everywhere — recognise the prefix-related shape and the algorithm writes itself.
+
+## Quick recall
+
+Click any question to reveal the answer.
+
+<details>
+<summary><strong>Q:</strong> When does a trie beat a hash set?</summary>
+
+**A:** When you need *prefix queries* (autocomplete, "all strings starting with X") or sorted iteration. Hash sets can't do either efficiently.
+
+</details>
+
+<details>
+<summary><strong>Q:</strong> Time to find all words in a 2D board (Word Search II)?</summary>
+
+**A:** `O(rows · cols · 4^maxLen)` with trie pruning. Without the trie, you'd repeat work for shared prefixes.
+
+</details>
+
+<details>
+<summary><strong>Q:</strong> DP-on-trie for word break — complexity?</summary>
+
+**A:** `O(|s| · max_word_len)` instead of `O(|s|² · |dict|)` for naive substring lookup.
+
+</details>
+
+<details>
+<summary><strong>Q:</strong> Why does Linux use a level-compressed trie for IP routing?</summary>
+
+**A:** Cache-friendly layout (children stored contiguously per level), shallow tree (8 levels for IPv4), RCU-friendly for lock-free reads. Plain binary tries are 32 levels deep.
+
+</details>
+
+<details>
+<summary><strong>Q:</strong> Trie + edit-distance budget — what does it solve?</summary>
+
+**A:** "Did you mean..." spell-correction. DFS the trie with an edit budget (deletions, insertions, substitutions). Prune subtrees once the budget exceeds the threshold.
+
+</details>
+
+<details>
+<summary><strong>Q:</strong> Stream-of-characters: match against a set of fixed patterns at the END of the seen text?</summary>
+
+**A:** Reverse the patterns; build a trie of the reverses; on each new char, walk that trie backward from the new char.
+
+</details>
+
+## Code template
+
+```python
+# Word Break — DP on trie. O(|s| * max_word_len).
+def word_break(s, dictionary):
+    root = TrieNode()
+    for w in dictionary:
+        n = root
+        for c in w: n = n.children.setdefault(c, TrieNode())
+        n.is_end = True
+
+    n_chars = len(s)
+    dp = [False] * (n_chars + 1)
+    dp[0] = True
+    for i in range(n_chars):
+        if not dp[i]: continue
+        node = root
+        for j in range(i, n_chars):
+            if s[j] not in node.children: break
+            node = node.children[s[j]]
+            if node.is_end: dp[j + 1] = True
+    return dp[n_chars]
+```
+
+## Pattern triggers
+
+- **"Autocomplete / words with prefix"** → trie + DFS from prefix node
+- **"Word search on a board"** → trie of dictionary + DFS-with-pruning over board
+- **"Replace each word with its shortest dictionary root"** → trie of roots; first end-of-word wins
+- **"Word break / segmentable strings"** → trie + DP
+- **"Did you mean...?" / spell correction** → trie + DFS with edit budget
+- **"Stream of characters, match against ends"** → trie of reversed patterns
+- **"Longest common prefix of `n` strings"** → trie; deepest single-child path
+- **"Routing table / longest prefix match"** → bit-level radix trie (Patricia, LC-trie)
+
+***
+
 # Cross-links
 
 - **Prerequisite:** [Trie](/cortex/data-structures-and-algorithms/trees-trie-introduction-to-tries) — the structural introduction.

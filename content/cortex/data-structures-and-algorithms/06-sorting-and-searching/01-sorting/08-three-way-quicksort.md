@@ -21,8 +21,6 @@ By the end of this lesson you'll know how to compose the two algorithms, why the
 
 # Why Two-Way Quicksort Fails on Duplicates
 
-> **Course:** DSA › Algorithms › Sorting › Three-Way Quicksort
-
 Recall Lomuto's partition from the Quicksort lesson:
 
 ```
@@ -76,8 +74,6 @@ Two-way quicksort wastes work on duplicate-heavy input because equal-to-pivot el
 ***
 
 # Understanding Three-Way Quicksort
-
-> **Course:** DSA › Algorithms › Sorting › Three-Way Quicksort
 
 Three-way quicksort is two-way quicksort with one change: the partition step splits into *three* regions instead of two.
 
@@ -190,8 +186,6 @@ Three-way quicksort: same recursive driver as two-way, but with a three-way part
 
 # The Partition Returns Two Boundaries
 
-> **Course:** DSA › Algorithms › Sorting › Three-Way Quicksort
-
 The partition step is structurally identical to Dutch National Flag (the Dutch National Flag Sort lesson), with one twist: instead of comparing against the constants `0`, `1`, `2`, we compare against the *pivot value*. Let's walk through it.
 
 ---
@@ -293,8 +287,6 @@ Three-way partition is Dutch National Flag with `pivot` instead of `1` as the mi
 ***
 
 # Implementation
-
-> **Course:** DSA › Algorithms › Sorting › Three-Way Quicksort
 
 We implement two functions: `partition` (three-way, returning two boundary indices) and `quicksort` (the recursive driver).
 
@@ -505,8 +497,6 @@ object Main {
 
 # Complexity Analysis
 
-> **Course:** DSA › Algorithms › Sorting › Three-Way Quicksort
-
 | Resource | Best (many duplicates) | Average | Worst |
 |---|---|---|---|
 | **Time** | `O(n)` | `O(n log n)` | `O(n²)` |
@@ -558,8 +548,6 @@ Three-way quicksort: linear time on duplicate-heavy input, same `O(n log n)` ave
 ***
 
 # Three-Way Quicksort Problem
-
-> **Course:** DSA › Algorithms › Sorting › Three-Way Quicksort
 
 ---
 

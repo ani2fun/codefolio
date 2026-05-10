@@ -161,6 +161,99 @@ The migration policy considers cache locality (don't migrate too often) and NUMA
 
 ***
 
+# Memorize
+
+The high-leverage facts to commit to long-term memory — atomic enough for an Anki card, concrete enough to recall under pressure or during production debugging. CFS's RB-tree is the most-deployed RB-tree on the planet — knowing how it works is systems-engineering currency.
+
+## Quick recall
+
+Click any question to reveal the answer.
+
+<details>
+<summary><strong>Q:</strong> What does CFS use the RB-tree for?</summary>
+
+**A:** Picking the next task to run. Tasks are keyed by `vruntime` (virtual runtime); CFS picks the leftmost (least-run) task in `O(log n)` — or `O(1)` with `rb_root_cached`.
+
+</details>
+
+<details>
+<summary><strong>Q:</strong> Why RB-tree, not AVL or splay?</summary>
+
+**A:** **Deterministic worst case** (no probabilistic structures in a kernel scheduler). **Constant rotation count** on insert/delete (write-heavy: every context switch is insert+delete). **Zero per-node memory overhead** (colour bit packed into parent pointer's low bit).
+
+</details>
+
+<details>
+<summary><strong>Q:</strong> What's <code>rb_root_cached</code>?</summary>
+
+**A:** RB-tree augmented with a cached pointer to the leftmost node. Maintains the pointer on every insert/erase. Makes `pick_next_task_fair` `O(1)` instead of `O(log n)`.
+
+</details>
+
+<details>
+<summary><strong>Q:</strong> Per-CPU run queues — why?</summary>
+
+**A:** One RB-tree per CPU (`cfs_rq` in `struct rq`). Avoids contention. Load balancing migrates tasks across trees periodically.
+
+</details>
+
+<details>
+<summary><strong>Q:</strong> What types of tasks does CFS handle?</summary>
+
+**A:** `SCHED_NORMAL`, `SCHED_BATCH`, `SCHED_IDLE`. Real-time tasks (`SCHED_FIFO`, `SCHED_RR`) bypass CFS — handled by `rt_sched_class`.
+
+</details>
+
+<details>
+<summary><strong>Q:</strong> Why is the kernel's RB-tree implementation type-erased?</summary>
+
+**A:** Generic via macros: you embed an `rb_node` field in your struct, then `container_of` macros translate between `rb_node *` and your struct. Single implementation handles every kernel use of RB-tree.
+
+</details>
+
+<details>
+<summary><strong>Q:</strong> Is `vruntime` precision a problem?</summary>
+
+**A:** Unsigned 64-bit; wraps after ~292 years of CPU time. Comparisons use signed-difference arithmetic to handle wrap correctly.
+
+</details>
+
+## Source pointers
+
+```
+lib/rbtree.c                    — generic RB-tree primitives
+lib/rbtree_test.c               — unit tests (worth reading for patterns)
+include/linux/rbtree.h          — public API: rb_insert_color, rb_erase
+include/linux/rbtree_augmented.h — for augmented RB-trees (size-tracking, etc.)
+
+kernel/sched/fair.c             — CFS scheduler entry points
+                                  pick_next_task_fair, enqueue_task_fair, ...
+kernel/sched/sched.h            — struct cfs_rq, struct sched_entity
+include/linux/sched.h           — task_struct's sched_entity field
+```
+
+Other notable RB-tree users in the kernel:
+
+```
+fs/eventpoll.c                  — epoll(7); RB-tree of file descriptors
+mm/mmap.c                       — VMA tree (virtual memory areas)
+fs/ext4/extents.c               — extent-tree variant
+net/ipv4/inetpeer.c             — peer cache
+```
+
+## Pattern triggers
+
+- **"Need an O(log n) sorted structure in the kernel"** → `lib/rbtree.c`
+- **"Need fast 'pick smallest' / 'pick next-most-urgent'"** → `rb_root_cached`
+- **"Need deterministic worst case"** → RB-tree (not splay)
+- **"Generic over many types in C"** → embed `rb_node` + use `container_of`
+- **"Where does Linux pick the next thread?"** → `pick_next_task_fair` in `kernel/sched/fair.c`
+- **"Scheduler latency spike under high task count"** → likely RB-tree height; check `nr_running`
+- **"Lock-free iteration over the run queue"** → not without RCU; the kernel doesn't expose this
+- **"Custom data structure on top of RB-tree"** → use augmented RB-tree (`rbtree_augmented.h`)
+
+***
+
 # Cross-links
 
 - **Prerequisite:** [Red-Black Tree](/cortex/data-structures-and-algorithms/trees-red-black-tree-introduction-to-red-black-trees).

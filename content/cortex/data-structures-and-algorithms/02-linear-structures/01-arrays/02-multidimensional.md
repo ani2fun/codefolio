@@ -20,8 +20,6 @@ This section extends the array model to grids and matrix-like structures while i
 
 # Understanding the Problem
 
-> **Course:** DSA › Arrays › Multidimensional Arrays
-
 A 1D array fixed the "too many variables" problem. But the moment your data has **two natural axes** — classes and students, rows and columns, pixels in a row and pixels in a column — a single 1D array stops scaling. You end up naming arrays the same way you used to name variables, and the original problem comes back through the side door.
 
 Let's see exactly where the wall is.
@@ -119,8 +117,6 @@ When you find yourself naming arrays `data1`, `data2`, `data3`... you need a mul
 ***
 
 # Defining Dimensions for Arrays
-
-> **Course:** DSA › Arrays › Multidimensional Arrays
 
 The fix is to add a second axis. But what is an "axis," and how does the language know which value you mean when there are now two of them? In this section we'll define **dimension**, see how rows and columns map to two indices, and write the first 2D array in Python.
 
@@ -411,8 +407,6 @@ When your data has two levels of grouping (classes → students, rows → column
 
 # Exploring a Possible Solution
 
-> **Course:** DSA › Arrays › Multidimensional Arrays
-
 We've seen *where* a single-dimensional array fails. Now we need a structure that scales with the depth of the data — one axis per level of grouping, no matter how deep — and the trick that makes it work is one of the most reused recursive ideas in programming.
 
 ---
@@ -698,8 +692,6 @@ Each new dimension is an outer array that holds the previous structure as its it
 ***
 
 # Overview of Supported Operations
-
-> **Course:** DSA › Arrays › Multidimensional
 
 A 2D array supports the same four operations as a 1D array — **create, access, modify, traverse** — with one twist: every operation now takes one *more* index per dimension. The mechanics carry over almost verbatim, so the time you've spent on 1D arrays already pays for most of this section.
 
@@ -1639,8 +1631,6 @@ Access and modify are **O(1)** — the CPU computes the exact memory address fro
 ***
 
 # Internal mechanics of multidimensional arrays
-
-> **Course:** DSA › Arrays › Multidimensional Arrays
 
 A 2D array is a *logical* picture — rows and columns sitting in a grid. Memory is **physically** a 1D ribbon of bytes. There is no "second axis" inside the chip. So either the picture is a lie, or the language is doing arithmetic behind the scenes to flatten one onto the other. (Spoiler: it's the second one.)
 

@@ -321,6 +321,107 @@ That's the entire structure. Six lines for `update`, six lines for `prefix_sum`,
 
 ***
 
+# Memorize
+
+The high-leverage facts to commit to long-term memory — atomic enough for an Anki card, concrete enough to recall under pressure or during production debugging. The Fenwick tree is six lines per operation; if you can write it cold, you can solve every prefix-sum-with-updates problem.
+
+## Quick recall
+
+Click any question to reveal the answer.
+
+<details>
+<summary><strong>Q:</strong> What single bit-trick is the entire Fenwick tree built on?</summary>
+
+**A:** `i & (−i)` — isolates the lowest set bit of `i`.
+
+</details>
+
+<details>
+<summary><strong>Q:</strong> Update direction vs query direction?</summary>
+
+**A:** **Update** walks *up*: `i += i & −i` until past `n`. **Query** walks *down*: `i -= i & −i` until 0.
+
+</details>
+
+<details>
+<summary><strong>Q:</strong> Time complexity of update and prefix-sum query?</summary>
+
+**A:** Both `O(log n)`. Each step strips or adds one bit.
+
+</details>
+
+<details>
+<summary><strong>Q:</strong> Why is Fenwick 1-indexed?</summary>
+
+**A:** The `i & −i` trick relies on `i ≠ 0`. `bit[0]` is the loop's terminating sentinel.
+
+</details>
+
+<details>
+<summary><strong>Q:</strong> When can Fenwick replace segment tree?</summary>
+
+**A:** When the operation is *invertible* (sum, XOR, product mod prime) and you need point updates + prefix/range queries. Half the code, half the memory, half the constant factor.
+
+</details>
+
+<details>
+<summary><strong>Q:</strong> When can Fenwick <em>not</em> replace segment tree?</summary>
+
+**A:** Min, max, GCD — there's no "subtract a value" inverse. Range update + range query is also more natural in segment tree.
+
+</details>
+
+<details>
+<summary><strong>Q:</strong> Range sum from <code>l</code> to <code>r</code>?</summary>
+
+**A:** `prefix_sum(r) − prefix_sum(l − 1)`. Two prefix-sum calls, `O(log n)` total.
+
+</details>
+
+<details>
+<summary><strong>Q:</strong> Build cost from a length-<code>n</code> array — naive vs optimal?</summary>
+
+**A:** Naive (call `update` for each): `O(n log n)`. Optimal (incremental partial-sum trick): `O(n)`.
+
+</details>
+
+## Code template
+
+```python
+class Fenwick:
+    def __init__(self, n):
+        self.n = n
+        self.bit = [0] * (n + 1)                                    # 1-indexed
+
+    def update(self, i, delta):                                     # O(log n)
+        while i <= self.n:
+            self.bit[i] += delta
+            i += i & -i                                             # walk up
+
+    def prefix_sum(self, i):                                        # O(log n)
+        s = 0
+        while i > 0:
+            s += self.bit[i]
+            i -= i & -i                                             # walk down
+        return s
+
+    def range_sum(self, l, r):                                      # O(log n)
+        return self.prefix_sum(r) - self.prefix_sum(l - 1)
+```
+
+## Pattern triggers
+
+- **"Prefix sum that needs to support point updates"** → Fenwick
+- **"Count inversions in an array"** → Fenwick over coordinate-compressed values
+- **"Count smaller elements after self / Count of range sum"** → Fenwick
+- **"K-th smallest in a stream"** → Fenwick indexed by value + binary-lift descent
+- **"2D range counting after coordinate compression"** → 2D Fenwick, `O(log² n)`
+- **"Range sum + point update"** → Fenwick (over segment tree's overhead)
+- **"Range update + point query"** → Fenwick on a difference array
+- **"Min/max/GCD over a range"** → segment tree, not Fenwick
+
+***
+
 # Cross-links
 
 - **Sibling structure:** [Segment Tree](/cortex/data-structures-and-algorithms/trees-segment-tree-introduction-to-segment-trees) — more general, more complex, more memory.

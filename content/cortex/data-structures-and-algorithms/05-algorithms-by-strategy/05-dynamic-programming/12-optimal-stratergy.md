@@ -15,8 +15,6 @@ By the end of this lesson you'll know the **adversarial DP** template — `dp[i]
 
 # The Game and the Adversarial Twist
 
-> **Course:** DSA › Algorithms › Dynamic Programming › Optimal Strategy
-
 You have an array `coins` of `n` (always even, in the canonical version) integers. Players alternate turns; on each turn the active player picks the leftmost or rightmost coin, removes it, and pockets its value. You move first, and both players play optimally.
 
 ```d2
@@ -55,8 +53,6 @@ Game DP is value-DP plus an adversary. Recurrences alternate max (your move) wit
 ***
 
 # Two Equivalent Recurrences
-
-> **Course:** DSA › Algorithms › Dynamic Programming › Optimal Strategy
 
 Let `dp[i][j]` = the maximum value the player to move can guarantee on the subarray `coins[i..j]`. There are two clean ways to write the recurrence; both compute the same value.
 
@@ -128,8 +124,6 @@ Adversarial DP needs to model the opponent's best response. Either explicit min 
 ***
 
 # Optimal Game Strategy — The Algorithm
-
-> **Course:** DSA › Algorithms › Dynamic Programming › Optimal Strategy
 
 ## The Problem
 

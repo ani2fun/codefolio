@@ -18,8 +18,6 @@ By the end of this lesson you'll know the algorithm, why the loop bounds are `i 
 
 # Understanding Bubble Sort
 
-> **Course:** DSA › Algorithms › Sorting › Bubble Sort
-
 Bubble sort works by repeatedly **comparing adjacent pairs** and swapping them if they're out of order. Each full pass through the array bubbles the largest unsorted element to its correct position at the end.
 
 The name comes from the visual analogy: **lighter elements rise to the top** like bubbles in water, while **heavier elements sink to the bottom**. In code terms: smaller values move toward the front, larger values toward the back.
@@ -132,8 +130,6 @@ Bubble sort: walk the array, swap adjacent pairs if out of order, repeat until n
 
 # Why the Loop Bounds Are What They Are
 
-> **Course:** DSA › Algorithms › Sorting › Bubble Sort
-
 Bubble sort uses two nested loops. The bounds — `i < n - 1` for the outer loop and `j < n - i - 1` for the inner loop — look arbitrary at first. They're not. Both come from one observation: **after pass `i`, the last `i` elements are already in their final positions, so we don't need to compare them again.**
 
 ---
@@ -204,8 +200,6 @@ Both loop bounds — `i < n - 1` and `j < n - i - 1` — come from "the last `i`
 ***
 
 # Implementation
-
-> **Course:** DSA › Algorithms › Sorting › Bubble Sort
 
 Two versions: the basic implementation (always runs `n - 1` passes) and the optimised version with an early-exit flag.
 
@@ -377,8 +371,6 @@ The same `swapped` flag pattern translates one-to-one to all 10 languages above;
 
 # Complexity Analysis
 
-> **Course:** DSA › Algorithms › Sorting › Bubble Sort
-
 | Resource | Best | Average | Worst |
 |---|---|---|---|
 | **Time (basic)** | `O(n²)` | `O(n²)` | `O(n²)` |
@@ -423,8 +415,6 @@ Bubble sort's `O(n²)` time is determined by *how slowly each element moves* —
 ***
 
 # Bubble Sort Problem
-
-> **Course:** DSA › Algorithms › Sorting › Bubble Sort
 
 The canonical exercise: implement bubble sort to sort an array.
 

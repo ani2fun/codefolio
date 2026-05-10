@@ -546,6 +546,129 @@ object Solution {
 
 ***
 
+# Memorize
+
+The high-leverage facts to commit to long-term memory — atomic enough for an Anki card, concrete enough to recall under pressure or during production debugging. AVL's four rotation cases are mechanical once you've internalised which subtree caused the imbalance.
+
+## Quick recall
+
+Click any question to reveal the answer.
+
+<details>
+<summary><strong>Q:</strong> The AVL invariant?</summary>
+
+**A:** For every node, `|height(left) − height(right)| ≤ 1`. The difference is the *balance factor*; legal values are `{−1, 0, +1}`.
+
+</details>
+
+<details>
+<summary><strong>Q:</strong> Maximum height of an AVL tree with <code>n</code> nodes?</summary>
+
+**A:** `1.44 · log₂(n)`. Tighter than red-black's `2 log₂(n)`.
+
+</details>
+
+<details>
+<summary><strong>Q:</strong> Why is the height bound <code>1.44 log n</code> and not <code>log n</code>?</summary>
+
+**A:** The minimum-node AVL tree of height `h` follows the Fibonacci recurrence `N(h) = N(h-1) + N(h-2) + 1`. Solving gives `N(h) ≈ φ^h / √5`, so `h ≤ log_φ(n) ≈ 1.44 · log₂(n)`.
+
+</details>
+
+<details>
+<summary><strong>Q:</strong> The four AVL rebalance cases?</summary>
+
+**A:** **LL** (insert in P.left.left → right-rotate P), **RR** (insert in P.right.right → left-rotate P), **LR** (insert in P.left.right → left-rotate P.left, then right-rotate P), **RL** (insert in P.right.left → right-rotate P.right, then left-rotate P).
+
+</details>
+
+<details>
+<summary><strong>Q:</strong> What does a single rotation cost?</summary>
+
+**A:** `O(1)` work — three pointer reassignments and two height updates. The recursion stack handles propagation.
+
+</details>
+
+<details>
+<summary><strong>Q:</strong> How many rotations does an AVL <em>insert</em> trigger in the worst case?</summary>
+
+**A:** One single or one double rotation. After it, the height of the affected subtree is restored, and the recursion unwinds without further rotations.
+
+</details>
+
+<details>
+<summary><strong>Q:</strong> How many rotations does an AVL <em>delete</em> trigger in the worst case?</summary>
+
+**A:** Up to `O(log n)` — rebalances can cascade up the tree because a delete can shorten a subtree by 1, which may unbalance the parent.
+
+</details>
+
+<details>
+<summary><strong>Q:</strong> Per-node overhead?</summary>
+
+**A:** 4 bytes for height (or 2 bits for balance factor; 4 bytes is more flexible and the default).
+
+</details>
+
+<details>
+<summary><strong>Q:</strong> Where does AVL appear in production code?</summary>
+
+**A:** PostgreSQL's GiST indexes (in-memory parts), some in-memory database engines (Memgraph). Most standard libraries use RB-tree instead.
+
+</details>
+
+<details>
+<summary><strong>Q:</strong> When should you reach for AVL over RB-tree?</summary>
+
+**A:** Read-heavy workloads where the ~30% shallower tree wins on lookup latency. For mixed or write-heavy workloads, RB-tree's cheaper rotations win.
+
+</details>
+
+## Code template
+
+```python
+class Node:
+    __slots__ = ("key", "left", "right", "height")
+    def __init__(self, key):
+        self.key, self.left, self.right, self.height = key, None, None, 1
+
+def h(n): return n.height if n else 0
+def bf(n): return h(n.left) - h(n.right) if n else 0
+def update(n): n.height = 1 + max(h(n.left), h(n.right))
+
+def rot_right(p):
+    l = p.left; p.left = l.right; l.right = p
+    update(p); update(l); return l
+
+def rot_left(p):
+    r = p.right; p.right = r.left; r.left = p
+    update(p); update(r); return r
+
+def insert(node, key):
+    if node is None: return Node(key)
+    if   key < node.key: node.left  = insert(node.left, key)
+    elif key > node.key: node.right = insert(node.right, key)
+    else: return node
+    update(node)
+    b = bf(node)
+    if b >  1 and key < node.left.key:  return rot_right(node)                               # LL
+    if b < -1 and key > node.right.key: return rot_left(node)                                # RR
+    if b >  1 and key > node.left.key:  node.left  = rot_left(node.left);  return rot_right(node)  # LR
+    if b < -1 and key < node.right.key: node.right = rot_right(node.right); return rot_left(node)   # RL
+    return node
+```
+
+## Pattern triggers
+
+- **Read-heavy in-memory sorted map** → AVL beats RB-tree on lookup latency
+- **Sorted insertion guaranteed by workload** → any self-balancing tree (plain BST collapses)
+- **k-th order statistic queries on a sorted set** → augment AVL with `size` per node
+- **Mixed read/write** → RB-tree is usually the better default
+- **"Why is my BST 100× slower than expected?"** → likely degenerated; switch to self-balancing
+- **Need explicit height tracking for some custom invariant** → AVL's height field is already there
+
+***
+
 # Cross-links
 
 - **Prerequisite:** [Binary Search Tree](/cortex/data-structures-and-algorithms/trees-binary-search-tree-introduction-to-binary-search-trees), [Self-Balancing BSTs Overview](/cortex/data-structures-and-algorithms/trees-self-balancing-bst-overview-self-balancing-bst-overview).

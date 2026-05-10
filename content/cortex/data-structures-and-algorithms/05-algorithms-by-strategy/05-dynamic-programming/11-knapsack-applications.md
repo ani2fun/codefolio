@@ -16,8 +16,6 @@ By the end of this lesson you'll know how to recognise the knapsack shape in dis
 
 # Subset Sum — The Boolean 0/1 Knapsack
 
-> **Course:** DSA › Algorithms › Dynamic Programming › Knapsack Applications
-
 Strip the *value* from 0/1 knapsack, drop the *capacity* in favour of an *exact* target, and ask "is it possible?" instead of "what's the maximum?". You're left with **subset sum**: given an array of integers and a target, does any subset sum exactly to the target?
 
 ## The Problem
@@ -211,8 +209,6 @@ object Main extends App {
 
 # Rod Cutting — Unbounded Knapsack in Disguise
 
-> **Course:** DSA › Algorithms › Dynamic Programming › Knapsack Applications
-
 You have a steel rod of length `length` and a price list `prices` where `prices[i]` is the selling price for a piece of length `i + 1`. Cut the rod into integer-length pieces (any number of pieces, including just one — no cuts) and sell each piece individually. Maximise total revenue.
 
 This is **unbounded knapsack** with a twist: weight = piece length, capacity = total rod length, and the "items" are *every possible piece length from 1 to `length`*. You can cut multiple pieces of the same length, so reuse is unlimited — that's what makes it unbounded.
@@ -374,8 +370,6 @@ object Main extends App {
 
 # Coin Change — Minimum Coins to Hit an Amount
 
-> **Course:** DSA › Algorithms › Dynamic Programming › Knapsack Applications
-
 You have unlimited supply of coins in denominations `coins[i]`. What's the minimum number of coins that sum to `amount`? If impossible, return `-1`.
 
 This is **unbounded knapsack** with weight = denomination, value = 1 (one coin per unit), and the optimisation reversed from max to min.
@@ -524,8 +518,6 @@ object Main extends App {
 ***
 
 # Coin Change II — Counting the Ways
-
-> **Course:** DSA › Algorithms › Dynamic Programming › Knapsack Applications
 
 Same setup — unlimited coins of each denomination — but now we ask **how many distinct ways** can the amount be made? Order doesn't matter; `[1, 2]` and `[2, 1]` count as the same way.
 

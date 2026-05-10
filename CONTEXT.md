@@ -32,7 +32,11 @@ Optional YAML block at the top of a Chapter providing `title` and `summary`. The
 The tree of Books, Sections, and Chapters rendered in the Cortex reader's left panel. Built from a flat chapter list.
 
 **Runnable Code Block**:
-A code block in a Chapter that calls the Code Runner via `/api/run`. Identified by a placeholder class in the rendered HTML.
+A code block in a Chapter that calls the Code Runner via `/api/run`. One variant of a Block.
+
+**Block**:
+A typed payload extracted from a placeholder `<div>` in a rendered Chapter's HTML. Five variants: `RunnableCode`, `RunnableGroup`, `Mermaid`, `D2Slides`, `D2Inline`. Pure structural decoders live in `shared.cortex.Blocks` (JVM-tested); the JS-side DOM walk + URI / JSON shims live in `client.components.cortex.BlockDiscovery`. The renderer (`ChapterContent`) is a total `Block => VdomElement` dispatch.
+_Avoid_: Widget, Plugin, Embed
 
 ### Hello pipeline (three-store demo)
 
@@ -84,6 +88,7 @@ Any error a pipeline can produce; converted to an API Error + status by a single
 - A `/api/hello` request reads a **Cached Greeting** (Redis) → falls back to **Visit Count** (Postgres) → always appends a **Hello Event** (Mongo).
 - **Degraded** = a non-critical store failed; Greeting still returned.
 - A **Runnable Code Block** in a **Chapter** calls a **Code Execution Backend** via the runner endpoint.
+- The markdown pipeline emits a placeholder `<div>` per **Block**; the client decodes them into a typed `Block` ADT and mounts a Scala.js component for each.
 
 ## Example dialogue
 

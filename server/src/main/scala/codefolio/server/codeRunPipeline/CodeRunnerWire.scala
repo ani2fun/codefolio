@@ -34,10 +34,14 @@ private[codeRunPipeline] object CodeRunnerWire:
       stdin: Option[String],
       lang: RunnableLanguageInfo
   ): String =
+    // Java: rewrite `public class X` → `public class Main` so Judge0's compile
+    // step (which writes the source as Main.java) doesn't reject it.
+    val effectiveSource =
+      if lang.id == 62 then JavaSourceRewriter.normalizeEntrypoint(source) else source
     Json
       .obj(
         "language_id" -> Json.fromInt(lang.id),
-        "source_code" -> Json.fromString(b64(source)),
+        "source_code" -> Json.fromString(b64(effectiveSource)),
         "stdin"       -> stdin.map(s => Json.fromString(b64(s))).getOrElse(Json.Null)
       )
       .noSpaces

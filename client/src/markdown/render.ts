@@ -62,7 +62,9 @@ const RUNNABLE_LANGUAGES: LanguageInfo[] = [
     runnable: true,
   },
   { id: 62, label: "☕ Java 13 (OpenJDK)", aliases: ["java"], runnable: true },
-  { id: 81, label: "🌀 Scala 2.13", aliases: ["scala"], runnable: true },
+  // Scala — no emoji; the client renders the real Scala wave-mark next to the
+  // label via BrandIcons.Scala (no native emoji evokes the brand cleanly).
+  { id: 81, label: "Scala 2.13", aliases: ["scala"], runnable: true },
   { id: 50, label: "🔧 C (GCC 9.2)", aliases: ["c"], runnable: true },
   {
     id: 54,

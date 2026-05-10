@@ -229,6 +229,105 @@ class Solution {
 
 ***
 
+# Memorize
+
+The high-leverage facts to commit to long-term memory — atomic enough for an Anki card, concrete enough to recall under pressure or during production debugging. Suffix array + LCP is the dense representation of "every substring of S"; once you have it, a dozen string queries reduce to one-pass scans.
+
+## Quick recall
+
+Click any question to reveal the answer.
+
+<details>
+<summary><strong>Q:</strong> What's <code>SA[i]</code>?</summary>
+
+**A:** The starting index of the `i`-th lexicographically smallest suffix of `S`.
+
+</details>
+
+<details>
+<summary><strong>Q:</strong> Time complexity of suffix-array construction (best practical algorithm)?</summary>
+
+**A:** `O(n log n)` (prefix doubling) or `O(n)` (SA-IS / DC3). Naive sort-of-suffixes is `O(n² log n)` and only good for small inputs.
+
+</details>
+
+<details>
+<summary><strong>Q:</strong> What's <code>LCP[i]</code>?</summary>
+
+**A:** Longest common prefix length between `SA[i-1]` and `SA[i]` — adjacent suffixes in lex order.
+
+</details>
+
+<details>
+<summary><strong>Q:</strong> Time to build LCP given SA?</summary>
+
+**A:** `O(n)` via Kasai's algorithm.
+
+</details>
+
+<details>
+<summary><strong>Q:</strong> Pattern-search complexity using SA?</summary>
+
+**A:** `O(m log n)` via binary search on SA. With LCP-aware speedup: `O(m + log n)`.
+
+</details>
+
+<details>
+<summary><strong>Q:</strong> Longest repeated substring via LCP?</summary>
+
+**A:** `max(LCP[i])` — the largest LCP value gives the longest substring shared by two suffixes.
+
+</details>
+
+<details>
+<summary><strong>Q:</strong> Distinct substrings count via SA + LCP?</summary>
+
+**A:** `Σ (n − SA[i] − LCP[i])` over all `i`. `n − SA[i]` is suffix length; `LCP[i]` is what was already counted.
+
+</details>
+
+<details>
+<summary><strong>Q:</strong> Why is the FM-index more popular than raw suffix array in bioinformatics?</summary>
+
+**A:** FM-index compresses the SA + auxiliary structures using BWT, fitting genomes in a fraction of the memory while retaining `O(m)` substring-count queries.
+
+</details>
+
+## Code template
+
+```python
+def build_sa(s):                                  # naive O(n² log n) — fine for educational use
+    n = len(s)
+    return sorted(range(n), key=lambda i: s[i:])
+
+def build_lcp(s, sa):                             # Kasai's O(n)
+    n = len(s)
+    rank = [0] * n
+    for i, idx in enumerate(sa): rank[idx] = i
+    lcp = [0] * n
+    k = 0
+    for i in range(n):
+        if rank[i] == 0: k = 0; continue
+        j = sa[rank[i] - 1]
+        while i + k < n and j + k < n and s[i + k] == s[j + k]: k += 1
+        lcp[rank[i]] = k
+        if k > 0: k -= 1
+    return lcp
+```
+
+## Pattern triggers
+
+- **"Pattern matching against a fixed text, many queries"** → suffix array binary search
+- **"Longest repeated substring"** → SA + LCP, take max LCP
+- **"Count distinct substrings"** → SA + LCP, sum `(n - SA[i] - LCP[i])`
+- **"Longest common substring of two strings"** → concatenate with separator; SA + LCP
+- **"Burrows-Wheeler Transform / bzip2"** → SA construction is the prerequisite
+- **"DNA / genome alignment"** → FM-index (compressed SA variant)
+- **"Distinct substrings in a string"** → SA + LCP
+- **"K-th lexicographically smallest substring"** → walk SA in order, count substrings as you go
+
+***
+
 # Cross-links
 
 - **Prerequisites:** [Naive String Matching](/cortex/data-structures-and-algorithms/strings-string-matching-naive), [Binary Search](/cortex/data-structures-and-algorithms/sorting-and-searching-searching-binary-search).

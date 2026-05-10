@@ -57,6 +57,7 @@ object LucideIcons:
   @js.native @JSImport("lucide-react", "Star") private object StarRaw                 extends js.Object
   @js.native @JSImport("lucide-react", "Trophy") private object TrophyRaw             extends js.Object
   @js.native @JSImport("lucide-react", "ExternalLink") private object ExternalLinkRaw extends js.Object
+  @js.native @JSImport("lucide-react", "Search") private object SearchRaw             extends js.Object
 
   // ---- Components (call as Sun(withClass("h-5 w-5"))) --------------------
 
@@ -85,3 +86,4 @@ object LucideIcons:
   val Star         = JsComponent[IconProps, Children.None, Null](StarRaw)
   val Trophy       = JsComponent[IconProps, Children.None, Null](TrophyRaw)
   val ExternalLink = JsComponent[IconProps, Children.None, Null](ExternalLinkRaw)
+  val Search       = JsComponent[IconProps, Children.None, Null](SearchRaw)

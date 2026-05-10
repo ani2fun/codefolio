@@ -18,8 +18,6 @@ By the end of this lesson you'll know the **Longest Common Subsequence** (LCS) p
 
 # The Common-Subsequence Problem
 
-> **Course:** DSA › Algorithms › Dynamic Programming › LCS
-
 Given two strings `s1` (length `m`) and `s2` (length `n`), a **subsequence** of a string is a sequence of characters obtained by deleting zero or more characters without changing the relative order of the rest. The characters do **not** have to be adjacent. (A *substring* requires adjacency; a *subsequence* doesn't.)
 
 ```d2
@@ -66,8 +64,6 @@ A subsequence preserves order but allows arbitrary skipping. The LCS is the long
 ***
 
 # Optimal Substructure — The Two-Case Recurrence
-
-> **Course:** DSA › Algorithms › Dynamic Programming › LCS
 
 Define `lcs(i, j)` as the length of the LCS of the prefixes `s1[0..i]` and `s2[0..j]`. Look at the *last* characters of both prefixes — `s1[i]` and `s2[j]` — and ask: *what's the relationship between `lcs(i, j)` and `lcs` of smaller prefixes?*
 
@@ -126,8 +122,6 @@ When `i = 0`, the prefix `s1[0..0]` still has one character — `s1[0]`. We're n
 
 # Overlapping Subproblems — Why DP Wins
 
-> **Course:** DSA › Algorithms › Dynamic Programming › LCS
-
 A naive recursion on the recurrence calls `lcs(i, j)` from three different parents (`lcs(i+1, j+1)`, `lcs(i+1, j)`, `lcs(i, j+1)`) — each of which has its own three parents — and so on. The same `(i, j)` pair gets recomputed exponentially many times.
 
 ```mermaid
@@ -169,8 +163,6 @@ The recursion's call graph has only `m × n` distinct nodes, but visits them exp
 ***
 
 # Top-Down Solution (Memoization)
-
-> **Course:** DSA › Algorithms › Dynamic Programming › LCS
 
 The top-down implementation translates the recurrence directly into a recursive function with a memo table. The function `lcs(i, j)` checks the memo first; if the answer is already there, return it. Otherwise compute and store.
 
@@ -363,8 +355,6 @@ object Main extends App {
 
 # Bottom-Up Solution (Tabulation)
 
-> **Course:** DSA › Algorithms › Dynamic Programming › LCS
-
 Bottom-up fills a 2D table iteratively from the smallest subproblem (empty prefixes) outward. **The table is `(m+1) × (n+1)`, not `m × n`** — this is the trick that lets us avoid negative indices.
 
 The shift: in the table, index `i` represents *the number of characters considered* from `s1`, not the index of the last character. So `i` ranges from `0` (empty prefix) to `m` (full string), giving `m + 1` rows. Same for `j` and `n + 1` columns. The base case "empty prefix" lives in row 0 and column 0, all zeros. The character at "position `i`" of the prefix is at string index `i - 1`.
@@ -422,8 +412,6 @@ The traversal order — row by row, left to right — guarantees that when we co
 ***
 
 # Longest Common Subsequence
-
-> **Course:** DSA › Algorithms › Dynamic Programming › LCS
 
 ## The Problem
 
@@ -646,8 +634,6 @@ LCS is the canonical 2D-state DP: prefix length on one axis, prefix length on th
 ***
 
 # Longest Common Subsequence II — All LCSs
-
-> **Course:** DSA › Algorithms › Dynamic Programming › LCS
 
 The standard LCS returns one number — the length. **LCS II** returns *all* longest common subsequences, in case there are ties (e.g. `s1 = "xyzabc", s2 = "xzlfcb"` has both `"xzc"` and `"xzb"` of length 3).
 

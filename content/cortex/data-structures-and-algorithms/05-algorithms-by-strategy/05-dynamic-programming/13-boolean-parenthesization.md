@@ -16,8 +16,6 @@ By the end of this lesson you'll know the **boolean parenthesisation** recurrenc
 
 # The Boolean Parenthesisation Problem
 
-> **Course:** DSA › Algorithms › Dynamic Programming › Boolean Parenthesisation
-
 You're given a string `s` of alternating *operands* (`T` for True, `F` for False) and *binary operators* (`&` for AND, `|` for OR, `^` for XOR). Find the number of distinct parenthesisations that evaluate the expression to `True`.
 
 ```d2
@@ -62,8 +60,6 @@ Boolean parenthesisation counts True-evaluating parse trees over a string of ope
 ***
 
 # Why Two Tables, T and F
-
-> **Course:** DSA › Algorithms › Dynamic Programming › Boolean Parenthesisation
 
 Define `T[i][j]` = number of ways to parenthesise `s[i..j]` so it evaluates to True. By symmetry, `F[i][j]` = number of ways to evaluate to False. Both are over the same operand range; they sum to the total number of parenthesisations (the Catalan count for that operand-count).
 
@@ -124,8 +120,6 @@ Two tables (`T` and `F`) are mandatory because operator combinations care about 
 
 # The Three-Operator Truth Tables
 
-> **Course:** DSA › Algorithms › Dynamic Programming › Boolean Parenthesisation
-
 Each binary operator's truth table tells us, for each of the four `(L, R)` cases, whether the result is True or False:
 
 | L | R | & | \| | ^ |
@@ -164,8 +158,6 @@ Three operators, three truth tables. The DP just sums products across split poin
 ***
 
 # Boolean Parenthesisation — The Algorithm
-
-> **Course:** DSA › Algorithms › Dynamic Programming › Boolean Parenthesisation
 
 ## The Problem
 

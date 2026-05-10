@@ -1,7 +1,7 @@
 [
   {
-    "name": "Diplôme Data Engineer (RNCP Niveau 7)",
-    "issuer": "Sorbonne University · DataScientest",
+    "name": "Diplôme Data Engineer Liora x Sorbonne University",
+    "issuer": "Sorbonne University · Liora (DataScientest)",
     "date": "April 2026",
     "length": "9-month programme",
     "description": "Hands-on coursework spanning data engineering and DevOps fundamentals — Kafka, PySpark, Airflow, MongoDB, Snowflake, dbt, FastAPI, Docker/Kubernetes, and Prometheus/Grafana.",

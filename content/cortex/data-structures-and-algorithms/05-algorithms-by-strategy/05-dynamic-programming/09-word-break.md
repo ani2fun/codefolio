@@ -15,8 +15,6 @@ By the end of this lesson you'll know the **word break** recurrence (`canBreak[i
 
 # The Word-Break Problem
 
-> **Course:** DSA › Algorithms › Dynamic Programming › Word Break
-
 Given a string `s` of length `n` and a dictionary `wordDict` of valid words, decide whether `s` can be split into a sequence of dictionary words concatenated in order.
 
 ```d2
@@ -78,8 +76,6 @@ Word break asks "does *any* partition work?" — a boolean, not a number. Brute 
 
 # Optimal Substructure — Same Shape, Different Aggregator
 
-> **Course:** DSA › Algorithms › Dynamic Programming › Word Break
-
 Define `canBreak[i]` = whether `s[0..i-1]` (the first `i` characters) can be segmented. Two parts to the recurrence:
 
 **Base case — empty prefix.** Zero characters trivially segments (zero words concatenate to empty):
@@ -138,8 +134,6 @@ Word break is the boolean-existence variant of palindrome partitioning. Swap the
 
 # Hash-Set Lookup — Why the Predicate Is `O(1)`
 
-> **Course:** DSA › Algorithms › Dynamic Programming › Word Break
-
 The recurrence asks `"is s[j..i-1] in wordDict?"` for every `(i, j)` pair. Without preprocessing, looking up a word in a list of `m` words costs `O(m · L)` per query — total `O(n² · m · L)`, awful.
 
 The fix is one line: convert `wordDict` to a **hash set** before the loop. Now each membership check is `O(L)` average — `L` characters hashed to look up a bucket, plus a string compare on hit.
@@ -179,8 +173,6 @@ The dictionary is a hash set, not a list. One preprocess step makes every predic
 ***
 
 # Word Break — The Algorithm
-
-> **Course:** DSA › Algorithms › Dynamic Programming › Word Break
 
 ## The Problem
 

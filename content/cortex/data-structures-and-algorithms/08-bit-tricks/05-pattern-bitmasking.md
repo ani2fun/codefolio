@@ -15,8 +15,6 @@ By the end of this lesson you'll have written **pairwise bits swap** (using `0x5
 
 # What "Bitmasking" Means
 
-> **Course:** DSA › Algorithms › Bit Manipulation › Bitmasking Pattern
-
 Bitmasking has two distinct meanings, both common:
 
 **Meaning A — A constant pattern that selects bits.** A "mask" is a number whose set bits select a region of interest. The kth-bit operations from lesson 1 are the simplest examples; this lesson generalises to multi-bit masks like `0x55555555` (every other bit, starting from bit 1) and `0xAAAAAAAA` (the complement). These masks let you operate on whole groups of bits in parallel — swap odd-positioned bits with even-positioned bits, count bits in groups, etc.
@@ -72,8 +70,6 @@ Bitmasking gives you two parallel powers: constant masks for parallel bit-group 
 ***
 
 # Pairwise Bits Swap
-
-> **Course:** DSA › Algorithms › Bit Manipulation › Bitmasking Pattern
 
 ## The Problem
 
@@ -212,8 +208,6 @@ object Main extends App {
 ***
 
 # Unique Subsets
-
-> **Course:** DSA › Algorithms › Bit Manipulation › Bitmasking Pattern
 
 ## The Problem
 

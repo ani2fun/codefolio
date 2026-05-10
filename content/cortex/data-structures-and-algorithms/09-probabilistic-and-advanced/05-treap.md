@@ -242,6 +242,105 @@ These primitives let you implement an array-like structure with `O(log n)` inser
 
 ***
 
+# Memorize
+
+The high-leverage facts to commit to long-term memory — atomic enough for an Anki card, concrete enough to recall under pressure or during production debugging. Treaps are the "balanced BST you can write yourself" — competitive programmers reach for them because the code is short and the implicit-treap split/merge primitives unlock a class of sequence problems.
+
+## Quick recall
+
+Click any question to reveal the answer.
+
+<details>
+<summary><strong>Q:</strong> Two orderings a treap satisfies?</summary>
+
+**A:** **BST** ordered on keys; **max-heap** ordered on (random) priorities.
+
+</details>
+
+<details>
+<summary><strong>Q:</strong> Expected complexity of insert/search/delete?</summary>
+
+**A:** All `O(log n)` expected. Worst case `O(n)` but exponentially unlikely.
+
+</details>
+
+<details>
+<summary><strong>Q:</strong> What gives the expected balance?</summary>
+
+**A:** Random priorities. Each random shape is equivalent to inserting in random order — expected height is `O(log n)`.
+
+</details>
+
+<details>
+<summary><strong>Q:</strong> Insert procedure?</summary>
+
+**A:** Standard BST insert; assign random priority. Rotate up while the new node's priority exceeds its parent's.
+
+</details>
+
+<details>
+<summary><strong>Q:</strong> Delete procedure?</summary>
+
+**A:** Find by key. Rotate down toward whichever child has higher priority (push the target node toward a leaf). Snip when leaf-reached.
+
+</details>
+
+<details>
+<summary><strong>Q:</strong> What's an implicit treap?</summary>
+
+**A:** A treap where the implicit "key" is each node's *in-order rank*, augmented with subtree size. Supports `split(t, k)`, `merge(a, b)`, `kth(k)` in `O(log n)` — array-like operations with logarithmic cost.
+
+</details>
+
+<details>
+<summary><strong>Q:</strong> Why are treaps rare in production but common in competitive programming?</summary>
+
+**A:** Production has well-tested RB-tree libraries. Competitive needs short code; treap is ~50 lines vs RB-tree's ~150.
+
+</details>
+
+## Code template
+
+```python
+import random
+
+class TreapNode:
+    __slots__ = ("key", "priority", "left", "right")
+    def __init__(self, key):
+        self.key, self.priority = key, random.random()
+        self.left = self.right = None
+
+def rot_right(p):
+    l = p.left; p.left = l.right; l.right = p
+    return l
+
+def rot_left(p):
+    r = p.right; p.right = r.left; r.left = p
+    return r
+
+def insert(node, key):
+    if node is None: return TreapNode(key)
+    if key < node.key:
+        node.left = insert(node.left, key)
+        if node.left.priority > node.priority: node = rot_right(node)
+    elif key > node.key:
+        node.right = insert(node.right, key)
+        if node.right.priority > node.priority: node = rot_left(node)
+    return node
+```
+
+## Pattern triggers
+
+- **"Sorted set with split / merge / kth in log time"** → implicit treap
+- **"Want balanced BST with simpler code than RB"** → treap
+- **"Insert anywhere in a virtual array, log time"** → implicit treap with subtree-size augment
+- **"Cartesian tree on an array"** → treap with priorities = array values
+- **"Persistent ordered map"** → persistent treap (path copying)
+- **"Concurrent ordered map"** → not treap (no easy lock-free version) — use skip list
+- **"Production Java/C++ sorted map"** → use `TreeMap`/`std::map` (RB), not treap
+
+***
+
 # Cross-links
 
 - **Prerequisites:** [BST](/cortex/data-structures-and-algorithms/trees-binary-search-tree-introduction-to-binary-search-trees), [Heap](/cortex/data-structures-and-algorithms/trees-heap-introduction-to-heaps).

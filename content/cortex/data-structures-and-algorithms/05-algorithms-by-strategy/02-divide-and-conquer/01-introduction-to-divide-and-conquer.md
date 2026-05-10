@@ -285,6 +285,106 @@ If the problem is **inherently online** (you can't see the whole input at once),
 
 ***
 
+# Memorize
+
+The high-leverage facts to commit to long-term memory — atomic enough for an Anki card, concrete enough to recall under pressure or during production debugging. Once the three D&C steps are reflexive, every recursive optimisation problem starts with "what's `a`, what's `b`, what's `f(n)`?"
+
+## Quick recall
+
+Click any question to reveal the answer.
+
+<details>
+<summary><strong>Q:</strong> Three steps of D&C?</summary>
+
+**A:** **Divide** the problem into smaller subproblems of the same kind. **Conquer** each (recursively). **Combine** the answers into the original problem's answer.
+
+</details>
+
+<details>
+<summary><strong>Q:</strong> Recurrence for merge sort?</summary>
+
+**A:** `T(n) = 2T(n/2) + n → Θ(n log n)`. Master theorem case 2.
+
+</details>
+
+<details>
+<summary><strong>Q:</strong> Recurrence for binary search?</summary>
+
+**A:** `T(n) = T(n/2) + 1 → Θ(log n)`.
+
+</details>
+
+<details>
+<summary><strong>Q:</strong> Recurrence for Karatsuba multiplication?</summary>
+
+**A:** `T(n) = 3T(n/2) + n → Θ(n^(log₂ 3)) ≈ Θ(n^1.585)`. Beats `Θ(n²)` for large enough `n`.
+
+</details>
+
+<details>
+<summary><strong>Q:</strong> Recurrence for Strassen matrix multiplication?</summary>
+
+**A:** `T(n) = 7T(n/2) + n² → Θ(n^(log₂ 7)) ≈ Θ(n^2.807)`. Beats cubic for large enough matrices.
+
+</details>
+
+<details>
+<summary><strong>Q:</strong> Why is D&C the wrong choice for Fibonacci?</summary>
+
+**A:** Subproblems overlap (`fib(n-1)` and `fib(n-2)` both call `fib(n-3)`). Pure D&C wastes exponential work on duplicates. Use DP (memoisation) instead.
+
+</details>
+
+<details>
+<summary><strong>Q:</strong> What's the canonical "trap" in maximum-subarray D&C?</summary>
+
+**A:** Forgetting the cross-midpoint case. The answer might span the boundary between halves; you must scan outward from `mid` separately.
+
+</details>
+
+<details>
+<summary><strong>Q:</strong> Why is randomised quicksort considered D&C even though it's not balanced?</summary>
+
+**A:** Each recursive call is on a strictly-smaller subarray. Randomisation ensures *expected* balance; the structure is still divide-then-recurse-then-combine.
+
+</details>
+
+## Code template
+
+```python
+def divide_and_conquer(problem):
+    if base_case(problem):
+        return solve_directly(problem)
+
+    sub_problems = divide(problem)                          # split
+    sub_solutions = [divide_and_conquer(sp) for sp in sub_problems]
+    return combine(sub_solutions)                           # merge
+
+# Concrete: max-subarray D&C
+def max_subarray(A, lo, hi):
+    if lo == hi: return A[lo]
+    mid = (lo + hi) // 2
+    return max(
+        max_subarray(A, lo, mid),
+        max_subarray(A, mid + 1, hi),
+        max_crossing(A, lo, mid, hi),                       # the cross case!
+    )
+```
+
+## Pattern triggers
+
+- **Sort an array faster than `O(n²)`** → merge sort, quicksort
+- **Search a sorted array** → binary search (D&C with one branch)
+- **Multiply huge integers** → Karatsuba
+- **Multiply matrices for huge `n`** → Strassen
+- **FFT / signal processing / polynomial multiply** → Cooley-Tukey D&C
+- **Closest pair of points** → x-sorted + cross-strip D&C, `O(n log n)`
+- **"Find max in range" with overlapping subproblems** → DP, not D&C
+- **Parallelisable workload** → D&C, since subproblems are independent
+- **Combine cost dominates** → check if `f(n)` is too heavy; might be Master case 3
+
+***
+
 # Cross-links
 
 - **Foundations:** [Recurrence Relations and Master Theorem](/cortex/data-structures-and-algorithms/foundations-recurrence-relations-and-master-theorem) — the analysis tool for every D&C algorithm.

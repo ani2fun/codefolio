@@ -15,8 +15,6 @@ By the end of this lesson you'll know the **minimum-cut palindrome partitioning*
 
 # The Partitioning Problem
 
-> **Course:** DSA › Algorithms › Dynamic Programming › Palindrome Partitioning
-
 Given a string `s` of length `n`, find the **minimum number of cuts** so that every resulting piece reads the same forward and backward.
 
 ```d2
@@ -61,8 +59,6 @@ Palindrome partitioning counts **cuts**, not pieces. Brute force is `2^(n-1)`; D
 ***
 
 # Optimal Substructure — Fix the Last Piece
-
-> **Course:** DSA › Algorithms › Dynamic Programming › Palindrome Partitioning
 
 Define `cuts[i]` = minimum cuts needed to palindrome-partition the prefix `s[0..i]`. Two cases:
 
@@ -117,8 +113,6 @@ Optimal substructure for partition problems: fix one piece (here, the last), rec
 
 # Two Tables, One Pass
 
-> **Course:** DSA › Algorithms › Dynamic Programming › Palindrome Partitioning
-
 The recurrence asks `"is s[j+1..i] a palindrome?"` inside its inner loop. Naively that's an `O(n)` check, blowing the total cost to `O(n³)`. We need an `O(1)` palindromicity lookup.
 
 The fix is a precomputed `isPalin[i][j]` table — exactly the boolean table from the previous lesson:
@@ -168,8 +162,6 @@ Two-phase DPs ("predicate first, optimisation second") are common when the predi
 ***
 
 # Palindrome Partitioning — Minimum Cuts
-
-> **Course:** DSA › Algorithms › Dynamic Programming › Palindrome Partitioning
 
 ## The Problem
 

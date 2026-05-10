@@ -19,8 +19,6 @@ By the end of this lesson you'll know the algorithm, why it's structurally simil
 
 # Understanding Selection Sort
 
-> **Course:** DSA › Algorithms › Sorting › Selection Sort
-
 Selection sort divides the array into two regions: a **sorted prefix** at the front and an **unsorted suffix** at the back. Each pass: scan the unsorted suffix to find its minimum, then swap that minimum with the first element of the suffix. The sorted region grows by one; the unsorted region shrinks by one.
 
 Compare this with bubble sort: bubble sort *bubbles* the largest unsorted element to the back via many adjacent swaps. Selection sort *selects* the smallest unsorted element and *teleports* it to the front via one swap.
@@ -149,8 +147,6 @@ Selection sort: pick the smallest from the unsorted region, swap it into place, 
 
 # Why the Loop Bounds Match Bubble Sort
 
-> **Course:** DSA › Algorithms › Sorting › Selection Sort
-
 The outer loop runs `i` from `0` to `n - 2` — exactly like bubble sort. The reason is the same: after `n - 1` passes, `n - 1` elements are correctly placed, and the remaining one (the largest, since selection sort picks minimums) is forced into the last position.
 
 The inner loop differs from bubble sort. Selection sort's inner loop runs `j` from `i + 1` to `n - 1` — it scans the *entire* unsorted suffix to find the minimum. Bubble sort's inner loop scanned the unsorted suffix to bubble up the maximum, but it stopped one short to avoid out-of-bounds on `arr[j + 1]`.
@@ -203,8 +199,6 @@ The loop bounds — `i < n - 1` and `j ∈ [i + 1, n - 1]` — are exactly what'
 ***
 
 # Implementation
-
-> **Course:** DSA › Algorithms › Sorting › Selection Sort
 
 
 ```pseudocode
@@ -354,8 +348,6 @@ For `n = 5`, exactly 4 swap operations executed (some are no-ops where `i == min
 
 # Complexity Analysis
 
-> **Course:** DSA › Algorithms › Sorting › Selection Sort
-
 | Resource | Best | Average | Worst |
 |---|---|---|---|
 | **Time** | `O(n²)` | `O(n²)` | `O(n²)` |
@@ -402,8 +394,6 @@ Selection sort trades adaptiveness for write-count: same `O(n²)` comparisons bu
 ***
 
 # Why Selection Sort Is Not Stable
-
-> **Course:** DSA › Algorithms › Sorting › Selection Sort
 
 Stability matters when sorting records with secondary fields. Bubble sort is stable; selection sort is not. The reason: selection sort uses **long-distance swaps** that can leapfrog over equal elements, flipping their relative order.
 
@@ -473,8 +463,6 @@ Selection sort isn't stable because long-distance swaps can leapfrog equal eleme
 ***
 
 # Selection Sort Problem
-
-> **Course:** DSA › Algorithms › Sorting › Selection Sort
 
 The canonical exercise: implement selection sort to sort an array.
 

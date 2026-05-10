@@ -16,8 +16,6 @@ By the end of this lesson you'll know the **Longest Increasing Subsequence** (LI
 
 # The Increasing-Subsequence Problem
 
-> **Course:** DSA › Algorithms › Dynamic Programming › LIS
-
 Given an array `arr` of length `n`, a **subsequence** is any selection of elements from `arr` that preserves their original order. Elements don't have to be adjacent — you can skip any number of them — but you can't reorder.
 
 ```d2
@@ -60,8 +58,6 @@ A subsequence preserves order but allows skipping. The LIS is the longest such s
 ***
 
 # Optimal Substructure — Why DP Applies
-
-> **Course:** DSA › Algorithms › Dynamic Programming › LIS
 
 Define `lis(i)` = the length of the longest increasing subsequence **ending exactly at index `i`**. Two facts make DP work:
 
@@ -116,8 +112,6 @@ flowchart LR
 
 # Overlapping Subproblems — Why DP Wins
 
-> **Course:** DSA › Algorithms › Dynamic Programming › LIS
-
 If we compute `lis(i)` recursively without caching, the same `lis(j)` gets computed many times — once for every later index `i'` where `arr[j] < arr[i']`. The recursion's call graph is dense: subproblems repeat heavily.
 
 ```mermaid
@@ -155,8 +149,6 @@ The recursion's call graph contains the same subproblems many times over. Cachin
 ***
 
 # Longest Increasing Subsequence
-
-> **Course:** DSA › Algorithms › Dynamic Programming › LIS
 
 ## The Problem
 
@@ -449,8 +441,6 @@ Track `prev[i]` = the index `j` that produced `dp[i]`'s maximum (or `-1` if `arr
 ***
 
 # Largest Sum Ascending Subsequence
-
-> **Course:** DSA › Algorithms › Dynamic Programming › LIS
 
 A natural variant: instead of the longest *length*, find the *largest sum* — and return the subsequence itself, not just a number. Same recurrence shape, swap "+1" for "+arr[i]", and add path reconstruction.
 

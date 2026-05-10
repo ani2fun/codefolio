@@ -17,8 +17,6 @@ That algorithm is backtracking. By the end of this lesson you'll know what shape
 
 # Why Brute Force Needs a Smarter Form
 
-> **Course:** DSA › Algorithms › Backtracking › Introduction
-
 A naive brute-force algorithm enumerates *every* possible answer and tests each one. For a 4-digit binary PIN, that's 2⁴ = 16 candidates — a list you could write by hand. For an 8-queens placement, it's about 4 × 10⁹ if you ignore the rules. For sudoku, it's 6 × 10²¹. *Listing them all* isn't an option even on the fastest hardware.
 
 The trick is to enumerate **without listing**. Imagine the candidates aren't a flat list but a tree: each level is "the next decision," each path from root to leaf is a complete candidate, each branch you don't take is a whole subtree of candidates you skip. If you can recognise a partial decision as *already-doomed* — say, two queens on the same row — you can chop off the entire subtree without ever visiting its leaves.
@@ -87,8 +85,6 @@ Backtracking is brute force in tree form: walk every candidate, prune the dead o
 ***
 
 # The Phone-Password Problem
-
-> **Course:** DSA › Algorithms › Backtracking › Introduction
 
 You forgot the 4-digit PIN you set on your phone. To keep the example simple, suppose the PIN is made of only 0s and 1s — a 4-digit binary number. There are 2⁴ = 16 possible PINs. The phone tells you yes/no on each guess. How do you find the right one without brute-trying randomly?
 
@@ -215,8 +211,6 @@ Four steps: make a choice, validate, backtrack on failure, repeat. The phone-pas
 
 # The Three Components of Every Backtracking Solution
 
-> **Course:** DSA › Algorithms › Backtracking › Introduction
-
 Now we promote the phone-password observations to the three formal components of any backtracking solution. Knowing these by name lets you recognise backtracking in a fresh problem within seconds.
 
 ---
@@ -334,8 +328,6 @@ Three components: finite outcomes, validation function, recursive structure. Tog
 
 # The State Space Tree
 
-> **Course:** DSA › Algorithms › Backtracking › Introduction
-
 The state space tree is the algorithm's "soul." Drawing it makes the algorithm fall out for free; failing to draw it leads to bugs.
 
 ---
@@ -437,8 +429,6 @@ The state space tree is the picture of every backtracking algorithm. Tree size =
 ***
 
 # Implementing It in Code
-
-> **Course:** DSA › Algorithms › Backtracking › Introduction
 
 The four steps — make a choice, validate, backtrack, repeat — translate cleanly into a recursive function with a `for` loop inside.
 
@@ -662,8 +652,6 @@ Backtracking code is a recursive function with a `for` loop, a base case for lea
 ***
 
 # What Backtracking Actually Costs
-
-> **Course:** DSA › Algorithms › Backtracking › Introduction
 
 A clean recursive structure is beautiful, but it doesn't escape the underlying brute-force cost. Backtracking's runtime is bounded by the size of the state space tree — and that's usually exponential.
 

@@ -165,6 +165,111 @@ A tuned routing table lookup on modern hardware: 50-100 nanoseconds. At 1 Gbps l
 
 ***
 
+# Memorize
+
+The high-leverage facts to commit to long-term memory — atomic enough for an Anki card, concrete enough to recall under pressure or during production debugging. Every IP packet leaving your machine hits this trie; knowing how it works is networking-engineering currency.
+
+## Quick recall
+
+Click any question to reveal the answer.
+
+<details>
+<summary><strong>Q:</strong> What operation is the IP routing table doing on every packet?</summary>
+
+**A:** **Longest-prefix match**: find the routing entry whose prefix matches the destination IP, picking the *longest* such prefix.
+
+</details>
+
+<details>
+<summary><strong>Q:</strong> Why not a binary trie of 32-bit IP addresses?</summary>
+
+**A:** Up to 32 levels deep. Linux uses a level-compressed (LC) trie: each node tests `b` bits at a time, branching `2^b` ways. Depth `~8` for IPv4.
+
+</details>
+
+<details>
+<summary><strong>Q:</strong> Typical lookup latency for the Linux fib_trie?</summary>
+
+**A:** 50-100 ns per packet on modern hardware. At 1 Gbps line rate (1M packets/sec), the trie uses 5-10% of the per-packet budget.
+
+</details>
+
+<details>
+<summary><strong>Q:</strong> Why is the trie structure read-mostly?</summary>
+
+**A:** Routing-table updates (adding/removing routes) are rare; lookups happen per packet. The kernel uses RCU to make reads lock-free.
+
+</details>
+
+<details>
+<summary><strong>Q:</strong> What synchronisation does the lookup path use?</summary>
+
+**A:** **None for reads** — RCU lets readers traverse without locks. **Writers acquire `rtnl_lock`** (the global routing-table lock; rare path).
+
+</details>
+
+<details>
+<summary><strong>Q:</strong> Why no heap allocations in the fast path?</summary>
+
+**A:** The fib_trie lookup is per-packet hot path; allocation cost would dominate. All lookup state is on the stack.
+
+</details>
+
+<details>
+<summary><strong>Q:</strong> What's a TCAM and why does hardware use one instead of fib_trie?</summary>
+
+**A:** **Ternary Content-Addressable Memory** does longest-prefix match in *one cycle* via parallel bit-comparison. Used by switch/router silicon; software-defined routers use fib_trie.
+
+</details>
+
+<details>
+<summary><strong>Q:</strong> What does "VRF" mean and how does it affect the trie?</summary>
+
+**A:** **Virtual Routing and Forwarding** — multiple routing tables per system (per-namespace, per-tenant). Each is a separate fib_trie instance.
+
+</details>
+
+## Source pointers
+
+```
+net/ipv4/fib_trie.c             — IPv4 LC-trie implementation
+net/ipv4/fib_lookup.h           — lookup interface
+net/ipv4/fib_semantics.c        — fib_alias, fib_info: route metadata
+include/net/ip_fib.h            — public API: fib_lookup, fib_table_lookup
+net/ipv6/ip6_fib.c              — IPv6 routing trie (different impl)
+```
+
+Reading order:
+
+```
+1. include/net/ip_fib.h                — entry points
+2. net/ipv4/fib_trie.c::fib_table_lookup — the per-packet fast path
+3. net/ipv4/fib_trie.c::fib_table_insert — the update path (rtnl_lock held)
+4. Documentation/RCU/                  — to understand the lock-free reads
+```
+
+User-space tooling:
+
+```
+ip route show                  — current routing table
+ip route get <dest>            — what would happen for this destination
+ip rule                        — policy routing (selects which trie/VRF)
+ss -t                          — TCP socket state (touches the trie indirectly)
+```
+
+## Pattern triggers
+
+- **"Lock-free read-mostly structure in a kernel"** → RCU + appropriate trie/tree
+- **"Per-packet processing budget"** → 1000 ns at 1 Gbps; trie lookup must fit in tens of ns
+- **"Longest-prefix match"** → radix / Patricia / LC-trie
+- **"Hardware vs software routing"** → TCAM (silicon) vs fib_trie (software)
+- **"Multiple routing tables per box"** → VRF / namespace; each gets its own fib_trie
+- **"Routing change causing latency spike"** → trie update path takes `rtnl_lock`; coordinated rollout helps
+- **"How do switches do this in microseconds?"** → TCAM in silicon; not the same algorithm
+- **"Where to read the source?"** → `net/ipv4/fib_trie.c::fib_table_lookup`
+
+***
+
 # Cross-links
 
 - **Prerequisites:** [Trie](/cortex/data-structures-and-algorithms/trees-trie-introduction-to-tries), [RCU and Hazard Pointers](/cortex/data-structures-and-algorithms/concurrency-and-systems-rcu-and-hazard-pointers).

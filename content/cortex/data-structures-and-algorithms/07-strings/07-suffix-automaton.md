@@ -172,6 +172,115 @@ Each of these is `O(n)` or `O(n log n)`, hard to beat with any other structure.
 
 ***
 
+# Memorize
+
+The high-leverage facts to commit to long-term memory — atomic enough for an Anki card, concrete enough to recall under pressure or during production debugging. Suffix automaton is niche but unbeatable for distinct-substring questions; the construction is the most beautiful algorithm in this module.
+
+## Quick recall
+
+Click any question to reveal the answer.
+
+<details>
+<summary><strong>Q:</strong> What does a suffix automaton accept?</summary>
+
+**A:** Every substring of a fixed string `S`. It's the minimal DFA recognising that language.
+
+</details>
+
+<details>
+<summary><strong>Q:</strong> Maximum number of states for SAM on a string of length <code>n</code>?</summary>
+
+**A:** `2n − 1`. The transition count is at most `3n − 4`. Both linear in `n`.
+
+</details>
+
+<details>
+<summary><strong>Q:</strong> Construction time?</summary>
+
+**A:** `O(n · |Σ|)` with arrays (effectively `O(n)` for fixed alphabet). Online: characters added one at a time.
+
+</details>
+
+<details>
+<summary><strong>Q:</strong> What does a SAM state represent?</summary>
+
+**A:** An *equivalence class* of substrings that end at the same set of positions in `S` (`endpos`). Each state stores the longest substring in its class.
+
+</details>
+
+<details>
+<summary><strong>Q:</strong> What's a suffix link?</summary>
+
+**A:** From state `s`, points to the state representing the longest *proper suffix* of `s`'s longest substring with a different `endpos` set.
+
+</details>
+
+<details>
+<summary><strong>Q:</strong> Distinct substring count via SAM?</summary>
+
+**A:** `Σ (len[s] − len[link[s]])` over all non-initial states `s`. `O(n)` after construction.
+
+</details>
+
+<details>
+<summary><strong>Q:</strong> Why is SAM the right tool for "longest common substring of two strings"?</summary>
+
+**A:** Build SAM on one string, walk through the other character-by-character tracking the longest match. `O(n + m)` total.
+
+</details>
+
+## Code template
+
+```python
+class SAMState:
+    __slots__ = ("trans", "link", "length")
+    def __init__(self):
+        self.trans, self.link, self.length = {}, -1, 0
+
+class SAM:
+    def __init__(self):
+        self.states = [SAMState()]
+        self.last = 0
+
+    def extend(self, c):
+        cur = len(self.states); self.states.append(SAMState())
+        self.states[cur].length = self.states[self.last].length + 1
+        p = self.last
+        while p != -1 and c not in self.states[p].trans:
+            self.states[p].trans[c] = cur
+            p = self.states[p].link
+        if p == -1:
+            self.states[cur].link = 0
+        else:
+            q = self.states[p].trans[c]
+            if self.states[p].length + 1 == self.states[q].length:
+                self.states[cur].link = q
+            else:
+                clone = len(self.states); self.states.append(SAMState())
+                self.states[clone].length = self.states[p].length + 1
+                self.states[clone].link = self.states[q].link
+                self.states[clone].trans = dict(self.states[q].trans)
+                while p != -1 and self.states[p].trans.get(c) == q:
+                    self.states[p].trans[c] = clone
+                    p = self.states[p].link
+                self.states[q].link = clone
+                self.states[cur].link = clone
+        self.last = cur
+```
+
+## Pattern triggers
+
+- **"Is X a substring of S?"** → SAM walk, `O(|X|)`
+- **"Count distinct substrings of S"** → SAM, sum `len[s] - len[link[s]]`
+- **"Longest common substring of two strings"** → build SAM on one, walk through the other
+- **"Longest common substring of multiple strings"** → generalised SAM
+- **"K-th lexicographically smallest substring"** → walk SAM in lex order, count as you go
+- **"Number of occurrences of every substring"** → SAM with size-of-endpos per state
+- **"Linear-time substring problem on a fixed string"** → SAM
+- **Need linear-time but suffix array isn't enough** → SAM
+
+***
+
 # Cross-links
 
 - **Prerequisites:** [Suffix Array](/cortex/data-structures-and-algorithms/strings-suffix-array) (similar information, different representation), [Graphs](/cortex/data-structures-and-algorithms/graphs-introduction-to-graphs) (the SAM is a DAG).

@@ -1,0 +1,50 @@
+<!doctype html>
+<html lang="en" class="light">
+<head>
+  <meta charset="utf-8">
+  <title>Cortex · UI kit</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Geist:wght@300;400;500;600;700&family=Geist+Mono:wght@400;500;600&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="style.css">
+  <script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+  <script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+  <script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+  <script src="data.js"></script>
+  <script type="text/babel" src="CortexSidebar.jsx"></script>
+  <script type="text/babel" src="CortexBreadcrumb.jsx"></script>
+  <script type="text/babel" src="ChapterContent.jsx"></script>
+  <script type="text/babel" src="CortexToc.jsx"></script>
+  <script type="text/babel" src="CortexPager.jsx"></script>
+</head>
+<body>
+  <div id="root"></div>
+  <script type="text/babel">
+    const App = () => {
+      const chapters = window.CORTEX_DATA.book.chapters;
+      const [activeChapter, setActiveChapter] = React.useState("ch5");
+      const [activeSection, setActiveSection] = React.useState("intro");
+      const idx = chapters.findIndex(c => c.id === activeChapter);
+      const prev = idx > 0 ? chapters[idx - 1] : null;
+      const next = idx < chapters.length - 1 ? chapters[idx + 1] : null;
+      const onSectionPick = (id) => {
+        setActiveSection(id);
+        const el = document.getElementById(id);
+        if (el) el.scrollIntoView({ behavior: "smooth", block: "start" });
+      };
+      return (
+        <div className="cx-page">
+          <window.CortexSidebar activeId={activeChapter} onPick={setActiveChapter} />
+          <main className="cx-main">
+            <window.CortexBreadcrumb chapter={window.CORTEX_DATA.chapter} />
+            <window.ChapterContent chapter={window.CORTEX_DATA.chapter} />
+            <window.CortexPager prev={prev} next={next} onPick={setActiveChapter} />
+          </main>
+          <window.CortexToc activeId={activeSection} onPick={onSectionPick} />
+        </div>
+      );
+    };
+    ReactDOM.createRoot(document.getElementById("root")).render(<App />);
+  </script>
+</body>
+</html>

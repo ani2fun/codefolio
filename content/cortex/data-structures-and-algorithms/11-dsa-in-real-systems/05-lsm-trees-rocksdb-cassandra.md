@@ -137,6 +137,104 @@ The "**RUM conjecture**" (Athanassoulis et al., 2016) formalises this: any stora
 
 ***
 
+# Memorize
+
+The high-leverage facts to commit to long-term memory — atomic enough for an Anki card, concrete enough to recall under pressure or during production debugging. LSM is the write-optimised alternative to B-trees; recognising when each one wins is the most-asked database-design question.
+
+## Quick recall
+
+Click any question to reveal the answer.
+
+<details>
+<summary><strong>Q:</strong> Three layers of an LSM-tree write path?</summary>
+
+**A:** **WAL** (sequential durability log), **memtable** (in-memory sorted structure, usually skip list), **SSTables** (immutable sorted files on disk after memtable flush).
+
+</details>
+
+<details>
+<summary><strong>Q:</strong> Why do writes go to a memtable + WAL instead of directly to disk?</summary>
+
+**A:** Sequential writes (to WAL + memtable, the latter in-memory) are dramatically cheaper than random writes (to a B-tree page on disk). LSM trades read amplification for write throughput.
+
+</details>
+
+<details>
+<summary><strong>Q:</strong> What does compaction do?</summary>
+
+**A:** Merges multiple SSTables into one (streaming merge sort). Resolves tombstones. Required to keep read amplification bounded — without compaction, reads check ever-more files.
+
+</details>
+
+<details>
+<summary><strong>Q:</strong> Leveled vs tiered compaction?</summary>
+
+**A:** **Leveled**: each level non-overlapping, merge-with-next on flush. Lower read amp, higher write amp. **Tiered**: K SSTables per tier, merge to next when full. Higher read amp, lower write amp.
+
+</details>
+
+<details>
+<summary><strong>Q:</strong> Why does each SSTable carry a Bloom filter?</summary>
+
+**A:** Reads might check every SSTable for a key. Bloom filter says "definitely not in this SSTable" → skip the disk read. Without it, every read = (# SSTables) disk seeks.
+
+</details>
+
+<details>
+<summary><strong>Q:</strong> What's the RUM conjecture?</summary>
+
+**A:** Storage systems trade off **R**ead, **U**pdate, and **M**emory amplifications. LSM minimises update amplification (sequential writes) at the cost of the others. B-trees do the opposite.
+
+</details>
+
+<details>
+<summary><strong>Q:</strong> Typical write amplification for leveled compaction?</summary>
+
+**A:** ~70× (with `T = 10` levels and 7 levels). Every logical write hits disk ~70 times across the lifetime of compactions. Tunable; tiered compaction is lower.
+
+</details>
+
+<details>
+<summary><strong>Q:</strong> Why does delete-heavy workload bloat LSM SSTables?</summary>
+
+**A:** Tombstones don't free space until a compaction merges them with the original key. Heavy deletes between compactions bloat both memory and disk.
+
+</details>
+
+## Source pointers
+
+```
+RocksDB (the canonical LSM):
+db/memtable.cc, db/memtable.h           — skip-list memtable
+db/db_impl/db_impl_write.cc             — write path (WAL + memtable)
+db/compaction/compaction_picker.cc      — leveled compaction picker
+db/version_set.cc                       — version metadata, level structure
+util/bloom_impl.h                       — per-SSTable Bloom filter
+include/rocksdb/options.h               — every tuning knob
+
+LevelDB (smaller predecessor):
+db/version_set.cc                       — level management
+db/log_writer.cc                        — WAL writer
+table/table.cc                          — SSTable format
+
+Cassandra:
+src/java/org/apache/cassandra/io/sstable/   — SSTable read/write
+src/java/org/apache/cassandra/db/compaction/ — compaction strategies
+```
+
+## Pattern triggers
+
+- **"Write-heavy workload"** → LSM (RocksDB, Cassandra) over B-tree
+- **"Read-heavy workload"** → B-tree (Postgres) over LSM
+- **"Time-series / append-mostly data"** → LSM
+- **"Range queries dominant"** → B+-tree (sorted leaves are linked); LSM range scan is more expensive
+- **"Tombstones bloating disk"** → tune compaction; reduce delete frequency; consider TTL strategies
+- **"Why is the read slow?"** → too many SSTables; Bloom filter false positive; level-0 files overlap
+- **"Write stalls under load"** → compaction can't keep up; tune throughput / parallelism
+- **"Where to read the source?"** → RocksDB; the README and `include/rocksdb/options.h` are the entry points
+
+***
+
 # Cross-links
 
 - **Prerequisites:** [B-Tree](/cortex/data-structures-and-algorithms/trees-b-tree-introduction-to-b-trees) (the read-optimised alternative), [Skip List](/cortex/data-structures-and-algorithms/probabilistic-and-advanced-skip-list) (memtable choice), [Bloom Filter](/cortex/data-structures-and-algorithms/probabilistic-and-advanced-bloom-filter) (read optimisation).

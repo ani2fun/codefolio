@@ -20,8 +20,6 @@ By the end of this lesson you'll have written seven XOR-based algorithms, rangin
 
 # Why XOR Cancels
 
-> **Course:** DSA › Algorithms › Bit Manipulation › XOR Pattern
-
 Three identities form the algebraic foundation for everything in this lesson:
 
 | Identity | Why it matters |
@@ -70,8 +68,6 @@ XOR + commutative + associative + self-inverse = pairs cancel regardless of orde
 ***
 
 # Have Opposite Signs
-
-> **Course:** DSA › Algorithms › Bit Manipulation › XOR Pattern
 
 ## The Problem
 
@@ -154,8 +150,6 @@ object Main extends App {
 ***
 
 # Swap Numbers Without a Temporary
-
-> **Course:** DSA › Algorithms › Bit Manipulation › XOR Pattern
 
 ## The Problem
 
@@ -264,8 +258,6 @@ object Main extends App {
 
 # Toggle Count
 
-> **Course:** DSA › Algorithms › Bit Manipulation › XOR Pattern
-
 ## The Problem
 
 Given two integers `num1` and `num2`, return the number of bits that need to be flipped to convert one into the other.
@@ -358,8 +350,6 @@ object Main extends App {
 
 # Odd-Occurring Element
 
-> **Course:** DSA › Algorithms › Bit Manipulation › XOR Pattern
-
 ## The Problem
 
 Given an array where every element appears an even number of times *except one* that appears an odd number of times, find the odd-occurring element. Required: O(n) time, O(1) space.
@@ -446,8 +436,6 @@ object Main extends App {
 ***
 
 # Odd-Occurring Element II
-
-> **Course:** DSA › Algorithms › Bit Manipulation › XOR Pattern
 
 ## The Problem
 
@@ -601,8 +589,6 @@ object Main extends App {
 
 # Duplicate Element
 
-> **Course:** DSA › Algorithms › Bit Manipulation › XOR Pattern
-
 ## The Problem
 
 You're given an array of size `n` containing elements from `1` to `n - 1`. Exactly one element appears twice; everyone else appears once. Find the duplicate.
@@ -708,8 +694,6 @@ object Main extends App {
 ***
 
 # Missing and Duplicated Elements
-
-> **Course:** DSA › Algorithms › Bit Manipulation › XOR Pattern
 
 ## The Problem
 

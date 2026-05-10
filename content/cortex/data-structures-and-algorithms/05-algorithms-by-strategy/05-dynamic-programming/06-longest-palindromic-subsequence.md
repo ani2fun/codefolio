@@ -15,8 +15,6 @@ By the end of this lesson you'll know the **Longest Palindromic Subsequence** (L
 
 # The Palindromic-Subsequence Problem
 
-> **Course:** DSA › Algorithms › Dynamic Programming › LPS
-
 Given a string `s`, find the length of its longest palindromic subsequence — the longest selection of characters (preserving order, gaps allowed) that reads the same forward and backward.
 
 ```d2
@@ -61,8 +59,6 @@ LPS is "longest palindrome you can spell using a subset of the string's characte
 ***
 
 # Optimal Substructure — Walking Inward From the Endpoints
-
-> **Course:** DSA › Algorithms › Dynamic Programming › LPS
 
 Define `dp(i, j)` = length of the LPS of the substring `s[i..j]`. The recurrence comes from looking at the *endpoints*:
 
@@ -125,8 +121,6 @@ LPS is interval DP on `(i, j)`. Endpoints match → take both; mismatch → drop
 
 # Interval DP — Filling the Table by Length
 
-> **Course:** DSA › Algorithms › Dynamic Programming › LPS
-
 Each cell `dp[i][j]` depends on smaller intervals — `dp[i+1][j-1]`, `dp[i+1][j]`, `dp[i][j-1]` — all with `j - i` smaller. To fill the table bottom-up, **iterate over interval lengths**, smallest to largest. This is **interval DP**: the dependency points inward; we work outward.
 
 ```d2
@@ -176,8 +170,6 @@ If we iterated `i` from 0 to `n-1` and `j` from `i` to `n-1`, the cell `dp[i][j]
 ---
 
 # Longest Palindromic Subsequence
-
-> **Course:** DSA › Algorithms › Dynamic Programming › LPS
 
 ## The Problem
 

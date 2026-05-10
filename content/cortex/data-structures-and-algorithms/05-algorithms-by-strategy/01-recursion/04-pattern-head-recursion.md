@@ -17,8 +17,6 @@ By the end of this lesson you'll know what shape a problem has to have for head 
 
 # Understanding Head Recursion
 
-> **Course:** DSA › Algorithms › Recursion › Head Recursion
-
 Head recursion means the recursive call sits at the *head* of the function body — right after the base-case check, before any other processing. By the time the body's "real work" starts, the recursive call has already returned with the answer to the smaller subproblem. Every step uses the smaller answer to compute its own.
 
 This is the pattern of the queue from the Recursion lesson: the question goes all the way to the front of the line first, the answer comes back, each person adds 1 on the way out. **The descent is silent; the ascent is where the work happens.**
@@ -366,8 +364,6 @@ Head recursion's mantra: **descend silently, ascend with work**. Recursive call 
 
 # Identifying Head Recursion
 
-> **Course:** DSA › Algorithms › Recursion › Head Recursion
-
 When you see a fresh problem, three diagnostic questions decide whether head recursion fits.
 
 | # | Question | If "yes," head recursion fits because... |
@@ -436,8 +432,6 @@ Three checks — recursive structure, work-after-recursion, and a base case — 
 ***
 
 # Forward Sequence
-
-> **Course:** DSA › Algorithms › Recursion › Head Recursion
 
 Our first worked problem. Deliberately easy — this is where you watch the template fit a problem cleanly so you can recognise the fit on sight.
 
@@ -725,8 +719,6 @@ Forward Sequence is the head-recursion template applied with `g = append` and `h
 
 # Calculate Factorial
 
-> **Course:** DSA › Algorithms › Recursion › Head Recursion
-
 The poster child of recursion. The combine function is multiplication; the base case is delicate.
 
 ---
@@ -961,8 +953,6 @@ Factorial is the head-recursion template with `g = multiply` and a base case tha
 
 # Sum of Digits
 
-> **Course:** DSA › Algorithms › Recursion › Head Recursion
-
 This is the warm-up from earlier promoted to a full problem. The reduction `h` is no longer "decrement" — it's "lop off the last digit." Same template, different `h`.
 
 ---
@@ -1179,8 +1169,6 @@ Sum of Digits is head recursion with `g = add` and a `h(n) = n / 10` reduction t
 ***
 
 # Reverse a Queue
-
-> **Course:** DSA › Algorithms › Recursion › Head Recursion
 
 The hardest of the four. The recursive structure is still head-recursion-flavoured, but you have to use the call stack itself as your auxiliary data structure — and the combine step requires an enqueue *after* the recursive call.
 

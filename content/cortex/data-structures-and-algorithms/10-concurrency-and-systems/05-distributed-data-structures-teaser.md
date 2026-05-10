@@ -146,6 +146,85 @@ This chapter is intentionally a teaser. Three resources for going deeper:
 
 ***
 
+# Memorize
+
+The high-leverage facts to commit to long-term memory — atomic enough for an Anki card, concrete enough to recall under pressure or during production debugging. This chapter is a teaser, but these facts are the entry point for every distributed-systems conversation.
+
+## Quick recall
+
+Click any question to reveal the answer.
+
+<details>
+<summary><strong>Q:</strong> What's a CRDT and why does it matter?</summary>
+
+**A:** **Conflict-free Replicated Data Type.** Designed so concurrent updates from different nodes merge automatically without conflict resolution. Enables eventual consistency without per-write coordination.
+
+</details>
+
+<details>
+<summary><strong>Q:</strong> State-based vs operation-based CRDTs?</summary>
+
+**A:** **State-based (CvRDT)**: nodes send full state; receivers merge via a commutative-associative-idempotent `merge`. **Op-based (CmRDT)**: nodes broadcast operations; ops must commute; usually requires causal delivery.
+
+</details>
+
+<details>
+<summary><strong>Q:</strong> What does a Merkle tree's root hash uniquely identify?</summary>
+
+**A:** The entire tree's contents. Two trees with identical roots are guaranteed identical (modulo hash collisions, which are cryptographically negligible).
+
+</details>
+
+<details>
+<summary><strong>Q:</strong> Cost of comparing two large replicated trees via Merkle hashing?</summary>
+
+**A:** `O(log n)` round-trips: exchange root hashes; recurse only into subtrees with mismatched hashes. Used by Cassandra and DynamoDB for anti-entropy.
+
+</details>
+
+<details>
+<summary><strong>Q:</strong> Vector clock vs Lamport clock?</summary>
+
+**A:** **Lamport** (single integer per node) — total order, doesn't distinguish concurrent from causally-ordered events. **Vector** (vector indexed by node) — partial order, captures causal relationships and detects concurrency.
+
+</details>
+
+<details>
+<summary><strong>Q:</strong> Two events `a` and `b` are *concurrent* in a vector-clock system iff?</summary>
+
+**A:** Neither `vc(a) ≤ vc(b)` nor `vc(b) ≤ vc(a)`. Both vectors have at least one component the other lacks.
+
+</details>
+
+<details>
+<summary><strong>Q:</strong> Production examples of each?</summary>
+
+**A:** **CRDTs**: Riak, Redis CRDB, collaborative editors. **Merkle trees**: Bitcoin/Ethereum, Git, Cassandra anti-entropy. **Vector clocks**: DynamoDB, version-vector replication.
+
+</details>
+
+## Source pointers
+
+- **CRDT papers**: Marc Shapiro et al., *"A comprehensive study of CRDTs"* (INRIA tech report, 2011).
+- **Merkle tree**: Ralph Merkle's original 1979 thesis; modern usage in Bitcoin's `block_index` and Git's `tree` objects.
+- **Vector clocks**: Mattern (1989) and Fidge (1988) papers — both short.
+- **Designing Data-Intensive Applications** by Martin Kleppmann — the canonical book.
+- **Jepsen reports** at [jepsen.io](https://jepsen.io) — what actually goes wrong in production.
+
+## Pattern triggers
+
+- **"Two replicas, eventual consistency, no coordinator"** → CRDT
+- **"Compare two large trees efficiently"** → Merkle root + recursive descent on mismatches
+- **"Detect causal ordering of events across machines"** → vector clock
+- **"Need a total order, OK with arbitrary tiebreak"** → Lamport clock
+- **"Replicate counter across data centers"** → G-Counter (CRDT)
+- **"Replicate set with adds and removes"** → OR-Set (CRDT)
+- **"Anti-entropy / find diverged partitions"** → Merkle tree comparison
+- **"Concurrent edits with auto-merge"** → CRDT (Figma, Google Docs internals)
+- **"Strong consistency required"** → not eventual consistency; use Paxos / Raft
+
+***
+
 # Cross-links
 
 - **Prerequisites:** [CAS and Atomics](/cortex/data-structures-and-algorithms/concurrency-and-systems-cas-and-atomics), [Binary Tree](/cortex/data-structures-and-algorithms/trees-binary-tree-introduction-to-binary-trees) (Merkle is a tree).

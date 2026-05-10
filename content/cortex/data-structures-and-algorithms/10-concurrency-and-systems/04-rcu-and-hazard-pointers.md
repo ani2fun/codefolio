@@ -172,6 +172,106 @@ For full implementation, see Folly's `HazPtr` (`folly/synchronization/HazPtr.h`)
 
 ***
 
+# Memorize
+
+The high-leverage facts to commit to long-term memory — atomic enough for an Anki card, concrete enough to recall under pressure or during production debugging. Memory reclamation is the hardest part of lock-free programming in C/C++/Rust; recognising which strategy fits which workload saves you from use-after-free bugs.
+
+## Quick recall
+
+Click any question to reveal the answer.
+
+<details>
+<summary><strong>Q:</strong> What problem do RCU and hazard pointers solve?</summary>
+
+**A:** Safe memory reclamation in lock-free contexts. When a writer wants to free a node, *some reader might still be reading it*. Both strategies defer the free.
+
+</details>
+
+<details>
+<summary><strong>Q:</strong> One-sentence definition of RCU?</summary>
+
+**A:** Defer freeing until every reader has passed a *quiescent point* (e.g., context-switched). The wait window is called a *grace period*.
+
+</details>
+
+<details>
+<summary><strong>Q:</strong> One-sentence definition of hazard pointers?</summary>
+
+**A:** Each reader publishes "I'm reading this address" in a per-thread slot. Writers scan all slots before freeing; if the address appears, defer.
+
+</details>
+
+<details>
+<summary><strong>Q:</strong> RCU vs hazard pointers — read cost?</summary>
+
+**A:** **RCU**: zero (no atomic op per read). **Hazard pointers**: one atomic write per pointer dereference.
+
+</details>
+
+<details>
+<summary><strong>Q:</strong> Best workload shape for RCU?</summary>
+
+**A:** **Read-mostly** with rare writes. Readers are essentially free; writers pay the grace-period wait.
+
+</details>
+
+<details>
+<summary><strong>Q:</strong> Why doesn't Java need RCU or hazard pointers?</summary>
+
+**A:** The garbage collector won't free a node while any thread holds a reference. Lock-free reclamation comes "for free" with the JVM.
+
+</details>
+
+<details>
+<summary><strong>Q:</strong> Where does Linux use RCU?</summary>
+
+**A:** Routing tables (`net/ipv4/route.c`), file-descriptor tables, dcache, namespace lookups, lockdep. The `Documentation/RCU/` directory in the kernel source is a master class.
+
+</details>
+
+<details>
+<summary><strong>Q:</strong> Third major reclamation strategy in user-space?</summary>
+
+**A:** **Epoch-based reclamation** (Crossbeam's `epoch` crate in Rust). Each thread joins a global epoch; old epochs are reclaimed once no thread references them.
+
+</details>
+
+## Code template
+
+```python
+# Conceptual hazard-pointer-protected lock-free pop:
+#
+# def pop(stack, hp_slot):
+#     while True:
+#         old_top = stack.top
+#         if old_top is None: return None
+#         hp_slot.write(old_top)                    # publish hazard
+#         if old_top is not stack.top:              # invalidated; retry
+#             continue
+#         if CAS(&stack.top, old_top, old_top.next):
+#             hp_slot.clear()
+#             queue_for_reclamation(old_top)        # don't free yet
+#             return old_top.data
+#
+# def reclaim_periodically():
+#     for node in reclamation_queue:
+#         if node.address not in any hp_slot:
+#             free(node); remove from queue
+```
+
+## Pattern triggers
+
+- **"Read-mostly shared structure" in a kernel/system context** → RCU
+- **"Lock-free read-write structure" in user-space C/C++** → hazard pointers
+- **"Lock-free in Rust without `unsafe`"** → Crossbeam's `epoch` crate
+- **"Lock-free in Java"** → just use it; the GC handles reclamation
+- **"Use-after-free in my lock-free implementation"** → missing reclamation strategy
+- **"`shared_ptr` is too slow on the hot path"** → switch to hazard pointers
+- **"How does the kernel achieve millions of routing-table lookups/sec?"** → RCU on the routing trie
+- **"Real-time / hard latency requirement"** → hazard pointers (RCU's grace period is unbounded)
+
+***
+
 # Cross-links
 
 - **Prerequisites:** [CAS and Atomics](/cortex/data-structures-and-algorithms/concurrency-and-systems-cas-and-atomics), [Lock-Free Queue](/cortex/data-structures-and-algorithms/concurrency-and-systems-lock-free-queue).

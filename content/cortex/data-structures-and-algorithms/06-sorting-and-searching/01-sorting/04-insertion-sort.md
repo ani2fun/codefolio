@@ -18,8 +18,6 @@ By the end of this lesson you'll know the algorithm, why it's fundamentally diff
 
 # Understanding Insertion Sort
 
-> **Course:** DSA › Algorithms › Sorting › Insertion Sort
-
 Insertion sort divides the array into a **sorted prefix** at the front and an **unsorted suffix** at the back — exactly like selection sort. The difference is in how each pass works:
 
 - **Selection sort** scans the unsorted suffix to find its minimum, then swaps it to the front of the suffix. One swap per pass; `O(n)` linear scan inside.
@@ -136,8 +134,6 @@ Insertion sort: take each new element, slide it into the sorted prefix by shifti
 
 # Why Insertion Sort Beats Its Quadratic Cousins
 
-> **Course:** DSA › Algorithms › Sorting › Insertion Sort
-
 All three of bubble sort, selection sort, and insertion sort are `O(n²)` in the worst case. But "same big-O" hides huge differences in **average performance** and **adaptiveness**. Insertion sort wins on both axes.
 
 ---
@@ -205,8 +201,6 @@ Insertion sort is `O(n²)` in the worst case but wins on best case (`O(n)`), ada
 ***
 
 # Implementation
-
-> **Course:** DSA › Algorithms › Sorting › Insertion Sort
 
 The algorithm uses two nested loops: an outer loop that picks the next "key" from the unsorted suffix, and an inner loop that shifts larger elements right until the key's correct position is found.
 
@@ -354,8 +348,6 @@ Result: [1, 3, 4, 5, 8] ✓ — total shifts: 1+0+3+2 = 6
 
 # Complexity Analysis
 
-> **Course:** DSA › Algorithms › Sorting › Insertion Sort
-
 | Resource | Best | Average | Worst |
 |---|---|---|---|
 | **Time** | `O(n)` | `O(n²)` | `O(n²)` |
@@ -405,8 +397,6 @@ Insertion sort: `O(n)` best, `O(n²)` worst, `O(k·n)` for almost-sorted data, p
 ***
 
 # Insertion Sort Problem
-
-> **Course:** DSA › Algorithms › Sorting › Insertion Sort
 
 The canonical exercise.
 

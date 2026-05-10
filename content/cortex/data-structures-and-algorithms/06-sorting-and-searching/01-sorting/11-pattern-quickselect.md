@@ -19,8 +19,6 @@ This file is the pattern lesson for quickselect. By the end you'll know the algo
 
 # Understanding Quickselect
 
-> **Course:** DSA › Algorithms › Sorting › Quickselect Pattern
-
 Quickselect is a one-sided variant of quicksort. The partition step is identical (Lomuto's, with a random pivot). The difference: after partitioning, instead of recursing on *both* halves, we recurse on *only* the half that contains the target position.
 
 ```
@@ -129,8 +127,6 @@ Quickselect: quicksort's partition without the both-halves recursion. `O(n)` ave
 
 # Identifying Quickselect Problems
 
-> **Course:** DSA › Algorithms › Sorting › Quickselect Pattern
-
 Three diagnostic questions decide whether quickselect fits.
 
 | # | Question | If "yes," quickselect fits because... |
@@ -181,8 +177,6 @@ Three checks — position-not-sort, total order on elements, mutation OK — gat
 ***
 
 # Kth Smallest Element
-
-> **Course:** DSA › Algorithms › Sorting › Quickselect Pattern
 
 The textbook quickselect problem. Find the k-th smallest element of an array.
 
@@ -401,8 +395,6 @@ object Main {
 
 # Median Finder
 
-> **Course:** DSA › Algorithms › Sorting › Quickselect Pattern
-
 The median is the middle element. For odd `n`, it's the `(n/2 + 1)`-th smallest. For even `n`, it's the *floor* of the average of the two middles. Either way, it's a quickselect problem.
 
 ---
@@ -481,8 +473,6 @@ For implementations in the other 9 languages, the structure is identical — wra
 
 # K Closest Elements
 
-> **Course:** DSA › Algorithms › Sorting › Quickselect Pattern
-
 Quickselect's partition step compares against a pivot. Change *what* you compare and you can find the k-th most-anything: closest to a target, brightest, oldest, etc.
 
 ---
@@ -555,8 +545,6 @@ For all 10 languages, the partition uses the score-tuple `(|x - target|, x)` ins
 ***
 
 # K Most Frequent Elements
-
-> **Course:** DSA › Algorithms › Sorting › Quickselect Pattern
 
 The final pattern — quickselect on a *derived* array. Build a frequency map, extract unique elements, quickselect by frequency.
 

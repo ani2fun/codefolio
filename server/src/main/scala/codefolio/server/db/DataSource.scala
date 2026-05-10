@@ -1,6 +1,6 @@
 package codefolio.server.db
 
-import codefolio.server.config.AppConfig
+import codefolio.server.config.DbConfig
 import com.zaxxer.hikari.{HikariConfig, HikariDataSource}
 import zio.*
 
@@ -8,16 +8,16 @@ import javax.sql.DataSource as JDataSource
 
 object DataSource:
 
-  val live: ZLayer[AppConfig, Throwable, JDataSource] =
+  val live: ZLayer[DbConfig, Throwable, JDataSource] =
     ZLayer.scoped {
       for
-        cfg <- ZIO.service[AppConfig]
+        cfg <- ZIO.service[DbConfig]
         ds <- ZIO.acquireRelease(
           ZIO.attemptBlocking {
             val hc: HikariConfig = HikariConfig()
-            hc.setJdbcUrl(cfg.db.url)
-            hc.setUsername(cfg.db.user)
-            hc.setPassword(cfg.db.password)
+            hc.setJdbcUrl(cfg.url)
+            hc.setUsername(cfg.user)
+            hc.setPassword(cfg.password)
             hc.setMaximumPoolSize(10)
             hc.setPoolName("codefolio-pool")
             HikariDataSource(hc)

@@ -1,6 +1,6 @@
 package codefolio.server.codeRunPipeline
 
-import codefolio.server.config.{AppConfig, RunnerConfig}
+import codefolio.server.config.RunnerConfig
 import codefolio.shared.api.Endpoints.{RunRequest, RunResponse, RunResult, RunnableLanguageInfo}
 import zio.*
 
@@ -71,9 +71,9 @@ object CodeRunPipeline:
    * may be absent if its URL is unset; if both are unset, the pipeline returns `NotConfigured` per request.
    * Piston is listed first so it wins ties when both back the same language.
    */
-  val live: ZLayer[AppConfig, Nothing, CodeRunPipeline] =
-    ZLayer.fromFunction { (cfg: AppConfig) =>
-      CodeRunPipelineLive(liveBackends(cfg.runner))
+  val live: ZLayer[RunnerConfig, Nothing, CodeRunPipeline] =
+    ZLayer.fromFunction { (cfg: RunnerConfig) =>
+      CodeRunPipelineLive(liveBackends(cfg))
     }
 
   // ---------------------------------------------------------------------------
@@ -142,7 +142,7 @@ object CodeRunPipeline:
    * Wraps the entire send + parse in `ZIO.attemptBlocking` so the JDK's blocking HTTP client doesn't pin a
    * platform thread.
    */
-  private def postJson[A](
+  private[codeRunPipeline] def postJson[A](
       baseUrl: String,
       pathAndQuery: String,
       payload: String,

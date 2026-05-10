@@ -129,6 +129,72 @@ object Solution {
 - **Most language standard libraries** (`str.find` in Python, `String.indexOf` in Java) use a *hybrid* — naive for small patterns, switch to faster algorithms (Boyer-Moore, Two-Way) for larger ones.
 - **`grep` and `ripgrep`** start with Boyer-Moore-Horspool (a simple acceleration of naive) and fall back to other methods for regex patterns. Pure naive matching is rarely shipped as the *only* algorithm.
 
+## Memorize
+
+The high-leverage facts to commit to long-term memory — atomic enough for an Anki card, concrete enough to recall under pressure or during production debugging.
+
+### Quick recall
+
+Click any question to reveal the answer.
+
+<details>
+<summary><strong>Q:</strong> Worst-case time complexity of naive substring matching?</summary>
+
+**A:** `O(nm)`. `n` text positions × `m` characters compared per position.
+
+</details>
+
+<details>
+<summary><strong>Q:</strong> Average-case time on random text?</summary>
+
+**A:** `O(n + m)`. Mismatches happen quickly; the inner loop usually terminates after a few characters.
+
+</details>
+
+<details>
+<summary><strong>Q:</strong> When is naive matching the right choice in production?</summary>
+
+**A:** Tiny patterns and tiny texts where the constant factor of cleverer algorithms (KMP, Boyer-Moore) outweighs their asymptotic win. Or: as a fallback layer in a hybrid implementation.
+
+</details>
+
+<details>
+<summary><strong>Q:</strong> Adversarial input shape that triggers worst-case?</summary>
+
+**A:** Long repeats that *almost* match. E.g., `T = "aaaa...aaab"`, `P = "aaa...aab"`. Each position scans `m` chars before mismatching on the last.
+
+</details>
+
+<details>
+<summary><strong>Q:</strong> What does <code>str.find</code> in Python actually use?</summary>
+
+**A:** A hybrid: Boyer-Moore-Horspool style for larger patterns, naive scan for tiny ones. Pure naive is rarely the only algorithm in stdlib.
+
+</details>
+
+### Code template
+
+```python
+def naive_match(T, P):
+    n, m = len(T), len(P)
+    matches = []
+    for i in range(n - m + 1):
+        j = 0
+        while j < m and T[i + j] == P[j]:
+            j += 1
+        if j == m:
+            matches.append(i)
+    return matches
+```
+
+### Pattern triggers
+
+- **One-off small substring search** → naive (`str.find`)
+- **Pattern is long or text is huge** → KMP / Z / Boyer-Moore
+- **Need to find pattern repeatedly in many texts** → KMP or Aho-Corasick
+- **"Find substring at line speed" production code** → Boyer-Moore-Horspool variant
+- **Adversarial near-match worst case suspected** → switch off naive; use KMP
+
 ## Cross-links
 
 - **Next:** [KMP](/cortex/data-structures-and-algorithms/strings-kmp) — `O(n + m)` via the failure function.

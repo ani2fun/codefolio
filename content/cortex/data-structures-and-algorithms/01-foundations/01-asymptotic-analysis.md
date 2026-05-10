@@ -664,6 +664,127 @@ Once these feel automatic, you've internalised every move asymptotic analysis as
 
 ***
 
+# Memorize
+
+The high-leverage facts to commit to long-term memory — atomic enough for an Anki card, concrete enough to recall under pressure or during production debugging. The vocabulary in this chapter is cited by every other chapter; recall that's instant pays back forever.
+
+## Quick recall
+
+Click any question to reveal the answer.
+
+<details>
+<summary><strong>Q:</strong> Definition of <code>f(n) = O(g(n))</code>?</summary>
+
+**A:** There exist positive constants `c` and `n₀` such that for all `n ≥ n₀`, `f(n) ≤ c · g(n)`.
+
+</details>
+
+<details>
+<summary><strong>Q:</strong> Difference between <code>O</code>, <code>Θ</code>, <code>Ω</code>?</summary>
+
+**A:** `O` = upper bound. `Θ` = tight bound (both upper and lower). `Ω` = lower bound.
+
+</details>
+
+<details>
+<summary><strong>Q:</strong> Is <code>n</code> in <code>O(n²)</code>?</summary>
+
+**A:** Yes. Big-O is an upper bound, not necessarily tight. `Θ(n)` would be the tight one.
+
+</details>
+
+<details>
+<summary><strong>Q:</strong> Is <code>100n</code> in <code>O(n)</code>?</summary>
+
+**A:** Yes. Big-O hides constants. `100n` and `n` are in the same class.
+
+</details>
+
+<details>
+<summary><strong>Q:</strong> Order from slowest to fastest growing: <code>O(n!)</code>, <code>O(2ⁿ)</code>, <code>O(n log n)</code>, <code>O(log n)</code>, <code>O(n²)</code>.</summary>
+
+**A:** `O(log n) < O(n log n) < O(n²) < O(2ⁿ) < O(n!)`.
+
+</details>
+
+<details>
+<summary><strong>Q:</strong> Three rules for deriving complexity from straight-line code?</summary>
+
+**A:** Sequential statements **add**. Nested loops **multiply**. Recursive calls **solve to a recurrence**.
+
+</details>
+
+<details>
+<summary><strong>Q:</strong> Closed form for <code>T(n) = 2T(n/2) + n</code>?</summary>
+
+**A:** `Θ(n log n)` — Master theorem case 2 (merge sort, balanced quicksort).
+
+</details>
+
+<details>
+<summary><strong>Q:</strong> Closed form for <code>T(n) = T(n/2) + 1</code>?</summary>
+
+**A:** `Θ(log n)` — binary search.
+
+</details>
+
+<details>
+<summary><strong>Q:</strong> Worst, average, amortized — example of each in a hash table?</summary>
+
+**A:** Worst lookup = `O(n)` (every key collides into one bucket). Average = `O(1)` (good hash). Amortized insert = `O(1)` (resize amortises across many inserts).
+
+</details>
+
+<details>
+<summary><strong>Q:</strong> Rough operation counts at <code>n = 10⁶</code>?</summary>
+
+**A:** `O(log n)` ≈ 20. `O(n)` ≈ 10⁶. `O(n log n)` ≈ 2 × 10⁷ (~20 ms). `O(n²)` ≈ 10¹² (≈ 12 days).
+
+</details>
+
+## Code template
+
+```python
+# Eyeball-the-loop reference card.
+
+def f1(arr):                     # O(n)        — single loop, constant work each
+    for x in arr: do(x)
+
+def f2(arr):                     # O(n²)       — nested, both loops in arr
+    for x in arr:
+        for y in arr: do(x, y)
+
+def f3(arr):                     # O(n)        — sequential, NOT nested
+    for x in arr: do(x)
+    for y in arr: do(y)
+
+def f4(n):                       # O(log n)    — halving recursion, constant work
+    if n <= 1: return
+    f4(n // 2)
+
+def f5(n):                       # O(n log n)  — branch ×2, linear work per level
+    if n <= 1: return
+    f5(n // 2)
+    f5(n // 2)
+    do_linear_work(n)
+```
+
+## Pattern triggers
+
+- **Single loop over `n`** → `O(n)`
+- **Nested loop, both over `n`** → `O(n²)`
+- **Triple-nested loops over `n`** → `O(n³)`
+- **Halving recursion (binary search shape)** → `O(log n)`
+- **Branch-into-two recursion + linear merge** → `O(n log n)`
+- **Recursion that examines all subsets** → `O(2ⁿ)`
+- **Recursion that examines all permutations** → `O(n!)`
+- **String concat in a loop (immutable strings)** → `O(n²)` from hidden allocation; use a builder
+- **`x in some_list` inside an outer loop** → `O(n²)`; convert to a `set` for `O(n)`
+- **ORM query inside a `for user in users:` loop** → N+1 queries; eager-fetch
+- **Regex with `(a+)+` against `aaaa…!`** → `O(2ⁿ)` catastrophic backtracking
+
+***
+
 # Cross-links
 
 - **Next in this module:** [Recurrence Relations and Master Theorem](/cortex/data-structures-and-algorithms/foundations-recurrence-relations-and-master-theorem) — *stub*; how to solve `T(n) = aT(n/b) + f(n)` without panic.

@@ -16,8 +16,6 @@ By the end of this lesson you'll know the diagnostic checks for "this looks like
 
 # Identifying the Binary Search Pattern
 
-> **Course:** DSA › Algorithms › Searching › Binary Search Pattern
-
 Two diagnostic questions decide whether plain binary search applies.
 
 | # | Question | If "yes," binary search fits because... |
@@ -55,8 +53,6 @@ The four worked problems below show this strategy applied in different settings:
 ---
 
 # Recovery Validation
-
-> **Course:** DSA › Algorithms › Searching › Binary Search Pattern
 
 A list of valid recovery codes (sorted) and a list of attempts. Did *any* attempt succeed?
 
@@ -185,8 +181,6 @@ class Solution {
 
 # Reverse Binary Search
 
-> **Course:** DSA › Algorithms › Searching › Binary Search Pattern
-
 Same algorithm with one comparison flipped: works on descending-sorted arrays.
 
 ## The Problem
@@ -291,8 +285,6 @@ class Solution {
 ***
 
 # Minimum Shared Element
-
-> **Course:** DSA › Algorithms › Searching › Binary Search Pattern
 
 Multi-row sorted matrix. Find the smallest element that appears in *every* row.
 
@@ -432,8 +424,6 @@ class Solution {
 ***
 
 # Intersecting Elements
-
-> **Course:** DSA › Algorithms › Searching › Binary Search Pattern
 
 Same setup as the previous problem; collect *all* shared elements instead of just the smallest.
 

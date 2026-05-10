@@ -14,8 +14,6 @@ By the end of this lesson you'll know **bit reversal** by LSB-extraction-and-reb
 
 # Reverse Bits
 
-> **Course:** DSA › Algorithms › Bit Manipulation › Bit Restructuring
-
 ## The Problem
 
 Given a 32-bit unsigned integer `num`, return the integer formed by reversing its 32 bits — bit 1 becomes bit 32, bit 2 becomes bit 31, and so on.
@@ -195,8 +193,6 @@ For hot loops, the divide-and-conquer approach uses 5 swap stages with magic mas
 ***
 
 # Circular Shift Bits
-
-> **Course:** DSA › Algorithms › Bit Manipulation › Bit Restructuring
 
 ## The Problem
 

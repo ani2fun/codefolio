@@ -1,21 +1,28 @@
 package codefolio.client.components.sections
 
 import codefolio.client.components.ToggleMode
-import codefolio.client.components.icons.{BrandIcons, LucideIcons}
 import japgolly.scalajs.react.*
 import japgolly.scalajs.react.vdom.html_<^.*
 
 import scala.scalajs.js
 
+/**
+ * Footer — "Let's talk." block + two link columns + meta line.
+ *
+ * Mirrors the design system prototype's `.ftr` layout. The meta line
+ * carries the homelab one-liner and the version stamp; the prototype's
+ * "v2.0 · paris ⌁ {year}" pattern is preserved.
+ */
 object Footer:
 
-  private def socialLink(href: String, icon: VdomNode): VdomNode =
+  private def metaLink(href: String, label: String, external: Boolean = false): VdomNode =
     <.a(
       ^.href      := href,
-      ^.rel       := "noopener noreferrer",
-      ^.target    := "_blank",
-      ^.className := "footer__social-link",
-      icon
+      ^.className := "footer__col-link",
+      (if external then TagMod(^.rel := "noopener noreferrer", ^.target := "_blank")
+       else TagMod.empty),
+      label,
+      if external then <.span(^.className := "footer__col-link-arrow", " ↗") else EmptyVdom
     )
 
   val Component = ScalaFnComponent[Unit] { _ =>
@@ -24,27 +31,51 @@ object Footer:
     <.footer(
       ^.className := "footer container",
       <.div(
-        ^.className := "footer__row",
+        ^.className := "footer__inner",
         <.div(
-          ^.className := "footer__credit",
-          "Made with",
-          LucideIcons.Heart(LucideIcons.withClass("footer__credit-icon [fill:currentColor]")),
-          s"in Paris by Aniket © $year"
+          ^.className := "footer__lede",
+          <.h2(^.className := "footer__name", "Let's talk."),
+          <.p(
+            ^.className := "footer__sub",
+            "Senior backend roles, JVM ecosystems, identity and platforms. Reach me at ",
+            <.a(^.href := "mailto:a.r.kakde@gmail.com", ^.className := "footer__sub-link", "a.r.kakde@gmail.com"),
+            "."
+          )
         ),
-        <.div(^.className := "footer__toggle", ToggleMode.Component()),
         <.div(
-          ^.className := "footer__socials",
+          ^.className := "footer__cols",
           <.div(
-            ^.className := "footer__social-row",
-            socialLink(
-              "https://www.linkedin.com/in/aniketkakde/",
-              BrandIcons.LinkedIn("footer__social-icon")
-            ),
-            socialLink(
-              "https://github.com/ani2fun",
-              BrandIcons.Github("footer__social-icon")
+            ^.className := "footer__col",
+            <.div(^.className := "footer__col-label", "FIND ME"),
+            <.div(
+              ^.className := "footer__col-list",
+              metaLink("https://www.linkedin.com/in/aniketkakde/", "LinkedIn", external = true),
+              metaLink("https://github.com/ani2fun", "GitHub", external = true),
+              metaLink("mailto:a.r.kakde@gmail.com", "Email", external = false)
+            )
+          ),
+          <.div(
+            ^.className := "footer__col",
+            <.div(^.className := "footer__col-label", "READ"),
+            <.div(
+              ^.className := "footer__col-list",
+              metaLink("/cortex", "Cortex"),
+              metaLink("https://notebook.kakde.eu", "Notebook", external = true),
+              metaLink("/Aniket-Kakde-CV-EN.pdf", "CV (PDF)")
             )
           )
+        )
+      ),
+      <.div(
+        ^.className := "footer__meta",
+        <.span(
+          ^.className := "footer__meta-credit",
+          s"built with scala.js · served from a 4-node k3s cluster in my flat · © $year"
+        ),
+        <.div(
+          ^.className := "footer__meta-right",
+          <.span(^.className := "footer__meta-version", s"v2.0 · paris · $year"),
+          <.div(^.className := "footer__meta-toggle", ToggleMode.Component())
         )
       )
     )

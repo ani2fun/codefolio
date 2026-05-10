@@ -15,8 +15,6 @@ By the end of this lesson you'll know the **subset-sum pattern** — a single bo
 
 # The Subset-Sum Pattern
 
-> **Course:** DSA › Algorithms › Dynamic Programming › Subset-Sum Pattern
-
 You saw subset sum in lesson 11 (knapsack applications) — a 2D boolean DP keyed on item count and remaining target. The pattern's structure:
 
 ```
@@ -65,8 +63,6 @@ The subset-sum pattern is one DP table answering "which sums are reachable using
 ***
 
 # Partition with Equal Sum
-
-> **Course:** DSA › Algorithms › Dynamic Programming › Subset-Sum Pattern
 
 ## The Problem
 
@@ -263,8 +259,6 @@ object Main extends App {
 ***
 
 # Sets With Smallest Discrepancy
-
-> **Course:** DSA › Algorithms › Dynamic Programming › Subset-Sum Pattern
 
 ## The Problem
 

@@ -17,8 +17,6 @@ That trick is recursion. By the end of this lesson you'll know what shape a prob
 
 # A Queue, a Lazy Person, and an Algorithm
 
-> **Course:** DSA › Algorithms › Recursion › The Concept
-
 Stand in line at any ATM and a small mystery stares back at you: the people around you don't know their position, and neither do you. Counting all the way to the front would mean stepping out of line. Asking everyone behind you what number you are is hopeless — they don't know either. But if you could ask *one* person — the one directly in front of you — and they could ask *one* person ahead of them, all the way down the line, the answer would come back to you in seconds.
 
 ```d2
@@ -71,8 +69,6 @@ Two facts about the queue — first person's answer is free, everyone else is +1
 ***
 
 # The Recursive Insight — Two Observations
-
-> **Course:** DSA › Algorithms › Recursion › The Concept
 
 The two observations from the queue are the recipe. Let's promote them to first-class concepts and watch them work.
 
@@ -178,8 +174,6 @@ Two facts (first-person knows; everyone else is +1) plus a chain of "ask the per
 ***
 
 # The Two Pieces of Every Recursion
-
-> **Course:** DSA › Algorithms › Recursion › The Concept
 
 Now let's stop talking about queues and start talking about *every* recursive problem. Two pieces. That's it.
 
@@ -325,8 +319,6 @@ Two pieces: a **base case** (a known answer) and a **recursive relation** (a rul
 
 # Visualising the Calls — The Recursion Tree
 
-> **Course:** DSA › Algorithms › Recursion › The Concept
-
 The recursion tree is the most useful diagram in this course. It shows the call structure of a recursive function from the top-level call all the way down to the base cases — and once you can draw the tree, you can read off the algorithm's time complexity, the maximum stack depth, and the pattern type (which we'll meet in the four pattern lessons that follow: Head Recursion, Tail Recursion, Multiple Recursion, and Multidimensional Recursion).
 
 ---
@@ -412,8 +404,6 @@ Drawing the tree is the fastest way to *see* what a recursive function does. The
 ***
 
 # Implementing It in Code
-
-> **Course:** DSA › Algorithms › Recursion › The Concept
 
 A recursive implementation is just a function whose body contains a call to itself. It directly mirrors the recursive relation:
 
@@ -690,8 +680,6 @@ Three steps: descend until the base case, return the base value, unwind by combi
 ***
 
 # What Recursion Actually Costs
-
-> **Course:** DSA › Algorithms › Recursion › The Concept
 
 A recursive solution looks beautifully short. Three lines. But every line is hiding the work that comes from each frame on the stack — and that hidden work is what makes recursion different from a `for` loop.
 

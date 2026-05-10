@@ -216,6 +216,111 @@ class Solution {
 
 ***
 
+# Memorize
+
+The high-leverage facts to commit to long-term memory — atomic enough for an Anki card, concrete enough to recall under pressure or during production debugging. HLL is the magic of "1% error in 12 KB regardless of cardinality" — once you've internalised the leading-zero trick, every distinct-count question becomes "should I use HLL?"
+
+## Quick recall
+
+Click any question to reveal the answer.
+
+<details>
+<summary><strong>Q:</strong> What does HLL estimate?</summary>
+
+**A:** Cardinality (number of distinct items) of a stream, regardless of stream size.
+
+</details>
+
+<details>
+<summary><strong>Q:</strong> Memory at <code>p = 14</code> (industry standard)?</summary>
+
+**A:** ~12 KB (16384 buckets × 6 bits). Standard error ~0.81%.
+
+</details>
+
+<details>
+<summary><strong>Q:</strong> Core trick?</summary>
+
+**A:** Hash each item to a uniform 64-bit value. Track the *maximum number of leading zeros* per bucket. By chance, max leading zeros ≈ log₂(distinct items).
+
+</details>
+
+<details>
+<summary><strong>Q:</strong> Why bucket?</summary>
+
+**A:** A single counter has huge variance. `m` buckets reduce standard error to `1.04 / √m`.
+
+</details>
+
+<details>
+<summary><strong>Q:</strong> What's the harmonic mean for and why?</summary>
+
+**A:** `n ≈ α · m² / Σ 2^(-R[j])`. Harmonic mean of `2^R[j]` reduces variance vs arithmetic mean.
+
+</details>
+
+<details>
+<summary><strong>Q:</strong> Are HLLs mergeable?</summary>
+
+**A:** Yes! Take per-bucket max across two HLLs to get the union's HLL. Critical for distributed analytics.
+
+</details>
+
+<details>
+<summary><strong>Q:</strong> Tradeoff space — error vs memory at p?</summary>
+
+**A:** `p = 12`: 1.625% error, 3 KB. `p = 14`: 0.81%, 12 KB. `p = 16`: 0.41%, 48 KB. `p = 18`: 0.20%, 192 KB.
+
+</details>
+
+<details>
+<summary><strong>Q:</strong> Where does HLL ship in production?</summary>
+
+**A:** **Redis** (`PFADD`/`PFCOUNT`/`PFMERGE`), **BigQuery** (`APPROX_COUNT_DISTINCT`), **Apache Druid / Pinot / Spark / Flink**.
+
+</details>
+
+## Code template
+
+```python
+import hashlib, math
+
+class HyperLogLog:
+    def __init__(self, p=14):
+        self.p = p
+        self.m = 1 << p
+        self.R = [0] * self.m
+        self.alpha = 0.7213 / (1 + 1.079 / self.m) if self.m > 64 else 0.709
+
+    def add(self, x):
+        h = int(hashlib.sha256(str(x).encode()).hexdigest(), 16) & ((1 << 64) - 1)
+        j = h >> (64 - self.p)
+        w = (h << self.p) & ((1 << 64) - 1)
+        rho = (64 - self.p + 1) if w == 0 else 64 - w.bit_length() + 1
+        if rho > self.R[j]: self.R[j] = rho
+
+    def estimate(self):
+        Z = sum(2.0 ** (-r) for r in self.R)
+        E = self.alpha * self.m * self.m / Z
+        if E <= 2.5 * self.m:                                 # small-cardinality correction
+            zeros = self.R.count(0)
+            if zeros > 0: E = self.m * math.log(self.m / zeros)
+        return E
+```
+
+## Pattern triggers
+
+- **"How many distinct visitors today?"** → HLL
+- **"Unique IPs hitting our CDN"** → HLL
+- **"Count distinct across many shards"** → HLL per shard, merge at query time
+- **"Rolling 24h windowed unique counts"** → HLL per minute, merge over the window
+- **"Need exact distinct count under 100k"** → hash set is fine; HLL only wins at scale
+- **"Bias on small cardinalities"** → linear-counting correction (count zero buckets)
+- **"Approximate set membership"** → not HLL — use Bloom filter
+- **"Approximate frequency"** → not HLL — use Count-Min Sketch
+
+***
+
 # Cross-links
 
 - **Sibling structures:** [Bloom Filter](/cortex/data-structures-and-algorithms/probabilistic-and-advanced-bloom-filter), [Count-Min Sketch](/cortex/data-structures-and-algorithms/probabilistic-and-advanced-count-min-sketch).

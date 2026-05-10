@@ -16,8 +16,6 @@ By the end of this lesson you'll know the **matrix chain multiplication** recurr
 
 # The Matrix-Chain Problem
 
-> **Course:** DSA › Algorithms › Dynamic Programming › Matrix Chain
-
 You're given a chain of matrices to multiply. The dimensions are encoded as a single array `dimensions` of length `n + 1`, where matrix `i` (1-indexed) has shape `dimensions[i-1] × dimensions[i]`. Find the minimum number of scalar multiplications needed to compute the entire product.
 
 ```d2
@@ -56,8 +54,6 @@ Matrix multiplication is associative; cost isn't. The order of parenthesisation 
 ***
 
 # Why Order Matters — The Cost Model
-
-> **Course:** DSA › Algorithms › Dynamic Programming › Matrix Chain
 
 A matrix multiplication `A (p × q) × B (q × r)` produces a `p × r` matrix and costs `p · q · r` scalar multiplications. The shared dimension `q` cancels in the result, but it shows up in the cost — so a chain like `A · B · C` has costs that depend on which two get combined first.
 
@@ -103,8 +99,6 @@ The cost of combining two sub-products is the product of three numbers from the 
 ***
 
 # The Recurrence — Split-Point Interval DP
-
-> **Course:** DSA › Algorithms › Dynamic Programming › Matrix Chain
 
 Define `dp[i][j]` = minimum scalar multiplications to compute the product `A_i · A_{i+1} · ... · A_j`. Two cases:
 
@@ -159,8 +153,6 @@ The cost of multiplying just matrix `A_1` (which is the single matrix `A` of sha
 ***
 
 # Matrix Chain Multiplication — The Algorithm
-
-> **Course:** DSA › Algorithms › Dynamic Programming › Matrix Chain
 
 ## The Problem
 

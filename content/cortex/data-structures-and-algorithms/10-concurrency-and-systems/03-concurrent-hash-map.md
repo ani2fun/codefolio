@@ -225,6 +225,95 @@ if __name__ == "__main__":
 
 ***
 
+# Memorize
+
+The high-leverage facts to commit to long-term memory — atomic enough for an Anki card, concrete enough to recall under pressure or during production debugging. Concurrent hash maps are the most-used concurrent structure; getting the lock granularity right separates a 30× speedup from a single-thread bottleneck.
+
+## Quick recall
+
+Click any question to reveal the answer.
+
+<details>
+<summary><strong>Q:</strong> Three lock-granularity strategies?</summary>
+
+**A:** **Single global lock** (`synchronized HashMap`), **stripe / segment locks** (pre-Java-8 `ConcurrentHashMap`), **per-bucket locks with lock-free reads** (Java 8+ `ConcurrentHashMap`).
+
+</details>
+
+<details>
+<summary><strong>Q:</strong> Why is Java 8's <code>ConcurrentHashMap</code> faster than the segmented version?</summary>
+
+**A:** Reads need no lock at all (volatile read of the bucket head). Writes lock only the affected bucket. Finer granularity → less contention.
+
+</details>
+
+<details>
+<summary><strong>Q:</strong> What's "weakly consistent iteration"?</summary>
+
+**A:** Iteration over a concurrent map reflects "some recent state"; doesn't throw on modification but doesn't guarantee that all-or-none of in-flight changes are visible. Sufficient for analytics; insufficient for snapshot-isolation.
+
+</details>
+
+<details>
+<summary><strong>Q:</strong> Why is <code>if (map.containsKey(k)) map.put(k, v)</code> wrong under concurrency?</summary>
+
+**A:** Not atomic. Another thread could remove `k` between the check and the put. Use atomic `putIfAbsent`, `replace`, `compute`, or `merge` instead.
+
+</details>
+
+<details>
+<summary><strong>Q:</strong> Java <code>ConcurrentHashMap</code>'s defence against HashDoS?</summary>
+
+**A:** Once a bucket's collision chain exceeds a threshold (8 entries), it converts to a red-black tree. Keeps lookups `O(log n)` even under attack.
+
+</details>
+
+<details>
+<summary><strong>Q:</strong> Go's <code>sync.Map</code> — what's it optimised for?</summary>
+
+**A:** Read-heavy workloads with infrequent writes. Stores read-mostly entries in an immutable read-map; writes go to a mutable dirty-map. The default Go `map` is **not** concurrent-safe.
+
+</details>
+
+<details>
+<summary><strong>Q:</strong> Why is <code>size()</code> sometimes approximate on a concurrent map?</summary>
+
+**A:** Walking all stripes/buckets while concurrent writes happen can yield a stale total. Java's `size()` is documented as a snapshot estimate, not a precise count.
+
+</details>
+
+## Code template
+
+```java
+// Java's ConcurrentHashMap supports atomic compound operations directly.
+ConcurrentHashMap<String, Integer> map = new ConcurrentHashMap<>();
+
+// Atomic increment of a counter:
+map.merge("hits", 1, Integer::sum);
+
+// Atomic put-if-absent:
+map.putIfAbsent(key, value);
+
+// Atomic compute (with current-or-default):
+map.compute(key, (k, v) -> (v == null ? 1 : v + 1));
+
+// NEVER do this:
+//   if (!map.containsKey(k)) map.put(k, v);   // race window between the two calls
+```
+
+## Pattern triggers
+
+- **"Multi-threaded shared map"** → use `ConcurrentHashMap` / `ConcurrentDictionary` / `sync.Map`
+- **"Atomic counter per key"** → `merge(key, 1, Integer::sum)`
+- **"Check-then-act on a map"** → use `putIfAbsent` / `compute` / `replace`, never two ops
+- **"Read-heavy / write-rare workload in Go"** → `sync.Map`
+- **"Need sorted concurrent map"** → `ConcurrentSkipListMap` (skip list)
+- **"Iterate while concurrent updates"** → fine if "weakly consistent" is OK; otherwise use a snapshot
+- **"Performance scales sub-linearly with cores"** → check lock granularity; segment count too low
+- **"Suspicious deadlock under load"** → check no nested locks via `compute` callbacks
+
+***
+
 # Cross-links
 
 - **Prerequisites:** [Hash Table](/cortex/data-structures-and-algorithms/linear-structures-hash-table-introduction-to-hash-tables), [CAS and Atomics](/cortex/data-structures-and-algorithms/concurrency-and-systems-cas-and-atomics).

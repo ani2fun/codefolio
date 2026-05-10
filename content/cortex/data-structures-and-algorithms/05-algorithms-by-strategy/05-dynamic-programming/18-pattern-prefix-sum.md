@@ -16,8 +16,6 @@ By the end of this lesson you'll know the **prefix-sum pattern** in 1D and 2D. Y
 
 # The Prefix-Sum Pattern
 
-> **Course:** DSA › Algorithms › Dynamic Programming › Prefix-Sum Pattern
-
 The 1D pattern:
 
 ```
@@ -85,8 +83,6 @@ Prefix sums precompute "all sums up to here" so every later range-sum query beco
 ***
 
 # K-Limited Submatrix Sum
-
-> **Course:** DSA › Algorithms › Dynamic Programming › Prefix-Sum Pattern
 
 ## The Problem
 
@@ -257,8 +253,6 @@ object Main extends App {
 ***
 
 # Maximum Submatrix Sum
-
-> **Course:** DSA › Algorithms › Dynamic Programming › Prefix-Sum Pattern
 
 ## The Problem
 
@@ -434,8 +428,6 @@ object Main extends App {
 ***
 
 # Range Sum Finder
-
-> **Course:** DSA › Algorithms › Dynamic Programming › Prefix-Sum Pattern
 
 ## The Problem
 

@@ -21,8 +21,6 @@ By the end of this lesson you'll know the divide-and-conquer paradigm that power
 
 # Divide and Conquer
 
-> **Course:** DSA › Algorithms › Sorting › Quicksort
-
 Divide-and-conquer is an algorithmic paradigm that solves a problem by:
 
 1. **Divide** — split the problem into smaller subproblems of the same kind.
@@ -107,8 +105,6 @@ Divide-and-conquer trades depth for breadth. Instead of `n` passes of `n` work, 
 ***
 
 # Understanding Quicksort
-
-> **Course:** DSA › Algorithms › Sorting › Quicksort
 
 Quicksort's core operation is the **partition**. Pick any element as the pivot. Rearrange the array so that:
 - Elements smaller than the pivot are on its left.
@@ -212,8 +208,6 @@ Quicksort: pick a pivot, partition around it, recurse on both halves. `O(n log n
 
 # The Partition Step — Lomuto's Scheme
 
-> **Course:** DSA › Algorithms › Sorting › Quicksort
-
 The partition step is the heart of quicksort. There are two classic schemes:
 - **Lomuto's scheme** — simpler, slightly slower, the version we'll use.
 - **Hoare's scheme** — faster but trickier to get right (notably, the pivot doesn't necessarily end up at the partition index).
@@ -299,8 +293,6 @@ Lomuto's partition: scan with two pointers, swap smaller-than-pivot elements lef
 ***
 
 # Implementation
-
-> **Course:** DSA › Algorithms › Sorting › Quicksort
 
 Two functions: `partition` (the rearrangement step) and `quicksort` (the recursive driver). We'll use Lomuto's partition with a random pivot.
 
@@ -527,8 +519,6 @@ Result: [1, 2, 4, 5, 7, 8] ✓
 
 # Complexity Analysis
 
-> **Course:** DSA › Algorithms › Sorting › Quicksort
-
 | Resource | Best | Average | Worst |
 |---|---|---|---|
 | **Time** | `O(n log n)` | `O(n log n)` | `O(n²)` |
@@ -575,8 +565,6 @@ Quicksort: `O(n log n)` average, `O(n²)` worst, in-place, unstable. The fastest
 ***
 
 # Quicksort Problem
-
-> **Course:** DSA › Algorithms › Sorting › Quicksort
 
 ---
 

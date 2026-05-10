@@ -596,6 +596,123 @@ Five problems, hardest at the end. Try each *without* the hint first.
 
 ***
 
+# Memorize
+
+The high-leverage facts to commit to long-term memory — atomic enough for an Anki card, concrete enough to recall under pressure or during production debugging. Once these recurrences and their solutions are automatic, every divide-and-conquer complexity claim becomes a one-second sanity check.
+
+## Quick recall
+
+Click any question to reveal the answer.
+
+<details>
+<summary><strong>Q:</strong> Standard form of a divide-and-conquer recurrence?</summary>
+
+**A:** `T(n) = a · T(n/b) + f(n)`. `a` recursive calls, each on size `n/b`, plus `f(n)` non-recursive work.
+
+</details>
+
+<details>
+<summary><strong>Q:</strong> The Master theorem's three cases — what determines which?</summary>
+
+**A:** Compare `f(n)` to the threshold `n^(log_b a)`. Case 1: `f` is asymptotically *smaller* → leaves dominate, `Θ(n^(log_b a))`. Case 2: `f` *equals* the threshold → balanced, `Θ(n^(log_b a) · log n)`. Case 3: `f` is asymptotically *larger* → root dominates, `Θ(f(n))`.
+
+</details>
+
+<details>
+<summary><strong>Q:</strong> Closed form for <code>T(n) = 2T(n/2) + n</code> (merge sort, balanced quicksort)?</summary>
+
+**A:** `Θ(n log n)`. Master theorem case 2 (`a=2, b=2`, threshold `n^1 = n`, equals `f(n)`).
+
+</details>
+
+<details>
+<summary><strong>Q:</strong> Closed form for <code>T(n) = T(n/2) + 1</code> (binary search)?</summary>
+
+**A:** `Θ(log n)`. Master theorem case 2 (`a=1, b=2`, threshold `n^0 = 1`, equals `f(n)`).
+
+</details>
+
+<details>
+<summary><strong>Q:</strong> Closed form for <code>T(n) = 3T(n/2) + n</code> (Karatsuba multiplication)?</summary>
+
+**A:** `Θ(n^(log₂ 3)) ≈ Θ(n^1.585)`. Master theorem case 1 — leaves dominate.
+
+</details>
+
+<details>
+<summary><strong>Q:</strong> Closed form for <code>T(n) = T(n-1) + n</code> (worst-case quicksort)?</summary>
+
+**A:** `Θ(n²)`. Master theorem doesn't apply (subtractive recurrence). Recursion-tree sum: `n + (n-1) + … + 1 = n(n+1)/2`.
+
+</details>
+
+<details>
+<summary><strong>Q:</strong> Closed form for <code>T(n) = 2T(n-1) + 1</code> (Tower of Hanoi)?</summary>
+
+**A:** `Θ(2ⁿ)`. Substitution method: `2^n − 1` exact moves.
+
+</details>
+
+<details>
+<summary><strong>Q:</strong> When does the Master theorem <em>not</em> apply?</summary>
+
+**A:** Subtractive recurrences (`T(n-1)`), uneven splits (`T(n/3) + T(2n/3)`), polylog gaps (`f(n) = n log n` against `n` threshold), non-constant `a` or `b`. Use recursion-tree, substitution, or Akra-Bazzi.
+
+</details>
+
+<details>
+<summary><strong>Q:</strong> Three methods for solving recurrences?</summary>
+
+**A:** **Recursion tree** (intuition; sum work per level). **Substitution** (guess and prove by induction). **Master theorem** (closed-form for standard divide-and-conquer).
+
+</details>
+
+<details>
+<summary><strong>Q:</strong> Closed form for <code>T(n) = 2T(n/2) + n log n</code>?</summary>
+
+**A:** `Θ(n log² n)`. Polylog gap — generalised Master theorem (or work-per-level argument: `log n` levels, each does `n log n` work).
+
+</details>
+
+## Code template
+
+```python
+# Master theorem decision tree.
+# Given T(n) = a*T(n/b) + f(n):
+#
+#   threshold = n ** (log(a, b))
+#
+#   if f(n) ∈ O(threshold / n^ε):     T(n) = Θ(threshold)             # Case 1
+#   if f(n) ∈ Θ(threshold):           T(n) = Θ(threshold * log n)     # Case 2
+#   if f(n) ∈ Ω(threshold * n^ε):     T(n) = Θ(f(n))                  # Case 3
+#                                                                       (regularity must hold)
+
+# Memorize the canonical recurrences and their answers:
+#
+#   2T(n/2) + n      → Θ(n log n)        merge sort, balanced quicksort
+#   2T(n/2) + 1      → Θ(n)              tree traversal, weighted-sum recursion
+#   T(n/2)   + 1     → Θ(log n)          binary search
+#   T(n/2)   + n     → Θ(n)              one-sided halving + linear work
+#   3T(n/2) + n      → Θ(n^1.585)        Karatsuba
+#   7T(n/2) + n²     → Θ(n^2.807)        Strassen
+#   T(n-1)  + 1      → Θ(n)              linear recursion
+#   T(n-1)  + n      → Θ(n²)             worst-case quicksort
+#   2T(n-1) + 1      → Θ(2ⁿ)             Tower of Hanoi
+```
+
+## Pattern triggers
+
+- **Two recursive calls on n/2 + linear merge** → `Θ(n log n)` (Master case 2)
+- **One recursive call on n/2 + constant work** → `Θ(log n)` (binary search)
+- **a recursive calls on n/2 + linear work, a > 2** → `Θ(n^(log₂ a))` (Master case 1; Karatsuba, Strassen)
+- **Recursion shaves off a constant (`T(n-1) + …`)** → can't apply Master; use recursion-tree
+- **Uneven split (`T(n/3) + T(2n/3) + n`)** → still `Θ(n log n)` if cuts are fractional; verify via tree
+- **Polylog gap (`f(n) = n logᵏ n` vs threshold `n`)** → `Θ(n log^(k+1) n)` (generalised case 2)
+- **f(n) much larger than threshold** → root dominates; `Θ(f(n))` (Master case 3)
+- **f(n) much smaller than threshold** → leaves dominate; `Θ(n^(log_b a))` (Master case 1)
+
+***
+
 # Cross-links
 
 - **Prerequisite:** [Asymptotic Analysis](/cortex/data-structures-and-algorithms/foundations-asymptotic-analysis) — the vocabulary `Θ`, `O`, `Ω` used throughout.

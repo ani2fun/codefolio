@@ -491,6 +491,125 @@ object Solution {
 
 ***
 
+# Memorize
+
+The high-leverage facts to commit to long-term memory — atomic enough for an Anki card, concrete enough to recall under pressure or during production debugging. Segment trees are competitive-programming bread and butter; the array-sizing and lazy-push patterns are easy to get wrong without these on the tip of your tongue.
+
+## Quick recall
+
+Click any question to reveal the answer.
+
+<details>
+<summary><strong>Q:</strong> Worst-case complexity of segment-tree range query and point update?</summary>
+
+**A:** Both `O(log n)`.
+
+</details>
+
+<details>
+<summary><strong>Q:</strong> Worst-case complexity of range update with lazy propagation?</summary>
+
+**A:** `O(log n)` (without lazy it'd be `O(n)`).
+
+</details>
+
+<details>
+<summary><strong>Q:</strong> Required tree-array sizing?</summary>
+
+**A:** `4 · n`. Sizing `2 · n` only works for power-of-2 `n` and corrupts memory otherwise. Always use `4 · n`.
+
+</details>
+
+<details>
+<summary><strong>Q:</strong> What does the lazy <code>push</code> operation do?</summary>
+
+**A:** Applies the pending lazy value to the node's aggregate, propagates it to children (if not a leaf), then clears the node's lazy. Must be called at the start of every recursive descent.
+
+</details>
+
+<details>
+<summary><strong>Q:</strong> Why must <code>push</code> happen before reading a child?</summary>
+
+**A:** A pending lazy on the parent reflects an uncommitted update over the children's range. Reading a child without pushing first returns a stale aggregate.
+
+</details>
+
+<details>
+<summary><strong>Q:</strong> Three node-relationship cases during a recursive query?</summary>
+
+**A:** **No overlap** with query range → return identity. **Fully inside** query range → return the node's aggregate (no descent). **Partial overlap** → push lazy, recurse on both children, combine.
+
+</details>
+
+<details>
+<summary><strong>Q:</strong> When is a Fenwick tree better than a segment tree?</summary>
+
+**A:** When the operation is *invertible* (sum, XOR) and you only need point updates + prefix queries. Half the LOC, half the constant factor.
+
+</details>
+
+<details>
+<summary><strong>Q:</strong> When is a segment tree the only choice (over Fenwick)?</summary>
+
+**A:** Non-invertible operations (min, max, GCD), range updates with lazy propagation, or augmented operations (segment-tree beats, persistent segment trees).
+
+</details>
+
+<details>
+<summary><strong>Q:</strong> Where do segment trees show up in production (vs competitive programming)?</summary>
+
+**A:** Time-series databases (continuous aggregates), spatial indexing (BVH for ray tracing is a 3D segment tree), Linux's `interval_tree.c` for one-dimensional range queries.
+
+</details>
+
+<details>
+<summary><strong>Q:</strong> What's the integer-overflow trap when applying a lazy value over a range?</summary>
+
+**A:** `lazy * (r − l + 1)` overflows `int32` for large ranges and large lazy values. Use `int64` (Java `long`, C++ `long long`).
+
+</details>
+
+## Code template
+
+```python
+class SegTree:
+    def __init__(self, arr):
+        self.n = len(arr)
+        self.tree = [0] * (4 * self.n)
+        self.lazy = [0] * (4 * self.n)
+        if self.n > 0: self._build(arr, 1, 0, self.n - 1)
+
+    def _build(self, arr, node, l, r):
+        if l == r: self.tree[node] = arr[l]; return
+        mid = (l + r) // 2
+        self._build(arr, 2*node,   l,     mid)
+        self._build(arr, 2*node+1, mid+1, r)
+        self.tree[node] = self.tree[2*node] + self.tree[2*node+1]
+
+    def _push(self, node, l, r):
+        if self.lazy[node]:
+            self.tree[node] += self.lazy[node] * (r - l + 1)
+            if l != r:
+                self.lazy[2*node]   += self.lazy[node]
+                self.lazy[2*node+1] += self.lazy[node]
+            self.lazy[node] = 0
+
+    # range_update / range_query: push first, then 3-case branch.
+```
+
+## Pattern triggers
+
+- **"Range sum + point update on a mutable array"** → Fenwick is simpler; segment tree if you need range updates too
+- **"Range min/max/GCD + point/range update"** → segment tree (Fenwick can't do non-invertible ops)
+- **"Range assignment + range query"** → segment tree with lazy = "the value the entire range was set to"
+- **"K-th smallest in a range"** → persistent segment tree, or merge sort tree
+- **"Count inversions"** → Fenwick over coordinate-compressed values; segment tree works too
+- **"Range queries on a 2D grid"** → 2D segment tree or 2D Fenwick (`O(log² n)` per op)
+- **"Forgetting to push lazy in query"** → returns stale aggregates; classic bug
+- **"`tree[]` sized `2n` and getting weird answers"** → resize to `4n`
+
+***
+
 # Cross-links
 
 - **Sibling structure:** [Fenwick Tree](/cortex/data-structures-and-algorithms/trees-fenwick-tree-introduction-to-fenwick-trees) — half the constant factor and half the lines of code, restricted to commutative operations.

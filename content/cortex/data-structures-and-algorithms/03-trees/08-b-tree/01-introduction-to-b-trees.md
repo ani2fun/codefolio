@@ -642,6 +642,127 @@ object Solution {
 
 ***
 
+# Memorize
+
+The high-leverage facts to commit to long-term memory — atomic enough for an Anki card, concrete enough to recall under pressure or during production debugging. The B-tree is the most-deployed indexing structure on the planet; these facts come up in every database conversation.
+
+## Quick recall
+
+Click any question to reveal the answer.
+
+<details>
+<summary><strong>Q:</strong> What does "B-tree of order <code>m</code>" mean?</summary>
+
+**A:** Each node holds between `⌈m/2⌉ − 1` and `m − 1` keys; up to `m` children. The root is allowed fewer. Sometimes parameterised as "minimum degree `T`" with max keys `2T − 1`.
+
+</details>
+
+<details>
+<summary><strong>Q:</strong> Height of a B-tree with <code>n</code> keys and order <code>m</code>?</summary>
+
+**A:** `O(log_(m/2) n)`. For `m = 200`, a billion-key tree has height ~4. That's 4 disk seeks per lookup.
+
+</details>
+
+<details>
+<summary><strong>Q:</strong> Why are disk B-trees order ~200, but in-memory B-trees order ~16?</summary>
+
+**A:** Order matches the cost of one I/O. Disk: page = 8 KB, fits ~200 keys. Cache: line = 64 bytes, fits ~16 keys. Order is "as many keys as one I/O can carry".
+
+</details>
+
+<details>
+<summary><strong>Q:</strong> What's the storage-utilisation guarantee?</summary>
+
+**A:** Every node (except possibly the root) is at least 50% full. Splits create two half-full siblings; merges restore the invariant on delete. Worst-case disk waste: 50%.
+
+</details>
+
+<details>
+<summary><strong>Q:</strong> Difference between B-tree and B+-tree?</summary>
+
+**A:** B-tree stores data in internal nodes too. B+-tree stores data *only* in leaves; internal nodes hold routing keys. Leaves are linked for `O(n)` range traversal. Every database uses B+-tree.
+
+</details>
+
+<details>
+<summary><strong>Q:</strong> Why does Postgres use B-link concurrency, not the textbook B-tree?</summary>
+
+**A:** B-link adds a right-sibling pointer per node so concurrent inserters don't have to lock the whole path during a split. Readers stumbling onto an in-progress split can follow the right-link to find missing keys.
+
+</details>
+
+<details>
+<summary><strong>Q:</strong> What does WAL guarantee for the B-tree?</summary>
+
+**A:** Every page modification is logged in the Write-Ahead Log *before* the page is flushed. Crash mid-update → replay the WAL forward and the index reconstructs identically.
+
+</details>
+
+<details>
+<summary><strong>Q:</strong> Why does Postgres NOT shrink a B-tree on delete?</summary>
+
+**A:** Deletions create dead tuples / empty slots; `VACUUM` reclaims them later. Shrinking inline would force expensive merges and conflict with MVCC's "still-visible-to-some-transaction" invariant.
+
+</details>
+
+<details>
+<summary><strong>Q:</strong> Default Postgres page size and index fanout?</summary>
+
+**A:** 8 KB page (matches OS page size). Fanout depends on key size; typically hundreds of routing entries per internal node, leading to 4-5 levels for billions of keys.
+
+</details>
+
+<details>
+<summary><strong>Q:</strong> Why does Rust's <code>std::collections::BTreeMap</code> use a B-tree, not RB-tree?</summary>
+
+**A:** Cache locality. B-tree of small order packs many keys per node, beating RB-tree's per-pointer-chase locality on modern memory hierarchies. The name reflects the algorithm; it's an in-memory variant.
+
+</details>
+
+## Code template
+
+```python
+T = 3                                                                                                          # minimum degree; max keys = 2T - 1
+
+class BNode:
+    __slots__ = ("keys", "children", "leaf")
+    def __init__(self, leaf=True):
+        self.keys, self.children, self.leaf = [], [], leaf
+
+def search(node, key):
+    i = 0
+    while i < len(node.keys) and key > node.keys[i]: i += 1
+    if i < len(node.keys) and key == node.keys[i]: return node
+    if node.leaf: return None
+    return search(node.children[i], key)
+
+def split_child(parent, i):
+    full = parent.children[i]
+    sib = BNode(leaf=full.leaf)
+    mid_key = full.keys[T - 1]
+    sib.keys = full.keys[T:]
+    full.keys = full.keys[:T - 1]
+    if not full.leaf:
+        sib.children = full.children[T:]
+        full.children = full.children[:T]
+    parent.keys.insert(i, mid_key)
+    parent.children.insert(i + 1, sib)
+```
+
+## Pattern triggers
+
+- **On-disk index** → B+-tree (every relational DB)
+- **In-memory ordered map with cache locality priority** → B-tree of small order (Rust `BTreeMap`)
+- **"Why is my range query slow?"** on a Postgres index → B+-tree leaf chain; check for fragmentation
+- **"Index keeps growing despite deletes"** → Postgres doesn't shrink; run `VACUUM FULL` or `REINDEX`
+- **"Concurrent inserts deadlock"** → switch implementation to B-link (Postgres) or use coarse locking
+- **"Where in Postgres source?"** → `src/backend/access/nbtree/` (entry: `nbtinsert.c::_bt_doinsert`)
+- **OLAP / write-heavy workload** → consider LSM tree instead (write-optimised)
+- **"What page size should I tune?"** → match OS page; usually defaults are right
+
+***
+
 # Cross-links
 
 - **Prerequisite:** [Self-Balancing BSTs Overview](/cortex/data-structures-and-algorithms/trees-self-balancing-bst-overview-self-balancing-bst-overview), [Memory Model and Cache](/cortex/data-structures-and-algorithms/foundations-memory-model-and-cache) (the disk-vs-RAM gap that motivates B-trees).

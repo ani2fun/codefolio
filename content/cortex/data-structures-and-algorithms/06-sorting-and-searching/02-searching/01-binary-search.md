@@ -18,8 +18,6 @@ That's binary search. It's the foundation of every other algorithm in this secti
 
 # Why Linear Search Loses at Scale
 
-> **Course:** DSA › Algorithms › Searching › Binary Search
-
 Linear search examines elements one at a time. For an array of size `n`, the worst case is `n` comparisons (the target is at the end, or absent). For `n = 10`, that's negligible. For `n = 1,000,000`, that's a million comparisons per query — repeated millions of times a day in a real database, that's hours of CPU.
 
 The deeper problem: linear search **doesn't use the structure of the input**. Even if the array is sorted, linear search ignores the order. The sortedness is wasted information.
@@ -50,8 +48,6 @@ Linear search is `O(n)`; binary search is `O(log n)`. The trade-off: binary need
 ***
 
 # Understanding Binary Search
-
-> **Course:** DSA › Algorithms › Searching › Binary Search
 
 The algorithm maintains a **search range** `[low, high]` representing positions where the target might be. Each iteration looks at the middle of the range, compares with the target, and either:
 - **Equals**: found! return `mid`.
@@ -118,8 +114,6 @@ Binary search halves the search range until the target is found or the range is 
 ***
 
 # Implementation
-
-> **Course:** DSA › Algorithms › Searching › Binary Search
 
 
 ```pseudocode
@@ -237,8 +231,6 @@ Iter 3: low=4, high=4, mid=4, arr[4]=9. 9 == 9 → return 4
 
 # Complexity Analysis
 
-> **Course:** DSA › Algorithms › Searching › Binary Search
-
 | Resource | Best | Average | Worst |
 |---|---|---|---|
 | **Time** | `O(1)` | `O(log n)` | `O(log n)` |
@@ -276,8 +268,6 @@ Binary search: `O(log n)` time, `O(1)` space, on any sorted array. The skeleton 
 ***
 
 # Binary Search Problem
-
-> **Course:** DSA › Algorithms › Searching › Binary Search
 
 ---
 

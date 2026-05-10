@@ -23,8 +23,6 @@ By the end of this lesson you'll know both algorithms, the "one half is always s
 
 # The Rotated Array Structure
 
-> **Course:** DSA › Algorithms › Searching › Sorted Rotated Array
-
 A sorted array `[a₀, a₁, ..., a_{n-1}]` rotated at pivot `k` becomes:
 
 ```
@@ -73,8 +71,6 @@ A rotated sorted array has two sorted segments with all-bigger followed by all-s
 ***
 
 # Finding the Minimum
-
-> **Course:** DSA › Algorithms › Searching › Sorted Rotated Array
 
 The minimum is at the start of segment 2 — the only place where `arr[i-1] > arr[i]` (the unique "discontinuity"). Find that index.
 
@@ -197,8 +193,6 @@ object Main {
 ***
 
 # Searching for a Target
-
-> **Course:** DSA › Algorithms › Searching › Sorted Rotated Array
 
 Standard binary search structure plus one extra check: identify the sorted half and decide whether the target is in it.
 
@@ -381,8 +375,6 @@ Both algorithms halve the search range each iteration. The extra check ("which h
 
 # Rotated Array Minimum Problem
 
-> **Course:** DSA › Algorithms › Searching › Sorted Rotated Array
-
 Given a sorted-then-rotated array of *distinct* elements, return the index of the minimum.
 
 ```
@@ -412,8 +404,6 @@ The implementation matches the version above. See [Finding the Minimum](#finding
 ***
 
 # Rotated Array Search Problem
-
-> **Course:** DSA › Algorithms › Searching › Sorted Rotated Array
 
 Given a sorted-then-rotated array of *distinct* elements and a target, return the index of target, or `-1`.
 

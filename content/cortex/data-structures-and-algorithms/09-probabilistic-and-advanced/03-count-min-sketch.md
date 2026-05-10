@@ -200,6 +200,100 @@ A common application: find the **top-K** most-frequent items in a stream — the
 
 ***
 
+# Memorize
+
+The high-leverage facts to commit to long-term memory — atomic enough for an Anki card, concrete enough to recall under pressure or during production debugging. CMS is the streaming-frequency partner of the Bloom filter — fixed memory, overestimation only.
+
+## Quick recall
+
+Click any question to reveal the answer.
+
+<details>
+<summary><strong>Q:</strong> CMS structure — what does the 2D grid hold?</summary>
+
+**A:** `d` rows of `w` counters. Each item hashes to one cell per row.
+
+</details>
+
+<details>
+<summary><strong>Q:</strong> Update operation?</summary>
+
+**A:** For each row `i`, increment `sketch[i][h_i(x)]`. `O(d)` per update.
+
+</details>
+
+<details>
+<summary><strong>Q:</strong> Query operation?</summary>
+
+**A:** Return the *minimum* of `sketch[i][h_i(x)]` over all `d` rows. `O(d)`.
+
+</details>
+
+<details>
+<summary><strong>Q:</strong> Why "min"?</summary>
+
+**A:** Each cell *overestimates* (collisions inflate). The minimum gives the tightest upper bound across rows.
+
+</details>
+
+<details>
+<summary><strong>Q:</strong> Tuning formulas — additive error <code>ε · N</code>, confidence <code>1 − δ</code>?</summary>
+
+**A:** `w = ⌈e / ε⌉`, `d = ⌈ln(1/δ)⌉`. For `ε = 0.001`, `δ = 0.01`: `w ≈ 2718`, `d ≈ 5` → ~14k counters → ~56 KB.
+
+</details>
+
+<details>
+<summary><strong>Q:</strong> Does CMS underestimate?</summary>
+
+**A:** Never. Always `f̂(x) ≥ f(x)`. The "min over rows" gives the tightest upper bound; the actual count can't be larger.
+
+</details>
+
+<details>
+<summary><strong>Q:</strong> How do you find heavy hitters with CMS?</summary>
+
+**A:** Maintain a min-heap of size K alongside the sketch. For each incoming item, query its CMS estimate; push if it exceeds the heap minimum.
+
+</details>
+
+## Code template
+
+```python
+import hashlib
+
+class CountMinSketch:
+    def __init__(self, w=2718, d=5):
+        self.w, self.d = w, d
+        self.table = [[0] * w for _ in range(d)]
+
+    def _hashes(self, x):
+        b = str(x).encode()
+        for i in range(self.d):
+            h = int(hashlib.sha256(b + bytes([i])).hexdigest()[:16], 16)
+            yield h % self.w
+
+    def add(self, x, count=1):
+        for i, h in enumerate(self._hashes(x)):
+            self.table[i][h] += count
+
+    def query(self, x):
+        return min(self.table[i][h] for i, h in enumerate(self._hashes(x)))
+```
+
+## Pattern triggers
+
+- **"Top-K most frequent in a stream"** → CMS + heap
+- **"How many times has IP X hit me?"** → CMS
+- **"Real-time analytics dashboard"** → CMS / HLL combination
+- **"DDoS rate-limiting per source"** → CMS for frequency
+- **"Network heavy-flow detection"** → CMS for packet counts
+- **"How many distinct?"** → not CMS — use HyperLogLog
+- **"Approximate quantiles"** → not CMS — use KLL or t-digest
+- **"Fixed memory regardless of stream cardinality"** → CMS / HLL / Bloom
+
+***
+
 # Cross-links
 
 - **Sibling structures:** [Bloom Filter](/cortex/data-structures-and-algorithms/probabilistic-and-advanced-bloom-filter) (membership), [HyperLogLog](/cortex/data-structures-and-algorithms/probabilistic-and-advanced-hyperloglog) (cardinality estimation).

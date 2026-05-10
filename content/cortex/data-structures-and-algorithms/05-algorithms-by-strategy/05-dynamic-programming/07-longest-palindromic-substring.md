@@ -15,8 +15,6 @@ By the end of this lesson you'll know the **Longest Palindromic Substring** recu
 
 # The Palindromic-Substring Problem
 
-> **Course:** DSA › Algorithms › Dynamic Programming › LPSubstr
-
 Given a string `s`, find the longest substring (contiguous) that is itself a palindrome.
 
 ```d2
@@ -76,8 +74,6 @@ LPSubstr requires contiguity. Brute force (check all `O(n²)` substrings, palind
 
 # The `isPalindrome` Recurrence
 
-> **Course:** DSA › Algorithms › Dynamic Programming › LPSubstr
-
 Define `isPalin[i][j]` = `True` if `s[i..j]` is a palindrome, `False` otherwise. Three cases:
 
 - **Length 1** (`i == j`): always palindromic. `isPalin[i][i] = True`.
@@ -120,8 +116,6 @@ Substring palindromicity is a single-bit predicate that propagates inward. Filli
 ***
 
 # Longest Palindromic Substring
-
-> **Course:** DSA › Algorithms › Dynamic Programming › LPSubstr
 
 ## The Problem
 
@@ -347,8 +341,6 @@ class Solution {
 ***
 
 # Alternate: Expand Around Center
-
-> **Course:** DSA › Algorithms › Dynamic Programming › LPSubstr
 
 A palindrome has a *center* — a character (odd-length palindrome) or a gap between two characters (even-length palindrome). There are `2n - 1` possible centers in a string of length `n`. For each, expand outward as far as the substring stays palindromic. The longest expansion is the answer.
 

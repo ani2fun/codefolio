@@ -17,8 +17,6 @@ By the end of this lesson you'll know what sorting is, why it's the silent found
 
 # Why Disorder Gets Worse With Scale
 
-> **Course:** DSA › Algorithms › Sorting › Introduction
-
 Disorganised information feels harmless when there's a little of it. When there's a lot, it becomes the bottleneck. Three concrete examples show why.
 
 ---
@@ -135,8 +133,6 @@ The cost of disorder scales worse than linearly with data size. Sorting fixes th
 
 # Sorting as a Universal Fix
 
-> **Course:** DSA › Algorithms › Sorting › Introduction
-
 > **Sorting** is the arrangement of items in a specific order — typically ascending or descending — based on some comparison criterion (numeric value, alphabetical order, custom rule, etc.).
 
 That's the definition. The leverage comes from what *follows* sorting. A sorted list is the foundation for:
@@ -178,8 +174,6 @@ Sorting is the universal pre-processing step that turns expensive per-query work
 ***
 
 # Classification of Sorting Algorithms
-
-> **Course:** DSA › Algorithms › Sorting › Introduction
 
 Sorting algorithms differ along **six axes**. Knowing all six lets you read any algorithm's complexity table at a glance and predict whether it's the right tool for a given input. We'll re-encounter every one of these properties when we discuss specific algorithms in the upcoming files.
 
@@ -352,8 +346,6 @@ Six axes — comparison-vs-counting, stable-vs-unstable, in-place-vs-out-of-plac
 ***
 
 # Order Check
-
-> **Course:** DSA › Algorithms › Sorting › Introduction
 
 A warm-up that sets up the rest of the section. Before we sort, we need a way to *verify* that an array is sorted — both as a building block (some algorithms terminate when the input is detected as sorted) and as a sanity check (we'll use this to validate every sort we write later).
 

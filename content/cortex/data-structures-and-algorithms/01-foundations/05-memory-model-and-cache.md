@@ -495,6 +495,132 @@ A handful of recurring patterns make code cache-friendly:
 
 ***
 
+# Memorize
+
+The high-leverage facts to commit to long-term memory — atomic enough for an Anki card, concrete enough to recall under pressure or during production debugging. Big-O tells you the curve's shape; this chapter's facts tell you the curve's *slope*. Reading benchmarks without these is guessing.
+
+## Quick recall
+
+Click any question to reveal the answer.
+
+<details>
+<summary><strong>Q:</strong> Approximate latency of L1, L3, DRAM, SSD, HDD?</summary>
+
+**A:** L1 ≈ 4 cycles, L3 ≈ 40 cycles, DRAM ≈ 200 cycles, SSD ≈ 50,000 cycles, HDD ≈ 10,000,000 cycles. Each step roughly 5–10× slower than the one above.
+
+</details>
+
+<details>
+<summary><strong>Q:</strong> Standard cache line size on modern x86 / ARM?</summary>
+
+**A:** 64 bytes. The granularity at which the CPU loads from memory; one access pulls 8 doubles or 16 ints "for free".
+
+</details>
+
+<details>
+<summary><strong>Q:</strong> Spatial vs temporal locality — define both.</summary>
+
+**A:** **Spatial:** if you've accessed `X`, you'll likely access addresses near `X` soon. **Temporal:** if you've accessed `X`, you'll likely access `X` again soon.
+
+</details>
+
+<details>
+<summary><strong>Q:</strong> Why is row-major matrix traversal 10× faster than column-major at <code>n = 1024</code>, despite identical Big-O?</summary>
+
+**A:** Row-major reuses each cache line (8 doubles per fetch); column-major touches a fresh line per access, wasting 56 bytes. The prefetcher helps row-major, can't help column-major.
+
+</details>
+
+<details>
+<summary><strong>Q:</strong> What is false sharing?</summary>
+
+**A:** Two threads writing to *different* variables on the *same* cache line cause the line to ping-pong between cores' caches. Fix: pad hot variables to cache-line boundaries.
+
+</details>
+
+<details>
+<summary><strong>Q:</strong> Array vs linked list — why does the array win at "the same Big-O" of operations?</summary>
+
+**A:** Arrays are contiguous; the prefetcher streams ahead. Linked-list nodes are scattered across the heap; each pointer chase can miss. Array beats list by 5–10× wall-clock for traversal.
+
+</details>
+
+<details>
+<summary><strong>Q:</strong> Struct-of-arrays vs array-of-structs — when does each win?</summary>
+
+**A:** **Struct-of-arrays** wins when most operations touch only a few fields (cache lines aren't wasted on unused fields). **Array-of-structs** wins when every operation touches every field (locality across fields).
+
+</details>
+
+<details>
+<summary><strong>Q:</strong> What does loop blocking (tiling) do?</summary>
+
+**A:** Process `B × B` tiles where `B` fits in L1. Same total work; far fewer cache misses. BLAS implementations rely on this for matrix multiply.
+
+</details>
+
+<details>
+<summary><strong>Q:</strong> What does NumPy <code>arr.T</code> (transpose) do to memory?</summary>
+
+**A:** Nothing! It just swaps the strides. Both `arr` and `arr.T` share the same memory; iterating one is cache-friendly, the other is cache-hostile.
+
+</details>
+
+<details>
+<summary><strong>Q:</strong> What's the TLB and when does it matter?</summary>
+
+**A:** Translation Lookaside Buffer — a cache for address-translation tables. A program touching enough distinct 4 KB pages can exhaust the TLB even if every page's contents are in L1. Real concern for memory-mapped database engines.
+
+</details>
+
+## Code template
+
+```python
+# Cache-friendly traversal cheat sheet.
+
+# GOOD — row-major traversal of a row-major-stored matrix:
+for i in range(n):
+    row = m[i]              # one cache-line fetch starts here
+    for j in range(n):
+        do(row[j])          # subsequent accesses are L1 hits
+
+# BAD — column-major traversal of a row-major-stored matrix:
+for j in range(n):
+    for i in range(n):
+        do(m[i][j])         # each access is a fresh cache line
+
+# GOOD — touch every field of each struct before moving on:
+for p in particles:
+    p.update_position()     # all of p's fields are hot in L1
+
+# BAD — split the same work into multiple passes:
+for p in particles: p.update_x()
+for p in particles: p.update_y()
+for p in particles: p.update_z()    # each pass reloads from L2/L3
+
+# GOOD — pre-allocate, no resize:
+arr = [0] * n
+for i in range(n): arr[i] = compute(i)
+
+# BAD — repeated string concat (immutable strings → O(n²) hidden):
+s = ""
+for chunk in chunks: s += chunk     # use "".join(chunks) instead
+```
+
+## Pattern triggers
+
+- **Same Big-O, 10× slower in practice** → cache miss rate; profile with `perf stat`
+- **Sorting structures of objects** → consider struct-of-arrays for the key field
+- **Hot counter shared across threads** → false sharing; pad to cache-line boundary
+- **Matrix operations** → row-major + tiling; `numpy.ascontiguousarray()` if you transposed earlier
+- **Hash table keeps growing** → rehash thrashes the cache; pre-size if you know the count
+- **Linked-list traversal in a tight loop** → switch to a vector / array if random access is OK
+- **BLAS / linear-algebra workload** → trust the library; it already does cache blocking
+- **Memory-mapped large file** → mind the TLB; consider `madvise(MADV_HUGEPAGE)` for huge regions
+- **Concurrent counter degrades non-linearly with cores** → false sharing or true contention; profile cache-miss events
+
+***
+
 # Cross-links
 
 - **Prerequisite:** [Asymptotic Analysis](/cortex/data-structures-and-algorithms/foundations-asymptotic-analysis) — the language for talking about cost growth, which this chapter contrasts with wall-clock cost.

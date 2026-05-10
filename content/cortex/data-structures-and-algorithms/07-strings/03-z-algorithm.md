@@ -257,6 +257,100 @@ object Solution {
 
 ***
 
+# Memorize
+
+The high-leverage facts to commit to long-term memory — atomic enough for an Anki card, concrete enough to recall under pressure or during production debugging. Z-array is the cleaner-looking sibling of KMP — once you've internalised the Z-box invariant, every prefix-or-period question reduces to one Z-array build.
+
+## Quick recall
+
+Click any question to reveal the answer.
+
+<details>
+<summary><strong>Q:</strong> What does <code>Z[i]</code> represent?</summary>
+
+**A:** The length of the longest substring starting at `i` that matches a *prefix* of `S`. By convention `Z[0] = 0`.
+
+</details>
+
+<details>
+<summary><strong>Q:</strong> Time complexity of building Z-array?</summary>
+
+**A:** `O(n)`. Amortised: the Z-box's right edge `r` only moves forward across the loop.
+
+</details>
+
+<details>
+<summary><strong>Q:</strong> What's the Z-box?</summary>
+
+**A:** The interval `[l, r]` representing the rightmost discovered substring matching a prefix of `S`. Maintained across the loop to reuse work.
+
+</details>
+
+<details>
+<summary><strong>Q:</strong> How do you match pattern <code>P</code> in text <code>T</code> using Z-array?</summary>
+
+**A:** Build Z-array for `S = P + '$' + T` (where `$` doesn't appear in either). Any position `i > m` with `Z[i] = m` is a match in `T` at offset `i - m - 1`.
+
+</details>
+
+<details>
+<summary><strong>Q:</strong> Why does the separator <code>$</code> matter?</summary>
+
+**A:** It prevents the Z-array from continuing the match past the pattern boundary into `T`. Must be a character not in `P` or `T`.
+
+</details>
+
+<details>
+<summary><strong>Q:</strong> Smallest period of <code>S</code> via Z-array?</summary>
+
+**A:** Smallest `p` such that `Z[p] + p ≥ n`. The whole string is then a prefix of `(S[0..p-1])^k`.
+
+</details>
+
+<details>
+<summary><strong>Q:</strong> Z-array vs KMP failure function — equivalent or different?</summary>
+
+**A:** Equivalent matching power, both `O(n + m)`. Different mental model. Z-array tends to be slightly faster in practice; KMP is more universally taught.
+
+</details>
+
+<details>
+<summary><strong>Q:</strong> Compute Z for <code>"aabcaabxaaaz"</code>.</summary>
+
+**A:** `[0, 1, 0, 0, 3, 1, 0, 0, 2, 2, 1, 0]`.
+
+</details>
+
+## Code template
+
+```python
+def z_array(S):
+    n = len(S)
+    Z = [0] * n
+    l, r = 0, 0
+    for i in range(1, n):
+        if i < r:
+            Z[i] = min(r - i, Z[i - l])              # reuse work inside the Z-box
+        while i + Z[i] < n and S[Z[i]] == S[i + Z[i]]:
+            Z[i] += 1
+        if i + Z[i] > r:
+            l, r = i, i + Z[i]                       # extend the Z-box
+    return Z
+
+# Pattern matching: build Z for P + "$" + T; any Z[i] == m means a match.
+```
+
+## Pattern triggers
+
+- **"Find pattern in text"** → Z-array of `P + "$" + T`
+- **"Period / shortest repeating prefix"** → Z-array; smallest `p` with `Z[p] + p ≥ n`
+- **"Distinct substring counting"** → suffix array (Z is more limited here)
+- **"Need both prefix-match and period info"** → one Z-build does both
+- **"Sibling of KMP, different mental model"** → Z-array
+- **"Implementation should fit in 15 lines"** → Z-array beats KMP on brevity
+
+***
+
 # Cross-links
 
 - **Sibling:** [KMP](/cortex/data-structures-and-algorithms/strings-kmp) — equivalent matching power, different mental model.

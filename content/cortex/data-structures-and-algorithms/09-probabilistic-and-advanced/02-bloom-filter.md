@@ -232,6 +232,109 @@ class Solution {
 
 ***
 
+# Memorize
+
+The high-leverage facts to commit to long-term memory — atomic enough for an Anki card, concrete enough to recall under pressure or during production debugging. Bloom filters trade certainty for memory — knowing when that trade is acceptable is the skill.
+
+## Quick recall
+
+Click any question to reveal the answer.
+
+<details>
+<summary><strong>Q:</strong> What kind of error does a Bloom filter produce?</summary>
+
+**A:** False positives only. Never false negatives. "Definitely not in the set" or "probably yes".
+
+</details>
+
+<details>
+<summary><strong>Q:</strong> Tuning formulas — given <code>n</code> items and target false-positive rate <code>p</code>?</summary>
+
+**A:** `m = −n · ln(p) / (ln 2)²` bits; `k = (m / n) · ln 2` hash functions.
+
+</details>
+
+<details>
+<summary><strong>Q:</strong> For <code>n = 10⁹</code> and <code>p = 0.01</code> — what memory?</summary>
+
+**A:** `m ≈ 9.5 GB`, `k ≈ 7`. Compared to a hash set of 32-byte keys: `32 GB`. ~3× compression at 1% FPR.
+
+</details>
+
+<details>
+<summary><strong>Q:</strong> Why can't a standard Bloom filter support deletion?</summary>
+
+**A:** Setting a bit to 0 might affect *other* items that hashed to that bit. Use a Counting Bloom Filter (4-bit counters) for deletes.
+
+</details>
+
+<details>
+<summary><strong>Q:</strong> What's the "double hashing trick"?</summary>
+
+**A:** Generate `k` hashes from just two: `h_i(x) = h_1(x) + i · h_2(x) mod m`. Saves computing `k` independent hashes; quality is good enough for typical FPR targets.
+
+</details>
+
+<details>
+<summary><strong>Q:</strong> When does FPR climb beyond the design target?</summary>
+
+**A:** When you insert significantly more items than `n`. Once roughly half the bits are set, the FPR rises rapidly.
+
+</details>
+
+<details>
+<summary><strong>Q:</strong> Three production places Bloom filters live?</summary>
+
+**A:** **Cassandra/RocksDB SSTables** (skip disk reads), **Chrome's malicious-URL filter** (privacy + speed), **Bitcoin SPV proofs** (lightweight client filtering).
+
+</details>
+
+<details>
+<summary><strong>Q:</strong> Modern alternative to Bloom filter?</summary>
+
+**A:** **Cuckoo filter** — better space efficiency at the same FPR, supports deletes natively. Used in newer caching systems.
+
+</details>
+
+## Code template
+
+```python
+import math, hashlib
+
+class BloomFilter:
+    def __init__(self, n, p):
+        self.m = max(1, int(-n * math.log(p) / (math.log(2) ** 2)))
+        self.k = max(1, int(self.m / n * math.log(2)))
+        self.bits = bytearray((self.m + 7) // 8)
+
+    def _hashes(self, x):
+        d = hashlib.sha1(str(x).encode()).digest()
+        h1 = int.from_bytes(d[:8], "big")
+        h2 = int.from_bytes(d[8:16], "big")
+        for i in range(self.k):
+            yield (h1 + i * h2) % self.m
+
+    def add(self, x):
+        for h in self._hashes(x):
+            self.bits[h // 8] |= 1 << (h % 8)
+
+    def __contains__(self, x):
+        return all(self.bits[h // 8] & (1 << (h % 8)) for h in self._hashes(x))
+```
+
+## Pattern triggers
+
+- **"Skip an expensive lookup if we know the key is absent"** → Bloom filter pre-check (databases, browser malicious-URL)
+- **"Set membership with a tight memory budget"** → Bloom filter
+- **"Privacy-preserving 'do you have this?' query"** → Bloom filter (Bitcoin SPV)
+- **"Need deletes on a Bloom"** → Counting Bloom or Cuckoo filter
+- **"Don't know `n` in advance"** → Scalable Bloom Filter
+- **"Adversarial inputs / DoS vector"** → use cryptographic-quality hash + random seed
+- **"Two parties want set intersection size"** → bit-AND of their Bloom filters; estimate from set bits
+- **"Rolling time-window membership"** → multiple Bloom filters, rotate and discard
+
+***
+
 # Cross-links
 
 - **Prerequisite:** [Hash Table](/cortex/data-structures-and-algorithms/linear-structures-hash-table-introduction-to-hash-tables) — the underlying primitive (we need good hash functions).

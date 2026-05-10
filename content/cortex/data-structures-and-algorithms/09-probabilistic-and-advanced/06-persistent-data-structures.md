@@ -213,6 +213,99 @@ For a list (linked or persistent vector), the per-operation cost is `O(log n)` i
 
 ***
 
+# Memorize
+
+The high-leverage facts to commit to long-term memory — atomic enough for an Anki card, concrete enough to recall under pressure or during production debugging. Persistence + structural sharing is the trick behind every undo system, every functional language's immutable map, and Git itself.
+
+## Quick recall
+
+Click any question to reveal the answer.
+
+<details>
+<summary><strong>Q:</strong> What does "persistent" mean for a data structure?</summary>
+
+**A:** Modifications produce *new versions* while preserving older ones. Both old and new are accessible.
+
+</details>
+
+<details>
+<summary><strong>Q:</strong> Three flavours of persistence?</summary>
+
+**A:** **Partial** — old versions readable, only latest modifiable. **Full** — every version readable + modifiable. **Confluent** — versions can be merged.
+
+</details>
+
+<details>
+<summary><strong>Q:</strong> Path-copying cost on a balanced BST?</summary>
+
+**A:** `O(log n)` time and space per modification. Only the path from root to modified node is copied; everything else is shared.
+
+</details>
+
+<details>
+<summary><strong>Q:</strong> Why does this share so much with previous versions?</summary>
+
+**A:** Unmodified subtrees are referenced by both versions. Editing one node changes only `O(log n)` nodes' references along the path; `O(n − log n)` nodes are untouched.
+
+</details>
+
+<details>
+<summary><strong>Q:</strong> Why do functional languages "get persistence for free"?</summary>
+
+**A:** Immutability means nodes never change. New versions naturally share references with old ones. The cost (`log n` overhead) is the price of immutability.
+
+</details>
+
+<details>
+<summary><strong>Q:</strong> Production systems built on persistence?</summary>
+
+**A:** **Git** (Merkle DAG of commits/trees/blobs), **Clojure / Scala / Haskell** persistent collections, **Postgres MVCC** (each transaction sees a snapshot), **VS Code / IntelliJ undo** (rope structure).
+
+</details>
+
+<details>
+<summary><strong>Q:</strong> When is path copying the wrong choice?</summary>
+
+**A:** **Tight inner loop on a single version** — mutable arrays are faster (cache-friendly). **One-shot transformation, discard old** — in-place beats persistence.
+
+</details>
+
+## Code template
+
+```python
+class Node:
+    __slots__ = ("key", "left", "right")
+    def __init__(self, key, left=None, right=None):
+        self.key, self.left, self.right = key, left, right
+
+def insert(node, key):
+    """Returns NEW root for the new version; doesn't modify the old."""
+    if node is None: return Node(key)
+    if key < node.key:
+        return Node(node.key, insert(node.left, key), node.right)
+    if key > node.key:
+        return Node(node.key, node.left, insert(node.right, key))
+    return node                                 # duplicate; reuse
+
+# All previous versions remain accessible:
+# v0 = None
+# v1 = insert(v0, 5)
+# v2 = insert(v1, 3)
+# v0, v1, v2 all live simultaneously.
+```
+
+## Pattern triggers
+
+- **"Undo / redo"** → persistent rope or persistent BST
+- **"Snapshot isolation in a database"** → MVCC = persistence
+- **"Branch and merge file trees"** → Git's Merkle DAG
+- **"Functional / immutable collections in production"** → Clojure/Scala persistent maps and vectors
+- **"CRDT / collaborative editing"** → persistence enables clean merges
+- **"Hot inner loop, single version"** → use mutable; persistence pays an unaffordable `log n`
+- **"Memory growing forever"** → garbage-collect old versions; persistence + GC pair well
+
+***
+
 # Cross-links
 
 - **Prerequisites:** [BST](/cortex/data-structures-and-algorithms/trees-binary-search-tree-introduction-to-binary-search-trees), [Amortized Analysis](/cortex/data-structures-and-algorithms/foundations-amortized-analysis).

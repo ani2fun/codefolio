@@ -16,8 +16,6 @@ By the end of this lesson, you'll see how the small primitives stack into surpri
 
 # Parity Checker
 
-> **Course:** DSA › Algorithms › Bit Manipulation › Applications
-
 ## The Problem
 
 Given an integer, return `"odd"` if it's odd, `"even"` if it's even.
@@ -102,8 +100,6 @@ object Main extends App {
 
 # Power of 2
 
-> **Course:** DSA › Algorithms › Bit Manipulation › Applications
-
 ## The Problem
 
 Given an integer, return `true` if it's a positive power of 2 (1, 2, 4, 8, …); else `false`.
@@ -186,8 +182,6 @@ object Main extends App {
 ***
 
 # Parity Checker II — Set-Bit Parity
-
-> **Course:** DSA › Algorithms › Bit Manipulation › Applications
 
 ## The Problem
 
@@ -289,8 +283,6 @@ object Main extends App {
 ***
 
 # Power Function — Fast Exponentiation
-
-> **Course:** DSA › Algorithms › Bit Manipulation › Applications
 
 ## The Problem
 

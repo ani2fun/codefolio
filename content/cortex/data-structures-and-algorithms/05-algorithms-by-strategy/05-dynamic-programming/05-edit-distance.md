@@ -15,8 +15,6 @@ By the end of this lesson you'll know the **edit distance** recurrence (one case
 
 # The Edit-Distance Problem
 
-> **Course:** DSA › Algorithms › Dynamic Programming › Edit Distance
-
 Given two strings `s1` and `s2`, an **edit operation** is one of:
 - **Insert** a character at any position.
 - **Delete** a character from any position.
@@ -55,8 +53,6 @@ Edit distance counts insertions, deletions, and substitutions. Each costs 1. Bru
 ***
 
 # The Three-Case Mismatch — One Per Operation
-
-> **Course:** DSA › Algorithms › Dynamic Programming › Edit Distance
 
 Define `dp(i, j)` = the edit distance between prefixes `s1[0..i]` and `s2[0..j]`. Look at the last characters `s1[i]` and `s2[j]`:
 
@@ -120,8 +116,6 @@ Match → free; mismatch → 1 + min of three predecessors (insert, delete, subs
 
 # Base Cases — Why Row 0 Is `j` and Column 0 Is `i`
 
-> **Course:** DSA › Algorithms › Dynamic Programming › Edit Distance
-
 Bottom-up uses the same `(m+1) × (n+1)` shift as LCS — `i` and `j` count characters considered. The base cases live in row 0 and column 0:
 
 - `dp[0][j] = j` — transforming the empty string into `s2[0..j-1]` requires `j` insertions.
@@ -169,8 +163,6 @@ Base cases aren't all zero — they're `j` and `i`, encoding the cost of going t
 ***
 
 # Edit Distance — The Algorithm
-
-> **Course:** DSA › Algorithms › Dynamic Programming › Edit Distance
 
 ## The Problem
 

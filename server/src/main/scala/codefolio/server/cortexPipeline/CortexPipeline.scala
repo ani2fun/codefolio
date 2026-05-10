@@ -1,6 +1,6 @@
 package codefolio.server.cortexPipeline
 
-import codefolio.server.config.AppConfig
+import codefolio.server.config.CortexConfig
 import codefolio.shared.api.Endpoints.{ChapterPayload, CortexIndex}
 import codefolio.shared.cortex.CortexIndexWalker.{
   BookMeta,
@@ -87,12 +87,12 @@ object CortexPipeline:
     Ref.make(Option.empty[CortexState]).map(cache => CortexPipelineLive(cortexFs, autoReload, cache))
 
   /** Resource-free layer: builds a filesystem-backed [[CortexFs]] and an empty cache. */
-  val live: ZLayer[AppConfig, Nothing, CortexPipeline] =
+  val live: ZLayer[CortexConfig, Nothing, CortexPipeline] =
     ZLayer.fromZIO {
       for
-        cfg   <- ZIO.service[AppConfig]
+        cfg   <- ZIO.service[CortexConfig]
         cache <- Ref.make(Option.empty[CortexState])
-      yield CortexPipelineLive(LiveCortexFs(cfg.cortex.root), cfg.cortex.autoReload, cache)
+      yield CortexPipelineLive(LiveCortexFs(cfg.root), cfg.autoReload, cache)
     }
 
   // ===========================================================================

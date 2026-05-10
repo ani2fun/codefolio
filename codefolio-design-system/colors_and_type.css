@@ -1,0 +1,272 @@
+/* ─── Codefolio Design System — colors + type ──────────────────────
+   Pulled from client/tailwind.css (shadcn HSL channels) and the
+   section CSS (which uses Tailwind's blue-* / rose-* / gray-* scales
+   on top). Both light and dark themes are first-class — every var
+   that flips for `.dark` lives in both blocks below.
+   ──────────────────────────────────────────────────────────────── */
+
+:root {
+    /* ── shadcn HSL channels (raw) ─────────────────────────────── */
+    --background:           0 0% 100%;
+    --foreground:           222.2 84% 3.5%;
+    --card:                 0 0% 100%;
+    --card-foreground:      222.2 84% 3.5%;
+    --popover:              0 0% 100%;
+    --popover-foreground:   222.2 84% 3.5%;
+    --primary:              221.2 83.2% 53.3%;
+    --primary-foreground:   210 40% 98%;
+    --secondary:            210 40% 96.1%;
+    --secondary-foreground: 222.2 47.4% 11.2%;
+    --muted:                210 40% 96.1%;
+    --muted-foreground:     215.4 18% 38%;
+    --accent:               210 40% 96.1%;
+    --accent-foreground:    222.2 47.4% 11.2%;
+    --destructive:          0 84.2% 60.2%;
+    --destructive-foreground: 210 40% 98%;
+    --border:               214.3 31.8% 91.4%;
+    --input:                214.3 31.8% 91.4%;
+    --ring:                 221.2 83.2% 53.3%;
+    --radius:               0.75rem;
+
+    /* ── Resolved colors (use these directly in plain CSS) ─────── */
+    --bg:           hsl(var(--background));
+    --fg1:          hsl(var(--foreground));
+    --fg2:          hsl(var(--muted-foreground));
+    --primary-c:    hsl(var(--primary));        /* the blue */
+    --primary-fg:   hsl(var(--primary-foreground));
+    --border-c:     hsl(var(--border));
+
+    /* Tailwind blue scale — used heavily in section CSS */
+    --blue-50:   #eff6ff;
+    --blue-100:  #dbeafe;
+    --blue-200:  #bfdbfe;
+    --blue-300:  #93c5fd;
+    --blue-400:  #60a5fa;
+    --blue-500:  #3b82f6;
+    --blue-600:  #2563eb;   /* primary in light mode (≈ hsl 221 83% 53%) */
+    --blue-700:  #1d4ed8;   /* hero name + section titles */
+    --blue-800:  #1e40af;
+    --blue-900:  #1e3a8a;   /* card titles in light mode */
+    --blue-950:  #172554;
+
+    /* Tailwind rose scale — accent / highlight (Diploma badge,
+       experience time chip, footer heart). */
+    --rose-50:   #fff1f2;
+    --rose-100:  #ffe4e6;
+    --rose-300:  #fda4af;
+    --rose-400:  #fb7185;
+    --rose-500:  #f43f5e;   /* canonical accent rose */
+    --rose-600:  #e11d48;   /* "Made with ♥" */
+    --rose-950:  #4c0519;
+
+    /* Tailwind gray scale — body copy + chrome */
+    --gray-50:   #f9fafb;
+    --gray-100:  #f3f4f6;
+    --gray-200:  #e5e7eb;
+    --gray-300:  #d1d5db;
+    --gray-600:  #4b5563;
+    --gray-700:  #374151;
+    --gray-800:  #1f2937;
+    --gray-900:  #111827;
+    --gray-950:  #030712;
+
+    /* Slate (project card backgrounds in dark mode use slate-900) */
+    --slate-900: #0f172a;
+
+    /* Green (about page emphasis) */
+    --green-700: #15803d;
+
+    /* ── Typography fonts ──────────────────────────────────────── */
+    /* The codebase relies on Tailwind's defaults: `font-sans` (which
+       on most systems resolves to system-ui) and `font-mono` (ui-
+       monospace). No webfonts are loaded. We mirror that here, with
+       Inter/JetBrains Mono as the explicit fallback for parity across
+       prototype platforms. */
+    --font-sans: ui-sans-serif, system-ui, -apple-system, "Segoe UI",
+                 Roboto, "Helvetica Neue", Arial, "Noto Sans",
+                 sans-serif, "Apple Color Emoji", "Segoe UI Emoji";
+    --font-mono: ui-monospace, SFMono-Regular, "SF Mono", Menlo,
+                 Consolas, "Liberation Mono", monospace;
+    --font-display: var(--font-sans);   /* same family, heavier weight */
+
+    /* ── Type scale (Tailwind defaults the codebase uses) ──────── */
+    --text-xs:    0.75rem;   /* 12 — meta / tags */
+    --text-sm:    0.875rem;  /* 14 */
+    --text-base:  1rem;      /* 16 — body */
+    --text-lg:    1.125rem;  /* 18 */
+    --text-xl:    1.25rem;   /* 20 — subhead */
+    --text-2xl:   1.5rem;    /* 24 — body large (about, hero byline md+) */
+    --text-3xl:   1.875rem;  /* 30 — section h2 mobile */
+    --text-4xl:   2.25rem;   /* 36 — hero title md+ */
+    --text-5xl:   3rem;      /* 48 — section h2 md+ */
+    --text-6xl:   3.75rem;   /* 60 — hero name md+ */
+
+    /* Weights actually used: 400, 600 (semibold), 700 (bold) */
+    --weight-regular:  400;
+    --weight-semibold: 600;
+    --weight-bold:     700;
+
+    /* Line heights */
+    --leading-tight:   1.25;
+    --leading-snug:    1.375;
+    --leading-normal:  1.5;
+    --leading-relaxed: 1.625;
+
+    /* Tracking — used on the certifications/cortex meta uppercase */
+    --tracking-wide:   0.025em;
+    --tracking-wider:  0.05em;
+
+    /* ── Radii (shadcn-style) ───────────────────────────────────── */
+    --radius-sm: calc(var(--radius) - 4px);  /* 8px */
+    --radius-md: calc(var(--radius) - 2px);  /* 10px */
+    --radius-lg: var(--radius);              /* 12px — default cards */
+
+    /* ── Shadows (from rounded-lg shadow-md / shadow-lg) ───────── */
+    --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+    --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1),
+                 0 2px 4px -2px rgb(0 0 0 / 0.1);
+    --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1),
+                 0 4px 6px -4px rgb(0 0 0 / 0.1);
+
+    /* ── Spacing (Tailwind 4px base — used as gap-2, p-5, etc.) ─ */
+    --space-1: 0.25rem;
+    --space-2: 0.5rem;
+    --space-3: 0.75rem;
+    --space-4: 1rem;
+    --space-5: 1.25rem;
+    --space-6: 1.5rem;
+    --space-8: 2rem;
+    --space-10: 2.5rem;
+    --space-12: 3rem;
+    --space-16: 4rem;
+    --space-24: 6rem;
+    --space-32: 8rem;
+}
+
+.dark {
+    --background:           221.2 50% 5%;
+    --foreground:           210 40% 99%;
+    --card:                 222.2 84% 4.9%;
+    --card-foreground:      210 40% 99%;
+    --popover:              222.2 84% 4.9%;
+    --popover-foreground:   210 40% 99%;
+    --primary:              217.2 91.2% 59.8%;   /* lighter blue in dark */
+    --primary-foreground:   222.2 47.4% 11.2%;
+    --secondary:            217.2 32.6% 17.5%;
+    --secondary-foreground: 210 40% 98%;
+    --muted:                217.2 32.6% 17.5%;
+    --muted-foreground:     214 28% 78%;
+    --accent:               217.2 32.6% 17.5%;
+    --accent-foreground:    210 40% 98%;
+    --destructive:          0 62.8% 30.6%;
+    --destructive-foreground: 210 40% 98%;
+    --border:               217.2 32.6% 17.5%;
+    --input:                217.2 32.6% 17.5%;
+    --ring:                 224.3 76.3% 48%;
+}
+
+/* ─── Semantic role tokens ─────────────────────────────────────────
+   Map the raw scales to *meaning*, so prototypes can stay theme-safe
+   without restating the long Tailwind class strings. */
+:root {
+    --color-text-primary:   var(--gray-950);   /* body text, light mode */
+    --color-text-secondary: var(--gray-800);
+    --color-text-muted:     var(--gray-700);
+    --color-text-accent:    var(--blue-700);   /* h2, hero name */
+    --color-text-link:      var(--blue-600);
+    --color-text-time:      var(--rose-500);   /* dates, time chips */
+
+    --color-tag-bg:         var(--blue-200);
+    --color-tag-fg:         var(--blue-900);
+    --color-tag-bg-strong:  var(--blue-600);   /* hover / selected rail */
+    --color-tag-fg-strong:  var(--gray-50);
+
+    --color-card-bg:        #ffffff;
+    --color-card-border:    var(--blue-500);   /* the blue card border */
+    --color-card-hover-bg:  var(--blue-50);
+
+    --color-badge-accent-bg: var(--rose-500);
+    --color-badge-accent-fg: #ffffff;
+}
+.dark {
+    --color-text-primary:   #ffffff;
+    --color-text-secondary: var(--gray-100);
+    --color-text-muted:     var(--gray-200);
+    --color-text-accent:    var(--blue-400);
+    --color-text-link:      var(--blue-400);
+    --color-text-time:      var(--rose-500);
+
+    --color-tag-bg:         var(--blue-600);
+    --color-tag-fg:         var(--gray-50);
+
+    --color-card-bg:        var(--slate-900);
+    --color-card-border:    var(--gray-50);
+    --color-card-hover-bg:  var(--gray-900);
+}
+
+/* ─── Semantic type roles ──────────────────────────────────────────
+   Each role mirrors the actual class strings used in the codebase. */
+.h1 {
+    font-family: var(--font-display);
+    font-weight: var(--weight-bold);
+    font-size: var(--text-4xl);              /* mobile */
+    color: var(--color-text-accent);
+    line-height: var(--leading-tight);
+}
+@media (min-width: 768px) {
+    .h1 { font-size: var(--text-6xl); }       /* hero name md+ */
+}
+.h2 {
+    font-family: var(--font-display);
+    font-weight: var(--weight-bold);
+    font-size: var(--text-3xl);
+    color: var(--color-text-accent);
+    line-height: var(--leading-tight);
+}
+@media (min-width: 768px) {
+    .h2 { font-size: var(--text-5xl); }
+}
+.h3 {
+    font-family: var(--font-display);
+    font-weight: var(--weight-semibold);
+    font-size: var(--text-xl);
+    color: var(--color-text-accent);
+}
+.body-lg {
+    font-size: var(--text-lg);
+    line-height: var(--leading-relaxed);
+    color: var(--color-text-secondary);
+}
+@media (min-width: 768px) {
+    .body-lg { font-size: var(--text-2xl); }
+}
+.body {
+    font-size: var(--text-base);
+    line-height: var(--leading-normal);
+    color: var(--color-text-secondary);
+}
+.body-sm {
+    font-size: var(--text-sm);
+    line-height: var(--leading-normal);
+    color: var(--color-text-muted);
+}
+.eyebrow {
+    font-size: 0.6875rem;                     /* 11px — actual usage */
+    font-weight: var(--weight-semibold);
+    text-transform: uppercase;
+    letter-spacing: var(--tracking-wider);
+    color: var(--color-text-muted);
+}
+.tag {
+    display: inline-block;
+    margin: 0.25rem;
+    padding: 0.25rem 0.5rem;
+    font-size: var(--text-xs);
+    border-radius: 0.25rem;
+    background: var(--color-tag-bg);
+    color: var(--color-tag-fg);
+}
+.code, code, pre {
+    font-family: var(--font-mono);
+    font-size: 0.875em;
+}

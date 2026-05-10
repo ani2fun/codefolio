@@ -539,6 +539,130 @@ The assertions never fire, because the implementation respects the invariant. If
 
 ***
 
+# Memorize
+
+The high-leverage facts to commit to long-term memory — atomic enough for an Anki card, concrete enough to recall under pressure or during production debugging. Once these proof patterns are second nature, you can sketch a correctness argument as fast as you can write code.
+
+## Quick recall
+
+Click any question to reveal the answer.
+
+<details>
+<summary><strong>Q:</strong> Two parts of a proof by induction?</summary>
+
+**A:** **Base case** — prove `P(n₀)` directly. **Inductive step** — assume `P(k)`, prove `P(k+1)`.
+
+</details>
+
+<details>
+<summary><strong>Q:</strong> Difference between weak and strong induction?</summary>
+
+**A:** Weak: assume `P(k)` to prove `P(k+1)`. Strong: assume `P(j)` for all `n₀ ≤ j ≤ k` to prove `P(k+1)`. Strong is needed for divide-and-conquer correctness and for Fibonacci-style recurrences.
+
+</details>
+
+<details>
+<summary><strong>Q:</strong> Three properties a loop invariant must satisfy?</summary>
+
+**A:** **Initialization** (holds before first iteration), **Maintenance** (held entering iteration → holds entering next), **Termination** (combined with exit condition, implies the postcondition).
+
+</details>
+
+<details>
+<summary><strong>Q:</strong> Loop invariant for binary search?</summary>
+
+**A:** "If `target` is in `arr`, then it is in `arr[lo..hi]` (the inclusive subarray still being searched)."
+
+</details>
+
+<details>
+<summary><strong>Q:</strong> Why <code>mid = lo + (hi - lo) / 2</code> instead of <code>(lo + hi) / 2</code>?</summary>
+
+**A:** Avoids integer overflow when `lo + hi > Int.MaxValue`. Joshua Bloch found this bug in Java's `Arrays.binarySearch` after nine years.
+
+</details>
+
+<details>
+<summary><strong>Q:</strong> Structure of a proof by contradiction?</summary>
+
+**A:** Assume `not P`. Derive an absurdity (a contradiction with established facts). Conclude `P`.
+
+</details>
+
+<details>
+<summary><strong>Q:</strong> Why must you prove termination separately from correctness?</summary>
+
+**A:** Correctness says "*if* the function returns, the answer is right". Termination says "the function returns". A loop that maintains its invariant forever is still wrong.
+
+</details>
+
+<details>
+<summary><strong>Q:</strong> Standard pattern for proving termination?</summary>
+
+**A:** Identify a non-negative integer-valued *measure* that strictly decreases each iteration (or each recursive call). Since it can't go below zero, the loop terminates.
+
+</details>
+
+<details>
+<summary><strong>Q:</strong> Where do invariants live in production code?</summary>
+
+**A:** As comments on the loop, as `assert` statements (debug builds), and in formal contract languages (D's `invariant`, Eiffel's `require`/`ensure`). Compile out in release builds.
+
+</details>
+
+<details>
+<summary><strong>Q:</strong> Why does the Rust borrow checker count as an invariant checker?</summary>
+
+**A:** It machine-proves: at every program point, every reference is either *unique-and-mutable* or *shared-and-read-only*. Ruling out half the C++ bug catalogue.
+
+</details>
+
+## Code template
+
+```python
+# Loop-invariant template — annotate the invariant directly on the loop.
+
+def binary_search(arr, target):
+    """
+    Precondition: arr is sorted ascending.
+    Postcondition: returns i with arr[i] == target, or -1 if absent.
+    """
+    assert all(arr[i] <= arr[i + 1] for i in range(len(arr) - 1))
+
+    lo, hi = 0, len(arr) - 1
+    while lo <= hi:
+        # Invariant: if target is in arr, it is in arr[lo..hi].
+        # Termination measure: hi - lo (strictly decreases each iteration).
+        mid = lo + (hi - lo) // 2          # avoid overflow
+        if arr[mid] == target: return mid
+        if arr[mid] < target:  lo = mid + 1
+        else:                  hi = mid - 1
+    # Postcondition: target is not in arr; lo > hi.
+    return -1
+
+
+# Induction-on-length skeleton for recursive correctness:
+#
+# def f(arr):
+#     if len(arr) <= 1: return base_case(arr)         # base
+#     left  = f(arr[:mid])                            # IH: f correct for size < n
+#     right = f(arr[mid:])                            # IH: same
+#     return combine(left, right)                     # show: combine preserves the postcondition
+```
+
+## Pattern triggers
+
+- **Loop with off-by-one suspicion** → write the invariant as a comment; check Initialization / Maintenance / Termination
+- **Recursive function correctness** → strong induction on input size
+- **"Prove this is impossible" / lower bound** → contradiction
+- **"Prove infinite supply / unbounded count"** → contradiction (assume finite, derive a contradiction)
+- **Operation that shrinks a measure** → use that measure as the termination argument
+- **Concurrent/shared state** → Rust's borrow checker, or formal model checking (TLA+)
+- **`if (map.containsKey(k)) map.put(k, v)`** → not atomic under concurrency; use atomic compound operations
+- **Production assertion fires in CI** → invariant violated; fix is to either correct the code or weaken the invariant
+
+***
+
 # Cross-links
 
 - **Prerequisite:** [Asymptotic Analysis](/cortex/data-structures-and-algorithms/foundations-asymptotic-analysis) — the language proofs are written in.

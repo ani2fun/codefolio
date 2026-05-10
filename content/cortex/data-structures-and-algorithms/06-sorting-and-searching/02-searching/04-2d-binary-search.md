@@ -18,8 +18,6 @@ By the end of this lesson you'll know the index-flattening trick, why it produce
 
 # Understanding 2D Binary Search
 
-> **Course:** DSA › Algorithms › Searching › 2D Binary Search
-
 The matrix structure required:
 
 1. **Each row is sorted** in non-decreasing order.
@@ -77,8 +75,6 @@ A matrix that's "globally sorted by row order" can be binary-searched in `O(log(
 ***
 
 # The Index-Flattening Trick
-
-> **Course:** DSA › Algorithms › Searching › 2D Binary Search
 
 The core insight: in a row-major matrix of `N` rows and `M` columns, **the cell at `(row, col)` is at flattened-index `row * M + col`**, and conversely, **the flattened-index `i` maps to `(row, col) = (i / M, i % M)`**.
 
@@ -155,8 +151,6 @@ The flattened-index trick: `mid → (mid / M, mid % M)`. Binary search the index
 ***
 
 # Implementation
-
-> **Course:** DSA › Algorithms › Searching › 2D Binary Search
 
 
 ```pseudocode
@@ -299,8 +293,6 @@ The algorithm performs at most `log₂(N·M)` iterations, each `O(1)`. Same as 1
 ***
 
 # 2D Binary Search Problem
-
-> **Course:** DSA › Algorithms › Searching › 2D Binary Search
 
 ---
 

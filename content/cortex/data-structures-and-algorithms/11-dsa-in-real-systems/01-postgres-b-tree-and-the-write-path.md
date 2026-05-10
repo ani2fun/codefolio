@@ -173,6 +173,98 @@ The interesting part: VACUUM doesn't *rebuild* the index. It only deletes dead e
 
 ***
 
+# Memorize
+
+The high-leverage facts to commit to long-term memory — atomic enough for an Anki card, concrete enough to recall under pressure or during production debugging. These facts are interview gold for any database role and the first things to check when an index misbehaves.
+
+## Quick recall
+
+Click any question to reveal the answer.
+
+<details>
+<summary><strong>Q:</strong> Default Postgres page size?</summary>
+
+**A:** 8 KB. Matches OS page size (4 KB × 2). Tunable at compile time via `BLCKSZ`.
+
+</details>
+
+<details>
+<summary><strong>Q:</strong> Postgres B-tree variant — what does "B-link" add over textbook B-tree?</summary>
+
+**A:** A right-sibling pointer per node. Lets concurrent inserters split without locking the whole path; readers stumbling onto in-progress splits follow the right-link to find missing keys.
+
+</details>
+
+<details>
+<summary><strong>Q:</strong> Why doesn't <code>DELETE</code> shrink a Postgres B-tree?</summary>
+
+**A:** MVCC retains dead tuples until VACUUM. Inline shrinkage would conflict with "still-visible-to-some-transaction" semantics. VACUUM reclaims pages later.
+
+</details>
+
+<details>
+<summary><strong>Q:</strong> What does WAL guarantee?</summary>
+
+**A:** Every page modification is logged in the Write-Ahead Log *before* the page is flushed. Crash → replay WAL forward; index reconstructs identically.
+
+</details>
+
+<details>
+<summary><strong>Q:</strong> Approximate height of a B+-tree on a 1-billion-row Postgres index?</summary>
+
+**A:** 4-5 levels. Default page = 8 KB; ~200 keys per internal node; `log_200(10⁹) ≈ 4`.
+
+</details>
+
+<details>
+<summary><strong>Q:</strong> Why is <code>CREATE INDEX</code> the default B+-tree (not B-tree)?</summary>
+
+**A:** B+-tree stores data only at leaves; internal nodes are pure routing → higher fanout → shallower tree. Plus linked leaves give cheap range queries.
+
+</details>
+
+<details>
+<summary><strong>Q:</strong> What's "index bloat" and how do you diagnose it?</summary>
+
+**A:** Dead-tuple accumulation in leaves; index grows monotonically without VACUUM. Diagnose with `pg_stat_user_indexes` and the `pgstattuple` extension. Fix: tune autovacuum or `REINDEX`.
+
+</details>
+
+<details>
+<summary><strong>Q:</strong> Maximum key size?</summary>
+
+**A:** ~1/3 of the page size (so ≤2.7 KB at 8 KB pages). Wider keys cause `INSERT` to error.
+
+</details>
+
+## Source pointers
+
+```
+src/backend/access/nbtree/
+├── nbtinsert.c        — _bt_doinsert, _bt_split, _bt_findinsertloc
+├── nbtsearch.c        — _bt_search (descent), _bt_first
+├── nbtxlog.c          — WAL replay (XLOG_BTREE_INSERT_LEAF, etc.)
+├── nbtree.c           — entry point: btinsert, btgettuple, btvacuumscan
+└── README             — design rationale, B-link concurrency notes
+```
+
+```
+src/include/access/nbtree.h    — BTPageOpaqueData, the per-page metadata
+                                  (btpo_prev, btpo_next, level, flags)
+```
+
+## Pattern triggers
+
+- **"Index bloat over time"** → autovacuum not keeping up; dead tuples accumulate
+- **"Slow range query on indexed column"** → check leaf-chain fragmentation
+- **"INSERT deadlock on partial index"** → simplify the partial-index condition
+- **"Why is this index so much bigger than the table?"** → bloat; `pgstattuple` to confirm
+- **"How does Postgres pick which index?"** → planner uses `pg_statistic` selectivity estimates
+- **"What changes on crash recovery?"** → WAL replay reconstructs indexes from logged page modifications
+- **"Where to read the source?"** → `nbtinsert.c::_bt_doinsert` is the entry point
+
+***
+
 # Cross-links
 
 - **Prerequisites:** [B-Tree](/cortex/data-structures-and-algorithms/trees-b-tree-introduction-to-b-trees), [Self-Balancing BSTs Overview](/cortex/data-structures-and-algorithms/trees-self-balancing-bst-overview-self-balancing-bst-overview).

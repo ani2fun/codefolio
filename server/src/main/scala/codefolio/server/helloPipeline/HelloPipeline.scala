@@ -1,6 +1,6 @@
 package codefolio.server.helloPipeline
 
-import codefolio.server.config.AppConfig
+import codefolio.server.config.{MongoConfig, RedisConfig}
 import codefolio.shared.api.Endpoints.{Greeting, HealthStatus, HelloEvent, RecentCalls}
 import codefolio.shared.api.EndpointsJsonSerdes.given
 import com.mongodb.client.model.{IndexOptions, Indexes, Sorts}
@@ -87,13 +87,14 @@ object HelloPipeline:
    * Resource-safe layer: builds a Hikari-backed `Visits`, a Lettuce-backed `GreetingCache`, and a
    * Mongo-backed `EventLog`, releasing the underlying clients in reverse order on shutdown.
    */
-  val live: ZLayer[AppConfig & JDataSource, Throwable, HelloPipeline] =
+  val live: ZLayer[RedisConfig & MongoConfig & JDataSource, Throwable, HelloPipeline] =
     ZLayer.scoped {
       for
-        cfg    <- ZIO.service[AppConfig]
-        ds     <- ZIO.service[JDataSource]
-        cache  <- liveCache(cfg)
-        events <- liveEventLog(cfg)
+        redisCfg <- ZIO.service[RedisConfig]
+        mongoCfg <- ZIO.service[MongoConfig]
+        ds       <- ZIO.service[JDataSource]
+        cache    <- liveCache(redisCfg)
+        events   <- liveEventLog(mongoCfg)
       yield HelloPipelineLive(liveVisits(ds), cache, events)
     }
 
@@ -130,12 +131,12 @@ object HelloPipeline:
           }
           .catchAll(_ => ZIO.succeed(false))
 
-  private def liveCache(cfg: AppConfig): ZIO[Scope, Throwable, GreetingCache] =
-    val ttl = cfg.redis.ttlSecs.seconds
+  private def liveCache(cfg: RedisConfig): ZIO[Scope, Throwable, GreetingCache] =
+    val ttl = cfg.ttlSecs.seconds
     for
       client <- ZIO.acquireRelease(
         ZIO.attemptBlocking {
-          val c = RedisClient.create(cfg.redis.url)
+          val c = RedisClient.create(cfg.url)
           // Without an explicit command timeout Lettuce will block on a stalled
           // connection effectively forever — see ADR-0002. Cap commands at 2s so
           // the Degraded path actually returns within a request budget.
@@ -178,7 +179,7 @@ object HelloPipeline:
           .map(_ == "PONG")
           .catchAll(_ => ZIO.succeed(false))
 
-  private def liveEventLog(cfg: AppConfig): ZIO[Scope, Throwable, EventLog] =
+  private def liveEventLog(cfg: MongoConfig): ZIO[Scope, Throwable, EventLog] =
     for
       client <- ZIO.acquireRelease(
         ZIO.attemptBlocking {
@@ -186,7 +187,7 @@ object HelloPipeline:
           // when Mongo is down post-startup. Trim to 2s so the Degraded path
           // (ADR-0002) actually returns within the request budget.
           val settings = MongoClientSettings.builder
-            .applyConnectionString(ConnectionString(cfg.mongo.uri))
+            .applyConnectionString(ConnectionString(cfg.uri))
             .applyToClusterSettings { b =>
               b.serverSelectionTimeout(2, TimeUnit.SECONDS); ()
             }
@@ -198,7 +199,7 @@ object HelloPipeline:
         }
       )(c => ZIO.attempt(c.close()).orDie)
       coll <- ZIO.attemptBlocking {
-        val db   = client.getDatabase(cfg.mongo.database)
+        val db   = client.getDatabase(cfg.database)
         val coll = db.getCollection("hello_events")
         coll.createIndex(
           Indexes.descending("timestampEpochMs"),

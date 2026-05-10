@@ -633,6 +633,131 @@ object Solution {
 
 ***
 
+# Memorize
+
+The high-leverage facts to commit to long-term memory — atomic enough for an Anki card, concrete enough to recall under pressure or during production debugging. RB-tree is the workhorse balanced BST of production code; recognising the five invariants on sight is interview-and-debug currency.
+
+## Quick recall
+
+Click any question to reveal the answer.
+
+<details>
+<summary><strong>Q:</strong> The five RB-tree invariants?</summary>
+
+**A:** (1) Every node is red or black. (2) The root is black. (3) Every NIL leaf is black. (4) A red node's children are both black (no two reds in a row). (5) Every root-to-leaf path has the same number of black nodes (the *black-height*).
+
+</details>
+
+<details>
+<summary><strong>Q:</strong> Maximum height of an RB-tree with <code>n</code> nodes?</summary>
+
+**A:** `2 · log₂(n + 1)`. Looser than AVL's `1.44 log n` but enough for `O(log n)` operations.
+
+</details>
+
+<details>
+<summary><strong>Q:</strong> Why is the height bound `2 log n`?</summary>
+
+**A:** A subtree of black-height `bh` has ≥ `2^bh − 1` internal nodes (induction). Longest path = ≤ `2 · bh` (alternating red/black; reds can't be adjacent). So `h ≤ 2 · log₂(n + 1)`.
+
+</details>
+
+<details>
+<summary><strong>Q:</strong> Worst-case rotations per insert? Per delete?</summary>
+
+**A:** Insert: ≤ 2 rotations (constant). Delete: ≤ 3 rotations (constant). The colour cascade is `O(log n)` recolours but `O(1)` rotations.
+
+</details>
+
+<details>
+<summary><strong>Q:</strong> Three insert-fixup cases?</summary>
+
+**A:** Named by the uncle's colour. **Case 1:** uncle red → recolour parent + uncle black, grandparent red, propagate up. **Case 2:** uncle black, Z is inner child → rotate parent; reduces to Case 3. **Case 3:** uncle black, Z is outer child → recolour + rotate grandparent.
+
+</details>
+
+<details>
+<summary><strong>Q:</strong> Per-node memory overhead?</summary>
+
+**A:** One colour bit, often packed into the parent pointer's low bit (alignment makes it free). Effectively *zero extra bytes* in the kernel's `lib/rbtree.c`.
+
+</details>
+
+<details>
+<summary><strong>Q:</strong> What does <code>rb_root_cached</code> add over <code>rb_root</code>?</summary>
+
+**A:** A cached pointer to the leftmost node, maintained on every insert/erase. Makes "find smallest" `O(1)` — what CFS's `pick_next_task` relies on.
+
+</details>
+
+<details>
+<summary><strong>Q:</strong> RB-tree vs 2-3-4 tree relationship?</summary>
+
+**A:** RB-trees are isomorphic to 2-3-4 trees. A black node + red children corresponds to a 2-3-4 node with up to 4 children. The colour invariants are the 2-3-4 split rules in disguise.
+
+</details>
+
+<details>
+<summary><strong>Q:</strong> Three places RB-trees ship in production?</summary>
+
+**A:** Java `TreeMap`/`TreeSet`, C++ `std::map`/`std::set`, Linux `lib/rbtree.c` (used in CFS scheduler, epoll, mm/mmap, ext4, ...).
+
+</details>
+
+<details>
+<summary><strong>Q:</strong> Why RB-tree over AVL in production by default?</summary>
+
+**A:** Constant-bounded rotation count on writes; mixed read/write workloads dominate; the slightly taller height is asymptotically irrelevant.
+
+</details>
+
+## Code template
+
+```python
+RED, BLACK = 0, 1
+
+class Node:
+    __slots__ = ("key", "colour", "left", "right", "parent")
+    def __init__(self, key):
+        self.key, self.colour = key, RED
+        self.left = self.right = self.parent = None
+
+# Insert is "BST insert as red, then fix-up":
+#
+# def insert_fixup(z):
+#     while z.parent is not None and z.parent.colour == RED:
+#         p, g = z.parent, z.parent.parent
+#         if p is g.left:
+#             u = g.right
+#             if u.colour == RED:                     # Case 1: uncle red
+#                 p.colour = BLACK; u.colour = BLACK
+#                 g.colour = RED
+#                 z = g                               # propagate up
+#             else:
+#                 if z is p.right:                    # Case 2: inner → reduce to Case 3
+#                     z = p; left_rotate(z)
+#                 z.parent.colour = BLACK             # Case 3
+#                 z.parent.parent.colour = RED
+#                 right_rotate(z.parent.parent)
+#         else:
+#             # mirror with left/right swapped
+#             ...
+#     root.colour = BLACK
+```
+
+## Pattern triggers
+
+- **"Need a sorted in-memory map"** → RB-tree; usually `TreeMap` / `std::map`
+- **"What's the kernel scheduler / epoll / page cache using?"** → `lib/rbtree.c`
+- **Mixed read/write workload, balanced BST** → RB-tree (default in stdlib)
+- **Order statistics on a sorted set** → augment RB-tree nodes with `size`
+- **Need fast "smallest key"** → `rb_root_cached` pattern (cache the leftmost pointer)
+- **Concurrent updates to a sorted map** → don't roll your own; use `ConcurrentSkipListMap` or RCU-protected RB-tree
+- **Subtle bug after rebalance** → check that all five invariants still hold; verify black-height equality
+- **Pre-existing tree, want to add 2-3-4 visualisation** → group black-with-red-children as one super-node
+
+***
+
 # Cross-links
 
 - **Prerequisite:** [Binary Search Tree](/cortex/data-structures-and-algorithms/trees-binary-search-tree-introduction-to-binary-search-trees), [Self-Balancing BSTs Overview](/cortex/data-structures-and-algorithms/trees-self-balancing-bst-overview-self-balancing-bst-overview).

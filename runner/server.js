@@ -13,7 +13,14 @@ const RUNTIMES = {
   50: { ext: "script.c",   compile: ["gcc",  "-O2", "script.c",   "-o", "prog", "-lm"], run: ["./prog"] },
   54: { ext: "script.cpp", compile: ["g++",  "-O2", "script.cpp", "-o", "prog"],         run: ["./prog"] },
   60: { ext: "script.go",  run:     ["go",   "run", "script.go"] },
-  62: { ext: "Main.java",  compile: ["javac", "Main.java"],  run: ["java", "-cp", ".", "Main"] },
+  // -encoding UTF-8: javac defaults to the platform encoding (POSIX inside this
+  // image), so any non-ASCII byte in the source (e.g. → × é used in chapter
+  // comments) crashes the parser silently — javac dies before producing a
+  // diagnostic and `compile_output` comes back empty. Forcing UTF-8 makes javac
+  // read the source the same way we wrote it (writeFileSync above uses utf8).
+  // -Dfile.encoding=UTF-8 makes the JVM's stdout writer emit UTF-8 too so the
+  // captured stdout round-trips through base64 cleanly.
+  62: { ext: "Main.java",  compile: ["javac", "-encoding", "UTF-8", "Main.java"],  run: ["java", "-Dfile.encoding=UTF-8", "-cp", ".", "Main"] },
   73: { ext: "main.rs",    compile: ["rustc", "-O", "main.rs", "-o", "prog"],          run: ["./prog"], compileTimeoutMs: 30_000 },
   78: { ext: "Main.kt",    compile: ["sh", "-c", "kotlinc -include-runtime -d Main.jar Main.kt 2>&1"], run: ["java", "-jar", "Main.jar"], compileTimeoutMs: 60_000 },
   81: { ext: "Main.scala", run:     ["scala-cli", "run", "Main.scala", "--quiet", "--server=false"], runTimeoutMs: 90_000 },

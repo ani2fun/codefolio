@@ -15,8 +15,6 @@ By the end of this lesson you'll know the **edit-distance pattern** — the meta
 
 # The Edit-Distance Pattern
 
-> **Course:** DSA › Algorithms › Dynamic Programming › Edit-Distance Pattern
-
 The pattern has four mandatory components:
 
 1. **State.** `dp[i][j]` represents some answer to the question "considering the first `i` characters of one input and the first `j` characters of another (or the same) input."
@@ -70,8 +68,6 @@ The edit-distance pattern: 2D prefix DP, base cases on empty prefixes, fork on l
 ***
 
 # Wildcard Pattern Matching
-
-> **Course:** DSA › Algorithms › Dynamic Programming › Edit-Distance Pattern
 
 ## The Problem
 
@@ -275,8 +271,6 @@ object Main extends App {
 ***
 
 # Interleaving Check
-
-> **Course:** DSA › Algorithms › Dynamic Programming › Edit-Distance Pattern
 
 ## The Problem
 

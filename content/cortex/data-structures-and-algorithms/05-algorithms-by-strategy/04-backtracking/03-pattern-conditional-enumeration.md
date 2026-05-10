@@ -19,8 +19,6 @@ By the end of this lesson you'll know what makes a problem "conditional" rather 
 
 # Understanding Conditional Enumeration
 
-> **Course:** DSA › Algorithms › Backtracking › Conditional Enumeration
-
 A backtracking solution exhibits **conditional enumeration** when **some leaves of the state space tree aren't valid solutions** *or* **some internal nodes can be pruned because no descendant of theirs could possibly be valid**. The algorithm validates as it goes, abandons doomed paths early, and only records leaves that survive every check.
 
 The cleanest way to see this is to compare with the unconditional template from the previous lesson. There, *every* leaf was recorded. Here, leaves are recorded only if they pass a validation check, and **internal nodes are pruned** the moment we know they can't extend to a solution.
@@ -341,8 +339,6 @@ Conditional enumeration adds *pruning* to the unconditional template. Two flavou
 
 # Identifying Conditional Enumeration
 
-> **Course:** DSA › Algorithms › Backtracking › Conditional Enumeration
-
 Three diagnostic questions decide whether conditional enumeration fits.
 
 | # | Question | If "yes," conditional enumeration fits because... |
@@ -407,8 +403,6 @@ Three checks — invalid-leaf possibility, partial-state pruning possibility, in
 ***
 
 # Generate Parentheses
-
-> **Course:** DSA › Algorithms › Backtracking › Conditional Enumeration
 
 The canonical conditional-enumeration problem. Both flavours of pruning visible side-by-side: choice-bounded (only emit `(` if there's room; only emit `)` if there's an open to match) and the implicit constraint-bounded (no separate check needed, because the choice-bounded prune handles it).
 
@@ -595,8 +589,6 @@ Generate Parentheses is the textbook example of choice-bounded pruning. Two coun
 ***
 
 # Target Sum Combinations
-
-> **Course:** DSA › Algorithms › Backtracking › Conditional Enumeration
 
 Find all combinations of array elements (with repetition) that sum to a target. Constraint-bounded pruning: stop the recursion the moment the partial sum *exceeds* the target.
 
@@ -915,8 +907,6 @@ Target Sum Combinations introduces constraint-bounded pruning at its cleanest: a
 ***
 
 # Generate IP Addresses
-
-> **Course:** DSA › Algorithms › Backtracking › Conditional Enumeration
 
 A digit string can split into an IPv4 address in many ways, but most splits produce invalid octets. Validation per segment + segment-count constraint = several pruning rules combined.
 
@@ -1261,8 +1251,6 @@ Generate IPs combines several pruning rules: per-segment validation, segment-cou
 ***
 
 # String Permutations
-
-> **Course:** DSA › Algorithms › Backtracking › Conditional Enumeration
 
 The swap-and-undo recipe. Different shape from the previous three problems — we mutate the input string directly to produce each permutation, then swap back to undo.
 

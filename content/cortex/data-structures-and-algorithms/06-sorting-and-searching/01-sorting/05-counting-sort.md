@@ -19,8 +19,6 @@ By the end of this lesson you'll know the three-phase counting sort algorithm, w
 
 # Understanding Counting Sort
 
-> **Course:** DSA › Algorithms › Sorting › Counting Sort
-
 Counting sort exploits a single fact: **if you know how many elements have each possible value, you know the position of every element in the sorted output.** It avoids comparisons entirely; it just counts and places.
 
 The algorithm works in three phases:
@@ -135,8 +133,6 @@ Counting sort: count occurrences → cumulative sum → place by lookup. No comp
 ***
 
 # The Three Phases — Count, Accumulate, Place
-
-> **Course:** DSA › Algorithms › Sorting › Counting Sort
 
 The algorithm has three nested but conceptually distinct phases. Each one does something specific; getting any one of them wrong (especially phase 2) breaks the whole sort.
 
@@ -290,8 +286,6 @@ Three phases: count → accumulate → place. The cumulative sum in phase 2 is t
 
 # Why Counting Sort Is Stable
 
-> **Course:** DSA › Algorithms › Sorting › Counting Sort
-
 Stability matters when the elements are *records* with multiple fields (e.g., `(score, name)` tuples). Counting sort is stable — and the *reason* is the deliberate reverse walk in phase 3 combined with the post-decrement.
 
 ---
@@ -369,8 +363,6 @@ Counting sort is stable because phase 3 walks the input in reverse and uses post
 ***
 
 # Implementation
-
-> **Course:** DSA › Algorithms › Sorting › Counting Sort
 
 
 ```pseudocode
@@ -533,8 +525,6 @@ Phase 3 — place in reverse
 
 # Complexity Analysis
 
-> **Course:** DSA › Algorithms › Sorting › Counting Sort
-
 | Resource | Best | Average | Worst |
 |---|---|---|---|
 | **Time** | `O(n + k)` | `O(n + k)` | `O(n + k)` |
@@ -581,8 +571,6 @@ Counting sort: `O(n + k)` time and space, stable, not in-place. The fastest sort
 ***
 
 # Counting Sort Problem
-
-> **Course:** DSA › Algorithms › Sorting › Counting Sort
 
 ---
 

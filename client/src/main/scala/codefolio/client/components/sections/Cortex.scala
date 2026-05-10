@@ -33,20 +33,44 @@ object Cortex:
       }
       .render { (_, state) =>
         Section("cortex", "cortex")(
-          <.h2(^.className := "cortex__title", "Cortex"),
-          <.p(
-            ^.className := "cortex__subtitle",
-            "Long-form notes from books, courses, and rabbit holes. Click any topic to start reading."
-          ),
-          state.value.render(
-            loaded = idx =>
-              <.div(
-                BookGrid.Component(BookGrid.Props(idx.books.toList, limit = Some(PreviewLimit))),
-                if idx.books.size > PreviewLimit then
-                  <.div(^.className := "cortex__cta-row", browseAllCta)
-                else EmptyVdom
+          <.div(
+            ^.className := "cortex__inner",
+            <.div(^.className := "cortex__eyebrow", "CORTEX · LONG-FORM NOTES"),
+            <.div(
+              ^.className := "cortex__heading-row",
+              <.h2(
+                ^.className := "cortex__title",
+                "Writing",
+                <.br,
+                "I'm working through."
               ),
-            errored = _ => browseAllCta
+              state.value.render(
+                loaded = idx =>
+                  idx.books.headOption match
+                    case Some(book) =>
+                      <.div(
+                        ^.className := "cortex__pulse-pill",
+                        <.span(^.className := "cortex__pulse-dot", ^.aria.hidden := true),
+                        <.span(
+                          ^.className := "cortex__pulse-text",
+                          s"Currently writing: ${book.title}"
+                        )
+                      )
+                    case None => EmptyVdom
+                ,
+                errored = _ => EmptyVdom
+              )
+            ),
+            state.value.render(
+              loaded = idx =>
+                <.div(
+                  BookGrid.Component(BookGrid.Props(idx.books.toList, limit = Some(PreviewLimit))),
+                  if idx.books.size > PreviewLimit then
+                    <.div(^.className := "cortex__cta-row", browseAllCta)
+                  else EmptyVdom
+                ),
+              errored = _ => browseAllCta
+            )
           )
         )
       }

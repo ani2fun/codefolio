@@ -486,6 +486,121 @@ The Linux kernel makes this trade-off explicitly. The CFS scheduler uses a red-b
 
 ***
 
+# Memorize
+
+The high-leverage facts to commit to long-term memory — atomic enough for an Anki card, concrete enough to recall under pressure or during production debugging. Amortized analysis lets you defend "this is `O(1)`" claims that look false at first glance; once these patterns click, you'll spot dynamic-array push, hash rehash, and splay-tree access at sight.
+
+## Quick recall
+
+Click any question to reveal the answer.
+
+<details>
+<summary><strong>Q:</strong> Definition of amortized cost?</summary>
+
+**A:** Total cost of any sequence of `n` operations, divided by `n`, in the worst case over all sequences. *Not* an average over inputs — it's an average over operations on one structure.
+
+</details>
+
+<details>
+<summary><strong>Q:</strong> Three methods to prove amortized cost claims?</summary>
+
+**A:** **Aggregate** (total over `n` ops, divide by `n`). **Accounting** (charge ops more than actual cost; bank credits). **Potential** (`amortized = actual + ΔΦ` where `Φ` is a potential function).
+
+</details>
+
+<details>
+<summary><strong>Q:</strong> Amortized cost of dynamic-array push (growth factor 2)?</summary>
+
+**A:** `O(1)`. Total cost of `n` pushes ≤ `3n` (n pushes + ≤ 2n copy work from geometric resize series).
+
+</details>
+
+<details>
+<summary><strong>Q:</strong> Why does growth factor 2 give amortized `O(1)` but constant `+k` growth give amortized `O(n)`?</summary>
+
+**A:** Geometric series sums to `O(n)` total resize work. Arithmetic series sums to `O(n²)`. The constant factor must be `>1` strictly, not additive.
+
+</details>
+
+<details>
+<summary><strong>Q:</strong> Why must dynamic-array shrink only at quarter-full, not half-full?</summary>
+
+**A:** Half-full triggers oscillation: pop-shrink-push-resize repeatedly, each `O(n)`. Quarter-full guarantees enough work between shrinks to amortise the resize.
+
+</details>
+
+<details>
+<summary><strong>Q:</strong> Amortized cost of binary-counter increment (cost = bits flipped)?</summary>
+
+**A:** `O(1)`. Total flips over `n` increments ≤ `2n` (geometric series: bit `i` flips every `2^i` increments).
+
+</details>
+
+<details>
+<summary><strong>Q:</strong> Splay-tree access — amortized vs worst-case?</summary>
+
+**A:** Amortized `O(log n)`; worst-case `O(n)`. Excellent for batch processing; bad for latency-sensitive systems.
+
+</details>
+
+<details>
+<summary><strong>Q:</strong> When is amortized analysis the wrong tool?</summary>
+
+**A:** Real-time / latency-bounded systems. Amortized averages over a sequence; one operation can still be `O(n)`. Use worst-case-bounded structures (RB-tree over splay) for hard deadlines.
+
+</details>
+
+<details>
+<summary><strong>Q:</strong> Why does Linux's CFS scheduler use RB-tree instead of splay tree, despite splay being amortized `O(log n)`?</summary>
+
+**A:** Per-decision worst-case bound matters more than throughput average. Splay's `O(n)` worst case is unacceptable in a scheduler; RB-tree's `O(log n)` worst case isn't.
+
+</details>
+
+<details>
+<summary><strong>Q:</strong> Hash-table insert: average vs amortized?</summary>
+
+**A:** Average insert = `O(1)` (good hash). Amortized insert = `O(1)` (resize amortises across many inserts). Both required to claim "`O(1)`" in production.
+
+</details>
+
+## Code template
+
+```python
+# The three amortized-analysis methods, sketched on dynamic-array push.
+
+# 1. Aggregate method: total cost of n pushes
+def aggregate_cost(n):
+    pushes = n                          # 1 unit each
+    resize_powers = [2 ** k for k in range(n.bit_length()) if 2 ** k <= n]
+    resize = sum(resize_powers)         # geometric: ≤ 2n
+    return pushes + resize              # ≤ 3n  →  amortized 3 per push
+
+# 2. Accounting method: charge each push 3 units
+#    - 1 unit pays for the push itself
+#    - 2 units bank credit on the new element
+#    When resize hits, banked credits across the upper half pay for the copy.
+
+# 3. Potential method: Φ(D) = 2 * (size - capacity / 2)
+#    Cheap push:    actual=1, ΔΦ=2  → amortized=3
+#    Resize push:   actual=cap+1, ΔΦ=2-cap  → amortized=3
+
+# All three give the same answer: amortized O(1) per push.
+```
+
+## Pattern triggers
+
+- **Operation is occasionally `O(n)` but usually `O(1)`** → likely amortized; check the long-run sequence
+- **Geometric resize (×2 capacity)** → `O(1)` amortized
+- **Constant `+k` resize** → `O(n)` amortized; *not* a fix
+- **Hash table insert with rehash** → `O(1)` amortized
+- **Splay tree access / Fibonacci-heap decrease-key** → `O(log n)` / `O(1)` amortized; worst case worse
+- **Real-time / latency-sensitive system** → amortized is *not* enough; use worst-case-bounded structure
+- **Adversary controls the sequence** → still amortized; "for all sequences" definition holds
+- **"This is `O(1)` but my profiler shows occasional spikes"** → amortized in action; look for resize / rehash points
+
+***
+
 # Cross-links
 
 - **Prerequisite:** [Asymptotic Analysis](/cortex/data-structures-and-algorithms/foundations-asymptotic-analysis), [Recurrence Relations](/cortex/data-structures-and-algorithms/foundations-recurrence-relations-and-master-theorem).

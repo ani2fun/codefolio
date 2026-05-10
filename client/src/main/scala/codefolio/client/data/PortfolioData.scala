@@ -24,28 +24,46 @@ object PortfolioData:
     val alt: String = js.native
 
   @js.native trait Project extends js.Object:
-    val name: String                  = js.native
-    val tags: js.Array[String]        = js.native
-    val projectUrl: String            = js.native
-    val githubUrl: String             = js.native
-    val image: ProjectImage           = js.native
-    val description: String           = js.native
+    val name: String                       = js.native
+    val tags: js.Array[String]             = js.native
+    val projectUrl: String                 = js.native
+    val githubUrl: String                  = js.native
+    val image: ProjectImage                = js.native
+    val description: String                = js.native
+    val category: js.UndefOr[String]       = js.native
+    val metadata: js.UndefOr[String]       = js.native
+    val featured: js.UndefOr[Boolean]      = js.native
 
   // ---- Experience ---------------------------------------------------------
 
   @js.native trait Company extends js.Object:
-    val short: String = js.native
-    val name: String  = js.native
-    val url: String   = js.native
+    val short: String                  = js.native
+    val name: String                   = js.native
+    val url: String                    = js.native
+    /** Optional name to use in Hero's logo strip when it should differ from
+     *  `short` — e.g. JSON says "Nokia", strip wants "Bell Labs". */
+    val displayName: js.UndefOr[String] = js.native
 
   @js.native trait Experience extends js.Object:
-    val position: String                      = js.native
-    val company: Company                      = js.native
-    val time: String                          = js.native
-    val description: String                   = js.native
-    val items: js.Array[String]               = js.native
-    val results: js.UndefOr[js.Array[String]] = js.native
-    val leveragedKnowledgeIn: js.Array[String] = js.native
+    val position: String                                = js.native
+    val company: Company                                = js.native
+    val time: String                                    = js.native
+    val description: String                             = js.native
+    val items: js.Array[String]                         = js.native
+    val results: js.UndefOr[js.Array[String]]           = js.native
+    val leveragedKnowledgeIn: js.Array[String]          = js.native
+    /** 2–3 promoted chips shown above the bullets. */
+    val primaryTech: js.UndefOr[js.Array[String]]       = js.native
+    /** Demoted secondary stack shown smaller below the bullets. */
+    val secondaryTech: js.UndefOr[js.Array[String]]     = js.native
+    /** Pulled into SelectedWork strip when true. */
+    val featured: js.UndefOr[Boolean]                   = js.native
+    /** Short label in SelectedWork meta row, e.g. "Backend / Identity". */
+    val roleTag: js.UndefOr[String]                     = js.native
+    /** Short blurb for SelectedWork rows; falls back to `description`. */
+    val selectedWorkBlurb: js.UndefOr[String]           = js.native
+    /** Location string for SelectedWork meta row, e.g. "Paris" or "Remote". */
+    val location: js.UndefOr[String]                    = js.native
 
   // ---- Certifications -----------------------------------------------------
 

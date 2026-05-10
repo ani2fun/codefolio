@@ -21,8 +21,6 @@ By the end of this lesson you'll know the heap data structure and its array repr
 
 # Understanding Heaps
 
-> **Course:** DSA › Algorithms › Sorting › Heapsort
-
 A **heap** is a complete binary tree (filled top-to-bottom, left-to-right) with the **heap property**:
 
 - **Max heap**: every parent ≥ its children.
@@ -151,8 +149,6 @@ Heap = complete binary tree with the parent-child ordering property; stored as a
 
 # The Heapify Operation
 
-> **Course:** DSA › Algorithms › Sorting › Heapsort
-
 `heapify(arr, n, i)` ensures the subtree rooted at index `i` satisfies the max-heap property, *assuming* the subtrees rooted at `2*i+1` and `2*i+2` already do. It's recursive: if a swap is needed, the call propagates downward to fix any new violation.
 
 ---
@@ -216,8 +212,6 @@ The recursion descends the tree, at most one level per call. The tree has height
 ***
 
 # Heapsort in Two Phases
-
-> **Course:** DSA › Algorithms › Sorting › Heapsort
 
 The algorithm:
 
@@ -301,8 +295,6 @@ Heapsort: build heap in `O(n)`, extract one element at a time in `O(n log n)`. T
 ***
 
 # Implementation
-
-> **Course:** DSA › Algorithms › Sorting › Heapsort
 
 Two functions: `heapify` and `heap_sort` (the two-phase driver).
 
@@ -465,8 +457,6 @@ object Main {
 
 # Complexity Analysis
 
-> **Course:** DSA › Algorithms › Sorting › Heapsort
-
 | Resource | Best | Average | Worst |
 |---|---|---|---|
 | **Time** | `O(n log n)` | `O(n log n)` | `O(n log n)` |
@@ -508,8 +498,6 @@ Heapsort: `O(n log n)` worst case, in-place, no allocation. The choice for memor
 ***
 
 # Heapsort Problem
-
-> **Course:** DSA › Algorithms › Sorting › Heapsort
 
 ---
 

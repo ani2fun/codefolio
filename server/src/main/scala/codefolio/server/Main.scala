@@ -1,7 +1,7 @@
 package codefolio.server
 
 import codefolio.server.codeRunPipeline.CodeRunPipeline
-import codefolio.server.config.AppConfig
+import codefolio.server.config.{AppConfig, CortexConfig, DbConfig, MongoConfig, RedisConfig, RunnerConfig}
 import codefolio.server.cortexPipeline.CortexPipeline
 import codefolio.server.db.{DataSource, Migrations}
 import codefolio.server.helloPipeline.HelloPipeline
@@ -44,6 +44,21 @@ object Main extends ZIOAppDefault:
   override val bootstrap: ZLayer[Any, Nothing, Unit] =
     Runtime.setConfigProvider(TypesafeConfigProvider.fromResourcePath())
 
+  // Project each sub-config out of `AppConfig` so downstream layers depend only on
+  // the slice they actually read. Keeps every pipeline's interface honest about
+  // what config it touches, and lets tests construct a single sub-config rather
+  // than a fully-formed `AppConfig` for every layer they wire.
+  private val dbCfg: ZLayer[AppConfig, Nothing, DbConfig] =
+    ZLayer.fromFunction((c: AppConfig) => c.db)
+  private val redisCfg: ZLayer[AppConfig, Nothing, RedisConfig] =
+    ZLayer.fromFunction((c: AppConfig) => c.redis)
+  private val mongoCfg: ZLayer[AppConfig, Nothing, MongoConfig] =
+    ZLayer.fromFunction((c: AppConfig) => c.mongo)
+  private val runnerCfg: ZLayer[AppConfig, Nothing, RunnerConfig] =
+    ZLayer.fromFunction((c: AppConfig) => c.runner)
+  private val cortexCfg: ZLayer[AppConfig, Nothing, CortexConfig] =
+    ZLayer.fromFunction((c: AppConfig) => c.cortex)
+
   override def run: ZIO[Any, Throwable, Unit] =
     // Run schema migrations *before* binding the HTTP port — if they fail
     // we'd rather crash on boot than serve traffic against a stale schema.
@@ -53,6 +68,11 @@ object Main extends ZIOAppDefault:
     program
       .provide(
         AppConfig.live,       // reads `application.conf` + env vars
+        dbCfg,                // AppConfig → DbConfig
+        redisCfg,             // AppConfig → RedisConfig
+        mongoCfg,             // AppConfig → MongoConfig
+        runnerCfg,            // AppConfig → RunnerConfig
+        cortexCfg,            // AppConfig → CortexConfig
         DataSource.live,      // HikariCP pool over Postgres
         HelloPipeline.live,   // /api/hello, /api/recent, /api/health (Postgres + Redis + Mongo)
         CodeRunPipeline.live, // /api/run (Piston / Code Runner)

@@ -20,8 +20,6 @@ This file is the final pattern lesson in the sorting section. By the end you'll 
 
 # Understanding Custom Comparators
 
-> **Course:** DSA › Algorithms › Sorting › Custom Compare Pattern
-
 A **comparator** is a function (or callable object) that takes two elements `a` and `b` and returns:
 
 - **Negative** if `a` should come before `b`.
@@ -108,8 +106,6 @@ A comparator is a function that defines "which element comes first." Any sort al
 
 # The Three Styles
 
-> **Course:** DSA › Algorithms › Sorting › Custom Compare Pattern
-
 Most languages support three syntactic styles for custom compare. Each has its place.
 
 ---
@@ -192,8 +188,6 @@ Three styles, one underlying idea: provide a function that orders pairs. Pick th
 
 # Identifying Custom-Compare Problems
 
-> **Course:** DSA › Algorithms › Sorting › Custom Compare Pattern
-
 Two diagnostic questions decide whether the custom-compare pattern fits.
 
 | # | Question | If "yes," custom compare fits because... |
@@ -237,8 +231,6 @@ Two checks — a transformation is needed, and the transformation is a function 
 ***
 
 # Bitwise Sort
-
-> **Course:** DSA › Algorithms › Sorting › Custom Compare Pattern
 
 Sort numbers by the count of `1` bits in their binary representation. Ties broken by value.
 
@@ -380,8 +372,6 @@ object Main {
 
 # Sort Characters by Frequency
 
-> **Course:** DSA › Algorithms › Sorting › Custom Compare Pattern
-
 Sort a string's characters by frequency (descending), with lexicographic tiebreaks.
 
 ---
@@ -430,8 +420,6 @@ The full 10-language implementations follow the same pattern: build a frequency 
 ***
 
 # Largest Number
-
-> **Course:** DSA › Algorithms › Sorting › Custom Compare Pattern
 
 Concatenate numbers to form the largest possible number. The custom compare here is *non-obvious*: we don't sort by value or by digit count. We sort by which order produces a larger concatenation.
 
@@ -501,8 +489,6 @@ If `arr = [0, 0]`, the sorted concatenation is `"00"` — but the largest number
 ***
 
 # Sort People by Height
-
-> **Course:** DSA › Algorithms › Sorting › Custom Compare Pattern
 
 A two-step problem: first sort by a custom rule, then *reconstruct* the order based on a per-element index. The custom compare gets us the initial sort; a clever insertion gets us the final answer.
 

@@ -444,6 +444,115 @@ The condensation DAG is a powerful tool. Many problems on a directed graph are e
 
 ***
 
+# Memorize
+
+The high-leverage facts to commit to long-term memory — atomic enough for an Anki card, concrete enough to recall under pressure or during production debugging. SCCs unlock dependency cycles in code, the giant component of the web, 2-SAT, and many other problems — recognising the shape is half the battle.
+
+## Quick recall
+
+Click any question to reveal the answer.
+
+<details>
+<summary><strong>Q:</strong> Definition of an SCC?</summary>
+
+**A:** A maximal set of vertices in a directed graph where every vertex can reach every other. The relation "mutually reachable" is an equivalence relation; SCCs partition the vertex set.
+
+</details>
+
+<details>
+<summary><strong>Q:</strong> Time complexity of Kosaraju? Of Tarjan?</summary>
+
+**A:** Both `O(V + E)`. Kosaraju does two DFS passes; Tarjan does one with the lowlink trick.
+
+</details>
+
+<details>
+<summary><strong>Q:</strong> Two passes of Kosaraju?</summary>
+
+**A:** **Pass 1** — DFS the original graph, push vertices onto a stack as they finish. **Pass 2** — DFS the *transpose* graph in stack-pop order; each DFS tree is one SCC.
+
+</details>
+
+<details>
+<summary><strong>Q:</strong> What does <code>low[u]</code> mean in Tarjan's algorithm?</summary>
+
+**A:** The smallest discovery time reachable from `u` via tree edges followed by *at most one* back-edge. If `low[u] == disc[u]`, `u` is the root of an SCC.
+
+</details>
+
+<details>
+<summary><strong>Q:</strong> Why does Tarjan need the <code>on_stack</code> flag?</summary>
+
+**A:** To distinguish "still in current SCC" from "already assigned to another SCC". Without it, you'd update `low[u]` from cross-edges into other SCCs and merge them incorrectly.
+
+</details>
+
+<details>
+<summary><strong>Q:</strong> What's the condensation graph?</summary>
+
+**A:** Collapse each SCC into a single super-vertex. The result is a *DAG*. Many problems on directed graphs reduce to "find SCCs, solve on the DAG".
+
+</details>
+
+<details>
+<summary><strong>Q:</strong> When does Tarjan beat Kosaraju in production?</summary>
+
+**A:** Almost always — single pass, smaller constant factor. Production code (Boost, NetworkX) uses Tarjan by default.
+
+</details>
+
+<details>
+<summary><strong>Q:</strong> Does a directed graph have a cycle iff some SCC has size ≥ 2?</summary>
+
+**A:** Almost. The exact rule: a cycle exists iff some SCC has size ≥ 2 OR some vertex has a self-loop.
+
+</details>
+
+## Code template
+
+```python
+def tarjan(n, adj):
+    disc = [-1] * n
+    low = [-1] * n
+    on_stack = [False] * n
+    stk, sccs = [], []
+    timer = [0]
+
+    def dfs(u):
+        disc[u] = low[u] = timer[0]; timer[0] += 1
+        stk.append(u); on_stack[u] = True
+        for v in adj[u]:
+            if disc[v] == -1:
+                dfs(v)
+                low[u] = min(low[u], low[v])
+            elif on_stack[v]:
+                low[u] = min(low[u], disc[v])
+        if low[u] == disc[u]:
+            scc = []
+            while True:
+                w = stk.pop(); on_stack[w] = False
+                scc.append(w)
+                if w == u: break
+            sccs.append(scc)
+
+    for v in range(n):
+        if disc[v] == -1: dfs(v)
+    return sccs
+```
+
+## Pattern triggers
+
+- **"Find cycles in a directed graph"** → SCCs of size ≥ 2 (plus self-loops)
+- **"Detect circular dependencies between modules"** → SCCs of the dependency graph
+- **"Compress a directed graph to its DAG"** → condensation via SCC
+- **"2-SAT solvability"** → no variable and its negation in the same SCC of the implication graph
+- **"Mother vertex" / "vertex reaching all others"** → last vertex Kosaraju finishes
+- **"Topological sort of a graph with cycles"** → topo-sort the condensation DAG
+- **"Web graph / dependency graph at scale"** → Tarjan on the directed-edge representation
+- **Recursion-stack overflow on big graphs** → iterative Tarjan with an explicit stack
+
+***
+
 # Cross-links
 
 - **Prerequisites:** [Graph Traversal](/cortex/data-structures-and-algorithms/graphs-traversing-a-graph), [Cycle Detection](/cortex/data-structures-and-algorithms/graphs-cycle-detection).

@@ -10,16 +10,23 @@ import codefolio.client.components.cortex.{
   MobileToc
 }
 import codefolio.client.markdown.MarkdownRenderer
-import codefolio.client.util.{AsyncFetch, PageTitle}
+import codefolio.client.util.{AsyncFetch, PageTitle, ReaderState}
 import codefolio.shared.api.Endpoints.{ChapterPayload, ChapterRef}
 import japgolly.scalajs.react.*
 import japgolly.scalajs.react.vdom.html_<^.*
+import org.scalajs.dom
 
 import scala.scalajs.concurrent.JSExecutionContext.Implicits.queue
+import scala.scalajs.js
 
 /**
  * Reads `/api/cortex/{book}/{chapter}`, runs the markdown through the client-side pipeline, and lays out the
  * result with sidebar + breadcrumb + TOC + pager.
+ *
+ * Side-effects beyond rendering: caches the chapter's word-count-derived "minutes to read" in localStorage on
+ * every successful load, and listens to the window's `scroll` event while mounted to persist the user's
+ * reading-progress percent (both keyed by chapter slug). The sidebar reads those values back to render the
+ * progress rail and the `Xm` time-to-read stamp.
  */
 object ChapterPage:
 
@@ -35,21 +42,61 @@ object ChapterPage:
     ScalaFnComponent
       .withHooks[Props]
       .useState(AsyncFetch.initial[Loaded])
-      .useEffectWithDepsBy((props, _) => (props.book, props.chapter)) { (_, state) => deps =>
-        val (book, chapter) = deps
+      // Cleanup ref for the per-chapter scroll listener. Same pattern as D2Diagram: on the next
+      // effect run we drain this array (removing the listener and saving a final progress sample),
+      // then push a fresh cleanup as the new listener is installed.
+      .useRefBy((_, _) => js.Array[js.Function0[Unit]]())
+      .useEffectWithDepsBy((props, _, _) => (props.book, props.chapter)) { (_, state, _) => deps =>
+        val (_, chapter) = deps
         AsyncFetch.run(
           setState = state.setState,
           fetch =
             for
-              payload  <- ApiClient.getCortexChapter(book, chapter)
+              payload  <- ApiClient.getCortexChapter(deps._1, chapter)
               rendered <- MarkdownRenderer.render(payload.raw)
             yield Loaded(payload, rendered),
-          errorPrefix = s"Failed to load $book/$chapter",
+          errorPrefix = s"Failed to load ${deps._1}/${chapter}",
           onLoaded = loaded =>
-            PageTitle.set(s"${loaded.payload.frontmatter.title} — ${loaded.payload.book.title}")
+            PageTitle.set(s"${loaded.payload.frontmatter.title} — ${loaded.payload.book.title}") >>
+              Callback(ReaderState.saveMinutesFromRaw(loaded.payload.chapter.slug, loaded.payload.raw))
         )
       }
-      .render { (props, state) =>
+      // Persist scroll-progress for the active chapter while the user reads. We throttle via a 200ms
+      // setTimeout debounce so we're not hammering localStorage on every wheel tick. The previous
+      // chapter's listener is torn down (and a final progress sample written) on chapter change.
+      .useEffectWithDepsBy((p, _, _) => (p.book, p.chapter)) { (_, _, cleanupRef) => deps =>
+        val (_, chapter) = deps
+
+        val tearDown: Callback = Callback {
+          val arr = cleanupRef.value
+          for i <- 0 until arr.length do arr(i)()
+          cleanupRef.value = js.Array()
+        }
+
+        val install: Callback = Callback {
+          var pending: Option[Int] = None
+          val onScroll: js.Function1[dom.Event, Unit] = (_: dom.Event) => {
+            pending.foreach(dom.window.clearTimeout)
+            pending = Some(dom.window.setTimeout(
+              () => ReaderState.saveScrollProgress(chapter),
+              200.0
+            ))
+          }
+          dom.window.addEventListener("scroll", onScroll, useCapture = false)
+          cleanupRef.value.push { () =>
+            dom.window.removeEventListener("scroll", onScroll, useCapture = false)
+            // One last snapshot so the sidebar shows where the user actually left, not the last
+            // debounced sample (which may be ~200ms stale).
+            ReaderState.saveScrollProgress(chapter)
+            pending.foreach(dom.window.clearTimeout)
+            ()
+          }
+          ()
+        }
+
+        tearDown >> install
+      }
+      .render { (props, state, _) =>
         state.value.render(
           loaded = renderLoaded,
           loading = <.main(
@@ -71,6 +118,7 @@ object ChapterPage:
 
     val content: VdomNode =
       <.div(
+        ^.className := "cortex-reader-layout__prose",
         CortexBreadcrumb.Component(
           CortexBreadcrumb.Props(
             bookSlug = payload.book.slug,
@@ -79,13 +127,13 @@ object ChapterPage:
           )
         ),
         <.h1(
-          ^.className := "text-3xl md:text-4xl font-bold text-foreground mb-3",
+          ^.className := "cortex-reader-prose__title",
           payload.frontmatter.title
         ),
         payload.frontmatter.summary
           .map(s =>
             <.p(
-              ^.className := "text-base text-muted-foreground leading-relaxed mb-8",
+              ^.className := "cortex-reader-prose__lede",
               s
             ): VdomNode
           )

@@ -20,8 +20,6 @@ By the end of this lesson you'll know the algorithm, the invariants that the thr
 
 # Understanding Dutch National Flag
 
-> **Course:** DSA › Algorithms › Sorting › Dutch National Flag
-
 The Dutch National Flag (DNF) algorithm sorts an array with **at most 3 distinct values** in a single pass. The values are conventionally `0`, `1`, `2` — but the algorithm generalises to any three categories you can order (e.g., `< pivot`, `== pivot`, `> pivot` for quicksort).
 
 The algorithm runs three pointers along the array:
@@ -161,8 +159,6 @@ DNF: three pointers, three cases, one pass. Linear time, constant space. The tec
 
 # The Four-Region Invariant
 
-> **Course:** DSA › Algorithms › Sorting › Dutch National Flag
-
 The DNF algorithm maintains a **loop invariant** that's the easiest way to convince yourself it's correct. At the start of every iteration:
 
 - `arr[0..left-1]` contains only `0`s.
@@ -233,8 +229,6 @@ The four-region invariant gives the algorithm its correctness proof. The loop co
 ***
 
 # Implementation
-
-> **Course:** DSA › Algorithms › Sorting › Dutch National Flag
 
 
 ```pseudocode
@@ -370,8 +364,6 @@ object Main {
 
 # Complexity Analysis
 
-> **Course:** DSA › Algorithms › Sorting › Dutch National Flag
-
 | Resource | Best | Average | Worst |
 |---|---|---|---|
 | **Time** | `O(n)` | `O(n)` | `O(n)` |
@@ -401,8 +393,6 @@ DNF is `O(n)` time, `O(1)` space, single pass. The three-way partition technique
 ***
 
 # Dutch National Flag Problem
-
-> **Course:** DSA › Algorithms › Sorting › Dutch National Flag
 
 ---
 

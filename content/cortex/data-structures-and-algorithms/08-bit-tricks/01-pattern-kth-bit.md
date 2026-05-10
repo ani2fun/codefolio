@@ -17,8 +17,6 @@ By the end of this lesson you'll know the **kth-bit primitives** — `n & (1 << 
 
 # The Bit-Manipulation Toolkit
 
-> **Course:** DSA › Algorithms › Bit Manipulation › Kth-Bit Operations
-
 A 32-bit integer is a row of 32 boolean cells. The bit at *position k* (counting from 1, starting at the least-significant end) is what the operations target. The trick: every kth-bit operation builds a **mask** — `1 << (k - 1)` — and combines it with the integer using a bitwise operator.
 
 ```d2
@@ -76,8 +74,6 @@ Every kth-bit primitive is `mask = 1 << (k - 1)` plus one of four operators. Mem
 ***
 
 # Kth Bit Check
-
-> **Course:** DSA › Algorithms › Bit Manipulation › Kth-Bit Operations
 
 ## The Problem
 
@@ -186,8 +182,6 @@ object Main extends App {
 
 # Set Kth Bit
 
-> **Course:** DSA › Algorithms › Bit Manipulation › Kth-Bit Operations
-
 ## The Problem
 
 Given `num` and `k`, return `num` with its kth bit forced to 1. If the bit was already 1, the value is unchanged.
@@ -275,8 +269,6 @@ object Main extends App {
 
 # Unset Kth Bit
 
-> **Course:** DSA › Algorithms › Bit Manipulation › Kth-Bit Operations
-
 ## The Problem
 
 Given `num` and `k`, return `num` with its kth bit forced to 0. If the bit was already 0, the value is unchanged.
@@ -363,8 +355,6 @@ object Main extends App {
 ***
 
 # Toggle Kth Bit
-
-> **Course:** DSA › Algorithms › Bit Manipulation › Kth-Bit Operations
 
 ## The Problem
 

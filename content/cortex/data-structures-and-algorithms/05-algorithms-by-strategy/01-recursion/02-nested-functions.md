@@ -16,8 +16,6 @@ This lesson is the bridge between memory layout and recursion. By the end you'll
 
 # When One Function Calls Another
 
-> **Course:** DSA › Algorithms › Recursion › Nested Functions
-
 Pick any non-trivial program — a compiler, a web server, a game engine. None of them live in a single function. They live in dozens, hundreds, sometimes tens of thousands of small functions that call one another in a constant cascade. Modular. Testable. Reusable. The price for all that elegance is paid in one specific region of memory: the stack we set up in the Memory Model lesson.
 
 Every nested call adds a fresh tier of scaffolding. The previous tier is still there, paused mid-construction, waiting for the new tier to finish so it can resume. Stack memory is the bookkeeping that makes that pausing-and-resuming work, and stack overflow is what happens when the pausing is too deep for the bookkeeping to hold.
@@ -64,8 +62,6 @@ Functions calling functions is the most ordinary thing programs do. The stack is
 ***
 
 # Anatomy of a Stack Frame
-
-> **Course:** DSA › Algorithms › Recursion › Nested Functions
 
 A stack frame is not magic. It's a fixed-size block of bytes in the stack region with a fixed layout, decided by the compiler. Every frame in a program follows the same template — only the contents differ.
 
@@ -122,8 +118,6 @@ A frame is not abstract — it's a fixed block of bytes with a fixed layout. Eve
 ***
 
 # Tracing a Real Program
-
-> **Course:** DSA › Algorithms › Recursion › Nested Functions
 
 Let's run a four-function program through the stack and watch the frames grow and shrink. The program is deliberately trivial — one call per function, no logic — so we can focus on the *stack behaviour* without the algorithm getting in the way.
 
@@ -278,8 +272,6 @@ Calls push, returns pop. The deepest moment is when the most frames are alive at
 ***
 
 # Stack Overflow — Three Ways to Break the Scaffold
-
-> **Course:** DSA › Algorithms › Recursion › Nested Functions
 
 The stack region is finite. On most systems each thread gets between **1 MB and 8 MB** of stack — total. That's not very much. A small frame holds maybe a hundred bytes; a frame with a big local array holds far more. When the running program tries to push one more frame and there isn't room for it, the OS terminates the process with a **stack overflow** error.
 
@@ -631,8 +623,6 @@ Stack overflow has three flavours: many small frames, one huge frame, or both at
 ***
 
 # What This Means for Recursion
-
-> **Course:** DSA › Algorithms › Recursion › Nested Functions
 
 We've been pretending the four functions in our trace were unrelated. Watch what happens if `function_a` calls **`function_a`**.
 

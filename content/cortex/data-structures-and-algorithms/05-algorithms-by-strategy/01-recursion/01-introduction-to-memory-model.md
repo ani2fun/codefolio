@@ -16,8 +16,6 @@ Recursive code looks innocent. A function that calls itself, a base case, three 
 
 # Why Memory Layout Matters
 
-> **Course:** DSA › Algorithms › Recursion › Introduction
-
 You write a clean, three-line recursive function. It works on small inputs. You ship it. Six weeks later, a customer hits it with a list of a million items and the production process dies with `StackOverflowError`. You add a `try/catch`. The next customer hits it with two million items. The same crash. You add `sys.setrecursionlimit(10**6)`. The Python interpreter still segfaults — because the limit you raised wasn't the limit that mattered.
 
 There is a region of memory called **the stack**, and recursion lives there. Every function call your program makes — recursive or not — is written into that region in a very specific way. When the region runs out of space, your program ends. Not your function. Your *process*.
@@ -54,8 +52,6 @@ Stack overflow isn't a recursion bug, it's a *memory layout* bug — and you can
 ***
 
 # A Process Is a Building Under Construction
-
-> **Course:** DSA › Algorithms › Recursion › Introduction
 
 Imagine the moment your program starts. The operating system gives it a chunk of address space — a tall, empty plot of land. Inside that plot, four crews show up and stake out their territories. They will not move for the entire run of your program. Every value you ever create, every function you ever call, ends up living with one of these four crews.
 
@@ -114,8 +110,6 @@ Four regions, one analogy. But "they exist" isn't enough — each region behaves
 ***
 
 # Heap — The Lumber Yard
-
-> **Course:** DSA › Algorithms › Recursion › Introduction
 
 The heap is the most flexible region in the building site, and the most dangerous. Anything you can ask for — a one-byte integer, a million-element array, a graph of objects pointing at each other — comes out of the heap. The catch is that the heap doesn't track who owns what. If you forget to return what you took, the heap doesn't reclaim it; it just keeps shrinking until the process dies.
 
@@ -389,8 +383,6 @@ The heap is permissive — anything fits, but cleanup is on you (or a garbage co
 
 # Stack — The Scaffolding
 
-> **Course:** DSA › Algorithms › Recursion › Introduction
-
 The stack is the region recursion lives in. Every function call you make — whether it calls itself or anything else — gets a slip of paper called a *stack frame* pushed onto the top of the stack. When the function returns, the slip is thrown away. The most recent frame is always the next one to leave. Last in, first out.
 
 If you understand only one region in this lesson, make it this one.
@@ -649,8 +641,6 @@ The stack is automatic — but automatic doesn't mean infinite. Each call adds a
 ***
 
 # Static — The Foundation
-
-> **Course:** DSA › Algorithms › Recursion › Introduction
 
 The static region is the simplest of the four — and the easiest to ignore until it bites you. It's the foundation of the building site: poured on day one, present until demolition, never moved. Anything here exists for the *entire run of the program*.
 
@@ -955,8 +945,6 @@ Globals and statics are the bones of the building — but bones are not the part
 
 # Code Segment — The Blueprint
 
-> **Course:** DSA › Algorithms › Recursion › Introduction
-
 The code segment — also called the **text segment** or simply *text* — is the region that holds the executable instructions of your program. The four other regions hold *data*. This one holds *code*. It's the blueprint that the other crews work from.
 
 ---
@@ -1055,8 +1043,6 @@ Four regions, four roles, one process. Time to see them all working together on 
 ***
 
 # Putting It All Together
-
-> **Course:** DSA › Algorithms › Recursion › Introduction
 
 You now have the four regions. Let's run a small program through them to lock in the model.
 

@@ -2,24 +2,23 @@ package codefolio.client.components.cortex
 
 import codefolio.client.markdown.MarkdownRenderer
 import codefolio.client.util.HashScroll
+import codefolio.shared.cortex.Block
 import japgolly.scalajs.react.*
 import japgolly.scalajs.react.vdom.html_<^.*
 import org.scalajs.dom
 
 import scala.scalajs.js
-import scala.util.{Failure, Success, Try}
+import scala.util.Try
 
 /**
- * Owns the full pipeline that turns a rendered markdown HTML string into a mounted, interactive Cortex
- * Chapter: drops the HTML into an `<article>` via `dangerouslySetInnerHTML`, walks it after mount, and
- * React-portal-mounts Scala.js components into the placeholder divs the TS markdown pipeline emits. The
- * placeholder catalog (Runnable Code Blocks, Mermaid, D2) was previously a separate file
- * (`ChapterPlaceholders`) but each catalog block had to know about DOM nodes and the renderer had to iterate
- * over opaque `(node, vdom)` tuples — folding the two together puts both halves of the pipeline in one place
- * and makes the catalog the natural unit-test surface.
+ * Owns the post-render mounting half of the Chapter pipeline: drops the rendered HTML into an `<article>`
+ * via `dangerouslySetInnerHTML`, asks [[BlockDiscovery]] to find every Cortex Block placeholder, and React-
+ * portal-mounts a Scala.js component into each one.
  *
- * Doesn't render the TOC itself — `props.result.toc` is exposed for the sidebar/heading-tracker to consume
- * separately.
+ * Discovery + structural validation live in `BlockDiscovery` (DOM walk + JS shims) and `shared.cortex.Blocks`
+ * (pure decoders, JVM-tested). This module owns only the React-side concerns: hook lifecycle, root teardown
+ * across chapter changes, click delegation for in-article anchors, and the total `Block => VdomElement`
+ * dispatch.
  *
  * Roots are unmounted on each chapter change so we don't leak component trees.
  */
@@ -73,8 +72,8 @@ object ChapterContent:
             article.addEventListener("click", onArticleClick)
 
             val newRoots = js.Array[RootHandle]()
-            discover(article).foreach { case (node, vdom) =>
-              val _ = newRoots.push(mount(node, vdom))
+            BlockDiscovery.discover(article).blocks.foreach { case (node, block) =>
+              val _ = newRoots.push(mount(node, render(block)))
             }
             rootsRef.value = newRoots
             val _ = dom.window.setTimeout(() => HashScroll.scrollToCurrentHash(), 0)
@@ -93,112 +92,27 @@ object ChapterContent:
         )
       }
 
-  // ---- Block catalog -----------------------------------------------------
+  // Total `Block => VdomElement` dispatch. Adding a new Block variant breaks the match
+  // exhaustively at compile time — the missing-case error names exactly what's missing.
+  private def render(block: Block): VdomElement = block match
+    case Block.RunnableCode(language, source, languageLabel) =>
+      RunnableCodeBlock.Component(RunnableCodeBlock.Props(language, source, languageLabel))
+    case Block.RunnableGroup(tabs) =>
+      RunnableCodeGroup.Component(RunnableCodeGroup.Props(tabs.map(toGroupTab)))
+    case Block.Mermaid(source) =>
+      MermaidBlock.Component(MermaidBlock.Props(source))
+    case Block.D2Slides(slides, caption) =>
+      D2Slideshow.Component(D2Slideshow.Props(slides, caption))
+    case Block.D2Inline(svgHtml) =>
+      D2Diagram.Component(D2Diagram.Props(svgHtml))
 
-  // Walk the article DOM and return every recognised block as a `(node, vdom)` pair, ready to mount.
-  // Skips placeholder divs whose required attributes are missing or malformed (decoder failures are
-  // logged via `dom.console.warn`; one bad block doesn't break the rest of the chapter).
-  private def discover(article: dom.Element): List[(dom.HTMLElement, VdomElement)] =
-    blocks.flatMap { block =>
-      val nodes = article.querySelectorAll(s"div.${block.className}")
-      (0 until nodes.length).iterator.flatMap { i =>
-        val node = nodes.item(i).asInstanceOf[dom.HTMLElement]
-        block.render(node).map(vdom => (node, vdom))
-      }.toList
-    }
-
-  private trait Block:
-    def className: String
-    def render(node: dom.HTMLElement): Option[VdomElement]
-
-  // Every block type the markdown pipeline knows how to emit. Order doesn't matter.
-  private val blocks: List[Block] = List(RunnableCode, RunnableGroup, Mermaid, D2Slides, D2Inline)
-
-  private object RunnableCode extends Block:
-    override val className: String = "runnable-code"
-
-    override def render(node: dom.HTMLElement): Option[VdomElement] =
-      val lang = Option(node.getAttribute("data-lang"))
-      val src = Option(node.getAttribute("data-source")).flatMap(decodeURIComponent(className, "data-source"))
-      val label = Option(node.getAttribute("data-language-label"))
-      for
-        l <- lang
-        s <- src
-      yield RunnableCodeBlock.Component(RunnableCodeBlock.Props(l, s, label))
-
-  private object RunnableGroup extends Block:
-    override val className: String = "runnable-group"
-
-    override def render(node: dom.HTMLElement): Option[VdomElement] =
-      val tabs = Option(node.getAttribute("data-tabs")).flatMap(decodeTabs).getOrElse(List.empty)
-      Option.when(tabs.nonEmpty)(RunnableCodeGroup.Component(RunnableCodeGroup.Props(tabs)))
-
-  private object Mermaid extends Block:
-    override val className: String = "mermaid-block"
-
-    override def render(node: dom.HTMLElement): Option[VdomElement] =
-      Option(node.getAttribute("data-mermaid-source"))
-        .flatMap(decodeURIComponent(className, "data-mermaid-source"))
-        .map(src => MermaidBlock.Component(MermaidBlock.Props(src)))
-
-  private object D2Slides extends Block:
-    override val className: String = "d2-slides"
-
-    override def render(node: dom.HTMLElement): Option[VdomElement] =
-      val slides = (0 until node.children.length).iterator.flatMap { j =>
-        val child = node.children.item(j).asInstanceOf[dom.HTMLElement]
-        if child.classList.contains("d2-slide") && child.innerHTML.nonEmpty then Some(child.innerHTML)
-        else None
-      }.toList
-      Option.when(slides.nonEmpty) {
-        val caption = Option(node.getAttribute("data-caption")).filter(_.nonEmpty)
-        D2Slideshow.Component(D2Slideshow.Props(slides, caption))
-      }
-
-  // Inline single-diagram D2 block. The component lives at `cortex.D2Diagram`; the block is named
-  // differently to avoid a self-reference shadow inside this object.
-  private object D2Inline extends Block:
-    override val className: String = "d2-diagram"
-
-    override def render(node: dom.HTMLElement): Option[VdomElement] =
-      val inner = node.innerHTML
-      Option.when(inner.nonEmpty)(D2Diagram.Component(D2Diagram.Props(inner)))
-
-  // ---- decoders ----------------------------------------------------------
-
-  // Wrap `js.Dynamic.global.decodeURIComponent` so a malformed URI on one block doesn't throw past the
-  // discover loop. Logs the offending block + attribute to the console for diagnosis. `block` and
-  // `attr` are passed in so the warning names the source rather than printing a bare URIError.
-  private def decodeURIComponent(block: String, attr: String)(s: String): Option[String] =
-    Try(js.Dynamic.global.decodeURIComponent(s).asInstanceOf[String]) match
-      case Success(v) => Some(v)
-      case Failure(t) =>
-        dom.console.warn(s"chapter: skipping $block — malformed $attr: ${t.getMessage}")
-        None
-
-  private def decodeTabs(encoded: String): Option[List[RunnableCodeGroup.Tab]] =
-    val attempt = Try {
-      val decoded = js.Dynamic.global.decodeURIComponent(encoded).asInstanceOf[String]
-      val parsed  = js.JSON.parse(decoded).asInstanceOf[js.Array[js.Dynamic]]
-      parsed.toList.map { obj =>
-        // `runnable` is optional — defaults to true so older payloads / future
-        // tabs that omit the field still get a runnable tab.
-        val runnable = obj.runnable.asInstanceOf[js.UndefOr[Boolean]].toOption.getOrElse(true)
-        RunnableCodeGroup.Tab(
-          language = obj.language.asInstanceOf[String],
-          languageLabel = obj.languageLabel.asInstanceOf[String],
-          source = obj.source.asInstanceOf[String],
-          runnable = runnable
-        )
-      }
-    }
-    attempt match
-      case Success(v) => Some(v)
-      case Failure(t) =>
-        dom.console.warn(s"chapter: skipping runnable-group — malformed data-tabs: ${t.getMessage}")
-        None
-
-  // ---- helpers -----------------------------------------------------------
+  private def toGroupTab(t: Block.Tab): RunnableCodeGroup.Tab =
+    RunnableCodeGroup.Tab(
+      language = t.language,
+      languageLabel = t.languageLabel,
+      source = t.source,
+      runnable = t.runnable
+    )
 
   // Delegated click handler for in-article hash links. The rehype-autolink-headings pass adds
   // `<a href="#slug">` to each heading, and TOC bullets in markdown also resolve to the same shape.

@@ -363,6 +363,115 @@ object Solution {
 
 ***
 
+# Memorize
+
+The high-leverage facts to commit to long-term memory — atomic enough for an Anki card, concrete enough to recall under pressure or during production debugging. Randomisation defuses adversarial inputs and turns worst cases into expected cases — but only if you reach for it deliberately.
+
+## Quick recall
+
+Click any question to reveal the answer.
+
+<details>
+<summary><strong>Q:</strong> Monte Carlo vs Las Vegas — what's the difference?</summary>
+
+**A:** **Monte Carlo:** always finishes in bounded time, may be *wrong* with bounded probability. **Las Vegas:** always *correct*, running time is a random variable with bounded expectation.
+
+</details>
+
+<details>
+<summary><strong>Q:</strong> Expected complexity of randomised quicksort?</summary>
+
+**A:** `O(n log n)` expected; `O(n²)` worst case. Probability of hitting worst case on `n = 10⁶` is essentially zero.
+
+</details>
+
+<details>
+<summary><strong>Q:</strong> Expected complexity of randomised quickselect?</summary>
+
+**A:** `O(n)` expected; `O(n²)` worst case. Used for `nth_element` in C++ STL.
+
+</details>
+
+<details>
+<summary><strong>Q:</strong> What is reservoir sampling?</summary>
+
+**A:** Pick `k` uniform-random items from a stream of unknown length using `O(k)` memory. Each new item replaces a random slot with probability `k/i`.
+
+</details>
+
+<details>
+<summary><strong>Q:</strong> Why do hash tables use random hash seeds?</summary>
+
+**A:** **HashDoS defence.** Without random seeding, an attacker who knows the hash function can craft keys that all collide, degrading lookup to `O(n)` per operation.
+
+</details>
+
+<details>
+<summary><strong>Q:</strong> Miller-Rabin primality testing — Monte Carlo or Las Vegas?</summary>
+
+**A:** Monte Carlo. False-positive probability is `< 4^-k` for `k` rounds. With 50 rounds, `< 10^-30` — below cosmic-ray bit-flip rate.
+
+</details>
+
+<details>
+<summary><strong>Q:</strong> Why is "power of two choices" load balancing better than random?</summary>
+
+**A:** Pick two random servers; route to the less-loaded. Maximum load grows as `log log n` instead of `log n / log log n` for plain random — exponentially better tail behaviour.
+
+</details>
+
+<details>
+<summary><strong>Q:</strong> Pseudo-random vs cryptographic random — when does the choice matter?</summary>
+
+**A:** **Pseudo-random** (`random.random()`, `Math.random()`) is fine for shuffling, sampling, simulations. **Cryptographic** (`SecureRandom`, `/dev/urandom`) is mandatory for keys, salts, HashDoS defence, anything an attacker shouldn't predict.
+
+</details>
+
+## Code template
+
+```python
+import random
+
+# Randomised quickselect — O(n) expected, O(n²) worst case.
+def quickselect(A, k):
+    A = list(A)
+    lo, hi = 0, len(A) - 1
+    while lo < hi:
+        pivot_idx = random.randint(lo, hi)
+        A[pivot_idx], A[hi] = A[hi], A[pivot_idx]
+        p = partition(A, lo, hi)
+        if p == k: return A[p]
+        if p < k: lo = p + 1
+        else:     hi = p - 1
+    return A[lo]
+
+# Reservoir sampling for k items from a stream of unknown length.
+def reservoir_sample(stream, k):
+    sample = []
+    for i, x in enumerate(stream, start=1):
+        if i <= k:
+            sample.append(x)
+        else:
+            j = random.randint(1, i)
+            if j <= k:
+                sample[j - 1] = x
+    return sample
+```
+
+## Pattern triggers
+
+- **Worst-case input is suspiciously easy to construct** → randomise the algorithm; defuse the adversary
+- **"Top-K from a huge unsorted array"** → randomised quickselect, `O(n)` expected
+- **"Sample uniformly from a stream of unknown length"** → reservoir sampling
+- **"Find a duplicate / collision in a hash"** → birthday paradox; `O(√n)` expected
+- **Hash-flood / HashDoS attack** → random hash seed
+- **Primality test for a giant number** → Miller-Rabin (Monte Carlo)
+- **Probabilistic data structure (Bloom, CMS, HLL)** → randomness in the hash seed
+- **Load balancing across servers** → "power of two choices"
+- **Crypto / security-sensitive randomness** → use `SecureRandom`, never `Math.random()`
+
+***
+
 # Cross-links
 
 - **Foundations:** [Asymptotic Analysis](/cortex/data-structures-and-algorithms/foundations-asymptotic-analysis) (expected vs worst-case), [Amortized Analysis](/cortex/data-structures-and-algorithms/foundations-amortized-analysis).

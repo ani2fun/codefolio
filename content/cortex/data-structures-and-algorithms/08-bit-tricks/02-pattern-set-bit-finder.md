@@ -15,8 +15,6 @@ By the end of this lesson you'll know **`n & (n - 1)` clears the rightmost set b
 
 # The `n & (n - 1)` Identity
 
-> **Course:** DSA › Algorithms › Bit Manipulation › Set-Bit Finder
-
 Subtracting 1 from a binary number flips its **rightmost set bit** to 0 and sets every bit below it to 1.
 
 ```d2
@@ -67,8 +65,6 @@ n = 0b101000  ⇒ n & -n       = 0b001000  (isolates bit 4)
 ***
 
 # Only Set Bit
-
-> **Course:** DSA › Algorithms › Bit Manipulation › Set-Bit Finder
 
 ## The Problem
 
@@ -180,8 +176,6 @@ object Main extends App {
 ***
 
 # Rightmost Set Bit
-
-> **Course:** DSA › Algorithms › Bit Manipulation › Set-Bit Finder
 
 ## The Problem
 

@@ -1,7 +1,7 @@
 package codefolio.client.components.cortex
 
 import codefolio.client.api.ApiClient
-import codefolio.client.components.icons.LucideIcons
+import codefolio.client.components.icons.{BrandIcons, LucideIcons}
 import codefolio.shared.api.Endpoints.{RunRequest, RunResult}
 import codefolio.shared.runner.CodeExecutor
 import codefolio.shared.runner.CodeExecutor.RunState
@@ -104,6 +104,20 @@ object RunnableCodeBlock:
         val labelText =
           if props.hideLanguageLabel then "" else props.languageLabel.getOrElse(props.language)
 
+        // Real brand icons for languages where the emoji-only label is too vague
+        // (e.g. Scala, where 🌀 reads as a generic swirl). Other languages keep
+        // the emoji prefix in the label string. Suppressed alongside the text
+        // when `hideLanguageLabel` is set — the group tab strip already shows
+        // the brand icon, and emitting it again here would double-render it
+        // inside the active tab's bare block.
+        val labelNode: VdomNode =
+          <.span(
+            ^.className := "rcb__language-label",
+            if !props.hideLanguageLabel && props.language.equalsIgnoreCase("scala") then
+              TagMod(BrandIcons.Scala("rcb__brand-icon rcb__brand-icon--scala"), labelText)
+            else labelText
+          )
+
         // Display-only tabs (pseudocode) drop the Run/Cancel/Reset controls and
         // the output panel, and swap the editable editor for a static <pre>
         // with the same Prism highlighting hook (which falls back to
@@ -114,12 +128,12 @@ object RunnableCodeBlock:
             else
               <.div(
                 ^.className := "rcb__header",
-                <.span(^.className := "rcb__language-label", labelText)
+                labelNode
               )
           else
             <.div(
               ^.className := "rcb__header",
-              <.span(^.className := "rcb__language-label", labelText),
+              labelNode,
               <.div(
                 ^.className := "rcb__controls",
                 if dirty && s.runState != RunState.Running then

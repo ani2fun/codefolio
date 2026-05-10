@@ -18,8 +18,6 @@ By the end of this lesson you'll know upper bound, the one-character difference 
 
 # Understanding Upper Bound
 
-> **Course:** DSA › Algorithms › Searching › Upper Bound
-
 The **upper bound** of a target `t` in a sorted array is the **smallest index `i` such that `arr[i] > t`**. If no such index exists (every element is `<= t`), the upper bound is `n`.
 
 ```
@@ -89,8 +87,6 @@ Upper bound = first index strictly > target. One character changed from lower bo
 ***
 
 # Lower vs Upper — The One-Character Difference
-
-> **Course:** DSA › Algorithms › Searching › Upper Bound
 
 Stack the two algorithms side by side:
 
@@ -179,8 +175,6 @@ Lower and upper bound are the same algorithm with one comparison changed. Their 
 ***
 
 # Implementation
-
-> **Course:** DSA › Algorithms › Searching › Upper Bound
 
 
 ```pseudocode
@@ -296,8 +290,6 @@ Upper bound: `O(log n)` time, `O(1)` space, one character different from lower b
 ***
 
 # Upper Bound Problem
-
-> **Course:** DSA › Algorithms › Searching › Upper Bound
 
 ---
 

@@ -16,8 +16,6 @@ By the end of this lesson you'll know the diagnostic checks for "this is an uppe
 
 # Identifying the Upper Bound Pattern
 
-> **Course:** DSA › Algorithms › Searching › Upper Bound Pattern
-
 | # | Question | If "yes," upper bound fits because... |
 |---|---|---|
 | **Q1** | Is the data sorted ascending? | Upper bound needs monotone non-decreasing input. |

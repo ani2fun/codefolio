@@ -21,8 +21,6 @@ By the end of this lesson you'll know the divide-merge structure, why merge sort
 
 # Understanding Merge Sort
 
-> **Course:** DSA › Algorithms › Sorting › Merge Sort
-
 Merge sort follows the divide-and-conquer paradigm exactly:
 
 1. **Divide** — split the array into two halves at the midpoint.
@@ -150,8 +148,6 @@ Merge sort: split in half, recurse, merge. `O(n log n)` worst case, stable, but 
 
 # The Merge Step
 
-> **Course:** DSA › Algorithms › Sorting › Merge Sort
-
 Merging two sorted arrays into one sorted array is a classic two-pointer algorithm.
 
 ## Algorithm
@@ -227,8 +223,6 @@ The merge step combines two sorted arrays in `O(n + m)` time with a two-pointer 
 ***
 
 # Implementation
-
-> **Course:** DSA › Algorithms › Sorting › Merge Sort
 
 Two functions: `merge` (combines two sorted arrays) and `merge_sort` (the recursive driver).
 
@@ -393,8 +387,6 @@ object Main {
 
 # Complexity Analysis
 
-> **Course:** DSA › Algorithms › Sorting › Merge Sort
-
 | Resource | Best | Average | Worst |
 |---|---|---|---|
 | **Time** | `O(n log n)` | `O(n log n)` | `O(n log n)` |
@@ -448,8 +440,6 @@ Merge sort: `O(n log n)` worst case, stable, `O(n)` extra space. The slow-but-st
 
 # Merge Sort Problem
 
-> **Course:** DSA › Algorithms › Sorting › Merge Sort
-
 ---
 
 ## The Problem
@@ -488,8 +478,6 @@ The implementation is identical to the version above. See [Implementation](#impl
 ---
 
 # Count Inversions
-
-> **Course:** DSA › Algorithms › Sorting › Merge Sort
 
 A classic problem that uses merge sort's *merge* step alone — and shows why merge sort's structure is more useful than just sorting.
 

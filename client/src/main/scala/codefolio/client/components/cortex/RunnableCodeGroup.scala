@@ -1,5 +1,6 @@
 package codefolio.client.components.cortex
 
+import codefolio.client.components.icons.BrandIcons
 import japgolly.scalajs.react.*
 import japgolly.scalajs.react.vdom.html_<^.*
 
@@ -57,7 +58,11 @@ object RunnableCodeGroup:
                   ^.aria.selected := isActive,
                   ^.onClick --> activeS.setState(i),
                   ^.className := cls,
-                  tab.languageLabel
+                  // Real brand icon prefix where the emoji-only label is too vague
+                  // (Scala). Other languages keep their emoji prefix in the string.
+                  if tab.language.equalsIgnoreCase("scala") then
+                    TagMod(BrandIcons.Scala("rcg__brand-icon rcg__brand-icon--scala"), tab.languageLabel)
+                  else tab.languageLabel
                 )
               }
             ),

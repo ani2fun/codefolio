@@ -16,8 +16,6 @@ By the end of this lesson you'll know the diagnostic checks for "this is a lower
 
 # Identifying the Lower Bound Pattern
 
-> **Course:** DSA › Algorithms › Searching › Lower Bound Pattern
-
 Three diagnostic questions:
 
 | # | Question | If "yes," lower bound fits because... |
@@ -40,8 +38,6 @@ If all three hold, lower bound is the right primitive.
 ---
 
 # Search Insert Position
-
-> **Course:** DSA › Algorithms › Searching › Lower Bound Pattern
 
 Direct lower-bound application.
 
@@ -138,8 +134,6 @@ class Solution {
 ***
 
 # First and Last Position
-
-> **Course:** DSA › Algorithms › Searching › Lower Bound Pattern
 
 Two `O(log n)` queries — `lower_bound(target)` for the first index, `lower_bound(target + 1) - 1` for the last.
 
@@ -259,8 +253,6 @@ class Solution {
 ***
 
 # Closest Element
-
-> **Course:** DSA › Algorithms › Searching › Lower Bound Pattern
 
 Use lower bound to find the threshold position; the answer is either at the threshold or just before it.
 
@@ -391,8 +383,6 @@ class Solution {
 ***
 
 # K Closest Elements
-
-> **Course:** DSA › Algorithms › Searching › Lower Bound Pattern
 
 Lower bound anchors a sliding window that expands outward.
 

@@ -172,6 +172,115 @@ The delta encoding inside a pack is the same idea as a diff — store one base, 
 
 ***
 
+# Memorize
+
+The high-leverage facts to commit to long-term memory — atomic enough for an Anki card, concrete enough to recall under pressure or during production debugging. Git is the most-deployed Merkle DAG on the planet; understanding the structure makes "how did Git do that?" stop being magic.
+
+## Quick recall
+
+Click any question to reveal the answer.
+
+<details>
+<summary><strong>Q:</strong> Four object types in a Git repository?</summary>
+
+**A:** **Blob** (file contents), **tree** (directory listing), **commit** (snapshot + parents + metadata), **tag** (annotated label).
+
+</details>
+
+<details>
+<summary><strong>Q:</strong> What hash function does Git use, and what's it computed over?</summary>
+
+**A:** SHA-1 (transitioning to SHA-256). Hash is over `<type> <length>\0<content>` — including a small header before the bytes.
+
+</details>
+
+<details>
+<summary><strong>Q:</strong> What does "content-addressed" mean for Git?</summary>
+
+**A:** Object's identity = SHA-1 of its content. Two objects with the same content are the same object. Deduplication and tamper detection in one rule.
+
+</details>
+
+<details>
+<summary><strong>Q:</strong> Cost of editing one file in a 100k-file repo, in object terms?</summary>
+
+**A:** 1 new blob + path-length-many new trees + 1 new commit. Other ~99k blobs are *shared* with the prior commit's trees.
+
+</details>
+
+<details>
+<summary><strong>Q:</strong> Why is <code>git diff A B</code> fast on huge trees?</summary>
+
+**A:** Subtrees with identical hashes are short-circuited — equal hash means equal content (modulo collisions). Only differing paths are descended into.
+
+</details>
+
+<details>
+<summary><strong>Q:</strong> What's a pack file?</summary>
+
+**A:** A compacted binary file containing many objects, with delta encoding for similar ones (consecutive versions of a file). Reduces repository size 5-10× over loose objects.
+
+</details>
+
+<details>
+<summary><strong>Q:</strong> What does `git push --force` do to history?</summary>
+
+**A:** Replaces the remote branch's pointer with yours. Old commits become unreachable, eligible for `git gc --prune` after 14 days. Lost work, *not* lost data — until GC runs.
+
+</details>
+
+<details>
+<summary><strong>Q:</strong> What's `git reflog`?</summary>
+
+**A:** A local-only log of where `HEAD` and branches have pointed historically. Lets you recover from `reset --hard`, force-push, branch-deletion, and many other "I lost my work" scenarios.
+
+</details>
+
+## Source pointers
+
+```
+.git/objects/<2-char>/<38-char>            — loose objects (one file per object)
+.git/objects/pack/<pack>.{pack,idx}        — packed objects + index
+.git/refs/heads/<branch>                   — branch pointers (sha hashes)
+.git/HEAD                                  — current branch ref
+.git/logs/HEAD                             — reflog
+.git/index                                 — staging area (binary)
+```
+
+Git source highlights:
+
+```
+object.c, object.h          — generic object handling, type tagging
+sha1-name.c                 — name resolution (HEAD~3, branch, tag → sha)
+tree.c, commit.c, blob.c    — per-type object handlers
+diff-lib.c, diff-tree.c     — tree-vs-tree diff (with hash short-circuit)
+pack-objects.c              — pack-file creation + delta selection
+fsck.c                      — integrity checker; walks the DAG verifying hashes
+```
+
+Useful plumbing commands for understanding the DAG:
+
+```
+git cat-file -p <sha>          — pretty-print object contents
+git cat-file -t <sha>          — object type
+git ls-tree HEAD               — root tree of current commit
+git rev-list --all --objects   — every object reachable from any branch
+git fsck --full                — verify the entire DAG
+```
+
+## Pattern triggers
+
+- **"How does Git store large repos efficiently?"** → content-addressed dedup + pack-file delta encoding
+- **"Why is `git diff` instant?"** → tree hash equality short-circuits unchanged subtrees
+- **"How do I recover lost work?"** → `git reflog` + `git fsck --lost-found`
+- **"Submodule weirdness"** → submodules store *commit hashes*, not contents; recursive clone needed
+- **"Disk space too high"** → `git gc --aggressive`; pack files compact loose objects
+- **"How does Git verify integrity?"** → walk the DAG; recompute hashes; mismatch = corruption
+- **"What's the structure of a pack file?"** → header + objects (some delta-encoded) + index for fast lookup
+- **"How does CRDT-style merging work in Git?"** → it doesn't natively; merges are user-resolved or 3-way
+
+***
+
 # Cross-links
 
 - **Prerequisites:** [Persistent Data Structures](/cortex/data-structures-and-algorithms/probabilistic-and-advanced-persistent-data-structures), [Distributed Data Structures (Teaser)](/cortex/data-structures-and-algorithms/concurrency-and-systems-distributed-data-structures-teaser) (Merkle trees).

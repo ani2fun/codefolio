@@ -18,8 +18,6 @@ This is **lower bound** — the index of the *first element `≥ target`*, or `n
 
 # Understanding Lower Bound
 
-> **Course:** DSA › Algorithms › Searching › Lower Bound
-
 The **lower bound** of a target `t` in a sorted array is the **smallest index `i` such that `arr[i] >= t`**. If no such index exists (i.e., every element is less than `t`), the lower bound is `n` — one past the last index, which is exactly where `t` would be inserted to keep the array sorted.
 
 Three cases:
@@ -102,8 +100,6 @@ Lower bound = "first index where the value is at least target." Three changes fr
 
 # Why the Loop Bounds Change
 
-> **Course:** DSA › Algorithms › Searching › Lower Bound
-
 The three changes look minor but each is load-bearing. Get any one wrong and the algorithm misbehaves on edge cases.
 
 ---
@@ -172,8 +168,6 @@ Three changes — `high = n`, `low < high`, `high = mid` on equality — convert
 ***
 
 # Implementation
-
-> **Course:** DSA › Algorithms › Searching › Lower Bound
 
 
 ```pseudocode
@@ -289,8 +283,6 @@ Lower bound is `O(log n)` time, `O(1)` space, and never returns "not found." It 
 ***
 
 # Lower Bound Problem
-
-> **Course:** DSA › Algorithms › Searching › Lower Bound
 
 ---
 

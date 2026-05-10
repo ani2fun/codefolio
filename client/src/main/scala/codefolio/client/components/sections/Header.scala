@@ -20,11 +20,11 @@ object Header:
   final case class Props(ctl: RouterCtl[Page])
 
   private val menuLinks: List[(String, String)] = List(
-    "/#about"          -> "About",
-    "/#experience"     -> "Experience",
-    "/#projects"       -> "Projects",
-    "/#certifications" -> "Certifications",
-    "/#cortex"         -> "Cortex"
+    "/#work"       -> "Work",
+    "/#about"      -> "About",
+    "/#experience" -> "Experience",
+    "/#projects"   -> "Projects",
+    "/#cortex"     -> "Cortex"
   )
 
   /**
@@ -83,23 +83,32 @@ object Header:
             ^.className := "header__nav container",
             <.a(
               ^.href      := "/#hero",
-              ^.className := "header__title",
+              ^.className := "header__brand",
               ^.onClick ==> linkClick("/#hero"),
-              "Aniket Kakde"
+              <.span(^.className := "header__logomark", "a"),
+              <.span(^.className := "header__wordmark", "aniket.kakde")
             ),
-            <.div(^.className := "header__toggle--mobile", ToggleMode.Component()),
             <.div(
               ^.className := "header__menu",
               menuLinks.toTagMod((hash, label) => desktopLink(hash, label))
             ),
-            <.div(^.className := "header__toggle--desktop", ToggleMode.Component()),
-            <.button(
-              ^.className  := "header__burger",
-              ^.aria.label := (if menuOpenS.value then "Close menu" else "Open menu"),
-              ^.onClick --> toggleMenu,
-              if menuOpenS.value then
-                LucideIcons.X(LucideIcons.withClass("header__burger-icon"))
-              else LucideIcons.Menu(LucideIcons.withClass("header__burger-icon"))
+            <.div(
+              ^.className := "header__actions",
+              <.div(^.className := "header__toggle--mobile", ToggleMode.Component()),
+              <.div(^.className := "header__toggle--desktop", ToggleMode.Component()),
+              <.a(
+                ^.href      := "mailto:a.r.kakde@gmail.com",
+                ^.className := "header__cta",
+                "Get in touch"
+              ),
+              <.button(
+                ^.className  := "header__burger",
+                ^.aria.label := (if menuOpenS.value then "Close menu" else "Open menu"),
+                ^.onClick --> toggleMenu,
+                if menuOpenS.value then
+                  LucideIcons.X(LucideIcons.withClass("header__burger-icon"))
+                else LucideIcons.Menu(LucideIcons.withClass("header__burger-icon"))
+              )
             )
           ),
           if menuOpenS.value then

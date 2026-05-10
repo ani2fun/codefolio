@@ -18,8 +18,6 @@ This lesson opens the dynamic-programming section with the simplest DP shape —
 
 # The Recursion Disaster That Forces Memoization
 
-> **Course:** DSA › Algorithms › Dynamic Programming › Why DP Exists
-
 In the Multiple Recursion lesson you wrote this:
 
 ```python
@@ -80,8 +78,6 @@ The recursive Fibonacci is exponential because identical subproblems get solved 
 ***
 
 # What "Dynamic Programming" Actually Means
-
-> **Course:** DSA › Algorithms › Dynamic Programming › Definition
 
 The phrase is misleading. Richard Bellman coined it in the 1950s — and admitted later that he chose "dynamic" to sound impressive to a budget-conscious congress, and "programming" because that meant "scheduling" at the time. Neither word means what they sound like. **Dynamic programming has nothing to do with dynamic types or computer programming languages.** It's a problem-solving technique with two requirements:
 
@@ -156,8 +152,6 @@ DP needs two things: *optimal substructure* (answers compose from smaller answer
 
 # Linear DP — The Simplest Shape
 
-> **Course:** DSA › Algorithms › Dynamic Programming › Linear DP
-
 **Linear DP** is the shape where:
 
 - The state is a single integer `i` (`dp[i]`).
@@ -203,8 +197,6 @@ Linear DP is one row of cells, filled left-to-right. Each cell after the base ca
 ***
 
 # Calculate Factorial
-
-> **Course:** DSA › Algorithms › Dynamic Programming › Linear DP
 
 The factorial of a positive integer `n` is `n! = n × (n-1) × (n-2) × … × 1`, with `0! = 1` by convention. It's the classic linear-DP warm-up: there's no overlap, so DP isn't strictly *necessary*, but it lets us walk through the four-step recipe on a problem with no surprises.
 
@@ -412,8 +404,6 @@ The modulo lets us return a meaningful answer even when the true factorial is as
 
 # Nth Fibonacci Number
 
-> **Course:** DSA › Algorithms › Dynamic Programming › Linear DP
-
 This is the canonical "this is why DP exists" problem. The recursive form is exponential; the DP form is linear. The transformation is a single ten-line loop.
 
 ## The Problem
@@ -618,8 +608,6 @@ Recursive Fibonacci was exponential because of duplicate subproblems. DP Fibonac
 
 # Top-Down vs Bottom-Up — The Two Faces of Every DP Solution
 
-> **Course:** DSA › Algorithms › Dynamic Programming › Implementation Styles
-
 Every DP problem has two equivalent implementations. They produce the same answer, have the same Big-O time, and differ only in *direction* of computation.
 
 **Top-down (memoization)** writes the recurrence as a recursive function and caches results in a dictionary or array. It computes only the subproblems actually needed.
@@ -770,8 +758,6 @@ Top-down memoizes a recursive function; bottom-up fills a table iteratively. The
 ***
 
 # Space Optimisation — Throwing the Table Away
-
-> **Course:** DSA › Algorithms › Dynamic Programming › Space Optimisation
 
 The Fibonacci recurrence depends on `dp[i-1]` and `dp[i-2]`. The other `n - 1` cells of the array are never referenced again after they're computed. **We don't need to store them.** Two scalar variables are enough.
 

@@ -430,6 +430,128 @@ object Solution {
 
 ***
 
+# Memorize
+
+The high-leverage facts to commit to long-term memory — atomic enough for an Anki card, concrete enough to recall under pressure or during production debugging. DSU is two integer arrays plus two short methods; recognising the "merge groups + query group membership" shape lets you solve a vast class of problems in linear time.
+
+## Quick recall
+
+Click any question to reveal the answer.
+
+<details>
+<summary><strong>Q:</strong> Two operations a DSU supports?</summary>
+
+**A:** **`find(x)`** — return a representative of the set containing `x`. **`union(x, y)`** — merge the two sets containing `x` and `y`.
+
+</details>
+
+<details>
+<summary><strong>Q:</strong> Amortized complexity per operation with both optimisations?</summary>
+
+**A:** `O(α(n))` where `α` is the inverse Ackermann function. For any practical `n`, `α(n) ≤ 4` — effectively constant.
+
+</details>
+
+<details>
+<summary><strong>Q:</strong> Two non-negotiable optimisations?</summary>
+
+**A:** **Path compression** (every node on the find path becomes a child of the root) + **union by rank** (or by size). Either alone gives `O(log n)`; together give `O(α(n))`.
+
+</details>
+
+<details>
+<summary><strong>Q:</strong> What does <code>find(x)</code> with path compression do, in three lines?</summary>
+
+**A:**
+```
+def find(x):
+    if parent[x] != x:
+        parent[x] = find(parent[x])
+    return parent[x]
+```
+
+</details>
+
+<details>
+<summary><strong>Q:</strong> Recursion-depth gotcha for big inputs?</summary>
+
+**A:** Recursive `find` can blow the stack on `n = 10⁶` chains before path compression has kicked in. Use iterative two-pass: walk to the root, then re-walk compressing.
+
+</details>
+
+<details>
+<summary><strong>Q:</strong> Common bug: comparing membership without going through <code>find</code>?</summary>
+
+**A:** `parent[x] == parent[y]` is *not* the same as "same set". Always use `find(x) == find(y)`. Easy mistake.
+
+</details>
+
+<details>
+<summary><strong>Q:</strong> Operation DSU does NOT support?</summary>
+
+**A:** Split. Once unioned, you can't unmerge without rebuilding from scratch. For dynamic-connectivity-with-deletes, use link-cut trees instead.
+
+</details>
+
+<details>
+<summary><strong>Q:</strong> What's the canonical algorithm DSU enables?</summary>
+
+**A:** **Kruskal's MST** — sort edges by weight, walk in order, accept an edge iff its endpoints are in different DSU components.
+
+</details>
+
+<details>
+<summary><strong>Q:</strong> Memory layout?</summary>
+
+**A:** Two arrays of size `n`: `parent[]` (initial: `parent[i] = i`) and `rank[]` (initial: zeros). That's it.
+
+</details>
+
+## Code template
+
+```python
+class DSU:
+    def __init__(self, n):
+        self.parent = list(range(n))
+        self.rank = [0] * n
+        self.num_sets = n
+
+    def find(self, x):
+        # Path compression: every node on the find path → child of root.
+        if self.parent[x] != x:
+            self.parent[x] = self.find(self.parent[x])
+        return self.parent[x]
+
+    def union(self, x, y):
+        rx, ry = self.find(x), self.find(y)
+        if rx == ry: return False
+        # Union by rank: shorter tree under taller one.
+        if self.rank[rx] < self.rank[ry]:
+            rx, ry = ry, rx
+        self.parent[ry] = rx
+        if self.rank[rx] == self.rank[ry]:
+            self.rank[rx] += 1
+        self.num_sets -= 1
+        return True
+
+    def same_set(self, x, y):
+        return self.find(x) == self.find(y)
+```
+
+## Pattern triggers
+
+- **"Are X and Y in the same connected component?"** → DSU
+- **"Build MST"** → Kruskal: sort edges, DSU-union
+- **"Count connected components"** → initial `n`, decrement on each successful union
+- **"Cycle detected in undirected graph?"** → adding an edge whose endpoints are already same-set
+- **"Image segmentation: group adjacent pixels"** → DSU per pixel
+- **"Accounts merge / entity resolution"** → DSU on identifiers
+- **"Are two cells reachable in a grid?"** → DSU on cells (offline) or BFS (online)
+- **"Online connectivity with deletes"** → DSU isn't enough; link-cut tree
+- **"Connectivity over a stream of merges, query after each"** → vanilla DSU is perfect
+
+***
+
 # Cross-links
 
 - **Foundations:** [Amortized Analysis](/cortex/data-structures-and-algorithms/foundations-amortized-analysis) — the `O(α(n))` proof is the most sophisticated amortized analysis in this curriculum.

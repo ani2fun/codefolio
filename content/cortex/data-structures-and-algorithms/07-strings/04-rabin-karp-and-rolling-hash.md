@@ -280,6 +280,108 @@ object Solution {
 
 ***
 
+# Memorize
+
+The high-leverage facts to commit to long-term memory — atomic enough for an Anki card, concrete enough to recall under pressure or during production debugging. Rolling hash is the trick that makes "many substring queries" tractable — it shows up everywhere from plagiarism detection to Git's chunking.
+
+## Quick recall
+
+Click any question to reveal the answer.
+
+<details>
+<summary><strong>Q:</strong> Time complexity of Rabin-Karp on average / worst case?</summary>
+
+**A:** Average `O(n + m)` for random text. Worst case `O(nm)` (every hash collides), same as naive — but exponentially unlikely with a large prime.
+
+</details>
+
+<details>
+<summary><strong>Q:</strong> Rolling-hash recurrence for window shift?</summary>
+
+**A:** `h_{i+1} = (h_i − leave · b^(m-1)) · b + enter mod p`. `O(1)` per shift after initial setup.
+
+</details>
+
+<details>
+<summary><strong>Q:</strong> Why do you still verify after a hash match?</summary>
+
+**A:** Hash collisions exist. A "candidate match" must be confirmed byte-by-byte to avoid false positives.
+
+</details>
+
+<details>
+<summary><strong>Q:</strong> Standard prime and base for polynomial hashing?</summary>
+
+**A:** Prime: `10⁹ + 7` or `10⁹ + 9`. Base: `31`, `53`, or `257` (just larger than the alphabet). For adversarial security, use double hashing (two `(b, p)` pairs).
+
+</details>
+
+<details>
+<summary><strong>Q:</strong> Why is single hashing insecure for adversarial input?</summary>
+
+**A:** With a known fixed prime, an attacker can engineer collisions. Mitigation: random seed (HashDoS defence) or double hashing (collision probability `(m/p)²` instead of `m/p`).
+
+</details>
+
+<details>
+<summary><strong>Q:</strong> Modular subtraction gotcha?</summary>
+
+**A:** `(h - x * b_pow) mod p` can go negative. Add `p` after the subtraction to renormalise into `[0, p)`.
+
+</details>
+
+<details>
+<summary><strong>Q:</strong> Where does rolling hash beat KMP / Z?</summary>
+
+**A:** **Multiple patterns at once** (compute candidate hashes, check against a hash set). **Document fingerprinting** (set of rolling hashes is the document's signature).
+
+</details>
+
+<details>
+<summary><strong>Q:</strong> Production application — Git's content-defined chunking?</summary>
+
+**A:** Variable-sized file chunks split at rolling-hash boundaries. Identical chunks across files dedupe automatically. FastCDC is the algorithm.
+
+</details>
+
+## Code template
+
+```python
+def rabin_karp(T, P):
+    n, m = len(T), len(P)
+    if m > n: return []
+    b, p = 257, 10**9 + 7
+    p_hash = t_hash = 0
+    bm = 1                                            # b^(m-1) mod p
+    for i in range(m):
+        p_hash = (p_hash * b + ord(P[i])) % p
+        t_hash = (t_hash * b + ord(T[i])) % p
+        if i < m - 1: bm = (bm * b) % p
+
+    matches = []
+    for i in range(n - m + 1):
+        if p_hash == t_hash and T[i:i + m] == P:      # verify on hash hit
+            matches.append(i)
+        if i < n - m:
+            t_hash = ((t_hash - ord(T[i]) * bm) * b + ord(T[i + m])) % p
+            if t_hash < 0: t_hash += p                # renormalise after subtraction
+    return matches
+```
+
+## Pattern triggers
+
+- **"Find one pattern in one text"** → KMP / Z / `str.find` is simpler
+- **"Find any of K patterns in a text"** → Rabin-Karp with K hashes (or Aho-Corasick)
+- **"Find duplicate substrings of fixed length"** → rolling hash + hash set
+- **"Longest duplicate substring"** → binary search + rolling hash, `O(n log n)`
+- **"Document fingerprinting / plagiarism detection"** → rolling-hash signatures
+- **"Content-defined chunking" (deduplication, rsync, Git)** → rolling hash boundary detection
+- **"DNA tandem-repeat / windowed analysis"** → rolling hash over the genome
+- **Adversarial-input system** → double hashing or cryptographic hash
+- **Modular arithmetic going negative** → add `p` after every subtraction
+
+***
+
 # Cross-links
 
 - **Prerequisites:** [Naive String Matching](/cortex/data-structures-and-algorithms/strings-string-matching-naive), [Hash Table](/cortex/data-structures-and-algorithms/linear-structures-hash-table-introduction-to-hash-tables).

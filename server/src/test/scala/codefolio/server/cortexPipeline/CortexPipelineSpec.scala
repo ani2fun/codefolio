@@ -1,6 +1,6 @@
 package codefolio.server.cortexPipeline
 
-import codefolio.server.config.{AppConfig, CortexConfig, DbConfig, MongoConfig, RedisConfig, RunnerConfig}
+import codefolio.server.config.CortexConfig
 import codefolio.shared.cortex.CortexIndexWalker.{BookMeta, CortexDir, CortexEntry, CortexFile}
 import zio.*
 import zio.test.*
@@ -268,22 +268,7 @@ object CortexPipelineSpec extends ZIOSpecDefault:
     )
 
   private def pipelineLayer(root: Path): ZLayer[Any, Nothing, CortexPipeline] =
-    ZLayer.succeed(appConfig(root)) >>> CortexPipeline.live
-
-  private def appConfig(root: Path): AppConfig =
-    AppConfig(
-      port = 0,
-      staticDir = "./client/dist",
-      db = DbConfig(
-        url = "jdbc:postgresql://localhost:5432/codefolio",
-        user = "codefolio",
-        password = "codefolio"
-      ),
-      redis = RedisConfig(url = "redis://localhost:6379", ttlSecs = 10),
-      mongo = MongoConfig(uri = "mongodb://localhost:27017", database = "codefolio"),
-      runner = RunnerConfig(pistonUrl = None, codeRunnerUrl = None, codeRunnerAuthToken = None),
-      cortex = CortexConfig(root = root.toString, autoReload = true)
-    )
+    ZLayer.succeed(CortexConfig(root = root.toString, autoReload = true)) >>> CortexPipeline.live
 
   private val tempRoot: ZIO[Scope, Throwable, Path] =
     ZIO.acquireRelease(ZIO.attempt(Files.createTempDirectory("codefolio-cortex-test-"))) { root =>

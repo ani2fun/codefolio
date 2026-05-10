@@ -297,6 +297,108 @@ object Solution {
 
 ***
 
+# Memorize
+
+The high-leverage facts to commit to long-term memory — atomic enough for an Anki card, concrete enough to recall under pressure or during production debugging. CAS is the single primitive every lock-free structure builds on; recognising the read-compute-CAS-retry pattern is interview-and-debug currency.
+
+## Quick recall
+
+Click any question to reveal the answer.
+
+<details>
+<summary><strong>Q:</strong> What does <code>CAS(addr, expected, new)</code> do, atomically?</summary>
+
+**A:** If `*addr == expected`, write `new` and return success; otherwise leave `*addr` unchanged and return failure. All in one indivisible step.
+
+</details>
+
+<details>
+<summary><strong>Q:</strong> Standard idiom for atomic increment with CAS?</summary>
+
+**A:** ```do { old = counter; new = old + 1; } while (!CAS(&counter, old, new))```. Read, compute, retry on failure.
+
+</details>
+
+<details>
+<summary><strong>Q:</strong> What's the ABA problem?</summary>
+
+**A:** Thread A reads `X`. Thread B changes `X → Y → X`. Thread A's CAS succeeds, despite the underlying state having changed. For pointers, the original `X` may have been freed and reallocated.
+
+</details>
+
+<details>
+<summary><strong>Q:</strong> Two standard ABA mitigations?</summary>
+
+**A:** **Tagged pointers** (pair pointer + version counter; CAS the tuple via 128-bit double-CAS). **Hazard pointers / RCU / epoch reclamation** — defer freeing until no thread is reading.
+
+</details>
+
+<details>
+<summary><strong>Q:</strong> Memory orderings — five C++ standard options?</summary>
+
+**A:** `relaxed` (no inter-thread ordering), `acquire` (read), `release` (write), `acq_rel` (read-modify-write), `seq_cst` (sequentially consistent).
+
+</details>
+
+<details>
+<summary><strong>Q:</strong> Standard memory ordering for a CAS in a lock-free queue?</summary>
+
+**A:** `acq_rel` — `release` semantics on the write side, `acquire` semantics on the read side. Establishes the happens-before edge.
+
+</details>
+
+<details>
+<summary><strong>Q:</strong> Difference between <code>compare_exchange_strong</code> and <code>weak</code>?</summary>
+
+**A:** `strong` guarantees no spurious failure. `weak` may fail spuriously even when the comparison would succeed; faster on ARM/POWER. Use `weak` inside a retry loop.
+
+</details>
+
+<details>
+<summary><strong>Q:</strong> ARM / POWER alternative to CAS?</summary>
+
+**A:** Load-Linked / Store-Conditional (LL/SC). LL marks the cache line; SC fails if the line was touched since LL. Avoids ABA inherently.
+
+</details>
+
+## Code template
+
+```python
+# Conceptual lock-free counter (Python uses GIL; example shape only).
+counter = AtomicInteger(0)
+
+def increment():
+    while True:
+        old = counter.load()
+        new = old + 1
+        if counter.compare_and_swap(old, new):
+            return new
+        # else: someone else won; retry
+```
+
+```c
+// C11 atomics
+#include <stdatomic.h>
+atomic_int counter = 0;
+int old, new_;
+do {
+    old = atomic_load(&counter);
+    new_ = old + 1;
+} while (!atomic_compare_exchange_weak(&counter, &old, new_));
+```
+
+## Pattern triggers
+
+- **"Atomic counter / atomic flag"** → CAS loop or `atomic_fetch_add`
+- **"Lock-free stack push / pop"** → CAS on the head pointer
+- **"Lock-free queue / hash map / tree"** → CAS-based, but expect ABA mitigation
+- **"Pointer that might be freed and reused"** → tagged pointer or hazard pointer
+- **"ARM-only weird race"** → memory-ordering bug, not visible on x86
+- **"Counter degrading non-linearly with cores"** → false sharing or true contention; profile cache-miss events
+- **"Compiler reordered my CAS"** → use proper memory ordering, not `relaxed`
+
+***
+
 # Cross-links
 
 - **Prerequisite:** [Memory Model and Cache](/cortex/data-structures-and-algorithms/foundations-memory-model-and-cache) — the cache-coherence behaviour CAS depends on.

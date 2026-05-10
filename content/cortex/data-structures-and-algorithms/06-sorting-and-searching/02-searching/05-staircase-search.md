@@ -27,8 +27,6 @@ By the end of this lesson you'll know the algorithm, why starting from the top-r
 
 # Understanding Staircase Search
 
-> **Course:** DSA › Algorithms › Searching › Staircase Search
-
 The required matrix structure (looser than 2D binary search):
 
 1. **Each row is sorted** left to right.
@@ -92,8 +90,6 @@ Staircase search: walk from top-right (or bottom-left), move down on too-small, 
 
 # Why the Top-Right Corner
 
-> **Course:** DSA › Algorithms › Searching › Staircase Search
-
 The algorithm requires starting at a corner where the value is **maximal in its row AND minimal in its column** (or the inverse). Only the top-right and bottom-left corners satisfy this. Top-left and bottom-right don't — and starting there makes the algorithm ambiguous.
 
 ```d2
@@ -133,8 +129,6 @@ Top-right (or bottom-left) is the only valid starting corner. The corner's cell 
 ***
 
 # Implementation
-
-> **Course:** DSA › Algorithms › Searching › Staircase Search
 
 
 ```pseudocode
@@ -280,8 +274,6 @@ Staircase search: `O(N + M)`, `O(1)` space, requires only row/column sortedness.
 ***
 
 # Staircase Search Problem
-
-> **Course:** DSA › Algorithms › Searching › Staircase Search
 
 ---
 

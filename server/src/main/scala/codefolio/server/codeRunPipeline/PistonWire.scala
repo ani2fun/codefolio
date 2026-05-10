@@ -51,11 +51,15 @@ private[codeRunPipeline] object PistonWire:
       lang.id,
       throw new IllegalArgumentException(s"Piston does not support ${lang.label} (id=${lang.id})")
     )
+    // Java: rewrite `public class X` → `public class Main` so Piston's compile
+    // step (which writes the source as Main.java) doesn't reject it.
+    val effectiveSource =
+      if lang.id == 62 then JavaSourceRewriter.normalizeEntrypoint(source) else source
     Json
       .obj(
         "language"        -> Json.fromString(pistonName),
         "version"         -> Json.fromString("*"),
-        "files"           -> Json.arr(Json.obj("content" -> Json.fromString(source))),
+        "files"           -> Json.arr(Json.obj("content" -> Json.fromString(effectiveSource))),
         "stdin"           -> Json.fromString(stdin.getOrElse("")),
         "compile_timeout" -> Json.fromInt(10000),
         "run_timeout"     -> Json.fromInt(10000)

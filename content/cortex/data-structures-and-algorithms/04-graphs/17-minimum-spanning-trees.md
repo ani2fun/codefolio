@@ -419,6 +419,115 @@ In practice, **Kruskal** is the more common choice — it composes well with arb
 
 ***
 
+# Memorize
+
+The high-leverage facts to commit to long-term memory — atomic enough for an Anki card, concrete enough to recall under pressure or during production debugging. The cut property is the single theorem behind every MST algorithm; once you've internalised it, both Kruskal and Prim become "the obvious thing".
+
+## Quick recall
+
+Click any question to reveal the answer.
+
+<details>
+<summary><strong>Q:</strong> What is a spanning tree?</summary>
+
+**A:** A subgraph that touches every vertex, has exactly `V − 1` edges, is connected and acyclic. The MST minimises total edge weight.
+
+</details>
+
+<details>
+<summary><strong>Q:</strong> The cut property?</summary>
+
+**A:** For any partition of the vertices, the *lightest edge crossing the partition* is in some MST. Both Kruskal and Prim are corollaries.
+
+</details>
+
+<details>
+<summary><strong>Q:</strong> Time complexity of Kruskal vs Prim?</summary>
+
+**A:** Both `O(E log V)`. Kruskal: sort dominates. Prim with binary heap: `O((V + E) log V)`. Prim with Fibonacci heap: `O(E + V log V)`.
+
+</details>
+
+<details>
+<summary><strong>Q:</strong> Kruskal's algorithm in three lines?</summary>
+
+**A:** Sort edges by weight; iterate; for each edge, if endpoints are in different DSU components, union them and accept the edge. Stop when `V − 1` edges accepted.
+
+</details>
+
+<details>
+<summary><strong>Q:</strong> Prim's algorithm in three lines?</summary>
+
+**A:** Maintain a min-heap of edges from the tree to outside; repeatedly extract the lightest, add the new vertex; push that vertex's outgoing edges. `O(E log V)` total.
+
+</details>
+
+<details>
+<summary><strong>Q:</strong> When does Prim beat Kruskal?</summary>
+
+**A:** Dense graphs (`E ≈ V²`). Prim with adjacency matrix runs in `O(V²)`, beating Kruskal's `O(V² log V)`.
+
+</details>
+
+<details>
+<summary><strong>Q:</strong> Does MST require non-negative edge weights?</summary>
+
+**A:** No. Both Kruskal and Prim handle negative weights without modification. (Unlike Dijkstra's shortest path.)
+
+</details>
+
+<details>
+<summary><strong>Q:</strong> Is the MST unique?</summary>
+
+**A:** Iff all edge weights are distinct. Otherwise multiple MSTs may exist with the same total weight.
+
+</details>
+
+## Code template
+
+```python
+# Kruskal — short, idiomatic, uses DSU.
+def kruskal_mst(n, edges):
+    edges = sorted(edges, key=lambda e: e[2])               # by weight
+    dsu = DSU(n)
+    mst, total = [], 0
+    for u, v, w in edges:
+        if dsu.union(u, v):
+            mst.append((u, v, w))
+            total += w
+            if len(mst) == n - 1: break
+    return mst, total
+
+# Prim — heap-based, lazy version (skips already-in-MST nodes on pop).
+import heapq
+def prim_mst(n, adj, start=0):
+    in_mst = [False] * n
+    pq = [(0, start, -1)]                                   # (weight, vertex, parent)
+    mst, total = [], 0
+    while pq:
+        w, u, p = heapq.heappop(pq)
+        if in_mst[u]: continue
+        in_mst[u] = True
+        total += w
+        if p != -1: mst.append((p, u, w))
+        for v, weight in adj[u]:
+            if not in_mst[v]: heapq.heappush(pq, (weight, v, u))
+    return mst, total
+```
+
+## Pattern triggers
+
+- **"Cheapest way to connect all of X"** → MST
+- **Dense graph** → Prim with adjacency matrix
+- **Sparse graph** → Kruskal (sort + DSU)
+- **Streaming edges, can't sort** → Prim
+- **Single-linkage hierarchical clustering** → MST construction (it's the same algorithm)
+- **Image segmentation by graph cut** → MST + threshold (Felzenszwalb)
+- **"Critical edges in MST"** → exclude each, see if MST weight changes
+- **"Find min-cost layout for power grid / cable network"** → MST
+
+***
+
 # Cross-links
 
 - **Prerequisites:** [Graph introduction](/cortex/data-structures-and-algorithms/graphs-introduction-to-graphs), [DSU](/cortex/data-structures-and-algorithms/trees-disjoint-set-union-introduction-to-disjoint-set-union), [Heap](/cortex/data-structures-and-algorithms/trees-heap-introduction-to-heaps).

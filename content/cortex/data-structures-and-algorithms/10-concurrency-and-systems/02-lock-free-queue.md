@@ -238,6 +238,102 @@ The Java/Scala versions use `AtomicReference`; the Python implementation falls b
 
 ***
 
+# Memorize
+
+The high-leverage facts to commit to long-term memory — atomic enough for an Anki card, concrete enough to recall under pressure or during production debugging. The Michael-Scott queue is the canonical lock-free queue; once you can sketch the two-CAS-per-enqueue pattern, you've understood every JVM/CLR concurrent queue implementation.
+
+## Quick recall
+
+Click any question to reveal the answer.
+
+<details>
+<summary><strong>Q:</strong> What does the dummy sentinel node do in Michael-Scott?</summary>
+
+**A:** Simplifies the empty-queue case. `head == tail == sentinel` means empty; otherwise the first real element is `head.next`. Both pointers always non-null.
+
+</details>
+
+<details>
+<summary><strong>Q:</strong> How many CASes per enqueue?</summary>
+
+**A:** Two. **CAS 1**: link new node onto `tail.next`. **CAS 2**: advance `tail` (best-effort; lagging tail fixed by next enqueuer).
+
+</details>
+
+<details>
+<summary><strong>Q:</strong> Why "best-effort" on the tail-advance CAS?</summary>
+
+**A:** If it fails, another thread already advanced `tail`. No retry needed; correctness is preserved by the help-the-lagging-tail branch in subsequent operations.
+
+</details>
+
+<details>
+<summary><strong>Q:</strong> What's the "help advance lagging tail" branch?</summary>
+
+**A:** A reader/writer that finds `tail.next` non-null knows tail is stale and CASes `tail` forward themselves. Cooperative; ensures no thread can stall the queue by being preempted.
+
+</details>
+
+<details>
+<summary><strong>Q:</strong> Variants you should know by name?</summary>
+
+**A:** **MPMC** (multi-producer, multi-consumer) — Michael-Scott. **SPSC** (single producer, single consumer) — ring buffer with two atomic counters; no CAS needed. **MPSC** (used in actor frameworks). **SPMC** (rare).
+
+</details>
+
+<details>
+<summary><strong>Q:</strong> Why is memory reclamation hard in C/C++ but easy in Java?</summary>
+
+**A:** Java's GC won't free a node while any thread holds a reference. C/C++ need hazard pointers, RCU, or tagged-pointer ABA mitigation to defer frees safely.
+
+</details>
+
+<details>
+<summary><strong>Q:</strong> What does the LMAX Disruptor do differently?</summary>
+
+**A:** Ring buffer with per-producer/per-consumer sequence numbers. Avoids most CAS contention by giving each thread its own slot to advance.
+
+</details>
+
+## Code template
+
+```c
+typedef struct Node { int value; _Atomic(struct Node*) next; } Node;
+typedef struct Queue { _Atomic(Node*) head, tail; } Queue;
+
+void enqueue(Queue *q, int value) {
+    Node *node = malloc(sizeof(Node));
+    node->value = value;
+    atomic_store(&node->next, NULL);
+
+    while (1) {
+        Node *last = atomic_load(&q->tail);
+        Node *next = atomic_load(&last->next);
+        if (last != atomic_load(&q->tail)) continue;          // tail moved; retry
+        if (next == NULL) {
+            Node *expected = NULL;
+            if (atomic_compare_exchange_weak(&last->next, &expected, node)) {
+                atomic_compare_exchange_weak(&q->tail, &last, node);     // best-effort
+                return;
+            }
+        } else {
+            atomic_compare_exchange_weak(&q->tail, &last, next);         // help advance
+        }
+    }
+}
+```
+
+## Pattern triggers
+
+- **"Producer-consumer queue, mostly Java/.NET"** → `ConcurrentLinkedQueue` / `ConcurrentQueue` (Michael-Scott)
+- **"Producer-consumer in C/C++/Rust"** → `boost::lockfree::queue`, JCTools, `crossbeam_channel`
+- **"Single producer, single consumer"** → SPSC ring buffer (no CAS needed)
+- **"Many threads contending on one queue"** → consider Disruptor pattern (per-slot sequence numbers)
+- **"Use-after-free in lock-free queue"** → memory reclamation strategy missing (hazard pointers or RCU)
+- **"Don't roll your own"** → use a library; correct lock-free queues are fiddly
+
+***
+
 # Cross-links
 
 - **Prerequisites:** [CAS and Atomics](/cortex/data-structures-and-algorithms/concurrency-and-systems-cas-and-atomics), [Queue](/cortex/data-structures-and-algorithms/linear-structures-queue-introduction-to-queues).

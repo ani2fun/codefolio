@@ -12,29 +12,35 @@
     "projectUrl": "https://kakde.eu",
     "githubUrl": "https://github.com/ani2fun",
     "image": {
-      "url": "/img/other/macbook.webp",
+      "url": "",
       "alt": "Self-hosted homelab cluster"
     },
-    "description": "Four-node K3s cluster on commodity hardware sitting at home. Hands-on with the full delivery path — packaging, deployment, networking, observability — for the services I actually use, including this site and the notebook below."
+    "description": "Four-node K3s cluster on commodity hardware sitting at home. Hands-on with the full delivery path — packaging, deployment, networking, observability — for the services I actually use, including this site.",
+    "category": "Infra",
+    "metadata": "K3S · 2023 · LINUX · GO",
+    "featured": true
   },
   {
-    "name": "Technical notebook (mdBook)",
+    "name": "Codefolio App",
     "tags": [
-      "mdBook",
-      "Rust",
-      "Markdown",
+      "Scala 3",
+      "Scala.js",
+      "ZIO",
+      "Tailwind",
       "Self-hosted"
     ],
-    "projectUrl": "https://notebook.kakde.eu",
-    "githubUrl": "https://github.com/ani2fun/note-book.git",
+    "projectUrl": "https://www.kakde.eu/",
+    "githubUrl": "https://github.com/ani2fun/codefolio",
     "image": {
-      "url": "/img/other/macbook.webp",
-      "alt": "Technical notebook"
+      "url": "/img/other/portfolio-webapp.webp",
+      "alt": "Codefolio App"
     },
-    "description": "An mdBook-based reference of in-depth technical guides — data structures, algorithms, system design, and infrastructure setup notes. Self-hosted on the homelab cluster."
+    "description": "Scala 3 end-to-end — Scala.js + scalajs-react frontend, ZIO 2 + zio-http backend fronting Postgres, Redis, and MongoDB. Packaged as a container and deployed to the homelab cluster behind the same ingress as the rest of my services.",
+    "category": "Backend",
+    "metadata": "SCALA.JS · 2024 · ZIO + TAILWIND"
   },
   {
-    "name": "Sonatype Maven Central Publisher (Gradle plugin)",
+    "name": "Sonatype Maven Central Publisher",
     "tags": [
       "Kotlin",
       "Gradle",
@@ -47,42 +53,8 @@
       "url": "/img/other/gradle-plugin.webp",
       "alt": "Gradle plugin"
     },
-    "description": "Open-source Gradle plugin I authored and maintain on the official Plugin Portal. Publishes JVM artefacts to Maven Central through Sonatype's Central Portal API. Demo projects: github.com/ani2fun/plugin-demo."
-  },
-  {
-    "name": "Portfolio site (this one)",
-    "tags": [
-      "React",
-      "Next.js",
-      "TypeScript",
-      "Tailwind",
-      "Self-hosted"
-    ],
-    "projectUrl": "https://www.kakde.eu/",
-    "githubUrl": "https://github.com/ani2fun/portfolio-app.git",
-    "image": {
-      "url": "/img/other/portfolio-webapp.webp",
-      "alt": "Portfolio site"
-    },
-    "description": "React + Next.js portfolio, packaged as a container and deployed to the homelab cluster behind the same ingress as the rest of my services."
-  },
-  {
-    "name": "Food Ordering System (DDD + Hexagonal)",
-    "tags": [
-      "Kotlin",
-      "Spring Boot",
-      "Kafka",
-      "PostgreSQL",
-      "Next.js",
-      "Hexagonal",
-      "DDD"
-    ],
-    "projectUrl": "https://github.com/ani2fun/food-ordering-system",
-    "githubUrl": "https://github.com/ani2fun/food-ordering-system.git",
-    "image": {
-      "url": "/img/food-ordering-system/system-1.webp",
-      "alt": "Food Ordering System"
-    },
-    "description": "An e-commerce prototype for a food-ordering system, written to practise hexagonal architecture and domain-driven design end-to-end — Kotlin services on Spring Boot, Kafka for events, PostgreSQL for storage, Next.js frontend."
+    "description": "Open-source Gradle plugin I authored and maintain on the official Plugin Portal. Publishes JVM artefacts to Maven Central through Sonatype's Central Portal API. Demo projects: github.com/ani2fun/plugin-demo.",
+    "category": "OSS",
+    "metadata": "GRADLE PLUGIN · 2023 · KOTLIN"
   }
 ]

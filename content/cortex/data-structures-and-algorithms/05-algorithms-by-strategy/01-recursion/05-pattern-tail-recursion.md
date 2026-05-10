@@ -19,8 +19,6 @@ By the end of this lesson you'll know what makes a recursive call "tail" vs not,
 
 # Understanding Tail Recursion
 
-> **Course:** DSA › Algorithms › Recursion › Tail Recursion
-
 A function call is a **tail call** if it's the *last* thing the calling function does — nothing remains to compute after it returns. A function is **tail-recursive** if its recursive call is a tail call: the function returns the result of the recursive call directly, doing no work afterwards.
 
 Compare:
@@ -342,8 +340,6 @@ Tail recursion does its work on the descent and accumulates the answer in a para
 
 # Identifying Tail Recursion
 
-> **Course:** DSA › Algorithms › Recursion › Tail Recursion
-
 Three diagnostic questions decide whether tail recursion fits.
 
 | # | Question | If "yes," tail recursion fits because... |
@@ -397,8 +393,6 @@ Three checks — descent-only progress, single-accumulator answer, recursive cal
 ***
 
 # Reverse Sequence
-
-> **Course:** DSA › Algorithms › Recursion › Tail Recursion
 
 The mirror image of Forward Sequence from the Head Recursion lesson. Same problem family, but now we want the numbers in descending order — and tail recursion gives it to us essentially for free.
 
@@ -667,8 +661,6 @@ Reverse Sequence is the tail-recursion mirror of Forward Sequence: same recursio
 
 # Search Element
 
-> **Course:** DSA › Algorithms › Recursion › Tail Recursion
-
 Linear search done recursively. The accumulator is the index we're currently inspecting — start at 0, advance by 1 each call, return the index on a match or `-1` at the end.
 
 ---
@@ -910,8 +902,6 @@ Search Element shows tail recursion in its simplest "scanner" form: an index acc
 
 # Is Palindrome
 
-> **Course:** DSA › Algorithms › Recursion › Tail Recursion
-
 Two-pointer recursion. Start at both ends, walk inward, fail fast on mismatch.
 
 ---
@@ -1147,8 +1137,6 @@ Is-Palindrome is tail recursion with two converging pointers. The accumulator is
 ***
 
 # Reverse a List
-
-> **Course:** DSA › Algorithms › Recursion › Tail Recursion
 
 The classic interview question. Reverse a singly linked list using only `O(1)` auxiliary memory (with TCO, anyway). The recursive solution is three lines and arguably clearer than the iterative one.
 

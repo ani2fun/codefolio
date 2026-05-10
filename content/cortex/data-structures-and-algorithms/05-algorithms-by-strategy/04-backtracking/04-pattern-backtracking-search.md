@@ -22,8 +22,6 @@ By the end of this lesson you'll know what makes a problem a search rather than 
 
 # Understanding Backtracking Search
 
-> **Course:** DSA › Algorithms › Backtracking › Search
-
 Backtracking search is the pattern where the *state* itself is the candidate solution. The state is typically a 2D grid (maze, sudoku, chessboard) or some other structured world that the algorithm mutates as it walks the recursion. Each frame:
 
 1. **Records its choice** by mutating the state (place a queen, mark a maze cell as visited, write a digit).
@@ -311,8 +309,6 @@ Backtracking search is enumeration's mirror image: instead of building an output
 
 # Identifying Backtracking Search
 
-> **Course:** DSA › Algorithms › Backtracking › Search
-
 Three diagnostic questions decide whether backtracking search fits.
 
 | # | Question | If "yes," backtracking search fits because... |
@@ -373,8 +369,6 @@ Three checks — state-IS-the-answer, boolean propagation, explicit undo — gat
 ***
 
 # Rat in a Maze
-
-> **Course:** DSA › Algorithms › Backtracking › Search
 
 The canonical backtracking-search problem. Walk a 2D grid; pick directions; mark visited cells to prevent cycles; reach the goal or fail.
 
@@ -717,8 +711,6 @@ Rat in a Maze is the canonical "find one path" search problem. Mark visited, rec
 
 # Word Quest
 
-> **Course:** DSA › Algorithms › Backtracking › Search
-
 A 2D character grid; we want to know whether a given word appears as a chain of orthogonally-adjacent cells (with no cell reused). Same search recipe as the maze, with character-matching instead of obstacle-checking.
 
 ---
@@ -1014,8 +1006,6 @@ Word Quest is the canonical "match a sequence on a grid" search problem. Same re
 ***
 
 # Solve N Queens
-
-> **Course:** DSA › Algorithms › Backtracking › Search
 
 The classic. Place `n` queens on an `n × n` board so no two attack each other. Find *all* valid configurations.
 
@@ -1348,8 +1338,6 @@ N-Queens is the canonical "find all configurations" search problem. Place-recurs
 ***
 
 # Solve Sudoku
-
-> **Course:** DSA › Algorithms › Backtracking › Search
 
 The hardest worked problem in this section. Sudoku's state space is enormous, but constraint propagation prunes it relentlessly.
 

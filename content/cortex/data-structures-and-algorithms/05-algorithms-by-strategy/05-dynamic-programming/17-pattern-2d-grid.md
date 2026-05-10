@@ -17,8 +17,6 @@ By the end of this lesson you'll have written four canonical 2D-grid DPs: **long
 
 # The 2D-Grid Pattern
 
-> **Course:** DSA › Algorithms › Dynamic Programming › 2D-Grid Pattern
-
 The pattern's three flavours:
 
 1. **Origin-to-target** — `dp[r][c]` is the answer for cell `(r, c)`; transitions read from cells "earlier in the traversal." Examples: minimum-sum path, count of paths.
@@ -67,8 +65,6 @@ Origin-to-target. `dp[r][c] = grid[r][c] + min(dp[r-1][c], dp[r][c-1])`. Two nes
 ***
 
 # Longest Ascending Route
-
-> **Course:** DSA › Algorithms › Dynamic Programming › 2D-Grid Pattern
 
 ## The Problem
 
@@ -285,8 +281,6 @@ object Main extends App {
 
 # Largest Square Area of 1s
 
-> **Course:** DSA › Algorithms › Dynamic Programming › 2D-Grid Pattern
-
 ## The Problem
 
 Given a binary matrix of 0s and 1s, find the area of the largest *axis-aligned square* of 1s.
@@ -489,8 +483,6 @@ object Main extends App {
 
 # Destination Path Count
 
-> **Course:** DSA › Algorithms › Dynamic Programming › 2D-Grid Pattern
-
 ## The Problem
 
 Given an `n × m` matrix of non-negative cell costs and a target cost, count the number of paths from `(0, 0)` to `(n-1, m-1)` whose summed costs equal the target. Moves are right or down only.
@@ -676,8 +668,6 @@ object Main extends App {
 ***
 
 # Largest Plus of 1s
-
-> **Course:** DSA › Algorithms › Dynamic Programming › 2D-Grid Pattern
 
 ## The Problem
 

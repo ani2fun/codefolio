@@ -1,53 +1,77 @@
 @layer components {
-    /* Header — sticky top nav with desktop pill menu and mobile drawer.
+    /* Header — sticky top nav with logomark + lowercase wordmark + desktop nav
+       + dark-mode toggle + ghost "Get in touch" pill + mobile drawer.
+
        Block: .header
-       Elements: __nav, __title, __toggle, __toggle--mobile, __toggle--desktop,
-                 __menu, __link, __burger, __burger-icon, __drawer, __drawer-list,
+       Elements: __nav, __brand, __logomark, __wordmark, __link, __link--active,
+                 __actions, __toggle, __toggle--mobile, __toggle--desktop,
+                 __cta, __burger, __burger-icon, __drawer, __drawer-list,
                  __drawer-link */
 
     .header {
-        @apply fixed top-0 left-0 right-0 z-50 bg-white dark:bg-background shadow-md opacity-95;
+        @apply fixed top-0 left-0 right-0 z-50 bg-background/85 backdrop-blur
+               border-b border-border/60;
     }
     .header__nav {
-        /* `container` is added literally in markup — v4's container utility
-           carries embedded breakpoint media queries that @apply can't expand. */
-        @apply p-5 flex justify-between items-center;
+        @apply px-5 py-4 flex justify-between items-center gap-4;
     }
-    .header__title {
-        @apply hidden md:block text-lg md:text-2xl lg:text-3xl font-bold text-primary dark:text-primary;
+    .header__brand {
+        @apply flex items-center gap-2.5 no-underline;
     }
-    .header__toggle {
-        /* No styling on its own — the variants below decide visibility. */
+    .header__logomark {
+        /* Solid ink-on-bg chip per prototype — confidence over decoration.
+           Bg flips with theme: dark roast in light mode, warm cream in dark
+           mode. The mono "a" sits in the middle. */
+        @apply inline-flex items-center justify-center w-[22px] h-[22px] rounded-md
+               bg-foreground text-background text-xs font-mono font-semibold leading-none;
     }
-    .header__toggle--mobile {
-        @apply block md:hidden;
-    }
-    .header__toggle--desktop {
-        @apply hidden md:flex;
+    .header__wordmark {
+        @apply text-[13px] font-mono font-medium tracking-tight text-foreground hidden sm:inline;
     }
     .header__menu {
-        @apply hidden md:flex md:space-x-2 lg:space-x-5;
+        @apply hidden md:flex md:gap-1 lg:gap-2;
     }
     .header__link {
-        @apply px-2 lg:px-3 py-2 hover:bg-primary dark:hover:bg-primary hover:text-gray-50
-               text-base lg:text-xl font-semibold rounded;
+        @apply relative px-2 lg:px-3 py-2 text-sm font-medium text-foreground/80
+               hover:text-foreground transition-colors no-underline;
+    }
+    .header__link::after {
+        content: "";
+        position: absolute;
+        left: 0.5rem;
+        right: 0.5rem;
+        bottom: 0.4rem;
+        height: 1px;
+        background-color: hsl(var(--primary));
+        transform: scaleX(0);
+        transform-origin: left;
+        transition: transform 200ms ease;
+    }
+    .header__link:hover::after { transform: scaleX(1); }
+    .header__actions {
+        @apply flex items-center gap-3;
+    }
+    .header__toggle--mobile { @apply block md:hidden; }
+    .header__toggle--desktop { @apply hidden md:flex; }
+    .header__cta {
+        /* Solid ink-on-bg pill per prototype. Hover lifts 1px; nothing more. */
+        @apply hidden md:inline-flex items-center px-[14px] py-2 rounded-full
+               bg-foreground text-background text-[13px] font-medium
+               hover:-translate-y-px transition no-underline;
     }
     .header__burger {
-        @apply md:hidden;
+        @apply md:hidden inline-flex items-center justify-center;
     }
     .header__burger-icon {
-        @apply w-10 h-10 text-primary dark:text-primary hover:text-rose-500;
+        @apply w-7 h-7 text-foreground/80 hover:text-primary;
     }
     .header__drawer {
-        @apply md:hidden;
+        @apply md:hidden border-t border-border/60 bg-background;
     }
     .header__drawer-list {
-        /* `items-left` was the original — not a Tailwind utility, v3 silently
-           ignored it; v4 errors. Replaced with `items-start` (its intended
-           equivalent) to keep the drawer items left-aligned. */
-        @apply flex flex-col items-start space-y-5 bg-white dark:bg-background p-5;
+        @apply flex flex-col items-start gap-3 p-6;
     }
     .header__drawer-link {
-        @apply font-semibold hover:text-primary dark:hover:text-primary;
+        @apply text-base font-medium text-foreground/80 hover:text-primary;
     }
 }

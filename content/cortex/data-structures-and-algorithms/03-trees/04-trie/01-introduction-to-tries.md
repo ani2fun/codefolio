@@ -521,6 +521,131 @@ Variants worth knowing:
 
 ***
 
+# Memorize
+
+The high-leverage facts to commit to long-term memory — atomic enough for an Anki card, concrete enough to recall under pressure or during production debugging. Once these click, every prefix-search problem reduces to "build a trie, walk it, return".
+
+## Quick recall
+
+Click any question to reveal the answer.
+
+<details>
+<summary><strong>Q:</strong> Time complexity of trie insert / search / prefix-check?</summary>
+
+**A:** `O(L)` where `L` is the length of the input string. Independent of how many strings are stored.
+
+</details>
+
+<details>
+<summary><strong>Q:</strong> Space complexity of inserting a string of length <code>L</code>?</summary>
+
+**A:** `O(L)` worst case (no shared prefix). With a shared prefix, only the divergent suffix consumes new nodes.
+
+</details>
+
+<details>
+<summary><strong>Q:</strong> Why is the end-of-word marker essential?</summary>
+
+**A:** Without it, you can't distinguish "this string is in the dictionary" from "this string is a prefix of one in the dictionary". `app` and `apple` look identical without it.
+
+</details>
+
+<details>
+<summary><strong>Q:</strong> Three storage choices for a node's children — trade-offs?</summary>
+
+**A:** **Array of 26 pointers** (English): `O(1)` lookup, ~208 bytes/node wasted on null slots. **Hash map**: smaller for sparse, slower constant. **Sorted vector**: tiny memory, `O(log alphabet)` lookup, sorted iteration free.
+
+</details>
+
+<details>
+<summary><strong>Q:</strong> What's a compressed (radix / Patricia) trie?</summary>
+
+**A:** A trie where every chain of single-child nodes is collapsed into one edge labelled with the full substring. Saves space dramatically for deep but sparse trees.
+
+</details>
+
+<details>
+<summary><strong>Q:</strong> Cost of <code>enumerateWithPrefix(prefix)</code>?</summary>
+
+**A:** `O(L + K · L_avg)`. `L` to descend to the prefix node, `K · L_avg` to construct each of `K` matching words.
+
+</details>
+
+<details>
+<summary><strong>Q:</strong> What does Linux's <code>fib_trie.c</code> use a trie for?</summary>
+
+**A:** Longest-prefix match on IP addresses for the routing table. Every packet hits this trie. Optimised as an LC-trie (level-compressed radix trie) with RCU for lock-free reads.
+
+</details>
+
+<details>
+<summary><strong>Q:</strong> Why use a trie instead of a hash set for autocomplete?</summary>
+
+**A:** Hash set can't enumerate "all strings starting with X" efficiently — it has no order. Trie answers prefix queries in `O(L + matches)`, where the L is the prefix length, regardless of dictionary size.
+
+</details>
+
+<details>
+<summary><strong>Q:</strong> When does the trie <em>not</em> save space over storing the strings?</summary>
+
+**A:** When prefixes aren't shared (random keys, hashes, UUIDs). Every node has one child; the trie is a forest of independent paths — same total storage as the strings plus overhead.
+
+</details>
+
+<details>
+<summary><strong>Q:</strong> What does the Adaptive Radix Tree (ART) optimise?</summary>
+
+**A:** Memory: each internal node uses one of four layouts (4, 16, 48, 256 children) chosen by population count. Used by DuckDB and HyPer for in-memory indexes.
+
+</details>
+
+## Code template
+
+```python
+class TrieNode:
+    __slots__ = ("children", "is_end")
+    def __init__(self):
+        self.children = {}
+        self.is_end = False
+
+class Trie:
+    def __init__(self):
+        self.root = TrieNode()
+
+    def insert(self, word):
+        node = self.root
+        for ch in word:
+            node = node.children.setdefault(ch, TrieNode())
+        node.is_end = True
+
+    def search(self, word):
+        node = self._walk(word)
+        return node is not None and node.is_end
+
+    def starts_with(self, prefix):
+        return self._walk(prefix) is not None
+
+    def _walk(self, s):
+        node = self.root
+        for ch in s:
+            if ch not in node.children: return None
+            node = node.children[ch]
+        return node
+```
+
+## Pattern triggers
+
+- **Autocomplete / "all strings with prefix X"** → trie + DFS from prefix node
+- **Multi-pattern matching against a stream** → trie with failure links → Aho-Corasick
+- **Word-search puzzle** (board of letters, find dictionary words) → trie + DFS-with-pruning over the board
+- **Replace each word with its shortest dictionary root** → trie of roots, walk each word until first end-of-word
+- **IP routing / longest-prefix match** → bit-level radix trie (Patricia, LC-trie)
+- **Spell-checker "did you mean..."** → trie + DFS with edit-distance budget
+- **Lots of strings sharing prefixes** → trie compresses; lots of unrelated strings → hash set is simpler
+- **"Are all strings in S also prefixes of strings in T?"** → build trie of T, check every S in `O(|S| · L)`
+
+***
+
 # Cross-links
 
 - **Prerequisites:** [Binary Tree](/cortex/data-structures-and-algorithms/trees-binary-tree-introduction-to-binary-trees), [Hash Table](/cortex/data-structures-and-algorithms/linear-structures-hash-table-introduction-to-hash-tables) (children-map alternative).

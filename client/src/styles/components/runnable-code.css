@@ -11,7 +11,17 @@
         @apply flex items-center justify-between gap-2 px-3 py-2 border-b border-border bg-muted/40;
     }
     .rcb__language-label {
-        @apply text-xs font-medium text-muted-foreground;
+        @apply inline-flex items-center gap-1.5 text-xs font-medium text-muted-foreground;
+    }
+    /* Real brand-mark prefix for languages where the emoji-only label is too
+       vague (currently just Scala). Sized to sit on the cap-height of the
+       label text; coloured in Scala brand red so the chip reads as a real
+       brand mark, not a monochrome glyph. */
+    .rcb__brand-icon {
+        @apply h-3.5 w-3.5 shrink-0;
+    }
+    .rcb__brand-icon--scala {
+        color: #DC322F;
     }
     .rcb__controls {
         @apply flex items-center gap-2;
@@ -102,10 +112,17 @@
         @apply flex border-b border-border bg-muted/40 overflow-x-auto;
     }
     .rcg__tab {
-        @apply px-4 py-2 text-xs font-semibold whitespace-nowrap border-b-2 transition-colors
-               border-transparent text-muted-foreground hover:text-foreground;
+        @apply inline-flex items-center gap-1.5 px-4 py-2 text-xs font-semibold whitespace-nowrap
+               border-b-2 transition-colors border-transparent text-muted-foreground hover:text-foreground;
     }
     .rcg__tab--active {
         @apply border-primary text-foreground;
+    }
+    /* Scala-specific brand mark on tabs, same rules as `.rcb__brand-icon`. */
+    .rcg__brand-icon {
+        @apply h-3.5 w-3.5 shrink-0;
+    }
+    .rcg__brand-icon--scala {
+        color: #DC322F;
     }
 }

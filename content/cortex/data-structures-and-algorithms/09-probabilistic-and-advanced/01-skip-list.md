@@ -431,6 +431,114 @@ The tail is exponentially decaying — the probability that the height exceeds `
 
 ***
 
+# Memorize
+
+The high-leverage facts to commit to long-term memory — atomic enough for an Anki card, concrete enough to recall under pressure or during production debugging. Skip list is the simplest probabilistic ordered structure; once you can write it cold, you have a balanced map in 30 lines.
+
+## Quick recall
+
+Click any question to reveal the answer.
+
+<details>
+<summary><strong>Q:</strong> Expected complexity of skip-list search/insert/delete?</summary>
+
+**A:** All `O(log n)` expected. Worst case is `O(n)` but exponentially unlikely.
+
+</details>
+
+<details>
+<summary><strong>Q:</strong> How is each new node's height chosen?</summary>
+
+**A:** Coin flips: 50% chance of height ≥ 1, 25% of ≥ 2, 12.5% of ≥ 3, …, capped at `MAX_LEVEL`.
+
+</details>
+
+<details>
+<summary><strong>Q:</strong> Why does the geometric height distribution give `O(log n)` expected?</summary>
+
+**A:** Expected height is `log₂ n`; expected lateral moves per level are constant (geometric). Total: `O(log n × constant)`.
+
+</details>
+
+<details>
+<summary><strong>Q:</strong> Where do skip lists ship in production?</summary>
+
+**A:** **Redis sorted sets** (`zset`), **LevelDB / RocksDB memtables**, **Java `ConcurrentSkipListMap`**.
+
+</details>
+
+<details>
+<summary><strong>Q:</strong> Why skip list over RB-tree for concurrent contexts?</summary>
+
+**A:** Lock-free skip list is well-understood; lock-free RB-tree is research-level. Each node only points to its successor, not to a parent — simpler synchronisation.
+
+</details>
+
+<details>
+<summary><strong>Q:</strong> Memory overhead?</summary>
+
+**A:** Average ~2 forward pointers per node (geometric series sums to 2). Comparable to an RB-tree's three pointers (left, right, parent).
+
+</details>
+
+<details>
+<summary><strong>Q:</strong> Implementation length compared to RB-tree?</summary>
+
+**A:** ~30 lines for full insert/search/delete vs ~200 for RB-tree. Why competitive programming and concurrent code often pick skip list.
+
+</details>
+
+## Code template
+
+```python
+import random
+
+class SkipNode:
+    __slots__ = ("key", "value", "forward")
+    def __init__(self, key, value, height):
+        self.key, self.value = key, value
+        self.forward = [None] * height
+
+class SkipList:
+    MAX_LEVEL = 16
+    def __init__(self):
+        self.head = SkipNode(None, None, self.MAX_LEVEL)
+        self.level = 0
+
+    def _random_height(self):
+        h = 1
+        while random.random() < 0.5 and h < self.MAX_LEVEL: h += 1
+        return h
+
+    def insert(self, key, value):
+        update = [self.head] * self.MAX_LEVEL
+        x = self.head
+        for lvl in range(self.level, -1, -1):
+            while x.forward[lvl] is not None and x.forward[lvl].key < key:
+                x = x.forward[lvl]
+            update[lvl] = x
+        h = self._random_height()
+        if h > self.level + 1:
+            for i in range(self.level + 1, h): update[i] = self.head
+            self.level = h - 1
+        new = SkipNode(key, value, h)
+        for i in range(h):
+            new.forward[i] = update[i].forward[i]
+            update[i].forward[i] = new
+```
+
+## Pattern triggers
+
+- **"Sorted in-memory map with simple code"** → skip list
+- **"Concurrent ordered map"** → skip list (or `ConcurrentSkipListMap`)
+- **"Range queries on a sorted set"** → skip list, walk level-0 chain
+- **"Need fast member-to-rank lookup"** → skip list with span-augmented forward pointers
+- **"Redis sorted set internals"** → skip list + hash table
+- **"LSM-tree memtable"** → skip list (LevelDB, RocksDB)
+- **"Want a balanced BST without the rebalance choreography"** → skip list
+
+***
+
 # Cross-links
 
 - **Prerequisites:** [Singly Linked List](/cortex/data-structures-and-algorithms/linear-structures-singly-linked-list-introduction-to-singly-linked-lists), [Asymptotic Analysis](/cortex/data-structures-and-algorithms/foundations-asymptotic-analysis).

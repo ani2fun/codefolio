@@ -238,6 +238,116 @@ The Java/C/Scala variants follow the same algorithm. Aho-Corasick is more often 
 
 ***
 
+# Memorize
+
+The high-leverage facts to commit to long-term memory — atomic enough for an Anki card, concrete enough to recall under pressure or during production debugging. Aho-Corasick is "KMP for many patterns at once" — the algorithm behind every fixed-string multi-search you've ever used.
+
+## Quick recall
+
+Click any question to reveal the answer.
+
+<details>
+<summary><strong>Q:</strong> Total time complexity of Aho-Corasick?</summary>
+
+**A:** `O(n + Σ m_i + matches)`. Build is `O(Σ m_i)`; match scan is `O(n)`; reporting matches adds proportional cost.
+
+</details>
+
+<details>
+<summary><strong>Q:</strong> What is a failure link in Aho-Corasick?</summary>
+
+**A:** From a trie node `u` representing string `w`, points to the node representing the longest proper suffix of `w` that's also a prefix of some pattern.
+
+</details>
+
+<details>
+<summary><strong>Q:</strong> Why is the construction BFS, not DFS?</summary>
+
+**A:** Failure links at depth `d` depend on failure links at depth `d-1`. BFS visits in depth order; DFS doesn't.
+
+</details>
+
+<details>
+<summary><strong>Q:</strong> What are output links and why precompute them?</summary>
+
+**A:** From node `u`, point to the closest pattern-terminal ancestor reachable via failure links. Lets you report all matches at a position in `O(1)` per match instead of walking the failure chain each time.
+
+</details>
+
+<details>
+<summary><strong>Q:</strong> Aho-Corasick vs running KMP K times?</summary>
+
+**A:** AC: `O(n + Σ m_i + matches)`, single pass over text. K KMPs: `O(K(n + m_avg))`. AC scales independently of `K`.
+
+</details>
+
+<details>
+<summary><strong>Q:</strong> Where does AC ship in production?</summary>
+
+**A:** `grep -F`, Snort/Suricata IDS, spam filters, content moderation, search-engine entity routing. The 1975 paper described the bibliographic-search use case at Bell Labs.
+
+</details>
+
+<details>
+<summary><strong>Q:</strong> Memory cost for `K` patterns of avg length `L`?</summary>
+
+**A:** `O(K · L · |Σ|)` worst case (each trie node has alphabet-sized child pointers). Use hash-mapped children for sparse alphabets / huge pattern sets.
+
+</details>
+
+## Code template
+
+```python
+from collections import deque
+
+def build_aho_corasick(patterns):
+    root = ACNode()
+    for p in patterns:
+        node = root
+        for ch in p:
+            node = node.children.setdefault(ch, ACNode())
+        node.is_end = True
+
+    # BFS to set failure links
+    q = deque()
+    for c in root.children.values(): c.fail = root; q.append(c)
+    while q:
+        u = q.popleft()
+        for ch, v in u.children.items():
+            q.append(v)
+            f = u.fail
+            while f is not root and ch not in f.children: f = f.fail
+            v.fail = f.children.get(ch, root)
+            if v.fail is v: v.fail = root
+            v.output = v.fail if v.fail.is_end else v.fail.output
+    return root
+
+def search(T, root):
+    state, matches = root, []
+    for i, ch in enumerate(T):
+        while state is not root and ch not in state.children:
+            state = state.fail
+        if ch in state.children: state = state.children[ch]
+        u = state
+        while u is not root:
+            if u.is_end: matches.append((i - u.depth + 1, u.depth))
+            u = u.output if u.output else root
+    return matches
+```
+
+## Pattern triggers
+
+- **"Match a stream against many fixed patterns"** → Aho-Corasick
+- **"`grep -F` style multi-pattern fixed-string search"** → Aho-Corasick
+- **"IDS / signature-based malware detection"** → Aho-Corasick
+- **"Spam keyword / content moderation"** → Aho-Corasick
+- **"Many short DNA motifs against a long sequence"** → Aho-Corasick (or BWT-based for huge inputs)
+- **"Single pattern only"** → KMP / Z is simpler
+- **"Tens of millions of patterns"** → memory matters; consider compressed-trie variants or sharded AC
+- **"Need approximate matching"** → AC doesn't natively support; use Levenshtein automaton or `agrep`
+
+***
+
 # Cross-links
 
 - **Prerequisites:** [KMP](/cortex/data-structures-and-algorithms/strings-kmp) (the failure-function idea), [Trie](/cortex/data-structures-and-algorithms/trees-trie-introduction-to-tries).

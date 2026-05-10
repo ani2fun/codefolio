@@ -19,8 +19,6 @@ By the end of this lesson you'll know the diagnostic checks for unconditional en
 
 # Understanding Unconditional Enumeration
 
-> **Course:** DSA › Algorithms › Backtracking › Unconditional Enumeration
-
 A backtracking solution exhibits **unconditional enumeration** when **every leaf of the state space tree is a valid solution**. There's no validation function that filters leaves; there's no bounding rule that prunes internal nodes. The algorithm enumerates every candidate the tree can produce, and *all of them count*.
 
 This is exactly the pattern from the introductory phone-password problem. Every 4-digit binary string is a candidate; every leaf gets recorded; the algorithm doesn't say "no" to any leaf. The only difference between problems in this category is the structure of the *choices*: subsets choose include-or-exclude per element, sequences choose a value in `1..k` per slot, phone combinations choose a letter per digit.
@@ -331,8 +329,6 @@ Unconditional enumeration is the simplest backtracking pattern: walk the full st
 
 # Identifying Unconditional Enumeration
 
-> **Course:** DSA › Algorithms › Backtracking › Unconditional Enumeration
-
 Three diagnostic questions decide whether unconditional enumeration fits.
 
 | # | Question | If "yes," unconditional enumeration fits because... |
@@ -396,8 +392,6 @@ Three checks — every leaf is a solution, one decision per slot, fixed branchin
 ***
 
 # Unique Subsets
-
-> **Course:** DSA › Algorithms › Backtracking › Unconditional Enumeration
 
 The textbook subsets problem. Each element of the input array becomes one slot in the state space tree; each slot has exactly two choices: include or exclude.
 
@@ -738,8 +732,6 @@ Unique Subsets is the canonical 2-choice unconditional enumeration: include-or-e
 
 # Case Transformations
 
-> **Course:** DSA › Algorithms › Backtracking › Unconditional Enumeration
-
 The branching factor varies per slot. Letters have 2 choices (toggle or keep); non-letters have 1 choice (keep). Same recipe; different choice generation.
 
 ---
@@ -1046,8 +1038,6 @@ Case Transformations shows unconditional enumeration with a *variable* branching
 
 # Number Sequence
 
-> **Course:** DSA › Algorithms › Backtracking › Unconditional Enumeration
-
 Both slot count and branching factor become parameters. This is the most general unconditional-enumeration shape in this section.
 
 ---
@@ -1245,8 +1235,6 @@ Number Sequence is the cleanest demonstration of unconditional enumeration's gen
 ***
 
 # Phone Combinations
-
-> **Course:** DSA › Algorithms › Backtracking › Unconditional Enumeration
 
 The classic phone-keypad problem. Each digit's set of letters is different — branching factor varies per slot — but every leaf is still a valid output.
 

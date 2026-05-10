@@ -137,6 +137,106 @@ Tunable via `list-max-listpack-size` (default `-2`, meaning 8 KB per node).
 
 ***
 
+# Memorize
+
+The high-leverage facts to commit to long-term memory — atomic enough for an Anki card, concrete enough to recall under pressure or during production debugging. Redis's encoding-per-size pattern is the cleanest "cache-aware engineering" story in open-source code; these facts come up in every Redis sizing conversation.
+
+## Quick recall
+
+Click any question to reveal the answer.
+
+<details>
+<summary><strong>Q:</strong> Encoding switch rule for a Redis Hash?</summary>
+
+**A:** Below `hash-max-listpack-entries` (default 128) and `hash-max-listpack-value` (default 64 bytes per field/value): **listpack** (contiguous). Above: **hashtable** (chained).
+
+</details>
+
+<details>
+<summary><strong>Q:</strong> Why does small-data listpack beat hashtable in memory?</summary>
+
+**A:** Listpack is one contiguous allocation with size-prefixed entries. Hashtable adds bucket arrays + per-entry node overhead + pointer indirection. 5-10× memory savings for small data.
+
+</details>
+
+<details>
+<summary><strong>Q:</strong> What replaces ziplist in Redis 7+?</summary>
+
+**A:** **listpack**. Eliminates ziplist's "cascade update" problem (where a size-encoding change could trigger `O(n²)` rewrites).
+
+</details>
+
+<details>
+<summary><strong>Q:</strong> Sorted set internal structure?</summary>
+
+**A:** Two structures in tandem: a **skip list** keyed by score (for `ZRANGE`) plus a **hash table** mapping member → score (for `O(1)` `ZSCORE`/`ZRANK`).
+
+</details>
+
+<details>
+<summary><strong>Q:</strong> What is a quicklist?</summary>
+
+**A:** A linked list of listpacks. Outer linked-list for `O(1)` head/tail push/pop; inner listpacks for memory locality. Used by Redis Lists.
+
+</details>
+
+<details>
+<summary><strong>Q:</strong> Incremental rehashing — what does it solve?</summary>
+
+**A:** A hash-table grow-by-2 would be `O(n)` and stall the single-threaded server. Incremental rehashing migrates one bucket per operation; no individual op exceeds a few microseconds.
+
+</details>
+
+<details>
+<summary><strong>Q:</strong> Encoding upgrade — one-way or reversible?</summary>
+
+**A:** One-way. Once a Hash exceeds the threshold and switches to hashtable, deletes don't bring it back. To shrink, dump and restore.
+
+</details>
+
+<details>
+<summary><strong>Q:</strong> Memory measurement commands?</summary>
+
+**A:** `OBJECT ENCODING <key>` (which encoding), `MEMORY USAGE <key>` (actual bytes), `OBJECT REFCOUNT <key>` (shared-string detection).
+
+</details>
+
+## Source pointers
+
+```
+src/dict.c              — hash table; incremental rehashing in dictRehashStep
+src/dict.h              — struct dict (the two-table design)
+src/listpack.c          — listpack encoding (Redis 7+)
+src/ziplist.c           — ziplist encoding (legacy, removed in 7.2)
+src/quicklist.c         — quicklist (linked list of listpacks)
+src/intset.c            — intset (packed sorted integer array)
+src/t_zset.c            — sorted set: skip list + hash table
+src/t_hash.c            — hash data type
+src/t_string.c          — string with embstr / raw / int encodings
+src/object.c            — generic object encoding helpers
+```
+
+Configuration knobs to know:
+
+```
+hash-max-listpack-entries / -value
+list-max-listpack-size
+set-max-listpack-entries / -intset-entries
+zset-max-listpack-entries / -value
+```
+
+## Pattern triggers
+
+- **"Why is my Redis using so much memory?"** → check `OBJECT ENCODING`; many small hashes already on hashtable encoding burn 5-10× memory
+- **"Slow `HGETALL` on a 100k-field hash"** → that's `O(n)` regardless of encoding; use `HSCAN`
+- **"Sorted set internals"** → skip list + hash table in `t_zset.c`
+- **"Suspicious latency spikes during inserts"** → incremental rehashing migrating a bucket; usually fine
+- **"What encoding for my workload?"** → defaults are empirical sweet spots; benchmark before tuning
+- **"Memory budget tight on Redis"** → keep collections under threshold sizes; use `MEMORY USAGE` to verify
+- **"Where to read the source?"** → `t_zset.c` is unusually clean; `dict.c` is the canonical incremental-rehash example
+
+***
+
 # Cross-links
 
 - **Prerequisites:** [Hash Table](/cortex/data-structures-and-algorithms/linear-structures-hash-table-introduction-to-hash-tables), [Skip List](/cortex/data-structures-and-algorithms/probabilistic-and-advanced-skip-list), [Memory Model and Cache](/cortex/data-structures-and-algorithms/foundations-memory-model-and-cache).

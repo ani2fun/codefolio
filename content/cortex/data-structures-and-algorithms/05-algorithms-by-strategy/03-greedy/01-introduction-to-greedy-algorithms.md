@@ -369,6 +369,106 @@ The lesson: greedy is fragile. *Always* construct the proof of correctness (or c
 
 ***
 
+# Memorize
+
+The high-leverage facts to commit to long-term memory — atomic enough for an Anki card, concrete enough to recall under pressure or during production debugging. Greedy is the most beautiful and most fragile strategy: when it works, it's a 10-line solution; when it doesn't, you have a confidently-wrong answer. Internalising the trigger patterns is the difference.
+
+## Quick recall
+
+Click any question to reveal the answer.
+
+<details>
+<summary><strong>Q:</strong> Definition of a greedy algorithm?</summary>
+
+**A:** At each step, make the choice that looks best *now* — without looking ahead to whether that choice constrains future choices badly.
+
+</details>
+
+<details>
+<summary><strong>Q:</strong> What property must a problem have for greedy to be correct?</summary>
+
+**A:** The *greedy-choice property*: a globally-optimal solution can always be reached by making a locally-best first choice. (Plus optimal substructure.)
+
+</details>
+
+<details>
+<summary><strong>Q:</strong> Standard sort key for activity selection?</summary>
+
+**A:** End time. Earliest-ending compatible activity is always in some optimal solution. Sorting by start time is a common wrong answer.
+
+</details>
+
+<details>
+<summary><strong>Q:</strong> What is the exchange argument?</summary>
+
+**A:** Take any optimum; swap one of its choices for the corresponding greedy choice; show the result is still optimal. Repeat until you've transformed the optimum into the greedy solution.
+
+</details>
+
+<details>
+<summary><strong>Q:</strong> Famous greedy failure?</summary>
+
+**A:** **0/1 knapsack.** Greedy by value-per-weight gives wrong answers when items can't be split. Use DP. (Fractional knapsack *is* greedy-amenable.)
+
+</details>
+
+<details>
+<summary><strong>Q:</strong> Famous greedy success — and the proof technique?</summary>
+
+**A:** **Huffman coding.** Repeatedly combine two least-frequent symbols. Exchange argument: in any optimal tree, the two least-frequent symbols can be made deepest siblings, reducing to the next level.
+
+</details>
+
+<details>
+<summary><strong>Q:</strong> Three classical greedy graph algorithms?</summary>
+
+**A:** **Kruskal MST**, **Prim MST**, **Dijkstra shortest path**. All proved correct by exchange-argument variants.
+
+</details>
+
+<details>
+<summary><strong>Q:</strong> When is the coin-change greedy correct?</summary>
+
+**A:** Only for "canonical" coin systems (like US coins). For arbitrary denominations (e.g., {1, 7, 10}), greedy fails — use DP.
+
+</details>
+
+## Code template
+
+```python
+# Activity selection — the canonical greedy.
+def activity_selection(activities):
+    activities = sorted(activities, key=lambda a: a[1])    # sort by END time
+    selected = []
+    last_end = float('-inf')
+    for s, e in activities:
+        if s >= last_end:
+            selected.append((s, e))
+            last_end = e
+    return selected
+
+# Generic greedy skeleton:
+#
+# 1. Identify the local-best choice (sort by some key).
+# 2. Walk through choices in order; accept each iff it doesn't violate
+#    a constraint with previous accepted choices.
+# 3. Prove correctness by exchange argument before trusting the answer.
+```
+
+## Pattern triggers
+
+- **"Pick the most non-overlapping intervals"** → activity selection (sort by end time)
+- **"Build a prefix code minimising bit-length"** → Huffman (min-heap of frequencies)
+- **"Connect all of X with min total weight"** → MST (Kruskal or Prim)
+- **"Shortest path with non-negative weights"** → Dijkstra
+- **"Schedule with deadlines, maximise on-time tasks"** → sort by deadline; greedy with priority queue
+- **"Assign tasks to workers with capacity"** → often greedy by load (with proofs)
+- **"Coin change with arbitrary denominations"** → DP, *not* greedy
+- **"0/1 knapsack"** → DP, *not* greedy (fractional knapsack is greedy)
+- **No exchange-argument proof in sight** → suspect greedy is wrong; reach for DP
+
+***
+
 # Cross-links
 
 - **Foundations:** [Proof Techniques](/cortex/data-structures-and-algorithms/foundations-proof-techniques) — the exchange argument is a specialised proof pattern for greedy correctness.
