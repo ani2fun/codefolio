@@ -127,9 +127,17 @@ object CodeRunPipeline:
 
   // ---- Shared HTTP plumbing ----------------------------------------------
 
+  // Force HTTP/1.1: piston (and our Code Runner Judge0 image) is Express
+  // over plaintext, which doesn't speak HTTP/2. Java HttpClient's default
+  // (HTTP_2) sends `Connection: Upgrade, HTTP2-Settings: …` headers on
+  // every plaintext POST as part of h2c discovery, and Express's
+  // body-parser middleware rejects the upgrade-laden request with a
+  // bare-text `400 Bad Request` (no JSON body) before our handler ever
+  // sees it. Pinning HTTP/1.1 sidesteps the h2c handshake entirely.
   private val httpClient: HttpClient =
     HttpClient
       .newBuilder()
+      .version(HttpClient.Version.HTTP_1_1)
       .connectTimeout(java.time.Duration.ofSeconds(10))
       .build()
 
