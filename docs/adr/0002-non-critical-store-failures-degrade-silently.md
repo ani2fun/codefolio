@@ -1,0 +1,7 @@
+# Non-critical store failures degrade the response silently
+
+The `/api/hello` pipeline reads a Cached Greeting from Redis over the canonical Visit Count in Postgres, then appends a Hello Event to MongoDB. The three stores are *not* equally critical to the request: Postgres holds the canonical value; Redis is a read-through cache; Mongo is an append-only event log surfaced via `/api/recent`.
+
+**Decision**: failures in Redis or Mongo are caught (`catchAll(e => ZIO.logWarning(...))`) and swallowed — the request still returns a Greeting as long as Postgres is reachable, *or* a cached Greeting is available. Postgres-down with an empty cache surfaces as `HelloFailure.GreetingUnavailable` → **503 Service Unavailable** (the 500 the original draft of this ADR specified was an over-broad bucket; 503 is more accurate because it tells clients a dependency is down, not that the server made a mistake). `/api/recent` mirrors this: Mongo-down surfaces as `HelloFailure.RecentUnavailable` → 503. `/api/health` reports per-store status symmetrically (so the operator can see which non-critical store is down), but the request path is asymmetric on purpose.
+
+The trade is request availability for visibility into upstream errors. New endpoints that touch multiple stores should follow the same convention: only the canonical-write store is critical; cache and event-log failures should log-and-degrade. The CONTEXT.md term **Degraded** names this state.

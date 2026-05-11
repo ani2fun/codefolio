@@ -1,0 +1,117 @@
+#!/usr/bin/env bash
+# One-command dev mode: Postgres (Docker) + sbt watcher (server reStart +
+# client fastLinkJS) + Vite dev server. Streams all logs to stdout with
+# coloured prefixes. Ctrl-C tears everything down.
+
+set -euo pipefail
+
+ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+cd "$ROOT"
+
+SERVER_PORT=8080
+VITE_PORT=5173
+
+# ---- helpers -------------------------------------------------------------
+
+c_reset=$'\033[0m'
+c_db=$'\033[36m'      # cyan
+c_sbt=$'\033[33m'     # yellow
+c_vite=$'\033[35m'    # magenta
+c_meta=$'\033[32m'    # green
+
+prefix() { local label="$1" colour="$2"; sed -u -e "s/^/${colour}[${label}]${c_reset} /"; }
+log()    { printf "%s[dev]%s %s\n" "$c_meta" "$c_reset" "$*"; }
+warn()   { printf "%s[dev]%s %s\n" $'\033[31m' "$c_reset" "$*" >&2; }
+
+port_pids() { lsof -nP -iTCP:"$1" -sTCP:LISTEN -t 2>/dev/null || true; }
+
+PIDS=()
+cleanup() {
+  log "shutting down…"
+  for pid in "${PIDS[@]:-}"; do kill "$pid" 2>/dev/null || true; done
+  # Best-effort: stop the sbt-revolver-managed server JVM (parented to sbt's child)
+  (sbt -batch "server/reStop" >/dev/null 2>&1 &) || true
+  # And kill anything still holding the server port
+  local stragglers
+  stragglers="$(port_pids "$SERVER_PORT")"
+  if [[ -n "$stragglers" ]]; then
+    log "killing leftover process(es) on :$SERVER_PORT — ${stragglers//$'\n'/ }"
+    kill $stragglers 2>/dev/null || true
+  fi
+}
+trap cleanup EXIT INT TERM
+
+# ---- 1. Pre-flight: free the ports we need ------------------------------
+
+# Stop any background sbt-revolver server first (clean if a previous run
+# of this script was killed without releasing it).
+log "stopping any prior sbt-revolver-managed server"
+(sbt -batch -no-colors "server/reStop" >/dev/null 2>&1 || true)
+
+for port_info in "$SERVER_PORT:server" "$VITE_PORT:vite"; do
+  port="${port_info%%:*}"
+  who="${port_info##*:}"
+  pids="$(port_pids "$port")"
+  if [[ -n "$pids" ]]; then
+    warn "port $port (for $who) is in use by PID(s): ${pids//$'\n'/ }"
+    warn "attempting to free it…"
+    kill $pids 2>/dev/null || true
+    sleep 2
+    pids="$(port_pids "$port")"
+    if [[ -n "$pids" ]]; then
+      warn "still in use — please stop the conflicting process and retry."
+      exit 1
+    fi
+  fi
+done
+
+# ---- 2. Backing stores: Postgres + Redis + MongoDB + Code Runner --------
+
+log "starting backing stores (db redis mongo code-runner)"
+docker compose up -d --remove-orphans db redis mongo code-runner
+
+for svc in db redis mongo; do
+  log "waiting for $svc to be healthy…"
+  for _ in $(seq 1 30); do
+    status="$(docker inspect --format '{{.State.Health.Status}}' "$(docker compose ps -q "$svc")" 2>/dev/null || echo starting)"
+    [[ "$status" == "healthy" ]] && break
+    sleep 1
+  done
+done
+
+# code-runner has no healthcheck; just confirm the container is up.
+log "code-runner reachable at http://127.0.0.1:2358 (Judge0-API-compatible)"
+export CODE_RUNNER_URL="${CODE_RUNNER_URL:-http://localhost:2358}"
+
+# ---- 3. Frontend deps (one-time) ----------------------------------------
+
+if [[ ! -d client/node_modules ]]; then
+  log "installing npm deps (first run)"
+  (cd client && npm install --no-audit --no-fund) | prefix "npm" "$c_vite"
+fi
+
+# ---- 4. sbt watcher: server reStart + client fastLinkJS in parallel -----
+
+log "starting sbt watcher (server/reStart + client/fastLinkJS)…"
+sbt -no-colors "~ all server/reStart client/fastLinkJS" \
+  2> >(prefix "sbt" "$c_sbt" >&2) \
+  |  prefix "sbt" "$c_sbt" &
+PIDS+=($!)
+
+# ---- 5. Vite dev server --------------------------------------------------
+
+log "starting Vite dev server on http://localhost:${VITE_PORT}"
+(cd client && npm run dev --silent) \
+  2> >(prefix "vite" "$c_vite" >&2) \
+  |  prefix "vite" "$c_vite" &
+PIDS+=($!)
+
+log "all services up — Ctrl-C to stop"
+log "  Vite (frontend, with HMR):  http://localhost:${VITE_PORT}"
+log "  ZIO server (API + Swagger): http://localhost:${SERVER_PORT}  /docs"
+log "  Postgres:                   localhost:5432  (user/pass: codefolio)"
+log "  Redis:                      localhost:6379"
+log "  MongoDB:                    localhost:27017 (db: codefolio)"
+log "  Code Runner:                localhost:2358 (POST /submissions/?base64_encoded=true&wait=true)"
+
+wait "${PIDS[@]}"

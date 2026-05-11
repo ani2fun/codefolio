@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="en"><head>
+<meta charset="UTF-8"><title>Semantic neutrals</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&family=Geist+Mono:wght@400;500&display=swap">
+<link rel="stylesheet" href="../colors_and_type.css">
+<style>
+*,*::before,*::after{box-sizing:border-box}
+html,body{margin:0;padding:0}
+body{background:#f7f3ec;font-family:var(--font-sans);padding:22px 26px;min-height:100vh;color:#292421}
+.list{display:flex;flex-direction:column;gap:0;border-top:1px solid #dcd4c5;border-bottom:1px solid #dcd4c5}
+.row{display:grid;grid-template-columns:36px 1fr 140px 120px;gap:12px;align-items:center;padding:11px 4px;border-bottom:1px solid rgba(220,212,197,.6)}
+.row:last-child{border-bottom:0}
+.chip{width:22px;height:22px;border-radius:6px;border:1px solid #dcd4c5}
+.name{font-family:var(--font-mono);font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:#696057}
+.use{font-size:13px;color:#292421}
+.hex{font-family:var(--font-mono);font-size:11.5px;color:#696057;text-align:right}
+</style></head><body>
+<div class="list">
+  <div class="row"><span class="chip" style="background:#292421"></span><span class="name">foreground</span><span class="use">primary ink — headings, body</span><span class="hex">#292421</span></div>
+  <div class="row"><span class="chip" style="background:#696057"></span><span class="name">muted-foreground</span><span class="use">eyebrows, dates, captions</span><span class="hex">#696057</span></div>
+  <div class="row"><span class="chip" style="background:rgba(41,36,33,.85);border-color:rgba(41,36,33,.2)"></span><span class="name">foreground / 85</span><span class="use">body copy default</span><span class="hex">rgba/.85</span></div>
+  <div class="row"><span class="chip" style="background:#dcd4c5"></span><span class="name">border</span><span class="use">hairline rules · 1px dividers</span><span class="hex">#dcd4c5</span></div>
+  <div class="row"><span class="chip" style="background:rgba(220,212,197,.6);border-color:rgba(220,212,197,1)"></span><span class="name">border / 60</span><span class="use">section dividers</span><span class="hex">rgba/.60</span></div>
+  <div class="row"><span class="chip" style="background:#e8e1d5"></span><span class="name">secondary</span><span class="use">warm band · Projects section</span><span class="hex">#e8e1d5</span></div>
+  <div class="row"><span class="chip" style="background:rgba(200,105,62,.12);border-color:rgba(200,105,62,.35)"></span><span class="name">primary / 12</span><span class="use">tag fill · results pull-quote</span><span class="hex">rgba/.12</span></div>
+</div>
+</body></html>

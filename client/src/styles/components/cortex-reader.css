@@ -1,0 +1,531 @@
+@layer components {
+    /* Cortex reader — sidebar | main | TOC layout shells.
+       Blocks: .cortex-reader-layout, .cortex-reader-breadcrumb, .cortex-reader-pager, .cortex-reader-sidebar, .cortex-reader-toc, .cortex-reader-toc-mobile */
+
+    /* ─── Layout (3-column reader) ───────────────────────────────── */
+    /* Widths matched to the latest Cortex reader UI kit (software-docs feel —
+       think Stripe / MDN / Vercel docs, not classical long-form essay):
+         page max  1840px  ·  sidebar 280px  ·  prose cap 1100px  ·
+         collapsed TOC rail 56px  ·  open TOC panel 300px
+       At 1920 this leaves ~80px of composed shoulder on each side; at 2560
+       the shoulders grow but the reading column stays at its measured cap.
+       The 1100px prose cap lands at ~96ch — past the classical reading
+       ceiling but matches modern technical-docs sites that prioritise
+       code-block density over line-by-line cadence. The TOC column flips
+       from 56 → 300px when the rail is hovered or any descendant is
+       focused; we use `:has()` rather than a JSX-driven class so the
+       component holds no UI state, just the IntersectionObserver-driven
+       active-section. */
+    .cortex-reader-layout {
+        @apply grid grid-cols-1 lg:grid-cols-[280px_minmax(0,1fr)]
+               xl:grid-cols-[280px_minmax(0,1fr)_56px] gap-0 max-w-[1840px] mx-auto;
+        transition: grid-template-columns 150ms ease;
+    }
+    @media (min-width: 1280px) {
+        .cortex-reader-layout:has(.cortex-reader-toc:hover),
+        .cortex-reader-layout:has(.cortex-reader-toc:focus-within) {
+            grid-template-columns: 280px minmax(0, 1fr) 300px;
+        }
+    }
+    @media (prefers-reduced-motion: reduce) {
+        .cortex-reader-layout { transition: none; }
+    }
+    .cortex-reader-layout__main {
+        @apply px-5 md:px-16 py-11 pb-20 min-w-0;
+    }
+    .cortex-reader-layout__prose {
+        @apply max-w-[1100px] mx-auto;
+    }
+    /* Chapter title — Instrument Serif italic, large editorial display.
+       Sits above the markdown body so it lives outside .chapter-content
+       (and therefore isn't styled by the Typography plugin). */
+    .cortex-reader-prose__title {
+        font-family: var(--font-display);
+        font-style: italic;
+        font-weight: 400;
+        font-size: clamp(48px, 5.4vw, 76px);
+        line-height: 0.96;
+        letter-spacing: -0.025em;
+        color: hsl(var(--foreground));
+        margin: 0 0 22px;
+    }
+    /* Lede paragraph — slightly larger sans body, narrower than the body
+       prose so the opening reads as a deliberate hierarchy step (78ch lede
+       vs. ~96ch body measure). */
+    .cortex-reader-prose__lede {
+        font-family: var(--font-sans);
+        font-size: clamp(17px, 1.4vw, 19px);
+        line-height: 1.55;
+        color: hsl(var(--foreground) / 0.85);
+        max-width: 78ch;
+        text-wrap: pretty;
+        margin: 0 0 40px;
+    }
+    .cortex-reader-prose__lede em {
+        font-family: var(--font-display);
+        font-style: italic;
+        font-size: 1.06em;
+        color: hsl(var(--foreground));
+        letter-spacing: 0.05em;
+    }
+
+    /* ─── Breadcrumb ─────────────────────────────────────────────── */
+    /* Mono uppercase tracking for the parent crumbs; the current chapter
+       drops back to sans for legibility (it's the long bit). */
+    .cortex-reader-breadcrumb {
+        @apply text-[11px] font-mono uppercase tracking-widest
+               text-muted-foreground mb-9;
+    }
+    .cortex-reader-breadcrumb__list {
+        @apply flex flex-wrap items-center gap-2;
+    }
+    .cortex-reader-breadcrumb__link {
+        @apply text-muted-foreground hover:text-primary transition-colors;
+    }
+    .cortex-reader-breadcrumb__separator {
+        @apply h-[11px] w-[11px] opacity-60;
+    }
+    .cortex-reader-breadcrumb__current {
+        @apply font-sans text-[13px] tracking-normal normal-case
+               text-foreground/85 font-medium truncate;
+    }
+
+    /* ─── Pager (prev/next chapter) ──────────────────────────────── */
+    /* Two-column even on mobile so prev/next live side-by-side. Cards
+       get a terracotta `::before` rail that scales in on hover plus a
+       subtle 1px lift + soft shadow. */
+    .cortex-reader-pager {
+        @apply mt-16 pt-8 border-t border-border grid grid-cols-2 gap-3 sm:gap-3.5
+               max-w-[720px] mx-auto;
+    }
+    .cortex-reader-pager__card {
+        /* `group` is added literally in markup so group-hover: works on children. */
+        @apply relative overflow-hidden rounded-lg border border-border bg-card
+               px-5 py-4 transition min-w-0;
+    }
+    .cortex-reader-pager__card::before {
+        content: "";
+        position: absolute;
+        left: 0;
+        top: 0;
+        bottom: 0;
+        width: 3px;
+        background-color: hsl(var(--primary));
+        transform: scaleY(0);
+        transform-origin: center;
+        transition: transform 220ms cubic-bezier(0.2, 0.7, 0.2, 1);
+    }
+    .cortex-reader-pager__card--next::before { left: auto; right: 0; }
+    .cortex-reader-pager__card:hover {
+        transform: translateY(-1px);
+        border-color: hsl(var(--border));
+        box-shadow: 0 1px 0 rgba(0, 0, 0, 0.05),
+                    0 8px 24px -12px rgba(0, 0, 0, 0.18);
+    }
+    .cortex-reader-pager__card:hover::before { transform: scaleY(1); }
+    @media (prefers-reduced-motion: reduce) {
+        .cortex-reader-pager__card { transition: none; }
+        .cortex-reader-pager__card:hover { transform: none; }
+        .cortex-reader-pager__card::before { transition: none; }
+    }
+    .cortex-reader-pager__card--next {
+        @apply text-right col-start-2;
+    }
+    .cortex-reader-pager__label {
+        @apply flex items-center gap-1.5 text-[11px] font-mono font-medium
+               uppercase tracking-widest text-muted-foreground mb-2;
+    }
+    .cortex-reader-pager__label--next {
+        @apply justify-end;
+    }
+    .cortex-reader-pager__label-icon {
+        @apply h-3 w-3;
+    }
+    /* Pager title — Instrument Serif italic 18px to match the editorial
+       voice across the rest of the site. */
+    .cortex-reader-pager__title {
+        font-family: var(--font-display);
+        font-style: italic;
+        font-weight: 400;
+        font-size: 18px;
+        line-height: 1.2;
+        letter-spacing: -0.01em;
+        color: hsl(var(--foreground));
+        @apply block truncate;
+    }
+
+    /* ─── Scroll-to-top floating button ──────────────────────────── */
+    .scroll-to-top {
+        @apply fixed bottom-5 right-5 z-40 rounded-full bg-primary text-primary-foreground
+               p-3 shadow-lg transition-opacity duration-200 hover:opacity-90;
+    }
+    .scroll-to-top--hidden {
+        @apply opacity-0 pointer-events-none;
+    }
+    .scroll-to-top--visible {
+        @apply opacity-100;
+    }
+    .scroll-to-top__icon {
+        @apply h-5 w-5;
+    }
+
+    /* ─── Sidebar (chapters) ─────────────────────────────────────── */
+    .cortex-reader-sidebar__open-button {
+        @apply lg:hidden fixed bottom-5 left-5 z-40 rounded-full bg-primary text-primary-foreground p-3 shadow-lg;
+    }
+    .cortex-reader-sidebar__open-icon {
+        @apply h-5 w-5;
+    }
+    .cortex-reader-sidebar__drawer-overlay {
+        @apply lg:hidden fixed inset-0 z-50 bg-black/40;
+    }
+    .cortex-reader-sidebar__drawer-panel {
+        @apply absolute left-0 top-0 h-full w-[85%] max-w-sm overflow-y-auto bg-background border-r border-border;
+    }
+    .cortex-reader-sidebar__close-button {
+        @apply absolute top-4 right-4 text-muted-foreground;
+    }
+    .cortex-reader-sidebar__close-icon {
+        @apply h-5 w-5;
+    }
+    .cortex-reader-sidebar__desktop {
+        @apply hidden lg:block sticky top-20 self-start max-h-[calc(100vh-5rem)]
+               overflow-y-auto border-r border-border;
+    }
+    .cortex-reader-sidebar__inner {
+        @apply flex flex-col gap-5 px-6 pt-9 pb-12;
+    }
+    /* "Back to Cortex" link — mono uppercase eyebrow, low weight. */
+    .cortex-reader-sidebar__back {
+        @apply text-[14px] font-mono font-medium uppercase tracking-widest
+               text-muted-foreground hover:text-primary transition-colors;
+    }
+    /* Book title — Instrument Serif italic, sized for sidebar. */
+    .cortex-reader-sidebar__title {
+        font-family: var(--font-display);
+        font-style: italic;
+        font-weight: 400;
+        font-size: 24px;
+        line-height: 1.1;
+        letter-spacing: -0.015em;
+        color: hsl(var(--foreground));
+        margin-top: 0.5rem;
+    }
+    .cortex-reader-sidebar__description {
+        @apply mt-1 text-[11px] font-mono uppercase tracking-wider
+               text-muted-foreground leading-relaxed;
+    }
+    /* Recursive sidebar tree. The top-level <ul> is `__tree`; sections nest
+       arbitrarily deep via <details>/<summary>; leaves are chapter links.
+       Indentation is depth-driven (rules below) so the tree stays scannable
+       even for deeply nested books like the DSA import. */
+    .cortex-reader-sidebar__tree {
+        @apply space-y-1 list-none;
+    }
+    .cortex-reader-sidebar__section {
+        @apply list-none;
+    }
+    .cortex-reader-sidebar__section-details {
+        @apply list-none;
+    }
+    .cortex-reader-sidebar__section-details > summary::-webkit-details-marker { display: none; }
+    .cortex-reader-sidebar__section-details > summary { list-style: none; }
+    .cortex-reader-sidebar__section-summary {
+        @apply flex items-center gap-2 cursor-pointer select-none py-1
+               text-xs font-bold uppercase tracking-wider text-foreground
+               hover:text-primary;
+    }
+    /* Lucide ChevronRight rendered inline by CortexSidebar; rotates 90° when
+       the parent <details> is open. h-4 w-4 = 16px to land legibly next to
+       the 12px-uppercase summary text — `w-3` (the previous Unicode triangle's
+       size) was too tiny against the bold all-caps label. */
+    .cortex-reader-sidebar__section-chevron {
+        @apply h-4 w-4 flex-none text-muted-foreground transition-transform;
+    }
+    .cortex-reader-sidebar__section-details[open]
+        > .cortex-reader-sidebar__section-summary
+        .cortex-reader-sidebar__section-chevron {
+        transform: rotate(90deg);
+    }
+    .cortex-reader-sidebar__section-name {
+        @apply flex-1 truncate;
+    }
+    .cortex-reader-sidebar__section-children {
+        @apply list-none ml-3 mt-1 space-y-1 border-l border-border pl-2;
+    }
+    .cortex-reader-sidebar__section--depth-0 > .cortex-reader-sidebar__section-details > .cortex-reader-sidebar__section-summary {
+        @apply mt-3;
+    }
+    .cortex-reader-sidebar__chapter-item {
+        @apply list-none;
+    }
+    /* Chapter row — 4-column grid mirroring the design system's
+       `cx-sidebar__item`: [progress rail · num badge · name · min].
+       Every column renders even when the data is empty so all rows
+       baseline-align. Compact px so deep nested trees still fit at
+       280px sidebar width. */
+    .cortex-reader-sidebar__chapter-link {
+        @apply grid items-center gap-2.5 py-2 pr-2.5 pl-1.5
+               rounded-md text-[13.5px] leading-snug text-foreground/75
+               hover:text-foreground hover:bg-secondary/50
+               transition-colors;
+        grid-template-columns: 4px 28px minmax(0, 1fr) auto;
+    }
+    /* Reading-progress rail — 3px terracotta fill anchored to the bottom
+       of the row, rising as the user scrolls deeper. The track uses the
+       border token so it stays visible against both the row and the
+       active-card surface. */
+    .cortex-reader-sidebar__progress {
+        position: relative;
+        width: 3px;
+        height: 26px;
+        border-radius: 2px;
+        background-color: hsl(var(--border));
+        overflow: hidden;
+        align-self: center;
+        justify-self: center;
+    }
+    .cortex-reader-sidebar__progress-fill {
+        position: absolute;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background-color: hsl(var(--primary));
+        border-radius: 2px;
+        transition: height 220ms cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    /* Mono number badge — 28×28 outlined square. Empty content (when the
+       chapter has no derived number) leaves a visible empty box; that's
+       fine for the rare corner-case but expected to be filled in real use. */
+    .cortex-reader-sidebar__num {
+        @apply inline-flex items-center justify-center
+               text-[11px] font-mono text-muted-foreground;
+        width: 28px;
+        height: 28px;
+        border-radius: 6px;
+        border: 1px solid hsl(var(--border));
+        background-color: transparent;
+        transition: color 160ms, border-color 160ms, background-color 160ms;
+    }
+    .cortex-reader-sidebar__name {
+        @apply min-w-0 overflow-hidden text-ellipsis whitespace-nowrap;
+    }
+    /* Reveal the full chapter title on hover / keyboard focus by un-truncating
+       the row in place. We avoided a popup tooltip here because the sidebar's
+       `overflow-y: auto` implicitly clips horizontal overflow (W3C overflow
+       rules), so any `position: absolute` pseudo-element extending past the
+       column edge gets sliced. Expanding the row instead keeps the full text
+       inside the sidebar's bounds; the row simply grows vertically. */
+    .cortex-reader-sidebar__chapter-link:hover .cortex-reader-sidebar__name,
+    .cortex-reader-sidebar__chapter-link:focus-visible .cortex-reader-sidebar__name {
+        white-space: normal;
+        overflow: visible;
+        text-overflow: clip;
+    }
+    /* Time-to-read stamp — small mono pill at the right of the row.
+       Hidden until a value lands in localStorage (first chapter load). */
+    .cortex-reader-sidebar__min {
+        @apply text-[10.5px] font-mono tracking-wide text-muted-foreground;
+    }
+    /* Active chapter — soft card surface with shadow + terracotta-tinted
+       number badge (replaces the muted outline). The bg-card token
+       handles light/dark; the shadow stack matches the design's --shadow-1. */
+    .cortex-reader-sidebar__chapter-link--active {
+        @apply bg-card text-foreground font-medium;
+        box-shadow: 0 1px 0 rgba(0, 0, 0, 0.04), 0 1px 2px rgba(0, 0, 0, 0.04);
+    }
+    .cortex-reader-sidebar__chapter-link--active .cortex-reader-sidebar__num {
+        color: hsl(var(--primary));
+        border-color: hsl(var(--primary) / 0.35);
+        background-color: hsl(var(--primary) / 0.12);
+    }
+    .dark .cortex-reader-sidebar__chapter-link--active {
+        box-shadow: 0 1px 0 rgba(255, 255, 255, 0.04);
+    }
+
+    /* ─── Search input ────────────────────────────────────────────── */
+    /* Sits below the book description, above the chapter list. Filters the
+       sidebar tree as the user types; the ⌘K hint is a passive label, the
+       global keydown listener owns the focus shortcut. */
+    .cortex-reader-sidebar__search {
+        @apply flex items-center gap-2 px-3 py-2 mt-3 mb-3
+               rounded-md bg-card border border-border
+               focus-within:border-primary;
+        transition: border-color 160ms, box-shadow 160ms;
+    }
+    .cortex-reader-sidebar__search:focus-within {
+        box-shadow: 0 0 0 3px hsl(var(--primary) / 0.18);
+    }
+    .cortex-reader-sidebar__search-icon {
+        @apply h-3.5 w-3.5 text-muted-foreground flex-none;
+    }
+    .cortex-reader-sidebar__search-input {
+        @apply flex-1 min-w-0 bg-transparent border-0 outline-none p-0
+               text-[13px] text-foreground placeholder:text-muted-foreground;
+    }
+    /* Strip the user-agent search "X" cancel button (Safari + Chrome both
+       paint it; ours is the Esc handler instead). */
+    .cortex-reader-sidebar__search-input::-webkit-search-cancel-button {
+        -webkit-appearance: none;
+        appearance: none;
+    }
+    .cortex-reader-sidebar__search-kbd {
+        @apply text-[10px] font-mono text-muted-foreground border border-border
+               rounded px-1.5 py-0.5 bg-secondary/40 flex-none;
+    }
+    .cortex-reader-sidebar__mark {
+        @apply rounded-sm px-0.5 text-foreground;
+        background-color: hsl(var(--primary) / 0.18);
+    }
+    .cortex-reader-sidebar__empty {
+        @apply px-2 py-3 text-[13px] text-muted-foreground leading-relaxed;
+    }
+    .cortex-reader-sidebar__empty em {
+        font-family: var(--font-display);
+        font-style: italic;
+        color: hsl(var(--foreground) / 0.85);
+        letter-spacing: 0.05em;
+    }
+
+    /* ─── Right-rail TOC minimap (xl+) ───────────────────────────────
+       Single aside that's narrow at rest (column = 56px) and expands
+       its visible width when the parent grid widens on hover/focus
+       (driven by `:has()` on the layout). Each row is a horizontal
+       bar tick + label; the label fades in from opacity 0 → 1 in step
+       with the column expansion.
+    */
+    .cortex-reader-toc {
+        @apply hidden xl:block sticky top-20 self-start max-h-[calc(100vh-5rem)]
+               border-l border-border;
+        padding: 36px 12px;
+        /* X-axis hidden so labels and the wide "Contents" eyebrow don't bleed out
+           of the 56px collapsed column; Y-axis auto so chapters with more headings
+           than fit in 100vh stay reachable via a thin scrollbar. */
+        overflow-x: hidden;
+        overflow-y: auto;
+        scrollbar-width: thin;
+        scrollbar-color: hsl(var(--border)) transparent;
+        transition: padding 150ms ease;
+    }
+    .cortex-reader-toc::-webkit-scrollbar {
+        width: 6px;
+    }
+    .cortex-reader-toc::-webkit-scrollbar-thumb {
+        background-color: hsl(var(--border));
+        border-radius: 3px;
+    }
+    .cortex-reader-toc:hover,
+    .cortex-reader-toc:focus-within {
+        padding: 36px 22px;
+    }
+    /* "Contents" eyebrow — invisible at rest so the collapsed rail doesn't
+       look like a stray header; fades in alongside the labels. */
+    .cortex-reader-toc__eyebrow {
+        @apply text-[11px] font-mono font-medium uppercase tracking-widest
+               text-muted-foreground mb-3.5;
+        opacity: 0;
+        transition: opacity 150ms ease;
+        white-space: nowrap;
+    }
+    .cortex-reader-toc:hover .cortex-reader-toc__eyebrow,
+    .cortex-reader-toc:focus-within .cortex-reader-toc__eyebrow {
+        opacity: 1;
+    }
+    .cortex-reader-toc__list {
+        @apply list-none p-0 m-0 flex flex-col gap-1;
+    }
+    .cortex-reader-toc__row {
+        @apply block;
+    }
+    /* Indentation by heading depth. l1 / l2 hug the left rail; l3
+       indents by 14px; deeper depths clamp to l3 in the component, so
+       there's no fall-through case to handle. */
+    .cortex-reader-toc__row--l3 .cortex-reader-toc__btn {
+        padding-left: 14px;
+    }
+    .cortex-reader-toc__btn {
+        @apply flex items-center gap-2.5 w-full bg-transparent border-0 cursor-pointer
+               py-1 px-0 text-left text-muted-foreground no-underline
+               transition-colors;
+        font-family: var(--font-sans);
+    }
+    .cortex-reader-toc__btn:hover {
+        @apply text-foreground;
+    }
+    .cortex-reader-toc__row--active .cortex-reader-toc__btn {
+        @apply text-foreground font-medium;
+    }
+    /* Bar tick — 4px tall × 14px wide; widens to 22px when active. The
+       transition animates BOTH width and background so a row going active
+       feels like it pulls the rail forward. */
+    .cortex-reader-toc__tick {
+        display: inline-block;
+        width: 14px;
+        height: 4px;
+        flex: none;
+        background-color: hsl(var(--border));
+        border-radius: 2px;
+        transition: width 150ms ease, background-color 150ms ease;
+    }
+    .cortex-reader-toc__row--active .cortex-reader-toc__tick {
+        background-color: hsl(var(--primary));
+        width: 22px;
+    }
+    .cortex-reader-toc__btn:hover .cortex-reader-toc__tick {
+        background-color: hsl(var(--foreground));
+    }
+    .cortex-reader-toc__row--active .cortex-reader-toc__btn:hover .cortex-reader-toc__tick {
+        background-color: hsl(var(--primary));
+    }
+    /* Label — fades in alongside the eyebrow. truncate so long headings
+       don't blow out the 260px column. */
+    .cortex-reader-toc__label {
+        @apply text-xs leading-snug whitespace-nowrap overflow-hidden text-ellipsis;
+        opacity: 0;
+        transition: opacity 150ms ease;
+    }
+    /* On hover / keyboard focus, unwrap the heading label so long titles
+       show in full. Same reasoning as the sidebar: the `.cortex-reader-toc`
+       wrapper sets `overflow-x: hidden`, so a popup tooltip would clip. */
+    .cortex-reader-toc:hover .cortex-reader-toc__btn:hover .cortex-reader-toc__label,
+    .cortex-reader-toc:focus-within
+        .cortex-reader-toc__btn:focus-visible
+        .cortex-reader-toc__label {
+        white-space: normal;
+        overflow: visible;
+        text-overflow: clip;
+    }
+    .cortex-reader-toc:hover .cortex-reader-toc__label,
+    .cortex-reader-toc:focus-within .cortex-reader-toc__label {
+        opacity: 1;
+    }
+    @media (prefers-reduced-motion: reduce) {
+        .cortex-reader-toc,
+        .cortex-reader-toc__eyebrow,
+        .cortex-reader-toc__tick,
+        .cortex-reader-toc__label { transition: none; }
+    }
+
+    /* ─── Mobile collapsible TOC (below xl) ──────────────────────── */
+    .cortex-reader-toc-mobile {
+        @apply xl:hidden mb-8 rounded-lg border border-border;
+    }
+    .cortex-reader-toc-mobile__toggle {
+        @apply w-full flex items-center justify-between px-4 py-3 text-sm font-semibold;
+    }
+    .cortex-reader-toc-mobile__label {
+        @apply flex items-center gap-2;
+    }
+    .cortex-reader-toc-mobile__chevron {
+        @apply h-4 w-4 transition-transform;
+    }
+    .cortex-reader-toc-mobile__chevron--open {
+        @apply rotate-180;
+    }
+    .cortex-reader-toc-mobile__list {
+        @apply px-4 pb-3 space-y-1.5 border-t border-border pt-3;
+    }
+    .cortex-reader-toc-mobile__link {
+        @apply text-sm text-muted-foreground hover:text-primary;
+    }
+}

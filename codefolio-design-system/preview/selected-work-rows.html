@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="en"><head>
+<meta charset="UTF-8"><title>Selected work row</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Geist:wght@400;500&family=Geist+Mono:wght@400;500&display=swap">
+<style>
+*,*::before,*::after{box-sizing:border-box}
+html,body{margin:0;padding:0}
+body{background:#f7f3ec;color:#292421;font-family:"Geist",sans-serif;padding:22px 26px;min-height:100vh}
+.list{display:flex;flex-direction:column;border-top:1px solid rgba(220,212,197,.6)}
+.row{position:relative;display:grid;grid-template-columns:minmax(140px,1fr) minmax(160px,1.1fr) minmax(0,2fr) minmax(120px,1fr) auto;align-items:center;gap:16px;padding:18px 0;border-bottom:1px solid rgba(220,212,197,.6);text-decoration:none;color:inherit;transition:transform .2s}
+.row:hover{transform:translateX(2px)}
+.row .rail{position:absolute;left:0;top:0;bottom:0;width:2px;background:#c8693e;transform:scaleY(0);transform-origin:top;transition:transform .22s cubic-bezier(.4,0,.2,1)}
+.row:hover .rail{transform:scaleY(1)}
+.row .company{font-family:"Instrument Serif",serif;font-style:italic;font-weight:400;font-size:30px;line-height:1;padding-left:16px}
+.row .meta{font-family:"Geist Mono",monospace;font-size:10.5px;letter-spacing:.06em;text-transform:uppercase;color:#696057}
+.row .blurb{font-size:13.5px;line-height:1.55;color:rgba(41,36,33,.85)}
+.row .tags{display:flex;flex-wrap:wrap;gap:4px 12px;justify-content:flex-end;text-align:right;font-family:"Geist Mono",monospace;font-size:11px;color:#696057}
+.row .arrow{color:#696057;transition:color .2s}
+.row:hover .arrow{color:#c8693e}
+.row .arrow svg{width:16px;height:16px;transform:rotate(-45deg);transition:transform .2s}
+.row:hover .arrow svg{transform:rotate(-45deg) translateX(2px)}
+</style></head><body>
+<div class="list">
+  <a class="row" href="#">
+    <span class="rail"></span>
+    <div class="company">Europcar</div>
+    <div class="meta">2022 – Present · Paris · Backend / Identity</div>
+    <div class="blurb">Customer authentication and account lifecycle on Kotlin + Spring Boot with Keycloak — for both consumer and B2B partner organisations.</div>
+    <div class="tags"><span>Kotlin</span><span>Spring Boot</span><span>Keycloak</span></div>
+    <div class="arrow"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14m-6-6l6 6-6 6"/></svg></div>
+  </a>
+  <a class="row" href="#">
+    <span class="rail"></span>
+    <div class="company">Audi&nbsp;AG</div>
+    <div class="meta">2018 – 2021 · Remote · Backend / Data Pipeline</div>
+    <div class="blurb">Set the early backend architecture for Audi's in-house labeling platform — ground-truth video data feeding autonomous-driving model training.</div>
+    <div class="tags"><span>Scala</span><span>Akka-HTTP</span><span>ScalaJS</span></div>
+    <div class="arrow"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14m-6-6l6 6-6 6"/></svg></div>
+  </a>
+</div>
+</body></html>

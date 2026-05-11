@@ -1,0 +1,169 @@
+/* ─────────────────────────────────────────────────────────────────────
+   Codefolio (kakde.eu) — Design Tokens
+   Source: client/tailwind.css (shadcn HSL token table) + section CSS.
+
+   The site uses Tailwind v4 with shadcn-style HSL tokens. We mirror those
+   tokens here both in their original HSL form (so they can be composed
+   with `hsl(var(--background))`) and as resolved hex/oklch values for
+   designers reading the file outside the Tailwind context.
+
+   Naming mirrors the existing semantic tokens; on top we surface a small
+   set of `fg1/fg2`, `bg1/bg2`, and typographic semantic vars so the
+   design system reads at a glance.
+   ───────────────────────────────────────────────────────────────────── */
+
+:root {
+  /* ── Raw HSL channels (same names as client/tailwind.css) ─────────── */
+  --background: 36 28% 96%;        /* #f7f3ec  warm off-white page bg     */
+  --foreground: 30 14% 14%;        /* #292421  dark roast ink             */
+  --card: 40 50% 97%;              /* #fbf9f3  cream card surface         */
+  --card-foreground: 30 14% 14%;
+  --popover: 40 50% 97%;
+  --popover-foreground: 30 14% 14%;
+  --primary: 18 55% 52%;           /* #c8693e  terracotta accent          */
+  --primary-foreground: 36 28% 98%;
+  --secondary: 32 22% 90%;         /* #e8e1d5  warm neutral band          */
+  --secondary-foreground: 30 14% 14%;
+  --muted: 32 22% 92%;             /* #ece6db                             */
+  --muted-foreground: 30 8% 38%;   /* #696057  scale-7 mono caption ink   */
+  --accent: 32 22% 90%;
+  --accent-foreground: 30 14% 14%;
+  --destructive: 0 84.2% 60.2%;    /* shadcn default; rarely surfaces     */
+  --destructive-foreground: 36 28% 98%;
+  --border: 32 18% 84%;            /* #dcd4c5  hairline rules             */
+  --input: 32 18% 84%;
+  --ring: 18 55% 52%;
+  --radius: 0.875rem;              /* 14px — base; --md = 12, --sm = 10   */
+
+  /* Editorial literals (used by header logomark, hero name superscript). */
+  --cream: 36 28% 92%;             /* #efe8d8                             */
+  --roast: 30 12% 6%;              /* #110f0d                             */
+
+  /* ── Resolved color tokens (read-friendly) ────────────────────────── */
+  --c-bg:        #f7f3ec;   /* page bg (warm off-white)                 */
+  --c-bg-card:   #fbf9f3;   /* card surface (cream)                     */
+  --c-bg-band:   #e8e1d5;   /* secondary surface (subtle warm band)     */
+  --c-fg:        #292421;   /* primary ink — dark roast                 */
+  --c-fg-muted:  #696057;   /* mono captions, dates, eyebrows           */
+  --c-fg-soft:   rgba(41, 36, 33, .85); /* body copy at 85% — `text-foreground/85` */
+  --c-border:    #dcd4c5;   /* hairline rules                           */
+  --c-border-soft: rgba(220, 212, 197, .6); /* `border-border/60`       */
+  --c-primary:   #c8693e;   /* terracotta accent                        */
+  --c-primary-soft: rgba(200, 105, 62, .12); /* tag fill, results bg    */
+  --c-primary-ring: rgba(200, 105, 62, .35); /* tag border              */
+  --c-cream:     #efe8d8;
+  --c-roast:     #110f0d;
+
+  /* ── Type system ──────────────────────────────────────────────────── */
+  --font-display: "Instrument Serif", ui-serif, Georgia, "Times New Roman", serif;
+  --font-sans:    "Geist", ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  --font-mono:    "Geist Mono", ui-monospace, "SF Mono", Menlo, Monaco, "Cascadia Mono", monospace;
+
+  /* Display rule: Instrument Serif is italic-only at 400. Never roman,
+     never bold. Sans is Geist 400/500/600/700. Mono is Geist Mono 400/500. */
+
+  /* ── Spacing / radii / shadows ────────────────────────────────────── */
+  --r-sm: 10px;   /* radius-sm — chips, small cards            */
+  --r-md: 12px;   /* radius-md — buttons, inputs               */
+  --r-lg: 14px;   /* radius (base) — cards                     */
+  --r-pill: 9999px;
+
+  /* Shadows are restrained: a 1px ledge + a long soft drop on hover.
+     Borrowed from .projects__card and .cortex-reader-pager__card. */
+  --shadow-1: 0 1px 0 rgba(0,0,0,.05), 0 1px 2px rgba(0,0,0,.04);
+  --shadow-lift: 0 1px 0 rgba(0,0,0,.05), 0 8px 24px -12px rgba(0,0,0,.18);
+}
+
+.dark {
+  --background: 30 12% 6%;         /* #110f0d  dark roast page bg         */
+  --foreground: 36 32% 92%;        /* #ece2d0  warm cream ink             */
+  --card: 30 10% 9%;               /* #1a1715                             */
+  --card-foreground: 36 32% 92%;
+  --popover: 30 10% 9%;
+  --popover-foreground: 36 32% 92%;
+  --primary: 18 65% 62%;           /* #db7e54  brighter terracotta        */
+  --primary-foreground: 30 12% 6%;
+  --secondary: 30 8% 14%;          /* #25211f                             */
+  --secondary-foreground: 36 32% 92%;
+  --muted: 30 8% 14%;
+  --muted-foreground: 35 12% 62%;  /* #a59b8c                             */
+  --accent: 30 8% 14%;
+  --accent-foreground: 36 32% 92%;
+  --destructive: 0 62.8% 50%;
+  --destructive-foreground: 36 32% 92%;
+  --border: 30 8% 18%;             /* #2e2a26                             */
+  --input: 30 8% 18%;
+  --ring: 18 65% 62%;
+
+  --c-bg:        #110f0d;
+  --c-bg-card:   #1a1715;
+  --c-bg-band:   #25211f;
+  --c-fg:        #ece2d0;
+  --c-fg-muted:  #a59b8c;
+  --c-fg-soft:   rgba(236, 226, 208, .85);
+  --c-border:    #2e2a26;
+  --c-primary:   #db7e54;
+}
+
+/* ─────────────────────────────────────────────────────────────────────
+   Semantic typographic styles
+   ───────────────────────────────────────────────────────────────────── */
+
+.ds-display-xl,  /* hero name — 44/70px clamp */
+.ds-display-lg,  /* section / chapter title    */
+.ds-display-md,  /* row company name           */
+.ds-display-sm   /* card name                  */
+{
+  font-family: var(--font-display);
+  font-style: italic;
+  font-weight: 400;
+  color: hsl(var(--foreground));
+  letter-spacing: -0.025em;
+  line-height: 0.96;
+}
+.ds-display-xl { font-size: clamp(44px, 5.4vw, 70px); }
+.ds-display-lg { font-size: 40px; letter-spacing: -0.02em; line-height: 1.02; }
+.ds-display-md { font-size: clamp(28px, 3vw, 36px); line-height: 1; letter-spacing: -0.015em; }
+.ds-display-sm { font-size: 22px; line-height: 1.1; letter-spacing: -0.01em; }
+
+.ds-body-lg,
+.ds-body,
+.ds-body-sm {
+  font-family: var(--font-sans);
+  color: hsl(var(--foreground) / .85);
+  line-height: 1.55;
+}
+.ds-body-lg { font-size: clamp(17px, 1.4vw, 19px); }
+.ds-body    { font-size: 16px; line-height: 1.6; }
+.ds-body-sm { font-size: 14px; line-height: 1.6; }
+
+.ds-eyebrow {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: hsl(var(--muted-foreground));
+}
+.ds-eyebrow--primary { color: hsl(var(--primary)); }
+
+.ds-meta {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.04em;
+  color: hsl(var(--muted-foreground));
+}
+
+.ds-em {
+  /* Editorial italic emphasis used inside body copy.
+     Switches from Geist sans to Instrument Serif italic mid-sentence
+     for a one-word lift. */
+  font-family: var(--font-display);
+  font-style: italic;
+  font-weight: 400;
+  letter-spacing: 0.05em;
+  color: hsl(var(--foreground));
+}
+
+code, kbd, pre, .ds-mono {
+  font-family: var(--font-mono);
+}

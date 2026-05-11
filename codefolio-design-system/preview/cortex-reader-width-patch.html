@@ -1,0 +1,390 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Cortex Reader — width patch preview</title>
+<link rel="stylesheet" href="../colors_and_type.css">
+<style>
+  *,*::before,*::after{box-sizing:border-box}
+  html,body{margin:0;padding:0;background:var(--c-bg);color:var(--c-fg);font-family:var(--font-sans);
+    -webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility}
+  body::before{content:"";position:fixed;inset:0;pointer-events:none;z-index:0;opacity:.04;
+    background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 160 160'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/></filter><rect width='100%25' height='100%25' filter='url(%23n)' opacity='0.6'/></svg>");
+    background-size:160px 160px;mix-blend-mode:multiply}
+
+  /* ── Switcher chrome ─────────────────────────────────────────── */
+  .pv-chrome{position:fixed;top:14px;left:50%;transform:translateX(-50%);z-index:50;
+    display:inline-flex;gap:0;background:var(--c-bg-card);border:1px solid var(--c-border);
+    border-radius:9999px;padding:4px;box-shadow:var(--shadow-1)}
+  .pv-tab{font-family:var(--font-mono);font-size:11px;letter-spacing:.12em;text-transform:uppercase;
+    padding:8px 14px;border-radius:9999px;color:var(--c-fg-muted);cursor:pointer}
+  .pv-tab--on{background:var(--c-fg);color:var(--c-bg)}
+  .pv-note{position:fixed;top:64px;left:50%;transform:translateX(-50%);z-index:49;
+    font-family:var(--font-mono);font-size:11px;letter-spacing:.06em;color:var(--c-fg-muted);
+    background:rgba(251,249,243,.7);backdrop-filter:blur(6px);padding:4px 10px;border-radius:9999px;
+    border:1px solid var(--c-border-soft)}
+
+  /* ── Stage — simulate a 1920-wide viewport so the bands are real ── */
+  .pv-stage{position:relative;width:1920px;margin:88px auto 0;background:var(--c-bg);
+    border:1px solid var(--c-border);border-radius:14px;overflow:hidden;
+    transform-origin:top center}
+
+  /* ── Header (compressed mock) ────────────────────────────────── */
+  .h{display:flex;justify-content:space-between;align-items:center;padding:14px 28px;
+    border-bottom:1px solid var(--c-border-soft);background:rgba(247,243,236,.85);backdrop-filter:blur(8px)}
+  .h__l{display:flex;align-items:center;gap:10px}
+  .h__logo{width:22px;height:22px;border-radius:6px;background:var(--c-fg);color:var(--c-bg);
+    display:inline-flex;align-items:center;justify-content:center;font-family:var(--font-mono);
+    font-weight:600;font-size:12px}
+  .h__word{font-family:var(--font-mono);font-weight:500;font-size:13px;color:var(--c-fg)}
+  .h__menu{display:flex;gap:6px;font-size:14px;color:rgba(41,36,33,.8)}
+  .h__menu span{padding:8px 12px}
+  .h__cta{padding:8px 14px;border-radius:9999px;background:var(--c-fg);color:var(--c-bg);font-size:13px}
+
+  /* ── Reader layout — variables drive before/after ─────────────── */
+  .cr{display:grid;gap:0;margin:0 auto;transition:grid-template-columns .25s ease,max-width .25s ease;
+    grid-template-columns:var(--cr-cols);max-width:var(--cr-max)}
+  .cr-side{padding:44px 28px;border-right:1px solid var(--c-border-soft);min-width:0}
+  .cr-back{font-family:var(--font-mono);font-size:11px;letter-spacing:.14em;text-transform:uppercase;
+    color:var(--c-fg-muted);margin-bottom:18px}
+  .cr-side h2{font-family:var(--font-display);font-style:italic;font-size:32px;line-height:1;
+    letter-spacing:-.02em;margin:0 0 14px}
+  .cr-side .blurb{font-family:var(--font-mono);font-size:10.5px;line-height:1.55;letter-spacing:.08em;
+    text-transform:uppercase;color:var(--c-fg-muted);margin-bottom:22px}
+  .cr-search{display:flex;align-items:center;gap:8px;padding:8px 12px;border:1px solid var(--c-border);
+    border-radius:10px;font-family:var(--font-mono);font-size:11px;color:var(--c-fg-muted);
+    margin-bottom:24px;background:var(--c-bg-card)}
+  .cr-search kbd{margin-left:auto;font-family:var(--font-mono);font-size:10px;
+    border:1px solid var(--c-border);border-radius:4px;padding:1px 5px;background:var(--c-bg)}
+  .cr-list{display:flex;flex-direction:column;gap:6px}
+  .cr-list-h{font-family:var(--font-mono);font-size:11px;letter-spacing:.14em;text-transform:uppercase;
+    color:var(--c-fg-muted);padding:8px 4px}
+  .cr-list-h::before{content:"› ";color:var(--c-border)}
+  .cr-row{display:flex;gap:10px;padding:10px 8px;border-radius:8px;font-size:13px;align-items:center}
+  .cr-row--on{background:rgba(200,105,62,.06)}
+  .cr-row__n{width:24px;height:24px;border-radius:6px;background:var(--c-bg-card);border:1px solid var(--c-border);
+    display:inline-flex;align-items:center;justify-content:center;font-family:var(--font-mono);
+    font-size:10.5px;color:var(--c-primary);flex-shrink:0}
+  .cr-row--on .cr-row__n{background:rgba(200,105,62,.12);border-color:rgba(200,105,62,.4)}
+  .cr-row__t{flex:1;color:rgba(41,36,33,.85);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .cr-row__m{font-family:var(--font-mono);font-size:10px;color:var(--c-fg-muted)}
+
+  .cr-main{padding:44px 64px 80px;min-width:0;position:relative;transition:padding .25s ease}
+  .cr-main[data-wide="1"]{padding-left:56px;padding-right:56px}
+  .cr-main[data-wide="2"]{padding-left:40px;padding-right:40px}
+  .cr-prose{margin:0 auto;transition:max-width .25s ease;max-width:var(--cr-prose)}
+  .crumb{font-family:var(--font-mono);font-size:11px;letter-spacing:.14em;text-transform:uppercase;
+    color:var(--c-fg-muted);margin-bottom:36px}
+  .crumb b{font-family:var(--font-sans);font-size:13px;letter-spacing:0;text-transform:none;color:var(--c-fg);font-weight:500}
+  .crumb span{margin:0 8px;opacity:.6}
+  .cr-title{font-family:var(--font-display);font-style:italic;font-weight:400;font-size:clamp(48px,5.4vw,76px);
+    line-height:.96;letter-spacing:-.025em;margin:0 0 22px}
+  .cr-lede{font-size:19px;line-height:1.55;color:rgba(41,36,33,.85);max-width:var(--cr-lede);
+    transition:max-width .25s ease;margin:0 0 40px;text-wrap:pretty}
+  .cr-lede em{font-family:var(--font-display);font-style:italic;font-size:1.06em;color:var(--c-fg);letter-spacing:.05em}
+  .cr-prose p{font-size:16.5px;line-height:1.75;margin:0 0 22px;color:rgba(41,36,33,.9);text-wrap:pretty}
+  .cr-prose p b{font-weight:600;color:var(--c-fg)}
+  .cr-prose h3{font-family:var(--font-display);font-style:italic;font-size:34px;letter-spacing:-.015em;
+    margin:48px 0 18px;line-height:1.05}
+  .cr-prose ul{margin:0 0 22px;padding-left:22px}
+  .cr-prose ul li{font-size:16px;line-height:1.7;margin-bottom:8px;color:rgba(41,36,33,.85)}
+  .cr-prose code{font-family:var(--font-mono);font-size:.88em;padding:1px 6px;border-radius:4px;
+    background:rgba(200,105,62,.08);border:1px solid rgba(200,105,62,.18)}
+  .cr-prose pre{background:var(--c-roast);color:var(--c-cream);padding:18px 22px;border-radius:10px;
+    font-family:var(--font-mono);font-size:13px;line-height:1.6;overflow-x:auto;margin:0 0 28px;
+    white-space:pre}
+  .hr-sep{height:1px;background:var(--c-border);margin:48px 0}
+
+  .cr-toc{padding:44px 0;display:flex;flex-direction:column;align-items:flex-end;gap:14px;
+    border-left:1px solid var(--c-border-soft)}
+  .cr-toc__tick{width:14px;height:1px;background:var(--c-border)}
+  .cr-toc__tick--on{background:var(--c-primary);width:22px}
+
+  /* ── Annotation bands marking empty space ─────────────────────── */
+  .pv-band{position:absolute;top:0;bottom:0;border:2px dashed rgba(200,80,80,.55);border-radius:6px;
+    pointer-events:none;display:flex;align-items:center;justify-content:center;
+    background:repeating-linear-gradient(45deg,rgba(200,80,80,.04) 0 8px,transparent 8px 16px);
+    opacity:0;transition:opacity .25s ease}
+  .cr[data-bands="on"] .pv-band{opacity:1}
+  .pv-band__label{transform:rotate(-90deg);font-family:var(--font-mono);font-size:10.5px;letter-spacing:.18em;
+    text-transform:uppercase;color:rgba(180,60,60,.85);white-space:nowrap}
+  .pv-band--l{left:var(--band-l-x);width:var(--band-l-w)}
+  .pv-band--r{right:var(--band-r-x);width:var(--band-r-w)}
+
+  /* ── Variant geometry ─────────────────────────────────────────── */
+  /* Variants are now driven by JS that writes vars onto .pv-stage so the
+     Tweaks panel and the segmented chrome share one source of truth. */
+
+  /* ── Metric pills under chrome ────────────────────────────────── */
+  .pv-metrics{position:fixed;bottom:14px;left:50%;transform:translateX(-50%);z-index:49;
+    display:flex;gap:8px;background:var(--c-bg-card);border:1px solid var(--c-border);
+    border-radius:9999px;padding:6px 8px;box-shadow:var(--shadow-1);font-family:var(--font-mono);font-size:11px}
+  .pv-metric{padding:4px 10px;border-radius:9999px;color:var(--c-fg-muted)}
+  .pv-metric b{color:var(--c-fg);font-weight:600}
+  .pv-metric--accent{background:rgba(200,105,62,.1);color:var(--c-primary)}
+  .pv-metric--accent b{color:var(--c-primary)}
+
+  /* ── Tweaks panel ────────────────────────────────────────────── */
+  .tw{position:fixed;top:14px;right:14px;z-index:60;width:300px;background:var(--c-bg-card);
+    border:1px solid var(--c-border);border-radius:14px;box-shadow:var(--shadow-lift);
+    padding:14px 16px 16px;font-family:var(--font-sans)}
+  .tw__head{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px}
+  .tw__title{font-family:var(--font-mono);font-size:11px;letter-spacing:.18em;text-transform:uppercase;color:var(--c-fg-muted)}
+  .tw__reset{font-family:var(--font-mono);font-size:10px;letter-spacing:.1em;text-transform:uppercase;
+    color:var(--c-primary);background:none;border:0;cursor:pointer;padding:2px 4px}
+  .tw__reset:hover{text-decoration:underline}
+  .tw__row{display:flex;flex-direction:column;gap:4px;margin-bottom:12px}
+  .tw__lbl{display:flex;justify-content:space-between;align-items:baseline}
+  .tw__lbl-k{font-size:12px;color:var(--c-fg);font-weight:500}
+  .tw__lbl-v{font-family:var(--font-mono);font-size:11px;color:var(--c-primary)}
+  .tw__row input[type=range]{width:100%;accent-color:var(--c-primary)}
+  .tw__seg{display:flex;background:var(--c-bg);border:1px solid var(--c-border);border-radius:8px;padding:2px;gap:2px}
+  .tw__seg button{flex:1;padding:6px 8px;font-family:var(--font-mono);font-size:10px;
+    letter-spacing:.1em;text-transform:uppercase;border-radius:6px;color:var(--c-fg-muted);cursor:pointer;background:none;border:0}
+  .tw__seg button[aria-pressed="true"]{background:var(--c-fg);color:var(--c-bg)}
+  .tw__toggle{display:flex;justify-content:space-between;align-items:center;font-size:12px;color:var(--c-fg)}
+  .tw__toggle input{accent-color:var(--c-primary)}
+  .tw__hint{font-family:var(--font-mono);font-size:10px;letter-spacing:.04em;color:var(--c-fg-muted);
+    margin-top:6px;padding-top:10px;border-top:1px solid var(--c-border-soft);line-height:1.5}
+</style>
+</head>
+<body>
+
+<div class="pv-chrome" role="tablist">
+  <button class="pv-tab pv-tab--on" data-mode="before">Before · 720px</button>
+  <button class="pv-tab" data-mode="after">After · 820–880px</button>
+  <button class="pv-tab" data-mode="custom">Custom</button>
+  <button class="pv-tab" data-mode="bands" style="font-family: Geist">Show bands</button>
+</div>
+
+<aside class="tw" id="tw">
+  <div class="tw__head">
+    <span class="tw__title">Tweaks</span>
+    <button class="tw__reset" id="tw-reset">Reset</button>
+  </div>
+
+  <div class="tw__row">
+    <div class="tw__lbl"><span class="tw__lbl-k">Viewport (sim.)</span><span class="tw__lbl-v" id="v-vp">1920px</span></div>
+    <input type="range" id="tw-vp" min="1280" max="2560" step="40" value="1920">
+  </div>
+
+  <div class="tw__row">
+    <div class="tw__lbl"><span class="tw__lbl-k">Outer cap</span><span class="tw__lbl-v" id="v-max">1680px</span></div>
+    <input type="range" id="tw-max" min="1280" max="2400" step="20" value="1680">
+  </div>
+
+  <div class="tw__row">
+    <div class="tw__lbl"><span class="tw__lbl-k">Prose cap</span><span class="tw__lbl-v" id="v-prose">720px</span></div>
+    <input type="range" id="tw-prose" min="600" max="1400" step="10" value="720">
+  </div>
+
+  <div class="tw__row">
+    <div class="tw__lbl"><span class="tw__lbl-k">Main padding</span><span class="tw__lbl-v" id="v-pad">64px</span></div>
+    <input type="range" id="tw-pad" min="16" max="96" step="4" value="64">
+  </div>
+
+  <div class="tw__row">
+    <div class="tw__lbl"><span class="tw__lbl-k">Sidebar</span><span class="tw__lbl-v" id="v-side">280px</span></div>
+    <input type="range" id="tw-side" min="220" max="360" step="10" value="280">
+  </div>
+
+  <div class="tw__row">
+    <div class="tw__lbl"><span class="tw__lbl-k">TOC rail</span><span class="tw__lbl-v" id="v-toc">56px</span></div>
+    <input type="range" id="tw-toc" min="0" max="320" step="4" value="56">
+  </div>
+
+  <div class="tw__row">
+    <div class="tw__lbl"><span class="tw__lbl-k">Lede measure</span><span class="tw__lbl-v" id="v-lede">60ch</span></div>
+    <input type="range" id="tw-lede" min="50" max="110" step="1" value="60">
+  </div>
+
+  <label class="tw__toggle"><span>Show empty bands</span><input type="checkbox" id="tw-bands"></label>
+
+  <p class="tw__hint">Drag <b>Outer cap</b> and <b>Prose cap</b> up until the red bands vanish. Custom values fill the chrome's <i>Custom</i> tab.</p>
+</aside>
+<div class="pv-note" id="note">Simulated 1920 × 1080 viewport · scaled to fit</div>
+
+<div class="pv-stage" id="stage" data-mode="before">
+  <header class="h" style="padding: 14px 28px">
+    <div class="h__l"><span class="h__logo">a</span><span class="h__word">aniket.kakde</span></div>
+    <nav class="h__menu"><span>Work</span><span>About</span><span>Experience</span><span>Projects</span><span>Cortex</span><span>Blog</span></nav>
+    <a class="h__cta">Get in touch</a>
+  </header>
+
+  <div class="cr" id="cr" data-bands="off">
+    <div class="pv-band pv-band--l"><span class="pv-band__label">Empty band</span></div>
+    <div class="pv-band pv-band--r"><span class="pv-band__label">Empty band</span></div>
+
+    <aside class="cr-side">
+      <div class="cr-back">← Cortex</div>
+      <h2>Data Structures and Algorithms</h2>
+      <p class="blurb">A senior-engineer-grade DSA curriculum: 11 modules from asymptotic analysis to the production data structures inside Postgres, Linux, Redis, and Git.</p>
+      <div class="cr-search"><span>🔎 Search chapters</span><kbd>⌘K</kbd></div>
+      <div class="cr-list">
+        <div class="cr-row cr-row--on"><span class="cr-row__n">01</span><span class="cr-row__t">Data Structures a…</span><span class="cr-row__m">4m</span></div>
+        <div class="cr-row"><span class="cr-row__n">02</span><span class="cr-row__t">Pseudocode Refere…</span><span class="cr-row__m">3m</span></div>
+        <div class="cr-list-h">Foundations</div>
+        <div class="cr-list-h">Linear structures</div>
+        <div class="cr-list-h">Trees</div>
+        <div class="cr-list-h">Graphs</div>
+        <div class="cr-list-h">Algorithms by strategy</div>
+        <div class="cr-list-h">Sorting and searching</div>
+        <div class="cr-list-h">Strings</div>
+        <div class="cr-list-h">Bit tricks</div>
+        <div class="cr-list-h">Probabilistic and adva…</div>
+      </div>
+    </aside>
+
+    <main class="cr-main" style="padding: 44px 40px 80px; width: 1504px; text-align: justify">
+      <div class="cr-prose">
+        <nav class="crumb">Home <span>›</span> Cortex <span>›</span> Data Structures &amp; Algorithms <span>›</span> <b>Data Structures and Algorithms</b></nav>
+        <h1 class="cr-title">Data Structures and Algorithms</h1>
+        <p class="cr-lede">A curriculum for engineers who want to <em>understand</em> how computers store and manipulate information — not just memorise enough to pass an interview. The book starts with the foundations every later chapter assumes (asymptotic analysis, recurrence relations, the memory model), walks through every classical structure and algorithm with worked examples in five languages, and ends with a synthesis module showing where each idea lives inside Postgres, Linux, Redis, Git, and other production systems.</p>
+
+        <p>The goal is not breadth-as-a-checklist. The goal is for you to be able to <b>reach for the right structure under pressure</b>, <b>derive its complexity from first principles</b>, and <b>debug the production version when it goes wrong</b> — the three things that separate engineers who <em>use</em> DSA from engineers who <em>understand</em> it.</p>
+
+        <div class="hr-sep"></div>
+
+        <h3>Reading conventions</h3>
+        <ul>
+          <li>Every chapter opens with a hook, a real-world analogy, and a visual before the formalism.</li>
+          <li>Code appears in five tabs: <b>Pseudocode</b>, <b>Python</b> (canonical), <b>Java</b>, <b>Scala</b>, <b>C</b>. Click between them; the pseudocode is the algorithm, the Python tab is the spec, the others are ports for muscle memory.</li>
+          <li>Every chapter closes with <b>Edge cases &amp; pitfalls</b>, <b>Production reality</b> (where this lives in real systems), and a <b>Practice ladder</b> of problems graded from warm-up to interview-grade.</li>
+        </ul>
+
+        <p>Where a structure has a "boring" production cousin (e.g. linked lists vs. <code>intrusive lists in the Linux kernel</code>), we read the production version after the textbook one and explicitly diff them. The textbook version is for understanding; the production version is for shipping.</p>
+
+        <pre>fn binary_search(a: &amp;[i64], target: i64) -&gt; Option&lt;usize&gt; {
+    let (mut lo, mut hi) = (0, a.len());
+    while lo &lt; hi {
+        let mid = lo + (hi - lo) / 2;   // avoid overflow
+        match a[mid].cmp(&amp;target) {
+            Ordering::Less    =&gt; lo = mid + 1,
+            Ordering::Greater =&gt; hi = mid,
+            Ordering::Equal   =&gt; return Some(mid),
+        }
+    }
+    None
+}</pre>
+
+        <p>The five-language convention isn't decorative. Each tab forces a different invariant into the foreground — Python is the spec, Java pins down the type, Scala shows the algebraic shape, C shows what the machine is actually doing, and the pseudocode is the version you'd whiteboard in an interview.</p>
+      </div>
+    </main>
+
+    <aside class="cr-toc">
+      <span class="cr-toc__tick cr-toc__tick--on"></span>
+      <span class="cr-toc__tick"></span>
+      <span class="cr-toc__tick"></span>
+      <span class="cr-toc__tick"></span>
+      <span class="cr-toc__tick"></span>
+      <span class="cr-toc__tick"></span>
+    </aside>
+  </div>
+</div>
+
+<div class="pv-metrics">
+  <span class="pv-metric">Outer cap <b id="m-max">1680px</b></span>
+  <span class="pv-metric">Prose cap <b id="m-prose">720px</b></span>
+  <span class="pv-metric">Line measure <b id="m-line">~65ch</b></span>
+  <span class="pv-metric pv-metric--accent">Empty / side <b id="m-band">~260px</b></span>
+</div>
+
+<script>
+  const stage = document.getElementById("stage");
+  const cr    = document.getElementById("cr");
+  const main  = cr.querySelector(".cr-main");
+  const tabs  = document.querySelectorAll(".pv-tab");
+  const m = {
+    max:document.getElementById("m-max"),
+    prose:document.getElementById("m-prose"),
+    line:document.getElementById("m-line"),
+    band:document.getElementById("m-band"),
+  };
+  const ids = ["vp","max","prose","pad","side","toc","lede"];
+  const ctl = Object.fromEntries(ids.map(k => [k, document.getElementById("tw-"+k)]));
+  const val = Object.fromEntries(ids.map(k => [k, document.getElementById("v-"+k)]));
+  const bands = document.getElementById("tw-bands");
+
+  const PRESETS = {
+    before: {vp:1920,max:1680,prose:720,pad:64,side:280,toc:56,lede:60},
+    after:  {vp:1920,max:1840,prose:880,pad:40,side:280,toc:56,lede:68},
+    custom: null, // freeform
+  };
+
+  function apply(){
+    const v = Object.fromEntries(ids.map(k => [k, +ctl[k].value]));
+    // Set CSS variables on stage / layout
+    cr.style.setProperty("--cr-max",   v.max+"px");
+    cr.style.setProperty("--cr-cols",  v.side+"px minmax(0,1fr) "+v.toc+"px");
+    cr.style.setProperty("--cr-prose", v.prose+"px");
+    cr.style.setProperty("--cr-lede",  v.lede+"ch");
+    main.style.paddingLeft = v.pad+"px";
+    main.style.paddingRight = v.pad+"px";
+    // Empty-band geometry: outside the prose, inside the side/toc columns.
+    const innerW   = Math.min(v.vp, v.max);
+    const mainW    = innerW - v.side - v.toc;
+    const proseW   = Math.min(v.prose, mainW - v.pad*2);
+    const bandSide = Math.max(0, (mainW - proseW)/2);
+    cr.style.setProperty("--band-l-x", v.side+"px");
+    cr.style.setProperty("--band-l-w", bandSide+"px");
+    cr.style.setProperty("--band-r-x", v.toc+"px");
+    cr.style.setProperty("--band-r-w", bandSide+"px");
+    // Stage viewport
+    stage.style.width = v.vp+"px";
+    // Metric pills
+    val.vp.textContent    = v.vp+"px";
+    val.max.textContent   = v.max+"px";
+    val.prose.textContent = v.prose+"px";
+    val.pad.textContent   = v.pad+"px";
+    val.side.textContent  = v.side+"px";
+    val.toc.textContent   = v.toc+"px";
+    val.lede.textContent  = v.lede+"ch";
+    m.max.textContent   = v.max+"px";
+    m.prose.textContent = v.prose+"px";
+    m.line.textContent  = "~"+Math.round(proseW/9.2)+"ch";
+    m.band.textContent  = Math.round(bandSide)+"px / side";
+    fit();
+  }
+
+  function loadPreset(name){
+    const p = PRESETS[name]; if (!p) return;
+    ids.forEach(k => ctl[k].value = p[k]);
+    apply();
+  }
+
+  tabs.forEach(t => t.addEventListener("click", () => {
+    const mode = t.dataset.mode;
+    if (mode === "bands"){
+      bands.checked = !bands.checked;
+      cr.dataset.bands = bands.checked ? "on" : "off";
+      tabs.forEach(x => x.classList.toggle("pv-tab--on", x.dataset.mode === "bands" && bands.checked));
+      return;
+    }
+    cr.dataset.bands = bands.checked ? "on" : "off";
+    tabs.forEach(x => x.classList.toggle("pv-tab--on", x.dataset.mode === mode));
+    if (mode !== "custom") loadPreset(mode);
+  }));
+
+  ids.forEach(k => ctl[k].addEventListener("input", () => {
+    apply();
+    tabs.forEach(x => x.classList.toggle("pv-tab--on", x.dataset.mode === "custom"));
+  }));
+  bands.addEventListener("change", () => {
+    cr.dataset.bands = bands.checked ? "on" : "off";
+  });
+  document.getElementById("tw-reset").addEventListener("click", () => loadPreset("before"));
+
+  /* Scale the simulated viewport down to fit the real one. */
+  function fit(){
+    const stageW = stage.offsetWidth || 1920;
+    const available = window.innerWidth - 64;
+    const scale = Math.min(1, available / stageW);
+    stage.style.transform = `scale(${scale})`;
+    stage.style.marginBottom = ((1 - scale) * stage.offsetHeight * -1) + "px";
+  }
+  window.addEventListener("resize", fit);
+  loadPreset("before");
+</script>
+</body>
+</html>

@@ -1,0 +1,142 @@
+@layer components {
+    /* ChapterContent — the rendered <article> wrapper. The Tailwind Typography
+       (prose) plugin drives most of the look; we only override the headings'
+       scroll offset and the <pre>/<img> defaults so that runnable code and
+       images don't collide with the plugin's spacing. */
+
+    /* Editorial typography for chapter prose. The Tailwind Typography plugin
+       drives spacing and lists; we own the heading fonts (serif italic for
+       h1/h2, sans for h3) and pull every prose role onto our terracotta /
+       cream / ink token stack so the reader flows with the rest of the site. */
+    .chapter-content {
+        @apply prose dark:prose-invert max-w-none
+               prose-headings:scroll-mt-28 prose-pre:p-0 prose-pre:bg-transparent
+               prose-pre:border-0 prose-img:my-0;
+        font-size: 16.5px;
+        line-height: 1.72;
+        --tw-prose-body: hsl(var(--foreground) / 0.85);
+        --tw-prose-headings: hsl(var(--foreground));
+        --tw-prose-lead: hsl(var(--foreground) / 0.85);
+        --tw-prose-links: hsl(var(--primary));
+        --tw-prose-bold: hsl(var(--foreground));
+        --tw-prose-counters: hsl(var(--muted-foreground));
+        --tw-prose-bullets: hsl(var(--muted-foreground));
+        --tw-prose-quotes: hsl(var(--foreground) / 0.85);
+        --tw-prose-captions: hsl(var(--muted-foreground));
+        --tw-prose-invert-body: hsl(var(--foreground) / 0.85);
+        --tw-prose-invert-headings: hsl(var(--foreground));
+        --tw-prose-invert-lead: hsl(var(--foreground) / 0.85);
+        --tw-prose-invert-links: hsl(var(--primary));
+        --tw-prose-invert-bold: hsl(var(--foreground));
+        --tw-prose-invert-counters: hsl(var(--muted-foreground));
+        --tw-prose-invert-bullets: hsl(var(--muted-foreground));
+        --tw-prose-invert-quotes: hsl(var(--foreground) / 0.85);
+        --tw-prose-invert-captions: hsl(var(--muted-foreground));
+    }
+    /* h2 — Instrument Serif italic, 32px, tight measure. Replaces the
+       Typography plugin's default sans-bold heading. */
+    .chapter-content h2 {
+        font-family: var(--font-display);
+        font-style: italic;
+        font-weight: 400;
+        font-size: 32px;
+        line-height: 1.05;
+        letter-spacing: -0.015em;
+        margin: 56px 0 14px;
+    }
+    /* h3 — Geist sans, 17px semibold. Calmer step than h2 so the
+       hierarchy reads cleanly on long chapters. */
+    .chapter-content h3 {
+        font-family: var(--font-sans);
+        font-weight: 600;
+        font-size: 17px;
+        line-height: 1.3;
+        letter-spacing: -0.005em;
+        margin: 36px 0 10px;
+    }
+    /* Editorial em — italic-serif accent at +4% size, ink colour. */
+    .chapter-content em {
+        font-family: var(--font-display);
+        font-style: italic;
+        font-size: 1.04em;
+        color: hsl(var(--foreground));
+        letter-spacing: 0.05em;
+    }
+    /* Bold uses font-weight 600 (medium-bold), not the plugin's 700. */
+    .chapter-content strong {
+        font-weight: 600;
+    }
+
+    /* Inline code: rehype-pretty-code is bypassed for inline nodes, so we
+       own the full look. A muted chip keeps it readable in both themes. */
+    .chapter-content :not(pre) > code {
+        @apply rounded px-1.5 py-0.5 bg-muted text-foreground font-mono text-[0.875em];
+    }
+
+    /* D2 embeds Markdown labels inside SVG <foreignObject> nodes. Those nodes
+       live under the article, so our inline-code chip rule would otherwise
+       override D2's own SVG-scoped theme colors in dark mode. Keep not-prose
+       islands isolated from article-level inline-code styling. */
+    .chapter-content .not-prose :not(pre) > code {
+        color: inherit !important;
+        background-color: var(--color-neutral-muted, #eef1f8) !important;
+        padding: 0.2em 0.4em !important;
+        border-radius: 6px !important;
+    }
+
+    /* Tailwind Typography wraps every <blockquote> in italic + curly open/close
+       quotes via blockquote::before / blockquote p::before content rules. That
+       reads as a pull-quote — wrong for callouts, definitions, hints, and the
+       Q/A blocks the rebuild uses heavily. Strip the italics, bold, and quote
+       glyphs; keep the left border and inset so the block stays visually
+       distinct from surrounding prose. */
+    .chapter-content blockquote {
+        font-style: normal;
+        font-weight: 400;
+        quotes: none;
+    }
+    .chapter-content blockquote p:first-of-type::before,
+    .chapter-content blockquote p:last-of-type::after,
+    .chapter-content blockquote::before,
+    .chapter-content blockquote::after {
+        content: none;
+    }
+
+    /* Collapsible Q/A used by the Memorize section. <details> + <summary> is
+       native HTML so remark passes it through; we only own the look. */
+    .chapter-content details {
+        @apply my-3 rounded-md border border-border bg-muted/30 px-4 py-2 transition-colors;
+    }
+    .chapter-content details:hover {
+        @apply bg-muted/50;
+    }
+    .chapter-content details[open] {
+        @apply bg-muted/40;
+    }
+    .chapter-content details > summary {
+        @apply cursor-pointer font-medium text-foreground py-1 -mx-1 px-1 rounded;
+        list-style: none;
+    }
+    .chapter-content details > summary::-webkit-details-marker { display: none; }
+    .chapter-content details > summary::before {
+        content: "▸";
+        display: inline-block;
+        width: 1em;
+        margin-right: 0.25em;
+        color: rgb(59 130 246);
+        transition: transform 0.15s ease;
+    }
+    .chapter-content details[open] > summary::before {
+        content: "▾";
+    }
+    .chapter-content details > summary p {
+        display: inline;
+        margin: 0;
+    }
+    .chapter-content details > *:not(summary) {
+        @apply mt-2 mb-1;
+    }
+    .chapter-content details > *:last-child {
+        @apply mb-0;
+    }
+}
