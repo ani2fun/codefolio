@@ -113,7 +113,7 @@ flowchart LR
 
 That is the entire system. One server. One file. Nightly backup to a cloud bucket. Deployed to a $4/month VM. **It will work.**
 
-The same view in C4 Container notation (rendered from [`diagrams/book-tracker.dsl`](https://github.com/ani2fun/note-book/tree/main/src/computer-science/system-design/1.foundations/diagrams/book-tracker.dsl) via `make diagrams`):
+The same view in C4 Container notation (rendered from [`diagrams/book-tracker.dsl`](https://github.com/ani2fun/codefolio/tree/main/content/cortex/system-design/01-foundations/diagrams/book-tracker.dsl) via `make diagrams`):
 
 <img src="./diagrams/structurizr-PersonalContainers.svg" alt="C4 Container view of the personal-scale book tracker" />
 <p align="center"><strong>C4 Container view — three boxes is the entire production architecture for the personal-scale book tracker.</strong></p>

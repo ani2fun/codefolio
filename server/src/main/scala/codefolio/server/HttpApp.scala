@@ -5,7 +5,7 @@ import codefolio.server.codeRunPipeline.CodeRunPipeline
 import codefolio.server.config.AppConfig
 import codefolio.server.cortexPipeline.CortexPipeline
 import codefolio.server.helloPipeline.HelloPipeline
-import codefolio.server.http.{ApiRoutes, StaticRoutes}
+import codefolio.server.http.{ApiRoutes, CortexAssetRoutes, LikeC4ProxyRoutes, StaticRoutes}
 import zio.*
 import zio.http.*
 
@@ -36,13 +36,15 @@ final private class HttpAppLive(
     blog: BlogPipeline
 ) extends HttpApp:
 
-  private val apiRoutes    = ApiRoutes.routes(helloPipeline, codeRun, cortex, blog)
-  private val staticRoutes = StaticRoutes.from(cfg.staticDir)
+  private val apiRoutes         = ApiRoutes.routes(helloPipeline, codeRun, cortex, blog)
+  private val cortexAssetRoutes = CortexAssetRoutes.from(cfg.cortex.root)
+  private val likec4Routes      = LikeC4ProxyRoutes.routes
+  private val staticRoutes      = StaticRoutes.from(cfg.staticDir)
 
   override def serve: Task[Unit] =
     ZIO.logInfo(s"Starting server on port ${cfg.port}; ${staticRoutes.startupInfo}") *>
       Server
-        .serve(apiRoutes ++ staticRoutes.routes)
+        .serve(apiRoutes ++ cortexAssetRoutes ++ likec4Routes ++ staticRoutes.routes)
         .provide(
           ZLayer.succeed(Server.Config.default.port(cfg.port)),
           Server.live

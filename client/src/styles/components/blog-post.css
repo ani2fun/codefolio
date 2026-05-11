@@ -32,6 +32,7 @@
     }
     .blog-post strong {
         font-weight: 600;
+        color: hsl(var(--foreground));
     }
     .blog-post em {
         font-style: italic;

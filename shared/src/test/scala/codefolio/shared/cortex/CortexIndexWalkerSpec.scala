@@ -43,7 +43,7 @@ object CortexIndexWalkerSpec extends ZIOSpecDefault:
         )
       },
       test("a single chapter at book root yields one Book with one ChapterRef") {
-        val tree = book("intro-book", children = List(chapter("hello.md", "# Hello\n\nbody")))
+        val tree     = book("intro-book", children = List(chapter("hello.md", "# Hello\n\nbody")))
         val Right(r) = CortexIndexWalker.walk(List(tree)): @unchecked
         val books    = r.index.books
         assertTrue(
@@ -190,6 +190,46 @@ object CortexIndexWalkerSpec extends ZIOSpecDefault:
         )
         val Right(r) = CortexIndexWalker.walk(List(tree)): @unchecked
         assertTrue(r.index.books.head.chapters.map(_.slug) == List("c"))
+      },
+      test("section dirs named 'examples' are skipped (companion source code, not chapters)") {
+        // Runnable example projects sit next to lessons under examples/<NN>-<slug>/. Their
+        // README.md would otherwise appear as a rogue chapter in the sidebar.
+        val tree = book(
+          "system-design",
+          children = List(
+            chapter("01-intro.md", "# Intro"),
+            section(
+              "examples",
+              children = List(
+                section(
+                  "04-cap-pacelc-simulator",
+                  children = List(chapter("README.md", "# How to run"))
+                )
+              )
+            )
+          )
+        )
+        val Right(r) = CortexIndexWalker.walk(List(tree)): @unchecked
+        assertTrue(r.index.books.head.chapters.map(_.slug) == List("intro"))
+      },
+      test("'01-examples' is also skipped — the order prefix doesn't change the role") {
+        val tree = book(
+          "b",
+          children = List(
+            chapter("01-c.md", "# C"),
+            section("01-examples", children = List(chapter("README.md", "# How to run")))
+          )
+        )
+        val Right(r) = CortexIndexWalker.walk(List(tree)): @unchecked
+        assertTrue(r.index.books.head.chapters.map(_.slug) == List("c"))
+      },
+      test("a book at the top level literally named 'examples' is skipped too") {
+        val tree = List(
+          CortexDir(name = "examples", children = List(chapter("README.md", "# top-level"))),
+          book("real-book", children = List(chapter("01-c.md", "# C")))
+        )
+        val Right(r) = CortexIndexWalker.walk(tree): @unchecked
+        assertTrue(r.index.books.map(_.slug) == Seq("real-book"))
       },
       test("chapter files starting with '_' or '.' are skipped") {
         val tree = book(

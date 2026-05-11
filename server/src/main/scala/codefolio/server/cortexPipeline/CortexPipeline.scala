@@ -248,7 +248,11 @@ final private class CortexPipelineLive(
         book = bk,
         chapter = ch,
         frontmatter = parsed.frontmatter,
-        raw = parsed.body,
+        // Rewrite relative asset URLs (./diagrams/foo.svg, ../shared/bar.png) to absolute
+        // /api/cortex/asset/<book>/<resolved-path>. Lets authors write portable markdown
+        // that works on GitHub and inside Cortex without learning a URL convention. See
+        // [[ChapterAssetRewrite]] for what does and doesn't get rewritten.
+        raw = ChapterAssetRewrite.rewrite(parsed.body, book, relPath),
         prevSlug = prevSlug,
         nextSlug = nextSlug
       )

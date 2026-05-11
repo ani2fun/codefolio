@@ -1,0 +1,19 @@
+---
+config:
+  theme: base
+  themeVariables:
+    primaryColor: "#dbeafe"
+    primaryBorderColor: "#3b82f6"
+    primaryTextColor: "#1e3a5f"
+    lineColor: "#64748b"
+    secondaryColor: "#ede9fe"
+    tertiaryColor: "#fef9c3"
+---
+flowchart LR
+    Author["Author writes<br/>lesson.md"] --> Build["mdbook build"]
+    Build --> D2["mdbook-d2<br/>renders d2"]
+    Build --> Mermaid["theme/mermaid-init.js<br/>renders mermaid in browser"]
+    Build --> Structurizr["pre-rendered SVG<br/>(make diagrams)"]
+    D2 --> HTML["HTML output"]
+    Mermaid --> HTML
+    Structurizr --> HTML

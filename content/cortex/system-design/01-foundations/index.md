@@ -20,8 +20,8 @@ By the time you finish this part you will:
 
 ## Runnable examples
 
-- [`examples/04-cap-pacelc-simulator/`](https://github.com/ani2fun/note-book/tree/main/src/computer-science/system-design/1.foundations/examples/04-cap-pacelc-simulator) — three-node KV store with injectable partitions.
-- [`examples/05-littles-law-queueing/`](https://github.com/ani2fun/note-book/tree/main/src/computer-science/system-design/1.foundations/examples/05-littles-law-queueing) — an M/M/1 queue simulator that lets you watch latency blow up as utilisation crosses 0.7.
+- [`examples/04-cap-pacelc-simulator/`](https://github.com/ani2fun/codefolio/tree/main/content/cortex/system-design/01-foundations/examples/04-cap-pacelc-simulator) — three-node KV store with injectable partitions.
+- [`examples/05-littles-law-queueing/`](https://github.com/ani2fun/codefolio/tree/main/content/cortex/system-design/01-foundations/examples/05-littles-law-queueing) — an M/M/1 queue simulator that lets you watch latency blow up as utilisation crosses 0.7.
 
 ## Prerequisites
 

@@ -17,6 +17,10 @@
      Prose cap      1100 px    ← reading measure (~96ch)
      Main padding     64 px    ← gap between sidebar and prose
      Lede measure     78 ch    ← opening paragraph
+     Body size      18.5 px    ← paragraph + list items
+     Body leading    1.80      ← line-height for body
+     Lede size        21 px    ← opening paragraph
+     Lede leading    1.60      ← line-height for lede
 
      Sidebar         320 px    ← default, not overridden here
      TOC rail         52 px    ← default, not overridden here
@@ -70,7 +74,21 @@
         max-width: 78ch;
     }
 
-    /* 5. Open-TOC column — push to 300 px so long chapter headings
+    /* 5. Body text scale-up — companion to the wider 1100px measure.
+          Bigger glyphs and taller leading make a 96ch line tolerable;
+          without these, the eye fatigues on the return sweep. Adjust
+          together or not at all. */
+    .cortex-reader-prose p,
+    .cortex-reader-prose li {
+        font-size: 18.5px;
+        line-height: 1.8;
+    }
+    .cortex-reader-prose__lede {
+        font-size: 21px;
+        line-height: 1.6;
+    }
+
+    /* 6. Open-TOC column — push to 300 px so long chapter headings
           stop wrapping awkwardly when the drawer is open. */
     @media (min-width: 1280px) {
         .cortex-reader-layout:has(.cortex-reader-toc:hover),

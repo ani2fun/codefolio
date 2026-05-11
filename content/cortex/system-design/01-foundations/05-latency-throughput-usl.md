@@ -183,11 +183,11 @@ A senior engineer would say: *"We are running on the latency cliff. Any small di
 
 ## 5. Build It
 
-The lesson ships a runnable **M/M/c queueing simulator** at [`examples/05-littles-law-queueing/`](https://github.com/ani2fun/note-book/tree/main/src/computer-science/system-design/1.foundations/examples/05-littles-law-queueing). It is event-driven, deterministic, and ~200 lines.
+The lesson ships a runnable **M/M/c queueing simulator** at [`examples/05-littles-law-queueing/`](https://github.com/ani2fun/codefolio/tree/main/content/cortex/system-design/01-foundations/examples/05-littles-law-queueing). It is event-driven, deterministic, and ~200 lines.
 
 ```bash
-git clone https://github.com/ani2fun/note-book.git
-cd note-book/src/computer-science/system-design/1.foundations/examples/05-littles-law-queueing
+git clone https://github.com/ani2fun/codefolio.git
+cd codefolio/content/cortex/system-design/01-foundations/examples/05-littles-law-queueing
 just test       # 6 tests including a Little's-Law-residual check
 just demo       # runs the headline utilisation sweep + pooling-vs-partitioning experiment
 ```

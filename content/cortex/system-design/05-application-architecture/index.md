@@ -9,5 +9,6 @@
 29. [Service discovery and service mesh](/cortex/system-design/application-architecture-service-discovery-and-mesh)
 30. [Authentication and authorization](/cortex/system-design/application-architecture-authn-authz)
 31. [Multi-tenancy](/cortex/system-design/application-architecture-multi-tenancy)
+32. [Example — modelling a system with the C4 model](/cortex/system-design/application-architecture-example-c4-model)
 
-> **Status:** stubs. Wave 4 of the build plan.
+> **Status:** chapters 27–31 are stubs (Wave 4 of the build plan); chapter 32 is a worked example.

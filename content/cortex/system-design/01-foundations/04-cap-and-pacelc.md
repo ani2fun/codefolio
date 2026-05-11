@@ -128,7 +128,7 @@ The PM did not realise they were asking for the impossible. Your job was to tran
 
 ## 5. Build It
 
-The lesson ships with a full runnable simulator at [`examples/04-cap-pacelc-simulator/`](https://github.com/ani2fun/note-book/tree/main/src/computer-science/system-design/1.foundations/examples/04-cap-pacelc-simulator). It is a 3-node KV store with **injectable partitions** and **two pluggable consistency modes (CP / AP)**. The C4 Container view below — rendered from [`diagrams/cp-cluster.dsl`](https://github.com/ani2fun/note-book/tree/main/src/computer-science/system-design/1.foundations/diagrams/cp-cluster.dsl) — shows the topology the simulator implements:
+The lesson ships with a full runnable simulator at [`examples/04-cap-pacelc-simulator/`](https://github.com/ani2fun/codefolio/tree/main/content/cortex/system-design/01-foundations/examples/04-cap-pacelc-simulator). It is a 3-node KV store with **injectable partitions** and **two pluggable consistency modes (CP / AP)**. The C4 Container view below — rendered from [`diagrams/cp-cluster.dsl`](https://github.com/ani2fun/codefolio/tree/main/content/cortex/system-design/01-foundations/diagrams/cp-cluster.dsl) via `make diagrams` — shows the topology the simulator implements:
 
 <img src="./diagrams/structurizr-CpClusterContainers.svg" alt="C4 Container view of the CP cluster" />
 <p align="center"><strong>C4 Container view — three replicas of the quorum KV store. Every arrow between replicas is a "replicate write & await ack" edge that gets blocked by an injected partition.</strong></p>
@@ -136,8 +136,8 @@ The lesson ships with a full runnable simulator at [`examples/04-cap-pacelc-simu
 Run it locally:
 
 ```bash
-git clone https://github.com/ani2fun/note-book.git
-cd note-book/src/computer-science/system-design/1.foundations/examples/04-cap-pacelc-simulator
+git clone https://github.com/ani2fun/codefolio.git
+cd codefolio/content/cortex/system-design/01-foundations/examples/04-cap-pacelc-simulator
 just test                      # 8 tests, locks down the (mode × partition × op) matrix
 just demo                      # 8 narrated scenarios — read the output line by line
 ```

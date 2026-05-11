@@ -7,15 +7,15 @@ import codefolio.shared.api.Endpoints.{Book, ChapterRef, CortexIndex}
  *
  * Takes an in-memory `CortexEntry` tree (the FS adapter materialises this from disk) and produces a
  * `CortexIndex` plus a per-book reverse map (chapter slug → relative file path). The seam keeps the
- * convention rules — numeric-prefix ordering, max Section depth, Slug uniqueness, Frontmatter title
- * fallback chain — in one named module that JVM tests can exercise with literal fixtures.
+ * convention rules — numeric-prefix ordering, max Section depth, Slug uniqueness, Frontmatter title fallback
+ * chain — in one named module that JVM tests can exercise with literal fixtures.
  *
  * Lenient by ADR-0001: `BookMeta` and `SectionMeta` are `Option` — the FS adapter passes `None` when the
  * matching `book.json` / `_section.json` is missing or malformed, and the walker falls back to a humanised
  * directory name. The same leniency applies to Chapter `Frontmatter` via [[Frontmatter.extractTitle]].
  *
- * Mirrors the pattern in [[SidebarForest]] and [[codefolio.shared.runner.CodeExecutor]]: a pure shared
- * module behind an internal seam, callable from any platform that lands in `shared`.
+ * Mirrors the pattern in [[SidebarForest]] and [[codefolio.shared.runner.CodeExecutor]]: a pure shared module
+ * behind an internal seam, callable from any platform that lands in `shared`.
  */
 object CortexIndexWalker:
 
@@ -82,14 +82,15 @@ object CortexIndexWalker:
   // ===========================================================================
 
   /**
-   * Walk a list of root-level entries. Each top-level `CortexDir` whose name is slug-like and does not start
-   * with `_` or `.` becomes a Book; other top-level entries are silently skipped (so `_drafts/`, `.git/`, and
-   * stray files can sit alongside real books without failing the index). The leading-underscore-or-dot rule
-   * is applied uniformly at every level — Books, Sections, and Chapters.
+   * Walk a list of root-level entries. Each top-level `CortexDir` whose name is slug-like, does not start
+   * with `_` or `.`, and is not a reserved companion-asset directory ([[ReservedAuxDirs]]) becomes a Book;
+   * other top-level entries are silently skipped (so `_drafts/`, `.git/`, and stray files can sit alongside
+   * real books without failing the index). The same filter applies uniformly at every level — Books,
+   * Sections, and Chapters.
    */
   def walk(roots: List[CortexEntry]): Either[IndexError, WalkResult] =
     val bookDirs = ordered(roots).collect {
-      case d: CortexDir if slugLike(d.name) && !d.name.startsWith("_") && !d.name.startsWith(".") => d
+      case d: CortexDir if includesAsContent(d.name) => d
     }
     val results = bookDirs.map(d => buildBook(d, d.name))
     results.collectFirst { case Left(e) => e } match
@@ -98,6 +99,27 @@ object CortexIndexWalker:
         val books = results.collect { case Right((b, _)) => b }
         val maps  = results.collect { case Right((b, m)) => b.slug -> m }.toMap
         Right(WalkResult(CortexIndex(books), maps))
+
+  /**
+   * Directory names that are companion source/asset locations rather than chapter content.
+   *
+   *   - `examples` — runnable code projects sitting next to a lesson (their `README.md` and any internal docs
+   *     would otherwise pollute the sidebar as rogue chapters).
+   *
+   * The check is on the order-prefix-stripped name, so both `examples/` and `01-examples/` qualify. Add new
+   * reserved names sparingly: a single literal is much easier to reason about than a regex.
+   */
+  val ReservedAuxDirs: Set[String] = Set("examples")
+
+  /**
+   * Whether a directory name is eligible to become a Book / Section. Excludes `_*`, `.*`, anything
+   * non-slug-like, and reserved-aux directory names ([[ReservedAuxDirs]]).
+   */
+  def includesAsContent(name: String): Boolean =
+    slugLike(name) &&
+      !name.startsWith("_") &&
+      !name.startsWith(".") &&
+      !ReservedAuxDirs.contains(stripOrderPrefix(name))
 
   /** Reject anything that isn't a simple slug — letters, digits, hyphens, underscores; non-empty. */
   def slugLike(s: String): Boolean =
@@ -193,7 +215,7 @@ object CortexIndexWalker:
           f
       }
       val sectionDirs = children.collect {
-        case d: CortexDir if !d.name.startsWith("_") && !d.name.startsWith(".") => d
+        case d: CortexDir if includesAsContent(d.name) => d
       }
       val groupOpt = if groupPath.isEmpty then None else Some(groupPath.toSeq)
 

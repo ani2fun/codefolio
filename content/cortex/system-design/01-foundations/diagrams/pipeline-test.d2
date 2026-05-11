@@ -1,0 +1,29 @@
+direction: right
+
+author: "Author" {
+  shape: person
+}
+
+build: "mdbook build" {
+  shape: rectangle
+  style.fill: "#dbeafe"
+  style.stroke: "#3b82f6"
+}
+
+d2_pp: "mdbook-d2\npreprocessor"
+mermaid_js: "mermaid-init.js\n(client-side)"
+structurizr: "Pre-rendered SVG\n(via `make diagrams`)"
+
+html: "HTML output" {
+  shape: rectangle
+  style.fill: "#fef9c3"
+  style.stroke: "#d97706"
+}
+
+author -> build: "writes lesson.md"
+build -> d2_pp
+build -> mermaid_js
+build -> structurizr
+d2_pp -> html
+mermaid_js -> html
+structurizr -> html
