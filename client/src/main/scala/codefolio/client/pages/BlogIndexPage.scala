@@ -39,7 +39,7 @@ object BlogIndexPage:
             <.p(
               ^.className :=
                 "text-center text-foreground/80 mb-10 text-sm md:text-base max-w-2xl mx-auto",
-              "Long-form articles, recipes, and field notes. Click any post to start reading."
+              "Articles and write-ups. Pick a post to start reading."
             ),
             state.value.render(
               loaded = idx => PostGrid.Component(PostGrid.Props(idx.posts.toList))

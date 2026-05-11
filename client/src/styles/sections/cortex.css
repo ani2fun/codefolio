@@ -4,7 +4,7 @@
        Block: .cortex
        Elements:
          __inner             — content wrapper
-         __eyebrow           — "CORTEX · LONG-FORM NOTES" mono caption
+         __eyebrow           — "CORTEX · NOTEBOOK" mono caption
          __heading-row       — title left, pulse pill right
          __title             — italic display heading
          __pulse-pill        — "Currently writing: …" pill
@@ -16,54 +16,7 @@
     .cortex {
         @apply py-24 px-6 scroll-mt-24 border-t border-border/60;
     }
-    /* .cortex__inner {
-        @apply max-w-6xl mx-auto;
-    }
-    .cortex__eyebrow {
-        @apply text-sm font-mono tracking-widest text-muted-foreground uppercase mb-3;
-    }
-    .cortex__heading-row {
-        @apply flex flex-col md:flex-row md:items-end md:justify-between gap-4 mb-12;
-    }
-    .cortex__title {
-        font-family: var(--font-display);
-        font-style: italic;
-        font-weight: 400;
-        font-size: 40px;
-        line-height: 1.02;
-        letter-spacing: -0.02em;
-        color: hsl(var(--foreground));
-        margin: 0;
-    }
-    .cortex__pulse-pill {
-        @apply inline-flex items-center gap-2 px-3 py-1.5 rounded-full
-               border border-border/70 bg-card/60;
-    }
-    .cortex__pulse-dot {
-        @apply inline-block w-1.5 h-1.5 rounded-full relative;
-        background-color: hsl(var(--primary));
-    }
-    .cortex__pulse-dot::after {
-        content: "";
-        position: absolute;
-        inset: -3px;
-        border-radius: 9999px;
-        background-color: hsl(var(--primary));
-        opacity: 0.4;
-        animation: cortex-pulse 2.4s cubic-bezier(0.4, 0, 0.2, 1) infinite;
-    }
-    @keyframes cortex-pulse {
-        0%   { transform: scale(0.6); opacity: 0.6; }
-        70%  { transform: scale(1.6); opacity: 0;   }
-        100% { transform: scale(0.6); opacity: 0;   }
-    }
-    @media (prefers-reduced-motion: reduce) {
-        .cortex__pulse-dot::after { animation: none; }
-    }
-    .cortex__pulse-text {
-        @apply text-[11px] font-mono tracking-wide text-muted-foreground;
-    } */
-
+    
     /* ── Card grid (rendered by BookGrid) ─────────────────────────── */
     .cortex__grid {
         @apply grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 max-w-6xl mx-auto;

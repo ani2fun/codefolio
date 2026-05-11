@@ -1,5 +1,6 @@
 package codefolio.client.components.sections
 
+import codefolio.client.components.icons.LucideIcons
 import codefolio.client.components.ui.Section
 import japgolly.scalajs.react.*
 import japgolly.scalajs.react.vdom.html_<^.*
@@ -10,8 +11,8 @@ import japgolly.scalajs.react.vdom.html_<^.*
  * Layout from top:
  *   1. status pill (live "currently at …" mono caption with pulsing green dot) 2. display name in italic
  *      Instrument Serif with tiny "EU" superscript 3. lede paragraph with one editorial italic emphasis 4.
- *      hierarchical CTAs (filled primary / ghost secondary / plain mailto) 5. 4-column stat strip (numbers in
- *      display serif, captions in mono)
+ *      hierarchical CTAs (filled primary / ghost secondary) — Download CV, See selected work, Cortex, Blog 5.
+ *      4-column stat strip (numbers in display serif, captions in mono)
  *
  * All copy is hardcoded — these strings change rarely, putting them in JSON trades a grep for a build-time
  * indirection that adds nothing.
@@ -45,25 +46,33 @@ object Hero:
           <.em("Backend-leaning"),
           " Software Engineer. Currently at Europcar, building the unified B2B/B2C customer identity platform.",
           <.br,
-          "Previously: Helped built at Audi, in-house video annotation platform and data pipeline used to generate ground-truth training data for autonomous driving models, and helped lead a Disney pilot that became a multi-million-euro replacement of their legacy marketing platform."
+          "Previously: Helped build Audi's in-house video annotation platform and data pipeline used to generate ground-truth training data for autonomous driving models, and helped lead a Disney pilot that became a multi-million-euro replacement of their legacy marketing platform."
         ),
         <.div(
           ^.className := "hero__cta-row",
           <.a(
             ^.href      := "/Aniket-Kakde-CV-EN.pdf",
             ^.className := "hero__cta hero__cta--primary",
-            "Download CV ",
-            <.span(^.className := "hero__cta-arrow", "→")
+            LucideIcons.Download(LucideIcons.withClass("hero__cta-icon")),
+            "Download CV"
           ),
           <.a(
             ^.href      := "#work",
             ^.className := "hero__cta hero__cta--ghost",
+            LucideIcons.ArrowRight(LucideIcons.withClass("hero__cta-icon")),
             "See selected work"
           ),
           <.a(
-            ^.href      := "mailto:a.r.kakde@gmail.com?subject=Hi, Aniket",
-            ^.className := "hero__cta hero__cta--plain",
-            "a.r.kakde@gmail.com"
+            ^.href      := "/cortex",
+            ^.className := "hero__cta hero__cta--ghost",
+            LucideIcons.BookOpen(LucideIcons.withClass("hero__cta-icon")),
+            "Cortex"
+          ),
+          <.a(
+            ^.href      := "/blogs",
+            ^.className := "hero__cta hero__cta--ghost",
+            LucideIcons.Pencil(LucideIcons.withClass("hero__cta-icon")),
+            "Blog"
           )
         ),
         <.div(

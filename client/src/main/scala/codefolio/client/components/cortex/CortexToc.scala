@@ -18,9 +18,9 @@ import scala.scalajs.js.JSConverters.*
  *   - **Bar ticks** — 4px-tall, 14px-wide. Active row's tick widens to 22px and tints terracotta.
  *   - **Labels fade in** when the aside is hovered/focused; at rest only the ticks are visible.
  *
- * The aside-expansion and parent-grid-widen are both driven by CSS `:hover` / `:focus-within` (with a
- * sibling `:has()` rule on `.cortex-reader-layout`), so this component owns no UI-state hook for the
- * open/closed flag — only the IntersectionObserver-driven active-section state.
+ * The aside-expansion and parent-grid-widen are both driven by CSS `:hover` / `:focus-within` (with a sibling
+ * `:has()` rule on `.cortex-reader-layout`), so this component owns no UI-state hook for the open/closed flag
+ * — only the IntersectionObserver-driven active-section state.
  *
  * Hidden below xl; mobile uses [[MobileToc]].
  */

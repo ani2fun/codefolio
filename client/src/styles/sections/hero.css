@@ -10,12 +10,11 @@
          __name              — Instrument Serif italic display name
          __name-sup          — tiny "EU" superscript
          __lede              — body paragraph with editorial italic
-         __cta-row           — horizontal CTA stack on desktop, vertical on mobile
+         __cta-row           — horizontal CTA stack on desktop, wraps on mobile
          __cta               — base CTA spacing
-         __cta--primary      — filled terracotta
+         __cta--primary      — filled (dark on light, terracotta on hover)
          __cta--ghost        — outlined neutral
-         __cta--plain        — text-only mailto
-         __cta-arrow         — arrow span (slides on hover)
+         __cta-icon          — Lucide icon inside a CTA (slides on hover for primary)
          __stats             — 4-col grid → 2-col on mobile
          __stat / __stat-num / __stat-sup / __stat-label
          __logo-strip / __logo-strip-eyebrow / __logo-strip-item
@@ -103,18 +102,15 @@
         @apply px-5 py-2.5 rounded-full bg-foreground text-background
                hover:bg-primary hover:text-primary-foreground;
     }
-    .hero__cta--primary .hero__cta-arrow {
-        @apply transition-transform;
+    .hero__cta-icon {
+        @apply h-4 w-4 flex-none transition-transform;
     }
-    .hero__cta--primary:hover .hero__cta-arrow {
+    .hero__cta--primary:hover .hero__cta-icon {
         transform: translateX(2px);
     }
     .hero__cta--ghost {
         @apply px-5 py-2.5 rounded-full border border-foreground/30
                text-foreground hover:border-foreground;
-    }
-    .hero__cta--plain {
-        @apply text-muted-foreground hover:text-foreground font-mono text-[13px];
     }
 
     /* ── Stat strip ────────────────────────────────────────────────── */

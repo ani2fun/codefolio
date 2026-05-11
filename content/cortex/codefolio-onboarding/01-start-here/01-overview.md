@@ -8,7 +8,7 @@ summary: What codefolio is, what's running where, and the shape of the system at
 **Codefolio** is the engine behind `kakde.eu`. It's a single-binary Scala 3 application that serves:
 
 1. A **portfolio site** — Hero, About, Experience, Projects, Certifications.
-2. A **Cortex** — long-form notes (the chapter you're reading lives here).
+2. A **Cortex** — where the longer notes I work through live (this chapter is one of them).
 3. A **runnable code playground** — e.g. `python run` and friends in chapters actually execute against a sandboxed runner.
 4. A **demo page** at `/demo` that exercises Postgres, Redis, and MongoDB in a single round-trip — kept around as a smoke test of the persistence layer.
 
@@ -61,8 +61,8 @@ Every box is something you can grep for in the repo:
 | Codegen | **sbt-openapi-codegen** | One YAML defines requests, responses, and schemas; both server and client compile against the same types. No drift, no hand-written DTOs. |
 | Frontend | **Scala.js + scalajs-react 3.0** | One language across stack; the same `Endpoints.RunRequest` case class is used in the browser and in the JVM. |
 | Markdown | **unified / remark / rehype** in TS | The remark/rehype ecosystem is JS-native; we wrap it in **one** TypeScript module instead of facading 30+ plugins from Scala. |
-| Styling | **Tailwind v4 + BEM** | CSS-first config in [`client/tailwind.css`](https://github.com/ani2fun/codefolio/blob/main/client/tailwind.css); per-section/component BEM stylesheets under `client/src/styles/{sections,components}/` so DevTools shows `.experience__role-card` instead of a 200-char utility soup. |
-| Persistence | **HikariCP + Lettuce + Mongo sync** | The Hello demo exercises all three. The portfolio itself is content-from-files (no DB writes from prod traffic). |
+| Styling | **Tailwind v4 + BEM** (Block Element Modifier — class names like `block__element--modifier`) | CSS-first config in [`client/tailwind.css`](https://github.com/ani2fun/codefolio/blob/main/client/tailwind.css); per-section/component BEM stylesheets under `client/src/styles/{sections,components}/` so DevTools shows `.experience__role-card` instead of a 200-char utility soup. |
+| Persistence | **HikariCP** (JDBC connection pool) + **Lettuce** (async Redis client) + **Mongo sync driver** | The Hello demo exercises all three. The portfolio itself is content-from-files (no DB writes from prod traffic). Each library is justified in the [Server Stack](./server-stack) deep-dive — short version: Hikari is the de-facto JVM pool, Lettuce is Netty-based and the only mature async Redis client on the JVM, and the Mongo sync driver wrapped in `ZIO.attemptBlocking` matches the pattern used for Postgres. |
 
 ## Mental model
 

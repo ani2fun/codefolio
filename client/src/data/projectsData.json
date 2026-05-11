@@ -35,7 +35,7 @@
       "url": "/img/other/portfolio-webapp.webp",
       "alt": "Codefolio App"
     },
-    "description": "Scala 3 end-to-end — Scala.js + scalajs-react frontend, ZIO 2 + zio-http backend fronting Postgres, Redis, and MongoDB. Packaged as a container and deployed to the homelab cluster behind the same ingress as the rest of my services.",
+    "description": "You're looking at it. kakde.eu runs on this — same architecture I used at Audi: Scala 3 end-to-end, Scala.js + scalajs-react on the frontend, ZIO 2 + zio-http on the backend over Postgres, Redis, and Mongo. Packaged as a container and deployed to my homelab cluster. The GitHub link below has the code if you want to see how it's built.",
     "category": "Backend",
     "metadata": "SCALA.JS · 2024 · ZIO + TAILWIND"
   },

@@ -12,19 +12,21 @@ import org.scalajs.dom
 import scala.scalajs.js
 
 /**
- * Cortex reader's left-panel **Sidebar Forest**. Tree assembly lives in [[SidebarForest]] (shared, JVM-tested);
- * this file owns the React rendering plus three pieces of editorial UX bolted onto each chapter row:
+ * Cortex reader's left-panel **Sidebar Forest**. Tree assembly lives in [[SidebarForest]] (shared,
+ * JVM-tested); this file owns the React rendering plus three pieces of editorial UX bolted onto each chapter
+ * row:
  *
- *   - **Search** — top-of-rail input that filters the chapter list by title (case-insensitive substring match).
- *     Sections whose chapters all filter out collapse automatically because the tree is rebuilt from the
- *     filtered chapter list. ⌘K / Ctrl+K focuses; Esc clears.
- *   - **Reading-progress rail** — 3px terracotta fill on the left edge of each row, height proportional to the
- *     last-saved scroll position for that chapter ([[ReaderState.progressFor]]).
- *   - **Time to read** — small mono `Xm` stamp on the right of each row, derived from the chapter's word count
- *     the first time it loads ([[ReaderState.minutesFor]]); blank until the chapter has been opened once.
+ *   - **Search** — top-of-rail input that filters the chapter list by title (case-insensitive substring
+ *     match). Sections whose chapters all filter out collapse automatically because the tree is rebuilt from
+ *     the filtered chapter list. ⌘K / Ctrl+K focuses; Esc clears.
+ *   - **Reading-progress rail** — 3px terracotta fill on the left edge of each row, height proportional to
+ *     the last-saved scroll position for that chapter ([[ReaderState.progressFor]]).
+ *   - **Time to read** — small mono `Xm` stamp on the right of each row, derived from the chapter's word
+ *     count the first time it loads ([[ReaderState.minutesFor]]); blank until the chapter has been opened
+ *     once.
  *
- * The progress + minutes maps are read once per render via `snapshotFor(chapterSlugs)` so we don't do N storage
- * round-trips inside the recursive node renderer.
+ * The progress + minutes maps are read once per render via `snapshotFor(chapterSlugs)` so we don't do N
+ * storage round-trips inside the recursive node renderer.
  */
 object CortexSidebar:
 
@@ -145,11 +147,11 @@ object CortexSidebar:
           ^.className := "cortex-reader-sidebar__search",
           LucideIcons.Search(LucideIcons.withClass("cortex-reader-sidebar__search-icon")),
           <.input(
-            ^.tpe         := "search",
-            ^.placeholder := "Search chapters",
-            ^.aria.label  := "Search chapters in this book",
-            ^.value       := query,
-            ^.className   := "cortex-reader-sidebar__search-input",
+            ^.tpe                          := "search",
+            ^.placeholder                  := "Search chapters",
+            ^.aria.label                   := "Search chapters in this book",
+            ^.value                        := query,
+            ^.className                    := "cortex-reader-sidebar__search-input",
             VdomAttr("data-cortex-search") := "true",
             ^.onChange ==> { (e: ReactEventFromInput) => onQuery(e.target.value) },
             ^.onKeyDown ==> { (e: ReactKeyboardEvent) =>

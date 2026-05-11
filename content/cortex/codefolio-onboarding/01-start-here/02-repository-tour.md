@@ -75,23 +75,37 @@ The contract is enforced by *the compiler*, not by tests. If you change a field'
 
 ```
 server/src/main/scala/codefolio/server/
-├── Main.scala                ← ZIO entry point; layer wiring
-├── HttpApp.scala             ← tapir → zio-http; static-file routes; SPA fallback
-├── handlers/
-│   ├── HelloHandler.scala         /api/hello, /api/recent, /api/health
-│   ├── CodeRunHandler.scala       /api/run — picks Piston or Code Runner
-│   └── CortexHandler.scala     /api/cortex/*
-├── runner/
-│   ├── Languages.scala            10-entry registry (python, java, ...)
-│   ├── Piston.scala               public Piston backend
-│   └── CodeRunner.scala           local Judge0-protocol Code Runner backend
-├── db/                       ← HikariCP DataSource, Liquibase migrations, VisitsRepo
-├── cache/RedisCache.scala
-├── eventlog/HelloEventLog.scala  ← Mongo capped collection of recent /hello calls
-└── config/AppConfig.scala
+├── Main.scala                            ← ZIO entry point; layer wiring
+├── HttpApp.scala                         ← tapir → zio-http binding (delegates routes to ApiRoutes)
+├── helloPipeline/
+│   └── HelloPipeline.scala                   /api/hello, /api/recent, /api/health —
+│                                             one deep module with internal Visits /
+│                                             GreetingCache / EventLog seams (ADR-0003)
+├── codeRunPipeline/
+│   ├── CodeRunPipeline.scala                 /api/run — single CodeExecutionBackend
+│   │                                         seam; public RunFailure ADT (ADR-0004)
+│   ├── Languages.scala                       11-entry registry (python, java, …)
+│   ├── PistonWire.scala                      public Piston backend adapter
+│   ├── CodeRunnerWire.scala                  local Judge0-protocol Code Runner adapter
+│   └── JavaSourceRewriter.scala              normalises `public class Foo` for Piston
+├── cortexPipeline/
+│   └── CortexPipeline.scala                  /api/cortex/* — internal CortexFs seam +
+│                                             mtime cache; CortexFailure error type
+├── blogPipeline/
+│   ├── BlogPipeline.scala                    /api/blog/index, /api/blog/{slug}
+│   └── BlogFrontmatter.scala                 YAML frontmatter parser for posts
+├── http/
+│   ├── ApiRoutes.scala                       composes every pipeline's tapir endpoints
+│   ├── ApiErrors.scala                       HandlerFailure union → HTTP status mapping
+│   └── StaticRoutes.scala                    /assets/*, SPA index.html fallback
+├── db/
+│   ├── DataSource.scala                      HikariCP pool
+│   └── Migrations.scala                      Liquibase runner
+└── config/
+    └── AppConfig.scala                       AppConfig + per-store config types
 ```
 
-The handlers are organised by **endpoint family**, not by entity. If you're looking for "where does `/api/run` happen", grep for `runCode` and start in `CodeRunHandler.scala`.
+Each *pipeline* package is a **deep module** with a public entry point and small internal seams (see ADR-0003 and ADR-0004 in `docs/adr/`). If you're looking for "where does `/api/run` happen", grep for `runCode` and start in `CodeRunPipeline.scala`. Cross-cutting wiring (route composition, error → HTTP mapping, static fallback) lives in `http/`.
 
 ## What lives in `client/`
 
@@ -104,9 +118,10 @@ client/src/
 │   ├── Layout.scala          ← Header / outlet / Footer wrapper
 │   ├── pages/                ← one file per route
 │   ├── components/
-│   │   ├── sections/         ← Hero, About, Experience, Projects, ...
-│   │   ├── cortex/        ← ChapterContent, RunnableCodeBlock, MermaidBlock, D2Diagram, ...
-│   │   ├── ui/               ← Button (CVA-style variants in Scala)
+│   │   ├── sections/         ← Hero, About, Experience, Projects, Cortex, ...
+│   │   ├── cortex/           ← CortexSidebar, CortexToc, ChapterContent, BookGrid, ...
+│   │   ├── blog/             ← PostGrid, blog post renderers
+│   │   ├── ui/               ← Section, Button (CVA-style variants in Scala)
 │   │   └── icons/            ← lucide-react via JsComponent
 │   ├── api/ApiClient.scala   ← typed HTTP client built from tapir endpoints
 │   ├── markdown/MarkdownRenderer.scala  ← thin Scala facade over render.ts
@@ -133,7 +148,19 @@ A few patterns to internalise:
 
 ## What lives in `shared/`
 
-Almost nothing **by hand** — it's mostly codegen output. The one hand-written file is a smoke test under `shared/src/test/scala/` that imports the generated `Endpoints` to verify codegen ran. If `sbt test` passes, the generation worked and the schemas line up.
+`shared/` is the smallest of the three sbt projects but it's the keystone — it's what stops the server and the client from drifting apart.
+
+It's a **cross-compiled** Scala module: one source tree that compiles to JVM bytecode for the server *and* to Scala.js IR for the client. The same `case class Greeting(message, visits, cached)` is available to both sides, with the same JSON shape, the same field names, the same nullable rules. There is no hand-written DTO on either side — there's nothing to keep in sync.
+
+What's in there:
+
+- **Codegen output** (most of it) — `Endpoints.scala`, `EndpointsJsonSerdes.scala`, `EndpointsSchemas.scala` emitted under `src_managed/` by `sbt-openapi-codegen` from `api/openapi.yaml`. Includes every request/response case class plus tapir `Endpoint` values the server interprets and the client calls.
+- **Two hand-written pure modules** — `runner/CodeExecutor.scala` (state machine for the runnable code blocks) and `cortex/SidebarForest.scala` (flat-list → tree builder for the sidebar). Both are platform-agnostic, both unit-tested on the JVM, both used in the browser.
+- **One smoke test** under `shared/src/test/scala/` that imports the generated `Endpoints` to confirm codegen ran. If `sbt test` passes, the generation worked.
+
+The payoff: rename `Greeting.message` → `Greeting.greeting` in `api/openapi.yaml`, run `sbt compile`, and the **server pipeline** and the **client API client** both stop compiling in the same build. The contract becomes a compile-time check.
+
+The canonical walk-through of this is the [Hello World, End to End](../how-it-works/hello-world-end-to-end) chapter — it traces one `/api/hello` request through every step of the stack and shows exactly where the shared module pays off. The full mechanical details (`crossProject(JSPlatform, JVMPlatform)`, `crossType(CrossType.Pure)`, codegen plugin settings, how each generated file is laid out) are in the [Shared & Codegen](../deep-dive/shared-and-codegen) deep-dive.
 
 ## What lives in `content/`
 
@@ -162,8 +189,8 @@ The historical name reason: the project once used Judge0 itself, but Judge0 has 
 | If you want to … | Start in … |
 | --- | --- |
 | Change a request/response shape | `api/openapi.yaml`, then chase compile errors |
-| Add a new HTTP endpoint | `api/openapi.yaml` → handler under `server/handlers/` → wire in `HttpApp.scala` → call from `client/api/ApiClient.scala` |
+| Add a new HTTP endpoint | `api/openapi.yaml` → new `server/<feature>Pipeline/` package → register in `server/http/ApiRoutes.scala` → call from `client/api/ApiClient.scala` |
 | Tweak how a chapter looks | `client/src/markdown/render.ts` (HTML emitted) and/or the relevant component under `client/.../components/cortex/` |
-| Add a runnable language | `server/.../runner/Languages.scala` + Prism grammar in `client/src/markdown/runtime.ts` |
-| Fix a routing issue | `client/.../Router.scala` (SPA side) **and** `server/.../HttpApp.scala`'s static fallback (server side) |
+| Add a runnable language | `server/.../codeRunPipeline/Languages.scala` + Prism grammar in `client/src/markdown/runtime.ts` |
+| Fix a routing issue | `client/.../Router.scala` (SPA side) **and** `server/http/StaticRoutes.scala`'s SPA fallback (server side) |
 | Wire a new env var | `server/.../config/AppConfig.scala` + `application.conf` + `docker-compose.yml` |

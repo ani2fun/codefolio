@@ -33,13 +33,13 @@ object CortexIndexPage:
           <.section(
             ^.className := "px-4 md:px-8 pt-28 md:pt-32 pb-12",
             <.h1(
-              ^.className := "text-3xl md:text-5xl font-bold text-center text-blue-700 mb-3",
+              ^.className := "text-3xl md:text-5xl font-bold text-center text-foreground mb-3",
               "Cortex"
             ),
             <.p(
               ^.className :=
-                "text-center text-gray-700 dark:text-gray-200 mb-10 text-sm md:text-base max-w-2xl mx-auto",
-              "Long-form notes from books, courses, and rabbit holes. Click any topic to start reading."
+                "text-center text-foreground/80 mb-10 text-sm md:text-base max-w-2xl mx-auto",
+              "Notes I keep while reading, building, and chasing rabbit holes. Pick a topic and dive in."
             ),
             state.value.render(
               loaded = idx => BookGrid.Component(BookGrid.Props(idx.books.toList))

@@ -1,26 +1,17 @@
 package codefolio.client.pages
 
-import codefolio.client.components.sections.{
-  About,
-  Certifications,
-  Cortex,
-  Experience,
-  Hero,
-  Projects,
-  SelectedWork
-}
+import codefolio.client.components.sections.{About, Certifications, Experience, Hero, Projects, SelectedWork}
 import codefolio.client.util.PageTitle
 import japgolly.scalajs.react.*
 import japgolly.scalajs.react.vdom.html_<^.*
 import org.scalajs.dom
 
 /**
- * Landing page — composes every portfolio section in the original order: Hero, About, Experience, Projects,
- * Certifications, Cortex. Header and Footer are applied by the Layout, not here.
+ * Landing page — composes every portfolio section in order: Hero, SelectedWork, About, Experience, Projects,
+ * Certifications. The Cortex and Blog landing pages are reachable via the Hero CTAs (and the Header nav), not
+ * as homepage sections. Header and Footer are applied by the Layout, not here.
  *
- * On mount, scroll to the URL fragment (e.g. `/#about`) so deep-links work after a hard reload. We retry once
- * after a tick because some sections — Experience in particular — measure their layout before scrolling makes
- * sense.
+ * On mount, scroll to the URL fragment (e.g. `/#about`) so deep-links work after a hard reload.
  */
 object HomePage:
 

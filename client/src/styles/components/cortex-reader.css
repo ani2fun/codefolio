@@ -304,6 +304,18 @@
     .cortex-reader-sidebar__name {
         @apply min-w-0 overflow-hidden text-ellipsis whitespace-nowrap;
     }
+    /* Reveal the full chapter title on hover / keyboard focus by un-truncating
+       the row in place. We avoided a popup tooltip here because the sidebar's
+       `overflow-y: auto` implicitly clips horizontal overflow (W3C overflow
+       rules), so any `position: absolute` pseudo-element extending past the
+       column edge gets sliced. Expanding the row instead keeps the full text
+       inside the sidebar's bounds; the row simply grows vertically. */
+    .cortex-reader-sidebar__chapter-link:hover .cortex-reader-sidebar__name,
+    .cortex-reader-sidebar__chapter-link:focus-visible .cortex-reader-sidebar__name {
+        white-space: normal;
+        overflow: visible;
+        text-overflow: clip;
+    }
     /* Time-to-read stamp — small mono pill at the right of the row.
        Hidden until a value lands in localStorage (first chapter load). */
     .cortex-reader-sidebar__min {
@@ -465,6 +477,17 @@
         @apply text-xs leading-snug whitespace-nowrap overflow-hidden text-ellipsis;
         opacity: 0;
         transition: opacity 150ms ease;
+    }
+    /* On hover / keyboard focus, unwrap the heading label so long titles
+       show in full. Same reasoning as the sidebar: the `.cortex-reader-toc`
+       wrapper sets `overflow-x: hidden`, so a popup tooltip would clip. */
+    .cortex-reader-toc:hover .cortex-reader-toc__btn:hover .cortex-reader-toc__label,
+    .cortex-reader-toc:focus-within
+        .cortex-reader-toc__btn:focus-visible
+        .cortex-reader-toc__label {
+        white-space: normal;
+        overflow: visible;
+        text-overflow: clip;
     }
     .cortex-reader-toc:hover .cortex-reader-toc__label,
     .cortex-reader-toc:focus-within .cortex-reader-toc__label {
