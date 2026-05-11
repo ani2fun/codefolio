@@ -49,7 +49,7 @@ object Footer:
           ^.className := "footer__cols",
           <.div(
             ^.className := "footer__col",
-            <.div(^.className := "footer__col-label", "FIND ME"),
+            <.div(^.className := "footer__col-label", "Find me"),
             <.div(
               ^.className := "footer__col-list",
               metaLink("https://www.linkedin.com/in/aniketkakde/", "LinkedIn", external = true),
@@ -59,7 +59,7 @@ object Footer:
           ),
           <.div(
             ^.className := "footer__col",
-            <.div(^.className := "footer__col-label", "READ"),
+            <.div(^.className := "footer__col-label", "Read"),
             <.div(
               ^.className := "footer__col-list",
               metaLink("/cortex", "Cortex"),

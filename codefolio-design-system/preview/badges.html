@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="en"><head>
+<meta charset="UTF-8"><title>Status pill & badges</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Geist:wght@400;500;600&family=Geist+Mono:wght@400;500&display=swap">
+<style>
+*,*::before,*::after{box-sizing:border-box}
+html,body{margin:0;padding:0}
+body{background:#f7f3ec;color:#292421;font-family:"Geist",sans-serif;padding:22px 26px;min-height:100vh}
+.stack{display:flex;flex-direction:column;gap:14px}
+.row{display:flex;flex-wrap:wrap;gap:14px;align-items:center}
+.lbl{font-family:"Geist Mono",monospace;font-size:10px;letter-spacing:.16em;text-transform:uppercase;color:#696057;margin-bottom:8px}
+
+.status{display:inline-flex;align-items:center;gap:8px;padding:6px 12px;border-radius:9999px;border:1px solid rgba(220,212,197,.7);background:rgba(251,249,243,.4)}
+.status .dot{position:relative;width:6px;height:6px;border-radius:50%;background:#4ade80}
+.status .dot::after{content:"";position:absolute;inset:-3px;border-radius:50%;background:#4ade80;opacity:.4;animation:p 2.4s cubic-bezier(.4,0,.2,1) infinite}
+@keyframes p{0%{transform:scale(.6);opacity:.6}70%{transform:scale(1.6);opacity:0}100%{transform:scale(.6);opacity:0}}
+.status .t{font-family:"Geist Mono",monospace;font-size:11px;letter-spacing:.04em;color:#696057}
+
+.badge-hl{display:inline-block;font-family:"Geist Mono",monospace;font-size:10px;letter-spacing:.10em;text-transform:uppercase;padding:2px 6px;border-radius:4px;background:#c8693e;color:#fdf8f1}
+
+.ascii-badge{display:inline-block;font-family:"Geist Mono",monospace;font-size:11px;letter-spacing:.16em;text-transform:uppercase;padding:4px 10px;border-radius:9999px;color:#696057;background:#fbf9f3;border:1px solid rgba(220,212,197,.7)}
+</style></head><body>
+<div class="stack">
+  <div>
+    <div class="lbl">Live status pill — Hero header</div>
+    <span class="status"><span class="dot"></span><span class="t">Currently at Europcar · open to senior backend roles</span></span>
+  </div>
+  <div>
+    <div class="lbl">Highlight badge — Certifications "In progress"</div>
+    <span class="badge-hl">In&nbsp;progress</span>
+  </div>
+  <div>
+    <div class="lbl">ASCII frame badge — Projects K3s topology</div>
+    <span class="ascii-badge">live · 4 nodes · k3s</span>
+  </div>
+</div>
+</body></html>

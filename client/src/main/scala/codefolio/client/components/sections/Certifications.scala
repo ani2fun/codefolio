@@ -37,9 +37,9 @@ object Certifications:
             else "certifications__card group"
           val markerIcon =
             if cert.highlight then
-              LucideIcons.Star(LucideIcons.withClass("certifications__marker-icon [fill:currentColor]"))
-            else
               LucideIcons.Trophy(LucideIcons.withClass("certifications__marker-icon"))
+            else
+              LucideIcons.Star(LucideIcons.withClass("certifications__marker-icon"))
 
           <.div(
             ^.key       := idx,
@@ -77,8 +77,8 @@ object Certifications:
                 },
                 <.span(
                   ^.className := "certifications__view",
-                  "View",
-                  LucideIcons.Maximize2(LucideIcons.withClass("certifications__view-arrow"))
+                  "View certificate",
+                  LucideIcons.ArrowRight(LucideIcons.withClass("certifications__view-arrow"))
                 )
               )
             )

@@ -1333,4 +1333,117 @@
         .blog-post__consumption-head h2 { font-size: 32px; }
         .blog-post__section { font-size: 28px; }
     }
+
+    /* ─── Contrast patch (always-dark bands) ──────────────────────────
+       Bands like `.blog-post__recipe`, `__dosage`, `__panel`, `__consumption`
+       paint a dark surface (`hsl(var(--roast))`) in both light and dark
+       mode. Children that don't opt into their own treatment inherit
+       `color: hsl(var(--foreground))` — which is near-black in light mode,
+       so they're effectively invisible on the dark band. Force a cream-
+       family colour for every text descendant inside these bands so the
+       theme switch doesn't change them. Body copy bumped from 0.7 → 0.82
+       to clear WCAG AA (4.5:1 on `#110f0d`).
+       Source: codefolio-design-system/patches/blog-post.contrast-patch.css */
+
+    .blog-post__recipe :where(h1, h2, h3, h4, h5, h6) {
+        color: hsl(var(--cream));
+    }
+    .blog-post__recipe :where(p, li, dd, dt, blockquote, figcaption) {
+        color: hsl(var(--cream) / 0.82);
+    }
+    .blog-post__recipe :where(strong, b) {
+        color: hsl(var(--cream) / 0.95);
+        font-weight: 500;
+    }
+    .blog-post__recipe :where(em, i) {
+        color: hsl(var(--cream));
+    }
+    .blog-post__recipe :where(a) {
+        color: hsl(var(--primary));
+        text-decoration-color: hsl(var(--primary) / 0.5);
+    }
+    .blog-post__recipe :where(a:hover) {
+        color: hsl(var(--cream));
+    }
+    .blog-post__recipe :where(code, kbd, samp) {
+        color: hsl(var(--cream));
+        background: hsl(var(--cream) / 0.08);
+        border: 1px solid hsl(var(--cream) / 0.12);
+        border-radius: 3px;
+        padding: 1px 5px;
+    }
+    .blog-post__recipe :where(hr) {
+        border: 0;
+        border-top: 1px solid hsl(var(--cream) / 0.15);
+    }
+
+    .blog-post__dosage :where(p, li, dt, dd) {
+        color: hsl(var(--cream) / 0.82);
+    }
+    .blog-post__dosage :where(strong, b) {
+        color: hsl(var(--cream) / 0.95);
+    }
+    .blog-post__panel :where(p, li, dt, dd) {
+        color: hsl(var(--cream) / 0.82);
+    }
+    .blog-post__panel :where(strong, b) {
+        color: hsl(var(--cream) / 0.95);
+    }
+    .blog-post__consumption :where(p, li, dt, dd) {
+        color: hsl(var(--cream) / 0.82);
+    }
+    .blog-post__consumption :where(strong, b) {
+        color: hsl(var(--cream) / 0.95);
+    }
+
+    /* Lift panel-warn to full brightness — was 0.9, hard to read on dark. */
+    .blog-post__panel-warn {
+        color: hsl(var(--primary));
+    }
+
+    /* Pills inside dark bands always use their dark-mode palette,
+       regardless of `html.dark`. */
+    :is(.blog-post__recipe, .blog-post__dosage, .blog-post__panel,
+        .blog-post__consumption, .blog-post__pullquote) .blog-post__pill--good {
+        background: rgb(20 60 30 / 0.6);
+        color: rgb(160 220 180);
+    }
+    :is(.blog-post__recipe, .blog-post__dosage, .blog-post__panel,
+        .blog-post__consumption, .blog-post__pullquote) .blog-post__pill--warn {
+        background: rgb(80 60 20 / 0.55);
+        color: rgb(230 200 110);
+    }
+    :is(.blog-post__recipe, .blog-post__dosage, .blog-post__panel,
+        .blog-post__consumption, .blog-post__pullquote) .blog-post__pill--bad {
+        background: rgb(70 30 30 / 0.6);
+        color: rgb(220 160 160);
+    }
+    :is(.blog-post__recipe, .blog-post__dosage, .blog-post__panel,
+        .blog-post__consumption, .blog-post__pullquote) .blog-post__pill--neutral {
+        background: rgb(80 50 20 / 0.55);
+        color: rgb(220 170 110);
+    }
+
+    /* Callouts: inline children inherit the variant ink. */
+    .blog-post__callout p :where(strong, b, em, i, a, code, span) {
+        color: inherit;
+    }
+
+    /* Dark-mode list dividers — bump opacity so they don't disappear. */
+    .dark .blog-post__symptoms-good li,
+    .dark .blog-post__symptoms-bad li,
+    .dark .blog-post__rules-do li,
+    .dark .blog-post__rules-dont li {
+        border-bottom-color: rgb(255 255 255 / 0.08);
+    }
+
+    /* Tables inside dark bands (rare but possible). */
+    .blog-post__recipe .blog-post__table tbody td,
+    .blog-post__recipe .blog-post__table tbody tr:nth-child(even) {
+        color: hsl(var(--cream) / 0.85);
+        background: hsl(var(--cream) / 0.04);
+    }
+    .blog-post__recipe .blog-post__table tbody tr {
+        border-bottom-color: hsl(var(--cream) / 0.12);
+    }
 }

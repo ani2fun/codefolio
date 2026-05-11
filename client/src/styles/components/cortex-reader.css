@@ -3,24 +3,28 @@
        Blocks: .cortex-reader-layout, .cortex-reader-breadcrumb, .cortex-reader-pager, .cortex-reader-sidebar, .cortex-reader-toc, .cortex-reader-toc-mobile */
 
     /* ─── Layout (3-column reader) ───────────────────────────────── */
-    /* Widths matched to the latest Cortex reader UI kit:
-         page max 1680px  ·  sidebar 280px  ·  prose cap 720px  ·
-         collapsed TOC rail 56px  ·  open TOC panel 260px
-       The 720px prose cap is the design's preferred reading measure —
-       narrower than the previous 860 to land at ~65 chars per line at
-       16.5px body. The TOC column flips from 56 → 260px when the rail
-       is hovered or any descendant is focused; we use `:has()` rather
-       than a JSX-driven class so the component holds no UI state, just
-       the IntersectionObserver-driven active-section. */
+    /* Widths matched to the latest Cortex reader UI kit (software-docs feel —
+       think Stripe / MDN / Vercel docs, not classical long-form essay):
+         page max  1840px  ·  sidebar 280px  ·  prose cap 1100px  ·
+         collapsed TOC rail 56px  ·  open TOC panel 300px
+       At 1920 this leaves ~80px of composed shoulder on each side; at 2560
+       the shoulders grow but the reading column stays at its measured cap.
+       The 1100px prose cap lands at ~96ch — past the classical reading
+       ceiling but matches modern technical-docs sites that prioritise
+       code-block density over line-by-line cadence. The TOC column flips
+       from 56 → 300px when the rail is hovered or any descendant is
+       focused; we use `:has()` rather than a JSX-driven class so the
+       component holds no UI state, just the IntersectionObserver-driven
+       active-section. */
     .cortex-reader-layout {
         @apply grid grid-cols-1 lg:grid-cols-[280px_minmax(0,1fr)]
-               xl:grid-cols-[280px_minmax(0,1fr)_56px] gap-0 max-w-[1680px] mx-auto;
+               xl:grid-cols-[280px_minmax(0,1fr)_56px] gap-0 max-w-[1840px] mx-auto;
         transition: grid-template-columns 150ms ease;
     }
     @media (min-width: 1280px) {
         .cortex-reader-layout:has(.cortex-reader-toc:hover),
         .cortex-reader-layout:has(.cortex-reader-toc:focus-within) {
-            grid-template-columns: 280px minmax(0, 1fr) 260px;
+            grid-template-columns: 280px minmax(0, 1fr) 300px;
         }
     }
     @media (prefers-reduced-motion: reduce) {
@@ -30,7 +34,7 @@
         @apply px-5 md:px-16 py-11 pb-20 min-w-0;
     }
     .cortex-reader-layout__prose {
-        @apply max-w-[720px] mx-auto;
+        @apply max-w-[1100px] mx-auto;
     }
     /* Chapter title — Instrument Serif italic, large editorial display.
        Sits above the markdown body so it lives outside .chapter-content
@@ -45,13 +49,15 @@
         color: hsl(var(--foreground));
         margin: 0 0 22px;
     }
-    /* Lede paragraph — slightly larger sans body with a constrained measure. */
+    /* Lede paragraph — slightly larger sans body, narrower than the body
+       prose so the opening reads as a deliberate hierarchy step (78ch lede
+       vs. ~96ch body measure). */
     .cortex-reader-prose__lede {
         font-family: var(--font-sans);
         font-size: clamp(17px, 1.4vw, 19px);
         line-height: 1.55;
         color: hsl(var(--foreground) / 0.85);
-        max-width: 60ch;
+        max-width: 78ch;
         text-wrap: pretty;
         margin: 0 0 40px;
     }

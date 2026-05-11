@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<title>Card</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Geist:wght@400;500;600;700&family=Geist+Mono:wght@400;500&display=swap">
+<link rel="stylesheet" href="../colors_and_type.css">
+<style>
+  *,*::before,*::after { box-sizing: border-box; }
+  html,body { margin:0; padding:0; }
+  body {
+    background: var(--c-bg);
+    color: var(--c-fg);
+    font-family: var(--font-sans);
+    -webkit-font-smoothing: antialiased;
+    font-feature-settings: "ss01","cv11";
+    padding: 22px 26px;
+    min-height: 100vh;
+  }
+  /* Soft grain at low opacity, matching the site's ::before texture. */
+  body::before{
+    content:""; position:fixed; inset:0; pointer-events:none; z-index:0; opacity:.04;
+    background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 160 160'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/></filter><rect width='100%25' height='100%25' filter='url(%23n)' opacity='0.6'/></svg>");
+    background-size: 160px 160px;
+    mix-blend-mode: multiply;
+  }
+  body > * { position: relative; z-index: 1; }
+  .row { display:flex; gap:14px; align-items:stretch; flex-wrap:wrap; }
+  .swatch {
+    width: 96px; min-height: 96px;
+    border-radius: 12px;
+    border: 1px solid var(--c-border);
+    padding: 10px 12px;
+    display: flex; flex-direction: column; justify-content: flex-end;
+    font-family: var(--font-mono); font-size: 10.5px; letter-spacing: 0.04em;
+    color: var(--c-fg);
+  }
+  .swatch .label { font-weight: 500; }
+  .swatch .hex   { color: var(--c-fg-muted); margin-top: 2px; }
+  .stack { display:flex; flex-direction:column; gap: 10px; }
+  .grid2 { display:grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  .hairline { height:1px; background: var(--c-border); border:0; margin: 0; }
+  .pill {
+    display:inline-flex; align-items:center; gap:6px;
+    padding: 4px 10px; border-radius: 9999px;
+    font-family: var(--font-mono); font-size: 11px; letter-spacing: 0.08em;
+    text-transform: uppercase; color: var(--c-fg-muted);
+    border: 1px solid var(--c-border);
+    background: rgba(251,249,243,.4);
+  }
+  .pill .dot { width: 6px; height: 6px; border-radius: 50%; background: #4ade80; }
+</style>
+</head>
+<body>
+<!-- card body provided by each preview file -->
+</body>
+</html>

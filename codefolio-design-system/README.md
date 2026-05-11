@@ -1,200 +1,197 @@
-# Codefolio Design System
+# Codefolio — Design System
 
-Aniket Kakde's personal portfolio + **Cortex** (long-form technical notes / knowledge library) — a single Scala.js + React SPA self-hosted on a homelab K3s cluster at **kakde.eu**.
+This is the design system for **Codefolio** (kakde.eu) — the editorial personal portfolio of Aniket Kakde, a backend-leaning software engineer based in Paris. The system is extracted from the live codebase, normalised, and re-presented here for use by design agents producing slides, mocks, prototypes, and production work in the same visual language.
 
-The site doubles as a portfolio (Hero / About / Experience / Projects / Certifications / Footer) and a reader for Markdown books with diagrams, math, and runnable code blocks. This design system extracts the live tokens, fonts, components, and brand language out of that codebase so we can prototype against it.
+## Brand & product context
 
----
+- **Product**: One single-page editorial portfolio at **kakde.eu**. Sections: Hero · About · Experience · Projects · Selected Work · Cortex (reading shelf) · Blog · Certifications · Footer.
+- **Author / subject**: Aniket Kakde — ~10 years on production systems at Europcar, Audi, Disneyland Paris, Dassault Systèmes, UPS, Bell-Labs.
+- **Tagline**: *Backend-leaning Software Engineer.* JVM-centric (Kotlin · Java · Scala · ZIO), with the occasional foray into infra (K3s, AWS/GCP) and frontends (Scala.js + scalajs-react).
+- **Stack**: Scala 3 + Scala.js + scalajs-react on the frontend (yes — really), Tailwind v4 with shadcn-style HSL tokens, Vite. Self-hosted on the author's K3s homelab.
+- **Voice**: Quiet confidence. *"You're looking at it."* Plain spoken, lightly self-deprecating, technically specific.
 
 ## Sources
 
-| What | Where |
-| ---- | ----- |
-| Codebase (read-only mount) | `client/` — Scala.js + React 19 + Tailwind v4 + shadcn HSL tokens |
-| Live site | <https://kakde.eu> |
-| Cortex live | (subdomain — also on the homelab cluster) |
-| Notebook (mdBook, sibling project) | <https://notebook.kakde.eu> |
-| Resume PDF | `client/public/Aniket-Kakde-CV-EN.pdf` |
+| Source                | Path                                                              |
+|-----------------------|-------------------------------------------------------------------|
+| Local codebase (live) | `client/` — Scala 3 + Vite SPA, mounted via File System Access    |
+| Token table           | `client/tailwind.css`                                             |
+| Section CSS           | `client/src/styles/sections/*.css` (BEM-style, in `@layer components`) |
+| Component CSS         | `client/src/styles/components/*.css`                              |
+| Page data             | `client/src/data/{projectsData,experienceData,certificationsData}.json` |
+| Section components    | `client/src/main/scala/codefolio/client/components/sections/*.scala` |
+| Icon bindings         | `client/src/main/scala/codefolio/client/components/icons/{LucideIcons,BrandIcons}.scala` |
+| Public assets         | `client/public/img/portfolio/`, `client/public/certificates/`     |
+| Live site             | https://kakde.eu                                                  |
 
-The codebase uses Tailwind v4 with the standard shadcn variable set (HSL channels in `:root`/`.dark`) plus BEM-style component classes per section, all under `client/src/styles/`.
-
----
-
-## Products represented
-
-1. **Portfolio (homepage)** — single-page scroll: Hero → About → Experience → Projects → Certifications → Cortex preview → Footer. Sticky pill nav with hash anchors. Dark mode toggle in nav and footer.
-2. **Cortex reader** — three-column layout (sidebar / main / right-rail TOC minimap). Renders Markdown via a Scala.js renderer (`MarkdownRenderer`), with `rehype-pretty-code` syntax highlighting, KaTeX math, Mermaid + D2 diagrams, and runnable code blocks. The right-rail minimap shows ticks for headings; hovering reveals the full TOC panel.
-
----
-
-## Index
-
-- `README.md` — this file (context, content fundamentals, visual foundations, iconography)
-- `SKILL.md` — Agent Skill manifest for `codefolio-design`
-- `colors_and_type.css` — base + semantic CSS variables and `.h1` / `.body` / `.tag` / `.eyebrow` roles
-- `assets/` — logos, portrait collage, project thumbnails (all `.webp`)
-- `preview/` — small HTML cards for the Design System tab (one per token group / component / state)
-- `ui_kits/portfolio/` — pixel-recreation of the portfolio homepage as JSX components + `index.html`
-- `ui_kits/cortex/` — pixel-recreation of the Cortex reader (sidebar / chapter / TOC) as JSX components + `index.html`
+Treat the codebase as the source of truth; this design system normalises and explains it, but never replaces it.
 
 ---
 
 ## Content fundamentals
 
-The voice is **first-person, dry, pragmatic, technical**. No marketing puff, no emoji, no exclamation marks. It reads like a senior engineer writing their own bio.
+**Voice.** First-person, conversational, technical. Sentences are short and load-bearing. Plain English. Never marketing fluff. The author is the protagonist — *"I"*, *"my"*, sometimes *"you"* when addressing the reader directly (only in the hero/footer CTAs).
 
-**Pronouns.** Almost always "I" / "my" — not "we", not "you". Bio paragraphs lead with the subject, never with adjectives.
+**Casing.**
+- Section titles, hero name, role companies → display **italic serif**, sentence case (e.g. *About*, *Experience*, *Let's talk.*).
+- Eyebrows, dates, role tags, metadata, tags → **UPPERCASE MONO** with wide tracking (`0.16em`).
+- Body, paragraphs, bullets → **sentence case**, no capitalisation games.
+- Tech names rendered as they are conventionally typeset: `Kotlin`, `Spring Boot`, `OAuth2 / OIDC`, `Scala 3`, `Scala.js`, `ZIO`, `K3s`, `JVM` (not `Jvm`).
 
-> "Backend-leaning Software Engineer with **ten years** on production systems."
-> "I run a small four-node K3s cluster on commodity hardware at home and self-host my own services on it — including this site."
+**Punctuation.**
+- En-dash (`–`) for date ranges: *2022 – Present*.
+- Em-dash (`—`) for parenthetical asides: *Backend-leaning Software Engineer — based in Paris.*
+- Middle dot (`·`) as a separator in mono meta strings: `2022 – Present · Paris · Backend / Identity`.
+- The Oxford comma is fine. Curly quotes always: *"Let's talk."* (`'` not `'`).
 
-**Concreteness over claims.** Specifics replace adjectives:
+**Editorial italic.** A single word or phrase mid-sentence can switch from Geist sans to Instrument Serif italic for a one-word lift — used sparingly, never twice in a row. CSS class: `.about__emphasis` / `.hero__lede em`.
 
-> "Modernised the team's Gradle build setup with multi-level CI caching, cutting build times by ~50% (≈12 min → ≈5 min) — pattern adopted as the internal reference by 3+ adjacent JVM teams."
+**Vibe.** Editorial magazine, not landing page. The site reads like a designer's CV in print: lots of hairlines, room to breathe, italicised display headings, mono captions like a column-rule. *"Living architecture documentation"* and *"on production systems"* are kinds of phrases that fit here — quietly proud, never breathless.
 
-Tech stacks are listed inline with commas, never as bullet salads in prose: *"Day-to-day in Java, Kotlin, Scala, Kafka, PostgreSQL, and AWS/GCP."* Dedicated **Stack:** rows in the Experience pane do the chip-list version.
+**No emoji.** None. The codebase has zero. Don't introduce them.
 
-**Casing.** Sentence case for headings (`About`, `Experience`, `Projects`, `Cortex`). Short eyebrow labels are UPPERCASE with wide tracking (`STACK`, `RESULTS`, issuer / date metadata).
+**Examples (taken verbatim from the live site).**
 
-**Em dashes** (`—`) and **en dashes** (`–`) are used freely, especially for date ranges and parenthetical asides. ASCII hyphens are not substituted.
+> *"You're looking at it. kakde.eu runs on this — same architecture I used at Audi: Scala 3 end-to-end, Scala.js + scalajs-react on the frontend, ZIO 2 + zio-http on the backend over Postgres, Redis, and Mongo."*
 
-**Punctuation & accent.**
-- British / European spellings — *"modernised"*, *"organisation"*, *"specialise"*. Aniket is based in Paris.
-- French diacritics retained: *"Diplôme Data Engineer"*, *"Grande École"*.
-- Two-space dashes around clauses, e.g. *"hands-on with the full delivery path — packaging, deployment…"*.
-- "**Cortex**" is a proper noun (always capitalised, never italicised).
+> *"Four-node K3s cluster on commodity hardware sitting at home. Hands-on with the full delivery path — packaging, deployment, networking, observability — for the services I actually use, including this site."*
 
-**Tone words / vibe.** *backend-leaning · production · pragmatic · hands-on · self-hosted · long-form · rabbit holes · day-to-day*.
+> *"Backend-leaning Software Engineer based in Paris. Ten years on production systems at Europcar, Audi, Dassault, and Disneyland Paris — Java, Kotlin, Scala, Kafka, PostgreSQL, AWS/GCP."*
 
-**Tone words to avoid.** *passionate · journey · empower · unlock · seamless · synergy · cutting-edge*. No emoji 🚫. No 🔥. Star emoji and decorative unicode are not used.
-
-**CTA copy is bare.** "Get in touch", "Download CV", "Browse all", "View". No verbs like *"Discover"*, no exclamation marks.
-
-**Cortex blurb sets the reader's expectation:**
-
-> "Long-form notes from books, courses, and rabbit holes. Click any topic to start reading."
-
-That's the brand voice in one sentence: long-form, plural sources, casual ("rabbit holes"), and immediately gives the reader an action.
+> Eyebrow: `PROJECTS · SELECTED` / Meta: `K3S · 2023 · LINUX · GO` / Status: `Currently at Europcar · open to senior backend roles`.
 
 ---
 
 ## Visual foundations
 
-### Palette
+**Palette.** Warm editorial neutrals with a single saturated accent — *terracotta*.
 
-- **Primary blue** is the spine of the brand. Light mode lands on `--blue-700` (#1d4ed8) for headings and `--blue-600` for buttons; dark mode lifts to `--blue-400`. Backgrounds for selected/hovered states use `--blue-50` (light) or `--gray-900` (dark).
-- **Rose accent** (`--rose-500`) is used **sparingly** — dates, the experience `time` line, the Diploma badge, the footer "Made with ♥" heart, and the highlighted certification marker. Never as a primary surface colour.
-- **Greens** appear once (`Europcar International` emphasis in About). Otherwise neutral.
-- Cards in light mode are pure white with a 1px `--blue-500` border. In dark mode they switch to `--slate-900` with a near-white border.
+| Token             | Light       | Dark        | Use                                            |
+|-------------------|-------------|-------------|------------------------------------------------|
+| `--c-bg`          | `#f7f3ec`   | `#110f0d`   | Page background (warm off-white / dark roast)  |
+| `--c-bg-card`     | `#fbf9f3`   | `#1a1715`   | Cards, popovers                                |
+| `--c-bg-band`     | `#e8e1d5`   | `#25211f`   | Section bands (Projects section background)    |
+| `--c-fg`          | `#292421`   | `#ece2d0`   | Primary ink                                    |
+| `--c-fg-muted`    | `#696057`   | `#a59b8c`   | Mono captions, dates, eyebrows                 |
+| `--c-fg-soft`     | 85% fg      | 85% fg      | Body copy                                      |
+| `--c-border`      | `#dcd4c5`   | `#2e2a26`   | Hairline rules                                 |
+| `--c-primary`     | `#c8693e`   | `#db7e54`   | Terracotta accent, hover, single rails         |
 
-### Type
+There is **one** accent, deliberately. No secondary colour. No gradient backgrounds (the only gradient in the codebase is a `repeating-linear-gradient` of 1px stripes on project-card placeholders).
 
-- **Single family.** The codebase ships zero webfonts. It uses Tailwind defaults: `font-sans` (system stack) and `font-mono` (ui-monospace). No display / serif. We mirror this in `colors_and_type.css`.
-  - **Substitution flagged:** if a prototype renders on a device whose system stack is ugly, fall back to **Inter** for sans and **JetBrains Mono** for mono — both close in metric to the macOS / Windows defaults the live site renders against.
-- **Weights actually used.** 400 (regular), 600 (semibold), 700 (bold). Nothing lighter, nothing heavier.
-- **Scale is large at the top.** Hero name hits `text-6xl` (60px) at md+. Section h2s are `text-5xl` (48px). Body is `text-lg`–`text-2xl` (18–24px) — much larger than typical SaaS sites — which is part of the "long-form readable" feel.
-- **Eyebrow pattern.** 11–12px, semibold, uppercase, `tracking-wider`. Used for issuer / metadata rows under titles.
+**Typography.** Three families, strict roles:
 
-### Spacing & rhythm
+- **Instrument Serif** — display headings, hero name, section titles, company names in Experience, *editorial italic* mid-sentence accents. **Always italic, 400 only. Never roman, never bold.**
+- **Geist** — sans body, CTAs, nav, fact-list values. Weights 400/500/600/700.
+- **Geist Mono** — eyebrows, dates, tags, metadata, status pills, card icons. Weights 400/500.
 
-- 4px base unit (Tailwind). `gap-2`, `gap-4`, `gap-8` carry most layouts.
-- Sections use `min-h-screen` + generous `pt-32` (128px) so each lands cleanly when hash-jumped to.
-- Cards use `p-5`/`p-6` consistently. Tag chips use `px-2 py-1`.
+Display scale is `clamp()`-driven for fluid sizes. Mono is set at `11px / 0.16em` tracking for caption use, `13px / 0.04em` for inline meta.
 
-### Radii
+**Spacing & rhythm.** Tailwind v4 spacing scale (4px base). Section padding is `py-24 px-6`. Max widths: `max-w-6xl` for hero/projects/footer, `max-w-5xl` for experience, `max-w-prose` for body copy.
 
-- Cards / buttons / sections: `rounded-md` (10px) and `rounded-lg` (12px). Tags get `rounded` (4px). Pills are full-rounded only on the scroll-to-top FAB.
-- The `--radius` token is `0.75rem`; `--radius-md` and `--radius-sm` derive from it.
+**Radii.** Restrained.
+- `--r-sm = 10px` — chips, small cards
+- `--r-md = 12px` — buttons, inputs
+- `--r-lg = 14px` — cards (`rounded-lg` in shadcn)
+- `--r-pill = 9999px` — status pills, CTA buttons, filter chips, badges
 
-### Shadows
+**Borders & rules.** This system *runs on hairlines.* `1px solid hsl(var(--border))` everywhere — at section tops/bottoms, between stat-strip cells, between accordion rows, between fact-list rows. Often softened to `border-border/60` for whisper-quiet rules. Borders do more work than backgrounds here.
 
-Three tiers:
+**Shadows.** Two only:
+- **Resting** — `0 1px 0 rgba(0,0,0,.05), 0 1px 2px rgba(0,0,0,.04)` — a 1px ledge.
+- **Hover-lift** — `0 1px 0 rgba(0,0,0,.05), 0 8px 24px -12px rgba(0,0,0,.18)` — long soft drop, only on interactive cards.
 
-- `shadow-md` — every section block and most cards. Soft, generic.
-- `shadow-lg` — only on the floating buttons (scroll-to-top, mobile sidebar opener).
-- A single coloured shadow exists: the highlighted certification marker, with a `shadow-rose-500/30` glow.
+No inner shadows. No coloured shadows. No "glow".
 
-### Borders
+**Backgrounds.**
+- Plain warm bg, no images, no patterns.
+- One full-bleed warm band (`--c-bg-band`) on the Projects section.
+- A *single* texture: SVG fractal noise at 4% opacity, `mix-blend-mode: multiply`, applied as a `body::before` overlay. Reads as paper grain, not visible as noise.
+- Project-card placeholders are a soft 135° linear-gradient over a `repeating-linear-gradient` of 1px stripes — for when no photo exists.
 
-- 1px `border-blue-500` is the default card outline in light mode; in dark, `border-gray-50`.
-- The Experience rail uses a thicker `border-2 border-blue-600` to register as a tab strip.
-- The certifications timeline spine is a vertical 2px gradient (`from-blue-600 via-blue-500 to-blue-300`).
-- Default body border colour comes from the shadcn `--border` token.
+**Animation.** Quiet and physical.
+- Status-pill dot pulses on `cubic-bezier(0.4, 0, 0.2, 1)` over 2.4s. Respects `prefers-reduced-motion`.
+- Hover transitions are 200–220ms, easing `cubic-bezier(0.2, 0.7, 0.2, 1)` (gentle deceleration).
+- Underlines slide in `scaleX(0) → scaleX(1)` from `transform-origin: left` on nav hover.
+- Cards lift `-3px` on hover with the long shadow.
+- Buttons translate `-1px` on hover. No bounce. No spring.
+- Accordion chevrons rotate 90° on open with the same easing.
 
-### Backgrounds
+**Hover states.** Slight darken or terracotta tint. *Never* a colour shift on the whole element — usually only the underline / border / icon picks up `--primary`. Outlined buttons get `border-foreground` on hover (the existing border darkens, doesn't change colour).
 
-- **No gradient hero.** The hero is plain background with an outlined card.
-- **No full-bleed photography.** Photos live inside the About collage at small/medium sizes, and as project thumbnails (`/img/...`) inside cards. Each collage tile carries a translucent `bg-blue-200/50` overlay for a unified tint.
-- **No texture / grain / repeating pattern.** Surfaces are flat colour.
-- **One coloured spine** (the certifications timeline), one coloured chip cluster (tags). That's the extent of decoration.
+**Press states.** No explicit press style — focus rings are the default Tailwind `ring`, terracotta-tinted via `--ring`. Buttons don't scale on press.
 
-### Hover & press
+**Transparency & blur.** Used only twice:
+- Header chrome: `bg-background/85 backdrop-blur` so the top nav sits softly over scrolling content.
+- Card surfaces: occasional `bg-card/40` for very subtle layering (status pill).
 
-- Links and chips flip text colour to `--primary` (`hover:text-primary`) — never just opacity-down.
-- Project social-icon hovers use `hover:scale-125 transition-transform duration-100` — a sharp, snappy 100ms zoom.
-- Buttons swap fill: a primary button goes from `bg-blue-600 text-gray-50` to `bg-gray-50 text-slate-900` on hover (an inversion, not a tint).
-- Cards flip background to `--blue-50` (light) / `--gray-900` (dark). No translation, no scale on cards.
-- The "next chapter" hover in the Cortex reader changes border colour, not background.
-- Pressed states are not custom-styled beyond the browser default — focus rings come from `focus-visible:ring-2 ring-ring`.
+**Cards.** `border border-border/70 bg-card rounded-lg`. Hover adds `border-primary/50` + the long shadow + `translateY(-3px)`. They do **not** have heavy fills; the warm cream surface against the warm bg is enough.
 
-### Animation
+**Layout rules.**
+- Header is fixed top with a hairline bottom border. Sections push `py-24` and use `scroll-mt-24` so anchor scrolls don't hide behind the header.
+- Content is centred in `max-w-6xl mx-auto` containers with `px-6` gutters.
+- The Hero stat-strip is a 4-cell grid with internal vertical rules — collapses to 2×2 on mobile with a mid-row horizontal rule.
+- The About section is a 12-col grid: 7-col prose / 5-col sticky sidecard.
+- The Selected-Work row is a 5-col flex with a left rail that scales in vertically on hover.
 
-- `transition-colors` and `transition-transform` are everywhere; `transition-all` is rare.
-- Durations: `duration-100` (icon zoom), `duration-150` (rail TOC), `duration-200` (scroll-to-top fade), `duration-300` (CTA buttons).
-- No bounce easings, no spring physics. Default `ease`. **No keyframe animations** beyond Tailwind's built-in `animate-pulse` on the footer heart.
-
-### Layout rules
-
-- Sticky top header (`fixed top-0`, `z-50`, 95% opacity white / dark background).
-- One sticky bottom-right scroll-to-top FAB (`fixed bottom-5 right-5`).
-- Content max-width via Tailwind's `container` (and per-section caps like `max-w-6xl` on the Cortex grid, `max-w-3xl` on certifications, `max-w-2xl` on subtitles).
-- Three-column reader (sidebar / main / right-rail TOC) with `[280px_minmax(0,1fr)_64px]` grid template.
-
-### Transparency & blur
-
-- The header sits at `opacity-95` on solid white — light blur effect via the layered z-index stack, not via `backdrop-filter`. **No backdrop blur is used.**
-- The drawer overlay is `bg-black/40` (40% black, no blur).
-- The about photo overlay is `bg-blue-200/50` light / `bg-blue-600/50` dark.
-
-### Card anatomy (canonical)
-
-```
-┌──────────────────────────────────────┐  ← 1px blue-500 border, rounded-lg
-│  [optional 192px-tall image]         │     no shadow on internal cards;
-│                                      │     section blocks add shadow-md
-│  [icon-row]              ← w-7 h-7   │
-│                                      │
-│  Card Title                          │  ← text-xl semibold blue-700
-│  description body, gray-800          │  ← text-base, flex-1 to fill
-│                                      │
-│  [tag][tag][tag]            View →   │  ← bg-blue-200 chips,
-└──────────────────────────────────────┘     rose-500 right-aligned cta
-```
+**Imagery vibe.** Warm, slightly desaturated. The portrait gets `filter: saturate(0.92) contrast(1.02)`. Photos sit in `rounded-lg` frames with a hairline border. There are very few photos — the system is mostly typographic.
 
 ---
 
 ## Iconography
 
-The codebase has **two** icon sources:
+**Two icon systems.** Both live in `client/src/main/scala/codefolio/client/components/icons/`.
 
-1. **Lucide React** — pulled directly via `import { Sun } from 'lucide-react'`. Used for every functional UI icon. The Scala.js wrapper (`LucideIcons.scala`) explicitly enumerates the subset in use:
-   - `Sun`, `Moon`, `Menu`, `X`, `ArrowRight`, `ArrowLeft`, `ArrowUp`, `BookOpen`, `Loader2`, `Play`, `Pause`, `RotateCcw`, `Square`, `Maximize2`, `ZoomIn`, `ZoomOut`, `Check`, `Copy`, `ChevronRight`, `ChevronDown`, `ListTree`, `Heart`, `Star`, `Trophy`, `ExternalLink`.
-2. **Brand SVGs** — only **GitHub** and **LinkedIn** glyphs (Simple-Icons paths), drawn inline with `fill="currentColor"`. Defined in `BrandIcons.scala`. These are the only non-Lucide icons in the codebase.
+### 1. Lucide (general UI)
+The codebase uses **lucide-react** for all general UI icons — typed bindings in `LucideIcons.scala`. Stroke icons, **1.5px stroke** by default (Tailwind's `[&_svg]:stroke-[1.5]`), 16–20px sizing.
 
-**Defaults.** Lucide stroke icons inherit `currentColor` and `stroke-width: 2` (Lucide's default). Sizes come from the surrounding className (`h-4 w-4` for inline meta, `h-5 w-5` for buttons, `h-7 w-7` for project icons, `h-8 w-8` for footer socials). The codebase **never** sets `size` numerically — always via Tailwind classes.
+Used icons (verbatim from the codebase):
+`Sun · Moon · Menu · X · ArrowRight · ArrowLeft · ArrowUp · BookOpen · Loader2 · Play · Pause · RotateCcw · Square · Maximize2 · ZoomIn · ZoomOut · Check · Copy · ChevronRight · ChevronDown · ListTree · Heart · Star · Trophy · ExternalLink · Search · Download · Pencil`
 
-**No emoji.** Anywhere. Not in copy, not in icons, not in tag labels. The footer "Made with ♥" uses the Lucide `Heart` glyph filled with `currentColor` (`[fill:currentColor]` modifier), not a unicode emoji. The certification highlight uses the Lucide `Star` (also `[fill:currentColor]`); non-highlighted certs use `Trophy` outlined.
+When designing in HTML outside the Scala app, link Lucide from CDN:
 
-**No icon font.** Lucide is shipped per-component via tree-shaking; there's no consolidated SVG sprite or font file in `client/public/`.
+```html
+<script src="https://unpkg.com/lucide@latest"></script>
+<i data-lucide="arrow-right" class="h-4 w-4"></i>
+<script>lucide.createIcons();</script>
+```
 
-**For prototypes in this design system,** load Lucide via CDN: `<script src="https://unpkg.com/lucide@latest"></script>` then `lucide.createIcons()`. Keep the same restricted vocabulary listed above; if a new icon is needed, **prefer adding it from Lucide** before reaching for any other set.
+### 2. Brand marks
+Hand-curated Simple-Icons paths in `BrandIcons.scala`. Currently exported: **GitHub**, **LinkedIn**, **Scala**. Single-path SVGs at `viewBox="0 0 24 24"`, `fill="currentColor"`. Inline SVG, no CDN.
 
-**Substitutions flagged.** None — Lucide is freely CDN-available, and the GitHub / LinkedIn marks are inlined in `ui_kits/portfolio/BrandIcons.jsx`.
+Copied as standalone SVGs into `assets/icons/`:
+- `assets/icons/github.svg`
+- `assets/icons/linkedin.svg`
+- `assets/icons/scala.svg`
+- `assets/icons/sun.svg`, `moon.svg`, `arrow-right.svg`, `external-link.svg`, `chevron-down.svg`, `download.svg`, `book-open.svg`, `check.svg`, `menu.svg`, `x.svg` (Lucide subset for offline use)
+
+### Rules
+- **No emoji.** Anywhere. Ever.
+- **No unicode glyphs as icons** (no `↗`, no `→`, no `★`). The single exception is the footer-link arrow `↗` which is rendered as `font-mono text-muted-foreground`-styled text — and Lucide `ArrowUpRight` is preferred for new work.
+- Stroke icons match the brand's hairline aesthetic — **never use fill-style icons** for UI.
+- Brand marks (GitHub, LinkedIn, Scala) are the **only** filled SVGs allowed, and only for their own brand.
+- If an icon isn't in Lucide and isn't a brand, look for the nearest Lucide match before reaching for another set.
 
 ---
 
-## Iterating
+## Index
 
-- The system inherits Tailwind's defaults wholesale. If a prototype needs a token that's not here, look first in Tailwind v3/v4 docs, then the project's own `tailwind.css`.
-- When in doubt about how a section should look in dark mode, the rule is: text → near-white, surfaces → `slate-900` / `gray-900`, primary blue lifts one shade lighter (`blue-400`).
-- Want a non-blue brand variant? Override `--primary` and `--color-text-accent` only — the rest of the system follows.
+Root of this design system:
+
+| Path                                 | What's there                                            |
+|--------------------------------------|---------------------------------------------------------|
+| `README.md`                          | You are here.                                           |
+| `SKILL.md`                           | Agent skill manifest (cross-compatible with Claude Code).|
+| `colors_and_type.css`                | Tokens + semantic typographic classes (`.ds-display-xl`, `.ds-eyebrow`, `.ds-em`, …). |
+| `assets/`                            | Logos, portrait, certificates, downloadable CV, icon SVGs. |
+| `assets/portrait.webp`               | Portrait photo (4:5).                                    |
+| `assets/favicon.webp`                | Site favicon — the brand glyph.                          |
+| `assets/icons/*.svg`                 | Brand marks + offline Lucide subset.                     |
+| `assets/Aniket-Kakde-CV-EN.pdf`      | The CV PDF served from the live site.                    |
+| `assets/certificates/*.jpg`          | Certificate scans (Udemy etc).                           |
+| `preview/`                           | Design-system preview cards (registered for the Design System tab). |
+| `ui_kits/codefolio/`                 | Click-thru recreation of the live site.                  |
+
+### Font substitution (caveat)
+The codebase loads **Instrument Serif**, **Geist**, and **Geist Mono** from **Google Fonts** at runtime — no local TTFs are checked in. The preview cards and UI kit do the same. If you need offline / PPTX-embedded fonts, please drop the TTFs into `fonts/` and update `colors_and_type.css`. Otherwise the system substitutes from Google Fonts.
+
