@@ -156,4 +156,59 @@
     .latency-scaled-time__caption-arrow {
         @apply mx-1 text-muted-foreground;
     }
+
+    /* ─── Estimation calculator ───────────────────────────────────── */
+    .estimation-calculator {
+        @apply my-6 rounded-lg border border-border bg-card p-4;
+    }
+    .estimation-calculator__title {
+        @apply mb-3 text-center text-sm font-medium text-muted-foreground;
+    }
+    .estimation-calculator__presets {
+        @apply mb-4 flex flex-wrap items-center justify-center gap-2;
+    }
+    .estimation-calculator__preset {
+        @apply inline-flex h-8 items-center rounded-full border border-border bg-background
+               px-3 text-xs font-medium text-foreground transition-colors hover:bg-accent;
+    }
+    .estimation-calculator__preset--active {
+        @apply border-primary bg-primary text-primary-foreground hover:bg-primary/90;
+    }
+    .estimation-calculator__fields {
+        @apply grid grid-cols-1 gap-3 sm:grid-cols-2;
+    }
+    .estimation-calculator__field {
+        @apply flex flex-col gap-1;
+    }
+    .estimation-calculator__field-label {
+        @apply text-xs font-semibold uppercase tracking-wide text-muted-foreground;
+    }
+    .estimation-calculator__field-row {
+        @apply flex items-center gap-2 rounded-md border border-border bg-background px-2;
+    }
+    .estimation-calculator__field-input {
+        @apply h-9 flex-1 border-0 bg-transparent text-sm font-medium tabular-nums text-foreground
+               focus:outline-none focus:ring-0;
+    }
+    .estimation-calculator__field-suffix {
+        @apply text-xs font-medium text-muted-foreground;
+    }
+    .estimation-calculator__field-hint {
+        @apply text-xs text-muted-foreground;
+    }
+    .estimation-calculator__outputs {
+        @apply mt-4 grid grid-cols-1 gap-1 rounded-md border border-border bg-background p-3 text-sm;
+    }
+    .estimation-calculator__output-row {
+        @apply flex items-baseline justify-between gap-2 border-b border-border/50 py-1 last:border-b-0;
+    }
+    .estimation-calculator__output-label {
+        @apply text-xs uppercase tracking-wide text-muted-foreground;
+    }
+    .estimation-calculator__output-value {
+        @apply text-base font-semibold tabular-nums text-foreground;
+    }
+    .estimation-calculator__output-suffix {
+        @apply text-xs font-normal text-muted-foreground;
+    }
 }
