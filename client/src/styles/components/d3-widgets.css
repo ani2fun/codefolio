@@ -715,4 +715,92 @@
     .cache-stampede__readout-note {
         @apply text-xs text-muted-foreground;
     }
+
+    /* ─── B-tree walker ───────────────────────────────────────────────── */
+    .btree-walker {
+        @apply my-6 rounded-lg border border-border bg-card p-4;
+    }
+    .btree-walker__title {
+        @apply mb-3 text-center text-sm font-medium text-muted-foreground;
+    }
+    .btree-walker__frame {
+        @apply flex justify-center;
+    }
+    .btree-walker__svg {
+        @apply block w-full h-auto;
+    }
+    .btree-walker__caption {
+        font-size: 11px;
+        fill: var(--color-muted-foreground, #64748b);
+        font-weight: 500;
+    }
+    .btree-walker__level-label {
+        font-size: 11px;
+        font-weight: 500;
+        fill: var(--color-foreground, #0a0f25);
+        font-variant-numeric: tabular-nums;
+    }
+    .btree-walker__level-label--seq {
+        fill: hsl(var(--destructive));
+        font-weight: 600;
+    }
+    .btree-walker__bar {
+        stroke: var(--color-border, #e5e7eb);
+        stroke-width: 1;
+        transition: fill 200ms ease;
+    }
+    .btree-walker__bar--internal {
+        fill: hsl(var(--muted-foreground) / 0.18);
+    }
+    .btree-walker__bar--seq {
+        fill: hsl(var(--destructive) / 0.20);
+        stroke: hsl(var(--destructive));
+    }
+    .btree-walker__path-dot {
+        fill: #3b82f6; /* blue-500 — the lookup path */
+        stroke: var(--color-card, #ffffff);
+        stroke-width: 1.5;
+    }
+    .btree-walker__path-line {
+        stroke: #3b82f6;
+        stroke-width: 2;
+        stroke-dasharray: 3 3;
+        opacity: 0.6;
+    }
+    .btree-walker__page-count {
+        font-size: 11px;
+        fill: var(--color-foreground, #0a0f25);
+        font-variant-numeric: tabular-nums;
+    }
+    .btree-walker__controls {
+        @apply mt-3 flex flex-col gap-3 items-stretch max-w-xl mx-auto;
+    }
+    .btree-walker__slider-row {
+        @apply flex flex-col gap-1.5;
+    }
+    .btree-walker__slider-text {
+        @apply text-sm font-medium text-foreground tabular-nums text-center;
+    }
+    .btree-walker__slider {
+        @apply h-2 w-full appearance-none rounded-full bg-muted accent-primary;
+    }
+    .btree-walker__slider::-webkit-slider-thumb {
+        @apply h-4 w-4 rounded-full bg-primary;
+        appearance: none;
+    }
+    .btree-walker__readout {
+        @apply mt-4 grid grid-cols-1 gap-1 rounded-md border border-border bg-background p-3 text-sm;
+    }
+    .btree-walker__readout-row {
+        @apply grid grid-cols-1 gap-1 border-b border-border/40 py-1 last:border-b-0 sm:grid-cols-[1fr_auto_2fr] sm:items-baseline sm:gap-3;
+    }
+    .btree-walker__readout-label {
+        @apply text-xs uppercase tracking-wide text-muted-foreground;
+    }
+    .btree-walker__readout-value {
+        @apply text-base font-semibold tabular-nums text-foreground;
+    }
+    .btree-walker__readout-note {
+        @apply text-xs text-muted-foreground;
+    }
 }

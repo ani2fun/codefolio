@@ -12,11 +12,11 @@ import scala.util.{Failure, Success, Try}
  *
  *   - Without coalescing, every caller misses, every caller's request flies to the origin in parallel. The
  *     origin briefly sees N in-flight requests of duration `originLatencyMs` each — the canonical thundering-
- *     herd shape. If N exceeds the origin's capacity, the origin falls over, every request times out, and
- *     the cache never gets repopulated.
- *   - With coalescing (a "lease", a Redis SETNX lock, a singleflight in Go, a Java CompletableFuture
- *     memoised by key), the first miss takes the lock; the remaining N-1 callers wait on the in-flight
- *     fetch. The origin sees exactly 1 request.
+ *     herd shape. If N exceeds the origin's capacity, the origin falls over, every request times out, and the
+ *     cache never gets repopulated.
+ *   - With coalescing (a "lease", a Redis SETNX lock, a singleflight in Go, a Java CompletableFuture memoised
+ *     by key), the first miss takes the lock; the remaining N-1 callers wait on the in-flight fetch. The
+ *     origin sees exactly 1 request.
  *
  * The rectangles in the SVG are the *origin's queue-depth-over-time* — width = origin latency, height = peak
  * in-flight requests. The N× area difference is the entire pedagogical point of the widget.
@@ -43,8 +43,8 @@ import scala.util.{Failure, Success, Try}
  *     concurrency = 100 and a 50-rps capacity origin, the no-coalescing case overflows by 2×.
  *   - `originLatencyMs` is how long each origin fetch takes; sets the rectangle width.
  *   - `originCapacity` is the threshold against which we paint a red "exceeded" verdict. Best understood as
- *     "concurrent requests the origin can serve without melting" — for an app server it's roughly the
- *     thread / coroutine pool; for a database it's the connection pool.
+ *     "concurrent requests the origin can serve without melting" — for an app server it's roughly the thread
+ *     / coroutine pool; for a database it's the connection pool.
  *
  * SVG is built as a string and injected via `dangerouslySetInnerHTML`. State is just the two slider values;
  * the rectangles and readouts derive from them.
@@ -93,15 +93,17 @@ object CacheStampedeSimulator:
       case Success(s) if s.originLatencyMin < 1 || s.originLatencyMax < s.originLatencyMin =>
         Left("payload.originLatencyRange must satisfy 1 ≤ min ≤ max")
       case Success(s) if s.concurrency < s.concurrencyMin || s.concurrency > s.concurrencyMax =>
-        Left(s"payload.concurrency must fall within concurrencyRange [${s.concurrencyMin}, ${s.concurrencyMax}]")
+        Left(
+          s"payload.concurrency must fall within concurrencyRange [${s.concurrencyMin}, ${s.concurrencyMax}]"
+        )
       case Success(s) if s.originLatencyMs < s.originLatencyMin || s.originLatencyMs > s.originLatencyMax =>
         Left(
           s"payload.originLatencyMs must fall within originLatencyRange [${s.originLatencyMin}, ${s.originLatencyMax}]"
         )
       case Success(s) if s.originCapacity < 1 =>
         Left("payload.originCapacity must be ≥ 1")
-      case Success(s)  => Right(s)
-      case Failure(t)  => Left(Option(t.getMessage).getOrElse("invalid payload JSON"))
+      case Success(s) => Right(s)
+      case Failure(t) => Left(Option(t.getMessage).getOrElse("invalid payload JSON"))
 
   // ===========================================================================
   // Layout
@@ -109,12 +111,12 @@ object CacheStampedeSimulator:
 
   private val ViewBoxWidth  = 720.0
   private val ViewBoxHeight = 360.0
-  private val TopPad        = 40.0   // panel caption
-  private val PanelHPad     = 30.0   // padding inside each panel
-  private val PanelVPad     = 60.0   // top/bottom inside the panel (y-axis labels live here)
+  private val TopPad        = 40.0  // panel caption
+  private val PanelHPad     = 30.0  // padding inside each panel
+  private val PanelVPad     = 60.0  // top/bottom inside the panel (y-axis labels live here)
   private val PanelWidth    = 320.0
-  private val PanelHeight   = 240.0  // total panel height
-  private val PanelGap      = 40.0   // gap between the two panels
+  private val PanelHeight   = 240.0 // total panel height
+  private val PanelGap      = 40.0  // gap between the two panels
   private val PanelLeftX    = (ViewBoxWidth - 2 * PanelWidth - PanelGap) / 2
   private val PanelRightX   = PanelLeftX + PanelWidth + PanelGap
   private val PlotTop       = TopPad + 16
@@ -193,9 +195,13 @@ object CacheStampedeSimulator:
     // Inline label inside the bar (or above it if too short)
     val labelY = if barH > 24 then barY + barH / 2 + 4 else barY - 4
     val labelClass =
-      if barH > 24 then "cache-stampede__bar-label" else "cache-stampede__bar-label cache-stampede__bar-label--above"
+      if barH > 24 then "cache-stampede__bar-label"
+      else "cache-stampede__bar-label cache-stampede__bar-label--above"
     val barLabel =
-      s"""<text class="$labelClass" x="${plotLeftX + math.min(barW, 80) / 2 + 4}" y="$labelY" text-anchor="start">${esc(
+      s"""<text class="$labelClass" x="${plotLeftX + math.min(
+          barW,
+          80
+        ) / 2 + 4}" y="$labelY" text-anchor="start">${esc(
           barCaption
         )}</text>"""
 
@@ -280,7 +286,7 @@ object CacheStampedeSimulator:
             val ms       = latS.value
             val capacity = spec.originCapacity
             // The "savings ratio" is how many *fewer* origin requests the coalesced path causes per stampede.
-            val ratio    = n.toDouble
+            val ratio             = n.toDouble
             val withoutOriginReqs = n
             val withOriginReqs    = 1
             // user-visible p99 latency: both paths wait roughly originLatencyMs (the in-flight request
