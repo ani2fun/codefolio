@@ -67,6 +67,35 @@ done
 
 # ---- 2. Backing stores: Postgres + Redis + MongoDB + Code Runner --------
 
+# Preflight: locate docker. Docker Desktop installs `docker` at
+# /usr/local/bin/docker (Intel) or /opt/homebrew/bin/docker (Apple
+# Silicon) on first launch. Those symlinks occasionally disappear after
+# an OS update or a fresh reboot while the binary inside Docker.app stays
+# put — fall back to the bundled binary so the launcher doesn't die on
+# `command not found`. (Mac-only path; Linux Docker installs put `docker`
+# on $PATH directly and never hit the fallback.)
+if ! command -v docker >/dev/null 2>&1; then
+  if [[ -x /Applications/Docker.app/Contents/Resources/bin/docker ]]; then
+    log "docker not on \$PATH — using bundled binary from Docker.app"
+    export PATH="/Applications/Docker.app/Contents/Resources/bin:$PATH"
+  else
+    warn "docker not found. Install Docker Desktop"
+    warn "  https://www.docker.com/products/docker-desktop/"
+    warn "or another Docker-compatible runtime (OrbStack, Colima, podman-compose)."
+    exit 1
+  fi
+fi
+
+# Confirm the daemon is reachable. The CLI being present doesn't mean
+# Docker Desktop is running — `docker compose up` would otherwise fail
+# deep inside step 2 with a less-actionable error.
+if ! docker info >/dev/null 2>&1; then
+  warn "docker CLI is available but the daemon isn't responding."
+  warn "Start Docker Desktop and re-run ./bin/dev:"
+  warn "    open -ga Docker"
+  exit 1
+fi
+
 log "starting backing stores (db redis mongo code-runner likec4)"
 docker compose up -d --remove-orphans db redis mongo code-runner likec4
 
