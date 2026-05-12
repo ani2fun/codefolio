@@ -24,6 +24,17 @@ object LikeC4Block:
   // doesn't expose it yet, so build it via the generic `VdomAttr` escape hatch.
   private val loadingAttr = VdomAttr[String]("loading")
 
+  /**
+   * LikeC4's React Flow gates wheel-zoom on a modifier key (`zoomActivationKeyCode: Meta` on macOS, `Control`
+   * elsewhere). Trackpad pinch works regardless because Chrome/Safari emit pinch gestures as `wheel +
+   * ctrlKey:true`, which passes the gate; a bare mouse-wheel sends `ctrlKey:false` and is ignored. Surface
+   * the right shortcut so the affordance matches reality.
+   */
+  private val zoomShortcutLabel: String =
+    val ua = dom.window.navigator.userAgent
+    if ua.contains("Mac") || ua.contains("iPhone") || ua.contains("iPad") then "⌘ + Scroll"
+    else "Ctrl + Scroll"
+
   final case class Props(src: String, height: Option[Int], title: Option[String])
 
   val Component =
@@ -107,16 +118,16 @@ object LikeC4Block:
                   ^.title     := labelTitle,
                   loadingAttr := "lazy"
                 ),
-                // LikeC4's standalone viewer hides the React Flow controls panel
-                // (`enableControls: false` is hardcoded in the bundle), so we
-                // surface the mouse-wheel + drag affordance ourselves. Synthetic
-                // +/- buttons would be fragile — d3-zoom under React Flow rejects
-                // non-trusted wheel events, so dispatchEvent doesn't move the
-                // viewport. The hint is the honest UX cue.
+                // LikeC4's viewer doesn't render React Flow controls (the bundle's
+                // `enableControls: false` is hardcoded), so we surface the right
+                // shortcuts ourselves. Wheel-zoom is gated on `zoomActivationKeyCode`
+                // — Meta on macOS, Control elsewhere — which is why a bare mouse
+                // wheel does nothing. Synthetic +/− buttons aren't an option:
+                // d3-zoom under React Flow rejects untrusted wheel events.
                 <.div(
                   ^.className   := "likec4-modal__hint",
                   ^.aria.hidden := true,
-                  "Scroll to zoom · Drag to pan"
+                  s"$zoomShortcutLabel to zoom · Drag to pan · Pinch on trackpad"
                 ),
                 <.button(
                   ^.tpe := "button",
