@@ -400,4 +400,116 @@
     .queueing-simulator__readout-note {
         @apply text-xs text-muted-foreground;
     }
+
+    /* ─── Handshake timeline ──────────────────────────────────────────── */
+    .handshake-timeline {
+        @apply my-6 rounded-lg border border-border bg-card p-4;
+    }
+    .handshake-timeline__title {
+        @apply mb-3 text-center text-sm font-medium text-muted-foreground;
+    }
+    .handshake-timeline__frame {
+        @apply flex justify-center;
+    }
+    .handshake-timeline__svg {
+        @apply block w-full h-auto;
+    }
+    .handshake-timeline__caption {
+        @apply text-xs font-medium;
+        fill: var(--color-muted-foreground, #64748b);
+        font-size: 11px;
+    }
+    .handshake-timeline__scenario-label {
+        @apply text-xs;
+        fill: var(--color-foreground, #0a0f25);
+        font-size: 12px;
+        font-weight: 500;
+    }
+    .handshake-timeline__total {
+        @apply text-xs;
+        fill: var(--color-foreground, #0a0f25);
+        font-size: 12px;
+        font-weight: 600;
+        font-variant-numeric: tabular-nums;
+    }
+    .handshake-timeline__phase {
+        transition: opacity 200ms ease;
+        opacity: 0.92;
+    }
+    .handshake-timeline__phase-label {
+        font-size: 10px;
+        font-weight: 600;
+        fill: #ffffff;
+        pointer-events: none;
+    }
+    .handshake-timeline__phase-label--abbrev {
+        letter-spacing: 0.05em;
+    }
+    /* Phase-kind colours — tuned for legibility on both light and dark themes.
+       Each is Tailwind 500-ish with a small contrast bump so 24-px-tall bars
+       read at a glance and white text labels remain legible. */
+    .handshake-timeline__phase--dns {
+        fill: #f59e0b; /* amber-500 */
+    }
+    .handshake-timeline__phase--tcp {
+        fill: #3b82f6; /* blue-500 */
+    }
+    .handshake-timeline__phase--tls {
+        fill: #8b5cf6; /* violet-500 */
+    }
+    .handshake-timeline__phase--quic {
+        fill: #14b8a6; /* teal-500 */
+    }
+    .handshake-timeline__phase--request {
+        fill: #10b981; /* emerald-500 */
+    }
+    .handshake-timeline__phase--processing {
+        fill: #f43f5e; /* rose-500 */
+    }
+    .handshake-timeline__phase--other {
+        fill: #64748b; /* slate-500 */
+    }
+    .handshake-timeline__controls {
+        @apply mt-3 flex justify-center;
+    }
+    .handshake-timeline__slider-label {
+        @apply flex w-full max-w-md flex-col items-stretch gap-2;
+    }
+    .handshake-timeline__slider-text {
+        @apply text-center text-sm font-medium text-foreground tabular-nums;
+    }
+    .handshake-timeline__slider {
+        @apply h-2 w-full appearance-none rounded-full bg-muted accent-primary;
+    }
+    .handshake-timeline__slider::-webkit-slider-thumb {
+        @apply h-4 w-4 rounded-full bg-primary;
+        appearance: none;
+    }
+    .handshake-timeline__legend {
+        @apply mt-3 flex flex-wrap items-center justify-center gap-3 text-xs;
+    }
+    .handshake-timeline__legend-item {
+        @apply inline-flex items-center gap-1.5 text-muted-foreground;
+    }
+    .handshake-timeline__swatch {
+        @apply inline-block h-3 w-3 rounded;
+    }
+    .handshake-timeline__legend-text {
+        @apply text-foreground;
+    }
+    .handshake-timeline__readout {
+        @apply mt-4 grid grid-cols-1 gap-1 rounded-md border border-border bg-background p-3 text-sm;
+    }
+    .handshake-timeline__readout-row {
+        @apply grid grid-cols-1 gap-1 border-b border-border/40 py-1 last:border-b-0 sm:grid-cols-[1fr_auto_2fr] sm:items-baseline sm:gap-3;
+    }
+    .handshake-timeline__readout-label {
+        @apply text-xs uppercase tracking-wide text-muted-foreground;
+    }
+    .handshake-timeline__readout-value {
+        @apply text-base font-semibold tabular-nums text-foreground;
+    }
+    .handshake-timeline__readout-note {
+        @apply text-xs text-muted-foreground;
+    }
 }

@@ -1,0 +1,65 @@
+// Lesson 6 — "Networking primer for system designers". The component
+// vocabulary the rest of Part 2 builds on: how an HTTP request travels from
+// a browser, through the recursive DNS resolver, to a CDN edge (with origin
+// shielding), and only on cache misses, to the origin app + database.
+//
+// The overview view is the system-context the lesson opens on. The
+// `cdn_internals` view zooms inside the CDN system to make the edge-vs-shield
+// distinction concrete — caching (Lesson 8) and replication (Lesson 11) both
+// reuse this shape.
+//
+// No `specification` block — element kinds (`actor`, `system`, `container`)
+// are declared once in workspace.c4 and shared across the LikeC4 project.
+
+model {
+  user = actor 'Browser user' {
+    description 'Types https://example.com and waits for first paint.'
+  }
+
+  resolver = system 'Recursive DNS resolver' {
+    description 'OS / ISP / public (1.1.1.1, 8.8.8.8). Caches answers per TTL.'
+  }
+
+  cdn = system 'CDN' {
+    description 'Anycast edge fleet in front of origin. Most reads never reach the origin.'
+
+    edge_pop = container 'Edge POP' {
+      description 'Anycast IP. Terminates TCP/QUIC + TLS. Caches popular objects (hot tier).'
+    }
+    shield = container 'Origin shield' {
+      description 'Regional cache between edges and origin. Coalesces concurrent misses into one upstream fetch.'
+    }
+
+    edge_pop -> shield 'cache miss — fetch via shield'
+  }
+
+  origin = system 'Origin' {
+    description 'The application the CDN sits in front of. Sees only cache misses + revalidations.'
+
+    app_server = container 'App server' {
+      description 'Renders pages / serves API. The thing you actually wrote.'
+    }
+    database = container 'Database' {
+      description 'System of record for the dynamic responses the app produces.'
+
+      app_server -> database 'reads / writes'
+    }
+  }
+
+  user -> resolver 'A / AAAA query for www.example.com'
+  resolver -> user 'returns CDN anycast IP'
+  user -> cdn 'HTTPS request — TCP/QUIC + TLS + HTTP GET'
+  cdn -> origin 'cache miss — origin fetch on the small fraction of misses'
+}
+
+views {
+  view buildingblocks_networking_overview of user {
+    title 'Networking — system context (browser → DNS → CDN → origin)'
+    include *
+  }
+
+  view buildingblocks_networking_cdn_internals of cdn {
+    title 'CDN — container view (edge POP + origin shield)'
+    include *
+  }
+}

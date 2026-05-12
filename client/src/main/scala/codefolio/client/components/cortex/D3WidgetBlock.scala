@@ -3,6 +3,7 @@ package codefolio.client.components.cortex
 import codefolio.client.components.cortex.widgets.{
   ArrayTraversal,
   EstimationCalculator,
+  HandshakeTimeline,
   LatencyScaledTime,
   PartitionSimulator,
   QueueingSimulator
@@ -33,13 +34,15 @@ object D3WidgetBlock:
         PartitionSimulator.Component(PartitionSimulator.Props(props.payload))
       case "queueing-simulator" =>
         QueueingSimulator.Component(QueueingSimulator.Props(props.payload))
+      case "handshake-timeline" =>
+        HandshakeTimeline.Component(HandshakeTimeline.Props(props.payload))
       case other =>
         <.div(
           ^.className := "d3-widget__error",
           <.p(^.className := "d3-widget__error-title", "Unknown D3 widget"),
           <.p(
             ^.className := "d3-widget__error-message",
-            s"""Widget "$other" is not registered. Available widgets: array-traversal, latency-scaled-time, estimation-calculator, partition-simulator, queueing-simulator."""
+            s"""Widget "$other" is not registered. Available widgets: array-traversal, latency-scaled-time, estimation-calculator, partition-simulator, queueing-simulator, handshake-timeline."""
           )
         )
   }
