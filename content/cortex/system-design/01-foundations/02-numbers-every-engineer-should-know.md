@@ -1,3 +1,8 @@
+---
+title: '2. Numbers every engineer should know'
+summary: How long each kind of computer operation actually takes — memorise three rows and you can ballpark the rest in seconds, on demand, forever.
+---
+
 # 2. Numbers every engineer should know
 
 ## TL;DR
@@ -37,7 +42,31 @@ The trick that makes them stick: **scale a 1-nanosecond L1 cache hit to feel lik
 | Read 1 MB sequentially from a spinning disk | 5 ms | 2 months |
 | Disk seek (spinning) | 4 ms | **1 month 18 days** |
 
-> Sources: Peter Norvig's [original interpretation](http://norvig.com/21-days.html#answers) of Jeff Dean's numbers; Aleksey Shipilëv's [updated 2020 measurements](https://shipilev.net/blog/2020/jvm-anatomy-quark-31-spinlocks/) for modern hardware; AWS / Cloudflare published cross-region RTT numbers.
+> Sources: Peter Norvig's [original interpretation](http://norvig.com/21-days.html#answers) of Jeff Dean's numbers; Aleksey Shipilëv's [Nanotrusting the nanotime](https://shipilev.net/blog/2014/nanotrusting-nanotime/) for honest nanosecond-scale measurement methodology; AWS / Cloudflare published cross-region RTT numbers.
+
+The same data on a horizontal log scale — bars span nine orders of magnitude, so the gap between the cache layers and the cross-region hop is something the eye picks up in one beat. Click any row to update the human-scale caption.
+
+```d3 widget=latency-scaled-time
+{
+  "title": "Latency landscape — median operations on a log axis (1 ns ≡ 1 second on the human scale)",
+  "scaleSeconds": 1.0e9,
+  "items": [
+    { "label": "L1 cache",                  "ns": 1,         "highlight": true },
+    { "label": "Branch mispredict",         "ns": 3 },
+    { "label": "L2 cache",                  "ns": 4 },
+    { "label": "Mutex lock/unlock",         "ns": 17 },
+    { "label": "L3 cache",                  "ns": 40 },
+    { "label": "Main memory",               "ns": 100,       "highlight": true },
+    { "label": "Snappy compress 1 KB",      "ns": 2000 },
+    { "label": "1 KB over 1 Gbps",          "ns": 10000 },
+    { "label": "Random SSD read",           "ns": 16000 },
+    { "label": "Same-DC RTT",               "ns": 500000 },
+    { "label": "1 MB SSD sequential",       "ns": 1000000 },
+    { "label": "Disk seek (spinning)",      "ns": 4000000 },
+    { "label": "Cross-region RTT (CA↔NL)",  "ns": 150000000, "highlight": true }
+  ]
+}
+```
 
 Memorise just *three* of those rows and the rest become deducible:
 
@@ -60,14 +89,14 @@ The numbers in the table are **medians** for *typical* operations on *typical* m
 
 Two related numbers you will need for the rest of the track:
 
-| Quantity | Modern value (2025) | Notes |
+| Quantity | Modern value (2026) | Notes |
 |---|---|---|
 | Datacentre 10 Gbps NIC bandwidth | ~1.25 GB/s | "How much can leave one server per second?" |
-| Modern NVMe SSD sequential read | ~7 GB/s | A single disk can saturate a 10 G NIC |
-| Modern DDR5 memory bandwidth | ~50 GB/s | RAM is roughly 10× faster than disk |
-| Cross-region inter-AZ bandwidth | ~10 Gbps | Internal AWS / GCP backbone |
+| Modern NVMe Gen5 SSD sequential read | ~14 GB/s | A single disk can saturate ten 10 G NICs |
+| Modern DDR5 memory bandwidth (per channel) | ~50 GB/s | RAM is roughly 3–4× faster than NVMe Gen5 |
+| Cross-region inter-AZ bandwidth | ~10 Gbps | Internal AWS / GCP backbone (100 Gbps spines exist; per-instance NIC is the bound) |
 
-The bandwidth column matters because **a 1 GB transfer** does not take 10 µs (the latency of one packet) — it takes ~800 ms over a 10 Gbps link, dominated by bandwidth, not latency. Latency × concurrency = throughput. We will use this exact relationship in [Lesson 5 — Little's Law](./05-latency-throughput-usl.md).
+The bandwidth column matters because **a 1 GB transfer** does not take 10 µs (the latency of one packet) — it takes ~800 ms over a 10 Gbps link, dominated by bandwidth, not latency. Latency × concurrency = throughput. We will use this exact relationship in [Lesson 5 — Little's Law](/cortex/system-design/foundations-latency-throughput-usl).
 
 ## 4. Worked Example
 
@@ -161,8 +190,10 @@ ping -c 20 cloudflare.com | tail -3
 # Cross-continent RTT — pick a host on the other side of the world
 ping -c 20 www.scaleway.com | tail -3
 
-# Disk read bandwidth (Linux/macOS)
-dd if=/dev/zero of=/tmp/bench bs=1M count=1024 status=progress 2>&1 | tail -2
+# Disk write bandwidth (Linux/macOS). `conv=fdatasync` forces the kernel to
+# wait for the data to hit the disk before reporting completion — without it
+# you measure the OS page cache, which gives suspiciously fast numbers.
+dd if=/dev/zero of=/tmp/bench bs=1M count=1024 conv=fdatasync status=progress 2>&1 | tail -2
 ```
 
 Write down the three numbers you get. You will reference them every time anyone asks "is this design feasible?" for the rest of your career.
@@ -200,7 +231,7 @@ That last one is why "just put the database in the other region" is almost never
 - **Quoting medians when only tails matter.** If 1% of your requests are 100× slower than the median, your *user* experiences the tail every fifth page load (a page with 100 dependent calls hits the 99th-percentile call ~once). [The Tail at Scale (Dean & Barroso, 2013)](https://research.google/pubs/the-tail-at-scale/) is required reading.
 - **Optimising L1 cache when network is the bottleneck.** A 100 ns memory access embedded inside a 100 ms cross-region call is *one millionth* of the latency. Senior engineers triage where the time actually goes *before* optimising.
 - **Forgetting that a "fast" disk is still ~10,000× slower than RAM.** This is why caching exists. This is also why "we made the database faster" hits a wall — the disk is still the disk.
-- **Trusting cloud "best-case" latencies.** Vendors quote *un-loaded* RTT. Loaded systems queue. A "1 ms" service can take 50 ms when its CPU is 90% utilised. We will quantify this in [Lesson 5 — Little's Law](./05-latency-throughput-usl.md).
+- **Trusting cloud "best-case" latencies.** Vendors quote *un-loaded* RTT. Loaded systems queue. A "1 ms" service can take 50 ms when its CPU is 90% utilised. We will quantify this in [Lesson 5 — Little's Law](/cortex/system-design/foundations-latency-throughput-usl).
 - **Comparing wall-clock from different machines.** Same code, different CPU, can be 10× different. Always measure on the hardware you will run on.
 - **Forgetting cold caches.** First-request latency is dominated by everything that *should* have been hot but was not — DNS, TLS handshake, JIT, page cache, CDN warm-up. Every system has a "first 30 seconds" pathology. Production load tests should always include cold-start measurement.
 
@@ -239,9 +270,27 @@ That last one is why "just put the database in the other region" is almost never
 > **Exercise 3 — Build the table for your own machine.**
 > Run the calibration script in section 5. Add a row for "git clone of a 100 MB repo over your home internet". Compare to your in-region datacentre numbers. By what factor is your home internet slower? *(This is why CDNs exist.)*
 
+> **Exercise 4 — The cross-region cost reflex.**
+> A request inside your service touches the L1 cache once (1 ns), reads from NVMe SSD once (16 µs), and makes a single cross-region call (150 ms). What fraction of the total latency is the cross-region hop? Round to one decimal.
+>
+> <details>
+> <summary>Solution</summary>
+>
+> Total latency: 1 ns + 16,000 ns + 150,000,000 ns = **150,016,001 ns**.
+>
+> Cross-region share: 150,000,000 / 150,016,001 = **99.989%**.
+>
+> The cross-region hop is essentially the *entire* latency budget. The other two operations contribute about *one part in ten thousand* — round-off noise from the user's perspective.
+>
+> The senior reflex this teaches: when you see *any* cross-region call in a hot path, that hop is the only thing that matters until eliminated. Re-arranging the local steps to be 2× faster gives the user **zero perceptible benefit**. Pinning the data into the same region as the caller gives the user a 1,000× speedup. Match the optimisation to where the time actually is.
+>
+> This is the same lesson Stack Overflow keeps stress-testing in production: their stack is fast because *no request crosses the public internet a second time*, not because they tuned their Postgres knobs.
+>
+> </details>
+
 ## In the Wild
 
-- **[Jeff Dean — Designs, Lessons and Advice from Building Large Distributed Systems](https://research.google/pubs/designs-lessons-and-advice-from-building-large-distributed-systems/)** (2009) — the talk that launched the table.
+- **[Jeff Dean — Designs, Lessons and Advice from Building Large Distributed Systems](https://www.cs.cornell.edu/projects/ladis2009/talks/dean-keynote-ladis2009.pdf)** (2009, LADIS keynote PDF) — the talk that launched the table; slide 24 is the original *Numbers Everyone Should Know*.
 
 - **[Peter Norvig — Teach Yourself Programming in Ten Years (Answers section)](http://norvig.com/21-days.html#answers)** — the most-cited public reproduction of Jeff Dean's table, with Norvig's own annotations.
 
@@ -251,4 +300,4 @@ That last one is why "just put the database in the other region" is almost never
 
 ---
 
-**Next:** the *combinatorial* skill that turns these numbers into design decisions — back-of-envelope estimation. By the end of [Lesson 3](./03-back-of-envelope-estimation.md), you will be able to estimate the QPS, storage, and bandwidth of any system in 5 minutes, with nothing but multiplication. → [Lesson 3 — Back-of-envelope estimation](./03-back-of-envelope-estimation.md)
+**Next:** the *combinatorial* skill that turns these numbers into design decisions — back-of-envelope estimation. By the end of [Lesson 3](/cortex/system-design/foundations-back-of-envelope-estimation), you will be able to estimate the QPS, storage, and bandwidth of any system in 5 minutes, with nothing but multiplication. → [Lesson 3 — Back-of-envelope estimation](/cortex/system-design/foundations-back-of-envelope-estimation)

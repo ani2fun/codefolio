@@ -83,4 +83,77 @@
     .array-traversal__progress {
         @apply min-w-24 text-center text-xs font-medium tabular-nums text-muted-foreground;
     }
+
+    /* ─── Latency-scaled-time chart ────────────────────────────────── */
+    .latency-scaled-time {
+        @apply my-6 rounded-lg border border-border bg-card p-4;
+    }
+    .latency-scaled-time__title {
+        @apply mb-3 text-center text-sm font-medium text-muted-foreground;
+    }
+    .latency-scaled-time__frame {
+        @apply flex justify-center cursor-pointer;
+    }
+    .latency-scaled-time__svg {
+        @apply block w-full h-auto;
+    }
+    .latency-scaled-time__axis {
+        stroke: var(--color-border, #e5e7eb);
+        stroke-width: 1;
+    }
+    .latency-scaled-time__tick {
+        stroke: var(--color-border, #e5e7eb);
+        stroke-width: 1;
+    }
+    .latency-scaled-time__tick-label {
+        @apply text-xs;
+        fill: var(--color-muted-foreground, #64748b);
+        font-size: 10px;
+        font-variant-numeric: tabular-nums;
+    }
+    .latency-scaled-time__tick-label--major {
+        font-weight: 600;
+        fill: var(--color-foreground, #0a0f25);
+    }
+    .latency-scaled-time__hit {
+        fill: transparent;
+        /* Picks up pointer events without painting — full-row click target. */
+        pointer-events: all;
+    }
+    .latency-scaled-time__row:hover .latency-scaled-time__hit {
+        fill: rgba(148, 163, 184, 0.08);
+    }
+    .latency-scaled-time__label {
+        @apply text-sm;
+        fill: var(--color-foreground, #0a0f25);
+        font-size: 12px;
+    }
+    .latency-scaled-time__label--highlight {
+        font-weight: 600;
+    }
+    .latency-scaled-time__label--selected {
+        font-weight: 700;
+        fill: hsl(var(--primary));
+    }
+    .latency-scaled-time__bar {
+        fill: hsl(var(--muted-foreground) / 0.55);
+        transition: fill 200ms ease, opacity 200ms ease;
+    }
+    .latency-scaled-time__bar--highlight {
+        fill: hsl(var(--primary) / 0.85);
+    }
+    .latency-scaled-time__bar--selected {
+        fill: hsl(var(--primary));
+    }
+    .latency-scaled-time__ns {
+        font-size: 11px;
+        fill: var(--color-muted-foreground, #64748b);
+        font-variant-numeric: tabular-nums;
+    }
+    .latency-scaled-time__caption {
+        @apply mt-3 text-center text-sm text-foreground min-h-[1.5rem];
+    }
+    .latency-scaled-time__caption-arrow {
+        @apply mx-1 text-muted-foreground;
+    }
 }

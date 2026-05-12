@@ -1,6 +1,6 @@
 package codefolio.client.components.cortex
 
-import codefolio.client.components.cortex.widgets.ArrayTraversal
+import codefolio.client.components.cortex.widgets.{ArrayTraversal, LatencyScaledTime}
 import japgolly.scalajs.react.*
 import japgolly.scalajs.react.vdom.html_<^.*
 
@@ -19,13 +19,15 @@ object D3WidgetBlock:
     props.widget match
       case "array-traversal" =>
         ArrayTraversal.Component(ArrayTraversal.Props(props.payload))
+      case "latency-scaled-time" =>
+        LatencyScaledTime.Component(LatencyScaledTime.Props(props.payload))
       case other =>
         <.div(
           ^.className := "d3-widget__error",
           <.p(^.className := "d3-widget__error-title", "Unknown D3 widget"),
           <.p(
             ^.className := "d3-widget__error-message",
-            s"""Widget "$other" is not registered. Available widgets: array-traversal."""
+            s"""Widget "$other" is not registered. Available widgets: array-traversal, latency-scaled-time."""
           )
         )
   }
