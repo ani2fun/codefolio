@@ -72,6 +72,20 @@ The tapir error type — invalid language, executor failure, timeout.
 **Code Execution Backend**:
 A single internal seam (`CodeExecutionBackend`) inside the Code Run pipeline that declares whether it supports a given language and executes a Run Request. Two adapters in production: **Piston** (remote public service, supports a fixed Judge0-id whitelist) and **Code Runner** (local Judge0-API-compatible container, universal fallback that supports every language in `Languages`). The orchestration walks the configured backends in priority order and picks the first whose `supports(lang)` is true. Wire-format mapping (request body shape, response → `RunResult`) lives in pure side modules `PistonWire` / `CodeRunnerWire`, exercised directly by golden-fixture specs without HTTP. Not a public port — the only public surface is `CodeRunPipeline.run`.
 
+### C4 model embedding
+
+**LikeC4 Proxy**:
+The server-side reverse-proxy route `GET /c4/*` in `server.http.LikeC4ProxyRoutes`. Byte-level passthrough — forwards each request verbatim to the in-cluster `likec4` Service (`http://likec4/c4/...`), preserves the upstream `Content-Type`, returns 502 on failure. Not a Code Execution Backend pattern: single hard-coded upstream, no internal seam, no typed protocol. Lives in `server.http` alongside the static-asset routes because it has the same flavour (HTTP passthrough), not because it shares a port.
+_Avoid_: Diagram service, LikeC4 backend, C4 adapter.
+
+**C4 Model Source**:
+The DSL files under `c4/` (currently `c4/workspace.c4`) authored in LikeC4's DSL. Compiled by `likec4 build --base /c4/` inside `Dockerfile.likec4` into a static SPA, then served by nginx in the `likec4` image. Codefolio's CI rebuilds and promotes the `likec4` image whenever files under `c4/` or `Dockerfile.likec4` change.
+_Avoid_: Workspace, Diagram source, Architecture file.
+
+**C4 View**:
+A named projection of a C4 Model Source — e.g. `index`, `codefolioRuntime`, `gitops` — declared inside the `views { ... }` block. The URL pattern `/c4/view/<name>` resolves to client-side routing inside the SPA: nginx serves `index.html` for any path under `/c4/` and the LikeC4 JS handles the navigation. A view is *selection* over the model, not a redraw — adding a new element automatically lights it up in every view whose filter includes it.
+_Avoid_: Diagram, Picture, Chart.
+
 ### HTTP layer
 
 **API Error**:
@@ -89,6 +103,8 @@ Any error a pipeline can produce; converted to an API Error + status by a single
 - **Degraded** = a non-critical store failed; Greeting still returned.
 - A **Runnable Code Block** in a **Chapter** calls a **Code Execution Backend** via the runner endpoint.
 - The markdown pipeline emits a placeholder `<div>` per **Block**; the client decodes them into a typed `Block` ADT and mounts a Scala.js component for each.
+- A **Chapter** may embed a **C4 View** via an `<iframe>` whose `src` (`/c4/view/<name>`) resolves through the **LikeC4 Proxy** to the in-cluster `likec4` Service.
+- The **LikeC4 Proxy** is a passthrough — single fixed upstream, no port, no alternate adapter — contrast with the **Code Execution Backend** which is a typed multi-adapter seam.
 
 ## Example dialogue
 
@@ -97,6 +113,9 @@ Any error a pipeline can produce; converted to an API Error + status by a single
 >
 > **Reviewer:** "What if Mongo is down when an `/api/hello` comes in?"
 > **Author:** "**Degraded** mode. Postgres still increments, the **Greeting** still ships back, the **Hello Event** is dropped (logged). `/api/recent` is missing that entry; that's the trade."
+>
+> **Reviewer:** "Why isn't the **LikeC4 Proxy** a Code Execution Backend?"
+> **Author:** "Different shape. The **Code Execution Backend** is a typed seam with two adapters (Piston + Code Runner) and orchestration in between. The **LikeC4 Proxy** is one hard-coded upstream, byte-level passthrough, no internal seam. *One adapter means a hypothetical seam* — we'd only promote it to a Backend if a second LikeC4-flavoured renderer (Structurizr, Mermaid C4) ever showed up."
 
 ## Flagged ambiguities
 
