@@ -27,12 +27,15 @@ object LikeC4Block:
   /**
    * LikeC4's React Flow gates wheel-zoom on a modifier key (`zoomActivationKeyCode: Meta` on macOS, `Control`
    * elsewhere). Trackpad pinch works regardless because Chrome/Safari emit pinch gestures as `wheel +
-   * ctrlKey:true`, which passes the gate; a bare mouse-wheel sends `ctrlKey:false` and is ignored. Surface
-   * the right shortcut so the affordance matches reality.
+   * ctrlKey:true`, which passes the gate; a bare mouse-wheel sends `ctrlKey:false` and is ignored.
+   *
+   * On macOS we show ⌘ first (the platform-native modifier) but include Ctrl too — both ultimately deliver
+   * `ctrlKey:true` on the wheel event, and external Windows-style keyboards plugged into a Mac are common
+   * enough that hiding the Ctrl option costs more than the extra glyph. On non-mac we just say Ctrl.
    */
   private val zoomShortcutLabel: String =
     val ua = dom.window.navigator.userAgent
-    if ua.contains("Mac") || ua.contains("iPhone") || ua.contains("iPad") then "⌘ + Scroll"
+    if ua.contains("Mac") || ua.contains("iPhone") || ua.contains("iPad") then "⌘ / Ctrl + Scroll"
     else "Ctrl + Scroll"
 
   final case class Props(src: String, height: Option[Int], title: Option[String])
