@@ -15,6 +15,10 @@ concurrency:
   group: likec4-main
   cancel-in-progress: true
 
+permissions:
+  contents: read
+  packages: write
+
 jobs:
   call:
     uses: ./.github/workflows/_build-push-promote.yml
