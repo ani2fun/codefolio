@@ -8,16 +8,16 @@ import scala.util.hashing.MurmurHash3
 import scala.util.{Failure, Success, Try}
 
 /**
- * Hot-shard widget — bar chart of per-shard request volume under three partitioning strategies (range,
- * hash, hash + virtual shards) applied to the same Zipfian-skewed workload. The reader watches one shard
- * turn red as the skew slider cranks up under "range" or "hash"; switching to "hash + virtual shards"
- * smooths it back out.
+ * Hot-shard widget — bar chart of per-shard request volume under three partitioning strategies (range, hash,
+ * hash + virtual shards) applied to the same Zipfian-skewed workload. The reader watches one shard turn red
+ * as the skew slider cranks up under "range" or "hash"; switching to "hash + virtual shards" smooths it back
+ * out.
  *
  * The pedagogical hook is the "hot-shard factor" readout — max-load / mean-load. Under uniform load it's
- * ~1.0. Under Zipfian-skewed load with raw range / hash partitioning, it can climb to 3–8× on small
- * shard counts. Adding virtual shards (~50 per physical) drops it back near 1× because the law of large
- * numbers kicks in. That is the same insight as virtual nodes on the consistent-hash ring (Lesson 7),
- * applied to sharding.
+ * ~1.0. Under Zipfian-skewed load with raw range / hash partitioning, it can climb to 3–8× on small shard
+ * counts. Adding virtual shards (~50 per physical) drops it back near 1× because the law of large numbers
+ * kicks in. That is the same insight as virtual nodes on the consistent-hash ring (Lesson 7), applied to
+ * sharding.
  *
  * Re-used in:
  *   - Lesson 12 (sharding) — primary.
@@ -38,7 +38,7 @@ import scala.util.{Failure, Success, Try}
  * }}}
  *
  *   - `skew` is the Zipfian exponent. 0 = uniform; ~1.0 = mildly skewed (the canonical "long tail"); 1.5+
- *     = severely skewed (one key dominates).
+ * \= severely skewed (one key dominates).
  *   - `keyCount` is the universe of distinct keys; the widget fires one request per key, weighted by the
  *     Zipfian distribution.
  *   - `virtualPerShard` is how many ring positions each physical shard claims under the "hash + virtual"
@@ -83,14 +83,14 @@ object HotShardSimulator:
 
   private def parsePayload(json: String): Either[String, Spec] =
     Try {
-      val raw       = js.JSON.parse(json).asInstanceOf[js.Dynamic]
-      val title     = raw.title.asInstanceOf[js.UndefOr[String]].toOption.filter(_.nonEmpty)
-      val sc        = raw.shardCount.asInstanceOf[js.UndefOr[Double]].toOption.getOrElse(8.0).toInt
-      val scR       = parseIntRange(raw.shardCountRange, (2, 16))
-      val skew      = raw.skew.asInstanceOf[js.UndefOr[Double]].toOption.getOrElse(1.2)
-      val skewR     = parseDoubleRange(raw.skewRange, (0.0, 2.0))
-      val kc        = raw.keyCount.asInstanceOf[js.UndefOr[Double]].toOption.getOrElse(500.0).toInt
-      val vps       = raw.virtualPerShard.asInstanceOf[js.UndefOr[Double]].toOption.getOrElse(50.0).toInt
+      val raw   = js.JSON.parse(json).asInstanceOf[js.Dynamic]
+      val title = raw.title.asInstanceOf[js.UndefOr[String]].toOption.filter(_.nonEmpty)
+      val sc    = raw.shardCount.asInstanceOf[js.UndefOr[Double]].toOption.getOrElse(8.0).toInt
+      val scR   = parseIntRange(raw.shardCountRange, (2, 16))
+      val skew  = raw.skew.asInstanceOf[js.UndefOr[Double]].toOption.getOrElse(1.2)
+      val skewR = parseDoubleRange(raw.skewRange, (0.0, 2.0))
+      val kc    = raw.keyCount.asInstanceOf[js.UndefOr[Double]].toOption.getOrElse(500.0).toInt
+      val vps   = raw.virtualPerShard.asInstanceOf[js.UndefOr[Double]].toOption.getOrElse(50.0).toInt
       Spec(title, sc, scR._1, scR._2, skew, skewR._1, skewR._2, kc, vps)
     } match
       case Success(s) if s.shardMin < 2 || s.shardMax < s.shardMin =>
@@ -133,11 +133,11 @@ object HotShardSimulator:
           math.min(shardCount - 1, ((j - 1).toLong * shardCount / keyCount).toInt)
         case Strategy.Hash =>
           val h        = MurmurHash3.stringHash(s"key-$j")
-          val unsigned = (h.toLong & 0xffffffffL)
+          val unsigned = h.toLong & 0xffffffffL
           (unsigned % shardCount).toInt
         case Strategy.HashVirtual =>
           val h        = MurmurHash3.stringHash(s"key-$j")
-          val unsigned = (h.toLong & 0xffffffffL)
+          val unsigned = h.toLong & 0xffffffffL
           val totalV   = shardCount.toLong * virtualPerShard.toLong
           val vNode    = (unsigned % totalV).toInt
           vNode / virtualPerShard
@@ -173,23 +173,26 @@ object HotShardSimulator:
     s.replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;").replace("\"", "&quot;")
 
   private def buildSvg(load: Array[Double], hotFactor: Double): String =
-    val pct       = percent(load)
-    val maxPct    = math.max(pct.max, 1.0)
-    val gap       = 4.0
-    val slot      = PlotW / load.length
-    val barW      = slot - gap
+    val pct    = percent(load)
+    val maxPct = math.max(pct.max, 1.0)
+    val gap    = 4.0
+    val slot   = PlotW / load.length
+    val barW   = slot - gap
     val bars = load.indices.map { i =>
-      val barH    = (pct(i) / maxPct) * MaxBarH
-      val barX    = LeftPad + i * slot + gap / 2
-      val barY    = ChartBottom - barH
-      val isHot   = pct(i) >= maxPct * 0.85 && hotFactor > 1.5
-      val barCls  = if isHot then "hot-shard__bar hot-shard__bar--hot" else "hot-shard__bar"
-      val labelY  = if barH > 18 then barY + 14 else barY - 6
+      val barH   = (pct(i) / maxPct) * MaxBarH
+      val barX   = LeftPad + i * slot + gap / 2
+      val barY   = ChartBottom - barH
+      val isHot  = pct(i) >= maxPct * 0.85 && hotFactor > 1.5
+      val barCls = if isHot then "hot-shard__bar hot-shard__bar--hot" else "hot-shard__bar"
+      val labelY = if barH > 18 then barY + 14 else barY - 6
       val labelCls =
         if barH > 18 then "hot-shard__bar-label" else "hot-shard__bar-label hot-shard__bar-label--outside"
-      val xLabel = s"""<text class="hot-shard__x-label" x="${barX + barW / 2}" y="${ChartBottom + 16}" text-anchor="middle">${i + 1}</text>"""
+      val xLabel =
+        s"""<text class="hot-shard__x-label" x="${barX + barW / 2}" y="${ChartBottom + 16}" text-anchor="middle">${i + 1}</text>"""
       val percentLabel =
-        s"""<text class="$labelCls" x="${barX + barW / 2}" y="$labelY" text-anchor="middle">${esc(f"${pct(i)}%.0f%%")}</text>"""
+        s"""<text class="$labelCls" x="${barX + barW / 2}" y="$labelY" text-anchor="middle">${esc(
+            f"${pct(i)}%.0f%%"
+          )}</text>"""
       s"""<g>
          |  <rect class="$barCls" x="$barX" y="$barY" width="$barW" height="$barH" rx="2"/>
          |  $percentLabel
@@ -302,10 +305,12 @@ object HotShardSimulator:
                   "Verdict",
                   verdict._1,
                   verdict._2 match
-                    case "ok"   => "Distribution is approximately uniform — your hottest shard is doing close to its fair share"
+                    case "ok" =>
+                      "Distribution is approximately uniform — your hottest shard is doing close to its fair share"
                     case "warn" => "Some skew, but tolerable — most production workloads run here"
-                    case "bad"  => "One shard is doing the work of many — under load it will saturate before the others"
-                    case _      => ""
+                    case "bad" =>
+                      "One shard is doing the work of many — under load it will saturate before the others"
+                    case _ => ""
                 ),
                 readoutRow(
                   "What virtual shards do",

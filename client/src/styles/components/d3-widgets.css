@@ -978,4 +978,106 @@
     .hot-shard__readout-note {
         @apply text-xs text-muted-foreground;
     }
+
+    /* ─── Raft animator ───────────────────────────────────────────────── */
+    .raft-animator {
+        @apply my-6 rounded-lg border border-border bg-card p-4;
+    }
+    .raft-animator__title {
+        @apply mb-3 text-center text-sm font-medium text-muted-foreground;
+    }
+    .raft-animator__scenarios {
+        @apply mb-3 flex flex-wrap items-center justify-center gap-2;
+    }
+    .raft-animator__scenario {
+        @apply inline-flex h-8 items-center rounded-full border border-border bg-background
+               px-3 text-xs font-medium text-foreground transition-colors hover:bg-accent;
+    }
+    .raft-animator__scenario--active {
+        @apply border-primary bg-primary text-primary-foreground hover:bg-primary/90;
+    }
+    .raft-animator__frame {
+        @apply flex justify-center;
+    }
+    .raft-animator__svg {
+        @apply block w-full max-w-2xl h-auto;
+    }
+    .raft-animator__node {
+        stroke-width: 2;
+        transition: fill 200ms ease, stroke 200ms ease;
+    }
+    .raft-animator__node--follower {
+        fill: var(--color-card, #ffffff);
+        stroke: hsl(var(--muted-foreground));
+    }
+    .raft-animator__node--candidate {
+        fill: hsl(48 96% 90%);
+        stroke: hsl(38 92% 50%);
+    }
+    .raft-animator__node--leader {
+        fill: hsl(220 95% 90%);
+        stroke: hsl(220 90% 55%);
+        stroke-width: 3;
+    }
+    .raft-animator__node--down {
+        fill: hsl(var(--destructive) / 0.12);
+        stroke: hsl(var(--destructive));
+        stroke-dasharray: 5 4;
+    }
+    .raft-animator__node-id {
+        font-size: 13px;
+        font-weight: 700;
+        fill: var(--color-foreground, #0a0f25);
+    }
+    .raft-animator__node-badge {
+        font-size: 9px;
+        font-weight: 700;
+        letter-spacing: 0.06em;
+        fill: var(--color-foreground, #0a0f25);
+    }
+    .raft-animator__node-term {
+        font-size: 10px;
+        fill: var(--color-muted-foreground, #64748b);
+        font-variant-numeric: tabular-nums;
+    }
+    .raft-animator__node-votedfor {
+        font-size: 9px;
+        fill: var(--color-muted-foreground, #64748b);
+        font-style: italic;
+    }
+    .raft-animator__node-log {
+        font-size: 10px;
+        font-family: ui-monospace, SFMono-Regular, monospace;
+        fill: var(--color-muted-foreground, #64748b);
+    }
+    .raft-animator__arrow {
+        stroke: hsl(220 90% 55%);
+        stroke-width: 2;
+    }
+    .raft-animator__arrow-head {
+        fill: hsl(220 90% 55%);
+    }
+    .raft-animator__arrow-label {
+        font-size: 11px;
+        font-weight: 600;
+        fill: hsl(220 90% 35%);
+        font-family: ui-monospace, SFMono-Regular, monospace;
+    }
+    .raft-animator__caption {
+        @apply mt-3 text-center text-sm text-foreground min-h-[1.5rem];
+    }
+    .raft-animator__controls {
+        @apply mt-3 flex flex-wrap items-center justify-center gap-2;
+    }
+    .raft-animator__button {
+        @apply inline-flex h-9 items-center gap-1.5 rounded-md border border-border bg-background
+               px-3 text-sm font-medium text-foreground transition-colors hover:bg-accent
+               disabled:pointer-events-none disabled:opacity-45;
+    }
+    .raft-animator__button--primary {
+        @apply border-primary bg-primary text-primary-foreground hover:bg-primary/90;
+    }
+    .raft-animator__progress {
+        @apply min-w-24 text-center text-xs font-medium tabular-nums text-muted-foreground;
+    }
 }
