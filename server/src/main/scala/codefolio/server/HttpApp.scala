@@ -41,10 +41,20 @@ final private class HttpAppLive(
   private val likec4Routes      = LikeC4ProxyRoutes.routes
   private val staticRoutes      = StaticRoutes.from(cfg.staticDir)
 
+  // frame-ancestors 'self' lets kakde.eu embed its own pages (the /c4/* iframe
+  // on the system-design demo chapter is same-origin) but blocks cross-origin
+  // embedding. `ensureHeader` only sets it when a handler hasn't already, so
+  // any route that needs a stricter policy can still opt in explicitly.
+  private val securityHeaders =
+    Middleware.ensureHeader("Content-Security-Policy")("frame-ancestors 'self'")
+
   override def serve: Task[Unit] =
     ZIO.logInfo(s"Starting server on port ${cfg.port}; ${staticRoutes.startupInfo}") *>
       Server
-        .serve(apiRoutes ++ cortexAssetRoutes ++ likec4Routes ++ staticRoutes.routes)
+        .serve(
+          (apiRoutes ++ cortexAssetRoutes ++ likec4Routes ++ staticRoutes.routes) @@
+            securityHeaders
+        )
         .provide(
           ZLayer.succeed(Server.Config.default.port(cfg.port)),
           Server.live
