@@ -84,6 +84,8 @@ The pattern: **most systems default to the weakest practical model**, and offer 
 
 [Lesson 4 (CAP and PACELC, honestly)](/cortex/system-design/foundations-cap-and-pacelc) introduced the *partition* dimension. Consistency models live on the *non-partition* axis — the "L" (latency) or "C" (consistency) trade-off in PACELC, *during normal operation*. The `PartitionSimulator` widget from Foundations 4 still applies here: under a partition, a CP system stays strongly consistent (refuses some writes); an AP system serves stale data (continues writes). What lesson 13 adds is: **even during normal operation** (no partition), you choose a consistency level per query; even an "AP system" can give you strong reads if you ask for the right primitive (Cassandra's `CONSISTENCY ALL` or LWT).
 
+The hardest level — **linearisability** — is the strongest single-key guarantee any practical system offers, and it is what **consensus algorithms** ([Lesson 14](/cortex/system-design/building-blocks-consensus-paxos-and-raft)) actually provide. Linearisable reads on etcd cost ~1 RTT to the Raft leader; everything weaker is the database choosing to short-circuit that path. When a system claims "strongly consistent reads", what it usually means under the hood is "we route this query to a node that ran consensus on its local state".
+
 ## 4. Worked example — three queries, three different consistency levels
 
 Suppose you're building a banking app. Three queries:

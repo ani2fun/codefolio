@@ -191,7 +191,7 @@ The pattern: **read the plan from the inside out** (leaves first; results bubble
 | Choice | What you give up | What you get |
 |---|---|---|
 | Single relational DB | horizontal write scaling | full SQL, ACID, mature tooling, decades of operator knowledge |
-| Adding a read replica | a tiny bit of replication lag | linear read scaling; a hot standby for failover |
+| Adding a read replica ([Lesson 11](/cortex/system-design/building-blocks-replication)) | a tiny bit of replication lag | linear read scaling; a hot standby for failover |
 | Adding an index | a few % write overhead per index | constant 3–4 page reads for the indexed lookup |
 | 3NF schema | join cost on reads | every fact lives in one place; updates are simple |
 | Denormalising | manual update propagation | flat reads for one specific query |
