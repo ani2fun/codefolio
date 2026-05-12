@@ -211,4 +211,109 @@
     .estimation-calculator__output-suffix {
         @apply text-xs font-normal text-muted-foreground;
     }
+
+    /* ─── Partition simulator ─────────────────────────────────────── */
+    .partition-simulator {
+        @apply my-6 rounded-lg border border-border bg-card p-4;
+    }
+    .partition-simulator__title {
+        @apply mb-3 text-center text-sm font-medium text-muted-foreground;
+    }
+    .partition-simulator__scenarios {
+        @apply mb-3 flex flex-wrap items-center justify-center gap-2;
+    }
+    .partition-simulator__scenario {
+        @apply inline-flex h-8 items-center gap-2 rounded-full border border-border bg-background
+               px-3 text-xs font-medium text-foreground transition-colors hover:bg-accent;
+    }
+    .partition-simulator__scenario--active {
+        @apply border-primary bg-primary/10;
+    }
+    .partition-simulator__scenario-name {
+        @apply tracking-tight;
+    }
+    .partition-simulator__mode-badge {
+        @apply inline-flex h-5 items-center rounded-full px-2 text-[10px] font-bold uppercase tracking-wide;
+    }
+    .partition-simulator__mode-badge--cp {
+        @apply bg-blue-500/15 text-blue-600 dark:text-blue-300;
+    }
+    .partition-simulator__mode-badge--ap {
+        @apply bg-amber-500/15 text-amber-700 dark:text-amber-300;
+    }
+    .partition-simulator__frame {
+        @apply flex justify-center;
+    }
+    .partition-simulator__svg {
+        @apply block w-full max-w-2xl h-auto;
+    }
+    .partition-simulator__link {
+        stroke: var(--color-border, #e5e7eb);
+        stroke-width: 2.5;
+        transition: stroke-dasharray 250ms ease, opacity 250ms ease;
+    }
+    .partition-simulator__link--broken {
+        stroke: hsl(var(--destructive));
+        stroke-dasharray: 6 6;
+        opacity: 0.7;
+    }
+    .partition-simulator__node {
+        fill: var(--color-card, #ffffff);
+        stroke: hsl(var(--primary));
+        stroke-width: 2;
+        transition: fill 200ms ease, stroke 200ms ease;
+    }
+    .partition-simulator__node--refused {
+        fill: hsl(var(--destructive) / 0.12);
+        stroke: hsl(var(--destructive));
+    }
+    .partition-simulator__node-label {
+        @apply text-sm font-bold;
+        fill: var(--color-foreground, #0a0f25);
+        font-size: 14px;
+    }
+    .partition-simulator__node-value {
+        @apply text-xs;
+        fill: var(--color-muted-foreground, #64748b);
+        font-size: 12px;
+        font-family: ui-monospace, SFMono-Regular, monospace;
+    }
+    .partition-simulator__node-value--refused {
+        fill: hsl(var(--destructive));
+    }
+    .partition-simulator__badge rect {
+        fill: hsl(var(--destructive));
+    }
+    .partition-simulator__badge text {
+        fill: var(--color-card, #ffffff);
+        font-size: 9px;
+        font-weight: 700;
+        letter-spacing: 0.05em;
+    }
+    .partition-simulator__caption {
+        @apply mt-3 flex flex-wrap items-baseline justify-center gap-2 text-center text-sm text-foreground min-h-[1.5rem];
+    }
+    .partition-simulator__caption-text {
+        @apply text-foreground;
+    }
+    .partition-simulator__controls {
+        @apply mt-3 flex flex-wrap items-center justify-center gap-2;
+    }
+    .partition-simulator__button {
+        @apply inline-flex h-9 items-center gap-1.5 rounded-md border border-border bg-background
+               px-3 text-sm font-medium text-foreground transition-colors hover:bg-accent
+               disabled:pointer-events-none disabled:opacity-45;
+    }
+    .partition-simulator__button--primary {
+        @apply border-primary bg-primary text-primary-foreground hover:bg-primary/90;
+    }
+    .partition-simulator__button--icon {
+        @apply w-9 justify-center px-0;
+    }
+    .partition-simulator__button-icon {
+        @apply h-4 w-4;
+    }
+    .partition-simulator__progress {
+        @apply min-w-24 text-center text-xs font-medium tabular-nums text-muted-foreground;
+    }
 }
