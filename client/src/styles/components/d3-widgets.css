@@ -512,4 +512,104 @@
     .handshake-timeline__readout-note {
         @apply text-xs text-muted-foreground;
     }
+
+    /* ─── Consistent hash ring ────────────────────────────────────────── */
+    .consistent-hash-ring {
+        @apply my-6 rounded-lg border border-border bg-card p-4;
+    }
+    .consistent-hash-ring__title {
+        @apply mb-3 text-center text-sm font-medium text-muted-foreground;
+    }
+    .consistent-hash-ring__frame {
+        @apply flex justify-center;
+    }
+    .consistent-hash-ring__svg {
+        @apply block w-full h-auto;
+    }
+    .consistent-hash-ring__ring {
+        fill: none;
+        stroke: var(--color-border, #e5e7eb);
+        stroke-width: 1.5;
+    }
+    .consistent-hash-ring__phys-disk {
+        stroke: var(--color-card, #ffffff);
+        stroke-width: 2;
+    }
+    .consistent-hash-ring__phys-label {
+        fill: #ffffff;
+        font-size: 11px;
+        font-weight: 700;
+        pointer-events: none;
+    }
+    .consistent-hash-ring__vnode {
+        opacity: 0.78;
+        transition: opacity 200ms ease;
+    }
+    .consistent-hash-ring__key {
+        stroke: var(--color-card, #ffffff);
+        stroke-width: 1;
+        opacity: 0.95;
+    }
+    .consistent-hash-ring__center {
+        @apply text-xs uppercase;
+        fill: var(--color-muted-foreground, #64748b);
+        font-size: 11px;
+        font-weight: 600;
+        letter-spacing: 0.08em;
+    }
+    .consistent-hash-ring__center-sub {
+        fill: var(--color-foreground, #0a0f25);
+        font-size: 12px;
+        font-weight: 500;
+        font-variant-numeric: tabular-nums;
+    }
+    .consistent-hash-ring__controls {
+        @apply mt-3 flex flex-col gap-3 items-stretch max-w-md mx-auto;
+    }
+    .consistent-hash-ring__slider-row {
+        @apply flex flex-col gap-1.5;
+    }
+    .consistent-hash-ring__slider-text {
+        @apply text-sm font-medium text-foreground tabular-nums text-center;
+    }
+    .consistent-hash-ring__slider {
+        @apply h-2 w-full appearance-none rounded-full bg-muted accent-primary;
+    }
+    .consistent-hash-ring__slider::-webkit-slider-thumb {
+        @apply h-4 w-4 rounded-full bg-primary;
+        appearance: none;
+    }
+    .consistent-hash-ring__loads {
+        @apply mt-4 rounded-md border border-border bg-background p-3;
+    }
+    .consistent-hash-ring__loads-label {
+        @apply mb-2 text-xs uppercase tracking-wide text-muted-foreground;
+    }
+    .consistent-hash-ring__loads-grid {
+        @apply grid grid-cols-2 gap-1.5 sm:grid-cols-4;
+    }
+    .consistent-hash-ring__load-item {
+        @apply inline-flex items-center gap-2 text-xs;
+    }
+    .consistent-hash-ring__swatch {
+        @apply inline-block h-3 w-3 flex-none rounded;
+    }
+    .consistent-hash-ring__load-text {
+        @apply text-foreground tabular-nums;
+    }
+    .consistent-hash-ring__readout {
+        @apply mt-3 grid grid-cols-1 gap-1 rounded-md border border-border bg-background p-3 text-sm;
+    }
+    .consistent-hash-ring__readout-row {
+        @apply grid grid-cols-1 gap-1 border-b border-border/40 py-1 last:border-b-0 sm:grid-cols-[1fr_auto_2fr] sm:items-baseline sm:gap-3;
+    }
+    .consistent-hash-ring__readout-label {
+        @apply text-xs uppercase tracking-wide text-muted-foreground;
+    }
+    .consistent-hash-ring__readout-value {
+        @apply text-base font-semibold tabular-nums text-foreground;
+    }
+    .consistent-hash-ring__readout-note {
+        @apply text-xs text-muted-foreground;
+    }
 }

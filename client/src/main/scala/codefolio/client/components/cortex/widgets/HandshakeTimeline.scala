@@ -8,10 +8,10 @@ import scala.util.{Failure, Success, Try}
 
 /**
  * Handshake-timeline widget — stacked horizontal-bar comparison of an HTTP visit's latency budget across
- * protocol stacks and connection states. Each row is a scenario (e.g. "TCP + TLS 1.2 + HTTP/1.1, cold"),
- * each colored segment is a phase (DNS, TCP, TLS, QUIC, HTTP request+response, optional server processing),
- * and the slider scrubs the round-trip time so the reader can feel how cold cross-region (~150 ms) blows up
- * the handshake tax vs a warm pooled connection.
+ * protocol stacks and connection states. Each row is a scenario (e.g. "TCP + TLS 1.2 + HTTP/1.1, cold"), each
+ * colored segment is a phase (DNS, TCP, TLS, QUIC, HTTP request+response, optional server processing), and
+ * the slider scrubs the round-trip time so the reader can feel how cold cross-region (~150 ms) blows up the
+ * handshake tax vs a warm pooled connection.
  *
  * Companion to lesson 6's prose pivot: every protocol choice is an RTT count. The bar chart makes the cliff
  * visible; the slider makes it visceral.
@@ -58,8 +58,8 @@ import scala.util.{Failure, Success, Try}
  *   - `kind` is one of `dns | tcp | tls | quic | request | processing | other`; it picks the segment colour
  *     and (when the bar is too narrow for the full name) the abbreviation. Unknown values fall back to
  *     `other`. The seven kinds are the legend's full vocabulary.
- *   - All scenarios share one x-axis scaled to the widest scenario's total, so a 5-ms cold visit and a
- *     250-ms cold visit sit next to each other at the right visual ratio.
+ *   - All scenarios share one x-axis scaled to the widest scenario's total, so a 5-ms cold visit and a 250-ms
+ *     cold visit sit next to each other at the right visual ratio.
  *
  * SVG is built as a string and injected via `dangerouslySetInnerHTML` — same pattern Mermaid + D2 +
  * ArrayTraversal and the rest of the catalog use. Only the slider value lives in React state; the bar chart
@@ -76,6 +76,7 @@ object HandshakeTimeline:
 
   final case class Phase(name: String, rttCount: Double, fixedMs: Double, kind: PhaseKind)
   final case class Scenario(name: String, phases: List[Phase])
+
   final case class Spec(
       title: Option[String],
       rttMs: Double,
@@ -264,7 +265,9 @@ object HandshakeTimeline:
           )}</text>"""
       val totalX = LeftPad + msToPx(total) + 8
       val totalLabel =
-        s"""<text class="handshake-timeline__total" x="$totalX" y="$nameY" text-anchor="start">${esc(formatMs(total))}</text>"""
+        s"""<text class="handshake-timeline__total" x="$totalX" y="$nameY" text-anchor="start">${esc(
+            formatMs(total)
+          )}</text>"""
 
       (segments :+ nameLabel :+ totalLabel).mkString("\n")
     }.mkString("\n")
