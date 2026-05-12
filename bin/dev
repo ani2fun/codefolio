@@ -83,11 +83,13 @@ done
 log "code-runner reachable at http://127.0.0.1:2358 (Judge0-API-compatible)"
 export CODE_RUNNER_URL="${CODE_RUNNER_URL:-http://localhost:2358}"
 
-# likec4 has no healthcheck; nginx is fast to start. Edit the DSL at
-# content/cortex/system-design/05-application-architecture/c4/workspace.c4
-# then `docker compose up -d --build likec4` to pick up changes.
+# likec4 has no healthcheck; nginx is fast to start. Edit any .c4 source
+# under content/cortex/**/c4/ then `docker compose up -d --build likec4` to
+# pick up changes. Use 127.0.0.1 (not `localhost`) so the JDK HttpClient
+# in LikeC4ProxyRoutes connects over IPv4 — docker-desktop binds :8090 to
+# 127.0.0.1 only, and the JDK prefers ::1 for `localhost` on macOS.
 log "likec4 SPA reachable at http://127.0.0.1:8090/c4/ (proxied by ZIO server at /c4/*)"
-export LIKEC4_URL="${LIKEC4_URL:-http://localhost:8090}"
+export LIKEC4_URL="${LIKEC4_URL:-http://127.0.0.1:8090}"
 
 # ---- 3. Frontend deps (one-time) ----------------------------------------
 
