@@ -10,19 +10,18 @@ import java.time.Duration
 /**
  * Reverse-proxies `GET` requests under `/c4/` to the in-cluster LikeC4 service.
  *
- * LikeC4 ships as a static SPA built with `--base /c4/`, so its index.html
- * references `/c4/assets/...` paths. The browser hits codefolio at
- * `kakde.eu/c4/...`; codefolio forwards those requests in-cluster to the
+ * LikeC4 ships as a static SPA built with `--base /c4/`, so its index.html references `/c4/assets/...` paths.
+ * The browser hits codefolio at `kakde.eu/c4/...`; codefolio forwards those requests in-cluster to the
  * `likec4` Service. There is no public Ingress on the LikeC4 deployment.
  *
- * Posture mirrors piston: ClusterIP only + NetworkPolicy in apps-prod
- * permitting codefolio → likec4 on port 8080.
+ * Posture mirrors piston: ClusterIP only + NetworkPolicy in apps-prod permitting codefolio → likec4 on port
+ * 8080.
  *
  * v1 demo notes:
- *   - Upstream URL is hardcoded. If we ever need to override per environment,
- *     promote to AppConfig (same pattern as `RunnerConfig.pistonUrl`).
- *   - Forwards only the body bytes + Content-Type. Cache-Control / ETag are
- *     dropped to keep the pass-through simple; we can layer them in later.
+ *   - Upstream URL is hardcoded. If we ever need to override per environment, promote to AppConfig (same
+ *     pattern as `RunnerConfig.pistonUrl`).
+ *   - Forwards only the body bytes + Content-Type. Cache-Control / ETag are dropped to keep the pass-through
+ *     simple; we can layer them in later.
  */
 object LikeC4ProxyRoutes:
 
@@ -49,12 +48,10 @@ object LikeC4ProxyRoutes:
     s"$UpstreamBaseUrl${buildUpstreamPath(rest.encode)}$querySep$query"
 
   /**
-   * Build the upstream path under `/c4/`. `trailing` captures the segments
-   * after `/c4` without a leading slash (so `/c4/view/index` arrives as
-   * `"view/index"`), but we defensively strip a slash regardless and always
-   * insert the join slash ourselves. Exposed (package-private) so
-   * `LikeC4ProxyRoutesSpec` can pin the behaviour without spinning up an HTTP
-   * server.
+   * Build the upstream path under `/c4/`. `trailing` captures the segments after `/c4` without a leading
+   * slash (so `/c4/view/index` arrives as `"view/index"`), but we defensively strip a slash regardless and
+   * always insert the join slash ourselves. Exposed (package-private) so `LikeC4ProxyRoutesSpec` can pin the
+   * behaviour without spinning up an HTTP server.
    */
   private[http] def buildUpstreamPath(restEncoded: String): String =
     s"/c4/${restEncoded.stripPrefix("/")}"
