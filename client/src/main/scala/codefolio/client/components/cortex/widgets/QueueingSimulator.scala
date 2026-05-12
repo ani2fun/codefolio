@@ -27,8 +27,8 @@ import scala.util.{Failure, Success, Try}
  *
  *   - `serviceTimeMs` (1/µ) sets the baseline service time; the bar chart shows latency multipliers, the
  *     readout shows absolute milliseconds.
- *   - `initialRho` is the slider's starting position. Defaults to 0.7 (the standard production-target shoulder
- *     just before the cliff steepens).
+ *   - `initialRho` is the slider's starting position. Defaults to 0.7 (the standard production-target
+ *     shoulder just before the cliff steepens).
  *
  * SVG is built as a string and injected via `dangerouslySetInnerHTML` — same pattern Mermaid + D2 +
  * ArrayTraversal + the other widgets use. State is just the current slider ρ; the bar chart and readout both
@@ -57,8 +57,8 @@ object QueueingSimulator:
   private val LeftPad          = 56.0
   private val RightPad         = 24.0
   private val TopPad           = 22.0
-  private val ChartBottom      = 200.0  // y of the x-axis (bar baseline)
-  private val MaxVisibleFactor = 12.0   // bars beyond this clip and overflow
+  private val ChartBottom      = 200.0 // y of the x-axis (bar baseline)
+  private val MaxVisibleFactor = 12.0  // bars beyond this clip and overflow
 
   // ===========================================================================
   // Parsing
@@ -72,11 +72,12 @@ object QueueingSimulator:
       val initRho = raw.initialRho.asInstanceOf[js.UndefOr[Double]].toOption.getOrElse(0.7)
       Spec(title, svcMs, initRho)
     } match
-      case Success(spec) if spec.serviceTimeMs <= 0          => Left("payload.serviceTimeMs must be > 0")
-      case Success(spec) if spec.initialRho < 0              => Left("payload.initialRho must be ≥ 0")
-      case Success(spec) if spec.initialRho >= 1             => Left("payload.initialRho must be < 1 (ρ=1 has no stable solution)")
-      case Success(spec)                                     => Right(spec)
-      case Failure(t)                                        => Left(Option(t.getMessage).getOrElse("invalid payload JSON"))
+      case Success(spec) if spec.serviceTimeMs <= 0 => Left("payload.serviceTimeMs must be > 0")
+      case Success(spec) if spec.initialRho < 0     => Left("payload.initialRho must be ≥ 0")
+      case Success(spec) if spec.initialRho >= 1 =>
+        Left("payload.initialRho must be < 1 (ρ=1 has no stable solution)")
+      case Success(spec) => Right(spec)
+      case Failure(t)    => Left(Option(t.getMessage).getOrElse("invalid payload JSON"))
 
   // ===========================================================================
   // M/M/1 maths
@@ -113,8 +114,8 @@ object QueueingSimulator:
     RhoSamples.minBy(r => math.abs(r - currentRho))
 
   private def axisSvg: String =
-    val y       = ChartBottom
-    val gridYs  = List(0.0, 0.25, 0.5, 0.75, 1.0).map(f => y - f * (y - TopPad))
+    val y      = ChartBottom
+    val gridYs = List(0.0, 0.25, 0.5, 0.75, 1.0).map(f => y - f * (y - TopPad))
     val gridLines = gridYs
       .map(gy =>
         s"""<line class="queueing-simulator__grid" x1="$LeftPad" y1="$gy" x2="${ViewBoxWidth - RightPad}" y2="$gy"/>"""
@@ -130,23 +131,25 @@ object QueueingSimulator:
       (1.0, s"${MaxVisibleFactor.toInt}×")
     ).map { case (f, label) =>
       val gy = y - f * (y - TopPad)
-      s"""<text class="queueing-simulator__y-label" x="${LeftPad - 8}" y="${gy + 4}" text-anchor="end">${esc(label)}</text>"""
+      s"""<text class="queueing-simulator__y-label" x="${LeftPad - 8}" y="${gy + 4}" text-anchor="end">${esc(
+          label
+        )}</text>"""
     }.mkString("\n")
     s"$gridLines\n$xAxis\n$yLabels"
 
   private def barSvg(rho: Double, selected: Boolean, index: Int, total: Int): String =
-    val plotW   = ViewBoxWidth - LeftPad - RightPad
-    val gap     = 6.0
-    val slot    = plotW / total
-    val barW    = slot - gap
-    val barX    = LeftPad + index * slot + gap / 2
-    val factor  = inflation(rho)
-    val visible = math.min(factor, MaxVisibleFactor)
-    val barH    = (visible / MaxVisibleFactor) * (ChartBottom - TopPad)
-    val barY    = ChartBottom - barH
+    val plotW    = ViewBoxWidth - LeftPad - RightPad
+    val gap      = 6.0
+    val slot     = plotW / total
+    val barW     = slot - gap
+    val barX     = LeftPad + index * slot + gap / 2
+    val factor   = inflation(rho)
+    val visible  = math.min(factor, MaxVisibleFactor)
+    val barH     = (visible / MaxVisibleFactor) * (ChartBottom - TopPad)
+    val barY     = ChartBottom - barH
     val overflow = factor > MaxVisibleFactor
     val barCls = if selected then "queueing-simulator__bar queueing-simulator__bar--selected"
-                 else "queueing-simulator__bar"
+    else "queueing-simulator__bar"
     val factorLabel =
       if factor.isInfinite then "→ ∞"
       else if factor < 10 then f"$factor%.1f×"
@@ -162,7 +165,9 @@ object QueueingSimulator:
     s"""<g>
        |  <rect class="$barCls" x="$barX" y="$barY" width="$barW" height="$barH" rx="2"/>
        |  $overflowMarker
-       |  <text class="queueing-simulator__bar-label" x="${barX + barW / 2}" y="$factorY" text-anchor="middle">${esc(factorLabel)}</text>
+       |  <text class="queueing-simulator__bar-label" x="${barX + barW / 2}" y="$factorY" text-anchor="middle">${esc(
+        factorLabel
+      )}</text>
        |  $rhoLabel
        |</g>""".stripMargin
 
@@ -176,7 +181,8 @@ object QueueingSimulator:
        |     xmlns="http://www.w3.org/2000/svg">
        |  $axisSvg
        |  $bars
-       |  <text class="queueing-simulator__chart-title" x="$LeftPad" y="${TopPad - 6}" text-anchor="start">Latency multiplier W / (1/µ) — capped at ${MaxVisibleFactor.toInt}×; bars above are off-chart</text>
+       |  <text class="queueing-simulator__chart-title" x="$LeftPad" y="${TopPad - 6}" text-anchor="start">Latency multiplier W / (1/µ) — capped at ${MaxVisibleFactor
+        .toInt}×; bars above are off-chart</text>
        |</svg>""".stripMargin
 
   private def formatMs(ms: Double): String =
@@ -214,10 +220,10 @@ object QueueingSimulator:
               <.pre(^.className := "d3-widget__error-message", err)
             )
           case Right(spec) =>
-            val rho       = rhoS.value
-            val w         = meanW(rho, spec.serviceTimeMs)
-            val lq        = meanQueueLength(rho)
-            val infl      = inflation(rho)
+            val rho                        = rhoS.value
+            val w                          = meanW(rho, spec.serviceTimeMs)
+            val lq                         = meanQueueLength(rho)
+            val infl                       = inflation(rho)
             val (verdictText, verdictTone) = verdict(rho)
 
             <.div(
@@ -249,14 +255,26 @@ object QueueingSimulator:
               ),
               <.div(
                 ^.className := "queueing-simulator__readout",
-                readoutRow("Mean response time W", formatMs(w), s"= ${f"$infl%.1f"}× the ${formatMs(spec.serviceTimeMs)} service time"),
-                readoutRow("Mean queue length L_q", formatQueueLength(lq), "jobs waiting (not counting the one being served)"),
-                readoutRow("Verdict", verdictText, verdictTone match
-                  case "safe"   => "Plenty of headroom; small spikes absorb fine"
-                  case "ok"     => "Standard production target — ρ ≈ 0.6–0.7"
-                  case "warn"   => "Headroom shrinking; tail latency starts steepening"
-                  case "danger" => "Past the cliff — any disturbance triggers minutes of queue drain"
-                  case _        => "")
+                readoutRow(
+                  "Mean response time W",
+                  formatMs(w),
+                  s"= ${f"$infl%.1f"}× the ${formatMs(spec.serviceTimeMs)} service time"
+                ),
+                readoutRow(
+                  "Mean queue length L_q",
+                  formatQueueLength(lq),
+                  "jobs waiting (not counting the one being served)"
+                ),
+                readoutRow(
+                  "Verdict",
+                  verdictText,
+                  verdictTone match
+                    case "safe"   => "Plenty of headroom; small spikes absorb fine"
+                    case "ok"     => "Standard production target — ρ ≈ 0.6–0.7"
+                    case "warn"   => "Headroom shrinking; tail latency starts steepening"
+                    case "danger" => "Past the cliff — any disturbance triggers minutes of queue drain"
+                    case _        => ""
+                )
               )
             )
       }

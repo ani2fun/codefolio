@@ -38,7 +38,8 @@ import scala.util.{Failure, Success, Try}
  * }}}
  *
  *   - `nodes` is a label-per-node string (the current value of `x`).
- *   - `links` is the symmetric reachability graph at this frame. A missing pair means the partition severed it.
+ *   - `links` is the symmetric reachability graph at this frame. A missing pair means the partition severed
+ *     it.
  *   - `refused` is optional; lists nodes whose write attempt was rejected in this frame (rendered with a
  *     "REFUSED" badge).
  *
@@ -73,6 +74,7 @@ object PartitionSimulator:
   private val ViewBoxHeight = 220.0
   private val NodeRadius    = 36.0
   private val NodeYCenter   = 92.0
+
   private val NodeXPositions: Map[String, Double] = Map(
     "A" -> 160.0,
     "B" -> 360.0,
@@ -105,16 +107,18 @@ object PartitionSimulator:
       }
       Spec(title, scenarios)
     } match
-      case Success(spec) if spec.scenarios.isEmpty                              => Left("payload.scenarios must be non-empty")
-      case Success(spec) if spec.scenarios.exists(_.steps.isEmpty)              => Left("every scenario must have ≥ 1 step")
-      case Success(spec) if spec.scenarios.exists(_.name.trim.isEmpty)          => Left("every scenario.name must be non-empty")
-      case Success(spec)                                                        => Right(spec)
-      case Failure(t) => Left(Option(t.getMessage).getOrElse("invalid payload JSON"))
+      case Success(spec) if spec.scenarios.isEmpty => Left("payload.scenarios must be non-empty")
+      case Success(spec) if spec.scenarios.exists(_.steps.isEmpty) =>
+        Left("every scenario must have ≥ 1 step")
+      case Success(spec) if spec.scenarios.exists(_.name.trim.isEmpty) =>
+        Left("every scenario.name must be non-empty")
+      case Success(spec) => Right(spec)
+      case Failure(t)    => Left(Option(t.getMessage).getOrElse("invalid payload JSON"))
 
   private def parseStep(s: js.Dynamic): Step =
-    val msg = s.msg.asInstanceOf[js.UndefOr[String]].toOption.getOrElse("")
+    val msg      = s.msg.asInstanceOf[js.UndefOr[String]].toOption.getOrElse("")
     val nodesObj = s.nodes.asInstanceOf[js.UndefOr[js.Dictionary[String]]].toOption.getOrElse(js.Dictionary())
-    val nodes = nodesObj.toMap
+    val nodes    = nodesObj.toMap
     val rawLinks = s.links
       .asInstanceOf[js.UndefOr[js.Array[js.Array[String]]]]
       .toOption
@@ -167,17 +171,20 @@ object PartitionSimulator:
             s"M $xa $NodeYCenter Q $midX $arcY $xb $NodeYCenter"
           else
             s"M $xa $NodeYCenter L $xb $NodeYCenter"
-        val cls = if present then "partition-simulator__link" else "partition-simulator__link partition-simulator__link--broken"
+        val cls = if present then "partition-simulator__link"
+        else "partition-simulator__link partition-simulator__link--broken"
         s"""<path class="$cls" d="$pathD" fill="none"/>"""
       }
       .mkString("\n")
 
   private def nodeSvg(node: String, value: String, step: Step): String =
-    val cx       = NodeXPositions(node)
-    val cy       = NodeYCenter
-    val refused  = step.refused.contains(node)
-    val nodeCls  = if refused then "partition-simulator__node partition-simulator__node--refused" else "partition-simulator__node"
-    val valueCls = if refused then "partition-simulator__node-value partition-simulator__node-value--refused" else "partition-simulator__node-value"
+    val cx      = NodeXPositions(node)
+    val cy      = NodeYCenter
+    val refused = step.refused.contains(node)
+    val nodeCls = if refused then "partition-simulator__node partition-simulator__node--refused"
+    else "partition-simulator__node"
+    val valueCls = if refused then "partition-simulator__node-value partition-simulator__node-value--refused"
+    else "partition-simulator__node-value"
     val badge =
       if refused then
         s"""<g class="partition-simulator__badge">
@@ -214,9 +221,9 @@ object PartitionSimulator:
     ScalaFnComponent
       .withHooks[Props]
       .useMemoBy(_.payload)(_ => payload => parsePayload(payload))
-      .useState(0)         // scenario index
-      .useState(0)         // step index within scenario
-      .useState(false)     // playing
+      .useState(0)     // scenario index
+      .useState(0)     // step index within scenario
+      .useState(false) // playing
       .useRefBy(_ => Option.empty[Int])
       .useEffectWithDepsBy((_, specM, scenarioS, _, _, _) =>
         (specM.value.toOption.fold(0)(_.scenarios.size), scenarioS.value)
@@ -280,11 +287,16 @@ object PartitionSimulator:
                 spec.scenarios.zipWithIndex.toVdomArray { case (sc, idx) =>
                   val active = scenarioIdx == idx
                   <.button(
-                    ^.key       := s"scenario-$idx",
-                    ^.tpe       := "button",
-                    ^.className := s"partition-simulator__scenario${if active then " partition-simulator__scenario--active" else ""}",
+                    ^.key := s"scenario-$idx",
+                    ^.tpe := "button",
+                    ^.className := s"partition-simulator__scenario${
+                        if active then " partition-simulator__scenario--active" else ""
+                      }",
                     ^.onClick --> scenarioS.setState(idx),
-                    <.span(^.className := s"partition-simulator__mode-badge partition-simulator__mode-badge--${sc.mode.toLowerCase}", sc.mode.toUpperCase),
+                    <.span(
+                      ^.className := s"partition-simulator__mode-badge partition-simulator__mode-badge--${sc.mode.toLowerCase}",
+                      sc.mode.toUpperCase
+                    ),
                     <.span(^.className := "partition-simulator__scenario-name", sc.name)
                   )
                 }
@@ -296,8 +308,14 @@ object PartitionSimulator:
               <.p(
                 ^.className := "partition-simulator__caption",
                 ^.aria.live := "polite",
-                <.span(^.className := s"partition-simulator__mode-badge partition-simulator__mode-badge--${scenario.mode.toLowerCase}", modeBadge),
-                <.span(^.className := "partition-simulator__caption-text", if step.msg.nonEmpty then step.msg else " ")
+                <.span(
+                  ^.className := s"partition-simulator__mode-badge partition-simulator__mode-badge--${scenario.mode.toLowerCase}",
+                  modeBadge
+                ),
+                <.span(
+                  ^.className := "partition-simulator__caption-text",
+                  if step.msg.nonEmpty then step.msg else " "
+                )
               ),
               <.div(
                 ^.className := "partition-simulator__controls",

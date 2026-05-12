@@ -11,11 +11,11 @@ import scala.util.{Failure, Success, Try}
  * reader picks a service preset (or types their own numbers) and the widget computes write/read QPS, annual
  * storage growth, and peak egress bandwidth live, using the exact formula the lesson body teaches:
  *
- *   - write QPS (avg)  = DAU × writes-per-user-per-day / 86,400
- *   - read  QPS (avg)  = DAU × reads-per-user-per-day  / 86,400
- *   - peak QPS         = avg × peak-factor (default 3×)
- *   - storage/year     = DAU × writes-per-user × 365 × bytes-per-write × replication-factor (default 3×)
- *   - egress at peak   = read-QPS-peak × bytes-per-write
+ *   - write QPS (avg) = DAU × writes-per-user-per-day / 86,400
+ *   - read QPS (avg) = DAU × reads-per-user-per-day / 86,400
+ *   - peak QPS = avg × peak-factor (default 3×)
+ *   - storage/year = DAU × writes-per-user × 365 × bytes-per-write × replication-factor (default 3×)
+ *   - egress at peak = read-QPS-peak × bytes-per-write
  *
  * The widget is the practice surface; the prose paragraph just above it is the *explanation* the reader can
  * always go back to. Numbers update on every keystroke / slider tick so the relationship between inputs and
@@ -36,8 +36,8 @@ import scala.util.{Failure, Success, Try}
  * }}}
  *
  *   - `peakFactor` and `replicationFactor` are author-tunable; the lesson defaults (3× / 3×) match the prose.
- *   - Presets seed the four inputs on click; the reader can then override any field. The "Custom" pseudo-preset
- *     is just "whatever's currently in the inputs" — there's no extra schema entry for it.
+ *   - Presets seed the four inputs on click; the reader can then override any field. The "Custom"
+ *     pseudo-preset is just "whatever's currently in the inputs" — there's no extra schema entry for it.
  *
  * Same string-built SVG-or-HTML / scalajs-react / inline-CSS-class pattern as ArrayTraversal and
  * LatencyScaledTime. The only structural difference: this widget renders a `<form>`-shaped surface (number
@@ -99,12 +99,13 @@ object EstimationCalculator:
       }
       Spec(title, peakF, replF, presets)
     } match
-      case Success(spec) if spec.presets.isEmpty                            => Left("payload.presets must be non-empty")
-      case Success(spec) if spec.peakFactor <= 0                            => Left("payload.peakFactor must be > 0")
-      case Success(spec) if spec.replicationFactor <= 0                     => Left("payload.replicationFactor must be > 0")
-      case Success(spec) if spec.presets.exists(p => p.name.trim.isEmpty)   => Left("every preset.name must be non-empty")
-      case Success(spec)                                                    => Right(spec)
-      case Failure(t)                                                       => Left(Option(t.getMessage).getOrElse("invalid payload JSON"))
+      case Success(spec) if spec.presets.isEmpty        => Left("payload.presets must be non-empty")
+      case Success(spec) if spec.peakFactor <= 0        => Left("payload.peakFactor must be > 0")
+      case Success(spec) if spec.replicationFactor <= 0 => Left("payload.replicationFactor must be > 0")
+      case Success(spec) if spec.presets.exists(p => p.name.trim.isEmpty) =>
+        Left("every preset.name must be non-empty")
+      case Success(spec) => Right(spec)
+      case Failure(t)    => Left(Option(t.getMessage).getOrElse("invalid payload JSON"))
 
   // ===========================================================================
   // Formatting helpers
@@ -150,6 +151,7 @@ object EstimationCalculator:
   private case class FieldsState(dau: String, writes: String, reads: String, bytes: String)
 
   private object FieldsState:
+
     def from(p: Preset): FieldsState =
       FieldsState(
         dau = p.dau.toLong.toString,
@@ -191,12 +193,12 @@ object EstimationCalculator:
             val readsPerUser  = parseField(fields.reads)
             val bytesPerWrite = parseField(fields.bytes)
 
-            val writeQpsAvg  = dau * writesPerUser / SecondsPerDay
-            val readQpsAvg   = dau * readsPerUser / SecondsPerDay
-            val writeQpsPeak = writeQpsAvg * spec.peakFactor
-            val readQpsPeak  = readQpsAvg * spec.peakFactor
-            val writesPerYear = dau * writesPerUser * DaysPerYear
-            val storagePerYear = writesPerYear * bytesPerWrite * spec.replicationFactor
+            val writeQpsAvg       = dau * writesPerUser / SecondsPerDay
+            val readQpsAvg        = dau * readsPerUser / SecondsPerDay
+            val writeQpsPeak      = writeQpsAvg * spec.peakFactor
+            val readQpsPeak       = readQpsAvg * spec.peakFactor
+            val writesPerYear     = dau * writesPerUser * DaysPerYear
+            val storagePerYear    = writesPerYear * bytesPerWrite * spec.replicationFactor
             val egressBytesAtPeak = readQpsPeak * bytesPerWrite
 
             <.div(
@@ -210,9 +212,11 @@ object EstimationCalculator:
                 spec.presets.zipWithIndex.toVdomArray { case (preset, idx) =>
                   val active = presetS.value == idx
                   <.button(
-                    ^.key       := s"preset-$idx",
-                    ^.tpe       := "button",
-                    ^.className := s"estimation-calculator__preset${if active then " estimation-calculator__preset--active" else ""}",
+                    ^.key := s"preset-$idx",
+                    ^.tpe := "button",
+                    ^.className := s"estimation-calculator__preset${
+                        if active then " estimation-calculator__preset--active" else ""
+                      }",
                     ^.onClick --> (fieldsS.setState(FieldsState.from(preset)) >> presetS.setState(idx)),
                     preset.name
                   )
@@ -221,24 +225,64 @@ object EstimationCalculator:
               // Inputs
               <.div(
                 ^.className := "estimation-calculator__fields",
-                inputField("Daily active users", "DAU — round to the nearest million", fields.dau, "users",
-                  (s, v) => s.copy(dau = v), fieldsS, presetS),
-                inputField("Writes / user / day", "e.g. 2 for tweets, 30 for messaging", fields.writes, "per day",
-                  (s, v) => s.copy(writes = v), fieldsS, presetS),
-                inputField("Reads / user / day", "e.g. 50 for timelines, 10 for video views", fields.reads, "per day",
-                  (s, v) => s.copy(reads = v), fieldsS, presetS),
-                inputField("Bytes per write", "1 KB text, 5 MB image, 5 GB hour-of-video", fields.bytes, "bytes",
-                  (s, v) => s.copy(bytes = v), fieldsS, presetS)
+                inputField(
+                  "Daily active users",
+                  "DAU — round to the nearest million",
+                  fields.dau,
+                  "users",
+                  (s, v) => s.copy(dau = v),
+                  fieldsS,
+                  presetS
+                ),
+                inputField(
+                  "Writes / user / day",
+                  "e.g. 2 for tweets, 30 for messaging",
+                  fields.writes,
+                  "per day",
+                  (s, v) => s.copy(writes = v),
+                  fieldsS,
+                  presetS
+                ),
+                inputField(
+                  "Reads / user / day",
+                  "e.g. 50 for timelines, 10 for video views",
+                  fields.reads,
+                  "per day",
+                  (s, v) => s.copy(reads = v),
+                  fieldsS,
+                  presetS
+                ),
+                inputField(
+                  "Bytes per write",
+                  "1 KB text, 5 MB image, 5 GB hour-of-video",
+                  fields.bytes,
+                  "bytes",
+                  (s, v) => s.copy(bytes = v),
+                  fieldsS,
+                  presetS
+                )
               ),
               // Output panel
               <.div(
                 ^.className := "estimation-calculator__outputs",
                 outputRow("Write QPS (avg)", fmtNumber(writeQpsAvg), "writes/s"),
-                outputRow(s"Write QPS (peak ×${stripTrailingZero(spec.peakFactor)})", fmtNumber(writeQpsPeak), "writes/s"),
+                outputRow(
+                  s"Write QPS (peak ×${stripTrailingZero(spec.peakFactor)})",
+                  fmtNumber(writeQpsPeak),
+                  "writes/s"
+                ),
                 outputRow("Read QPS (avg)", fmtNumber(readQpsAvg), "reads/s"),
-                outputRow(s"Read QPS (peak ×${stripTrailingZero(spec.peakFactor)})", fmtNumber(readQpsPeak), "reads/s"),
+                outputRow(
+                  s"Read QPS (peak ×${stripTrailingZero(spec.peakFactor)})",
+                  fmtNumber(readQpsPeak),
+                  "reads/s"
+                ),
                 outputRow("Read / write ratio", fmtRatio(readsPerUser, writesPerUser), ""),
-                outputRow(s"Storage growth / year (×${stripTrailingZero(spec.replicationFactor)} replication)", fmtBytes(storagePerYear), ""),
+                outputRow(
+                  s"Storage growth / year (×${stripTrailingZero(spec.replicationFactor)} replication)",
+                  fmtBytes(storagePerYear),
+                  ""
+                ),
                 outputRow("Egress at peak", fmtBitsPerSec(egressBytesAtPeak), "")
               )
             )
@@ -279,16 +323,16 @@ object EstimationCalculator:
 
   /** One row in the read-only output panel. */
   private def outputRow(label: String, value: String, suffix: String): VdomNode =
+    val suffixNode: VdomNode =
+      if suffix.nonEmpty then
+        <.span(^.className := "estimation-calculator__output-suffix", s" $suffix")
+      else EmptyVdom
     <.div(
       ^.className := "estimation-calculator__output-row",
       <.span(^.className := "estimation-calculator__output-label", label),
       <.span(
         ^.className := "estimation-calculator__output-value",
         value,
-        if suffix.nonEmpty then
-          Vector[VdomNode](
-            <.span(^.className := "estimation-calculator__output-suffix", s" $suffix")
-          ).toVdomArray
-        else EmptyVdom
+        suffixNode
       )
     )

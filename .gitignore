@@ -42,8 +42,3 @@ Thumbs.db
 *.pyc
 **/.pytest_cache/
 **/.ruff_cache/
-
-# Structurizr → PlantUML → SVG pipeline:
-# .dsl is the source of truth (committed); .svg is the rendered output (committed);
-# .puml is an intermediate produced by `make diagrams`. Not committed.
-content/cortex/**/diagrams/*.puml

@@ -97,12 +97,13 @@ object LatencyScaledTime:
       }
       Spec(title, scaleSecondsR, items)
     } match
-      case Success(spec) if spec.items.isEmpty                          => Left("payload.items must be non-empty")
-      case Success(spec) if spec.scaleSeconds <= 0                      => Left("payload.scaleSeconds must be > 0")
-      case Success(spec) if spec.items.exists(i => i.ns <= 0)           => Left("every item.ns must be > 0")
-      case Success(spec) if spec.items.exists(i => i.label.trim.isEmpty) => Left("every item.label must be non-empty")
-      case Success(spec)                                                => Right(spec)
-      case Failure(t) => Left(Option(t.getMessage).getOrElse("invalid payload JSON"))
+      case Success(spec) if spec.items.isEmpty                => Left("payload.items must be non-empty")
+      case Success(spec) if spec.scaleSeconds <= 0            => Left("payload.scaleSeconds must be > 0")
+      case Success(spec) if spec.items.exists(i => i.ns <= 0) => Left("every item.ns must be > 0")
+      case Success(spec) if spec.items.exists(i => i.label.trim.isEmpty) =>
+        Left("every item.label must be non-empty")
+      case Success(spec) => Right(spec)
+      case Failure(t)    => Left(Option(t.getMessage).getOrElse("invalid payload JSON"))
 
   // ===========================================================================
   // Scales and formatting
@@ -124,15 +125,15 @@ object LatencyScaledTime:
   private def plural(n: Int): String = if n == 1 then "" else "s"
 
   /**
-   * Rescale a real-time ns to human-time seconds using `scaleSeconds`, then format as the largest natural unit
-   * + remainder. Mirrors the third column of the lesson's latency table ("1 minute 40 seconds", "4 years 9
-   * months", "5 days 19 hours").
+   * Rescale a real-time ns to human-time seconds using `scaleSeconds`, then format as the largest natural
+   * unit + remainder. Mirrors the third column of the lesson's latency table ("1 minute 40 seconds", "4 years
+   * 9 months", "5 days 19 hours").
    */
   private def humaniseSeconds(seconds: Double): String =
     val minute = 60.0
     val hour   = 3_600.0
     val day    = 86_400.0
-    val month  = 30.0 * day      // approximate; matches conventional informal usage
+    val month  = 30.0 * day // approximate; matches conventional informal usage
     val year   = 365.25 * day
     if seconds < 1 then f"$seconds%.2f seconds"
     else if seconds < minute then
@@ -186,13 +187,13 @@ object LatencyScaledTime:
     val y0 = TopPad - 6
     val ticks = DecadeTicks
       .map { ns =>
-        val x      = xScale(ns)
-        val label  = formatNs(ns)
+        val x     = xScale(ns)
+        val label = formatNs(ns)
         // Stagger labels slightly so 9-decade fit isn't crowded; major decades (ns/µs/ms/s starts) get bold.
-        val major  = (ns == 1 || ns == 1_000 || ns == 1_000_000 || ns == 1_000_000_000)
+        val major  = ns == 1 || ns == 1_000 || ns == 1_000_000 || ns == 1_000_000_000
         val labelY = y0 - 8
-        val cls    = if major then "latency-scaled-time__tick-label latency-scaled-time__tick-label--major"
-                     else "latency-scaled-time__tick-label"
+        val cls = if major then "latency-scaled-time__tick-label latency-scaled-time__tick-label--major"
+        else "latency-scaled-time__tick-label"
         s"""<g>
            |  <line class="latency-scaled-time__tick" x1="$x" y1="${y0 - 4}" x2="$x" y2="$y0"/>
            |  <text class="$cls" x="$x" y="$labelY" text-anchor="middle">${esc(label)}</text>
@@ -224,9 +225,13 @@ object LatencyScaledTime:
     val hitH = RowHeight
     s"""<g class="latency-scaled-time__row" data-index="$rowIndex">
        |  <rect class="latency-scaled-time__hit" x="0" y="$hitY" width="$ViewBoxWidth" height="$hitH"/>
-       |  <text class="$labelCls" x="${PlotMin - 12}" y="${y + 18}" text-anchor="end">${esc(item.label)}</text>
+       |  <text class="$labelCls" x="${PlotMin - 12}" y="${y + 18}" text-anchor="end">${esc(
+        item.label
+      )}</text>
        |  <rect class="$barCls" x="$PlotMin" y="$barY" width="$barW" height="$BarHeight" rx="3"/>
-       |  <text class="latency-scaled-time__ns" x="$nsLabelX" y="${y + 18}" text-anchor="start">${esc(formatNs(item.ns))}</text>
+       |  <text class="latency-scaled-time__ns" x="$nsLabelX" y="${y + 18}" text-anchor="start">${esc(
+        formatNs(item.ns)
+      )}</text>
        |</g>""".stripMargin
 
   private def buildSvg(spec: Spec, selectedIndex: Int): String =
@@ -282,8 +287,8 @@ object LatencyScaledTime:
                 .map(t => <.p(^.className := "latency-scaled-time__title", t): VdomNode)
                 .getOrElse(EmptyVdom),
               <.div(
-                ^.className               := "latency-scaled-time__frame",
-                ^.onClick                ==> onClick,
+                ^.className := "latency-scaled-time__frame",
+                ^.onClick ==> onClick,
                 ^.dangerouslySetInnerHtml := buildSvg(spec, selected)
               ),
               <.p(
@@ -298,9 +303,10 @@ object LatencyScaledTime:
             )
       }
 
-  /** Default-select the slowest non-highlighted row, falling back to the last item. Reader's eye lands on the
-    * largest gap first — the canonical Cross-region RTT moment.
-    */
+  /**
+   * Default-select the slowest non-highlighted row, falling back to the last item. Reader's eye lands on the
+   * largest gap first — the canonical Cross-region RTT moment.
+   */
   private def pickDefaultIndex(items: List[Item]): Int =
     val withIndex = items.zipWithIndex
     withIndex.maxByOption { case (it, _) => it.ns }.map(_._2).getOrElse(0)
