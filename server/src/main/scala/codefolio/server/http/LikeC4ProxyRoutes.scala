@@ -8,24 +8,23 @@ import java.net.http.{HttpClient, HttpRequest, HttpResponse}
 import java.time.Duration
 
 /**
- * Reverse-proxies `GET` requests under `/c4/` to the in-cluster LikeC4 service.
+ * Reverse-proxies `GET` requests under `/c4/` to the LikeC4 service.
  *
  * LikeC4 ships as a static SPA built with `--base /c4/`, so its index.html references `/c4/assets/...` paths.
- * The browser hits codefolio at `kakde.eu/c4/...`; codefolio forwards those requests in-cluster to the
- * `likec4` Service. There is no public Ingress on the LikeC4 deployment.
+ * The browser hits codefolio at `kakde.eu/c4/...`; codefolio forwards those requests to the upstream LikeC4
+ * deployment. There is no public Ingress on the LikeC4 deployment.
  *
  * Posture mirrors piston: ClusterIP only + NetworkPolicy in apps-prod permitting codefolio → likec4 on port
  * 8080.
  *
  * v1 demo notes:
- *   - Upstream URL is hardcoded. If we ever need to override per environment, promote to AppConfig (same
- *     pattern as `RunnerConfig.pistonUrl`).
+ *   - Upstream URL is supplied by `AppConfig.likec4.upstreamUrl` (env var `LIKEC4_URL`). Production defaults
+ *     to the in-cluster Service `http://likec4`; bin/dev overrides to `http://localhost:8090` and docker
+ *     compose to `http://likec4:8080`.
  *   - Forwards only the body bytes + Content-Type. Cache-Control / ETag are dropped to keep the pass-through
  *     simple; we can layer them in later.
  */
 object LikeC4ProxyRoutes:
-
-  private val UpstreamBaseUrl = "http://likec4"
 
   private val httpClient: HttpClient =
     HttpClient
@@ -34,15 +33,15 @@ object LikeC4ProxyRoutes:
       .connectTimeout(Duration.ofSeconds(5))
       .build()
 
-  def routes: Routes[Any, Response] =
+  def from(upstreamBaseUrl: String): Routes[Any, Response] =
     Routes(
       Method.GET / "c4" / trailing ->
         Handler.fromFunctionZIO[(zio.http.Path, Request)] { case (rest, req) =>
-          proxy(buildUpstreamUrl(rest, req))
+          proxy(buildUpstreamUrl(upstreamBaseUrl, rest, req))
         }
     )
 
-  private def buildUpstreamUrl(rest: zio.http.Path, req: Request): String =
+  private def buildUpstreamUrl(base: String, rest: zio.http.Path, req: Request): String =
     // `trailing` captures the segments after `/c4` without a leading slash, so
     // a request for `/c4/view/index` arrives as `rest.encode == "view/index"`.
     // We always insert the slash between `/c4` and the captured rest so empty
@@ -50,7 +49,7 @@ object LikeC4ProxyRoutes:
     val restPath = rest.encode.stripPrefix("/")
     val query    = req.url.queryParams.encode
     val querySep = if query.nonEmpty then "?" else ""
-    s"$UpstreamBaseUrl/c4/$restPath$querySep$query"
+    s"$base/c4/$restPath$querySep$query"
 
   private def proxy(upstreamUrl: String): UIO[Response] =
     ZIO

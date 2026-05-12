@@ -4,7 +4,7 @@
 
 ## TL;DR
 
-> **C4** is a way to describe a software system at four progressively-deeper zoom levels: **Context**, **Container**, **Component**, **Code**. **LikeC4** is an open-source tool that compiles a small DSL into a navigable canvas. The diagram below is the live overview of this site's homelab platform, regenerated on every push from [`c4/workspace.c4`](https://github.com/ani2fun/codefolio/blob/main/c4/workspace.c4).
+> **C4** is a way to describe a software system at four progressively-deeper zoom levels: **Context**, **Container**, **Component**, **Code**. **LikeC4** is an open-source tool that compiles a small DSL into a navigable canvas. The diagram below is the live overview of this site's homelab platform, regenerated on every push from [`workspace.c4`](https://github.com/ani2fun/codefolio/blob/main/content/cortex/system-design/05-application-architecture/c4/workspace.c4).
 
 ## 1. Why a model, not a picture
 

@@ -38,7 +38,7 @@ final private class HttpAppLive(
 
   private val apiRoutes         = ApiRoutes.routes(helloPipeline, codeRun, cortex, blog)
   private val cortexAssetRoutes = CortexAssetRoutes.from(cfg.cortex.root)
-  private val likec4Routes      = LikeC4ProxyRoutes.routes
+  private val likec4Routes      = LikeC4ProxyRoutes.from(cfg.likec4.upstreamUrl)
   private val staticRoutes      = StaticRoutes.from(cfg.staticDir)
 
   override def serve: Task[Unit] =

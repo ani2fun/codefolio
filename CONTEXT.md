@@ -75,11 +75,11 @@ A single internal seam (`CodeExecutionBackend`) inside the Code Run pipeline tha
 ### C4 model embedding
 
 **LikeC4 Proxy**:
-The server-side reverse-proxy route `GET /c4/*` in `server.http.LikeC4ProxyRoutes`. Byte-level passthrough — forwards each request verbatim to the in-cluster `likec4` Service (`http://likec4/c4/...`), preserves the upstream `Content-Type`, returns 502 on failure. Not a Code Execution Backend pattern: single hard-coded upstream, no internal seam, no typed protocol. Lives in `server.http` alongside the static-asset routes because it has the same flavour (HTTP passthrough), not because it shares a port.
+The server-side reverse-proxy route `GET /c4/*` in `server.http.LikeC4ProxyRoutes`. Byte-level passthrough — forwards each request verbatim to the upstream LikeC4 service, preserves the upstream `Content-Type`, returns 502 on failure. Upstream URL is supplied by `AppConfig.likec4.upstreamUrl` (env var `LIKEC4_URL`) — defaults to the in-cluster Service `http://likec4` for production K8s, overridden to `http://localhost:8090` in `bin/dev` and `http://likec4:8080` in docker compose. Not a Code Execution Backend pattern: no internal seam, no typed protocol. Lives in `server.http` alongside the static-asset routes because it has the same flavour (HTTP passthrough), not because it shares a port.
 _Avoid_: Diagram service, LikeC4 backend, C4 adapter.
 
 **C4 Model Source**:
-The DSL files under `c4/` (currently `c4/workspace.c4`) authored in LikeC4's DSL. Compiled by `likec4 build --base /c4/` inside `Dockerfile.likec4` into a static SPA, then served by nginx in the `likec4` image. Codefolio's CI rebuilds and promotes the `likec4` image whenever files under `c4/` or `Dockerfile.likec4` change.
+The DSL files under `content/cortex/system-design/05-application-architecture/c4/` (currently `workspace.c4`) authored in LikeC4's DSL. Co-located with the chapter that embeds them so the diagram and the prose evolve together. Compiled by `likec4 build --base /c4/` inside `Dockerfile.likec4` into a static SPA, then served by nginx in the `likec4` image. Codefolio's CI rebuilds and promotes the `likec4` image whenever files under that directory or `Dockerfile.likec4` change.
 _Avoid_: Workspace, Diagram source, Architecture file.
 
 **C4 View**:

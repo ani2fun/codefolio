@@ -33,6 +33,9 @@ export default defineConfig({
       // Forward API calls to the ZIO backend during development.
       "/api": "http://localhost:8080",
       "/docs": "http://localhost:8080",
+      // /c4/* is reverse-proxied by the ZIO server to the LikeC4 SPA
+      // container (see LikeC4ProxyRoutes + bin/dev's LIKEC4_URL export).
+      "/c4": "http://localhost:8080",
     },
   },
 

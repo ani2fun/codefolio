@@ -5,7 +5,7 @@ on:
     branches:
       - main
     paths:
-      - 'c4/**'
+      - 'content/cortex/system-design/05-application-architecture/c4/**'
       - 'Dockerfile.likec4'
       - '.github/workflows/likec4-build-push-promote.yml'
       - '.github/workflows/_build-push-promote.yml'

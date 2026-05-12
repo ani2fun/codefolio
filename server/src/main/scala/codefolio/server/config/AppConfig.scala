@@ -25,6 +25,13 @@ final case class RunnerConfig(
 )
 
 /**
+ * Upstream URL for the LikeC4 reverse proxy that fronts `/c4/`. Defaults to the in-cluster Kubernetes Service
+ * name; override with `LIKEC4_URL` for local dev (`http://localhost:8090`) or docker compose
+ * (`http://likec4:8080`).
+ */
+final case class LikeC4Config(upstreamUrl: String)
+
+/**
  * Path to the Cortex content tree. Default is `./content/cortex` relative to the working directory (matches
  * the layout shipped with the Docker image, where the Dockerfile copies content/ to /app/content). The
  * structure is fully convention-driven: each immediate subdirectory is a book; nested directories become
@@ -51,6 +58,7 @@ final case class AppConfig(
     redis: RedisConfig,
     mongo: MongoConfig,
     runner: RunnerConfig,
+    likec4: LikeC4Config,
     cortex: CortexConfig,
     blog: BlogConfig
 )
