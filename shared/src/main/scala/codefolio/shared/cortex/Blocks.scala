@@ -2,8 +2,8 @@ package codefolio.shared.cortex
 
 /**
  * Cortex **Blocks** — typed payloads of the placeholder `<div>`s that the markdown pipeline emits inside a
- * Chapter's rendered HTML. The pipeline emits five flavours: `RunnableCode`, `RunnableGroup`, `Mermaid`,
- * `D2Slides`, `D2Inline`. Each one mounts a Scala.js React component on the client.
+ * Chapter's rendered HTML. The pipeline emits seven flavours: `RunnableCode`, `RunnableGroup`, `Mermaid`,
+ * `D2Slides`, `D2Inline`, `D3Widget`, `TracedCode`. Each one mounts a Scala.js React component on the client.
  *
  * This module owns the **structural validation** that turns raw attribute / child data into a typed `Block`
  * (or a `BlockDecodeError`). It runs identically on the JVM and on Scala.js so the validation is
@@ -98,6 +98,37 @@ object Blocks:
     if svgHtml.isEmpty then Left(BlockDecodeError.EmptyContent("d2-diagram", "innerHTML"))
     else Right(Block.D2Inline(svgHtml))
 
+  /**
+   * Decode a `d3-widget` placeholder. `widget` (from `data-widget`) names a Scala.js + D3 component in the
+   * client-side catalog; `payload` (URI-decoded `data-payload`) is the raw JSON the widget interprets. The
+   * shared decoder only validates that both are present and non-empty — per-widget schema validation lives in
+   * the widget itself, mirroring the `D2Slides(slides: List[String])` precedent where shared keeps the
+   * payload structural and the client renderer parses it.
+   */
+  def decodeD3Widget(
+      widget: Option[String],
+      payload: Option[String]
+  ): Either[BlockDecodeError, Block.D3Widget] =
+    for
+      name <- widget.toRight(BlockDecodeError.MissingAttribute("d3-widget", "data-widget"))
+      data <- payload.toRight(BlockDecodeError.MissingAttribute("d3-widget", "data-payload"))
+    yield Block.D3Widget(name, data)
+
+  /**
+   * Decode a `traced-code-block` placeholder. `language` (from `data-lang`) is the runtime to execute under
+   * (only "python" is supported in v1; the field is kept so adding Java later doesn't require an attribute
+   * rename). `source` (URI-decoded `data-source`) is the user program. The actual `sys.settrace` wrapper
+   * lives on the client — the server-side `/api/run` is unchanged. See ADR-0007.
+   */
+  def decodeTracedCode(
+      language: Option[String],
+      source: Option[String]
+  ): Either[BlockDecodeError, Block.TracedCode] =
+    for
+      lang <- language.toRight(BlockDecodeError.MissingAttribute("traced-code-block", "data-lang"))
+      src  <- source.toRight(BlockDecodeError.MissingAttribute("traced-code-block", "data-source"))
+    yield Block.TracedCode(lang, src)
+
 /**
  * The decoded payload of a single placeholder `<div>` in a rendered Chapter. Each variant maps 1:1 to a
  * Scala.js React component on the client; the renderer (`ChapterContent`) is a total `Block => VdomElement`
@@ -130,6 +161,21 @@ object Block:
   ) extends Block
 
   final case class D2Inline(svgHtml: String) extends Block
+
+  /**
+   * Named entry in the client-side D3 widget catalog plus the raw JSON payload it interprets. Schema is
+   * deliberately loose at this layer — each widget owns its own decoder, so the catalog can grow without
+   * regenerating shared types.
+   */
+  final case class D3Widget(widget: String, payload: String) extends Block
+
+  /**
+   * Step-through visualisation for a code block whose execution we want to inspect. `language` is the runtime
+   * ("python" in v1); `source` is the user program. On the client, a `sys.settrace` harness wraps the source
+   * and posts to the existing `/api/run`; the trace is parsed out of stdout and rendered as code + locals
+   * panel + step controls.
+   */
+  final case class TracedCode(language: String, source: String) extends Block
 
 /**
  * Why a placeholder `<div>` could not be turned into a `Block`. Both the JVM specs and the Scala.js

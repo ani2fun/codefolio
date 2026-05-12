@@ -344,6 +344,16 @@ const htmlAttr = (html: string, name: string): string | null => {
   return html.match(re)?.[2] ?? null;
 };
 
+// Pull a `key=value` (quoted or bare) out of a fence's info-string `meta`.
+// Used by ```d3 widget=array-traversal — the widget name is the only required
+// key today, but the same parser will handle future per-instance options.
+const parseMetaKv = (meta: string, key: string): string | null => {
+  const quoted = new RegExp(`\\b${key}\\s*=\\s*(["'])(.*?)\\1`).exec(meta);
+  if (quoted) return quoted[2];
+  const bare = new RegExp(`\\b${key}\\s*=\\s*([^\\s"']+)`).exec(meta);
+  return bare ? bare[1] : null;
+};
+
 const escapeHtmlAttr = (s: string): string =>
   s
     .replace(/&/g, "&amp;")
@@ -615,8 +625,53 @@ const codeHandler = (state: State, node: Code): Element | undefined => {
     };
   }
 
+  // ```d3 widget=array-traversal   → interactive D3 widget placeholder.
+  // The body is the raw payload (JSON in v1) — the client-side widget owns the
+  // schema. Mirrors the D2Slides precedent: shared keeps the payload structural,
+  // each widget interprets it.
+  if (node.lang === "d3") {
+    const meta = typeof node.meta === "string" ? node.meta : "";
+    const widget = parseMetaKv(meta, "widget");
+    if (widget) {
+      return {
+        type: "element",
+        tagName: "div",
+        properties: {
+          className: ["d3-widget"],
+          "data-widget": widget,
+          "data-payload": encodeURIComponent(node.value),
+        },
+        children: [],
+      };
+    }
+    // No widget= key — fall through to default code rendering so authors get
+    // a visible "this fence is wrong" pre block rather than silent emptiness.
+  }
+
   const meta = typeof node.meta === "string" ? node.meta : "";
   const runRequested = /\brun\b/.test(meta);
+  const traceRequested = /\btrace\b/.test(meta);
+
+  // ```python trace  → step-through visualisation placeholder.
+  // Server-side runs the code unchanged via /api/run; the client wraps it in a
+  // sys.settrace harness and parses the trace from stdout. Python only in v1.
+  if (traceRequested && node.lang) {
+    const lang = resolveLanguage(node.lang);
+    if (lang && /^python/i.test(node.lang)) {
+      return {
+        type: "element",
+        tagName: "div",
+        // `traced-code-block` is the placeholder (mirrors `mermaid-block`); the mounted Scala.js
+        // component renders its own `traced-code` root inside so CSS rules don't apply twice.
+        properties: {
+          className: ["traced-code-block"],
+          "data-lang": node.lang,
+          "data-source": encodeURIComponent(node.value),
+        },
+        children: [],
+      };
+    }
+  }
 
   if (data?.runnableTabs) {
     return {

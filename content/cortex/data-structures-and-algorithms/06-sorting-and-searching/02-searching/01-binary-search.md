@@ -68,6 +68,44 @@ s0 -> s1 -> s2
 
 <p align="center"><strong>Each iteration halves the range. For an array of 7 elements, ≤ 3 iterations are enough (because <code>log₂(7) ≈ 3</code>).</strong></p>
 
+Step through the same example interactively — use the controls below to advance `low`, `mid`, and `high` one iteration at a time. The shaded band is the live search range.
+
+```d3 widget=array-traversal
+{
+  "items": ["1", "3", "5", "7", "9", "11", "13"],
+  "title": "Binary search for 9",
+  "steps": [
+    {
+      "markers": [
+        { "name": "lo",  "index": 0, "color": "#3b82f6" },
+        { "name": "mid", "index": 3, "color": "#10b981" },
+        { "name": "hi",  "index": 6, "color": "#f59e0b" }
+      ],
+      "range": { "lo": 0, "hi": 6 },
+      "msg": "arr[mid]=7 < 9 → discard left half; set lo = mid + 1"
+    },
+    {
+      "markers": [
+        { "name": "lo",  "index": 4, "color": "#3b82f6" },
+        { "name": "mid", "index": 5, "color": "#10b981" },
+        { "name": "hi",  "index": 6, "color": "#f59e0b" }
+      ],
+      "range": { "lo": 4, "hi": 6 },
+      "msg": "arr[mid]=11 > 9 → discard right half; set hi = mid - 1"
+    },
+    {
+      "markers": [
+        { "name": "lo",  "index": 4, "color": "#3b82f6" },
+        { "name": "mid", "index": 4, "color": "#10b981" },
+        { "name": "hi",  "index": 4, "color": "#f59e0b" }
+      ],
+      "range": { "lo": 4, "hi": 4 },
+      "msg": "arr[mid]=9 = target → return 4"
+    }
+  ]
+}
+```
+
 ---
 
 ## Why `mid = low + (high - low) / 2` Instead of `(low + high) / 2`?
@@ -213,19 +251,27 @@ object Main {
 }
 ```
 
+### Step through the execution
 
-<details>
-<summary><strong>Trace — arr = [1, 3, 5, 7, 9, 11, 13], target = 9</strong></summary>
+Click **Trace** to run the algorithm with a Python tracer attached. The current line lights up; the locals panel on the right shows `low`, `mid`, `high`, and `target` as they change. The same `(low, high, mid)` triple you scrubbed through above now derives from the live execution rather than authored steps.
 
+```python trace
+def binary_search(arr, target):
+    low, high = 0, len(arr) - 1
+    while low <= high:
+        mid = low + (high - low) // 2
+        if arr[mid] == target:
+            return mid
+        if arr[mid] < target:
+            low = mid + 1
+        else:
+            high = mid - 1
+    return -1
+
+
+result = binary_search([1, 3, 5, 7, 9, 11, 13], 9)
+print(result)
 ```
-Iter 1: low=0, high=6, mid=3, arr[3]=7. 7 < 9 → low = 4
-Iter 2: low=4, high=6, mid=5, arr[5]=11. 11 > 9 → high = 4
-Iter 3: low=4, high=4, mid=4, arr[4]=9. 9 == 9 → return 4
-
-3 iterations to find an element in a 7-element array (log₂(7) ≈ 3).
-```
-
-</details>
 
 ***
 

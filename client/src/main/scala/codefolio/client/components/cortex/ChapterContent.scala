@@ -105,6 +105,10 @@ object ChapterContent:
       D2Slideshow.Component(D2Slideshow.Props(slides, caption))
     case Block.D2Inline(svgHtml) =>
       D2Diagram.Component(D2Diagram.Props(svgHtml))
+    case Block.D3Widget(widget, payload) =>
+      D3WidgetBlock.Component(D3WidgetBlock.Props(widget, payload))
+    case Block.TracedCode(language, source) =>
+      TracedCodeBlock.Component(TracedCodeBlock.Props(language, source))
 
   private def toGroupTab(t: Block.Tab): RunnableCodeGroup.Tab =
     RunnableCodeGroup.Tab(

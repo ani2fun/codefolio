@@ -35,8 +35,18 @@ The tree of Books, Sections, and Chapters rendered in the Cortex reader's left p
 A code block in a Chapter that calls the Code Runner via `/api/run`. One variant of a Block.
 
 **Block**:
-A typed payload extracted from a placeholder `<div>` in a rendered Chapter's HTML. Five variants: `RunnableCode`, `RunnableGroup`, `Mermaid`, `D2Slides`, `D2Inline`. Pure structural decoders live in `shared.cortex.Blocks` (JVM-tested); the JS-side DOM walk + URI / JSON shims live in `client.components.cortex.BlockDiscovery`. The renderer (`ChapterContent`) is a total `Block => VdomElement` dispatch.
-_Avoid_: Widget, Plugin, Embed
+A typed payload extracted from a placeholder `<div>` in a rendered Chapter's HTML. Seven variants: `RunnableCode`, `RunnableGroup`, `Mermaid`, `D2Slides`, `D2Inline`, `D3Widget`, `TracedCode`. Pure structural decoders live in `shared.cortex.Blocks` (JVM-tested); the JS-side DOM walk + URI / JSON shims live in `client.components.cortex.BlockDiscovery`. The renderer (`ChapterContent`) is a total `Block => VdomElement` dispatch.
+_Avoid_: Widget, Plugin, Embed (Widget appears as a sub-concept of `D3Widget` — see below; never use "Widget" alone for "Block".)
+
+**D3 Widget**:
+The catalog of named, parameterised D3 visualisations referenced by `Block.D3Widget(name, payload)`. Each entry is a Scala.js + D3 component on the client; the markdown fence ` ```d3 widget=<name> ` carries a JSON payload that the widget interprets. Schema is widget-local — `shared.Blocks` keeps `D3Widget` payload structurally loose (the same precedent as `D2Slides` keeping slides as raw source). The catalog is a closed match in `D3WidgetBlock`; unknown names render an inline error rather than failing the chapter. First widget: **Array Traversal Stepper**.
+
+**Array Traversal Stepper**:
+First widget in the D3 catalog. Renders a row of indexed cells with one or more named markers per step (`lo`, `mid`, `hi`, …) and an optional highlighted range. Drives linear scan, two-pointer, binary search, sliding window, and bubble-sort step visualisations from one component. Used in `01-binary-search.md`.
+
+**Traced Code**:
+A Python source the author marks ` ```python trace ` for a step-through visualisation. The server-side `/api/run` is unchanged — the client wraps the source in a `sys.settrace` harness (with `__CFTRACE_BEGIN__` / `__CFTRACE_END__` markers on stdout), posts the wrapped program, then parses the trace out of stdout and renders code + current-line cursor + locals panel + step controls. **Collapsed by default** — only the language label and a Trace button are visible until the reader opts in; an `Eye` / `EyeOff` toggle in the header collapses again without losing trace state (the trace + frame index live in component state, not the DOM). Python only in v1; the language slot is preserved so Java can land later as a separate adapter.
+_Avoid_: Debugger, Stepper (Stepper is reserved for the array-traversal widget's control row), Python Tutor (the embedded-iframe pattern was rejected — see ADR-0006).
 
 ### Hello pipeline (three-store demo)
 
@@ -105,6 +115,7 @@ Any error a pipeline can produce; converted to an API Error + status by a single
 - The markdown pipeline emits a placeholder `<div>` per **Block**; the client decodes them into a typed `Block` ADT and mounts a Scala.js component for each.
 - A **Chapter** may embed a **C4 View** via an `<iframe>` whose `src` (`/c4/view/<name>`) resolves through the **LikeC4 Proxy** to the in-cluster `likec4` Service.
 - The **LikeC4 Proxy** is a passthrough — single fixed upstream, no port, no alternate adapter — contrast with the **Code Execution Backend** which is a typed multi-adapter seam.
+- A **D3 Widget** is a closed-catalog Block — the markdown picks a name, the client renders it from a shared catalog; the **TracedCode** Block reuses the **Code Execution Backend** via the existing `/api/run` (a tracer harness on the client wraps the source; no server-side seam was added).
 
 ## Example dialogue
 

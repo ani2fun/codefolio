@@ -114,5 +114,33 @@ object BlocksSpec extends ZIOSpecDefault:
         val r = Blocks.decodeD2Inline("")
         assertTrue(r == Left(BlockDecodeError.EmptyContent("d2-diagram", "innerHTML")))
       }
+    ),
+    suite("decodeD3Widget")(
+      test("happy path — widget + payload present") {
+        val r = Blocks.decodeD3Widget(Some("array-traversal"), Some("""{"items":[1,2,3]}"""))
+        assertTrue(r == Right(Block.D3Widget("array-traversal", """{"items":[1,2,3]}""")))
+      },
+      test("missing widget → MissingAttribute(data-widget)") {
+        val r = Blocks.decodeD3Widget(None, Some("""{}"""))
+        assertTrue(r == Left(BlockDecodeError.MissingAttribute("d3-widget", "data-widget")))
+      },
+      test("missing payload → MissingAttribute(data-payload)") {
+        val r = Blocks.decodeD3Widget(Some("array-traversal"), None)
+        assertTrue(r == Left(BlockDecodeError.MissingAttribute("d3-widget", "data-payload")))
+      }
+    ),
+    suite("decodeTracedCode")(
+      test("happy path — language + source present") {
+        val r = Blocks.decodeTracedCode(Some("python"), Some("print(1)"))
+        assertTrue(r == Right(Block.TracedCode("python", "print(1)")))
+      },
+      test("missing language → MissingAttribute(data-lang)") {
+        val r = Blocks.decodeTracedCode(None, Some("print(1)"))
+        assertTrue(r == Left(BlockDecodeError.MissingAttribute("traced-code-block", "data-lang")))
+      },
+      test("missing source → MissingAttribute(data-source)") {
+        val r = Blocks.decodeTracedCode(Some("python"), None)
+        assertTrue(r == Left(BlockDecodeError.MissingAttribute("traced-code-block", "data-source")))
+      }
     )
   )

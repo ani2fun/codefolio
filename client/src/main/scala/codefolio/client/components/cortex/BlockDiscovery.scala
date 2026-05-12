@@ -60,7 +60,7 @@ object BlockDiscovery:
     def decode(node: dom.HTMLElement): Either[BlockDecodeError, Block]
 
   private val Discoverers: List[Discoverer] =
-    List(RunnableCode, RunnableGroup, Mermaid, D2Slides, D2Inline)
+    List(RunnableCode, RunnableGroup, Mermaid, D2Slides, D2Inline, D3Widget, TracedCode)
 
   private object RunnableCode extends Discoverer:
     override val className: String = "runnable-code"
@@ -123,6 +123,24 @@ object BlockDiscovery:
 
     override def decode(node: dom.HTMLElement): Either[BlockDecodeError, Block] =
       Blocks.decodeD2Inline(node.innerHTML)
+
+  private object D3Widget extends Discoverer:
+    override val className: String = "d3-widget"
+
+    override def decode(node: dom.HTMLElement): Either[BlockDecodeError, Block] =
+      val widget  = nonEmpty(node.getAttribute("data-widget"))
+      val payload = nonEmpty(node.getAttribute("data-payload")).flatMap(uriDecode)
+      Blocks.decodeD3Widget(widget, payload)
+
+  private object TracedCode extends Discoverer:
+    // Mirrors the Mermaid pattern: `<block>-block` is the placeholder; the mounted widget renders its own
+    // root class (here, `traced-code`) inside.
+    override val className: String = "traced-code-block"
+
+    override def decode(node: dom.HTMLElement): Either[BlockDecodeError, Block] =
+      val lang = nonEmpty(node.getAttribute("data-lang"))
+      val src  = nonEmpty(node.getAttribute("data-source")).flatMap(uriDecode)
+      Blocks.decodeTracedCode(lang, src)
 
   // ---------------------------------------------------------------------------
   // Shims
