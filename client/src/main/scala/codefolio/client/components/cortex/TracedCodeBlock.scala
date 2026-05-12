@@ -45,9 +45,9 @@ object TracedCodeBlock:
    * a flat `name → repr(value)` map. `fn` is the function name the frame was executing in (`<module>` for
    * top-level).
    */
-  private final case class Frame(line: Int, event: String, fn: String, locals: List[(String, String)])
+  final private case class Frame(line: Int, event: String, fn: String, locals: List[(String, String)])
 
-  private final case class Trace(frames: List[Frame], programStdout: String, programStderr: String)
+  final private case class Trace(frames: List[Frame], programStdout: String, programStderr: String)
 
   private val BeginMarker = "__CFTRACE_BEGIN__"
   private val EndMarker   = "__CFTRACE_END__"
@@ -101,7 +101,9 @@ object TracedCodeBlock:
   // ---------------------------------------------------------------------------
 
   private def base64Encode(s: String): String =
-    js.Dynamic.global.btoa(js.Dynamic.global.unescape(js.Dynamic.global.encodeURIComponent(s))).asInstanceOf[String]
+    js.Dynamic.global.btoa(js.Dynamic.global.unescape(js.Dynamic.global.encodeURIComponent(s))).asInstanceOf[
+      String
+    ]
 
   private def wrapPython(userSource: String): String =
     val encoded = base64Encode(userSource)
@@ -158,11 +160,11 @@ object TracedCodeBlock:
   // UI state machine
   // ---------------------------------------------------------------------------
 
-  private sealed trait Phase
-  private case object Idle                                                   extends Phase
-  private case object Running                                                extends Phase
-  private final case class Failed(message: String)                           extends Phase
-  private final case class Ready(trace: Trace, stepIndex: Int, playing: Boolean) extends Phase
+  sealed private trait Phase
+  private case object Idle                                                       extends Phase
+  private case object Running                                                    extends Phase
+  final private case class Failed(message: String)                               extends Phase
+  final private case class Ready(trace: Trace, stepIndex: Int, playing: Boolean) extends Phase
 
   private val StepDelayMs = 700
 
@@ -373,7 +375,7 @@ object TracedCodeBlock:
     <.pre(
       ^.className := "traced-code__source not-prose",
       lines.zipWithIndex.toVdomArray { case (line, i) =>
-        val lineNo = i + 1
+        val lineNo    = i + 1
         val isCurrent = currentLine.contains(lineNo)
         val cls =
           if isCurrent then "traced-code__line traced-code__line--current"
@@ -543,6 +545,7 @@ object TracedCodeBlock:
         <.span(
           ^.className := "traced-code__progress",
           s"trace ready · ${total} frame${if total == 1 then "" else "s"}"
-        ),
+        )
+      ,
       visibilityToggle(visible, onToggleVisible)
     )

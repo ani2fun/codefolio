@@ -5,11 +5,11 @@ import japgolly.scalajs.react.*
 import japgolly.scalajs.react.vdom.html_<^.*
 
 /**
- * Runtime dispatcher for `Block.D3Widget(name, payload)`. The widget catalog is a closed map from
- * widget-name → component; an unknown name renders an inline error so the rest of the chapter still mounts.
+ * Runtime dispatcher for `Block.D3Widget(name, payload)`. The widget catalog is a closed map from widget-name
+ * → component; an unknown name renders an inline error so the rest of the chapter still mounts.
  *
- * New widgets land here as new cases. The structural decode in `shared.cortex.Blocks` is deliberately loose
- * — each widget owns the schema of its payload — so growing the catalog never touches shared.
+ * New widgets land here as new cases. The structural decode in `shared.cortex.Blocks` is deliberately loose —
+ * each widget owns the schema of its payload — so growing the catalog never touches shared.
  */
 object D3WidgetBlock:
 

@@ -9,9 +9,9 @@ import scala.scalajs.js
 import scala.util.{Failure, Success, Try}
 
 /**
- * Array traversal stepper — the first widget in the D3 catalog. Renders a row of cells with one or more
- * named markers per step and an optional highlighted range. Step controls (prev/next/play/reset) scrub
- * through the author-defined steps.
+ * Array traversal stepper — the first widget in the D3 catalog. Renders a row of cells with one or more named
+ * markers per step and an optional highlighted range. Step controls (prev/next/play/reset) scrub through the
+ * author-defined steps.
  *
  * Payload schema (JSON):
  * {{{
@@ -76,10 +76,10 @@ object ArrayTraversal:
 
   private def parsePayload(json: String): Either[String, Spec] =
     Try {
-      val raw    = js.JSON.parse(json).asInstanceOf[js.Dynamic]
-      val itemsJ = raw.items.asInstanceOf[js.Array[js.Any]]
-      val items  = itemsJ.toList.map(v => js.Dynamic.global.String(v).asInstanceOf[String])
-      val title  = raw.title.asInstanceOf[js.UndefOr[String]].toOption.filter(_.nonEmpty)
+      val raw      = js.JSON.parse(json).asInstanceOf[js.Dynamic]
+      val itemsJ   = raw.items.asInstanceOf[js.Array[js.Any]]
+      val items    = itemsJ.toList.map(v => js.Dynamic.global.String(v).asInstanceOf[String])
+      val title    = raw.title.asInstanceOf[js.UndefOr[String]].toOption.filter(_.nonEmpty)
       val rawSteps = raw.steps.asInstanceOf[js.UndefOr[js.Array[js.Dynamic]]].toOption.getOrElse(js.Array())
       val steps = rawSteps.toList.map { s =>
         val mks = s.markers.asInstanceOf[js.UndefOr[js.Array[js.Dynamic]]].toOption
@@ -121,7 +121,9 @@ object ArrayTraversal:
 
   private def colorFor(marker: Marker, fallbackIdx: Int): String =
     marker.color
-      .orElse(Option.when(fallbackIdx >= 0 && fallbackIdx < PaletteByIndex.length)(PaletteByIndex(fallbackIdx)))
+      .orElse(
+        Option.when(fallbackIdx >= 0 && fallbackIdx < PaletteByIndex.length)(PaletteByIndex(fallbackIdx))
+      )
       .getOrElse(DefaultColor)
 
   // Escape values that land inside SVG attribute strings / text nodes. Items
@@ -153,8 +155,12 @@ object ArrayTraversal:
           else "array-traversal__cell"
         s"""<g>
            |  <rect class="$cls" x="${cellX(i)}" y="$cellY" width="$CellSize" height="$CellSize" rx="6"/>
-           |  <text class="array-traversal__cell-label" x="${cellX(i) + CellSize / 2}" y="${cellY + CellSize / 2 + 5}" text-anchor="middle">${esc(label)}</text>
-           |  <text class="array-traversal__cell-index" x="${cellX(i) + CellSize / 2}" y="${cellY + CellSize + 12}" text-anchor="middle">$i</text>
+           |  <text class="array-traversal__cell-label" x="${cellX(
+            i
+          ) + CellSize / 2}" y="${cellY + CellSize / 2 + 5}" text-anchor="middle">${esc(label)}</text>
+           |  <text class="array-traversal__cell-index" x="${cellX(
+            i
+          ) + CellSize / 2}" y="${cellY + CellSize + 12}" text-anchor="middle">$i</text>
            |</g>""".stripMargin
       }
       .mkString("\n")
@@ -170,7 +176,9 @@ object ArrayTraversal:
           Some(
             s"""<g class="array-traversal__marker">
                |  <path d="M ${cx - 5} ${laneY + 6} L ${cx + 5} ${laneY + 6} L $cx ${laneY - 2} Z" fill="$color"/>
-               |  <text class="array-traversal__marker-label" x="$cx" y="${laneY + MarkerLaneH - 14}" text-anchor="middle" fill="$color">${esc(m.name)}</text>
+               |  <text class="array-traversal__marker-label" x="$cx" y="${laneY + MarkerLaneH - 14}" text-anchor="middle" fill="$color">${esc(
+                m.name
+              )}</text>
                |</g>""".stripMargin
           )
       }
