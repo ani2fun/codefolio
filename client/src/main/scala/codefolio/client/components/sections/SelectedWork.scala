@@ -12,8 +12,8 @@ import scala.scalajs.js
  * SelectedWork — three-row scannable strip between Hero and About.
  *
  * The "30-second skim path" the design brief calls out as the missing piece of the original site. Each row
- * condenses a single role into: company-italic | dates · location · role mono | one-sentence blurb
- * \| primary tech tags right-aligned | arrow ↗
+ * condenses a single role into: company-italic | dates · location · role mono | one-sentence blurb \| primary
+ * tech tags right-aligned | arrow ↗
  *
  * Picks are driven by the `featured: true` flag in `experienceData.json`. If no entries are flagged we fall
  * back to the first three (which match Europcar / Audi / Disney by virtue of reverse-chronological JSON order
