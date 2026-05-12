@@ -8,16 +8,16 @@ import scala.util.{Failure, Success, Try}
 
 /**
  * Replication-lag widget — two parallel timelines (leader, replica) showing the same sequence of writes
- * arriving at different times. A draggable "read time" cursor on each timeline reveals what value the
- * reader sees if it queries at that moment: the leader always shows the latest committed write; the
- * replica shows whichever write has propagated through the lag window. When the reader's clock is in
- * the lag window after a write, the replica returns *stale data* — that's the read-your-writes hazard,
- * highlighted in red on the readout.
+ * arriving at different times. A draggable "read time" cursor on each timeline reveals what value the reader
+ * sees if it queries at that moment: the leader always shows the latest committed write; the replica shows
+ * whichever write has propagated through the lag window. When the reader's clock is in the lag window after a
+ * write, the replica returns *stale data* — that's the read-your-writes hazard, highlighted in red on the
+ * readout.
  *
  * Two sliders: `lagMs` (replication lag — sync replication ~10 ms; async cross-region ~50–500 ms) and
- * `readDelayMs` (how long after the latest write the reader queries). Drag `readDelayMs` below `lagMs`
- * and the replica's value diverges from the leader's by exactly one write. That is the difference
- * between strong reads and eventually-consistent reads, made visceral.
+ * `readDelayMs` (how long after the latest write the reader queries). Drag `readDelayMs` below `lagMs` and
+ * the replica's value diverges from the leader's by exactly one write. That is the difference between strong
+ * reads and eventually-consistent reads, made visceral.
  *
  * Re-used in:
  *   - Lesson 11 (replication) — primary.
@@ -39,9 +39,9 @@ import scala.util.{Failure, Success, Try}
  *
  *   - `lagMs` is the simulated time the replica is behind the leader on every write.
  *   - `readDelayMs` is how long after the *latest* write the reader queries the system.
- *   - `writeCount` (default 5) is how many writes to include in the timeline; `writeIntervalMs` (100)
- *     is the spacing between writes. The total timeline width is `writeCount * writeIntervalMs + lagMs
- *     + readDelayMs`, with the SVG scaled to fit.
+ *   - `writeCount` (default 5) is how many writes to include in the timeline; `writeIntervalMs` (100) is the
+ *     spacing between writes. The total timeline width is `writeCount * writeIntervalMs + lagMs +
+ *     readDelayMs`, with the SVG scaled to fit.
  */
 object ReplicationLagSimulator:
 
@@ -74,14 +74,14 @@ object ReplicationLagSimulator:
 
   private def parsePayload(json: String): Either[String, Spec] =
     Try {
-      val raw    = js.JSON.parse(json).asInstanceOf[js.Dynamic]
-      val title  = raw.title.asInstanceOf[js.UndefOr[String]].toOption.filter(_.nonEmpty)
-      val lag    = raw.lagMs.asInstanceOf[js.UndefOr[Double]].toOption.getOrElse(80.0).toInt
-      val lagR   = parseRange(raw.lagRange, (0, 500))
-      val rd     = raw.readDelayMs.asInstanceOf[js.UndefOr[Double]].toOption.getOrElse(30.0).toInt
-      val rdR    = parseRange(raw.readDelayRange, (0, 500))
-      val wc     = raw.writeCount.asInstanceOf[js.UndefOr[Double]].toOption.getOrElse(5.0).toInt
-      val wi     = raw.writeIntervalMs.asInstanceOf[js.UndefOr[Double]].toOption.getOrElse(100.0).toInt
+      val raw   = js.JSON.parse(json).asInstanceOf[js.Dynamic]
+      val title = raw.title.asInstanceOf[js.UndefOr[String]].toOption.filter(_.nonEmpty)
+      val lag   = raw.lagMs.asInstanceOf[js.UndefOr[Double]].toOption.getOrElse(80.0).toInt
+      val lagR  = parseRange(raw.lagRange, (0, 500))
+      val rd    = raw.readDelayMs.asInstanceOf[js.UndefOr[Double]].toOption.getOrElse(30.0).toInt
+      val rdR   = parseRange(raw.readDelayRange, (0, 500))
+      val wc    = raw.writeCount.asInstanceOf[js.UndefOr[Double]].toOption.getOrElse(5.0).toInt
+      val wi    = raw.writeIntervalMs.asInstanceOf[js.UndefOr[Double]].toOption.getOrElse(100.0).toInt
       Spec(title, lag, lagR._1, lagR._2, rd, rdR._1, rdR._2, wc, wi)
     } match
       case Success(s) if s.lagMin < 0 || s.lagMax < s.lagMin =>
@@ -130,12 +130,12 @@ object ReplicationLagSimulator:
   // ===========================================================================
 
   private def buildSvg(spec: Spec, lagMs: Int, readDelayMs: Int): String =
-    val ws       = writes(spec, lagMs)
-    val timeMax  = ws.last.replicaTime + readDelayMs + spec.writeIntervalMs
-    val plotW    = ViewBoxWidth - LeftPad - RightPad
-    val laneLY   = TopPad
-    val laneRY   = TopPad + LaneHeight + LaneGap
-    val nowAtMs  = ws.last.leaderTime + readDelayMs
+    val ws      = writes(spec, lagMs)
+    val timeMax = ws.last.replicaTime + readDelayMs + spec.writeIntervalMs
+    val plotW   = ViewBoxWidth - LeftPad - RightPad
+    val laneLY  = TopPad
+    val laneRY  = TopPad + LaneHeight + LaneGap
+    val nowAtMs = ws.last.leaderTime + readDelayMs
 
     def tx(t: Int): Double =
       if timeMax <= 0 then LeftPad else LeftPad + (t.toDouble / timeMax.toDouble) * plotW
@@ -283,7 +283,8 @@ object ReplicationLagSimulator:
                 readoutRow(
                   "Replica read",
                   if onReplica == 0 then "no writes yet" else s"sees W$onReplica",
-                  if stale then s"stale by ${onLeader - onReplica} write${if onLeader - onReplica == 1 then "" else "s"} — the read-your-writes hazard"
+                  if stale then
+                    s"stale by ${onLeader - onReplica} write${if onLeader - onReplica == 1 then "" else "s"} — the read-your-writes hazard"
                   else "in sync with the leader for this query"
                 ),
                 readoutRow(

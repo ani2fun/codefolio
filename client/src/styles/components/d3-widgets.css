@@ -891,4 +891,91 @@
     .replication-lag__readout-note {
         @apply text-xs text-muted-foreground;
     }
+
+    /* ─── Hot shard simulator ─────────────────────────────────────────── */
+    .hot-shard {
+        @apply my-6 rounded-lg border border-border bg-card p-4;
+    }
+    .hot-shard__title {
+        @apply mb-3 text-center text-sm font-medium text-muted-foreground;
+    }
+    .hot-shard__frame {
+        @apply flex justify-center;
+    }
+    .hot-shard__svg {
+        @apply block w-full h-auto;
+    }
+    .hot-shard__axis {
+        stroke: var(--color-border, #e5e7eb);
+        stroke-width: 1;
+    }
+    .hot-shard__y-label, .hot-shard__x-axis-title {
+        font-size: 11px;
+        fill: var(--color-muted-foreground, #64748b);
+    }
+    .hot-shard__x-label {
+        font-size: 11px;
+        fill: var(--color-foreground, #0a0f25);
+        font-variant-numeric: tabular-nums;
+    }
+    .hot-shard__bar {
+        fill: hsl(var(--primary) / 0.65);
+        transition: fill 200ms ease;
+    }
+    .hot-shard__bar--hot {
+        fill: hsl(var(--destructive));
+    }
+    .hot-shard__bar-label {
+        font-size: 10px;
+        font-weight: 600;
+        fill: #ffffff;
+        pointer-events: none;
+    }
+    .hot-shard__bar-label--outside {
+        fill: var(--color-foreground, #0a0f25);
+    }
+    .hot-shard__controls {
+        @apply mt-3 flex flex-col gap-3 items-stretch max-w-xl mx-auto;
+    }
+    .hot-shard__strategy-row {
+        @apply flex flex-wrap items-center justify-center gap-2;
+    }
+    .hot-shard__strategy-label {
+        @apply text-xs uppercase tracking-wide text-muted-foreground mr-2;
+    }
+    .hot-shard__strategy {
+        @apply inline-flex h-8 items-center rounded-full border border-border bg-background
+               px-3 text-xs font-medium text-foreground transition-colors hover:bg-accent;
+    }
+    .hot-shard__strategy--active {
+        @apply border-primary bg-primary text-primary-foreground hover:bg-primary/90;
+    }
+    .hot-shard__slider-row {
+        @apply flex flex-col gap-1.5;
+    }
+    .hot-shard__slider-text {
+        @apply text-sm font-medium text-foreground tabular-nums text-center;
+    }
+    .hot-shard__slider {
+        @apply h-2 w-full appearance-none rounded-full bg-muted accent-primary;
+    }
+    .hot-shard__slider::-webkit-slider-thumb {
+        @apply h-4 w-4 rounded-full bg-primary;
+        appearance: none;
+    }
+    .hot-shard__readout {
+        @apply mt-3 grid grid-cols-1 gap-1 rounded-md border border-border bg-background p-3 text-sm;
+    }
+    .hot-shard__readout-row {
+        @apply grid grid-cols-1 gap-1 border-b border-border/40 py-1 last:border-b-0 sm:grid-cols-[1fr_auto_2fr] sm:items-baseline sm:gap-3;
+    }
+    .hot-shard__readout-label {
+        @apply text-xs uppercase tracking-wide text-muted-foreground;
+    }
+    .hot-shard__readout-value {
+        @apply text-base font-semibold tabular-nums text-foreground;
+    }
+    .hot-shard__readout-note {
+        @apply text-xs text-muted-foreground;
+    }
 }

@@ -7,6 +7,7 @@ import codefolio.client.components.cortex.widgets.{
   ConsistentHashRing,
   EstimationCalculator,
   HandshakeTimeline,
+  HotShardSimulator,
   LatencyScaledTime,
   PartitionSimulator,
   QueueingSimulator,
@@ -48,13 +49,15 @@ object D3WidgetBlock:
         BTreeWalker.Component(BTreeWalker.Props(props.payload))
       case "replication-lag" =>
         ReplicationLagSimulator.Component(ReplicationLagSimulator.Props(props.payload))
+      case "hot-shard" =>
+        HotShardSimulator.Component(HotShardSimulator.Props(props.payload))
       case other =>
         <.div(
           ^.className := "d3-widget__error",
           <.p(^.className := "d3-widget__error-title", "Unknown D3 widget"),
           <.p(
             ^.className := "d3-widget__error-message",
-            s"""Widget "$other" is not registered. Available widgets: array-traversal, latency-scaled-time, estimation-calculator, partition-simulator, queueing-simulator, handshake-timeline, consistent-hash-ring, cache-stampede, btree-walker, replication-lag."""
+            s"""Widget "$other" is not registered. Available widgets: array-traversal, latency-scaled-time, estimation-calculator, partition-simulator, queueing-simulator, handshake-timeline, consistent-hash-ring, cache-stampede, btree-walker, replication-lag, hot-shard."""
           )
         )
   }
