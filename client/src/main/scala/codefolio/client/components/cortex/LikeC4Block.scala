@@ -74,7 +74,12 @@ object LikeC4Block:
               ^.className := "likec4-iframe__frame",
               ^.src       := props.src,
               ^.title     := labelTitle,
-              ^.height    := props.height.getOrElse(DefaultHeight).toString,
+              // scalajs-react's typed `^.height` is silently dropped on
+              // <iframe> in the React VDOM layer (verified in the DOM —
+              // the attribute never lands). Use inline CSS instead.
+              ^.style := js.Dynamic
+                .literal(height = s"${props.height.getOrElse(DefaultHeight)}px")
+                .asInstanceOf[js.Object],
               loadingAttr := "lazy"
             ),
             <.button(
@@ -101,6 +106,17 @@ object LikeC4Block:
                   ^.src       := props.src,
                   ^.title     := labelTitle,
                   loadingAttr := "lazy"
+                ),
+                // LikeC4's standalone viewer hides the React Flow controls panel
+                // (`enableControls: false` is hardcoded in the bundle), so we
+                // surface the mouse-wheel + drag affordance ourselves. Synthetic
+                // +/- buttons would be fragile — d3-zoom under React Flow rejects
+                // non-trusted wheel events, so dispatchEvent doesn't move the
+                // viewport. The hint is the honest UX cue.
+                <.div(
+                  ^.className   := "likec4-modal__hint",
+                  ^.aria.hidden := true,
+                  "Scroll to zoom · Drag to pan"
                 ),
                 <.button(
                   ^.tpe := "button",

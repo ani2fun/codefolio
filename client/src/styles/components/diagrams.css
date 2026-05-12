@@ -160,4 +160,10 @@
     .likec4-modal__close-icon {
         @apply h-4 w-4;
     }
+    .likec4-modal__hint {
+        /* Bottom-left affordance: the LikeC4 standalone viewer doesn't render
+           the React Flow controls panel, but mouse-wheel + drag still work. */
+        @apply absolute bottom-3 left-3 rounded-md bg-background/85 border border-border
+               px-2.5 py-1 text-xs font-medium text-muted-foreground select-none pointer-events-none;
+    }
 }
