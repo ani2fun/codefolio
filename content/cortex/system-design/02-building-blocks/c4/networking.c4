@@ -12,7 +12,7 @@
 // are declared once in workspace.c4 and shared across the LikeC4 project.
 
 model {
-  user = actor 'Browser user' {
+  browserUser = actor 'Browser user' {
     description 'Types https://example.com and waits for first paint.'
   }
 
@@ -46,16 +46,23 @@ model {
     }
   }
 
-  user -> resolver 'A / AAAA query for www.example.com'
-  resolver -> user 'returns CDN anycast IP'
-  user -> cdn 'HTTPS request — TCP/QUIC + TLS + HTTP GET'
+  browserUser -> resolver 'A / AAAA query for www.example.com'
+  resolver -> browserUser 'returns CDN anycast IP'
+  browserUser -> cdn 'HTTPS request — TCP/QUIC + TLS + HTTP GET'
   cdn -> origin 'cache miss — origin fetch on the small fraction of misses'
 }
 
 views {
-  view buildingblocks_networking_overview of user {
+  // System-landscape view (no `of` clause) — shows peer systems side by
+  // side. A scoped view (e.g. `of cdn`) would zoom INTO the CDN and only
+  // show its containers + immediate neighbours, which is the wrong shape
+  // for an overview meant to display the whole browser → DNS → CDN →
+  // origin topology. Listing the elements explicitly (rather than
+  // `include *`) keeps the view focused on this lesson; otherwise LikeC4
+  // pulls in every element from every other `.c4` file in the project.
+  view buildingblocks_networking_overview {
     title 'Networking — system context (browser → DNS → CDN → origin)'
-    include *
+    include browserUser, resolver, cdn, origin
   }
 
   view buildingblocks_networking_cdn_internals of cdn {
