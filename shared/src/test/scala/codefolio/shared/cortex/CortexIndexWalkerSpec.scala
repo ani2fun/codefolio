@@ -73,6 +73,29 @@ object CortexIndexWalkerSpec extends ZIOSpecDefault:
           r.index.books.head.chapters.map(_.slug) == List("first", "second", "late")
         )
       },
+      test("'index.md' sorts before numbered siblings within its directory") {
+        // Each Part has its own index.md that introduces the section. It should land in the sidebar
+        // *above* the part's first numbered lesson, not after the last one.
+        val tree = book(
+          "guide",
+          children = List(
+            section(
+              "01-foundations",
+              children = List(
+                chapter("03-third.md", "# Third"),
+                chapter("01-first.md", "# First"),
+                chapter("index.md", "# Foundations overview"),
+                chapter("02-second.md", "# Second")
+              )
+            )
+          )
+        )
+        val Right(r) = CortexIndexWalker.walk(List(tree)): @unchecked
+        assertTrue(
+          r.index.books.head.chapters.map(_.slug) ==
+            List("foundations-index", "foundations-first", "foundations-second", "foundations-third")
+        )
+      },
       test("nested sections become groupPath entries; chapter slug joins all order-stripped segments") {
         val tree = book(
           "guide",

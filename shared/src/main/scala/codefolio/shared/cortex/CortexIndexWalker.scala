@@ -261,5 +261,16 @@ object CortexIndexWalker:
   private def ordered(entries: List[CortexEntry]): List[CortexEntry] =
     entries.sortBy(c => (extractOrder(c.name), c.name.toLowerCase))
 
+  /**
+   * Numeric ordering key for sibling entries.
+   *
+   *   - `index.md` (or a bare `index` directory) sorts first within its level. The Part-level
+   *     `01-foundations/index.md` is the landing page for "Part 1 — Foundations" and should appear *above*
+   *     `01-what-system-design-means.md` in the sidebar, not after the last lesson.
+   *   - `01-foo`, `02-bar`, … sort by their leading integer.
+   *   - Everything else falls to the end (`Int.MaxValue`).
+   */
   private def extractOrder(name: String): Int =
-    "^(\\d+)".r.findPrefixMatchOf(name).map(_.group(1).toInt).getOrElse(Int.MaxValue)
+    val stripped = name.stripSuffix(".md")
+    if stripped == "index" then -1
+    else "^(\\d+)".r.findPrefixMatchOf(name).map(_.group(1).toInt).getOrElse(Int.MaxValue)
