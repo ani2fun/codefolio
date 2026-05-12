@@ -109,6 +109,8 @@ object ChapterContent:
       D3WidgetBlock.Component(D3WidgetBlock.Props(widget, payload))
     case Block.TracedCode(language, source) =>
       TracedCodeBlock.Component(TracedCodeBlock.Props(language, source))
+    case Block.LikeC4(src, height, title) =>
+      LikeC4Block.Component(LikeC4Block.Props(src, height, title))
 
   private def toGroupTab(t: Block.Tab): RunnableCodeGroup.Tab =
     RunnableCodeGroup.Tab(

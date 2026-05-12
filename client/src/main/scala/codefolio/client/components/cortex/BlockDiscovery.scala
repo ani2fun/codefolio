@@ -60,7 +60,7 @@ object BlockDiscovery:
     def decode(node: dom.HTMLElement): Either[BlockDecodeError, Block]
 
   private val Discoverers: List[Discoverer] =
-    List(RunnableCode, RunnableGroup, Mermaid, D2Slides, D2Inline, D3Widget, TracedCode)
+    List(RunnableCode, RunnableGroup, Mermaid, D2Slides, D2Inline, D3Widget, TracedCode, LikeC4)
 
   private object RunnableCode extends Discoverer:
     override val className: String = "runnable-code"
@@ -141,6 +141,15 @@ object BlockDiscovery:
       val lang = nonEmpty(node.getAttribute("data-lang"))
       val src  = nonEmpty(node.getAttribute("data-source")).flatMap(uriDecode)
       Blocks.decodeTracedCode(lang, src)
+
+  private object LikeC4 extends Discoverer:
+    override val className: String = "likec4-iframe"
+
+    override def decode(node: dom.HTMLElement): Either[BlockDecodeError, Block] =
+      val src    = nonEmpty(node.getAttribute("data-src"))
+      val height = nonEmpty(node.getAttribute("data-height"))
+      val title  = nonEmpty(node.getAttribute("data-title"))
+      Blocks.decodeLikeC4(src, height, title)
 
   // ---------------------------------------------------------------------------
   // Shims

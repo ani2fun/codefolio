@@ -559,6 +559,52 @@ const remarkUnwrapImages: Plugin<[], Root> = () => (tree) => {
   });
 };
 
+// ---- Rewrite LikeC4 iframes to discoverable placeholders ----------------
+//
+// Authors embed LikeC4 views as raw `<iframe src="/c4/view/...">` tags in
+// markdown. `remark-parse` produces an `html` node whose `value` is the raw
+// HTML, and `remark-rehype` with `allowDangerousHtml: true` passes it through
+// as a `raw` HAST node — never as an `iframe` element we could visit.
+//
+// So we rewrite at the mdast stage: walk every `html` node, find iframes
+// whose `src` starts with `/c4/`, and replace them with a placeholder
+// `<div class="likec4-iframe" data-src=... data-height=... data-title=...>`.
+// `BlockDiscovery` picks the div up and mounts the LikeC4Block component
+// (which renders its own iframe + zoom button + modal).
+//
+// Bare-bones regex over a known-shape author input — our content writes
+// `<iframe ...></iframe>` with whitespace between attrs, no `>` in attr
+// values, and an explicit closing tag.
+
+const escapeAttr = (s: string): string =>
+  s
+    .replace(/&/g, "&amp;")
+    .replace(/"/g, "&quot;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;");
+
+const remarkRewriteLikeC4Iframes: Plugin<[], Root> = () => (tree) => {
+  visit(tree, "html", (node: Html) => {
+    if (!node.value.includes("/c4/")) return;
+    node.value = node.value.replace(
+      /<iframe\b([^>]*)>\s*<\/iframe>/gi,
+      (full, attrs: string) => {
+        const srcMatch = /\bsrc="(\/c4\/[^"]+)"/.exec(attrs);
+        if (!srcMatch) return full;
+        const heightMatch = /\bheight="([^"]+)"/.exec(attrs);
+        const titleMatch = /\btitle="([^"]+)"/.exec(attrs);
+        const heightAttr = heightMatch
+          ? ` data-height="${escapeAttr(heightMatch[1])}"`
+          : "";
+        const titleAttr = titleMatch
+          ? ` data-title="${escapeAttr(titleMatch[1])}"`
+          : "";
+        return `<div class="likec4-iframe" data-src="${escapeAttr(srcMatch[1])}"${heightAttr}${titleAttr}></div>`;
+      },
+    );
+  });
+};
+
 // ---- Custom code handler ------------------------------------------------
 //
 // Routes:
@@ -773,6 +819,7 @@ export async function renderChapter(source: string): Promise<RenderResult> {
     .use(remarkGroupD2Slides)
     .use(remarkGroupRunnable)
     .use(remarkUnwrapImages)
+    .use(remarkRewriteLikeC4Iframes)
     .use(remarkRehype, {
       handlers: { code: codeHandler },
       // Allow our custom div placeholders + d2's inline SVG markup to pass

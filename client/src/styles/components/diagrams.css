@@ -121,4 +121,43 @@
     .mermaid__error-message {
         @apply whitespace-pre-wrap text-xs;
     }
+
+    /* ─── LikeC4 iframe ──────────────────────────────────────────── */
+    /* Mirrors `.diagram` (D2) — `group` stays literal in markup so the
+       hover-zoom button can use group-hover: on its descendant button. */
+    .likec4-iframe {
+        @apply relative my-6 overflow-hidden rounded-lg border border-border bg-card;
+    }
+    .likec4-iframe__frame {
+        @apply block w-full;
+    }
+    .likec4-iframe__zoom-button {
+        @apply absolute top-2 right-2 inline-flex items-center gap-1 rounded-md bg-background/90
+               border border-border px-2 py-1 text-xs font-medium text-foreground
+               opacity-0 group-hover:opacity-100 focus-visible:opacity-100
+               transition-opacity hover:bg-accent;
+    }
+    .likec4-iframe__zoom-icon {
+        @apply h-3.5 w-3.5;
+    }
+    .likec4-modal {
+        @apply fixed inset-0 z-[60] bg-black/80 flex items-center justify-center p-4;
+    }
+    .likec4-modal__card {
+        /* width/height intentionally sized in viewport units so the LikeC4 SPA
+           has as much room as possible without bleeding to the edge. */
+        @apply relative rounded-lg bg-card shadow-2xl overflow-hidden;
+        width: 95vw;
+        height: 90vh;
+    }
+    .likec4-modal__frame {
+        @apply block w-full h-full;
+    }
+    .likec4-modal__close {
+        @apply absolute top-3 right-3 rounded-md bg-background/90 border border-border p-2
+               hover:bg-accent text-foreground;
+    }
+    .likec4-modal__close-icon {
+        @apply h-4 w-4;
+    }
 }

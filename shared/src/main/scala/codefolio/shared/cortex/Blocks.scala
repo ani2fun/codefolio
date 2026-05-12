@@ -129,6 +129,24 @@ object Blocks:
       src  <- source.toRight(BlockDecodeError.MissingAttribute("traced-code-block", "data-source"))
     yield Block.TracedCode(lang, src)
 
+  /**
+   * Decode a `likec4-iframe` placeholder. `src` (from `data-src`) is the URL of the LikeC4 view (e.g.
+   * `/c4/view/foo`) and is the only required attribute. `height` (from `data-height`) is the inline iframe
+   * height in pixels; malformed values fall through as `None` so the renderer uses its default. `title` (from
+   * `data-title`) is the accessible label for the iframe; empty-string is normalised to `None`.
+   *
+   * Validation stays minimal — the LikeC4 SPA itself decides what to render for a given `src`, and a 404
+   * inside the iframe is a runtime concern, not a placeholder-decode concern.
+   */
+  def decodeLikeC4(
+      src: Option[String],
+      height: Option[String],
+      title: Option[String]
+  ): Either[BlockDecodeError, Block.LikeC4] =
+    src
+      .toRight(BlockDecodeError.MissingAttribute("likec4-iframe", "data-src"))
+      .map(s => Block.LikeC4(s, height.flatMap(_.toIntOption), title.filter(_.nonEmpty)))
+
 /**
  * The decoded payload of a single placeholder `<div>` in a rendered Chapter. Each variant maps 1:1 to a
  * Scala.js React component on the client; the renderer (`ChapterContent`) is a total `Block => VdomElement`
@@ -176,6 +194,17 @@ object Block:
    * panel + step controls.
    */
   final case class TracedCode(language: String, source: String) extends Block
+
+  /**
+   * Embedded LikeC4 diagram view, surfaced as an `<iframe>` pointing at the LikeC4 SPA (proxied under `/c4`).
+   * `src` is the upstream URL (e.g. `/c4/view/foundations_cp_cluster_containers`); `height` is the optional
+   * inline pixel height the author asked for (renderer falls back to a default when absent); `title` is the
+   * optional accessible label (already markdown-author-controlled via the original `title` attribute).
+   *
+   * The component wraps the iframe with a hover-visible Zoom button that opens a near-fullscreen modal —
+   * mirrors the `D2Inline` affordance but delegates pan/zoom inside the diagram to the LikeC4 SPA itself.
+   */
+  final case class LikeC4(src: String, height: Option[Int], title: Option[String]) extends Block
 
 /**
  * Why a placeholder `<div>` could not be turned into a `Block`. Both the JVM specs and the Scala.js
