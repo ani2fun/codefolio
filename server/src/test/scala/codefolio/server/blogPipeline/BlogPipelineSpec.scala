@@ -79,7 +79,10 @@ object BlogPipelineSpec extends ZIOSpecDefault:
     test("falls back to humanised slug when frontmatter is missing") {
       for
         pipeline <- BlogPipeline.from(
-          FakeBlogFs(FakeBlogFs.Snapshot(mtime = 1L, posts = List("untitled-post" -> "Just body, no fence."))),
+          FakeBlogFs(FakeBlogFs.Snapshot(
+            mtime = 1L,
+            posts = List("untitled-post" -> "Just body, no fence.")
+          )),
           autoReload = false
         )
         idx     <- pipeline.index
@@ -113,14 +116,20 @@ object BlogPipelineSpec extends ZIOSpecDefault:
     test("rebuilds the index when mtime advances and autoReload=true") {
       for
         fs <- ZIO.succeed(
-          FakeBlogFs(FakeBlogFs.Snapshot(mtime = 1L, posts = List("a" -> "---\ntitle: A\npublishedAt: 2025-01-01\n---\nA")))
+          FakeBlogFs(FakeBlogFs.Snapshot(
+            mtime = 1L,
+            posts = List("a" -> "---\ntitle: A\npublishedAt: 2025-01-01\n---\nA")
+          ))
         )
         pipeline <- BlogPipeline.from(fs, autoReload = true)
         first    <- pipeline.index
-        _        = fs.advance(2L, List(
-          "a" -> "---\ntitle: A\npublishedAt: 2025-01-01\n---\nA",
-          "b" -> "---\ntitle: B\npublishedAt: 2026-01-01\n---\nB"
-        ))
+        _ = fs.advance(
+          2L,
+          List(
+            "a" -> "---\ntitle: A\npublishedAt: 2025-01-01\n---\nA",
+            "b" -> "---\ntitle: B\npublishedAt: 2026-01-01\n---\nB"
+          )
+        )
         second <- pipeline.index
       yield assertTrue(
         first.posts.map(_.slug) == List("a"),
@@ -131,7 +140,10 @@ object BlogPipelineSpec extends ZIOSpecDefault:
     test("serves from cache when mtime is unchanged") {
       for
         fs <- ZIO.succeed(
-          FakeBlogFs(FakeBlogFs.Snapshot(mtime = 1L, posts = List("a" -> "---\ntitle: A\npublishedAt: 2025-01-01\n---\nA")))
+          FakeBlogFs(FakeBlogFs.Snapshot(
+            mtime = 1L,
+            posts = List("a" -> "---\ntitle: A\npublishedAt: 2025-01-01\n---\nA")
+          ))
         )
         pipeline <- BlogPipeline.from(fs, autoReload = true)
         _        <- pipeline.index

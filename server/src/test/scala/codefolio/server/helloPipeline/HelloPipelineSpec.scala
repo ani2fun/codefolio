@@ -23,8 +23,8 @@ object HelloPipelineSpec extends ZIOSpecDefault:
           greeting.cached,
           greeting.visits == 7L,
           greeting.message == "Hello from ZIO + Postgres",
-          visits.calls == 0L,             // cache hit short-circuits Postgres
-          eventLog.stored.size == 1,      // event still appended
+          visits.calls == 0L,        // cache hit short-circuits Postgres
+          eventLog.stored.size == 1, // event still appended
           eventLog.stored.head.visits == 7L
         )
       },
@@ -53,11 +53,11 @@ object HelloPipelineSpec extends ZIOSpecDefault:
           coldGreeting <- pipeline.greet
           warmGreeting <- pipeline.greet
         yield assertTrue(
-          !coldGreeting.cached,                     // first call: cold read, cached=false
-          warmGreeting.cached,                      // second call: cache hit, cached=true
-          warmGreeting.visits == 1L,                // same visit count served from cache
-          visits.calls == 1L,                       // Postgres only hit once
-          cache.stored.exists(g => !g.cached)       // stored form remains canonical
+          !coldGreeting.cached,               // first call: cold read, cached=false
+          warmGreeting.cached,                // second call: cache hit, cached=true
+          warmGreeting.visits == 1L,          // same visit count served from cache
+          visits.calls == 1L,                 // Postgres only hit once
+          cache.stored.exists(g => !g.cached) // stored form remains canonical
         )
       },
       test("Redis GET down: degrades to cold read, still returns a Greeting") {

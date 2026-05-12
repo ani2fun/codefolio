@@ -66,9 +66,9 @@ object BlockDiscovery:
     override val className: String = "runnable-code"
 
     override def decode(node: dom.HTMLElement): Either[BlockDecodeError, Block] =
-      val lang   = nonEmpty(node.getAttribute("data-lang"))
-      val src    = nonEmpty(node.getAttribute("data-source")).flatMap(uriDecode)
-      val label  = nonEmpty(node.getAttribute("data-language-label"))
+      val lang  = nonEmpty(node.getAttribute("data-lang"))
+      val src   = nonEmpty(node.getAttribute("data-source")).flatMap(uriDecode)
+      val label = nonEmpty(node.getAttribute("data-language-label"))
       Blocks.decodeRunnableCode(lang, src, label)
 
   private object RunnableGroup extends Discoverer:

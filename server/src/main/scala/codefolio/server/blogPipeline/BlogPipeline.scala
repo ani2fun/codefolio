@@ -51,12 +51,12 @@ private[blogPipeline] trait BlogFs:
  *     assembles a `BlogPostPayload` in one pass.
  *
  * Mirrors the ADR-0003 internal-seams pattern from Cortex: the [[BlogFs]] accessor trait is package-private;
- * the only public surface is `index` + `post`. Lenient parsing per ADR-0001 — malformed or missing frontmatter
- * fields fall through to humanised-slug defaults.
+ * the only public surface is `index` + `post`. Lenient parsing per ADR-0001 — malformed or missing
+ * frontmatter fields fall through to humanised-slug defaults.
  *
- * Prev/next semantics: posts are sorted descending by `publishedAt`, so for a reader on post `i`,
- * `prevSlug = posts(i + 1).slug` (the older post) and `nextSlug = posts(i - 1).slug` (the newer post).
- * Reads natural in chronological order: prev = "what was posted before this", next = "what came next".
+ * Prev/next semantics: posts are sorted descending by `publishedAt`, so for a reader on post `i`, `prevSlug =
+ * posts(i + 1).slug` (the older post) and `nextSlug = posts(i - 1).slug` (the newer post). Reads natural in
+ * chronological order: prev = "what was posted before this", next = "what came next".
  */
 trait BlogPipeline:
   def index: IO[BlogFailure, BlogIndex]
@@ -168,7 +168,7 @@ final private class BlogPipelineLive(
       for
         state <- cachedState
         idx = state.index.posts.indexWhere(_.slug == slug)
-        _   <- ZIO.unless(idx >= 0)(ZIO.fail(BlogFailure.NotFound: BlogFailure))
+        _ <- ZIO.unless(idx >= 0)(ZIO.fail(BlogFailure.NotFound: BlogFailure))
         summary = state.index.posts(idx)
         fm <- ZIO
           .fromOption(state.slugToFrontmatter.get(slug))
@@ -215,7 +215,7 @@ final private class BlogPipelineLive(
       }
       // Sort descending by `publishedAt` (newest first). Malformed or missing dates sink
       // to the bottom — lenient per ADR-0001, no IndexInvalid raised for bad date strings.
-      sorted = summaries.sortBy(s => parseDate(s.publishedAt))(Ordering[LocalDate].reverse)
+      sorted            = summaries.sortBy(s => parseDate(s.publishedAt))(Ordering[LocalDate].reverse)
       slugToFile        = sorted.map(s => s.slug -> s"${s.slug}.md").toMap
       slugToFrontmatter = parsed.map { case (slug, p) => slug -> p.frontmatter }.toMap
       state             = BlogState(BlogIndex(sorted), slugToFile, slugToFrontmatter, mt)

@@ -28,6 +28,7 @@ final class FakeEventLog private (
   def stored: List[HelloEvent] = appended.get()
 
 object FakeEventLog:
+
   def empty: FakeEventLog =
     FakeEventLog(AtomicReference(List.empty), None, AtomicReference(true))
 

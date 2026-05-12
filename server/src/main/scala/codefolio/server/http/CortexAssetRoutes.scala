@@ -11,14 +11,13 @@ import java.nio.file.Path as NioPath
  *
  * URL: `GET /api/cortex/asset/{book}/{rest...}` → file at `${cortexRoot}/{book}/{rest}`.
  *
- * Why under `/api`? The Vite dev server proxies `/api → :8080` already, so the same URL
- * works in both `bin/dev` (Vite at :5173 proxying to the JVM at :8080) and in production
- * (single JVM at :8080 fronting both API and static frontend). Putting the asset route
- * under `/cortex/...` would require an extra Vite proxy rule and would collide with the
- * SPA chapter routes that are intentionally swallowed by index.html.
+ * Why under `/api`? The Vite dev server proxies `/api → :8080` already, so the same URL works in both
+ * `bin/dev` (Vite at :5173 proxying to the JVM at :8080) and in production (single JVM at :8080 fronting both
+ * API and static frontend). Putting the asset route under `/cortex/...` would require an extra Vite proxy
+ * rule and would collide with the SPA chapter routes that are intentionally swallowed by index.html.
  *
- * Path-safety: the resolved real path must remain inside `cortexRoot`. Symlinks that
- * escape, `..` traversals, and non-files all 404.
+ * Path-safety: the resolved real path must remain inside `cortexRoot`. Symlinks that escape, `..` traversals,
+ * and non-files all 404.
  */
 object CortexAssetRoutes:
 
@@ -77,6 +76,9 @@ object CortexAssetRoutes:
     else if lower.endsWith(".pdf") then "application/pdf"
     else if lower.endsWith(".txt") || lower.endsWith(".md") then "text/plain; charset=utf-8"
     else if lower.endsWith(".json") then "application/json; charset=utf-8"
-    else if lower.endsWith(".mmd") || lower.endsWith(".d2") || lower.endsWith(".dsl") || lower.endsWith(".puml") then
+    else if lower.endsWith(".mmd") || lower.endsWith(".d2") || lower.endsWith(".dsl") || lower.endsWith(
+        ".puml"
+      )
+    then
       "text/plain; charset=utf-8"
     else "application/octet-stream"

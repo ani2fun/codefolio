@@ -7,10 +7,10 @@ import org.scalajs.dom
 
 import scala.scalajs.js
 
-/** Floating "back to top" button that fades in once the user has scrolled
-  * past a threshold. Useful on long DSA chapters where the prev/next pager
-  * sits 8–10 screens down.
-  */
+/**
+ * Floating "back to top" button that fades in once the user has scrolled past a threshold. Useful on long DSA
+ * chapters where the prev/next pager sits 8–10 screens down.
+ */
 object ScrollToTop:
 
   /** Pixels of vertical scroll before the button appears. */
@@ -36,8 +36,8 @@ object ScrollToTop:
           if visibleS.value then "scroll-to-top scroll-to-top--visible"
           else "scroll-to-top scroll-to-top--hidden"
         <.button(
-          ^.tpe := "button",
-          ^.className := cls,
+          ^.tpe        := "button",
+          ^.className  := cls,
           ^.aria.label := "Back to top",
           ^.onClick --> Callback {
             dom.window.scrollTo(0, 0)

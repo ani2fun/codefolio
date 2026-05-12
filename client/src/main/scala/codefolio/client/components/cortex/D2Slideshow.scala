@@ -8,9 +8,9 @@ import org.scalajs.dom
 /**
  * Step-through controller for a group of pre-rendered D2 SVG frames.
  *
- * Markdown authors mark a run of D2 fences with `<div class="d2-slides" ...>`.
- * `render.ts` groups those frames into one placeholder, and `ChapterContent`
- * mounts this component with the captured SVG for each frame.
+ * Markdown authors mark a run of D2 fences with `<div class="d2-slides" ...>`. `render.ts` groups those
+ * frames into one placeholder, and `ChapterContent` mounts this component with the captured SVG for each
+ * frame.
  */
 object D2Slideshow:
 
@@ -88,9 +88,9 @@ object D2Slideshow:
               <.button(
                 ^.tpe := "button",
                 ^.onClick --> previous,
-                ^.disabled := atStart,
+                ^.disabled   := atStart,
                 ^.aria.label := "Previous slide",
-                ^.className := "d2-slideshow__button",
+                ^.className  := "d2-slideshow__button",
                 LucideIcons.ArrowLeft(LucideIcons.withClass("d2-slideshow__button-icon")),
                 "Prev"
               ),
@@ -98,7 +98,7 @@ object D2Slideshow:
                 ^.tpe := "button",
                 ^.onClick --> togglePlay,
                 ^.aria.label := (if playingS.value then "Pause slideshow" else "Play slideshow"),
-                ^.className := "d2-slideshow__button d2-slideshow__button--primary",
+                ^.className  := "d2-slideshow__button d2-slideshow__button--primary",
                 if playingS.value then
                   LucideIcons.Pause(LucideIcons.withClass("d2-slideshow__button-icon"))
                 else LucideIcons.Play(LucideIcons.withClass("d2-slideshow__button-icon")),
@@ -107,18 +107,18 @@ object D2Slideshow:
               <.button(
                 ^.tpe := "button",
                 ^.onClick --> next,
-                ^.disabled := atEnd,
+                ^.disabled   := atEnd,
                 ^.aria.label := "Next slide",
-                ^.className := "d2-slideshow__button",
+                ^.className  := "d2-slideshow__button",
                 "Next",
                 LucideIcons.ArrowRight(LucideIcons.withClass("d2-slideshow__button-icon"))
               ),
               <.button(
                 ^.tpe := "button",
                 ^.onClick --> reset,
-                ^.disabled := atStart && !playingS.value,
+                ^.disabled   := atStart && !playingS.value,
                 ^.aria.label := "Reset slideshow",
-                ^.className := "d2-slideshow__button d2-slideshow__button--icon",
+                ^.className  := "d2-slideshow__button d2-slideshow__button--icon",
                 LucideIcons.RotateCcw(LucideIcons.withClass("d2-slideshow__button-icon"))
               ),
               <.span(

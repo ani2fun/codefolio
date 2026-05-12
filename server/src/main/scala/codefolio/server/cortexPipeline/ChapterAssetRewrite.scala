@@ -5,11 +5,10 @@ import java.util.regex.Matcher
 /**
  * Rewrite relative asset URLs in chapter markdown to absolute `/api/cortex/asset/...` URLs.
  *
- * Chapter authors write natural relative paths (`./diagrams/foo.svg`, `../shared/bar.png`)
- * and the pipeline rewrites them to `/api/cortex/asset/<book>/<resolved-path>` before
- * sending the chapter payload to the client. This keeps lesson markdown portable —
- * the same `./diagrams/foo.svg` reference works on GitHub's file viewer and inside
- * Cortex without authors needing to know URL conventions.
+ * Chapter authors write natural relative paths (`./diagrams/foo.svg`, `../shared/bar.png`) and the pipeline
+ * rewrites them to `/api/cortex/asset/<book>/<resolved-path>` before sending the chapter payload to the
+ * client. This keeps lesson markdown portable — the same `./diagrams/foo.svg` reference works on GitHub's
+ * file viewer and inside Cortex without authors needing to know URL conventions.
  *
  * What gets rewritten:
  *   - HTML `<img src="...">` and `<a href="...">` (and similar attrs on `<source>`, `<video>`, etc.)
@@ -18,12 +17,12 @@ import java.util.regex.Matcher
  * What gets left alone:
  *   - Already-absolute URLs: `/...`, `http(s)://...`, `mailto:`, `data:`, `tel:`, `javascript:`
  *   - In-page anchors: `#section`
- *   - Chapter cross-links (`.md` suffix or `.md#anchor` / `.md?query`) — those are a routing
- *     concern handled separately (or currently broken; see TODO)
+ *   - Chapter cross-links (`.md` suffix or `.md#anchor` / `.md?query`) — those are a routing concern handled
+ *     separately (or currently broken; see TODO)
  *
- * Path normalisation: `.` and `..` segments are collapsed against the chapter's directory.
- * A `../shared/bar.png` from a chapter at `01-foundations/04-cap-and-pacelc.md` resolves
- * to `shared/bar.png`, not `01-foundations/../shared/bar.png`.
+ * Path normalisation: `.` and `..` segments are collapsed against the chapter's directory. A
+ * `../shared/bar.png` from a chapter at `01-foundations/04-cap-and-pacelc.md` resolves to `shared/bar.png`,
+ * not `01-foundations/../shared/bar.png`.
  */
 object ChapterAssetRewrite:
 
@@ -33,10 +32,14 @@ object ChapterAssetRewrite:
   /**
    * Rewrite all relative asset URLs in `raw` markdown.
    *
-   * @param raw                  chapter markdown body (frontmatter already stripped)
-   * @param bookSlug             book slug, e.g. `"system-design"`
-   * @param chapterPathInBook    chapter's path within the book, e.g. `"01-foundations/04-cap-and-pacelc.md"`
-   * @param assetPrefix          URL prefix to mount assets under
+   * @param raw
+   *   chapter markdown body (frontmatter already stripped)
+   * @param bookSlug
+   *   book slug, e.g. `"system-design"`
+   * @param chapterPathInBook
+   *   chapter's path within the book, e.g. `"01-foundations/04-cap-and-pacelc.md"`
+   * @param assetPrefix
+   *   URL prefix to mount assets under
    */
   def rewrite(
       raw: String,
@@ -92,18 +95,18 @@ object ChapterAssetRewrite:
 
   /** Match `foo.md`, `foo.md#anchor`, `foo.md?query` — these are chapter cross-links. */
   private def endsWithMd(url: String): Boolean =
-    val cut    = url.indexOf('#') match
+    val cut = url.indexOf('#') match
       case -1 => url.indexOf('?') match
           case -1 => url
           case i  => url.substring(0, i)
-      case i  => url.substring(0, i)
+      case i => url.substring(0, i)
     cut.endsWith(".md")
 
   /**
-   * Collapse `.` and `..` segments. Empty segments (from leading or doubled slashes) are
-   * dropped. A `..` at the start (or after only `..`s) is preserved — it means "escape the
-   * book root", which is a no-op as far as Cortex's chapter-scoped resolution goes, but we
-   * keep the literal form so the result is honest about what was asked.
+   * Collapse `.` and `..` segments. Empty segments (from leading or doubled slashes) are dropped. A `..` at
+   * the start (or after only `..`s) is preserved — it means "escape the book root", which is a no-op as far
+   * as Cortex's chapter-scoped resolution goes, but we keep the literal form so the result is honest about
+   * what was asked.
    */
   private[cortexPipeline] def normalize(segs: IndexedSeq[String]): IndexedSeq[String] =
     segs.foldLeft(Vector.empty[String]):

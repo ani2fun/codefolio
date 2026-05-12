@@ -11,9 +11,9 @@ import scala.util.Try
  *
  * The "instant" scroll behaviour is the load-bearing detail: a page-wide `scroll-behavior: smooth` CSS rule
  * fights with scalajs-react Router's link interception — the router sees the `#anchor` URL change and
- * re-renders before the browser finishes its smooth scroll, which cancels the animation. Forcing
- * `behavior: 'instant'` sidesteps that. All three click sites and the on-mount fragment scroll go through
- * here so the workaround lives in one place.
+ * re-renders before the browser finishes its smooth scroll, which cancels the animation. Forcing `behavior:
+ * 'instant'` sidesteps that. All three click sites and the on-mount fragment scroll go through here so the
+ * workaround lives in one place.
  *
  * Click handlers are no-ops when the target element doesn't exist — in that case we let the click fall
  * through to default browser behaviour rather than swallowing it.
@@ -40,15 +40,16 @@ object HashScroll:
       scrollTo(slug)
 
   /**
-   * In-page hash-link click handler for React-mounted links. Prevents the default + stops propagation, scrolls
-   * the target into view, and pushes the hash to history via `replaceState` (no router re-render).
+   * In-page hash-link click handler for React-mounted links. Prevents the default + stops propagation,
+   * scrolls the target into view, and pushes the hash to history via `replaceState` (no router re-render).
    */
   def onHashLinkClick(e: ReactMouseEvent, slug: String): Callback =
     Callback(handleClick(slug, () => e.preventDefault(), () => e.stopPropagation()))
 
-  /** Like [[onHashLinkClick]] but for native `addEventListener` handlers, which receive a `dom.MouseEvent`
-    * rather than scalajs-react's wrapped `ReactMouseEvent`.
-    */
+  /**
+   * Like [[onHashLinkClick]] but for native `addEventListener` handlers, which receive a `dom.MouseEvent`
+   * rather than scalajs-react's wrapped `ReactMouseEvent`.
+   */
   def onHashLinkNative(e: dom.MouseEvent, slug: String): Unit =
     handleClick(slug, () => e.preventDefault(), () => e.stopPropagation())
 

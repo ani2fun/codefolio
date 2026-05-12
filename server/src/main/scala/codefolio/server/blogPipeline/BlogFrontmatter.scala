@@ -14,14 +14,14 @@ import codefolio.shared.api.Endpoints.{BlogMetaItem, BlogPostFrontmatter}
  *   - One `key: value` pair per line; whitespace around `:` is tolerated.
  *   - String values may be optionally quoted with `"..."` or `'...'`.
  *   - `tags` accepts inline-list syntax `[a, b, c]` — split on `,` and trim, brackets stripped.
- *   - `meta` is a semicolon-separated list of `label=value` pairs:
- *     `meta: Read Time=15 min; Active Prep=10 minutes; Difficulty=Beginner`
- *     A pipe (`|`) is also accepted as the label/value delimiter for posts that prefer it.
+ *   - `meta` is a semicolon-separated list of `label=value` pairs: `meta: Read Time=15 min; Active Prep=10
+ *     minutes; Difficulty=Beginner` A pipe (`|`) is also accepted as the label/value delimiter for posts that
+ *     prefer it.
  *   - `readMinutes` parses as `Int`; non-numeric → `None`.
  *
- * Lenient per ADR-0001: a malformed or unterminated frontmatter fence yields a frontmatter with
- * `title = humanise(slug)`, `publishedAt = ""`, and the entire file as body. The date parser in
- * `BlogPipeline` then sinks the post to the bottom of the index rather than failing the whole tree.
+ * Lenient per ADR-0001: a malformed or unterminated frontmatter fence yields a frontmatter with `title =
+ * humanise(slug)`, `publishedAt = ""`, and the entire file as body. The date parser in `BlogPipeline` then
+ * sinks the post to the bottom of the index rather than failing the whole tree.
  */
 object BlogFrontmatter:
 

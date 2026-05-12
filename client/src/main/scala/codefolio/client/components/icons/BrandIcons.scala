@@ -21,9 +21,10 @@ object BrandIcons:
   def LinkedIn(className: String, title: String = "LinkedIn"): VdomNode =
     render(className, title, LinkedInPathD)
 
-  /** Scala wave-mark — three stacked ribbons, the Simple Icons rendering of
-   *  the official Scala logo. Used in runnable-code language chips where the
-   *  emoji-only tab label can't stand in for a real brand identity. */
+  /**
+   * Scala wave-mark — three stacked ribbons, the Simple Icons rendering of the official Scala logo. Used in
+   * runnable-code language chips where the emoji-only tab label can't stand in for a real brand identity.
+   */
   def Scala(className: String, title: String = "Scala"): VdomNode =
     render(className, title, ScalaPathD)
 

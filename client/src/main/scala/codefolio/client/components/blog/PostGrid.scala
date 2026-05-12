@@ -39,7 +39,8 @@ object PostGrid:
           s"${post.publishedAt}$readingMinutes"
         )
       ),
-      post.eyebrow.filter(_.nonEmpty).map(e => <.div(^.className := "blog__card-eyebrow", e): VdomNode).getOrElse(EmptyVdom),
+      post.eyebrow.filter(_.nonEmpty).map(e => <.div(^.className := "blog__card-eyebrow", e): VdomNode)
+        .getOrElse(EmptyVdom),
       <.h2(^.className := "blog__card-title", post.title),
       <.p(^.className  := "blog__card-summary", post.summary),
       <.div(

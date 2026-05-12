@@ -6,9 +6,9 @@ package codefolio.shared.cortex
  * `D2Slides`, `D2Inline`. Each one mounts a Scala.js React component on the client.
  *
  * This module owns the **structural validation** that turns raw attribute / child data into a typed `Block`
- * (or a `BlockDecodeError`). It runs identically on the JVM and on Scala.js so the validation is unit-testable
- * without a DOM. The Scala.js DOM walk + URI / JSON shims live in `client.components.cortex.BlockDiscovery`,
- * which feeds these decoders.
+ * (or a `BlockDecodeError`). It runs identically on the JVM and on Scala.js so the validation is
+ * unit-testable without a DOM. The Scala.js DOM walk + URI / JSON shims live in
+ * `client.components.cortex.BlockDiscovery`, which feeds these decoders.
  *
  * Mirrors ADR-0004's server-side bytes↔values split: live wire adapters do the IO, pure modules do the
  * shape-checking, tests bypass IO and exercise the pure modules directly.
@@ -106,6 +106,7 @@ object Blocks:
 sealed trait Block
 
 object Block:
+
   final case class RunnableCode(
       language: String,
       source: String,

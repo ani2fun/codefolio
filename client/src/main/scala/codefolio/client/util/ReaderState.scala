@@ -9,8 +9,8 @@ import scala.util.Try
  *
  *   - **progress** — 0..100 percent, written on scroll while reading, replayed as a 3px terracotta rail next
  *     to each chapter row in the sidebar.
- *   - **minutes**  — words-per-minute estimate computed once from a chapter's raw markdown body, replayed as
- *     a small mono-stamp ("12m") at the right of each chapter row.
+ *   - **minutes** — words-per-minute estimate computed once from a chapter's raw markdown body, replayed as a
+ *     small mono-stamp ("12m") at the right of each chapter row.
  *
  * Stored under keys `cortex:progress:<slug>` and `cortex:minutes:<slug>` respectively; reads tolerate
  * missing/garbage values and return the defaults so a corrupt entry never breaks the sidebar render.

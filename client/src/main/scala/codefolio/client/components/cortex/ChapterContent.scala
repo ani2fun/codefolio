@@ -11,8 +11,8 @@ import scala.scalajs.js
 import scala.util.Try
 
 /**
- * Owns the post-render mounting half of the Chapter pipeline: drops the rendered HTML into an `<article>`
- * via `dangerouslySetInnerHTML`, asks [[BlockDiscovery]] to find every Cortex Block placeholder, and React-
+ * Owns the post-render mounting half of the Chapter pipeline: drops the rendered HTML into an `<article>` via
+ * `dangerouslySetInnerHTML`, asks [[BlockDiscovery]] to find every Cortex Block placeholder, and React-
  * portal-mounts a Scala.js component into each one.
  *
  * Discovery + structural validation live in `BlockDiscovery` (DOM walk + JS shims) and `shared.cortex.Blocks`

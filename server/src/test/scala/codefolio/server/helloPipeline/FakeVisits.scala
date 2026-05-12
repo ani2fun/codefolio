@@ -26,6 +26,7 @@ final class FakeVisits private (
   def setPing(v: Boolean): Unit = pingValue.set(v)
 
 object FakeVisits:
+
   /** First call returns 1, second 2, and so on. Ping returns true. */
   def succeeding(): FakeVisits =
     FakeVisits(n => ZIO.succeed(n), AtomicReference(true))
