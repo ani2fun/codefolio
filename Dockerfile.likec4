@@ -5,7 +5,34 @@
 FROM node:20-alpine AS builder
 WORKDIR /build
 RUN npm install -g likec4@latest
-COPY content/cortex/system-design/05-application-architecture/c4/ ./c4/
+
+# LikeC4 reads .c4 files recursively from its project root, so every Part's
+# c4/ directory under content/cortex/ is fair game for the same model namespace.
+# We materialise the project root in two passes:
+#
+#   1. Copy the entire content/cortex/ tree to a scratch area.
+#   2. find -exec each .c4 file into /build/c4/<part>/<file>.c4 so filename
+#      collisions across Parts are impossible by construction (LikeC4 view
+#      names already live in a flat namespace — see workspace.c4 conventions).
+#
+# A non-zero find result fails the build loudly rather than silently shipping
+# an empty SPA.
+COPY content/cortex/ /tmp/cortex/
+RUN set -eu; \
+    mkdir -p /build/c4; \
+    count=0; \
+    for src in $(find /tmp/cortex -type f -name '*.c4' | sort); do \
+      dir=$(dirname "$src"); \
+      part=$(basename "$(dirname "$dir")"); \
+      mkdir -p "/build/c4/$part"; \
+      cp "$src" "/build/c4/$part/$(basename "$src")"; \
+      count=$((count + 1)); \
+    done; \
+    if [ "$count" -eq 0 ]; then echo "ERROR: no .c4 sources found under content/cortex/"; exit 1; fi; \
+    rm -rf /tmp/cortex; \
+    echo "Collected $count LikeC4 source(s):"; \
+    find /build/c4 -type f -name '*.c4' | sort
+
 WORKDIR /build/c4
 # --base /c4/ makes the SPA load its assets from /c4/... so it works behind
 # codefolio's subpath proxy without rewriting HTML at runtime.

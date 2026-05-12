@@ -223,6 +223,30 @@ object CortexIndexWalkerSpec extends ZIOSpecDefault:
         val Right(r) = CortexIndexWalker.walk(List(tree)): @unchecked
         assertTrue(r.index.books.head.chapters.map(_.slug) == List("c"))
       },
+      test("section dirs named 'c4' are skipped (LikeC4 source files, not chapters)") {
+        // Each Part holds its lesson .c4 sources in a sibling c4/ directory; the
+        // LikeC4 build pipeline collects them into the SPA project root. Cortex
+        // must not try to render them as chapters even if a stray .md lands
+        // there during authoring.
+        val tree = book(
+          "system-design",
+          children = List(
+            chapter("01-intro.md", "# Intro"),
+            section(
+              "01-foundations",
+              children = List(
+                chapter("01-what.md", "# What"),
+                section(
+                  "c4",
+                  children = List(chapter("authoring-notes.md", "# Author notes"))
+                )
+              )
+            )
+          )
+        )
+        val Right(r) = CortexIndexWalker.walk(List(tree)): @unchecked
+        assertTrue(r.index.books.head.chapters.map(_.slug) == List("intro", "foundations-what"))
+      },
       test("a book at the top level literally named 'examples' is skipped too") {
         val tree = List(
           CortexDir(name = "examples", children = List(chapter("README.md", "# top-level"))),

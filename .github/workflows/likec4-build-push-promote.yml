@@ -5,7 +5,10 @@ on:
     branches:
       - main
     paths:
-      - 'content/cortex/system-design/05-application-architecture/c4/**'
+      # Any .c4 source under content/cortex/ feeds the same LikeC4 SPA.
+      # Each Part keeps its lesson sources in a sibling c4/ subdirectory;
+      # Dockerfile.likec4 collects them recursively into the project root.
+      - 'content/cortex/**/*.c4'
       - 'Dockerfile.likec4'
       - '.github/workflows/likec4-build-push-promote.yml'
       - '.github/workflows/_build-push-promote.yml'

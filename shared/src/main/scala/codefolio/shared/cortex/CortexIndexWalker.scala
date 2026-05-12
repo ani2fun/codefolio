@@ -105,11 +105,13 @@ object CortexIndexWalker:
    *
    *   - `examples` — runnable code projects sitting next to a lesson (their `README.md` and any internal docs
    *     would otherwise pollute the sidebar as rogue chapters).
+   *   - `c4` — LikeC4 `.c4` source files for a Part's interactive diagrams. Collected by the LikeC4 build
+   *     pipeline (`Dockerfile.likec4`) into the LikeC4 SPA project root; never directly served from Cortex.
    *
    * The check is on the order-prefix-stripped name, so both `examples/` and `01-examples/` qualify. Add new
    * reserved names sparingly: a single literal is much easier to reason about than a regex.
    */
-  val ReservedAuxDirs: Set[String] = Set("examples")
+  val ReservedAuxDirs: Set[String] = Set("examples", "c4")
 
   /**
    * Whether a directory name is eligible to become a Book / Section. Excludes `_*`, `.*`, anything
