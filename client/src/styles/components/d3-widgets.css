@@ -316,4 +316,88 @@
     .partition-simulator__progress {
         @apply min-w-24 text-center text-xs font-medium tabular-nums text-muted-foreground;
     }
+
+    /* ─── Queueing simulator ──────────────────────────────────────── */
+    .queueing-simulator {
+        @apply my-6 rounded-lg border border-border bg-card p-4;
+    }
+    .queueing-simulator__title {
+        @apply mb-3 text-center text-sm font-medium text-muted-foreground;
+    }
+    .queueing-simulator__frame {
+        @apply flex justify-center;
+    }
+    .queueing-simulator__svg {
+        @apply block w-full h-auto;
+    }
+    .queueing-simulator__chart-title {
+        @apply text-xs font-medium;
+        fill: var(--color-muted-foreground, #64748b);
+        font-size: 11px;
+    }
+    .queueing-simulator__axis {
+        stroke: var(--color-border, #e5e7eb);
+        stroke-width: 1;
+    }
+    .queueing-simulator__grid {
+        stroke: var(--color-border, #e5e7eb);
+        stroke-width: 0.5;
+        stroke-dasharray: 2 4;
+        opacity: 0.5;
+    }
+    .queueing-simulator__y-label, .queueing-simulator__x-label {
+        @apply text-xs;
+        fill: var(--color-muted-foreground, #64748b);
+        font-size: 10px;
+        font-variant-numeric: tabular-nums;
+    }
+    .queueing-simulator__bar {
+        fill: hsl(var(--muted-foreground) / 0.5);
+        transition: fill 200ms ease;
+    }
+    .queueing-simulator__bar--selected {
+        fill: hsl(var(--primary));
+    }
+    .queueing-simulator__bar-label {
+        font-size: 10px;
+        font-weight: 600;
+        fill: var(--color-foreground, #0a0f25);
+        font-variant-numeric: tabular-nums;
+    }
+    .queueing-simulator__overflow {
+        font-size: 14px;
+        fill: hsl(var(--destructive));
+        font-weight: 700;
+    }
+    .queueing-simulator__controls {
+        @apply mt-3 flex justify-center;
+    }
+    .queueing-simulator__slider-label {
+        @apply flex w-full max-w-md flex-col items-stretch gap-2;
+    }
+    .queueing-simulator__slider-text {
+        @apply text-center text-sm font-medium text-foreground tabular-nums;
+    }
+    .queueing-simulator__slider {
+        @apply h-2 w-full appearance-none rounded-full bg-muted accent-primary;
+    }
+    .queueing-simulator__slider::-webkit-slider-thumb {
+        @apply h-4 w-4 rounded-full bg-primary;
+        appearance: none;
+    }
+    .queueing-simulator__readout {
+        @apply mt-4 grid grid-cols-1 gap-1 rounded-md border border-border bg-background p-3 text-sm;
+    }
+    .queueing-simulator__readout-row {
+        @apply grid grid-cols-1 gap-1 border-b border-border/40 py-1 last:border-b-0 sm:grid-cols-[1fr_auto_2fr] sm:items-baseline sm:gap-3;
+    }
+    .queueing-simulator__readout-label {
+        @apply text-xs uppercase tracking-wide text-muted-foreground;
+    }
+    .queueing-simulator__readout-value {
+        @apply text-base font-semibold tabular-nums text-foreground;
+    }
+    .queueing-simulator__readout-note {
+        @apply text-xs text-muted-foreground;
+    }
 }

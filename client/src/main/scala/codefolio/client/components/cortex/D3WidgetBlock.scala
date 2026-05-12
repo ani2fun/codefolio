@@ -4,7 +4,8 @@ import codefolio.client.components.cortex.widgets.{
   ArrayTraversal,
   EstimationCalculator,
   LatencyScaledTime,
-  PartitionSimulator
+  PartitionSimulator,
+  QueueingSimulator
 }
 import japgolly.scalajs.react.*
 import japgolly.scalajs.react.vdom.html_<^.*
@@ -30,13 +31,15 @@ object D3WidgetBlock:
         EstimationCalculator.Component(EstimationCalculator.Props(props.payload))
       case "partition-simulator" =>
         PartitionSimulator.Component(PartitionSimulator.Props(props.payload))
+      case "queueing-simulator" =>
+        QueueingSimulator.Component(QueueingSimulator.Props(props.payload))
       case other =>
         <.div(
           ^.className := "d3-widget__error",
           <.p(^.className := "d3-widget__error-title", "Unknown D3 widget"),
           <.p(
             ^.className := "d3-widget__error-message",
-            s"""Widget "$other" is not registered. Available widgets: array-traversal, latency-scaled-time, estimation-calculator, partition-simulator."""
+            s"""Widget "$other" is not registered. Available widgets: array-traversal, latency-scaled-time, estimation-calculator, partition-simulator, queueing-simulator."""
           )
         )
   }
