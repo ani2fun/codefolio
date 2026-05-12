@@ -44,12 +44,14 @@ object LikeC4ProxyRoutes:
     )
 
   private def buildUpstreamUrl(rest: zio.http.Path, req: Request): String =
-    val restPath = rest.encode
-    val normalisedPath =
-      if restPath.isEmpty || restPath == "/" then "/" else restPath
-    val query = req.url.queryParams.encode
+    // `trailing` captures the segments after `/c4` without a leading slash, so
+    // a request for `/c4/view/index` arrives as `rest.encode == "view/index"`.
+    // We always insert the slash between `/c4` and the captured rest so empty
+    // and non-empty paths both produce a well-formed upstream URL.
+    val restPath = rest.encode.stripPrefix("/")
+    val query    = req.url.queryParams.encode
     val querySep = if query.nonEmpty then "?" else ""
-    s"$UpstreamBaseUrl/c4$normalisedPath$querySep$query"
+    s"$UpstreamBaseUrl/c4/$restPath$querySep$query"
 
   private def proxy(upstreamUrl: String): UIO[Response] =
     ZIO
