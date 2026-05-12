@@ -11,122 +11,36 @@ specification {
 }
 
 model {
-  visitor = actor 'Visitor' {
-    description 'Public reader on kakde.eu'
-  }
-
-  operator = actor 'Operator' {
+  user = actor 'Operator' {
     description 'Aniket — administers the homelab'
   }
 
-  // -----------------------------------------------------------------------
-  // Platform: four nodes running the K3s cluster.
-  // -----------------------------------------------------------------------
   homelab = system 'Homelab Platform' {
-    description 'K3s cluster across four Ubuntu nodes joined by a private mesh'
+    description 'K3s cluster across four Ubuntu nodes'
 
     ms1 = container 'ms-1' {
-      description 'K3s control plane and admin host'
+      description 'K3s server and admin host'
     }
     wk1 = container 'wk-1' {
-      description 'Database-class worker'
+      description 'Database worker'
     }
     wk2 = container 'wk-2' {
-      description 'GitOps-class worker'
+      description 'GitOps worker'
     }
     edge = container 'vm-1 (edge)' {
-      description 'Public ingress edge (Traefik)'
+      description 'Public ingress edge'
     }
 
-    operator -> ms1 'kubectl over private mesh'
+    user -> ms1 'kubectl over private mesh'
     edge -> ms1 'overlay traffic'
     edge -> wk1 'overlay traffic'
     edge -> wk2 'overlay traffic'
-  }
-
-  // -----------------------------------------------------------------------
-  // Application: codefolio (the site you are reading right now), plus its
-  // co-deployed runtime dependencies.
-  // -----------------------------------------------------------------------
-  codefolio = system 'Codefolio' {
-    description 'Scala 3 full-stack web app served at kakde.eu'
-
-    web = container 'codefolio-web' {
-      description 'ZIO-HTTP server + Vite-built ScalaJS React frontend'
-    }
-    mongo = container 'codefolio-mongo' {
-      description 'In-namespace event log (ephemeral)'
-    }
-    redis = container 'codefolio-redis' {
-      description 'In-namespace cache (ephemeral)'
-    }
-    piston = container 'piston' {
-      description 'In-cluster Judge0-style code-execution sandbox'
-    }
-    likec4 = container 'likec4' {
-      description 'In-cluster LikeC4 SPA serving this very canvas'
-    }
-
-    web -> mongo 'event log writes'
-    web -> redis 'cached reads'
-    web -> piston 'POST /api/v2/execute (server-side proxy)'
-    web -> likec4 'GET /c4/* (server-side proxy)'
-  }
-
-  postgres = system 'Shared PostgreSQL' {
-    description 'Multi-tenant database used by codefolio, keycloak, dsa-tracker'
-  }
-
-  visitor -> codefolio.web 'https://kakde.eu'
-  codefolio.web -> postgres 'JDBC over private mesh'
-
-  // -----------------------------------------------------------------------
-  // Continuous-deployment loop: code in two GitHub repos lands in the
-  // cluster via image build + manifest commit-back + Argo CD sync.
-  // -----------------------------------------------------------------------
-  cd = system 'Continuous Deployment' {
-    description 'GitOps loop driving image rollouts into the cluster'
-
-    repoApp = container 'github: codefolio repo' {
-      description 'Application source + Dockerfiles + c4/'
-    }
-    repoInfra = container 'github: infra repo' {
-      description 'Kubernetes manifests, Argo Applications, this DSL is built from the app repo'
-    }
-    ci = container 'GitHub Actions' {
-      description 'Builds container images, pushes to GHCR, bumps infra kustomizations'
-    }
-    ghcr = container 'GHCR' {
-      description 'Container image registry'
-    }
-    argo = container 'Argo CD' {
-      description 'Reconciles cluster state from the infra repo'
-    }
-
-    repoApp -> ci 'push to main'
-    ci -> ghcr 'docker buildx push'
-    ci -> repoInfra 'commit-back: bump image newTag'
-    argo -> repoInfra 'poll + reconcile'
-    argo -> homelab 'apply manifests'
   }
 }
 
 views {
   view index of homelab {
-    title 'Homelab — platform overview'
-    description 'Four nodes joined by a private mesh; the public edge fronts the cluster.'
+    title 'Homelab overview'
     include *
-  }
-
-  view codefolioRuntime of codefolio {
-    title 'Codefolio — runtime dependencies'
-    description 'How the codefolio web pod fans out to its co-deployed and shared backends.'
-    include *, visitor, postgres
-  }
-
-  view gitops of cd {
-    title 'Continuous deployment — code to cluster'
-    description 'The GitOps loop: codefolio repo to GHCR to infra repo to Argo CD to the homelab.'
-    include *, homelab
   }
 }

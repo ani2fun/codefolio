@@ -4,7 +4,7 @@
 
 FROM node:20-alpine AS builder
 WORKDIR /build
-RUN npm install -g likec4@1.56.0
+RUN npm install -g likec4@latest
 COPY c4/ ./c4/
 WORKDIR /build/c4
 # --base /c4/ makes the SPA load its assets from /c4/... so it works behind

@@ -38,7 +38,7 @@ The diagram below describes the platform that serves this very page. It's delibe
 
 ## 3. The source behind the picture
 
-Here is the slice of the DSL that produces the canvas above. The full file in [`c4/workspace.c4`](https://github.com/ani2fun/codefolio/blob/main/c4/workspace.c4) also defines the `codefolioRuntime` and `gitops` views linked at the bottom of this page; the model is shared, the views are projections.
+Here is the entire DSL that produces the canvas above:
 
 ```
 specification {
@@ -48,19 +48,19 @@ specification {
 }
 
 model {
-  operator = actor 'Operator' {
+  user = actor 'Operator' {
     description 'Aniket — administers the homelab'
   }
 
   homelab = system 'Homelab Platform' {
     description 'K3s cluster across four Ubuntu nodes'
 
-    ms1  = container 'ms-1'        { description 'K3s control plane and admin host' }
-    wk1  = container 'wk-1'        { description 'Database-class worker' }
-    wk2  = container 'wk-2'        { description 'GitOps-class worker' }
-    edge = container 'vm-1 (edge)' { description 'Public ingress edge (Traefik)' }
+    ms1  = container 'ms-1'        { description 'K3s server and admin host' }
+    wk1  = container 'wk-1'        { description 'Database worker' }
+    wk2  = container 'wk-2'        { description 'GitOps worker' }
+    edge = container 'vm-1 (edge)' { description 'Public ingress edge' }
 
-    operator -> ms1 'kubectl over private mesh'
+    user -> ms1 'kubectl over private mesh'
     edge -> ms1 'overlay traffic'
     edge -> wk1 'overlay traffic'
     edge -> wk2 'overlay traffic'
@@ -69,7 +69,7 @@ model {
 
 views {
   view index of homelab {
-    title 'Homelab — platform overview'
+    title 'Homelab overview'
     include *
   }
 }
@@ -87,16 +87,7 @@ Three things to notice:
 - **Not a substitute for sequence diagrams.** The C4 model describes structure, not behaviour. If you need to show "request flows through A, then B, then C", reach for a sequence diagram and keep C4 as the index.
 - **Not architecture-as-code.** It is architecture-*as-diagrams*-as-code: the model captures what's drawn, not what's deployed. The gap between model and reality must be closed by review — no tool will do that for you.
 
-## 5. The other two views
-
-The same model is sliced into two more views that you can navigate to directly. Each opens the LikeC4 canvas focused on a different system:
-
-- [Codefolio — runtime dependencies](/c4/view/codefolioRuntime) — how the codefolio web pod fans out to its co-deployed and shared backends.
-- [Continuous deployment — code to cluster](/c4/view/gitops) — the GitOps loop from the codefolio repo to GHCR to the infra repo to Argo CD.
-
-Each view is just an `include` filter over the same model — adding a new container automatically lights it up in every view it belongs to, with no per-picture edits.
-
-## 6. Where to go next
+## 5. Where to go next
 
 - [LikeC4 documentation](https://likec4.dev/docs) — the full DSL, view-filtering, theming, embedding.
 - [The C4 model](https://c4model.com) — Simon Brown's original site, including the Containers / Components zoom rules.
