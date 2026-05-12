@@ -612,4 +612,107 @@
     .consistent-hash-ring__readout-note {
         @apply text-xs text-muted-foreground;
     }
+
+    /* ─── Cache stampede simulator ────────────────────────────────────── */
+    .cache-stampede {
+        @apply my-6 rounded-lg border border-border bg-card p-4;
+    }
+    .cache-stampede__title {
+        @apply mb-3 text-center text-sm font-medium text-muted-foreground;
+    }
+    .cache-stampede__frame {
+        @apply flex justify-center;
+    }
+    .cache-stampede__svg {
+        @apply block w-full h-auto;
+    }
+    .cache-stampede__panel-frame {
+        fill: var(--color-background, #f8f5f2);
+        stroke: var(--color-border, #e5e7eb);
+        stroke-width: 1;
+    }
+    .cache-stampede__panel-title {
+        font-size: 13px;
+        font-weight: 600;
+        fill: var(--color-foreground, #0a0f25);
+    }
+    .cache-stampede__panel-subtitle {
+        font-size: 11px;
+        fill: var(--color-muted-foreground, #64748b);
+    }
+    .cache-stampede__axis {
+        stroke: var(--color-border, #e5e7eb);
+        stroke-width: 1;
+    }
+    .cache-stampede__axis-label {
+        font-size: 10px;
+        fill: var(--color-muted-foreground, #64748b);
+        font-variant-numeric: tabular-nums;
+    }
+    .cache-stampede__y-title {
+        font-size: 11px;
+        font-weight: 500;
+        fill: var(--color-muted-foreground, #64748b);
+    }
+    .cache-stampede__bar {
+        transition: fill 200ms ease, opacity 200ms ease;
+    }
+    .cache-stampede__bar--without {
+        fill: #f43f5e; /* rose-500 — the bad case is red */
+        opacity: 0.85;
+    }
+    .cache-stampede__bar--with {
+        fill: #10b981; /* emerald-500 — the good case is green */
+        opacity: 0.9;
+    }
+    .cache-stampede__bar-label {
+        font-size: 11px;
+        font-weight: 600;
+        fill: #ffffff;
+        pointer-events: none;
+    }
+    .cache-stampede__bar-label--above {
+        fill: var(--color-foreground, #0a0f25);
+    }
+    .cache-stampede__verdict {
+        font-size: 12px;
+        font-weight: 600;
+    }
+    .cache-stampede__verdict--bad {
+        fill: hsl(var(--destructive));
+    }
+    .cache-stampede__verdict--ok {
+        fill: var(--color-foreground, #0a0f25);
+    }
+    .cache-stampede__controls {
+        @apply mt-3 flex flex-col gap-3 items-stretch max-w-md mx-auto;
+    }
+    .cache-stampede__slider-row {
+        @apply flex flex-col gap-1.5;
+    }
+    .cache-stampede__slider-text {
+        @apply text-sm font-medium text-foreground tabular-nums text-center;
+    }
+    .cache-stampede__slider {
+        @apply h-2 w-full appearance-none rounded-full bg-muted accent-primary;
+    }
+    .cache-stampede__slider::-webkit-slider-thumb {
+        @apply h-4 w-4 rounded-full bg-primary;
+        appearance: none;
+    }
+    .cache-stampede__readout {
+        @apply mt-4 grid grid-cols-1 gap-1 rounded-md border border-border bg-background p-3 text-sm;
+    }
+    .cache-stampede__readout-row {
+        @apply grid grid-cols-1 gap-1 border-b border-border/40 py-1 last:border-b-0 sm:grid-cols-[1fr_auto_2fr] sm:items-baseline sm:gap-3;
+    }
+    .cache-stampede__readout-label {
+        @apply text-xs uppercase tracking-wide text-muted-foreground;
+    }
+    .cache-stampede__readout-value {
+        @apply text-base font-semibold tabular-nums text-foreground;
+    }
+    .cache-stampede__readout-note {
+        @apply text-xs text-muted-foreground;
+    }
 }

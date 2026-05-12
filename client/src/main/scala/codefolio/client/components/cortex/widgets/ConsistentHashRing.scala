@@ -44,9 +44,11 @@ import scala.util.{Failure, Success, Try}
  *   - `keyCount` is fixed by the spec (no slider). The widget computes ownership for every key at every
  *     slider change. With max 8 nodes × 50 vnodes × 24 keys it remains microsecond-fast.
  *
- * Hash function is FNV-1a-32 — deterministic, well-distributed, simple. Positions on the ring are
- * `hash(s) / 2^32 × 2π`. Key positions, virtual-node positions, and physical-node primary positions are all
- * derived from the same hash, so the visualisation is reproducible.
+ * Hash function is two MurmurHash3 passes (different seeds) XORed and run through a final avalanche pass — a
+ * single MurmurHash3 pass on short prefix-shared inputs ("node-0-v0", "node-1-v0", …) was empirically
+ * clustering ring positions. Positions on the ring are `unsigned(hash) / 2^32 × 2π`. Key positions, virtual-
+ * node positions, and physical-node primary positions are all derived from the same hash, so the
+ * visualisation is reproducible.
  */
 object ConsistentHashRing:
 
@@ -126,22 +128,24 @@ object ConsistentHashRing:
       case Success(s) if s.nodeCount < s.nodeMin || s.nodeCount > s.nodeMax =>
         Left(s"payload.nodeCount must fall within nodeRange [${s.nodeMin}, ${s.nodeMax}]")
       case Success(s) if s.virtualNodes < s.virtualNodesMin || s.virtualNodes > s.virtualNodesMax =>
-        Left(s"payload.virtualNodes must fall within virtualNodeRange [${s.virtualNodesMin}, ${s.virtualNodesMax}]")
+        Left(
+          s"payload.virtualNodes must fall within virtualNodeRange [${s.virtualNodesMin}, ${s.virtualNodesMax}]"
+        )
       case Success(s) if s.keyCount < 1 || s.keyCount > 64 =>
         Left("payload.keyCount must be in [1, 64]")
-      case Success(s)  => Right(s)
-      case Failure(t)  => Left(Option(t.getMessage).getOrElse("invalid payload JSON"))
+      case Success(s) => Right(s)
+      case Failure(t) => Left(Option(t.getMessage).getOrElse("invalid payload JSON"))
 
   // ===========================================================================
   // Ring data — vnodes sorted, key ownership, per-node load
   // ===========================================================================
 
-  private final case class VNode(physicalIdx: Int, vIdx: Int, pos: Double)
+  final private case class VNode(physicalIdx: Int, vIdx: Int, pos: Double)
 
   /**
-   * Build all virtual nodes (one per (physical, vIdx) pair) sorted by angular position. We use Scala's
-   * stdlib `sortInPlaceBy` rather than `java.util.Arrays.sort(Array[Object], Comparator)` because the JVM-
-   * style overload silently breaks on Scala.js for non-primitive arrays — the dropped sort manifests as
+   * Build all virtual nodes (one per (physical, vIdx) pair) sorted by angular position. We use Scala's stdlib
+   * `sortInPlaceBy` rather than `java.util.Arrays.sort(Array[Object], Comparator)` because the JVM- style
+   * overload silently breaks on Scala.js for non-primitive arrays — the dropped sort manifests as
    * pathological load distributions (the bug this method existed for, observed on Lesson 7's first build).
    */
   private def buildVNodes(nodeCount: Int, virtualNodes: Int): Array[VNode] =
@@ -299,8 +303,10 @@ object ConsistentHashRing:
       s"""<text class="consistent-hash-ring__center" x="$RingCx" y="${RingCy - 8}" text-anchor="middle">${esc(
           "Hash ring"
         )}</text>
-         |<text class="consistent-hash-ring__center-sub" x="$RingCx" y="${RingCy + 14}" text-anchor="middle">${nodeCount} node${if nodeCount == 1 then ""
-        else "s"} × $virtualNodes vnode${if virtualNodes == 1 then "" else "s"}</text>""".stripMargin
+         |<text class="consistent-hash-ring__center-sub" x="$RingCx" y="${RingCy + 14}" text-anchor="middle">${nodeCount} node${
+          if nodeCount == 1 then ""
+          else "s"
+        } × $virtualNodes vnode${if virtualNodes == 1 then "" else "s"}</text>""".stripMargin
 
     s"""<svg viewBox="0 0 $ViewBoxWidth $ViewBoxHeight"
        |     class="consistent-hash-ring__svg" role="img"
@@ -399,7 +405,10 @@ object ConsistentHashRing:
                         ^.className := "consistent-hash-ring__swatch",
                         ^.style := js.Dictionary("backgroundColor" -> nodeColor(i)).asInstanceOf[js.Object]
                       ),
-                      <.span(^.className := "consistent-hash-ring__load-text", s"Node ${i + 1}: $count ($pct%)")
+                      <.span(
+                        ^.className := "consistent-hash-ring__load-text",
+                        s"Node ${i + 1}: $count ($pct%)"
+                      )
                     ): VdomNode
                   }.toVdomArray
                 )

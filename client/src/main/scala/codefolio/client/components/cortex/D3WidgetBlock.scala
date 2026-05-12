@@ -2,6 +2,7 @@ package codefolio.client.components.cortex
 
 import codefolio.client.components.cortex.widgets.{
   ArrayTraversal,
+  CacheStampedeSimulator,
   ConsistentHashRing,
   EstimationCalculator,
   HandshakeTimeline,
@@ -39,13 +40,15 @@ object D3WidgetBlock:
         HandshakeTimeline.Component(HandshakeTimeline.Props(props.payload))
       case "consistent-hash-ring" =>
         ConsistentHashRing.Component(ConsistentHashRing.Props(props.payload))
+      case "cache-stampede" =>
+        CacheStampedeSimulator.Component(CacheStampedeSimulator.Props(props.payload))
       case other =>
         <.div(
           ^.className := "d3-widget__error",
           <.p(^.className := "d3-widget__error-title", "Unknown D3 widget"),
           <.p(
             ^.className := "d3-widget__error-message",
-            s"""Widget "$other" is not registered. Available widgets: array-traversal, latency-scaled-time, estimation-calculator, partition-simulator, queueing-simulator, handshake-timeline, consistent-hash-ring."""
+            s"""Widget "$other" is not registered. Available widgets: array-traversal, latency-scaled-time, estimation-calculator, partition-simulator, queueing-simulator, handshake-timeline, consistent-hash-ring, cache-stampede."""
           )
         )
   }
