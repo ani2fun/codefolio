@@ -1,0 +1,22 @@
+// THROWAWAY smoke test for the LikeC4 build pipeline. Verifies that
+// .c4 sources nested under content/cortex/<book>/<part>/c4/ are
+// collected into the same LikeC4 project as the homelab workspace.
+// Delete after the smoke view (/c4/view/foundations_smoke) is observed
+// in the deployed SPA on the feature branch.
+//
+// Note: this file does NOT declare a `specification` block. Element kinds
+// (`system`, `actor`, `container`) are declared once in workspace.c4
+// and shared across every .c4 file LikeC4 merges into the project.
+
+model {
+  smoke = system 'Foundations pre-flight smoke' {
+    description 'Confirms lesson c4 source discovery; remove after verification.'
+  }
+}
+
+views {
+  view foundations_smoke of smoke {
+    title 'Foundations pre-flight smoke'
+    include *
+  }
+}
