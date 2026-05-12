@@ -38,13 +38,13 @@ import scala.util.{Failure, Success, Try}
  *
  *   - `rowCount` is the slider's starting position; the slider is log-mapped so the user can drag from
  *     `rowCountRange[0]` to `rowCountRange[1]` with even resolution per decade.
- *   - `fanout` is the average number of entries per index page. 100 is typical for Postgres on a narrow
- *     key; 200+ for very narrow keys; 50 for wide keys.
+ *   - `fanout` is the average number of entries per index page. 100 is typical for Postgres on a narrow key;
+ *     200+ for very narrow keys; 50 for wide keys.
  *   - `rowsPerPage` is the heap density — typical 100 for narrow rows, 50 for wide ones.
- *   - `randomReadMs` is the per-page latency for an index-lookup page (random read; usually cached, but
- *     the worst case is a cold SSD seek). 0.1 ms is a reasonable Postgres-on-SSD default.
- *   - `sequentialReadMs` is the per-page latency for a sequential scan (read-ahead drops the per-page
- *     cost). 0.01 ms for SSD with read-ahead is a good default.
+ *   - `randomReadMs` is the per-page latency for an index-lookup page (random read; usually cached, but the
+ *     worst case is a cold SSD seek). 0.1 ms is a reasonable Postgres-on-SSD default.
+ *   - `sequentialReadMs` is the per-page latency for a sequential scan (read-ahead drops the per-page cost).
+ *     0.01 ms for SSD with read-ahead is a good default.
  *
  * SVG is built as a string and injected via `dangerouslySetInnerHTML`. State is just the log-slider value;
  * the tree and stats derive from it.
@@ -124,8 +124,8 @@ object BTreeWalker:
     depth
 
   /**
-   * Pages at each level, root → leaf. The leaf level holds `leafPages` pages exactly; every level above is
-   * a ceil-division of the level below by the fanout, growing from 1 page at the root.
+   * Pages at each level, root → leaf. The leaf level holds `leafPages` pages exactly; every level above is a
+   * ceil-division of the level below by the fanout, growing from 1 page at the root.
    */
   private def pagesPerLevel(rowCount: Int, fanout: Int, rowsPerPage: Int): List[Int] =
     val depth  = depthOf(rowCount, fanout, rowsPerPage)
@@ -147,10 +147,10 @@ object BTreeWalker:
   private val SliderTicks = 1000
 
   /**
-   * Map slider position to a "nice" row count from the 1-2-5 series (so the labels land on round numbers
-   * the reader recognises — 100, 200, 500, 1K, 2K, …, 1M, 10M, 100M — instead of 1,010,370). This also
-   * keeps the depth calculation pedagogically clean: at exactly 1 M rows + fanout 100 the depth is 3, and
-   * the snapped slider lands at exactly 1 M when the reader drags to that visual position.
+   * Map slider position to a "nice" row count from the 1-2-5 series (so the labels land on round numbers the
+   * reader recognises — 100, 200, 500, 1K, 2K, …, 1M, 10M, 100M — instead of 1,010,370). This also keeps the
+   * depth calculation pedagogically clean: at exactly 1 M rows + fanout 100 the depth is 3, and the snapped
+   * slider lands at exactly 1 M when the reader drags to that visual position.
    */
   private def niceRound(n: Int): Int =
     if n <= 1 then 1
@@ -253,10 +253,10 @@ object BTreeWalker:
       else ""
 
     // The "seq scan" comparison row at the bottom.
-    val seqY        = TopPad + depth * LevelHeight + 24
-    val seqBarW     = pagesToBarW(leafPages, maxBarPages)
-    val seqBarH     = 22.0
-    val seqRow      =
+    val seqY    = TopPad + depth * LevelHeight + 24
+    val seqBarW = pagesToBarW(leafPages, maxBarPages)
+    val seqBarH = 22.0
+    val seqRow =
       s"""<text class="btree-walker__level-label btree-walker__level-label--seq" x="${LeftPad - 10}" y="${seqY + 16}" text-anchor="end">Seq scan</text>
          |<rect class="btree-walker__bar btree-walker__bar--seq" x="$LeftPad" y="$seqY" width="$seqBarW" height="$seqBarH" rx="3"/>
          |<text class="btree-walker__page-count" x="${LeftPad + seqBarW + 10}" y="${seqY + 16}" text-anchor="start">${esc(
@@ -264,8 +264,10 @@ object BTreeWalker:
         )}</text>""".stripMargin
 
     val pathCaption =
-      s"""<text class="btree-walker__caption" x="$LeftPad" y="${TopPad - 12}" text-anchor="start">Index lookup path — $depth random page read${if depth == 1 then ""
-        else "s"}</text>"""
+      s"""<text class="btree-walker__caption" x="$LeftPad" y="${TopPad - 12}" text-anchor="start">Index lookup path — $depth random page read${
+          if depth == 1 then ""
+          else "s"
+        }</text>"""
 
     s"""<svg viewBox="0 0 $ViewBoxWidth ${seqY + seqBarH + 24}"
        |     class="btree-walker__svg" role="img"

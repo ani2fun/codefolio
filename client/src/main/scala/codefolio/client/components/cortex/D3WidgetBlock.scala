@@ -9,7 +9,8 @@ import codefolio.client.components.cortex.widgets.{
   HandshakeTimeline,
   LatencyScaledTime,
   PartitionSimulator,
-  QueueingSimulator
+  QueueingSimulator,
+  ReplicationLagSimulator
 }
 import japgolly.scalajs.react.*
 import japgolly.scalajs.react.vdom.html_<^.*
@@ -45,13 +46,15 @@ object D3WidgetBlock:
         CacheStampedeSimulator.Component(CacheStampedeSimulator.Props(props.payload))
       case "btree-walker" =>
         BTreeWalker.Component(BTreeWalker.Props(props.payload))
+      case "replication-lag" =>
+        ReplicationLagSimulator.Component(ReplicationLagSimulator.Props(props.payload))
       case other =>
         <.div(
           ^.className := "d3-widget__error",
           <.p(^.className := "d3-widget__error-title", "Unknown D3 widget"),
           <.p(
             ^.className := "d3-widget__error-message",
-            s"""Widget "$other" is not registered. Available widgets: array-traversal, latency-scaled-time, estimation-calculator, partition-simulator, queueing-simulator, handshake-timeline, consistent-hash-ring, cache-stampede, btree-walker."""
+            s"""Widget "$other" is not registered. Available widgets: array-traversal, latency-scaled-time, estimation-calculator, partition-simulator, queueing-simulator, handshake-timeline, consistent-hash-ring, cache-stampede, btree-walker, replication-lag."""
           )
         )
   }

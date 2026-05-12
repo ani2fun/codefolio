@@ -803,4 +803,92 @@
     .btree-walker__readout-note {
         @apply text-xs text-muted-foreground;
     }
+
+    /* ─── Replication-lag simulator ───────────────────────────────────── */
+    .replication-lag {
+        @apply my-6 rounded-lg border border-border bg-card p-4;
+    }
+    .replication-lag__title {
+        @apply mb-3 text-center text-sm font-medium text-muted-foreground;
+    }
+    .replication-lag__frame {
+        @apply flex justify-center;
+    }
+    .replication-lag__svg {
+        @apply block w-full h-auto;
+    }
+    .replication-lag__lane {
+        fill: var(--color-background, #f8f5f2);
+        stroke: var(--color-border, #e5e7eb);
+        stroke-width: 1;
+    }
+    .replication-lag__lane-label {
+        font-size: 12px;
+        font-weight: 600;
+        fill: var(--color-foreground, #0a0f25);
+    }
+    .replication-lag__baseline {
+        stroke: var(--color-border, #e5e7eb);
+        stroke-width: 1;
+        stroke-dasharray: 2 3;
+    }
+    .replication-lag__write {
+        fill: #3b82f6; /* blue-500 */
+        stroke: var(--color-card, #ffffff);
+        stroke-width: 2;
+    }
+    .replication-lag__write-label {
+        font-size: 10px;
+        font-weight: 600;
+        fill: var(--color-foreground, #0a0f25);
+        font-variant-numeric: tabular-nums;
+        pointer-events: none;
+    }
+    .replication-lag__arrow {
+        stroke: #64748b; /* slate-500 */
+        stroke-width: 1.5;
+        stroke-dasharray: 3 3;
+        opacity: 0.6;
+    }
+    .replication-lag__cursor {
+        stroke: hsl(var(--destructive));
+        stroke-width: 2;
+        stroke-dasharray: 6 3;
+    }
+    .replication-lag__cursor-label {
+        font-size: 11px;
+        fill: hsl(var(--destructive));
+        font-weight: 600;
+    }
+    .replication-lag__controls {
+        @apply mt-3 flex flex-col gap-3 items-stretch max-w-xl mx-auto;
+    }
+    .replication-lag__slider-row {
+        @apply flex flex-col gap-1.5;
+    }
+    .replication-lag__slider-text {
+        @apply text-sm font-medium text-foreground tabular-nums text-center;
+    }
+    .replication-lag__slider {
+        @apply h-2 w-full appearance-none rounded-full bg-muted accent-primary;
+    }
+    .replication-lag__slider::-webkit-slider-thumb {
+        @apply h-4 w-4 rounded-full bg-primary;
+        appearance: none;
+    }
+    .replication-lag__readout {
+        @apply mt-3 grid grid-cols-1 gap-1 rounded-md border border-border bg-background p-3 text-sm;
+    }
+    .replication-lag__readout-row {
+        @apply grid grid-cols-1 gap-1 border-b border-border/40 py-1 last:border-b-0 sm:grid-cols-[1fr_auto_2fr] sm:items-baseline sm:gap-3;
+    }
+    .replication-lag__readout-label {
+        @apply text-xs uppercase tracking-wide text-muted-foreground;
+    }
+    .replication-lag__readout-value {
+        @apply text-base font-semibold tabular-nums text-foreground;
+    }
+    .replication-lag__readout-note {
+        @apply text-xs text-muted-foreground;
+    }
 }
