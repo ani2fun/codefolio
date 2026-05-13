@@ -31,6 +31,8 @@ The curriculum is organised as **Modules → Topics → Tutorials**. Each module
 10. [**Concurrency and Systems**](/cortex/data-structures-and-algorithms/concurrency-and-systems-index) — CAS, lock-free queues, concurrent hash maps, hazard pointers.
 11. [**DSA in Real Systems**](/cortex/data-structures-and-algorithms/dsa-in-real-systems-index) — Postgres B-trees, Linux RB-trees, Redis encodings, Git's DAG, LSM trees, routing tables.
 
+**Revision:** [**Quick Reference**](/cortex/data-structures-and-algorithms/quick-reference) — a dense, collapsible cheat-sheet of every pattern's intuition, triggers, complexity, and Python skeleton. Built for fast recall, not first reads.
+
 ---
 
 ## Three reading paths
