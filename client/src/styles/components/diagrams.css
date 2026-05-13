@@ -108,9 +108,31 @@
     }
 
     /* ─── Mermaid ────────────────────────────────────────────────── */
+    /* `group` is added literally in markup so the hover-zoom button uses
+       group-hover: on its descendant button — same pattern as `.diagram`.
+
+       Mermaid emits SVGs at their natural pixel size, which on a wide article
+       reads as a tiny diagram floating in a big card. We force the inline SVG
+       to fill the container width (`w-full`) while keeping aspect ratio
+       (`h-auto`) and cap absolute height (`max-h-[480px]`) so a tall diagram
+       doesn't dominate the scroll. The fullscreen modal ignores these caps and
+       sizes from the zoom state. */
     .mermaid {
-        @apply my-6 flex justify-center overflow-x-auto rounded-lg border border-border
-               bg-card p-4 [&_svg]:max-w-full;
+        @apply relative my-6 rounded-lg border border-border bg-card p-4
+               [&_svg]:block [&_svg]:mx-auto [&_svg]:max-w-full [&_svg]:w-full
+               [&_svg]:h-auto [&_svg]:max-h-[480px];
+    }
+    .mermaid__svg {
+        @apply flex justify-center;
+    }
+    .mermaid__zoom-button {
+        @apply absolute top-2 right-2 inline-flex items-center gap-1 rounded-md bg-background/90
+               border border-border px-2 py-1 text-xs font-medium text-foreground
+               opacity-0 group-hover:opacity-100 focus-visible:opacity-100
+               transition-opacity hover:bg-accent;
+    }
+    .mermaid__zoom-icon {
+        @apply h-3.5 w-3.5;
     }
     .mermaid__error {
         @apply my-6 rounded-lg border border-destructive/40 bg-destructive/10 p-4 text-sm text-destructive;

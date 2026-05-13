@@ -114,16 +114,18 @@
         @apply bg-muted/40;
     }
     .chapter-content details > summary {
-        @apply cursor-pointer font-medium text-foreground py-1 -mx-1 px-1 rounded;
+        @apply cursor-pointer font-medium text-foreground py-1 -mx-1 px-1 rounded
+               flex items-center gap-2;
         list-style: none;
     }
     .chapter-content details > summary::-webkit-details-marker { display: none; }
     .chapter-content details > summary::before {
         content: "▸";
         display: inline-block;
-        width: 1em;
-        margin-right: 0.25em;
-        color: rgb(59 130 246);
+        flex-shrink: 0;
+        color: hsl(var(--foreground));
+        font-size: 3em;     /* keeps the chevron visible next to large heading text */
+        line-height: 1;
         transition: transform 0.15s ease;
     }
     .chapter-content details[open] > summary::before {
@@ -131,6 +133,15 @@
     }
     .chapter-content details > summary p {
         display: inline;
+        margin: 0;
+    }
+    /* Headings inside <summary> (used by the Quick Reference chapter so its
+       collapsed top-level sections still register in the right-rail outline)
+       keep their prose typography but lose the block margins that would push
+       the chevron off-axis from the heading text. The parent <summary> is now
+       a flex row, so margin: 0 is enough — `align-items: center` does the
+       vertical work. */
+    .chapter-content details > summary :is(h1, h2, h3, h4, h5, h6) {
         margin: 0;
     }
     .chapter-content details > *:not(summary) {
