@@ -14,7 +14,7 @@ We assume **zero** prior systems knowledge. We do not assume you have ever heard
 
 ## The four promises this track makes you
 
-We are explicitly trying to be better than [systemdesignschool.io](https://systemdesignschool.io) and [educative.io](https://www.educative.io). The four axes we measure ourselves against:
+The four axes we measure ourselves against:
 
 1. **Runnable.** Every architectural concept ships with code you can clone and run. `docker compose up`, click "Run", or a single `just test` — and the example works on your laptop.
 2. **Quantitative.** No hand-waving. If we say "a memory access is fast and a network call is slow", you will see the actual numbers and an analogy that makes them stick.
