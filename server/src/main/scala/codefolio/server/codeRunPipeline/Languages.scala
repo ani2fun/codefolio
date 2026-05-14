@@ -3,16 +3,21 @@ package codefolio.server.codeRunPipeline
 import codefolio.shared.api.Endpoints.RunnableLanguageInfo
 
 /**
- * The set of languages we expose as runnable code blocks.
+ * The single source of truth for every runnable language and everything the pipeline needs to dispatch it to
+ * a backend.
  *
- * The numeric `id` field is the canonical identifier and matches Judge0's submission language IDs (kept as
- * the canonical key so the same enum works for both Piston and the local Code Runner container, which speaks
- * the Judge0 submissions API protocol). Aliases let the markdown layer (and the user) write `python` or `py`
- * without caring about the IDs.
+ * Each [[Language]] bundles:
+ *   - `info` — the public, codegen'd API shape ([[RunnableLanguageInfo]]: a Judge0 submission id, a display
+ *     label, and the aliases the markdown layer / user can type). The Judge0 id is the canonical key; the
+ *     local Code Runner backend speaks the Judge0 submissions protocol and uses it directly.
+ *   - `pistonName` — the Piston-protocol runtime name, or `None` when Piston can't run this language. The
+ *     orchestration treats `None` as "Piston doesn't support this" and falls through to the Code Runner
+ *     backend.
  *
- * Mirror of `portfolio-app/src/lib/judge0.ts#RUNNABLE_LANGUAGES`. The Piston wire layer
- * ([[PistonWire.pistonLanguage]]) currently maps every entry here onto a Piston runtime; if a future language
- * is added that Piston doesn't support, the orchestration falls back to the Code Runner backend.
+ * The wire adapters ([[PistonWire]], [[CodeRunnerWire]]) read backend ids from here rather than each carrying
+ * its own map — adding a language is one entry in [[all]], not a change spread across three files.
+ *
+ * Mirror of `portfolio-app/src/lib/judge0.ts#RUNNABLE_LANGUAGES`.
  */
 object Languages:
 
@@ -22,31 +27,82 @@ object Languages:
   /** Hard limit on `stdin` size, in UTF-8 bytes. */
   val MaxStdinBytes: Int = 16 * 1024
 
-  val all: List[RunnableLanguageInfo] = List(
-    RunnableLanguageInfo(id = 71, label = "Python 3.8", aliases = Seq("python", "py", "python3")),
-    RunnableLanguageInfo(id = 62, label = "Java 13 (OpenJDK)", aliases = Seq("java")),
-    RunnableLanguageInfo(id = 81, label = "Scala 2.13", aliases = Seq("scala")),
-    RunnableLanguageInfo(id = 50, label = "C (GCC 9.2)", aliases = Seq("c")),
-    RunnableLanguageInfo(id = 54, label = "C++ (GCC 9.2)", aliases = Seq("cpp", "c++", "cxx")),
-    RunnableLanguageInfo(id = 60, label = "Go 1.13", aliases = Seq("go", "golang")),
-    RunnableLanguageInfo(id = 73, label = "Rust 1.40", aliases = Seq("rust", "rs")),
-    RunnableLanguageInfo(id = 78, label = "Kotlin 1.9", aliases = Seq("kotlin", "kt")),
-    RunnableLanguageInfo(id = 74, label = "TypeScript 3.7", aliases = Seq("typescript", "ts")),
-    RunnableLanguageInfo(
-      id = 63,
-      label = "JavaScript (Node.js 12)",
-      aliases = Seq("javascript", "js", "node")
+  /** One runnable language plus its per-backend dispatch knowledge. See the object docstring. */
+  final case class Language(info: RunnableLanguageInfo, pistonName: Option[String]):
+    def id: Int              = info.id
+    def label: String        = info.label
+    def aliases: Seq[String] = info.aliases
+
+  // Judge0 id of Java — the one language whose source needs entrypoint normalisation before either backend
+  // (the `public class` name must match the on-disk file, which both backends write as Main.java).
+  private val JavaId: Int = 62
+
+  val all: List[Language] = List(
+    Language(
+      RunnableLanguageInfo(id = 71, label = "Python 3.8", aliases = Seq("python", "py", "python3")),
+      pistonName = Some("python")
     ),
-    RunnableLanguageInfo(id = 82, label = "SQL (SQLite 3.27)", aliases = Seq("sql", "sqlite"))
+    Language(
+      RunnableLanguageInfo(id = JavaId, label = "Java 13 (OpenJDK)", aliases = Seq("java")),
+      pistonName = Some("java")
+    ),
+    Language(
+      RunnableLanguageInfo(id = 81, label = "Scala 2.13", aliases = Seq("scala")),
+      pistonName = Some("scala")
+    ),
+    Language(
+      RunnableLanguageInfo(id = 50, label = "C (GCC 9.2)", aliases = Seq("c")),
+      pistonName = Some("c")
+    ),
+    Language(
+      RunnableLanguageInfo(id = 54, label = "C++ (GCC 9.2)", aliases = Seq("cpp", "c++", "cxx")),
+      pistonName = Some("c++")
+    ),
+    Language(
+      RunnableLanguageInfo(id = 60, label = "Go 1.13", aliases = Seq("go", "golang")),
+      pistonName = Some("go")
+    ),
+    Language(
+      RunnableLanguageInfo(id = 73, label = "Rust 1.40", aliases = Seq("rust", "rs")),
+      pistonName = Some("rust")
+    ),
+    Language(
+      RunnableLanguageInfo(id = 78, label = "Kotlin 1.9", aliases = Seq("kotlin", "kt")),
+      pistonName = Some("kotlin")
+    ),
+    Language(
+      RunnableLanguageInfo(id = 74, label = "TypeScript 3.7", aliases = Seq("typescript", "ts")),
+      pistonName = Some("typescript")
+    ),
+    Language(
+      RunnableLanguageInfo(
+        id = 63,
+        label = "JavaScript (Node.js 12)",
+        aliases = Seq("javascript", "js", "node")
+      ),
+      pistonName = Some("javascript")
+    ),
+    Language(
+      RunnableLanguageInfo(id = 82, label = "SQL (SQLite 3.27)", aliases = Seq("sql", "sqlite")),
+      pistonName = Some("sqlite3")
+    )
   )
 
   /** Lowercased alias → language. Built once at class-load. */
-  private val aliasIndex: Map[String, RunnableLanguageInfo] =
+  private val aliasIndex: Map[String, Language] =
     all.flatMap(lang => lang.aliases.map(a => a.toLowerCase -> lang)).toMap
 
   /**
    * Resolve an alias (case-insensitive). Returns `None` for unknown languages so the pipeline can return a
    * 400.
    */
-  def resolve(alias: String): Option[RunnableLanguageInfo] =
+  def resolve(alias: String): Option[Language] =
     Option(alias).map(_.trim.toLowerCase).filter(_.nonEmpty).flatMap(aliasIndex.get)
+
+  /**
+   * The source to actually send to a backend: Java gets its entrypoint class renamed to `Main` (see
+   * [[JavaSourceRewriter]]); every other language passes through untouched. Both wire adapters call this so
+   * neither has to know which language is special.
+   */
+  def effectiveSource(lang: Language, source: String): String =
+    if lang.id == JavaId then JavaSourceRewriter.normalizeEntrypoint(source) else source

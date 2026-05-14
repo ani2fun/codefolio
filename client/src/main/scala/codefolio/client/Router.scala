@@ -17,13 +17,13 @@ import japgolly.scalajs.react.extra.router.*
  *   - `("cortex" / seg).caseClass[...]` → "/cortex/<one-segment>"
  *   - `("cortex" / seg / seg).caseClass` → "/cortex/<seg>/<seg>"
  *
- * Important pairing: every top-level path here MUST also be listed in `server/HttpApp.scala`'s
- * `staticRoutes`. Without that, a hard reload of (say) `/cortex/foo/bar` returns 404 because the server only
- * serves index.html for paths it recognises. (See the Onboarding "Local Development" chapter, foot-gun #3.)
+ * SPA route topology: the set of top-level SPA paths lives in `shared.AppRoutes.SpaRoutes` — the single
+ * source of truth. The production server derives its index.html fallback list from it (see ADR-0009), so a
+ * hard reload of e.g. `/cortex/foo/bar` resolves correctly without a hand-maintained server-side mirror.
  *
  * To add a route:
- *   1. Add a case to `Page` (e.g. `case Settings`). 2. Add a rule below. 3. Add the path to `staticRoutes` in
- *      `HttpApp.scala`.
+ *   1. Add a `SpaRoute` to `shared.AppRoutes.SpaRoutes`. 2. Add a case to `Page` (e.g. `case Settings`). 3.
+ *      Add a rule below.
  */
 object Router:
 

@@ -31,12 +31,20 @@ Optional YAML block at the top of a Chapter providing `title` and `summary`. The
 **Sidebar Forest**:
 The tree of Books, Sections, and Chapters rendered in the Cortex reader's left panel. Built from a flat chapter list.
 
+**Mtime-Cached Index**:
+A derived in-memory index over a filesystem content tree, rebuilt when the tree's mtime watermark advances. The shared module `server.content.MtimeCachedIndex` owns the cache + invalidation; the Cortex and Blog pipelines each supply only a `currentMtime` and a `rebuild` effect. `autoReload` is on under `bin/dev`, off in production (the cache fills once at first request). See ADR-0008.
+_Avoid_: Cache, Index Cache (too generic — the mtime-watermark invalidation is the defining trait).
+
 **Runnable Code Block**:
 A code block in a Chapter that calls the Code Runner via `/api/run`. One variant of a Block.
 
 **Block**:
 A typed payload extracted from a placeholder `<div>` in a rendered Chapter's HTML. Seven variants: `RunnableCode`, `RunnableGroup`, `Mermaid`, `D2Slides`, `D2Inline`, `D3Widget`, `TracedCode`. Pure structural decoders live in `shared.cortex.Blocks` (JVM-tested); the JS-side DOM walk + URI / JSON shims live in `client.components.cortex.BlockDiscovery`. The renderer (`ChapterContent`) is a total `Block => VdomElement` dispatch.
 _Avoid_: Widget, Plugin, Embed (Widget appears as a sub-concept of `D3Widget` — see below; never use "Widget" alone for "Block".)
+
+**Diagram Zoom**:
+The shared fullscreen-zoom modal for the `Mermaid` and `D2Inline` Block variants — `client.components.cortex.DiagramZoom`. Owns zoom state, the keyboard shortcuts, and the body-scroll lock; each diagram block keeps only its own way of obtaining the SVG (D2 receives it pre-rendered as a prop, Mermaid snapshots it on open).
+_Avoid_: Lightbox, Modal (Modal is too generic — this is diagram-specific).
 
 **D3 Widget**:
 The catalog of named, parameterised D3 visualisations referenced by `Block.D3Widget(name, payload)`. Each entry is a Scala.js + D3 component on the client; the markdown fence ` ```d3 widget=<name> ` carries a JSON payload that the widget interprets. Schema is widget-local — `shared.Blocks` keeps `D3Widget` payload structurally loose (the same precedent as `D2Slides` keeping slides as raw source). The catalog is a closed match in `D3WidgetBlock`; unknown names render an inline error rather than failing the chapter. First widget: **Array Traversal Stepper**.
@@ -79,6 +87,10 @@ The tapir success output — `{ stdout, stderr, exitCode, runtimeMs }`.
 **Run Failure**:
 The tapir error type — invalid language, executor failure, timeout.
 
+**Language**:
+One runnable language in the `Languages` table — `Languages.Language`, wrapping the public `RunnableLanguageInfo` (Judge0 id + label + aliases) and adding `pistonName: Option[String]` (the Piston runtime name, or `None` when Piston can't run it). `Languages` is the single source of truth for language dispatch: alias resolution, byte limits, the per-backend ids, and the Java-entrypoint preprocessing (`effectiveSource`) all live there. See ADR-0011.
+_Avoid_: putting backend ids on `RunnableLanguageInfo` directly — it's the codegen'd API contract, and a backend protocol detail must not leak into it.
+
 **Code Execution Backend**:
 A single internal seam (`CodeExecutionBackend`) inside the Code Run pipeline that declares whether it supports a given language and executes a Run Request. Two adapters in production: **Piston** (remote public service, supports a fixed Judge0-id whitelist) and **Code Runner** (local Judge0-API-compatible container, universal fallback that supports every language in `Languages`). The orchestration walks the configured backends in priority order and picks the first whose `supports(lang)` is true. Wire-format mapping (request body shape, response → `RunResult`) lives in pure side modules `PistonWire` / `CodeRunnerWire`, exercised directly by golden-fixture specs without HTTP. Not a public port — the only public surface is `CodeRunPipeline.run`.
 
@@ -102,13 +114,24 @@ _Avoid_: Diagram, Picture, Chart.
 The uniform JSON payload returned to clients on any handler failure — `{ message, details? }` plus an HTTP status code.
 
 **Handler Failure**:
-Any error a pipeline can produce; converted to an API Error + status by a single mapper. Implemented as a Scala 3 union type `HandlerFailure = RunFailure | CortexFailure | HelloFailure` in `ApiErrors`, with one `toHttp` method dispatching across all variants. Each variant lives in its own pipeline package (`codeRunPipeline.RunFailure`, `cortexPipeline.CortexFailure`, `helloPipeline.HelloFailure`). New pipeline error types extend the union and add a case to the match.
+Any error a pipeline can produce; converted to an API Error + status by a single mapper. Implemented as a Scala 3 union type `HandlerFailure = RunFailure | CortexFailure | HelloFailure | BlogFailure` in `ApiErrors`, with one `toHttp` method dispatching across all variants. Each variant lives in its own pipeline package (`codeRunPipeline.RunFailure`, `cortexPipeline.CortexFailure`, `helloPipeline.HelloFailure`, `blogPipeline.BlogFailure`). New pipeline error types extend the union and add a case to the match.
+
+**Handler Endpoint**:
+The server-side wiring helper `ApiRoutes.handlerEndpoint` — bundles the `(StatusCode, ApiError)` error output and the `HandlerFailure → toHttp` mapping so every fallible endpoint is wired the same way and can't ship without its error plumbing. The client mirror is `ApiClient.callable`. See ADR-0012.
+
+**Static File Server**:
+`server.http.FileServer` — serves files from a fixed root directory with path-traversal containment (resolve to the real on-disk path, reject anything that escapes the root). Both the frontend-bundle routes (`StaticRoutes`) and the Cortex asset routes (`CortexAssetRoutes`) route through it, so the security-critical guard has one home. The content-type lookup is `server.http.ContentTypes`. See ADR-0010.
+_Avoid_: File Handler, Asset Server (Asset is overloaded — `CortexAssetRoutes` is one *caller*, not the module).
+
+**SPA Route**:
+A top-level route the single-page app owns — `AppRoutes.SpaRoute(segment, hasNestedRoutes)`. `AppRoutes.SpaRoutes` is the single source of truth for the SPA route topology: the client `Router` builds its rules from it and the production server derives its `index.html` fallback list from it. See ADR-0009.
+_Avoid_: Page (overloaded — see Flagged ambiguities; **SPA Route** is the *server-visible topology*, **Page** is the client routing ADT).
 
 ## Relationships
 
 - A **Book** contains zero or more **Sections** and one or more **Chapters**.
 - Every **Chapter** has a globally unique **Slug**; collisions are an Index error.
-- The **Cortex** index is rebuilt when filesystem mtime changes.
+- The **Cortex** index (and the Blog index) is an **Mtime-Cached Index** — rebuilt when the content tree's filesystem mtime advances.
 - A `/api/hello` request reads a **Cached Greeting** (Redis) → falls back to **Visit Count** (Postgres) → always appends a **Hello Event** (Mongo).
 - **Degraded** = a non-critical store failed; Greeting still returned.
 - A **Runnable Code Block** in a **Chapter** calls a **Code Execution Backend** via the runner endpoint.
@@ -116,6 +139,9 @@ Any error a pipeline can produce; converted to an API Error + status by a single
 - A **Chapter** may embed a **C4 View** via an `<iframe>` whose `src` (`/c4/view/<name>`) resolves through the **LikeC4 Proxy** to the in-cluster `likec4` Service.
 - The **LikeC4 Proxy** is a passthrough — single fixed upstream, no port, no alternate adapter — contrast with the **Code Execution Backend** which is a typed multi-adapter seam.
 - A **D3 Widget** is a closed-catalog Block — the markdown picks a name, the client renders it from a shared catalog; the **TracedCode** Block reuses the **Code Execution Backend** via the existing `/api/run` (a tracer harness on the client wraps the source; no server-side seam was added).
+- The **SPA Route** list in `AppRoutes` is read by both the client router and the server's `index.html` fallback — one declaration, two runtimes.
+- Both the frontend-bundle routes and the Cortex asset routes serve files through one **Static File Server**.
+- The **Mermaid** and **D2Inline** Blocks share one **Diagram Zoom** modal; they differ only in how each obtains its SVG.
 
 ## Example dialogue
 

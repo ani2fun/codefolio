@@ -77,6 +77,9 @@ The contract is enforced by *the compiler*, not by tests. If you change a field'
 server/src/main/scala/codefolio/server/
 ├── Main.scala                            ← ZIO entry point; layer wiring
 ├── HttpApp.scala                         ← tapir → zio-http binding (delegates routes to ApiRoutes)
+├── content/
+│   └── MtimeCachedIndex.scala                mtime-keyed cache shared by the Cortex
+│                                             and Blog pipelines (ADR-0008)
 ├── helloPipeline/
 │   └── HelloPipeline.scala                   /api/hello, /api/recent, /api/health —
 │                                             one deep module with internal Visits /
@@ -84,20 +87,30 @@ server/src/main/scala/codefolio/server/
 ├── codeRunPipeline/
 │   ├── CodeRunPipeline.scala                 /api/run — single CodeExecutionBackend
 │   │                                         seam; public RunFailure ADT (ADR-0004)
-│   ├── Languages.scala                       11-entry registry (python, java, …)
+│   ├── Languages.scala                       single source of truth for language
+│   │                                         dispatch — ids, aliases, pistonName,
+│   │                                         effectiveSource (ADR-0011)
 │   ├── PistonWire.scala                      public Piston backend adapter
 │   ├── CodeRunnerWire.scala                  local Judge0-protocol Code Runner adapter
 │   └── JavaSourceRewriter.scala              normalises `public class Foo` for Piston
 ├── cortexPipeline/
-│   └── CortexPipeline.scala                  /api/cortex/* — internal CortexFs seam +
-│                                             mtime cache; CortexFailure error type
+│   ├── CortexPipeline.scala                  /api/cortex/* — internal CortexFs seam;
+│   │                                         MtimeCachedIndex cache; CortexFailure type
+│   └── ChapterAssetRewrite.scala             rewrites relative asset URLs in chapters
 ├── blogPipeline/
-│   ├── BlogPipeline.scala                    /api/blog/index, /api/blog/{slug}
+│   ├── BlogPipeline.scala                    /api/blogs/index, /api/blogs/{slug}
 │   └── BlogFrontmatter.scala                 YAML frontmatter parser for posts
 ├── http/
-│   ├── ApiRoutes.scala                       composes every pipeline's tapir endpoints
+│   ├── ApiRoutes.scala                       composes every pipeline's tapir endpoints;
+│   │                                         handlerEndpoint wiring helper (ADR-0012)
 │   ├── ApiErrors.scala                       HandlerFailure union → HTTP status mapping
-│   └── StaticRoutes.scala                    /assets/*, SPA index.html fallback
+│   ├── FileServer.scala                      static file serving + path-traversal guard,
+│   │                                         shared by both static surfaces (ADR-0010)
+│   ├── ContentTypes.scala                    one extension → Content-Type table
+│   ├── StaticRoutes.scala                    /assets/*, SPA index.html fallback derived
+│   │                                         from AppRoutes.SpaRoutes (ADR-0009)
+│   ├── CortexAssetRoutes.scala               /api/cortex/asset/* over a FileServer
+│   └── LikeC4ProxyRoutes.scala               /c4/* reverse proxy to the LikeC4 service
 ├── db/
 │   ├── DataSource.scala                      HikariCP pool
 │   └── Migrations.scala                      Liquibase runner

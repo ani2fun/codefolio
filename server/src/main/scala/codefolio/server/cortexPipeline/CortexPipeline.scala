@@ -1,6 +1,7 @@
 package codefolio.server.cortexPipeline
 
 import codefolio.server.config.CortexConfig
+import codefolio.server.content.MtimeCachedIndex
 import codefolio.shared.api.Endpoints.{ChapterPayload, CortexIndex}
 import codefolio.shared.cortex.CortexIndexWalker.{
   BookMeta,
@@ -32,12 +33,12 @@ object CortexFailure:
 /**
  * In-memory snapshot of the Cortex tree. Package-private because nothing outside the pipeline should observe
  * its shape — `reverseMaps` (book → chapter slug → relative file path) is an internal lookup structure used
- * by chapter-payload assembly. Callers only see `CortexIndex` and `ChapterPayload`.
+ * by chapter-payload assembly. Callers only see `CortexIndex` and `ChapterPayload`. The cache watermark lives
+ * in [[MtimeCachedIndex]], not here.
  */
 final private[cortexPipeline] case class CortexState(
     index: CortexIndex,
-    reverseMaps: Map[String, Map[String, String]],
-    mtimeWatermark: Long
+    reverseMaps: Map[String, Map[String, String]]
 )
 
 /**
@@ -74,7 +75,8 @@ private[cortexPipeline] trait CortexFs:
  * public surface is `index` + `chapter`. Lenient parsing per ADR-0001 — malformed `book.json`,
  * `_section.json`, and unterminated frontmatter fall through to humanised-slug defaults. The convention rules
  * (numeric-prefix ordering, max Section depth, Slug uniqueness, Frontmatter title fallback) live in the pure
- * shared module [[CortexIndexWalker]]; this pipeline owns the IO, the cache, and the walker invocation.
+ * shared module [[CortexIndexWalker]]; this pipeline owns the IO and the walker invocation, and delegates the
+ * mtime-keyed cache to [[MtimeCachedIndex]] (shared with the Blog pipeline).
  */
 trait CortexPipeline:
   def index: IO[CortexFailure, CortexIndex]
@@ -82,18 +84,35 @@ trait CortexPipeline:
 
 object CortexPipeline:
 
-  /** Direct construction from an explicit [[CortexFs]] accessor + cache reset. Used by tests. */
+  /** Direct construction from an explicit [[CortexFs]] accessor. Used by tests. */
   def from(cortexFs: CortexFs, autoReload: Boolean): UIO[CortexPipeline] =
-    Ref.make(Option.empty[CortexState]).map(cache => CortexPipelineLive(cortexFs, autoReload, cache))
+    MtimeCachedIndex
+      .make(autoReload, cortexFs.currentMtime, rebuildState(cortexFs))
+      .map(state => CortexPipelineLive(cortexFs, state))
 
   /** Resource-free layer: builds a filesystem-backed [[CortexFs]] and an empty cache. */
   val live: ZLayer[CortexConfig, Nothing, CortexPipeline] =
     ZLayer.fromZIO {
       for
-        cfg   <- ZIO.service[CortexConfig]
-        cache <- Ref.make(Option.empty[CortexState])
-      yield CortexPipelineLive(LiveCortexFs(cfg.root), cfg.autoReload, cache)
+        cfg <- ZIO.service[CortexConfig]
+        fs = LiveCortexFs(cfg.root)
+        state <- MtimeCachedIndex.make(cfg.autoReload, fs.currentMtime, rebuildState(fs))
+      yield CortexPipelineLive(fs, state)
     }
+
+  /**
+   * Scan the FS into a literal `CortexEntry` tree, walk it through the pure [[CortexIndexWalker]], and
+   * assemble a [[CortexState]]. Walker errors are mapped to the pipeline's failure envelope here rather than
+   * at the seam, so the FS adapter stays free of pipeline-level concerns. Passed to [[MtimeCachedIndex]] as
+   * the rebuild step.
+   */
+  private def rebuildState(cortexFs: CortexFs): IO[CortexFailure, CortexState] =
+    for
+      roots <- cortexFs.loadRoots
+      walked <- ZIO
+        .fromEither(CortexIndexWalker.walk(roots))
+        .mapError(indexErrorToFailure)
+    yield CortexState(walked.index, walked.reverseMaps)
 
   // ===========================================================================
   // FS adapter — bytes ↔ values plus path-traversal containment. All convention
@@ -217,24 +236,23 @@ object CortexPipeline:
 
 final private class CortexPipelineLive(
     cortexFs: CortexFs,
-    autoReload: Boolean,
-    cache: Ref[Option[CortexState]]
+    state: MtimeCachedIndex[CortexFailure, CortexState]
 ) extends CortexPipeline:
 
   override def index: IO[CortexFailure, CortexIndex] =
-    cachedState.map(_.index)
+    state.get.map(_.index)
 
   override def chapter(book: String, chapter: String): IO[CortexFailure, ChapterPayload] =
     if !CortexIndexWalker.slugLike(book) || !CortexIndexWalker.slugLike(chapter) then
       ZIO.fail(CortexFailure.NotFound)
     else
       for
-        state <- cachedState
+        st <- state.get
         bk <- ZIO
-          .fromOption(state.index.books.find(_.slug == book))
+          .fromOption(st.index.books.find(_.slug == book))
           .orElseFail(CortexFailure.NotFound: CortexFailure)
         relPath <- ZIO
-          .fromOption(state.reverseMaps.get(book).flatMap(_.get(chapter)))
+          .fromOption(st.reverseMaps.get(book).flatMap(_.get(chapter)))
           .orElseFail(CortexFailure.NotFound: CortexFailure)
         chapterIndex = bk.chapters.indexWhere(_.slug == chapter)
         ch           = bk.chapters(chapterIndex)
@@ -256,34 +274,3 @@ final private class CortexPipelineLive(
         prevSlug = prevSlug,
         nextSlug = nextSlug
       )
-
-  // `mtimeWatermark` is the max mtime across the tree at last build. Concurrent requests
-  // during a content edit can both observe a stale cache and both trigger a rebuild — that
-  // is harmless: rebuilds are idempotent (last write wins) and any window of stale serves
-  // is bounded by a single request's worth of work.
-  private def cachedState: IO[CortexFailure, CortexState] =
-    cache.get.flatMap {
-      case None => loadAndCache
-      case Some(old) =>
-        if !autoReload then ZIO.succeed(old)
-        else
-          cortexFs.currentMtime.flatMap { mt =>
-            if mt > old.mtimeWatermark then loadAndCache
-            else ZIO.succeed(old)
-          }
-    }
-
-  // Composition: scan the FS into a literal CortexEntry tree, walk it through the pure
-  // CortexIndexWalker, stamp the result with the current mtime, write the cache. Walker errors
-  // are mapped to the pipeline's failure envelope here rather than at the seam, so the FS
-  // adapter stays free of pipeline-level concerns.
-  private def loadAndCache: IO[CortexFailure, CortexState] =
-    for
-      mt    <- cortexFs.currentMtime
-      roots <- cortexFs.loadRoots
-      walked <- ZIO
-        .fromEither(CortexIndexWalker.walk(roots))
-        .mapError(CortexPipeline.indexErrorToFailure)
-      state = CortexState(walked.index, walked.reverseMaps, mt)
-      _ <- cache.set(Some(state))
-    yield state
