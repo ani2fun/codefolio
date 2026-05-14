@@ -7,15 +7,15 @@ import scala.scalajs.js
 import scala.util.{Failure, Success, Try}
 
 /**
- * Raft animator — step-replay of three scripted Raft scenarios over a 3-node cluster: leader election,
- * log replication, leader failover. Each step is a pre-baked snapshot of cluster state (per-node role,
- * term, log, votedFor) plus a caption and an optional "message in flight" arrow. The reader walks
- * forward and back through the steps; the widget renders the current snapshot as a 3-node SVG with
- * roles, terms, log entries, and any in-flight messages drawn between nodes.
+ * Raft animator — step-replay of three scripted Raft scenarios over a 3-node cluster: leader election, log
+ * replication, leader failover. Each step is a pre-baked snapshot of cluster state (per-node role, term, log,
+ * votedFor) plus a caption and an optional "message in flight" arrow. The reader walks forward and back
+ * through the steps; the widget renders the current snapshot as a 3-node SVG with roles, terms, log entries,
+ * and any in-flight messages drawn between nodes.
  *
- * Scripted rather than simulated for the same reason `PartitionSimulator` is: a real Raft simulation
- * would either be too random (different result every replay) or too complex to drive with sliders.
- * Pre-baked scenarios make the failure-mode pedagogy crisp.
+ * Scripted rather than simulated for the same reason `PartitionSimulator` is: a real Raft simulation would
+ * either be too random (different result every replay) or too complex to drive with sliders. Pre-baked
+ * scenarios make the failure-mode pedagogy crisp.
  *
  * Re-used in:
  *   - Lesson 14 (consensus) — primary.
@@ -46,8 +46,8 @@ import scala.util.{Failure, Success, Try}
  * }}}
  *
  *   - `role` ∈ {follower, candidate, leader, down}. "down" renders the node as struck out.
- *   - `log` is the list of committed + uncommitted entries; the lesson's scenarios keep it ≤ 5
- *     entries so it fits horizontally inside the node SVG.
+ *   - `log` is the list of committed + uncommitted entries; the lesson's scenarios keep it ≤ 5 entries so it
+ *     fits horizontally inside the node SVG.
  *   - `message` is optional; if present, draws an arrow between the named nodes with the label.
  */
 object RaftAnimator:
@@ -59,7 +59,13 @@ object RaftAnimator:
   enum NodeRole:
     case Follower, Candidate, Leader, Down
 
-  final case class NodeState(id: String, role: NodeRole, term: Int, log: List[String], votedFor: Option[String])
+  final case class NodeState(
+      id: String,
+      role: NodeRole,
+      term: Int,
+      log: List[String],
+      votedFor: Option[String]
+  )
 
   final case class Message(from: String, to: String, label: String)
 
@@ -178,21 +184,31 @@ object RaftAnimator:
   // ===========================================================================
 
   private def nodeSvg(node: NodeState, x: Double, y: Double): String =
-    val cls       = roleClass(node.role)
-    val badge     = roleBadge(node.role)
-    val logStr    = if node.log.isEmpty then "—" else node.log.mkString(" · ")
-    val votedFor  = node.votedFor.map(v => s"voted: $v").getOrElse("")
-    val voteY     = y + 28
-    val logY      = y + 44
+    val cls      = roleClass(node.role)
+    val badge    = roleBadge(node.role)
+    val logStr   = if node.log.isEmpty then "—" else node.log.mkString(" · ")
+    val votedFor = node.votedFor.map(v => s"voted: $v").getOrElse("")
+    val voteY    = y + 28
+    val logY     = y + 44
     s"""<g>
        |  <circle class="$cls" cx="$x" cy="$y" r="$NodeR"/>
-       |  <text class="raft-animator__node-id" x="$x" y="${y - 16}" text-anchor="middle">${esc(node.id)}</text>
-       |  <text class="raft-animator__node-badge" x="$x" y="${y - 2}" text-anchor="middle">${esc(badge)}</text>
+       |  <text class="raft-animator__node-id" x="$x" y="${y - 16}" text-anchor="middle">${esc(
+        node.id
+      )}</text>
+       |  <text class="raft-animator__node-badge" x="$x" y="${y - 2}" text-anchor="middle">${esc(
+        badge
+      )}</text>
        |  <text class="raft-animator__node-term" x="$x" y="${y + 14}" text-anchor="middle">term ${node.term}</text>
-       |  ${if votedFor.nonEmpty then
-        s"""<text class="raft-animator__node-votedfor" x="$x" y="$voteY" text-anchor="middle">${esc(votedFor)}</text>"""
-      else ""}
-       |  <text class="raft-animator__node-log" x="$x" y="$logY" text-anchor="middle">log: ${esc(logStr)}</text>
+       |  ${
+        if votedFor.nonEmpty then
+          s"""<text class="raft-animator__node-votedfor" x="$x" y="$voteY" text-anchor="middle">${esc(
+              votedFor
+            )}</text>"""
+        else ""
+      }
+       |  <text class="raft-animator__node-log" x="$x" y="$logY" text-anchor="middle">log: ${esc(
+        logStr
+      )}</text>
        |</g>""".stripMargin
 
   private def messageSvg(message: Message, positions: Map[String, (Double, Double)]): String =
@@ -212,12 +228,14 @@ object RaftAnimator:
         s"""<g>
            |  <line class="raft-animator__arrow" x1="$startX" y1="$startY" x2="$endX" y2="$endY"
            |        marker-end="url(#raftArrow)"/>
-           |  <text class="raft-animator__arrow-label" x="$midX" y="$midY" text-anchor="middle">${esc(message.label)}</text>
+           |  <text class="raft-animator__arrow-label" x="$midX" y="$midY" text-anchor="middle">${esc(
+            message.label
+          )}</text>
            |</g>""".stripMargin
       case _ => ""
 
   private def buildSvg(step: Step): String =
-    val n         = step.nodes.size
+    val n = step.nodes.size
     val positions = step.nodes.zipWithIndex.map { case (node, i) =>
       val (x, y) = nodePos(i, n)
       node.id -> (x, y)
@@ -253,8 +271,8 @@ object RaftAnimator:
     ScalaFnComponent
       .withHooks[Props]
       .useMemoBy(_.payload)(_ => payload => parsePayload(payload))
-      .useState(0)  // current scenario index
-      .useState(0)  // current step index
+      .useState(0) // current scenario index
+      .useState(0) // current step index
       .render { (_, specM, scenarioIdxS, stepIdxS) =>
         specM.value match
           case Left(err) =>
