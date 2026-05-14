@@ -60,15 +60,15 @@ object BlockDiscovery:
     def decode(node: dom.HTMLElement): Either[BlockDecodeError, Block]
 
   private val Discoverers: List[Discoverer] =
-    List(RunnableCode, RunnableGroup, Mermaid, D2Slides, D2Inline)
+    List(RunnableCode, RunnableGroup, Mermaid, D2Slides, D2Inline, D3Widget, TracedCode, LikeC4)
 
   private object RunnableCode extends Discoverer:
     override val className: String = "runnable-code"
 
     override def decode(node: dom.HTMLElement): Either[BlockDecodeError, Block] =
-      val lang   = nonEmpty(node.getAttribute("data-lang"))
-      val src    = nonEmpty(node.getAttribute("data-source")).flatMap(uriDecode)
-      val label  = nonEmpty(node.getAttribute("data-language-label"))
+      val lang  = nonEmpty(node.getAttribute("data-lang"))
+      val src   = nonEmpty(node.getAttribute("data-source")).flatMap(uriDecode)
+      val label = nonEmpty(node.getAttribute("data-language-label"))
       Blocks.decodeRunnableCode(lang, src, label)
 
   private object RunnableGroup extends Discoverer:
@@ -123,6 +123,33 @@ object BlockDiscovery:
 
     override def decode(node: dom.HTMLElement): Either[BlockDecodeError, Block] =
       Blocks.decodeD2Inline(node.innerHTML)
+
+  private object D3Widget extends Discoverer:
+    override val className: String = "d3-widget"
+
+    override def decode(node: dom.HTMLElement): Either[BlockDecodeError, Block] =
+      val widget  = nonEmpty(node.getAttribute("data-widget"))
+      val payload = nonEmpty(node.getAttribute("data-payload")).flatMap(uriDecode)
+      Blocks.decodeD3Widget(widget, payload)
+
+  private object TracedCode extends Discoverer:
+    // Mirrors the Mermaid pattern: `<block>-block` is the placeholder; the mounted widget renders its own
+    // root class (here, `traced-code`) inside.
+    override val className: String = "traced-code-block"
+
+    override def decode(node: dom.HTMLElement): Either[BlockDecodeError, Block] =
+      val lang = nonEmpty(node.getAttribute("data-lang"))
+      val src  = nonEmpty(node.getAttribute("data-source")).flatMap(uriDecode)
+      Blocks.decodeTracedCode(lang, src)
+
+  private object LikeC4 extends Discoverer:
+    override val className: String = "likec4-iframe"
+
+    override def decode(node: dom.HTMLElement): Either[BlockDecodeError, Block] =
+      val src    = nonEmpty(node.getAttribute("data-src"))
+      val height = nonEmpty(node.getAttribute("data-height"))
+      val title  = nonEmpty(node.getAttribute("data-title"))
+      Blocks.decodeLikeC4(src, height, title)
 
   // ---------------------------------------------------------------------------
   // Shims

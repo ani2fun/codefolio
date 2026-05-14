@@ -344,6 +344,16 @@ const htmlAttr = (html: string, name: string): string | null => {
   return html.match(re)?.[2] ?? null;
 };
 
+// Pull a `key=value` (quoted or bare) out of a fence's info-string `meta`.
+// Used by ```d3 widget=array-traversal — the widget name is the only required
+// key today, but the same parser will handle future per-instance options.
+const parseMetaKv = (meta: string, key: string): string | null => {
+  const quoted = new RegExp(`\\b${key}\\s*=\\s*(["'])(.*?)\\1`).exec(meta);
+  if (quoted) return quoted[2];
+  const bare = new RegExp(`\\b${key}\\s*=\\s*([^\\s"']+)`).exec(meta);
+  return bare ? bare[1] : null;
+};
+
 const escapeHtmlAttr = (s: string): string =>
   s
     .replace(/&/g, "&amp;")
@@ -549,6 +559,52 @@ const remarkUnwrapImages: Plugin<[], Root> = () => (tree) => {
   });
 };
 
+// ---- Rewrite LikeC4 iframes to discoverable placeholders ----------------
+//
+// Authors embed LikeC4 views as raw `<iframe src="/c4/view/...">` tags in
+// markdown. `remark-parse` produces an `html` node whose `value` is the raw
+// HTML, and `remark-rehype` with `allowDangerousHtml: true` passes it through
+// as a `raw` HAST node — never as an `iframe` element we could visit.
+//
+// So we rewrite at the mdast stage: walk every `html` node, find iframes
+// whose `src` starts with `/c4/`, and replace them with a placeholder
+// `<div class="likec4-iframe" data-src=... data-height=... data-title=...>`.
+// `BlockDiscovery` picks the div up and mounts the LikeC4Block component
+// (which renders its own iframe + zoom button + modal).
+//
+// Bare-bones regex over a known-shape author input — our content writes
+// `<iframe ...></iframe>` with whitespace between attrs, no `>` in attr
+// values, and an explicit closing tag.
+
+const escapeAttr = (s: string): string =>
+  s
+    .replace(/&/g, "&amp;")
+    .replace(/"/g, "&quot;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;");
+
+const remarkRewriteLikeC4Iframes: Plugin<[], Root> = () => (tree) => {
+  visit(tree, "html", (node: Html) => {
+    if (!node.value.includes("/c4/")) return;
+    node.value = node.value.replace(
+      /<iframe\b([^>]*)>\s*<\/iframe>/gi,
+      (full, attrs: string) => {
+        const srcMatch = /\bsrc="(\/c4\/[^"]+)"/.exec(attrs);
+        if (!srcMatch) return full;
+        const heightMatch = /\bheight="([^"]+)"/.exec(attrs);
+        const titleMatch = /\btitle="([^"]+)"/.exec(attrs);
+        const heightAttr = heightMatch
+          ? ` data-height="${escapeAttr(heightMatch[1])}"`
+          : "";
+        const titleAttr = titleMatch
+          ? ` data-title="${escapeAttr(titleMatch[1])}"`
+          : "";
+        return `<div class="likec4-iframe" data-src="${escapeAttr(srcMatch[1])}"${heightAttr}${titleAttr}></div>`;
+      },
+    );
+  });
+};
+
 // ---- Custom code handler ------------------------------------------------
 //
 // Routes:
@@ -615,8 +671,53 @@ const codeHandler = (state: State, node: Code): Element | undefined => {
     };
   }
 
+  // ```d3 widget=array-traversal   → interactive D3 widget placeholder.
+  // The body is the raw payload (JSON in v1) — the client-side widget owns the
+  // schema. Mirrors the D2Slides precedent: shared keeps the payload structural,
+  // each widget interprets it.
+  if (node.lang === "d3") {
+    const meta = typeof node.meta === "string" ? node.meta : "";
+    const widget = parseMetaKv(meta, "widget");
+    if (widget) {
+      return {
+        type: "element",
+        tagName: "div",
+        properties: {
+          className: ["d3-widget"],
+          "data-widget": widget,
+          "data-payload": encodeURIComponent(node.value),
+        },
+        children: [],
+      };
+    }
+    // No widget= key — fall through to default code rendering so authors get
+    // a visible "this fence is wrong" pre block rather than silent emptiness.
+  }
+
   const meta = typeof node.meta === "string" ? node.meta : "";
   const runRequested = /\brun\b/.test(meta);
+  const traceRequested = /\btrace\b/.test(meta);
+
+  // ```python trace  → step-through visualisation placeholder.
+  // Server-side runs the code unchanged via /api/run; the client wraps it in a
+  // sys.settrace harness and parses the trace from stdout. Python only in v1.
+  if (traceRequested && node.lang) {
+    const lang = resolveLanguage(node.lang);
+    if (lang && /^python/i.test(node.lang)) {
+      return {
+        type: "element",
+        tagName: "div",
+        // `traced-code-block` is the placeholder (mirrors `mermaid-block`); the mounted Scala.js
+        // component renders its own `traced-code` root inside so CSS rules don't apply twice.
+        properties: {
+          className: ["traced-code-block"],
+          "data-lang": node.lang,
+          "data-source": encodeURIComponent(node.value),
+        },
+        children: [],
+      };
+    }
+  }
 
   if (data?.runnableTabs) {
     return {
@@ -718,6 +819,7 @@ export async function renderChapter(source: string): Promise<RenderResult> {
     .use(remarkGroupD2Slides)
     .use(remarkGroupRunnable)
     .use(remarkUnwrapImages)
+    .use(remarkRewriteLikeC4Iframes)
     .use(remarkRehype, {
       handlers: { code: codeHandler },
       // Allow our custom div placeholders + d2's inline SVG markup to pass

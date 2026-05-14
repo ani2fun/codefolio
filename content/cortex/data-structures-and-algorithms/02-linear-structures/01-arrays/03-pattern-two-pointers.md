@@ -807,7 +807,7 @@ The following lessons each apply the two-pointer technique in exactly this direc
 | **Palindrome Checker** | Compare characters from both ends |
 | **Vowel Exchange** | Find and swap vowels from both ends |
 | **Reverse Words** | Reverse each word's characters with inner two pointers |
-| **Reverse Segments** | Reverse a sub-range with two pointers |
+| **Reverse Segments** | Reverse the first *k* characters of every *2k* block |
 | **Reverse Word Order** | Reverse entire string, then reverse each word |
 
 Each is a small twist on the same pattern — same skeleton, different work in the loop body.
@@ -2086,104 +2086,117 @@ Reverse Words composes two ideas: **scanning to find word boundaries** and **two
 
 ## The Problem
 
-Given an array and a list of segment boundaries `[l, r]`, reverse the elements **within each segment** in-place. Elements outside the segments are untouched.
+Given a string `s` and an integer `k`, process the string in groups of `2k` characters and reverse the **first `k` characters of every group**. Return the updated string.
+
+Two rules cover the tail of the string when a full `2k` group doesn't fit:
+
+- If fewer than `k` characters remain, reverse all of them.
+- If at least `k` but fewer than `2k` characters remain, reverse only the first `k` and leave the rest unchanged.
 
 ```
-Input:  arr = [1, 2, 3, 4, 5, 6, 7, 8],  segments = [(0, 3), (4, 7)]
-Output: arr = [4, 3, 2, 1, 8, 7, 6, 5]
-              ↑         ↑  ↑         ↑
-              segment 0 reversed     segment 1 reversed
+Input:  s = "abcdefghij",  k = 2
+Output: "bacdfeghji"
+
+  groups of 2k = 4:    abcd      efgh      ij
+  reverse first k = 2: [ba]cd    [fe]gh    [ji]     (last group: only k chars, reverse all)
+  result:              bacdfeghji
 ```
 
 ---
 
 ## Examples
 
-**Example 1 — two segments**
+**Example 1 — full groups plus a trailing chunk of exactly `k`**
 ```
-Input:  arr = [1, 2, 3, 4, 5, 6, 7, 8],  segments = [(0, 3), (4, 7)]
-Output: [4, 3, 2, 1, 8, 7, 6, 5]
+Input:  s = "abcdefghij",  k = 2
+Output: "bacdfeghji"
 ```
+- The first 2k characters are `abcd`; reverse the first k: `ab` → `ba`.
+- The next 2k characters are `efgh`; reverse the first k: `ef` → `fe`.
+- `ij` is left — `k` characters, fewer than `2k` — so reverse the first k: `ij` → `ji`.
 
-**Example 2 — single segment in the middle**
+**Example 2 — fewer than `k` characters remain**
 ```
-Input:  arr = [1, 2, 3, 4, 5],  segments = [(1, 3)]
-Output: [1, 4, 3, 2, 5]
+Input:  s = "dfgh",  k = 5
+Output: "hgfd"
 ```
+- There are fewer than `k` characters left, so reverse all of them.
 
-**Example 3 — entire array as one segment**
+**Example 3 — exactly `2k` characters, second half untouched**
 ```
-Input:  arr = [1, 2, 3, 4, 5],  segments = [(0, 4)]
-Output: [5, 4, 3, 2, 1]
+Input:  s = "qwerty",  k = 3
+Output: "ewqrty"
 ```
+- The first k characters are reversed: `qwe` → `ewq`.
+- The remaining characters (`rty`) are left unchanged.
 
-**Example 4 — single-element segment**
+**Example 4 — trailing chunk between `k` and `2k`**
 ```
-Input:  arr = [1, 2, 3],  segments = [(1, 1)]
-Output: [1, 2, 3]   (reversing one element is a no-op)
+Input:  s = "abcdefg",  k = 2
+Output: "bacdfeg"
 ```
+- Groups are `abcd` and `efg`. In `abcd`, reverse `ab` → `ba`. `efg` has 3 characters (≥ `k`, < `2k`), so reverse the first `k` — `ef` → `fe` — and leave `g`.
 
 ---
 
 ## Intuition
 
-You already have the exact tool for this: the two-pointer reversal from "Flip Characters". Reversing a segment `[l, r]` is identical to reversing the whole array — just start `left = l` and `right = r` instead of `0` and `n-1`.
+You already have the exact tool for this: the two-pointer reversal from "Flip Characters". Reversing the first `k` characters of a block is just that reversal applied to a sub-range — start `left` at the block's first index and `right` `k - 1` positions later.
 
-For multiple segments, simply apply the two-pointer reversal once per segment. Each reversal is independent — the segments don't overlap, so the order you process them in doesn't matter.
+The whole problem is then a simple outer loop: jump through the string in strides of `2k`, and at each landing point reverse one `k`-wide window. Two details make the tail rules disappear:
+
+- **Stride by `2k`, not `k`.** Only the first `k` of each block is touched; the second `k` is skipped. Stepping `start` by `2k` lands directly on each window and steps *over* the untouched halves — so "leave the rest unchanged" needs no code, those indices are simply never visited.
+- **Clamp `right` with `min`.** Set `right = min(start + k - 1, n - 1)`. When a full `k`-window fits, this is `start + k - 1`. When fewer than `k` characters remain, `start + k - 1` runs off the end and `min` pulls it back to the last index — so the "reverse whatever's left" rule is handled by arithmetic, not a branch.
 
 ```d2
-direction: right
+direction: down
 
-ORIG: "Original:  [1, 2, 3, 4, 5, 6, 7, 8]" {
-  grid-columns: 8
+ORIG: "Original — s = abcdefghij, k = 2  (block size 2k = 4)" {
+  grid-columns: 10
   grid-gap: 0
-  a: "1"
-  b: "2"
-  c: "3"
-  d: "4"
-  e: "5"
-  f: "6"
-  g: "7"
-  h: "8"
+  a: "a"
+  b: "b"
+  c: "c"
+  d: "d"
+  e: "e"
+  f: "f"
+  g: "g"
+  h: "h"
+  i: "i"
+  j: "j"
 }
-SEG0: "After reversing segment (0,3)" {
-  grid-columns: 8
-  grid-gap: 0
-  a: "4"
-  b: "3"
-  c: "2"
-  d: "1"
-  e: "5"
-  f: "6"
-  g: "7"
-  h: "8"
-}
-SEG0.a.style.fill: "#fde68a"
-SEG0.b.style.fill: "#fde68a"
-SEG0.c.style.fill: "#fde68a"
-SEG0.d.style.fill: "#fde68a"
-SEG1: "After reversing segment (4,7)" {
-  grid-columns: 8
-  grid-gap: 0
-  a: "4"
-  b: "3"
-  c: "2"
-  d: "1"
-  e: "8"
-  f: "7"
-  g: "6"
-  h: "5"
-}
-SEG1.e.style.fill: "#dcfce7"
-SEG1.f.style.fill: "#dcfce7"
-SEG1.g.style.fill: "#dcfce7"
-SEG1.h.style.fill: "#dcfce7"
+ORIG.a.style.fill: "#fde68a"
+ORIG.b.style.fill: "#fde68a"
+ORIG.e.style.fill: "#fde68a"
+ORIG.f.style.fill: "#fde68a"
+ORIG.i.style.fill: "#fde68a"
+ORIG.j.style.fill: "#fde68a"
 
-ORIG -> SEG0: "reverse [0,3]"
-SEG0 -> SEG1: "reverse [4,7]"
+RESULT: "Result — first k of every 2k block reversed" {
+  grid-columns: 10
+  grid-gap: 0
+  a: "b"
+  b: "a"
+  c: "c"
+  d: "d"
+  e: "f"
+  f: "e"
+  g: "g"
+  h: "h"
+  i: "j"
+  j: "i"
+}
+RESULT.a.style.fill: "#dcfce7"
+RESULT.b.style.fill: "#dcfce7"
+RESULT.e.style.fill: "#dcfce7"
+RESULT.f.style.fill: "#dcfce7"
+RESULT.i.style.fill: "#dcfce7"
+RESULT.j.style.fill: "#dcfce7"
+
+ORIG -> RESULT: "reverse first k=2 of every 2k=4 block (last block has only k chars left)"
 ```
 
-<p align="center"><strong>Reversing two segments of <code>[1,2,3,4,5,6,7,8]</code> — each segment is reversed independently using the standard two-pointer swap-and-converge.</strong></p>
+<p align="center"><strong>Reversing the first <code>k</code> of every <code>2k</code> block in <code>abcdefghij</code> — the highlighted cells are the windows that get reversed; the gaps (<code>cd</code>, <code>gh</code>) are stepped over entirely.</strong></p>
 
 ---
 
@@ -2191,25 +2204,26 @@ SEG0 -> SEG1: "reverse [4,7]"
 
 | Check | Answer for Reverse Segments |
 |---|---|
-| ✅ Two positions simultaneously? | Yes — `arr[left]` and `arr[right]` are swapped together at each step within each segment |
-| ✅ One near start, one near end? | Yes — for each segment `(l, r)`, `left = l`, `right = r` |
-| ✅ Both move inward? | Yes — `left++`, `right--` within each segment's reversal |
+| ✅ Two positions simultaneously? | Yes — within each `k`-window, `arr[left]` and `arr[right]` are swapped together |
+| ✅ One near start, one near end? | Yes — for each window, `left = start` and `right = min(start + k - 1, n - 1)` |
+| ✅ Both move inward? | Yes — `left++`, `right--` within each window's reversal |
 | ✅ Simple work at each step? | Yes — one swap per iteration |
 
-Reverse Segments is structurally identical to Flip Characters — the only difference is that `left` and `right` start from a given `(l, r)` pair instead of `(0, n-1)`. The two-pointer pattern is unchanged; the input just parameterises the range.
+Reverse Segments is structurally identical to Flip Characters — the only difference is that `left` and `right` start from a computed window `(start, start + k - 1)` instead of `(0, n-1)`. The two-pointer pattern is unchanged; the `2k` stride and the `min` clamp just decide *which* sub-ranges to feed it.
 
-**Why is this still "direct application" and not something more complex?** No transformation of the data is needed — the segment boundaries are given directly, and the reversal within each boundary is the same swap-and-converge loop. There's no searching for the right range, no sorting, no condition-based pointer movement. Two pointers enter a segment, march toward each other, and exit. The only outer logic is iterating through the list of segments.
+**Why is this still "direct application" and not something more complex?** The reversal inside each window is the unmodified swap-and-converge loop. The only thing wrapped around it is a `for` loop that picks window start positions by counting in `2k` strides. There's no data transformation, no searching for a range, no condition-based pointer movement inside the window. Two pointers enter a window, march toward each other, and exit.
 
-**What makes each segment's reversal independent?** Non-overlapping segments modify distinct array regions — each `reverse_segment(arr, l, r)` call touches only indices `l` through `r`. Because no two calls share an index, processing order is irrelevant: process segment 0 first or last, the result is the same. This independence is what allows the outer loop to be a simple `for l, r in segments` — no coordination between iterations needed.
+**Why doesn't the "leave the rest unchanged" rule need any code?** Because the outer loop strides by `2k` and each reversal only touches `start .. start + k - 1`. The second half of every block — indices `start + k .. start + 2k - 1` — is never an endpoint and never swapped. The rule is satisfied by *omission*: those indices are simply skipped, so they keep their original values for free.
 
 ---
 
 ## Approach
 
-1. For each `(l, r)` segment in the `segments` list:
-   - Set `left = l`, `right = r`
-   - While `left < right`: swap `arr[left]` and `arr[right]`, `left++`, `right--`
-2. Done — all segments reversed in-place
+1. Convert `s` to a mutable character array `arr` (strings are immutable in most languages).
+2. For each block start `start` = `0, 2k, 4k, …` while `start < n`:
+   - Set `left = start` and `right = min(start + k - 1, n - 1)` — the `min` clamps the short tail.
+   - While `left < right`: swap `arr[left]` and `arr[right]`, `left++`, `right--`.
+3. Join `arr` back into a string and return it.
 
 ---
 
@@ -2217,95 +2231,112 @@ Reverse Segments is structurally identical to Flip Characters — the only diffe
 
 
 ```pseudocode
-function reverseSegment(arr, l, r):                       # in-place reverse arr[l..r]
-    left ← l; right ← r
+function reverseSegment(arr, left, right):                # in-place reverse arr[left..right]
     while left < right:
         swap arr[left] and arr[right]
-        left ← left + 1
+        left  ← left + 1
         right ← right − 1
 
-function reverseSegments(arr, segments):
-    for each (l, r) in segments:
-        reverseSegment(arr, l, r)
+function reverseSegments(s, k):
+    arr ← characters of s                                 # mutable copy
+    n   ← length(arr)
+    start ← 0
+    while start < n:                                      # jump over each 2k block
+        left  ← start
+        right ← min(start + k − 1, n − 1)                 # clamp the short tail
+        reverseSegment(arr, left, right)
+        start ← start + 2k
+    return arr joined into a string
 ```
 
 ```python run
-from typing import List, Tuple
+from typing import List
 
 class Solution:
-    def reverse_segment(self, arr: List[int], l: int, r: int) -> None:
-        """Reverse arr[l..r] in-place using two pointers."""
-        left, right = l, r
+    def reverse_segment(
+        self, arr: List[str], left: int, right: int
+    ) -> None:
+
+        # Use a while loop to traverse the string using the two pointers
         while left < right:
+
+            # Swap the characters pointed by the left and right pointers
             arr[left], arr[right] = arr[right], arr[left]
-            left  += 1
+
+            # Move the pointers towards the center of the string
+            left += 1
             right -= 1
 
-    def reverse_segments(self, arr: List[int], segments: List[Tuple[int, int]]) -> None:
-        for l, r in segments:
-            self.reverse_segment(arr, l, r)
+    def reverse_segments(self, s: str, k: int) -> str:
+
+        # convert the string to list for in-place modification
+        arr = list(s)
+        n = len(arr)
+
+        for start in range(0, n, 2 * k):
+
+            # Initialize left and right pointers to the current segment
+            left = start
+            right = min(start + k - 1, n - 1)
+
+            # Reverse the segment using the two-pointer method
+            self.reverse_segment(arr, left, right)
+
+        # convert the list back to string
+        return "".join(arr)
 
 
 sol = Solution()
-
-a1 = [1, 2, 3, 4, 5, 6, 7, 8]
-sol.reverse_segments(a1, [(0, 3), (4, 7)]); print(a1)   # [4, 3, 2, 1, 8, 7, 6, 5]
-
-a2 = [1, 2, 3, 4, 5]
-sol.reverse_segments(a2, [(1, 3)]); print(a2)           # [1, 4, 3, 2, 5]
-
-a3 = [1, 2, 3, 4, 5]
-sol.reverse_segments(a3, [(0, 4)]); print(a3)           # [5, 4, 3, 2, 1]
-
-a4 = [1, 2, 3]
-sol.reverse_segments(a4, [(1, 1)]); print(a4)           # [1, 2, 3]
+print(sol.reverse_segments("abcdefghij", 2))   # bacdfeghji
+print(sol.reverse_segments("dfgh", 5))         # hgfd
+print(sol.reverse_segments("qwerty", 3))       # ewqrty
+print(sol.reverse_segments("abcdefg", 2))      # bacdfeg
 ```
 
 ```java run
-import java.util.Arrays;
-
 public class Main {
     static class Solution {
-        void reverseSegment(int[] arr, int l, int r) {
-            int left = l, right = r;
+        void reverseSegment(char[] arr, int left, int right) {
             while (left < right) {
-                int tmp = arr[left];
+                char tmp = arr[left];
                 arr[left]  = arr[right];
                 arr[right] = tmp;
                 left++;
                 right--;
             }
         }
-        void reverseSegments(int[] arr, int[][] segments) {
-            for (int[] seg : segments) reverseSegment(arr, seg[0], seg[1]);
+
+        String reverseSegments(String s, int k) {
+            char[] arr = s.toCharArray();
+            int n = arr.length;
+
+            for (int start = 0; start < n; start += 2 * k) {
+                int left  = start;
+                int right = Math.min(start + k - 1, n - 1);
+                reverseSegment(arr, left, right);
+            }
+
+            return new String(arr);
         }
     }
 
     public static void main(String[] args) {
         Solution sol = new Solution();
-
-        int[] a1 = {1,2,3,4,5,6,7,8};
-        sol.reverseSegments(a1, new int[][]{{0,3},{4,7}}); System.out.println(Arrays.toString(a1));
-
-        int[] a2 = {1,2,3,4,5};
-        sol.reverseSegments(a2, new int[][]{{1,3}}); System.out.println(Arrays.toString(a2));
-
-        int[] a3 = {1,2,3,4,5};
-        sol.reverseSegments(a3, new int[][]{{0,4}}); System.out.println(Arrays.toString(a3));
-
-        int[] a4 = {1,2,3};
-        sol.reverseSegments(a4, new int[][]{{1,1}}); System.out.println(Arrays.toString(a4));
+        System.out.println(sol.reverseSegments("abcdefghij", 2));   // bacdfeghji
+        System.out.println(sol.reverseSegments("dfgh", 5));         // hgfd
+        System.out.println(sol.reverseSegments("qwerty", 3));       // ewqrty
+        System.out.println(sol.reverseSegments("abcdefg", 2));      // bacdfeg
     }
 }
 ```
 
 ```c run
 #include <stdio.h>
+#include <string.h>
 
-void reverse_segment(int* arr, int l, int r) {
-    int left = l, right = r;
+void reverse_segment(char* arr, int left, int right) {
     while (left < right) {
-        int tmp = arr[left];
+        char tmp = arr[left];
         arr[left]  = arr[right];
         arr[right] = tmp;
         left++;
@@ -2313,23 +2344,29 @@ void reverse_segment(int* arr, int l, int r) {
     }
 }
 
-void print_arr(int* arr, int n) {
-    for (int i = 0; i < n; i++) printf("%d ", arr[i]);
-    printf("\n");
+/* Reverses the first k chars of every 2k block, in place. */
+void reverse_segments(char* arr, int k) {
+    int n = (int)strlen(arr);
+    for (int start = 0; start < n; start += 2 * k) {
+        int left  = start;
+        int right = start + k - 1;
+        if (right > n - 1) right = n - 1;       /* clamp the short tail */
+        reverse_segment(arr, left, right);
+    }
 }
 
 int main() {
-    int a1[] = {1,2,3,4,5,6,7,8};
-    reverse_segment(a1, 0, 3); reverse_segment(a1, 4, 7); print_arr(a1, 8);
+    char s1[] = "abcdefghij";
+    reverse_segments(s1, 2); printf("%s\n", s1);   /* bacdfeghji */
 
-    int a2[] = {1,2,3,4,5};
-    reverse_segment(a2, 1, 3); print_arr(a2, 5);
+    char s2[] = "dfgh";
+    reverse_segments(s2, 5); printf("%s\n", s2);   /* hgfd */
 
-    int a3[] = {1,2,3,4,5};
-    reverse_segment(a3, 0, 4); print_arr(a3, 5);
+    char s3[] = "qwerty";
+    reverse_segments(s3, 3); printf("%s\n", s3);   /* ewqrty */
 
-    int a4[] = {1,2,3};
-    reverse_segment(a4, 1, 1); print_arr(a4, 3);
+    char s4[] = "abcdefg";
+    reverse_segments(s4, 2); printf("%s\n", s4);   /* bacdfeg */
     return 0;
 }
 ```
@@ -2337,8 +2374,8 @@ int main() {
 ```scala run
 object Main extends App {
   class Solution {
-    def reverseSegment(arr: Array[Int], l: Int, r: Int): Unit = {
-      var left = l
+    def reverseSegment(arr: Array[Char], l: Int, r: Int): Unit = {
+      var left  = l
       var right = r
       while (left < right) {
         val tmp = arr(left)
@@ -2348,18 +2385,28 @@ object Main extends App {
         right -= 1
       }
     }
-    def reverseSegments(arr: Array[Int], segments: Seq[(Int, Int)]): Unit =
-      segments.foreach { case (l, r) => reverseSegment(arr, l, r) }
+
+    def reverseSegments(s: String, k: Int): String = {
+      val arr = s.toCharArray
+      val n   = arr.length
+
+      var start = 0
+      while (start < n) {
+        val left  = start
+        val right = math.min(start + k - 1, n - 1)
+        reverseSegment(arr, left, right)
+        start += 2 * k
+      }
+
+      new String(arr)
+    }
   }
 
   val sol = new Solution
-
-  val a1 = Array(1,2,3,4,5,6,7,8)
-  sol.reverseSegments(a1, Seq((0,3), (4,7))); println(a1.mkString(", "))
-
-  val a2 = Array(1,2,3,4,5); sol.reverseSegments(a2, Seq((1,3))); println(a2.mkString(", "))
-  val a3 = Array(1,2,3,4,5); sol.reverseSegments(a3, Seq((0,4))); println(a3.mkString(", "))
-  val a4 = Array(1,2,3);     sol.reverseSegments(a4, Seq((1,1))); println(a4.mkString(", "))
+  println(sol.reverseSegments("abcdefghij", 2))   // bacdfeghji
+  println(sol.reverseSegments("dfgh", 5))         // hgfd
+  println(sol.reverseSegments("qwerty", 3))       // ewqrty
+  println(sol.reverseSegments("abcdefg", 2))      // bacdfeg
 }
 ```
 
@@ -2368,53 +2415,60 @@ object Main extends App {
 
 ## Dry Run — Example 1
 
-`arr = [1, 2, 3, 4, 5, 6, 7, 8]`
+`s = "abcdefghij"`, `k = 2` → `n = 10`, stride `2k = 4`. Block starts: `0, 4, 8`.
 
-**Segment (0, 3):** `left=0`, `right=3`
-
-| Step | `left` | `right` | Swap | Array |
-|---|---|---|---|---|
-| 1 | 0 | 3 | `1 ↔ 4` | `[4, 2, 3, 1, 5, 6, 7, 8]` |
-| 2 | 1 | 2 | `2 ↔ 3` | `[4, 3, 2, 1, 5, 6, 7, 8]` |
-| — | 2 | 1 | stop | — |
-
-**Segment (4, 7):** `left=4`, `right=7`
+**Block start = 0:** `left = 0`, `right = min(0 + 1, 9) = 1`
 
 | Step | `left` | `right` | Swap | Array |
 |---|---|---|---|---|
-| 1 | 4 | 7 | `5 ↔ 8` | `[4, 3, 2, 1, 8, 6, 7, 5]` |
-| 2 | 5 | 6 | `6 ↔ 7` | `[4, 3, 2, 1, 8, 7, 6, 5]` |
-| — | 6 | 5 | stop | — |
+| 1 | 0 | 1 | `a ↔ b` | `bacdefghij` |
+| — | 1 | 0 | stop | — |
 
-**Result: `[4, 3, 2, 1, 8, 7, 6, 5]`** ✓
+**Block start = 4:** `left = 4`, `right = min(4 + 1, 9) = 5`
+
+| Step | `left` | `right` | Swap | Array |
+|---|---|---|---|---|
+| 1 | 4 | 5 | `e ↔ f` | `bacdfeghij` |
+| — | 5 | 4 | stop | — |
+
+**Block start = 8:** `left = 8`, `right = min(8 + 1, 9) = 9` — only `k` characters remain; the clamp is a no-op here
+
+| Step | `left` | `right` | Swap | Array |
+|---|---|---|---|---|
+| 1 | 8 | 9 | `i ↔ j` | `bacdfeghji` |
+| — | 9 | 8 | stop | — |
+
+**Result: `"bacdfeghji"`** ✓
 
 ---
 
 ## Complexity Analysis
 
-Let `n` = array length, `k` = number of segments, `s` = total elements covered by all segments.
+Let `n` = the length of the string.
 
 | | Complexity | Reasoning |
 |---|---|---|
-| **Time** | O(s) | Each reversed element is visited once; O(n) in the worst case (all segments cover the full array) |
-| **Space** | O(1) | Only pointer variables — in-place reversal |
+| **Time** | O(n) | Every index is an endpoint of at most one swap; the skipped second-halves aren't visited at all. Building the character array and joining it back are also O(n). |
+| **Space** | O(n) | The mutable character array is a copy of the string — unavoidable because strings are immutable (in Python, Java, Scala). The two-pointer reversal itself adds only O(1) on top of that copy. |
 
 ---
 
 ## Edge Cases
 
-| Scenario | Segment | Effect |
+| Scenario | Input | Effect |
 |---|---|---|
-| Single element | `(i, i)` | `left = right` — loop never runs, no-op |
-| Entire array | `(0, n-1)` | Full reversal |
-| Overlapping segments | `(0,4), (2,6)` | **Undefined** — this function assumes non-overlapping. Overlapping produces incorrect results. |
-| Out-of-bounds | `(-1, 5)` | Caller's responsibility to validate indices |
+| `k = 1` | any `s` | Every window is a single character — `left = right`, the loop never runs; the string returns unchanged |
+| `k ≥ n` | `s = "dfgh", k = 5` | One block; `right` clamps to `n - 1`; the whole string is reversed |
+| Last block `< k` chars | trailing chunk | `min` clamps `right`; the short tail is fully reversed |
+| Last block `k`–`2k` chars | trailing chunk | First `k` reversed; the rest is never visited, left as-is |
+| Empty string | `s = ""` | `n = 0`; the outer loop never runs; returns `""` |
+| `k = 0` | — | Out of scope — the problem constraints assume `k ≥ 1` (a `2k = 0` stride would not advance) |
 
 ---
 
 ## Key Takeaway
 
-Reverse Segments shows that the two-pointer reversal is a **reusable utility** — not just a technique for one specific problem. By extracting it into `reverse_segment(arr, l, r)`, you get a building block that can be called on any sub-range of any array. The next problem, Reverse Word Order, uses exactly this building block twice in sequence.
+Reverse Segments shows that the two-pointer reversal is a **reusable utility** — not just a technique for one specific problem. By extracting it into `reverse_segment(arr, left, right)`, you get a building block that can be aimed at any sub-range. The new idea here is letting *index arithmetic* carry the irregular requirements: a `2k` stride skips the untouched halves, and a `min` clamp folds two separate tail rules into one expression — no branching needed. The next problem, Reverse Word Order, composes sub-range reversals the same way to flip word order while keeping each word intact.
 
 ***
 
@@ -2558,7 +2612,7 @@ This is a **composed** direct application: two separate two-pointer passes appli
 3. **Step 2:** Scan through the array; for each word found at range `[l, r]`, reverse `chars[l..r]` with two pointers
 4. Return `"".join(chars)`
 
-This reuses `reverse_segment(arr, l, r)` from the previous lesson twice.
+This reuses `reverse_segment(arr, left, right)` from the previous lesson twice.
 
 ---
 
@@ -2813,7 +2867,7 @@ flowchart TB
   PC["Palindrome Checker<br/>Compare chars from both ends"]
   VE["Vowel Exchange<br/>Scan to vowel, then swap"]
   RW["Reverse Words<br/>Apply reversal per word"]
-  RS["Reverse Segments<br/>Apply reversal per segment range"]
+  RS["Reverse Segments<br/>Reverse first k of every 2k block"]
   RWO["Reverse Word Order<br/>Full reverse + per-word reverse"]
 
   TP --> FC

@@ -4,18 +4,19 @@ import java.util.regex.Pattern
 
 /**
  * Java's "public class name must match the file name" rule — combined with the fact that neither Judge0 nor
- * Piston let us specify a file name for the user's source — means a snippet that declares
- * `public class Solution { ... }` fails compilation on both backends, because the source is written to disk
- * as `Main.java` and the compiler refuses (`class Solution is public, should be declared in a file named
- * Solution.java`). The DSA chapters use `Solution` (and similar) as the idiomatic entry-point class.
+ * Piston let us specify a file name for the user's source — means a snippet that declares `public class
+ * Solution { ... }` fails compilation on both backends, because the source is written to disk as `Main.java`
+ * and the compiler refuses (`class Solution is public, should be declared in a file named Solution.java`).
+ * The DSA chapters use `Solution` (and similar) as the idiomatic entry-point class.
  *
  * Fix: rewrite the source so the public class is `Main` before sending it to either backend. Word-boundary
  * substitution catches the declaration plus any self-references (e.g. `new Solution(); Solution.foo()`).
  * Anything else — no public class, already named `Main`, or non-Java languages — passes through untouched.
  *
- * Lives in `codeRunPipeline` and is called by both [[CodeRunnerWire]] and [[PistonWire]] before encoding.
- * The shape (single static `normalizeEntrypoint`) is small enough to keep beside the wires rather than
- * promote to `shared/`; both wires already depend on this package.
+ * Lives in `codeRunPipeline` and is invoked via [[Languages.effectiveSource]] — the wire adapters call that
+ * rather than this directly, so neither [[CodeRunnerWire]] nor [[PistonWire]] has to know which language is
+ * special. The shape (single static `normalizeEntrypoint`) is small enough to keep beside the table rather
+ * than promote to `shared/`.
  */
 private[codeRunPipeline] object JavaSourceRewriter:
 
@@ -31,13 +32,12 @@ private[codeRunPipeline] object JavaSourceRewriter:
     """\bclass\s+Main\b""".r
 
   /**
-   * If `source` declares a top-level `class <Name>` where `<Name>` is not `Main`, rename every
-   * word-boundary occurrence of `<Name>` to `Main` so the JVM can find the entry point. Covers both
-   * `public class X` (compile-time error: file name mismatch) and plain `class X` (runtime error: Judge0
-   * runs `java Main` after writing the source as Main.java). Only the first top-level class is renamed
-   * (Judge0 / Piston compile a single file; multiple top-level classes are uncommon in DSA snippets).
-   * Source that already declares any `Main` class — top-level or nested — passes through to avoid
-   * collisions.
+   * If `source` declares a top-level `class <Name>` where `<Name>` is not `Main`, rename every word-boundary
+   * occurrence of `<Name>` to `Main` so the JVM can find the entry point. Covers both `public class X`
+   * (compile-time error: file name mismatch) and plain `class X` (runtime error: Judge0 runs `java Main`
+   * after writing the source as Main.java). Only the first top-level class is renamed (Judge0 / Piston
+   * compile a single file; multiple top-level classes are uncommon in DSA snippets). Source that already
+   * declares any `Main` class — top-level or nested — passes through to avoid collisions.
    */
   def normalizeEntrypoint(source: String): String =
     if anyMainClassPattern.findFirstIn(source).isDefined then source

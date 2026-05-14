@@ -2,13 +2,13 @@ package codefolio.shared.cortex
 
 /**
  * Cortex **Blocks** — typed payloads of the placeholder `<div>`s that the markdown pipeline emits inside a
- * Chapter's rendered HTML. The pipeline emits five flavours: `RunnableCode`, `RunnableGroup`, `Mermaid`,
- * `D2Slides`, `D2Inline`. Each one mounts a Scala.js React component on the client.
+ * Chapter's rendered HTML. The pipeline emits seven flavours: `RunnableCode`, `RunnableGroup`, `Mermaid`,
+ * `D2Slides`, `D2Inline`, `D3Widget`, `TracedCode`. Each one mounts a Scala.js React component on the client.
  *
  * This module owns the **structural validation** that turns raw attribute / child data into a typed `Block`
- * (or a `BlockDecodeError`). It runs identically on the JVM and on Scala.js so the validation is unit-testable
- * without a DOM. The Scala.js DOM walk + URI / JSON shims live in `client.components.cortex.BlockDiscovery`,
- * which feeds these decoders.
+ * (or a `BlockDecodeError`). It runs identically on the JVM and on Scala.js so the validation is
+ * unit-testable without a DOM. The Scala.js DOM walk + URI / JSON shims live in
+ * `client.components.cortex.BlockDiscovery`, which feeds these decoders.
  *
  * Mirrors ADR-0004's server-side bytes↔values split: live wire adapters do the IO, pure modules do the
  * shape-checking, tests bypass IO and exercise the pure modules directly.
@@ -98,6 +98,55 @@ object Blocks:
     if svgHtml.isEmpty then Left(BlockDecodeError.EmptyContent("d2-diagram", "innerHTML"))
     else Right(Block.D2Inline(svgHtml))
 
+  /**
+   * Decode a `d3-widget` placeholder. `widget` (from `data-widget`) names a Scala.js + D3 component in the
+   * client-side catalog; `payload` (URI-decoded `data-payload`) is the raw JSON the widget interprets. The
+   * shared decoder only validates that both are present and non-empty — per-widget schema validation lives in
+   * the widget itself, mirroring the `D2Slides(slides: List[String])` precedent where shared keeps the
+   * payload structural and the client renderer parses it.
+   */
+  def decodeD3Widget(
+      widget: Option[String],
+      payload: Option[String]
+  ): Either[BlockDecodeError, Block.D3Widget] =
+    for
+      name <- widget.toRight(BlockDecodeError.MissingAttribute("d3-widget", "data-widget"))
+      data <- payload.toRight(BlockDecodeError.MissingAttribute("d3-widget", "data-payload"))
+    yield Block.D3Widget(name, data)
+
+  /**
+   * Decode a `traced-code-block` placeholder. `language` (from `data-lang`) is the runtime to execute under
+   * (only "python" is supported in v1; the field is kept so adding Java later doesn't require an attribute
+   * rename). `source` (URI-decoded `data-source`) is the user program. The actual `sys.settrace` wrapper
+   * lives on the client — the server-side `/api/run` is unchanged. See ADR-0007.
+   */
+  def decodeTracedCode(
+      language: Option[String],
+      source: Option[String]
+  ): Either[BlockDecodeError, Block.TracedCode] =
+    for
+      lang <- language.toRight(BlockDecodeError.MissingAttribute("traced-code-block", "data-lang"))
+      src  <- source.toRight(BlockDecodeError.MissingAttribute("traced-code-block", "data-source"))
+    yield Block.TracedCode(lang, src)
+
+  /**
+   * Decode a `likec4-iframe` placeholder. `src` (from `data-src`) is the URL of the LikeC4 view (e.g.
+   * `/c4/view/foo`) and is the only required attribute. `height` (from `data-height`) is the inline iframe
+   * height in pixels; malformed values fall through as `None` so the renderer uses its default. `title` (from
+   * `data-title`) is the accessible label for the iframe; empty-string is normalised to `None`.
+   *
+   * Validation stays minimal — the LikeC4 SPA itself decides what to render for a given `src`, and a 404
+   * inside the iframe is a runtime concern, not a placeholder-decode concern.
+   */
+  def decodeLikeC4(
+      src: Option[String],
+      height: Option[String],
+      title: Option[String]
+  ): Either[BlockDecodeError, Block.LikeC4] =
+    src
+      .toRight(BlockDecodeError.MissingAttribute("likec4-iframe", "data-src"))
+      .map(s => Block.LikeC4(s, height.flatMap(_.toIntOption), title.filter(_.nonEmpty)))
+
 /**
  * The decoded payload of a single placeholder `<div>` in a rendered Chapter. Each variant maps 1:1 to a
  * Scala.js React component on the client; the renderer (`ChapterContent`) is a total `Block => VdomElement`
@@ -106,6 +155,7 @@ object Blocks:
 sealed trait Block
 
 object Block:
+
   final case class RunnableCode(
       language: String,
       source: String,
@@ -129,6 +179,32 @@ object Block:
   ) extends Block
 
   final case class D2Inline(svgHtml: String) extends Block
+
+  /**
+   * Named entry in the client-side D3 widget catalog plus the raw JSON payload it interprets. Schema is
+   * deliberately loose at this layer — each widget owns its own decoder, so the catalog can grow without
+   * regenerating shared types.
+   */
+  final case class D3Widget(widget: String, payload: String) extends Block
+
+  /**
+   * Step-through visualisation for a code block whose execution we want to inspect. `language` is the runtime
+   * ("python" in v1); `source` is the user program. On the client, a `sys.settrace` harness wraps the source
+   * and posts to the existing `/api/run`; the trace is parsed out of stdout and rendered as code + locals
+   * panel + step controls.
+   */
+  final case class TracedCode(language: String, source: String) extends Block
+
+  /**
+   * Embedded LikeC4 diagram view, surfaced as an `<iframe>` pointing at the LikeC4 SPA (proxied under `/c4`).
+   * `src` is the upstream URL (e.g. `/c4/view/foundations_cp_cluster_containers`); `height` is the optional
+   * inline pixel height the author asked for (renderer falls back to a default when absent); `title` is the
+   * optional accessible label (already markdown-author-controlled via the original `title` attribute).
+   *
+   * The component wraps the iframe with a hover-visible Zoom button that opens a near-fullscreen modal —
+   * mirrors the `D2Inline` affordance but delegates pan/zoom inside the diagram to the LikeC4 SPA itself.
+   */
+  final case class LikeC4(src: String, height: Option[Int], title: Option[String]) extends Block
 
 /**
  * Why a placeholder `<div>` could not be turned into a `Block`. Both the JVM specs and the Scala.js

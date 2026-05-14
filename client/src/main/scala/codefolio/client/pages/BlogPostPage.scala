@@ -17,8 +17,8 @@ import scala.scalajs.concurrent.JSExecutionContext.Implicits.queue
  * result in a single-column reader. Reuses [[ChapterContent]] so any future runnable-code / D2 placeholder
  * blocks embedded in a blog post mount the same way they do in a chapter.
  *
- * No sidebar, no TOC layout — blog posts are standalone reads. The post body's own `<nav class="blog-post__toc">`
- * (rendered as raw HTML in the markdown body) is the in-article TOC.
+ * No sidebar, no TOC layout — blog posts are standalone reads. The post body's own `<nav
+ * class="blog-post__toc">` (rendered as raw HTML in the markdown body) is the in-article TOC.
  */
 object BlogPostPage:
 

@@ -1,3 +1,8 @@
+---
+title: '4. The CAP theorem and PACELC, honestly'
+summary: CAP is a partition-time choice; PACELC names the trade-off you pay every other day. Demystified with a runnable simulator and an inline partition widget.
+---
+
 # 4. The CAP theorem and PACELC, honestly
 
 ## TL;DR
@@ -75,7 +80,7 @@ Two stable engineering instincts emerge:
 1. **PC + EC** systems are for *truth-of-record* data — money, identity, inventory, anything where the answer "I am not sure" is preferable to a wrong answer.
 2. **PA + EL** systems are for *experience* data — likes, views, presence, search, anything where "stale by 30 seconds" is fine and "unavailable for 30 seconds" is a disaster.
 
-Most real companies run **both kinds side by side**. We will see this directly in [Capstone 38 (news feed)](../7.capstones/38-news-feed.md) and [Capstone 44 (payments)](../7.capstones/44-payment-system.md).
+Most real companies run **both kinds side by side**. We will see this directly in [Capstone 38 (news feed)](/cortex/system-design/capstones-news-feed) and [Capstone 44 (payments)](/cortex/system-design/capstones-payment-system).
 
 ## 4. Worked Example
 
@@ -128,16 +133,113 @@ The PM did not realise they were asking for the impossible. Your job was to tran
 
 ## 5. Build It
 
-The lesson ships with a full runnable simulator at [`examples/04-cap-pacelc-simulator/`](https://github.com/ani2fun/note-book/tree/main/src/computer-science/system-design/1.foundations/examples/04-cap-pacelc-simulator). It is a 3-node KV store with **injectable partitions** and **two pluggable consistency modes (CP / AP)**. The C4 Container view below — rendered from [`diagrams/cp-cluster.dsl`](https://github.com/ani2fun/note-book/tree/main/src/computer-science/system-design/1.foundations/diagrams/cp-cluster.dsl) — shows the topology the simulator implements:
+The lesson ships with a full runnable simulator at [`examples/04-cap-pacelc-simulator/`](https://github.com/ani2fun/codefolio/tree/main/content/cortex/system-design/01-foundations/examples/04-cap-pacelc-simulator). It is a 3-node KV store with **injectable partitions** and **two pluggable consistency modes (CP / AP)**. The C4 Container view below — rendered live from [`c4/cp-cluster.c4`](https://github.com/ani2fun/codefolio/blob/main/content/cortex/system-design/01-foundations/c4/cp-cluster.c4) — shows the topology the simulator implements:
 
-<img src="./diagrams/structurizr-CpClusterContainers.svg" alt="C4 Container view of the CP cluster" />
-<p align="center"><strong>C4 Container view — three replicas of the quorum KV store. Every arrow between replicas is a "replicate write & await ack" edge that gets blocked by an injected partition.</strong></p>
+<iframe
+  src="/c4/view/foundations_cp_cluster_containers"
+  width="100%"
+  height="520"
+  style="border: 1px solid var(--border, #2b2b2b); border-radius: 8px;"
+  loading="lazy"
+  title="CP cluster — three-replica quorum KV store"
+></iframe>
+
+> Three replicas of the quorum KV store; every arrow is a "replicate write & await ack" edge — the edge that gets blocked by an injected partition.
+
+Before cloning the repo, walk through the four canonical scenarios inline — same cluster, same partitions, same modes, same conclusions. Pick a scenario tab, then step through frame-by-frame. Watch the `REFUSED` badge appear on the minority side in CP mode, and watch the split-brain divergence in AP mode get reconciled by last-writer-wins after the heal.
+
+```d3 widget=partition-simulator
+{
+  "title": "Three-node KV cluster — pick a scenario, step through frame-by-frame",
+  "scenarios": [
+    {
+      "name": "CP — minority refuses on partition",
+      "mode": "CP",
+      "steps": [
+        { "msg": "Initial state. All three replicas committed x=v0 via quorum.",
+          "nodes": { "A": "v0", "B": "v0", "C": "v0" },
+          "links": [["A","B"], ["A","C"], ["B","C"]] },
+        { "msg": "Network partitions: {A} | {B, C}. The edges A↔B and A↔C are dropped.",
+          "nodes": { "A": "v0", "B": "v0", "C": "v0" },
+          "links": [["B","C"]] },
+        { "msg": "Write x=v1 via A — REFUSED. A is alone (1 of 3 reachable); no majority.",
+          "nodes": { "A": "v0", "B": "v0", "C": "v0" },
+          "links": [["B","C"]],
+          "refused": ["A"] },
+        { "msg": "Write x=v1 via B — committed. B,C are a majority of 2.",
+          "nodes": { "A": "v0", "B": "v1", "C": "v1" },
+          "links": [["B","C"]] },
+        { "msg": "Partition heals. A catches up; cluster converges on x=v1 cleanly.",
+          "nodes": { "A": "v1", "B": "v1", "C": "v1" },
+          "links": [["A","B"], ["A","C"], ["B","C"]] }
+      ]
+    },
+    {
+      "name": "AP — both sides accept, then LWW reconciles",
+      "mode": "AP",
+      "steps": [
+        { "msg": "Initial state. All three replicas committed x=v0.",
+          "nodes": { "A": "v0", "B": "v0", "C": "v0" },
+          "links": [["A","B"], ["A","C"], ["B","C"]] },
+        { "msg": "Network partitions: {A} | {B, C}.",
+          "nodes": { "A": "v0", "B": "v0", "C": "v0" },
+          "links": [["B","C"]] },
+        { "msg": "Write via A — accepted locally (no quorum required in AP).",
+          "nodes": { "A": "alice", "B": "v0", "C": "v0" },
+          "links": [["B","C"]] },
+        { "msg": "Write via B — accepted, replicated to C. Split-brain: A and {B,C} disagree.",
+          "nodes": { "A": "alice", "B": "bob", "C": "bob" },
+          "links": [["B","C"]] },
+        { "msg": "Heal. Last-writer-wins: B's write happened later (ts=3 > A's ts=2), so bob wins. alice is silently lost.",
+          "nodes": { "A": "bob", "B": "bob", "C": "bob" },
+          "links": [["A","B"], ["A","C"], ["B","C"]] }
+      ]
+    },
+    {
+      "name": "CP — majority side keeps writing",
+      "mode": "CP",
+      "steps": [
+        { "msg": "Initial state. All three replicas committed x=v0.",
+          "nodes": { "A": "v0", "B": "v0", "C": "v0" },
+          "links": [["A","B"], ["A","C"], ["B","C"]] },
+        { "msg": "Network partitions: {A, B} | {C}.",
+          "nodes": { "A": "v0", "B": "v0", "C": "v0" },
+          "links": [["A","B"]] },
+        { "msg": "Write x=v1 via A — committed. A,B are 2 of 3 = majority.",
+          "nodes": { "A": "v1", "B": "v1", "C": "v0" },
+          "links": [["A","B"]] },
+        { "msg": "Read x via C — returns stale v0. C is on the minority side; CP says strong on the majority, not everywhere.",
+          "nodes": { "A": "v1", "B": "v1", "C": "v0" },
+          "links": [["A","B"]] },
+        { "msg": "Heal. C catches up via replication; cluster is consistent again.",
+          "nodes": { "A": "v1", "B": "v1", "C": "v1" },
+          "links": [["A","B"], ["A","C"], ["B","C"]] }
+      ]
+    },
+    {
+      "name": "CP — happy path, no partition",
+      "mode": "CP",
+      "steps": [
+        { "msg": "Initial state. All three replicas committed x=v0.",
+          "nodes": { "A": "v0", "B": "v0", "C": "v0" },
+          "links": [["A","B"], ["A","C"], ["B","C"]] },
+        { "msg": "Write x=v1 via A — committed. All three replicas are reachable; quorum trivially met.",
+          "nodes": { "A": "v1", "B": "v1", "C": "v1" },
+          "links": [["A","B"], ["A","C"], ["B","C"]] },
+        { "msg": "Read x via B — returns v1. CP guarantees linearizable reads across replicas.",
+          "nodes": { "A": "v1", "B": "v1", "C": "v1" },
+          "links": [["A","B"], ["A","C"], ["B","C"]] }
+      ]
+    }
+  ]
+}
+```
 
 Run it locally:
 
 ```bash
-git clone https://github.com/ani2fun/note-book.git
-cd note-book/src/computer-science/system-design/1.foundations/examples/04-cap-pacelc-simulator
+git clone https://github.com/ani2fun/codefolio.git
+cd codefolio/content/cortex/system-design/01-foundations/examples/04-cap-pacelc-simulator
 just test                      # 8 tests, locks down the (mode × partition × op) matrix
 just demo                      # 8 narrated scenarios — read the output line by line
 ```
@@ -194,7 +296,7 @@ def write(cluster, key, value, coordinator):
 
 > Start in AP mode. Write `x=1` via A. Partition {A | B,C}. Write `x=alice` via A and `x=bob` via B. Heal. *Predict* the value before reading it. Then run.
 
-You will discover that **last-writer-wins silently lost one of the writes** — even though both writes returned success. That is the price of AP, made visible. In production, you would defend against it with vector clocks, CRDTs, or application-level conflict resolution. We will see CRDTs in [Capstone 11 — collaborative editor](../7.capstones/45-multiplayer-game-backend.md) (Google Docs / Figma).
+You will discover that **last-writer-wins silently lost one of the writes** — even though both writes returned success. That is the price of AP, made visible. In production, you would defend against it with vector clocks, CRDTs, or application-level conflict resolution. We will see CRDTs in detail when distributed-patterns lessons cover consistency models and conflict-free replicated data types.
 
 ## 6. Trade-offs & Complexity
 
@@ -216,11 +318,11 @@ You will discover that **last-writer-wins silently lost one of the writes** — 
 
 - **Believing CAP applies to single-datacentre systems.** Inside one datacentre, partitions are extremely rare. CAP *technically* still applies but in practice you tune for latency, not partitions. PACELC's "Else" tells the real story.
 - **Calling a system "CA".** Either it is single-machine (CAP irrelevant), or it is lying about its partition behaviour (most common — the system silently fails closed during a partition and the docs do not say so).
-- **Confusing eventual consistency with "any old answer".** Real eventual-consistency systems guarantee *bounded staleness* and *monotonic reads* if you ask for them. We will get into this in [Lesson 13 — Consistency models](../2.building-blocks/13-consistency-models.md). If a vendor says "eventually consistent" and cannot quote a staleness bound, walk away.
+- **Confusing eventual consistency with "any old answer".** Real eventual-consistency systems guarantee *bounded staleness* and *monotonic reads* if you ask for them. We will get into this in [Lesson 13 — Consistency models](/cortex/system-design/building-blocks-consistency-models). If a vendor says "eventually consistent" and cannot quote a staleness bound, walk away.
 - **Forgetting that "linearizable" reads are an *option* in CP systems.** Many CP systems (etcd, Spanner) offer "stale read" or "follower read" knobs that trade some consistency for lower latency. Knowing they exist is what distinguishes a senior from a junior using the same database.
 - **Designing for the partition that never happens.** If partitions in your network occur once a year for 30 seconds, designing the entire architecture around the rare partition is a bad investment. Design for the *common* case (no partition, low latency), but have a *plan* for partition (drain shedding, fail-closed, alerting).
 - **Sync replication != CP.** A system that "synchronously replicates" but does not require a quorum of acks (just one) is *not* CP — a single failure can lose the write.
-- **Two-phase commit is not magic.** 2PC blocks on the slowest participant and does not survive coordinator failure cleanly. Modern alternatives — Raft, Paxos, Spanner's Paxos+TrueTime, Calvin — are what production uses. We cover them in [Lesson 14](../2.building-blocks/14-consensus-paxos-and-raft.md).
+- **Two-phase commit is not magic.** 2PC blocks on the slowest participant and does not survive coordinator failure cleanly. Modern alternatives — Raft, Paxos, Spanner's Paxos+TrueTime, Calvin — are what production uses. We cover them in [Lesson 14](/cortex/system-design/building-blocks-consensus-paxos-and-raft).
 
 ## 8. Practice
 
@@ -273,4 +375,4 @@ You will discover that **last-writer-wins silently lost one of the writes** — 
 
 ---
 
-**Next:** the *normal day* trade-off PACELC pointed at — **latency vs throughput** — and the two ridiculously simple equations (Little's Law and the USL) that explain why doubling servers does not double throughput. → [Lesson 5 — Latency, throughput, and the USL](./05-latency-throughput-usl.md)
+**Next:** the *normal day* trade-off PACELC pointed at — **latency vs throughput** — and the two ridiculously simple equations (Little's Law and the USL) that explain why doubling servers does not double throughput. → [Lesson 5 — Latency, throughput, and the USL](/cortex/system-design/foundations-latency-throughput-usl)

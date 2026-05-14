@@ -1,14 +1,16 @@
 package codefolio.server.codeRunPipeline
 
-import codefolio.shared.api.Endpoints.{RunResult, RunnableLanguageInfo}
+import codefolio.server.codeRunPipeline.Languages.Language
+import codefolio.shared.api.Endpoints.RunResult
 import io.circe.Json
 import io.circe.parser.parse
 
 /**
  * Pure wire-format adapter for the Piston public-service API (`/api/v2/execute`).
  *
- * Owns the protocol details: which Judge0 language IDs Piston supports, the JSON request body shape, and the
- * mapping from Piston's response into our canonical [[RunResult]]. Lives behind `LivePistonBackend` in
+ * Owns the protocol details: the JSON request body shape and the mapping from Piston's response into our
+ * canonical [[RunResult]]. Which languages Piston supports — and the Piston runtime name for each — comes
+ * from [[Languages]] (`Language.pistonName`), not a map kept here. Lives behind `LivePistonBackend` in
  * production; exercised directly by `PistonWireSpec` against golden response fixtures so wire-level mapping
  * bugs surface without a stub HTTP server.
  *
@@ -17,26 +19,11 @@ import io.circe.parser.parse
  */
 private[codeRunPipeline] object PistonWire:
 
-  /** Map our canonical (Judge0) language ID to the string Piston wants. */
-  private val pistonLanguage: Map[Int, String] = Map(
-    71 -> "python",
-    62 -> "java",
-    81 -> "scala",
-    50 -> "c",
-    54 -> "c++",
-    60 -> "go",
-    73 -> "rust",
-    78 -> "kotlin",
-    74 -> "typescript",
-    63 -> "javascript",
-    82 -> "sqlite3"
-  )
-
   /**
    * Whether Piston knows how to run a given language. False → orchestration should pick a different backend.
    */
-  def supports(lang: RunnableLanguageInfo): Boolean =
-    pistonLanguage.contains(lang.id)
+  def supports(lang: Language): Boolean =
+    lang.pistonName.isDefined
 
   /**
    * Build the Piston request JSON. Caller must check [[supports]] first; an unsupported language panics with
@@ -45,16 +32,12 @@ private[codeRunPipeline] object PistonWire:
   def buildRequestBody(
       source: String,
       stdin: Option[String],
-      lang: RunnableLanguageInfo
+      lang: Language
   ): String =
-    val pistonName = pistonLanguage.getOrElse(
-      lang.id,
+    val pistonName = lang.pistonName.getOrElse(
       throw new IllegalArgumentException(s"Piston does not support ${lang.label} (id=${lang.id})")
     )
-    // Java: rewrite `public class X` → `public class Main` so Piston's compile
-    // step (which writes the source as Main.java) doesn't reject it.
-    val effectiveSource =
-      if lang.id == 62 then JavaSourceRewriter.normalizeEntrypoint(source) else source
+    val effectiveSource = Languages.effectiveSource(lang, source)
     Json
       .obj(
         "language"        -> Json.fromString(pistonName),

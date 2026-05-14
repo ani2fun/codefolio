@@ -9,27 +9,28 @@ import japgolly.scalajs.react.vdom.html_<^.*
 /**
  * Projects — featured K3s card with ASCII topology + filterable card grid.
  *
- * - Filter chips at the top: All · Infra · OSS · Backend.
- * - First entry (where `featured: true` or first in JSON) gets a 2-col span
- *   and renders the K3s topology as an inline `<pre>` instead of a hero
- *   image. Replaces the duplicated macbook.webp reuse — substance over
- *   stock photography.
- * - Other cards: real photo when present (`food-ordering-system`,
- *   `gradle-plugin`); otherwise a tinted-stripe placeholder showing the
- *   `metadata` mono caption.
+ *   - Filter chips at the top: All · Infra · OSS · Backend.
+ *   - First entry (where `featured: true` or first in JSON) gets a 2-col span and renders the K3s topology as
+ *     an inline `<pre>` instead of a hero image. Replaces the duplicated macbook.webp reuse — substance over
+ *     stock photography.
+ *   - Other cards: real photo when present (`food-ordering-system`, `gradle-plugin`); otherwise a
+ *     tinted-stripe placeholder showing the `metadata` mono caption.
  */
 object Projects:
 
   private val filters: List[String] = List("All", "Infra", "OSS", "Backend")
 
-  /** A pre-block + status-pill pair for one project card. Different cards get
-   *  different diagrams; the badge text travels with the diagram so each
-   *  project's frame reads as its own thing rather than wearing homelab chrome. */
-  private final case class AsciiPanel(badge: String, art: String)
+  /**
+   * A pre-block + status-pill pair for one project card. Different cards get different diagrams; the badge
+   * text travels with the diagram so each project's frame reads as its own thing rather than wearing homelab
+   * chrome.
+   */
+  final private case class AsciiPanel(badge: String, art: String)
 
-  /** Inline ASCII topology for the homelab K3s card. Mirrors the actual
-   *  4-node cluster: one control-plane + three workers, all on a single
-   *  flat home network behind a Pi-hosted ingress. */
+  /**
+   * Inline ASCII topology for the homelab K3s card. Mirrors the actual 4-node cluster: one control-plane +
+   * three workers, all on a single flat home network behind a Pi-hosted ingress.
+   */
   private val k3sAscii: String =
     """                     internet
       |                        │
@@ -60,9 +61,10 @@ object Projects:
       |│                                                      │
       |└──────────────────────────────────────────────────────┘""".stripMargin
 
-  /** Single-deploy three-store layout for the Codefolio app: Scala.js front
-   *  end calling a zio-http API that fans out to Postgres (canonical),
-   *  Redis (read-through cache), and Mongo (append-only event log). */
+  /**
+   * Single-deploy three-store layout for the Codefolio app: Scala.js front end calling a zio-http API that
+   * fans out to Postgres (canonical), Redis (read-through cache), and Mongo (append-only event log).
+   */
   private val codefolioAscii: String =
     """             browser
       |                │
@@ -86,9 +88,10 @@ object Projects:
       |       └────┘└─────┘└─────┘
       |       counter cache events""".stripMargin
 
-  /** Publish flow for the Sonatype Maven Central Publisher Gradle plugin:
-   *  user's build → plugin assembles + PGP-signs the bundle → POSTs it to
-   *  the new Central Portal API → stages and releases to Maven Central. */
+  /**
+   * Publish flow for the Sonatype Maven Central Publisher Gradle plugin: user's build → plugin assembles +
+   * PGP-signs the bundle → POSTs it to the new Central Portal API → stages and releases to Maven Central.
+   */
   private val sonatypeAscii: String =
     """      your gradle build
       |              │
@@ -115,8 +118,10 @@ object Projects:
       |      │  Maven Central │   search.maven.org
       |      └────────────────┘""".stripMargin
 
-  /** Lookup the diagram for a project by name. Anything unmatched falls back
-   *  to the photo / placeholder branch in `renderCard`. */
+  /**
+   * Lookup the diagram for a project by name. Anything unmatched falls back to the photo / placeholder branch
+   * in `renderCard`.
+   */
   private def asciiFor(p: PortfolioData.Project): Option[AsciiPanel] =
     p.name match
       case "Self-hosted homelab on K3s" =>
@@ -137,9 +142,10 @@ object Projects:
       icon
     )
 
-  /** Decide which projects show up under the active filter. "All" passes
-   *  everything; otherwise the project's `category` field has to match (or
-   *  the project is hidden). */
+  /**
+   * Decide which projects show up under the active filter. "All" passes everything; otherwise the project's
+   * `category` field has to match (or the project is hidden).
+   */
   private def matchesFilter(p: PortfolioData.Project, active: String): Boolean =
     if active == "All" then true
     else p.category.toOption.contains(active)
@@ -186,7 +192,7 @@ object Projects:
               ^.className := "projects__filters",
               filters.toTagMod { f =>
                 val cls = if active == f then "projects__filter projects__filter--active"
-                          else "projects__filter"
+                else "projects__filter"
                 <.button(
                   ^.key       := f,
                   ^.className := cls,
@@ -206,9 +212,10 @@ object Projects:
         )
       }
 
-  /** True iff the project's image points at a real per-project asset that we
-   *  want to keep showing — anything else (the duplicated macbook.webp) gets
-   *  replaced by a tinted-stripe placeholder. */
+  /**
+   * True iff the project's image points at a real per-project asset that we want to keep showing — anything
+   * else (the duplicated macbook.webp) gets replaced by a tinted-stripe placeholder.
+   */
   private def hasRealPhoto(p: PortfolioData.Project): Boolean =
     val url = Option(p.image).map(_.url).getOrElse("")
     url.nonEmpty && !url.contains("macbook.webp") && !url.endsWith("portfolio-webapp.webp")
@@ -231,7 +238,7 @@ object Projects:
           <.div(
             ^.className := "projects__ascii-frame",
             <.span(^.className := "projects__ascii-badge", panel.badge),
-            <.pre(^.className := "projects__ascii", panel.art)
+            <.pre(^.className  := "projects__ascii", panel.art)
           )
         case None if hasRealPhoto(p) =>
           <.img(
@@ -261,7 +268,8 @@ object Projects:
               p.projectUrl,
               s"Open ${p.name}",
               LucideIcons.ExternalLink(LucideIcons.withClass("projects__icon-svg"))
-            ),
+            )
+          ,
           iconLink(
             p.githubUrl,
             s"${p.name} on GitHub",

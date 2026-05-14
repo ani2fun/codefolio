@@ -1,3 +1,8 @@
+---
+title: '5. Latency, throughput, and the Universal Scalability Law'
+summary: Little''s Law in your back pocket, the M/M/1 cliff in your gut, and the USL on the whiteboard — the queueing instinct that drives every capacity decision.
+---
+
 # 5. Latency, throughput, and the Universal Scalability Law
 
 ## TL;DR
@@ -95,6 +100,16 @@ The first factor (`1/µ`) is the service time. The second factor (`1 / (1−ρ)`
 
 That is the latency cliff.
 
+Drag the slider below. The bar chart shows the latency-multiplier at ten discrete utilisation points; the readout shows the absolute response time for a 50 ms service-time service and the matching mean queue length. Watch how the bars are flat-looking through ρ=0.7, then how the four right-most bars run off the top of the chart.
+
+```d3 widget=queueing-simulator
+{
+  "title": "M/M/1 latency vs utilisation — drag ρ to feel the cliff",
+  "serviceTimeMs": 50,
+  "initialRho": 0.7
+}
+```
+
 ### The Universal Scalability Law (USL)
 
 Gunther's USL is a simple, three-parameter model for *throughput as you add servers*:
@@ -166,7 +181,7 @@ If your service is *stateless* and the bottleneck was thread availability, you m
 
 Not more app threads. Either:
 - **Reduce service time `W`** — most senior thing to do. Every 1× drop in service time is a 1× drop in `L`, which is a 1× drop in load on the *next* tier.
-- **Add capacity at the bottleneck** — typically the database. Cache reads, partition writes, add a read replica. You can read [Lesson 8](../2.building-blocks/08-caching.md) and [Lesson 11](../2.building-blocks/11-replication.md) for these patterns.
+- **Add capacity at the bottleneck** — typically the database. Cache reads, partition writes, add a read replica. You can read [Lesson 8](/cortex/system-design/building-blocks-caching) and [Lesson 11](/cortex/system-design/building-blocks-replication) for these patterns.
 - **Decouple synchronously-blocked work** — push slow operations behind a queue (Lesson 15) so the response time (`W` for the user) can drop even if the *work* still takes the same time.
 
 The *measurement* drove the diagnosis. Without Little's Law and the M/M/1 formula in your back pocket, the conversation is "why is it slow?". With them, the conversation is "the bottleneck is component X at ρ=0.95; add Y to the budget".
@@ -183,11 +198,11 @@ A senior engineer would say: *"We are running on the latency cliff. Any small di
 
 ## 5. Build It
 
-The lesson ships a runnable **M/M/c queueing simulator** at [`examples/05-littles-law-queueing/`](https://github.com/ani2fun/note-book/tree/main/src/computer-science/system-design/1.foundations/examples/05-littles-law-queueing). It is event-driven, deterministic, and ~200 lines.
+The lesson ships a runnable **M/M/c queueing simulator** at [`examples/05-littles-law-queueing/`](https://github.com/ani2fun/codefolio/tree/main/content/cortex/system-design/01-foundations/examples/05-littles-law-queueing). It is event-driven, deterministic, and ~200 lines.
 
 ```bash
-git clone https://github.com/ani2fun/note-book.git
-cd note-book/src/computer-science/system-design/1.foundations/examples/05-littles-law-queueing
+git clone https://github.com/ani2fun/codefolio.git
+cd codefolio/content/cortex/system-design/01-foundations/examples/05-littles-law-queueing
 just test       # 6 tests including a Little's-Law-residual check
 just demo       # runs the headline utilisation sweep + pooling-vs-partitioning experiment
 ```
@@ -296,16 +311,16 @@ The *exception* is throughput-only batch systems where latency does not matter (
 
 - **[Brendan Gregg — Systems Performance](http://www.brendangregg.com/sysperfbook.html)** (book + free chapters online) — comprehensive tooling and methodology for measuring everything in this lesson on real systems.
 
-- **[Cloudflare — How to make your database 1,000× faster (by removing the database)](https://blog.cloudflare.com/keep-track-trends-with-trillions-of-data-points-of-history/)** (2019, paraphrased title) — multiple Cloudflare posts make the same case: the cheapest queue is the one you avoid. Latency comes from *removing* hops, not from making them faster.
+- **[Discord — How Discord Stores Trillions of Messages](https://discord.com/blog/how-discord-stores-trillions-of-messages)** (2023) — read the section on tail-latency under load; the migration was driven by exactly the M/M/c queueing dynamics this lesson formalises. Notice how often the post quotes *p99* and *cell-level utilisation*, not means.
 
 ---
 
 **You finished Part 1.** You now have:
 
-- A senior engineer's mental model of "what system design actually is" ([Lesson 1](./01-what-system-design-means.md)).
-- The numbers — to within a factor of 10 — for every operation in a computer ([Lesson 2](./02-numbers-every-engineer-should-know.md)).
-- The estimation skill that turns a back-of-envelope into an architectural decision ([Lesson 3](./03-back-of-envelope-estimation.md)).
-- The CAP / PACELC trade-off, *felt* through the simulator ([Lesson 4](./04-cap-and-pacelc.md)).
-- Little's Law, the M/M/1 cliff, and the USL — the queueing instinct that drives every capacity decision ([this lesson](./05-latency-throughput-usl.md)).
+- A senior engineer's mental model of "what system design actually is" ([Lesson 1](/cortex/system-design/foundations-what-system-design-means)).
+- The numbers — to within a factor of 10 — for every operation in a computer ([Lesson 2](/cortex/system-design/foundations-numbers-every-engineer-should-know)).
+- The estimation skill that turns a back-of-envelope into an architectural decision ([Lesson 3](/cortex/system-design/foundations-back-of-envelope-estimation)).
+- The CAP / PACELC trade-off, *felt* through the simulator ([Lesson 4](/cortex/system-design/foundations-cap-and-pacelc)).
+- Little's Law, the M/M/1 cliff, and the USL — the queueing instinct that drives every capacity decision (this lesson).
 
-Next up: the actual building blocks — networking, load balancers, caches, databases, replication, sharding, consistency, consensus. Each lesson follows the same 8-beat shape. → [Part 2 — Building blocks](../2.building-blocks/index.md)
+Next up: the actual building blocks — networking, load balancers, caches, databases, replication, sharding, consistency, consensus. Each lesson follows the same 8-beat shape. → [Part 2 — Building blocks](/cortex/system-design)

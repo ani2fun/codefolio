@@ -7,15 +7,15 @@ import codefolio.shared.api.Endpoints.{Book, ChapterRef, CortexIndex}
  *
  * Takes an in-memory `CortexEntry` tree (the FS adapter materialises this from disk) and produces a
  * `CortexIndex` plus a per-book reverse map (chapter slug → relative file path). The seam keeps the
- * convention rules — numeric-prefix ordering, max Section depth, Slug uniqueness, Frontmatter title
- * fallback chain — in one named module that JVM tests can exercise with literal fixtures.
+ * convention rules — numeric-prefix ordering, max Section depth, Slug uniqueness, Frontmatter title fallback
+ * chain — in one named module that JVM tests can exercise with literal fixtures.
  *
  * Lenient by ADR-0001: `BookMeta` and `SectionMeta` are `Option` — the FS adapter passes `None` when the
  * matching `book.json` / `_section.json` is missing or malformed, and the walker falls back to a humanised
  * directory name. The same leniency applies to Chapter `Frontmatter` via [[Frontmatter.extractTitle]].
  *
- * Mirrors the pattern in [[SidebarForest]] and [[codefolio.shared.runner.CodeExecutor]]: a pure shared
- * module behind an internal seam, callable from any platform that lands in `shared`.
+ * Mirrors the pattern in [[SidebarForest]] and [[codefolio.shared.runner.CodeExecutor]]: a pure shared module
+ * behind an internal seam, callable from any platform that lands in `shared`.
  */
 object CortexIndexWalker:
 
@@ -27,11 +27,16 @@ object CortexIndexWalker:
   // never sees raw bytes or JSON.
   // ===========================================================================
 
+  /**
+   * `order` controls the book's position on the Cortex index: books with an `order` sort ascending and ahead
+   * of any book without one, which fall to the end sorted alphabetically by directory name.
+   */
   final case class BookMeta(
       title: Option[String],
       description: Option[String],
       tags: Option[Seq[String]],
-      estimatedReadingMinutes: Option[Int]
+      estimatedReadingMinutes: Option[Int],
+      order: Option[Int] = None
   )
 
   final case class SectionMeta(title: Option[String], summary: Option[String])
@@ -82,15 +87,18 @@ object CortexIndexWalker:
   // ===========================================================================
 
   /**
-   * Walk a list of root-level entries. Each top-level `CortexDir` whose name is slug-like and does not start
-   * with `_` or `.` becomes a Book; other top-level entries are silently skipped (so `_drafts/`, `.git/`, and
-   * stray files can sit alongside real books without failing the index). The leading-underscore-or-dot rule
-   * is applied uniformly at every level — Books, Sections, and Chapters.
+   * Walk a list of root-level entries. Each top-level `CortexDir` whose name is slug-like, does not start
+   * with `_` or `.`, and is not a reserved companion-asset directory ([[ReservedAuxDirs]]) becomes a Book;
+   * other top-level entries are silently skipped (so `_drafts/`, `.git/`, and stray files can sit alongside
+   * real books without failing the index). The same filter applies uniformly at every level — Books,
+   * Sections, and Chapters.
+   *
+   * Books are ordered by `book.json#order` (see [[BookMeta]]); Sections and Chapters by numeric prefix.
    */
   def walk(roots: List[CortexEntry]): Either[IndexError, WalkResult] =
-    val bookDirs = ordered(roots).collect {
-      case d: CortexDir if slugLike(d.name) && !d.name.startsWith("_") && !d.name.startsWith(".") => d
-    }
+    val bookDirs = roots
+      .collect { case d: CortexDir if includesAsContent(d.name) => d }
+      .sortBy(d => (d.bookMeta.flatMap(_.order).getOrElse(Int.MaxValue), d.name.toLowerCase))
     val results = bookDirs.map(d => buildBook(d, d.name))
     results.collectFirst { case Left(e) => e } match
       case Some(e) => Left(e)
@@ -98,6 +106,29 @@ object CortexIndexWalker:
         val books = results.collect { case Right((b, _)) => b }
         val maps  = results.collect { case Right((b, m)) => b.slug -> m }.toMap
         Right(WalkResult(CortexIndex(books), maps))
+
+  /**
+   * Directory names that are companion source/asset locations rather than chapter content.
+   *
+   *   - `examples` — runnable code projects sitting next to a lesson (their `README.md` and any internal docs
+   *     would otherwise pollute the sidebar as rogue chapters).
+   *   - `c4` — LikeC4 `.c4` source files for a Part's interactive diagrams. Collected by the LikeC4 build
+   *     pipeline (`Dockerfile.likec4`) into the LikeC4 SPA project root; never directly served from Cortex.
+   *
+   * The check is on the order-prefix-stripped name, so both `examples/` and `01-examples/` qualify. Add new
+   * reserved names sparingly: a single literal is much easier to reason about than a regex.
+   */
+  val ReservedAuxDirs: Set[String] = Set("examples", "c4")
+
+  /**
+   * Whether a directory name is eligible to become a Book / Section. Excludes `_*`, `.*`, anything
+   * non-slug-like, and reserved-aux directory names ([[ReservedAuxDirs]]).
+   */
+  def includesAsContent(name: String): Boolean =
+    slugLike(name) &&
+      !name.startsWith("_") &&
+      !name.startsWith(".") &&
+      !ReservedAuxDirs.contains(stripOrderPrefix(name))
 
   /** Reject anything that isn't a simple slug — letters, digits, hyphens, underscores; non-empty. */
   def slugLike(s: String): Boolean =
@@ -193,7 +224,7 @@ object CortexIndexWalker:
           f
       }
       val sectionDirs = children.collect {
-        case d: CortexDir if !d.name.startsWith("_") && !d.name.startsWith(".") => d
+        case d: CortexDir if includesAsContent(d.name) => d
       }
       val groupOpt = if groupPath.isEmpty then None else Some(groupPath.toSeq)
 
@@ -237,5 +268,16 @@ object CortexIndexWalker:
   private def ordered(entries: List[CortexEntry]): List[CortexEntry] =
     entries.sortBy(c => (extractOrder(c.name), c.name.toLowerCase))
 
+  /**
+   * Numeric ordering key for sibling entries.
+   *
+   *   - `index.md` (or a bare `index` directory) sorts first within its level. The Part-level
+   *     `01-foundations/index.md` is the landing page for "Part 1 — Foundations" and should appear *above*
+   *     `01-what-system-design-means.md` in the sidebar, not after the last lesson.
+   *   - `01-foo`, `02-bar`, … sort by their leading integer.
+   *   - Everything else falls to the end (`Int.MaxValue`).
+   */
   private def extractOrder(name: String): Int =
-    "^(\\d+)".r.findPrefixMatchOf(name).map(_.group(1).toInt).getOrElse(Int.MaxValue)
+    val stripped = name.stripSuffix(".md")
+    if stripped == "index" then -1
+    else "^(\\d+)".r.findPrefixMatchOf(name).map(_.group(1).toInt).getOrElse(Int.MaxValue)

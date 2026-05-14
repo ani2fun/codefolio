@@ -1,6 +1,6 @@
 package codefolio.server.codeRunPipeline
 
-import codefolio.shared.api.Endpoints.RunnableLanguageInfo
+import codefolio.server.codeRunPipeline.Languages.Language
 import zio.test.*
 
 import java.nio.charset.StandardCharsets
@@ -13,7 +13,7 @@ import java.util.Base64
  */
 object CodeRunnerWireSpec extends ZIOSpecDefault:
 
-  private val python: RunnableLanguageInfo =
+  private val python: Language =
     Languages.resolve("python").getOrElse(throw new IllegalStateException("python missing"))
 
   private def b64(s: String): String =

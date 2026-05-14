@@ -3,12 +3,12 @@ package codefolio.client.components
 import japgolly.scalajs.react.*
 import org.scalajs.dom
 
-/** Replacement for next-themes. The actual *initial* theme is set by the
-  * inline script in `client/index.html` (which runs synchronously before any
-  * module script and avoids the flash-of-incorrect-theme), so this object's
-  * job is just runtime toggling: read/write `<html class="dark">` and persist
-  * the choice to `localStorage` under the same key the inline script reads.
-  */
+/**
+ * Replacement for next-themes. The actual *initial* theme is set by the inline script in `client/index.html`
+ * (which runs synchronously before any module script and avoids the flash-of-incorrect-theme), so this
+ * object's job is just runtime toggling: read/write `<html class="dark">` and persist the choice to
+ * `localStorage` under the same key the inline script reads.
+ */
 object Theme:
 
   enum Mode:

@@ -1,6 +1,7 @@
 package codefolio.server.codeRunPipeline
 
-import codefolio.shared.api.Endpoints.{RunResult, RunnableLanguageInfo}
+import codefolio.server.codeRunPipeline.Languages.Language
+import codefolio.shared.api.Endpoints.RunResult
 import io.circe.Json
 import io.circe.parser.parse
 
@@ -12,9 +13,9 @@ import java.util.Base64
  * name, speaks the Judge0 submissions API — that's the wire shape the Code Runner image exposes.
  *
  * Owns the path/query suffix, the base64-encoded JSON request body shape, and the mapping from Judge0's
- * response (also base64-encoded fields) into our canonical [[RunResult]]. Exercised directly by
- * `CodeRunnerWireSpec` against golden response fixtures so wire-level mapping bugs surface without a stub
- * HTTP server.
+ * response (also base64-encoded fields) into our canonical [[RunResult]]. The numeric language id comes from
+ * [[Languages]] (`Language.id`), not a constant kept here. Exercised directly by `CodeRunnerWireSpec` against
+ * golden response fixtures so wire-level mapping bugs surface without a stub HTTP server.
  */
 private[codeRunPipeline] object CodeRunnerWire:
 
@@ -27,17 +28,15 @@ private[codeRunPipeline] object CodeRunnerWire:
       "&fields=stdout,stderr,compile_output,message,status,time,memory"
 
   /**
-   * Build the Judge0 submission request body. Source and stdin are base64-encoded; language ID is canonical.
+   * Build the Judge0 submission request body. Source and stdin are base64-encoded; the language id is the
+   * canonical Judge0 id from [[Languages]].
    */
   def buildRequestBody(
       source: String,
       stdin: Option[String],
-      lang: RunnableLanguageInfo
+      lang: Language
   ): String =
-    // Java: rewrite `public class X` → `public class Main` so Judge0's compile
-    // step (which writes the source as Main.java) doesn't reject it.
-    val effectiveSource =
-      if lang.id == 62 then JavaSourceRewriter.normalizeEntrypoint(source) else source
+    val effectiveSource = Languages.effectiveSource(lang, source)
     Json
       .obj(
         "language_id" -> Json.fromInt(lang.id),

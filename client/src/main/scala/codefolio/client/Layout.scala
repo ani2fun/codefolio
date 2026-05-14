@@ -5,10 +5,10 @@ import japgolly.scalajs.react.*
 import japgolly.scalajs.react.extra.router.{Resolution, RouterCtl}
 import japgolly.scalajs.react.vdom.html_<^.*
 
-/** App-shell layout: Header at top, the resolved page in the middle, Footer
-  * at the bottom. The Header receives the RouterCtl so its nav links navigate
-  * via pushState rather than full reloads.
-  */
+/**
+ * App-shell layout: Header at top, the resolved page in the middle, Footer at the bottom. The Header receives
+ * the RouterCtl so its nav links navigate via pushState rather than full reloads.
+ */
 object Layout:
 
   final case class Props(ctl: RouterCtl[Page], resolution: Resolution[Page])

@@ -1,3 +1,8 @@
+---
+title: '3. Back-of-envelope estimation'
+summary: Multiply five numbers, double the result, design for the doubled number — the drill that every senior engineer does before any code is written.
+---
+
 # 3. Back-of-envelope estimation
 
 ## TL;DR
@@ -5,7 +10,7 @@
 
 ## 1. Motivation
 
-In **2010**, Twitter's site was famously held together with bailing wire. The "fail whale" had its own Wikipedia page. Every World Cup goal generated a traffic spike that took the site down. The [SREcon 2018 retrospective by Yao Yue](https://www.usenix.org/conference/srecon18americas/presentation/yue) describes how a 12-engineer infrastructure team learned to estimate the next spike before it arrived — and reroute around it — by doing exactly the kind of math we are about to learn.
+In **2010**, Twitter's site was famously held together with bailing wire. The [Fail Whale](https://en.wikipedia.org/wiki/Twitter#Outages) had its own Wikipedia entry. Every World Cup goal generated a traffic spike that took the site down. A small infrastructure team eventually learned to estimate the next spike before it arrived — and reroute around it — by doing exactly the kind of math we are about to learn.
 
 When the Brazilian World Cup goal-scoring spike of 8,800 tweets/sec hit in 2014, Twitter did not crash. Why? Because someone, on a whiteboard, six months earlier, had multiplied: *World-Cup-finals viewers × tweet-per-viewer rate × goal-event amplification = upper bound on QPS during the moment of a goal*. They had then provisioned for **3× that estimate** and built a fast-cache shedding path for the inevitable underestimate.
 
@@ -99,7 +104,7 @@ The read path is **25× the write path**. That is the *single most important num
 - Writes can be slow; reads cannot.
 - The architecture is read-optimised.
 
-This is exactly why Twitter's core design uses *fan-out on write* — pre-compute every follower's timeline at write time so reads are O(1) cache hits. We will design that exact pipeline in [Capstone 38](../7.capstones/38-news-feed.md).
+This is exactly why Twitter's core design uses *fan-out on write* — pre-compute every follower's timeline at write time so reads are O(1) cache hits. We will design that exact pipeline in [Capstone 38](/cortex/system-design/capstones-news-feed).
 
 ### Calculation 3 — Storage growth
 
@@ -192,6 +197,22 @@ Now make `BYTES_PER_WRITE` = `5_000_000` (a video upload service like YouTube). 
 
 This is the BOTE habit. Five numbers, three derived totals, one architectural decision. Five minutes.
 
+The same template, made interactive — pick a preset and watch the four output numbers move; type your own and feel the read/write-ratio flip. *The estimates below use rounded, illustrative public figures, not real-time stats; that is the BOTE point.*
+
+```d3 widget=estimation-calculator
+{
+  "title": "Pick a preset or punch in your own numbers — the outputs update on every keystroke",
+  "peakFactor": 3,
+  "replicationFactor": 3,
+  "presets": [
+    { "name": "Twitter/X (illustrative)",     "dau": 200000000,  "writesPerUser": 2,  "readsPerUser": 50, "bytesPerWrite": 1000 },
+    { "name": "YouTube views (illustrative)", "dau": 750000000,  "writesPerUser": 0,  "readsPerUser": 10, "bytesPerWrite": 5000000 },
+    { "name": "WhatsApp (illustrative)",      "dau": 2000000000, "writesPerUser": 30, "readsPerUser": 30, "bytesPerWrite": 250 },
+    { "name": "Personal book tracker (10 readers)", "dau": 10,    "writesPerUser": 1,  "readsPerUser": 10, "bytesPerWrite": 500 }
+  ]
+}
+```
+
 ## 6. Trade-offs & Complexity
 
 There is no algorithmic complexity in BOTE — it is multiplication. But there *are* trade-offs in how aggressive your assumptions are.
@@ -211,7 +232,7 @@ The instinct to be precise is wrong. The instinct to slap "× 10 for safety" on 
 - **Forgetting metadata.** A "tweet" is not 280 bytes. It is 280 chars *plus* a 64-bit ID, an author ID, a timestamp, geolocation, language, source, hashtags array, mention array, attachment URLs, retweet status, like-count cache, etc. — **easily 1 KB**, often 4 KB. The same goes for "messages", "events", "rows".
 - **Forgetting indexes.** Storage is not just user data. Every secondary index, every search index, every materialised view, every analytics aggregate is **another full copy** of the data, often partially. The 3× "indexes / derived" multiplier is *generous on the low end*.
 - **Conflating write QPS with row growth.** Edits, deletes, and revisions all count toward write QPS but reduce or stay-flat for storage growth. Likes, retweets, saves all count as writes but add ~50 bytes each, not 1 KB. Be specific.
-- **Ignoring multi-region replication overhead.** A "1 KB write" replicated to 3 regions is *3 KB of cross-region bandwidth*, dominated by the cross-region cost in dollars. We will quantify this in [Lesson 11 — Replication](../2.building-blocks/11-replication.md).
+- **Ignoring multi-region replication overhead.** A "1 KB write" replicated to 3 regions is *3 KB of cross-region bandwidth*, dominated by the cross-region cost in dollars. We will quantify this in [Lesson 11 — Replication](/cortex/system-design/building-blocks-replication).
 - **Estimating averages and shipping for them.** A QPS estimate is the *integral over time*. Real traffic has spikes. Provision for the **99th-percentile minute**, not the daily average.
 - **Trusting your peak factor.** "We expect 3× peaks". Then a celebrity tweets your URL and traffic is **300×** for 90 seconds. The right design has a **shedding strategy** (rate limit, queue, serve from cache) for the case where the estimate is wrong.
 
@@ -258,10 +279,10 @@ The instinct to be precise is wrong. The instinct to slap "× 10 for safety" on 
 
 - **[Discord — Discord's Trillion-Message Move from Cassandra to ScyllaDB](https://discord.com/blog/how-discord-stores-trillions-of-messages)** (2023) — the post documents *exactly* the kind of growth-curve estimation that drove the migration. The estimates are explicit and reproducible.
 
-- **[YouTube engineering blog archive](https://blog.youtube/inside-youtube/youtube-by-the-numbers/)** — periodic "by the numbers" posts. Your YouTube BOTE estimate (Exercise 1) should land within a factor of 3.
+- **[YouTube — Press / By the numbers](https://blog.youtube/press/)** — periodically updated stats on hours watched, uploads, monthly users. Your YouTube BOTE estimate (Exercise 1) should land within a factor of 3 of the numbers quoted here.
 
-- **[High Scalability — All Time Favorites](http://highscalability.com/all-time-favorites/)** — a curated archive of architecture posts from named systems (Reddit, Pinterest, Tumblr, Etsy, Foursquare, etc.) with traffic numbers in each. Useful as a "known answers" reference for sanity-checking your own estimates.
+- **[High Scalability](https://highscalability.com/)** — a long-running archive of architecture posts from named systems (Reddit, Pinterest, Tumblr, Etsy, Foursquare, etc.) with traffic numbers in each. Useful as a "known answers" reference for sanity-checking your own estimates.
 
 ---
 
-**Next:** the most-misunderstood theorem in distributed systems. We will demystify CAP, fix it with PACELC, and *feel* a partition with a runnable simulator. → [Lesson 4 — The CAP theorem and PACELC, honestly](./04-cap-and-pacelc.md)
+**Next:** the most-misunderstood theorem in distributed systems. We will demystify CAP, fix it with PACELC, and *feel* a partition with a runnable simulator. → [Lesson 4 — The CAP theorem and PACELC, honestly](/cortex/system-design/foundations-cap-and-pacelc)

@@ -1,3 +1,8 @@
+---
+title: '1. What "system design" actually means'
+summary: The discipline that asks "what happens when the disk fills up?" before any code is written — and answers it before the disk fills up.
+---
+
 # 1. What "system design" actually means
 
 ## TL;DR
@@ -113,10 +118,18 @@ flowchart LR
 
 That is the entire system. One server. One file. Nightly backup to a cloud bucket. Deployed to a $4/month VM. **It will work.**
 
-The same view in C4 Container notation (rendered from [`diagrams/book-tracker.dsl`](https://github.com/ani2fun/note-book/tree/main/src/computer-science/system-design/1.foundations/diagrams/book-tracker.dsl) via `make diagrams`):
+The same view in C4 Container notation, rendered live from [`c4/book-tracker.c4`](https://github.com/ani2fun/codefolio/blob/main/content/cortex/system-design/01-foundations/c4/book-tracker.c4):
 
-<img src="./diagrams/structurizr-PersonalContainers.svg" alt="C4 Container view of the personal-scale book tracker" />
-<p align="center"><strong>C4 Container view — three boxes is the entire production architecture for the personal-scale book tracker.</strong></p>
+<iframe
+  src="/c4/view/foundations_book_tracker_personal"
+  width="100%"
+  height="520"
+  style="border: 1px solid var(--border, #2b2b2b); border-radius: 8px;"
+  loading="lazy"
+  title="Personal-scale book tracker — C4 Container view"
+></iframe>
+
+> Pan and zoom inside the frame. Three boxes is the entire production architecture for the personal-scale book tracker.
 
 **Step 5 — Now what would break, and would you care?**
 
@@ -138,10 +151,18 @@ This is the actual job: **knowing what not to build**.
 
 Below is what that scaled architecture looks like in C4 Container notation. Notice how nearly every single new box is a *response* to a non-functional requirement (concurrent users, latency, durability, observability) rather than a new feature:
 
-<img src="./diagrams/structurizr-ScaledContainers.svg" alt="C4 Container view of the scaled book tracker (50k users)" />
-<p align="center"><strong>C4 Container view — same product, scaled to 50,000 users with a real-time leaderboard. Compare to the three-box version above.</strong></p>
+<iframe
+  src="/c4/view/foundations_book_tracker_scaled"
+  width="100%"
+  height="640"
+  style="border: 1px solid var(--border, #2b2b2b); border-radius: 8px;"
+  loading="lazy"
+  title="Scaled book tracker (50k readers) — C4 Container view"
+></iframe>
 
-Same product. The architectural difference between the two diagrams is the entire content of this track — how to know *which* box to add, *when*, and *why*.
+> Same product, scaled to 50,000 readers with a real-time leaderboard. Compare to the three-box version above by panning between the two frames.
+
+The architectural difference between the two views is the entire content of this track — how to know *which* box to add, *when*, and *why*.
 
 ## 5. Build It
 
@@ -150,7 +171,7 @@ The best way to start thinking like a system designer is to read **real postmort
 Pick one and read it now (15 minutes each):
 
 - [GitLab — Database outage of January 31](https://about.gitlab.com/blog/postmortem-of-database-outage-of-january-31/) (2017)
-- [Cloudflare — November 2 outage](https://blog.cloudflare.com/cloudflare-incident-on-november-2-2023/) (2023)
+- [Cloudflare — November 2 control-plane outage](https://blog.cloudflare.com/post-mortem-on-cloudflare-control-plane-and-analytics-outage/) (2023)
 - [Heroku — Status incident archive](https://status.heroku.com/incidents) (ongoing — pick any "post-incident review")
 - [Curated list: danluu/post-mortems](https://github.com/danluu/post-mortems) — a hand-picked collection of the best public postmortems by Dan Luu.
 
@@ -236,7 +257,7 @@ The mistakes that distinguish junior from senior thinking — every one of these
 - **Treating "the cloud" as infinite and infallible.** It is not. Regions go down. Availability zones lose power. AWS has lost an entire region for a day twice. Design for it.
 - **Assuming the network is reliable.** It is not — partitions happen, packets vanish, DNS lies. (This is fallacy #1 of the [Eight Fallacies of Distributed Systems](https://en.wikipedia.org/wiki/Fallacies_of_distributed_computing). We will dedicate a lesson to it later.)
 - **Building distributed systems before you have a single-machine system that works.** Distribution multiplies bugs by the number of nodes. If you cannot make one machine reliable, six of them will not save you. They will compound your suffering.
-- **Caching as a reflex.** "Add a cache" is the duct tape of system design. It hides slowness, then explodes spectacularly the first time the cache layer fails and 100% of your traffic hits the cold backend. (Cache stampedes get their own treatment in [Lesson 8](../2.building-blocks/08-caching.md).)
+- **Caching as a reflex.** "Add a cache" is the duct tape of system design. It hides slowness, then explodes spectacularly the first time the cache layer fails and 100% of your traffic hits the cold backend. (Cache stampedes get their own treatment in [Lesson 8](/cortex/system-design/building-blocks-caching).)
 - **Forgetting people.** A system that needs 10 engineers to operate but the team has 3 is *broken by design*, no matter how elegant the architecture.
 
 How would you notice you are committing one of these mistakes? You stop being able to answer the question "*what does this system look like at 10× current load, and what fails first?*" without staring at the ceiling for 30 seconds.
@@ -257,7 +278,7 @@ If you cannot answer that on demand for the system you are designing, you have n
 > - "I need it to be a single source of truth — no stale reads, ever."
 > - "I need it to stay up if any one region goes down."
 >
-> Pick *two* and write one paragraph explaining to the PM, in plain language, why you cannot give them the third without changing one of the other two. (We will formalise this in [Lesson 4 — CAP and PACELC](./04-cap-and-pacelc.md). The point of doing it now is to feel the *intuition* before the formalism.)
+> Pick *two* and write one paragraph explaining to the PM, in plain language, why you cannot give them the third without changing one of the other two. (We will formalise this in [Lesson 4 — CAP and PACELC](/cortex/system-design/foundations-cap-and-pacelc). The point of doing it now is to feel the *intuition* before the formalism.)
 
 <details>
 <summary><strong>Hint for Exercise 3</strong></summary>
@@ -272,10 +293,10 @@ Your two regions cannot agree on the latest write *and* keep responding *and* ke
 
 - **[Discord — How Discord Stores Trillions of Messages](https://discord.com/blog/how-discord-stores-trillions-of-messages)** (2023) — A study in *deliberate* migration from Cassandra to ScyllaDB, including the months of measurement that justified the move. Notice how much of the post is about *measurement*, not implementation.
 
-- **[Stripe — Designing Robust and Predictable APIs with Idempotency](https://stripe.com/blog/idempotency)** (2017) — Senior-grade thinking about making payments retryable without double-charging anyone. We will use this directly in [Lesson 17](../3.distributed-patterns/17-idempotency-retries-backoff.md) and [Capstone 44](../7.capstones/44-payment-system.md).
+- **[Stripe — Designing Robust and Predictable APIs with Idempotency](https://stripe.com/blog/idempotency)** (2017) — Senior-grade thinking about making payments retryable without double-charging anyone. We will use this directly in [Lesson 17](/cortex/system-design/distributed-patterns-idempotency-retries-backoff) and [Capstone 44](/cortex/system-design/capstones-payment-system).
 
 - **[Cloudflare — How we built Pingora, the proxy that connects Cloudflare to the Internet](https://blog.cloudflare.com/how-we-built-pingora-the-proxy-that-connects-cloudflare-to-the-internet/)** (2022) — A masterclass in *replacing* a load-bearing component (Nginx) with a custom one (Pingora) only after years of measurement justified the cost.
 
 ---
 
-**Next:** the second-most-important habit a senior engineer cultivates — knowing how slow each kind of computer operation actually is. Without that, every design conversation devolves into vibes. With it, you can ballpark any design's feasibility in 30 seconds. → [Lesson 2 — Numbers every engineer should know](./02-numbers-every-engineer-should-know.md)
+**Next:** the second-most-important habit a senior engineer cultivates — knowing how slow each kind of computer operation actually is. Without that, every design conversation devolves into vibes. With it, you can ballpark any design's feasibility in 30 seconds. → [Lesson 2 — Numbers every engineer should know](/cortex/system-design/foundations-numbers-every-engineer-should-know)

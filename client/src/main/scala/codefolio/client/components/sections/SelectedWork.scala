@@ -11,20 +11,20 @@ import scala.scalajs.js
 /**
  * SelectedWork — three-row scannable strip between Hero and About.
  *
- * The "30-second skim path" the design brief calls out as the missing piece
- * of the original site. Each row condenses a single role into:
- *   company-italic | dates · location · role mono | one-sentence blurb
- *   | primary tech tags right-aligned | arrow ↗
+ * The "30-second skim path" the design brief calls out as the missing piece of the original site. Each row
+ * condenses a single role into: company-italic | dates · location · role mono | one-sentence blurb \| primary
+ * tech tags right-aligned | arrow ↗
  *
- * Picks are driven by the `featured: true` flag in `experienceData.json`.
- * If no entries are flagged we fall back to the first three (which match
- * Europcar / Audi / Disney by virtue of reverse-chronological JSON order
+ * Picks are driven by the `featured: true` flag in `experienceData.json`. If no entries are flagged we fall
+ * back to the first three (which match Europcar / Audi / Disney by virtue of reverse-chronological JSON order
  * minus the one-month Dassault stint at index 1 — see `pickFeatured`).
  */
 object SelectedWork:
 
-  /** Drop the months/days noise from a "August 2022 – Present" string,
-   *  keeping just the years for the meta row.  "August 2022" → "2022". */
+  /**
+   * Drop the months/days noise from a "August 2022 – Present" string, keeping just the years for the meta
+   * row. "August 2022" → "2022".
+   */
   private def yearsOnly(time: String): String =
     val tokens = time.split("[-–—]").map(_.trim)
     tokens.map { tok =>
@@ -32,9 +32,10 @@ object SelectedWork:
       words.lastOption.getOrElse(tok)
     }.mkString(" – ")
 
-  /** Pick the entries to render. Honours an explicit `featured: true` flag
-   *  if any rows have it; otherwise picks the first three excluding the
-   *  one-month Dassault stint. */
+  /**
+   * Pick the entries to render. Honours an explicit `featured: true` flag if any rows have it; otherwise
+   * picks the first three excluding the one-month Dassault stint.
+   */
   private def pickFeatured(all: js.Array[PortfolioData.Experience]): List[PortfolioData.Experience] =
     val flagged = all.filter(_.featured.getOrElse(false)).toList
     if flagged.nonEmpty then flagged.take(3)

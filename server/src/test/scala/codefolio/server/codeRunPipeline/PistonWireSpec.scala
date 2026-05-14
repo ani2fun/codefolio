@@ -1,5 +1,6 @@
 package codefolio.server.codeRunPipeline
 
+import codefolio.server.codeRunPipeline.Languages.Language
 import codefolio.shared.api.Endpoints.RunnableLanguageInfo
 import zio.test.*
 
@@ -10,15 +11,18 @@ import zio.test.*
  */
 object PistonWireSpec extends ZIOSpecDefault:
 
-  private val python: RunnableLanguageInfo =
+  private val python: Language =
     Languages.resolve("python").getOrElse(throw new IllegalStateException("python missing"))
 
   /**
-   * Synthetic language whose id is deliberately NOT in `PistonWire.pistonLanguage`. Keeps the test decoupled
-   * from which real `Languages` entries happen to be in Piston's protocol map at any moment.
+   * Synthetic language with no `pistonName` — Piston can't run it. Keeps the test decoupled from which real
+   * `Languages` entries happen to carry a Piston runtime name at any moment.
    */
-  private val unknown: RunnableLanguageInfo =
-    RunnableLanguageInfo(id = 999, label = "Unknown 999", aliases = Seq("unknown"))
+  private val unknown: Language =
+    Language(
+      RunnableLanguageInfo(id = 999, label = "Unknown 999", aliases = Seq("unknown")),
+      pistonName = None
+    )
 
   override def spec: Spec[Any, Any] = suite("PistonWire")(
     suite("supports")(

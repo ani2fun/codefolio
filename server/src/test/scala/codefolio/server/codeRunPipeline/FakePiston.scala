@@ -1,6 +1,7 @@
 package codefolio.server.codeRunPipeline
 
-import codefolio.shared.api.Endpoints.{RunResult, RunnableLanguageInfo}
+import codefolio.server.codeRunPipeline.Languages.Language
+import codefolio.shared.api.Endpoints.RunResult
 import zio.*
 
 import java.util.concurrent.atomic.AtomicReference
@@ -17,13 +18,13 @@ final class FakePiston(
   private val recorded =
     AtomicReference(List.empty[FakePiston.Call])
 
-  override def supports(lang: RunnableLanguageInfo): Boolean =
+  override def supports(lang: Language): Boolean =
     languageIds.contains(lang.id)
 
   override def run(
       source: String,
       stdin: Option[String],
-      lang: RunnableLanguageInfo
+      lang: Language
   ): Task[RunResult] =
     ZIO.succeed(recorded.updateAndGet(_ :+ FakePiston.Call(source, stdin, lang))) *> response
 
@@ -31,7 +32,7 @@ final class FakePiston(
 
 object FakePiston:
 
-  final case class Call(source: String, stdin: Option[String], lang: RunnableLanguageInfo)
+  final case class Call(source: String, stdin: Option[String], lang: Language)
 
   def succeeding(languageIds: Set[Int], result: RunResult): FakePiston =
     FakePiston(languageIds, ZIO.succeed(result))

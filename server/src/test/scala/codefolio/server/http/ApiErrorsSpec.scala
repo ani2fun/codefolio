@@ -1,5 +1,6 @@
 package codefolio.server.http
 
+import codefolio.server.blogPipeline.BlogFailure
 import codefolio.server.codeRunPipeline.RunFailure
 import codefolio.server.cortexPipeline.CortexFailure
 import codefolio.server.helloPipeline.HelloFailure
@@ -77,6 +78,28 @@ object ApiErrorsSpec extends ZIOSpecDefault:
         recent.error == "Recent calls unavailable",
         recent.detail == Some("mongo down"),
         recent.hint.isEmpty
+      )
+    },
+    test("maps BlogFailure variants to HTTP status codes") {
+      assertTrue(
+        ApiErrors.toHttp(BlogFailure.NotFound)._1 == StatusCode.NotFound,
+        ApiErrors.toHttp(BlogFailure.IO("boom"))._1 == StatusCode.InternalServerError,
+        ApiErrors.toHttp(BlogFailure.IndexInvalid("bad index"))._1 ==
+          StatusCode.InternalServerError
+      )
+    },
+    test("maps BlogFailure variants to stable ApiError envelopes") {
+      val (_, notFound)     = ApiErrors.toHttp(BlogFailure.NotFound)
+      val (_, ioErr)        = ApiErrors.toHttp(BlogFailure.IO("disk gone"))
+      val (_, indexInvalid) = ApiErrors.toHttp(BlogFailure.IndexInvalid("dup slug"))
+
+      assertTrue(
+        notFound.error == "Not found",
+        notFound.detail.isEmpty,
+        ioErr.error == "Blog IO error",
+        ioErr.detail == Some("disk gone"),
+        indexInvalid.error == "Blog index is invalid",
+        indexInvalid.detail == Some("dup slug")
       )
     }
   )

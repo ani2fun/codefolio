@@ -67,8 +67,37 @@ done
 
 # ---- 2. Backing stores: Postgres + Redis + MongoDB + Code Runner --------
 
-log "starting backing stores (db redis mongo code-runner)"
-docker compose up -d --remove-orphans db redis mongo code-runner
+# Preflight: locate docker. Docker Desktop installs `docker` at
+# /usr/local/bin/docker (Intel) or /opt/homebrew/bin/docker (Apple
+# Silicon) on first launch. Those symlinks occasionally disappear after
+# an OS update or a fresh reboot while the binary inside Docker.app stays
+# put — fall back to the bundled binary so the launcher doesn't die on
+# `command not found`. (Mac-only path; Linux Docker installs put `docker`
+# on $PATH directly and never hit the fallback.)
+if ! command -v docker >/dev/null 2>&1; then
+  if [[ -x /Applications/Docker.app/Contents/Resources/bin/docker ]]; then
+    log "docker not on \$PATH — using bundled binary from Docker.app"
+    export PATH="/Applications/Docker.app/Contents/Resources/bin:$PATH"
+  else
+    warn "docker not found. Install Docker Desktop"
+    warn "  https://www.docker.com/products/docker-desktop/"
+    warn "or another Docker-compatible runtime (OrbStack, Colima, podman-compose)."
+    exit 1
+  fi
+fi
+
+# Confirm the daemon is reachable. The CLI being present doesn't mean
+# Docker Desktop is running — `docker compose up` would otherwise fail
+# deep inside step 2 with a less-actionable error.
+if ! docker info >/dev/null 2>&1; then
+  warn "docker CLI is available but the daemon isn't responding."
+  warn "Start Docker Desktop and re-run ./bin/dev:"
+  warn "    open -ga Docker"
+  exit 1
+fi
+
+log "starting backing stores (db redis mongo code-runner likec4)"
+docker compose up -d --remove-orphans db redis mongo code-runner likec4
 
 for svc in db redis mongo; do
   log "waiting for $svc to be healthy…"
@@ -82,6 +111,14 @@ done
 # code-runner has no healthcheck; just confirm the container is up.
 log "code-runner reachable at http://127.0.0.1:2358 (Judge0-API-compatible)"
 export CODE_RUNNER_URL="${CODE_RUNNER_URL:-http://localhost:2358}"
+
+# likec4 has no healthcheck; nginx is fast to start. Edit any .c4 source
+# under content/cortex/**/c4/ then `docker compose up -d --build likec4` to
+# pick up changes. Use 127.0.0.1 (not `localhost`) so the JDK HttpClient
+# in LikeC4ProxyRoutes connects over IPv4 — docker-desktop binds :8090 to
+# 127.0.0.1 only, and the JDK prefers ::1 for `localhost` on macOS.
+log "likec4 SPA reachable at http://127.0.0.1:8090/c4/ (proxied by ZIO server at /c4/*)"
+export LIKEC4_URL="${LIKEC4_URL:-http://127.0.0.1:8090}"
 
 # ---- 3. Frontend deps (one-time) ----------------------------------------
 
@@ -113,5 +150,6 @@ log "  Postgres:                   localhost:5432  (user/pass: codefolio)"
 log "  Redis:                      localhost:6379"
 log "  MongoDB:                    localhost:27017 (db: codefolio)"
 log "  Code Runner:                localhost:2358 (POST /submissions/?base64_encoded=true&wait=true)"
+log "  LikeC4 (via proxy):         http://localhost:${SERVER_PORT}/c4/view/index"
 
 wait "${PIDS[@]}"

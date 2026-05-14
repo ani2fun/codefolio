@@ -9,16 +9,17 @@ import japgolly.scalajs.react.vdom.html_<^.*
 import scala.scalajs.js
 
 /**
- * Experience — vertical accordion. Replaces the previous horizontal tab rail
- * (which jailed the user inside a fixed-height inner-scrolled pane on long
- * roles like Europcar). One role open by default; clicking another header
- * swaps which is open. State is a single `Int` — multi-open felt fiddly and
- * the design brief explicitly calls for "one expanded by default".
+ * Experience — vertical accordion. Replaces the previous horizontal tab rail (which jailed the user inside a
+ * fixed-height inner-scrolled pane on long roles like Europcar). One role open by default; clicking another
+ * header swaps which is open. State is a single `Int` — multi-open felt fiddly and the design brief
+ * explicitly calls for "one expanded by default".
  */
 object Experience:
 
-  /** Split a tech list into 2–3 promoted "primary" chips + the rest. Falls
-   *  back to first 3 / remainder when explicit `primaryTech` isn't set yet. */
+  /**
+   * Split a tech list into 2–3 promoted "primary" chips + the rest. Falls back to first 3 / remainder when
+   * explicit `primaryTech` isn't set yet.
+   */
   private def splitTech(exp: PortfolioData.Experience): (List[String], List[String]) =
     val all     = exp.leveragedKnowledgeIn.toList
     val primary = exp.primaryTech.toOption.map(_.toList).getOrElse(all.take(3))
@@ -68,7 +69,7 @@ object Experience:
       ^.className := s"experience__role${if open then " experience__role--open" else ""}"
     )(
       <.button(
-        ^.className  := "experience__role-header",
+        ^.className := "experience__role-header",
         ^.onClick --> onOpen,
         ^.aria.expanded := open,
         <.span(^.className := "experience__role-company", exp.company.short),

@@ -57,31 +57,48 @@
 codefolio/
 ├── CONTEXT.md              # ★ project domain glossary (Cortex, Greeting, Handler Failure, …)
 ├── api/openapi.yaml        # ★ source of truth for the API
-├── docs/adr/               # architecture decision records
+├── docs/adr/               # architecture decision records (0001–0012)
 │   ├── 0001-cortex-content-errors-are-lenient-by-default.md
 │   ├── 0002-non-critical-store-failures-degrade-silently.md
 │   ├── 0003-hello-pipeline-internal-seams.md
-│   └── 0004-wire-adapters-and-unified-backends.md
+│   ├── 0004-wire-adapters-and-unified-backends.md
+│   ├── 0005-client-cortex-blocks-bytes-to-values-seam.md
+│   ├── 0006-d3-widgets-as-a-closed-catalog.md
+│   ├── 0007-traced-code-uses-a-client-side-tracer-harness.md
+│   ├── 0008-filesystem-pipelines-share-an-mtime-cache.md
+│   ├── 0009-spa-route-topology-in-app-routes.md
+│   ├── 0010-file-server-owns-the-path-traversal-guard.md
+│   ├── 0011-languages-table-is-the-single-source-of-truth.md
+│   └── 0012-endpoint-wiring-helpers-enforce-the-error-contract.md
 ├── shared/                 # cross-compiled (JVM + JS); codegen lands in src_managed
 │   └── src/main/scala/codefolio/shared/
 │       ├── runner/         # CodeExecutor (pure Idle→Running→Done state machine)
 │       ├── cortex/         # SidebarForest (pure flat-list-to-tree builder)
-│       └── api/            # generated tapir endpoints + case classes (Endpoints.*)
+│       ├── api/            # generated tapir endpoints + case classes (Endpoints.*)
+│       └── AppRoutes.scala # shared route segments + SpaRoutes topology (ADR-0009)
 ├── server/                 # ZIO + zio-http + tapir + Postgres/Redis/MongoDB
 │   └── src/main/scala/codefolio/server/
 │       ├── db/             # DataSource, Migrations (Postgres infra)
+│       ├── content/        # MtimeCachedIndex — mtime-keyed cache shared by the
+│       │                   # Cortex + Blog pipelines (ADR-0008)
 │       ├── helloPipeline/  # /api/hello,/recent,/health — one deep module with internal
 │       │                   # Visits/GreetingCache/EventLog seams (ADR-0003)
 │       ├── codeRunPipeline/# /api/run — one deep module with a single CodeExecutionBackend
 │       │                   # seam (Piston + Code Runner adapters), pure PistonWire/
-│       │                   # CodeRunnerWire wire-format modules, public RunFailure ADT,
-│       │                   # and Languages table (ADR-0004)
+│       │                   # CodeRunnerWire wire-format modules, public RunFailure ADT;
+│       │                   # Languages is the single source of truth for language
+│       │                   # dispatch — backend ids + effectiveSource (ADR-0004, ADR-0011)
 │       ├── cortexPipeline/ # /api/cortex/* — one deep module with an internal CortexFs
-│       │                   # seam (FS scan only), mtime cache, payload assembly; the
+│       │                   # seam (FS scan only); MtimeCachedIndex for the cache; the
 │       │                   # pure CortexIndexWalker is invoked by the pipeline, not
-│       │                   # behind the seam (ADR-0004); CortexFailure is the
-│       │                   # seam's error type
-│       ├── http/           # ApiRoutes + ApiErrors.toHttp(HandlerFailure union)
+│       │                   # behind the seam (ADR-0004); CortexFailure is the seam's
+│       │                   # error type
+│       ├── blogPipeline/   # /api/blogs/* — same shape as cortexPipeline over a BlogFs
+│       │                   # seam + MtimeCachedIndex; BlogFailure is the error type
+│       ├── http/           # ApiRoutes (+ handlerEndpoint wiring helper, ADR-0012),
+│       │                   # ApiErrors.toHttp(HandlerFailure union); StaticRoutes +
+│       │                   # CortexAssetRoutes over a shared FileServer/ContentTypes
+│       │                   # (ADR-0010); LikeC4ProxyRoutes
 │       ├── config/         # AppConfig + per-store config types
 │       └── HttpApp.scala   # tapir → zio-http binding
 ├── client/                 # Scala.js + scalajs-react + Vite + Tailwind
@@ -156,13 +173,15 @@ Failures in Redis or Mongo are caught and *logged-then-ignored* — `/api/hello`
 
 - **BEM blocks live in `client/src/styles/{sections,components}/*.css`** and are imported from [tailwind.css](client/tailwind.css). Each block uses the v3 layer model: utilities applied at the call site (`^.className := "experience"`) win over `@apply`'d defaults inside `@layer components`. Modifier classes (`--active`, `--highlight`, `--last`) layer on top of the base via the same mechanism. Per-instance values (dynamic colors, gridArea, inline `style`) stay inline.
 
-- **Route ordering matters.** Don't put a `Method.GET / trailing` catch-all anywhere in the static-routes set — it shadows the specific tapir routes for `/api/*` and `/docs/*` and you'll get HTML/404 instead of JSON/Swagger. The static handler in [HttpApp.scala](server/src/main/scala/codefolio/server/HttpApp.scala) uses *only* specific patterns:
+- **Route ordering matters.** Don't put a `Method.GET / trailing` catch-all anywhere in the static-routes set — it shadows the specific tapir routes for `/api/*` and `/docs/*` and you'll get HTML/404 instead of JSON/Swagger. [http/StaticRoutes.scala](server/src/main/scala/codefolio/server/http/StaticRoutes.scala) uses *only* specific patterns — fixed routes (`/`, `/index.html`, `/assets/*`, …) plus an SPA `index.html` fallback **derived** from `AppRoutes.SpaRoutes` (ADR-0009), one leaf route per `SpaRoute` and a `/segment/trailing` route for the nested ones:
   ```scala
   Method.GET / Root                      // → index.html
   Method.GET / "index.html"              // → index.html
-  Method.GET / "assets" / string("name") // → assets/<name>
+  Method.GET / "assets" / trailing       // → assets/<rest>  (via FileServer)
+  Method.GET / "cortex"                  // → index.html  (SpaRoute leaf)
+  Method.GET / "cortex" / trailing       // → index.html  (SpaRoute, hasNestedRoutes)
   ```
-  And the entire `staticRoutes` set is replaced with `Routes.empty` when `client/dist` doesn't exist (dev mode).
+  And the entire route set is replaced with `Routes.empty` when `client/dist` doesn't exist (dev mode) — `FileServer.exists` is false. File serving + the path-traversal guard live in `http/FileServer.scala` (ADR-0010).
 
 - **`sbt run` / `reStart` working directory** is set to the build root via:
   ```scala

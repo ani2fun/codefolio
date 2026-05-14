@@ -1,7 +1,8 @@
 package codefolio.server.codeRunPipeline
 
+import codefolio.server.codeRunPipeline.Languages.Language
 import codefolio.server.config.RunnerConfig
-import codefolio.shared.api.Endpoints.{RunRequest, RunResponse, RunResult, RunnableLanguageInfo}
+import codefolio.shared.api.Endpoints.{RunRequest, RunResponse, RunResult}
 import zio.*
 
 import java.net.URI
@@ -40,8 +41,8 @@ object RunFailure:
  * Piston reports support only for languages in its protocol map ([[PistonWire.supports]]).
  */
 private[codeRunPipeline] trait CodeExecutionBackend:
-  def supports(lang: RunnableLanguageInfo): Boolean
-  def run(source: String, stdin: Option[String], lang: RunnableLanguageInfo): Task[RunResult]
+  def supports(lang: Language): Boolean
+  def run(source: String, stdin: Option[String], lang: Language): Task[RunResult]
 
 /**
  * Two-backend pipeline for `/api/run`.
@@ -94,12 +95,12 @@ object CodeRunPipeline:
 
   final private class LivePistonBackend(baseUrl: String) extends CodeExecutionBackend:
 
-    override def supports(lang: RunnableLanguageInfo): Boolean = PistonWire.supports(lang)
+    override def supports(lang: Language): Boolean = PistonWire.supports(lang)
 
     override def run(
         source: String,
         stdin: Option[String],
-        lang: RunnableLanguageInfo
+        lang: Language
     ): Task[RunResult] =
       val body = PistonWire.buildRequestBody(source, stdin, lang)
       postJson(baseUrl, "/api/v2/execute", body, PistonWire.parseRunResult, "Piston")
@@ -107,12 +108,12 @@ object CodeRunPipeline:
   final private class LiveCodeRunnerBackend(baseUrl: String, authToken: Option[String])
       extends CodeExecutionBackend:
 
-    override def supports(lang: RunnableLanguageInfo): Boolean = true
+    override def supports(lang: Language): Boolean = true
 
     override def run(
         source: String,
         stdin: Option[String],
-        lang: RunnableLanguageInfo
+        lang: Language
     ): Task[RunResult] =
       val body         = CodeRunnerWire.buildRequestBody(source, stdin, lang)
       val extraHeaders = authToken.fold(Map.empty[String, String])(t => Map("X-Auth-Token" -> t))
@@ -185,7 +186,7 @@ final private class CodeRunPipelineLive(
         .fromOption(Languages.resolve(req.language))
         .mapError(_ => RunFailure.BadInput(s"Language '${req.language}' is not runnable"))
       result <- pickAndRun(lang, req)
-    yield RunResponse(result = result, language = lang)
+    yield RunResponse(result = result, language = lang.info)
 
   private def validate(req: RunRequest): IO[RunFailure, Unit] =
     val sourceBytes = req.source.getBytes(StandardCharsets.UTF_8).length
@@ -201,7 +202,7 @@ final private class CodeRunPipelineLive(
    * `NotConfigured`; non-empty but no support → `BadInput`. Backend exceptions are wrapped as
    * [[RunFailure.BackendFailure]].
    */
-  private def pickAndRun(lang: RunnableLanguageInfo, req: RunRequest): IO[RunFailure, RunResult] =
+  private def pickAndRun(lang: Language, req: RunRequest): IO[RunFailure, RunResult] =
     if backends.isEmpty then ZIO.fail(RunFailure.NotConfigured)
     else
       backends.find(_.supports(lang)) match

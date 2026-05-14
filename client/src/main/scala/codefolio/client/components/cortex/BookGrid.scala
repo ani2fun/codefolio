@@ -7,8 +7,8 @@ import japgolly.scalajs.react.vdom.html_<^.*
 
 /**
  * Renders a grid of Book cards from a `CortexIndex.books` slice. Used by both `CortexIndexPage` (full list)
- * and the home-page `Cortex` section (first six). Card markup lives once; per-page chrome (heading,
- * "Browse all" CTA) stays at the call site.
+ * and the home-page `Cortex` section (first six). Card markup lives once; per-page chrome (heading, "Browse
+ * all" CTA) stays at the call site.
  *
  * Markup uses the `cortex__card*` BEM classes from `client/src/styles/sections/cortex.css`. The empty-list
  * message is the component's responsibility because it's part of the grid surface; "no books" reads better

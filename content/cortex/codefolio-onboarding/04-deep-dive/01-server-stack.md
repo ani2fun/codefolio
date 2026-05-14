@@ -257,28 +257,28 @@ The fallback to `.toAbsolutePath.normalize` handles the case where `toRealPath()
 
 **If you remove either check:** path traversal is one Bash command away from being exploitable. This is the kind of code that *looks* defensive and unnecessary until it isn't.
 
-## Static fallback list — explicit, not wildcard
+## Static fallback list — derived, not wildcard
 
-[http/StaticRoutes.scala:60-89](server/src/main/scala/codefolio/server/http/StaticRoutes.scala) lists every SPA route by hand:
+[http/StaticRoutes.scala](server/src/main/scala/codefolio/server/http/StaticRoutes.scala) builds two route sets: a handful of *fixed* routes (`/`, `/index.html`, `/assets/*`, the CV PDF, …) plus an SPA `index.html` fallback **derived** from `AppRoutes.SpaRoutes` — the single source of truth for the SPA route topology (ADR-0009):
 
 ```scala
-Routes(
-  Method.GET / Root                          -> handler(staticIndex),
-  Method.GET / "index.html"                  -> handler(staticIndex),
-  Method.GET / "assets" / trailing           -> trailingFileHandler("assets"),
-  // …
-  Method.GET / AppRoutes.Cortex              -> handler(staticIndex),
-  Method.GET / AppRoutes.Cortex / trailing   -> Handler.fromFunctionZIO(…),
-  Method.GET / AppRoutes.Blogs               -> handler(staticIndex),
-  Method.GET / AppRoutes.Blogs / trailing    -> Handler.fromFunctionZIO(…)
+// shared/AppRoutes.scala — the topology, read by the client Router AND the server
+val SpaRoutes = List(
+  SpaRoute("demo",   hasNestedRoutes = false),
+  SpaRoute("cortex", hasNestedRoutes = true),
+  SpaRoute("blogs",  hasNestedRoutes = true)
 )
+
+// server/http/StaticRoutes.scala — derive one leaf route per SpaRoute, plus a
+// `/segment/trailing` route for the nested ones, so /cortex/foo/bar reloads cleanly.
+val spaFallback = AppRoutes.SpaRoutes.flatMap { spa => /* leaf (+ nested) */ }
 ```
 
-You'd think a single `Method.GET / trailing -> staticIndex` catch-all would be cleaner. It is cleaner. It also breaks the API.
+You'd think a single `Method.GET / trailing -> staticIndex` catch-all would be cleaner still. It is. It also breaks the API.
 
 zio-http's route matcher doesn't reliably resolve specific tapir routes ahead of a sibling wildcard. Adding `/ trailing` shadows `/api/*` and `/docs/*`, both of which return JSON. You'd get HTML where you expected JSON, with no error, until you noticed the Swagger UI was mysteriously the home page.
 
-The mitigation is the explicit list above — every SPA top-level route enumerated, plus a `Cortex / trailing` and `Blogs / trailing` for nested pages. Add a new top-level SPA route and you have to add it here too. It's annoying. The alternative is worse.
+The mitigation isn't a hand-maintained list any more — it's the derivation from `AppRoutes.SpaRoutes`. Add a new top-level SPA route there and **both** the client router and the server fallback pick it up; there is no separate server-side mirror to forget. `StaticRoutesSpec` runs real requests through the derived routes to prove every `SpaRoute` is covered.
 
 **If you swap in a `/ trailing` wildcard:** test `/api/health` immediately. You'll get HTML.
 

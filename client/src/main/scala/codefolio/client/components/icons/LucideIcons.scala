@@ -60,6 +60,8 @@ object LucideIcons:
   @js.native @JSImport("lucide-react", "Search") private object SearchRaw             extends js.Object
   @js.native @JSImport("lucide-react", "Download") private object DownloadRaw         extends js.Object
   @js.native @JSImport("lucide-react", "Pencil") private object PencilRaw             extends js.Object
+  @js.native @JSImport("lucide-react", "Eye") private object EyeRaw                   extends js.Object
+  @js.native @JSImport("lucide-react", "EyeOff") private object EyeOffRaw             extends js.Object
 
   // ---- Components (call as Sun(withClass("h-5 w-5"))) --------------------
 
@@ -91,3 +93,5 @@ object LucideIcons:
   val Search       = JsComponent[IconProps, Children.None, Null](SearchRaw)
   val Download     = JsComponent[IconProps, Children.None, Null](DownloadRaw)
   val Pencil       = JsComponent[IconProps, Children.None, Null](PencilRaw)
+  val Eye          = JsComponent[IconProps, Children.None, Null](EyeRaw)
+  val EyeOff       = JsComponent[IconProps, Children.None, Null](EyeOffRaw)

@@ -11,8 +11,8 @@ import scala.scalajs.js
 import scala.util.Try
 
 /**
- * Owns the post-render mounting half of the Chapter pipeline: drops the rendered HTML into an `<article>`
- * via `dangerouslySetInnerHTML`, asks [[BlockDiscovery]] to find every Cortex Block placeholder, and React-
+ * Owns the post-render mounting half of the Chapter pipeline: drops the rendered HTML into an `<article>` via
+ * `dangerouslySetInnerHTML`, asks [[BlockDiscovery]] to find every Cortex Block placeholder, and React-
  * portal-mounts a Scala.js component into each one.
  *
  * Discovery + structural validation live in `BlockDiscovery` (DOM walk + JS shims) and `shared.cortex.Blocks`
@@ -105,6 +105,12 @@ object ChapterContent:
       D2Slideshow.Component(D2Slideshow.Props(slides, caption))
     case Block.D2Inline(svgHtml) =>
       D2Diagram.Component(D2Diagram.Props(svgHtml))
+    case Block.D3Widget(widget, payload) =>
+      D3WidgetBlock.Component(D3WidgetBlock.Props(widget, payload))
+    case Block.TracedCode(language, source) =>
+      TracedCodeBlock.Component(TracedCodeBlock.Props(language, source))
+    case Block.LikeC4(src, height, title) =>
+      LikeC4Block.Component(LikeC4Block.Props(src, height, title))
 
   private def toGroupTab(t: Block.Tab): RunnableCodeGroup.Tab =
     RunnableCodeGroup.Tab(

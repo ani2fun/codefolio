@@ -18,6 +18,7 @@ import codefolio.shared.api.Endpoints.{
 }
 import codefolio.shared.api.EndpointsJsonSerdes.*
 import codefolio.shared.api.EndpointsSchemas.*
+import sttp.tapir.PublicEndpoint
 import sttp.tapir.json.circe.*
 import sttp.tapir.server.ziohttp.ZioHttpInterpreter
 import sttp.tapir.swagger.bundle.SwaggerInterpreter
@@ -42,6 +43,23 @@ object ApiRoutes:
 
     ZioHttpInterpreter().toHttp(endpoints ++ swaggerEndpoints)
 
+  // The uniform error output for every fallible endpoint: an HTTP status code chosen at runtime plus a
+  // JSON `ApiError` envelope.
+  private val apiErrorOut = statusCode and jsonBody[ApiError]
+
+  /**
+   * Wire a derived endpoint to its pipeline logic: attach the uniform `(StatusCode, ApiError)` error output
+   * and the `HandlerFailure → ApiErrors.toHttp` mapping in one place. An endpoint built through this helper
+   * cannot ship without its error plumbing — the only way to produce a `ZServerEndpoint` here is to hand over
+   * logic typed as `I => IO[HandlerFailure, O]`, and the helper always applies `errorOut` + `mapError`.
+   */
+  private def handlerEndpoint[I, O](
+      base: PublicEndpoint[I, Unit, O, Any]
+  )(logic: I => IO[ApiErrors.HandlerFailure, O]): ZServerEndpoint[Any, Any] =
+    base
+      .errorOut(apiErrorOut)
+      .zServerLogic(input => logic(input).mapError(ApiErrors.toHttp))
+
   private def serverEndpoints(
       helloPipeline: HelloPipeline,
       codeRun: CodeRunPipeline,
@@ -49,78 +67,44 @@ object ApiRoutes:
       blog: BlogPipeline
   ): List[ZServerEndpoint[Any, Any]] =
 
-    val apiErrorOut = statusCode and jsonBody[ApiError]
+    // Endpoints are defined here rather than reusing the generated `Endpoints.*` values directly so the
+    // server can choose the status code at runtime while still using generated request/response case
+    // classes and codecs. `handlerEndpoint` bundles the error wiring so it can't be forgotten. Health
+    // stays on the generated endpoint because it never fails (`UIO[HealthStatus]` — degradation is part
+    // of the success body, not the error channel).
 
-    // Hello, recent, run, and cortex endpoints are defined manually instead of directly reusing
-    // the generated values so the server can choose the status code at runtime while still using
-    // generated request/response case classes and codecs. Health stays on the generated endpoint
-    // because it never fails (`UIO[HealthStatus]` — degradation is part of the success body).
-    val helloEndpoint: ZServerEndpoint[Any, Any] =
-      endpoint.get
-        .in("api" / "hello")
-        .errorOut(apiErrorOut)
-        .out(jsonBody[Greeting])
-        .zServerLogic { _ =>
-          helloPipeline.greet.mapError(ApiErrors.toHttp)
-        }
+    val helloEndpoint = handlerEndpoint(
+      endpoint.get.in("api" / "hello").out(jsonBody[Greeting])
+    )(_ => helloPipeline.greet)
 
-    val recentEndpoint: ZServerEndpoint[Any, Any] =
-      endpoint.get
-        .in("api" / "recent")
-        .errorOut(apiErrorOut)
-        .out(jsonBody[RecentCalls])
-        .zServerLogic { _ =>
-          helloPipeline.recent(RecentLimit).mapError(ApiErrors.toHttp)
-        }
+    val recentEndpoint = handlerEndpoint(
+      endpoint.get.in("api" / "recent").out(jsonBody[RecentCalls])
+    )(_ => helloPipeline.recent(RecentLimit))
 
     val healthEndpoint: ZServerEndpoint[Any, Any] =
       Endpoints.getHealth.zServerLogic(_ => helloPipeline.health)
 
-    val runEndpoint: ZServerEndpoint[Any, Any] =
-      endpoint.post
-        .in("api" / "run")
-        .in(jsonBody[RunRequest])
-        .errorOut(apiErrorOut)
-        .out(jsonBody[RunResponse])
-        .zServerLogic { req =>
-          codeRun.run(req).mapError(ApiErrors.toHttp)
-        }
+    val runEndpoint = handlerEndpoint(
+      endpoint.post.in("api" / "run").in(jsonBody[RunRequest]).out(jsonBody[RunResponse])
+    )(req => codeRun.run(req))
 
-    val cortexIndexEndpoint: ZServerEndpoint[Any, Any] =
-      endpoint.get
-        .in("api" / "cortex" / "index")
-        .errorOut(apiErrorOut)
-        .out(jsonBody[CortexIndex])
-        .zServerLogic { _ =>
-          cortex.index.mapError(ApiErrors.toHttp)
-        }
+    val cortexIndexEndpoint = handlerEndpoint(
+      endpoint.get.in("api" / "cortex" / "index").out(jsonBody[CortexIndex])
+    )(_ => cortex.index)
 
-    val cortexChapterEndpoint: ZServerEndpoint[Any, Any] =
+    val cortexChapterEndpoint = handlerEndpoint(
       endpoint.get
         .in("api" / "cortex" / path[String]("book") / path[String]("chapter"))
-        .errorOut(apiErrorOut)
         .out(jsonBody[ChapterPayload])
-        .zServerLogic { case (book, chapter) =>
-          cortex.chapter(book, chapter).mapError(ApiErrors.toHttp)
-        }
+    ) { case (book, chapter) => cortex.chapter(book, chapter) }
 
-    val blogIndexEndpoint: ZServerEndpoint[Any, Any] =
-      endpoint.get
-        .in("api" / "blogs" / "index")
-        .errorOut(apiErrorOut)
-        .out(jsonBody[BlogIndex])
-        .zServerLogic { _ =>
-          blog.index.mapError(ApiErrors.toHttp)
-        }
+    val blogIndexEndpoint = handlerEndpoint(
+      endpoint.get.in("api" / "blogs" / "index").out(jsonBody[BlogIndex])
+    )(_ => blog.index)
 
-    val blogPostEndpoint: ZServerEndpoint[Any, Any] =
-      endpoint.get
-        .in("api" / "blogs" / path[String]("slug"))
-        .errorOut(apiErrorOut)
-        .out(jsonBody[BlogPostPayload])
-        .zServerLogic { slug =>
-          blog.post(slug).mapError(ApiErrors.toHttp)
-        }
+    val blogPostEndpoint = handlerEndpoint(
+      endpoint.get.in("api" / "blogs" / path[String]("slug")).out(jsonBody[BlogPostPayload])
+    )(slug => blog.post(slug))
 
     List(
       helloEndpoint,

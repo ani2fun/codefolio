@@ -29,6 +29,7 @@ final class FakeGreetingCache private (
   def stored: Option[Greeting] = storage.get()
 
 object FakeGreetingCache:
+
   def empty: FakeGreetingCache =
     FakeGreetingCache(AtomicReference(None), None, AtomicReference(true))
 

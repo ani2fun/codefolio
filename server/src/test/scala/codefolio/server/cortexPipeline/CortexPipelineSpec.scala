@@ -167,7 +167,7 @@ object CortexPipelineSpec extends ZIOSpecDefault:
             pipeline <- ZIO.service[CortexPipeline]
             idx1     <- pipeline.index.mapError(toThrowable)
             _        <- write(file, "# Updated Title")
-            // Bump mtime by a wide margin so the cache's `mt > old.mtimeWatermark` check fires
+            // Bump mtime by a wide margin so the MtimeCachedIndex watermark check fires
             // even on filesystems with coarse timestamp resolution.
             _ <- ZIO.attempt(
               Files.setLastModifiedTime(
@@ -183,10 +183,10 @@ object CortexPipelineSpec extends ZIOSpecDefault:
         yield result
       }
     },
-    // The cache + autoReload tests below exercise CortexPipelineLive against the FakeCortexFs seam, so they
-    // assert the pipeline's cache-invalidation logic AND the walker integration without filesystem ceremony.
-    // The live-FS test above stays because it additionally verifies that LiveCortexFs.currentMtime walks the
-    // tree on disk — a different concern.
+    // The cache + autoReload tests below exercise CortexPipelineLive against the FakeCortexFs seam: they
+    // assert the pipeline correctly wires MtimeCachedIndex AND the walker integration, without filesystem
+    // ceremony. The mtime-cache invalidation logic itself is pinned directly by MtimeCachedIndexSpec; the
+    // live-FS test above additionally verifies that LiveCortexFs.currentMtime walks the tree on disk.
     test("cache hit when mtime is unchanged: loadRoots runs once across multiple reads") {
       val fake = FakeCortexFs(
         FakeCortexFs.Snapshot(mtime = 100L, roots = List(bookEntry("only", "Only")))

@@ -1,6 +1,7 @@
 package codefolio.server.blogPipeline
 
 import codefolio.server.config.BlogConfig
+import codefolio.server.content.MtimeCachedIndex
 import codefolio.shared.api.Endpoints.{BlogIndex, BlogPostFrontmatter, BlogPostPayload, BlogSummary}
 import zio.*
 
@@ -20,14 +21,12 @@ object BlogFailure:
 
 /**
  * In-memory snapshot of the blog index. Bodies aren't cached — the post handler re-reads on demand via
- * `readPostSafe`, mirroring the Cortex pattern (cache the index, not chapter bodies). `slugToFile` is the
- * lookup the post handler uses to resolve a slug back to its filename.
+ * `readPostSafe`, mirroring the Cortex pattern (cache the index, not post bodies). `slugToFrontmatter` lets
+ * `post` assemble a payload without re-parsing. The cache watermark lives in [[MtimeCachedIndex]], not here.
  */
 final private[blogPipeline] case class BlogState(
     index: BlogIndex,
-    slugToFile: Map[String, String],
-    slugToFrontmatter: Map[String, BlogPostFrontmatter],
-    mtimeWatermark: Long
+    slugToFrontmatter: Map[String, BlogPostFrontmatter]
 )
 
 /**
@@ -51,12 +50,12 @@ private[blogPipeline] trait BlogFs:
  *     assembles a `BlogPostPayload` in one pass.
  *
  * Mirrors the ADR-0003 internal-seams pattern from Cortex: the [[BlogFs]] accessor trait is package-private;
- * the only public surface is `index` + `post`. Lenient parsing per ADR-0001 — malformed or missing frontmatter
- * fields fall through to humanised-slug defaults.
+ * the only public surface is `index` + `post`. Lenient parsing per ADR-0001 — malformed or missing
+ * frontmatter fields fall through to humanised-slug defaults.
  *
- * Prev/next semantics: posts are sorted descending by `publishedAt`, so for a reader on post `i`,
- * `prevSlug = posts(i + 1).slug` (the older post) and `nextSlug = posts(i - 1).slug` (the newer post).
- * Reads natural in chronological order: prev = "what was posted before this", next = "what came next".
+ * Prev/next semantics: posts are sorted descending by `publishedAt`, so for a reader on post `i`, `prevSlug =
+ * posts(i + 1).slug` (the older post) and `nextSlug = posts(i - 1).slug` (the newer post). Reads natural in
+ * chronological order: prev = "what was posted before this", next = "what came next".
  */
 trait BlogPipeline:
   def index: IO[BlogFailure, BlogIndex]
@@ -64,18 +63,51 @@ trait BlogPipeline:
 
 object BlogPipeline:
 
-  /** Direct construction from an explicit [[BlogFs]] accessor + cache reset. Used by tests. */
+  /** Direct construction from an explicit [[BlogFs]] accessor. Used by tests. */
   def from(blogFs: BlogFs, autoReload: Boolean): UIO[BlogPipeline] =
-    Ref.make(Option.empty[BlogState]).map(cache => BlogPipelineLive(blogFs, autoReload, cache))
+    MtimeCachedIndex
+      .make(autoReload, blogFs.currentMtime, rebuildState(blogFs))
+      .map(state => BlogPipelineLive(blogFs, state))
 
   /** Resource-free layer: builds a filesystem-backed [[BlogFs]] and an empty cache. */
   val live: ZLayer[BlogConfig, Nothing, BlogPipeline] =
     ZLayer.fromZIO {
       for
-        cfg   <- ZIO.service[BlogConfig]
-        cache <- Ref.make(Option.empty[BlogState])
-      yield BlogPipelineLive(LiveBlogFs(cfg.root), cfg.autoReload, cache)
+        cfg <- ZIO.service[BlogConfig]
+        fs = LiveBlogFs(cfg.root)
+        state <- MtimeCachedIndex.make(cfg.autoReload, fs.currentMtime, rebuildState(fs))
+      yield BlogPipelineLive(fs, state)
     }
+
+  /**
+   * Load every post body, parse frontmatter, and assemble a [[BlogState]] — the index sorted descending by
+   * `publishedAt` (newest first) plus the slug→frontmatter lookup `post` needs. Malformed or missing dates
+   * sink to the bottom of the sort, lenient per ADR-0001. Passed to [[MtimeCachedIndex]] as the rebuild step.
+   */
+  private def rebuildState(blogFs: BlogFs): IO[BlogFailure, BlogState] =
+    for
+      posts <- blogFs.loadPosts
+      parsed = posts.map { case (slug, raw) => slug -> BlogFrontmatter.parse(raw, fallbackSlug = slug) }
+      summaries = parsed.map { case (slug, p) =>
+        BlogSummary(
+          slug = slug,
+          title = p.frontmatter.title,
+          summary = p.frontmatter.summary.getOrElse(""),
+          publishedAt = p.frontmatter.publishedAt,
+          tags = p.frontmatter.tags,
+          readMinutes = p.frontmatter.readMinutes,
+          eyebrow = p.frontmatter.eyebrow
+        )
+      }
+      sorted            = summaries.sortBy(s => parseDate(s.publishedAt))(Ordering[LocalDate].reverse)
+      slugToFrontmatter = parsed.map { case (slug, p) => slug -> p.frontmatter }.toMap
+    yield BlogState(BlogIndex(sorted), slugToFrontmatter)
+
+  // Sentinel for unparseable dates — pushes the post to the bottom of the descending sort.
+  private val DateFloor: LocalDate = LocalDate.of(1, 1, 1)
+
+  private def parseDate(s: String): LocalDate =
+    scala.util.Try(LocalDate.parse(s)).getOrElse(DateFloor)
 
   // ===========================================================================
   // FS adapter — bytes ↔ values plus path-traversal containment.
@@ -155,28 +187,27 @@ object BlogPipeline:
 
 final private class BlogPipelineLive(
     blogFs: BlogFs,
-    autoReload: Boolean,
-    cache: Ref[Option[BlogState]]
+    state: MtimeCachedIndex[BlogFailure, BlogState]
 ) extends BlogPipeline:
 
   override def index: IO[BlogFailure, BlogIndex] =
-    cachedState.map(_.index)
+    state.get.map(_.index)
 
   override def post(slug: String): IO[BlogFailure, BlogPostPayload] =
     if !BlogPipeline.slugLike(slug) then ZIO.fail(BlogFailure.NotFound)
     else
       for
-        state <- cachedState
-        idx = state.index.posts.indexWhere(_.slug == slug)
-        _   <- ZIO.unless(idx >= 0)(ZIO.fail(BlogFailure.NotFound: BlogFailure))
-        summary = state.index.posts(idx)
+        st <- state.get
+        idx = st.index.posts.indexWhere(_.slug == slug)
+        _ <- ZIO.unless(idx >= 0)(ZIO.fail(BlogFailure.NotFound: BlogFailure))
+        summary = st.index.posts(idx)
         fm <- ZIO
-          .fromOption(state.slugToFrontmatter.get(slug))
+          .fromOption(st.slugToFrontmatter.get(slug))
           .orElseFail(BlogFailure.NotFound: BlogFailure)
         raw <- blogFs.readPostSafe(slug)
         body     = BlogFrontmatter.stripFrontmatter(raw)
-        prevSlug = if idx + 1 < state.index.posts.length then Some(state.index.posts(idx + 1).slug) else None
-        nextSlug = if idx > 0 then Some(state.index.posts(idx - 1).slug) else None
+        prevSlug = if idx + 1 < st.index.posts.length then Some(st.index.posts(idx + 1).slug) else None
+        nextSlug = if idx > 0 then Some(st.index.posts(idx - 1).slug) else None
       yield BlogPostPayload(
         post = summary,
         frontmatter = fm,
@@ -184,46 +215,3 @@ final private class BlogPipelineLive(
         prevSlug = prevSlug,
         nextSlug = nextSlug
       )
-
-  private def cachedState: IO[BlogFailure, BlogState] =
-    cache.get.flatMap {
-      case None => loadAndCache
-      case Some(old) =>
-        if !autoReload then ZIO.succeed(old)
-        else
-          blogFs.currentMtime.flatMap { mt =>
-            if mt > old.mtimeWatermark then loadAndCache
-            else ZIO.succeed(old)
-          }
-    }
-
-  private def loadAndCache: IO[BlogFailure, BlogState] =
-    for
-      mt    <- blogFs.currentMtime
-      posts <- blogFs.loadPosts
-      parsed = posts.map { case (slug, raw) => slug -> BlogFrontmatter.parse(raw, fallbackSlug = slug) }
-      summaries = parsed.map { case (slug, p) =>
-        BlogSummary(
-          slug = slug,
-          title = p.frontmatter.title,
-          summary = p.frontmatter.summary.getOrElse(""),
-          publishedAt = p.frontmatter.publishedAt,
-          tags = p.frontmatter.tags,
-          readMinutes = p.frontmatter.readMinutes,
-          eyebrow = p.frontmatter.eyebrow
-        )
-      }
-      // Sort descending by `publishedAt` (newest first). Malformed or missing dates sink
-      // to the bottom — lenient per ADR-0001, no IndexInvalid raised for bad date strings.
-      sorted = summaries.sortBy(s => parseDate(s.publishedAt))(Ordering[LocalDate].reverse)
-      slugToFile        = sorted.map(s => s.slug -> s"${s.slug}.md").toMap
-      slugToFrontmatter = parsed.map { case (slug, p) => slug -> p.frontmatter }.toMap
-      state             = BlogState(BlogIndex(sorted), slugToFile, slugToFrontmatter, mt)
-      _ <- cache.set(Some(state))
-    yield state
-
-  // Sentinel for unparseable dates — pushes the post to the bottom of the descending sort.
-  private val DateFloor: LocalDate = LocalDate.of(1, 1, 1)
-
-  private def parseDate(s: String): LocalDate =
-    scala.util.Try(LocalDate.parse(s)).getOrElse(DateFloor)

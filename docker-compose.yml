@@ -50,6 +50,19 @@ services:
     ports:
       - "127.0.0.1:2358:2358"
 
+  # Static SPA built from the co-located workspace.c4 by Dockerfile.likec4
+  # (nginx on :8080). Bound to 127.0.0.1 only — local dev convenience, not
+  # internet-facing, matching the production posture (no public Ingress on
+  # the LikeC4 image). Rebuild after editing the DSL with:
+  #   docker compose up -d --build likec4
+  likec4:
+    build:
+      context: .
+      dockerfile: Dockerfile.likec4
+    restart: unless-stopped
+    ports:
+      - "127.0.0.1:8090:8080"
+
   app:
     build: .
     depends_on:
@@ -57,6 +70,7 @@ services:
       redis: { condition: service_healthy }
       mongo: { condition: service_healthy }
       code-runner: { condition: service_started }
+      likec4: { condition: service_started }
     environment:
       DB_URL:      jdbc:postgresql://db:5432/codefolio
       DB_USER:     codefolio
@@ -71,6 +85,9 @@ services:
       PISTON_URL:              ${PISTON_URL:-}
       CODE_RUNNER_URL:         ${CODE_RUNNER_URL:-http://code-runner:2358}
       CODE_RUNNER_AUTHN_TOKEN: ${CODE_RUNNER_AUTHN_TOKEN:-}
+      # Reach the likec4 nginx via docker compose DNS on its container port.
+      # bin/dev (JVM on host) overrides to http://localhost:8090.
+      LIKEC4_URL:              http://likec4:8080
     ports:
       - "8080:8080"
 
