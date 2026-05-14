@@ -95,7 +95,7 @@
         @apply mt-1 whitespace-pre-wrap text-xs text-amber-700 dark:text-amber-400;
     }
     .rcb__details-pre--stderr {
-        @apply mt-1 whitespace-pre-wrap text-xs text-rose-700 dark:text-rose-400;
+        @apply mt-1 whitespace-pre-wrap text-xs text-rose-700 dark:text-rose-400 text-foreground!;
     }
     .rcb__stdout {
         @apply whitespace-pre-wrap text-xs text-foreground!;
