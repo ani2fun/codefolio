@@ -42,17 +42,16 @@ object MermaidBlock:
   val Component =
     ScalaFnComponent
       .withHooks[Props]
-      .useState(Option.empty[String])                       // errS
-      .useState(Theme.current)                              // modeS
-      .useState(false)                                      // openS
-      .useState(1.0)                                        // zoomS
-      .useState(Option.empty[String])                       // capturedSvgS
-      .useRefBy(_ => js.Array[js.Function0[Unit]]())        // cleanupRef (modal keydown listeners)
-      .useRefToVdom[dom.html.Div]                           // inlineRef (where mermaid renders into)
-      .useRefToVdom[dom.html.Div]                           // modalSvgRef (the modal's SVG container)
+      .useState(Option.empty[String])                // errS
+      .useState(Theme.current)                       // modeS
+      .useState(false)                               // openS
+      .useState(1.0)                                 // zoomS
+      .useState(Option.empty[String])                // capturedSvgS
+      .useRefBy(_ => js.Array[js.Function0[Unit]]()) // cleanupRef (modal keydown listeners)
+      .useRefToVdom[dom.html.Div]                    // inlineRef (where mermaid renders into)
       // ─── render mermaid into the inline container ──────────────────────────────────────────────────────
-      .useEffectWithDepsBy((p, _, modeS, _, _, _, _, _, _) => (p.source, modeS.value == Theme.Mode.Dark)) {
-        (_, errS, _, _, _, _, _, inlineRef, _) => (source, isDark) =>
+      .useEffectWithDepsBy((p, _, modeS, _, _, _, _, _) => (p.source, modeS.value == Theme.Mode.Dark)) {
+        (_, errS, _, _, _, _, _, inlineRef) => (source, isDark) =>
           inlineRef.foreach { el =>
             renderMermaidInto(el.asInstanceOf[dom.HTMLElement], source, isDark).toFuture
               .onComplete {
@@ -64,7 +63,7 @@ object MermaidBlock:
           }
       }
       // ─── watch theme class on <html> so dark/light flips trigger re-render ──────────────────────────────
-      .useEffectOnMountBy { (_, _, modeS, _, _, _, _, _, _) =>
+      .useEffectOnMountBy { (_, _, modeS, _, _, _, _, _) =>
         Callback {
           val obs = new dom.MutationObserver({ (_, _) =>
             val now = Theme.current
@@ -80,8 +79,8 @@ object MermaidBlock:
         }
       }
       // ─── modal keyboard handling + body scroll lock ─────────────────────────────────────────────────────
-      .useEffectWithDepsBy((_, _, _, openS, _, _, _, _, _) => openS.value) {
-        (_, _, _, openS, zoomS, _, cleanupRef, _, _) => isOpen =>
+      .useEffectWithDepsBy((_, _, _, openS, _, _, _, _) => openS.value) {
+        (_, _, _, openS, zoomS, _, cleanupRef, _) => isOpen =>
           val tearDown: Callback = Callback {
             val arr = cleanupRef.value
             for i <- 0 until arr.length do arr(i)()
@@ -123,22 +122,7 @@ object MermaidBlock:
 
           tearDown >> install
       }
-      // ─── inside the modal, force the cloned SVG to fill its card ────────────────────────────────────────
-      .useEffectWithDepsBy((_, _, _, openS, _, _, _, _, _) => openS.value) {
-        (_, _, _, _, _, _, _, _, modalSvgRef) => isOpen =>
-          if !isOpen then Callback.empty
-          else
-            modalSvgRef.foreach { wrapper =>
-              val svg = wrapper.querySelector("svg")
-              if svg != null then
-                svg.setAttribute("preserveAspectRatio", "xMidYMid meet")
-                val style = svg.asInstanceOf[js.Dynamic].style
-                style.width = "100%"
-                style.height = "100%"
-                style.display = "block"
-            }
-      }
-      .render { (_, errS, _, openS, zoomS, capturedSvgS, _, inlineRef, modalSvgRef) =>
+      .render { (_, errS, _, openS, zoomS, capturedSvgS, _, inlineRef) =>
         val close: Callback = openS.setState(false) >> zoomS.setState(1.0)
 
         val openModal: Callback =
@@ -230,7 +214,7 @@ object MermaidBlock:
                         )
                         .asInstanceOf[js.Object],
                       ^.className := "diagram-modal__card",
-                      <.div.withRef(modalSvgRef)(
+                      <.div(
                         ^.className               := "diagram-modal__svg not-prose",
                         ^.dangerouslySetInnerHtml := capturedSvgS.value.getOrElse("")
                       )

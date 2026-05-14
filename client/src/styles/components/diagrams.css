@@ -106,6 +106,40 @@
     .diagram-modal__svg {
         @apply w-full h-full;
     }
+    /* The captured SVG arrives with the render engine's own sizing baked in
+       (mermaid bakes an inline `max-width`; both engines set width/height
+       attributes). Override it here so the SVG always fills its wrapper and
+       the viewBox + default `preserveAspectRatio` (xMidYMid meet) keeps the
+       diagram contained. Declarative on purpose — a JS one-shot got wiped
+       when `dangerouslySetInnerHtml` re-applied on every zoom re-render. */
+    .diagram-modal__svg svg {
+        width: 100% !important;
+        height: 100% !important;
+        max-width: 100% !important;
+        display: block;
+    }
+    /* Webkit-only scrollbar styling. We deliberately do NOT set the standard
+       `scrollbar-color` / `scrollbar-width` props: in Chromium 121+ setting
+       `scrollbar-color` makes the engine ignore `::-webkit-scrollbar` sizing,
+       so a custom (thicker) bar is only reachable through these pseudo-element
+       rules. Firefox consequently falls back to its default scrollbar here.
+       Fixed light values because the modal overlay is always `bg-black/80`
+       regardless of theme — the `--border` token would vanish in dark mode. */
+    .diagram-modal__viewport::-webkit-scrollbar {
+        width: 18px;
+        height: 18px;
+    }
+    .diagram-modal__viewport::-webkit-scrollbar-thumb {
+        background-color: rgb(255 255 255 / 0.4);
+        border-radius: 9px;
+    }
+    .diagram-modal__viewport::-webkit-scrollbar-thumb:hover {
+        background-color: rgb(255 255 255 / 0.6);
+    }
+    .diagram-modal__viewport::-webkit-scrollbar-track,
+    .diagram-modal__viewport::-webkit-scrollbar-corner {
+        background-color: rgb(255 255 255 / 0.08);
+    }
 
     /* ─── Mermaid ────────────────────────────────────────────────── */
     /* `group` is added literally in markup so the hover-zoom button uses

@@ -33,9 +33,8 @@ object D2Diagram:
       .useState(false)
       .useState(1.0)
       .useRefBy(_ => js.Array[js.Function0[Unit]]())
-      .useRefToVdom[dom.html.Div]
-      .useEffectWithDepsBy((_, openS, _, _, _) => openS.value) {
-        (_, openS, zoomS, cleanupRef, _) => isOpen =>
+      .useEffectWithDepsBy((_, openS, _, _) => openS.value) {
+        (_, openS, zoomS, cleanupRef) => isOpen =>
           val tearDown: Callback = Callback {
             val arr = cleanupRef.value
             for i <- 0 until arr.length do arr(i)()
@@ -77,21 +76,7 @@ object D2Diagram:
 
           tearDown >> install
       }
-      .useEffectWithDepsBy((_, openS, _, _, _) => openS.value) {
-        (_, _, _, _, svgRef) => isOpen =>
-          if !isOpen then Callback.empty
-          else
-            svgRef.foreach { wrapper =>
-              val svg = wrapper.querySelector("svg")
-              if svg != null then
-                svg.setAttribute("preserveAspectRatio", "xMidYMid meet")
-                val style = svg.asInstanceOf[js.Dynamic].style
-                style.width = "100%"
-                style.height = "100%"
-                style.display = "block"
-            }
-      }
-      .render { (props, openS, zoomS, _, svgRef) =>
+      .render { (props, openS, zoomS, _) =>
         val close: Callback     = openS.setState(false) >> zoomS.setState(1.0)
         val openModal: Callback = zoomS.setState(1.0) >> openS.setState(true)
         val zoomIn: Callback    = zoomS.modState(z => math.min(MaxZoom, z + Step))
@@ -165,7 +150,7 @@ object D2Diagram:
                     )
                     .asInstanceOf[js.Object],
                   ^.className := "diagram-modal__card",
-                  <.div.withRef(svgRef)(
+                  <.div(
                     ^.className               := "diagram-modal__svg not-prose",
                     ^.dangerouslySetInnerHtml := props.svgHtml
                   )
