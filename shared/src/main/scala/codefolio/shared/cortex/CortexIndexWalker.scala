@@ -27,11 +27,16 @@ object CortexIndexWalker:
   // never sees raw bytes or JSON.
   // ===========================================================================
 
+  /**
+   * `order` controls the book's position on the Cortex index: books with an `order` sort ascending and ahead
+   * of any book without one, which fall to the end sorted alphabetically by directory name.
+   */
   final case class BookMeta(
       title: Option[String],
       description: Option[String],
       tags: Option[Seq[String]],
-      estimatedReadingMinutes: Option[Int]
+      estimatedReadingMinutes: Option[Int],
+      order: Option[Int] = None
   )
 
   final case class SectionMeta(title: Option[String], summary: Option[String])
@@ -87,11 +92,13 @@ object CortexIndexWalker:
    * other top-level entries are silently skipped (so `_drafts/`, `.git/`, and stray files can sit alongside
    * real books without failing the index). The same filter applies uniformly at every level — Books,
    * Sections, and Chapters.
+   *
+   * Books are ordered by `book.json#order` (see [[BookMeta]]); Sections and Chapters by numeric prefix.
    */
   def walk(roots: List[CortexEntry]): Either[IndexError, WalkResult] =
-    val bookDirs = ordered(roots).collect {
-      case d: CortexDir if includesAsContent(d.name) => d
-    }
+    val bookDirs = roots
+      .collect { case d: CortexDir if includesAsContent(d.name) => d }
+      .sortBy(d => (d.bookMeta.flatMap(_.order).getOrElse(Int.MaxValue), d.name.toLowerCase))
     val results = bookDirs.map(d => buildBook(d, d.name))
     results.collectFirst { case Left(e) => e } match
       case Some(e) => Left(e)

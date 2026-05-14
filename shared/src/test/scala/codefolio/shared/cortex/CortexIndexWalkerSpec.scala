@@ -164,6 +164,22 @@ object CortexIndexWalkerSpec extends ZIOSpecDefault:
           b.estimatedReadingMinutes.isEmpty
         )
       },
+      test("books sort by BookMeta.order; unordered books fall to the end alphabetically") {
+        val withOrder = (slug: String, ord: Int) =>
+          book(
+            slug,
+            meta = Some(BookMeta(None, None, None, None, Some(ord))),
+            children = List(chapter("c.md", "# C"))
+          )
+        val tree = List(
+          withOrder("zeta", 2),
+          withOrder("alpha", 1),
+          book("yak", children = List(chapter("c.md", "# C"))),
+          book("box", children = List(chapter("c.md", "# C")))
+        )
+        val Right(r) = CortexIndexWalker.walk(tree): @unchecked
+        assertTrue(r.index.books.map(_.slug) == List("alpha", "zeta", "box", "yak"))
+      },
       test("frontmatter title wins over body H1 for chapter title") {
         val raw = """---
                     |title: Frontmatter Wins
