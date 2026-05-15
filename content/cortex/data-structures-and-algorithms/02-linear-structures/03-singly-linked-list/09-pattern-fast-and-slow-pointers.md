@@ -1144,115 +1144,268 @@ even: "Even length — [1, 2, 3, 4], middles = 2 and 3" {
 
 ```pseudocode
 # Check whether the two halves of the list have equal sum.
-function sumRange(start, end):
-    s ← 0; cur ← start
-    while cur ≠ end:
-        s ← s + cur.val
-        cur ← cur.next
-    return s
+function sumOfList(start, end):
+    sum ← 0
+    current ← start
+    while current ≠ end:
+        sum ← sum + current.val
+        current ← current.next
+    return sum
 
 function equalHalves(head):
-    if head is null OR head.next is null: return true
-    slow ← head; fast ← head
+    if head is null OR head.next is null:
+        return true
+
+    # Initialize slow pointer
+    slow ← head
+
+    # Initialize fast pointer
+    fast ← head
+
+    # Find the midpoint of the list using the slow and fast pointer technique
     while fast is not null AND fast.next is not null:
+
+        # Move the slow pointer by one step
         slow ← slow.next
+
+        # Move the fast pointer by two steps
         fast ← fast.next.next
-    # Odd length: middle belongs to first half (start second half one past slow).
-    # Even length: slow already marks the start of the second half.
-    secondStart ← slow.next if fast is not null else slow
-    return sumRange(head, secondStart) = sumRange(secondStart, null)
+
+    secondHalfStart ← null
+
+    # Odd number of nodes, middle node goes to first half
+    if fast is not null:
+        secondHalfStart ← slow.next
+    # Even number of nodes, slow is the start of second half
+    else:
+        secondHalfStart ← slow
+
+    # Calculate sums of the first half
+    firstHalfSum ← sumOfList(head, secondHalfStart)
+
+    # Calculate sums of the second half
+    secondHalfSum ← sumOfList(secondHalfStart, null)
+
+    return firstHalfSum = secondHalfSum
 ```
 
 ```python run
 from typing import Optional
 
 class Solution:
-    def _sum_range(self, start: Optional[ListNode], end: Optional[ListNode]) -> int:
-        s, cur = 0, start
-        while cur is not end:
-            s += cur.val
-            cur = cur.next
-        return s
+    def sum_of_list(
+        self, start: Optional[ListNode], end: Optional[ListNode]
+    ) -> int:
+        sum_val = 0
+        current = start
+        while current != end:
+            sum_val += current.val
+            current = current.next
+        return sum_val
 
     def equal_halves(self, head: Optional[ListNode]) -> bool:
         if head is None or head.next is None:
             return True
 
-        slow, fast = head, head
+        # Initialize slow pointer
+        slow: Optional[ListNode] = head
+
+        # Initialize fast pointer
+        fast: Optional[ListNode] = head
+
+        # Find the midpoint of the list using the slow and fast pointer
+        # technique
         while fast is not None and fast.next is not None:
+
+            # Move the slow pointer by one step
             slow = slow.next
+
+            # Move the fast pointer by two steps
             fast = fast.next.next
 
-        # Odd length: middle belongs to first half (start second half one past slow)
-        # Even length: slow already marks the start of the second half
-        second_start = slow.next if fast is not None else slow
+        second_half_start: Optional[ListNode] = None
 
-        return self._sum_range(head, second_start) == self._sum_range(second_start, None)
+        # Odd number of nodes, middle node goes to first half
+        if fast is not None:
+            second_half_start = slow.next
+
+        # Even number of nodes, slow is the start of second half
+        else:
+            second_half_start = slow
+
+        # Calculate sums of the first half
+        first_half_sum = self.sum_of_list(head, second_half_start)
+
+        # Calculate sums of the second half
+        second_half_sum = self.sum_of_list(second_half_start, None)
+
+        return first_half_sum == second_half_sum
 ```
 
 ```java run
 class Solution {
-    private int sumRange(ListNode start, ListNode end) {
-        int s = 0;
-        for (ListNode cur = start; cur != end; cur = cur.next) s += cur.val;
-        return s;
+    private int sumOfList(ListNode start, ListNode end) {
+        int sum = 0;
+        ListNode current = start;
+        while (current != end) {
+            sum += current.val;
+            current = current.next;
+        }
+        return sum;
     }
 
     public boolean equalHalves(ListNode head) {
-        if (head == null || head.next == null) return true;
+        if (head == null || head.next == null) {
+            return true;
+        }
 
-        ListNode slow = head, fast = head;
+        // Initialize slow pointer
+        ListNode slow = head;
+
+        // Initialize fast pointer
+        ListNode fast = head;
+
+        // Find the midpoint of the list using the slow and fast pointer
+        // technique
         while (fast != null && fast.next != null) {
+
+            // Move the slow pointer by one step
             slow = slow.next;
+
+            // Move the fast pointer by two steps
             fast = fast.next.next;
         }
 
-        ListNode secondStart = (fast != null) ? slow.next : slow;
-        return sumRange(head, secondStart) == sumRange(secondStart, null);
+        ListNode secondHalfStart = null;
+
+        // Odd number of nodes, middle node goes to first half
+        if (fast != null) {
+            secondHalfStart = slow.next;
+        }
+
+        // Even number of nodes, slow is the start of second half
+        else {
+            secondHalfStart = slow;
+        }
+
+        // Calculate sums of the first half
+        int firstHalfSum = sumOfList(head, secondHalfStart);
+
+        // Calculate sums of the second half
+        int secondHalfSum = sumOfList(secondHalfStart, null);
+
+        return firstHalfSum == secondHalfSum;
     }
 }
 ```
 
 ```c run
-static int sum_range(ListNode *start, ListNode *end) {
-    int s = 0;
-    for (ListNode *cur = start; cur != end; cur = cur->next) s += cur->val;
-    return s;
+static int sumOfList(ListNode *start, ListNode *end) {
+    int sum = 0;
+    ListNode *current = start;
+    while (current != end) {
+        sum += current->val;
+        current = current->next;
+    }
+    return sum;
 }
 
 int equalHalves(ListNode *head) {
-    if (head == NULL || head->next == NULL) return 1;
+    if (head == NULL || head->next == NULL) {
+        return 1;
+    }
 
-    ListNode *slow = head, *fast = head;
+    /* Initialize slow pointer */
+    ListNode *slow = head;
+
+    /* Initialize fast pointer */
+    ListNode *fast = head;
+
+    /* Find the midpoint of the list using the slow and fast pointer
+       technique */
     while (fast != NULL && fast->next != NULL) {
+
+        /* Move the slow pointer by one step */
         slow = slow->next;
+
+        /* Move the fast pointer by two steps */
         fast = fast->next->next;
     }
 
-    ListNode *secondStart = (fast != NULL) ? slow->next : slow;
-    return sum_range(head, secondStart) == sum_range(secondStart, NULL);
+    ListNode *secondHalfStart = NULL;
+
+    /* Odd number of nodes, middle node goes to first half */
+    if (fast != NULL) {
+        secondHalfStart = slow->next;
+    }
+
+    /* Even number of nodes, slow is the start of second half */
+    else {
+        secondHalfStart = slow;
+    }
+
+    /* Calculate sums of the first half */
+    int firstHalfSum = sumOfList(head, secondHalfStart);
+
+    /* Calculate sums of the second half */
+    int secondHalfSum = sumOfList(secondHalfStart, NULL);
+
+    return firstHalfSum == secondHalfSum;
 }
 ```
 
 ```scala run
 object Solution {
-  private def sumRange(start: ListNode, end: ListNode): Int = {
-    var s = 0; var cur = start
-    while (cur ne end) { s += cur.v; cur = cur.next }
-    s
+  private def sumOfList(start: ListNode, end: ListNode): Int = {
+    var sum = 0
+    var current = start
+    while (current ne end) {
+      sum += current.v
+      current = current.next
+    }
+    sum
   }
 
   def equalHalves(head: ListNode): Boolean = {
-    if (head == null || head.next == null) return true
+    if (head == null || head.next == null) {
+      return true
+    }
 
-    var slow = head; var fast = head
+    // Initialize slow pointer
+    var slow = head
+
+    // Initialize fast pointer
+    var fast = head
+
+    // Find the midpoint of the list using the slow and fast pointer
+    // technique
     while (fast != null && fast.next != null) {
+
+      // Move the slow pointer by one step
       slow = slow.next
+
+      // Move the fast pointer by two steps
       fast = fast.next.next
     }
 
-    val secondStart = if (fast != null) slow.next else slow
-    sumRange(head, secondStart) == sumRange(secondStart, null)
+    var secondHalfStart: ListNode = null
+
+    // Odd number of nodes, middle node goes to first half
+    if (fast != null) {
+      secondHalfStart = slow.next
+    }
+    // Even number of nodes, slow is the start of second half
+    else {
+      secondHalfStart = slow
+    }
+
+    // Calculate sums of the first half
+    val firstHalfSum = sumOfList(head, secondHalfStart)
+
+    // Calculate sums of the second half
+    val secondHalfSum = sumOfList(secondHalfStart, null)
+
+    firstHalfSum == secondHalfSum
   }
 }
 ```
