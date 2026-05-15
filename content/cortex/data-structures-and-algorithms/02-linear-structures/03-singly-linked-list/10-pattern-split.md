@@ -695,38 +695,102 @@ function evenOddSplit(head):
 from typing import List, Optional
 
 class Solution:
-    def even_odd_split(self, head: Optional[ListNode]) -> List[Optional[ListNode]]:
-        even_dummy, odd_dummy = ListNode(), ListNode()
-        even_tail, odd_tail   = even_dummy, odd_dummy
+    def even_odd_split(
+        self, head: Optional[ListNode]
+    ) -> List[Optional[ListNode]]:
 
+        # Initialize head and tail references for the two split lists
+        even_dummy = ListNode(0)
+        even_tail = even_dummy
+
+        odd_dummy = ListNode(0)
+        odd_tail = odd_dummy
+
+        # Create current reference to iterate through the list
         current = head
+
+        # Iterate through the list and split nodes into two lists
         while current is not None:
+
+            # If the current node's value is even then the node goes to
+            # the even list
             if current.val % 2 == 0:
+
+                # `current` node goes to the even split list
                 even_tail.next = current
-                even_tail      = current
+
+                # Move even_tail forward
+                even_tail = even_tail.next
+
+            # Otherwise, the node goes to the odd list
             else:
+
+                # `current` node goes to the odd split list
                 odd_tail.next = current
-                odd_tail      = current
+
+                # Move odd_tail forward
+                odd_tail = odd_tail.next
+
+            # Move to the next node in the original list
             current = current.next
 
-        even_tail.next = None              # seal both output lists
-        odd_tail.next  = None
+        # Terminate the even list
+        even_tail.next = None
+
+        # Terminate the odd list
+        odd_tail.next = None
+
         return [even_dummy.next, odd_dummy.next]
 ```
 
 ```java run
 class Solution {
     public ListNode[] evenOddSplit(ListNode head) {
-        ListNode evenDummy = new ListNode(), oddDummy = new ListNode();
-        ListNode evenTail = evenDummy, oddTail = oddDummy;
 
-        for (ListNode current = head; current != null; current = current.next) {
-            if (current.val % 2 == 0) { evenTail.next = current; evenTail = current; }
-            else                      { oddTail.next  = current; oddTail  = current; }
+        // Initialize head and tail references for the two split lists
+        ListNode evenDummy = new ListNode();
+        ListNode evenTail = evenDummy;
+
+        ListNode oddDummy = new ListNode();
+        ListNode oddTail = oddDummy;
+
+        // Create current reference to iterate through the list
+        ListNode current = head;
+
+        // Iterate through the list and split nodes into two lists
+        while (current != null) {
+
+            // If the current node's value is even then the node goes to
+            // the even list
+            if (current.val % 2 == 0) {
+
+                // `current` node goes to the even split list
+                evenTail.next = current;
+
+                // Move evenTail forward
+                evenTail = evenTail.next;
+            }
+
+            // Otherwise, the node goes to the odd list
+            else {
+
+                // `current` node goes to the odd split list
+                oddTail.next = current;
+
+                // Move oddTail forward
+                oddTail = oddTail.next;
+            }
+
+            // Move to the next node in the original list
+            current = current.next;
         }
 
+        // Terminate the even list
         evenTail.next = null;
-        oddTail.next  = null;
+
+        // Terminate the odd list
+        oddTail.next = null;
+
         return new ListNode[]{evenDummy.next, oddDummy.next};
     }
 }
@@ -736,15 +800,50 @@ class Solution {
 typedef struct { ListNode *evens; ListNode *odds; } EvenOddSplit;
 
 EvenOddSplit evenOddSplit(ListNode *head) {
-    ListNode evenDummy = {0, NULL}, oddDummy = {0, NULL};
-    ListNode *evenTail = &evenDummy, *oddTail = &oddDummy;
 
-    for (ListNode *c = head; c != NULL; c = c->next) {
-        if (c->val % 2 == 0) { evenTail->next = c; evenTail = c; }
-        else                 { oddTail->next  = c; oddTail  = c; }
+    /* Initialize head and tail references for the two split lists */
+    ListNode evenDummy = {0, NULL};
+    ListNode *evenTail = &evenDummy;
+
+    ListNode oddDummy = {0, NULL};
+    ListNode *oddTail = &oddDummy;
+
+    /* Create current reference to iterate through the list */
+    ListNode *current = head;
+
+    /* Iterate through the list and split nodes into two lists */
+    while (current != NULL) {
+
+        /* If the current node's value is even then the node goes to
+           the even list */
+        if (current->val % 2 == 0) {
+
+            /* `current` node goes to the even split list */
+            evenTail->next = current;
+
+            /* Move evenTail forward */
+            evenTail = evenTail->next;
+        }
+
+        /* Otherwise, the node goes to the odd list */
+        else {
+
+            /* `current` node goes to the odd split list */
+            oddTail->next = current;
+
+            /* Move oddTail forward */
+            oddTail = oddTail->next;
+        }
+
+        /* Move to the next node in the original list */
+        current = current->next;
     }
+
+    /* Terminate the even list */
     evenTail->next = NULL;
-    oddTail->next  = NULL;
+
+    /* Terminate the odd list */
+    oddTail->next = NULL;
 
     EvenOddSplit out = {evenDummy.next, oddDummy.next};
     return out;
@@ -754,19 +853,51 @@ EvenOddSplit evenOddSplit(ListNode *head) {
 ```scala run
 object Solution {
   def evenOddSplit(head: ListNode): Array[ListNode] = {
-    val evenDummy = new ListNode(0)
-    val oddDummy  = new ListNode(0)
-    var evenTail: ListNode = evenDummy
-    var oddTail:  ListNode = oddDummy
 
+    // Initialize head and tail references for the two split lists
+    val evenDummy = new ListNode(0)
+    var evenTail: ListNode = evenDummy
+
+    val oddDummy = new ListNode(0)
+    var oddTail: ListNode = oddDummy
+
+    // Create current reference to iterate through the list
     var current = head
+
+    // Iterate through the list and split nodes into two lists
     while (current != null) {
-      if (current.v % 2 == 0) { evenTail.next = current; evenTail = current }
-      else                    { oddTail.next  = current; oddTail  = current }
+
+      // If the current node's value is even then the node goes to
+      // the even list
+      if (current.v % 2 == 0) {
+
+        // `current` node goes to the even split list
+        evenTail.next = current
+
+        // Move evenTail forward
+        evenTail = evenTail.next
+      }
+
+      // Otherwise, the node goes to the odd list
+      else {
+
+        // `current` node goes to the odd split list
+        oddTail.next = current
+
+        // Move oddTail forward
+        oddTail = oddTail.next
+      }
+
+      // Move to the next node in the original list
       current = current.next
     }
+
+    // Terminate the even list
     evenTail.next = null
-    oddTail.next  = null
+
+    // Terminate the odd list
+    oddTail.next = null
+
     Array(evenDummy.next, oddDummy.next)
   }
 }
