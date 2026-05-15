@@ -1755,205 +1755,475 @@ Given the **head** of a singly linked list that can be represented as **L0 ->
 
 
 ```pseudocode
-# Reorder L0 → Ln → L1 → Ln−1 → ... using split + reverse + alternate-merge.
-function splitInHalf(head):
+function reverseList(head):
+    current ← head; previous ← null
+    while current is not null:
+        nextNode ← current.next
+        current.next ← previous
+        previous ← current
+        current ← nextNode
+    return previous
+
+function splitListInHalf(head):
+    # Initialize slow and fast pointers to find the middle of the
+    # list
     slow ← head; fast ← head; prevToSlow ← null
+    # Move slow by one and fast by two nodes until fast reaches the
+    # end
     while fast is not null AND fast.next is not null:
         prevToSlow ← slow
         slow ← slow.next
         fast ← fast.next.next
+    # Split for even length list
     if fast is null:
-        second ← prevToSlow.next
+        secondHalf ← prevToSlow.next
         prevToSlow.next ← null
+    # Split for odd length list
     else:
-        second ← slow.next
+        secondHalf ← slow.next
         slow.next ← null
-    return (head, second)
+    return (head, secondHalf)
 
-function reverse(head):
-    prev ← null; cur ← head
-    while cur is not null:
-        nxt ← cur.next
-        cur.next ← prev
-        prev ← cur; cur ← nxt
-    return prev
+function mergeAlternateNodes(firstHalf, secondHalf):
+    # Create a dummy node to form the merged list
+    dummy ← new ListNode; tail ← dummy
+    # Boolean to switch between nodes from each list
+    mergeFirst ← true
+    # Alternate between the nodes of each list
+    while firstHalf is not null AND secondHalf is not null:
+        if mergeFirst:
+            tail.next ← firstHalf; firstHalf ← firstHalf.next
+        else:
+            tail.next ← secondHalf; secondHalf ← secondHalf.next
+        tail ← tail.next
+        mergeFirst ← NOT mergeFirst
+    # Append any remaining nodes from firstHalf or secondHalf
+    if firstHalf is not null:
+        tail.next ← firstHalf
+    else if secondHalf is not null:
+        tail.next ← secondHalf
+    return dummy.next
 
 function shuffleList(head):
+    # No need to reorder if the list is empty or has only one element
     if head is null OR head.next is null: return head
-    (first, second) ← splitInHalf(head)
-    second ← reverse(second)
-
-    dummy ← new ListNode; tail ← dummy
-    takeFirst ← true
-    while first is not null AND second is not null:
-        if takeFirst: tail.next ← first;  first  ← first.next
-        else:         tail.next ← second; second ← second.next
-        tail ← tail.next
-        takeFirst ← NOT takeFirst
-    tail.next ← first if first is not null else second
-    return dummy.next
+    # Split the list into two halves
+    (firstHalf, secondHalf) ← splitListInHalf(head)
+    # Reverse the second half of the list
+    reversedSecondHalf ← reverseList(secondHalf)
+    # Alternatively merge the first list and the reversed second list
+    return mergeAlternateNodes(firstHalf, reversedSecondHalf)
 ```
 
 ```python run
-from typing import Optional
+from typing import List, Optional
 
 class Solution:
-    def _split_in_half(self, head: ListNode):
-        # slow/fast split — first half gets the middle on odd length
-        slow, fast, prev_to_slow = head, head, None
+    def reverse_list(
+        self, head: Optional[ListNode]
+    ) -> Optional[ListNode]:
+        current = head
+        previous = None
+
+        while current is not None:
+            next_node = current.next
+            current.next = previous
+            previous = current
+            current = next_node
+
+        return previous
+
+    def split_list_in_half(
+        self, head: Optional[ListNode]
+    ) -> List[Optional[ListNode]]:
+
+        # Initialize slow and fast pointers to find the middle of the
+        # list
+        slow = head
+        fast = head
+        prev_to_slow = None
+
+        # Move slow by one and fast by two nodes until fast reaches
+        # the end
         while fast is not None and fast.next is not None:
             prev_to_slow = slow
             slow = slow.next
             fast = fast.next.next
+
+        # Split for even length list
         if fast is None:
-            second = prev_to_slow.next
+            second_half = prev_to_slow.next
             prev_to_slow.next = None
+
+        # Split for odd length list
         else:
-            second = slow.next
+            second_half = slow.next
             slow.next = None
-        return head, second
 
-    def _reverse(self, head: Optional[ListNode]) -> Optional[ListNode]:
-        prev, cur = None, head
-        while cur is not None:
-            nxt = cur.next
-            cur.next = prev
-            prev, cur = cur, nxt
-        return prev
+        return [head, second_half]
 
-    def shuffle_list(self, head: Optional[ListNode]) -> Optional[ListNode]:
+    def merge_alternate_nodes(
+        self,
+        first_half: Optional[ListNode],
+        second_half: Optional[ListNode],
+    ) -> Optional[ListNode]:
+
+        # Create a dummy node to form the merged list
+        dummy = ListNode(0)
+        tail = dummy
+
+        # Boolean to switch between nodes from each list
+        merge_first = True
+
+        # Alternate between the nodes of each list
+        while first_half is not None and second_half is not None:
+            if merge_first:
+                tail.next = first_half
+                first_half = first_half.next
+            else:
+                tail.next = second_half
+                second_half = second_half.next
+            tail = tail.next
+            merge_first = not merge_first
+
+        # Append any remaining nodes from first_half or second_half
+        if first_half is not None:
+            tail.next = first_half
+        elif second_half is not None:
+            tail.next = second_half
+
+        return dummy.next
+
+    def shuffle_list(
+        self, head: Optional[ListNode]
+    ) -> Optional[ListNode]:
+
+        # No need to reorder if the list is empty or has only one
+        # element
         if head is None or head.next is None:
             return head
 
-        first, second = self._split_in_half(head)
-        second        = self._reverse(second)
+        # Split the list into two halves
+        first_half, second_half = self.split_list_in_half(head)
 
-        # Alternate-merge: first → second → first → second → ...
-        dummy = ListNode()
-        tail  = dummy
-        take_first = True
-        while first is not None and second is not None:
-            if take_first:
-                tail.next = first;  first  = first.next
-            else:
-                tail.next = second; second = second.next
-            tail       = tail.next
-            take_first = not take_first
-        tail.next = first if first is not None else second
-        return dummy.next
+        # Reverse the second half of the list
+        reversed_second_half = self.reverse_list(second_half)
+
+        # Alternatively merge the first list and the reversed second
+        # list
+        return self.merge_alternate_nodes(first_half, reversed_second_half)
 ```
 
 ```java run
+import java.util.*;
+
 class Solution {
-    private ListNode reverse(ListNode h) {
-        ListNode prev = null, cur = h;
-        while (cur != null) { ListNode nxt = cur.next; cur.next = prev; prev = cur; cur = nxt; }
-        return prev;
+    private ListNode reverseList(ListNode head) {
+        ListNode current = head;
+        ListNode previous = null;
+
+        while (current != null) {
+            ListNode nextNode = current.next;
+            current.next = previous;
+            previous = current;
+            current = nextNode;
+        }
+
+        return previous;
     }
-    private ListNode[] splitInHalf(ListNode head) {
-        ListNode slow = head, fast = head, prevToSlow = null;
+
+    private List<ListNode> splitListInHalf(ListNode head) {
+
+        // Initialize slow and fast pointers to find the middle of the
+        // list
+        ListNode slow = head, fast = head;
+        ListNode prevToSlow = null;
+
+        // Move slow by one and fast by two nodes until fast reaches
+        // the end
         while (fast != null && fast.next != null) {
             prevToSlow = slow;
             slow = slow.next;
             fast = fast.next.next;
         }
-        ListNode second;
-        if (fast == null) { second = prevToSlow.next; prevToSlow.next = null; }
-        else               { second = slow.next; slow.next = null; }
-        return new ListNode[]{head, second};
+
+        ListNode secondHalf;
+
+        // Split for even length list
+        if (fast == null) {
+            secondHalf = prevToSlow.next;
+            prevToSlow.next = null;
+        }
+
+        // Split for odd length list
+        else {
+            secondHalf = slow.next;
+            slow.next = null;
+        }
+
+        return Arrays.asList(head, secondHalf);
+    }
+
+    private ListNode mergeAlternateNodes(ListNode firstHalf, ListNode secondHalf) {
+
+        // Create a dummy node to form the merged list
+        ListNode dummy = new ListNode(0);
+        ListNode tail = dummy;
+
+        // Boolean to switch between nodes from each list
+        boolean mergeFirst = true;
+
+        // Alternate between the nodes of each list
+        while (firstHalf != null && secondHalf != null) {
+            if (mergeFirst) {
+                tail.next = firstHalf;
+                firstHalf = firstHalf.next;
+                tail = tail.next;
+            } else {
+                tail.next = secondHalf;
+                secondHalf = secondHalf.next;
+                tail = tail.next;
+            }
+
+            mergeFirst = !mergeFirst;
+        }
+
+        // Append any remaining nodes from firstHalf or secondHalf
+        if (firstHalf != null) {
+            tail.next = firstHalf;
+        } else if (secondHalf != null) {
+            tail.next = secondHalf;
+        }
+
+        return dummy.next;
     }
 
     public ListNode shuffleList(ListNode head) {
-        if (head == null || head.next == null) return head;
 
-        ListNode[] halves = splitInHalf(head);
-        ListNode first = halves[0], second = reverse(halves[1]);
-
-        ListNode dummy = new ListNode(), tail = dummy;
-        boolean takeFirst = true;
-        while (first != null && second != null) {
-            if (takeFirst) { tail.next = first;  first  = first.next; }
-            else            { tail.next = second; second = second.next; }
-            tail      = tail.next;
-            takeFirst = !takeFirst;
+        // No need to reorder if the list is empty or has only one
+        // element
+        if (head == null || head.next == null) {
+            return head;
         }
-        tail.next = (first != null) ? first : second;
-        return dummy.next;
+
+        // Split the list in two halves
+        List<ListNode> heads = splitListInHalf(head);
+        ListNode firstHalf = heads.get(0);
+        ListNode secondHalf = heads.get(1);
+
+        // Reverse the second half of the list
+        ListNode reversedSecondHalf = reverseList(secondHalf);
+
+        // Alternatively merged the first list and the reversed second
+        // list
+        return mergeAlternateNodes(firstHalf, reversedSecondHalf);
     }
 }
 ```
 
 ```c run
-static ListNode* sl_reverse(ListNode *h) {
-    ListNode *prev = NULL, *cur = h;
-    while (cur) { ListNode *nxt = cur->next; cur->next = prev; prev = cur; cur = nxt; }
-    return prev;
+typedef struct { ListNode *first; ListNode *second; } HalfSplit;
+
+static ListNode* reverseList(ListNode *head) {
+    ListNode *current = head;
+    ListNode *previous = NULL;
+
+    while (current != NULL) {
+        ListNode *nextNode = current->next;
+        current->next = previous;
+        previous = current;
+        current = nextNode;
+    }
+
+    return previous;
 }
 
-ListNode* shuffleList(ListNode *head) {
-    if (head == NULL || head->next == NULL) return head;
+static HalfSplit splitListInHalf(ListNode *head) {
 
-    ListNode *slow = head, *fast = head, *prevToSlow = NULL;
+    /* Initialize slow and fast pointers to find the middle of the
+       list */
+    ListNode *slow = head, *fast = head;
+    ListNode *prevToSlow = NULL;
+
+    /* Move slow by one and fast by two nodes until fast reaches the
+       end */
     while (fast != NULL && fast->next != NULL) {
         prevToSlow = slow;
         slow = slow->next;
         fast = fast->next->next;
     }
-    ListNode *second;
-    if (fast == NULL) { second = prevToSlow->next; prevToSlow->next = NULL; }
-    else               { second = slow->next; slow->next = NULL; }
 
-    second = sl_reverse(second);
-    ListNode *first = head;
+    ListNode *secondHalf;
 
+    /* Split for even length list */
+    if (fast == NULL) {
+        secondHalf = prevToSlow->next;
+        prevToSlow->next = NULL;
+    }
+
+    /* Split for odd length list */
+    else {
+        secondHalf = slow->next;
+        slow->next = NULL;
+    }
+
+    HalfSplit out = {head, secondHalf};
+    return out;
+}
+
+static ListNode* mergeAlternateNodes(ListNode *firstHalf, ListNode *secondHalf) {
+
+    /* Create a dummy node to form the merged list */
     ListNode dummy = {0, NULL};
     ListNode *tail = &dummy;
-    int takeFirst = 1;
-    while (first != NULL && second != NULL) {
-        if (takeFirst) { tail->next = first;  first  = first->next; }
-        else            { tail->next = second; second = second->next; }
-        tail      = tail->next;
-        takeFirst = !takeFirst;
+
+    /* Boolean to switch between nodes from each list */
+    int mergeFirst = 1;
+
+    /* Alternate between the nodes of each list */
+    while (firstHalf != NULL && secondHalf != NULL) {
+        if (mergeFirst) {
+            tail->next = firstHalf;
+            firstHalf = firstHalf->next;
+            tail = tail->next;
+        } else {
+            tail->next = secondHalf;
+            secondHalf = secondHalf->next;
+            tail = tail->next;
+        }
+
+        mergeFirst = !mergeFirst;
     }
-    tail->next = (first != NULL) ? first : second;
+
+    /* Append any remaining nodes from firstHalf or secondHalf */
+    if (firstHalf != NULL) {
+        tail->next = firstHalf;
+    } else if (secondHalf != NULL) {
+        tail->next = secondHalf;
+    }
+
     return dummy.next;
+}
+
+ListNode* shuffleList(ListNode *head) {
+
+    /* No need to reorder if the list is empty or has only one
+       element */
+    if (head == NULL || head->next == NULL) {
+        return head;
+    }
+
+    /* Split the list in two halves */
+    HalfSplit heads = splitListInHalf(head);
+
+    /* Reverse the second half of the list */
+    ListNode *reversedSecondHalf = reverseList(heads.second);
+
+    /* Alternatively merged the first list and the reversed second
+       list */
+    return mergeAlternateNodes(heads.first, reversedSecondHalf);
 }
 ```
 
 ```scala run
 object Solution {
-  private def reverse(h: ListNode): ListNode = {
-    var prev: ListNode = null; var cur = h
-    while (cur != null) { val nxt = cur.next; cur.next = prev; prev = cur; cur = nxt }
-    prev
+  private def reverseList(head: ListNode): ListNode = {
+    var current = head
+    var previous: ListNode = null
+
+    while (current != null) {
+      val nextNode = current.next
+      current.next = previous
+      previous = current
+      current = nextNode
+    }
+
+    previous
   }
 
-  def shuffleList(head: ListNode): ListNode = {
-    if (head == null || head.next == null) return head
+  private def splitListInHalf(head: ListNode): (ListNode, ListNode) = {
 
-    var slow = head; var fast = head
+    // Initialize slow and fast pointers to find the middle of the
+    // list
+    var slow = head
+    var fast = head
     var prevToSlow: ListNode = null
+
+    // Move slow by one and fast by two nodes until fast reaches the
+    // end
     while (fast != null && fast.next != null) {
       prevToSlow = slow
       slow = slow.next
       fast = fast.next.next
     }
-    var second: ListNode = null
-    if (fast == null) { second = prevToSlow.next; prevToSlow.next = null }
-    else               { second = slow.next; slow.next = null }
-    second = reverse(second)
 
-    val dummy = new ListNode(0); var tail: ListNode = dummy
-    var first = head
-    var takeFirst = true
-    while (first != null && second != null) {
-      if (takeFirst) { tail.next = first;  first  = first.next }
-      else            { tail.next = second; second = second.next }
-      tail      = tail.next
-      takeFirst = !takeFirst
+    var secondHalf: ListNode = null
+
+    // Split for even length list
+    if (fast == null) {
+      secondHalf = prevToSlow.next
+      prevToSlow.next = null
     }
-    tail.next = if (first != null) first else second
+    // Split for odd length list
+    else {
+      secondHalf = slow.next
+      slow.next = null
+    }
+
+    (head, secondHalf)
+  }
+
+  private def mergeAlternateNodes(firstHalfArg: ListNode, secondHalfArg: ListNode): ListNode = {
+    var firstHalf = firstHalfArg
+    var secondHalf = secondHalfArg
+
+    // Create a dummy node to form the merged list
+    val dummy = new ListNode(0)
+    var tail: ListNode = dummy
+
+    // Boolean to switch between nodes from each list
+    var mergeFirst = true
+
+    // Alternate between the nodes of each list
+    while (firstHalf != null && secondHalf != null) {
+      if (mergeFirst) {
+        tail.next = firstHalf
+        firstHalf = firstHalf.next
+        tail = tail.next
+      } else {
+        tail.next = secondHalf
+        secondHalf = secondHalf.next
+        tail = tail.next
+      }
+
+      mergeFirst = !mergeFirst
+    }
+
+    // Append any remaining nodes from firstHalf or secondHalf
+    if (firstHalf != null) {
+      tail.next = firstHalf
+    } else if (secondHalf != null) {
+      tail.next = secondHalf
+    }
+
     dummy.next
+  }
+
+  def shuffleList(head: ListNode): ListNode = {
+
+    // No need to reorder if the list is empty or has only one
+    // element
+    if (head == null || head.next == null) return head
+
+    // Split the list in two halves
+    val (firstHalf, secondHalf) = splitListInHalf(head)
+
+    // Reverse the second half of the list
+    val reversedSecondHalf = reverseList(secondHalf)
+
+    // Alternatively merged the first list and the reversed second
+    // list
+    mergeAlternateNodes(firstHalf, reversedSecondHalf)
   }
 }
 ```
