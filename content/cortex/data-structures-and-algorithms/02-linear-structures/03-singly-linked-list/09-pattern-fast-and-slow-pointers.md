@@ -1435,163 +1435,260 @@ Given the **head** of a singly linked list, write a function to check if the g
 ```pseudocode
 # Palindrome check. Find middle, reverse second half in place, compare element-by-element.
 function reverse(head):
-    previous ← null; current ← head
+    current ← head
+    previous ← null
     while current is not null:
-        nxt ← current.next
+        nextNode ← current.next
         current.next ← previous
         previous ← current
-        current ← nxt
+        current ← nextNode
     return previous
 
-function findMiddle(head):
-    slow ← head; fast ← head
+function findMiddleNode(head):
+    slow ← head
+    fast ← head
     while fast is not null AND fast.next is not null:
         slow ← slow.next
         fast ← fast.next.next
     return slow
 
-function palindromeChecker(head):
-    if head is null OR head.next is null: return true
-    middle ← findMiddle(head)
-    reversedSecond ← reverse(middle)
-    a ← head; b ← reversedSecond
-    while b is not null:
-        if a.val ≠ b.val: return false
-        a ← a.next
-        b ← b.next
+function isPalindrome(headA, headB):
+    while headB is not null:
+        if headA.val ≠ headB.val:
+            return false
+        headA ← headA.next
+        headB ← headB.next
     return true
+
+function palindromeChecker(head):
+    if head is null OR head.next is null:
+        return true
+
+    # Find the middle node of the linked list
+    middleNode ← findMiddleNode(head)
+
+    # Reverse the second half of the list
+    reversedSecondHalf ← reverse(middleNode)
+
+    # Compare the elements of first half with the reversed second half
+    return isPalindrome(head, reversedSecondHalf)
 ```
 
 ```python run
 from typing import Optional
 
 class Solution:
-    def _reverse(self, head: Optional[ListNode]) -> Optional[ListNode]:
-        previous, current = None, head
+    def reverse(self, head: Optional[ListNode]) -> Optional[ListNode]:
+        current: Optional[ListNode] = head
+        previous: Optional[ListNode] = None
+
         while current is not None:
-            nxt = current.next
+            next_node = current.next
             current.next = previous
-            previous, current = current, nxt
+            previous = current
+            current = next_node
+
         return previous
 
-    def _find_middle(self, head: Optional[ListNode]) -> Optional[ListNode]:
-        slow, fast = head, head
+    def find_middle_node(
+        self, head: Optional[ListNode]
+    ) -> Optional[ListNode]:
+        slow = head
+        fast = head
         while fast is not None and fast.next is not None:
             slow = slow.next
             fast = fast.next.next
+
         return slow
+
+    def is_palindrome(
+        self, head_a: Optional[ListNode], head_b: Optional[ListNode]
+    ) -> bool:
+        while head_b is not None:
+            if head_a.val != head_b.val:
+                return False
+            head_a = head_a.next
+            head_b = head_b.next
+        return True
 
     def palindrome_checker(self, head: Optional[ListNode]) -> bool:
         if head is None or head.next is None:
             return True
 
-        middle = self._find_middle(head)
-        # Reverse the second half IN PLACE, then compare element-by-element
-        reversed_second = self._reverse(middle)
+        # Find the middle node of the linked list
+        middle_node = self.find_middle_node(head)
 
-        a, b = head, reversed_second
-        while b is not None:
-            if a.val != b.val:
-                return False
-            a, b = a.next, b.next
-        return True
+        # Reverse the second half of the list
+        reversed_second_half = self.reverse(middle_node)
+
+        # Compare the elements of first half with the reversed second
+        # half
+        return self.is_palindrome(head, reversed_second_half)
 ```
 
 ```java run
 class Solution {
     private ListNode reverse(ListNode head) {
-        ListNode previous = null, current = head;
+        ListNode current = head;
+        ListNode previous = null;
+
         while (current != null) {
             ListNode next = current.next;
             current.next = previous;
             previous = current;
-            current  = next;
+            current = next;
         }
+
         return previous;
     }
 
-    private ListNode findMiddle(ListNode head) {
-        ListNode slow = head, fast = head;
+    private ListNode findMiddleNode(ListNode head) {
+        ListNode slow = head;
+        ListNode fast = head;
         while (fast != null && fast.next != null) {
             slow = slow.next;
             fast = fast.next.next;
         }
+
         return slow;
     }
 
-    public boolean palindromeChecker(ListNode head) {
-        if (head == null || head.next == null) return true;
-        ListNode middle = findMiddle(head);
-        ListNode reversedSecond = reverse(middle);
-
-        ListNode a = head, b = reversedSecond;
-        while (b != null) {
-            if (a.val != b.val) return false;
-            a = a.next;
-            b = b.next;
+    private boolean isPalindrome(ListNode headA, ListNode headB) {
+        while (headB != null) {
+            if (headA.val != headB.val) {
+                return false;
+            }
+            headA = headA.next;
+            headB = headB.next;
         }
         return true;
+    }
+
+    public boolean palindromeChecker(ListNode head) {
+        if (head == null || head.next == null) {
+            return true;
+        }
+
+        // Find the middle node of the linked list
+        ListNode middleNode = findMiddleNode(head);
+
+        // Reverse the second half of the list
+        ListNode reversedSecondHalf = reverse(middleNode);
+
+        // Compare the elements of first half with the reversed second
+        // half
+        return isPalindrome(head, reversedSecondHalf);
     }
 }
 ```
 
 ```c run
-static ListNode* reverse_list(ListNode *head) {
-    ListNode *prev = NULL, *cur = head;
-    while (cur) {
-        ListNode *nxt = cur->next;
-        cur->next = prev;
-        prev = cur; cur = nxt;
+static ListNode* reverse(ListNode *head) {
+    ListNode *current = head;
+    ListNode *previous = NULL;
+
+    while (current != NULL) {
+        ListNode *next = current->next;
+        current->next = previous;
+        previous = current;
+        current = next;
     }
-    return prev;
+
+    return previous;
 }
-static ListNode* find_middle(ListNode *head) {
-    ListNode *slow = head, *fast = head;
-    while (fast && fast->next) { slow = slow->next; fast = fast->next->next; }
+
+static ListNode* findMiddleNode(ListNode *head) {
+    ListNode *slow = head;
+    ListNode *fast = head;
+    while (fast != NULL && fast->next != NULL) {
+        slow = slow->next;
+        fast = fast->next->next;
+    }
+
     return slow;
 }
 
-int palindromeChecker(ListNode *head) {
-    if (head == NULL || head->next == NULL) return 1;
-    ListNode *mid = find_middle(head);
-    ListNode *rev = reverse_list(mid);
-
-    ListNode *a = head, *b = rev;
-    while (b) {
-        if (a->val != b->val) return 0;
-        a = a->next; b = b->next;
+static int isPalindrome(ListNode *headA, ListNode *headB) {
+    while (headB != NULL) {
+        if (headA->val != headB->val) {
+            return 0;
+        }
+        headA = headA->next;
+        headB = headB->next;
     }
     return 1;
+}
+
+int palindromeChecker(ListNode *head) {
+    if (head == NULL || head->next == NULL) {
+        return 1;
+    }
+
+    /* Find the middle node of the linked list */
+    ListNode *middleNode = findMiddleNode(head);
+
+    /* Reverse the second half of the list */
+    ListNode *reversedSecondHalf = reverse(middleNode);
+
+    /* Compare the elements of first half with the reversed second
+       half */
+    return isPalindrome(head, reversedSecondHalf);
 }
 ```
 
 ```scala run
 object Solution {
   private def reverse(headIn: ListNode): ListNode = {
-    var prev: ListNode = null; var cur = headIn
-    while (cur != null) {
-      val nxt = cur.next
-      cur.next = prev
-      prev = cur; cur = nxt
+    var current = headIn
+    var previous: ListNode = null
+
+    while (current != null) {
+      val next = current.next
+      current.next = previous
+      previous = current
+      current = next
     }
-    prev
+
+    previous
   }
-  private def findMiddle(head: ListNode): ListNode = {
-    var slow = head; var fast = head
-    while (fast != null && fast.next != null) { slow = slow.next; fast = fast.next.next }
+
+  private def findMiddleNode(head: ListNode): ListNode = {
+    var slow = head
+    var fast = head
+    while (fast != null && fast.next != null) {
+      slow = slow.next
+      fast = fast.next.next
+    }
     slow
   }
 
-  def palindromeChecker(head: ListNode): Boolean = {
-    if (head == null || head.next == null) return true
-    val mid = findMiddle(head)
-    val rev = reverse(mid)
-    var a = head; var b = rev
-    while (b != null) {
-      if (a.v != b.v) return false
-      a = a.next; b = b.next
+  private def isPalindrome(headAIn: ListNode, headBIn: ListNode): Boolean = {
+    var headA = headAIn
+    var headB = headBIn
+    while (headB != null) {
+      if (headA.v != headB.v) {
+        return false
+      }
+      headA = headA.next
+      headB = headB.next
     }
     true
+  }
+
+  def palindromeChecker(head: ListNode): Boolean = {
+    if (head == null || head.next == null) {
+      return true
+    }
+
+    // Find the middle node of the linked list
+    val middleNode = findMiddleNode(head)
+
+    // Reverse the second half of the list
+    val reversedSecondHalf = reverse(middleNode)
+
+    // Compare the elements of first half with the reversed second
+    // half
+    isPalindrome(head, reversedSecondHalf)
   }
 }
 ```
