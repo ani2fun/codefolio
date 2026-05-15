@@ -1137,20 +1137,42 @@ function splitByModulo(head, k):
 from typing import List, Optional
 
 class Solution:
-    def split_by_modulo(self, head: Optional[ListNode], k: int) -> List[Optional[ListNode]]:
-        dummies = [ListNode() for _ in range(k)]
-        tails   = list(dummies)
+    def split_by_modulo(
+        self, head: Optional[ListNode], k: int
+    ) -> List[Optional[ListNode]]:
 
+        # Initialize head and tail references for k split lists
+        dummy_heads: List[ListNode] = [ListNode(0) for _ in range(k)]
+        tails: List[ListNode] = dummy_heads[:]
+
+        # Create current reference to iterate through the list
         current = head
-        while current is not None:
-            group = current.val % k
-            tails[group].next = current
-            tails[group]      = current
-            current           = current.next
 
-        for t in tails:
-            t.next = None
-        return [d.next for d in dummies]
+        # Iterate through the list and split nodes into k lists
+        while current is not None:
+
+            # Find group index using modulo operation
+            group = current.val % k
+
+            # `current` node goes to its modulo group
+            tails[group].next = current
+
+            # Move group tail forward
+            tails[group] = tails[group].next
+
+            # Move to the next node in the original list
+            current = current.next
+
+        # Terminate each list to avoid cycles
+        for i in range(k):
+            tails[i].next = None
+
+        # Collect heads (excluding dummy nodes)
+        result: List[Optional[ListNode]] = []
+        for i in range(k):
+            result.append(dummy_heads[i].next)
+
+        return result
 ```
 
 ```java run
