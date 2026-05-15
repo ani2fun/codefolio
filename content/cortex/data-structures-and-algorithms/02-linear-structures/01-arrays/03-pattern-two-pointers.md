@@ -1144,11 +1144,14 @@ Flip Characters is the two-pointer reversal pattern applied to a character array
 
 ## The Problem
 
-Given a string, determine whether it is a **palindrome** — a word or phrase that reads the same forwards and backwards.
+Given a string `s`, return `true` if it is a **palindrome** — a string that reads the same forwards and backwards **after converting all uppercase letters to lowercase and removing all non-alphanumeric characters**. Return `false` otherwise.
+
+Alphanumeric characters are letters and digits: `[a–z]`, `[A–Z]`, `[0–9]`. Everything else (spaces, punctuation) is skipped.
 
 ```
-Input:  s = "racecar"   →   Output: True
-Input:  s = "hello"     →   Output: False
+Input:  s = "a man nam a"   →   Output: True   (after filtering: "amannama")
+Input:  s = "race car rac ecar" → Output: True (after filtering: "racecarracecar")
+Input:  s = "This is codeintuition" → Output: False
 ```
 
 ---
@@ -1157,85 +1160,85 @@ Input:  s = "hello"     →   Output: False
 
 **Example 1**
 ```
-Input:  "racecar"
+Input:  s = "a man nam a"
 Output: True
-Explanation: r-a-c-e-c-a-r reversed is still r-a-c-e-c-a-r
+Explanation: Removing spaces and lower-casing gives "amannama", which is a palindrome.
 ```
 
 **Example 2**
 ```
-Input:  "hello"
-Output: False
-Explanation: 'h' ≠ 'o' — the first and last characters already disagree
+Input:  s = "race car rac ecar"
+Output: True
+Explanation: After filtering, "racecarracecar" is a palindrome.
 ```
 
 **Example 3**
 ```
-Input:  "abcba"
-Output: True
+Input:  s = "This is codeintuition"
+Output: False
+Explanation: After filtering, "thisiscodeintuition" reads differently forwards vs backwards.
 ```
 
 **Example 4 — single character**
 ```
-Input:  "a"
-Output: True   (every single character is trivially a palindrome)
+Input:  s = "a"
+Output: True   (every single alphanumeric character is trivially a palindrome)
 ```
 
 ---
 
 ## Intuition
 
-A string is a palindrome when its first character equals its last, its second equals its second-to-last, and so on all the way to the middle.
+A string is a palindrome when its first alphanumeric character (lowercased) equals its last, its second equals its second-to-last, and so on all the way to the middle.
 
-That's a mirror-pair relationship — exactly what two pointers are built for. Place `left` at the start and `right` at the end. At each step, compare `s[left]` and `s[right]`:
+That's a mirror-pair relationship — exactly what two pointers are built for. Place `left` at the start and `right` at the end. At each step, examine `s[left]` and `s[right]`:
 
-- If they **match** → the pair is fine, move both inward and continue
-- If they **don't match** → it's not a palindrome, return `False` immediately
+- If either is **not alphanumeric** → skip it (advance `left` or retreat `right` past it)
+- If both are alphanumeric and **match** (case-insensitive) → the pair is fine, move both inward and continue
+- If both are alphanumeric and **don't match** → it's not a palindrome, return `False` immediately
 - If `left >= right` without any mismatch → every pair matched, return `True`
 
 No extra memory needed. One pass.
 
-```mermaid
----
-config:
-  theme: base
-  themeVariables:
-    primaryColor: "#dbeafe"
-    primaryBorderColor: "#3b82f6"
-    primaryTextColor: "#1e3a5f"
-    lineColor: "#64748b"
-    secondaryColor: "#ede9fe"
-    tertiaryColor: "#fef9c3"
----
-flowchart TB
-  subgraph S0["Start  —  left=0, right=6"]
-    direction LR
-    P0L(["left"]) --> R0["r"] --- A0["a"] --- C0["c"] --- E0["e"] --- C1["c"] --- A1["a"] --- R1["r"]
-    R1 --> P0R(["right"])
-  end
-  subgraph S1["'r'='r' ✓  left=1, right=5"]
-    direction LR
-    P1L(["left"]) --> A2["a"] --- C2["c"] --- E1["e"] --- C3["c"] --- A3["a"]
-    A3 --> P1R(["right"])
-  end
-  subgraph S2["'a'='a' ✓  left=2, right=4"]
-    direction LR
-    P2L(["left"]) --> C4["c"] --- E2["e"] --- C5["c"]
-    C5 --> P2R(["right"])
-  end
-  subgraph S3["'c'='c' ✓  left=3, right=3"]
-    direction LR
-    P3L(["left=right"]) --> E3["e"]
-    E3 --> P3R(["right=left"])
-  end
-  subgraph S4["left ≥ right  →  all pairs matched"]
-    DONE(["✓  return True"])
-  end
-
-  S0 -->|"match → move inward"| S1
-  S1 -->|"match → move inward"| S2
-  S2 -->|"match → move inward"| S3
-  S3 -->|"left ≥ right"| S4
+```d3 widget=array-traversal
+{
+  "items": ["r", "a", "c", "e", "c", "a", "r"],
+  "title": "Checking \"racecar\" for palindrome",
+  "steps": [
+    {
+      "keys":    ["r0", "a0", "c0", "e", "c1", "a1", "r1"],
+      "markers": [
+        { "name": "left",  "index": 0, "color": "#3b82f6" },
+        { "name": "right", "index": 6, "color": "#f59e0b" }
+      ],
+      "msg": "Initial — compare s[0]='r' with s[6]='r' → match, move both inward."
+    },
+    {
+      "keys":    ["r0", "a0", "c0", "e", "c1", "a1", "r1"],
+      "markers": [
+        { "name": "left",  "index": 1, "color": "#3b82f6" },
+        { "name": "right", "index": 5, "color": "#f59e0b" }
+      ],
+      "msg": "Compare s[1]='a' with s[5]='a' → match, move both inward."
+    },
+    {
+      "keys":    ["r0", "a0", "c0", "e", "c1", "a1", "r1"],
+      "markers": [
+        { "name": "left",  "index": 2, "color": "#3b82f6" },
+        { "name": "right", "index": 4, "color": "#f59e0b" }
+      ],
+      "msg": "Compare s[2]='c' with s[4]='c' → match, move both inward."
+    },
+    {
+      "keys":    ["r0", "a0", "c0", "e", "c1", "a1", "r1"],
+      "markers": [
+        { "name": "left",  "index": 3, "color": "#3b82f6" },
+        { "name": "right", "index": 3, "color": "#f59e0b" }
+      ],
+      "msg": "Pointers meet at index 3 (the middle 'e'). All pairs matched — return True."
+    }
+  ]
+}
 ```
 
 <p align="center"><strong>Checking <code>"racecar"</code> for palindrome — every mirror pair matches; when pointers meet at the centre, the check passes.</strong></p>
@@ -1296,62 +1299,143 @@ This early-exit property makes two-pointer palindrome checking efficient in prac
 
 
 ```pseudocode
-# Palindrome check — pointers march inward; first mismatch fails.
-function isPalindrome(s):
-    left ← 0
+function palindromeChecker(s):
+    # An empty string is vacuously a palindrome
+    if s is empty:
+        return true
+
+    # Initialize two pointers, one at the start and the other at the end
+    left  ← 0
     right ← length(s) − 1
+
     while left < right:
-        if s[left] ≠ s[right]:
+        charLeft  ← s[left]
+        charRight ← s[right]
+
+        # Skip non-alphanumeric characters from the left
+        if charLeft is not alphanumeric:
+            left ← left + 1
+
+        # Skip non-alphanumeric characters from the right
+        else if charRight is not alphanumeric:
+            right ← right − 1
+
+        # Compare the characters ignoring case
+        else if toLower(charLeft) ≠ toLower(charRight):
             return false
-        left ← left + 1
-        right ← right − 1
+
+        # Pair matched — move both pointers inward
+        else:
+            left  ← left + 1
+            right ← right − 1
+
+    # All pairs matched — it's a palindrome
     return true
 ```
 
 ```python run
 class Solution:
-    def is_palindrome(self, s: str) -> bool:
-        left, right = 0, len(s) - 1
+    def palindrome_checker(self, s: str) -> bool:
+        if not s:
+
+            # An empty string is considered a palindrome
+            return True
+
+        # Initialize two pointers, one pointing to the beginning of the
+        # string and the other pointing to the end of the string
+        left  = 0
+        right = len(s) - 1
+
         while left < right:
-            if s[left] != s[right]:
+            char_left  = s[left]
+            char_right = s[right]
+
+            # Skip non-alphanumeric characters from the left
+            if not char_left.isalnum():
+                left += 1
+
+            # Skip non-alphanumeric characters from the right
+            elif not char_right.isalnum():
+                right -= 1
+
+            # Check if the characters are equal ignoring case
+            elif char_left.lower() != char_right.lower():
+
+                # Characters are not equal, so it's not a palindrome
                 return False
-            left  += 1
-            right -= 1
+
+            # Move both pointers towards the center
+            else:
+                left  += 1
+                right -= 1
+
+        # All characters have been checked and are equal, so it's a palindrome
         return True
 
 
 sol = Solution()
-print(sol.is_palindrome("racecar"))  # True
-print(sol.is_palindrome("hello"))    # False
-print(sol.is_palindrome("abcba"))    # True
-print(sol.is_palindrome("a"))        # True
-print(sol.is_palindrome("ab"))       # False
-print(sol.is_palindrome("aa"))       # True
+print(sol.palindrome_checker("a man nam a"))             # True
+print(sol.palindrome_checker("race car rac ecar"))       # True
+print(sol.palindrome_checker("This is codeintuition"))   # False
+print(sol.palindrome_checker("racecar"))                 # True
+print(sol.palindrome_checker("a"))                       # True
+print(sol.palindrome_checker(""))                        # True
 ```
 
 ```java run
 public class Main {
     static class Solution {
-        boolean isPalindrome(String s) {
-            int left = 0;
-            int right = s.length() - 1;
-            while (left < right) {
-                if (s.charAt(left) != s.charAt(right)) return false;
-                left++;
-                right--;
+        boolean palindromeChecker(String s) {
+            if (s.isEmpty()) {
+
+                // An empty string is considered a palindrome
+                return true;
             }
+
+            // Initialize two pointers, one pointing to the beginning of the
+            // string and the other pointing to the end of the string
+            int left  = 0;
+            int right = s.length() - 1;
+
+            while (left < right) {
+                char charLeft  = s.charAt(left);
+                char charRight = s.charAt(right);
+
+                // Skip non-alphanumeric characters from the left
+                if (!Character.isLetterOrDigit(charLeft)) {
+                    left++;
+                }
+                // Skip non-alphanumeric characters from the right
+                else if (!Character.isLetterOrDigit(charRight)) {
+                    right--;
+                }
+                // Check if the characters are equal ignoring case
+                else if (Character.toLowerCase(charLeft) !=
+                         Character.toLowerCase(charRight)) {
+
+                    // Characters are not equal, so it's not a palindrome
+                    return false;
+                }
+                // Move both pointers towards the center
+                else {
+                    left++;
+                    right--;
+                }
+            }
+
+            // All characters have been checked and are equal, so it's a palindrome
             return true;
         }
     }
 
     public static void main(String[] args) {
         Solution sol = new Solution();
-        System.out.println(sol.isPalindrome("racecar"));
-        System.out.println(sol.isPalindrome("hello"));
-        System.out.println(sol.isPalindrome("abcba"));
-        System.out.println(sol.isPalindrome("a"));
-        System.out.println(sol.isPalindrome("ab"));
-        System.out.println(sol.isPalindrome("aa"));
+        System.out.println(sol.palindromeChecker("a man nam a"));            // true
+        System.out.println(sol.palindromeChecker("race car rac ecar"));      // true
+        System.out.println(sol.palindromeChecker("This is codeintuition"));  // false
+        System.out.println(sol.palindromeChecker("racecar"));                // true
+        System.out.println(sol.palindromeChecker("a"));                      // true
+        System.out.println(sol.palindromeChecker(""));                       // true
     }
 }
 ```
@@ -1359,25 +1443,55 @@ public class Main {
 ```c run
 #include <stdio.h>
 #include <stdbool.h>
+#include <ctype.h>
 #include <string.h>
 
-bool is_palindrome(const char* s) {
-    int left = 0, right = (int)strlen(s) - 1;
+bool palindrome_checker(const char* s) {
+    /* An empty string is considered a palindrome */
+    if (s[0] == '\0') return true;
+
+    /* Initialize two pointers, one pointing to the beginning of the
+     * string and the other pointing to the end of the string */
+    int left  = 0;
+    int right = (int)strlen(s) - 1;
+
     while (left < right) {
-        if (s[left] != s[right]) return false;
-        left++;
-        right--;
+        char char_left  = s[left];
+        char char_right = s[right];
+
+        /* Skip non-alphanumeric characters from the left */
+        if (!isalnum((unsigned char)char_left)) {
+            left++;
+        }
+        /* Skip non-alphanumeric characters from the right */
+        else if (!isalnum((unsigned char)char_right)) {
+            right--;
+        }
+        /* Check if the characters are equal ignoring case */
+        else if (tolower((unsigned char)char_left) !=
+                 tolower((unsigned char)char_right)) {
+
+            /* Characters are not equal, so it's not a palindrome */
+            return false;
+        }
+        /* Move both pointers towards the center */
+        else {
+            left++;
+            right--;
+        }
     }
+
+    /* All characters have been checked and are equal, so it's a palindrome */
     return true;
 }
 
 int main() {
-    printf("%d\n", is_palindrome("racecar"));
-    printf("%d\n", is_palindrome("hello"));
-    printf("%d\n", is_palindrome("abcba"));
-    printf("%d\n", is_palindrome("a"));
-    printf("%d\n", is_palindrome("ab"));
-    printf("%d\n", is_palindrome("aa"));
+    printf("%d\n", palindrome_checker("a man nam a"));            /* 1 */
+    printf("%d\n", palindrome_checker("race car rac ecar"));      /* 1 */
+    printf("%d\n", palindrome_checker("This is codeintuition"));  /* 0 */
+    printf("%d\n", palindrome_checker("racecar"));                /* 1 */
+    printf("%d\n", palindrome_checker("a"));                      /* 1 */
+    printf("%d\n", palindrome_checker(""));                       /* 1 */
     return 0;
 }
 ```
@@ -1385,25 +1499,55 @@ int main() {
 ```scala run
 object Main extends App {
   class Solution {
-    def isPalindrome(s: String): Boolean = {
-      var left = 0
-      var right = s.length - 1
-      while (left < right) {
-        if (s(left) != s(right)) return false
-        left  += 1
-        right -= 1
+    def palindromeChecker(s: String): Boolean = {
+      if (s.isEmpty) {
+
+        // An empty string is considered a palindrome
+        return true
       }
+
+      // Initialize two pointers, one pointing to the beginning of the
+      // string and the other pointing to the end of the string
+      var left  = 0
+      var right = s.length - 1
+
+      while (left < right) {
+        val charLeft  = s(left)
+        val charRight = s(right)
+
+        // Skip non-alphanumeric characters from the left
+        if (!charLeft.isLetterOrDigit) {
+          left += 1
+        }
+        // Skip non-alphanumeric characters from the right
+        else if (!charRight.isLetterOrDigit) {
+          right -= 1
+        }
+        // Check if the characters are equal ignoring case
+        else if (charLeft.toLower != charRight.toLower) {
+
+          // Characters are not equal, so it's not a palindrome
+          return false
+        }
+        // Move both pointers towards the center
+        else {
+          left  += 1
+          right -= 1
+        }
+      }
+
+      // All characters have been checked and are equal, so it's a palindrome
       true
     }
   }
 
   val sol = new Solution
-  println(sol.isPalindrome("racecar"))
-  println(sol.isPalindrome("hello"))
-  println(sol.isPalindrome("abcba"))
-  println(sol.isPalindrome("a"))
-  println(sol.isPalindrome("ab"))
-  println(sol.isPalindrome("aa"))
+  println(sol.palindromeChecker("a man nam a"))            // true
+  println(sol.palindromeChecker("race car rac ecar"))      // true
+  println(sol.palindromeChecker("This is codeintuition"))  // false
+  println(sol.palindromeChecker("racecar"))                // true
+  println(sol.palindromeChecker("a"))                      // true
+  println(sol.palindromeChecker(""))                       // true
 }
 ```
 
