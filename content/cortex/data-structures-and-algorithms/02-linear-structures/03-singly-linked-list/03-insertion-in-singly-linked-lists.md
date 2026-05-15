@@ -269,10 +269,24 @@ Given the **head** of a singly linked list and a **data** value, write a functio
 
 
 ```pseudocode
-# Compact form — `head = null` makes newNode.next = null automatically.
 function insertAtBeginning(head, data):
+    # Create a new node with the given data
     newNode ← new ListNode(data)
-    newNode.next ← head                                # works whether head is null or not
+
+    # If the list is empty (head is null)
+    if head is null:
+
+        # Set the next pointer to null since it's the only node
+        newNode.next ← null
+
+        # Return the newNode as this is the new head
+        return newNode
+
+    # Set the next pointer of the new node to the current head,
+    # making the new node the new head
+    newNode.next ← head
+
+    # Return the newNode as this is the new head
     return newNode
 ```
 
@@ -283,8 +297,24 @@ class ListNode:
 
 class Solution:
     def insert_at_beginning(self, head, data):
+
+        # Create a new node with the given data
         new_node = ListNode(data)
-        new_node.next = head  # Works for both empty (None) and non-empty lists
+
+        # If the list is empty (head is None)
+        if head is None:
+
+            # Set the next pointer to None since it's the only node
+            new_node.next = None
+
+            # Return the new_node as this is the new head
+            return new_node
+
+        # Set the next pointer of the new node to the current head,
+        # making the new node the new head
+        new_node.next = head
+
+        # Return the new_node as this is the new head
         return new_node
 
 n4=ListNode(10); n3=ListNode(3,n4); n2=ListNode(7,n3); n1=ListNode(5,n2)
@@ -299,8 +329,25 @@ public class Main {
     static class ListNode { int val; ListNode next; ListNode(int v){val=v;} }
 
     static ListNode insertAtBeginning(ListNode head, int data) {
+
+        // Create a new node with the given data
         ListNode newNode = new ListNode(data);
-        newNode.next = head;  // Works for both null and non-null head
+
+        // If the list is empty (head is null)
+        if (head == null) {
+
+            // Set the next pointer to null since it's the only node
+            newNode.next = null;
+
+            // Return the newNode as this is the new head
+            return newNode;
+        }
+
+        // Set the next pointer of the new node to the current head,
+        // making the new node the new head
+        newNode.next = head;
+
+        // Return the newNode as this is the new head
         return newNode;
     }
 
@@ -323,9 +370,26 @@ typedef struct ListNode { int val; struct ListNode *next; } ListNode;
 ListNode* newNode(int v){ ListNode*n=malloc(sizeof*n); n->val=v; n->next=NULL; return n; }
 
 ListNode* insertAtBeginning(ListNode *head, int data) {
-    ListNode *node = newNode(data);
-    node->next = head;  /* Works for both NULL and non-NULL head */
-    return node;
+
+    /* Create a new node with the given data */
+    ListNode *newN = newNode(data);
+
+    /* If the list is empty (head is NULL) */
+    if (head == NULL) {
+
+        /* Set the next pointer to NULL since it's the only node */
+        newN->next = NULL;
+
+        /* Return the newNode as this is the new head */
+        return newN;
+    }
+
+    /* Set the next pointer of the new node to the current head,
+       making the new node the new head */
+    newN->next = head;
+
+    /* Return the newNode as this is the new head */
+    return newN;
 }
 
 int main() {
@@ -342,8 +406,25 @@ class ListNode(var v: Int, var next: ListNode = null)
 
 object Main extends App {
   def insertAtBeginning(head: ListNode, data: Int): ListNode = {
+
+    // Create a new node with the given data
     val newNode = new ListNode(data)
-    newNode.next = head  // Works for both null and non-null head
+
+    // If the list is empty (head is null)
+    if (head == null) {
+
+      // Set the next pointer to null since it's the only node
+      newNode.next = null
+
+      // Return the newNode as this is the new head
+      return newNode
+    }
+
+    // Set the next pointer of the new node to the current head,
+    // making the new node the new head
+    newNode.next = head
+
+    // Return the newNode as this is the new head
     newNode
   }
 
