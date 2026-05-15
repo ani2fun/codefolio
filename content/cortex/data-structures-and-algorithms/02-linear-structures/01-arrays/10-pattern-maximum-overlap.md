@@ -175,6 +175,21 @@ sweep -> state
 
 <p align="center"><strong>Iterating the sorted array is equivalent to sweeping a vertical line through the points and processing each one in order.</strong></p>
 
+```d3 widget=array-traversal
+{
+  "items": ["(1,s)", "(2,s)", "(4,e)", "(5,e)", "(6,s)", "(8,e)"],
+  "title": "Line sweep through sorted points (intervals [[1,4], [2,5], [6,8]])",
+  "steps": [
+    { "markers": [{"name": "sweep", "index": 0, "color": "#f59e0b"}], "msg": "Sweep at (1, 's'). State update: something opens at x=1." },
+    { "markers": [{"name": "sweep", "index": 1, "color": "#f59e0b"}], "msg": "Sweep advances to (2, 's'). Another open at x=2." },
+    { "markers": [{"name": "sweep", "index": 2, "color": "#f59e0b"}], "msg": "Sweep advances to (4, 'e'). Something closes at x=4." },
+    { "markers": [{"name": "sweep", "index": 3, "color": "#f59e0b"}], "msg": "Sweep advances to (5, 'e'). Another close at x=5." },
+    { "markers": [{"name": "sweep", "index": 4, "color": "#f59e0b"}], "msg": "Sweep advances to (6, 's'). Reopens at x=6." },
+    { "markers": [{"name": "sweep", "index": 5, "color": "#f59e0b"}], "msg": "Sweep advances to (8, 'e'). Final close. Sweep done." }
+  ]
+}
+```
+
 The state machine is where each problem varies. Maximum overlap tracks a counter. Busiest interval tracks both a counter and the current time window. Weighted problems track a running sum. The sweep skeleton is identical — only the *reaction* at each point changes.
 
 ---
@@ -268,6 +283,21 @@ events -> result
 ```
 
 <p align="center"><strong>The counter <code>overlap</code> rides the sweep line. Its peak value — <strong>3</strong> here — is the maximum number of intervals active at any single instant.</strong></p>
+
+```d3 widget=array-traversal
+{
+  "items": ["(1,s)", "(2,s)", "(3,s)", "(4,e)", "(5,e)", "(6,e)"],
+  "title": "Maximum overlap counter on intervals [[1,4], [2,6], [3,5]]",
+  "steps": [
+    { "markers": [{"name": "sweep", "index": 0, "color": "#f59e0b"}], "msg": "(1, 's') → overlap = 1, maxOverlap = 1." },
+    { "markers": [{"name": "sweep", "index": 1, "color": "#f59e0b"}], "msg": "(2, 's') → overlap = 2, maxOverlap = 2." },
+    { "markers": [{"name": "sweep", "index": 2, "color": "#f59e0b"}], "msg": "(3, 's') → overlap = 3, maxOverlap = 3 ★." },
+    { "markers": [{"name": "sweep", "index": 3, "color": "#f59e0b"}], "msg": "(4, 'e') → overlap = 2, maxOverlap stays 3." },
+    { "markers": [{"name": "sweep", "index": 4, "color": "#f59e0b"}], "msg": "(5, 'e') → overlap = 1." },
+    { "markers": [{"name": "sweep", "index": 5, "color": "#f59e0b"}], "msg": "(6, 'e') → overlap = 0. Final maxOverlap = 3 ✓" }
+  ]
+}
+```
 
 That's the whole idea. Everything else in this lesson is bookkeeping around that single insight.
 
@@ -760,6 +790,23 @@ flowchart TB
 ```
 
 <p align="center"><strong>The counter <code>rooms</code> reaches 2 three separate times, but never climbs higher. <code>minRooms</code> = 2 is the answer.</strong></p>
+
+```d3 widget=array-traversal
+{
+  "items": ["(0,s)", "(5,s)", "(10,e)", "(15,s)", "(20,e)", "(25,s)", "(30,e)", "(40,e)"],
+  "title": "Minimum Meeting Rooms — line sweep on meetings = [[0,30], [5,10], [15,20], [25,40]]",
+  "steps": [
+    { "markers": [{"name": "sweep", "index": 0, "color": "#f59e0b"}], "msg": "(0, 's'): rooms = 1, minRooms = 1." },
+    { "markers": [{"name": "sweep", "index": 1, "color": "#f59e0b"}], "msg": "(5, 's'): rooms = 2, minRooms = 2 ★." },
+    { "markers": [{"name": "sweep", "index": 2, "color": "#f59e0b"}], "msg": "(10, 'e'): rooms = 1." },
+    { "markers": [{"name": "sweep", "index": 3, "color": "#f59e0b"}], "msg": "(15, 's'): rooms = 2, minRooms stays 2." },
+    { "markers": [{"name": "sweep", "index": 4, "color": "#f59e0b"}], "msg": "(20, 'e'): rooms = 1." },
+    { "markers": [{"name": "sweep", "index": 5, "color": "#f59e0b"}], "msg": "(25, 's'): rooms = 2, minRooms stays 2." },
+    { "markers": [{"name": "sweep", "index": 6, "color": "#f59e0b"}], "msg": "(30, 'e'): rooms = 1." },
+    { "markers": [{"name": "sweep", "index": 7, "color": "#f59e0b"}], "msg": "(40, 'e'): rooms = 0. Final minRooms = 2 ✓" }
+  ]
+}
+```
 
 ---
 
