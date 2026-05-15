@@ -897,6 +897,43 @@ object Main extends App {
 
 After sort: `[2, 3, 4, 6, 8]`
 
+```d3 widget=array-traversal
+{
+  "items": ["2", "3", "4", "6", "8"],
+  "title": "Two Sum on sorted [2, 3, 4, 6, 8], target = 7",
+  "steps": [
+    {
+      "markers": [
+        { "name": "left",  "index": 0, "color": "#3b82f6" },
+        { "name": "right", "index": 4, "color": "#f59e0b" }
+      ],
+      "msg": "sum = 2 + 8 = 10 > 7 → discard arr[right]; right--."
+    },
+    {
+      "markers": [
+        { "name": "left",  "index": 0, "color": "#3b82f6" },
+        { "name": "right", "index": 3, "color": "#f59e0b" }
+      ],
+      "msg": "sum = 2 + 6 = 8 > 7 → discard arr[right]; right--."
+    },
+    {
+      "markers": [
+        { "name": "left",  "index": 0, "color": "#3b82f6" },
+        { "name": "right", "index": 2, "color": "#f59e0b" }
+      ],
+      "msg": "sum = 2 + 4 = 6 < 7 → discard arr[left]; left++."
+    },
+    {
+      "markers": [
+        { "name": "left",  "index": 1, "color": "#3b82f6" },
+        { "name": "right", "index": 2, "color": "#f59e0b" }
+      ],
+      "msg": "sum = 3 + 4 = 7 = target → return [3, 4]."
+    }
+  ]
+}
+```
+
 | Step | `left` | `right` | `arr[left]` | `arr[right]` | sum | Action |
 |---|---|---|---|---|---|---|
 | 1 | 0 | 4 | 2 | 8 | 10 | 10 > 7 → `right--` |
