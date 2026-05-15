@@ -17,8 +17,8 @@ import scala.util.{Failure, Success, Try}
  *
  * Rendering uses D3 selections + transitions inside a React `useEffect`. React owns a host `<div>`; D3 owns
  * the `<svg>` it creates inside that div. On step change a single update pass re-binds data and transitions
- * positions so swap-style problems animate items moving between cells rather than flicker-rebuilding the
- * SVG. See ADR-0013.
+ * positions so swap-style problems animate items moving between cells rather than flicker-rebuilding the SVG.
+ * See ADR-0013.
  *
  * Payload schema (JSON):
  * {{{
@@ -39,8 +39,8 @@ import scala.util.{Failure, Success, Try}
  * }}}
  *
  * The optional per-step `items` lets each step define the array contents. When the contents change across
- * steps, D3 keys the join by `keys` (or by the item label when `keys` is omitted), so an item moving from
- * one index to another transitions its `transform` rather than re-creating a fresh DOM node. Authors whose
+ * steps, D3 keys the join by `keys` (or by the item label when `keys` is omitted), so an item moving from one
+ * index to another transitions its `transform` rather than re-creating a fresh DOM node. Authors whose
  * `items` contain duplicate labels (e.g. palindrome checks on `["r","a","c","e","c","a","r"]`) must provide
  * explicit `keys` to avoid D3 collapsing duplicates.
  */
@@ -53,6 +53,7 @@ object ArrayTraversal:
 
   final case class Marker(name: String, index: Int, color: Option[String])
   final case class RangeBand(lo: Int, hi: Int)
+
   final case class Step(
       items: Option[List[String]],
       keys: Option[List[String]],
@@ -60,6 +61,7 @@ object ArrayTraversal:
       range: Option[RangeBand],
       msg: String
   )
+
   final case class Spec(items: List[String], title: Option[String], steps: List[Step])
 
   final case class Props(payload: String)
@@ -381,11 +383,11 @@ object ArrayTraversal:
     ScalaFnComponent
       .withHooks[Props]
       .useMemoBy(_.payload)(_ => payload => parsePayload(payload))
-      .useState(0)                              // step index
-      .useState(false)                          // playing
-      .useRefBy(_ => Option.empty[Int])         // play timeout id
-      .useRefToVdom[dom.html.Element]           // host div ref — D3 manages the <svg> inside
-      .useRefBy(_ => false)                     // hasRendered (mutable; avoids re-render cycle)
+      .useState(0)                      // step index
+      .useState(false)                  // playing
+      .useRefBy(_ => Option.empty[Int]) // play timeout id
+      .useRefToVdom[dom.html.Element]   // host div ref — D3 manages the <svg> inside
+      .useRefBy(_ => false)             // hasRendered (mutable; avoids re-render cycle)
       // ── play-loop timer ─────────────────────────────────────────────────────
       .useEffectWithDepsBy((_, specM, indexS, playingS, _, _, _) =>
         (specM.value.toOption.fold(0)(_.steps.size), indexS.value, playingS.value)
