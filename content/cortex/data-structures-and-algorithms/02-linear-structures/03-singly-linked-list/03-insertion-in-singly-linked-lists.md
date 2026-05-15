@@ -1123,11 +1123,21 @@ Given a reference to a **random node** in a singly linked list and a **data** va
 
 
 ```pseudocode
-# Compact form of the same algorithm.
 function insertAfterTheGivenNode(node, data):
-    if node is null: return
+    # Check if the given node is null
+    if node is null:
+
+        # If the given node is null, there is nothing to do
+        return
+
+    # Create a new node with the provided data
     newNode ← new ListNode(data)
+
+    # Set the next pointer of the new node to the next pointer of
+    # the given node
     newNode.next ← node.next
+
+    # Set the next pointer of the given node to the new node
     node.next ← newNode
 ```
 
@@ -1138,10 +1148,22 @@ class ListNode:
 
 class Solution:
     def insert_after_the_given_node(self, node, data):
-        if node is None: return  # No reference point — nothing to do
+
+        # Check if the given node is None
+        if node is None:
+
+            # If the given node is None, there is nothing to do
+            return
+
+        # Create a new node with the provided data
         new_node = ListNode(data)
-        new_node.next = node.next  # Bridge new node to what came after given
-        node.next = new_node       # Given node now points to new node
+
+        # Set the next pointer of the new node to the next pointer of
+        # the given node
+        new_node.next = node.next
+
+        # Set the next pointer of the given node to the new node
+        node.next = new_node
 
 n4=ListNode(10); n3=ListNode(3,n4); n2=ListNode(7,n3); n1=ListNode(5,n2)
 Solution().insert_after_the_given_node(n2, 6)
@@ -1155,10 +1177,23 @@ public class Main {
     static class ListNode { int val; ListNode next; ListNode(int v){val=v;} }
 
     static void insertAfterTheGivenNode(ListNode node, int data) {
-        if (node == null) return;  // No reference point — nothing to do
+
+        // Check if the given node is null
+        if (node == null) {
+
+            // If the given node is null, there is nothing to do
+            return;
+        }
+
+        // Create a new node with the provided data
         ListNode newNode = new ListNode(data);
-        newNode.next = node.next;  // Bridge new node to what came after given
-        node.next = newNode;       // Given node now points to new node
+
+        // Set the next pointer of the new node to the next pointer of
+        // the given node
+        newNode.next = node.next;
+
+        // Set the next pointer of the given node to the new node
+        node.next = newNode;
     }
 
     public static void main(String[] args) {
@@ -1180,10 +1215,23 @@ typedef struct ListNode { int val; struct ListNode *next; } ListNode;
 ListNode* newNode(int v){ ListNode*n=malloc(sizeof*n); n->val=v; n->next=NULL; return n; }
 
 void insertAfterTheGivenNode(ListNode *node, int data) {
-    if (!node) return;  /* No reference point — nothing to do */
+
+    /* Check if the given node is NULL */
+    if (node == NULL) {
+
+        /* If the given node is NULL, there is nothing to do */
+        return;
+    }
+
+    /* Create a new node with the provided data */
     ListNode *newN = newNode(data);
-    newN->next = node->next;  /* Bridge new node to what came after given */
-    node->next = newN;        /* Given node now points to new node */
+
+    /* Set the next pointer of the new node to the next pointer of
+       the given node */
+    newN->next = node->next;
+
+    /* Set the next pointer of the given node to the new node */
+    node->next = newN;
 }
 
 int main() {
@@ -1200,10 +1248,23 @@ class ListNode(var v: Int, var next: ListNode = null)
 
 object Main extends App {
   def insertAfterTheGivenNode(node: ListNode, data: Int): Unit = {
-    if (node == null) return  // No reference point — nothing to do
+
+    // Check if the given node is null
+    if (node == null) {
+
+      // If the given node is null, there is nothing to do
+      return
+    }
+
+    // Create a new node with the provided data
     val newNode = new ListNode(data)
-    newNode.next = node.next  // Bridge new node to what came after given
-    node.next = newNode       // Given node now points to new node
+
+    // Set the next pointer of the new node to the next pointer of
+    // the given node
+    newNode.next = node.next
+
+    // Set the next pointer of the given node to the new node
+    node.next = newNode
   }
 
   val n4=new ListNode(10); val n3=new ListNode(3,n4)
