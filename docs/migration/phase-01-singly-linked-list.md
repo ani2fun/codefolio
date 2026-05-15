@@ -202,3 +202,45 @@ End with a phase status note pointing at Phase 2.
 - Memory file `dsa_align_source_code_verbatim.md` updated with any
   new drift patterns discovered.
 - One Phase 1 closeout commit summarising the work.
+
+## Phase 1 — DONE (2026-05-15)
+
+All 13 chapters of the Singly Linked List phase are now
+code-aligned. Recap:
+
+| Chapter | Status | Key alignment work |
+|---|---|---|
+| 1.1 Introduction | ✓ | Boundary Node chained-elif (commit `2b50bd2`) |
+| 1.2 Traversal | ✓ | Node Search, Length-of-List, Node Expedition (`8ccc477`, `b1194d1`, follow-ups) |
+| 1.3 Insertion | ✓ | 10 problems aligned (head/tail/before/after insertion) |
+| 1.4 Deletion | ✓ | 15 problems aligned (largest chapter) |
+| 1.5 Cycle Detection | ✓ | Floyd's algorithm |
+| 1.6 Reversal | ✓ | Iterative + recursive reversal |
+| 1.7 Reversal Subproblem | ✓ | k-group reversal |
+| 1.8 Sliding Window Traversal | ✓ | Forward window |
+| 1.9 Fast and Slow Pointers | ✓ | Middle node, halves, palindrome (`3bf1eda`–`ec60a4a`) |
+| 1.10 Split | ✓ | Even/odd, alternate groups, modulo, k-way (`0080e5d`–`d18e086`) |
+| 1.11 Merge | ✓ | Alternate fusion, sorted merge, sorted-merge-II reverse-then-merge, list addition (`d140b86`, `e3407fa`, `6740d21`, `76adfbf`, `4e480f8`) |
+| 1.12 Reorder | ✓ | Split-+-merge helper decomposition restored across all four problems (`3bfd62c`, `ffd6852`, `c15f5a6`, `cb5813c`) |
+| 1.13 Design | ✓ | Verified already aligned (no changes needed) |
+
+**Deferred (Phase-1-out-of-scope):**
+
+- **Interactive linked-list widget** — the existing `array-traversal`
+  widget can't animate pointer-arrow snapping. ~30 frame sequences
+  in source remain represented by static diagrams + prose. Build a
+  `linked-list` widget in a dedicated arc, then retroactively
+  convert.
+- **`array-traversal` two-row conversions for Ch 1.1** — the two
+  array-comparison diagrams (insert-by-copy, delete-by-copy) fit
+  the existing widget; deferred to keep Phase 1 commits content-
+  pure.
+
+**New drift patterns captured in memory** (`dsa_align_source_code_verbatim.md`):
+
+- Single-function collapse of split + merge decomposition (Ch 1.12).
+- Three-loop list addition flattened to single loop (Ch 1.11).
+- Scala `.v` typo (should be `.val`) recurred across 3 chapters.
+- C `c run` blocks are independent translation units — duplicate
+  function names across blocks compile cleanly.
+- Helper methods in Java/Scala carry `private`; port the modifier.
