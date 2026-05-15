@@ -369,7 +369,7 @@ The implementation of the merge list solution is given as follows.
 
 
 ```pseudocode
-function mergeAlternateNodes(headA, headB):
+function alternateNodeFusion(headA, headB):
     dummy ← new ListNode; tail ← dummy
     cA ← headA; cB ← headB
     takeFromA ← true
@@ -386,7 +386,7 @@ function mergeAlternateNodes(headA, headB):
 from typing import Optional
 
 class Solution:
-    def merge_alternate_nodes(self, head_a: Optional[ListNode], head_b: Optional[ListNode]) -> Optional[ListNode]:
+    def alternate_node_fusion(self, head_a: Optional[ListNode], head_b: Optional[ListNode]) -> Optional[ListNode]:
         dummy = ListNode()
         tail  = dummy
         cA, cB = head_a, head_b
@@ -404,7 +404,7 @@ class Solution:
 
 ```java run
 class Solution {
-    public ListNode mergeAlternateNodes(ListNode headA, ListNode headB) {
+    public ListNode alternateNodeFusion(ListNode headA, ListNode headB) {
         ListNode dummy = new ListNode(), tail = dummy;
         ListNode cA = headA, cB = headB;
         boolean takeFromA = true;
@@ -421,7 +421,7 @@ class Solution {
 ```
 
 ```c run
-ListNode* mergeAlternateNodes(ListNode *headA, ListNode *headB) {
+ListNode* alternateNodeFusion(ListNode *headA, ListNode *headB) {
     ListNode dummy = {0, NULL};
     ListNode *tail = &dummy;
     ListNode *cA = headA, *cB = headB;
@@ -439,7 +439,7 @@ ListNode* mergeAlternateNodes(ListNode *headA, ListNode *headB) {
 
 ```scala run
 object Solution {
-  def mergeAlternateNodes(headA: ListNode, headB: ListNode): ListNode = {
+  def alternateNodeFusion(headA: ListNode, headB: ListNode): ListNode = {
     val dummy = new ListNode(0)
     var tail: ListNode = dummy
     var cA = headA; var cB = headB
@@ -496,7 +496,7 @@ You should take the first node of the first list (with the head as headA) as the
 
 
 ```pseudocode
-function mergeAlternateNodes(headA, headB):
+function alternateNodeFusion(headA, headB):
     dummy ← new ListNode; tail ← dummy
     cA ← headA; cB ← headB
     takeFromA ← true
@@ -513,7 +513,7 @@ function mergeAlternateNodes(headA, headB):
 from typing import Optional
 
 class Solution:
-    def merge_alternate_nodes(self, head_a: Optional[ListNode], head_b: Optional[ListNode]) -> Optional[ListNode]:
+    def alternate_node_fusion(self, head_a: Optional[ListNode], head_b: Optional[ListNode]) -> Optional[ListNode]:
         dummy = ListNode()
         tail  = dummy
         cA, cB = head_a, head_b
@@ -531,7 +531,7 @@ class Solution:
 
 ```java run
 class Solution {
-    public ListNode mergeAlternateNodes(ListNode headA, ListNode headB) {
+    public ListNode alternateNodeFusion(ListNode headA, ListNode headB) {
         ListNode dummy = new ListNode(), tail = dummy;
         ListNode cA = headA, cB = headB;
         boolean takeFromA = true;
@@ -548,7 +548,7 @@ class Solution {
 ```
 
 ```c run
-ListNode* mergeAlternateNodes(ListNode *headA, ListNode *headB) {
+ListNode* alternateNodeFusion(ListNode *headA, ListNode *headB) {
     ListNode dummy = {0, NULL};
     ListNode *tail = &dummy;
     ListNode *cA = headA, *cB = headB;
@@ -566,7 +566,7 @@ ListNode* mergeAlternateNodes(ListNode *headA, ListNode *headB) {
 
 ```scala run
 object Solution {
-  def mergeAlternateNodes(headA: ListNode, headB: ListNode): ListNode = {
+  def alternateNodeFusion(headA: ListNode, headB: ListNode): ListNode = {
     val dummy = new ListNode(0)
     var tail: ListNode = dummy
     var cA = headA; var cB = headB
