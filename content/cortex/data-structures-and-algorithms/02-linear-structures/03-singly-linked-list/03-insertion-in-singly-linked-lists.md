@@ -1730,21 +1730,39 @@ Given the **head** of a singly linked list, a reference to a **random node** in 
 
 
 ```pseudocode
-# Same algorithm — re-listed for the second test case.
 function insertBeforeTheGivenNode(head, node, data):
-    if head is null OR node is null: return head
+    # Check if the head or node is null
+    if head is null OR node is null:
+        return head
+
+    # Create a new node with the given data
     newNode ← new ListNode(data)
+
+    # If the given node is the head, insert the new node before it
     if node = head:
         newNode.next ← head
+
+        # Return the newNode as this is the new head
         return newNode
+
+    # Traverse the linked list until the current node matches the
+    # given node
     current ← head
     previous ← null
     while current is not null AND current ≠ node:
         previous ← current
         current ← current.next
-    if current is null: return head
+
+    # If the current node is null, the given node was not found in
+    # the linked list
+    if current is null:
+        return head
+
+    # Insert the new node before the given node
     newNode.next ← current
     previous.next ← newNode
+
+    # Return the head of the modified linked list
     return head
 ```
 
@@ -1755,26 +1773,39 @@ class ListNode:
 
 class Solution:
     def insert_before_the_given_node(self, head, node, data):
+
+        # Check if the head or node is null
         if head is None or node is None:
             return head
 
+        # Create a new node with the given data
         new_node = ListNode(data)
 
-        if node is head:            # Given node is head — insert at beginning
+        # If the given node is the head, insert the new node before it
+        if node == head:
             new_node.next = head
+
+            # Return the newNode as this is the new head
             return new_node
 
+        # Traverse the linked list until the current node matches the
+        # given node
         current = head
         previous = None
-        while current is not None and current is not node:
-            previous = current      # Track predecessor before advancing
+        while current is not None and current != node:
+            previous = current
             current = current.next
 
-        if current is None:         # Given node not found
+        # If the current node is null, the given node was not found in
+        # the linked list
+        if current is None:
             return head
 
-        new_node.next = current     # New node points to the given node
-        previous.next = new_node    # Predecessor now points to new node
+        # Insert the new node before the given node
+        new_node.next = current
+        previous.next = new_node
+
+        # Return the head of the modified linked list
         return head
 
 n4=ListNode(10); n3=ListNode(3,n4); n2=ListNode(7,n3); n1=ListNode(5,n2)
@@ -1789,25 +1820,43 @@ public class Main {
     static class ListNode { int val; ListNode next; ListNode(int v){val=v;} }
 
     static ListNode insertBeforeTheGivenNode(ListNode head, ListNode node, int data) {
-        if (head == null || node == null) return head;
 
+        // Check if the head or node is null
+        if (head == null || node == null) {
+            return head;
+        }
+
+        // Create a new node with the given data
         ListNode newNode = new ListNode(data);
 
-        if (node == head) {         // Given node is head — insert at beginning
+        // If the given node is the head, insert the new node before it
+        if (node == head) {
             newNode.next = head;
+
+            // Return the newNode as this is the new head
             return newNode;
         }
 
-        ListNode current = head, previous = null;
+        // Traverse the linked list until the current node matches the
+        // given node
+        ListNode current = head;
+        ListNode previous = null;
         while (current != null && current != node) {
-            previous = current;     // Track predecessor before advancing
+            previous = current;
             current = current.next;
         }
 
-        if (current == null) return head;  // Given node not found
+        // If the current node is null, the given node was not found in
+        // the linked list
+        if (current == null) {
+            return head;
+        }
 
-        newNode.next = current;     // New node points to the given node
-        previous.next = newNode;    // Predecessor now points to new node
+        // Insert the new node before the given node
+        newNode.next = current;
+        previous.next = newNode;
+
+        // Return the head of the modified linked list
         return head;
     }
 
@@ -1830,25 +1879,43 @@ typedef struct ListNode { int val; struct ListNode *next; } ListNode;
 ListNode* newNode(int v){ ListNode*n=malloc(sizeof*n); n->val=v; n->next=NULL; return n; }
 
 ListNode* insertBeforeTheGivenNode(ListNode *head, ListNode *node, int data) {
-    if (!head || !node) return head;
 
+    /* Check if the head or node is NULL */
+    if (head == NULL || node == NULL) {
+        return head;
+    }
+
+    /* Create a new node with the given data */
     ListNode *newN = newNode(data);
 
-    if (node == head) {         /* Given node is head — insert at beginning */
+    /* If the given node is the head, insert the new node before it */
+    if (node == head) {
         newN->next = head;
+
+        /* Return the newNode as this is the new head */
         return newN;
     }
 
-    ListNode *current = head, *previous = NULL;
-    while (current && current != node) {
-        previous = current;     /* Track predecessor before advancing */
+    /* Traverse the linked list until the current node matches the
+       given node */
+    ListNode *current = head;
+    ListNode *previous = NULL;
+    while (current != NULL && current != node) {
+        previous = current;
         current = current->next;
     }
 
-    if (!current) return head;  /* Given node not found */
+    /* If the current node is NULL, the given node was not found in
+       the linked list */
+    if (current == NULL) {
+        return head;
+    }
 
-    newN->next = current;       /* New node points to the given node */
-    previous->next = newN;      /* Predecessor now points to new node */
+    /* Insert the new node before the given node */
+    newN->next = current;
+    previous->next = newN;
+
+    /* Return the head of the modified linked list */
     return head;
 }
 
@@ -1866,26 +1933,43 @@ class ListNode(var v: Int, var next: ListNode = null)
 
 object Main extends App {
   def insertBeforeTheGivenNode(head: ListNode, node: ListNode, data: Int): ListNode = {
-    if (head == null || node == null) return head
 
+    // Check if the head or node is null
+    if (head == null || node == null) {
+      return head
+    }
+
+    // Create a new node with the given data
     val newNode = new ListNode(data)
 
-    if (node eq head) {         // Given node is head — insert at beginning
+    // If the given node is the head, insert the new node before it
+    if (node == head) {
       newNode.next = head
+
+      // Return the newNode as this is the new head
       return newNode
     }
 
+    // Traverse the linked list until the current node matches the
+    // given node
     var current = head
     var previous: ListNode = null
-    while (current != null && (current ne node)) {
-      previous = current        // Track predecessor before advancing
+    while (current != null && current != node) {
+      previous = current
       current = current.next
     }
 
-    if (current == null) return head  // Given node not found
+    // If the current node is null, the given node was not found in
+    // the linked list
+    if (current == null) {
+      return head
+    }
 
-    newNode.next = current      // New node points to the given node
-    previous.next = newNode     // Predecessor now points to new node
+    // Insert the new node before the given node
+    newNode.next = current
+    previous.next = newNode
+
+    // Return the head of the modified linked list
     head
   }
 
