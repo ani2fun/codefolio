@@ -599,11 +599,21 @@ Given the **head** of a singly linked list, write a function that returns the le
 
 ```pseudocode
 function lengthOfTheList(head):
+    # Initialize count to 0
     count ← 0
+
+    # Set current to hold the head of the list
     current ← head
+
     while current is not null:
+
+        # Increment count by 1
         count ← count + 1
+
+        # Set current to hold the next node in the list
         current ← current.next
+
+    # Return count as the length of the linked list
     return count
 ```
 
@@ -614,11 +624,22 @@ class ListNode:
 
 class Solution:
     def length_of_the_list(self, head: ListNode) -> int:
+
+        # Initialize count to 0
         count = 0
+
+        # Set current to hold the head of the list
         current = head
-        while current:
-            count   += 1           # Count this node
-            current  = current.next
+
+        while current is not None:
+
+            # Increment count by 1
+            count += 1
+
+            # Set current to hold the next node in the list
+            current = current.next
+
+        # Return count as the length of the linked list
         return count
 
 # Build list 5 → 7 → 3 → 10
@@ -632,9 +653,23 @@ public class Main {
     static class ListNode { int val; ListNode next; ListNode(int v){val=v;} }
 
     static int lengthOfTheList(ListNode head) {
+
+        // Initialize count to 0
         int count = 0;
-        for (ListNode cur = head; cur != null; cur = cur.next)
-            count++;  // Count this node
+
+        // Set current to hold the head of the list
+        ListNode current = head;
+
+        while (current != null) {
+
+            // Increment count by 1
+            count++;
+
+            // Set current to hold the next node in the list
+            current = current.next;
+        }
+
+        // Return count as the length of the linked list
         return count;
     }
 
@@ -656,9 +691,23 @@ typedef struct ListNode { int val; struct ListNode *next; } ListNode;
 ListNode* newNode(int v){ ListNode*n=malloc(sizeof*n); n->val=v; n->next=NULL; return n; }
 
 int lengthOfTheList(ListNode *head) {
+
+    /* Initialize count to 0 */
     int count = 0;
-    for (ListNode *cur = head; cur != NULL; cur = cur->next)
-        count++;  /* Count this node */
+
+    /* Set current to hold the head of the list */
+    ListNode *current = head;
+
+    while (current != NULL) {
+
+        /* Increment count by 1 */
+        count++;
+
+        /* Set current to hold the next node in the list */
+        current = current->next;
+    }
+
+    /* Return count as the length of the linked list */
     return count;
 }
 
