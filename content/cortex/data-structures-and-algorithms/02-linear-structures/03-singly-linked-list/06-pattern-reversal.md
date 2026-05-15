@@ -1045,17 +1045,38 @@ You need to reverse the list in place.
 ```pseudocode
 # Reverse the first k nodes; stitch the original head (now the segment's tail) to the suffix.
 function reverseFirstKNodes(head, k):
-    if k ≤ 0 OR head is null: return head
-    previous ← null; current ← head
+
+    # if K is less than or equal to 0, return the original head
+    if k ≤ 0:
+        return head
+
+    # Initialize pointers current and previous
+    current ← head
+    previous ← null
     count ← 0
+
     while current is not null AND count < k:
-        nxt ← current.next
+
+        # Save the address of next node
+        next ← current.next
+
+        # Update the next of current node
         current.next ← previous
+
+        # Move previous to hold current node
         previous ← current
-        current ← nxt
+
+        # Move current ahead
+        current ← next
+
+        # Increment count
         count ← count + 1
-    head.next ← current                                # original head is now the segment's tail
-    return previous                                     # k-th original node is the new head
+
+    # Connect the reversed sublist with the remaining part
+    if head is not null:
+        head.next ← current
+
+    return previous
 ```
 
 ```python run
@@ -1067,47 +1088,80 @@ class ListNode:
         self.next = next
 
 class Solution:
-    def reverse_first_k_nodes(self, head: Optional[ListNode], k: int) -> Optional[ListNode]:
-        if k <= 0 or head is None:
+    def reverse_first_k_nodes(
+        self, head: Optional[ListNode], k: int
+    ) -> Optional[ListNode]:
+
+        # if K is less than or equal to 0, return the original head
+        if k <= 0:
             return head
 
+        # Initialize pointers current and previous
+        current: Optional[ListNode] = head
         previous: Optional[ListNode] = None
-        current:  Optional[ListNode] = head
         count = 0
 
-        # Three-pointer reversal — but capped at k iterations
         while current is not None and count < k:
-            nxt = current.next
-            current.next = previous
-            previous = current
-            current  = nxt
-            count   += 1
 
-        # The original head is now the k-th node of the reversed prefix → tail of reversed portion.
-        # Stitch it to the unreversed suffix (pointed to by `current`).
-        head.next = current
-        return previous   # new head of the whole list (the k-th original node)
+            # Save the address of next node
+            next_node = current.next
+
+            # Update the next of current node
+            current.next = previous
+
+            # Move previous to hold current node
+            previous = current
+
+            # Move current ahead
+            current = next_node
+
+            # Increment count
+            count += 1
+
+        # Connect the reversed sublist with the remaining part
+        if head is not None:
+            head.next = current
+
+        return previous
 ```
 
 ```java run
 class Solution {
     public ListNode reverseFirstKNodes(ListNode head, int k) {
-        if (k <= 0 || head == null) return head;
 
+        // if K is less than or equal to 0, return the original head
+        if (k <= 0) {
+            return head;
+        }
+
+        // Initialize pointers current and previous
+        ListNode current = head;
         ListNode previous = null;
-        ListNode current  = head;
         int count = 0;
 
         while (current != null && count < k) {
+
+            // Save the address of next node
             ListNode next = current.next;
+
+            // Update the next of current node
             current.next = previous;
+
+            // Move previous to hold current node
             previous = current;
-            current  = next;
+
+            // Move current ahead
+            current = next;
+
+            // Increment count
             count++;
         }
 
-        // Stitch original head (now tail of reversed prefix) to unreversed suffix
-        head.next = current;
+        // Connect the reversed sublist with the remaining part
+        if (head != null) {
+            head.next = current;
+        }
+
         return previous;
     }
 }
@@ -1117,21 +1171,40 @@ class Solution {
 typedef struct ListNode { int val; struct ListNode *next; } ListNode;
 
 ListNode* reverseFirstKNodes(ListNode *head, int k) {
-    if (k <= 0 || head == NULL) return head;
 
+    /* if K is less than or equal to 0, return the original head */
+    if (k <= 0) {
+        return head;
+    }
+
+    /* Initialize pointers current and previous */
+    ListNode *current = head;
     ListNode *previous = NULL;
-    ListNode *current  = head;
     int count = 0;
 
     while (current != NULL && count < k) {
+
+        /* Save the address of next node */
         ListNode *next = current->next;
+
+        /* Update the next of current node */
         current->next = previous;
+
+        /* Move previous to hold current node */
         previous = current;
-        current  = next;
+
+        /* Move current ahead */
+        current = next;
+
+        /* Increment count */
         count++;
     }
 
-    head->next = current;         /* stitch reversed prefix to unreversed suffix */
+    /* Connect the reversed sublist with the remaining part */
+    if (head != NULL) {
+        head->next = current;
+    }
+
     return previous;
 }
 ```
@@ -1139,21 +1212,40 @@ ListNode* reverseFirstKNodes(ListNode *head, int k) {
 ```scala run
 object Solution {
   def reverseFirstKNodes(head: ListNode, k: Int): ListNode = {
-    if (k <= 0 || head == null) return head
 
+    // if K is less than or equal to 0, return the original head
+    if (k <= 0) {
+      return head
+    }
+
+    // Initialize pointers current and previous
+    var current: ListNode = head
     var previous: ListNode = null
-    var current:  ListNode = head
     var count = 0
 
     while (current != null && count < k) {
+
+      // Save the address of next node
       val next = current.next
+
+      // Update the next of current node
       current.next = previous
+
+      // Move previous to hold current node
       previous = current
-      current  = next
-      count   += 1
+
+      // Move current ahead
+      current = next
+
+      // Increment count
+      count += 1
     }
 
-    head.next = current           // stitch
+    // Connect the reversed sublist with the remaining part
+    if (head != null) {
+      head.next = current
+    }
+
     previous
   }
 }
