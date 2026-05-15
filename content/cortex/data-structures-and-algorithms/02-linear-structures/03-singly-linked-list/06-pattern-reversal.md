@@ -144,16 +144,21 @@ The full-list reversal in all ten languages. Each version is the same three-poin
 
 
 ```pseudocode
-# In-place reversal of a singly linked list. O(n) time, O(1) space.
+# Reverse the entire singly linked list in place. O(n) time, O(1) space.
 function reverse(head):
-    previous ← null                                    # reversed prefix's head
-    current ← head                                     # the walker
+
+    # Initialize references
+    current ← head
+    previous ← null
+
+    # Set the next reference of each node to its previous node
     while current is not null:
-        nxt ← current.next                             # save forward link BEFORE clobbering
-        current.next ← previous                        # flip the pointer backward
+        next ← current.next
+        current.next ← previous
         previous ← current
-        current ← nxt
-    return previous                                     # when current is null, previous is the new head
+        current ← next
+
+    return previous
 ```
 
 ```python run
@@ -165,28 +170,38 @@ class ListNode:
         self.next = next
 
 def reverse(head: Optional[ListNode]) -> Optional[ListNode]:
-    previous: Optional[ListNode] = None     # behind current; the reversed prefix's head
-    current:  Optional[ListNode] = head     # the walker
+
+    # Initialize references
+    current: Optional[ListNode] = head
+    previous: Optional[ListNode] = None
+
+    # Set the next reference of each node to its previous node
     while current is not None:
-        nxt = current.next                  # save forward link BEFORE we clobber it
-        current.next = previous             # flip the pointer backward
-        previous = current                  # advance previous to current
-        current  = nxt                      # advance current to saved next
-    return previous                         # when current is None, previous is the new head
+        next_node: Optional[ListNode] = current.next
+        current.next = previous
+        previous = current
+        current = next_node
+
+    return previous
 ```
 
 ```java run
 class Solution {
     public ListNode reverse(ListNode head) {
-        ListNode previous = null;           // behind current; reversed prefix's head
-        ListNode current  = head;           // the walker
+
+        // Initialize references
+        ListNode current = head;
+        ListNode previous = null;
+
+        // Set the next reference of each node to its previous node
         while (current != null) {
-            ListNode next = current.next;   // save forward link first
-            current.next = previous;        // flip backward
-            previous = current;             // advance previous
-            current  = next;                // advance current
+            ListNode next = current.next;
+            current.next = previous;
+            previous = current;
+            current = next;
         }
-        return previous;                    // new head of the reversed list
+
+        return previous;
     }
 }
 ```
@@ -195,30 +210,40 @@ class Solution {
 typedef struct ListNode { int val; struct ListNode *next; } ListNode;
 
 ListNode* reverse(ListNode *head) {
-    ListNode *previous = NULL;              /* behind current */
-    ListNode *current  = head;              /* the walker */
+
+    /* Initialize references */
+    ListNode *current = head;
+    ListNode *previous = NULL;
+
+    /* Set the next reference of each node to its previous node */
     while (current != NULL) {
-        ListNode *next = current->next;     /* save forward link */
-        current->next = previous;           /* flip backward */
+        ListNode *next = current->next;
+        current->next = previous;
         previous = current;
-        current  = next;
+        current = next;
     }
-    return previous;                        /* new head */
+
+    return previous;
 }
 ```
 
 ```scala run
 object Solution {
   def reverse(head: ListNode): ListNode = {
-    var previous: ListNode = null           // behind current
-    var current:  ListNode = head           // walker
+
+    // Initialize references
+    var current: ListNode = head
+    var previous: ListNode = null
+
+    // Set the next reference of each node to its previous node
     while (current != null) {
-      val next = current.next               // save forward link
-      current.next = previous               // flip backward
+      val next = current.next
+      current.next = previous
       previous = current
-      current  = next
+      current = next
     }
-    previous                                // new head
+
+    previous
   }
 }
 ```
@@ -383,18 +408,22 @@ Segment reversal in all ten languages. The skeleton is the same three-pointer lo
 
 
 ```pseudocode
-# Reverse a segment [start..end]. `previous` is seeded with end.next (the post-segment suffix)
-# so the reversed tail's next pointer naturally connects to the rest of the list.
+# Reverse a segment [start..end]. Seed `previous` with end.next (rightBound) so the reversed tail's next pointer naturally connects to the rest of the list.
 function reverse(start, end):
-    rightBound ← end.next                              # cache BEFORE reversing
-    previous ← rightBound
+
+    # Initialize references
     current ← start
+    rightBound ← end.next
+    previous ← rightBound
+
+    # Set the next reference of each node to its previous node
     while current ≠ rightBound:
-        nxt ← current.next
+        next ← current.next
         current.next ← previous
         previous ← current
-        current ← nxt
-    return previous                                     # new head of the reversed segment (was `end`)
+        current ← next
+
+    return previous
 ```
 
 ```python run
@@ -406,32 +435,40 @@ class ListNode:
         self.next = next
 
 def reverse(start: ListNode, end: ListNode) -> ListNode:
-    # Cache rightBound BEFORE reversing — once we flip pointers inside the segment,
-    # the link to the post-segment suffix is gone.
-    right_bound = end.next
-    previous    = right_bound           # reversed tail will point here automatically
-    current     = start
-    while current is not right_bound:
-        nxt = current.next              # save forward link
-        current.next = previous         # flip backward
+
+    # Initialize references
+    current: Optional[ListNode] = start
+    right_bound: Optional[ListNode] = end.next
+    previous: Optional[ListNode] = right_bound
+
+    # Set the next reference of each node to its previous node
+    while current != right_bound:
+        next_node: Optional[ListNode] = current.next
+        current.next = previous
         previous = current
-        current  = nxt
-    return previous                     # new head of the reversed segment (was `end`)
+        current = next_node
+
+    return previous
 ```
 
 ```java run
 class Solution {
     public ListNode reverse(ListNode start, ListNode end) {
-        ListNode rightBound = end.next;           // cache before flipping anything
-        ListNode previous   = rightBound;         // reversed tail auto-links here
-        ListNode current    = start;
+
+        // Initialize references
+        ListNode current = start;
+        ListNode rightBound = end.next;
+        ListNode previous = rightBound;
+
+        // Set the next reference of each node to its previous node
         while (current != rightBound) {
-            ListNode next = current.next;         // save forward link
-            current.next = previous;              // flip backward
+            ListNode next = current.next;
+            current.next = previous;
             previous = current;
-            current  = next;
+            current = next;
         }
-        return previous;                          // new segment head (was `end`)
+
+        return previous;
     }
 }
 ```
@@ -440,32 +477,42 @@ class Solution {
 typedef struct ListNode { int val; struct ListNode *next; } ListNode;
 
 ListNode* reverseSegment(ListNode *start, ListNode *end) {
-    ListNode *rightBound = end->next;             /* cache before flipping */
-    ListNode *previous   = rightBound;
-    ListNode *current    = start;
+
+    /* Initialize references */
+    ListNode *current = start;
+    ListNode *rightBound = end->next;
+    ListNode *previous = rightBound;
+
+    /* Set the next reference of each node to its previous node */
     while (current != rightBound) {
-        ListNode *next = current->next;           /* save forward link */
-        current->next = previous;                 /* flip backward */
+        ListNode *next = current->next;
+        current->next = previous;
         previous = current;
-        current  = next;
+        current = next;
     }
-    return previous;                              /* new segment head */
+
+    return previous;
 }
 ```
 
 ```scala run
 object Solution {
   def reverse(start: ListNode, end: ListNode): ListNode = {
-    val rightBound: ListNode = end.next           // cache before flipping
-    var previous:   ListNode = rightBound
-    var current:    ListNode = start
+
+    // Initialize references
+    var current: ListNode = start
+    val rightBound: ListNode = end.next
+    var previous: ListNode = rightBound
+
+    // Set the next reference of each node to its previous node
     while (current ne rightBound) {
-      val next = current.next                     // save forward link
-      current.next = previous                     // flip backward
+      val next = current.next
+      current.next = previous
       previous = current
-      current  = next
+      current = next
     }
-    previous                                      // new segment head
+
+    previous
   }
 }
 ```
@@ -575,15 +622,27 @@ The implementation of the reversal algorithm to reverse the entire list, in all 
 
 
 ```pseudocode
-# Same algorithm as `reverse` above — re-listed under the standard public name.
+# Same algorithm as `reverse` above — re-listed under the standard public name with source's verbose per-step comments.
 function reverseAList(head):
-    previous ← null
+
+    # Initialize pointers current and previous
     current ← head
+    previous ← null
+
     while current is not null:
-        nxt ← current.next
+
+        # Save the address of next node
+        next ← current.next
+
+        # Update the next of current node
         current.next ← previous
+
+        # Move previous to hold current node
         previous ← current
-        current ← nxt
+
+        # Move current ahead
+        current ← next
+
     return previous
 ```
 
@@ -596,29 +655,55 @@ class ListNode:
         self.next = next
 
 class Solution:
-    def reverse_a_list(self, head: Optional[ListNode]) -> Optional[ListNode]:
-        previous: Optional[ListNode] = None     # behind current; reversed prefix's head
-        current:  Optional[ListNode] = head     # the walker
+    def reverse_a_list(
+        self, head: Optional[ListNode]
+    ) -> Optional[ListNode]:
+
+        # Initialize pointers current and previous
+        current: Optional[ListNode] = head
+        previous: Optional[ListNode] = None
+
         while current is not None:
-            nxt = current.next                  # save forward link
-            current.next = previous             # flip backward
+
+            # Save the address of next node
+            next_node = current.next
+
+            # Update the next of current node
+            current.next = previous
+
+            # Move previous to hold current node
             previous = current
-            current  = nxt
-        return previous                         # new head
+
+            # Move current ahead
+            current = next_node
+
+        return previous
 ```
 
 ```java run
 class Solution {
     public ListNode reverseAList(ListNode head) {
+
+        // Initialize pointers current and previous
+        ListNode current = head;
         ListNode previous = null;
-        ListNode current  = head;
+
         while (current != null) {
-            ListNode next = current.next;       // save forward link
-            current.next = previous;            // flip backward
+
+            // Save the address of next node
+            ListNode next = current.next;
+
+            // Update the next of current node
+            current.next = previous;
+
+            // Move previous to hold current node
             previous = current;
-            current  = next;
+
+            // Move current ahead
+            current = next;
         }
-        return previous;                        // new head
+
+        return previous;
     }
 }
 ```
@@ -627,30 +712,54 @@ class Solution {
 typedef struct ListNode { int val; struct ListNode *next; } ListNode;
 
 ListNode* reverseAList(ListNode *head) {
+
+    /* Initialize pointers current and previous */
+    ListNode *current = head;
     ListNode *previous = NULL;
-    ListNode *current  = head;
+
     while (current != NULL) {
-        ListNode *next = current->next;         /* save forward link */
-        current->next = previous;               /* flip backward */
+
+        /* Save the address of next node */
+        ListNode *next = current->next;
+
+        /* Update the next of current node */
+        current->next = previous;
+
+        /* Move previous to hold current node */
         previous = current;
-        current  = next;
+
+        /* Move current ahead */
+        current = next;
     }
-    return previous;                            /* new head */
+
+    return previous;
 }
 ```
 
 ```scala run
 object Solution {
   def reverseAList(head: ListNode): ListNode = {
+
+    // Initialize pointers current and previous
+    var current: ListNode = head
     var previous: ListNode = null
-    var current:  ListNode = head
+
     while (current != null) {
-      val next = current.next                   // save forward link
-      current.next = previous                   // flip backward
+
+      // Save the address of next node
+      val next = current.next
+
+      // Update the next of current node
+      current.next = previous
+
+      // Move previous to hold current node
       previous = current
-      current  = next
+
+      // Move current ahead
+      current = next
     }
-    previous                                    // new head
+
+    previous
   }
 }
 ```
