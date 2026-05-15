@@ -914,25 +914,39 @@ A short list of problems that fall under this pattern — we'll tackle each belo
 
 ## The Problem
 
-> Given an array `meetings` where `meetings[i] = [start_i, end_i]` represents a meeting's start and end time, return the **minimum number of meeting rooms** required to host every meeting without any being interrupted.
+Given an array of **meetings** consisting of start and end times `[[s1, e1], [s2, e2], ...] (si < ei)` of meetings, find and return the **minimum number of meeting rooms** required so that all meetings can take place.
 
+Two intervals `[s1, e1]` and `[s2, e2]` are considered overlapping if `e1 > s2`. If `e1 == s2`, the intervals are **not** considered overlapping.
+
+---
+
+## Examples
+
+**Example 1**
 ```
-Input:  meetings = [[0, 30], [5, 10], [15, 20]]
+Input:  meetings = [[1, 20], [10, 30], [30, 40], [1, 5]]
 Output: 2
-Explanation: [0,30] overlaps both [5,10] and [15,20], but [5,10] and [15,20] don't overlap each other.
-             So one room can host [5,10] then [15,20], and another room hosts [0,30].
+Explanation: We need at least two meeting rooms for all meetings. The
+             first two rooms are used for the meetings [1, 5] and
+             [1, 20]. When the first room is free, it will be used for
+             the [10, 30] meeting, and when the second room is free, it
+             will be used for the meeting between [30, 40].
+```
 
-Input:  meetings = [[7, 10], [2, 4]]
+**Example 2**
+```
+Input:  meetings = [[1, 10], [1, 10], [1, 10]]
+Output: 3
+Explanation: We need at least three meeting rooms so that all meetings
+             can take place.
+```
+
+**Example 3**
+```
+Input:  meetings = [[1, 15], [15, 17], [17, 18]]
 Output: 1
-Explanation: No overlap — a single room can host both back-to-back.
-
-Input:  meetings = [[1, 5], [2, 6], [3, 7], [4, 8]]
-Output: 4
-Explanation: All four meetings overlap around time 4 → each needs its own room.
-
-Input:  meetings = []
-Output: 0
-Explanation: No meetings means no rooms needed.
+Explanation: One meeting room is enough for all the meetings to take
+             place (the touching ends never compete for the room).
 ```
 
 ---
@@ -982,9 +996,9 @@ peak -> ans
 
 **Mental model:** imagine rooms as a stack of keys. You hand out a key each time a meeting starts and get one back each time a meeting ends. The tallest the handed-out pile ever grows is the number of keys you must have originally had.
 
-**Concrete numbers:** for `[[0,30],[5,10],[15,20]]` the pile grows to 2 at `t=5` (both `[0,30]` and `[5,10]` are holding keys), drops to 1 at `t=10`, grows back to 2 at `t=15`, drops to 1 at `t=20`, and drops to 0 at `t=30`. Tallest value: 2 — the answer.
+**Concrete numbers:** for `[[1,20],[10,30],[30,40],[1,5]]` the pile grows to 1 at `t=1` (`[1,20]` takes a key), to 2 at the next `t=1` (`[1,5]` joins), drops to 1 at `t=5`, stays at 2 from `t=10` to `t=20`, drops to 1 at `t=20`, then 0 at `t=30`, then 1 at `t=30` for `[30,40]`, and back to 0 at `t=40`. Tallest value: 2 — the answer.
 
-**What breaks otherwise:** if you answered with "total number of meetings" (3) you'd over-provision. If you answered with "number of overlapping pairs" (2 — `[0,30]` overlaps each of the others, but not at the same time) you'd *under*-provision: you'd still need 2 rooms. The right quantity is concurrency at the busiest instant.
+**What breaks otherwise:** if you answered with "total number of meetings" (4) you'd over-provision. If you answered with "number of overlapping pairs" you'd *under*-provision. The right quantity is concurrency at the busiest instant.
 
 ### Q2 — Why "touching is non-overlapping"?
 
@@ -1042,169 +1056,320 @@ flowchart TB
 
 
 ```pseudocode
-# Same algorithm, with explicit empty-input guard and "update peak only on opens" optimisation.
+# TimePoint sweep: end before start on ties; track running rooms, remember peak.
 function minimumMeetingRooms(meetings):
-    if meetings is empty: return 0
-    points ← empty list
+    times ← empty list
     for each (s, e) in meetings:
-        append (s, 's') to points
-        append (e, 'e') to points
-    sort points ascending (with 'e' tiebreaking before 's')
+        append TimePoint(s, 's') to times
+        append TimePoint(e, 'e') to times
 
-    rooms ← 0; minRooms ← 0
-    for each (_, tag) in points:
-        if tag = 's':
+    sort times ascending by (time, type)  # 'e' < 's' so end before start on ties
+
+    rooms ← 0
+    minRooms ← 0
+
+    for each point in times:
+        if point.type = 's':
             rooms ← rooms + 1
-            if rooms > minRooms:                      # closes can only decrease — don't bother
-                minRooms ← rooms
+            minRooms ← max(rooms, minRooms)
         else:
             rooms ← rooms − 1
+
     return minRooms
 ```
 
 ```python run
 from typing import List
 
+# Define a class to store the time and type ('s' or 'e')
+class TimePoint:
+    def __init__(self, time: int, type_: str):
+        self.time = time
+        self.type = type_
+
+    def __lt__(self, other):
+
+        # Sort the times array, end times come before start times
+        # as 'e' < 's'
+        if self.time == other.time:
+            return self.type < other.type
+        return self.time < other.time
+
 def minimum_meeting_rooms(meetings: List[List[int]]) -> int:
-    if not meetings:
-        return 0
 
-    # Split each meeting into two tagged points
-    points = []
-    for s, e in meetings:
-        points.append((s, 's'))
-        points.append((e, 'e'))
+    # Create a dynamic array to store start and end times
+    times: List[TimePoint] = []
 
-    # Sort: primary key time ascending; secondary 'e' < 's' keeps touching meetings non-overlapping
-    points.sort()
+    for interval in meetings:
 
-    rooms = 0        # concurrent meetings right now
-    min_rooms = 0    # peak concurrency — this is the answer
+        # Add start and end times to the times array
+        times.append(TimePoint(interval[0], "s"))
+        times.append(TimePoint(interval[1], "e"))
 
-    for _, tag in points:
-        if tag == 's':
+    # Sort the times array using the custom compare function
+    times.sort()
+
+    # Initialize 'rooms' and 'minRooms' to 0
+    rooms = 0
+    min_rooms = 0
+
+    for point in times:
+
+        # Increment rooms if we encounter a start point
+        if point.type == "s":
             rooms += 1
-            if rooms > min_rooms:        # update peak only on opens (closes can only decrease it)
-                min_rooms = rooms
+            min_rooms = max(min_rooms, rooms)
+
+        # Decrement rooms if we encounter an end point
         else:
-            rooms -= 1                   # a room just freed up
+            rooms -= 1
+
+    # For an overlap we need at least 2 intervals
     return min_rooms
 
 
-print(minimum_meeting_rooms([[0, 30], [5, 10], [15, 20]]))            # 2
-print(minimum_meeting_rooms([[7, 10], [2, 4]]))                        # 1
-print(minimum_meeting_rooms([[1, 5], [2, 6], [3, 7], [4, 8]]))         # 4
-print(minimum_meeting_rooms([]))                                        # 0
+print(minimum_meeting_rooms([[1, 20], [10, 30], [30, 40], [1, 5]]))   # 2
+print(minimum_meeting_rooms([[1, 10], [1, 10], [1, 10]]))             # 3
+print(minimum_meeting_rooms([[1, 15], [15, 17], [17, 18]]))           # 1
 ```
 
 ```java run
 import java.util.*;
 
-class Solution {
-    public int minimumMeetingRooms(int[][] meetings) {
-        if (meetings.length == 0) return 0;
+// Define a class to store the time and type ('s' or 'e')
+class TimePoint {
 
-        List<int[]> points = new ArrayList<>();
-        for (int[] m : meetings) {
-            points.add(new int[]{m[0], 1});   // start event (tag = 1)
-            points.add(new int[]{m[1], 0});   // end event   (tag = 0)
+    int time;
+    char type;
+
+    TimePoint(int time, char type) {
+        this.time = time;
+        this.type = type;
+    }
+}
+
+// Comparator for TimePoint
+class Compare implements Comparator<TimePoint> {
+    public int compare(TimePoint a, TimePoint b) {
+
+        // Sort the times array, end times come before start times
+        // as 'e' < 's'
+        if (a.time == b.time) {
+            return Character.compare(a.type, b.type);
         }
-        // tag 0 sorts before tag 1 on ties → end before start, touching = non-overlapping
-        points.sort((a, b) -> a[0] != b[0] ? Integer.compare(a[0], b[0])
-                                           : Integer.compare(a[1], b[1]));
 
+        return Integer.compare(a.time, b.time);
+    }
+}
+
+class Solution {
+    public int minimumMeetingRooms(List<List<Integer>> meetings) {
+
+        // Create a dynamic array to store start and end times
+        List<TimePoint> times = new ArrayList<>();
+
+        for (List<Integer> interval : meetings) {
+
+            // Add start and end times to the times array
+            times.add(new TimePoint(interval.get(0), 's'));
+            times.add(new TimePoint(interval.get(1), 'e'));
+        }
+
+        // Sort the times array using the custom compare function
+        times.sort(new Compare());
+
+        // Initialize 'rooms' and 'minRooms' to 0
         int rooms = 0, minRooms = 0;
-        for (int[] p : points) {
-            if (p[1] == 1) {
+
+        for (TimePoint point : times) {
+
+            // Increment rooms if we encounter a start point
+            if (point.type == 's') {
                 rooms++;
-                if (rooms > minRooms) minRooms = rooms;
-            } else {
+                minRooms = Math.max(rooms, minRooms);
+            }
+
+            // Decrement rooms if we encounter an end point
+            else {
                 rooms--;
             }
         }
+
+        // For an overlap we need at least 2 intervals
         return minRooms;
+    }
+
+    public static void main(String[] args) {
+        Solution s = new Solution();
+        System.out.println(s.minimumMeetingRooms(List.of(
+            List.of(1, 20), List.of(10, 30), List.of(30, 40), List.of(1, 5))));   // 2
+        System.out.println(s.minimumMeetingRooms(List.of(
+            List.of(1, 10), List.of(1, 10), List.of(1, 10))));                    // 3
+        System.out.println(s.minimumMeetingRooms(List.of(
+            List.of(1, 15), List.of(15, 17), List.of(17, 18))));                  // 1
     }
 }
 ```
 
 ```c run
+#include <stdio.h>
 #include <stdlib.h>
 
-int cmp(const void* a, const void* b) {
-    int* x = (int*)a; int* y = (int*)b;
-    if (x[0] != y[0]) return x[0] - y[0];
-    return x[1] - y[1];
+// Define a struct to store the time and type ('s' or 'e')
+typedef struct {
+    int  time;
+    char type;
+} TimePoint;
+
+// Sort the times array, end times come before start times as 'e' < 's'
+static int cmp(const void* a, const void* b) {
+    const TimePoint* x = (const TimePoint*)a;
+    const TimePoint* y = (const TimePoint*)b;
+    if (x->time == y->time) return (int)x->type - (int)y->type;
+    return x->time - y->time;
 }
 
 int minimumMeetingRooms(int meetings[][2], int n) {
-    if (n == 0) return 0;
-    int (*points)[2] = malloc(sizeof(int[2]) * 2 * n);
-    int k = 0;
-    for (int i = 0; i < n; i++) {
-        points[k][0] = meetings[i][0]; points[k][1] = 1; k++;
-        points[k][0] = meetings[i][1]; points[k][1] = 0; k++;
-    }
-    qsort(points, 2 * n, sizeof(int[2]), cmp);
 
+    // Create a dynamic array to store start and end times
+    TimePoint* times = (TimePoint*)malloc(sizeof(TimePoint) * 2 * n);
+    int k = 0;
+
+    for (int i = 0; i < n; i++) {
+
+        // Add start and end times to the times array
+        times[k].time = meetings[i][0]; times[k].type = 's'; k++;
+        times[k].time = meetings[i][1]; times[k].type = 'e'; k++;
+    }
+
+    // Sort the times array using the custom compare function
+    qsort(times, 2 * n, sizeof(TimePoint), cmp);
+
+    // Initialize 'rooms' and 'minRooms' to 0
     int rooms = 0, minRooms = 0;
+
     for (int i = 0; i < 2 * n; i++) {
-        if (points[i][1] == 1) {
+
+        // Increment rooms if we encounter a start point
+        if (times[i].type == 's') {
             rooms++;
             if (rooms > minRooms) minRooms = rooms;
-        } else rooms--;
+        }
+
+        // Decrement rooms if we encounter an end point
+        else {
+            rooms--;
+        }
     }
-    free(points);
+
+    free(times);
+
+    // For an overlap we need at least 2 intervals
     return minRooms;
+}
+
+int main(void) {
+    int m1[][2] = {{1, 20}, {10, 30}, {30, 40}, {1, 5}};
+    printf("%d\n", minimumMeetingRooms(m1, 4));   // 2
+    int m2[][2] = {{1, 10}, {1, 10}, {1, 10}};
+    printf("%d\n", minimumMeetingRooms(m2, 3));   // 3
+    int m3[][2] = {{1, 15}, {15, 17}, {17, 18}};
+    printf("%d\n", minimumMeetingRooms(m3, 3));   // 1
+    return 0;
 }
 ```
 
 ```scala run
-object Solution {
-  def minimumMeetingRooms(meetings: Array[Array[Int]]): Int = {
-    if (meetings.isEmpty) return 0
-    val points = meetings.flatMap(m => Seq((m(0), 1), (m(1), 0)))
-                         .sortBy(p => (p._1, p._2))   // end before start on ties
+// Define a class to store the time and type ('s' or 'e')
+case class TimePoint(time: Int, `type`: Char)
 
-    var rooms = 0; var minRooms = 0
-    for ((_, tag) <- points) {
-      if (tag == 1) { rooms += 1; if (rooms > minRooms) minRooms = rooms }
-      else          { rooms -= 1 }
+object Solution {
+
+  // Sort the times array, end times come before start times as 'e' < 's'
+  private val ordering: Ordering[TimePoint] =
+    Ordering.by((p: TimePoint) => (p.time, p.`type`))
+
+  def minimumMeetingRooms(meetings: Array[Array[Int]]): Int = {
+
+    // Create a dynamic array to store start and end times
+    val times = scala.collection.mutable.ArrayBuffer.empty[TimePoint]
+
+    for (interval <- meetings) {
+
+      // Add start and end times to the times array
+      times += TimePoint(interval(0), 's')
+      times += TimePoint(interval(1), 'e')
     }
+
+    // Sort the times array using the custom compare function
+    val sorted = times.sorted(ordering)
+
+    // Initialize 'rooms' and 'minRooms' to 0
+    var rooms    = 0
+    var minRooms = 0
+
+    for (point <- sorted) {
+
+      // Increment rooms if we encounter a start point
+      if (point.`type` == 's') {
+        rooms += 1
+        minRooms = math.max(rooms, minRooms)
+      }
+
+      // Decrement rooms if we encounter an end point
+      else {
+        rooms -= 1
+      }
+    }
+
+    // For an overlap we need at least 2 intervals
     minRooms
+  }
+
+  def main(args: Array[String]): Unit = {
+    println(minimumMeetingRooms(Array(Array(1, 20), Array(10, 30), Array(30, 40), Array(1, 5))))  // 2
+    println(minimumMeetingRooms(Array(Array(1, 10), Array(1, 10), Array(1, 10))))                 // 3
+    println(minimumMeetingRooms(Array(Array(1, 15), Array(15, 17), Array(17, 18))))               // 1
   }
 }
 ```
 
 
 <details>
-<summary><strong>Trace — meetings = [[0, 30], [5, 10], [15, 20]]</strong></summary>
+<summary><strong>Trace — meetings = [[1, 20], [10, 30], [30, 40], [1, 5]]</strong></summary>
 
 ```
-Split + sort: [(0,'s'), (5,'s'), (10,'e'), (15,'s'), (20,'e'), (30,'e')]
+Tagged + sorted (end before start on ties):
+[(1,'s'), (1,'s'), (5,'e'), (10,'s'), (20,'e'), (30,'e'), (30,'s'), (40,'e')]
 
-Step 1 │ (0,'s')  │ rooms 0 → 1 │ minRooms = 1
-Step 2 │ (5,'s')  │ rooms 1 → 2 │ minRooms = 2 ★
-Step 3 │ (10,'e') │ rooms 2 → 1 │ minRooms = 2
-Step 4 │ (15,'s') │ rooms 1 → 2 │ minRooms = 2
+Step 1 │ (1,'s')  │ rooms 0 → 1 │ minRooms = 1
+Step 2 │ (1,'s')  │ rooms 1 → 2 │ minRooms = 2 ★
+Step 3 │ (5,'e')  │ rooms 2 → 1 │ minRooms = 2
+Step 4 │ (10,'s') │ rooms 1 → 2 │ minRooms = 2
 Step 5 │ (20,'e') │ rooms 2 → 1 │ minRooms = 2
-Step 6 │ (30,'e') │ rooms 1 → 0 │ minRooms = 2
+Step 6 │ (30,'e') │ rooms 1 → 0 │ minRooms = 2  ← end first on tie
+Step 7 │ (30,'s') │ rooms 0 → 1 │ minRooms = 2  ← reuses freed room
+Step 8 │ (40,'e') │ rooms 1 → 0 │ minRooms = 2
 
-Result: 2 ✓   Peak was reached twice — once at t=5 and again at t=15.
+Result: 2 ✓   Peak was reached at t=1 (two simultaneous opens).
 ```
 
 </details>
 
 <details>
-<summary><strong>Trace — meetings = [[1, 5], [5, 10]] (touching case)</strong></summary>
+<summary><strong>Trace — meetings = [[1, 15], [15, 17], [17, 18]] (touching case)</strong></summary>
 
 ```
-Split + sort: [(1,'s'), (5,'e'), (5,'s'), (10,'e')]
-                       ^^^^^^^^^^^^^^^^^  end BEFORE start at t=5
+Tagged + sorted: [(1,'s'), (15,'e'), (15,'s'), (17,'e'), (17,'s'), (18,'e')]
+                          ^^^^^^^^^^^^^^^^^^^  end BEFORE start at t=15
+                                              ^^^^^^^^^^^^^^^^^^^  also at t=17
 
 Step 1 │ (1,'s')  │ rooms 0 → 1 │ minRooms = 1
-Step 2 │ (5,'e')  │ rooms 1 → 0 │ minRooms = 1   ← first meeting freed its room
-Step 3 │ (5,'s')  │ rooms 0 → 1 │ minRooms = 1   ← second meeting takes the same room
-Step 4 │ (10,'e') │ rooms 1 → 0 │ minRooms = 1
+Step 2 │ (15,'e') │ rooms 1 → 0 │ minRooms = 1   ← first meeting freed its room
+Step 3 │ (15,'s') │ rooms 0 → 1 │ minRooms = 1   ← second meeting takes the same room
+Step 4 │ (17,'e') │ rooms 1 → 0 │ minRooms = 1
+Step 5 │ (17,'s') │ rooms 0 → 1 │ minRooms = 1
+Step 6 │ (18,'e') │ rooms 1 → 0 │ minRooms = 1
 
 Result: 1 ✓   Back-to-back meetings share a single room — exactly what we want.
 ```
@@ -1253,68 +1418,86 @@ Minimum Meeting Rooms is the **canonical** maximum-overlap problem — so canoni
 
 ## The Problem
 
-> You are given an array of intervals `intervals` where `intervals[i] = [start_i, end_i]`, and a positive integer `k`. Return the **minimum number of intervals to remove** so that at any single instant, the number of remaining intervals active at that instant is at most `k`.
+Given an array of `intervals` where `intervals[i] = [si, ei]`, find and return the **minimum number of intervals you need to remove** so that the rest of the intervals are non-overlapping.
+
+Two intervals `[s1, e1]` and `[s2, e2]` are considered overlapping if `e1 > s2`. If `e1 == s2`, the intervals are **not** considered overlapping.
 
 ```
-Input:  intervals = [[1, 4], [2, 5], [3, 6], [7, 9]], k = 2
-Output: 1
-Explanation: At t=3 and t=4 all of [1,4], [2,5], [3,6] are active (overlap = 3).
-             Remove any one of them — say [3,6] — and the peak drops to 2.
-
-Input:  intervals = [[1, 2], [3, 4], [5, 6]], k = 1
-Output: 0
-Explanation: No two intervals overlap → peak is already 1 ≤ k.
-
-Input:  intervals = [[1, 10], [2, 10], [3, 10], [4, 10]], k = 2
-Output: 2
-Explanation: All four active at t=4 → peak 4. Remove two to bring peak down to 2.
+intervals = [[1, 2], [2, 3], [3, 4], [1, 3]]   →  1
+intervals = [[1, 5], [1, 5], [1, 5]]            →  2
+intervals = [[1, 5], [5, 7], [7, 8]]            →  0
 ```
 
 ---
 
-## What Does "Cap the Overlap at K" Mean?
+## Examples
 
-Think of `k` as a **capacity** — the number of lanes on a highway, parallel servers, concurrent calls a receptionist can handle. Whenever more than `k` intervals are active simultaneously, the excess must go — someone gets turned away. The question: what is the smallest number of intervals we can drop so the peak concurrency never exceeds `k`?
+**Example 1**
+```
+Input:  intervals = [[1, 2], [2, 3], [3, 4], [1, 3]]
+Output: 1
+Explanation: The interval [1, 3] can be removed, and the rest of the
+             intervals do not overlap.
+```
+
+**Example 2**
+```
+Input:  intervals = [[1, 5], [1, 5], [1, 5]]
+Output: 2
+Explanation: We need to remove two [1, 5] intervals to make the rest of
+             the intervals non-overlapping.
+```
+
+**Example 3**
+```
+Input:  intervals = [[1, 5], [5, 7], [7, 8]]
+Output: 0
+Explanation: We don't need to remove any of the intervals since they are
+             already non-overlapping (touching counts as non-overlapping).
+```
+
+---
+
+## What Does "Minimum Removals for Non-Overlap" Mean?
+
+Imagine you have a stack of meeting requests that **all want the same single room**. Some clash with others; some don't. You want to **honour as many as possible**, which is the same as **cancelling as few as possible**. The answer is: total intervals minus the largest subset of mutually non-overlapping ones.
 
 ```d2
 direction: right
 
-before: "Before: peak overlap = 3" {
+before: "Before: 4 intervals, [1,3] clashes" {
   grid-columns: 4
   grid-gap: 16
-  b1: "[1,4]" {style.fill: "#fde68a"; style.stroke: "#d97706"}
-  b2: "[2,5]" {style.fill: "#fde68a"; style.stroke: "#d97706"}
-  b3: "[3,6]" {style.fill: "#fecaca"; style.stroke: "#dc2626"}
-  b4: "[7,9]"
+  b1: "[1,2]" {style.fill: "#dcfce7"; style.stroke: "#16a34a"}
+  b2: "[2,3]" {style.fill: "#dcfce7"; style.stroke: "#16a34a"}
+  b3: "[3,4]" {style.fill: "#dcfce7"; style.stroke: "#16a34a"}
+  b4: "[1,3]" {style.fill: "#fecaca"; style.stroke: "#dc2626"}
 }
 
 cap: |md
-  **Capacity** k = 2
-
-  At `t∈[3,4]` three are active — excess of 1
+  Remove **1** interval (`[1,3]`)
+  to leave the rest non-overlapping
 |
 
-after: "After removing [3,6]: peak = 2" {
+after: "After: 3 non-overlapping intervals kept" {
   grid-columns: 3
   grid-gap: 16
-  a1: "[1,4]" {style.fill: "#dcfce7"; style.stroke: "#16a34a"}
-  a2: "[2,5]" {style.fill: "#dcfce7"; style.stroke: "#16a34a"}
-  a3: "[7,9]" {style.fill: "#dcfce7"; style.stroke: "#16a34a"}
+  a1: "[1,2]" {style.fill: "#dcfce7"; style.stroke: "#16a34a"}
+  a2: "[2,3]" {style.fill: "#dcfce7"; style.stroke: "#16a34a"}
+  a3: "[3,4]" {style.fill: "#dcfce7"; style.stroke: "#16a34a"}
 }
 
 before -> cap
 cap -> after
 ```
 
-<p align="center"><strong>Whenever the live count exceeds <code>k</code>, we must evict interval(s) until the count is back within capacity. The question is which ones to evict — and how few.</strong></p>
+<p align="center"><strong>Removing the fewest intervals so the survivors are pairwise non-overlapping is equivalent to keeping the largest non-overlapping subset. The answer is <code>n − count(largest subset)</code>.</strong></p>
 
 ---
 
-## The Greedy Insight — When You Must Evict, Evict the One Ending Last
+## The Greedy Insight — Always Keep the Interval That Ends Earliest
 
-Suppose at some instant the live count hits `k + 1`. Someone has to go. Who?
-
-**Greedy answer:** whichever of the currently-active intervals has the **largest end time**. Evicting the longest-running one is the most "helpful" removal because every moment that interval would have occupied the lane is now freed up — including moments still to come. Evicting a short, about-to-end interval would free only a tiny sliver of future lane-time, leaving us likely to exceed `k` again soon.
+Among intervals that compete for a slot, the one that **ends earliest** leaves the most room afterwards for future picks. Anything that ends later would block more of the future timeline for no extra benefit.
 
 ```mermaid
 ---
@@ -1329,17 +1512,17 @@ config:
     tertiaryColor: "#fef9c3"
 ---
 flowchart TB
-    Trigger(["At t = now, active count = k + 1<br/>One interval must be evicted"])
-    Choice["Active: A ends at 6, B ends at 8, C ends at 20"]
-    Bad["Evict A → C keeps occupying lane till 20<br/>lots of future moments still tight"]
-    Good["Evict C → frees every future moment up to 20<br/>future overlap pressure minimised"]
+    Trigger(["Choosing the next interval to keep<br/>from intervals sorted by end time"])
+    Choice["Candidates sorted by end: A ends at 3, B ends at 6, C ends at 9"]
+    Bad["Pick C → blocks the timeline until t = 9<br/>fewer future picks possible"]
+    Good["Pick A → only blocks until t = 3<br/>more room for future picks"]
     Choice --> Bad
     Choice --> Good
 ```
 
-<p align="center"><strong>Evicting the longest-running active interval frees the most future lane-time. It is provably optimal.</strong></p>
+<p align="center"><strong>Sorting by end time turns the problem into a one-pass greedy: always extend the kept set with the next interval whose start is at or after the last kept end.</strong></p>
 
-Why is this provably optimal? Because every removal saves exactly the **amount of future time** the evicted interval would have occupied. The interval with the largest end time occupies the most future time. In any optimal solution, we can *swap* a shorter eviction for the longest-end one and still be valid — the longer one's extra future-coverage can only *help* stay under capacity later.
+This is a classic **exchange argument**: in any optimal subset, you can swap its "first by end" for the globally earliest-ending interval without losing any compatibility — the swap can only *help* future picks. By induction, the earliest-ending choice at every step is optimal.
 
 ---
 
@@ -1347,52 +1530,46 @@ Why is this provably optimal? Because every removal saves exactly the **amount o
 
 | Question | Answer |
 |---|---|
-| **Q1.** Is this a maximum-overlap problem? | **Yes** — the peak overlap is what we're taming |
-| **Q2.** Do we need to identify *which* intervals to remove, or just count? | **Just count**, but we need a way to pick the best victim at each conflict |
-| **Q3.** Is a plain counter enough, or do we need the identities of active intervals? | **Identities** — we need to know end times to pick the victim |
-| **Q4.** What data structure supports "get the one with max end in O(log N)"? | **Max-heap keyed on end time** |
+| **Q1.** Is this still a maximum-overlap problem? | **Indirectly** — the overlap is the cause of the conflict, but the answer is computed by a different framing |
+| **Q2.** Do we need to identify *which* intervals to remove, or just count? | **Just count** — and `n − count(kept)` is the answer |
+| **Q3.** What ordering makes the greedy work? | **Sort by end time ascending** |
+| **Q4.** What state do we keep during the sweep? | The **end time of the last kept interval** and a **running count** of kept intervals |
 
-### Q1 — Why "maximum overlap"?
+### Q1 — Why "indirectly" maximum overlap?
 
-**Mental model:** walk the timeline; whenever overlap goes above `k`, drop intervals until it's back at `k`. The number of drops is the answer.
+**Mental model:** the overlap creates the conflict, but the greedy doesn't *count* overlap. It walks intervals in end-time order and accepts each one whose start is past the last kept end.
 
-**Concrete numbers:** for `[[1,4],[2,5],[3,6]]` with `k=2`, at `t=3` the active count is 3 > 2. One eviction → live count drops to 2. No further violations → total evictions = 1.
+**Concrete numbers:** for `[[1,2],[2,3],[3,4],[1,3]]`, all four overlap pairwise via the `[1,3]` joiner. But the greedy keeps three (`[1,2], [2,3], [3,4]`) and drops just one.
 
-**What breaks otherwise:** if you try to "remove intervals that overlap with others" (a simpler greedy), you'd over-remove. Two intervals can overlap each other yet still fit under `k=2` — removing either is wasted. The peak-overlap framing is the only one that correctly targets just-the-excess.
+**What breaks otherwise:** trying to "count peak overlap" gives you the *minimum number of rooms*, not the minimum number of removals. They are different problems with different answers.
 
 ### Q2 — Why "just count"?
 
-**Mental model:** the problem asks for the minimum *number* of removals, not the identities. But the sweep still has to *pick* good victims to guarantee the minimum — otherwise a bad choice could cascade into more violations later.
+**Mental model:** the problem asks for a single integer — the number of intervals to remove. Identities don't matter for the return value.
 
-**Concrete numbers:** even if the final answer is just `1`, our simulated sweep has to commit to *which* interval it removed to continue correctly. If it "removed" the wrong one (a short one), the next conflict might force a second removal that a better choice would have avoided.
+**Concrete numbers:** the answer for example 1 is `1`. We compute it as `n − count = 4 − 3 = 1`. We never write down which interval to remove.
 
-**What breaks otherwise:** returning the count without actually picking victims correctly yields a wrong answer on non-trivial inputs. The counter alone isn't enough.
+**What breaks otherwise:** nothing — but tracking identities adds complexity for no benefit. Counts are cheap and exact.
 
-### Q3 — Why "identities of active intervals"?
+### Q3 — Why "sort by end time ascending"?
 
-**Mental model:** at each start event, we *add* the interval to a running "active set". At each end event, we *remove* it (the one whose end we just hit). When we need to evict, we pick the active member with the largest end.
+**Mental model:** sorting by start works for many interval problems, but here it ties together two unrelated questions: "which starts first?" vs "which is compatible with future picks?". Sorting by end answers the second directly.
 
-**Concrete numbers:** at `t=3` in example 1, the active set is `{[1,4], [2,5], [3,6]}` with ends `{4, 5, 6}`. The max is `6` → evict `[3,6]`.
+**Concrete numbers:** consider `[[1,100], [2,3], [4,5]]`. Sorted by start, you'd be tempted to keep `[1,100]` first and then nothing else fits. Sorted by end → `[2,3], [4,5], [1,100]`; greedy keeps `[2,3]` and `[4,5]`, drops `[1,100]`. Answer 1 vs answer 2.
 
-**What breaks otherwise:** a plain counter loses the identities. We'd know overlap hit 3 but have no principled way to pick who to drop. Any arbitrary choice risks sub-optimality.
+**What breaks otherwise:** sorting by start can force a single "long" interval to dominate the kept set, throwing away many short compatible ones.
 
-### Q4 — Why "max-heap on end time"?
+### Q4 — Why "track only the last kept end"?
 
-**Mental model:** a heap lets us peek and pop the largest end in O(log N). Starts push into it; ends implicitly pop it (but only if the end event corresponds to something still in the heap — we track evictions with a "skip list" or mark-based approach).
+**Mental model:** since intervals are sorted by end time ascending, every previously-kept interval has end ≤ current candidate's end. The only constraint on the next candidate is "start ≥ end of the last kept one".
 
-**Concrete numbers:** with N intervals, we do at most 2N heap operations × O(log N) = O(N log N) total — same asymptotic as the sort.
+**Concrete numbers:** after keeping `[1,2]`, the next candidate `[2,3]` has `start=2 ≥ 2` → keep it; the running `end` updates to 3. Next `[1,3]` has `start=1 < 3` → skip (it's a removal). Next `[3,4]` has `start=3 ≥ 3` → keep, `end` becomes 4.
 
-**What breaks otherwise:** without a heap, finding the max-end active interval is O(N) per conflict → O(N²) overall. Fine for `N = 1000`, blown up for `N = 10⁶`.
+**What breaks otherwise:** tracking all kept ends is wasteful — only the latest one matters because it dominates all earlier kept ends.
 
 ---
 
 ## The Greedy Sweep (Visualised)
-
-We modify the event-based sweep slightly. We walk through *intervals* sorted by start, and maintain a **max-heap of end times** of intervals currently kept. At each interval start:
-
-1. First, **pop** any ended intervals (ends ≤ current start) from the heap — they're no longer active.
-2. **Push** the new interval's end.
-3. If heap size now exceeds `k`, pop the max-end entry (that's the eviction) and increment `removals`.
 
 ```mermaid
 ---
@@ -1407,124 +1584,141 @@ config:
     tertiaryColor: "#fef9c3"
 ---
 flowchart TB
-    Init(["Sort intervals by start; heap = empty; removals = 0"])
-    Each["For each interval iv = [s, e]:"]
-    Expire["1. While heap.top ≤ s: pop (interval ended)"]
-    Add["2. heap.push(e)"]
-    Check["3. If heap.size > k: removals += 1; heap.pop() (evict the largest end)"]
-    Done(["Return removals"])
-    Init --> Each --> Expire --> Add --> Check --> Each
-    Check --> Done
+    Init(["Sort intervals by end ascending<br/>count = 1 (first interval kept)<br/>end = intervals[0][1]"])
+    Each["For i = 1 to n−1:"]
+    Cmp{"intervals[i][0] ≥ end?"}
+    Keep["Keep: count += 1<br/>end ← intervals[i][1]"]
+    Skip["Skip (counts as a removal later)"]
+    Done(["Return n − count"])
+    Init --> Each --> Cmp
+    Cmp -- "Yes" --> Keep --> Each
+    Cmp -- "No"  --> Skip --> Each
+    Each --> Done
 ```
 
-<p align="center"><strong>Sweep intervals left to right; keep a max-heap of active end times; evict the longest-ending interval whenever capacity is exceeded.</strong></p>
-
-A subtle but important point: **the evicted interval is "erased from history"** — we pretend it was never kept. So "heap size" at any moment equals the number of surviving intervals currently active. That's why it's safe to compare heap size directly to `k`.
+<p align="center"><strong>Sort by end ascending; greedily keep every interval whose start is at or after the last kept end; the answer is total minus kept.</strong></p>
 
 ---
 
 ## The Solution
 
-The implementation below uses a **max-heap** (via negation in languages without one built in). Crucially, the "expire ended intervals" step uses the current interval's start as the threshold and uses **strict `<=`** to drop touching-ended intervals — keeping the non-overlap convention.
+The greedy is one short pass after a sort: keep the first interval (by end time), then walk the rest accepting any whose start is at or after the last kept end. The answer is `n − count(kept)`.
 
 
 ```pseudocode
-# Remove the fewest intervals so concurrency stays ≤ k. Sweep + max-heap of currently-kept end-times.
-function removeIntervals(intervals, k):
+# Sort intervals by end ascending; greedily keep non-overlapping ones. Answer = n − count.
+function removeIntervals(intervals):
     if intervals is empty:
         return 0
-    if k ≤ 0:
-        return length(intervals)                      # nothing allowed → remove all
 
-    sort intervals by start ascending
-    heap ← empty max-heap of end-times
-    removals ← 0
+    # Sort the intervals in ascending order of their end times
+    sort intervals by end ascending
+    n ← length(intervals)
 
-    for each (s, e) in intervals:
-        # Expire intervals that ended at or before s.
-        while heap is not empty AND heap.top ≤ s:
-            heap.pop
-        heap.push(e)                                  # tentatively keep the new interval
-        if size(heap) > k:                            # over capacity — evict the latest-ending one
-            heap.pop                                  # max-heap top = largest end → best victim
-            removals ← removals + 1
-    return removals
+    # Keep track of the non-overlapping intervals, start with 1
+    count ← 1
+
+    # End time of the first interval
+    end ← intervals[0][1]
+
+    for i from 1 to n − 1:
+        # If current interval's start time is greater or equal to the end time of previous
+        # interval means it does not overlap with previous interval, so we increase the
+        # count and update the end time to current interval's end time
+        if intervals[i][0] ≥ end:
+            count ← count + 1
+            end ← intervals[i][1]
+
+    # Return the number of intervals to be removed, i.e., difference between total
+    # intervals and non-overlapping intervals
+    return n − count
 ```
 
 ```python run
 from typing import List
-import heapq
 
-def remove_intervals(intervals: List[List[int]], k: int) -> int:
-    if not intervals or k <= 0:
-        # k <= 0 means no interval is allowed → remove all of them
-        return len(intervals) if k <= 0 else 0
+def remove_intervals(intervals: List[List[int]]) -> int:
 
-    # Sort by start ascending — processing order matches the sweep direction
-    intervals.sort(key=lambda x: x[0])
+    # if intervals list is empty return 0
+    if not intervals:
+        return 0
 
-    # Max-heap of end times of currently-kept active intervals.
-    # Python's heapq is min-heap; negate to simulate max-heap.
-    heap: List[int] = []
+    # sort the intervals in ascending order of their end times
+    intervals.sort(key=lambda x: x[1])
+    n = len(intervals)
 
-    removals = 0
+    # keep track of the non-overlapping intervals, start with 1
+    count = 1
 
-    for s, e in intervals:
-        # Expire any intervals that ended at or before this start.
-        # '<=' because touching intervals are non-overlapping in our convention.
-        while heap and -heap[0] <= s:
-            heapq.heappop(heap)
+    # end time of the first interval
+    end = intervals[0][1]
 
-        # Tentatively keep the new interval
-        heapq.heappush(heap, -e)
+    for i in range(1, n):
 
-        # If we now exceed capacity, evict the interval with the largest end time
-        if len(heap) > k:
-            heapq.heappop(heap)   # top of max-heap = largest end → best victim
-            removals += 1
+        # if current interval's start time is greater or equal to the
+        # end time of previous interval means it does not overlap
+        # with previous interval so we increase the count and update
+        # the end time to current interval's end time
+        if intervals[i][0] >= end:
+            count += 1
+            end = intervals[i][1]
 
-    return removals
+    # return the number of intervals to be removed, i.e.,
+    # difference between total intervals and non-overlapping
+    # intervals
+    return n - count
 
 
-print(remove_intervals([[1, 4], [2, 5], [3, 6], [7, 9]], 2))      # 1
-print(remove_intervals([[1, 2], [3, 4], [5, 6]], 1))               # 0
-print(remove_intervals([[1, 10], [2, 10], [3, 10], [4, 10]], 2))   # 2
+print(remove_intervals([[1, 2], [2, 3], [3, 4], [1, 3]]))   # 1
+print(remove_intervals([[1, 5], [1, 5], [1, 5]]))           # 2
+print(remove_intervals([[1, 5], [5, 7], [7, 8]]))           # 0
 ```
 
 ```java run
 import java.util.*;
 
 class Solution {
-    public int removeIntervals(int[][] intervals, int k) {
-        if (intervals.length == 0) return 0;
-        if (k <= 0) return intervals.length;   // no capacity → drop everything
+    public int removeIntervals(int[][] intervals) {
 
-        // Sort by start ascending
-        Arrays.sort(intervals, (a, b) -> Integer.compare(a[0], b[0]));
+        // if intervals list is empty return 0
+        if (intervals.length == 0) {
+            return 0;
+        }
 
-        // Max-heap of end times — Java's PriorityQueue is min-heap by default, reverse it
-        PriorityQueue<Integer> heap = new PriorityQueue<>(Collections.reverseOrder());
+        // sort the intervals in ascending order of their end times
+        Arrays.sort(intervals, (a, b) -> a[1] - b[1]);
 
-        int removals = 0;
+        int n = intervals.length;
 
-        for (int[] iv : intervals) {
-            int s = iv[0], e = iv[1];
+        // keep track of the non-overlapping intervals, start with 1
+        int count = 1;
 
-            // Drain expired intervals — touching counts as non-overlapping
-            while (!heap.isEmpty() && heap.peek() <= s) {
-                // peek() is the LARGEST end — if the largest end is already ≤ s,
-                // every active interval has ended (since all others have smaller ends too)
-                heap.poll();
-            }
+        // end time of the first interval
+        int end = intervals[0][1];
 
-            heap.offer(e);
+        for (int i = 1; i < n; i++) {
 
-            if (heap.size() > k) {
-                heap.poll();   // evict the largest end
-                removals++;
+            // if current interval's start time is greater or equal to
+            // the end time of previous interval means it does not
+            // overlap with previous interval so we increase the count
+            // and update the end time to current interval's end time
+            if (intervals[i][0] >= end) {
+                count++;
+                end = intervals[i][1];
             }
         }
-        return removals;
+
+        // return the number of intervals to be removed, i.e.,
+        // difference between total intervals and non-overlapping
+        // intervals
+        return n - count;
+    }
+
+    public static void main(String[] args) {
+        Solution s = new Solution();
+        System.out.println(s.removeIntervals(new int[][]{{1, 2}, {2, 3}, {3, 4}, {1, 3}}));  // 1
+        System.out.println(s.removeIntervals(new int[][]{{1, 5}, {1, 5}, {1, 5}}));          // 2
+        System.out.println(s.removeIntervals(new int[][]{{1, 5}, {5, 7}, {7, 8}}));          // 0
     }
 }
 ```
@@ -1533,123 +1727,133 @@ class Solution {
 #include <stdio.h>
 #include <stdlib.h>
 
-// --- simple max-heap on int ---
-static int heap[100005];
-static int hsize = 0;
-
-static void hpush(int v) {
-    int i = hsize++;
-    heap[i] = v;
-    while (i > 0 && heap[(i - 1) / 2] < heap[i]) {
-        int t = heap[i]; heap[i] = heap[(i - 1) / 2]; heap[(i - 1) / 2] = t;
-        i = (i - 1) / 2;
-    }
-}
-static int hpop(void) {
-    int top = heap[0];
-    heap[0] = heap[--hsize];
-    int i = 0;
-    while (1) {
-        int l = 2 * i + 1, r = 2 * i + 2, best = i;
-        if (l < hsize && heap[l] > heap[best]) best = l;
-        if (r < hsize && heap[r] > heap[best]) best = r;
-        if (best == i) break;
-        int t = heap[i]; heap[i] = heap[best]; heap[best] = t;
-        i = best;
-    }
-    return top;
-}
-static int hpeek(void) { return heap[0]; }
-
-static int cmp(const void* a, const void* b) {
-    return (*(int**)a)[0] - (*(int**)b)[0];
+static int cmpByEnd(const void* a, const void* b) {
+    const int* x = *(const int**)a;
+    const int* y = *(const int**)b;
+    return x[1] - y[1];
 }
 
-int removeIntervals(int** intervals, int n, int k) {
+int removeIntervals(int** intervals, int n) {
+
+    // if intervals list is empty return 0
     if (n == 0) return 0;
-    if (k <= 0) return n;
 
-    qsort(intervals, n, sizeof(int*), cmp);
-    hsize = 0;
+    // sort the intervals in ascending order of their end times
+    qsort(intervals, n, sizeof(int*), cmpByEnd);
 
-    int removals = 0;
-    for (int i = 0; i < n; i++) {
-        int s = intervals[i][0], e = intervals[i][1];
-        // Expire any ended intervals
-        while (hsize > 0 && hpeek() <= s) hpop();
-        hpush(e);
-        if (hsize > k) { hpop(); removals++; }   // evict largest end
+    // keep track of the non-overlapping intervals, start with 1
+    int count = 1;
+
+    // end time of the first interval
+    int end = intervals[0][1];
+
+    for (int i = 1; i < n; i++) {
+
+        // if current interval's start time is greater or equal to
+        // the end time of previous interval means it does not
+        // overlap with previous interval so we increase the count
+        // and update the end time to current interval's end time
+        if (intervals[i][0] >= end) {
+            count++;
+            end = intervals[i][1];
+        }
     }
-    return removals;
+
+    // return the number of intervals to be removed, i.e.,
+    // difference between total intervals and non-overlapping
+    // intervals
+    return n - count;
+}
+
+int main(void) {
+    int a1[][2] = {{1, 2}, {2, 3}, {3, 4}, {1, 3}};
+    int* p1[] = {a1[0], a1[1], a1[2], a1[3]};
+    printf("%d\n", removeIntervals(p1, 4));   // 1
+
+    int a2[][2] = {{1, 5}, {1, 5}, {1, 5}};
+    int* p2[] = {a2[0], a2[1], a2[2]};
+    printf("%d\n", removeIntervals(p2, 3));   // 2
+
+    int a3[][2] = {{1, 5}, {5, 7}, {7, 8}};
+    int* p3[] = {a3[0], a3[1], a3[2]};
+    printf("%d\n", removeIntervals(p3, 3));   // 0
+    return 0;
 }
 ```
 
 ```scala run
-import scala.collection.mutable
-
 object Solution {
-  def removeIntervals(intervals: Array[Array[Int]], k: Int): Int = {
+  def removeIntervals(intervals: Array[Array[Int]]): Int = {
+
+    // if intervals list is empty return 0
     if (intervals.isEmpty) return 0
-    if (k <= 0) return intervals.length
 
-    val sorted = intervals.sortBy(_(0))
-    // Max-heap via reverse ordering
-    val heap = mutable.PriorityQueue.empty[Int](Ordering.Int)
+    // sort the intervals in ascending order of their end times
+    val sorted = intervals.sortBy(_(1))
+    val n      = sorted.length
 
-    var removals = 0
-    for (iv <- sorted) {
-      val (s, e) = (iv(0), iv(1))
-      while (heap.nonEmpty && heap.head <= s) heap.dequeue()   // expire ended
-      heap.enqueue(e)
-      if (heap.size > k) {
-        heap.dequeue()   // evict interval with largest end
-        removals += 1
+    // keep track of the non-overlapping intervals, start with 1
+    var count = 1
+
+    // end time of the first interval
+    var end = sorted(0)(1)
+
+    for (i <- 1 until n) {
+
+      // if current interval's start time is greater or equal to
+      // the end time of previous interval means it does not
+      // overlap with previous interval so we increase the count
+      // and update the end time to current interval's end time
+      if (sorted(i)(0) >= end) {
+        count += 1
+        end = sorted(i)(1)
       }
     }
-    removals
+
+    // return the number of intervals to be removed, i.e.,
+    // difference between total intervals and non-overlapping
+    // intervals
+    n - count
+  }
+
+  def main(args: Array[String]): Unit = {
+    println(removeIntervals(Array(Array(1, 2), Array(2, 3), Array(3, 4), Array(1, 3))))  // 1
+    println(removeIntervals(Array(Array(1, 5), Array(1, 5), Array(1, 5))))               // 2
+    println(removeIntervals(Array(Array(1, 5), Array(5, 7), Array(7, 8))))               // 0
   }
 }
 ```
 
 
 <details>
-<summary><strong>Trace — intervals = [[1, 4], [2, 5], [3, 6], [7, 9]], k = 2</strong></summary>
+<summary><strong>Trace — intervals = [[1, 2], [2, 3], [3, 4], [1, 3]]</strong></summary>
 
 ```
-Sorted by start: [[1,4], [2,5], [3,6], [7,9]]
-heap = [] (max-heap of active end times)
+Sorted by end:   [[1,2], [2,3], [1,3], [3,4]]
+count = 1   end = 2   (first interval kept)
 
-Step 1 │ iv=[1,4] │ expire: heap empty          │ push 4  heap=[4]        size 1 ≤ 2
-Step 2 │ iv=[2,5] │ expire: top 4 > 2 → stop    │ push 5  heap=[5,4]      size 2 ≤ 2
-Step 3 │ iv=[3,6] │ expire: top 5 > 3 → stop    │ push 6  heap=[6,4,5]    size 3 > 2
-                     EVICT top=6 (largest end)  │          heap=[5,4]     removals = 1
-Step 4 │ iv=[7,9] │ expire: top 5 ≤ 7 → pop     │          heap=[4]
-                     expire: top 4 ≤ 7 → pop    │          heap=[]
-                                                │ push 9   heap=[9]        size 1 ≤ 2
+Step │ i=1 iv=[2,3] │ start 2 ≥ end 2 → keep │ count=2 end=3
+Step │ i=2 iv=[1,3] │ start 1 <  end 3 → skip │ count=2 end=3
+Step │ i=3 iv=[3,4] │ start 3 ≥ end 3 → keep │ count=3 end=4
 
-Result: removals = 1 ✓
+Kept 3 of 4 → answer = 4 − 3 = 1 ✓
 
-[3,6] was removed because, of the three overlapping intervals at t=3,
-it had the largest end time (6 > 5 > 4). Greedy optimal.
+The skipped [1,3] is the one to remove.
 ```
 
 </details>
 
 <details>
-<summary><strong>Trace — intervals = [[1, 10], [2, 10], [3, 10], [4, 10]], k = 2</strong></summary>
+<summary><strong>Trace — intervals = [[1, 5], [1, 5], [1, 5]]</strong></summary>
 
 ```
-Sorted by start: [[1,10], [2,10], [3,10], [4,10]]
-heap = []
+Sorted by end:   [[1,5], [1,5], [1,5]]
+count = 1   end = 5
 
-Step 1 │ iv=[1,10] │ push 10 → heap=[10]           size 1 ≤ 2
-Step 2 │ iv=[2,10] │ push 10 → heap=[10,10]        size 2 ≤ 2
-Step 3 │ iv=[3,10] │ push 10 → heap=[10,10,10]     size 3 > 2
-                     EVICT → heap=[10,10]          removals = 1
-Step 4 │ iv=[4,10] │ push 10 → heap=[10,10,10]     size 3 > 2
-                     EVICT → heap=[10,10]          removals = 2
+Step │ i=1 iv=[1,5] │ start 1 < end 5 → skip │ count=1 end=5
+Step │ i=2 iv=[1,5] │ start 1 < end 5 → skip │ count=1 end=5
 
-Result: 2 ✓   Four identical intervals → must drop two to fit capacity k=2.
+Kept 1 of 3 → answer = 3 − 1 = 2 ✓
 ```
 
 </details>
@@ -1660,8 +1864,8 @@ Result: 2 ✓   Four identical intervals → must drop two to fit capacity k=2.
 
 | | Complexity | Reasoning |
 |---|---|---|
-| **Time** | O(N log N) | Sort is O(N log N); each interval pushes and possibly pops O(log N) |
-| **Space** | O(N) | Heap holds up to N end times |
+| **Time** | O(N log N) | Sort by end is O(N log N); the greedy sweep is O(N) |
+| **Space** | O(1) | Aside from input + sort scratch, only `count` and `end` are kept |
 
 ---
 
@@ -1669,25 +1873,25 @@ Result: 2 ✓   Four identical intervals → must drop two to fit capacity k=2.
 
 | Case | Example | Expected | Reasoning |
 |---|---|---|---|
-| Empty input | `[]`, `k = 3` | 0 | Nothing to remove |
-| Zero capacity | `[[1,2]]`, `k = 0` | 1 | No intervals allowed → remove everything |
-| Already within capacity | `[[1,2],[3,4]]`, `k = 1` | 0 | Peak is 1 → no conflicts |
-| All identical | `[[1,5]×5]`, `k = 2` | 3 | 5 active at once, evict 3 |
-| Touching intervals | `[[1,5],[5,10]]`, `k = 1` | 0 | `5` ends before `5` starts (strict `<=`); no conflict |
-| Nested intervals | `[[1,20],[2,3],[4,5]]`, `k = 1` | 2 | Outer overlaps each inner one; evict outer + one inner |
-| Capacity ≥ N | `[[1,2],[1,2],[1,2]]`, `k = 10` | 0 | Plenty of capacity |
+| Empty input | `[]` | 0 | Nothing to remove |
+| Singleton | `[[1, 5]]` | 0 | One interval is trivially non-overlapping |
+| All identical | `[[1, 5], [1, 5], [1, 5]]` | 2 | Only one can survive |
+| Touching only | `[[1, 5], [5, 7], [7, 8]]` | 0 | `e1 == s2` is not an overlap |
+| Nested cover | `[[1, 20], [2, 3], [4, 5]]` | 1 | Keep `[2,3]` and `[4,5]`; drop `[1,20]` |
+| All disjoint | `[[1, 2], [3, 4], [5, 6]]` | 0 | Already non-overlapping |
+| Chained clashes | `[[1, 2], [2, 3], [3, 4], [1, 3]]` | 1 | `[1,3]` is the lone troublemaker |
 
 ---
 
 ## Final Takeaway
 
-Remove Intervals extends the maximum-overlap sweep from **passive counting** to **active decision-making**. You're not just watching the counter tick — you're keeping the counter *bounded* by making a greedy choice every time it would exceed the cap. The "always evict the longest-ending" rule is a textbook exchange argument: swap any other choice for this one and you never get worse. Memorise the trio: **sort by start, max-heap on ends, evict when size > k**. When a problem asks "how few removals to keep concurrency ≤ k?", this is the answer.
+Remove Intervals is the **classic "activity selection" problem** in disguise. The peak-overlap framing is what *creates* the conflict, but the solution lives in a different framing entirely: **sort by end, keep greedy**. The number of removals is `n − count(kept)`. Remember the contrast with Minimum Meeting Rooms — same intervals, *very* different answer: that one counts peak concurrency, this one counts the largest non-overlapping subset. Whenever a problem asks "what is the minimum I must drop so the rest are pairwise non-overlapping?", reach for **sort by end + greedy keep**.
 
 > **Transfer Challenge:** Modify the function to return the **list of original indices** of the removed intervals, not just the count. Order doesn't matter.
 >
 > <details><summary><strong>Solution hint</strong></summary>
 >
-> Push `(end_time, original_index)` tuples into the heap instead of raw end times. When you evict the top, add its index to a `removed` list. Return that list.
+> Pair each interval with its original index before sorting. After the sweep, the removed indices are exactly the ones the greedy *skipped*. Track the kept indices in a set; return the complement.
 >
 > </details>
 
@@ -1697,21 +1901,43 @@ Remove Intervals extends the maximum-overlap sweep from **passive counting** to 
 
 ## The Problem
 
-> Given an array of intervals `intervals` where `intervals[i] = [start_i, end_i]`, return the **contiguous time interval `[a, b]`** during which the **maximum number of intervals are simultaneously active**. If multiple such windows tie, return the one starting earliest.
+Given an array of **meetings** consisting of start and end times `[[s1, e1], [s2, e2], ...] (si < ei)` of meetings, find and return the **busiest interval** — the time interval during which the maximum number of meetings overlap.
 
+Two intervals `[s1, e1]` and `[s2, e2]` are considered overlapping if `e1 > s2`. If `e1 == s2`, the intervals are **not** considered overlapping.
+
+> You must abide by the following constraints:
+>
+> - If multiple intervals tie for the maximum overlap, return the **first** such interval.
+> - The output should be in the form `[intervalStart, intervalEnd]`.
+> - If there are no overlapping intervals, return `[-1, -1]`.
+
+---
+
+## Examples
+
+**Example 1**
 ```
-Input:  intervals = [[1, 4], [2, 6], [3, 5]]
-Output: [3, 4]
-Explanation: At any instant in [3,4) all three intervals are active — peak = 3.
-             Before t=3 only two are active; after t=4 only two remain.
-
-Input:  intervals = [[1, 10], [2, 3], [5, 7]]
+Input:  meetings = [[1, 3], [2, 4], [5, 6]]
 Output: [2, 3]
-Explanation: Peak = 2 achieved during [2,3) and again during [5,7). Earliest window wins.
+Explanation: The interval [2, 3] is the busiest because it is the period
+             during which the highest number of meetings (2) overlap.
+```
 
-Input:  intervals = [[1, 2], [3, 4]]
-Output: [1, 2]
-Explanation: Peak = 1 (no actual overlap). Earliest active window is [1,2).
+**Example 2**
+```
+Input:  meetings = [[1, 8], [4, 5], [6, 7], [7, 8]]
+Output: [4, 5]
+Explanation: The intervals [4, 5], [6, 7], and [7, 8] all have the
+             maximum number of overlapping meetings. Since [4, 5]
+             occurs first, it is returned as the busiest interval.
+```
+
+**Example 3**
+```
+Input:  meetings = [[1, 5], [5, 10], [10, 15]]
+Output: [-1, -1]
+Explanation: Meetings only touch at endpoints so there are no
+             overlapping meetings.
 ```
 
 ---
@@ -1791,7 +2017,7 @@ events -> busiest
 
 **Mental model:** the counter is the same. The only change is *what we record* when it reaches a new high.
 
-**Concrete numbers:** for `[[1,4],[2,6],[3,5]]`, the counter sequence is `1, 2, 3, 2, 1, 0`. The peak `3` happens at `t = 3`. That's the left edge of our window.
+**Concrete numbers:** for `[[1,3],[2,4],[5,6]]`, the counter sequence over the sorted events `[(1,'s'),(2,'s'),(3,'e'),(4,'e'),(5,'s'),(6,'e')]` is `1, 2, 1, 0, 1, 0`. The peak `2` happens between `t = 2` and the next end event at `t = 3`. That's our window.
 
 **What breaks otherwise:** if you skip the overlap framing and try a pairwise intersection hunt ("find the interval common to all"), you'd write O(N²) code with a complicated intersection formula — and still get the same answer.
 
@@ -1799,23 +2025,23 @@ events -> busiest
 
 **Mental model:** the question is "when is it busiest?", not "how busy is the busiest moment?". The peak value drops out of the algorithm for free; the range is the main output.
 
-**Concrete numbers:** the peak is `3` (value), attained during `[3, 4]` (range). The caller wants `[3, 4]`. Returning `3` alone would miss half the answer.
+**Concrete numbers:** the peak is `2` (value), attained during `[2, 3]` (range). The caller wants `[2, 3]`. Returning `2` alone would miss half the answer.
 
-**What breaks otherwise:** a value-only algorithm would return `3` for both `[[1,4],[2,6],[3,5]]` and `[[10,11],[10,11],[10,11]]`. The two problems have the same peak but totally different busiest ranges — you'd be throwing away the information that distinguishes them.
+**What breaks otherwise:** a value-only algorithm would return `2` for both `[[1,3],[2,4],[5,6]]` and `[[10,11],[10,12]]`. The two problems have the same peak but different busiest ranges — you'd be throwing away the information that distinguishes them.
 
 ### Q3 — Why "coordinate + count"?
 
-**Mental model:** imagine a cursor pointing at the current event. When the counter goes *up* and beats the current max, the cursor's coordinate is the left edge of a new candidate window. The next event coordinate becomes the right edge.
+**Mental model:** imagine a cursor pointing at the current event. When the counter goes *up* and beats the current max, the cursor's coordinate is the left edge of a new candidate window. The first event after that which keeps the counter at the same max marks the right edge.
 
-**Concrete numbers:** at `t = 3`, the counter reaches 3 — a new max. We tentatively set `left = 3`. When we advance to `t = 4` (the next event), we set `right = 4` and record the window `[3, 4]`.
+**Concrete numbers:** at `t = 2`, the counter reaches `2` — a new max. We set `start = 2`, `end = −1` (window open). At `t = 3` an end event fires while `count == max == 2`, so we set `end = 3`. Window: `[2, 3]`.
 
 **What breaks otherwise:** tracking only the max value loses the coordinate of where it happened. You'd have no way to build the window.
 
 ### Q4 — Why "first to reach max wins"?
 
-**Mental model:** we update the window *strictly* when the count exceeds the stored max — not when it ties. Ties preserve the earlier window.
+**Mental model:** we update `intervalStart` *strictly* when the count exceeds the stored max — not when it ties. Ties preserve the earlier window. And once `intervalEnd` is set (no longer `−1`), later end events don't overwrite it.
 
-**Concrete numbers:** for `[[1,10],[2,3],[5,7]]`, count reaches 2 at `t = 2` (window `[2, 3]`) and again at `t = 5` (window `[5, 7]`). Because we use `>` not `≥`, the first window sticks.
+**Concrete numbers:** for `[[1,8],[4,5],[6,7],[7,8]]`, the events are `(1,'s'),(4,'s'),(5,'e'),(6,'s'),(7,'e'),(7,'s'),(8,'e'),(8,'e')`. Counter peaks at 2 multiple times — first at `t = 4`. We lock `start = 4, end = 5` and never overwrite, even though count returns to 2 at `t = 6` and again at `t = 7`.
 
 **What breaks otherwise:** using `≥` would always return the *last* tied window — which answers a different question. The tiebreaker is part of the contract.
 
@@ -1823,7 +2049,7 @@ events -> busiest
 
 ## The Sweep Strategy (Visualised)
 
-Instead of splitting into events, we iterate **one sorted event list** but remember the coordinate of each event. On any start that pushes `count` above `maxCount`, we set `busiestStart = this event's coordinate`. On the *next* event after that, we close the window: `busiestEnd = next event's coordinate`. We know "next event" only after we process it, so the cleanest implementation is: **after each event, update `busiestEnd` to the current coordinate whenever `count == maxCount` and the window is still "open"**.
+The sweep needs two pieces of state beyond the usual counter: **`intervalStart`** (set when a `'s'` event pushes count above the running max) and **`intervalEnd`** (set on an `'e'` event when count momentarily equals the running max *and* end is still flagged as open with `−1`). Once `intervalEnd` is set, it stays set — that's how "first window wins" is enforced.
 
 ```mermaid
 ---
@@ -1838,19 +2064,22 @@ config:
     tertiaryColor: "#fef9c3"
 ---
 flowchart TB
-    Init(["Split + sort events<br/>count=0, maxCount=0, busiest=[undef, undef]"])
-    For["For each (coord, tag) in sorted events:"]
-    Upd["If tag='s': count += 1<br/>If tag='e': count -= 1"]
-    Check["If count > maxCount:<br/>maxCount = count<br/>busiestStart = coord (left edge of new peak)"]
-    Close["Peek NEXT event's coord → set busiestEnd = nextCoord<br/>(closes the window whenever the NEXT event would drop us below peak)"]
-    Done(["return [busiestStart, busiestEnd]"])
-    Init --> For --> Upd --> Check --> Close --> For
-    Check --> Done
+    Init(["Split + sort events<br/>currentOverlap=0, maximumOverlap=0<br/>intervalStart=0, intervalEnd=0"])
+    For["For each (time, type) in sorted events:"]
+    Start["If type='s':<br/>currentOverlap += 1<br/>If currentOverlap > maximumOverlap:<br/>maximumOverlap = currentOverlap<br/>intervalStart = time<br/>intervalEnd = -1 (open window)"]
+    End["If type='e':<br/>If currentOverlap == maximumOverlap AND intervalEnd == -1:<br/>intervalEnd = time<br/>currentOverlap -= 1"]
+    Final(["If maximumOverlap ≤ 1: return [-1, -1]<br/>Else: return [intervalStart, intervalEnd]"])
+    Init --> For
+    For --> Start
+    For --> End
+    Start --> For
+    End --> For
+    For --> Final
 ```
 
-<p align="center"><strong>A small tweak to the sweep: remember the coordinate of every peak-setting event, then peek the next event coordinate to close the window.</strong></p>
+<p align="center"><strong>Standard sweep plus two pieces of state: <code>intervalStart</code> set on a peak-breaking <code>'s'</code>, <code>intervalEnd</code> set on the first <code>'e'</code> that fires while the count is still at peak.</strong></p>
 
-Concretely, the easiest implementation iterates with an index `i` and uses `points[i+1][0]` as the closing coordinate when a new peak is discovered at `points[i]`. We only record the *first* such peak (`>` not `≥`) so ties keep the earliest window.
+The final guard `maximumOverlap ≤ 1` returns `[-1, -1]` — a single interval alone doesn't count as "overlap" by the problem's definition.
 
 ---
 
@@ -1859,99 +2088,239 @@ Concretely, the easiest implementation iterates with an index `i` and uses `poin
 
 ```pseudocode
 # Find the [start, end] window with the highest concurrent-interval count.
-function busiestInterval(intervals):
-    if intervals is empty: return empty list
-    points ← empty list
-    for each (s, e) in intervals:
-        append (s, 's') to points
-        append (e, 'e') to points
-    sort points ascending (with 'e' tiebreaking before 's')
+function busiestInterval(meetings):
+    times ← empty list
+    for each (s, e) in meetings:
+        append TimePoint(s, 's') to times
+        append TimePoint(e, 'e') to times
 
-    count ← 0; maxCount ← 0
-    busiest ← [0, 0]
-    for i from 0 to length(points) − 1:
-        (coord, tag) ← points[i]
-        if tag = 's':
-            count ← count + 1
-            if count > maxCount:                      # strict > — first window at the peak wins ties
-                maxCount ← count
-                busiest[0] ← coord
-                busiest[1] ← points[i + 1].coord      # peak ends at the very next event
+    sort times ascending by (time, type)   # 'e' < 's' on ties
+
+    currentOverlap ← 0
+    maximumOverlap ← 0
+    intervalStart  ← 0
+    intervalEnd    ← 0
+
+    for each point in times:
+        if point.type = 's':
+            # If we are at the start of a new maximum overlap interval
+            currentOverlap ← currentOverlap + 1
+            if currentOverlap > maximumOverlap:
+                maximumOverlap ← currentOverlap
+                intervalStart  ← point.time
+                intervalEnd    ← -1                # reset end of busiest interval
         else:
-            count ← count − 1
-    return busiest
+            # If we are at the end of an interval with maximum overlap and
+            # the current overlap equals the maximum overlap, lock the end
+            if currentOverlap = maximumOverlap AND intervalEnd = -1:
+                intervalEnd ← point.time
+            currentOverlap ← currentOverlap − 1
+
+    if maximumOverlap ≤ 1:
+        return [-1, -1]
+    return [intervalStart, intervalEnd]
 ```
 
 ```python run
-from typing import List
+from typing import List, Tuple
 
-def busiest_interval(intervals: List[List[int]]) -> List[int]:
-    if not intervals:
-        return []
+# Define a class to store the time and type ('s' or 'e')
+class TimePoint:
+    def __init__(self, time: int, type_: str):
+        self.time = time
+        self.type = type_
 
-    # Build and sort the usual tagged-point array
-    points = []
-    for s, e in intervals:
-        points.append((s, 's'))
-        points.append((e, 'e'))
-    points.sort()   # 'e' < 's' on ties — touching intervals don't overlap
+    def __lt__(self, other):
 
-    count = 0
-    max_count = 0
-    busiest = [0, 0]   # will be overwritten on the first true peak
+        # Sort the times array, end times come before start times
+        # as 'e' < 's'
+        if self.time == other.time:
+            return self.type < other.type
+        return self.time < other.time
 
-    for i, (coord, tag) in enumerate(points):
-        if tag == 's':
-            count += 1
-            # Strict '>' → first window that reaches a new peak wins ties
-            if count > max_count:
-                max_count = count
-                # Left edge = this start coord; right edge = the NEXT event coord.
-                # There is always a next event because every 's' has a matching 'e'.
-                busiest = [coord, points[i + 1][0]]
+def busiest_interval(
+    meetings: List[List[int]],
+) -> Tuple[int, int]:
+
+    # Create a dynamic array to store start and end times
+    times: List[TimePoint] = []
+
+    for interval in meetings:
+
+        # Add start and end times to the times array
+        times.append(TimePoint(interval[0], "s"))
+        times.append(TimePoint(interval[1], "e"))
+
+    # Sort the times array using the custom compare function
+    times.sort()
+
+    # Currently overlapping intervals
+    current_overlap = 0
+
+    # Maximum overlap count
+    maximum_overlap = 0
+
+    # Start of the interval with maximum overlap
+    interval_start = 0
+
+    # End of the interval with maximum overlap
+    interval_end = 0
+
+    for point in times:
+        if point.type == "s":
+
+            # If we are at the start of a new maximum overlap
+            # interval
+            current_overlap += 1
+
+            # If the current overlap exceeds the maximum overlap
+            # update the maximum overlap and start of the interval
+            # with maximum overlap
+            if current_overlap > maximum_overlap:
+                maximum_overlap = current_overlap
+                interval_start = point.time
+
+                # Reset the end of the interval with maximum overlap
+                interval_end = -1
+
+        # 'e' - end of interval
         else:
-            count -= 1
 
-    return busiest
+            # If we are at the end of an interval with maximum
+            # overlap and the current overlap is equal to the
+            # maximum overlap then update the end of the interval
+            # with maximum overlap
+            if (
+                current_overlap == maximum_overlap
+                and interval_end == -1
+            ):
+                interval_end = point.time
+
+            # Decrement the current overlap count
+            current_overlap -= 1
+
+    # If maximum_overlap <= 1, return (-1, -1) indicating no overlap
+    if maximum_overlap <= 1:
+        return -1, -1
+
+    return interval_start, interval_end
 
 
-print(busiest_interval([[1, 4], [2, 6], [3, 5]]))   # [3, 4]
-print(busiest_interval([[1, 10], [2, 3], [5, 7]]))  # [2, 3]
-print(busiest_interval([[1, 2], [3, 4]]))           # [1, 2]
+print(busiest_interval([[1, 3], [2, 4], [5, 6]]))             # (2, 3)
+print(busiest_interval([[1, 8], [4, 5], [6, 7], [7, 8]]))     # (4, 5)
+print(busiest_interval([[1, 5], [5, 10], [10, 15]]))          # (-1, -1)
 ```
 
 ```java run
 import java.util.*;
 
-class Solution {
-    public int[] busiestInterval(int[][] intervals) {
-        if (intervals.length == 0) return new int[0];
+// Define a class to store the time and type ('s' or 'e')
+class TimePoint {
 
-        List<int[]> points = new ArrayList<>();
-        for (int[] iv : intervals) {
-            points.add(new int[]{iv[0], 1});   // start
-            points.add(new int[]{iv[1], 0});   // end
+    int time;
+    char type;
+
+    TimePoint(int time, char type) {
+        this.time = time;
+        this.type = type;
+    }
+}
+
+// Comparator for TimePoint
+class Compare implements Comparator<TimePoint> {
+    public int compare(TimePoint a, TimePoint b) {
+
+        // Sort the times array, end times come before start times
+        // as 'e' < 's'
+        if (a.time == b.time) {
+            return Character.compare(a.type, b.type);
         }
-        points.sort((a, b) -> a[0] != b[0] ? Integer.compare(a[0], b[0])
-                                           : Integer.compare(a[1], b[1]));
 
-        int count = 0, maxCount = 0;
-        int[] busiest = new int[]{0, 0};
+        return Integer.compare(a.time, b.time);
+    }
+}
 
-        for (int i = 0; i < points.size(); i++) {
-            int[] p = points.get(i);
-            if (p[1] == 1) {
-                count++;
-                if (count > maxCount) {          // strict '>' — earliest wins ties
-                    maxCount = count;
-                    busiest[0] = p[0];           // left edge = this start coord
-                    busiest[1] = points.get(i + 1)[0];   // right edge = next event coord
+class Solution {
+    public int[] busiestInterval(List<List<Integer>> meetings) {
+
+        // Create a dynamic array to store start and end times
+        List<TimePoint> times = new ArrayList<>();
+
+        for (List<Integer> interval : meetings) {
+
+            // Add start and end times to the times array
+            times.add(new TimePoint(interval.get(0), 's'));
+            times.add(new TimePoint(interval.get(1), 'e'));
+        }
+
+        // Sort the times array using the custom compare function
+        times.sort(new Compare());
+
+        // Currently overlapping intervals
+        int currentOverlap = 0;
+
+        // Maximum overlap count
+        int maximumOverlap = 0;
+
+        // Start of the interval with maximum overlap
+        int intervalStart = 0;
+
+        // End of the interval with maximum overlap
+        int intervalEnd = 0;
+
+        for (TimePoint point : times) {
+            if (point.type == 's') {
+
+                // If we are at the start of a new maximum overlap
+                // interval
+                currentOverlap++;
+
+                // If the current overlap exceeds the maximum overlap
+                // update the maximum overlap and start of the interval
+                // with maximum overlap
+                if (currentOverlap > maximumOverlap) {
+                    maximumOverlap = currentOverlap;
+                    intervalStart = point.time;
+
+                    // Reset the end of the interval with maximum overlap
+                    intervalEnd = -1;
                 }
-            } else {
-                count--;
+            }
+
+            // 'e' - end of interval
+            else {
+
+                // If we are at the end of an interval with maximum
+                // overlap and the current overlap is equal to the
+                // maximum overlap then update the end of the interval
+                // with maximum overlap
+                if (
+                    currentOverlap == maximumOverlap && intervalEnd == -1
+                ) {
+                    intervalEnd = point.time;
+                }
+
+                // Decrement the current overlap count
+                currentOverlap--;
             }
         }
-        return busiest;
+
+        // If maximumOverlap <= 1, return {-1, -1} indicating no overlap
+        if (maximumOverlap <= 1) {
+            return new int[] { -1, -1 };
+        }
+
+        return new int[] { intervalStart, intervalEnd };
+    }
+
+    public static void main(String[] args) {
+        Solution s = new Solution();
+        System.out.println(Arrays.toString(s.busiestInterval(List.of(
+            List.of(1, 3), List.of(2, 4), List.of(5, 6)))));                                 // [2, 3]
+        System.out.println(Arrays.toString(s.busiestInterval(List.of(
+            List.of(1, 8), List.of(4, 5), List.of(6, 7), List.of(7, 8)))));                  // [4, 5]
+        System.out.println(Arrays.toString(s.busiestInterval(List.of(
+            List.of(1, 5), List.of(5, 10), List.of(10, 15)))));                              // [-1, -1]
     }
 }
 ```
@@ -1960,101 +2329,239 @@ class Solution {
 #include <stdio.h>
 #include <stdlib.h>
 
+// Define a struct to store the time and type ('s' or 'e')
+typedef struct {
+    int  time;
+    char type;
+} TimePoint;
+
+// Sort the times array, end times come before start times as 'e' < 's'
 static int cmp(const void* a, const void* b) {
-    int* x = (int*)a; int* y = (int*)b;
-    if (x[0] != y[0]) return x[0] - y[0];
-    return x[1] - y[1];
+    const TimePoint* x = (const TimePoint*)a;
+    const TimePoint* y = (const TimePoint*)b;
+    if (x->time == y->time) return (int)x->type - (int)y->type;
+    return x->time - y->time;
 }
 
-// out must point to an int[2]; sets out[0]=a, out[1]=b
-void busiestInterval(int intervals[][2], int n, int out[2]) {
-    if (n == 0) { out[0] = out[1] = 0; return; }
+void busiestInterval(int meetings[][2], int n, int out[2]) {
 
-    int (*points)[2] = malloc(sizeof(int[2]) * 2 * n);
+    // Create a dynamic array to store start and end times
+    TimePoint* times = (TimePoint*)malloc(sizeof(TimePoint) * 2 * n);
     int k = 0;
-    for (int i = 0; i < n; i++) {
-        points[k][0] = intervals[i][0]; points[k][1] = 1; k++;
-        points[k][0] = intervals[i][1]; points[k][1] = 0; k++;
-    }
-    qsort(points, 2 * n, sizeof(int[2]), cmp);
 
-    int count = 0, maxCount = 0;
-    out[0] = out[1] = 0;
-    for (int i = 0; i < 2 * n; i++) {
-        if (points[i][1] == 1) {
-            count++;
-            if (count > maxCount) {
-                maxCount = count;
-                out[0] = points[i][0];
-                out[1] = points[i + 1][0];   // safe: every start has a matching later end
-            }
-        } else count--;
+    for (int i = 0; i < n; i++) {
+
+        // Add start and end times to the times array
+        times[k].time = meetings[i][0]; times[k].type = 's'; k++;
+        times[k].time = meetings[i][1]; times[k].type = 'e'; k++;
     }
-    free(points);
+
+    // Sort the times array using the custom compare function
+    qsort(times, 2 * n, sizeof(TimePoint), cmp);
+
+    // Currently overlapping intervals
+    int currentOverlap = 0;
+
+    // Maximum overlap count
+    int maximumOverlap = 0;
+
+    // Start of the interval with maximum overlap
+    int intervalStart = -1;
+
+    // End of the interval with maximum overlap
+    int intervalEnd = -1;
+
+    for (int i = 0; i < 2 * n; i++) {
+        if (times[i].type == 's') {
+
+            // If we are at the start of a new maximum overlap interval
+            currentOverlap++;
+
+            // If the current overlap exceeds the maximum overlap
+            // update the maximum overlap and start of the interval
+            // with maximum overlap
+            if (currentOverlap > maximumOverlap) {
+                maximumOverlap = currentOverlap;
+                intervalStart  = times[i].time;
+
+                // Reset the end of the interval with maximum overlap
+                intervalEnd = -1;
+            }
+        }
+
+        // 'e' - end of interval
+        else {
+
+            // If we are at the end of an interval with maximum overlap
+            // and the current overlap equals the maximum overlap then
+            // update the end of the interval with maximum overlap
+            if (currentOverlap == maximumOverlap && intervalEnd == -1) {
+                intervalEnd = times[i].time;
+            }
+
+            // Decrement the current overlap count
+            currentOverlap--;
+        }
+    }
+
+    free(times);
+
+    // If maximumOverlap <= 1, return {-1, -1} indicating no overlap
+    if (maximumOverlap <= 1) { out[0] = -1; out[1] = -1; return; }
+
+    out[0] = intervalStart;
+    out[1] = intervalEnd;
+}
+
+int main(void) {
+    int out[2];
+    int m1[][2] = {{1, 3}, {2, 4}, {5, 6}};
+    busiestInterval(m1, 3, out); printf("[%d, %d]\n", out[0], out[1]);    // [2, 3]
+    int m2[][2] = {{1, 8}, {4, 5}, {6, 7}, {7, 8}};
+    busiestInterval(m2, 4, out); printf("[%d, %d]\n", out[0], out[1]);    // [4, 5]
+    int m3[][2] = {{1, 5}, {5, 10}, {10, 15}};
+    busiestInterval(m3, 3, out); printf("[%d, %d]\n", out[0], out[1]);    // [-1, -1]
+    return 0;
 }
 ```
 
 ```scala run
+// Define a class to store the time and type ('s' or 'e')
+case class TimePoint(time: Int, `type`: Char)
+
 object Solution {
-  def busiestInterval(intervals: Array[Array[Int]]): Array[Int] = {
-    if (intervals.isEmpty) return Array.empty
 
-    val points = intervals.flatMap(iv => Seq((iv(0), 1), (iv(1), 0)))
-                          .sortBy(p => (p._1, p._2))   // end before start on ties
+  // Sort the times array, end times come before start times as 'e' < 's'
+  private val ordering: Ordering[TimePoint] =
+    Ordering.by((p: TimePoint) => (p.time, p.`type`))
 
-    var count = 0
-    var maxCount = 0
-    val busiest = Array(0, 0)
+  def busiestInterval(meetings: Array[Array[Int]]): Array[Int] = {
 
-    for (i <- points.indices) {
-      val (coord, tag) = points(i)
-      if (tag == 1) {
-        count += 1
-        if (count > maxCount) {            // '>' keeps the earliest window on ties
-          maxCount = count
-          busiest(0) = coord
-          busiest(1) = points(i + 1)._1    // next event's coord closes the window
-        }
-      } else count -= 1
+    // Create a dynamic array to store start and end times
+    val times = scala.collection.mutable.ArrayBuffer.empty[TimePoint]
+
+    for (interval <- meetings) {
+
+      // Add start and end times to the times array
+      times += TimePoint(interval(0), 's')
+      times += TimePoint(interval(1), 'e')
     }
-    busiest
+
+    // Sort the times array using the custom compare function
+    val sorted = times.sorted(ordering)
+
+    // Currently overlapping intervals
+    var currentOverlap = 0
+
+    // Maximum overlap count
+    var maximumOverlap = 0
+
+    // Start of the interval with maximum overlap
+    var intervalStart = 0
+
+    // End of the interval with maximum overlap
+    var intervalEnd = 0
+
+    for (point <- sorted) {
+      if (point.`type` == 's') {
+
+        // If we are at the start of a new maximum overlap interval
+        currentOverlap += 1
+
+        // If the current overlap exceeds the maximum overlap
+        // update the maximum overlap and start of the interval
+        // with maximum overlap
+        if (currentOverlap > maximumOverlap) {
+          maximumOverlap = currentOverlap
+          intervalStart  = point.time
+
+          // Reset the end of the interval with maximum overlap
+          intervalEnd = -1
+        }
+      }
+
+      // 'e' - end of interval
+      else {
+
+        // If we are at the end of an interval with maximum overlap
+        // and the current overlap equals the maximum overlap then
+        // update the end of the interval with maximum overlap
+        if (currentOverlap == maximumOverlap && intervalEnd == -1) {
+          intervalEnd = point.time
+        }
+
+        // Decrement the current overlap count
+        currentOverlap -= 1
+      }
+    }
+
+    // If maximumOverlap <= 1, return {-1, -1} indicating no overlap
+    if (maximumOverlap <= 1) Array(-1, -1)
+    else Array(intervalStart, intervalEnd)
+  }
+
+  def main(args: Array[String]): Unit = {
+    println(busiestInterval(Array(Array(1, 3), Array(2, 4), Array(5, 6))).mkString("[", ", ", "]"))    // [2, 3]
+    println(busiestInterval(Array(Array(1, 8), Array(4, 5), Array(6, 7), Array(7, 8))).mkString("[", ", ", "]"))   // [4, 5]
+    println(busiestInterval(Array(Array(1, 5), Array(5, 10), Array(10, 15))).mkString("[", ", ", "]"))             // [-1, -1]
   }
 }
 ```
 
 
 <details>
-<summary><strong>Trace — intervals = [[1, 4], [2, 6], [3, 5]]</strong></summary>
+<summary><strong>Trace — meetings = [[1, 3], [2, 4], [5, 6]]</strong></summary>
 
 ```
-Sorted events: [(1,'s'), (2,'s'), (3,'s'), (4,'e'), (5,'e'), (6,'e')]
+Sorted events: [(1,'s'), (2,'s'), (3,'e'), (4,'e'), (5,'s'), (6,'e')]
 
-i=0 (1,'s') │ count 0→1 │ 1 > 0 → maxCount=1, busiest=[1, next=2]  → [1,2]
-i=1 (2,'s') │ count 1→2 │ 2 > 1 → maxCount=2, busiest=[2, next=3]  → [2,3]
-i=2 (3,'s') │ count 2→3 │ 3 > 2 → maxCount=3, busiest=[3, next=4]  → [3,4] ★
-i=3 (4,'e') │ count 3→2 │ no update
-i=4 (5,'e') │ count 2→1 │ no update
-i=5 (6,'e') │ count 1→0 │ no update
+(1,'s') │ overlap 0→1 │ 1 > 0 → max=1, start=1, end=-1
+(2,'s') │ overlap 1→2 │ 2 > 1 → max=2, start=2, end=-1
+(3,'e') │ overlap == max AND end==-1 → end=3 │ overlap 2→1
+(4,'e') │ overlap (1) != max (2) → no update │ overlap 1→0
+(5,'s') │ overlap 0→1 │ 1 > 2 FALSE → no peak
+(6,'e') │ no update                          │ overlap 1→0
 
-Result: [3, 4] ✓
+max overlap = 2 > 1 → result: [2, 3] ✓
 ```
 
 </details>
 
 <details>
-<summary><strong>Trace — intervals = [[1, 10], [2, 3], [5, 7]] (tie case)</strong></summary>
+<summary><strong>Trace — meetings = [[1, 8], [4, 5], [6, 7], [7, 8]] (tie case)</strong></summary>
 
 ```
-Sorted events: [(1,'s'), (2,'s'), (3,'e'), (5,'s'), (7,'e'), (10,'e')]
+Sorted events: [(1,'s'), (4,'s'), (5,'e'), (6,'s'), (7,'e'), (7,'s'), (8,'e'), (8,'e')]
 
-i=0 (1,'s')  │ count 0→1 │ 1 > 0 → busiest=[1, next=2]  → [1,2]
-i=1 (2,'s')  │ count 1→2 │ 2 > 1 → busiest=[2, next=3]  → [2,3] ★ locked
-i=2 (3,'e')  │ count 2→1 │ no update
-i=3 (5,'s')  │ count 1→2 │ 2 > 2 FALSE (strict '>') → window stays [2,3]
-i=4 (7,'e')  │ count 2→1 │ no update
-i=5 (10,'e') │ count 1→0 │ no update
+(1,'s') │ overlap 0→1 │ 1 > 0 → max=1, start=1, end=-1
+(4,'s') │ overlap 1→2 │ 2 > 1 → max=2, start=4, end=-1 ★
+(5,'e') │ overlap == max AND end==-1 → end=5 │ overlap 2→1
+(6,'s') │ overlap 1→2 │ 2 > 2 FALSE → window stays [4,5]
+(7,'e') │ overlap (2) == max (2) but end != -1 → no update │ overlap 2→1
+(7,'s') │ overlap 1→2 │ 2 > 2 FALSE → no update
+(8,'e') │ end != -1 → no update │ overlap 2→1
+(8,'e') │ no update             │ overlap 1→0
 
-Result: [2, 3] ✓   Earliest tie wins.
+max overlap = 2 > 1 → result: [4, 5] ✓  (earliest of three tied windows)
+```
+
+</details>
+
+<details>
+<summary><strong>Trace — meetings = [[1, 5], [5, 10], [10, 15]] (no overlap)</strong></summary>
+
+```
+Sorted events: [(1,'s'), (5,'e'), (5,'s'), (10,'e'), (10,'s'), (15,'e')]
+                       ^^^^^^^^^^^^^^^^^^^  end before start on ties
+
+(1,'s')  │ overlap 0→1 │ 1 > 0 → max=1, start=1, end=-1
+(5,'e')  │ end=5       │ overlap 1→0
+(5,'s')  │ overlap 0→1 │ 1 > 1 FALSE → no update
+(10,'e') │ end != -1 → no update │ overlap 1→0
+(10,'s') │ overlap 0→1 │ 1 > 1 FALSE → no update
+(15,'e') │ no update            │ overlap 1→0
+
+max overlap = 1 ≤ 1 → result: [-1, -1] ✓
 ```
 
 </details>
@@ -2074,24 +2581,24 @@ Result: [2, 3] ✓   Earliest tie wins.
 
 | Case | Example | Expected | Reasoning |
 |---|---|---|---|
-| Empty input | `[]` | `[]` | No intervals → no busy window |
-| Single interval | `[[1, 10]]` | `[1, 10]` | Peak=1 attained at t=1; next event is the end t=10 |
-| Disjoint | `[[1, 2], [3, 4]]` | `[1, 2]` | Peak=1; first to reach it |
-| Touching | `[[1, 3], [3, 5]]` | `[1, 3]` | `'e'` processed before `'s'` at 3 → peak=1 only; first window wins |
-| Triple tie | `[[1, 5], [2, 6], [3, 7]]` | `[3, 5]` | Peak=3 at t=3, next event is `(5,'e')` |
+| Empty input | `[]` | `[-1, -1]` | No intervals → no overlap |
+| Single interval | `[[1, 10]]` | `[-1, -1]` | max overlap = 1; not an overlap |
+| Disjoint | `[[1, 2], [3, 4]]` | `[-1, -1]` | Peak = 1 only — no overlap |
+| Touching | `[[1, 3], [3, 5]]` | `[-1, -1]` | `'e'` processed before `'s'` at `3` → peak = 1 |
+| Triple tie | `[[1, 5], [2, 6], [3, 7]]` | `[3, 5]` | Peak = 3 first attained at `t = 3`; first end fires at `5` |
 | Nested | `[[1, 100], [50, 51]]` | `[50, 51]` | Inner interval triggers the peak of 2 |
 
 ---
 
 ## Final Takeaway
 
-Busiest Interval shows how the same sweep can answer a richer question by remembering **where** peaks occur, not just **how high** they go. The trick — "close the window at the next event coord" — generalises: any time you need a *range* instead of a *value*, look at event coordinates, not index positions. When you next see "busiest", "most active", "highest-load window", you now know exactly what to reach for.
+Busiest Interval shows how the same sweep can answer a richer question by remembering **where** peaks occur, not just **how high** they go. The trick — "set `intervalEnd` on the first `'e'` event that fires while count is still at peak" — generalises: any time you need a *range* instead of a *value*, look at event coordinates, not index positions. Don't forget the `maximumOverlap ≤ 1` guard at the end: a single interval doesn't qualify as an overlap.
 
-> **Transfer Challenge:** Return **all** disjoint windows during which the peak is sustained (not just the earliest). For `[[1,10],[2,3],[5,7]]` the output should be `[[2,3], [5,7]]` because both windows have count = 2 = max.
+> **Transfer Challenge:** Return **all** disjoint windows during which the peak is sustained (not just the earliest). For `[[1,8],[4,5],[6,7],[7,8]]` the output should be `[[4,5], [6,7], [7,8]]` because all three windows have count = 2 = max.
 >
 > <details><summary><strong>Solution hint</strong></summary>
 >
-> Sweep twice. Pass 1 finds `maxCount`. Pass 2 collects every window where `count == maxCount` for a contiguous run of events, emitting each run as `[leftCoord, rightCoord]`. Stays O(N log N).
+> Sweep twice. Pass 1 finds `maximumOverlap`. Pass 2 collects every window where `currentOverlap == maximumOverlap` for a contiguous run of events, emitting each run as `[start, end]`. Stays O(N log N).
 >
 > </details>
 
@@ -2101,49 +2608,73 @@ Busiest Interval shows how the same sweep can answer a richer question by rememb
 
 ## The Problem
 
-> Each task in an array `tasks` is described by `tasks[i] = [start_i, end_i, load_i]`, meaning the task consumes `load_i` units of a shared resource (CPU cores, memory, bandwidth) continuously from `start_i` to `end_i`. Return the **peak total load** — the maximum sum of simultaneously-active loads at any instant.
+Given an array of **jobs**, consisting of start time, end time, and required resources `[[s1, e1, r1], [s2, e2, r2], ...] (si < ei)`, find and return the **busiest interval** formed by overlapping jobs.
 
+The busiest interval is the period during which the **total resources required** across all overlapping jobs are maximised. Your function should return both this interval and the corresponding maximum resources needed during that time.
+
+Two intervals `[s1, e1]` and `[s2, e2]` are considered overlapping if `e1 > s2`. If `e1 == s2`, the intervals are **not** considered overlapping.
+
+> You must abide by the following constraints:
+>
+> - If multiple intervals tie for the maximum resources, return the **first** such interval.
+> - The output should be in the form `[intervalStart, intervalEnd, maxResources]`.
+> - If there are no overlapping intervals, return `[-1, -1, 0]`.
+
+---
+
+## Examples
+
+**Example 1**
 ```
-Input:  tasks = [[1, 4, 3], [2, 6, 2], [3, 5, 1]]
-Output: 6
-Explanation: At t=3 all three tasks are active → total load = 3 + 2 + 1 = 6.
-             That's the peak; load drops back to 3 at t=4 when [1,4,3] ends.
+Input:  jobs = [[1, 5, 2], [2, 6, 3], [4, 7, 4]]
+Output: [4, 5, 9]
+Explanation: At interval [4, 5], all three jobs overlap, requiring
+             2 + 3 + 4 = 9 resources, which is the maximum.
+```
 
-Input:  tasks = [[1, 10, 5], [2, 3, 10]]
-Output: 15
-Explanation: Between t=2 and t=3, both tasks are active → 5 + 10 = 15.
+**Example 2**
+```
+Input:  jobs = [[1, 3, 1], [2, 4, 5], [5, 6, 4]]
+Output: [2, 3, 6]
+Explanation: At t = 2 the first two jobs overlap, requiring 1 + 5 = 6
+             resources — the maximum. The next event (an end at t = 3)
+             closes the first peak window, so the result is [2, 3, 6].
+```
 
-Input:  tasks = [[1, 2, 100]]
-Output: 100
-Explanation: A single task with load 100 → peak is 100.
+**Example 3**
+```
+Input:  jobs = [[1, 5, 2], [5, 10, 3], [10, 15, 5]]
+Output: [-1, -1, 0]
+Explanation: Jobs only touch at endpoints, so there are no
+             overlapping jobs.
 ```
 
 ---
 
-## What Does "Peak Load" Mean?
+## What Does "Peak Resources" Mean?
 
-Instead of counting **how many** intervals are active (each contributing +1 to the counter), we sum **how much** they contribute — each interval adds its own `load` at its start and removes the same `load` at its end. The sweep is identical; the delta is weighted.
+Instead of counting **how many** intervals are active (each contributing +1 to the counter), we sum **how much** they contribute — each job adds its own `resources` at its start and removes the same amount at its end. The sweep is identical; the delta is weighted. We also remember the **interval coordinates** of the first peak.
 
 ```d2
 direction: right
 
-loads: "Three tasks with loads" {
+loads: "Three jobs with resources" {
   grid-columns: 3
   grid-gap: 16
   l1: |md
-    `[1,4]`
+    `[1,5]`
 
-    load=3
+    r=2
   |
   l2: |md
     `[2,6]`
 
-    load=2
+    r=3
   |
   l3: |md
-    `[3,5]`
+    `[4,7]`
 
-    load=1
+    r=4
   |
 }
 
@@ -2151,44 +2682,44 @@ sweep: "Running total across events" {
   grid-columns: 6
   grid-gap: 0
   e1: |md
-    `t=1 +3`
+    `t=1 +2`
 
-    load=3
+    cur=2
   | {style.fill: "#dcfce7"; style.stroke: "#16a34a"}
   e2: |md
-    `t=2 +2`
+    `t=2 +3`
 
-    load=5
+    cur=5
   | {style.fill: "#dcfce7"; style.stroke: "#16a34a"}
   e3: |md
-    `t=3 +1`
+    `t=4 +4`
 
-    load=6 ★
+    cur=9 ★
   | {style.fill: "#fde68a"; style.stroke: "#d97706"}
   e4: |md
-    `t=4 -3`
+    `t=5 -2`
 
-    load=3
+    cur=7
   |
   e5: |md
-    `t=5 -1`
+    `t=6 -3`
 
-    load=2
+    cur=4
   |
   e6: |md
-    `t=6 -2`
+    `t=7 -4`
 
-    load=0
+    cur=0
   |
 }
 
-ans: "peakLoad = 6" {style.fill: "#fde68a"; style.stroke: "#d97706"}
+ans: "result = [4, 5, 9]" {style.fill: "#fde68a"; style.stroke: "#d97706"}
 
 loads -> sweep
 sweep -> ans
 ```
 
-<p align="center"><strong>Each event is a ±load delta instead of ±1. The peak value of the running sum is the answer.</strong></p>
+<p align="center"><strong>Each event is a ±resources delta instead of ±1. The peak value of the running sum is the third output; the surrounding event coordinates are the first two.</strong></p>
 
 ---
 
@@ -2197,41 +2728,41 @@ sweep -> ans
 | Question | Answer |
 |---|---|
 | **Q1.** Is this a maximum-overlap problem? | **Yes** — with a weighted counter instead of ±1 |
-| **Q2.** What does each start/end event contribute? | **+load at start, −load at end** |
+| **Q2.** What does each start/end event contribute? | **+resources at start, −resources at end** |
 | **Q3.** Does the tie-breaker rule change? | **No — still end before start on shared coords** |
-| **Q4.** Does "strict overlap ≥ 2" collapse apply? | **No — a single task's own load is meaningful** |
+| **Q4.** When do we collapse to `[-1, -1, 0]`? | **When `maxResources == maxSingleJobResources`** — no two jobs ever overlapped |
 
 ### Q1 — Why "maximum overlap"?
 
-**Mental model:** the peak of a weighted counter is structurally the same as the peak of an unweighted counter. We never cared that the increment was `+1` — we only cared that it tracked "what's active right now". Changing the increment to `+load` tracks "how much resource is active right now" with zero extra machinery.
+**Mental model:** the peak of a weighted counter is structurally the same as the peak of an unweighted counter. We never cared that the increment was `+1` — we only cared that it tracked "what's active right now". Changing the increment to `+resources` tracks "how much resource is active right now" with zero extra machinery.
 
-**Concrete numbers:** running totals in the example are `3, 5, 6, 3, 2, 0`. Peak = 6.
+**Concrete numbers:** for `[[1,5,2],[2,6,3],[4,7,4]]`, the running totals across sorted events `[(1,'s'),(2,'s'),(4,'s'),(5,'e'),(6,'e'),(7,'e')]` are `2, 5, 9, 7, 4, 0`. Peak = 9 at `t = 4`.
 
-**What breaks otherwise:** if you tried to count "peak number of tasks active" (the unweighted version), you'd return `3` for example 1 — missing the fact that each task has a different cost.
+**What breaks otherwise:** if you tried to count "peak number of jobs active" (the unweighted version), you'd return `3` for example 1 — missing the fact that each job has a different cost.
 
-### Q2 — Why "+load at start, −load at end"?
+### Q2 — Why "+resources at start, −resources at end"?
 
-**Mental model:** a task's cost is paid continuously from start to end. The cumulative change in "resource in use" crossing the start boundary is `+load`; crossing the end boundary is `−load`. Same symmetry as ±1, scaled.
+**Mental model:** a job's resource use is paid continuously from start to end. The cumulative change in "resource in use" crossing the start boundary is `+resources`; crossing the end boundary is `−resources`. Same symmetry as ±1, scaled.
 
-**Concrete numbers:** for `[2, 6, 2]`, crossing `t=2` adds 2 to total load; crossing `t=6` subtracts 2. The task contributes exactly `load × (end − start)` to total resource-seconds, but we don't care about the integral — just the instantaneous peak.
+**Concrete numbers:** for `[2, 6, 3]`, crossing `t=2` adds 3 to total resources; crossing `t=6` subtracts 3.
 
-**What breaks otherwise:** forgetting the sign flip at the end would create a monotonically-increasing counter — load would only ever grow, giving the wrong answer. Symmetric deltas are what make the running total return to zero after the last task ends.
+**What breaks otherwise:** forgetting the sign flip at the end would create a monotonically-increasing counter — load would only ever grow, giving the wrong answer.
 
 ### Q3 — Why "same tie-breaker"?
 
-**Mental model:** the convention that touching tasks are non-overlapping still holds. When one task ends exactly as another starts, the end delta should fire first so the first task's load is released before the second task's load is added.
+**Mental model:** the convention that touching jobs are non-overlapping still holds. When one job ends exactly as another starts, the end delta should fire first so the first job's resources are released before the second job's resources are added.
 
-**Concrete numbers:** for `[[1,3,5],[3,7,4]]` at `t=3`, processing end-first gives `5 → 0 → 4`. Processing start-first gives `5 → 9 → 4` — a phantom spike of 9 that doesn't represent real simultaneity.
+**Concrete numbers:** for `[[1,5,2],[5,10,3]]` at `t=5`, processing end-first gives `2 → 0 → 3`. Processing start-first would give `2 → 5 → 3` — a phantom spike of 5 that doesn't represent real simultaneity.
 
 **What breaks otherwise:** flipping the order invents peaks that never actually happened. In capacity-planning contexts, that translates directly to over-provisioning.
 
-### Q4 — Why "no collapse to 0"?
+### Q4 — Why collapse on `maxResources == maxSingleJobResources`?
 
-**Mental model:** a single task with load 100 legitimately consumes 100 units of resource while it runs. The "need at least 2 for overlap" convention from the generic pattern doesn't apply here — we're measuring *load*, not *overlap count*.
+**Mental model:** "no overlap" means no two jobs were ever active at the same instant. The peak resource value in that case is just the largest single job's resources. So if `maxResources` equals the largest single-job resources, the algorithm never observed any actual overlap — return `[-1, -1, 0]`.
 
-**Concrete numbers:** for `[[1, 2, 100]]` the answer is `100`, not `0`.
+**Concrete numbers:** for `[[1,5,2],[5,10,3],[10,15,5]]`, `maxSingleJobResources = 5` (the third job). The sweep also reports `maxResources = 5`, matched only when the lone third job is active. → return `[-1, -1, 0]`.
 
-**What breaks otherwise:** applying the collapse rule would under-report resource needs by hiding every single-task workload — catastrophic for any real capacity calculation.
+**What breaks otherwise:** a naive `peak <= 0` check would only catch the empty-input case. A "did we ever have count > 1?" check would require an extra counter alongside the weighted sweep. The single-job comparison is a cleaner invariant.
 
 ---
 
@@ -2250,16 +2781,15 @@ config:
     tertiaryColor: "#fef9c3"
 ---
 flowchart TB
-    Split["Each task [s, e, load] → two events:<br/>(s, +load) start<br/>(e, -load) end"]
-    Sort["Sort events by coord ascending<br/>On ties, NEGATIVE delta (end) before POSITIVE (start)"]
-    Sweep["Running sum:<br/>load += delta on every event<br/>peakLoad = max(peakLoad, load)"]
-    Done(["return peakLoad"])
-    Split --> Sort --> Sweep --> Done
+    Split["Each job [s, e, r] → two TimePoints:<br/>(s, 's', r) start<br/>(e, 'e', r) end"]
+    Sort["Sort by (time, type)<br/>'e' < 's' on ties"]
+    Track["maxSingleJobResources = max of all rᵢ<br/>(pre-pass for the collapse rule)"]
+    Sweep["Sweep:<br/>'s': currentResources += r; if exceeds max → reset intervalEnd=-1, intervalStart=time<br/>'e': if current == max AND intervalEnd == -1 → intervalEnd=time; currentResources -= r"]
+    Final(["If maxResources == maxSingleJobResources: return [-1, -1, 0]<br/>Else: return [intervalStart, intervalEnd, maxResources]"])
+    Split --> Sort --> Track --> Sweep --> Final
 ```
 
-<p align="center"><strong>Same four-step skeleton as the base sweep — the only changes are that each event carries a signed <code>load</code> delta and tie-breaking uses the sign instead of a string tag.</strong></p>
-
-A neat implementation trick: store each event as `(coord, delta)` where `delta = +load` for starts and `delta = -load` for ends. Sort ascending by `(coord, delta)` — negative values come before positive values on ties, giving us "end before start" for free. Then the sweep is just `load += delta; peak = max(peak, load)`.
+<p align="center"><strong>Same four-step skeleton as Busiest Interval — but each event carries a <code>resources</code> contribution, and the collapse rule uses the largest single-job resources as the no-overlap sentinel.</strong></p>
 
 ---
 
@@ -2267,162 +2797,520 @@ A neat implementation trick: store each event as `(coord, delta)` where `delta =
 
 
 ```pseudocode
-# Each task contributes a SIGNED load (+ at start, − at end). Sweep summing deltas; track max.
-function peakResource(tasks):
-    if tasks is empty: return 0
-    events ← empty list
-    for each (s, e, load) in tasks:
-        append (s, +load) to events                   # start: add load
-        append (e, −load) to events                   # end:   remove load
-    sort events ascending (negative deltas before positive on ties → ends before starts)
+# TimePoint sweep with resources field; track first peak's start/end + the peak amount.
+function peakResourceRequirement(jobs):
+    times ← empty list
+    for each (s, e, r) in jobs:
+        append TimePoint(s, 's', r) to times
+        append TimePoint(e, 'e', r) to times
 
-    curLoad ← 0; peakLoad ← 0
-    for each (_, delta) in events:
-        curLoad ← curLoad + delta
-        if curLoad > peakLoad:                        # only add-events can push past the peak
-            peakLoad ← curLoad
-    return peakLoad
+    sort times ascending by (time, type)   # 'e' < 's' on ties
+
+    currentResources ← 0
+    maxResources     ← 0
+    intervalStart    ← 0
+    intervalEnd      ← 0
+
+    # Pre-pass: largest single job's resources — used as the no-overlap sentinel
+    maxSingleJobResources ← 0
+    for each (s, e, r) in jobs:
+        maxSingleJobResources ← max(maxSingleJobResources, r)
+
+    for each point in times:
+        if point.type = 's':
+            currentResources ← currentResources + point.resources
+            if currentResources > maxResources:
+                maxResources  ← currentResources
+                intervalStart ← point.time
+                intervalEnd   ← -1                 # reset end
+        else:
+            if currentResources = maxResources AND intervalEnd = -1:
+                intervalEnd ← point.time
+            currentResources ← currentResources − point.resources
+
+    if maxResources = maxSingleJobResources:
+        return [-1, -1, 0]
+    return [intervalStart, intervalEnd, maxResources]
 ```
 
 ```python run
-from typing import List
+from typing import List, Tuple
 
-def peak_resource(tasks: List[List[int]]) -> int:
-    if not tasks:
-        return 0
+# Define a class to store the time and type ('s' or 'e')
+class TimePoint:
+    def __init__(self, time: int, type_: str, resources: int):
+        self.time = time
+        self.type = type_
+        self.resources = resources
 
-    # Each task emits two signed deltas
-    events = []
-    for s, e, load in tasks:
-        events.append((s, load))     # start: positive delta
-        events.append((e, -load))    # end:   negative delta
+    def __lt__(self, other):
 
-    # Sort by (coord, delta). On ties, negative deltas come first →
-    # ends processed before starts → touching tasks don't create phantom peaks.
-    events.sort()
+        # Sort the times array, end times come before start times
+        # as 'e' < 's'
+        if self.time == other.time:
+            return self.type < other.type
+        return self.time < other.time
 
-    cur_load = 0      # current total load (running sum of deltas)
-    peak_load = 0     # best peak seen so far
+def peak_resource_requirement(
+    jobs: List[List[int]],
+) -> Tuple[int, int, int]:
 
-    for _, delta in events:
-        cur_load += delta                 # add this event's signed contribution
-        if cur_load > peak_load:          # only increase-events can push past the peak
-            peak_load = cur_load
-    return peak_load
+    # Create a dynamic array to store start and end times
+    times: List[TimePoint] = []
+
+    for job in jobs:
+
+        # Add start and end times to the times array
+        times.append(TimePoint(job[0], "s", job[2]))
+        times.append(TimePoint(job[1], "e", job[2]))
+
+    # Sort the times array using the custom compare function
+    times.sort()
+
+    # Currently required resources
+    current_resources = 0
+
+    # Maximum resources count
+    maximum_resources = 0
+
+    # Start of the interval with maximum resources
+    interval_start = 0
+
+    # End of the interval with maximum resources
+    interval_end = 0
+
+    # Maximum resources required by a single job
+    max_single_job_resources = 0
+
+    # Find the maximum resources required by a single job
+    for job in jobs:
+        max_single_job_resources = max(
+            max_single_job_resources, job[2]
+        )
+
+    for point in times:
+        if point.type == "s":
+
+            # If we are at the start of a new maximum resources
+            # interval
+            current_resources += point.resources
+
+            # If the current resources exceed the maximum resources
+            # update the maximum resources and start of the interval
+            # with maximum resources
+            if current_resources > maximum_resources:
+                maximum_resources = current_resources
+                interval_start = point.time
+
+                # Reset the end of the interval with maximum
+                # resources
+                interval_end = -1
+
+        # 'e' - end of interval
+        else:
+
+            # If we are at the end of an interval with maximum
+            # resources and the current resources are equal to the
+            # maximum resources then update the end of the interval
+            # with maximum resources
+            if (
+                current_resources == maximum_resources
+                and interval_end == -1
+            ):
+                interval_end = point.time
+
+            # Decrement the current resources count
+            current_resources -= point.resources
+
+    # If the maximum resources is equal to the maximum resources
+    # required by a single job, return {-1, -1, 0} as there is no
+    # interval with overlapping jobs
+    if maximum_resources == max_single_job_resources:
+        return -1, -1, 0
+
+    return interval_start, interval_end, maximum_resources
 
 
-print(peak_resource([[1, 4, 3], [2, 6, 2], [3, 5, 1]]))   # 6
-print(peak_resource([[1, 10, 5], [2, 3, 10]]))            # 15
-print(peak_resource([[1, 2, 100]]))                        # 100
-print(peak_resource([]))                                    # 0
+print(peak_resource_requirement([[1, 5, 2], [2, 6, 3], [4, 7, 4]]))         # (4, 5, 9)
+print(peak_resource_requirement([[1, 3, 1], [2, 4, 5], [5, 6, 4]]))         # (2, 3, 6)
+print(peak_resource_requirement([[1, 5, 2], [5, 10, 3], [10, 15, 5]]))      # (-1, -1, 0)
 ```
 
 ```java run
 import java.util.*;
 
+// Define a struct to store the time, type ('s' or 'e') and resources
+class TimePoint {
+
+    int time;
+    char type;
+    int resources;
+
+    TimePoint(int time, char type, int resources) {
+        this.time = time;
+        this.type = type;
+        this.resources = resources;
+    }
+}
+
+// Comparator for TimePoint
+class Compare implements Comparator<TimePoint> {
+    public int compare(TimePoint a, TimePoint b) {
+
+        // Sort the times array, end times come before start times
+        // as 'e' < 's'
+        if (a.time == b.time) {
+            return Character.compare(a.type, b.type);
+        }
+
+        return Integer.compare(a.time, b.time);
+    }
+}
+
 class Solution {
-    public int peakResource(int[][] tasks) {
-        if (tasks.length == 0) return 0;
+    public int[] peakResourceRequirement(List<List<Integer>> jobs) {
 
-        List<int[]> events = new ArrayList<>();
-        for (int[] t : tasks) {
-            events.add(new int[]{t[0], t[2]});     // start: +load
-            events.add(new int[]{t[1], -t[2]});    // end:   -load
-        }
-        // On ties, smaller (more negative) delta sorts first → end before start
-        events.sort((a, b) -> a[0] != b[0] ? Integer.compare(a[0], b[0])
-                                           : Integer.compare(a[1], b[1]));
+        // Create a dynamic array to store start and end times
+        List<TimePoint> times = new ArrayList<>();
 
-        int curLoad = 0, peakLoad = 0;
-        for (int[] ev : events) {
-            curLoad += ev[1];
-            if (curLoad > peakLoad) peakLoad = curLoad;
+        for (List<Integer> job : jobs) {
+
+            // Add start and end times to the times array
+            times.add(new TimePoint(job.get(0), 's', job.get(2)));
+            times.add(new TimePoint(job.get(1), 'e', job.get(2)));
         }
-        return peakLoad;
+
+        // Sort the times array using the custom compare function
+        times.sort(new Compare());
+
+        // Currently required resources
+        int currentResources = 0;
+
+        // Maximum resources required at any time
+        int maxResources = 0;
+
+        // Start of the interval with maximum resources
+        int intervalStart = -1;
+
+        // End of the interval with maximum resources
+        int intervalEnd = -1;
+
+        // Maximum resources required by a single job
+        int maxSingleJobResources = 0;
+
+        // Find the maximum resources required by a single job
+        for (List<Integer> job : jobs) {
+            maxSingleJobResources = Math.max(
+                maxSingleJobResources,
+                job.get(2)
+            );
+        }
+
+        for (TimePoint point : times) {
+            if (point.type == 's') {
+
+                // Add the resources of the current job
+                currentResources += point.resources;
+
+                // If the current resources exceed the maximum resources
+                // update the maximum resources and start of the interval
+                // with maximum resources
+                if (currentResources > maxResources) {
+                    maxResources = currentResources;
+                    intervalStart = point.time;
+
+                    // Reset the end of the interval with maximum
+                    // resources
+                    intervalEnd = -1;
+                }
+            }
+
+            // 'e' - end of interval
+            else {
+
+                // If we are at the end of an interval with maximum
+                // overlap and the current overlap is equal to the
+                // maximum resources then update the end of the interval
+                // with maximum resources
+                if (
+                    currentResources == maxResources && intervalEnd == -1
+                ) {
+                    intervalEnd = point.time;
+                }
+
+                // Decrement the current resources count
+                currentResources -= point.resources;
+            }
+        }
+
+        // If the maximum resources is equal to the maximum resources
+        // required by a single job, return {-1, -1, 0} as there is no
+        // interval with overlapping jobs
+        if (maxResources == maxSingleJobResources) {
+            return new int[] { -1, -1, 0 };
+        }
+
+        return new int[] { intervalStart, intervalEnd, maxResources };
+    }
+
+    public static void main(String[] args) {
+        Solution s = new Solution();
+        System.out.println(Arrays.toString(s.peakResourceRequirement(List.of(
+            List.of(1, 5, 2), List.of(2, 6, 3), List.of(4, 7, 4)))));           // [4, 5, 9]
+        System.out.println(Arrays.toString(s.peakResourceRequirement(List.of(
+            List.of(1, 3, 1), List.of(2, 4, 5), List.of(5, 6, 4)))));           // [2, 3, 6]
+        System.out.println(Arrays.toString(s.peakResourceRequirement(List.of(
+            List.of(1, 5, 2), List.of(5, 10, 3), List.of(10, 15, 5)))));        // [-1, -1, 0]
     }
 }
 ```
 
 ```c run
+#include <stdio.h>
 #include <stdlib.h>
 
+// Define a struct to store the time, type ('s' or 'e') and resources
+typedef struct {
+    int  time;
+    char type;
+    int  resources;
+} TimePoint;
+
+// Sort the times array, end times come before start times as 'e' < 's'
 static int cmp(const void* a, const void* b) {
-    int* x = (int*)a; int* y = (int*)b;
-    if (x[0] != y[0]) return x[0] - y[0];
-    return x[1] - y[1];   // more-negative delta first → end before start
+    const TimePoint* x = (const TimePoint*)a;
+    const TimePoint* y = (const TimePoint*)b;
+    if (x->time == y->time) return (int)x->type - (int)y->type;
+    return x->time - y->time;
 }
 
-// tasks: rows of [start, end, load]
-int peakResource(int tasks[][3], int n) {
-    if (n == 0) return 0;
-    int (*events)[2] = malloc(sizeof(int[2]) * 2 * n);
-    int k = 0;
-    for (int i = 0; i < n; i++) {
-        events[k][0] = tasks[i][0]; events[k][1] =  tasks[i][2]; k++;   // +load
-        events[k][0] = tasks[i][1]; events[k][1] = -tasks[i][2]; k++;   // -load
-    }
-    qsort(events, 2 * n, sizeof(int[2]), cmp);
+void peakResourceRequirement(int jobs[][3], int n, int out[3]) {
 
-    int cur = 0, peak = 0;
-    for (int i = 0; i < 2 * n; i++) {
-        cur += events[i][1];
-        if (cur > peak) peak = cur;
+    // Create a dynamic array to store start and end times
+    TimePoint* times = (TimePoint*)malloc(sizeof(TimePoint) * 2 * n);
+    int k = 0;
+
+    for (int i = 0; i < n; i++) {
+
+        // Add start and end times to the times array
+        times[k].time = jobs[i][0]; times[k].type = 's'; times[k].resources = jobs[i][2]; k++;
+        times[k].time = jobs[i][1]; times[k].type = 'e'; times[k].resources = jobs[i][2]; k++;
     }
-    free(events);
-    return peak;
+
+    // Sort the times array using the custom compare function
+    qsort(times, 2 * n, sizeof(TimePoint), cmp);
+
+    // Currently required resources
+    int currentResources = 0;
+
+    // Maximum resources required at any time
+    int maxResources = 0;
+
+    // Start of the interval with maximum resources
+    int intervalStart = -1;
+
+    // End of the interval with maximum resources
+    int intervalEnd = -1;
+
+    // Maximum resources required by a single job
+    int maxSingleJobResources = 0;
+
+    // Find the maximum resources required by a single job
+    for (int i = 0; i < n; i++) {
+        if (jobs[i][2] > maxSingleJobResources) maxSingleJobResources = jobs[i][2];
+    }
+
+    for (int i = 0; i < 2 * n; i++) {
+        if (times[i].type == 's') {
+
+            // Add the resources of the current job
+            currentResources += times[i].resources;
+
+            // If the current resources exceed the maximum resources
+            // update the maximum resources and start of the interval
+            // with maximum resources
+            if (currentResources > maxResources) {
+                maxResources  = currentResources;
+                intervalStart = times[i].time;
+
+                // Reset the end of the interval with maximum resources
+                intervalEnd = -1;
+            }
+        }
+
+        // 'e' - end of interval
+        else {
+
+            // If we are at the end of an interval with maximum overlap
+            // and the current overlap equals the maximum resources then
+            // update the end of the interval with maximum resources
+            if (currentResources == maxResources && intervalEnd == -1) {
+                intervalEnd = times[i].time;
+            }
+
+            // Decrement the current resources count
+            currentResources -= times[i].resources;
+        }
+    }
+
+    free(times);
+
+    // If the maximum resources is equal to the maximum resources
+    // required by a single job, return {-1, -1, 0} as there is no
+    // interval with overlapping jobs
+    if (maxResources == maxSingleJobResources) {
+        out[0] = -1; out[1] = -1; out[2] = 0; return;
+    }
+
+    out[0] = intervalStart;
+    out[1] = intervalEnd;
+    out[2] = maxResources;
+}
+
+int main(void) {
+    int out[3];
+    int j1[][3] = {{1, 5, 2}, {2, 6, 3}, {4, 7, 4}};
+    peakResourceRequirement(j1, 3, out); printf("[%d, %d, %d]\n", out[0], out[1], out[2]);   // [4, 5, 9]
+    int j2[][3] = {{1, 3, 1}, {2, 4, 5}, {5, 6, 4}};
+    peakResourceRequirement(j2, 3, out); printf("[%d, %d, %d]\n", out[0], out[1], out[2]);   // [2, 3, 6]
+    int j3[][3] = {{1, 5, 2}, {5, 10, 3}, {10, 15, 5}};
+    peakResourceRequirement(j3, 3, out); printf("[%d, %d, %d]\n", out[0], out[1], out[2]);   // [-1, -1, 0]
+    return 0;
 }
 ```
 
 ```scala run
+// Define a class to store the time, type ('s' or 'e') and resources
+case class TimePoint(time: Int, `type`: Char, resources: Int)
+
 object Solution {
-  def peakResource(tasks: Array[Array[Int]]): Int = {
-    if (tasks.isEmpty) return 0
 
-    val events = tasks.flatMap(t => Seq((t(0), t(2)), (t(1), -t(2))))
-                      .sortBy(ev => (ev._1, ev._2))   // end (negative delta) first on ties
+  // Sort the times array, end times come before start times as 'e' < 's'
+  private val ordering: Ordering[TimePoint] =
+    Ordering.by((p: TimePoint) => (p.time, p.`type`))
 
-    var cur = 0; var peak = 0
-    for ((_, delta) <- events) {
-      cur += delta
-      if (cur > peak) peak = cur
+  def peakResourceRequirement(jobs: Array[Array[Int]]): Array[Int] = {
+
+    // Create a dynamic array to store start and end times
+    val times = scala.collection.mutable.ArrayBuffer.empty[TimePoint]
+
+    for (job <- jobs) {
+
+      // Add start and end times to the times array
+      times += TimePoint(job(0), 's', job(2))
+      times += TimePoint(job(1), 'e', job(2))
     }
-    peak
+
+    // Sort the times array using the custom compare function
+    val sorted = times.sorted(ordering)
+
+    // Currently required resources
+    var currentResources = 0
+
+    // Maximum resources required at any time
+    var maxResources = 0
+
+    // Start of the interval with maximum resources
+    var intervalStart = -1
+
+    // End of the interval with maximum resources
+    var intervalEnd = -1
+
+    // Maximum resources required by a single job
+    var maxSingleJobResources = 0
+
+    // Find the maximum resources required by a single job
+    for (job <- jobs) {
+      maxSingleJobResources = math.max(maxSingleJobResources, job(2))
+    }
+
+    for (point <- sorted) {
+      if (point.`type` == 's') {
+
+        // Add the resources of the current job
+        currentResources += point.resources
+
+        // If the current resources exceed the maximum resources
+        // update the maximum resources and start of the interval
+        // with maximum resources
+        if (currentResources > maxResources) {
+          maxResources  = currentResources
+          intervalStart = point.time
+
+          // Reset the end of the interval with maximum resources
+          intervalEnd = -1
+        }
+      }
+
+      // 'e' - end of interval
+      else {
+
+        // If we are at the end of an interval with maximum overlap
+        // and the current overlap equals the maximum resources then
+        // update the end of the interval with maximum resources
+        if (currentResources == maxResources && intervalEnd == -1) {
+          intervalEnd = point.time
+        }
+
+        // Decrement the current resources count
+        currentResources -= point.resources
+      }
+    }
+
+    // If the maximum resources is equal to the maximum resources
+    // required by a single job, return {-1, -1, 0} as there is no
+    // interval with overlapping jobs
+    if (maxResources == maxSingleJobResources) Array(-1, -1, 0)
+    else Array(intervalStart, intervalEnd, maxResources)
+  }
+
+  def main(args: Array[String]): Unit = {
+    println(peakResourceRequirement(Array(Array(1, 5, 2), Array(2, 6, 3), Array(4, 7, 4))).mkString("[", ", ", "]"))       // [4, 5, 9]
+    println(peakResourceRequirement(Array(Array(1, 3, 1), Array(2, 4, 5), Array(5, 6, 4))).mkString("[", ", ", "]"))       // [2, 3, 6]
+    println(peakResourceRequirement(Array(Array(1, 5, 2), Array(5, 10, 3), Array(10, 15, 5))).mkString("[", ", ", "]"))    // [-1, -1, 0]
   }
 }
 ```
 
 
 <details>
-<summary><strong>Trace — tasks = [[1, 4, 3], [2, 6, 2], [3, 5, 1]]</strong></summary>
+<summary><strong>Trace — jobs = [[1, 5, 2], [2, 6, 3], [4, 7, 4]]</strong></summary>
 
 ```
-Events sorted by (coord, delta): [(1,+3), (2,+2), (3,+1), (4,-3), (5,-1), (6,-2)]
+maxSingleJobResources = 4 (the third job)
 
-Step 1 │ (1,+3) │ cur 0 → 3  │ peak = 3
-Step 2 │ (2,+2) │ cur 3 → 5  │ peak = 5
-Step 3 │ (3,+1) │ cur 5 → 6  │ peak = 6 ★
-Step 4 │ (4,-3) │ cur 6 → 3  │ peak = 6
-Step 5 │ (5,-1) │ cur 3 → 2  │ peak = 6
-Step 6 │ (6,-2) │ cur 2 → 0  │ peak = 6
+Sorted events: [(1,'s',2), (2,'s',3), (4,'s',4), (5,'e',2), (6,'e',3), (7,'e',4)]
 
-Result: 6 ✓
+(1,'s',2) │ cur 0→2  │ 2 > 0  → max=2, start=1, end=-1
+(2,'s',3) │ cur 2→5  │ 5 > 2  → max=5, start=2, end=-1
+(4,'s',4) │ cur 5→9  │ 9 > 5  → max=9, start=4, end=-1 ★
+(5,'e',2) │ cur == max AND end==-1 → end=5 │ cur 9→7
+(6,'e',3) │ cur(7) != max(9) → no update    │ cur 7→4
+(7,'e',4) │ cur(4) != max(9) → no update    │ cur 4→0
+
+maxResources (9) != maxSingleJobResources (4) → result: [4, 5, 9] ✓
 ```
 
 </details>
 
 <details>
-<summary><strong>Trace — tasks = [[1, 3, 5], [3, 7, 4]] (touching case)</strong></summary>
+<summary><strong>Trace — jobs = [[1, 5, 2], [5, 10, 3], [10, 15, 5]] (no overlap)</strong></summary>
 
 ```
-Events sorted: [(1,+5), (3,-5), (3,+4), (7,-4)]
-                       ^^^^^^^^^^^^^^^ -5 < +4 → end processed first
+maxSingleJobResources = 5 (the third job)
 
-Step 1 │ (1,+5) │ cur 0 → 5 │ peak = 5
-Step 2 │ (3,-5) │ cur 5 → 0 │ peak = 5   ← first task's load released
-Step 3 │ (3,+4) │ cur 0 → 4 │ peak = 5   ← second task opens; no phantom spike
-Step 4 │ (7,-4) │ cur 4 → 0 │ peak = 5
+Sorted events: [(1,'s',2), (5,'e',2), (5,'s',3), (10,'e',3), (10,'s',5), (15,'e',5)]
+                          ^^^^^^^^^^^^^^^^^^^^^  end before start on ties
+                                                ^^^^^^^^^^^^^^^^^^^^^^  also at t=10
 
-Result: 5 ✓   If '+4' had been processed first, we'd have seen a phantom peak of 9.
+(1,'s',2)  │ cur 0→2 │ 2 > 0 → max=2, start=1, end=-1
+(5,'e',2)  │ cur == max AND end==-1 → end=5 │ cur 2→0
+(5,'s',3)  │ cur 0→3 │ 3 > 2 → max=3, start=5, end=-1
+(10,'e',3) │ cur == max AND end==-1 → end=10 │ cur 3→0
+(10,'s',5) │ cur 0→5 │ 5 > 3 → max=5, start=10, end=-1
+(15,'e',5) │ cur == max AND end==-1 → end=15 │ cur 5→0
+
+maxResources (5) == maxSingleJobResources (5) → result: [-1, -1, 0] ✓
 ```
 
 </details>
@@ -2433,8 +3321,8 @@ Result: 5 ✓   If '+4' had been processed first, we'd have seen a phantom peak 
 
 | | Complexity | Reasoning |
 |---|---|---|
-| **Time** | O(N log N) | Sorting 2N events dominates; sweep is linear |
-| **Space** | O(N) | Events array has 2N entries |
+| **Time** | O(N log N) | Sorting 2N TimePoints dominates; sweep is linear |
+| **Space** | O(N) | Times array has 2N entries |
 
 ---
 
@@ -2442,18 +3330,18 @@ Result: 5 ✓   If '+4' had been processed first, we'd have seen a phantom peak 
 
 | Case | Example | Expected | Reasoning |
 |---|---|---|---|
-| Empty input | `[]` | 0 | No tasks, no load |
-| Single task | `[[1, 2, 100]]` | 100 | A single task's own load counts — no collapse |
-| Uniform loads | `[[1,4,1],[2,5,1],[3,6,1]]` | 3 | Reduces to plain meeting-rooms case |
-| Giant task, small peers | `[[1,100,50],[2,3,1]]` | 51 | Brief co-occurrence elevates peak from 50 to 51 |
-| Touching boundary | `[[1,5,10],[5,9,20]]` | 20 | End before start at t=5 → no phantom 30 |
-| Negative loads? | `[[1,3,5],[2,4,-2]]` | 5 (from t=1 to t=2) | Math still works — but verify problem allows negatives |
+| Empty input | `[]` | `[-1, -1, 0]` | No jobs → no overlap, no resources |
+| Single job | `[[1, 2, 100]]` | `[-1, -1, 0]` | One job alone is not an overlap; `maxResources == maxSingleJobResources` |
+| Uniform resources | `[[1,4,1],[2,5,1],[3,6,1]]` | `[3, 4, 3]` | Reduces to plain meeting-rooms case with `r = 1` |
+| Giant job, small peers | `[[1,100,50],[2,3,1]]` | `[2, 3, 51]` | Brief co-occurrence elevates peak from 50 to 51 |
+| Touching boundary | `[[1,5,10],[5,9,20]]` | `[-1, -1, 0]` | End before start at `t=5` → no real overlap |
+| Three-way tie at the peak | `[[1,8,5],[4,5,5],[6,7,5]]` | `[4, 5, 10]` | Earliest window of peak 10 is `[4, 5]` |
 
 ---
 
 ## Why the Weighted Sweep Matters
 
-The jump from ±1 to ±load looks tiny — but it unlocks a huge class of problems that the plain counter can't touch: **CPU scheduling with variable threads per job**, **memory provisioning for heterogeneous containers**, **airport traffic where larger aircraft occupy more gates**, and **bandwidth peaks in network routers**. The generalisation works because overlap *counting* is just a special case of overlap *weighting* where every weight happens to be 1.
+The jump from ±1 to ±resources looks tiny — but it unlocks a huge class of problems that the plain counter can't touch: **CPU scheduling with variable threads per job**, **memory provisioning for heterogeneous containers**, **airport traffic where larger aircraft occupy more gates**, and **bandwidth peaks in network routers**. The generalisation works because overlap *counting* is just a special case of overlap *weighting* where every weight happens to be 1.
 
 If you ever catch yourself thinking "but my intervals aren't all equal" in a capacity problem, reach for this variant first — chances are it solves your problem in the exact same O(N log N) runtime.
 
@@ -2461,12 +3349,12 @@ If you ever catch yourself thinking "but my intervals aren't all equal" in a cap
 
 ## Final Takeaway
 
-Peak Resource Requirement is the **weighted twin** of Minimum Meeting Rooms. Both sweep a counter across tagged events; both return its peak. The difference is just how much each event contributes. Memorise the skeleton, note that tie-breaking falls out for free when you store signed deltas, and you'll see "peak load" problems everywhere: capacity planning, billing, service-mesh autoscaling, scheduling. The algorithm is the same six lines; only the words around it change.
+Peak Resource Requirement is the **weighted twin** of Busiest Interval. Both sweep tagged events; both return `[start, end, value]`. The difference is what each event contributes (`+r` instead of `+1`) and how "no overlap" is detected (`maxResources == maxSingleJobResources` instead of `maxOverlap ≤ 1`). Memorise the skeleton, watch the collapse rule, and you'll spot weighted-overlap problems everywhere: capacity planning, billing, service-mesh autoscaling, scheduling.
 
-> **Transfer Challenge:** Extend the algorithm to also return the **time interval** `[a, b]` during which the peak is attained (like "Busiest Interval" but for loads). What's the only line that needs to change?
+> **Transfer Challenge:** Modify the function to also return the **list of job indices** active during the peak interval.
 >
 > <details><summary><strong>Solution hint</strong></summary>
 >
-> When `curLoad > peakLoad`, remember `peakStart = this event's coord` and `peakEnd = next event's coord`. Same trick as the Busiest Interval section — the weighted sweep doesn't change the shape of the answer, only the increment.
+> Tag each TimePoint with its original `jobIndex`. Maintain an `active` set: add on `'s'`, remove on `'e'`. When a new peak is recorded (`currentResources > maxResources`), snapshot `active.toList` into `peakJobs`. Stays O(N log N) for the sort; `O(N)` extra space for the set and the snapshot.
 >
 > </details>
