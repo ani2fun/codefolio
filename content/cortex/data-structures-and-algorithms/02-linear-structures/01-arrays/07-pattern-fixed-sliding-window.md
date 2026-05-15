@@ -890,23 +890,27 @@ config:
 flowchart TB
   Edge{"k > n?"}
   RetN(["return -1"])
-  Init(["start=0, end=0, sum=0, min_sum=∞"])
-  Loop{"end < len(arr)?"}
-  Expand["① sum += arr[end]"]
-  Contract{"end − start + 1 > k?"}
+  Init(["start=0, end=0, sum=0, min_sum=+inf"])
+  Loop{"end &lt; len(arr)?"}
+  Expand["1. sum += arr[end]"]
+  Contract{"end - start + 1 &gt; k?"}
   Remove["sum -= arr[start]<br/>start += 1"]
-  Process{"end − start + 1 == k?"}
+  Process{"end - start + 1 == k?"}
   Update["min_sum = min(min_sum, sum)"]
   Advance["end += 1"]
   Done(["return min_sum"])
 
   Edge -->|"yes"| RetN
-  Edge -->|"no"|  Init --> Loop
-  Loop -->|"yes"| Expand --> Contract
-  Contract -->|"yes"| Remove --> Process
-  Contract -->|"no"|  Process
-  Process -->|"yes"| Update --> Advance
-  Process -->|"no"|  Advance
+  Edge -->|"no"| Init
+  Init --> Loop
+  Loop -->|"yes"| Expand
+  Expand --> Contract
+  Contract -->|"yes"| Remove
+  Remove --> Process
+  Contract -->|"no"| Process
+  Process -->|"yes"| Update
+  Update --> Advance
+  Process -->|"no"| Advance
   Advance --> Loop
   Loop -->|"no"| Done
 ```
@@ -2490,21 +2494,24 @@ config:
 ---
 flowchart TB
   Init(["start=0, end=0, evenCount=0, oddCount=0, result=[]"])
-  Loop{"end < len(arr)?"}
-  Expand["① if arr[end] is even → evenCount++<br/>else → oddCount++"]
-  Contract{"end − start + 1 > k?"}
-  Remove["if arr[start] is even → evenCount--<br/>else → oddCount--<br/>start += 1"]
-  Process{"end − start + 1 == k?"}
+  Loop{"end &lt; len(arr)?"}
+  Expand["1. if arr[end] is even, evenCount++<br/>else, oddCount++"]
+  Contract{"end - start + 1 &gt; k?"}
+  Remove["if arr[start] is even, evenCount--<br/>else, oddCount--<br/>start += 1"]
+  Process{"end - start + 1 == k?"}
   Append["result.append([evenCount, oddCount])"]
   Advance["end += 1"]
   Done(["return result"])
 
   Init --> Loop
-  Loop -->|"yes"| Expand --> Contract
-  Contract -->|"yes"| Remove --> Process
-  Contract -->|"no"|  Process
-  Process -->|"yes"| Append --> Advance
-  Process -->|"no"|  Advance
+  Loop -->|"yes"| Expand
+  Expand --> Contract
+  Contract -->|"yes"| Remove
+  Remove --> Process
+  Contract -->|"no"| Process
+  Process -->|"yes"| Append
+  Append --> Advance
+  Process -->|"no"| Advance
   Advance --> Loop
   Loop -->|"no"| Done
 ```
