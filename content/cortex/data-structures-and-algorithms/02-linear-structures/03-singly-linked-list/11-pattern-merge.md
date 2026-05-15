@@ -497,15 +497,20 @@ You should take the first node of the first list (with the head as headA) as the
 
 ```pseudocode
 function alternateNodeFusion(headA, headB):
+    # Create a new dummy node as the head of the merged list
     dummy ← new ListNode; tail ← dummy
-    cA ← headA; cB ← headB
-    takeFromA ← true
-    while cA is not null AND cB is not null:
-        if takeFromA: tail.next ← cA; cA ← cA.next
-        else:         tail.next ← cB; cB ← cB.next
+    currentA ← headA; currentB ← headB
+    mergeFirst ← true
+    # Merge alternate nodes from both lists
+    while currentA is not null AND currentB is not null:
+        if mergeFirst:
+            tail.next ← currentA; currentA ← currentA.next
+        else:
+            tail.next ← currentB; currentB ← currentB.next
         tail ← tail.next
-        takeFromA ← NOT takeFromA
-    tail.next ← cA if cA is not null else cB
+        mergeFirst ← NOT mergeFirst
+    # Attach any remaining nodes from the longer list
+    tail.next ← currentA if currentA is not null else currentB
     return dummy.next
 ```
 
@@ -513,35 +518,132 @@ function alternateNodeFusion(headA, headB):
 from typing import Optional
 
 class Solution:
-    def alternate_node_fusion(self, head_a: Optional[ListNode], head_b: Optional[ListNode]) -> Optional[ListNode]:
-        dummy = ListNode()
-        tail  = dummy
-        cA, cB = head_a, head_b
-        take_from_a = True                      # boolean flips each iteration
-        while cA is not None and cB is not None:
-            if take_from_a:
-                tail.next = cA; cA = cA.next
+    def alternate_node_fusion(
+        self, head_a: Optional[ListNode], head_b: Optional[ListNode]
+    ) -> Optional[ListNode]:
+
+        # Create a new dummy node as the head of the merged list
+        dummy = ListNode(0)
+        tail = dummy
+
+        current_a = head_a
+        current_b = head_b
+
+        merge_first = True
+
+        # Merge alternate nodes from both lists
+        while current_a is not None and current_b is not None:
+
+            # If merge_first is true, attach the current node from
+            # current_a to the merged list
+            if merge_first:
+
+                # Attach the current node from current_a to the merged
+                # list
+                tail.next = current_a
+
+                # Move current_a to the next node
+                current_a = current_a.next
+
+                # Move the tail pointer to the newly attached node
+                tail = tail.next
+
+            # Otherwise, attach the current node from current_b to the
+            # merged list
             else:
-                tail.next = cB; cB = cB.next
-            tail        = tail.next
-            take_from_a = not take_from_a
-        tail.next = cA if cA is not None else cB
+
+                # Attach the current node from current_b to the merged
+                # list
+                tail.next = current_b
+
+                # Move current_b to the next node
+                current_b = current_b.next
+
+                # Move the tail pointer to the newly attached node
+                tail = tail.next
+
+            # Toggle between lists
+            merge_first = not merge_first
+
+        # If there are any remaining nodes in current_a, attach them to
+        # the merged list
+        if current_a is not None:
+            tail.next = current_a
+
+        # else if there are any remaining nodes in current_b, attach
+        # them to the merged list
+        elif current_b is not None:
+            tail.next = current_b
+
+        # Return the merged list starting from the node after the
+        # dummy node
         return dummy.next
 ```
 
 ```java run
 class Solution {
     public ListNode alternateNodeFusion(ListNode headA, ListNode headB) {
-        ListNode dummy = new ListNode(), tail = dummy;
-        ListNode cA = headA, cB = headB;
-        boolean takeFromA = true;
-        while (cA != null && cB != null) {
-            if (takeFromA) { tail.next = cA; cA = cA.next; }
-            else            { tail.next = cB; cB = cB.next; }
-            tail       = tail.next;
-            takeFromA  = !takeFromA;
+
+        // Create a new dummy node as the head of the merged list
+        ListNode dummy = new ListNode(0);
+        ListNode tail = dummy;
+
+        ListNode currentA = headA;
+        ListNode currentB = headB;
+
+        boolean mergeFirst = true;
+
+        // Merge alternate nodes from both lists
+        while (currentA != null && currentB != null) {
+
+            // If mergeFirst is true, attach the current node from
+            // currentA to the merged list
+            if (mergeFirst) {
+
+                // Attach the current node from currentA to the merged
+                // list
+                tail.next = currentA;
+
+                // Move currentA to the next node
+                currentA = currentA.next;
+
+                // Move the tail pointer to the newly attached node
+                tail = tail.next;
+            }
+
+            // Otherwise, attach the current node from currentB to the
+            // merged list
+            else {
+
+                // Attach the current node from currentB to the merged
+                // list
+                tail.next = currentB;
+
+                // Move currentB to the next node
+                currentB = currentB.next;
+
+                // Move the tail pointer to the newly attached node
+                tail = tail.next;
+            }
+
+            // Toggle between lists
+            mergeFirst = !mergeFirst;
         }
-        tail.next = (cA != null) ? cA : cB;
+
+        // If there are any remaining nodes in currentA, attach them to
+        // the merged list
+        if (currentA != null) {
+            tail.next = currentA;
+        }
+
+        // Else if there are any remaining nodes in currentB, attach
+        // them to the merged list
+        else if (currentB != null) {
+            tail.next = currentB;
+        }
+
+        // Return the merged list starting from the node after the
+        // dummy node
         return dummy.next;
     }
 }
@@ -549,17 +651,67 @@ class Solution {
 
 ```c run
 ListNode* alternateNodeFusion(ListNode *headA, ListNode *headB) {
+
+    /* Create a new dummy node as the head of the merged list */
     ListNode dummy = {0, NULL};
     ListNode *tail = &dummy;
-    ListNode *cA = headA, *cB = headB;
-    int takeFromA = 1;
-    while (cA != NULL && cB != NULL) {
-        if (takeFromA) { tail->next = cA; cA = cA->next; }
-        else            { tail->next = cB; cB = cB->next; }
-        tail      = tail->next;
-        takeFromA = !takeFromA;
+
+    ListNode *currentA = headA;
+    ListNode *currentB = headB;
+
+    int mergeFirst = 1;
+
+    /* Merge alternate nodes from both lists */
+    while (currentA != NULL && currentB != NULL) {
+
+        /* If mergeFirst is true, attach the current node from
+           currentA to the merged list */
+        if (mergeFirst) {
+
+            /* Attach the current node from currentA to the merged
+               list */
+            tail->next = currentA;
+
+            /* Move currentA to the next node */
+            currentA = currentA->next;
+
+            /* Move the tail pointer to the newly attached node */
+            tail = tail->next;
+        }
+
+        /* Otherwise, attach the current node from currentB to the
+           merged list */
+        else {
+
+            /* Attach the current node from currentB to the merged
+               list */
+            tail->next = currentB;
+
+            /* Move currentB to the next node */
+            currentB = currentB->next;
+
+            /* Move the tail pointer to the newly attached node */
+            tail = tail->next;
+        }
+
+        /* Toggle between lists */
+        mergeFirst = !mergeFirst;
     }
-    tail->next = (cA != NULL) ? cA : cB;
+
+    /* If there are any remaining nodes in currentA, attach them to
+       the merged list */
+    if (currentA != NULL) {
+        tail->next = currentA;
+    }
+
+    /* Else if there are any remaining nodes in currentB, attach
+       them to the merged list */
+    else if (currentB != NULL) {
+        tail->next = currentB;
+    }
+
+    /* Return the merged list starting from the node after the
+       dummy node */
     return dummy.next;
 }
 ```
@@ -567,17 +719,59 @@ ListNode* alternateNodeFusion(ListNode *headA, ListNode *headB) {
 ```scala run
 object Solution {
   def alternateNodeFusion(headA: ListNode, headB: ListNode): ListNode = {
+
+    // Create a new dummy node as the head of the merged list
     val dummy = new ListNode(0)
     var tail: ListNode = dummy
-    var cA = headA; var cB = headB
-    var takeFromA = true
-    while (cA != null && cB != null) {
-      if (takeFromA) { tail.next = cA; cA = cA.next }
-      else            { tail.next = cB; cB = cB.next }
-      tail      = tail.next
-      takeFromA = !takeFromA
+
+    var currentA = headA
+    var currentB = headB
+
+    var mergeFirst = true
+
+    // Merge alternate nodes from both lists
+    while (currentA != null && currentB != null) {
+
+      // If mergeFirst is true, attach the current node from currentA
+      // to the merged list
+      if (mergeFirst) {
+
+        // Attach the current node from currentA to the merged list
+        tail.next = currentA
+
+        // Move currentA to the next node
+        currentA = currentA.next
+
+        // Move the tail pointer to the newly attached node
+        tail = tail.next
+      }
+      // Otherwise, attach the current node from currentB to the
+      // merged list
+      else {
+
+        // Attach the current node from currentB to the merged list
+        tail.next = currentB
+
+        // Move currentB to the next node
+        currentB = currentB.next
+
+        // Move the tail pointer to the newly attached node
+        tail = tail.next
+      }
+
+      // Toggle between lists
+      mergeFirst = !mergeFirst
     }
-    tail.next = if (cA != null) cA else cB
+
+    // If there are any remaining nodes in currentA, attach them to
+    // the merged list
+    if (currentA != null) tail.next = currentA
+    // Else if there are any remaining nodes in currentB, attach them
+    // to the merged list
+    else if (currentB != null) tail.next = currentB
+
+    // Return the merged list starting from the node after the dummy
+    // node
     dummy.next
   }
 }
