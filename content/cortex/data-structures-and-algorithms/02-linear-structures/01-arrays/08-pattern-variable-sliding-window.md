@@ -1201,38 +1201,55 @@ We will now solve these problems to understand the variable-size sliding window 
 
 # Consecutive Ones
 
-## The Hook
-
-You're parsing the uptime log of a production service — `1` means the second was healthy, `0` means it crashed. Your SLA promises the **longest unbroken green streak** each day. A nested loop solves it in O(N²). But this is the simplest possible variable window, and it runs in a single linear pass. Get this right, and every future window problem feels familiar — because they are all variations of this.
-
 ## The Problem
 
-> Given a binary array `arr` containing only `0`s and `1`s, return the length of the longest contiguous subarray consisting entirely of `1`s.
+Given a binary array `arr`, find and return the **maximum number of consecutive `1`s** in the array.
 
 ```
-Input:  arr = [1, 1, 0, 1, 1, 1, 0, 1]
-Output: 3            (the run of three 1s at indices 3..5)
+arr = [1, 1, 1, 0, 0, 0, 1, 1, 1, 1, 0]   →  4
+arr = [1, 1, 0, 0, 0, 1, 1, 0, 1, 0]      →  2
+arr = [0, 0, 0]                            →  0
+```
 
+---
+
+## Examples
+
+**Example 1**
+```
+Input:  arr = [1, 1, 1, 0, 0, 0, 1, 1, 1, 1, 0]
+Output: 4
+Explanation: The maximum number of consecutive ones is 4 — the run at
+             indices 6..9.
+```
+
+**Example 2**
+```
+Input:  arr = [1, 1, 0, 0, 0, 1, 1, 0, 1, 0]
+Output: 2
+Explanation: The maximum number of consecutive ones is 2 — both the run
+             [1, 1] at indices 0..1 and the run [1, 1] at indices 5..6.
+```
+
+**Example 3**
+```
 Input:  arr = [0, 0, 0]
-Output: 0            (no 1s at all)
-
-Input:  arr = [1, 1, 1, 1]
-Output: 4            (the entire array is one run)
+Output: 0
+Explanation: The maximum number of consecutive ones is 0.
 ```
 
 ---
 
 ## Intuition
 
-The window **invariant** is the simplest possible: *every element in the window is a `1`*. As long as the invariant holds, the window is a valid candidate.
+Walk through the array once. Track two values:
 
-What happens the instant `arr[end] == 0`? Every subarray that includes that `0` is automatically invalid. Contracting `start` by one step doesn't help — the `0` is still inside the window. Two steps? Still inside. You would have to drag `start` *all the way past* `end` to restore the invariant.
+- **`count_ones`** — the length of the current run of `1`s ending at the current position.
+- **`max_ones`** — the best run length we've seen so far.
 
-So don't drag. **Leap.** Set `start = end + 1` in one move and skip every dead window at once.
+Every time we see a `1`, the current run grows by one. Every time we see a `0`, the current run ends — we compare it against `max_ones`, then reset the counter to zero and start counting again.
 
-> *Before you read on — which family of skipped subarrays does this remind you of?*
-
-If you guessed Kadane's algorithm from the identification section, you've already internalised the pattern. Kadane leaps past a negative prefix; Consecutive Ones leaps past a zero. Same shape, different invariant.
+One subtlety: when the array ends on a run of `1`s (no trailing `0` to trigger the comparison), we need a **final check** after the loop to make sure that last run is folded into `max_ones`.
 
 ---
 
@@ -1240,65 +1257,145 @@ If you guessed Kadane's algorithm from the identification section, you've alread
 
 
 ```pseudocode
-# Longest run of consecutive 1s. On a 0, leap `start` past it in one move.
-function findMaxConsecutiveOnes(arr):
-    n ← length(arr)
-    if n = 0: return 0
-    start ← 0; end ← 0; maxLen ← 0
-    while end < n:
-        if arr[end] = 0:
-            start ← end + 1                       # window resets to position past the 0
+function consecutiveOnes(arr):
+    # To store the starting index of the subarray
+    start ← 0
+
+    # To store the ending index of the subarray
+    end ← 0
+
+    # To store the current count of 1s in the window
+    countOnes ← 0
+
+    # To store the maximum number of 1s in any subarray
+    maxOnes ← 0
+
+    # Move the window one step to the right until it reaches the end of the array
+    while end < length(arr):
+
+        # Add the current element to the count if it's 1
+        if arr[end] = 1:
+            countOnes ← countOnes + 1
+
+        # Otherwise, process the aggregate and reset count
         else:
-            maxLen ← max(maxLen, end − start + 1)
+            # Process aggregate when we encounter a 0
+            maxOnes ← max(maxOnes, countOnes)
+
+            # Reset count for consecutive ones
+            countOnes ← 0
+
+        # Expand the window
         end ← end + 1
-    return maxLen
+
+    # Final check for the last segment of ones
+    maxOnes ← max(maxOnes, countOnes)
+
+    return maxOnes
 ```
 
 ```python run
 from typing import List
 
-def find_max_consecutive_ones(arr: List[int]) -> int:
-    n = len(arr)
-    if n == 0:
-        return 0
+class Solution:
+    def consecutive_ones(self, arr: List[int]) -> int:
 
-    start = end = max_len = 0
-    while end < n:
-        if arr[end] == 0:
-            start = end + 1                             # Leap past the 0 in one move.
-        else:
-            max_len = max(max_len, end - start + 1)
-        end += 1
-    return max_len
+        # To store the starting index of the subarray
+        start = 0
+
+        # To store the ending index of the subarray
+        end = 0
+
+        # To store the current count of 1s in the window
+        count_ones = 0
+
+        # To store the maximum number of 1s in any subarray
+        max_ones = 0
+
+        # Move the window one step to the right until it reaches the end
+        # of the array
+        while end < len(arr):
+
+            # Add the current element to the count if it's 1
+            if arr[end] == 1:
+                count_ones += 1
+
+            # Otherwise, process the aggregate and reset count
+            else:
+
+                # Process aggregate when we encounter a 0
+                max_ones = max(max_ones, count_ones)
+
+                # Reset count for consecutive ones
+                count_ones = 0
+
+            # Expand the window
+            end += 1
+
+        # Final check for the last segment of ones
+        max_ones = max(max_ones, count_ones)
+
+        return max_ones
 
 
-print(find_max_consecutive_ones([1, 1, 0, 1, 1, 1, 0, 1]))  # 3
-print(find_max_consecutive_ones([0, 0, 0]))                  # 0
-print(find_max_consecutive_ones([1, 1, 1, 1]))               # 4
-print(find_max_consecutive_ones([1]))                         # 1
-print(find_max_consecutive_ones([]))                          # 0
+sol = Solution()
+print(sol.consecutive_ones([1, 1, 1, 0, 0, 0, 1, 1, 1, 1, 0]))   # 4
+print(sol.consecutive_ones([1, 1, 0, 0, 0, 1, 1, 0, 1, 0]))      # 2
+print(sol.consecutive_ones([0, 0, 0]))                            # 0
 ```
 
 ```java run
 public class Main {
-    static int findMaxConsecutiveOnes(int[] arr) {
-        int n = arr.length;
-        if (n == 0) return 0;
-        int start = 0, end = 0, maxLen = 0;
-        while (end < n) {
-            if (arr[end] == 0) start = end + 1;
-            else               maxLen = Math.max(maxLen, end - start + 1);
-            end++;
+    static class Solution {
+        public int consecutiveOnes(int[] arr) {
+
+            // To store the starting index of the subarray
+            int start = 0;
+
+            // To store the ending index of the subarray
+            int end = 0;
+
+            // To store the current count of 1s in the window
+            int countOnes = 0;
+
+            // To store the maximum number of 1s in any subarray
+            int maxOnes = 0;
+
+            // Move the window one step to the right until it reaches the
+            // end of the array
+            while (end < arr.length) {
+
+                // Add the current element to the count if it's 1
+                if (arr[end] == 1) {
+                    countOnes++;
+                }
+
+                // Otherwise, process the aggregate and reset count
+                else {
+
+                    // Process aggregate when we encounter a 0
+                    maxOnes = Math.max(maxOnes, countOnes);
+
+                    // Reset count for consecutive ones
+                    countOnes = 0;
+                }
+
+                // Expand the window
+                end++;
+            }
+
+            // Final check for the last segment of ones
+            maxOnes = Math.max(maxOnes, countOnes);
+
+            return maxOnes;
         }
-        return maxLen;
     }
 
     public static void main(String[] args) {
-        System.out.println(findMaxConsecutiveOnes(new int[]{1, 1, 0, 1, 1, 1, 0, 1}));
-        System.out.println(findMaxConsecutiveOnes(new int[]{0, 0, 0}));
-        System.out.println(findMaxConsecutiveOnes(new int[]{1, 1, 1, 1}));
-        System.out.println(findMaxConsecutiveOnes(new int[]{1}));
-        System.out.println(findMaxConsecutiveOnes(new int[]{}));
+        Solution sol = new Solution();
+        System.out.println(sol.consecutiveOnes(new int[]{1, 1, 1, 0, 0, 0, 1, 1, 1, 1, 0}));  // 4
+        System.out.println(sol.consecutiveOnes(new int[]{1, 1, 0, 0, 0, 1, 1, 0, 1, 0}));     // 2
+        System.out.println(sol.consecutiveOnes(new int[]{0, 0, 0}));                           // 0
     }
 }
 ```
@@ -1306,126 +1403,179 @@ public class Main {
 ```c run
 #include <stdio.h>
 
-int find_max_consecutive_ones(int* arr, int n) {
-    if (n == 0) return 0;
-    int start = 0, end = 0, max_len = 0;
+int consecutive_ones(int* arr, int n) {
+
+    /* To store the starting index of the subarray */
+    int start = 0;
+
+    /* To store the ending index of the subarray */
+    int end = 0;
+
+    /* To store the current count of 1s in the window */
+    int count_ones = 0;
+
+    /* To store the maximum number of 1s in any subarray */
+    int max_ones = 0;
+
+    /* Move the window one step to the right until it reaches the end of
+     * the array */
     while (end < n) {
-        if (arr[end] == 0) start = end + 1;
-        else if (end - start + 1 > max_len) max_len = end - start + 1;
+
+        /* Add the current element to the count if it's 1 */
+        if (arr[end] == 1) {
+            count_ones++;
+        }
+
+        /* Otherwise, process the aggregate and reset count */
+        else {
+
+            /* Process aggregate when we encounter a 0 */
+            if (count_ones > max_ones) max_ones = count_ones;
+
+            /* Reset count for consecutive ones */
+            count_ones = 0;
+        }
+
+        /* Expand the window */
         end++;
     }
-    return max_len;
+
+    /* Final check for the last segment of ones */
+    if (count_ones > max_ones) max_ones = count_ones;
+
+    return max_ones;
 }
 
 int main() {
-    int a1[] = {1, 1, 0, 1, 1, 1, 0, 1}; printf("%d\n", find_max_consecutive_ones(a1, 8));
-    int a2[] = {0, 0, 0};                printf("%d\n", find_max_consecutive_ones(a2, 3));
-    int a3[] = {1, 1, 1, 1};             printf("%d\n", find_max_consecutive_ones(a3, 4));
-    int a4[] = {1};                      printf("%d\n", find_max_consecutive_ones(a4, 1));
-    printf("%d\n", find_max_consecutive_ones(NULL, 0));
+    int a1[] = {1, 1, 1, 0, 0, 0, 1, 1, 1, 1, 0};
+    int a2[] = {1, 1, 0, 0, 0, 1, 1, 0, 1, 0};
+    int a3[] = {0, 0, 0};
+    printf("%d\n", consecutive_ones(a1, 11));  /* 4 */
+    printf("%d\n", consecutive_ones(a2, 10));  /* 2 */
+    printf("%d\n", consecutive_ones(a3, 3));   /* 0 */
     return 0;
 }
 ```
 
 ```scala run
 object Main extends App {
-  def findMaxConsecutiveOnes(arr: Array[Int]): Int = {
-    if (arr.isEmpty) return 0
-    var start = 0
-    var end = 0
-    var maxLen = 0
-    while (end < arr.length) {
-      if (arr(end) == 0) start = end + 1
-      else               maxLen = math.max(maxLen, end - start + 1)
-      end += 1
+  class Solution {
+    def consecutiveOnes(arr: Array[Int]): Int = {
+
+      // To store the starting index of the subarray
+      var start = 0
+
+      // To store the ending index of the subarray
+      var end = 0
+
+      // To store the current count of 1s in the window
+      var countOnes = 0
+
+      // To store the maximum number of 1s in any subarray
+      var maxOnes = 0
+
+      // Move the window one step to the right until it reaches the end
+      // of the array
+      while (end < arr.length) {
+
+        // Add the current element to the count if it's 1
+        if (arr(end) == 1) {
+          countOnes += 1
+        }
+        // Otherwise, process the aggregate and reset count
+        else {
+
+          // Process aggregate when we encounter a 0
+          maxOnes = math.max(maxOnes, countOnes)
+
+          // Reset count for consecutive ones
+          countOnes = 0
+        }
+
+        // Expand the window
+        end += 1
+      }
+
+      // Final check for the last segment of ones
+      maxOnes = math.max(maxOnes, countOnes)
+
+      maxOnes
     }
-    maxLen
   }
 
-  println(findMaxConsecutiveOnes(Array(1, 1, 0, 1, 1, 1, 0, 1)))
-  println(findMaxConsecutiveOnes(Array(0, 0, 0)))
-  println(findMaxConsecutiveOnes(Array(1, 1, 1, 1)))
-  println(findMaxConsecutiveOnes(Array(1)))
-  println(findMaxConsecutiveOnes(Array.empty[Int]))
+  val sol = new Solution
+  println(sol.consecutiveOnes(Array(1, 1, 1, 0, 0, 0, 1, 1, 1, 1, 0)))   // 4
+  println(sol.consecutiveOnes(Array(1, 1, 0, 0, 0, 1, 1, 0, 1, 0)))      // 2
+  println(sol.consecutiveOnes(Array(0, 0, 0)))                            // 0
 }
 ```
 
 
 ```d3 widget=array-traversal
 {
-  "items": ["1", "1", "0", "1", "1", "1", "0", "1"],
-  "title": "Consecutive Ones on [1, 1, 0, 1, 1, 1, 0, 1]",
+  "items": ["1", "1", "1", "0", "0", "0", "1", "1", "1", "1", "0"],
+  "title": "Consecutive Ones on [1, 1, 1, 0, 0, 0, 1, 1, 1, 1, 0]",
   "steps": [
     {
-      "keys":    ["a", "b", "c", "d", "e", "f", "g", "h"],
-      "markers": [
-        { "name": "start", "index": 0, "color": "#3b82f6" },
-        { "name": "end",   "index": 0, "color": "#10b981" }
-      ],
-      "range":   { "lo": 0, "hi": 0 },
-      "msg": "arr[0] = 1 → invariant holds. window = [0..0], len = 1. max_len = 1."
+      "keys":    ["a", "b", "c", "d", "e", "f", "g", "h", "i", "j", "k"],
+      "markers": [{ "name": "end", "index": 0, "color": "#10b981" }],
+      "msg": "arr[0] = 1 → count_ones = 1. max_ones = 0."
     },
     {
-      "keys":    ["a", "b", "c", "d", "e", "f", "g", "h"],
-      "markers": [
-        { "name": "start", "index": 0, "color": "#3b82f6" },
-        { "name": "end",   "index": 1, "color": "#10b981" }
-      ],
-      "range":   { "lo": 0, "hi": 1 },
-      "msg": "arr[1] = 1 → invariant holds. window = [0..1], len = 2. max_len = 2."
+      "keys":    ["a", "b", "c", "d", "e", "f", "g", "h", "i", "j", "k"],
+      "markers": [{ "name": "end", "index": 2, "color": "#10b981" }],
+      "msg": "After three 1s in a row: count_ones = 3. max_ones still 0 (no 0 seen yet)."
     },
     {
-      "keys":    ["a", "b", "c", "d", "e", "f", "g", "h"],
-      "markers": [
-        { "name": "end",   "index": 2, "color": "#10b981" }
-      ],
-      "msg": "arr[2] = 0 → invariant breaks. LEAP start = 3."
+      "keys":    ["a", "b", "c", "d", "e", "f", "g", "h", "i", "j", "k"],
+      "markers": [{ "name": "end", "index": 3, "color": "#10b981" }],
+      "msg": "arr[3] = 0 → process: max_ones = max(0, 3) = 3. Reset count_ones = 0."
     },
     {
-      "keys":    ["a", "b", "c", "d", "e", "f", "g", "h"],
-      "markers": [
-        { "name": "start", "index": 3, "color": "#3b82f6" },
-        { "name": "end",   "index": 5, "color": "#10b981" }
-      ],
-      "range":   { "lo": 3, "hi": 5 },
-      "msg": "Three more 1s extend the window. window = [3..5], len = 3. max_len = 3 (new best)."
+      "keys":    ["a", "b", "c", "d", "e", "f", "g", "h", "i", "j", "k"],
+      "markers": [{ "name": "end", "index": 5, "color": "#10b981" }],
+      "msg": "More 0s — max_ones stays 3, count_ones stays 0."
     },
     {
-      "keys":    ["a", "b", "c", "d", "e", "f", "g", "h"],
-      "markers": [
-        { "name": "end",   "index": 6, "color": "#10b981" }
-      ],
-      "msg": "arr[6] = 0 → LEAP start = 7."
+      "keys":    ["a", "b", "c", "d", "e", "f", "g", "h", "i", "j", "k"],
+      "markers": [{ "name": "end", "index": 9, "color": "#10b981" }],
+      "msg": "Four 1s at indices 6..9: count_ones = 4. max_ones still 3."
     },
     {
-      "keys":    ["a", "b", "c", "d", "e", "f", "g", "h"],
-      "markers": [
-        { "name": "start", "index": 7, "color": "#3b82f6" },
-        { "name": "end",   "index": 7, "color": "#10b981" }
-      ],
-      "range":   { "lo": 7, "hi": 7 },
-      "msg": "arr[7] = 1 → window = [7..7], len = 1. max_len still 3. Return 3."
+      "keys":    ["a", "b", "c", "d", "e", "f", "g", "h", "i", "j", "k"],
+      "markers": [{ "name": "end", "index": 10, "color": "#10b981" }],
+      "msg": "arr[10] = 0 → process: max_ones = max(3, 4) = 4. Reset count_ones = 0."
+    },
+    {
+      "keys":    ["a", "b", "c", "d", "e", "f", "g", "h", "i", "j", "k"],
+      "markers": [],
+      "msg": "Loop ends. Final check: max_ones = max(4, 0) = 4. Return 4."
     }
   ]
 }
 ```
 
 <details>
-<summary><strong>Trace — arr = [1, 1, 0, 1, 1, 1, 0, 1]</strong></summary>
+<summary><strong>Trace — arr = [1, 1, 1, 0, 0, 0, 1, 1, 1, 1, 0]</strong></summary>
 
 ```
-start=0, end=0, max_len=0
+start=0, end=0, count_ones=0, max_ones=0
 
-end=0: arr[0]=1 → invariant holds | window=[0..0] len=1  | max_len=1
-end=1: arr[1]=1 → invariant holds | window=[0..1] len=2  | max_len=2
-end=2: arr[2]=0 → LEAP start=3    | window broken        | max_len=2
-end=3: arr[3]=1 → invariant holds | window=[3..3] len=1  | max_len=2
-end=4: arr[4]=1 → invariant holds | window=[3..4] len=2  | max_len=2
-end=5: arr[5]=1 → invariant holds | window=[3..5] len=3  | max_len=3
-end=6: arr[6]=0 → LEAP start=7    | window broken        | max_len=3
-end=7: arr[7]=1 → invariant holds | window=[7..7] len=1  | max_len=3
+end=0:  arr[0]=1  → count_ones=1.  max_ones=0.
+end=1:  arr[1]=1  → count_ones=2.  max_ones=0.
+end=2:  arr[2]=1  → count_ones=3.  max_ones=0.
+end=3:  arr[3]=0  → max_ones=max(0,3)=3. count_ones=0.
+end=4:  arr[4]=0  → max_ones=max(3,0)=3. count_ones=0.
+end=5:  arr[5]=0  → max_ones=max(3,0)=3. count_ones=0.
+end=6:  arr[6]=1  → count_ones=1.
+end=7:  arr[7]=1  → count_ones=2.
+end=8:  arr[8]=1  → count_ones=3.
+end=9:  arr[9]=1  → count_ones=4.
+end=10: arr[10]=0 → max_ones=max(3,4)=4. count_ones=0.
 
-Return: 3 ✓  (the run at indices 3..5)
+Final check: max_ones = max(4, 0) = 4.
+
+Return: 4 ✓  (the run at indices 6..9)
 ```
 
 </details>
@@ -1436,8 +1586,8 @@ Return: 3 ✓  (the run at indices 3..5)
 
 | | Complexity | Reasoning |
 |---|---|---|
-| **Time** | O(N) | `end` advances once per iteration; `start` either stays or leaps forward — never moves backward |
-| **Space** | O(1) | Three integers: `start`, `end`, `max_len` |
+| **Time** | O(N) | One pass through the array; constant work per element |
+| **Space** | O(1) | Two integer counters (`count_ones`, `max_ones`) |
 
 ---
 
@@ -1445,47 +1595,60 @@ Return: 3 ✓  (the run at indices 3..5)
 
 | Case | Example | Expected | Reasoning |
 |---|---|---|---|
-| Empty array | `[]` | `0` | The early guard returns before the loop runs |
-| All zeros | `[0, 0, 0]` | `0` | Every iteration leaps `start` past `end`; `max_len` never updates |
-| All ones | `[1, 1, 1, 1]` | `4` | `start` stays at `0`; `max_len` grows each iteration |
-| Single one | `[1]` | `1` | One iteration, invariant holds, `max_len = 1` |
-| Trailing zero | `[1, 1, 0]` | `2` | Best run already recorded before the final leap |
+| Empty array | `[]` | `0` | Loop never runs; both counters stay 0 |
+| All zeros | `[0, 0, 0]` | `0` | Each 0 resets `count_ones` to 0; `max_ones` never updates |
+| All ones | `[1, 1, 1, 1]` | `4` | No 0 to trigger comparison; final check folds the run in |
+| Single one | `[1]` | `1` | One iteration, then final check returns 1 |
+| Trailing ones | `[0, 1, 1]` | `2` | Final check catches the run that didn't see a closing 0 |
 
 ---
 
-## Final Takeaway
+## Key Takeaway
 
-Consecutive Ones is the **Hello, World** of the variable window — one invariant, one leap rule, one line of bookkeeping. Every pattern in this section descends from its shape. When you see a problem where a single "bad" element invalidates every window touching it, reach for the leap, not the shrink.
-
-> **Transfer Challenge:** Modify the code to return the *starting index* of the longest run, not just its length. What changes? Solve it before peeking.
->
-> <details><summary><strong>Solution hint</strong></summary>
->
-> Track `best_start` alongside `max_len`. When `end - start + 1 > max_len`, update both: `max_len = end - start + 1` and `best_start = start`. That's it — two extra lines.
->
-> </details>
+Consecutive Ones is the simplest aggregate-then-reset variation of the sliding window. The `count_ones` counter is the aggregate; each `0` triggers a process-and-reset step. The **final check after the loop** is the part that's easy to miss — without it, an array ending on a run of `1`s would silently lose its best run.
 
 ***
 
 # Product Conundrum
 
-## The Hook
-
-Consecutive Ones had it easy — one `0` kills a window instantly. But what if adding one element kicks out **many** elements at once, like dropping a boulder onto a seesaw? Welcome to the world where contraction is a *loop*, not an `if`. This is the first problem that demands `while` on the shrink, and understanding when to switch from `if` to `while` is a survival skill for every window problem ahead.
-
 ## The Problem
 
-> Given an array `arr` of **positive integers** and a positive integer `k`, return the length of the longest contiguous subarray whose **product** is strictly less than `k`.
+Given an array of positive integers `arr` and an integer `k`, find and return the **number of contiguous subarrays** where the product of all the elements in the subarray is **strictly less than `k`**.
 
 ```
-Input:  arr = [1, 2, 3, 4],  k = 10
-Output: 3            (the subarray [1, 2, 3] has product 6 < 10; longer extensions hit product ≥ 10)
+arr = [10, 5, 2, 6],  k = 100   →  8
+arr = [10, 5],        k = 50    →  2
+arr = [1],            k = 1     →  0
+```
 
-Input:  arr = [10, 5, 2, 6],  k = 100
-Output: 3            (the subarray [5, 2, 6] has product 60 < 100)
+---
 
-Input:  arr = [1, 2, 3],  k = 1
-Output: 0            (no subarray of positive integers has product < 1)
+## Examples
+
+**Example 1**
+```
+Input:  arr = [10, 5, 2, 6], k = 100
+Output: 8
+Explanation: The 8 subarrays whose product is less than 100 are:
+             [10], [5], [2], [6], [10, 5], [5, 2], [2, 6], [5, 2, 6].
+             Note that [10, 5, 2] is not included — its product 100 is
+             not strictly less than k.
+```
+
+**Example 2**
+```
+Input:  arr = [10, 5], k = 50
+Output: 2
+Explanation: The 2 subarrays whose product is less than 50 are [10] and [5].
+             Note that [10, 5] is not included — its product 50 is not
+             strictly less than k.
+```
+
+**Example 3**
+```
+Input:  arr = [1], k = 1
+Output: 0
+Explanation: There are no subarrays whose product is less than k.
 ```
 
 ---
@@ -1496,9 +1659,7 @@ The invariant: `product(arr[start..end]) < k`. When we expand `end`, the product
 
 **Why `while` and not `if`?** Suppose the window is `[2, 3, 4]` with product `24`, and we add a `50`. Now the product is `1200`, and `k = 100`. Contracting once drops the `2` — new product `600`. Still too big. Again → `200`. Again → `50`. It took **three** contractions to restore the invariant. One big new element can dethrone several old ones in a single iteration.
 
-> *Pause and predict — if the array were `[100, 100, 100, 100]` and `k = 50`, what would the loop do at every `end`?*
-
-It would contract immediately, leaving the window empty (`start = end + 1`), record a length of `0`, then expand and repeat. Four iterations, four contractions, final answer `0`. The algorithm handles degenerate inputs gracefully because the invariant is *always* restored before the length is recorded.
+**Counting the subarrays.** Once the invariant holds for `arr[start..end]`, every subarray *ending at `end`* with start position in `[start, end]` also satisfies it (since shorter windows have smaller products). That's exactly `end − start + 1` valid subarrays ending at the current `end`. Accumulate this count at every step and the total at the end is the answer.
 
 ---
 
@@ -1506,77 +1667,145 @@ It would contract immediately, leaving the window empty (`start = end + 1`), rec
 
 
 ```pseudocode
-# Longest subarray of positive ints whose product is strictly less than k.
-# `while` because one expansion may force several contractions.
-function longestSubarrayWithProductLessThanK(arr, k):
-    n ← length(arr)
-    if n = 0 OR k ≤ 1: return 0                   # positives can't make a product < 1
-    start ← 0; end ← 0
-    product ← 1; maxLen ← 0
-    while end < n:
+function productConundrum(arr, k):
+    # To store the starting index of the subarray
+    start ← 0
+
+    # To store the ending index of the subarray
+    end ← 0
+
+    # Initialize product to 1
+    product ← 1
+
+    # Initialize answer to 0
+    answer ← 0
+
+    # Move the window one step to the right until it reaches the end
+    # of the array
+    while end < length(arr):
+
+        # Add contribution of arr[end]
         product ← product × arr[end]
-        while product ≥ k AND start ≤ end:
+
+        # Process aggregate
+        while start ≤ end AND product ≥ k:
+
+            # Remove contribution of arr[start] using the inverse function
             product ← product ÷ arr[start]
+
+            # Contract window
             start ← start + 1
-        maxLen ← max(maxLen, end − start + 1)
+
+        # Count valid subarrays
+        answer ← answer + (end − start + 1)
+
+        # Expand the window
         end ← end + 1
-    return maxLen
+
+    return answer
 ```
 
 ```python run
 from typing import List
 
-def longest_subarray_with_product_less_than_k(arr: List[int], k: int) -> int:
-    n = len(arr)
-    if n == 0 or k <= 1:
-        return 0                                       # k ≤ 1 unsatisfiable for positives.
+class Solution:
+    def product_conundrum(self, arr: List[int], k: int) -> int:
 
-    start = end = 0
-    product = 1
-    max_len = 0
-    while end < n:
-        product *= arr[end]
-        # `while` because one expansion may force several contractions.
-        while product >= k and start <= end:
-            product //= arr[start]
-            start += 1
-        max_len = max(max_len, end - start + 1)
-        end += 1
-    return max_len
+        # To store the starting index of the subarray
+        start = 0
+
+        # To store the ending index of the subarray
+        end = 0
+
+        # Initialize product to 1
+        product = 1
+
+        # Initialize answer to 0
+        answer = 0
+
+        # Move the window one step to the right until it reaches the end
+        # of the array
+        while end < len(arr):
+
+            # Add contribution of arr[end]
+            product *= arr[end]
+
+            # Process aggregate
+            while start <= end and product >= k:
+
+                # Remove contribution of arr[start] using the inverse
+                # function
+                product //= arr[start]
+
+                # Contract window
+                start += 1
+
+            # Count valid subarrays
+            answer += end - start + 1
+
+            # Expand the window
+            end += 1
+
+        return answer
 
 
-print(longest_subarray_with_product_less_than_k([1, 2, 3, 4], 10))      # 3
-print(longest_subarray_with_product_less_than_k([10, 5, 2, 6], 100))    # 3
-print(longest_subarray_with_product_less_than_k([1, 2, 3], 1))          # 0
-print(longest_subarray_with_product_less_than_k([1, 1, 1], 2))          # 3
-print(longest_subarray_with_product_less_than_k([100, 100, 100], 50))   # 0
+sol = Solution()
+print(sol.product_conundrum([10, 5, 2, 6], 100))   # 8
+print(sol.product_conundrum([10, 5], 50))           # 2
+print(sol.product_conundrum([1], 1))                # 0
 ```
 
 ```java run
 public class Main {
-    static int longestSubarrayWithProductLessThanK(int[] arr, int k) {
-        int n = arr.length;
-        if (n == 0 || k <= 1) return 0;
-        int start = 0, end = 0, maxLen = 0;
-        long product = 1;
-        while (end < n) {
-            product *= arr[end];
-            while (product >= k && start <= end) {
-                product /= arr[start];
-                start++;
+    static class Solution {
+        public int productConundrum(int[] arr, int k) {
+
+            // To store the starting index of the subarray
+            int start = 0;
+
+            // To store the ending index of the subarray
+            int end = 0;
+
+            // Initialize product to 1
+            long product = 1;
+
+            // Initialize answer to 0
+            int answer = 0;
+
+            // Move the window one step to the right until it reaches the
+            // end of the array
+            while (end < arr.length) {
+
+                // Add contribution of arr[end]
+                product *= arr[end];
+
+                // Process aggregate
+                while (start <= end && product >= k) {
+
+                    // Remove contribution of arr[start] using the inverse
+                    // function
+                    product /= arr[start];
+
+                    // Contract window
+                    start++;
+                }
+
+                // Count valid subarrays
+                answer += end - start + 1;
+
+                // Expand the window
+                end++;
             }
-            maxLen = Math.max(maxLen, end - start + 1);
-            end++;
+
+            return answer;
         }
-        return maxLen;
     }
 
     public static void main(String[] args) {
-        System.out.println(longestSubarrayWithProductLessThanK(new int[]{1, 2, 3, 4}, 10));
-        System.out.println(longestSubarrayWithProductLessThanK(new int[]{10, 5, 2, 6}, 100));
-        System.out.println(longestSubarrayWithProductLessThanK(new int[]{1, 2, 3}, 1));
-        System.out.println(longestSubarrayWithProductLessThanK(new int[]{1, 1, 1}, 2));
-        System.out.println(longestSubarrayWithProductLessThanK(new int[]{100, 100, 100}, 50));
+        Solution sol = new Solution();
+        System.out.println(sol.productConundrum(new int[]{10, 5, 2, 6}, 100));   // 8
+        System.out.println(sol.productConundrum(new int[]{10, 5}, 50));           // 2
+        System.out.println(sol.productConundrum(new int[]{1}, 1));                // 0
     }
 }
 ```
@@ -1584,58 +1813,104 @@ public class Main {
 ```c run
 #include <stdio.h>
 
-int longest_subarray_with_product_less_than_k(int* arr, int n, int k) {
-    if (n == 0 || k <= 1) return 0;
-    int start = 0, end = 0, max_len = 0;
+int product_conundrum(int* arr, int n, int k) {
+
+    /* To store the starting index of the subarray */
+    int start = 0;
+
+    /* To store the ending index of the subarray */
+    int end = 0;
+
+    /* Initialize product to 1 */
     long long product = 1;
+
+    /* Initialize answer to 0 */
+    int answer = 0;
+
+    /* Move the window one step to the right until it reaches the end of
+     * the array */
     while (end < n) {
+
+        /* Add contribution of arr[end] */
         product *= arr[end];
-        while (product >= k && start <= end) {
+
+        /* Process aggregate */
+        while (start <= end && product >= k) {
+
+            /* Remove contribution of arr[start] using the inverse function */
             product /= arr[start];
+
+            /* Contract window */
             start++;
         }
-        if (end - start + 1 > max_len) max_len = end - start + 1;
+
+        /* Count valid subarrays */
+        answer += end - start + 1;
+
+        /* Expand the window */
         end++;
     }
-    return max_len;
+
+    return answer;
 }
 
 int main() {
-    int a1[] = {1, 2, 3, 4};      printf("%d\n", longest_subarray_with_product_less_than_k(a1, 4, 10));
-    int a2[] = {10, 5, 2, 6};     printf("%d\n", longest_subarray_with_product_less_than_k(a2, 4, 100));
-    int a3[] = {1, 2, 3};         printf("%d\n", longest_subarray_with_product_less_than_k(a3, 3, 1));
-    int a4[] = {1, 1, 1};         printf("%d\n", longest_subarray_with_product_less_than_k(a4, 3, 2));
-    int a5[] = {100, 100, 100};   printf("%d\n", longest_subarray_with_product_less_than_k(a5, 3, 50));
+    int a1[] = {10, 5, 2, 6};  printf("%d\n", product_conundrum(a1, 4, 100));  /* 8 */
+    int a2[] = {10, 5};        printf("%d\n", product_conundrum(a2, 2, 50));   /* 2 */
+    int a3[] = {1};            printf("%d\n", product_conundrum(a3, 1, 1));    /* 0 */
     return 0;
 }
 ```
 
 ```scala run
 object Main extends App {
-  def longestSubarrayWithProductLessThanK(arr: Array[Int], k: Int): Int = {
-    val n = arr.length
-    if (n == 0 || k <= 1) return 0
-    var start = 0
-    var end = 0
-    var product = 1L
-    var maxLen = 0
-    while (end < n) {
-      product *= arr(end)
-      while (product >= k && start <= end) {
-        product /= arr(start)
-        start += 1
+  class Solution {
+    def productConundrum(arr: Array[Int], k: Int): Int = {
+
+      // To store the starting index of the subarray
+      var start = 0
+
+      // To store the ending index of the subarray
+      var end = 0
+
+      // Initialize product to 1
+      var product = 1L
+
+      // Initialize answer to 0
+      var answer = 0
+
+      // Move the window one step to the right until it reaches the end
+      // of the array
+      while (end < arr.length) {
+
+        // Add contribution of arr[end]
+        product *= arr(end)
+
+        // Process aggregate
+        while (start <= end && product >= k) {
+
+          // Remove contribution of arr[start] using the inverse function
+          product /= arr(start)
+
+          // Contract window
+          start += 1
+        }
+
+        // Count valid subarrays
+        answer += end - start + 1
+
+        // Expand the window
+        end += 1
       }
-      maxLen = math.max(maxLen, end - start + 1)
-      end += 1
+
+      answer
     }
-    maxLen
   }
 
-  println(longestSubarrayWithProductLessThanK(Array(1, 2, 3, 4), 10))
-  println(longestSubarrayWithProductLessThanK(Array(10, 5, 2, 6), 100))
-  println(longestSubarrayWithProductLessThanK(Array(1, 2, 3), 1))
-  println(longestSubarrayWithProductLessThanK(Array(1, 1, 1), 2))
-  println(longestSubarrayWithProductLessThanK(Array(100, 100, 100), 50))
+  val sol = new Solution
+  println(sol.productConundrum(Array(10, 5, 2, 6), 100))   // 8
+  println(sol.productConundrum(Array(10, 5), 50))           // 2
+  println(sol.productConundrum(Array(1), 1))                // 0
 }
 ```
 
@@ -1644,20 +1919,19 @@ object Main extends App {
 <summary><strong>Trace — arr = [10, 5, 2, 6], k = 100</strong></summary>
 
 ```
-start=0, end=0, product=1, max_len=0
+start=0, end=0, product=1, answer=0
 
-end=0: product *= 10 → 10.  10 < 100 — no contract.  window=[0..0] len=1 | max_len=1
-end=1: product *= 5  → 50.  50 < 100 — no contract.  window=[0..1] len=2 | max_len=2
-end=2: product *= 2  → 100. 100 ≥ 100 — contract:
-         product //= 10 → 10, start=1.  10 < 100 — stop.
-       window=[1..2] len=2                                              | max_len=2
-end=3: product *= 6  → 60.  60 < 100 — no contract. window=[1..3] len=3 | max_len=3
+end=0: product *= 10 → 10. 10 < 100 — no contract.
+       answer += (0 - 0 + 1) = 1 → answer = 1.   subarray [10]
+end=1: product *= 5 → 50. 50 < 100 — no contract.
+       answer += (1 - 0 + 1) = 2 → answer = 3.   subarrays [5], [10, 5]
+end=2: product *= 2 → 100. 100 ≥ 100 — contract:
+         product //= 10 → 10, start=1. 10 < 100 — stop.
+       answer += (2 - 1 + 1) = 2 → answer = 5.   subarrays [2], [5, 2]
+end=3: product *= 6 → 60. 60 < 100 — no contract.
+       answer += (3 - 1 + 1) = 3 → answer = 8.   subarrays [6], [2, 6], [5, 2, 6]
 
-Return: 3 ✓   (subarray [5, 2, 6])
-
-The contraction at end=2 demonstrates why 'while' matters: without it,
-start would still be 0, product would still be 100, and the invariant
-would be silently violated.
+Return: 8 ✓
 ```
 
 </details>
@@ -1669,7 +1943,7 @@ would be silently violated.
 | | Complexity | Reasoning |
 |---|---|---|
 | **Time** | O(N) | Each index is visited at most twice overall — once by `end`, once by `start`. The inner `while` is amortised |
-| **Space** | O(1) | Four integers: `start`, `end`, `product`, `max_len` |
+| **Space** | O(1) | Four integers: `start`, `end`, `product`, `answer` |
 
 The amortised argument matters: the inner `while` looks quadratic, but across the *whole* run, `start` moves forward at most `N` times total, so the sum of all inner iterations is bounded by `N`.
 
@@ -1679,66 +1953,69 @@ The amortised argument matters: the inner `while` looks quadratic, but across th
 
 | Case | Example | Expected | Reasoning |
 |---|---|---|---|
-| `k ≤ 1` | `arr=[1,2,3]`, `k=1` | `0` | No product of positives can be strictly less than 1 |
+| `k ≤ 1` | `arr=[1, 2, 3]`, `k=1` | `0` | No product of positive ints can be strictly less than 1 |
+| Single element `≥ k` | `arr=[10]`, `k=5` | `0` | Inner contract empties window; nothing to count |
+| All elements `< k` | `arr=[1, 1, 1]`, `k=2` | `6` | Every non-empty subarray valid: 3 + 2 + 1 = 6 |
 | Empty array | `arr=[]`, `k=10` | `0` | Loop never executes |
-| Single big element | `arr=[100]`, `k=50` | `0` | `end=0` expands, contraction empties window, no length recorded ≥ 1 |
-| All elements `< k` | `arr=[1,1,1]`, `k=2` | `3` | Product stays ≤ 1 throughout; window is the entire array |
-| Product exactly equals `k` | `arr=[2,5]`, `k=10` | `1` | `2*5 = 10` is *not* strictly less, so the window contracts |
+| Product exactly equals `k` | `arr=[2, 5]`, `k=10` | `2` | `2 * 5 = 10` not strictly less — only `[2]` and `[5]` count |
 
 ---
 
-## Final Takeaway
+## Key Takeaway
 
-Product Conundrum is where the variable window grows teeth. The jump from `if` to `while` on contraction is what separates toy windows from industrial ones — and the amortised O(N) analysis is what reassures you the loop is still linear. When you see a problem where one new element can invalidate several previous ones, reach for `while`.
-
-> **Transfer Challenge:** Change the problem to *count the number of subarrays* whose product is strictly less than `k` (not just the longest). Hint: when the invariant holds for window `arr[start..end]`, how many valid subarrays *ending at `end`* exist?
->
-> <details><summary><strong>Solution hint</strong></summary>
->
-> Every window `arr[start..end]` that satisfies the invariant contains `end - start + 1` valid subarrays ending at `end` (from length 1 up to the full window). Accumulate `count += end - start + 1` instead of taking the max — everything else stays the same.
->
-> </details>
+Product Conundrum upgrades the variable window in two ways at once: contraction becomes a `while` (one expansion can force several shrinks), and the aggregate is a **count of subarrays**, not a single max/min. The trick to counting is recognising that once the invariant holds for `[start..end]`, every shorter window ending at `end` is also valid — so `end − start + 1` new subarrays land in the answer at each step.
 
 ***
 
 # Maximum Subarray Sum
 
-## The Hook
-
-You already proved this one. Back in the identification section, we walked through the three-case proof that skipping every subarray rooted in a negative prefix never costs us the answer. Now the proof becomes code — five lines of pure Kadane's algorithm. The mathematical heavy lifting is already done; this section is the victory lap, and the fact that it is *only* a victory lap is itself a measure of how far you've come.
-
 ## The Problem
 
-> Given an integer array `arr` (which may contain negative values), return the largest possible sum of a contiguous non-empty subarray.
+Given an integer array `arr`, find the **non-empty subarray with the maximum sum** and return that sum.
 
 ```
+arr = [-2, 1, -3, 4, -1, 2, 1, -5, 4]   →  6        (subarray [4, -1, 2, 1])
+arr = [5, 4, -1, 7, 8]                  →  23       (the whole array)
+arr = [1]                                →  1
+```
+
+---
+
+## Examples
+
+**Example 1**
+```
 Input:  arr = [-2, 1, -3, 4, -1, 2, 1, -5, 4]
-Output: 6            (subarray [4, -1, 2, 1])
+Output: 6
+Explanation: The subarray [4, -1, 2, 1] has the largest sum of 6.
+```
 
-Input:  arr = [1]
-Output: 1            (single element)
-
-Input:  arr = [-3, -1, -2]
-Output: -1           (all negative — best we can do is the single largest element)
-
+**Example 2**
+```
 Input:  arr = [5, 4, -1, 7, 8]
-Output: 23           (the entire array)
+Output: 23
+Explanation: The subarray [5, 4, -1, 7, 8] has the largest sum of 23.
+```
+
+**Example 3**
+```
+Input:  arr = [1]
+Output: 1
+Explanation: The subarray [1] has the largest sum of 1.
 ```
 
 ---
 
 ## Intuition
 
-Re-read the proof in the identification section above if it has faded. The short version:
+Kadane's algorithm in sliding-window form. The invariant:
 
-- **Invariant:** `sum(arr[start..i]) ≥ 0` for every `i` in `[start, end)`.
-- **Decision rule:** if adding `arr[end]` pushes the running sum below zero, every subarray rooted at or between `start` and `end` is provably beaten by one that starts at `end + 1`. Reset and move on.
+- **`sum`** — the running sum of the current candidate subarray ending at the current `end`.
+- **`max_sum`** — the best sum seen so far.
 
-The elegance is that we never *shrink* the window one element at a time. When the invariant breaks, we **leap** past the entire negative prefix — just like Consecutive Ones, just like every "skip the bad region entirely" pattern.
+When the running `sum` goes negative, every subarray ending at `end` with a non-empty negative prefix is provably beaten by one that starts at `end + 1`. Reset by setting `sum = arr[end]` and leaping `start` past the dead region. Otherwise, just extend the current subarray by adding `arr[end]`.
 
-> *Before looking at the code — what should the initial value of `current` and `max_sum` be, and why not just `0`?*
-
-If you said "the first element", you already caught the edge case. Using `0` would cause an all-negative array like `[-3, -1, -2]` to return `0` — a sum that corresponds to *no subarray at all*, which violates the non-empty constraint.
+We seed `sum` and `max_sum` with `arr[0]` (not `0`) so that an all-negative array still returns the single largest element rather than `0`.
 
 ---
 
@@ -1746,59 +2023,150 @@ If you said "the first element", you already caught the edge case. Using `0` wou
 
 
 ```pseudocode
-# Kadane in compact for-loop form.
 function maxSubarraySum(arr):
-    n ← length(arr)
-    if n = 0: return 0
-    current ← arr[0]; maxSum ← arr[0]
-    for end from 1 to n − 1:
-        if current < 0:
-            current ← arr[end]
+    if arr is empty: return 0
+
+    # To store the starting index of the subarray
+    start ← 0
+
+    # To store the ending index of the subarray
+    end ← 0
+
+    # Initialize sum to a default value (current sum)
+    sum ← arr[end]
+
+    # To store the maximum subarray sum found so far
+    maxSum ← arr[end]
+
+    # Increment to start from index 1 as index 0 has already been taken
+    end ← end + 1
+
+    # Sliding window
+    while end < length(arr):
+
+        # If the current sum becomes negative, reset the window
+        if sum < 0:
+            sum ← arr[end]
+            start ← end + 1
+
+        # Otherwise, add contribution of arr[end]
         else:
-            current ← current + arr[end]
-        maxSum ← max(maxSum, current)
+            sum ← sum + arr[end]
+
+        # Update the maximum subarray sum found so far
+        maxSum ← max(maxSum, sum)
+
+        # Expand the window from the right
+        end ← end + 1
+
     return maxSum
 ```
 
 ```python run
 from typing import List
 
-def max_subarray_sum(arr: List[int]) -> int:
-    n = len(arr)
-    if n == 0:
-        return 0
-    current = max_sum = arr[0]
-    for end in range(1, n):
-        current = arr[end] if current < 0 else current + arr[end]
-        max_sum = max(max_sum, current)
-    return max_sum
+class Solution:
+    def max_subarray_sum(self, arr: List[int]) -> int:
+        if not arr:
+            return 0
+
+        # To store the starting index of the subarray
+        start = 0
+
+        # To store the ending index of the subarray
+        end = 0
+
+        # Initialize sum to a default value (current sum)
+        sum = arr[end]
+
+        # To store the maximum subarray sum found so far
+        max_sum = arr[end]
+
+        # Increment to start from index 1 as index 0 has already been
+        # taken into account
+        end += 1
+
+        # Sliding window
+        while end < len(arr):
+
+            # If the current sum becomes negative, reset the window
+            if sum < 0:
+                sum = arr[end]
+                start = end + 1
+
+            # Otherwise, add the contribution of arr[end]
+            else:
+                sum += arr[end]
+
+            # Update the maximum subarray sum found so far
+            max_sum = max(max_sum, sum)
+
+            # Expand the window from the right
+            end += 1
+
+        return max_sum
 
 
-print(max_subarray_sum([-2, 1, -3, 4, -1, 2, 1, -5, 4]))  # 6
-print(max_subarray_sum([1]))                               # 1
-print(max_subarray_sum([-3, -1, -2]))                      # -1
-print(max_subarray_sum([5, 4, -1, 7, 8]))                  # 23
-print(max_subarray_sum([-1]))                              # -1
+sol = Solution()
+print(sol.max_subarray_sum([-2, 1, -3, 4, -1, 2, 1, -5, 4]))   # 6
+print(sol.max_subarray_sum([5, 4, -1, 7, 8]))                   # 23
+print(sol.max_subarray_sum([1]))                                # 1
 ```
 
 ```java run
 public class Main {
-    static int maxSubarraySum(int[] arr) {
-        if (arr.length == 0) return 0;
-        int current = arr[0], maxSum = arr[0];
-        for (int end = 1; end < arr.length; end++) {
-            current = (current < 0) ? arr[end] : current + arr[end];
-            if (current > maxSum) maxSum = current;
+    static class Solution {
+        public int maxSubarraySum(int[] arr) {
+            if (arr.length == 0) {
+                return 0;
+            }
+
+            // To store the starting index of the subarray
+            int start = 0;
+
+            // To store the ending index of the subarray
+            int end = 0;
+
+            // Initialize sum to a default value (current sum)
+            int sum = arr[end];
+
+            // To store the maximum subarray sum found so far
+            int maxSum = arr[end];
+
+            // Increment to start from index 1 as index 0 has already been
+            // taken into account
+            end++;
+
+            // Sliding window
+            while (end < arr.length) {
+
+                // If the current sum becomes negative, reset the window
+                if (sum < 0) {
+                    sum = arr[end];
+                    start = end + 1;
+                }
+
+                // Otherwise, add contribution of arr[end]
+                else {
+                    sum += arr[end];
+                }
+
+                // Update the maximum subarray sum found so far
+                maxSum = Math.max(maxSum, sum);
+
+                // Expand the window from the right
+                end++;
+            }
+
+            return maxSum;
         }
-        return maxSum;
     }
 
     public static void main(String[] args) {
-        System.out.println(maxSubarraySum(new int[]{-2, 1, -3, 4, -1, 2, 1, -5, 4}));
-        System.out.println(maxSubarraySum(new int[]{1}));
-        System.out.println(maxSubarraySum(new int[]{-3, -1, -2}));
-        System.out.println(maxSubarraySum(new int[]{5, 4, -1, 7, 8}));
-        System.out.println(maxSubarraySum(new int[]{-1}));
+        Solution sol = new Solution();
+        System.out.println(sol.maxSubarraySum(new int[]{-2, 1, -3, 4, -1, 2, 1, -5, 4}));  // 6
+        System.out.println(sol.maxSubarraySum(new int[]{5, 4, -1, 7, 8}));                   // 23
+        System.out.println(sol.maxSubarraySum(new int[]{1}));                                 // 1
     }
 }
 ```
@@ -1808,47 +2176,108 @@ public class Main {
 
 int max_subarray_sum(int* arr, int n) {
     if (n == 0) return 0;
-    int current = arr[0], max_sum = arr[0];
-    for (int end = 1; end < n; end++) {
-        current = (current < 0) ? arr[end] : current + arr[end];
-        if (current > max_sum) max_sum = current;
+
+    /* To store the starting index of the subarray */
+    int start = 0;
+
+    /* To store the ending index of the subarray */
+    int end = 0;
+
+    /* Initialize sum to a default value (current sum) */
+    int sum = arr[end];
+
+    /* To store the maximum subarray sum found so far */
+    int max_sum = arr[end];
+
+    /* Increment to start from index 1 as index 0 has already been taken */
+    end++;
+
+    /* Sliding window */
+    while (end < n) {
+
+        /* If the current sum becomes negative, reset the window */
+        if (sum < 0) {
+            sum = arr[end];
+            start = end + 1;
+        }
+
+        /* Otherwise, add contribution of arr[end] */
+        else {
+            sum += arr[end];
+        }
+
+        /* Update the maximum subarray sum found so far */
+        if (sum > max_sum) max_sum = sum;
+
+        /* Expand the window from the right */
+        end++;
     }
+
     return max_sum;
 }
 
 int main() {
     int a1[] = {-2, 1, -3, 4, -1, 2, 1, -5, 4};
-    int a2[] = {1};
-    int a3[] = {-3, -1, -2};
-    int a4[] = {5, 4, -1, 7, 8};
-    int a5[] = {-1};
-    printf("%d\n", max_subarray_sum(a1, 9));
-    printf("%d\n", max_subarray_sum(a2, 1));
-    printf("%d\n", max_subarray_sum(a3, 3));
-    printf("%d\n", max_subarray_sum(a4, 5));
-    printf("%d\n", max_subarray_sum(a5, 1));
+    int a2[] = {5, 4, -1, 7, 8};
+    int a3[] = {1};
+    printf("%d\n", max_subarray_sum(a1, 9));   /* 6 */
+    printf("%d\n", max_subarray_sum(a2, 5));   /* 23 */
+    printf("%d\n", max_subarray_sum(a3, 1));   /* 1 */
     return 0;
 }
 ```
 
 ```scala run
 object Main extends App {
-  def maxSubarraySum(arr: Array[Int]): Int = {
-    if (arr.isEmpty) return 0
-    var current = arr(0)
-    var maxSum = arr(0)
-    for (end <- 1 until arr.length) {
-      current = if (current < 0) arr(end) else current + arr(end)
-      maxSum = math.max(maxSum, current)
+  class Solution {
+    def maxSubarraySum(arr: Array[Int]): Int = {
+      if (arr.isEmpty) {
+        return 0
+      }
+
+      // To store the starting index of the subarray
+      var start = 0
+
+      // To store the ending index of the subarray
+      var end = 0
+
+      // Initialize sum to a default value (current sum)
+      var sum = arr(end)
+
+      // To store the maximum subarray sum found so far
+      var maxSum = arr(end)
+
+      // Increment to start from index 1 as index 0 has already been taken
+      end += 1
+
+      // Sliding window
+      while (end < arr.length) {
+
+        // If the current sum becomes negative, reset the window
+        if (sum < 0) {
+          sum = arr(end)
+          start = end + 1
+        }
+        // Otherwise, add contribution of arr[end]
+        else {
+          sum += arr(end)
+        }
+
+        // Update the maximum subarray sum found so far
+        maxSum = math.max(maxSum, sum)
+
+        // Expand the window from the right
+        end += 1
+      }
+
+      maxSum
     }
-    maxSum
   }
 
-  println(maxSubarraySum(Array(-2, 1, -3, 4, -1, 2, 1, -5, 4)))
-  println(maxSubarraySum(Array(1)))
-  println(maxSubarraySum(Array(-3, -1, -2)))
-  println(maxSubarraySum(Array(5, 4, -1, 7, 8)))
-  println(maxSubarraySum(Array(-1)))
+  val sol = new Solution
+  println(sol.maxSubarraySum(Array(-2, 1, -3, 4, -1, 2, 1, -5, 4)))   // 6
+  println(sol.maxSubarraySum(Array(5, 4, -1, 7, 8)))                    // 23
+  println(sol.maxSubarraySum(Array(1)))                                 // 1
 }
 ```
 
@@ -1857,16 +2286,16 @@ object Main extends App {
 <summary><strong>Trace — arr = [-2, 1, -3, 4, -1, 2, 1, -5, 4]</strong></summary>
 
 ```
-Initial: current = arr[0] = -2, max_sum = -2
+Initial: start=0, end=0, sum = arr[0] = -2, max_sum = -2.  Increment end to 1.
 
-end=1: current=-2 < 0 → LEAP  | current = arr[1] = 1  | max_sum = max(-2, 1) = 1
-end=2: current=1  ≥ 0 → extend| current = 1 + (-3) = -2| max_sum = max(1, -2) = 1
-end=3: current=-2 < 0 → LEAP  | current = arr[3] = 4  | max_sum = max(1, 4) = 4
-end=4: current=4  ≥ 0 → extend| current = 4 + (-1) = 3 | max_sum = max(4, 3) = 4
-end=5: current=3  ≥ 0 → extend| current = 3 + 2 = 5    | max_sum = max(4, 5) = 5
-end=6: current=5  ≥ 0 → extend| current = 5 + 1 = 6    | max_sum = max(5, 6) = 6
-end=7: current=6  ≥ 0 → extend| current = 6 + (-5) = 1 | max_sum = max(6, 1) = 6
-end=8: current=1  ≥ 0 → extend| current = 1 + 4 = 5    | max_sum = max(6, 5) = 6
+end=1: sum=-2 < 0 → reset.    sum = arr[1] = 1,  start = 2.  max_sum = max(-2, 1) = 1
+end=2: sum=1  ≥ 0 → extend.   sum = 1 + (-3) = -2.           max_sum = max(1, -2) = 1
+end=3: sum=-2 < 0 → reset.    sum = arr[3] = 4,  start = 4.  max_sum = max(1, 4) = 4
+end=4: sum=4  ≥ 0 → extend.   sum = 4 + (-1) = 3.            max_sum = max(4, 3) = 4
+end=5: sum=3  ≥ 0 → extend.   sum = 3 + 2 = 5.               max_sum = max(4, 5) = 5
+end=6: sum=5  ≥ 0 → extend.   sum = 5 + 1 = 6.               max_sum = max(5, 6) = 6
+end=7: sum=6  ≥ 0 → extend.   sum = 6 + (-5) = 1.            max_sum = max(6, 1) = 6
+end=8: sum=1  ≥ 0 → extend.   sum = 1 + 4 = 5.               max_sum = max(6, 5) = 6
 
 Return: 6 ✓   (the subarray [4, -1, 2, 1], indices 3..6)
 ```
@@ -1880,7 +2309,7 @@ Return: 6 ✓   (the subarray [4, -1, 2, 1], indices 3..6)
 | | Complexity | Reasoning |
 |---|---|---|
 | **Time** | O(N) | Single pass; every element visited exactly once |
-| **Space** | O(1) | Two integers: `current`, `max_sum` |
+| **Space** | O(1) | Constant — `start`, `end`, `sum`, `maxSum` |
 
 ---
 
@@ -1890,48 +2319,57 @@ Return: 6 ✓   (the subarray [4, -1, 2, 1], indices 3..6)
 |---|---|---|---|
 | All negative | `[-3, -1, -2]` | `-1` | Seed from `arr[0]` and record every iteration — the single largest element wins |
 | Single element | `[5]` | `5` | Loop never runs; seed values are the answer |
-| Entire array positive | `[5, 4, -1, 7, 8]` | `23` | Invariant never breaks; `current` just keeps accumulating |
-| Starts with huge negative | `[-100, 1, 2, 3]` | `6` | One leap at `end=1`, then pure accumulation |
+| Entire array positive | `[5, 4, -1, 7, 8]` | `23` | Invariant never breaks; `sum` just keeps accumulating |
+| Starts with huge negative | `[-100, 1, 2, 3]` | `6` | One reset at `end=1`, then pure accumulation |
 | Zero prefix | `[0, 0, -1, 5]` | `5` | Zeros are non-negative — invariant holds until the `-1`; code still correct |
+| Empty array | `[]` | `0` | Early-return guard |
 
 ---
 
-## Final Takeaway
+## Key Takeaway
 
-Maximum Subarray Sum is the archetype for "skip the bad region" variable window problems. The invariant (non-negative prefix) is stronger than Consecutive Ones's (all ones) because it allows negatives *inside* the window — only the prefix matters. This is Kadane's algorithm, and once you've internalised its skip-rather-than-shrink shape, you'll see it in half a dozen disguises: "maximum product subarray", "longest alternating subarray", "largest sum circular subarray" — all the same move with a different invariant.
-
-> **Transfer Challenge:** Return the subarray itself (its start and end indices), not just the sum.
->
-> <details><summary><strong>Solution hint</strong></summary>
->
-> Track `cur_start` (resets to `end` on every leap) alongside `current`. When `current > max_sum`, also record `best_start = cur_start` and `best_end = end`. Three extra variables, same O(N) runtime.
->
-> </details>
+Maximum Subarray Sum is Kadane's algorithm written in the variable-sliding-window shape. The invariant is "the running `sum` from `start` to `end` is non-negative"; when adding `arr[end]` pushes that sum below zero, every subarray with a non-empty negative prefix is provably dominated by one starting at `end + 1`, so we leap `start` past the dead region. The seed value `arr[0]` (instead of `0`) keeps the algorithm correct for all-negative arrays.
 
 ***
 
 # Consecutive Ones with K Flips
 
-## The Hook
-
-You are building a feature flag rollout. Your uptime log is mostly `1`s (healthy) with scattered `0`s (hiccups). Your product manager asks: *"If we're allowed to 'forgive' up to `k` hiccups and smooth them over, what is the longest continuous success streak we could claim?"* This problem is the grand finale of the section — it generalises **both** Consecutive Ones (the `k=0` case) and demonstrates why `while` on contraction is essential. If you understand this, you own the variable sliding window.
-
 ## The Problem
 
-> Given a binary array `arr` and a non-negative integer `k`, return the length of the longest contiguous subarray containing only `1`s **after flipping at most `k` of its `0`s to `1`s**.
+Given a binary array `arr` and a non-negative integer `k`, find and return the **maximum number of consecutive `1`s** in the array **if you can flip at most `k` `0`s**.
 
 ```
-Input:  arr = [1, 1, 0, 0, 1, 1, 1, 0, 1],  k = 2
-Output: 7            (flip the two 0s at indices 2,3 → run [1,1,1,1,1,1,1] of length 7)
+arr = [1, 1, 1, 0, 0, 0, 1, 1, 1, 1, 0],  k = 1   →  5    (flip the last 0 inside the run)
+arr = [1, 1, 1, 0, 1, 0, 1, 1, 1, 0, 0],  k = 2   →  9    (flip 0s at indices 3 and 5)
+arr = [0, 0, 0, 0],                        k = 2   →  2    (flip any 2 consecutive 0s)
+```
 
-Input:  arr = [1, 0, 1, 1, 0, 1],  k = 1
-Output: 4            (flip either 0 → a run of 4)
+---
 
-Input:  arr = [0, 0, 0],  k = 0
-Output: 0            (no flips allowed, no 1s present — equals Consecutive Ones on [0,0,0])
+## Examples
 
-Input:  arr = [1, 1, 1],  k = 5
-Output: 3            (already all 1s; extra flips unused)
+**Example 1**
+```
+Input:  arr = [1, 1, 1, 0, 0, 0, 1, 1, 1, 1, 0], k = 1
+Output: 5
+Explanation: The maximum number of consecutive 1s is 5 if we flip the
+             last 0 between the two runs of 1s.
+```
+
+**Example 2**
+```
+Input:  arr = [1, 1, 1, 0, 1, 0, 1, 1, 1, 0, 0], k = 2
+Output: 9
+Explanation: The maximum number of consecutive 1s is 9 if we flip the 0s
+             at indices 3 and 5.
+```
+
+**Example 3**
+```
+Input:  arr = [0, 0, 0, 0], k = 2
+Output: 2
+Explanation: The maximum number of consecutive 1s is 2 if we flip any 2
+             consecutive 0s.
 ```
 
 ---
@@ -1954,70 +2392,167 @@ And here is the payoff: set `k = 0`, and this code becomes **identical in behavi
 
 
 ```pseudocode
-# Longest run of 1s achievable by flipping at most k zeros.
-# Window invariant: at most k zeros inside [start, end].
-function longestOnesWithKFlips(arr, k):
-    n ← length(arr)
-    if n = 0: return 0
-    start ← 0; zeros ← 0; maxLen ← 0
-    for end from 0 to n − 1:
-        if arr[end] = 0: zeros ← zeros + 1        # 0 costs one flip
-        while zeros > k:                           # over budget — shrink from the left
-            if arr[start] = 0: zeros ← zeros − 1
+function consecutiveOnesWithKFlips(arr, k):
+    # To store the starting index of the subarray
+    start ← 0
+
+    # To store the ending index of the subarray
+    end ← 0
+
+    # To store the current count of 0s in the window
+    countZeros ← 0
+
+    # To store the maximum number of 1s in any subarray
+    maxOnes ← 0
+
+    # Move the window one step to the right until it reaches the end of
+    # the array
+    while end < length(arr):
+
+        # Add contribution of arr[end]
+        if arr[end] = 0:
+
+            # Increment count of zeros
+            countZeros ← countZeros + 1
+
+        # Process aggregate
+        while countZeros > k:
+
+            # Remove contribution of arr[start] using the inverse function
+            if arr[start] = 0:
+
+                # Decrement count of zeros if we move past a zero
+                countZeros ← countZeros − 1
+
+            # Contract window
             start ← start + 1
-        maxLen ← max(maxLen, end − start + 1)
-    return maxLen
+
+        # Update the maximum number of consecutive ones seen so far
+        maxOnes ← max(maxOnes, end − start + 1)
+
+        # Expand the window
+        end ← end + 1
+
+    return maxOnes
 ```
 
 ```python run
 from typing import List
 
-def longest_ones_with_k_flips(arr: List[int], k: int) -> int:
-    n = len(arr)
-    if n == 0:
-        return 0
-    start = zeros = max_len = 0
-    for end in range(n):
-        if arr[end] == 0:
-            zeros += 1                                  # 0 costs one flip.
-        while zeros > k:                                # Over budget — shrink.
-            if arr[start] == 0:
-                zeros -= 1
-            start += 1
-        max_len = max(max_len, end - start + 1)
-    return max_len
+class Solution:
+    def consecutive_ones_with_k_flips(
+        self, arr: List[int], k: int
+    ) -> int:
+
+        # To store the starting index of the subarray
+        start = 0
+
+        # To store the ending index of the subarray
+        end = 0
+
+        # To store the current count of 0s in the window
+        count_zeros = 0
+
+        # To store the maximum number of 1s in any subarray
+        max_ones = 0
+
+        # Move the window one step to the right until it reaches the end
+        # of the array
+        while end < len(arr):
+
+            # Add contribution of arr[end]
+            if arr[end] == 0:
+
+                # Increment count of zeros
+                count_zeros += 1
+
+            # Process aggregate
+            while count_zeros > k:
+
+                # Remove contribution of arr[start] using the inverse
+                # function
+                if arr[start] == 0:
+
+                    # Decrement count of zeros if we move past a zero
+                    count_zeros -= 1
+
+                # Contract window
+                start += 1
+
+            # Update the maximum number of consecutive ones seen so far
+            max_ones = max(max_ones, end - start + 1)
+
+            # Expand the window
+            end += 1
+
+        return max_ones
 
 
-print(longest_ones_with_k_flips([1, 1, 0, 0, 1, 1, 1, 0, 1], 2))   # 7
-print(longest_ones_with_k_flips([1, 0, 1, 1, 0, 1], 1))             # 4
-print(longest_ones_with_k_flips([0, 0, 0], 0))                      # 0
-print(longest_ones_with_k_flips([1, 1, 1], 5))                      # 3
-print(longest_ones_with_k_flips([0, 0, 1, 1, 0, 0, 1, 1, 1], 3))    # 9
+sol = Solution()
+print(sol.consecutive_ones_with_k_flips([1, 1, 1, 0, 0, 0, 1, 1, 1, 1, 0], 1))   # 5
+print(sol.consecutive_ones_with_k_flips([1, 1, 1, 0, 1, 0, 1, 1, 1, 0, 0], 2))   # 9
+print(sol.consecutive_ones_with_k_flips([0, 0, 0, 0], 2))                         # 2
 ```
 
 ```java run
 public class Main {
-    static int longestOnesWithKFlips(int[] arr, int k) {
-        int n = arr.length;
-        if (n == 0) return 0;
-        int start = 0, zeros = 0, maxLen = 0;
-        for (int end = 0; end < n; end++) {
-            if (arr[end] == 0) zeros++;
-            while (zeros > k) {
-                if (arr[start] == 0) zeros--;
-                start++;
+    static class Solution {
+        public int consecutiveOnesWithKFlips(int[] arr, int k) {
+
+            // To store the starting index of the subarray
+            int start = 0;
+
+            // To store the ending index of the subarray
+            int end = 0;
+
+            // To store the current count of 0s in the window
+            int countZeros = 0;
+
+            // To store the maximum number of 1s in any subarray
+            int maxOnes = 0;
+
+            // Move the window one step to the right until it reaches the
+            // end of the array
+            while (end < arr.length) {
+
+                // Add contribution of arr[end]
+                if (arr[end] == 0) {
+
+                    // Increment count of zeros
+                    countZeros++;
+                }
+
+                // Process aggregate
+                while (countZeros > k) {
+
+                    // Remove contribution of arr[start] using the inverse
+                    // function
+                    if (arr[start] == 0) {
+
+                        // Decrement count of zeros if we move past a zero
+                        countZeros--;
+                    }
+
+                    // Contract window
+                    start++;
+                }
+
+                // Update the maximum number of consecutive ones seen so far
+                maxOnes = Math.max(maxOnes, end - start + 1);
+
+                // Expand the window
+                end++;
             }
-            if (end - start + 1 > maxLen) maxLen = end - start + 1;
+
+            return maxOnes;
         }
-        return maxLen;
     }
 
     public static void main(String[] args) {
-        System.out.println(longestOnesWithKFlips(new int[]{1, 1, 0, 0, 1, 1, 1, 0, 1}, 2));
-        System.out.println(longestOnesWithKFlips(new int[]{1, 0, 1, 1, 0, 1}, 1));
-        System.out.println(longestOnesWithKFlips(new int[]{0, 0, 0}, 0));
-        System.out.println(longestOnesWithKFlips(new int[]{1, 1, 1}, 5));
-        System.out.println(longestOnesWithKFlips(new int[]{0, 0, 1, 1, 0, 0, 1, 1, 1}, 3));
+        Solution sol = new Solution();
+        System.out.println(sol.consecutiveOnesWithKFlips(new int[]{1, 1, 1, 0, 0, 0, 1, 1, 1, 1, 0}, 1));  // 5
+        System.out.println(sol.consecutiveOnesWithKFlips(new int[]{1, 1, 1, 0, 1, 0, 1, 1, 1, 0, 0}, 2));  // 9
+        System.out.println(sol.consecutiveOnesWithKFlips(new int[]{0, 0, 0, 0}, 2));                       // 2
     }
 }
 ```
@@ -2025,53 +2560,120 @@ public class Main {
 ```c run
 #include <stdio.h>
 
-int longest_ones_with_k_flips(int* arr, int n, int k) {
-    if (n == 0) return 0;
-    int start = 0, zeros = 0, max_len = 0;
-    for (int end = 0; end < n; end++) {
-        if (arr[end] == 0) zeros++;
-        while (zeros > k) {
-            if (arr[start] == 0) zeros--;
+int consecutive_ones_with_k_flips(int* arr, int n, int k) {
+
+    /* To store the starting index of the subarray */
+    int start = 0;
+
+    /* To store the ending index of the subarray */
+    int end = 0;
+
+    /* To store the current count of 0s in the window */
+    int count_zeros = 0;
+
+    /* To store the maximum number of 1s in any subarray */
+    int max_ones = 0;
+
+    /* Move the window one step to the right until it reaches the end of
+     * the array */
+    while (end < n) {
+
+        /* Add contribution of arr[end] */
+        if (arr[end] == 0) {
+
+            /* Increment count of zeros */
+            count_zeros++;
+        }
+
+        /* Process aggregate */
+        while (count_zeros > k) {
+
+            /* Remove contribution of arr[start] using the inverse function */
+            if (arr[start] == 0) {
+
+                /* Decrement count of zeros if we move past a zero */
+                count_zeros--;
+            }
+
+            /* Contract window */
             start++;
         }
-        if (end - start + 1 > max_len) max_len = end - start + 1;
+
+        /* Update the maximum number of consecutive ones seen so far */
+        if (end - start + 1 > max_ones) max_ones = end - start + 1;
+
+        /* Expand the window */
+        end++;
     }
-    return max_len;
+
+    return max_ones;
 }
 
 int main() {
-    int a1[] = {1, 1, 0, 0, 1, 1, 1, 0, 1}; printf("%d\n", longest_ones_with_k_flips(a1, 9, 2));
-    int a2[] = {1, 0, 1, 1, 0, 1};          printf("%d\n", longest_ones_with_k_flips(a2, 6, 1));
-    int a3[] = {0, 0, 0};                   printf("%d\n", longest_ones_with_k_flips(a3, 3, 0));
-    int a4[] = {1, 1, 1};                   printf("%d\n", longest_ones_with_k_flips(a4, 3, 5));
-    int a5[] = {0, 0, 1, 1, 0, 0, 1, 1, 1}; printf("%d\n", longest_ones_with_k_flips(a5, 9, 3));
+    int a1[] = {1, 1, 1, 0, 0, 0, 1, 1, 1, 1, 0}; printf("%d\n", consecutive_ones_with_k_flips(a1, 11, 1));  /* 5 */
+    int a2[] = {1, 1, 1, 0, 1, 0, 1, 1, 1, 0, 0}; printf("%d\n", consecutive_ones_with_k_flips(a2, 11, 2));  /* 9 */
+    int a3[] = {0, 0, 0, 0};                       printf("%d\n", consecutive_ones_with_k_flips(a3, 4, 2));   /* 2 */
     return 0;
 }
 ```
 
 ```scala run
 object Main extends App {
-  def longestOnesWithKFlips(arr: Array[Int], k: Int): Int = {
-    if (arr.isEmpty) return 0
-    var start = 0
-    var zeros = 0
-    var maxLen = 0
-    for (end <- arr.indices) {
-      if (arr(end) == 0) zeros += 1
-      while (zeros > k) {
-        if (arr(start) == 0) zeros -= 1
-        start += 1
+  class Solution {
+    def consecutiveOnesWithKFlips(arr: Array[Int], k: Int): Int = {
+
+      // To store the starting index of the subarray
+      var start = 0
+
+      // To store the ending index of the subarray
+      var end = 0
+
+      // To store the current count of 0s in the window
+      var countZeros = 0
+
+      // To store the maximum number of 1s in any subarray
+      var maxOnes = 0
+
+      // Move the window one step to the right until it reaches the end
+      // of the array
+      while (end < arr.length) {
+
+        // Add contribution of arr[end]
+        if (arr(end) == 0) {
+
+          // Increment count of zeros
+          countZeros += 1
+        }
+
+        // Process aggregate
+        while (countZeros > k) {
+
+          // Remove contribution of arr[start] using the inverse function
+          if (arr(start) == 0) {
+
+            // Decrement count of zeros if we move past a zero
+            countZeros -= 1
+          }
+
+          // Contract window
+          start += 1
+        }
+
+        // Update the maximum number of consecutive ones seen so far
+        maxOnes = math.max(maxOnes, end - start + 1)
+
+        // Expand the window
+        end += 1
       }
-      maxLen = math.max(maxLen, end - start + 1)
+
+      maxOnes
     }
-    maxLen
   }
 
-  println(longestOnesWithKFlips(Array(1, 1, 0, 0, 1, 1, 1, 0, 1), 2))
-  println(longestOnesWithKFlips(Array(1, 0, 1, 1, 0, 1), 1))
-  println(longestOnesWithKFlips(Array(0, 0, 0), 0))
-  println(longestOnesWithKFlips(Array(1, 1, 1), 5))
-  println(longestOnesWithKFlips(Array(0, 0, 1, 1, 0, 0, 1, 1, 1), 3))
+  val sol = new Solution
+  println(sol.consecutiveOnesWithKFlips(Array(1, 1, 1, 0, 0, 0, 1, 1, 1, 1, 0), 1))  // 5
+  println(sol.consecutiveOnesWithKFlips(Array(1, 1, 1, 0, 1, 0, 1, 1, 1, 0, 0), 2))  // 9
+  println(sol.consecutiveOnesWithKFlips(Array(0, 0, 0, 0), 2))                       // 2
 }
 ```
 
