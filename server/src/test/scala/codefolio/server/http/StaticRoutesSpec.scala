@@ -11,10 +11,9 @@ import scala.jdk.CollectionConverters.*
 
 /**
  * Tests that the production server's SPA index.html fallback is *derived* from `AppRoutes.SpaRoutes` rather
- * than hand-mirrored. A hard reload of any top-level SPA path must return index.html so the client router
- * can re-resolve; this spec runs real requests through `StaticRoutes.from(...).routes` to prove every
- * `SpaRoute` is covered, that nested routes serve index.html for deep paths, and that a leaf-only route does
- * not.
+ * than hand-mirrored. A hard reload of any top-level SPA path must return index.html so the client router can
+ * re-resolve; this spec runs real requests through `StaticRoutes.from(...).routes` to prove every `SpaRoute`
+ * is covered, that nested routes serve index.html for deep paths, and that a leaf-only route does not.
  */
 object StaticRoutesSpec extends ZIOSpecDefault:
 
@@ -24,8 +23,8 @@ object StaticRoutesSpec extends ZIOSpecDefault:
     test("serves index.html at the root") {
       ZIO.scoped {
         for
-          dir <- tempDist
-          res <- runGet(StaticRoutes.from(dir.toString).routes, "/")
+          dir  <- tempDist
+          res  <- runGet(StaticRoutes.from(dir.toString).routes, "/")
           body <- res.body.asString
         yield assertTrue(res.status == Status.Ok, body.contains(IndexMarker))
       }
@@ -67,7 +66,7 @@ object StaticRoutesSpec extends ZIOSpecDefault:
       for
         tmp <- ZIO.attempt(Files.createTempDirectory("codefolio-staticroutes-gone-"))
         _   <- ZIO.attempt(Files.delete(tmp))
-        sr   = StaticRoutes.from(tmp.toString)
+        sr = StaticRoutes.from(tmp.toString)
         res <- runGet(sr.routes, "/cortex")
       yield assertTrue(res.status == Status.NotFound, sr.startupInfo.contains("dev mode"))
     }
