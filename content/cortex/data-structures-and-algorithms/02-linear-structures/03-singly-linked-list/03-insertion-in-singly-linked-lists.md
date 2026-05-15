@@ -2392,21 +2392,54 @@ Given the **head** of a singly linked list, a distance **X**, and a **data** val
 
 
 ```pseudocode
-# Same algorithm — re-listed for a second test case.
 function insertAtGivenDistance(head, X, data):
-    if head is null AND X > 0: return null
+    # If the list is empty and X is greater than 0, insertion is not
+    # possible, return null
+    if head is null AND X > 0:
+        return null
+
+    # Create a new node with the given data
     newNode ← new ListNode(data)
+
+    # If X is 0, insert the new node at the beginning of the list
     if X = 0:
+
+        # Set the next pointer of the new node to the current head,
+        # making the new node the new head.
         newNode.next ← head
+
+        # Return the newNode as this is the new head
         return newNode
+
+    # Pointer to traverse the list
     current ← head
+
+    # Counter to track the number of nodes traversed
     counter ← 0
+
+    # Traverse the list until reaching the desired distance or the
+    # end of the list
     while current is not null AND counter < X − 1:
+
+        # Move to the next node
         current ← current.next
+
+        # Increment the counter
         counter ← counter + 1
-    if current is null: return head
+
+    # If the list is shorter than X-1, it's not possible to insert
+    # the new node, so return head.
+    if current is null:
+        return head
+
+    # Set the next pointer of the new node to the current node
     newNode.next ← current.next
+
+    # Update the next pointer of the current node to point to the new
+    # node
     current.next ← newNode
+
+    # Return the updated head of the list
     return head
 ```
 
@@ -2417,26 +2450,54 @@ class ListNode:
 
 class Solution:
     def insert_at_given_distance(self, head, X, data):
-        if head is None and X > 0:
-            return None  # Cannot insert past position 0 in an empty list
 
+        # If the list is empty and x is greater than 0, insertion is not
+        # possible, return None
+        if head is None and X > 0:
+            return None
+
+        # Create a new node with the given data
         new_node = ListNode(data)
 
-        if X == 0:                  # Insert at beginning
+        # If X is 0, insert the new node at the beginning of the list
+        if X == 0:
+
+            # Set the next pointer of the new node to the current head,
+            # making the new node the new head.
             new_node.next = head
+
+            # Return the newNode as this is the new head
             return new_node
 
+        # Pointer to traverse the list
         current = head
+
+        # Counter to track the number of nodes traversed
         counter = 0
+
+        # Traverse the list until reaching the desired distance or the
+        # end of the list
         while current is not None and counter < X - 1:
-            current = current.next  # Advance to position X−1 (the predecessor)
+
+            # Move to the next node
+            current = current.next
+
+            # Increment the counter
             counter += 1
 
-        if current is None:         # X exceeds list size — invalid
+        # If the list is shorter than X-1, it's not possible to insert
+        # the new node, so return head.
+        if current is None:
             return head
 
-        new_node.next = current.next  # New node inherits what came after predecessor
-        current.next = new_node       # Predecessor now points to new node
+        # Set the next pointer of the new node to the current node
+        new_node.next = current.next
+
+        # Update the next pointer of the current node to point to the new
+        # node
+        current.next = new_node
+
+        # Return the updated head of the list
         return head
 
 n4=ListNode(10); n3=ListNode(3,n4); n2=ListNode(7,n3); n1=ListNode(5,n2)
@@ -2451,26 +2512,58 @@ public class Main {
     static class ListNode { int val; ListNode next; ListNode(int v){val=v;} }
 
     static ListNode insertAtGivenDistance(ListNode head, int X, int data) {
-        if (head == null && X > 0) return null;
 
+        // If the list is empty and X is greater than 0, insertion is not
+        // possible, return null
+        if (head == null && X > 0) {
+            return null;
+        }
+
+        // Create a new node with the given data
         ListNode newNode = new ListNode(data);
 
-        if (X == 0) {               // Insert at beginning
+        // If X is 0, insert the new node at the beginning of the list
+        if (X == 0) {
+
+            // Set the next pointer of the new node to the current head,
+            // making the new node the new head.
             newNode.next = head;
+
+            // Return the newNode as this is the new head
             return newNode;
         }
 
+        // Pointer to traverse the list
         ListNode current = head;
+
+        // Counter to track the number of nodes traversed
         int counter = 0;
+
+        // Traverse the list until reaching the desired distance or the
+        // end of the list
         while (current != null && counter < X - 1) {
-            current = current.next; // Advance to position X−1 (the predecessor)
+
+            // Move to the next node
+            current = current.next;
+
+            // Increment the counter
             counter++;
         }
 
-        if (current == null) return head;  // X exceeds list size
+        // If the list is shorter than X-1, it's not possible to insert
+        // the new node, so return head.
+        if (current == null) {
+            return head;
+        }
 
-        newNode.next = current.next;  // New node inherits what came after predecessor
-        current.next = newNode;       // Predecessor now points to new node
+        // Set the next pointer of the new node to the current node
+        newNode.next = current.next;
+
+        // Update the next pointer of the current node to point to the new
+        // node
+        current.next = newNode;
+
+        // Return the updated head of the list
         return head;
     }
 
@@ -2493,26 +2586,58 @@ typedef struct ListNode { int val; struct ListNode *next; } ListNode;
 ListNode* newNode(int v){ ListNode*n=malloc(sizeof*n); n->val=v; n->next=NULL; return n; }
 
 ListNode* insertAtGivenDistance(ListNode *head, int X, int data) {
-    if (!head && X > 0) return NULL;
 
+    /* If the list is empty and X is greater than 0, insertion is not
+       possible, return NULL */
+    if (head == NULL && X > 0) {
+        return NULL;
+    }
+
+    /* Create a new node with the given data */
     ListNode *newN = newNode(data);
 
-    if (X == 0) {               /* Insert at beginning */
+    /* If X is 0, insert the new node at the beginning of the list */
+    if (X == 0) {
+
+        /* Set the next pointer of the new node to the current head,
+           making the new node the new head. */
         newN->next = head;
+
+        /* Return the newNode as this is the new head */
         return newN;
     }
 
+    /* Pointer to traverse the list */
     ListNode *current = head;
+
+    /* Counter to track the number of nodes traversed */
     int counter = 0;
-    while (current && counter < X - 1) {
-        current = current->next;  /* Advance to position X−1 (the predecessor) */
+
+    /* Traverse the list until reaching the desired distance or the
+       end of the list */
+    while (current != NULL && counter < X - 1) {
+
+        /* Move to the next node */
+        current = current->next;
+
+        /* Increment the counter */
         counter++;
     }
 
-    if (!current) return head;  /* X exceeds list size */
+    /* If the list is shorter than X-1, it's not possible to insert
+       the new node, so return head. */
+    if (current == NULL) {
+        return head;
+    }
 
-    newN->next = current->next;  /* New node inherits what came after predecessor */
-    current->next = newN;        /* Predecessor now points to new node */
+    /* Set the next pointer of the new node to the current node */
+    newN->next = current->next;
+
+    /* Update the next pointer of the current node to point to the new
+       node */
+    current->next = newN;
+
+    /* Return the updated head of the list */
     return head;
 }
 
@@ -2530,26 +2655,58 @@ class ListNode(var v: Int, var next: ListNode = null)
 
 object Main extends App {
   def insertAtGivenDistance(head: ListNode, X: Int, data: Int): ListNode = {
-    if (head == null && X > 0) return null
 
+    // If the list is empty and X is greater than 0, insertion is not
+    // possible, return null
+    if (head == null && X > 0) {
+      return null
+    }
+
+    // Create a new node with the given data
     val newNode = new ListNode(data)
 
-    if (X == 0) {               // Insert at beginning
+    // If X is 0, insert the new node at the beginning of the list
+    if (X == 0) {
+
+      // Set the next pointer of the new node to the current head,
+      // making the new node the new head.
       newNode.next = head
+
+      // Return the newNode as this is the new head
       return newNode
     }
 
+    // Pointer to traverse the list
     var current = head
+
+    // Counter to track the number of nodes traversed
     var counter = 0
+
+    // Traverse the list until reaching the desired distance or the
+    // end of the list
     while (current != null && counter < X - 1) {
-      current = current.next    // Advance to position X−1 (the predecessor)
+
+      // Move to the next node
+      current = current.next
+
+      // Increment the counter
       counter += 1
     }
 
-    if (current == null) return head  // X exceeds list size
+    // If the list is shorter than X-1, it's not possible to insert
+    // the new node, so return head.
+    if (current == null) {
+      return head
+    }
 
-    newNode.next = current.next  // New node inherits what came after predecessor
-    current.next = newNode       // Predecessor now points to new node
+    // Set the next pointer of the new node to the current node
+    newNode.next = current.next
+
+    // Update the next pointer of the current node to point to the new
+    // node
+    current.next = newNode
+
+    // Return the updated head of the list
     head
   }
 
