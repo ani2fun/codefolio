@@ -319,6 +319,57 @@ flowchart TB
 
 <p align="center"><strong>Each iteration peeks at <code>merged.last</code> and either extends its end or appends a fresh interval. The sweep visits every input exactly once.</strong></p>
 
+```d3 widget=array-traversal
+{
+  "items": ["[1,3]", "[2,6]", "[8,10]", "[9,12]", "[15,18]"],
+  "title": "Interval merging on sorted arr = [[1,3], [2,6], [8,10], [9,12], [15,18]]",
+  "primaryLabel": "arr (sorted)",
+  "secondaryItems": ["[1,3]", "·", "·", "·", "·"],
+  "secondaryLabel": "merged",
+  "steps": [
+    {
+      "items": ["[1,3]", "[2,6]", "[8,10]", "[9,12]", "[15,18]"],
+      "markers": [{"name": "i", "index": 0, "color": "#3b82f6"}],
+      "secondaryItems": ["[1,3]", "·", "·", "·", "·"],
+      "secondaryKeys": ["m0", "m1", "m2", "m3", "m4"],
+      "msg": "Init: seed merged with arr[0]=[1,3]. Sweep starts from i=1."
+    },
+    {
+      "items": ["[1,3]", "[2,6]", "[8,10]", "[9,12]", "[15,18]"],
+      "markers": [{"name": "i", "index": 1, "color": "#3b82f6"}],
+      "secondaryItems": ["[1,6]", "·", "·", "·", "·"],
+      "secondaryKeys": ["m0", "m1", "m2", "m3", "m4"],
+      "secondaryMarkers": [{"name": "last", "index": 0, "color": "#f59e0b"}],
+      "msg": "i=1: arr[1]=[2,6]. 2 ≤ 3 (last.end) → EXTEND → merged.last = [1, max(3,6)] = [1,6]."
+    },
+    {
+      "items": ["[1,3]", "[2,6]", "[8,10]", "[9,12]", "[15,18]"],
+      "markers": [{"name": "i", "index": 2, "color": "#3b82f6"}],
+      "secondaryItems": ["[1,6]", "[8,10]", "·", "·", "·"],
+      "secondaryKeys": ["m0", "m1", "m2", "m3", "m4"],
+      "secondaryMarkers": [{"name": "last", "index": 1, "color": "#f59e0b"}],
+      "msg": "i=2: arr[2]=[8,10]. 8 > 6 → APPEND → merged = [[1,6], [8,10]]."
+    },
+    {
+      "items": ["[1,3]", "[2,6]", "[8,10]", "[9,12]", "[15,18]"],
+      "markers": [{"name": "i", "index": 3, "color": "#3b82f6"}],
+      "secondaryItems": ["[1,6]", "[8,12]", "·", "·", "·"],
+      "secondaryKeys": ["m0", "m1", "m2", "m3", "m4"],
+      "secondaryMarkers": [{"name": "last", "index": 1, "color": "#f59e0b"}],
+      "msg": "i=3: arr[3]=[9,12]. 9 ≤ 10 → EXTEND → merged.last = [8, max(10,12)] = [8,12]."
+    },
+    {
+      "items": ["[1,3]", "[2,6]", "[8,10]", "[9,12]", "[15,18]"],
+      "markers": [{"name": "i", "index": 4, "color": "#3b82f6"}],
+      "secondaryItems": ["[1,6]", "[8,12]", "[15,18]", "·", "·"],
+      "secondaryKeys": ["m0", "m1", "m2", "m3", "m4"],
+      "secondaryMarkers": [{"name": "last", "index": 2, "color": "#f59e0b"}],
+      "msg": "i=4: arr[4]=[15,18]. 15 > 12 → APPEND → merged = [[1,6], [8,12], [15,18]] ✓"
+    }
+  ]
+}
+```
+
 The `<=` vs `<` distinction is the only edge-case knob. If your problem treats touching intervals like `[1, 3]` and `[3, 5]` as overlapping (e.g. continuous busy time), use `<=`. If it treats them as adjacent-but-distinct (e.g. discrete sessions), use `<`. The whole algorithm is otherwise identical.
 
 ---
