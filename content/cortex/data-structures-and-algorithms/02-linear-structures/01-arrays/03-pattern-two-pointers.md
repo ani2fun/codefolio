@@ -2043,16 +2043,14 @@ Vowel Exchange introduces a new wrinkle: **not every position deserves a swap**.
 
 ## The Problem
 
-Given a sentence as a list of characters (a character array), reverse every individual word's characters **in-place**, while keeping the words in their original order.
+Given a string `s`, reverse the characters of every word **while preserving the original word order** and the original whitespace exactly. The string may contain leading or trailing spaces, and words may be separated by more than a single space — every space stays where it was; only the letters inside each word are flipped.
 
 ```
-Input:  ['t','h','e',' ','s','k','y']
-Output: ['e','h','t',' ','y','k','s']
-         ↑       ↑       ↑       ↑
-         "the" → "eht"   "sky" → "yks"
+Input:  s = "This is a string"
+Output:     "sihT si a gnirts"
 ```
 
-The words stay in place — only the characters inside each word are flipped.
+The words stay in place — only the characters inside each word are reversed.
 
 ---
 
@@ -2060,26 +2058,31 @@ The words stay in place — only the characters inside each word are flipped.
 
 **Example 1**
 ```
-Input:  "the sky"
-Output: "eht yks"
+Input:  s = "This is a string"
+Output:     "sihT si a gnirts"
+Explanation: All four words are reversed; spaces are preserved.
 ```
 
-**Example 2**
+**Example 2 — multiple spaces between words**
 ```
-Input:  "hello world"
-Output: "olleh dlrow"
+Input:  s = "I  love  coding"
+Output:     "I  evol  gnidoc"
+Explanation: Words separated by more than one space — the double spaces stay
+             intact; only the words' characters reverse.
 ```
 
 **Example 3 — single word**
 ```
-Input:  "hello"
-Output: "olleh"
+Input:  s = "random"
+Output:     "modnar"
+Explanation: The string contains one word; it is reversed.
 ```
 
-**Example 4 — single character words**
+**Example 4 — single-character words**
 ```
-Input:  "a b c"
-Output: "a b c"   (single characters are palindromes of themselves)
+Input:  s = "a b c"
+Output:     "a b c"
+Explanation: Reversing a single character is a no-op.
 ```
 
 ---
@@ -2090,48 +2093,52 @@ You already know how to reverse a contiguous block of characters with two pointe
 
 The key insight: **spaces act as word boundaries**. Walk through the array character by character. When you find the start of a word, scan forward to find its end (the next space or the array boundary). Now you have a `[word_start, word_end]` range — apply the two-pointer reversal to that range. Then continue scanning for the next word.
 
-```d2
-direction: right
-
-INPUT: "Input:  't h e   s k y'" {
-  grid-columns: 7
-  grid-gap: 0
-  a: "t"
-  b: "h"
-  c: "e"
-  d: " "
-  e: "s"
-  f: "k"
-  g: "y"
+```d3 widget=array-traversal
+{
+  "items": ["t", "h", "e", " ", "s", "k", "y"],
+  "title": "Reverse each word in \"the sky\"",
+  "steps": [
+    {
+      "items":   ["t", "h", "e", " ", "s", "k", "y"],
+      "markers": [
+        { "name": "left",  "index": 0, "color": "#3b82f6" },
+        { "name": "right", "index": 2, "color": "#f59e0b" }
+      ],
+      "range":   { "lo": 0, "hi": 2 },
+      "msg": "Scan finds the first word at indices [0..2]. Reverse it: swap arr[0]='t' with arr[2]='e'."
+    },
+    {
+      "items":   ["e", "h", "t", " ", "s", "k", "y"],
+      "markers": [
+        { "name": "left",  "index": 1, "color": "#3b82f6" },
+        { "name": "right", "index": 1, "color": "#f59e0b" }
+      ],
+      "range":   { "lo": 0, "hi": 2 },
+      "msg": "Inside word 1, the pointers meet at index 1; the middle 'h' is its own mirror."
+    },
+    {
+      "items":   ["e", "h", "t", " ", "s", "k", "y"],
+      "markers": [
+        { "name": "left",  "index": 4, "color": "#3b82f6" },
+        { "name": "right", "index": 6, "color": "#f59e0b" }
+      ],
+      "range":   { "lo": 4, "hi": 6 },
+      "msg": "Scan skips the space at index 3, then finds the second word at indices [4..6]. Reverse it: swap arr[4]='s' with arr[6]='y'."
+    },
+    {
+      "items":   ["e", "h", "t", " ", "y", "k", "s"],
+      "markers": [
+        { "name": "left",  "index": 5, "color": "#3b82f6" },
+        { "name": "right", "index": 5, "color": "#f59e0b" }
+      ],
+      "range":   { "lo": 4, "hi": 6 },
+      "msg": "Inside word 2, the pointers meet at index 5. Result: \"eht yks\"."
+    }
+  ]
 }
-W1: "Word 1: indices 0-2  →  reverse 't h e'" {
-  grid-columns: 7
-  grid-gap: 0
-  a: "e"
-  b: "h"
-  c: "t"
-  d: " "
-  e: "s"
-  f: "k"
-  g: "y"
-}
-W2: "Word 2: indices 4-6  →  reverse 's k y'" {
-  grid-columns: 7
-  grid-gap: 0
-  a: "e"
-  b: "h"
-  c: "t"
-  d: " "
-  e: "y"
-  f: "k"
-  g: "s"
-}
-
-INPUT -> W1: reverse word 1
-W1 -> W2: reverse word 2
 ```
 
-<p align="center"><strong>Reverse Words on <code>"the sky"</code> — find each word's boundaries using a scan, then apply two-pointer reversal within that range.</strong></p>
+<p align="center"><strong>Reverse Words on <code>"the sky"</code> — the outer scan finds each word's boundaries (highlighted band); two pointers then reverse the characters inside that range.</strong></p>
 
 ---
 
@@ -2168,97 +2175,176 @@ The outer scan that finds word boundaries is bookkeeping — once a `[word_start
 
 
 ```pseudocode
-# Reverse each word in place; word boundaries are spaces.
+function findWordEnd(arr, start):
+    # Assign the start index to the end index
+    end ← start
+
+    # Iterate through the string until a space is encountered
+    while end < length(arr) AND arr[end] ≠ ' ':
+        end ← end + 1
+
+    # Return the index of the last character of the word
+    return end − 1
+
+function reverseWord(arr, left, right):
+    # Use a while loop to traverse the word using the two pointers
+    while left < right:
+        swap arr[left] and arr[right]
+        left  ← left + 1
+        right ← right − 1
+
 function reverseWords(s):
-    chars ← list of characters of s
-    n ← length(chars)
-    i ← 0
-    while i < n:
-        if chars[i] = ' ':
-            i ← i + 1
+    arr   ← list of characters of s
+    start ← 0
+
+    # Iterate through the string
+    while start < length(arr):
+        # Skip any leading spaces
+        if arr[start] = ' ':
+            start ← start + 1
             continue
-        wordStart ← i
-        while i < n AND chars[i] ≠ ' ':
-            i ← i + 1
-        wordEnd ← i − 1
-        # Two-pointer reverse within [wordStart, wordEnd].
-        left ← wordStart; right ← wordEnd
-        while left < right:
-            swap chars[left] and chars[right]
-            left ← left + 1
-            right ← right − 1
-    return chars joined as a string
+
+        # Find the end of the current word
+        end ← findWordEnd(arr, start)
+
+        # Reverse the characters in the current word using two pointers
+        reverseWord(arr, start, end)
+
+        # Move the start pointer to the next word
+        start ← end + 1
+
+    return arr joined as a string
 ```
 
 ```python run
 from typing import List
 
 class Solution:
+    def find_word_end(self, arr: List[str], start: int) -> int:
+
+        # Assign the start index to the end index
+        end = start
+
+        # Iterate through the string until a space is encountered
+        while end < len(arr) and arr[end] != " ":
+            end += 1
+
+        # Return the index of the last character of the word
+        return end - 1
+
+    def reverse_word(self, arr: List[str], left: int, right: int) -> None:
+
+        # Use a while loop to traverse the word using the two pointers
+        while left < right:
+
+            # Swap the characters pointed by the left and right pointers
+            arr[left], arr[right] = arr[right], arr[left]
+
+            # Move the pointers towards the center of the word
+            left  += 1
+            right -= 1
+
     def reverse_words(self, s: str) -> str:
-        chars = list(s)
-        n = len(chars)
-        i = 0
+        arr   = list(s)
+        start = 0
 
-        while i < n:
-            if chars[i] == ' ':
-                i += 1
+        # Iterate through the string
+        while start < len(arr):
+
+            # Skip any leading spaces
+            if arr[start] == " ":
+                start += 1
                 continue
-            word_start = i
-            while i < n and chars[i] != ' ':
-                i += 1
-            word_end = i - 1
 
-            # Two-pointer reverse within [word_start, word_end].
-            left, right = word_start, word_end
-            while left < right:
-                chars[left], chars[right] = chars[right], chars[left]
-                left  += 1
-                right -= 1
+            # Find the end of the current word
+            end = self.find_word_end(arr, start)
 
-        return "".join(chars)
+            # Reverse the characters in the current word using two
+            # pointers
+            self.reverse_word(arr, start, end)
+
+            # Move the start pointer to the next word
+            start = end + 1
+
+        return "".join(arr)
 
 
 sol = Solution()
-print(sol.reverse_words("the sky"))      # "eht yks"
-print(sol.reverse_words("hello world"))  # "olleh dlrow"
-print(sol.reverse_words("hello"))        # "olleh"
-print(sol.reverse_words("a b c"))        # "a b c"
-print(sol.reverse_words(""))             # ""
+print(sol.reverse_words("This is a string"))   # sihT si a gnirts
+print(sol.reverse_words("I  love  coding"))    # I  evol  gnidoc
+print(sol.reverse_words("random"))             # modnar
+print(sol.reverse_words("a b c"))              # a b c
+print(repr(sol.reverse_words("")))             # ''
 ```
 
 ```java run
 public class Main {
     static class Solution {
-        String reverseWords(String s) {
-            char[] chars = s.toCharArray();
-            int n = chars.length, i = 0;
+        int findWordEnd(char[] arr, int start) {
 
-            while (i < n) {
-                if (chars[i] == ' ') { i++; continue; }
-                int wordStart = i;
-                while (i < n && chars[i] != ' ') i++;
-                int wordEnd = i - 1;
+            // Assign the start index to the end index
+            int end = start;
 
-                int left = wordStart, right = wordEnd;
-                while (left < right) {
-                    char tmp = chars[left];
-                    chars[left]  = chars[right];
-                    chars[right] = tmp;
-                    left++;
-                    right--;
-                }
+            // Iterate through the string until a space is encountered
+            while (end < arr.length && arr[end] != ' ') {
+                end++;
             }
-            return new String(chars);
+
+            // Return the index of the last character of the word
+            return end - 1;
+        }
+
+        void reverseWord(char[] arr, int left, int right) {
+
+            // Use a while loop to traverse the word using the two pointers
+            while (left < right) {
+
+                // Swap the characters pointed by the left and right pointers
+                char tmp   = arr[left];
+                arr[left]  = arr[right];
+                arr[right] = tmp;
+
+                // Move the pointers towards the center of the word
+                left++;
+                right--;
+            }
+        }
+
+        String reverseWords(String s) {
+            char[] arr = s.toCharArray();
+            int start = 0;
+
+            // Iterate through the string
+            while (start < arr.length) {
+
+                // Skip any leading spaces
+                if (arr[start] == ' ') {
+                    start++;
+                    continue;
+                }
+
+                // Find the end of the current word
+                int end = findWordEnd(arr, start);
+
+                // Reverse the characters in the current word using two
+                // pointers
+                reverseWord(arr, start, end);
+
+                // Move the start pointer to the next word
+                start = end + 1;
+            }
+
+            return new String(arr);
         }
     }
 
     public static void main(String[] args) {
         Solution sol = new Solution();
-        System.out.println(sol.reverseWords("the sky"));
-        System.out.println(sol.reverseWords("hello world"));
-        System.out.println(sol.reverseWords("hello"));
-        System.out.println(sol.reverseWords("a b c"));
-        System.out.println(sol.reverseWords(""));
+        System.out.println(sol.reverseWords("This is a string"));  // sihT si a gnirts
+        System.out.println(sol.reverseWords("I  love  coding"));   // I  evol  gnidoc
+        System.out.println(sol.reverseWords("random"));            // modnar
+        System.out.println(sol.reverseWords("a b c"));             // a b c
+        System.out.println("'" + sol.reverseWords("") + "'");      // ''
     }
 }
 ```
@@ -2267,33 +2353,66 @@ public class Main {
 #include <stdio.h>
 #include <string.h>
 
-void reverse_range(char* s, int left, int right) {
+static int find_word_end(const char* arr, int n, int start) {
+
+    /* Assign the start index to the end index */
+    int end = start;
+
+    /* Iterate through the string until a space is encountered */
+    while (end < n && arr[end] != ' ') {
+        end++;
+    }
+
+    /* Return the index of the last character of the word */
+    return end - 1;
+}
+
+static void reverse_word(char* arr, int left, int right) {
+
+    /* Use a while loop to traverse the word using the two pointers */
     while (left < right) {
-        char tmp = s[left];
-        s[left]  = s[right];
-        s[right] = tmp;
+
+        /* Swap the characters pointed by the left and right pointers */
+        char tmp   = arr[left];
+        arr[left]  = arr[right];
+        arr[right] = tmp;
+
+        /* Move the pointers towards the center of the word */
         left++;
         right--;
     }
 }
 
 void reverse_words(char* s) {
-    int n = (int)strlen(s);
-    int i = 0;
-    while (i < n) {
-        if (s[i] == ' ') { i++; continue; }
-        int word_start = i;
-        while (i < n && s[i] != ' ') i++;
-        reverse_range(s, word_start, i - 1);
+    int n     = (int)strlen(s);
+    int start = 0;
+
+    /* Iterate through the string */
+    while (start < n) {
+
+        /* Skip any leading spaces */
+        if (s[start] == ' ') {
+            start++;
+            continue;
+        }
+
+        /* Find the end of the current word */
+        int end = find_word_end(s, n, start);
+
+        /* Reverse the characters in the current word using two pointers */
+        reverse_word(s, start, end);
+
+        /* Move the start pointer to the next word */
+        start = end + 1;
     }
 }
 
 int main() {
-    char s1[] = "the sky";     reverse_words(s1); printf("%s\n", s1);
-    char s2[] = "hello world"; reverse_words(s2); printf("%s\n", s2);
-    char s3[] = "hello";       reverse_words(s3); printf("%s\n", s3);
-    char s4[] = "a b c";       reverse_words(s4); printf("%s\n", s4);
-    char s5[] = "";            reverse_words(s5); printf("'%s'\n", s5);
+    char s1[] = "This is a string";  reverse_words(s1); printf("%s\n", s1);
+    char s2[] = "I  love  coding";   reverse_words(s2); printf("%s\n", s2);
+    char s3[] = "random";            reverse_words(s3); printf("%s\n", s3);
+    char s4[] = "a b c";             reverse_words(s4); printf("%s\n", s4);
+    char s5[] = "";                  reverse_words(s5); printf("'%s'\n", s5);
     return 0;
 }
 ```
@@ -2301,64 +2420,99 @@ int main() {
 ```scala run
 object Main extends App {
   class Solution {
+    def findWordEnd(arr: Array[Char], start: Int): Int = {
+
+      // Assign the start index to the end index
+      var end = start
+
+      // Iterate through the string until a space is encountered
+      while (end < arr.length && arr(end) != ' ') {
+        end += 1
+      }
+
+      // Return the index of the last character of the word
+      end - 1
+    }
+
+    def reverseWord(arr: Array[Char], l: Int, r: Int): Unit = {
+      var left  = l
+      var right = r
+
+      // Use a while loop to traverse the word using the two pointers
+      while (left < right) {
+
+        // Swap the characters pointed by the left and right pointers
+        val tmp    = arr(left)
+        arr(left)  = arr(right)
+        arr(right) = tmp
+
+        // Move the pointers towards the center of the word
+        left  += 1
+        right -= 1
+      }
+    }
+
     def reverseWords(s: String): String = {
-      val chars = s.toCharArray
-      val n = chars.length
-      var i = 0
-      while (i < n) {
-        if (chars(i) == ' ') {
-          i += 1
+      val arr   = s.toCharArray
+      var start = 0
+
+      // Iterate through the string
+      while (start < arr.length) {
+
+        // Skip any leading spaces
+        if (arr(start) == ' ') {
+          start += 1
         } else {
-          val wordStart = i
-          while (i < n && chars(i) != ' ') i += 1
-          var left = wordStart
-          var right = i - 1
-          while (left < right) {
-            val tmp = chars(left)
-            chars(left)  = chars(right)
-            chars(right) = tmp
-            left  += 1
-            right -= 1
-          }
+          // Find the end of the current word
+          val end = findWordEnd(arr, start)
+
+          // Reverse the characters in the current word using two pointers
+          reverseWord(arr, start, end)
+
+          // Move the start pointer to the next word
+          start = end + 1
         }
       }
-      new String(chars)
+
+      new String(arr)
     }
   }
 
   val sol = new Solution
-  println(sol.reverseWords("the sky"))
-  println(sol.reverseWords("hello world"))
-  println(sol.reverseWords("hello"))
-  println(sol.reverseWords("a b c"))
-  println(s"'${sol.reverseWords("")}'")
+  println(sol.reverseWords("This is a string"))  // sihT si a gnirts
+  println(sol.reverseWords("I  love  coding"))   // I  evol  gnidoc
+  println(sol.reverseWords("random"))            // modnar
+  println(sol.reverseWords("a b c"))             // a b c
+  println(s"'${sol.reverseWords("")}'")          // ''
 }
 ```
 
 
 ---
 
-## Dry Run — "hello world"
+## Dry Run — "the sky"
 
-`chars = ['h','e','l','l','o',' ','w','o','r','l','d']`
+`arr = ['t','h','e',' ','s','k','y']`, `n = 7`
 
-**Word 1:** `word_start = 0`, `word_end = 4`
+**Word 1:** outer scan finds non-space at `start = 0`; `findWordEnd` returns `end = 2`.
 
-| Step | `left` | `right` | Swap | Chars |
+| Step | `left` | `right` | Swap | Array |
 |---|---|---|---|---|
-| 1 | 0 | 4 | `'h'↔'o'` | `['o','e','l','l','h',' ','w','o','r','l','d']` |
-| 2 | 1 | 3 | `'e'↔'l'` | `['o','l','l','e','h',' ','w','o','r','l','d']` |
-| — | 2 | 2 | stop | — |
+| 1 | 0 | 2 | `t ↔ e` | `['e','h','t',' ','s','k','y']` |
+| — | 1 | 1 | `left ≥ right` — stop | — |
 
-**Word 2:** `word_start = 6`, `word_end = 10`
+`start` advances to `end + 1 = 3`. The space at index 3 is skipped; `start = 4`.
 
-| Step | `left` | `right` | Swap | Chars |
+**Word 2:** `findWordEnd` returns `end = 6`.
+
+| Step | `left` | `right` | Swap | Array |
 |---|---|---|---|---|
-| 1 | 6 | 10 | `'w'↔'d'` | `['o','l','l','e','h',' ','d','o','r','l','w']` |
-| 2 | 7 | 9 | `'o'↔'l'` | `['o','l','l','e','h',' ','d','l','r','o','w']` |
-| — | 8 | 8 | stop | — |
+| 1 | 4 | 6 | `s ↔ y` | `['e','h','t',' ','y','k','s']` |
+| — | 5 | 5 | `left ≥ right` — stop | — |
 
-**Return `"olleh dlrow"`** ✓
+`start` advances to `end + 1 = 7 = n` — outer loop exits.
+
+**Return `"eht yks"`** ✓
 
 ---
 
