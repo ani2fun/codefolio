@@ -535,41 +535,37 @@ This works, but it uses O(n) extra space and touches every element twice. We can
 
 **Key insight:** to reverse an array, we just need to swap equidistant elements from both ends — `arr[0] ↔ arr[n-1]`, `arr[1] ↔ arr[n-2]`, and so on. Each swap needs exactly two positions: one from the left, one from the right. That's the two-pointer template.
 
-```mermaid
----
-config:
-  theme: base
-  themeVariables:
-    primaryColor: "#dbeafe"
-    primaryBorderColor: "#3b82f6"
-    primaryTextColor: "#1e3a5f"
-    lineColor: "#64748b"
-    secondaryColor: "#ede9fe"
-    tertiaryColor: "#fef9c3"
----
-flowchart TB
-  subgraph Step0["Start: left=0, right=4"]
-    direction LR
-    A0(["left"]) --> S0A["1"] --- S0B["2"] --- S0C["3"] --- S0D["4"] --- S0E["5"]
-    S0E --> B0(["right"])
-  end
-  subgraph Step1["Swap arr[0]↔arr[4], left=1, right=3"]
-    direction LR
-    A1(["left"]) --> S1A["5"] --- S1B["2"] --- S1C["3"] --- S1D["4"] --- S1E["1"]
-    S1D --> B1(["right"])
-  end
-  subgraph Step2["Swap arr[1]↔arr[3], left=2, right=2"]
-    direction LR
-    A2(["left"]) --> S2A["5"] --- S2B["4"] --- S2C["3"] --- S2D["2"] --- S2E["1"]
-    S2C --> B2(["right"])
-  end
-  subgraph Step3["left = right = 2  →  loop ends"]
-    DONE(["✓  arr = [5, 4, 3, 2, 1]"])
-  end
-
-  Step0 -->|"swap + move"| Step1
-  Step1 -->|"swap + move"| Step2
-  Step2 -->|"left ≥ right"| Step3
+```d3 widget=array-traversal
+{
+  "items": ["1", "2", "3", "4", "5"],
+  "title": "Two-pointer reversal on [1, 2, 3, 4, 5]",
+  "steps": [
+    {
+      "items":   ["1", "2", "3", "4", "5"],
+      "markers": [
+        { "name": "left",  "index": 0, "color": "#3b82f6" },
+        { "name": "right", "index": 4, "color": "#f59e0b" }
+      ],
+      "msg": "Initial — left = 0, right = 4. Swap arr[0]=1 with arr[4]=5."
+    },
+    {
+      "items":   ["5", "2", "3", "4", "1"],
+      "markers": [
+        { "name": "left",  "index": 1, "color": "#3b82f6" },
+        { "name": "right", "index": 3, "color": "#f59e0b" }
+      ],
+      "msg": "Move inward — left = 1, right = 3. Swap arr[1]=2 with arr[3]=4."
+    },
+    {
+      "items":   ["5", "4", "3", "2", "1"],
+      "markers": [
+        { "name": "left",  "index": 2, "color": "#3b82f6" },
+        { "name": "right", "index": 2, "color": "#f59e0b" }
+      ],
+      "msg": "left = right = 2 — pointers meet, the middle element stays. Result: [5, 4, 3, 2, 1]."
+    }
+  ]
+}
 ```
 
 <p align="center"><strong>Two-pointer reversal on <code>[1, 2, 3, 4, 5]</code> — two swaps close the gap from both ends; the middle element needs no swap.</strong></p>
