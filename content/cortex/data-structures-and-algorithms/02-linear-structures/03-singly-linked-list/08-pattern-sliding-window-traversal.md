@@ -1453,29 +1453,61 @@ Swapping of data is not allowed. Only references should be changed. You can assu
 # Swap the n-th node from the start with the n-th node from the end.
 # Locate both nodes (and their predecessors) in one pass via the cursor trick.
 function swapNthNodes(head, n):
-    if head is null OR head.next is null: return head
 
-    nthStart ← head; prevStart ← null
-    cursor ← head
-    for i from 1 to n − 1:                             # advance to nth-from-start
-        prevStart ← nthStart
-        nthStart ← nthStart.next
-        cursor ← cursor.next
+    # If the list is empty or has only one node, no swapping is needed.
+    if head is null OR head.next is null:
+        return head
 
-    nthEnd ← head; prevEnd ← null
-    while cursor is not null AND cursor.next is not null:    # slide → nthEnd ends at nth-from-end
-        prevEnd ← nthEnd
-        nthEnd ← nthEnd.next
-        cursor ← cursor.next
+    # Pointer to the Nth node from the beginning
+    nthFromStart ← head
 
-    return swapNodes(head, prevStart, nthStart, prevEnd, nthEnd)
+    # Pointer to the node before the nthFromStart node
+    prevToNthFromStart ← null
 
-function swapNodes(head, prevA, a, prevB, b):
-    if prevA is not null: prevA.next ← b
-    else:                 head ← b                     # a was the head
-    if prevB is not null: prevB.next ← a
-    else:                 head ← a
-    swap a.next and b.next                             # swap the forward links
+    # Pointer to keep track of the end of the list
+    current ← head
+
+    # Traverse to the Nth node from the beginning
+    for i ← 1 to n − 1:
+        prevToNthFromStart ← nthFromStart
+        nthFromStart ← nthFromStart.next
+        current ← current.next
+
+    # Pointer to the Nth node from the end
+    nthFromEnd ← head
+
+    # Pointer to the node before the nthFromEnd node
+    prevToNthFromEnd ← null
+
+    # Find the Nth node from the end
+    while current is not null AND current.next is not null:
+        prevToNthFromEnd ← nthFromEnd
+        nthFromEnd ← nthFromEnd.next
+        current ← current.next
+
+    return swapNodes(head, prevToNthFromStart, nthFromStart, prevToNthFromEnd, nthFromEnd)
+
+function swapNodes(head, prevToNthFromStart, nthFromStart, prevToNthFromEnd, nthFromEnd):
+
+    # If the Nth node from the beginning is the same as the Nth node from the end, no swapping is needed
+    if prevToNthFromStart is not null:
+        prevToNthFromStart.next ← nthFromEnd
+    # If Nth node from the beginning is the head, update the head
+    else:
+        head ← nthFromEnd
+
+    # If the Nth node from the end is the same as the Nth node from the beginning, no swapping is needed
+    if prevToNthFromEnd is not null:
+        prevToNthFromEnd.next ← nthFromStart
+    # If Nth node from the end is the head, update the head
+    else:
+        head ← nthFromStart
+
+    # Swap the next pointers of the two nodes
+    temp ← nthFromStart.next
+    nthFromStart.next ← nthFromEnd.next
+    nthFromEnd.next ← temp
+
     return head
 ```
 
@@ -1483,126 +1515,335 @@ function swapNodes(head, prevA, a, prevB, b):
 from typing import Optional
 
 class Solution:
-    def swap_nth_nodes(self, head: Optional[ListNode], n: int) -> Optional[ListNode]:
+    def swap_nodes(
+        self,
+        head: Optional[ListNode],
+        prev_to_nth_from_start: Optional[ListNode],
+        nth_from_start: Optional[ListNode],
+        prev_to_nth_from_end: Optional[ListNode],
+        nth_from_end: Optional[ListNode],
+    ) -> Optional[ListNode]:
+
+        # If the Nth node from the beginning is the same as the Nth
+        # node from the end, no swapping is needed
+        if prev_to_nth_from_start is not None:
+            prev_to_nth_from_start.next = nth_from_end
+
+        # If Nth node from the beginning is the head, update the
+        # head
+        else:
+            head = nth_from_end
+
+        # If the Nth node from the end is the same as the Nth node
+        # from the beginning, no swapping is needed
+        if prev_to_nth_from_end is not None:
+            prev_to_nth_from_end.next = nth_from_start
+
+        # If Nth node from the end is the head, update the head
+        else:
+            head = nth_from_start
+
+        # Swap the next pointers of the two nodes
+        temp = nth_from_start.next
+        nth_from_start.next = nth_from_end.next
+        nth_from_end.next = temp
+
+        return head
+
+    def swap_nth_nodes(
+        self, head: Optional[ListNode], n: int
+    ) -> Optional[ListNode]:
+
+        # If the list is empty or has only one node, no swapping is
+        # needed.
         if head is None or head.next is None:
             return head
 
-        # Advance to the n-th node from the start while tracking its predecessor
-        nth_start = head
-        prev_start: Optional[ListNode] = None
-        cursor = head
-        for _ in range(n - 1):
-            prev_start = nth_start
-            nth_start = nth_start.next
-            cursor = cursor.next
+        # Pointer to the Nth node from the beginning
+        nth_from_start = head
 
-        # Slide-to-end to locate n-th from the end and its predecessor
-        nth_end = head
-        prev_end: Optional[ListNode] = None
-        while cursor is not None and cursor.next is not None:
-            prev_end = nth_end
-            nth_end  = nth_end.next
-            cursor   = cursor.next
+        # Pointer to the node before the nth_from_start node
+        prev_to_nth_from_start: Optional[ListNode] = None
 
-        return self._swap_nodes(head, prev_start, nth_start, prev_end, nth_end)
+        # Pointer to keep track of the end of the list
+        current = head
 
-    def _swap_nodes(self, head, prev_a, a, prev_b, b):
-        # Re-parent a's predecessor to point at b, and vice versa.
-        if prev_a is not None: prev_a.next = b
-        else:                  head = b
-        if prev_b is not None: prev_b.next = a
-        else:                  head = a
-        # Swap their forward links
-        a.next, b.next = b.next, a.next
-        return head
+        # Traverse to the Nth node from the beginning
+        for _ in range(1, n):
+            prev_to_nth_from_start = nth_from_start
+            nth_from_start = nth_from_start.next
+            current = current.next
+
+        # Pointer to the Nth node from the end
+        nth_from_end = head
+
+        # Pointer to the node before the nth_from_end node
+        prev_to_nth_from_end: Optional[ListNode] = None
+
+        # Find the Nth node from the end
+        while current is not None and current.next is not None:
+            prev_to_nth_from_end = nth_from_end
+            nth_from_end = nth_from_end.next
+            current = current.next
+
+        return self.swap_nodes(
+            head,
+            prev_to_nth_from_start,
+            nth_from_start,
+            prev_to_nth_from_end,
+            nth_from_end,
+        )
 ```
 
 ```java run
 class Solution {
-    public ListNode swapNthNodes(ListNode head, int n) {
-        if (head == null || head.next == null) return head;
+    private ListNode swapNodes(
+        ListNode head,
+        ListNode prevToNthFromStart,
+        ListNode nthFromStart,
+        ListNode prevToNthFromEnd,
+        ListNode nthFromEnd
+    ) {
 
-        ListNode nthStart = head, prevStart = null, cursor = head;
-        for (int i = 1; i < n; i++) {
-            prevStart = nthStart;
-            nthStart = nthStart.next;
-            cursor = cursor.next;
+        // If the Nth node from the beginning is the same as the Nth
+        // node from the end, no swapping is needed
+        if (prevToNthFromStart != null) {
+            prevToNthFromStart.next = nthFromEnd;
         }
 
-        ListNode nthEnd = head, prevEnd = null;
-        while (cursor != null && cursor.next != null) {
-            prevEnd = nthEnd;
-            nthEnd  = nthEnd.next;
-            cursor  = cursor.next;
+        // If Nth node from the beginning is the head, update the
+        // head
+        else {
+            head = nthFromEnd;
         }
 
-        return swapNodes(head, prevStart, nthStart, prevEnd, nthEnd);
+        // If the Nth node from the end is the same as the Nth node
+        // from the beginning, no swapping is needed
+        if (prevToNthFromEnd != null) {
+            prevToNthFromEnd.next = nthFromStart;
+        }
+
+        // If Nth node from the end is the head, update the head
+        else {
+            head = nthFromStart;
+        }
+
+        // Swap the next pointers of the two nodes
+        ListNode temp = nthFromStart.next;
+        nthFromStart.next = nthFromEnd.next;
+        nthFromEnd.next = temp;
+
+        return head;
     }
 
-    private ListNode swapNodes(ListNode head, ListNode prevA, ListNode a, ListNode prevB, ListNode b) {
-        if (prevA != null) prevA.next = b; else head = b;
-        if (prevB != null) prevB.next = a; else head = a;
-        ListNode tmp = a.next; a.next = b.next; b.next = tmp;
-        return head;
+    public ListNode swapNthNodes(ListNode head, int n) {
+
+        // If the list is empty or has only one node, no swapping is
+        // needed.
+        if (head == null || head.next == null) {
+            return head;
+        }
+
+        // Pointer to the Nth node from the beginning
+        ListNode nthFromStart = head;
+
+        // Pointer to the node before the nthFromStart node
+        ListNode prevToNthFromStart = null;
+
+        // Pointer to keep track of the end of the list
+        ListNode current = head;
+
+        // Traverse to the Nth node from the beginning
+        for (int i = 1; i < n; ++i) {
+            prevToNthFromStart = nthFromStart;
+            nthFromStart = nthFromStart.next;
+            current = current.next;
+        }
+
+        // Pointer to the Nth node from the end
+        ListNode nthFromEnd = head;
+
+        // Pointer to the node before the nthFromEnd node
+        ListNode prevToNthFromEnd = null;
+
+        // Find the Nth node from the end
+        while (current != null && current.next != null) {
+            prevToNthFromEnd = nthFromEnd;
+            nthFromEnd = nthFromEnd.next;
+            current = current.next;
+        }
+
+        return swapNodes(
+            head,
+            prevToNthFromStart,
+            nthFromStart,
+            prevToNthFromEnd,
+            nthFromEnd
+        );
     }
 }
 ```
 
 ```c run
-static ListNode* swap_nodes(ListNode *head, ListNode *prevA, ListNode *a, ListNode *prevB, ListNode *b) {
-    if (prevA != NULL) prevA->next = b; else head = b;
-    if (prevB != NULL) prevB->next = a; else head = a;
-    ListNode *tmp = a->next; a->next = b->next; b->next = tmp;
+static ListNode* swapNodes(
+    ListNode *head,
+    ListNode *prevToNthFromStart,
+    ListNode *nthFromStart,
+    ListNode *prevToNthFromEnd,
+    ListNode *nthFromEnd
+) {
+
+    /* If the Nth node from the beginning is the same as the Nth
+       node from the end, no swapping is needed */
+    if (prevToNthFromStart != NULL) {
+        prevToNthFromStart->next = nthFromEnd;
+    }
+
+    /* If Nth node from the beginning is the head, update the
+       head */
+    else {
+        head = nthFromEnd;
+    }
+
+    /* If the Nth node from the end is the same as the Nth node
+       from the beginning, no swapping is needed */
+    if (prevToNthFromEnd != NULL) {
+        prevToNthFromEnd->next = nthFromStart;
+    }
+
+    /* If Nth node from the end is the head, update the head */
+    else {
+        head = nthFromStart;
+    }
+
+    /* Swap the next pointers of the two nodes */
+    ListNode *temp = nthFromStart->next;
+    nthFromStart->next = nthFromEnd->next;
+    nthFromEnd->next = temp;
+
     return head;
 }
 
 ListNode* swapNthNodes(ListNode *head, int n) {
-    if (head == NULL || head->next == NULL) return head;
 
-    ListNode *nthStart = head, *prevStart = NULL, *cursor = head;
-    for (int i = 1; i < n; i++) {
-        prevStart = nthStart;
-        nthStart  = nthStart->next;
-        cursor    = cursor->next;
+    /* If the list is empty or has only one node, no swapping is
+       needed. */
+    if (head == NULL || head->next == NULL) {
+        return head;
     }
 
-    ListNode *nthEnd = head, *prevEnd = NULL;
-    while (cursor != NULL && cursor->next != NULL) {
-        prevEnd = nthEnd;
-        nthEnd  = nthEnd->next;
-        cursor  = cursor->next;
+    /* Pointer to the Nth node from the beginning */
+    ListNode *nthFromStart = head;
+
+    /* Pointer to the node before the nthFromStart node */
+    ListNode *prevToNthFromStart = NULL;
+
+    /* Pointer to keep track of the end of the list */
+    ListNode *current = head;
+
+    /* Traverse to the Nth node from the beginning */
+    for (int i = 1; i < n; ++i) {
+        prevToNthFromStart = nthFromStart;
+        nthFromStart = nthFromStart->next;
+        current = current->next;
     }
 
-    return swap_nodes(head, prevStart, nthStart, prevEnd, nthEnd);
+    /* Pointer to the Nth node from the end */
+    ListNode *nthFromEnd = head;
+
+    /* Pointer to the node before the nthFromEnd node */
+    ListNode *prevToNthFromEnd = NULL;
+
+    /* Find the Nth node from the end */
+    while (current != NULL && current->next != NULL) {
+        prevToNthFromEnd = nthFromEnd;
+        nthFromEnd = nthFromEnd->next;
+        current = current->next;
+    }
+
+    return swapNodes(head, prevToNthFromStart, nthFromStart, prevToNthFromEnd, nthFromEnd);
 }
 ```
 
 ```scala run
 object Solution {
-  private def swapNodes(headIn: ListNode, prevA: ListNode, a: ListNode, prevB: ListNode, b: ListNode): ListNode = {
+  private def swapNodes(
+      headIn: ListNode,
+      prevToNthFromStart: ListNode,
+      nthFromStart: ListNode,
+      prevToNthFromEnd: ListNode,
+      nthFromEnd: ListNode
+  ): ListNode = {
     var head = headIn
-    if (prevA != null) prevA.next = b else head = b
-    if (prevB != null) prevB.next = a else head = a
-    val tmp = a.next; a.next = b.next; b.next = tmp
+
+    // If the Nth node from the beginning is the same as the Nth
+    // node from the end, no swapping is needed
+    if (prevToNthFromStart != null) {
+      prevToNthFromStart.next = nthFromEnd
+    }
+    // If Nth node from the beginning is the head, update the head
+    else {
+      head = nthFromEnd
+    }
+
+    // If the Nth node from the end is the same as the Nth node
+    // from the beginning, no swapping is needed
+    if (prevToNthFromEnd != null) {
+      prevToNthFromEnd.next = nthFromStart
+    }
+    // If Nth node from the end is the head, update the head
+    else {
+      head = nthFromStart
+    }
+
+    // Swap the next pointers of the two nodes
+    val temp = nthFromStart.next
+    nthFromStart.next = nthFromEnd.next
+    nthFromEnd.next = temp
+
     head
   }
 
   def swapNthNodes(head: ListNode, n: Int): ListNode = {
-    if (head == null || head.next == null) return head
 
-    var nthStart = head
-    var prevStart: ListNode = null
-    var cursor = head
-    var i = 1
-    while (i < n) { prevStart = nthStart; nthStart = nthStart.next; cursor = cursor.next; i += 1 }
-
-    var nthEnd = head
-    var prevEnd: ListNode = null
-    while (cursor != null && cursor.next != null) {
-      prevEnd = nthEnd; nthEnd = nthEnd.next; cursor = cursor.next
+    // If the list is empty or has only one node, no swapping is
+    // needed.
+    if (head == null || head.next == null) {
+      return head
     }
 
-    swapNodes(head, prevStart, nthStart, prevEnd, nthEnd)
+    // Pointer to the Nth node from the beginning
+    var nthFromStart = head
+
+    // Pointer to the node before the nthFromStart node
+    var prevToNthFromStart: ListNode = null
+
+    // Pointer to keep track of the end of the list
+    var current = head
+
+    // Traverse to the Nth node from the beginning
+    var i = 1
+    while (i < n) {
+      prevToNthFromStart = nthFromStart
+      nthFromStart = nthFromStart.next
+      current = current.next
+      i += 1
+    }
+
+    // Pointer to the Nth node from the end
+    var nthFromEnd = head
+
+    // Pointer to the node before the nthFromEnd node
+    var prevToNthFromEnd: ListNode = null
+
+    // Find the Nth node from the end
+    while (current != null && current.next != null) {
+      prevToNthFromEnd = nthFromEnd
+      nthFromEnd = nthFromEnd.next
+      current = current.next
+    }
+
+    swapNodes(head, prevToNthFromStart, nthFromStart, prevToNthFromEnd, nthFromEnd)
   }
 }
 ```
