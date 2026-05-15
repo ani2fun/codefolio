@@ -716,20 +716,26 @@ s2 -> s3: "reverse arr[0..4]"
 
 
 ```pseudocode
-# Three-reversal for RIGHT rotation. HEAD = arr[0..n−k−1], TAIL = arr[n−k..n−1].
-# Want [TAIL | HEAD]: reverse each half, then reverse the whole thing.
 function reverse(arr, start, end):
     while start < end:
         swap arr[start] and arr[end]
-        start ← start + 1; end ← end − 1
+        start ← start + 1
+        end   ← end − 1
 
-function rotateRight(arr, k):
+function kRotations(arr, k):
     n ← length(arr)
+
+    # Set k to be in the range of [0, n)
     k ← k mod n
-    if k = 0: return
-    reverse(arr, n − k, n − 1)                    # reverse the tail
-    reverse(arr, 0, n − k − 1)                    # reverse the head
-    reverse(arr, 0, n − 1)                        # reverse the whole array
+
+    # Reverse the entire array using two pointer method
+    reverse(arr, 0, n − 1)
+
+    # Reverse the first k elements using two pointer method
+    reverse(arr, 0, k − 1)
+
+    # Reverse the remaining elements using two pointer method
+    reverse(arr, k, n − 1)
 ```
 
 ```python run
@@ -742,21 +748,24 @@ class Solution:
             start += 1
             end   -= 1
 
-    def rotate_right(self, arr: List[int], k: int) -> None:
+    def k_rotations(self, arr: List[int], k: int) -> None:
         n = len(arr)
-        k %= n
-        if k == 0:
-            return
 
-        # HEAD = arr[0..n-k-1], TAIL = arr[n-k..n-1]. We want [TAIL | HEAD].
-        # Reverse each half, then reverse the whole thing — same identity as left-rotate.
-        self.reverse(arr, n - k, n - 1)
-        self.reverse(arr, 0, n - k - 1)
+        # Set k to be in the range of [0, n)
+        k %= n
+
+        # Reverse the entire array using two pointer method
         self.reverse(arr, 0, n - 1)
+
+        # Reverse the first k elements using two pointer method
+        self.reverse(arr, 0, k - 1)
+
+        # Reverse the remaining elements using two pointer method
+        self.reverse(arr, k, n - 1)
 
 
 arr = [1, 2, 3, 4, 5]
-Solution().rotate_right(arr, 3)
+Solution().k_rotations(arr, 3)
 print(arr)   # [3, 4, 5, 1, 2]
 ```
 
@@ -765,30 +774,37 @@ import java.util.Arrays;
 
 public class Main {
     static class Solution {
-        void reverse(int[] arr, int start, int end) {
+        private void reverse(int[] arr, int start, int end) {
             while (start < end) {
-                int tmp = arr[start];
+                int temp   = arr[start];
                 arr[start] = arr[end];
-                arr[end]   = tmp;
+                arr[end]   = temp;
                 start++;
                 end--;
             }
         }
 
-        void rotateRight(int[] arr, int k) {
+        public void kRotations(int[] arr, int k) {
             int n = arr.length;
+
+            // Set k to be in the range of [0, n)
             k %= n;
-            if (k == 0) return;
-            reverse(arr, n - k, n - 1);
-            reverse(arr, 0, n - k - 1);
+
+            // Reverse the entire array using two pointer method
             reverse(arr, 0, n - 1);
+
+            // Reverse the first k elements using two pointer method
+            reverse(arr, 0, k - 1);
+
+            // Reverse the remaining elements using two pointer method
+            reverse(arr, k, n - 1);
         }
     }
 
     public static void main(String[] args) {
         int[] arr = {1, 2, 3, 4, 5};
-        new Solution().rotateRight(arr, 3);
-        System.out.println(Arrays.toString(arr));
+        new Solution().kRotations(arr, 3);
+        System.out.println(Arrays.toString(arr));   // [3, 4, 5, 1, 2]
     }
 }
 ```
@@ -796,9 +812,9 @@ public class Main {
 ```c run
 #include <stdio.h>
 
-void reverse_seg(int* arr, int start, int end) {
+static void reverse_seg(int* arr, int start, int end) {
     while (start < end) {
-        int tmp = arr[start];
+        int tmp    = arr[start];
         arr[start] = arr[end];
         arr[end]   = tmp;
         start++;
@@ -806,18 +822,25 @@ void reverse_seg(int* arr, int start, int end) {
     }
 }
 
-void rotate_right(int* arr, int n, int k) {
+void k_rotations(int* arr, int n, int k) {
+
+    /* Set k to be in the range of [0, n) */
     k %= n;
-    if (k == 0) return;
-    reverse_seg(arr, n - k, n - 1);
-    reverse_seg(arr, 0, n - k - 1);
+
+    /* Reverse the entire array using two pointer method */
     reverse_seg(arr, 0, n - 1);
+
+    /* Reverse the first k elements using two pointer method */
+    reverse_seg(arr, 0, k - 1);
+
+    /* Reverse the remaining elements using two pointer method */
+    reverse_seg(arr, k, n - 1);
 }
 
 int main() {
     int arr[] = {1, 2, 3, 4, 5};
-    rotate_right(arr, 5, 3);
-    for (int i = 0; i < 5; i++) printf("%d ", arr[i]);
+    k_rotations(arr, 5, 3);
+    for (int i = 0; i < 5; i++) printf("%d ", arr[i]);   /* 3 4 5 1 2 */
     printf("\n");
     return 0;
 }
@@ -828,9 +851,9 @@ object Main extends App {
   class Solution {
     def reverse(arr: Array[Int], s0: Int, e0: Int): Unit = {
       var start = s0
-      var end = e0
+      var end   = e0
       while (start < end) {
-        val tmp = arr(start)
+        val tmp    = arr(start)
         arr(start) = arr(end)
         arr(end)   = tmp
         start += 1
@@ -838,19 +861,26 @@ object Main extends App {
       }
     }
 
-    def rotateRight(arr: Array[Int], k0: Int): Unit = {
+    def kRotations(arr: Array[Int], k0: Int): Unit = {
       val n = arr.length
+
+      // Set k to be in the range of [0, n)
       val k = k0 % n
-      if (k == 0) return
-      reverse(arr, n - k, n - 1)
-      reverse(arr, 0, n - k - 1)
+
+      // Reverse the entire array using two pointer method
       reverse(arr, 0, n - 1)
+
+      // Reverse the first k elements using two pointer method
+      reverse(arr, 0, k - 1)
+
+      // Reverse the remaining elements using two pointer method
+      reverse(arr, k, n - 1)
     }
   }
 
   val arr = Array(1, 2, 3, 4, 5)
-  new Solution().rotateRight(arr, 3)
-  println(arr.mkString(", "))
+  new Solution().kRotations(arr, 3)
+  println(arr.mkString(", "))   // 3, 4, 5, 1, 2
 }
 ```
 
