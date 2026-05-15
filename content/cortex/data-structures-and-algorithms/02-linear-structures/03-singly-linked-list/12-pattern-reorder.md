@@ -553,75 +553,252 @@ Given the **head** of a singly linked list, write a function to move the last 
 
 
 ```pseudocode
-# Move the last node to the front.
+function splitLastNode(head):
+    current ← head; previous ← null
+    # Traverse the list until the last node is reached
+    while current.next is not null:
+        # Keep track of the previous node
+        previous ← current
+        # Move to the next node
+        current ← current.next
+    # Disconnect the last node
+    if previous is not null:
+        previous.next ← null
+    # Return {head of remaining list, last node}
+    return (head, current)
+
+function mergeLastNode(lastNode, firstNode):
+    # If there is no last node, return the first node
+    if lastNode is null: return firstNode
+    # Connect the last node to the first node
+    lastNode.next ← firstNode
+    return lastNode
+
 function relocateNode(head):
+    # If the list is empty or contains only one node, no need to
+    # modify it
     if head is null OR head.next is null: return head
-    prev ← null; cur ← head
-    while cur.next is not null:
-        prev ← cur; cur ← cur.next
-    prev.next ← null                                   # detach the tail
-    cur.next ← head                                    # prepend it
-    return cur
+    # Split the last node from the list
+    (firstNode, lastNode) ← splitLastNode(head)
+    # Merge the last node at the front
+    return mergeLastNode(lastNode, firstNode)
 ```
 
 ```python run
-from typing import Optional
+from typing import Optional, Tuple
 
 class Solution:
-    def relocate_node(self, head: Optional[ListNode]) -> Optional[ListNode]:
-        if head is None or head.next is None:
+    def split_last_node(
+        self, head: ListNode
+    ) -> Tuple[ListNode, ListNode]:
+        current = head
+        previous = None
+
+        # Traverse the list until the last node is reached
+        while current.next is not None:
+
+            # Keep track of the previous node
+            previous = current
+
+            # Move to the next node
+            current = current.next
+
+        # Disconnect the last node
+        if previous is not None:
+            previous.next = None
+
+        # Return {head of remaining list, last node}
+        return head, current
+
+    def merge_last_node(
+        self,
+        last_node: Optional[ListNode],
+        first_node: Optional[ListNode],
+    ) -> Optional[ListNode]:
+
+        # If there is no last node, return the first node
+        if not last_node:
+            return first_node
+
+        # Connect the last node to the first node
+        last_node.next = first_node
+        return last_node
+
+    def relocate_node(
+        self, head: Optional[ListNode]
+    ) -> Optional[ListNode]:
+
+        # If the list is empty or contains only one node, no need to
+        # modify it
+        if not head or not head.next:
             return head
 
-        # Walk to the last node while tracking its predecessor
-        prev, cur = None, head
-        while cur.next is not None:
-            prev, cur = cur, cur.next
+        # Split the last node from the list
+        first_node, last_node = self.split_last_node(head)
 
-        prev.next = None      # disconnect the last node
-        cur.next  = head      # prepend last as new head
-        return cur
+        # Merge the last node at the front
+        return self.merge_last_node(last_node, first_node)
 ```
 
 ```java run
+import java.util.*;
+
 class Solution {
+    private List<ListNode> splitLastNode(ListNode head) {
+        ListNode current = head;
+        ListNode previous = null;
+
+        // Traverse the list until the last node is reached
+        while (current.next != null) {
+
+            // Keep track of the previous node
+            previous = current;
+
+            // Move to the next node
+            current = current.next;
+        }
+
+        // Disconnect the last node
+        if (previous != null) {
+            previous.next = null;
+        }
+
+        // Return {head of remaining list, last node}
+        return Arrays.asList(head, current);
+    }
+
+    private ListNode mergeLastNode(ListNode lastNode, ListNode firstNode) {
+
+        // If there is no last node, return the first node
+        if (lastNode == null) {
+            return firstNode;
+        }
+
+        // Connect the last node to the first node
+        lastNode.next = firstNode;
+        return lastNode;
+    }
+
     public ListNode relocateNode(ListNode head) {
-        if (head == null || head.next == null) return head;
 
-        ListNode prev = null, cur = head;
-        while (cur.next != null) { prev = cur; cur = cur.next; }
+        // If the list is empty or contains only one node, no need to
+        // modify it
+        if (head == null || head.next == null) {
+            return head;
+        }
 
-        prev.next = null;
-        cur.next  = head;
-        return cur;
+        // Split the last node from the list
+        List<ListNode> heads = splitLastNode(head);
+        ListNode firstNode = heads.get(0);
+        ListNode lastNode = heads.get(1);
+
+        // Merge the last node at the front
+        return mergeLastNode(lastNode, firstNode);
     }
 }
 ```
 
 ```c run
+typedef struct { ListNode *first; ListNode *last; } SplitResult;
+
+static SplitResult splitLastNode(ListNode *head) {
+    ListNode *current = head;
+    ListNode *previous = NULL;
+
+    /* Traverse the list until the last node is reached */
+    while (current->next != NULL) {
+
+        /* Keep track of the previous node */
+        previous = current;
+
+        /* Move to the next node */
+        current = current->next;
+    }
+
+    /* Disconnect the last node */
+    if (previous != NULL) {
+        previous->next = NULL;
+    }
+
+    /* Return {head of remaining list, last node} */
+    SplitResult out = {head, current};
+    return out;
+}
+
+static ListNode* mergeLastNode(ListNode *lastNode, ListNode *firstNode) {
+
+    /* If there is no last node, return the first node */
+    if (lastNode == NULL) {
+        return firstNode;
+    }
+
+    /* Connect the last node to the first node */
+    lastNode->next = firstNode;
+    return lastNode;
+}
+
 ListNode* relocateNode(ListNode *head) {
-    if (head == NULL || head->next == NULL) return head;
 
-    ListNode *prev = NULL, *cur = head;
-    while (cur->next != NULL) { prev = cur; cur = cur->next; }
+    /* If the list is empty or contains only one node, no need to
+       modify it */
+    if (head == NULL || head->next == NULL) {
+        return head;
+    }
 
-    prev->next = NULL;
-    cur->next  = head;
-    return cur;
+    /* Split the last node from the list */
+    SplitResult heads = splitLastNode(head);
+
+    /* Merge the last node at the front */
+    return mergeLastNode(heads.last, heads.first);
 }
 ```
 
 ```scala run
 object Solution {
+  private def splitLastNode(head: ListNode): (ListNode, ListNode) = {
+    var current = head
+    var previous: ListNode = null
+
+    // Traverse the list until the last node is reached
+    while (current.next != null) {
+
+      // Keep track of the previous node
+      previous = current
+
+      // Move to the next node
+      current = current.next
+    }
+
+    // Disconnect the last node
+    if (previous != null) {
+      previous.next = null
+    }
+
+    // Return {head of remaining list, last node}
+    (head, current)
+  }
+
+  private def mergeLastNode(lastNode: ListNode, firstNode: ListNode): ListNode = {
+
+    // If there is no last node, return the first node
+    if (lastNode == null) return firstNode
+
+    // Connect the last node to the first node
+    lastNode.next = firstNode
+    lastNode
+  }
+
   def relocateNode(head: ListNode): ListNode = {
+
+    // If the list is empty or contains only one node, no need to
+    // modify it
     if (head == null || head.next == null) return head
 
-    var prev: ListNode = null
-    var cur = head
-    while (cur.next != null) { prev = cur; cur = cur.next }
+    // Split the last node from the list
+    val (firstNode, lastNode) = splitLastNode(head)
 
-    prev.next = null
-    cur.next  = head
-    cur
+    // Merge the last node at the front
+    mergeLastNode(lastNode, firstNode)
   }
 }
 ```
