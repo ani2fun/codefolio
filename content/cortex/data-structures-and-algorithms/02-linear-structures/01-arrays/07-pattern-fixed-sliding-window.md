@@ -241,55 +241,18 @@ Three things to supply when solving a specific problem:
 
 Array: `[2, 5, 1, 3, 7, 4]`, window size `k = 4`, function `f` = sum.
 
-```d2
-arr: "end=0 — add arr[0]=2 → window=[2], size=1 < 4, skip process" {
-  grid-columns: 6
-  grid-gap: 0
-  a0: "2" {style.fill: "#fde68a"; style.stroke: "#d97706"}
-  a1: "5"
-  a2: "1"
-  a3: "3"
-  a4: "7"
-  a5: "4"
-}
-```
-
-```d2
-arr: "end=3 — add arr[3]=3 → window=[2,5,1,3], size=4 == k → process sum=11" {
-  grid-columns: 6
-  grid-gap: 0
-  a0: "2" {style.fill: "#fde68a"; style.stroke: "#d97706"}
-  a1: "5" {style.fill: "#fde68a"; style.stroke: "#d97706"}
-  a2: "1" {style.fill: "#fde68a"; style.stroke: "#d97706"}
-  a3: "3" {style.fill: "#fde68a"; style.stroke: "#d97706"}
-  a4: "7"
-  a5: "4"
-}
-```
-
-```d2
-arr: "end=4 — add 7 → size=5 > 4 → remove arr[0]=2, start=1 → window=[5,1,3,7], size=4 → process sum=16" {
-  grid-columns: 6
-  grid-gap: 0
-  a0: "2"
-  a1: "5" {style.fill: "#fde68a"; style.stroke: "#d97706"}
-  a2: "1" {style.fill: "#fde68a"; style.stroke: "#d97706"}
-  a3: "3" {style.fill: "#fde68a"; style.stroke: "#d97706"}
-  a4: "7" {style.fill: "#fde68a"; style.stroke: "#d97706"}
-  a5: "4"
-}
-```
-
-```d2
-arr: "end=5 — add 4 → size=5 > 4 → remove arr[1]=5, start=2 → window=[1,3,7,4], size=4 → process sum=15" {
-  grid-columns: 6
-  grid-gap: 0
-  a0: "2"
-  a1: "5"
-  a2: "1" {style.fill: "#fde68a"; style.stroke: "#d97706"}
-  a3: "3" {style.fill: "#fde68a"; style.stroke: "#d97706"}
-  a4: "7" {style.fill: "#fde68a"; style.stroke: "#d97706"}
-  a5: "4" {style.fill: "#fde68a"; style.stroke: "#d97706"}
+```d3 widget=array-traversal
+{
+  "items": ["2", "5", "1", "3", "7", "4"],
+  "title": "Fixed sliding window of size k = 4 on [2, 5, 1, 3, 7, 4]",
+  "steps": [
+    { "markers": [{"name": "start", "index": 0, "color": "#3b82f6"}, {"name": "end", "index": 0, "color": "#f59e0b"}], "range": {"lo": 0, "hi": 0}, "msg": "end=0 — add arr[0]=2 → window=[2], size 1 < 4 → skip process." },
+    { "markers": [{"name": "start", "index": 0, "color": "#3b82f6"}, {"name": "end", "index": 1, "color": "#f59e0b"}], "range": {"lo": 0, "hi": 1}, "msg": "end=1 — add arr[1]=5 → window=[2, 5], size 2 < 4 → skip process." },
+    { "markers": [{"name": "start", "index": 0, "color": "#3b82f6"}, {"name": "end", "index": 2, "color": "#f59e0b"}], "range": {"lo": 0, "hi": 2}, "msg": "end=2 — add arr[2]=1 → window=[2, 5, 1], size 3 < 4 → skip process." },
+    { "markers": [{"name": "start", "index": 0, "color": "#3b82f6"}, {"name": "end", "index": 3, "color": "#f59e0b"}], "range": {"lo": 0, "hi": 3}, "msg": "end=3 — add arr[3]=3 → window=[2, 5, 1, 3], size = k → process sum = 11." },
+    { "markers": [{"name": "start", "index": 1, "color": "#3b82f6"}, {"name": "end", "index": 4, "color": "#f59e0b"}], "range": {"lo": 1, "hi": 4}, "msg": "end=4 — add 7 → size 5 > 4 → remove arr[0]=2, start=1 → window=[5, 1, 3, 7] → process sum = 16." },
+    { "markers": [{"name": "start", "index": 2, "color": "#3b82f6"}, {"name": "end", "index": 5, "color": "#f59e0b"}], "range": {"lo": 2, "hi": 5}, "msg": "end=5 — add 4 → size 5 > 4 → remove arr[1]=5, start=2 → window=[1, 3, 7, 4] → process sum = 15." }
+  ]
 }
 ```
 
@@ -516,6 +479,21 @@ w2 -> w3: "remove 12, add 3"
 ```
 
 <p align="center"><strong>Three windows of size k=4 slide through the array. Each slide removes one element from the left and adds one from the right — the sum updates in O(1) each time.</strong></p>
+
+```d3 widget=array-traversal
+{
+  "items": ["1", "12", "-5", "-6", "50", "3"],
+  "title": "Maximum average subarray on [1, 12, -5, -6, 50, 3], k = 4",
+  "steps": [
+    { "markers": [{"name": "start", "index": 0, "color": "#3b82f6"}, {"name": "end", "index": 0, "color": "#f59e0b"}], "range": {"lo": 0, "hi": 0}, "msg": "end=0 — add 1 → sum = 1, window=[1], size 1 < 4." },
+    { "markers": [{"name": "start", "index": 0, "color": "#3b82f6"}, {"name": "end", "index": 1, "color": "#f59e0b"}], "range": {"lo": 0, "hi": 1}, "msg": "end=1 — add 12 → sum = 13, window=[1, 12], size 2 < 4." },
+    { "markers": [{"name": "start", "index": 0, "color": "#3b82f6"}, {"name": "end", "index": 2, "color": "#f59e0b"}], "range": {"lo": 0, "hi": 2}, "msg": "end=2 — add −5 → sum = 8, window=[1, 12, −5], size 3 < 4." },
+    { "markers": [{"name": "start", "index": 0, "color": "#3b82f6"}, {"name": "end", "index": 3, "color": "#f59e0b"}], "range": {"lo": 0, "hi": 3}, "msg": "end=3 — add −6 → sum = 2, window=[1, 12, −5, −6] → avg = 0.50; maxAvg = 0.50." },
+    { "markers": [{"name": "start", "index": 1, "color": "#3b82f6"}, {"name": "end", "index": 4, "color": "#f59e0b"}], "range": {"lo": 1, "hi": 4}, "msg": "end=4 — add 50, remove arr[0]=1 → sum = 51, window=[12, −5, −6, 50] → avg = 12.75; maxAvg = 12.75 ★." },
+    { "markers": [{"name": "start", "index": 2, "color": "#3b82f6"}, {"name": "end", "index": 5, "color": "#f59e0b"}], "range": {"lo": 2, "hi": 5}, "msg": "end=5 — add 3, remove arr[1]=12 → sum = 42, window=[−5, −6, 50, 3] → avg = 10.50; maxAvg stays 12.75 → answer: 12.75." }
+  ]
+}
+```
 
 ---
 
