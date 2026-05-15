@@ -808,17 +808,21 @@ Given the heads of two sorted linked lists **headA** and **headB**, write a fun
 
 
 ```pseudocode
-# Merge two ASCENDING-sorted lists. Pick the smaller head each step.
 function mergeSortedLists(headA, headB):
+    # Create a dummy node and initialize the tail pointer
     dummy ← new ListNode; tail ← dummy
-    cA ← headA; cB ← headB
-    while cA is not null AND cB is not null:
-        if cA.val ≤ cB.val:
-            tail.next ← cA; cA ← cA.next
+    currentA ← headA; currentB ← headB
+    # Traverse both lists until one of them becomes empty
+    while currentA is not null AND currentB is not null:
+        # Pick the smaller head; ties go to list A
+        if currentA.val ≤ currentB.val:
+            tail.next ← currentA; currentA ← currentA.next
         else:
-            tail.next ← cB; cB ← cB.next
+            tail.next ← currentB; currentB ← currentB.next
+        # Move the tail pointer forward
         tail ← tail.next
-    tail.next ← cA if cA is not null else cB
+    # Append the remaining nodes from the non-empty list
+    tail.next ← currentA if currentA is not null else currentB
     return dummy.next
 ```
 
@@ -826,31 +830,96 @@ function mergeSortedLists(headA, headB):
 from typing import Optional
 
 class Solution:
-    def merge_sorted_lists(self, head_a: Optional[ListNode], head_b: Optional[ListNode]) -> Optional[ListNode]:
-        dummy = ListNode()
-        tail  = dummy
-        cA, cB = head_a, head_b
-        while cA is not None and cB is not None:
-            if cA.val <= cB.val:
-                tail.next = cA; cA = cA.next
+    def merge_sorted_lists(
+        self, head_a: Optional[ListNode], head_b: Optional[ListNode]
+    ) -> Optional[ListNode]:
+
+        # Create a dummy node and initialize the tail pointer
+        dummy = ListNode(0)
+        tail = dummy
+
+        current_a = head_a
+        current_b = head_b
+
+        # Traverse both lists until one of them becomes empty
+        while current_a is not None and current_b is not None:
+
+            # If the value of the current node in list A is less than
+            # or equal to the value of the current node in list B,
+            # append the current node from list A to the merged list
+            if current_a.val <= current_b.val:
+                tail.next = current_a
+                current_a = current_a.next
+
+            # Otherwise, append the current node from list B to the
+            # merged
             else:
-                tail.next = cB; cB = cB.next
+                tail.next = current_b
+                current_b = current_b.next
+
+            # Move the tail pointer forward
             tail = tail.next
-        tail.next = cA if cA is not None else cB
+
+        # Append the remaining nodes from the non-empty list to the
+        # merged list
+        if current_a is not None:
+            tail.next = current_a
+
+        # Else if there are any remaining nodes in current_b, attach
+        # them to the merged list
+        elif current_b is not None:
+            tail.next = current_b
+
+        # Return the merged list (excluding the dummy node)
         return dummy.next
 ```
 
 ```java run
 class Solution {
     public ListNode mergeSortedLists(ListNode headA, ListNode headB) {
-        ListNode dummy = new ListNode(), tail = dummy;
-        ListNode cA = headA, cB = headB;
-        while (cA != null && cB != null) {
-            if (cA.val <= cB.val) { tail.next = cA; cA = cA.next; }
-            else                   { tail.next = cB; cB = cB.next; }
+
+        // Create a dummy node and initialize the tail pointer
+        ListNode dummy = new ListNode(0);
+        ListNode tail = dummy;
+
+        ListNode currentA = headA;
+        ListNode currentB = headB;
+
+        // Traverse both lists until one of them becomes empty
+        while (currentA != null && currentB != null) {
+
+            // If the value of the current node in list A is less than
+            // or equal to the value of the current node in list B,
+            // append the current node from list A to the merged list
+            if (currentA.val <= currentB.val) {
+                tail.next = currentA;
+                currentA = currentA.next;
+            }
+
+            // Otherwise, append the current node from list B to the
+            // merged
+            else {
+                tail.next = currentB;
+                currentB = currentB.next;
+            }
+
+            // Move the tail pointer forward
             tail = tail.next;
         }
-        tail.next = (cA != null) ? cA : cB;
+
+        // Append the remaining nodes from the non-empty list to the
+        // merged list
+        if (currentA != null) {
+            tail.next = currentA;
+        }
+
+        // Else if there are any remaining nodes in currentB, attach
+        // them to the merged list
+        else if (currentB != null) {
+            tail.next = currentB;
+        }
+
+        // Return the merged list (excluding the dummy node)
         return dummy.next;
     }
 }
@@ -858,15 +927,49 @@ class Solution {
 
 ```c run
 ListNode* mergeSortedLists(ListNode *headA, ListNode *headB) {
+
+    /* Create a dummy node and initialize the tail pointer */
     ListNode dummy = {0, NULL};
     ListNode *tail = &dummy;
-    ListNode *cA = headA, *cB = headB;
-    while (cA != NULL && cB != NULL) {
-        if (cA->val <= cB->val) { tail->next = cA; cA = cA->next; }
-        else                     { tail->next = cB; cB = cB->next; }
+
+    ListNode *currentA = headA;
+    ListNode *currentB = headB;
+
+    /* Traverse both lists until one of them becomes empty */
+    while (currentA != NULL && currentB != NULL) {
+
+        /* If the value of the current node in list A is less than
+           or equal to the value of the current node in list B,
+           append the current node from list A to the merged list */
+        if (currentA->val <= currentB->val) {
+            tail->next = currentA;
+            currentA = currentA->next;
+        }
+
+        /* Otherwise, append the current node from list B to the
+           merged */
+        else {
+            tail->next = currentB;
+            currentB = currentB->next;
+        }
+
+        /* Move the tail pointer forward */
         tail = tail->next;
     }
-    tail->next = (cA != NULL) ? cA : cB;
+
+    /* Append the remaining nodes from the non-empty list to the
+       merged list */
+    if (currentA != NULL) {
+        tail->next = currentA;
+    }
+
+    /* Else if there are any remaining nodes in currentB, attach
+       them to the merged list */
+    else if (currentB != NULL) {
+        tail->next = currentB;
+    }
+
+    /* Return the merged list (excluding the dummy node) */
     return dummy.next;
 }
 ```
@@ -874,15 +977,42 @@ ListNode* mergeSortedLists(ListNode *headA, ListNode *headB) {
 ```scala run
 object Solution {
   def mergeSortedLists(headA: ListNode, headB: ListNode): ListNode = {
+
+    // Create a dummy node and initialize the tail pointer
     val dummy = new ListNode(0)
     var tail: ListNode = dummy
-    var cA = headA; var cB = headB
-    while (cA != null && cB != null) {
-      if (cA.v <= cB.v) { tail.next = cA; cA = cA.next }
-      else               { tail.next = cB; cB = cB.next }
+
+    var currentA = headA
+    var currentB = headB
+
+    // Traverse both lists until one of them becomes empty
+    while (currentA != null && currentB != null) {
+
+      // If the value of the current node in list A is less than or
+      // equal to the value of the current node in list B, append
+      // the current node from list A to the merged list
+      if (currentA.val <= currentB.val) {
+        tail.next = currentA
+        currentA = currentA.next
+      }
+      // Otherwise, append the current node from list B to the merged
+      else {
+        tail.next = currentB
+        currentB = currentB.next
+      }
+
+      // Move the tail pointer forward
       tail = tail.next
     }
-    tail.next = if (cA != null) cA else cB
+
+    // Append the remaining nodes from the non-empty list to the
+    // merged list
+    if (currentA != null) tail.next = currentA
+    // Else if there are any remaining nodes in currentB, attach them
+    // to the merged list
+    else if (currentB != null) tail.next = currentB
+
+    // Return the merged list (excluding the dummy node)
     dummy.next
   }
 }
