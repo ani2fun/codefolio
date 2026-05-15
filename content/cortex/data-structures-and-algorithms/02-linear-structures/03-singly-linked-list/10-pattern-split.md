@@ -956,36 +956,61 @@ function splitAlternateGroups(head, k):
 from typing import List, Optional
 
 class Solution:
-    def split_alternate_groups(self, head: Optional[ListNode], k: int) -> List[Optional[ListNode]]:
-        first_dummy, second_dummy = ListNode(), ListNode()
-        first_tail,  second_tail  = first_dummy, second_dummy
+    def split_alternate_groups(
+        self, head: Optional[ListNode], k: int
+    ) -> List[Optional[ListNode]]:
 
-        current = head
-        add_to_first = True
+        # Head and tail references for the two resulting lists
+        first_list_dummy: ListNode = ListNode(0)
+        first_list_tail: ListNode = first_list_dummy
+
+        second_list_dummy: ListNode = ListNode(0)
+        second_list_tail: ListNode = second_list_dummy
+
+        current: Optional[ListNode] = head
+
+        # Flag to alternate between the two lists
+        add_to_first_list: bool = True
+
+        # Iterate through the original list
         while current is not None:
-            chunk_start = current
-            # Walk up to k nodes for this chunk
-            prev = None
+
+            # Start of the current chunk
+            chunk_start: ListNode = current
+            previous: Optional[ListNode] = None
+
+            # Traverse up to k nodes for the current chunk
             for _ in range(k):
                 if current is None:
                     break
-                prev    = current
+                previous = current
                 current = current.next
 
-            # Disconnect the chunk from the rest
-            prev.next = None
+            # Disconnect the chunk from the rest of the list
+            if previous:
+                previous.next = None
 
-            # Attach to the active bucket
-            if add_to_first:
-                first_tail.next = chunk_start
-                first_tail      = prev
+            # Attach chunk to the appropriate list
+            if add_to_first_list:
+
+                # Attach chunk to the first list
+                first_list_tail.next = chunk_start
+
+                # Move tail to the end of the chunk
+                first_list_tail = previous
             else:
-                second_tail.next = chunk_start
-                second_tail      = prev
 
-            add_to_first = not add_to_first
+                # Attach chunk to the second list
+                second_list_tail.next = chunk_start
 
-        return [first_dummy.next, second_dummy.next]
+                # Move tail to the end of the chunk
+                second_list_tail = previous
+
+            # Alternate for next chunk
+            add_to_first_list = not add_to_first_list
+
+        # Return heads of the two lists
+        return [first_list_dummy.next, second_list_dummy.next]
 ```
 
 ```java run
