@@ -2265,21 +2265,45 @@ Given the **head** of a singly linked list and a **data** value, write a functio
 
 
 ```pseudocode
-# Delete EVERY node matching `data`. First strip the head, then bypass interior runs.
 function deleteNodesWithGivenData(head, data):
-    while head is not null AND head.val = data:        # strip leading matches
-        head ← head.next
-    if head is null: return null
 
+    # Check if the list is empty
+    if head is null:
+        return null
+
+    # Remove any nodes at the beginning of the list with the given
+    # data
+    while head is not null AND head.val = data:
+        nodeToBeDeleted ← head
+        head ← head.next
+        nodeToBeDeleted ← null
+
+    # If the list becomes empty after removing nodes, return null
+    if head is null:
+        return null
+
+    # Initialize pointers for previous and current nodes
     previous ← head
     current ← head.next
+
+    # Traverse the list and remove nodes with the given data
     while current is not null:
+
+        # Remove any nodes with the given data
         while current is not null AND current.val = data:
-            current ← current.next                     # skip over a run of matches
-        previous.next ← current                        # reconnect predecessor → first keeper
+            nodeToBeDeleted ← current
+            current ← current.next
+            nodeToBeDeleted ← null
+
+        # Update the links between nodes to bypass the removed nodes
+        previous.next ← current
         previous ← current
+
+        # Move to the next node
         if current is not null:
             current ← current.next
+
+    # Return the modified list
     return head
 ```
 
@@ -2290,30 +2314,45 @@ class ListNode:
         self.next = next
 
 def delete_nodes_with_given_data(head, data):
-    # Strip matching nodes from the front so head always points to a keeper
-    while head is not None and head.val == data:
-        head = head.next
 
-    # List was all-matches — now empty
+    # Check if the list is empty
     if head is None:
         return None
 
+    # Remove any nodes at the beginning of the list with the given
+    # data
+    while head is not None and head.val == data:
+        node_to_be_deleted = head
+        head = head.next
+        del node_to_be_deleted
+
+    # If the list becomes empty after removing nodes, return None
+    if head is None:
+        return None
+
+    # Initialize pointers for previous and current nodes
     previous = head
     current = head.next
 
+    # Traverse the list and remove nodes with the given data
     while current is not None:
-        # Skip over any consecutive run of matching nodes
-        while current is not None and current.val == data:
-            current = current.next
 
-        # Reconnect previous to the first non-matching node (or None)
-        previous.next = current
+        # Remove any nodes with the given data
+        while current is not None and current.val == data:
+            node_to_be_deleted = current
+            current = current.next
+            del node_to_be_deleted
+
+        # Update the links between nodes to bypass the removed nodes
+        if previous:
+            previous.next = current
         previous = current
 
-        # Advance only when current is still valid
+        # Move to the next node
         if current is not None:
             current = current.next
 
+    # Return the modified list
     return head
 
 # --- driver ---
@@ -2341,25 +2380,54 @@ public class Main {
     }
 
     static ListNode deleteNodesWithGivenData(ListNode head, int data) {
-        // Strip matching nodes from the front
-        while (head != null && head.val == data) head = head.next;
 
-        // All nodes were matches — list is now empty
-        if (head == null) return null;
+        // Check if the list is empty
+        if (head == null) {
+            return null;
+        }
 
+        // Remove any nodes at the beginning of the list with the given
+        // data
+        while (head != null && head.val == data) {
+            ListNode nodeToBeDeleted = head;
+            head = head.next;
+
+            // Delete the node
+            nodeToBeDeleted = null;
+        }
+
+        // If the list becomes empty after removing nodes, return null
+        if (head == null) {
+            return null;
+        }
+
+        // Initialize pointers for previous and current nodes
         ListNode previous = head;
         ListNode current = head.next;
 
+        // Traverse the list and remove nodes with the given data
         while (current != null) {
-            // Skip over a consecutive run of matching nodes
-            while (current != null && current.val == data) current = current.next;
 
-            // Reconnect and advance
+            // Remove any nodes with the given data
+            while (current != null && current.val == data) {
+                ListNode nodeToBeDeleted = current;
+                current = current.next;
+
+                // Delete the node
+                nodeToBeDeleted = null;
+            }
+
+            // Update the links between nodes to bypass the removed nodes
             previous.next = current;
             previous = current;
-            if (current != null) current = current.next;
+
+            // Move to the next node
+            if (current != null) {
+                current = current.next;
+            }
         }
 
+        // Return the modified list
         return head;
     }
 
@@ -2394,25 +2462,50 @@ ListNode* newNode(int v) {
 }
 
 ListNode* deleteNodesWithGivenData(ListNode *head, int data) {
-    // Strip matching nodes from the front and free them
-    while (head != NULL && head->val == data) {
-        ListNode *tmp = head; head = head->next; free(tmp);
-    }
-    if (head == NULL) return NULL;
 
+    /* Check if the list is empty */
+    if (head == NULL) {
+        return NULL;
+    }
+
+    /* Remove any nodes at the beginning of the list with the given
+       data */
+    while (head != NULL && head->val == data) {
+        ListNode *nodeToBeDeleted = head;
+        head = head->next;
+        free(nodeToBeDeleted);
+    }
+
+    /* If the list becomes empty after removing nodes, return NULL */
+    if (head == NULL) {
+        return NULL;
+    }
+
+    /* Initialize pointers for previous and current nodes */
     ListNode *previous = head;
     ListNode *current = head->next;
 
+    /* Traverse the list and remove nodes with the given data */
     while (current != NULL) {
-        // Free and skip consecutive matching nodes
+
+        /* Remove any nodes with the given data */
         while (current != NULL && current->val == data) {
-            ListNode *tmp = current; current = current->next; free(tmp);
+            ListNode *nodeToBeDeleted = current;
+            current = current->next;
+            free(nodeToBeDeleted);
         }
+
+        /* Update the links between nodes to bypass the removed nodes */
         previous->next = current;
         previous = current;
-        if (current != NULL) current = current->next;
+
+        /* Move to the next node */
+        if (current != NULL) {
+            current = current->next;
+        }
     }
 
+    /* Return the modified list */
     return head;
 }
 
@@ -2442,21 +2535,55 @@ class ListNode(var v: Int, var next: ListNode = null)
 
 object Main extends App {
   def deleteNodesWithGivenData(head: ListNode, data: Int): ListNode = {
-    // Strip matching nodes from the front
-    var h = head
-    while (h != null && h.v == data) h = h.next
-    if (h == null) return null
 
+    // Check if the list is empty
+    if (head == null) {
+      return null
+    }
+
+    // Remove any nodes at the beginning of the list with the given
+    // data
+    var h = head
+    while (h != null && h.v == data) {
+      var nodeToBeDeleted = h
+      h = h.next
+
+      // Delete the node
+      nodeToBeDeleted = null
+    }
+
+    // If the list becomes empty after removing nodes, return null
+    if (h == null) {
+      return null
+    }
+
+    // Initialize pointers for previous and current nodes
     var previous = h
     var current = h.next
 
+    // Traverse the list and remove nodes with the given data
     while (current != null) {
-      // Skip consecutive matching nodes
-      while (current != null && current.v == data) current = current.next
+
+      // Remove any nodes with the given data
+      while (current != null && current.v == data) {
+        var nodeToBeDeleted = current
+        current = current.next
+
+        // Delete the node
+        nodeToBeDeleted = null
+      }
+
+      // Update the links between nodes to bypass the removed nodes
       previous.next = current
       previous = current
-      if (current != null) current = current.next
+
+      // Move to the next node
+      if (current != null) {
+        current = current.next
+      }
     }
+
+    // Return the modified list
     h
   }
 
