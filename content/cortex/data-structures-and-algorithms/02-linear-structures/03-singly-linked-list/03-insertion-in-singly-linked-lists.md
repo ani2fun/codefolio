@@ -683,14 +683,31 @@ Given the **head** of a singly linked list and a **data** value, write a functio
 
 
 ```pseudocode
-# Compact form — same algorithm.
 function insertAtEnd(head, data):
+    # Create a new node with the given data
     newNode ← new ListNode(data)
-    if head is null: return newNode
+
+    # If the list is empty
+    if head is null:
+
+        # Set the next pointer of the new node to null
+        newNode.next ← null
+
+        # Return the new node as the new head of the list
+        return newNode
+
+    # Traverse the list to find the last node
     current ← head
-    while current.next is not null:
+    while current is not null AND current.next is not null:
         current ← current.next
+
+    # Set the next pointer of the new node to null
+    newNode.next ← null
+
+    # Link the last node to the new node
     current.next ← newNode
+
+    # Return the original head of the list
     return head
 ```
 
@@ -701,12 +718,32 @@ class ListNode:
 
 class Solution:
     def insert_at_end(self, head, data):
-        new_node = ListNode(data)
-        if head is None: return new_node
 
+        # Create a new node with the given data
+        new_node = ListNode(data)
+
+        # If the list is empty
+        if head is None:
+
+            # Set the next pointer of the new node to None
+            new_node.next = None
+
+            # Return the new node as the new head of the list
+            return new_node
+
+        # Traverse the list to find the last node
         current = head
-        while current.next: current = current.next  # Walk to tail
-        current.next = new_node
+        while current is not None and current.next is not None:
+            current = current.next
+
+        # Set the next pointer of the new node to None
+        new_node.next = None
+
+        # Link the last node to the new node
+        if current:
+            current.next = new_node
+
+        # Return the original head of the list
         return head
 
 n4=ListNode(10); n3=ListNode(3,n4); n2=ListNode(7,n3); n1=ListNode(5,n2)
@@ -721,11 +758,33 @@ public class Main {
     static class ListNode { int val; ListNode next; ListNode(int v){val=v;} }
 
     static ListNode insertAtEnd(ListNode head, int data) {
+
+        // Create a new node with the given data
         ListNode newNode = new ListNode(data);
-        if (head == null) return newNode;
+
+        // If the list is empty
+        if (head == null) {
+
+            // Set the next pointer of the new node to null
+            newNode.next = null;
+
+            // Return the new node as the new head of the list
+            return newNode;
+        }
+
+        // Traverse the list to find the last node
         ListNode current = head;
-        while (current.next != null) current = current.next;
+        while (current != null && current.next != null) {
+            current = current.next;
+        }
+
+        // Set the next pointer of the new node to null
+        newNode.next = null;
+
+        // Link the last node to the new node
         current.next = newNode;
+
+        // Return the original head of the list
         return head;
     }
 
@@ -748,11 +807,33 @@ typedef struct ListNode { int val; struct ListNode *next; } ListNode;
 ListNode* newNode(int v){ ListNode*n=malloc(sizeof*n); n->val=v; n->next=NULL; return n; }
 
 ListNode* insertAtEnd(ListNode *head, int data) {
-    ListNode *node = newNode(data);
-    if (!head) return node;
-    ListNode *cur = head;
-    while (cur->next) cur = cur->next;
-    cur->next = node;
+
+    /* Create a new node with the given data */
+    ListNode *newN = newNode(data);
+
+    /* If the list is empty */
+    if (head == NULL) {
+
+        /* Set the next pointer of the new node to NULL */
+        newN->next = NULL;
+
+        /* Return the new node as the new head of the list */
+        return newN;
+    }
+
+    /* Traverse the list to find the last node */
+    ListNode *current = head;
+    while (current != NULL && current->next != NULL) {
+        current = current->next;
+    }
+
+    /* Set the next pointer of the new node to NULL */
+    newN->next = NULL;
+
+    /* Link the last node to the new node */
+    current->next = newN;
+
+    /* Return the original head of the list */
     return head;
 }
 
@@ -770,11 +851,33 @@ class ListNode(var v: Int, var next: ListNode = null)
 
 object Main extends App {
   def insertAtEnd(head: ListNode, data: Int): ListNode = {
+
+    // Create a new node with the given data
     val newNode = new ListNode(data)
-    if (head == null) return newNode
+
+    // If the list is empty
+    if (head == null) {
+
+      // Set the next pointer of the new node to null
+      newNode.next = null
+
+      // Return the new node as the new head of the list
+      return newNode
+    }
+
+    // Traverse the list to find the last node
     var current = head
-    while (current.next != null) current = current.next
+    while (current != null && current.next != null) {
+      current = current.next
+    }
+
+    // Set the next pointer of the new node to null
+    newNode.next = null
+
+    // Link the last node to the new node
     current.next = newNode
+
+    // Return the original head of the list
     head
   }
 
