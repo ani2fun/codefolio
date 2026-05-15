@@ -719,70 +719,130 @@ The problem needs to be solved without modifying the values in the list's nodes.
 ```pseudocode
 # Reverse-k-segments specialised to k = 2 → swap consecutive pairs.
 function reverse(start, end):
+    current ← start
     rightBound ← end.next
-    previous ← rightBound; current ← start
+    previous ← rightBound
+
     while current ≠ rightBound:
-        nxt ← current.next
+        next ← current.next
         current.next ← previous
         previous ← current
-        current ← nxt
+        current ← next
+
     return previous
 
 function pairwiseSwap(head):
-    if head is null OR head.next is null: return head
-    start ← head; leftBound ← null
+
+    # If the list is empty or has only one element, no reversal needed.
+    if head is null OR head.next is null:
+
+        # Return the original head
+        return head
+
+    # Start of the current pair to be reversed
+    start ← head
+
+    # Initialize the 'leftBound' pointer for the first pair's reversal.
+    leftBound ← null
+
+    # Loop while there are pairs to be swapped
     while start is not null AND start.next is not null:
-        end ← start.next                               # each pair is exactly 2 nodes
+
+        # Get the end node of the current pair
+        end ← start.next
+
+        # Get the head of the reversed pair.
         reversedHead ← reverse(start, end)
+
+        # If leftBound is null, we're at the first segment — update head
         if leftBound is null:
             head ← reversedHead
+        # Otherwise, connect leftBound.next to the new reversedHead
         else:
             leftBound.next ← reversedHead
-        leftBound ← start                              # `start` is the pair's tail after reversal
+
+        # Update leftBound to the current pair's start (which is now the end after reversal)
+        leftBound ← start
+
+        # Move start to the next pair
         start ← start.next
+
+    # Return the head of the modified list
     return head
 ```
 
 ```python run
+from typing import Optional
+
 class ListNode:
     def __init__(self, val=0, next=None):
         self.val = val
         self.next = next
 
-def reverse(start, end):
-    current = start
-    right_bound = end.next   # First node AFTER the segment — acts as the stop sentinel
-    previous = right_bound   # Tail of reversed segment points back to what was after it
+class Solution:
+    def reverse(
+        self, start: Optional[ListNode], end: Optional[ListNode]
+    ) -> Optional[ListNode]:
+        current = start
+        right_bound = end.next
+        previous = right_bound
 
-    while current != right_bound:
-        nxt = current.next
-        current.next = previous  # Redirect current node backward
-        previous = current
-        current = nxt
+        while current != right_bound:
+            next_node = current.next
+            current.next = previous
+            previous = current
+            current = next_node
 
-    return previous  # New head of the reversed segment
+        return previous
 
-def pairwise_swap(head):
-    # Empty list or single node — nothing to swap
-    if head is None or head.next is None:
+    def pairwise_swap(
+        self, head: Optional[ListNode]
+    ) -> Optional[ListNode]:
+
+        # If the list is empty or has only one element, no reversal
+        # needed.
+        if head is None or head.next is None:
+
+            # Return the original head
+            return head
+
+        # Start of the current pair to be reversed
+        start = head
+
+        # Initialize the 'left_bound' pointer for the first pair's
+        # reversal.
+        left_bound = None
+
+        # Loop while there are pairs to be swapped
+        while start is not None and start.next is not None:
+
+            # Get the end node of the current pair
+            end = start.next
+
+            # Get the head of the reversed pair.
+            reversed_head = self.reverse(start, end)
+
+            # Check if there is a previous segment to connect to or
+            # if the existing head needs to be updated.
+            # If leftBound is null, it means we're at the first segment
+            # So, we need to update the head to the reversedHead
+            if left_bound is None:
+                head = reversed_head
+
+            # If there is a leftBound, connect its next to the new
+            # reversedHead
+            else:
+                left_bound.next = reversed_head
+
+            # Update left_bound to the current pair's start
+            # (which is now the end after reversal)
+            left_bound = start
+
+            # Move start to the next pair
+            start = start.next
+
+        # Return the head of the modified list
         return head
-
-    start = head
-    left_bound = None  # Last node of the already-processed chain
-
-    while start is not None and start.next is not None:
-        end = start.next          # Each pair is exactly 2 nodes: start..end
-        reversed_head = reverse(start, end)
-
-        if left_bound is None:
-            head = reversed_head  # First pair: the reversed head becomes the new list head
-        else:
-            left_bound.next = reversed_head  # Stitch previous segment to this reversed pair
-
-        left_bound = start        # After reversal, `start` is the tail of the pair
-        start = start.next        # Advance to the next unprocessed pair
-
-    return head
 
 # Driver
 def build(vals):
@@ -801,7 +861,7 @@ def to_list(head):
     return result
 
 head = build([1, 2, 3, 4])
-print(to_list(pairwise_swap(head)))  # [2, 1, 4, 3]
+print(to_list(Solution().pairwise_swap(head)))  # [2, 1, 4, 3]
 ```
 
 ```java run
@@ -815,37 +875,68 @@ public class Solution {
 
     static ListNode reverse(ListNode start, ListNode end) {
         ListNode current = start;
-        ListNode rightBound = end.next;  // Sentinel — stop reversing here
-        ListNode previous = rightBound;  // Tail points back to the segment after
+        ListNode rightBound = end.next;
+        ListNode previous = rightBound;
 
         while (current != rightBound) {
             ListNode next = current.next;
-            current.next = previous;     // Redirect pointer backward
+            current.next = previous;
             previous = current;
             current = next;
         }
-        return previous;  // New head of the reversed pair
+
+        // Return the new head of the reversed segment
+        return previous;
     }
 
     static ListNode pairwiseSwap(ListNode head) {
-        if (head == null || head.next == null) return head;
 
+        // If the list is empty or has only one element, no reversal
+        // needed.
+        if (head == null || head.next == null) {
+            return head;
+        }
+
+        // Start of the current pair to be reversed
         ListNode start = head;
+
+        // Initialize the 'leftBound' pointer for the first pair's
+        // reversal.
         ListNode leftBound = null;
 
+        // Loop while there are pairs to be swapped
         while (start != null && start.next != null) {
+
+            // Get the end node of the current pair
             ListNode end = start.next;
+
+            // Get the head of the reversed pair.
             ListNode reversedHead = reverse(start, end);
 
+            // Check if there is a previous segment to connect to or
+            // if the existing head needs to be updated.
+            // If leftBound is null, it means we're at the first
+            // segment So, we need to update the head to the
+            // reversedHead
             if (leftBound == null) {
-                head = reversedHead;        // First pair updates the overall head
-            } else {
-                leftBound.next = reversedHead;  // Stitch previous tail to new head
+                head = reversedHead;
             }
 
-            leftBound = start;      // start is now the tail of the swapped pair
-            start = start.next;     // Move to the next unprocessed pair
+            // If there is a leftBound, connect its next to the new
+            // reversedHead
+            else {
+                leftBound.next = reversedHead;
+            }
+
+            // Update leftBound to the current pair's start
+            // (which is now the end after reversal)
+            leftBound = start;
+
+            // Move start to the next pair
+            start = start.next;
         }
+
+        // Return the head of the modified list
         return head;
     }
 
@@ -891,37 +982,67 @@ ListNode* newNode(int v) {
 
 ListNode* reverse(ListNode *start, ListNode *end) {
     ListNode *current = start;
-    ListNode *rightBound = end->next;  /* Sentinel: stop here */
-    ListNode *previous = rightBound;   /* New tail points past the segment */
+    ListNode *rightBound = end->next;
+    ListNode *previous = rightBound;
 
     while (current != rightBound) {
-        ListNode *nxt = current->next;
-        current->next = previous;       /* Flip pointer backward */
+        ListNode *next = current->next;
+        current->next = previous;
         previous = current;
-        current = nxt;
+        current = next;
     }
-    return previous;  /* New head of the reversed pair */
+
+    return previous;
 }
 
 ListNode* pairwiseSwap(ListNode *head) {
-    if (!head || !head->next) return head;
 
+    /* If the list is empty or has only one element, no reversal
+       needed. */
+    if (head == NULL || head->next == NULL) {
+        return head;
+    }
+
+    /* Start of the current pair to be reversed */
     ListNode *start = head;
+
+    /* Initialize the 'leftBound' pointer for the first pair's
+       reversal. */
     ListNode *leftBound = NULL;
 
-    while (start && start->next) {
+    /* Loop while there are pairs to be swapped */
+    while (start != NULL && start->next != NULL) {
+
+        /* Get the end node of the current pair */
         ListNode *end = start->next;
+
+        /* Get the head of the reversed pair. */
         ListNode *reversedHead = reverse(start, end);
 
-        if (!leftBound) {
-            head = reversedHead;          /* First pair becomes new list head */
-        } else {
-            leftBound->next = reversedHead;  /* Connect previous tail to new head */
+        /* Check if there is a previous segment to connect to or
+           if the existing head needs to be updated.
+           If leftBound is null, it means we're at the first
+           segment So, we need to update the head to the
+           reversedHead */
+        if (leftBound == NULL) {
+            head = reversedHead;
         }
 
-        leftBound = start;        /* start is the tail after swap */
-        start = start->next;      /* Advance to next unprocessed pair */
+        /* If there is a leftBound, connect its next to the new
+           reversedHead */
+        else {
+            leftBound->next = reversedHead;
+        }
+
+        /* Update leftBound to the current pair's start
+           (which is now the end after reversal) */
+        leftBound = start;
+
+        /* Move start to the next pair */
+        start = start->next;
     }
+
+    /* Return the head of the modified list */
     return head;
 }
 
@@ -952,39 +1073,71 @@ class ListNode(var v: Int, var next: ListNode = null)
 object Solution {
   def reverse(start: ListNode, end: ListNode): ListNode = {
     var current = start
-    val rightBound = end.next  // Sentinel — stop here
-    var previous = rightBound  // New tail points past the segment
+    val rightBound = end.next
+    var previous = rightBound
 
     while (current != rightBound) {
-      val nxt = current.next
-      current.next = previous  // Flip pointer backward
+      val next = current.next
+      current.next = previous
       previous = current
-      current = nxt
+      current = next
     }
-    previous  // New head of the reversed pair
+
+    // Return the new head of the reversed segment
+    previous
   }
 
-  def pairwiseSwap(head: ListNode): ListNode = {
-    if (head == null || head.next == null) return head
+  def pairwiseSwap(headIn: ListNode): ListNode = {
 
+    // If the list is empty or has only one element, no reversal
+    // needed.
+    if (headIn == null || headIn.next == null) {
+      return headIn
+    }
+
+    var head = headIn
+
+    // Start of the current pair to be reversed
     var start = head
-    var leftBound: ListNode = null
-    var newHead = head
 
+    // Initialize the 'leftBound' pointer for the first pair's
+    // reversal.
+    var leftBound: ListNode = null
+
+    // Loop while there are pairs to be swapped
     while (start != null && start.next != null) {
+
+      // Get the end node of the current pair
       val end = start.next
+
+      // Get the head of the reversed pair.
       val reversedHead = reverse(start, end)
 
+      // Check if there is a previous segment to connect to or
+      // if the existing head needs to be updated.
+      // If leftBound is null, it means we're at the first
+      // segment So, we need to update the head to the
+      // reversedHead
       if (leftBound == null) {
-        newHead = reversedHead          // First pair becomes the list head
-      } else {
-        leftBound.next = reversedHead  // Stitch previous tail to new head
+        head = reversedHead
       }
 
-      leftBound = start       // start is the tail after the swap
-      start = start.next      // Advance to next unprocessed pair
+      // If there is a leftBound, connect its next to the new
+      // reversedHead
+      else {
+        leftBound.next = reversedHead
+      }
+
+      // Update leftBound to the current pair's start
+      // (which is now the end after reversal)
+      leftBound = start
+
+      // Move start to the next pair
+      start = start.next
     }
-    newHead
+
+    // Return the head of the modified list
+    head
   }
 
   def build(vals: List[Int]): ListNode = {
