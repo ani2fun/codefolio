@@ -225,10 +225,23 @@ Given the **head** of a singly linked list, write a function to delete the first
 
 
 ```pseudocode
-# Same algorithm — variable rebinding form.
 function deleteFirstNode(head):
-    if head is null: return null
-    head ← head.next                                   # old head unreachable → GC
+    # Check if the list is empty
+    if head is null:
+
+        # Return null since there are no nodes to delete
+        return null
+
+    # Create a temporary pointer to store the current head node
+    nodeToBeDeleted ← head
+
+    # Move the head pointer to the next node
+    head ← head.next
+
+    # Delete the original head node to free memory
+    nodeToBeDeleted ← null
+
+    # Return the new head node
     return head
 ```
 
@@ -239,12 +252,23 @@ class ListNode:
         self.next = next
 
 def delete_first_node(head):
-    # If the list is empty, nothing to delete
+
+    # Check if the list is empty
     if head is None:
+
+        # Return None since there are no nodes to delete
         return None
 
-    # Move head forward — the old head becomes unreachable and gets GC'd
+    # Create a temporary pointer to store the current head node
+    node_to_be_deleted = head
+
+    # Move the head pointer to the next node
     head = head.next
+
+    # Delete the original head node to free memory
+    del node_to_be_deleted
+
+    # Return the new head node
     return head
 
 # --- driver ---
@@ -278,11 +302,24 @@ public class Main {
     }
 
     static ListNode deleteFirstNode(ListNode head) {
-        // If the list is empty, nothing to delete
-        if (head == null) return null;
 
-        // Advance head — the old head becomes eligible for GC
+        // Check if the list is empty
+        if (head == null) {
+
+            // Return null since there are no nodes to delete
+            return null;
+        }
+
+        // Create a temporary pointer to store the current head node
+        ListNode nodeToBeDeleted = head;
+
+        // Move the head pointer to the next node
         head = head.next;
+
+        // Delete the original head node to free memory
+        nodeToBeDeleted = null;
+
+        // Return the new head node
         return head;
     }
 
@@ -328,13 +365,24 @@ ListNode* newNode(int v) {
 }
 
 ListNode* deleteFirstNode(ListNode *head) {
-    // If the list is empty, nothing to delete
-    if (head == NULL) return NULL;
 
+    /* Check if the list is empty */
+    if (head == NULL) {
+
+        /* Return NULL since there are no nodes to delete */
+        return NULL;
+    }
+
+    /* Create a temporary pointer to store the current head node */
     ListNode *nodeToBeDeleted = head;
-    // Advance head before freeing, so we don't read freed memory
+
+    /* Move the head pointer to the next node */
     head = head->next;
+
+    /* Delete the original head node to free memory */
     free(nodeToBeDeleted);
+
+    /* Return the new head node */
     return head;
 }
 
@@ -365,10 +413,25 @@ class ListNode(var v: Int, var next: ListNode = null)
 
 object Main extends App {
   def deleteFirstNode(head: ListNode): ListNode = {
-    // If the list is empty, nothing to delete
-    if (head == null) return null
-    // Advance head — the old head becomes unreachable and gets GC'd
-    head.next
+
+    // Check if the list is empty
+    if (head == null) {
+
+      // Return null since there are no nodes to delete
+      return null
+    }
+
+    // Create a temporary pointer to store the current head node
+    var nodeToBeDeleted = head
+
+    // Move the head pointer to the next node
+    val newHead = head.next
+
+    // Delete the original head node to free memory
+    nodeToBeDeleted = null
+
+    // Return the new head node
+    newHead
   }
 
   def build(vals: Int*): ListNode = {
