@@ -123,7 +123,7 @@ object ChapterContent:
   // Delegated click handler for in-article hash links. The rehype-autolink-headings pass adds
   // `<a href="#slug">` to each heading, and TOC bullets in markdown also resolve to the same shape.
   // We find the anchor (if any) and hand off to HashScroll, which owns the bypass-router-and-scroll
-  // logic shared with CortexToc / MobileToc.
+  // logic shared with CortexToc.
   private val onArticleClick: js.Function1[dom.MouseEvent, Unit] = (e: dom.MouseEvent) =>
     val target = e.target.asInstanceOf[dom.Element]
     val anchor =

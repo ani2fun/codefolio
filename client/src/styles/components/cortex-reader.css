@@ -1,34 +1,22 @@
 @layer components {
-    /* Cortex reader — sidebar | main | TOC layout shells.
-       Blocks: .cortex-reader-layout, .cortex-reader-breadcrumb, .cortex-reader-pager, .cortex-reader-sidebar, .cortex-reader-toc, .cortex-reader-toc-mobile */
+    /* Cortex reader — sidebar | main layout shells, plus a floating "On This Page" TOC overlay.
+       Blocks: .cortex-reader-layout, .cortex-reader-breadcrumb, .cortex-reader-pager, .cortex-reader-sidebar,
+               .cortex-reader-toc-float, .cortex-reader-toc-pop, .cortex-reader-toc-scrim */
 
-    /* ─── Layout (3-column reader) ───────────────────────────────── */
+    /* ─── Layout (2-column reader) ───────────────────────────────── */
     /* Widths matched to the latest Cortex reader UI kit (software-docs feel —
        think Stripe / MDN / Vercel docs, not classical long-form essay):
-         page max  1840px  ·  sidebar 280px  ·  prose cap 1100px  ·
-         collapsed TOC rail 56px  ·  open TOC panel 300px
+         page max  1840px  ·  sidebar 280px  ·  prose cap 1100px
        At 1920 this leaves ~80px of composed shoulder on each side; at 2560
        the shoulders grow but the reading column stays at its measured cap.
        The 1100px prose cap lands at ~96ch — past the classical reading
        ceiling but matches modern technical-docs sites that prioritise
-       code-block density over line-by-line cadence. The TOC column flips
-       from 56 → 300px when the rail is hovered or any descendant is
-       focused; we use `:has()` rather than a JSX-driven class so the
-       component holds no UI state, just the IntersectionObserver-driven
-       active-section. */
+       code-block density over line-by-line cadence. The right-rail TOC
+       column is gone — replaced by a floating hamburger FAB that opens an
+       "On this page" popover, working on every viewport. */
     .cortex-reader-layout {
         @apply grid grid-cols-1 lg:grid-cols-[280px_minmax(0,1fr)]
-               xl:grid-cols-[280px_minmax(0,1fr)_56px] gap-0 max-w-[1840px] mx-auto;
-        transition: grid-template-columns 150ms ease;
-    }
-    @media (min-width: 1280px) {
-        .cortex-reader-layout:has(.cortex-reader-toc:hover),
-        .cortex-reader-layout:has(.cortex-reader-toc:focus-within) {
-            grid-template-columns: 280px minmax(0, 1fr) 300px;
-        }
-    }
-    @media (prefers-reduced-motion: reduce) {
-        .cortex-reader-layout { transition: none; }
+               gap-0 max-w-[1840px] mx-auto;
     }
     .cortex-reader-layout__main {
         @apply px-5 md:px-16 py-11 pb-20 min-w-0;
@@ -387,145 +375,225 @@
         letter-spacing: 0.05em;
     }
 
-    /* ─── Right-rail TOC minimap (xl+) ───────────────────────────────
-       Single aside that's narrow at rest (column = 56px) and expands
-       its visible width when the parent grid widens on hover/focus
-       (driven by `:has()` on the layout). Each row is a horizontal
-       bar tick + label; the label fades in from opacity 0 → 1 in step
-       with the column expansion.
-    */
-    .cortex-reader-toc {
-        @apply hidden xl:block sticky top-20 self-start max-h-[calc(100vh-5rem)]
-               border-l border-border;
-        padding: 36px 12px;
-        /* X-axis hidden so labels and the wide "Contents" eyebrow don't bleed out
-           of the 56px collapsed column; Y-axis auto so chapters with more headings
-           than fit in 100vh stay reachable via a thin scrollbar. */
-        overflow-x: hidden;
+    /* ─── Floating TOC button (every viewport) ───────────────────────
+       Mirrors .scroll-to-top: same 44×44 circle, same primary fill, same
+       shadow language. Sits 12px above the back-to-top button on the same
+       vertical axis (right: 20px). Open-state flips the fill to the
+       foreground colour and swaps the ListTree icon for X, so it reads
+       as "press again to close". */
+    .cortex-reader-toc-float {
+        position: fixed;
+        right: 20px;
+        /* 20 (gutter) + 44 (back-to-top) + 12 (gap) = 76 */
+        bottom: 76px;
+        z-index: 40;
+        width: 44px;
+        height: 44px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 9999px;
+        border: 0;
+        cursor: pointer;
+        background-color: hsl(var(--primary));
+        color: hsl(var(--primary-foreground));
+        box-shadow: 0 6px 18px -4px rgba(0, 0, 0, 0.25),
+                    0 2px 4px -1px rgba(0, 0, 0, 0.10);
+        transition: opacity 180ms ease,
+                    transform 180ms ease,
+                    background-color 180ms ease,
+                    color 180ms ease;
+    }
+    .cortex-reader-toc-float:hover {
+        opacity: 0.92;
+        transform: translateY(-1px);
+    }
+    .cortex-reader-toc-float:focus-visible {
+        outline: 2px solid hsl(var(--primary));
+        outline-offset: 3px;
+    }
+    .cortex-reader-toc-float__icon {
+        width: 20px;
+        height: 20px;
+    }
+    .cortex-reader-toc-float[aria-expanded="true"] {
+        background-color: hsl(var(--foreground));
+        color: hsl(var(--background));
+    }
+    .cortex-reader-toc-float[aria-expanded="true"] .cortex-reader-toc-float__icon--menu  { display: none; }
+    .cortex-reader-toc-float[aria-expanded="false"] .cortex-reader-toc-float__icon--close { display: none; }
+    @media (prefers-reduced-motion: reduce) {
+        .cortex-reader-toc-float { transition: none; }
+        .cortex-reader-toc-float:hover { transform: none; }
+    }
+
+    /* ─── Floating TOC popover ────────────────────────────────────
+       Anchored bottom-right, above the FAB stack:
+         20 (gutter) + 44 (top) + 12 (gap) + 44 (toc) + 12 (gap) = 132 */
+    .cortex-reader-toc-pop {
+        position: fixed;
+        right: 20px;
+        bottom: 132px;
+        z-index: 39;
+        width: 340px;
+        max-width: calc(100vw - 40px);
+        max-height: min(60vh, 480px);
+        display: flex;
+        flex-direction: column;
+        background-color: hsl(var(--card));
+        color: hsl(var(--card-foreground));
+        border: 1px solid hsl(var(--border));
+        border-radius: 14px;
+        box-shadow: 0 1px 0 rgba(0, 0, 0, 0.05),
+                    0 8px 24px -12px rgba(0, 0, 0, 0.18);
+        padding: 18px 4px 14px;
+        transform-origin: bottom right;
+        transition: opacity 180ms ease, transform 180ms ease;
+    }
+    .cortex-reader-toc-pop[data-open="false"] {
+        opacity: 0;
+        transform: translateY(8px) scale(0.98);
+        pointer-events: none;
+    }
+    .cortex-reader-toc-pop[data-open="true"] {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+    .cortex-reader-toc-pop__head {
+        display: flex;
+        align-items: baseline;
+        gap: 8px;
+        padding: 0 16px 12px;
+        border-bottom: 1px solid hsl(var(--border) / 0.6);
+    }
+    .cortex-reader-toc-pop__eyebrow {
+        font-family: var(--font-mono);
+        font-size: 11px;
+        letter-spacing: 0.16em;
+        text-transform: uppercase;
+        color: hsl(var(--muted-foreground));
+        font-weight: 500;
+    }
+    .cortex-reader-toc-pop__count {
+        margin-left: auto;
+        font-family: var(--font-mono);
+        font-size: 10.5px;
+        color: hsl(var(--muted-foreground));
+        background-color: hsl(var(--background));
+        border: 1px solid hsl(var(--border) / 0.6);
+        border-radius: 9999px;
+        padding: 2px 8px;
+    }
+    .cortex-reader-toc-pop__list {
+        list-style: none;
+        margin: 8px 0 0;
+        padding: 0 8px;
         overflow-y: auto;
+        /* Reserve the scrollbar gutter so the rows don't jump 6-8px wider
+           the moment the list grows past the cap. */
+        scrollbar-gutter: stable;
         scrollbar-width: thin;
         scrollbar-color: hsl(var(--border)) transparent;
-        transition: padding 150ms ease;
     }
-    .cortex-reader-toc::-webkit-scrollbar {
-        width: 6px;
-    }
-    .cortex-reader-toc::-webkit-scrollbar-thumb {
+    .cortex-reader-toc-pop__list::-webkit-scrollbar { width: 8px; }
+    .cortex-reader-toc-pop__list::-webkit-scrollbar-track { background: transparent; }
+    .cortex-reader-toc-pop__list::-webkit-scrollbar-thumb {
         background-color: hsl(var(--border));
-        border-radius: 3px;
+        border-radius: 4px;
+        /* A 2px transparent "border" pads the thumb away from the gutter edge
+           so it reads as a pill, not a flush bar. */
+        border: 2px solid hsl(var(--card));
     }
-    .cortex-reader-toc:hover,
-    .cortex-reader-toc:focus-within {
-        padding: 36px 22px;
+    .cortex-reader-toc-pop__list::-webkit-scrollbar-thumb:hover {
+        background-color: hsl(var(--muted-foreground));
     }
-    /* "Contents" eyebrow — invisible at rest so the collapsed rail doesn't
-       look like a stray header; fades in alongside the labels. */
-    .cortex-reader-toc__eyebrow {
-        @apply text-[11px] font-mono font-medium uppercase tracking-widest
-               text-muted-foreground mb-3.5;
-        opacity: 0;
-        transition: opacity 150ms ease;
-        white-space: nowrap;
+    .cortex-reader-toc-pop__row {
+        padding: 0;
     }
-    .cortex-reader-toc:hover .cortex-reader-toc__eyebrow,
-    .cortex-reader-toc:focus-within .cortex-reader-toc__eyebrow {
-        opacity: 1;
-    }
-    .cortex-reader-toc__list {
-        @apply list-none p-0 m-0 flex flex-col gap-1;
-    }
-    .cortex-reader-toc__row {
-        @apply block;
-    }
-    /* Indentation by heading depth. l1 / l2 hug the left rail; l3
-       indents by 14px; deeper depths clamp to l3 in the component, so
-       there's no fall-through case to handle. */
-    .cortex-reader-toc__row--l3 .cortex-reader-toc__btn {
-        padding-left: 14px;
-    }
-    .cortex-reader-toc__btn {
-        @apply flex items-center gap-2.5 w-full bg-transparent border-0 cursor-pointer
-               py-1 px-0 text-left text-muted-foreground no-underline
-               transition-colors;
+    .cortex-reader-toc-pop__btn {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        width: 100%;
+        padding: 7px 8px;
+        border: 0;
+        background: none;
+        cursor: pointer;
+        text-align: left;
+        text-decoration: none;
+        color: hsl(var(--muted-foreground));
         font-family: var(--font-sans);
+        font-size: 13px;
+        line-height: 1.35;
+        border-radius: 6px;
+        transition: background-color 140ms ease, color 140ms ease;
     }
-    .cortex-reader-toc__btn:hover {
-        @apply text-foreground;
+    .cortex-reader-toc-pop__btn:hover {
+        color: hsl(var(--foreground));
+        background-color: hsl(var(--foreground) / 0.04);
     }
-    .cortex-reader-toc__row--active .cortex-reader-toc__btn {
-        @apply text-foreground font-medium;
-    }
-    /* Bar tick — 4px tall × 14px wide; widens to 22px when active. The
-       transition animates BOTH width and background so a row going active
-       feels like it pulls the rail forward. */
-    .cortex-reader-toc__tick {
+    .cortex-reader-toc-pop__tick {
         display: inline-block;
         width: 14px;
         height: 4px;
+        border-radius: 2px;
         flex: none;
         background-color: hsl(var(--border));
-        border-radius: 2px;
         transition: width 150ms ease, background-color 150ms ease;
     }
-    .cortex-reader-toc__row--active .cortex-reader-toc__tick {
+    .cortex-reader-toc-pop__btn:hover .cortex-reader-toc-pop__tick {
+        background-color: hsl(var(--foreground));
+    }
+    .cortex-reader-toc-pop__row--active .cortex-reader-toc-pop__btn {
+        color: hsl(var(--foreground));
+        font-weight: 500;
+    }
+    .cortex-reader-toc-pop__row--active .cortex-reader-toc-pop__tick {
         background-color: hsl(var(--primary));
         width: 22px;
     }
-    .cortex-reader-toc__btn:hover .cortex-reader-toc__tick {
-        background-color: hsl(var(--foreground));
+    /* Depth indent + weight — l1 reads as a section header (bolder,
+       foreground colour) so the user can scan top-level anchors at a
+       glance; l2/l3 are children, indented and lighter. The Scala
+       component caps at l3, matching the prior right-rail rule. */
+    .cortex-reader-toc-pop__row--l1 .cortex-reader-toc-pop__btn {
+        color: hsl(var(--foreground));
+        font-weight: 600;
+        font-size: 13.5px;
     }
-    .cortex-reader-toc__row--active .cortex-reader-toc__btn:hover .cortex-reader-toc__tick {
-        background-color: hsl(var(--primary));
+    .cortex-reader-toc-pop__row--l1:not(:first-child) .cortex-reader-toc-pop__btn {
+        margin-top: 6px;
     }
-    /* Label — fades in alongside the eyebrow. truncate so long headings
-       don't blow out the 260px column. */
-    .cortex-reader-toc__label {
-        @apply text-xs leading-snug whitespace-nowrap overflow-hidden text-ellipsis;
-        opacity: 0;
-        transition: opacity 150ms ease;
+    .cortex-reader-toc-pop__row--l2 .cortex-reader-toc-pop__btn {
+        padding-left: 14px;
+        font-size: 13px;
     }
-    /* On hover / keyboard focus, unwrap the heading label so long titles
-       show in full. Same reasoning as the sidebar: the `.cortex-reader-toc`
-       wrapper sets `overflow-x: hidden`, so a popup tooltip would clip. */
-    .cortex-reader-toc:hover .cortex-reader-toc__btn:hover .cortex-reader-toc__label,
-    .cortex-reader-toc:focus-within
-        .cortex-reader-toc__btn:focus-visible
-        .cortex-reader-toc__label {
+    .cortex-reader-toc-pop__row--l3 .cortex-reader-toc-pop__btn {
+        padding-left: 22px;
+        font-size: 12.5px;
+    }
+    .cortex-reader-toc-pop__label {
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+    .cortex-reader-toc-pop__btn:hover .cortex-reader-toc-pop__label,
+    .cortex-reader-toc-pop__row--active .cortex-reader-toc-pop__label {
         white-space: normal;
-        overflow: visible;
-        text-overflow: clip;
-    }
-    .cortex-reader-toc:hover .cortex-reader-toc__label,
-    .cortex-reader-toc:focus-within .cortex-reader-toc__label {
-        opacity: 1;
     }
     @media (prefers-reduced-motion: reduce) {
-        .cortex-reader-toc,
-        .cortex-reader-toc__eyebrow,
-        .cortex-reader-toc__tick,
-        .cortex-reader-toc__label { transition: none; }
+        .cortex-reader-toc-pop,
+        .cortex-reader-toc-pop__tick,
+        .cortex-reader-toc-pop__btn { transition: none; }
     }
 
-    /* ─── Mobile collapsible TOC (below xl) ──────────────────────── */
-    .cortex-reader-toc-mobile {
-        @apply xl:hidden mb-8 rounded-lg border border-border;
+    /* Transparent scrim — captures click-outside without dimming the page
+       (the popover is the only visible chrome). */
+    .cortex-reader-toc-scrim {
+        position: fixed;
+        inset: 0;
+        z-index: 38;
+        background: transparent;
     }
-    .cortex-reader-toc-mobile__toggle {
-        @apply w-full flex items-center justify-between px-4 py-3 text-sm font-semibold;
-    }
-    .cortex-reader-toc-mobile__label {
-        @apply flex items-center gap-2;
-    }
-    .cortex-reader-toc-mobile__chevron {
-        @apply h-4 w-4 transition-transform;
-    }
-    .cortex-reader-toc-mobile__chevron--open {
-        @apply rotate-180;
-    }
-    .cortex-reader-toc-mobile__list {
-        @apply px-4 pb-3 space-y-1.5 border-t border-border pt-3;
-    }
-    .cortex-reader-toc-mobile__link {
-        @apply text-sm text-muted-foreground hover:text-primary;
-    }
+    .cortex-reader-toc-scrim[data-open="false"] { display: none; }
 }
