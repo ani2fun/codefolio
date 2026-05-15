@@ -1191,6 +1191,65 @@ object Main extends App {
 
 `arr = [1, 1, 1, 1, 1]`, `k = 2`, `target = 2`
 
+```d3 widget=array-traversal
+{
+  "items": ["1", "1", "1", "1", "1"],
+  "title": "Fixed sliding window k = 2 on [1, 1, 1, 1, 1], target = 2",
+  "steps": [
+    {
+      "keys":    ["a", "b", "c", "d", "e"],
+      "markers": [
+        { "name": "start", "index": 0, "color": "#3b82f6" },
+        { "name": "end",   "index": 0, "color": "#10b981" }
+      ],
+      "range":   { "lo": 0, "hi": 0 },
+      "msg": "Expand: window = [0..0], size 1 < k. window_sum = 1."
+    },
+    {
+      "keys":    ["a", "b", "c", "d", "e"],
+      "markers": [
+        { "name": "start", "index": 0, "color": "#3b82f6" },
+        { "name": "end",   "index": 1, "color": "#10b981" }
+      ],
+      "range":   { "lo": 0, "hi": 1 },
+      "msg": "Expand: window = [0..1], size 2 = k. window_sum = 2 = target → count = 1."
+    },
+    {
+      "keys":    ["a", "b", "c", "d", "e"],
+      "markers": [
+        { "name": "start", "index": 1, "color": "#3b82f6" },
+        { "name": "end",   "index": 2, "color": "#10b981" }
+      ],
+      "range":   { "lo": 1, "hi": 2 },
+      "msg": "Slide: drop arr[0], add arr[2]. window_sum = 2 = target → count = 2."
+    },
+    {
+      "keys":    ["a", "b", "c", "d", "e"],
+      "markers": [
+        { "name": "start", "index": 2, "color": "#3b82f6" },
+        { "name": "end",   "index": 3, "color": "#10b981" }
+      ],
+      "range":   { "lo": 2, "hi": 3 },
+      "msg": "Slide: drop arr[1], add arr[3]. window_sum = 2 = target → count = 3."
+    },
+    {
+      "keys":    ["a", "b", "c", "d", "e"],
+      "markers": [
+        { "name": "start", "index": 3, "color": "#3b82f6" },
+        { "name": "end",   "index": 4, "color": "#10b981" }
+      ],
+      "range":   { "lo": 3, "hi": 4 },
+      "msg": "Slide: drop arr[2], add arr[4]. window_sum = 2 = target → count = 4."
+    },
+    {
+      "keys":    ["a", "b", "c", "d", "e"],
+      "markers": [],
+      "msg": "end past array bound — loop ends. Final count = 4."
+    }
+  ]
+}
+```
+
 <details>
 <summary><strong>Trace — arr = [1, 1, 1, 1, 1],  k = 2,  target = 2</strong></summary>
 
