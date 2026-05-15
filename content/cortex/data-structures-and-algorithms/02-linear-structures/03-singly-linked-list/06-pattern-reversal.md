@@ -1271,31 +1271,56 @@ You need to reverse the list in place.
 
 
 ```pseudocode
-# Reverse the LAST k nodes by walking to the (length − k − 1)-th node, then reversing the tail.
-function length(head):
-    n ← 0
-    while head is not null:
-        n ← n + 1
-        head ← head.next
-    return n
+# Reverse the LAST k nodes by walking to the (length − k − 1)-th node, then reversing the tail and stitching it back on.
+function lengthOfList(head):
 
-function reverseAll(head):
-    previous ← null; current ← head
+    # Traverse the list and increment the length until the end
+    length ← 0
+    while head is not null:
+        length ← length + 1
+        head ← head.next
+
+    # Return the length
+    return length
+
+function reverseAList(head):
+
+    # Initialize pointers current and previous
+    current ← head
+    previous ← null
+
     while current is not null:
-        nxt ← current.next
+        next ← current.next
         current.next ← previous
         previous ← current
-        current ← nxt
+        current ← next
+
     return previous
 
 function reverseLastKNodes(head, k):
-    if k ≤ 0 OR head is null: return head
-    n ← length(head)
-    if k ≥ n: return reverseAll(head)
+
+    # if K is less than or equal to 0, return the original head
+    if k ≤ 0:
+        return head
+
+    # Find the length of the list
+    length ← lengthOfList(head)
+
+    # If k is greater than or equal to length, reverse the entire list
+    if k ≥ length:
+        return reverseAList(head)
+
+    # Find the (length - k)th node after which the reversal should occur
     current ← head
-    repeat (n − k − 1) times:
+    for i ← 1 to length − k − 1:
         current ← current.next
-    current.next ← reverseAll(current.next)            # reverse the suffix; reattach
+
+    # Reverse the last k nodes
+    lastKReverseHead ← reverseAList(current.next)
+
+    # Connect the (length - k)th node to the new head
+    current.next ← lastKReverseHead
+
     return head
 ```
 
@@ -1303,125 +1328,287 @@ function reverseLastKNodes(head, k):
 from typing import Optional
 
 class Solution:
-    def _length(self, head: Optional[ListNode]) -> int:
-        n = 0
-        while head:
-            n += 1
-            head = head.next
-        return n
+    def length_of_list(self, head: Optional[ListNode]) -> int:
+        length: int = 0
 
-    def _reverse_all(self, head: Optional[ListNode]) -> Optional[ListNode]:
-        previous, current = None, head
-        while current:
-            nxt = current.next
+        # Traverse the list and increment the length until the end
+        while head:
+            length += 1
+            head = head.next
+
+        # Return the length
+        return length
+
+    def reverse_a_list(
+        self, head: Optional[ListNode]
+    ) -> Optional[ListNode]:
+
+        # Initialize pointers current and previous
+        current: Optional[ListNode] = head
+        previous: Optional[ListNode] = None
+
+        while current is not None:
+
+            # Save the address of next node
+            next_node = current.next
+
+            # Update the next of current node
             current.next = previous
-            previous, current = current, nxt
+
+            # Move previous to hold current node
+            previous = current
+
+            # Move current ahead
+            current = next_node
+
         return previous
 
-    def reverse_last_k_nodes(self, head: Optional[ListNode], k: int) -> Optional[ListNode]:
-        if k <= 0 or head is None:
+    def reverse_last_k_nodes(
+        self, head: Optional[ListNode], k: int
+    ) -> Optional[ListNode]:
+
+        # if K is less than or equal to 0, return the original head
+        if k <= 0:
             return head
 
-        length = self._length(head)
-        if k >= length:
-            return self._reverse_all(head)
+        # Find the length of the list
+        length = self.length_of_list(head)
 
-        # Walk to the (length - k)-th node — the predecessor of the segment to reverse
+        # If k is greater than or equal to length, reverse the entire
+        # list
+        if k >= length:
+            return self.reverse_a_list(head)
+
+        # Find the (length - k)th node after which the reversal should
+        # occur
         current = head
-        for _ in range(length - k - 1):
+        for _ in range(1, length - k):
             current = current.next
 
-        # Reverse the tail segment and stitch it back on
-        current.next = self._reverse_all(current.next)
+        # Reverse the last k nodes
+        last_k_reverse_head = self.reverse_a_list(current.next)
+
+        # Connect the (length - k)th node to the new head
+        current.next = last_k_reverse_head
+
         return head
 ```
 
 ```java run
 class Solution {
-    private int length(ListNode head) {
-        int n = 0;
-        while (head != null) { n++; head = head.next; }
-        return n;
+    private int lengthOfList(ListNode head) {
+        int length = 0;
+
+        // Traverse the list and increment the length until the end
+        while (head != null) {
+            length++;
+            head = head.next;
+        }
+
+        // Return the length
+        return length;
     }
 
-    private ListNode reverseAll(ListNode head) {
-        ListNode previous = null, current = head;
+    private ListNode reverseAList(ListNode head) {
+
+        // Initialize pointers current and previous
+        ListNode current = head;
+        ListNode previous = null;
+
         while (current != null) {
+
+            // Save the address of next node
             ListNode next = current.next;
+
+            // Update the next of current node
             current.next = previous;
+
+            // Move previous to hold current node
             previous = current;
-            current  = next;
+
+            // Move current ahead
+            current = next;
         }
+
         return previous;
     }
 
     public ListNode reverseLastKNodes(ListNode head, int k) {
-        if (k <= 0 || head == null) return head;
 
-        int len = length(head);
-        if (k >= len) return reverseAll(head);
+        // if K is less than or equal to 0, return the original head
+        if (k <= 0) {
+            return head;
+        }
 
+        // Find the length of the list
+        int length = lengthOfList(head);
+
+        // If k is greater than or equal to length, reverse the entire
+        // list
+        if (k >= length) {
+            return reverseAList(head);
+        }
+
+        // Find the (length - k)th node after which the reversal should
+        // occur
         ListNode current = head;
-        for (int i = 0; i < len - k - 1; i++) current = current.next;
-        current.next = reverseAll(current.next);
+        for (int i = 1; i < length - k; i++) {
+            current = current.next;
+        }
+
+        // Reverse the last k nodes
+        ListNode lastKReverseHead = reverseAList(current.next);
+
+        // Connect the (length - k)th node to the new head
+        current.next = lastKReverseHead;
+
         return head;
     }
 }
 ```
 
 ```c run
-static int length_of(ListNode *head) {
-    int n = 0;
-    while (head) { n++; head = head->next; }
-    return n;
+static int lengthOfList(ListNode *head) {
+    int length = 0;
+
+    /* Traverse the list and increment the length until the end */
+    while (head != NULL) {
+        length++;
+        head = head->next;
+    }
+
+    /* Return the length */
+    return length;
 }
 
-static ListNode* reverse_all(ListNode *head) {
-    ListNode *prev = NULL, *cur = head;
-    while (cur) {
-        ListNode *nxt = cur->next;
-        cur->next = prev;
-        prev = cur; cur = nxt;
+static ListNode* reverseAList(ListNode *head) {
+
+    /* Initialize pointers current and previous */
+    ListNode *current = head;
+    ListNode *previous = NULL;
+
+    while (current != NULL) {
+
+        /* Save the address of next node */
+        ListNode *next = current->next;
+
+        /* Update the next of current node */
+        current->next = previous;
+
+        /* Move previous to hold current node */
+        previous = current;
+
+        /* Move current ahead */
+        current = next;
     }
-    return prev;
+
+    return previous;
 }
 
 ListNode* reverseLastKNodes(ListNode *head, int k) {
-    if (k <= 0 || head == NULL) return head;
 
-    int len = length_of(head);
-    if (k >= len) return reverse_all(head);
+    /* if K is less than or equal to 0, return the original head */
+    if (k <= 0) {
+        return head;
+    }
 
-    ListNode *cur = head;
-    for (int i = 0; i < len - k - 1; i++) cur = cur->next;
-    cur->next = reverse_all(cur->next);
+    /* Find the length of the list */
+    int length = lengthOfList(head);
+
+    /* If k is greater than or equal to length, reverse the entire
+       list */
+    if (k >= length) {
+        return reverseAList(head);
+    }
+
+    /* Find the (length - k)th node after which the reversal should
+       occur */
+    ListNode *current = head;
+    for (int i = 1; i < length - k; i++) {
+        current = current->next;
+    }
+
+    /* Reverse the last k nodes */
+    ListNode *lastKReverseHead = reverseAList(current->next);
+
+    /* Connect the (length - k)th node to the new head */
+    current->next = lastKReverseHead;
+
     return head;
 }
 ```
 
 ```scala run
 object Solution {
-  private def length(h: ListNode): Int = {
-    var n = 0; var cur = h
-    while (cur != null) { n += 1; cur = cur.next }
-    n
-  }
-  private def reverseAll(h: ListNode): ListNode = {
-    var prev: ListNode = null; var cur = h
-    while (cur != null) {
-      val nxt = cur.next
-      cur.next = prev
-      prev = cur; cur = nxt
-    }
-    prev
-  }
-  def reverseLastKNodes(head: ListNode, k: Int): ListNode = {
-    if (k <= 0 || head == null) return head
-    val len = length(head)
-    if (k >= len) return reverseAll(head)
+  private def lengthOfList(head: ListNode): Int = {
+    var length = 0
+
+    // Traverse the list and increment the length until the end
     var cur = head
-    for (_ <- 0 until len - k - 1) cur = cur.next
-    cur.next = reverseAll(cur.next)
+    while (cur != null) {
+      length += 1
+      cur = cur.next
+    }
+
+    // Return the length
+    length
+  }
+
+  private def reverseAList(head: ListNode): ListNode = {
+
+    // Initialize pointers current and previous
+    var current = head
+    var previous: ListNode = null
+
+    while (current != null) {
+
+      // Save the address of next node
+      val next = current.next
+
+      // Update the next of current node
+      current.next = previous
+
+      // Move previous to hold current node
+      previous = current
+
+      // Move current ahead
+      current = next
+    }
+
+    previous
+  }
+
+  def reverseLastKNodes(head: ListNode, k: Int): ListNode = {
+
+    // if K is less than or equal to 0, return the original head
+    if (k <= 0) {
+      return head
+    }
+
+    // Find the length of the list
+    val length = lengthOfList(head)
+
+    // If k is greater than or equal to length, reverse the entire
+    // list
+    if (k >= length) {
+      return reverseAList(head)
+    }
+
+    // Find the (length - k)th node after which the reversal should
+    // occur
+    var current = head
+    var i = 1
+    while (i < length - k) {
+      current = current.next
+      i += 1
+    }
+
+    // Reverse the last k nodes
+    val lastKReverseHead = reverseAList(current.next)
+
+    // Connect the (length - k)th node to the new head
+    current.next = lastKReverseHead
+
     head
   }
 }
