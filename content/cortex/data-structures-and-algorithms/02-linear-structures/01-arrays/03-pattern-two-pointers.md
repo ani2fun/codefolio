@@ -2937,41 +2937,45 @@ Reverse Segments shows that the two-pointer reversal is a **reusable utility** �
 
 ## The Problem
 
-Given a string of words separated by single spaces, reverse the **order of the words** in-place, keeping each word's characters intact.
+Given a string `s`, return a new string with the **words in reverse order**, separated by a single space, with no leading or trailing whitespace. Words in the input are separated by **one or more** spaces, and the input may contain leading, trailing, or multiple spaces between words — all of which must be normalised in the output.
 
 ```
-Input:  "the sky is blue"
-Output: "blue is sky the"
+Input:  s = "This is a    string"
+Output:     "string a is This"
 ```
 
-The words flip order; no word's characters change.
+The words flip order; each word's characters stay intact; redundant whitespace disappears.
 
 ---
 
 ## Examples
 
-**Example 1**
+**Example 1 — multiple spaces inside the string**
 ```
-Input:  "the sky is blue"
-Output: "blue is sky the"
+Input:  s = "This is a    string"
+Output:     "string a is This"
+Explanation: All four words are concatenated in reverse order and separated
+             by a single space.
 ```
 
-**Example 2**
+**Example 2 — leading and trailing spaces**
 ```
-Input:  "hello world"
-Output: "world hello"
+Input:  s = "   fizz buzz  "
+Output:     "buzz fizz"
+Explanation: Leading and trailing spaces are removed.
 ```
 
 **Example 3 — single word**
 ```
-Input:  "hello"
-Output: "hello"
+Input:  s = "random"
+Output:     "random"
+Explanation: Only one word; the result is the input.
 ```
 
 **Example 4**
 ```
-Input:  "a good example"
-Output: "example good a"
+Input:  s = "a good example"
+Output:     "example good a"
 ```
 
 ---
@@ -3013,37 +3017,54 @@ flowchart TB
 
 Let's trace exactly what each step does to `"the sky"`:
 
-```mermaid
----
-config:
-  theme: base
-  themeVariables:
-    primaryColor: "#dbeafe"
-    primaryBorderColor: "#3b82f6"
-    primaryTextColor: "#1e3a5f"
-    lineColor: "#64748b"
-    secondaryColor: "#ede9fe"
-    tertiaryColor: "#fef9c3"
----
-flowchart LR
-  subgraph A["Original"]
-    direction LR
-    t["t"] --- h["h"] --- e["e"] --- sp[" "] --- s["s"] --- k["k"] --- y["y"]
-  end
-  subgraph B["After Step 1: reverse entire string"]
-    direction LR
-    y2["y"] --- k2["k"] --- s2["s"] --- sp2[" "] --- e2["e"] --- h2["h"] --- t2["t"]
-  end
-  subgraph C["After Step 2: reverse each word"]
-    direction LR
-    s3["s"] --- k3["k"] --- y3["y"] --- sp3[" "] --- t3["t"] --- h3["h"] --- e3["e"]
-  end
-
-  A -->|"reverse whole"| B
-  B -->|"reverse words"| C
+```d3 widget=array-traversal
+{
+  "items": ["t", "h", "e", " ", "s", "k", "y"],
+  "title": "Reversing word order in \"the sky\"",
+  "steps": [
+    {
+      "items":   ["t", "h", "e", " ", "s", "k", "y"],
+      "markers": [
+        { "name": "left",  "index": 0, "color": "#3b82f6" },
+        { "name": "right", "index": 6, "color": "#f59e0b" }
+      ],
+      "range":   { "lo": 0, "hi": 6 },
+      "msg": "Step 1: reverse the entire string. Pointers start at the two ends."
+    },
+    {
+      "items":   ["y", "k", "s", " ", "e", "h", "t"],
+      "markers": [],
+      "range":   { "lo": 0, "hi": 6 },
+      "msg": "After Step 1: the string is reversed to 'yks eht'. Word order is flipped; each word's letters are also flipped."
+    },
+    {
+      "items":   ["y", "k", "s", " ", "e", "h", "t"],
+      "markers": [
+        { "name": "left",  "index": 0, "color": "#3b82f6" },
+        { "name": "right", "index": 2, "color": "#f59e0b" }
+      ],
+      "range":   { "lo": 0, "hi": 2 },
+      "msg": "Step 2a: scan finds the first word at indices [0..2]. Reverse it."
+    },
+    {
+      "items":   ["s", "k", "y", " ", "e", "h", "t"],
+      "markers": [
+        { "name": "left",  "index": 4, "color": "#3b82f6" },
+        { "name": "right", "index": 6, "color": "#f59e0b" }
+      ],
+      "range":   { "lo": 4, "hi": 6 },
+      "msg": "Step 2b: scan finds the second word at indices [4..6]. Reverse it."
+    },
+    {
+      "items":   ["s", "k", "y", " ", "t", "h", "e"],
+      "markers": [],
+      "msg": "Final: 'sky the' — words are in reverse order, characters intact."
+    }
+  ]
+}
 ```
 
-<p align="center"><strong>Step-by-step on <code>"the sky"</code> — after the full reverse, each word's letters are backwards; reversing each word fixes them while keeping the flipped word order.</strong></p>
+<p align="center"><strong>Step-by-step on <code>"the sky"</code> — Step 1 reverses the whole string (flipping word order but scrambling each word); Step 2 reverses each word, unscrambling letters while keeping the new word order.</strong></p>
 
 Each word is reversed **twice** in total — once by the full-string reversal, once by the per-word reversal. Two reversals cancel out, returning each word's characters to their original order. But the words themselves have moved to their new positions.
 
@@ -3081,103 +3102,193 @@ This reuses `reverse_segment(arr, left, right)` from the previous lesson twice.
 
 
 ```pseudocode
-# The three-reversal trick: reverse all, then reverse each word → words land in reverse order
-# while keeping their internal letter order intact.
-function reverse(chars, l, r):
-    while l < r:
-        swap chars[l] and chars[r]
-        l ← l + 1; r ← r − 1
+function findWordEnd(arr, start):
+    end ← start
+    while end < length(arr) AND arr[end] ≠ ' ':
+        end ← end + 1
+    return end − 1
+
+function reverseWord(arr, left, right):
+    while left < right:
+        swap arr[left] and arr[right]
+        left  ← left + 1
+        right ← right − 1
+
+function removeExtraSpaces(s):
+    # Collapse runs of spaces to one, trim leading/trailing spaces
+    return s with multiple spaces replaced by a single space,
+             trimmed of leading and trailing whitespace
 
 function reverseWordOrder(s):
-    chars ← list of characters of s
-    n ← length(chars)
+    # Reverse the entire string (flips word order, scrambles each word)
+    s ← reverse(s)
 
-    reverse(chars, 0, n − 1)                              # step 1: reverse whole string
-
-    i ← 0                                                  # step 2: reverse each word in place
-    while i < n:
-        if chars[i] = ' ':
-            i ← i + 1
+    # Reverse each word in place — unscrambles letters within each word
+    arr   ← list of characters of s
+    start ← 0
+    while start < length(arr):
+        if arr[start] = ' ':
+            start ← start + 1
             continue
-        wordStart ← i
-        while i < n AND chars[i] ≠ ' ':
-            i ← i + 1
-        reverse(chars, wordStart, i − 1)
-    return chars joined as a string
+        end ← findWordEnd(arr, start)
+        reverseWord(arr, start, end)
+        start ← end + 1
+
+    # Normalise whitespace and return
+    return removeExtraSpaces(arr joined as a string)
 ```
 
 ```python run
 from typing import List
 
 class Solution:
-    def _reverse(self, chars: List[str], l: int, r: int) -> None:
-        while l < r:
-            chars[l], chars[r] = chars[r], chars[l]
-            l += 1
-            r -= 1
+    def remove_extra_spaces(self, s: str) -> str:
+        # Collapse any run of whitespace into a single space, and strip
+        # leading/trailing spaces
+        return " ".join(s.split()).strip()
+
+    def find_word_end(self, arr: List[str], start: int) -> int:
+
+        # Assign the start index to the end index
+        end = start
+
+        # Iterate through the string until a space is encountered
+        while end < len(arr) and arr[end] != " ":
+            end += 1
+
+        # Return the index of the last character of the word
+        return end - 1
+
+    def reverse_word(self, arr: List[str], left: int, right: int) -> None:
+
+        # Use a while loop to traverse the word using the two pointers
+        while left < right:
+
+            # Swap the characters pointed by the left and right pointers
+            arr[left], arr[right] = arr[right], arr[left]
+
+            # Move the pointers towards the center of the word
+            left  += 1
+            right -= 1
 
     def reverse_word_order(self, s: str) -> str:
-        chars = list(s)
-        n = len(chars)
 
-        # Step 1: reverse the whole string.
-        self._reverse(chars, 0, n - 1)
+        # Step 1: reverse the entire string (Python slicing makes this easy)
+        s = s[::-1]
 
-        # Step 2: reverse each word individually — restoring intra-word order.
-        i = 0
-        while i < n:
-            if chars[i] == ' ':
-                i += 1
+        # Convert to a character array for easier manipulation
+        arr   = list(s)
+        start = 0
+
+        # Step 2: reverse each word in place
+        while start < len(arr):
+
+            # Skip any leading spaces
+            if arr[start] == " ":
+                start += 1
                 continue
-            word_start = i
-            while i < n and chars[i] != ' ':
-                i += 1
-            self._reverse(chars, word_start, i - 1)
 
-        return "".join(chars)
+            # Find the end of the current word
+            end = self.find_word_end(arr, start)
+
+            # Reverse the current word using the two-pointer method
+            self.reverse_word(arr, start, end)
+
+            # Move start to the start of the next word
+            start = end + 1
+
+        # Convert the array back to a string and normalise whitespace
+        return self.remove_extra_spaces("".join(arr))
 
 
 sol = Solution()
-print(sol.reverse_word_order("the sky is blue"))   # "blue is sky the"
-print(sol.reverse_word_order("hello world"))        # "world hello"
-print(sol.reverse_word_order("hello"))              # "hello"
-print(sol.reverse_word_order("a good example"))     # "example good a"
+print(sol.reverse_word_order("This is a    string"))   # string a is This
+print(sol.reverse_word_order("   fizz buzz  "))        # buzz fizz
+print(sol.reverse_word_order("random"))                # random
+print(sol.reverse_word_order("a good example"))        # example good a
 ```
 
 ```java run
 public class Main {
     static class Solution {
-        void reverse(char[] chars, int l, int r) {
-            while (l < r) {
-                char tmp = chars[l];
-                chars[l] = chars[r];
-                chars[r] = tmp;
-                l++;
-                r--;
+        String removeExtraSpaces(String s) {
+            // Use regex to collapse multiple spaces into one and trim
+            return s.replaceAll("\\s+", " ").trim();
+        }
+
+        String reverse(String s) {
+            // Use StringBuilder to reverse the whole string
+            return new StringBuilder(s).reverse().toString();
+        }
+
+        int findWordEnd(char[] arr, int start) {
+
+            // Assign the start index to the end index
+            int end = start;
+
+            // Iterate through the string until a space is encountered
+            while (end < arr.length && arr[end] != ' ') {
+                end++;
+            }
+
+            // Return the index of the last character of the word
+            return end - 1;
+        }
+
+        void reverseWord(char[] arr, int left, int right) {
+
+            // Use a while loop to traverse the word using the two pointers
+            while (left < right) {
+
+                // Swap the characters pointed by the left and right pointers
+                char tmp   = arr[left];
+                arr[left]  = arr[right];
+                arr[right] = tmp;
+
+                // Move the pointers towards the center of the word
+                left++;
+                right--;
             }
         }
 
         String reverseWordOrder(String s) {
-            char[] chars = s.toCharArray();
-            int n = chars.length;
-            reverse(chars, 0, n - 1);                  // Step 1
-            int i = 0;
-            while (i < n) {                            // Step 2
-                if (chars[i] == ' ') { i++; continue; }
-                int wordStart = i;
-                while (i < n && chars[i] != ' ') i++;
-                reverse(chars, wordStart, i - 1);
+
+            // Step 1: reverse the entire string
+            s = reverse(s);
+
+            // Convert to a character array
+            char[] arr = s.toCharArray();
+
+            int start = 0;
+            while (start < arr.length) {
+
+                // Skip any leading spaces
+                if (arr[start] == ' ') {
+                    start++;
+                    continue;
+                }
+
+                // Find the end of the current word
+                int end = findWordEnd(arr, start);
+
+                // Reverse the current word using the two-pointer method
+                reverseWord(arr, start, end);
+
+                // Move start to the start of the next word
+                start = end + 1;
             }
-            return new String(chars);
+
+            // Normalise whitespace and return
+            return removeExtraSpaces(new String(arr));
         }
     }
 
     public static void main(String[] args) {
         Solution sol = new Solution();
-        System.out.println(sol.reverseWordOrder("the sky is blue"));
-        System.out.println(sol.reverseWordOrder("hello world"));
-        System.out.println(sol.reverseWordOrder("hello"));
-        System.out.println(sol.reverseWordOrder("a good example"));
+        System.out.println(sol.reverseWordOrder("This is a    string"));   // string a is This
+        System.out.println(sol.reverseWordOrder("   fizz buzz  "));        // buzz fizz
+        System.out.println(sol.reverseWordOrder("random"));                // random
+        System.out.println(sol.reverseWordOrder("a good example"));        // example good a
     }
 }
 ```
@@ -3186,33 +3297,60 @@ public class Main {
 #include <stdio.h>
 #include <string.h>
 
-void reverse_range(char* s, int l, int r) {
+static void reverse_range(char* s, int l, int r) {
     while (l < r) {
         char tmp = s[l];
-        s[l] = s[r];
-        s[r] = tmp;
+        s[l]     = s[r];
+        s[r]     = tmp;
         l++;
         r--;
     }
 }
 
+static int find_word_end(const char* arr, int n, int start) {
+    int end = start;
+    while (end < n && arr[end] != ' ') end++;
+    return end - 1;
+}
+
+/* Collapse runs of spaces to one and strip leading / trailing spaces
+ * in place. The string is rewritten through a write index. */
+static void remove_extra_spaces(char* s) {
+    int n     = (int)strlen(s);
+    int write = 0;
+    for (int i = 0; i < n; i++) {
+        if (s[i] != ' ' || (i > 0 && s[i - 1] != ' ')) {
+            s[write++] = s[i];
+        }
+    }
+    if (write > 0 && s[write - 1] == ' ') write--;
+    s[write] = '\0';
+}
+
 void reverse_word_order(char* s) {
     int n = (int)strlen(s);
-    reverse_range(s, 0, n - 1);                      /* Step 1 */
-    int i = 0;
-    while (i < n) {                                   /* Step 2 */
-        if (s[i] == ' ') { i++; continue; }
-        int word_start = i;
-        while (i < n && s[i] != ' ') i++;
-        reverse_range(s, word_start, i - 1);
+
+    /* Step 1: reverse the entire string */
+    reverse_range(s, 0, n - 1);
+
+    /* Step 2: reverse each word in place */
+    int start = 0;
+    while (start < n) {
+        if (s[start] == ' ') { start++; continue; }
+        int end = find_word_end(s, n, start);
+        reverse_range(s, start, end);
+        start = end + 1;
     }
+
+    /* Step 3: normalise whitespace */
+    remove_extra_spaces(s);
 }
 
 int main() {
-    char s1[] = "the sky is blue"; reverse_word_order(s1); printf("%s\n", s1);
-    char s2[] = "hello world";     reverse_word_order(s2); printf("%s\n", s2);
-    char s3[] = "hello";           reverse_word_order(s3); printf("%s\n", s3);
-    char s4[] = "a good example";  reverse_word_order(s4); printf("%s\n", s4);
+    char s1[] = "This is a    string"; reverse_word_order(s1); printf("%s\n", s1);
+    char s2[] = "   fizz buzz  ";      reverse_word_order(s2); printf("%s\n", s2);
+    char s3[] = "random";              reverse_word_order(s3); printf("%s\n", s3);
+    char s4[] = "a good example";      reverse_word_order(s4); printf("%s\n", s4);
     return 0;
 }
 ```
@@ -3220,41 +3358,59 @@ int main() {
 ```scala run
 object Main extends App {
   class Solution {
-    def reverse(chars: Array[Char], l0: Int, r0: Int): Unit = {
-      var l = l0
-      var r = r0
-      while (l < r) {
-        val tmp = chars(l)
-        chars(l) = chars(r)
-        chars(r) = tmp
-        l += 1
-        r -= 1
+    def removeExtraSpaces(s: String): String =
+      // Collapse runs of spaces to one and trim leading / trailing spaces
+      s.split("\\s+").filter(_.nonEmpty).mkString(" ")
+
+    def reverse(s: String): String = s.reverse
+
+    def findWordEnd(arr: Array[Char], start: Int): Int = {
+      var end = start
+      while (end < arr.length && arr(end) != ' ') end += 1
+      end - 1
+    }
+
+    def reverseWord(arr: Array[Char], l: Int, r: Int): Unit = {
+      var left  = l
+      var right = r
+      while (left < right) {
+        val tmp    = arr(left)
+        arr(left)  = arr(right)
+        arr(right) = tmp
+        left  += 1
+        right -= 1
       }
     }
 
     def reverseWordOrder(s: String): String = {
-      val chars = s.toCharArray
-      val n = chars.length
-      reverse(chars, 0, n - 1)                       // Step 1
-      var i = 0
-      while (i < n) {                                // Step 2
-        if (chars(i) == ' ') {
-          i += 1
+      // Step 1: reverse the entire string
+      val reversed = reverse(s)
+
+      // Convert to a character array
+      val arr   = reversed.toCharArray
+      var start = 0
+
+      // Step 2: reverse each word in place
+      while (start < arr.length) {
+        if (arr(start) == ' ') {
+          start += 1
         } else {
-          val wordStart = i
-          while (i < n && chars(i) != ' ') i += 1
-          reverse(chars, wordStart, i - 1)
+          val end = findWordEnd(arr, start)
+          reverseWord(arr, start, end)
+          start = end + 1
         }
       }
-      new String(chars)
+
+      // Step 3: normalise whitespace and return
+      removeExtraSpaces(new String(arr))
     }
   }
 
   val sol = new Solution
-  println(sol.reverseWordOrder("the sky is blue"))
-  println(sol.reverseWordOrder("hello world"))
-  println(sol.reverseWordOrder("hello"))
-  println(sol.reverseWordOrder("a good example"))
+  println(sol.reverseWordOrder("This is a    string"))   // string a is This
+  println(sol.reverseWordOrder("   fizz buzz  "))        // buzz fizz
+  println(sol.reverseWordOrder("random"))                // random
+  println(sol.reverseWordOrder("a good example"))        // example good a
 }
 ```
 
@@ -3301,8 +3457,10 @@ object Main extends App {
 |---|---|---|---|
 | Single word | `"hello"` | `"hello"` | Full reverse gives `"olleh"`; reversing single word gives `"hello"` back |
 | Two words | `"hi there"` | `"there hi"` | One full reverse + two word reverses |
-| Leading space | `" hello"` | `"hello "` | Space moves to end (correct word order reversal) |
-| Trailing space | `"hello "` | `" hello"` | Space moves to start |
+| Leading space | `" hello"` | `"hello"` | Space normalised out by `removeExtraSpaces` |
+| Trailing space | `"hello "` | `"hello"` | Trailing space stripped |
+| Multiple spaces | `"hi   there"` | `"there hi"` | Multi-space runs collapsed to one |
+| Empty string | `""` | `""` | No words; result is empty |
 
 ---
 
