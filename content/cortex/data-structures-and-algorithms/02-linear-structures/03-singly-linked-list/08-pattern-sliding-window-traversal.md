@@ -842,20 +842,57 @@ Given the **head** of a singly linked list and a positive integer **k**, writ
 ```pseudocode
 # Maximum sum of any k consecutive nodes. Standard fixed-window sum on a linked list.
 function kMaximumSum(head, k):
-    if head is null OR k ≤ 0: return −1
-    window ← 0; end ← head; count ← 0
-    while end is not null AND count < k:               # seed the window with the first k nodes
-        window ← window + end.val
-        end ← end.next
-        count ← count + 1
-    if count < k: return −1                            # list shorter than k
-    maxSum ← window
+
+    # Handle edge case: empty list or invalid k
+    if head is null OR k ≤ 0:
+        return −1
+
+    # Pointer to mark the start of the current window
     start ← head
+
+    # Pointer to mark the end of the current window
+    end ← head
+
+    # Variable to store the sum of the current window
+    sum ← 0
+
+    # Counter to count nodes in the first window
+    count ← 0
+
+    # Step 1: Calculate the sum of the first window of size k
+    while end is not null AND count < k:
+
+        # Add the current node's value to the sum
+        sum ← sum + end.val
+
+        # Move the end pointer forward
+        end ← end.next
+
+        # Increment the node counter
+        count ← count + 1
+
+    # If there are fewer than k nodes in the list, return -1
+    if count < k:
+        return −1
+
+    # Initialize maxSum with the sum of the first window
+    maxSum ← sum
+
+    # Step 2: Slide the window through the rest of the list
     while end is not null:
-        window ← window + end.val − start.val          # slide: add new, drop old
-        maxSum ← max(maxSum, window)
+
+        # Update the current sum by removing the start node and adding the new end node
+        sum ← sum − start.val + end.val
+
+        # Update maxSum if the current window sum is greater
+        if sum > maxSum:
+            maxSum ← sum
+
+        # Move the start and end pointers forward to slide the window
         start ← start.next
         end ← end.next
+
+    # Return the maximum sum of any contiguous k nodes
     return maxSum
 ```
 
@@ -863,56 +900,126 @@ function kMaximumSum(head, k):
 from typing import Optional
 
 class Solution:
-    def k_maximum_sum(self, head: Optional[ListNode], k: int) -> int:
+    def k_maximum_sum(
+        self, head: Optional[ListNode], k: int
+    ) -> int:
+
+        # Handle edge case: empty list or invalid k
         if head is None or k <= 0:
             return -1
 
-        # Sum the first k nodes to seed the window
-        window = 0
-        end, count = head, 0
+        # Pointer to mark the start of the current window
+        start = head
+
+        # Pointer to mark the end of the current window
+        end = head
+
+        # Variable to store the sum of the current window
+        sum_ = 0
+
+        # Counter to count nodes in the first window
+        count = 0
+
+        # Step 1: Calculate the sum of the first window of size k
         while end is not None and count < k:
-            window += end.val
+
+            # Add the current node's value to the sum
+            sum_ += end.val
+
+            # Move the end pointer forward
             end = end.next
+
+            # Increment the node counter
             count += 1
 
+        # If there are fewer than k nodes in the list, return -1
         if count < k:
-            return -1           # list shorter than k
+            return -1
 
-        max_sum = window
-        start = head
+        # Initialize max_sum with the sum of the first window
+        max_sum = sum_
+
+        # Step 2: Slide the window through the rest of the list
         while end is not None:
-            # Slide: subtract departing start, add arriving end
-            window += end.val - start.val
-            if window > max_sum:
-                max_sum = window
-            start = start.next
-            end   = end.next
 
+            # Update the current sum by removing the start node and
+            # adding the new end node
+            sum_ = sum_ - start.val + end.val
+
+            # Update max_sum if the current window sum is greater
+            if sum_ > max_sum:
+                max_sum = sum_
+
+            # Move the start and end pointers forward to slide the
+            # window
+            start = start.next
+            end = end.next
+
+        # Return the maximum sum of any contiguous k nodes
         return max_sum
 ```
 
 ```java run
 class Solution {
     public int kMaximumSum(ListNode head, int k) {
-        if (head == null || k <= 0) return -1;
 
-        int window = 0, count = 0;
+        // Handle edge case: empty list or invalid k
+        if (head == null || k <= 0) {
+            return -1;
+        }
+
+        // Pointer to mark the start of the current window
+        ListNode start = head;
+
+        // Pointer to mark the end of the current window
         ListNode end = head;
+
+        // Variable to store the sum of the current window
+        int sum = 0;
+
+        // Counter to count nodes in the first window
+        int count = 0;
+
+        // Step 1: Calculate the sum of the first window of size k
         while (end != null && count < k) {
-            window += end.val;
+
+            // Add the current node's value to the sum
+            sum += end.val;
+
+            // Move the end pointer forward
             end = end.next;
+
+            // Increment the node counter
             count++;
         }
-        if (count < k) return -1;
 
-        int maxSum = window;
-        ListNode start = head;
-        while (end != null) {
-            window += end.val - start.val;
-            if (window > maxSum) maxSum = window;
-            start = start.next;
-            end   = end.next;
+        // If there are fewer than k nodes in the list, return -1
+        if (count < k) {
+            return -1;
         }
+
+        // Initialize maxSum with the sum of the first window
+        int maxSum = sum;
+
+        // Step 2: Slide the window through the rest of the list
+        while (end != null) {
+
+            // Update the current sum by removing the start node and
+            // adding the new end node
+            sum = sum - start.val + end.val;
+
+            // Update maxSum if the current window sum is greater
+            if (sum > maxSum) {
+                maxSum = sum;
+            }
+
+            // Move the start and end pointers forward to slide the
+            // window
+            start = start.next;
+            end = end.next;
+        }
+
+        // Return the maximum sum of any contiguous k nodes
         return maxSum;
     }
 }
@@ -920,25 +1027,64 @@ class Solution {
 
 ```c run
 int kMaximumSum(ListNode *head, int k) {
-    if (head == NULL || k <= 0) return -1;
 
-    int window = 0, count = 0;
+    /* Handle edge case: empty list or invalid k */
+    if (head == NULL || k <= 0) {
+        return -1;
+    }
+
+    /* Pointer to mark the start of the current window */
+    ListNode *start = head;
+
+    /* Pointer to mark the end of the current window */
     ListNode *end = head;
+
+    /* Variable to store the sum of the current window */
+    int sum = 0;
+
+    /* Counter to count nodes in the first window */
+    int count = 0;
+
+    /* Step 1: Calculate the sum of the first window of size k */
     while (end != NULL && count < k) {
-        window += end->val;
+
+        /* Add the current node's value to the sum */
+        sum += end->val;
+
+        /* Move the end pointer forward */
         end = end->next;
+
+        /* Increment the node counter */
         count++;
     }
-    if (count < k) return -1;
 
-    int maxSum = window;
-    ListNode *start = head;
-    while (end != NULL) {
-        window += end->val - start->val;
-        if (window > maxSum) maxSum = window;
-        start = start->next;
-        end   = end->next;
+    /* If there are fewer than k nodes in the list, return -1 */
+    if (count < k) {
+        return -1;
     }
+
+    /* Initialize maxSum with the sum of the first window */
+    int maxSum = sum;
+
+    /* Step 2: Slide the window through the rest of the list */
+    while (end != NULL) {
+
+        /* Update the current sum by removing the start node and
+           adding the new end node */
+        sum = sum - start->val + end->val;
+
+        /* Update maxSum if the current window sum is greater */
+        if (sum > maxSum) {
+            maxSum = sum;
+        }
+
+        /* Move the start and end pointers forward to slide the
+           window */
+        start = start->next;
+        end = end->next;
+    }
+
+    /* Return the maximum sum of any contiguous k nodes */
     return maxSum;
 }
 ```
@@ -946,26 +1092,64 @@ int kMaximumSum(ListNode *head, int k) {
 ```scala run
 object Solution {
   def kMaximumSum(head: ListNode, k: Int): Int = {
-    if (head == null || k <= 0) return -1
 
-    var window = 0
-    var count  = 0
-    var end    = head
+    // Handle edge case: empty list or invalid k
+    if (head == null || k <= 0) {
+      return -1
+    }
+
+    // Pointer to mark the start of the current window
+    var start = head
+
+    // Pointer to mark the end of the current window
+    var end = head
+
+    // Variable to store the sum of the current window
+    var sum = 0
+
+    // Counter to count nodes in the first window
+    var count = 0
+
+    // Step 1: Calculate the sum of the first window of size k
     while (end != null && count < k) {
-      window += end.v
+
+      // Add the current node's value to the sum
+      sum += end.v
+
+      // Move the end pointer forward
       end = end.next
+
+      // Increment the node counter
       count += 1
     }
-    if (count < k) return -1
 
-    var maxSum = window
-    var start  = head
-    while (end != null) {
-      window += end.v - start.v
-      if (window > maxSum) maxSum = window
-      start = start.next
-      end   = end.next
+    // If there are fewer than k nodes in the list, return -1
+    if (count < k) {
+      return -1
     }
+
+    // Initialize maxSum with the sum of the first window
+    var maxSum = sum
+
+    // Step 2: Slide the window through the rest of the list
+    while (end != null) {
+
+      // Update the current sum by removing the start node and
+      // adding the new end node
+      sum = sum - start.v + end.v
+
+      // Update maxSum if the current window sum is greater
+      if (sum > maxSum) {
+        maxSum = sum
+      }
+
+      // Move the start and end pointers forward to slide the
+      // window
+      start = start.next
+      end = end.next
+    }
+
+    // Return the maximum sum of any contiguous k nodes
     maxSum
   }
 }
