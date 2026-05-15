@@ -1610,11 +1610,12 @@ Palindrome checking is the comparison variant of the two-pointer pattern. Where 
 
 ## The Problem
 
-Given a string, reverse **only the vowels** (`a, e, i, o, u` — both uppercase and lowercase) while leaving all other characters exactly where they are.
+Given a string `s`, **reverse the vowels** in the string and return the updated string. All non-vowel characters stay in place. The vowels to consider are the English-alphabet ones — `a`, `e`, `i`, `o`, `u`, in both uppercase and lowercase.
 
 ```
-Input:  "hello"    →   Output: "holle"
-Input:  "leetcode" →   Output: "leotcede"
+Input:  s = "random"     →   Output: "rondam"
+Input:  s = "afegijoku"  →   Output: "ufogijeka"
+Input:  s = "bcdf"       →   Output: "bcdf"
 ```
 
 ---
@@ -1623,29 +1624,33 @@ Input:  "leetcode" →   Output: "leotcede"
 
 **Example 1**
 ```
-Input:  "hello"
-Output: "holle"
-Explanation: vowels are 'e' (index 1) and 'o' (index 4) — swap them.
+Input:  s = "random"
+Output: "rondam"
+Explanation: The vowels 'a' (index 1) and 'o' (index 2) are swapped.
 ```
 
 **Example 2**
 ```
-Input:  "leetcode"
-Output: "leotcede"
-Explanation: vowels at indices 1(e), 2(e), 5(o), 7(e)
-             Reversed vowel order: e→e→o→e becomes e→o→e→e
+Input:  s = "afegijoku"
+Output: "ufogijeka"
+Explanation: The vowels are swapped in mirror-pair order:
+             - 'a' (index 0) is swapped with 'u' (index 8)
+             - 'e' (index 2) is swapped with 'o' (index 6)
+             - 'i' (index 4) is its own mirror; it stays in place.
 ```
 
 **Example 3**
 ```
-Input:  "bcdfg"
-Output: "bcdfg"   (no vowels — nothing to swap)
+Input:  s = "bcdf"
+Output: "bcdf"
+Explanation: No vowels — the string is unchanged.
 ```
 
-**Example 4**
+**Example 4 — all vowels**
 ```
-Input:  "aeiou"
-Output: "uoiea"   (all vowels, fully reversed)
+Input:  s = "aeiou"
+Output: "uoiea"
+Explanation: Every position is a vowel, so the swap reduces to a full reversal.
 ```
 
 ---
@@ -1656,43 +1661,56 @@ The classic two-pointer reversal swaps every pair. This problem adds a filter: *
 
 Think of the two pointers as scouts. The left scout hunts for the next vowel from the left; the right scout hunts for the next vowel from the right. When both scouts have found a vowel, they swap and then both advance. If either scout hits the middle first, we're done.
 
-```mermaid
----
-config:
-  theme: base
-  themeVariables:
-    primaryColor: "#dbeafe"
-    primaryBorderColor: "#3b82f6"
-    primaryTextColor: "#1e3a5f"
-    lineColor: "#64748b"
-    secondaryColor: "#ede9fe"
-    tertiaryColor: "#fef9c3"
----
-flowchart TB
-  subgraph S0["Start  —  'hello',  left=0, right=4"]
-    direction LR
-    P0L(["left"]) --> H0["h"] --- E0["e"] --- L0["l"] --- L1["l"] --- O0["o"]
-    O0 --> P0R(["right"])
-  end
-  subgraph S1["'h' is not a vowel  →  left++ to find vowel"]
-    direction LR
-    P1L(["left"]) --> H1["h"] --- E1["e"] --- L2["l"] --- L3["l"] --- O1["o"]
-    O1 --> P1R(["right"])
-    note1(["left skips 'h'<br/>stops at 'e'"])
-  end
-  subgraph S2["'e' vowel found, 'o' vowel found  →  swap!  left=2, right=3"]
-    direction LR
-    P2L(["left"]) --> H2["h"] --- O2["o"] --- L4["l"] --- L5["l"] --- E2["e"]
-    L4 --> P2R(["right"])
-  end
-  subgraph S3["'l' not a vowel, 'l' not a vowel  →  left ≥ right  →  done"]
-    DONE(["✓  'holle'"])
-  end
-
-  S0 --> S1 --> S2 --> S3
+```d3 widget=array-traversal
+{
+  "items": ["a", "f", "e", "g", "i", "j", "o", "k", "u"],
+  "title": "Vowel exchange on \"afegijoku\"",
+  "steps": [
+    {
+      "items":   ["a", "f", "e", "g", "i", "j", "o", "k", "u"],
+      "markers": [
+        { "name": "left",  "index": 0, "color": "#3b82f6" },
+        { "name": "right", "index": 8, "color": "#f59e0b" }
+      ],
+      "msg": "Both pointers are on vowels — swap arr[left]='a' with arr[right]='u'."
+    },
+    {
+      "items":   ["u", "f", "e", "g", "i", "j", "o", "k", "a"],
+      "markers": [
+        { "name": "left",  "index": 1, "color": "#3b82f6" },
+        { "name": "right", "index": 7, "color": "#f59e0b" }
+      ],
+      "msg": "Move inward — arr[left]='f' is a consonant (skip), arr[right]='k' is a consonant (skip)."
+    },
+    {
+      "items":   ["u", "f", "e", "g", "i", "j", "o", "k", "a"],
+      "markers": [
+        { "name": "left",  "index": 2, "color": "#3b82f6" },
+        { "name": "right", "index": 6, "color": "#f59e0b" }
+      ],
+      "msg": "Both pointers are on vowels — swap arr[left]='e' with arr[right]='o'."
+    },
+    {
+      "items":   ["u", "f", "o", "g", "i", "j", "e", "k", "a"],
+      "markers": [
+        { "name": "left",  "index": 3, "color": "#3b82f6" },
+        { "name": "right", "index": 5, "color": "#f59e0b" }
+      ],
+      "msg": "arr[left]='g' is a consonant (skip), arr[right]='j' is a consonant (skip)."
+    },
+    {
+      "items":   ["u", "f", "o", "g", "i", "j", "e", "k", "a"],
+      "markers": [
+        { "name": "left",  "index": 4, "color": "#3b82f6" },
+        { "name": "right", "index": 4, "color": "#f59e0b" }
+      ],
+      "msg": "Pointers meet at index 4 — the middle 'i' is its own mirror; nothing to swap. Result: \"ufogijeka\"."
+    }
+  ]
+}
 ```
 
-<p align="center"><strong>Vowel exchange on <code>"hello"</code> — left skips the consonant <code>'h'</code>, finds vowel <code>'e'</code>; right is already on vowel <code>'o'</code>; they swap; pointers cross, done.</strong></p>
+<p align="center"><strong>Vowel exchange on <code>"afegijoku"</code> — each pointer scans past consonants until it finds a vowel; matched vowel pairs swap; pointers meet at the middle <code>'i'</code>.</strong></p>
 
 ---
 
@@ -1729,81 +1747,143 @@ This is a direct application with one variation: each pointer doesn't step by ex
 
 
 ```pseudocode
-VOWELS ← Set of {'a','e','i','o','u','A','E','I','O','U'}
+VOWELS ← {'a','e','i','o','u','A','E','I','O','U'}
 
-# Reverse only the vowels — non-vowels stay in place.
 function vowelExchange(s):
+    # Convert the string to an array for easier manipulation
     chars ← list of characters of s
-    left ← 0
+
+    # Initialize two pointers, one at the start and the other at the end
+    left  ← 0
     right ← length(chars) − 1
+
     while left < right:
-        while left < right AND chars[left]  is not in VOWELS: left  ← left + 1
-        while left < right AND chars[right] is not in VOWELS: right ← right − 1
-        if left < right:
-            swap chars[left] and chars[right]
+        # If the left pointer is not on a vowel, move it inward
+        if chars[left] is not in VOWELS:
             left ← left + 1
+
+        # If the right pointer is not on a vowel, move it inward
+        else if chars[right] is not in VOWELS:
             right ← right − 1
-    return chars joined as a string
+
+        # Both pointers are on vowels — swap and advance both
+        else:
+            swap chars[left] and chars[right]
+            left  ← left + 1
+            right ← right − 1
+
+    # Convert the array back to a string and return
+    return chars joined into a string
 ```
 
 ```python run
 class Solution:
     def vowel_exchange(self, s: str) -> str:
-        VOWELS = set("aeiouAEIOU")
-        chars  = list(s)   # strings are immutable — work on a list
-        left, right = 0, len(chars) - 1
 
+        # Create a set to store all the vowels in both uppercase and
+        # lowercase
+        vowels = set(["a", "e", "i", "o", "u", "A", "E", "I", "O", "U"])
+
+        # Initialize two pointers, one pointing to the beginning of the
+        # string and the other pointing to the end of the string
+        left:  int = 0
+        right: int = len(s) - 1
+
+        # Convert the string to an array for easier manipulation
+        chars = list(s)
+
+        # Use a while loop to traverse the string using the two pointers
         while left < right:
-            while left < right and chars[left]  not in VOWELS: left  += 1
-            while left < right and chars[right] not in VOWELS: right -= 1
-            if left < right:
+
+            # Check if the character pointed by the first pointer is a
+            # vowel. If it is not a vowel, move the pointer to the next
+            # character
+            if chars[left] not in vowels:
+                left += 1
+
+            # Check if the character pointed by the second pointer is a
+            # vowel. If it is not a vowel, move the pointer to the
+            # previous character
+            elif chars[right] not in vowels:
+                right -= 1
+
+            # If both pointers point to vowels, swap the characters
+            else:
                 chars[left], chars[right] = chars[right], chars[left]
                 left  += 1
                 right -= 1
 
+        # Convert the array back to a string and return the modified string
         return "".join(chars)
 
 
 sol = Solution()
-print(sol.vowel_exchange("hello"))     # "holle"
-print(sol.vowel_exchange("leetcode"))  # "leotcede"
-print(sol.vowel_exchange("bcdfg"))     # "bcdfg"
-print(sol.vowel_exchange("aeiou"))     # "uoiea"
-print(sol.vowel_exchange("a"))         # "a"
+print(sol.vowel_exchange("random"))     # rondam
+print(sol.vowel_exchange("afegijoku"))  # ufogijeka
+print(sol.vowel_exchange("bcdf"))       # bcdf
+print(sol.vowel_exchange("aeiou"))      # uoiea
+print(sol.vowel_exchange("a"))          # a
 ```
 
 ```java run
+import java.util.HashSet;
+
 public class Main {
     static class Solution {
-        boolean isVowel(char c) {
-            return "aeiouAEIOU".indexOf(c) >= 0;
-        }
-
         String vowelExchange(String s) {
+
+            // Create a hash set to store all the vowels in both
+            // uppercase and lowercase
+            HashSet<Character> vowels = new HashSet<>();
+            for (char c : "aeiouAEIOU".toCharArray()) vowels.add(c);
+
+            // Initialize two pointers, one pointing to the beginning of
+            // the string and the other pointing to the end of the string
+            int left  = 0;
+            int right = s.length() - 1;
+
+            // Convert the string to a character array for easier
+            // manipulation
             char[] chars = s.toCharArray();
-            int left = 0, right = chars.length - 1;
+
+            // Use a while loop to traverse the string using the two pointers
             while (left < right) {
-                while (left < right && !isVowel(chars[left]))  left++;
-                while (left < right && !isVowel(chars[right])) right--;
-                if (left < right) {
-                    char tmp = chars[left];
+
+                // Check if the character pointed by the first pointer is a
+                // vowel. If it is not a vowel, move the pointer to the
+                // next character
+                if (!vowels.contains(chars[left])) {
+                    left++;
+                }
+                // Check if the character pointed by the second pointer is
+                // a vowel. If it is not a vowel, move the pointer to the
+                // previous character
+                else if (!vowels.contains(chars[right])) {
+                    right--;
+                }
+                // If both pointers point to vowels, swap the characters
+                else {
+                    char tmp     = chars[left];
                     chars[left]  = chars[right];
                     chars[right] = tmp;
                     left++;
                     right--;
                 }
             }
+
+            // Convert the character array back to a string and return the
+            // modified string
             return new String(chars);
         }
     }
 
     public static void main(String[] args) {
         Solution sol = new Solution();
-        System.out.println(sol.vowelExchange("hello"));
-        System.out.println(sol.vowelExchange("leetcode"));
-        System.out.println(sol.vowelExchange("bcdfg"));
-        System.out.println(sol.vowelExchange("aeiou"));
-        System.out.println(sol.vowelExchange("a"));
+        System.out.println(sol.vowelExchange("random"));     // rondam
+        System.out.println(sol.vowelExchange("afegijoku"));  // ufogijeka
+        System.out.println(sol.vowelExchange("bcdf"));       // bcdf
+        System.out.println(sol.vowelExchange("aeiou"));      // uoiea
+        System.out.println(sol.vowelExchange("a"));          // a
     }
 }
 ```
@@ -1813,16 +1893,31 @@ public class Main {
 #include <string.h>
 #include <stdbool.h>
 
-bool is_vowel(char c) {
+static bool is_vowel(char c) {
+    /* Vowels in both uppercase and lowercase */
     return strchr("aeiouAEIOU", c) != NULL;
 }
 
 void vowel_exchange(char* s) {
-    int left = 0, right = (int)strlen(s) - 1;
+
+    /* Initialize two pointers, one pointing to the beginning of the
+     * string and the other pointing to the end of the string */
+    int left  = 0;
+    int right = (int)strlen(s) - 1;
+
+    /* Use a while loop to traverse the string using the two pointers */
     while (left < right) {
-        while (left < right && !is_vowel(s[left]))  left++;
-        while (left < right && !is_vowel(s[right])) right--;
-        if (left < right) {
+
+        /* Move the left pointer inward past non-vowels */
+        if (!is_vowel(s[left])) {
+            left++;
+        }
+        /* Move the right pointer inward past non-vowels */
+        else if (!is_vowel(s[right])) {
+            right--;
+        }
+        /* Both pointers point to vowels — swap them */
+        else {
             char tmp = s[left];
             s[left]  = s[right];
             s[right] = tmp;
@@ -1833,62 +1928,85 @@ void vowel_exchange(char* s) {
 }
 
 int main() {
-    char s1[] = "hello";    vowel_exchange(s1); printf("%s\n", s1);
-    char s2[] = "leetcode"; vowel_exchange(s2); printf("%s\n", s2);
-    char s3[] = "bcdfg";    vowel_exchange(s3); printf("%s\n", s3);
-    char s4[] = "aeiou";    vowel_exchange(s4); printf("%s\n", s4);
-    char s5[] = "a";        vowel_exchange(s5); printf("%s\n", s5);
+    char s1[] = "random";     vowel_exchange(s1); printf("%s\n", s1);   /* rondam */
+    char s2[] = "afegijoku";  vowel_exchange(s2); printf("%s\n", s2);   /* ufogijeka */
+    char s3[] = "bcdf";       vowel_exchange(s3); printf("%s\n", s3);   /* bcdf */
+    char s4[] = "aeiou";      vowel_exchange(s4); printf("%s\n", s4);   /* uoiea */
+    char s5[] = "a";          vowel_exchange(s5); printf("%s\n", s5);   /* a */
     return 0;
 }
 ```
 
 ```scala run
 object Main extends App {
-  val Vowels: Set[Char] = "aeiouAEIOU".toSet
-
   class Solution {
     def vowelExchange(s: String): String = {
+
+      // Create a set to store all the vowels in both uppercase and
+      // lowercase
+      val vowels: Set[Char] = "aeiouAEIOU".toSet
+
+      // Initialize two pointers, one pointing to the beginning of the
+      // string and the other pointing to the end of the string
+      var left  = 0
+      var right = s.length - 1
+
+      // Convert the string to a character array for easier manipulation
       val chars = s.toCharArray
-      var left = 0
-      var right = chars.length - 1
+
+      // Use a while loop to traverse the string using the two pointers
       while (left < right) {
-        while (left < right && !Vowels.contains(chars(left)))  left  += 1
-        while (left < right && !Vowels.contains(chars(right))) right -= 1
-        if (left < right) {
-          val tmp = chars(left)
+
+        // If the left pointer is not on a vowel, move it inward
+        if (!vowels.contains(chars(left))) {
+          left += 1
+        }
+        // If the right pointer is not on a vowel, move it inward
+        else if (!vowels.contains(chars(right))) {
+          right -= 1
+        }
+        // If both pointers point to vowels, swap the characters
+        else {
+          val tmp      = chars(left)
           chars(left)  = chars(right)
           chars(right) = tmp
           left  += 1
           right -= 1
         }
       }
+
+      // Convert the character array back to a string and return
       new String(chars)
     }
   }
 
   val sol = new Solution
-  println(sol.vowelExchange("hello"))
-  println(sol.vowelExchange("leetcode"))
-  println(sol.vowelExchange("bcdfg"))
-  println(sol.vowelExchange("aeiou"))
-  println(sol.vowelExchange("a"))
+  println(sol.vowelExchange("random"))     // rondam
+  println(sol.vowelExchange("afegijoku"))  // ufogijeka
+  println(sol.vowelExchange("bcdf"))       // bcdf
+  println(sol.vowelExchange("aeiou"))      // uoiea
+  println(sol.vowelExchange("a"))          // a
 }
 ```
 
 
 ---
 
-## Dry Run — "leetcode"
+## Dry Run — "afegijoku"
 
-`s = "leetcode"`, vowels at indices 1(e), 2(e), 5(o), 7(e)
+`s = "afegijoku"`, `n = 9`. Vowels live at indices `0 (a)`, `2 (e)`, `4 (i)`, `6 (o)`, `8 (u)`.
 
-| Round | `left` scans to | `right` scans to | Swap | String |
+| Round | `left` | `right` | Action | String |
 |---|---|---|---|---|
-| 1 | index 1 `'e'` | index 7 `'e'` | `'e'↔'e'` | `"leetcode"` (same chars) |
-| 2 | index 2 `'e'` | index 5 `'o'` | `'e'↔'o'` | `"leotcede"` |
-| 3 | left=3, right=4 — no vowels found before crossing | — | — | done |
+| 1 | 0 (`a`, vowel) | 8 (`u`, vowel) | swap `a ↔ u`, then `left++`, `right--` | `"ufegijoka"` |
+| 2 | 1 (`f`, consonant) | 7 (`k`, consonant) | `left++`, `right--` past consonants | `"ufegijoka"` |
+| 3 | 2 (`e`, vowel) | 6 (`o`, vowel) | swap `e ↔ o`, then `left++`, `right--` | `"ufogijeka"` |
+| 4 | 3 (`g`, consonant) | 5 (`j`, consonant) | `left++`, `right--` past consonants | `"ufogijeka"` |
+| 5 | 4 | 4 | `left ≥ right` — stop | `"ufogijeka"` ✓ |
 
-**Return `"leotcede"`** ✓
+The middle character at index 4 (`'i'`) is its own mirror — no swap.
+
+**Return `"ufogijeka"`** ✓
 
 ---
 
@@ -1907,7 +2025,7 @@ object Main extends App {
 
 | Scenario | Input | Output | Note |
 |---|---|---|---|
-| No vowels | `"bcdfg"` | `"bcdfg"` | Pointers never stop to swap |
+| No vowels | `"bcdf"` | `"bcdf"` | Pointers never stop to swap |
 | All vowels | `"aeiou"` | `"uoiea"` | Every step swaps |
 | Single character | `"a"` | `"a"` | Loop never runs |
 | Already reversed vowels | `"uoiea"` | `"aeiou"` | Swap brings original back |
