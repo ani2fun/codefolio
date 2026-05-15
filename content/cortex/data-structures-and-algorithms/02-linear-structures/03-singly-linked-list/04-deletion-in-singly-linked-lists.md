@@ -1867,18 +1867,56 @@ Given the **head** of a singly linked list and a **data** value, write a functio
 
 
 ```pseudocode
-# Delete the first node matching `data`. Special-case the head; otherwise track predecessor.
 function deleteNodeWithGivenData(head, data):
-    if head is null: return null
-    if head.val = data:                                # head itself matches
-        return head.next
+
+    # If the list is empty, return null
+    if head is null:
+        return null
+
+    # If the head node contains the given data
+    if head.val = data:
+
+        # Create a temporary pointer to the head node
+        nodeToBeDeleted ← head
+
+        # Update the head pointer to the next node
+        head ← head.next
+
+        # Delete the previous head node
+        nodeToBeDeleted ← null
+
+        # Return the updated head pointer
+        return head
+
+    # Pointer to the current node, starting from the head
     current ← head
+
+    # Pointer to the previous node, initially null
     previous ← null
+
+    # If the target data is not in the first node, search for it in
+    # the rest of the list
     while current is not null AND current.val ≠ data:
+
+        # Move the previous pointer to the current node
         previous ← current
+
+        # Move the current pointer to the next node
         current ← current.next
-    if current is null: return head                    # not found — list unchanged
-    previous.next ← current.next                       # bypass the matched node
+
+    # If the given data is not found, return the original head
+    # pointer
+    if current is null:
+        return head
+
+    # Update the next pointer of the previous node to skip the
+    # current node
+    previous.next ← current.next
+
+    # Delete the node with the given data
+    current ← null
+
+    # Return the head of the list, with the target data node removed
     return head
 ```
 
@@ -1889,28 +1927,56 @@ class ListNode:
         self.next = next
 
 def delete_node_with_given_data(head, data):
-    # Empty list — nothing to delete
+
+    # If the list is empty, return None
     if head is None:
         return None
 
-    # Head itself matches — move head forward and GC reclaims the old head
+    # If the head node contains the given data
     if head.val == data:
-        return head.next
 
+        # Create a temporary pointer to the head node
+        node_to_be_deleted = head
+
+        # Update the head pointer to the next node
+        head = head.next
+
+        # Delete the previous head node
+        del node_to_be_deleted
+
+        # Return the updated head pointer
+        return head
+
+    # Pointer to the current node, starting from the head
     current = head
+
+    # Pointer to the previous node, initially None
     previous = None
 
-    # Search for the first node whose value equals data
+    # If the target data is not in the first node, search for it in
+    # the rest of the list
     while current is not None and current.val != data:
+
+        # Move the previous pointer to the current node
         previous = current
+
+        # Move the current pointer to the next node
         current = current.next
 
-    # Data not found — return list unchanged
+    # If the given data is not found, return the original head
+    # pointer
     if current is None:
         return head
 
-    # Bypass the matched node — GC reclaims it
-    previous.next = current.next
+    # Update the next pointer of the previous node to skip the
+    # current node
+    if previous and current:
+        previous.next = current.next
+
+    # Delete the node with the given data
+    del current
+
+    # Return the head of the list, with the target data node removed
     return head
 
 # --- driver ---
@@ -1940,26 +2006,59 @@ public class Main {
     }
 
     static ListNode deleteNodeWithGivenData(ListNode head, int data) {
-        // Empty list — nothing to delete
-        if (head == null) return null;
 
-        // Head itself matches — move head forward; GC reclaims old head
-        if (head.val == data) return head.next;
+        // If the list is empty, return null
+        if (head == null) {
+            return null;
+        }
 
+        // If the head node contains the given data
+        if (head.val == data) {
+
+            // Create a temporary pointer to the head node
+            ListNode nodeToBeDeleted = head;
+
+            // Update the head pointer to the next node
+            head = head.next;
+
+            // Delete the previous head node
+            nodeToBeDeleted = null;
+
+            // Return the updated head pointer
+            return head;
+        }
+
+        // Pointer to the current node, starting from the head
         ListNode current = head;
+
+        // Pointer to the previous node, initially null
         ListNode previous = null;
 
-        // Search for the first node whose value equals data
+        // If the target data is not in the first node, search for it in
+        // the rest of the list
         while (current != null && current.val != data) {
+
+            // Move the previous pointer to the current node
             previous = current;
+
+            // Move the current pointer to the next node
             current = current.next;
         }
 
-        // Data not found — return list unchanged
-        if (current == null) return head;
+        // If the given data is not found, return the original head
+        // pointer
+        if (current == null) {
+            return head;
+        }
 
-        // Bypass the matched node
+        // Update the next pointer of the previous node to skip the
+        // current node
         previous.next = current.next;
+
+        // Delete the node with the given data
+        current = null;
+
+        // Return the head of the list, with the target data node removed
         return head;
     }
 
@@ -1994,29 +2093,59 @@ ListNode* newNode(int v) {
 }
 
 ListNode* deleteNodeWithGivenData(ListNode *head, int data) {
-    // Empty list — nothing to delete
-    if (head == NULL) return NULL;
 
-    // Head itself matches — free it and return next
-    if (head->val == data) {
-        ListNode *next = head->next; free(head); return next;
+    /* If the list is empty, return NULL */
+    if (head == NULL) {
+        return NULL;
     }
 
+    /* If the head node contains the given data */
+    if (head->val == data) {
+
+        /* Create a temporary pointer to the head node */
+        ListNode *nodeToBeDeleted = head;
+
+        /* Update the head pointer to the next node */
+        head = head->next;
+
+        /* Delete the previous head node */
+        free(nodeToBeDeleted);
+
+        /* Return the updated head pointer */
+        return head;
+    }
+
+    /* Pointer to the current node, starting from the head */
     ListNode *current = head;
+
+    /* Pointer to the previous node, initially NULL */
     ListNode *previous = NULL;
 
-    // Search for the first node whose value equals data
+    /* If the target data is not in the first node, search for it in
+       the rest of the list */
     while (current != NULL && current->val != data) {
+
+        /* Move the previous pointer to the current node */
         previous = current;
+
+        /* Move the current pointer to the next node */
         current = current->next;
     }
 
-    // Data not found — return list unchanged
-    if (current == NULL) return head;
+    /* If the given data is not found, return the original head
+       pointer */
+    if (current == NULL) {
+        return head;
+    }
 
-    // Bypass and free the matched node
+    /* Update the next pointer of the previous node to skip the
+       current node */
     previous->next = current->next;
+
+    /* Delete the node with the given data */
     free(current);
+
+    /* Return the head of the list, with the target data node removed */
     return head;
 }
 
@@ -2046,26 +2175,59 @@ class ListNode(var v: Int, var next: ListNode = null)
 
 object Main extends App {
   def deleteNodeWithGivenData(head: ListNode, data: Int): ListNode = {
-    // Empty list — nothing to delete
-    if (head == null) return null
 
-    // Head itself matches — advance past it; GC reclaims old head
-    if (head.v == data) return head.next
+    // If the list is empty, return null
+    if (head == null) {
+      return null
+    }
 
+    // If the head node contains the given data
+    if (head.v == data) {
+
+      // Create a temporary pointer to the head node
+      var nodeToBeDeleted = head
+
+      // Update the head pointer to the next node
+      val newHead = head.next
+
+      // Delete the previous head node
+      nodeToBeDeleted = null
+
+      // Return the updated head pointer
+      return newHead
+    }
+
+    // Pointer to the current node, starting from the head
     var current = head
+
+    // Pointer to the previous node, initially null
     var previous: ListNode = null
 
-    // Search for the first node whose value equals data
+    // If the target data is not in the first node, search for it in
+    // the rest of the list
     while (current != null && current.v != data) {
+
+      // Move the previous pointer to the current node
       previous = current
+
+      // Move the current pointer to the next node
       current = current.next
     }
 
-    // Data not found — return list unchanged
-    if (current == null) return head
+    // If the given data is not found, return the original head
+    // pointer
+    if (current == null) {
+      return head
+    }
 
-    // Bypass the matched node
+    // Update the next pointer of the previous node to skip the
+    // current node
     previous.next = current.next
+
+    // Delete the node with the given data
+    current = null
+
+    // Return the head of the list, with the target data node removed
     head
   }
 
