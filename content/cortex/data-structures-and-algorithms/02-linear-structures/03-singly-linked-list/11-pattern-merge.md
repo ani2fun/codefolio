@@ -1378,19 +1378,37 @@ Given **heads** of two non-empty singly linked lists **headA** and **headB**, re
 
 
 ```pseudocode
-# Add two numbers stored as linked lists (least-significant digit first). Carry-propagating loop.
-# Loop stops only when BOTH inputs are exhausted AND there's no pending carry.
 function listAddition(headA, headB):
+    # Create a new head for the result list and initialize tail pointer
     dummy ← new ListNode; tail ← dummy
-    cA ← headA; cB ← headB
+    currentA ← headA; currentB ← headB
+    # Initialize carry to 0
     carry ← 0
-    while cA is not null OR cB is not null OR carry > 0:
-        s ← carry
-        if cA is not null: s ← s + cA.val; cA ← cA.next
-        if cB is not null: s ← s + cB.val; cB ← cB.next
-        carry ← s ÷ 10
-        tail.next ← new ListNode(s mod 10)
+    # Traverse both lists while neither list is empty
+    while currentA is not null AND currentB is not null:
+        # Start with the carry value, then add both digits
+        sum ← carry + currentA.val + currentB.val
+        currentA ← currentA.next; currentB ← currentB.next
+        # Calculate the new carry value
+        carry ← sum ÷ 10
+        # Create a new node with the sum modulo 10
+        tail.next ← new ListNode(sum mod 10)
         tail ← tail.next
+    # If there are remaining nodes in list A, continue adding them
+    while currentA is not null:
+        sum ← carry + currentA.val
+        carry ← sum ÷ 10
+        tail.next ← new ListNode(sum mod 10); tail ← tail.next
+        currentA ← currentA.next
+    # If there are remaining nodes in list B, continue adding them
+    while currentB is not null:
+        sum ← carry + currentB.val
+        carry ← sum ÷ 10
+        tail.next ← new ListNode(sum mod 10); tail ← tail.next
+        currentB ← currentB.next
+    # If there is a remaining carry, create a new node for it
+    if carry > 0:
+        tail.next ← new ListNode(carry)
     return dummy.next
 ```
 
@@ -1398,36 +1416,131 @@ function listAddition(headA, headB):
 from typing import Optional
 
 class Solution:
-    def list_addition(self, head_a: Optional[ListNode], head_b: Optional[ListNode]) -> Optional[ListNode]:
-        dummy = ListNode()
-        tail  = dummy
-        cA, cB = head_a, head_b
+    def list_addition(
+        self, head_a: Optional[ListNode], head_b: Optional[ListNode]
+    ) -> Optional[ListNode]:
+
+        # Create a new head for the result list and initialize tail
+        # pointer
+        dummy = ListNode(0)
+        tail = dummy
+
+        current_a = head_a
+        current_b = head_b
+
+        # Initialize carry to 0
         carry = 0
-        # The loop stops only when BOTH inputs are exhausted AND there's no pending carry
-        while cA is not None or cB is not None or carry > 0:
-            s = carry
-            if cA is not None: s += cA.val; cA = cA.next
-            if cB is not None: s += cB.val; cB = cB.next
-            carry     = s // 10
-            tail.next = ListNode(s % 10)
-            tail      = tail.next
+
+        # Traverse both lists while neither list is empty
+        while current_a is not None and current_b is not None:
+
+            # Start with the carry value
+            sum_value = carry
+
+            # Add the values from both lists
+            sum_value += current_a.val + current_b.val
+
+            # Move to the next nodes in both lists
+            current_a = current_a.next
+            current_b = current_b.next
+
+            # Calculate the new carry value
+            carry = sum_value // 10
+
+            # Create a new node with the sum modulo 10
+            tail.next = ListNode(sum_value % 10)
+
+            # Move the tail pointer to the newly created node
+            tail = tail.next
+
+        # If there are remaining nodes in list A, continue adding them
+        while current_a is not None:
+            sum_value = carry + current_a.val
+            carry = sum_value // 10
+            tail.next = ListNode(sum_value % 10)
+            tail = tail.next
+            current_a = current_a.next
+
+        # If there are remaining nodes in list B, continue adding them
+        while current_b is not None:
+            sum_value = carry + current_b.val
+            carry = sum_value // 10
+            tail.next = ListNode(sum_value % 10)
+            tail = tail.next
+            current_b = current_b.next
+
+        # If there is a remaining carry, create a new node for it
+        if carry > 0:
+            tail.next = ListNode(carry)
+
+        # Return the head of the resulting list (excluding the dummy
+        # node)
         return dummy.next
 ```
 
 ```java run
 class Solution {
     public ListNode listAddition(ListNode headA, ListNode headB) {
-        ListNode dummy = new ListNode(), tail = dummy;
-        ListNode cA = headA, cB = headB;
+
+        // Create a new head for the result list and initialize tail
+        // pointer
+        ListNode dummy = new ListNode(0);
+        ListNode tail = dummy;
+
+        ListNode currentA = headA;
+        ListNode currentB = headB;
+
+        // Initialize carry to 0
         int carry = 0;
-        while (cA != null || cB != null || carry > 0) {
-            int s = carry;
-            if (cA != null) { s += cA.val; cA = cA.next; }
-            if (cB != null) { s += cB.val; cB = cB.next; }
-            carry     = s / 10;
-            tail.next = new ListNode(s % 10);
-            tail      = tail.next;
+
+        // Traverse both lists while neither list is empty
+        while (currentA != null && currentB != null) {
+
+            // Start with the carry value
+            int sum = carry;
+
+            // Add the values from both lists
+            sum += currentA.val + currentB.val;
+
+            // Move to the next nodes in both lists
+            currentA = currentA.next;
+            currentB = currentB.next;
+
+            // Calculate the new carry value
+            carry = sum / 10;
+
+            // Create a new node with the sum modulo 10
+            tail.next = new ListNode(sum % 10);
+
+            // Move the tail pointer to the newly created node
+            tail = tail.next;
         }
+
+        // If there are remaining nodes in list A, continue adding them
+        while (currentA != null) {
+            int sum = carry + currentA.val;
+            carry = sum / 10;
+            tail.next = new ListNode(sum % 10);
+            tail = tail.next;
+            currentA = currentA.next;
+        }
+
+        // If there are remaining nodes in list B, continue adding them
+        while (currentB != null) {
+            int sum = carry + currentB.val;
+            carry = sum / 10;
+            tail.next = new ListNode(sum % 10);
+            tail = tail.next;
+            currentB = currentB.next;
+        }
+
+        // If there is a remaining carry, create a new node for it
+        if (carry > 0) {
+            tail.next = new ListNode(carry);
+        }
+
+        // Return the head of the resulting list (excluding the dummy
+        // node)
         return dummy.next;
     }
 }
@@ -1435,19 +1548,74 @@ class Solution {
 
 ```c run
 ListNode* listAddition(ListNode *headA, ListNode *headB) {
+
+    /* Create a new head for the result list and initialize tail
+       pointer */
     ListNode dummy = {0, NULL};
     ListNode *tail = &dummy;
+
+    ListNode *currentA = headA;
+    ListNode *currentB = headB;
+
+    /* Initialize carry to 0 */
     int carry = 0;
-    while (headA != NULL || headB != NULL || carry > 0) {
-        int s = carry;
-        if (headA != NULL) { s += headA->val; headA = headA->next; }
-        if (headB != NULL) { s += headB->val; headB = headB->next; }
-        carry     = s / 10;
-        ListNode *n = (ListNode*)malloc(sizeof(ListNode));
-        n->val = s % 10; n->next = NULL;
-        tail->next = n;
-        tail       = n;
+
+    /* Traverse both lists while neither list is empty */
+    while (currentA != NULL && currentB != NULL) {
+
+        /* Start with the carry value */
+        int sum = carry;
+
+        /* Add the values from both lists */
+        sum += currentA->val + currentB->val;
+
+        /* Move to the next nodes in both lists */
+        currentA = currentA->next;
+        currentB = currentB->next;
+
+        /* Calculate the new carry value */
+        carry = sum / 10;
+
+        /* Create a new node with the sum modulo 10 */
+        ListNode *node = (ListNode*)malloc(sizeof(ListNode));
+        node->val = sum % 10; node->next = NULL;
+        tail->next = node;
+
+        /* Move the tail pointer to the newly created node */
+        tail = node;
     }
+
+    /* If there are remaining nodes in list A, continue adding them */
+    while (currentA != NULL) {
+        int sum = carry + currentA->val;
+        carry = sum / 10;
+        ListNode *node = (ListNode*)malloc(sizeof(ListNode));
+        node->val = sum % 10; node->next = NULL;
+        tail->next = node;
+        tail = node;
+        currentA = currentA->next;
+    }
+
+    /* If there are remaining nodes in list B, continue adding them */
+    while (currentB != NULL) {
+        int sum = carry + currentB->val;
+        carry = sum / 10;
+        ListNode *node = (ListNode*)malloc(sizeof(ListNode));
+        node->val = sum % 10; node->next = NULL;
+        tail->next = node;
+        tail = node;
+        currentB = currentB->next;
+    }
+
+    /* If there is a remaining carry, create a new node for it */
+    if (carry > 0) {
+        ListNode *node = (ListNode*)malloc(sizeof(ListNode));
+        node->val = carry; node->next = NULL;
+        tail->next = node;
+    }
+
+    /* Return the head of the resulting list (excluding the dummy
+       node) */
     return dummy.next;
 }
 ```
@@ -1455,18 +1623,66 @@ ListNode* listAddition(ListNode *headA, ListNode *headB) {
 ```scala run
 object Solution {
   def listAddition(headA: ListNode, headB: ListNode): ListNode = {
+
+    // Create a new head for the result list and initialize tail
+    // pointer
     val dummy = new ListNode(0)
     var tail: ListNode = dummy
-    var a = headA; var b = headB
+
+    var currentA = headA
+    var currentB = headB
+
+    // Initialize carry to 0
     var carry = 0
-    while (a != null || b != null || carry > 0) {
-      var s = carry
-      if (a != null) { s += a.v; a = a.next }
-      if (b != null) { s += b.v; b = b.next }
-      carry = s / 10
-      tail.next = new ListNode(s % 10)
+
+    // Traverse both lists while neither list is empty
+    while (currentA != null && currentB != null) {
+
+      // Start with the carry value
+      var sum = carry
+
+      // Add the values from both lists
+      sum += currentA.val + currentB.val
+
+      // Move to the next nodes in both lists
+      currentA = currentA.next
+      currentB = currentB.next
+
+      // Calculate the new carry value
+      carry = sum / 10
+
+      // Create a new node with the sum modulo 10
+      tail.next = new ListNode(sum % 10)
+
+      // Move the tail pointer to the newly created node
       tail = tail.next
     }
+
+    // If there are remaining nodes in list A, continue adding them
+    while (currentA != null) {
+      val sum = carry + currentA.val
+      carry = sum / 10
+      tail.next = new ListNode(sum % 10)
+      tail = tail.next
+      currentA = currentA.next
+    }
+
+    // If there are remaining nodes in list B, continue adding them
+    while (currentB != null) {
+      val sum = carry + currentB.val
+      carry = sum / 10
+      tail.next = new ListNode(sum % 10)
+      tail = tail.next
+      currentB = currentB.next
+    }
+
+    // If there is a remaining carry, create a new node for it
+    if (carry > 0) {
+      tail.next = new ListNode(carry)
+    }
+
+    // Return the head of the resulting list (excluding the dummy
+    // node)
     dummy.next
   }
 }
