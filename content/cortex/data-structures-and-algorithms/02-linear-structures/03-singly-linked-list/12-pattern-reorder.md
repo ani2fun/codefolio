@@ -1284,85 +1284,446 @@ Given the **head** of a singly linked list and a value **X**, write a function
 
 
 ```pseudocode
-# Partition: nodes with val < x first, then nodes with val ≥ x. Preserve relative order.
-function valuePartition(head, x):
-    lessDummy ← new ListNode; greaterDummy ← new ListNode
-    lessTail ← lessDummy; greaterTail ← greaterDummy
+function splitListByValue(head, X):
+    # Create dummy nodes to initialize the heads of two separate
+    # lists. List for nodes with values less than X.
+    lessHead ← new ListNode; lessTail ← lessHead
+    # List for nodes with values greater than or equal to X.
+    greaterHead ← new ListNode; greaterTail ← greaterHead
+    # Start traversing the original list from the head.
     current ← head
+    # Traverse and split nodes based on the value of X.
     while current is not null:
-        if current.val < x:
-            lessTail.next ← current; lessTail ← current
+        # If the value of the current node is less than X, it should
+        # be appended to the list for nodes < X.
+        if current.val < X:
+            lessTail.next ← current
+            lessTail ← lessTail.next
+        # Otherwise, the value of the current node is greater than
+        # or equal to X, and it should be appended to the list for
+        # nodes >= X.
         else:
-            greaterTail.next ← current; greaterTail ← current
+            greaterTail.next ← current
+            greaterTail ← greaterTail.next
+        # Proceed to the next node in the original list.
         current ← current.next
+    # End both lists by setting the next pointers of their tails to
+    # null.
+    lessTail.next ← null
     greaterTail.next ← null
-    lessTail.next ← greaterDummy.next                  # concatenate
-    return lessDummy.next
+    return (lessHead.next, greaterHead.next)
+
+function mergeLessAndGreaterLists(lessHead, greaterHead):
+    # If the first list (lessHead) is empty, return greaterHead as
+    # the concatenated list.
+    if lessHead is null: return greaterHead
+    # If the second list (greaterHead) is empty, return lessHead as
+    # the concatenated list.
+    if greaterHead is null: return lessHead
+    # Find the end of the first list (lessHead) to append greaterHead.
+    current ← lessHead
+    while current.next is not null:
+        current ← current.next
+    # Append greaterHead to the end of lessHead.
+    current.next ← greaterHead
+    return lessHead
+
+function valuePartition(head, X):
+    # Return the head if the list is empty or has only one node.
+    if head is null OR head.next is null: return head
+    # Split the original list into two lists: nodes < X and nodes >= X.
+    (lessHead, greaterHead) ← splitListByValue(head, X)
+    # Merge both lists and return the head of the combined list.
+    return mergeLessAndGreaterLists(lessHead, greaterHead)
 ```
 
 ```python run
-from typing import Optional
+from typing import List, Optional
 
 class Solution:
-    def value_partition(self, head: Optional[ListNode], x: int) -> Optional[ListNode]:
-        less_dummy,    greater_dummy    = ListNode(), ListNode()
-        less_tail,     greater_tail     = less_dummy, greater_dummy
+    def split_list_by_value(
+        self, head: Optional[ListNode], X: int
+    ) -> List[Optional[ListNode]]:
+
+        # Create dummy nodes to initialize the heads of two separate
+        # lists. List for nodes with values less than X.
+        less_head = ListNode(0)
+        less_tail = less_head
+
+        # List for nodes with values greater than or equal to X.
+        greater_head = ListNode(0)
+        greater_tail = greater_head
+
+        # Start traversing the original list from the head.
         current = head
+
+        # Traverse and split nodes based on the value of X.
         while current is not None:
-            if current.val < x:
-                less_tail.next    = current; less_tail    = current
+
+            # If the value of the current node is less than X, it
+            # should be appended to the list for nodes < X.
+            if current.val < X:
+
+                # Append current node to list for nodes < X.
+                less_tail.next = current
+
+                # Move less_tail to the newly added node.
+                less_tail = less_tail.next
+
+            # Otherwise, the value of the current node is greater
+            # than or equal to X, and it should be appended to the
+            # list for nodes >= X.
             else:
-                greater_tail.next = current; greater_tail = current
+
+                # Append current node to list for nodes >= X.
+                greater_tail.next = current
+
+                # Move greater_tail to the newly added node.
+                greater_tail = greater_tail.next
+
+            # Proceed to the next node in the original list.
             current = current.next
+
+        # End both lists by setting the next pointers of their tails
+        # to None.
+        less_tail.next = None
         greater_tail.next = None
-        less_tail.next    = greater_dummy.next       # concatenate
-        return less_dummy.next
+
+        # Return heads of both lists, excluding dummy nodes.
+        return [less_head.next, greater_head.next]
+
+    def merge_less_and_greater_lists(
+        self,
+        less_head: Optional[ListNode],
+        greater_head: Optional[ListNode],
+    ) -> Optional[ListNode]:
+
+        # If the first list (less_head) is empty, return greater_head
+        # as the concatenated list.
+        if less_head is None:
+            return greater_head
+
+        # If the second list (greater_head) is empty, return less_head
+        # as the concatenated list.
+        if greater_head is None:
+            return less_head
+
+        # Find the end of the first list (less_head) to append
+        # greater_head.
+        current = less_head
+        while current is not None and current.next is not None:
+            current = current.next
+
+        # Append greater_head to the end of less_head.
+        current.next = greater_head
+        return less_head
+
+    def value_partition(
+        self, head: Optional[ListNode], X: int
+    ) -> Optional[ListNode]:
+
+        # Return the head if the list is empty or has only one node.
+        if head is None or head.next is None:
+            return head
+
+        # Split the original list into two lists: nodes < X and nodes
+        # >= X.
+        less_head, greater_head = self.split_list_by_value(head, X)
+
+        # Merge both lists and return the head of the combined list.
+        return self.merge_less_and_greater_lists(less_head, greater_head)
 ```
 
 ```java run
+import java.util.*;
+
 class Solution {
-    public ListNode valuePartition(ListNode head, int x) {
-        ListNode lessDummy = new ListNode(), lessTail = lessDummy;
-        ListNode greaterDummy = new ListNode(), greaterTail = greaterDummy;
-        for (ListNode c = head; c != null; c = c.next) {
-            if (c.val < x) { lessTail.next    = c; lessTail    = c; }
-            else            { greaterTail.next = c; greaterTail = c; }
+    private List<ListNode> splitListByValue(ListNode head, int X) {
+
+        // Create dummy nodes to initialize the heads of two separate
+        // lists. List for nodes with values less than X.
+        ListNode lessHead = new ListNode(0);
+        ListNode lessTail = lessHead;
+
+        // List for nodes with values greater than or equal to X.
+        ListNode greaterHead = new ListNode(0);
+        ListNode greaterTail = greaterHead;
+
+        // Start traversing the original list from the head.
+        ListNode current = head;
+
+        // Traverse and split nodes based on the value of X.
+        while (current != null) {
+
+            // If the value of the current node is less than X, it
+            // should be appended to the list for nodes < X.
+            if (current.val < X) {
+
+                // Append current node to list for nodes < X.
+                lessTail.next = current;
+
+                // Move lessTail to the newly added node.
+                lessTail = lessTail.next;
+            }
+
+            // Otherwise, the value of the current node is greater
+            // than or equal to X, and it should be appended to the
+            // list for nodes >= X.
+            else {
+
+                // Append current node to list for nodes >= X.
+                greaterTail.next = current;
+
+                // Move greaterTail to the newly added node.
+                greaterTail = greaterTail.next;
+            }
+
+            // Proceed to the next node in the original list.
+            current = current.next;
         }
+
+        // End both lists by setting the next pointers of their tails
+        // to null.
+        lessTail.next = null;
         greaterTail.next = null;
-        lessTail.next    = greaterDummy.next;
-        return lessDummy.next;
+
+        // Return heads of both lists, excluding dummy nodes.
+        return Arrays.asList(lessHead.next, greaterHead.next);
+    }
+
+    private ListNode mergeLessAndGreaterLists(ListNode lessHead, ListNode greaterHead) {
+
+        // If the first list (lessHead) is empty, return greaterHead
+        // as the concatenated list.
+        if (lessHead == null) {
+            return greaterHead;
+        }
+
+        // If the second list (greaterHead) is empty, return lessHead
+        // as the concatenated list.
+        if (greaterHead == null) {
+            return lessHead;
+        }
+
+        // Find the end of the first list (lessHead) to append
+        // greaterHead.
+        ListNode current = lessHead;
+        while (current != null && current.next != null) {
+            current = current.next;
+        }
+
+        // Append greaterHead to the end of lessHead.
+        current.next = greaterHead;
+        return lessHead;
+    }
+
+    public ListNode valuePartition(ListNode head, int X) {
+
+        // Return the head if the list is empty or has only one node.
+        if (head == null || head.next == null) {
+            return head;
+        }
+
+        // Split the original list into two lists: nodes < X and
+        // nodes >= X.
+        List<ListNode> heads = splitListByValue(head, X);
+
+        // Head of list with nodes < X.
+        ListNode lessHead = heads.get(0);
+
+        // Head of list with nodes >= X.
+        ListNode greaterHead = heads.get(1);
+
+        // Merge both lists and return the head of the combined list.
+        return mergeLessAndGreaterLists(lessHead, greaterHead);
     }
 }
 ```
 
 ```c run
-ListNode* valuePartition(ListNode *head, int x) {
-    ListNode lessDummy = {0, NULL}, greaterDummy = {0, NULL};
-    ListNode *lessTail = &lessDummy, *greaterTail = &greaterDummy;
-    for (ListNode *c = head; c != NULL; c = c->next) {
-        if (c->val < x) { lessTail->next    = c; lessTail    = c; }
-        else             { greaterTail->next = c; greaterTail = c; }
+typedef struct { ListNode *less; ListNode *greater; } ValueSplit;
+
+static ValueSplit splitListByValue(ListNode *head, int X) {
+
+    /* Create dummy nodes to initialize the heads of two separate
+       lists. List for nodes with values less than X. */
+    ListNode lessHead = {0, NULL};
+    ListNode *lessTail = &lessHead;
+
+    /* List for nodes with values greater than or equal to X. */
+    ListNode greaterHead = {0, NULL};
+    ListNode *greaterTail = &greaterHead;
+
+    /* Start traversing the original list from the head. */
+    ListNode *current = head;
+
+    /* Traverse and split nodes based on the value of X. */
+    while (current != NULL) {
+
+        /* If the value of the current node is less than X, it should
+           be appended to the list for nodes < X. */
+        if (current->val < X) {
+
+            /* Append current node to list for nodes < X. */
+            lessTail->next = current;
+
+            /* Move lessTail to the newly added node. */
+            lessTail = lessTail->next;
+        }
+
+        /* Otherwise, the value of the current node is greater than
+           or equal to X, and it should be appended to the list for
+           nodes >= X. */
+        else {
+
+            /* Append current node to list for nodes >= X. */
+            greaterTail->next = current;
+
+            /* Move greaterTail to the newly added node. */
+            greaterTail = greaterTail->next;
+        }
+
+        /* Proceed to the next node in the original list. */
+        current = current->next;
     }
+
+    /* End both lists by setting the next pointers of their tails to
+       NULL. */
+    lessTail->next = NULL;
     greaterTail->next = NULL;
-    lessTail->next    = greaterDummy.next;
-    return lessDummy.next;
+
+    ValueSplit out = {lessHead.next, greaterHead.next};
+    return out;
+}
+
+static ListNode* mergeLessAndGreaterLists(ListNode *lessHead, ListNode *greaterHead) {
+
+    /* If the first list (lessHead) is empty, return greaterHead as
+       the concatenated list. */
+    if (lessHead == NULL) {
+        return greaterHead;
+    }
+
+    /* If the second list (greaterHead) is empty, return lessHead as
+       the concatenated list. */
+    if (greaterHead == NULL) {
+        return lessHead;
+    }
+
+    /* Find the end of the first list (lessHead) to append
+       greaterHead. */
+    ListNode *current = lessHead;
+    while (current != NULL && current->next != NULL) {
+        current = current->next;
+    }
+
+    /* Append greaterHead to the end of lessHead. */
+    current->next = greaterHead;
+    return lessHead;
+}
+
+ListNode* valuePartition(ListNode *head, int X) {
+
+    /* Return the head if the list is empty or has only one node. */
+    if (head == NULL || head->next == NULL) {
+        return head;
+    }
+
+    /* Split the original list into two lists: nodes < X and
+       nodes >= X. */
+    ValueSplit heads = splitListByValue(head, X);
+
+    /* Merge both lists and return the head of the combined list. */
+    return mergeLessAndGreaterLists(heads.less, heads.greater);
 }
 ```
 
 ```scala run
 object Solution {
-  def valuePartition(head: ListNode, x: Int): ListNode = {
-    val lessDummy = new ListNode(0); var lessTail: ListNode = lessDummy
-    val greaterDummy = new ListNode(0); var greaterTail: ListNode = greaterDummy
-    var c = head
-    while (c != null) {
-      if (c.v < x) { lessTail.next    = c; lessTail    = c }
-      else          { greaterTail.next = c; greaterTail = c }
-      c = c.next
+  private def splitListByValue(head: ListNode, X: Int): (ListNode, ListNode) = {
+
+    // Create dummy nodes to initialize the heads of two separate
+    // lists. List for nodes with values less than X.
+    val lessHead = new ListNode(0)
+    var lessTail: ListNode = lessHead
+
+    // List for nodes with values greater than or equal to X.
+    val greaterHead = new ListNode(0)
+    var greaterTail: ListNode = greaterHead
+
+    // Start traversing the original list from the head.
+    var current = head
+
+    // Traverse and split nodes based on the value of X.
+    while (current != null) {
+
+      // If the value of the current node is less than X, it should
+      // be appended to the list for nodes < X.
+      if (current.val < X) {
+
+        // Append current node to list for nodes < X.
+        lessTail.next = current
+
+        // Move lessTail to the newly added node.
+        lessTail = lessTail.next
+      }
+      // Otherwise, the value of the current node is greater than or
+      // equal to X, and it should be appended to the list for
+      // nodes >= X.
+      else {
+
+        // Append current node to list for nodes >= X.
+        greaterTail.next = current
+
+        // Move greaterTail to the newly added node.
+        greaterTail = greaterTail.next
+      }
+
+      // Proceed to the next node in the original list.
+      current = current.next
     }
+
+    // End both lists by setting the next pointers of their tails to
+    // null.
+    lessTail.next = null
     greaterTail.next = null
-    lessTail.next    = greaterDummy.next
-    lessDummy.next
+
+    (lessHead.next, greaterHead.next)
+  }
+
+  private def mergeLessAndGreaterLists(lessHead: ListNode, greaterHead: ListNode): ListNode = {
+
+    // If the first list (lessHead) is empty, return greaterHead as
+    // the concatenated list.
+    if (lessHead == null) return greaterHead
+
+    // If the second list (greaterHead) is empty, return lessHead as
+    // the concatenated list.
+    if (greaterHead == null) return lessHead
+
+    // Find the end of the first list (lessHead) to append
+    // greaterHead.
+    var current = lessHead
+    while (current != null && current.next != null) {
+      current = current.next
+    }
+
+    // Append greaterHead to the end of lessHead.
+    current.next = greaterHead
+    lessHead
+  }
+
+  def valuePartition(head: ListNode, X: Int): ListNode = {
+
+    // Return the head if the list is empty or has only one node.
+    if (head == null || head.next == null) return head
+
+    // Split the original list into two lists: nodes < X and
+    // nodes >= X.
+    val (lessHead, greaterHead) = splitListByValue(head, X)
+
+    // Merge both lists and return the head of the combined list.
+    mergeLessAndGreaterLists(lessHead, greaterHead)
   }
 }
 ```
