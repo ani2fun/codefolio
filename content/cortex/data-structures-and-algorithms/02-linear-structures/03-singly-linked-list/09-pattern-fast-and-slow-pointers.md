@@ -379,13 +379,25 @@ The implementation of the fast and slow pointer solution is given as follows.
 
 
 ```pseudocode
-# Find the middle node. Fast = 2 × slow → when fast hits the end, slow is at the midpoint.
-# Even length: returns the SECOND middle.
+# Fast = 2 × slow. When fast hits the end, slow is at the midpoint (the SECOND middle on even length).
 function middleNodeSearch(head):
-    slow ← head; fast ← head
+
+    # Initialize slow pointer to the head of the list
+    slow ← head
+
+    # Initialize fast pointer to the head of the list
+    fast ← head
+
+    # Iterate until fast pointer reaches the end of the list
     while fast is not null AND fast.next is not null:
+
+        # Move slow pointer one step forward
         slow ← slow.next
+
+        # Move fast pointer two steps forward
         fast ← fast.next.next
+
+    # Return the middle node or the second middle node (in case of even number of nodes)
     return slow
 ```
 
@@ -393,23 +405,52 @@ function middleNodeSearch(head):
 from typing import Optional
 
 class Solution:
-    def middle_node_search(self, head: Optional[ListNode]) -> Optional[ListNode]:
-        slow, fast = head, head
-        # When fast reaches the end, slow is parked at the middle.
+    def middle_node_search(
+        self, head: Optional[ListNode]
+    ) -> Optional[ListNode]:
+
+        # Initialize slow pointer to the head of the list
+        slow = head
+
+        # Initialize fast pointer to the head of the list
+        fast = head
+
+        # Iterate until fast pointer reaches the end of the list
         while fast is not None and fast.next is not None:
+
+            # Move slow pointer one step forward
             slow = slow.next
+
+            # Move fast pointer two steps forward
             fast = fast.next.next
-        return slow    # for even length, returns the SECOND middle
+
+        # Return the middle node or the second middle node (in case of
+        # even number of nodes)
+        return slow
 ```
 
 ```java run
 class Solution {
     public ListNode middleNodeSearch(ListNode head) {
-        ListNode slow = head, fast = head;
+
+        // Initialize slow pointer to the head of the list
+        ListNode slow = head;
+
+        // Initialize fast pointer to the head of the list
+        ListNode fast = head;
+
+        // Iterate until fast pointer reaches the end of the list
         while (fast != null && fast.next != null) {
+
+            // Move slow pointer one step forward
             slow = slow.next;
+
+            // Move fast pointer two steps forward
             fast = fast.next.next;
         }
+
+        // Return the middle node or the second middle node (in case of
+        // even number of nodes)
         return slow;
     }
 }
@@ -417,11 +458,25 @@ class Solution {
 
 ```c run
 ListNode* middleNodeSearch(ListNode *head) {
-    ListNode *slow = head, *fast = head;
+
+    /* Initialize slow pointer to the head of the list */
+    ListNode *slow = head;
+
+    /* Initialize fast pointer to the head of the list */
+    ListNode *fast = head;
+
+    /* Iterate until fast pointer reaches the end of the list */
     while (fast != NULL && fast->next != NULL) {
+
+        /* Move slow pointer one step forward */
         slow = slow->next;
+
+        /* Move fast pointer two steps forward */
         fast = fast->next->next;
     }
+
+    /* Return the middle node or the second middle node (in case of
+       even number of nodes) */
     return slow;
 }
 ```
@@ -429,11 +484,25 @@ ListNode* middleNodeSearch(ListNode *head) {
 ```scala run
 object Solution {
   def middleNodeSearch(head: ListNode): ListNode = {
-    var slow = head; var fast = head
+
+    // Initialize slow pointer to the head of the list
+    var slow = head
+
+    // Initialize fast pointer to the head of the list
+    var fast = head
+
+    // Iterate until fast pointer reaches the end of the list
     while (fast != null && fast.next != null) {
+
+      // Move slow pointer one step forward
       slow = slow.next
+
+      // Move fast pointer two steps forward
       fast = fast.next.next
     }
+
+    // Return the middle node or the second middle node (in case of
+    // even number of nodes)
     slow
   }
 }
