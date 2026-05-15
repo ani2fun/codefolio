@@ -130,15 +130,26 @@ Given below is the generic code implementation of the fast and slow pointer trav
 
 
 ```pseudocode
-# Generic fast-and-slow template. slow moves 1, fast moves (n + 1). When fast reaches `end`,
-# slow is parked at the (length / (n + 1))-th node — the "1-out-of-(n+1)" position.
+# Generic fast-and-slow template. slow moves 1, fast moves n+1. When fast reaches end, slow parks at the "1-out-of-(n+1)" position.
 function findTheSolutionNode(start, end, n):
-    slow ← start; fast ← start
-    while fast is not null AND fast ≠ end AND fast.next is not null:
-        slow ← slow.next                               # 1 step
-        for i from 1 to n + 1:                         # n + 1 steps
-            if fast is null OR fast = end: break
-            fast ← fast.next
+
+    # Create two references slow and fast
+    # and point them to the start
+    slow ← start
+    fast ← start
+
+    # Null checks to take care of edge cases
+    while fast.next is not null AND fast ≠ end:
+
+        # Move slow 1 step
+        slow ← slow.next
+
+        # Move fast n+1 step
+        for i ← 0 to n:
+            if fast is not null AND fast.next is not null:
+                fast ← fast.next
+
+    # Node pointed by slow is the solution
     return slow
 ```
 
@@ -151,31 +162,50 @@ class ListNode:
         self.next = next
 
 def find_the_solution_node(start: ListNode, end: Optional[ListNode], n: int) -> ListNode:
-    # Generic fast-and-slow: slow moves 1 step per tick, fast moves (n + 1).
-    # When fast reaches `end`, slow is parked at the (length / (n + 1))-th node.
+
+    # Create two references slow and fast
+    # and point them to the start
     slow = start
     fast = start
-    while fast is not None and fast is not end and fast.next is not None:
-        slow = slow.next                    # 1 step for slow
-        for _ in range(n + 1):              # n + 1 steps for fast
-            if fast is None or fast is end:
-                break
-            fast = fast.next
+
+    # Null checks to take care of edge cases
+    while fast.next is not None and fast is not end:
+
+        # Move slow 1 step
+        slow = slow.next
+
+        # Move fast n+1 step
+        for _ in range(n + 1):
+            if fast is not None and fast.next is not None:
+                fast = fast.next
+
+    # Node pointed by slow is the solution
     return slow
 ```
 
 ```java run
 class Solution {
     public ListNode findTheSolutionNode(ListNode start, ListNode end, int n) {
+
+        // Create two references slow and fast
+        // and point them to the start
         ListNode slow = start;
         ListNode fast = start;
-        while (fast != null && fast != end && fast.next != null) {
-            slow = slow.next;                       // 1 step for slow
-            for (int i = 0; i < n + 1; i++) {       // n + 1 steps for fast
-                if (fast == null || fast == end) break;
-                fast = fast.next;
+
+        // Null checks to take care of edge cases
+        while (fast.next != null && fast != end) {
+
+            // Move slow 1 step
+            slow = slow.next;
+
+            // Move fast n+1 step
+            for (int i = 0; i < n + 1; i++) {
+                if (fast != null && fast.next != null)
+                    fast = fast.next;
             }
         }
+
+        // Node pointed by slow is the solution
         return slow;
     }
 }
@@ -185,14 +215,26 @@ class Solution {
 typedef struct ListNode { int val; struct ListNode *next; } ListNode;
 
 ListNode* findTheSolutionNode(ListNode *start, ListNode *end, int n) {
-    ListNode *slow = start, *fast = start;
-    while (fast != NULL && fast != end && fast->next != NULL) {
-        slow = slow->next;                          /* 1 step for slow */
-        for (int i = 0; i < n + 1; i++) {           /* n + 1 steps for fast */
-            if (fast == NULL || fast == end) break;
-            fast = fast->next;
+
+    /* Create two pointers slow and fast
+       and point them to the start */
+    ListNode *slow = start;
+    ListNode *fast = start;
+
+    /* Null pointer checks to take care of edge cases */
+    while (fast->next && fast != end) {
+
+        /* Move slow 1 step */
+        slow = slow->next;
+
+        /* Move fast n+1 steps */
+        for (int i = 0; i < n + 1; i++) {
+            if (fast->next)
+                fast = fast->next;
         }
     }
+
+    /* Node pointed by slow is the solution */
     return slow;
 }
 ```
@@ -200,16 +242,29 @@ ListNode* findTheSolutionNode(ListNode *start, ListNode *end, int n) {
 ```scala run
 object Solution {
   def findTheSolutionNode(start: ListNode, end: ListNode, n: Int): ListNode = {
+
+    // Create two references slow and fast
+    // and point them to the start
     var slow = start
     var fast = start
-    while (fast != null && (fast ne end) && fast.next != null) {
+
+    // Null checks to take care of edge cases
+    while (fast.next != null && (fast ne end)) {
+
+      // Move slow 1 step
       slow = slow.next
+
+      // Move fast n+1 step
       var i = 0
-      while (i < n + 1 && fast != null && (fast ne end)) {
-        fast = fast.next
+      while (i < n + 1) {
+        if (fast != null && fast.next != null) {
+          fast = fast.next
+        }
         i += 1
       }
     }
+
+    // Node pointed by slow is the solution
     slow
   }
 }
