@@ -67,44 +67,49 @@ The loop terminates when `left >= right`. At that point, every pair of equidista
 
 Here is the full picture of a single traversal on an array of size 7:
 
-```mermaid
----
-config:
-  theme: base
-  themeVariables:
-    primaryColor: "#dbeafe"
-    primaryBorderColor: "#3b82f6"
-    primaryTextColor: "#1e3a5f"
-    lineColor: "#64748b"
-    secondaryColor: "#ede9fe"
-    tertiaryColor: "#fef9c3"
----
-flowchart TB
-  subgraph S0["Initial state"]
-    direction LR
-    L0(["left=0"]) --> I0["A"] --- I1["B"] --- I2["C"] --- I3["D"] --- I4["E"] --- I5["F"] --- I6["G"]
-    I6 --> R0(["right=6"])
-  end
-  subgraph S1["After iteration 1  (A & G processed, left++, right--)"]
-    direction LR
-    L1(["left=1"]) --> J1["B"] --- J2["C"] --- J3["D"] --- J4["E"] --- J5["F"]
-    J5 --> R1(["right=5"])
-  end
-  subgraph S2["After iteration 2  (B & F processed, left++, right--)"]
-    direction LR
-    L2(["left=2"]) --> K2["C"] --- K3["D"] --- K4["E"]
-    K4 --> R2(["right=4"])
-  end
-  subgraph S3["After iteration 3  (C & E processed, left++, right--)"]
-    direction LR
-    L3(["left=3"]) --> M3["D"]
-    M3 --> R3(["right=3"])
-  end
-  subgraph S4["left = right = 3  →  loop ends"]
-    DONE(["✓ centre element D handled separately if needed"])
-  end
-
-  S0 --> S1 --> S2 --> S3 --> S4
+```d3 widget=array-traversal
+{
+  "items": ["A", "B", "C", "D", "E", "F", "G"],
+  "title": "Two-pointer traversal on a 7-element array",
+  "steps": [
+    {
+      "markers": [
+        { "name": "left",  "index": 0, "color": "#3b82f6" },
+        { "name": "right", "index": 6, "color": "#f59e0b" }
+      ],
+      "range":   { "lo": 0, "hi": 6 },
+      "msg": "Initial state — left = 0, right = 6. The whole array lies between the pointers."
+    },
+    {
+      "markers": [
+        { "name": "left",  "index": 1, "color": "#3b82f6" },
+        { "name": "right", "index": 5, "color": "#f59e0b" }
+      ],
+      "range":   { "lo": 1, "hi": 5 },
+      "msg": "After iteration 1 — A and G have been processed; left++, right--."
+    },
+    {
+      "markers": [
+        { "name": "left",  "index": 2, "color": "#3b82f6" },
+        { "name": "right", "index": 4, "color": "#f59e0b" }
+      ],
+      "range":   { "lo": 2, "hi": 4 },
+      "msg": "After iteration 2 — B and F processed; left++, right--."
+    },
+    {
+      "markers": [
+        { "name": "left",  "index": 3, "color": "#3b82f6" },
+        { "name": "right", "index": 3, "color": "#f59e0b" }
+      ],
+      "range":   { "lo": 3, "hi": 3 },
+      "msg": "After iteration 3 — C and E processed; left = right = 3."
+    },
+    {
+      "markers": [],
+      "msg": "left ≥ right — loop ends. The centre element D is handled separately if the problem requires it."
+    }
+  ]
+}
 ```
 
 <p align="center"><strong>Iteration-by-iteration view of the two-pointer traversal on a 7-element array — each step processes one pair of equidistant elements and closes the gap by one on each side.</strong></p>
