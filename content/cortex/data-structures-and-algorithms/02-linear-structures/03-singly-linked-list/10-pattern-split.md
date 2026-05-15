@@ -1301,28 +1301,54 @@ function kWayListSplit(head, k):
 from typing import List, Optional
 
 class Solution:
-    def k_way_list_split(self, head: Optional[ListNode], k: int) -> List[Optional[ListNode]]:
-        length, cur = 0, head
-        while cur:
-            length += 1; cur = cur.next
+    def find_length(self, head: Optional[ListNode]) -> int:
+        length = 0
+        while head is not None:
+            length += 1
+            head = head.next
+        return length
 
-        base_size = length // k
-        extra     = length %  k
+    def k_way_list_split(
+        self, head: Optional[ListNode], k: int
+    ) -> List[Optional[ListNode]]:
 
+        # Get total number of nodes
+        length = self.find_length(head)
+
+        # Base size of each part
+        part_size = length // k
+
+        # Remainder to distribute among parts
+        extra_nodes = length % k
+
+        # Result list to store part heads
         parts: List[Optional[ListNode]] = [None] * k
+
+        # Pointer to traverse the list
         current = head
+
         for i in range(k):
-            if current is None:
-                break
+
+            # Set the start of the current part
             parts[i] = current
-            size = base_size + (1 if extra > 0 else 0)
-            # Walk size - 1 nodes; then detach
-            for _ in range(size - 1):
-                current = current.next
-            nxt = current.next
-            current.next = None
-            current = nxt
-            if extra > 0: extra -= 1
+
+            # Calculate the size for the current part
+            current_part_size = part_size + (1 if extra_nodes > 0 else 0)
+
+            # Traverse `current_part_size - 1` nodes ahead in the list
+            for j in range(1, current_part_size):
+                if current:
+                    current = current.next
+
+            # Move to the start of the next part, breaking the link
+            if current:
+                next_part_head = current.next
+                current.next = None
+                current = next_part_head
+
+            # Decrease `extra_nodes` only if it was used for this part
+            if extra_nodes > 0:
+                extra_nodes -= 1
 
         return parts
 ```
