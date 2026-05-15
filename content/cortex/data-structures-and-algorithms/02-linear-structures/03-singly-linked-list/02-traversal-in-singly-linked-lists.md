@@ -438,12 +438,21 @@ class ListNode:
 
 class Solution:
     def node_search(self, head: ListNode, data: int) -> ListNode | None:
+
+        # Start from the head of the linked list
         current = head
-        while current:
-            if current.val == data:   # Found — return immediately
+
+        while current is not None:
+
+            # Found the value, return the current node
+            if current.val == data:
                 return current
-            current = current.next    # Advance to next node
-        return None                   # Exhausted the list without a match
+
+            # Move to the next node
+            current = current.next
+
+        # Value not found in the linked list
+        return None
 
 # Build list 5 → 7 → 3 → 10
 n4=ListNode(10); n3=ListNode(3,n4); n2=ListNode(7,n3); n1=ListNode(5,n2)
@@ -457,12 +466,23 @@ public class Main {
     static class ListNode { int val; ListNode next; ListNode(int v){val=v;} }
 
     static ListNode nodeSearch(ListNode head, int data) {
+
+        // Start from the head of the linked list
         ListNode current = head;
+
         while (current != null) {
-            if (current.val == data) return current;  // Found — return immediately
+
+            // Found the value, return the current node
+            if (current.val == data) {
+                return current;
+            }
+
+            // Move to the next node
             current = current.next;
         }
-        return null;  // Exhausted the list without a match
+
+        // Value not found in the linked list
+        return null;
     }
 
     public static void main(String[] args) {
@@ -484,12 +504,23 @@ typedef struct ListNode { int val; struct ListNode *next; } ListNode;
 ListNode* newNode(int v){ ListNode*n=malloc(sizeof*n); n->val=v; n->next=NULL; return n; }
 
 ListNode* nodeSearch(ListNode *head, int data) {
+
+    /* Start from the head of the linked list */
     ListNode *current = head;
+
     while (current != NULL) {
-        if (current->val == data) return current;  /* Found — return immediately */
+
+        /* Found the value, return the current node */
+        if (current->val == data) {
+            return current;
+        }
+
+        /* Move to the next node */
         current = current->next;
     }
-    return NULL;  /* Exhausted the list without a match */
+
+    /* Value not found in the linked list */
+    return NULL;
 }
 
 int main() {
@@ -507,12 +538,23 @@ class ListNode(var v: Int, var next: ListNode = null)
 
 object Main extends App {
   def nodeSearch(head: ListNode, data: Int): ListNode = {
+
+    // Start from the head of the linked list
     var current = head
+
     while (current != null) {
-      if (current.v == data) return current  // Found — return immediately
+
+      // Found the value, return the current node
+      if (current.v == data) {
+        return current
+      }
+
+      // Move to the next node
       current = current.next
     }
-    null  // Exhausted the list without a match
+
+    // Value not found in the linked list
+    null
   }
 
   val n4=new ListNode(10); val n3=new ListNode(3,n4)
