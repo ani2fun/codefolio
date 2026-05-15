@@ -3912,29 +3912,158 @@ Given the **head** of a singly linked list and a **random node** in the list, wr
 
 ## Solution
 
-```cpp
-/**
- * Definition for singly-linked list.
- * struct ListNode {
- *     int val;
- *     ListNode *next;
- *     ListNode() : val(0), next(nullptr) {}
- *     ListNode(int val) : val(val), next(nullptr) {}
- * };
- */
 
-using namespace std;
+```pseudocode
+function deleteNodeBeforeTheGivenNode(head, node):
 
-class Solution {
-public:
-    ListNode *deleteNodeBeforeTheGivenNode(
-        ListNode *head,
-        ListNode *node
-    ) {
+    # If the head or the given node is null, there is nothing to
+    # delete. Return the existing head
+    if head is null OR node is null:
+        return head
 
-        // If the head or the given node is nullptr, there is nothing to
+    # If the given node is the head node, we cannot delete the node
+    # before it
+    if node = head:
+        return head
+
+    # If the node to delete is the immediate next node of the head
+    # Update the head to point to the next node, delete the original
+    # head, and return the updated head
+    if head.next is not null AND head.next = node:
+        nodeToBeDeleted ← head
+        head ← head.next
+
+        # Dereference for garbage collection
+        nodeToBeDeleted ← null
+        return head
+
+    # Initialize variables for traversal
+    # current node being examined
+    current ← head.next
+
+    # Node preceding the current node
+    previous ← head
+
+    # Node preceding the previous node
+    previousToprevious ← null
+
+    # Traverse the linked list until we find the node or reach the
+    # end.
+    while current is not null AND current ≠ node:
+        previousToprevious ← previous
+        previous ← current
+        current ← current.next
+
+    # If the node to delete was not found, return the head as is.
+    if current is null:
+        return head
+
+    # Connect the previous node to the current node, bypassing the
+    # node to delete.
+    previousToprevious.next ← current
+
+    # Dereference for garbage collection
+    previous ← null
+
+    return head
+```
+
+```python run
+class ListNode:
+    def __init__(self, val=0, next=None):
+        self.val = val
+        self.next = next
+
+def delete_node_before_the_given_node(head, node):
+
+    # If the head or the given node is None, there is nothing to
+    # delete. Return the existing head
+    if head is None or node is None:
+        return head
+
+    # If the given node is the head node, we cannot delete the node
+    # before it
+    if node == head:
+        return head
+
+    # If the node to delete is the immediate next node of the head
+    # Update the head to point to the next node, delete the original
+    # head, and return the updated head
+    if head.next is not None and head.next == node:
+        node_to_be_deleted = head
+        head = head.next
+        node_to_be_deleted = (
+
+            # Dereference for garbage collection
+            None
+        )
+        return head
+
+    # Initialize variables for traversal
+    # current node being examined
+    current = head.next
+
+    # Node preceding the current node
+    previous = head
+
+    # Node preceding the previous node
+    previous_toprevious = None
+
+    # Traverse the linked list until we find the node or reach the
+    # end.
+    while current is not None and current != node:
+        previous_toprevious = previous
+        previous = current
+        current = current.next
+
+    # If the node to delete was not found, return the head as is.
+    if current is None:
+        return head
+
+    # Connect the previous node to the current node, bypassing the
+    # node to delete.
+    previous_toprevious.next = current
+
+    # Dereference for garbage collection
+    previous = None
+
+    return head
+
+# --- driver ---
+def build(vals):
+    dummy = ListNode(0); cur = dummy
+    for v in vals:
+        cur.next = ListNode(v); cur = cur.next
+    return dummy.next
+
+def to_list(head):
+    res = []
+    while head: res.append(head.val); head = head.next
+    return res
+
+def find(head, val):
+    cur = head
+    while cur and cur.val != val: cur = cur.next
+    return cur
+
+head = build([5, 7, 3, 10])
+head = delete_node_before_the_given_node(head, find(head, 3))
+print(to_list(head))  # [5, 3, 10]
+```
+
+```java run
+public class Main {
+    static class ListNode {
+        int val; ListNode next;
+        ListNode(int v) { val = v; }
+        ListNode(int v, ListNode n) { val = v; next = n; }
+    }
+
+    static ListNode deleteNodeBeforeTheGivenNode(ListNode head, ListNode node) {
+
+        // If the head or the given node is null, there is nothing to
         // delete Return the existing head
-        if (head == nullptr || node == nullptr) {
+        if (head == null || node == null) {
             return head;
         }
 
@@ -3947,45 +4076,252 @@ public:
         // If the node to delete is the immediate next node of the head
         // Update the head to point to the next node, delete the original
         // head, and return the updated head
-        if (head->next != nullptr && head->next == node) {
-            ListNode *nodeToBeDeleted = head;
-            head = head->next;
-            delete nodeToBeDeleted;
+        if (head.next != null && head.next == node) {
+            ListNode nodeToBeDeleted = head;
+            head = head.next;
+
+            // Dereference for garbage collection
+            nodeToBeDeleted = null;
             return head;
         }
 
         // Initialize variables for traversal
         // current node being examined
-        ListNode *current = head->next;
+        ListNode current = head.next;
 
         // Node preceding the current node
-        ListNode *previous = head;
+        ListNode previous = head;
 
         // Node preceding the previous node
-        ListNode *previousToprevious = nullptr;
+        ListNode previousToprevious = null;
 
         // Traverse the linked list until we find the node or reach the
         // end.
-        while (current != nullptr && current != node) {
+        while (current != null && current != node) {
             previousToprevious = previous;
             previous = current;
-            current = current->next;
+            current = current.next;
         }
 
         // If the node to delete was not found, return the head as is.
-        if (current == nullptr) {
+        if (current == null) {
             return head;
         }
 
         // Connect the previous node to the current node, bypassing the
         // node to delete.
-        previousToprevious->next = current;
-        delete previous;
+        previousToprevious.next = current;
+
+        // Dereference for garbage collection
+        previous = null;
 
         return head;
     }
-};
+
+    static ListNode build(int[] vals) {
+        ListNode dummy = new ListNode(0); ListNode cur = dummy;
+        for (int v : vals) { cur.next = new ListNode(v); cur = cur.next; }
+        return dummy.next;
+    }
+
+    static String toStr(ListNode head) {
+        StringBuilder sb = new StringBuilder("[");
+        while (head != null) { sb.append(head.val); if (head.next != null) sb.append(", "); head = head.next; }
+        return sb.append("]").toString();
+    }
+
+    static ListNode find(ListNode head, int val) {
+        ListNode cur = head;
+        while (cur != null && cur.val != val) cur = cur.next;
+        return cur;
+    }
+
+    public static void main(String[] args) {
+        ListNode head = build(new int[]{5, 7, 3, 10});
+        head = deleteNodeBeforeTheGivenNode(head, find(head, 3));
+        System.out.println(toStr(head)); // [5, 3, 10]
+    }
+}
 ```
+
+```c run
+#include <stdio.h>
+#include <stdlib.h>
+
+typedef struct ListNode { int val; struct ListNode *next; } ListNode;
+
+ListNode* newNode(int v) {
+    ListNode *n = malloc(sizeof(ListNode)); n->val = v; n->next = NULL; return n;
+}
+
+ListNode* deleteNodeBeforeTheGivenNode(ListNode *head, ListNode *node) {
+
+    /* If the head or the given node is NULL, there is nothing to
+       delete Return the existing head */
+    if (head == NULL || node == NULL) {
+        return head;
+    }
+
+    /* If the given node is the head node, we cannot delete the node
+       before it */
+    if (node == head) {
+        return head;
+    }
+
+    /* If the node to delete is the immediate next node of the head
+       Update the head to point to the next node, delete the original
+       head, and return the updated head */
+    if (head->next != NULL && head->next == node) {
+        ListNode *nodeToBeDeleted = head;
+        head = head->next;
+        free(nodeToBeDeleted);
+        return head;
+    }
+
+    /* Initialize variables for traversal */
+    /* current node being examined */
+    ListNode *current = head->next;
+
+    /* Node preceding the current node */
+    ListNode *previous = head;
+
+    /* Node preceding the previous node */
+    ListNode *previousToprevious = NULL;
+
+    /* Traverse the linked list until we find the node or reach the
+       end. */
+    while (current != NULL && current != node) {
+        previousToprevious = previous;
+        previous = current;
+        current = current->next;
+    }
+
+    /* If the node to delete was not found, return the head as is. */
+    if (current == NULL) {
+        return head;
+    }
+
+    /* Connect the previous node to the current node, bypassing the
+       node to delete. */
+    previousToprevious->next = current;
+    free(previous);
+
+    return head;
+}
+
+ListNode* build(int *vals, int n) {
+    ListNode dummy = {0, NULL}; ListNode *cur = &dummy;
+    for (int i = 0; i < n; i++) { cur->next = newNode(vals[i]); cur = cur->next; }
+    return dummy.next;
+}
+
+void printList(ListNode *head) {
+    printf("[");
+    while (head) { printf("%d", head->val); if (head->next) printf(", "); head = head->next; }
+    printf("]\n");
+}
+
+ListNode* find(ListNode *head, int val) {
+    ListNode *cur = head;
+    while (cur != NULL && cur->val != val) cur = cur->next;
+    return cur;
+}
+
+int main() {
+    int vals[] = {5, 7, 3, 10};
+    ListNode *head = build(vals, 4);
+    head = deleteNodeBeforeTheGivenNode(head, find(head, 3));
+    printList(head); // [5, 3, 10]
+    return 0;
+}
+```
+
+```scala run
+class ListNode(var v: Int, var next: ListNode = null)
+
+object Main extends App {
+  def deleteNodeBeforeTheGivenNode(head: ListNode, node: ListNode): ListNode = {
+
+    // If the head or the given node is null, there is nothing to
+    // delete Return the existing head
+    if (head == null || node == null) {
+      return head
+    }
+
+    // If the given node is the head node, we cannot delete the node
+    // before it
+    if (node == head) {
+      return head
+    }
+
+    // If the node to delete is the immediate next node of the head
+    // Update the head to point to the next node, delete the original
+    // head, and return the updated head
+    if (head.next != null && head.next == node) {
+      var nodeToBeDeleted = head
+      val newHead = head.next
+
+      // Dereference for garbage collection
+      nodeToBeDeleted = null
+      return newHead
+    }
+
+    // Initialize variables for traversal
+    // current node being examined
+    var current = head.next
+
+    // Node preceding the current node
+    var previous = head
+
+    // Node preceding the previous node
+    var previousToprevious: ListNode = null
+
+    // Traverse the linked list until we find the node or reach the
+    // end.
+    while (current != null && current != node) {
+      previousToprevious = previous
+      previous = current
+      current = current.next
+    }
+
+    // If the node to delete was not found, return the head as is.
+    if (current == null) {
+      return head
+    }
+
+    // Connect the previous node to the current node, bypassing the
+    // node to delete.
+    previousToprevious.next = current
+
+    // Dereference for garbage collection
+    previous = null
+
+    head
+  }
+
+  def build(vals: Int*): ListNode = {
+    val dummy = new ListNode(0); var cur = dummy
+    for (v <- vals) { cur.next = new ListNode(v); cur = cur.next }
+    dummy.next
+  }
+
+  def toStr(head: ListNode): String = {
+    val sb = new StringBuilder("["); var cur = head
+    while (cur != null) { sb.append(cur.v); if (cur.next != null) sb.append(", "); cur = cur.next }
+    sb.append("]").toString
+  }
+
+  def find(head: ListNode, value: Int): ListNode = {
+    var cur = head
+    while (cur != null && cur.v != value) cur = cur.next
+    cur
+  }
+
+  val head = build(5, 7, 3, 10)
+  println(toStr(deleteNodeBeforeTheGivenNode(head, find(head, 3)))) // [5, 3, 10]
+}
+```
+
 
 ***
 
