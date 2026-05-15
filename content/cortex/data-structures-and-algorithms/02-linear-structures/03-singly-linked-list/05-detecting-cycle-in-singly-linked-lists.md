@@ -537,37 +537,62 @@ Given the **head** of a linked list, write a function to detect if there is a c
 
 
 ```pseudocode
-# Boolean version of Floyd's algorithm — return true on collision, false if fast falls off.
+# Boolean version of Floyd's algorithm — return true on the first collision, false if fast falls off the list.
 function detectCycle(head):
-    slow ← head; fast ← head
+
+    # Initialize the slow pointer to the head of the list
+    slow ← head
+
+    # Initialize the fast pointer to the head of the list
+    fast ← head
+
     while fast is not null AND fast.next is not null:
+
+        # Move the slow pointer one step forward
         slow ← slow.next
+
+        # Move the fast pointer two steps forward
         fast ← fast.next.next
+
+        # If the slow and fast pointers meet, there is a cycle in the list
         if slow = fast:
             return true
-    return false                                       # finite list — no cycle
+
+    # If the loop exits without returning true, there is no cycle in the list
+    return false
 ```
 
 ```python run
+from typing import Optional
+
 class ListNode:
     def __init__(self, val=0, next=None):
         self.val = val
         self.next = next
 
-def detect_cycle(head):
-    # Initialize both pointers at the head
-    slow = head
-    fast = head
+def detect_cycle(head: Optional[ListNode]) -> bool:
 
-    while fast is not None and fast.next is not None:
-        slow = slow.next          # Move slow one step — tortoise pace
-        fast = fast.next.next     # Move fast two steps — hare pace
+    # Initialize the slow pointer to the head of the list
+    slow: Optional[ListNode] = head
 
-        # If they meet, a cycle forces them to converge inside the loop
-        if slow is fast:
+    # Initialize the fast pointer to the head of the list
+    fast: Optional[ListNode] = head
+
+    while fast is not None and fast.next is not None and slow:
+
+        # Move the slow pointer one step forward
+        slow = slow.next
+
+        # Move the fast pointer two steps forward
+        fast = fast.next.next
+
+        # If the slow and fast pointers meet, there is a cycle in the
+        # list
+        if slow == fast:
             return True
 
-    # fast fell off the end — no cycle possible in a finite list
+    # If the loop exits without returning true, there is no cycle in
+    # the list
     return False
 
 # Driver: non-cyclic list [5, 7, 3, 10]
@@ -590,18 +615,30 @@ public class DetectCycle {
     }
 
     static boolean detectCycle(ListNode head) {
+
+        // Initialize the slow pointer to the head of the list
         ListNode slow = head;
+
+        // Initialize the fast pointer to the head of the list
         ListNode fast = head;
 
         while (fast != null && fast.next != null) {
-            slow = slow.next;         // Move slow one step
-            fast = fast.next.next;    // Move fast two steps
 
-            // Meeting point proves a cycle exists
-            if (slow == fast) return true;
+            // Move the slow pointer one step forward
+            slow = slow.next;
+
+            // Move the fast pointer two steps forward
+            fast = fast.next.next;
+
+            // If the slow and fast pointers meet, there is a cycle in
+            // the list
+            if (slow == fast) {
+                return true;
+            }
         }
 
-        // fast reached null — list is finite with no cycle
+        // If the loop exits without returning true, there is no cycle in
+        // the list
         return false;
     }
 
@@ -635,18 +672,31 @@ ListNode* newNode(int v) {
 }
 
 int detectCycle(ListNode *head) {
+
+    /* Initialize the slow pointer to the head of the list */
     ListNode *slow = head;
+
+    /* Initialize the fast pointer to the head of the list */
     ListNode *fast = head;
 
     while (fast != NULL && fast->next != NULL) {
-        slow = slow->next;        /* Move slow one step */
-        fast = fast->next->next;  /* Move fast two steps */
 
-        /* Pointers share the same address only inside a cycle */
-        if (slow == fast) return 1;
+        /* Move the slow pointer one step forward */
+        slow = slow->next;
+
+        /* Move the fast pointer two steps forward */
+        fast = fast->next->next;
+
+        /* If the slow and fast pointers meet, there is a cycle in
+           the list */
+        if (slow == fast) {
+            return 1;
+        }
     }
 
-    return 0; /* fast exited — no cycle */
+    /* If the loop exits without returning true, there is no cycle in
+       the list */
+    return 0;
 }
 
 int main() {
@@ -667,18 +717,31 @@ class ListNode(var v: Int, var next: ListNode = null)
 
 object DetectCycle {
   def detectCycle(head: ListNode): Boolean = {
+
+    // Initialize the slow pointer to the head of the list
     var slow = head
+
+    // Initialize the fast pointer to the head of the list
     var fast = head
 
     while (fast != null && fast.next != null) {
-      slow = slow.next         // Move slow one step
-      fast = fast.next.next    // Move fast two steps
 
-      // Reference equality: same object in memory → cycle confirmed
-      if (slow eq fast) return true
+      // Move the slow pointer one step forward
+      slow = slow.next
+
+      // Move the fast pointer two steps forward
+      fast = fast.next.next
+
+      // If the slow and fast pointers meet, there is a cycle in
+      // the list
+      if (slow eq fast) {
+        return true
+      }
     }
 
-    false // fast exited cleanly — no cycle
+    // If the loop exits without returning true, there is no cycle in
+    // the list
+    false
   }
 
   def main(args: Array[String]): Unit = {
