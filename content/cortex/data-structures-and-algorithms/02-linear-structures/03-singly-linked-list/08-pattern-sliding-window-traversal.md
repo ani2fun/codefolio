@@ -150,16 +150,30 @@ Given below is the generic code implementation of the fixed-size sliding window 
 
 
 ```pseudocode
-# Two pointers k apart on a linked list. Phase 1 sets the gap; Phase 2 slides both forward.
+# Generic fixed-size sliding window over a linked list. `start` and `end` stay k steps apart.
 function slidingWindowTraversal(head, k):
-    start ← head; end ← head
-    for i from 1 to k:                                 # Phase 1 — establish a k-step gap
-        if end is null: return                         # list shorter than k
+
+    # Initialize start and end to head
+    start ← head
+    end ← head
+
+    # Move end k steps ahead
+    for i ← 1 to k:
+        if end is null:
+            return                                     # Exit early if the list is shorter than k
         end ← end.next
-    while end is not null:                             # Phase 2 — slide
-        # ... problem-specific work on (start, end) ...
+
+    while end is not null:
+
+        # Apply operation on start and end
+        # these nodes are k steps apart
+        # Example: start.val = start.val + end.val
+
+        # Move ahead both start and end by one step
         start ← start.next
         end ← end.next
+
+    return
 ```
 
 ```python run
@@ -171,39 +185,54 @@ class ListNode:
         self.next = next
 
 def sliding_window_traversal(head: Optional[ListNode], k: int) -> None:
-    start = head
-    end   = head
 
-    # Phase 1 — advance `end` by k hops to establish a window of size k+1
+    # Initialize start and end to head
+    start = head
+    end = head
+
+    # Move end k steps ahead
     for _ in range(k):
         if end is None:
-            return                  # list shorter than k → window cannot be formed
+            return  # Exit early if the list is shorter than k
         end = end.next
 
-    # Phase 2 — slide the window. start and end are k steps apart at all times.
     while end is not None:
-        # Apply problem-specific operation on `start` and `end` here.
-        # e.g., print(start.val, end.val)  or  start.val += end.val
+        # Apply operation on start and end
+        # these nodes are k steps apart
+        # Example: start.val = start.val + end.val
+
+        # Move ahead both start and end by one step
         start = start.next
-        end   = end.next
+        end = end.next
+
+    return
 ```
 
 ```java run
 class Solution {
     public void slidingWindowTraversal(ListNode head, int k) {
-        ListNode start = head, end = head;
 
-        // Phase 1 — offset end by k hops
+        // Initialize start and end to head
+        ListNode start = head;
+        ListNode end = head;
+
+        // Move end k steps ahead
         for (int i = 0; i < k; i++) {
-            if (end == null) return;          // list shorter than k
+            if (end == null) {
+                return; // Exit early if the list is shorter than k
+            }
             end = end.next;
         }
 
-        // Phase 2 — slide in lockstep
+        // Traverse the list while end is not null
         while (end != null) {
-            // Apply problem-specific operation on start and end here.
+            // Apply operation on start and end
+            // these nodes are k steps apart
+            // Example: start.val = start.val + end.val;
+
+            // Move ahead both start and end by one step
             start = start.next;
-            end   = end.next;
+            end = end.next;
         }
     }
 }
@@ -213,42 +242,62 @@ class Solution {
 typedef struct ListNode { int val; struct ListNode *next; } ListNode;
 
 void slidingWindowTraversal(ListNode *head, int k) {
-    ListNode *start = head, *end = head;
 
-    /* Phase 1 — offset end by k hops */
+    /* Initialize start and end to head */
+    ListNode *start = head;
+    ListNode *end = head;
+
+    /* Move end k steps ahead */
+    /* This creates a window of size k+1 */
     for (int i = 0; i < k; i++) {
-        if (end == NULL) return;              /* list shorter than k */
+        if (end == NULL) {
+            return; /* Exit early if the list is shorter than k */
+        }
         end = end->next;
     }
 
-    /* Phase 2 — slide in lockstep */
     while (end != NULL) {
-        /* Apply problem-specific operation on start and end here. */
+
+        /* Apply operation on start and end
+           these nodes are k steps apart
+           Example: start->val = start->val + end->val */
+
+        /* Move ahead both start and end by one step */
         start = start->next;
-        end   = end->next;
+        end = end->next;
     }
+
+    return;
 }
 ```
 
 ```scala run
 object Solution {
   def slidingWindowTraversal(head: ListNode, k: Int): Unit = {
-    var start = head
-    var end   = head
 
-    // Phase 1 — offset end by k hops
+    // Initialize start and end to head
+    var start = head
+    var end = head
+
+    // Move end k steps ahead
     var i = 0
     while (i < k) {
-      if (end == null) return
+      if (end == null) {
+        return // Exit early if the list is shorter than k
+      }
       end = end.next
       i += 1
     }
 
-    // Phase 2 — slide in lockstep
+    // Traverse the list while end is not null
     while (end != null) {
-      // Apply problem-specific operation on start and end here.
+      // Apply operation on start and end
+      // these nodes are k steps apart
+      // Example: start.val = start.val + end.val
+
+      // Move ahead both start and end by one step
       start = start.next
-      end   = end.next
+      end = end.next
     }
   }
 }
