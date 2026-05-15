@@ -830,101 +830,431 @@ The indices start with `1`.
 
 
 ```pseudocode
-# Identical to evenOddList — different problem framing, same algorithm.
-function parityOrder(head):
-    if head is null OR head.next is null: return head
-    oddDummy ← new ListNode; evenDummy ← new ListNode
-    oddTail ← oddDummy; evenTail ← evenDummy
-    current ← head; counter ← 1
+function splitByParity(head):
+    # Initialize head and tail references for the two split lists
+    oddDummy ← new ListNode; oddTail ← oddDummy
+    evenDummy ← new ListNode; evenTail ← evenDummy
+    # Create current reference to iterate through the list
+    current ← head
+    # To track alternate positions
+    counter ← 1
+    # Iterate through the list and split nodes into two lists
     while current is not null:
+        # If the counter is odd then the node goes to the odd list
         if counter mod 2 = 1:
-            oddTail.next ← current; oddTail ← current
+            # `current` node goes to the odd split list
+            oddTail.next ← current
+            # Move oddTail forward
+            oddTail ← oddTail.next
         else:
-            evenTail.next ← current; evenTail ← current
+            # `current` node goes to the even split list
+            evenTail.next ← current
+            # Move evenTail forward
+            evenTail ← evenTail.next
+        # Move to the next node in the original list
         current ← current.next
         counter ← counter + 1
+    # Terminate the odd list
+    oddTail.next ← null
+    # Terminate the even list
     evenTail.next ← null
-    oddTail.next ← evenDummy.next
-    return oddDummy.next
+    return (oddDummy.next, evenDummy.next)
+
+function mergeOddAndEvenLists(oddHead, evenHead):
+    # If the odd list is empty return the even list
+    if oddHead is null: return evenHead
+    # If the even list is empty return the odd list
+    if evenHead is null: return oddHead
+    # Traverse to the end of the odd list
+    current ← oddHead
+    while current.next is not null:
+        current ← current.next
+    # Connect the even list at the end of the odd list
+    current.next ← evenHead
+    return oddHead
+
+function parityOrder(head):
+    # If the list is empty or contains only one node, no splitting is
+    # necessary
+    if head is null OR head.next is null: return head
+    # Split the list odd and even lists
+    (oddHead, evenHead) ← splitByParity(head)
+    # Append the even list at the end of the odd list and return
+    # the head of the merged list
+    return mergeOddAndEvenLists(oddHead, evenHead)
 ```
 
 ```python run
-from typing import Optional
+from typing import List, Optional
 
 class Solution:
-    def parity_order(self, head: Optional[ListNode]) -> Optional[ListNode]:
+    def split_by_parity(
+        self, head: Optional[ListNode]
+    ) -> List[Optional[ListNode]]:
+
+        # Initialize head and tail references for the two split lists
+        odd_dummy = ListNode(0)
+        odd_tail = odd_dummy
+
+        even_dummy = ListNode(0)
+        even_tail = even_dummy
+
+        # Create current reference to iterate through the list
+        current = head
+
+        # To track alternate positions
+        counter = 1
+
+        # Iterate through the list and split nodes into two lists
+        while current is not None:
+
+            # If the counter is odd then the node goes to the odd list
+            if counter % 2 == 1:
+
+                # `current` node goes to the odd split list
+                odd_tail.next = current
+
+                # Move odd_tail forward
+                odd_tail = odd_tail.next
+
+            # Otherwise, the node goes to the even list
+            else:
+
+                # `current` node goes to the even split list
+                even_tail.next = current
+
+                # Move even_tail forward
+                even_tail = even_tail.next
+
+            # Move to the next node in the original list
+            current = current.next
+            counter += 1
+
+        # Terminate the odd list
+        odd_tail.next = None
+
+        # Terminate the even list
+        even_tail.next = None
+
+        return [odd_dummy.next, even_dummy.next]
+
+    def merge_odd_and_even_lists(
+        self, odd_head: Optional[ListNode], even_head: Optional[ListNode]
+    ) -> Optional[ListNode]:
+
+        # If the odd list is empty return the even list
+        if odd_head is None:
+            return even_head
+
+        # If the even list is empty return the odd list
+        if even_head is None:
+            return odd_head
+
+        # Traverse to the end of the odd list
+        current = odd_head
+        while current is not None and current.next is not None:
+            current = current.next
+
+        # Connect the even list at the end of the odd list
+        current.next = even_head
+        return odd_head
+
+    def parity_order(
+        self, head: Optional[ListNode]
+    ) -> Optional[ListNode]:
+
+        # If the list is empty or contains only one node, no splitting
+        # is necessary
         if head is None or head.next is None:
             return head
 
-        odd_dummy, even_dummy = ListNode(), ListNode()
-        odd_tail,  even_tail  = odd_dummy, even_dummy
-        current, counter = head, 1
-        while current is not None:
-            if counter % 2 == 1:
-                odd_tail.next  = current; odd_tail  = current
-            else:
-                even_tail.next = current; even_tail = current
-            current = current.next
-            counter += 1
-        even_tail.next = None
-        odd_tail.next  = even_dummy.next   # concatenate
-        return odd_dummy.next
+        # Split the list odd and even lists
+        odd_head, even_head = self.split_by_parity(head)
+
+        # Append the even list at the end of the odd list and return
+        # the head of the merged list
+        return self.merge_odd_and_even_lists(odd_head, even_head)
 ```
 
 ```java run
-class Solution {
-    public ListNode parityOrder(ListNode head) {
-        if (head == null || head.next == null) return head;
+import java.util.*;
 
-        ListNode oddDummy = new ListNode(), oddTail  = oddDummy;
-        ListNode evenDummy = new ListNode(), evenTail = evenDummy;
+class Solution {
+    private List<ListNode> splitByParity(ListNode head) {
+
+        // Initialize head and tail references for the two split lists
+        ListNode oddDummy = new ListNode(0);
+        ListNode oddTail = oddDummy;
+
+        ListNode evenDummy = new ListNode(0);
+        ListNode evenTail = evenDummy;
+
+        // Create current reference to iterate through the list
+        ListNode current = head;
+
+        // To track alternate positions
         int counter = 1;
-        for (ListNode c = head; c != null; c = c.next) {
-            if (counter % 2 == 1) { oddTail.next = c;  oddTail = c; }
-            else                   { evenTail.next = c; evenTail = c; }
+
+        // Iterate through the list and split nodes into two lists
+        while (current != null) {
+
+            // If the counter is odd then the node goes to the odd list
+            if (counter % 2 == 1) {
+
+                // `current` node goes to the odd split list
+                oddTail.next = current;
+
+                // Move oddTail forward
+                oddTail = oddTail.next;
+            }
+
+            // Otherwise, the node goes to the even list
+            else {
+
+                // `current` node goes to the even split list
+                evenTail.next = current;
+
+                // Move evenTail forward
+                evenTail = evenTail.next;
+            }
+
+            // Move to the next node in the original list
+            current = current.next;
             counter++;
         }
+
+        // Terminate the odd list
+        oddTail.next = null;
+
+        // Terminate the even list
         evenTail.next = null;
-        oddTail.next  = evenDummy.next;
-        return oddDummy.next;
+
+        return Arrays.asList(oddDummy.next, evenDummy.next);
+    }
+
+    private ListNode mergeOddAndEvenLists(ListNode oddHead, ListNode evenHead) {
+
+        // If the odd list is empty return the even list
+        if (oddHead == null) {
+            return evenHead;
+        }
+
+        // If the even list is empty return the odd list
+        if (evenHead == null) {
+            return oddHead;
+        }
+
+        // Traverse to the end of the odd list
+        ListNode current = oddHead;
+        while (current != null && current.next != null) {
+            current = current.next;
+        }
+
+        // Connect the even list at the end of the odd list
+        current.next = evenHead;
+        return oddHead;
+    }
+
+    public ListNode parityOrder(ListNode head) {
+
+        // If the list is empty or contains only one node, no splitting
+        // is necessary
+        if (head == null || head.next == null) {
+            return head;
+        }
+
+        // Split the list odd and even lists
+        List<ListNode> heads = splitByParity(head);
+        ListNode oddHead = heads.get(0);
+        ListNode evenHead = heads.get(1);
+
+        // Append the even list at the end of the odd list and return
+        // the head of the merged list
+        return mergeOddAndEvenLists(oddHead, evenHead);
     }
 }
 ```
 
 ```c run
-ListNode* parityOrder(ListNode *head) {
-    if (head == NULL || head->next == NULL) return head;
+typedef struct { ListNode *odd; ListNode *even; } ParitySplit;
 
-    ListNode oddDummy  = {0, NULL}, evenDummy = {0, NULL};
-    ListNode *oddTail  = &oddDummy, *evenTail = &evenDummy;
+static ParitySplit splitByParity(ListNode *head) {
+
+    /* Initialize head and tail references for the two split lists */
+    ListNode oddDummy = {0, NULL};
+    ListNode *oddTail = &oddDummy;
+
+    ListNode evenDummy = {0, NULL};
+    ListNode *evenTail = &evenDummy;
+
+    /* Create current reference to iterate through the list */
+    ListNode *current = head;
+
+    /* To track alternate positions */
     int counter = 1;
-    for (ListNode *c = head; c != NULL; c = c->next) {
-        if (counter % 2 == 1) { oddTail->next = c;  oddTail = c; }
-        else                   { evenTail->next = c; evenTail = c; }
+
+    /* Iterate through the list and split nodes into two lists */
+    while (current != NULL) {
+
+        /* If the counter is odd then the node goes to the odd list */
+        if (counter % 2 == 1) {
+
+            /* `current` node goes to the odd split list */
+            oddTail->next = current;
+
+            /* Move oddTail forward */
+            oddTail = oddTail->next;
+        }
+
+        /* Otherwise, the node goes to the even list */
+        else {
+
+            /* `current` node goes to the even split list */
+            evenTail->next = current;
+
+            /* Move evenTail forward */
+            evenTail = evenTail->next;
+        }
+
+        /* Move to the next node in the original list */
+        current = current->next;
         counter++;
     }
+
+    /* Terminate the odd list */
+    oddTail->next = NULL;
+
+    /* Terminate the even list */
     evenTail->next = NULL;
-    oddTail->next  = evenDummy.next;
-    return oddDummy.next;
+
+    ParitySplit out = {oddDummy.next, evenDummy.next};
+    return out;
+}
+
+static ListNode* mergeOddAndEvenLists(ListNode *oddHead, ListNode *evenHead) {
+
+    /* If the odd list is empty return the even list */
+    if (oddHead == NULL) {
+        return evenHead;
+    }
+
+    /* If the even list is empty return the odd list */
+    if (evenHead == NULL) {
+        return oddHead;
+    }
+
+    /* Traverse to the end of the odd list */
+    ListNode *current = oddHead;
+    while (current != NULL && current->next != NULL) {
+        current = current->next;
+    }
+
+    /* Connect the even list at the end of the odd list */
+    current->next = evenHead;
+    return oddHead;
+}
+
+ListNode* parityOrder(ListNode *head) {
+
+    /* If the list is empty or contains only one node, no splitting
+       is necessary */
+    if (head == NULL || head->next == NULL) {
+        return head;
+    }
+
+    /* Split the list odd and even lists */
+    ParitySplit heads = splitByParity(head);
+
+    /* Append the even list at the end of the odd list and return
+       the head of the merged list */
+    return mergeOddAndEvenLists(heads.odd, heads.even);
 }
 ```
 
 ```scala run
 object Solution {
+  private def splitByParity(head: ListNode): (ListNode, ListNode) = {
+
+    // Initialize head and tail references for the two split lists
+    val oddDummy = new ListNode(0)
+    var oddTail: ListNode = oddDummy
+
+    val evenDummy = new ListNode(0)
+    var evenTail: ListNode = evenDummy
+
+    // Create current reference to iterate through the list
+    var current = head
+
+    // To track alternate positions
+    var counter = 1
+
+    // Iterate through the list and split nodes into two lists
+    while (current != null) {
+
+      // If the counter is odd then the node goes to the odd list
+      if (counter % 2 == 1) {
+
+        // `current` node goes to the odd split list
+        oddTail.next = current
+
+        // Move oddTail forward
+        oddTail = oddTail.next
+      }
+      // Otherwise, the node goes to the even list
+      else {
+
+        // `current` node goes to the even split list
+        evenTail.next = current
+
+        // Move evenTail forward
+        evenTail = evenTail.next
+      }
+
+      // Move to the next node in the original list
+      current = current.next
+      counter += 1
+    }
+
+    // Terminate the odd list
+    oddTail.next = null
+
+    // Terminate the even list
+    evenTail.next = null
+
+    (oddDummy.next, evenDummy.next)
+  }
+
+  private def mergeOddAndEvenLists(oddHead: ListNode, evenHead: ListNode): ListNode = {
+
+    // If the odd list is empty return the even list
+    if (oddHead == null) return evenHead
+
+    // If the even list is empty return the odd list
+    if (evenHead == null) return oddHead
+
+    // Traverse to the end of the odd list
+    var current = oddHead
+    while (current != null && current.next != null) {
+      current = current.next
+    }
+
+    // Connect the even list at the end of the odd list
+    current.next = evenHead
+    oddHead
+  }
+
   def parityOrder(head: ListNode): ListNode = {
+
+    // If the list is empty or contains only one node, no splitting
+    // is necessary
     if (head == null || head.next == null) return head
 
-    val oddDummy = new ListNode(0); var oddTail: ListNode = oddDummy
-    val evenDummy = new ListNode(0); var evenTail: ListNode = evenDummy
-    var c = head; var counter = 1
-    while (c != null) {
-      if (counter % 2 == 1) { oddTail.next = c;  oddTail = c }
-      else                   { evenTail.next = c; evenTail = c }
-      c = c.next; counter += 1
-    }
-    evenTail.next = null
-    oddTail.next  = evenDummy.next
-    oddDummy.next
+    // Split the list odd and even lists
+    val (oddHead, evenHead) = splitByParity(head)
+
+    // Append the even list at the end of the odd list and return
+    // the head of the merged list
+    mergeOddAndEvenLists(oddHead, evenHead)
   }
 }
 ```
