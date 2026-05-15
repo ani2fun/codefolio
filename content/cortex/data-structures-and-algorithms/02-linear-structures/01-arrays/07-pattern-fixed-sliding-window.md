@@ -853,13 +853,13 @@ All follow the same template — the only thing that changes is the add and remo
 
 ## The Problem
 
-Given an integer array `arr`, an integer `k`, and a target integer `target`, count the number of contiguous subarrays of size **exactly `k`** whose elements sum to exactly `target`.
+Given an integer array `arr` and a positive integer `k`, find the **minimum sum** among all contiguous subarrays of size exactly `k`. If no such subarray exists (i.e. `k > len(arr)`), return `-1` instead.
 
 ```
-arr = [1, 2, 3, 4, 5],  k = 3,  target = 9   →  1   ([2, 3, 4])
-arr = [1, 1, 1, 1, 1],  k = 2,  target = 2   →  4   ([1,1],[1,1],[1,1],[1,1])
-arr = [3, 1, 4, 1, 5],  k = 2,  target = 5   →  2   ([1,4],[4,1])
-arr = [1, 2, 3],         k = 4,  target = 6   →  0   (no window of size 4 exists)
+arr = [4, 4, 5, 6, 4], k = 3   →  13   (subarray [4, 4, 5])
+arr = [1, 2, 3, 5],    k = 1   →   1   (subarray [1])
+arr = [1, 2, 3, 5],    k = 4   →  11   (only one subarray: [1, 2, 3, 5])
+arr = [1, 2],          k = 5   →  -1   (no size-5 subarray exists)
 ```
 
 ---
@@ -868,34 +868,34 @@ arr = [1, 2, 3],         k = 4,  target = 6   →  0   (no window of size 4 exis
 
 **Example 1**
 ```
-Input:  arr = [1, 2, 3, 4, 5],  k = 3,  target = 9
-Output: 1
-Explanation: Only [2, 3, 4] sums to 9.
+Input:  arr = [4, 4, 5, 6, 4], k = 3
+Output: 13
+Explanation: The subarray [4, 4, 5] has a minimum sum of 13 and a size of 3.
 ```
 
 **Example 2**
 ```
-Input:  arr = [1, 1, 1, 1, 1],  k = 2,  target = 2
-Output: 4
-Explanation: Every adjacent pair [1,1] sums to 2, and there are 4 such pairs.
+Input:  arr = [1, 2, 3, 5], k = 1
+Output: 1
+Explanation: The subarray [1] has a minimum sum of 1 and a size of 1.
 ```
 
 **Example 3**
 ```
-Input:  arr = [3, 1, 4, 1, 5],  k = 2,  target = 5
-Output: 2
-Explanation: [1,4] at indices 1-2 and [4,1] at indices 2-3 both sum to 5.
+Input:  arr = [1, 2, 3, 5], k = 4
+Output: 11
+Explanation: The subarray [1, 2, 3, 5] has a minimum sum of 11 and a size of 4.
 ```
 
 ---
 
 ## Intuition
 
-There are exactly `n − k + 1` windows of size `k` in an array of length `n`. The brute force sums each window from scratch — recomputing `k − 1` shared elements every time a window slides.
+There are exactly `n − k + 1` contiguous subarrays of size `k` in an array of length `n`. The brute force sums each one from scratch — recomputing `k − 1` shared elements every time the window slides — and tracks the running minimum.
 
-The fixed sliding window fixes this: maintain a running `window_sum`. When the window slides right by one step, subtract the element leaving from the left and add the element entering from the right. One subtraction + one addition replaces an entire inner loop.
+The fixed sliding window does the same in one pass: maintain a running `sum`. When the window slides right by one step, **add the new element entering on the right** and **subtract the element leaving on the left**. One addition + one subtraction replaces the entire inner sum.
 
-For this problem, after each slide we simply check: does `window_sum == target`? If yes, increment the count.
+Whenever the window has exactly `k` elements, compare its current sum against the running `min_sum` and update if smaller.
 
 ```mermaid
 ---
@@ -910,30 +910,30 @@ config:
     tertiaryColor: "#fef9c3"
 ---
 flowchart TB
-  Init(["start=0, end=0, window_sum=0, count=0"])
+  Edge{"k > n?"}
+  RetN(["return -1"])
+  Init(["start=0, end=0, sum=0, min_sum=∞"])
   Loop{"end < len(arr)?"}
-  Expand["① window_sum += arr[end]"]
+  Expand["① sum += arr[end]"]
   Contract{"end − start + 1 > k?"}
-  Remove["window_sum -= arr[start]<br/>start += 1"]
+  Remove["sum -= arr[start]<br/>start += 1"]
   Process{"end − start + 1 == k?"}
-  Check{"window_sum == target?"}
-  Inc["count += 1"]
+  Update["min_sum = min(min_sum, sum)"]
   Advance["end += 1"]
-  Done(["return count"])
+  Done(["return min_sum"])
 
-  Init --> Loop
+  Edge -->|"yes"| RetN
+  Edge -->|"no"|  Init --> Loop
   Loop -->|"yes"| Expand --> Contract
   Contract -->|"yes"| Remove --> Process
-  Contract -->|"no"| Process
-  Process -->|"yes"| Check
-  Process -->|"no"| Advance
-  Check -->|"yes"| Inc --> Advance
-  Check -->|"no"| Advance
+  Contract -->|"no"|  Process
+  Process -->|"yes"| Update --> Advance
+  Process -->|"no"|  Advance
   Advance --> Loop
   Loop -->|"no"| Done
 ```
 
-<p align="center"><strong>Subarray Size Equals K — expand, contract if oversized, then check the sum when the window reaches exactly size k.</strong></p>
+<p align="center"><strong>Subarray Size Equals K — expand the window, contract if oversized, then update <code>min_sum</code> whenever the window reaches exactly size k.</strong></p>
 
 ---
 
@@ -941,108 +941,115 @@ flowchart TB
 
 
 ```pseudocode
-# Brute force — recompute every k-window's sum. O(n × k).
-function countSubarraysBrute(arr, k, target):
+function subarraySizeEqualsKBrute(arr, k):
     n ← length(arr)
-    count ← 0
+    if k > n: return −1
+    minSum ← +∞
     for i from 0 to n − k:
         windowSum ← 0
         for j from 0 to k − 1:
-            windowSum ← windowSum + arr[i + j]
-        if windowSum = target:
-            count ← count + 1
-    return count
+            windowSum ← windowSum + arr[i + j]    # re-summed each window — O(k) per i
+        minSum ← min(minSum, windowSum)
+    return minSum
 ```
 
 ```python run
 from typing import List
 
-def count_subarrays_brute(arr: List[int], k: int, target: int) -> int:
+def subarray_size_equals_k_brute(arr: List[int], k: int) -> int:
     n = len(arr)
-    count = 0
+    if k > n:
+        return -1
+    min_sum = float("inf")
     for i in range(n - k + 1):
         window_sum = 0
         for j in range(k):
-            window_sum += arr[i + j]      # Re-summed each window — that's the O(n*k) cost.
-        if window_sum == target:
-            count += 1
-    return count
+            window_sum += arr[i + j]    # Re-summed each window — that's the O(n*k) cost.
+        if window_sum < min_sum:
+            min_sum = window_sum
+    return min_sum
 
-print(count_subarrays_brute([1, 2, 3, 4, 5], 3, 9))  # 1
-print(count_subarrays_brute([1, 1, 1, 1, 1], 2, 2))  # 4
+
+print(subarray_size_equals_k_brute([4, 4, 5, 6, 4], 3))  # 13
+print(subarray_size_equals_k_brute([1, 2, 3, 5], 1))     # 1
 ```
 
 ```java run
 public class Main {
-    static int countSubarraysBrute(int[] arr, int k, int target) {
-        int n = arr.length, count = 0;
+    static int subarraySizeEqualsKBrute(int[] arr, int k) {
+        int n = arr.length;
+        if (k > n) return -1;
+        int minSum = Integer.MAX_VALUE;
         for (int i = 0; i <= n - k; i++) {
             int windowSum = 0;
             for (int j = 0; j < k; j++) windowSum += arr[i + j];
-            if (windowSum == target) count++;
+            if (windowSum < minSum) minSum = windowSum;
         }
-        return count;
+        return minSum;
     }
 
     public static void main(String[] args) {
-        System.out.println(countSubarraysBrute(new int[]{1, 2, 3, 4, 5}, 3, 9));
-        System.out.println(countSubarraysBrute(new int[]{1, 1, 1, 1, 1}, 2, 2));
+        System.out.println(subarraySizeEqualsKBrute(new int[]{4, 4, 5, 6, 4}, 3));  // 13
+        System.out.println(subarraySizeEqualsKBrute(new int[]{1, 2, 3, 5}, 1));     // 1
     }
 }
 ```
 
 ```c run
 #include <stdio.h>
+#include <limits.h>
 
-int count_subarrays_brute(int* arr, int n, int k, int target) {
-    int count = 0;
+int subarray_size_equals_k_brute(int* arr, int n, int k) {
+    if (k > n) return -1;
+    int min_sum = INT_MAX;
     for (int i = 0; i <= n - k; i++) {
         int window_sum = 0;
         for (int j = 0; j < k; j++) window_sum += arr[i + j];
-        if (window_sum == target) count++;
+        if (window_sum < min_sum) min_sum = window_sum;
     }
-    return count;
+    return min_sum;
 }
 
 int main() {
-    int a1[] = {1, 2, 3, 4, 5};
-    int a2[] = {1, 1, 1, 1, 1};
-    printf("%d\n", count_subarrays_brute(a1, 5, 3, 9));
-    printf("%d\n", count_subarrays_brute(a2, 5, 2, 2));
+    int a1[] = {4, 4, 5, 6, 4};
+    int a2[] = {1, 2, 3, 5};
+    printf("%d\n", subarray_size_equals_k_brute(a1, 5, 3));  /* 13 */
+    printf("%d\n", subarray_size_equals_k_brute(a2, 4, 1));  /* 1 */
     return 0;
 }
 ```
 
 ```scala run
 object Main extends App {
-  def countSubarraysBrute(arr: Array[Int], k: Int, target: Int): Int = {
+  def subarraySizeEqualsKBrute(arr: Array[Int], k: Int): Int = {
     val n = arr.length
-    var count = 0
+    if (k > n) return -1
+    var minSum = Int.MaxValue
     for (i <- 0 to n - k) {
       var sum = 0
       for (j <- 0 until k) sum += arr(i + j)
-      if (sum == target) count += 1
+      if (sum < minSum) minSum = sum
     }
-    count
+    minSum
   }
 
-  println(countSubarraysBrute(Array(1, 2, 3, 4, 5), 3, 9))
-  println(countSubarraysBrute(Array(1, 1, 1, 1, 1), 2, 2))
+  println(subarraySizeEqualsKBrute(Array(4, 4, 5, 6, 4), 3))  // 13
+  println(subarraySizeEqualsKBrute(Array(1, 2, 3, 5), 1))     // 1
 }
 ```
 
 
 <details>
-<summary><strong>Trace — arr = [1, 2, 3, 4, 5],  k = 3,  target = 9  (brute force)</strong></summary>
+<summary><strong>Trace — arr = [4, 4, 5, 6, 4],  k = 3  (brute force)</strong></summary>
 
 ```
-n=5,  valid windows: i = 0, 1, 2  (n - k + 1 = 3)
+n=5, valid windows: i = 0, 1, 2  (n - k + 1 = 3)
 
-i=0: 1+2+3 = 6  ≠ 9
-i=1: 2+3+4 = 9  == 9 → count=1   (2 and 3 were already summed in i=0 — recomputed)
-i=2: 3+4+5 = 12 ≠ 9              (3 and 4 were already summed in i=1 — recomputed again)
+i=0: 4+4+5 = 13            min_sum = 13   (initial)
+i=1: 4+5+6 = 15            min_sum = 13   (4 and 5 re-summed from i=0)
+i=2: 5+6+4 = 15            min_sum = 13   (5 and 6 re-summed from i=1)
 
-Return: 1 ✓  —  total additions: 9 (3 windows × 3 elements)
+Return: 13 ✓  —  total additions: 9 (3 windows × 3 elements each)
 ```
 
 </details>
@@ -1053,103 +1060,238 @@ Return: 1 ✓  —  total additions: 9 (3 windows × 3 elements)
 
 
 ```pseudocode
-function countSubarraysWithSum(arr, k, target):
-    start ← 0; end ← 0
-    windowSum ← 0; count ← 0
+function subarraySizeEqualsK(arr, k):
+    # Edge case: if k is greater than the array size, return -1
+    if k > length(arr): return −1
+
+    # To store the starting index of the subarray
+    start ← 0
+
+    # To store the ending index of the subarray
+    end ← 0
+
+    # To store the current subarray sum
+    sum ← 0
+
+    # We want to find the minimum sum
+    minSum ← +∞
+
+    # Sliding window to process all subarrays of size k
     while end < length(arr):
-        windowSum ← windowSum + arr[end]              # expand
-        if end − start + 1 > k:                       # contract
-            windowSum ← windowSum − arr[start]
+
+        # Add contribution of arr[end] to the current window sum
+        sum ← sum + arr[end]
+
+        # If the current subarray has more than k elements, then
+        # remove elements from the start of the subarray till it has
+        # exactly k elements
+        if end − start + 1 > k:
+
+            # Remove contribution of arr[start] as the window is now too large
+            sum ← sum − arr[start]
+
+            # Contract the window from the left
             start ← start + 1
-        if end − start + 1 = k AND windowSum = target:
-            count ← count + 1                         # process
+
+        # Check if the window size is exactly k
+        if end − start + 1 = k:
+
+            # Update the minimum sum
+            minSum ← min(minSum, sum)
+
+        # Expand the window from the right
         end ← end + 1
-    return count
+
+    return minSum
 ```
 
 ```python run
 from typing import List
 
 class Solution:
-    def count_subarrays_with_sum(self, arr: List[int], k: int, target: int) -> int:
-        start = end = 0
-        window_sum = count = 0
+    def subarray_size_equals_k(self, arr: List[int], k: int) -> int:
+
+        # Edge case: If k is greater than the array size, return -1.
+        if k > len(arr):
+            return -1
+
+        # To store the starting index of the subarray
+        start: int = 0
+
+        # To store the ending index of the subarray
+        end: int = 0
+
+        # To store the current subarray sum
+        sum: int = 0
+
+        # We want to find the minimum sum.
+        min_sum = float("inf")
+
+        # Sliding window to process all subarrays of size k
         while end < len(arr):
-            window_sum += arr[end]                     # ① expand
-            if end - start + 1 > k:                    # ② contract
-                window_sum -= arr[start]
+
+            # Add contribution of arr[end] to the current window sum
+            sum += arr[end]
+
+            # If the current subarray has more than k elements
+            # then remove elements from the start of the subarray till
+            # the subarray has exactly k elements
+            if end - start + 1 > k:
+
+                # Remove contribution of arr[start] as the window is now
+                # too large
+                sum -= arr[start]
+
+                # Contract the window from the left
                 start += 1
-            if end - start + 1 == k and window_sum == target:
-                count += 1                              # ③ process
+
+            # Check if the window size is exactly k
+            if end - start + 1 == k:
+
+                # Update the minimum sum
+                min_sum = min(min_sum, sum)
+
+            # Expand the window from the right
             end += 1
-        return count
+
+        return min_sum
 
 
 sol = Solution()
-print(sol.count_subarrays_with_sum([1, 2, 3, 4, 5], 3, 9))   # 1
-print(sol.count_subarrays_with_sum([1, 1, 1, 1, 1], 2, 2))   # 4
-print(sol.count_subarrays_with_sum([3, 1, 4, 1, 5], 2, 5))   # 2
-print(sol.count_subarrays_with_sum([1, 2, 3], 4, 6))          # 0
-print(sol.count_subarrays_with_sum([5], 1, 5))                # 1
+print(sol.subarray_size_equals_k([4, 4, 5, 6, 4], 3))   # 13
+print(sol.subarray_size_equals_k([1, 2, 3, 5], 1))      # 1
+print(sol.subarray_size_equals_k([1, 2, 3, 5], 4))      # 11
+print(sol.subarray_size_equals_k([1, 2], 5))            # -1
 ```
 
 ```java run
 public class Main {
     static class Solution {
-        int countSubarraysWithSum(int[] arr, int k, int target) {
-            int start = 0, end = 0, windowSum = 0, count = 0;
+        public int subarraySizeEqualsK(int[] arr, int k) {
+
+            // Edge case: If k is greater than the array size, return -1.
+            if (k > arr.length) {
+                return -1;
+            }
+
+            // To store the starting index of the subarray
+            int start = 0;
+
+            // To store the ending index of the subarray
+            int end = 0;
+
+            // To store the current subarray sum
+            int sum = 0;
+
+            // We want to find the minimum sum.
+            int minSum = Integer.MAX_VALUE;
+
+            // Sliding window to process all subarrays of size k
             while (end < arr.length) {
-                windowSum += arr[end];
+
+                // Add contribution of arr[end] to the current window sum
+                sum += arr[end];
+
+                // If the current subarray has more than k elements
+                // then remove elements from the start of the subarray till
+                // the subarray has exactly k elements
                 if (end - start + 1 > k) {
-                    windowSum -= arr[start];
+
+                    // Remove contribution of arr[start] as the window is now
+                    // too large
+                    sum -= arr[start];
+
+                    // Contract the window from the left
                     start++;
                 }
-                if (end - start + 1 == k && windowSum == target) count++;
+
+                // Check if the window size is exactly k
+                if (end - start + 1 == k) {
+
+                    // Update the minimum sum
+                    minSum = Math.min(minSum, sum);
+                }
+
+                // Expand the window from the right
                 end++;
             }
-            return count;
+
+            return minSum;
         }
     }
 
     public static void main(String[] args) {
         Solution sol = new Solution();
-        System.out.println(sol.countSubarraysWithSum(new int[]{1, 2, 3, 4, 5}, 3, 9));
-        System.out.println(sol.countSubarraysWithSum(new int[]{1, 1, 1, 1, 1}, 2, 2));
-        System.out.println(sol.countSubarraysWithSum(new int[]{3, 1, 4, 1, 5}, 2, 5));
-        System.out.println(sol.countSubarraysWithSum(new int[]{1, 2, 3}, 4, 6));
-        System.out.println(sol.countSubarraysWithSum(new int[]{5}, 1, 5));
+        System.out.println(sol.subarraySizeEqualsK(new int[]{4, 4, 5, 6, 4}, 3));   // 13
+        System.out.println(sol.subarraySizeEqualsK(new int[]{1, 2, 3, 5}, 1));      // 1
+        System.out.println(sol.subarraySizeEqualsK(new int[]{1, 2, 3, 5}, 4));      // 11
+        System.out.println(sol.subarraySizeEqualsK(new int[]{1, 2}, 5));            // -1
     }
 }
 ```
 
 ```c run
 #include <stdio.h>
+#include <limits.h>
 
-int count_subarrays_with_sum(int* arr, int n, int k, int target) {
-    int start = 0, end = 0, window_sum = 0, count = 0;
+int subarray_size_equals_k(int* arr, int n, int k) {
+
+    /* Edge case: If k is greater than the array size, return -1. */
+    if (k > n) return -1;
+
+    /* To store the starting index of the subarray */
+    int start = 0;
+
+    /* To store the ending index of the subarray */
+    int end = 0;
+
+    /* To store the current subarray sum */
+    int sum = 0;
+
+    /* We want to find the minimum sum. */
+    int min_sum = INT_MAX;
+
+    /* Sliding window to process all subarrays of size k */
     while (end < n) {
-        window_sum += arr[end];
+
+        /* Add contribution of arr[end] to the current window sum */
+        sum += arr[end];
+
+        /* If the current subarray has more than k elements then remove
+         * elements from the start of the subarray till the subarray has
+         * exactly k elements */
         if (end - start + 1 > k) {
-            window_sum -= arr[start];
+
+            /* Remove contribution of arr[start] as the window is too large */
+            sum -= arr[start];
+
+            /* Contract the window from the left */
             start++;
         }
-        if (end - start + 1 == k && window_sum == target) count++;
+
+        /* Check if the window size is exactly k */
+        if (end - start + 1 == k) {
+
+            /* Update the minimum sum */
+            if (sum < min_sum) min_sum = sum;
+        }
+
+        /* Expand the window from the right */
         end++;
     }
-    return count;
+
+    return min_sum;
 }
 
 int main() {
-    int a1[] = {1, 2, 3, 4, 5};
-    int a2[] = {1, 1, 1, 1, 1};
-    int a3[] = {3, 1, 4, 1, 5};
-    int a4[] = {1, 2, 3};
-    int a5[] = {5};
-    printf("%d\n", count_subarrays_with_sum(a1, 5, 3, 9));
-    printf("%d\n", count_subarrays_with_sum(a2, 5, 2, 2));
-    printf("%d\n", count_subarrays_with_sum(a3, 5, 2, 5));
-    printf("%d\n", count_subarrays_with_sum(a4, 3, 4, 6));
-    printf("%d\n", count_subarrays_with_sum(a5, 1, 1, 5));
+    int a1[] = {4, 4, 5, 6, 4};
+    int a2[] = {1, 2, 3, 5};
+    int a3[] = {1, 2, 3, 5};
+    int a4[] = {1, 2};
+    printf("%d\n", subarray_size_equals_k(a1, 5, 3));   /* 13 */
+    printf("%d\n", subarray_size_equals_k(a2, 4, 1));   /* 1 */
+    printf("%d\n", subarray_size_equals_k(a3, 4, 4));   /* 11 */
+    printf("%d\n", subarray_size_equals_k(a4, 2, 5));   /* -1 */
     return 0;
 }
 ```
@@ -1157,44 +1299,75 @@ int main() {
 ```scala run
 object Main extends App {
   class Solution {
-    def countSubarraysWithSum(arr: Array[Int], k: Int, target: Int): Int = {
+    def subarraySizeEqualsK(arr: Array[Int], k: Int): Int = {
+
+      // Edge case: If k is greater than the array size, return -1.
+      if (k > arr.length) return -1
+
+      // To store the starting index of the subarray
       var start = 0
+
+      // To store the ending index of the subarray
       var end = 0
-      var windowSum = 0
-      var count = 0
+
+      // To store the current subarray sum
+      var sum = 0
+
+      // We want to find the minimum sum.
+      var minSum = Int.MaxValue
+
+      // Sliding window to process all subarrays of size k
       while (end < arr.length) {
-        windowSum += arr(end)
+
+        // Add contribution of arr[end] to the current window sum
+        sum += arr(end)
+
+        // If the current subarray has more than k elements
+        // then remove elements from the start of the subarray till
+        // the subarray has exactly k elements
         if (end - start + 1 > k) {
-          windowSum -= arr(start)
+
+          // Remove contribution of arr[start] as the window is too large
+          sum -= arr(start)
+
+          // Contract the window from the left
           start += 1
         }
-        if (end - start + 1 == k && windowSum == target) count += 1
+
+        // Check if the window size is exactly k
+        if (end - start + 1 == k) {
+
+          // Update the minimum sum
+          minSum = math.min(minSum, sum)
+        }
+
+        // Expand the window from the right
         end += 1
       }
-      count
+
+      minSum
     }
   }
 
   val sol = new Solution
-  println(sol.countSubarraysWithSum(Array(1, 2, 3, 4, 5), 3, 9))
-  println(sol.countSubarraysWithSum(Array(1, 1, 1, 1, 1), 2, 2))
-  println(sol.countSubarraysWithSum(Array(3, 1, 4, 1, 5), 2, 5))
-  println(sol.countSubarraysWithSum(Array(1, 2, 3), 4, 6))
-  println(sol.countSubarraysWithSum(Array(5), 1, 5))
+  println(sol.subarraySizeEqualsK(Array(4, 4, 5, 6, 4), 3))   // 13
+  println(sol.subarraySizeEqualsK(Array(1, 2, 3, 5), 1))      // 1
+  println(sol.subarraySizeEqualsK(Array(1, 2, 3, 5), 4))      // 11
+  println(sol.subarraySizeEqualsK(Array(1, 2), 5))            // -1
 }
 ```
 
 
 ---
 
-## Dry Run — Example 2
+## Dry Run — Example 1
 
-`arr = [1, 1, 1, 1, 1]`, `k = 2`, `target = 2`
+`arr = [4, 4, 5, 6, 4]`, `k = 3`
 
 ```d3 widget=array-traversal
 {
-  "items": ["1", "1", "1", "1", "1"],
-  "title": "Fixed sliding window k = 2 on [1, 1, 1, 1, 1], target = 2",
+  "items": ["4", "4", "5", "6", "4"],
+  "title": "Fixed sliding window k = 3 on [4, 4, 5, 6, 4] — finding min sum",
   "steps": [
     {
       "keys":    ["a", "b", "c", "d", "e"],
@@ -1203,7 +1376,7 @@ object Main extends App {
         { "name": "end",   "index": 0, "color": "#10b981" }
       ],
       "range":   { "lo": 0, "hi": 0 },
-      "msg": "Expand: window = [0..0], size 1 < k. window_sum = 1."
+      "msg": "Expand: window = [0..0], size 1 < k. sum = 4."
     },
     {
       "keys":    ["a", "b", "c", "d", "e"],
@@ -1212,64 +1385,60 @@ object Main extends App {
         { "name": "end",   "index": 1, "color": "#10b981" }
       ],
       "range":   { "lo": 0, "hi": 1 },
-      "msg": "Expand: window = [0..1], size 2 = k. window_sum = 2 = target → count = 1."
+      "msg": "Expand: window = [0..1], size 2 < k. sum = 8."
+    },
+    {
+      "keys":    ["a", "b", "c", "d", "e"],
+      "markers": [
+        { "name": "start", "index": 0, "color": "#3b82f6" },
+        { "name": "end",   "index": 2, "color": "#10b981" }
+      ],
+      "range":   { "lo": 0, "hi": 2 },
+      "msg": "Expand: window = [0..2], size 3 = k. sum = 13 → min_sum = 13."
     },
     {
       "keys":    ["a", "b", "c", "d", "e"],
       "markers": [
         { "name": "start", "index": 1, "color": "#3b82f6" },
-        { "name": "end",   "index": 2, "color": "#10b981" }
+        { "name": "end",   "index": 3, "color": "#10b981" }
       ],
-      "range":   { "lo": 1, "hi": 2 },
-      "msg": "Slide: drop arr[0], add arr[2]. window_sum = 2 = target → count = 2."
+      "range":   { "lo": 1, "hi": 3 },
+      "msg": "Slide: drop arr[0]=4, add arr[3]=6. sum = 15. 15 > 13, min_sum stays 13."
     },
     {
       "keys":    ["a", "b", "c", "d", "e"],
       "markers": [
         { "name": "start", "index": 2, "color": "#3b82f6" },
-        { "name": "end",   "index": 3, "color": "#10b981" }
-      ],
-      "range":   { "lo": 2, "hi": 3 },
-      "msg": "Slide: drop arr[1], add arr[3]. window_sum = 2 = target → count = 3."
-    },
-    {
-      "keys":    ["a", "b", "c", "d", "e"],
-      "markers": [
-        { "name": "start", "index": 3, "color": "#3b82f6" },
         { "name": "end",   "index": 4, "color": "#10b981" }
       ],
-      "range":   { "lo": 3, "hi": 4 },
-      "msg": "Slide: drop arr[2], add arr[4]. window_sum = 2 = target → count = 4."
+      "range":   { "lo": 2, "hi": 4 },
+      "msg": "Slide: drop arr[1]=4, add arr[4]=4. sum = 15. 15 > 13, min_sum stays 13."
     },
     {
       "keys":    ["a", "b", "c", "d", "e"],
       "markers": [],
-      "msg": "end past array bound — loop ends. Final count = 4."
+      "msg": "end past array bound — loop ends. Return min_sum = 13."
     }
   ]
 }
 ```
 
 <details>
-<summary><strong>Trace — arr = [1, 1, 1, 1, 1],  k = 2,  target = 2</strong></summary>
+<summary><strong>Trace — arr = [4, 4, 5, 6, 4],  k = 3</strong></summary>
 
 ```
-start=0, end=0, window_sum=0, count=0
+start=0, end=0, sum=0, min_sum=∞
 
-end=0: ① sum += arr[0]=1 → sum=1. size=1, not k=2.
-end=1: ① sum += arr[1]=1 → sum=2. size=2==k → sum==target=2 → count=1.
-end=2: ① sum += arr[2]=1 → sum=3. ② size=3>k → sum-=arr[0]=1 → sum=2, start=1.
-       ③ size=2==k → sum==target=2 → count=2.
-end=3: ① sum += arr[3]=1 → sum=3. ② size=3>k → sum-=arr[1]=1 → sum=2, start=2.
-       ③ size=2==k → sum==target=2 → count=3.
-end=4: ① sum += arr[4]=1 → sum=3. ② size=3>k → sum-=arr[2]=1 → sum=2, start=3.
-       ③ size=2==k → sum==target=2 → count=4.
+end=0: ① sum += arr[0]=4 → sum=4.  size=1 < k.
+end=1: ① sum += arr[1]=4 → sum=8.  size=2 < k.
+end=2: ① sum += arr[2]=5 → sum=13. size=3 = k → min_sum = 13.
+end=3: ① sum += arr[3]=6 → sum=19. ② size=4 > k → sum -= arr[0]=4 → sum=15, start=1.
+       ③ size=3 = k → min_sum = min(13, 15) = 13.
+end=4: ① sum += arr[4]=4 → sum=19. ② size=4 > k → sum -= arr[1]=4 → sum=15, start=2.
+       ③ size=3 = k → min_sum = min(13, 15) = 13.
 end=5: end >= n=5 → loop exits.
 
-Return: 4 ✓
-
-Every adjacent pair [1,1] sums to 2.
-Each iteration: add right, remove left, check — all in O(1).
+Return: 13 ✓
 ```
 
 </details>
@@ -1280,10 +1449,10 @@ Each iteration: add right, remove left, check — all in O(1).
 
 | | Complexity | Reasoning |
 |---|---|---|
-| **Time** | O(N) | `end` visits each element once; `start` moves at most N times total |
-| **Space** | O(1) | Only two pointer variables and a running sum |
+| **Time** | O(N) | `end` visits each element once; `start` moves at most N times across all iterations |
+| **Space** | O(1) | Two index variables, one running sum, one min_sum |
 
-Versus brute force O(N × k) — the sliding window replaces the inner loop of k additions with 2 operations (one add, one subtract).
+Versus brute force O(N × k) — the sliding window replaces the inner loop of k additions with one add + one subtract per slide.
 
 ---
 
@@ -1291,18 +1460,18 @@ Versus brute force O(N × k) — the sliding window replaces the inner loop of k
 
 | Scenario | Input | Output | Note |
 |---|---|---|---|
-| k > n | `[1,2]`, k=5, target=3 | `0` | No window of size k can form |
-| k == n | `[1,2,3]`, k=3, target=6 | `1` | Only one window: the whole array |
-| No matching window | `[1,2,3]`, k=2, target=10 | `0` | No window sums to target |
-| All windows match | `[1,1,1,1]`, k=2, target=2 | `3` | Every adjacent pair qualifies |
-| Single element | `[5]`, k=1, target=5 | `1` | One window, one element |
-| Negative elements | `[-1, 2, -1, 2]`, k=2, target=1 | `2` | Works identically — sums can be negative |
+| `k > n` | `[1, 2]`, k=5 | `-1` | No window of size k fits — return sentinel |
+| `k == n` | `[1, 2, 3]`, k=3 | `6` | Only one window: the whole array |
+| `k == 1` | `[3, 1, 4, 1, 5]`, k=1 | `1` | Each element is its own window — answer is `min(arr)` |
+| All identical | `[5, 5, 5, 5]`, k=2 | `10` | Every window sums to the same value |
+| Negative elements | `[-1, 2, -1, 2]`, k=2 | `1` | Works identically — smallest pair is `(-1, 2)` or `(2, -1)`, both sum to 1 |
+| Single element | `[5]`, k=1 | `5` | One window, one element |
 
 ---
 
 ## Key Takeaway
 
-Subarray Size Equals K is the simplest fixed sliding window problem: maintain a running sum, add on expand, subtract on contract, check on full-size. The count increments every time the window sum hits the target. The time drops from O(N × k) to O(N) because the shared elements between adjacent windows are updated in O(1) instead of recomputed.
+Subarray Size Equals K is the simplest fixed sliding window problem: maintain a running sum, add on expand, subtract on contract, take the minimum on full size. The time drops from O(N × k) to O(N) because the shared elements between adjacent windows are updated in O(1) instead of recomputed. The `k > n` guard is the only edge that needs explicit handling — every other case falls out of the loop body.
 
 ***
 
