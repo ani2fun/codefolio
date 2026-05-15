@@ -1640,29 +1640,48 @@ Given the **head** of a singly linked list and two integers **left** and **
 
 ```pseudocode
 # Reverse arbitrary positions [left..right] (1-indexed). Stitch the leftBound to the new head of the segment.
-function reverseSegment(start, end):
+function getNodeAtPosition(head, position):
+    current ← head
+    for i ← 1 to position − 1:
+        current ← current.next
+    return current
+
+function reverse(start, end):
+    current ← start
     rightBound ← end.next
-    previous ← rightBound; current ← start
+    previous ← rightBound
+
     while current ≠ rightBound:
-        nxt ← current.next
+        next ← current.next
         current.next ← previous
         previous ← current
-        current ← nxt
+        current ← next
+
     return previous
 
-function nodeAt(head, position):
-    cur ← head
-    repeat (position − 1) times:
-        cur ← cur.next
-    return cur
-
 function reverseTheGivenSegment(head, left, right):
-    if head is null OR head.next is null OR left = right: return head
-    end ← nodeAt(head, right)
+
+    # Handle cases where reversal is not needed
+    if head is null OR head.next is null OR left = right:
+        return head
+
+    # Get the end node of the segment
+    end ← getNodeAtPosition(head, right)
+
+    # If the left position is 1, reverse from the head
     if left = 1:
-        return reverseSegment(head, end)               # segment starts at head — new head is segment head
-    leftBound ← nodeAt(head, left − 1)
-    leftBound.next ← reverseSegment(leftBound.next, end)
+        return reverse(head, end)
+
+    # Get the node before the 'left' position to connect after reversal
+    leftBound ← getNodeAtPosition(head, left − 1)
+
+    # Node at the start of the segment to reverse
+    start ← leftBound.next
+
+    # Reverse the segment and connect to the leftBound node
+    leftBound.next ← reverse(start, end)
+
+    # Return the modified list
     return head
 ```
 
@@ -1670,126 +1689,225 @@ function reverseTheGivenSegment(head, left, right):
 from typing import Optional
 
 class Solution:
-    def _reverse_segment(self, start, end):
-        right_bound = end.next
-        previous, current = right_bound, start
-        while current is not right_bound:
-            nxt = current.next
+    def get_node_at_position(
+        self, head: Optional[ListNode], position: int
+    ) -> Optional[ListNode]:
+        current = head
+        for i in range(1, position):
+            current = current.next
+        return current
+
+    def reverse(
+        self, start: Optional[ListNode], end: Optional[ListNode]
+    ) -> Optional[ListNode]:
+        current: Optional[ListNode] = start
+        right_bound: Optional[ListNode] = end.next
+        previous: Optional[ListNode] = right_bound
+
+        while current != right_bound:
+            next_node = current.next
             current.next = previous
-            previous, current = current, nxt
+            previous = current
+            current = next_node
+
         return previous
 
-    def _node_at(self, head, position):
-        cur = head
-        for _ in range(position - 1):
-            cur = cur.next
-        return cur
+    def reverse_the_given_segment(
+        self, head: Optional[ListNode], left: int, right: int
+    ) -> Optional[ListNode]:
 
-    def reverse_the_given_segment(self, head: Optional[ListNode], left: int, right: int) -> Optional[ListNode]:
-        # Degenerate cases — nothing to reverse
+        # Handle cases where reversal is not needed
         if head is None or head.next is None or left == right:
             return head
 
-        end = self._node_at(head, right)
+        # Get the end node of the segment
+        end = self.get_node_at_position(head, right)
 
+        # If the left position is 1, reverse from the head
         if left == 1:
-            # Segment starts at the head; new head is the reversed segment's head
-            return self._reverse_segment(head, end)
+            return self.reverse(head, end)
 
-        # Interior segment — reverse it and stitch leftBound to the new segment head
-        left_bound = self._node_at(head, left - 1)
-        left_bound.next = self._reverse_segment(left_bound.next, end)
+        # Get the node before the 'left' position to connect after
+        # reversal
+        left_bound = self.get_node_at_position(head, left - 1)
+
+        # Node at the start of the segment to reverse
+        start = left_bound.next
+
+        # Reverse the segment and connect to the left_bound node
+        left_bound.next = self.reverse(start, end)
+
+        # Return the modified list
         return head
 ```
 
 ```java run
 class Solution {
-    private ListNode nodeAt(ListNode head, int position) {
-        ListNode cur = head;
-        for (int i = 1; i < position; i++) cur = cur.next;
-        return cur;
+    private ListNode getNodeAtPosition(ListNode head, int position) {
+        ListNode current = head;
+        for (int i = 1; i < position; ++i) {
+            current = current.next;
+        }
+        return current;
     }
 
-    private ListNode reverseSegment(ListNode start, ListNode end) {
+    private ListNode reverse(ListNode start, ListNode end) {
+        ListNode current = start;
         ListNode rightBound = end.next;
         ListNode previous = rightBound;
-        ListNode current  = start;
+
         while (current != rightBound) {
             ListNode next = current.next;
             current.next = previous;
             previous = current;
-            current  = next;
+            current = next;
         }
+
         return previous;
     }
 
-    public ListNode reverseTheGivenSegment(ListNode head, int left, int right) {
-        if (head == null || head.next == null || left == right) return head;
+    public ListNode reverseTheGivenSegment(
+        ListNode head,
+        int left,
+        int right
+    ) {
 
-        ListNode end = nodeAt(head, right);
-        if (left == 1) return reverseSegment(head, end);
+        // Handle cases where reversal is not needed
+        if (head == null || head.next == null || left == right) {
+            return head;
+        }
 
-        ListNode leftBound = nodeAt(head, left - 1);
-        leftBound.next = reverseSegment(leftBound.next, end);
+        // Get the end node of the segment
+        ListNode end = getNodeAtPosition(head, right);
+
+        // If the left position is 1, reverse from the head
+        if (left == 1) {
+            return reverse(head, end);
+        }
+
+        // Get the node before the 'left' position to connect after
+        // reversal
+        ListNode leftBound = getNodeAtPosition(head, left - 1);
+
+        // Node at the start of the segment to reverse
+        ListNode start = leftBound.next;
+
+        // Reverse the segment and connect to the leftBound node
+        leftBound.next = reverse(start, end);
+
+        // Return the modified list
         return head;
     }
 }
 ```
 
 ```c run
-static ListNode* node_at(ListNode *head, int position) {
-    ListNode *cur = head;
-    for (int i = 1; i < position; i++) cur = cur->next;
-    return cur;
+static ListNode* getNodeAtPosition(ListNode *head, int position) {
+    ListNode *current = head;
+    for (int i = 1; i < position; ++i) {
+        current = current->next;
+    }
+    return current;
 }
 
-static ListNode* reverse_segment(ListNode *start, ListNode *end) {
+static ListNode* reverse(ListNode *start, ListNode *end) {
+    ListNode *current = start;
     ListNode *rightBound = end->next;
-    ListNode *prev = rightBound, *cur = start;
-    while (cur != rightBound) {
-        ListNode *nxt = cur->next;
-        cur->next = prev;
-        prev = cur; cur = nxt;
+    ListNode *previous = rightBound;
+
+    while (current != rightBound) {
+        ListNode *next = current->next;
+        current->next = previous;
+        previous = current;
+        current = next;
     }
-    return prev;
+
+    return previous;
 }
 
 ListNode* reverseTheGivenSegment(ListNode *head, int left, int right) {
-    if (head == NULL || head->next == NULL || left == right) return head;
 
-    ListNode *end = node_at(head, right);
-    if (left == 1) return reverse_segment(head, end);
+    /* Handle cases where reversal is not needed */
+    if (head == NULL || head->next == NULL || left == right) {
+        return head;
+    }
 
-    ListNode *leftBound = node_at(head, left - 1);
-    leftBound->next = reverse_segment(leftBound->next, end);
+    /* Get the end node of the segment */
+    ListNode *end = getNodeAtPosition(head, right);
+
+    /* If the left position is 1, reverse from the head */
+    if (left == 1) {
+        return reverse(head, end);
+    }
+
+    /* Get the node before the 'left' position to connect after
+       reversal */
+    ListNode *leftBound = getNodeAtPosition(head, left - 1);
+
+    /* Node at the start of the segment to reverse */
+    ListNode *start = leftBound->next;
+
+    /* Reverse the segment and connect to the leftBound node */
+    leftBound->next = reverse(start, end);
+
+    /* Return the modified list */
     return head;
 }
 ```
 
 ```scala run
 object Solution {
-  private def nodeAt(head: ListNode, position: Int): ListNode = {
-    var cur = head
-    var i = 1; while (i < position) { cur = cur.next; i += 1 }
-    cur
-  }
-  private def reverseSegment(start: ListNode, end: ListNode): ListNode = {
-    val rightBound = end.next
-    var prev: ListNode = rightBound
-    var cur:  ListNode = start
-    while (cur ne rightBound) {
-      val nxt = cur.next
-      cur.next = prev
-      prev = cur; cur = nxt
+  private def getNodeAtPosition(head: ListNode, position: Int): ListNode = {
+    var current = head
+    var i = 1
+    while (i < position) {
+      current = current.next
+      i += 1
     }
-    prev
+    current
   }
+
+  private def reverse(start: ListNode, end: ListNode): ListNode = {
+    var current: ListNode = start
+    val rightBound: ListNode = end.next
+    var previous: ListNode = rightBound
+
+    while (current ne rightBound) {
+      val next = current.next
+      current.next = previous
+      previous = current
+      current = next
+    }
+
+    previous
+  }
+
   def reverseTheGivenSegment(head: ListNode, left: Int, right: Int): ListNode = {
-    if (head == null || head.next == null || left == right) return head
-    val end = nodeAt(head, right)
-    if (left == 1) return reverseSegment(head, end)
-    val leftBound = nodeAt(head, left - 1)
-    leftBound.next = reverseSegment(leftBound.next, end)
+
+    // Handle cases where reversal is not needed
+    if (head == null || head.next == null || left == right) {
+      return head
+    }
+
+    // Get the end node of the segment
+    val end = getNodeAtPosition(head, right)
+
+    // If the left position is 1, reverse from the head
+    if (left == 1) {
+      return reverse(head, end)
+    }
+
+    // Get the node before the 'left' position to connect after
+    // reversal
+    val leftBound = getNodeAtPosition(head, left - 1)
+
+    // Node at the start of the segment to reverse
+    val start = leftBound.next
+
+    // Reverse the segment and connect to the leftBound node
+    leftBound.next = reverse(start, end)
+
+    // Return the modified list
     head
   }
 }
