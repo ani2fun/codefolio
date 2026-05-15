@@ -797,76 +797,123 @@ n3.next -> n2.value: "loop back (X=2)"
 
 
 ```pseudocode
-# Floyd Phase 1 to detect the loop. Then walk to the loop's tail and null its next pointer.
+# Floyd Phase 1 to detect the loop; then walk to the node just before the loop entry and null its next pointer.
 function removeLoop(head):
-    if head is null OR head.next is null: return
 
-    slow ← head; fast ← head
+    # Check if the list is empty or has only one element (no loop possible)
+    if head is null OR head.next is null:
+        return
+
+    # Pointer to traverse the list one node at a time
+    slow ← head
+
+    # Pointer to traverse the list two nodes at a time
+    fast ← head
+
+    # Flag to indicate if a loop is present
     hasLoop ← false
+
+    # Detect if there is a loop in the linked list
     while fast is not null AND fast.next is not null:
+
+        # Move slow pointer by one node
         slow ← slow.next
+
+        # Move fast pointer by two nodes
         fast ← fast.next.next
+
+        # If slow and fast pointers meet, there is a loop
         if slow = fast:
             hasLoop ← true
             break
-    if NOT hasLoop: return
 
-    # Find the tail of the loop.
+    # No loop found, return from the function
+    if NOT hasLoop:
+        return
+
+    # If the loop starts at the head of the linked list
     if slow = head:
-        # Special case — loop entry is the head itself.
         while slow.next ≠ head:
             slow ← slow.next
+
+    # Find the start of the loop (where slow and fast pointers meet again)
     else:
-        # General case — reset fast to head; walk both at speed 1.
-        # They meet at the node JUST BEFORE the loop entry.
+
+        # Reset fast pointer to the head of the linked list
         fast ← head
         while slow.next ≠ fast.next:
             slow ← slow.next
             fast ← fast.next
 
-    slow.next ← null                                   # cut the loop
+    # Remove the loop by setting the next pointer of the last node in the loop to null
+    slow.next ← null
 ```
 
 ```python run
+from typing import Optional
+
 class ListNode:
     def __init__(self, val=0, next=None):
         self.val = val
         self.next = next
 
-def remove_loop(head):
+def remove_loop(head: Optional[ListNode]) -> None:
+
+    # Check if the list is empty or has only one element (no loop
+    # possible)
     if head is None or head.next is None:
         return
 
-    slow = head
-    fast = head
-    has_loop = False
+    # Pointer to traverse the list one node at a time
+    slow: Optional[ListNode] = head
 
-    # Phase 1: detect the loop using Floyd's algorithm
-    while fast is not None and fast.next is not None:
-        slow = slow.next         # tortoise — one step at a time
-        fast = fast.next.next    # hare — two steps at a time
-        if slow is fast:
+    # Pointer to traverse the list two nodes at a time
+    fast: Optional[ListNode] = head
+
+    # Flag to indicate if a loop is present
+    has_loop: bool = False
+
+    # Detect if there is a loop in the linked list
+    while (
+        slow is not None
+        and fast is not None
+        and fast.next is not None
+    ):
+
+        # Move slow pointer by one node
+        slow = slow.next
+
+        # Move fast pointer by two nodes
+        fast = fast.next.next
+
+        # If slow and fast pointers meet, there is a loop
+        if slow == fast:
             has_loop = True
             break
 
+    # No loop found, return from the function
     if not has_loop:
-        return  # No loop — nothing to remove
+        return
 
-    # Phase 2: find the tail of the loop
-    if slow is head:
-        # Special case: loop starts at the head itself
-        while slow.next is not head:
+    # If the loop starts at the head of the linked list
+    if slow == head:
+        while slow.next != head:
             slow = slow.next
+
+    # Find the start of the loop (where slow and fast pointers meet
+    # again)
     else:
-        # General case: reset fast to head and walk both one step at a time
-        # They meet at the node just before the loop entry
+
+        # Reset fast pointer to the head of the linked list
         fast = head
-        while slow.next is not fast.next:
+        while slow.next != fast.next:
             slow = slow.next
             fast = fast.next
 
-    # Cut the loop by nullifying the tail's next pointer
-    slow.next = None
+    # Remove the loop by setting the next pointer of the last node in
+    # the loop to None
+    if slow:
+        slow.next = None
 
 def print_list(head):
     result = []
@@ -896,27 +943,55 @@ public class RemoveLoop {
     }
 
     static void removeLoop(ListNode head) {
-        if (head == null || head.next == null) return;
 
-        ListNode slow = head;
-        ListNode fast = head;
-        boolean hasLoop = false;
-
-        // Phase 1: detect loop with Floyd's two-pointer trick
-        while (fast != null && fast.next != null) {
-            slow = slow.next;
-            fast = fast.next.next;
-            if (slow == fast) { hasLoop = true; break; }
+        // Check if the list is empty or has only one element (no loop
+        // possible)
+        if (head == null || head.next == null) {
+            return;
         }
 
-        if (!hasLoop) return;
+        // Pointer to traverse the list one node at a time
+        ListNode slow = head;
 
-        // Phase 2: find the last node of the loop
+        // Pointer to traverse the list two nodes at a time
+        ListNode fast = head;
+
+        // Flag to indicate if a loop is present
+        boolean hasLoop = false;
+
+        // Detect if there is a loop in the linked list
+        while (fast != null && fast.next != null) {
+
+            // Move slow pointer by one node
+            slow = slow.next;
+
+            // Move fast pointer by two nodes
+            fast = fast.next.next;
+
+            // If slow and fast pointers meet, there is a loop
+            if (slow == fast) {
+                hasLoop = true;
+                break;
+            }
+        }
+
+        // No loop found, return from the function
+        if (!hasLoop) {
+            return;
+        }
+
+        // If the loop starts at the head of the linked list
         if (slow == head) {
-            // Loop starts at head — walk slow until its next is head
-            while (slow.next != head) slow = slow.next;
-        } else {
-            // Reset fast to head; walk both until their nexts meet
+            while (slow.next != head) {
+                slow = slow.next;
+            }
+        }
+
+        // Find the start of the loop (where slow and fast pointers meet
+        // again)
+        else {
+
+            // Reset fast pointer to the head of the linked list
             fast = head;
             while (slow.next != fast.next) {
                 slow = slow.next;
@@ -924,7 +999,8 @@ public class RemoveLoop {
             }
         }
 
-        // Cut the loop
+        // Remove the loop by setting the next pointer of the last node
+        // in the loop to null
         slow.next = null;
     }
 
@@ -968,24 +1044,55 @@ ListNode* newNode(int v) {
 }
 
 void removeLoop(ListNode *head) {
-    if (head == NULL || head->next == NULL) return;
 
-    ListNode *slow = head, *fast = head;
-    int hasLoop = 0;
-
-    /* Phase 1: detect loop */
-    while (fast != NULL && fast->next != NULL) {
-        slow = slow->next;
-        fast = fast->next->next;
-        if (slow == fast) { hasLoop = 1; break; }
+    /* Check if the list is empty or has only one element (no loop
+       possible) */
+    if (head == NULL || head->next == NULL) {
+        return;
     }
 
-    if (!hasLoop) return;
+    /* Pointer to traverse the list one node at a time */
+    ListNode *slow = head;
 
-    /* Phase 2: find the tail of the loop */
+    /* Pointer to traverse the list two nodes at a time */
+    ListNode *fast = head;
+
+    /* Flag to indicate if a loop is present */
+    int hasLoop = 0;
+
+    /* Detect if there is a loop in the linked list */
+    while (fast != NULL && fast->next != NULL) {
+
+        /* Move slow pointer by one node */
+        slow = slow->next;
+
+        /* Move fast pointer by two nodes */
+        fast = fast->next->next;
+
+        /* If slow and fast pointers meet, there is a loop */
+        if (slow == fast) {
+            hasLoop = 1;
+            break;
+        }
+    }
+
+    /* No loop found, return from the function */
+    if (!hasLoop) {
+        return;
+    }
+
+    /* If the loop starts at the head of the linked list */
     if (slow == head) {
-        while (slow->next != head) slow = slow->next;
-    } else {
+        while (slow->next != head) {
+            slow = slow->next;
+        }
+    }
+
+    /* Find the start of the loop (where slow and fast pointers meet
+       again) */
+    else {
+
+        /* Reset fast pointer to the head of the linked list */
         fast = head;
         while (slow->next != fast->next) {
             slow = slow->next;
@@ -993,7 +1100,9 @@ void removeLoop(ListNode *head) {
         }
     }
 
-    slow->next = NULL; /* Cut the loop */
+    /* Remove the loop by setting the next pointer of the last node
+       in the loop to NULL */
+    slow->next = NULL;
 }
 
 void printList(ListNode *head) {
@@ -1024,25 +1133,54 @@ class ListNode(var v: Int, var next: ListNode = null)
 
 object RemoveLoop {
   def removeLoop(head: ListNode): Unit = {
-    if (head == null || head.next == null) return
 
-    var slow = head
-    var fast = head
-    var hasLoop = false
-
-    // Phase 1: detect loop
-    while (fast != null && fast.next != null) {
-      slow = slow.next
-      fast = fast.next.next
-      if (slow eq fast) { hasLoop = true; fast = null } // break
+    // Check if the list is empty or has only one element (no loop
+    // possible)
+    if (head == null || head.next == null) {
+      return
     }
 
-    if (!hasLoop) return
+    // Pointer to traverse the list one node at a time
+    var slow = head
 
-    // Phase 2: find loop tail
+    // Pointer to traverse the list two nodes at a time
+    var fast = head
+
+    // Flag to indicate if a loop is present
+    var hasLoop = false
+
+    // Detect if there is a loop in the linked list
+    while (fast != null && fast.next != null && !hasLoop) {
+
+      // Move slow pointer by one node
+      slow = slow.next
+
+      // Move fast pointer by two nodes
+      fast = fast.next.next
+
+      // If slow and fast pointers meet, there is a loop
+      if (slow eq fast) {
+        hasLoop = true
+      }
+    }
+
+    // No loop found, return from the function
+    if (!hasLoop) {
+      return
+    }
+
+    // If the loop starts at the head of the linked list
     if (slow eq head) {
-      while (slow.next ne head) slow = slow.next
-    } else {
+      while (slow.next ne head) {
+        slow = slow.next
+      }
+    }
+
+    // Find the start of the loop (where slow and fast pointers meet
+    // again)
+    else {
+
+      // Reset fast pointer to the head of the linked list
       fast = head
       while (slow.next ne fast.next) {
         slow = slow.next
@@ -1050,7 +1188,9 @@ object RemoveLoop {
       }
     }
 
-    slow.next = null // Cut the loop
+    // Remove the loop by setting the next pointer of the last node
+    // in the loop to null
+    slow.next = null
   }
 
   def printList(head: ListNode): Unit = {
