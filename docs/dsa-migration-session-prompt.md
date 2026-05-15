@@ -423,12 +423,71 @@ grep -nE "(total|sum_|need|remaining_target)" \
 
 ## Closing the session
 
-End every session with a short summary message (3-6 bullets):
+End every session with **two things**, in this order:
+
+### 1. Status summary (3-6 bullets)
 
 - **What landed this session** (commit hashes + 1-line each).
 - **What's in progress** (file paths + state).
 - **Recommended next chunk** for the following session.
 - **Anything surprising** that future-you should know.
+
+### 2. Next-session prompt (paste-ready)
+
+Write a ready-to-paste prompt for the next session, wrapped in a
+fenced markdown block so the user can copy it directly. It must:
+
+- **Point at the two read-first docs**: this standing brief
+  (`docs/dsa-migration-session-prompt.md`) and the relevant phase
+  file (`docs/migration/phase-XX-…md`).
+- **State the current state**: list the most recent commits done
+  for this phase (hashes + one-line description each), so a fresh
+  agent can verify the starting point.
+- **State the Session task**: be specific about which chapter and
+  problem(s) to tackle. Don't say "continue Phase 1" — say
+  "Phase 1, Session N: align Ch 1.3 problems 5-10 code in all 5
+  language tabs". Either reuse one of the templates from the phase
+  file or write a fresh one tailored to what just landed.
+- **Include the constraints reminder**: one commit per problem,
+  no `git push`, no `Co-Authored-By:`, verify Python tab runs, the
+  Java 21 / scalafmt export if Scala will be touched.
+- **End with the closeout instruction**: "End of session: write a
+  3-6 bullet summary AND a paste-ready next-session prompt per the
+  standing brief."
+
+Example shape:
+
+```markdown
+You are continuing the DSA migration on the `codefolio` repo.
+
+**Read these before touching any files:**
+
+1. [`docs/dsa-migration-session-prompt.md`](docs/dsa-migration-session-prompt.md) — standing methodology brief.
+2. [`docs/migration/phase-0X-<name>.md`](docs/migration/phase-0X-<name>.md) — phase plan.
+
+## Session task — Phase X (<Name>), Session N
+
+Phase X is **in progress**. Recent commits:
+- Ch X.Y <Problem> — commit `<hash>` (<one-line>)
+- ...
+
+**Do this session:**
+
+1. <Specific task 1>
+2. <Specific task 2>
+
+**Constraints:** one commit per problem; no push; no
+Co-Authored-By; verify Python tab; export JAVA_HOME for Scala.
+
+**End of session:** write a 3-6 bullet summary AND a paste-ready
+next-session prompt per the standing brief.
+```
+
+The user pastes the next-session prompt verbatim at the start of
+the following session — no editing required. If it requires
+editing, you wrote it wrong.
+
+---
 
 That's the entire methodology. Begin by reading the **Session task**
 block at the top of this file (or the user's first message) and
