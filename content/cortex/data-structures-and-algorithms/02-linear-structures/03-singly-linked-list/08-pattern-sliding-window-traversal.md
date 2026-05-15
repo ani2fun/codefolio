@@ -1180,20 +1180,41 @@ Given the **head** of a singly linked list and a non-negative integer **N**, 
 
 
 ```pseudocode
-# Same single-pass trim as above — re-listed as the canonical solution to the Example 2 case.
-function trimNthNode(head, k):
-    if head is null: return null
-    end ← head
-    for i from 1 to k − 1:
-        if end is null: return head
-        end ← end.next
-    if end.next is null: return head.next
-    prev ← null; start ← head
-    while end.next is not null:
-        end ← end.next
-        prev ← start
-        start ← start.next
-    prev.next ← start.next
+# Single-pass trim using source's nth_node_from_end / prev_to_nth_node_from_end naming.
+function trimNthNode(head, n):
+
+    # Handle edge case for an empty list
+    if head is null:
+        return null
+
+    # Pointer to keep track of the end of the list
+    current ← head
+
+    # Move the current pointer n steps ahead
+    for i ← 1 to n − 1:
+
+        # If n is greater than the length of the list
+        if current is null:
+            return head
+        current ← current.next
+
+    # If the current pointer is now at the last node, it means we need to remove the head
+    if current.next is null:
+        return head.next
+
+    nthNodeFromEnd ← head
+    prevToNthNodeFromEnd ← null
+
+    # Move both pointers until the current pointer reaches the last node
+    while current is not null AND current.next is not null:
+        prevToNthNodeFromEnd ← nthNodeFromEnd
+        nthNodeFromEnd ← nthNodeFromEnd.next
+        current ← current.next
+
+    # Now, prevToNthNodeFromEnd points to the node before the one we want to remove
+    prevToNthNodeFromEnd.next ← nthNodeFromEnd.next
+
+    # Return the modified list
     return head
 ```
 
@@ -1201,108 +1222,196 @@ function trimNthNode(head, k):
 from typing import Optional
 
 class Solution:
-    def trim_nth_node(self, head: Optional[ListNode], k: int) -> Optional[ListNode]:
+    def trim_nth_node(
+        self, head: Optional[ListNode], n: int
+    ) -> Optional[ListNode]:
+
+        # Handle edge case for an empty list
         if head is None:
             return None
 
-        # Offset `end` by k − 1 hops to prime the window of size k
-        end = head
-        for _ in range(k - 1):
-            if end is None:
-                return head         # k exceeds list size → nothing to trim
-            end = end.next
+        # Pointer to keep track of the end of the list
+        current = head
 
-        # If `end` is already the tail, the victim is the head itself
-        if end.next is None:
+        # Move the current pointer n steps ahead
+        for _ in range(1, n):
+
+            # If n is greater than the length of the list
+            if current is None:
+                return head
+            current = current.next
+
+        # If the current pointer is now at the last node, it means we
+        # need to remove the head
+        if current.next is None:
             return head.next
 
-        # Slide both pointers until `end` is the tail. `prev` trails `start`.
-        prev, start = None, head
-        while end.next is not None:
-            end = end.next
-            prev, start = start, start.next
+        nth_node_from_end = head
+        prev_to_nth_node_from_end = None
 
-        # prev is the (k+1)-th from end → splice out its next
-        prev.next = start.next
+        # Move both pointers until the current pointer reaches the last
+        # node
+        while current is not None and current.next is not None:
+            prev_to_nth_node_from_end = nth_node_from_end
+            nth_node_from_end = nth_node_from_end.next
+            current = current.next
+
+        # Now, prev_to_nth_node_from_end points to the node before the
+        # one we want to remove
+        prev_to_nth_node_from_end.next = nth_node_from_end.next
+
+        # Return the modified list
         return head
 ```
 
 ```java run
 class Solution {
-    public ListNode trimNthNode(ListNode head, int k) {
-        if (head == null) return null;
+    public ListNode trimNthNode(ListNode head, int n) {
 
-        // Offset end by k - 1 hops
-        ListNode end = head;
-        for (int i = 1; i < k; i++) {
-            if (end == null) return head;
-            end = end.next;
+        // Handle edge case for an empty list
+        if (head == null) {
+            return null;
         }
 
-        // If end is at the tail, target is the head
-        if (end.next == null) return head.next;
+        // Pointer to keep track of the end of the list
+        ListNode current = head;
 
-        ListNode prev = null, start = head;
-        while (end.next != null) {
-            end = end.next;
-            prev = start;
-            start = start.next;
+        // Move the current pointer n steps ahead
+        for (int i = 1; i < n; i++) {
+
+            // If n is greater than the length of the list
+            if (current == null) {
+                return head;
+            }
+            current = current.next;
         }
 
-        prev.next = start.next;
+        // If the current pointer is now at the last node, it means we
+        // need to remove the head
+        if (current.next == null) {
+            return head.next;
+        }
+
+        ListNode nthNodeFromEnd = head;
+        ListNode prevToNthNodeFromEnd = null;
+
+        // Move both pointers until the current pointer reaches the last
+        // node
+        while (current != null && current.next != null) {
+            prevToNthNodeFromEnd = nthNodeFromEnd;
+            nthNodeFromEnd = nthNodeFromEnd.next;
+            current = current.next;
+        }
+
+        // Now, prevToNthNodeFromEnd points to the node before the one
+        // we want to remove
+        if (prevToNthNodeFromEnd != null) {
+            prevToNthNodeFromEnd.next = nthNodeFromEnd.next;
+        }
+
+        // Return the modified list
         return head;
     }
 }
 ```
 
 ```c run
-ListNode* trimNthNode(ListNode *head, int k) {
-    if (head == NULL) return NULL;
+ListNode* trimNthNode(ListNode *head, int n) {
 
-    ListNode *end = head;
-    for (int i = 1; i < k; i++) {
-        if (end == NULL) return head;
-        end = end->next;
+    /* Handle edge case for an empty list */
+    if (head == NULL) {
+        return NULL;
     }
 
-    if (end->next == NULL) return head->next;
+    /* Pointer to keep track of the end of the list */
+    ListNode *current = head;
 
-    ListNode *prev = NULL, *start = head;
-    while (end->next != NULL) {
-        end = end->next;
-        prev = start;
-        start = start->next;
+    /* Move the current pointer n steps ahead */
+    for (int i = 1; i < n; i++) {
+
+        /* If n is greater than the length of the list */
+        if (current == NULL) {
+            return head;
+        }
+        current = current->next;
     }
 
-    prev->next = start->next;
+    /* If the current pointer is now at the last node, it means we
+       need to remove the head */
+    if (current->next == NULL) {
+        return head->next;
+    }
+
+    ListNode *nthNodeFromEnd = head;
+    ListNode *prevToNthNodeFromEnd = NULL;
+
+    /* Move both pointers until the current pointer reaches the last
+       node */
+    while (current != NULL && current->next != NULL) {
+        prevToNthNodeFromEnd = nthNodeFromEnd;
+        nthNodeFromEnd = nthNodeFromEnd->next;
+        current = current->next;
+    }
+
+    /* Now, prevToNthNodeFromEnd points to the node before the one
+       we want to remove */
+    if (prevToNthNodeFromEnd != NULL) {
+        prevToNthNodeFromEnd->next = nthNodeFromEnd->next;
+    }
+
+    /* Return the modified list */
     return head;
 }
 ```
 
 ```scala run
 object Solution {
-  def trimNthNode(head: ListNode, k: Int): ListNode = {
-    if (head == null) return null
+  def trimNthNode(head: ListNode, n: Int): ListNode = {
 
-    var end = head
+    // Handle edge case for an empty list
+    if (head == null) {
+      return null
+    }
+
+    // Pointer to keep track of the end of the list
+    var current = head
+
+    // Move the current pointer n steps ahead
     var i = 1
-    while (i < k) {
-      if (end == null) return head
-      end = end.next
+    while (i < n) {
+
+      // If n is greater than the length of the list
+      if (current == null) {
+        return head
+      }
+      current = current.next
       i += 1
     }
 
-    if (end.next == null) return head.next
-
-    var prev: ListNode = null
-    var start = head
-    while (end.next != null) {
-      end = end.next
-      prev = start
-      start = start.next
+    // If the current pointer is now at the last node, it means we
+    // need to remove the head
+    if (current.next == null) {
+      return head.next
     }
 
-    prev.next = start.next
+    var nthNodeFromEnd = head
+    var prevToNthNodeFromEnd: ListNode = null
+
+    // Move both pointers until the current pointer reaches the last
+    // node
+    while (current != null && current.next != null) {
+      prevToNthNodeFromEnd = nthNodeFromEnd
+      nthNodeFromEnd = nthNodeFromEnd.next
+      current = current.next
+    }
+
+    // Now, prevToNthNodeFromEnd points to the node before the one
+    // we want to remove
+    if (prevToNthNodeFromEnd != null) {
+      prevToNthNodeFromEnd.next = nthNodeFromEnd.next
+    }
+
+    // Return the modified list
     head
   }
 }
