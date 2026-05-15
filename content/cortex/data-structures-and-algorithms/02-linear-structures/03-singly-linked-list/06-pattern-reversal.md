@@ -795,35 +795,58 @@ You need to reverse the list in place.
 
 
 ```pseudocode
-# Same iterative reversal — re-listed once more for the demo's full driver.
+# Reverse the singly linked list in place — direct application of the reversal algorithm.
 function reverseAList(head):
+
+    # Initialize pointers current and previous
     current ← head
     previous ← null
+
     while current is not null:
-        nextNode ← current.next                        # save next before we overwrite it
-        current.next ← previous                        # redirect arrow backward
-        previous ← current                             # advance previous to current
-        current ← nextNode                             # step forward through the original list
-    return previous                                     # old tail is the new head
+
+        # Save the address of next node
+        next ← current.next
+
+        # Update the next of current node
+        current.next ← previous
+
+        # Move previous to hold current node
+        previous ← current
+
+        # Move current ahead
+        current ← next
+
+    return previous
 ```
 
 ```python run
+from typing import Optional
+
 class ListNode:
     def __init__(self, val=0, next=None):
         self.val = val
         self.next = next
 
-def reverse_a_list(head):
-    current = head
-    previous = None  # Will become the new tail (points to None at end)
+def reverse_a_list(head: Optional[ListNode]) -> Optional[ListNode]:
+
+    # Initialize pointers current and previous
+    current: Optional[ListNode] = head
+    previous: Optional[ListNode] = None
 
     while current is not None:
-        next_node = current.next   # Save next before we overwrite it
-        current.next = previous    # Redirect arrow backward
-        previous = current         # Advance previous to current node
-        current = next_node        # Step forward through the original list
 
-    # previous now points to the old tail — the new head
+        # Save the address of next node
+        next_node = current.next
+
+        # Update the next of current node
+        current.next = previous
+
+        # Move previous to hold current node
+        previous = current
+
+        # Move current ahead
+        current = next_node
+
     return previous
 
 def print_list(head):
@@ -851,17 +874,27 @@ public class ReverseAList {
     }
 
     static ListNode reverseAList(ListNode head) {
+
+        // Initialize pointers current and previous
         ListNode current = head;
-        ListNode previous = null; // Starts as null — becomes the new tail
+        ListNode previous = null;
 
         while (current != null) {
-            ListNode next = current.next;  // Save next before overwriting
-            current.next = previous;       // Redirect arrow backward
-            previous = current;            // Advance previous
-            current = next;               // Step forward
+
+            // Save the address of next node
+            ListNode next = current.next;
+
+            // Update the next of current node
+            current.next = previous;
+
+            // Move previous to hold current node
+            previous = current;
+
+            // Move current ahead
+            current = next;
         }
 
-        return previous; // Old tail is now the new head
+        return previous;
     }
 
     static void printList(ListNode head) {
@@ -901,17 +934,27 @@ ListNode* newNode(int v) {
 }
 
 ListNode* reverseAList(ListNode *head) {
+
+    /* Initialize pointers current and previous */
     ListNode *current = head;
-    ListNode *previous = NULL; /* Will become the new tail */
+    ListNode *previous = NULL;
 
     while (current != NULL) {
-        ListNode *next = current->next; /* Save next before overwriting */
-        current->next = previous;       /* Redirect arrow backward */
-        previous = current;             /* Advance previous */
-        current = next;                 /* Step forward */
+
+        /* Save the address of next node */
+        ListNode *next = current->next;
+
+        /* Update the next of current node */
+        current->next = previous;
+
+        /* Move previous to hold current node */
+        previous = current;
+
+        /* Move current ahead */
+        current = next;
     }
 
-    return previous; /* Old tail is the new head */
+    return previous;
 }
 
 void printList(ListNode *head) {
@@ -939,17 +982,27 @@ class ListNode(var v: Int, var next: ListNode = null)
 
 object ReverseAList {
   def reverseAList(head: ListNode): ListNode = {
+
+    // Initialize pointers current and previous
     var current = head
-    var previous: ListNode = null // Grows backward into the reversed list
+    var previous: ListNode = null
 
     while (current != null) {
-      val next = current.next  // Save next before overwriting
-      current.next = previous  // Flip the arrow
-      previous = current       // Advance previous
-      current = next           // Step forward
+
+      // Save the address of next node
+      val next = current.next
+
+      // Update the next of current node
+      current.next = previous
+
+      // Move previous to hold current node
+      previous = current
+
+      // Move current ahead
+      current = next
     }
 
-    previous // Old tail is now the new head
+    previous
   }
 
   def printList(head: ListNode): Unit = {
