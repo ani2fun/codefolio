@@ -1351,6 +1351,65 @@ object Main extends App {
 ```
 
 
+```d3 widget=array-traversal
+{
+  "items": ["1", "1", "0", "1", "1", "1", "0", "1"],
+  "title": "Consecutive Ones on [1, 1, 0, 1, 1, 1, 0, 1]",
+  "steps": [
+    {
+      "keys":    ["a", "b", "c", "d", "e", "f", "g", "h"],
+      "markers": [
+        { "name": "start", "index": 0, "color": "#3b82f6" },
+        { "name": "end",   "index": 0, "color": "#10b981" }
+      ],
+      "range":   { "lo": 0, "hi": 0 },
+      "msg": "arr[0] = 1 → invariant holds. window = [0..0], len = 1. max_len = 1."
+    },
+    {
+      "keys":    ["a", "b", "c", "d", "e", "f", "g", "h"],
+      "markers": [
+        { "name": "start", "index": 0, "color": "#3b82f6" },
+        { "name": "end",   "index": 1, "color": "#10b981" }
+      ],
+      "range":   { "lo": 0, "hi": 1 },
+      "msg": "arr[1] = 1 → invariant holds. window = [0..1], len = 2. max_len = 2."
+    },
+    {
+      "keys":    ["a", "b", "c", "d", "e", "f", "g", "h"],
+      "markers": [
+        { "name": "end",   "index": 2, "color": "#10b981" }
+      ],
+      "msg": "arr[2] = 0 → invariant breaks. LEAP start = 3."
+    },
+    {
+      "keys":    ["a", "b", "c", "d", "e", "f", "g", "h"],
+      "markers": [
+        { "name": "start", "index": 3, "color": "#3b82f6" },
+        { "name": "end",   "index": 5, "color": "#10b981" }
+      ],
+      "range":   { "lo": 3, "hi": 5 },
+      "msg": "Three more 1s extend the window. window = [3..5], len = 3. max_len = 3 (new best)."
+    },
+    {
+      "keys":    ["a", "b", "c", "d", "e", "f", "g", "h"],
+      "markers": [
+        { "name": "end",   "index": 6, "color": "#10b981" }
+      ],
+      "msg": "arr[6] = 0 → LEAP start = 7."
+    },
+    {
+      "keys":    ["a", "b", "c", "d", "e", "f", "g", "h"],
+      "markers": [
+        { "name": "start", "index": 7, "color": "#3b82f6" },
+        { "name": "end",   "index": 7, "color": "#10b981" }
+      ],
+      "range":   { "lo": 7, "hi": 7 },
+      "msg": "arr[7] = 1 → window = [7..7], len = 1. max_len still 3. Return 3."
+    }
+  ]
+}
+```
+
 <details>
 <summary><strong>Trace — arr = [1, 1, 0, 1, 1, 1, 0, 1]</strong></summary>
 
