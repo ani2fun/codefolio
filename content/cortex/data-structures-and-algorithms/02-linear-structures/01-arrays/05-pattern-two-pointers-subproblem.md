@@ -1280,6 +1280,40 @@ No triplets for i=0.
 
 **i=1, arr[i]=-1, target=1, left=2, right=5:**
 
+```d3 widget=array-traversal
+{
+  "items": ["-4", "-1", "-1", "0", "1", "2"],
+  "title": "Three Sum inner trace — i = 1 (arr[i] = -1), target for inner = 1",
+  "steps": [
+    {
+      "keys":    ["a", "b", "c", "d", "e", "f"],
+      "markers": [
+        { "name": "i",     "index": 1, "color": "#a855f7" },
+        { "name": "left",  "index": 2, "color": "#3b82f6" },
+        { "name": "right", "index": 5, "color": "#f59e0b" }
+      ],
+      "msg": "arr[left] + arr[right] = -1 + 2 = 1 = target → record triplet [-1, -1, 2]."
+    },
+    {
+      "keys":    ["a", "b", "c", "d", "e", "f"],
+      "markers": [
+        { "name": "i",     "index": 1, "color": "#a855f7" },
+        { "name": "left",  "index": 3, "color": "#3b82f6" },
+        { "name": "right", "index": 4, "color": "#f59e0b" }
+      ],
+      "msg": "After advancing past duplicates: arr[left] + arr[right] = 0 + 1 = 1 = target → record triplet [-1, 0, 1]."
+    },
+    {
+      "keys":    ["a", "b", "c", "d", "e", "f"],
+      "markers": [
+        { "name": "i",     "index": 1, "color": "#a855f7" }
+      ],
+      "msg": "left ≥ right → inner pass for i = 1 ends. Two triplets recorded."
+    }
+  ]
+}
+```
+
 | left | right | arr[l]+arr[r] | Action |
 |---|---|---|---|
 | 2 (-1) | 5 (2) | 1 | == 1 ✅ → record **[-1,-1,2]**, skip dup, left=3, right=4 |
