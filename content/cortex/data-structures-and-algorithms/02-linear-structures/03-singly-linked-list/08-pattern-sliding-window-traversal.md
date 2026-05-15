@@ -1877,141 +1877,300 @@ Given the **head** of a singly linked list and a non-negative integer **k**, 
 
 
 ```pseudocode
-# Left-rotate by k. Find the k-th-from-end node, split there, wrap the original tail to the old head.
+# Right-rotate by k. Find the k-th-from-end node, split there, wrap the original tail to the old head.
+function findLength(head):
+    length ← 0
+    while head is not null:
+        length ← length + 1
+        head ← head.next
+    return length
+
 function kRotations(head, k):
-    if head is null OR head.next is null OR k = 0: return head
 
-    length ← 0; cur ← head
-    while cur is not null: length ← length + 1; cur ← cur.next
-    k ← k mod length                                   # rotating by length is a no-op
-    if k = 0: return head
+    # If the list is empty or has only one node, no swapping is needed.
+    if head is null OR head.next is null OR k = 0:
+        return head
 
-    cursor ← head
-    for i from 1 to k − 1:                             # offset cursor by k − 1
-        cursor ← cursor.next
-    kthFromEnd ← head; prevToKth ← null
-    while cursor is not null AND cursor.next is not null:
-        prevToKth ← kthFromEnd
+    # Get the length of the list
+    length ← findLength(head)
+
+    # If k is greater than or equal to the length of the list, reduce k to its modulo value
+    if k ≥ length:
+        return kRotations(head, k mod length)
+
+    # Pointer to keep track of the end of the list
+    current ← head
+
+    # Traverse to the kth node from the beginning
+    for i ← 1 to k − 1:
+        current ← current.next
+
+    # Pointer to the kth node from the end
+    kthFromEnd ← head
+
+    # Pointer to the node before the kthFromEnd node
+    prevToKthFromEnd ← null
+
+    # Find the kth node from the end
+    while current is not null AND current.next is not null:
+        prevToKthFromEnd ← kthFromEnd
         kthFromEnd ← kthFromEnd.next
-        cursor ← cursor.next
+        current ← current.next
 
-    prevToKth.next ← null                              # split the list
-    cursor.next ← head                                 # old tail wraps to old head
-    return kthFromEnd                                  # new head is the k-th from end
+    # Since kthFromEnd is the new head node, disconnect the list at prevToKthFromEnd
+    prevToKthFromEnd.next ← null
+
+    # Link the end of the list back to the original head.
+    current.next ← head
+
+    # Return kthFromEnd as it becomes the new head of the rotated list.
+    return kthFromEnd
 ```
 
 ```python run
 from typing import Optional
 
 class Solution:
-    def k_rotations(self, head: Optional[ListNode], k: int) -> Optional[ListNode]:
+    def find_length(self, head: Optional[ListNode]) -> int:
+        length = 0
+        while head is not None:
+            length += 1
+            head = head.next
+        return length
+
+    def k_rotations(
+        self, head: Optional[ListNode], k: int
+    ) -> Optional[ListNode]:
+
+        # If the list is empty or has only one node, no swapping is
+        # needed.
         if head is None or head.next is None or k == 0:
             return head
 
-        # Count length so we can reduce k modulo length
-        length, cur = 0, head
-        while cur:
-            length += 1
-            cur = cur.next
-        k %= length
-        if k == 0:
-            return head
+        # Get the length of the list
+        length = self.find_length(head)
 
-        # Offset cursor by k − 1 hops; then slide to find k-th from end and its predecessor
-        cursor = head
-        for _ in range(k - 1):
-            cursor = cursor.next
+        # If k is greater than or equal to the length of the list, reduce
+        # k to its modulo value
+        if k >= length:
+            return self.k_rotations(head, k % length)
 
+        # Pointer to keep track of the end of the list
+        current = head
+
+        # Traverse to the kth node from the beginning
+        for i in range(1, k):
+            current = current.next
+
+        # Pointer to the kth node from the end
         kth_from_end = head
-        prev_to_kth: Optional[ListNode] = None
-        while cursor is not None and cursor.next is not None:
-            prev_to_kth = kth_from_end
-            kth_from_end = kth_from_end.next
-            cursor = cursor.next
 
-        # Split and stitch: new head is kth_from_end; old tail wraps to old head
-        prev_to_kth.next = None
-        cursor.next = head
+        # Pointer to the node before the kth_from_end node
+        prev_to_kth_from_end = None
+
+        # Find the kth node from the end
+        while current is not None and current.next is not None:
+            prev_to_kth_from_end = kth_from_end
+            kth_from_end = kth_from_end.next
+            current = current.next
+
+        # Since kth_from_end is the new head node, disconnect the list
+        # at `prev_to_kth_from_end`, making `kth_from_end` the new head.
+        prev_to_kth_from_end.next = None
+
+        # Link the end of the list back to the original head.
+        current.next = head
+
+        # Return `kth_from_end` as it becomes the new head of the rotated
+        # list.
         return kth_from_end
 ```
 
 ```java run
 class Solution {
-    public ListNode kRotations(ListNode head, int k) {
-        if (head == null || head.next == null || k == 0) return head;
-
+    private int findLength(ListNode head) {
         int length = 0;
-        for (ListNode cur = head; cur != null; cur = cur.next) length++;
-        k %= length;
-        if (k == 0) return head;
+        while (head != null) {
+            length++;
+            head = head.next;
+        }
+        return length;
+    }
 
-        ListNode cursor = head;
-        for (int i = 1; i < k; i++) cursor = cursor.next;
+    public ListNode kRotations(ListNode head, int k) {
 
-        ListNode kthFromEnd = head, prevToKth = null;
-        while (cursor != null && cursor.next != null) {
-            prevToKth = kthFromEnd;
-            kthFromEnd = kthFromEnd.next;
-            cursor = cursor.next;
+        // If the list is empty or has only one node, no swapping is
+        // needed.
+        if (head == null || head.next == null || k == 0) {
+            return head;
         }
 
-        prevToKth.next = null;
-        cursor.next = head;
+        // Get the length of the list
+        int length = findLength(head);
+
+        // If k is greater than or equal to the length of the list,
+        // reduce k to its modulo value
+        if (k >= length) {
+            return kRotations(head, k % length);
+        }
+
+        // Pointer to keep track of the end of the list
+        ListNode current = head;
+
+        // Traverse to the kth node from the beginning
+        for (int i = 1; i < k; ++i) {
+            current = current.next;
+        }
+
+        // Pointer to the kth node from the end
+        ListNode kthFromEnd = head;
+
+        // Pointer to the node before the kthFromEnd node
+        ListNode prevToKthFromEnd = null;
+
+        // Find the kth node from the end
+        while (current != null && current.next != null) {
+            prevToKthFromEnd = kthFromEnd;
+            kthFromEnd = kthFromEnd.next;
+            current = current.next;
+        }
+
+        // Since kthFromEnd is the new head node, disconnect the list
+        // at `prevToKthFromEnd`, making `kthFromEnd` the new head.
+        prevToKthFromEnd.next = null;
+
+        // Link the end of the list back to the original head.
+        current.next = head;
+
+        // Return `kthFromEnd` as it becomes the new head of the
+        // rotated list.
         return kthFromEnd;
     }
 }
 ```
 
 ```c run
-ListNode* kRotations(ListNode *head, int k) {
-    if (head == NULL || head->next == NULL || k == 0) return head;
-
+static int findLength(ListNode *head) {
     int length = 0;
-    for (ListNode *cur = head; cur != NULL; cur = cur->next) length++;
-    k %= length;
-    if (k == 0) return head;
+    while (head != NULL) {
+        length++;
+        head = head->next;
+    }
+    return length;
+}
 
-    ListNode *cursor = head;
-    for (int i = 1; i < k; i++) cursor = cursor->next;
+ListNode* kRotations(ListNode *head, int k) {
 
-    ListNode *kthFromEnd = head, *prevToKth = NULL;
-    while (cursor != NULL && cursor->next != NULL) {
-        prevToKth = kthFromEnd;
-        kthFromEnd = kthFromEnd->next;
-        cursor = cursor->next;
+    /* If the list is empty or has only one node, no swapping is
+       needed. */
+    if (head == NULL || head->next == NULL || k == 0) {
+        return head;
     }
 
-    prevToKth->next = NULL;
-    cursor->next = head;
+    /* Get the length of the list */
+    int length = findLength(head);
+
+    /* If k is greater than or equal to the length of the list,
+       reduce k to its modulo value */
+    if (k >= length) {
+        return kRotations(head, k % length);
+    }
+
+    /* Pointer to keep track of the end of the list */
+    ListNode *current = head;
+
+    /* Traverse to the kth node from the beginning */
+    for (int i = 1; i < k; ++i) {
+        current = current->next;
+    }
+
+    /* Pointer to the kth node from the end */
+    ListNode *kthFromEnd = head;
+
+    /* Pointer to the node before the kthFromEnd node */
+    ListNode *prevToKthFromEnd = NULL;
+
+    /* Find the kth node from the end */
+    while (current != NULL && current->next != NULL) {
+        prevToKthFromEnd = kthFromEnd;
+        kthFromEnd = kthFromEnd->next;
+        current = current->next;
+    }
+
+    /* Since kthFromEnd is the new head node, disconnect the list
+       at prevToKthFromEnd, making kthFromEnd the new head. */
+    prevToKthFromEnd->next = NULL;
+
+    /* Link the end of the list back to the original head. */
+    current->next = head;
+
+    /* Return kthFromEnd as it becomes the new head of the rotated
+       list. */
     return kthFromEnd;
 }
 ```
 
 ```scala run
 object Solution {
-  def kRotations(head: ListNode, kIn: Int): ListNode = {
-    if (head == null || head.next == null || kIn == 0) return head
-
+  private def findLength(head: ListNode): Int = {
     var length = 0
     var cur = head
-    while (cur != null) { length += 1; cur = cur.next }
-    var k = kIn % length
-    if (k == 0) return head
+    while (cur != null) {
+      length += 1
+      cur = cur.next
+    }
+    length
+  }
 
-    var cursor = head
-    var i = 1
-    while (i < k) { cursor = cursor.next; i += 1 }
+  def kRotations(head: ListNode, k: Int): ListNode = {
 
-    var kthFromEnd = head
-    var prevToKth: ListNode = null
-    while (cursor != null && cursor.next != null) {
-      prevToKth = kthFromEnd
-      kthFromEnd = kthFromEnd.next
-      cursor = cursor.next
+    // If the list is empty or has only one node, no swapping is
+    // needed.
+    if (head == null || head.next == null || k == 0) {
+      return head
     }
 
-    prevToKth.next = null
-    cursor.next = head
+    // Get the length of the list
+    val length = findLength(head)
+
+    // If k is greater than or equal to the length of the list,
+    // reduce k to its modulo value
+    if (k >= length) {
+      return kRotations(head, k % length)
+    }
+
+    // Pointer to keep track of the end of the list
+    var current = head
+
+    // Traverse to the kth node from the beginning
+    var i = 1
+    while (i < k) {
+      current = current.next
+      i += 1
+    }
+
+    // Pointer to the kth node from the end
+    var kthFromEnd = head
+
+    // Pointer to the node before the kthFromEnd node
+    var prevToKthFromEnd: ListNode = null
+
+    // Find the kth node from the end
+    while (current != null && current.next != null) {
+      prevToKthFromEnd = kthFromEnd
+      kthFromEnd = kthFromEnd.next
+      current = current.next
+    }
+
+    // Since kthFromEnd is the new head node, disconnect the list
+    // at prevToKthFromEnd, making kthFromEnd the new head.
+    prevToKthFromEnd.next = null
+
+    // Link the end of the list back to the original head.
+    current.next = head
+
+    // Return kthFromEnd as it becomes the new head of the rotated
+    // list.
     kthFromEnd
   }
 }
