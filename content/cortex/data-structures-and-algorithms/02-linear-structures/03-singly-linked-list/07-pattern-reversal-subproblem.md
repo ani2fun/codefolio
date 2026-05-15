@@ -1761,22 +1761,77 @@ If, at the end, the length of the remaining list is less than the required group
 
 ```pseudocode
 # Reverse the first 1, then next 2, then next 3, … nodes. Stop when the list is too short for the next group.
+function findLength(head):
+    length ← 0
+    while head is not null:
+        length ← length + 1
+        head ← head.next
+    return length
+
+function getNodeAtPosition(head, position):
+    current ← head
+    for i ← 1 to position − 1:
+        current ← current.next
+    return current
+
+function reverse(start, end):
+    current ← start
+    rightBound ← end.next
+    previous ← rightBound
+
+    while current ≠ rightBound:
+        next ← current.next
+        current.next ← previous
+        previous ← current
+        current ← next
+
+    return previous
+
 function reverseIncreasingGroups(head):
-    if head is null OR head.next is null: return head
-    start ← head; leftBound ← null
-    remaining ← length(head)
+
+    # If the list is empty or has only one node, no need to reverse segments
+    if head is null OR head.next is null:
+        return head
+
+    # Start of the current segment to be reversed
+    start ← head
+
+    # Pointer to the last node of the previous segment
+    leftBound ← null
+
+    # Find the length of the linked list
+    length ← findLength(head)
+
+    # Start with a group size of 1
     groupSize ← 1
-    while remaining ≥ groupSize:
-        end ← advance(start, groupSize)
-        reversedHead ← reverseSegment(start, end)
+
+    # Loop through the list to reverse segments of increasing size
+    while length ≥ groupSize:
+
+        # Get the end node of the current segment
+        end ← getNodeAtPosition(start, groupSize)
+
+        # Get the head of the reversed segment.
+        reversedHead ← reverse(start, end)
+
         if leftBound is null:
             head ← reversedHead
         else:
             leftBound.next ← reversedHead
+
+        # Update leftBound to the current segment's start (which is now the end after reversal)
         leftBound ← start
+
+        # Move to the next segment
         start ← leftBound.next
-        remaining ← remaining − groupSize
+
+        # Decrement the remaining length by the size of the current group
+        length ← length − groupSize
+
+        # Increment groupSize for the next segment
         groupSize ← groupSize + 1
+
+    # Return the head of the modified list
     return head
 ```
 
@@ -1784,89 +1839,191 @@ function reverseIncreasingGroups(head):
 from typing import Optional
 
 class Solution:
-    def _length(self, head: Optional[ListNode]) -> int:
-        n = 0
-        while head:
-            n += 1; head = head.next
-        return n
+    def find_length(self, head: Optional[ListNode]) -> int:
+        length = 0
+        while head is not None:
+            length += 1
+            head = head.next
+        return length
 
-    def _advance(self, start: ListNode, steps: int) -> ListNode:
-        cur = start
-        for _ in range(steps - 1):
-            cur = cur.next
-        return cur
+    def get_node_at_position(
+        self, head: ListNode, position: int
+    ) -> ListNode:
+        current = head
+        for _ in range(1, position):
+            current = current.next
+        return current
 
-    def _reverse_segment(self, start: ListNode, end: ListNode) -> ListNode:
-        right_bound = end.next
-        previous, current = right_bound, start
-        while current is not right_bound:
-            nxt = current.next
+    def reverse(
+        self, start: Optional[ListNode], end: Optional[ListNode]
+    ) -> Optional[ListNode]:
+        current: Optional[ListNode] = start
+        right_bound: Optional[ListNode] = end.next
+        previous: Optional[ListNode] = right_bound
+
+        while current != right_bound:
+            next_node = current.next
             current.next = previous
-            previous, current = current, nxt
+            previous = current
+            current = next_node
+
         return previous
 
-    def reverse_increasing_groups(self, head: Optional[ListNode]) -> Optional[ListNode]:
+    def reverse_increasing_groups(
+        self, head: Optional[ListNode]
+    ) -> Optional[ListNode]:
+
+        # If the list is empty or has only one node, no need to
+        # reverse segments
         if head is None or head.next is None:
             return head
 
+        # Start of the current segment to be reversed
         start = head
-        left_bound: Optional[ListNode] = None
-        remaining = self._length(head)
+
+        # Pointer to the last node of the previous segment
+        left_bound = None
+
+        # Find the length of the linked list
+        length = self.find_length(head)
+
+        # Start with a group size of 1
         group_size = 1
 
-        while remaining >= group_size:                  # stop as soon as list is too short for next group
-            end = self._advance(start, group_size)
-            reversed_head = self._reverse_segment(start, end)
+        # Loop through the list to reverse segments of increasing size
+        while length >= group_size:
 
+            # Get the end node of the current segment
+            end = self.get_node_at_position(start, group_size)
+
+            # Get the head of the reversed segment.
+            reversed_head = self.reverse(start, end)
+
+            # Check if there is a previous segment to connect to or
+            # if the existing head needs to be updated.
+            # If left_bound is None, it means we're at the first segment
+            # So, we need to update the head to the reversed_head
+            # Return the new head
             if left_bound is None:
-                head = reversed_head                    # first segment (even size 1 is a no-op for reversal)
+                head = reversed_head
+
+            # If there is a left_bound, connect its next to the new
+            # reversed_head
             else:
                 left_bound.next = reversed_head
 
+            # Update left_bound to the current segment's start (which is
+            # now the end after reversal)
             left_bound = start
+
+            # Move to the next segment
             start = left_bound.next
 
-            remaining  -= group_size
+            # Decrement the remaining length by the size of the current
+            # group
+            length -= group_size
+
+            # Increment group_size for the next segment
             group_size += 1
 
+        # Return the head of the modified list
         return head
 ```
 
 ```java run
 class Solution {
-    private int length(ListNode h) { int n=0; while(h!=null){n++; h=h.next;} return n; }
-    private ListNode advance(ListNode s, int steps) { for (int i=1;i<steps;i++) s=s.next; return s; }
-    private ListNode reverseSegment(ListNode start, ListNode end) {
+    private int findLength(ListNode head) {
+        int length = 0;
+        while (head != null) {
+            length++;
+            head = head.next;
+        }
+        return length;
+    }
+
+    private ListNode getNodeAtPosition(ListNode head, int position) {
+        ListNode current = head;
+        for (int i = 1; i < position; ++i) {
+            current = current.next;
+        }
+        return current;
+    }
+
+    private ListNode reverse(ListNode start, ListNode end) {
+        ListNode current = start;
         ListNode rightBound = end.next;
-        ListNode previous = rightBound, current = start;
+        ListNode previous = rightBound;
+
         while (current != rightBound) {
             ListNode next = current.next;
             current.next = previous;
-            previous = current; current = next;
+            previous = current;
+            current = next;
         }
+
         return previous;
     }
 
     public ListNode reverseIncreasingGroups(ListNode head) {
-        if (head == null || head.next == null) return head;
 
-        ListNode start = head, leftBound = null;
-        int remaining = length(head);
+        // If the list is empty or has only one node, no need to
+        // reverse segments
+        if (head == null || head.next == null) {
+            return head;
+        }
+
+        // Start of the current segment to be reversed
+        ListNode start = head;
+
+        // Pointer to the last node of the previous segment
+        ListNode leftBound = null;
+
+        // Find the length of the linked list
+        int length = findLength(head);
+
+        // Start with a group size of 1
         int groupSize = 1;
 
-        while (remaining >= groupSize) {
-            ListNode end = advance(start, groupSize);
-            ListNode reversedHead = reverseSegment(start, end);
+        // Loop through the list to reverse segments of increasing size
+        while (length >= groupSize) {
 
-            if (leftBound == null) head = reversedHead;
-            else                    leftBound.next = reversedHead;
+            // Get the end node of the current segment
+            ListNode end = getNodeAtPosition(start, groupSize);
 
+            // Get the head of the reversed segment.
+            ListNode reversedHead = reverse(start, end);
+
+            // Check if there is a previous segment to connect to or
+            // if the existing head needs to be updated.
+            // If leftBound is null, it means we're at the first
+            // segment So, we need to update the head to the
+            // reversedHead
+            if (leftBound == null) {
+                head = reversedHead;
+            }
+
+            // If there is a leftBound, connect its next to the new
+            // reversedHead
+            else {
+                leftBound.next = reversedHead;
+            }
+
+            // Update leftBound to the current segment's start (which is
+            // now the end after reversal)
             leftBound = start;
+
+            // Move to the next segment
             start = leftBound.next;
 
-            remaining -= groupSize;
+            // Decrement the remaining length by the size of the current
+            // group
+            length -= groupSize;
+
+            // increment groupSize for the next segment
             groupSize++;
         }
+
+        // Return the head of the modified list
         return head;
     }
 }
@@ -1874,67 +2031,159 @@ class Solution {
 
 ```c run
 ListNode* reverseIncreasingGroups(ListNode *head) {
-    if (head == NULL || head->next == NULL) return head;
 
-    ListNode *start = head, *leftBound = NULL;
-    int remaining = length_of(head);
+    /* If the list is empty or has only one node, no need to
+       reverse segments */
+    if (head == NULL || head->next == NULL) {
+        return head;
+    }
+
+    /* Start of the current segment to be reversed */
+    ListNode *start = head;
+
+    /* Pointer to the last node of the previous segment */
+    ListNode *leftBound = NULL;
+
+    /* Find the length of the linked list */
+    int length = findLength(head);
+
+    /* Start with a group size of 1 */
     int groupSize = 1;
 
-    while (remaining >= groupSize) {
-        ListNode *end = advance(start, groupSize);
-        ListNode *reversedHead = reverse_segment(start, end);
+    /* Loop through the list to reverse segments of increasing size */
+    while (length >= groupSize) {
 
-        if (leftBound == NULL) head = reversedHead;
-        else                    leftBound->next = reversedHead;
+        /* Get the end node of the current segment */
+        ListNode *end = getNodeAtPosition(start, groupSize);
 
+        /* Get the head of the reversed segment. */
+        ListNode *reversedHead = reverse(start, end);
+
+        /* Check if there is a previous segment to connect to or
+           if the existing head needs to be updated.
+           If leftBound is null, it means we're at the first
+           segment So, we need to update the head to the
+           reversedHead */
+        if (leftBound == NULL) {
+            head = reversedHead;
+        }
+
+        /* If there is a leftBound, connect its next to the new
+           reversedHead */
+        else {
+            leftBound->next = reversedHead;
+        }
+
+        /* Update leftBound to the current segment's start (which is
+           now the end after reversal) */
         leftBound = start;
+
+        /* Move to the next segment */
         start = leftBound->next;
 
-        remaining -= groupSize;
+        /* Decrement the remaining length by the size of the current
+           group */
+        length -= groupSize;
+
+        /* increment groupSize for the next segment */
         groupSize++;
     }
+
+    /* Return the head of the modified list */
     return head;
 }
 ```
 
 ```scala run
 object Solution {
-  private def length(h: ListNode): Int = { var n=0; var c=h; while(c!=null){n+=1; c=c.next}; n }
-  private def advance(s: ListNode, steps: Int): ListNode = { var c=s; var i=1; while(i<steps){c=c.next; i+=1}; c }
-  private def reverseSegment(start: ListNode, end: ListNode): ListNode = {
+  private def findLength(head: ListNode): Int = {
+    var length = 0; var cur = head
+    while (cur != null) { length += 1; cur = cur.next }
+    length
+  }
+
+  private def getNodeAtPosition(head: ListNode, position: Int): ListNode = {
+    var current = head
+    var i = 1
+    while (i < position) { current = current.next; i += 1 }
+    current
+  }
+
+  private def reverse(start: ListNode, end: ListNode): ListNode = {
+    var current = start
     val rightBound = end.next
-    var prev: ListNode = rightBound
-    var cur:  ListNode = start
-    while (cur ne rightBound) {
-      val nxt = cur.next
-      cur.next = prev
-      prev = cur; cur = nxt
+    var previous = rightBound
+    while (current != rightBound) {
+      val next = current.next
+      current.next = previous
+      previous = current
+      current = next
     }
-    prev
+    previous
   }
 
   def reverseIncreasingGroups(headIn: ListNode): ListNode = {
-    if (headIn == null || headIn.next == null) return headIn
+
+    // If the list is empty or has only one node, no need to
+    // reverse segments
+    if (headIn == null || headIn.next == null) {
+      return headIn
+    }
 
     var head = headIn
+
+    // Start of the current segment to be reversed
     var start = head
+
+    // Pointer to the last node of the previous segment
     var leftBound: ListNode = null
-    var remaining = length(head)
+
+    // Find the length of the linked list
+    var length = findLength(head)
+
+    // Start with a group size of 1
     var groupSize = 1
 
-    while (remaining >= groupSize) {
-      val end = advance(start, groupSize)
-      val reversedHead = reverseSegment(start, end)
+    // Loop through the list to reverse segments of increasing size
+    while (length >= groupSize) {
 
-      if (leftBound == null) head = reversedHead
-      else                    leftBound.next = reversedHead
+      // Get the end node of the current segment
+      val end = getNodeAtPosition(start, groupSize)
 
+      // Get the head of the reversed segment.
+      val reversedHead = reverse(start, end)
+
+      // Check if there is a previous segment to connect to or
+      // if the existing head needs to be updated.
+      // If leftBound is null, it means we're at the first
+      // segment So, we need to update the head to the
+      // reversedHead
+      if (leftBound == null) {
+        head = reversedHead
+      }
+
+      // If there is a leftBound, connect its next to the new
+      // reversedHead
+      else {
+        leftBound.next = reversedHead
+      }
+
+      // Update leftBound to the current segment's start (which is
+      // now the end after reversal)
       leftBound = start
+
+      // Move to the next segment
       start = leftBound.next
 
-      remaining -= groupSize
+      // Decrement the remaining length by the size of the current
+      // group
+      length -= groupSize
+
+      // increment groupSize for the next segment
       groupSize += 1
     }
+
+    // Return the head of the modified list
     head
   }
 }
