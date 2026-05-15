@@ -107,6 +107,24 @@ flowchart TB
 
 <p align="center"><strong>Brute-force nested loops check every pair — O(n²) time, correct but slow. For n=8 that's 28 pairs checked.</strong></p>
 
+```d3 widget=array-traversal
+{
+  "items": ["3", "5", "2", "8", "7", "1", "9", "4"],
+  "title": "Brute force on arr = [3, 5, 2, 8, 7, 1, 9, 4], target = 13",
+  "steps": [
+    { "markers": [{"name": "i", "index": 0, "color": "#3b82f6"}, {"name": "j", "index": 1, "color": "#f59e0b"}], "msg": "i=0 (3), j=1 (5): 3 + 5 = 8 ≠ 13" },
+    { "markers": [{"name": "i", "index": 0, "color": "#3b82f6"}, {"name": "j", "index": 2, "color": "#f59e0b"}], "msg": "i=0 (3), j=2 (2): 3 + 2 = 5 ≠ 13" },
+    { "markers": [{"name": "i", "index": 0, "color": "#3b82f6"}, {"name": "j", "index": 3, "color": "#f59e0b"}], "msg": "i=0 (3), j=3 (8): 3 + 8 = 11 ≠ 13" },
+    { "markers": [{"name": "i", "index": 0, "color": "#3b82f6"}, {"name": "j", "index": 4, "color": "#f59e0b"}], "msg": "i=0 (3), j=4 (7): 3 + 7 = 10 ≠ 13" },
+    { "markers": [{"name": "i", "index": 0, "color": "#3b82f6"}, {"name": "j", "index": 5, "color": "#f59e0b"}], "msg": "i=0 (3), j=5 (1): 3 + 1 = 4 ≠ 13" },
+    { "markers": [{"name": "i", "index": 0, "color": "#3b82f6"}, {"name": "j", "index": 6, "color": "#f59e0b"}], "msg": "i=0 (3), j=6 (9): 3 + 9 = 12 ≠ 13" },
+    { "markers": [{"name": "i", "index": 0, "color": "#3b82f6"}, {"name": "j", "index": 7, "color": "#f59e0b"}], "msg": "i=0 (3), j=7 (4): 3 + 4 = 7 ≠ 13. Inner loop exhausted → i++" },
+    { "markers": [{"name": "i", "index": 1, "color": "#3b82f6"}, {"name": "j", "index": 2, "color": "#f59e0b"}], "msg": "i=1 (5), j=2 (2): 5 + 2 = 7 ≠ 13" },
+    { "markers": [{"name": "i", "index": 1, "color": "#3b82f6"}, {"name": "j", "index": 3, "color": "#f59e0b"}], "range": {"lo": 1, "hi": 3}, "msg": "i=1 (5), j=3 (8): 5 + 8 = 13 ✓ → return [5, 8]" }
+  ]
+}
+```
+
 
 ```pseudocode
 # Brute force — every pair (i, j) with j > i. O(n²).
@@ -346,9 +364,18 @@ R -> arr.a7
 
 <p align="center"><strong>Sorted array with two pointers — <code>left = 0</code> points at the smallest element, <code>right = n−1</code> points at the largest.</strong></p>
 
-
-```pseudocode
-# Two-sum via reduction. Sort first → arr[left] is the running min, arr[right] the running max.
+```d3 widget=array-traversal
+{
+  "items": ["1", "2", "3", "4", "5", "7", "8", "9"],
+  "title": "Two-pointer on sorted [1, 2, 3, 4, 5, 7, 8, 9], target = 13",
+  "steps": [
+    { "markers": [{"name": "left", "index": 0, "color": "#3b82f6"}, {"name": "right", "index": 7, "color": "#f59e0b"}], "msg": "sum = 1 + 9 = 10 < 13 → 9 is the max; only ++left can grow the sum." },
+    { "markers": [{"name": "left", "index": 1, "color": "#3b82f6"}, {"name": "right", "index": 7, "color": "#f59e0b"}], "msg": "sum = 2 + 9 = 11 < 13 → still short; ++left." },
+    { "markers": [{"name": "left", "index": 2, "color": "#3b82f6"}, {"name": "right", "index": 7, "color": "#f59e0b"}], "msg": "sum = 3 + 9 = 12 < 13 → still short; ++left." },
+    { "markers": [{"name": "left", "index": 3, "color": "#3b82f6"}, {"name": "right", "index": 7, "color": "#f59e0b"}], "range": {"lo": 3, "hi": 7}, "msg": "sum = 4 + 9 = 13 = target → return [4, 9] ✓" }
+  ]
+}
+```
 # Each pointer move has a guaranteed direction: ++left grows the sum, --right shrinks it.
 function twoSum(arr, target):
     sort arr in place
