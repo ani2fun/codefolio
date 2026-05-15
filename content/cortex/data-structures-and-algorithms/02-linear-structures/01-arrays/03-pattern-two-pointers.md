@@ -818,14 +818,14 @@ Each is a small twist on the same pattern — same skeleton, different work in t
 
 ## The Problem
 
-Given an array of characters, reverse the array **in-place** — that is, modify the original array so its characters appear in reverse order.
+Given an array of characters `arr`, reverse the array by **swapping equidistant elements** from the start and the end. The reversal must happen **in-place** — modify the input array directly and use **O(1) extra space**.
 
 ```
-Input:  chars = ['h', 'e', 'l', 'l', 'o']
-Output: chars is modified to ['o', 'l', 'l', 'e', 'h']
+Input:  arr = [a, e, i, o, u]
+Output:       [u, o, i, e, a]
 ```
 
-This is the character-array equivalent of reversing an integer array — the same two-pointer mechanics, applied to chars.
+This is the canonical direct application of the two-pointer pattern — the template and the algorithm are identical.
 
 ---
 
@@ -833,20 +833,20 @@ This is the character-array equivalent of reversing an integer array — the sam
 
 **Example 1**
 ```
-Input:  ['h', 'e', 'l', 'l', 'o']
-Output: ['o', 'l', 'l', 'e', 'h']
+Input:  arr = [a, e, i, o, u]
+Output:       [u, o, i, e, a]
 ```
 
 **Example 2**
 ```
-Input:  ['A', 'B', 'C', 'D']
-Output: ['D', 'C', 'B', 'A']
+Input:  arr = [a, b, c, d, e]
+Output:       [e, d, c, b, a]
 ```
 
-**Example 3 — single character**
+**Example 3 — empty array**
 ```
-Input:  ['X']
-Output: ['X']   (unchanged)
+Input:  arr = []
+Output:       []
 ```
 
 ---
@@ -857,44 +857,45 @@ To reverse a sequence, the first element must become the last, the second must b
 
 Two pointers are perfect for this: `left` starts at index 0 (the first character), `right` starts at index `n-1` (the last character). Swap the pair, then move both inward. Repeat until they meet.
 
-```mermaid
----
-config:
-  theme: base
-  themeVariables:
-    primaryColor: "#dbeafe"
-    primaryBorderColor: "#3b82f6"
-    primaryTextColor: "#1e3a5f"
-    lineColor: "#64748b"
-    secondaryColor: "#ede9fe"
-    tertiaryColor: "#fef9c3"
----
-flowchart TB
-  subgraph S0["Start  —  left=0, right=4"]
-    direction LR
-    P0L(["left"]) --> C0["h"] --- C1["e"] --- C2["l"] --- C3["l"] --- C4["o"]
-    C4 --> P0R(["right"])
-  end
-  subgraph S1["Swap 'h' ↔ 'o'  —  left=1, right=3"]
-    direction LR
-    P1L(["left"]) --> D0["o"] --- D1["e"] --- D2["l"] --- D3["l"] --- D4["h"]
-    D3 --> P1R(["right"])
-  end
-  subgraph S2["Swap 'e' ↔ 'l'  —  left=2, right=2"]
-    direction LR
-    P2L(["left"]) --> E0["o"] --- E1["l"] --- E2["l"] --- E3["e"] --- E4["h"]
-    E2 --> P2R(["right"])
-  end
-  subgraph S3["left = right = 2  →  loop ends"]
-    DONE(["✓  ['o','l','l','e','h']"])
-  end
-
-  S0 -->|"swap + left++ + right--"| S1
-  S1 -->|"swap + left++ + right--"| S2
-  S2 -->|"left ≥ right"| S3
+```d3 widget=array-traversal
+{
+  "items": ["a", "e", "i", "o", "u"],
+  "title": "Reversing [a, e, i, o, u] in place with two pointers",
+  "steps": [
+    {
+      "items":   ["a", "e", "i", "o", "u"],
+      "markers": [
+        { "name": "left",  "index": 0, "color": "#3b82f6" },
+        { "name": "right", "index": 4, "color": "#f59e0b" }
+      ],
+      "msg": "Initial — left = 0, right = 4. Swap arr[left] and arr[right] (a ↔ u)."
+    },
+    {
+      "items":   ["u", "e", "i", "o", "a"],
+      "markers": [
+        { "name": "left",  "index": 1, "color": "#3b82f6" },
+        { "name": "right", "index": 3, "color": "#f59e0b" }
+      ],
+      "msg": "Move inward — left = 1, right = 3. Swap arr[left] and arr[right] (e ↔ o)."
+    },
+    {
+      "items":   ["u", "o", "i", "e", "a"],
+      "markers": [
+        { "name": "left",  "index": 2, "color": "#3b82f6" },
+        { "name": "right", "index": 2, "color": "#f59e0b" }
+      ],
+      "msg": "Pointers meet at index 2 — the middle element is its own mirror; no swap needed."
+    },
+    {
+      "items":   ["u", "o", "i", "e", "a"],
+      "markers": [],
+      "msg": "Done — arr is reversed: [u, o, i, e, a]."
+    }
+  ]
+}
 ```
 
-<p align="center"><strong>Flipping <code>['h','e','l','l','o']</code> in-place — two swaps bring the array to its reversed state; the middle character needs no swap.</strong></p>
+<p align="center"><strong>Flipping <code>[a, e, i, o, u]</code> in place — two swaps reverse the array; the middle element at index 2 is its own mirror.</strong></p>
 
 ---
 
@@ -929,13 +930,15 @@ Every box is checked with nothing extra needed. This is the purest direct applic
 
 
 ```pseudocode
-# Same shape as array reverse — applied to a character list.
-function flipCharacters(chars):
-    left ← 0
-    right ← length(chars) − 1
+function flipCharacters(arr):
+    # Initialize two pointers, one at the start and the other at the end
+    left  ← 0
+    right ← length(arr) − 1
+
+    # Walk the pointers inward, swapping each mirror pair
     while left < right:
-        swap chars[left] and chars[right]
-        left ← left + 1
+        swap arr[left] and arr[right]
+        left  ← left + 1
         right ← right − 1
 ```
 
@@ -943,22 +946,32 @@ function flipCharacters(chars):
 from typing import List
 
 class Solution:
-    def flip_characters(self, chars: List[str]) -> None:
-        left, right = 0, len(chars) - 1
+    def flip_characters(self, arr: List[str]) -> None:
+
+        # Initialize two pointers, one pointing to the beginning of the
+        # array and the other pointing to the end of the array
+        left: int = 0
+        right = len(arr) - 1
+
+        # Use a while loop to traverse the array using the two pointers
         while left < right:
-            chars[left], chars[right] = chars[right], chars[left]   # swap mirror pair
+
+            # Swap the characters pointed by the left and right pointers
+            arr[left], arr[right] = arr[right], arr[left]
+
+            # Move the pointers towards the center of the array
             left  += 1
             right -= 1
 
 
-c1 = ['h', 'e', 'l', 'l', 'o']
-Solution().flip_characters(c1); print(c1)   # ['o', 'l', 'l', 'e', 'h']
+a1 = ['a', 'e', 'i', 'o', 'u']
+Solution().flip_characters(a1); print(a1)   # ['u', 'o', 'i', 'e', 'a']
 
-c2 = ['A', 'B', 'C', 'D']
-Solution().flip_characters(c2); print(c2)   # ['D', 'C', 'B', 'A']
+a2 = ['a', 'b', 'c', 'd', 'e']
+Solution().flip_characters(a2); print(a2)   # ['e', 'd', 'c', 'b', 'a']
 
-c3 = ['X']
-Solution().flip_characters(c3); print(c3)   # ['X']
+a3: List[str] = []
+Solution().flip_characters(a3); print(a3)   # []
 ```
 
 ```java run
@@ -966,13 +979,22 @@ import java.util.Arrays;
 
 public class Main {
     static class Solution {
-        void flipCharacters(char[] chars) {
-            int left = 0;
-            int right = chars.length - 1;
+        void flipCharacters(char[] arr) {
+
+            // Initialize two pointers, one pointing to the beginning of the
+            // array and the other pointing to the end of the array
+            int left  = 0;
+            int right = arr.length - 1;
+
+            // Use a while loop to traverse the array using the two pointers
             while (left < right) {
-                char tmp = chars[left];
-                chars[left]  = chars[right];
-                chars[right] = tmp;
+
+                // Swap the characters pointed by the left and right pointers
+                char tmp     = arr[left];
+                arr[left]    = arr[right];
+                arr[right]   = tmp;
+
+                // Move the pointers towards the center of the array
                 left++;
                 right--;
             }
@@ -980,17 +1002,17 @@ public class Main {
     }
 
     public static void main(String[] args) {
-        char[] c1 = {'h','e','l','l','o'};
-        new Solution().flipCharacters(c1);
-        System.out.println(Arrays.toString(c1));
+        char[] a1 = {'a','e','i','o','u'};
+        new Solution().flipCharacters(a1);
+        System.out.println(Arrays.toString(a1));   // [u, o, i, e, a]
 
-        char[] c2 = {'A','B','C','D'};
-        new Solution().flipCharacters(c2);
-        System.out.println(Arrays.toString(c2));
+        char[] a2 = {'a','b','c','d','e'};
+        new Solution().flipCharacters(a2);
+        System.out.println(Arrays.toString(a2));   // [e, d, c, b, a]
 
-        char[] c3 = {'X'};
-        new Solution().flipCharacters(c3);
-        System.out.println(Arrays.toString(c3));
+        char[] a3 = {};
+        new Solution().flipCharacters(a3);
+        System.out.println(Arrays.toString(a3));   // []
     }
 }
 ```
@@ -998,30 +1020,42 @@ public class Main {
 ```c run
 #include <stdio.h>
 
-void flip_characters(char* chars, int n) {
-    int left = 0, right = n - 1;
+void flip_characters(char* arr, int n) {
+
+    /* Initialize two pointers, one pointing to the beginning of the
+     * array and the other pointing to the end of the array */
+    int left  = 0;
+    int right = n - 1;
+
+    /* Use a while loop to traverse the array using the two pointers */
     while (left < right) {
-        char tmp = chars[left];
-        chars[left]  = chars[right];
-        chars[right] = tmp;
+
+        /* Swap the characters pointed by the left and right pointers */
+        char tmp   = arr[left];
+        arr[left]  = arr[right];
+        arr[right] = tmp;
+
+        /* Move the pointers towards the center of the array */
         left++;
         right--;
     }
 }
 
-void print_chars(char* chars, int n) {
+static void print_arr(char* arr, int n) {
     putchar('[');
-    for (int i = 0; i < n; i++) printf("'%c'%s", chars[i], i + 1 < n ? ", " : "");
+    for (int i = 0; i < n; i++) printf("%c%s", arr[i], i + 1 < n ? ", " : "");
     printf("]\n");
 }
 
 int main() {
-    char c1[] = {'h','e','l','l','o'};
-    flip_characters(c1, 5); print_chars(c1, 5);
-    char c2[] = {'A','B','C','D'};
-    flip_characters(c2, 4); print_chars(c2, 4);
-    char c3[] = {'X'};
-    flip_characters(c3, 1); print_chars(c3, 1);
+    char a1[] = {'a','e','i','o','u'};
+    flip_characters(a1, 5); print_arr(a1, 5);   /* [u, o, i, e, a] */
+
+    char a2[] = {'a','b','c','d','e'};
+    flip_characters(a2, 5); print_arr(a2, 5);   /* [e, d, c, b, a] */
+
+    char a3[1] = {0};
+    flip_characters(a3, 0); print_arr(a3, 0);   /* [] */
     return 0;
 }
 ```
@@ -1029,25 +1063,36 @@ int main() {
 ```scala run
 object Main extends App {
   class Solution {
-    def flipCharacters(chars: Array[Char]): Unit = {
-      var left = 0
-      var right = chars.length - 1
+    def flipCharacters(arr: Array[Char]): Unit = {
+
+      // Initialize two pointers, one pointing to the beginning of the
+      // array and the other pointing to the end of the array
+      var left  = 0
+      var right = arr.length - 1
+
+      // Use a while loop to traverse the array using the two pointers
       while (left < right) {
-        val tmp = chars(left)
-        chars(left)  = chars(right)
-        chars(right) = tmp
+
+        // Swap the characters pointed by the left and right pointers
+        val tmp    = arr(left)
+        arr(left)  = arr(right)
+        arr(right) = tmp
+
+        // Move the pointers towards the center of the array
         left  += 1
         right -= 1
       }
     }
   }
 
-  val c1 = Array('h','e','l','l','o')
-  new Solution().flipCharacters(c1); println(c1.mkString("[", ", ", "]"))
-  val c2 = Array('A','B','C','D')
-  new Solution().flipCharacters(c2); println(c2.mkString("[", ", ", "]"))
-  val c3 = Array('X')
-  new Solution().flipCharacters(c3); println(c3.mkString("[", ", ", "]"))
+  val a1 = Array('a','e','i','o','u')
+  new Solution().flipCharacters(a1); println(a1.mkString("[", ", ", "]"))   // [u, o, i, e, a]
+
+  val a2 = Array('a','b','c','d','e')
+  new Solution().flipCharacters(a2); println(a2.mkString("[", ", ", "]"))   // [e, d, c, b, a]
+
+  val a3 = Array.empty[Char]
+  new Solution().flipCharacters(a3); println(a3.mkString("[", ", ", "]"))   // []
 }
 ```
 
@@ -1056,15 +1101,15 @@ object Main extends App {
 
 ## Dry Run — Example 1
 
-`chars = ['h', 'e', 'l', 'l', 'o']`, `n = 5`
+`arr = [a, e, i, o, u]`, `n = 5`
 
 | Iteration | `left` | `right` | Swap | Array after swap |
 |---|---|---|---|---|
-| 1 | 0 | 4 | `'h' ↔ 'o'` | `['o','e','l','l','h']` |
-| 2 | 1 | 3 | `'e' ↔ 'l'` | `['o','l','l','e','h']` |
-| — | 2 | 2 | `left ≥ right` — stop | `['o','l','l','e','h']` ✓ |
+| 1 | 0 | 4 | `a ↔ u` | `[u, e, i, o, a]` |
+| 2 | 1 | 3 | `e ↔ o` | `[u, o, i, e, a]` |
+| — | 2 | 2 | `left ≥ right` — stop | `[u, o, i, e, a]` ✓ |
 
-The middle element at index 2 (`'l'`) is its own mirror — no swap needed.
+The middle element at index 2 (`i`) is its own mirror — no swap needed.
 
 ---
 
