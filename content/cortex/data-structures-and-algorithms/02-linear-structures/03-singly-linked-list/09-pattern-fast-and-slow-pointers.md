@@ -546,12 +546,25 @@ If there are two middle nodes, return the reference of the second one.
 
 
 ```pseudocode
-# Same algorithm with explicit step-by-two annotation.
+# Fast = 2 × slow. When fast hits the end, slow is at the midpoint (the SECOND middle on even length).
 function middleNodeSearch(head):
-    slow ← head; fast ← head
+
+    # Initialize slow pointer to the head of the list
+    slow ← head
+
+    # Initialize fast pointer to the head of the list
+    fast ← head
+
+    # Iterate until fast pointer reaches the end of the list
     while fast is not null AND fast.next is not null:
-        slow ← slow.next                               # advance slow by one
-        fast ← fast.next.next                          # advance fast by two
+
+        # Move slow pointer one step forward
+        slow ← slow.next
+
+        # Move fast pointer two steps forward
+        fast ← fast.next.next
+
+    # Return the middle node or the second middle node (in case of even number of nodes)
     return slow
 ```
 
@@ -561,19 +574,27 @@ class ListNode:
         self.val = val
         self.next = next
 
-def middle_node_search(head: ListNode) -> ListNode:
-    # Both pointers start at head
-    slow = head
-    fast = head
+class Solution:
+    def middle_node_search(self, head: "ListNode") -> "ListNode":
 
-    # fast moves 2 steps per iteration, slow moves 1 —
-    # when fast reaches the end, slow is at the midpoint
-    while fast is not None and fast.next is not None:
-        slow = slow.next          # advance slow by one
-        fast = fast.next.next     # advance fast by two
+        # Initialize slow pointer to the head of the list
+        slow = head
 
-    # slow now sits at the middle (second middle for even-length lists)
-    return slow
+        # Initialize fast pointer to the head of the list
+        fast = head
+
+        # Iterate until fast pointer reaches the end of the list
+        while fast is not None and fast.next is not None:
+
+            # Move slow pointer one step forward
+            slow = slow.next
+
+            # Move fast pointer two steps forward
+            fast = fast.next.next
+
+        # Return the middle node or the second middle node (in case of
+        # even number of nodes)
+        return slow
 
 # --- driver ---
 def build(vals):
@@ -585,7 +606,7 @@ def build(vals):
     return dummy.next
 
 head = build([5, 7, 3, 10, 6])
-print(middle_node_search(head).val)   # expected: 3
+print(Solution().middle_node_search(head).val)   # expected: 3
 ```
 
 ```java run
@@ -597,18 +618,26 @@ public class Solution {
         ListNode(int v, ListNode n) { val = v; next = n; }
     }
 
-    static ListNode middleNodeSearch(ListNode head) {
+    public ListNode middleNodeSearch(ListNode head) {
+
+        // Initialize slow pointer to the head of the list
         ListNode slow = head;
+
+        // Initialize fast pointer to the head of the list
         ListNode fast = head;
 
-        // fast moves 2 steps per iteration, slow moves 1 —
-        // when fast reaches the end, slow is at the midpoint
+        // Iterate until fast pointer reaches the end of the list
         while (fast != null && fast.next != null) {
-            slow = slow.next;      // advance slow by one
-            fast = fast.next.next; // advance fast by two
+
+            // Move slow pointer one step forward
+            slow = slow.next;
+
+            // Move fast pointer two steps forward
+            fast = fast.next.next;
         }
 
-        // slow now sits at the middle (second middle for even-length lists)
+        // Return the middle node or the second middle node (in case of
+        // even number of nodes)
         return slow;
     }
 
@@ -621,7 +650,7 @@ public class Solution {
 
     public static void main(String[] args) {
         ListNode head = build(new int[]{5, 7, 3, 10, 6});
-        System.out.println(middleNodeSearch(head).val); // expected: 3
+        System.out.println(new Solution().middleNodeSearch(head).val); // expected: 3
     }
 }
 ```
@@ -643,17 +672,25 @@ ListNode* newNode(int v) {
 }
 
 ListNode* middleNodeSearch(ListNode *head) {
+
+    /* Initialize slow pointer to the head of the list */
     ListNode *slow = head;
+
+    /* Initialize fast pointer to the head of the list */
     ListNode *fast = head;
 
-    /* fast moves 2 steps per iteration, slow moves 1 —
-       when fast reaches the end, slow is at the midpoint */
+    /* Iterate until fast pointer reaches the end of the list */
     while (fast != NULL && fast->next != NULL) {
-        slow = slow->next;       /* advance slow by one */
-        fast = fast->next->next; /* advance fast by two */
+
+        /* Move slow pointer one step forward */
+        slow = slow->next;
+
+        /* Move fast pointer two steps forward */
+        fast = fast->next->next;
     }
 
-    /* slow now sits at the middle (second middle for even-length lists) */
+    /* Return the middle node or the second middle node (in case of
+       even number of nodes) */
     return slow;
 }
 
@@ -677,17 +714,25 @@ class ListNode(var v: Int, var next: ListNode = null)
 
 object Solution {
   def middleNodeSearch(head: ListNode): ListNode = {
+
+    // Initialize slow pointer to the head of the list
     var slow = head
+
+    // Initialize fast pointer to the head of the list
     var fast = head
 
-    // fast moves 2 steps per iteration, slow moves 1 —
-    // when fast reaches the end, slow is at the midpoint
+    // Iterate until fast pointer reaches the end of the list
     while (fast != null && fast.next != null) {
-      slow = slow.next        // advance slow by one
-      fast = fast.next.next   // advance fast by two
+
+      // Move slow pointer one step forward
+      slow = slow.next
+
+      // Move fast pointer two steps forward
+      fast = fast.next.next
     }
 
-    // slow now sits at the middle (second middle for even-length lists)
+    // Return the middle node or the second middle node (in case of
+    // even number of nodes)
     slow
   }
 
