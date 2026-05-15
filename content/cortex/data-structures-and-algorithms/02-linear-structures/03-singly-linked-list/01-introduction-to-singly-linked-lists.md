@@ -691,13 +691,23 @@ Because the tail is the *only* node whose `next` is `null`. The given node itsel
 
 ```pseudocode
 function boundaryNode(head, node):
+    # If either head or node is null, return "none"
     if head is null OR node is null:
         return "none"
-    isHead ← (node = head)                             # node is the first node
-    isTail ← (node.next is null)                       # node has no successor
-    if isHead AND isTail: return "both"
-    if isHead:            return "first"
-    if isTail:            return "last"
+
+    # If head and node are the same, and node has no next node, return "both"
+    else if node = head AND node.next is null:
+        return "both"
+
+    # If head and node are the same, but node has a next node, return "first"
+    else if node = head:
+        return "first"
+
+    # If node is the last node (i.e., it has no next node), return "last"
+    else if node.next is null:
+        return "last"
+
+    # If none of the above conditions are met, return "none"
     return "none"
 ```
 
@@ -709,18 +719,27 @@ class ListNode:
 
 class Solution:
     def boundary_node(self, head: ListNode, node: ListNode) -> str:
+
+        # If either head or node is None, return "none"
         if not head or not node:
             return "none"
 
-        is_head = (node is head)            # True if node is the first node
-        is_tail = (node.next is None)       # True if node has no successor
+        # If head and node are the same, and node has no next node,
+        # return "both"
+        elif node == head and not node.next:
+            return "both"
 
-        if is_head and is_tail:
-            return "both"   # Single-element list
-        if is_head:
+        # If head and node are the same, but node has a next node, return
+        # "first"
+        elif node == head:
             return "first"
-        if is_tail:
+
+        # If node is the last node (i.e., it has no next node), return
+        # "last"
+        elif not node.next:
             return "last"
+
+        # If none of the above conditions are met, return "none"
         return "none"
 
 # --- test ---
@@ -748,14 +767,31 @@ public class Main {
     }
 
     static String boundaryNode(ListNode head, ListNode node) {
-        if (head == null || node == null) return "none";
 
-        boolean isHead = (node == head);       // Identity comparison — same object
-        boolean isTail = (node.next == null);  // No successor means tail
+        // If either head or node is null, return "none"
+        if (head == null || node == null) {
+            return "none";
+        }
 
-        if (isHead && isTail) return "both";
-        if (isHead)           return "first";
-        if (isTail)           return "last";
+        // If head and node are the same, and node has no next node,
+        // return "both"
+        else if (node == head && node.next == null) {
+            return "both";
+        }
+
+        // If head and node are the same, but node has a next node,
+        // return "first"
+        else if (node == head) {
+            return "first";
+        }
+
+        // If node is the last node (i.e., it has no next node), return
+        // "last"
+        else if (node.next == null) {
+            return "last";
+        }
+
+        // If none of the above conditions are met, return "none"
         return "none";
     }
 
@@ -785,14 +821,31 @@ ListNode* newNode(int v) {
 }
 
 const char* boundaryNode(ListNode *head, ListNode *node) {
-    if (!head || !node) return "none";
 
-    int isHead = (node == head);        /* pointer equality — same address */
-    int isTail = (node->next == NULL);  /* no successor → tail */
+    /* If either head or node is NULL, return "none" */
+    if (!head || !node) {
+        return "none";
+    }
 
-    if (isHead && isTail) return "both";
-    if (isHead)           return "first";
-    if (isTail)           return "last";
+    /* If head and node are the same, and node has no next node,
+       return "both" */
+    else if (node == head && node->next == NULL) {
+        return "both";
+    }
+
+    /* If head and node are the same, but node has a next node,
+       return "first" */
+    else if (node == head) {
+        return "first";
+    }
+
+    /* If node is the last node (i.e., it has no next node),
+       return "last" */
+    else if (node->next == NULL) {
+        return "last";
+    }
+
+    /* If none of the above conditions are met, return "none" */
     return "none";
 }
 
@@ -813,15 +866,33 @@ class ListNode(var v: Int, var next: ListNode = null)
 
 object Main extends App {
   def boundaryNode(head: ListNode, node: ListNode): String = {
-    if (head == null || node == null) return "none"
 
-    val isHead = node eq head         // Reference equality
-    val isTail = node.next == null    // No successor → tail
+    // If either head or node is null, return "none"
+    if (head == null || node == null) {
+      "none"
+    }
 
-    if (isHead && isTail) "both"
-    else if (isHead)      "first"
-    else if (isTail)      "last"
-    else                  "none"
+    // If head and node are the same, and node has no next node,
+    // return "both"
+    else if ((node eq head) && node.next == null) {
+      "both"
+    }
+
+    // If head and node are the same, but node has a next node,
+    // return "first"
+    else if (node eq head) {
+      "first"
+    }
+
+    // If node is the last node (i.e., it has no next node), return "last"
+    else if (node.next == null) {
+      "last"
+    }
+
+    // If none of the above conditions are met, return "none"
+    else {
+      "none"
+    }
   }
 
   val n1 = new ListNode(5); val n2 = new ListNode(7)
@@ -839,11 +910,10 @@ object Main extends App {
 <summary><strong>Trace — head = [5, 7, 3, 10], node = the node holding 10</strong></summary>
 
 ```
-isHead = (node == head)   →  node holds 10, head holds 5   →  false
-isTail = (node.next == null) →  10's next is null            →  true
-
-Decision table:
-  isHead=false, isTail=true  →  "last" ✓
+Step 1: head != null AND node != null → not "none"
+Step 2: node == head?           →  node holds 10, head holds 5   →  false → skip "both"
+Step 3: node == head?           →  same check                    →  false → skip "first"
+Step 4: node.next == null?      →  10's next is null             →  true  → return "last" ✓
 ```
 
 </details>
@@ -852,14 +922,12 @@ Decision table:
 <summary><strong>Trace — head = [5], node = the only node</strong></summary>
 
 ```
-isHead = (node == head)   →  both reference the same object  →  true
-isTail = (node.next == null) →  its next is null            →  true
-
-Decision table:
-  isHead=true, isTail=true  →  "both" ✓
+Step 1: head != null AND node != null → not "none"
+Step 2: node == head AND node.next == null?
+        both reference the same object, and next is null  →  true  → return "both" ✓
 
 A single-node list is simultaneously the head AND the tail — the "both" branch
-exists specifically for this case.
+fires when both conditions hold in the same elif arm.
 ```
 
 </details>
