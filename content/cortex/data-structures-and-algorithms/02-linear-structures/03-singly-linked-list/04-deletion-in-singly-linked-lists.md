@@ -5944,50 +5944,163 @@ Given the **head** of a singly linked list and distance **X**, write a function 
 
 ## Solution
 
-```cpp
-/**
- * Definition for singly-linked list.
- * struct ListNode {
- *     int val;
- *     ListNode *next;
- *     ListNode() : val(0), next(nullptr) {}
- *     ListNode(int val) : val(val), next(nullptr) {}
- * };
- */
 
-using namespace std;
+```pseudocode
+function deleteNodeAtGivenDistance(head, X):
 
-class Solution {
-public:
-    ListNode *deleteNodeAtGivenDistance(ListNode *head, int X) {
+    # If the head is null (empty list), return null
+    if head is null:
+        return null
 
-        // If the head is nullptr (empty list), return nullptr
-        if (head == nullptr) {
-            return nullptr;
+    # If X is 0, delete the head node
+    if X = 0:
+        nodeToBeDeleted ← head
+
+        # Update the head to the next node
+        head ← head.next
+
+        # Delete the original head node
+        nodeToBeDeleted ← null
+
+        # Return the updated head
+        return head
+
+    counter ← 0
+    current ← head
+
+    # Traverse to the node at position X - 1
+    while current is not null AND counter < X - 1:
+
+        # Move to the next node
+        current ← current.next
+
+        # Increment the counter
+        counter ← counter + 1
+
+    # If the node at position X - 1 is null or the next node is
+    # null, return the head
+    if current is null OR current.next is null:
+        return head
+
+    # Store the node to be deleted
+    nodeToBeDeleted ← current.next
+
+    # Update the next pointer of the current node
+    current.next ← current.next.next
+
+    # Delete the node at position X
+    nodeToBeDeleted ← null
+
+    # Return the head
+    return head
+```
+
+```python run
+class ListNode:
+    def __init__(self, val=0, next=None):
+        self.val = val
+        self.next = next
+
+def delete_node_at_given_distance(head, x):
+
+    # If the head is None (empty list), return None
+    if head is None:
+        return None
+
+    # If x is 0, delete the head node
+    if x == 0:
+        node_to_be_deleted = head
+
+        # Update the head to the next node
+        head = head.next
+
+        # Delete the original head node
+        del node_to_be_deleted
+
+        # Return the updated head
+        return head
+
+    counter = 0
+    current = head
+
+    # Traverse to the node at position x - 1
+    while current is not None and counter < x - 1:
+
+        # Move to the next node
+        current = current.next
+
+        # Increment the counter
+        counter += 1
+
+    # If the node at position x - 1 is None or the next node is None,
+    # return the head
+    if current is None or current.next is None:
+        return head
+
+    # Store the node to be deleted
+    node_to_be_deleted = current.next
+
+    # Update the next pointer of the current node
+    current.next = current.next.next
+
+    # Delete the node at position x
+    del node_to_be_deleted
+
+    # Return the head
+    return head
+
+# --- driver ---
+def build(vals):
+    dummy = ListNode(0); cur = dummy
+    for v in vals:
+        cur.next = ListNode(v); cur = cur.next
+    return dummy.next
+
+def to_list(head):
+    res = []
+    while head: res.append(head.val); head = head.next
+    return res
+
+print(to_list(delete_node_at_given_distance(build([5, 7, 3, 10]), 1)))  # [5, 3, 10]
+```
+
+```java run
+public class Main {
+    static class ListNode {
+        int val; ListNode next;
+        ListNode(int v) { val = v; }
+        ListNode(int v, ListNode n) { val = v; next = n; }
+    }
+
+    static ListNode deleteNodeAtGivenDistance(ListNode head, int X) {
+
+        // If the head is null (empty list), return null
+        if (head == null) {
+            return null;
         }
 
         // If X is 0, delete the head node
         if (X == 0) {
-            ListNode *nodeToBeDeleted = head;
+            ListNode nodeToBeDeleted = head;
 
             // Update the head to the next node
-            head = head->next;
+            head = head.next;
 
             // Delete the original head node
-            delete nodeToBeDeleted;
+            nodeToBeDeleted = null;
 
             // Return the updated head
             return head;
         }
 
         int counter = 0;
-        ListNode *current = head;
+        ListNode current = head;
 
         // Traverse to the node at position X - 1
-        while (current != nullptr && counter < X - 1) {
+        while (current != null && counter < X - 1) {
 
             // Move to the next node
-            current = current->next;
+            current = current.next;
 
             // Increment the counter
             counter++;
@@ -5995,24 +6108,200 @@ public:
 
         // If the node at position X - 1 is null or the next node is
         // null, return the head
-        if (current == nullptr || current->next == nullptr) {
+        if (current == null || current.next == null) {
             return head;
         }
 
         // Store the node to be deleted
-        ListNode *nodeToBeDeleted = current->next;
+        ListNode nodeToBeDeleted = current.next;
 
         // Update the next pointer of current node
-        current->next = current->next->next;
+        current.next = current.next.next;
 
         // Delete the node at position X
-        delete nodeToBeDeleted;
+        nodeToBeDeleted = null;
 
         // Return the head
         return head;
     }
-};
+
+    static ListNode build(int[] vals) {
+        ListNode dummy = new ListNode(0); ListNode cur = dummy;
+        for (int v : vals) { cur.next = new ListNode(v); cur = cur.next; }
+        return dummy.next;
+    }
+
+    static String toStr(ListNode head) {
+        StringBuilder sb = new StringBuilder("[");
+        while (head != null) { sb.append(head.val); if (head.next != null) sb.append(", "); head = head.next; }
+        return sb.append("]").toString();
+    }
+
+    public static void main(String[] args) {
+        ListNode head = build(new int[]{5, 7, 3, 10});
+        head = deleteNodeAtGivenDistance(head, 1);
+        System.out.println(toStr(head)); // [5, 3, 10]
+    }
+}
 ```
+
+```c run
+#include <stdio.h>
+#include <stdlib.h>
+
+typedef struct ListNode { int val; struct ListNode *next; } ListNode;
+
+ListNode* newNode(int v) {
+    ListNode *n = malloc(sizeof(ListNode)); n->val = v; n->next = NULL; return n;
+}
+
+ListNode* deleteNodeAtGivenDistance(ListNode *head, int X) {
+
+    /* If the head is NULL (empty list), return NULL */
+    if (head == NULL) {
+        return NULL;
+    }
+
+    /* If X is 0, delete the head node */
+    if (X == 0) {
+        ListNode *nodeToBeDeleted = head;
+
+        /* Update the head to the next node */
+        head = head->next;
+
+        /* Delete the original head node */
+        free(nodeToBeDeleted);
+
+        /* Return the updated head */
+        return head;
+    }
+
+    int counter = 0;
+    ListNode *current = head;
+
+    /* Traverse to the node at position X - 1 */
+    while (current != NULL && counter < X - 1) {
+
+        /* Move to the next node */
+        current = current->next;
+
+        /* Increment the counter */
+        counter++;
+    }
+
+    /* If the node at position X - 1 is NULL or the next node is
+       NULL, return the head */
+    if (current == NULL || current->next == NULL) {
+        return head;
+    }
+
+    /* Store the node to be deleted */
+    ListNode *nodeToBeDeleted = current->next;
+
+    /* Update the next pointer of the current node */
+    current->next = current->next->next;
+
+    /* Delete the node at position X */
+    free(nodeToBeDeleted);
+
+    /* Return the head */
+    return head;
+}
+
+ListNode* build(int *vals, int n) {
+    ListNode dummy = {0, NULL}; ListNode *cur = &dummy;
+    for (int i = 0; i < n; i++) { cur->next = newNode(vals[i]); cur = cur->next; }
+    return dummy.next;
+}
+
+void printList(ListNode *head) {
+    printf("[");
+    while (head) { printf("%d", head->val); if (head->next) printf(", "); head = head->next; }
+    printf("]\n");
+}
+
+int main() {
+    int vals[] = {5, 7, 3, 10};
+    ListNode *head = build(vals, 4);
+    head = deleteNodeAtGivenDistance(head, 1);
+    printList(head); // [5, 3, 10]
+    return 0;
+}
+```
+
+```scala run
+class ListNode(var v: Int, var next: ListNode = null)
+
+object Main extends App {
+  def deleteNodeAtGivenDistance(head: ListNode, X: Int): ListNode = {
+
+    // If the head is null (empty list), return null
+    if (head == null) {
+      return null
+    }
+
+    // If X is 0, delete the head node
+    if (X == 0) {
+      var nodeToBeDeleted = head
+
+      // Update the head to the next node
+      val newHead = head.next
+
+      // Delete the original head node
+      nodeToBeDeleted = null
+
+      // Return the updated head
+      return newHead
+    }
+
+    var counter = 0
+    var current = head
+
+    // Traverse to the node at position X - 1
+    while (current != null && counter < X - 1) {
+
+      // Move to the next node
+      current = current.next
+
+      // Increment the counter
+      counter += 1
+    }
+
+    // If the node at position X - 1 is null or the next node is
+    // null, return the head
+    if (current == null || current.next == null) {
+      return head
+    }
+
+    // Store the node to be deleted
+    var nodeToBeDeleted = current.next
+
+    // Update the next pointer of the current node
+    current.next = current.next.next
+
+    // Delete the node at position X
+    nodeToBeDeleted = null
+
+    // Return the head
+    head
+  }
+
+  def build(vals: Int*): ListNode = {
+    val dummy = new ListNode(0); var cur = dummy
+    for (v <- vals) { cur.next = new ListNode(v); cur = cur.next }
+    dummy.next
+  }
+
+  def toStr(head: ListNode): String = {
+    val sb = new StringBuilder("["); var cur = head
+    while (cur != null) { sb.append(cur.v); if (cur.next != null) sb.append(", "); cur = cur.next }
+    sb.append("]").toString
+  }
+
+  println(toStr(deleteNodeAtGivenDistance(build(5, 7, 3, 10), 1))) // [5, 3, 10]
+}
+```
+
 
 ***
 
