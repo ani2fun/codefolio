@@ -783,21 +783,51 @@ If there is only one middle node, that node should be part of the first half. 
 
 
 ```pseudocode
-# Split a list into two halves. prevToSlow lets us cut cleanly even on even-length lists.
+# Split a list into two halves using slow + fast + prevToSlow.
 function splitListInHalf(head):
+
+    # If the list is empty or has only one element, return the original head and None
     if head is null OR head.next is null:
         return [head, null]
-    slow ← head; fast ← head; prevToSlow ← null
-    while fast is not null AND fast.next is not null:
+
+    slow ← head
+    fast ← head
+    prevToSlow ← null
+
+    # Find the midpoint of the list using the slow and fast pointer technique
+    while fast is not null AND fast.next is not null AND slow is not null:
+
+        # Keep track of the node before the midpoint
         prevToSlow ← slow
+
+        # Move the slow pointer by one step
         slow ← slow.next
+
+        # Move the fast pointer by two steps
         fast ← fast.next.next
-    if fast is null:                                  # even length — slow is the 2nd middle
+
+    secondHalf ← null
+
+    # If the fast pointer reached the end of the list, it has an even number of nodes
+    if fast is null AND prevToSlow is not null:
+
+        # The second half starts from the next node of the previous slow pointer
         secondHalf ← prevToSlow.next
+
+        # Disconnect the two halves by setting the next of the previous slow pointer to null
         prevToSlow.next ← null
-    else:                                              # odd length — slow is the unique middle
-        secondHalf ← slow.next
-        slow.next ← null
+
+    # else the list has an odd number of nodes
+    else:
+        if slow is not null:
+
+            # The second half starts from the node after the slow pointer
+            secondHalf ← slow.next
+
+            # Disconnect the two halves by setting the next of the slow pointer to null
+            slow.next ← null
+
+    # Return a list containing the head of the first half and the head of the second half
     return [head, secondHalf]
 ```
 
@@ -805,51 +835,124 @@ function splitListInHalf(head):
 from typing import Optional, List
 
 class Solution:
-    def split_list_in_half(self, head: Optional[ListNode]) -> List[Optional[ListNode]]:
+    def split_list_in_half(
+        self, head: Optional[ListNode]
+    ) -> List[Optional[ListNode]]:
+
+        # If the list is empty or has only one element, return the
+        # original head and None
         if head is None or head.next is None:
             return [head, None]
 
-        slow, fast = head, head
+        slow: Optional[ListNode] = head
+        fast: Optional[ListNode] = head
         prev_to_slow: Optional[ListNode] = None
 
-        # Find middle — prev_to_slow lets us split cleanly for even-length lists
-        while fast is not None and fast.next is not None:
+        # Find the midpoint of the list using the slow and fast pointer
+        # technique
+        while (
+            fast is not None
+            and fast.next is not None
+            and slow is not None
+        ):
+
+            # Keep track of the node before the midpoint
             prev_to_slow = slow
+
+            # Move the slow pointer by one step
             slow = slow.next
+
+            # Move the fast pointer by two steps
             fast = fast.next.next
 
-        if fast is None:
-            # Even length — slow is the 2nd-middle (start of second half)
-            second_half = prev_to_slow.next
-            prev_to_slow.next = None
-        else:
-            # Odd length — slow is the single middle; it stays in the first half
-            second_half = slow.next
-            slow.next = None
+        second_half: Optional[ListNode] = None
 
+        # If the fast pointer reached the end of the list, it has an even
+        # number of nodes
+        if fast is None and prev_to_slow is not None:
+
+            # The second half starts from the next node of the previous
+            # slow pointer
+            second_half = prev_to_slow.next
+
+            # Disconnect the two halves by setting the next of the
+            # previous slow pointer to None
+            prev_to_slow.next = None
+
+        # else the list has an odd number of nodes
+        else:
+            if slow is not None:
+
+                # The second half starts from the node after the slow
+                # pointer
+                second_half = slow.next
+
+                # Disconnect the two halves by setting the next of the
+                # slow pointer to None
+                slow.next = None
+
+        # Return a list containing the head of the first half and the
+        # head of the second half
         return [head, second_half]
 ```
 
 ```java run
 class Solution {
     public ListNode[] splitListInHalf(ListNode head) {
-        if (head == null || head.next == null) return new ListNode[]{head, null};
 
-        ListNode slow = head, fast = head, prevToSlow = null;
+        // If the list is empty or has only one element, return the
+        // original head and null
+        if (head == null || head.next == null) {
+            return new ListNode[]{head, null};
+        }
+
+        ListNode slow = head;
+        ListNode fast = head;
+        ListNode prevToSlow = null;
+
+        // Find the midpoint of the list using the slow and fast pointer
+        // technique
         while (fast != null && fast.next != null) {
+
+            // Keep track of the node before the midpoint
             prevToSlow = slow;
+
+            // Move the slow pointer by one step
             slow = slow.next;
+
+            // Move the fast pointer by two steps
             fast = fast.next.next;
         }
 
         ListNode secondHalf;
+
+        // If the fast pointer reached the end of the list, it has an
+        // even number of nodes
         if (fast == null) {
+
+            // The second half starts from the next node of the previous
+            // slow pointer
             secondHalf = prevToSlow.next;
+
+            // Disconnect the two halves by setting the next of the
+            // previous slow pointer to null
             prevToSlow.next = null;
-        } else {
+        }
+
+        // else the list has an odd number of nodes
+        else {
+
+            // The second half starts from the node after the slow
+            // pointer
             secondHalf = slow.next;
+
+            // Disconnect the two halves by setting the next of the slow
+            // pointer to null
             slow.next = null;
         }
+
+        // Return a list containing the head of the first half and the
+        // head of the second half
         return new ListNode[]{head, secondHalf};
     }
 }
@@ -861,23 +964,58 @@ class Solution {
 typedef struct { ListNode *first; ListNode *second; } ListPair;
 
 ListPair splitListInHalf(ListNode *head) {
-    ListPair out = {head, NULL};
-    if (head == NULL || head->next == NULL) return out;
 
-    ListNode *slow = head, *fast = head, *prevToSlow = NULL;
+    /* If the list is empty or has only one element, return the
+       original head and NULL */
+    ListPair out = {head, NULL};
+    if (head == NULL || head->next == NULL) {
+        return out;
+    }
+
+    ListNode *slow = head;
+    ListNode *fast = head;
+    ListNode *prevToSlow = NULL;
+
+    /* Find the midpoint of the list using the slow and fast pointer
+       technique */
     while (fast != NULL && fast->next != NULL) {
+
+        /* Keep track of the node before the midpoint */
         prevToSlow = slow;
+
+        /* Move the slow pointer by one step */
         slow = slow->next;
+
+        /* Move the fast pointer by two steps */
         fast = fast->next->next;
     }
 
+    /* If the fast pointer reached the end of the list, it has an
+       even number of nodes */
     if (fast == NULL) {
+
+        /* The second half starts from the next node of the previous
+           slow pointer */
         out.second = prevToSlow->next;
+
+        /* Disconnect the two halves by setting the next of the
+           previous slow pointer to NULL */
         prevToSlow->next = NULL;
-    } else {
+
+    }
+
+    /* else the list has an odd number of nodes */
+    else {
+
+        /* The second half starts from the node after the slow
+           pointer */
         out.second = slow->next;
+
+        /* Disconnect the two halves by setting the next of the slow
+           pointer to NULL */
         slow->next = NULL;
     }
+
     return out;
 }
 ```
@@ -885,24 +1023,60 @@ ListPair splitListInHalf(ListNode *head) {
 ```scala run
 object Solution {
   def splitListInHalf(head: ListNode): Array[ListNode] = {
-    if (head == null || head.next == null) return Array(head, null)
 
-    var slow = head; var fast = head
+    // If the list is empty or has only one element, return the
+    // original head and null
+    if (head == null || head.next == null) {
+      return Array(head, null)
+    }
+
+    var slow = head
+    var fast = head
     var prevToSlow: ListNode = null
+
+    // Find the midpoint of the list using the slow and fast pointer
+    // technique
     while (fast != null && fast.next != null) {
+
+      // Keep track of the node before the midpoint
       prevToSlow = slow
+
+      // Move the slow pointer by one step
       slow = slow.next
+
+      // Move the fast pointer by two steps
       fast = fast.next.next
     }
 
     var secondHalf: ListNode = null
+
+    // If the fast pointer reached the end of the list, it has an
+    // even number of nodes
     if (fast == null) {
+
+      // The second half starts from the next node of the previous
+      // slow pointer
       secondHalf = prevToSlow.next
+
+      // Disconnect the two halves by setting the next of the
+      // previous slow pointer to null
       prevToSlow.next = null
-    } else {
+    }
+
+    // else the list has an odd number of nodes
+    else {
+
+      // The second half starts from the node after the slow
+      // pointer
       secondHalf = slow.next
+
+      // Disconnect the two halves by setting the next of the slow
+      // pointer to null
       slow.next = null
     }
+
+    // Return a list containing the head of the first half and the
+    // head of the second half
     Array(head, secondHalf)
   }
 }
