@@ -291,15 +291,22 @@ Given the **head** of a singly linked list, write a function to print a comma (`
 
 
 ```pseudocode
-# Print each value, separated by ", " — but only between values, not after the last.
 function nodeExpedition(head):
+    # Start from the head of the linked list
     current ← head
+
+    # Iterate until the current node is not null
     while current is not null:
+
+        # Print the value of the current node
         print current.val
+
+        # If there is a next node, print a comma after the value
         if current.next is not null:
             print ", "
+
+        # Move to the next node
         current ← current.next
-    print newline
 ```
 
 ```python run
@@ -309,17 +316,26 @@ class ListNode:
 
 class Solution:
     def node_expedition(self, head: ListNode) -> None:
+
+        # Start from the head of the linked list
         current = head
-        while current:
+
+        # Iterate until the current node is not null
+        while current is not None:
+
+            # Print the value of the current node
             print(current.val, end="")
-            if current.next:        # Print comma only between nodes, not after last
+
+            # If there is a next node, print a comma after the value
+            if current.next is not None:
                 print(", ", end="")
+
+            # Move to the next node
             current = current.next
-        print()
 
 # Build list 5 → 7 → 3 → 10
 n4=ListNode(10); n3=ListNode(3,n4); n2=ListNode(7,n3); n1=ListNode(5,n2)
-Solution().node_expedition(n1)  # 5, 7, 3, 10
+Solution().node_expedition(n1); print()  # 5, 7, 3, 10
 ```
 
 ```java run
@@ -327,20 +343,31 @@ public class Main {
     static class ListNode { int val; ListNode next; ListNode(int v){val=v;} }
 
     static void nodeExpedition(ListNode head) {
+
+        // Start from the head of the linked list
         ListNode current = head;
+
+        // Iterate until the current node is not null
         while (current != null) {
+
+            // Print the value of the current node
             System.out.print(current.val);
-            if (current.next != null) System.out.print(", ");  // Comma between nodes only
+
+            // If there is a next node, print a comma after the value
+            if (current.next != null) {
+                System.out.print(", ");
+            }
+
+            // Move to the next node
             current = current.next;
         }
-        System.out.println();
     }
 
     public static void main(String[] args) {
         ListNode n1=new ListNode(5), n2=new ListNode(7),
                  n3=new ListNode(3), n4=new ListNode(10);
         n1.next=n2; n2.next=n3; n3.next=n4;
-        nodeExpedition(n1);  // 5, 7, 3, 10
+        nodeExpedition(n1); System.out.println();  // 5, 7, 3, 10
     }
 }
 ```
@@ -353,19 +380,30 @@ typedef struct ListNode { int val; struct ListNode *next; } ListNode;
 ListNode* newNode(int v){ ListNode*n=malloc(sizeof*n); n->val=v; n->next=NULL; return n; }
 
 void nodeExpedition(ListNode *head) {
+
+    /* Start from the head of the linked list */
     ListNode *current = head;
+
+    /* Iterate until the current node is not null */
     while (current != NULL) {
+
+        /* Print the value of the current node */
         printf("%d", current->val);
-        if (current->next != NULL) printf(", ");  /* Comma between nodes only */
+
+        /* If there is a next node, print a comma after the value */
+        if (current->next != NULL) {
+            printf(", ");
+        }
+
+        /* Move to the next node */
         current = current->next;
     }
-    printf("\n");
 }
 
 int main() {
     ListNode *n1=newNode(5),*n2=newNode(7),*n3=newNode(3),*n4=newNode(10);
     n1->next=n2; n2->next=n3; n3->next=n4;
-    nodeExpedition(n1);  /* 5, 7, 3, 10 */
+    nodeExpedition(n1); printf("\n");  /* 5, 7, 3, 10 */
     return 0;
 }
 ```
@@ -375,18 +413,29 @@ class ListNode(var v: Int, var next: ListNode = null)
 
 object Main extends App {
   def nodeExpedition(head: ListNode): Unit = {
+
+    // Start from the head of the linked list
     var current = head
+
+    // Iterate until the current node is not null
     while (current != null) {
+
+      // Print the value of the current node
       print(current.v)
-      if (current.next != null) print(", ")  // Comma between nodes only
+
+      // If there is a next node, print a comma after the value
+      if (current.next != null) {
+        print(", ")
+      }
+
+      // Move to the next node
       current = current.next
     }
-    println()
   }
 
   val n4=new ListNode(10); val n3=new ListNode(3,n4)
   val n2=new ListNode(7,n3); val n1=new ListNode(5,n2)
-  nodeExpedition(n1)  // 5, 7, 3, 10
+  nodeExpedition(n1); println()  // 5, 7, 3, 10
 }
 ```
 
