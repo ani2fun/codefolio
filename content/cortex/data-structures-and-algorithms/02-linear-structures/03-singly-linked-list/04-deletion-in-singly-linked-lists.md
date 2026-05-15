@@ -878,16 +878,41 @@ Given the **head** of a singly linked list, write a function to delete the last 
 
 
 ```pseudocode
-# Walk until current is the tail; previous trails one step behind. Unlink the tail.
 function deleteLastNode(head):
-    if head is null: return null
-    if head.next is null: return null                  # single node → empty after delete
+
+    # If the list is empty, there's nothing to delete
+    if head is null:
+        return null
+
+    # If there's only one node in the list, delete it and return null
+    if head.next is null:
+        head ← null
+        return null
+
+    # current node being iterated
     current ← head
+
+    # previous node
     previous ← null
-    while current.next is not null:
+
+    # Traverse the list until the last node is reached
+    while current is not null AND current.next is not null:
+
+        # Move the previous pointer to the current node
         previous ← current
+
+        # Move the current pointer to the next node
         current ← current.next
-    previous.next ← null                               # detach the tail (GC reclaims it)
+
+    # At this point, current is pointing to the last node and
+    # previous is pointing to the second-to-last node. Update the
+    # next pointer of the second-to-last node to skip the last node
+    previous.next ← current.next
+
+    # Delete the last node
+    current ← null
+
+    # Return the updated head of the list
     return head
 ```
 
@@ -898,24 +923,44 @@ class ListNode:
         self.next = next
 
 def delete_last_node(head):
-    # Empty list — nothing to delete
+
     if head is None:
+
+        # If the list is empty, there's nothing to delete
         return None
 
-    # Single node — deleting it empties the list
     if head.next is None:
+
+        # If there's only one node in the list, delete it and return
+        # None
+        head = None
         return None
 
+    # current node being iterated
     current = head
+
+    # previous node
     previous = None
 
-    # Walk until current is the last node; previous trails one step behind
-    while current.next is not None:
+    # Traverse the list until the last node is reached
+    while current is not None and current.next is not None:
+
+        # Move the previous pointer to the current node
         previous = current
+
+        # Move the current pointer to the next node
         current = current.next
 
-    # Unlink the last node — GC reclaims it
-    previous.next = None
+    # At this point, current is pointing to the last node and
+    # previous is pointing to the second-to-last node. Update the
+    # next pointer of the second-to-last node to skip the last node
+    if previous and current:
+        previous.next = current.next
+
+    # Delete the last node
+    current = None
+
+    # Return the updated head of the list
     return head
 
 # --- driver ---
@@ -949,23 +994,44 @@ public class Main {
     }
 
     static ListNode deleteLastNode(ListNode head) {
-        // Empty list — nothing to delete
-        if (head == null) return null;
 
-        // Single node — deleting it empties the list
-        if (head.next == null) return null;
+        // If the list is empty, there's nothing to delete
+        if (head == null) {
+            return null;
+        }
 
+        // If there's only one node in the list, delete it and return
+        // null
+        if (head.next == null) {
+            head = null;
+            return null;
+        }
+
+        // current node being iterated
         ListNode current = head;
+
+        // previous node
         ListNode previous = null;
 
-        // Walk until current is the last node
-        while (current.next != null) {
+        // Traverse the list until the last node is reached
+        while (current != null && current.next != null) {
+
+            // Move the previous pointer to the current node
             previous = current;
+
+            // Move the current pointer to the next node
             current = current.next;
         }
 
-        // Unlink the last node — GC reclaims it
-        previous.next = null;
+        // At this point, current is pointing to the last node and
+        // previous is pointing to the second-to-last node. Update the
+        // next pointer of the second-to-last node to skip the last node
+        previous.next = current.next;
+
+        // Delete the last node
+        current = null;
+
+        // Return the updated head of the list
         return head;
     }
 
@@ -1010,24 +1076,44 @@ ListNode* newNode(int v) {
 }
 
 ListNode* deleteLastNode(ListNode *head) {
-    // Empty list — nothing to delete
-    if (head == NULL) return NULL;
 
-    // Single node — deleting it empties the list
-    if (head->next == NULL) { free(head); return NULL; }
+    /* If the list is empty, there's nothing to delete */
+    if (head == NULL) {
+        return NULL;
+    }
 
+    /* If there's only one node in the list, delete it and return
+       NULL */
+    if (head->next == NULL) {
+        free(head);
+        return NULL;
+    }
+
+    /* current node being iterated */
     ListNode *current = head;
+
+    /* previous node */
     ListNode *previous = NULL;
 
-    // Walk until current is the last node
-    while (current->next != NULL) {
+    /* Traverse the list until the last node is reached */
+    while (current != NULL && current->next != NULL) {
+
+        /* Move the previous pointer to the current node */
         previous = current;
+
+        /* Move the current pointer to the next node */
         current = current->next;
     }
 
-    // Unlink and free the last node
-    previous->next = NULL;
+    /* At this point, current is pointing to the last node and
+       previous is pointing to the second-to-last node. Update the
+       next pointer of the second-to-last node to skip the last node */
+    previous->next = current->next;
+
+    /* Delete the last node */
     free(current);
+
+    /* Return the updated head of the list */
     return head;
 }
 
@@ -1057,23 +1143,43 @@ class ListNode(var v: Int, var next: ListNode = null)
 
 object Main extends App {
   def deleteLastNode(head: ListNode): ListNode = {
-    // Empty list — nothing to delete
-    if (head == null) return null
 
-    // Single node — deleting it empties the list
-    if (head.next == null) return null
+    // If the list is empty, there's nothing to delete
+    if (head == null) {
+      return null
+    }
 
+    // If there's only one node in the list, delete it and return
+    // null
+    if (head.next == null) {
+      return null
+    }
+
+    // current node being iterated
     var current = head
+
+    // previous node
     var previous: ListNode = null
 
-    // Walk until current is the last node
-    while (current.next != null) {
+    // Traverse the list until the last node is reached
+    while (current != null && current.next != null) {
+
+      // Move the previous pointer to the current node
       previous = current
+
+      // Move the current pointer to the next node
       current = current.next
     }
 
-    // Unlink the last node — GC reclaims it
-    previous.next = null
+    // At this point, current is pointing to the last node and
+    // previous is pointing to the second-to-last node. Update the
+    // next pointer of the second-to-last node to skip the last node
+    previous.next = current.next
+
+    // Delete the last node
+    current = null
+
+    // Return the updated head of the list
     head
   }
 
