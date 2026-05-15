@@ -132,6 +132,92 @@ temp -> copy: "pass 2: copy back"
 
 <p align="center"><strong>Brute-force rotation using a temporary array — two passes, O(n) extra space.</strong></p>
 
+```d3 widget=array-traversal
+{
+  "items": ["1", "2", "3", "4", "5", "6", "7", "8"],
+  "title": "Brute-force left-rotate by k=4 using temp array",
+  "secondaryItems": ["·", "·", "·", "·", "·", "·", "·", "·"],
+  "steps": [
+    {
+      "items": ["1", "2", "3", "4", "5", "6", "7", "8"],
+      "secondaryItems": ["·", "·", "·", "·", "·", "·", "·", "·"],
+      "secondaryKeys": ["t0", "t1", "t2", "t3", "t4", "t5", "t6", "t7"],
+      "msg": "Init: arr above, temp (empty) below. We will fill temp[i] = arr[(i + 4) mod 8]."
+    },
+    {
+      "items": ["1", "2", "3", "4", "5", "6", "7", "8"],
+      "markers": [{"name": "src", "index": 4, "color": "#f59e0b"}],
+      "secondaryItems": ["5", "·", "·", "·", "·", "·", "·", "·"],
+      "secondaryKeys": ["t0", "t1", "t2", "t3", "t4", "t5", "t6", "t7"],
+      "secondaryMarkers": [{"name": "i", "index": 0, "color": "#3b82f6"}],
+      "msg": "i=0 → temp[0] = arr[(0+4) mod 8] = arr[4] = 5."
+    },
+    {
+      "items": ["1", "2", "3", "4", "5", "6", "7", "8"],
+      "markers": [{"name": "src", "index": 5, "color": "#f59e0b"}],
+      "secondaryItems": ["5", "6", "·", "·", "·", "·", "·", "·"],
+      "secondaryKeys": ["t0", "t1", "t2", "t3", "t4", "t5", "t6", "t7"],
+      "secondaryMarkers": [{"name": "i", "index": 1, "color": "#3b82f6"}],
+      "msg": "i=1 → temp[1] = arr[5] = 6."
+    },
+    {
+      "items": ["1", "2", "3", "4", "5", "6", "7", "8"],
+      "markers": [{"name": "src", "index": 6, "color": "#f59e0b"}],
+      "secondaryItems": ["5", "6", "7", "·", "·", "·", "·", "·"],
+      "secondaryKeys": ["t0", "t1", "t2", "t3", "t4", "t5", "t6", "t7"],
+      "secondaryMarkers": [{"name": "i", "index": 2, "color": "#3b82f6"}],
+      "msg": "i=2 → temp[2] = arr[6] = 7."
+    },
+    {
+      "items": ["1", "2", "3", "4", "5", "6", "7", "8"],
+      "markers": [{"name": "src", "index": 7, "color": "#f59e0b"}],
+      "secondaryItems": ["5", "6", "7", "8", "·", "·", "·", "·"],
+      "secondaryKeys": ["t0", "t1", "t2", "t3", "t4", "t5", "t6", "t7"],
+      "secondaryMarkers": [{"name": "i", "index": 3, "color": "#3b82f6"}],
+      "msg": "i=3 → temp[3] = arr[7] = 8."
+    },
+    {
+      "items": ["1", "2", "3", "4", "5", "6", "7", "8"],
+      "markers": [{"name": "src", "index": 0, "color": "#f59e0b"}],
+      "secondaryItems": ["5", "6", "7", "8", "1", "·", "·", "·"],
+      "secondaryKeys": ["t0", "t1", "t2", "t3", "t4", "t5", "t6", "t7"],
+      "secondaryMarkers": [{"name": "i", "index": 4, "color": "#3b82f6"}],
+      "msg": "i=4 → (4+4) mod 8 wraps to index 0 → temp[4] = arr[0] = 1."
+    },
+    {
+      "items": ["1", "2", "3", "4", "5", "6", "7", "8"],
+      "markers": [{"name": "src", "index": 1, "color": "#f59e0b"}],
+      "secondaryItems": ["5", "6", "7", "8", "1", "2", "·", "·"],
+      "secondaryKeys": ["t0", "t1", "t2", "t3", "t4", "t5", "t6", "t7"],
+      "secondaryMarkers": [{"name": "i", "index": 5, "color": "#3b82f6"}],
+      "msg": "i=5 → temp[5] = arr[1] = 2."
+    },
+    {
+      "items": ["1", "2", "3", "4", "5", "6", "7", "8"],
+      "markers": [{"name": "src", "index": 2, "color": "#f59e0b"}],
+      "secondaryItems": ["5", "6", "7", "8", "1", "2", "3", "·"],
+      "secondaryKeys": ["t0", "t1", "t2", "t3", "t4", "t5", "t6", "t7"],
+      "secondaryMarkers": [{"name": "i", "index": 6, "color": "#3b82f6"}],
+      "msg": "i=6 → temp[6] = arr[2] = 3."
+    },
+    {
+      "items": ["1", "2", "3", "4", "5", "6", "7", "8"],
+      "markers": [{"name": "src", "index": 3, "color": "#f59e0b"}],
+      "secondaryItems": ["5", "6", "7", "8", "1", "2", "3", "4"],
+      "secondaryKeys": ["t0", "t1", "t2", "t3", "t4", "t5", "t6", "t7"],
+      "secondaryMarkers": [{"name": "i", "index": 7, "color": "#3b82f6"}],
+      "msg": "i=7 → temp[7] = arr[3] = 4. Pass 1 complete."
+    },
+    {
+      "items": ["5", "6", "7", "8", "1", "2", "3", "4"],
+      "secondaryItems": ["5", "6", "7", "8", "1", "2", "3", "4"],
+      "secondaryKeys": ["t0", "t1", "t2", "t3", "t4", "t5", "t6", "t7"],
+      "msg": "Pass 2: copy temp back into arr → arr = [5, 6, 7, 8, 1, 2, 3, 4] ✓"
+    }
+  ]
+}
+```
+
 
 ```pseudocode
 # Brute-force left rotation by k. Build a rotated copy in temp, then write it back.
