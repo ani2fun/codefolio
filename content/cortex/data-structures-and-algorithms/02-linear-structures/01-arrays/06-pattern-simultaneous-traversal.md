@@ -839,55 +839,96 @@ flowchart TB
 
 
 ```pseudocode
-# Same algorithm as `subsequenceChecker` — re-listed under the standard name.
-function isSubsequence(s, t):
-    index1 ← 0; index2 ← 0
+function subsequenceChecker(s, t):
+    # pointer for s
+    index1 ← 0
+
+    # pointer for t
+    index2 ← 0
+
     while index1 < length(s) AND index2 < length(t):
         if s[index1] = t[index2]:
+
+            # If the current character matches, move the pointer for s
             index1 ← index1 + 1
+
+        # Move the pointer for t in every iteration
         index2 ← index2 + 1
+
+    # If index1 reaches the end of s, it means all characters in s
+    # are found in t in the same order
     return index1 = length(s)
 ```
 
 ```python run
 class Solution:
-    def is_subsequence(self, s: str, t: str) -> bool:
-        index1, index2 = 0, 0
+    def subsequence_checker(self, s: str, t: str) -> bool:
+
+        # pointer for s
+        index1: int = 0
+
+        # pointer for t
+        index2: int = 0
+
         while index1 < len(s) and index2 < len(t):
             if s[index1] == t[index2]:
+
+                # If the current character matches, move the pointer for
+                # s
                 index1 += 1
+
+            # Move the pointer for t in every iteration
             index2 += 1
+
+        # If index1 reaches the end of s, it means all characters in s
+        # are found in t in the same order
         return index1 == len(s)
 
 
 sol = Solution()
-print(sol.is_subsequence("ace", "abcde"))  # True
-print(sol.is_subsequence("aec", "abcde"))  # False
-print(sol.is_subsequence("", "abc"))       # True
-print(sol.is_subsequence("abc", ""))       # False
-print(sol.is_subsequence("abc", "abc"))    # True
+print(sol.subsequence_checker("ace", "abcde"))   # True
+print(sol.subsequence_checker("aec", "abcde"))   # False
+print(sol.subsequence_checker("", "abc"))        # True
+print(sol.subsequence_checker("abc", ""))        # False
+print(sol.subsequence_checker("abc", "abc"))     # True
 ```
 
 ```java run
 public class Main {
     static class Solution {
-        boolean isSubsequence(String s, String t) {
-            int i1 = 0, i2 = 0;
-            while (i1 < s.length() && i2 < t.length()) {
-                if (s.charAt(i1) == t.charAt(i2)) i1++;
-                i2++;
+        public boolean subsequenceChecker(String s, String t) {
+
+            // pointer for s
+            int index1 = 0;
+
+            // pointer for t
+            int index2 = 0;
+
+            while (index1 < s.length() && index2 < t.length()) {
+                if (s.charAt(index1) == t.charAt(index2)) {
+
+                    // If the current character matches, move the pointer for
+                    // s
+                    index1++;
+                }
+
+                // Move the pointer for t in every iteration
+                index2++;
             }
-            return i1 == s.length();
+
+            // If index1 reaches the end of s, it means all characters in s
+            // are found in t in the same order
+            return index1 == s.length();
         }
     }
 
     public static void main(String[] args) {
         Solution sol = new Solution();
-        System.out.println(sol.isSubsequence("ace", "abcde"));
-        System.out.println(sol.isSubsequence("aec", "abcde"));
-        System.out.println(sol.isSubsequence("", "abc"));
-        System.out.println(sol.isSubsequence("abc", ""));
-        System.out.println(sol.isSubsequence("abc", "abc"));
+        System.out.println(sol.subsequenceChecker("ace", "abcde"));   // true
+        System.out.println(sol.subsequenceChecker("aec", "abcde"));   // false
+        System.out.println(sol.subsequenceChecker("", "abc"));        // true
+        System.out.println(sol.subsequenceChecker("abc", ""));        // false
+        System.out.println(sol.subsequenceChecker("abc", "abc"));     // true
     }
 }
 ```
@@ -897,22 +938,39 @@ public class Main {
 #include <stdbool.h>
 #include <string.h>
 
-bool is_subsequence(const char* s, const char* t) {
-    int i1 = 0, i2 = 0;
-    int ns = (int)strlen(s), nt = (int)strlen(t);
-    while (i1 < ns && i2 < nt) {
-        if (s[i1] == t[i2]) i1++;
-        i2++;
+bool subsequence_checker(const char* s, const char* t) {
+
+    /* pointer for s */
+    int index1 = 0;
+
+    /* pointer for t */
+    int index2 = 0;
+
+    int ns = (int)strlen(s);
+    int nt = (int)strlen(t);
+
+    while (index1 < ns && index2 < nt) {
+        if (s[index1] == t[index2]) {
+
+            /* If the current character matches, move the pointer for s */
+            index1++;
+        }
+
+        /* Move the pointer for t in every iteration */
+        index2++;
     }
-    return i1 == ns;
+
+    /* If index1 reaches the end of s, it means all characters in s
+     * are found in t in the same order */
+    return index1 == ns;
 }
 
 int main() {
-    printf("%d\n", is_subsequence("ace", "abcde"));
-    printf("%d\n", is_subsequence("aec", "abcde"));
-    printf("%d\n", is_subsequence("", "abc"));
-    printf("%d\n", is_subsequence("abc", ""));
-    printf("%d\n", is_subsequence("abc", "abc"));
+    printf("%d\n", subsequence_checker("ace", "abcde"));    /* 1 */
+    printf("%d\n", subsequence_checker("aec", "abcde"));    /* 0 */
+    printf("%d\n", subsequence_checker("", "abc"));         /* 1 */
+    printf("%d\n", subsequence_checker("abc", ""));         /* 0 */
+    printf("%d\n", subsequence_checker("abc", "abc"));      /* 1 */
     return 0;
 }
 ```
@@ -920,23 +978,37 @@ int main() {
 ```scala run
 object Main extends App {
   class Solution {
-    def isSubsequence(s: String, t: String): Boolean = {
-      var i1 = 0
-      var i2 = 0
-      while (i1 < s.length && i2 < t.length) {
-        if (s(i1) == t(i2)) i1 += 1
-        i2 += 1
+    def subsequenceChecker(s: String, t: String): Boolean = {
+
+      // pointer for s
+      var index1 = 0
+
+      // pointer for t
+      var index2 = 0
+
+      while (index1 < s.length && index2 < t.length) {
+        if (s(index1) == t(index2)) {
+
+          // If the current character matches, move the pointer for s
+          index1 += 1
+        }
+
+        // Move the pointer for t in every iteration
+        index2 += 1
       }
-      i1 == s.length
+
+      // If index1 reaches the end of s, it means all characters in s
+      // are found in t in the same order
+      index1 == s.length
     }
   }
 
   val sol = new Solution
-  println(sol.isSubsequence("ace", "abcde"))
-  println(sol.isSubsequence("aec", "abcde"))
-  println(sol.isSubsequence("", "abc"))
-  println(sol.isSubsequence("abc", ""))
-  println(sol.isSubsequence("abc", "abc"))
+  println(sol.subsequenceChecker("ace", "abcde"))   // true
+  println(sol.subsequenceChecker("aec", "abcde"))   // false
+  println(sol.subsequenceChecker("", "abc"))        // true
+  println(sol.subsequenceChecker("abc", ""))        // false
+  println(sol.subsequenceChecker("abc", "abc"))     // true
 }
 ```
 
