@@ -1049,118 +1049,301 @@ Given the heads of two sorted linked lists, **headA** and **headB**, write a 
 
 
 ```pseudocode
-# Merge two DESCENDING-sorted lists into a descending result. Reverse both → ascending lists,
-# then pick the LARGER head each step.
+# Reverse both ascending inputs → descending lists, then merge picking
+# the larger head each step → descending result.
 function reverse(head):
-    prev ← null; cur ← head
-    while cur is not null:
-        nxt ← cur.next
-        cur.next ← prev
-        prev ← cur; cur ← nxt
-    return prev
+    current ← head; previous ← null
+    while current is not null:
+        next ← current.next
+        current.next ← previous
+        previous ← current
+        current ← next
+    return previous
+
+function mergeSortedLists(headA, headB):
+    # Create a dummy node and initialize the tail pointer
+    dummy ← new ListNode; tail ← dummy
+    currentA ← headA; currentB ← headB
+    # Traverse both lists until one of them becomes empty
+    while currentA is not null AND currentB is not null:
+        # Pick the larger head; ties go to list A
+        if currentA.val ≥ currentB.val:
+            tail.next ← currentA; currentA ← currentA.next
+        else:
+            tail.next ← currentB; currentB ← currentB.next
+        # Move the tail pointer forward
+        tail ← tail.next
+    # Append the remaining nodes from the non-empty list
+    tail.next ← currentA if currentA is not null else currentB
+    return dummy.next
 
 function mergeSortedListsII(headA, headB):
-    a ← reverse(headA); b ← reverse(headB)
-    dummy ← new ListNode; tail ← dummy
-    while a is not null AND b is not null:
-        if a.val ≥ b.val:
-            tail.next ← a; a ← a.next
-        else:
-            tail.next ← b; b ← b.next
-        tail ← tail.next
-    tail.next ← a if a is not null else b
-    return dummy.next
+    return mergeSortedLists(reverse(headA), reverse(headB))
 ```
 
 ```python run
 from typing import Optional
 
 class Solution:
-    def _reverse(self, head: Optional[ListNode]) -> Optional[ListNode]:
-        prev, cur = None, head
-        while cur is not None:
-            nxt = cur.next
-            cur.next = prev
-            prev, cur = cur, nxt
-        return prev
+    def reverse(self, head: Optional[ListNode]) -> Optional[ListNode]:
+        current = head
+        previous = None
 
-    def merge_sorted_lists_ii(self, head_a: Optional[ListNode], head_b: Optional[ListNode]) -> Optional[ListNode]:
-        # Reverse both inputs so they become descending, then pick the larger head each tick
-        a, b = self._reverse(head_a), self._reverse(head_b)
-        dummy = ListNode()
-        tail  = dummy
-        while a is not None and b is not None:
-            if a.val >= b.val:
-                tail.next = a; a = a.next
+        while current is not None:
+            next_node = current.next
+            current.next = previous
+            previous = current
+            current = next_node
+
+        return previous
+
+    def merge_sorted_lists(
+        self, head_a: Optional[ListNode], head_b: Optional[ListNode]
+    ) -> Optional[ListNode]:
+
+        # Create a dummy node and initialize the tail pointer
+        dummy = ListNode(0)
+        tail = dummy
+
+        current_a = head_a
+        current_b = head_b
+
+        # Traverse both lists until one of them becomes empty
+        while current_a is not None and current_b is not None:
+
+            # If the value of the current node in list A is greater
+            # than or equal to the value of the current node in list
+            # B, append the current node from list A to the merged
+            # list
+            if current_a.val >= current_b.val:
+                tail.next = current_a
+                current_a = current_a.next
+
+            # Otherwise, append the current node from list B to the
+            # merged
             else:
-                tail.next = b; b = b.next
+                tail.next = current_b
+                current_b = current_b.next
+
+            # Move the tail pointer forward
             tail = tail.next
-        tail.next = a if a is not None else b
+
+        # Append the remaining nodes from the non-empty list to the
+        # merged list
+        if current_a is not None:
+            tail.next = current_a
+
+        # Else if there are any remaining nodes in current_b, attach
+        # them to the merged list
+        elif current_b is not None:
+            tail.next = current_b
+
+        # Return the merged list (excluding the dummy node)
         return dummy.next
+
+    def merge_sorted_lists_ii(
+        self, head_a: Optional[ListNode], head_b: Optional[ListNode]
+    ) -> Optional[ListNode]:
+        return self.merge_sorted_lists(
+            self.reverse(head_a), self.reverse(head_b)
+        )
 ```
 
 ```java run
 class Solution {
     private ListNode reverse(ListNode head) {
-        ListNode prev = null, cur = head;
-        while (cur != null) { ListNode nxt = cur.next; cur.next = prev; prev = cur; cur = nxt; }
-        return prev;
+        ListNode current = head;
+        ListNode previous = null;
+
+        while (current != null) {
+            ListNode next = current.next;
+            current.next = previous;
+            previous = current;
+            current = next;
+        }
+
+        return previous;
+    }
+
+    private ListNode mergeSortedLists(ListNode headA, ListNode headB) {
+
+        // Create a dummy node and initialize the tail pointer
+        ListNode dummy = new ListNode(0);
+        ListNode tail = dummy;
+
+        ListNode currentA = headA;
+        ListNode currentB = headB;
+
+        // Traverse both lists until one of them becomes empty
+        while (currentA != null && currentB != null) {
+
+            // If the value of the current node in list A is greater
+            // than or equal to the value of the current node in list
+            // B, append the current node from list A to the merged
+            // list
+            if (currentA.val >= currentB.val) {
+                tail.next = currentA;
+                currentA = currentA.next;
+            }
+
+            // Otherwise, append the current node from list B to the
+            // merged
+            else {
+                tail.next = currentB;
+                currentB = currentB.next;
+            }
+
+            // Move the tail pointer forward
+            tail = tail.next;
+        }
+
+        // Append the remaining nodes from the non-empty list to the
+        // merged list
+        if (currentA != null) {
+            tail.next = currentA;
+        }
+
+        // Else if there are any remaining nodes in currentB, attach
+        // them to the merged list
+        else if (currentB != null) {
+            tail.next = currentB;
+        }
+
+        // Return the merged list (excluding the dummy node)
+        return dummy.next;
     }
 
     public ListNode mergeSortedListsII(ListNode headA, ListNode headB) {
-        ListNode a = reverse(headA), b = reverse(headB);
-        ListNode dummy = new ListNode(), tail = dummy;
-        while (a != null && b != null) {
-            if (a.val >= b.val) { tail.next = a; a = a.next; }
-            else                 { tail.next = b; b = b.next; }
-            tail = tail.next;
-        }
-        tail.next = (a != null) ? a : b;
-        return dummy.next;
+        return mergeSortedLists(reverse(headA), reverse(headB));
     }
 }
 ```
 
 ```c run
-static ListNode* rev_list(ListNode *h) {
-    ListNode *prev = NULL, *cur = h;
-    while (cur) { ListNode *nxt = cur->next; cur->next = prev; prev = cur; cur = nxt; }
-    return prev;
+static ListNode* reverse(ListNode *head) {
+    ListNode *current = head;
+    ListNode *previous = NULL;
+
+    while (current != NULL) {
+        ListNode *next = current->next;
+        current->next = previous;
+        previous = current;
+        current = next;
+    }
+
+    return previous;
+}
+
+static ListNode* mergeSortedLists(ListNode *headA, ListNode *headB) {
+
+    /* Create a dummy node and initialize the tail pointer */
+    ListNode dummy = {0, NULL};
+    ListNode *tail = &dummy;
+
+    ListNode *currentA = headA;
+    ListNode *currentB = headB;
+
+    /* Traverse both lists until one of them becomes empty */
+    while (currentA != NULL && currentB != NULL) {
+
+        /* If the value of the current node in list A is greater than
+           or equal to the value of the current node in list B,
+           append the current node from list A to the merged list */
+        if (currentA->val >= currentB->val) {
+            tail->next = currentA;
+            currentA = currentA->next;
+        }
+
+        /* Otherwise, append the current node from list B to the
+           merged */
+        else {
+            tail->next = currentB;
+            currentB = currentB->next;
+        }
+
+        /* Move the tail pointer forward */
+        tail = tail->next;
+    }
+
+    /* Append the remaining nodes from the non-empty list to the
+       merged list */
+    if (currentA != NULL) {
+        tail->next = currentA;
+    }
+
+    /* Else if there are any remaining nodes in currentB, attach
+       them to the merged list */
+    else if (currentB != NULL) {
+        tail->next = currentB;
+    }
+
+    /* Return the merged list (excluding the dummy node) */
+    return dummy.next;
 }
 
 ListNode* mergeSortedListsII(ListNode *headA, ListNode *headB) {
-    ListNode *a = rev_list(headA), *b = rev_list(headB);
-    ListNode dummy = {0, NULL};
-    ListNode *tail = &dummy;
-    while (a != NULL && b != NULL) {
-        if (a->val >= b->val) { tail->next = a; a = a->next; }
-        else                   { tail->next = b; b = b->next; }
-        tail = tail->next;
-    }
-    tail->next = (a != NULL) ? a : b;
-    return dummy.next;
+    return mergeSortedLists(reverse(headA), reverse(headB));
 }
 ```
 
 ```scala run
 object Solution {
-  private def rev(h: ListNode): ListNode = {
-    var prev: ListNode = null; var cur = h
-    while (cur != null) { val nxt = cur.next; cur.next = prev; prev = cur; cur = nxt }
-    prev
+  private def reverse(head: ListNode): ListNode = {
+    var current = head
+    var previous: ListNode = null
+
+    while (current != null) {
+      val next = current.next
+      current.next = previous
+      previous = current
+      current = next
+    }
+
+    previous
   }
 
-  def mergeSortedListsII(headA: ListNode, headB: ListNode): ListNode = {
-    var a = rev(headA); var b = rev(headB)
-    val dummy = new ListNode(0); var tail: ListNode = dummy
-    while (a != null && b != null) {
-      if (a.v >= b.v) { tail.next = a; a = a.next }
-      else             { tail.next = b; b = b.next }
+  private def mergeSortedLists(headA: ListNode, headB: ListNode): ListNode = {
+
+    // Create a dummy node and initialize the tail pointer
+    val dummy = new ListNode(0)
+    var tail: ListNode = dummy
+
+    var currentA = headA
+    var currentB = headB
+
+    // Traverse both lists until one of them becomes empty
+    while (currentA != null && currentB != null) {
+
+      // If the value of the current node in list A is greater than
+      // or equal to the value of the current node in list B, append
+      // the current node from list A to the merged list
+      if (currentA.val >= currentB.val) {
+        tail.next = currentA
+        currentA = currentA.next
+      }
+      // Otherwise, append the current node from list B to the merged
+      else {
+        tail.next = currentB
+        currentB = currentB.next
+      }
+
+      // Move the tail pointer forward
       tail = tail.next
     }
-    tail.next = if (a != null) a else b
+
+    // Append the remaining nodes from the non-empty list to the
+    // merged list
+    if (currentA != null) tail.next = currentA
+    // Else if there are any remaining nodes in currentB, attach them
+    // to the merged list
+    else if (currentB != null) tail.next = currentB
+
+    // Return the merged list (excluding the dummy node)
     dummy.next
   }
+
+  def mergeSortedListsII(headA: ListNode, headB: ListNode): ListNode =
+    mergeSortedLists(reverse(headA), reverse(headB))
 }
 ```
 
