@@ -141,6 +141,19 @@ sweep -> state
 
 <p align="center"><strong>The sweep visits each interval in sorted order, updating shared state in O(1). One pass — no nested loops.</strong></p>
 
+```d3 widget=array-traversal
+{
+  "items": ["[1,3]", "[2,5]", "[4,7]", "[6,8]"],
+  "title": "Line sweep — visit sorted intervals left to right",
+  "steps": [
+    { "markers": [{"name": "sweep", "index": 0, "color": "#f59e0b"}], "msg": "Sweep at [1,3] — state initialised (algorithm-specific)." },
+    { "markers": [{"name": "sweep", "index": 1, "color": "#f59e0b"}], "msg": "Sweep advances to [2,5] — state updated based on relation to previous." },
+    { "markers": [{"name": "sweep", "index": 2, "color": "#f59e0b"}], "msg": "Sweep advances to [4,7] — single O(1) state update." },
+    { "markers": [{"name": "sweep", "index": 3, "color": "#f59e0b"}], "msg": "Sweep advances to [6,8] — final state produces the answer." }
+  ]
+}
+```
+
 The state is **the algorithm**. Different problems need different state:
 - **Merge overlaps** → keep the last merged interval and stretch its end forward
 - **Maximum concurrent events** → maintain a running count of active intervals
@@ -318,6 +331,57 @@ flowchart TB
 ```
 
 <p align="center"><strong>Each iteration peeks at <code>merged.last</code> and either extends its end or appends a fresh interval. The sweep visits every input exactly once.</strong></p>
+
+```d3 widget=array-traversal
+{
+  "items": ["[1,3]", "[2,6]", "[8,10]", "[9,12]", "[15,18]"],
+  "title": "Interval merging on sorted arr = [[1,3], [2,6], [8,10], [9,12], [15,18]]",
+  "primaryLabel": "arr (sorted)",
+  "secondaryItems": ["[1,3]", "·", "·", "·", "·"],
+  "secondaryLabel": "merged",
+  "steps": [
+    {
+      "items": ["[1,3]", "[2,6]", "[8,10]", "[9,12]", "[15,18]"],
+      "markers": [{"name": "i", "index": 0, "color": "#3b82f6"}],
+      "secondaryItems": ["[1,3]", "·", "·", "·", "·"],
+      "secondaryKeys": ["m0", "m1", "m2", "m3", "m4"],
+      "msg": "Init: seed merged with arr[0]=[1,3]. Sweep starts from i=1."
+    },
+    {
+      "items": ["[1,3]", "[2,6]", "[8,10]", "[9,12]", "[15,18]"],
+      "markers": [{"name": "i", "index": 1, "color": "#3b82f6"}],
+      "secondaryItems": ["[1,6]", "·", "·", "·", "·"],
+      "secondaryKeys": ["m0", "m1", "m2", "m3", "m4"],
+      "secondaryMarkers": [{"name": "last", "index": 0, "color": "#f59e0b"}],
+      "msg": "i=1: arr[1]=[2,6]. 2 ≤ 3 (last.end) → EXTEND → merged.last = [1, max(3,6)] = [1,6]."
+    },
+    {
+      "items": ["[1,3]", "[2,6]", "[8,10]", "[9,12]", "[15,18]"],
+      "markers": [{"name": "i", "index": 2, "color": "#3b82f6"}],
+      "secondaryItems": ["[1,6]", "[8,10]", "·", "·", "·"],
+      "secondaryKeys": ["m0", "m1", "m2", "m3", "m4"],
+      "secondaryMarkers": [{"name": "last", "index": 1, "color": "#f59e0b"}],
+      "msg": "i=2: arr[2]=[8,10]. 8 > 6 → APPEND → merged = [[1,6], [8,10]]."
+    },
+    {
+      "items": ["[1,3]", "[2,6]", "[8,10]", "[9,12]", "[15,18]"],
+      "markers": [{"name": "i", "index": 3, "color": "#3b82f6"}],
+      "secondaryItems": ["[1,6]", "[8,12]", "·", "·", "·"],
+      "secondaryKeys": ["m0", "m1", "m2", "m3", "m4"],
+      "secondaryMarkers": [{"name": "last", "index": 1, "color": "#f59e0b"}],
+      "msg": "i=3: arr[3]=[9,12]. 9 ≤ 10 → EXTEND → merged.last = [8, max(10,12)] = [8,12]."
+    },
+    {
+      "items": ["[1,3]", "[2,6]", "[8,10]", "[9,12]", "[15,18]"],
+      "markers": [{"name": "i", "index": 4, "color": "#3b82f6"}],
+      "secondaryItems": ["[1,6]", "[8,12]", "[15,18]", "·", "·"],
+      "secondaryKeys": ["m0", "m1", "m2", "m3", "m4"],
+      "secondaryMarkers": [{"name": "last", "index": 2, "color": "#f59e0b"}],
+      "msg": "i=4: arr[4]=[15,18]. 15 > 12 → APPEND → merged = [[1,6], [8,12], [15,18]] ✓"
+    }
+  ]
+}
+```
 
 The `<=` vs `<` distinction is the only edge-case knob. If your problem treats touching intervals like `[1, 3]` and `[3, 5]` as overlapping (e.g. continuous busy time), use `<=`. If it treats them as adjacent-but-distinct (e.g. discrete sessions), use `<`. The whole algorithm is otherwise identical.
 
@@ -630,6 +694,57 @@ flowchart TB
 
 <p align="center"><strong>The sweep extends the highlighter twice and lifts it twice. Final answer: three non-overlapping busy windows.</strong></p>
 
+```d3 widget=array-traversal
+{
+  "items": ["[9,11]", "[10,12]", "[14,16]", "[15,17]", "[20,21]"],
+  "title": "Delivery intervals — merge on sorted [[9,11], [10,12], [14,16], [15,17], [20,21]]",
+  "primaryLabel": "sorted",
+  "secondaryItems": ["[9,11]", "·", "·", "·", "·"],
+  "secondaryLabel": "merged",
+  "steps": [
+    {
+      "items": ["[9,11]", "[10,12]", "[14,16]", "[15,17]", "[20,21]"],
+      "markers": [{"name": "i", "index": 0, "color": "#3b82f6"}],
+      "secondaryItems": ["[9,11]", "·", "·", "·", "·"],
+      "secondaryKeys": ["m0", "m1", "m2", "m3", "m4"],
+      "msg": "Init: seed merged with sorted[0]=[9,11]. Sweep from i=1."
+    },
+    {
+      "items": ["[9,11]", "[10,12]", "[14,16]", "[15,17]", "[20,21]"],
+      "markers": [{"name": "i", "index": 1, "color": "#3b82f6"}],
+      "secondaryItems": ["[9,12]", "·", "·", "·", "·"],
+      "secondaryKeys": ["m0", "m1", "m2", "m3", "m4"],
+      "secondaryMarkers": [{"name": "last", "index": 0, "color": "#f59e0b"}],
+      "msg": "i=1: [10,12]. 10 ≤ 11 → EXTEND → merged.last = [9, max(11,12)] = [9,12]."
+    },
+    {
+      "items": ["[9,11]", "[10,12]", "[14,16]", "[15,17]", "[20,21]"],
+      "markers": [{"name": "i", "index": 2, "color": "#3b82f6"}],
+      "secondaryItems": ["[9,12]", "[14,16]", "·", "·", "·"],
+      "secondaryKeys": ["m0", "m1", "m2", "m3", "m4"],
+      "secondaryMarkers": [{"name": "last", "index": 1, "color": "#f59e0b"}],
+      "msg": "i=2: [14,16]. 14 > 12 → APPEND → merged = [[9,12], [14,16]]."
+    },
+    {
+      "items": ["[9,11]", "[10,12]", "[14,16]", "[15,17]", "[20,21]"],
+      "markers": [{"name": "i", "index": 3, "color": "#3b82f6"}],
+      "secondaryItems": ["[9,12]", "[14,17]", "·", "·", "·"],
+      "secondaryKeys": ["m0", "m1", "m2", "m3", "m4"],
+      "secondaryMarkers": [{"name": "last", "index": 1, "color": "#f59e0b"}],
+      "msg": "i=3: [15,17]. 15 ≤ 16 → EXTEND → merged.last = [14, max(16,17)] = [14,17]."
+    },
+    {
+      "items": ["[9,11]", "[10,12]", "[14,16]", "[15,17]", "[20,21]"],
+      "markers": [{"name": "i", "index": 4, "color": "#3b82f6"}],
+      "secondaryItems": ["[9,12]", "[14,17]", "[20,21]", "·", "·"],
+      "secondaryKeys": ["m0", "m1", "m2", "m3", "m4"],
+      "secondaryMarkers": [{"name": "last", "index": 2, "color": "#f59e0b"}],
+      "msg": "i=4: [20,21]. 20 > 17 → APPEND → merged = [[9,12], [14,17], [20,21]] → 3 busy windows ✓"
+    }
+  ]
+}
+```
+
 
 ```pseudocode
 # Identical algorithm to mergeOverlapping — re-listed here for the delivery scenario.
@@ -837,88 +952,133 @@ After sorting, sweep left-to-right and check that **each meeting starts no earli
 
 
 ```pseudocode
-# After sorting by start, conflicts can only exist between consecutive pairs.
-# Strict < — touching intervals like [1,3] and [3,5] don't conflict.
-function canAttendAll(arr):
-    if length(arr) < 2: return true
-    sort arr by start ascending
-    for i from 1 to length(arr) − 1:
-        if arr[i].start < arr[i − 1].end:
+function verifySchedule(meetings):
+
+    # sort the meetings on their start time
+    sort meetings by meetings[i][0] ascending
+
+    # check if any two meetings overlap
+    for i from 1 to length(meetings) − 1:
+        if meetings[i][0] < meetings[i − 1][1]:
             return false
+
     return true
 ```
 
 ```python run
 from typing import List
 
-def can_attend_all(arr: List[List[int]]) -> bool:
-    # Empty or single meeting can never have a conflict
-    if len(arr) < 2:
+class Solution:
+    def verify_schedule(self, meetings: List[List[int]]) -> bool:
+
+        # sort the meetings on their start time
+        meetings.sort(key=lambda x: x[0])
+
+        # check if any two meetings overlap
+        for i in range(1, len(meetings)):
+            if meetings[i][0] < meetings[i - 1][1]:
+                return False
+
         return True
 
-    # Sort by start ascending — conflicts can only exist between consecutive pairs
-    arr.sort(key=lambda x: x[0])
 
-    for i in range(1, len(arr)):
-        # Strict '<' because touching meetings ([1,3] and [3,5]) are allowed
-        if arr[i][0] < arr[i - 1][1]:
-            return False
-    return True
-
-
-print(can_attend_all([[0, 30], [5, 10], [15, 20]]))   # False
-print(can_attend_all([[7, 10], [2, 4]]))              # True
-print(can_attend_all([[1, 3], [3, 6]]))               # True (touching ok)
-print(can_attend_all([]))                              # True
+sol = Solution()
+print(sol.verify_schedule([[1, 20], [10, 30], [30, 40], [1, 5]]))   # False
+print(sol.verify_schedule([[1, 10], [1, 10], [1, 10]]))             # False
+print(sol.verify_schedule([[1, 15], [15, 17], [17, 18]]))           # True
 ```
 
 ```java run
 import java.util.*;
 
-class Solution {
-    public boolean canAttendAll(int[][] arr) {
-        if (arr.length < 2) return true;
+public class Main {
+    static class Solution {
+        public boolean verifySchedule(int[][] meetings) {
 
-        // Sort by start ascending
-        Arrays.sort(arr, (a, b) -> Integer.compare(a[0], b[0]));
+            // sort the meetings on their start time
+            Arrays.sort(meetings, Comparator.comparingInt(a -> a[0]));
 
-        for (int i = 1; i < arr.length; i++) {
-            // '<' so touching meetings are allowed
-            if (arr[i][0] < arr[i - 1][1]) return false;
+            // check if any two meetings overlap
+            for (int i = 1; i < meetings.length; i++) {
+                if (meetings[i][0] < meetings[i - 1][1]) {
+                    return false;
+                }
+            }
+
+            return true;
         }
-        return true;
+    }
+
+    public static void main(String[] args) {
+        Solution sol = new Solution();
+        System.out.println(sol.verifySchedule(new int[][]{{1, 20}, {10, 30}, {30, 40}, {1, 5}}));  // false
+        System.out.println(sol.verifySchedule(new int[][]{{1, 10}, {1, 10}, {1, 10}}));            // false
+        System.out.println(sol.verifySchedule(new int[][]{{1, 15}, {15, 17}, {17, 18}}));          // true
     }
 }
 ```
 
 ```c run
+#include <stdio.h>
 #include <stdbool.h>
 #include <stdlib.h>
 
-int cmp(const void* a, const void* b) {
-    return (*(int**)a)[0] - (*(int**)b)[0];
+static int cmp_pairs(const void* a, const void* b) {
+    const int* pa = *(const int* const*)a;
+    const int* pb = *(const int* const*)b;
+    return pa[0] - pb[0];
 }
 
-bool canAttendAll(int** arr, int n) {
-    if (n < 2) return true;
-    qsort(arr, n, sizeof(int*), cmp);
+bool verify_schedule(int** meetings, int n) {
+
+    /* sort the meetings on their start time */
+    qsort(meetings, n, sizeof(int*), cmp_pairs);
+
+    /* check if any two meetings overlap */
     for (int i = 1; i < n; i++) {
-        if (arr[i][0] < arr[i - 1][1]) return false;
+        if (meetings[i][0] < meetings[i - 1][1]) {
+            return false;
+        }
     }
+
     return true;
+}
+
+int main() {
+    int a[4][2] = {{1, 20}, {10, 30}, {30, 40}, {1, 5}};
+    int* p[4] = {a[0], a[1], a[2], a[3]};
+    printf("%d\n", verify_schedule(p, 4));  /* 0 (false) */
+
+    int b[3][2] = {{1, 15}, {15, 17}, {17, 18}};
+    int* q[3] = {b[0], b[1], b[2]};
+    printf("%d\n", verify_schedule(q, 3));  /* 1 (true) */
+    return 0;
 }
 ```
 
 ```scala run
-object Solution {
-  def canAttendAll(arr: Array[Array[Int]]): Boolean = {
-    if (arr.length < 2) return true
-    val sorted = arr.sortBy(_(0))
-    for (i <- 1 until sorted.length) {
-      if (sorted(i)(0) < sorted(i - 1)(1)) return false
+object Main extends App {
+  class Solution {
+    def verifySchedule(meetings: Array[Array[Int]]): Boolean = {
+
+      // sort the meetings on their start time
+      val sorted = meetings.sortBy(_(0))
+
+      // check if any two meetings overlap
+      for (i <- 1 until sorted.length) {
+        if (sorted(i)(0) < sorted(i - 1)(1)) {
+          return false
+        }
+      }
+
+      true
     }
-    true
   }
+
+  val sol = new Solution
+  println(sol.verifySchedule(Array(Array(1, 20), Array(10, 30), Array(30, 40), Array(1, 5))))  // false
+  println(sol.verifySchedule(Array(Array(1, 10), Array(1, 10), Array(1, 10))))                  // false
+  println(sol.verifySchedule(Array(Array(1, 15), Array(15, 17), Array(17, 18))))                // true
 }
 ```
 
@@ -990,107 +1150,57 @@ Verify Schedule is the smallest possible interval-merging problem — you don't 
 
 # Overlap Reduction
 
-## The Hook
-
-A conference room is double-booked. Three meetings overlap; you need to **cancel as few as possible** so the survivors don't conflict. Naively, this looks like a brutal combinatorial search — try every subset, check if it's conflict-free, take the largest. Exponential. The clean answer is a single sort + sweep that picks the right victims using one decision rule, and you'll see the rule emerge naturally from the line-sweep mindset.
-
 ## The Problem
 
-> Given an array of intervals `arr`, return the **minimum number of intervals to remove** so that the remaining intervals are pairwise non-overlapping. Touching intervals (`[1, 2]` and `[2, 3]`) are considered **non-overlapping**.
+Given an array of `intervals` where `intervals[i] = [si, ei]`, merge all **overlapping** intervals and return a list of non-overlapping intervals that covers all the intervals in the input. You can return the answer in **any order**.
+
+Two intervals `[s1, e1]` and `[s2, e2]` are considered **overlapping** if `e1 ≥ s2` (so touching counts as overlap and the two halves merge).
 
 ```
-Input:  arr = [[1, 2], [2, 3], [3, 4], [1, 3]]
-Output: 1            (remove [1,3] → survivors [[1,2],[2,3],[3,4]] are non-overlapping)
-
-Input:  arr = [[1, 2], [1, 2], [1, 2]]
-Output: 2            (keep only one of the duplicates)
-
-Input:  arr = [[1, 2], [2, 3]]
-Output: 0            (touching, no removal needed)
-
-Input:  arr = []
-Output: 0            (nothing to remove)
+intervals = [[1, 4], [2, 3], [3, 4], [4, 6]]   →  [[1, 6]]
+intervals = [[1, 5], [1, 5], [1, 5]]            →  [[1, 5]]
+intervals = [[1, 5], [6, 7], [8, 9]]            →  [[1, 5], [6, 7], [8, 9]]
 ```
 
 ---
 
-## The Greedy Insight — Sort by End, Not by Start
+## Examples
 
-Most interval problems sort by start. This one is the famous exception: **sort by end ascending**. The reasoning is the heart of the algorithm.
-
-> *Pause and predict — when two intervals overlap and you must remove one, which one do you keep?*
-
-You keep the one that **ends earlier**, because it leaves the most room for future intervals to slot in conflict-free. The interval ending later "sticks out further" and is more likely to collide with whatever comes next.
-
-```mermaid
----
-config:
-  theme: base
-  themeVariables:
-    primaryColor: "#dbeafe"
-    primaryBorderColor: "#3b82f6"
-    primaryTextColor: "#1e3a5f"
-    lineColor: "#64748b"
-    secondaryColor: "#ede9fe"
-    tertiaryColor: "#fef9c3"
----
-flowchart TB
-    subgraph Choice["Two overlapping intervals — which to keep?"]
-        direction LR
-        A["[1, 5]"] ~~~ B["[2, 3]"]
-    end
-    KeepA["Keep [1,5]: blocks the entire range up to 5<br/>any future interval starting at 4 must be removed"]
-    KeepB["Keep [2,3]: only blocks up to 3<br/>future interval starting at 4 fits cleanly"]
-    Verdict["Always keep the one ending earlier — it leaves the most room"]
-    Choice --> KeepA
-    Choice --> KeepB
-    KeepA --> Verdict
-    KeepB --> Verdict
+**Example 1**
+```
+Input:  intervals = [[1, 4], [2, 3], [3, 4], [4, 6]]
+Output: [[1, 6]]
+Explanation: [2, 3] and [3, 4] already lie within [1, 4]; [1, 4] and [4, 6]
+             touch (overlap by our definition) and merge into [1, 6].
 ```
 
-<p align="center"><strong>Greedy choice: when two intervals collide, keep the one ending sooner. Sorting by end ascending makes this choice automatic for the entire sweep.</strong></p>
-
-This is a classic **greedy algorithm** — the activity selection problem in disguise.
-
----
-
-## The Algorithm
-
-> **Step 1.** Sort `arr` by **end coordinate ascending**.
->
-> **Step 2.** Track `prev_end` — the end of the most recently kept interval. Initialize to `-infinity`.
->
-> **Step 3.** Initialize `removed = 0`.
->
-> **Step 4.** For each interval `[s, e]` in sorted order:
-> - If `s >= prev_end` → keep it; update `prev_end = e`.
-> - Else → it overlaps with the kept one; **remove** it (`removed += 1`).
->
-> **Step 5.** Return `removed`.
-
-```mermaid
----
-config:
-  theme: base
-  themeVariables:
-    primaryColor: "#dbeafe"
-    primaryBorderColor: "#3b82f6"
-    primaryTextColor: "#1e3a5f"
-    lineColor: "#64748b"
-    secondaryColor: "#ede9fe"
-    tertiaryColor: "#fef9c3"
----
-flowchart TB
-    Init(["arr = [[1,2], [2,3], [3,4], [1,3]]<br/>sort by end → [[1,2], [2,3], [1,3], [3,4]]<br/>prev_end = -∞, removed = 0"])
-    S1["i=0: [1,2]: 1 ≥ -∞ → KEEP, prev_end=2"]
-    S2["i=1: [2,3]: 2 ≥ 2 → KEEP, prev_end=3"]
-    S3["i=2: [1,3]: 1 < 3 → REMOVE, removed=1"]
-    S4["i=3: [3,4]: 3 ≥ 3 → KEEP, prev_end=4"]
-    Done(["return removed = 1 ✓"])
-    Init --> S1 --> S2 --> S3 --> S4 --> Done
+**Example 2**
+```
+Input:  intervals = [[1, 5], [1, 5], [1, 5]]
+Output: [[1, 5]]
+Explanation: All three are the same interval — they collapse into one.
 ```
 
-<p align="center"><strong>Sort by end. Keep an interval iff its start lies at or after the last kept end. Every removed interval was provably the right victim.</strong></p>
+**Example 3**
+```
+Input:  intervals = [[1, 5], [6, 7], [8, 9]]
+Output: [[1, 5], [6, 7], [8, 9]]
+Explanation: The intervals are already pairwise non-overlapping; nothing merges.
+```
+
+---
+
+## Intuition
+
+After sorting by start, two intervals `A` (earlier) and `B` (later) overlap exactly when `B.start ≤ A.end`. In that case, the merged result starts at `A.start` and ends at `max(A.end, B.end)` (because `B` could end earlier than `A` if it's nested inside).
+
+The algorithm sweeps left to right, maintaining a running `merged` list:
+- The first interval seeds the list.
+- For each subsequent interval, compare its start with the **last merged interval's end**:
+  - **Overlap** (`current.start ≤ merged[-1].end`) → extend the last merged interval's end to `max(merged[-1].end, current.end)`.
+  - **No overlap** → append the current interval as a new entry in `merged`.
+
+A single pass over the sorted intervals produces the answer.
 
 ---
 
@@ -1098,385 +1208,111 @@ flowchart TB
 
 
 ```pseudocode
-# Greedy: sort by END ascending, keep early-ending intervals.
-# Each kept interval leaves the most room for future ones.
-function eraseOverlapIntervals(arr):
-    if length(arr) < 2: return 0
-    sort arr by end ascending
-    removed ← 0
-    prevEnd ← −∞
-    for each (s, e) in arr:
-        if s ≥ prevEnd:                               # disjoint with the last kept → keep
-            prevEnd ← e
+function overlapReduction(intervals):
+
+    # Sort intervals by start time
+    sort intervals by intervals[i][0] ascending
+
+    # Initialize output array and push the first interval
+    merged ← [intervals[0]]
+
+    # Loop through intervals and merge if overlapping or adjacent
+    for i from 1 to length(intervals) − 1:
+
+        # If the current interval overlaps with the last interval in
+        # the merged list, merge them
+        if intervals[i][0] ≤ merged[last].end:
+            merged[last].end ← max(merged[last].end, intervals[i].end)
+
+        # If the current interval is non-overlapping, add it to the
+        # merged list
         else:
-            removed ← removed + 1                     # overlaps; this one ends later → drop
-    return removed
+            append intervals[i] to merged
+
+    return merged
 ```
 
 ```python run
 from typing import List
 
-def erase_overlap_intervals(arr: List[List[int]]) -> int:
-    if len(arr) < 2:
-        return 0
+class Solution:
+    def overlap_reduction(
+        self, intervals: List[List[int]]
+    ) -> List[List[int]]:
 
-    # Sort by END ascending — the greedy "keep early-ending intervals" rule
-    arr.sort(key=lambda x: x[1])
+        # Sort intervals by start time
+        intervals.sort(key=lambda x: x[0])
 
-    removed  = 0
-    prev_end = float('-inf')   # nothing kept yet → any start is acceptable
+        # Initialize output array and push the first interval
+        merged = [intervals[0]]
 
-    for s, e in arr:
-        if s >= prev_end:
-            # Non-overlapping with the last kept interval → keep it
-            prev_end = e
-        else:
-            # Overlap — remove this one (it ends later than the kept one
-            # because the array is sorted by end ascending)
-            removed += 1
+        # Loop through intervals and merge if overlapping or adjacent
+        for i in range(1, len(intervals)):
 
-    return removed
+            # If the current interval overlaps with the last interval in
+            # the merged list, merge them
+            if intervals[i][0] <= merged[-1][1]:
+                merged[-1][1] = max(merged[-1][1], intervals[i][1])
+
+            # If the current interval is non-overlapping, add it to the
+            # merged list
+            else:
+                merged.append(intervals[i])
+        return merged
 
 
-print(erase_overlap_intervals([[1, 2], [2, 3], [3, 4], [1, 3]]))   # 1
-print(erase_overlap_intervals([[1, 2], [1, 2], [1, 2]]))           # 2
-print(erase_overlap_intervals([[1, 2], [2, 3]]))                   # 0
+sol = Solution()
+print(sol.overlap_reduction([[1, 4], [2, 3], [3, 4], [4, 6]]))   # [[1, 6]]
+print(sol.overlap_reduction([[1, 5], [1, 5], [1, 5]]))            # [[1, 5]]
+print(sol.overlap_reduction([[1, 5], [6, 7], [8, 9]]))            # [[1, 5], [6, 7], [8, 9]]
 ```
 
 ```java run
 import java.util.*;
 
-class Solution {
-    public int eraseOverlapIntervals(int[][] arr) {
-        if (arr.length < 2) return 0;
+public class Main {
+    static class Solution {
+        public int[][] overlapReduction(int[][] intervals) {
 
-        // Sort by END ascending
-        Arrays.sort(arr, (a, b) -> Integer.compare(a[1], b[1]));
+            // Sort intervals by start time
+            Arrays.sort(intervals, (a, b) -> Integer.compare(a[0], b[0]));
 
-        int removed  = 0;
-        int prevEnd  = Integer.MIN_VALUE;
+            // Initialize output list and push the first interval
+            List<int[]> merged = new ArrayList<>();
+            merged.add(intervals[0]);
 
-        for (int[] iv : arr) {
-            if (iv[0] >= prevEnd) {
-                prevEnd = iv[1];   // keep
-            } else {
-                removed++;          // overlap → remove
+            // Loop through intervals and merge if overlapping or adjacent
+            for (int i = 1; i < intervals.length; i++) {
+
+                // If the current interval overlaps with the last interval in
+                // the merged list, merge them
+                if (intervals[i][0] <= merged.get(merged.size() - 1)[1]) {
+                    merged.get(merged.size() - 1)[1] = Math.max(
+                        merged.get(merged.size() - 1)[1],
+                        intervals[i][1]
+                    );
+                }
+
+                // If the current interval is non-overlapping, add it to the
+                // merged list
+                else {
+                    merged.add(intervals[i]);
+                }
             }
+
+            // Convert output list to 2D array and return
+            return merged.toArray(new int[merged.size()][]);
         }
-        return removed;
     }
-}
-```
 
-```c run
-#include <stdlib.h>
-#include <limits.h>
-
-int cmp(const void* a, const void* b) {
-    return (*(int**)a)[1] - (*(int**)b)[1];
-}
-
-int eraseOverlapIntervals(int** arr, int n) {
-    if (n < 2) return 0;
-    qsort(arr, n, sizeof(int*), cmp);
-
-    int removed = 0;
-    int prevEnd = INT_MIN;
-
-    for (int i = 0; i < n; i++) {
-        if (arr[i][0] >= prevEnd) prevEnd = arr[i][1];
-        else removed++;
-    }
-    return removed;
-}
-```
-
-```scala run
-object Solution {
-  def eraseOverlapIntervals(arr: Array[Array[Int]]): Int = {
-    if (arr.length < 2) return 0
-    val sorted = arr.sortBy(_(1))
-    var removed = 0
-    var prevEnd = Int.MinValue
-    for (iv <- sorted) {
-      if (iv(0) >= prevEnd) prevEnd = iv(1) else removed += 1
-    }
-    removed
-  }
-}
-```
-
-
-<details>
-<summary><strong>Trace — arr = [[1, 2], [2, 3], [3, 4], [1, 3]]</strong></summary>
-
-```
-Sort by end ascending: [[1,2], [2,3], [1,3], [3,4]]
-prev_end = -∞, removed = 0
-
-iv=[1,2]: 1 ≥ -∞ → KEEP    | prev_end=2 | removed=0
-iv=[2,3]: 2 ≥  2 → KEEP    | prev_end=3 | removed=0
-iv=[1,3]: 1 <  3 → REMOVE  | prev_end=3 | removed=1
-iv=[3,4]: 3 ≥  3 → KEEP    | prev_end=4 | removed=1
-
-Result: 1 ✓   (the [1,3] is the unavoidable victim)
-```
-
-</details>
-
----
-
-## Why Greedy Works — The Exchange Argument
-
-Suppose the optimal solution keeps interval `X` while our greedy keeps a different interval `Y` (with `Y.end <= X.end`). Anything that fits after `X` also fits after `Y` (because `Y` ends earlier or at the same point). So we can **swap `X` for `Y`** in the optimal solution without losing any other intervals — proving our greedy choice is always at least as good. Apply this argument inductively across the whole sweep, and the greedy solution matches the optimum.
-
-This is the same exchange argument that powers the **activity selection problem** in algorithm textbooks.
-
----
-
-## Complexity Analysis
-
-| | Complexity | Reasoning |
-|---|---|---|
-| **Time** | O(N log N) | Sort dominates; sweep is O(N) |
-| **Space** | O(1) extra (or O(log N) for sort stack) | No auxiliary structure |
-
----
-
-## Edge Cases
-
-| Case | Example | Expected | Reasoning |
-|---|---|---|---|
-| Empty | `[]` | `0` | Nothing to remove |
-| Single | `[[1, 5]]` | `0` | One interval cannot conflict |
-| All identical | `[[1,2],[1,2],[1,2]]` | `2` | Keep one, remove the other two |
-| Touching (no overlap) | `[[1,2],[2,3]]` | `0` | `s >= prev_end` includes equality |
-| Fully nested | `[[1,10],[2,3],[4,5]]` | `1` | Sort by end → `[[2,3],[4,5],[1,10]]`; the wide `[1,10]` is the removal |
-| Already disjoint | `[[1,2],[3,4],[5,6]]` | `0` | Greedy keeps everything |
-
----
-
-## The Relationship — Why End-Sort Beats Start-Sort Here
-
-| Sort key | Verify Schedule (Q1) | Overlap Reduction (Q2) |
-|---|---|---|
-| **By start** | ✓ correct | ✗ wrong — picks the wrong victims |
-| **By end** | ✗ awkward (needs extra bookkeeping) | ✓ optimal greedy |
-
-Verify Schedule cares about **detection** (is there *any* overlap?), so the natural left-to-right sweep on starts works. Overlap Reduction cares about **selection** (keep the most intervals possible), and selection benefits from "always commit to the choice that closes earliest". This is the same reason CPU scheduling, classroom assignments, and bandwidth packing all use end-time greedy strategies.
-
----
-
-## Final Takeaway
-
-Overlap Reduction is your introduction to **greedy interval algorithms**. The pivot from "sort by start" to "sort by end" is the lesson that pays the highest dividends elsewhere — activity selection, minimum number of arrows to burst balloons, classroom assignment. Whenever the question is *minimize removals* or *maximize keeps* on a set of intervals, reach for sort-by-end-ascending plus the greedy keep-or-skip rule.
-
-> **Transfer Challenge:** Given a set of intervals, return the **maximum number you can keep** such that the survivors are pairwise non-overlapping (instead of the count to remove).
->
-> <details><summary><strong>Solution hint</strong></summary>
->
-> The two answers are complementary: `maximum_kept = N - removed`. Your greedy already counts the kept intervals implicitly — just `return N - removed`. Or rewrite the loop to count `kept` instead. Same algorithm, different return statement.
->
-> </details>
-
-***
-
-# Employee Free Time
-
-## The Hook
-
-You're scheduling a meeting between three engineers. Each one's calendar is a sorted list of busy intervals. You want every block of time when **all three are free simultaneously** — the moments when a meeting could actually happen. Naively, you'd intersect schedules pairwise, which gets ugly fast. The clean approach is to **flatten everyone's busy time onto one number line**, merge all the overlapping busy blocks, then read off the gaps. Sweep + merge + complement.
-
-## The Problem
-
-> You are given a list of `K` employees, where each employee's schedule is a sorted, non-overlapping list of busy intervals. Return the list of **finite intervals** during which **all employees are simultaneously free**, sorted in ascending order. Touching intervals are considered overlapping (no zero-length free blocks). Free time before the earliest busy moment or after the latest busy moment is **not** included — only intervals bounded on both sides by busy time.
-
-```
-Input:  schedules = [[[1, 3], [6, 7]],
-                     [[2, 4]],
-                     [[2, 5], [9, 12]]]
-
-Step 1 — flatten busy times:  [[1,3], [6,7], [2,4], [2,5], [9,12]]
-Step 2 — merge overlaps:      [[1,5], [6,7], [9,12]]
-Step 3 — gaps between merged: [[5,6], [7,9]]
-
-Output: [[5, 6], [7, 9]]
-
-
-Input:  schedules = [[[1, 2], [5, 6]],
-                     [[1, 3]],
-                     [[4, 10]]]
-
-Flatten:  [[1,2],[5,6],[1,3],[4,10]]
-Merge:    [[1,3],[4,10]]
-Gaps:     [[3,4]]
-
-Output: [[3, 4]]
-```
-
----
-
-## The Insight — Free Time Is the Complement of Merged Busy Time
-
-A moment is "everyone free" iff it is **not inside any employee's busy interval**. So if you take the union of all busy intervals across all employees, the gaps between consecutive merged intervals are exactly the moments when nobody is busy.
-
-```d2
-direction: right
-
-step1: "Step 1: Flatten everyone's busy times into one array" {
-  grid-columns: 5
-  grid-gap: 16
-  f1: "[1,3]"
-  f2: "[6,7]"
-  f3: "[2,4]"
-  f4: "[2,5]"
-  f5: "[9,12]"
-}
-
-step2: "Step 2: Sort + merge into disjoint busy blocks" {
-  grid-columns: 3
-  grid-gap: 16
-  m1: "[1,5]" {style.fill: "#fde68a"; style.stroke: "#d97706"}
-  m2: "[6,7]" {style.fill: "#fde68a"; style.stroke: "#d97706"}
-  m3: "[9,12]" {style.fill: "#fde68a"; style.stroke: "#d97706"}
-}
-
-step3: "Step 3: Read off gaps between consecutive merged blocks" {
-  grid-columns: 2
-  grid-gap: 16
-  g1: "[5,6]" {style.fill: "#dcfce7"; style.stroke: "#16a34a"}
-  g2: "[7,9]" {style.fill: "#dcfce7"; style.stroke: "#16a34a"}
-}
-
-step1 -> step2
-step2 -> step3
-```
-
-<p align="center"><strong>Three steps: flatten, merge, complement. The gaps between consecutive merged busy blocks are precisely the common free time.</strong></p>
-
-> *Before reading the code — what defines a "gap" between two consecutive merged intervals `[a, b]` and `[c, d]`?*
-
-The gap is `[b, c]` — start at where the previous busy block ends, end where the next one begins. It exists as a non-zero free window iff `b < c`. (If `b == c` the busy blocks touch and there's no breathing room.)
-
----
-
-## The Algorithm
-
-> **Step 1.** Flatten all employees' busy intervals into one big array.
->
-> **Step 2.** Sort by start ascending; tiebreak by end ascending.
->
-> **Step 3.** Run the standard interval merge (`<=` because touching busy times means no free moment).
->
-> **Step 4.** Walk the merged list; for each consecutive pair `(prev, curr)`, emit `[prev.end, curr.start]` if `prev.end < curr.start`.
-
-The key observation: once you merge, you've completely forgotten *who* was busy — only *when* anyone was busy. That's exactly what the problem asks about.
-
----
-
-## The Solution
-
-
-```pseudocode
-# 1) Flatten everyone's busy intervals. 2) Merge overlaps. 3) Gaps between merged blocks = free time.
-function employeeFreeTime(schedules):
-    busy ← empty list
-    for each schedule in schedules:
-        for each interval in schedule:
-            append interval to busy
-    if length(busy) < 2: return empty list
-    sort busy by start (tiebreak by end)
-
-    merged ← [copy of busy[0]]
-    for i from 1 to length(busy) − 1:
-        last ← last element of merged
-        if busy[i].start ≤ last.end:
-            last.end ← max(last.end, busy[i].end)
-        else:
-            append copy of busy[i] to merged
-
-    free ← empty list
-    for i from 1 to length(merged) − 1:
-        if merged[i − 1].end < merged[i].start:       # strict < → only positive-length gaps
-            append [merged[i − 1].end, merged[i].start] to free
-    return free
-```
-
-```python run
-from typing import List
-
-def employee_free_time(schedules: List[List[List[int]]]) -> List[List[int]]:
-    # Step 1: flatten everyone's busy intervals into one array
-    busy = [iv for sched in schedules for iv in sched]
-    if len(busy) < 2:
-        return []
-
-    # Step 2: sort by start; tiebreak by end (standard merge prep)
-    busy.sort(key=lambda x: (x[0], x[1]))
-
-    # Step 3: merge overlapping busy blocks. '<=' so touching busy times count
-    # as continuous busy — no zero-length free window will be emitted.
-    merged = [busy[0][:]]
-    for i in range(1, len(busy)):
-        last = merged[-1]
-        if busy[i][0] <= last[1]:
-            last[1] = max(last[1], busy[i][1])
-        else:
-            merged.append(busy[i][:])
-
-    # Step 4: gaps between consecutive merged busy blocks are the free time
-    free = []
-    for i in range(1, len(merged)):
-        # Strict '<' guarantees we only emit free windows of positive length
-        if merged[i - 1][1] < merged[i][0]:
-            free.append([merged[i - 1][1], merged[i][0]])
-    return free
-
-
-print(employee_free_time([[[1, 3], [6, 7]], [[2, 4]], [[2, 5], [9, 12]]]))
-# [[5, 6], [7, 9]]
-
-print(employee_free_time([[[1, 2], [5, 6]], [[1, 3]], [[4, 10]]]))
-# [[3, 4]]
-
-print(employee_free_time([[[1, 4]], [[2, 5]], [[3, 6]]]))
-# [] (busy blocks all merge into one — no internal gaps)
-```
-
-```java run
-import java.util.*;
-
-class Solution {
-    public int[][] employeeFreeTime(int[][][] schedules) {
-        // Step 1: flatten
-        List<int[]> busy = new ArrayList<>();
-        for (int[][] sched : schedules) {
-            for (int[] iv : sched) busy.add(iv);
-        }
-        if (busy.size() < 2) return new int[0][];
-
-        // Step 2: sort by start, tiebreak by end
-        busy.sort((a, b) -> a[0] != b[0] ? Integer.compare(a[0], b[0])
-                                         : Integer.compare(a[1], b[1]));
-
-        // Step 3: merge
-        List<int[]> merged = new ArrayList<>();
-        merged.add(busy.get(0).clone());
-        for (int i = 1; i < busy.size(); i++) {
-            int[] last = merged.get(merged.size() - 1);
-            int[] cur  = busy.get(i);
-            if (cur[0] <= last[1]) last[1] = Math.max(last[1], cur[1]);
-            else merged.add(cur.clone());
-        }
-
-        // Step 4: gaps
-        List<int[]> free = new ArrayList<>();
-        for (int i = 1; i < merged.size(); i++) {
-            int gapStart = merged.get(i - 1)[1];
-            int gapEnd   = merged.get(i)[0];
-            if (gapStart < gapEnd) free.add(new int[]{gapStart, gapEnd});
-        }
-        return free.toArray(new int[free.size()][]);
+    public static void main(String[] args) {
+        Solution sol = new Solution();
+        int[][] r1 = sol.overlapReduction(new int[][]{{1, 4}, {2, 3}, {3, 4}, {4, 6}});
+        int[][] r2 = sol.overlapReduction(new int[][]{{1, 5}, {1, 5}, {1, 5}});
+        int[][] r3 = sol.overlapReduction(new int[][]{{1, 5}, {6, 7}, {8, 9}});
+        System.out.println(Arrays.deepToString(r1));   // [[1, 6]]
+        System.out.println(Arrays.deepToString(r2));   // [[1, 5]]
+        System.out.println(Arrays.deepToString(r3));   // [[1, 5], [6, 7], [8, 9]]
     }
 }
 ```
@@ -1485,108 +1321,500 @@ class Solution {
 #include <stdio.h>
 #include <stdlib.h>
 
-int cmp(const void* a, const void* b) {
-    int* x = *(int**)a;
-    int* y = *(int**)b;
-    if (x[0] != y[0]) return x[0] - y[0];
-    return x[1] - y[1];
+static int cmp_pairs(const void* a, const void* b) {
+    const int* pa = *(const int* const*)a;
+    const int* pb = *(const int* const*)b;
+    return pa[0] - pb[0];
 }
 
-// schedules: array of (intervals[], count) pairs
-int** employeeFreeTime(int*** schedules, int* schedSizes, int K, int* outSize) {
-    int total = 0;
-    for (int i = 0; i < K; i++) total += schedSizes[i];
-    if (total < 2) { *outSize = 0; return NULL; }
+static int int_max(int a, int b) { return a > b ? a : b; }
 
-    // Flatten
-    int** busy = (int**)malloc(sizeof(int*) * total);
-    int t = 0;
-    for (int i = 0; i < K; i++)
-        for (int j = 0; j < schedSizes[i]; j++)
-            busy[t++] = schedules[i][j];
+/* Writes merged pairs as out[2*i], out[2*i+1]; returns the merged count. */
+int overlap_reduction(int** intervals, int n, int* out) {
 
-    qsort(busy, total, sizeof(int*), cmp);
+    /* Sort intervals by start time */
+    qsort(intervals, n, sizeof(int*), cmp_pairs);
 
-    // Merge
-    int** merged = (int**)malloc(sizeof(int*) * total);
-    int   mc = 0;
-    merged[mc] = (int*)malloc(sizeof(int) * 2);
-    merged[mc][0] = busy[0][0]; merged[mc][1] = busy[0][1];
-    mc++;
-    for (int i = 1; i < total; i++) {
-        int* last = merged[mc - 1];
-        if (busy[i][0] <= last[1]) {
-            if (busy[i][1] > last[1]) last[1] = busy[i][1];
-        } else {
-            merged[mc] = (int*)malloc(sizeof(int) * 2);
-            merged[mc][0] = busy[i][0]; merged[mc][1] = busy[i][1];
-            mc++;
+    /* Initialize output array and push the first interval */
+    out[0] = intervals[0][0];
+    out[1] = intervals[0][1];
+    int merged_count = 1;
+
+    /* Loop through intervals and merge if overlapping or adjacent */
+    for (int i = 1; i < n; i++) {
+        int last_end_idx = 2 * (merged_count - 1) + 1;
+
+        /* If the current interval overlaps with the last merged interval */
+        if (intervals[i][0] <= out[last_end_idx]) {
+            out[last_end_idx] = int_max(out[last_end_idx], intervals[i][1]);
+        }
+        /* Otherwise, append it as a new merged interval */
+        else {
+            out[2 * merged_count]     = intervals[i][0];
+            out[2 * merged_count + 1] = intervals[i][1];
+            merged_count++;
         }
     }
 
-    // Gaps
-    int** free = (int**)malloc(sizeof(int*) * mc);
-    int  fc = 0;
-    for (int i = 1; i < mc; i++) {
-        if (merged[i - 1][1] < merged[i][0]) {
-            free[fc] = (int*)malloc(sizeof(int) * 2);
-            free[fc][0] = merged[i - 1][1];
-            free[fc][1] = merged[i][0];
-            fc++;
-        }
+    return merged_count;
+}
+
+static void print_pairs(int* p, int count) {
+    printf("[");
+    for (int i = 0; i < count; i++) {
+        printf("[%d, %d]%s", p[2 * i], p[2 * i + 1], i + 1 < count ? ", " : "");
     }
-    *outSize = fc;
-    return free;
+    printf("]\n");
+}
+
+int main() {
+    int a1[4][2] = {{1, 4}, {2, 3}, {3, 4}, {4, 6}};
+    int* p1[4] = {a1[0], a1[1], a1[2], a1[3]};
+    int out[20]; int c = overlap_reduction(p1, 4, out); print_pairs(out, c);  /* [[1, 6]] */
+
+    int a2[3][2] = {{1, 5}, {1, 5}, {1, 5}};
+    int* p2[3] = {a2[0], a2[1], a2[2]};
+    c = overlap_reduction(p2, 3, out); print_pairs(out, c);  /* [[1, 5]] */
+
+    int a3[3][2] = {{1, 5}, {6, 7}, {8, 9}};
+    int* p3[3] = {a3[0], a3[1], a3[2]};
+    c = overlap_reduction(p3, 3, out); print_pairs(out, c);  /* [[1, 5], [6, 7], [8, 9]] */
+    return 0;
 }
 ```
 
 ```scala run
-object Solution {
-  def employeeFreeTime(schedules: Array[Array[Array[Int]]]): Array[Array[Int]] = {
-    val busy = schedules.flatten
-    if (busy.length < 2) return Array.empty
+object Main extends App {
+  class Solution {
+    def overlapReduction(intervals: Array[Array[Int]]): Array[Array[Int]] = {
 
-    val sorted = busy.sortWith((a, b) => if (a(0) != b(0)) a(0) < b(0) else a(1) < b(1))
-    val merged = scala.collection.mutable.ArrayBuffer[Array[Int]](sorted(0).clone())
-    for (i <- 1 until sorted.length) {
-      val last = merged.last
-      if (sorted(i)(0) <= last(1)) last(1) = math.max(last(1), sorted(i)(1))
-      else merged += sorted(i).clone()
-    }
+      // Sort intervals by start time
+      val sorted = intervals.sortBy(_(0))
 
-    val free = scala.collection.mutable.ArrayBuffer[Array[Int]]()
-    for (i <- 1 until merged.length) {
-      if (merged(i - 1)(1) < merged(i)(0))
-        free += Array(merged(i - 1)(1), merged(i)(0))
+      // Initialize output buffer and push the first interval
+      val merged = scala.collection.mutable.ArrayBuffer(sorted(0).clone())
+
+      // Loop through intervals and merge if overlapping or adjacent
+      for (i <- 1 until sorted.length) {
+
+        // If the current interval overlaps with the last interval in
+        // the merged list, merge them
+        if (sorted(i)(0) <= merged.last(1)) {
+          merged.last(1) = math.max(merged.last(1), sorted(i)(1))
+        }
+        // If the current interval is non-overlapping, add it to the
+        // merged list
+        else {
+          merged += sorted(i).clone()
+        }
+      }
+
+      merged.toArray
     }
-    free.toArray
   }
+
+  val sol = new Solution
+  val r1 = sol.overlapReduction(Array(Array(1, 4), Array(2, 3), Array(3, 4), Array(4, 6)))
+  val r2 = sol.overlapReduction(Array(Array(1, 5), Array(1, 5), Array(1, 5)))
+  val r3 = sol.overlapReduction(Array(Array(1, 5), Array(6, 7), Array(8, 9)))
+  println(r1.map(_.mkString("[", ", ", "]")).mkString("[", ", ", "]"))   // [[1, 6]]
+  println(r2.map(_.mkString("[", ", ", "]")).mkString("[", ", ", "]"))   // [[1, 5]]
+  println(r3.map(_.mkString("[", ", ", "]")).mkString("[", ", ", "]"))   // [[1, 5], [6, 7], [8, 9]]
 }
 ```
 
 
 <details>
-<summary><strong>Trace — schedules = [[[1, 3], [6, 7]], [[2, 4]], [[2, 5], [9, 12]]]</strong></summary>
+<summary><strong>Trace — intervals = [[1, 4], [2, 3], [3, 4], [4, 6]]</strong></summary>
 
 ```
-Step 1 (flatten):
-  busy = [[1,3], [6,7], [2,4], [2,5], [9,12]]
+After sort by start: [[1, 4], [2, 3], [3, 4], [4, 6]] (already sorted)
 
-Step 2 (sort by start, tiebreak end):
-  busy = [[1,3], [2,4], [2,5], [6,7], [9,12]]
+Initial: merged = [[1, 4]]
 
-Step 3 (merge):
-  init     merged = [[1,3]]
-  [2,4]: 2 ≤ 3 → extend → merged = [[1, max(3,4)]] = [[1,4]]
-  [2,5]: 2 ≤ 4 → extend → merged = [[1, max(4,5)]] = [[1,5]]
-  [6,7]: 6 > 5 → append → merged = [[1,5], [6,7]]
-  [9,12]: 9 > 7 → append → merged = [[1,5], [6,7], [9,12]]
+i=1: [2, 3]. 2 ≤ merged[-1].end (4) → merge: merged[-1].end = max(4, 3) = 4.
+     merged = [[1, 4]]
+i=2: [3, 4]. 3 ≤ 4 → merge: merged[-1].end = max(4, 4) = 4.
+     merged = [[1, 4]]
+i=3: [4, 6]. 4 ≤ 4 → merge: merged[-1].end = max(4, 6) = 6.
+     merged = [[1, 6]]
 
-Step 4 (gaps):
-  pair ([1,5], [6,7]):  5 < 6 → emit [5, 6]
-  pair ([6,7], [9,12]): 7 < 9 → emit [7, 9]
+Result: [[1, 6]] ✓
+```
 
-Result: [[5, 6], [7, 9]] ✓
+</details>
+
+---
+
+## Complexity Analysis
+
+| | Complexity | Reasoning |
+|---|---|---|
+| **Time** | O(N log N) | Sort dominates; the merge sweep is O(N) |
+| **Space** | O(N) | The `merged` list holds at most `N` intervals |
+
+---
+
+## Edge Cases
+
+| Case | Example | Expected | Reasoning |
+|---|---|---|---|
+| Single interval | `[[3, 7]]` | `[[3, 7]]` | Loop body never runs; the seed is the answer |
+| All identical | `[[1, 5], [1, 5], [1, 5]]` | `[[1, 5]]` | Each merges into the seed |
+| Already disjoint | `[[1, 2], [4, 5]]` | `[[1, 2], [4, 5]]` | The else branch fires every iteration |
+| Touching intervals | `[[1, 4], [4, 6]]` | `[[1, 6]]` | `4 ≤ 4` triggers merge — touching counts as overlap here |
+| Fully nested | `[[1, 10], [3, 5]]` | `[[1, 10]]` | After sort, `[3, 5]` is contained in `[1, 10]`; `max(10, 5) = 10` |
+| Out-of-order input | `[[8, 9], [1, 5], [6, 7]]` | `[[1, 5], [6, 7], [8, 9]]` | Sort fixes order; nothing merges |
+
+---
+
+## Key Takeaway
+
+Overlap Reduction is the canonical **merge overlapping intervals** problem and the spine of the interval-merging pattern. Once intervals are sorted by start, the merge rule reduces to "does this start fall on or before the last merged end?" — a one-comparison test that produces the entire merged set in a single linear sweep. Every interval-merge problem you'll meet (calendar collapse, range coalesce, event windowing) is a variation on this exact loop.
+> </details>
+
+***
+
+# Employee Free Time
+
+## The Problem
+
+Given an array of `meetings` consisting of the start and end times `[[s1, e1], [s2, e2], ...]` (with `si < ei`) of all meetings of the employees of a company, find and return the **time intervals where all the employees are free** — i.e. none of them are in a meeting.
+
+Two intervals `[s1, e1]` and `[s2, e2]` are considered **overlapping** if `e1 ≥ s2` (touching counts as overlap, so no zero-length free windows are emitted).
+
+```
+meetings = [[1, 4], [2, 3], [3, 4], [4, 6], [8, 9]]   →  [[6, 8]]
+meetings = [[1, 2], [4, 6], [5, 7], [9, 10]]           →  [[2, 4], [7, 9]]
+meetings = [[1, 5], [2, 4], [5, 9]]                    →  []
+```
+
+---
+
+## Examples
+
+**Example 1**
+```
+Input:  meetings = [[1, 4], [2, 3], [3, 4], [4, 6], [8, 9]]
+Output: [[6, 8]]
+Explanation: All the employees will be free only in the interval [6, 8].
+```
+
+**Example 2**
+```
+Input:  meetings = [[1, 2], [4, 6], [5, 7], [9, 10]]
+Output: [[2, 4], [7, 9]]
+Explanation: All the employees will be free only in the intervals [2, 4]
+             and [7, 9].
+```
+
+**Example 3**
+```
+Input:  meetings = [[1, 5], [2, 4], [5, 9]]
+Output: []
+Explanation: There are no time intervals during which all employees are
+             simultaneously free.
+```
+
+---
+
+## Intuition
+
+A moment is "everyone free" iff it is **not inside any meeting**. So if we take the union of all meetings, the gaps between consecutive merged blocks are exactly the moments when nobody is busy.
+
+The recipe falls out:
+
+1. **Sort meetings by start time** — adjacent meetings are now the only candidates for merging.
+2. **Merge overlapping meetings** with the standard interval-merge sweep (`<=` because touching counts as overlap here).
+3. **Walk the merged list** and emit `[prev.end, curr.start]` for every consecutive pair where `prev.end < curr.start`.
+
+The algorithm collapses the input to a list of disjoint "busy blocks", then reads off the gaps. Free time before the earliest busy moment or after the latest is **not** reported — only intervals bounded on both sides by meetings.
+
+---
+
+## The Solution
+
+
+```pseudocode
+function employeeFreeTime(meetings):
+
+    # Sort meetings by start time
+    sort meetings by meetings[i][0] ascending
+
+    # Initialize output array and push the first meeting
+    merged ← [meetings[0]]
+
+    # Loop through meetings and merge if overlapping or adjacent
+    for i from 1 to length(meetings) − 1:
+
+        # If the current meeting overlaps with the last meeting in
+        # the merged list, merge them
+        if meetings[i][0] ≤ merged[last].end:
+            merged[last].end ← max(merged[last].end, meetings[i].end)
+
+        # If the current meeting is non-overlapping, add it to the
+        # merged list
+        else:
+            append meetings[i] to merged
+
+    # Find gaps between merged meetings to get free time
+    freeTimes ← empty list
+    for i from 1 to length(merged) − 1:
+        start ← merged[i − 1].end
+        end   ← merged[i].start
+        if start < end:
+            append [start, end] to freeTimes
+
+    return freeTimes
+```
+
+```python run
+from typing import List
+
+class Solution:
+    def employee_free_time(
+        self, meetings: List[List[int]]
+    ) -> List[List[int]]:
+
+        # Sort meetings by start time
+        meetings.sort(key=lambda x: x[0])
+
+        # Initialize output array and push the first meeting
+        merged = [meetings[0]]
+
+        # Loop through meetings and merge if overlapping or adjacent
+        for i in range(1, len(meetings)):
+
+            # If the current meeting overlaps with the last meeting in
+            # the merged list, merge them
+            if meetings[i][0] <= merged[-1][1]:
+                merged[-1][1] = max(merged[-1][1], meetings[i][1])
+
+            # If the current meeting is non-overlapping, add it to the
+            # merged list
+            else:
+                merged.append(meetings[i])
+
+        # Find free time slots between merged meetings
+        free_times: List[List[int]] = []
+        for i in range(1, len(merged)):
+            start: int = merged[i - 1][1]
+            end:   int = merged[i][0]
+            if start < end:
+                free_times.append([start, end])
+        return free_times
+
+
+sol = Solution()
+print(sol.employee_free_time([[1, 4], [2, 3], [3, 4], [4, 6], [8, 9]]))   # [[6, 8]]
+print(sol.employee_free_time([[1, 2], [4, 6], [5, 7], [9, 10]]))           # [[2, 4], [7, 9]]
+print(sol.employee_free_time([[1, 5], [2, 4], [5, 9]]))                    # []
+```
+
+```java run
+import java.util.*;
+
+public class Main {
+    static class Solution {
+        public int[][] employeeFreeTime(int[][] meetings) {
+
+            // Sort meetings by start time
+            Arrays.sort(meetings, (a, b) -> Integer.compare(a[0], b[0]));
+
+            // Initialize output list and push the first meeting
+            List<int[]> merged = new ArrayList<>();
+            merged.add(meetings[0]);
+
+            // Loop through meetings and merge if overlapping or adjacent
+            for (int i = 1; i < meetings.length; i++) {
+
+                // If the current meeting overlaps with the last meeting in
+                // the merged list, merge them
+                if (meetings[i][0] <= merged.get(merged.size() - 1)[1]) {
+                    merged.get(merged.size() - 1)[1] = Math.max(
+                        merged.get(merged.size() - 1)[1],
+                        meetings[i][1]
+                    );
+                }
+                // If the current meeting is non-overlapping, add it to the
+                // merged list
+                else {
+                    merged.add(meetings[i]);
+                }
+            }
+
+            // Find gaps between merged meetings to get free time
+            List<int[]> freeTimes = new ArrayList<>();
+            for (int i = 1; i < merged.size(); i++) {
+                int start = merged.get(i - 1)[1];
+                int end   = merged.get(i)[0];
+                if (start < end) {
+                    freeTimes.add(new int[] { start, end });
+                }
+            }
+
+            // Convert the list to an array and return
+            return freeTimes.toArray(new int[freeTimes.size()][]);
+        }
+    }
+
+    public static void main(String[] args) {
+        Solution sol = new Solution();
+        int[][] r1 = sol.employeeFreeTime(new int[][]{{1, 4}, {2, 3}, {3, 4}, {4, 6}, {8, 9}});
+        int[][] r2 = sol.employeeFreeTime(new int[][]{{1, 2}, {4, 6}, {5, 7}, {9, 10}});
+        int[][] r3 = sol.employeeFreeTime(new int[][]{{1, 5}, {2, 4}, {5, 9}});
+        System.out.println(Arrays.deepToString(r1));   // [[6, 8]]
+        System.out.println(Arrays.deepToString(r2));   // [[2, 4], [7, 9]]
+        System.out.println(Arrays.deepToString(r3));   // []
+    }
+}
+```
+
+```c run
+#include <stdio.h>
+#include <stdlib.h>
+
+static int cmp_pairs(const void* a, const void* b) {
+    const int* pa = *(const int* const*)a;
+    const int* pb = *(const int* const*)b;
+    return pa[0] - pb[0];
+}
+
+static int int_max(int a, int b) { return a > b ? a : b; }
+
+int employee_free_time(int** meetings, int n, int* out) {
+
+    /* Sort meetings by start time */
+    qsort(meetings, n, sizeof(int*), cmp_pairs);
+
+    /* Initialize merged list (using stack-style packed array) */
+    int merged[200];   /* up to 100 merged pairs for examples */
+    merged[0] = meetings[0][0];
+    merged[1] = meetings[0][1];
+    int mc = 1;
+
+    /* Loop through meetings and merge if overlapping or adjacent */
+    for (int i = 1; i < n; i++) {
+        int last_end_idx = 2 * (mc - 1) + 1;
+
+        if (meetings[i][0] <= merged[last_end_idx]) {
+            /* Merge */
+            merged[last_end_idx] = int_max(merged[last_end_idx], meetings[i][1]);
+        } else {
+            /* Append */
+            merged[2 * mc]     = meetings[i][0];
+            merged[2 * mc + 1] = meetings[i][1];
+            mc++;
+        }
+    }
+
+    /* Find gaps between merged meetings to get free time */
+    int fc = 0;
+    for (int i = 1; i < mc; i++) {
+        int start = merged[2 * (i - 1) + 1];
+        int end   = merged[2 * i];
+        if (start < end) {
+            out[2 * fc]     = start;
+            out[2 * fc + 1] = end;
+            fc++;
+        }
+    }
+
+    return fc;
+}
+
+static void print_pairs(int* p, int count) {
+    printf("[");
+    for (int i = 0; i < count; i++) {
+        printf("[%d, %d]%s", p[2 * i], p[2 * i + 1], i + 1 < count ? ", " : "");
+    }
+    printf("]\n");
+}
+
+int main() {
+    int a1[5][2] = {{1, 4}, {2, 3}, {3, 4}, {4, 6}, {8, 9}};
+    int* p1[5] = {a1[0], a1[1], a1[2], a1[3], a1[4]};
+    int out[20]; int c = employee_free_time(p1, 5, out); print_pairs(out, c);  /* [[6, 8]] */
+
+    int a2[4][2] = {{1, 2}, {4, 6}, {5, 7}, {9, 10}};
+    int* p2[4] = {a2[0], a2[1], a2[2], a2[3]};
+    c = employee_free_time(p2, 4, out); print_pairs(out, c);  /* [[2, 4], [7, 9]] */
+
+    int a3[3][2] = {{1, 5}, {2, 4}, {5, 9}};
+    int* p3[3] = {a3[0], a3[1], a3[2]};
+    c = employee_free_time(p3, 3, out); print_pairs(out, c);  /* [] */
+    return 0;
+}
+```
+
+```scala run
+object Main extends App {
+  class Solution {
+    def employeeFreeTime(meetings: Array[Array[Int]]): Array[Array[Int]] = {
+
+      // Sort meetings by start time
+      val sorted = meetings.sortBy(_(0))
+
+      // Initialize output buffer and push the first meeting
+      val merged = scala.collection.mutable.ArrayBuffer(sorted(0).clone())
+
+      // Loop through meetings and merge if overlapping or adjacent
+      for (i <- 1 until sorted.length) {
+
+        // If the current meeting overlaps with the last meeting in
+        // the merged list, merge them
+        if (sorted(i)(0) <= merged.last(1)) {
+          merged.last(1) = math.max(merged.last(1), sorted(i)(1))
+        }
+        // If the current meeting is non-overlapping, add it to the
+        // merged list
+        else {
+          merged += sorted(i).clone()
+        }
+      }
+
+      // Find free time slots between merged meetings
+      val freeTimes = scala.collection.mutable.ArrayBuffer.empty[Array[Int]]
+      for (i <- 1 until merged.length) {
+        val start = merged(i - 1)(1)
+        val end   = merged(i)(0)
+        if (start < end) {
+          freeTimes += Array(start, end)
+        }
+      }
+
+      freeTimes.toArray
+    }
+  }
+
+  val sol = new Solution
+  val r1 = sol.employeeFreeTime(Array(Array(1, 4), Array(2, 3), Array(3, 4), Array(4, 6), Array(8, 9)))
+  val r2 = sol.employeeFreeTime(Array(Array(1, 2), Array(4, 6), Array(5, 7), Array(9, 10)))
+  val r3 = sol.employeeFreeTime(Array(Array(1, 5), Array(2, 4), Array(5, 9)))
+  println(r1.map(_.mkString("[", ", ", "]")).mkString("[", ", ", "]"))   // [[6, 8]]
+  println(r2.map(_.mkString("[", ", ", "]")).mkString("[", ", ", "]"))   // [[2, 4], [7, 9]]
+  println(r3.map(_.mkString("[", ", ", "]")).mkString("[", ", ", "]"))   // []
+}
+```
+
+
+<details>
+<summary><strong>Trace — meetings = [[1, 4], [2, 3], [3, 4], [4, 6], [8, 9]]</strong></summary>
+
+```
+After sort by start: [[1, 4], [2, 3], [3, 4], [4, 6], [8, 9]] (already sorted)
+
+Merge:
+  init     merged = [[1, 4]]
+  [2, 3]: 2 ≤ 4 → merge: merged[-1].end = max(4, 3) = 4 → merged = [[1, 4]]
+  [3, 4]: 3 ≤ 4 → merge: merged[-1].end = max(4, 4) = 4 → merged = [[1, 4]]
+  [4, 6]: 4 ≤ 4 → merge: merged[-1].end = max(4, 6) = 6 → merged = [[1, 6]]
+  [8, 9]: 8 > 6 → append → merged = [[1, 6], [8, 9]]
+
+Gaps:
+  pair ([1, 6], [8, 9]): 6 < 8 → emit [6, 8]
+
+Result: [[6, 8]] ✓
 ```
 
 </details>
@@ -1732,150 +1960,240 @@ For each `iv` in `intervals`:
 
 
 ```pseudocode
-# Insert a new interval into a sorted, non-overlapping list. Three sequential phases.
-function insert(intervals, newInterval):
-    result ← empty list
-    i ← 0; n ← length(intervals)
-    newStart ← newInterval.start
-    newEnd   ← newInterval.end
+function insertInterval(intervals, interval):
 
-    # Phase 1 — copy intervals that end strictly before newInterval starts.
-    while i < n AND intervals[i].end < newStart:
-        append intervals[i] to result
+    # Initialize output list
+    merged ← empty list
+
+    i ← 0
+    n ← length(intervals)
+
+    # Add all intervals that come before the new interval
+    while i < n AND intervals[i][1] < interval[0]:
+        append intervals[i] to merged
         i ← i + 1
 
-    # Phase 2 — absorb every interval that overlaps newInterval into newInterval itself.
-    while i < n AND intervals[i].start ≤ newEnd:
-        newStart ← min(newStart, intervals[i].start)
-        newEnd   ← max(newEnd,   intervals[i].end)
+    # Merge overlapping intervals with the new interval
+    while i < n AND intervals[i][0] ≤ interval[1]:
+        interval[0] ← min(interval[0], intervals[i][0])
+        interval[1] ← max(interval[1], intervals[i][1])
         i ← i + 1
-    append [newStart, newEnd] to result               # push the (possibly grown) merged interval
 
-    # Phase 3 — copy the rest (all start strictly after newEnd).
+    # Add the merged new interval
+    append interval to merged
+
+    # Add remaining intervals after the new interval
     while i < n:
-        append intervals[i] to result
+        append intervals[i] to merged
         i ← i + 1
-    return result
+
+    return merged
 ```
 
 ```python run
 from typing import List
 
-def insert(intervals: List[List[int]], newInterval: List[int]) -> List[List[int]]:
-    result = []
-    i, n  = 0, len(intervals)
-    new_start, new_end = newInterval
+class Solution:
+    def insert_interval(
+        self, intervals: List[List[int]], interval: List[int]
+    ) -> List[List[int]]:
 
-    # Phase 1: copy intervals that end strictly before newInterval starts
-    while i < n and intervals[i][1] < new_start:
-        result.append(intervals[i])
-        i += 1
+        # Initialize output list
+        merged: List[List[int]] = []
 
-    # Phase 2: absorb every interval that overlaps newInterval into newInterval itself
-    # Loop condition: current interval starts at or before newInterval ends.
-    # Touching intervals (start == new_end) are absorbed because '<=' here.
-    while i < n and intervals[i][0] <= new_end:
-        new_start = min(new_start, intervals[i][0])
-        new_end   = max(new_end,   intervals[i][1])
-        i += 1
-    # Push the (possibly grown) newInterval exactly once, after Phase 2 ends
-    result.append([new_start, new_end])
+        i: int = 0
+        n: int = len(intervals)
 
-    # Phase 3: copy the rest — they all start strictly after newInterval's grown end
-    while i < n:
-        result.append(intervals[i])
-        i += 1
+        # Add all intervals that come before the new interval
+        while i < n and intervals[i][1] < interval[0]:
+            merged.append(intervals[i])
+            i += 1
 
-    return result
+        # Merge overlapping intervals with the new interval
+        while i < n and intervals[i][0] <= interval[1]:
+            interval[0] = min(interval[0], intervals[i][0])
+            interval[1] = max(interval[1], intervals[i][1])
+            i += 1
+
+        # Add the merged new interval
+        merged.append(interval)
+
+        # Add remaining intervals after the new interval
+        while i < n:
+            merged.append(intervals[i])
+            i += 1
+
+        return merged
 
 
-print(insert([[1, 3], [6, 9]], [2, 5]))
-# [[1, 5], [6, 9]]
-
-print(insert([[1, 2], [3, 5], [6, 7], [8, 10], [12, 16]], [4, 8]))
-# [[1, 2], [3, 10], [12, 16]]
-
-print(insert([], [5, 7]))
-# [[5, 7]]
+sol = Solution()
+print(sol.insert_interval([[1, 4], [6, 7]], [3, 6]))                   # [[1, 7]]
+print(sol.insert_interval([[4, 5], [7, 9]], [6, 8]))                   # [[4, 5], [6, 9]]
+print(sol.insert_interval([[1, 2], [6, 7], [8, 9]], [4, 5]))           # [[1, 2], [4, 5], [6, 7], [8, 9]]
 ```
 
 ```java run
 import java.util.*;
 
-class Solution {
-    public int[][] insert(int[][] intervals, int[] newInterval) {
-        List<int[]> result = new ArrayList<>();
-        int i = 0, n = intervals.length;
-        int ns = newInterval[0], ne = newInterval[1];
+public class Main {
+    static class Solution {
+        public int[][] insertInterval(int[][] intervals, int[] interval) {
 
-        // Phase 1: strictly before
-        while (i < n && intervals[i][1] < ns) {
-            result.add(intervals[i++]);
+            // Initialize output list
+            List<int[]> merged = new ArrayList<>();
+
+            int i = 0;
+            int n = intervals.length;
+
+            // Add all intervals that come before the new interval
+            while (i < n && intervals[i][1] < interval[0]) {
+                merged.add(intervals[i]);
+                i++;
+            }
+
+            // Merge overlapping intervals with the new interval
+            while (i < n && intervals[i][0] <= interval[1]) {
+                interval[0] = Math.min(interval[0], intervals[i][0]);
+                interval[1] = Math.max(interval[1], intervals[i][1]);
+                i++;
+            }
+
+            // Add the merged new interval
+            merged.add(interval);
+
+            // Add remaining intervals after the new interval
+            while (i < n) {
+                merged.add(intervals[i]);
+                i++;
+            }
+
+            return merged.toArray(new int[merged.size()][]);
         }
-        // Phase 2: overlap → absorb into [ns, ne]
-        while (i < n && intervals[i][0] <= ne) {
-            ns = Math.min(ns, intervals[i][0]);
-            ne = Math.max(ne, intervals[i][1]);
-            i++;
-        }
-        result.add(new int[]{ns, ne});
+    }
 
-        // Phase 3: strictly after
-        while (i < n) result.add(intervals[i++]);
-
-        return result.toArray(new int[result.size()][]);
+    public static void main(String[] args) {
+        Solution sol = new Solution();
+        int[][] r1 = sol.insertInterval(new int[][]{{1, 4}, {6, 7}}, new int[]{3, 6});
+        int[][] r2 = sol.insertInterval(new int[][]{{4, 5}, {7, 9}}, new int[]{6, 8});
+        int[][] r3 = sol.insertInterval(new int[][]{{1, 2}, {6, 7}, {8, 9}}, new int[]{4, 5});
+        System.out.println(Arrays.deepToString(r1));   // [[1, 7]]
+        System.out.println(Arrays.deepToString(r2));   // [[4, 5], [6, 9]]
+        System.out.println(Arrays.deepToString(r3));   // [[1, 2], [4, 5], [6, 7], [8, 9]]
     }
 }
 ```
 
 ```c run
+#include <stdio.h>
 #include <stdlib.h>
 
-int** insert(int** intervals, int n, int* newInterval, int* outSize) {
-    int** result = (int**)malloc(sizeof(int*) * (n + 1));
-    int  rc = 0, i = 0;
-    int  ns = newInterval[0], ne = newInterval[1];
+static int int_min(int a, int b) { return a < b ? a : b; }
+static int int_max(int a, int b) { return a > b ? a : b; }
 
-    // Phase 1
-    while (i < n && intervals[i][1] < ns) {
-        result[rc++] = intervals[i++];
-    }
-    // Phase 2: absorb overlapping
-    while (i < n && intervals[i][0] <= ne) {
-        if (intervals[i][0] < ns) ns = intervals[i][0];
-        if (intervals[i][1] > ne) ne = intervals[i][1];
+/* Writes merged pairs as out[2*k], out[2*k+1]; returns merged count. */
+int insert_interval(int** intervals, int n, int* interval, int* out) {
+
+    int merged_count = 0;
+    int i = 0;
+
+    /* Add all intervals that come before the new interval */
+    while (i < n && intervals[i][1] < interval[0]) {
+        out[2 * merged_count]     = intervals[i][0];
+        out[2 * merged_count + 1] = intervals[i][1];
+        merged_count++;
         i++;
     }
-    result[rc] = (int*)malloc(sizeof(int) * 2);
-    result[rc][0] = ns; result[rc][1] = ne;
-    rc++;
 
-    // Phase 3
-    while (i < n) result[rc++] = intervals[i++];
-    *outSize = rc;
-    return result;
+    /* Merge overlapping intervals with the new interval */
+    while (i < n && intervals[i][0] <= interval[1]) {
+        interval[0] = int_min(interval[0], intervals[i][0]);
+        interval[1] = int_max(interval[1], intervals[i][1]);
+        i++;
+    }
+
+    /* Add the merged new interval */
+    out[2 * merged_count]     = interval[0];
+    out[2 * merged_count + 1] = interval[1];
+    merged_count++;
+
+    /* Add remaining intervals after the new interval */
+    while (i < n) {
+        out[2 * merged_count]     = intervals[i][0];
+        out[2 * merged_count + 1] = intervals[i][1];
+        merged_count++;
+        i++;
+    }
+
+    return merged_count;
+}
+
+static void print_pairs(int* p, int count) {
+    printf("[");
+    for (int i = 0; i < count; i++) {
+        printf("[%d, %d]%s", p[2 * i], p[2 * i + 1], i + 1 < count ? ", " : "");
+    }
+    printf("]\n");
+}
+
+int main() {
+    int a1[2][2] = {{1, 4}, {6, 7}}; int* p1[2] = {a1[0], a1[1]}; int iv1[2] = {3, 6};
+    int out[20]; int c = insert_interval(p1, 2, iv1, out); print_pairs(out, c);  /* [[1, 7]] */
+
+    int a2[2][2] = {{4, 5}, {7, 9}}; int* p2[2] = {a2[0], a2[1]}; int iv2[2] = {6, 8};
+    c = insert_interval(p2, 2, iv2, out); print_pairs(out, c);                   /* [[4, 5], [6, 9]] */
+
+    int a3[3][2] = {{1, 2}, {6, 7}, {8, 9}}; int* p3[3] = {a3[0], a3[1], a3[2]}; int iv3[2] = {4, 5};
+    c = insert_interval(p3, 3, iv3, out); print_pairs(out, c);                   /* [[1, 2], [4, 5], [6, 7], [8, 9]] */
+    return 0;
 }
 ```
 
 ```scala run
-object Solution {
-  def insert(intervals: Array[Array[Int]], newInterval: Array[Int]): Array[Array[Int]] = {
-    val result = scala.collection.mutable.ArrayBuffer[Array[Int]]()
-    var i  = 0
-    val n  = intervals.length
-    var ns = newInterval(0)
-    var ne = newInterval(1)
+object Main extends App {
+  class Solution {
+    def insertInterval(
+        intervals: Array[Array[Int]], interval: Array[Int]
+    ): Array[Array[Int]] = {
 
-    while (i < n && intervals(i)(1) < ns) { result += intervals(i); i += 1 }
-    while (i < n && intervals(i)(0) <= ne) {
-      ns = math.min(ns, intervals(i)(0))
-      ne = math.max(ne, intervals(i)(1))
-      i += 1
+      // Initialize output buffer
+      val merged = scala.collection.mutable.ArrayBuffer[Array[Int]]()
+
+      var i = 0
+      val n = intervals.length
+
+      // Add all intervals that come before the new interval
+      while (i < n && intervals(i)(1) < interval(0)) {
+        merged += intervals(i)
+        i += 1
+      }
+
+      // Merge overlapping intervals with the new interval
+      while (i < n && intervals(i)(0) <= interval(1)) {
+        interval(0) = math.min(interval(0), intervals(i)(0))
+        interval(1) = math.max(interval(1), intervals(i)(1))
+        i += 1
+      }
+
+      // Add the merged new interval
+      merged += interval
+
+      // Add remaining intervals after the new interval
+      while (i < n) {
+        merged += intervals(i)
+        i += 1
+      }
+
+      merged.toArray
     }
-    result += Array(ns, ne)
-    while (i < n) { result += intervals(i); i += 1 }
-    result.toArray
   }
+
+  val sol = new Solution
+  val r1 = sol.insertInterval(Array(Array(1, 4), Array(6, 7)), Array(3, 6))
+  val r2 = sol.insertInterval(Array(Array(4, 5), Array(7, 9)), Array(6, 8))
+  val r3 = sol.insertInterval(Array(Array(1, 2), Array(6, 7), Array(8, 9)), Array(4, 5))
+  println(r1.map(_.mkString("[", ", ", "]")).mkString("[", ", ", "]"))   // [[1, 7]]
+  println(r2.map(_.mkString("[", ", ", "]")).mkString("[", ", ", "]"))   // [[4, 5], [6, 9]]
+  println(r3.map(_.mkString("[", ", ", "]")).mkString("[", ", ", "]"))   // [[1, 2], [4, 5], [6, 7], [8, 9]]
 }
 ```
 

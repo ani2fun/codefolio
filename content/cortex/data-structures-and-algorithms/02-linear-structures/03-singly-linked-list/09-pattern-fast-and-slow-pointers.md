@@ -130,15 +130,26 @@ Given below is the generic code implementation of the fast and slow pointer trav
 
 
 ```pseudocode
-# Generic fast-and-slow template. slow moves 1, fast moves (n + 1). When fast reaches `end`,
-# slow is parked at the (length / (n + 1))-th node — the "1-out-of-(n+1)" position.
+# Generic fast-and-slow template. slow moves 1, fast moves n+1. When fast reaches end, slow parks at the "1-out-of-(n+1)" position.
 function findTheSolutionNode(start, end, n):
-    slow ← start; fast ← start
-    while fast is not null AND fast ≠ end AND fast.next is not null:
-        slow ← slow.next                               # 1 step
-        for i from 1 to n + 1:                         # n + 1 steps
-            if fast is null OR fast = end: break
-            fast ← fast.next
+
+    # Create two references slow and fast
+    # and point them to the start
+    slow ← start
+    fast ← start
+
+    # Null checks to take care of edge cases
+    while fast.next is not null AND fast ≠ end:
+
+        # Move slow 1 step
+        slow ← slow.next
+
+        # Move fast n+1 step
+        for i ← 0 to n:
+            if fast is not null AND fast.next is not null:
+                fast ← fast.next
+
+    # Node pointed by slow is the solution
     return slow
 ```
 
@@ -151,31 +162,50 @@ class ListNode:
         self.next = next
 
 def find_the_solution_node(start: ListNode, end: Optional[ListNode], n: int) -> ListNode:
-    # Generic fast-and-slow: slow moves 1 step per tick, fast moves (n + 1).
-    # When fast reaches `end`, slow is parked at the (length / (n + 1))-th node.
+
+    # Create two references slow and fast
+    # and point them to the start
     slow = start
     fast = start
-    while fast is not None and fast is not end and fast.next is not None:
-        slow = slow.next                    # 1 step for slow
-        for _ in range(n + 1):              # n + 1 steps for fast
-            if fast is None or fast is end:
-                break
-            fast = fast.next
+
+    # Null checks to take care of edge cases
+    while fast.next is not None and fast is not end:
+
+        # Move slow 1 step
+        slow = slow.next
+
+        # Move fast n+1 step
+        for _ in range(n + 1):
+            if fast is not None and fast.next is not None:
+                fast = fast.next
+
+    # Node pointed by slow is the solution
     return slow
 ```
 
 ```java run
 class Solution {
     public ListNode findTheSolutionNode(ListNode start, ListNode end, int n) {
+
+        // Create two references slow and fast
+        // and point them to the start
         ListNode slow = start;
         ListNode fast = start;
-        while (fast != null && fast != end && fast.next != null) {
-            slow = slow.next;                       // 1 step for slow
-            for (int i = 0; i < n + 1; i++) {       // n + 1 steps for fast
-                if (fast == null || fast == end) break;
-                fast = fast.next;
+
+        // Null checks to take care of edge cases
+        while (fast.next != null && fast != end) {
+
+            // Move slow 1 step
+            slow = slow.next;
+
+            // Move fast n+1 step
+            for (int i = 0; i < n + 1; i++) {
+                if (fast != null && fast.next != null)
+                    fast = fast.next;
             }
         }
+
+        // Node pointed by slow is the solution
         return slow;
     }
 }
@@ -185,14 +215,26 @@ class Solution {
 typedef struct ListNode { int val; struct ListNode *next; } ListNode;
 
 ListNode* findTheSolutionNode(ListNode *start, ListNode *end, int n) {
-    ListNode *slow = start, *fast = start;
-    while (fast != NULL && fast != end && fast->next != NULL) {
-        slow = slow->next;                          /* 1 step for slow */
-        for (int i = 0; i < n + 1; i++) {           /* n + 1 steps for fast */
-            if (fast == NULL || fast == end) break;
-            fast = fast->next;
+
+    /* Create two pointers slow and fast
+       and point them to the start */
+    ListNode *slow = start;
+    ListNode *fast = start;
+
+    /* Null pointer checks to take care of edge cases */
+    while (fast->next && fast != end) {
+
+        /* Move slow 1 step */
+        slow = slow->next;
+
+        /* Move fast n+1 steps */
+        for (int i = 0; i < n + 1; i++) {
+            if (fast->next)
+                fast = fast->next;
         }
     }
+
+    /* Node pointed by slow is the solution */
     return slow;
 }
 ```
@@ -200,16 +242,29 @@ ListNode* findTheSolutionNode(ListNode *start, ListNode *end, int n) {
 ```scala run
 object Solution {
   def findTheSolutionNode(start: ListNode, end: ListNode, n: Int): ListNode = {
+
+    // Create two references slow and fast
+    // and point them to the start
     var slow = start
     var fast = start
-    while (fast != null && (fast ne end) && fast.next != null) {
+
+    // Null checks to take care of edge cases
+    while (fast.next != null && (fast ne end)) {
+
+      // Move slow 1 step
       slow = slow.next
+
+      // Move fast n+1 step
       var i = 0
-      while (i < n + 1 && fast != null && (fast ne end)) {
-        fast = fast.next
+      while (i < n + 1) {
+        if (fast != null && fast.next != null) {
+          fast = fast.next
+        }
         i += 1
       }
     }
+
+    // Node pointed by slow is the solution
     slow
   }
 }
@@ -324,13 +379,25 @@ The implementation of the fast and slow pointer solution is given as follows.
 
 
 ```pseudocode
-# Find the middle node. Fast = 2 × slow → when fast hits the end, slow is at the midpoint.
-# Even length: returns the SECOND middle.
+# Fast = 2 × slow. When fast hits the end, slow is at the midpoint (the SECOND middle on even length).
 function middleNodeSearch(head):
-    slow ← head; fast ← head
+
+    # Initialize slow pointer to the head of the list
+    slow ← head
+
+    # Initialize fast pointer to the head of the list
+    fast ← head
+
+    # Iterate until fast pointer reaches the end of the list
     while fast is not null AND fast.next is not null:
+
+        # Move slow pointer one step forward
         slow ← slow.next
+
+        # Move fast pointer two steps forward
         fast ← fast.next.next
+
+    # Return the middle node or the second middle node (in case of even number of nodes)
     return slow
 ```
 
@@ -338,23 +405,52 @@ function middleNodeSearch(head):
 from typing import Optional
 
 class Solution:
-    def middle_node_search(self, head: Optional[ListNode]) -> Optional[ListNode]:
-        slow, fast = head, head
-        # When fast reaches the end, slow is parked at the middle.
+    def middle_node_search(
+        self, head: Optional[ListNode]
+    ) -> Optional[ListNode]:
+
+        # Initialize slow pointer to the head of the list
+        slow = head
+
+        # Initialize fast pointer to the head of the list
+        fast = head
+
+        # Iterate until fast pointer reaches the end of the list
         while fast is not None and fast.next is not None:
+
+            # Move slow pointer one step forward
             slow = slow.next
+
+            # Move fast pointer two steps forward
             fast = fast.next.next
-        return slow    # for even length, returns the SECOND middle
+
+        # Return the middle node or the second middle node (in case of
+        # even number of nodes)
+        return slow
 ```
 
 ```java run
 class Solution {
     public ListNode middleNodeSearch(ListNode head) {
-        ListNode slow = head, fast = head;
+
+        // Initialize slow pointer to the head of the list
+        ListNode slow = head;
+
+        // Initialize fast pointer to the head of the list
+        ListNode fast = head;
+
+        // Iterate until fast pointer reaches the end of the list
         while (fast != null && fast.next != null) {
+
+            // Move slow pointer one step forward
             slow = slow.next;
+
+            // Move fast pointer two steps forward
             fast = fast.next.next;
         }
+
+        // Return the middle node or the second middle node (in case of
+        // even number of nodes)
         return slow;
     }
 }
@@ -362,11 +458,25 @@ class Solution {
 
 ```c run
 ListNode* middleNodeSearch(ListNode *head) {
-    ListNode *slow = head, *fast = head;
+
+    /* Initialize slow pointer to the head of the list */
+    ListNode *slow = head;
+
+    /* Initialize fast pointer to the head of the list */
+    ListNode *fast = head;
+
+    /* Iterate until fast pointer reaches the end of the list */
     while (fast != NULL && fast->next != NULL) {
+
+        /* Move slow pointer one step forward */
         slow = slow->next;
+
+        /* Move fast pointer two steps forward */
         fast = fast->next->next;
     }
+
+    /* Return the middle node or the second middle node (in case of
+       even number of nodes) */
     return slow;
 }
 ```
@@ -374,11 +484,25 @@ ListNode* middleNodeSearch(ListNode *head) {
 ```scala run
 object Solution {
   def middleNodeSearch(head: ListNode): ListNode = {
-    var slow = head; var fast = head
+
+    // Initialize slow pointer to the head of the list
+    var slow = head
+
+    // Initialize fast pointer to the head of the list
+    var fast = head
+
+    // Iterate until fast pointer reaches the end of the list
     while (fast != null && fast.next != null) {
+
+      // Move slow pointer one step forward
       slow = slow.next
+
+      // Move fast pointer two steps forward
       fast = fast.next.next
     }
+
+    // Return the middle node or the second middle node (in case of
+    // even number of nodes)
     slow
   }
 }
@@ -422,12 +546,25 @@ If there are two middle nodes, return the reference of the second one.
 
 
 ```pseudocode
-# Same algorithm with explicit step-by-two annotation.
+# Fast = 2 × slow. When fast hits the end, slow is at the midpoint (the SECOND middle on even length).
 function middleNodeSearch(head):
-    slow ← head; fast ← head
+
+    # Initialize slow pointer to the head of the list
+    slow ← head
+
+    # Initialize fast pointer to the head of the list
+    fast ← head
+
+    # Iterate until fast pointer reaches the end of the list
     while fast is not null AND fast.next is not null:
-        slow ← slow.next                               # advance slow by one
-        fast ← fast.next.next                          # advance fast by two
+
+        # Move slow pointer one step forward
+        slow ← slow.next
+
+        # Move fast pointer two steps forward
+        fast ← fast.next.next
+
+    # Return the middle node or the second middle node (in case of even number of nodes)
     return slow
 ```
 
@@ -437,19 +574,27 @@ class ListNode:
         self.val = val
         self.next = next
 
-def middle_node_search(head: ListNode) -> ListNode:
-    # Both pointers start at head
-    slow = head
-    fast = head
+class Solution:
+    def middle_node_search(self, head: "ListNode") -> "ListNode":
 
-    # fast moves 2 steps per iteration, slow moves 1 —
-    # when fast reaches the end, slow is at the midpoint
-    while fast is not None and fast.next is not None:
-        slow = slow.next          # advance slow by one
-        fast = fast.next.next     # advance fast by two
+        # Initialize slow pointer to the head of the list
+        slow = head
 
-    # slow now sits at the middle (second middle for even-length lists)
-    return slow
+        # Initialize fast pointer to the head of the list
+        fast = head
+
+        # Iterate until fast pointer reaches the end of the list
+        while fast is not None and fast.next is not None:
+
+            # Move slow pointer one step forward
+            slow = slow.next
+
+            # Move fast pointer two steps forward
+            fast = fast.next.next
+
+        # Return the middle node or the second middle node (in case of
+        # even number of nodes)
+        return slow
 
 # --- driver ---
 def build(vals):
@@ -461,7 +606,7 @@ def build(vals):
     return dummy.next
 
 head = build([5, 7, 3, 10, 6])
-print(middle_node_search(head).val)   # expected: 3
+print(Solution().middle_node_search(head).val)   # expected: 3
 ```
 
 ```java run
@@ -473,18 +618,26 @@ public class Solution {
         ListNode(int v, ListNode n) { val = v; next = n; }
     }
 
-    static ListNode middleNodeSearch(ListNode head) {
+    public ListNode middleNodeSearch(ListNode head) {
+
+        // Initialize slow pointer to the head of the list
         ListNode slow = head;
+
+        // Initialize fast pointer to the head of the list
         ListNode fast = head;
 
-        // fast moves 2 steps per iteration, slow moves 1 —
-        // when fast reaches the end, slow is at the midpoint
+        // Iterate until fast pointer reaches the end of the list
         while (fast != null && fast.next != null) {
-            slow = slow.next;      // advance slow by one
-            fast = fast.next.next; // advance fast by two
+
+            // Move slow pointer one step forward
+            slow = slow.next;
+
+            // Move fast pointer two steps forward
+            fast = fast.next.next;
         }
 
-        // slow now sits at the middle (second middle for even-length lists)
+        // Return the middle node or the second middle node (in case of
+        // even number of nodes)
         return slow;
     }
 
@@ -497,7 +650,7 @@ public class Solution {
 
     public static void main(String[] args) {
         ListNode head = build(new int[]{5, 7, 3, 10, 6});
-        System.out.println(middleNodeSearch(head).val); // expected: 3
+        System.out.println(new Solution().middleNodeSearch(head).val); // expected: 3
     }
 }
 ```
@@ -519,17 +672,25 @@ ListNode* newNode(int v) {
 }
 
 ListNode* middleNodeSearch(ListNode *head) {
+
+    /* Initialize slow pointer to the head of the list */
     ListNode *slow = head;
+
+    /* Initialize fast pointer to the head of the list */
     ListNode *fast = head;
 
-    /* fast moves 2 steps per iteration, slow moves 1 —
-       when fast reaches the end, slow is at the midpoint */
+    /* Iterate until fast pointer reaches the end of the list */
     while (fast != NULL && fast->next != NULL) {
-        slow = slow->next;       /* advance slow by one */
-        fast = fast->next->next; /* advance fast by two */
+
+        /* Move slow pointer one step forward */
+        slow = slow->next;
+
+        /* Move fast pointer two steps forward */
+        fast = fast->next->next;
     }
 
-    /* slow now sits at the middle (second middle for even-length lists) */
+    /* Return the middle node or the second middle node (in case of
+       even number of nodes) */
     return slow;
 }
 
@@ -553,17 +714,25 @@ class ListNode(var v: Int, var next: ListNode = null)
 
 object Solution {
   def middleNodeSearch(head: ListNode): ListNode = {
+
+    // Initialize slow pointer to the head of the list
     var slow = head
+
+    // Initialize fast pointer to the head of the list
     var fast = head
 
-    // fast moves 2 steps per iteration, slow moves 1 —
-    // when fast reaches the end, slow is at the midpoint
+    // Iterate until fast pointer reaches the end of the list
     while (fast != null && fast.next != null) {
-      slow = slow.next        // advance slow by one
-      fast = fast.next.next   // advance fast by two
+
+      // Move slow pointer one step forward
+      slow = slow.next
+
+      // Move fast pointer two steps forward
+      fast = fast.next.next
     }
 
-    // slow now sits at the middle (second middle for even-length lists)
+    // Return the middle node or the second middle node (in case of
+    // even number of nodes)
     slow
   }
 
@@ -614,21 +783,51 @@ If there is only one middle node, that node should be part of the first half. 
 
 
 ```pseudocode
-# Split a list into two halves. prevToSlow lets us cut cleanly even on even-length lists.
+# Split a list into two halves using slow + fast + prevToSlow.
 function splitListInHalf(head):
+
+    # If the list is empty or has only one element, return the original head and None
     if head is null OR head.next is null:
         return [head, null]
-    slow ← head; fast ← head; prevToSlow ← null
-    while fast is not null AND fast.next is not null:
+
+    slow ← head
+    fast ← head
+    prevToSlow ← null
+
+    # Find the midpoint of the list using the slow and fast pointer technique
+    while fast is not null AND fast.next is not null AND slow is not null:
+
+        # Keep track of the node before the midpoint
         prevToSlow ← slow
+
+        # Move the slow pointer by one step
         slow ← slow.next
+
+        # Move the fast pointer by two steps
         fast ← fast.next.next
-    if fast is null:                                  # even length — slow is the 2nd middle
+
+    secondHalf ← null
+
+    # If the fast pointer reached the end of the list, it has an even number of nodes
+    if fast is null AND prevToSlow is not null:
+
+        # The second half starts from the next node of the previous slow pointer
         secondHalf ← prevToSlow.next
+
+        # Disconnect the two halves by setting the next of the previous slow pointer to null
         prevToSlow.next ← null
-    else:                                              # odd length — slow is the unique middle
-        secondHalf ← slow.next
-        slow.next ← null
+
+    # else the list has an odd number of nodes
+    else:
+        if slow is not null:
+
+            # The second half starts from the node after the slow pointer
+            secondHalf ← slow.next
+
+            # Disconnect the two halves by setting the next of the slow pointer to null
+            slow.next ← null
+
+    # Return a list containing the head of the first half and the head of the second half
     return [head, secondHalf]
 ```
 
@@ -636,51 +835,124 @@ function splitListInHalf(head):
 from typing import Optional, List
 
 class Solution:
-    def split_list_in_half(self, head: Optional[ListNode]) -> List[Optional[ListNode]]:
+    def split_list_in_half(
+        self, head: Optional[ListNode]
+    ) -> List[Optional[ListNode]]:
+
+        # If the list is empty or has only one element, return the
+        # original head and None
         if head is None or head.next is None:
             return [head, None]
 
-        slow, fast = head, head
+        slow: Optional[ListNode] = head
+        fast: Optional[ListNode] = head
         prev_to_slow: Optional[ListNode] = None
 
-        # Find middle — prev_to_slow lets us split cleanly for even-length lists
-        while fast is not None and fast.next is not None:
+        # Find the midpoint of the list using the slow and fast pointer
+        # technique
+        while (
+            fast is not None
+            and fast.next is not None
+            and slow is not None
+        ):
+
+            # Keep track of the node before the midpoint
             prev_to_slow = slow
+
+            # Move the slow pointer by one step
             slow = slow.next
+
+            # Move the fast pointer by two steps
             fast = fast.next.next
 
-        if fast is None:
-            # Even length — slow is the 2nd-middle (start of second half)
-            second_half = prev_to_slow.next
-            prev_to_slow.next = None
-        else:
-            # Odd length — slow is the single middle; it stays in the first half
-            second_half = slow.next
-            slow.next = None
+        second_half: Optional[ListNode] = None
 
+        # If the fast pointer reached the end of the list, it has an even
+        # number of nodes
+        if fast is None and prev_to_slow is not None:
+
+            # The second half starts from the next node of the previous
+            # slow pointer
+            second_half = prev_to_slow.next
+
+            # Disconnect the two halves by setting the next of the
+            # previous slow pointer to None
+            prev_to_slow.next = None
+
+        # else the list has an odd number of nodes
+        else:
+            if slow is not None:
+
+                # The second half starts from the node after the slow
+                # pointer
+                second_half = slow.next
+
+                # Disconnect the two halves by setting the next of the
+                # slow pointer to None
+                slow.next = None
+
+        # Return a list containing the head of the first half and the
+        # head of the second half
         return [head, second_half]
 ```
 
 ```java run
 class Solution {
     public ListNode[] splitListInHalf(ListNode head) {
-        if (head == null || head.next == null) return new ListNode[]{head, null};
 
-        ListNode slow = head, fast = head, prevToSlow = null;
+        // If the list is empty or has only one element, return the
+        // original head and null
+        if (head == null || head.next == null) {
+            return new ListNode[]{head, null};
+        }
+
+        ListNode slow = head;
+        ListNode fast = head;
+        ListNode prevToSlow = null;
+
+        // Find the midpoint of the list using the slow and fast pointer
+        // technique
         while (fast != null && fast.next != null) {
+
+            // Keep track of the node before the midpoint
             prevToSlow = slow;
+
+            // Move the slow pointer by one step
             slow = slow.next;
+
+            // Move the fast pointer by two steps
             fast = fast.next.next;
         }
 
         ListNode secondHalf;
+
+        // If the fast pointer reached the end of the list, it has an
+        // even number of nodes
         if (fast == null) {
+
+            // The second half starts from the next node of the previous
+            // slow pointer
             secondHalf = prevToSlow.next;
+
+            // Disconnect the two halves by setting the next of the
+            // previous slow pointer to null
             prevToSlow.next = null;
-        } else {
+        }
+
+        // else the list has an odd number of nodes
+        else {
+
+            // The second half starts from the node after the slow
+            // pointer
             secondHalf = slow.next;
+
+            // Disconnect the two halves by setting the next of the slow
+            // pointer to null
             slow.next = null;
         }
+
+        // Return a list containing the head of the first half and the
+        // head of the second half
         return new ListNode[]{head, secondHalf};
     }
 }
@@ -692,23 +964,58 @@ class Solution {
 typedef struct { ListNode *first; ListNode *second; } ListPair;
 
 ListPair splitListInHalf(ListNode *head) {
-    ListPair out = {head, NULL};
-    if (head == NULL || head->next == NULL) return out;
 
-    ListNode *slow = head, *fast = head, *prevToSlow = NULL;
+    /* If the list is empty or has only one element, return the
+       original head and NULL */
+    ListPair out = {head, NULL};
+    if (head == NULL || head->next == NULL) {
+        return out;
+    }
+
+    ListNode *slow = head;
+    ListNode *fast = head;
+    ListNode *prevToSlow = NULL;
+
+    /* Find the midpoint of the list using the slow and fast pointer
+       technique */
     while (fast != NULL && fast->next != NULL) {
+
+        /* Keep track of the node before the midpoint */
         prevToSlow = slow;
+
+        /* Move the slow pointer by one step */
         slow = slow->next;
+
+        /* Move the fast pointer by two steps */
         fast = fast->next->next;
     }
 
+    /* If the fast pointer reached the end of the list, it has an
+       even number of nodes */
     if (fast == NULL) {
+
+        /* The second half starts from the next node of the previous
+           slow pointer */
         out.second = prevToSlow->next;
+
+        /* Disconnect the two halves by setting the next of the
+           previous slow pointer to NULL */
         prevToSlow->next = NULL;
-    } else {
+
+    }
+
+    /* else the list has an odd number of nodes */
+    else {
+
+        /* The second half starts from the node after the slow
+           pointer */
         out.second = slow->next;
+
+        /* Disconnect the two halves by setting the next of the slow
+           pointer to NULL */
         slow->next = NULL;
     }
+
     return out;
 }
 ```
@@ -716,24 +1023,60 @@ ListPair splitListInHalf(ListNode *head) {
 ```scala run
 object Solution {
   def splitListInHalf(head: ListNode): Array[ListNode] = {
-    if (head == null || head.next == null) return Array(head, null)
 
-    var slow = head; var fast = head
+    // If the list is empty or has only one element, return the
+    // original head and null
+    if (head == null || head.next == null) {
+      return Array(head, null)
+    }
+
+    var slow = head
+    var fast = head
     var prevToSlow: ListNode = null
+
+    // Find the midpoint of the list using the slow and fast pointer
+    // technique
     while (fast != null && fast.next != null) {
+
+      // Keep track of the node before the midpoint
       prevToSlow = slow
+
+      // Move the slow pointer by one step
       slow = slow.next
+
+      // Move the fast pointer by two steps
       fast = fast.next.next
     }
 
     var secondHalf: ListNode = null
+
+    // If the fast pointer reached the end of the list, it has an
+    // even number of nodes
     if (fast == null) {
+
+      // The second half starts from the next node of the previous
+      // slow pointer
       secondHalf = prevToSlow.next
+
+      // Disconnect the two halves by setting the next of the
+      // previous slow pointer to null
       prevToSlow.next = null
-    } else {
+    }
+
+    // else the list has an odd number of nodes
+    else {
+
+      // The second half starts from the node after the slow
+      // pointer
       secondHalf = slow.next
+
+      // Disconnect the two halves by setting the next of the slow
+      // pointer to null
       slow.next = null
     }
+
+    // Return a list containing the head of the first half and the
+    // head of the second half
     Array(head, secondHalf)
   }
 }
@@ -801,115 +1144,268 @@ even: "Even length — [1, 2, 3, 4], middles = 2 and 3" {
 
 ```pseudocode
 # Check whether the two halves of the list have equal sum.
-function sumRange(start, end):
-    s ← 0; cur ← start
-    while cur ≠ end:
-        s ← s + cur.val
-        cur ← cur.next
-    return s
+function sumOfList(start, end):
+    sum ← 0
+    current ← start
+    while current ≠ end:
+        sum ← sum + current.val
+        current ← current.next
+    return sum
 
 function equalHalves(head):
-    if head is null OR head.next is null: return true
-    slow ← head; fast ← head
+    if head is null OR head.next is null:
+        return true
+
+    # Initialize slow pointer
+    slow ← head
+
+    # Initialize fast pointer
+    fast ← head
+
+    # Find the midpoint of the list using the slow and fast pointer technique
     while fast is not null AND fast.next is not null:
+
+        # Move the slow pointer by one step
         slow ← slow.next
+
+        # Move the fast pointer by two steps
         fast ← fast.next.next
-    # Odd length: middle belongs to first half (start second half one past slow).
-    # Even length: slow already marks the start of the second half.
-    secondStart ← slow.next if fast is not null else slow
-    return sumRange(head, secondStart) = sumRange(secondStart, null)
+
+    secondHalfStart ← null
+
+    # Odd number of nodes, middle node goes to first half
+    if fast is not null:
+        secondHalfStart ← slow.next
+    # Even number of nodes, slow is the start of second half
+    else:
+        secondHalfStart ← slow
+
+    # Calculate sums of the first half
+    firstHalfSum ← sumOfList(head, secondHalfStart)
+
+    # Calculate sums of the second half
+    secondHalfSum ← sumOfList(secondHalfStart, null)
+
+    return firstHalfSum = secondHalfSum
 ```
 
 ```python run
 from typing import Optional
 
 class Solution:
-    def _sum_range(self, start: Optional[ListNode], end: Optional[ListNode]) -> int:
-        s, cur = 0, start
-        while cur is not end:
-            s += cur.val
-            cur = cur.next
-        return s
+    def sum_of_list(
+        self, start: Optional[ListNode], end: Optional[ListNode]
+    ) -> int:
+        sum_val = 0
+        current = start
+        while current != end:
+            sum_val += current.val
+            current = current.next
+        return sum_val
 
     def equal_halves(self, head: Optional[ListNode]) -> bool:
         if head is None or head.next is None:
             return True
 
-        slow, fast = head, head
+        # Initialize slow pointer
+        slow: Optional[ListNode] = head
+
+        # Initialize fast pointer
+        fast: Optional[ListNode] = head
+
+        # Find the midpoint of the list using the slow and fast pointer
+        # technique
         while fast is not None and fast.next is not None:
+
+            # Move the slow pointer by one step
             slow = slow.next
+
+            # Move the fast pointer by two steps
             fast = fast.next.next
 
-        # Odd length: middle belongs to first half (start second half one past slow)
-        # Even length: slow already marks the start of the second half
-        second_start = slow.next if fast is not None else slow
+        second_half_start: Optional[ListNode] = None
 
-        return self._sum_range(head, second_start) == self._sum_range(second_start, None)
+        # Odd number of nodes, middle node goes to first half
+        if fast is not None:
+            second_half_start = slow.next
+
+        # Even number of nodes, slow is the start of second half
+        else:
+            second_half_start = slow
+
+        # Calculate sums of the first half
+        first_half_sum = self.sum_of_list(head, second_half_start)
+
+        # Calculate sums of the second half
+        second_half_sum = self.sum_of_list(second_half_start, None)
+
+        return first_half_sum == second_half_sum
 ```
 
 ```java run
 class Solution {
-    private int sumRange(ListNode start, ListNode end) {
-        int s = 0;
-        for (ListNode cur = start; cur != end; cur = cur.next) s += cur.val;
-        return s;
+    private int sumOfList(ListNode start, ListNode end) {
+        int sum = 0;
+        ListNode current = start;
+        while (current != end) {
+            sum += current.val;
+            current = current.next;
+        }
+        return sum;
     }
 
     public boolean equalHalves(ListNode head) {
-        if (head == null || head.next == null) return true;
+        if (head == null || head.next == null) {
+            return true;
+        }
 
-        ListNode slow = head, fast = head;
+        // Initialize slow pointer
+        ListNode slow = head;
+
+        // Initialize fast pointer
+        ListNode fast = head;
+
+        // Find the midpoint of the list using the slow and fast pointer
+        // technique
         while (fast != null && fast.next != null) {
+
+            // Move the slow pointer by one step
             slow = slow.next;
+
+            // Move the fast pointer by two steps
             fast = fast.next.next;
         }
 
-        ListNode secondStart = (fast != null) ? slow.next : slow;
-        return sumRange(head, secondStart) == sumRange(secondStart, null);
+        ListNode secondHalfStart = null;
+
+        // Odd number of nodes, middle node goes to first half
+        if (fast != null) {
+            secondHalfStart = slow.next;
+        }
+
+        // Even number of nodes, slow is the start of second half
+        else {
+            secondHalfStart = slow;
+        }
+
+        // Calculate sums of the first half
+        int firstHalfSum = sumOfList(head, secondHalfStart);
+
+        // Calculate sums of the second half
+        int secondHalfSum = sumOfList(secondHalfStart, null);
+
+        return firstHalfSum == secondHalfSum;
     }
 }
 ```
 
 ```c run
-static int sum_range(ListNode *start, ListNode *end) {
-    int s = 0;
-    for (ListNode *cur = start; cur != end; cur = cur->next) s += cur->val;
-    return s;
+static int sumOfList(ListNode *start, ListNode *end) {
+    int sum = 0;
+    ListNode *current = start;
+    while (current != end) {
+        sum += current->val;
+        current = current->next;
+    }
+    return sum;
 }
 
 int equalHalves(ListNode *head) {
-    if (head == NULL || head->next == NULL) return 1;
+    if (head == NULL || head->next == NULL) {
+        return 1;
+    }
 
-    ListNode *slow = head, *fast = head;
+    /* Initialize slow pointer */
+    ListNode *slow = head;
+
+    /* Initialize fast pointer */
+    ListNode *fast = head;
+
+    /* Find the midpoint of the list using the slow and fast pointer
+       technique */
     while (fast != NULL && fast->next != NULL) {
+
+        /* Move the slow pointer by one step */
         slow = slow->next;
+
+        /* Move the fast pointer by two steps */
         fast = fast->next->next;
     }
 
-    ListNode *secondStart = (fast != NULL) ? slow->next : slow;
-    return sum_range(head, secondStart) == sum_range(secondStart, NULL);
+    ListNode *secondHalfStart = NULL;
+
+    /* Odd number of nodes, middle node goes to first half */
+    if (fast != NULL) {
+        secondHalfStart = slow->next;
+    }
+
+    /* Even number of nodes, slow is the start of second half */
+    else {
+        secondHalfStart = slow;
+    }
+
+    /* Calculate sums of the first half */
+    int firstHalfSum = sumOfList(head, secondHalfStart);
+
+    /* Calculate sums of the second half */
+    int secondHalfSum = sumOfList(secondHalfStart, NULL);
+
+    return firstHalfSum == secondHalfSum;
 }
 ```
 
 ```scala run
 object Solution {
-  private def sumRange(start: ListNode, end: ListNode): Int = {
-    var s = 0; var cur = start
-    while (cur ne end) { s += cur.v; cur = cur.next }
-    s
+  private def sumOfList(start: ListNode, end: ListNode): Int = {
+    var sum = 0
+    var current = start
+    while (current ne end) {
+      sum += current.v
+      current = current.next
+    }
+    sum
   }
 
   def equalHalves(head: ListNode): Boolean = {
-    if (head == null || head.next == null) return true
+    if (head == null || head.next == null) {
+      return true
+    }
 
-    var slow = head; var fast = head
+    // Initialize slow pointer
+    var slow = head
+
+    // Initialize fast pointer
+    var fast = head
+
+    // Find the midpoint of the list using the slow and fast pointer
+    // technique
     while (fast != null && fast.next != null) {
+
+      // Move the slow pointer by one step
       slow = slow.next
+
+      // Move the fast pointer by two steps
       fast = fast.next.next
     }
 
-    val secondStart = if (fast != null) slow.next else slow
-    sumRange(head, secondStart) == sumRange(secondStart, null)
+    var secondHalfStart: ListNode = null
+
+    // Odd number of nodes, middle node goes to first half
+    if (fast != null) {
+      secondHalfStart = slow.next
+    }
+    // Even number of nodes, slow is the start of second half
+    else {
+      secondHalfStart = slow
+    }
+
+    // Calculate sums of the first half
+    val firstHalfSum = sumOfList(head, secondHalfStart)
+
+    // Calculate sums of the second half
+    val secondHalfSum = sumOfList(secondHalfStart, null)
+
+    firstHalfSum == secondHalfSum
   }
 }
 ```
@@ -939,163 +1435,260 @@ Given the **head** of a singly linked list, write a function to check if the g
 ```pseudocode
 # Palindrome check. Find middle, reverse second half in place, compare element-by-element.
 function reverse(head):
-    previous ← null; current ← head
+    current ← head
+    previous ← null
     while current is not null:
-        nxt ← current.next
+        nextNode ← current.next
         current.next ← previous
         previous ← current
-        current ← nxt
+        current ← nextNode
     return previous
 
-function findMiddle(head):
-    slow ← head; fast ← head
+function findMiddleNode(head):
+    slow ← head
+    fast ← head
     while fast is not null AND fast.next is not null:
         slow ← slow.next
         fast ← fast.next.next
     return slow
 
-function palindromeChecker(head):
-    if head is null OR head.next is null: return true
-    middle ← findMiddle(head)
-    reversedSecond ← reverse(middle)
-    a ← head; b ← reversedSecond
-    while b is not null:
-        if a.val ≠ b.val: return false
-        a ← a.next
-        b ← b.next
+function isPalindrome(headA, headB):
+    while headB is not null:
+        if headA.val ≠ headB.val:
+            return false
+        headA ← headA.next
+        headB ← headB.next
     return true
+
+function palindromeChecker(head):
+    if head is null OR head.next is null:
+        return true
+
+    # Find the middle node of the linked list
+    middleNode ← findMiddleNode(head)
+
+    # Reverse the second half of the list
+    reversedSecondHalf ← reverse(middleNode)
+
+    # Compare the elements of first half with the reversed second half
+    return isPalindrome(head, reversedSecondHalf)
 ```
 
 ```python run
 from typing import Optional
 
 class Solution:
-    def _reverse(self, head: Optional[ListNode]) -> Optional[ListNode]:
-        previous, current = None, head
+    def reverse(self, head: Optional[ListNode]) -> Optional[ListNode]:
+        current: Optional[ListNode] = head
+        previous: Optional[ListNode] = None
+
         while current is not None:
-            nxt = current.next
+            next_node = current.next
             current.next = previous
-            previous, current = current, nxt
+            previous = current
+            current = next_node
+
         return previous
 
-    def _find_middle(self, head: Optional[ListNode]) -> Optional[ListNode]:
-        slow, fast = head, head
+    def find_middle_node(
+        self, head: Optional[ListNode]
+    ) -> Optional[ListNode]:
+        slow = head
+        fast = head
         while fast is not None and fast.next is not None:
             slow = slow.next
             fast = fast.next.next
+
         return slow
+
+    def is_palindrome(
+        self, head_a: Optional[ListNode], head_b: Optional[ListNode]
+    ) -> bool:
+        while head_b is not None:
+            if head_a.val != head_b.val:
+                return False
+            head_a = head_a.next
+            head_b = head_b.next
+        return True
 
     def palindrome_checker(self, head: Optional[ListNode]) -> bool:
         if head is None or head.next is None:
             return True
 
-        middle = self._find_middle(head)
-        # Reverse the second half IN PLACE, then compare element-by-element
-        reversed_second = self._reverse(middle)
+        # Find the middle node of the linked list
+        middle_node = self.find_middle_node(head)
 
-        a, b = head, reversed_second
-        while b is not None:
-            if a.val != b.val:
-                return False
-            a, b = a.next, b.next
-        return True
+        # Reverse the second half of the list
+        reversed_second_half = self.reverse(middle_node)
+
+        # Compare the elements of first half with the reversed second
+        # half
+        return self.is_palindrome(head, reversed_second_half)
 ```
 
 ```java run
 class Solution {
     private ListNode reverse(ListNode head) {
-        ListNode previous = null, current = head;
+        ListNode current = head;
+        ListNode previous = null;
+
         while (current != null) {
             ListNode next = current.next;
             current.next = previous;
             previous = current;
-            current  = next;
+            current = next;
         }
+
         return previous;
     }
 
-    private ListNode findMiddle(ListNode head) {
-        ListNode slow = head, fast = head;
+    private ListNode findMiddleNode(ListNode head) {
+        ListNode slow = head;
+        ListNode fast = head;
         while (fast != null && fast.next != null) {
             slow = slow.next;
             fast = fast.next.next;
         }
+
         return slow;
     }
 
-    public boolean palindromeChecker(ListNode head) {
-        if (head == null || head.next == null) return true;
-        ListNode middle = findMiddle(head);
-        ListNode reversedSecond = reverse(middle);
-
-        ListNode a = head, b = reversedSecond;
-        while (b != null) {
-            if (a.val != b.val) return false;
-            a = a.next;
-            b = b.next;
+    private boolean isPalindrome(ListNode headA, ListNode headB) {
+        while (headB != null) {
+            if (headA.val != headB.val) {
+                return false;
+            }
+            headA = headA.next;
+            headB = headB.next;
         }
         return true;
+    }
+
+    public boolean palindromeChecker(ListNode head) {
+        if (head == null || head.next == null) {
+            return true;
+        }
+
+        // Find the middle node of the linked list
+        ListNode middleNode = findMiddleNode(head);
+
+        // Reverse the second half of the list
+        ListNode reversedSecondHalf = reverse(middleNode);
+
+        // Compare the elements of first half with the reversed second
+        // half
+        return isPalindrome(head, reversedSecondHalf);
     }
 }
 ```
 
 ```c run
-static ListNode* reverse_list(ListNode *head) {
-    ListNode *prev = NULL, *cur = head;
-    while (cur) {
-        ListNode *nxt = cur->next;
-        cur->next = prev;
-        prev = cur; cur = nxt;
+static ListNode* reverse(ListNode *head) {
+    ListNode *current = head;
+    ListNode *previous = NULL;
+
+    while (current != NULL) {
+        ListNode *next = current->next;
+        current->next = previous;
+        previous = current;
+        current = next;
     }
-    return prev;
+
+    return previous;
 }
-static ListNode* find_middle(ListNode *head) {
-    ListNode *slow = head, *fast = head;
-    while (fast && fast->next) { slow = slow->next; fast = fast->next->next; }
+
+static ListNode* findMiddleNode(ListNode *head) {
+    ListNode *slow = head;
+    ListNode *fast = head;
+    while (fast != NULL && fast->next != NULL) {
+        slow = slow->next;
+        fast = fast->next->next;
+    }
+
     return slow;
 }
 
-int palindromeChecker(ListNode *head) {
-    if (head == NULL || head->next == NULL) return 1;
-    ListNode *mid = find_middle(head);
-    ListNode *rev = reverse_list(mid);
-
-    ListNode *a = head, *b = rev;
-    while (b) {
-        if (a->val != b->val) return 0;
-        a = a->next; b = b->next;
+static int isPalindrome(ListNode *headA, ListNode *headB) {
+    while (headB != NULL) {
+        if (headA->val != headB->val) {
+            return 0;
+        }
+        headA = headA->next;
+        headB = headB->next;
     }
     return 1;
+}
+
+int palindromeChecker(ListNode *head) {
+    if (head == NULL || head->next == NULL) {
+        return 1;
+    }
+
+    /* Find the middle node of the linked list */
+    ListNode *middleNode = findMiddleNode(head);
+
+    /* Reverse the second half of the list */
+    ListNode *reversedSecondHalf = reverse(middleNode);
+
+    /* Compare the elements of first half with the reversed second
+       half */
+    return isPalindrome(head, reversedSecondHalf);
 }
 ```
 
 ```scala run
 object Solution {
   private def reverse(headIn: ListNode): ListNode = {
-    var prev: ListNode = null; var cur = headIn
-    while (cur != null) {
-      val nxt = cur.next
-      cur.next = prev
-      prev = cur; cur = nxt
+    var current = headIn
+    var previous: ListNode = null
+
+    while (current != null) {
+      val next = current.next
+      current.next = previous
+      previous = current
+      current = next
     }
-    prev
+
+    previous
   }
-  private def findMiddle(head: ListNode): ListNode = {
-    var slow = head; var fast = head
-    while (fast != null && fast.next != null) { slow = slow.next; fast = fast.next.next }
+
+  private def findMiddleNode(head: ListNode): ListNode = {
+    var slow = head
+    var fast = head
+    while (fast != null && fast.next != null) {
+      slow = slow.next
+      fast = fast.next.next
+    }
     slow
   }
 
-  def palindromeChecker(head: ListNode): Boolean = {
-    if (head == null || head.next == null) return true
-    val mid = findMiddle(head)
-    val rev = reverse(mid)
-    var a = head; var b = rev
-    while (b != null) {
-      if (a.v != b.v) return false
-      a = a.next; b = b.next
+  private def isPalindrome(headAIn: ListNode, headBIn: ListNode): Boolean = {
+    var headA = headAIn
+    var headB = headBIn
+    while (headB != null) {
+      if (headA.v != headB.v) {
+        return false
+      }
+      headA = headA.next
+      headB = headB.next
     }
     true
+  }
+
+  def palindromeChecker(head: ListNode): Boolean = {
+    if (head == null || head.next == null) {
+      return true
+    }
+
+    // Find the middle node of the linked list
+    val middleNode = findMiddleNode(head)
+
+    // Reverse the second half of the list
+    val reversedSecondHalf = reverse(middleNode)
+
+    // Compare the elements of first half with the reversed second
+    // half
+    isPalindrome(head, reversedSecondHalf)
   }
 }
 ```

@@ -1,11 +1,13 @@
 package codefolio.client.components.cortex.widgets
 
 import codefolio.client.components.icons.LucideIcons
+import codefolio.client.d3.D3
 import japgolly.scalajs.react.*
 import japgolly.scalajs.react.vdom.html_<^.*
 import org.scalajs.dom
 
 import scala.scalajs.js
+import scala.scalajs.js.JSConverters.*
 import scala.util.{Failure, Success, Try}
 
 /**
@@ -13,24 +15,34 @@ import scala.util.{Failure, Success, Try}
  * markers per step and an optional highlighted range. Step controls (prev/next/play/reset) scrub through the
  * author-defined steps.
  *
+ * Rendering uses D3 selections + transitions inside a React `useEffect`. React owns a host `<div>`; D3 owns
+ * the `<svg>` it creates inside that div. On step change a single update pass re-binds data and transitions
+ * positions so swap-style problems animate items moving between cells rather than flicker-rebuilding the SVG.
+ * See ADR-0013.
+ *
  * Payload schema (JSON):
  * {{{
  * {
- *   "items":  ["1", "3", "5", "7", "9", "11", "13"],
- *   "title":  "Binary search for 11",
+ *   "items":  ["a", "e", "i", "o", "u"],
+ *   "title":  "Flip characters",
  *   "steps":  [
- *     { "markers": [{"name": "lo", "index": 0}, {"name": "mid", "index": 3}, {"name": "hi", "index": 6}],
- *       "range":   { "lo": 0, "hi": 6 },
- *       "msg":     "mid=7 ≠ 11; go right" },
+ *     {
+ *       "items": ["a", "e", "i", "o", "u"],            // optional, overrides top-level for this step
+ *       "keys":  ["a", "e", "i", "o", "u"],            // optional, defaults to items themselves
+ *       "markers": [{"name": "left", "index": 0}, {"name": "right", "index": 4}],
+ *       "range":   { "lo": 0, "hi": 4 },
+ *       "msg":     "swap arr[0] and arr[4]"
+ *     },
  *     ...
  *   ]
  * }
  * }}}
  *
- * SVG is built as a string and injected via `dangerouslySetInnerHTML` — same pattern Mermaid + D2 use. The
- * scalajs-react VDOM doesn't include SVG tags under the `html_<^` import that the rest of this package uses,
- * and mixing namespaces churns the build for very little gain on a fixed-cardinality layout. CSS transitions
- * give us smooth interpolation between steps without imperative D3 selections.
+ * The optional per-step `items` lets each step define the array contents. When the contents change across
+ * steps, D3 keys the join by `keys` (or by the item label when `keys` is omitted), so an item moving from one
+ * index to another transitions its `transform` rather than re-creating a fresh DOM node. Authors whose
+ * `items` contain duplicate labels (e.g. palindrome checks on `["r","a","c","e","c","a","r"]`) must provide
+ * explicit `keys` to avoid D3 collapsing duplicates.
  */
 object ArrayTraversal:
 
@@ -41,8 +53,31 @@ object ArrayTraversal:
 
   final case class Marker(name: String, index: Int, color: Option[String])
   final case class RangeBand(lo: Int, hi: Int)
-  final case class Step(markers: List[Marker], range: Option[RangeBand], msg: String)
-  final case class Spec(items: List[String], title: Option[String], steps: List[Step])
+
+  final case class Step(
+      items: Option[List[String]],
+      keys: Option[List[String]],
+      markers: List[Marker],
+      range: Option[RangeBand],
+      msg: String,
+      // Optional secondary row state for chapters that need two stacked arrays
+      // (e.g. simultaneous traversal of two sequences, in-place reverse via temp
+      // array). When `secondaryItems` is `None` here AND `Spec.secondaryItems`
+      // is `None`, the widget renders a single row exactly as before.
+      secondaryItems: Option[List[String]],
+      secondaryKeys: Option[List[String]],
+      secondaryMarkers: List[Marker],
+      secondaryRange: Option[RangeBand]
+  )
+
+  final case class Spec(
+      items: List[String],
+      title: Option[String],
+      steps: List[Step],
+      primaryLabel: Option[String],
+      secondaryItems: Option[List[String]],
+      secondaryLabel: Option[String]
+  )
 
   final case class Props(payload: String)
 
@@ -51,19 +86,21 @@ object ArrayTraversal:
   // prose column without horizontal scrolling for arrays up to ~12 elements.
   // ---------------------------------------------------------------------------
 
-  private val CellSize     = 56.0
-  private val CellGap      = 6.0
-  private val MarkerLaneH  = 44.0
-  private val RangeBandH   = 8.0
-  private val PaddingX     = 16.0
-  private val PaddingY     = 12.0
-  private val StepDelayMs  = 1200
-  private val DefaultColor = "#3b82f6"
+  private val CellSize             = 56.0
+  private val CellGap              = 6.0
+  private val MarkerLaneH          = 44.0
+  private val RangeBandH           = 8.0
+  private val PaddingX             = 16.0
+  private val PaddingY             = 12.0
+  private val StepDelayMs          = 1200
+  private val TransitionDurationMs = 450.0
+  private val DefaultColor         = "#3b82f6"
+  private val SvgNs                = "http://www.w3.org/2000/svg"
 
   private val PaletteByIndex = Vector(
-    "#3b82f6", // lo / first
+    "#3b82f6", // left / first
     "#10b981", // mid
-    "#f59e0b", // hi
+    "#f59e0b", // right / hi
     "#a855f7",
     "#ef4444"
   )
@@ -74,38 +111,69 @@ object ArrayTraversal:
   // error placeholder rather than crashing the chapter.
   // ---------------------------------------------------------------------------
 
+  private def parseMarkers(arr: js.UndefOr[js.Array[js.Dynamic]]): List[Marker] =
+    arr.toOption
+      .getOrElse(js.Array())
+      .toList
+      .map { m =>
+        Marker(
+          name = m.name.asInstanceOf[js.UndefOr[String]].toOption.getOrElse(""),
+          index = m.index.asInstanceOf[js.UndefOr[Int]].toOption.getOrElse(0),
+          color = m.color.asInstanceOf[js.UndefOr[String]].toOption.filter(_.nonEmpty)
+        )
+      }
+
+  private def parseRange(r: js.UndefOr[js.Dynamic]): Option[RangeBand] =
+    r.toOption.map { v =>
+      RangeBand(
+        lo = v.lo.asInstanceOf[js.UndefOr[Int]].toOption.getOrElse(0),
+        hi = v.hi.asInstanceOf[js.UndefOr[Int]].toOption.getOrElse(0)
+      )
+    }
+
+  private def parseStringArray(arr: js.UndefOr[js.Array[js.Any]]): Option[List[String]] =
+    arr.toOption.map(_.toList.map(v => js.Dynamic.global.String(v).asInstanceOf[String]))
+
   private def parsePayload(json: String): Either[String, Spec] =
     Try {
-      val raw      = js.JSON.parse(json).asInstanceOf[js.Dynamic]
-      val itemsJ   = raw.items.asInstanceOf[js.Array[js.Any]]
-      val items    = itemsJ.toList.map(v => js.Dynamic.global.String(v).asInstanceOf[String])
-      val title    = raw.title.asInstanceOf[js.UndefOr[String]].toOption.filter(_.nonEmpty)
-      val rawSteps = raw.steps.asInstanceOf[js.UndefOr[js.Array[js.Dynamic]]].toOption.getOrElse(js.Array())
+      val raw    = js.JSON.parse(json).asInstanceOf[js.Dynamic]
+      val itemsJ = raw.items.asInstanceOf[js.Array[js.Any]]
+      val items  = itemsJ.toList.map(v => js.Dynamic.global.String(v).asInstanceOf[String])
+      val title  = raw.title.asInstanceOf[js.UndefOr[String]].toOption.filter(_.nonEmpty)
+      val primaryLabel =
+        raw.primaryLabel.asInstanceOf[js.UndefOr[String]].toOption.filter(_.nonEmpty)
+      val secondaryItems =
+        parseStringArray(raw.secondaryItems.asInstanceOf[js.UndefOr[js.Array[js.Any]]])
+      val secondaryLabel =
+        raw.secondaryLabel.asInstanceOf[js.UndefOr[String]].toOption.filter(_.nonEmpty)
+      val rawSteps = raw.steps
+        .asInstanceOf[js.UndefOr[js.Array[js.Dynamic]]]
+        .toOption
+        .getOrElse(js.Array())
       val steps = rawSteps.toList.map { s =>
-        val mks = s.markers.asInstanceOf[js.UndefOr[js.Array[js.Dynamic]]].toOption
-          .getOrElse(js.Array())
-          .toList
-          .map { m =>
-            Marker(
-              name = m.name.asInstanceOf[js.UndefOr[String]].toOption.getOrElse(""),
-              index = m.index.asInstanceOf[js.UndefOr[Int]].toOption.getOrElse(0),
-              color = m.color.asInstanceOf[js.UndefOr[String]].toOption.filter(_.nonEmpty)
-            )
-          }
-        val rng = s.range.asInstanceOf[js.UndefOr[js.Dynamic]].toOption.map { r =>
-          RangeBand(
-            lo = r.lo.asInstanceOf[js.UndefOr[Int]].toOption.getOrElse(0),
-            hi = r.hi.asInstanceOf[js.UndefOr[Int]].toOption.getOrElse(0)
-          )
-        }
-        val msg = s.msg.asInstanceOf[js.UndefOr[String]].toOption.getOrElse("")
-        Step(mks, rng, msg)
+        val mks          = parseMarkers(s.markers.asInstanceOf[js.UndefOr[js.Array[js.Dynamic]]])
+        val rng          = parseRange(s.range.asInstanceOf[js.UndefOr[js.Dynamic]])
+        val perStepItems = parseStringArray(s.items.asInstanceOf[js.UndefOr[js.Array[js.Any]]])
+        val perStepKeys  = parseStringArray(s.keys.asInstanceOf[js.UndefOr[js.Array[js.Any]]])
+        val secItems =
+          parseStringArray(s.secondaryItems.asInstanceOf[js.UndefOr[js.Array[js.Any]]])
+        val secKeys =
+          parseStringArray(s.secondaryKeys.asInstanceOf[js.UndefOr[js.Array[js.Any]]])
+        val secMarkers =
+          parseMarkers(s.secondaryMarkers.asInstanceOf[js.UndefOr[js.Array[js.Dynamic]]])
+        val secRange = parseRange(s.secondaryRange.asInstanceOf[js.UndefOr[js.Dynamic]])
+        val msg      = s.msg.asInstanceOf[js.UndefOr[String]].toOption.getOrElse("")
+        Step(perStepItems, perStepKeys, mks, rng, msg, secItems, secKeys, secMarkers, secRange)
       }
-      Spec(items, title, steps)
+      Spec(items, title, steps, primaryLabel, secondaryItems, secondaryLabel)
     } match
       case Success(spec) if spec.items.isEmpty => Left("payload.items must be non-empty")
       case Success(spec)                       => Right(spec)
       case Failure(t)                          => Left(Option(t.getMessage).getOrElse("invalid payload JSON"))
+
+  // ---------------------------------------------------------------------------
+  // Layout helpers
+  // ---------------------------------------------------------------------------
 
   private def clamp(i: Int, count: Int): Int =
     if count <= 0 then 0 else math.max(0, math.min(count - 1, i))
@@ -116,8 +184,12 @@ object ArrayTraversal:
   private def viewBoxWidth(itemCount: Int): Double =
     PaddingX * 2 + itemCount * CellSize + (itemCount - 1).max(0) * CellGap
 
-  private def viewBoxHeight: Double =
-    PaddingY * 2 + CellSize + MarkerLaneH + RangeBandH + 6.0
+  private def singleRowHeight: Double = CellSize + MarkerLaneH + RangeBandH + 6.0
+
+  private def viewBoxHeight(hasSecondary: Boolean): Double =
+    PaddingY * 2 + singleRowHeight + (if hasSecondary then RowGap + singleRowHeight else 0.0)
+
+  private val RowGap = 20.0
 
   private def colorFor(marker: Marker, fallbackIdx: Int): String =
     marker.color
@@ -126,74 +198,274 @@ object ArrayTraversal:
       )
       .getOrElse(DefaultColor)
 
-  // Escape values that land inside SVG attribute strings / text nodes. Items
-  // are author-controlled and not expected to contain markup, but a stray `<`
-  // or `&` should not break the diagram.
-  private def esc(s: String): String =
-    s.replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;").replace("\"", "&quot;")
+  private def itemsFor(spec: Spec, step: Step): List[String] =
+    step.items.getOrElse(spec.items)
+
+  private def keysFor(spec: Spec, step: Step): List[String] =
+    step.keys.getOrElse(itemsFor(spec, step))
 
   // ---------------------------------------------------------------------------
-  // SVG string-building. Range band sits behind cells; markers sit in front so
-  // labels never disappear.
+  // Secondary-row helpers. Returns Some(items) when this widget instance has a
+  // secondary row (either spec-level default OR per-step override); None means
+  // single-row layout.
   // ---------------------------------------------------------------------------
 
-  private def rangeBandSvg(range: Option[RangeBand], itemCount: Int, y: Double): String =
-    range.filter(r => r.lo <= r.hi && r.lo >= 0 && r.hi < itemCount) match
-      case None => ""
-      case Some(r) =>
-        val x  = cellX(r.lo)
-        val xR = cellX(r.hi) + CellSize
-        s"""<rect class="array-traversal__range" x="$x" y="$y" width="${xR - x}" height="$RangeBandH" rx="3"/>"""
+  private def secondaryItemsFor(spec: Spec, step: Step): Option[List[String]] =
+    step.secondaryItems.orElse(spec.secondaryItems)
 
-  private def cellsSvg(items: List[String], range: Option[RangeBand]): String =
-    val cellY = PaddingY
-    items.zipWithIndex
-      .map { case (label, i) =>
-        val inRange = range.exists(r => i >= r.lo && i <= r.hi)
-        val cls =
-          if inRange then "array-traversal__cell array-traversal__cell--in-range"
-          else "array-traversal__cell"
-        s"""<g>
-           |  <rect class="$cls" x="${cellX(i)}" y="$cellY" width="$CellSize" height="$CellSize" rx="6"/>
-           |  <text class="array-traversal__cell-label" x="${cellX(
-            i
-          ) + CellSize / 2}" y="${cellY + CellSize / 2 + 5}" text-anchor="middle">${esc(label)}</text>
-           |  <text class="array-traversal__cell-index" x="${cellX(
-            i
-          ) + CellSize / 2}" y="${cellY + CellSize + 12}" text-anchor="middle">$i</text>
-           |</g>""".stripMargin
+  private def secondaryKeysFor(spec: Spec, step: Step): Option[List[String]] =
+    step.secondaryKeys.orElse(secondaryItemsFor(spec, step))
+
+  private def specHasSecondary(spec: Spec): Boolean =
+    spec.secondaryItems.isDefined || spec.steps.exists(_.secondaryItems.isDefined)
+
+  // ---------------------------------------------------------------------------
+  // Mount the SVG element inside the host div on first call; return the SVG
+  // element for D3 to manipulate. Subsequent calls return the existing SVG.
+  // ---------------------------------------------------------------------------
+
+  private def ensureSvg(host: dom.html.Element, spec: Spec): dom.Element =
+    val existing = host.querySelector("svg")
+    if existing != null then existing.asInstanceOf[dom.Element]
+    else
+      val svg          = dom.document.createElementNS(SvgNs, "svg").asInstanceOf[dom.Element]
+      val hasSecondary = specHasSecondary(spec)
+      val width = viewBoxWidth(
+        math.max(spec.items.size, spec.secondaryItems.fold(0)(_.size))
+      )
+      svg.setAttribute("class", "array-traversal__svg")
+      svg.setAttribute("role", "img")
+      svg.setAttribute("aria-label", spec.title.getOrElse("Array traversal"))
+      svg.setAttribute("xmlns", SvgNs)
+      svg.setAttribute("viewBox", s"0 0 $width ${viewBoxHeight(hasSecondary)}")
+      host.appendChild(svg)
+      svg
+
+  // ---------------------------------------------------------------------------
+  // D3 render — runs after every step change. Idempotent: the first call sets up
+  // the SVG structure via enter selections; subsequent calls update positions /
+  // text / markers via transitions on the same elements.
+  // ---------------------------------------------------------------------------
+
+  // Row identifier used to namespace CSS classes when both primary and secondary
+  // rows are present. "primary" maps to the original class names so existing
+  // chapters render unchanged; "secondary" gets distinct classes so D3 can pick
+  // its own row's elements without bleed-through.
+  final private case class RowKey(suffix: String, classSuffix: String)
+  private val PrimaryRow   = RowKey("", "")
+  private val SecondaryRow = RowKey("--secondary", "--secondary")
+
+  private def renderRow(
+      svgEl: dom.Element,
+      rowKey: RowKey,
+      items: List[String],
+      keys: List[String],
+      markers: List[Marker],
+      range: Option[RangeBand],
+      cellY: Double,
+      animate: Boolean
+  ): Unit =
+    val svg                        = D3.select(svgEl)
+    val itemCount                  = items.size
+    val cellGroupClass             = s"array-traversal__cell-group${rowKey.classSuffix}"
+    val markerGroupClass           = s"array-traversal__marker${rowKey.classSuffix}"
+    val rangeClass                 = s"array-traversal__range${rowKey.classSuffix}"
+    val bandY                      = cellY + CellSize + 18
+    val laneY                      = cellY + CellSize + 20.0
+    val cellData: js.Array[js.Any] = items.toJSArray.asInstanceOf[js.Array[js.Any]]
+    val cellKeys                   = keys.toJSArray
+    val cellKeyFn: js.Function2[js.Any, Int, js.Any] =
+      (_, i) => if i < cellKeys.length then cellKeys(i) else js.Dynamic.global.String(i)
+
+    // Range band ----------------------------------------------------------------
+    val rangeData: js.Array[js.Any] = range
+      .filter(r => r.lo <= r.hi && r.lo >= 0 && r.hi < itemCount)
+      .toList
+      .map(r => js.Dynamic.literal(lo = r.lo, hi = r.hi).asInstanceOf[js.Any])
+      .toJSArray
+    val rangeJoin = svg
+      .selectAll(s"rect.$rangeClass")
+      .data(rangeData)
+      .join("rect")
+      .attr("class", rangeClass)
+      .attr("y", bandY)
+      .attr("height", RangeBandH)
+      .attr("rx", 3)
+    val rangeX: js.Function2[js.Any, Int, js.Any] =
+      (d, _) => cellX(d.asInstanceOf[js.Dynamic].lo.asInstanceOf[Int])
+    val rangeW: js.Function2[js.Any, Int, js.Any] =
+      (d, _) =>
+        val dyn = d.asInstanceOf[js.Dynamic]
+        val lo  = dyn.lo.asInstanceOf[Int]
+        val hi  = dyn.hi.asInstanceOf[Int]
+        cellX(hi) + CellSize - cellX(lo)
+    val _ =
+      if animate then
+        rangeJoin
+          .transition()
+          .duration(TransitionDurationMs)
+          .ease(D3.easeCubicInOut)
+          .attr("x", rangeX)
+          .attr("width", rangeW)
+      else rangeJoin.attr("x", rangeX).attr("width", rangeW)
+
+    // Cells --------------------------------------------------------------------
+    val cellSel = svg.selectAll(s"g.$cellGroupClass").data(cellData, cellKeyFn)
+    val cellEnter = cellSel
+      .enter()
+      .append("g")
+      .attr("class", cellGroupClass)
+      .attr(
+        "transform",
+        ((_, i) => s"translate(${cellX(i)}, $cellY)"): js.Function2[js.Any, Int, js.Any]
+      )
+    val _ = cellEnter
+      .append("rect")
+      .attr("class", "array-traversal__cell")
+      .attr("x", 0)
+      .attr("y", 0)
+      .attr("width", CellSize)
+      .attr("height", CellSize)
+      .attr("rx", 6)
+    val _ = cellEnter
+      .append("text")
+      .attr("class", "array-traversal__cell-label")
+      .attr("x", CellSize / 2)
+      .attr("y", CellSize / 2 + 5)
+      .attr("text-anchor", "middle")
+      .text(((d, _) => d): js.Function2[js.Any, Int, js.Any])
+    val _ = cellEnter
+      .append("text")
+      .attr("class", "array-traversal__cell-index")
+      .attr("x", CellSize / 2)
+      .attr("y", CellSize + 12)
+      .attr("text-anchor", "middle")
+      .text(((_, i) => js.Dynamic.global.String(i)): js.Function2[js.Any, Int, js.Any])
+    val _ = cellSel.exit().remove()
+
+    val cellAll = svg.selectAll(s"g.$cellGroupClass")
+    val cellTransform: js.Function2[js.Any, Int, js.Any] =
+      (_, i) => s"translate(${cellX(i)}, $cellY)"
+    val _ =
+      if animate then
+        cellAll
+          .transition()
+          .duration(TransitionDurationMs)
+          .ease(D3.easeCubicInOut)
+          .attr("transform", cellTransform)
+      else cellAll.attr("transform", cellTransform)
+
+    val _ = cellAll
+      .select("text.array-traversal__cell-label")
+      .text(((d, _) => d): js.Function2[js.Any, Int, js.Any])
+    val _ = cellAll
+      .select("text.array-traversal__cell-index")
+      .text(((_, i) => js.Dynamic.global.String(i)): js.Function2[js.Any, Int, js.Any])
+
+    val inRangeFn: js.Function2[js.Any, Int, Boolean] = (_, i) =>
+      range.exists(r => i >= r.lo && i <= r.hi)
+    val _ = cellAll
+      .select("rect.array-traversal__cell")
+      .classed("array-traversal__cell--in-range", inRangeFn)
+
+    // Markers ------------------------------------------------------------------
+    val markerData: js.Array[js.Any] = markers
+      .filter(m => m.index >= 0 && m.index < itemCount)
+      .zipWithIndex
+      .map { case (m, fallbackIdx) =>
+        js.Dynamic
+          .literal(name = m.name, index = m.index, color = colorFor(m, fallbackIdx))
+          .asInstanceOf[js.Any]
       }
-      .mkString("\n")
+      .toJSArray
+    val markerKeyFn: js.Function2[js.Any, Int, js.Any] =
+      (d, _) => d.asInstanceOf[js.Dynamic].name
+    val markerSel = svg.selectAll(s"g.$markerGroupClass").data(markerData, markerKeyFn)
+    val centerOf: (js.Any, Int) => Double =
+      (d, _) => cellX(d.asInstanceOf[js.Dynamic].index.asInstanceOf[Int]) + CellSize / 2
 
-  private def markersSvg(markers: List[Marker], itemCount: Int): String =
-    val laneY = PaddingY + CellSize + 20.0
-    markers.zipWithIndex
-      .flatMap { case (m, fallbackIdx) =>
-        if m.index < 0 || m.index >= itemCount then None
-        else
-          val color = colorFor(m, fallbackIdx)
-          val cx    = cellX(m.index) + CellSize / 2
-          Some(
-            s"""<g class="array-traversal__marker">
-               |  <path d="M ${cx - 5} ${laneY + 6} L ${cx + 5} ${laneY + 6} L $cx ${laneY - 2} Z" fill="$color"/>
-               |  <text class="array-traversal__marker-label" x="$cx" y="${laneY + MarkerLaneH - 14}" text-anchor="middle" fill="$color">${esc(
-                m.name
-              )}</text>
-               |</g>""".stripMargin
-          )
-      }
-      .mkString("\n")
+    val markerEnter = markerSel
+      .enter()
+      .append("g")
+      .attr("class", markerGroupClass)
+      .attr(
+        "transform",
+        ((d, i) => s"translate(${centerOf(d, i)}, 0)"): js.Function2[js.Any, Int, js.Any]
+      )
+    val _ = markerEnter
+      .append("path")
+      .attr("d", s"M -5 ${laneY + 6} L 5 ${laneY + 6} L 0 ${laneY - 2} Z")
+      .attr(
+        "fill",
+        ((d, _) => d.asInstanceOf[js.Dynamic].color): js.Function2[js.Any, Int, js.Any]
+      )
+    val _ = markerEnter
+      .append("text")
+      .attr("class", "array-traversal__marker-label")
+      .attr("x", 0)
+      .attr("y", laneY + MarkerLaneH - 14)
+      .attr("text-anchor", "middle")
+      .attr(
+        "fill",
+        ((d, _) => d.asInstanceOf[js.Dynamic].color): js.Function2[js.Any, Int, js.Any]
+      )
+      .text(((d, _) => d.asInstanceOf[js.Dynamic].name): js.Function2[js.Any, Int, js.Any])
+    val _ = markerSel.exit().remove()
 
-  private def buildSvg(spec: Spec, step: Step): String =
-    val bandY = PaddingY + CellSize + 18
-    s"""<svg viewBox="0 0 ${viewBoxWidth(spec.items.size)} $viewBoxHeight"
-       |     class="array-traversal__svg" role="img"
-       |     aria-label="${esc(spec.title.getOrElse("Array traversal"))}"
-       |     xmlns="http://www.w3.org/2000/svg">
-       |  ${rangeBandSvg(step.range, spec.items.size, bandY)}
-       |  ${cellsSvg(spec.items, step.range)}
-       |  ${markersSvg(step.markers, spec.items.size)}
-       |</svg>""".stripMargin
+    val markerAll = svg.selectAll(s"g.$markerGroupClass")
+    val markerTransform: js.Function2[js.Any, Int, js.Any] =
+      (d, i) => s"translate(${centerOf(d, i)}, 0)"
+    val _ =
+      if animate then
+        markerAll
+          .transition()
+          .duration(TransitionDurationMs)
+          .ease(D3.easeCubicInOut)
+          .attr("transform", markerTransform)
+      else markerAll.attr("transform", markerTransform)
+    val _ = markerAll
+      .select("path")
+      .attr("fill", ((d, _) => d.asInstanceOf[js.Dynamic].color): js.Function2[js.Any, Int, js.Any])
+    val _ = markerAll
+      .select("text.array-traversal__marker-label")
+      .attr("fill", ((d, _) => d.asInstanceOf[js.Dynamic].color): js.Function2[js.Any, Int, js.Any])
+      .text(((d, _) => d.asInstanceOf[js.Dynamic].name): js.Function2[js.Any, Int, js.Any])
+
+  private def renderStep(svgEl: dom.Element, spec: Spec, step: Step, animate: Boolean): Unit =
+    val svg          = D3.select(svgEl)
+    val items        = itemsFor(spec, step)
+    val keys         = keysFor(spec, step)
+    val itemCount    = items.size
+    val secItems     = secondaryItemsFor(spec, step)
+    val hasSecondary = specHasSecondary(spec)
+    val width = viewBoxWidth(
+      math.max(itemCount, secItems.fold(0)(_.size))
+    )
+    val _ = svg.attr("viewBox", s"0 0 $width ${viewBoxHeight(hasSecondary)}")
+
+    renderRow(svgEl, PrimaryRow, items, keys, step.markers, step.range, PaddingY, animate)
+
+    secItems match
+      case Some(secondary) =>
+        val secKeys  = secondaryKeysFor(spec, step).getOrElse(secondary)
+        val secCellY = PaddingY + singleRowHeight + RowGap
+        renderRow(
+          svgEl,
+          SecondaryRow,
+          secondary,
+          secKeys,
+          step.secondaryMarkers,
+          step.secondaryRange,
+          secCellY,
+          animate
+        )
+      case None =>
+        // Tear down any secondary-row elements left over from a previous render
+        // pass (shouldn't happen since secondary presence is fixed per Spec, but
+        // belt-and-braces).
+        val _ = svg.selectAll("g.array-traversal__cell-group--secondary").remove()
+        val _ = svg.selectAll("g.array-traversal__marker--secondary").remove()
+        val _ = svg.selectAll("rect.array-traversal__range--secondary").remove()
 
   // ---------------------------------------------------------------------------
   // Component
@@ -203,12 +475,15 @@ object ArrayTraversal:
     ScalaFnComponent
       .withHooks[Props]
       .useMemoBy(_.payload)(_ => payload => parsePayload(payload))
-      .useState(0)
-      .useState(false)
-      .useRefBy(_ => Option.empty[Int])
-      .useEffectWithDepsBy((_, specM, indexS, playingS, _) =>
+      .useState(0)                      // step index
+      .useState(false)                  // playing
+      .useRefBy(_ => Option.empty[Int]) // play timeout id
+      .useRefToVdom[dom.html.Element]   // host div ref — D3 manages the <svg> inside
+      .useRefBy(_ => false)             // hasRendered (mutable; avoids re-render cycle)
+      // ── play-loop timer ─────────────────────────────────────────────────────
+      .useEffectWithDepsBy((_, specM, indexS, playingS, _, _, _) =>
         (specM.value.toOption.fold(0)(_.steps.size), indexS.value, playingS.value)
-      ) { (_, _, indexS, playingS, timeoutRef) => (count, index, playing) =>
+      ) { (_, _, indexS, playingS, timeoutRef, _, _) => (count, index, playing) =>
         Callback {
           timeoutRef.value.foreach(dom.window.clearTimeout)
           timeoutRef.value = None
@@ -220,7 +495,22 @@ object ArrayTraversal:
               timeoutRef.value = Some(id)
         }
       }
-      .render { (_, specM, indexS, playingS, _) =>
+      // ── D3 render on every step / spec change ───────────────────────────────
+      .useEffectWithDepsBy((_, specM, indexS, _, _, _, _) =>
+        (specM.value.toOption.fold(0)(_.steps.size), indexS.value)
+      ) { (_, specM, _, _, _, hostRef, hasRenderedRef) => (count, index) =>
+        specM.value.toOption.filter(_.steps.nonEmpty) match
+          case Some(spec) =>
+            hostRef.foreach { host =>
+              val svgEl   = ensureSvg(host, spec)
+              val step    = spec.steps(clamp(index, count))
+              val animate = hasRenderedRef.value
+              renderStep(svgEl, spec, step, animate)
+              if !hasRenderedRef.value then hasRenderedRef.value = true
+            }
+          case None => Callback.empty
+      }
+      .render { (_, specM, indexS, playingS, _, hostRef, _) =>
         specM.value match
           case Left(err) =>
             <.div(
@@ -232,7 +522,7 @@ object ArrayTraversal:
             val count = spec.steps.size
             val idx   = clamp(indexS.value, math.max(1, count))
             val currentStep =
-              if count == 0 then Step(Nil, None, "No steps defined.")
+              if count == 0 then Step(None, None, Nil, None, "No steps defined.", None, None, Nil, None)
               else spec.steps(idx)
             val atStart = idx == 0
             val atEnd   = count == 0 || idx == count - 1
@@ -255,9 +545,8 @@ object ArrayTraversal:
                 .map(t => <.p(^.className := "array-traversal__title", t): VdomNode)
                 .getOrElse(EmptyVdom),
               <.div(
-                ^.className               := "array-traversal__frame",
-                ^.dangerouslySetInnerHtml := buildSvg(spec, currentStep)
-              ),
+                ^.className := "array-traversal__frame"
+              ).withRef(hostRef),
               <.p(
                 ^.className := "array-traversal__caption",
                 ^.aria.live := "polite",

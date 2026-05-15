@@ -65,6 +65,53 @@ i2 -> arr2.b0
 
 <p align="center"><strong>Two index variables — one per array — start at position 0 and move independently based on a condition evaluated at each step.</strong></p>
 
+```d3 widget=array-traversal
+{
+  "items": ["1", "4", "7", "10"],
+  "title": "Simultaneous traversal on two sorted arrays (merge example)",
+  "primaryLabel": "arr1",
+  "secondaryItems": ["2", "5", "8"],
+  "secondaryLabel": "arr2",
+  "steps": [
+    {
+      "markers": [{"name": "index1", "index": 0, "color": "#f59e0b"}],
+      "secondaryMarkers": [{"name": "index2", "index": 0, "color": "#10b981"}],
+      "msg": "Init: index1=0, index2=0. Compare arr1[0]=1 vs arr2[0]=2."
+    },
+    {
+      "markers": [{"name": "index1", "index": 1, "color": "#f59e0b"}],
+      "secondaryMarkers": [{"name": "index2", "index": 0, "color": "#10b981"}],
+      "msg": "1 < 2 → take arr1[0]=1, advance index1 → 1. Merged so far: [1]."
+    },
+    {
+      "markers": [{"name": "index1", "index": 1, "color": "#f59e0b"}],
+      "secondaryMarkers": [{"name": "index2", "index": 1, "color": "#10b981"}],
+      "msg": "arr1[1]=4 vs arr2[0]=2 → 4 > 2 → take 2, advance index2 → 1. Merged: [1, 2]."
+    },
+    {
+      "markers": [{"name": "index1", "index": 2, "color": "#f59e0b"}],
+      "secondaryMarkers": [{"name": "index2", "index": 1, "color": "#10b981"}],
+      "msg": "arr1[1]=4 vs arr2[1]=5 → 4 < 5 → take 4, advance index1 → 2. Merged: [1, 2, 4]."
+    },
+    {
+      "markers": [{"name": "index1", "index": 2, "color": "#f59e0b"}],
+      "secondaryMarkers": [{"name": "index2", "index": 2, "color": "#10b981"}],
+      "msg": "arr1[2]=7 vs arr2[1]=5 → 7 > 5 → take 5, advance index2 → 2. Merged: [1, 2, 4, 5]."
+    },
+    {
+      "markers": [{"name": "index1", "index": 3, "color": "#f59e0b"}],
+      "secondaryMarkers": [{"name": "index2", "index": 2, "color": "#10b981"}],
+      "msg": "arr1[2]=7 vs arr2[2]=8 → 7 < 8 → take 7, advance index1 → 3. Merged: [1, 2, 4, 5, 7]."
+    },
+    {
+      "markers": [{"name": "index1", "index": 3, "color": "#f59e0b"}],
+      "secondaryMarkers": [{"name": "index2", "index": 2, "color": "#10b981"}],
+      "msg": "arr1[3]=10 vs arr2[2]=8 → 10 > 8 → take 8, advance index2 → 3 (past end). Main loop exits. Cleanup: append remaining arr1 → [1, 2, 4, 5, 7, 8, 10] ✓"
+    }
+  ]
+}
+```
+
 ---
 
 ## Two Index Variables, One Loop
@@ -608,6 +655,43 @@ flowchart LR
 
 <p align="center"><strong>Simultaneous traversal — <code>index2</code> always advances; <code>index1</code> only advances on a match. The two-pointer structure makes the logic explicit and easy to follow.</strong></p>
 
+```d3 widget=array-traversal
+{
+  "items": ["a", "c", "e"],
+  "title": "Subsequence check via simultaneous traversal — s = ace, t = abcde",
+  "primaryLabel": "s",
+  "secondaryItems": ["a", "b", "c", "d", "e"],
+  "secondaryLabel": "t",
+  "steps": [
+    {
+      "markers": [{"name": "index1", "index": 0, "color": "#f59e0b"}],
+      "secondaryMarkers": [{"name": "index2", "index": 0, "color": "#10b981"}],
+      "msg": "s[0]='a' vs t[0]='a' → match → advance both."
+    },
+    {
+      "markers": [{"name": "index1", "index": 1, "color": "#f59e0b"}],
+      "secondaryMarkers": [{"name": "index2", "index": 1, "color": "#10b981"}],
+      "msg": "s[1]='c' vs t[1]='b' → no match → advance only index2."
+    },
+    {
+      "markers": [{"name": "index1", "index": 1, "color": "#f59e0b"}],
+      "secondaryMarkers": [{"name": "index2", "index": 2, "color": "#10b981"}],
+      "msg": "s[1]='c' vs t[2]='c' → match → advance both."
+    },
+    {
+      "markers": [{"name": "index1", "index": 2, "color": "#f59e0b"}],
+      "secondaryMarkers": [{"name": "index2", "index": 3, "color": "#10b981"}],
+      "msg": "s[2]='e' vs t[3]='d' → no match → advance only index2."
+    },
+    {
+      "markers": [{"name": "index1", "index": 2, "color": "#f59e0b"}],
+      "secondaryMarkers": [{"name": "index2", "index": 4, "color": "#10b981"}],
+      "msg": "s[2]='e' vs t[4]='e' → match → advance both. index1 == len(s) → return True ✓"
+    }
+  ]
+}
+```
+
 
 ```pseudocode
 # Two-pointer subsequence check. Advance s only on a match; advance t every iteration.
@@ -839,55 +923,96 @@ flowchart TB
 
 
 ```pseudocode
-# Same algorithm as `subsequenceChecker` — re-listed under the standard name.
-function isSubsequence(s, t):
-    index1 ← 0; index2 ← 0
+function subsequenceChecker(s, t):
+    # pointer for s
+    index1 ← 0
+
+    # pointer for t
+    index2 ← 0
+
     while index1 < length(s) AND index2 < length(t):
         if s[index1] = t[index2]:
+
+            # If the current character matches, move the pointer for s
             index1 ← index1 + 1
+
+        # Move the pointer for t in every iteration
         index2 ← index2 + 1
+
+    # If index1 reaches the end of s, it means all characters in s
+    # are found in t in the same order
     return index1 = length(s)
 ```
 
 ```python run
 class Solution:
-    def is_subsequence(self, s: str, t: str) -> bool:
-        index1, index2 = 0, 0
+    def subsequence_checker(self, s: str, t: str) -> bool:
+
+        # pointer for s
+        index1: int = 0
+
+        # pointer for t
+        index2: int = 0
+
         while index1 < len(s) and index2 < len(t):
             if s[index1] == t[index2]:
+
+                # If the current character matches, move the pointer for
+                # s
                 index1 += 1
+
+            # Move the pointer for t in every iteration
             index2 += 1
+
+        # If index1 reaches the end of s, it means all characters in s
+        # are found in t in the same order
         return index1 == len(s)
 
 
 sol = Solution()
-print(sol.is_subsequence("ace", "abcde"))  # True
-print(sol.is_subsequence("aec", "abcde"))  # False
-print(sol.is_subsequence("", "abc"))       # True
-print(sol.is_subsequence("abc", ""))       # False
-print(sol.is_subsequence("abc", "abc"))    # True
+print(sol.subsequence_checker("ace", "abcde"))   # True
+print(sol.subsequence_checker("aec", "abcde"))   # False
+print(sol.subsequence_checker("", "abc"))        # True
+print(sol.subsequence_checker("abc", ""))        # False
+print(sol.subsequence_checker("abc", "abc"))     # True
 ```
 
 ```java run
 public class Main {
     static class Solution {
-        boolean isSubsequence(String s, String t) {
-            int i1 = 0, i2 = 0;
-            while (i1 < s.length() && i2 < t.length()) {
-                if (s.charAt(i1) == t.charAt(i2)) i1++;
-                i2++;
+        public boolean subsequenceChecker(String s, String t) {
+
+            // pointer for s
+            int index1 = 0;
+
+            // pointer for t
+            int index2 = 0;
+
+            while (index1 < s.length() && index2 < t.length()) {
+                if (s.charAt(index1) == t.charAt(index2)) {
+
+                    // If the current character matches, move the pointer for
+                    // s
+                    index1++;
+                }
+
+                // Move the pointer for t in every iteration
+                index2++;
             }
-            return i1 == s.length();
+
+            // If index1 reaches the end of s, it means all characters in s
+            // are found in t in the same order
+            return index1 == s.length();
         }
     }
 
     public static void main(String[] args) {
         Solution sol = new Solution();
-        System.out.println(sol.isSubsequence("ace", "abcde"));
-        System.out.println(sol.isSubsequence("aec", "abcde"));
-        System.out.println(sol.isSubsequence("", "abc"));
-        System.out.println(sol.isSubsequence("abc", ""));
-        System.out.println(sol.isSubsequence("abc", "abc"));
+        System.out.println(sol.subsequenceChecker("ace", "abcde"));   // true
+        System.out.println(sol.subsequenceChecker("aec", "abcde"));   // false
+        System.out.println(sol.subsequenceChecker("", "abc"));        // true
+        System.out.println(sol.subsequenceChecker("abc", ""));        // false
+        System.out.println(sol.subsequenceChecker("abc", "abc"));     // true
     }
 }
 ```
@@ -897,22 +1022,39 @@ public class Main {
 #include <stdbool.h>
 #include <string.h>
 
-bool is_subsequence(const char* s, const char* t) {
-    int i1 = 0, i2 = 0;
-    int ns = (int)strlen(s), nt = (int)strlen(t);
-    while (i1 < ns && i2 < nt) {
-        if (s[i1] == t[i2]) i1++;
-        i2++;
+bool subsequence_checker(const char* s, const char* t) {
+
+    /* pointer for s */
+    int index1 = 0;
+
+    /* pointer for t */
+    int index2 = 0;
+
+    int ns = (int)strlen(s);
+    int nt = (int)strlen(t);
+
+    while (index1 < ns && index2 < nt) {
+        if (s[index1] == t[index2]) {
+
+            /* If the current character matches, move the pointer for s */
+            index1++;
+        }
+
+        /* Move the pointer for t in every iteration */
+        index2++;
     }
-    return i1 == ns;
+
+    /* If index1 reaches the end of s, it means all characters in s
+     * are found in t in the same order */
+    return index1 == ns;
 }
 
 int main() {
-    printf("%d\n", is_subsequence("ace", "abcde"));
-    printf("%d\n", is_subsequence("aec", "abcde"));
-    printf("%d\n", is_subsequence("", "abc"));
-    printf("%d\n", is_subsequence("abc", ""));
-    printf("%d\n", is_subsequence("abc", "abc"));
+    printf("%d\n", subsequence_checker("ace", "abcde"));    /* 1 */
+    printf("%d\n", subsequence_checker("aec", "abcde"));    /* 0 */
+    printf("%d\n", subsequence_checker("", "abc"));         /* 1 */
+    printf("%d\n", subsequence_checker("abc", ""));         /* 0 */
+    printf("%d\n", subsequence_checker("abc", "abc"));      /* 1 */
     return 0;
 }
 ```
@@ -920,23 +1062,37 @@ int main() {
 ```scala run
 object Main extends App {
   class Solution {
-    def isSubsequence(s: String, t: String): Boolean = {
-      var i1 = 0
-      var i2 = 0
-      while (i1 < s.length && i2 < t.length) {
-        if (s(i1) == t(i2)) i1 += 1
-        i2 += 1
+    def subsequenceChecker(s: String, t: String): Boolean = {
+
+      // pointer for s
+      var index1 = 0
+
+      // pointer for t
+      var index2 = 0
+
+      while (index1 < s.length && index2 < t.length) {
+        if (s(index1) == t(index2)) {
+
+          // If the current character matches, move the pointer for s
+          index1 += 1
+        }
+
+        // Move the pointer for t in every iteration
+        index2 += 1
       }
-      i1 == s.length
+
+      // If index1 reaches the end of s, it means all characters in s
+      // are found in t in the same order
+      index1 == s.length
     }
   }
 
   val sol = new Solution
-  println(sol.isSubsequence("ace", "abcde"))
-  println(sol.isSubsequence("aec", "abcde"))
-  println(sol.isSubsequence("", "abc"))
-  println(sol.isSubsequence("abc", ""))
-  println(sol.isSubsequence("abc", "abc"))
+  println(sol.subsequenceChecker("ace", "abcde"))   // true
+  println(sol.subsequenceChecker("aec", "abcde"))   // false
+  println(sol.subsequenceChecker("", "abc"))        // true
+  println(sol.subsequenceChecker("abc", ""))        // false
+  println(sol.subsequenceChecker("abc", "abc"))     // true
 }
 ```
 

@@ -11,9 +11,9 @@ import scala.scalajs.js
  * The fullscreen zoom modal shared by [[D2Diagram]] and [[MermaidBlock]].
  *
  * Both diagram blocks differ in how they *obtain* their SVG — D2 receives it pre-rendered as a prop, Mermaid
- * renders it client-side and snapshots it on open — but the modal itself (zoom state, the `Escape`/`+`/`-`/`0`
- * keyboard shortcuts, the body-scroll lock, and the toolbar + viewport chrome) is identical. It lives here so
- * a fix lands once.
+ * renders it client-side and snapshots it on open — but the modal itself (zoom state, the
+ * `Escape`/`+`/`-`/`0` keyboard shortcuts, the body-scroll lock, and the toolbar + viewport chrome) is
+ * identical. It lives here so a fix lands once.
  *
  * The parent owns the open/closed state and passes it in as `isOpen` (and `onClose` to flip it back). This
  * component is always mounted; it owns only the zoom level, which it resets whenever it closes — so each open

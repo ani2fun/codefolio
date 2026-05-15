@@ -65,7 +65,9 @@ final class FileServer private (
 
 object FileServer:
 
-  /** Resolve `root` once: absolutise it, note whether it exists, and snapshot its real path for containment. */
+  /**
+   * Resolve `root` once: absolutise it, note whether it exists, and snapshot its real path for containment.
+   */
   def apply(root: String): FileServer =
     val resolvedRoot = File(root).getAbsoluteFile
     val exists       = resolvedRoot.isDirectory

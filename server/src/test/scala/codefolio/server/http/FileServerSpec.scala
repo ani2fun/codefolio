@@ -11,8 +11,8 @@ import scala.jdk.CollectionConverters.*
 /**
  * Tests the security-critical part of static file serving: path-traversal containment, content-type
  * resolution, and the read-or-404 contract. Both [[StaticRoutes]] and [[CortexAssetRoutes]] route through
- * this module, so the `..` / absolute-path / symlink-escape rejections are pinned once here rather than
- * being absent on two separate route sets.
+ * this module, so the `..` / absolute-path / symlink-escape rejections are pinned once here rather than being
+ * absent on two separate route sets.
  */
 object FileServerSpec extends ZIOSpecDefault:
 
@@ -92,7 +92,7 @@ object FileServerSpec extends ZIOSpecDefault:
         for
           tmp <- ZIO.attempt(Files.createTempDirectory("codefolio-fileserver-gone-"))
           _   <- ZIO.attempt(Files.delete(tmp))
-          fs   = FileServer(tmp.toString)
+          fs = FileServer(tmp.toString)
           res <- fs.serve("anything.txt")
         yield assertTrue(!fs.exists, res.status == Status.NotFound)
       }

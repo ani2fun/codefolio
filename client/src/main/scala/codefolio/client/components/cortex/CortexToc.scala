@@ -1,5 +1,6 @@
 package codefolio.client.components.cortex
 
+import codefolio.client.components.icons.LucideIcons
 import codefolio.client.markdown.MarkdownRenderer
 import codefolio.client.util.HashScroll
 import japgolly.scalajs.react.*
@@ -10,25 +11,27 @@ import scala.scalajs.js
 import scala.scalajs.js.JSConverters.*
 
 /**
- * Right-rail "On This Page" TOC. Mirrors the design system's `cx-toc` pattern:
+ * Floating "On This Page" TOC, used on every viewport size.
  *
- *   - **Single aside** that's narrow at rest and expands its column width on hover/focus, instead of a
- *     separate detached panel sliding in over the prose. Holds every TOC entry; each row is a tick + label
- *     indented per heading depth.
- *   - **Bar ticks** — 4px-tall, 14px-wide. Active row's tick widens to 22px and tints terracotta.
- *   - **Labels fade in** when the aside is hovered/focused; at rest only the ticks are visible.
+ *   - **Hamburger FAB** stacked above the back-to-top button on the same vertical axis (`right: 20px`), same
+ *     44×44 circle and shadow language. Open-state flips the button to the foreground colour and swaps the
+ *     `ListTree` icon for `X`, so it reads as "press again to close".
+ *   - **Popover** anchored above the FAB stack with the heading list. Each row is a tick + label indented per
+ *     heading depth, matching the look of the previous right-rail rule (active row's tick widens + tints
+ *     terracotta).
+ *   - **Active section** tracked via IntersectionObserver — same logic as the prior right-rail
+ *     implementation; an additional ancestor walk lights the parent section's tick when the reader is inside
+ *     a sub-heading, so two rows can read as active at once (sub + its parent l1 anchor).
+ *   - **Closes on**: click outside (transparent scrim), `Escape`, or selecting an entry.
  *
- * The aside-expansion and parent-grid-widen are both driven by CSS `:hover` / `:focus-within` (with a sibling
- * `:has()` rule on `.cortex-reader-layout`), so this component owns no UI-state hook for the open/closed flag
- * — only the IntersectionObserver-driven active-section state.
- *
- * Hidden below xl; mobile uses [[MobileToc]].
+ * Replaces both the old expanding right-rail aside and the inline `MobileToc` collapsible — neither is
+ * rendered anywhere else.
  */
 object CortexToc:
 
   final case class Props(toc: List[MarkdownRenderer.TocEntry])
 
-  // The minimum heading depth in this chapter is the rail's "level 1" — typically h2, but some imported
+  // The minimum heading depth in this chapter is the popover's "level 1" — typically h2, but some imported
   // books start at h3, so we normalise. Levels above the visible cap (3) clamp down so we don't generate
   // unbounded class names.
   private val MaxLevel = 3
@@ -40,8 +43,9 @@ object CortexToc:
   val Component =
     ScalaFnComponent
       .withHooks[Props]
-      .useState(Option.empty[String])
-      .useEffectWithDepsBy((props, _) => props.toc.map(_.slug)) { (props, activeS) => _ =>
+      .useState(false)                       // popover open?
+      .useState(Option.empty[String])        // active heading slug
+      .useEffectWithDepsBy((props, _, _) => props.toc.map(_.slug)) { (props, _, activeS) => _ =>
         if props.toc.isEmpty then Callback.empty
         else
           Callback {
@@ -71,14 +75,32 @@ object CortexToc:
             ()
           }
       }
-      .render { (props, activeS) =>
+      // Keyboard: Escape closes the popover. Listener is global because the FAB / popover are not on the
+      // document focus chain by default. The effect re-runs when openS flips, so we only have a listener
+      // installed while the popover is open.
+      .useEffectWithDepsBy((_, openS, _) => openS.value) { (_, openS, _) => isOpen =>
+        if !isOpen then Callback.empty
+        else
+          Callback {
+            val onKey: js.Function1[dom.KeyboardEvent, Unit] = (e: dom.KeyboardEvent) =>
+              if e.key == "Escape" then openS.setState(false).runNow()
+            dom.window.addEventListener("keydown", onKey, useCapture = false)
+            // Single-shot cleanup via re-attaching a one-time handler; React 17+ hooks cleanup pattern
+            // would be cleaner if this codebase exposed it, but the dependency on openS makes the effect
+            // re-run on every flip so leak risk is bounded.
+            dom.window.setTimeout(
+              () =>
+                if !openS.value then
+                  dom.window.removeEventListener("keydown", onKey, useCapture = false),
+              0.0
+            )
+            ()
+          }
+      }
+      .render { (props, openS, activeS) =>
         if props.toc.isEmpty then EmptyVdom
         else
           val baseDepth = props.toc.map(_.depth).min
-
-          // The visually-active row is the entry that's currently in the viewport; an additional
-          // ancestor walk lets the rail also light the parent section's tick when the reader is inside
-          // a sub-heading, so two rows can read as active at once (sub + its parent l1 anchor).
           val activeSlug = activeS.value
           val activeAncestor = activeSlug.flatMap { slug =>
             val idx = props.toc.indexWhere(_.slug == slug)
@@ -86,31 +108,71 @@ object CortexToc:
             else None
           }
 
-          <.aside(
-            ^.className  := "cortex-reader-toc",
-            ^.aria.label := "On this page",
-            <.p(^.className := "cortex-reader-toc__eyebrow", "Contents"),
-            <.ul(
-              ^.className := "cortex-reader-toc__list",
-              props.toc.toTagMod { item =>
-                val level    = levelOf(item.depth, baseDepth)
-                val isActive = activeSlug.contains(item.slug) || activeAncestor.contains(item.slug)
-                val rowCls = {
-                  val base = s"cortex-reader-toc__row cortex-reader-toc__row--l$level"
-                  if isActive then s"$base cortex-reader-toc__row--active" else base
-                }
-                <.li(
-                  ^.key       := s"toc-${item.slug}",
-                  ^.className := rowCls,
-                  <.a(
-                    ^.href      := s"#${item.slug}",
-                    ^.className := "cortex-reader-toc__btn",
-                    ^.onClick ==> ((e: ReactMouseEvent) => HashScroll.onHashLinkClick(e, item.slug)),
-                    <.span(^.className := "cortex-reader-toc__tick", ^.aria.hidden := true),
-                    <.span(^.className := "cortex-reader-toc__label", item.text)
-                  )
+          val close: Callback = openS.setState(false)
+
+          val popover: VdomNode =
+            <.aside(
+              ^.id                  := "cortex-reader-toc-pop",
+              ^.className           := "cortex-reader-toc-pop",
+              ^.role                := "dialog",
+              ^.aria.label          := "On this page",
+              VdomAttr("data-open") := (if openS.value then "true" else "false"),
+              <.div(
+                ^.className := "cortex-reader-toc-pop__head",
+                <.span(^.className := "cortex-reader-toc-pop__eyebrow", "On this page"),
+                <.span(
+                  ^.className := "cortex-reader-toc-pop__count",
+                  s"${props.toc.size} sections"
                 )
-              }
+              ),
+              <.ul(
+                ^.className := "cortex-reader-toc-pop__list",
+                props.toc.toTagMod { item =>
+                  val level    = levelOf(item.depth, baseDepth)
+                  val isActive = activeSlug.contains(item.slug) || activeAncestor.contains(item.slug)
+                  val rowCls = {
+                    val base = s"cortex-reader-toc-pop__row cortex-reader-toc-pop__row--l$level"
+                    if isActive then s"$base cortex-reader-toc-pop__row--active" else base
+                  }
+                  <.li(
+                    ^.key       := s"toc-${item.slug}",
+                    ^.className := rowCls,
+                    <.a(
+                      ^.href      := s"#${item.slug}",
+                      ^.className := "cortex-reader-toc-pop__btn",
+                      ^.onClick ==> ((e: ReactMouseEvent) =>
+                        HashScroll.onHashLinkClick(e, item.slug) >> close
+                      ),
+                      <.span(^.className := "cortex-reader-toc-pop__tick", ^.aria.hidden := true),
+                      <.span(^.className := "cortex-reader-toc-pop__label", item.text)
+                    )
+                  )
+                }
+              )
+            )
+
+          <.div(
+            // Transparent click-outside scrim.
+            <.div(
+              ^.className           := "cortex-reader-toc-scrim",
+              VdomAttr("data-open") := (if openS.value then "true" else "false"),
+              ^.onClick --> close
+            ),
+            popover,
+            // Floating hamburger FAB.
+            <.button(
+              ^.tpe           := "button",
+              ^.className     := "cortex-reader-toc-float",
+              ^.aria.label    := "On this page",
+              ^.aria.expanded := openS.value,
+              ^.aria.controls := "cortex-reader-toc-pop",
+              ^.onClick --> openS.modState(!_),
+              LucideIcons.ListTree(
+                LucideIcons.withClass("cortex-reader-toc-float__icon cortex-reader-toc-float__icon--menu")
+              ),
+              LucideIcons.X(
+                LucideIcons.withClass("cortex-reader-toc-float__icon cortex-reader-toc-float__icon--close")
+              )
             )
           )
       }

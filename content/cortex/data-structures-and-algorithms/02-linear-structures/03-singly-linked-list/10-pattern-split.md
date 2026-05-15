@@ -695,38 +695,102 @@ function evenOddSplit(head):
 from typing import List, Optional
 
 class Solution:
-    def even_odd_split(self, head: Optional[ListNode]) -> List[Optional[ListNode]]:
-        even_dummy, odd_dummy = ListNode(), ListNode()
-        even_tail, odd_tail   = even_dummy, odd_dummy
+    def even_odd_split(
+        self, head: Optional[ListNode]
+    ) -> List[Optional[ListNode]]:
 
+        # Initialize head and tail references for the two split lists
+        even_dummy = ListNode(0)
+        even_tail = even_dummy
+
+        odd_dummy = ListNode(0)
+        odd_tail = odd_dummy
+
+        # Create current reference to iterate through the list
         current = head
+
+        # Iterate through the list and split nodes into two lists
         while current is not None:
+
+            # If the current node's value is even then the node goes to
+            # the even list
             if current.val % 2 == 0:
+
+                # `current` node goes to the even split list
                 even_tail.next = current
-                even_tail      = current
+
+                # Move even_tail forward
+                even_tail = even_tail.next
+
+            # Otherwise, the node goes to the odd list
             else:
+
+                # `current` node goes to the odd split list
                 odd_tail.next = current
-                odd_tail      = current
+
+                # Move odd_tail forward
+                odd_tail = odd_tail.next
+
+            # Move to the next node in the original list
             current = current.next
 
-        even_tail.next = None              # seal both output lists
-        odd_tail.next  = None
+        # Terminate the even list
+        even_tail.next = None
+
+        # Terminate the odd list
+        odd_tail.next = None
+
         return [even_dummy.next, odd_dummy.next]
 ```
 
 ```java run
 class Solution {
     public ListNode[] evenOddSplit(ListNode head) {
-        ListNode evenDummy = new ListNode(), oddDummy = new ListNode();
-        ListNode evenTail = evenDummy, oddTail = oddDummy;
 
-        for (ListNode current = head; current != null; current = current.next) {
-            if (current.val % 2 == 0) { evenTail.next = current; evenTail = current; }
-            else                      { oddTail.next  = current; oddTail  = current; }
+        // Initialize head and tail references for the two split lists
+        ListNode evenDummy = new ListNode();
+        ListNode evenTail = evenDummy;
+
+        ListNode oddDummy = new ListNode();
+        ListNode oddTail = oddDummy;
+
+        // Create current reference to iterate through the list
+        ListNode current = head;
+
+        // Iterate through the list and split nodes into two lists
+        while (current != null) {
+
+            // If the current node's value is even then the node goes to
+            // the even list
+            if (current.val % 2 == 0) {
+
+                // `current` node goes to the even split list
+                evenTail.next = current;
+
+                // Move evenTail forward
+                evenTail = evenTail.next;
+            }
+
+            // Otherwise, the node goes to the odd list
+            else {
+
+                // `current` node goes to the odd split list
+                oddTail.next = current;
+
+                // Move oddTail forward
+                oddTail = oddTail.next;
+            }
+
+            // Move to the next node in the original list
+            current = current.next;
         }
 
+        // Terminate the even list
         evenTail.next = null;
-        oddTail.next  = null;
+
+        // Terminate the odd list
+        oddTail.next = null;
+
         return new ListNode[]{evenDummy.next, oddDummy.next};
     }
 }
@@ -736,15 +800,50 @@ class Solution {
 typedef struct { ListNode *evens; ListNode *odds; } EvenOddSplit;
 
 EvenOddSplit evenOddSplit(ListNode *head) {
-    ListNode evenDummy = {0, NULL}, oddDummy = {0, NULL};
-    ListNode *evenTail = &evenDummy, *oddTail = &oddDummy;
 
-    for (ListNode *c = head; c != NULL; c = c->next) {
-        if (c->val % 2 == 0) { evenTail->next = c; evenTail = c; }
-        else                 { oddTail->next  = c; oddTail  = c; }
+    /* Initialize head and tail references for the two split lists */
+    ListNode evenDummy = {0, NULL};
+    ListNode *evenTail = &evenDummy;
+
+    ListNode oddDummy = {0, NULL};
+    ListNode *oddTail = &oddDummy;
+
+    /* Create current reference to iterate through the list */
+    ListNode *current = head;
+
+    /* Iterate through the list and split nodes into two lists */
+    while (current != NULL) {
+
+        /* If the current node's value is even then the node goes to
+           the even list */
+        if (current->val % 2 == 0) {
+
+            /* `current` node goes to the even split list */
+            evenTail->next = current;
+
+            /* Move evenTail forward */
+            evenTail = evenTail->next;
+        }
+
+        /* Otherwise, the node goes to the odd list */
+        else {
+
+            /* `current` node goes to the odd split list */
+            oddTail->next = current;
+
+            /* Move oddTail forward */
+            oddTail = oddTail->next;
+        }
+
+        /* Move to the next node in the original list */
+        current = current->next;
     }
+
+    /* Terminate the even list */
     evenTail->next = NULL;
-    oddTail->next  = NULL;
+
+    /* Terminate the odd list */
+    oddTail->next = NULL;
 
     EvenOddSplit out = {evenDummy.next, oddDummy.next};
     return out;
@@ -754,19 +853,51 @@ EvenOddSplit evenOddSplit(ListNode *head) {
 ```scala run
 object Solution {
   def evenOddSplit(head: ListNode): Array[ListNode] = {
-    val evenDummy = new ListNode(0)
-    val oddDummy  = new ListNode(0)
-    var evenTail: ListNode = evenDummy
-    var oddTail:  ListNode = oddDummy
 
+    // Initialize head and tail references for the two split lists
+    val evenDummy = new ListNode(0)
+    var evenTail: ListNode = evenDummy
+
+    val oddDummy = new ListNode(0)
+    var oddTail: ListNode = oddDummy
+
+    // Create current reference to iterate through the list
     var current = head
+
+    // Iterate through the list and split nodes into two lists
     while (current != null) {
-      if (current.v % 2 == 0) { evenTail.next = current; evenTail = current }
-      else                    { oddTail.next  = current; oddTail  = current }
+
+      // If the current node's value is even then the node goes to
+      // the even list
+      if (current.v % 2 == 0) {
+
+        // `current` node goes to the even split list
+        evenTail.next = current
+
+        // Move evenTail forward
+        evenTail = evenTail.next
+      }
+
+      // Otherwise, the node goes to the odd list
+      else {
+
+        // `current` node goes to the odd split list
+        oddTail.next = current
+
+        // Move oddTail forward
+        oddTail = oddTail.next
+      }
+
+      // Move to the next node in the original list
       current = current.next
     }
+
+    // Terminate the even list
     evenTail.next = null
-    oddTail.next  = null
+
+    // Terminate the odd list
+    oddTail.next = null
+
     Array(evenDummy.next, oddDummy.next)
   }
 }
@@ -825,36 +956,61 @@ function splitAlternateGroups(head, k):
 from typing import List, Optional
 
 class Solution:
-    def split_alternate_groups(self, head: Optional[ListNode], k: int) -> List[Optional[ListNode]]:
-        first_dummy, second_dummy = ListNode(), ListNode()
-        first_tail,  second_tail  = first_dummy, second_dummy
+    def split_alternate_groups(
+        self, head: Optional[ListNode], k: int
+    ) -> List[Optional[ListNode]]:
 
-        current = head
-        add_to_first = True
+        # Head and tail references for the two resulting lists
+        first_list_dummy: ListNode = ListNode(0)
+        first_list_tail: ListNode = first_list_dummy
+
+        second_list_dummy: ListNode = ListNode(0)
+        second_list_tail: ListNode = second_list_dummy
+
+        current: Optional[ListNode] = head
+
+        # Flag to alternate between the two lists
+        add_to_first_list: bool = True
+
+        # Iterate through the original list
         while current is not None:
-            chunk_start = current
-            # Walk up to k nodes for this chunk
-            prev = None
+
+            # Start of the current chunk
+            chunk_start: ListNode = current
+            previous: Optional[ListNode] = None
+
+            # Traverse up to k nodes for the current chunk
             for _ in range(k):
                 if current is None:
                     break
-                prev    = current
+                previous = current
                 current = current.next
 
-            # Disconnect the chunk from the rest
-            prev.next = None
+            # Disconnect the chunk from the rest of the list
+            if previous:
+                previous.next = None
 
-            # Attach to the active bucket
-            if add_to_first:
-                first_tail.next = chunk_start
-                first_tail      = prev
+            # Attach chunk to the appropriate list
+            if add_to_first_list:
+
+                # Attach chunk to the first list
+                first_list_tail.next = chunk_start
+
+                # Move tail to the end of the chunk
+                first_list_tail = previous
             else:
-                second_tail.next = chunk_start
-                second_tail      = prev
 
-            add_to_first = not add_to_first
+                # Attach chunk to the second list
+                second_list_tail.next = chunk_start
 
-        return [first_dummy.next, second_dummy.next]
+                # Move tail to the end of the chunk
+                second_list_tail = previous
+
+            # Alternate for next chunk
+            add_to_first_list = not add_to_first_list
+
+        # Return heads of the two lists
+        return [first_list_dummy.next, second_list_dummy.next]
 ```
 
 ```java run
@@ -981,20 +1137,42 @@ function splitByModulo(head, k):
 from typing import List, Optional
 
 class Solution:
-    def split_by_modulo(self, head: Optional[ListNode], k: int) -> List[Optional[ListNode]]:
-        dummies = [ListNode() for _ in range(k)]
-        tails   = list(dummies)
+    def split_by_modulo(
+        self, head: Optional[ListNode], k: int
+    ) -> List[Optional[ListNode]]:
 
+        # Initialize head and tail references for k split lists
+        dummy_heads: List[ListNode] = [ListNode(0) for _ in range(k)]
+        tails: List[ListNode] = dummy_heads[:]
+
+        # Create current reference to iterate through the list
         current = head
-        while current is not None:
-            group = current.val % k
-            tails[group].next = current
-            tails[group]      = current
-            current           = current.next
 
-        for t in tails:
-            t.next = None
-        return [d.next for d in dummies]
+        # Iterate through the list and split nodes into k lists
+        while current is not None:
+
+            # Find group index using modulo operation
+            group = current.val % k
+
+            # `current` node goes to its modulo group
+            tails[group].next = current
+
+            # Move group tail forward
+            tails[group] = tails[group].next
+
+            # Move to the next node in the original list
+            current = current.next
+
+        # Terminate each list to avoid cycles
+        for i in range(k):
+            tails[i].next = None
+
+        # Collect heads (excluding dummy nodes)
+        result: List[Optional[ListNode]] = []
+        for i in range(k):
+            result.append(dummy_heads[i].next)
+
+        return result
 ```
 
 ```java run
@@ -1123,28 +1301,54 @@ function kWayListSplit(head, k):
 from typing import List, Optional
 
 class Solution:
-    def k_way_list_split(self, head: Optional[ListNode], k: int) -> List[Optional[ListNode]]:
-        length, cur = 0, head
-        while cur:
-            length += 1; cur = cur.next
+    def find_length(self, head: Optional[ListNode]) -> int:
+        length = 0
+        while head is not None:
+            length += 1
+            head = head.next
+        return length
 
-        base_size = length // k
-        extra     = length %  k
+    def k_way_list_split(
+        self, head: Optional[ListNode], k: int
+    ) -> List[Optional[ListNode]]:
 
+        # Get total number of nodes
+        length = self.find_length(head)
+
+        # Base size of each part
+        part_size = length // k
+
+        # Remainder to distribute among parts
+        extra_nodes = length % k
+
+        # Result list to store part heads
         parts: List[Optional[ListNode]] = [None] * k
+
+        # Pointer to traverse the list
         current = head
+
         for i in range(k):
-            if current is None:
-                break
+
+            # Set the start of the current part
             parts[i] = current
-            size = base_size + (1 if extra > 0 else 0)
-            # Walk size - 1 nodes; then detach
-            for _ in range(size - 1):
-                current = current.next
-            nxt = current.next
-            current.next = None
-            current = nxt
-            if extra > 0: extra -= 1
+
+            # Calculate the size for the current part
+            current_part_size = part_size + (1 if extra_nodes > 0 else 0)
+
+            # Traverse `current_part_size - 1` nodes ahead in the list
+            for j in range(1, current_part_size):
+                if current:
+                    current = current.next
+
+            # Move to the start of the next part, breaking the link
+            if current:
+                next_part_head = current.next
+                current.next = None
+                current = next_part_head
+
+            # Decrease `extra_nodes` only if it was used for this part
+            if extra_nodes > 0:
+                extra_nodes -= 1
 
         return parts
 ```

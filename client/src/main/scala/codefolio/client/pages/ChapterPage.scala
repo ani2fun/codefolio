@@ -6,8 +6,7 @@ import codefolio.client.components.cortex.{
   CortexBreadcrumb,
   CortexErrorView,
   CortexPager,
-  CortexReaderLayout,
-  MobileToc
+  CortexReaderLayout
 }
 import codefolio.client.markdown.MarkdownRenderer
 import codefolio.client.util.{AsyncFetch, PageTitle, ReaderState}
@@ -138,7 +137,6 @@ object ChapterPage:
             ): VdomNode
           )
           .getOrElse(EmptyVdom),
-        MobileToc.Component(MobileToc.Props(toc)),
         ChapterContent.Component(ChapterContent.Props(loaded.render)),
         CortexPager.Component(
           CortexPager.Props(payload.book.slug, prev, next)

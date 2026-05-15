@@ -291,15 +291,22 @@ Given the **head** of a singly linked list, write a function to print a comma (`
 
 
 ```pseudocode
-# Print each value, separated by ", " — but only between values, not after the last.
 function nodeExpedition(head):
+    # Start from the head of the linked list
     current ← head
+
+    # Iterate until the current node is not null
     while current is not null:
+
+        # Print the value of the current node
         print current.val
+
+        # If there is a next node, print a comma after the value
         if current.next is not null:
             print ", "
+
+        # Move to the next node
         current ← current.next
-    print newline
 ```
 
 ```python run
@@ -309,17 +316,26 @@ class ListNode:
 
 class Solution:
     def node_expedition(self, head: ListNode) -> None:
+
+        # Start from the head of the linked list
         current = head
-        while current:
+
+        # Iterate until the current node is not null
+        while current is not None:
+
+            # Print the value of the current node
             print(current.val, end="")
-            if current.next:        # Print comma only between nodes, not after last
+
+            # If there is a next node, print a comma after the value
+            if current.next is not None:
                 print(", ", end="")
+
+            # Move to the next node
             current = current.next
-        print()
 
 # Build list 5 → 7 → 3 → 10
 n4=ListNode(10); n3=ListNode(3,n4); n2=ListNode(7,n3); n1=ListNode(5,n2)
-Solution().node_expedition(n1)  # 5, 7, 3, 10
+Solution().node_expedition(n1); print()  # 5, 7, 3, 10
 ```
 
 ```java run
@@ -327,20 +343,31 @@ public class Main {
     static class ListNode { int val; ListNode next; ListNode(int v){val=v;} }
 
     static void nodeExpedition(ListNode head) {
+
+        // Start from the head of the linked list
         ListNode current = head;
+
+        // Iterate until the current node is not null
         while (current != null) {
+
+            // Print the value of the current node
             System.out.print(current.val);
-            if (current.next != null) System.out.print(", ");  // Comma between nodes only
+
+            // If there is a next node, print a comma after the value
+            if (current.next != null) {
+                System.out.print(", ");
+            }
+
+            // Move to the next node
             current = current.next;
         }
-        System.out.println();
     }
 
     public static void main(String[] args) {
         ListNode n1=new ListNode(5), n2=new ListNode(7),
                  n3=new ListNode(3), n4=new ListNode(10);
         n1.next=n2; n2.next=n3; n3.next=n4;
-        nodeExpedition(n1);  // 5, 7, 3, 10
+        nodeExpedition(n1); System.out.println();  // 5, 7, 3, 10
     }
 }
 ```
@@ -353,19 +380,30 @@ typedef struct ListNode { int val; struct ListNode *next; } ListNode;
 ListNode* newNode(int v){ ListNode*n=malloc(sizeof*n); n->val=v; n->next=NULL; return n; }
 
 void nodeExpedition(ListNode *head) {
+
+    /* Start from the head of the linked list */
     ListNode *current = head;
+
+    /* Iterate until the current node is not null */
     while (current != NULL) {
+
+        /* Print the value of the current node */
         printf("%d", current->val);
-        if (current->next != NULL) printf(", ");  /* Comma between nodes only */
+
+        /* If there is a next node, print a comma after the value */
+        if (current->next != NULL) {
+            printf(", ");
+        }
+
+        /* Move to the next node */
         current = current->next;
     }
-    printf("\n");
 }
 
 int main() {
     ListNode *n1=newNode(5),*n2=newNode(7),*n3=newNode(3),*n4=newNode(10);
     n1->next=n2; n2->next=n3; n3->next=n4;
-    nodeExpedition(n1);  /* 5, 7, 3, 10 */
+    nodeExpedition(n1); printf("\n");  /* 5, 7, 3, 10 */
     return 0;
 }
 ```
@@ -375,18 +413,29 @@ class ListNode(var v: Int, var next: ListNode = null)
 
 object Main extends App {
   def nodeExpedition(head: ListNode): Unit = {
+
+    // Start from the head of the linked list
     var current = head
+
+    // Iterate until the current node is not null
     while (current != null) {
+
+      // Print the value of the current node
       print(current.v)
-      if (current.next != null) print(", ")  // Comma between nodes only
+
+      // If there is a next node, print a comma after the value
+      if (current.next != null) {
+        print(", ")
+      }
+
+      // Move to the next node
       current = current.next
     }
-    println()
   }
 
   val n4=new ListNode(10); val n3=new ListNode(3,n4)
   val n2=new ListNode(7,n3); val n1=new ListNode(5,n2)
-  nodeExpedition(n1)  // 5, 7, 3, 10
+  nodeExpedition(n1); println()  // 5, 7, 3, 10
 }
 ```
 
@@ -438,12 +487,21 @@ class ListNode:
 
 class Solution:
     def node_search(self, head: ListNode, data: int) -> ListNode | None:
+
+        # Start from the head of the linked list
         current = head
-        while current:
-            if current.val == data:   # Found — return immediately
+
+        while current is not None:
+
+            # Found the value, return the current node
+            if current.val == data:
                 return current
-            current = current.next    # Advance to next node
-        return None                   # Exhausted the list without a match
+
+            # Move to the next node
+            current = current.next
+
+        # Value not found in the linked list
+        return None
 
 # Build list 5 → 7 → 3 → 10
 n4=ListNode(10); n3=ListNode(3,n4); n2=ListNode(7,n3); n1=ListNode(5,n2)
@@ -457,12 +515,23 @@ public class Main {
     static class ListNode { int val; ListNode next; ListNode(int v){val=v;} }
 
     static ListNode nodeSearch(ListNode head, int data) {
+
+        // Start from the head of the linked list
         ListNode current = head;
+
         while (current != null) {
-            if (current.val == data) return current;  // Found — return immediately
+
+            // Found the value, return the current node
+            if (current.val == data) {
+                return current;
+            }
+
+            // Move to the next node
             current = current.next;
         }
-        return null;  // Exhausted the list without a match
+
+        // Value not found in the linked list
+        return null;
     }
 
     public static void main(String[] args) {
@@ -484,12 +553,23 @@ typedef struct ListNode { int val; struct ListNode *next; } ListNode;
 ListNode* newNode(int v){ ListNode*n=malloc(sizeof*n); n->val=v; n->next=NULL; return n; }
 
 ListNode* nodeSearch(ListNode *head, int data) {
+
+    /* Start from the head of the linked list */
     ListNode *current = head;
+
     while (current != NULL) {
-        if (current->val == data) return current;  /* Found — return immediately */
+
+        /* Found the value, return the current node */
+        if (current->val == data) {
+            return current;
+        }
+
+        /* Move to the next node */
         current = current->next;
     }
-    return NULL;  /* Exhausted the list without a match */
+
+    /* Value not found in the linked list */
+    return NULL;
 }
 
 int main() {
@@ -507,12 +587,23 @@ class ListNode(var v: Int, var next: ListNode = null)
 
 object Main extends App {
   def nodeSearch(head: ListNode, data: Int): ListNode = {
+
+    // Start from the head of the linked list
     var current = head
+
     while (current != null) {
-      if (current.v == data) return current  // Found — return immediately
+
+      // Found the value, return the current node
+      if (current.v == data) {
+        return current
+      }
+
+      // Move to the next node
       current = current.next
     }
-    null  // Exhausted the list without a match
+
+    // Value not found in the linked list
+    null
   }
 
   val n4=new ListNode(10); val n3=new ListNode(3,n4)
@@ -557,11 +648,21 @@ Given the **head** of a singly linked list, write a function that returns the le
 
 ```pseudocode
 function lengthOfTheList(head):
+    # Initialize count to 0
     count ← 0
+
+    # Set current to hold the head of the list
     current ← head
+
     while current is not null:
+
+        # Increment count by 1
         count ← count + 1
+
+        # Set current to hold the next node in the list
         current ← current.next
+
+    # Return count as the length of the linked list
     return count
 ```
 
@@ -572,11 +673,22 @@ class ListNode:
 
 class Solution:
     def length_of_the_list(self, head: ListNode) -> int:
+
+        # Initialize count to 0
         count = 0
+
+        # Set current to hold the head of the list
         current = head
-        while current:
-            count   += 1           # Count this node
-            current  = current.next
+
+        while current is not None:
+
+            # Increment count by 1
+            count += 1
+
+            # Set current to hold the next node in the list
+            current = current.next
+
+        # Return count as the length of the linked list
         return count
 
 # Build list 5 → 7 → 3 → 10
@@ -590,9 +702,23 @@ public class Main {
     static class ListNode { int val; ListNode next; ListNode(int v){val=v;} }
 
     static int lengthOfTheList(ListNode head) {
+
+        // Initialize count to 0
         int count = 0;
-        for (ListNode cur = head; cur != null; cur = cur.next)
-            count++;  // Count this node
+
+        // Set current to hold the head of the list
+        ListNode current = head;
+
+        while (current != null) {
+
+            // Increment count by 1
+            count++;
+
+            // Set current to hold the next node in the list
+            current = current.next;
+        }
+
+        // Return count as the length of the linked list
         return count;
     }
 
@@ -614,9 +740,23 @@ typedef struct ListNode { int val; struct ListNode *next; } ListNode;
 ListNode* newNode(int v){ ListNode*n=malloc(sizeof*n); n->val=v; n->next=NULL; return n; }
 
 int lengthOfTheList(ListNode *head) {
+
+    /* Initialize count to 0 */
     int count = 0;
-    for (ListNode *cur = head; cur != NULL; cur = cur->next)
-        count++;  /* Count this node */
+
+    /* Set current to hold the head of the list */
+    ListNode *current = head;
+
+    while (current != NULL) {
+
+        /* Increment count by 1 */
+        count++;
+
+        /* Set current to hold the next node in the list */
+        current = current->next;
+    }
+
+    /* Return count as the length of the linked list */
     return count;
 }
 

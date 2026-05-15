@@ -27,6 +27,11 @@
     .array-traversal__svg {
         @apply block w-full max-w-3xl h-auto;
     }
+    /* Transform / position of cells and markers is animated by D3 (see ADR-0013); CSS keeps
+       only the fill/stroke transitions that D3 doesn't touch (in-range class toggle). */
+    .array-traversal__cell-group {
+        /* D3 owns this group's transform; no CSS transition. */
+    }
     .array-traversal__cell {
         fill: var(--color-card, #ffffff);
         stroke: var(--color-border, #e5e7eb);
@@ -51,10 +56,11 @@
         fill: rgba(59, 130, 246, 0.18);
         stroke: rgba(59, 130, 246, 0.45);
         stroke-width: 1;
+        /* D3 owns x/width transitions; CSS keeps fill smoothing. */
         transition: fill 250ms ease;
     }
-    .array-traversal__marker path {
-        transition: transform 250ms ease;
+    .array-traversal__marker {
+        /* D3 owns this group's transform; no CSS transition. */
     }
     .array-traversal__marker-label {
         font-size: 11px;

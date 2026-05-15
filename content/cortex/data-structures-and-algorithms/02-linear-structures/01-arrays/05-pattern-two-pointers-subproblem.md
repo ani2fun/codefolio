@@ -132,6 +132,92 @@ temp -> copy: "pass 2: copy back"
 
 <p align="center"><strong>Brute-force rotation using a temporary array — two passes, O(n) extra space.</strong></p>
 
+```d3 widget=array-traversal
+{
+  "items": ["1", "2", "3", "4", "5", "6", "7", "8"],
+  "title": "Brute-force left-rotate by k=4 using temp array",
+  "secondaryItems": ["·", "·", "·", "·", "·", "·", "·", "·"],
+  "steps": [
+    {
+      "items": ["1", "2", "3", "4", "5", "6", "7", "8"],
+      "secondaryItems": ["·", "·", "·", "·", "·", "·", "·", "·"],
+      "secondaryKeys": ["t0", "t1", "t2", "t3", "t4", "t5", "t6", "t7"],
+      "msg": "Init: arr above, temp (empty) below. We will fill temp[i] = arr[(i + 4) mod 8]."
+    },
+    {
+      "items": ["1", "2", "3", "4", "5", "6", "7", "8"],
+      "markers": [{"name": "src", "index": 4, "color": "#f59e0b"}],
+      "secondaryItems": ["5", "·", "·", "·", "·", "·", "·", "·"],
+      "secondaryKeys": ["t0", "t1", "t2", "t3", "t4", "t5", "t6", "t7"],
+      "secondaryMarkers": [{"name": "i", "index": 0, "color": "#3b82f6"}],
+      "msg": "i=0 → temp[0] = arr[(0+4) mod 8] = arr[4] = 5."
+    },
+    {
+      "items": ["1", "2", "3", "4", "5", "6", "7", "8"],
+      "markers": [{"name": "src", "index": 5, "color": "#f59e0b"}],
+      "secondaryItems": ["5", "6", "·", "·", "·", "·", "·", "·"],
+      "secondaryKeys": ["t0", "t1", "t2", "t3", "t4", "t5", "t6", "t7"],
+      "secondaryMarkers": [{"name": "i", "index": 1, "color": "#3b82f6"}],
+      "msg": "i=1 → temp[1] = arr[5] = 6."
+    },
+    {
+      "items": ["1", "2", "3", "4", "5", "6", "7", "8"],
+      "markers": [{"name": "src", "index": 6, "color": "#f59e0b"}],
+      "secondaryItems": ["5", "6", "7", "·", "·", "·", "·", "·"],
+      "secondaryKeys": ["t0", "t1", "t2", "t3", "t4", "t5", "t6", "t7"],
+      "secondaryMarkers": [{"name": "i", "index": 2, "color": "#3b82f6"}],
+      "msg": "i=2 → temp[2] = arr[6] = 7."
+    },
+    {
+      "items": ["1", "2", "3", "4", "5", "6", "7", "8"],
+      "markers": [{"name": "src", "index": 7, "color": "#f59e0b"}],
+      "secondaryItems": ["5", "6", "7", "8", "·", "·", "·", "·"],
+      "secondaryKeys": ["t0", "t1", "t2", "t3", "t4", "t5", "t6", "t7"],
+      "secondaryMarkers": [{"name": "i", "index": 3, "color": "#3b82f6"}],
+      "msg": "i=3 → temp[3] = arr[7] = 8."
+    },
+    {
+      "items": ["1", "2", "3", "4", "5", "6", "7", "8"],
+      "markers": [{"name": "src", "index": 0, "color": "#f59e0b"}],
+      "secondaryItems": ["5", "6", "7", "8", "1", "·", "·", "·"],
+      "secondaryKeys": ["t0", "t1", "t2", "t3", "t4", "t5", "t6", "t7"],
+      "secondaryMarkers": [{"name": "i", "index": 4, "color": "#3b82f6"}],
+      "msg": "i=4 → (4+4) mod 8 wraps to index 0 → temp[4] = arr[0] = 1."
+    },
+    {
+      "items": ["1", "2", "3", "4", "5", "6", "7", "8"],
+      "markers": [{"name": "src", "index": 1, "color": "#f59e0b"}],
+      "secondaryItems": ["5", "6", "7", "8", "1", "2", "·", "·"],
+      "secondaryKeys": ["t0", "t1", "t2", "t3", "t4", "t5", "t6", "t7"],
+      "secondaryMarkers": [{"name": "i", "index": 5, "color": "#3b82f6"}],
+      "msg": "i=5 → temp[5] = arr[1] = 2."
+    },
+    {
+      "items": ["1", "2", "3", "4", "5", "6", "7", "8"],
+      "markers": [{"name": "src", "index": 2, "color": "#f59e0b"}],
+      "secondaryItems": ["5", "6", "7", "8", "1", "2", "3", "·"],
+      "secondaryKeys": ["t0", "t1", "t2", "t3", "t4", "t5", "t6", "t7"],
+      "secondaryMarkers": [{"name": "i", "index": 6, "color": "#3b82f6"}],
+      "msg": "i=6 → temp[6] = arr[2] = 3."
+    },
+    {
+      "items": ["1", "2", "3", "4", "5", "6", "7", "8"],
+      "markers": [{"name": "src", "index": 3, "color": "#f59e0b"}],
+      "secondaryItems": ["5", "6", "7", "8", "1", "2", "3", "4"],
+      "secondaryKeys": ["t0", "t1", "t2", "t3", "t4", "t5", "t6", "t7"],
+      "secondaryMarkers": [{"name": "i", "index": 7, "color": "#3b82f6"}],
+      "msg": "i=7 → temp[7] = arr[3] = 4. Pass 1 complete."
+    },
+    {
+      "items": ["5", "6", "7", "8", "1", "2", "3", "4"],
+      "secondaryItems": ["5", "6", "7", "8", "1", "2", "3", "4"],
+      "secondaryKeys": ["t0", "t1", "t2", "t3", "t4", "t5", "t6", "t7"],
+      "msg": "Pass 2: copy temp back into arr → arr = [5, 6, 7, 8, 1, 2, 3, 4] ✓"
+    }
+  ]
+}
+```
+
 
 ```pseudocode
 # Brute-force left rotation by k. Build a rotated copy in temp, then write it back.
@@ -716,20 +802,26 @@ s2 -> s3: "reverse arr[0..4]"
 
 
 ```pseudocode
-# Three-reversal for RIGHT rotation. HEAD = arr[0..n−k−1], TAIL = arr[n−k..n−1].
-# Want [TAIL | HEAD]: reverse each half, then reverse the whole thing.
 function reverse(arr, start, end):
     while start < end:
         swap arr[start] and arr[end]
-        start ← start + 1; end ← end − 1
+        start ← start + 1
+        end   ← end − 1
 
-function rotateRight(arr, k):
+function kRotations(arr, k):
     n ← length(arr)
+
+    # Set k to be in the range of [0, n)
     k ← k mod n
-    if k = 0: return
-    reverse(arr, n − k, n − 1)                    # reverse the tail
-    reverse(arr, 0, n − k − 1)                    # reverse the head
-    reverse(arr, 0, n − 1)                        # reverse the whole array
+
+    # Reverse the entire array using two pointer method
+    reverse(arr, 0, n − 1)
+
+    # Reverse the first k elements using two pointer method
+    reverse(arr, 0, k − 1)
+
+    # Reverse the remaining elements using two pointer method
+    reverse(arr, k, n − 1)
 ```
 
 ```python run
@@ -742,21 +834,24 @@ class Solution:
             start += 1
             end   -= 1
 
-    def rotate_right(self, arr: List[int], k: int) -> None:
+    def k_rotations(self, arr: List[int], k: int) -> None:
         n = len(arr)
-        k %= n
-        if k == 0:
-            return
 
-        # HEAD = arr[0..n-k-1], TAIL = arr[n-k..n-1]. We want [TAIL | HEAD].
-        # Reverse each half, then reverse the whole thing — same identity as left-rotate.
-        self.reverse(arr, n - k, n - 1)
-        self.reverse(arr, 0, n - k - 1)
+        # Set k to be in the range of [0, n)
+        k %= n
+
+        # Reverse the entire array using two pointer method
         self.reverse(arr, 0, n - 1)
+
+        # Reverse the first k elements using two pointer method
+        self.reverse(arr, 0, k - 1)
+
+        # Reverse the remaining elements using two pointer method
+        self.reverse(arr, k, n - 1)
 
 
 arr = [1, 2, 3, 4, 5]
-Solution().rotate_right(arr, 3)
+Solution().k_rotations(arr, 3)
 print(arr)   # [3, 4, 5, 1, 2]
 ```
 
@@ -765,30 +860,37 @@ import java.util.Arrays;
 
 public class Main {
     static class Solution {
-        void reverse(int[] arr, int start, int end) {
+        private void reverse(int[] arr, int start, int end) {
             while (start < end) {
-                int tmp = arr[start];
+                int temp   = arr[start];
                 arr[start] = arr[end];
-                arr[end]   = tmp;
+                arr[end]   = temp;
                 start++;
                 end--;
             }
         }
 
-        void rotateRight(int[] arr, int k) {
+        public void kRotations(int[] arr, int k) {
             int n = arr.length;
+
+            // Set k to be in the range of [0, n)
             k %= n;
-            if (k == 0) return;
-            reverse(arr, n - k, n - 1);
-            reverse(arr, 0, n - k - 1);
+
+            // Reverse the entire array using two pointer method
             reverse(arr, 0, n - 1);
+
+            // Reverse the first k elements using two pointer method
+            reverse(arr, 0, k - 1);
+
+            // Reverse the remaining elements using two pointer method
+            reverse(arr, k, n - 1);
         }
     }
 
     public static void main(String[] args) {
         int[] arr = {1, 2, 3, 4, 5};
-        new Solution().rotateRight(arr, 3);
-        System.out.println(Arrays.toString(arr));
+        new Solution().kRotations(arr, 3);
+        System.out.println(Arrays.toString(arr));   // [3, 4, 5, 1, 2]
     }
 }
 ```
@@ -796,9 +898,9 @@ public class Main {
 ```c run
 #include <stdio.h>
 
-void reverse_seg(int* arr, int start, int end) {
+static void reverse_seg(int* arr, int start, int end) {
     while (start < end) {
-        int tmp = arr[start];
+        int tmp    = arr[start];
         arr[start] = arr[end];
         arr[end]   = tmp;
         start++;
@@ -806,18 +908,25 @@ void reverse_seg(int* arr, int start, int end) {
     }
 }
 
-void rotate_right(int* arr, int n, int k) {
+void k_rotations(int* arr, int n, int k) {
+
+    /* Set k to be in the range of [0, n) */
     k %= n;
-    if (k == 0) return;
-    reverse_seg(arr, n - k, n - 1);
-    reverse_seg(arr, 0, n - k - 1);
+
+    /* Reverse the entire array using two pointer method */
     reverse_seg(arr, 0, n - 1);
+
+    /* Reverse the first k elements using two pointer method */
+    reverse_seg(arr, 0, k - 1);
+
+    /* Reverse the remaining elements using two pointer method */
+    reverse_seg(arr, k, n - 1);
 }
 
 int main() {
     int arr[] = {1, 2, 3, 4, 5};
-    rotate_right(arr, 5, 3);
-    for (int i = 0; i < 5; i++) printf("%d ", arr[i]);
+    k_rotations(arr, 5, 3);
+    for (int i = 0; i < 5; i++) printf("%d ", arr[i]);   /* 3 4 5 1 2 */
     printf("\n");
     return 0;
 }
@@ -828,9 +937,9 @@ object Main extends App {
   class Solution {
     def reverse(arr: Array[Int], s0: Int, e0: Int): Unit = {
       var start = s0
-      var end = e0
+      var end   = e0
       while (start < end) {
-        val tmp = arr(start)
+        val tmp    = arr(start)
         arr(start) = arr(end)
         arr(end)   = tmp
         start += 1
@@ -838,19 +947,26 @@ object Main extends App {
       }
     }
 
-    def rotateRight(arr: Array[Int], k0: Int): Unit = {
+    def kRotations(arr: Array[Int], k0: Int): Unit = {
       val n = arr.length
+
+      // Set k to be in the range of [0, n)
       val k = k0 % n
-      if (k == 0) return
-      reverse(arr, n - k, n - 1)
-      reverse(arr, 0, n - k - 1)
+
+      // Reverse the entire array using two pointer method
       reverse(arr, 0, n - 1)
+
+      // Reverse the first k elements using two pointer method
+      reverse(arr, 0, k - 1)
+
+      // Reverse the remaining elements using two pointer method
+      reverse(arr, k, n - 1)
     }
   }
 
   val arr = Array(1, 2, 3, 4, 5)
-  new Solution().rotateRight(arr, 3)
-  println(arr.mkString(", "))
+  new Solution().kRotations(arr, 3)
+  println(arr.mkString(", "))   // 3, 4, 5, 1, 2
 }
 ```
 
@@ -1068,27 +1184,60 @@ Since the array is sorted, if `arr[i] > 0`, then `arr[left] ≥ arr[i] > 0` and 
 
 
 ```pseudocode
-# Three-sum: triplets summing to 0. Fix one element, then two-sum the rest.
+function skipDuplicatesLeft(arr, left, right):
+    # Skip duplicates from the left pointer
+    while left < right AND arr[left] = arr[left + 1]:
+        left ← left + 1
+    return left + 1
+
+function skipDuplicatesRight(arr, left, right):
+    # Skip duplicates from the right pointer
+    while left < right AND arr[right] = arr[right − 1]:
+        right ← right − 1
+    return right − 1
+
+function duplicateAwareTwoSum(arr, index, result):
+    left  ← index + 1
+    right ← length(arr) − 1
+
+    # Use a while loop to traverse the array using the two pointers
+    while left < right:
+        sum ← arr[index] + arr[left] + arr[right]
+
+        # If the sum is 0, add the triplet to the result
+        if sum = 0:
+            append [arr[index], arr[left], arr[right]] to result
+
+            # Move the left pointer to the next unique element to avoid duplicates
+            left  ← skipDuplicatesLeft(arr, left, right)
+
+            # Move the right pointer to the previous unique element to avoid duplicates
+            right ← skipDuplicatesRight(arr, left, right)
+
+        # Move the left pointer to increase the sum
+        else if sum < 0:
+            left ← left + 1
+
+        # Move the right pointer to decrease the sum
+        else:
+            right ← right − 1
+
 function threeSum(arr):
-    sort arr in place
-    n ← length(arr)
     result ← empty list
-    for i from 0 to n − 3:
-        if arr[i] > 0: break                      # all remaining are positive — impossible
-        if i > 0 AND arr[i] = arr[i − 1]: continue   # skip duplicate fixed elements
-        left ← i + 1; right ← n − 1
-        target ← −arr[i]
-        while left < right:
-            total ← arr[left] + arr[right]
-            if total = target:
-                append [arr[i], arr[left], arr[right]] to result
-                while left < right AND arr[left]  = arr[left + 1]:  left  ← left + 1
-                while left < right AND arr[right] = arr[right − 1]: right ← right − 1
-                left ← left + 1; right ← right − 1
-            else if total < target:
-                left ← left + 1
-            else:
-                right ← right − 1
+
+    # Sort the array in non-decreasing order
+    sort arr in place
+
+    # Traverse the array using 1 pointer
+    for i from 0 to length(arr) − 1:
+
+        # Skip duplicates for the first element
+        if i > 0 AND arr[i] = arr[i − 1]:
+            continue
+
+        # Use the two-pointer technique to find pairs with sum -arr[i]
+        duplicateAwareTwoSum(arr, i, result)
+
     return result
 ```
 
@@ -1096,40 +1245,83 @@ function threeSum(arr):
 from typing import List
 
 class Solution:
+    def skip_duplicates_left(
+        self, arr: List[int], left: int, right: int
+    ) -> int:
+
+        # Skip duplicates from the left pointer
+        while left < right and arr[left] == arr[left + 1]:
+            left += 1
+
+        # Return the index of the next unique element
+        return left + 1
+
+    def skip_duplicates_right(
+        self, arr: List[int], left: int, right: int
+    ) -> int:
+
+        # Skip duplicates from the right pointer
+        while left < right and arr[right] == arr[right - 1]:
+            right -= 1
+
+        # Return the index of the next unique element
+        return right - 1
+
+    def duplicate_aware_two_sum(
+        self, arr: List[int], index: int, result: List[List[int]]
+    ) -> None:
+        left  = index + 1
+        right = len(arr) - 1
+
+        # Use a while loop to traverse the array using the two pointers
+        while left < right:
+            total = arr[index] + arr[left] + arr[right]
+
+            # If the sum is 0, add the triplet to the result.
+            if total == 0:
+                result.append([arr[index], arr[left], arr[right]])
+
+                # Move the left pointer to the next unique element to
+                # avoid duplicates
+                left = self.skip_duplicates_left(arr, left, right)
+
+                # Move the right pointer to the previous unique element
+                # to avoid duplicates
+                right = self.skip_duplicates_right(arr, left, right)
+
+            # Move the left pointer to increase the sum
+            elif total < 0:
+                left += 1
+
+            # Move the right pointer to decrease the sum
+            else:
+                right -= 1
+
     def three_sum(self, arr: List[int]) -> List[List[int]]:
+        result: List[List[int]] = []
+
+        # Sort the array in non-decreasing order.
         arr.sort()
-        n = len(arr)
-        result = []
 
-        for i in range(n - 2):
-            if arr[i] > 0:
-                break                              # All remaining are positive → impossible.
+        # Traverse the array using 1 pointer.
+        for i in range(len(arr)):
+
+            # Skip duplicates for the first element.
             if i > 0 and arr[i] == arr[i - 1]:
-                continue                           # Skip duplicate fixed elements.
+                continue
 
-            left, right = i + 1, n - 1
-            target = -arr[i]
+            # Use the two-pointer technique to find pairs with sum
+            # -arr[i].
+            self.duplicate_aware_two_sum(arr, i, result)
 
-            while left < right:
-                total = arr[left] + arr[right]
-                if total == target:
-                    result.append([arr[i], arr[left], arr[right]])
-                    while left < right and arr[left]  == arr[left + 1]:  left  += 1
-                    while left < right and arr[right] == arr[right - 1]: right -= 1
-                    left  += 1
-                    right -= 1
-                elif total < target:
-                    left += 1
-                else:
-                    right -= 1
         return result
 
 
 sol = Solution()
-print(sol.three_sum([-1, 0, 1, 2, -1, -4]))   # [[-1,-1,2],[-1,0,1]]
-print(sol.three_sum([0, 0, 0, 0]))             # [[0,0,0]]
+print(sol.three_sum([-1, 0, 1, 2, -1, -4]))   # [[-1, -1, 2], [-1, 0, 1]]
+print(sol.three_sum([0, 0, 0, 0]))             # [[0, 0, 0]]
 print(sol.three_sum([1, 2, 3]))                # []
-print(sol.three_sum([-2, 0, 0, 2, 2]))         # [[-2,0,2]]
+print(sol.three_sum([-2, 0, 0, 2, 2]))         # [[-2, 0, 2]]
 ```
 
 ```java run
@@ -1137,40 +1329,94 @@ import java.util.*;
 
 public class Main {
     static class Solution {
-        List<List<Integer>> threeSum(int[] arr) {
-            Arrays.sort(arr);
-            int n = arr.length;
-            List<List<Integer>> result = new ArrayList<>();
+        private int skipDuplicatesLeft(int[] arr, int left, int right) {
 
-            for (int i = 0; i < n - 2; i++) {
-                if (arr[i] > 0) break;
-                if (i > 0 && arr[i] == arr[i - 1]) continue;
-                int left = i + 1, right = n - 1, target = -arr[i];
-                while (left < right) {
-                    int total = arr[left] + arr[right];
-                    if (total == target) {
-                        result.add(Arrays.asList(arr[i], arr[left], arr[right]));
-                        while (left < right && arr[left]  == arr[left + 1])  left++;
-                        while (left < right && arr[right] == arr[right - 1]) right--;
-                        left++;
-                        right--;
-                    } else if (total < target) {
-                        left++;
-                    } else {
-                        right--;
-                    }
+            // Skip duplicates from the left pointer
+            while (left < right && arr[left] == arr[left + 1]) {
+                left++;
+            }
+
+            // Return the index of the next unique element
+            return left + 1;
+        }
+
+        private int skipDuplicatesRight(int[] arr, int left, int right) {
+
+            // Skip duplicates from the right pointer
+            while (left < right && arr[right] == arr[right - 1]) {
+                right--;
+            }
+
+            // Return the index of the next unique element
+            return right - 1;
+        }
+
+        private void duplicateAwareTwoSum(
+            int[] arr,
+            int index,
+            List<List<Integer>> result
+        ) {
+            int left  = index + 1;
+            int right = arr.length - 1;
+
+            // Use a while loop to traverse the array using the two pointers
+            while (left < right) {
+                int sum = arr[index] + arr[left] + arr[right];
+
+                // If the sum is 0, add the triplet to the result.
+                if (sum == 0) {
+                    result.add(List.of(arr[index], arr[left], arr[right]));
+
+                    // Move the left pointer to the next unique element to
+                    // avoid duplicates
+                    left = skipDuplicatesLeft(arr, left, right);
+
+                    // Move the right pointer to the previous unique element
+                    // to avoid duplicates
+                    right = skipDuplicatesRight(arr, left, right);
+                }
+
+                // Move the left pointer to increase the sum
+                else if (sum < 0) {
+                    left++;
+                }
+
+                // Move the right pointer to decrease the sum
+                else {
+                    right--;
                 }
             }
+        }
+
+        public List<List<Integer>> threeSum(int[] arr) {
+            List<List<Integer>> result = new ArrayList<>();
+
+            // Sort the array in non-decreasing order.
+            Arrays.sort(arr);
+
+            // Traverse the array using 1 pointer.
+            for (int i = 0; i < arr.length; i++) {
+
+                // Skip duplicates for the first element.
+                if (i > 0 && arr[i] == arr[i - 1]) {
+                    continue;
+                }
+
+                // Use the two-pointer technique to find pairs with sum
+                // -arr[i].
+                duplicateAwareTwoSum(arr, i, result);
+            }
+
             return result;
         }
     }
 
     public static void main(String[] args) {
         Solution s = new Solution();
-        System.out.println(s.threeSum(new int[]{-1, 0, 1, 2, -1, -4}));
-        System.out.println(s.threeSum(new int[]{0, 0, 0, 0}));
-        System.out.println(s.threeSum(new int[]{1, 2, 3}));
-        System.out.println(s.threeSum(new int[]{-2, 0, 0, 2, 2}));
+        System.out.println(s.threeSum(new int[]{-1, 0, 1, 2, -1, -4}));  // [[-1, -1, 2], [-1, 0, 1]]
+        System.out.println(s.threeSum(new int[]{0, 0, 0, 0}));            // [[0, 0, 0]]
+        System.out.println(s.threeSum(new int[]{1, 2, 3}));               // []
+        System.out.println(s.threeSum(new int[]{-2, 0, 0, 2, 2}));        // [[-2, 0, 2]]
     }
 }
 ```
@@ -1179,30 +1425,83 @@ public class Main {
 #include <stdio.h>
 #include <stdlib.h>
 
-int cmp(const void* a, const void* b) { return (*(int*)a) - (*(int*)b); }
+static int cmp(const void* a, const void* b) { return (*(int*)a) - (*(int*)b); }
 
-void three_sum(int* arr, int n) {
-    qsort(arr, n, sizeof(int), cmp);
-    printf("[");
-    int first = 1;
-    for (int i = 0; i < n - 2; i++) {
-        if (arr[i] > 0) break;
-        if (i > 0 && arr[i] == arr[i - 1]) continue;
-        int left = i + 1, right = n - 1, target = -arr[i];
-        while (left < right) {
-            int total = arr[left] + arr[right];
-            if (total == target) {
-                if (!first) printf(", ");
-                printf("[%d, %d, %d]", arr[i], arr[left], arr[right]);
-                first = 0;
-                while (left < right && arr[left]  == arr[left + 1])  left++;
-                while (left < right && arr[right] == arr[right - 1]) right--;
-                left++;
-                right--;
-            } else if (total < target) left++;
-            else                       right--;
+static int skip_duplicates_left(const int* arr, int left, int right) {
+
+    /* Skip duplicates from the left pointer */
+    while (left < right && arr[left] == arr[left + 1]) {
+        left++;
+    }
+
+    /* Return the index of the next unique element */
+    return left + 1;
+}
+
+static int skip_duplicates_right(const int* arr, int left, int right) {
+
+    /* Skip duplicates from the right pointer */
+    while (left < right && arr[right] == arr[right - 1]) {
+        right--;
+    }
+
+    /* Return the index of the next unique element */
+    return right - 1;
+}
+
+static int first = 1;
+
+static void duplicate_aware_two_sum(const int* arr, int n, int index) {
+    int left  = index + 1;
+    int right = n - 1;
+
+    /* Use a while loop to traverse the array using the two pointers */
+    while (left < right) {
+        int sum = arr[index] + arr[left] + arr[right];
+
+        /* If the sum is 0, add the triplet to the result */
+        if (sum == 0) {
+            if (!first) printf(", ");
+            printf("[%d, %d, %d]", arr[index], arr[left], arr[right]);
+            first = 0;
+
+            /* Move the left pointer to the next unique element to avoid duplicates */
+            left = skip_duplicates_left(arr, left, right);
+
+            /* Move the right pointer to the previous unique element to avoid duplicates */
+            right = skip_duplicates_right(arr, left, right);
+        }
+
+        /* Move the left pointer to increase the sum */
+        else if (sum < 0) {
+            left++;
+        }
+
+        /* Move the right pointer to decrease the sum */
+        else {
+            right--;
         }
     }
+}
+
+void three_sum(int* arr, int n) {
+
+    /* Sort the array in non-decreasing order */
+    qsort(arr, n, sizeof(int), cmp);
+
+    first = 1;
+    printf("[");
+
+    /* Traverse the array using 1 pointer */
+    for (int i = 0; i < n; i++) {
+
+        /* Skip duplicates for the first element */
+        if (i > 0 && arr[i] == arr[i - 1]) continue;
+
+        /* Use the two-pointer technique to find pairs with sum -arr[i] */
+        duplicate_aware_two_sum(arr, n, i);
+    }
+
     printf("]\n");
 }
 
@@ -1218,44 +1517,91 @@ int main() {
 ```scala run
 object Main extends App {
   class Solution {
-    def threeSum(arr: Array[Int]): List[List[Int]] = {
-      val sorted = arr.sorted
-      val n = sorted.length
-      val result = scala.collection.mutable.ListBuffer.empty[List[Int]]
+    private def skipDuplicatesLeft(arr: Array[Int], l: Int, right: Int): Int = {
+      var left = l
 
-      var i = 0
-      while (i < n - 2) {
-        if (sorted(i) > 0) {
-          i = n
-        } else if (i > 0 && sorted(i) == sorted(i - 1)) {
-          i += 1
-        } else {
-          var left = i + 1
-          var right = n - 1
-          val target = -sorted(i)
-          while (left < right) {
-            val total = sorted(left) + sorted(right)
-            if (total == target) {
-              result += List(sorted(i), sorted(left), sorted(right))
-              while (left < right && sorted(left)  == sorted(left + 1))  left  += 1
-              while (left < right && sorted(right) == sorted(right - 1)) right -= 1
-              left  += 1
-              right -= 1
-            } else if (total < target) left  += 1
-            else                       right -= 1
-          }
-          i += 1
+      // Skip duplicates from the left pointer
+      while (left < right && arr(left) == arr(left + 1)) {
+        left += 1
+      }
+
+      // Return the index of the next unique element
+      left + 1
+    }
+
+    private def skipDuplicatesRight(arr: Array[Int], left: Int, r: Int): Int = {
+      var right = r
+
+      // Skip duplicates from the right pointer
+      while (left < right && arr(right) == arr(right - 1)) {
+        right -= 1
+      }
+
+      // Return the index of the next unique element
+      right - 1
+    }
+
+    private def duplicateAwareTwoSum(
+        arr: Array[Int],
+        index: Int,
+        result: scala.collection.mutable.ListBuffer[List[Int]]
+    ): Unit = {
+      var left  = index + 1
+      var right = arr.length - 1
+
+      // Use a while loop to traverse the array using the two pointers
+      while (left < right) {
+        val sum = arr(index) + arr(left) + arr(right)
+
+        // If the sum is 0, add the triplet to the result
+        if (sum == 0) {
+          result += List(arr(index), arr(left), arr(right))
+
+          // Move the left pointer to the next unique element to avoid duplicates
+          left = skipDuplicatesLeft(arr, left, right)
+
+          // Move the right pointer to the previous unique element to avoid duplicates
+          right = skipDuplicatesRight(arr, left, right)
+        }
+        // Move the left pointer to increase the sum
+        else if (sum < 0) {
+          left += 1
+        }
+        // Move the right pointer to decrease the sum
+        else {
+          right -= 1
         }
       }
+    }
+
+    def threeSum(arr: Array[Int]): List[List[Int]] = {
+      val result = scala.collection.mutable.ListBuffer.empty[List[Int]]
+
+      // Sort the array in non-decreasing order
+      val sorted = arr.sorted
+
+      // Traverse the array using 1 pointer
+      var i = 0
+      while (i < sorted.length) {
+
+        // Skip duplicates for the first element
+        if (!(i > 0 && sorted(i) == sorted(i - 1))) {
+
+          // Use the two-pointer technique to find pairs with sum -arr[i]
+          duplicateAwareTwoSum(sorted, i, result)
+        }
+        i += 1
+      }
+
       result.toList
     }
   }
 
   val sol = new Solution
-  println(sol.threeSum(Array(-1, 0, 1, 2, -1, -4)))
-  println(sol.threeSum(Array(0, 0, 0, 0)))
-  println(sol.threeSum(Array(1, 2, 3)))
-  println(sol.threeSum(Array(-2, 0, 0, 2, 2)))
+  println(sol.threeSum(Array(-1, 0, 1, 2, -1, -4)))   // List(List(-1, -1, 2), List(-1, 0, 1))
+  println(sol.threeSum(Array(0, 0, 0, 0)))             // List(List(0, 0, 0))
+  println(sol.threeSum(Array(1, 2, 3)))                // List()
+  println(sol.threeSum(Array(-2, 0, 0, 2, 2)))         // List(List(-2, 0, 2))
 }
 ```
 
@@ -1279,6 +1625,40 @@ object Main extends App {
 No triplets for i=0.
 
 **i=1, arr[i]=-1, target=1, left=2, right=5:**
+
+```d3 widget=array-traversal
+{
+  "items": ["-4", "-1", "-1", "0", "1", "2"],
+  "title": "Three Sum inner trace — i = 1 (arr[i] = -1), target for inner = 1",
+  "steps": [
+    {
+      "keys":    ["a", "b", "c", "d", "e", "f"],
+      "markers": [
+        { "name": "i",     "index": 1, "color": "#a855f7" },
+        { "name": "left",  "index": 2, "color": "#3b82f6" },
+        { "name": "right", "index": 5, "color": "#f59e0b" }
+      ],
+      "msg": "arr[left] + arr[right] = -1 + 2 = 1 = target → record triplet [-1, -1, 2]."
+    },
+    {
+      "keys":    ["a", "b", "c", "d", "e", "f"],
+      "markers": [
+        { "name": "i",     "index": 1, "color": "#a855f7" },
+        { "name": "left",  "index": 3, "color": "#3b82f6" },
+        { "name": "right", "index": 4, "color": "#f59e0b" }
+      ],
+      "msg": "After advancing past duplicates: arr[left] + arr[right] = 0 + 1 = 1 = target → record triplet [-1, 0, 1]."
+    },
+    {
+      "keys":    ["a", "b", "c", "d", "e", "f"],
+      "markers": [
+        { "name": "i",     "index": 1, "color": "#a855f7" }
+      ],
+      "msg": "left ≥ right → inner pass for i = 1 ends. Two triplets recorded."
+    }
+  ]
+}
+```
 
 | left | right | arr[l]+arr[r] | Action |
 |---|---|---|---|
@@ -1855,28 +2235,76 @@ The `j > i+1` guard for the inner skip is important — without it, `j = i+1` wo
 
 
 ```pseudocode
-# Four-sum: quadruples summing to target. Fix two elements (i, j), then two-sum the rest.
-function fourSum(arr, target):
-    sort arr in place
-    n ← length(arr)
+# Decomposed Four Sum: outer i, inner j, then call duplicateAwareTwoSum on the remaining suffix.
+# skipDuplicatesLeft/skipDuplicatesRight return the NEXT-unique index (not the last duplicate one).
+function skipDuplicatesLeft(arr, left, right):
+    # Skip duplicates from the left pointer
+    while left < right AND arr[left] = arr[left + 1]:
+        left ← left + 1
+    # Return the index of the next unique element
+    return left + 1
+
+function skipDuplicatesRight(arr, left, right):
+    # Skip duplicates from the right pointer
+    while left < right AND arr[right] = arr[right − 1]:
+        right ← right − 1
+    # Return the index of the next unique element
+    return right − 1
+
+function duplicateAwareTwoSum(arr, left, target):
+    right ← length(arr) − 1
     result ← empty list
-    for i from 0 to n − 4:
-        if i > 0 AND arr[i] = arr[i − 1]: continue   # skip duplicate i
-        for j from i + 1 to n − 3:
-            if j > i + 1 AND arr[j] = arr[j − 1]: continue   # skip duplicate j (relative to fixed i)
-            left ← j + 1; right ← n − 1
-            need ← target − arr[i] − arr[j]
-            while left < right:
-                total ← arr[left] + arr[right]
-                if total = need:
-                    append [arr[i], arr[j], arr[left], arr[right]] to result
-                    while left < right AND arr[left]  = arr[left + 1]:  left  ← left + 1
-                    while left < right AND arr[right] = arr[right − 1]: right ← right − 1
-                    left ← left + 1; right ← right − 1
-                else if total < need:
-                    left ← left + 1
-                else:
-                    right ← right − 1
+
+    # Use a while loop to traverse the array using the two pointers
+    while left < right:
+        sum ← arr[left] + arr[right]
+
+        # If the sum is equal to target, add the numbers to the result.
+        if sum = target:
+            append (arr[left], arr[right]) to result
+
+            # Move the left pointer to the next unique element to avoid duplicates
+            left  ← skipDuplicatesLeft(arr, left, right)
+
+            # Move the right pointer to the previous unique element to avoid duplicates
+            right ← skipDuplicatesRight(arr, left, right)
+
+        # Move the left pointer to increase the sum
+        else if sum < target:
+            left ← left + 1
+
+        # Move the right pointer to decrease the sum
+        else:
+            right ← right − 1
+    return result
+
+function fourSum(arr, target):
+    result ← empty list
+
+    # Sort the array in non-decreasing order
+    sort arr in place
+
+    # Loop through each element of the array
+    for i from 0 to length(arr) − 1:
+        # Skip duplicates for the first element
+        if i > 0 AND arr[i] = arr[i − 1]:
+            continue
+
+        for j from i + 1 to length(arr) − 1:
+            # Skip duplicates for the second element
+            if j > i + 1 AND arr[j] = arr[j − 1]:
+                continue
+
+            # Define the remaining target for the two-pointer technique
+            remainingTarget ← target − arr[i] − arr[j]
+
+            # Find pairs with sum equal to the remaining target
+            twoSumResults ← duplicateAwareTwoSum(arr, j + 1, remainingTarget)
+
+            # Add the quadruplets to the result
+            for each (a, b) in twoSumResults:
+                append [arr[i], arr[j], a, b] to result
+
     return result
 ```
 
@@ -1884,33 +2312,93 @@ function fourSum(arr, target):
 from typing import List
 
 class Solution:
-    def four_sum(self, arr: List[int], target: int) -> List[List[int]]:
-        arr.sort()
-        n = len(arr)
+    def skip_duplicates_left(
+        self, arr: List[int], left: int, right: int
+    ) -> int:
+
+        # Skip duplicates from the left pointer
+        while left < right and arr[left] == arr[left + 1]:
+            left += 1
+
+        # Return the index of the next unique element
+        return left + 1
+
+    def skip_duplicates_right(
+        self, arr: List[int], left: int, right: int
+    ) -> int:
+
+        # Skip duplicates from the right pointer
+        while left < right and arr[right] == arr[right - 1]:
+            right -= 1
+
+        # Return the index of the next unique element
+        return right - 1
+
+    def duplicate_aware_two_sum(
+        self, arr: List[int], left: int, target: int
+    ) -> List[List[int]]:
+        right = len(arr) - 1
         result = []
 
-        for i in range(n - 3):
+        # Use a while loop to traverse the array using the two pointers
+        while left < right:
+            sum_ = arr[left] + arr[right]
+
+            # If the sum is equal to target, add the numbers to the
+            # result.
+            if sum_ == target:
+                result.append([arr[left], arr[right]])
+
+                # Move the left pointer to the next unique element to
+                # avoid duplicates
+                left = self.skip_duplicates_left(arr, left, right)
+
+                # Move the right pointer to the previous unique element
+                # to avoid duplicates
+                right = self.skip_duplicates_right(arr, left, right)
+
+            # Move the left pointer to increase the sum
+            elif sum_ < target:
+                left += 1
+
+            # Move the right pointer to decrease the sum
+            else:
+                right -= 1
+        return result
+
+    def four_sum(self, arr: List[int], target: int) -> List[List[int]]:
+        result = []
+
+        # Sort the array in non-decreasing order
+        arr.sort()
+
+        for i in range(len(arr)):
+
+            # Skip duplicates for the first element
             if i > 0 and arr[i] == arr[i - 1]:
                 continue
-            for j in range(i + 1, n - 2):
-                # j > i+1 guard avoids comparing arr[j] against the *outer* fixed element.
+
+            for j in range(i + 1, len(arr)):
+
+                # Skip duplicates for the second element
                 if j > i + 1 and arr[j] == arr[j - 1]:
                     continue
 
-                left, right = j + 1, n - 1
-                need = target - arr[i] - arr[j]
-                while left < right:
-                    total = arr[left] + arr[right]
-                    if total == need:
-                        result.append([arr[i], arr[j], arr[left], arr[right]])
-                        while left < right and arr[left]  == arr[left + 1]:  left  += 1
-                        while left < right and arr[right] == arr[right - 1]: right -= 1
-                        left  += 1
-                        right -= 1
-                    elif total < need:
-                        left += 1
-                    else:
-                        right -= 1
+                # Define the remaining target for the two-pointer
+                # technique
+                remaining_target = target - arr[i] - arr[j]
+
+                # Find pairs with sum equal to the remaining target
+                two_sum_results = self.duplicate_aware_two_sum(
+                    arr, j + 1, remaining_target
+                )
+
+                # Add the quadruplets to the result
+                for two_sum in two_sum_results:
+                    result.append(
+                        [arr[i], arr[j], two_sum[0], two_sum[1]]
+                    )
+
         return result
 
 
@@ -1926,33 +2414,108 @@ import java.util.*;
 
 public class Main {
     static class Solution {
-        List<List<Integer>> fourSum(int[] arr, int target) {
-            Arrays.sort(arr);
-            int n = arr.length;
+        private int skipDuplicatesLeft(int[] arr, int left, int right) {
+
+            // Skip duplicates from the left pointer
+            while (left < right && arr[left] == arr[left + 1]) {
+                left++;
+            }
+
+            // Return the index of the next unique element
+            return left + 1;
+        }
+
+        private int skipDuplicatesRight(int[] arr, int left, int right) {
+
+            // Skip duplicates from the right pointer
+            while (left < right && arr[right] == arr[right - 1]) {
+                right--;
+            }
+
+            // Return the index of the next unique element
+            return right - 1;
+        }
+
+        private List<int[]> duplicateAwareTwoSum(
+            int[] arr,
+            int left,
+            int target
+        ) {
+            int right = arr.length - 1;
+            List<int[]> result = new ArrayList<>();
+
+            // Use a while loop to traverse the array using the two pointers
+            while (left < right) {
+                int sum = arr[left] + arr[right];
+
+                // If the sum is equal to target, add the numbers to the
+                // result.
+                if (sum == target) {
+                    result.add(new int[] { arr[left], arr[right] });
+
+                    // Move the left pointer to the next unique element to
+                    // avoid duplicates
+                    left = skipDuplicatesLeft(arr, left, right);
+
+                    // Move the right pointer to the previous unique element
+                    // to avoid duplicates
+                    right = skipDuplicatesRight(arr, left, right);
+                }
+
+                // Move the left pointer to increase the sum
+                else if (sum < target) {
+                    left++;
+                }
+
+                // Move the right pointer to decrease the sum
+                else {
+                    right--;
+                }
+            }
+            return result;
+        }
+
+        public List<List<Integer>> fourSum(int[] arr, int target) {
             List<List<Integer>> result = new ArrayList<>();
 
-            for (int i = 0; i < n - 3; i++) {
-                if (i > 0 && arr[i] == arr[i - 1]) continue;
-                for (int j = i + 1; j < n - 2; j++) {
-                    if (j > i + 1 && arr[j] == arr[j - 1]) continue;
-                    int left = j + 1, right = n - 1;
-                    int need = target - arr[i] - arr[j];
-                    while (left < right) {
-                        int total = arr[left] + arr[right];
-                        if (total == need) {
-                            result.add(Arrays.asList(arr[i], arr[j], arr[left], arr[right]));
-                            while (left < right && arr[left]  == arr[left + 1])  left++;
-                            while (left < right && arr[right] == arr[right - 1]) right--;
-                            left++;
-                            right--;
-                        } else if (total < need) {
-                            left++;
-                        } else {
-                            right--;
-                        }
+            // Sort the array in non-decreasing order
+            Arrays.sort(arr);
+
+            // Loop through each element of the array
+            for (int i = 0; i < arr.length; i++) {
+
+                // Skip duplicates for the first element
+                if (i > 0 && arr[i] == arr[i - 1]) {
+                    continue;
+                }
+
+                for (int j = i + 1; j < arr.length; j++) {
+
+                    // Skip duplicates for the second element
+                    if (j > i + 1 && arr[j] == arr[j - 1]) {
+                        continue;
+                    }
+
+                    // Define the remaining target for the two-pointer
+                    // technique
+                    int remainingTarget = target - arr[i] - arr[j];
+
+                    // Find pairs with sum equal to the remaining target
+                    List<int[]> twoSumResults = duplicateAwareTwoSum(
+                        arr,
+                        j + 1,
+                        remainingTarget
+                    );
+
+                    // Add the quadruplets to the result
+                    for (int[] twoSum : twoSumResults) {
+                        result.add(
+                            List.of(arr[i], arr[j], twoSum[0], twoSum[1])
+                        );
                     }
                 }
             }
+
             return result;
         }
     }
@@ -1971,30 +2534,89 @@ public class Main {
 #include <stdio.h>
 #include <stdlib.h>
 
-int cmp(const void* a, const void* b) { return (*(int*)a) - (*(int*)b); }
+static int cmp(const void* a, const void* b) { return (*(int*)a) - (*(int*)b); }
+
+static int skip_duplicates_left(const int* arr, int left, int right) {
+
+    // Skip duplicates from the left pointer
+    while (left < right && arr[left] == arr[left + 1]) {
+        left++;
+    }
+
+    // Return the index of the next unique element
+    return left + 1;
+}
+
+static int skip_duplicates_right(const int* arr, int left, int right) {
+
+    // Skip duplicates from the right pointer
+    while (left < right && arr[right] == arr[right - 1]) {
+        right--;
+    }
+
+    // Return the index of the next unique element
+    return right - 1;
+}
+
+static void duplicate_aware_two_sum(
+    const int* arr, int n, int left, int target,
+    int a, int b, int* first
+) {
+    int right = n - 1;
+
+    // Use a while loop to traverse the array using the two pointers
+    while (left < right) {
+        int sum = arr[left] + arr[right];
+
+        // If the sum is equal to target, print the quadruplet
+        if (sum == target) {
+            if (!*first) printf(", ");
+            printf("[%d, %d, %d, %d]", a, b, arr[left], arr[right]);
+            *first = 0;
+
+            // Move the left pointer to the next unique element to avoid duplicates
+            left  = skip_duplicates_left(arr, left, right);
+
+            // Move the right pointer to the previous unique element to avoid duplicates
+            right = skip_duplicates_right(arr, left, right);
+        }
+
+        // Move the left pointer to increase the sum
+        else if (sum < target) {
+            left++;
+        }
+
+        // Move the right pointer to decrease the sum
+        else {
+            right--;
+        }
+    }
+}
 
 void four_sum(int* arr, int n, int target) {
+
+    // Sort the array in non-decreasing order
     qsort(arr, n, sizeof(int), cmp);
+
     printf("[");
     int first = 1;
-    for (int i = 0; i < n - 3; i++) {
+
+    // Loop through each element of the array
+    for (int i = 0; i < n; i++) {
+
+        // Skip duplicates for the first element
         if (i > 0 && arr[i] == arr[i - 1]) continue;
-        for (int j = i + 1; j < n - 2; j++) {
+
+        for (int j = i + 1; j < n; j++) {
+
+            // Skip duplicates for the second element
             if (j > i + 1 && arr[j] == arr[j - 1]) continue;
-            int left = j + 1, right = n - 1, need = target - arr[i] - arr[j];
-            while (left < right) {
-                int total = arr[left] + arr[right];
-                if (total == need) {
-                    if (!first) printf(", ");
-                    printf("[%d, %d, %d, %d]", arr[i], arr[j], arr[left], arr[right]);
-                    first = 0;
-                    while (left < right && arr[left]  == arr[left + 1])  left++;
-                    while (left < right && arr[right] == arr[right - 1]) right--;
-                    left++;
-                    right--;
-                } else if (total < need) left++;
-                else                     right--;
-            }
+
+            // Define the remaining target for the two-pointer technique
+            int remaining_target = target - arr[i] - arr[j];
+
+            // Find pairs with sum equal to the remaining target
+            duplicate_aware_two_sum(arr, n, j + 1, remaining_target, arr[i], arr[j], &first);
         }
     }
     printf("]\n");
@@ -2012,41 +2634,107 @@ int main() {
 ```scala run
 object Main extends App {
   class Solution {
+    private def skipDuplicatesLeft(arr: Array[Int], left0: Int, right: Int): Int = {
+      var left = left0
+
+      // Skip duplicates from the left pointer
+      while (left < right && arr(left) == arr(left + 1)) {
+        left += 1
+      }
+
+      // Return the index of the next unique element
+      left + 1
+    }
+
+    private def skipDuplicatesRight(arr: Array[Int], left: Int, right0: Int): Int = {
+      var right = right0
+
+      // Skip duplicates from the right pointer
+      while (left < right && arr(right) == arr(right - 1)) {
+        right -= 1
+      }
+
+      // Return the index of the next unique element
+      right - 1
+    }
+
+    private def duplicateAwareTwoSum(
+        arr: Array[Int],
+        left0: Int,
+        target: Int
+    ): List[(Int, Int)] = {
+      var left  = left0
+      var right = arr.length - 1
+      val result = scala.collection.mutable.ListBuffer.empty[(Int, Int)]
+
+      // Use a while loop to traverse the array using the two pointers
+      while (left < right) {
+        val sum = arr(left) + arr(right)
+
+        // If the sum is equal to target, add the numbers to the result.
+        if (sum == target) {
+          result += ((arr(left), arr(right)))
+
+          // Move the left pointer to the next unique element to avoid duplicates
+          left = skipDuplicatesLeft(arr, left, right)
+
+          // Move the right pointer to the previous unique element to avoid duplicates
+          right = skipDuplicatesRight(arr, left, right)
+        }
+
+        // Move the left pointer to increase the sum
+        else if (sum < target) {
+          left += 1
+        }
+
+        // Move the right pointer to decrease the sum
+        else {
+          right -= 1
+        }
+      }
+      result.toList
+    }
+
     def fourSum(arr: Array[Int], target: Int): List[List[Int]] = {
+
+      // Sort the array in non-decreasing order
       val sorted = arr.sorted
-      val n = sorted.length
       val result = scala.collection.mutable.ListBuffer.empty[List[Int]]
 
+      // Loop through each element of the array
       var i = 0
-      while (i < n - 3) {
+      while (i < sorted.length) {
+
+        // Skip duplicates for the first element
         if (i > 0 && sorted(i) == sorted(i - 1)) {
           i += 1
         } else {
           var j = i + 1
-          while (j < n - 2) {
+          while (j < sorted.length) {
+
+            // Skip duplicates for the second element
             if (j > i + 1 && sorted(j) == sorted(j - 1)) {
               j += 1
             } else {
-              var left = j + 1
-              var right = n - 1
-              val need = target - sorted(i) - sorted(j)
-              while (left < right) {
-                val total = sorted(left) + sorted(right)
-                if (total == need) {
-                  result += List(sorted(i), sorted(j), sorted(left), sorted(right))
-                  while (left < right && sorted(left)  == sorted(left + 1))  left  += 1
-                  while (left < right && sorted(right) == sorted(right - 1)) right -= 1
-                  left  += 1
-                  right -= 1
-                } else if (total < need) left  += 1
-                else                     right -= 1
+
+              // Define the remaining target for the two-pointer technique
+              val remainingTarget = target - sorted(i) - sorted(j)
+
+              // Find pairs with sum equal to the remaining target
+              val twoSumResults = duplicateAwareTwoSum(sorted, j + 1, remainingTarget)
+
+              // Add the quadruplets to the result
+              for ((a, b) <- twoSumResults) {
+                result += List(sorted(i), sorted(j), a, b)
               }
+
               j += 1
             }
           }
           i += 1
         }
       }
+
       result.toList
     }
   }

@@ -804,9 +804,40 @@ Traversal is one of the most common operations on an array. It is the **only** w
 
 The pointer starts at index `0` and steps forward one cell at a time until it reaches the end:
 
-<div class="array-stepper" data-values="1, 2, 3, 4, 5" data-label="index"></div>
+```d3 widget=array-traversal
+{
+  "items": ["1", "2", "3", "4", "5"],
+  "title": "Traversing an array with a loop control variable",
+  "steps": [
+    {
+      "markers": [{ "name": "index", "index": 0, "color": "#3b82f6" }],
+      "msg": "Start at index = 0; read arr[0] = 1."
+    },
+    {
+      "markers": [{ "name": "index", "index": 1, "color": "#3b82f6" }],
+      "msg": "Advance: index = 1; read arr[1] = 2."
+    },
+    {
+      "markers": [{ "name": "index", "index": 2, "color": "#3b82f6" }],
+      "msg": "Advance: index = 2; read arr[2] = 3."
+    },
+    {
+      "markers": [{ "name": "index", "index": 3, "color": "#3b82f6" }],
+      "msg": "Advance: index = 3; read arr[3] = 4."
+    },
+    {
+      "markers": [{ "name": "index", "index": 4, "color": "#3b82f6" }],
+      "msg": "Advance: index = 4; read arr[4] = 5."
+    },
+    {
+      "markers": [],
+      "msg": "index = 5 ≥ length — loop ends. Every element has been visited exactly once."
+    }
+  ]
+}
+```
 
-<p align="center"><strong>Traversing an array using a loop control variable <code>index</code>. Click Next/Prev to step through, or use the ←/→ keys when the widget is focused.</strong></p>
+<p align="center"><strong>Traversing an array using a loop control variable <code>index</code>. Use Prev/Next/Play to step through.</strong></p>
 
 Higher-level languages have built-in functions to get the array's length. For lower-level languages like C/C++, the programmer needs to track the array's size manually.
 

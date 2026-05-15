@@ -67,44 +67,49 @@ The loop terminates when `left >= right`. At that point, every pair of equidista
 
 Here is the full picture of a single traversal on an array of size 7:
 
-```mermaid
----
-config:
-  theme: base
-  themeVariables:
-    primaryColor: "#dbeafe"
-    primaryBorderColor: "#3b82f6"
-    primaryTextColor: "#1e3a5f"
-    lineColor: "#64748b"
-    secondaryColor: "#ede9fe"
-    tertiaryColor: "#fef9c3"
----
-flowchart TB
-  subgraph S0["Initial state"]
-    direction LR
-    L0(["left=0"]) --> I0["A"] --- I1["B"] --- I2["C"] --- I3["D"] --- I4["E"] --- I5["F"] --- I6["G"]
-    I6 --> R0(["right=6"])
-  end
-  subgraph S1["After iteration 1  (A & G processed, left++, right--)"]
-    direction LR
-    L1(["left=1"]) --> J1["B"] --- J2["C"] --- J3["D"] --- J4["E"] --- J5["F"]
-    J5 --> R1(["right=5"])
-  end
-  subgraph S2["After iteration 2  (B & F processed, left++, right--)"]
-    direction LR
-    L2(["left=2"]) --> K2["C"] --- K3["D"] --- K4["E"]
-    K4 --> R2(["right=4"])
-  end
-  subgraph S3["After iteration 3  (C & E processed, left++, right--)"]
-    direction LR
-    L3(["left=3"]) --> M3["D"]
-    M3 --> R3(["right=3"])
-  end
-  subgraph S4["left = right = 3  →  loop ends"]
-    DONE(["✓ centre element D handled separately if needed"])
-  end
-
-  S0 --> S1 --> S2 --> S3 --> S4
+```d3 widget=array-traversal
+{
+  "items": ["A", "B", "C", "D", "E", "F", "G"],
+  "title": "Two-pointer traversal on a 7-element array",
+  "steps": [
+    {
+      "markers": [
+        { "name": "left",  "index": 0, "color": "#3b82f6" },
+        { "name": "right", "index": 6, "color": "#f59e0b" }
+      ],
+      "range":   { "lo": 0, "hi": 6 },
+      "msg": "Initial state — left = 0, right = 6. The whole array lies between the pointers."
+    },
+    {
+      "markers": [
+        { "name": "left",  "index": 1, "color": "#3b82f6" },
+        { "name": "right", "index": 5, "color": "#f59e0b" }
+      ],
+      "range":   { "lo": 1, "hi": 5 },
+      "msg": "After iteration 1 — A and G have been processed; left++, right--."
+    },
+    {
+      "markers": [
+        { "name": "left",  "index": 2, "color": "#3b82f6" },
+        { "name": "right", "index": 4, "color": "#f59e0b" }
+      ],
+      "range":   { "lo": 2, "hi": 4 },
+      "msg": "After iteration 2 — B and F processed; left++, right--."
+    },
+    {
+      "markers": [
+        { "name": "left",  "index": 3, "color": "#3b82f6" },
+        { "name": "right", "index": 3, "color": "#f59e0b" }
+      ],
+      "range":   { "lo": 3, "hi": 3 },
+      "msg": "After iteration 3 — C and E processed; left = right = 3."
+    },
+    {
+      "markers": [],
+      "msg": "left ≥ right — loop ends. The centre element D is handled separately if the problem requires it."
+    }
+  ]
+}
 ```
 
 <p align="center"><strong>Iteration-by-iteration view of the two-pointer traversal on a 7-element array — each step processes one pair of equidistant elements and closes the gap by one on each side.</strong></p>
@@ -530,41 +535,37 @@ This works, but it uses O(n) extra space and touches every element twice. We can
 
 **Key insight:** to reverse an array, we just need to swap equidistant elements from both ends — `arr[0] ↔ arr[n-1]`, `arr[1] ↔ arr[n-2]`, and so on. Each swap needs exactly two positions: one from the left, one from the right. That's the two-pointer template.
 
-```mermaid
----
-config:
-  theme: base
-  themeVariables:
-    primaryColor: "#dbeafe"
-    primaryBorderColor: "#3b82f6"
-    primaryTextColor: "#1e3a5f"
-    lineColor: "#64748b"
-    secondaryColor: "#ede9fe"
-    tertiaryColor: "#fef9c3"
----
-flowchart TB
-  subgraph Step0["Start: left=0, right=4"]
-    direction LR
-    A0(["left"]) --> S0A["1"] --- S0B["2"] --- S0C["3"] --- S0D["4"] --- S0E["5"]
-    S0E --> B0(["right"])
-  end
-  subgraph Step1["Swap arr[0]↔arr[4], left=1, right=3"]
-    direction LR
-    A1(["left"]) --> S1A["5"] --- S1B["2"] --- S1C["3"] --- S1D["4"] --- S1E["1"]
-    S1D --> B1(["right"])
-  end
-  subgraph Step2["Swap arr[1]↔arr[3], left=2, right=2"]
-    direction LR
-    A2(["left"]) --> S2A["5"] --- S2B["4"] --- S2C["3"] --- S2D["2"] --- S2E["1"]
-    S2C --> B2(["right"])
-  end
-  subgraph Step3["left = right = 2  →  loop ends"]
-    DONE(["✓  arr = [5, 4, 3, 2, 1]"])
-  end
-
-  Step0 -->|"swap + move"| Step1
-  Step1 -->|"swap + move"| Step2
-  Step2 -->|"left ≥ right"| Step3
+```d3 widget=array-traversal
+{
+  "items": ["1", "2", "3", "4", "5"],
+  "title": "Two-pointer reversal on [1, 2, 3, 4, 5]",
+  "steps": [
+    {
+      "items":   ["1", "2", "3", "4", "5"],
+      "markers": [
+        { "name": "left",  "index": 0, "color": "#3b82f6" },
+        { "name": "right", "index": 4, "color": "#f59e0b" }
+      ],
+      "msg": "Initial — left = 0, right = 4. Swap arr[0]=1 with arr[4]=5."
+    },
+    {
+      "items":   ["5", "2", "3", "4", "1"],
+      "markers": [
+        { "name": "left",  "index": 1, "color": "#3b82f6" },
+        { "name": "right", "index": 3, "color": "#f59e0b" }
+      ],
+      "msg": "Move inward — left = 1, right = 3. Swap arr[1]=2 with arr[3]=4."
+    },
+    {
+      "items":   ["5", "4", "3", "2", "1"],
+      "markers": [
+        { "name": "left",  "index": 2, "color": "#3b82f6" },
+        { "name": "right", "index": 2, "color": "#f59e0b" }
+      ],
+      "msg": "left = right = 2 — pointers meet, the middle element stays. Result: [5, 4, 3, 2, 1]."
+    }
+  ]
+}
 ```
 
 <p align="center"><strong>Two-pointer reversal on <code>[1, 2, 3, 4, 5]</code> — two swaps close the gap from both ends; the middle element needs no swap.</strong></p>
@@ -818,14 +819,14 @@ Each is a small twist on the same pattern — same skeleton, different work in t
 
 ## The Problem
 
-Given an array of characters, reverse the array **in-place** — that is, modify the original array so its characters appear in reverse order.
+Given an array of characters `arr`, reverse the array by **swapping equidistant elements** from the start and the end. The reversal must happen **in-place** — modify the input array directly and use **O(1) extra space**.
 
 ```
-Input:  chars = ['h', 'e', 'l', 'l', 'o']
-Output: chars is modified to ['o', 'l', 'l', 'e', 'h']
+Input:  arr = [a, e, i, o, u]
+Output:       [u, o, i, e, a]
 ```
 
-This is the character-array equivalent of reversing an integer array — the same two-pointer mechanics, applied to chars.
+This is the canonical direct application of the two-pointer pattern — the template and the algorithm are identical.
 
 ---
 
@@ -833,20 +834,20 @@ This is the character-array equivalent of reversing an integer array — the sam
 
 **Example 1**
 ```
-Input:  ['h', 'e', 'l', 'l', 'o']
-Output: ['o', 'l', 'l', 'e', 'h']
+Input:  arr = [a, e, i, o, u]
+Output:       [u, o, i, e, a]
 ```
 
 **Example 2**
 ```
-Input:  ['A', 'B', 'C', 'D']
-Output: ['D', 'C', 'B', 'A']
+Input:  arr = [a, b, c, d, e]
+Output:       [e, d, c, b, a]
 ```
 
-**Example 3 — single character**
+**Example 3 — empty array**
 ```
-Input:  ['X']
-Output: ['X']   (unchanged)
+Input:  arr = []
+Output:       []
 ```
 
 ---
@@ -857,44 +858,45 @@ To reverse a sequence, the first element must become the last, the second must b
 
 Two pointers are perfect for this: `left` starts at index 0 (the first character), `right` starts at index `n-1` (the last character). Swap the pair, then move both inward. Repeat until they meet.
 
-```mermaid
----
-config:
-  theme: base
-  themeVariables:
-    primaryColor: "#dbeafe"
-    primaryBorderColor: "#3b82f6"
-    primaryTextColor: "#1e3a5f"
-    lineColor: "#64748b"
-    secondaryColor: "#ede9fe"
-    tertiaryColor: "#fef9c3"
----
-flowchart TB
-  subgraph S0["Start  —  left=0, right=4"]
-    direction LR
-    P0L(["left"]) --> C0["h"] --- C1["e"] --- C2["l"] --- C3["l"] --- C4["o"]
-    C4 --> P0R(["right"])
-  end
-  subgraph S1["Swap 'h' ↔ 'o'  —  left=1, right=3"]
-    direction LR
-    P1L(["left"]) --> D0["o"] --- D1["e"] --- D2["l"] --- D3["l"] --- D4["h"]
-    D3 --> P1R(["right"])
-  end
-  subgraph S2["Swap 'e' ↔ 'l'  —  left=2, right=2"]
-    direction LR
-    P2L(["left"]) --> E0["o"] --- E1["l"] --- E2["l"] --- E3["e"] --- E4["h"]
-    E2 --> P2R(["right"])
-  end
-  subgraph S3["left = right = 2  →  loop ends"]
-    DONE(["✓  ['o','l','l','e','h']"])
-  end
-
-  S0 -->|"swap + left++ + right--"| S1
-  S1 -->|"swap + left++ + right--"| S2
-  S2 -->|"left ≥ right"| S3
+```d3 widget=array-traversal
+{
+  "items": ["a", "e", "i", "o", "u"],
+  "title": "Reversing [a, e, i, o, u] in place with two pointers",
+  "steps": [
+    {
+      "items":   ["a", "e", "i", "o", "u"],
+      "markers": [
+        { "name": "left",  "index": 0, "color": "#3b82f6" },
+        { "name": "right", "index": 4, "color": "#f59e0b" }
+      ],
+      "msg": "Initial — left = 0, right = 4. Swap arr[left] and arr[right] (a ↔ u)."
+    },
+    {
+      "items":   ["u", "e", "i", "o", "a"],
+      "markers": [
+        { "name": "left",  "index": 1, "color": "#3b82f6" },
+        { "name": "right", "index": 3, "color": "#f59e0b" }
+      ],
+      "msg": "Move inward — left = 1, right = 3. Swap arr[left] and arr[right] (e ↔ o)."
+    },
+    {
+      "items":   ["u", "o", "i", "e", "a"],
+      "markers": [
+        { "name": "left",  "index": 2, "color": "#3b82f6" },
+        { "name": "right", "index": 2, "color": "#f59e0b" }
+      ],
+      "msg": "Pointers meet at index 2 — the middle element is its own mirror; no swap needed."
+    },
+    {
+      "items":   ["u", "o", "i", "e", "a"],
+      "markers": [],
+      "msg": "Done — arr is reversed: [u, o, i, e, a]."
+    }
+  ]
+}
 ```
 
-<p align="center"><strong>Flipping <code>['h','e','l','l','o']</code> in-place — two swaps bring the array to its reversed state; the middle character needs no swap.</strong></p>
+<p align="center"><strong>Flipping <code>[a, e, i, o, u]</code> in place — two swaps reverse the array; the middle element at index 2 is its own mirror.</strong></p>
 
 ---
 
@@ -929,13 +931,15 @@ Every box is checked with nothing extra needed. This is the purest direct applic
 
 
 ```pseudocode
-# Same shape as array reverse — applied to a character list.
-function flipCharacters(chars):
-    left ← 0
-    right ← length(chars) − 1
+function flipCharacters(arr):
+    # Initialize two pointers, one at the start and the other at the end
+    left  ← 0
+    right ← length(arr) − 1
+
+    # Walk the pointers inward, swapping each mirror pair
     while left < right:
-        swap chars[left] and chars[right]
-        left ← left + 1
+        swap arr[left] and arr[right]
+        left  ← left + 1
         right ← right − 1
 ```
 
@@ -943,22 +947,32 @@ function flipCharacters(chars):
 from typing import List
 
 class Solution:
-    def flip_characters(self, chars: List[str]) -> None:
-        left, right = 0, len(chars) - 1
+    def flip_characters(self, arr: List[str]) -> None:
+
+        # Initialize two pointers, one pointing to the beginning of the
+        # array and the other pointing to the end of the array
+        left: int = 0
+        right = len(arr) - 1
+
+        # Use a while loop to traverse the array using the two pointers
         while left < right:
-            chars[left], chars[right] = chars[right], chars[left]   # swap mirror pair
+
+            # Swap the characters pointed by the left and right pointers
+            arr[left], arr[right] = arr[right], arr[left]
+
+            # Move the pointers towards the center of the array
             left  += 1
             right -= 1
 
 
-c1 = ['h', 'e', 'l', 'l', 'o']
-Solution().flip_characters(c1); print(c1)   # ['o', 'l', 'l', 'e', 'h']
+a1 = ['a', 'e', 'i', 'o', 'u']
+Solution().flip_characters(a1); print(a1)   # ['u', 'o', 'i', 'e', 'a']
 
-c2 = ['A', 'B', 'C', 'D']
-Solution().flip_characters(c2); print(c2)   # ['D', 'C', 'B', 'A']
+a2 = ['a', 'b', 'c', 'd', 'e']
+Solution().flip_characters(a2); print(a2)   # ['e', 'd', 'c', 'b', 'a']
 
-c3 = ['X']
-Solution().flip_characters(c3); print(c3)   # ['X']
+a3: List[str] = []
+Solution().flip_characters(a3); print(a3)   # []
 ```
 
 ```java run
@@ -966,13 +980,22 @@ import java.util.Arrays;
 
 public class Main {
     static class Solution {
-        void flipCharacters(char[] chars) {
-            int left = 0;
-            int right = chars.length - 1;
+        void flipCharacters(char[] arr) {
+
+            // Initialize two pointers, one pointing to the beginning of the
+            // array and the other pointing to the end of the array
+            int left  = 0;
+            int right = arr.length - 1;
+
+            // Use a while loop to traverse the array using the two pointers
             while (left < right) {
-                char tmp = chars[left];
-                chars[left]  = chars[right];
-                chars[right] = tmp;
+
+                // Swap the characters pointed by the left and right pointers
+                char tmp     = arr[left];
+                arr[left]    = arr[right];
+                arr[right]   = tmp;
+
+                // Move the pointers towards the center of the array
                 left++;
                 right--;
             }
@@ -980,17 +1003,17 @@ public class Main {
     }
 
     public static void main(String[] args) {
-        char[] c1 = {'h','e','l','l','o'};
-        new Solution().flipCharacters(c1);
-        System.out.println(Arrays.toString(c1));
+        char[] a1 = {'a','e','i','o','u'};
+        new Solution().flipCharacters(a1);
+        System.out.println(Arrays.toString(a1));   // [u, o, i, e, a]
 
-        char[] c2 = {'A','B','C','D'};
-        new Solution().flipCharacters(c2);
-        System.out.println(Arrays.toString(c2));
+        char[] a2 = {'a','b','c','d','e'};
+        new Solution().flipCharacters(a2);
+        System.out.println(Arrays.toString(a2));   // [e, d, c, b, a]
 
-        char[] c3 = {'X'};
-        new Solution().flipCharacters(c3);
-        System.out.println(Arrays.toString(c3));
+        char[] a3 = {};
+        new Solution().flipCharacters(a3);
+        System.out.println(Arrays.toString(a3));   // []
     }
 }
 ```
@@ -998,30 +1021,42 @@ public class Main {
 ```c run
 #include <stdio.h>
 
-void flip_characters(char* chars, int n) {
-    int left = 0, right = n - 1;
+void flip_characters(char* arr, int n) {
+
+    /* Initialize two pointers, one pointing to the beginning of the
+     * array and the other pointing to the end of the array */
+    int left  = 0;
+    int right = n - 1;
+
+    /* Use a while loop to traverse the array using the two pointers */
     while (left < right) {
-        char tmp = chars[left];
-        chars[left]  = chars[right];
-        chars[right] = tmp;
+
+        /* Swap the characters pointed by the left and right pointers */
+        char tmp   = arr[left];
+        arr[left]  = arr[right];
+        arr[right] = tmp;
+
+        /* Move the pointers towards the center of the array */
         left++;
         right--;
     }
 }
 
-void print_chars(char* chars, int n) {
+static void print_arr(char* arr, int n) {
     putchar('[');
-    for (int i = 0; i < n; i++) printf("'%c'%s", chars[i], i + 1 < n ? ", " : "");
+    for (int i = 0; i < n; i++) printf("%c%s", arr[i], i + 1 < n ? ", " : "");
     printf("]\n");
 }
 
 int main() {
-    char c1[] = {'h','e','l','l','o'};
-    flip_characters(c1, 5); print_chars(c1, 5);
-    char c2[] = {'A','B','C','D'};
-    flip_characters(c2, 4); print_chars(c2, 4);
-    char c3[] = {'X'};
-    flip_characters(c3, 1); print_chars(c3, 1);
+    char a1[] = {'a','e','i','o','u'};
+    flip_characters(a1, 5); print_arr(a1, 5);   /* [u, o, i, e, a] */
+
+    char a2[] = {'a','b','c','d','e'};
+    flip_characters(a2, 5); print_arr(a2, 5);   /* [e, d, c, b, a] */
+
+    char a3[1] = {0};
+    flip_characters(a3, 0); print_arr(a3, 0);   /* [] */
     return 0;
 }
 ```
@@ -1029,25 +1064,36 @@ int main() {
 ```scala run
 object Main extends App {
   class Solution {
-    def flipCharacters(chars: Array[Char]): Unit = {
-      var left = 0
-      var right = chars.length - 1
+    def flipCharacters(arr: Array[Char]): Unit = {
+
+      // Initialize two pointers, one pointing to the beginning of the
+      // array and the other pointing to the end of the array
+      var left  = 0
+      var right = arr.length - 1
+
+      // Use a while loop to traverse the array using the two pointers
       while (left < right) {
-        val tmp = chars(left)
-        chars(left)  = chars(right)
-        chars(right) = tmp
+
+        // Swap the characters pointed by the left and right pointers
+        val tmp    = arr(left)
+        arr(left)  = arr(right)
+        arr(right) = tmp
+
+        // Move the pointers towards the center of the array
         left  += 1
         right -= 1
       }
     }
   }
 
-  val c1 = Array('h','e','l','l','o')
-  new Solution().flipCharacters(c1); println(c1.mkString("[", ", ", "]"))
-  val c2 = Array('A','B','C','D')
-  new Solution().flipCharacters(c2); println(c2.mkString("[", ", ", "]"))
-  val c3 = Array('X')
-  new Solution().flipCharacters(c3); println(c3.mkString("[", ", ", "]"))
+  val a1 = Array('a','e','i','o','u')
+  new Solution().flipCharacters(a1); println(a1.mkString("[", ", ", "]"))   // [u, o, i, e, a]
+
+  val a2 = Array('a','b','c','d','e')
+  new Solution().flipCharacters(a2); println(a2.mkString("[", ", ", "]"))   // [e, d, c, b, a]
+
+  val a3 = Array.empty[Char]
+  new Solution().flipCharacters(a3); println(a3.mkString("[", ", ", "]"))   // []
 }
 ```
 
@@ -1056,15 +1102,15 @@ object Main extends App {
 
 ## Dry Run — Example 1
 
-`chars = ['h', 'e', 'l', 'l', 'o']`, `n = 5`
+`arr = [a, e, i, o, u]`, `n = 5`
 
 | Iteration | `left` | `right` | Swap | Array after swap |
 |---|---|---|---|---|
-| 1 | 0 | 4 | `'h' ↔ 'o'` | `['o','e','l','l','h']` |
-| 2 | 1 | 3 | `'e' ↔ 'l'` | `['o','l','l','e','h']` |
-| — | 2 | 2 | `left ≥ right` — stop | `['o','l','l','e','h']` ✓ |
+| 1 | 0 | 4 | `a ↔ u` | `[u, e, i, o, a]` |
+| 2 | 1 | 3 | `e ↔ o` | `[u, o, i, e, a]` |
+| — | 2 | 2 | `left ≥ right` — stop | `[u, o, i, e, a]` ✓ |
 
-The middle element at index 2 (`'l'`) is its own mirror — no swap needed.
+The middle element at index 2 (`i`) is its own mirror — no swap needed.
 
 ---
 
@@ -1099,11 +1145,14 @@ Flip Characters is the two-pointer reversal pattern applied to a character array
 
 ## The Problem
 
-Given a string, determine whether it is a **palindrome** — a word or phrase that reads the same forwards and backwards.
+Given a string `s`, return `true` if it is a **palindrome** — a string that reads the same forwards and backwards **after converting all uppercase letters to lowercase and removing all non-alphanumeric characters**. Return `false` otherwise.
+
+Alphanumeric characters are letters and digits: `[a–z]`, `[A–Z]`, `[0–9]`. Everything else (spaces, punctuation) is skipped.
 
 ```
-Input:  s = "racecar"   →   Output: True
-Input:  s = "hello"     →   Output: False
+Input:  s = "a man nam a"   →   Output: True   (after filtering: "amannama")
+Input:  s = "race car rac ecar" → Output: True (after filtering: "racecarracecar")
+Input:  s = "This is codeintuition" → Output: False
 ```
 
 ---
@@ -1112,85 +1161,85 @@ Input:  s = "hello"     →   Output: False
 
 **Example 1**
 ```
-Input:  "racecar"
+Input:  s = "a man nam a"
 Output: True
-Explanation: r-a-c-e-c-a-r reversed is still r-a-c-e-c-a-r
+Explanation: Removing spaces and lower-casing gives "amannama", which is a palindrome.
 ```
 
 **Example 2**
 ```
-Input:  "hello"
-Output: False
-Explanation: 'h' ≠ 'o' — the first and last characters already disagree
+Input:  s = "race car rac ecar"
+Output: True
+Explanation: After filtering, "racecarracecar" is a palindrome.
 ```
 
 **Example 3**
 ```
-Input:  "abcba"
-Output: True
+Input:  s = "This is codeintuition"
+Output: False
+Explanation: After filtering, "thisiscodeintuition" reads differently forwards vs backwards.
 ```
 
 **Example 4 — single character**
 ```
-Input:  "a"
-Output: True   (every single character is trivially a palindrome)
+Input:  s = "a"
+Output: True   (every single alphanumeric character is trivially a palindrome)
 ```
 
 ---
 
 ## Intuition
 
-A string is a palindrome when its first character equals its last, its second equals its second-to-last, and so on all the way to the middle.
+A string is a palindrome when its first alphanumeric character (lowercased) equals its last, its second equals its second-to-last, and so on all the way to the middle.
 
-That's a mirror-pair relationship — exactly what two pointers are built for. Place `left` at the start and `right` at the end. At each step, compare `s[left]` and `s[right]`:
+That's a mirror-pair relationship — exactly what two pointers are built for. Place `left` at the start and `right` at the end. At each step, examine `s[left]` and `s[right]`:
 
-- If they **match** → the pair is fine, move both inward and continue
-- If they **don't match** → it's not a palindrome, return `False` immediately
+- If either is **not alphanumeric** → skip it (advance `left` or retreat `right` past it)
+- If both are alphanumeric and **match** (case-insensitive) → the pair is fine, move both inward and continue
+- If both are alphanumeric and **don't match** → it's not a palindrome, return `False` immediately
 - If `left >= right` without any mismatch → every pair matched, return `True`
 
 No extra memory needed. One pass.
 
-```mermaid
----
-config:
-  theme: base
-  themeVariables:
-    primaryColor: "#dbeafe"
-    primaryBorderColor: "#3b82f6"
-    primaryTextColor: "#1e3a5f"
-    lineColor: "#64748b"
-    secondaryColor: "#ede9fe"
-    tertiaryColor: "#fef9c3"
----
-flowchart TB
-  subgraph S0["Start  —  left=0, right=6"]
-    direction LR
-    P0L(["left"]) --> R0["r"] --- A0["a"] --- C0["c"] --- E0["e"] --- C1["c"] --- A1["a"] --- R1["r"]
-    R1 --> P0R(["right"])
-  end
-  subgraph S1["'r'='r' ✓  left=1, right=5"]
-    direction LR
-    P1L(["left"]) --> A2["a"] --- C2["c"] --- E1["e"] --- C3["c"] --- A3["a"]
-    A3 --> P1R(["right"])
-  end
-  subgraph S2["'a'='a' ✓  left=2, right=4"]
-    direction LR
-    P2L(["left"]) --> C4["c"] --- E2["e"] --- C5["c"]
-    C5 --> P2R(["right"])
-  end
-  subgraph S3["'c'='c' ✓  left=3, right=3"]
-    direction LR
-    P3L(["left=right"]) --> E3["e"]
-    E3 --> P3R(["right=left"])
-  end
-  subgraph S4["left ≥ right  →  all pairs matched"]
-    DONE(["✓  return True"])
-  end
-
-  S0 -->|"match → move inward"| S1
-  S1 -->|"match → move inward"| S2
-  S2 -->|"match → move inward"| S3
-  S3 -->|"left ≥ right"| S4
+```d3 widget=array-traversal
+{
+  "items": ["r", "a", "c", "e", "c", "a", "r"],
+  "title": "Checking \"racecar\" for palindrome",
+  "steps": [
+    {
+      "keys":    ["r0", "a0", "c0", "e", "c1", "a1", "r1"],
+      "markers": [
+        { "name": "left",  "index": 0, "color": "#3b82f6" },
+        { "name": "right", "index": 6, "color": "#f59e0b" }
+      ],
+      "msg": "Initial — compare s[0]='r' with s[6]='r' → match, move both inward."
+    },
+    {
+      "keys":    ["r0", "a0", "c0", "e", "c1", "a1", "r1"],
+      "markers": [
+        { "name": "left",  "index": 1, "color": "#3b82f6" },
+        { "name": "right", "index": 5, "color": "#f59e0b" }
+      ],
+      "msg": "Compare s[1]='a' with s[5]='a' → match, move both inward."
+    },
+    {
+      "keys":    ["r0", "a0", "c0", "e", "c1", "a1", "r1"],
+      "markers": [
+        { "name": "left",  "index": 2, "color": "#3b82f6" },
+        { "name": "right", "index": 4, "color": "#f59e0b" }
+      ],
+      "msg": "Compare s[2]='c' with s[4]='c' → match, move both inward."
+    },
+    {
+      "keys":    ["r0", "a0", "c0", "e", "c1", "a1", "r1"],
+      "markers": [
+        { "name": "left",  "index": 3, "color": "#3b82f6" },
+        { "name": "right", "index": 3, "color": "#f59e0b" }
+      ],
+      "msg": "Pointers meet at index 3 (the middle 'e'). All pairs matched — return True."
+    }
+  ]
+}
 ```
 
 <p align="center"><strong>Checking <code>"racecar"</code> for palindrome — every mirror pair matches; when pointers meet at the centre, the check passes.</strong></p>
@@ -1251,62 +1300,143 @@ This early-exit property makes two-pointer palindrome checking efficient in prac
 
 
 ```pseudocode
-# Palindrome check — pointers march inward; first mismatch fails.
-function isPalindrome(s):
-    left ← 0
+function palindromeChecker(s):
+    # An empty string is vacuously a palindrome
+    if s is empty:
+        return true
+
+    # Initialize two pointers, one at the start and the other at the end
+    left  ← 0
     right ← length(s) − 1
+
     while left < right:
-        if s[left] ≠ s[right]:
+        charLeft  ← s[left]
+        charRight ← s[right]
+
+        # Skip non-alphanumeric characters from the left
+        if charLeft is not alphanumeric:
+            left ← left + 1
+
+        # Skip non-alphanumeric characters from the right
+        else if charRight is not alphanumeric:
+            right ← right − 1
+
+        # Compare the characters ignoring case
+        else if toLower(charLeft) ≠ toLower(charRight):
             return false
-        left ← left + 1
-        right ← right − 1
+
+        # Pair matched — move both pointers inward
+        else:
+            left  ← left + 1
+            right ← right − 1
+
+    # All pairs matched — it's a palindrome
     return true
 ```
 
 ```python run
 class Solution:
-    def is_palindrome(self, s: str) -> bool:
-        left, right = 0, len(s) - 1
+    def palindrome_checker(self, s: str) -> bool:
+        if not s:
+
+            # An empty string is considered a palindrome
+            return True
+
+        # Initialize two pointers, one pointing to the beginning of the
+        # string and the other pointing to the end of the string
+        left  = 0
+        right = len(s) - 1
+
         while left < right:
-            if s[left] != s[right]:
+            char_left  = s[left]
+            char_right = s[right]
+
+            # Skip non-alphanumeric characters from the left
+            if not char_left.isalnum():
+                left += 1
+
+            # Skip non-alphanumeric characters from the right
+            elif not char_right.isalnum():
+                right -= 1
+
+            # Check if the characters are equal ignoring case
+            elif char_left.lower() != char_right.lower():
+
+                # Characters are not equal, so it's not a palindrome
                 return False
-            left  += 1
-            right -= 1
+
+            # Move both pointers towards the center
+            else:
+                left  += 1
+                right -= 1
+
+        # All characters have been checked and are equal, so it's a palindrome
         return True
 
 
 sol = Solution()
-print(sol.is_palindrome("racecar"))  # True
-print(sol.is_palindrome("hello"))    # False
-print(sol.is_palindrome("abcba"))    # True
-print(sol.is_palindrome("a"))        # True
-print(sol.is_palindrome("ab"))       # False
-print(sol.is_palindrome("aa"))       # True
+print(sol.palindrome_checker("a man nam a"))             # True
+print(sol.palindrome_checker("race car rac ecar"))       # True
+print(sol.palindrome_checker("This is codeintuition"))   # False
+print(sol.palindrome_checker("racecar"))                 # True
+print(sol.palindrome_checker("a"))                       # True
+print(sol.palindrome_checker(""))                        # True
 ```
 
 ```java run
 public class Main {
     static class Solution {
-        boolean isPalindrome(String s) {
-            int left = 0;
-            int right = s.length() - 1;
-            while (left < right) {
-                if (s.charAt(left) != s.charAt(right)) return false;
-                left++;
-                right--;
+        boolean palindromeChecker(String s) {
+            if (s.isEmpty()) {
+
+                // An empty string is considered a palindrome
+                return true;
             }
+
+            // Initialize two pointers, one pointing to the beginning of the
+            // string and the other pointing to the end of the string
+            int left  = 0;
+            int right = s.length() - 1;
+
+            while (left < right) {
+                char charLeft  = s.charAt(left);
+                char charRight = s.charAt(right);
+
+                // Skip non-alphanumeric characters from the left
+                if (!Character.isLetterOrDigit(charLeft)) {
+                    left++;
+                }
+                // Skip non-alphanumeric characters from the right
+                else if (!Character.isLetterOrDigit(charRight)) {
+                    right--;
+                }
+                // Check if the characters are equal ignoring case
+                else if (Character.toLowerCase(charLeft) !=
+                         Character.toLowerCase(charRight)) {
+
+                    // Characters are not equal, so it's not a palindrome
+                    return false;
+                }
+                // Move both pointers towards the center
+                else {
+                    left++;
+                    right--;
+                }
+            }
+
+            // All characters have been checked and are equal, so it's a palindrome
             return true;
         }
     }
 
     public static void main(String[] args) {
         Solution sol = new Solution();
-        System.out.println(sol.isPalindrome("racecar"));
-        System.out.println(sol.isPalindrome("hello"));
-        System.out.println(sol.isPalindrome("abcba"));
-        System.out.println(sol.isPalindrome("a"));
-        System.out.println(sol.isPalindrome("ab"));
-        System.out.println(sol.isPalindrome("aa"));
+        System.out.println(sol.palindromeChecker("a man nam a"));            // true
+        System.out.println(sol.palindromeChecker("race car rac ecar"));      // true
+        System.out.println(sol.palindromeChecker("This is codeintuition"));  // false
+        System.out.println(sol.palindromeChecker("racecar"));                // true
+        System.out.println(sol.palindromeChecker("a"));                      // true
+        System.out.println(sol.palindromeChecker(""));                       // true
     }
 }
 ```
@@ -1314,25 +1444,55 @@ public class Main {
 ```c run
 #include <stdio.h>
 #include <stdbool.h>
+#include <ctype.h>
 #include <string.h>
 
-bool is_palindrome(const char* s) {
-    int left = 0, right = (int)strlen(s) - 1;
+bool palindrome_checker(const char* s) {
+    /* An empty string is considered a palindrome */
+    if (s[0] == '\0') return true;
+
+    /* Initialize two pointers, one pointing to the beginning of the
+     * string and the other pointing to the end of the string */
+    int left  = 0;
+    int right = (int)strlen(s) - 1;
+
     while (left < right) {
-        if (s[left] != s[right]) return false;
-        left++;
-        right--;
+        char char_left  = s[left];
+        char char_right = s[right];
+
+        /* Skip non-alphanumeric characters from the left */
+        if (!isalnum((unsigned char)char_left)) {
+            left++;
+        }
+        /* Skip non-alphanumeric characters from the right */
+        else if (!isalnum((unsigned char)char_right)) {
+            right--;
+        }
+        /* Check if the characters are equal ignoring case */
+        else if (tolower((unsigned char)char_left) !=
+                 tolower((unsigned char)char_right)) {
+
+            /* Characters are not equal, so it's not a palindrome */
+            return false;
+        }
+        /* Move both pointers towards the center */
+        else {
+            left++;
+            right--;
+        }
     }
+
+    /* All characters have been checked and are equal, so it's a palindrome */
     return true;
 }
 
 int main() {
-    printf("%d\n", is_palindrome("racecar"));
-    printf("%d\n", is_palindrome("hello"));
-    printf("%d\n", is_palindrome("abcba"));
-    printf("%d\n", is_palindrome("a"));
-    printf("%d\n", is_palindrome("ab"));
-    printf("%d\n", is_palindrome("aa"));
+    printf("%d\n", palindrome_checker("a man nam a"));            /* 1 */
+    printf("%d\n", palindrome_checker("race car rac ecar"));      /* 1 */
+    printf("%d\n", palindrome_checker("This is codeintuition"));  /* 0 */
+    printf("%d\n", palindrome_checker("racecar"));                /* 1 */
+    printf("%d\n", palindrome_checker("a"));                      /* 1 */
+    printf("%d\n", palindrome_checker(""));                       /* 1 */
     return 0;
 }
 ```
@@ -1340,25 +1500,55 @@ int main() {
 ```scala run
 object Main extends App {
   class Solution {
-    def isPalindrome(s: String): Boolean = {
-      var left = 0
-      var right = s.length - 1
-      while (left < right) {
-        if (s(left) != s(right)) return false
-        left  += 1
-        right -= 1
+    def palindromeChecker(s: String): Boolean = {
+      if (s.isEmpty) {
+
+        // An empty string is considered a palindrome
+        return true
       }
+
+      // Initialize two pointers, one pointing to the beginning of the
+      // string and the other pointing to the end of the string
+      var left  = 0
+      var right = s.length - 1
+
+      while (left < right) {
+        val charLeft  = s(left)
+        val charRight = s(right)
+
+        // Skip non-alphanumeric characters from the left
+        if (!charLeft.isLetterOrDigit) {
+          left += 1
+        }
+        // Skip non-alphanumeric characters from the right
+        else if (!charRight.isLetterOrDigit) {
+          right -= 1
+        }
+        // Check if the characters are equal ignoring case
+        else if (charLeft.toLower != charRight.toLower) {
+
+          // Characters are not equal, so it's not a palindrome
+          return false
+        }
+        // Move both pointers towards the center
+        else {
+          left  += 1
+          right -= 1
+        }
+      }
+
+      // All characters have been checked and are equal, so it's a palindrome
       true
     }
   }
 
   val sol = new Solution
-  println(sol.isPalindrome("racecar"))
-  println(sol.isPalindrome("hello"))
-  println(sol.isPalindrome("abcba"))
-  println(sol.isPalindrome("a"))
-  println(sol.isPalindrome("ab"))
-  println(sol.isPalindrome("aa"))
+  println(sol.palindromeChecker("a man nam a"))            // true
+  println(sol.palindromeChecker("race car rac ecar"))      // true
+  println(sol.palindromeChecker("This is codeintuition"))  // false
+  println(sol.palindromeChecker("racecar"))                // true
+  println(sol.palindromeChecker("a"))                      // true
+  println(sol.palindromeChecker(""))                       // true
 }
 ```
 
@@ -1421,11 +1611,12 @@ Palindrome checking is the comparison variant of the two-pointer pattern. Where 
 
 ## The Problem
 
-Given a string, reverse **only the vowels** (`a, e, i, o, u` — both uppercase and lowercase) while leaving all other characters exactly where they are.
+Given a string `s`, **reverse the vowels** in the string and return the updated string. All non-vowel characters stay in place. The vowels to consider are the English-alphabet ones — `a`, `e`, `i`, `o`, `u`, in both uppercase and lowercase.
 
 ```
-Input:  "hello"    →   Output: "holle"
-Input:  "leetcode" →   Output: "leotcede"
+Input:  s = "random"     →   Output: "rondam"
+Input:  s = "afegijoku"  →   Output: "ufogijeka"
+Input:  s = "bcdf"       →   Output: "bcdf"
 ```
 
 ---
@@ -1434,29 +1625,33 @@ Input:  "leetcode" →   Output: "leotcede"
 
 **Example 1**
 ```
-Input:  "hello"
-Output: "holle"
-Explanation: vowels are 'e' (index 1) and 'o' (index 4) — swap them.
+Input:  s = "random"
+Output: "rondam"
+Explanation: The vowels 'a' (index 1) and 'o' (index 2) are swapped.
 ```
 
 **Example 2**
 ```
-Input:  "leetcode"
-Output: "leotcede"
-Explanation: vowels at indices 1(e), 2(e), 5(o), 7(e)
-             Reversed vowel order: e→e→o→e becomes e→o→e→e
+Input:  s = "afegijoku"
+Output: "ufogijeka"
+Explanation: The vowels are swapped in mirror-pair order:
+             - 'a' (index 0) is swapped with 'u' (index 8)
+             - 'e' (index 2) is swapped with 'o' (index 6)
+             - 'i' (index 4) is its own mirror; it stays in place.
 ```
 
 **Example 3**
 ```
-Input:  "bcdfg"
-Output: "bcdfg"   (no vowels — nothing to swap)
+Input:  s = "bcdf"
+Output: "bcdf"
+Explanation: No vowels — the string is unchanged.
 ```
 
-**Example 4**
+**Example 4 — all vowels**
 ```
-Input:  "aeiou"
-Output: "uoiea"   (all vowels, fully reversed)
+Input:  s = "aeiou"
+Output: "uoiea"
+Explanation: Every position is a vowel, so the swap reduces to a full reversal.
 ```
 
 ---
@@ -1467,43 +1662,56 @@ The classic two-pointer reversal swaps every pair. This problem adds a filter: *
 
 Think of the two pointers as scouts. The left scout hunts for the next vowel from the left; the right scout hunts for the next vowel from the right. When both scouts have found a vowel, they swap and then both advance. If either scout hits the middle first, we're done.
 
-```mermaid
----
-config:
-  theme: base
-  themeVariables:
-    primaryColor: "#dbeafe"
-    primaryBorderColor: "#3b82f6"
-    primaryTextColor: "#1e3a5f"
-    lineColor: "#64748b"
-    secondaryColor: "#ede9fe"
-    tertiaryColor: "#fef9c3"
----
-flowchart TB
-  subgraph S0["Start  —  'hello',  left=0, right=4"]
-    direction LR
-    P0L(["left"]) --> H0["h"] --- E0["e"] --- L0["l"] --- L1["l"] --- O0["o"]
-    O0 --> P0R(["right"])
-  end
-  subgraph S1["'h' is not a vowel  →  left++ to find vowel"]
-    direction LR
-    P1L(["left"]) --> H1["h"] --- E1["e"] --- L2["l"] --- L3["l"] --- O1["o"]
-    O1 --> P1R(["right"])
-    note1(["left skips 'h'<br/>stops at 'e'"])
-  end
-  subgraph S2["'e' vowel found, 'o' vowel found  →  swap!  left=2, right=3"]
-    direction LR
-    P2L(["left"]) --> H2["h"] --- O2["o"] --- L4["l"] --- L5["l"] --- E2["e"]
-    L4 --> P2R(["right"])
-  end
-  subgraph S3["'l' not a vowel, 'l' not a vowel  →  left ≥ right  →  done"]
-    DONE(["✓  'holle'"])
-  end
-
-  S0 --> S1 --> S2 --> S3
+```d3 widget=array-traversal
+{
+  "items": ["a", "f", "e", "g", "i", "j", "o", "k", "u"],
+  "title": "Vowel exchange on \"afegijoku\"",
+  "steps": [
+    {
+      "items":   ["a", "f", "e", "g", "i", "j", "o", "k", "u"],
+      "markers": [
+        { "name": "left",  "index": 0, "color": "#3b82f6" },
+        { "name": "right", "index": 8, "color": "#f59e0b" }
+      ],
+      "msg": "Both pointers are on vowels — swap arr[left]='a' with arr[right]='u'."
+    },
+    {
+      "items":   ["u", "f", "e", "g", "i", "j", "o", "k", "a"],
+      "markers": [
+        { "name": "left",  "index": 1, "color": "#3b82f6" },
+        { "name": "right", "index": 7, "color": "#f59e0b" }
+      ],
+      "msg": "Move inward — arr[left]='f' is a consonant (skip), arr[right]='k' is a consonant (skip)."
+    },
+    {
+      "items":   ["u", "f", "e", "g", "i", "j", "o", "k", "a"],
+      "markers": [
+        { "name": "left",  "index": 2, "color": "#3b82f6" },
+        { "name": "right", "index": 6, "color": "#f59e0b" }
+      ],
+      "msg": "Both pointers are on vowels — swap arr[left]='e' with arr[right]='o'."
+    },
+    {
+      "items":   ["u", "f", "o", "g", "i", "j", "e", "k", "a"],
+      "markers": [
+        { "name": "left",  "index": 3, "color": "#3b82f6" },
+        { "name": "right", "index": 5, "color": "#f59e0b" }
+      ],
+      "msg": "arr[left]='g' is a consonant (skip), arr[right]='j' is a consonant (skip)."
+    },
+    {
+      "items":   ["u", "f", "o", "g", "i", "j", "e", "k", "a"],
+      "markers": [
+        { "name": "left",  "index": 4, "color": "#3b82f6" },
+        { "name": "right", "index": 4, "color": "#f59e0b" }
+      ],
+      "msg": "Pointers meet at index 4 — the middle 'i' is its own mirror; nothing to swap. Result: \"ufogijeka\"."
+    }
+  ]
+}
 ```
 
-<p align="center"><strong>Vowel exchange on <code>"hello"</code> — left skips the consonant <code>'h'</code>, finds vowel <code>'e'</code>; right is already on vowel <code>'o'</code>; they swap; pointers cross, done.</strong></p>
+<p align="center"><strong>Vowel exchange on <code>"afegijoku"</code> — each pointer scans past consonants until it finds a vowel; matched vowel pairs swap; pointers meet at the middle <code>'i'</code>.</strong></p>
 
 ---
 
@@ -1540,81 +1748,143 @@ This is a direct application with one variation: each pointer doesn't step by ex
 
 
 ```pseudocode
-VOWELS ← Set of {'a','e','i','o','u','A','E','I','O','U'}
+VOWELS ← {'a','e','i','o','u','A','E','I','O','U'}
 
-# Reverse only the vowels — non-vowels stay in place.
 function vowelExchange(s):
+    # Convert the string to an array for easier manipulation
     chars ← list of characters of s
-    left ← 0
+
+    # Initialize two pointers, one at the start and the other at the end
+    left  ← 0
     right ← length(chars) − 1
+
     while left < right:
-        while left < right AND chars[left]  is not in VOWELS: left  ← left + 1
-        while left < right AND chars[right] is not in VOWELS: right ← right − 1
-        if left < right:
-            swap chars[left] and chars[right]
+        # If the left pointer is not on a vowel, move it inward
+        if chars[left] is not in VOWELS:
             left ← left + 1
+
+        # If the right pointer is not on a vowel, move it inward
+        else if chars[right] is not in VOWELS:
             right ← right − 1
-    return chars joined as a string
+
+        # Both pointers are on vowels — swap and advance both
+        else:
+            swap chars[left] and chars[right]
+            left  ← left + 1
+            right ← right − 1
+
+    # Convert the array back to a string and return
+    return chars joined into a string
 ```
 
 ```python run
 class Solution:
     def vowel_exchange(self, s: str) -> str:
-        VOWELS = set("aeiouAEIOU")
-        chars  = list(s)   # strings are immutable — work on a list
-        left, right = 0, len(chars) - 1
 
+        # Create a set to store all the vowels in both uppercase and
+        # lowercase
+        vowels = set(["a", "e", "i", "o", "u", "A", "E", "I", "O", "U"])
+
+        # Initialize two pointers, one pointing to the beginning of the
+        # string and the other pointing to the end of the string
+        left:  int = 0
+        right: int = len(s) - 1
+
+        # Convert the string to an array for easier manipulation
+        chars = list(s)
+
+        # Use a while loop to traverse the string using the two pointers
         while left < right:
-            while left < right and chars[left]  not in VOWELS: left  += 1
-            while left < right and chars[right] not in VOWELS: right -= 1
-            if left < right:
+
+            # Check if the character pointed by the first pointer is a
+            # vowel. If it is not a vowel, move the pointer to the next
+            # character
+            if chars[left] not in vowels:
+                left += 1
+
+            # Check if the character pointed by the second pointer is a
+            # vowel. If it is not a vowel, move the pointer to the
+            # previous character
+            elif chars[right] not in vowels:
+                right -= 1
+
+            # If both pointers point to vowels, swap the characters
+            else:
                 chars[left], chars[right] = chars[right], chars[left]
                 left  += 1
                 right -= 1
 
+        # Convert the array back to a string and return the modified string
         return "".join(chars)
 
 
 sol = Solution()
-print(sol.vowel_exchange("hello"))     # "holle"
-print(sol.vowel_exchange("leetcode"))  # "leotcede"
-print(sol.vowel_exchange("bcdfg"))     # "bcdfg"
-print(sol.vowel_exchange("aeiou"))     # "uoiea"
-print(sol.vowel_exchange("a"))         # "a"
+print(sol.vowel_exchange("random"))     # rondam
+print(sol.vowel_exchange("afegijoku"))  # ufogijeka
+print(sol.vowel_exchange("bcdf"))       # bcdf
+print(sol.vowel_exchange("aeiou"))      # uoiea
+print(sol.vowel_exchange("a"))          # a
 ```
 
 ```java run
+import java.util.HashSet;
+
 public class Main {
     static class Solution {
-        boolean isVowel(char c) {
-            return "aeiouAEIOU".indexOf(c) >= 0;
-        }
-
         String vowelExchange(String s) {
+
+            // Create a hash set to store all the vowels in both
+            // uppercase and lowercase
+            HashSet<Character> vowels = new HashSet<>();
+            for (char c : "aeiouAEIOU".toCharArray()) vowels.add(c);
+
+            // Initialize two pointers, one pointing to the beginning of
+            // the string and the other pointing to the end of the string
+            int left  = 0;
+            int right = s.length() - 1;
+
+            // Convert the string to a character array for easier
+            // manipulation
             char[] chars = s.toCharArray();
-            int left = 0, right = chars.length - 1;
+
+            // Use a while loop to traverse the string using the two pointers
             while (left < right) {
-                while (left < right && !isVowel(chars[left]))  left++;
-                while (left < right && !isVowel(chars[right])) right--;
-                if (left < right) {
-                    char tmp = chars[left];
+
+                // Check if the character pointed by the first pointer is a
+                // vowel. If it is not a vowel, move the pointer to the
+                // next character
+                if (!vowels.contains(chars[left])) {
+                    left++;
+                }
+                // Check if the character pointed by the second pointer is
+                // a vowel. If it is not a vowel, move the pointer to the
+                // previous character
+                else if (!vowels.contains(chars[right])) {
+                    right--;
+                }
+                // If both pointers point to vowels, swap the characters
+                else {
+                    char tmp     = chars[left];
                     chars[left]  = chars[right];
                     chars[right] = tmp;
                     left++;
                     right--;
                 }
             }
+
+            // Convert the character array back to a string and return the
+            // modified string
             return new String(chars);
         }
     }
 
     public static void main(String[] args) {
         Solution sol = new Solution();
-        System.out.println(sol.vowelExchange("hello"));
-        System.out.println(sol.vowelExchange("leetcode"));
-        System.out.println(sol.vowelExchange("bcdfg"));
-        System.out.println(sol.vowelExchange("aeiou"));
-        System.out.println(sol.vowelExchange("a"));
+        System.out.println(sol.vowelExchange("random"));     // rondam
+        System.out.println(sol.vowelExchange("afegijoku"));  // ufogijeka
+        System.out.println(sol.vowelExchange("bcdf"));       // bcdf
+        System.out.println(sol.vowelExchange("aeiou"));      // uoiea
+        System.out.println(sol.vowelExchange("a"));          // a
     }
 }
 ```
@@ -1624,16 +1894,31 @@ public class Main {
 #include <string.h>
 #include <stdbool.h>
 
-bool is_vowel(char c) {
+static bool is_vowel(char c) {
+    /* Vowels in both uppercase and lowercase */
     return strchr("aeiouAEIOU", c) != NULL;
 }
 
 void vowel_exchange(char* s) {
-    int left = 0, right = (int)strlen(s) - 1;
+
+    /* Initialize two pointers, one pointing to the beginning of the
+     * string and the other pointing to the end of the string */
+    int left  = 0;
+    int right = (int)strlen(s) - 1;
+
+    /* Use a while loop to traverse the string using the two pointers */
     while (left < right) {
-        while (left < right && !is_vowel(s[left]))  left++;
-        while (left < right && !is_vowel(s[right])) right--;
-        if (left < right) {
+
+        /* Move the left pointer inward past non-vowels */
+        if (!is_vowel(s[left])) {
+            left++;
+        }
+        /* Move the right pointer inward past non-vowels */
+        else if (!is_vowel(s[right])) {
+            right--;
+        }
+        /* Both pointers point to vowels — swap them */
+        else {
             char tmp = s[left];
             s[left]  = s[right];
             s[right] = tmp;
@@ -1644,62 +1929,85 @@ void vowel_exchange(char* s) {
 }
 
 int main() {
-    char s1[] = "hello";    vowel_exchange(s1); printf("%s\n", s1);
-    char s2[] = "leetcode"; vowel_exchange(s2); printf("%s\n", s2);
-    char s3[] = "bcdfg";    vowel_exchange(s3); printf("%s\n", s3);
-    char s4[] = "aeiou";    vowel_exchange(s4); printf("%s\n", s4);
-    char s5[] = "a";        vowel_exchange(s5); printf("%s\n", s5);
+    char s1[] = "random";     vowel_exchange(s1); printf("%s\n", s1);   /* rondam */
+    char s2[] = "afegijoku";  vowel_exchange(s2); printf("%s\n", s2);   /* ufogijeka */
+    char s3[] = "bcdf";       vowel_exchange(s3); printf("%s\n", s3);   /* bcdf */
+    char s4[] = "aeiou";      vowel_exchange(s4); printf("%s\n", s4);   /* uoiea */
+    char s5[] = "a";          vowel_exchange(s5); printf("%s\n", s5);   /* a */
     return 0;
 }
 ```
 
 ```scala run
 object Main extends App {
-  val Vowels: Set[Char] = "aeiouAEIOU".toSet
-
   class Solution {
     def vowelExchange(s: String): String = {
+
+      // Create a set to store all the vowels in both uppercase and
+      // lowercase
+      val vowels: Set[Char] = "aeiouAEIOU".toSet
+
+      // Initialize two pointers, one pointing to the beginning of the
+      // string and the other pointing to the end of the string
+      var left  = 0
+      var right = s.length - 1
+
+      // Convert the string to a character array for easier manipulation
       val chars = s.toCharArray
-      var left = 0
-      var right = chars.length - 1
+
+      // Use a while loop to traverse the string using the two pointers
       while (left < right) {
-        while (left < right && !Vowels.contains(chars(left)))  left  += 1
-        while (left < right && !Vowels.contains(chars(right))) right -= 1
-        if (left < right) {
-          val tmp = chars(left)
+
+        // If the left pointer is not on a vowel, move it inward
+        if (!vowels.contains(chars(left))) {
+          left += 1
+        }
+        // If the right pointer is not on a vowel, move it inward
+        else if (!vowels.contains(chars(right))) {
+          right -= 1
+        }
+        // If both pointers point to vowels, swap the characters
+        else {
+          val tmp      = chars(left)
           chars(left)  = chars(right)
           chars(right) = tmp
           left  += 1
           right -= 1
         }
       }
+
+      // Convert the character array back to a string and return
       new String(chars)
     }
   }
 
   val sol = new Solution
-  println(sol.vowelExchange("hello"))
-  println(sol.vowelExchange("leetcode"))
-  println(sol.vowelExchange("bcdfg"))
-  println(sol.vowelExchange("aeiou"))
-  println(sol.vowelExchange("a"))
+  println(sol.vowelExchange("random"))     // rondam
+  println(sol.vowelExchange("afegijoku"))  // ufogijeka
+  println(sol.vowelExchange("bcdf"))       // bcdf
+  println(sol.vowelExchange("aeiou"))      // uoiea
+  println(sol.vowelExchange("a"))          // a
 }
 ```
 
 
 ---
 
-## Dry Run — "leetcode"
+## Dry Run — "afegijoku"
 
-`s = "leetcode"`, vowels at indices 1(e), 2(e), 5(o), 7(e)
+`s = "afegijoku"`, `n = 9`. Vowels live at indices `0 (a)`, `2 (e)`, `4 (i)`, `6 (o)`, `8 (u)`.
 
-| Round | `left` scans to | `right` scans to | Swap | String |
+| Round | `left` | `right` | Action | String |
 |---|---|---|---|---|
-| 1 | index 1 `'e'` | index 7 `'e'` | `'e'↔'e'` | `"leetcode"` (same chars) |
-| 2 | index 2 `'e'` | index 5 `'o'` | `'e'↔'o'` | `"leotcede"` |
-| 3 | left=3, right=4 — no vowels found before crossing | — | — | done |
+| 1 | 0 (`a`, vowel) | 8 (`u`, vowel) | swap `a ↔ u`, then `left++`, `right--` | `"ufegijoka"` |
+| 2 | 1 (`f`, consonant) | 7 (`k`, consonant) | `left++`, `right--` past consonants | `"ufegijoka"` |
+| 3 | 2 (`e`, vowel) | 6 (`o`, vowel) | swap `e ↔ o`, then `left++`, `right--` | `"ufogijeka"` |
+| 4 | 3 (`g`, consonant) | 5 (`j`, consonant) | `left++`, `right--` past consonants | `"ufogijeka"` |
+| 5 | 4 | 4 | `left ≥ right` — stop | `"ufogijeka"` ✓ |
 
-**Return `"leotcede"`** ✓
+The middle character at index 4 (`'i'`) is its own mirror — no swap.
+
+**Return `"ufogijeka"`** ✓
 
 ---
 
@@ -1718,7 +2026,7 @@ object Main extends App {
 
 | Scenario | Input | Output | Note |
 |---|---|---|---|
-| No vowels | `"bcdfg"` | `"bcdfg"` | Pointers never stop to swap |
+| No vowels | `"bcdf"` | `"bcdf"` | Pointers never stop to swap |
 | All vowels | `"aeiou"` | `"uoiea"` | Every step swaps |
 | Single character | `"a"` | `"a"` | Loop never runs |
 | Already reversed vowels | `"uoiea"` | `"aeiou"` | Swap brings original back |
@@ -1736,16 +2044,14 @@ Vowel Exchange introduces a new wrinkle: **not every position deserves a swap**.
 
 ## The Problem
 
-Given a sentence as a list of characters (a character array), reverse every individual word's characters **in-place**, while keeping the words in their original order.
+Given a string `s`, reverse the characters of every word **while preserving the original word order** and the original whitespace exactly. The string may contain leading or trailing spaces, and words may be separated by more than a single space — every space stays where it was; only the letters inside each word are flipped.
 
 ```
-Input:  ['t','h','e',' ','s','k','y']
-Output: ['e','h','t',' ','y','k','s']
-         ↑       ↑       ↑       ↑
-         "the" → "eht"   "sky" → "yks"
+Input:  s = "This is a string"
+Output:     "sihT si a gnirts"
 ```
 
-The words stay in place — only the characters inside each word are flipped.
+The words stay in place — only the characters inside each word are reversed.
 
 ---
 
@@ -1753,26 +2059,31 @@ The words stay in place — only the characters inside each word are flipped.
 
 **Example 1**
 ```
-Input:  "the sky"
-Output: "eht yks"
+Input:  s = "This is a string"
+Output:     "sihT si a gnirts"
+Explanation: All four words are reversed; spaces are preserved.
 ```
 
-**Example 2**
+**Example 2 — multiple spaces between words**
 ```
-Input:  "hello world"
-Output: "olleh dlrow"
+Input:  s = "I  love  coding"
+Output:     "I  evol  gnidoc"
+Explanation: Words separated by more than one space — the double spaces stay
+             intact; only the words' characters reverse.
 ```
 
 **Example 3 — single word**
 ```
-Input:  "hello"
-Output: "olleh"
+Input:  s = "random"
+Output:     "modnar"
+Explanation: The string contains one word; it is reversed.
 ```
 
-**Example 4 — single character words**
+**Example 4 — single-character words**
 ```
-Input:  "a b c"
-Output: "a b c"   (single characters are palindromes of themselves)
+Input:  s = "a b c"
+Output:     "a b c"
+Explanation: Reversing a single character is a no-op.
 ```
 
 ---
@@ -1783,48 +2094,52 @@ You already know how to reverse a contiguous block of characters with two pointe
 
 The key insight: **spaces act as word boundaries**. Walk through the array character by character. When you find the start of a word, scan forward to find its end (the next space or the array boundary). Now you have a `[word_start, word_end]` range — apply the two-pointer reversal to that range. Then continue scanning for the next word.
 
-```d2
-direction: right
-
-INPUT: "Input:  't h e   s k y'" {
-  grid-columns: 7
-  grid-gap: 0
-  a: "t"
-  b: "h"
-  c: "e"
-  d: " "
-  e: "s"
-  f: "k"
-  g: "y"
+```d3 widget=array-traversal
+{
+  "items": ["t", "h", "e", " ", "s", "k", "y"],
+  "title": "Reverse each word in \"the sky\"",
+  "steps": [
+    {
+      "items":   ["t", "h", "e", " ", "s", "k", "y"],
+      "markers": [
+        { "name": "left",  "index": 0, "color": "#3b82f6" },
+        { "name": "right", "index": 2, "color": "#f59e0b" }
+      ],
+      "range":   { "lo": 0, "hi": 2 },
+      "msg": "Scan finds the first word at indices [0..2]. Reverse it: swap arr[0]='t' with arr[2]='e'."
+    },
+    {
+      "items":   ["e", "h", "t", " ", "s", "k", "y"],
+      "markers": [
+        { "name": "left",  "index": 1, "color": "#3b82f6" },
+        { "name": "right", "index": 1, "color": "#f59e0b" }
+      ],
+      "range":   { "lo": 0, "hi": 2 },
+      "msg": "Inside word 1, the pointers meet at index 1; the middle 'h' is its own mirror."
+    },
+    {
+      "items":   ["e", "h", "t", " ", "s", "k", "y"],
+      "markers": [
+        { "name": "left",  "index": 4, "color": "#3b82f6" },
+        { "name": "right", "index": 6, "color": "#f59e0b" }
+      ],
+      "range":   { "lo": 4, "hi": 6 },
+      "msg": "Scan skips the space at index 3, then finds the second word at indices [4..6]. Reverse it: swap arr[4]='s' with arr[6]='y'."
+    },
+    {
+      "items":   ["e", "h", "t", " ", "y", "k", "s"],
+      "markers": [
+        { "name": "left",  "index": 5, "color": "#3b82f6" },
+        { "name": "right", "index": 5, "color": "#f59e0b" }
+      ],
+      "range":   { "lo": 4, "hi": 6 },
+      "msg": "Inside word 2, the pointers meet at index 5. Result: \"eht yks\"."
+    }
+  ]
 }
-W1: "Word 1: indices 0-2  →  reverse 't h e'" {
-  grid-columns: 7
-  grid-gap: 0
-  a: "e"
-  b: "h"
-  c: "t"
-  d: " "
-  e: "s"
-  f: "k"
-  g: "y"
-}
-W2: "Word 2: indices 4-6  →  reverse 's k y'" {
-  grid-columns: 7
-  grid-gap: 0
-  a: "e"
-  b: "h"
-  c: "t"
-  d: " "
-  e: "y"
-  f: "k"
-  g: "s"
-}
-
-INPUT -> W1: reverse word 1
-W1 -> W2: reverse word 2
 ```
 
-<p align="center"><strong>Reverse Words on <code>"the sky"</code> — find each word's boundaries using a scan, then apply two-pointer reversal within that range.</strong></p>
+<p align="center"><strong>Reverse Words on <code>"the sky"</code> — the outer scan finds each word's boundaries (highlighted band); two pointers then reverse the characters inside that range.</strong></p>
 
 ---
 
@@ -1861,97 +2176,176 @@ The outer scan that finds word boundaries is bookkeeping — once a `[word_start
 
 
 ```pseudocode
-# Reverse each word in place; word boundaries are spaces.
+function findWordEnd(arr, start):
+    # Assign the start index to the end index
+    end ← start
+
+    # Iterate through the string until a space is encountered
+    while end < length(arr) AND arr[end] ≠ ' ':
+        end ← end + 1
+
+    # Return the index of the last character of the word
+    return end − 1
+
+function reverseWord(arr, left, right):
+    # Use a while loop to traverse the word using the two pointers
+    while left < right:
+        swap arr[left] and arr[right]
+        left  ← left + 1
+        right ← right − 1
+
 function reverseWords(s):
-    chars ← list of characters of s
-    n ← length(chars)
-    i ← 0
-    while i < n:
-        if chars[i] = ' ':
-            i ← i + 1
+    arr   ← list of characters of s
+    start ← 0
+
+    # Iterate through the string
+    while start < length(arr):
+        # Skip any leading spaces
+        if arr[start] = ' ':
+            start ← start + 1
             continue
-        wordStart ← i
-        while i < n AND chars[i] ≠ ' ':
-            i ← i + 1
-        wordEnd ← i − 1
-        # Two-pointer reverse within [wordStart, wordEnd].
-        left ← wordStart; right ← wordEnd
-        while left < right:
-            swap chars[left] and chars[right]
-            left ← left + 1
-            right ← right − 1
-    return chars joined as a string
+
+        # Find the end of the current word
+        end ← findWordEnd(arr, start)
+
+        # Reverse the characters in the current word using two pointers
+        reverseWord(arr, start, end)
+
+        # Move the start pointer to the next word
+        start ← end + 1
+
+    return arr joined as a string
 ```
 
 ```python run
 from typing import List
 
 class Solution:
+    def find_word_end(self, arr: List[str], start: int) -> int:
+
+        # Assign the start index to the end index
+        end = start
+
+        # Iterate through the string until a space is encountered
+        while end < len(arr) and arr[end] != " ":
+            end += 1
+
+        # Return the index of the last character of the word
+        return end - 1
+
+    def reverse_word(self, arr: List[str], left: int, right: int) -> None:
+
+        # Use a while loop to traverse the word using the two pointers
+        while left < right:
+
+            # Swap the characters pointed by the left and right pointers
+            arr[left], arr[right] = arr[right], arr[left]
+
+            # Move the pointers towards the center of the word
+            left  += 1
+            right -= 1
+
     def reverse_words(self, s: str) -> str:
-        chars = list(s)
-        n = len(chars)
-        i = 0
+        arr   = list(s)
+        start = 0
 
-        while i < n:
-            if chars[i] == ' ':
-                i += 1
+        # Iterate through the string
+        while start < len(arr):
+
+            # Skip any leading spaces
+            if arr[start] == " ":
+                start += 1
                 continue
-            word_start = i
-            while i < n and chars[i] != ' ':
-                i += 1
-            word_end = i - 1
 
-            # Two-pointer reverse within [word_start, word_end].
-            left, right = word_start, word_end
-            while left < right:
-                chars[left], chars[right] = chars[right], chars[left]
-                left  += 1
-                right -= 1
+            # Find the end of the current word
+            end = self.find_word_end(arr, start)
 
-        return "".join(chars)
+            # Reverse the characters in the current word using two
+            # pointers
+            self.reverse_word(arr, start, end)
+
+            # Move the start pointer to the next word
+            start = end + 1
+
+        return "".join(arr)
 
 
 sol = Solution()
-print(sol.reverse_words("the sky"))      # "eht yks"
-print(sol.reverse_words("hello world"))  # "olleh dlrow"
-print(sol.reverse_words("hello"))        # "olleh"
-print(sol.reverse_words("a b c"))        # "a b c"
-print(sol.reverse_words(""))             # ""
+print(sol.reverse_words("This is a string"))   # sihT si a gnirts
+print(sol.reverse_words("I  love  coding"))    # I  evol  gnidoc
+print(sol.reverse_words("random"))             # modnar
+print(sol.reverse_words("a b c"))              # a b c
+print(repr(sol.reverse_words("")))             # ''
 ```
 
 ```java run
 public class Main {
     static class Solution {
-        String reverseWords(String s) {
-            char[] chars = s.toCharArray();
-            int n = chars.length, i = 0;
+        int findWordEnd(char[] arr, int start) {
 
-            while (i < n) {
-                if (chars[i] == ' ') { i++; continue; }
-                int wordStart = i;
-                while (i < n && chars[i] != ' ') i++;
-                int wordEnd = i - 1;
+            // Assign the start index to the end index
+            int end = start;
 
-                int left = wordStart, right = wordEnd;
-                while (left < right) {
-                    char tmp = chars[left];
-                    chars[left]  = chars[right];
-                    chars[right] = tmp;
-                    left++;
-                    right--;
-                }
+            // Iterate through the string until a space is encountered
+            while (end < arr.length && arr[end] != ' ') {
+                end++;
             }
-            return new String(chars);
+
+            // Return the index of the last character of the word
+            return end - 1;
+        }
+
+        void reverseWord(char[] arr, int left, int right) {
+
+            // Use a while loop to traverse the word using the two pointers
+            while (left < right) {
+
+                // Swap the characters pointed by the left and right pointers
+                char tmp   = arr[left];
+                arr[left]  = arr[right];
+                arr[right] = tmp;
+
+                // Move the pointers towards the center of the word
+                left++;
+                right--;
+            }
+        }
+
+        String reverseWords(String s) {
+            char[] arr = s.toCharArray();
+            int start = 0;
+
+            // Iterate through the string
+            while (start < arr.length) {
+
+                // Skip any leading spaces
+                if (arr[start] == ' ') {
+                    start++;
+                    continue;
+                }
+
+                // Find the end of the current word
+                int end = findWordEnd(arr, start);
+
+                // Reverse the characters in the current word using two
+                // pointers
+                reverseWord(arr, start, end);
+
+                // Move the start pointer to the next word
+                start = end + 1;
+            }
+
+            return new String(arr);
         }
     }
 
     public static void main(String[] args) {
         Solution sol = new Solution();
-        System.out.println(sol.reverseWords("the sky"));
-        System.out.println(sol.reverseWords("hello world"));
-        System.out.println(sol.reverseWords("hello"));
-        System.out.println(sol.reverseWords("a b c"));
-        System.out.println(sol.reverseWords(""));
+        System.out.println(sol.reverseWords("This is a string"));  // sihT si a gnirts
+        System.out.println(sol.reverseWords("I  love  coding"));   // I  evol  gnidoc
+        System.out.println(sol.reverseWords("random"));            // modnar
+        System.out.println(sol.reverseWords("a b c"));             // a b c
+        System.out.println("'" + sol.reverseWords("") + "'");      // ''
     }
 }
 ```
@@ -1960,33 +2354,66 @@ public class Main {
 #include <stdio.h>
 #include <string.h>
 
-void reverse_range(char* s, int left, int right) {
+static int find_word_end(const char* arr, int n, int start) {
+
+    /* Assign the start index to the end index */
+    int end = start;
+
+    /* Iterate through the string until a space is encountered */
+    while (end < n && arr[end] != ' ') {
+        end++;
+    }
+
+    /* Return the index of the last character of the word */
+    return end - 1;
+}
+
+static void reverse_word(char* arr, int left, int right) {
+
+    /* Use a while loop to traverse the word using the two pointers */
     while (left < right) {
-        char tmp = s[left];
-        s[left]  = s[right];
-        s[right] = tmp;
+
+        /* Swap the characters pointed by the left and right pointers */
+        char tmp   = arr[left];
+        arr[left]  = arr[right];
+        arr[right] = tmp;
+
+        /* Move the pointers towards the center of the word */
         left++;
         right--;
     }
 }
 
 void reverse_words(char* s) {
-    int n = (int)strlen(s);
-    int i = 0;
-    while (i < n) {
-        if (s[i] == ' ') { i++; continue; }
-        int word_start = i;
-        while (i < n && s[i] != ' ') i++;
-        reverse_range(s, word_start, i - 1);
+    int n     = (int)strlen(s);
+    int start = 0;
+
+    /* Iterate through the string */
+    while (start < n) {
+
+        /* Skip any leading spaces */
+        if (s[start] == ' ') {
+            start++;
+            continue;
+        }
+
+        /* Find the end of the current word */
+        int end = find_word_end(s, n, start);
+
+        /* Reverse the characters in the current word using two pointers */
+        reverse_word(s, start, end);
+
+        /* Move the start pointer to the next word */
+        start = end + 1;
     }
 }
 
 int main() {
-    char s1[] = "the sky";     reverse_words(s1); printf("%s\n", s1);
-    char s2[] = "hello world"; reverse_words(s2); printf("%s\n", s2);
-    char s3[] = "hello";       reverse_words(s3); printf("%s\n", s3);
-    char s4[] = "a b c";       reverse_words(s4); printf("%s\n", s4);
-    char s5[] = "";            reverse_words(s5); printf("'%s'\n", s5);
+    char s1[] = "This is a string";  reverse_words(s1); printf("%s\n", s1);
+    char s2[] = "I  love  coding";   reverse_words(s2); printf("%s\n", s2);
+    char s3[] = "random";            reverse_words(s3); printf("%s\n", s3);
+    char s4[] = "a b c";             reverse_words(s4); printf("%s\n", s4);
+    char s5[] = "";                  reverse_words(s5); printf("'%s'\n", s5);
     return 0;
 }
 ```
@@ -1994,64 +2421,99 @@ int main() {
 ```scala run
 object Main extends App {
   class Solution {
+    def findWordEnd(arr: Array[Char], start: Int): Int = {
+
+      // Assign the start index to the end index
+      var end = start
+
+      // Iterate through the string until a space is encountered
+      while (end < arr.length && arr(end) != ' ') {
+        end += 1
+      }
+
+      // Return the index of the last character of the word
+      end - 1
+    }
+
+    def reverseWord(arr: Array[Char], l: Int, r: Int): Unit = {
+      var left  = l
+      var right = r
+
+      // Use a while loop to traverse the word using the two pointers
+      while (left < right) {
+
+        // Swap the characters pointed by the left and right pointers
+        val tmp    = arr(left)
+        arr(left)  = arr(right)
+        arr(right) = tmp
+
+        // Move the pointers towards the center of the word
+        left  += 1
+        right -= 1
+      }
+    }
+
     def reverseWords(s: String): String = {
-      val chars = s.toCharArray
-      val n = chars.length
-      var i = 0
-      while (i < n) {
-        if (chars(i) == ' ') {
-          i += 1
+      val arr   = s.toCharArray
+      var start = 0
+
+      // Iterate through the string
+      while (start < arr.length) {
+
+        // Skip any leading spaces
+        if (arr(start) == ' ') {
+          start += 1
         } else {
-          val wordStart = i
-          while (i < n && chars(i) != ' ') i += 1
-          var left = wordStart
-          var right = i - 1
-          while (left < right) {
-            val tmp = chars(left)
-            chars(left)  = chars(right)
-            chars(right) = tmp
-            left  += 1
-            right -= 1
-          }
+          // Find the end of the current word
+          val end = findWordEnd(arr, start)
+
+          // Reverse the characters in the current word using two pointers
+          reverseWord(arr, start, end)
+
+          // Move the start pointer to the next word
+          start = end + 1
         }
       }
-      new String(chars)
+
+      new String(arr)
     }
   }
 
   val sol = new Solution
-  println(sol.reverseWords("the sky"))
-  println(sol.reverseWords("hello world"))
-  println(sol.reverseWords("hello"))
-  println(sol.reverseWords("a b c"))
-  println(s"'${sol.reverseWords("")}'")
+  println(sol.reverseWords("This is a string"))  // sihT si a gnirts
+  println(sol.reverseWords("I  love  coding"))   // I  evol  gnidoc
+  println(sol.reverseWords("random"))            // modnar
+  println(sol.reverseWords("a b c"))             // a b c
+  println(s"'${sol.reverseWords("")}'")          // ''
 }
 ```
 
 
 ---
 
-## Dry Run — "hello world"
+## Dry Run — "the sky"
 
-`chars = ['h','e','l','l','o',' ','w','o','r','l','d']`
+`arr = ['t','h','e',' ','s','k','y']`, `n = 7`
 
-**Word 1:** `word_start = 0`, `word_end = 4`
+**Word 1:** outer scan finds non-space at `start = 0`; `findWordEnd` returns `end = 2`.
 
-| Step | `left` | `right` | Swap | Chars |
+| Step | `left` | `right` | Swap | Array |
 |---|---|---|---|---|
-| 1 | 0 | 4 | `'h'↔'o'` | `['o','e','l','l','h',' ','w','o','r','l','d']` |
-| 2 | 1 | 3 | `'e'↔'l'` | `['o','l','l','e','h',' ','w','o','r','l','d']` |
-| — | 2 | 2 | stop | — |
+| 1 | 0 | 2 | `t ↔ e` | `['e','h','t',' ','s','k','y']` |
+| — | 1 | 1 | `left ≥ right` — stop | — |
 
-**Word 2:** `word_start = 6`, `word_end = 10`
+`start` advances to `end + 1 = 3`. The space at index 3 is skipped; `start = 4`.
 
-| Step | `left` | `right` | Swap | Chars |
+**Word 2:** `findWordEnd` returns `end = 6`.
+
+| Step | `left` | `right` | Swap | Array |
 |---|---|---|---|---|
-| 1 | 6 | 10 | `'w'↔'d'` | `['o','l','l','e','h',' ','d','o','r','l','w']` |
-| 2 | 7 | 9 | `'o'↔'l'` | `['o','l','l','e','h',' ','d','l','r','o','w']` |
-| — | 8 | 8 | stop | — |
+| 1 | 4 | 6 | `s ↔ y` | `['e','h','t',' ','y','k','s']` |
+| — | 5 | 5 | `left ≥ right` — stop | — |
 
-**Return `"olleh dlrow"`** ✓
+`start` advances to `end + 1 = 7 = n` — outer loop exits.
+
+**Return `"eht yks"`** ✓
 
 ---
 
@@ -2476,41 +2938,45 @@ Reverse Segments shows that the two-pointer reversal is a **reusable utility** �
 
 ## The Problem
 
-Given a string of words separated by single spaces, reverse the **order of the words** in-place, keeping each word's characters intact.
+Given a string `s`, return a new string with the **words in reverse order**, separated by a single space, with no leading or trailing whitespace. Words in the input are separated by **one or more** spaces, and the input may contain leading, trailing, or multiple spaces between words — all of which must be normalised in the output.
 
 ```
-Input:  "the sky is blue"
-Output: "blue is sky the"
+Input:  s = "This is a    string"
+Output:     "string a is This"
 ```
 
-The words flip order; no word's characters change.
+The words flip order; each word's characters stay intact; redundant whitespace disappears.
 
 ---
 
 ## Examples
 
-**Example 1**
+**Example 1 — multiple spaces inside the string**
 ```
-Input:  "the sky is blue"
-Output: "blue is sky the"
+Input:  s = "This is a    string"
+Output:     "string a is This"
+Explanation: All four words are concatenated in reverse order and separated
+             by a single space.
 ```
 
-**Example 2**
+**Example 2 — leading and trailing spaces**
 ```
-Input:  "hello world"
-Output: "world hello"
+Input:  s = "   fizz buzz  "
+Output:     "buzz fizz"
+Explanation: Leading and trailing spaces are removed.
 ```
 
 **Example 3 — single word**
 ```
-Input:  "hello"
-Output: "hello"
+Input:  s = "random"
+Output:     "random"
+Explanation: Only one word; the result is the input.
 ```
 
 **Example 4**
 ```
-Input:  "a good example"
-Output: "example good a"
+Input:  s = "a good example"
+Output:     "example good a"
 ```
 
 ---
@@ -2552,37 +3018,54 @@ flowchart TB
 
 Let's trace exactly what each step does to `"the sky"`:
 
-```mermaid
----
-config:
-  theme: base
-  themeVariables:
-    primaryColor: "#dbeafe"
-    primaryBorderColor: "#3b82f6"
-    primaryTextColor: "#1e3a5f"
-    lineColor: "#64748b"
-    secondaryColor: "#ede9fe"
-    tertiaryColor: "#fef9c3"
----
-flowchart LR
-  subgraph A["Original"]
-    direction LR
-    t["t"] --- h["h"] --- e["e"] --- sp[" "] --- s["s"] --- k["k"] --- y["y"]
-  end
-  subgraph B["After Step 1: reverse entire string"]
-    direction LR
-    y2["y"] --- k2["k"] --- s2["s"] --- sp2[" "] --- e2["e"] --- h2["h"] --- t2["t"]
-  end
-  subgraph C["After Step 2: reverse each word"]
-    direction LR
-    s3["s"] --- k3["k"] --- y3["y"] --- sp3[" "] --- t3["t"] --- h3["h"] --- e3["e"]
-  end
-
-  A -->|"reverse whole"| B
-  B -->|"reverse words"| C
+```d3 widget=array-traversal
+{
+  "items": ["t", "h", "e", " ", "s", "k", "y"],
+  "title": "Reversing word order in \"the sky\"",
+  "steps": [
+    {
+      "items":   ["t", "h", "e", " ", "s", "k", "y"],
+      "markers": [
+        { "name": "left",  "index": 0, "color": "#3b82f6" },
+        { "name": "right", "index": 6, "color": "#f59e0b" }
+      ],
+      "range":   { "lo": 0, "hi": 6 },
+      "msg": "Step 1: reverse the entire string. Pointers start at the two ends."
+    },
+    {
+      "items":   ["y", "k", "s", " ", "e", "h", "t"],
+      "markers": [],
+      "range":   { "lo": 0, "hi": 6 },
+      "msg": "After Step 1: the string is reversed to 'yks eht'. Word order is flipped; each word's letters are also flipped."
+    },
+    {
+      "items":   ["y", "k", "s", " ", "e", "h", "t"],
+      "markers": [
+        { "name": "left",  "index": 0, "color": "#3b82f6" },
+        { "name": "right", "index": 2, "color": "#f59e0b" }
+      ],
+      "range":   { "lo": 0, "hi": 2 },
+      "msg": "Step 2a: scan finds the first word at indices [0..2]. Reverse it."
+    },
+    {
+      "items":   ["s", "k", "y", " ", "e", "h", "t"],
+      "markers": [
+        { "name": "left",  "index": 4, "color": "#3b82f6" },
+        { "name": "right", "index": 6, "color": "#f59e0b" }
+      ],
+      "range":   { "lo": 4, "hi": 6 },
+      "msg": "Step 2b: scan finds the second word at indices [4..6]. Reverse it."
+    },
+    {
+      "items":   ["s", "k", "y", " ", "t", "h", "e"],
+      "markers": [],
+      "msg": "Final: 'sky the' — words are in reverse order, characters intact."
+    }
+  ]
+}
 ```
 
-<p align="center"><strong>Step-by-step on <code>"the sky"</code> — after the full reverse, each word's letters are backwards; reversing each word fixes them while keeping the flipped word order.</strong></p>
+<p align="center"><strong>Step-by-step on <code>"the sky"</code> — Step 1 reverses the whole string (flipping word order but scrambling each word); Step 2 reverses each word, unscrambling letters while keeping the new word order.</strong></p>
 
 Each word is reversed **twice** in total — once by the full-string reversal, once by the per-word reversal. Two reversals cancel out, returning each word's characters to their original order. But the words themselves have moved to their new positions.
 
@@ -2620,103 +3103,193 @@ This reuses `reverse_segment(arr, left, right)` from the previous lesson twice.
 
 
 ```pseudocode
-# The three-reversal trick: reverse all, then reverse each word → words land in reverse order
-# while keeping their internal letter order intact.
-function reverse(chars, l, r):
-    while l < r:
-        swap chars[l] and chars[r]
-        l ← l + 1; r ← r − 1
+function findWordEnd(arr, start):
+    end ← start
+    while end < length(arr) AND arr[end] ≠ ' ':
+        end ← end + 1
+    return end − 1
+
+function reverseWord(arr, left, right):
+    while left < right:
+        swap arr[left] and arr[right]
+        left  ← left + 1
+        right ← right − 1
+
+function removeExtraSpaces(s):
+    # Collapse runs of spaces to one, trim leading/trailing spaces
+    return s with multiple spaces replaced by a single space,
+             trimmed of leading and trailing whitespace
 
 function reverseWordOrder(s):
-    chars ← list of characters of s
-    n ← length(chars)
+    # Reverse the entire string (flips word order, scrambles each word)
+    s ← reverse(s)
 
-    reverse(chars, 0, n − 1)                              # step 1: reverse whole string
-
-    i ← 0                                                  # step 2: reverse each word in place
-    while i < n:
-        if chars[i] = ' ':
-            i ← i + 1
+    # Reverse each word in place — unscrambles letters within each word
+    arr   ← list of characters of s
+    start ← 0
+    while start < length(arr):
+        if arr[start] = ' ':
+            start ← start + 1
             continue
-        wordStart ← i
-        while i < n AND chars[i] ≠ ' ':
-            i ← i + 1
-        reverse(chars, wordStart, i − 1)
-    return chars joined as a string
+        end ← findWordEnd(arr, start)
+        reverseWord(arr, start, end)
+        start ← end + 1
+
+    # Normalise whitespace and return
+    return removeExtraSpaces(arr joined as a string)
 ```
 
 ```python run
 from typing import List
 
 class Solution:
-    def _reverse(self, chars: List[str], l: int, r: int) -> None:
-        while l < r:
-            chars[l], chars[r] = chars[r], chars[l]
-            l += 1
-            r -= 1
+    def remove_extra_spaces(self, s: str) -> str:
+        # Collapse any run of whitespace into a single space, and strip
+        # leading/trailing spaces
+        return " ".join(s.split()).strip()
+
+    def find_word_end(self, arr: List[str], start: int) -> int:
+
+        # Assign the start index to the end index
+        end = start
+
+        # Iterate through the string until a space is encountered
+        while end < len(arr) and arr[end] != " ":
+            end += 1
+
+        # Return the index of the last character of the word
+        return end - 1
+
+    def reverse_word(self, arr: List[str], left: int, right: int) -> None:
+
+        # Use a while loop to traverse the word using the two pointers
+        while left < right:
+
+            # Swap the characters pointed by the left and right pointers
+            arr[left], arr[right] = arr[right], arr[left]
+
+            # Move the pointers towards the center of the word
+            left  += 1
+            right -= 1
 
     def reverse_word_order(self, s: str) -> str:
-        chars = list(s)
-        n = len(chars)
 
-        # Step 1: reverse the whole string.
-        self._reverse(chars, 0, n - 1)
+        # Step 1: reverse the entire string (Python slicing makes this easy)
+        s = s[::-1]
 
-        # Step 2: reverse each word individually — restoring intra-word order.
-        i = 0
-        while i < n:
-            if chars[i] == ' ':
-                i += 1
+        # Convert to a character array for easier manipulation
+        arr   = list(s)
+        start = 0
+
+        # Step 2: reverse each word in place
+        while start < len(arr):
+
+            # Skip any leading spaces
+            if arr[start] == " ":
+                start += 1
                 continue
-            word_start = i
-            while i < n and chars[i] != ' ':
-                i += 1
-            self._reverse(chars, word_start, i - 1)
 
-        return "".join(chars)
+            # Find the end of the current word
+            end = self.find_word_end(arr, start)
+
+            # Reverse the current word using the two-pointer method
+            self.reverse_word(arr, start, end)
+
+            # Move start to the start of the next word
+            start = end + 1
+
+        # Convert the array back to a string and normalise whitespace
+        return self.remove_extra_spaces("".join(arr))
 
 
 sol = Solution()
-print(sol.reverse_word_order("the sky is blue"))   # "blue is sky the"
-print(sol.reverse_word_order("hello world"))        # "world hello"
-print(sol.reverse_word_order("hello"))              # "hello"
-print(sol.reverse_word_order("a good example"))     # "example good a"
+print(sol.reverse_word_order("This is a    string"))   # string a is This
+print(sol.reverse_word_order("   fizz buzz  "))        # buzz fizz
+print(sol.reverse_word_order("random"))                # random
+print(sol.reverse_word_order("a good example"))        # example good a
 ```
 
 ```java run
 public class Main {
     static class Solution {
-        void reverse(char[] chars, int l, int r) {
-            while (l < r) {
-                char tmp = chars[l];
-                chars[l] = chars[r];
-                chars[r] = tmp;
-                l++;
-                r--;
+        String removeExtraSpaces(String s) {
+            // Use regex to collapse multiple spaces into one and trim
+            return s.replaceAll("\\s+", " ").trim();
+        }
+
+        String reverse(String s) {
+            // Use StringBuilder to reverse the whole string
+            return new StringBuilder(s).reverse().toString();
+        }
+
+        int findWordEnd(char[] arr, int start) {
+
+            // Assign the start index to the end index
+            int end = start;
+
+            // Iterate through the string until a space is encountered
+            while (end < arr.length && arr[end] != ' ') {
+                end++;
+            }
+
+            // Return the index of the last character of the word
+            return end - 1;
+        }
+
+        void reverseWord(char[] arr, int left, int right) {
+
+            // Use a while loop to traverse the word using the two pointers
+            while (left < right) {
+
+                // Swap the characters pointed by the left and right pointers
+                char tmp   = arr[left];
+                arr[left]  = arr[right];
+                arr[right] = tmp;
+
+                // Move the pointers towards the center of the word
+                left++;
+                right--;
             }
         }
 
         String reverseWordOrder(String s) {
-            char[] chars = s.toCharArray();
-            int n = chars.length;
-            reverse(chars, 0, n - 1);                  // Step 1
-            int i = 0;
-            while (i < n) {                            // Step 2
-                if (chars[i] == ' ') { i++; continue; }
-                int wordStart = i;
-                while (i < n && chars[i] != ' ') i++;
-                reverse(chars, wordStart, i - 1);
+
+            // Step 1: reverse the entire string
+            s = reverse(s);
+
+            // Convert to a character array
+            char[] arr = s.toCharArray();
+
+            int start = 0;
+            while (start < arr.length) {
+
+                // Skip any leading spaces
+                if (arr[start] == ' ') {
+                    start++;
+                    continue;
+                }
+
+                // Find the end of the current word
+                int end = findWordEnd(arr, start);
+
+                // Reverse the current word using the two-pointer method
+                reverseWord(arr, start, end);
+
+                // Move start to the start of the next word
+                start = end + 1;
             }
-            return new String(chars);
+
+            // Normalise whitespace and return
+            return removeExtraSpaces(new String(arr));
         }
     }
 
     public static void main(String[] args) {
         Solution sol = new Solution();
-        System.out.println(sol.reverseWordOrder("the sky is blue"));
-        System.out.println(sol.reverseWordOrder("hello world"));
-        System.out.println(sol.reverseWordOrder("hello"));
-        System.out.println(sol.reverseWordOrder("a good example"));
+        System.out.println(sol.reverseWordOrder("This is a    string"));   // string a is This
+        System.out.println(sol.reverseWordOrder("   fizz buzz  "));        // buzz fizz
+        System.out.println(sol.reverseWordOrder("random"));                // random
+        System.out.println(sol.reverseWordOrder("a good example"));        // example good a
     }
 }
 ```
@@ -2725,33 +3298,60 @@ public class Main {
 #include <stdio.h>
 #include <string.h>
 
-void reverse_range(char* s, int l, int r) {
+static void reverse_range(char* s, int l, int r) {
     while (l < r) {
         char tmp = s[l];
-        s[l] = s[r];
-        s[r] = tmp;
+        s[l]     = s[r];
+        s[r]     = tmp;
         l++;
         r--;
     }
 }
 
+static int find_word_end(const char* arr, int n, int start) {
+    int end = start;
+    while (end < n && arr[end] != ' ') end++;
+    return end - 1;
+}
+
+/* Collapse runs of spaces to one and strip leading / trailing spaces
+ * in place. The string is rewritten through a write index. */
+static void remove_extra_spaces(char* s) {
+    int n     = (int)strlen(s);
+    int write = 0;
+    for (int i = 0; i < n; i++) {
+        if (s[i] != ' ' || (i > 0 && s[i - 1] != ' ')) {
+            s[write++] = s[i];
+        }
+    }
+    if (write > 0 && s[write - 1] == ' ') write--;
+    s[write] = '\0';
+}
+
 void reverse_word_order(char* s) {
     int n = (int)strlen(s);
-    reverse_range(s, 0, n - 1);                      /* Step 1 */
-    int i = 0;
-    while (i < n) {                                   /* Step 2 */
-        if (s[i] == ' ') { i++; continue; }
-        int word_start = i;
-        while (i < n && s[i] != ' ') i++;
-        reverse_range(s, word_start, i - 1);
+
+    /* Step 1: reverse the entire string */
+    reverse_range(s, 0, n - 1);
+
+    /* Step 2: reverse each word in place */
+    int start = 0;
+    while (start < n) {
+        if (s[start] == ' ') { start++; continue; }
+        int end = find_word_end(s, n, start);
+        reverse_range(s, start, end);
+        start = end + 1;
     }
+
+    /* Step 3: normalise whitespace */
+    remove_extra_spaces(s);
 }
 
 int main() {
-    char s1[] = "the sky is blue"; reverse_word_order(s1); printf("%s\n", s1);
-    char s2[] = "hello world";     reverse_word_order(s2); printf("%s\n", s2);
-    char s3[] = "hello";           reverse_word_order(s3); printf("%s\n", s3);
-    char s4[] = "a good example";  reverse_word_order(s4); printf("%s\n", s4);
+    char s1[] = "This is a    string"; reverse_word_order(s1); printf("%s\n", s1);
+    char s2[] = "   fizz buzz  ";      reverse_word_order(s2); printf("%s\n", s2);
+    char s3[] = "random";              reverse_word_order(s3); printf("%s\n", s3);
+    char s4[] = "a good example";      reverse_word_order(s4); printf("%s\n", s4);
     return 0;
 }
 ```
@@ -2759,41 +3359,59 @@ int main() {
 ```scala run
 object Main extends App {
   class Solution {
-    def reverse(chars: Array[Char], l0: Int, r0: Int): Unit = {
-      var l = l0
-      var r = r0
-      while (l < r) {
-        val tmp = chars(l)
-        chars(l) = chars(r)
-        chars(r) = tmp
-        l += 1
-        r -= 1
+    def removeExtraSpaces(s: String): String =
+      // Collapse runs of spaces to one and trim leading / trailing spaces
+      s.split("\\s+").filter(_.nonEmpty).mkString(" ")
+
+    def reverse(s: String): String = s.reverse
+
+    def findWordEnd(arr: Array[Char], start: Int): Int = {
+      var end = start
+      while (end < arr.length && arr(end) != ' ') end += 1
+      end - 1
+    }
+
+    def reverseWord(arr: Array[Char], l: Int, r: Int): Unit = {
+      var left  = l
+      var right = r
+      while (left < right) {
+        val tmp    = arr(left)
+        arr(left)  = arr(right)
+        arr(right) = tmp
+        left  += 1
+        right -= 1
       }
     }
 
     def reverseWordOrder(s: String): String = {
-      val chars = s.toCharArray
-      val n = chars.length
-      reverse(chars, 0, n - 1)                       // Step 1
-      var i = 0
-      while (i < n) {                                // Step 2
-        if (chars(i) == ' ') {
-          i += 1
+      // Step 1: reverse the entire string
+      val reversed = reverse(s)
+
+      // Convert to a character array
+      val arr   = reversed.toCharArray
+      var start = 0
+
+      // Step 2: reverse each word in place
+      while (start < arr.length) {
+        if (arr(start) == ' ') {
+          start += 1
         } else {
-          val wordStart = i
-          while (i < n && chars(i) != ' ') i += 1
-          reverse(chars, wordStart, i - 1)
+          val end = findWordEnd(arr, start)
+          reverseWord(arr, start, end)
+          start = end + 1
         }
       }
-      new String(chars)
+
+      // Step 3: normalise whitespace and return
+      removeExtraSpaces(new String(arr))
     }
   }
 
   val sol = new Solution
-  println(sol.reverseWordOrder("the sky is blue"))
-  println(sol.reverseWordOrder("hello world"))
-  println(sol.reverseWordOrder("hello"))
-  println(sol.reverseWordOrder("a good example"))
+  println(sol.reverseWordOrder("This is a    string"))   // string a is This
+  println(sol.reverseWordOrder("   fizz buzz  "))        // buzz fizz
+  println(sol.reverseWordOrder("random"))                // random
+  println(sol.reverseWordOrder("a good example"))        // example good a
 }
 ```
 
@@ -2840,8 +3458,10 @@ object Main extends App {
 |---|---|---|---|
 | Single word | `"hello"` | `"hello"` | Full reverse gives `"olleh"`; reversing single word gives `"hello"` back |
 | Two words | `"hi there"` | `"there hi"` | One full reverse + two word reverses |
-| Leading space | `" hello"` | `"hello "` | Space moves to end (correct word order reversal) |
-| Trailing space | `"hello "` | `" hello"` | Space moves to start |
+| Leading space | `" hello"` | `"hello"` | Space normalised out by `removeExtraSpaces` |
+| Trailing space | `"hello "` | `"hello"` | Trailing space stripped |
+| Multiple spaces | `"hi   there"` | `"there hi"` | Multi-space runs collapsed to one |
+| Empty string | `""` | `""` | No words; result is empty |
 
 ---
 

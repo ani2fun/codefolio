@@ -28,6 +28,14 @@ The chapter identifier derived from its path joined with `-` (e.g. `01-data-stru
 **Frontmatter**:
 Optional YAML block at the top of a Chapter providing `title` and `summary`. The display name falls back to the stripped filename when absent.
 
+**Lesson Source**:
+The authoritative raw lesson under `/Users/aniket/Development/others/tutorial_dsa/extracted_data/DSA/data-structure/<topic>/<chapter>/<lesson>.md` from which a Cortex Chapter is derived. For each problem on a Chapter, the Lesson Source determines: the **Problem Statement**, the **Examples** (input/output pairs), and the **Solution Code** — including its method decomposition, identifier names, and inline comments. The destination Chapter owns the surrounding pedagogy (Intuition, Diagnostic Questions, Approach prose, Dry Run, Complexity, Edge Cases, Key Takeaway). When a Lesson Source factors a problem into helper methods (e.g. `skipDuplicatesLeft`, `duplicateAwareTwoSum`, `closestTwoSum`), every language tab in the destination must mirror that decomposition — paraphrasing the algorithm inline is treated as drift.
+_Avoid_: Reference Solution, Upstream Lesson (Reference is too generic; Upstream implies a sync relationship that doesn't exist).
+
+**Verbatim Code Alignment**:
+The rule that a Chapter's Solution code matches its Lesson Source's code shape verbatim across all five language tabs (Pseudocode, Python, Java, C, Scala) — same method decomposition, same identifier names (`sum`/`remainingTarget`/`maxResources`/`count_ones`/`minRooms`/…), same per-language naming convention (`snake_case` in Python/C; `camelCase` in Java/Scala), and idiomatically-translated copies of the source's inline comments. Sibling problems on the same Chapter must use a consistent decomposition (e.g. if Three Sum has helpers, Four Sum must have them too). When in doubt, open the Lesson Source first and port its method structure rather than writing fresh equivalent code.
+_Avoid_: Source Sync, Code Mirror.
+
 **Sidebar Forest**:
 The tree of Books, Sections, and Chapters rendered in the Cortex reader's left panel. Built from a flat chapter list.
 

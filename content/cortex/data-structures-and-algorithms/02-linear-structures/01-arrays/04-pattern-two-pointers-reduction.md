@@ -107,6 +107,24 @@ flowchart TB
 
 <p align="center"><strong>Brute-force nested loops check every pair — O(n²) time, correct but slow. For n=8 that's 28 pairs checked.</strong></p>
 
+```d3 widget=array-traversal
+{
+  "items": ["3", "5", "2", "8", "7", "1", "9", "4"],
+  "title": "Brute force on arr = [3, 5, 2, 8, 7, 1, 9, 4], target = 13",
+  "steps": [
+    { "markers": [{"name": "i", "index": 0, "color": "#3b82f6"}, {"name": "j", "index": 1, "color": "#f59e0b"}], "msg": "i=0 (3), j=1 (5): 3 + 5 = 8 ≠ 13" },
+    { "markers": [{"name": "i", "index": 0, "color": "#3b82f6"}, {"name": "j", "index": 2, "color": "#f59e0b"}], "msg": "i=0 (3), j=2 (2): 3 + 2 = 5 ≠ 13" },
+    { "markers": [{"name": "i", "index": 0, "color": "#3b82f6"}, {"name": "j", "index": 3, "color": "#f59e0b"}], "msg": "i=0 (3), j=3 (8): 3 + 8 = 11 ≠ 13" },
+    { "markers": [{"name": "i", "index": 0, "color": "#3b82f6"}, {"name": "j", "index": 4, "color": "#f59e0b"}], "msg": "i=0 (3), j=4 (7): 3 + 7 = 10 ≠ 13" },
+    { "markers": [{"name": "i", "index": 0, "color": "#3b82f6"}, {"name": "j", "index": 5, "color": "#f59e0b"}], "msg": "i=0 (3), j=5 (1): 3 + 1 = 4 ≠ 13" },
+    { "markers": [{"name": "i", "index": 0, "color": "#3b82f6"}, {"name": "j", "index": 6, "color": "#f59e0b"}], "msg": "i=0 (3), j=6 (9): 3 + 9 = 12 ≠ 13" },
+    { "markers": [{"name": "i", "index": 0, "color": "#3b82f6"}, {"name": "j", "index": 7, "color": "#f59e0b"}], "msg": "i=0 (3), j=7 (4): 3 + 4 = 7 ≠ 13. Inner loop exhausted → i++" },
+    { "markers": [{"name": "i", "index": 1, "color": "#3b82f6"}, {"name": "j", "index": 2, "color": "#f59e0b"}], "msg": "i=1 (5), j=2 (2): 5 + 2 = 7 ≠ 13" },
+    { "markers": [{"name": "i", "index": 1, "color": "#3b82f6"}, {"name": "j", "index": 3, "color": "#f59e0b"}], "range": {"lo": 1, "hi": 3}, "msg": "i=1 (5), j=3 (8): 5 + 8 = 13 ✓ → return [5, 8]" }
+  ]
+}
+```
+
 
 ```pseudocode
 # Brute force — every pair (i, j) with j > i. O(n²).
@@ -346,9 +364,18 @@ R -> arr.a7
 
 <p align="center"><strong>Sorted array with two pointers — <code>left = 0</code> points at the smallest element, <code>right = n−1</code> points at the largest.</strong></p>
 
-
-```pseudocode
-# Two-sum via reduction. Sort first → arr[left] is the running min, arr[right] the running max.
+```d3 widget=array-traversal
+{
+  "items": ["1", "2", "3", "4", "5", "7", "8", "9"],
+  "title": "Two-pointer on sorted [1, 2, 3, 4, 5, 7, 8, 9], target = 13",
+  "steps": [
+    { "markers": [{"name": "left", "index": 0, "color": "#3b82f6"}, {"name": "right", "index": 7, "color": "#f59e0b"}], "msg": "sum = 1 + 9 = 10 < 13 → 9 is the max; only ++left can grow the sum." },
+    { "markers": [{"name": "left", "index": 1, "color": "#3b82f6"}, {"name": "right", "index": 7, "color": "#f59e0b"}], "msg": "sum = 2 + 9 = 11 < 13 → still short; ++left." },
+    { "markers": [{"name": "left", "index": 2, "color": "#3b82f6"}, {"name": "right", "index": 7, "color": "#f59e0b"}], "msg": "sum = 3 + 9 = 12 < 13 → still short; ++left." },
+    { "markers": [{"name": "left", "index": 3, "color": "#3b82f6"}, {"name": "right", "index": 7, "color": "#f59e0b"}], "range": {"lo": 3, "hi": 7}, "msg": "sum = 4 + 9 = 13 = target → return [4, 9] ✓" }
+  ]
+}
+```
 # Each pointer move has a guaranteed direction: ++left grows the sum, --right shrinks it.
 function twoSum(arr, target):
     sort arr in place
@@ -761,17 +788,29 @@ flowchart TB
 
 ```pseudocode
 function twoSum(arr, target):
+    # Sort the array in non-decreasing order
     sort arr in place
-    left ← 0
+
+    left  ← 0
     right ← length(arr) − 1
+
+    # Use a while loop to traverse the array using the two pointers
     while left < right:
-        current ← arr[left] + arr[right]
-        if current = target:
+        sum ← arr[left] + arr[right]
+
+        # Found a pair that sums up to the target
+        if sum = target:
             return [arr[left], arr[right]]
-        else if current < target:
+
+        # Move the left pointer to increase the sum
+        else if sum < target:
             left ← left + 1
+
+        # Move the right pointer to decrease the sum
         else:
             right ← right − 1
+
+    # No pair found, return an empty array
     return empty list
 ```
 
@@ -780,25 +819,38 @@ from typing import List
 
 class Solution:
     def two_sum(self, arr: List[int], target: int) -> List[int]:
-        arr.sort()                       # Reduction step: enables left=min, right=max.
-        left, right = 0, len(arr) - 1
 
+        # Sort the array in non-decreasing order
+        arr.sort()
+
+        left  = 0
+        right = len(arr) - 1
+
+        # Use a while loop to traverse the array using the two pointers
         while left < right:
-            current = arr[left] + arr[right]
-            if current == target:
+            sum = arr[left] + arr[right]
+
+            # Found a pair that sums up to the target
+            if sum == target:
                 return [arr[left], arr[right]]
-            elif current < target:
-                left += 1                # Sum too small — left's the only one that can grow it.
+
+            # Move the left pointer to increase the sum
+            elif sum < target:
+                left += 1
+
+            # Move the right pointer to decrease the sum
             else:
-                right -= 1               # Sum too large — right's the only one that can shrink it.
+                right -= 1
+
+        # No pair found, return an empty array
         return []
 
 
 sol = Solution()
-print(sol.two_sum([2, 8, 3, 6, 4], 7))           # [3, 4]
-print(sol.two_sum([2, -1, 5, -4, 3], 34))        # []
-print(sol.two_sum([2], 2))                        # []
-print(sol.two_sum([-3, -1, 0, 2, 4, 6], 3))       # [-3, 6]
+print(sol.two_sum([2, 8, 3, 6, 4], 7))            # [3, 4]
+print(sol.two_sum([2, -1, 5, -4, 3], 34))         # []
+print(sol.two_sum([2], 2))                         # []
+print(sol.two_sum([-3, -1, 0, 2, 4, 6], 3))        # [-3, 6]
 ```
 
 ```java run
@@ -807,24 +859,44 @@ import java.util.Arrays;
 public class Main {
     static class Solution {
         int[] twoSum(int[] arr, int target) {
+
+            // Sort the array in non-decreasing order
             Arrays.sort(arr);
-            int left = 0, right = arr.length - 1;
+
+            int left  = 0;
+            int right = arr.length - 1;
+
+            // Use a while loop to traverse the array using the two pointers
             while (left < right) {
-                int current = arr[left] + arr[right];
-                if (current == target) return new int[]{ arr[left], arr[right] };
-                else if (current < target) left++;
-                else                       right--;
+                int sum = arr[left] + arr[right];
+
+                // Found a pair that sums up to the target
+                if (sum == target) {
+                    return new int[] { arr[left], arr[right] };
+                }
+
+                // Move the left pointer to increase the sum
+                else if (sum < target) {
+                    left++;
+                }
+
+                // Move the right pointer to decrease the sum
+                else {
+                    right--;
+                }
             }
+
+            // No pair found, return an empty array
             return new int[0];
         }
     }
 
     public static void main(String[] args) {
         Solution s = new Solution();
-        System.out.println(Arrays.toString(s.twoSum(new int[]{2,8,3,6,4}, 7)));
-        System.out.println(Arrays.toString(s.twoSum(new int[]{2,-1,5,-4,3}, 34)));
-        System.out.println(Arrays.toString(s.twoSum(new int[]{2}, 2)));
-        System.out.println(Arrays.toString(s.twoSum(new int[]{-3,-1,0,2,4,6}, 3)));
+        System.out.println(Arrays.toString(s.twoSum(new int[]{2, 8, 3, 6, 4}, 7)));        // [3, 4]
+        System.out.println(Arrays.toString(s.twoSum(new int[]{2, -1, 5, -4, 3}, 34)));     // []
+        System.out.println(Arrays.toString(s.twoSum(new int[]{2}, 2)));                    // []
+        System.out.println(Arrays.toString(s.twoSum(new int[]{-3, -1, 0, 2, 4, 6}, 3)));   // [-3, 6]
     }
 }
 ```
@@ -833,21 +905,44 @@ public class Main {
 #include <stdio.h>
 #include <stdlib.h>
 
-int cmp(const void* a, const void* b) { return (*(int*)a) - (*(int*)b); }
+static int cmp(const void* a, const void* b) { return (*(int*)a) - (*(int*)b); }
 
 void two_sum(int* arr, int n, int target, int* out, int* found) {
+
+    /* Sort the array in non-decreasing order */
     qsort(arr, n, sizeof(int), cmp);
-    int left = 0, right = n - 1;
+
+    int left  = 0;
+    int right = n - 1;
+
+    /* Use a while loop to traverse the array using the two pointers */
     while (left < right) {
         int sum = arr[left] + arr[right];
-        if (sum == target) { out[0] = arr[left]; out[1] = arr[right]; *found = 1; return; }
-        if (sum  < target) left++;
-        else               right--;
+
+        /* Found a pair that sums up to the target */
+        if (sum == target) {
+            out[0] = arr[left];
+            out[1] = arr[right];
+            *found = 1;
+            return;
+        }
+
+        /* Move the left pointer to increase the sum */
+        else if (sum < target) {
+            left++;
+        }
+
+        /* Move the right pointer to decrease the sum */
+        else {
+            right--;
+        }
     }
+
+    /* No pair found */
     *found = 0;
 }
 
-void run(int* arr, int n, int target) {
+static void run(int* arr, int n, int target) {
     int out[2], found = 0;
     two_sum(arr, n, target, out, &found);
     if (found) printf("[%d, %d]\n", out[0], out[1]);
@@ -855,10 +950,10 @@ void run(int* arr, int n, int target) {
 }
 
 int main() {
-    int a1[] = {2,8,3,6,4};      run(a1, 5, 7);
-    int a2[] = {2,-1,5,-4,3};    run(a2, 5, 34);
-    int a3[] = {2};              run(a3, 1, 2);
-    int a4[] = {-3,-1,0,2,4,6};  run(a4, 6, 3);
+    int a1[] = {2, 8, 3, 6, 4};        run(a1, 5, 7);     /* [3, 4] */
+    int a2[] = {2, -1, 5, -4, 3};      run(a2, 5, 34);    /* [] */
+    int a3[] = {2};                    run(a3, 1, 2);     /* [] */
+    int a4[] = {-3, -1, 0, 2, 4, 6};   run(a4, 6, 3);     /* [-3, 6] */
     return 0;
 }
 ```
@@ -867,24 +962,41 @@ int main() {
 object Main extends App {
   class Solution {
     def twoSum(arr: Array[Int], target: Int): Array[Int] = {
+
+      // Sort the array in non-decreasing order
       val sorted = arr.sorted
-      var left = 0
+
+      var left  = 0
       var right = sorted.length - 1
+
+      // Use a while loop to traverse the array using the two pointers
       while (left < right) {
         val sum = sorted(left) + sorted(right)
-        if (sum == target) return Array(sorted(left), sorted(right))
-        else if (sum < target) left  += 1
-        else                   right -= 1
+
+        // Found a pair that sums up to the target
+        if (sum == target) {
+          return Array(sorted(left), sorted(right))
+        }
+        // Move the left pointer to increase the sum
+        else if (sum < target) {
+          left += 1
+        }
+        // Move the right pointer to decrease the sum
+        else {
+          right -= 1
+        }
       }
+
+      // No pair found, return an empty array
       Array.empty[Int]
     }
   }
 
   val sol = new Solution
-  println(sol.twoSum(Array(2,8,3,6,4), 7).mkString("[", ", ", "]"))
-  println(sol.twoSum(Array(2,-1,5,-4,3), 34).mkString("[", ", ", "]"))
-  println(sol.twoSum(Array(2), 2).mkString("[", ", ", "]"))
-  println(sol.twoSum(Array(-3,-1,0,2,4,6), 3).mkString("[", ", ", "]"))
+  println(sol.twoSum(Array(2, 8, 3, 6, 4), 7).mkString("[", ", ", "]"))            // [3, 4]
+  println(sol.twoSum(Array(2, -1, 5, -4, 3), 34).mkString("[", ", ", "]"))         // []
+  println(sol.twoSum(Array(2), 2).mkString("[", ", ", "]"))                        // []
+  println(sol.twoSum(Array(-3, -1, 0, 2, 4, 6), 3).mkString("[", ", ", "]"))       // [-3, 6]
 }
 ```
 
@@ -896,6 +1008,43 @@ object Main extends App {
 `arr = [2, 8, 3, 6, 4]`, target = 7
 
 After sort: `[2, 3, 4, 6, 8]`
+
+```d3 widget=array-traversal
+{
+  "items": ["2", "3", "4", "6", "8"],
+  "title": "Two Sum on sorted [2, 3, 4, 6, 8], target = 7",
+  "steps": [
+    {
+      "markers": [
+        { "name": "left",  "index": 0, "color": "#3b82f6" },
+        { "name": "right", "index": 4, "color": "#f59e0b" }
+      ],
+      "msg": "sum = 2 + 8 = 10 > 7 → discard arr[right]; right--."
+    },
+    {
+      "markers": [
+        { "name": "left",  "index": 0, "color": "#3b82f6" },
+        { "name": "right", "index": 3, "color": "#f59e0b" }
+      ],
+      "msg": "sum = 2 + 6 = 8 > 7 → discard arr[right]; right--."
+    },
+    {
+      "markers": [
+        { "name": "left",  "index": 0, "color": "#3b82f6" },
+        { "name": "right", "index": 2, "color": "#f59e0b" }
+      ],
+      "msg": "sum = 2 + 4 = 6 < 7 → discard arr[left]; left++."
+    },
+    {
+      "markers": [
+        { "name": "left",  "index": 1, "color": "#3b82f6" },
+        { "name": "right", "index": 2, "color": "#f59e0b" }
+      ],
+      "msg": "sum = 3 + 4 = 7 = target → return [3, 4]."
+    }
+  ]
+}
+```
 
 | Step | `left` | `right` | `arr[left]` | `arr[right]` | sum | Action |
 |---|---|---|---|---|---|---|
@@ -1050,18 +1199,28 @@ flowchart TB
 
 
 ```pseudocode
-# Largest pair sum strictly LESS than target.
 function targetLimitedTwoSum(arr, target):
+    # Sort the array in non-decreasing order
     sort arr in place
-    left ← 0; right ← length(arr) − 1
-    maxSum ← −1                                    # sentinel: no valid pair yet
+    n ← length(arr)
+
+    left   ← 0
+    right  ← n − 1
+    maxSum ← −1
+
+    # Use a while loop to traverse the array using the two pointers
     while left < right:
-        total ← arr[left] + arr[right]
-        if total < target:
-            maxSum ← max(maxSum, total)            # valid candidate; try larger
-            left ← left + 1
+        sum ← arr[left] + arr[right]
+
+        # Move the left pointer to increase the sum
+        if sum < target:
+            maxSum ← max(maxSum, sum)
+            left  ← left + 1
+
+        # Move the right pointer to decrease the sum
         else:
-            right ← right − 1                      # ≥ target — shrink from the max side
+            right ← right − 1
+
     return maxSum
 ```
 
@@ -1070,18 +1229,29 @@ from typing import List
 
 class Solution:
     def target_limited_two_sum(self, arr: List[int], target: int) -> int:
-        arr.sort()                       # Reduction: enables left=min, right=max.
-        left, right = 0, len(arr) - 1
-        max_sum = -1                     # Sentinel: no valid pair found yet.
 
+        # Sort the array in non-decreasing order
+        arr.sort()
+        n = len(arr)
+
+        left:   int = 0
+        right:  int = n - 1
+        maxSum: int = -1
+
+        # Use a while loop to traverse the array using the two pointers
         while left < right:
-            total = arr[left] + arr[right]
-            if total < target:
-                max_sum = max(max_sum, total)   # Valid; try a larger one.
+            sum = arr[left] + arr[right]
+
+            # Move the left pointer to increase the sum
+            if sum < target:
+                maxSum = max(maxSum, sum)
                 left += 1
+
+            # Move the right pointer to decrease the sum
             else:
-                right -= 1                       # Too big — shrink from max side.
-        return max_sum
+                right -= 1
+
+        return maxSum
 
 
 sol = Solution()
@@ -1097,27 +1267,40 @@ import java.util.Arrays;
 public class Main {
     static class Solution {
         int targetLimitedTwoSum(int[] arr, int target) {
+
+            // Sort the array in non-decreasing order
             Arrays.sort(arr);
-            int left = 0, right = arr.length - 1, maxSum = -1;
+            int n      = arr.length;
+            int left   = 0;
+            int right  = n - 1;
+            int maxSum = -1;
+
+            // Use a while loop to traverse the array using the two pointers
             while (left < right) {
-                int total = arr[left] + arr[right];
-                if (total < target) {
-                    maxSum = Math.max(maxSum, total);
+                int sum = arr[left] + arr[right];
+
+                // Move the left pointer to increase the sum
+                if (sum < target) {
+                    maxSum = Math.max(maxSum, sum);
                     left++;
-                } else {
+                }
+
+                // Move the right pointer to decrease the sum
+                else {
                     right--;
                 }
             }
+
             return maxSum;
         }
     }
 
     public static void main(String[] args) {
         Solution s = new Solution();
-        System.out.println(s.targetLimitedTwoSum(new int[]{34,23,1,24,75,33,54,8}, 60));
-        System.out.println(s.targetLimitedTwoSum(new int[]{34,23,1,24,75,33,54,8}, 36));
-        System.out.println(s.targetLimitedTwoSum(new int[]{10,20,30}, 15));
-        System.out.println(s.targetLimitedTwoSum(new int[]{1,2}, 10));
+        System.out.println(s.targetLimitedTwoSum(new int[]{34, 23, 1, 24, 75, 33, 54, 8}, 60));  // 58
+        System.out.println(s.targetLimitedTwoSum(new int[]{34, 23, 1, 24, 75, 33, 54, 8}, 36));  // 35
+        System.out.println(s.targetLimitedTwoSum(new int[]{10, 20, 30}, 15));                    // -1
+        System.out.println(s.targetLimitedTwoSum(new int[]{1, 2}, 10));                          // 3
     }
 }
 ```
@@ -1126,33 +1309,46 @@ public class Main {
 #include <stdio.h>
 #include <stdlib.h>
 
-int cmp(const void* a, const void* b) { return (*(int*)a) - (*(int*)b); }
+static int cmp(const void* a, const void* b) { return (*(int*)a) - (*(int*)b); }
 
 int target_limited_two_sum(int* arr, int n, int target) {
+
+    /* Sort the array in non-decreasing order */
     qsort(arr, n, sizeof(int), cmp);
-    int left = 0, right = n - 1, max_sum = -1;
+
+    int left    = 0;
+    int right   = n - 1;
+    int max_sum = -1;
+
+    /* Use a while loop to traverse the array using the two pointers */
     while (left < right) {
-        int total = arr[left] + arr[right];
-        if (total < target) {
-            if (total > max_sum) max_sum = total;
+        int sum = arr[left] + arr[right];
+
+        /* Move the left pointer to increase the sum */
+        if (sum < target) {
+            if (sum > max_sum) max_sum = sum;
             left++;
-        } else {
+        }
+
+        /* Move the right pointer to decrease the sum */
+        else {
             right--;
         }
     }
+
     return max_sum;
 }
 
 int main() {
-    int a1[] = {34,23,1,24,75,33,54,8};
-    int a2[] = {34,23,1,24,75,33,54,8};
-    int a3[] = {10,20,30};
-    int a4[] = {1,2};
+    int a1[] = {34, 23, 1, 24, 75, 33, 54, 8};
+    int a2[] = {34, 23, 1, 24, 75, 33, 54, 8};
+    int a3[] = {10, 20, 30};
+    int a4[] = {1, 2};
 
-    printf("%d\n", target_limited_two_sum(a1, 8, 60));
-    printf("%d\n", target_limited_two_sum(a2, 8, 36));
-    printf("%d\n", target_limited_two_sum(a3, 3, 15));
-    printf("%d\n", target_limited_two_sum(a4, 2, 10));
+    printf("%d\n", target_limited_two_sum(a1, 8, 60));  /* 58 */
+    printf("%d\n", target_limited_two_sum(a2, 8, 36));  /* 35 */
+    printf("%d\n", target_limited_two_sum(a3, 3, 15));  /* -1 */
+    printf("%d\n", target_limited_two_sum(a4, 2, 10));  /*  3 */
     return 0;
 }
 ```
@@ -1161,28 +1357,40 @@ int main() {
 object Main extends App {
   class Solution {
     def targetLimitedTwoSum(arr: Array[Int], target: Int): Int = {
+
+      // Sort the array in non-decreasing order
       val sorted = arr.sorted
-      var left = 0
-      var right = sorted.length - 1
+      val n      = sorted.length
+
+      var left   = 0
+      var right  = n - 1
       var maxSum = -1
+
+      // Use a while loop to traverse the array using the two pointers
       while (left < right) {
-        val total = sorted(left) + sorted(right)
-        if (total < target) {
-          if (total > maxSum) maxSum = total
-          left += 1
-        } else {
+        val sum = sorted(left) + sorted(right)
+
+        // Move the left pointer to increase the sum
+        if (sum < target) {
+          maxSum = math.max(maxSum, sum)
+          left  += 1
+        }
+
+        // Move the right pointer to decrease the sum
+        else {
           right -= 1
         }
       }
+
       maxSum
     }
   }
 
   val sol = new Solution
-  println(sol.targetLimitedTwoSum(Array(34,23,1,24,75,33,54,8), 60))
-  println(sol.targetLimitedTwoSum(Array(34,23,1,24,75,33,54,8), 36))
-  println(sol.targetLimitedTwoSum(Array(10,20,30), 15))
-  println(sol.targetLimitedTwoSum(Array(1,2), 10))
+  println(sol.targetLimitedTwoSum(Array(34, 23, 1, 24, 75, 33, 54, 8), 60))  // 58
+  println(sol.targetLimitedTwoSum(Array(34, 23, 1, 24, 75, 33, 54, 8), 36))  // 35
+  println(sol.targetLimitedTwoSum(Array(10, 20, 30), 15))                    // -1
+  println(sol.targetLimitedTwoSum(Array(1, 2), 10))                          // 3
 }
 ```
 
@@ -1361,73 +1569,125 @@ flowchart TB
 
 
 ```pseudocode
-# Two-sum returning every distinct value-pair. After a hit, slide both pointers past
-# their runs of duplicates so each pair appears exactly once.
-function duplicateAwareTwoSum(arr, target):
-    sort arr in place
-    result ← empty list
-    left ← 0; right ← length(arr) − 1
-    while left < right:
-        total ← arr[left] + arr[right]
-        if total = target:
-            append [arr[left], arr[right]] to result
-            left  ← skipLeft(arr, left, right)
-            right ← skipRight(arr, left, right)
-        else if total < target:
-            left ← left + 1
-        else:
-            right ← right − 1
-    return result
-
-function skipLeft(arr, left, right):
+function skipDuplicatesLeft(arr, left, right):
+    # Skip duplicates from the left pointer
     while left < right AND arr[left] = arr[left + 1]:
         left ← left + 1
+
+    # Return the index of the next unique element
     return left + 1
 
-function skipRight(arr, left, right):
+function skipDuplicatesRight(arr, left, right):
+    # Skip duplicates from the right pointer
     while left < right AND arr[right] = arr[right − 1]:
         right ← right − 1
+
+    # Return the index of the next unique element
     return right − 1
+
+function duplicateAwareTwoSum(arr, target):
+    # Sort the array in non-decreasing order
+    sort arr in place
+    result ← empty list
+
+    left  ← 0
+    right ← length(arr) − 1
+
+    # Use a while loop to traverse the array using the two pointers
+    while left < right:
+        sum ← arr[left] + arr[right]
+
+        # If the sum matches the target, add the pair to the result list
+        if sum = target:
+            append [arr[left], arr[right]] to result
+
+            # Move the left pointer to the next unique element to avoid duplicates
+            left  ← skipDuplicatesLeft(arr, left, right)
+
+            # Move the right pointer to the previous unique element to avoid duplicates
+            right ← skipDuplicatesRight(arr, left, right)
+
+        # Move the left pointer to increase the sum
+        else if sum < target:
+            left ← left + 1
+
+        # Move the right pointer to decrease the sum
+        else:
+            right ← right − 1
+
+    return result
 ```
 
 ```python run
 from typing import List
 
 class Solution:
-    def _skip_left(self, arr, left, right):
+    def skip_duplicates_left(
+        self, arr: List[int], left: int, right: int
+    ) -> int:
+
+        # Skip duplicates from the left pointer
         while left < right and arr[left] == arr[left + 1]:
             left += 1
+
+        # Return the index of the next unique element
         return left + 1
 
-    def _skip_right(self, arr, left, right):
+    def skip_duplicates_right(
+        self, arr: List[int], left: int, right: int
+    ) -> int:
+
+        # Skip duplicates from the right pointer
         while left < right and arr[right] == arr[right - 1]:
             right -= 1
+
+        # Return the index of the next unique element
         return right - 1
 
-    def duplicate_aware_two_sum(self, arr: List[int], target: int) -> List[List[int]]:
+    def duplicate_aware_two_sum(
+        self, arr: List[int], target: int
+    ) -> List[List[int]]:
+
+        # Sort the array in non-decreasing order
         arr.sort()
         result = []
-        left, right = 0, len(arr) - 1
 
+        left  = 0
+        right = len(arr) - 1
+
+        # Use a while loop to traverse the array using the two pointers
         while left < right:
             total = arr[left] + arr[right]
+
+            # If the sum matches the target, add the pair to the
+            # result list
             if total == target:
                 result.append([arr[left], arr[right]])
-                # Slide both pointers past their runs of duplicates so each pair appears once.
-                left  = self._skip_left(arr, left, right)
-                right = self._skip_right(arr, left, right)
+
+                # Move the left pointer to the next unique element to
+                # avoid duplicates
+                left = self.skip_duplicates_left(arr, left, right)
+
+                # Move the right pointer to the previous unique element
+                # to avoid duplicates
+                right = self.skip_duplicates_right(arr, left, right)
+
+            # Move the left pointer to increase the sum
             elif total < target:
                 left += 1
+
+            # Move the right pointer to decrease the sum
             else:
                 right -= 1
+
         return result
 
 
 sol = Solution()
-print(sol.duplicate_aware_two_sum([1, 2, 2, 3, 4, 5], 6))   # [[1,5],[2,4]]
-print(sol.duplicate_aware_two_sum([1, 2, 2, 2, 2], 3))       # [[1,2]]
+print(sol.duplicate_aware_two_sum([1, 2, 2, 3, 4, 5], 6))   # [[1, 5], [2, 4]]
+print(sol.duplicate_aware_two_sum([1, 2, 2, 2, 2], 3))       # [[1, 2]]
 print(sol.duplicate_aware_two_sum([2], 2))                    # []
-print(sol.duplicate_aware_two_sum([3, 3, 3], 6))              # [[3,3]]
+print(sol.duplicate_aware_two_sum([3, 3, 3], 6))              # [[3, 3]]
 ```
 
 ```java run
@@ -1435,41 +1695,79 @@ import java.util.*;
 
 public class Main {
     static class Solution {
-        int skipLeft(int[] arr, int left, int right) {
-            while (left < right && arr[left] == arr[left + 1]) left++;
+        private int skipDuplicatesLeft(int[] arr, int left, int right) {
+
+            // Skip duplicates from the left pointer
+            while (left < right && arr[left] == arr[left + 1]) {
+                left++;
+            }
+
+            // Return the index of the next unique element
             return left + 1;
         }
-        int skipRight(int[] arr, int left, int right) {
-            while (left < right && arr[right] == arr[right - 1]) right--;
+
+        private int skipDuplicatesRight(int[] arr, int left, int right) {
+
+            // Skip duplicates from the right pointer
+            while (left < right && arr[right] == arr[right - 1]) {
+                right--;
+            }
+
+            // Return the index of the next unique element
             return right - 1;
         }
 
-        List<List<Integer>> duplicateAwareTwoSum(int[] arr, int target) {
+        public List<List<Integer>> duplicateAwareTwoSum(
+            int[] arr,
+            int target
+        ) {
+
+            // Sort the array in non-decreasing order
             Arrays.sort(arr);
             List<List<Integer>> result = new ArrayList<>();
-            int left = 0, right = arr.length - 1;
+
+            int left  = 0;
+            int right = arr.length - 1;
+
+            // Use a while loop to traverse the array using the two pointers
             while (left < right) {
-                int total = arr[left] + arr[right];
-                if (total == target) {
-                    result.add(Arrays.asList(arr[left], arr[right]));
-                    left  = skipLeft(arr, left, right);
-                    right = skipRight(arr, left, right);
-                } else if (total < target) {
+                int sum = arr[left] + arr[right];
+
+                // If the sum matches the target, add the pair to the
+                // result list
+                if (sum == target) {
+                    result.add(List.of(arr[left], arr[right]));
+
+                    // Move the left pointer to the next unique element to
+                    // avoid duplicates
+                    left = skipDuplicatesLeft(arr, left, right);
+
+                    // Move the right pointer to the previous unique element
+                    // to avoid duplicates
+                    right = skipDuplicatesRight(arr, left, right);
+                }
+
+                // Move the left pointer to increase the sum
+                else if (sum < target) {
                     left++;
-                } else {
+                }
+
+                // Move the right pointer to decrease the sum
+                else {
                     right--;
                 }
             }
+
             return result;
         }
     }
 
     public static void main(String[] args) {
         Solution s = new Solution();
-        System.out.println(s.duplicateAwareTwoSum(new int[]{1,2,2,3,4,5}, 6));
-        System.out.println(s.duplicateAwareTwoSum(new int[]{1,2,2,2,2}, 3));
-        System.out.println(s.duplicateAwareTwoSum(new int[]{2}, 2));
-        System.out.println(s.duplicateAwareTwoSum(new int[]{3,3,3}, 6));
+        System.out.println(s.duplicateAwareTwoSum(new int[]{1, 2, 2, 3, 4, 5}, 6));   // [[1, 5], [2, 4]]
+        System.out.println(s.duplicateAwareTwoSum(new int[]{1, 2, 2, 2, 2}, 3));       // [[1, 2]]
+        System.out.println(s.duplicateAwareTwoSum(new int[]{2}, 2));                   // []
+        System.out.println(s.duplicateAwareTwoSum(new int[]{3, 3, 3}, 6));             // [[3, 3]]
     }
 }
 ```
@@ -1478,26 +1776,65 @@ public class Main {
 #include <stdio.h>
 #include <stdlib.h>
 
-int cmp(const void* a, const void* b) { return (*(int*)a) - (*(int*)b); }
+static int cmp(const void* a, const void* b) { return (*(int*)a) - (*(int*)b); }
+
+static int skip_duplicates_left(const int* arr, int left, int right) {
+
+    /* Skip duplicates from the left pointer */
+    while (left < right && arr[left] == arr[left + 1]) {
+        left++;
+    }
+
+    /* Return the index of the next unique element */
+    return left + 1;
+}
+
+static int skip_duplicates_right(const int* arr, int left, int right) {
+
+    /* Skip duplicates from the right pointer */
+    while (left < right && arr[right] == arr[right - 1]) {
+        right--;
+    }
+
+    /* Return the index of the next unique element */
+    return right - 1;
+}
 
 void duplicate_aware_two_sum(int* arr, int n, int target) {
+
+    /* Sort the array in non-decreasing order */
     qsort(arr, n, sizeof(int), cmp);
-    int left = 0, right = n - 1;
+
+    int left  = 0;
+    int right = n - 1;
+
     printf("[");
     int first = 1;
+
+    /* Use a while loop to traverse the array using the two pointers */
     while (left < right) {
-        int total = arr[left] + arr[right];
-        if (total == target) {
+        int sum = arr[left] + arr[right];
+
+        /* If the sum matches the target, add the pair to the result */
+        if (sum == target) {
             if (!first) printf(", ");
             printf("[%d, %d]", arr[left], arr[right]);
             first = 0;
-            while (left < right && arr[left]  == arr[left + 1])  left++;
-            while (left < right && arr[right] == arr[right - 1]) right--;
+
+            /* Move the left pointer to the next unique element to avoid duplicates */
+            left = skip_duplicates_left(arr, left, right);
+
+            /* Move the right pointer to the previous unique element to avoid duplicates */
+            right = skip_duplicates_right(arr, left, right);
+        }
+
+        /* Move the left pointer to increase the sum */
+        else if (sum < target) {
             left++;
-            right--;
-        } else if (total < target) {
-            left++;
-        } else {
+        }
+
+        /* Move the right pointer to decrease the sum */
+        else {
             right--;
         }
     }
@@ -1505,10 +1842,10 @@ void duplicate_aware_two_sum(int* arr, int n, int target) {
 }
 
 int main() {
-    int a1[] = {1,2,2,3,4,5}; duplicate_aware_two_sum(a1, 6, 6);
-    int a2[] = {1,2,2,2,2};   duplicate_aware_two_sum(a2, 5, 3);
-    int a3[] = {2};           duplicate_aware_two_sum(a3, 1, 2);
-    int a4[] = {3,3,3};       duplicate_aware_two_sum(a4, 3, 6);
+    int a1[] = {1, 2, 2, 3, 4, 5}; duplicate_aware_two_sum(a1, 6, 6);  /* [[1, 5], [2, 4]] */
+    int a2[] = {1, 2, 2, 2, 2};    duplicate_aware_two_sum(a2, 5, 3);  /* [[1, 2]] */
+    int a3[] = {2};                duplicate_aware_two_sum(a3, 1, 2);  /* [] */
+    int a4[] = {3, 3, 3};          duplicate_aware_two_sum(a4, 3, 6);  /* [[3, 3]] */
     return 0;
 }
 ```
@@ -1516,31 +1853,72 @@ int main() {
 ```scala run
 object Main extends App {
   class Solution {
+    private def skipDuplicatesLeft(arr: Array[Int], l: Int, right: Int): Int = {
+      var left = l
+
+      // Skip duplicates from the left pointer
+      while (left < right && arr(left) == arr(left + 1)) {
+        left += 1
+      }
+
+      // Return the index of the next unique element
+      left + 1
+    }
+
+    private def skipDuplicatesRight(arr: Array[Int], left: Int, r: Int): Int = {
+      var right = r
+
+      // Skip duplicates from the right pointer
+      while (left < right && arr(right) == arr(right - 1)) {
+        right -= 1
+      }
+
+      // Return the index of the next unique element
+      right - 1
+    }
+
     def duplicateAwareTwoSum(arr: Array[Int], target: Int): List[List[Int]] = {
+
+      // Sort the array in non-decreasing order
       val sorted = arr.sorted
       val result = scala.collection.mutable.ListBuffer.empty[List[Int]]
-      var left = 0
+
+      var left  = 0
       var right = sorted.length - 1
+
+      // Use a while loop to traverse the array using the two pointers
       while (left < right) {
-        val total = sorted(left) + sorted(right)
-        if (total == target) {
+        val sum = sorted(left) + sorted(right)
+
+        // If the sum matches the target, add the pair to the result
+        if (sum == target) {
           result += List(sorted(left), sorted(right))
-          while (left < right && sorted(left)  == sorted(left + 1))  left  += 1
-          while (left < right && sorted(right) == sorted(right - 1)) right -= 1
-          left  += 1
+
+          // Move the left pointer to the next unique element to avoid duplicates
+          left = skipDuplicatesLeft(sorted, left, right)
+
+          // Move the right pointer to the previous unique element to avoid duplicates
+          right = skipDuplicatesRight(sorted, left, right)
+        }
+        // Move the left pointer to increase the sum
+        else if (sum < target) {
+          left += 1
+        }
+        // Move the right pointer to decrease the sum
+        else {
           right -= 1
-        } else if (total < target) left  += 1
-        else                       right -= 1
+        }
       }
+
       result.toList
     }
   }
 
   val sol = new Solution
-  println(sol.duplicateAwareTwoSum(Array(1,2,2,3,4,5), 6))
-  println(sol.duplicateAwareTwoSum(Array(1,2,2,2,2), 3))
-  println(sol.duplicateAwareTwoSum(Array(2), 2))
-  println(sol.duplicateAwareTwoSum(Array(3,3,3), 6))
+  println(sol.duplicateAwareTwoSum(Array(1, 2, 2, 3, 4, 5), 6))   // List(List(1, 5), List(2, 4))
+  println(sol.duplicateAwareTwoSum(Array(1, 2, 2, 2, 2), 3))       // List(List(1, 2))
+  println(sol.duplicateAwareTwoSum(Array(2), 2))                    // List()
+  println(sol.duplicateAwareTwoSum(Array(3, 3, 3), 6))              // List(List(3, 3))
 }
 ```
 
@@ -1868,19 +2246,27 @@ flowchart TB
 
 
 ```pseudocode
-# "Container with most water". Area = width × min(heights[left], heights[right]).
-# Always move the SHORTER wall inward — only the bottleneck can improve the area.
 function largestContainer(heights):
-    left ← 0; right ← length(heights) − 1
+    left    ← 0
+    right   ← length(heights) − 1
     maxArea ← 0
+
+    # Use a while loop to traverse the array using the two pointers
     while left < right:
-        width  ← right − left
-        height ← min(heights[left], heights[right])
-        maxArea ← max(maxArea, width × height)
+
+        # Calculate the area between the two vertical lines using
+        # left and right pointers
+        area    ← (right − left) × min(heights[left], heights[right])
+        maxArea ← max(maxArea, area)
+
+        # If the left line is smaller, move the left pointer to the right
         if heights[left] < heights[right]:
             left ← left + 1
+
+        # If the right line is smaller, move the right pointer to the left
         else:
             right ← right − 1
+
     return maxArea
 ```
 
@@ -1889,19 +2275,28 @@ from typing import List
 
 class Solution:
     def largest_container(self, heights: List[int]) -> int:
-        left, right = 0, len(heights) - 1
-        max_area = 0
+        left:     int = 0
+        right:    int = len(heights) - 1
+        max_area: int = 0
 
+        # Use a while loop to traverse the array using the two pointers
         while left < right:
-            width  = right - left
-            height = min(heights[left], heights[right])
-            max_area = max(max_area, width * height)
 
-            # Move the shorter wall inward — only the bottleneck can improve the area.
+            # Calculate the area between the two vertical lines using
+            # left and right pointers
+            area = (right - left) * min(heights[left], heights[right])
+            max_area = max(max_area, area)
+
+            # If the left line is smaller, move the left pointer to the
+            # right
             if heights[left] < heights[right]:
                 left += 1
+
+            # If the right line is smaller, move the right pointer to
+            # the left
             else:
                 right -= 1
+
         return max_area
 
 
@@ -1916,24 +2311,42 @@ print(sol.largest_container([4, 3, 2, 1, 4]))                 # 16
 public class Main {
     static class Solution {
         int largestContainer(int[] heights) {
-            int left = 0, right = heights.length - 1, maxArea = 0;
+            int left    = 0;
+            int right   = heights.length - 1;
+            int maxArea = 0;
+
+            // Use a while loop to traverse the array using the two pointers
             while (left < right) {
-                int width  = right - left;
-                int height = Math.min(heights[left], heights[right]);
-                maxArea = Math.max(maxArea, width * height);
-                if (heights[left] < heights[right]) left++;
-                else                                right--;
+
+                // Calculate the area between the two vertical lines using
+                // left and right pointers
+                int area =
+                    (right - left) * Math.min(heights[left], heights[right]);
+                maxArea = Math.max(maxArea, area);
+
+                // If the left line is smaller, move the left pointer to the
+                // right
+                if (heights[left] < heights[right]) {
+                    left++;
+                }
+
+                // If the right line is smaller, move the right pointer to
+                // the left
+                else {
+                    right--;
+                }
             }
+
             return maxArea;
         }
     }
 
     public static void main(String[] args) {
         Solution s = new Solution();
-        System.out.println(s.largestContainer(new int[]{2,4,3,3,5,2,4,3,2}));
-        System.out.println(s.largestContainer(new int[]{1,8,6,2,5,4,8,3,7}));
-        System.out.println(s.largestContainer(new int[]{1,1}));
-        System.out.println(s.largestContainer(new int[]{4,3,2,1,4}));
+        System.out.println(s.largestContainer(new int[]{2, 4, 3, 3, 5, 2, 4, 3, 2}));   // 20
+        System.out.println(s.largestContainer(new int[]{1, 8, 6, 2, 5, 4, 8, 3, 7}));   // 49
+        System.out.println(s.largestContainer(new int[]{1, 1}));                         // 1
+        System.out.println(s.largestContainer(new int[]{4, 3, 2, 1, 4}));                // 16
     }
 }
 ```
@@ -1941,26 +2354,41 @@ public class Main {
 ```c run
 #include <stdio.h>
 
-int min(int a, int b) { return a < b ? a : b; }
-int max(int a, int b) { return a > b ? a : b; }
+static int int_min(int a, int b) { return a < b ? a : b; }
+static int int_max(int a, int b) { return a > b ? a : b; }
 
 int largest_container(int* heights, int n) {
-    int left = 0, right = n - 1, max_area = 0;
+    int left     = 0;
+    int right    = n - 1;
+    int max_area = 0;
+
+    /* Use a while loop to traverse the array using the two pointers */
     while (left < right) {
-        int width  = right - left;
-        int height = min(heights[left], heights[right]);
-        max_area   = max(max_area, width * height);
-        if (heights[left] < heights[right]) left++;
-        else                                right--;
+
+        /* Calculate the area between the two vertical lines using
+         * left and right pointers */
+        int area = (right - left) * int_min(heights[left], heights[right]);
+        max_area = int_max(max_area, area);
+
+        /* If the left line is smaller, move the left pointer to the right */
+        if (heights[left] < heights[right]) {
+            left++;
+        }
+
+        /* If the right line is smaller, move the right pointer to the left */
+        else {
+            right--;
+        }
     }
+
     return max_area;
 }
 
 int main() {
-    int a1[] = {2,4,3,3,5,2,4,3,2}; printf("%d\n", largest_container(a1, 9));
-    int a2[] = {1,8,6,2,5,4,8,3,7}; printf("%d\n", largest_container(a2, 9));
-    int a3[] = {1,1};               printf("%d\n", largest_container(a3, 2));
-    int a4[] = {4,3,2,1,4};         printf("%d\n", largest_container(a4, 5));
+    int a1[] = {2, 4, 3, 3, 5, 2, 4, 3, 2}; printf("%d\n", largest_container(a1, 9));  /* 20 */
+    int a2[] = {1, 8, 6, 2, 5, 4, 8, 3, 7}; printf("%d\n", largest_container(a2, 9));  /* 49 */
+    int a3[] = {1, 1};                       printf("%d\n", largest_container(a3, 2));  /* 1 */
+    int a4[] = {4, 3, 2, 1, 4};              printf("%d\n", largest_container(a4, 5));  /* 16 */
     return 0;
 }
 ```
@@ -1969,25 +2397,38 @@ int main() {
 object Main extends App {
   class Solution {
     def largestContainer(heights: Array[Int]): Int = {
-      var left = 0
-      var right = heights.length - 1
+      var left    = 0
+      var right   = heights.length - 1
       var maxArea = 0
+
+      // Use a while loop to traverse the array using the two pointers
       while (left < right) {
-        val width  = right - left
-        val height = math.min(heights(left), heights(right))
-        maxArea    = math.max(maxArea, width * height)
-        if (heights(left) < heights(right)) left  += 1
-        else                                right -= 1
+
+        // Calculate the area between the two vertical lines using
+        // left and right pointers
+        val area = (right - left) * math.min(heights(left), heights(right))
+        maxArea  = math.max(maxArea, area)
+
+        // If the left line is smaller, move the left pointer to the right
+        if (heights(left) < heights(right)) {
+          left += 1
+        }
+
+        // If the right line is smaller, move the right pointer to the left
+        else {
+          right -= 1
+        }
       }
+
       maxArea
     }
   }
 
   val sol = new Solution
-  println(sol.largestContainer(Array(2,4,3,3,5,2,4,3,2)))
-  println(sol.largestContainer(Array(1,8,6,2,5,4,8,3,7)))
-  println(sol.largestContainer(Array(1,1)))
-  println(sol.largestContainer(Array(4,3,2,1,4)))
+  println(sol.largestContainer(Array(2, 4, 3, 3, 5, 2, 4, 3, 2)))   // 20
+  println(sol.largestContainer(Array(1, 8, 6, 2, 5, 4, 8, 3, 7)))   // 49
+  println(sol.largestContainer(Array(1, 1)))                         // 1
+  println(sol.largestContainer(Array(4, 3, 2, 1, 4)))                // 16
 }
 ```
 

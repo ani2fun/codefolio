@@ -485,6 +485,73 @@ Resize events fire at pushes 1, 2, 3, 5, 9, 17, 33, ... — exponentially rarer 
 
 </details>
 
+```d3 widget=array-traversal
+{
+  "items": ["1"],
+  "title": "Dynamic array: 8 pushes with capacity doubling",
+  "steps": [
+    {
+      "items": ["1"],
+      "keys":  ["a"],
+      "markers": [{ "name": "size", "index": 0, "color": "#3b82f6" }],
+      "range":   { "lo": 0, "hi": 0 },
+      "msg": "Push 1 — resize 0→1. Capacity is now 1; size = 1; 0 slots wasted."
+    },
+    {
+      "items": ["1", "2"],
+      "keys":  ["a", "b"],
+      "markers": [{ "name": "size", "index": 1, "color": "#3b82f6" }],
+      "range":   { "lo": 0, "hi": 1 },
+      "msg": "Push 2 — resize 1→2. Capacity = 2; size = 2; 0 slots wasted."
+    },
+    {
+      "items": ["1", "2", "3", "_"],
+      "keys":  ["a", "b", "c", "d"],
+      "markers": [{ "name": "size", "index": 2, "color": "#3b82f6" }],
+      "range":   { "lo": 0, "hi": 2 },
+      "msg": "Push 3 — resize 2→4 (copy 2 elements). Capacity = 4; size = 3; 1 reserved slot."
+    },
+    {
+      "items": ["1", "2", "3", "4"],
+      "keys":  ["a", "b", "c", "d"],
+      "markers": [{ "name": "size", "index": 3, "color": "#3b82f6" }],
+      "range":   { "lo": 0, "hi": 3 },
+      "msg": "Push 4 — no resize. Fast path: write + bump."
+    },
+    {
+      "items": ["1", "2", "3", "4", "5", "_", "_", "_"],
+      "keys":  ["a", "b", "c", "d", "e", "f", "g", "h"],
+      "markers": [{ "name": "size", "index": 4, "color": "#3b82f6" }],
+      "range":   { "lo": 0, "hi": 4 },
+      "msg": "Push 5 — resize 4→8 (copy 4 elements). Capacity = 8; size = 5; 3 reserved slots."
+    },
+    {
+      "items": ["1", "2", "3", "4", "5", "6", "_", "_"],
+      "keys":  ["a", "b", "c", "d", "e", "f", "g", "h"],
+      "markers": [{ "name": "size", "index": 5, "color": "#3b82f6" }],
+      "range":   { "lo": 0, "hi": 5 },
+      "msg": "Push 6 — no resize. Fast path."
+    },
+    {
+      "items": ["1", "2", "3", "4", "5", "6", "7", "_"],
+      "keys":  ["a", "b", "c", "d", "e", "f", "g", "h"],
+      "markers": [{ "name": "size", "index": 6, "color": "#3b82f6" }],
+      "range":   { "lo": 0, "hi": 6 },
+      "msg": "Push 7 — no resize. Fast path."
+    },
+    {
+      "items": ["1", "2", "3", "4", "5", "6", "7", "8"],
+      "keys":  ["a", "b", "c", "d", "e", "f", "g", "h"],
+      "markers": [{ "name": "size", "index": 7, "color": "#3b82f6" }],
+      "range":   { "lo": 0, "hi": 7 },
+      "msg": "Push 8 — no resize. Capacity = 8; size = 8; all slots used. Next push would trigger 8→16."
+    }
+  ]
+}
+```
+
+<p align="center"><strong>Eight pushes into an empty <code>DynamicArray</code> — the blue band tracks how much of the capacity is actually used; the wasted (<code>_</code>) slots are the cost of amortised O(1).</strong></p>
+
 ---
 
 ## Complexity Analysis

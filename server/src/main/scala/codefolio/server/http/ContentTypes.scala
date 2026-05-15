@@ -6,8 +6,8 @@ package codefolio.server.http
  * One table for both static surfaces — the Vite frontend bundle ([[StaticRoutes]]) and the Cortex asset tree
  * ([[CortexAssetRoutes]]) — so the two can't drift. The browser refuses to load `.js` ESM modules with the
  * wrong type ("Failed to fetch dynamically imported module"), and `woff`/`woff2` trigger CORS warnings
- * without a `font/...` type, so the table covers everything either surface serves; an unknown extension
- * falls back to `application/octet-stream`.
+ * without a `font/...` type, so the table covers everything either surface serves; an unknown extension falls
+ * back to `application/octet-stream`.
  */
 object ContentTypes:
 
