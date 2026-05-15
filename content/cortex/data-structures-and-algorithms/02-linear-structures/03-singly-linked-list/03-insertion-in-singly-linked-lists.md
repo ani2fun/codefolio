@@ -1599,14 +1599,14 @@ object Main extends App {
 
     val newNode = new ListNode(data)
 
-    if (node eq head) {        // Given node is the head — insert at beginning
+    if (node == head) {        // Given node is the head — insert at beginning
       newNode.next = head
       return newNode
     }
 
     var current = head
     var previous: ListNode = null
-    while (current != null && (current ne node)) {
+    while (current != null && current != node) {
       previous = current       // Track the predecessor before advancing
       current = current.next
     }
