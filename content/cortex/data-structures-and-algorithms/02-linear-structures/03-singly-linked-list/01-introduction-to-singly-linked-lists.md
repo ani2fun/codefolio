@@ -56,56 +56,96 @@ arr: array {
 
 This is an easy way to store data, but what if a new student joins the class? In this case, we will have to increase the size of the array by one, which is **not** possible. Well, we can solve this problem by creating a new array of a larger size, copying all the data from the previous array, and then adding the new student to it. However, this will be quite inefficient in terms of space and time complexity.
 
-```d2
-direction: right
-
-before: "Original array (size = 4)" {
-  grid-columns: 4
-  grid-gap: 0
-  a0: Alice
-  a1: Bob
-  a2: Carol
-  a3: David
+```d3 widget=array-traversal
+{
+  "items": ["Alice", "Bob", "Carol", "David"],
+  "title": "Insert by copying — allocate a bigger array, copy every element, then append the new item",
+  "primaryLabel": "Source array (size 4)",
+  "secondaryItems": ["·", "·", "·", "·", "·"],
+  "secondaryLabel": "Destination array (size 5)",
+  "steps": [
+    {
+      "markers": [{"name": "src", "index": 0, "color": "#f59e0b"}],
+      "secondaryMarkers": [{"name": "dst", "index": 0, "color": "#10b981"}],
+      "msg": "Allocate a new array of size 5. Both indices start at 0; the destination is empty."
+    },
+    {
+      "secondaryItems": ["Alice", "·", "·", "·", "·"],
+      "markers": [{"name": "src", "index": 1, "color": "#f59e0b"}],
+      "secondaryMarkers": [{"name": "dst", "index": 1, "color": "#10b981"}],
+      "msg": "Copy src[0]=Alice → dst[0]. Advance both indices."
+    },
+    {
+      "secondaryItems": ["Alice", "Bob", "·", "·", "·"],
+      "markers": [{"name": "src", "index": 2, "color": "#f59e0b"}],
+      "secondaryMarkers": [{"name": "dst", "index": 2, "color": "#10b981"}],
+      "msg": "Copy src[1]=Bob → dst[1]. Advance both indices."
+    },
+    {
+      "secondaryItems": ["Alice", "Bob", "Carol", "·", "·"],
+      "markers": [{"name": "src", "index": 3, "color": "#f59e0b"}],
+      "secondaryMarkers": [{"name": "dst", "index": 3, "color": "#10b981"}],
+      "msg": "Copy src[2]=Carol → dst[2]. Advance both indices."
+    },
+    {
+      "secondaryItems": ["Alice", "Bob", "Carol", "David", "·"],
+      "markers": [{"name": "src", "index": 4, "color": "#f59e0b"}],
+      "secondaryMarkers": [{"name": "dst", "index": 4, "color": "#10b981"}],
+      "msg": "Copy src[3]=David → dst[3]. Source is exhausted; one cell remains in the destination."
+    },
+    {
+      "secondaryItems": ["Alice", "Bob", "Carol", "David", "Eve"],
+      "markers": [{"name": "src", "index": 4, "color": "#f59e0b"}],
+      "secondaryMarkers": [{"name": "dst", "index": 5, "color": "#10b981"}],
+      "msg": "Append the new item Eve at dst[4]. Done — 4 copies + 1 write, O(n) work to insert a single element."
+    }
+  ]
 }
-
-after: "New array (size = 5) — copy all + append" {
-  grid-columns: 5
-  grid-gap: 0
-  a0: Alice
-  a1: Bob
-  a2: Carol
-  a3: David
-  a4: Eve {style.fill: "#dcfce7"; style.stroke: "#16a34a"}
-}
-
-before -> after: "allocate new array,\ncopy 4 elements,\nadd Eve"
 ```
 
 <p align="center"><strong>Adding a new student requires allocating a brand-new array and copying every existing element — O(n) time and O(n) extra space.</strong></p>
 
 Now, let's consider another scenario. What if a student leaves the class? We can use the same process again. This time, we create a new array of smaller size and copy all the data items except the one we want to delete.
 
-```d2
-direction: right
-
-before: "Original array (size = 4)" {
-  grid-columns: 4
-  grid-gap: 0
-  a0: Alice
-  a1: Bob {style.fill: "#fee2e2"; style.stroke: "#dc2626"}
-  a2: Carol
-  a3: David
+```d3 widget=array-traversal
+{
+  "items": ["Alice", "Bob", "Carol", "David"],
+  "title": "Delete by copying — allocate a smaller array and copy every element except the one being removed",
+  "primaryLabel": "Source array (size 4)",
+  "secondaryItems": ["·", "·", "·"],
+  "secondaryLabel": "Destination array (size 3)",
+  "steps": [
+    {
+      "markers": [{"name": "src", "index": 0, "color": "#f59e0b"}, {"name": "remove", "index": 1, "color": "#dc2626"}],
+      "secondaryMarkers": [{"name": "dst", "index": 0, "color": "#10b981"}],
+      "msg": "Allocate a smaller array of size 3. Mark the index to remove (Bob at src[1]). Both indices start at 0."
+    },
+    {
+      "secondaryItems": ["Alice", "·", "·"],
+      "markers": [{"name": "src", "index": 1, "color": "#f59e0b"}, {"name": "remove", "index": 1, "color": "#dc2626"}],
+      "secondaryMarkers": [{"name": "dst", "index": 1, "color": "#10b981"}],
+      "msg": "Copy src[0]=Alice → dst[0]. Advance both indices."
+    },
+    {
+      "secondaryItems": ["Alice", "·", "·"],
+      "markers": [{"name": "src", "index": 2, "color": "#f59e0b"}, {"name": "remove", "index": 1, "color": "#dc2626"}],
+      "secondaryMarkers": [{"name": "dst", "index": 1, "color": "#10b981"}],
+      "msg": "src[1]=Bob is the deletion target — skip it. Advance src only; dst stays at 1."
+    },
+    {
+      "secondaryItems": ["Alice", "Carol", "·"],
+      "markers": [{"name": "src", "index": 3, "color": "#f59e0b"}, {"name": "remove", "index": 1, "color": "#dc2626"}],
+      "secondaryMarkers": [{"name": "dst", "index": 2, "color": "#10b981"}],
+      "msg": "Copy src[2]=Carol → dst[1]. Advance both indices."
+    },
+    {
+      "secondaryItems": ["Alice", "Carol", "David"],
+      "markers": [{"name": "src", "index": 4, "color": "#f59e0b"}, {"name": "remove", "index": 1, "color": "#dc2626"}],
+      "secondaryMarkers": [{"name": "dst", "index": 3, "color": "#10b981"}],
+      "msg": "Copy src[3]=David → dst[2]. Source exhausted. Done — 3 copies + 1 skip, still O(n) work to remove a single element."
+    }
+  ]
 }
-
-after: "New array (size = 3) — skip Bob" {
-  grid-columns: 3
-  grid-gap: 0
-  a0: Alice
-  a1: Carol
-  a2: David
-}
-
-before -> after: "allocate smaller array,\ncopy all except Bob"
 ```
 
 <p align="center"><strong>Deleting a student requires another full copy into a smaller array — the same O(n) cost applies for every insertion or deletion.</strong></p>
