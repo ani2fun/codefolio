@@ -141,6 +141,19 @@ sweep -> state
 
 <p align="center"><strong>The sweep visits each interval in sorted order, updating shared state in O(1). One pass — no nested loops.</strong></p>
 
+```d3 widget=array-traversal
+{
+  "items": ["[1,3]", "[2,5]", "[4,7]", "[6,8]"],
+  "title": "Line sweep — visit sorted intervals left to right",
+  "steps": [
+    { "markers": [{"name": "sweep", "index": 0, "color": "#f59e0b"}], "msg": "Sweep at [1,3] — state initialised (algorithm-specific)." },
+    { "markers": [{"name": "sweep", "index": 1, "color": "#f59e0b"}], "msg": "Sweep advances to [2,5] — state updated based on relation to previous." },
+    { "markers": [{"name": "sweep", "index": 2, "color": "#f59e0b"}], "msg": "Sweep advances to [4,7] — single O(1) state update." },
+    { "markers": [{"name": "sweep", "index": 3, "color": "#f59e0b"}], "msg": "Sweep advances to [6,8] — final state produces the answer." }
+  ]
+}
+```
+
 The state is **the algorithm**. Different problems need different state:
 - **Merge overlaps** → keep the last merged interval and stretch its end forward
 - **Maximum concurrent events** → maintain a running count of active intervals
@@ -680,6 +693,57 @@ flowchart TB
 ```
 
 <p align="center"><strong>The sweep extends the highlighter twice and lifts it twice. Final answer: three non-overlapping busy windows.</strong></p>
+
+```d3 widget=array-traversal
+{
+  "items": ["[9,11]", "[10,12]", "[14,16]", "[15,17]", "[20,21]"],
+  "title": "Delivery intervals — merge on sorted [[9,11], [10,12], [14,16], [15,17], [20,21]]",
+  "primaryLabel": "sorted",
+  "secondaryItems": ["[9,11]", "·", "·", "·", "·"],
+  "secondaryLabel": "merged",
+  "steps": [
+    {
+      "items": ["[9,11]", "[10,12]", "[14,16]", "[15,17]", "[20,21]"],
+      "markers": [{"name": "i", "index": 0, "color": "#3b82f6"}],
+      "secondaryItems": ["[9,11]", "·", "·", "·", "·"],
+      "secondaryKeys": ["m0", "m1", "m2", "m3", "m4"],
+      "msg": "Init: seed merged with sorted[0]=[9,11]. Sweep from i=1."
+    },
+    {
+      "items": ["[9,11]", "[10,12]", "[14,16]", "[15,17]", "[20,21]"],
+      "markers": [{"name": "i", "index": 1, "color": "#3b82f6"}],
+      "secondaryItems": ["[9,12]", "·", "·", "·", "·"],
+      "secondaryKeys": ["m0", "m1", "m2", "m3", "m4"],
+      "secondaryMarkers": [{"name": "last", "index": 0, "color": "#f59e0b"}],
+      "msg": "i=1: [10,12]. 10 ≤ 11 → EXTEND → merged.last = [9, max(11,12)] = [9,12]."
+    },
+    {
+      "items": ["[9,11]", "[10,12]", "[14,16]", "[15,17]", "[20,21]"],
+      "markers": [{"name": "i", "index": 2, "color": "#3b82f6"}],
+      "secondaryItems": ["[9,12]", "[14,16]", "·", "·", "·"],
+      "secondaryKeys": ["m0", "m1", "m2", "m3", "m4"],
+      "secondaryMarkers": [{"name": "last", "index": 1, "color": "#f59e0b"}],
+      "msg": "i=2: [14,16]. 14 > 12 → APPEND → merged = [[9,12], [14,16]]."
+    },
+    {
+      "items": ["[9,11]", "[10,12]", "[14,16]", "[15,17]", "[20,21]"],
+      "markers": [{"name": "i", "index": 3, "color": "#3b82f6"}],
+      "secondaryItems": ["[9,12]", "[14,17]", "·", "·", "·"],
+      "secondaryKeys": ["m0", "m1", "m2", "m3", "m4"],
+      "secondaryMarkers": [{"name": "last", "index": 1, "color": "#f59e0b"}],
+      "msg": "i=3: [15,17]. 15 ≤ 16 → EXTEND → merged.last = [14, max(16,17)] = [14,17]."
+    },
+    {
+      "items": ["[9,11]", "[10,12]", "[14,16]", "[15,17]", "[20,21]"],
+      "markers": [{"name": "i", "index": 4, "color": "#3b82f6"}],
+      "secondaryItems": ["[9,12]", "[14,17]", "[20,21]", "·", "·"],
+      "secondaryKeys": ["m0", "m1", "m2", "m3", "m4"],
+      "secondaryMarkers": [{"name": "last", "index": 2, "color": "#f59e0b"}],
+      "msg": "i=4: [20,21]. 20 > 17 → APPEND → merged = [[9,12], [14,17], [20,21]] → 3 busy windows ✓"
+    }
+  ]
+}
+```
 
 
 ```pseudocode
