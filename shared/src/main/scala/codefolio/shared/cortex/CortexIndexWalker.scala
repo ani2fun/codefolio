@@ -39,7 +39,25 @@ object CortexIndexWalker:
       order: Option[Int] = None
   )
 
-  final case class SectionMeta(title: Option[String], summary: Option[String])
+  /**
+   * `defaultStatus` cascades to every chapter beneath this section unless a chapter's own frontmatter
+   * `essential:` overrides it. Recognised values are `"essential"` and `"optional"`; anything else is ignored
+   * and inheritance from the enclosing section / book root continues unchanged.
+   */
+  final case class SectionMeta(
+      title: Option[String],
+      summary: Option[String],
+      defaultStatus: Option[String] = None
+  )
+
+  /** Book-level default for chapters without any explicit essential/optional cascade. */
+  val DefaultEssential: Boolean = true
+
+  /** Parse a `defaultStatus` value into a Boolean; `None` for unrecognised strings (no inheritance flip). */
+  private def parseDefaultStatus(s: String): Option[Boolean] = s.toLowerCase match
+    case "essential" => Some(true)
+    case "optional"  => Some(false)
+    case _           => None
 
   // ===========================================================================
   // Input ADT — the in-memory tree the walker operates on.
@@ -180,7 +198,7 @@ object CortexIndexWalker:
       slug: String
   ): Either[IndexError, (Book, Map[String, String])] =
     val acc = scala.collection.mutable.ListBuffer.empty[(ChapterRef, String)]
-    walkSection(bookDir, Vector.empty, Vector.empty, acc) match
+    walkSection(bookDir, Vector.empty, Vector.empty, DefaultEssential, acc) match
       case Left(e) => Left(e)
       case Right(()) =>
         val chRefs = acc.iterator.map(_._1).toList
@@ -207,11 +225,16 @@ object CortexIndexWalker:
    * `groupPath` accumulates Section display titles for the chapter's `groupPath` field. The two diverge
    * because a section directory's display title can come from `_section.json#title` while its FS name still
    * carries the numeric ordering prefix.
+   *
+   * `inheritedEssential` carries the cascading essential/optional default down the tree. A section's
+   * `_section.json#defaultStatus` flips this for itself and its descendants until another `_section.json`
+   * overrides it; a chapter's frontmatter `essential:` overrides per-chapter.
    */
   private def walkSection(
       dir: CortexDir,
       pathInBook: Vector[String],
       groupPath: Vector[String],
+      inheritedEssential: Boolean,
       acc: scala.collection.mutable.ListBuffer[(ChapterRef, String)]
   ): Either[IndexError, Unit] =
     if groupPath.length > MaxSectionDepth then
@@ -234,10 +257,14 @@ object CortexIndexWalker:
           val slug     = chapterSlugFromPath(pathSegs.toList)
           if !slugLike(slug) then Left(IndexError.InvalidSlug(pathSegs.mkString("/"), slug))
           else
-            val fallback = humanise(f.name.stripSuffix(".md"))
-            val title    = Frontmatter.extractTitle(f.content, fallback)
-            val relPath  = pathSegs.mkString("/")
-            acc += ((ChapterRef(slug = slug, title = title, groupPath = groupOpt), relPath))
+            val fallback  = humanise(f.name.stripSuffix(".md"))
+            val title     = Frontmatter.extractTitle(f.content, fallback)
+            val essential = Frontmatter.extractEssential(f.content).getOrElse(inheritedEssential)
+            val relPath   = pathSegs.mkString("/")
+            acc += ((
+              ChapterRef(slug = slug, title = title, groupPath = groupOpt, essential = Some(essential)),
+              relPath
+            ))
             Right(())
         }
         .collectFirst { case Left(e) => e }
@@ -249,7 +276,11 @@ object CortexIndexWalker:
             case (Left(e), _) => Left(e)
             case (Right(()), d) =>
               val secTitle = d.sectionMeta.flatMap(_.title).getOrElse(humanise(d.name))
-              walkSection(d, pathInBook :+ d.name, groupPath :+ secTitle, acc)
+              val secDefault = d.sectionMeta
+                .flatMap(_.defaultStatus)
+                .flatMap(parseDefaultStatus)
+                .getOrElse(inheritedEssential)
+              walkSection(d, pathInBook :+ d.name, groupPath :+ secTitle, secDefault, acc)
           }
 
   /**

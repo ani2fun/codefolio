@@ -72,6 +72,43 @@ object FrontmatterSpec extends ZIOSpecDefault:
           parsed.frontmatter.summary.isEmpty,
           parsed.body == ""
         )
+      },
+      test("essential: true|false parses into the frontmatter override") {
+        val onTrue  = Frontmatter.parse("---\ntitle: T\nessential: true\n---\n", "F")
+        val onFalse = Frontmatter.parse("---\ntitle: T\nessential: false\n---\n", "F")
+        assertTrue(
+          onTrue.frontmatter.essential == Some(true),
+          onFalse.frontmatter.essential == Some(false)
+        )
+      },
+      test("essential: <unrecognised value> is ignored and falls through to None") {
+        val parsed = Frontmatter.parse("---\ntitle: T\nessential: maybe\n---\n", "F")
+        assertTrue(parsed.frontmatter.essential.isEmpty)
+      },
+      test("missing essential key yields None (inheritance lives in the walker)") {
+        val parsed = Frontmatter.parse("---\ntitle: T\nsummary: hi\n---\n", "F")
+        assertTrue(parsed.frontmatter.essential.isEmpty)
+      }
+    ),
+    suite("extractEssential")(
+      test("reads essential: true|false directly without splitting the body") {
+        assertTrue(
+          Frontmatter.extractEssential("---\nessential: true\n---\nbody") == Some(true),
+          Frontmatter.extractEssential("---\nessential: false\n---\nbody") == Some(false)
+        )
+      },
+      test("returns None when frontmatter is absent, unterminated, or the key is missing") {
+        assertTrue(
+          Frontmatter.extractEssential("plain body").isEmpty,
+          Frontmatter.extractEssential("---\nessential: true\n(no closing fence)").isEmpty,
+          Frontmatter.extractEssential("---\ntitle: T\n---\n").isEmpty
+        )
+      },
+      test("returns None for malformed boolean values") {
+        assertTrue(
+          Frontmatter.extractEssential("---\nessential: yes\n---\n").isEmpty,
+          Frontmatter.extractEssential("---\nessential: 1\n---\n").isEmpty
+        )
       }
     ),
     suite("extractTitle")(

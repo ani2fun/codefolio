@@ -400,6 +400,18 @@ components:
             Derived from the on-disk directory layout under
             `content/cortex/<book>/...` — directories become section
             segments, optionally re-titled by `_section.json`.
+        essential:
+          type: boolean
+          nullable: true
+          description: |
+            Whether this chapter is part of the book's mandatory canonical
+            path (`true` = essential, filled dot in the sidebar) or
+            destination-only reference material (`false` = optional, hollow
+            ring). Resolved by the index walker from a cascade: per-chapter
+            frontmatter `essential:` wins, otherwise the nearest enclosing
+            section's `_section.json#defaultStatus` ("essential" |
+            "optional"), otherwise `true`. Null on the wire is treated as
+            `true` by the client (default-essential).
 
     Book:
       type: object
@@ -443,6 +455,15 @@ components:
         summary:
           type: string
           nullable: true
+        essential:
+          type: boolean
+          nullable: true
+          description: |
+            Per-chapter override for the essential/optional status indicator
+            shown next to the chapter title in the sidebar. Absent (`null`)
+            means inherit from the nearest enclosing section's
+            `_section.json#defaultStatus`, falling through to the book-level
+            default (`true`).
 
     ChapterPayload:
       type: object

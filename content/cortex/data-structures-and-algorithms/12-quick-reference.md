@@ -2,6 +2,7 @@
 title: Quick Reference
 summary: Dense revision sheet — every DSA pattern's intuition, triggers, complexity, and Python skeleton in one collapsible page. Built for fast recall, not first reads.
 tags: [revision, patterns, cheatsheet]
+essential: false
 ---
 
 # Quick Reference

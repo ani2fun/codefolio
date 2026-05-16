@@ -87,6 +87,52 @@ object CortexSidebar:
     obj.updateDynamic("--progress")(f"${fraction.max(0.0).min(1.0)}%.3f")
     obj.asInstanceOf[js.Object]
 
+  /**
+   * Footnote-style chapter status dot (essential / optional) shown after the chapter title in the expanded
+   * sidebar and as a corner glyph on rail tiles. Defaults to `--essential` when the chapter's `essential`
+   * flag is missing on the wire (the cortex pipeline emits `Some(true|false)` from the cascade; the `None`
+   * branch is the resilient fallback).
+   */
+  private def renderStatus(ch: ChapterRef): VdomNode =
+    val isEssential = ch.essential.getOrElse(true)
+    val mod         = if isEssential then "essential" else "optional"
+    val tip =
+      if isEssential then "Essential — read this chapter"
+      else "Optional — reference material, skim or skip"
+    <.span(
+      ^.className   := s"cortex-reader-sidebar__status cortex-reader-sidebar__status--$mod",
+      ^.title       := tip,
+      ^.aria.label  := (if isEssential then "Essential reading" else "Optional reading"),
+      ^.aria.hidden := false
+    )
+
+  /** Short suffix appended to a rail tile's hover tooltip so the keyboard-only path also surfaces status. */
+  private def statusSuffix(ch: ChapterRef): String =
+    if ch.essential.getOrElse(true) then " · essential" else " · optional"
+
+  /** Two-swatch legend pinned to the bottom of the expanded sidebar; the quiet small-print of the design. */
+  private val legend: VdomNode =
+    <.div(
+      ^.className  := "cortex-reader-sidebar__legend",
+      ^.aria.label := "Chapter reading guide",
+      <.span(
+        ^.className := "cortex-reader-sidebar__legend-row",
+        <.span(
+          ^.className   := "cortex-reader-sidebar__status cortex-reader-sidebar__status--essential",
+          ^.aria.hidden := true
+        ),
+        "essential"
+      ),
+      <.span(
+        ^.className := "cortex-reader-sidebar__legend-row",
+        <.span(
+          ^.className   := "cortex-reader-sidebar__status cortex-reader-sidebar__status--optional",
+          ^.aria.hidden := true
+        ),
+        "optional"
+      )
+    )
+
   private def renderNode(
       node: Node,
       activeSlug: String,
@@ -121,7 +167,8 @@ object CortexSidebar:
         <.span(^.className := "cortex-reader-sidebar__name", highlight(ch.title, query)),
         row.minutes
           .map(m => <.span(^.className := "cortex-reader-sidebar__min", s"${m}m"): VdomNode)
-          .getOrElse(EmptyVdom)
+          .getOrElse(EmptyVdom),
+        renderStatus(ch)
       )
 
       val activeMods: TagMod =
@@ -200,9 +247,10 @@ object CortexSidebar:
           ^.onClick --> (onToggleCollapsed >> onLinkClick),
           activeMods,
           numberLabel(row.number),
+          renderStatus(ch),
           <.span(
             ^.className := "cortex-reader-sidebar__rail-tip",
-            s"${numberLabel(row.number)} · ${ch.title}"
+            s"${numberLabel(row.number)} · ${ch.title}${statusSuffix(ch)}"
           )
         )
       },
@@ -288,7 +336,8 @@ object CortexSidebar:
               renderNode(node, activeSlug, onLinkClick, book.slug, query, rows, scrollFraction)
             )
           )
-      )
+      ),
+      legend
     )
 
   // Global ⌘K / Ctrl+K focus shortcut. Single install gate; the handler looks up the input by

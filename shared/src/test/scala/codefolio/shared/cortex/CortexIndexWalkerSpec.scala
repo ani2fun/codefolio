@@ -380,6 +380,102 @@ object CortexIndexWalkerSpec extends ZIOSpecDefault:
         )
       }
     ),
+    suite("essential / optional cascade")(
+      test("chapter inherits essential = true at book root when no metadata is present") {
+        val tree     = book("b", children = List(chapter("01-c.md", "# C")))
+        val Right(r) = CortexIndexWalker.walk(List(tree)): @unchecked
+        assertTrue(r.index.books.head.chapters.head.essential == Some(true))
+      },
+      test("_section.json#defaultStatus = optional flips the cascade for descendants") {
+        val tree = book(
+          "b",
+          children = List(
+            section(
+              "01-extras",
+              meta = Some(SectionMeta(title = None, summary = None, defaultStatus = Some("optional"))),
+              children = List(
+                chapter("01-a.md", "# A"),
+                chapter("02-b.md", "# B")
+              )
+            )
+          )
+        )
+        val Right(r) = CortexIndexWalker.walk(List(tree)): @unchecked
+        val flags    = r.index.books.head.chapters.map(_.essential)
+        assertTrue(flags == List(Some(false), Some(false)))
+      },
+      test("chapter frontmatter essential: true wins against an optional section default") {
+        val raw = """---
+                    |essential: true
+                    |---
+                    |# Mandatory exception""".stripMargin
+        val tree = book(
+          "b",
+          children = List(
+            section(
+              "01-extras",
+              meta = Some(SectionMeta(None, None, defaultStatus = Some("optional"))),
+              children = List(chapter("01-must-read.md", raw))
+            )
+          )
+        )
+        val Right(r) = CortexIndexWalker.walk(List(tree)): @unchecked
+        assertTrue(r.index.books.head.chapters.head.essential == Some(true))
+      },
+      test("optional default cascades through nested sections without re-statement") {
+        val tree = book(
+          "b",
+          children = List(
+            section(
+              "01-extras",
+              meta = Some(SectionMeta(None, None, defaultStatus = Some("optional"))),
+              children = List(
+                section(
+                  "01-nested",
+                  children = List(chapter("01-inner.md", "# Inner"))
+                )
+              )
+            )
+          )
+        )
+        val Right(r) = CortexIndexWalker.walk(List(tree)): @unchecked
+        assertTrue(r.index.books.head.chapters.head.essential == Some(false))
+      },
+      test("a nested section can flip the cascade back to essential") {
+        val tree = book(
+          "b",
+          children = List(
+            section(
+              "01-extras",
+              meta = Some(SectionMeta(None, None, defaultStatus = Some("optional"))),
+              children = List(
+                section(
+                  "01-must-read-pocket",
+                  meta = Some(SectionMeta(None, None, defaultStatus = Some("essential"))),
+                  children = List(chapter("01-inner.md", "# Inner"))
+                )
+              )
+            )
+          )
+        )
+        val Right(r) = CortexIndexWalker.walk(List(tree)): @unchecked
+        assertTrue(r.index.books.head.chapters.head.essential == Some(true))
+      },
+      test("unrecognised defaultStatus values fall through silently to inheritance") {
+        val tree = book(
+          "b",
+          children = List(
+            section(
+              "01-extras",
+              meta = Some(SectionMeta(None, None, defaultStatus = Some("yolo"))),
+              children = List(chapter("01-a.md", "# A"))
+            )
+          )
+        )
+        val Right(r) = CortexIndexWalker.walk(List(tree)): @unchecked
+        assertTrue(r.index.books.head.chapters.head.essential == Some(true))
+      }
+    ),
     suite("public helpers")(
       test("slugify lowercases and collapses non-alphanumerics to single hyphens") {
         assertTrue(
