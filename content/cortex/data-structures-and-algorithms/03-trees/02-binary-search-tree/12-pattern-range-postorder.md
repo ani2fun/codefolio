@@ -112,16 +112,28 @@ class Solution:
 ```
 
 ```java run
-class Solution {
-    int f(int left, int right, int val) { return left + right + val; }
+public class Main {
+    static class TreeNode { int val; TreeNode left, right; TreeNode(int v){val=v;} }
 
-    public int processRange(TreeNode node, int low, int high) {
-        if (node == null) return 0;                                                                                // empty
-        if (node.val < low)  return processRange(node.right, low, high);                                           // prune left
-        if (node.val > high) return processRange(node.left,  low, high);                                           // prune right
-        int left  = processRange(node.left,  low, high);
-        int right = processRange(node.right, low, high);
-        return f(left, right, node.val);                                                                            // postorder combine
+    static class Solution {
+        int f(int left, int right, int val) { return left + right + val; }
+
+        public int processRange(TreeNode node, int low, int high) {
+            if (node == null) return 0;                                                                                // empty
+            if (node.val < low)  return processRange(node.right, low, high);                                           // prune left
+            if (node.val > high) return processRange(node.left,  low, high);                                           // prune right
+            int left  = processRange(node.left,  low, high);
+            int right = processRange(node.right, low, high);
+            return f(left, right, node.val);                                                                            // postorder combine
+        }
+    }
+
+    public static void main(String[] args) {
+        TreeNode root = new TreeNode(4);
+        root.left  = new TreeNode(2); root.right = new TreeNode(5);
+        root.left.left  = new TreeNode(1); root.left.right = new TreeNode(3);
+        root.right.right = new TreeNode(6);
+        System.out.println(new Solution().processRange(root, 2, 5));  // 14
     }
 }
 ```
@@ -140,17 +152,26 @@ int processRange(struct TreeNode *node, int low, int high) {
 ```
 
 ```scala run
-object Solution {
-  private def f(left: Int, right: Int, v: Int): Int = left + right + v
+class TreeNode(var value: Int, var left: TreeNode = null, var right: TreeNode = null)
 
-  def processRange(node: TreeNode, low: Int, high: Int): Int = {
-    if (node == null)           return 0                                                                                  // empty
-    if (node.value < low)       return processRange(node.right, low, high)                                                // prune left
-    if (node.value > high)      return processRange(node.left,  low, high)                                                // prune right
-    val left  = processRange(node.left,  low, high)
-    val right = processRange(node.right, low, high)
-    f(left, right, node.value)                                                                                            // combine
+object Main extends App {
+  object Solution {
+    private def f(left: Int, right: Int, v: Int): Int = left + right + v
+
+    def processRange(node: TreeNode, low: Int, high: Int): Int = {
+      if (node == null)           return 0                                                                                  // empty
+      if (node.value < low)       return processRange(node.right, low, high)                                                // prune left
+      if (node.value > high)      return processRange(node.left,  low, high)                                                // prune right
+      val left  = processRange(node.left,  low, high)
+      val right = processRange(node.right, low, high)
+      f(left, right, node.value)                                                                                            // combine
+    }
   }
+
+  val root = new TreeNode(4,
+    new TreeNode(2, new TreeNode(1), new TreeNode(3)),
+    new TreeNode(5, null, new TreeNode(6)))
+  println(Solution.processRange(root, 2, 5))  // 14
 }
 ```
 
@@ -236,19 +257,32 @@ class Solution:
 ```
 
 ```java run
-class Solution {
-    public int rangeSummationHelper(TreeNode root, int low, int high) {
-        if (root == null) return 0;                                                                                                 // empty
-        if (root.val < low)  return rangeSummationHelper(root.right, low, high);                                                    // prune left
-        if (root.val > high) return rangeSummationHelper(root.left,  low, high);                                                    // prune right
-        int leftSum  = rangeSummationHelper(root.left,  low, high);
-        int rightSum = rangeSummationHelper(root.right, low, high);
-        root.val += leftSum + rightSum;                                                                                              // mutate
-        return root.val;                                                                                                             // return new total
+public class Main {
+    static class TreeNode { int val; TreeNode left, right; TreeNode(int v){val=v;} }
+
+    static class Solution {
+        public int rangeSummationHelper(TreeNode root, int low, int high) {
+            if (root == null) return 0;                                                                                                 // empty
+            if (root.val < low)  return rangeSummationHelper(root.right, low, high);                                                    // prune left
+            if (root.val > high) return rangeSummationHelper(root.left,  low, high);                                                    // prune right
+            int leftSum  = rangeSummationHelper(root.left,  low, high);
+            int rightSum = rangeSummationHelper(root.right, low, high);
+            root.val += leftSum + rightSum;                                                                                              // mutate
+            return root.val;                                                                                                             // return new total
+        }
+
+        public void rangeSummation(TreeNode root, int low, int high) {
+            rangeSummationHelper(root, low, high);
+        }
     }
 
-    public void rangeSummation(TreeNode root, int low, int high) {
-        rangeSummationHelper(root, low, high);
+    public static void main(String[] args) {
+        TreeNode root = new TreeNode(4);
+        root.left  = new TreeNode(2); root.right = new TreeNode(5);
+        root.left.left  = new TreeNode(1); root.left.right = new TreeNode(3);
+        root.right.right = new TreeNode(6);
+        new Solution().rangeSummation(root, 2, 5);
+        System.out.println(root.val);  // 14
     }
 }
 ```
@@ -270,20 +304,30 @@ void rangeSummation(struct TreeNode *root, int low, int high) {
 ```
 
 ```scala run
-object Solution {
-  def rangeSummationHelper(root: TreeNode, low: Int, high: Int): Int = {
-    if (root == null)           return 0
-    if (root.value < low)       return rangeSummationHelper(root.right, low, high)
-    if (root.value > high)      return rangeSummationHelper(root.left,  low, high)
-    val leftSum  = rangeSummationHelper(root.left,  low, high)
-    val rightSum = rangeSummationHelper(root.right, low, high)
-    root.value += leftSum + rightSum
-    root.value
+class TreeNode(var value: Int, var left: TreeNode = null, var right: TreeNode = null)
+
+object Main extends App {
+  object Solution {
+    def rangeSummationHelper(root: TreeNode, low: Int, high: Int): Int = {
+      if (root == null)           return 0
+      if (root.value < low)       return rangeSummationHelper(root.right, low, high)
+      if (root.value > high)      return rangeSummationHelper(root.left,  low, high)
+      val leftSum  = rangeSummationHelper(root.left,  low, high)
+      val rightSum = rangeSummationHelper(root.right, low, high)
+      root.value += leftSum + rightSum
+      root.value
+    }
+
+    def rangeSummation(root: TreeNode, low: Int, high: Int): Unit = {
+      rangeSummationHelper(root, low, high)
+    }
   }
 
-  def rangeSummation(root: TreeNode, low: Int, high: Int): Unit = {
-    rangeSummationHelper(root, low, high)
-  }
+  val root = new TreeNode(4,
+    new TreeNode(2, new TreeNode(1), new TreeNode(3)),
+    new TreeNode(5, null, new TreeNode(6)))
+  Solution.rangeSummation(root, 2, 5)
+  println(root.value)  // 14
 }
 ```
 
@@ -389,23 +433,35 @@ class Solution:
 ```
 
 ```java run
-class Solution {
-    private int diameter = 0;
+public class Main {
+    static class TreeNode { int val; TreeNode left, right; TreeNode(int v){val=v;} }
 
-    private int rangeDiameterHelper(TreeNode root, int low, int high) {
-        if (root == null) return 0;
-        if (root.val < low)  return rangeDiameterHelper(root.right, low, high);                                                          // prune left
-        if (root.val > high) return rangeDiameterHelper(root.left,  low, high);                                                          // prune right
-        int leftH  = rangeDiameterHelper(root.left,  low, high);
-        int rightH = rangeDiameterHelper(root.right, low, high);
-        diameter = Math.max(diameter, leftH + rightH);                                                                                    // candidate
-        return Math.max(leftH, rightH) + 1;                                                                                                // height
+    static class Solution {
+        private int diameter = 0;
+
+        private int rangeDiameterHelper(TreeNode root, int low, int high) {
+            if (root == null) return 0;
+            if (root.val < low)  return rangeDiameterHelper(root.right, low, high);                                                          // prune left
+            if (root.val > high) return rangeDiameterHelper(root.left,  low, high);                                                          // prune right
+            int leftH  = rangeDiameterHelper(root.left,  low, high);
+            int rightH = rangeDiameterHelper(root.right, low, high);
+            diameter = Math.max(diameter, leftH + rightH);                                                                                    // candidate
+            return Math.max(leftH, rightH) + 1;                                                                                                // height
+        }
+
+        public int rangeDiameter(TreeNode root, int low, int high) {
+            diameter = 0;
+            rangeDiameterHelper(root, low, high);
+            return diameter;
+        }
     }
 
-    public int rangeDiameter(TreeNode root, int low, int high) {
-        diameter = 0;
-        rangeDiameterHelper(root, low, high);
-        return diameter;
+    public static void main(String[] args) {
+        TreeNode root = new TreeNode(4);
+        root.left  = new TreeNode(2); root.right = new TreeNode(5);
+        root.left.left  = new TreeNode(1); root.left.right = new TreeNode(3);
+        root.right.right = new TreeNode(6);
+        System.out.println(new Solution().rangeDiameter(root, 2, 5));  // 3
     }
 }
 ```
@@ -431,24 +487,33 @@ int rangeDiameter(struct TreeNode *root, int low, int high) {
 ```
 
 ```scala run
-class Solution {
-  private var diameter: Int = 0
+class TreeNode(var value: Int, var left: TreeNode = null, var right: TreeNode = null)
 
-  private def helper(root: TreeNode, low: Int, high: Int): Int = {
-    if (root == null)           return 0
-    if (root.value < low)       return helper(root.right, low, high)
-    if (root.value > high)      return helper(root.left,  low, high)
-    val leftH  = helper(root.left,  low, high)
-    val rightH = helper(root.right, low, high)
-    diameter = math.max(diameter, leftH + rightH)
-    math.max(leftH, rightH) + 1
+object Main extends App {
+  class Solution {
+    private var diameter: Int = 0
+
+    private def helper(root: TreeNode, low: Int, high: Int): Int = {
+      if (root == null)           return 0
+      if (root.value < low)       return helper(root.right, low, high)
+      if (root.value > high)      return helper(root.left,  low, high)
+      val leftH  = helper(root.left,  low, high)
+      val rightH = helper(root.right, low, high)
+      diameter = math.max(diameter, leftH + rightH)
+      math.max(leftH, rightH) + 1
+    }
+
+    def rangeDiameter(root: TreeNode, low: Int, high: Int): Int = {
+      diameter = 0
+      helper(root, low, high)
+      diameter
+    }
   }
 
-  def rangeDiameter(root: TreeNode, low: Int, high: Int): Int = {
-    diameter = 0
-    helper(root, low, high)
-    diameter
-  }
+  val root = new TreeNode(4,
+    new TreeNode(2, new TreeNode(1), new TreeNode(3)),
+    new TreeNode(5, null, new TreeNode(6)))
+  println(new Solution().rangeDiameter(root, 2, 5))  // 3
 }
 ```
 
@@ -517,20 +582,33 @@ class Solution:
 ```
 
 ```java run
-class Solution {
-    public int rangeLeavesHelper(TreeNode root, int low, int high) {
-        if (root == null) return 0;
-        if (root.val < low)  return rangeLeavesHelper(root.right, low, high);
-        if (root.val > high) return rangeLeavesHelper(root.left,  low, high);
-        if (root.left == null && root.right == null) return 1;                                                                              // leaf
-        int leftLeaves  = rangeLeavesHelper(root.left,  low, high);
-        int rightLeaves = rangeLeavesHelper(root.right, low, high);
-        root.val = leftLeaves + rightLeaves;                                                                                                 // mutate
-        return root.val;
+public class Main {
+    static class TreeNode { int val; TreeNode left, right; TreeNode(int v){val=v;} }
+
+    static class Solution {
+        public int rangeLeavesHelper(TreeNode root, int low, int high) {
+            if (root == null) return 0;
+            if (root.val < low)  return rangeLeavesHelper(root.right, low, high);
+            if (root.val > high) return rangeLeavesHelper(root.left,  low, high);
+            if (root.left == null && root.right == null) return 1;                                                                              // leaf
+            int leftLeaves  = rangeLeavesHelper(root.left,  low, high);
+            int rightLeaves = rangeLeavesHelper(root.right, low, high);
+            root.val = leftLeaves + rightLeaves;                                                                                                 // mutate
+            return root.val;
+        }
+
+        public void rangeLeaves(TreeNode root, int low, int high) {
+            rangeLeavesHelper(root, low, high);
+        }
     }
 
-    public void rangeLeaves(TreeNode root, int low, int high) {
-        rangeLeavesHelper(root, low, high);
+    public static void main(String[] args) {
+        TreeNode root = new TreeNode(4);
+        root.left  = new TreeNode(2); root.right = new TreeNode(5);
+        root.left.left  = new TreeNode(1); root.left.right = new TreeNode(3);
+        root.right.right = new TreeNode(6);
+        new Solution().rangeLeaves(root, 2, 5);
+        System.out.println(root.val);  // 1
     }
 }
 ```
@@ -553,21 +631,31 @@ void rangeLeaves(struct TreeNode *root, int low, int high) {
 ```
 
 ```scala run
-object Solution {
-  def rangeLeavesHelper(root: TreeNode, low: Int, high: Int): Int = {
-    if (root == null)           return 0
-    if (root.value < low)       return rangeLeavesHelper(root.right, low, high)
-    if (root.value > high)      return rangeLeavesHelper(root.left,  low, high)
-    if (root.left == null && root.right == null) return 1                                                                                          // leaf
-    val leftLeaves  = rangeLeavesHelper(root.left,  low, high)
-    val rightLeaves = rangeLeavesHelper(root.right, low, high)
-    root.value = leftLeaves + rightLeaves
-    root.value
+class TreeNode(var value: Int, var left: TreeNode = null, var right: TreeNode = null)
+
+object Main extends App {
+  object Solution {
+    def rangeLeavesHelper(root: TreeNode, low: Int, high: Int): Int = {
+      if (root == null)           return 0
+      if (root.value < low)       return rangeLeavesHelper(root.right, low, high)
+      if (root.value > high)      return rangeLeavesHelper(root.left,  low, high)
+      if (root.left == null && root.right == null) return 1                                                                                          // leaf
+      val leftLeaves  = rangeLeavesHelper(root.left,  low, high)
+      val rightLeaves = rangeLeavesHelper(root.right, low, high)
+      root.value = leftLeaves + rightLeaves
+      root.value
+    }
+
+    def rangeLeaves(root: TreeNode, low: Int, high: Int): Unit = {
+      rangeLeavesHelper(root, low, high)
+    }
   }
 
-  def rangeLeaves(root: TreeNode, low: Int, high: Int): Unit = {
-    rangeLeavesHelper(root, low, high)
-  }
+  val root = new TreeNode(4,
+    new TreeNode(2, new TreeNode(1), new TreeNode(3)),
+    new TreeNode(5, null, new TreeNode(6)))
+  Solution.rangeLeaves(root, 2, 5)
+  println(root.value)  // 1
 }
 ```
 
@@ -634,14 +722,27 @@ class Solution:
 ```
 
 ```java run
-class Solution {
-    public TreeNode rangeExclusiveTrim(TreeNode root, int low, int high) {
-        if (root == null) return null;
-        if (root.val < low)  return rangeExclusiveTrim(root.right, low, high);                                                                                // drop node + left subtree
-        if (root.val > high) return rangeExclusiveTrim(root.left,  low, high);                                                                                // drop node + right subtree
-        root.left  = rangeExclusiveTrim(root.left,  low, high);                                                                                                // trim and re-attach
-        root.right = rangeExclusiveTrim(root.right, low, high);
-        return root;
+public class Main {
+    static class TreeNode { int val; TreeNode left, right; TreeNode(int v){val=v;} }
+
+    static class Solution {
+        public TreeNode rangeExclusiveTrim(TreeNode root, int low, int high) {
+            if (root == null) return null;
+            if (root.val < low)  return rangeExclusiveTrim(root.right, low, high);                                                                                // drop node + left subtree
+            if (root.val > high) return rangeExclusiveTrim(root.left,  low, high);                                                                                // drop node + right subtree
+            root.left  = rangeExclusiveTrim(root.left,  low, high);                                                                                                // trim and re-attach
+            root.right = rangeExclusiveTrim(root.right, low, high);
+            return root;
+        }
+    }
+
+    public static void main(String[] args) {
+        TreeNode root = new TreeNode(4);
+        root.left  = new TreeNode(2); root.right = new TreeNode(5);
+        root.left.left  = new TreeNode(1); root.left.right = new TreeNode(3);
+        root.right.right = new TreeNode(6);
+        TreeNode result = new Solution().rangeExclusiveTrim(root, 2, 5);
+        System.out.println(result.val);  // 4
     }
 }
 ```
@@ -658,15 +759,25 @@ struct TreeNode *rangeExclusiveTrim(struct TreeNode *root, int low, int high) {
 ```
 
 ```scala run
-object Solution {
-  def rangeExclusiveTrim(root: TreeNode, low: Int, high: Int): TreeNode = {
-    if (root == null)           return null
-    if (root.value < low)       return rangeExclusiveTrim(root.right, low, high)
-    if (root.value > high)      return rangeExclusiveTrim(root.left,  low, high)
-    root.left  = rangeExclusiveTrim(root.left,  low, high)
-    root.right = rangeExclusiveTrim(root.right, low, high)
-    root
+class TreeNode(var value: Int, var left: TreeNode = null, var right: TreeNode = null)
+
+object Main extends App {
+  object Solution {
+    def rangeExclusiveTrim(root: TreeNode, low: Int, high: Int): TreeNode = {
+      if (root == null)           return null
+      if (root.value < low)       return rangeExclusiveTrim(root.right, low, high)
+      if (root.value > high)      return rangeExclusiveTrim(root.left,  low, high)
+      root.left  = rangeExclusiveTrim(root.left,  low, high)
+      root.right = rangeExclusiveTrim(root.right, low, high)
+      root
+    }
   }
+
+  val root = new TreeNode(4,
+    new TreeNode(2, new TreeNode(1), new TreeNode(3)),
+    new TreeNode(5, null, new TreeNode(6)))
+  val result = Solution.rangeExclusiveTrim(root, 2, 5)
+  println(result.value)  // 4
 }
 ```
 
