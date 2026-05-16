@@ -435,6 +435,72 @@ You should take the first node of the first list (with the head as headA) as the
 
 ## Solution
 
+```d3 widget=linked-list
+{
+  "title": "Alternate node fusion — Example 1: [1,2,3] + [4,5,6] → [1,4,2,5,3,6]",
+  "direction": "single",
+  "wrapAt": 4,
+  "nodes": [
+    {"id": "d",  "value": "·"},
+    {"id": "a1", "value": "1"},
+    {"id": "a2", "value": "2"},
+    {"id": "a3", "value": "3"},
+    {"id": "b1", "value": "4"},
+    {"id": "b2", "value": "5"},
+    {"id": "b3", "value": "6"}
+  ],
+  "head": "d",
+  "sections": [
+    {"name": "Init",      "startIdx": 0},
+    {"name": "Iter A/B ×3", "startIdx": 1},
+    {"name": "Tail attach", "startIdx": 7}
+  ],
+  "steps": [
+    {
+      "links": [["a1","a2"],["a2","a3"],["b1","b2"],["b2","b3"]],
+      "markers": [{"name": "dummy", "nodeId": "d"}, {"name": "headA", "nodeId": "a1"}, {"name": "headB", "nodeId": "b1"}, {"name": "current", "nodeId": "d"}],
+      "msg": "Init: dummy node created, current = dummy. mergeFirst = true. List A on row 0 (1→2→3); list B on row 1 (4→5→6)."
+    },
+    {
+      "links": [["d","a1"],["a1","a2"],["a2","a3"],["b1","b2"],["b2","b3"]],
+      "markers": [{"name": "dummy", "nodeId": "d"}, {"name": "headA", "nodeId": "a2"}, {"name": "headB", "nodeId": "b1"}, {"name": "current", "nodeId": "a1"}],
+      "msg": "Iter 1 (A): tail.next = currentA → dummy → 1. Advance currentA to 2, tail to 1. mergeFirst = false."
+    },
+    {
+      "links": [["d","a1"],["a1","b1"],["a2","a3"],["b1","b2"],["b2","b3"]],
+      "markers": [{"name": "dummy", "nodeId": "d"}, {"name": "headA", "nodeId": "a2"}, {"name": "headB", "nodeId": "b2"}, {"name": "current", "nodeId": "b1"}],
+      "msg": "Iter 2 (B): tail.next = currentB → 1 → 4 (overwrites the old 1→2 link). Advance currentB to 5, tail to 4."
+    },
+    {
+      "links": [["d","a1"],["a1","b1"],["b1","a2"],["a2","a3"],["b2","b3"]],
+      "markers": [{"name": "dummy", "nodeId": "d"}, {"name": "headA", "nodeId": "a3"}, {"name": "headB", "nodeId": "b2"}, {"name": "current", "nodeId": "a2"}],
+      "msg": "Iter 3 (A): tail.next = currentA → 4 → 2. Advance currentA to 3, tail to 2."
+    },
+    {
+      "links": [["d","a1"],["a1","b1"],["b1","a2"],["a2","b2"],["b2","b3"]],
+      "markers": [{"name": "dummy", "nodeId": "d"}, {"name": "headA", "nodeId": "a3"}, {"name": "headB", "nodeId": "b3"}, {"name": "current", "nodeId": "b2"}],
+      "msg": "Iter 4 (B): tail.next = currentB → 2 → 5. Advance currentB to 6, tail to 5."
+    },
+    {
+      "links": [["d","a1"],["a1","b1"],["b1","a2"],["a2","b2"],["b2","a3"]],
+      "markers": [{"name": "dummy", "nodeId": "d"}, {"name": "headA", "nodeId": "a3"}, {"name": "headB", "nodeId": "b3"}, {"name": "current", "nodeId": "a3"}],
+      "msg": "Iter 5 (A): tail.next = currentA → 5 → 3. Advance currentA to null, tail to 3. currentA is now null — exit loop."
+    },
+    {
+      "links": [["d","a1"],["a1","b1"],["b1","a2"],["a2","b2"],["b2","a3"],["a3","b3"]],
+      "markers": [{"name": "dummy", "nodeId": "d"}, {"name": "headB", "nodeId": "b3"}, {"name": "current", "nodeId": "a3"}],
+      "msg": "Tail attach: currentB still has nodes. tail.next = currentB → 3 → 6. Done."
+    },
+    {
+      "links": [["d","a1"],["a1","b1"],["b1","a2"],["a2","b2"],["b2","a3"],["a3","b3"]],
+      "markers": [{"name": "head", "nodeId": "a1"}],
+      "msg": "Return dummy.next — head of the alternate-fused list: 1 → 4 → 2 → 5 → 3 → 6. O(n+m) time, O(1) extra space (only the dummy)."
+    }
+  ]
+}
+```
+
+<p align="center"><strong>Alternate node fusion in-place — list A on row 0, list B on row 1. Each iteration splices one node into the tail, alternating between A and B; when one list runs out the remainder of the other gets attached whole.</strong></p>
 
 ```pseudocode
 function alternateNodeFusion(headA, headB):
