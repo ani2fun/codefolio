@@ -258,9 +258,11 @@ traverse(n1)  # 5 7 3 10
 public class Main {
     static class ListNode { int val; ListNode next; ListNode(int v){val=v;} }
 
-    static void traverse(ListNode head) {
-        for (ListNode current = head; current != null; current = current.next) {
-            System.out.print(current.val + " ");  // Advance: current = current.next
+    static class Solution {
+        public void traverse(ListNode head) {
+            for (ListNode current = head; current != null; current = current.next) {
+                System.out.print(current.val + " ");  // Advance: current = current.next
+            }
         }
     }
 
@@ -268,7 +270,7 @@ public class Main {
         ListNode n1=new ListNode(5), n2=new ListNode(7),
                  n3=new ListNode(3), n4=new ListNode(10);
         n1.next=n2; n2.next=n3; n3.next=n4;
-        traverse(n1);  // 5 7 3 10
+        new Solution().traverse(n1);  // 5 7 3 10
     }
 }
 ```
@@ -300,11 +302,13 @@ int main() {
 class ListNode(var v: Int, var next: ListNode = null)
 
 object Main extends App {
-  def traverse(head: ListNode): Unit = {
-    var current = head
-    while (current != null) {       // Stop when null is reached
-      print(s"${current.v} ")
-      current = current.next        // Advance to next node
+  class Solution {
+    def traverse(head: ListNode): Unit = {
+      var current = head
+      while (current != null) {       // Stop when null is reached
+        print(s"${current.v} ")
+        current = current.next        // Advance to next node
+      }
     }
   }
 
@@ -312,7 +316,7 @@ object Main extends App {
   val n3 = new ListNode(3,  n4)
   val n2 = new ListNode(7,  n3)
   val n1 = new ListNode(5,  n2)
-  traverse(n1)  // 5 7 3 10
+  new Solution().traverse(n1)  // 5 7 3 10
 }
 ```
 
