@@ -178,29 +178,41 @@ def find_the_solution_node(start: ListNode, end: Optional[ListNode], n: int) -> 
 ```
 
 ```java run
-class Solution {
-    public ListNode findTheSolutionNode(ListNode start, ListNode end, int n) {
+public class Main {
+    static class ListNode { int val; ListNode next; ListNode(int v){val=v;} }
 
-        // Create two references slow and fast
-        // and point them to the start
-        ListNode slow = start;
-        ListNode fast = start;
+    static class Solution {
+        public ListNode findTheSolutionNode(ListNode start, ListNode end, int n) {
 
-        // Null checks to take care of edge cases
-        while (fast.next != null && fast != end) {
+            // Create two references slow and fast
+            // and point them to the start
+            ListNode slow = start;
+            ListNode fast = start;
 
-            // Move slow 1 step
-            slow = slow.next;
+            // Null checks to take care of edge cases
+            while (fast.next != null && fast != end) {
 
-            // Move fast n+1 step
-            for (int i = 0; i < n + 1; i++) {
-                if (fast != null && fast.next != null)
-                    fast = fast.next;
+                // Move slow 1 step
+                slow = slow.next;
+
+                // Move fast n+1 step
+                for (int i = 0; i < n + 1; i++) {
+                    if (fast != null && fast.next != null)
+                        fast = fast.next;
+                }
             }
-        }
 
-        // Node pointed by slow is the solution
-        return slow;
+            // Node pointed by slow is the solution
+            return slow;
+        }
+    }
+
+    public static void main(String[] args) {
+        // Pattern only — invoke once for compile/run verification
+        ListNode n1=new ListNode(1),n2=new ListNode(2),n3=new ListNode(3),n4=new ListNode(4);
+        n1.next=n2; n2.next=n3; n3.next=n4;
+        ListNode solution = new Solution().findTheSolutionNode(n1, n4, 1);
+        System.out.println(solution.val); // 2
     }
 }
 ```
@@ -234,33 +246,42 @@ ListNode* findTheSolutionNode(ListNode *start, ListNode *end, int n) {
 ```
 
 ```scala run
-object Solution {
-  def findTheSolutionNode(start: ListNode, end: ListNode, n: Int): ListNode = {
+class ListNode(var v: Int, var next: ListNode = null)
 
-    // Create two references slow and fast
-    // and point them to the start
-    var slow = start
-    var fast = start
+object Main extends App {
+  class Solution {
+    def findTheSolutionNode(start: ListNode, end: ListNode, n: Int): ListNode = {
 
-    // Null checks to take care of edge cases
-    while (fast.next != null && (fast ne end)) {
+      // Create two references slow and fast
+      // and point them to the start
+      var slow = start
+      var fast = start
 
-      // Move slow 1 step
-      slow = slow.next
+      // Null checks to take care of edge cases
+      while (fast.next != null && (fast ne end)) {
 
-      // Move fast n+1 step
-      var i = 0
-      while (i < n + 1) {
-        if (fast != null && fast.next != null) {
-          fast = fast.next
+        // Move slow 1 step
+        slow = slow.next
+
+        // Move fast n+1 step
+        var i = 0
+        while (i < n + 1) {
+          if (fast != null && fast.next != null) {
+            fast = fast.next
+          }
+          i += 1
         }
-        i += 1
       }
-    }
 
-    // Node pointed by slow is the solution
-    slow
+      // Node pointed by slow is the solution
+      slow
+    }
   }
+
+  // Pattern only — invoke once for compile/run verification
+  val n4 = new ListNode(4); val n3 = new ListNode(3,n4); val n2 = new ListNode(2,n3); val n1 = new ListNode(1,n2)
+  val solution = new Solution().findTheSolutionNode(n1, n4, 1)
+  println(solution.v) // 2
 }
 ```
 
@@ -412,28 +433,40 @@ class Solution:
 ```
 
 ```java run
-class Solution {
-    public ListNode middleNodeSearch(ListNode head) {
+public class Main {
+    static class ListNode { int val; ListNode next; ListNode(int v){val=v;} }
 
-        // Initialize slow pointer to the head of the list
-        ListNode slow = head;
+    static class Solution {
+        public ListNode middleNodeSearch(ListNode head) {
 
-        // Initialize fast pointer to the head of the list
-        ListNode fast = head;
+            // Initialize slow pointer to the head of the list
+            ListNode slow = head;
 
-        // Iterate until fast pointer reaches the end of the list
-        while (fast != null && fast.next != null) {
+            // Initialize fast pointer to the head of the list
+            ListNode fast = head;
 
-            // Move slow pointer one step forward
-            slow = slow.next;
+            // Iterate until fast pointer reaches the end of the list
+            while (fast != null && fast.next != null) {
 
-            // Move fast pointer two steps forward
-            fast = fast.next.next;
+                // Move slow pointer one step forward
+                slow = slow.next;
+
+                // Move fast pointer two steps forward
+                fast = fast.next.next;
+            }
+
+            // Return the middle node or the second middle node (in case of
+            // even number of nodes)
+            return slow;
         }
+    }
 
-        // Return the middle node or the second middle node (in case of
-        // even number of nodes)
-        return slow;
+    public static void main(String[] args) {
+        // [1, 2, 3, 4, 5] -> middle is 3
+        ListNode n1=new ListNode(1),n2=new ListNode(2),n3=new ListNode(3),
+                 n4=new ListNode(4),n5=new ListNode(5);
+        n1.next=n2; n2.next=n3; n3.next=n4; n4.next=n5;
+        System.out.println(new Solution().middleNodeSearch(n1).val); // 3
     }
 }
 ```
@@ -464,29 +497,38 @@ ListNode* middleNodeSearch(ListNode *head) {
 ```
 
 ```scala run
-object Solution {
-  def middleNodeSearch(head: ListNode): ListNode = {
+class ListNode(var v: Int, var next: ListNode = null)
 
-    // Initialize slow pointer to the head of the list
-    var slow = head
+object Main extends App {
+  class Solution {
+    def middleNodeSearch(head: ListNode): ListNode = {
 
-    // Initialize fast pointer to the head of the list
-    var fast = head
+      // Initialize slow pointer to the head of the list
+      var slow = head
 
-    // Iterate until fast pointer reaches the end of the list
-    while (fast != null && fast.next != null) {
+      // Initialize fast pointer to the head of the list
+      var fast = head
 
-      // Move slow pointer one step forward
-      slow = slow.next
+      // Iterate until fast pointer reaches the end of the list
+      while (fast != null && fast.next != null) {
 
-      // Move fast pointer two steps forward
-      fast = fast.next.next
+        // Move slow pointer one step forward
+        slow = slow.next
+
+        // Move fast pointer two steps forward
+        fast = fast.next.next
+      }
+
+      // Return the middle node or the second middle node (in case of
+      // even number of nodes)
+      slow
     }
-
-    // Return the middle node or the second middle node (in case of
-    // even number of nodes)
-    slow
   }
+
+  // [1, 2, 3, 4, 5] -> middle is 3
+  val n5=new ListNode(5); val n4=new ListNode(4,n5); val n3=new ListNode(3,n4)
+  val n2=new ListNode(2,n3); val n1=new ListNode(1,n2)
+  println(new Solution().middleNodeSearch(n1).v) // 3
 }
 ```
 
@@ -592,7 +634,7 @@ print(Solution().middle_node_search(head).val)   # expected: 3
 ```
 
 ```java run
-public class Solution {
+public class Main {
     static class ListNode {
         int val;
         ListNode next;
@@ -600,39 +642,42 @@ public class Solution {
         ListNode(int v, ListNode n) { val = v; next = n; }
     }
 
-    public ListNode middleNodeSearch(ListNode head) {
+    static class Solution {
+        public ListNode middleNodeSearch(ListNode head) {
 
-        // Initialize slow pointer to the head of the list
-        ListNode slow = head;
+            // Initialize slow pointer to the head of the list
+            ListNode slow = head;
 
-        // Initialize fast pointer to the head of the list
-        ListNode fast = head;
+            // Initialize fast pointer to the head of the list
+            ListNode fast = head;
 
-        // Iterate until fast pointer reaches the end of the list
-        while (fast != null && fast.next != null) {
+            // Iterate until fast pointer reaches the end of the list
+            while (fast != null && fast.next != null) {
 
-            // Move slow pointer one step forward
-            slow = slow.next;
+                // Move slow pointer one step forward
+                slow = slow.next;
 
-            // Move fast pointer two steps forward
-            fast = fast.next.next;
+                // Move fast pointer two steps forward
+                fast = fast.next.next;
+            }
+
+            // Return the middle node or the second middle node (in case of
+            // even number of nodes)
+            return slow;
         }
 
-        // Return the middle node or the second middle node (in case of
-        // even number of nodes)
-        return slow;
-    }
-
-    static ListNode build(int[] vals) {
-        ListNode dummy = new ListNode(0);
-        ListNode cur = dummy;
-        for (int v : vals) { cur.next = new ListNode(v); cur = cur.next; }
-        return dummy.next;
+        public ListNode build(int[] vals) {
+            ListNode dummy = new ListNode(0);
+            ListNode cur = dummy;
+            for (int v : vals) { cur.next = new ListNode(v); cur = cur.next; }
+            return dummy.next;
+        }
     }
 
     public static void main(String[] args) {
-        ListNode head = build(new int[]{5, 7, 3, 10, 6});
-        System.out.println(new Solution().middleNodeSearch(head).val); // expected: 3
+        Solution sol = new Solution();
+        ListNode head = sol.build(new int[]{5, 7, 3, 10, 6});
+        System.out.println(sol.middleNodeSearch(head).val); // expected: 3
     }
 }
 ```
@@ -694,41 +739,42 @@ int main(void) {
 ```scala run
 class ListNode(var v: Int, var next: ListNode = null)
 
-object Solution {
-  def middleNodeSearch(head: ListNode): ListNode = {
+object Main extends App {
+  class Solution {
+    def middleNodeSearch(head: ListNode): ListNode = {
 
-    // Initialize slow pointer to the head of the list
-    var slow = head
+      // Initialize slow pointer to the head of the list
+      var slow = head
 
-    // Initialize fast pointer to the head of the list
-    var fast = head
+      // Initialize fast pointer to the head of the list
+      var fast = head
 
-    // Iterate until fast pointer reaches the end of the list
-    while (fast != null && fast.next != null) {
+      // Iterate until fast pointer reaches the end of the list
+      while (fast != null && fast.next != null) {
 
-      // Move slow pointer one step forward
-      slow = slow.next
+        // Move slow pointer one step forward
+        slow = slow.next
 
-      // Move fast pointer two steps forward
-      fast = fast.next.next
+        // Move fast pointer two steps forward
+        fast = fast.next.next
+      }
+
+      // Return the middle node or the second middle node (in case of
+      // even number of nodes)
+      slow
     }
 
-    // Return the middle node or the second middle node (in case of
-    // even number of nodes)
-    slow
+    def build(vals: Int*): ListNode = {
+      val dummy = new ListNode(0)
+      var cur = dummy
+      for (v <- vals) { cur.next = new ListNode(v); cur = cur.next }
+      dummy.next
+    }
   }
 
-  def build(vals: Int*): ListNode = {
-    val dummy = new ListNode(0)
-    var cur = dummy
-    for (v <- vals) { cur.next = new ListNode(v); cur = cur.next }
-    dummy.next
-  }
-
-  def main(args: Array[String]): Unit = {
-    val head = build(5, 7, 3, 10, 6)
-    println(middleNodeSearch(head).v) // expected: 3
-  }
+  val sol = new Solution()
+  val head = sol.build(5, 7, 3, 10, 6)
+  println(sol.middleNodeSearch(head).v) // expected: 3
 }
 ```
 
@@ -879,63 +925,79 @@ class Solution:
 ```
 
 ```java run
-class Solution {
-    public ListNode[] splitListInHalf(ListNode head) {
+public class Main {
+    static class ListNode { int val; ListNode next; ListNode(int v){val=v;} }
 
-        // If the list is empty or has only one element, return the
-        // original head and null
-        if (head == null || head.next == null) {
-            return new ListNode[]{head, null};
+    static class Solution {
+        public ListNode[] splitListInHalf(ListNode head) {
+
+            // If the list is empty or has only one element, return the
+            // original head and null
+            if (head == null || head.next == null) {
+                return new ListNode[]{head, null};
+            }
+
+            ListNode slow = head;
+            ListNode fast = head;
+            ListNode prevToSlow = null;
+
+            // Find the midpoint of the list using the slow and fast pointer
+            // technique
+            while (fast != null && fast.next != null) {
+
+                // Keep track of the node before the midpoint
+                prevToSlow = slow;
+
+                // Move the slow pointer by one step
+                slow = slow.next;
+
+                // Move the fast pointer by two steps
+                fast = fast.next.next;
+            }
+
+            ListNode secondHalf;
+
+            // If the fast pointer reached the end of the list, it has an
+            // even number of nodes
+            if (fast == null) {
+
+                // The second half starts from the next node of the previous
+                // slow pointer
+                secondHalf = prevToSlow.next;
+
+                // Disconnect the two halves by setting the next of the
+                // previous slow pointer to null
+                prevToSlow.next = null;
+            }
+
+            // else the list has an odd number of nodes
+            else {
+
+                // The second half starts from the node after the slow
+                // pointer
+                secondHalf = slow.next;
+
+                // Disconnect the two halves by setting the next of the slow
+                // pointer to null
+                slow.next = null;
+            }
+
+            // Return a list containing the head of the first half and the
+            // head of the second half
+            return new ListNode[]{head, secondHalf};
         }
+    }
 
-        ListNode slow = head;
-        ListNode fast = head;
-        ListNode prevToSlow = null;
-
-        // Find the midpoint of the list using the slow and fast pointer
-        // technique
-        while (fast != null && fast.next != null) {
-
-            // Keep track of the node before the midpoint
-            prevToSlow = slow;
-
-            // Move the slow pointer by one step
-            slow = slow.next;
-
-            // Move the fast pointer by two steps
-            fast = fast.next.next;
-        }
-
-        ListNode secondHalf;
-
-        // If the fast pointer reached the end of the list, it has an
-        // even number of nodes
-        if (fast == null) {
-
-            // The second half starts from the next node of the previous
-            // slow pointer
-            secondHalf = prevToSlow.next;
-
-            // Disconnect the two halves by setting the next of the
-            // previous slow pointer to null
-            prevToSlow.next = null;
-        }
-
-        // else the list has an odd number of nodes
-        else {
-
-            // The second half starts from the node after the slow
-            // pointer
-            secondHalf = slow.next;
-
-            // Disconnect the two halves by setting the next of the slow
-            // pointer to null
-            slow.next = null;
-        }
-
-        // Return a list containing the head of the first half and the
-        // head of the second half
-        return new ListNode[]{head, secondHalf};
+    public static void main(String[] args) {
+        // [5, 7, 3, 10, 6, 8] -> [[5, 7, 3], [10, 6, 8]]
+        ListNode n1=new ListNode(5),n2=new ListNode(7),n3=new ListNode(3),
+                 n4=new ListNode(10),n5=new ListNode(6),n6=new ListNode(8);
+        n1.next=n2; n2.next=n3; n3.next=n4; n4.next=n5; n5.next=n6;
+        ListNode[] halves = new Solution().splitListInHalf(n1);
+        for (ListNode c=halves[0];c!=null;c=c.next) System.out.print(c.val+" ");
+        System.out.print("| ");
+        for (ListNode c=halves[1];c!=null;c=c.next) System.out.print(c.val+" ");
+        // 5 7 3 | 10 6 8
     }
 }
 ```
@@ -1003,64 +1065,77 @@ ListPair splitListInHalf(ListNode *head) {
 ```
 
 ```scala run
-object Solution {
-  def splitListInHalf(head: ListNode): Array[ListNode] = {
+class ListNode(var v: Int, var next: ListNode = null)
 
-    // If the list is empty or has only one element, return the
-    // original head and null
-    if (head == null || head.next == null) {
-      return Array(head, null)
+object Main extends App {
+  class Solution {
+    def splitListInHalf(head: ListNode): Array[ListNode] = {
+
+      // If the list is empty or has only one element, return the
+      // original head and null
+      if (head == null || head.next == null) {
+        return Array(head, null)
+      }
+
+      var slow = head
+      var fast = head
+      var prevToSlow: ListNode = null
+
+      // Find the midpoint of the list using the slow and fast pointer
+      // technique
+      while (fast != null && fast.next != null) {
+
+        // Keep track of the node before the midpoint
+        prevToSlow = slow
+
+        // Move the slow pointer by one step
+        slow = slow.next
+
+        // Move the fast pointer by two steps
+        fast = fast.next.next
+      }
+
+      var secondHalf: ListNode = null
+
+      // If the fast pointer reached the end of the list, it has an
+      // even number of nodes
+      if (fast == null) {
+
+        // The second half starts from the next node of the previous
+        // slow pointer
+        secondHalf = prevToSlow.next
+
+        // Disconnect the two halves by setting the next of the
+        // previous slow pointer to null
+        prevToSlow.next = null
+      }
+
+      // else the list has an odd number of nodes
+      else {
+
+        // The second half starts from the node after the slow
+        // pointer
+        secondHalf = slow.next
+
+        // Disconnect the two halves by setting the next of the slow
+        // pointer to null
+        slow.next = null
+      }
+
+      // Return a list containing the head of the first half and the
+      // head of the second half
+      Array(head, secondHalf)
     }
-
-    var slow = head
-    var fast = head
-    var prevToSlow: ListNode = null
-
-    // Find the midpoint of the list using the slow and fast pointer
-    // technique
-    while (fast != null && fast.next != null) {
-
-      // Keep track of the node before the midpoint
-      prevToSlow = slow
-
-      // Move the slow pointer by one step
-      slow = slow.next
-
-      // Move the fast pointer by two steps
-      fast = fast.next.next
-    }
-
-    var secondHalf: ListNode = null
-
-    // If the fast pointer reached the end of the list, it has an
-    // even number of nodes
-    if (fast == null) {
-
-      // The second half starts from the next node of the previous
-      // slow pointer
-      secondHalf = prevToSlow.next
-
-      // Disconnect the two halves by setting the next of the
-      // previous slow pointer to null
-      prevToSlow.next = null
-    }
-
-    // else the list has an odd number of nodes
-    else {
-
-      // The second half starts from the node after the slow
-      // pointer
-      secondHalf = slow.next
-
-      // Disconnect the two halves by setting the next of the slow
-      // pointer to null
-      slow.next = null
-    }
-
-    // Return a list containing the head of the first half and the
-    // head of the second half
-    Array(head, secondHalf)
   }
+
+  // [5, 7, 3, 10, 6, 8] -> [[5, 7, 3], [10, 6, 8]]
+  val n6=new ListNode(8); val n5=new ListNode(6,n6); val n4=new ListNode(10,n5)
+  val n3=new ListNode(3,n4); val n2=new ListNode(7,n3); val n1=new ListNode(5,n2)
+  val halves = new Solution().splitListInHalf(n1)
+  var cur = halves(0); while (cur != null) { print(s"${cur.v} "); cur = cur.next }
+  print("| ")
+  cur = halves(1); while (cur != null) { print(s"${cur.v} "); cur = cur.next }
+  // 5 7 3 | 10 6 8
 }
 ```
 
@@ -1232,58 +1307,69 @@ class Solution:
 ```
 
 ```java run
-class Solution {
-    private int sumOfList(ListNode start, ListNode end) {
-        int sum = 0;
-        ListNode current = start;
-        while (current != end) {
-            sum += current.val;
-            current = current.next;
+public class Main {
+    static class ListNode { int val; ListNode next; ListNode(int v){val=v;} }
+
+    static class Solution {
+        private int sumOfList(ListNode start, ListNode end) {
+            int sum = 0;
+            ListNode current = start;
+            while (current != end) {
+                sum += current.val;
+                current = current.next;
+            }
+            return sum;
         }
-        return sum;
+
+        public boolean equalHalves(ListNode head) {
+            if (head == null || head.next == null) {
+                return true;
+            }
+
+            // Initialize slow pointer
+            ListNode slow = head;
+
+            // Initialize fast pointer
+            ListNode fast = head;
+
+            // Find the midpoint of the list using the slow and fast pointer
+            // technique
+            while (fast != null && fast.next != null) {
+
+                // Move the slow pointer by one step
+                slow = slow.next;
+
+                // Move the fast pointer by two steps
+                fast = fast.next.next;
+            }
+
+            ListNode secondHalfStart = null;
+
+            // Odd number of nodes, middle node goes to first half
+            if (fast != null) {
+                secondHalfStart = slow.next;
+            }
+
+            // Even number of nodes, slow is the start of second half
+            else {
+                secondHalfStart = slow;
+            }
+
+            // Calculate sums of the first half
+            int firstHalfSum = sumOfList(head, secondHalfStart);
+
+            // Calculate sums of the second half
+            int secondHalfSum = sumOfList(secondHalfStart, null);
+
+            return firstHalfSum == secondHalfSum;
+        }
     }
 
-    public boolean equalHalves(ListNode head) {
-        if (head == null || head.next == null) {
-            return true;
-        }
-
-        // Initialize slow pointer
-        ListNode slow = head;
-
-        // Initialize fast pointer
-        ListNode fast = head;
-
-        // Find the midpoint of the list using the slow and fast pointer
-        // technique
-        while (fast != null && fast.next != null) {
-
-            // Move the slow pointer by one step
-            slow = slow.next;
-
-            // Move the fast pointer by two steps
-            fast = fast.next.next;
-        }
-
-        ListNode secondHalfStart = null;
-
-        // Odd number of nodes, middle node goes to first half
-        if (fast != null) {
-            secondHalfStart = slow.next;
-        }
-
-        // Even number of nodes, slow is the start of second half
-        else {
-            secondHalfStart = slow;
-        }
-
-        // Calculate sums of the first half
-        int firstHalfSum = sumOfList(head, secondHalfStart);
-
-        // Calculate sums of the second half
-        int secondHalfSum = sumOfList(secondHalfStart, null);
-
-        return firstHalfSum == secondHalfSum;
+    public static void main(String[] args) {
+        // [1, 2, 3, 3] -> first half [1, 2] sum=3, second half [3, 3] sum=6 -> false
+        ListNode n1=new ListNode(1),n2=new ListNode(2),n3=new ListNode(3),n4=new ListNode(3);
+        n1.next=n2; n2.next=n3; n3.next=n4;
+        System.out.println(new Solution().equalHalves(n1)); // false
     }
 }
 ```
@@ -1344,58 +1430,66 @@ int equalHalves(ListNode *head) {
 ```
 
 ```scala run
-object Solution {
-  private def sumOfList(start: ListNode, end: ListNode): Int = {
-    var sum = 0
-    var current = start
-    while (current ne end) {
-      sum += current.v
-      current = current.next
+class ListNode(var v: Int, var next: ListNode = null)
+
+object Main extends App {
+  class Solution {
+    private def sumOfList(start: ListNode, end: ListNode): Int = {
+      var sum = 0
+      var current = start
+      while (current ne end) {
+        sum += current.v
+        current = current.next
+      }
+      sum
     }
-    sum
+
+    def equalHalves(head: ListNode): Boolean = {
+      if (head == null || head.next == null) {
+        return true
+      }
+
+      // Initialize slow pointer
+      var slow = head
+
+      // Initialize fast pointer
+      var fast = head
+
+      // Find the midpoint of the list using the slow and fast pointer
+      // technique
+      while (fast != null && fast.next != null) {
+
+        // Move the slow pointer by one step
+        slow = slow.next
+
+        // Move the fast pointer by two steps
+        fast = fast.next.next
+      }
+
+      var secondHalfStart: ListNode = null
+
+      // Odd number of nodes, middle node goes to first half
+      if (fast != null) {
+        secondHalfStart = slow.next
+      }
+      // Even number of nodes, slow is the start of second half
+      else {
+        secondHalfStart = slow
+      }
+
+      // Calculate sums of the first half
+      val firstHalfSum = sumOfList(head, secondHalfStart)
+
+      // Calculate sums of the second half
+      val secondHalfSum = sumOfList(secondHalfStart, null)
+
+      firstHalfSum == secondHalfSum
+    }
   }
 
-  def equalHalves(head: ListNode): Boolean = {
-    if (head == null || head.next == null) {
-      return true
-    }
-
-    // Initialize slow pointer
-    var slow = head
-
-    // Initialize fast pointer
-    var fast = head
-
-    // Find the midpoint of the list using the slow and fast pointer
-    // technique
-    while (fast != null && fast.next != null) {
-
-      // Move the slow pointer by one step
-      slow = slow.next
-
-      // Move the fast pointer by two steps
-      fast = fast.next.next
-    }
-
-    var secondHalfStart: ListNode = null
-
-    // Odd number of nodes, middle node goes to first half
-    if (fast != null) {
-      secondHalfStart = slow.next
-    }
-    // Even number of nodes, slow is the start of second half
-    else {
-      secondHalfStart = slow
-    }
-
-    // Calculate sums of the first half
-    val firstHalfSum = sumOfList(head, secondHalfStart)
-
-    // Calculate sums of the second half
-    val secondHalfSum = sumOfList(secondHalfStart, null)
-
-    firstHalfSum == secondHalfSum
-  }
+  // [1, 2, 3, 3] -> first half [1, 2] sum=3, second half [3, 3] sum=6 -> false
+  val n4=new ListNode(3); val n3=new ListNode(3,n4); val n2=new ListNode(2,n3); val n1=new ListNode(1,n2)
+  println(new Solution().equalHalves(n1)) // false
 }
 ```
 
@@ -1516,57 +1610,68 @@ class Solution:
 ```
 
 ```java run
-class Solution {
-    private ListNode reverse(ListNode head) {
-        ListNode current = head;
-        ListNode previous = null;
+public class Main {
+    static class ListNode { int val; ListNode next; ListNode(int v){val=v;} }
 
-        while (current != null) {
-            ListNode next = current.next;
-            current.next = previous;
-            previous = current;
-            current = next;
-        }
+    static class Solution {
+        private ListNode reverse(ListNode head) {
+            ListNode current = head;
+            ListNode previous = null;
 
-        return previous;
-    }
-
-    private ListNode findMiddleNode(ListNode head) {
-        ListNode slow = head;
-        ListNode fast = head;
-        while (fast != null && fast.next != null) {
-            slow = slow.next;
-            fast = fast.next.next;
-        }
-
-        return slow;
-    }
-
-    private boolean isPalindrome(ListNode headA, ListNode headB) {
-        while (headB != null) {
-            if (headA.val != headB.val) {
-                return false;
+            while (current != null) {
+                ListNode next = current.next;
+                current.next = previous;
+                previous = current;
+                current = next;
             }
-            headA = headA.next;
-            headB = headB.next;
-        }
-        return true;
-    }
 
-    public boolean palindromeChecker(ListNode head) {
-        if (head == null || head.next == null) {
+            return previous;
+        }
+
+        private ListNode findMiddleNode(ListNode head) {
+            ListNode slow = head;
+            ListNode fast = head;
+            while (fast != null && fast.next != null) {
+                slow = slow.next;
+                fast = fast.next.next;
+            }
+
+            return slow;
+        }
+
+        private boolean isPalindrome(ListNode headA, ListNode headB) {
+            while (headB != null) {
+                if (headA.val != headB.val) {
+                    return false;
+                }
+                headA = headA.next;
+                headB = headB.next;
+            }
             return true;
         }
 
-        // Find the middle node of the linked list
-        ListNode middleNode = findMiddleNode(head);
+        public boolean palindromeChecker(ListNode head) {
+            if (head == null || head.next == null) {
+                return true;
+            }
 
-        // Reverse the second half of the list
-        ListNode reversedSecondHalf = reverse(middleNode);
+            // Find the middle node of the linked list
+            ListNode middleNode = findMiddleNode(head);
 
-        // Compare the elements of first half with the reversed second
-        // half
-        return isPalindrome(head, reversedSecondHalf);
+            // Reverse the second half of the list
+            ListNode reversedSecondHalf = reverse(middleNode);
+
+            // Compare the elements of first half with the reversed second
+            // half
+            return isPalindrome(head, reversedSecondHalf);
+        }
+    }
+
+    public static void main(String[] args) {
+        // [1, 2, 2, 1] -> true
+        ListNode n1=new ListNode(1),n2=new ListNode(2),n3=new ListNode(2),n4=new ListNode(1);
+        n1.next=n2; n2.next=n3; n3.next=n4;
+        System.out.println(new Solution().palindromeChecker(n1)); // true
     }
 }
 ```
@@ -1626,59 +1731,67 @@ int palindromeChecker(ListNode *head) {
 ```
 
 ```scala run
-object Solution {
-  private def reverse(headIn: ListNode): ListNode = {
-    var current = headIn
-    var previous: ListNode = null
+class ListNode(var v: Int, var next: ListNode = null)
 
-    while (current != null) {
-      val next = current.next
-      current.next = previous
-      previous = current
-      current = next
-    }
+object Main extends App {
+  class Solution {
+    private def reverse(headIn: ListNode): ListNode = {
+      var current = headIn
+      var previous: ListNode = null
 
-    previous
-  }
-
-  private def findMiddleNode(head: ListNode): ListNode = {
-    var slow = head
-    var fast = head
-    while (fast != null && fast.next != null) {
-      slow = slow.next
-      fast = fast.next.next
-    }
-    slow
-  }
-
-  private def isPalindrome(headAIn: ListNode, headBIn: ListNode): Boolean = {
-    var headA = headAIn
-    var headB = headBIn
-    while (headB != null) {
-      if (headA.v != headB.v) {
-        return false
+      while (current != null) {
+        val next = current.next
+        current.next = previous
+        previous = current
+        current = next
       }
-      headA = headA.next
-      headB = headB.next
-    }
-    true
-  }
 
-  def palindromeChecker(head: ListNode): Boolean = {
-    if (head == null || head.next == null) {
-      return true
+      previous
     }
 
-    // Find the middle node of the linked list
-    val middleNode = findMiddleNode(head)
+    private def findMiddleNode(head: ListNode): ListNode = {
+      var slow = head
+      var fast = head
+      while (fast != null && fast.next != null) {
+        slow = slow.next
+        fast = fast.next.next
+      }
+      slow
+    }
 
-    // Reverse the second half of the list
-    val reversedSecondHalf = reverse(middleNode)
+    private def isPalindrome(headAIn: ListNode, headBIn: ListNode): Boolean = {
+      var headA = headAIn
+      var headB = headBIn
+      while (headB != null) {
+        if (headA.v != headB.v) {
+          return false
+        }
+        headA = headA.next
+        headB = headB.next
+      }
+      true
+    }
 
-    // Compare the elements of first half with the reversed second
-    // half
-    isPalindrome(head, reversedSecondHalf)
+    def palindromeChecker(head: ListNode): Boolean = {
+      if (head == null || head.next == null) {
+        return true
+      }
+
+      // Find the middle node of the linked list
+      val middleNode = findMiddleNode(head)
+
+      // Reverse the second half of the list
+      val reversedSecondHalf = reverse(middleNode)
+
+      // Compare the elements of first half with the reversed second
+      // half
+      isPalindrome(head, reversedSecondHalf)
+    }
   }
+
+  // [1, 2, 2, 1] -> true
+  val n4=new ListNode(1); val n3=new ListNode(2,n4); val n2=new ListNode(2,n3); val n1=new ListNode(1,n2)
+  println(new Solution().palindromeChecker(n1)) // true
 }
 ```
 
