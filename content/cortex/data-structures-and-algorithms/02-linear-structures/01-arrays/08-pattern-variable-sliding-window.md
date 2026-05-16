@@ -375,56 +375,95 @@ function variableSlidingWindow(arr):
 ```python run
 from typing import List
 
-def f_add(agg, x): return agg + x
-def f_remove(agg, x): return agg - x
-def process(agg): pass
+def f(agg, x): return agg + x
+def f_inverse(agg, x): return agg - x
 
 # Stand-in flags — replace with the real problem-specific predicates.
-should_contract = False
-should_expand   = True
+should_compute_aggregate = True
+should_contract_window   = False
+should_expand_window     = True
 
-def variable_sliding_window(arr: List[int]) -> None:
-    start = end = 0
+
+def sliding_window(arr: List[int]) -> None:
+    # Initialize start and end to 0
+    start = 0
+    end = 0
+
+    # Initialize aggregate to a default value
     aggregate = 0
-    while end < len(arr):
-        aggregate = f_add(aggregate, arr[end])         # Step 3.1: add arr[end].
-        process(aggregate)                              # Step 3.2: process current window.
 
-        if should_contract:                             # Step 3.3: shrink (use while if needed).
-            aggregate = f_remove(aggregate, arr[start])
+    # Move the window one step to the right until
+    # it reaches the end of the array
+    while end < len(arr):
+
+        if should_compute_aggregate:
+            # Add contribution of arr[end]
+            aggregate = f(aggregate, arr[end])
+
+        # Process aggregate
+        # ......
+        # (Add your processing code here)
+
+        if should_contract_window:
+            # Remove contribution of arr[start] using the inverse function
+            aggregate = f_inverse(aggregate, arr[start])
+            # Contract window
             start += 1
 
-        if should_expand:                               # Step 3.4: extend right.
+        if should_expand_window:
             end += 1
+
+
+sliding_window([1, 2, 3, 4])
+print("Template ran.")
 ```
 
 ```java run
 public class Main {
-    static int fAdd(int agg, int x)    { return agg + x; }
-    static int fRemove(int agg, int x) { return agg - x; }
-    static void process(int agg)       { /* problem-specific */ }
+    static int f(int agg, int x)        { return agg + x; }
+    static int fInverse(int agg, int x) { return agg - x; }
 
-    static boolean shouldContract = false;
-    static boolean shouldExpand   = true;
+    static boolean shouldComputeAggregate = true;
+    static boolean shouldContractWindow   = false;
+    static boolean shouldExpandWindow     = true;
 
-    static void variableSlidingWindow(int[] arr) {
-        int start = 0, end = 0, aggregate = 0;
-        while (end < arr.length) {
-            aggregate = fAdd(aggregate, arr[end]);
-            process(aggregate);
+    public static class SlidingWindow {
+        public void slidingWindow(int[] arr) {
+            // Initialize start and end to 0
+            int start = 0, end = 0;
 
-            if (shouldContract) {
-                aggregate = fRemove(aggregate, arr[start]);
-                start++;
-            }
-            if (shouldExpand) {
-                end++;
+            // Initialize aggregate to a default value
+            int aggregate = 0;
+
+            // Move the window one step to the right until
+            // it reaches the end of the array
+            while (end < arr.length) {
+
+                if (shouldComputeAggregate) {
+                    // Add contribution of arr[end]
+                    aggregate = f(aggregate, arr[end]);
+                }
+
+                // Process aggregate
+                // ......
+                // (Add your processing code here)
+
+                if (shouldContractWindow) {
+                    // Remove contribution of arr[start] using the inverse function
+                    aggregate = fInverse(aggregate, arr[start]);
+                    // Contract window
+                    start++;
+                }
+
+                if (shouldExpandWindow) {
+                    end++;
+                }
             }
         }
     }
 
     public static void main(String[] args) {
-        variableSlidingWindow(new int[]{1, 2, 3, 4});
+        new SlidingWindow().slidingWindow(new int[]{1, 2, 3, 4});
         System.out.println("Template ran.");
     }
 }
@@ -434,29 +473,47 @@ public class Main {
 #include <stdio.h>
 #include <stdbool.h>
 
-int  f_add(int agg, int x)    { return agg + x; }
-int  f_remove(int agg, int x) { return agg - x; }
-void process(int agg)         { (void)agg; }
+int  f(int agg, int x)         { return agg + x; }
+int  f_inverse(int agg, int x) { return agg - x; }
 
-bool should_contract = false;
-bool should_expand   = true;
+bool should_compute_aggregate = true;
+bool should_contract_window   = false;
+bool should_expand_window     = true;
 
-void variable_sliding_window(int* arr, int n) {
-    int start = 0, end = 0, aggregate = 0;
+void sliding_window(int* arr, int n) {
+    /* Initialize start and end to 0 */
+    int start = 0, end = 0;
+
+    /* Initialize aggregate to a default value */
+    int aggregate = 0;
+
+    /* Move the window one step to the right until
+     * it reaches the end of the array */
     while (end < n) {
-        aggregate = f_add(aggregate, arr[end]);
-        process(aggregate);
-        if (should_contract) {
-            aggregate = f_remove(aggregate, arr[start]);
+
+        if (should_compute_aggregate) {
+            /* Add contribution of arr[end] */
+            aggregate = f(aggregate, arr[end]);
+        }
+
+        /* Process aggregate */
+        /* ...... */
+        /* (Add your processing code here) */
+
+        if (should_contract_window) {
+            /* Remove contribution of arr[start] using the inverse function */
+            aggregate = f_inverse(aggregate, arr[start]);
+            /* Contract window */
             start++;
         }
-        if (should_expand) end++;
+
+        if (should_expand_window) end++;
     }
 }
 
 int main() {
     int arr[] = {1, 2, 3, 4};
-    variable_sliding_window(arr, 4);
+    sliding_window(arr, 4);
     printf("Template ran.\n");
     return 0;
 }
@@ -464,29 +521,48 @@ int main() {
 
 ```scala run
 object Main extends App {
-  def fAdd(agg: Int, x: Int): Int    = agg + x
-  def fRemove(agg: Int, x: Int): Int = agg - x
-  def process(agg: Int): Unit = ()
+  def f(agg: Int, x: Int): Int        = agg + x
+  def fInverse(agg: Int, x: Int): Int = agg - x
 
-  val shouldContract = false
-  val shouldExpand   = true
+  val shouldComputeAggregate = true
+  val shouldContractWindow   = false
+  val shouldExpandWindow     = true
 
-  def variableSlidingWindow(arr: Array[Int]): Unit = {
-    var start = 0
-    var end = 0
-    var aggregate = 0
-    while (end < arr.length) {
-      aggregate = fAdd(aggregate, arr(end))
-      process(aggregate)
-      if (shouldContract) {
-        aggregate = fRemove(aggregate, arr(start))
-        start += 1
+  class SlidingWindow {
+    def slidingWindow(arr: Array[Int]): Unit = {
+      // Initialize start and end to 0
+      var start = 0
+      var end = 0
+
+      // Initialize aggregate to a default value
+      var aggregate = 0
+
+      // Move the window one step to the right until
+      // it reaches the end of the array
+      while (end < arr.length) {
+
+        if (shouldComputeAggregate) {
+          // Add contribution of arr[end]
+          aggregate = f(aggregate, arr(end))
+        }
+
+        // Process aggregate
+        // ......
+        // (Add your processing code here)
+
+        if (shouldContractWindow) {
+          // Remove contribution of arr[start] using the inverse function
+          aggregate = fInverse(aggregate, arr(start))
+          // Contract window
+          start += 1
+        }
+
+        if (shouldExpandWindow) end += 1
       }
-      if (shouldExpand) end += 1
     }
   }
 
-  variableSlidingWindow(Array(1, 2, 3, 4))
+  new SlidingWindow().slidingWindow(Array(1, 2, 3, 4))
   println("Template ran.")
 }
 ```
