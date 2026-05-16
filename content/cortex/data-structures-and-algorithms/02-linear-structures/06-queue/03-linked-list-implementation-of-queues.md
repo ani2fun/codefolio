@@ -250,22 +250,22 @@ int main() {
 ```
 
 ```scala run
-class Queue(val capacity: Int) {
-  private class Node(val value: Int, var next: Node = null)
-
-  private var head: Node = null
-  private var tail: Node = null
-  private var currSize    = 0
-
-  def size:    Int     = 0
-  def empty:   Boolean = true
-  def front:   Int     = -1
-  def back:    Int     = -1
-  def enqueue(v: Int): Boolean = false
-  def dequeue: Int     = -1
-}
-
 object Main extends App {
+  class Queue(val capacity: Int) {
+    private class Node(val value: Int, var next: Node = null)
+
+    private var head: Node = null
+    private var tail: Node = null
+    private var currSize    = 0
+
+    def size:    Int     = 0
+    def empty:   Boolean = true
+    def front:   Int     = -1
+    def back:    Int     = -1
+    def enqueue(v: Int): Boolean = false
+    def dequeue: Int     = -1
+  }
+
   val q = new Queue(4)
   println("created queue with capacity 4")
 }
@@ -1044,37 +1044,37 @@ int main() {
 ```
 
 ```scala run
-class Queue(val capacity: Int) {
-  private class Node(val value: Int, var next: Node = null)
-
-  private var head: Node = null
-  private var tail: Node = null
-  private var n          = 0
-
-  def size:  Int     = n
-  def empty: Boolean = n == 0
-  def front: Int     = if (empty) -1 else head.value
-  def back:  Int     = if (empty) -1 else tail.value
-  def enqueue(v: Int): Boolean = {
-    if (n == capacity) return false
-    val node = new Node(v)
-    if (head == null) head = node
-    else              tail.next = node
-    tail = node
-    n   += 1
-    true
-  }
-  def dequeue: Int = {
-    if (empty) return -1
-    val v = head.value
-    head  = head.next
-    if (head == null) tail = null
-    n -= 1
-    v
-  }
-}
-
 object Main extends App {
+  class Queue(val capacity: Int) {
+    private class Node(val value: Int, var next: Node = null)
+
+    private var head: Node = null
+    private var tail: Node = null
+    private var n          = 0
+
+    def size:  Int     = n
+    def empty: Boolean = n == 0
+    def front: Int     = if (empty) -1 else head.value
+    def back:  Int     = if (empty) -1 else tail.value
+    def enqueue(v: Int): Boolean = {
+      if (n == capacity) return false
+      val node = new Node(v)
+      if (head == null) head = node
+      else              tail.next = node
+      tail = node
+      n   += 1
+      true
+    }
+    def dequeue: Int = {
+      if (empty) return -1
+      val v = head.value
+      head  = head.next
+      if (head == null) tail = null
+      n -= 1
+      v
+    }
+  }
+
   val q = new Queue(2)
   println(s"${q.enqueue(2)} ${q.back}")
   println(s"${q.enqueue(3)} ${q.front}")
