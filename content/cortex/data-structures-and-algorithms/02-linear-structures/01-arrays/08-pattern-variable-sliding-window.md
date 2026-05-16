@@ -849,72 +849,150 @@ flowchart TB
 
 
 ```pseudocode
-# Kadane's algorithm — sliding-window form. O(n).
-# If the running sum goes negative, restart fresh at the next element.
 function maxSubarraySum(arr):
-    n ← length(arr)
-    if n = 0: return 0
-    current ← arr[0]                              # seed with arr[0] for all-negative inputs
-    maxSum  ← arr[0]
-    end ← 1
-    while end < n:
-        if current < 0:
-            current ← arr[end]                    # negative prefix only hurts — restart
+    if arr is empty: return 0
+
+    # To store the starting index of the subarray
+    start ← 0
+
+    # To store the ending index of the subarray
+    end ← 0
+
+    # Initialize sum to a default value (current sum)
+    sum ← arr[end]
+
+    # To store the maximum subarray sum found so far
+    maxSum ← arr[end]
+
+    # Increment to start from index 1 as index 0 has already been taken
+    end ← end + 1
+
+    # Sliding window
+    while end < length(arr):
+
+        # If the current sum becomes negative, reset the window
+        if sum < 0:
+            sum ← arr[end]
+            start ← end + 1
+
+        # Otherwise, add contribution of arr[end]
         else:
-            current ← current + arr[end]
-        maxSum ← max(maxSum, current)
+            sum ← sum + arr[end]
+
+        # Update the maximum subarray sum found so far
+        maxSum ← max(maxSum, sum)
+
+        # Expand the window from the right
         end ← end + 1
+
     return maxSum
 ```
 
 ```python run
 from typing import List
 
-def max_subarray_sum(arr: List[int]) -> int:
-    n = len(arr)
-    if n == 0:
-        return 0
+class Solution:
+    def max_subarray_sum(self, arr: List[int]) -> int:
+        if not arr:
+            return 0
 
-    # Seed with arr[0] — using 0 would break all-negative inputs like [-3, -1, -2].
-    current = max_sum = arr[0]
-    start = 0
-    end = 1
+        # To store the starting index of the subarray
+        start = 0
 
-    while end < n:
-        if current < 0:
-            # Negative prefix can only hurt — restart fresh at end.
-            current = arr[end]
-            start   = end
-        else:
-            current += arr[end]
-        max_sum = max(max_sum, current)
+        # To store the ending index of the subarray
+        end = 0
+
+        # Initialize sum to a default value (current sum)
+        sum = arr[end]
+
+        # To store the maximum subarray sum found so far
+        max_sum = arr[end]
+
+        # Increment to start from index 1 as index 0 has already been
+        # taken into account
         end += 1
-    return max_sum
+
+        # Sliding window
+        while end < len(arr):
+
+            # If the current sum becomes negative, reset the window
+            if sum < 0:
+                sum = arr[end]
+                start = end + 1
+
+            # Otherwise, add the contribution of arr[end]
+            else:
+                sum += arr[end]
+
+            # Update the maximum subarray sum found so far
+            max_sum = max(max_sum, sum)
+
+            # Expand the window from the right
+            end += 1
+
+        return max_sum
 
 
-print(max_subarray_sum([-2, 1, -3, 4, -1, 2, 1, -5, 4]))   # 6
-print(max_subarray_sum([-3, -1, -2]))                       # -1
-print(max_subarray_sum([1]))                                 # 1
+sol = Solution()
+print(sol.max_subarray_sum([-2, 1, -3, 4, -1, 2, 1, -5, 4]))   # 6
+print(sol.max_subarray_sum([-3, -1, -2]))                       # -1
+print(sol.max_subarray_sum([1]))                                # 1
 ```
 
 ```java run
 public class Main {
-    static int maxSubarraySum(int[] arr) {
-        int n = arr.length;
-        if (n == 0) return 0;
-        int current = arr[0], maxSum = arr[0];
-        for (int end = 1; end < n; end++) {
-            if (current < 0) current = arr[end];
-            else             current += arr[end];
-            if (current > maxSum) maxSum = current;
+    static class Solution {
+        public int maxSubarraySum(int[] arr) {
+            if (arr.length == 0) {
+                return 0;
+            }
+
+            // To store the starting index of the subarray
+            int start = 0;
+
+            // To store the ending index of the subarray
+            int end = 0;
+
+            // Initialize sum to a default value (current sum)
+            int sum = arr[end];
+
+            // To store the maximum subarray sum found so far
+            int maxSum = arr[end];
+
+            // Increment to start from index 1 as index 0 has already been
+            // taken into account
+            end++;
+
+            // Sliding window
+            while (end < arr.length) {
+
+                // If the current sum becomes negative, reset the window
+                if (sum < 0) {
+                    sum = arr[end];
+                    start = end + 1;
+                }
+
+                // Otherwise, add contribution of arr[end]
+                else {
+                    sum += arr[end];
+                }
+
+                // Update the maximum subarray sum found so far
+                maxSum = Math.max(maxSum, sum);
+
+                // Expand the window from the right
+                end++;
+            }
+
+            return maxSum;
         }
-        return maxSum;
     }
 
     public static void main(String[] args) {
-        System.out.println(maxSubarraySum(new int[]{-2, 1, -3, 4, -1, 2, 1, -5, 4}));
-        System.out.println(maxSubarraySum(new int[]{-3, -1, -2}));
-        System.out.println(maxSubarraySum(new int[]{1}));
+        Solution sol = new Solution();
+        System.out.println(sol.maxSubarraySum(new int[]{-2, 1, -3, 4, -1, 2, 1, -5, 4}));  // 6
+        System.out.println(sol.maxSubarraySum(new int[]{-3, -1, -2}));                       // -1
+        System.out.println(sol.maxSubarraySum(new int[]{1}));                                 // 1
     }
 }
 ```
@@ -924,12 +1002,43 @@ public class Main {
 
 int max_subarray_sum(int* arr, int n) {
     if (n == 0) return 0;
-    int current = arr[0], max_sum = arr[0];
-    for (int end = 1; end < n; end++) {
-        if (current < 0) current = arr[end];
-        else             current += arr[end];
-        if (current > max_sum) max_sum = current;
+
+    /* To store the starting index of the subarray */
+    int start = 0;
+
+    /* To store the ending index of the subarray */
+    int end = 0;
+
+    /* Initialize sum to a default value (current sum) */
+    int sum = arr[end];
+
+    /* To store the maximum subarray sum found so far */
+    int max_sum = arr[end];
+
+    /* Increment to start from index 1 as index 0 has already been taken */
+    end++;
+
+    /* Sliding window */
+    while (end < n) {
+
+        /* If the current sum becomes negative, reset the window */
+        if (sum < 0) {
+            sum = arr[end];
+            start = end + 1;
+        }
+
+        /* Otherwise, add contribution of arr[end] */
+        else {
+            sum += arr[end];
+        }
+
+        /* Update the maximum subarray sum found so far */
+        if (sum > max_sum) max_sum = sum;
+
+        /* Expand the window from the right */
+        end++;
     }
+
     return max_sum;
 }
 
@@ -937,29 +1046,63 @@ int main() {
     int a1[] = {-2, 1, -3, 4, -1, 2, 1, -5, 4};
     int a2[] = {-3, -1, -2};
     int a3[] = {1};
-    printf("%d\n", max_subarray_sum(a1, 9));
-    printf("%d\n", max_subarray_sum(a2, 3));
-    printf("%d\n", max_subarray_sum(a3, 1));
+    printf("%d\n", max_subarray_sum(a1, 9));  /*  6 */
+    printf("%d\n", max_subarray_sum(a2, 3));  /* -1 */
+    printf("%d\n", max_subarray_sum(a3, 1));  /*  1 */
     return 0;
 }
 ```
 
 ```scala run
 object Main extends App {
-  def maxSubarraySum(arr: Array[Int]): Int = {
-    if (arr.isEmpty) return 0
-    var current = arr(0)
-    var maxSum = arr(0)
-    for (end <- 1 until arr.length) {
-      current = if (current < 0) arr(end) else current + arr(end)
-      maxSum = math.max(maxSum, current)
+  class Solution {
+    def maxSubarraySum(arr: Array[Int]): Int = {
+      if (arr.isEmpty) return 0
+
+      // To store the starting index of the subarray
+      var start = 0
+
+      // To store the ending index of the subarray
+      var end = 0
+
+      // Initialize sum to a default value (current sum)
+      var sum = arr(end)
+
+      // To store the maximum subarray sum found so far
+      var maxSum = arr(end)
+
+      // Increment to start from index 1 as index 0 has already been
+      // taken into account
+      end += 1
+
+      // Sliding window
+      while (end < arr.length) {
+
+        // If the current sum becomes negative, reset the window
+        if (sum < 0) {
+          sum = arr(end)
+          start = end + 1
+        }
+        // Otherwise, add contribution of arr[end]
+        else {
+          sum += arr(end)
+        }
+
+        // Update the maximum subarray sum found so far
+        maxSum = math.max(maxSum, sum)
+
+        // Expand the window from the right
+        end += 1
+      }
+
+      maxSum
     }
-    maxSum
   }
 
-  println(maxSubarraySum(Array(-2, 1, -3, 4, -1, 2, 1, -5, 4)))
-  println(maxSubarraySum(Array(-3, -1, -2)))
-  println(maxSubarraySum(Array(1)))
+  val sol = new Solution
+  println(sol.maxSubarraySum(Array(-2, 1, -3, 4, -1, 2, 1, -5, 4)))   //  6
+  println(sol.maxSubarraySum(Array(-3, -1, -2)))                       // -1
+  println(sol.maxSubarraySum(Array(1)))                                //  1
 }
 ```
 
