@@ -166,15 +166,27 @@ class Solution:
 ```
 
 ```java run
-class Solution {
-    public ListNode deleteFirstNode(ListNode head) {
-        if (head == null)        return null;          // Case 1: empty
-        if (head.next == null)   return null;          // Case 2: single node
-        ListNode nodeToDelete = head;                  // Save before clobber
-        head        = head.next;                       // Slide forward
-        head.prev   = null;                            // New head has no predecessor
-        nodeToDelete = null;                           // Drop reference for GC
-        return head;
+public class Main {
+    static class ListNode { int val; ListNode prev, next; ListNode(int v){val=v;} }
+
+    static class Solution {
+        public ListNode deleteFirstNode(ListNode head) {
+            if (head == null)        return null;          // Case 1: empty
+            if (head.next == null)   return null;          // Case 2: single node
+            ListNode nodeToDelete = head;                  // Save before clobber
+            head        = head.next;                       // Slide forward
+            head.prev   = null;                            // New head has no predecessor
+            nodeToDelete = null;                           // Drop reference for GC
+            return head;
+        }
+    }
+
+    public static void main(String[] args) {
+        ListNode n1=new ListNode(5),n2=new ListNode(7),n3=new ListNode(3),n4=new ListNode(10);
+        n1.next=n2; n2.prev=n1; n2.next=n3; n3.prev=n2; n3.next=n4; n4.prev=n3;
+        ListNode head = new Solution().deleteFirstNode(n1);
+        for (ListNode c=head;c!=null;c=c.next) System.out.print(c.val+" ");
+        // 7 3 10
     }
 }
 ```
@@ -195,16 +207,25 @@ ListNode* deleteFirstNode(ListNode *head) {
 ```
 
 ```scala run
-class Solution {
-  def deleteFirstNode(head: ListNode): ListNode = {
-    if (head == null)        return null               // Case 1: empty
-    if (head.next == null)   return null               // Case 2: single node
-    var nodeToDelete = head                            // Save before clobber
-    val newHead      = head.next
-    newHead.prev     = null                            // No predecessor
-    nodeToDelete     = null                            // Drop ref
-    newHead
+class ListNode(var v: Int, var prev: ListNode = null, var next: ListNode = null)
+
+object Main extends App {
+  class Solution {
+    def deleteFirstNode(head: ListNode): ListNode = {
+      if (head == null)        return null               // Case 1: empty
+      if (head.next == null)   return null               // Case 2: single node
+      var nodeToDelete = head                            // Save before clobber
+      val newHead      = head.next
+      newHead.prev     = null                            // No predecessor
+      nodeToDelete     = null                            // Drop ref
+      newHead
+    }
   }
+
+  val n1 = new ListNode(5); val n2 = new ListNode(7); val n3 = new ListNode(3); val n4 = new ListNode(10)
+  n1.next = n2; n2.prev = n1; n2.next = n3; n3.prev = n2; n3.next = n4; n4.prev = n3
+  var head = new Solution().deleteFirstNode(n1)
+  while (head != null) { print(s"${head.v} "); head = head.next }  // 7 3 10
 }
 ```
 
@@ -280,13 +301,25 @@ class Solution:
 ```
 
 ```java run
-class Solution {
-    public ListNode deleteFirstNode(ListNode head) {
-        if (head == null)       return null;
-        if (head.next == null)  return null;
-        head      = head.next;
-        head.prev = null;
-        return head;
+public class Main {
+    static class ListNode { int val; ListNode prev, next; ListNode(int v){val=v;} }
+
+    static class Solution {
+        public ListNode deleteFirstNode(ListNode head) {
+            if (head == null)       return null;
+            if (head.next == null)  return null;
+            head      = head.next;
+            head.prev = null;
+            return head;
+        }
+    }
+
+    public static void main(String[] args) {
+        ListNode n1=new ListNode(5),n2=new ListNode(7),n3=new ListNode(3),n4=new ListNode(10);
+        n1.next=n2; n2.prev=n1; n2.next=n3; n3.prev=n2; n3.next=n4; n4.prev=n3;
+        ListNode head = new Solution().deleteFirstNode(n1);
+        for (ListNode c=head;c!=null;c=c.next) System.out.print(c.val+" ");
+        // 7 3 10
     }
 }
 ```
@@ -304,14 +337,23 @@ ListNode* deleteFirstNode(ListNode *head) {
 ```
 
 ```scala run
-class Solution {
-  def deleteFirstNode(head: ListNode): ListNode = {
-    if (head == null)       return null
-    if (head.next == null)  return null
-    val newHead = head.next
-    newHead.prev = null
-    newHead
+class ListNode(var v: Int, var prev: ListNode = null, var next: ListNode = null)
+
+object Main extends App {
+  class Solution {
+    def deleteFirstNode(head: ListNode): ListNode = {
+      if (head == null)       return null
+      if (head.next == null)  return null
+      val newHead = head.next
+      newHead.prev = null
+      newHead
+    }
   }
+
+  val n1 = new ListNode(5); val n2 = new ListNode(7); val n3 = new ListNode(3); val n4 = new ListNode(10)
+  n1.next = n2; n2.prev = n1; n2.next = n3; n3.prev = n2; n3.next = n4; n4.prev = n3
+  var head = new Solution().deleteFirstNode(n1)
+  while (head != null) { print(s"${head.v} "); head = head.next }  // 7 3 10
 }
 ```
 
@@ -472,15 +514,27 @@ class Solution:
 ```
 
 ```java run
-class Solution {
-    public ListNode deleteLastNode(ListNode tail) {
-        if (tail == null)        return null;          // Case 1: empty
-        if (tail.prev == null)   return null;          // Case 2: single node
-        ListNode nodeToDelete = tail;                  // Save before clobber
-        tail        = tail.prev;                       // Slide backward via prev (O(1)!)
-        tail.next   = null;                            // New tail has no successor
-        nodeToDelete = null;
-        return tail;
+public class Main {
+    static class ListNode { int val; ListNode prev, next; ListNode(int v){val=v;} }
+
+    static class Solution {
+        public ListNode deleteLastNode(ListNode tail) {
+            if (tail == null)        return null;          // Case 1: empty
+            if (tail.prev == null)   return null;          // Case 2: single node
+            ListNode nodeToDelete = tail;                  // Save before clobber
+            tail        = tail.prev;                       // Slide backward via prev (O(1)!)
+            tail.next   = null;                            // New tail has no successor
+            nodeToDelete = null;
+            return tail;
+        }
+    }
+
+    public static void main(String[] args) {
+        ListNode n1=new ListNode(5),n2=new ListNode(7),n3=new ListNode(3),n4=new ListNode(10);
+        n1.next=n2; n2.prev=n1; n2.next=n3; n3.prev=n2; n3.next=n4; n4.prev=n3;
+        ListNode newTail = new Solution().deleteLastNode(n4);
+        for (ListNode c=n1;c!=null;c=c.next) System.out.print(c.val+" ");
+        // 5 7 3
     }
 }
 ```
@@ -498,14 +552,23 @@ ListNode* deleteLastNode(ListNode *tail) {
 ```
 
 ```scala run
-class Solution {
-  def deleteLastNode(tail: ListNode): ListNode = {
-    if (tail == null)       return null
-    if (tail.prev == null)  return null
-    val newTail = tail.prev
-    newTail.next = null
-    newTail
+class ListNode(var v: Int, var prev: ListNode = null, var next: ListNode = null)
+
+object Main extends App {
+  class Solution {
+    def deleteLastNode(tail: ListNode): ListNode = {
+      if (tail == null)       return null
+      if (tail.prev == null)  return null
+      val newTail = tail.prev
+      newTail.next = null
+      newTail
+    }
   }
+
+  val n1 = new ListNode(5); val n2 = new ListNode(7); val n3 = new ListNode(3); val n4 = new ListNode(10)
+  n1.next = n2; n2.prev = n1; n2.next = n3; n3.prev = n2; n3.next = n4; n4.prev = n3
+  new Solution().deleteLastNode(n4)
+  var c = n1; while (c != null) { print(s"${c.v} "); c = c.next }  // 5 7 3
 }
 ```
 
@@ -578,13 +641,25 @@ class Solution:
 ```
 
 ```java run
-class Solution {
-    public ListNode deleteLastNode(ListNode tail) {
-        if (tail == null)        return null;
-        if (tail.prev == null)   return null;
-        tail      = tail.prev;
-        tail.next = null;
-        return tail;
+public class Main {
+    static class ListNode { int val; ListNode prev, next; ListNode(int v){val=v;} }
+
+    static class Solution {
+        public ListNode deleteLastNode(ListNode tail) {
+            if (tail == null)        return null;
+            if (tail.prev == null)   return null;
+            tail      = tail.prev;
+            tail.next = null;
+            return tail;
+        }
+    }
+
+    public static void main(String[] args) {
+        ListNode n1=new ListNode(5),n2=new ListNode(7),n3=new ListNode(3),n4=new ListNode(10);
+        n1.next=n2; n2.prev=n1; n2.next=n3; n3.prev=n2; n3.next=n4; n4.prev=n3;
+        new Solution().deleteLastNode(n4);
+        for (ListNode c=n1;c!=null;c=c.next) System.out.print(c.val+" ");
+        // 5 7 3
     }
 }
 ```
@@ -602,14 +677,23 @@ ListNode* deleteLastNode(ListNode *tail) {
 ```
 
 ```scala run
-class Solution {
-  def deleteLastNode(tail: ListNode): ListNode = {
-    if (tail == null)       return null
-    if (tail.prev == null)  return null
-    val newTail = tail.prev
-    newTail.next = null
-    newTail
+class ListNode(var v: Int, var prev: ListNode = null, var next: ListNode = null)
+
+object Main extends App {
+  class Solution {
+    def deleteLastNode(tail: ListNode): ListNode = {
+      if (tail == null)       return null
+      if (tail.prev == null)  return null
+      val newTail = tail.prev
+      newTail.next = null
+      newTail
+    }
   }
+
+  val n1 = new ListNode(5); val n2 = new ListNode(7); val n3 = new ListNode(3); val n4 = new ListNode(10)
+  n1.next = n2; n2.prev = n1; n2.next = n3; n3.prev = n2; n3.next = n4; n4.prev = n3
+  new Solution().deleteLastNode(n4)
+  var c = n1; while (c != null) { print(s"${c.v} "); c = c.next }  // 5 7 3
 }
 ```
 
@@ -820,27 +904,39 @@ class Solution:
 ```
 
 ```java run
-class Solution {
-    public ListNode deleteNodeWithGivenData(ListNode head, int data) {
-        if (head == null) return null;
-        if (head.val == data) {                          // Case 2: head matches
-            ListNode old = head;
-            head = head.next;
-            if (head != null) head.prev = null;
-            old = null;
+public class Main {
+    static class ListNode { int val; ListNode prev, next; ListNode(int v){val=v;} }
+
+    static class Solution {
+        public ListNode deleteNodeWithGivenData(ListNode head, int data) {
+            if (head == null) return null;
+            if (head.val == data) {                          // Case 2: head matches
+                ListNode old = head;
+                head = head.next;
+                if (head != null) head.prev = null;
+                old = null;
+                return head;
+            }
+            ListNode current = head.next;
+            while (current != null && current.val != data) {
+                current = current.next;
+            }
+            if (current == null) return head;                // Case 4: not found
+            current.prev.next = current.next;                // Splice forward
+            if (current.next != null) {                      // Splice backward (guarded)
+                current.next.prev = current.prev;
+            }
+            current = null;
             return head;
         }
-        ListNode current = head.next;
-        while (current != null && current.val != data) {
-            current = current.next;
-        }
-        if (current == null) return head;                // Case 4: not found
-        current.prev.next = current.next;                // Splice forward
-        if (current.next != null) {                      // Splice backward (guarded)
-            current.next.prev = current.prev;
-        }
-        current = null;
-        return head;
+    }
+
+    public static void main(String[] args) {
+        ListNode n1=new ListNode(5),n2=new ListNode(7),n3=new ListNode(3),n4=new ListNode(10);
+        n1.next=n2; n2.prev=n1; n2.next=n3; n3.prev=n2; n3.next=n4; n4.prev=n3;
+        ListNode head = new Solution().deleteNodeWithGivenData(n1, 3);
+        for (ListNode c=head;c!=null;c=c.next) System.out.print(c.val+" ");
+        // 5 7 10
     }
 }
 ```
@@ -870,21 +966,30 @@ ListNode* deleteNodeWithGivenData(ListNode *head, int data) {
 ```
 
 ```scala run
-class Solution {
-  def deleteNodeWithGivenData(head: ListNode, data: Int): ListNode = {
-    if (head == null) return null
-    if (head.v == data) {
-      val newHead = head.next
-      if (newHead != null) newHead.prev = null
-      return newHead
+class ListNode(var v: Int, var prev: ListNode = null, var next: ListNode = null)
+
+object Main extends App {
+  class Solution {
+    def deleteNodeWithGivenData(head: ListNode, data: Int): ListNode = {
+      if (head == null) return null
+      if (head.v == data) {
+        val newHead = head.next
+        if (newHead != null) newHead.prev = null
+        return newHead
+      }
+      var current = head.next
+      while (current != null && current.v != data) current = current.next
+      if (current == null) return head
+      current.prev.next = current.next
+      if (current.next != null) current.next.prev = current.prev
+      head
     }
-    var current = head.next
-    while (current != null && current.v != data) current = current.next
-    if (current == null) return head
-    current.prev.next = current.next
-    if (current.next != null) current.next.prev = current.prev
-    head
   }
+
+  val n1 = new ListNode(5); val n2 = new ListNode(7); val n3 = new ListNode(3); val n4 = new ListNode(10)
+  n1.next = n2; n2.prev = n1; n2.next = n3; n3.prev = n2; n3.next = n4; n4.prev = n3
+  var head = new Solution().deleteNodeWithGivenData(n1, 3)
+  while (head != null) { print(s"${head.v} "); head = head.next }  // 5 7 10
 }
 ```
 
@@ -1007,20 +1112,32 @@ class Solution:
 ```
 
 ```java run
-class Solution {
-    public ListNode deleteNodeWithGivenData(ListNode head, int data) {
-        if (head == null) return null;
-        if (head.val == data) {
-            head = head.next;
-            if (head != null) head.prev = null;
+public class Main {
+    static class ListNode { int val; ListNode prev, next; ListNode(int v){val=v;} }
+
+    static class Solution {
+        public ListNode deleteNodeWithGivenData(ListNode head, int data) {
+            if (head == null) return null;
+            if (head.val == data) {
+                head = head.next;
+                if (head != null) head.prev = null;
+                return head;
+            }
+            ListNode current = head.next;
+            while (current != null && current.val != data) current = current.next;
+            if (current == null) return head;
+            current.prev.next = current.next;
+            if (current.next != null) current.next.prev = current.prev;
             return head;
         }
-        ListNode current = head.next;
-        while (current != null && current.val != data) current = current.next;
-        if (current == null) return head;
-        current.prev.next = current.next;
-        if (current.next != null) current.next.prev = current.prev;
-        return head;
+    }
+
+    public static void main(String[] args) {
+        ListNode n1=new ListNode(5),n2=new ListNode(7),n3=new ListNode(3),n4=new ListNode(10);
+        n1.next=n2; n2.prev=n1; n2.next=n3; n3.prev=n2; n3.next=n4; n4.prev=n3;
+        ListNode head = new Solution().deleteNodeWithGivenData(n1, 3);
+        for (ListNode c=head;c!=null;c=c.next) System.out.print(c.val+" ");
+        // 5 7 10
     }
 }
 ```
@@ -1046,21 +1163,30 @@ ListNode* deleteNodeWithGivenData(ListNode *head, int data) {
 ```
 
 ```scala run
-class Solution {
-  def deleteNodeWithGivenData(head: ListNode, data: Int): ListNode = {
-    if (head == null) return null
-    if (head.v == data) {
-      val newHead = head.next
-      if (newHead != null) newHead.prev = null
-      return newHead
+class ListNode(var v: Int, var prev: ListNode = null, var next: ListNode = null)
+
+object Main extends App {
+  class Solution {
+    def deleteNodeWithGivenData(head: ListNode, data: Int): ListNode = {
+      if (head == null) return null
+      if (head.v == data) {
+        val newHead = head.next
+        if (newHead != null) newHead.prev = null
+        return newHead
+      }
+      var current = head.next
+      while (current != null && current.v != data) current = current.next
+      if (current == null) return head
+      current.prev.next = current.next
+      if (current.next != null) current.next.prev = current.prev
+      head
     }
-    var current = head.next
-    while (current != null && current.v != data) current = current.next
-    if (current == null) return head
-    current.prev.next = current.next
-    if (current.next != null) current.next.prev = current.prev
-    head
   }
+
+  val n1 = new ListNode(5); val n2 = new ListNode(7); val n3 = new ListNode(3); val n4 = new ListNode(10)
+  n1.next = n2; n2.prev = n1; n2.next = n3; n3.prev = n2; n3.next = n4; n4.prev = n3
+  var head = new Solution().deleteNodeWithGivenData(n1, 3)
+  while (head != null) { print(s"${head.v} "); head = head.next }  // 5 7 10
 }
 ```
 
@@ -1147,25 +1273,37 @@ class Solution:
 ```
 
 ```java run
-class Solution {
-    public ListNode deleteNodesWithGivenData(ListNode head, int data) {
-        while (head != null && head.val == data) {
-            head = head.next;
-            if (head != null) head.prev = null;
-        }
-        if (head == null) return null;
-        ListNode previous = head;
-        ListNode current  = head.next;
-        while (current != null) {
-            while (current != null && current.val == data) current = current.next;
-            previous.next = current;
-            if (current != null) {
-                current.prev = previous;
-                previous = current;
-                current  = current.next;
+public class Main {
+    static class ListNode { int val; ListNode prev, next; ListNode(int v){val=v;} }
+
+    static class Solution {
+        public ListNode deleteNodesWithGivenData(ListNode head, int data) {
+            while (head != null && head.val == data) {
+                head = head.next;
+                if (head != null) head.prev = null;
             }
+            if (head == null) return null;
+            ListNode previous = head;
+            ListNode current  = head.next;
+            while (current != null) {
+                while (current != null && current.val == data) current = current.next;
+                previous.next = current;
+                if (current != null) {
+                    current.prev = previous;
+                    previous = current;
+                    current  = current.next;
+                }
+            }
+            return head;
         }
-        return head;
+    }
+
+    public static void main(String[] args) {
+        ListNode n1=new ListNode(5),n2=new ListNode(7),n3=new ListNode(3),n4=new ListNode(10),n5=new ListNode(3);
+        n1.next=n2; n2.prev=n1; n2.next=n3; n3.prev=n2; n3.next=n4; n4.prev=n3; n4.next=n5; n5.prev=n4;
+        ListNode head = new Solution().deleteNodesWithGivenData(n1, 3);
+        for (ListNode c=head;c!=null;c=c.next) System.out.print(c.val+" ");
+        // 5 7 10
     }
 }
 ```
@@ -1199,27 +1337,36 @@ ListNode* deleteNodesWithGivenData(ListNode *head, int data) {
 ```
 
 ```scala run
-class Solution {
-  def deleteNodesWithGivenData(head: ListNode, data: Int): ListNode = {
-    var h = head
-    while (h != null && h.v == data) {
-      h = h.next
-      if (h != null) h.prev = null
-    }
-    if (h == null) return null
-    var previous = h
-    var current  = h.next
-    while (current != null) {
-      while (current != null && current.v == data) current = current.next
-      previous.next = current
-      if (current != null) {
-        current.prev = previous
-        previous = current
-        current  = current.next
+class ListNode(var v: Int, var prev: ListNode = null, var next: ListNode = null)
+
+object Main extends App {
+  class Solution {
+    def deleteNodesWithGivenData(head: ListNode, data: Int): ListNode = {
+      var h = head
+      while (h != null && h.v == data) {
+        h = h.next
+        if (h != null) h.prev = null
       }
+      if (h == null) return null
+      var previous = h
+      var current  = h.next
+      while (current != null) {
+        while (current != null && current.v == data) current = current.next
+        previous.next = current
+        if (current != null) {
+          current.prev = previous
+          previous = current
+          current  = current.next
+        }
+      }
+      h
     }
-    h
   }
+
+  val n1 = new ListNode(5); val n2 = new ListNode(7); val n3 = new ListNode(3); val n4 = new ListNode(10); val n5 = new ListNode(3)
+  n1.next = n2; n2.prev = n1; n2.next = n3; n3.prev = n2; n3.next = n4; n4.prev = n3; n4.next = n5; n5.prev = n4
+  var head = new Solution().deleteNodesWithGivenData(n1, 3)
+  while (head != null) { print(s"${head.v} "); head = head.next }  // 5 7 10
 }
 ```
 
@@ -1373,17 +1520,29 @@ class Solution:
 ```
 
 ```java run
-class Solution {
-    public ListNode deleteNodeAfterTheGivenNode(ListNode head, ListNode node) {
-        if (head == null) return null;
-        if (node == null || node.next == null) return head;     // Cases 1 & 2
-        ListNode target = node.next;                            // Save before clobber
-        node.next = target.next;                                // Reroute past target
-        if (target.next != null) {                              // Mirror (guarded)
-            target.next.prev = node;
+public class Main {
+    static class ListNode { int val; ListNode prev, next; ListNode(int v){val=v;} }
+
+    static class Solution {
+        public ListNode deleteNodeAfterTheGivenNode(ListNode head, ListNode node) {
+            if (head == null) return null;
+            if (node == null || node.next == null) return head;     // Cases 1 & 2
+            ListNode target = node.next;                            // Save before clobber
+            node.next = target.next;                                // Reroute past target
+            if (target.next != null) {                              // Mirror (guarded)
+                target.next.prev = node;
+            }
+            target = null;
+            return head;
         }
-        target = null;
-        return head;
+    }
+
+    public static void main(String[] args) {
+        ListNode n1=new ListNode(5),n2=new ListNode(7),n3=new ListNode(3),n4=new ListNode(10);
+        n1.next=n2; n2.prev=n1; n2.next=n3; n3.prev=n2; n3.next=n4; n4.prev=n3;
+        ListNode head = new Solution().deleteNodeAfterTheGivenNode(n1, n2);
+        for (ListNode c=head;c!=null;c=c.next) System.out.print(c.val+" ");
+        // 5 7 10
     }
 }
 ```
@@ -1401,15 +1560,24 @@ ListNode* deleteNodeAfterTheGivenNode(ListNode *head, ListNode *node) {
 ```
 
 ```scala run
-class Solution {
-  def deleteNodeAfterTheGivenNode(head: ListNode, node: ListNode): ListNode = {
-    if (head == null) return null
-    if (node == null || node.next == null) return head
-    val target = node.next
-    node.next = target.next
-    if (target.next != null) target.next.prev = node
-    head
+class ListNode(var v: Int, var prev: ListNode = null, var next: ListNode = null)
+
+object Main extends App {
+  class Solution {
+    def deleteNodeAfterTheGivenNode(head: ListNode, node: ListNode): ListNode = {
+      if (head == null) return null
+      if (node == null || node.next == null) return head
+      val target = node.next
+      node.next = target.next
+      if (target.next != null) target.next.prev = node
+      head
+    }
   }
+
+  val n1 = new ListNode(5); val n2 = new ListNode(7); val n3 = new ListNode(3); val n4 = new ListNode(10)
+  n1.next = n2; n2.prev = n1; n2.next = n3; n3.prev = n2; n3.next = n4; n4.prev = n3
+  var head = new Solution().deleteNodeAfterTheGivenNode(n1, n2)
+  while (head != null) { print(s"${head.v} "); head = head.next }  // 5 7 10
 }
 ```
 
@@ -1487,14 +1655,26 @@ class Solution:
 ```
 
 ```java run
-class Solution {
-    public ListNode deleteNodeAfterTheGivenNode(ListNode head, ListNode node) {
-        if (head == null) return null;
-        if (node == null || node.next == null) return head;
-        ListNode target = node.next;
-        node.next = target.next;
-        if (target.next != null) target.next.prev = node;
-        return head;
+public class Main {
+    static class ListNode { int val; ListNode prev, next; ListNode(int v){val=v;} }
+
+    static class Solution {
+        public ListNode deleteNodeAfterTheGivenNode(ListNode head, ListNode node) {
+            if (head == null) return null;
+            if (node == null || node.next == null) return head;
+            ListNode target = node.next;
+            node.next = target.next;
+            if (target.next != null) target.next.prev = node;
+            return head;
+        }
+    }
+
+    public static void main(String[] args) {
+        ListNode n1=new ListNode(5),n2=new ListNode(7),n3=new ListNode(3),n4=new ListNode(10);
+        n1.next=n2; n2.prev=n1; n2.next=n3; n3.prev=n2; n3.next=n4; n4.prev=n3;
+        ListNode head = new Solution().deleteNodeAfterTheGivenNode(n1, n2);
+        for (ListNode c=head;c!=null;c=c.next) System.out.print(c.val+" ");
+        // 5 7 10
     }
 }
 ```
@@ -1512,15 +1692,24 @@ ListNode* deleteNodeAfterTheGivenNode(ListNode *head, ListNode *node) {
 ```
 
 ```scala run
-class Solution {
-  def deleteNodeAfterTheGivenNode(head: ListNode, node: ListNode): ListNode = {
-    if (head == null) return null
-    if (node == null || node.next == null) return head
-    val target = node.next
-    node.next = target.next
-    if (target.next != null) target.next.prev = node
-    head
+class ListNode(var v: Int, var prev: ListNode = null, var next: ListNode = null)
+
+object Main extends App {
+  class Solution {
+    def deleteNodeAfterTheGivenNode(head: ListNode, node: ListNode): ListNode = {
+      if (head == null) return null
+      if (node == null || node.next == null) return head
+      val target = node.next
+      node.next = target.next
+      if (target.next != null) target.next.prev = node
+      head
+    }
   }
+
+  val n1 = new ListNode(5); val n2 = new ListNode(7); val n3 = new ListNode(3); val n4 = new ListNode(10)
+  n1.next = n2; n2.prev = n1; n2.next = n3; n3.prev = n2; n3.next = n4; n4.prev = n3
+  var head = new Solution().deleteNodeAfterTheGivenNode(n1, n2)
+  while (head != null) { print(s"${head.v} "); head = head.next }  // 5 7 10
 }
 ```
 
@@ -1720,22 +1909,34 @@ class Solution:
 ```
 
 ```java run
-class Solution {
-    public ListNode deleteNodeBeforeTheGivenNode(ListNode head, ListNode node) {
-        if (head == null || node == null) return head;
-        if (node == head) return head;                          // Case 2
-        if (head.next == node) {                                // Case 3: given is second
-            ListNode old = head;
-            head      = head.next;
-            head.prev = null;
-            old = null;
+public class Main {
+    static class ListNode { int val; ListNode prev, next; ListNode(int v){val=v;} }
+
+    static class Solution {
+        public ListNode deleteNodeBeforeTheGivenNode(ListNode head, ListNode node) {
+            if (head == null || node == null) return head;
+            if (node == head) return head;                          // Case 2
+            if (head.next == node) {                                // Case 3: given is second
+                ListNode old = head;
+                head      = head.next;
+                head.prev = null;
+                old = null;
+                return head;
+            }
+            ListNode target = node.prev;                            // Case 4
+            node.prev = target.prev;
+            if (target.prev != null) target.prev.next = node;
+            target = null;
             return head;
         }
-        ListNode target = node.prev;                            // Case 4
-        node.prev = target.prev;
-        if (target.prev != null) target.prev.next = node;
-        target = null;
-        return head;
+    }
+
+    public static void main(String[] args) {
+        ListNode n1=new ListNode(5),n2=new ListNode(7),n3=new ListNode(3),n4=new ListNode(10);
+        n1.next=n2; n2.prev=n1; n2.next=n3; n3.prev=n2; n3.next=n4; n4.prev=n3;
+        ListNode head = new Solution().deleteNodeBeforeTheGivenNode(n1, n3);
+        for (ListNode c=head;c!=null;c=c.next) System.out.print(c.val+" ");
+        // 5 3 10
     }
 }
 ```
@@ -1760,20 +1961,29 @@ ListNode* deleteNodeBeforeTheGivenNode(ListNode *head, ListNode *node) {
 ```
 
 ```scala run
-class Solution {
-  def deleteNodeBeforeTheGivenNode(head: ListNode, node: ListNode): ListNode = {
-    if (head == null || node == null) return head
-    if (node eq head) return head
-    if (head.next eq node) {
-      val newHead = head.next
-      newHead.prev = null
-      return newHead
+class ListNode(var v: Int, var prev: ListNode = null, var next: ListNode = null)
+
+object Main extends App {
+  class Solution {
+    def deleteNodeBeforeTheGivenNode(head: ListNode, node: ListNode): ListNode = {
+      if (head == null || node == null) return head
+      if (node eq head) return head
+      if (head.next eq node) {
+        val newHead = head.next
+        newHead.prev = null
+        return newHead
+      }
+      val target = node.prev
+      node.prev = target.prev
+      if (target.prev != null) target.prev.next = node
+      head
     }
-    val target = node.prev
-    node.prev = target.prev
-    if (target.prev != null) target.prev.next = node
-    head
   }
+
+  val n1 = new ListNode(5); val n2 = new ListNode(7); val n3 = new ListNode(3); val n4 = new ListNode(10)
+  n1.next = n2; n2.prev = n1; n2.next = n3; n3.prev = n2; n3.next = n4; n4.prev = n3
+  var head = new Solution().deleteNodeBeforeTheGivenNode(n1, n3)
+  while (head != null) { print(s"${head.v} "); head = head.next }  // 5 3 10
 }
 ```
 
@@ -1865,19 +2075,31 @@ class Solution:
 ```
 
 ```java run
-class Solution {
-    public ListNode deleteNodeBeforeTheGivenNode(ListNode head, ListNode node) {
-        if (head == null || node == null) return head;
-        if (node == head) return head;
-        if (head.next == node) {
-            head      = head.next;
-            head.prev = null;
+public class Main {
+    static class ListNode { int val; ListNode prev, next; ListNode(int v){val=v;} }
+
+    static class Solution {
+        public ListNode deleteNodeBeforeTheGivenNode(ListNode head, ListNode node) {
+            if (head == null || node == null) return head;
+            if (node == head) return head;
+            if (head.next == node) {
+                head      = head.next;
+                head.prev = null;
+                return head;
+            }
+            ListNode target = node.prev;
+            node.prev = target.prev;
+            if (target.prev != null) target.prev.next = node;
             return head;
         }
-        ListNode target = node.prev;
-        node.prev = target.prev;
-        if (target.prev != null) target.prev.next = node;
-        return head;
+    }
+
+    public static void main(String[] args) {
+        ListNode n1=new ListNode(5),n2=new ListNode(7),n3=new ListNode(3),n4=new ListNode(10);
+        n1.next=n2; n2.prev=n1; n2.next=n3; n3.prev=n2; n3.next=n4; n4.prev=n3;
+        ListNode head = new Solution().deleteNodeBeforeTheGivenNode(n1, n3);
+        for (ListNode c=head;c!=null;c=c.next) System.out.print(c.val+" ");
+        // 5 3 10
     }
 }
 ```
@@ -1902,20 +2124,29 @@ ListNode* deleteNodeBeforeTheGivenNode(ListNode *head, ListNode *node) {
 ```
 
 ```scala run
-class Solution {
-  def deleteNodeBeforeTheGivenNode(head: ListNode, node: ListNode): ListNode = {
-    if (head == null || node == null) return head
-    if (node eq head) return head
-    if (head.next eq node) {
-      val newHead = head.next
-      newHead.prev = null
-      return newHead
+class ListNode(var v: Int, var prev: ListNode = null, var next: ListNode = null)
+
+object Main extends App {
+  class Solution {
+    def deleteNodeBeforeTheGivenNode(head: ListNode, node: ListNode): ListNode = {
+      if (head == null || node == null) return head
+      if (node eq head) return head
+      if (head.next eq node) {
+        val newHead = head.next
+        newHead.prev = null
+        return newHead
+      }
+      val target = node.prev
+      node.prev = target.prev
+      if (target.prev != null) target.prev.next = node
+      head
     }
-    val target = node.prev
-    node.prev = target.prev
-    if (target.prev != null) target.prev.next = node
-    head
   }
+
+  val n1 = new ListNode(5); val n2 = new ListNode(7); val n3 = new ListNode(3); val n4 = new ListNode(10)
+  n1.next = n2; n2.prev = n1; n2.next = n3; n3.prev = n2; n3.next = n4; n4.prev = n3
+  var head = new Solution().deleteNodeBeforeTheGivenNode(n1, n3)
+  while (head != null) { print(s"${head.v} "); head = head.next }  // 5 3 10
 }
 ```
 
@@ -2085,19 +2316,31 @@ class Solution:
 ```
 
 ```java run
-class Solution {
-    public ListNode deleteTheGivenNode(ListNode head, ListNode node) {
-        if (head == null || node == null) return head;
-        if (node == head) {                                    // Case 2
-            head = head.next;
-            if (head != null) head.prev = null;
+public class Main {
+    static class ListNode { int val; ListNode prev, next; ListNode(int v){val=v;} }
+
+    static class Solution {
+        public ListNode deleteTheGivenNode(ListNode head, ListNode node) {
+            if (head == null || node == null) return head;
+            if (node == head) {                                    // Case 2
+                head = head.next;
+                if (head != null) head.prev = null;
+                return head;
+            }
+            // Case 3: O(1) splice
+            if (node.prev != null) node.prev.next = node.next;
+            if (node.next != null) node.next.prev = node.prev;
+            node = null;
             return head;
         }
-        // Case 3: O(1) splice
-        if (node.prev != null) node.prev.next = node.next;
-        if (node.next != null) node.next.prev = node.prev;
-        node = null;
-        return head;
+    }
+
+    public static void main(String[] args) {
+        ListNode n1=new ListNode(5),n2=new ListNode(7),n3=new ListNode(3),n4=new ListNode(10);
+        n1.next=n2; n2.prev=n1; n2.next=n3; n3.prev=n2; n3.next=n4; n4.prev=n3;
+        ListNode head = new Solution().deleteTheGivenNode(n1, n2);
+        for (ListNode c=head;c!=null;c=c.next) System.out.print(c.val+" ");
+        // 5 3 10
     }
 }
 ```
@@ -2120,18 +2363,27 @@ ListNode* deleteTheGivenNode(ListNode *head, ListNode *node) {
 ```
 
 ```scala run
-class Solution {
-  def deleteTheGivenNode(head: ListNode, node: ListNode): ListNode = {
-    if (head == null || node == null) return head
-    if (node eq head) {
-      val newHead = head.next
-      if (newHead != null) newHead.prev = null
-      return newHead
+class ListNode(var v: Int, var prev: ListNode = null, var next: ListNode = null)
+
+object Main extends App {
+  class Solution {
+    def deleteTheGivenNode(head: ListNode, node: ListNode): ListNode = {
+      if (head == null || node == null) return head
+      if (node eq head) {
+        val newHead = head.next
+        if (newHead != null) newHead.prev = null
+        return newHead
+      }
+      if (node.prev != null) node.prev.next = node.next
+      if (node.next != null) node.next.prev = node.prev
+      head
     }
-    if (node.prev != null) node.prev.next = node.next
-    if (node.next != null) node.next.prev = node.prev
-    head
   }
+
+  val n1 = new ListNode(5); val n2 = new ListNode(7); val n3 = new ListNode(3); val n4 = new ListNode(10)
+  n1.next = n2; n2.prev = n1; n2.next = n3; n3.prev = n2; n3.next = n4; n4.prev = n3
+  var head = new Solution().deleteTheGivenNode(n1, n2)
+  while (head != null) { print(s"${head.v} "); head = head.next }  // 5 3 10
 }
 ```
 
@@ -2216,17 +2468,29 @@ class Solution:
 ```
 
 ```java run
-class Solution {
-    public ListNode deleteTheGivenNode(ListNode head, ListNode node) {
-        if (head == null || node == null) return head;
-        if (node == head) {
-            head = head.next;
-            if (head != null) head.prev = null;
+public class Main {
+    static class ListNode { int val; ListNode prev, next; ListNode(int v){val=v;} }
+
+    static class Solution {
+        public ListNode deleteTheGivenNode(ListNode head, ListNode node) {
+            if (head == null || node == null) return head;
+            if (node == head) {
+                head = head.next;
+                if (head != null) head.prev = null;
+                return head;
+            }
+            if (node.prev != null) node.prev.next = node.next;
+            if (node.next != null) node.next.prev = node.prev;
             return head;
         }
-        if (node.prev != null) node.prev.next = node.next;
-        if (node.next != null) node.next.prev = node.prev;
-        return head;
+    }
+
+    public static void main(String[] args) {
+        ListNode n1=new ListNode(5),n2=new ListNode(7),n3=new ListNode(3),n4=new ListNode(10);
+        n1.next=n2; n2.prev=n1; n2.next=n3; n3.prev=n2; n3.next=n4; n4.prev=n3;
+        ListNode head = new Solution().deleteTheGivenNode(n1, n2);
+        for (ListNode c=head;c!=null;c=c.next) System.out.print(c.val+" ");
+        // 5 3 10
     }
 }
 ```
@@ -2248,18 +2512,27 @@ ListNode* deleteTheGivenNode(ListNode *head, ListNode *node) {
 ```
 
 ```scala run
-class Solution {
-  def deleteTheGivenNode(head: ListNode, node: ListNode): ListNode = {
-    if (head == null || node == null) return head
-    if (node eq head) {
-      val newHead = head.next
-      if (newHead != null) newHead.prev = null
-      return newHead
+class ListNode(var v: Int, var prev: ListNode = null, var next: ListNode = null)
+
+object Main extends App {
+  class Solution {
+    def deleteTheGivenNode(head: ListNode, node: ListNode): ListNode = {
+      if (head == null || node == null) return head
+      if (node eq head) {
+        val newHead = head.next
+        if (newHead != null) newHead.prev = null
+        return newHead
+      }
+      if (node.prev != null) node.prev.next = node.next
+      if (node.next != null) node.next.prev = node.prev
+      head
     }
-    if (node.prev != null) node.prev.next = node.next
-    if (node.next != null) node.next.prev = node.prev
-    head
   }
+
+  val n1 = new ListNode(5); val n2 = new ListNode(7); val n3 = new ListNode(3); val n4 = new ListNode(10)
+  n1.next = n2; n2.prev = n1; n2.next = n3; n3.prev = n2; n3.next = n4; n4.prev = n3
+  var head = new Solution().deleteTheGivenNode(n1, n2)
+  while (head != null) { print(s"${head.v} "); head = head.next }  // 5 3 10
 }
 ```
 
@@ -2463,25 +2736,37 @@ class Solution:
 ```
 
 ```java run
-class Solution {
-    public ListNode deleteNodeAtGivenDistance(ListNode head, int X) {
-        if (head == null) return null;
-        if (X == 0) {
-            head = head.next;
-            if (head != null) head.prev = null;
+public class Main {
+    static class ListNode { int val; ListNode prev, next; ListNode(int v){val=v;} }
+
+    static class Solution {
+        public ListNode deleteNodeAtGivenDistance(ListNode head, int X) {
+            if (head == null) return null;
+            if (X == 0) {
+                head = head.next;
+                if (head != null) head.prev = null;
+                return head;
+            }
+            ListNode current = head;
+            int counter = 0;
+            while (current != null && counter < X) {
+                current = current.next;
+                counter++;
+            }
+            if (current == null) return head;
+            if (current.prev != null) current.prev.next = current.next;
+            if (current.next != null) current.next.prev = current.prev;
+            current = null;
             return head;
         }
-        ListNode current = head;
-        int counter = 0;
-        while (current != null && counter < X) {
-            current = current.next;
-            counter++;
-        }
-        if (current == null) return head;
-        if (current.prev != null) current.prev.next = current.next;
-        if (current.next != null) current.next.prev = current.prev;
-        current = null;
-        return head;
+    }
+
+    public static void main(String[] args) {
+        ListNode n1=new ListNode(5),n2=new ListNode(7),n3=new ListNode(3),n4=new ListNode(10);
+        n1.next=n2; n2.prev=n1; n2.next=n3; n3.prev=n2; n3.next=n4; n4.prev=n3;
+        ListNode head = new Solution().deleteNodeAtGivenDistance(n1, 1);
+        for (ListNode c=head;c!=null;c=c.next) System.out.print(c.val+" ");
+        // 5 3 10
     }
 }
 ```
@@ -2511,25 +2796,34 @@ ListNode* deleteNodeAtGivenDistance(ListNode *head, int X) {
 ```
 
 ```scala run
-class Solution {
-  def deleteNodeAtGivenDistance(head: ListNode, X: Int): ListNode = {
-    if (head == null) return null
-    if (X == 0) {
-      val newHead = head.next
-      if (newHead != null) newHead.prev = null
-      return newHead
+class ListNode(var v: Int, var prev: ListNode = null, var next: ListNode = null)
+
+object Main extends App {
+  class Solution {
+    def deleteNodeAtGivenDistance(head: ListNode, X: Int): ListNode = {
+      if (head == null) return null
+      if (X == 0) {
+        val newHead = head.next
+        if (newHead != null) newHead.prev = null
+        return newHead
+      }
+      var current = head
+      var counter = 0
+      while (current != null && counter < X) {
+        current = current.next
+        counter += 1
+      }
+      if (current == null) return head
+      if (current.prev != null) current.prev.next = current.next
+      if (current.next != null) current.next.prev = current.prev
+      head
     }
-    var current = head
-    var counter = 0
-    while (current != null && counter < X) {
-      current = current.next
-      counter += 1
-    }
-    if (current == null) return head
-    if (current.prev != null) current.prev.next = current.next
-    if (current.next != null) current.next.prev = current.prev
-    head
   }
+
+  val n1 = new ListNode(5); val n2 = new ListNode(7); val n3 = new ListNode(3); val n4 = new ListNode(10)
+  n1.next = n2; n2.prev = n1; n2.next = n3; n3.prev = n2; n3.next = n4; n4.prev = n3
+  var head = new Solution().deleteNodeAtGivenDistance(n1, 1)
+  while (head != null) { print(s"${head.v} "); head = head.next }  // 5 3 10
 }
 ```
 
@@ -2649,21 +2943,33 @@ class Solution:
 ```
 
 ```java run
-class Solution {
-    public ListNode deleteNodeAtGivenDistance(ListNode head, int X) {
-        if (head == null) return null;
-        if (X == 0) {
-            head = head.next;
-            if (head != null) head.prev = null;
+public class Main {
+    static class ListNode { int val; ListNode prev, next; ListNode(int v){val=v;} }
+
+    static class Solution {
+        public ListNode deleteNodeAtGivenDistance(ListNode head, int X) {
+            if (head == null) return null;
+            if (X == 0) {
+                head = head.next;
+                if (head != null) head.prev = null;
+                return head;
+            }
+            ListNode current = head;
+            int counter = 0;
+            while (current != null && counter < X) { current = current.next; counter++; }
+            if (current == null) return head;
+            if (current.prev != null) current.prev.next = current.next;
+            if (current.next != null) current.next.prev = current.prev;
             return head;
         }
-        ListNode current = head;
-        int counter = 0;
-        while (current != null && counter < X) { current = current.next; counter++; }
-        if (current == null) return head;
-        if (current.prev != null) current.prev.next = current.next;
-        if (current.next != null) current.next.prev = current.prev;
-        return head;
+    }
+
+    public static void main(String[] args) {
+        ListNode n1=new ListNode(5),n2=new ListNode(7),n3=new ListNode(3),n4=new ListNode(10);
+        n1.next=n2; n2.prev=n1; n2.next=n3; n3.prev=n2; n3.next=n4; n4.prev=n3;
+        ListNode head = new Solution().deleteNodeAtGivenDistance(n1, 1);
+        for (ListNode c=head;c!=null;c=c.next) System.out.print(c.val+" ");
+        // 5 3 10
     }
 }
 ```
@@ -2690,22 +2996,31 @@ ListNode* deleteNodeAtGivenDistance(ListNode *head, int X) {
 ```
 
 ```scala run
-class Solution {
-  def deleteNodeAtGivenDistance(head: ListNode, X: Int): ListNode = {
-    if (head == null) return null
-    if (X == 0) {
-      val newHead = head.next
-      if (newHead != null) newHead.prev = null
-      return newHead
+class ListNode(var v: Int, var prev: ListNode = null, var next: ListNode = null)
+
+object Main extends App {
+  class Solution {
+    def deleteNodeAtGivenDistance(head: ListNode, X: Int): ListNode = {
+      if (head == null) return null
+      if (X == 0) {
+        val newHead = head.next
+        if (newHead != null) newHead.prev = null
+        return newHead
+      }
+      var current = head
+      var counter = 0
+      while (current != null && counter < X) { current = current.next; counter += 1 }
+      if (current == null) return head
+      if (current.prev != null) current.prev.next = current.next
+      if (current.next != null) current.next.prev = current.prev
+      head
     }
-    var current = head
-    var counter = 0
-    while (current != null && counter < X) { current = current.next; counter += 1 }
-    if (current == null) return head
-    if (current.prev != null) current.prev.next = current.next
-    if (current.next != null) current.next.prev = current.prev
-    head
   }
+
+  val n1 = new ListNode(5); val n2 = new ListNode(7); val n3 = new ListNode(3); val n4 = new ListNode(10)
+  n1.next = n2; n2.prev = n1; n2.next = n3; n3.prev = n2; n3.next = n4; n4.prev = n3
+  var head = new Solution().deleteNodeAtGivenDistance(n1, 1)
+  while (head != null) { print(s"${head.v} "); head = head.next }  // 5 3 10
 }
 ```
 
