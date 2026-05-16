@@ -152,18 +152,29 @@ void all_helper(TreeNode *n) {
 ```
 
 ```scala run
-def allRootToLeafPaths(root: TreeNode): List[List[Int]] = {
-  val path = scala.collection.mutable.ListBuffer[Int]()
-  val out  = scala.collection.mutable.ListBuffer[List[Int]]()
-  def go(n: TreeNode): Unit = {
-    if (n == null) return
-    path += n.value
-    if (n.left == null && n.right == null) out += path.toList
-    else { go(n.left); go(n.right) }
-    path.remove(path.length - 1)
+class TreeNode(var value: Int, var left: TreeNode = null, var right: TreeNode = null)
+
+object Main extends App {
+  class Solution {
+    def allRootToLeafPaths(root: TreeNode): List[List[Int]] = {
+      val path = scala.collection.mutable.ListBuffer[Int]()
+      val out  = scala.collection.mutable.ListBuffer[List[Int]]()
+      def go(n: TreeNode): Unit = {
+        if (n == null) return
+        path += n.value
+        if (n.left == null && n.right == null) out += path.toList
+        else { go(n.left); go(n.right) }
+        path.remove(path.length - 1)
+      }
+      go(root)
+      out.toList
+    }
   }
-  go(root)
-  out.toList
+
+  val root = new TreeNode(1,
+    new TreeNode(2, new TreeNode(4), null),
+    new TreeNode(3, null, new TreeNode(7)))
+  println(new Solution().allRootToLeafPaths(root))  // List(List(1, 2, 4), List(1, 3, 7))
 }
 ```
 
@@ -274,19 +285,28 @@ void rtlp_helper(TreeNode *n, int remaining) {
 ```
 
 ```scala run
-def rootToLeafPaths(root: TreeNode, target: Int): List[List[Int]] = {
-  val path = scala.collection.mutable.ListBuffer[Int]()
-  val out  = scala.collection.mutable.ListBuffer[List[Int]]()
-  def go(n: TreeNode, remaining: Int): Unit = {
-    if (n == null) return
-    path += n.value
-    val rem = remaining - n.value
-    if (n.left == null && n.right == null) {
-      if (rem == 0) out += path.toList
-    } else { go(n.left, rem); go(n.right, rem) }
-    path.remove(path.length - 1)
+class TreeNode(var value: Int, var left: TreeNode = null, var right: TreeNode = null)
+
+object Main extends App {
+  class Solution {
+    def rootToLeafPaths(root: TreeNode, target: Int): List[List[Int]] = {
+      val path = scala.collection.mutable.ListBuffer[Int]()
+      val out  = scala.collection.mutable.ListBuffer[List[Int]]()
+      def go(n: TreeNode, remaining: Int): Unit = {
+        if (n == null) return
+        path += n.value
+        val rem = remaining - n.value
+        if (n.left == null && n.right == null) {
+          if (rem == 0) out += path.toList
+        } else { go(n.left, rem); go(n.right, rem) }
+        path.remove(path.length - 1)
+      }
+      go(root, target); out.toList
+    }
   }
-  go(root, target); out.toList
+
+  val root = new TreeNode(1, new TreeNode(2), new TreeNode(3))
+  println(new Solution().rootToLeafPaths(root, 4))  // List(List(1, 3))
 }
 ```
 
@@ -371,19 +391,28 @@ void ep_helper(TreeNode *n, int even, int odd) {
 ```
 
 ```scala run
-def equalPaths(root: TreeNode): List[List[Int]] = {
-  val path = scala.collection.mutable.ListBuffer[Int]()
-  val out  = scala.collection.mutable.ListBuffer[List[Int]]()
-  def go(n: TreeNode, even: Int, odd: Int): Unit = {
-    if (n == null) return
-    path += n.value
-    val (e, o) = if (n.value % 2 == 0) (even + 1, odd) else (even, odd + 1)
-    if (n.left == null && n.right == null) {
-      if (e == o) out += path.toList
-    } else { go(n.left, e, o); go(n.right, e, o) }
-    path.remove(path.length - 1)
+class TreeNode(var value: Int, var left: TreeNode = null, var right: TreeNode = null)
+
+object Main extends App {
+  class Solution {
+    def equalPaths(root: TreeNode): List[List[Int]] = {
+      val path = scala.collection.mutable.ListBuffer[Int]()
+      val out  = scala.collection.mutable.ListBuffer[List[Int]]()
+      def go(n: TreeNode, even: Int, odd: Int): Unit = {
+        if (n == null) return
+        path += n.value
+        val (e, o) = if (n.value % 2 == 0) (even + 1, odd) else (even, odd + 1)
+        if (n.left == null && n.right == null) {
+          if (e == o) out += path.toList
+        } else { go(n.left, e, o); go(n.right, e, o) }
+        path.remove(path.length - 1)
+      }
+      go(root, 0, 0); out.toList
+    }
   }
-  go(root, 0, 0); out.toList
+
+  val root = new TreeNode(1, new TreeNode(2), new TreeNode(3))
+  println(new Solution().equalPaths(root))  // List(List(1, 2))
 }
 ```
 
@@ -462,21 +491,32 @@ public static List<List<Integer>> duplicatePaths(TreeNode root) {
 ```
 
 ```scala run
-def duplicatePaths(root: TreeNode): List[List[Int]] = {
-  val path = scala.collection.mutable.ListBuffer[Int]()
-  val out  = scala.collection.mutable.ListBuffer[List[Int]]()
-  val seen = scala.collection.mutable.Map[String, Int]()
-  def go(n: TreeNode): Unit = {
-    if (n == null) return
-    path += n.value
-    if (n.left == null && n.right == null) {
-      val key = path.mkString(",")
-      seen(key) = seen.getOrElse(key, 0) + 1
-      if (seen(key) == 2) out += path.toList
-    } else { go(n.left); go(n.right) }
-    path.remove(path.length - 1)
+class TreeNode(var value: Int, var left: TreeNode = null, var right: TreeNode = null)
+
+object Main extends App {
+  class Solution {
+    def duplicatePaths(root: TreeNode): List[List[Int]] = {
+      val path = scala.collection.mutable.ListBuffer[Int]()
+      val out  = scala.collection.mutable.ListBuffer[List[Int]]()
+      val seen = scala.collection.mutable.Map[String, Int]()
+      def go(n: TreeNode): Unit = {
+        if (n == null) return
+        path += n.value
+        if (n.left == null && n.right == null) {
+          val key = path.mkString(",")
+          seen(key) = seen.getOrElse(key, 0) + 1
+          if (seen(key) == 2) out += path.toList
+        } else { go(n.left); go(n.right) }
+        path.remove(path.length - 1)
+      }
+      go(root); out.toList
+    }
   }
-  go(root); out.toList
+
+  val root = new TreeNode(1,
+    new TreeNode(1, new TreeNode(1), null),
+    new TreeNode(1, null, new TreeNode(1)))
+  println(new Solution().duplicatePaths(root))  // List(List(1, 1, 1))
 }
 ```
 
@@ -560,23 +600,32 @@ public static List<List<Integer>> prefixPaths(TreeNode root) {
 ```
 
 ```scala run
-def prefixPaths(root: TreeNode): List[List[Int]] = {
-  val path = scala.collection.mutable.ListBuffer[Int]()
-  val out  = scala.collection.mutable.ListBuffer[List[Int]]()
-  val freq = scala.collection.mutable.Map[Int, Int]()
-  def go(n: TreeNode, run: Int): Unit = {
-    if (n == null) return
-    path += n.value
-    val newRun = run + n.value
-    freq(newRun) = freq.getOrElse(newRun, 0) + 1
-    if (n.left == null && n.right == null) {
-      if (freq(newRun) > 1) out += path.toList
-    } else { go(n.left, newRun); go(n.right, newRun) }
-    val c = freq(newRun) - 1
-    if (c == 0) freq.remove(newRun) else freq(newRun) = c
-    path.remove(path.length - 1)
+class TreeNode(var value: Int, var left: TreeNode = null, var right: TreeNode = null)
+
+object Main extends App {
+  class Solution {
+    def prefixPaths(root: TreeNode): List[List[Int]] = {
+      val path = scala.collection.mutable.ListBuffer[Int]()
+      val out  = scala.collection.mutable.ListBuffer[List[Int]]()
+      val freq = scala.collection.mutable.Map[Int, Int]()
+      def go(n: TreeNode, run: Int): Unit = {
+        if (n == null) return
+        path += n.value
+        val newRun = run + n.value
+        freq(newRun) = freq.getOrElse(newRun, 0) + 1
+        if (n.left == null && n.right == null) {
+          if (freq(newRun) > 1) out += path.toList
+        } else { go(n.left, newRun); go(n.right, newRun) }
+        val c = freq(newRun) - 1
+        if (c == 0) freq.remove(newRun) else freq(newRun) = c
+        path.remove(path.length - 1)
+      }
+      go(root, 0); out.toList
+    }
   }
-  go(root, 0); out.toList
+
+  val root = new TreeNode(1, new TreeNode(-3, null, new TreeNode(3)), null)
+  println(new Solution().prefixPaths(root))  // List(List(1, -3, 3))
 }
 ```
 
