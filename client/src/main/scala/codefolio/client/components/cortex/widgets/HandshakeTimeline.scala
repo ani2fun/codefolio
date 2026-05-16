@@ -1,10 +1,11 @@
 package codefolio.client.components.cortex.widgets
 
+import codefolio.client.components.cortex.widgets.PayloadDecoder.*
 import japgolly.scalajs.react.*
 import japgolly.scalajs.react.vdom.html_<^.*
 
 import scala.scalajs.js
-import scala.util.{Failure, Success, Try}
+import scala.util.Try
 
 /**
  * Handshake-timeline widget — stacked horizontal-bar comparison of an HTTP visit's latency budget across
@@ -114,54 +115,34 @@ object HandshakeTimeline:
 
   private def parsePhase(d: js.Dynamic): Phase =
     Phase(
-      name = d.name.asInstanceOf[js.UndefOr[String]].toOption.getOrElse("").trim,
-      rttCount = d.rttCount.asInstanceOf[js.UndefOr[Double]].toOption.getOrElse(0.0),
-      fixedMs = d.fixedMs.asInstanceOf[js.UndefOr[Double]].toOption.getOrElse(0.0),
-      kind = parseKind(d.kind.asInstanceOf[js.UndefOr[String]].toOption.getOrElse(""))
+      name = d.string("name").trim,
+      rttCount = d.double("rttCount"),
+      fixedMs = d.double("fixedMs"),
+      kind = parseKind(d.string("kind"))
     )
 
   private def parseScenario(d: js.Dynamic): Scenario =
-    val name = d.name.asInstanceOf[js.UndefOr[String]].toOption.getOrElse("").trim
-    val rawPhases = d.phases
-      .asInstanceOf[js.UndefOr[js.Array[js.Dynamic]]]
-      .toOption
-      .getOrElse(js.Array())
-    Scenario(name, rawPhases.toList.map(parsePhase))
+    Scenario(name = d.string("name").trim, phases = d.dynList("phases").map(parsePhase))
 
   private def parsePayload(json: String): Either[String, Spec] =
-    Try {
-      val raw   = js.JSON.parse(json).asInstanceOf[js.Dynamic]
-      val title = raw.title.asInstanceOf[js.UndefOr[String]].toOption.filter(_.nonEmpty)
-      val rttMs = raw.rttMs.asInstanceOf[js.UndefOr[Double]].toOption.getOrElse(50.0)
-      val rttRange = raw.rttRange
-        .asInstanceOf[js.UndefOr[js.Array[Double]]]
-        .toOption
-        .map(_.toList)
-        .getOrElse(List(5.0, 200.0))
-      val (lo, hi) = rttRange match
-        case a :: b :: _ => (a, b)
-        case _           => (5.0, 200.0)
-      val rawScenarios = raw.scenarios
-        .asInstanceOf[js.UndefOr[js.Array[js.Dynamic]]]
-        .toOption
-        .getOrElse(js.Array())
-      Spec(title, rttMs, lo, hi, rawScenarios.toList.map(parseScenario))
-    } match
-      case Success(spec) if spec.scenarios.isEmpty => Left("payload.scenarios must be non-empty")
-      case Success(spec) if spec.scenarios.exists(_.phases.isEmpty) =>
-        Left("every scenario.phases must be non-empty")
-      case Success(spec) if spec.scenarios.exists(_.name.isEmpty) =>
-        Left("every scenario.name must be non-empty")
-      case Success(spec) if spec.scenarios.flatMap(_.phases).exists(_.name.isEmpty) =>
-        Left("every phase.name must be non-empty")
-      case Success(spec) if spec.scenarios.flatMap(_.phases).exists(p => p.rttCount < 0 || p.fixedMs < 0) =>
-        Left("phase.rttCount and phase.fixedMs must be ≥ 0")
-      case Success(spec) if spec.rttMin <= 0 || spec.rttMax <= spec.rttMin =>
-        Left("payload.rttRange must satisfy 0 < min < max")
-      case Success(spec) if spec.rttMs < spec.rttMin || spec.rttMs > spec.rttMax =>
-        Left(s"payload.rttMs (${spec.rttMs}) must fall within rttRange [${spec.rttMin}, ${spec.rttMax}]")
-      case Success(spec) => Right(spec)
-      case Failure(t)    => Left(Option(t.getMessage).getOrElse("invalid payload JSON"))
+    PayloadDecoder.run(json) { d =>
+      val rttMs     = d.double("rttMs", 50.0)
+      val (lo, hi)  = d.doubleRange("rttRange", (5.0, 200.0))
+      val scenarios = d.dynList("scenarios").map(parseScenario)
+      if scenarios.isEmpty then throw PayloadDecoder.invalid("scenarios must be non-empty")
+      if scenarios.exists(_.phases.isEmpty) then
+        throw PayloadDecoder.invalid("every scenario.phases must be non-empty")
+      if scenarios.exists(_.name.isEmpty) then
+        throw PayloadDecoder.invalid("every scenario.name must be non-empty")
+      if scenarios.flatMap(_.phases).exists(_.name.isEmpty) then
+        throw PayloadDecoder.invalid("every phase.name must be non-empty")
+      if scenarios.flatMap(_.phases).exists(p => p.rttCount < 0 || p.fixedMs < 0) then
+        throw PayloadDecoder.invalid("phase.rttCount and phase.fixedMs must be ≥ 0")
+      if lo <= 0 || hi <= lo then throw PayloadDecoder.invalid("rttRange must satisfy 0 < min < max")
+      if rttMs < lo || rttMs > hi then
+        throw PayloadDecoder.invalid(s"rttMs ($rttMs) must fall within rttRange [$lo, $hi]")
+      Spec(d.optString("title"), rttMs, lo, hi, scenarios)
+    }
 
   // ===========================================================================
   // Maths

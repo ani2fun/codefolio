@@ -1,19 +1,14 @@
 package codefolio.client.components.cortex.widgets
 
+import codefolio.client.components.cortex.widgets.PayloadDecoder.*
 import codefolio.client.components.icons.LucideIcons
 import codefolio.client.d3.D3
 import japgolly.scalajs.react.*
-// `Reusability[Double]` for the speed-multiplier dep in the play-loop effect.
-// `WithoutTolerance` is the strict-equality variant — we only compare the
-// fixed 0.5 / 1.0 / 2.0 sentinel values that the speed toggle buttons set,
-// so no floating-point tolerance is needed.
-import japgolly.scalajs.react.Reusability.DecimalImplicitsWithoutTolerance.reusabilityDouble
 import japgolly.scalajs.react.vdom.html_<^.*
 import org.scalajs.dom
 
 import scala.scalajs.js
 import scala.scalajs.js.JSConverters.*
-import scala.util.{Failure, Success, Try}
 
 /**
  * Linked-list stepper — second widget in the D3 catalog after `array-traversal`. Renders a horizontal row of
@@ -176,29 +171,25 @@ object LinkedList:
   // error placeholder rather than crashing the chapter.
   // ---------------------------------------------------------------------------
 
-  private def parseNodes(arr: js.UndefOr[js.Array[js.Dynamic]]): List[Node] =
-    arr.toOption
-      .getOrElse(js.Array())
-      .toList
-      .map { n =>
-        val rawStyle = n.style.asInstanceOf[js.UndefOr[String]].toOption.filter(_.nonEmpty)
-        val style = rawStyle.flatMap { s =>
-          if CanonicalNodeStyles.contains(s) then Some(s)
-          else
-            dom.console.warn(
-              s"linked-list: unknown node style '$s' (expected one of: ${CanonicalNodeStyles.mkString(", ")}). Dropping."
-            )
-            None
-        }
-        Node(
-          id = n.id.asInstanceOf[js.UndefOr[String]].toOption.getOrElse(""),
-          value = n.value.asInstanceOf[js.UndefOr[js.Any]].toOption.fold("")(v =>
-            js.Dynamic.global.String(v).asInstanceOf[String]
-          ),
-          style = style
+  private def parseNode(n: js.Dynamic): Node =
+    val rawStyle = n.optString("style")
+    val style = rawStyle.flatMap { s =>
+      if CanonicalNodeStyles.contains(s) then Some(s)
+      else
+        dom.console.warn(
+          s"linked-list: unknown node style '$s' (expected one of: ${CanonicalNodeStyles.mkString(", ")}). Dropping."
         )
-      }
-      .filter(_.id.nonEmpty)
+        None
+    }
+    val rawValue = n.selectDynamic("value").asInstanceOf[js.UndefOr[js.Any]].toOption
+    Node(
+      id = n.string("id"),
+      value = rawValue.fold("")(v => js.Dynamic.global.String(v).asInstanceOf[String]),
+      style = style
+    )
+
+  private def parseNodes(d: js.Dynamic, name: String): List[Node] =
+    d.dynList(name).map(parseNode).filter(_.id.nonEmpty)
 
   private def parseLinks(arr: js.UndefOr[js.Array[js.Any]]): List[Link] =
     arr.toOption.getOrElse(js.Array()).toList.flatMap { entry =>
@@ -212,40 +203,32 @@ object LinkedList:
             if from.nonEmpty && to.nonEmpty then Some(Link(from, to, None)) else None
           else None
         case o =>
-          val dyn  = o.asInstanceOf[js.Dynamic]
-          val from = dyn.from.asInstanceOf[js.UndefOr[String]].toOption.getOrElse("")
-          val to   = dyn.to.asInstanceOf[js.UndefOr[String]].toOption.getOrElse("")
-          val kind = dyn.kind.asInstanceOf[js.UndefOr[String]].toOption.filter(_.nonEmpty)
-          if from.nonEmpty && to.nonEmpty then Some(Link(from, to, kind)) else None
+          val dyn = o.asInstanceOf[js.Dynamic]
+          Some(Link(dyn.string("from"), dyn.string("to"), dyn.optString("kind")))
+            .filter(l => l.from.nonEmpty && l.to.nonEmpty)
     }
 
-  private def parseMarkers(arr: js.UndefOr[js.Array[js.Dynamic]]): List[Marker] =
-    arr.toOption
-      .getOrElse(js.Array())
-      .toList
-      .map { m =>
-        val name      = m.name.asInstanceOf[js.UndefOr[String]].toOption.getOrElse("")
-        val nodeId    = m.nodeId.asInstanceOf[js.UndefOr[String]].toOption.getOrElse("")
-        val rawColor  = m.color.asInstanceOf[js.UndefOr[String]].toOption.filter(_.nonEmpty)
-        val canonical = CanonicalMarkers.contains(name)
-        // Hard-reject author colours (ADR-0016) — log a one-line dev warning
-        // so the author sees they wrote something that's being ignored.
-        if rawColor.isDefined then
-          dom.console.warn(
-            s"linked-list: marker '$name' carries a `color` field — dropping (colour is resolved from the canon, not the payload)."
-          )
-        if name.nonEmpty && !canonical then
-          dom.console.warn(
-            s"linked-list: marker name '$name' is not in the canonical vocabulary. Rendered as an inline warning. Canonical names: ${CanonicalMarkers.keys.toList.sorted.mkString(", ")}."
-          )
-        Marker(name, nodeId, canonical)
-      }
-      .filter(m => m.name.nonEmpty && m.nodeId.nonEmpty)
+  private def parseMarker(m: js.Dynamic): Marker =
+    val name      = m.string("name")
+    val nodeId    = m.string("nodeId")
+    val rawColor  = m.optString("color")
+    val canonical = CanonicalMarkers.contains(name)
+    // Hard-reject author colours (ADR-0016) — log a one-line dev warning
+    // so the author sees they wrote something that's being ignored.
+    if rawColor.isDefined then
+      dom.console.warn(
+        s"linked-list: marker '$name' carries a `color` field — dropping (colour is resolved from the canon, not the payload)."
+      )
+    if name.nonEmpty && !canonical then
+      dom.console.warn(
+        s"linked-list: marker name '$name' is not in the canonical vocabulary. Rendered as an inline warning. Canonical names: ${CanonicalMarkers.keys.toList.sorted.mkString(", ")}."
+      )
+    Marker(name, nodeId, canonical)
 
-  private def parseSections(arr: js.UndefOr[js.Array[js.Dynamic]], stepCount: Int): List[Section] =
-    val parsed = arr.toOption.getOrElse(js.Array()).toList.flatMap { s =>
-      val name     = s.name.asInstanceOf[js.UndefOr[String]].toOption.getOrElse("")
-      val startIdx = s.startIdx.asInstanceOf[js.UndefOr[Int]].toOption.getOrElse(-1)
+  private def parseSections(d: js.Dynamic, stepCount: Int): List[Section] =
+    val parsed = d.dynList("sections").flatMap { s =>
+      val name     = s.string("name")
+      val startIdx = s.int("startIdx", -1)
       if name.nonEmpty && startIdx >= 0 && startIdx < stepCount then Some(Section(name, startIdx))
       else
         if name.nonEmpty then
@@ -262,46 +245,38 @@ object LinkedList:
         if acc.isEmpty || acc.last.startIdx < s.startIdx then acc :+ s else acc
       }
 
+  private def parseStep(s: js.Dynamic): Step =
+    val perStepNodes =
+      s.selectDynamic("nodes").asInstanceOf[js.UndefOr[js.Array[js.Dynamic]]].toOption
+        .map(arr => arr.toList.map(parseNode).filter(_.id.nonEmpty))
+    val links =
+      parseLinks(s.selectDynamic("links").asInstanceOf[js.UndefOr[js.Array[js.Any]]])
+    val markers  = s.dynList("markers").map(parseMarker).filter(m => m.name.nonEmpty && m.nodeId.nonEmpty)
+    val stepHead = s.optString("head")
+    val msg      = s.string("msg")
+    Step(perStepNodes, links, markers, stepHead, msg)
+
   private def parsePayload(json: String): Either[String, Spec] =
-    Try {
-      val raw = js.JSON.parse(json).asInstanceOf[js.Dynamic]
-      val dir = raw.direction.asInstanceOf[js.UndefOr[String]].toOption.filter(_.nonEmpty).getOrElse("single")
-      val nodes = parseNodes(raw.nodes.asInstanceOf[js.UndefOr[js.Array[js.Dynamic]]])
-      val head  = raw.head.asInstanceOf[js.UndefOr[String]].toOption.filter(_.nonEmpty)
-      val cycleTarget =
-        raw.cycleTarget.asInstanceOf[js.UndefOr[String]].toOption.filter(_.nonEmpty)
-      val title = raw.title.asInstanceOf[js.UndefOr[String]].toOption.filter(_.nonEmpty)
-      val rawSteps = raw.steps
-        .asInstanceOf[js.UndefOr[js.Array[js.Dynamic]]]
-        .toOption
-        .getOrElse(js.Array())
-      val steps = rawSteps.toList.map { s =>
-        val perStepNodes =
-          s.nodes.asInstanceOf[js.UndefOr[js.Array[js.Dynamic]]].toOption.map(arr => parseNodes(arr))
-        val links =
-          parseLinks(s.links.asInstanceOf[js.UndefOr[js.Array[js.Any]]])
-        val markers =
-          parseMarkers(s.markers.asInstanceOf[js.UndefOr[js.Array[js.Dynamic]]])
-        val stepHead =
-          s.head.asInstanceOf[js.UndefOr[String]].toOption.filter(_.nonEmpty)
-        val msg = s.msg.asInstanceOf[js.UndefOr[String]].toOption.getOrElse("")
-        Step(perStepNodes, links, markers, stepHead, msg)
-      }
-      val sections =
-        parseSections(raw.sections.asInstanceOf[js.UndefOr[js.Array[js.Dynamic]]], steps.size)
-      val wrapAt = raw.wrapAt.asInstanceOf[js.UndefOr[Int]].toOption.filter(_ > 0)
-      Spec(dir, nodes, head, cycleTarget, title, steps, sections, wrapAt)
-    } match
-      case Success(spec) if spec.nodes.isEmpty => Left("payload.nodes must be non-empty")
-      case Success(spec)                       => Right(spec)
-      case Failure(t)                          => Left(Option(t.getMessage).getOrElse("invalid payload JSON"))
+    PayloadDecoder.run(json) { d =>
+      val nodes = parseNodes(d, "nodes")
+      if nodes.isEmpty then throw PayloadDecoder.invalid("nodes must be non-empty")
+      val steps    = d.dynList("steps").map(parseStep)
+      val sections = parseSections(d, steps.size)
+      Spec(
+        direction = d.optString("direction").getOrElse("single"),
+        nodes = nodes,
+        head = d.optString("head"),
+        cycleTarget = d.optString("cycleTarget"),
+        title = d.optString("title"),
+        steps = steps,
+        sections = sections,
+        wrapAt = d.optInt("wrapAt").filter(_ > 0)
+      )
+    }
 
   // ---------------------------------------------------------------------------
   // Layout helpers
   // ---------------------------------------------------------------------------
-
-  private def clamp(i: Int, count: Int): Int =
-    if count <= 0 then 0 else math.max(0, math.min(count - 1, i))
 
   // Column-relative x. `col` is the position within a row (0..nodesPerRow-1).
   private def nodeXAtCol(col: Int): Double =
@@ -951,47 +926,33 @@ object LinkedList:
     ScalaFnComponent
       .withHooks[Props]
       .useMemoBy(_.payload)(_ => payload => parsePayload(payload))
-      .useState(0)                      // step index
-      .useState(false)                  // playing
-      .useState(1.0)                    // speed multiplier (0.5 / 1.0 / 2.0)
-      .useRefBy(_ => Option.empty[Int]) // play timeout id
-      .useRefToVdom[dom.html.Element]   // host div ref — D3 manages the <svg> inside
-      .useRefBy(_ => false)             // hasRendered (mutable; avoids re-render cycle)
-      // ── play-loop timer ─────────────────────────────────────────────────────
-      // Tick the step forward every (StepDelayMs / speed) ms while playing.
-      // Speed-toggle changes are a dep so the timer reschedules immediately,
-      // not at the next tick — flipping to 2× while playing shouldn't wait
-      // 1.2s for the change to take effect.
-      .useEffectWithDepsBy((_, specM, indexS, playingS, speedS, _, _, _) =>
-        (specM.value.toOption.fold(0)(_.steps.size), indexS.value, playingS.value, speedS.value)
-      ) { (_, _, indexS, playingS, _, timeoutRef, _, _) => (count, index, playing, speed) =>
-        Callback {
-          timeoutRef.value.foreach(dom.window.clearTimeout)
-          timeoutRef.value = None
-          if playing then
-            if index >= count - 1 then playingS.setState(false).runNow()
-            else
-              val delayMs = StepDelayMs / math.max(0.25, speed)
-              val id      = dom.window.setTimeout(() => indexS.setState(index + 1).runNow(), delayMs)
-              timeoutRef.value = Some(id)
-        }
+      .useState(1.0) // speed multiplier (0.5 / 1.0 / 2.0) — widget-owned; fed to Stepper as delayMs
+      // Stepper hook — owns the step index, playing flag, timeout ref, and play-loop effect. The
+      // speed toggle changes Input.delayMs, which is in the effect's deps, so the timer reschedules
+      // immediately on a speed flip (no waiting one tick for the change to take effect).
+      .customBy { (_, specM, speedS) =>
+        val stepCount = specM.value.toOption.fold(0)(_.steps.size)
+        val delayMs   = StepDelayMs / math.max(0.25, speedS.value)
+        Stepper.hook(Stepper.Input(stepCount, delayMs))
       }
+      .useRefToVdom[dom.html.Element] // host div ref — D3 manages the <svg> inside
+      .useRefBy(_ => false)           // hasRendered (mutable; avoids re-render cycle)
       // ── D3 render on every step / spec change ───────────────────────────────
-      .useEffectWithDepsBy((_, specM, indexS, _, _, _, _, _) =>
-        (specM.value.toOption.fold(0)(_.steps.size), indexS.value)
-      ) { (_, specM, _, _, _, _, hostRef, hasRenderedRef) => (count, index) =>
+      .useEffectWithDepsBy((_, specM, _, stepper, _, _) =>
+        (specM.value.toOption.fold(0)(_.steps.size), stepper.index)
+      ) { (_, specM, _, _, hostRef, hasRenderedRef) => (_, index) =>
         specM.value.toOption.filter(_.steps.nonEmpty) match
           case Some(spec) =>
             hostRef.foreach { host =>
               val svgEl   = ensureSvg(host, spec)
-              val step    = spec.steps(clamp(index, count))
+              val step    = spec.steps(index)
               val animate = hasRenderedRef.value
               renderStep(svgEl, spec, step, animate)
               if !hasRenderedRef.value then hasRenderedRef.value = true
             }
           case None => Callback.empty
       }
-      .render { (_, specM, indexS, playingS, speedS, _, hostRef, _) =>
+      .render { (_, specM, speedS, stepper, hostRef, _) =>
         specM.value match
           case Left(err) =>
             <.div(
@@ -1001,26 +962,10 @@ object LinkedList:
             )
           case Right(spec) =>
             val count = spec.steps.size
-            val idx   = clamp(indexS.value, math.max(1, count))
+            val idx   = stepper.index
             val currentStep =
               if count == 0 then Step(None, Nil, Nil, None, "No steps defined.")
               else spec.steps(idx)
-            val atStart = idx == 0
-            val atEnd   = count == 0 || idx == count - 1
-
-            val previous =
-              playingS.setState(false) >> indexS.modState(i => clamp(i - 1, math.max(1, count)))
-            val next =
-              playingS.setState(false) >> indexS.modState(i => clamp(i + 1, math.max(1, count)))
-            val reset =
-              playingS.setState(false) >> indexS.setState(0)
-            val togglePlay =
-              if playingS.value then playingS.setState(false)
-              else
-                val rewind = if atEnd then indexS.setState(0) else Callback.empty
-                rewind >> playingS.setState(true)
-            def jumpTo(i: Int): Callback =
-              playingS.setState(false) >> indexS.setState(clamp(i, math.max(1, count)))
 
             // Helper — render section labels above the progress bar. Each
             // label spans from its section's startIdx to the next section's
@@ -1069,7 +1014,7 @@ object LinkedList:
                     ^.tpe        := "button",
                     ^.className  := cls,
                     ^.aria.label := s"Jump to step ${i + 1}",
-                    ^.onClick --> jumpTo(i)
+                    ^.onClick --> stepper.jumpTo(i)
                   )
                 }
               )
@@ -1111,8 +1056,8 @@ object LinkedList:
                   ^.className := "linked-list__controls",
                   <.button(
                     ^.tpe := "button",
-                    ^.onClick --> previous,
-                    ^.disabled   := atStart,
+                    ^.onClick --> stepper.previous,
+                    ^.disabled   := stepper.atStart,
                     ^.aria.label := "Previous step",
                     ^.className  := "linked-list__button",
                     LucideIcons.ArrowLeft(LucideIcons.withClass("linked-list__button-icon")),
@@ -1120,19 +1065,19 @@ object LinkedList:
                   ),
                   <.button(
                     ^.tpe := "button",
-                    ^.onClick --> togglePlay,
+                    ^.onClick --> stepper.togglePlay,
                     ^.disabled   := count == 0,
-                    ^.aria.label := (if playingS.value then "Pause" else "Play"),
+                    ^.aria.label := (if stepper.isPlaying then "Pause" else "Play"),
                     ^.className  := "linked-list__button linked-list__button--primary",
-                    if playingS.value then
+                    if stepper.isPlaying then
                       LucideIcons.Pause(LucideIcons.withClass("linked-list__button-icon"))
                     else LucideIcons.Play(LucideIcons.withClass("linked-list__button-icon")),
-                    if playingS.value then "Pause" else "Play"
+                    if stepper.isPlaying then "Pause" else "Play"
                   ),
                   <.button(
                     ^.tpe := "button",
-                    ^.onClick --> next,
-                    ^.disabled   := atEnd,
+                    ^.onClick --> stepper.next,
+                    ^.disabled   := stepper.atEnd,
                     ^.aria.label := "Next step",
                     ^.className  := "linked-list__button",
                     "Next",
@@ -1140,8 +1085,8 @@ object LinkedList:
                   ),
                   <.button(
                     ^.tpe := "button",
-                    ^.onClick --> reset,
-                    ^.disabled   := atStart && !playingS.value,
+                    ^.onClick --> stepper.reset,
+                    ^.disabled   := stepper.atStart && !stepper.isPlaying,
                     ^.aria.label := "Reset",
                     ^.className  := "linked-list__button linked-list__button--icon",
                     LucideIcons.RotateCcw(LucideIcons.withClass("linked-list__button-icon"))

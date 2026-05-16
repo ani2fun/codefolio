@@ -1,12 +1,11 @@
 package codefolio.client.components.cortex.widgets
 
+import codefolio.client.components.cortex.widgets.PayloadDecoder.*
 import codefolio.client.components.icons.LucideIcons
 import japgolly.scalajs.react.*
 import japgolly.scalajs.react.vdom.html_<^.*
-import org.scalajs.dom
 
 import scala.scalajs.js
-import scala.util.{Failure, Success, Try}
 
 /**
  * Partition simulator — inline three-node KV cluster that walks the reader through canonical CAP/PACELC
@@ -88,41 +87,28 @@ object PartitionSimulator:
   // ===========================================================================
 
   private def parsePayload(json: String): Either[String, Spec] =
-    Try {
-      val raw   = js.JSON.parse(json).asInstanceOf[js.Dynamic]
-      val title = raw.title.asInstanceOf[js.UndefOr[String]].toOption.filter(_.nonEmpty)
-      val rawScenarios = raw.scenarios
-        .asInstanceOf[js.UndefOr[js.Array[js.Dynamic]]]
-        .toOption
-        .getOrElse(js.Array())
-      val scenarios = rawScenarios.toList.map { s =>
-        val name = s.name.asInstanceOf[js.UndefOr[String]].toOption.getOrElse("")
-        val mode = s.mode.asInstanceOf[js.UndefOr[String]].toOption.getOrElse("")
-        val rawSteps = s.steps
-          .asInstanceOf[js.UndefOr[js.Array[js.Dynamic]]]
-          .toOption
-          .getOrElse(js.Array())
-        val steps = rawSteps.toList.map(parseStep)
-        Scenario(name, mode, steps)
+    PayloadDecoder.run(json) { d =>
+      val scenarios = d.dynList("scenarios").map { s =>
+        Scenario(name = s.string("name"), mode = s.string("mode"), steps = s.dynList("steps").map(parseStep))
       }
-      Spec(title, scenarios)
-    } match
-      case Success(spec) if spec.scenarios.isEmpty => Left("payload.scenarios must be non-empty")
-      case Success(spec) if spec.scenarios.exists(_.steps.isEmpty) =>
-        Left("every scenario must have ≥ 1 step")
-      case Success(spec) if spec.scenarios.exists(_.name.trim.isEmpty) =>
-        Left("every scenario.name must be non-empty")
-      case Success(spec) => Right(spec)
-      case Failure(t)    => Left(Option(t.getMessage).getOrElse("invalid payload JSON"))
+      if scenarios.isEmpty then throw PayloadDecoder.invalid("scenarios must be non-empty")
+      if scenarios.exists(_.steps.isEmpty) then
+        throw PayloadDecoder.invalid("every scenario must have ≥ 1 step")
+      if scenarios.exists(_.name.trim.isEmpty) then
+        throw PayloadDecoder.invalid("every scenario.name must be non-empty")
+      Spec(title = d.optString("title"), scenarios = scenarios)
+    }
 
   private def parseStep(s: js.Dynamic): Step =
-    val msg      = s.msg.asInstanceOf[js.UndefOr[String]].toOption.getOrElse("")
-    val nodesObj = s.nodes.asInstanceOf[js.UndefOr[js.Dictionary[String]]].toOption.getOrElse(js.Dictionary())
-    val nodes    = nodesObj.toMap
-    val rawLinks = s.links
-      .asInstanceOf[js.UndefOr[js.Array[js.Array[String]]]]
-      .toOption
-      .getOrElse(js.Array())
+    val nodesObj =
+      s.selectDynamic("nodes").asInstanceOf[js.UndefOr[js.Dictionary[String]]].toOption.getOrElse(
+        js.Dictionary()
+      )
+    val nodes = nodesObj.toMap
+    val rawLinks =
+      s.selectDynamic("links").asInstanceOf[js.UndefOr[js.Array[js.Array[String]]]].toOption.getOrElse(
+        js.Array()
+      )
     val links = rawLinks.toList.flatMap { pair =>
       if pair.length >= 2 then
         val a = pair(0)
@@ -132,12 +118,9 @@ object PartitionSimulator:
         Some((lo, hi))
       else None
     }.toSet
-    val rawRefused = s.refused
-      .asInstanceOf[js.UndefOr[js.Array[String]]]
-      .toOption
-      .getOrElse(js.Array())
-    val refused = rawRefused.toSet
-    Step(msg, nodes, links, refused)
+    val refused =
+      s.selectDynamic("refused").asInstanceOf[js.UndefOr[js.Array[String]]].toOption.getOrElse(js.Array()).toSet
+    Step(msg = s.string("msg"), nodes = nodes, links = links, refused = refused)
 
   // ===========================================================================
   // SVG building
@@ -221,33 +204,23 @@ object PartitionSimulator:
     ScalaFnComponent
       .withHooks[Props]
       .useMemoBy(_.payload)(_ => payload => parsePayload(payload))
-      .useState(0)     // scenario index
-      .useState(0)     // step index within scenario
-      .useState(false) // playing
-      .useRefBy(_ => Option.empty[Int])
-      .useEffectWithDepsBy((_, specM, scenarioS, _, _, _) =>
-        (specM.value.toOption.fold(0)(_.scenarios.size), scenarioS.value)
-      ) { (_, _, _, stepS, playingS, _) => _ =>
-        // Reset to step 0 when scenario changes and stop playback.
-        playingS.setState(false) >> stepS.setState(0)
-      }
-      .useEffectWithDepsBy((_, specM, scenarioS, stepS, playingS, _) =>
-        val stepsInScenario =
+      .useState(0) // scenario index
+      // Stepper hook drives the inner step axis. Input.stepCount is the active scenario's step count,
+      // recomputed every render — when the user switches scenarios, the dep tuple in Stepper's
+      // play-loop effect changes and the timer cancels. The scenario-reset effect below explicitly
+      // resets the index to 0 so the new scenario starts from step 0 rather than the clamped tail.
+      .customBy { (_, specM, scenarioS) =>
+        val stepCount =
           specM.value.toOption.flatMap(_.scenarios.lift(scenarioS.value)).fold(0)(_.steps.size)
-        (stepsInScenario, stepS.value, playingS.value)
-      ) { (_, _, _, stepS, playingS, timeoutRef) => (count, index, playing) =>
-        Callback {
-          timeoutRef.value.foreach(dom.window.clearTimeout)
-          timeoutRef.value = None
-          if playing then
-            if index >= count - 1 then playingS.setState(false).runNow()
-            else
-              val id =
-                dom.window.setTimeout(() => stepS.setState(index + 1).runNow(), StepDelayMs.toDouble)
-              timeoutRef.value = Some(id)
-        }
+        Stepper.hook(Stepper.Input(stepCount, StepDelayMs.toDouble))
       }
-      .render { (_, specM, scenarioS, stepS, playingS, _) =>
+      .useEffectWithDepsBy((_, specM, scenarioS, _) =>
+        (specM.value.toOption.fold(0)(_.scenarios.size), scenarioS.value)
+      ) { (_, _, _, stepper) => _ =>
+        // Reset to step 0 when scenario changes and stop playback. `stepper.reset` bundles both.
+        stepper.reset
+      }
+      .render { (_, specM, scenarioS, stepper) =>
         specM.value match
           case Left(err) =>
             <.div(
@@ -259,23 +232,9 @@ object PartitionSimulator:
             val scenarioIdx = clamp(scenarioS.value, math.max(1, spec.scenarios.size))
             val scenario    = spec.scenarios(scenarioIdx)
             val count       = scenario.steps.size
-            val stepIdx     = clamp(stepS.value, math.max(1, count))
+            val stepIdx     = stepper.index
             val step        = scenario.steps(stepIdx)
-            val atStart     = stepIdx == 0
-            val atEnd       = count == 0 || stepIdx == count - 1
             val modeBadge   = scenario.mode.toUpperCase
-
-            val previous =
-              playingS.setState(false) >> stepS.modState(i => clamp(i - 1, math.max(1, count)))
-            val next =
-              playingS.setState(false) >> stepS.modState(i => clamp(i + 1, math.max(1, count)))
-            val reset =
-              playingS.setState(false) >> stepS.setState(0)
-            val togglePlay =
-              if playingS.value then playingS.setState(false)
-              else
-                val rewind = if atEnd then stepS.setState(0) else Callback.empty
-                rewind >> playingS.setState(true)
 
             <.div(
               ^.className := "partition-simulator not-prose",
@@ -321,8 +280,8 @@ object PartitionSimulator:
                 ^.className := "partition-simulator__controls",
                 <.button(
                   ^.tpe := "button",
-                  ^.onClick --> previous,
-                  ^.disabled   := atStart,
+                  ^.onClick --> stepper.previous,
+                  ^.disabled   := stepper.atStart,
                   ^.aria.label := "Previous step",
                   ^.className  := "partition-simulator__button",
                   LucideIcons.ArrowLeft(LucideIcons.withClass("partition-simulator__button-icon")),
@@ -330,19 +289,19 @@ object PartitionSimulator:
                 ),
                 <.button(
                   ^.tpe := "button",
-                  ^.onClick --> togglePlay,
+                  ^.onClick --> stepper.togglePlay,
                   ^.disabled   := count == 0,
-                  ^.aria.label := (if playingS.value then "Pause" else "Play"),
+                  ^.aria.label := (if stepper.isPlaying then "Pause" else "Play"),
                   ^.className  := "partition-simulator__button partition-simulator__button--primary",
-                  if playingS.value then
+                  if stepper.isPlaying then
                     LucideIcons.Pause(LucideIcons.withClass("partition-simulator__button-icon"))
                   else LucideIcons.Play(LucideIcons.withClass("partition-simulator__button-icon")),
-                  if playingS.value then "Pause" else "Play"
+                  if stepper.isPlaying then "Pause" else "Play"
                 ),
                 <.button(
                   ^.tpe := "button",
-                  ^.onClick --> next,
-                  ^.disabled   := atEnd,
+                  ^.onClick --> stepper.next,
+                  ^.disabled   := stepper.atEnd,
                   ^.aria.label := "Next step",
                   ^.className  := "partition-simulator__button",
                   "Next",
@@ -350,8 +309,8 @@ object PartitionSimulator:
                 ),
                 <.button(
                   ^.tpe := "button",
-                  ^.onClick --> reset,
-                  ^.disabled   := atStart && !playingS.value,
+                  ^.onClick --> stepper.reset,
+                  ^.disabled   := stepper.atStart && !stepper.isPlaying,
                   ^.aria.label := "Reset",
                   ^.className  := "partition-simulator__button partition-simulator__button--icon",
                   LucideIcons.RotateCcw(LucideIcons.withClass("partition-simulator__button-icon"))

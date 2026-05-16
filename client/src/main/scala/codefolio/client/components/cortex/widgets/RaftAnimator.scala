@@ -1,10 +1,10 @@
 package codefolio.client.components.cortex.widgets
 
+import codefolio.client.components.cortex.widgets.PayloadDecoder.*
 import japgolly.scalajs.react.*
 import japgolly.scalajs.react.vdom.html_<^.*
 
 import scala.scalajs.js
-import scala.util.{Failure, Success, Try}
 
 /**
  * Raft animator — step-replay of three scripted Raft scenarios over a 3-node cluster: leader election, log
@@ -89,63 +89,39 @@ object RaftAnimator:
 
   private def parseNode(d: js.Dynamic): NodeState =
     NodeState(
-      id = d.id.asInstanceOf[js.UndefOr[String]].toOption.getOrElse(""),
-      role = parseRole(d.role.asInstanceOf[js.UndefOr[String]].toOption.getOrElse("follower")),
-      term = d.term.asInstanceOf[js.UndefOr[Double]].toOption.getOrElse(1.0).toInt,
-      log = d.log
-        .asInstanceOf[js.UndefOr[js.Array[String]]]
-        .toOption
-        .map(_.toList)
-        .getOrElse(Nil),
-      votedFor = d.votedFor.asInstanceOf[js.UndefOr[String]].toOption.filter(_.nonEmpty)
+      id = d.string("id"),
+      role = parseRole(d.string("role", "follower")),
+      term = d.double("term", 1.0).toInt,
+      log = d.stringList("log").getOrElse(Nil),
+      votedFor = d.optString("votedFor")
     )
 
-  private def parseMessage(d: js.UndefOr[js.Dynamic]): Option[Message] =
-    d.toOption.flatMap { md =>
-      val from  = md.from.asInstanceOf[js.UndefOr[String]].toOption.getOrElse("")
-      val to    = md.to.asInstanceOf[js.UndefOr[String]].toOption.getOrElse("")
-      val label = md.label.asInstanceOf[js.UndefOr[String]].toOption.getOrElse("")
+  private def parseMessage(d: Option[js.Dynamic]): Option[Message] =
+    d.flatMap { md =>
+      val from  = md.string("from")
+      val to    = md.string("to")
+      val label = md.string("label")
       if from.isEmpty || to.isEmpty then None else Some(Message(from, to, label))
     }
 
   private def parseStep(d: js.Dynamic): Step =
-    val caption = d.caption.asInstanceOf[js.UndefOr[String]].toOption.getOrElse("")
-    val nodes = d.nodes
-      .asInstanceOf[js.UndefOr[js.Array[js.Dynamic]]]
-      .toOption
-      .getOrElse(js.Array())
-      .toList
-      .map(parseNode)
-    val message = parseMessage(d.message.asInstanceOf[js.UndefOr[js.Dynamic]])
-    Step(caption, nodes, message)
+    Step(
+      caption = d.string("caption"),
+      nodes = d.dynList("nodes").map(parseNode),
+      message = parseMessage(d.optObj("message"))
+    )
 
   private def parseScenario(d: js.Dynamic): Scenario =
-    val name = d.name.asInstanceOf[js.UndefOr[String]].toOption.getOrElse("")
-    val steps = d.steps
-      .asInstanceOf[js.UndefOr[js.Array[js.Dynamic]]]
-      .toOption
-      .getOrElse(js.Array())
-      .toList
-      .map(parseStep)
-    Scenario(name, steps)
+    Scenario(name = d.string("name"), steps = d.dynList("steps").map(parseStep))
 
   private def parsePayload(json: String): Either[String, Spec] =
-    Try {
-      val raw   = js.JSON.parse(json).asInstanceOf[js.Dynamic]
-      val title = raw.title.asInstanceOf[js.UndefOr[String]].toOption.filter(_.nonEmpty)
-      val scenarios = raw.scenarios
-        .asInstanceOf[js.UndefOr[js.Array[js.Dynamic]]]
-        .toOption
-        .getOrElse(js.Array())
-        .toList
-        .map(parseScenario)
-      Spec(title, scenarios)
-    } match
-      case Success(s) if s.scenarios.isEmpty => Left("payload.scenarios must be non-empty")
-      case Success(s) if s.scenarios.exists(_.steps.isEmpty) =>
-        Left("every scenario.steps must be non-empty")
-      case Success(s) => Right(s)
-      case Failure(t) => Left(Option(t.getMessage).getOrElse("invalid payload JSON"))
+    PayloadDecoder.run(json) { d =>
+      val scenarios = d.dynList("scenarios").map(parseScenario)
+      if scenarios.isEmpty then throw PayloadDecoder.invalid("scenarios must be non-empty")
+      if scenarios.exists(_.steps.isEmpty) then
+        throw PayloadDecoder.invalid("every scenario.steps must be non-empty")
+      Spec(d.optString("title"), scenarios)
+    }
 
   // ===========================================================================
   // Layout

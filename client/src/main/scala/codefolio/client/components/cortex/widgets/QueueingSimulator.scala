@@ -1,10 +1,10 @@
 package codefolio.client.components.cortex.widgets
 
+import codefolio.client.components.cortex.widgets.PayloadDecoder.*
 import japgolly.scalajs.react.*
 import japgolly.scalajs.react.vdom.html_<^.*
 
-import scala.scalajs.js
-import scala.util.{Failure, Success, Try}
+import scala.util.Try
 
 /**
  * Queueing simulator — visualises the M/M/1 latency cliff `W = (1/µ) / (1 − ρ)` as a horizontal bar chart of
@@ -65,19 +65,15 @@ object QueueingSimulator:
   // ===========================================================================
 
   private def parsePayload(json: String): Either[String, Spec] =
-    Try {
-      val raw     = js.JSON.parse(json).asInstanceOf[js.Dynamic]
-      val title   = raw.title.asInstanceOf[js.UndefOr[String]].toOption.filter(_.nonEmpty)
-      val svcMs   = raw.serviceTimeMs.asInstanceOf[js.UndefOr[Double]].toOption.getOrElse(50.0)
-      val initRho = raw.initialRho.asInstanceOf[js.UndefOr[Double]].toOption.getOrElse(0.7)
-      Spec(title, svcMs, initRho)
-    } match
-      case Success(spec) if spec.serviceTimeMs <= 0 => Left("payload.serviceTimeMs must be > 0")
-      case Success(spec) if spec.initialRho < 0     => Left("payload.initialRho must be ≥ 0")
-      case Success(spec) if spec.initialRho >= 1 =>
-        Left("payload.initialRho must be < 1 (ρ=1 has no stable solution)")
-      case Success(spec) => Right(spec)
-      case Failure(t)    => Left(Option(t.getMessage).getOrElse("invalid payload JSON"))
+    PayloadDecoder.run(json) { d =>
+      val svcMs   = d.double("serviceTimeMs", 50.0)
+      val initRho = d.double("initialRho", 0.7)
+      if svcMs <= 0 then throw PayloadDecoder.invalid("serviceTimeMs must be > 0")
+      if initRho < 0 then throw PayloadDecoder.invalid("initialRho must be ≥ 0")
+      if initRho >= 1 then
+        throw PayloadDecoder.invalid("initialRho must be < 1 (ρ=1 has no stable solution)")
+      Spec(title = d.optString("title"), serviceTimeMs = svcMs, initialRho = initRho)
+    }
 
   // ===========================================================================
   // M/M/1 maths

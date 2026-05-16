@@ -1,5 +1,6 @@
 package codefolio.client.components.cortex.widgets
 
+import codefolio.client.components.cortex.widgets.PayloadDecoder.*
 import codefolio.client.components.icons.LucideIcons
 import codefolio.client.d3.D3
 import japgolly.scalajs.react.*
@@ -8,7 +9,6 @@ import org.scalajs.dom
 
 import scala.scalajs.js
 import scala.scalajs.js.JSConverters.*
-import scala.util.{Failure, Success, Try}
 
 /**
  * Array traversal stepper — the first widget in the D3 catalog. Renders a row of cells with one or more named
@@ -106,77 +106,48 @@ object ArrayTraversal:
   )
 
   // ---------------------------------------------------------------------------
-  // Parsing — `js.JSON.parse` + `js.Dynamic` mirrors BlockDiscovery.parseRawTabs.
-  // Anything that throws collapses to a `Left(msg)`; the component renders an
-  // error placeholder rather than crashing the chapter.
+  // Parsing — decoder lambda reads typed fields off `js.Dynamic`; any thrown
+  // exception (missing field, validation failure) collapses to a `Left(msg)`
+  // via `PayloadDecoder.run`, and the component renders an inline error
+  // placeholder rather than crashing the chapter.
   // ---------------------------------------------------------------------------
 
-  private def parseMarkers(arr: js.UndefOr[js.Array[js.Dynamic]]): List[Marker] =
-    arr.toOption
-      .getOrElse(js.Array())
-      .toList
-      .map { m =>
-        Marker(
-          name = m.name.asInstanceOf[js.UndefOr[String]].toOption.getOrElse(""),
-          index = m.index.asInstanceOf[js.UndefOr[Int]].toOption.getOrElse(0),
-          color = m.color.asInstanceOf[js.UndefOr[String]].toOption.filter(_.nonEmpty)
-        )
-      }
+  private def parseMarker(d: js.Dynamic): Marker =
+    Marker(name = d.string("name"), index = d.int("index"), color = d.optString("color"))
 
-  private def parseRange(r: js.UndefOr[js.Dynamic]): Option[RangeBand] =
-    r.toOption.map { v =>
-      RangeBand(
-        lo = v.lo.asInstanceOf[js.UndefOr[Int]].toOption.getOrElse(0),
-        hi = v.hi.asInstanceOf[js.UndefOr[Int]].toOption.getOrElse(0)
-      )
-    }
+  private def parseRange(d: js.Dynamic): RangeBand =
+    RangeBand(lo = d.int("lo"), hi = d.int("hi"))
 
-  private def parseStringArray(arr: js.UndefOr[js.Array[js.Any]]): Option[List[String]] =
-    arr.toOption.map(_.toList.map(v => js.Dynamic.global.String(v).asInstanceOf[String]))
+  private def parseStep(d: js.Dynamic): Step =
+    Step(
+      items = d.stringList("items"),
+      keys = d.stringList("keys"),
+      markers = d.dynList("markers").map(parseMarker),
+      range = d.optObj("range").map(parseRange),
+      msg = d.string("msg"),
+      secondaryItems = d.stringList("secondaryItems"),
+      secondaryKeys = d.stringList("secondaryKeys"),
+      secondaryMarkers = d.dynList("secondaryMarkers").map(parseMarker),
+      secondaryRange = d.optObj("secondaryRange").map(parseRange)
+    )
 
   private def parsePayload(json: String): Either[String, Spec] =
-    Try {
-      val raw    = js.JSON.parse(json).asInstanceOf[js.Dynamic]
-      val itemsJ = raw.items.asInstanceOf[js.Array[js.Any]]
-      val items  = itemsJ.toList.map(v => js.Dynamic.global.String(v).asInstanceOf[String])
-      val title  = raw.title.asInstanceOf[js.UndefOr[String]].toOption.filter(_.nonEmpty)
-      val primaryLabel =
-        raw.primaryLabel.asInstanceOf[js.UndefOr[String]].toOption.filter(_.nonEmpty)
-      val secondaryItems =
-        parseStringArray(raw.secondaryItems.asInstanceOf[js.UndefOr[js.Array[js.Any]]])
-      val secondaryLabel =
-        raw.secondaryLabel.asInstanceOf[js.UndefOr[String]].toOption.filter(_.nonEmpty)
-      val rawSteps = raw.steps
-        .asInstanceOf[js.UndefOr[js.Array[js.Dynamic]]]
-        .toOption
-        .getOrElse(js.Array())
-      val steps = rawSteps.toList.map { s =>
-        val mks          = parseMarkers(s.markers.asInstanceOf[js.UndefOr[js.Array[js.Dynamic]]])
-        val rng          = parseRange(s.range.asInstanceOf[js.UndefOr[js.Dynamic]])
-        val perStepItems = parseStringArray(s.items.asInstanceOf[js.UndefOr[js.Array[js.Any]]])
-        val perStepKeys  = parseStringArray(s.keys.asInstanceOf[js.UndefOr[js.Array[js.Any]]])
-        val secItems =
-          parseStringArray(s.secondaryItems.asInstanceOf[js.UndefOr[js.Array[js.Any]]])
-        val secKeys =
-          parseStringArray(s.secondaryKeys.asInstanceOf[js.UndefOr[js.Array[js.Any]]])
-        val secMarkers =
-          parseMarkers(s.secondaryMarkers.asInstanceOf[js.UndefOr[js.Array[js.Dynamic]]])
-        val secRange = parseRange(s.secondaryRange.asInstanceOf[js.UndefOr[js.Dynamic]])
-        val msg      = s.msg.asInstanceOf[js.UndefOr[String]].toOption.getOrElse("")
-        Step(perStepItems, perStepKeys, mks, rng, msg, secItems, secKeys, secMarkers, secRange)
-      }
-      Spec(items, title, steps, primaryLabel, secondaryItems, secondaryLabel)
-    } match
-      case Success(spec) if spec.items.isEmpty => Left("payload.items must be non-empty")
-      case Success(spec)                       => Right(spec)
-      case Failure(t)                          => Left(Option(t.getMessage).getOrElse("invalid payload JSON"))
+    PayloadDecoder.run(json) { d =>
+      val items = d.stringList("items").getOrElse(throw PayloadDecoder.missing("items"))
+      if items.isEmpty then throw PayloadDecoder.invalid("items must be non-empty")
+      Spec(
+        items = items,
+        title = d.optString("title"),
+        steps = d.dynList("steps").map(parseStep),
+        primaryLabel = d.optString("primaryLabel"),
+        secondaryItems = d.stringList("secondaryItems"),
+        secondaryLabel = d.optString("secondaryLabel")
+      )
+    }
 
   // ---------------------------------------------------------------------------
   // Layout helpers
   // ---------------------------------------------------------------------------
-
-  private def clamp(i: Int, count: Int): Int =
-    if count <= 0 then 0 else math.max(0, math.min(count - 1, i))
 
   private def cellX(index: Int): Double =
     PaddingX + index * (CellSize + CellGap)
@@ -535,42 +506,30 @@ object ArrayTraversal:
     ScalaFnComponent
       .withHooks[Props]
       .useMemoBy(_.payload)(_ => payload => parsePayload(payload))
-      .useState(0)                      // step index
-      .useState(false)                  // playing
-      .useRefBy(_ => Option.empty[Int]) // play timeout id
-      .useRefToVdom[dom.html.Element]   // host div ref — D3 manages the <svg> inside
-      .useRefBy(_ => false)             // hasRendered (mutable; avoids re-render cycle)
-      // ── play-loop timer ─────────────────────────────────────────────────────
-      .useEffectWithDepsBy((_, specM, indexS, playingS, _, _, _) =>
-        (specM.value.toOption.fold(0)(_.steps.size), indexS.value, playingS.value)
-      ) { (_, _, indexS, playingS, timeoutRef, _, _) => (count, index, playing) =>
-        Callback {
-          timeoutRef.value.foreach(dom.window.clearTimeout)
-          timeoutRef.value = None
-          if playing then
-            if index >= count - 1 then playingS.setState(false).runNow()
-            else
-              val id =
-                dom.window.setTimeout(() => indexS.setState(index + 1).runNow(), StepDelayMs.toDouble)
-              timeoutRef.value = Some(id)
-        }
+      // Stepper hook — owns the step index, playing flag, timeout ref, and play-loop effect. Widget
+      // supplies (stepCount, delayMs); receives state + prev/next/reset/togglePlay/jumpTo callbacks.
+      .customBy { (_, specM) =>
+        val stepCount = specM.value.toOption.fold(0)(_.steps.size)
+        Stepper.hook(Stepper.Input(stepCount, StepDelayMs.toDouble))
       }
+      .useRefToVdom[dom.html.Element] // host div ref — D3 manages the <svg> inside
+      .useRefBy(_ => false)           // hasRendered (mutable; avoids re-render cycle)
       // ── D3 render on every step / spec change ───────────────────────────────
-      .useEffectWithDepsBy((_, specM, indexS, _, _, _, _) =>
-        (specM.value.toOption.fold(0)(_.steps.size), indexS.value)
-      ) { (_, specM, _, _, _, hostRef, hasRenderedRef) => (count, index) =>
+      .useEffectWithDepsBy((_, specM, stepper, _, _) =>
+        (specM.value.toOption.fold(0)(_.steps.size), stepper.index)
+      ) { (_, specM, _, hostRef, hasRenderedRef) => (_, index) =>
         specM.value.toOption.filter(_.steps.nonEmpty) match
           case Some(spec) =>
             hostRef.foreach { host =>
               val svgEl   = ensureSvg(host, spec)
-              val step    = spec.steps(clamp(index, count))
+              val step    = spec.steps(index)
               val animate = hasRenderedRef.value
               renderStep(svgEl, spec, step, animate)
               if !hasRenderedRef.value then hasRenderedRef.value = true
             }
           case None => Callback.empty
       }
-      .render { (_, specM, indexS, playingS, _, hostRef, _) =>
+      .render { (_, specM, stepper, hostRef, _) =>
         specM.value match
           case Left(err) =>
             <.div(
@@ -580,24 +539,10 @@ object ArrayTraversal:
             )
           case Right(spec) =>
             val count = spec.steps.size
-            val idx   = clamp(indexS.value, math.max(1, count))
+            val idx   = stepper.index
             val currentStep =
               if count == 0 then Step(None, None, Nil, None, "No steps defined.", None, None, Nil, None)
               else spec.steps(idx)
-            val atStart = idx == 0
-            val atEnd   = count == 0 || idx == count - 1
-
-            val previous =
-              playingS.setState(false) >> indexS.modState(i => clamp(i - 1, math.max(1, count)))
-            val next =
-              playingS.setState(false) >> indexS.modState(i => clamp(i + 1, math.max(1, count)))
-            val reset =
-              playingS.setState(false) >> indexS.setState(0)
-            val togglePlay =
-              if playingS.value then playingS.setState(false)
-              else
-                val rewind = if atEnd then indexS.setState(0) else Callback.empty
-                rewind >> playingS.setState(true)
 
             // Controls + step counter are only useful when there's more than
             // one step. For a single-step (static) widget, hide them entirely
@@ -610,8 +555,8 @@ object ArrayTraversal:
                   ^.className := "array-traversal__controls",
                   <.button(
                     ^.tpe := "button",
-                    ^.onClick --> previous,
-                    ^.disabled   := atStart,
+                    ^.onClick --> stepper.previous,
+                    ^.disabled   := stepper.atStart,
                     ^.aria.label := "Previous step",
                     ^.className  := "array-traversal__button",
                     LucideIcons.ArrowLeft(LucideIcons.withClass("array-traversal__button-icon")),
@@ -619,19 +564,19 @@ object ArrayTraversal:
                   ),
                   <.button(
                     ^.tpe := "button",
-                    ^.onClick --> togglePlay,
+                    ^.onClick --> stepper.togglePlay,
                     ^.disabled   := count == 0,
-                    ^.aria.label := (if playingS.value then "Pause" else "Play"),
+                    ^.aria.label := (if stepper.isPlaying then "Pause" else "Play"),
                     ^.className  := "array-traversal__button array-traversal__button--primary",
-                    if playingS.value then
+                    if stepper.isPlaying then
                       LucideIcons.Pause(LucideIcons.withClass("array-traversal__button-icon"))
                     else LucideIcons.Play(LucideIcons.withClass("array-traversal__button-icon")),
-                    if playingS.value then "Pause" else "Play"
+                    if stepper.isPlaying then "Pause" else "Play"
                   ),
                   <.button(
                     ^.tpe := "button",
-                    ^.onClick --> next,
-                    ^.disabled   := atEnd,
+                    ^.onClick --> stepper.next,
+                    ^.disabled   := stepper.atEnd,
                     ^.aria.label := "Next step",
                     ^.className  := "array-traversal__button",
                     "Next",
@@ -639,8 +584,8 @@ object ArrayTraversal:
                   ),
                   <.button(
                     ^.tpe := "button",
-                    ^.onClick --> reset,
-                    ^.disabled   := atStart && !playingS.value,
+                    ^.onClick --> stepper.reset,
+                    ^.disabled   := stepper.atStart && !stepper.isPlaying,
                     ^.aria.label := "Reset",
                     ^.className  := "array-traversal__button array-traversal__button--icon",
                     LucideIcons.RotateCcw(LucideIcons.withClass("array-traversal__button-icon"))

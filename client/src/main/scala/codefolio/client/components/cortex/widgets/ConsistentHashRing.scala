@@ -1,11 +1,12 @@
 package codefolio.client.components.cortex.widgets
 
+import codefolio.client.components.cortex.widgets.PayloadDecoder.*
 import japgolly.scalajs.react.*
 import japgolly.scalajs.react.vdom.html_<^.*
 
 import scala.scalajs.js
+import scala.util.Try
 import scala.util.hashing.MurmurHash3
-import scala.util.{Failure, Success, Try}
 
 /**
  * Consistent-hash-ring widget — the senior moment of Lesson 7 made visceral. A circular SVG ring with
@@ -105,36 +106,23 @@ object ConsistentHashRing:
   // Parsing
   // ===========================================================================
 
-  private def parseRange(d: js.Dynamic, default: (Int, Int)): (Int, Int) =
-    d.asInstanceOf[js.UndefOr[js.Array[Double]]].toOption.map(_.toList) match
-      case Some(lo :: hi :: _) => (lo.toInt, hi.toInt)
-      case _                   => default
-
   private def parsePayload(json: String): Either[String, Spec] =
-    Try {
-      val raw     = js.JSON.parse(json).asInstanceOf[js.Dynamic]
-      val title   = raw.title.asInstanceOf[js.UndefOr[String]].toOption.filter(_.nonEmpty)
-      val nc      = raw.nodeCount.asInstanceOf[js.UndefOr[Double]].toOption.getOrElse(4.0).toInt
-      val nRange  = parseRange(raw.nodeRange, (1, 8))
-      val vn      = raw.virtualNodes.asInstanceOf[js.UndefOr[Double]].toOption.getOrElse(1.0).toInt
-      val vnRange = parseRange(raw.virtualNodeRange, (1, 50))
-      val kc      = raw.keyCount.asInstanceOf[js.UndefOr[Double]].toOption.getOrElse(24.0).toInt
-      Spec(title, nc, nRange._1, nRange._2, vn, vnRange._1, vnRange._2, kc)
-    } match
-      case Success(s) if s.nodeMin < 1 || s.nodeMax < s.nodeMin =>
-        Left("payload.nodeRange must satisfy 1 ≤ min ≤ max")
-      case Success(s) if s.virtualNodesMin < 1 || s.virtualNodesMax < s.virtualNodesMin =>
-        Left("payload.virtualNodeRange must satisfy 1 ≤ min ≤ max")
-      case Success(s) if s.nodeCount < s.nodeMin || s.nodeCount > s.nodeMax =>
-        Left(s"payload.nodeCount must fall within nodeRange [${s.nodeMin}, ${s.nodeMax}]")
-      case Success(s) if s.virtualNodes < s.virtualNodesMin || s.virtualNodes > s.virtualNodesMax =>
-        Left(
-          s"payload.virtualNodes must fall within virtualNodeRange [${s.virtualNodesMin}, ${s.virtualNodesMax}]"
-        )
-      case Success(s) if s.keyCount < 1 || s.keyCount > 64 =>
-        Left("payload.keyCount must be in [1, 64]")
-      case Success(s) => Right(s)
-      case Failure(t) => Left(Option(t.getMessage).getOrElse("invalid payload JSON"))
+    PayloadDecoder.run(json) { d =>
+      val nc            = d.double("nodeCount", 4.0).toInt
+      val (nMin, nMx)   = d.intRange("nodeRange", (1, 8))
+      val vn            = d.double("virtualNodes", 1.0).toInt
+      val (vnMin, vnMx) = d.intRange("virtualNodeRange", (1, 50))
+      val kc            = d.double("keyCount", 24.0).toInt
+      if nMin < 1 || nMx < nMin then throw PayloadDecoder.invalid("nodeRange must satisfy 1 ≤ min ≤ max")
+      if vnMin < 1 || vnMx < vnMin then
+        throw PayloadDecoder.invalid("virtualNodeRange must satisfy 1 ≤ min ≤ max")
+      if nc < nMin || nc > nMx then
+        throw PayloadDecoder.invalid(s"nodeCount must fall within nodeRange [$nMin, $nMx]")
+      if vn < vnMin || vn > vnMx then
+        throw PayloadDecoder.invalid(s"virtualNodes must fall within virtualNodeRange [$vnMin, $vnMx]")
+      if kc < 1 || kc > 64 then throw PayloadDecoder.invalid("keyCount must be in [1, 64]")
+      Spec(d.optString("title"), nc, nMin, nMx, vn, vnMin, vnMx, kc)
+    }
 
   // ===========================================================================
   // Ring data — vnodes sorted, key ownership, per-node load

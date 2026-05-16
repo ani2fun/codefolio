@@ -1,10 +1,10 @@
 package codefolio.client.components.cortex.widgets
 
+import codefolio.client.components.cortex.widgets.PayloadDecoder.*
 import japgolly.scalajs.react.*
 import japgolly.scalajs.react.vdom.html_<^.*
 
-import scala.scalajs.js
-import scala.util.{Failure, Success, Try}
+import scala.util.Try
 
 /**
  * Replication-lag widget — two parallel timelines (leader, replica) showing the same sequence of writes
@@ -67,37 +67,23 @@ object ReplicationLagSimulator:
   // Parsing
   // ===========================================================================
 
-  private def parseRange(d: js.Dynamic, default: (Int, Int)): (Int, Int) =
-    d.asInstanceOf[js.UndefOr[js.Array[Double]]].toOption.map(_.toList) match
-      case Some(lo :: hi :: _) => (lo.toInt, hi.toInt)
-      case _                   => default
-
   private def parsePayload(json: String): Either[String, Spec] =
-    Try {
-      val raw   = js.JSON.parse(json).asInstanceOf[js.Dynamic]
-      val title = raw.title.asInstanceOf[js.UndefOr[String]].toOption.filter(_.nonEmpty)
-      val lag   = raw.lagMs.asInstanceOf[js.UndefOr[Double]].toOption.getOrElse(80.0).toInt
-      val lagR  = parseRange(raw.lagRange, (0, 500))
-      val rd    = raw.readDelayMs.asInstanceOf[js.UndefOr[Double]].toOption.getOrElse(30.0).toInt
-      val rdR   = parseRange(raw.readDelayRange, (0, 500))
-      val wc    = raw.writeCount.asInstanceOf[js.UndefOr[Double]].toOption.getOrElse(5.0).toInt
-      val wi    = raw.writeIntervalMs.asInstanceOf[js.UndefOr[Double]].toOption.getOrElse(100.0).toInt
-      Spec(title, lag, lagR._1, lagR._2, rd, rdR._1, rdR._2, wc, wi)
-    } match
-      case Success(s) if s.lagMin < 0 || s.lagMax < s.lagMin =>
-        Left("payload.lagRange must satisfy 0 ≤ min ≤ max")
-      case Success(s) if s.readDelayMin < 0 || s.readDelayMax < s.readDelayMin =>
-        Left("payload.readDelayRange must satisfy 0 ≤ min ≤ max")
-      case Success(s) if s.lagMs < s.lagMin || s.lagMs > s.lagMax =>
-        Left("payload.lagMs out of range")
-      case Success(s) if s.readDelayMs < s.readDelayMin || s.readDelayMs > s.readDelayMax =>
-        Left("payload.readDelayMs out of range")
-      case Success(s) if s.writeCount < 1 || s.writeCount > 12 =>
-        Left("payload.writeCount must be in [1, 12]")
-      case Success(s) if s.writeIntervalMs < 10 =>
-        Left("payload.writeIntervalMs must be ≥ 10")
-      case Success(s) => Right(s)
-      case Failure(t) => Left(Option(t.getMessage).getOrElse("invalid payload JSON"))
+    PayloadDecoder.run(json) { d =>
+      val lag           = d.double("lagMs", 80.0).toInt
+      val (lMin, lMx)   = d.intRange("lagRange", (0, 500))
+      val rd            = d.double("readDelayMs", 30.0).toInt
+      val (rdMin, rdMx) = d.intRange("readDelayRange", (0, 500))
+      val wc            = d.double("writeCount", 5.0).toInt
+      val wi            = d.double("writeIntervalMs", 100.0).toInt
+      if lMin < 0 || lMx < lMin then throw PayloadDecoder.invalid("lagRange must satisfy 0 ≤ min ≤ max")
+      if rdMin < 0 || rdMx < rdMin then
+        throw PayloadDecoder.invalid("readDelayRange must satisfy 0 ≤ min ≤ max")
+      if lag < lMin || lag > lMx then throw PayloadDecoder.invalid("lagMs out of range")
+      if rd < rdMin || rd > rdMx then throw PayloadDecoder.invalid("readDelayMs out of range")
+      if wc < 1 || wc > 12 then throw PayloadDecoder.invalid("writeCount must be in [1, 12]")
+      if wi < 10 then throw PayloadDecoder.invalid("writeIntervalMs must be ≥ 10")
+      Spec(d.optString("title"), lag, lMin, lMx, rd, rdMin, rdMx, wc, wi)
+    }
 
   // ===========================================================================
   // Layout
