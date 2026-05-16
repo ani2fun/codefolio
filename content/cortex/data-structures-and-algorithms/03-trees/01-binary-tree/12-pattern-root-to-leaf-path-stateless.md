@@ -238,14 +238,25 @@ int binary_summation_of_tree(TreeNode *root) { return bs_helper(root, 0); }
 ```
 
 ```scala run
-def binarySummationOfTree(root: TreeNode): Int = {
-  def go(n: TreeNode, acc: Int): Int = {
-    if (n == null) return 0
-    val a = (acc << 1) | n.value
-    if (n.left == null && n.right == null) return a
-    go(n.left, a) + go(n.right, a)
+class TreeNode(var value: Int, var left: TreeNode = null, var right: TreeNode = null)
+
+object Main extends App {
+  class Solution {
+    def binarySummationOfTree(root: TreeNode): Int = {
+      def go(n: TreeNode, acc: Int): Int = {
+        if (n == null) return 0
+        val a = (acc << 1) | n.value
+        if (n.left == null && n.right == null) return a
+        go(n.left, a) + go(n.right, a)
+      }
+      go(root, 0)
+    }
   }
-  go(root, 0)
+
+  val root = new TreeNode(1,
+    new TreeNode(0, new TreeNode(0), new TreeNode(1)),
+    new TreeNode(1, new TreeNode(0), new TreeNode(1)))
+  println(new Solution().binarySummationOfTree(root))  // 22
 }
 ```
 
@@ -310,15 +321,26 @@ int even_path(TreeNode *root) {
 ```
 
 ```scala run
-def evenPath(root: TreeNode): Boolean = {
-  if (root == null) return false
-  def go(n: TreeNode, ok: Boolean): Boolean = {
-    if (n == null) return false
-    val ok2 = ok && (n.value % 2 == 0)
-    if (n.left == null && n.right == null) return ok2
-    go(n.left, ok2) || go(n.right, ok2)
+class TreeNode(var value: Int, var left: TreeNode = null, var right: TreeNode = null)
+
+object Main extends App {
+  class Solution {
+    def evenPath(root: TreeNode): Boolean = {
+      if (root == null) return false
+      def go(n: TreeNode, ok: Boolean): Boolean = {
+        if (n == null) return false
+        val ok2 = ok && (n.value % 2 == 0)
+        if (n.left == null && n.right == null) return ok2
+        go(n.left, ok2) || go(n.right, ok2)
+      }
+      go(root, true)
+    }
   }
-  go(root, true)
+
+  val root = new TreeNode(2,
+    new TreeNode(4, new TreeNode(8), null),
+    new TreeNode(3))
+  println(new Solution().evenPath(root))  // true
 }
 ```
 
@@ -405,14 +427,25 @@ int odd_count(TreeNode *root) { return oc_helper(root, 0); }
 ```
 
 ```scala run
-def oddCount(root: TreeNode): Int = {
-  def go(n: TreeNode, length: Int): Int = {
-    if (n == null) return 0
-    val l2 = length + 1
-    if (n.left == null && n.right == null) return if (l2 % 2 == 1) 1 else 0
-    go(n.left, l2) + go(n.right, l2)
+class TreeNode(var value: Int, var left: TreeNode = null, var right: TreeNode = null)
+
+object Main extends App {
+  class Solution {
+    def oddCount(root: TreeNode): Int = {
+      def go(n: TreeNode, length: Int): Int = {
+        if (n == null) return 0
+        val l2 = length + 1
+        if (n.left == null && n.right == null) return if (l2 % 2 == 1) 1 else 0
+        go(n.left, l2) + go(n.right, l2)
+      }
+      go(root, 0)
+    }
   }
-  go(root, 0)
+
+  val root = new TreeNode(1,
+    new TreeNode(2, new TreeNode(4), null),
+    new TreeNode(3, null, new TreeNode(7)))
+  println(new Solution().oddCount(root))  // 2
 }
 ```
 
