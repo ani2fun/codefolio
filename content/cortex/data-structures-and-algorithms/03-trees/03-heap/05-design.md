@@ -256,40 +256,48 @@ void maxHeapFree(MaxHeap *h) { free(h->data); free(h); }
 ```scala run
 import scala.collection.mutable.ArrayBuffer
 
-class MaxHeap {
-  private val heap = ArrayBuffer.empty[Int]
+object Main extends App {
+  class MaxHeap {
+    private val heap = ArrayBuffer.empty[Int]
 
-  private def swap(i: Int, j: Int): Unit = { val t = heap(i); heap(i) = heap(j); heap(j) = t }
+    private def swap(i: Int, j: Int): Unit = { val t = heap(i); heap(i) = heap(j); heap(j) = t }
 
-  private def upHeapify(start: Int): Unit = {
-    var index = start; var parent = (index - 1) / 2
-    while (index > 0 && heap(parent) < heap(index)) { swap(index, parent); index = parent; parent = (index - 1) / 2 }
-  }
+    private def upHeapify(start: Int): Unit = {
+      var index = start; var parent = (index - 1) / 2
+      while (index > 0 && heap(parent) < heap(index)) { swap(index, parent); index = parent; parent = (index - 1) / 2 }
+    }
 
-  private def downHeapify(start: Int): Unit = {
-    var index = start; val n = heap.length; var go = true
-    while (go) {
-      var largest = index
-      val left = 2 * index + 1; val right = 2 * index + 2
-      if (left  < n && heap(left)  > heap(largest)) largest = left
-      if (right < n && heap(right) > heap(largest)) largest = right
-      if (largest == index) go = false else { swap(index, largest); index = largest }
+    private def downHeapify(start: Int): Unit = {
+      var index = start; val n = heap.length; var go = true
+      while (go) {
+        var largest = index
+        val left = 2 * index + 1; val right = 2 * index + 2
+        if (left  < n && heap(left)  > heap(largest)) largest = left
+        if (right < n && heap(right) > heap(largest)) largest = right
+        if (largest == index) go = false else { swap(index, largest); index = largest }
+      }
+    }
+
+    def insert(v: Int): Unit = { heap += v; upHeapify(heap.length - 1) }
+
+    def remove(index: Int): Unit = {
+      val last = heap.remove(heap.length - 1)
+      if (index < heap.length) { heap(index) = last; downHeapify(index) }
+    }
+
+    def getMax: Int = if (heap.isEmpty) -1 else heap(0)
+
+    def extractMax: Int = {
+      if (heap.isEmpty) -1
+      else { val top = heap(0); remove(0); top }
     }
   }
 
-  def insert(v: Int): Unit = { heap += v; upHeapify(heap.length - 1) }
-
-  def remove(index: Int): Unit = {
-    val last = heap.remove(heap.length - 1)
-    if (index < heap.length) { heap(index) = last; downHeapify(index) }
-  }
-
-  def getMax: Int = if (heap.isEmpty) -1 else heap(0)
-
-  def extractMax: Int = {
-    if (heap.isEmpty) -1
-    else { val top = heap(0); remove(0); top }
-  }
+  val h = new MaxHeap
+  Seq(3, 1, 4, 1, 5, 9).foreach(h.insert)
+  println(h.getMax)       // 9
+  println(h.extractMax)   // 9
+  println(h.getMax)       // 5
 }
 ```
 
@@ -501,39 +509,47 @@ void minHeapFree(MinHeap *h) { free(h->data); free(h); }
 ```scala run
 import scala.collection.mutable.ArrayBuffer
 
-class MinHeap {
-  private val heap = ArrayBuffer.empty[Int]
+object Main extends App {
+  class MinHeap {
+    private val heap = ArrayBuffer.empty[Int]
 
-  private def swap(i: Int, j: Int): Unit = { val t = heap(i); heap(i) = heap(j); heap(j) = t }
+    private def swap(i: Int, j: Int): Unit = { val t = heap(i); heap(i) = heap(j); heap(j) = t }
 
-  private def upHeapify(start: Int): Unit = {
-    var index = start; var parent = (index - 1) / 2
-    while (index > 0 && heap(parent) > heap(index)) { swap(index, parent); index = parent; parent = (index - 1) / 2 }
-  }
+    private def upHeapify(start: Int): Unit = {
+      var index = start; var parent = (index - 1) / 2
+      while (index > 0 && heap(parent) > heap(index)) { swap(index, parent); index = parent; parent = (index - 1) / 2 }
+    }
 
-  private def downHeapify(start: Int): Unit = {
-    var index = start; val n = heap.length; var go = true
-    while (go) {
-      var smallest = index
-      val left = 2 * index + 1; val right = 2 * index + 2
-      if (left  < n && heap(left)  < heap(smallest)) smallest = left
-      if (right < n && heap(right) < heap(smallest)) smallest = right
-      if (smallest == index) go = false else { swap(index, smallest); index = smallest }
+    private def downHeapify(start: Int): Unit = {
+      var index = start; val n = heap.length; var go = true
+      while (go) {
+        var smallest = index
+        val left = 2 * index + 1; val right = 2 * index + 2
+        if (left  < n && heap(left)  < heap(smallest)) smallest = left
+        if (right < n && heap(right) < heap(smallest)) smallest = right
+        if (smallest == index) go = false else { swap(index, smallest); index = smallest }
+      }
+    }
+
+    def insert(v: Int): Unit = { heap += v; upHeapify(heap.length - 1) }
+
+    def remove(index: Int): Unit = {
+      val last = heap.remove(heap.length - 1)
+      if (index < heap.length) { heap(index) = last; downHeapify(index) }
+    }
+
+    def getMin: Int = if (heap.isEmpty) -1 else heap(0)
+
+    def extractMin: Int = {
+      if (heap.isEmpty) -1 else { val top = heap(0); remove(0); top }
     }
   }
 
-  def insert(v: Int): Unit = { heap += v; upHeapify(heap.length - 1) }
-
-  def remove(index: Int): Unit = {
-    val last = heap.remove(heap.length - 1)
-    if (index < heap.length) { heap(index) = last; downHeapify(index) }
-  }
-
-  def getMin: Int = if (heap.isEmpty) -1 else heap(0)
-
-  def extractMin: Int = {
-    if (heap.isEmpty) -1 else { val top = heap(0); remove(0); top }
-  }
+  val h = new MinHeap
+  Seq(3, 1, 4, 1, 5, 9).foreach(h.insert)
+  println(h.getMin)       // 1
+  println(h.extractMin)   // 1
+  println(h.getMin)       // 1
 }
 ```
 
@@ -767,23 +783,29 @@ void medianFinderFree(MedianFinder *m) { maxHeapFree(m->lower); minHeapFree(m->u
 ```scala run
 import scala.collection.mutable.PriorityQueue
 
-class MedianFinder {
-  private val lower = PriorityQueue.empty[Int]                                                             // max-heap (default)
-  private val upper = PriorityQueue.empty[Int](Ordering[Int].reverse)                                       // min-heap
+object Main extends App {
+  class MedianFinder {
+    private val lower = PriorityQueue.empty[Int]                                                             // max-heap (default)
+    private val upper = PriorityQueue.empty[Int](Ordering[Int].reverse)                                       // min-heap
 
-  def addNum(num: Int): Unit = {
-    lower.enqueue(num)
-    if (upper.nonEmpty && lower.head > upper.head) {                                                        // order rebalance
-      val a = lower.dequeue(); val b = upper.dequeue()
-      lower.enqueue(b); upper.enqueue(a)
+    def addNum(num: Int): Unit = {
+      lower.enqueue(num)
+      if (upper.nonEmpty && lower.head > upper.head) {                                                        // order rebalance
+        val a = lower.dequeue(); val b = upper.dequeue()
+        lower.enqueue(b); upper.enqueue(a)
+      }
+      if (lower.size > upper.size + 1) upper.enqueue(lower.dequeue())                                          // size rebalance
+      else if (upper.size > lower.size) lower.enqueue(upper.dequeue())
     }
-    if (lower.size > upper.size + 1) upper.enqueue(lower.dequeue())                                          // size rebalance
-    else if (upper.size > lower.size) lower.enqueue(upper.dequeue())
+
+    def findMedian: Double =
+      if (lower.size > upper.size) lower.head.toDouble
+      else (lower.head + upper.head) / 2.0
   }
 
-  def findMedian: Double =
-    if (lower.size > upper.size) lower.head.toDouble
-    else (lower.head + upper.head) / 2.0
+  val mf = new MedianFinder
+  mf.addNum(1); mf.addNum(2); mf.addNum(4)
+  println(mf.findMedian)  // 2.0
 }
 ```
 
