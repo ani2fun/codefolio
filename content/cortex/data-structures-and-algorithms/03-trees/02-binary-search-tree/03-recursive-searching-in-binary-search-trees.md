@@ -190,13 +190,25 @@ class Solution:
 ```
 
 ```java run
-class Solution {
-    public TreeNode recursiveSearch(TreeNode root, int target) {
-        if (root == null) return null;                               // empty subtree
-        if (root.val == target) return root;                         // match
-        if (target < root.val)                                       // BST rule:
-            return recursiveSearch(root.left, target);               //   left half
-        return recursiveSearch(root.right, target);                  //   right half
+public class Main {
+    static class TreeNode { int val; TreeNode left, right; TreeNode(int v){val=v;} }
+
+    static class Solution {
+        public TreeNode recursiveSearch(TreeNode root, int target) {
+            if (root == null) return null;                               // empty subtree
+            if (root.val == target) return root;                         // match
+            if (target < root.val)                                       // BST rule:
+                return recursiveSearch(root.left, target);               //   left half
+            return recursiveSearch(root.right, target);                  //   right half
+        }
+    }
+
+    public static void main(String[] args) {
+        TreeNode root = new TreeNode(4);
+        root.left  = new TreeNode(2); root.right = new TreeNode(5);
+        root.left.left  = new TreeNode(1); root.left.right = new TreeNode(3);
+        root.right.right = new TreeNode(6);
+        System.out.println(new Solution().recursiveSearch(root, 3).val);  // 3
     }
 }
 ```
@@ -212,13 +224,22 @@ struct TreeNode *recursiveSearch(struct TreeNode *root, int target) {
 ```
 
 ```scala run
-object Solution {
-  def recursiveSearch(root: TreeNode, target: Int): TreeNode = {
-    if (root == null) null                                            // empty subtree
-    else if (root.value == target) root                               // match
-    else if (target < root.value) recursiveSearch(root.left,  target) // BST rule: left
-    else                          recursiveSearch(root.right, target) //          right
+class TreeNode(var value: Int, var left: TreeNode = null, var right: TreeNode = null)
+
+object Main extends App {
+  class Solution {
+    def recursiveSearch(root: TreeNode, target: Int): TreeNode = {
+      if (root == null) null                                            // empty subtree
+      else if (root.value == target) root                               // match
+      else if (target < root.value) recursiveSearch(root.left,  target) // BST rule: left
+      else                          recursiveSearch(root.right, target) //          right
+    }
   }
+
+  val root = new TreeNode(4,
+    new TreeNode(2, new TreeNode(1), new TreeNode(3)),
+    new TreeNode(5, null, new TreeNode(6)))
+  println(new Solution().recursiveSearch(root, 3).value)  // 3
 }
 ```
 
@@ -363,11 +384,23 @@ class Solution:
 ```
 
 ```java run
-class Solution {
-    public TreeNode recursivelyFindMinimum(TreeNode root) {
-        if (root == null)      return null;                          // empty tree
-        if (root.left == null) return root;                          // leftmost reached
-        return recursivelyFindMinimum(root.left);                    // keep going left
+public class Main {
+    static class TreeNode { int val; TreeNode left, right; TreeNode(int v){val=v;} }
+
+    static class Solution {
+        public TreeNode recursivelyFindMinimum(TreeNode root) {
+            if (root == null)      return null;                          // empty tree
+            if (root.left == null) return root;                          // leftmost reached
+            return recursivelyFindMinimum(root.left);                    // keep going left
+        }
+    }
+
+    public static void main(String[] args) {
+        TreeNode root = new TreeNode(4);
+        root.left  = new TreeNode(2); root.right = new TreeNode(5);
+        root.left.left  = new TreeNode(1); root.left.right = new TreeNode(3);
+        root.right.right = new TreeNode(6);
+        System.out.println(new Solution().recursivelyFindMinimum(root).val);  // 1
     }
 }
 ```
@@ -381,12 +414,21 @@ struct TreeNode *recursivelyFindMinimum(struct TreeNode *root) {
 ```
 
 ```scala run
-object Solution {
-  def recursivelyFindMinimum(root: TreeNode): TreeNode = {
-    if (root == null)      null                                       // empty tree
-    else if (root.left == null) root                                  // leftmost reached
-    else recursivelyFindMinimum(root.left)                            // keep going left
+class TreeNode(var value: Int, var left: TreeNode = null, var right: TreeNode = null)
+
+object Main extends App {
+  class Solution {
+    def recursivelyFindMinimum(root: TreeNode): TreeNode = {
+      if (root == null)      null                                       // empty tree
+      else if (root.left == null) root                                  // leftmost reached
+      else recursivelyFindMinimum(root.left)                            // keep going left
+    }
   }
+
+  val root = new TreeNode(4,
+    new TreeNode(2, new TreeNode(1), new TreeNode(3)),
+    new TreeNode(5, null, new TreeNode(6)))
+  println(new Solution().recursivelyFindMinimum(root).value)  // 1
 }
 ```
 
@@ -515,11 +557,23 @@ class Solution:
 ```
 
 ```java run
-class Solution {
-    public TreeNode recursivelyFindMaximum(TreeNode root) {
-        if (root == null)        return null;                          // empty tree
-        if (root.right == null)  return root;                          // rightmost reached
-        return recursivelyFindMaximum(root.right);                     // keep going right
+public class Main {
+    static class TreeNode { int val; TreeNode left, right; TreeNode(int v){val=v;} }
+
+    static class Solution {
+        public TreeNode recursivelyFindMaximum(TreeNode root) {
+            if (root == null)        return null;                          // empty tree
+            if (root.right == null)  return root;                          // rightmost reached
+            return recursivelyFindMaximum(root.right);                     // keep going right
+        }
+    }
+
+    public static void main(String[] args) {
+        TreeNode root = new TreeNode(4);
+        root.left  = new TreeNode(2); root.right = new TreeNode(5);
+        root.left.left  = new TreeNode(1); root.left.right = new TreeNode(3);
+        root.right.right = new TreeNode(6);
+        System.out.println(new Solution().recursivelyFindMaximum(root).val);  // 6
     }
 }
 ```
@@ -533,12 +587,21 @@ struct TreeNode *recursivelyFindMaximum(struct TreeNode *root) {
 ```
 
 ```scala run
-object Solution {
-  def recursivelyFindMaximum(root: TreeNode): TreeNode = {
-    if (root == null)            null                                    // empty tree
-    else if (root.right == null) root                                    // rightmost reached
-    else recursivelyFindMaximum(root.right)                              // keep going right
+class TreeNode(var value: Int, var left: TreeNode = null, var right: TreeNode = null)
+
+object Main extends App {
+  class Solution {
+    def recursivelyFindMaximum(root: TreeNode): TreeNode = {
+      if (root == null)            null                                    // empty tree
+      else if (root.right == null) root                                    // rightmost reached
+      else recursivelyFindMaximum(root.right)                              // keep going right
+    }
   }
+
+  val root = new TreeNode(4,
+    new TreeNode(2, new TreeNode(1), new TreeNode(3)),
+    new TreeNode(5, null, new TreeNode(6)))
+  println(new Solution().recursivelyFindMaximum(root).value)  // 6
 }
 ```
 
@@ -734,26 +797,38 @@ class Solution:
 ```
 
 ```java run
-class Solution {
-    TreeNode lowerBoundNode = null;                                          // shared state
+public class Main {
+    static class TreeNode { int val; TreeNode left, right; TreeNode(int v){val=v;} }
 
-    void helper(TreeNode root, int target) {
-        if (root == null) return;                                             // walked off
-        if (target < root.val) {                                              // node ≥ target
-            lowerBoundNode = root;                                            //   candidate
-            helper(root.left, target);                                        //   tighten left
-        } else if (root.val == target) {                                      // exact match
-            lowerBoundNode = root;                                            //   final answer
-            return;
-        } else {                                                              // node < target
-            helper(root.right, target);                                       //   search right
+    static class Solution {
+        TreeNode lowerBoundNode = null;                                          // shared state
+
+        void helper(TreeNode root, int target) {
+            if (root == null) return;                                             // walked off
+            if (target < root.val) {                                              // node ≥ target
+                lowerBoundNode = root;                                            //   candidate
+                helper(root.left, target);                                        //   tighten left
+            } else if (root.val == target) {                                      // exact match
+                lowerBoundNode = root;                                            //   final answer
+                return;
+            } else {                                                              // node < target
+                helper(root.right, target);                                       //   search right
+            }
+        }
+
+        public TreeNode recursivelyFindLowerBound(TreeNode root, int target) {
+            lowerBoundNode = null;                                                // reset
+            helper(root, target);
+            return lowerBoundNode;
         }
     }
 
-    public TreeNode recursivelyFindLowerBound(TreeNode root, int target) {
-        lowerBoundNode = null;                                                // reset
-        helper(root, target);
-        return lowerBoundNode;
+    public static void main(String[] args) {
+        TreeNode root = new TreeNode(4);
+        root.left  = new TreeNode(2); root.right = new TreeNode(5);
+        root.left.left  = new TreeNode(1); root.left.right = new TreeNode(3);
+        root.right.right = new TreeNode(6);
+        System.out.println(new Solution().recursivelyFindLowerBound(root, 3).val);  // 3
     }
 }
 ```
@@ -782,26 +857,35 @@ struct TreeNode *recursivelyFindLowerBound(struct TreeNode *root, int target) {
 ```
 
 ```scala run
-class Solution {
-  private var lowerBoundNode: TreeNode = null
+class TreeNode(var value: Int, var left: TreeNode = null, var right: TreeNode = null)
 
-  private def helper(root: TreeNode, target: Int): Unit = {
-    if (root == null) return                                                    // walked off
-    if (target < root.value) {                                                  // node ≥ target
-      lowerBoundNode = root                                                     //   candidate
-      helper(root.left, target)                                                 //   tighten left
-    } else if (root.value == target) {                                          // exact match
-      lowerBoundNode = root
-    } else {                                                                    // node < target
-      helper(root.right, target)                                                //   search right
+object Main extends App {
+  class Solution {
+    private var lowerBoundNode: TreeNode = null
+
+    private def helper(root: TreeNode, target: Int): Unit = {
+      if (root == null) return                                                    // walked off
+      if (target < root.value) {                                                  // node ≥ target
+        lowerBoundNode = root                                                     //   candidate
+        helper(root.left, target)                                                 //   tighten left
+      } else if (root.value == target) {                                          // exact match
+        lowerBoundNode = root
+      } else {                                                                    // node < target
+        helper(root.right, target)                                                //   search right
+      }
+    }
+
+    def recursivelyFindLowerBound(root: TreeNode, target: Int): TreeNode = {
+      lowerBoundNode = null                                                       // reset
+      helper(root, target)
+      lowerBoundNode
     }
   }
 
-  def recursivelyFindLowerBound(root: TreeNode, target: Int): TreeNode = {
-    lowerBoundNode = null                                                       // reset
-    helper(root, target)
-    lowerBoundNode
-  }
+  val root = new TreeNode(4,
+    new TreeNode(2, new TreeNode(1), new TreeNode(3)),
+    new TreeNode(5, null, new TreeNode(6)))
+  println(new Solution().recursivelyFindLowerBound(root, 3).value)  // 3
 }
 ```
 
@@ -955,23 +1039,35 @@ class Solution:
 ```
 
 ```java run
-class Solution {
-    TreeNode upperBoundNode = null;
+public class Main {
+    static class TreeNode { int val; TreeNode left, right; TreeNode(int v){val=v;} }
 
-    void helper(TreeNode root, int target) {
-        if (root == null) return;                                                  // walked off
-        if (target < root.val) {                                                   // node > target
-            upperBoundNode = root;                                                 //   candidate
-            helper(root.left, target);                                             //   tighten left
-        } else {                                                                   // node ≤ target
-            helper(root.right, target);                                            //   search right
+    static class Solution {
+        TreeNode upperBoundNode = null;
+
+        void helper(TreeNode root, int target) {
+            if (root == null) return;                                                  // walked off
+            if (target < root.val) {                                                   // node > target
+                upperBoundNode = root;                                                 //   candidate
+                helper(root.left, target);                                             //   tighten left
+            } else {                                                                   // node ≤ target
+                helper(root.right, target);                                            //   search right
+            }
+        }
+
+        public TreeNode recursivelyFindUpperBound(TreeNode root, int target) {
+            upperBoundNode = null;                                                     // reset
+            helper(root, target);
+            return upperBoundNode;
         }
     }
 
-    public TreeNode recursivelyFindUpperBound(TreeNode root, int target) {
-        upperBoundNode = null;                                                     // reset
-        helper(root, target);
-        return upperBoundNode;
+    public static void main(String[] args) {
+        TreeNode root = new TreeNode(4);
+        root.left  = new TreeNode(2); root.right = new TreeNode(5);
+        root.left.left  = new TreeNode(1); root.left.right = new TreeNode(3);
+        root.right.right = new TreeNode(6);
+        System.out.println(new Solution().recursivelyFindUpperBound(root, 3).val);  // 4
     }
 }
 ```
@@ -997,24 +1093,33 @@ struct TreeNode *recursivelyFindUpperBound(struct TreeNode *root, int target) {
 ```
 
 ```scala run
-class Solution {
-  private var upperBoundNode: TreeNode = null
+class TreeNode(var value: Int, var left: TreeNode = null, var right: TreeNode = null)
 
-  private def helper(root: TreeNode, target: Int): Unit = {
-    if (root == null) return                                                        // walked off
-    if (target < root.value) {                                                      // node > target
-      upperBoundNode = root                                                         //   candidate
-      helper(root.left, target)                                                     //   tighten left
-    } else {                                                                        // node ≤ target
-      helper(root.right, target)                                                    //   search right
+object Main extends App {
+  class Solution {
+    private var upperBoundNode: TreeNode = null
+
+    private def helper(root: TreeNode, target: Int): Unit = {
+      if (root == null) return                                                        // walked off
+      if (target < root.value) {                                                      // node > target
+        upperBoundNode = root                                                         //   candidate
+        helper(root.left, target)                                                     //   tighten left
+      } else {                                                                        // node ≤ target
+        helper(root.right, target)                                                    //   search right
+      }
+    }
+
+    def recursivelyFindUpperBound(root: TreeNode, target: Int): TreeNode = {
+      upperBoundNode = null                                                           // reset
+      helper(root, target)
+      upperBoundNode
     }
   }
 
-  def recursivelyFindUpperBound(root: TreeNode, target: Int): TreeNode = {
-    upperBoundNode = null                                                           // reset
-    helper(root, target)
-    upperBoundNode
-  }
+  val root = new TreeNode(4,
+    new TreeNode(2, new TreeNode(1), new TreeNode(3)),
+    new TreeNode(5, null, new TreeNode(6)))
+  println(new Solution().recursivelyFindUpperBound(root, 3).value)  // 4
 }
 ```
 
