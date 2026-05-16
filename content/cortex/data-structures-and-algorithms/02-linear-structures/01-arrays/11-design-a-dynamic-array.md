@@ -235,30 +235,40 @@ seq: "Capacity sequence as elements are pushed" {
 
 
 ```pseudocode
-# Dynamic array (vector / ArrayList) with amortised O(1) pushBack via capacity-doubling.
 class DynamicArray:
-    field arr                                          # backing storage
-    field currentSize                                  # number of stored elements
-    field capacity                                     # slots available in arr
+    field arr                                          # Pointer to the dynamically allocated array
+    field currentSize                                  # Current number of elements in the array
+    field capacity                                     # Current capacity of the array
 
     constructor():
-        arr ← empty list
+        arr ← null
         currentSize ← 0
         capacity ← 0
 
     function pushBack(val):
-        if currentSize ≥ capacity:                     # slow path — out of room
-            newCapacity ← 1 if capacity = 0 else capacity × 2     # double on each grow
+        if currentSize ≥ capacity:
+
+            # If the capacity is not enough, resize the array
+            newCapacity ← 1 if capacity = 0 else capacity × 2
             newArr ← list of newCapacity zeros
-            for i from 0 to currentSize − 1:           # O(currentSize) — happens log₂N times total
+
+            # Copy the existing elements to the new array
+            for i from 0 to currentSize − 1:
                 newArr[i] ← arr[i]
+
+            # Assign the new array and update the capacity
             arr ← newArr
             capacity ← newCapacity
-        arr[currentSize] ← val                         # fast path — O(1)
+
+        # Add the new element to the end of the array
+        arr[currentSize] ← val
         currentSize ← currentSize + 1
 
     function get(index):
-        return arr[index]                              # O(1) random access via contiguous storage
+        return arr[index]
+
+    function size():
+        return currentSize
 ```
 
 ```python run
@@ -266,42 +276,39 @@ from typing import List
 
 class DynamicArray:
     def __init__(self):
-        # Underlying storage. Starts as None — we allocate lazily on first push.
-        self.arr: List[int] = []
 
-        # Number of elements actually stored. Never exceeds `capacity`.
+        # Pointer to the dynamically allocated array
+        self.arr = None
+
+        # Current number of elements in the array
         self.current_size = 0
 
-        # Slots available in `arr`. Grows by doubling whenever size hits capacity.
+        # Current capacity of the array
         self.capacity = 0
 
     def push_back(self, val: int) -> None:
-        # Slow path: no room → allocate a fresh, larger backing array
         if self.current_size >= self.capacity:
-            # Start at 1 on the very first push; otherwise double the existing capacity.
-            # Doubling is what gives pushBack amortised O(1).
+
+            # If the capacity is not enough, resize the array
             new_capacity = 1 if self.capacity == 0 else self.capacity * 2
             new_arr = [0] * new_capacity
 
-            # Copy every live element into the new array. This O(current_size) work
-            # is why resizes look expensive — but they happen only log₂(N) times total.
+            # Copy the existing elements to the new array
             for i in range(self.current_size):
                 new_arr[i] = self.arr[i]
 
+            # Assign the new array and update the capacity
             self.arr = new_arr
             self.capacity = new_capacity
 
-        # Fast path: room available → write the new element and bump the size pointer.
-        # Both lines are O(1); they run every push regardless of resize.
+        # Add the new element to the end of the array
         self.arr[self.current_size] = val
         self.current_size += 1
 
     def get(self, index: int) -> int:
-        # Contiguous storage → O(1) random access via integer indexing
         return self.arr[index]
 
     def size(self) -> int:
-        # We track size explicitly so we don't count unused capacity slots
         return self.current_size
 
 
@@ -317,46 +324,70 @@ print(da.get(0))    # 2
 ```
 
 ```java run
-class DynamicArray {
-    // Underlying storage; reallocated whenever capacity is exhausted
-    private int[] arr;
-    // Number of live elements (always <= capacity)
-    private int currentSize;
-    // Total slots available in `arr`
-    private int capacity;
+public class Main {
+    static class DynamicArray {
 
-    public DynamicArray() {
-        this.arr = new int[0];   // empty on construction; first push triggers allocation
-        this.currentSize = 0;
-        this.capacity = 0;
-    }
+        // Pointer to the dynamically allocated array
+        private int[] arr;
 
-    public void pushBack(int val) {
-        // Slow path: storage is full → double the capacity
-        if (currentSize >= capacity) {
-            int newCapacity = (capacity == 0) ? 1 : capacity * 2;
-            int[] newArr = new int[newCapacity];
+        // Current number of elements in the array
+        private int currentSize;
 
-            // Manual copy — System.arraycopy would be faster, but the loop
-            // makes the O(n) work visible.
-            for (int i = 0; i < currentSize; i++) {
-                newArr[i] = arr[i];
-            }
-            arr = newArr;
-            capacity = newCapacity;
+        // Current capacity of the array
+        private int capacity;
+
+        public DynamicArray() {
+
+            // Initialize the array
+            arr = null;
+
+            // Initialize the currentSize to 0
+            currentSize = 0;
+
+            // Initialize the capacity to 0
+            capacity = 0;
         }
 
-        // Fast path: write and bump
-        arr[currentSize] = val;
-        currentSize++;
+        public void pushBack(int val) {
+            if (currentSize >= capacity) {
+
+                // If the capacity is not enough, resize the array
+                int newCapacity = (capacity == 0) ? 1 : capacity * 2;
+                int[] newArr = new int[newCapacity];
+
+                // Copy the existing elements to the new array
+                if (arr != null) {
+                    System.arraycopy(arr, 0, newArr, 0, currentSize);
+                }
+
+                // Assign the new array and update the capacity
+                arr = newArr;
+                capacity = newCapacity;
+            }
+
+            // Add the new element to the end of the array
+            arr[currentSize] = val;
+            currentSize++;
+        }
+
+        public int get(int index) {
+            return arr[index];
+        }
+
+        public int size() {
+            return currentSize;
+        }
     }
 
-    public int get(int index) {
-        return arr[index];   // contiguous array → O(1) random access
-    }
-
-    public int size() {
-        return currentSize;  // never return `capacity`; that's an internal detail
+    public static void main(String[] args) {
+        DynamicArray da = new DynamicArray();
+        da.pushBack(2);
+        da.pushBack(3);
+        System.out.println(da.get(1));    // 3
+        System.out.println(da.size());    // 2
+        da.pushBack(5);
+        System.out.println(da.size());    // 3
+        System.out.println(da.get(0));    // 2
     }
 }
 ```
@@ -366,65 +397,129 @@ class DynamicArray {
 #include <stdlib.h>
 
 typedef struct {
-    int* arr;          // heap-allocated backing storage
-    int  currentSize;  // number of live elements
-    int  capacity;     // allocated slots in arr
+    /* Pointer to the dynamically allocated array */
+    int* arr;
+
+    /* Current number of elements in the array */
+    int current_size;
+
+    /* Current capacity of the array */
+    int capacity;
 } DynamicArray;
 
-DynamicArray* dynamicArrayCreate(void) {
+DynamicArray* dynamic_array_create(void) {
     DynamicArray* d = (DynamicArray*)malloc(sizeof(DynamicArray));
+
+    /* Initialize the array */
     d->arr = NULL;
-    d->currentSize = 0;
+
+    /* Initialize the current_size to 0 */
+    d->current_size = 0;
+
+    /* Initialize the capacity to 0 */
     d->capacity = 0;
+
     return d;
 }
 
-void pushBack(DynamicArray* d, int val) {
-    if (d->currentSize >= d->capacity) {
-        // Double (or start at 1) — amortised O(1) requires factor > 1
-        int newCapacity = d->capacity == 0 ? 1 : d->capacity * 2;
-        // realloc handles the allocate-new + copy-existing in one call
-        d->arr = (int*)realloc(d->arr, sizeof(int) * newCapacity);
-        d->capacity = newCapacity;
+void push_back(DynamicArray* d, int val) {
+    if (d->current_size >= d->capacity) {
+
+        /* If the capacity is not enough, resize the array */
+        int new_capacity = (d->capacity == 0) ? 1 : d->capacity * 2;
+        int* new_arr = (int*)malloc(sizeof(int) * new_capacity);
+
+        /* Copy the existing elements to the new array */
+        for (int i = 0; i < d->current_size; i++) {
+            new_arr[i] = d->arr[i];
+        }
+
+        /* Assign the new array and update the capacity */
+        free(d->arr);
+        d->arr = new_arr;
+        d->capacity = new_capacity;
     }
-    d->arr[d->currentSize++] = val;   // write + bump in one expression
+
+    /* Add the new element to the end of the array */
+    d->arr[d->current_size] = val;
+    d->current_size++;
 }
 
 int get(DynamicArray* d, int index) {
-    return d->arr[index];              // pointer arithmetic → O(1)
+    return d->arr[index];
 }
 
 int size(DynamicArray* d) {
-    return d->currentSize;
+    return d->current_size;
 }
 
-void dynamicArrayFree(DynamicArray* d) {
+void dynamic_array_free(DynamicArray* d) {
     free(d->arr);
     free(d);
+}
+
+int main(void) {
+    DynamicArray* da = dynamic_array_create();
+    push_back(da, 2);
+    push_back(da, 3);
+    printf("%d\n", get(da, 1));    /* 3 */
+    printf("%d\n", size(da));      /* 2 */
+    push_back(da, 5);
+    printf("%d\n", size(da));      /* 3 */
+    printf("%d\n", get(da, 0));    /* 2 */
+    dynamic_array_free(da);
+    return 0;
 }
 ```
 
 ```scala run
-class DynamicArray {
-  private var arr: Array[Int] = new Array[Int](0)
-  private var currentSize: Int = 0
-  private var cap: Int = 0
+object Main extends App {
+  class DynamicArray {
 
-  def pushBack(v: Int): Unit = {
-    if (currentSize >= cap) {
-      // Factor of 2 keeps pushBack amortised O(1)
-      val newCap = if (cap == 0) 1 else cap * 2
-      val newArr = new Array[Int](newCap)
-      Array.copy(arr, 0, newArr, 0, currentSize)   // O(currentSize) resize cost
-      arr = newArr
-      cap = newCap
+    // Pointer to the dynamically allocated array
+    private var arr: Array[Int] = null
+
+    // Current number of elements in the array
+    private var currentSize: Int = 0
+
+    // Current capacity of the array
+    private var capacity: Int = 0
+
+    def pushBack(value: Int): Unit = {
+      if (currentSize >= capacity) {
+
+        // If the capacity is not enough, resize the array
+        val newCapacity = if (capacity == 0) 1 else capacity * 2
+        val newArr = new Array[Int](newCapacity)
+
+        // Copy the existing elements to the new array
+        if (arr != null) {
+          Array.copy(arr, 0, newArr, 0, currentSize)
+        }
+
+        // Assign the new array and update the capacity
+        arr = newArr
+        capacity = newCapacity
+      }
+
+      // Add the new element to the end of the array
+      arr(currentSize) = value
+      currentSize += 1
     }
-    arr(currentSize) = v
-    currentSize += 1
+
+    def get(index: Int): Int = arr(index)
+
+    def size: Int = currentSize
   }
 
-  def get(index: Int): Int = arr(index)
-  def size: Int = currentSize
+  val da = new DynamicArray
+  da.pushBack(2)
+  da.pushBack(3)
+  println(da.get(1))    // 3
+  println(da.size)      // 2
+  da.pushBack(5)
+  println(da.size)      // 3
+  println(da.get(0))    // 2
 }
 ```
 
