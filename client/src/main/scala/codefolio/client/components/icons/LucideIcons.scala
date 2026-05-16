@@ -62,6 +62,13 @@ object LucideIcons:
   @js.native @JSImport("lucide-react", "Pencil") private object PencilRaw             extends js.Object
   @js.native @JSImport("lucide-react", "Eye") private object EyeRaw                   extends js.Object
   @js.native @JSImport("lucide-react", "EyeOff") private object EyeOffRaw             extends js.Object
+  @js.native @JSImport("lucide-react", "ChevronLeft") private object ChevronLeftRaw   extends js.Object
+  @js.native @JSImport("lucide-react", "Focus") private object FocusRaw               extends js.Object
+  @js.native @JSImport("lucide-react", "Type") private object TypeRaw                 extends js.Object
+  @js.native @JSImport("lucide-react", "Link2") private object Link2Raw               extends js.Object
+  @js.native @JSImport("lucide-react", "Highlighter") private object HighlighterRaw   extends js.Object
+  @js.native @JSImport("lucide-react", "Quote") private object QuoteRaw               extends js.Object
+  @js.native @JSImport("lucide-react", "BookMarked") private object BookMarkedRaw     extends js.Object
 
   // ---- Components (call as Sun(withClass("h-5 w-5"))) --------------------
 
@@ -95,3 +102,10 @@ object LucideIcons:
   val Pencil       = JsComponent[IconProps, Children.None, Null](PencilRaw)
   val Eye          = JsComponent[IconProps, Children.None, Null](EyeRaw)
   val EyeOff       = JsComponent[IconProps, Children.None, Null](EyeOffRaw)
+  val ChevronLeft  = JsComponent[IconProps, Children.None, Null](ChevronLeftRaw)
+  val Focus        = JsComponent[IconProps, Children.None, Null](FocusRaw)
+  val Type         = JsComponent[IconProps, Children.None, Null](TypeRaw)
+  val Link2        = JsComponent[IconProps, Children.None, Null](Link2Raw)
+  val Highlighter  = JsComponent[IconProps, Children.None, Null](HighlighterRaw)
+  val Quote        = JsComponent[IconProps, Children.None, Null](QuoteRaw)
+  val BookMarked   = JsComponent[IconProps, Children.None, Null](BookMarkedRaw)

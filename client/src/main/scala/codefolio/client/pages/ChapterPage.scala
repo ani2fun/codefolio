@@ -5,7 +5,8 @@ import codefolio.client.components.cortex.{
   ChapterContent,
   CortexBreadcrumb,
   CortexErrorView,
-  CortexPager,
+  CortexPrevNext,
+  CortexReadMeta,
   CortexReaderLayout
 }
 import codefolio.client.markdown.MarkdownRenderer
@@ -129,6 +130,7 @@ object ChapterPage:
           ^.className := "cortex-reader-prose__title",
           payload.frontmatter.title
         ),
+        CortexReadMeta.Component(CortexReadMeta.Props(rawMarkdown = payload.raw)),
         payload.frontmatter.summary
           .map(s =>
             <.p(
@@ -138,8 +140,8 @@ object ChapterPage:
           )
           .getOrElse(EmptyVdom),
         ChapterContent.Component(ChapterContent.Props(loaded.render)),
-        CortexPager.Component(
-          CortexPager.Props(payload.book.slug, prev, next)
+        CortexPrevNext.Component(
+          CortexPrevNext.Props(bookSlug = payload.book.slug, prev = prev, next = next)
         )
       )
 
@@ -150,7 +152,8 @@ object ChapterPage:
           book = payload.book,
           activeChapterSlug = payload.chapter.slug,
           toc = toc,
-          content = content
+          content = content,
+          chapterTitle = payload.frontmatter.title
         )
       )
     )

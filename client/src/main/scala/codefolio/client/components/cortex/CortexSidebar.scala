@@ -13,42 +13,56 @@ import scala.scalajs.js
 
 /**
  * Cortex reader's left-panel **Sidebar Forest**. Tree assembly lives in [[SidebarForest]] (shared,
- * JVM-tested); this file owns the React rendering plus three pieces of editorial UX bolted onto each chapter
- * row:
+ * JVM-tested); this file owns the React rendering plus the editorial UX bolted onto each chapter row:
  *
  *   - **Search** — top-of-rail input that filters the chapter list by title (case-insensitive substring
- *     match). Sections whose chapters all filter out collapse automatically because the tree is rebuilt from
- *     the filtered chapter list. ⌘K / Ctrl+K focuses; Esc clears.
+ *     match). ⌘K / Ctrl+K focuses; Esc clears.
  *   - **Reading-progress rail** — 3px terracotta fill on the left edge of each row, height proportional to
- *     the last-saved scroll position for that chapter ([[ReaderState.progressFor]]).
- *   - **Time to read** — small mono `Xm` stamp on the right of each row, derived from the chapter's word
- *     count the first time it loads ([[ReaderState.minutesFor]]); blank until the chapter has been opened
- *     once.
- *
- * The progress + minutes maps are read once per render via `snapshotFor(chapterSlugs)` so we don't do N
- * storage round-trips inside the recursive node renderer.
+ *     the last-saved scroll position for that chapter.
+ *   - **Collapsible rail** — 280px ↔ 64px transition driven by the parent layout's `data-side` attribute.
+ *     When collapsed (and not peeking), an alternate compact "rail" renders numbered chapter tiles + section
+ *     icon tiles with hover tooltips.
+ *   - **Hover-peek** — collapsed sidebar expands temporarily on 450ms hover; the persisted preference is
+ *     unchanged. Implemented via `onMouseEnter` / `onMouseLeave` timers reporting up to the layout.
+ *   - **Sync flash** — listens for `cortex:syncFlash` (dispatched by `CortexToc` on entry click); pulses the
+ *     active rail tile / row for 800ms so the user sees the connection between the two TOC surfaces.
+ *   - **Progress ring on the active rail tile** — writes the throttled `scrollFraction` (passed from the
+ *     layout) as a CSS `--progress` custom property; the rail-tile `::after` paints a conic-gradient ring.
  */
 object CortexSidebar:
 
-  final case class Props(book: Book, activeChapterSlug: String)
+  /**
+   * Delay before hover-peek expands the rail. Long enough to ignore swipes-through, short enough to feel
+   * responsive when the user lingers.
+   */
+  private val PeekInMs = 450
+
+  /** Delay before hover-peek collapses again after mouseleave. Smooths out brief cursor escapes. */
+  private val PeekOutMs = 180
+
+  /** Sync-flash animation duration — matches the keyframes in cortex-reader.css. */
+  private val FlashMs = 800
+
+  final case class Props(
+      book: Book,
+      activeChapterSlug: String,
+      collapsed: Boolean,
+      peek: Boolean,
+      scrollFraction: Double,
+      onToggleCollapsed: Callback,
+      onPeekChange: Boolean => Callback
+  )
 
   private case class RowState(progress: Int, minutes: Option[Int], number: Int)
 
   private val EmptyRow = RowState(0, None, 0)
 
-  /** Two-digit chapter number ("01", "12"); empty for n=0 (chapter not in the book). */
   private def numberLabel(n: Int): String = if n <= 0 then "" else f"$n%02d"
 
-  /** Filter chapters by case-insensitive substring of title. Empty query passes everything. */
   private def filterChapters(chapters: Seq[ChapterRef], query: String): Seq[ChapterRef] =
     val q = query.trim.toLowerCase
-    if q.isEmpty then chapters
-    else chapters.filter(_.title.toLowerCase.contains(q))
+    if q.isEmpty then chapters else chapters.filter(_.title.toLowerCase.contains(q))
 
-  /**
-   * Render `query`-highlighted chapter title — the matched substring becomes a `<mark>` so the hit is visible
-   * even when the chapter is mid-list. Falls back to plain text when no query is present.
-   */
   private def highlight(title: String, query: String): VdomNode =
     val q = query.trim
     if q.isEmpty then title
@@ -63,13 +77,24 @@ object CortexSidebar:
         val after  = title.substring(idx + q.length)
         <.span(before, <.mark(^.className := "cortex-reader-sidebar__mark", hit), after)
 
+  /**
+   * Inline `--progress` CSS custom property, used by the active row's progress bar + active rail tile's
+   * conic-gradient ring. We can't type `--progress` as a strongly-typed style prop, so reach into
+   * `js.Dynamic` and set it as a string.
+   */
+  private def progressStyle(fraction: Double): js.Object =
+    val obj = js.Dynamic.literal()
+    obj.updateDynamic("--progress")(f"${fraction.max(0.0).min(1.0)}%.3f")
+    obj.asInstanceOf[js.Object]
+
   private def renderNode(
       node: Node,
       activeSlug: String,
       onLinkClick: Callback,
       bookSlug: String,
       query: String,
-      rows: Map[String, RowState]
+      rows: Map[String, RowState],
+      scrollFraction: Double
   ): VdomNode = node match
     case Leaf(ch) =>
       val isActive = ch.slug == activeSlug
@@ -78,27 +103,39 @@ object CortexSidebar:
           "cortex-reader-sidebar__chapter-link cortex-reader-sidebar__chapter-link--active"
         else "cortex-reader-sidebar__chapter-link"
       val row = rows.getOrElse(ch.slug, EmptyRow)
+      // Active row gets the `--progress` CSS custom property so its ::after bar can fill in. Inactive
+      // rows render a plain anchor — keeps the DOM lean.
+      val anchorMods: TagMod = TagMod(
+        ^.href := s"/cortex/$bookSlug/${ch.slug}",
+        ^.onClick --> onLinkClick,
+        ^.className := cls,
+        <.span(
+          ^.className   := "cortex-reader-sidebar__progress",
+          ^.aria.hidden := true,
+          <.span(
+            ^.className := "cortex-reader-sidebar__progress-fill",
+            ^.style     := js.Dynamic.literal(height = s"${row.progress}%").asInstanceOf[js.Object]
+          )
+        ),
+        <.span(^.className := "cortex-reader-sidebar__num", numberLabel(row.number)),
+        <.span(^.className := "cortex-reader-sidebar__name", highlight(ch.title, query)),
+        row.minutes
+          .map(m => <.span(^.className := "cortex-reader-sidebar__min", s"${m}m"): VdomNode)
+          .getOrElse(EmptyVdom)
+      )
+
+      val activeMods: TagMod =
+        if isActive then
+          TagMod(
+            ^.style                         := progressStyle(scrollFraction),
+            VdomAttr("data-progress-shown") := (if scrollFraction > 0.02 then "true" else "false")
+          )
+        else TagMod.empty
+
       <.li(
         ^.key       := s"leaf-${ch.slug}",
         ^.className := "cortex-reader-sidebar__chapter-item",
-        <.a(
-          ^.href := s"/cortex/$bookSlug/${ch.slug}",
-          ^.onClick --> onLinkClick,
-          ^.className := cls,
-          <.span(
-            ^.className   := "cortex-reader-sidebar__progress",
-            ^.aria.hidden := true,
-            <.span(
-              ^.className := "cortex-reader-sidebar__progress-fill",
-              ^.style     := js.Dynamic.literal(height = s"${row.progress}%").asInstanceOf[js.Object]
-            )
-          ),
-          <.span(^.className := "cortex-reader-sidebar__num", numberLabel(row.number)),
-          <.span(^.className := "cortex-reader-sidebar__name", highlight(ch.title, query)),
-          row.minutes
-            .map(m => <.span(^.className := "cortex-reader-sidebar__min", s"${m}m"): VdomNode)
-            .getOrElse(EmptyVdom)
-        )
+        <.a(anchorMods, activeMods)
       )
     case s @ Section(title, depth, children) =>
       val open = s.containsActive(activeSlug) || query.trim.nonEmpty
@@ -110,9 +147,6 @@ object CortexSidebar:
           ^.open      := open,
           <.summary(
             ^.className := "cortex-reader-sidebar__section-summary",
-            // Lucide chevron — rotated 90° via CSS when the parent <details> is open. Replaces
-            // the previous CSS ::before Unicode "▸" which rendered too small to read at the
-            // 12px summary font-size and didn't match the Lucide vocabulary used elsewhere.
             LucideIcons.ChevronRight(
               LucideIcons.withClass("cortex-reader-sidebar__section-chevron")
             ),
@@ -120,10 +154,86 @@ object CortexSidebar:
           ),
           <.ul(
             ^.className := "cortex-reader-sidebar__section-children",
-            children.toTagMod(child => renderNode(child, activeSlug, onLinkClick, bookSlug, query, rows))
+            children.toTagMod(child =>
+              renderNode(child, activeSlug, onLinkClick, bookSlug, query, rows, scrollFraction)
+            )
           )
         )
       )
+
+  /**
+   * Top-level walk to render the compact 64px rail. Chapter leaves at the root become numbered tiles; each
+   * top-level section becomes an icon tile labelled by its title. We deliberately don't recurse past the
+   * first level — the rail is for orientation, not navigation.
+   */
+  private def renderRail(
+      forest: List[Node],
+      bookSlug: String,
+      activeSlug: String,
+      onLinkClick: Callback,
+      onToggleCollapsed: Callback,
+      rows: Map[String, RowState],
+      scrollFraction: Double
+  ): VdomNode =
+    val chapterLeaves = forest.collect { case Leaf(ch) => ch }
+    val sections      = forest.collect { case Section(t, _, _) => t }
+    val showDivider   = chapterLeaves.nonEmpty && sections.nonEmpty
+
+    <.nav(
+      ^.className  := "cortex-reader-sidebar__rail",
+      ^.aria.label := "Chapter rail",
+      chapterLeaves.toTagMod { ch =>
+        val isActive = ch.slug == activeSlug
+        val row      = rows.getOrElse(ch.slug, EmptyRow)
+        val cls =
+          if isActive then "cortex-reader-sidebar__rail-tile cortex-reader-sidebar__rail-tile--active"
+          else "cortex-reader-sidebar__rail-tile"
+        val activeMods: TagMod =
+          if isActive then ^.style := progressStyle(scrollFraction)
+          else TagMod.empty
+        <.a(
+          ^.key       := s"rail-${ch.slug}",
+          ^.href      := s"/cortex/$bookSlug/${ch.slug}",
+          ^.className := cls,
+          // Clicking any rail tile re-expands the sidebar AND navigates. The expand-on-click happens
+          // first; the link follows. We don't preventDefault — let the router pick it up.
+          ^.onClick --> (onToggleCollapsed >> onLinkClick),
+          activeMods,
+          numberLabel(row.number),
+          <.span(
+            ^.className := "cortex-reader-sidebar__rail-tip",
+            s"${numberLabel(row.number)} · ${ch.title}"
+          )
+        )
+      },
+      if showDivider then
+        <.span(^.className := "cortex-reader-sidebar__rail-divider", ^.aria.hidden := true)
+      else EmptyVdom,
+      sections.toTagMod { title =>
+        <.button(
+          ^.key        := s"rail-sec-$title",
+          ^.tpe        := "button",
+          ^.className  := "cortex-reader-sidebar__rail-tile cortex-reader-sidebar__rail-tile--section",
+          ^.aria.label := title,
+          ^.onClick --> onToggleCollapsed,
+          LucideIcons.ChevronRight(LucideIcons.withClass("cortex-reader-sidebar__rail-tile__icon")),
+          <.span(^.className := "cortex-reader-sidebar__rail-tip", title)
+        )
+      }
+    )
+
+  private def renderTogglePill(collapsed: Boolean, onToggle: Callback): VdomNode =
+    val label = if collapsed then "Expand chapter sidebar" else "Collapse chapter sidebar"
+    <.button(
+      ^.tpe          := "button",
+      ^.className    := "cortex-reader-sidebar__toggle",
+      ^.aria.label   := label,
+      ^.aria.pressed := collapsed,
+      ^.onClick --> onToggle,
+      LucideIcons.ChevronLeft(LucideIcons.withClass("cortex-reader-sidebar__toggle-icon")),
+      <.span(^.className := "cortex-reader-sidebar__toggle-label", "Collapse"),
+      <.span(^.className := "cortex-reader-sidebar__toggle-kbd", "[")
+    )
 
   private def renderInner(
       book: Book,
@@ -131,12 +241,13 @@ object CortexSidebar:
       onLinkClick: Callback,
       query: String,
       onQuery: String => Callback,
-      rows: Map[String, RowState]
+      rows: Map[String, RowState],
+      scrollFraction: Double
   ): VdomNode =
     val filtered = filterChapters(book.chapters, query)
     val forest   = SidebarForest.build(filtered)
     <.div(
-      ^.className := "cortex-reader-sidebar__inner",
+      ^.className := "cortex-reader-sidebar__expanded",
       <.div(
         <.a(^.href       := "/cortex", ^.className := "cortex-reader-sidebar__back", "← Cortex"),
         <.h2(^.className := "cortex-reader-sidebar__title", book.title),
@@ -173,15 +284,15 @@ object CortexSidebar:
         else
           <.ul(
             ^.className := "cortex-reader-sidebar__tree",
-            forest.toTagMod(node => renderNode(node, activeSlug, onLinkClick, book.slug, query, rows))
+            forest.toTagMod(node =>
+              renderNode(node, activeSlug, onLinkClick, book.slug, query, rows, scrollFraction)
+            )
           )
       )
     )
 
-  // Global ⌘K / Ctrl+K focus shortcut. The handler looks up the active search input by data-attribute
-  // each time it fires so we don't have to hold a ref. Idempotent across re-mounts: the install marker
-  // on `window` short-circuits a second install if the sidebar mounts again (e.g. navigating between
-  // books) without ever cleaning up the listener.
+  // Global ⌘K / Ctrl+K focus shortcut. Single install gate; the handler looks up the input by
+  // data-attribute so we don't have to thread a ref across mounts.
   private val ShortcutMarker = "__codefolioCortexSearchShortcut"
 
   private def installShortcut(): Unit =
@@ -197,28 +308,104 @@ object CortexSidebar:
       dom.window.addEventListener("keydown", handler)
       win.updateDynamic(ShortcutMarker)(true)
 
+  /**
+   * Pulse the active rail tile + active chapter row when the right-TOC dispatches a sync-flash event. We
+   * toggle the `--flash` modifier classes via DOM-querySelector to avoid threading another piece of state
+   * through the render — the flash is a one-shot animation that ends on its own.
+   */
+  private def flashActiveElements(): Unit =
+    val tile = dom.document.querySelector(".cortex-reader-sidebar__rail-tile--active")
+    val row  = dom.document.querySelector(".cortex-reader-sidebar__chapter-link--active")
+    List(Option(tile), Option(row)).flatten.foreach { el =>
+      el.classList.remove("cortex-reader-sidebar__rail-tile--flash")
+      el.classList.remove("cortex-reader-sidebar__chapter-link--flash")
+      // Force reflow so the animation re-triggers when we re-add the class.
+      val _ = el.asInstanceOf[dom.html.Element].offsetWidth
+      if el.classList.contains("cortex-reader-sidebar__rail-tile--active") then
+        el.classList.add("cortex-reader-sidebar__rail-tile--flash")
+      if el.classList.contains("cortex-reader-sidebar__chapter-link--active") then
+        el.classList.add("cortex-reader-sidebar__chapter-link--flash")
+      dom.window.setTimeout(
+        () => {
+          el.classList.remove("cortex-reader-sidebar__rail-tile--flash")
+          el.classList.remove("cortex-reader-sidebar__chapter-link--flash")
+        },
+        FlashMs.toDouble
+      )
+    }
+
   val Component =
     ScalaFnComponent
       .withHooks[Props]
       .useState(false)
       .useState("")
-      .useEffectOnMountBy { (_, _, _) =>
+      .useRef(js.undefined: js.UndefOr[Int])
+      .useRef(js.undefined: js.UndefOr[Int])
+      .useEffectOnMountBy { (_, _, _, _, _) =>
         Callback(installShortcut())
       }
-      .render { (props, openS, queryS) =>
+      // Sync-flash listener — fires on cortex:syncFlash custom events from CortexToc.
+      .useEffectOnMountBy { (_, _, _, _, _) =>
+        Callback {
+          val onFlash: js.Function1[dom.Event, Unit] = (_: dom.Event) => flashActiveElements()
+          dom.window.addEventListener("cortex:syncFlash", onFlash, useCapture = false)
+          ()
+        }
+      }
+      .render { (props, openS, queryS, peekInRef, peekOutRef) =>
         val close: Callback = openS.setState(false) >> queryS.setState("")
 
-        // Snapshot localStorage on every render. The sidebar re-renders whenever its props change
-        // (chapter navigation in particular), which is the only moment the cached values can have
-        // shifted, so the map.apply per render is well within budget. The chapter number is the 1-based
-        // index into book.chapters — the codebase has no native num field, so we derive one (matches
-        // the design's `01`, `02`, … badges).
         val storage = ReaderState.snapshotFor(props.book.chapters.map(_.slug))
         val rows: Map[String, RowState] = props.book.chapters.iterator.zipWithIndex.map {
           case (ch, idx) =>
             val (p, m) = storage.getOrElse(ch.slug, (0, None))
             ch.slug -> RowState(p, m, idx + 1)
         }.toMap
+
+        val expandedInner =
+          renderInner(
+            props.book,
+            props.activeChapterSlug,
+            Callback.empty,
+            queryS.value,
+            q => queryS.setState(q),
+            rows,
+            props.scrollFraction
+          )
+
+        // Forest needed twice (expanded inner + rail) but build is cheap; this avoids passing it down.
+        val forest = SidebarForest.build(filterChapters(props.book.chapters, ""))
+        val rail = renderRail(
+          forest,
+          props.book.slug,
+          props.activeChapterSlug,
+          Callback.empty,
+          props.onToggleCollapsed,
+          rows,
+          props.scrollFraction
+        )
+
+        // Hover-peek timers. Only arm when the sidebar is collapsed; cancel any pending timer when
+        // the user re-enters or leaves quickly.
+        val onMouseEnter: Callback = Callback {
+          if props.collapsed then
+            peekOutRef.value.foreach(dom.window.clearTimeout)
+            peekInRef.value.foreach(dom.window.clearTimeout)
+            val handle = dom.window.setTimeout(
+              () => props.onPeekChange(true).runNow(),
+              PeekInMs.toDouble
+            )
+            peekInRef.value = handle
+        }
+        val onMouseLeave: Callback = Callback {
+          peekInRef.value.foreach(dom.window.clearTimeout)
+          if props.peek then
+            val handle = dom.window.setTimeout(
+              () => props.onPeekChange(false).runNow(),
+              PeekOutMs.toDouble
+            )
+            peekOutRef.value = handle
+        }
 
         <.div(
           <.button(
@@ -248,21 +435,23 @@ object CortexSidebar:
                   close,
                   queryS.value,
                   q => queryS.setState(q),
-                  rows
+                  rows,
+                  props.scrollFraction
                 )
               )
             )
           else EmptyVdom,
           <.aside(
-            ^.className := "cortex-reader-sidebar__desktop",
-            renderInner(
-              props.book,
-              props.activeChapterSlug,
-              Callback.empty,
-              queryS.value,
-              q => queryS.setState(q),
-              rows
-            )
+            ^.className  := "cortex-reader-sidebar__desktop",
+            ^.aria.label := "Chapter navigation",
+            ^.onMouseEnter --> onMouseEnter,
+            ^.onMouseLeave --> onMouseLeave,
+            renderTogglePill(props.collapsed, props.onToggleCollapsed),
+            // When collapsed (and not peeking), only the rail is visible; when expanded or peeking,
+            // the full inner is shown. We render both so CSS can transition between them; the active
+            // one is selected by the layout's `data-side` / `data-peek` attributes.
+            expandedInner,
+            rail
           )
         )
       }
