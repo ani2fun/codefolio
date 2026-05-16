@@ -144,19 +144,36 @@ def merge_lists(head_a: Optional[ListNode], head_b: Optional[ListNode],
 ```java run
 import java.util.function.BiPredicate;
 
-class Solution {
-    public ListNode mergeLists(ListNode headA, ListNode headB, BiPredicate<ListNode, ListNode> pickA) {
-        ListNode dummy = new ListNode();
-        ListNode tail  = dummy;
+public class Main {
+    static class ListNode {
+        int val; ListNode next;
+        ListNode() {}
+        ListNode(int v) { val = v; }
+    }
 
-        ListNode cA = headA, cB = headB;
-        while (cA != null && cB != null) {
-            if (pickA.test(cA, cB)) { tail.next = cA; cA = cA.next; }
-            else                    { tail.next = cB; cB = cB.next; }
-            tail = tail.next;
+    static class Solution {
+        public ListNode mergeLists(ListNode headA, ListNode headB, BiPredicate<ListNode, ListNode> pickA) {
+            ListNode dummy = new ListNode();
+            ListNode tail  = dummy;
+
+            ListNode cA = headA, cB = headB;
+            while (cA != null && cB != null) {
+                if (pickA.test(cA, cB)) { tail.next = cA; cA = cA.next; }
+                else                    { tail.next = cB; cB = cB.next; }
+                tail = tail.next;
+            }
+            tail.next = (cA != null) ? cA : cB;
+            return dummy.next;
         }
-        tail.next = (cA != null) ? cA : cB;
-        return dummy.next;
+    }
+
+    public static void main(String[] args) {
+        // Pattern only — merge [1, 4] + [2, 3] picking smaller -> [1, 2, 3, 4]
+        ListNode a1=new ListNode(1),a2=new ListNode(4); a1.next=a2;
+        ListNode b1=new ListNode(2),b2=new ListNode(3); b1.next=b2;
+        ListNode head = new Solution().mergeLists(a1, b1, (x, y) -> x.val <= y.val);
+        for (ListNode c=head;c!=null;c=c.next) System.out.print(c.val+" ");
+        // 1 2 3 4
     }
 }
 ```
@@ -180,20 +197,30 @@ ListNode* mergeLists(ListNode *headA, ListNode *headB, int (*pickA)(ListNode*, L
 ```
 
 ```scala run
-object Solution {
-  def mergeLists(headA: ListNode, headB: ListNode, pickA: (ListNode, ListNode) => Boolean): ListNode = {
-    val dummy = new ListNode(0)
-    var tail: ListNode = dummy
+class ListNode(var v: Int, var next: ListNode = null) { def this() = this(0) }
 
-    var cA = headA; var cB = headB
-    while (cA != null && cB != null) {
-      if (pickA(cA, cB)) { tail.next = cA; cA = cA.next }
-      else                { tail.next = cB; cB = cB.next }
-      tail = tail.next
+object Main extends App {
+  class Solution {
+    def mergeLists(headA: ListNode, headB: ListNode, pickA: (ListNode, ListNode) => Boolean): ListNode = {
+      val dummy = new ListNode(0)
+      var tail: ListNode = dummy
+
+      var cA = headA; var cB = headB
+      while (cA != null && cB != null) {
+        if (pickA(cA, cB)) { tail.next = cA; cA = cA.next }
+        else                { tail.next = cB; cB = cB.next }
+        tail = tail.next
+      }
+      tail.next = if (cA != null) cA else cB
+      dummy.next
     }
-    tail.next = if (cA != null) cA else cB
-    dummy.next
   }
+
+  // Pattern only — merge [1, 4] + [2, 3] picking smaller -> [1, 2, 3, 4]
+  val a2 = new ListNode(4); val a1 = new ListNode(1, a2)
+  val b2 = new ListNode(3); val b1 = new ListNode(2, b2)
+  var head = new Solution().mergeLists(a1, b1, (x, y) => x.v <= y.v)
+  while (head != null) { print(s"${head.v} "); head = head.next }  // 1 2 3 4
 }
 ```
 
@@ -344,19 +371,36 @@ class Solution:
 ```
 
 ```java run
-class Solution {
-    public ListNode alternateNodeFusion(ListNode headA, ListNode headB) {
-        ListNode dummy = new ListNode(), tail = dummy;
-        ListNode cA = headA, cB = headB;
-        boolean takeFromA = true;
-        while (cA != null && cB != null) {
-            if (takeFromA) { tail.next = cA; cA = cA.next; }
-            else            { tail.next = cB; cB = cB.next; }
-            tail       = tail.next;
-            takeFromA  = !takeFromA;
+public class Main {
+    static class ListNode {
+        int val; ListNode next;
+        ListNode() {}
+        ListNode(int v) { val = v; }
+    }
+
+    static class Solution {
+        public ListNode alternateNodeFusion(ListNode headA, ListNode headB) {
+            ListNode dummy = new ListNode(), tail = dummy;
+            ListNode cA = headA, cB = headB;
+            boolean takeFromA = true;
+            while (cA != null && cB != null) {
+                if (takeFromA) { tail.next = cA; cA = cA.next; }
+                else            { tail.next = cB; cB = cB.next; }
+                tail       = tail.next;
+                takeFromA  = !takeFromA;
+            }
+            tail.next = (cA != null) ? cA : cB;
+            return dummy.next;
         }
-        tail.next = (cA != null) ? cA : cB;
-        return dummy.next;
+    }
+
+    public static void main(String[] args) {
+        // [1, 3, 5] + [2, 4] -> [1, 2, 3, 4, 5]
+        ListNode a1=new ListNode(1),a2=new ListNode(3),a3=new ListNode(5); a1.next=a2; a2.next=a3;
+        ListNode b1=new ListNode(2),b2=new ListNode(4); b1.next=b2;
+        ListNode head = new Solution().alternateNodeFusion(a1, b1);
+        for (ListNode c=head;c!=null;c=c.next) System.out.print(c.val+" ");
+        // 1 2 3 4 5
     }
 }
 ```
@@ -379,21 +423,31 @@ ListNode* alternateNodeFusion(ListNode *headA, ListNode *headB) {
 ```
 
 ```scala run
-object Solution {
-  def alternateNodeFusion(headA: ListNode, headB: ListNode): ListNode = {
-    val dummy = new ListNode(0)
-    var tail: ListNode = dummy
-    var cA = headA; var cB = headB
-    var takeFromA = true
-    while (cA != null && cB != null) {
-      if (takeFromA) { tail.next = cA; cA = cA.next }
-      else            { tail.next = cB; cB = cB.next }
-      tail      = tail.next
-      takeFromA = !takeFromA
+class ListNode(var v: Int, var next: ListNode = null) { def this() = this(0) }
+
+object Main extends App {
+  class Solution {
+    def alternateNodeFusion(headA: ListNode, headB: ListNode): ListNode = {
+      val dummy = new ListNode(0)
+      var tail: ListNode = dummy
+      var cA = headA; var cB = headB
+      var takeFromA = true
+      while (cA != null && cB != null) {
+        if (takeFromA) { tail.next = cA; cA = cA.next }
+        else            { tail.next = cB; cB = cB.next }
+        tail      = tail.next
+        takeFromA = !takeFromA
+      }
+      tail.next = if (cA != null) cA else cB
+      dummy.next
     }
-    tail.next = if (cA != null) cA else cB
-    dummy.next
   }
+
+  // [1, 3, 5] + [2, 4] -> [1, 2, 3, 4, 5]
+  val a3 = new ListNode(5); val a2 = new ListNode(3, a3); val a1 = new ListNode(1, a2)
+  val b2 = new ListNode(4); val b1 = new ListNode(2, b2)
+  var head = new Solution().alternateNodeFusion(a1, b1)
+  while (head != null) { print(s"${head.v} "); head = head.next }  // 1 2 3 4 5
 }
 ```
 
@@ -588,70 +642,83 @@ class Solution:
 ```
 
 ```java run
-class Solution {
-    public ListNode alternateNodeFusion(ListNode headA, ListNode headB) {
+public class Main {
+    static class ListNode { int val; ListNode next; ListNode(int v){val=v;} }
 
-        // Create a new dummy node as the head of the merged list
-        ListNode dummy = new ListNode(0);
-        ListNode tail = dummy;
+    static class Solution {
+        public ListNode alternateNodeFusion(ListNode headA, ListNode headB) {
 
-        ListNode currentA = headA;
-        ListNode currentB = headB;
+            // Create a new dummy node as the head of the merged list
+            ListNode dummy = new ListNode(0);
+            ListNode tail = dummy;
 
-        boolean mergeFirst = true;
+            ListNode currentA = headA;
+            ListNode currentB = headB;
 
-        // Merge alternate nodes from both lists
-        while (currentA != null && currentB != null) {
+            boolean mergeFirst = true;
 
-            // If mergeFirst is true, attach the current node from
-            // currentA to the merged list
-            if (mergeFirst) {
+            // Merge alternate nodes from both lists
+            while (currentA != null && currentB != null) {
 
-                // Attach the current node from currentA to the merged
-                // list
+                // If mergeFirst is true, attach the current node from
+                // currentA to the merged list
+                if (mergeFirst) {
+
+                    // Attach the current node from currentA to the merged
+                    // list
+                    tail.next = currentA;
+
+                    // Move currentA to the next node
+                    currentA = currentA.next;
+
+                    // Move the tail pointer to the newly attached node
+                    tail = tail.next;
+                }
+
+                // Otherwise, attach the current node from currentB to the
+                // merged list
+                else {
+
+                    // Attach the current node from currentB to the merged
+                    // list
+                    tail.next = currentB;
+
+                    // Move currentB to the next node
+                    currentB = currentB.next;
+
+                    // Move the tail pointer to the newly attached node
+                    tail = tail.next;
+                }
+
+                // Toggle between lists
+                mergeFirst = !mergeFirst;
+            }
+
+            // If there are any remaining nodes in currentA, attach them to
+            // the merged list
+            if (currentA != null) {
                 tail.next = currentA;
-
-                // Move currentA to the next node
-                currentA = currentA.next;
-
-                // Move the tail pointer to the newly attached node
-                tail = tail.next;
             }
 
-            // Otherwise, attach the current node from currentB to the
-            // merged list
-            else {
-
-                // Attach the current node from currentB to the merged
-                // list
+            // Else if there are any remaining nodes in currentB, attach
+            // them to the merged list
+            else if (currentB != null) {
                 tail.next = currentB;
-
-                // Move currentB to the next node
-                currentB = currentB.next;
-
-                // Move the tail pointer to the newly attached node
-                tail = tail.next;
             }
 
-            // Toggle between lists
-            mergeFirst = !mergeFirst;
+            // Return the merged list starting from the node after the
+            // dummy node
+            return dummy.next;
         }
+    }
 
-        // If there are any remaining nodes in currentA, attach them to
-        // the merged list
-        if (currentA != null) {
-            tail.next = currentA;
-        }
-
-        // Else if there are any remaining nodes in currentB, attach
-        // them to the merged list
-        else if (currentB != null) {
-            tail.next = currentB;
-        }
-
-        // Return the merged list starting from the node after the
-        // dummy node
-        return dummy.next;
+    public static void main(String[] args) {
+        // [1, 3, 5] + [2, 4] -> [1, 2, 3, 4, 5]
+        ListNode a1=new ListNode(1),a2=new ListNode(3),a3=new ListNode(5); a1.next=a2; a2.next=a3;
+        ListNode b1=new ListNode(2),b2=new ListNode(4); b1.next=b2;
+        ListNode head = new Solution().alternateNodeFusion(a1, b1);
+        for (ListNode c=head;c!=null;c=c.next) System.out.print(c.val+" ");
+        // 1 2 3 4 5
     }
 }
 ```
@@ -724,63 +791,73 @@ ListNode* alternateNodeFusion(ListNode *headA, ListNode *headB) {
 ```
 
 ```scala run
-object Solution {
-  def alternateNodeFusion(headA: ListNode, headB: ListNode): ListNode = {
+class ListNode(var v: Int, var next: ListNode = null)
 
-    // Create a new dummy node as the head of the merged list
-    val dummy = new ListNode(0)
-    var tail: ListNode = dummy
+object Main extends App {
+  class Solution {
+    def alternateNodeFusion(headA: ListNode, headB: ListNode): ListNode = {
 
-    var currentA = headA
-    var currentB = headB
+      // Create a new dummy node as the head of the merged list
+      val dummy = new ListNode(0)
+      var tail: ListNode = dummy
 
-    var mergeFirst = true
+      var currentA = headA
+      var currentB = headB
 
-    // Merge alternate nodes from both lists
-    while (currentA != null && currentB != null) {
+      var mergeFirst = true
 
-      // If mergeFirst is true, attach the current node from currentA
+      // Merge alternate nodes from both lists
+      while (currentA != null && currentB != null) {
+
+        // If mergeFirst is true, attach the current node from currentA
+        // to the merged list
+        if (mergeFirst) {
+
+          // Attach the current node from currentA to the merged list
+          tail.next = currentA
+
+          // Move currentA to the next node
+          currentA = currentA.next
+
+          // Move the tail pointer to the newly attached node
+          tail = tail.next
+        }
+        // Otherwise, attach the current node from currentB to the
+        // merged list
+        else {
+
+          // Attach the current node from currentB to the merged list
+          tail.next = currentB
+
+          // Move currentB to the next node
+          currentB = currentB.next
+
+          // Move the tail pointer to the newly attached node
+          tail = tail.next
+        }
+
+        // Toggle between lists
+        mergeFirst = !mergeFirst
+      }
+
+      // If there are any remaining nodes in currentA, attach them to
+      // the merged list
+      if (currentA != null) tail.next = currentA
+      // Else if there are any remaining nodes in currentB, attach them
       // to the merged list
-      if (mergeFirst) {
+      else if (currentB != null) tail.next = currentB
 
-        // Attach the current node from currentA to the merged list
-        tail.next = currentA
-
-        // Move currentA to the next node
-        currentA = currentA.next
-
-        // Move the tail pointer to the newly attached node
-        tail = tail.next
-      }
-      // Otherwise, attach the current node from currentB to the
-      // merged list
-      else {
-
-        // Attach the current node from currentB to the merged list
-        tail.next = currentB
-
-        // Move currentB to the next node
-        currentB = currentB.next
-
-        // Move the tail pointer to the newly attached node
-        tail = tail.next
-      }
-
-      // Toggle between lists
-      mergeFirst = !mergeFirst
+      // Return the merged list starting from the node after the dummy
+      // node
+      dummy.next
     }
-
-    // If there are any remaining nodes in currentA, attach them to
-    // the merged list
-    if (currentA != null) tail.next = currentA
-    // Else if there are any remaining nodes in currentB, attach them
-    // to the merged list
-    else if (currentB != null) tail.next = currentB
-
-    // Return the merged list starting from the node after the dummy
-    // node
-    dummy.next
   }
+
+  // [1, 3, 5] + [2, 4] -> [1, 2, 3, 4, 5]
+  val a3 = new ListNode(5); val a2 = new ListNode(3, a3); val a1 = new ListNode(1, a2)
+  val b2 = new ListNode(4); val b1 = new ListNode(2, b2)
+  var head = new Solution().alternateNodeFusion(a1, b1)
+  while (head != null) { print(s"${head.v} "); head = head.next }  // 1 2 3 4 5
 }
 ```
 
@@ -882,52 +959,65 @@ class Solution:
 ```
 
 ```java run
-class Solution {
-    public ListNode mergeSortedLists(ListNode headA, ListNode headB) {
+public class Main {
+    static class ListNode { int val; ListNode next; ListNode(int v){val=v;} }
 
-        // Create a dummy node and initialize the tail pointer
-        ListNode dummy = new ListNode(0);
-        ListNode tail = dummy;
+    static class Solution {
+        public ListNode mergeSortedLists(ListNode headA, ListNode headB) {
 
-        ListNode currentA = headA;
-        ListNode currentB = headB;
+            // Create a dummy node and initialize the tail pointer
+            ListNode dummy = new ListNode(0);
+            ListNode tail = dummy;
 
-        // Traverse both lists until one of them becomes empty
-        while (currentA != null && currentB != null) {
+            ListNode currentA = headA;
+            ListNode currentB = headB;
 
-            // If the value of the current node in list A is less than
-            // or equal to the value of the current node in list B,
-            // append the current node from list A to the merged list
-            if (currentA.val <= currentB.val) {
+            // Traverse both lists until one of them becomes empty
+            while (currentA != null && currentB != null) {
+
+                // If the value of the current node in list A is less than
+                // or equal to the value of the current node in list B,
+                // append the current node from list A to the merged list
+                if (currentA.val <= currentB.val) {
+                    tail.next = currentA;
+                    currentA = currentA.next;
+                }
+
+                // Otherwise, append the current node from list B to the
+                // merged
+                else {
+                    tail.next = currentB;
+                    currentB = currentB.next;
+                }
+
+                // Move the tail pointer forward
+                tail = tail.next;
+            }
+
+            // Append the remaining nodes from the non-empty list to the
+            // merged list
+            if (currentA != null) {
                 tail.next = currentA;
-                currentA = currentA.next;
             }
 
-            // Otherwise, append the current node from list B to the
-            // merged
-            else {
+            // Else if there are any remaining nodes in currentB, attach
+            // them to the merged list
+            else if (currentB != null) {
                 tail.next = currentB;
-                currentB = currentB.next;
             }
 
-            // Move the tail pointer forward
-            tail = tail.next;
+            // Return the merged list (excluding the dummy node)
+            return dummy.next;
         }
+    }
 
-        // Append the remaining nodes from the non-empty list to the
-        // merged list
-        if (currentA != null) {
-            tail.next = currentA;
-        }
-
-        // Else if there are any remaining nodes in currentB, attach
-        // them to the merged list
-        else if (currentB != null) {
-            tail.next = currentB;
-        }
-
-        // Return the merged list (excluding the dummy node)
-        return dummy.next;
+    public static void main(String[] args) {
+        // [1, 2, 4] + [1, 3, 4] -> [1, 1, 2, 3, 4, 4]
+        ListNode a1=new ListNode(1),a2=new ListNode(2),a3=new ListNode(4); a1.next=a2; a2.next=a3;
+        ListNode b1=new ListNode(1),b2=new ListNode(3),b3=new ListNode(4); b1.next=b2; b2.next=b3;
+        ListNode head = new Solution().mergeSortedLists(a1, b1);
+        for (ListNode c=head;c!=null;c=c.next) System.out.print(c.val+" ");
+        // 1 1 2 3 4 4
     }
 }
 ```
@@ -982,46 +1072,56 @@ ListNode* mergeSortedLists(ListNode *headA, ListNode *headB) {
 ```
 
 ```scala run
-object Solution {
-  def mergeSortedLists(headA: ListNode, headB: ListNode): ListNode = {
+class ListNode(var v: Int, var next: ListNode = null)
 
-    // Create a dummy node and initialize the tail pointer
-    val dummy = new ListNode(0)
-    var tail: ListNode = dummy
+object Main extends App {
+  class Solution {
+    def mergeSortedLists(headA: ListNode, headB: ListNode): ListNode = {
 
-    var currentA = headA
-    var currentB = headB
+      // Create a dummy node and initialize the tail pointer
+      val dummy = new ListNode(0)
+      var tail: ListNode = dummy
 
-    // Traverse both lists until one of them becomes empty
-    while (currentA != null && currentB != null) {
+      var currentA = headA
+      var currentB = headB
 
-      // If the value of the current node in list A is less than or
-      // equal to the value of the current node in list B, append
-      // the current node from list A to the merged list
-      if (currentA.val <= currentB.val) {
-        tail.next = currentA
-        currentA = currentA.next
+      // Traverse both lists until one of them becomes empty
+      while (currentA != null && currentB != null) {
+
+        // If the value of the current node in list A is less than or
+        // equal to the value of the current node in list B, append
+        // the current node from list A to the merged list
+        if (currentA.v <= currentB.v) {
+          tail.next = currentA
+          currentA = currentA.next
+        }
+        // Otherwise, append the current node from list B to the merged
+        else {
+          tail.next = currentB
+          currentB = currentB.next
+        }
+
+        // Move the tail pointer forward
+        tail = tail.next
       }
-      // Otherwise, append the current node from list B to the merged
-      else {
-        tail.next = currentB
-        currentB = currentB.next
-      }
 
-      // Move the tail pointer forward
-      tail = tail.next
+      // Append the remaining nodes from the non-empty list to the
+      // merged list
+      if (currentA != null) tail.next = currentA
+      // Else if there are any remaining nodes in currentB, attach them
+      // to the merged list
+      else if (currentB != null) tail.next = currentB
+
+      // Return the merged list (excluding the dummy node)
+      dummy.next
     }
-
-    // Append the remaining nodes from the non-empty list to the
-    // merged list
-    if (currentA != null) tail.next = currentA
-    // Else if there are any remaining nodes in currentB, attach them
-    // to the merged list
-    else if (currentB != null) tail.next = currentB
-
-    // Return the merged list (excluding the dummy node)
-    dummy.next
   }
+
+  // [1, 2, 4] + [1, 3, 4] -> [1, 1, 2, 3, 4, 4]
+  val a3 = new ListNode(4); val a2 = new ListNode(2, a3); val a1 = new ListNode(1, a2)
+  val b3 = new ListNode(4); val b2 = new ListNode(3, b3); val b1 = new ListNode(1, b2)
+  var head = new Solution().mergeSortedLists(a1, b1)
+  while (head != null) { print(s"${head.v} "); head = head.next }  // 1 1 2 3 4 4
 }
 ```
 
@@ -1157,71 +1257,84 @@ class Solution:
 ```
 
 ```java run
-class Solution {
-    private ListNode reverse(ListNode head) {
-        ListNode current = head;
-        ListNode previous = null;
+public class Main {
+    static class ListNode { int val; ListNode next; ListNode(int v){val=v;} }
 
-        while (current != null) {
-            ListNode next = current.next;
-            current.next = previous;
-            previous = current;
-            current = next;
+    static class Solution {
+        private ListNode reverse(ListNode head) {
+            ListNode current = head;
+            ListNode previous = null;
+
+            while (current != null) {
+                ListNode next = current.next;
+                current.next = previous;
+                previous = current;
+                current = next;
+            }
+
+            return previous;
         }
 
-        return previous;
-    }
+        private ListNode mergeSortedLists(ListNode headA, ListNode headB) {
 
-    private ListNode mergeSortedLists(ListNode headA, ListNode headB) {
+            // Create a dummy node and initialize the tail pointer
+            ListNode dummy = new ListNode(0);
+            ListNode tail = dummy;
 
-        // Create a dummy node and initialize the tail pointer
-        ListNode dummy = new ListNode(0);
-        ListNode tail = dummy;
+            ListNode currentA = headA;
+            ListNode currentB = headB;
 
-        ListNode currentA = headA;
-        ListNode currentB = headB;
+            // Traverse both lists until one of them becomes empty
+            while (currentA != null && currentB != null) {
 
-        // Traverse both lists until one of them becomes empty
-        while (currentA != null && currentB != null) {
+                // If the value of the current node in list A is greater
+                // than or equal to the value of the current node in list
+                // B, append the current node from list A to the merged
+                // list
+                if (currentA.val >= currentB.val) {
+                    tail.next = currentA;
+                    currentA = currentA.next;
+                }
 
-            // If the value of the current node in list A is greater
-            // than or equal to the value of the current node in list
-            // B, append the current node from list A to the merged
-            // list
-            if (currentA.val >= currentB.val) {
+                // Otherwise, append the current node from list B to the
+                // merged
+                else {
+                    tail.next = currentB;
+                    currentB = currentB.next;
+                }
+
+                // Move the tail pointer forward
+                tail = tail.next;
+            }
+
+            // Append the remaining nodes from the non-empty list to the
+            // merged list
+            if (currentA != null) {
                 tail.next = currentA;
-                currentA = currentA.next;
             }
 
-            // Otherwise, append the current node from list B to the
-            // merged
-            else {
+            // Else if there are any remaining nodes in currentB, attach
+            // them to the merged list
+            else if (currentB != null) {
                 tail.next = currentB;
-                currentB = currentB.next;
             }
 
-            // Move the tail pointer forward
-            tail = tail.next;
+            // Return the merged list (excluding the dummy node)
+            return dummy.next;
         }
 
-        // Append the remaining nodes from the non-empty list to the
-        // merged list
-        if (currentA != null) {
-            tail.next = currentA;
+        public ListNode mergeSortedListsII(ListNode headA, ListNode headB) {
+            return mergeSortedLists(reverse(headA), reverse(headB));
         }
-
-        // Else if there are any remaining nodes in currentB, attach
-        // them to the merged list
-        else if (currentB != null) {
-            tail.next = currentB;
-        }
-
-        // Return the merged list (excluding the dummy node)
-        return dummy.next;
     }
 
-    public ListNode mergeSortedListsII(ListNode headA, ListNode headB) {
-        return mergeSortedLists(reverse(headA), reverse(headB));
+    public static void main(String[] args) {
+        // headA = [1, 2, 4], headB = [1, 3, 4] -> [4, 4, 3, 2, 1, 1]
+        ListNode a1=new ListNode(1),a2=new ListNode(2),a3=new ListNode(4); a1.next=a2; a2.next=a3;
+        ListNode b1=new ListNode(1),b2=new ListNode(3),b3=new ListNode(4); b1.next=b2; b2.next=b3;
+        ListNode head = new Solution().mergeSortedListsII(a1, b1);
+        for (ListNode c=head;c!=null;c=c.next) System.out.print(c.val+" ");
+        // 4 4 3 2 1 1
     }
 }
 ```
@@ -1294,63 +1407,73 @@ ListNode* mergeSortedListsII(ListNode *headA, ListNode *headB) {
 ```
 
 ```scala run
-object Solution {
-  private def reverse(head: ListNode): ListNode = {
-    var current = head
-    var previous: ListNode = null
+class ListNode(var v: Int, var next: ListNode = null)
 
-    while (current != null) {
-      val next = current.next
-      current.next = previous
-      previous = current
-      current = next
-    }
+object Main extends App {
+  class Solution {
+    private def reverse(head: ListNode): ListNode = {
+      var current = head
+      var previous: ListNode = null
 
-    previous
-  }
-
-  private def mergeSortedLists(headA: ListNode, headB: ListNode): ListNode = {
-
-    // Create a dummy node and initialize the tail pointer
-    val dummy = new ListNode(0)
-    var tail: ListNode = dummy
-
-    var currentA = headA
-    var currentB = headB
-
-    // Traverse both lists until one of them becomes empty
-    while (currentA != null && currentB != null) {
-
-      // If the value of the current node in list A is greater than
-      // or equal to the value of the current node in list B, append
-      // the current node from list A to the merged list
-      if (currentA.val >= currentB.val) {
-        tail.next = currentA
-        currentA = currentA.next
-      }
-      // Otherwise, append the current node from list B to the merged
-      else {
-        tail.next = currentB
-        currentB = currentB.next
+      while (current != null) {
+        val next = current.next
+        current.next = previous
+        previous = current
+        current = next
       }
 
-      // Move the tail pointer forward
-      tail = tail.next
+      previous
     }
 
-    // Append the remaining nodes from the non-empty list to the
-    // merged list
-    if (currentA != null) tail.next = currentA
-    // Else if there are any remaining nodes in currentB, attach them
-    // to the merged list
-    else if (currentB != null) tail.next = currentB
+    private def mergeSortedLists(headA: ListNode, headB: ListNode): ListNode = {
 
-    // Return the merged list (excluding the dummy node)
-    dummy.next
+      // Create a dummy node and initialize the tail pointer
+      val dummy = new ListNode(0)
+      var tail: ListNode = dummy
+
+      var currentA = headA
+      var currentB = headB
+
+      // Traverse both lists until one of them becomes empty
+      while (currentA != null && currentB != null) {
+
+        // If the value of the current node in list A is greater than
+        // or equal to the value of the current node in list B, append
+        // the current node from list A to the merged list
+        if (currentA.v >= currentB.v) {
+          tail.next = currentA
+          currentA = currentA.next
+        }
+        // Otherwise, append the current node from list B to the merged
+        else {
+          tail.next = currentB
+          currentB = currentB.next
+        }
+
+        // Move the tail pointer forward
+        tail = tail.next
+      }
+
+      // Append the remaining nodes from the non-empty list to the
+      // merged list
+      if (currentA != null) tail.next = currentA
+      // Else if there are any remaining nodes in currentB, attach them
+      // to the merged list
+      else if (currentB != null) tail.next = currentB
+
+      // Return the merged list (excluding the dummy node)
+      dummy.next
+    }
+
+    def mergeSortedListsII(headA: ListNode, headB: ListNode): ListNode =
+      mergeSortedLists(reverse(headA), reverse(headB))
   }
 
-  def mergeSortedListsII(headA: ListNode, headB: ListNode): ListNode =
-    mergeSortedLists(reverse(headA), reverse(headB))
+  // headA = [1, 2, 4], headB = [1, 3, 4] -> [4, 4, 3, 2, 1, 1]
+  val a3 = new ListNode(4); val a2 = new ListNode(2, a3); val a1 = new ListNode(1, a2)
+  val b3 = new ListNode(4); val b2 = new ListNode(3, b3); val b1 = new ListNode(1, b2)
+  var head = new Solution().mergeSortedListsII(a1, b1)
+  while (head != null) { print(s"${head.v} "); head = head.next }  // 4 4 3 2 1 1
 }
 ```
 
@@ -1486,69 +1609,82 @@ class Solution:
 ```
 
 ```java run
-class Solution {
-    public ListNode listAddition(ListNode headA, ListNode headB) {
+public class Main {
+    static class ListNode { int val; ListNode next; ListNode(int v){val=v;} }
 
-        // Create a new head for the result list and initialize tail
-        // pointer
-        ListNode dummy = new ListNode(0);
-        ListNode tail = dummy;
+    static class Solution {
+        public ListNode listAddition(ListNode headA, ListNode headB) {
 
-        ListNode currentA = headA;
-        ListNode currentB = headB;
+            // Create a new head for the result list and initialize tail
+            // pointer
+            ListNode dummy = new ListNode(0);
+            ListNode tail = dummy;
 
-        // Initialize carry to 0
-        int carry = 0;
+            ListNode currentA = headA;
+            ListNode currentB = headB;
 
-        // Traverse both lists while neither list is empty
-        while (currentA != null && currentB != null) {
+            // Initialize carry to 0
+            int carry = 0;
 
-            // Start with the carry value
-            int sum = carry;
+            // Traverse both lists while neither list is empty
+            while (currentA != null && currentB != null) {
 
-            // Add the values from both lists
-            sum += currentA.val + currentB.val;
+                // Start with the carry value
+                int sum = carry;
 
-            // Move to the next nodes in both lists
-            currentA = currentA.next;
-            currentB = currentB.next;
+                // Add the values from both lists
+                sum += currentA.val + currentB.val;
 
-            // Calculate the new carry value
-            carry = sum / 10;
+                // Move to the next nodes in both lists
+                currentA = currentA.next;
+                currentB = currentB.next;
 
-            // Create a new node with the sum modulo 10
-            tail.next = new ListNode(sum % 10);
+                // Calculate the new carry value
+                carry = sum / 10;
 
-            // Move the tail pointer to the newly created node
-            tail = tail.next;
+                // Create a new node with the sum modulo 10
+                tail.next = new ListNode(sum % 10);
+
+                // Move the tail pointer to the newly created node
+                tail = tail.next;
+            }
+
+            // If there are remaining nodes in list A, continue adding them
+            while (currentA != null) {
+                int sum = carry + currentA.val;
+                carry = sum / 10;
+                tail.next = new ListNode(sum % 10);
+                tail = tail.next;
+                currentA = currentA.next;
+            }
+
+            // If there are remaining nodes in list B, continue adding them
+            while (currentB != null) {
+                int sum = carry + currentB.val;
+                carry = sum / 10;
+                tail.next = new ListNode(sum % 10);
+                tail = tail.next;
+                currentB = currentB.next;
+            }
+
+            // If there is a remaining carry, create a new node for it
+            if (carry > 0) {
+                tail.next = new ListNode(carry);
+            }
+
+            // Return the head of the resulting list (excluding the dummy
+            // node)
+            return dummy.next;
         }
+    }
 
-        // If there are remaining nodes in list A, continue adding them
-        while (currentA != null) {
-            int sum = carry + currentA.val;
-            carry = sum / 10;
-            tail.next = new ListNode(sum % 10);
-            tail = tail.next;
-            currentA = currentA.next;
-        }
-
-        // If there are remaining nodes in list B, continue adding them
-        while (currentB != null) {
-            int sum = carry + currentB.val;
-            carry = sum / 10;
-            tail.next = new ListNode(sum % 10);
-            tail = tail.next;
-            currentB = currentB.next;
-        }
-
-        // If there is a remaining carry, create a new node for it
-        if (carry > 0) {
-            tail.next = new ListNode(carry);
-        }
-
-        // Return the head of the resulting list (excluding the dummy
-        // node)
-        return dummy.next;
+    public static void main(String[] args) {
+        // headA = [2, 4, 3] (= 342), headB = [5, 6, 4] (= 465) -> [7, 0, 8] (= 807)
+        ListNode a1=new ListNode(2),a2=new ListNode(4),a3=new ListNode(3); a1.next=a2; a2.next=a3;
+        ListNode b1=new ListNode(5),b2=new ListNode(6),b3=new ListNode(4); b1.next=b2; b2.next=b3;
+        ListNode head = new Solution().listAddition(a1, b1);
+        for (ListNode c=head;c!=null;c=c.next) System.out.print(c.val+" ");
+        // 7 0 8
     }
 }
 ```
@@ -1628,70 +1764,80 @@ ListNode* listAddition(ListNode *headA, ListNode *headB) {
 ```
 
 ```scala run
-object Solution {
-  def listAddition(headA: ListNode, headB: ListNode): ListNode = {
+class ListNode(var v: Int, var next: ListNode = null)
 
-    // Create a new head for the result list and initialize tail
-    // pointer
-    val dummy = new ListNode(0)
-    var tail: ListNode = dummy
+object Main extends App {
+  class Solution {
+    def listAddition(headA: ListNode, headB: ListNode): ListNode = {
 
-    var currentA = headA
-    var currentB = headB
+      // Create a new head for the result list and initialize tail
+      // pointer
+      val dummy = new ListNode(0)
+      var tail: ListNode = dummy
 
-    // Initialize carry to 0
-    var carry = 0
+      var currentA = headA
+      var currentB = headB
 
-    // Traverse both lists while neither list is empty
-    while (currentA != null && currentB != null) {
+      // Initialize carry to 0
+      var carry = 0
 
-      // Start with the carry value
-      var sum = carry
+      // Traverse both lists while neither list is empty
+      while (currentA != null && currentB != null) {
 
-      // Add the values from both lists
-      sum += currentA.val + currentB.val
+        // Start with the carry value
+        var sum = carry
 
-      // Move to the next nodes in both lists
-      currentA = currentA.next
-      currentB = currentB.next
+        // Add the values from both lists
+        sum += currentA.v + currentB.v
 
-      // Calculate the new carry value
-      carry = sum / 10
+        // Move to the next nodes in both lists
+        currentA = currentA.next
+        currentB = currentB.next
 
-      // Create a new node with the sum modulo 10
-      tail.next = new ListNode(sum % 10)
+        // Calculate the new carry value
+        carry = sum / 10
 
-      // Move the tail pointer to the newly created node
-      tail = tail.next
+        // Create a new node with the sum modulo 10
+        tail.next = new ListNode(sum % 10)
+
+        // Move the tail pointer to the newly created node
+        tail = tail.next
+      }
+
+      // If there are remaining nodes in list A, continue adding them
+      while (currentA != null) {
+        val sum = carry + currentA.v
+        carry = sum / 10
+        tail.next = new ListNode(sum % 10)
+        tail = tail.next
+        currentA = currentA.next
+      }
+
+      // If there are remaining nodes in list B, continue adding them
+      while (currentB != null) {
+        val sum = carry + currentB.v
+        carry = sum / 10
+        tail.next = new ListNode(sum % 10)
+        tail = tail.next
+        currentB = currentB.next
+      }
+
+      // If there is a remaining carry, create a new node for it
+      if (carry > 0) {
+        tail.next = new ListNode(carry)
+      }
+
+      // Return the head of the resulting list (excluding the dummy
+      // node)
+      dummy.next
     }
-
-    // If there are remaining nodes in list A, continue adding them
-    while (currentA != null) {
-      val sum = carry + currentA.val
-      carry = sum / 10
-      tail.next = new ListNode(sum % 10)
-      tail = tail.next
-      currentA = currentA.next
-    }
-
-    // If there are remaining nodes in list B, continue adding them
-    while (currentB != null) {
-      val sum = carry + currentB.val
-      carry = sum / 10
-      tail.next = new ListNode(sum % 10)
-      tail = tail.next
-      currentB = currentB.next
-    }
-
-    // If there is a remaining carry, create a new node for it
-    if (carry > 0) {
-      tail.next = new ListNode(carry)
-    }
-
-    // Return the head of the resulting list (excluding the dummy
-    // node)
-    dummy.next
   }
+
+  // headA = [2, 4, 3] (= 342), headB = [5, 6, 4] (= 465) -> [7, 0, 8] (= 807)
+  val a3 = new ListNode(3); val a2 = new ListNode(4, a3); val a1 = new ListNode(2, a2)
+  val b3 = new ListNode(4); val b2 = new ListNode(6, b3); val b1 = new ListNode(5, b2)
+  var head = new Solution().listAddition(a1, b1)
+  while (head != null) { print(s"${head.v} "); head = head.next }  // 7 0 8
 }
 ```
 
