@@ -13,9 +13,9 @@ import scala.jdk.CollectionConverters.*
  * Hard-rejects the same canon the [[codefolio.client.components.cortex.widgets.LinkedList]] widget enforces
  * at runtime (see ADR-0016): marker names ∈ `{head, tail, previous, current, next, slow, fast, dummy, start,
  * end, headA, headB, tailA, tailB}`, no `color` on payload markers, node `style` ∈ `{new, removed,
- * highlight}`, `sections[]` startIdx strictly increasing and in bounds. Runtime enforcement catches drift
- * the instant the author saves a chapter under `bin/dev`; this validator catches drift in CI for chapters
- * nobody re-opened locally.
+ * highlight}`, `sections[]` startIdx strictly increasing and in bounds. Runtime enforcement catches drift the
+ * instant the author saves a chapter under `bin/dev`; this validator catches drift in CI for chapters nobody
+ * re-opened locally.
  *
  * Wired as an sbt command alias `validateCortexPayloads` (see `build.sbt`); CI runs it alongside
  * `scalafmtCheckAll`.
