@@ -6,10 +6,10 @@ import japgolly.scalajs.react.*
 import japgolly.scalajs.react.vdom.html_<^.*
 
 /**
- * Big prev/next chapter cards rendered at the foot of the prose — replaces the smaller text-only pager.
- * Each card is an `<a>` with an eyebrow row (Previous / Next + arrow), the chapter title (display
- * italic), and a short blurb if one is in scope. Adjacency is computed server-side and threaded through
- * via `prev`/`next` props; this component is purely presentational.
+ * Big prev/next chapter cards rendered at the foot of the prose — replaces the smaller text-only pager. Each
+ * card is an `<a>` with an eyebrow row (Previous / Next + arrow), the chapter title (display italic), and a
+ * short blurb if one is in scope. Adjacency is computed server-side and threaded through via `prev`/`next`
+ * props; this component is purely presentational.
  */
 object CortexPrevNext:
 

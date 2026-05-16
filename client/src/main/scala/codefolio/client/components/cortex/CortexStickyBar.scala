@@ -7,13 +7,13 @@ import org.scalajs.dom
 import scala.scalajs.js
 
 /**
- * Slim chrome bar that slides in below the site header once the chapter H1 has scrolled out of view.
- * Shows `Ch. NN · <Chapter title> / <Active section>` so the user has lightweight wayfinding once the
- * masthead is no longer visible. No percent or time-remaining indicators (intentionally dropped per
- * chat-4 user feedback — visual signals only).
+ * Slim chrome bar that slides in below the site header once the chapter H1 has scrolled out of view. Shows
+ * `Ch. NN · <Chapter title> / <Active section>` so the user has lightweight wayfinding once the masthead is
+ * no longer visible. No percent or time-remaining indicators (intentionally dropped per chat-4 user feedback
+ * — visual signals only).
  *
- * Activation is driven by the H1's bounding rect via a passive scroll listener; the active section name
- * is supplied by the parent layout (which subscribes to the right-TOC's `cortex:activeHeading` event).
+ * Activation is driven by the H1's bounding rect via a passive scroll listener; the active section name is
+ * supplied by the parent layout (which subscribes to the right-TOC's `cortex:activeHeading` event).
  */
 object CortexStickyBar:
 
@@ -45,9 +45,9 @@ object CortexStickyBar:
       .render { (props, visibleS) =>
         val num = numberLabel(props.chapterNumber)
         <.div(
-          ^.className           := "cortex-reader-sticky-bar",
-          VdomAttr("data-on")   := (if visibleS.value then "true" else "false"),
-          ^.role                := "presentation",
+          ^.className         := "cortex-reader-sticky-bar",
+          VdomAttr("data-on") := (if visibleS.value then "true" else "false"),
+          ^.role              := "presentation",
           <.span(
             ^.className := "cortex-reader-sticky-bar__chapter",
             if num.nonEmpty then TagMod("Ch. ", <.strong(num), " · ", <.strong(props.chapterTitle))

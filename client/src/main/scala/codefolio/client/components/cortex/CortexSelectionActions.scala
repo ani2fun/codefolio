@@ -13,15 +13,15 @@ import scala.util.Try
  *
  *   - **Copy** — plain text to clipboard.
  *   - **Quote** — text wrapped in curly quotes + a `— Aniket Kakde` attribution tail.
- *   - **Highlight** — wraps the selection in a `<mark>` with terracotta accents. `surroundContents` is
- *     used inside a try/catch — it throws on cross-block selections, which we swallow (the user gets
- *     the visual nothing-happened feedback, no console noise). Highlights are DOM-only by design;
- *     persisting them across reloads is a follow-up.
- *   - **Define** — opens the first word of the selection in Wiktionary in a new tab. Pragmatic
- *     fallback for the common "look this up" intent.
+ *   - **Highlight** — wraps the selection in a `<mark>` with terracotta accents. `surroundContents` is used
+ *     inside a try/catch — it throws on cross-block selections, which we swallow (the user gets the visual
+ *     nothing-happened feedback, no console noise). Highlights are DOM-only by design; persisting them across
+ *     reloads is a follow-up.
+ *   - **Define** — opens the first word of the selection in Wiktionary in a new tab. Pragmatic fallback for
+ *     the common "look this up" intent.
  *
- * The popover is positioned in document coordinates from `Range.getBoundingClientRect()` (+ `scrollY`),
- * so it stays attached to the selection even after the page scrolls under it.
+ * The popover is positioned in document coordinates from `Range.getBoundingClientRect()` (+ `scrollY`), so it
+ * stays attached to the selection even after the page scrolls under it.
  */
 object CortexSelectionActions:
 
@@ -40,8 +40,10 @@ object CortexSelectionActions:
     case Act.Highlight => "Highlight"
     case Act.Define    => "Define"
 
-  /** Restrict the popover to selections that live entirely inside `.chapter-content`. Selections that
-    * span outside (e.g. a header click + drag into the prose) are ignored. */
+  /**
+   * Restrict the popover to selections that live entirely inside `.chapter-content`. Selections that span
+   * outside (e.g. a header click + drag into the prose) are ignored.
+   */
   private def isInsideProse(node: dom.Node): Boolean =
     val prose = dom.document.querySelector(".chapter-content")
     prose != null && (prose == node || prose.contains(node))
@@ -49,16 +51,16 @@ object CortexSelectionActions:
   val Component =
     ScalaFnComponent
       .withHooks[Unit]
-      .useState(false) // open
-      .useState((0.0, 0.0)) // (left, top) in document coords
-      .useState(Option.empty[Act]) // last action — drives the "Done" indicator
+      .useState(false)                      // open
+      .useState((0.0, 0.0))                 // (left, top) in document coords
+      .useState(Option.empty[Act])          // last action — drives the "Done" indicator
       .useRef(null.asInstanceOf[dom.Range]) // last selection's range, for Highlight
       .useEffectOnMountBy { (_, openS, posS, _, rangeRef) =>
         Callback {
           val onSelection: js.Function1[dom.Event, Unit] = (_: dom.Event) =>
             // Defer one frame so the selection has settled before we read it. requestAnimationFrame
             // is the standard debounce for selectionchange.
-            val _ = dom.window.asInstanceOf[js.Dynamic].requestAnimationFrame((_: Double) => {
+            val _ = dom.window.asInstanceOf[js.Dynamic].requestAnimationFrame { (_: Double) =>
               val sel = dom.window.getSelection()
               if sel == null || sel.isCollapsed || sel.rangeCount == 0 then
                 openS.setState(false).runNow()
@@ -77,13 +79,13 @@ object CortexSelectionActions:
                     posS.setState((left, top)).runNow()
                     openS.setState(true).runNow()
               ()
-            })
+            }
           dom.document.addEventListener("selectionchange", onSelection, useCapture = false)
 
           // Dismiss when the user clicks outside the popover (the popover itself stops propagation).
           val onDown: js.Function1[dom.MouseEvent, Unit] = (e: dom.MouseEvent) =>
             val target = e.target.asInstanceOf[dom.Element]
-            val pop = dom.document.querySelector(".cortex-reader-selpop")
+            val pop    = dom.document.querySelector(".cortex-reader-selpop")
             if pop == null || (target != null && !pop.contains(target)) then
               openS.setState(false).runNow()
           dom.document.addEventListener("mousedown", onDown, useCapture = false)
@@ -97,7 +99,7 @@ object CortexSelectionActions:
           .asInstanceOf[js.Object]
 
         def perform(act: Act): Callback = Callback {
-          val sel = dom.window.getSelection()
+          val sel  = dom.window.getSelection()
           val text = if sel != null then sel.toString.trim else ""
           act match
             case Act.Copy =>
@@ -120,7 +122,7 @@ object CortexSelectionActions:
                 text.split("\\s+").headOption.getOrElse("").replaceAll("[^A-Za-z\\-']", "")
               if first.nonEmpty then
                 val url = s"https://en.wiktionary.org/wiki/${js.Dynamic.global.encodeURIComponent(first)}"
-                val _ = dom.window.open(url, "_blank")
+                val _   = dom.window.open(url, "_blank")
               ()
           doneActS.setState(Some(act)).runNow()
           dom.window.setTimeout(
@@ -134,14 +136,14 @@ object CortexSelectionActions:
         }
 
         def actionButton(act: Act, icon: VdomNode): VdomNode =
-          val isDone = doneActS.value.contains(act)
+          val isDone  = doneActS.value.contains(act)
           val display = if isDone then "Done" else labelFor(act)
           <.button(
-            ^.key                 := s"selpop-${labelFor(act)}",
-            ^.tpe                 := "button",
-            VdomAttr("data-act")  := labelFor(act),
+            ^.key                  := s"selpop-${labelFor(act)}",
+            ^.tpe                  := "button",
+            VdomAttr("data-act")   := labelFor(act),
             VdomAttr("data-state") := (if isDone then "done" else ""),
-            ^.aria.label          := labelFor(act),
+            ^.aria.label           := labelFor(act),
             ^.onClick --> perform(act),
             icon,
             <.span(display)
@@ -157,7 +159,13 @@ object CortexSelectionActions:
           actionButton(Act.Copy, LucideIcons.Copy(LucideIcons.withClass("cortex-reader-selpop__icon"))),
           actionButton(Act.Quote, LucideIcons.Quote(LucideIcons.withClass("cortex-reader-selpop__icon"))),
           <.span(^.className := "cortex-reader-selpop__divider", ^.aria.hidden := true),
-          actionButton(Act.Highlight, LucideIcons.Highlighter(LucideIcons.withClass("cortex-reader-selpop__icon"))),
-          actionButton(Act.Define, LucideIcons.BookMarked(LucideIcons.withClass("cortex-reader-selpop__icon")))
+          actionButton(
+            Act.Highlight,
+            LucideIcons.Highlighter(LucideIcons.withClass("cortex-reader-selpop__icon"))
+          ),
+          actionButton(
+            Act.Define,
+            LucideIcons.BookMarked(LucideIcons.withClass("cortex-reader-selpop__icon"))
+          )
         )
       }

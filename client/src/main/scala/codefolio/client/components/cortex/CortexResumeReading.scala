@@ -11,21 +11,21 @@ import scala.util.Try
 
 /**
  * Bottom-centred "Continue where you left off" toast — shown on chapter load when a per-pathname scroll
- * position is persisted in localStorage and the saved fraction is between 5% and 95% (outside that band
- * means "fresh page" or "essentially done").
+ * position is persisted in localStorage and the saved fraction is between 5% and 95% (outside that band means
+ * "fresh page" or "essentially done").
  *
  *   - Persisted as a fraction (0.0–1.0) under `cortex-reader.resume:<pathname>`.
  *   - Toast appears 600ms after mount (lets layout settle); auto-dismisses after 8s if untouched.
  *   - Resume → `window.scrollTo({ top: scrollHeight * fraction, behavior: smooth })`.
  *   - X → dismiss (no persistence change).
  *
- * Per chat-4 user feedback, the percentage indicator was dropped from the toast — the bare "Continue
- * where you left off · Resume" copy stays.
+ * Per chat-4 user feedback, the percentage indicator was dropped from the toast — the bare "Continue where
+ * you left off · Resume" copy stays.
  */
 object CortexResumeReading:
 
-  private val ShowDelayMs = 600
-  private val AutoHideMs  = 8000
+  private val ShowDelayMs       = 600
+  private val AutoHideMs        = 8000
   private val PersistThrottleMs = 220
 
   private val MinFraction = 0.05
@@ -75,10 +75,10 @@ object CortexResumeReading:
       }
       .render { (_, openS, savedS) =>
         val onResume: Callback = Callback {
-          val doc = dom.document.documentElement
-          val total = doc.scrollHeight.toDouble - doc.clientHeight.toDouble
+          val doc    = dom.document.documentElement
+          val total  = doc.scrollHeight.toDouble - doc.clientHeight.toDouble
           val target = (total * savedS.value).max(0.0)
-          val opts = js.Dynamic.literal(top = target, behavior = "smooth").asInstanceOf[js.Object]
+          val opts   = js.Dynamic.literal(top = target, behavior = "smooth").asInstanceOf[js.Object]
           dom.window.asInstanceOf[js.Dynamic].scrollTo(opts)
           openS.setState(false).runNow()
         }

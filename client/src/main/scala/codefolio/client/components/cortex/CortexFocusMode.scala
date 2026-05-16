@@ -8,10 +8,10 @@ import org.scalajs.dom
 import scala.scalajs.js
 
 /**
- * Focus-mode chrome: the entry FAB, the persistent top-right hint pill ("Press F or Esc to exit"), and
- * the left-edge reveal zone. The actual fading of site chrome is owned by
- * `body.cortex-focus-mode` CSS rules in `cortex-reader.css` + `header.css`. Body-class management lives
- * in `CortexReaderLayout` (so the F-key listener can see/toggle it without prop drilling).
+ * Focus-mode chrome: the entry FAB, the persistent top-right hint pill ("Press F or Esc to exit"), and the
+ * left-edge reveal zone. The actual fading of site chrome is owned by `body.cortex-focus-mode` CSS rules in
+ * `cortex-reader.css` + `header.css`. Body-class management lives in `CortexReaderLayout` (so the F-key
+ * listener can see/toggle it without prop drilling).
  */
 object CortexFocusMode:
 
@@ -67,9 +67,9 @@ object CortexFocusMode:
           // Positioned by CSS at right: 20px; bottom: 188px (back-to-top 20 + 44 + 12 + type 44 + 12 +
           // TOC 44 + 12 = 188).
           <.button(
-            ^.tpe         := "button",
-            ^.className   := "cortex-reader-focus-fab",
-            ^.aria.label  := ariaLabel,
+            ^.tpe          := "button",
+            ^.className    := "cortex-reader-focus-fab",
+            ^.aria.label   := ariaLabel,
             ^.aria.pressed := props.focused,
             ^.onClick --> props.onToggle,
             LucideIcons.Focus(LucideIcons.withClass("cortex-reader-focus-fab__icon"))
@@ -77,10 +77,10 @@ object CortexFocusMode:
           // Hint pill — visible only when focused. Listens for clicks to exit focus mode (matches the
           // preview's behaviour where clicking the hint also exits).
           <.div(
-            ^.className                := "cortex-reader-focus-hint",
-            ^.role                     := "status",
-            VdomAttr("data-focused")   := (if props.focused then "true" else "false"),
-            VdomAttr("data-faded")     := (if fadedS.value then "true" else "false"),
+            ^.className              := "cortex-reader-focus-hint",
+            ^.role                   := "status",
+            VdomAttr("data-focused") := (if props.focused then "true" else "false"),
+            VdomAttr("data-faded")   := (if fadedS.value then "true" else "false"),
             ^.onClick --> props.onToggle,
             <.span(^.className := "cortex-reader-focus-hint__dot", ^.aria.hidden := true),
             <.span("Focus mode"),

@@ -9,17 +9,17 @@ import scala.scalajs.js
 import scala.util.Try
 
 /**
- * Reading preferences panel + FAB. Four controls, all persisted to localStorage and applied as CSS
- * custom properties on `document.documentElement`:
+ * Reading preferences panel + FAB. Four controls, all persisted to localStorage and applied as CSS custom
+ * properties on `document.documentElement`:
  *
  *   - **Size** — `s` / `m` / `l` → `--reader-fs: 16 / 18.5 / 21 px` on the prose root.
  *   - **Leading** — `tight` / `comfortable` / `loose` → `--reader-lh: 1.55 / 1.8 / 2.05`.
- *   - **Family** — `sans` / `serif` → swaps `--reader-font` between the site sans and an Iowan/Charter
- *     serif body stack (Instrument Serif italic is too heavy for body text — used only for display).
+ *   - **Family** — `sans` / `serif` → swaps `--reader-font` between the site sans and an Iowan/Charter serif
+ *     body stack (Instrument Serif italic is too heavy for body text — used only for display).
  *   - **Dark mode** — toggles `html.dark`, which the existing Tailwind v4 token palette already covers.
  *
- * Triggered by the Aa FAB in the right-edge fab stack OR the `T` key (skipped inside editable targets).
- * Panel is dismissed by `Esc`, clicks outside, or pressing `T`/Aa again.
+ * Triggered by the Aa FAB in the right-edge fab stack OR the `T` key (skipped inside editable targets). Panel
+ * is dismissed by `Esc`, clicks outside, or pressing `T`/Aa again.
  *
  * Dispatches `cortex:typePrefsChanged` after every apply so the mini-map can rebuild its tick positions
  * (prose height shifts with font size).
@@ -30,6 +30,7 @@ object CortexTypePrefs:
 
   private val SizeMap = Map("s" -> "16px", "m" -> "18.5px", "l" -> "21px")
   private val LeadMap = Map("tight" -> "1.55", "comfortable" -> "1.8", "loose" -> "2.05")
+
   private val FontMap = Map(
     "sans"  -> "var(--font-sans)",
     "serif" -> "\"Iowan Old Style\", \"Charter\", Georgia, serif"
@@ -61,8 +62,10 @@ object CortexTypePrefs:
     val obj = js.Dynamic.literal(size = p.size, lead = p.lead, font = p.font, dark = p.dark)
     Try(dom.window.localStorage.setItem(StorageKey, js.JSON.stringify(obj))).getOrElse(())
 
-  /** Apply prefs by writing CSS custom properties to the documentElement and toggling the dark class.
-    * Dispatches a `cortex:typePrefsChanged` event so dependent widgets (mini-map) can re-measure. */
+  /**
+   * Apply prefs by writing CSS custom properties to the documentElement and toggling the dark class.
+   * Dispatches a `cortex:typePrefsChanged` event so dependent widgets (mini-map) can re-measure.
+   */
   private def applyPrefs(p: Prefs): Unit =
     val style = dom.document.documentElement.asInstanceOf[js.Dynamic].style
     style.setProperty("--reader-fs", SizeMap.getOrElse(p.size, "18.5px"))
@@ -73,7 +76,7 @@ object CortexTypePrefs:
     val init = (new js.Object).asInstanceOf[dom.CustomEventInit]
     init.detail = p.size
     val ev = new dom.CustomEvent("cortex:typePrefsChanged", init)
-    val _ = dom.window.dispatchEvent(ev)
+    val _  = dom.window.dispatchEvent(ev)
 
   private def isEditableTarget(e: dom.KeyboardEvent): Boolean =
     val t = e.target.asInstanceOf[dom.Element]
@@ -109,7 +112,7 @@ object CortexTypePrefs:
         Callback {
           val onDown: js.Function1[dom.MouseEvent, Unit] = (e: dom.MouseEvent) =>
             if openS.value then
-              val t = e.target.asInstanceOf[dom.Element]
+              val t     = e.target.asInstanceOf[dom.Element]
               val panel = dom.document.querySelector(".cortex-reader-type-prefs")
               val fab   = dom.document.querySelector(".cortex-reader-type-prefs-fab")
               val inside =
@@ -131,11 +134,11 @@ object CortexTypePrefs:
 
         def seg(group: String, current: String, value: String, label: String): VdomNode =
           <.button(
-            ^.key                  := s"$group-$value",
-            ^.tpe                  := "button",
-            VdomAttr("data-tc")    := group,
-            VdomAttr("data-v")     := value,
-            ^.aria.pressed         := (current == value),
+            ^.key               := s"$group-$value",
+            ^.tpe               := "button",
+            VdomAttr("data-tc") := group,
+            VdomAttr("data-v")  := value,
+            ^.aria.pressed      := (current == value),
             ^.onClick --> setAndPersist(group match
               case "size" => p.withSize(value)
               case "lead" => p.withLead(value)
@@ -148,9 +151,9 @@ object CortexTypePrefs:
         <.div(
           // FAB
           <.button(
-            ^.tpe         := "button",
-            ^.className   := "cortex-reader-type-prefs-fab",
-            ^.aria.label  := "Reading preferences (T)",
+            ^.tpe           := "button",
+            ^.className     := "cortex-reader-type-prefs-fab",
+            ^.aria.label    := "Reading preferences (T)",
             ^.aria.expanded := openS.value,
             ^.aria.controls := "cortex-reader-type-prefs",
             ^.onClick --> openS.setState(!openS.value),
@@ -169,8 +172,8 @@ object CortexTypePrefs:
               ^.className := "cortex-reader-type-prefs__group",
               <.div(^.className := "cortex-reader-type-prefs__label", <.span("Size")),
               <.div(
-                ^.className := "cortex-reader-type-prefs__seg",
-                ^.role      := "radiogroup",
+                ^.className  := "cortex-reader-type-prefs__seg",
+                ^.role       := "radiogroup",
                 ^.aria.label := "Font size",
                 seg("size", p.size, "s", "Small"),
                 seg("size", p.size, "m", "Medium"),
@@ -182,8 +185,8 @@ object CortexTypePrefs:
               ^.className := "cortex-reader-type-prefs__group",
               <.div(^.className := "cortex-reader-type-prefs__label", <.span("Leading")),
               <.div(
-                ^.className := "cortex-reader-type-prefs__seg",
-                ^.role      := "radiogroup",
+                ^.className  := "cortex-reader-type-prefs__seg",
+                ^.role       := "radiogroup",
                 ^.aria.label := "Line height",
                 seg("lead", p.lead, "tight", "Tight"),
                 seg("lead", p.lead, "comfortable", "Comfortable"),
@@ -195,8 +198,8 @@ object CortexTypePrefs:
               ^.className := "cortex-reader-type-prefs__group",
               <.div(^.className := "cortex-reader-type-prefs__label", <.span("Type family")),
               <.div(
-                ^.className := "cortex-reader-type-prefs__seg cortex-reader-type-prefs__seg--family",
-                ^.role      := "radiogroup",
+                ^.className  := "cortex-reader-type-prefs__seg cortex-reader-type-prefs__seg--family",
+                ^.role       := "radiogroup",
                 ^.aria.label := "Type family",
                 seg("font", p.font, "sans", "Sans"),
                 seg("font", p.font, "serif", "Serif")

@@ -58,6 +58,22 @@ idx -> arr.a0: "arr[i]"
 
 <p align="center"><strong>Array traversal uses an integer index <code>i</code> that increments from <code>0</code> to <code>n-1</code> — direct O(1) access at each step.</strong></p>
 
+```d3 widget=array-traversal
+{
+  "title": "Array traversal — i increments 0 → n-1, arr[i] is O(1) each step",
+  "items": [5, 7, 3, 10],
+  "steps": [
+    { "markers": [{ "name": "i", "index": 0 }], "msg": "i = 0 — enter the loop, condition i < 4 holds" },
+    { "markers": [{ "name": "i", "index": 0 }], "range": { "lo": 0, "hi": 0 }, "msg": "arr[0] = 5 — O(1) direct access via the index" },
+    { "markers": [{ "name": "i", "index": 1 }], "range": { "lo": 1, "hi": 1 }, "msg": "i = 1 → arr[1] = 7" },
+    { "markers": [{ "name": "i", "index": 2 }], "range": { "lo": 2, "hi": 2 }, "msg": "i = 2 → arr[2] = 3" },
+    { "markers": [{ "name": "i", "index": 3 }], "range": { "lo": 3, "hi": 3 }, "msg": "i = 3 → arr[3] = 10" },
+    { "markers": [], "msg": "i = 4 — condition i < 4 fails, loop ends. O(n) total, O(1) per access." }
+  ]
+}
+```
+
+<p align="center"><strong>Step through the array traversal — six frames mirror the source: enter, four O(1) reads, exit. The index <code>i</code> walks the cells; the highlighted band shows what <code>arr[i]</code> resolves to at each step.</strong></p>
 
 ```pseudocode
 arr ← [5, 7, 3, 10]
