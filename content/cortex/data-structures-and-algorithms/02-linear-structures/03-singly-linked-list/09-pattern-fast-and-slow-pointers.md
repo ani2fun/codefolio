@@ -47,7 +47,7 @@ The fast and slow pointer pattern is a classification of problems that can be so
   "steps": [
     {
       "links": [["n1","n2"],["n2","n3"],["n3","n4"],["n4","n5"],["n5","n6"],["n6","n7"],["n7","n8"]],
-      "markers": [{"name": "head", "nodeId": "n1"}, {"name": "target = 1/n", "nodeId": "n4", "color": "#f59e0b"}, {"name": "tail", "nodeId": "n8", "color": "#10b981"}],
+      "markers": [{"name": "head", "nodeId": "n1"}, {"name": "current", "nodeId": "n4"}, {"name": "tail", "nodeId": "n8"}],
       "msg": "Goal: find a node at 1/n of the length in a single pass — no length measurement needed"
     }
   ]
@@ -79,17 +79,17 @@ The idea is to initialize two references `flast` and `slow` with `start` and 
   "steps": [
     {
       "links": [["n1","n2"],["n2","n3"],["n3","n4"],["n4","n5"]],
-      "markers": [{"name": "slow", "nodeId": "n1"}, {"name": "fast", "nodeId": "n1", "color": "#10b981"}],
+      "markers": [{"name": "slow", "nodeId": "n1"}, {"name": "fast", "nodeId": "n1"}],
       "msg": "Init: slow = fast = head"
     },
     {
       "links": [["n1","n2"],["n2","n3"],["n3","n4"],["n4","n5"]],
-      "markers": [{"name": "slow", "nodeId": "n2"}, {"name": "fast", "nodeId": "n3", "color": "#10b981"}],
+      "markers": [{"name": "slow", "nodeId": "n2"}, {"name": "fast", "nodeId": "n3"}],
       "msg": "Tick 1: slow → 2, fast → 3"
     },
     {
       "links": [["n1","n2"],["n2","n3"],["n3","n4"],["n4","n5"]],
-      "markers": [{"name": "slow", "nodeId": "n3", "color": "#f59e0b"}, {"name": "fast", "nodeId": "n5", "color": "#10b981"}],
+      "markers": [{"name": "slow", "nodeId": "n3"}, {"name": "fast", "nodeId": "n5"}],
       "msg": "Tick 2: slow → 3, fast → 5 (tail). Loop ends. slow is the middle."
     }
   ]
@@ -325,7 +325,7 @@ Let's consider the following problem as an example to better understand how to i
   "steps": [
     {
       "links": [["a1","a2"],["a2","a3"],["a3","a4"],["a4","a5"]],
-      "markers": [{"name": "middle", "nodeId": "a3", "color": "#f59e0b"}],
+      "markers": [{"name": "current", "nodeId": "a3"}],
       "msg": "Odd length [1,2,3,4,5] — middle = node(3), unambiguous"
     },
     {
@@ -336,7 +336,7 @@ Let's consider the following problem as an example to better understand how to i
         {"id": "a4", "value": "4"}
       ],
       "links": [["a1","a2"],["a2","a3"],["a3","a4"]],
-      "markers": [{"name": "2nd middle", "nodeId": "a3", "color": "#f59e0b"}],
+      "markers": [{"name": "current", "nodeId": "a3"}],
       "msg": "Even length [1,2,3,4] — fast-and-slow returns the SECOND middle = node(3)"
     }
   ]

@@ -287,12 +287,12 @@ Let's consider the following problem as an example to better understand how to i
         {"id": "b3", "value": "B:6"}
       ],
       "links": [["a1","a2"],["a2","a3"],["b1","b2"],["b2","b3"]],
-      "markers": [{"name": "headA", "nodeId": "a1"}, {"name": "headB", "nodeId": "b1", "color": "#10b981"}],
+      "markers": [{"name": "headA", "nodeId": "a1"}, {"name": "headB", "nodeId": "b1"}],
       "msg": "Before: two input lists A=[1,3,5] and B=[2,4,6]"
     },
     {
       "links": [["a1","b1"],["b1","a2"],["a2","b2"],["b2","a3"],["a3","b3"]],
-      "markers": [{"name": "merged head", "nodeId": "a1"}],
+      "markers": [{"name": "head", "nodeId": "a1"}],
       "msg": "After: spliced (sorted merge) — same 6 nodes rewired into 1 → 2 → 3 → 4 → 5 → 6"
     }
   ]

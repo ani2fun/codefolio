@@ -71,7 +71,7 @@ Two design decisions shape every linked-list class you'll ever write:
   "steps": [
     {
       "links": [["n1","n2"],["n2","n3"],["n3","n4"]],
-      "markers": [{"name": "head", "nodeId": "n1"}, {"name": "tail (optional)", "nodeId": "n4", "color": "#a855f7"}, {"name": "currentSize=4", "nodeId": "n3", "color": "#10b981"}],
+      "markers": [{"name": "head", "nodeId": "n1"}, {"name": "tail", "nodeId": "n4"}],
       "msg": "head + cached currentSize is the minimal viable design; tail is optional (makes append O(1) but costs an extra field to maintain)"
     }
   ]

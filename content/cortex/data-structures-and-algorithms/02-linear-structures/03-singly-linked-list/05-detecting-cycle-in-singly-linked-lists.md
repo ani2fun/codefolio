@@ -38,7 +38,7 @@ Sometimes, a linked list may not terminate at a `null` reference but instead, ho
   "steps": [
     {
       "links": [["n1","n2"],["n2","n3"],["n3","n4"],["n4","n5"]],
-      "markers": [{"name": "head", "nodeId": "n1"}, {"name": "cycle-entry", "nodeId": "n3", "color": "#a855f7"}],
+      "markers": [{"name": "head", "nodeId": "n1"}, {"name": "current", "nodeId": "n3"}],
       "msg": "Tail node(6) loops back to node(3) — naive traversal would never terminate"
     }
   ]
@@ -71,22 +71,22 @@ Below is an example of a linked list that has a cycle.
   "steps": [
     {
       "links": [["n1","n2"],["n2","n3"],["n3","n4"],["n4","n5"]],
-      "markers": [{"name": "slow", "nodeId": "n1"}, {"name": "fast", "nodeId": "n1", "color": "#10b981"}],
+      "markers": [{"name": "slow", "nodeId": "n1"}, {"name": "fast", "nodeId": "n1"}],
       "msg": "Init: slow = fast = head (both at node 5)"
     },
     {
       "links": [["n1","n2"],["n2","n3"],["n3","n4"],["n4","n5"]],
-      "markers": [{"name": "slow", "nodeId": "n2"}, {"name": "fast", "nodeId": "n3", "color": "#10b981"}],
+      "markers": [{"name": "slow", "nodeId": "n2"}, {"name": "fast", "nodeId": "n3"}],
       "msg": "Tick 1: slow → 7, fast → 3"
     },
     {
       "links": [["n1","n2"],["n2","n3"],["n3","n4"],["n4","n5"]],
-      "markers": [{"name": "slow", "nodeId": "n3"}, {"name": "fast", "nodeId": "n5", "color": "#10b981"}],
+      "markers": [{"name": "slow", "nodeId": "n3"}, {"name": "fast", "nodeId": "n5"}],
       "msg": "Tick 2: slow → 3, fast → 6"
     },
     {
       "links": [["n1","n2"],["n2","n3"],["n3","n4"],["n4","n5"]],
-      "markers": [{"name": "slow", "nodeId": "n4"}, {"name": "fast", "nodeId": "n4", "color": "#10b981"}],
+      "markers": [{"name": "slow", "nodeId": "n4"}, {"name": "fast", "nodeId": "n4"}],
       "msg": "Tick 3: slow → 10, fast → 10 — they meet! A cycle exists."
     }
   ]
@@ -113,17 +113,17 @@ Once we confirm that a linked list has a cycle, the next step is to find where t
   "steps": [
     {
       "links": [["n1","n2"],["n2","n3"],["n3","n4"],["n4","n5"]],
-      "markers": [{"name": "fast", "nodeId": "n1"}, {"name": "slow", "nodeId": "n4", "color": "#10b981"}],
+      "markers": [{"name": "fast", "nodeId": "n1"}, {"name": "slow", "nodeId": "n4"}],
       "msg": "Phase 2 init: fast resets to head; slow stays at the meeting point (node 10)"
     },
     {
       "links": [["n1","n2"],["n2","n3"],["n3","n4"],["n4","n5"]],
-      "markers": [{"name": "fast", "nodeId": "n2"}, {"name": "slow", "nodeId": "n5", "color": "#10b981"}],
+      "markers": [{"name": "fast", "nodeId": "n2"}, {"name": "slow", "nodeId": "n5"}],
       "msg": "Tick 1: both advance one step. fast → 7, slow → 6"
     },
     {
       "links": [["n1","n2"],["n2","n3"],["n3","n4"],["n4","n5"]],
-      "markers": [{"name": "fast", "nodeId": "n3"}, {"name": "slow", "nodeId": "n3", "color": "#10b981"}],
+      "markers": [{"name": "fast", "nodeId": "n3"}, {"name": "slow", "nodeId": "n3"}],
       "msg": "Tick 2: both advance one step. They meet at node(3) — the cycle start."
     }
   ]

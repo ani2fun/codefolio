@@ -45,17 +45,17 @@ The sliding window traversal pattern is a classification of problems that can be
   "steps": [
     {
       "links": [["n1","n2"],["n2","n3"],["n3","n4"],["n4","n5"],["n5","n6"]],
-      "markers": [{"name": "start", "nodeId": "n1", "color": "#f59e0b"}, {"name": "end", "nodeId": "n4", "color": "#10b981"}],
+      "markers": [{"name": "start", "nodeId": "n1"}, {"name": "end", "nodeId": "n4"}],
       "msg": "start at node 1, end at node 4 (3 hops ahead). Window = nodes 1..4."
     },
     {
       "links": [["n1","n2"],["n2","n3"],["n3","n4"],["n4","n5"],["n5","n6"]],
-      "markers": [{"name": "start", "nodeId": "n2", "color": "#f59e0b"}, {"name": "end", "nodeId": "n5", "color": "#10b981"}],
+      "markers": [{"name": "start", "nodeId": "n2"}, {"name": "end", "nodeId": "n5"}],
       "msg": "Both advance one step. Window = nodes 2..5."
     },
     {
       "links": [["n1","n2"],["n2","n3"],["n3","n4"],["n4","n5"],["n5","n6"]],
-      "markers": [{"name": "start", "nodeId": "n3", "color": "#f59e0b"}, {"name": "end", "nodeId": "n6", "color": "#10b981"}],
+      "markers": [{"name": "start", "nodeId": "n3"}, {"name": "end", "nodeId": "n6"}],
       "msg": "Both advance. Window = nodes 3..6. end.next is null → loop ends."
     }
   ]
@@ -88,7 +88,7 @@ It is important to note that two nodes that are at a distance `k` from each othe
   "steps": [
     {
       "links": [["s","a"],["a","b"],["b","e"]],
-      "markers": [{"name": "start", "nodeId": "s", "color": "#f59e0b"}, {"name": "end (k=3 hops)", "nodeId": "e", "color": "#10b981"}],
+      "markers": [{"name": "start", "nodeId": "s"}, {"name": "end", "nodeId": "e"}],
       "msg": "3 hops between start and end, but 4 nodes in the window (both endpoints included)"
     }
   ]
@@ -116,22 +116,22 @@ We perform the required operations on the nodes held in `start` and `end` and mo
   "steps": [
     {
       "links": [["n1","n2"],["n2","n3"],["n3","n4"],["n4","n5"],["n5","n6"],["n6","n7"]],
-      "markers": [{"name": "start", "nodeId": "n1", "color": "#f59e0b"}, {"name": "end", "nodeId": "n3", "color": "#10b981"}],
+      "markers": [{"name": "start", "nodeId": "n1"}, {"name": "end", "nodeId": "n3"}],
       "msg": "Setup: start = n1, end = n3 (k−1 = 2 hops ahead). Process pair (1, 3)."
     },
     {
       "links": [["n1","n2"],["n2","n3"],["n3","n4"],["n4","n5"],["n5","n6"],["n6","n7"]],
-      "markers": [{"name": "start", "nodeId": "n2", "color": "#f59e0b"}, {"name": "end", "nodeId": "n4", "color": "#10b981"}],
+      "markers": [{"name": "start", "nodeId": "n2"}, {"name": "end", "nodeId": "n4"}],
       "msg": "Tick 1: both advance. Process pair (2, 4)."
     },
     {
       "links": [["n1","n2"],["n2","n3"],["n3","n4"],["n4","n5"],["n5","n6"],["n6","n7"]],
-      "markers": [{"name": "start", "nodeId": "n3", "color": "#f59e0b"}, {"name": "end", "nodeId": "n5", "color": "#10b981"}],
+      "markers": [{"name": "start", "nodeId": "n3"}, {"name": "end", "nodeId": "n5"}],
       "msg": "Tick 2: process pair (3, 5)."
     },
     {
       "links": [["n1","n2"],["n2","n3"],["n3","n4"],["n4","n5"],["n5","n6"],["n6","n7"]],
-      "markers": [{"name": "start", "nodeId": "n5", "color": "#f59e0b"}, {"name": "end", "nodeId": "n7", "color": "#10b981"}],
+      "markers": [{"name": "start", "nodeId": "n5"}, {"name": "end", "nodeId": "n7"}],
       "msg": "Tick 4 (skipping ahead): process pair (5, 7). end.next is null → loop ends. Final start = n − k + 1 = 5."
     }
   ]
@@ -384,7 +384,7 @@ Let's consider the following problem as an example to better understand how to i
   "steps": [
     {
       "links": [["n1","n2"],["n2","n3"],["n3","n4"],["n4","n5"],["n5","n6"]],
-      "markers": [{"name": "3rd from end", "nodeId": "n4", "color": "#f59e0b"}],
+      "markers": [{"name": "current", "nodeId": "n4"}],
       "msg": "Before: target = n4 (3rd from end). Remove it."
     },
     {
@@ -397,7 +397,7 @@ Let's consider the following problem as an example to better understand how to i
         {"id": "n6", "value": "6"}
       ],
       "links": [["n1","n2"],["n2","n3"],["n3","n5"],["n4","n5"],["n5","n6"]],
-      "markers": [{"name": "victim", "nodeId": "n4"}],
+      "markers": [{"name": "current", "nodeId": "n4"}],
       "msg": "Splice: n3.next = n5 — n4 unreachable"
     },
     {
@@ -575,7 +575,7 @@ If we consider the **last node** of the linked list to be its end, the 1st node 
   "steps": [
     {
       "links": [["n1","kn"],["kn","m1"],["m1","m2"],["m2","last"]],
-      "markers": [{"name": "k-th from end", "nodeId": "kn", "color": "#f59e0b"}, {"name": "tail", "nodeId": "last", "color": "#10b981"}],
+      "markers": [{"name": "current", "nodeId": "kn"}, {"name": "tail", "nodeId": "last"}],
       "msg": "k − 1 hops between the k-th-from-end node and the tail (here k = 4)"
     }
   ]

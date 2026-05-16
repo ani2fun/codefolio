@@ -11,10 +11,11 @@ import scala.jdk.CollectionConverters.*
  * `content/cortex/` (recursive walk).
  *
  * Hard-rejects the same canon the [[codefolio.client.components.cortex.widgets.LinkedList]] widget enforces
- * at runtime (see ADR-0016): marker names ∈ `{head, tail, prev, curr, next, slow, fast, dummy, start, end}`,
- * no `color` on payload markers, node `style` ∈ `{new, removed, highlight}`, `sections[]` startIdx strictly
- * increasing and in bounds. Runtime enforcement catches drift the instant the author saves a chapter under
- * `bin/dev`; this validator catches drift in CI for chapters nobody re-opened locally.
+ * at runtime (see ADR-0016): marker names ∈ `{head, tail, previous, current, next, slow, fast, dummy, start,
+ * end, headA, headB, tailA, tailB}`, no `color` on payload markers, node `style` ∈ `{new, removed,
+ * highlight}`, `sections[]` startIdx strictly increasing and in bounds. Runtime enforcement catches drift
+ * the instant the author saves a chapter under `bin/dev`; this validator catches drift in CI for chapters
+ * nobody re-opened locally.
  *
  * Wired as an sbt command alias `validateCortexPayloads` (see `build.sbt`); CI runs it alongside
  * `scalafmtCheckAll`.
@@ -25,7 +26,22 @@ import scala.jdk.CollectionConverters.*
 object LinkedListCanonValidator:
 
   private val CanonicalMarkers: Set[String] =
-    Set("head", "tail", "prev", "curr", "next", "slow", "fast", "dummy", "start", "end")
+    Set(
+      "head",
+      "tail",
+      "previous",
+      "current",
+      "next",
+      "slow",
+      "fast",
+      "dummy",
+      "start",
+      "end",
+      "headA",
+      "headB",
+      "tailA",
+      "tailB"
+    )
 
   private val CanonicalNodeStyles: Set[String] =
     Set("new", "removed", "highlight")
@@ -39,6 +55,7 @@ object LinkedListCanonValidator:
     """(?ms)^```d3\s+widget=linked-list\s*\R(.*?)\R```\s*$""".r
 
   final case class Violation(file: Path, blockIdx: Int, msg: String):
+
     override def toString: String =
       s"${file.toString}: block #$blockIdx: $msg"
 
@@ -97,7 +114,7 @@ object LinkedListCanonValidator:
         validateSpec(file, blockIdx, json)
 
   private def validateSpec(file: Path, blockIdx: Int, json: Json): List[Violation] =
-    val violations = scala.collection.mutable.ListBuffer.empty[Violation]
+    val violations             = scala.collection.mutable.ListBuffer.empty[Violation]
     def add(msg: String): Unit = violations += Violation(file, blockIdx, msg)
 
     val cur = json.hcursor

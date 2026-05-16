@@ -65,38 +65,38 @@ This is an easy way to store data, but what if a new student joins the class? In
   "secondaryLabel": "Destination array (size 5)",
   "steps": [
     {
-      "markers": [{"name": "src", "index": 0, "color": "#f59e0b"}],
-      "secondaryMarkers": [{"name": "dst", "index": 0, "color": "#10b981"}],
+      "markers": [{"name": "src", "index": 0}],
+      "secondaryMarkers": [{"name": "dst", "index": 0}],
       "msg": "Allocate a new array of size 5. Both indices start at 0; the destination is empty."
     },
     {
       "secondaryItems": ["Alice", "·", "·", "·", "·"],
-      "markers": [{"name": "src", "index": 1, "color": "#f59e0b"}],
-      "secondaryMarkers": [{"name": "dst", "index": 1, "color": "#10b981"}],
+      "markers": [{"name": "src", "index": 1}],
+      "secondaryMarkers": [{"name": "dst", "index": 1}],
       "msg": "Copy src[0]=Alice → dst[0]. Advance both indices."
     },
     {
       "secondaryItems": ["Alice", "Bob", "·", "·", "·"],
-      "markers": [{"name": "src", "index": 2, "color": "#f59e0b"}],
-      "secondaryMarkers": [{"name": "dst", "index": 2, "color": "#10b981"}],
+      "markers": [{"name": "src", "index": 2}],
+      "secondaryMarkers": [{"name": "dst", "index": 2}],
       "msg": "Copy src[1]=Bob → dst[1]. Advance both indices."
     },
     {
       "secondaryItems": ["Alice", "Bob", "Carol", "·", "·"],
-      "markers": [{"name": "src", "index": 3, "color": "#f59e0b"}],
-      "secondaryMarkers": [{"name": "dst", "index": 3, "color": "#10b981"}],
+      "markers": [{"name": "src", "index": 3}],
+      "secondaryMarkers": [{"name": "dst", "index": 3}],
       "msg": "Copy src[2]=Carol → dst[2]. Advance both indices."
     },
     {
       "secondaryItems": ["Alice", "Bob", "Carol", "David", "·"],
-      "markers": [{"name": "src", "index": 4, "color": "#f59e0b"}],
-      "secondaryMarkers": [{"name": "dst", "index": 4, "color": "#10b981"}],
+      "markers": [{"name": "src", "index": 4}],
+      "secondaryMarkers": [{"name": "dst", "index": 4}],
       "msg": "Copy src[3]=David → dst[3]. Source is exhausted; one cell remains in the destination."
     },
     {
       "secondaryItems": ["Alice", "Bob", "Carol", "David", "Eve"],
-      "markers": [{"name": "src", "index": 4, "color": "#f59e0b"}],
-      "secondaryMarkers": [{"name": "dst", "index": 5, "color": "#10b981"}],
+      "markers": [{"name": "src", "index": 4}],
+      "secondaryMarkers": [{"name": "dst", "index": 5}],
       "msg": "Append the new item Eve at dst[4]. Done — 4 copies + 1 write, O(n) work to insert a single element."
     }
   ]
@@ -116,32 +116,32 @@ Now, let's consider another scenario. What if a student leaves the class? We can
   "secondaryLabel": "Destination array (size 3)",
   "steps": [
     {
-      "markers": [{"name": "src", "index": 0, "color": "#f59e0b"}, {"name": "remove", "index": 1, "color": "#dc2626"}],
-      "secondaryMarkers": [{"name": "dst", "index": 0, "color": "#10b981"}],
+      "markers": [{"name": "src", "index": 0}, {"name": "remove", "index": 1}],
+      "secondaryMarkers": [{"name": "dst", "index": 0}],
       "msg": "Allocate a smaller array of size 3. Mark the index to remove (Bob at src[1]). Both indices start at 0."
     },
     {
       "secondaryItems": ["Alice", "·", "·"],
-      "markers": [{"name": "src", "index": 1, "color": "#f59e0b"}, {"name": "remove", "index": 1, "color": "#dc2626"}],
-      "secondaryMarkers": [{"name": "dst", "index": 1, "color": "#10b981"}],
+      "markers": [{"name": "src", "index": 1}, {"name": "remove", "index": 1}],
+      "secondaryMarkers": [{"name": "dst", "index": 1}],
       "msg": "Copy src[0]=Alice → dst[0]. Advance both indices."
     },
     {
       "secondaryItems": ["Alice", "·", "·"],
-      "markers": [{"name": "src", "index": 2, "color": "#f59e0b"}, {"name": "remove", "index": 1, "color": "#dc2626"}],
-      "secondaryMarkers": [{"name": "dst", "index": 1, "color": "#10b981"}],
+      "markers": [{"name": "src", "index": 2}, {"name": "remove", "index": 1}],
+      "secondaryMarkers": [{"name": "dst", "index": 1}],
       "msg": "src[1]=Bob is the deletion target — skip it. Advance src only; dst stays at 1."
     },
     {
       "secondaryItems": ["Alice", "Carol", "·"],
-      "markers": [{"name": "src", "index": 3, "color": "#f59e0b"}, {"name": "remove", "index": 1, "color": "#dc2626"}],
-      "secondaryMarkers": [{"name": "dst", "index": 2, "color": "#10b981"}],
+      "markers": [{"name": "src", "index": 3}, {"name": "remove", "index": 1}],
+      "secondaryMarkers": [{"name": "dst", "index": 2}],
       "msg": "Copy src[2]=Carol → dst[1]. Advance both indices."
     },
     {
       "secondaryItems": ["Alice", "Carol", "David"],
-      "markers": [{"name": "src", "index": 4, "color": "#f59e0b"}, {"name": "remove", "index": 1, "color": "#dc2626"}],
-      "secondaryMarkers": [{"name": "dst", "index": 3, "color": "#10b981"}],
+      "markers": [{"name": "src", "index": 4}, {"name": "remove", "index": 1}],
+      "secondaryMarkers": [{"name": "dst", "index": 3}],
       "msg": "Copy src[3]=David → dst[2]. Source exhausted. Done — 3 copies + 1 skip, still O(n) work to remove a single element."
     }
   ]
@@ -326,7 +326,7 @@ Let us look at an example of insertion in a singly linked list to understand thi
         {"id": "d", "value": "David"}
       ],
       "links": [["a","b"],["b","c"],["c","d"]],
-      "markers": [{"name": "curr", "nodeId": "b"}],
+      "markers": [{"name": "current", "nodeId": "b"}],
       "msg": "Walk to the insertion point — curr at Bob"
     },
     {
@@ -338,7 +338,7 @@ Let us look at an example of insertion in a singly linked list to understand thi
         {"id": "d", "value": "David"}
       ],
       "links": [["a","b"],["b","c"],["c","d"]],
-      "markers": [{"name": "new", "nodeId": "z"}],
+      "markers": [{"name": "current", "nodeId": "z"}],
       "msg": "Step 1: allocate a new node holding 'Zara'"
     },
     {
@@ -350,7 +350,7 @@ Let us look at an example of insertion in a singly linked list to understand thi
         {"id": "d", "value": "David"}
       ],
       "links": [["a","b"],["b","c"],["z","c"],["c","d"]],
-      "markers": [{"name": "new", "nodeId": "z"}],
+      "markers": [{"name": "current", "nodeId": "z"}],
       "msg": "Step 2: new.next = Bob.next (point Zara at Carol)"
     },
     {
@@ -362,7 +362,7 @@ Let us look at an example of insertion in a singly linked list to understand thi
         {"id": "d", "value": "David"}
       ],
       "links": [["a","b"],["b","z"],["z","c"],["c","d"]],
-      "markers": [{"name": "curr", "nodeId": "b"}],
+      "markers": [{"name": "current", "nodeId": "b"}],
       "msg": "Step 3: Bob.next = new (Bob now points to Zara)"
     },
     {
@@ -678,12 +678,12 @@ All other complex operations can be implemented by mixing or piggybacking these 
     },
     {
       "links": [["n1","n2"],["n2","n3"],["n3","n4"]],
-      "markers": [{"name": "curr", "nodeId": "n1"}],
+      "markers": [{"name": "current", "nodeId": "n1"}],
       "msg": "Traversal — start curr at head"
     },
     {
       "links": [["n1","n2"],["n2","n3"],["n3","n4"]],
-      "markers": [{"name": "curr", "nodeId": "n3"}],
+      "markers": [{"name": "current", "nodeId": "n3"}],
       "msg": "Traversal — curr advances node-by-node (O(n))"
     },
     {
@@ -695,7 +695,7 @@ All other complex operations can be implemented by mixing or piggybacking these 
         {"id": "n4", "value": "9"}
       ],
       "links": [["n1","n2"],["n2","n3"],["n3","ins"],["ins","n4"]],
-      "markers": [{"name": "new", "nodeId": "ins"}],
+      "markers": [{"name": "current", "nodeId": "ins"}],
       "msg": "Insertion — splice a new node holding 8 after the node holding 3"
     },
     {
@@ -707,7 +707,7 @@ All other complex operations can be implemented by mixing or piggybacking these 
         {"id": "n4", "value": "9"}
       ],
       "links": [["n1","n2"],["n2","n3"],["n3","ins"],["ins","n4"]],
-      "markers": [{"name": "delete", "nodeId": "n2"}],
+      "markers": [{"name": "current", "nodeId": "n2"}],
       "msg": "Deletion — mark the node holding 7 for removal"
     },
     {
@@ -729,7 +729,7 @@ All other complex operations can be implemented by mixing or piggybacking these 
         {"id": "n4", "value": "9"}
       ],
       "links": [["n1","n3"],["n3","ins"],["ins","n4"]],
-      "markers": [{"name": "found", "nodeId": "n3"}],
+      "markers": [{"name": "current", "nodeId": "n3"}],
       "msg": "Search for value 3 — walk the chain, match found at this node (O(n))"
     }
   ]

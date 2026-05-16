@@ -171,7 +171,7 @@ Since linked lists are dynamic, we don't know their length in advance, and there
   "steps": [
     {
       "links": [["n1","n2"],["n2","n3"],["n3","n4"]],
-      "markers": [{"name": "current", "nodeId": "n1"}, {"name": "head", "nodeId": "n1", "color": "#10b981"}],
+      "markers": [{"name": "current", "nodeId": "n1"}, {"name": "head", "nodeId": "n1"}],
       "msg": "current ← head — start at node 5"
     },
     {

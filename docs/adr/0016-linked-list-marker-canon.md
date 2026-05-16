@@ -16,14 +16,18 @@ The reader carries a mental model across the section. When the model has to bend
     |---|---|---|
     | `head` | List entry | blue `#3b82f6` |
     | `tail` | Explicit last-node tracker | slate `#64748b` |
-    | `prev` | Trailing pointer (reversal) | amber `#f59e0b` |
-    | `curr` | Active pointer (reversal, traversal) | emerald `#10b981` |
+    | `previous` | Trailing pointer (reversal) | amber `#f59e0b` |
+    | `current` | Active pointer (reversal, traversal) | emerald `#10b981` |
     | `next` | Saved-next reference | violet `#a855f7` |
     | `slow` | Slow pointer (Floyd, two-pointer) | blue `#3b82f6` |
     | `fast` | Fast pointer (Floyd, two-pointer) | rose `#ef4444` |
     | `dummy` | Sentinel / dummy head | slate `#64748b` |
     | `start` | Segment start (reversal-of-segment) | amber `#f59e0b` |
     | `end` | Segment end (reversal-of-segment) | emerald `#10b981` |
+    | `headA`, `headB` | Two-list operations — list A / B entry | blue `#3b82f6`, cyan `#06b6d4` |
+    | `tailA`, `tailB` | Two-list operations — list A / B end | slate `#64748b`, slate-dark `#475569` |
+
+    Names match the natural variable names from the source's algorithm code (`previous`, `current`, `next` — not the terser `prev`, `curr`) so the diagram label, the prose, and the runnable code below all read the same.
 
     The node-style canon is `{new, removed, highlight}` — unknown values drop with a dev-mode `console.warn` and the node renders with its default look.
 

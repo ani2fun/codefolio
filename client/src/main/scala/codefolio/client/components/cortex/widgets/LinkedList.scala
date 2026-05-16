@@ -142,16 +142,23 @@ object LinkedList:
   // amend ADR-0016, then add an entry here. Every other code path reads
   // through this map.
   private val CanonicalMarkers: Map[String, String] = Map(
-    "head"  -> "#3b82f6", // blue   — list entry
-    "tail"  -> "#64748b", // slate  — explicit last-node tracker
-    "prev"  -> "#f59e0b", // amber  — trailing pointer (reversal)
-    "curr"  -> "#10b981", // emerald — active pointer
-    "next"  -> "#a855f7", // violet — saved-next reference
-    "slow"  -> "#3b82f6", // blue   — slow (Floyd, two-pointer)
-    "fast"  -> "#ef4444", // rose   — fast (Floyd, two-pointer)
-    "dummy" -> "#64748b", // slate  — sentinel / dummy head
-    "start" -> "#f59e0b", // amber  — segment start
-    "end"   -> "#10b981"  // emerald — segment end
+    "head"     -> "#3b82f6", // blue    — list entry
+    "tail"     -> "#64748b", // slate   — explicit last-node tracker
+    "previous" -> "#f59e0b", // amber   — trailing pointer (reversal)
+    "current"  -> "#10b981", // emerald — active pointer
+    "next"     -> "#a855f7", // violet  — saved-next reference
+    "slow"     -> "#3b82f6", // blue    — slow (Floyd, two-pointer)
+    "fast"     -> "#ef4444", // rose    — fast (Floyd, two-pointer)
+    "dummy"    -> "#64748b", // slate   — sentinel / dummy head
+    "start"    -> "#f59e0b", // amber   — segment start
+    "end"      -> "#10b981", // emerald — segment end
+    // Two-list operations (merge, split, alternate-merge). The B-list
+    // suffixes share role colours with the A-list versions; the suffix
+    // tells the reader which list, the colour tells which role.
+    "headA" -> "#3b82f6", // blue   — list A entry
+    "headB" -> "#06b6d4", // cyan   — list B entry
+    "tailA" -> "#64748b", // slate  — list A end
+    "tailB" -> "#475569"  // slate-dark — list B end
   )
 
   // Canonical node-style vocabulary. Unknown styles are dropped at parse

@@ -40,7 +40,7 @@ The reversal pattern is a classification of linked list problems that can be sol
   "steps": [
     {
       "links": [["a","s"],["s","m"],["m","e"],["e","z"]],
-      "markers": [{"name": "start", "nodeId": "s", "color": "#f59e0b"}, {"name": "end", "nodeId": "e", "color": "#f59e0b"}],
+      "markers": [{"name": "start", "nodeId": "s"}, {"name": "end", "nodeId": "e"}],
       "msg": "Before: segment from start to end (the …) flows left → right"
     },
     {
@@ -52,7 +52,7 @@ The reversal pattern is a classification of linked list problems that can be sol
         {"id": "z", "value": "z"}
       ],
       "links": [["a","e"],["e","m"],["m","s"],["s","z"]],
-      "markers": [{"name": "stitched", "nodeId": "e", "color": "#10b981"}],
+      "markers": [{"name": "current", "nodeId": "e"}],
       "msg": "After: segment reversed in place. a → end → … → start → z. Outside nodes untouched."
     }
   ]
@@ -81,22 +81,22 @@ Reversing the entire linked list is a special case of the generic reversal algor
   "steps": [
     {
       "links": [["n1","n2"],["n2","n3"],["n3","n4"]],
-      "markers": [{"name": "previous=null", "nodeId": "n1"}, {"name": "current", "nodeId": "n1", "color": "#10b981"}],
+      "markers": [{"name": "previous", "nodeId": "n1"}, {"name": "current", "nodeId": "n1"}],
       "msg": "Init: previous = null, current = head"
     },
     {
       "links": [["n2","n1"],["n2","n3"],["n3","n4"]],
-      "markers": [{"name": "previous", "nodeId": "n1"}, {"name": "current", "nodeId": "n2", "color": "#10b981"}],
+      "markers": [{"name": "previous", "nodeId": "n1"}, {"name": "current", "nodeId": "n2"}],
       "msg": "Tick 1: next = current.next (n2). current.next = previous (n1 → null). previous = current (n1). current = next (n2)."
     },
     {
       "links": [["n2","n1"],["n3","n2"],["n3","n4"]],
-      "markers": [{"name": "previous", "nodeId": "n2"}, {"name": "current", "nodeId": "n3", "color": "#10b981"}],
+      "markers": [{"name": "previous", "nodeId": "n2"}, {"name": "current", "nodeId": "n3"}],
       "msg": "Tick 2: n2.next now points to n1 (former predecessor). Advance."
     },
     {
       "links": [["n2","n1"],["n3","n2"],["n4","n3"]],
-      "markers": [{"name": "previous", "nodeId": "n3"}, {"name": "current", "nodeId": "n4", "color": "#10b981"}],
+      "markers": [{"name": "previous", "nodeId": "n3"}, {"name": "current", "nodeId": "n4"}],
       "msg": "Tick 3: n3.next now points to n2. Advance."
     },
     {
@@ -107,7 +107,7 @@ Reversing the entire linked list is a special case of the generic reversal algor
         {"id": "n1", "value": "5"}
       ],
       "links": [["n4","n3"],["n3","n2"],["n2","n1"]],
-      "markers": [{"name": "new head", "nodeId": "n4"}],
+      "markers": [{"name": "head", "nodeId": "n4"}],
       "msg": "Tick 4: n4.next = n3. current = null → loop ends. Return previous (n4) as new head: 10 → 3 → 7 → 5 → null."
     }
   ]
@@ -304,7 +304,7 @@ For this example, the two references can never be `null` and will always point
   "steps": [
     {
       "links": [["h","p"],["p","s"],["s","m"],["m","e"],["e","q"]],
-      "markers": [{"name": "start", "nodeId": "s", "color": "#f59e0b"}, {"name": "end", "nodeId": "e", "color": "#f59e0b"}],
+      "markers": [{"name": "start", "nodeId": "s"}, {"name": "end", "nodeId": "e"}],
       "msg": "Before: outer prefix h → · → ; segment start → · → end; outer suffix ·"
     },
     {
@@ -317,7 +317,7 @@ For this example, the two references can never be `null` and will always point
         {"id": "q", "value": "·"}
       ],
       "links": [["h","p"],["p","e"],["e","m"],["m","s"],["s","q"]],
-      "markers": [{"name": "reversed", "nodeId": "e", "color": "#10b981"}],
+      "markers": [{"name": "head", "nodeId": "e"}],
       "msg": "After: segment flipped — outer prefix/suffix untouched"
     }
   ]
@@ -345,7 +345,7 @@ To connect the first node of the segment back to the list after reversal, we nee
   "steps": [
     {
       "links": [["h","p"],["p","s"],["s","m"],["m","e"],["e","rb"],["rb","q"]],
-      "markers": [{"name": "start", "nodeId": "s"}, {"name": "end", "nodeId": "e"}, {"name": "rightBound", "nodeId": "rb", "color": "#f59e0b"}],
+      "markers": [{"name": "start", "nodeId": "s"}, {"name": "end", "nodeId": "e"}, {"name": "end", "nodeId": "rb"}],
       "msg": "rightBound = end.next captured upfront. The reversal walks current from start and stops when current == rightBound."
     }
   ]
@@ -398,7 +398,7 @@ The last step is to connect the reversed head back to the list. As we will see l
   "steps": [
     {
       "links": [["h","p"],["p","e"],["e","m"],["m","s"],["s","rb"],["rb","q"]],
-      "markers": [{"name": "new-head", "nodeId": "e", "color": "#10b981"}, {"name": "new-tail", "nodeId": "s", "color": "#10b981"}],
+      "markers": [{"name": "head", "nodeId": "e"}, {"name": "tail", "nodeId": "s"}],
       "msg": "predecessor.next = end (new segment head); start.next already = rightBound thanks to previous = rightBound init"
     }
   ]

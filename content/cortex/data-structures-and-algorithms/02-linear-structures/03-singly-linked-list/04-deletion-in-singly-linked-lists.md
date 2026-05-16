@@ -60,7 +60,7 @@ Update **head** to hold the reference of the next node (the second node), effect
   "steps": [
     {
       "links": [["n1","n2"],["n2","n3"],["n3","n4"]],
-      "markers": [{"name": "head", "nodeId": "n1"}, {"name": "delete", "nodeId": "n1", "color": "#dc2626"}],
+      "markers": [{"name": "head", "nodeId": "n1"}, {"name": "current", "nodeId": "n1"}],
       "msg": "Before: head → 5 → 7 → 3 → 10. Mark first node for removal."
     },
     {
@@ -488,12 +488,12 @@ In this scenario, we need to update the pointer of the second last node in the l
   "steps": [
     {
       "links": [["n1","n2"],["n2","n3"],["n3","n4"]],
-      "markers": [{"name": "previous", "nodeId": "n1"}, {"name": "current", "nodeId": "n2", "color": "#10b981"}],
+      "markers": [{"name": "previous", "nodeId": "n1"}, {"name": "current", "nodeId": "n2"}],
       "msg": "Start: previous=head, current=head.next"
     },
     {
       "links": [["n1","n2"],["n2","n3"],["n3","n4"]],
-      "markers": [{"name": "previous", "nodeId": "n3"}, {"name": "current", "nodeId": "n4", "color": "#10b981"}],
+      "markers": [{"name": "previous", "nodeId": "n3"}, {"name": "current", "nodeId": "n4"}],
       "msg": "Walk until current is the tail (current.next == null). previous now holds the second-last."
     },
     {
@@ -1210,7 +1210,7 @@ If the data matches the first node, this case becomes the same as **deleting the
   "steps": [
     {
       "links": [["n1","n2"],["n2","n3"]],
-      "markers": [{"name": "head", "nodeId": "n1"}, {"name": "target", "nodeId": "n1", "color": "#f59e0b"}],
+      "markers": [{"name": "head", "nodeId": "n1"}, {"name": "current", "nodeId": "n1"}],
       "msg": "Before: target matches the head"
     },
     {
@@ -1254,7 +1254,7 @@ To delete a node that is not the first node of the linked list, we need access t
   "steps": [
     {
       "links": [["n1","n2"],["n2","n3"],["n3","n4"]],
-      "markers": [{"name": "prev", "nodeId": "n1"}, {"name": "current", "nodeId": "n2", "color": "#10b981"}, {"name": "target", "nodeId": "n2", "color": "#f59e0b"}],
+      "markers": [{"name": "previous", "nodeId": "n1"}, {"name": "current", "nodeId": "n2"}, {"name": "current", "nodeId": "n2"}],
       "msg": "Walk: prev=node(5), current=node(7). Match. Stop."
     },
     {
@@ -1265,7 +1265,7 @@ To delete a node that is not the first node of the linked list, we need access t
         {"id": "n4", "value": "10"}
       ],
       "links": [["n1","n3"],["n2","n3"],["n3","n4"]],
-      "markers": [{"name": "prev", "nodeId": "n1"}],
+      "markers": [{"name": "previous", "nodeId": "n1"}],
       "msg": "prev.next = current.next — node(5) now points past node(7) to node(3)"
     },
     {
@@ -1309,7 +1309,7 @@ If the data provided does not match the data of any node in the linked list, the
   "steps": [
     {
       "links": [["n1","n2"],["n2","n3"],["n3","n4"]],
-      "markers": [{"name": "head", "nodeId": "n1"}, {"name": "target=99", "nodeId": "n1", "color": "#f59e0b"}],
+      "markers": [{"name": "head", "nodeId": "n1"}, {"name": "current", "nodeId": "n1"}],
       "msg": "Looking for value 99. Start at head."
     },
     {
@@ -2586,7 +2586,7 @@ When the given node is the last node in the list, attempting to delete a node af
   "steps": [
     {
       "links": [["n1","n2"],["n2","n3"]],
-      "markers": [{"name": "given", "nodeId": "n3"}],
+      "markers": [{"name": "current", "nodeId": "n3"}],
       "msg": "given is node(3); given.next is null — nothing to delete. Return head unchanged."
     }
   ]
@@ -2617,7 +2617,7 @@ To delete a node after a given node, we can update the pointer of the given node
   "steps": [
     {
       "links": [["n1","n2"],["n2","n3"],["n3","n4"]],
-      "markers": [{"name": "given", "nodeId": "n2"}, {"name": "victim", "nodeId": "n3", "color": "#f59e0b"}],
+      "markers": [{"name": "current", "nodeId": "n2"}, {"name": "current", "nodeId": "n3"}],
       "msg": "given = node(7); given.next = node(3) is the victim"
     },
     {
@@ -2628,7 +2628,7 @@ To delete a node after a given node, we can update the pointer of the given node
         {"id": "n4", "value": "10"}
       ],
       "links": [["n1","n2"],["n2","n4"],["n3","n4"]],
-      "markers": [{"name": "given", "nodeId": "n2"}],
+      "markers": [{"name": "current", "nodeId": "n2"}],
       "msg": "given.next = victim.next — node(7) now points past node(3) to node(10)"
     },
     {
@@ -3211,7 +3211,7 @@ When the given node is the first node in the list, attempting to delete a node b
   "steps": [
     {
       "links": [["n1","n2"],["n2","n3"]],
-      "markers": [{"name": "given", "nodeId": "n1"}],
+      "markers": [{"name": "current", "nodeId": "n1"}],
       "msg": "given == head — no node precedes it. Return head unchanged."
     }
   ]
@@ -3241,7 +3241,7 @@ This is a unique situation because removing the node before the second node esse
   "steps": [
     {
       "links": [["n1","n2"],["n2","n3"]],
-      "markers": [{"name": "head", "nodeId": "n1"}, {"name": "given", "nodeId": "n2"}, {"name": "victim", "nodeId": "n1", "color": "#f59e0b"}],
+      "markers": [{"name": "head", "nodeId": "n1"}, {"name": "current", "nodeId": "n2"}, {"name": "current", "nodeId": "n1"}],
       "msg": "given == second node; the predecessor is the head — head is the victim"
     },
     {
@@ -3285,7 +3285,7 @@ To delete the node before a given node, we need to access the node two steps bef
   "steps": [
     {
       "links": [["n1","n2"],["n2","n3"],["n3","n4"]],
-      "markers": [{"name": "prev", "nodeId": "n1"}, {"name": "current", "nodeId": "n2", "color": "#10b981"}, {"name": "target", "nodeId": "n2", "color": "#f59e0b"}],
+      "markers": [{"name": "previous", "nodeId": "n1"}, {"name": "current", "nodeId": "n2"}, {"name": "current", "nodeId": "n2"}],
       "msg": "Walk: prev=node(5), current=node(7). Match. Stop."
     },
     {
@@ -3296,7 +3296,7 @@ To delete the node before a given node, we need to access the node two steps bef
         {"id": "n4", "value": "10"}
       ],
       "links": [["n1","n3"],["n2","n3"],["n3","n4"]],
-      "markers": [{"name": "prev", "nodeId": "n1"}],
+      "markers": [{"name": "previous", "nodeId": "n1"}],
       "msg": "prev.next = current.next — node(5) now points past node(7) to node(3)"
     },
     {
@@ -4258,7 +4258,7 @@ If the given node matches the first node, this case becomes the same as **deleti
   "steps": [
     {
       "links": [["n1","n2"],["n2","n3"]],
-      "markers": [{"name": "head", "nodeId": "n1"}, {"name": "target", "nodeId": "n1", "color": "#f59e0b"}],
+      "markers": [{"name": "head", "nodeId": "n1"}, {"name": "current", "nodeId": "n1"}],
       "msg": "Before: target matches the head"
     },
     {
@@ -4302,7 +4302,7 @@ To delete a node that is not the first node of the linked list, we need access t
   "steps": [
     {
       "links": [["n1","n2"],["n2","n3"],["n3","n4"]],
-      "markers": [{"name": "prev", "nodeId": "n1"}, {"name": "current", "nodeId": "n2", "color": "#10b981"}, {"name": "target", "nodeId": "n2", "color": "#f59e0b"}],
+      "markers": [{"name": "previous", "nodeId": "n1"}, {"name": "current", "nodeId": "n2"}, {"name": "current", "nodeId": "n2"}],
       "msg": "Walk: prev=node(5), current=node(7). Match. Stop."
     },
     {
@@ -4313,7 +4313,7 @@ To delete a node that is not the first node of the linked list, we need access t
         {"id": "n4", "value": "10"}
       ],
       "links": [["n1","n3"],["n2","n3"],["n3","n4"]],
-      "markers": [{"name": "prev", "nodeId": "n1"}],
+      "markers": [{"name": "previous", "nodeId": "n1"}],
       "msg": "prev.next = current.next — node(5) now points past node(7) to node(3)"
     },
     {
@@ -5264,12 +5264,12 @@ When we need to delete a specific node from a list, we should traverse the list 
   "steps": [
     {
       "links": [["n0","n1"],["n1","n2"],["n2","n3"],["n3","n4"]],
-      "markers": [{"name": "current", "nodeId": "n0"}, {"name": "counter=0", "nodeId": "n0", "color": "#10b981"}],
+      "markers": [{"name": "current", "nodeId": "n0"}],
       "msg": "Start: current=head, counter=0. Walk X−1 = 1 hop."
     },
     {
       "links": [["n0","n1"],["n1","n2"],["n2","n3"],["n3","n4"]],
-      "markers": [{"name": "current", "nodeId": "n1"}, {"name": "counter=1", "nodeId": "n1", "color": "#10b981"}, {"name": "victim", "nodeId": "n2", "color": "#f59e0b"}],
+      "markers": [{"name": "current", "nodeId": "n1"}, {"name": "current", "nodeId": "n2"}],
       "msg": "After 1 hop, current at node(7). current.next = node(3) is the victim."
     },
     {
@@ -5329,7 +5329,7 @@ This is also an invalid case. To clarify, let's consider a list of size 5. In th
   "steps": [
     {
       "links": [["n0","n1"],["n1","n2"]],
-      "markers": [{"name": "current", "nodeId": "n2"}, {"name": "counter=2", "nodeId": "n2", "color": "#10b981"}],
+      "markers": [{"name": "current", "nodeId": "n2"}],
       "msg": "Walking forward — counter reaches 2 at node(3). Target X−1 = 4."
     },
     {

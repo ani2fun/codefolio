@@ -110,14 +110,16 @@ A horizontal row of value-bearing nodes connected by `next` arrows, with one or 
 |---|---|---|
 | `head` | List entry | blue |
 | `tail` | Explicit last-node tracker | slate |
-| `prev` | Trailing pointer (reversal) | amber |
-| `curr` | Active pointer | emerald |
+| `previous` | Trailing pointer (reversal) | amber |
+| `current` | Active pointer | emerald |
 | `next` | Saved-next reference | violet |
 | `slow` | Slow pointer (Floyd, two-pointer) | blue |
 | `fast` | Fast pointer (Floyd, two-pointer) | rose |
 | `dummy` | Sentinel / dummy head | slate |
 | `start` | Segment start (reversal-of-segment) | amber |
 | `end` | Segment end (reversal-of-segment) | emerald |
+| `headA`, `headB` | Two-list operations — list A / B entry | blue, cyan |
+| `tailA`, `tailB` | Two-list operations — list A / B end | slate, slate-dark |
 
 The widget *silently drops* any `color` field on a payload marker — the colour is resolved from the canon, not the payload. Per-node `style` is `{new, removed, highlight}` (anything else drops with a dev-mode console warning).
 
