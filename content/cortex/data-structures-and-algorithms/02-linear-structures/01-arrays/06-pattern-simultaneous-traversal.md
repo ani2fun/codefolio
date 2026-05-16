@@ -694,43 +694,86 @@ flowchart LR
 
 
 ```pseudocode
-# Two-pointer subsequence check. Advance s only on a match; advance t every iteration.
 function subsequenceChecker(s, t):
-    index1 ← 0; index2 ← 0
+
+    # pointer for s
+    index1 ← 0
+
+    # pointer for t
+    index2 ← 0
+
     while index1 < length(s) AND index2 < length(t):
         if s[index1] = t[index2]:
+
+            # If the current character matches, move the pointer for s
             index1 ← index1 + 1
+
+        # Move the pointer for t in every iteration
         index2 ← index2 + 1
-    return index1 = length(s)                     # all of s consumed → s is a subsequence
+
+    # If index1 reaches the end of s, it means all characters in s
+    # are found in t in the same order
+    return index1 = length(s)
 ```
 
 ```python run
 class Solution:
     def subsequence_checker(self, s: str, t: str) -> bool:
-        index1, index2 = 0, 0
+
+        # pointer for s
+        index1: int = 0
+
+        # pointer for t
+        index2: int = 0
+
         while index1 < len(s) and index2 < len(t):
             if s[index1] == t[index2]:
-                index1 += 1                  # Advance s only on a match.
-            index2 += 1                      # Always advance t — every char examined once.
-        return index1 == len(s)              # All of s consumed → subsequence.
+
+                # If the current character matches, move the pointer for
+                # s
+                index1 += 1
+
+            # Move the pointer for t in every iteration
+            index2 += 1
+
+        # If index1 reaches the end of s, it means all characters in s
+        # are found in t in the same order
+        return index1 == len(s)
 
 
-print(Solution().subsequence_checker("ace", "abcde"))   # True
-print(Solution().subsequence_checker("aec", "abcde"))   # False
-print(Solution().subsequence_checker("", "abcde"))      # True
-print(Solution().subsequence_checker("abc", ""))        # False
+sol = Solution()
+print(sol.subsequence_checker("ace", "abcde"))   # True
+print(sol.subsequence_checker("aec", "abcde"))   # False
+print(sol.subsequence_checker("", "abcde"))      # True
+print(sol.subsequence_checker("abc", ""))        # False
 ```
 
 ```java run
 public class Main {
     static class Solution {
-        boolean subsequenceChecker(String s, String t) {
-            int i1 = 0, i2 = 0;
-            while (i1 < s.length() && i2 < t.length()) {
-                if (s.charAt(i1) == t.charAt(i2)) i1++;
-                i2++;
+        public boolean subsequenceChecker(String s, String t) {
+
+            // pointer for s
+            int index1 = 0;
+
+            // pointer for t
+            int index2 = 0;
+
+            while (index1 < s.length() && index2 < t.length()) {
+                if (s.charAt(index1) == t.charAt(index2)) {
+
+                    // If the current character matches, move the pointer for
+                    // s
+                    index1++;
+                }
+
+                // Move the pointer for t in every iteration
+                index2++;
             }
-            return i1 == s.length();
+
+            // If index1 reaches the end of s, it means all characters in s
+            // are found in t in the same order
+            return index1 == s.length();
         }
     }
 
@@ -750,13 +793,30 @@ public class Main {
 #include <string.h>
 
 bool subsequence_checker(const char* s, const char* t) {
-    int i1 = 0, i2 = 0;
-    int ns = (int)strlen(s), nt = (int)strlen(t);
-    while (i1 < ns && i2 < nt) {
-        if (s[i1] == t[i2]) i1++;
-        i2++;
+
+    /* pointer for s */
+    int index1 = 0;
+
+    /* pointer for t */
+    int index2 = 0;
+
+    int ns = (int)strlen(s);
+    int nt = (int)strlen(t);
+
+    while (index1 < ns && index2 < nt) {
+        if (s[index1] == t[index2]) {
+
+            /* If the current character matches, move the pointer for s */
+            index1++;
+        }
+
+        /* Move the pointer for t in every iteration */
+        index2++;
     }
-    return i1 == ns;
+
+    /* If index1 reaches the end of s, it means all characters in s
+     * are found in t in the same order */
+    return index1 == ns;
 }
 
 int main() {
@@ -772,13 +832,27 @@ int main() {
 object Main extends App {
   class Solution {
     def subsequenceChecker(s: String, t: String): Boolean = {
-      var i1 = 0
-      var i2 = 0
-      while (i1 < s.length && i2 < t.length) {
-        if (s(i1) == t(i2)) i1 += 1
-        i2 += 1
+
+      // pointer for s
+      var index1 = 0
+
+      // pointer for t
+      var index2 = 0
+
+      while (index1 < s.length && index2 < t.length) {
+        if (s(index1) == t(index2)) {
+
+          // If the current character matches, move the pointer for s
+          index1 += 1
+        }
+
+        // Move the pointer for t in every iteration
+        index2 += 1
       }
-      i1 == s.length
+
+      // If index1 reaches the end of s, it means all characters in s
+      // are found in t in the same order
+      index1 == s.length
     }
   }
 
