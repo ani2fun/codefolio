@@ -267,16 +267,27 @@ class Solution:
 ```
 
 ```java run
-class Solution {
-    public void nodeExpedition(ListNode head) {
-        ListNode current = head;                    // Start at head
-        while (current != null) {                   // Walk until past the tail
-            System.out.print(current.val);          // Print value (no newline)
-            if (current.next != null) {             // Not the tail?
-                System.out.print(", ");             //   → emit separator
+public class Main {
+    static class ListNode { int val; ListNode prev, next; ListNode(int v){val=v;} }
+
+    static class Solution {
+        public void nodeExpedition(ListNode head) {
+            ListNode current = head;                    // Start at head
+            while (current != null) {                   // Walk until past the tail
+                System.out.print(current.val);          // Print value (no newline)
+                if (current.next != null) {             // Not the tail?
+                    System.out.print(", ");             //   → emit separator
+                }
+                current = current.next;                 // Advance forward
             }
-            current = current.next;                 // Advance forward
         }
+    }
+
+    public static void main(String[] args) {
+        // [5, 7, 3, 10] -> "5, 7, 3, 10"
+        ListNode n1=new ListNode(5),n2=new ListNode(7),n3=new ListNode(3),n4=new ListNode(10);
+        n1.next=n2; n2.prev=n1; n2.next=n3; n3.prev=n2; n3.next=n4; n4.prev=n3;
+        new Solution().nodeExpedition(n1); // 5, 7, 3, 10
     }
 }
 ```
@@ -295,15 +306,24 @@ void nodeExpedition(ListNode *head) {
 ```
 
 ```scala run
-class Solution {
-  def nodeExpedition(head: ListNode): Unit = {
-    var current = head                    // Start at head
-    while (current != null) {             // Walk until past the tail
-      print(current.v)                    // Print value (no newline)
-      if (current.next != null) print(", ")  // Separator unless this is the tail
-      current = current.next              // Advance forward
+class ListNode(var v: Int, var prev: ListNode = null, var next: ListNode = null)
+
+object Main extends App {
+  class Solution {
+    def nodeExpedition(head: ListNode): Unit = {
+      var current = head                    // Start at head
+      while (current != null) {             // Walk until past the tail
+        print(current.v)                    // Print value (no newline)
+        if (current.next != null) print(", ")  // Separator unless this is the tail
+        current = current.next              // Advance forward
+      }
     }
   }
+
+  // [5, 7, 3, 10] -> "5, 7, 3, 10"
+  val n1 = new ListNode(5); val n2 = new ListNode(7); val n3 = new ListNode(3); val n4 = new ListNode(10)
+  n1.next = n2; n2.prev = n1; n2.next = n3; n3.prev = n2; n3.next = n4; n4.prev = n3
+  new Solution().nodeExpedition(n1) // 5, 7, 3, 10
 }
 ```
 
@@ -392,16 +412,27 @@ class Solution:
 ```
 
 ```java run
-class Solution {
-    public void nodeExpeditionII(ListNode tail) {
-        ListNode current = tail;                    // Start at tail
-        while (current != null) {                   // Walk until past the head
-            System.out.print(current.val);          // Print value (no newline)
-            if (current.prev != null) {             // Not the head?
-                System.out.print(", ");             //   → emit separator
+public class Main {
+    static class ListNode { int val; ListNode prev, next; ListNode(int v){val=v;} }
+
+    static class Solution {
+        public void nodeExpeditionII(ListNode tail) {
+            ListNode current = tail;                    // Start at tail
+            while (current != null) {                   // Walk until past the head
+                System.out.print(current.val);          // Print value (no newline)
+                if (current.prev != null) {             // Not the head?
+                    System.out.print(", ");             //   → emit separator
+                }
+                current = current.prev;                 // Advance backward
             }
-            current = current.prev;                 // Advance backward
         }
+    }
+
+    public static void main(String[] args) {
+        // tail=node(10) of [5, 7, 3, 10] -> "10, 3, 7, 5"
+        ListNode n1=new ListNode(5),n2=new ListNode(7),n3=new ListNode(3),n4=new ListNode(10);
+        n1.next=n2; n2.prev=n1; n2.next=n3; n3.prev=n2; n3.next=n4; n4.prev=n3;
+        new Solution().nodeExpeditionII(n4); // 10, 3, 7, 5
     }
 }
 ```
@@ -420,15 +451,24 @@ void nodeExpeditionII(ListNode *tail) {
 ```
 
 ```scala run
-class Solution {
-  def nodeExpeditionII(tail: ListNode): Unit = {
-    var current = tail
-    while (current != null) {
-      print(current.v)
-      if (current.prev != null) print(", ")
-      current = current.prev      // Walk backwards
+class ListNode(var v: Int, var prev: ListNode = null, var next: ListNode = null)
+
+object Main extends App {
+  class Solution {
+    def nodeExpeditionII(tail: ListNode): Unit = {
+      var current = tail
+      while (current != null) {
+        print(current.v)
+        if (current.prev != null) print(", ")
+        current = current.prev      // Walk backwards
+      }
     }
   }
+
+  // tail=node(10) of [5, 7, 3, 10] -> "10, 3, 7, 5"
+  val n1 = new ListNode(5); val n2 = new ListNode(7); val n3 = new ListNode(3); val n4 = new ListNode(10)
+  n1.next = n2; n2.prev = n1; n2.next = n3; n3.prev = n2; n3.next = n4; n4.prev = n3
+  new Solution().nodeExpeditionII(n4) // 10, 3, 7, 5
 }
 ```
 
@@ -518,16 +558,28 @@ class Solution:
 ```
 
 ```java run
-class Solution {
-    public ListNode nodeSearch(ListNode tail, int data) {
-        ListNode current = tail;
-        while (current != null) {
-            if (current.val == data) {       // Return the first matching node
-                return current;
+public class Main {
+    static class ListNode { int val; ListNode prev, next; ListNode(int v){val=v;} }
+
+    static class Solution {
+        public ListNode nodeSearch(ListNode tail, int data) {
+            ListNode current = tail;
+            while (current != null) {
+                if (current.val == data) {       // Return the first matching node
+                    return current;
+                }
+                current = current.prev;          // Move backward
             }
-            current = current.prev;          // Move backward
+            return null;                         // No match anywhere in the list
         }
-        return null;                         // No match anywhere in the list
+    }
+
+    public static void main(String[] args) {
+        // [5, 7, 3, 10], data=3 -> node(3)
+        ListNode n1=new ListNode(5),n2=new ListNode(7),n3=new ListNode(3),n4=new ListNode(10);
+        n1.next=n2; n2.prev=n1; n2.next=n3; n3.prev=n2; n3.next=n4; n4.prev=n3;
+        ListNode found = new Solution().nodeSearch(n4, 3);
+        System.out.println(found == null ? "null" : found.val); // 3
     }
 }
 ```
@@ -546,15 +598,25 @@ ListNode* nodeSearch(ListNode *tail, int data) {
 ```
 
 ```scala run
-class Solution {
-  def nodeSearch(tail: ListNode, data: Int): ListNode = {
-    var current = tail
-    while (current != null) {
-      if (current.v == data) return current   // First match wins
-      current = current.prev
+class ListNode(var v: Int, var prev: ListNode = null, var next: ListNode = null)
+
+object Main extends App {
+  class Solution {
+    def nodeSearch(tail: ListNode, data: Int): ListNode = {
+      var current = tail
+      while (current != null) {
+        if (current.v == data) return current   // First match wins
+        current = current.prev
+      }
+      null                                       // No match
     }
-    null                                       // No match
   }
+
+  // [5, 7, 3, 10], data=3 -> node(3)
+  val n1 = new ListNode(5); val n2 = new ListNode(7); val n3 = new ListNode(3); val n4 = new ListNode(10)
+  n1.next = n2; n2.prev = n1; n2.next = n3; n3.prev = n2; n3.next = n4; n4.prev = n3
+  val found = new Solution().nodeSearch(n4, 3)
+  println(if (found == null) "null" else found.v) // 3
 }
 ```
 
