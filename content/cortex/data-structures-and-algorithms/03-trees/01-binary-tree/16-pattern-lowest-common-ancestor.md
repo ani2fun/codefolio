@@ -309,17 +309,27 @@ static TreeNode rlcaHelper(TreeNode root, Set<TreeNode> set) {
 ```
 
 ```scala run
-def randomLCA(root: TreeNode, nodes: List[TreeNode]): TreeNode = {
-  val set = nodes.toSet
-  def go(n: TreeNode): TreeNode = {
-    if (n == null)              return null
-    if (set.contains(n))        return n
-    val left  = go(n.left)
-    val right = go(n.right)
-    if (left != null && right != null) return n
-    if (left != null) left else right
+class TreeNode(var value: Int, var left: TreeNode = null, var right: TreeNode = null)
+
+object Main extends App {
+  class Solution {
+    def randomLCA(root: TreeNode, nodes: List[TreeNode]): TreeNode = {
+      val set = nodes.toSet
+      def go(n: TreeNode): TreeNode = {
+        if (n == null)              return null
+        if (set.contains(n))        return n
+        val left  = go(n.left)
+        val right = go(n.right)
+        if (left != null && right != null) return n
+        if (left != null) left else right
+      }
+      go(root)
+    }
   }
-  go(root)
+
+  val root = new TreeNode(1, new TreeNode(2), new TreeNode(3))
+  val lca  = new Solution().randomLCA(root, List(root.left, root.right))
+  println(lca.value)  // 1
 }
 ```
 
@@ -538,24 +548,35 @@ public static int distanceBetweenNodes(TreeNode root, int a, int b) {
 ```
 
 ```scala run
-def distanceBetweenNodes(root: TreeNode, a: Int, b: Int): Int = {
-  def lcaByVal(n: TreeNode): TreeNode = {
-    if (n == null)                          return null
-    if (n.value == a || n.value == b)       return n
-    val l = lcaByVal(n.left); val r = lcaByVal(n.right)
-    if (l != null && r != null) return n
-    if (l != null) l else r
+class TreeNode(var value: Int, var left: TreeNode = null, var right: TreeNode = null)
+
+object Main extends App {
+  class Solution {
+    def distanceBetweenNodes(root: TreeNode, a: Int, b: Int): Int = {
+      def lcaByVal(n: TreeNode): TreeNode = {
+        if (n == null)                          return null
+        if (n.value == a || n.value == b)       return n
+        val l = lcaByVal(n.left); val r = lcaByVal(n.right)
+        if (l != null && r != null) return n
+        if (l != null) l else r
+      }
+      def depth(n: TreeNode, v: Int, d: Int): Int = {
+        if (n == null)         return -1
+        if (n.value == v)      return d
+        val l = depth(n.left,  v, d + 1); if (l != -1) return l
+        depth(n.right, v, d + 1)
+      }
+      if (root == null) return -1
+      val l = lcaByVal(root); if (l == null) return -1
+      val da = depth(l, a, 0); val db = depth(l, b, 0)
+      if (da == -1 || db == -1) -1 else da + db
+    }
   }
-  def depth(n: TreeNode, v: Int, d: Int): Int = {
-    if (n == null)         return -1
-    if (n.value == v)      return d
-    val l = depth(n.left,  v, d + 1); if (l != -1) return l
-    depth(n.right, v, d + 1)
-  }
-  if (root == null) return -1
-  val l = lcaByVal(root); if (l == null) return -1
-  val da = depth(l, a, 0); val db = depth(l, b, 0)
-  if (da == -1 || db == -1) -1 else da + db
+
+  val root = new TreeNode(1,
+    new TreeNode(2, new TreeNode(4), null),
+    new TreeNode(3, null, new TreeNode(7)))
+  println(new Solution().distanceBetweenNodes(root, 4, 7))  // 4
 }
 ```
 
