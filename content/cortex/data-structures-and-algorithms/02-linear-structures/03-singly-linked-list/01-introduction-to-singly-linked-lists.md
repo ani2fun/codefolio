@@ -25,34 +25,18 @@ The linked list is the most important data structure you'll ever learn. Everythi
 
 To better understand a linked list, let us first look at some common problems programmers face when designing software systems. When writing a program, we often need a collection of data items that can be accessed sequentially. E.g., a collection of names of all the students in a class. It is common for people to think this is not such a complex problem. What's so hard with it? We can use an **array** to store this data where the size of the array is equal to the number of students.
 
-```d2
-arr: array {
-  grid-columns: 4
-  grid-gap: 0
-  a0: |md
-    **Alice**
-
-    `[0]`
-  |
-  a1: |md
-    **Bob**
-
-    `[1]`
-  |
-  a2: |md
-    **Carol**
-
-    `[2]`
-  |
-  a3: |md
-    **David**
-
-    `[3]`
-  |
+```d3 widget=array-traversal
+{
+  "title": "students[] — 4 names in one contiguous block, addressable by index",
+  "items": ["Alice", "Bob", "Carol", "David"],
+  "steps": [
+    {
+      "range": { "lo": 0, "hi": 3 },
+      "msg": "Every cell sits adjacent to the next — the index doubles as the offset from the array's base, so arr[i] is O(1)."
+    }
+  ]
 }
 ```
-
-<p align="center"><strong>An array of size 4 storing student names at contiguous indices.</strong></p>
 
 This is an easy way to store data, but what if a new student joins the class? In this case, we will have to increase the size of the array by one, which is **not** possible. Well, we can solve this problem by creating a new array of a larger size, copying all the data from the previous array, and then adding the new student to it. However, this will be quite inefficient in terms of space and time complexity.
 
