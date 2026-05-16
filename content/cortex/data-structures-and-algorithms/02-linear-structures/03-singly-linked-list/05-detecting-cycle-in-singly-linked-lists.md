@@ -68,6 +68,12 @@ Below is an example of a linked list that has a cycle.
   ],
   "head": "n1",
   "cycleTarget": "n3",
+  "sections": [
+    {"name": "Init", "startIdx": 0},
+    {"name": "Tick 1", "startIdx": 1},
+    {"name": "Tick 2", "startIdx": 4},
+    {"name": "Tick 3 (meet)", "startIdx": 7}
+  ],
   "steps": [
     {
       "links": [["n1","n2"],["n2","n3"],["n3","n4"],["n4","n5"]],
@@ -76,18 +82,48 @@ Below is an example of a linked list that has a cycle.
     },
     {
       "links": [["n1","n2"],["n2","n3"],["n3","n4"],["n4","n5"]],
+      "markers": [{"name": "slow", "nodeId": "n2"}, {"name": "fast", "nodeId": "n1"}],
+      "msg": "Tick 1a: slow advances by 1 → node 7"
+    },
+    {
+      "links": [["n1","n2"],["n2","n3"],["n3","n4"],["n4","n5"]],
+      "markers": [{"name": "slow", "nodeId": "n2"}, {"name": "fast", "nodeId": "n2"}],
+      "msg": "Tick 1b: fast advances step 1 of 2 → node 7"
+    },
+    {
+      "links": [["n1","n2"],["n2","n3"],["n3","n4"],["n4","n5"]],
       "markers": [{"name": "slow", "nodeId": "n2"}, {"name": "fast", "nodeId": "n3"}],
-      "msg": "Tick 1: slow → 7, fast → 3"
+      "msg": "Tick 1c: fast advances step 2 of 2 → node 3. slow=7, fast=3"
+    },
+    {
+      "links": [["n1","n2"],["n2","n3"],["n3","n4"],["n4","n5"]],
+      "markers": [{"name": "slow", "nodeId": "n3"}, {"name": "fast", "nodeId": "n3"}],
+      "msg": "Tick 2a: slow advances → node 3"
+    },
+    {
+      "links": [["n1","n2"],["n2","n3"],["n3","n4"],["n4","n5"]],
+      "markers": [{"name": "slow", "nodeId": "n3"}, {"name": "fast", "nodeId": "n4"}],
+      "msg": "Tick 2b: fast advances step 1 → node 10"
     },
     {
       "links": [["n1","n2"],["n2","n3"],["n3","n4"],["n4","n5"]],
       "markers": [{"name": "slow", "nodeId": "n3"}, {"name": "fast", "nodeId": "n5"}],
-      "msg": "Tick 2: slow → 3, fast → 6"
+      "msg": "Tick 2c: fast advances step 2 → node 6. slow=3, fast=6"
+    },
+    {
+      "links": [["n1","n2"],["n2","n3"],["n3","n4"],["n4","n5"]],
+      "markers": [{"name": "slow", "nodeId": "n4"}, {"name": "fast", "nodeId": "n5"}],
+      "msg": "Tick 3a: slow advances → node 10"
+    },
+    {
+      "links": [["n1","n2"],["n2","n3"],["n3","n4"],["n4","n5"]],
+      "markers": [{"name": "slow", "nodeId": "n4"}, {"name": "fast", "nodeId": "n3"}],
+      "msg": "Tick 3b: fast advances step 1 — wraps via cycle edge → back to node 3"
     },
     {
       "links": [["n1","n2"],["n2","n3"],["n3","n4"],["n4","n5"]],
       "markers": [{"name": "slow", "nodeId": "n4"}, {"name": "fast", "nodeId": "n4"}],
-      "msg": "Tick 3: slow → 10, fast → 10 — they meet! A cycle exists."
+      "msg": "Tick 3c: fast advances step 2 → node 10. slow and fast collide — a cycle exists."
     }
   ]
 }
@@ -110,6 +146,11 @@ Once we confirm that a linked list has a cycle, the next step is to find where t
   ],
   "head": "n1",
   "cycleTarget": "n3",
+  "sections": [
+    {"name": "Init",  "startIdx": 0},
+    {"name": "Tick 1", "startIdx": 1},
+    {"name": "Tick 2 (meet)", "startIdx": 3}
+  ],
   "steps": [
     {
       "links": [["n1","n2"],["n2","n3"],["n3","n4"],["n4","n5"]],
@@ -118,13 +159,28 @@ Once we confirm that a linked list has a cycle, the next step is to find where t
     },
     {
       "links": [["n1","n2"],["n2","n3"],["n3","n4"],["n4","n5"]],
+      "markers": [{"name": "fast", "nodeId": "n2"}, {"name": "slow", "nodeId": "n4"}],
+      "msg": "Tick 1a: fast advances one step → node 7"
+    },
+    {
+      "links": [["n1","n2"],["n2","n3"],["n3","n4"],["n4","n5"]],
       "markers": [{"name": "fast", "nodeId": "n2"}, {"name": "slow", "nodeId": "n5"}],
-      "msg": "Tick 1: both advance one step. fast → 7, slow → 6"
+      "msg": "Tick 1b: slow advances one step → node 6"
+    },
+    {
+      "links": [["n1","n2"],["n2","n3"],["n3","n4"],["n4","n5"]],
+      "markers": [{"name": "fast", "nodeId": "n3"}, {"name": "slow", "nodeId": "n5"}],
+      "msg": "Tick 2a: fast advances one step → node 3 (the highlighted cycle entry)"
     },
     {
       "links": [["n1","n2"],["n2","n3"],["n3","n4"],["n4","n5"]],
       "markers": [{"name": "fast", "nodeId": "n3"}, {"name": "slow", "nodeId": "n3"}],
-      "msg": "Tick 2: both advance one step. They meet at node(3) — the cycle start."
+      "msg": "Tick 2b: slow wraps via cycle edge → node 3. They collide at the cycle start."
+    },
+    {
+      "links": [["n1","n2"],["n2","n3"],["n3","n4"],["n4","n5"]],
+      "markers": [{"name": "fast", "nodeId": "n3"}, {"name": "slow", "nodeId": "n3"}],
+      "msg": "Return slow (= fast) — node 3 is the cycle start. Total: O(n) time, O(1) space."
     }
   ]
 }
@@ -133,17 +189,6 @@ Once we confirm that a linked list has a cycle, the next step is to find where t
 <p align="center"><strong>Phase 2 — reset <code>fast</code> to <code>head</code> and advance both pointers one step at a time. They collide at the node where the cycle begins.</strong></p>
 
 ```mermaid
----
-config:
-  theme: base
-  themeVariables:
-    primaryColor: "#dbeafe"
-    primaryBorderColor: "#3b82f6"
-    primaryTextColor: "#1e3a5f"
-    lineColor: "#64748b"
-    secondaryColor: "#ede9fe"
-    tertiaryColor: "#fef9c3"
----
 flowchart TB
     P1["Phase 1 — detect<br/>slow = fast = head<br/>slow += 1, fast += 2 each tick<br/>stop when slow == fast OR fast == null"]
     Q{"fast == null?"}
