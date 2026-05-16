@@ -28,7 +28,7 @@ In arrays, we have indexes to access the individual items of the array, e.g. `0`
 ```d2
 direction: right
 
-arr: "Array in memory — contiguous, index-addressable" {
+arr: "Array  —  contiguous, index-addressable" {
   grid-columns: 4
   grid-gap: 0
   a0: |md
@@ -52,8 +52,16 @@ arr: "Array in memory — contiguous, index-addressable" {
     **10**
   |
 }
-idx: "i = 0, 1, 2, 3" {shape: oval}
-idx -> arr.a0: "arr[i]"
+
+idx: "i ∈ {0, 1, 2, 3}" {
+  shape: oval
+  style.fill: "#dbeafe"
+  style.stroke: "#1d4ed8"
+  style.stroke-width: 2
+  style.bold: true
+}
+
+idx -> arr.a0: "arr[i] — O(1) direct read" {style.stroke-width: 2; style.bold: true}
 ```
 
 <p align="center"><strong>Array traversal uses an integer index <code>i</code> that increments from <code>0</code> to <code>n-1</code> — direct O(1) access at each step.</strong></p>

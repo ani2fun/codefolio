@@ -244,23 +244,48 @@ object Main extends App {
 
 The time complexity of the above function does not depend on the list size. In all cases, we always need to insert the node at the start of the list, which takes **constant** time, i.e., **O(1)**.
 
-```d2
-direction: right
-new: |md
-  **New node**
-
-  val: 6
-| {style.fill: "#dcfce7"; style.stroke: "#16a34a"}
-n1: "val: 5"
-n2: "val: 7"
-n3: |md
-  val: 3
-
-  `next: null`
-|
-new -> n1: "newNode.next = head\nhead = newNode\n— 2 pointer ops, O(1)"
-n1 -> n2
-n2 -> n3
+```d3 widget=linked-list
+{
+  "title": "Insert before the head — 2 pointer ops, O(1) regardless of list size",
+  "direction": "single",
+  "nodes": [
+    {"id": "n1", "value": "5"},
+    {"id": "n2", "value": "7"},
+    {"id": "n3", "value": "3"}
+  ],
+  "head": "n1",
+  "steps": [
+    {
+      "links": [["n1","n2"],["n2","n3"]],
+      "markers": [],
+      "msg": "Before: head → 5 → 7 → 3 → null"
+    },
+    {
+      "nodes": [
+        {"id": "n0", "value": "6", "style": "new"},
+        {"id": "n1", "value": "5"},
+        {"id": "n2", "value": "7"},
+        {"id": "n3", "value": "3"}
+      ],
+      "links": [["n0","n1"],["n1","n2"],["n2","n3"]],
+      "markers": [{"name": "current", "nodeId": "n0"}],
+      "head": "n1",
+      "msg": "Step 1: newNode.next = head — the new node points at the old head (1 pointer op)"
+    },
+    {
+      "nodes": [
+        {"id": "n0", "value": "6", "style": "new"},
+        {"id": "n1", "value": "5"},
+        {"id": "n2", "value": "7"},
+        {"id": "n3", "value": "3"}
+      ],
+      "links": [["n0","n1"],["n1","n2"],["n2","n3"]],
+      "markers": [],
+      "head": "n0",
+      "msg": "Step 2: head = newNode — head moves to the new node (1 pointer op). Total: O(1), independent of list size."
+    }
+  ]
+}
 ```
 
 <p align="center"><strong>Insert before the head node — only 2 pointer assignments needed, regardless of list size: always O(1) time.</strong></p>

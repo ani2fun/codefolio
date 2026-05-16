@@ -805,7 +805,27 @@ object LinkedList:
     // we compute a per-node `rank`: the first marker at a node renders the
     // arrowhead triangle + its label one slot above the row; subsequent
     // markers at the same node stack their labels upward, no extra triangle.
-    val activeMarkers = step.markers.filter(m => idxOf.contains(m.nodeId))
+    //
+    // Auto-inject `head` on every step that doesn't already declare a
+    // head-class marker (`head`/`headA`/`headB`/`headC`/`dummy` — `dummy`
+    // covers sentinel-headed merge/split widgets where the dummy IS the
+    // result head). The effective head comes from `step.head` (per-step
+    // override, used by reversal-style widgets where the head moves)
+    // falling back to `spec.head` then to the first node's id. Authors no
+    // longer need to repeat `{"name": "head", "nodeId": "n1"}` in every
+    // step — the widget guarantees the head pointer is always rendered so
+    // the reader keeps a stable anchor across the algorithm.
+    val headClassNames  = Set("head", "headA", "headB", "headC", "dummy")
+    val hasHeadInStep   = step.markers.exists(m => headClassNames.contains(m.name))
+    val effectiveHeadId = step.head.orElse(spec.head).orElse(nodes.headOption.map(_.id))
+    val markersWithHead =
+      if hasHeadInStep then step.markers
+      else
+        effectiveHeadId
+          .filter(idxOf.contains)
+          .map(h => Marker("head", h, canonical = true) :: step.markers)
+          .getOrElse(step.markers)
+    val activeMarkers = markersWithHead.filter(m => idxOf.contains(m.nodeId))
     // Globally-rank-assigned (Phase 1.6) so long names like `⚠ previous=null`
     // attached to adjacent nodes stack vertically instead of overlapping
     // horizontally. Two markers at the same node still stack the same way.

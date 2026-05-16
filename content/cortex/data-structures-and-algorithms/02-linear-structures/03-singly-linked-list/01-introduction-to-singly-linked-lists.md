@@ -146,9 +146,9 @@ Even though we can solve the problem using an array, it is inefficient if we hav
 An array has other fundamental problems that make it a bad choice for problems like these. For example, we cannot insert or delete data items **in place** in an array.
 
 ```d2
-direction: right
+direction: down
 
-mem: "Contiguous memory — each cell is fixed in place" {
+mem: "students[]  —  contiguous memory, every cell fixed" {
   grid-columns: 4
   grid-gap: 0
   c0: |md
@@ -175,10 +175,17 @@ mem: "Contiguous memory — each cell is fixed in place" {
 
 ins: "Insert 'Zara'\nbetween Bob & Carol?" {
   shape: oval
-  style.fill: "#fde68a"
-  style.stroke: "#d97706"
+  style.fill: "#fee2e2"
+  style.stroke: "#dc2626"
+  style.stroke-width: 2
+  style.bold: true
 }
-ins -> mem.c2: "No free slot!\nMust shift Carol & David\nor reallocate everything"
+
+ins -> mem.c2: "no free slot —\nshift Carol & David\nor reallocate" {
+  style.stroke: "#dc2626"
+  style.stroke-width: 2
+  style.bold: true
+}
 ```
 
 <p align="center"><strong>Arrays occupy a contiguous block of memory — there is no physical gap between elements to insert into, so every in-place insertion forces a cascade of element shifts.</strong></p>
@@ -398,24 +405,37 @@ A singly linked list node has two sections.
 
 ```d2
 direction: right
-node: "A single node" {
+
+node: "A node  —  two fields, one address" {
   grid-columns: 2
   grid-gap: 0
   val: |md
     **val**
 
-    (data)
+    the data (any type)
   |
   next: |md
     **next**
 
-    (pointer)
+    `ListNode *`
   |
 }
-n2: "next node..."
-nullnode: "null — if tail" {shape: oval}
-node.next -> n2: "points to"
-node.next -> nullnode: "or"
+
+n2: "next node in the chain" {
+  shape: rectangle
+  style.fill: "#f1f5f9"
+  style.stroke: "#475569"
+}
+
+nullnode: "null  (if this is the tail)" {
+  shape: oval
+  style.fill: "#fef3c7"
+  style.stroke: "#d97706"
+  style.italic: true
+}
+
+node.next -> n2 {style.stroke-width: 2}
+node.next -> nullnode {style.stroke-dash: 4}
 ```
 
 <p align="center"><strong>A singly linked list node stores two fields: <code>val</code> (the data) and <code>next</code> (the address of the following node, or <code>null</code> if it is the last).</strong></p>
