@@ -131,16 +131,18 @@ print(vals)  # [7, 3, 10]
 public class Main {
     static class ListNode { int val; ListNode next; ListNode(int v){val=v;} }
 
-    static ListNode deleteFirstNode(ListNode head) {
-        if (head == null) return null;  // Empty list — nothing to delete
-        return head.next;  // Advance head; GC reclaims the old head node
+    static class Solution {
+        public ListNode deleteFirstNode(ListNode head) {
+            if (head == null) return null;  // Empty list — nothing to delete
+            return head.next;  // Advance head; GC reclaims the old head node
+        }
     }
 
     public static void main(String[] args) {
         ListNode n1=new ListNode(5),n2=new ListNode(7),
                  n3=new ListNode(3),n4=new ListNode(10);
         n1.next=n2; n2.next=n3; n3.next=n4;
-        ListNode head = deleteFirstNode(n1);
+        ListNode head = new Solution().deleteFirstNode(n1);
         for (ListNode c=head;c!=null;c=c.next) System.out.print(c.val+" ");
         // 7 3 10
     }
@@ -175,14 +177,16 @@ int main() {
 class ListNode(var v: Int, var next: ListNode = null)
 
 object Main extends App {
-  def deleteFirstNode(head: ListNode): ListNode = {
-    if (head == null) return null  // Empty list — nothing to delete
-    head.next                      // Advance head; GC reclaims the old node
+  class Solution {
+    def deleteFirstNode(head: ListNode): ListNode = {
+      if (head == null) return null  // Empty list — nothing to delete
+      head.next                      // Advance head; GC reclaims the old node
+    }
   }
 
   val n4=new ListNode(10); val n3=new ListNode(3,n4)
   val n2=new ListNode(7,n3); val n1=new ListNode(5,n2)
-  var head = deleteFirstNode(n1)
+  var head = new Solution().deleteFirstNode(n1)
   while (head!=null) { print(s"${head.v} "); head=head.next }  // 7 3 10
 }
 ```
@@ -290,49 +294,52 @@ public class Main {
         ListNode(int v, ListNode n) { val = v; next = n; }
     }
 
-    static ListNode deleteFirstNode(ListNode head) {
+    static class Solution {
+        public ListNode deleteFirstNode(ListNode head) {
 
-        // Check if the list is empty
-        if (head == null) {
+            // Check if the list is empty
+            if (head == null) {
 
-            // Return null since there are no nodes to delete
-            return null;
-        }
+                // Return null since there are no nodes to delete
+                return null;
+            }
 
-        // Create a temporary pointer to store the current head node
-        ListNode nodeToBeDeleted = head;
+            // Create a temporary pointer to store the current head node
+            ListNode nodeToBeDeleted = head;
 
-        // Move the head pointer to the next node
-        head = head.next;
-
-        // Delete the original head node to free memory
-        nodeToBeDeleted = null;
-
-        // Return the new head node
-        return head;
-    }
-
-    static ListNode build(int[] vals) {
-        ListNode dummy = new ListNode(0);
-        ListNode cur = dummy;
-        for (int v : vals) { cur.next = new ListNode(v); cur = cur.next; }
-        return dummy.next;
-    }
-
-    static String toStr(ListNode head) {
-        StringBuilder sb = new StringBuilder("[");
-        while (head != null) {
-            sb.append(head.val);
-            if (head.next != null) sb.append(", ");
+            // Move the head pointer to the next node
             head = head.next;
+
+            // Delete the original head node to free memory
+            nodeToBeDeleted = null;
+
+            // Return the new head node
+            return head;
         }
-        return sb.append("]").toString();
+
+        public ListNode build(int[] vals) {
+            ListNode dummy = new ListNode(0);
+            ListNode cur = dummy;
+            for (int v : vals) { cur.next = new ListNode(v); cur = cur.next; }
+            return dummy.next;
+        }
+
+        public String toStr(ListNode head) {
+            StringBuilder sb = new StringBuilder("[");
+            while (head != null) {
+                sb.append(head.val);
+                if (head.next != null) sb.append(", ");
+                head = head.next;
+            }
+            return sb.append("]").toString();
+        }
     }
 
     public static void main(String[] args) {
-        ListNode head = build(new int[]{5, 7, 3, 10});
-        head = deleteFirstNode(head);
-        System.out.println(toStr(head)); // [7, 3, 10]
+        Solution sol = new Solution();
+        ListNode head = sol.build(new int[]{5, 7, 3, 10});
+        head = sol.deleteFirstNode(head);
+        System.out.println(sol.toStr(head)); // [7, 3, 10]
     }
 }
 ```
@@ -401,48 +408,51 @@ int main() {
 class ListNode(var v: Int, var next: ListNode = null)
 
 object Main extends App {
-  def deleteFirstNode(head: ListNode): ListNode = {
+  class Solution {
+    def deleteFirstNode(head: ListNode): ListNode = {
 
-    // Check if the list is empty
-    if (head == null) {
+      // Check if the list is empty
+      if (head == null) {
 
-      // Return null since there are no nodes to delete
-      return null
+        // Return null since there are no nodes to delete
+        return null
+      }
+
+      // Create a temporary pointer to store the current head node
+      var nodeToBeDeleted = head
+
+      // Move the head pointer to the next node
+      val newHead = head.next
+
+      // Delete the original head node to free memory
+      nodeToBeDeleted = null
+
+      // Return the new head node
+      newHead
     }
 
-    // Create a temporary pointer to store the current head node
-    var nodeToBeDeleted = head
-
-    // Move the head pointer to the next node
-    val newHead = head.next
-
-    // Delete the original head node to free memory
-    nodeToBeDeleted = null
-
-    // Return the new head node
-    newHead
-  }
-
-  def build(vals: Int*): ListNode = {
-    val dummy = new ListNode(0)
-    var cur = dummy
-    for (v <- vals) { cur.next = new ListNode(v); cur = cur.next }
-    dummy.next
-  }
-
-  def toStr(head: ListNode): String = {
-    val sb = new StringBuilder("[")
-    var cur = head
-    while (cur != null) {
-      sb.append(cur.v)
-      if (cur.next != null) sb.append(", ")
-      cur = cur.next
+    def build(vals: Int*): ListNode = {
+      val dummy = new ListNode(0)
+      var cur = dummy
+      for (v <- vals) { cur.next = new ListNode(v); cur = cur.next }
+      dummy.next
     }
-    sb.append("]").toString
+
+    def toStr(head: ListNode): String = {
+      val sb = new StringBuilder("[")
+      var cur = head
+      while (cur != null) {
+        sb.append(cur.v)
+        if (cur.next != null) sb.append(", ")
+        cur = cur.next
+      }
+      sb.append("]").toString
+    }
   }
 
-  val head = deleteFirstNode(build(5, 7, 3, 10))
-  println(toStr(head)) // [7, 3, 10]
+  val sol = new Solution()
+  val head = sol.deleteFirstNode(sol.build(5, 7, 3, 10))
+  println(sol.toStr(head)) // [7, 3, 10]
 }
 ```
 
@@ -970,69 +980,72 @@ public class Main {
         ListNode(int v, ListNode n) { val = v; next = n; }
     }
 
-    static ListNode deleteLastNode(ListNode head) {
+    static class Solution {
+        public ListNode deleteLastNode(ListNode head) {
 
-        // If the list is empty, there's nothing to delete
-        if (head == null) {
-            return null;
+            // If the list is empty, there's nothing to delete
+            if (head == null) {
+                return null;
+            }
+
+            // If there's only one node in the list, delete it and return
+            // null
+            if (head.next == null) {
+                head = null;
+                return null;
+            }
+
+            // current node being iterated
+            ListNode current = head;
+
+            // previous node
+            ListNode previous = null;
+
+            // Traverse the list until the last node is reached
+            while (current != null && current.next != null) {
+
+                // Move the previous pointer to the current node
+                previous = current;
+
+                // Move the current pointer to the next node
+                current = current.next;
+            }
+
+            // At this point, current is pointing to the last node and
+            // previous is pointing to the second-to-last node. Update the
+            // next pointer of the second-to-last node to skip the last node
+            previous.next = current.next;
+
+            // Delete the last node
+            current = null;
+
+            // Return the updated head of the list
+            return head;
         }
 
-        // If there's only one node in the list, delete it and return
-        // null
-        if (head.next == null) {
-            head = null;
-            return null;
+        public ListNode build(int[] vals) {
+            ListNode dummy = new ListNode(0);
+            ListNode cur = dummy;
+            for (int v : vals) { cur.next = new ListNode(v); cur = cur.next; }
+            return dummy.next;
         }
 
-        // current node being iterated
-        ListNode current = head;
-
-        // previous node
-        ListNode previous = null;
-
-        // Traverse the list until the last node is reached
-        while (current != null && current.next != null) {
-
-            // Move the previous pointer to the current node
-            previous = current;
-
-            // Move the current pointer to the next node
-            current = current.next;
+        public String toStr(ListNode head) {
+            StringBuilder sb = new StringBuilder("[");
+            while (head != null) {
+                sb.append(head.val);
+                if (head.next != null) sb.append(", ");
+                head = head.next;
+            }
+            return sb.append("]").toString();
         }
-
-        // At this point, current is pointing to the last node and
-        // previous is pointing to the second-to-last node. Update the
-        // next pointer of the second-to-last node to skip the last node
-        previous.next = current.next;
-
-        // Delete the last node
-        current = null;
-
-        // Return the updated head of the list
-        return head;
-    }
-
-    static ListNode build(int[] vals) {
-        ListNode dummy = new ListNode(0);
-        ListNode cur = dummy;
-        for (int v : vals) { cur.next = new ListNode(v); cur = cur.next; }
-        return dummy.next;
-    }
-
-    static String toStr(ListNode head) {
-        StringBuilder sb = new StringBuilder("[");
-        while (head != null) {
-            sb.append(head.val);
-            if (head.next != null) sb.append(", ");
-            head = head.next;
-        }
-        return sb.append("]").toString();
     }
 
     public static void main(String[] args) {
-        ListNode head = build(new int[]{5, 7, 3, 10});
-        head = deleteLastNode(head);
-        System.out.println(toStr(head)); // [5, 7, 3]
+        Solution sol = new Solution();
+        ListNode head = sol.build(new int[]{5, 7, 3, 10});
+        head = sol.deleteLastNode(head);
+        System.out.println(sol.toStr(head)); // [5, 7, 3]
     }
 }
 ```
@@ -1119,62 +1132,65 @@ int main() {
 class ListNode(var v: Int, var next: ListNode = null)
 
 object Main extends App {
-  def deleteLastNode(head: ListNode): ListNode = {
+  class Solution {
+    def deleteLastNode(head: ListNode): ListNode = {
 
-    // If the list is empty, there's nothing to delete
-    if (head == null) {
-      return null
+      // If the list is empty, there's nothing to delete
+      if (head == null) {
+        return null
+      }
+
+      // If there's only one node in the list, delete it and return
+      // null
+      if (head.next == null) {
+        return null
+      }
+
+      // current node being iterated
+      var current = head
+
+      // previous node
+      var previous: ListNode = null
+
+      // Traverse the list until the last node is reached
+      while (current != null && current.next != null) {
+
+        // Move the previous pointer to the current node
+        previous = current
+
+        // Move the current pointer to the next node
+        current = current.next
+      }
+
+      // At this point, current is pointing to the last node and
+      // previous is pointing to the second-to-last node. Update the
+      // next pointer of the second-to-last node to skip the last node
+      previous.next = current.next
+
+      // Delete the last node
+      current = null
+
+      // Return the updated head of the list
+      head
     }
 
-    // If there's only one node in the list, delete it and return
-    // null
-    if (head.next == null) {
-      return null
+    def build(vals: Int*): ListNode = {
+      val dummy = new ListNode(0)
+      var cur = dummy
+      for (v <- vals) { cur.next = new ListNode(v); cur = cur.next }
+      dummy.next
     }
 
-    // current node being iterated
-    var current = head
-
-    // previous node
-    var previous: ListNode = null
-
-    // Traverse the list until the last node is reached
-    while (current != null && current.next != null) {
-
-      // Move the previous pointer to the current node
-      previous = current
-
-      // Move the current pointer to the next node
-      current = current.next
+    def toStr(head: ListNode): String = {
+      val sb = new StringBuilder("[")
+      var cur = head
+      while (cur != null) { sb.append(cur.v); if (cur.next != null) sb.append(", "); cur = cur.next }
+      sb.append("]").toString
     }
-
-    // At this point, current is pointing to the last node and
-    // previous is pointing to the second-to-last node. Update the
-    // next pointer of the second-to-last node to skip the last node
-    previous.next = current.next
-
-    // Delete the last node
-    current = null
-
-    // Return the updated head of the list
-    head
   }
 
-  def build(vals: Int*): ListNode = {
-    val dummy = new ListNode(0)
-    var cur = dummy
-    for (v <- vals) { cur.next = new ListNode(v); cur = cur.next }
-    dummy.next
-  }
-
-  def toStr(head: ListNode): String = {
-    val sb = new StringBuilder("[")
-    var cur = head
-    while (cur != null) { sb.append(cur.v); if (cur.next != null) sb.append(", "); cur = cur.next }
-    sb.append("]").toString
-  }
-
-  println(toStr(deleteLastNode(build(5, 7, 3, 10)))) // [5, 7, 3]
+  val sol = new Solution()
+  println(sol.toStr(sol.deleteLastNode(sol.build(5, 7, 3, 10)))) // [5, 7, 3]
 }
 ```
 
@@ -1956,79 +1972,82 @@ public class Main {
         ListNode(int v, ListNode n) { val = v; next = n; }
     }
 
-    static ListNode deleteNodeWithGivenData(ListNode head, int data) {
+    static class Solution {
+        public ListNode deleteNodeWithGivenData(ListNode head, int data) {
 
-        // If the list is empty, return null
-        if (head == null) {
-            return null;
-        }
+            // If the list is empty, return null
+            if (head == null) {
+                return null;
+            }
 
-        // If the head node contains the given data
-        if (head.val == data) {
+            // If the head node contains the given data
+            if (head.val == data) {
 
-            // Create a temporary pointer to the head node
-            ListNode nodeToBeDeleted = head;
+                // Create a temporary pointer to the head node
+                ListNode nodeToBeDeleted = head;
 
-            // Update the head pointer to the next node
-            head = head.next;
+                // Update the head pointer to the next node
+                head = head.next;
 
-            // Delete the previous head node
-            nodeToBeDeleted = null;
+                // Delete the previous head node
+                nodeToBeDeleted = null;
 
-            // Return the updated head pointer
+                // Return the updated head pointer
+                return head;
+            }
+
+            // Pointer to the current node, starting from the head
+            ListNode current = head;
+
+            // Pointer to the previous node, initially null
+            ListNode previous = null;
+
+            // If the target data is not in the first node, search for it in
+            // the rest of the list
+            while (current != null && current.val != data) {
+
+                // Move the previous pointer to the current node
+                previous = current;
+
+                // Move the current pointer to the next node
+                current = current.next;
+            }
+
+            // If the given data is not found, return the original head
+            // pointer
+            if (current == null) {
+                return head;
+            }
+
+            // Update the next pointer of the previous node to skip the
+            // current node
+            previous.next = current.next;
+
+            // Delete the node with the given data
+            current = null;
+
+            // Return the head of the list, with the target data node removed
             return head;
         }
 
-        // Pointer to the current node, starting from the head
-        ListNode current = head;
-
-        // Pointer to the previous node, initially null
-        ListNode previous = null;
-
-        // If the target data is not in the first node, search for it in
-        // the rest of the list
-        while (current != null && current.val != data) {
-
-            // Move the previous pointer to the current node
-            previous = current;
-
-            // Move the current pointer to the next node
-            current = current.next;
+        public ListNode build(int[] vals) {
+            ListNode dummy = new ListNode(0); ListNode cur = dummy;
+            for (int v : vals) { cur.next = new ListNode(v); cur = cur.next; }
+            return dummy.next;
         }
 
-        // If the given data is not found, return the original head
-        // pointer
-        if (current == null) {
-            return head;
+        public String toStr(ListNode head) {
+            StringBuilder sb = new StringBuilder("[");
+            while (head != null) { sb.append(head.val); if (head.next != null) sb.append(", "); head = head.next; }
+            return sb.append("]").toString();
         }
-
-        // Update the next pointer of the previous node to skip the
-        // current node
-        previous.next = current.next;
-
-        // Delete the node with the given data
-        current = null;
-
-        // Return the head of the list, with the target data node removed
-        return head;
-    }
-
-    static ListNode build(int[] vals) {
-        ListNode dummy = new ListNode(0); ListNode cur = dummy;
-        for (int v : vals) { cur.next = new ListNode(v); cur = cur.next; }
-        return dummy.next;
-    }
-
-    static String toStr(ListNode head) {
-        StringBuilder sb = new StringBuilder("[");
-        while (head != null) { sb.append(head.val); if (head.next != null) sb.append(", "); head = head.next; }
-        return sb.append("]").toString();
     }
 
     public static void main(String[] args) {
-        ListNode head = build(new int[]{5, 7, 3, 10});
-        head = deleteNodeWithGivenData(head, 3);
-        System.out.println(toStr(head)); // [5, 7, 10]
+        Solution sol = new Solution();
+        ListNode head = sol.build(new int[]{5, 7, 3, 10});
+        head = sol.deleteNodeWithGivenData(head, 3);
+        System.out.println(sol.toStr(head)); // [5, 7, 10]
     }
 }
 ```
@@ -2125,76 +2144,79 @@ int main() {
 class ListNode(var v: Int, var next: ListNode = null)
 
 object Main extends App {
-  def deleteNodeWithGivenData(head: ListNode, data: Int): ListNode = {
+  class Solution {
+    def deleteNodeWithGivenData(head: ListNode, data: Int): ListNode = {
 
-    // If the list is empty, return null
-    if (head == null) {
-      return null
+      // If the list is empty, return null
+      if (head == null) {
+        return null
+      }
+
+      // If the head node contains the given data
+      if (head.v == data) {
+
+        // Create a temporary pointer to the head node
+        var nodeToBeDeleted = head
+
+        // Update the head pointer to the next node
+        val newHead = head.next
+
+        // Delete the previous head node
+        nodeToBeDeleted = null
+
+        // Return the updated head pointer
+        return newHead
+      }
+
+      // Pointer to the current node, starting from the head
+      var current = head
+
+      // Pointer to the previous node, initially null
+      var previous: ListNode = null
+
+      // If the target data is not in the first node, search for it in
+      // the rest of the list
+      while (current != null && current.v != data) {
+
+        // Move the previous pointer to the current node
+        previous = current
+
+        // Move the current pointer to the next node
+        current = current.next
+      }
+
+      // If the given data is not found, return the original head
+      // pointer
+      if (current == null) {
+        return head
+      }
+
+      // Update the next pointer of the previous node to skip the
+      // current node
+      previous.next = current.next
+
+      // Delete the node with the given data
+      current = null
+
+      // Return the head of the list, with the target data node removed
+      head
     }
 
-    // If the head node contains the given data
-    if (head.v == data) {
-
-      // Create a temporary pointer to the head node
-      var nodeToBeDeleted = head
-
-      // Update the head pointer to the next node
-      val newHead = head.next
-
-      // Delete the previous head node
-      nodeToBeDeleted = null
-
-      // Return the updated head pointer
-      return newHead
+    def build(vals: Int*): ListNode = {
+      val dummy = new ListNode(0); var cur = dummy
+      for (v <- vals) { cur.next = new ListNode(v); cur = cur.next }
+      dummy.next
     }
 
-    // Pointer to the current node, starting from the head
-    var current = head
-
-    // Pointer to the previous node, initially null
-    var previous: ListNode = null
-
-    // If the target data is not in the first node, search for it in
-    // the rest of the list
-    while (current != null && current.v != data) {
-
-      // Move the previous pointer to the current node
-      previous = current
-
-      // Move the current pointer to the next node
-      current = current.next
+    def toStr(head: ListNode): String = {
+      val sb = new StringBuilder("["); var cur = head
+      while (cur != null) { sb.append(cur.v); if (cur.next != null) sb.append(", "); cur = cur.next }
+      sb.append("]").toString
     }
-
-    // If the given data is not found, return the original head
-    // pointer
-    if (current == null) {
-      return head
-    }
-
-    // Update the next pointer of the previous node to skip the
-    // current node
-    previous.next = current.next
-
-    // Delete the node with the given data
-    current = null
-
-    // Return the head of the list, with the target data node removed
-    head
   }
 
-  def build(vals: Int*): ListNode = {
-    val dummy = new ListNode(0); var cur = dummy
-    for (v <- vals) { cur.next = new ListNode(v); cur = cur.next }
-    dummy.next
-  }
-
-  def toStr(head: ListNode): String = {
-    val sb = new StringBuilder("["); var cur = head
-    while (cur != null) { sb.append(cur.v); if (cur.next != null) sb.append(", "); cur = cur.next }
-    sb.append("]").toString
-  }
-
-  println(toStr(deleteNodeWithGivenData(build(5, 7, 3, 10), 3))) // [5, 7, 10]
+  val sol = new Solution()
+  println(sol.toStr(sol.deleteNodeWithGivenData(sol.build(5, 7, 3, 10), 3))) // [5, 7, 10]
 }
 ```
 
@@ -2330,74 +2352,77 @@ public class Main {
         ListNode(int v, ListNode n) { val = v; next = n; }
     }
 
-    static ListNode deleteNodesWithGivenData(ListNode head, int data) {
+    static class Solution {
+        public ListNode deleteNodesWithGivenData(ListNode head, int data) {
 
-        // Check if the list is empty
-        if (head == null) {
-            return null;
-        }
+            // Check if the list is empty
+            if (head == null) {
+                return null;
+            }
 
-        // Remove any nodes at the beginning of the list with the given
-        // data
-        while (head != null && head.val == data) {
-            ListNode nodeToBeDeleted = head;
-            head = head.next;
-
-            // Delete the node
-            nodeToBeDeleted = null;
-        }
-
-        // If the list becomes empty after removing nodes, return null
-        if (head == null) {
-            return null;
-        }
-
-        // Initialize pointers for previous and current nodes
-        ListNode previous = head;
-        ListNode current = head.next;
-
-        // Traverse the list and remove nodes with the given data
-        while (current != null) {
-
-            // Remove any nodes with the given data
-            while (current != null && current.val == data) {
-                ListNode nodeToBeDeleted = current;
-                current = current.next;
+            // Remove any nodes at the beginning of the list with the given
+            // data
+            while (head != null && head.val == data) {
+                ListNode nodeToBeDeleted = head;
+                head = head.next;
 
                 // Delete the node
                 nodeToBeDeleted = null;
             }
 
-            // Update the links between nodes to bypass the removed nodes
-            previous.next = current;
-            previous = current;
-
-            // Move to the next node
-            if (current != null) {
-                current = current.next;
+            // If the list becomes empty after removing nodes, return null
+            if (head == null) {
+                return null;
             }
+
+            // Initialize pointers for previous and current nodes
+            ListNode previous = head;
+            ListNode current = head.next;
+
+            // Traverse the list and remove nodes with the given data
+            while (current != null) {
+
+                // Remove any nodes with the given data
+                while (current != null && current.val == data) {
+                    ListNode nodeToBeDeleted = current;
+                    current = current.next;
+
+                    // Delete the node
+                    nodeToBeDeleted = null;
+                }
+
+                // Update the links between nodes to bypass the removed nodes
+                previous.next = current;
+                previous = current;
+
+                // Move to the next node
+                if (current != null) {
+                    current = current.next;
+                }
+            }
+
+            // Return the modified list
+            return head;
         }
 
-        // Return the modified list
-        return head;
-    }
+        public ListNode build(int[] vals) {
+            ListNode dummy = new ListNode(0); ListNode cur = dummy;
+            for (int v : vals) { cur.next = new ListNode(v); cur = cur.next; }
+            return dummy.next;
+        }
 
-    static ListNode build(int[] vals) {
-        ListNode dummy = new ListNode(0); ListNode cur = dummy;
-        for (int v : vals) { cur.next = new ListNode(v); cur = cur.next; }
-        return dummy.next;
-    }
-
-    static String toStr(ListNode head) {
-        StringBuilder sb = new StringBuilder("[");
-        while (head != null) { sb.append(head.val); if (head.next != null) sb.append(", "); head = head.next; }
-        return sb.append("]").toString();
+        public String toStr(ListNode head) {
+            StringBuilder sb = new StringBuilder("[");
+            while (head != null) { sb.append(head.val); if (head.next != null) sb.append(", "); head = head.next; }
+            return sb.append("]").toString();
+        }
     }
 
     public static void main(String[] args) {
-        ListNode head = build(new int[]{5, 7, 3, 10, 3, 12});
-        head = deleteNodesWithGivenData(head, 3);
-        System.out.println(toStr(head)); // [5, 7, 10, 12]
+        Solution sol = new Solution();
+        ListNode head = sol.build(new int[]{5, 7, 3, 10, 3, 12});
+        head = sol.deleteNodesWithGivenData(head, 3);
+        System.out.println(sol.toStr(head)); // [5, 7, 10, 12]
     }
 }
 ```
@@ -2485,72 +2510,75 @@ int main() {
 class ListNode(var v: Int, var next: ListNode = null)
 
 object Main extends App {
-  def deleteNodesWithGivenData(head: ListNode, data: Int): ListNode = {
+  class Solution {
+    def deleteNodesWithGivenData(head: ListNode, data: Int): ListNode = {
 
-    // Check if the list is empty
-    if (head == null) {
-      return null
-    }
+      // Check if the list is empty
+      if (head == null) {
+        return null
+      }
 
-    // Remove any nodes at the beginning of the list with the given
-    // data
-    var h = head
-    while (h != null && h.v == data) {
-      var nodeToBeDeleted = h
-      h = h.next
-
-      // Delete the node
-      nodeToBeDeleted = null
-    }
-
-    // If the list becomes empty after removing nodes, return null
-    if (h == null) {
-      return null
-    }
-
-    // Initialize pointers for previous and current nodes
-    var previous = h
-    var current = h.next
-
-    // Traverse the list and remove nodes with the given data
-    while (current != null) {
-
-      // Remove any nodes with the given data
-      while (current != null && current.v == data) {
-        var nodeToBeDeleted = current
-        current = current.next
+      // Remove any nodes at the beginning of the list with the given
+      // data
+      var h = head
+      while (h != null && h.v == data) {
+        var nodeToBeDeleted = h
+        h = h.next
 
         // Delete the node
         nodeToBeDeleted = null
       }
 
-      // Update the links between nodes to bypass the removed nodes
-      previous.next = current
-      previous = current
-
-      // Move to the next node
-      if (current != null) {
-        current = current.next
+      // If the list becomes empty after removing nodes, return null
+      if (h == null) {
+        return null
       }
+
+      // Initialize pointers for previous and current nodes
+      var previous = h
+      var current = h.next
+
+      // Traverse the list and remove nodes with the given data
+      while (current != null) {
+
+        // Remove any nodes with the given data
+        while (current != null && current.v == data) {
+          var nodeToBeDeleted = current
+          current = current.next
+
+          // Delete the node
+          nodeToBeDeleted = null
+        }
+
+        // Update the links between nodes to bypass the removed nodes
+        previous.next = current
+        previous = current
+
+        // Move to the next node
+        if (current != null) {
+          current = current.next
+        }
+      }
+
+      // Return the modified list
+      h
     }
 
-    // Return the modified list
-    h
+    def build(vals: Int*): ListNode = {
+      val dummy = new ListNode(0); var cur = dummy
+      for (v <- vals) { cur.next = new ListNode(v); cur = cur.next }
+      dummy.next
+    }
+
+    def toStr(head: ListNode): String = {
+      val sb = new StringBuilder("["); var cur = head
+      while (cur != null) { sb.append(cur.v); if (cur.next != null) sb.append(", "); cur = cur.next }
+      sb.append("]").toString
+    }
   }
 
-  def build(vals: Int*): ListNode = {
-    val dummy = new ListNode(0); var cur = dummy
-    for (v <- vals) { cur.next = new ListNode(v); cur = cur.next }
-    dummy.next
-  }
-
-  def toStr(head: ListNode): String = {
-    val sb = new StringBuilder("["); var cur = head
-    while (cur != null) { sb.append(cur.v); if (cur.next != null) sb.append(", "); cur = cur.next }
-    sb.append("]").toString
-  }
-
-  println(toStr(deleteNodesWithGivenData(build(5, 7, 3, 10, 3, 12), 3))) // [5, 7, 10, 12]
+  val sol = new Solution()
+  println(sol.toStr(sol.deleteNodesWithGivenData(sol.build(5, 7, 3, 10, 3, 12), 3))) // [5, 7, 10, 12]
 }
 ```
 
@@ -3005,56 +3033,59 @@ public class Main {
         ListNode(int v, ListNode n) { val = v; next = n; }
     }
 
-    static ListNode deleteNodeAfterTheGivenNode(ListNode head, ListNode node) {
+    static class Solution {
+        public ListNode deleteNodeAfterTheGivenNode(ListNode head, ListNode node) {
 
-        // If the list is empty, there's nothing to delete, so return
-        // null.
-        if (head == null) {
-            return null;
-        }
+            // If the list is empty, there's nothing to delete, so return
+            // null.
+            if (head == null) {
+                return null;
+            }
 
-        // If the given node is null or it is the last node in the list,
-        // there's no node to delete, so return the original head.
-        if (node == null || node.next == null) {
+            // If the given node is null or it is the last node in the list,
+            // there's no node to delete, so return the original head.
+            if (node == null || node.next == null) {
+                return head;
+            }
+
+            // Store the next node in a temporary variable.
+            ListNode nodeToBeDeleted = node.next;
+
+            // Link the current node (node) to the node after the one being
+            // deleted.
+            node.next = nodeToBeDeleted.next;
+
+            // Delete the node that was after the given node.
+            nodeToBeDeleted = null;
+
+            // Return the original head.
             return head;
         }
 
-        // Store the next node in a temporary variable.
-        ListNode nodeToBeDeleted = node.next;
+        public ListNode build(int[] vals) {
+            ListNode dummy = new ListNode(0); ListNode cur = dummy;
+            for (int v : vals) { cur.next = new ListNode(v); cur = cur.next; }
+            return dummy.next;
+        }
 
-        // Link the current node (node) to the node after the one being
-        // deleted.
-        node.next = nodeToBeDeleted.next;
+        public String toStr(ListNode head) {
+            StringBuilder sb = new StringBuilder("[");
+            while (head != null) { sb.append(head.val); if (head.next != null) sb.append(", "); head = head.next; }
+            return sb.append("]").toString();
+        }
 
-        // Delete the node that was after the given node.
-        nodeToBeDeleted = null;
-
-        // Return the original head.
-        return head;
-    }
-
-    static ListNode build(int[] vals) {
-        ListNode dummy = new ListNode(0); ListNode cur = dummy;
-        for (int v : vals) { cur.next = new ListNode(v); cur = cur.next; }
-        return dummy.next;
-    }
-
-    static String toStr(ListNode head) {
-        StringBuilder sb = new StringBuilder("[");
-        while (head != null) { sb.append(head.val); if (head.next != null) sb.append(", "); head = head.next; }
-        return sb.append("]").toString();
-    }
-
-    static ListNode find(ListNode head, int val) {
-        ListNode cur = head;
-        while (cur != null && cur.val != val) cur = cur.next;
-        return cur;
+        public ListNode find(ListNode head, int val) {
+            ListNode cur = head;
+            while (cur != null && cur.val != val) cur = cur.next;
+            return cur;
+        }
     }
 
     public static void main(String[] args) {
-        ListNode head = build(new int[]{5, 7, 3, 10});
-        head = deleteNodeAfterTheGivenNode(head, find(head, 7));
-        System.out.println(toStr(head)); // [5, 7, 10]
+        Solution sol = new Solution();
+        ListNode head = sol.build(new int[]{5, 7, 3, 10});
+        head = sol.deleteNodeAfterTheGivenNode(head, sol.find(head, 7));
+        System.out.println(sol.toStr(head)); // [5, 7, 10]
     }
 }
 ```
@@ -3128,54 +3159,57 @@ int main() {
 class ListNode(var v: Int, var next: ListNode = null)
 
 object Main extends App {
-  def deleteNodeAfterTheGivenNode(head: ListNode, node: ListNode): ListNode = {
+  class Solution {
+    def deleteNodeAfterTheGivenNode(head: ListNode, node: ListNode): ListNode = {
 
-    // If the list is empty, there's nothing to delete, so return
-    // null.
-    if (head == null) {
-      return null
+      // If the list is empty, there's nothing to delete, so return
+      // null.
+      if (head == null) {
+        return null
+      }
+
+      // If the given node is null or it is the last node in the list,
+      // there's no node to delete, so return the original head.
+      if (node == null || node.next == null) {
+        return head
+      }
+
+      // Store the next node in a temporary variable.
+      var nodeToBeDeleted = node.next
+
+      // Link the current node (node) to the node after the one being
+      // deleted.
+      node.next = nodeToBeDeleted.next
+
+      // Delete the node that was after the given node.
+      nodeToBeDeleted = null
+
+      // Return the original head.
+      head
     }
 
-    // If the given node is null or it is the last node in the list,
-    // there's no node to delete, so return the original head.
-    if (node == null || node.next == null) {
-      return head
+    def build(vals: Int*): ListNode = {
+      val dummy = new ListNode(0); var cur = dummy
+      for (v <- vals) { cur.next = new ListNode(v); cur = cur.next }
+      dummy.next
     }
 
-    // Store the next node in a temporary variable.
-    var nodeToBeDeleted = node.next
+    def toStr(head: ListNode): String = {
+      val sb = new StringBuilder("["); var cur = head
+      while (cur != null) { sb.append(cur.v); if (cur.next != null) sb.append(", "); cur = cur.next }
+      sb.append("]").toString
+    }
 
-    // Link the current node (node) to the node after the one being
-    // deleted.
-    node.next = nodeToBeDeleted.next
-
-    // Delete the node that was after the given node.
-    nodeToBeDeleted = null
-
-    // Return the original head.
-    head
+    def find(head: ListNode, value: Int): ListNode = {
+      var cur = head
+      while (cur != null && cur.v != value) cur = cur.next
+      cur
+    }
   }
 
-  def build(vals: Int*): ListNode = {
-    val dummy = new ListNode(0); var cur = dummy
-    for (v <- vals) { cur.next = new ListNode(v); cur = cur.next }
-    dummy.next
-  }
-
-  def toStr(head: ListNode): String = {
-    val sb = new StringBuilder("["); var cur = head
-    while (cur != null) { sb.append(cur.v); if (cur.next != null) sb.append(", "); cur = cur.next }
-    sb.append("]").toString
-  }
-
-  def find(head: ListNode, value: Int): ListNode = {
-    var cur = head
-    while (cur != null && cur.v != value) cur = cur.next
-    cur
-  }
-
-  val head = build(5, 7, 3, 10)
-  println(toStr(deleteNodeAfterTheGivenNode(head, find(head, 7)))) // [5, 7, 10]
+  val sol = new Solution()
+  val head = sol.build(5, 7, 3, 10)
+  println(sol.toStr(sol.deleteNodeAfterTheGivenNode(head, sol.find(head, 7)))) // [5, 7, 10]
 }
 ```
 
@@ -3963,87 +3997,90 @@ public class Main {
         ListNode(int v, ListNode n) { val = v; next = n; }
     }
 
-    static ListNode deleteNodeBeforeTheGivenNode(ListNode head, ListNode node) {
+    static class Solution {
+        public ListNode deleteNodeBeforeTheGivenNode(ListNode head, ListNode node) {
 
-        // If the head or the given node is null, there is nothing to
-        // delete Return the existing head
-        if (head == null || node == null) {
-            return head;
-        }
+            // If the head or the given node is null, there is nothing to
+            // delete Return the existing head
+            if (head == null || node == null) {
+                return head;
+            }
 
-        // If the given node is the head node, we cannot delete the node
-        // before it
-        if (node == head) {
-            return head;
-        }
+            // If the given node is the head node, we cannot delete the node
+            // before it
+            if (node == head) {
+                return head;
+            }
 
-        // If the node to delete is the immediate next node of the head
-        // Update the head to point to the next node, delete the original
-        // head, and return the updated head
-        if (head.next != null && head.next == node) {
-            ListNode nodeToBeDeleted = head;
-            head = head.next;
+            // If the node to delete is the immediate next node of the head
+            // Update the head to point to the next node, delete the original
+            // head, and return the updated head
+            if (head.next != null && head.next == node) {
+                ListNode nodeToBeDeleted = head;
+                head = head.next;
+
+                // Dereference for garbage collection
+                nodeToBeDeleted = null;
+                return head;
+            }
+
+            // Initialize variables for traversal
+            // current node being examined
+            ListNode current = head.next;
+
+            // Node preceding the current node
+            ListNode previous = head;
+
+            // Node preceding the previous node
+            ListNode previousToprevious = null;
+
+            // Traverse the linked list until we find the node or reach the
+            // end.
+            while (current != null && current != node) {
+                previousToprevious = previous;
+                previous = current;
+                current = current.next;
+            }
+
+            // If the node to delete was not found, return the head as is.
+            if (current == null) {
+                return head;
+            }
+
+            // Connect the previous node to the current node, bypassing the
+            // node to delete.
+            previousToprevious.next = current;
 
             // Dereference for garbage collection
-            nodeToBeDeleted = null;
+            previous = null;
+
             return head;
         }
 
-        // Initialize variables for traversal
-        // current node being examined
-        ListNode current = head.next;
-
-        // Node preceding the current node
-        ListNode previous = head;
-
-        // Node preceding the previous node
-        ListNode previousToprevious = null;
-
-        // Traverse the linked list until we find the node or reach the
-        // end.
-        while (current != null && current != node) {
-            previousToprevious = previous;
-            previous = current;
-            current = current.next;
+        public ListNode build(int[] vals) {
+            ListNode dummy = new ListNode(0); ListNode cur = dummy;
+            for (int v : vals) { cur.next = new ListNode(v); cur = cur.next; }
+            return dummy.next;
         }
 
-        // If the node to delete was not found, return the head as is.
-        if (current == null) {
-            return head;
+        public String toStr(ListNode head) {
+            StringBuilder sb = new StringBuilder("[");
+            while (head != null) { sb.append(head.val); if (head.next != null) sb.append(", "); head = head.next; }
+            return sb.append("]").toString();
         }
 
-        // Connect the previous node to the current node, bypassing the
-        // node to delete.
-        previousToprevious.next = current;
-
-        // Dereference for garbage collection
-        previous = null;
-
-        return head;
-    }
-
-    static ListNode build(int[] vals) {
-        ListNode dummy = new ListNode(0); ListNode cur = dummy;
-        for (int v : vals) { cur.next = new ListNode(v); cur = cur.next; }
-        return dummy.next;
-    }
-
-    static String toStr(ListNode head) {
-        StringBuilder sb = new StringBuilder("[");
-        while (head != null) { sb.append(head.val); if (head.next != null) sb.append(", "); head = head.next; }
-        return sb.append("]").toString();
-    }
-
-    static ListNode find(ListNode head, int val) {
-        ListNode cur = head;
-        while (cur != null && cur.val != val) cur = cur.next;
-        return cur;
+        public ListNode find(ListNode head, int val) {
+            ListNode cur = head;
+            while (cur != null && cur.val != val) cur = cur.next;
+            return cur;
+        }
     }
 
     public static void main(String[] args) {
-        ListNode head = build(new int[]{5, 7, 3, 10});
-        head = deleteNodeBeforeTheGivenNode(head, find(head, 3));
-        System.out.println(toStr(head)); // [5, 3, 10]
+        Solution sol = new Solution();
+        ListNode head = sol.build(new int[]{5, 7, 3, 10});
+        head = sol.deleteNodeBeforeTheGivenNode(head, sol.find(head, 3));
+        System.out.println(sol.toStr(head)); // [5, 3, 10]
     }
 }
 ```
@@ -4144,85 +4181,88 @@ int main() {
 class ListNode(var v: Int, var next: ListNode = null)
 
 object Main extends App {
-  def deleteNodeBeforeTheGivenNode(head: ListNode, node: ListNode): ListNode = {
+  class Solution {
+    def deleteNodeBeforeTheGivenNode(head: ListNode, node: ListNode): ListNode = {
 
-    // If the head or the given node is null, there is nothing to
-    // delete Return the existing head
-    if (head == null || node == null) {
-      return head
-    }
+      // If the head or the given node is null, there is nothing to
+      // delete Return the existing head
+      if (head == null || node == null) {
+        return head
+      }
 
-    // If the given node is the head node, we cannot delete the node
-    // before it
-    if (node == head) {
-      return head
-    }
+      // If the given node is the head node, we cannot delete the node
+      // before it
+      if (node == head) {
+        return head
+      }
 
-    // If the node to delete is the immediate next node of the head
-    // Update the head to point to the next node, delete the original
-    // head, and return the updated head
-    if (head.next != null && head.next == node) {
-      var nodeToBeDeleted = head
-      val newHead = head.next
+      // If the node to delete is the immediate next node of the head
+      // Update the head to point to the next node, delete the original
+      // head, and return the updated head
+      if (head.next != null && head.next == node) {
+        var nodeToBeDeleted = head
+        val newHead = head.next
+
+        // Dereference for garbage collection
+        nodeToBeDeleted = null
+        return newHead
+      }
+
+      // Initialize variables for traversal
+      // current node being examined
+      var current = head.next
+
+      // Node preceding the current node
+      var previous = head
+
+      // Node preceding the previous node
+      var previousToprevious: ListNode = null
+
+      // Traverse the linked list until we find the node or reach the
+      // end.
+      while (current != null && current != node) {
+        previousToprevious = previous
+        previous = current
+        current = current.next
+      }
+
+      // If the node to delete was not found, return the head as is.
+      if (current == null) {
+        return head
+      }
+
+      // Connect the previous node to the current node, bypassing the
+      // node to delete.
+      previousToprevious.next = current
 
       // Dereference for garbage collection
-      nodeToBeDeleted = null
-      return newHead
+      previous = null
+
+      head
     }
 
-    // Initialize variables for traversal
-    // current node being examined
-    var current = head.next
-
-    // Node preceding the current node
-    var previous = head
-
-    // Node preceding the previous node
-    var previousToprevious: ListNode = null
-
-    // Traverse the linked list until we find the node or reach the
-    // end.
-    while (current != null && current != node) {
-      previousToprevious = previous
-      previous = current
-      current = current.next
+    def build(vals: Int*): ListNode = {
+      val dummy = new ListNode(0); var cur = dummy
+      for (v <- vals) { cur.next = new ListNode(v); cur = cur.next }
+      dummy.next
     }
 
-    // If the node to delete was not found, return the head as is.
-    if (current == null) {
-      return head
+    def toStr(head: ListNode): String = {
+      val sb = new StringBuilder("["); var cur = head
+      while (cur != null) { sb.append(cur.v); if (cur.next != null) sb.append(", "); cur = cur.next }
+      sb.append("]").toString
     }
 
-    // Connect the previous node to the current node, bypassing the
-    // node to delete.
-    previousToprevious.next = current
-
-    // Dereference for garbage collection
-    previous = null
-
-    head
+    def find(head: ListNode, value: Int): ListNode = {
+      var cur = head
+      while (cur != null && cur.v != value) cur = cur.next
+      cur
+    }
   }
 
-  def build(vals: Int*): ListNode = {
-    val dummy = new ListNode(0); var cur = dummy
-    for (v <- vals) { cur.next = new ListNode(v); cur = cur.next }
-    dummy.next
-  }
-
-  def toStr(head: ListNode): String = {
-    val sb = new StringBuilder("["); var cur = head
-    while (cur != null) { sb.append(cur.v); if (cur.next != null) sb.append(", "); cur = cur.next }
-    sb.append("]").toString
-  }
-
-  def find(head: ListNode, value: Int): ListNode = {
-    var cur = head
-    while (cur != null && cur.v != value) cur = cur.next
-    cur
-  }
-
-  val head = build(5, 7, 3, 10)
-  println(toStr(deleteNodeBeforeTheGivenNode(head, find(head, 3)))) // [5, 3, 10]
+  val sol = new Solution()
+  val head = sol.build(5, 7, 3, 10)
+  println(sol.toStr(sol.deleteNodeBeforeTheGivenNode(head, sol.find(head, 3)))) // [5, 3, 10]
 }
 ```
 
@@ -4959,84 +4999,87 @@ public class Main {
         ListNode(int v, ListNode n) { val = v; next = n; }
     }
 
-    static ListNode deleteTheGivenNode(ListNode head, ListNode node) {
+    static class Solution {
+        public ListNode deleteTheGivenNode(ListNode head, ListNode node) {
 
-        // Check if either the head or the given node is null
-        if (head == null || node == null) {
+            // Check if either the head or the given node is null
+            if (head == null || node == null) {
+                return head;
+            }
+
+            // The given node is the head node
+            if (node == head) {
+
+                // Update the head to the next node
+                head = head.next;
+
+                // Delete the given node
+                node = null;
+
+                // Return the updated head
+                return head;
+            }
+
+            // Pointer to traverse the list
+            ListNode current = head;
+
+            // Pointer to track the previous node
+            ListNode previous = null;
+
+            // Traverse the list until the current node matches the given
+            // node
+            while (current != null && current != node) {
+
+                // Update the previous node
+                previous = current;
+
+                // Move to the next node
+                current = current.next;
+            }
+
+            // If the current node becomes null, the given node was not found
+            // in the list
+            if (current == null) {
+
+                // Return the original head
+                return head;
+            }
+
+            // Update the previous node's next pointer to skip the current
+            // node
+            previous.next = current.next;
+
+            // Delete the current node
+            current = null;
+
+            // Return the head of the modified list
             return head;
         }
 
-        // The given node is the head node
-        if (node == head) {
-
-            // Update the head to the next node
-            head = head.next;
-
-            // Delete the given node
-            node = null;
-
-            // Return the updated head
-            return head;
+        public ListNode build(int[] vals) {
+            ListNode dummy = new ListNode(0); ListNode cur = dummy;
+            for (int v : vals) { cur.next = new ListNode(v); cur = cur.next; }
+            return dummy.next;
         }
 
-        // Pointer to traverse the list
-        ListNode current = head;
-
-        // Pointer to track the previous node
-        ListNode previous = null;
-
-        // Traverse the list until the current node matches the given
-        // node
-        while (current != null && current != node) {
-
-            // Update the previous node
-            previous = current;
-
-            // Move to the next node
-            current = current.next;
+        public String toStr(ListNode head) {
+            StringBuilder sb = new StringBuilder("[");
+            while (head != null) { sb.append(head.val); if (head.next != null) sb.append(", "); head = head.next; }
+            return sb.append("]").toString();
         }
 
-        // If the current node becomes null, the given node was not found
-        // in the list
-        if (current == null) {
-
-            // Return the original head
-            return head;
+        public ListNode find(ListNode head, int val) {
+            ListNode cur = head;
+            while (cur != null && cur.val != val) cur = cur.next;
+            return cur;
         }
-
-        // Update the previous node's next pointer to skip the current
-        // node
-        previous.next = current.next;
-
-        // Delete the current node
-        current = null;
-
-        // Return the head of the modified list
-        return head;
-    }
-
-    static ListNode build(int[] vals) {
-        ListNode dummy = new ListNode(0); ListNode cur = dummy;
-        for (int v : vals) { cur.next = new ListNode(v); cur = cur.next; }
-        return dummy.next;
-    }
-
-    static String toStr(ListNode head) {
-        StringBuilder sb = new StringBuilder("[");
-        while (head != null) { sb.append(head.val); if (head.next != null) sb.append(", "); head = head.next; }
-        return sb.append("]").toString();
-    }
-
-    static ListNode find(ListNode head, int val) {
-        ListNode cur = head;
-        while (cur != null && cur.val != val) cur = cur.next;
-        return cur;
     }
 
     public static void main(String[] args) {
-        ListNode head = build(new int[]{5, 7, 3, 10});
-        head = deleteTheGivenNode(head, find(head, 7));
-        System.out.println(toStr(head)); // [5, 3, 10]
+        Solution sol = new Solution();
+        ListNode head = sol.build(new int[]{5, 7, 3, 10});
+        head = sol.deleteTheGivenNode(head, sol.find(head, 7));
+        System.out.println(sol.toStr(head)); // [5, 3, 10]
     }
 }
 ```
@@ -5138,82 +5181,85 @@ int main() {
 class ListNode(var v: Int, var next: ListNode = null)
 
 object Main extends App {
-  def deleteTheGivenNode(head: ListNode, node: ListNode): ListNode = {
+  class Solution {
+    def deleteTheGivenNode(head: ListNode, node: ListNode): ListNode = {
 
-    // Check if either the head or the given node is null
-    if (head == null || node == null) {
-      return head
+      // Check if either the head or the given node is null
+      if (head == null || node == null) {
+        return head
+      }
+
+      // The given node is the head node
+      if (node == head) {
+
+        // Update the head to the next node
+        val newHead = head.next
+
+        // Delete the given node
+        var n = node
+        n = null
+
+        // Return the updated head
+        return newHead
+      }
+
+      // Pointer to traverse the list
+      var current = head
+
+      // Pointer to track the previous node
+      var previous: ListNode = null
+
+      // Traverse the list until the current node matches the given node
+      while (current != null && current != node) {
+
+        // Update the previous node
+        previous = current
+
+        // Move to the next node
+        current = current.next
+      }
+
+      // If the current node becomes null, the given node was not found
+      // in the list
+      if (current == null) {
+
+        // Return the original head
+        return head
+      }
+
+      // Update the previous node's next pointer to skip the current
+      // node
+      previous.next = current.next
+
+      // Delete the current node
+      current = null
+
+      // Return the head of the modified list
+      head
     }
 
-    // The given node is the head node
-    if (node == head) {
-
-      // Update the head to the next node
-      val newHead = head.next
-
-      // Delete the given node
-      var n = node
-      n = null
-
-      // Return the updated head
-      return newHead
+    def build(vals: Int*): ListNode = {
+      val dummy = new ListNode(0); var cur = dummy
+      for (v <- vals) { cur.next = new ListNode(v); cur = cur.next }
+      dummy.next
     }
 
-    // Pointer to traverse the list
-    var current = head
-
-    // Pointer to track the previous node
-    var previous: ListNode = null
-
-    // Traverse the list until the current node matches the given node
-    while (current != null && current != node) {
-
-      // Update the previous node
-      previous = current
-
-      // Move to the next node
-      current = current.next
+    def toStr(head: ListNode): String = {
+      val sb = new StringBuilder("["); var cur = head
+      while (cur != null) { sb.append(cur.v); if (cur.next != null) sb.append(", "); cur = cur.next }
+      sb.append("]").toString
     }
 
-    // If the current node becomes null, the given node was not found
-    // in the list
-    if (current == null) {
-
-      // Return the original head
-      return head
+    def find(head: ListNode, value: Int): ListNode = {
+      var cur = head
+      while (cur != null && cur.v != value) cur = cur.next
+      cur
     }
-
-    // Update the previous node's next pointer to skip the current
-    // node
-    previous.next = current.next
-
-    // Delete the current node
-    current = null
-
-    // Return the head of the modified list
-    head
   }
 
-  def build(vals: Int*): ListNode = {
-    val dummy = new ListNode(0); var cur = dummy
-    for (v <- vals) { cur.next = new ListNode(v); cur = cur.next }
-    dummy.next
-  }
-
-  def toStr(head: ListNode): String = {
-    val sb = new StringBuilder("["); var cur = head
-    while (cur != null) { sb.append(cur.v); if (cur.next != null) sb.append(", "); cur = cur.next }
-    sb.append("]").toString
-  }
-
-  def find(head: ListNode, value: Int): ListNode = {
-    var cur = head
-    while (cur != null && cur.v != value) cur = cur.next
-    cur
-  }
-
-  val head = build(5, 7, 3, 10)
-  println(toStr(deleteTheGivenNode(head, find(head, 7)))) // [5, 3, 10]
+  val sol = new Solution()
+  val head = sol.build(5, 7, 3, 10)
+  println(sol.toStr(sol.deleteTheGivenNode(head, sol.find(head, 7)))) // [5, 3, 10]
 }
 ```
 
@@ -5936,75 +5982,78 @@ public class Main {
         ListNode(int v, ListNode n) { val = v; next = n; }
     }
 
-    static ListNode deleteNodeAtGivenDistance(ListNode head, int X) {
+    static class Solution {
+        public ListNode deleteNodeAtGivenDistance(ListNode head, int X) {
 
-        // If the head is null (empty list), return null
-        if (head == null) {
-            return null;
-        }
+            // If the head is null (empty list), return null
+            if (head == null) {
+                return null;
+            }
 
-        // If X is 0, delete the head node
-        if (X == 0) {
-            ListNode nodeToBeDeleted = head;
+            // If X is 0, delete the head node
+            if (X == 0) {
+                ListNode nodeToBeDeleted = head;
 
-            // Update the head to the next node
-            head = head.next;
+                // Update the head to the next node
+                head = head.next;
 
-            // Delete the original head node
+                // Delete the original head node
+                nodeToBeDeleted = null;
+
+                // Return the updated head
+                return head;
+            }
+
+            int counter = 0;
+            ListNode current = head;
+
+            // Traverse to the node at position X - 1
+            while (current != null && counter < X - 1) {
+
+                // Move to the next node
+                current = current.next;
+
+                // Increment the counter
+                counter++;
+            }
+
+            // If the node at position X - 1 is null or the next node is
+            // null, return the head
+            if (current == null || current.next == null) {
+                return head;
+            }
+
+            // Store the node to be deleted
+            ListNode nodeToBeDeleted = current.next;
+
+            // Update the next pointer of current node
+            current.next = current.next.next;
+
+            // Delete the node at position X
             nodeToBeDeleted = null;
 
-            // Return the updated head
+            // Return the head
             return head;
         }
 
-        int counter = 0;
-        ListNode current = head;
-
-        // Traverse to the node at position X - 1
-        while (current != null && counter < X - 1) {
-
-            // Move to the next node
-            current = current.next;
-
-            // Increment the counter
-            counter++;
+        public ListNode build(int[] vals) {
+            ListNode dummy = new ListNode(0); ListNode cur = dummy;
+            for (int v : vals) { cur.next = new ListNode(v); cur = cur.next; }
+            return dummy.next;
         }
 
-        // If the node at position X - 1 is null or the next node is
-        // null, return the head
-        if (current == null || current.next == null) {
-            return head;
+        public String toStr(ListNode head) {
+            StringBuilder sb = new StringBuilder("[");
+            while (head != null) { sb.append(head.val); if (head.next != null) sb.append(", "); head = head.next; }
+            return sb.append("]").toString();
         }
-
-        // Store the node to be deleted
-        ListNode nodeToBeDeleted = current.next;
-
-        // Update the next pointer of current node
-        current.next = current.next.next;
-
-        // Delete the node at position X
-        nodeToBeDeleted = null;
-
-        // Return the head
-        return head;
-    }
-
-    static ListNode build(int[] vals) {
-        ListNode dummy = new ListNode(0); ListNode cur = dummy;
-        for (int v : vals) { cur.next = new ListNode(v); cur = cur.next; }
-        return dummy.next;
-    }
-
-    static String toStr(ListNode head) {
-        StringBuilder sb = new StringBuilder("[");
-        while (head != null) { sb.append(head.val); if (head.next != null) sb.append(", "); head = head.next; }
-        return sb.append("]").toString();
     }
 
     public static void main(String[] args) {
-        ListNode head = build(new int[]{5, 7, 3, 10});
-        head = deleteNodeAtGivenDistance(head, 1);
-        System.out.println(toStr(head)); // [5, 3, 10]
+        Solution sol = new Solution();
+        ListNode head = sol.build(new int[]{5, 7, 3, 10});
+        head = sol.deleteNodeAtGivenDistance(head, 1);
+        System.out.println(sol.toStr(head)); // [5, 3, 10]
     }
 }
 ```
@@ -6097,72 +6146,75 @@ int main() {
 class ListNode(var v: Int, var next: ListNode = null)
 
 object Main extends App {
-  def deleteNodeAtGivenDistance(head: ListNode, X: Int): ListNode = {
+  class Solution {
+    def deleteNodeAtGivenDistance(head: ListNode, X: Int): ListNode = {
 
-    // If the head is null (empty list), return null
-    if (head == null) {
-      return null
-    }
+      // If the head is null (empty list), return null
+      if (head == null) {
+        return null
+      }
 
-    // If X is 0, delete the head node
-    if (X == 0) {
-      var nodeToBeDeleted = head
+      // If X is 0, delete the head node
+      if (X == 0) {
+        var nodeToBeDeleted = head
 
-      // Update the head to the next node
-      val newHead = head.next
+        // Update the head to the next node
+        val newHead = head.next
 
-      // Delete the original head node
+        // Delete the original head node
+        nodeToBeDeleted = null
+
+        // Return the updated head
+        return newHead
+      }
+
+      var counter = 0
+      var current = head
+
+      // Traverse to the node at position X - 1
+      while (current != null && counter < X - 1) {
+
+        // Move to the next node
+        current = current.next
+
+        // Increment the counter
+        counter += 1
+      }
+
+      // If the node at position X - 1 is null or the next node is
+      // null, return the head
+      if (current == null || current.next == null) {
+        return head
+      }
+
+      // Store the node to be deleted
+      var nodeToBeDeleted = current.next
+
+      // Update the next pointer of the current node
+      current.next = current.next.next
+
+      // Delete the node at position X
       nodeToBeDeleted = null
 
-      // Return the updated head
-      return newHead
+      // Return the head
+      head
     }
 
-    var counter = 0
-    var current = head
-
-    // Traverse to the node at position X - 1
-    while (current != null && counter < X - 1) {
-
-      // Move to the next node
-      current = current.next
-
-      // Increment the counter
-      counter += 1
+    def build(vals: Int*): ListNode = {
+      val dummy = new ListNode(0); var cur = dummy
+      for (v <- vals) { cur.next = new ListNode(v); cur = cur.next }
+      dummy.next
     }
 
-    // If the node at position X - 1 is null or the next node is
-    // null, return the head
-    if (current == null || current.next == null) {
-      return head
+    def toStr(head: ListNode): String = {
+      val sb = new StringBuilder("["); var cur = head
+      while (cur != null) { sb.append(cur.v); if (cur.next != null) sb.append(", "); cur = cur.next }
+      sb.append("]").toString
     }
-
-    // Store the node to be deleted
-    var nodeToBeDeleted = current.next
-
-    // Update the next pointer of the current node
-    current.next = current.next.next
-
-    // Delete the node at position X
-    nodeToBeDeleted = null
-
-    // Return the head
-    head
   }
 
-  def build(vals: Int*): ListNode = {
-    val dummy = new ListNode(0); var cur = dummy
-    for (v <- vals) { cur.next = new ListNode(v); cur = cur.next }
-    dummy.next
-  }
-
-  def toStr(head: ListNode): String = {
-    val sb = new StringBuilder("["); var cur = head
-    while (cur != null) { sb.append(cur.v); if (cur.next != null) sb.append(", "); cur = cur.next }
-    sb.append("]").toString
-  }
-
-  println(toStr(deleteNodeAtGivenDistance(build(5, 7, 3, 10), 1))) // [5, 3, 10]
+  val sol = new Solution()
+  println(sol.toStr(sol.deleteNodeAtGivenDistance(sol.build(5, 7, 3, 10), 1))) // [5, 3, 10]
 }
 ```
 
