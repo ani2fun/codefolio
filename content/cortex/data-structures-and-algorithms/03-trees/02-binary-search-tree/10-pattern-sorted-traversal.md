@@ -117,24 +117,36 @@ class Solution:
 ```
 
 ```java run
-class Solution {
-    private int aggregate;
+public class Main {
+    static class TreeNode { int val; TreeNode left, right; TreeNode(int v){val=v;} }
 
-    public int callingFunction(TreeNode root) {
-        aggregate = 0;
-        inorder(root);
-        return aggregate;
+    static class Solution {
+        private int aggregate;
+
+        public int callingFunction(TreeNode root) {
+            aggregate = 0;
+            inorder(root);
+            return aggregate;
+        }
+
+        private void inorder(TreeNode node) {
+            if (node == null) return;
+            inorder(node.left);                                  // 1. left subtree
+            int output = f(node.val);                            // 2. process node
+            aggregate = g(aggregate, output);                    // 3. fold
+            inorder(node.right);                                 // 4. right subtree
+        }
+        int f(int v) { return v; }
+        int g(int agg, int out) { return agg + out; }
     }
 
-    private void inorder(TreeNode node) {
-        if (node == null) return;
-        inorder(node.left);                                  // 1. left subtree
-        int output = f(node.val);                            // 2. process node
-        aggregate = g(aggregate, output);                    // 3. fold
-        inorder(node.right);                                 // 4. right subtree
+    public static void main(String[] args) {
+        TreeNode root = new TreeNode(4);
+        root.left  = new TreeNode(2); root.right = new TreeNode(5);
+        root.left.left  = new TreeNode(1); root.left.right = new TreeNode(3);
+        root.right.right = new TreeNode(6);
+        System.out.println(new Solution().callingFunction(root));  // 21
     }
-    int f(int v) { return v; }
-    int g(int agg, int out) { return agg + out; }
 }
 ```
 
@@ -160,24 +172,33 @@ int callingFunction(struct TreeNode *root) {
 ```
 
 ```scala run
-class Solution {
-  private var aggregate: Int = 0
+class TreeNode(var value: Int, var left: TreeNode = null, var right: TreeNode = null)
 
-  def callingFunction(root: TreeNode): Int = {
-    aggregate = 0
-    inorder(root)
-    aggregate
+object Main extends App {
+  class Solution {
+    private var aggregate: Int = 0
+
+    def callingFunction(root: TreeNode): Int = {
+      aggregate = 0
+      inorder(root)
+      aggregate
+    }
+
+    private def inorder(node: TreeNode): Unit = {
+      if (node == null) return
+      inorder(node.left)                                          // 1. left subtree
+      val output = f(node.value)                                  // 2. process node
+      aggregate = g(aggregate, output)                            // 3. fold
+      inorder(node.right)                                         // 4. right subtree
+    }
+    private def f(v: Int): Int            = v
+    private def g(agg: Int, out: Int): Int = agg + out
   }
 
-  private def inorder(node: TreeNode): Unit = {
-    if (node == null) return
-    inorder(node.left)                                          // 1. left subtree
-    val output = f(node.value)                                  // 2. process node
-    aggregate = g(aggregate, output)                            // 3. fold
-    inorder(node.right)                                         // 4. right subtree
-  }
-  private def f(v: Int): Int            = v
-  private def g(agg: Int, out: Int): Int = agg + out
+  val root = new TreeNode(4,
+    new TreeNode(2, new TreeNode(1), new TreeNode(3)),
+    new TreeNode(5, null, new TreeNode(6)))
+  println(new Solution().callingFunction(root))  // 21
 }
 ```
 
@@ -304,21 +325,33 @@ class Solution:
 ```
 
 ```java run
-class Solution {
-    private int minDiff = Integer.MAX_VALUE;
-    private TreeNode prevNode = null;
+public class Main {
+    static class TreeNode { int val; TreeNode left, right; TreeNode(int v){val=v;} }
 
-    private void inorder(TreeNode root) {
-        if (root == null) return;
-        inorder(root.left);
-        if (prevNode != null) minDiff = Math.min(minDiff, root.val - prevNode.val);
-        prevNode = root;
-        inorder(root.right);
+    static class Solution {
+        private int minDiff = Integer.MAX_VALUE;
+        private TreeNode prevNode = null;
+
+        private void inorder(TreeNode root) {
+            if (root == null) return;
+            inorder(root.left);
+            if (prevNode != null) minDiff = Math.min(minDiff, root.val - prevNode.val);
+            prevNode = root;
+            inorder(root.right);
+        }
+
+        public int lowestAbsoluteVariance(TreeNode root) {
+            inorder(root);
+            return minDiff;
+        }
     }
 
-    public int lowestAbsoluteVariance(TreeNode root) {
-        inorder(root);
-        return minDiff;
+    public static void main(String[] args) {
+        TreeNode root = new TreeNode(5);
+        root.left  = new TreeNode(4); root.right = new TreeNode(8);
+        root.left.left  = new TreeNode(2);
+        root.right.right = new TreeNode(10);
+        System.out.println(new Solution().lowestAbsoluteVariance(root));  // 1
     }
 }
 ```
@@ -349,22 +382,31 @@ int lowestAbsoluteVariance(struct TreeNode *root) {
 ```
 
 ```scala run
-class Solution {
-  private var minDiff: Int = Int.MaxValue
-  private var prevNode: TreeNode = null
+class TreeNode(var value: Int, var left: TreeNode = null, var right: TreeNode = null)
 
-  private def inorder(root: TreeNode): Unit = {
-    if (root == null) return
-    inorder(root.left)
-    if (prevNode != null) minDiff = math.min(minDiff, root.value - prevNode.value)
-    prevNode = root
-    inorder(root.right)
+object Main extends App {
+  class Solution {
+    private var minDiff: Int = Int.MaxValue
+    private var prevNode: TreeNode = null
+
+    private def inorder(root: TreeNode): Unit = {
+      if (root == null) return
+      inorder(root.left)
+      if (prevNode != null) minDiff = math.min(minDiff, root.value - prevNode.value)
+      prevNode = root
+      inorder(root.right)
+    }
+
+    def lowestAbsoluteVariance(root: TreeNode): Int = {
+      inorder(root)
+      minDiff
+    }
   }
 
-  def lowestAbsoluteVariance(root: TreeNode): Int = {
-    inorder(root)
-    minDiff
-  }
+  val root = new TreeNode(5,
+    new TreeNode(4, new TreeNode(2), null),
+    new TreeNode(8, null, new TreeNode(10)))
+  println(new Solution().lowestAbsoluteVariance(root))  // 1
 }
 ```
 
@@ -444,24 +486,36 @@ class Solution:
 ```
 
 ```java run
-class Solution {
-    private boolean isValid = true;
-    private TreeNode prevNode = null;
+public class Main {
+    static class TreeNode { int val; TreeNode left, right; TreeNode(int v){val=v;} }
 
-    private void inorder(TreeNode root) {
-        if (root == null || !isValid) return;
-        inorder(root.left);
-        if (prevNode != null && root.val <= prevNode.val) {
-            isValid = false;
-            return;
+    static class Solution {
+        private boolean isValid = true;
+        private TreeNode prevNode = null;
+
+        private void inorder(TreeNode root) {
+            if (root == null || !isValid) return;
+            inorder(root.left);
+            if (prevNode != null && root.val <= prevNode.val) {
+                isValid = false;
+                return;
+            }
+            prevNode = root;
+            inorder(root.right);
         }
-        prevNode = root;
-        inorder(root.right);
+
+        public boolean bstValidator(TreeNode root) {
+            inorder(root);
+            return isValid;
+        }
     }
 
-    public boolean bstValidator(TreeNode root) {
-        inorder(root);
-        return isValid;
+    public static void main(String[] args) {
+        TreeNode root = new TreeNode(4);
+        root.left  = new TreeNode(2); root.right = new TreeNode(5);
+        root.left.left  = new TreeNode(1); root.left.right = new TreeNode(3);
+        root.right.right = new TreeNode(6);
+        System.out.println(new Solution().bstValidator(root));  // true
     }
 }
 ```
@@ -492,25 +546,34 @@ bool bstValidator(struct TreeNode *root) {
 ```
 
 ```scala run
-class Solution {
-  private var isValid: Boolean = true
-  private var prevNode: TreeNode = null
+class TreeNode(var value: Int, var left: TreeNode = null, var right: TreeNode = null)
 
-  private def inorder(root: TreeNode): Unit = {
-    if (root == null || !isValid) return
-    inorder(root.left)
-    if (prevNode != null && root.value <= prevNode.value) {
-      isValid = false
-      return
+object Main extends App {
+  class Solution {
+    private var isValid: Boolean = true
+    private var prevNode: TreeNode = null
+
+    private def inorder(root: TreeNode): Unit = {
+      if (root == null || !isValid) return
+      inorder(root.left)
+      if (prevNode != null && root.value <= prevNode.value) {
+        isValid = false
+        return
+      }
+      prevNode = root
+      inorder(root.right)
     }
-    prevNode = root
-    inorder(root.right)
+
+    def bstValidator(root: TreeNode): Boolean = {
+      inorder(root)
+      isValid
+    }
   }
 
-  def bstValidator(root: TreeNode): Boolean = {
-    inorder(root)
-    isValid
-  }
+  val root = new TreeNode(4,
+    new TreeNode(2, new TreeNode(1), new TreeNode(3)),
+    new TreeNode(5, null, new TreeNode(6)))
+  println(new Solution().bstValidator(root))  // true
 }
 ```
 
@@ -571,18 +634,30 @@ class Solution:
 ```java run
 import java.util.*;
 
-class Solution {
-    private void inorder(TreeNode root, List<Integer> result) {
-        if (root == null) return;
-        inorder(root.left, result);
-        result.add(root.val);
-        inorder(root.right, result);
+public class Main {
+    static class TreeNode { int val; TreeNode left, right; TreeNode(int v){val=v;} }
+
+    static class Solution {
+        private void inorder(TreeNode root, List<Integer> result) {
+            if (root == null) return;
+            inorder(root.left, result);
+            result.add(root.val);
+            inorder(root.right, result);
+        }
+
+        public List<Integer> bstToSortedArray(TreeNode root) {
+            List<Integer> result = new ArrayList<>();
+            inorder(root, result);
+            return result;
+        }
     }
 
-    public List<Integer> bstToSortedArray(TreeNode root) {
-        List<Integer> result = new ArrayList<>();
-        inorder(root, result);
-        return result;
+    public static void main(String[] args) {
+        TreeNode root = new TreeNode(4);
+        root.left  = new TreeNode(2); root.right = new TreeNode(5);
+        root.left.left  = new TreeNode(1); root.left.right = new TreeNode(3);
+        root.right.right = new TreeNode(6);
+        System.out.println(new Solution().bstToSortedArray(root));  // [1, 2, 3, 4, 5, 6]
     }
 }
 ```
@@ -607,19 +682,28 @@ int *bstToSortedArray(struct TreeNode *root, int *out_size) {
 ```scala run
 import scala.collection.mutable
 
-object Solution {
-  private def inorder(root: TreeNode, result: mutable.ArrayBuffer[Int]): Unit = {
-    if (root == null) return
-    inorder(root.left, result)
-    result.append(root.value)
-    inorder(root.right, result)
+class TreeNode(var value: Int, var left: TreeNode = null, var right: TreeNode = null)
+
+object Main extends App {
+  object Solution {
+    private def inorder(root: TreeNode, result: mutable.ArrayBuffer[Int]): Unit = {
+      if (root == null) return
+      inorder(root.left, result)
+      result.append(root.value)
+      inorder(root.right, result)
+    }
+
+    def bstToSortedArray(root: TreeNode): List[Int] = {
+      val buf = mutable.ArrayBuffer[Int]()
+      inorder(root, buf)
+      buf.toList
+    }
   }
 
-  def bstToSortedArray(root: TreeNode): List[Int] = {
-    val buf = mutable.ArrayBuffer[Int]()
-    inorder(root, buf)
-    buf.toList
-  }
+  val root = new TreeNode(4,
+    new TreeNode(2, new TreeNode(1), new TreeNode(3)),
+    new TreeNode(5, null, new TreeNode(6)))
+  println(Solution.bstToSortedArray(root))  // List(1, 2, 3, 4, 5, 6)
 }
 ```
 
@@ -742,28 +826,46 @@ class Solution:
 ```
 
 ```java run
-class Solution {
-    private TreeNode head = null, tail = null;
+public class Main {
+    static class TreeNode { int val; TreeNode left, right; TreeNode(int v){val=v;} }
 
-    private void inorder(TreeNode root) {
-        if (root == null) return;
-        inorder(root.left);
-        if (tail != null) {
-            tail.right = root;
-            root.left = tail;
-        } else {
-            head = root;
-            root.left = null;
+    static class Solution {
+        private TreeNode head = null, tail = null;
+
+        private void inorder(TreeNode root) {
+            if (root == null) return;
+            inorder(root.left);
+            if (tail != null) {
+                tail.right = root;
+                root.left = tail;
+            } else {
+                head = root;
+                root.left = null;
+            }
+            tail = root;
+            inorder(root.right);
         }
-        tail = root;
-        inorder(root.right);
+
+        public TreeNode bstToSortedDll(TreeNode root) {
+            if (root == null) return null;
+            inorder(root);
+            if (tail != null) tail.right = null;
+            return head;
+        }
     }
 
-    public TreeNode bstToSortedDll(TreeNode root) {
-        if (root == null) return null;
-        inorder(root);
-        if (tail != null) tail.right = null;
-        return head;
+    public static void main(String[] args) {
+        TreeNode root = new TreeNode(4);
+        root.left  = new TreeNode(2); root.right = new TreeNode(5);
+        root.left.left  = new TreeNode(1); root.left.right = new TreeNode(3);
+        root.right.right = new TreeNode(6);
+        TreeNode head = new Solution().bstToSortedDll(root);
+        StringBuilder sb = new StringBuilder();
+        for (TreeNode c = head; c != null; c = c.right) {
+            if (sb.length() > 0) sb.append(' ');
+            sb.append(c.val);
+        }
+        System.out.println(sb);  // 1 2 3 4 5 6
     }
 }
 ```
@@ -795,30 +897,47 @@ struct TreeNode *bstToSortedDll(struct TreeNode *root) {
 ```
 
 ```scala run
-class Solution {
-  private var head: TreeNode = null
-  private var tail: TreeNode = null
+class TreeNode(var value: Int, var left: TreeNode = null, var right: TreeNode = null)
 
-  private def inorder(root: TreeNode): Unit = {
-    if (root == null) return
-    inorder(root.left)
-    if (tail != null) {
-      tail.right = root
-      root.left  = tail
-    } else {
-      head = root
-      root.left = null
+object Main extends App {
+  class Solution {
+    private var head: TreeNode = null
+    private var tail: TreeNode = null
+
+    private def inorder(root: TreeNode): Unit = {
+      if (root == null) return
+      inorder(root.left)
+      if (tail != null) {
+        tail.right = root
+        root.left  = tail
+      } else {
+        head = root
+        root.left = null
+      }
+      tail = root
+      inorder(root.right)
     }
-    tail = root
-    inorder(root.right)
+
+    def bstToSortedDll(root: TreeNode): TreeNode = {
+      if (root == null) return null
+      inorder(root)
+      if (tail != null) tail.right = null
+      head
+    }
   }
 
-  def bstToSortedDll(root: TreeNode): TreeNode = {
-    if (root == null) return null
-    inorder(root)
-    if (tail != null) tail.right = null
-    head
+  val root = new TreeNode(4,
+    new TreeNode(2, new TreeNode(1), new TreeNode(3)),
+    new TreeNode(5, null, new TreeNode(6)))
+  val head = new Solution().bstToSortedDll(root)
+  val sb = new StringBuilder
+  var c = head
+  while (c != null) {
+    if (sb.nonEmpty) sb.append(' ')
+    sb.append(c.value)
+    c = c.right
   }
+  println(sb)  // 1 2 3 4 5 6
 }
 ```
 
