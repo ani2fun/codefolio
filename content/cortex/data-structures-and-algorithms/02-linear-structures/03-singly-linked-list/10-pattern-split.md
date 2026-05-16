@@ -46,46 +46,32 @@ flowchart LR
 
 <p align="center"><strong>The split pattern — every node is routed to one of <code>k</code> output lists by a classifier function <code>f</code>. Nothing is copied; the original nodes are re-linked into their destination list.</strong></p>
 
-```d2
-direction: right
-
-before: Original list {
-  direction: right
-  a1: "1"
-  a2: "2"
-  a3: "3"
-  a4: "4"
-  a5: "5"
-  a6: "6"
-  a1 -> a2
-  a2 -> a3
-  a3 -> a4
-  a4 -> a5
-  a5 -> a6
+```d3 widget=linked-list
+{
+  "title": "Round-robin split into k=3 sub-lists — node i goes to list (i mod k)",
+  "direction": "single",
+  "nodes": [
+    {"id": "n1", "value": "1"},
+    {"id": "n2", "value": "2"},
+    {"id": "n3", "value": "3"},
+    {"id": "n4", "value": "4"},
+    {"id": "n5", "value": "5"},
+    {"id": "n6", "value": "6"}
+  ],
+  "head": "n1",
+  "steps": [
+    {
+      "links": [["n1","n2"],["n2","n3"],["n3","n4"],["n4","n5"],["n5","n6"]],
+      "markers": [{"name": "head", "nodeId": "n1"}],
+      "msg": "Before: original list 1 → 2 → 3 → 4 → 5 → 6"
+    },
+    {
+      "links": [["n1","n4"],["n2","n5"],["n3","n6"]],
+      "markers": [{"name": "list 0", "nodeId": "n1", "color": "#3b82f6"}, {"name": "list 1", "nodeId": "n2", "color": "#10b981"}, {"name": "list 2", "nodeId": "n3", "color": "#f59e0b"}],
+      "msg": "After: list 0 = (1,4); list 1 = (2,5); list 2 = (3,6). Same nodes — re-linked into 3 chains."
+    }
+  ]
 }
-
-after: "After split into k=3 sub-lists (round robin)" {
-  l0: "List 0" {
-    direction: right
-    b1: "1"
-    b4: "4"
-    b1 -> b4
-  }
-  l1: "List 1" {
-    direction: right
-    b2: "2"
-    b5: "5"
-    b2 -> b5
-  }
-  l2: "List 2" {
-    direction: right
-    b3: "3"
-    b6: "6"
-    b3 -> b6
-  }
-}
-
-before -> after
 ```
 
 <p align="center"><strong>Round-robin split — node <em>i</em> goes to list <em>i mod k</em>. Every original node ends up in exactly one sublist; no allocations, just re-linking.</strong></p>

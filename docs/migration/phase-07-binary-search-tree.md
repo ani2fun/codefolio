@@ -6,6 +6,15 @@
 **Source**: `/Users/aniket/Development/others/tutorial_dsa/extracted_data/DSA/data-structure/8.binary-search-tree/`
 **Destination**: `/Users/aniket/Development/homelab/codefolio/content/cortex/data-structures-and-algorithms/03-trees/02-binary-search-tree/`
 
+## Widgets required
+
+| Widget | Status | Notes |
+|---|---|---|
+| `binary-tree` | ✓ reused | Built in Phase 6. BST insert/delete/search animations use the same node layout |
+
+Per ADR-0006 (updated 2026-05-16): Phase 7 reuses the `binary-tree`
+widget from Phase 6; no precursor build needed.
+
 ## Stats
 
 | | Count |

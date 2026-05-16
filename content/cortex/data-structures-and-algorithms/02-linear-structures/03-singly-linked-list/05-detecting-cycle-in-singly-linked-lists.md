@@ -22,25 +22,27 @@ Floyd came up with something better. His algorithm uses **two pointers**, no has
 
 Sometimes, a linked list may not terminate at a `null` reference but instead, hold the reference to some other node in the next section of its last node. Such a list is said to have a cycle, as now, if we traverse the list from the start, we will loop indefinitely and never reach a `null` reference. Floyd's algorithm, also called the tortoise and hare method, uses the fast and slow pointer technique to identify if a linked list has a cycle in a single pass. It is a really efficient algorithm that can also identify the node at which the cycle starts without using any extra space.
 
-```d2
-direction: right
-h: head {shape: oval}
-n1: {value: 5; next}
-n2: {value: 7; next}
-n3: {
-  value: 3
-  next
-  style.fill: "#fde68a"
-  style.stroke: "#d97706"
+```d3 widget=linked-list
+{
+  "title": "A linked list with a cycle — the tail loops back to node(3) instead of pointing to null",
+  "direction": "single",
+  "nodes": [
+    {"id": "n1", "value": "5"},
+    {"id": "n2", "value": "7"},
+    {"id": "n3", "value": "3", "style": "highlight"},
+    {"id": "n4", "value": "10"},
+    {"id": "n5", "value": "6"}
+  ],
+  "head": "n1",
+  "cycleTarget": "n3",
+  "steps": [
+    {
+      "links": [["n1","n2"],["n2","n3"],["n3","n4"],["n4","n5"]],
+      "markers": [{"name": "head", "nodeId": "n1"}, {"name": "cycle-entry", "nodeId": "n3", "color": "#a855f7"}],
+      "msg": "Tail node(6) loops back to node(3) — naive traversal would never terminate"
+    }
+  ]
 }
-n4: {value: 10; next}
-n5: {value: 6; next}
-h -> n1.value
-n1.next -> n2.value
-n2.next -> n3.value
-n3.next -> n4.value
-n4.next -> n5.value
-n5.next -> n3.value: "cycle back"
 ```
 
 <p align="center"><strong>A cycle exists when the tail's <code>next</code> points back to an earlier node (here the node holding <code>3</code>) instead of <code>null</code>. Traversal never terminates.</strong></p>
@@ -53,47 +55,79 @@ The `fast` and `slow` pointers can meet at any node in the cycle and not necess
 
 Below is an example of a linked list that has a cycle.
 
-```mermaid
----
-config:
-  theme: base
-  themeVariables:
-    primaryColor: "#dbeafe"
-    primaryBorderColor: "#3b82f6"
-    primaryTextColor: "#1e3a5f"
-    lineColor: "#64748b"
-    secondaryColor: "#ede9fe"
-    tertiaryColor: "#fef9c3"
----
-flowchart LR
-    H(["head<br/>slow + fast"]) --> A["5"] --> B["7"] --> C["3"] --> D["10"] --> E["6"]
-    E -->|"cycle"| C
-    TRACE["Tick 1: slow→7, fast→3<br/>Tick 2: slow→3, fast→6<br/>Tick 3: slow→10, fast→10 ★ meet"]
-    E -.-> TRACE
+```d3 widget=linked-list
+{
+  "title": "Floyd Phase 1 — slow advances 1, fast advances 2; they meet inside the loop",
+  "direction": "single",
+  "nodes": [
+    {"id": "n1", "value": "5"},
+    {"id": "n2", "value": "7"},
+    {"id": "n3", "value": "3"},
+    {"id": "n4", "value": "10"},
+    {"id": "n5", "value": "6"}
+  ],
+  "head": "n1",
+  "cycleTarget": "n3",
+  "steps": [
+    {
+      "links": [["n1","n2"],["n2","n3"],["n3","n4"],["n4","n5"]],
+      "markers": [{"name": "slow", "nodeId": "n1"}, {"name": "fast", "nodeId": "n1", "color": "#10b981"}],
+      "msg": "Init: slow = fast = head (both at node 5)"
+    },
+    {
+      "links": [["n1","n2"],["n2","n3"],["n3","n4"],["n4","n5"]],
+      "markers": [{"name": "slow", "nodeId": "n2"}, {"name": "fast", "nodeId": "n3", "color": "#10b981"}],
+      "msg": "Tick 1: slow → 7, fast → 3"
+    },
+    {
+      "links": [["n1","n2"],["n2","n3"],["n3","n4"],["n4","n5"]],
+      "markers": [{"name": "slow", "nodeId": "n3"}, {"name": "fast", "nodeId": "n5", "color": "#10b981"}],
+      "msg": "Tick 2: slow → 3, fast → 6"
+    },
+    {
+      "links": [["n1","n2"],["n2","n3"],["n3","n4"],["n4","n5"]],
+      "markers": [{"name": "slow", "nodeId": "n4"}, {"name": "fast", "nodeId": "n4", "color": "#10b981"}],
+      "msg": "Tick 3: slow → 10, fast → 10 — they meet! A cycle exists."
+    }
+  ]
+}
 ```
 
 <p align="center"><strong>Slow moves 1 step, fast moves 2. If a cycle exists, fast laps slow and they meet at some node inside the loop. If no cycle exists, fast reaches <code>null</code>.</strong></p>
 
 Once we confirm that a linked list has a cycle, the next step is to find where the cycle starts. After the `fast` and `slow` pointer meet at some node, we move `fast` back to the head of the list and traverse the list again using both `fast` and `slow`. However, this time, both `fast` and `slow` move at the same speed of one step in each iteration until they meet. The node at which they meet this time is where the cycle starts.
 
-```mermaid
----
-config:
-  theme: base
-  themeVariables:
-    primaryColor: "#dbeafe"
-    primaryBorderColor: "#3b82f6"
-    primaryTextColor: "#1e3a5f"
-    lineColor: "#64748b"
-    secondaryColor: "#ede9fe"
-    tertiaryColor: "#fef9c3"
----
-flowchart LR
-    H(["head<br/>(reset fast)"]) --> A["5"] --> B["7"] --> C["3 ★<br/>cycle start"] --> D["10"] --> E["6<br/>meeting point"]
-    E -->|"cycle"| C
-    style C fill:#fef9c3,stroke:#3b82f6
-    NOTE["After they met, move both 1 step at a time.<br/>They will re-meet at the cycle-start node."]
-    E -.-> NOTE
+```d3 widget=linked-list
+{
+  "title": "Floyd Phase 2 — reset fast to head; walk both at speed 1; they meet at the cycle start",
+  "direction": "single",
+  "nodes": [
+    {"id": "n1", "value": "5"},
+    {"id": "n2", "value": "7"},
+    {"id": "n3", "value": "3", "style": "highlight"},
+    {"id": "n4", "value": "10"},
+    {"id": "n5", "value": "6"}
+  ],
+  "head": "n1",
+  "cycleTarget": "n3",
+  "steps": [
+    {
+      "links": [["n1","n2"],["n2","n3"],["n3","n4"],["n4","n5"]],
+      "markers": [{"name": "fast", "nodeId": "n1"}, {"name": "slow", "nodeId": "n4", "color": "#10b981"}],
+      "msg": "Phase 2 init: fast resets to head; slow stays at the meeting point (node 10)"
+    },
+    {
+      "links": [["n1","n2"],["n2","n3"],["n3","n4"],["n4","n5"]],
+      "markers": [{"name": "fast", "nodeId": "n2"}, {"name": "slow", "nodeId": "n5", "color": "#10b981"}],
+      "msg": "Tick 1: both advance one step. fast → 7, slow → 6"
+    },
+    {
+      "links": [["n1","n2"],["n2","n3"],["n3","n4"],["n4","n5"]],
+      "markers": [{"name": "fast", "nodeId": "n3"}, {"name": "slow", "nodeId": "n3", "color": "#10b981"}],
+      "msg": "Tick 2: both advance one step. They meet at node(3) — the cycle start."
+    }
+  ]
+}
 ```
 
 <p align="center"><strong>Phase 2 — reset <code>fast</code> to <code>head</code> and advance both pointers one step at a time. They collide at the node where the cycle begins.</strong></p>

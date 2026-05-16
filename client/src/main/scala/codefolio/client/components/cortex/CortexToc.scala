@@ -43,8 +43,8 @@ object CortexToc:
   val Component =
     ScalaFnComponent
       .withHooks[Props]
-      .useState(false)                       // popover open?
-      .useState(Option.empty[String])        // active heading slug
+      .useState(false)                // popover open?
+      .useState(Option.empty[String]) // active heading slug
       .useEffectWithDepsBy((props, _, _) => props.toc.map(_.slug)) { (props, _, activeS) => _ =>
         if props.toc.isEmpty then Callback.empty
         else
@@ -100,7 +100,7 @@ object CortexToc:
       .render { (props, openS, activeS) =>
         if props.toc.isEmpty then EmptyVdom
         else
-          val baseDepth = props.toc.map(_.depth).min
+          val baseDepth  = props.toc.map(_.depth).min
           val activeSlug = activeS.value
           val activeAncestor = activeSlug.flatMap { slug =>
             val idx = props.toc.indexWhere(_.slug == slug)

@@ -6,6 +6,17 @@
 **Source**: `/Users/aniket/Development/others/tutorial_dsa/extracted_data/DSA/data-structure/9.heap/`
 **Destination**: `/Users/aniket/Development/homelab/codefolio/content/cortex/data-structures-and-algorithms/03-trees/03-heap/`
 
+## Widgets required
+
+| Widget | Status | Notes |
+|---|---|---|
+| `heap-tree` | to-build | ADR pending. Source has 20 Interactive Diagrams — heap bubbling (sift-up / sift-down), heapify operations, parallel heap-as-array / heap-as-tree view. May extend `binary-tree` if the geometry overlap is sufficient |
+
+Per ADR-0006 (updated 2026-05-16): widget builds run as a precursor
+session at the start of the phase. Phase 8 evaluates whether to
+build a dedicated `heap-tree` widget or extend `binary-tree` with
+an array-projection mode.
+
 ## Stats
 
 | | Count |

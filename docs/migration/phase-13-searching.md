@@ -6,6 +6,15 @@
 **Source**: `/Users/aniket/Development/others/tutorial_dsa/extracted_data/DSA/algorithms/4.searching/`
 **Destination**: `/Users/aniket/Development/homelab/codefolio/content/cortex/data-structures-and-algorithms/06-sorting-and-searching/02-searching/`
 
+## Widgets required
+
+| Widget | Status | Notes |
+|---|---|---|
+| `array-traversal` | ✓ reused | Built in Phase 0. Source has 45 Interactive Diagrams — binary-search animation with lo/hi/mid markers, linear search with a running cursor. Range band is already supported |
+
+Per ADR-0006 (updated 2026-05-16): Phase 13 reuses Phase 0's
+`array-traversal` widget; no precursor build needed.
+
 ## Stats
 
 | | Count |

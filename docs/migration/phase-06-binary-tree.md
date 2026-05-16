@@ -6,6 +6,17 @@
 **Source**: `/Users/aniket/Development/others/tutorial_dsa/extracted_data/DSA/data-structure/7.binary-tree/`
 **Destination**: `/Users/aniket/Development/homelab/codefolio/content/cortex/data-structures-and-algorithms/03-trees/01-binary-tree/`
 
+## Widgets required
+
+| Widget | Status | Notes |
+|---|---|---|
+| `binary-tree` | to-build | ADR pending. Source has 39 Interactive Diagrams — node-with-left/right-child layout, BFS/DFS traversal animations, tree construction step-throughs. Phase 7 (BST) reuses this widget |
+
+Per ADR-0006 (updated 2026-05-16): widget builds run as a precursor
+session at the start of the phase. Phase 6 builds the `binary-tree`
+widget (used by Phases 6 and 7; may also be extended for Phase 8
+Heap if the heap-as-tree projection works visually).
+
 ## Stats
 
 | | Count |

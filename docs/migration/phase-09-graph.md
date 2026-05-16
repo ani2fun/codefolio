@@ -6,6 +6,18 @@
 **Source**: `/Users/aniket/Development/others/tutorial_dsa/extracted_data/DSA/data-structure/10.graph/`
 **Destination**: `/Users/aniket/Development/homelab/codefolio/content/cortex/data-structures-and-algorithms/04-graphs/`
 
+## Widgets required
+
+| Widget | Status | Notes |
+|---|---|---|
+| `graph-explorer` | to-build | ADR pending. Source has 22 Interactive Diagrams — graph traversal (DFS/BFS), shortest path (Dijkstra), topological sort. Most complex new widget so far — needs force-directed or fixed-position layout, BFS/DFS frontier highlighting, edge weights |
+
+Per ADR-0006 (updated 2026-05-16): widget builds run as a precursor
+session at the start of the phase. Phase 9 builds the
+`graph-explorer` widget. Consider whether D3's `d3-force` module
+is needed (would extend the facade and slightly increase the
+bundle — check against the +90 KB cap in ADR-0013).
+
 ## Stats
 
 | | Count |

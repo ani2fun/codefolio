@@ -216,27 +216,25 @@ Now that we know arrays' limitations and the situations where those limitations 
 
 A linked list is a linear and dynamic data structure that stores data sequentially at random memory locations. Instead of storing all the data items in a contiguous block of memory like arrays, a linked list stores them at random locations in memory. Whenever a new item is to be added, a new memory block is dynamically created to store this new value, which is then added to the chain of already existing items, effectively extending the **linked list**.
 
-```d2
-direction: right
-n1: {
-  val: Alice
-  next
+```d3 widget=linked-list
+{
+  "title": "Singly linked list — each node points to the next; the tail points to null",
+  "direction": "single",
+  "nodes": [
+    {"id": "a", "value": "Alice"},
+    {"id": "b", "value": "Bob"},
+    {"id": "c", "value": "Carol"},
+    {"id": "d", "value": "David"}
+  ],
+  "head": "a",
+  "steps": [
+    {
+      "links": [["a","b"],["b","c"],["c","d"]],
+      "markers": [{"name": "head", "nodeId": "a"}],
+      "msg": "head → Alice → Bob → Carol → David → null"
+    }
+  ]
 }
-n2: {
-  val: Bob
-  next
-}
-n3: {
-  val: Carol
-  next
-}
-n4: {
-  val: David
-  next: "null"
-}
-n1.next -> n2.val
-n2.next -> n3.val
-n3.next -> n4.val
 ```
 
 <p align="center"><strong>Abstract representation of a singly linked list — each node holds a value and a pointer to the next node; the last node points to null.</strong></p>
@@ -245,45 +243,61 @@ n3.next -> n4.val
 
 A linked list guarantees the insertion and deletion of items from the **start** and **end** of the list in **O(1)** space and **O(1)** time. It also guarantees the insertion and deletion of any data item **without** using any extra space. You can imagine it as a dynamic sequential container whose size can be increased or decreased at will.
 
-```d2
-insert: "Insert at head — O(1)" {
-  direction: right
-  i0: {
-    val: Zara
-    next
-    style.fill: "#dcfce7"
-    style.stroke: "#16a34a"
-  }
-  i1: {
-    val: Alice
-    next
-  }
-  i2: {
-    val: Bob
-    next: "null"
-  }
-  i0.next -> i1.val: "point to old head"
-  i1.next -> i2.val
-}
-
-delete: "Delete head — O(1)" {
-  direction: right
-  d1: {
-    val: Alice
-    next
-    style.fill: "#fee2e2"
-    style.stroke: "#dc2626"
-  }
-  d2: {
-    val: Bob
-    next
-  }
-  d3: {
-    val: Carol
-    next: "null"
-  }
-  d1.next -> d2.val: "advance head"
-  d2.next -> d3.val
+```d3 widget=linked-list
+{
+  "title": "Insert and delete at the head are both O(1) — pointer updates only, no shifting",
+  "direction": "single",
+  "nodes": [
+    {"id": "z", "value": "Zara"},
+    {"id": "a", "value": "Alice"},
+    {"id": "b", "value": "Bob"},
+    {"id": "c", "value": "Carol"}
+  ],
+  "head": "a",
+  "steps": [
+    {
+      "nodes": [
+        {"id": "a", "value": "Alice"},
+        {"id": "b", "value": "Bob"},
+        {"id": "c", "value": "Carol"}
+      ],
+      "links": [["a","b"],["b","c"]],
+      "markers": [{"name": "head", "nodeId": "a"}],
+      "msg": "Starting list: head → Alice → Bob → Carol → null"
+    },
+    {
+      "nodes": [
+        {"id": "z", "value": "Zara", "style": "new"},
+        {"id": "a", "value": "Alice"},
+        {"id": "b", "value": "Bob"},
+        {"id": "c", "value": "Carol"}
+      ],
+      "links": [["z","a"],["a","b"],["b","c"]],
+      "markers": [{"name": "head", "nodeId": "z"}],
+      "msg": "Insert at head: allocate Zara, point it to old head, repoint head — O(1)"
+    },
+    {
+      "nodes": [
+        {"id": "z", "value": "Zara"},
+        {"id": "a", "value": "Alice", "style": "removed"},
+        {"id": "b", "value": "Bob"},
+        {"id": "c", "value": "Carol"}
+      ],
+      "links": [["z","a"],["a","b"],["b","c"]],
+      "markers": [{"name": "head", "nodeId": "z"}],
+      "msg": "Now delete Alice: mark for removal — pointer fix-ups next"
+    },
+    {
+      "nodes": [
+        {"id": "z", "value": "Zara"},
+        {"id": "b", "value": "Bob"},
+        {"id": "c", "value": "Carol"}
+      ],
+      "links": [["z","b"],["b","c"]],
+      "markers": [{"name": "head", "nodeId": "z"}],
+      "msg": "Repoint Zara.next → Bob (skipping Alice); free Alice — O(1)"
+    }
+  ]
 }
 ```
 
@@ -291,29 +305,80 @@ delete: "Delete head — O(1)" {
 
 Let us look at an example of insertion in a singly linked list to understand this better.
 
-```d2
-direction: right
-
-before: "Before insertion" {
-  direction: right
-  a1: Alice
-  a2: Bob
-  a3: Carol
-  a4: David
-  a1 -> a2 -> a3 -> a4
+```d3 widget=linked-list
+{
+  "title": "Insert 'Zara' after 'Bob' — three pointer updates, no shifting",
+  "direction": "single",
+  "nodes": [
+    {"id": "a", "value": "Alice"},
+    {"id": "b", "value": "Bob"},
+    {"id": "z", "value": "Zara"},
+    {"id": "c", "value": "Carol"},
+    {"id": "d", "value": "David"}
+  ],
+  "head": "a",
+  "steps": [
+    {
+      "nodes": [
+        {"id": "a", "value": "Alice"},
+        {"id": "b", "value": "Bob"},
+        {"id": "c", "value": "Carol"},
+        {"id": "d", "value": "David"}
+      ],
+      "links": [["a","b"],["b","c"],["c","d"]],
+      "markers": [{"name": "curr", "nodeId": "b"}],
+      "msg": "Walk to the insertion point — curr at Bob"
+    },
+    {
+      "nodes": [
+        {"id": "a", "value": "Alice"},
+        {"id": "b", "value": "Bob"},
+        {"id": "z", "value": "Zara", "style": "new"},
+        {"id": "c", "value": "Carol"},
+        {"id": "d", "value": "David"}
+      ],
+      "links": [["a","b"],["b","c"],["c","d"]],
+      "markers": [{"name": "new", "nodeId": "z"}],
+      "msg": "Step 1: allocate a new node holding 'Zara'"
+    },
+    {
+      "nodes": [
+        {"id": "a", "value": "Alice"},
+        {"id": "b", "value": "Bob"},
+        {"id": "z", "value": "Zara", "style": "new"},
+        {"id": "c", "value": "Carol"},
+        {"id": "d", "value": "David"}
+      ],
+      "links": [["a","b"],["b","c"],["z","c"],["c","d"]],
+      "markers": [{"name": "new", "nodeId": "z"}],
+      "msg": "Step 2: new.next = Bob.next (point Zara at Carol)"
+    },
+    {
+      "nodes": [
+        {"id": "a", "value": "Alice"},
+        {"id": "b", "value": "Bob"},
+        {"id": "z", "value": "Zara"},
+        {"id": "c", "value": "Carol"},
+        {"id": "d", "value": "David"}
+      ],
+      "links": [["a","b"],["b","z"],["z","c"],["c","d"]],
+      "markers": [{"name": "curr", "nodeId": "b"}],
+      "msg": "Step 3: Bob.next = new (Bob now points to Zara)"
+    },
+    {
+      "nodes": [
+        {"id": "a", "value": "Alice"},
+        {"id": "b", "value": "Bob"},
+        {"id": "z", "value": "Zara"},
+        {"id": "c", "value": "Carol"},
+        {"id": "d", "value": "David"}
+      ],
+      "links": [["a","b"],["b","z"],["z","c"],["c","d"]],
+      "markers": [{"name": "head", "nodeId": "a"}],
+      "msg": "Done — Alice → Bob → Zara → Carol → David. Three pointer updates, O(1)."
+    }
+  ]
 }
-
-after: "Insert 'Zara' after 'Bob'" {
-  direction: right
-  b1: Alice
-  b2: Bob
-  new: Zara {style.fill: "#dcfce7"; style.stroke: "#16a34a"}
-  b3: Carol
-  b4: David
-  b1 -> b2 -> new -> b3 -> b4
-}
-
-before -> after: "1. Create new node\n2. new.next = Bob.next\n3. Bob.next = new"
 ```
 
 <p align="center"><strong>Inserting 'Zara' after 'Bob' — redirect two pointers; no shifting, no copying, O(1) once the insertion point is known.</strong></p>
@@ -464,27 +529,25 @@ object Main extends App {
 
 A linked list is just a chain of nodes. Below is how these nodes chain together to form a singly linked list.
 
-```d2
-direction: right
-n1: {
-  val: 5
-  next
+```d3 widget=linked-list
+{
+  "title": "Logical chain — four nodes connected by next pointers; tail points to null",
+  "direction": "single",
+  "nodes": [
+    {"id": "n1", "value": "5"},
+    {"id": "n2", "value": "7"},
+    {"id": "n3", "value": "3"},
+    {"id": "n4", "value": "9"}
+  ],
+  "head": "n1",
+  "steps": [
+    {
+      "links": [["n1","n2"],["n2","n3"],["n3","n4"]],
+      "markers": [{"name": "head", "nodeId": "n1"}],
+      "msg": "head → 5 → 7 → 3 → 9 → null"
+    }
+  ]
 }
-n2: {
-  val: 7
-  next
-}
-n3: {
-  val: 3
-  next
-}
-n4: {
-  val: 9
-  next: "null"
-}
-n1.next -> n2.val
-n2.next -> n3.val
-n3.next -> n4.val
 ```
 
 <p align="center"><strong>Logical representation — nodes appear sequential left to right, each pointing to the next, with the tail pointing to null.</strong></p>
@@ -596,38 +659,80 @@ Every data structure is essentially used to store, retrieve, and manipulate data
 
 All other complex operations can be implemented by mixing or piggybacking these fundamental operations. Let's examine some operations we can perform on a singly linked list.
 
-```d2
-ops: "Operations on a singly linked list" {
-  grid-rows: 2
-  grid-gap: 24
-  t: |md
-    **Traversal**
-
-    Visit each node once
-
-    `O(n)`
-  |
-  i: |md
-    **Insertion**
-
-    At head / tail / position
-
-    `O(1) head · O(n) middle`
-  |
-  d: |md
-    **Deletion**
-
-    By value / position
-
-    `O(1) head · O(n) middle`
-  |
-  s: |md
-    **Search**
-
-    Find node by value
-
-    `O(n)`
-  |
+```d3 widget=linked-list
+{
+  "title": "Some operations on a singly linked list — traversal, insertion, deletion, search",
+  "direction": "single",
+  "nodes": [
+    {"id": "n1", "value": "5"},
+    {"id": "n2", "value": "7"},
+    {"id": "n3", "value": "3"},
+    {"id": "n4", "value": "9"}
+  ],
+  "head": "n1",
+  "steps": [
+    {
+      "links": [["n1","n2"],["n2","n3"],["n3","n4"]],
+      "markers": [{"name": "head", "nodeId": "n1"}],
+      "msg": "Starting list: head → 5 → 7 → 3 → 9 → null"
+    },
+    {
+      "links": [["n1","n2"],["n2","n3"],["n3","n4"]],
+      "markers": [{"name": "curr", "nodeId": "n1"}],
+      "msg": "Traversal — start curr at head"
+    },
+    {
+      "links": [["n1","n2"],["n2","n3"],["n3","n4"]],
+      "markers": [{"name": "curr", "nodeId": "n3"}],
+      "msg": "Traversal — curr advances node-by-node (O(n))"
+    },
+    {
+      "nodes": [
+        {"id": "n1", "value": "5"},
+        {"id": "n2", "value": "7"},
+        {"id": "n3", "value": "3"},
+        {"id": "ins", "value": "8", "style": "new"},
+        {"id": "n4", "value": "9"}
+      ],
+      "links": [["n1","n2"],["n2","n3"],["n3","ins"],["ins","n4"]],
+      "markers": [{"name": "new", "nodeId": "ins"}],
+      "msg": "Insertion — splice a new node holding 8 after the node holding 3"
+    },
+    {
+      "nodes": [
+        {"id": "n1", "value": "5"},
+        {"id": "n2", "value": "7", "style": "removed"},
+        {"id": "n3", "value": "3"},
+        {"id": "ins", "value": "8"},
+        {"id": "n4", "value": "9"}
+      ],
+      "links": [["n1","n2"],["n2","n3"],["n3","ins"],["ins","n4"]],
+      "markers": [{"name": "delete", "nodeId": "n2"}],
+      "msg": "Deletion — mark the node holding 7 for removal"
+    },
+    {
+      "nodes": [
+        {"id": "n1", "value": "5"},
+        {"id": "n3", "value": "3"},
+        {"id": "ins", "value": "8"},
+        {"id": "n4", "value": "9"}
+      ],
+      "links": [["n1","n3"],["n3","ins"],["ins","n4"]],
+      "markers": [{"name": "head", "nodeId": "n1"}],
+      "msg": "Repoint 5.next → 3, free 7 — list is now 5 → 3 → 8 → 9"
+    },
+    {
+      "nodes": [
+        {"id": "n1", "value": "5"},
+        {"id": "n3", "value": "3", "style": "highlight"},
+        {"id": "ins", "value": "8"},
+        {"id": "n4", "value": "9"}
+      ],
+      "links": [["n1","n3"],["n3","ins"],["ins","n4"]],
+      "markers": [{"name": "found", "nodeId": "n3"}],
+      "msg": "Search for value 3 — walk the chain, match found at this node (O(n))"
+    }
+  ]
 }
 ```
 

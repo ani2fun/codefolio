@@ -6,6 +6,18 @@
 **Source**: `/Users/aniket/Development/others/tutorial_dsa/extracted_data/DSA/data-structure/3.doubly-linked-list/`
 **Destination**: `/Users/aniket/Development/homelab/codefolio/content/cortex/data-structures-and-algorithms/02-linear-structures/04-doubly-linked-list/`
 
+## Widgets required
+
+| Widget | Status | Notes |
+|---|---|---|
+| `linked-list` (double mode) | ✓ reused | Built in Phase 1 (ADR-0014); set `direction: "double"` in payloads |
+
+Per ADR-0006 (updated 2026-05-16): every phase's Definition of
+Done includes converting source Interactive Diagrams to D3 widgets.
+Phase 2 reuses Phase 1's `linked-list` widget; no new widget code
+needed before content sessions begin. The widget auto-derives
+`prev` arrows from each forward link when `direction: "double"`.
+
 ## Stats
 
 | | Count |

@@ -53,9 +53,14 @@ object D3:
     def each(fn: js.Function2[js.Any, Int, Unit]): Selection                                   = js.native
     def call(fn: js.Function1[Selection, Any]): Selection                                      = js.native
     def transition(): Transition                                                               = js.native
-    def node(): dom.Element                                                                    = js.native
-    def empty(): Boolean                                                                       = js.native
-    def size(): Int                                                                            = js.native
+    // Named transitions don't interrupt each other on the same element — use
+    // distinct names (e.g. "fade" and "move") when running concurrent
+    // transitions on overlapping selections, otherwise the second one
+    // cancels the first by D3 default-namespace rules.
+    def transition(name: String): Transition = js.native
+    def node(): dom.Element                  = js.native
+    def empty(): Boolean                     = js.native
+    def size(): Int                          = js.native
 
   @js.native
   trait Transition extends js.Object:

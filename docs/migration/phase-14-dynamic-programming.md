@@ -6,6 +6,17 @@
 **Source**: `/Users/aniket/Development/others/tutorial_dsa/extracted_data/DSA/algorithms/5.dynamic-programming/`
 **Destination**: `/Users/aniket/Development/homelab/codefolio/content/cortex/data-structures-and-algorithms/05-algorithms-by-strategy/05-dynamic-programming/`
 
+## Widgets required
+
+| Widget | Status | Notes |
+|---|---|---|
+| `dp-table` | to-build | ADR pending. Source has 24 Interactive Diagrams — 2D grid fill animations, subproblem-dependency arrows. New widget — first 2D-grid in the catalog |
+
+Per ADR-0006 (updated 2026-05-16): widget builds run as a precursor
+session at the start of the phase. Phase 14 builds the `dp-table`
+widget — the catalog's first 2D-grid widget. Likely reusable for
+future LP / partitioning visualisations.
+
 ## Stats
 
 | | Count |

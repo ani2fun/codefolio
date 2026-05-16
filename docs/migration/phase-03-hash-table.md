@@ -6,6 +6,18 @@
 **Source**: `/Users/aniket/Development/others/tutorial_dsa/extracted_data/DSA/data-structure/4.hash-table/`
 **Destination**: `/Users/aniket/Development/homelab/codefolio/content/cortex/data-structures-and-algorithms/02-linear-structures/07-hash-table/`
 
+## Widgets required
+
+| Widget | Status | Notes |
+|---|---|---|
+| `hash-table` | to-build | ADR pending. Source has ~57 Interactive Diagrams (largest of any phase) — primarily bucket arrays with chained or probed entries, insertion / deletion / collision-handling animations |
+
+Per ADR-0006 (updated 2026-05-16): widget builds run as a precursor
+session at the start of the phase before any chapter content work.
+Phase 3 requires building the `hash-table` widget first (ADR-NNNN
+→ Scala module → CSS → dispatcher → POC, mirroring ADR-0014 /
+LinkedList.scala).
+
 ## Stats
 
 | | Count |

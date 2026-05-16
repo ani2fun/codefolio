@@ -9,6 +9,7 @@ import codefolio.client.components.cortex.widgets.{
   HandshakeTimeline,
   HotShardSimulator,
   LatencyScaledTime,
+  LinkedList,
   PartitionSimulator,
   QueueingSimulator,
   RaftAnimator,
@@ -34,6 +35,8 @@ object D3WidgetBlock:
         ArrayTraversal.Component(ArrayTraversal.Props(props.payload))
       case "latency-scaled-time" =>
         LatencyScaledTime.Component(LatencyScaledTime.Props(props.payload))
+      case "linked-list" =>
+        LinkedList.Component(LinkedList.Props(props.payload))
       case "estimation-calculator" =>
         EstimationCalculator.Component(EstimationCalculator.Props(props.payload))
       case "partition-simulator" =>
@@ -60,7 +63,7 @@ object D3WidgetBlock:
           <.p(^.className := "d3-widget__error-title", "Unknown D3 widget"),
           <.p(
             ^.className := "d3-widget__error-message",
-            s"""Widget "$other" is not registered. Available widgets: array-traversal, latency-scaled-time, estimation-calculator, partition-simulator, queueing-simulator, handshake-timeline, consistent-hash-ring, cache-stampede, btree-walker, replication-lag, hot-shard, raft-animator."""
+            s"""Widget "$other" is not registered. Available widgets: array-traversal, linked-list, latency-scaled-time, estimation-calculator, partition-simulator, queueing-simulator, handshake-timeline, consistent-hash-ring, cache-stampede, btree-walker, replication-lag, hot-shard, raft-animator."""
           )
         )
   }

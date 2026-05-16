@@ -38,44 +38,42 @@ Let's consider an example problem and see how to break it down into smaller subp
 
 Consider the following example with`k = 3`for a linked list of size 7.
 
-```d2
-direction: right
-
-before: "Before — list = [1, 2, 3, 4, 5, 6, 7], k = 3" {
-  direction: right
-  n1: {grid-columns: 2; grid-gap: 0; value: 1; next}
-  n2: {grid-columns: 2; grid-gap: 0; value: 2; next}
-  n3: {grid-columns: 2; grid-gap: 0; value: 3; next}
-  n4: {grid-columns: 2; grid-gap: 0; value: 4; next}
-  n5: {grid-columns: 2; grid-gap: 0; value: 5; next}
-  n6: {grid-columns: 2; grid-gap: 0; value: 6; next}
-  n7: {grid-columns: 2; grid-gap: 0; value: 7; next: "null"}
-  n1.next -> n2.value
-  n2.next -> n3.value
-  n3.next -> n4.value
-  n4.next -> n5.value
-  n5.next -> n6.value
-  n6.next -> n7.value
+```d3 widget=linked-list
+{
+  "title": "Reverse in groups of k=3 — each chunk reversed in place; trailing fragment stays put",
+  "direction": "single",
+  "nodes": [
+    {"id": "n1", "value": "1"},
+    {"id": "n2", "value": "2"},
+    {"id": "n3", "value": "3"},
+    {"id": "n4", "value": "4"},
+    {"id": "n5", "value": "5"},
+    {"id": "n6", "value": "6"},
+    {"id": "n7", "value": "7"}
+  ],
+  "head": "n1",
+  "steps": [
+    {
+      "links": [["n1","n2"],["n2","n3"],["n3","n4"],["n4","n5"],["n5","n6"],["n6","n7"]],
+      "markers": [{"name": "head", "nodeId": "n1"}],
+      "msg": "Before: 1 → 2 → 3 → 4 → 5 → 6 → 7"
+    },
+    {
+      "nodes": [
+        {"id": "n3", "value": "3"},
+        {"id": "n2", "value": "2"},
+        {"id": "n1", "value": "1"},
+        {"id": "n6", "value": "6"},
+        {"id": "n5", "value": "5"},
+        {"id": "n4", "value": "4"},
+        {"id": "n7", "value": "7"}
+      ],
+      "links": [["n3","n2"],["n2","n1"],["n1","n6"],["n6","n5"],["n5","n4"],["n4","n7"]],
+      "markers": [{"name": "head", "nodeId": "n3"}],
+      "msg": "After: each group of 3 reversed → 3 → 2 → 1 → 6 → 5 → 4 → 7 (trailing single node 7 untouched)"
+    }
+  ]
 }
-
-after: "After — each group of 3 reversed in place (the trailing '7' stays put)" {
-  direction: right
-  n3: {grid-columns: 2; grid-gap: 0; value: 3; next}
-  n2: {grid-columns: 2; grid-gap: 0; value: 2; next}
-  n1: {grid-columns: 2; grid-gap: 0; value: 1; next}
-  n6: {grid-columns: 2; grid-gap: 0; value: 6; next}
-  n5: {grid-columns: 2; grid-gap: 0; value: 5; next}
-  n4: {grid-columns: 2; grid-gap: 0; value: 4; next}
-  n7: {grid-columns: 2; grid-gap: 0; value: 7; next: "null"}
-  n3.next -> n2.value
-  n2.next -> n1.value
-  n1.next -> n6.value
-  n6.next -> n5.value
-  n5.next -> n4.value
-  n4.next -> n7.value
-}
-
-before -> after
 ```
 
 <p align="center"><strong>Reverse-in-groups-of-K — slice the list into chunks of <code>k</code>, reverse each chunk in place, and leave any trailing (fewer-than-<code>k</code>) nodes untouched. The core reversal loop is invoked once per chunk.</strong></p>
@@ -114,114 +112,96 @@ We use two reference variables `start` and `end` to denote the boundary of a k-g
 
 We initialize `start` and `end` with the `head` of the list and iterate `k-1` times using `end` to find the end of the first k-group. We initialize `leftBound` with null for the first k-group, as there is no node before the head of the list.
 
-```d2
-direction: right
-h: head {shape: oval}
-lb: |md
-  **leftBound**
-
-  (dummy before first group)
-| {style.fill: "#ede9fe"; style.stroke: "#3b82f6"}
-n1: |md
-  **1**
-
-  start
-| {style.fill: "#fde68a"; style.stroke: "#d97706"}
-n2: "2"
-n3: |md
-  **3**
-
-  end
-| {style.fill: "#fde68a"; style.stroke: "#d97706"}
-n4: "4"
-n5: "5"
-n6: "6"
-n7: "7"
-h -> lb
-lb -> n1
-n1 -> n2
-n2 -> n3
-n3 -> n4
-n4 -> n5
-n5 -> n6
-n6 -> n7
+```d3 widget=linked-list
+{
+  "title": "Boundary pointers — leftBound (before start), start (group head), end (group tail)",
+  "direction": "single",
+  "nodes": [
+    {"id": "lb", "value": "leftBound"},
+    {"id": "n1", "value": "1"},
+    {"id": "n2", "value": "2"},
+    {"id": "n3", "value": "3"},
+    {"id": "n4", "value": "4"},
+    {"id": "n5", "value": "5"},
+    {"id": "n6", "value": "6"},
+    {"id": "n7", "value": "7"}
+  ],
+  "head": "n1",
+  "steps": [
+    {
+      "links": [["lb","n1"],["n1","n2"],["n2","n3"],["n3","n4"],["n4","n5"],["n5","n6"],["n6","n7"]],
+      "markers": [{"name": "leftBound", "nodeId": "lb", "color": "#a855f7"}, {"name": "start", "nodeId": "n1", "color": "#f59e0b"}, {"name": "end", "nodeId": "n3", "color": "#10b981"}],
+      "msg": "First group: leftBound = null (dummy), start = n1, end = n3 (advanced k−1 = 2 hops)"
+    }
+  ]
+}
 ```
 
 <p align="center"><strong>Three boundary pointers per group — <code>leftBound</code> (the node <em>before</em> <code>start</code>, needed so we can re-attach the reversed group to the rest of the list), <code>start</code> (first node of the group), and <code>end</code> (last node of the group, reached by advancing <code>start</code> by <code>k−1</code> hops).</strong></p>
 
 After reversing the first k-group, we need to update the `head` of the list, as the previous `end` node will be the new head of the list.
 
-```d2
-direction: right
-
-before: "Before first reversal" {
-  direction: right
-  h: head {shape: oval}
-  n1: "1"
-  n2: "2"
-  n3: "3"
-  n4: "4"
-  n5: "·"
-  h -> n1
-  n1 -> n2
-  n2 -> n3
-  n3 -> n4
-  n4 -> n5
+```d3 widget=linked-list
+{
+  "title": "After the first group reversal, head updates to the new first node (the old end)",
+  "direction": "single",
+  "nodes": [
+    {"id": "n1", "value": "1"},
+    {"id": "n2", "value": "2"},
+    {"id": "n3", "value": "3"},
+    {"id": "n4", "value": "4"},
+    {"id": "n5", "value": "·"}
+  ],
+  "head": "n1",
+  "steps": [
+    {
+      "links": [["n1","n2"],["n2","n3"],["n3","n4"],["n4","n5"]],
+      "markers": [{"name": "head", "nodeId": "n1"}],
+      "msg": "Before first reversal"
+    },
+    {
+      "nodes": [
+        {"id": "n3", "value": "3"},
+        {"id": "n2", "value": "2"},
+        {"id": "n1", "value": "1"},
+        {"id": "n4", "value": "4"},
+        {"id": "n5", "value": "·"}
+      ],
+      "links": [["n3","n2"],["n2","n1"],["n1","n4"],["n4","n5"]],
+      "markers": [{"name": "head", "nodeId": "n3", "color": "#10b981"}],
+      "msg": "After: head = n3 (the old end of the first group). Subsequent groups don't need to update head."
+    }
+  ]
 }
-
-after: "After — head now points at the NEW first node (3)" {
-  direction: right
-  h: head {shape: oval}
-  n3: {value: 3; style.fill: "#dcfce7"; style.stroke: "#16a34a"}
-  n2: "2"
-  n1: "1"
-  n4: "4"
-  n5: "·"
-  h -> n3.value
-  n3.value -> n2
-  n2 -> n1
-  n1 -> n4
-  n4 -> n5
-}
-
-before -> after
 ```
 
 <p align="center"><strong>After the <em>first</em> group is reversed, its head becomes the new head of the entire list. Update <code>head</code> to point at <code>end</code> of the just-reversed group. Subsequent groups don't need this update — their previous group handles the re-attachment.</strong></p>
 
 Similarly, after reversing the first k-group, the previous `start` and the node after it would be the `leftBound` and `start` for the next k-group respectively.
 
-```d2
-direction: right
-h: head {shape: oval}
-g1a: "3"
-g1b: "2"
-g1c: "1"
-lb2: |md
-  **leftBound**
-
-  (= last node of just-reversed group)
-| {style.fill: "#ede9fe"; style.stroke: "#3b82f6"}
-s2: |md
-  **4**
-
-  start
-| {style.fill: "#fde68a"; style.stroke: "#d97706"}
-m: "5"
-e2: |md
-  **6**
-
-  end
-| {style.fill: "#fde68a"; style.stroke: "#d97706"}
-r: "7"
-h -> g1a
-g1a -> g1b
-g1b -> g1c
-g1c -> lb2
-lb2 -> s2
-s2 -> m
-m -> e2
-e2 -> r
+```d3 widget=linked-list
+{
+  "title": "Slide boundary forward — old start becomes new leftBound; start advances to next group head",
+  "direction": "single",
+  "nodes": [
+    {"id": "g1a", "value": "3"},
+    {"id": "g1b", "value": "2"},
+    {"id": "g1c", "value": "1"},
+    {"id": "lb2", "value": "leftBound"},
+    {"id": "s2", "value": "4"},
+    {"id": "m", "value": "5"},
+    {"id": "e2", "value": "6"},
+    {"id": "r", "value": "7"}
+  ],
+  "head": "g1a",
+  "steps": [
+    {
+      "links": [["g1a","g1b"],["g1b","g1c"],["g1c","lb2"],["lb2","s2"],["s2","m"],["m","e2"],["e2","r"]],
+      "markers": [{"name": "leftBound", "nodeId": "lb2", "color": "#a855f7"}, {"name": "start", "nodeId": "s2", "color": "#f59e0b"}, {"name": "end", "nodeId": "e2", "color": "#10b981"}],
+      "msg": "Second group: leftBound = old start (1's position), start = n4, end = n6 (n4 advanced k−1 = 2 hops)"
+    }
+  ]
+}
 ```
 
 <p align="center"><strong>After processing one group, slide the boundary forward — the old <code>start</code> becomes the new <code>leftBound</code>, and <code>start</code> advances to the first node of the next group. The segment-reversal loop is now primed to repeat.</strong></p>

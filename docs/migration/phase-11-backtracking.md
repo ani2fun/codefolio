@@ -6,6 +6,16 @@
 **Source**: `/Users/aniket/Development/others/tutorial_dsa/extracted_data/DSA/algorithms/2.backtracking/`
 **Destination**: `/Users/aniket/Development/homelab/codefolio/content/cortex/data-structures-and-algorithms/05-algorithms-by-strategy/04-backtracking/`
 
+## Widgets required
+
+| Widget | Status | Notes |
+|---|---|---|
+| `decision-tree` | to-build | ADR pending. Source has 13 Interactive Diagrams — backtracking-tree with branch / prune visualisation, decision-state at each level. Likely extends `binary-tree` (built in Phase 6) with an n-ary children list and "pruned" branch styling |
+
+Per ADR-0006 (updated 2026-05-16): widget builds run as a precursor
+session at the start of the phase. Phase 11 builds (or extends
+from `binary-tree`) the `decision-tree` widget.
+
 ## Stats
 
 | | Count |

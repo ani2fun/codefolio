@@ -6,6 +6,14 @@
 **Source**: `/Users/aniket/Development/others/tutorial_dsa/extracted_data/DSA/algorithms/6.bit-manipulation/`
 **Destination**: `/Users/aniket/Development/homelab/codefolio/content/cortex/data-structures-and-algorithms/08-bit-tricks/`
 
+## Widgets required
+
+None. Source has 0 Interactive Diagrams in this phase — bit
+manipulation uses inline truth tables and side-by-side static
+diagrams rather than frame sequences. If author later decides
+animated bit-row visuals are worth adding, propose `bit-row` as
+a new widget; otherwise Phase 15 ships with static blocks only.
+
 ## Stats
 
 | | Count |

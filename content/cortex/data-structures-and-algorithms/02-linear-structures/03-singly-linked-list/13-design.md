@@ -57,20 +57,25 @@ Two design decisions shape every linked-list class you'll ever write:
    *Cached `tail`* — `append` becomes O(1). But every operation that might change the tail (head deletion that empties the list, removal of the last node, insert at position = size) must remember to update it.  
    *No `tail`* — `append` is O(n) but there's one less invariant to maintain.
 
-```d2
-direction: right
-h: head {shape: oval}
-n1: "3"
-n2: "8"
-n3: "2"
-n4: "1"
-t: "tail (optional)" {shape: oval; style.stroke-dash: 3}
-s: "currentSize: 4" {shape: rectangle; style.fill: "#ede9fe"; style.stroke: "#3b82f6"}
-h -> n1
-n1 -> n2
-n2 -> n3
-n3 -> n4
-t -> n4: "" {style.stroke-dash: 3}
+```d3 widget=linked-list
+{
+  "title": "SinglyLinkedList state — head (always) + currentSize (cached) + tail (optional)",
+  "direction": "single",
+  "nodes": [
+    {"id": "n1", "value": "3"},
+    {"id": "n2", "value": "8"},
+    {"id": "n3", "value": "2"},
+    {"id": "n4", "value": "1"}
+  ],
+  "head": "n1",
+  "steps": [
+    {
+      "links": [["n1","n2"],["n2","n3"],["n3","n4"]],
+      "markers": [{"name": "head", "nodeId": "n1"}, {"name": "tail (optional)", "nodeId": "n4", "color": "#a855f7"}, {"name": "currentSize=4", "nodeId": "n3", "color": "#10b981"}],
+      "msg": "head + cached currentSize is the minimal viable design; tail is optional (makes append O(1) but costs an extra field to maintain)"
+    }
+  ]
+}
 ```
 
 <p align="center"><strong>The <code>SinglyLinkedList</code> object owns three pieces of state — <code>head</code> (always), <code>currentSize</code> (usually cached), and <code>tail</code> (sometimes cached). The trade-offs are the whole design.</strong></p>

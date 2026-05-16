@@ -6,6 +6,17 @@
 **Source**: `/Users/aniket/Development/others/tutorial_dsa/extracted_data/DSA/data-structure/5.stack/`
 **Destination**: `/Users/aniket/Development/homelab/codefolio/content/cortex/data-structures-and-algorithms/02-linear-structures/05-stack/`
 
+## Widgets required
+
+| Widget | Status | Notes |
+|---|---|---|
+| `stack-queue` | to-build | ADR pending. Source has 44 Interactive Diagrams — push/pop animations with a single growing/shrinking column of cells, expression-evaluation traces. Phase 5 (Queue) reuses this widget |
+
+Per ADR-0006 (updated 2026-05-16): widget builds run as a precursor
+session at the start of the phase before any chapter content work.
+Phase 4 builds the `stack-queue` widget (used by both Phase 4 and
+Phase 5).
+
 ## Stats
 
 | | Count |

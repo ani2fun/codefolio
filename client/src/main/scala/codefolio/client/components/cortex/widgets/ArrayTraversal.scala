@@ -233,11 +233,18 @@ object ArrayTraversal:
       val width = viewBoxWidth(
         math.max(spec.items.size, spec.secondaryItems.fold(0)(_.size))
       )
+      val height = viewBoxHeight(hasSecondary)
       svg.setAttribute("class", "array-traversal__svg")
       svg.setAttribute("role", "img")
       svg.setAttribute("aria-label", spec.title.getOrElse("Array traversal"))
       svg.setAttribute("xmlns", SvgNs)
-      svg.setAttribute("viewBox", s"0 0 $width ${viewBoxHeight(hasSecondary)}")
+      svg.setAttribute("viewBox", s"0 0 $width $height")
+      // Pin the intrinsic SVG size to the viewBox dimensions so the browser
+      // doesn't stretch the SVG to fill its flex parent. CSS `max-w-full
+      // h-auto` then shrinks long widgets to fit narrow screens while
+      // preserving the aspect ratio. Cells render at their natural 56 px.
+      svg.setAttribute("width", width.toString)
+      svg.setAttribute("height", height.toString)
       host.appendChild(svg)
       svg
 
@@ -369,12 +376,21 @@ object ArrayTraversal:
       .classed("array-traversal__cell--in-range", inRangeFn)
 
     // Markers ------------------------------------------------------------------
-    val markerData: js.Array[js.Any] = markers
-      .filter(m => m.index >= 0 && m.index < itemCount)
-      .zipWithIndex
-      .map { case (m, fallbackIdx) =>
+    // Multiple markers may attach to the same cell index (e.g. `left` and
+    // `i` initialised together at index 0). To avoid the labels overlapping,
+    // we compute a per-index `rank`: the first marker at an index renders
+    // the arrowhead triangle + its label one slot below the row; subsequent
+    // markers at the same index stack their labels downward, no extra
+    // triangle.
+    val activeMarkers = markers.filter(m => m.index >= 0 && m.index < itemCount)
+    val rankedMarkers = activeMarkers.zipWithIndex.map { case (m, idx) =>
+      val rank = activeMarkers.take(idx).count(_.index == m.index)
+      (m, rank)
+    }
+    val markerData: js.Array[js.Any] = rankedMarkers.zipWithIndex
+      .map { case ((m, rank), fallbackIdx) =>
         js.Dynamic
-          .literal(name = m.name, index = m.index, color = colorFor(m, fallbackIdx))
+          .literal(name = m.name, index = m.index, color = colorFor(m, fallbackIdx), rank = rank)
           .asInstanceOf[js.Any]
       }
       .toJSArray
@@ -383,6 +399,15 @@ object ArrayTraversal:
     val markerSel = svg.selectAll(s"g.$markerGroupClass").data(markerData, markerKeyFn)
     val centerOf: (js.Any, Int) => Double =
       (d, _) => cellX(d.asInstanceOf[js.Dynamic].index.asInstanceOf[Int]) + CellSize / 2
+
+    val markerLaneRowH = 14.0
+    val labelY: js.Function2[js.Any, Int, js.Any] = (d, _) =>
+      val rank = d.asInstanceOf[js.Dynamic].rank.asInstanceOf[Int]
+      (laneY + MarkerLaneH - 14 + rank * markerLaneRowH).toString
+    val trianglePathFn: js.Function2[js.Any, Int, js.Any] = (d, _) =>
+      val rank = d.asInstanceOf[js.Dynamic].rank.asInstanceOf[Int]
+      if rank == 0 then s"M -5 ${laneY + 6} L 5 ${laneY + 6} L 0 ${laneY - 2} Z"
+      else ""
 
     val markerEnter = markerSel
       .enter()
@@ -394,7 +419,7 @@ object ArrayTraversal:
       )
     val _ = markerEnter
       .append("path")
-      .attr("d", s"M -5 ${laneY + 6} L 5 ${laneY + 6} L 0 ${laneY - 2} Z")
+      .attr("d", trianglePathFn)
       .attr(
         "fill",
         ((d, _) => d.asInstanceOf[js.Dynamic].color): js.Function2[js.Any, Int, js.Any]
@@ -403,7 +428,7 @@ object ArrayTraversal:
       .append("text")
       .attr("class", "array-traversal__marker-label")
       .attr("x", 0)
-      .attr("y", laneY + MarkerLaneH - 14)
+      .attr("y", labelY)
       .attr("text-anchor", "middle")
       .attr(
         "fill",
@@ -425,9 +450,11 @@ object ArrayTraversal:
       else markerAll.attr("transform", markerTransform)
     val _ = markerAll
       .select("path")
+      .attr("d", trianglePathFn)
       .attr("fill", ((d, _) => d.asInstanceOf[js.Dynamic].color): js.Function2[js.Any, Int, js.Any])
     val _ = markerAll
       .select("text.array-traversal__marker-label")
+      .attr("y", labelY)
       .attr("fill", ((d, _) => d.asInstanceOf[js.Dynamic].color): js.Function2[js.Any, Int, js.Any])
       .text(((d, _) => d.asInstanceOf[js.Dynamic].name): js.Function2[js.Any, Int, js.Any])
 
@@ -441,7 +468,40 @@ object ArrayTraversal:
     val width = viewBoxWidth(
       math.max(itemCount, secItems.fold(0)(_.size))
     )
-    val _ = svg.attr("viewBox", s"0 0 $width ${viewBoxHeight(hasSecondary)}")
+    val totalH = viewBoxHeight(hasSecondary)
+    val _      = svg.attr("viewBox", s"0 0 $width $totalH")
+
+    // Empty-step placeholder: when both rows are empty, render "(empty
+    // array)" centred so the SVG canvas isn't a blank rectangle. Mirrors
+    // the same protection in the `linked-list` widget.
+    val bothRowsEmpty = itemCount == 0 && secItems.forall(_.isEmpty)
+    if bothRowsEmpty then
+      val ensureCanvasW            = math.max(width, 240.0)
+      val _                        = svg.attr("viewBox", s"0 0 $ensureCanvasW $totalH")
+      val _                        = svg.selectAll("g.array-traversal__cell-group").remove()
+      val _                        = svg.selectAll("g.array-traversal__cell-group--secondary").remove()
+      val _                        = svg.selectAll("g.array-traversal__marker").remove()
+      val _                        = svg.selectAll("g.array-traversal__marker--secondary").remove()
+      val _                        = svg.selectAll("rect.array-traversal__range").remove()
+      val _                        = svg.selectAll("rect.array-traversal__range--secondary").remove()
+      val phData: js.Array[js.Any] = js.Array("(empty array)").asInstanceOf[js.Array[js.Any]]
+      val phKeyFn: js.Function2[js.Any, Int, js.Any] = (_, _) => "ph"
+      val phSel = svg.selectAll("text.array-traversal__empty-placeholder").data(phData, phKeyFn)
+      val _ = phSel
+        .enter()
+        .append("text")
+        .attr("class", "array-traversal__empty-placeholder")
+        .attr("text-anchor", "middle")
+        .attr("x", ensureCanvasW / 2)
+        .attr("y", PaddingY + CellSize / 2 + 6)
+        .text("(empty array)")
+      val _ = svg
+        .selectAll("text.array-traversal__empty-placeholder")
+        .attr("x", ensureCanvasW / 2)
+        .attr("y", PaddingY + CellSize / 2 + 6)
+      return ()
+    else
+      val _ = svg.selectAll("text.array-traversal__empty-placeholder").remove()
 
     renderRow(svgEl, PrimaryRow, items, keys, step.markers, step.range, PaddingY, animate)
 
@@ -539,6 +599,58 @@ object ArrayTraversal:
                 val rewind = if atEnd then indexS.setState(0) else Callback.empty
                 rewind >> playingS.setState(true)
 
+            // Controls + step counter are only useful when there's more than
+            // one step. For a single-step (static) widget, hide them entirely
+            // — the diagram reads as a static figure with no implication of
+            // a sequence to step through.
+            val controls: VdomNode =
+              if count <= 1 then EmptyVdom
+              else
+                <.div(
+                  ^.className := "array-traversal__controls",
+                  <.button(
+                    ^.tpe := "button",
+                    ^.onClick --> previous,
+                    ^.disabled   := atStart,
+                    ^.aria.label := "Previous step",
+                    ^.className  := "array-traversal__button",
+                    LucideIcons.ArrowLeft(LucideIcons.withClass("array-traversal__button-icon")),
+                    "Prev"
+                  ),
+                  <.button(
+                    ^.tpe := "button",
+                    ^.onClick --> togglePlay,
+                    ^.disabled   := count == 0,
+                    ^.aria.label := (if playingS.value then "Pause" else "Play"),
+                    ^.className  := "array-traversal__button array-traversal__button--primary",
+                    if playingS.value then
+                      LucideIcons.Pause(LucideIcons.withClass("array-traversal__button-icon"))
+                    else LucideIcons.Play(LucideIcons.withClass("array-traversal__button-icon")),
+                    if playingS.value then "Pause" else "Play"
+                  ),
+                  <.button(
+                    ^.tpe := "button",
+                    ^.onClick --> next,
+                    ^.disabled   := atEnd,
+                    ^.aria.label := "Next step",
+                    ^.className  := "array-traversal__button",
+                    "Next",
+                    LucideIcons.ArrowRight(LucideIcons.withClass("array-traversal__button-icon"))
+                  ),
+                  <.button(
+                    ^.tpe := "button",
+                    ^.onClick --> reset,
+                    ^.disabled   := atStart && !playingS.value,
+                    ^.aria.label := "Reset",
+                    ^.className  := "array-traversal__button array-traversal__button--icon",
+                    LucideIcons.RotateCcw(LucideIcons.withClass("array-traversal__button-icon"))
+                  ),
+                  <.span(
+                    ^.className := "array-traversal__progress",
+                    s"Step ${idx + 1} / ${math.max(1, count)}"
+                  )
+                )
+
             <.div(
               ^.className := "array-traversal not-prose",
               spec.title
@@ -552,49 +664,6 @@ object ArrayTraversal:
                 ^.aria.live := "polite",
                 if currentStep.msg.nonEmpty then currentStep.msg else " "
               ),
-              <.div(
-                ^.className := "array-traversal__controls",
-                <.button(
-                  ^.tpe := "button",
-                  ^.onClick --> previous,
-                  ^.disabled   := atStart,
-                  ^.aria.label := "Previous step",
-                  ^.className  := "array-traversal__button",
-                  LucideIcons.ArrowLeft(LucideIcons.withClass("array-traversal__button-icon")),
-                  "Prev"
-                ),
-                <.button(
-                  ^.tpe := "button",
-                  ^.onClick --> togglePlay,
-                  ^.disabled   := count == 0,
-                  ^.aria.label := (if playingS.value then "Pause" else "Play"),
-                  ^.className  := "array-traversal__button array-traversal__button--primary",
-                  if playingS.value then
-                    LucideIcons.Pause(LucideIcons.withClass("array-traversal__button-icon"))
-                  else LucideIcons.Play(LucideIcons.withClass("array-traversal__button-icon")),
-                  if playingS.value then "Pause" else "Play"
-                ),
-                <.button(
-                  ^.tpe := "button",
-                  ^.onClick --> next,
-                  ^.disabled   := atEnd,
-                  ^.aria.label := "Next step",
-                  ^.className  := "array-traversal__button",
-                  "Next",
-                  LucideIcons.ArrowRight(LucideIcons.withClass("array-traversal__button-icon"))
-                ),
-                <.button(
-                  ^.tpe := "button",
-                  ^.onClick --> reset,
-                  ^.disabled   := atStart && !playingS.value,
-                  ^.aria.label := "Reset",
-                  ^.className  := "array-traversal__button array-traversal__button--icon",
-                  LucideIcons.RotateCcw(LucideIcons.withClass("array-traversal__button-icon"))
-                ),
-                <.span(
-                  ^.className := "array-traversal__progress",
-                  s"Step ${idx + 1} / ${math.max(1, count)}"
-                )
-              )
+              controls
             )
       }

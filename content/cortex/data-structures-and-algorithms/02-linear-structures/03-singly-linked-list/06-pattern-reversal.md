@@ -25,36 +25,38 @@ Many linked list problems require us to reverse the entire list or a part of it.
 
 The reversal pattern is a classification of linked list problems that can be solved using the linked list reversal algorithm.
 
-```d2
-direction: down
-
-before: "Before — segment [start, end]" {
-  direction: right
-  a: {grid-columns: 2; grid-gap: 0; value: a; next}
-  s: {grid-columns: 2; grid-gap: 0; value: start; next; style.fill: "#fde68a"; style.stroke: "#d97706"}
-  m: {grid-columns: 2; grid-gap: 0; value: "..."; next}
-  e: {grid-columns: 2; grid-gap: 0; value: end; next; style.fill: "#fde68a"; style.stroke: "#d97706"}
-  z: {grid-columns: 2; grid-gap: 0; value: z; next}
-  a.next -> s.value
-  s.next -> m.value
-  m.next -> e.value
-  e.next -> z.value
+```d3 widget=linked-list
+{
+  "title": "Reversal pattern — flip the segment [start, end] in place; nodes outside untouched",
+  "direction": "single",
+  "nodes": [
+    {"id": "a", "value": "a"},
+    {"id": "s", "value": "start"},
+    {"id": "m", "value": "..."},
+    {"id": "e", "value": "end"},
+    {"id": "z", "value": "z"}
+  ],
+  "head": "a",
+  "steps": [
+    {
+      "links": [["a","s"],["s","m"],["m","e"],["e","z"]],
+      "markers": [{"name": "start", "nodeId": "s", "color": "#f59e0b"}, {"name": "end", "nodeId": "e", "color": "#f59e0b"}],
+      "msg": "Before: segment from start to end (the …) flows left → right"
+    },
+    {
+      "nodes": [
+        {"id": "a", "value": "a"},
+        {"id": "e", "value": "end", "style": "new"},
+        {"id": "m", "value": "..."},
+        {"id": "s", "value": "start", "style": "new"},
+        {"id": "z", "value": "z"}
+      ],
+      "links": [["a","e"],["e","m"],["m","s"],["s","z"]],
+      "markers": [{"name": "stitched", "nodeId": "e", "color": "#10b981"}],
+      "msg": "After: segment reversed in place. a → end → … → start → z. Outside nodes untouched."
+    }
+  ]
 }
-
-after: "After — segment reversed in place" {
-  direction: right
-  a: {grid-columns: 2; grid-gap: 0; value: a; next}
-  e: {grid-columns: 2; grid-gap: 0; value: end; next; style.fill: "#dcfce7"; style.stroke: "#16a34a"}
-  m: {grid-columns: 2; grid-gap: 0; value: "..."; next}
-  s: {grid-columns: 2; grid-gap: 0; value: start; next; style.fill: "#dcfce7"; style.stroke: "#16a34a"}
-  z: {grid-columns: 2; grid-gap: 0; value: z; next}
-  a.next -> e.value
-  e.next -> m.value
-  m.next -> s.value
-  s.next -> z.value
-}
-
-before -> after: "flip each next pointer within the segment"
 ```
 
 <p align="center"><strong>The reversal pattern flips a contiguous segment <code>[start, end]</code> in place — the nodes before <code>start</code> and after <code>end</code> remain untouched. Stitch the reversed segment back to its neighbours and you're done.</strong></p>
@@ -65,36 +67,51 @@ In this course, we will learn more about the linked list reversal algorithm and 
 
 Reversing the entire linked list is a special case of the generic reversal algorithm to reverse a segment between `start` and `end`. We first look at this special case as it has a much simpler implementation and is used in most linked list problems that require a reversal. Consider we are given a linked list denoted by `head` and need to reverse it completely.
 
-```d2
-direction: right
-
-before: Before {
-  direction: right
-  h: head {shape: oval}
-  n1: {grid-columns: 2; grid-gap: 0; value: 5; next}
-  n2: {grid-columns: 2; grid-gap: 0; value: 7; next}
-  n3: {grid-columns: 2; grid-gap: 0; value: 3; next}
-  n4: {grid-columns: 2; grid-gap: 0; value: 10; next: "null"}
-  h -> n1.value
-  n1.next -> n2.value
-  n2.next -> n3.value
-  n3.next -> n4.value
+```d3 widget=linked-list
+{
+  "title": "Reverse the entire list — three-pointer walk; every next flips",
+  "direction": "single",
+  "nodes": [
+    {"id": "n1", "value": "5"},
+    {"id": "n2", "value": "7"},
+    {"id": "n3", "value": "3"},
+    {"id": "n4", "value": "10"}
+  ],
+  "head": "n1",
+  "steps": [
+    {
+      "links": [["n1","n2"],["n2","n3"],["n3","n4"]],
+      "markers": [{"name": "previous=null", "nodeId": "n1"}, {"name": "current", "nodeId": "n1", "color": "#10b981"}],
+      "msg": "Init: previous = null, current = head"
+    },
+    {
+      "links": [["n2","n1"],["n2","n3"],["n3","n4"]],
+      "markers": [{"name": "previous", "nodeId": "n1"}, {"name": "current", "nodeId": "n2", "color": "#10b981"}],
+      "msg": "Tick 1: next = current.next (n2). current.next = previous (n1 → null). previous = current (n1). current = next (n2)."
+    },
+    {
+      "links": [["n2","n1"],["n3","n2"],["n3","n4"]],
+      "markers": [{"name": "previous", "nodeId": "n2"}, {"name": "current", "nodeId": "n3", "color": "#10b981"}],
+      "msg": "Tick 2: n2.next now points to n1 (former predecessor). Advance."
+    },
+    {
+      "links": [["n2","n1"],["n3","n2"],["n4","n3"]],
+      "markers": [{"name": "previous", "nodeId": "n3"}, {"name": "current", "nodeId": "n4", "color": "#10b981"}],
+      "msg": "Tick 3: n3.next now points to n2. Advance."
+    },
+    {
+      "nodes": [
+        {"id": "n4", "value": "10"},
+        {"id": "n3", "value": "3"},
+        {"id": "n2", "value": "7"},
+        {"id": "n1", "value": "5"}
+      ],
+      "links": [["n4","n3"],["n3","n2"],["n2","n1"]],
+      "markers": [{"name": "new head", "nodeId": "n4"}],
+      "msg": "Tick 4: n4.next = n3. current = null → loop ends. Return previous (n4) as new head: 10 → 3 → 7 → 5 → null."
+    }
+  ]
 }
-
-after: After {
-  direction: right
-  h: head {shape: oval}
-  n1: {grid-columns: 2; grid-gap: 0; value: 10; next}
-  n2: {grid-columns: 2; grid-gap: 0; value: 3; next}
-  n3: {grid-columns: 2; grid-gap: 0; value: 7; next}
-  n4: {grid-columns: 2; grid-gap: 0; value: 5; next: "null"}
-  h -> n1.value
-  n1.next -> n2.value
-  n2.next -> n3.value
-  n3.next -> n4.value
-}
-
-before -> after: "flip every next pointer"
 ```
 
 <p align="center"><strong>Full-list reversal — the old tail becomes the new head, every node's <code>next</code> points to its former predecessor.</strong></p>
@@ -271,65 +288,68 @@ Reversing a segment between two nodes is the generic case of the reversal algori
 
 For this example, the two references can never be `null` and will always point to some node in the list such that `start` comes before `end` when traversing the list in the forward direction from `head`.
 
-```d2
-direction: right
-
-before: "Before — reverse segment [start, end] inclusive" {
-  direction: right
-  h: head {shape: oval}
-  p: "·"
-  s: start {style.fill: "#fde68a"; style.stroke: "#d97706"}
-  m: "·"
-  e: end {style.fill: "#fde68a"; style.stroke: "#d97706"}
-  q: "·"
-  h -> p
-  p -> s
-  s -> m
-  m -> e
-  e -> q
+```d3 widget=linked-list
+{
+  "title": "Reverse a segment [start, end] inclusive — outer nodes stay intact",
+  "direction": "single",
+  "nodes": [
+    {"id": "h", "value": "head"},
+    {"id": "p", "value": "·"},
+    {"id": "s", "value": "start"},
+    {"id": "m", "value": "·"},
+    {"id": "e", "value": "end"},
+    {"id": "q", "value": "·"}
+  ],
+  "head": "h",
+  "steps": [
+    {
+      "links": [["h","p"],["p","s"],["s","m"],["m","e"],["e","q"]],
+      "markers": [{"name": "start", "nodeId": "s", "color": "#f59e0b"}, {"name": "end", "nodeId": "e", "color": "#f59e0b"}],
+      "msg": "Before: outer prefix h → · → ; segment start → · → end; outer suffix ·"
+    },
+    {
+      "nodes": [
+        {"id": "h", "value": "head"},
+        {"id": "p", "value": "·"},
+        {"id": "e", "value": "end", "style": "new"},
+        {"id": "m", "value": "·"},
+        {"id": "s", "value": "start", "style": "new"},
+        {"id": "q", "value": "·"}
+      ],
+      "links": [["h","p"],["p","e"],["e","m"],["m","s"],["s","q"]],
+      "markers": [{"name": "reversed", "nodeId": "e", "color": "#10b981"}],
+      "msg": "After: segment flipped — outer prefix/suffix untouched"
+    }
+  ]
 }
-
-after: "After — segment flipped, outer nodes intact" {
-  direction: right
-  h: head {shape: oval}
-  p: "·"
-  e: end {style.fill: "#dcfce7"; style.stroke: "#16a34a"}
-  m: "·"
-  s: start {style.fill: "#dcfce7"; style.stroke: "#16a34a"}
-  q: "·"
-  h -> p
-  p -> e
-  e -> m
-  m -> s
-  s -> q
-}
-
-before -> after
 ```
 
 <p align="center"><strong>Both endpoints are included. After reversal, the outer list structure is preserved — only the order of nodes inside <code>[start, end]</code> is flipped.</strong></p>
 
 To connect the first node of the segment back to the list after reversal, we need to know the node after `end`. We create a reference variable `rightBound` and initialize it with the node after `end`.
 
-```d2
-direction: right
-h: head {shape: oval}
-p: "·"
-s: start
-m: "·"
-e: end
-rb: |md
-  **rightBound**
-
-  (= end.next)
-| {style.fill: "#fde68a"; style.stroke: "#d97706"}
-q: "·"
-h -> p
-p -> s
-s -> m
-m -> e
-e -> rb
-rb -> q
+```d3 widget=linked-list
+{
+  "title": "Cache rightBound = end.next before reversing — sentinel for the segment boundary",
+  "direction": "single",
+  "nodes": [
+    {"id": "h", "value": "head"},
+    {"id": "p", "value": "·"},
+    {"id": "s", "value": "start"},
+    {"id": "m", "value": "·"},
+    {"id": "e", "value": "end"},
+    {"id": "rb", "value": "rightBound"},
+    {"id": "q", "value": "·"}
+  ],
+  "head": "h",
+  "steps": [
+    {
+      "links": [["h","p"],["p","s"],["s","m"],["m","e"],["e","rb"],["rb","q"]],
+      "markers": [{"name": "start", "nodeId": "s"}, {"name": "end", "nodeId": "e"}, {"name": "rightBound", "nodeId": "rb", "color": "#f59e0b"}],
+      "msg": "rightBound = end.next captured upfront. The reversal walks current from start and stops when current == rightBound."
+    }
+  ]
+}
 ```
 
 <p align="center"><strong>Cache <code>rightBound = end.next</code> <em>before</em> reversing. During reversal we walk from <code>start</code> and stop the moment <code>current == rightBound</code> — the sentinel that tells us we've exhausted the segment.</strong></p>
@@ -361,29 +381,28 @@ flowchart TB
 
 The last step is to connect the reversed head back to the list. As we will see later when solving problems that use the reversal technique, this is generally done by the caller of the reverse algorithm, which has the references to the node before `start`. 
 
-```d2
-direction: right
-h: head {shape: oval}
-p: predecessor of start
-new: |md
-  **end**
-
-  (new segment head)
-| {style.fill: "#fde68a"; style.stroke: "#d97706"}
-m: "·"
-s: |md
-  **start**
-
-  (new segment tail)
-|
-rb: rightBound
-q: "·"
-h -> p
-p -> new: "predecessor.next = new head of segment"
-new -> m
-m -> s
-s -> rb
-rb -> q
+```d3 widget=linked-list
+{
+  "title": "Final stitch — predecessor of start now points at the reversed segment's new head",
+  "direction": "single",
+  "nodes": [
+    {"id": "h", "value": "head"},
+    {"id": "p", "value": "predecessor"},
+    {"id": "e", "value": "end"},
+    {"id": "m", "value": "·"},
+    {"id": "s", "value": "start"},
+    {"id": "rb", "value": "rightBound"},
+    {"id": "q", "value": "·"}
+  ],
+  "head": "h",
+  "steps": [
+    {
+      "links": [["h","p"],["p","e"],["e","m"],["m","s"],["s","rb"],["rb","q"]],
+      "markers": [{"name": "new-head", "nodeId": "e", "color": "#10b981"}, {"name": "new-tail", "nodeId": "s", "color": "#10b981"}],
+      "msg": "predecessor.next = end (new segment head); start.next already = rightBound thanks to previous = rightBound init"
+    }
+  ]
+}
 ```
 
 <p align="center"><strong>Final stitch — the predecessor of the original <code>start</code> now points at the reversed segment's new head (<code>end</code>). The reversed segment's tail (<code>start</code>) already points at <code>rightBound</code> thanks to our <code>previous = rightBound</code> initialisation.</strong></p>
@@ -557,32 +576,36 @@ To better understand the problems that can be solved by directly applying the li
 
 > **Problem statement:** Given a singly linked list, reverse it in place
 
-```d2
-direction: right
-
-before: Input {
-  direction: right
-  n1: {grid-columns: 2; grid-gap: 0; value: 5; next}
-  n2: {grid-columns: 2; grid-gap: 0; value: 7; next}
-  n3: {grid-columns: 2; grid-gap: 0; value: 3; next}
-  n4: {grid-columns: 2; grid-gap: 0; value: 10; next: "null"}
-  n1.next -> n2.value
-  n2.next -> n3.value
-  n3.next -> n4.value
+```d3 widget=linked-list
+{
+  "title": "In-place reversal — input [5, 7, 3, 10] → output [10, 3, 7, 5]",
+  "direction": "single",
+  "nodes": [
+    {"id": "n1", "value": "5"},
+    {"id": "n2", "value": "7"},
+    {"id": "n3", "value": "3"},
+    {"id": "n4", "value": "10"}
+  ],
+  "head": "n1",
+  "steps": [
+    {
+      "links": [["n1","n2"],["n2","n3"],["n3","n4"]],
+      "markers": [{"name": "head", "nodeId": "n1"}],
+      "msg": "Input: 5 → 7 → 3 → 10 → null"
+    },
+    {
+      "nodes": [
+        {"id": "n4", "value": "10"},
+        {"id": "n3", "value": "3"},
+        {"id": "n2", "value": "7"},
+        {"id": "n1", "value": "5"}
+      ],
+      "links": [["n4","n3"],["n3","n2"],["n2","n1"]],
+      "markers": [{"name": "head", "nodeId": "n4"}],
+      "msg": "Output: same 4 nodes, rewired — 10 → 3 → 7 → 5 → null. No new allocations, O(1) extra space."
+    }
+  ]
 }
-
-after: "Output (in-place reversal)" {
-  direction: right
-  n1: {grid-columns: 2; grid-gap: 0; value: 10; next}
-  n2: {grid-columns: 2; grid-gap: 0; value: 3; next}
-  n3: {grid-columns: 2; grid-gap: 0; value: 7; next}
-  n4: {grid-columns: 2; grid-gap: 0; value: 5; next: "null"}
-  n1.next -> n2.value
-  n2.next -> n3.value
-  n3.next -> n4.value
-}
-
-before -> after
 ```
 
 <p align="center"><strong>"In place" means no auxiliary list is built — the same nodes are rewired, not copied. O(1) extra space.</strong></p>

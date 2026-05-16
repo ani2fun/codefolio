@@ -25,7 +25,12 @@
         @apply flex justify-center;
     }
     .array-traversal__svg {
-        @apply block w-full max-w-3xl h-auto;
+        /* Render at the SVG's intrinsic pixel size (cells = 56px) without
+           upscaling. `max-w-full` prevents overflow on narrow screens —
+           long lists (viewBox wider than the prose column) shrink to fit.
+           Pairs with `.array-traversal__frame { justify-center }` so the
+           SVG sits centred under its title. */
+        @apply block h-auto max-w-full;
     }
     /* Transform / position of cells and markers is animated by D3 (see ADR-0013); CSS keeps
        only the fill/stroke transitions that D3 doesn't touch (in-range class toggle). */
@@ -66,6 +71,11 @@
         font-size: 11px;
         font-weight: 600;
     }
+    .array-traversal__empty-placeholder {
+        fill: var(--color-fg-muted, #94a3b8);
+        font-size: 50px;
+        font-style: italic;
+    }
     .array-traversal__caption {
         @apply mt-3 text-center text-sm text-foreground min-h-[1.25rem];
     }
@@ -87,6 +97,130 @@
         @apply h-4 w-4;
     }
     .array-traversal__progress {
+        @apply min-w-24 text-center text-xs font-medium tabular-nums text-muted-foreground;
+    }
+
+    /* ─── Linked-list stepper (singly + doubly) ───────────────────────
+       Shape mirrors .array-traversal__* but with nodes + arrows + a
+       back lane for doubly's prev arrows / Floyd's cycle back-edge.
+       Authors pick singly vs doubly via `direction` in the payload
+       (see ADR-0014). */
+    .linked-list {
+        @apply my-6 rounded-lg border border-border bg-card p-4;
+    }
+    .linked-list__title {
+        @apply mb-3 text-center text-sm font-medium text-muted-foreground;
+    }
+    .linked-list__frame {
+        @apply flex justify-center;
+    }
+    .linked-list__svg {
+        /* Same sizing rationale as `.array-traversal__svg` — render at the
+           SVG's intrinsic pixel size (nodes = 56px) without upscaling so
+           the widget reads at a comfortable density for the prose column.
+           `max-w-full` lets very long chains shrink to fit narrower screens. */
+        @apply block h-auto max-w-full;
+    }
+    /* D3 owns the node group's transform; CSS provides the visual style
+       for the rect and the dark-mode-safe text fill. */
+    .linked-list__node {
+        /* D3 owns this group's transform; no CSS transition. */
+    }
+    .linked-list__node-rect {
+        fill: var(--color-card, #ffffff);
+        stroke: var(--color-border, #e5e7eb);
+        stroke-width: 1.5;
+        transition: fill 220ms ease, stroke 220ms ease;
+    }
+    .linked-list__node--new .linked-list__node-rect {
+        stroke: rgba(16, 185, 129, 0.72);
+        stroke-width: 2;
+    }
+    .linked-list__node--removed .linked-list__node-rect {
+        stroke: rgba(239, 68, 68, 0.7);
+        fill: rgba(239, 68, 68, 0.05);
+    }
+    .linked-list__node--removed {
+        opacity: 0.6;
+    }
+    .linked-list__node--highlight .linked-list__node-rect {
+        fill: rgba(59, 130, 246, 0.08);
+        stroke: rgba(59, 130, 246, 0.55);
+    }
+    .linked-list__node-label {
+        @apply text-sm font-semibold;
+        /* `currentColor` fallback so SVG text stays visible if the
+           CSS custom property is unset in some dark-mode contexts. */
+        fill: var(--color-fg-default, currentColor);
+        font-size: 16px;
+    }
+    /* Arrows. D3 sets each path's `d` attribute per step; CSS only
+       defines stroke, dash, and colour. */
+    .linked-list__arrow {
+        stroke: var(--color-fg-muted, #64748b);
+        stroke-width: 2;
+        fill: none;
+        transition: stroke 250ms ease;
+    }
+    .linked-list__arrowhead {
+        fill: var(--color-fg-muted, #64748b);
+        transition: fill 250ms ease;
+    }
+    .linked-list__arrow-group--back .linked-list__arrow {
+        stroke: var(--color-fg-muted, #94a3b8);
+        stroke-dasharray: 3 3;
+        opacity: 0.85;
+    }
+    .linked-list__arrow-group--back .linked-list__arrowhead {
+        fill: var(--color-fg-muted, #94a3b8);
+        opacity: 0.85;
+    }
+    .linked-list__arrow-group--broken .linked-list__arrow {
+        stroke: rgba(239, 68, 68, 0.75);
+        stroke-dasharray: 4 4;
+    }
+    .linked-list__arrow-group--broken .linked-list__arrowhead {
+        fill: rgba(239, 68, 68, 0.75);
+    }
+    .linked-list__cycle-edge {
+        stroke: rgba(168, 85, 247, 0.7);
+        stroke-width: 2;
+        stroke-dasharray: 6 4;
+        fill: none;
+    }
+    .linked-list__marker {
+        /* D3 owns this group's transform; no CSS transition. */
+    }
+    .linked-list__marker-label {
+        font-size: 11px;
+        font-weight: 600;
+    }
+    .linked-list__empty-placeholder {
+        fill: var(--color-fg-muted, #94a3b8);
+        font-size: 50px;
+        font-style: italic;
+    }
+    .linked-list__caption {
+        @apply mt-3 text-center text-sm text-foreground min-h-[1.25rem];
+    }
+    .linked-list__controls {
+        @apply mt-3 flex flex-wrap items-center justify-center gap-2;
+    }
+    .linked-list__button {
+        @apply inline-flex h-9 items-center gap-1.5 rounded-md border border-border bg-background
+               px-3 text-sm font-medium text-foreground transition-colors hover:bg-accent
+               disabled:pointer-events-none disabled:opacity-45;
+    }
+    .linked-list__button--primary {
+        @apply border-primary bg-primary text-primary-foreground hover:bg-primary/90;
+    }
+    .linked-list__button--icon {
+        @apply w-9 justify-center px-0;
+    }
+    .linked-list__button-icon {
+        @apply h-4 w-4;
+    }
+    .linked-list__progress {
         @apply min-w-24 text-center text-xs font-medium tabular-nums text-muted-foreground;
     }
 

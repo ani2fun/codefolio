@@ -263,44 +263,40 @@ Let's consider the following problem as an example to better understand how to i
 
 > **Problem statement:** Given two singly linked lists, merge them by splicing alternate nodes from both lists together. The merged list should start with the first node of the first list.
 
-```d2
-direction: right
-
-before: Two input lists {
-  a: List A {
-    direction: right
-    a1: "1"
-    a2: "3"
-    a3: "5"
-    a1 -> a2
-    a2 -> a3
-  }
-  b: List B {
-    direction: right
-    b1: "2"
-    b2: "4"
-    b3: "6"
-    b1 -> b2
-    b2 -> b3
-  }
+```d3 widget=linked-list
+{
+  "title": "Sorted merge — same six nodes; only their next pointers are rewired",
+  "direction": "single",
+  "nodes": [
+    {"id": "a1", "value": "1"},
+    {"id": "b1", "value": "2"},
+    {"id": "a2", "value": "3"},
+    {"id": "b2", "value": "4"},
+    {"id": "a3", "value": "5"},
+    {"id": "b3", "value": "6"}
+  ],
+  "head": "a1",
+  "steps": [
+    {
+      "nodes": [
+        {"id": "a1", "value": "A:1"},
+        {"id": "a2", "value": "A:3"},
+        {"id": "a3", "value": "A:5"},
+        {"id": "b1", "value": "B:2"},
+        {"id": "b2", "value": "B:4"},
+        {"id": "b3", "value": "B:6"}
+      ],
+      "links": [["a1","a2"],["a2","a3"],["b1","b2"],["b2","b3"]],
+      "markers": [{"name": "headA", "nodeId": "a1"}, {"name": "headB", "nodeId": "b1", "color": "#10b981"}],
+      "msg": "Before: two input lists A=[1,3,5] and B=[2,4,6]"
+    },
+    {
+      "links": [["a1","b1"],["b1","a2"],["a2","b2"],["b2","a3"],["a3","b3"]],
+      "markers": [{"name": "merged head", "nodeId": "a1"}],
+      "msg": "After: spliced (sorted merge) — same 6 nodes rewired into 1 → 2 → 3 → 4 → 5 → 6"
+    }
+  ]
 }
-
-after: "Spliced (sorted merge)" {
-  direction: right
-  c1: "1"
-  c2: "2"
-  c3: "3"
-  c4: "4"
-  c5: "5"
-  c6: "6"
-  c1 -> c2
-  c2 -> c3
-  c3 -> c4
-  c4 -> c5
-  c5 -> c6
-}
-
-before -> after
 ```
 
 <p align="center"><strong>Merging splices the original nodes — no new nodes allocated. The six nodes above are the same six objects before and after; only their <code>.next</code> pointers have been rewired into a single chain.</strong></p>

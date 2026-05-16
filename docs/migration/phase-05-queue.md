@@ -6,6 +6,15 @@
 **Source**: `/Users/aniket/Development/others/tutorial_dsa/extracted_data/DSA/data-structure/6.queue/`
 **Destination**: `/Users/aniket/Development/homelab/codefolio/content/cortex/data-structures-and-algorithms/02-linear-structures/06-queue/`
 
+## Widgets required
+
+| Widget | Status | Notes |
+|---|---|---|
+| `stack-queue` | ✓ reused | Built in Phase 4. Set `mode: "queue"` (or equivalent payload flag) — supports enqueue/dequeue + circular-queue front/back markers |
+
+Per ADR-0006 (updated 2026-05-16): Phase 5 reuses the `stack-queue`
+widget from Phase 4; no precursor build needed.
+
 ## Stats
 
 | | Count |

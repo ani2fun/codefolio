@@ -33,26 +33,27 @@ Inserting at the beginning of a linked list is a fundamental and commonly used o
 
 In this scenario, if the linked list is empty, the **head** would be `null`. We need to initialize the **head** node of the linked list and ensure that the pointer of this newly created **head** node is `null`, as this new node will also be the last node of the list.
 
-```d2
-direction: right
-
-before: "Before — empty list" {
-  h1: "head = null" {shape: oval}
+```d3 widget=linked-list
+{
+  "title": "Insert at beginning — empty list: the new node becomes both head and tail",
+  "direction": "single",
+  "nodes": [{"id": "n", "value": "6"}],
+  "head": "n",
+  "steps": [
+    {
+      "nodes": [],
+      "links": [],
+      "markers": [],
+      "msg": "Before: head = null (empty list)"
+    },
+    {
+      "nodes": [{"id": "n", "value": "6", "style": "new"}],
+      "links": [],
+      "markers": [{"name": "head", "nodeId": "n"}],
+      "msg": "Allocate the new node; head ← newNode. newNode.next = null (it's also the tail)."
+    }
+  ]
 }
-
-after: "After — insert val=6" {
-  direction: right
-  h2: head {shape: oval}
-  n: {
-    val: 6
-    next: "null"
-    style.fill: "#dcfce7"
-    style.stroke: "#16a34a"
-  }
-  h2 -> n.val
-}
-
-before -> after: "create new node,\nhead = newNode"
 ```
 
 <p align="center"><strong>Case 1 — empty list: create a single node and make it the head; its <code>next</code> is <code>null</code> since it is also the tail.</strong></p>
@@ -67,39 +68,63 @@ before -> after: "create new node,\nhead = newNode"
 
 In this scenario, we already have some data in the linked list, so the **head** is not `null`. Therefore, to insert a new node at the beginning of the list, we need to update the pointer of the newly created node to store the reference of the existing **head** node.
 
-```d2
-direction: right
-
-before: "Before — list = [5, 7, 3]" {
-  direction: right
-  h: head {shape: oval}
-  b1: {val: 5; next}
-  b2: {val: 7; next}
-  b3: {val: 3; next: "null"}
-  h -> b1.val
-  b1.next -> b2.val
-  b2.next -> b3.val
+```d3 widget=linked-list
+{
+  "title": "Insert at beginning — non-empty list: two pointer updates, O(1)",
+  "direction": "single",
+  "nodes": [
+    {"id": "new", "value": "6"},
+    {"id": "n1", "value": "5"},
+    {"id": "n2", "value": "7"},
+    {"id": "n3", "value": "3"}
+  ],
+  "head": "n1",
+  "steps": [
+    {
+      "nodes": [
+        {"id": "n1", "value": "5"},
+        {"id": "n2", "value": "7"},
+        {"id": "n3", "value": "3"}
+      ],
+      "links": [["n1","n2"],["n2","n3"]],
+      "markers": [{"name": "head", "nodeId": "n1"}],
+      "msg": "Before: head → 5 → 7 → 3"
+    },
+    {
+      "nodes": [
+        {"id": "new", "value": "6", "style": "new"},
+        {"id": "n1", "value": "5"},
+        {"id": "n2", "value": "7"},
+        {"id": "n3", "value": "3"}
+      ],
+      "links": [["n1","n2"],["n2","n3"]],
+      "markers": [{"name": "head", "nodeId": "n1"}, {"name": "new", "nodeId": "new", "color": "#10b981"}],
+      "msg": "Step 1: allocate new node with value 6"
+    },
+    {
+      "nodes": [
+        {"id": "new", "value": "6", "style": "new"},
+        {"id": "n1", "value": "5"},
+        {"id": "n2", "value": "7"},
+        {"id": "n3", "value": "3"}
+      ],
+      "links": [["new","n1"],["n1","n2"],["n2","n3"]],
+      "markers": [{"name": "head", "nodeId": "n1"}, {"name": "new", "nodeId": "new", "color": "#10b981"}],
+      "msg": "Step 2: newNode.next = head (point new node at old head)"
+    },
+    {
+      "nodes": [
+        {"id": "new", "value": "6"},
+        {"id": "n1", "value": "5"},
+        {"id": "n2", "value": "7"},
+        {"id": "n3", "value": "3"}
+      ],
+      "links": [["new","n1"],["n1","n2"],["n2","n3"]],
+      "markers": [{"name": "head", "nodeId": "new"}],
+      "msg": "Step 3: head = newNode — done in O(1)"
+    }
+  ]
 }
-
-after: "After — insert val=6 at beginning" {
-  direction: right
-  h: head {shape: oval}
-  new: {
-    val: 6
-    next
-    style.fill: "#dcfce7"
-    style.stroke: "#16a34a"
-  }
-  c1: {val: 5; next}
-  c2: {val: 7; next}
-  c3: {val: 3; next: "null"}
-  h -> new.val
-  new.next -> c1.val
-  c1.next -> c2.val
-  c2.next -> c3.val
-}
-
-before -> after: "newNode.next = head\nhead = newNode"
 ```
 
 <p align="center"><strong>Case 2 — non-empty list: point the new node's <code>next</code> to the old head, then make the new node the new head.</strong></p>
@@ -446,26 +471,27 @@ Inserting at the end of a list is a common operation used to extend the list. Un
 
 If the linked list is empty, the **head** is `null`. We create a new node and make it the head — it is also the tail since it's the only node.
 
-```d2
-direction: right
-
-before: "Before — empty list" {
-  h1: "head = null" {shape: oval}
+```d3 widget=linked-list
+{
+  "title": "Insert at end — empty list: same as insert at beginning when there's nothing yet",
+  "direction": "single",
+  "nodes": [{"id": "n", "value": "6"}],
+  "head": "n",
+  "steps": [
+    {
+      "nodes": [],
+      "links": [],
+      "markers": [],
+      "msg": "Before: head = null (empty list)"
+    },
+    {
+      "nodes": [{"id": "n", "value": "6", "style": "new"}],
+      "links": [],
+      "markers": [{"name": "head", "nodeId": "n"}],
+      "msg": "Create newNode and make it the head — newNode.next = null"
+    }
+  ]
 }
-
-after: "After — insert val=6" {
-  direction: right
-  h2: head {shape: oval}
-  n: {
-    val: 6
-    next: "null"
-    style.fill: "#dcfce7"
-    style.stroke: "#16a34a"
-  }
-  h2 -> n.val
-}
-
-before -> after: "create new node,\nhead = newNode"
 ```
 
 <p align="center"><strong>Case 1 — empty list: the new node becomes both head and tail.</strong></p>
@@ -480,36 +506,62 @@ before -> after: "create new node,\nhead = newNode"
 
 We traverse to the last node (whose `next` is `null`) and link the new node after it.
 
-```d2
-direction: right
-
-before: "Before — list = [5, 7, 3]" {
-  direction: right
-  b1: "val: 5"
-  b2: "val: 7"
-  b3: |md
-    val: 3
-
-    `next: null`
-  |
-  b1 -> b2 -> b3
+```d3 widget=linked-list
+{
+  "title": "Insert at end — non-empty list: walk to tail then attach",
+  "direction": "single",
+  "nodes": [
+    {"id": "n1", "value": "5"},
+    {"id": "n2", "value": "7"},
+    {"id": "n3", "value": "3"},
+    {"id": "new", "value": "6"}
+  ],
+  "head": "n1",
+  "steps": [
+    {
+      "nodes": [
+        {"id": "n1", "value": "5"},
+        {"id": "n2", "value": "7"},
+        {"id": "n3", "value": "3"}
+      ],
+      "links": [["n1","n2"],["n2","n3"]],
+      "markers": [{"name": "curr", "nodeId": "n1"}],
+      "msg": "Before: head → 5 → 7 → 3. Start curr at head."
+    },
+    {
+      "nodes": [
+        {"id": "n1", "value": "5"},
+        {"id": "n2", "value": "7"},
+        {"id": "n3", "value": "3"}
+      ],
+      "links": [["n1","n2"],["n2","n3"]],
+      "markers": [{"name": "curr", "nodeId": "n3"}],
+      "msg": "Walk to the tail (curr.next == null) — O(n)"
+    },
+    {
+      "nodes": [
+        {"id": "n1", "value": "5"},
+        {"id": "n2", "value": "7"},
+        {"id": "n3", "value": "3"},
+        {"id": "new", "value": "6", "style": "new"}
+      ],
+      "links": [["n1","n2"],["n2","n3"]],
+      "markers": [{"name": "curr", "nodeId": "n3"}, {"name": "new", "nodeId": "new", "color": "#10b981"}],
+      "msg": "Allocate newNode"
+    },
+    {
+      "nodes": [
+        {"id": "n1", "value": "5"},
+        {"id": "n2", "value": "7"},
+        {"id": "n3", "value": "3"},
+        {"id": "new", "value": "6"}
+      ],
+      "links": [["n1","n2"],["n2","n3"],["n3","new"]],
+      "markers": [{"name": "head", "nodeId": "n1"}],
+      "msg": "tail.next = newNode — done. Total O(n) (walk + attach)."
+    }
+  ]
 }
-
-after: "After — insert val=6 at end" {
-  direction: right
-  c1: "val: 5"
-  c2: "val: 7"
-  c3: "val: 3"
-  new: {
-    val: 6
-    next: "null"
-    style.fill: "#dcfce7"
-    style.stroke: "#16a34a"
-  }
-  c1 -> c2 -> c3 -> new.val
-}
-
-before -> after: "traverse to tail,\ntail.next = newNode"
 ```
 
 <p align="center"><strong>Case 2 — non-empty list: traverse to the tail, then set <code>tail.next = newNode</code>.</strong></p>
@@ -899,13 +951,21 @@ Inserting after a given node in a singly linked list is a relatively straightfor
 
 If the list is empty and contains no elements, we cannot find the given node because it does not exist within the list. Inserting a new node after the given node is not possible because there is no reference point within the list to perform the insertion. In such a case, the method would return without making any changes.
 
-```d2
-direction: right
-n1: "node = null" {shape: oval}
-n2: "head = null" {shape: oval}
-n3: "Return — nothing to do" {shape: oval; style.fill: "#fee2e2"; style.stroke: "#dc2626"}
-n1 -> n3
-n2 -> n3
+```d3 widget=linked-list
+{
+  "title": "Insert after given node — empty list or null reference: nothing to do",
+  "direction": "single",
+  "nodes": [{"id": "placeholder", "value": "—"}],
+  "head": "placeholder",
+  "steps": [
+    {
+      "nodes": [],
+      "links": [],
+      "markers": [],
+      "msg": "node = null and/or head = null — no reference point. Return immediately."
+    }
+  ]
+}
 ```
 
 <p align="center"><strong>Case 1 — empty list or null node: the function returns immediately with no changes.</strong></p>
@@ -918,35 +978,52 @@ n2 -> n3
 
 Since the new node will be inserted between two existing nodes, we must ensure that we properly set up the pointers of these nodes. Inserting after a given node is a three-step process.
 
-```mermaid
----
-config:
-  theme: base
-  themeVariables:
-    primaryColor: "#dbeafe"
-    primaryBorderColor: "#3b82f6"
-    primaryTextColor: "#1e3a5f"
-    lineColor: "#64748b"
-    secondaryColor: "#ede9fe"
-    tertiaryColor: "#fef9c3"
----
-flowchart TB
-    subgraph BEFORE["Before — list = [5, 7, 3], insert 6 after node(7)"]
-        direction LR
-        B1["val: 5"] --> B2["val: 7<br/>(given node)"] --> B3["val: 3<br/>next: null"]
-    end
-    subgraph STEP1["Step 1 — newNode.next = node.next"]
-        direction LR
-        S1["val: 5"] --> S2["val: 7<br/>(given)"] --> S3["val: 3<br/>next: null"]
-        NEW1["val: 6<br/>next: ●"] -->|"points to"| S3
-        style NEW1 fill:#fef9c3,stroke:#3b82f6
-    end
-    subgraph AFTER["Step 2 — node.next = newNode"]
-        direction LR
-        C1["val: 5"] --> C2["val: 7<br/>(given)"] --> NEW2["val: 6<br/>next: ●"] --> C3["val: 3<br/>next: null"]
-        style NEW2 fill:#fef9c3,stroke:#3b82f6
-    end
-    BEFORE --> STEP1 --> AFTER
+```d3 widget=linked-list
+{
+  "title": "Insert 6 after node(7) — bridge new.next first, then redirect node.next",
+  "direction": "single",
+  "nodes": [
+    {"id": "n1", "value": "5"},
+    {"id": "n2", "value": "7"},
+    {"id": "new", "value": "6"},
+    {"id": "n3", "value": "3"}
+  ],
+  "head": "n1",
+  "steps": [
+    {
+      "nodes": [
+        {"id": "n1", "value": "5"},
+        {"id": "n2", "value": "7"},
+        {"id": "n3", "value": "3"}
+      ],
+      "links": [["n1","n2"],["n2","n3"]],
+      "markers": [{"name": "given", "nodeId": "n2"}],
+      "msg": "Before: list = [5, 7, 3]; insert 6 after node(7)"
+    },
+    {
+      "nodes": [
+        {"id": "n1", "value": "5"},
+        {"id": "n2", "value": "7"},
+        {"id": "new", "value": "6", "style": "new"},
+        {"id": "n3", "value": "3"}
+      ],
+      "links": [["n1","n2"],["n2","n3"],["new","n3"]],
+      "markers": [{"name": "given", "nodeId": "n2"}, {"name": "new", "nodeId": "new", "color": "#10b981"}],
+      "msg": "Step 1: newNode.next = node.next — new bridges over to node 3"
+    },
+    {
+      "nodes": [
+        {"id": "n1", "value": "5"},
+        {"id": "n2", "value": "7"},
+        {"id": "new", "value": "6"},
+        {"id": "n3", "value": "3"}
+      ],
+      "links": [["n1","n2"],["n2","new"],["new","n3"]],
+      "markers": [{"name": "head", "nodeId": "n1"}],
+      "msg": "Step 2: node.next = newNode — splice complete. O(1)."
+    }
+  ]
+}
 ```
 
 <p align="center"><strong>Case 2 — non-empty list: bridge the new node in by wiring its <code>next</code> first, then redirecting the given node.</strong></p>
@@ -1286,11 +1363,21 @@ Inserting before a given node may seem simple, just like inserting after a node.
 
 If the list is empty and contains no elements, we cannot find the given node because it does not exist within the list. Inserting a new node before the given node is not possible. In such a case, we return the **head** node as-is.
 
-```d2
-direction: right
-h: "head = null" {shape: oval}
-r: "Return head — nothing to do" {shape: oval; style.fill: "#fee2e2"; style.stroke: "#dc2626"}
-h -> r
+```d3 widget=linked-list
+{
+  "title": "Insert before given node — empty list: return head unchanged",
+  "direction": "single",
+  "nodes": [{"id": "placeholder", "value": "—"}],
+  "head": "placeholder",
+  "steps": [
+    {
+      "nodes": [],
+      "links": [],
+      "markers": [],
+      "msg": "head = null — given node cannot exist. Return null."
+    }
+  ]
+}
 ```
 
 <p align="center"><strong>Case 1 — empty list: return the head immediately with no changes.</strong></p>
@@ -1303,52 +1390,41 @@ h -> r
 
 This is similar to **inserting at the beginning**, which we learned earlier. To determine if the given node is the first node, we compare it to the **head** node. If both are the same object, the given node is the head.
 
-```d2
-direction: right
-
-before: "Before — node == head" {
-  direction: right
-  h: head {shape: oval}
-  b1: |md
-    val: 7
-
-    (given)
-  |
-  b2: "val: 3"
-  b3: |md
-    val: 10
-
-    `next: null`
-  |
-  h -> b1 -> b2 -> b3
+```d3 widget=linked-list
+{
+  "title": "Insert before given node — given == head: same as insert-at-beginning",
+  "direction": "single",
+  "nodes": [
+    {"id": "new", "value": "6"},
+    {"id": "n1", "value": "7"},
+    {"id": "n2", "value": "3"},
+    {"id": "n3", "value": "10"}
+  ],
+  "head": "n1",
+  "steps": [
+    {
+      "nodes": [
+        {"id": "n1", "value": "7"},
+        {"id": "n2", "value": "3"},
+        {"id": "n3", "value": "10"}
+      ],
+      "links": [["n1","n2"],["n2","n3"]],
+      "markers": [{"name": "head", "nodeId": "n1"}, {"name": "given", "nodeId": "n1", "color": "#10b981"}],
+      "msg": "Before: node == head. Given is node(7)."
+    },
+    {
+      "nodes": [
+        {"id": "new", "value": "6", "style": "new"},
+        {"id": "n1", "value": "7"},
+        {"id": "n2", "value": "3"},
+        {"id": "n3", "value": "10"}
+      ],
+      "links": [["new","n1"],["n1","n2"],["n2","n3"]],
+      "markers": [{"name": "head", "nodeId": "new"}],
+      "msg": "newNode.next = head, return newNode — done in O(1)"
+    }
+  ]
 }
-
-after: "After — insert val=6 before node(7)" {
-  direction: right
-  h: head {shape: oval}
-  new: {
-    val: 6
-    next
-    style.fill: "#dcfce7"
-    style.stroke: "#16a34a"
-  }
-  c1: |md
-    val: 7
-
-    (given)
-  |
-  c2: "val: 3"
-  c3: |md
-    val: 10
-
-    `next: null`
-  |
-  h -> new.val
-  new.next -> c1
-  c1 -> c2 -> c3
-}
-
-before -> after: "newNode.next = head\nreturn newNode"
 ```
 
 <p align="center"><strong>Case 2 — given node is the head: same as insert-at-beginning; the new node becomes the new head.</strong></p>
@@ -1363,24 +1439,24 @@ before -> after: "newNode.next = head\nreturn newNode"
 
 This case is not easy, but it becomes simpler once we understand the concept behind it. The problem is that we don't have a reference to the node just before the given node. Without that predecessor, we can't rewire its `next` pointer after inserting.
 
-```d2
-problem: "Problem — no predecessor reference" {
-  direction: right
-  p1: "val: 5"
-  p2: "val: 7"
-  p3: |md
-    val: 3
-
-    (given)
-  | {style.fill: "#fde68a"; style.stroke: "#d97706"}
-  p4: |md
-    val: 10
-
-    `next: null`
-  |
-  p1 -> p2 -> p3 -> p4
-  q: "We want to insert\nBEFORE node(3)\nbut who points to it?" {shape: oval}
-  q -> p3: "" {style.stroke-dash: 3}
+```d3 widget=linked-list
+{
+  "title": "Problem — singly-linked lists are forward-only, so the predecessor is unknown",
+  "direction": "single",
+  "nodes": [
+    {"id": "n1", "value": "5"},
+    {"id": "n2", "value": "7"},
+    {"id": "n3", "value": "3"},
+    {"id": "n4", "value": "10"}
+  ],
+  "head": "n1",
+  "steps": [
+    {
+      "links": [["n1","n2"],["n2","n3"],["n3","n4"]],
+      "markers": [{"name": "given", "nodeId": "n3"}],
+      "msg": "Want to insert BEFORE node(3). But which node points to node(3)? We have no back-pointer."
+    }
+  ]
 }
 ```
 
@@ -1390,56 +1466,67 @@ problem: "Problem — no predecessor reference" {
 
 We create a `previous` pointer initialised to `null`. As we traverse, we update both `current` and `previous` together at each step. When `current` reaches the given node, `previous` holds its predecessor. The problem then reduces to **inserting after the previous node** — which we already know how to do.
 
-```d2
-direction: right
-
-before: "Before — list = [5, 7, 3, 10], insert 6 before node(3)" {
-  direction: right
-  b1: "val: 5"
-  b2: "val: 7"
-  b3: |md
-    val: 3
-
-    (given)
-  |
-  b4: |md
-    val: 10
-
-    `next: null`
-  |
-  b1 -> b2 -> b3 -> b4
-  pr: previous {shape: oval}
-  cr: current {shape: oval}
-  pr -> b2: "" {style.stroke-dash: 3}
-  cr -> b3: "" {style.stroke-dash: 3}
+```d3 widget=linked-list
+{
+  "title": "Insert before given node — track previous + current as you walk",
+  "direction": "single",
+  "nodes": [
+    {"id": "n1", "value": "5"},
+    {"id": "n2", "value": "7"},
+    {"id": "new", "value": "6"},
+    {"id": "n3", "value": "3"},
+    {"id": "n4", "value": "10"}
+  ],
+  "head": "n1",
+  "steps": [
+    {
+      "nodes": [
+        {"id": "n1", "value": "5"},
+        {"id": "n2", "value": "7"},
+        {"id": "n3", "value": "3"},
+        {"id": "n4", "value": "10"}
+      ],
+      "links": [["n1","n2"],["n2","n3"],["n3","n4"]],
+      "markers": [{"name": "previous", "nodeId": "n1"}, {"name": "current", "nodeId": "n2", "color": "#10b981"}, {"name": "given", "nodeId": "n3", "color": "#f59e0b"}],
+      "msg": "Start: previous=head, current=head.next. Given=node(3)."
+    },
+    {
+      "nodes": [
+        {"id": "n1", "value": "5"},
+        {"id": "n2", "value": "7"},
+        {"id": "n3", "value": "3"},
+        {"id": "n4", "value": "10"}
+      ],
+      "links": [["n1","n2"],["n2","n3"],["n3","n4"]],
+      "markers": [{"name": "previous", "nodeId": "n2"}, {"name": "current", "nodeId": "n3", "color": "#10b981"}, {"name": "given", "nodeId": "n3", "color": "#f59e0b"}],
+      "msg": "Walk forward — current == given (node 3). previous = node(7)."
+    },
+    {
+      "nodes": [
+        {"id": "n1", "value": "5"},
+        {"id": "n2", "value": "7"},
+        {"id": "new", "value": "6", "style": "new"},
+        {"id": "n3", "value": "3"},
+        {"id": "n4", "value": "10"}
+      ],
+      "links": [["n1","n2"],["n2","n3"],["new","n3"],["n3","n4"]],
+      "markers": [{"name": "new", "nodeId": "new"}],
+      "msg": "Allocate newNode; newNode.next = current (point at node 3)"
+    },
+    {
+      "nodes": [
+        {"id": "n1", "value": "5"},
+        {"id": "n2", "value": "7"},
+        {"id": "new", "value": "6"},
+        {"id": "n3", "value": "3"},
+        {"id": "n4", "value": "10"}
+      ],
+      "links": [["n1","n2"],["n2","new"],["new","n3"],["n3","n4"]],
+      "markers": [{"name": "head", "nodeId": "n1"}],
+      "msg": "previous.next = newNode — splice complete. O(n) walk + O(1) wire."
+    }
+  ]
 }
-
-after: "After — previous.next rewired through new node" {
-  direction: right
-  c1: "val: 5"
-  c2: "val: 7"
-  new: {
-    val: 6
-    next
-    style.fill: "#dcfce7"
-    style.stroke: "#16a34a"
-  }
-  c3: |md
-    val: 3
-
-    (given)
-  |
-  c4: |md
-    val: 10
-
-    `next: null`
-  |
-  c1 -> c2 -> new.val
-  new.next -> c3
-  c3 -> c4
-}
-
-before -> after: "newNode.next = current\nprevious.next = newNode"
 ```
 
 <p align="center"><strong>Case 3 — non-head node: traverse with two pointers until <code>current == given</code>, then wire the new node between <code>previous</code> and <code>current</code>.</strong></p>
@@ -1991,15 +2078,21 @@ Just as inserting before a given node is accomplished by piggybacking on the sea
 
 Attempting to insert a node at a position greater than 0 in an empty list is invalid. The only valid position in an empty list is position 0 (making the new node the head). When X > 0 but no nodes exist, we return the existing **head**.
 
-```d2
-direction: right
-h: "head = null" {shape: oval}
-c: "X > 0?" {shape: diamond}
-r: "Return head — invalid position" {shape: oval; style.fill: "#fee2e2"; style.stroke: "#dc2626"}
-n: "Create node, return it as head" {shape: oval; style.fill: "#dcfce7"; style.stroke: "#16a34a"}
-h -> c
-c -> r: "Yes"
-c -> n: "No (X=0)"
+```d3 widget=linked-list
+{
+  "title": "Insert at distance — empty list with X > 0: invalid position, return null",
+  "direction": "single",
+  "nodes": [{"id": "placeholder", "value": "—"}],
+  "head": "placeholder",
+  "steps": [
+    {
+      "nodes": [],
+      "links": [],
+      "markers": [],
+      "msg": "head = null, X > 0 — no valid position. Return null. (X = 0 with empty list is the create-new-head case.)"
+    }
+  ]
+}
 ```
 
 <p align="center"><strong>Case 1 — empty list with X > 0: no position exists to insert at, return unchanged.</strong></p>
@@ -2012,22 +2105,41 @@ c -> n: "No (X=0)"
 
 Inserting at distance 0 means inserting at the **beginning** of the list — exactly what we covered in the very first insertion lesson.
 
-```d2
-direction: right
-new: |md
-  val: 6
-
-  (new)
-| {style.fill: "#dcfce7"; style.stroke: "#16a34a"}
-n1: "val: 5"
-n2: "val: 7"
-n3: |md
-  val: 3
-
-  `next: null`
-|
-new -> n1: "newNode.next = head"
-n1 -> n2 -> n3
+```d3 widget=linked-list
+{
+  "title": "Insert at distance X = 0 — same as insert-at-beginning",
+  "direction": "single",
+  "nodes": [
+    {"id": "new", "value": "6"},
+    {"id": "n1", "value": "5"},
+    {"id": "n2", "value": "7"},
+    {"id": "n3", "value": "3"}
+  ],
+  "head": "n1",
+  "steps": [
+    {
+      "nodes": [
+        {"id": "n1", "value": "5"},
+        {"id": "n2", "value": "7"},
+        {"id": "n3", "value": "3"}
+      ],
+      "links": [["n1","n2"],["n2","n3"]],
+      "markers": [{"name": "head", "nodeId": "n1"}],
+      "msg": "Before: head → 5 → 7 → 3, X = 0"
+    },
+    {
+      "nodes": [
+        {"id": "new", "value": "6", "style": "new"},
+        {"id": "n1", "value": "5"},
+        {"id": "n2", "value": "7"},
+        {"id": "n3", "value": "3"}
+      ],
+      "links": [["new","n1"],["n1","n2"],["n2","n3"]],
+      "markers": [{"name": "head", "nodeId": "new"}],
+      "msg": "newNode.next = head; head = newNode. O(1)."
+    }
+  ]
+}
 ```
 
 <p align="center"><strong>Case 2 — X = 0: insert-at-beginning; new node becomes the new head.</strong></p>
@@ -2042,58 +2154,67 @@ n1 -> n2 -> n3
 
 Traverse the list while keeping a counter starting at 0. Increment the counter on each step. Stop when `counter == X - 1` — this lands us at the node just **before** where we want to insert. The problem then reduces to **inserting after that node**, which we already know.
 
-```d2
-direction: right
-
-before: "Before — list = [5, 7, 3, 10], X = 2" {
-  direction: right
-  b1: |md
-    val: 5
-
-    `idx 0`
-  |
-  b2: |md
-    val: 7
-
-    `idx 1`
-  |
-  b3: |md
-    val: 3
-
-    `idx 2`
-  |
-  b4: |md
-    val: 10
-
-    `next: null`
-  |
-  b1 -> b2 -> b3 -> b4
-  cur: "current stops\nat idx X−1 = 1" {shape: oval}
-  cur -> b2: "" {style.stroke-dash: 3}
+```d3 widget=linked-list
+{
+  "title": "Insert at distance X = 2 — walk X−1 steps, then splice",
+  "direction": "single",
+  "nodes": [
+    {"id": "n1", "value": "5"},
+    {"id": "n2", "value": "7"},
+    {"id": "new", "value": "6"},
+    {"id": "n3", "value": "3"},
+    {"id": "n4", "value": "10"}
+  ],
+  "head": "n1",
+  "steps": [
+    {
+      "nodes": [
+        {"id": "n1", "value": "5"},
+        {"id": "n2", "value": "7"},
+        {"id": "n3", "value": "3"},
+        {"id": "n4", "value": "10"}
+      ],
+      "links": [["n1","n2"],["n2","n3"],["n3","n4"]],
+      "markers": [{"name": "current", "nodeId": "n1"}, {"name": "counter=0", "nodeId": "n1", "color": "#10b981"}],
+      "msg": "Start: current=head, counter=0. Target X=2 → stop at counter X−1 = 1."
+    },
+    {
+      "nodes": [
+        {"id": "n1", "value": "5"},
+        {"id": "n2", "value": "7"},
+        {"id": "n3", "value": "3"},
+        {"id": "n4", "value": "10"}
+      ],
+      "links": [["n1","n2"],["n2","n3"],["n3","n4"]],
+      "markers": [{"name": "current", "nodeId": "n2"}, {"name": "counter=1", "nodeId": "n2", "color": "#10b981"}],
+      "msg": "Walk: counter=1, current at node(7). Stop."
+    },
+    {
+      "nodes": [
+        {"id": "n1", "value": "5"},
+        {"id": "n2", "value": "7"},
+        {"id": "new", "value": "6", "style": "new"},
+        {"id": "n3", "value": "3"},
+        {"id": "n4", "value": "10"}
+      ],
+      "links": [["n1","n2"],["n2","n3"],["new","n3"],["n3","n4"]],
+      "markers": [{"name": "new", "nodeId": "new"}],
+      "msg": "newNode.next = current.next (point at node 3)"
+    },
+    {
+      "nodes": [
+        {"id": "n1", "value": "5"},
+        {"id": "n2", "value": "7"},
+        {"id": "new", "value": "6"},
+        {"id": "n3", "value": "3"},
+        {"id": "n4", "value": "10"}
+      ],
+      "links": [["n1","n2"],["n2","new"],["new","n3"],["n3","n4"]],
+      "markers": [{"name": "head", "nodeId": "n1"}],
+      "msg": "current.next = newNode — splice complete. List is 5 → 7 → 6 → 3 → 10."
+    }
+  ]
 }
-
-after: "After — insert val=6 at distance 2" {
-  direction: right
-  c1: "val: 5"
-  c2: "val: 7"
-  new: {
-    val: 6
-    next
-    style.fill: "#dcfce7"
-    style.stroke: "#16a34a"
-  }
-  c3: "val: 3"
-  c4: |md
-    val: 10
-
-    `next: null`
-  |
-  c1 -> c2 -> new.val
-  new.next -> c3
-  c3 -> c4
-}
-
-before -> after: "newNode.next = current.next\ncurrent.next = newNode"
 ```
 
 <p align="center"><strong>Case 3 — valid position: traverse X−1 steps to land at the predecessor, then splice in the new node.</strong></p>
@@ -2110,20 +2231,30 @@ before -> after: "newNode.next = current.next\ncurrent.next = newNode"
 
 If `X` exceeds the list's length, the position doesn't exist. For example, inserting at position 5 in a 4-element list is invalid — we return the existing **head** unchanged.
 
-```d2
-direction: right
-n1: "val: 5"
-n2: "val: 7"
-n3: "val: 3"
-n4: |md
-  val: 10
-
-  `next: null`
-|
-n1 -> n2 -> n3 -> n4
-
-oob: "X = 5 > size (4)\ncurrent reaches null\n→ return head unchanged" {shape: oval; style.fill: "#fee2e2"; style.stroke: "#dc2626"}
-oob -> n4: "" {style.stroke-dash: 3}
+```d3 widget=linked-list
+{
+  "title": "Insert at distance X = 5 in size-4 list — traversal falls off, return head unchanged",
+  "direction": "single",
+  "nodes": [
+    {"id": "n1", "value": "5"},
+    {"id": "n2", "value": "7"},
+    {"id": "n3", "value": "3"},
+    {"id": "n4", "value": "10"}
+  ],
+  "head": "n1",
+  "steps": [
+    {
+      "links": [["n1","n2"],["n2","n3"],["n3","n4"]],
+      "markers": [{"name": "current", "nodeId": "n4"}, {"name": "counter=3", "nodeId": "n4", "color": "#10b981"}],
+      "msg": "Walking forward — counter reaches 3 at node(10). Target X−1 = 4."
+    },
+    {
+      "links": [["n1","n2"],["n2","n3"],["n3","n4"]],
+      "markers": [{"name": "head", "nodeId": "n1"}],
+      "msg": "current = current.next becomes null before counter hits 4. X = 5 exceeds size 4 → return head unchanged."
+    }
+  ]
+}
 ```
 
 <p align="center"><strong>Case 4 — X exceeds list size: traversal hits null before reaching X−1, return unchanged.</strong></p>

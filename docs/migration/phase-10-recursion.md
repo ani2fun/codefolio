@@ -6,6 +6,16 @@
 **Source**: `/Users/aniket/Development/others/tutorial_dsa/extracted_data/DSA/algorithms/1.recursion/`
 **Destination**: `/Users/aniket/Development/homelab/codefolio/content/cortex/data-structures-and-algorithms/05-algorithms-by-strategy/01-recursion/`
 
+## Widgets required
+
+| Widget | Status | Notes |
+|---|---|---|
+| `call-stack` | to-build | ADR pending. Source has 10 Interactive Diagrams — recursion-tree animation, stack-frame push/pop, stack unwinding. May overlap with `stack-queue` (Phase 4); evaluate at build time |
+
+Per ADR-0006 (updated 2026-05-16): widget builds run as a precursor
+session at the start of the phase. Phase 10 builds (or extends
+from `stack-queue`) the `call-stack` widget.
+
 ## Stats
 
 | | Count |

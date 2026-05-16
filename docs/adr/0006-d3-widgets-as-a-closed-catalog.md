@@ -13,3 +13,10 @@ precedent: shared keeps the structure; the renderer interprets.
 
 Unknown widget names render an inline error rather than failing the chapter — the catalog is a closed match
 in `D3WidgetBlock`, and a typo in markdown should not break the page.
+
+**Update (2026-05-16, ADR-0014):** the catalog now **grows per phase** as the DSA migration introduces new
+visualisation topologies. Each new widget gets its own ADR (ADR-0014 for `linked-list`; future widgets follow
+the same shape — ADR + Scala module + CSS BEM block + one dispatcher case). The closed-catalog stance is
+unchanged: authors still name widgets in fences, unknown names still render an inline error, payload schemas
+remain widget-private. Widget builds run as a precursor at the *start* of each phase, before any chapter
+alignment work in that phase begins — codified in `docs/dsa-migration-session-prompt.md`.

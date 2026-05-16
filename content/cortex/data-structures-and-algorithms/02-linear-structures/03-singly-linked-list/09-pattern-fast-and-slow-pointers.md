@@ -29,29 +29,29 @@ The problem can be further extended to find a node between two given nodes at a 
 
 The fast and slow pointer pattern is a classification of problems that can be solved using the fast and slow pointer technique.
 
-```d2
-direction: right
-h: head {shape: oval}
-a: "·"
-b: "·"
-c: "·"
-d: |md
-  **target**
-
-  (at 1/n of length)
-| {style.fill: "#fde68a"; style.stroke: "#d97706"}
-e: "·"
-f: "·"
-g: "·"
-t: tail
-h -> a
-a -> b
-b -> c
-c -> d
-d -> e
-e -> f
-f -> g
-g -> t
+```d3 widget=linked-list
+{
+  "title": "Fast-and-slow finds a node at a proportional distance — e.g., 1/n of length",
+  "direction": "single",
+  "nodes": [
+    {"id": "n1", "value": "1"},
+    {"id": "n2", "value": "2"},
+    {"id": "n3", "value": "3"},
+    {"id": "n4", "value": "4"},
+    {"id": "n5", "value": "5"},
+    {"id": "n6", "value": "6"},
+    {"id": "n7", "value": "7"},
+    {"id": "n8", "value": "8"}
+  ],
+  "head": "n1",
+  "steps": [
+    {
+      "links": [["n1","n2"],["n2","n3"],["n3","n4"],["n4","n5"],["n5","n6"],["n6","n7"],["n7","n8"]],
+      "markers": [{"name": "head", "nodeId": "n1"}, {"name": "target = 1/n", "nodeId": "n4", "color": "#f59e0b"}, {"name": "tail", "nodeId": "n8", "color": "#10b981"}],
+      "msg": "Goal: find a node at 1/n of the length in a single pass — no length measurement needed"
+    }
+  ]
+}
 ```
 
 <p align="center"><strong>Fast-and-slow pointers find a node at a <em>proportional</em> distance from the ends — e.g., the middle (<code>n=2</code>, one pointer moves twice as fast), or the 1/3 point (<code>n=3</code>, fast moves three times as fast). No length measurement needed.</strong></p>
@@ -64,31 +64,36 @@ It should be noted that a solution node will only exist if the length **L** betw
 
 The idea is to initialize two references `flast` and `slow` with `start` and move them forward at different speeds until `fast` reaches `end`.The `slow` reference moves **1** step in each iteration, while the `fast` reference moves **(n+1)** steps. This way, at the end of every iteration, the `slow` reference is at a proportional distance from the `start` and `fast` reference. When the `fast` reference reaches `end`, the `slow` reference points to the solution node.
 
-```d2
-direction: right
-h: head {shape: oval}
-a: "1"
-b: "2"
-m: |md
-  **3**
-
-  middle
-| {style.fill: "#fde68a"; style.stroke: "#d97706"}
-d: "4"
-e: "5"
-note: |md
-  fast moves 2 steps per tick
-
-  slow moves 1 step per tick
-
-  when fast reaches tail, slow is at middle
-| {shape: rectangle}
-h -> a
-a -> b
-b -> m
-m -> d
-d -> e
-e -> note: "" {style.stroke-dash: 3}
+```d3 widget=linked-list
+{
+  "title": "Middle-finding — fast moves 2x; when fast reaches tail, slow is at the middle",
+  "direction": "single",
+  "nodes": [
+    {"id": "n1", "value": "1"},
+    {"id": "n2", "value": "2"},
+    {"id": "n3", "value": "3"},
+    {"id": "n4", "value": "4"},
+    {"id": "n5", "value": "5"}
+  ],
+  "head": "n1",
+  "steps": [
+    {
+      "links": [["n1","n2"],["n2","n3"],["n3","n4"],["n4","n5"]],
+      "markers": [{"name": "slow", "nodeId": "n1"}, {"name": "fast", "nodeId": "n1", "color": "#10b981"}],
+      "msg": "Init: slow = fast = head"
+    },
+    {
+      "links": [["n1","n2"],["n2","n3"],["n3","n4"],["n4","n5"]],
+      "markers": [{"name": "slow", "nodeId": "n2"}, {"name": "fast", "nodeId": "n3", "color": "#10b981"}],
+      "msg": "Tick 1: slow → 2, fast → 3"
+    },
+    {
+      "links": [["n1","n2"],["n2","n3"],["n3","n4"],["n4","n5"]],
+      "markers": [{"name": "slow", "nodeId": "n3", "color": "#f59e0b"}, {"name": "fast", "nodeId": "n5", "color": "#10b981"}],
+      "msg": "Tick 2: slow → 3, fast → 5 (tail). Loop ends. slow is the middle."
+    }
+  ]
+}
 ```
 
 <p align="center"><strong>The middle-finding case — by far the most common. <code>fast</code> moves twice as fast as <code>slow</code>. Because fast traverses at 2× speed, it reaches the end in half the ticks it would take slow — so when fast is done, slow is exactly halfway through.</strong></p>
@@ -305,37 +310,36 @@ Let's consider the following problem as an example to better understand how to i
 
 > **Problem statement:** Given a linked list, find the middle node.
 
-```d2
-odd: "Odd length — [1, 2, 3, 4, 5]" {
-  direction: right
-  a1: "1"
-  a2: "2"
-  a3: |md
-    **3**
-
-    middle
-  | {style.fill: "#fde68a"; style.stroke: "#d97706"}
-  a4: "4"
-  a5: "5"
-  a1 -> a2
-  a2 -> a3
-  a3 -> a4
-  a4 -> a5
-}
-
-even: "Even length — [1, 2, 3, 4]" {
-  direction: right
-  b1: "1"
-  b2: "2"
-  b3: |md
-    **3**
-
-    2nd middle
-  | {style.fill: "#fde68a"; style.stroke: "#d97706"}
-  b4: "4"
-  b1 -> b2
-  b2 -> b3
-  b3 -> b4
+```d3 widget=linked-list
+{
+  "title": "Middle node — odd length picks the true centre; even length picks the second middle",
+  "direction": "single",
+  "nodes": [
+    {"id": "a1", "value": "1"},
+    {"id": "a2", "value": "2"},
+    {"id": "a3", "value": "3"},
+    {"id": "a4", "value": "4"},
+    {"id": "a5", "value": "5"}
+  ],
+  "head": "a1",
+  "steps": [
+    {
+      "links": [["a1","a2"],["a2","a3"],["a3","a4"],["a4","a5"]],
+      "markers": [{"name": "middle", "nodeId": "a3", "color": "#f59e0b"}],
+      "msg": "Odd length [1,2,3,4,5] — middle = node(3), unambiguous"
+    },
+    {
+      "nodes": [
+        {"id": "a1", "value": "1"},
+        {"id": "a2", "value": "2"},
+        {"id": "a3", "value": "3"},
+        {"id": "a4", "value": "4"}
+      ],
+      "links": [["a1","a2"],["a2","a3"],["a3","a4"]],
+      "markers": [{"name": "2nd middle", "nodeId": "a3", "color": "#f59e0b"}],
+      "msg": "Even length [1,2,3,4] — fast-and-slow returns the SECOND middle = node(3)"
+    }
+  ]
 }
 ```
 
@@ -1092,38 +1096,45 @@ object Solution {
 Given the **head** of a singly linked list, write a function that returns `true` if the sum of the nodes of the first half of the linked list is equal to the sum of the nodes of the second half. Return `false` otherwise.
 
 ```d2
-odd: "Odd length — [1, 2, 3, 4, 5], middle = 3" {
-  h1: First half {
-    direction: right
-    o1: "1"
-    o2: "2"
-    o3: "3 ★" {style.fill: "#fde68a"; style.stroke: "#d97706"}
-    o1 -> o2
-    o2 -> o3
-  }
-  h2: Second half {
-    direction: right
-    o4: "4"
-    o5: "5"
-    o4 -> o5
-  }
+direction: right
+title: "Odd length [1, 2, 3, 4, 5] — middle (★ 3) belongs to the first half" {shape: text; near: top-center}
+h1: First half (3 nodes) {
+  direction: right
+  o1: "1"
+  o2: "2"
+  o3: "3 ★" {style.fill: "#fde68a"; style.stroke: "#d97706"}
+  o1 -> o2 -> o3
 }
-
-even: "Even length — [1, 2, 3, 4], middles = 2 and 3" {
-  h1: First half {
-    direction: right
-    e1: "1"
-    e2: "2"
-    e1 -> e2
-  }
-  h2: Second half {
-    direction: right
-    e3: "3"
-    e4: "4"
-    e3 -> e4
-  }
+h2: Second half (2 nodes) {
+  direction: right
+  o4: "4"
+  o5: "5"
+  o4 -> o5
 }
+h1 -> h2
 ```
+
+<p align="center"><strong>Odd length — the middle node (3) belongs to the first half. Sums must match across <code>{1,2,3}</code> and <code>{4,5}</code>.</strong></p>
+
+```d2
+direction: right
+title: "Even length [1, 2, 3, 4] — halves are equal (2 + 2)" {shape: text; near: top-center}
+h1: First half (2 nodes) {
+  direction: right
+  e1: "1"
+  e2: "2"
+  e1 -> e2
+}
+h2: Second half (2 nodes) {
+  direction: right
+  e3: "3"
+  e4: "4"
+  e3 -> e4
+}
+h1 -> h2
+```
+
+<p align="center"><strong>Even length — the two halves are equal in size. Sums must match across <code>{1,2}</code> and <code>{3,4}</code>.</strong></p>
 
 <p align="center"><strong>Split convention — when the list has odd length, the single middle node belongs to the first half. When even, the two halves are equal.</strong></p>
 

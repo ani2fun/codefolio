@@ -46,57 +46,46 @@ When the list is empty, any attempt to delete a node is unnecessary because ther
 
 Update **head** to hold the reference of the next node (the second node), effectively unlinking the first node. In GC languages (Java, Python, JS), the old head is automatically collected. In C/C++, we explicitly free/delete it.
 
-```d2
-direction: right
-
-before: "Before — list = [5, 7, 3, 10]" {
-  direction: right
-  h: head {shape: oval}
-  n1: {
-    value: 5
-    next
-    style.fill: "#fde68a"
-    style.stroke: "#d97706"
-  }
-  n2: {
-    value: 7
-    next
-  }
-  n3: {
-    value: 3
-    next
-  }
-  n4: {
-    value: 10
-    next: "null"
-  }
-  h -> n1.value
-  n1.next -> n2.value
-  n2.next -> n3.value
-  n3.next -> n4.value
+```d3 widget=linked-list
+{
+  "title": "Delete first node — advance head; old head is freed",
+  "direction": "single",
+  "nodes": [
+    {"id": "n1", "value": "5"},
+    {"id": "n2", "value": "7"},
+    {"id": "n3", "value": "3"},
+    {"id": "n4", "value": "10"}
+  ],
+  "head": "n1",
+  "steps": [
+    {
+      "links": [["n1","n2"],["n2","n3"],["n3","n4"]],
+      "markers": [{"name": "head", "nodeId": "n1"}, {"name": "delete", "nodeId": "n1", "color": "#dc2626"}],
+      "msg": "Before: head → 5 → 7 → 3 → 10. Mark first node for removal."
+    },
+    {
+      "nodes": [
+        {"id": "n1", "value": "5", "style": "removed"},
+        {"id": "n2", "value": "7"},
+        {"id": "n3", "value": "3"},
+        {"id": "n4", "value": "10"}
+      ],
+      "links": [["n1","n2"],["n2","n3"],["n3","n4"]],
+      "markers": [{"name": "head", "nodeId": "n2"}],
+      "msg": "head = head.next — head now points to node(7)"
+    },
+    {
+      "nodes": [
+        {"id": "n2", "value": "7"},
+        {"id": "n3", "value": "3"},
+        {"id": "n4", "value": "10"}
+      ],
+      "links": [["n2","n3"],["n3","n4"]],
+      "markers": [{"name": "head", "nodeId": "n2"}],
+      "msg": "Old head unreachable → freed (GC in Java/Python; explicit free in C). O(1)."
+    }
+  ]
 }
-
-after: "After — head advanced to second node" {
-  direction: right
-  h: head {shape: oval}
-  n2: {
-    value: 7
-    next
-  }
-  n3: {
-    value: 3
-    next
-  }
-  n4: {
-    value: 10
-    next: "null"
-  }
-  h -> n2.value
-  n2.next -> n3.value
-  n3.next -> n4.value
-}
-
-before -> after: "head = head.next; free old head"
 ```
 
 <p align="center"><strong>Case 2 — non-empty list: advance head to the second node; the first node is unlinked and freed.</strong></p>
@@ -485,63 +474,51 @@ Deleting the last node is the same as deleting the first node when only one node
 
 In this scenario, we need to update the pointer of the second last node in the list to hold `null` and then delete the last node. We need access to the list's last and second last nodes to accomplish this. We will traverse the list from the beginning while keeping track of the **current** and  nodes. This way, when we reach the last node, we will have access to the second last node. Thereafter, we can update the pointer of the second last node to `null`, or more intuitively, to the next of the last node, which should already be `null`, and then delete the last node.
 
-```d2
-direction: right
-
-before: "Before — walk with current + previous" {
-  direction: right
-  h: head {shape: oval}
-  n1: {
-    value: 5
-    next
-  }
-  n2: {
-    value: 7
-    next
-  }
-  n3: {
-    value: 3
-    next
-  }
-  n4: {
-    value: 10
-    next: "null"
-    style.fill: "#fde68a"
-    style.stroke: "#d97706"
-  }
-  prev: previous {shape: oval; style.stroke-dash: 3}
-  cur: current {shape: oval; style.stroke-dash: 3}
-  h -> n1.value
-  n1.next -> n2.value
-  n2.next -> n3.value
-  n3.next -> n4.value
-  prev -> n3.value: "" {style.stroke-dash: 3}
-  cur -> n4.value: "" {style.stroke-dash: 3}
+```d3 widget=linked-list
+{
+  "title": "Delete last node — walk with previous + current; unlink tail",
+  "direction": "single",
+  "nodes": [
+    {"id": "n1", "value": "5"},
+    {"id": "n2", "value": "7"},
+    {"id": "n3", "value": "3"},
+    {"id": "n4", "value": "10"}
+  ],
+  "head": "n1",
+  "steps": [
+    {
+      "links": [["n1","n2"],["n2","n3"],["n3","n4"]],
+      "markers": [{"name": "previous", "nodeId": "n1"}, {"name": "current", "nodeId": "n2", "color": "#10b981"}],
+      "msg": "Start: previous=head, current=head.next"
+    },
+    {
+      "links": [["n1","n2"],["n2","n3"],["n3","n4"]],
+      "markers": [{"name": "previous", "nodeId": "n3"}, {"name": "current", "nodeId": "n4", "color": "#10b981"}],
+      "msg": "Walk until current is the tail (current.next == null). previous now holds the second-last."
+    },
+    {
+      "nodes": [
+        {"id": "n1", "value": "5"},
+        {"id": "n2", "value": "7"},
+        {"id": "n3", "value": "3"},
+        {"id": "n4", "value": "10", "style": "removed"}
+      ],
+      "links": [["n1","n2"],["n2","n3"]],
+      "markers": [{"name": "previous", "nodeId": "n3"}],
+      "msg": "previous.next = null — tail is now unreachable"
+    },
+    {
+      "nodes": [
+        {"id": "n1", "value": "5"},
+        {"id": "n2", "value": "7"},
+        {"id": "n3", "value": "3"}
+      ],
+      "links": [["n1","n2"],["n2","n3"]],
+      "markers": [{"name": "head", "nodeId": "n1"}],
+      "msg": "Free old tail. Final list: 5 → 7 → 3. O(n) walk + O(1) unlink."
+    }
+  ]
 }
-
-after: "After — previous.next = null; free current" {
-  direction: right
-  h: head {shape: oval}
-  n1: {
-    value: 5
-    next
-  }
-  n2: {
-    value: 7
-    next
-  }
-  n3: {
-    value: 3
-    next: "null"
-    style.fill: "#dcfce7"
-    style.stroke: "#16a34a"
-  }
-  h -> n1.value
-  n1.next -> n2.value
-  n2.next -> n3.value
-}
-
-before -> after: "unlink tail"
 ```
 
 <p align="center"><strong>To delete the tail we keep two pointers, <code>previous</code> and <code>current</code>, so when <code>current</code> reaches the tail, <code>previous</code> is one step behind — ready to have its <code>next</code> set to <code>null</code>.</strong></p>
@@ -1220,47 +1197,34 @@ When the list is empty, meaning it contains no elements, any attempt to delete a
 
 If the data matches the first node, this case becomes the same as **deleting the first node**. We update the **head** to store the reference to the second node and delete the old head.
 
-```d2
-direction: right
-
-before: "Before — target is the head" {
-  direction: right
-  h: head {shape: oval}
-  n1: {
-    value: "5 (target)"
-    next
-    style.fill: "#fde68a"
-    style.stroke: "#d97706"
-  }
-  n2: {
-    value: 7
-    next
-  }
-  n3: {
-    value: 3
-    next: "null"
-  }
-  h -> n1.value
-  n1.next -> n2.value
-  n2.next -> n3.value
+```d3 widget=linked-list
+{
+  "title": "Target is the head — single pointer update, head advances",
+  "direction": "single",
+  "nodes": [
+    {"id": "n1", "value": "5"},
+    {"id": "n2", "value": "7"},
+    {"id": "n3", "value": "3"}
+  ],
+  "head": "n1",
+  "steps": [
+    {
+      "links": [["n1","n2"],["n2","n3"]],
+      "markers": [{"name": "head", "nodeId": "n1"}, {"name": "target", "nodeId": "n1", "color": "#f59e0b"}],
+      "msg": "Before: target matches the head"
+    },
+    {
+      "nodes": [
+        {"id": "n1", "value": "5", "style": "removed"},
+        {"id": "n2", "value": "7"},
+        {"id": "n3", "value": "3"}
+      ],
+      "links": [["n1","n2"],["n2","n3"]],
+      "markers": [{"name": "head", "nodeId": "n2"}],
+      "msg": "head = head.next — old head unreachable, freed. O(1)."
+    }
+  ]
 }
-
-after: "After — head advances one step" {
-  direction: right
-  h: head {shape: oval}
-  n2: {
-    value: 7
-    next
-  }
-  n3: {
-    value: 3
-    next: "null"
-  }
-  h -> n2.value
-  n2.next -> n3.value
-}
-
-before -> after: "head = head.next"
 ```
 
 <p align="center"><strong>Deleting the head is a single pointer update — move <code>head</code> forward and the old head becomes unreachable (garbage-collected or freed).</strong></p>
@@ -1276,61 +1240,46 @@ before -> after: "head = head.next"
 
 To delete a node that is not the first node of the linked list, we need access to the node 1 step before the one to be deleted. We will traverse the list from the beginning while keeping track of the **current** and nodes. This way, when we reach the node with the given data, we will have access to its previous node, which we need to update.Deleting the given node involves a three-step process.
 
-```d2
-direction: right
-
-before: "Before — walk with prev + current" {
-  direction: right
-  h: head {shape: oval}
-  n1: {
-    value: 5
-    next
-  }
-  n2: {
-    value: "7 (target)"
-    next
-    style.fill: "#fde68a"
-    style.stroke: "#d97706"
-  }
-  n3: {
-    value: 3
-    next
-  }
-  n4: {
-    value: 10
-    next: "null"
-  }
-  prev: prev {shape: oval; style.stroke-dash: 3}
-  cur: current {shape: oval; style.stroke-dash: 3}
-  h -> n1.value
-  n1.next -> n2.value
-  n2.next -> n3.value
-  n3.next -> n4.value
-  prev -> n1.value: "" {style.stroke-dash: 3}
-  cur -> n2.value: "" {style.stroke-dash: 3}
+```d3 widget=linked-list
+{
+  "title": "Interior deletion — prev + current walk, then splice prev.next over current",
+  "direction": "single",
+  "nodes": [
+    {"id": "n1", "value": "5"},
+    {"id": "n2", "value": "7"},
+    {"id": "n3", "value": "3"},
+    {"id": "n4", "value": "10"}
+  ],
+  "head": "n1",
+  "steps": [
+    {
+      "links": [["n1","n2"],["n2","n3"],["n3","n4"]],
+      "markers": [{"name": "prev", "nodeId": "n1"}, {"name": "current", "nodeId": "n2", "color": "#10b981"}, {"name": "target", "nodeId": "n2", "color": "#f59e0b"}],
+      "msg": "Walk: prev=node(5), current=node(7). Match. Stop."
+    },
+    {
+      "nodes": [
+        {"id": "n1", "value": "5"},
+        {"id": "n2", "value": "7", "style": "removed"},
+        {"id": "n3", "value": "3"},
+        {"id": "n4", "value": "10"}
+      ],
+      "links": [["n1","n3"],["n2","n3"],["n3","n4"]],
+      "markers": [{"name": "prev", "nodeId": "n1"}],
+      "msg": "prev.next = current.next — node(5) now points past node(7) to node(3)"
+    },
+    {
+      "nodes": [
+        {"id": "n1", "value": "5"},
+        {"id": "n3", "value": "3"},
+        {"id": "n4", "value": "10"}
+      ],
+      "links": [["n1","n3"],["n3","n4"]],
+      "markers": [{"name": "head", "nodeId": "n1"}],
+      "msg": "Free current. Final: 5 → 3 → 10. O(n) walk + O(1) unlink."
+    }
+  ]
 }
-
-after: "After — splice out current" {
-  direction: right
-  h: head {shape: oval}
-  n1: {
-    value: 5
-    next
-  }
-  n3: {
-    value: 3
-    next
-  }
-  n4: {
-    value: 10
-    next: "null"
-  }
-  h -> n1.value
-  n1.next -> n3.value
-  n3.next -> n4.value
-}
-
-before -> after: "prev.next = current.next; free current"
 ```
 
 <p align="center"><strong>To delete an interior node, we need its predecessor. A two-pointer walk (<code>prev</code> + <code>current</code>) gives us both — then <code>prev.next = current.next</code> unlinks the target in O(1).</strong></p>
@@ -1346,33 +1295,35 @@ before -> after: "prev.next = current.next; free current"
 
 If the data provided does not match the data of any node in the linked list, then such a node does not exist in the list, so we return the existing **head**.
 
-```d2
-direction: right
-h: head {shape: oval}
-n1: {
-  value: 5
-  next
+```d3 widget=linked-list
+{
+  "title": "Target not in list — traversal falls off, return head unchanged",
+  "direction": "single",
+  "nodes": [
+    {"id": "n1", "value": "5"},
+    {"id": "n2", "value": "7"},
+    {"id": "n3", "value": "3"},
+    {"id": "n4", "value": "10"}
+  ],
+  "head": "n1",
+  "steps": [
+    {
+      "links": [["n1","n2"],["n2","n3"],["n3","n4"]],
+      "markers": [{"name": "head", "nodeId": "n1"}, {"name": "target=99", "nodeId": "n1", "color": "#f59e0b"}],
+      "msg": "Looking for value 99. Start at head."
+    },
+    {
+      "links": [["n1","n2"],["n2","n3"],["n3","n4"]],
+      "markers": [{"name": "current", "nodeId": "n4"}],
+      "msg": "Walk through 5 → 7 → 3 → 10 — no match"
+    },
+    {
+      "links": [["n1","n2"],["n2","n3"],["n3","n4"]],
+      "markers": [{"name": "head", "nodeId": "n1"}],
+      "msg": "current = current.next becomes null — target not found. Return head unchanged."
+    }
+  ]
 }
-n2: {
-  value: 7
-  next
-}
-n3: {
-  value: 3
-  next
-}
-n4: {
-  value: 10
-  next: "null"
-}
-target: "target = 99 (not found)" {shape: oval; style.fill: "#fee2e2"; style.stroke: "#dc2626"}
-result: "return head unchanged" {shape: oval}
-h -> n1.value
-n1.next -> n2.value
-n2.next -> n3.value
-n3.next -> n4.value
-target -> result: "" {style.stroke-dash: 3}
-n4.next -> result: "" {style.stroke-dash: 3}
 ```
 
 <p align="center"><strong>If we reach the tail without finding the target, the list contains no node with that value — return the head unchanged.</strong></p>
@@ -2622,28 +2573,24 @@ If the list is empty and contains no elements, we cannot find the given node bec
 
 When the given node is the last node in the list, attempting to delete a node after it becomes an invalid operation. This is because, by definition, the last node has no successor, i.e., no node following it in the sequence. We can return the **head** because no other operation needs to be done.
 
-```d2
-direction: right
-h: head {shape: oval}
-n1: {
-  value: 5
-  next
+```d3 widget=linked-list
+{
+  "title": "Delete after given node — given is the tail: no successor, return unchanged",
+  "direction": "single",
+  "nodes": [
+    {"id": "n1", "value": "5"},
+    {"id": "n2", "value": "7"},
+    {"id": "n3", "value": "3"}
+  ],
+  "head": "n1",
+  "steps": [
+    {
+      "links": [["n1","n2"],["n2","n3"]],
+      "markers": [{"name": "given", "nodeId": "n3"}],
+      "msg": "given is node(3); given.next is null — nothing to delete. Return head unchanged."
+    }
+  ]
 }
-n2: {
-  value: 7
-  next
-}
-n3: {
-  value: "3 (given, next: null)"
-  next: "null"
-  style.fill: "#fde68a"
-  style.stroke: "#d97706"
-}
-result: "return head unchanged" {shape: oval}
-h -> n1.value
-n1.next -> n2.value
-n2.next -> n3.value
-n3.value -> result: "no successor to delete" {style.stroke-dash: 3}
 ```
 
 <p align="center"><strong>If the given node is the tail, there is no "node after it" to delete — return the list unchanged.</strong></p>
@@ -2656,57 +2603,46 @@ n3.value -> result: "no successor to delete" {style.stroke-dash: 3}
 
 To delete a node after a given node, we can update the pointer of the given node to skip over the node that needs to be deleted. Then, we can remove the node that we want to delete.
 
-```d2
-direction: right
-
-before: "Before — delete the node after 'given'" {
-  direction: right
-  h: head {shape: oval}
-  n1: {
-    value: 5
-    next
-  }
-  n2: {
-    value: "7 (given)"
-    next
-  }
-  n3: {
-    value: "3 (victim)"
-    next
-    style.fill: "#fde68a"
-    style.stroke: "#d97706"
-  }
-  n4: {
-    value: 10
-    next: "null"
-  }
-  h -> n1.value
-  n1.next -> n2.value
-  n2.next -> n3.value
-  n3.next -> n4.value
+```d3 widget=linked-list
+{
+  "title": "Delete after given node — O(1): redirect given.next past the victim",
+  "direction": "single",
+  "nodes": [
+    {"id": "n1", "value": "5"},
+    {"id": "n2", "value": "7"},
+    {"id": "n3", "value": "3"},
+    {"id": "n4", "value": "10"}
+  ],
+  "head": "n1",
+  "steps": [
+    {
+      "links": [["n1","n2"],["n2","n3"],["n3","n4"]],
+      "markers": [{"name": "given", "nodeId": "n2"}, {"name": "victim", "nodeId": "n3", "color": "#f59e0b"}],
+      "msg": "given = node(7); given.next = node(3) is the victim"
+    },
+    {
+      "nodes": [
+        {"id": "n1", "value": "5"},
+        {"id": "n2", "value": "7"},
+        {"id": "n3", "value": "3", "style": "removed"},
+        {"id": "n4", "value": "10"}
+      ],
+      "links": [["n1","n2"],["n2","n4"],["n3","n4"]],
+      "markers": [{"name": "given", "nodeId": "n2"}],
+      "msg": "given.next = victim.next — node(7) now points past node(3) to node(10)"
+    },
+    {
+      "nodes": [
+        {"id": "n1", "value": "5"},
+        {"id": "n2", "value": "7"},
+        {"id": "n4", "value": "10"}
+      ],
+      "links": [["n1","n2"],["n2","n4"]],
+      "markers": [{"name": "head", "nodeId": "n1"}],
+      "msg": "Free victim. Final: 5 → 7 → 10. O(1)."
+    }
+  ]
 }
-
-after: "After — given.next = victim.next" {
-  direction: right
-  h: head {shape: oval}
-  n1: {
-    value: 5
-    next
-  }
-  n2: {
-    value: "7 (given)"
-    next
-  }
-  n4: {
-    value: 10
-    next: "null"
-  }
-  h -> n1.value
-  n1.next -> n2.value
-  n2.next -> n4.value
-}
-
-before -> after: "one pointer hop"
 ```
 
 <p align="center"><strong>Deleting the node after a given node is O(1) — we already have the predecessor (the given node itself). Just redirect <code>given.next</code> past the victim.</strong></p>
@@ -3262,28 +3198,24 @@ If the list is empty and contains no elements, we cannot find the given node bec
 
 When the given node is the first node in the list, attempting to delete a node before it becomes an invalid operation. This is because, by definition, the first node has no predecessor, i.e., no node preceding it in the sequence. We can return the **head** because no other operation needs to be done.
 
-```d2
-direction: right
-h: head {shape: oval}
-n1: {
-  value: "5 (given)"
-  next
-  style.fill: "#fde68a"
-  style.stroke: "#d97706"
+```d3 widget=linked-list
+{
+  "title": "Delete before given node — given is the head: no predecessor, return unchanged",
+  "direction": "single",
+  "nodes": [
+    {"id": "n1", "value": "5"},
+    {"id": "n2", "value": "7"},
+    {"id": "n3", "value": "3"}
+  ],
+  "head": "n1",
+  "steps": [
+    {
+      "links": [["n1","n2"],["n2","n3"]],
+      "markers": [{"name": "given", "nodeId": "n1"}],
+      "msg": "given == head — no node precedes it. Return head unchanged."
+    }
+  ]
 }
-n2: {
-  value: 7
-  next
-}
-n3: {
-  value: 3
-  next: "null"
-}
-result: "return head unchanged" {shape: oval}
-h -> n1.value
-n1.next -> n2.value
-n2.next -> n3.value
-n1.value -> result: "no predecessor to delete" {style.stroke-dash: 3}
 ```
 
 <p align="center"><strong>If the given node is the head, there is no "node before it" to delete — return the list unchanged.</strong></p>
@@ -3296,47 +3228,34 @@ n1.value -> result: "no predecessor to delete" {style.stroke-dash: 3}
 
 This is a unique situation because removing the node before the second node essentially means deleting the linked list's head node. As learned earlier, this scenario is identical to **deleting the first node**. We need to update the head to store the reference to the second node and then delete the old head.
 
-```d2
-direction: right
-
-before: "Before — 'given' is the second node" {
-  direction: right
-  h: head {shape: oval}
-  n1: {
-    value: "5 (victim)"
-    next
-    style.fill: "#fde68a"
-    style.stroke: "#d97706"
-  }
-  n2: {
-    value: "7 (given)"
-    next
-  }
-  n3: {
-    value: 3
-    next: "null"
-  }
-  h -> n1.value
-  n1.next -> n2.value
-  n2.next -> n3.value
+```d3 widget=linked-list
+{
+  "title": "Delete before given node — given is second: collapses to 'delete the head'",
+  "direction": "single",
+  "nodes": [
+    {"id": "n1", "value": "5"},
+    {"id": "n2", "value": "7"},
+    {"id": "n3", "value": "3"}
+  ],
+  "head": "n1",
+  "steps": [
+    {
+      "links": [["n1","n2"],["n2","n3"]],
+      "markers": [{"name": "head", "nodeId": "n1"}, {"name": "given", "nodeId": "n2"}, {"name": "victim", "nodeId": "n1", "color": "#f59e0b"}],
+      "msg": "given == second node; the predecessor is the head — head is the victim"
+    },
+    {
+      "nodes": [
+        {"id": "n1", "value": "5", "style": "removed"},
+        {"id": "n2", "value": "7"},
+        {"id": "n3", "value": "3"}
+      ],
+      "links": [["n1","n2"],["n2","n3"]],
+      "markers": [{"name": "head", "nodeId": "n2"}],
+      "msg": "head = head.next — node(5) freed. O(1)."
+    }
+  ]
 }
-
-after: "After — head advances past the victim" {
-  direction: right
-  h: head {shape: oval}
-  n2: {
-    value: "7 (given)"
-    next
-  }
-  n3: {
-    value: 3
-    next: "null"
-  }
-  h -> n2.value
-  n2.next -> n3.value
-}
-
-before -> after: "head = head.next"
 ```
 
 <p align="center"><strong>When <code>given</code> is the second node, the node before it is the head. This special case collapses to "delete the head" — handled in one pointer update.</strong></p>
@@ -3352,61 +3271,46 @@ before -> after: "head = head.next"
 
 To delete the node before a given node, we need to access the node two steps before the given node. We traverse the linked list while keeping track of the **current**,  and **previousToPrevious** nodes. As soon as we reach the given node, we update the pointer of the **previousToPrevious** node to hold the reference to the current node and then delete the node.
 
-```d2
-direction: right
-
-before: "Before — walk with prev + current" {
-  direction: right
-  h: head {shape: oval}
-  n1: {
-    value: 5
-    next
-  }
-  n2: {
-    value: "7 (target)"
-    next
-    style.fill: "#fde68a"
-    style.stroke: "#d97706"
-  }
-  n3: {
-    value: 3
-    next
-  }
-  n4: {
-    value: 10
-    next: "null"
-  }
-  prev: prev {shape: oval; style.stroke-dash: 3}
-  cur: current {shape: oval; style.stroke-dash: 3}
-  h -> n1.value
-  n1.next -> n2.value
-  n2.next -> n3.value
-  n3.next -> n4.value
-  prev -> n1.value: "" {style.stroke-dash: 3}
-  cur -> n2.value: "" {style.stroke-dash: 3}
+```d3 widget=linked-list
+{
+  "title": "Interior deletion — prev + current walk, then splice prev.next over current",
+  "direction": "single",
+  "nodes": [
+    {"id": "n1", "value": "5"},
+    {"id": "n2", "value": "7"},
+    {"id": "n3", "value": "3"},
+    {"id": "n4", "value": "10"}
+  ],
+  "head": "n1",
+  "steps": [
+    {
+      "links": [["n1","n2"],["n2","n3"],["n3","n4"]],
+      "markers": [{"name": "prev", "nodeId": "n1"}, {"name": "current", "nodeId": "n2", "color": "#10b981"}, {"name": "target", "nodeId": "n2", "color": "#f59e0b"}],
+      "msg": "Walk: prev=node(5), current=node(7). Match. Stop."
+    },
+    {
+      "nodes": [
+        {"id": "n1", "value": "5"},
+        {"id": "n2", "value": "7", "style": "removed"},
+        {"id": "n3", "value": "3"},
+        {"id": "n4", "value": "10"}
+      ],
+      "links": [["n1","n3"],["n2","n3"],["n3","n4"]],
+      "markers": [{"name": "prev", "nodeId": "n1"}],
+      "msg": "prev.next = current.next — node(5) now points past node(7) to node(3)"
+    },
+    {
+      "nodes": [
+        {"id": "n1", "value": "5"},
+        {"id": "n3", "value": "3"},
+        {"id": "n4", "value": "10"}
+      ],
+      "links": [["n1","n3"],["n3","n4"]],
+      "markers": [{"name": "head", "nodeId": "n1"}],
+      "msg": "Free current. Final: 5 → 3 → 10. O(n) walk + O(1) unlink."
+    }
+  ]
 }
-
-after: "After — splice out current" {
-  direction: right
-  h: head {shape: oval}
-  n1: {
-    value: 5
-    next
-  }
-  n3: {
-    value: 3
-    next
-  }
-  n4: {
-    value: 10
-    next: "null"
-  }
-  h -> n1.value
-  n1.next -> n3.value
-  n3.next -> n4.value
-}
-
-before -> after: "prev.next = current.next; free current"
 ```
 
 <p align="center"><strong>To delete an interior node, we need its predecessor. A two-pointer walk (<code>prev</code> + <code>current</code>) gives us both — then <code>prev.next = current.next</code> unlinks the target in O(1).</strong></p>
@@ -4341,47 +4245,34 @@ If the list is empty and contains no elements, we cannot find the given node bec
 
 If the given node matches the first node, this case becomes the same as **deleting the first node**. We update the **head** to store the reference to the second node and delete the old head.
 
-```d2
-direction: right
-
-before: "Before — target is the head" {
-  direction: right
-  h: head {shape: oval}
-  n1: {
-    value: "5 (target)"
-    next
-    style.fill: "#fde68a"
-    style.stroke: "#d97706"
-  }
-  n2: {
-    value: 7
-    next
-  }
-  n3: {
-    value: 3
-    next: "null"
-  }
-  h -> n1.value
-  n1.next -> n2.value
-  n2.next -> n3.value
+```d3 widget=linked-list
+{
+  "title": "Target is the head — single pointer update, head advances",
+  "direction": "single",
+  "nodes": [
+    {"id": "n1", "value": "5"},
+    {"id": "n2", "value": "7"},
+    {"id": "n3", "value": "3"}
+  ],
+  "head": "n1",
+  "steps": [
+    {
+      "links": [["n1","n2"],["n2","n3"]],
+      "markers": [{"name": "head", "nodeId": "n1"}, {"name": "target", "nodeId": "n1", "color": "#f59e0b"}],
+      "msg": "Before: target matches the head"
+    },
+    {
+      "nodes": [
+        {"id": "n1", "value": "5", "style": "removed"},
+        {"id": "n2", "value": "7"},
+        {"id": "n3", "value": "3"}
+      ],
+      "links": [["n1","n2"],["n2","n3"]],
+      "markers": [{"name": "head", "nodeId": "n2"}],
+      "msg": "head = head.next — old head unreachable, freed. O(1)."
+    }
+  ]
 }
-
-after: "After — head advances one step" {
-  direction: right
-  h: head {shape: oval}
-  n2: {
-    value: 7
-    next
-  }
-  n3: {
-    value: 3
-    next: "null"
-  }
-  h -> n2.value
-  n2.next -> n3.value
-}
-
-before -> after: "head = head.next"
 ```
 
 <p align="center"><strong>Deleting the head is a single pointer update — move <code>head</code> forward and the old head becomes unreachable (garbage-collected or freed).</strong></p>
@@ -4397,61 +4288,46 @@ before -> after: "head = head.next"
 
 To delete a node that is not the first node of the linked list, we need access to the node 1 step before the one to be deleted. We will traverse the list from the beginning while keeping track of the **current** and nodes. This way, when we reach the given node, we will have access to its previous node, which we need to update. Deleting the given node involves a three step process.
 
-```d2
-direction: right
-
-before: "Before — walk with prev + current" {
-  direction: right
-  h: head {shape: oval}
-  n1: {
-    value: 5
-    next
-  }
-  n2: {
-    value: "7 (target)"
-    next
-    style.fill: "#fde68a"
-    style.stroke: "#d97706"
-  }
-  n3: {
-    value: 3
-    next
-  }
-  n4: {
-    value: 10
-    next: "null"
-  }
-  prev: prev {shape: oval; style.stroke-dash: 3}
-  cur: current {shape: oval; style.stroke-dash: 3}
-  h -> n1.value
-  n1.next -> n2.value
-  n2.next -> n3.value
-  n3.next -> n4.value
-  prev -> n1.value: "" {style.stroke-dash: 3}
-  cur -> n2.value: "" {style.stroke-dash: 3}
+```d3 widget=linked-list
+{
+  "title": "Interior deletion — prev + current walk, then splice prev.next over current",
+  "direction": "single",
+  "nodes": [
+    {"id": "n1", "value": "5"},
+    {"id": "n2", "value": "7"},
+    {"id": "n3", "value": "3"},
+    {"id": "n4", "value": "10"}
+  ],
+  "head": "n1",
+  "steps": [
+    {
+      "links": [["n1","n2"],["n2","n3"],["n3","n4"]],
+      "markers": [{"name": "prev", "nodeId": "n1"}, {"name": "current", "nodeId": "n2", "color": "#10b981"}, {"name": "target", "nodeId": "n2", "color": "#f59e0b"}],
+      "msg": "Walk: prev=node(5), current=node(7). Match. Stop."
+    },
+    {
+      "nodes": [
+        {"id": "n1", "value": "5"},
+        {"id": "n2", "value": "7", "style": "removed"},
+        {"id": "n3", "value": "3"},
+        {"id": "n4", "value": "10"}
+      ],
+      "links": [["n1","n3"],["n2","n3"],["n3","n4"]],
+      "markers": [{"name": "prev", "nodeId": "n1"}],
+      "msg": "prev.next = current.next — node(5) now points past node(7) to node(3)"
+    },
+    {
+      "nodes": [
+        {"id": "n1", "value": "5"},
+        {"id": "n3", "value": "3"},
+        {"id": "n4", "value": "10"}
+      ],
+      "links": [["n1","n3"],["n3","n4"]],
+      "markers": [{"name": "head", "nodeId": "n1"}],
+      "msg": "Free current. Final: 5 → 3 → 10. O(n) walk + O(1) unlink."
+    }
+  ]
 }
-
-after: "After — splice out current" {
-  direction: right
-  h: head {shape: oval}
-  n1: {
-    value: 5
-    next
-  }
-  n3: {
-    value: 3
-    next
-  }
-  n4: {
-    value: 10
-    next: "null"
-  }
-  h -> n1.value
-  n1.next -> n3.value
-  n3.next -> n4.value
-}
-
-before -> after: "prev.next = current.next; free current"
 ```
 
 <p align="center"><strong>To delete an interior node, we need its predecessor. A two-pointer walk (<code>prev</code> + <code>current</code>) gives us both — then <code>prev.next = current.next</code> unlinks the target in O(1).</strong></p>
@@ -5373,67 +5249,54 @@ X = 0
 
 When we need to delete a specific node from a list, we should traverse the list until we reach the node just before the one we want to delete. Keep track of the current node and traverse `X-1` steps instead of `X`. At the end of the loop, we will reach the node one step before the node that needs to be deleted. Then, the problem becomes **deleting a node after a given node**, where the given node is the node one step before the node that has to be deleted. Update the reference in the given node's pointer to point to the node after the one that has to be deleted. Once the connections have been updated, safely delete the next node.
 
-```d2
-direction: right
-
-before: "X = 2 within a list of size 5" {
-  direction: right
-  h: head {shape: oval}
-  n0: {
-    value: "5 [0]"
-    next
-  }
-  n1: {
-    value: "7 [1]"
-    next
-  }
-  n2: {
-    value: "3 [2 — victim]"
-    next
-    style.fill: "#fde68a"
-    style.stroke: "#d97706"
-  }
-  n3: {
-    value: "10 [3]"
-    next
-  }
-  n4: {
-    value: "4 [4]"
-    next: "null"
-  }
-  h -> n0.value
-  n0.next -> n1.value
-  n1.next -> n2.value
-  n2.next -> n3.value
-  n3.next -> n4.value
+```d3 widget=linked-list
+{
+  "title": "Delete at distance X = 2 in size-5 list — walk X−1 hops, then unlink",
+  "direction": "single",
+  "nodes": [
+    {"id": "n0", "value": "5"},
+    {"id": "n1", "value": "7"},
+    {"id": "n2", "value": "3"},
+    {"id": "n3", "value": "10"},
+    {"id": "n4", "value": "4"}
+  ],
+  "head": "n0",
+  "steps": [
+    {
+      "links": [["n0","n1"],["n1","n2"],["n2","n3"],["n3","n4"]],
+      "markers": [{"name": "current", "nodeId": "n0"}, {"name": "counter=0", "nodeId": "n0", "color": "#10b981"}],
+      "msg": "Start: current=head, counter=0. Walk X−1 = 1 hop."
+    },
+    {
+      "links": [["n0","n1"],["n1","n2"],["n2","n3"],["n3","n4"]],
+      "markers": [{"name": "current", "nodeId": "n1"}, {"name": "counter=1", "nodeId": "n1", "color": "#10b981"}, {"name": "victim", "nodeId": "n2", "color": "#f59e0b"}],
+      "msg": "After 1 hop, current at node(7). current.next = node(3) is the victim."
+    },
+    {
+      "nodes": [
+        {"id": "n0", "value": "5"},
+        {"id": "n1", "value": "7"},
+        {"id": "n2", "value": "3", "style": "removed"},
+        {"id": "n3", "value": "10"},
+        {"id": "n4", "value": "4"}
+      ],
+      "links": [["n0","n1"],["n1","n3"],["n2","n3"],["n3","n4"]],
+      "markers": [{"name": "current", "nodeId": "n1"}],
+      "msg": "current.next = current.next.next — node(7) now points past node(3) to node(10)"
+    },
+    {
+      "nodes": [
+        {"id": "n0", "value": "5"},
+        {"id": "n1", "value": "7"},
+        {"id": "n3", "value": "10"},
+        {"id": "n4", "value": "4"}
+      ],
+      "links": [["n0","n1"],["n1","n3"],["n3","n4"]],
+      "markers": [{"name": "head", "nodeId": "n0"}],
+      "msg": "Free victim. Final: 5 → 7 → 10 → 4. O(X) walk + O(1) unlink."
+    }
+  ]
 }
-
-after: "After — node at index 2 unlinked" {
-  direction: right
-  h: head {shape: oval}
-  n0: {
-    value: 5
-    next
-  }
-  n1: {
-    value: 7
-    next
-  }
-  n3: {
-    value: 10
-    next
-  }
-  n4: {
-    value: 4
-    next: "null"
-  }
-  h -> n0.value
-  n0.next -> n1.value
-  n1.next -> n3.value
-  n3.next -> n4.value
-}
-
-before -> after: "walk X−1 hops to predecessor; prev.next = prev.next.next"
 ```
 
 <p align="center"><strong>When <code>X</code> is within bounds, walk <code>X−1</code> steps to reach the predecessor and splice out its successor.</strong></p>
@@ -5453,28 +5316,29 @@ This indicates an invalid query. For example, we cannot delete the 10th node in 
 
 This is also an invalid case. To clarify, let's consider a list of size 5. In this scenario, the potential values of `X` could range from 0 to 4, meaning `[0, 4]`. Therefore, an input 5 would be invalid. It's important to note that X represents the distance from the head node, not the node's position.
 
-```d2
-direction: right
-h: head {shape: oval}
-n0: {
-  value: "5 [0]"
-  next
+```d3 widget=linked-list
+{
+  "title": "Delete at distance X = 5 in size-3 list — walk falls off, return head unchanged",
+  "direction": "single",
+  "nodes": [
+    {"id": "n0", "value": "5"},
+    {"id": "n1", "value": "7"},
+    {"id": "n2", "value": "3"}
+  ],
+  "head": "n0",
+  "steps": [
+    {
+      "links": [["n0","n1"],["n1","n2"]],
+      "markers": [{"name": "current", "nodeId": "n2"}, {"name": "counter=2", "nodeId": "n2", "color": "#10b981"}],
+      "msg": "Walking forward — counter reaches 2 at node(3). Target X−1 = 4."
+    },
+    {
+      "links": [["n0","n1"],["n1","n2"]],
+      "markers": [{"name": "head", "nodeId": "n0"}],
+      "msg": "current = current.next becomes null before counter hits 4. X=5 out of range (valid range [0, 2]). Return head unchanged."
+    }
+  ]
 }
-n1: {
-  value: "7 [1]"
-  next
-}
-n2: {
-  value: "3 [2]"
-  next: "null"
-}
-x: "X = 5 (out of range)" {shape: oval; style.fill: "#fee2e2"; style.stroke: "#dc2626"}
-result: "return head unchanged" {shape: oval}
-h -> n0.value
-n0.next -> n1.value
-n1.next -> n2.value
-x -> result: "walk falls off" {style.stroke-dash: 3}
-n2.next -> result: "" {style.stroke-dash: 3}
 ```
 
 <p align="center"><strong>When <code>X</code> is ≥ list size, there is no node at that index — return the list unchanged without modifying anything.</strong></p>

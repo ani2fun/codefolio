@@ -300,40 +300,40 @@ Let's consider the following problem as an example to better understand how to i
 
 > **Problem statement:** Given a singly linked list, reorder its nodes so all nodes at even indices come after the nodes at odd indices. The indices start with 1.
 
-```d2
-direction: right
-
-before: "Before — indices 0, 1, 2, 3, 4, 5" {
-  direction: right
-  a0: "1 [0]"
-  a1: "2 [1]"
-  a2: "3 [2]"
-  a3: "4 [3]"
-  a4: "5 [4]"
-  a5: "6 [5]"
-  a0 -> a1
-  a1 -> a2
-  a2 -> a3
-  a3 -> a4
-  a4 -> a5
+```d3 widget=linked-list
+{
+  "title": "Odd-even index reorder — odd-indexed nodes first, then even-indexed",
+  "direction": "single",
+  "nodes": [
+    {"id": "n0", "value": "1"},
+    {"id": "n1", "value": "2"},
+    {"id": "n2", "value": "3"},
+    {"id": "n3", "value": "4"},
+    {"id": "n4", "value": "5"},
+    {"id": "n5", "value": "6"}
+  ],
+  "head": "n0",
+  "steps": [
+    {
+      "links": [["n0","n1"],["n1","n2"],["n2","n3"],["n3","n4"],["n4","n5"]],
+      "markers": [{"name": "head", "nodeId": "n0"}],
+      "msg": "Before: indices 0..5 with values 1..6"
+    },
+    {
+      "nodes": [
+        {"id": "n1", "value": "2"},
+        {"id": "n3", "value": "4"},
+        {"id": "n5", "value": "6"},
+        {"id": "n0", "value": "1"},
+        {"id": "n2", "value": "3"},
+        {"id": "n4", "value": "5"}
+      ],
+      "links": [["n1","n3"],["n3","n5"],["n5","n0"],["n0","n2"],["n2","n4"]],
+      "markers": [{"name": "head", "nodeId": "n1"}],
+      "msg": "After: odd-indexed (2, 4, 6) first, then even-indexed (1, 3, 5)"
+    }
+  ]
 }
-
-after: "After — odd-indexed first, then even-indexed" {
-  direction: right
-  b1: "2"
-  b3: "4"
-  b5: "6"
-  b0: "1"
-  b2: "3"
-  b4: "5"
-  b1 -> b3
-  b3 -> b5
-  b5 -> b0
-  b0 -> b2
-  b2 -> b4
-}
-
-before -> after
 ```
 
 <p align="center"><strong>Odd-even reorder — example target shape. All nodes at odd indices ([1], [3], [5]) come before all nodes at even indices ([0], [2], [4]). A clean split-then-concatenate case.</strong></p>

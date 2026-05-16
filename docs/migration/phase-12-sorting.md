@@ -6,6 +6,15 @@
 **Source**: `/Users/aniket/Development/others/tutorial_dsa/extracted_data/DSA/algorithms/3.sorting/`
 **Destination**: `/Users/aniket/Development/homelab/codefolio/content/cortex/data-structures-and-algorithms/06-sorting-and-searching/01-sorting/`
 
+## Widgets required
+
+| Widget | Status | Notes |
+|---|---|---|
+| `array-traversal` | ✓ reused | Built in Phase 0. Source has 56 Interactive Diagrams — array reordering animations during compare-swap, partitioning, merging. Per-step `items` override + `keys` lets D3 transition swaps smoothly |
+
+Per ADR-0006 (updated 2026-05-16): Phase 12 reuses Phase 0's
+`array-traversal` widget; no precursor build needed.
+
 ## Stats
 
 | | Count |

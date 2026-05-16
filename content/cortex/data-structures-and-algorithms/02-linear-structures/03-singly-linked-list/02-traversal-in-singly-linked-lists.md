@@ -157,24 +157,45 @@ Instead of an integer loop control variable representing an item's index in an a
 
 Since linked lists are dynamic, we don't know their length in advance, and therefore, we have to keep traversing until we reach a node with a **`null`** value stored in its pointer. That is how we know we have reached the end of a linked list.
 
-```mermaid
----
-config:
-  theme: base
-  themeVariables:
-    primaryColor: "#dbeafe"
-    primaryBorderColor: "#3b82f6"
-    primaryTextColor: "#1e3a5f"
-    lineColor: "#64748b"
-    secondaryColor: "#ede9fe"
-    tertiaryColor: "#fef9c3"
----
-flowchart LR
-    CUR(["current"]) -->|"step 1"| N1["val: 5<br/>next: ●"]
-    N1 -->|"current = current.next"| N2["val: 7<br/>next: ●"]
-    N2 -->|"current = current.next"| N3["val: 3<br/>next: ●"]
-    N3 -->|"current = current.next"| N4["val: 10<br/>next: null"]
-    N4 -->|"null → stop"| STOP(["end"])
+```d3 widget=linked-list
+{
+  "title": "Linked-list traversal — current hops node-by-node until it reaches null",
+  "direction": "single",
+  "nodes": [
+    {"id": "n1", "value": "5"},
+    {"id": "n2", "value": "7"},
+    {"id": "n3", "value": "3"},
+    {"id": "n4", "value": "10"}
+  ],
+  "head": "n1",
+  "steps": [
+    {
+      "links": [["n1","n2"],["n2","n3"],["n3","n4"]],
+      "markers": [{"name": "current", "nodeId": "n1"}, {"name": "head", "nodeId": "n1", "color": "#10b981"}],
+      "msg": "current ← head — start at node 5"
+    },
+    {
+      "links": [["n1","n2"],["n2","n3"],["n3","n4"]],
+      "markers": [{"name": "current", "nodeId": "n2"}],
+      "msg": "current = current.next — hop to node 7"
+    },
+    {
+      "links": [["n1","n2"],["n2","n3"],["n3","n4"]],
+      "markers": [{"name": "current", "nodeId": "n3"}],
+      "msg": "current = current.next — hop to node 3"
+    },
+    {
+      "links": [["n1","n2"],["n2","n3"],["n3","n4"]],
+      "markers": [{"name": "current", "nodeId": "n4"}],
+      "msg": "current = current.next — hop to node 10 (the tail)"
+    },
+    {
+      "links": [["n1","n2"],["n2","n3"],["n3","n4"]],
+      "markers": [{"name": "head", "nodeId": "n1"}],
+      "msg": "current.next is null — stop. Traversed all 4 nodes in O(n)."
+    }
+  ]
+}
 ```
 
 <p align="center"><strong>Linked list traversal — a <code>current</code> pointer starts at <code>head</code> and hops forward via <code>current = current.next</code> until it reaches <code>null</code>.</strong></p>

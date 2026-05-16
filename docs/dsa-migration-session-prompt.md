@@ -63,6 +63,36 @@ Phase 0 — Arrays — is **done**. Phase 1 has begun (Ch 1.1 Boundary
 Node + Ch 1.2 Node Search + Length of the List code-aligned as of
 commits `2b50bd2`, `8ccc477`, `b1194d1`).
 
+### Widget catalog growth per phase
+
+Every phase has a fixed widget-type requirement (added 2026-05-16
+alongside ADR-0014). A widget either already exists in the catalog
+(reused, no new code) or must be built as a precursor session at
+the start of the phase:
+
+| Phase | Widget type | Status |
+|---|---|---|
+| 0 — Arrays | `array-traversal` | ✓ in catalog |
+| 1 — Singly Linked List | `linked-list` (single) | ✓ ADR-0014 |
+| 2 — Doubly Linked List | `linked-list` (double) | ✓ reused |
+| 3 — Hash Table | `hash-table` (new) | to-build |
+| 4 — Stack | `stack-queue` (new) | to-build |
+| 5 — Queue | `stack-queue` (reused) | reused |
+| 6 — Binary Tree | `binary-tree` (new) | to-build |
+| 7 — BST | `binary-tree` (reused) | reused |
+| 8 — Heap | `heap-tree` (new) | to-build |
+| 9 — Graph | `graph-explorer` (new) | to-build |
+| 10 — Recursion | `call-stack` (new) | to-build |
+| 11 — Backtracking | `decision-tree` (new) | to-build |
+| 12 — Sorting | `array-traversal` (reused) | reused |
+| 13 — Searching | `array-traversal` (reused) | reused |
+| 14 — DP | `dp-table` (new) | to-build |
+| 15 — Bit Manipulation | none (source has 0 Interactive Diagrams) | n/a |
+
+Each `to-build` entry is a one-session precursor at the start of
+its phase: ADR → Scala module → CSS → dispatcher → POC, mirroring
+ADR-0014 / `LinkedList.scala` / commit `a371b5f`.
+
 ---
 
 ## Hard rules (non-negotiable)
@@ -224,30 +254,45 @@ code parts for those):
 
 ### Step 3 — Interactive diagrams
 
-For every `// Interactive Diagram (N frames): <description>` in
-source, decide:
+**Policy (updated 2026-05-16):** every phase's Definition of Done
+**includes** converting all source `// Interactive Diagram` markers
+to D3 widgets — they are no longer deferred to a later arc. New
+widget types land first as a precursor at the *start* of the phase
+(ADR + Scala module + CSS BEM block + dispatcher case + browser
+POC), and only then do chapter-alignment sessions convert diagrams
+in-line. See ADR-0006 for the catalog-growth policy and the
+"Widgets required" block at the top of each `docs/migration/phase-XX-*.md`
+for the per-phase widget mapping.
 
-- **Does the existing `array-traversal` widget fit?** It supports a
-  single linear array with markers (`left`, `right`, `start`, `end`,
-  `i`, `j`, …), an optional range band, and per-step `items` /
-  `keys` for swap animations. Now also supports a **secondary row**
-  (`secondaryItems`, `secondaryMarkers`, `secondaryRange`) for
-  two-array scenarios — see commit `75793e0`.
-- **Yes — single array with markers** → author an
-  `array-traversal` widget instance with one step per logical event
-  in source's frame sequence. Source often has 20-30 frames; compress
-  to ~5-10 meaningful steps. Place it inside the relevant H2 section,
-  usually right after the static d2/mermaid diagram or replacing it.
-  Examples: ch 04 brute-force / two-pointer Two Sum widgets in
-  commit `465e739`.
-- **Yes — two arrays** → use the secondary-row extension. Examples:
-  ch 05 rotate-via-temp (`7776a56`), ch 06 simultaneous traversal +
-  subsequence checker (`cd5f9d1`), ch 09 interval merging
-  (`6db8cc8`).
-- **No** — the visualisation needs a 2D grid (ch 02 row-major /
-  column-major) or an interval timeline. Flag in the commit message
-  as deferred. Don't build a new widget type ad hoc; that warrants
-  its own ADR + arc.
+For every `// Interactive Diagram (N frames): <description>` in
+source:
+
+1. **Check the current phase's "Widgets required" block.** If the
+   needed widget already exists in the catalog (current entries:
+   `array-traversal`, `linked-list`), proceed to step 2. If not,
+   stop content work — raise an ADR + build the widget first.
+
+2. **Pick the right widget:**
+   - **Arrays / sequence-of-cells** → `array-traversal` (linear,
+     single or secondary row via `secondaryItems`/`secondaryMarkers`/
+     `secondaryRange`). Examples: ch 04 two-pointer Two Sum
+     (`465e739`); ch 06 simultaneous traversal (`cd5f9d1`); ch 09
+     interval merging (`6db8cc8`); Phase 1 ch 1.1 array-comparison
+     (`a7062f2`).
+   - **Linked lists — pointer rewiring, traversal, pattern matching,
+     cycle detection** → `linked-list` (singly via
+     `direction: "single"`, doubly via `direction: "double"`,
+     Floyd's via top-level `cycleTarget`). ADR-0014. Examples land
+     in Phase 1.5 conversion commits.
+
+3. **Compress frames.** Source often has 20–40 frames per diagram;
+   compress to ~5–10 meaningful steps. Place the widget inside the
+   relevant H2 section, usually replacing the static d2/mermaid
+   block that was previously there.
+
+4. **2D grids, interval timelines, anything new** → new widget
+   warranted. Halt content work, raise an ADR, build the widget,
+   update the phase's "Widgets required" block, then resume.
 
 ### Static diagrams
 
@@ -388,9 +433,12 @@ finishing.
 - **Rewriting prose for style.** Destination's prose is good enough.
   Only edit prose if it references stale example data or the
   Authority matrix says source wins.
-- **Building new widget types.** Each new widget (2D grid, interval
-  timeline, tree visualiser) is its own ADR + arc. Note them as
-  deferred; don't sketch them in.
+- **Building widgets *during* a chapter alignment session.** Widget
+  builds are their own dedicated session at the *start* of a phase
+  (ADR + Scala module + CSS + dispatcher + browser POC). Don't
+  invent a widget mid-conversion — halt content work, build the
+  widget, then resume. See Step 3 above and the per-phase plan's
+  "Widgets required" block.
 - **Touching the build, dependencies, ADRs, or pipeline code.**
   That's a different kind of task. Bring it up with the user if
   you think it's blocking content work.

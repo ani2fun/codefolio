@@ -29,25 +29,37 @@ This presents another use case for the sliding window technique, apart from aggr
 
 The sliding window traversal pattern is a classification of problems that can be solved using the sliding window traversal technique.
 
-```d2
-direction: right
-h: head {shape: oval}
-n1: {value: 1; style.fill: "#fde68a"; style.stroke: "#d97706"}
-n2: "2"
-n3: "3"
-n4: {value: 4; style.fill: "#fde68a"; style.stroke: "#d97706"}
-n5: "5"
-n6: "6"
-sp: start {shape: oval; style.stroke-dash: 3}
-ep: end {shape: oval; style.stroke-dash: 3}
-h -> n1.value
-n1.value -> n2
-n2 -> n3
-n3 -> n4.value
-n4.value -> n5
-n5 -> n6
-sp -> n1.value: "" {style.stroke-dash: 3}
-ep -> n4.value: "" {style.stroke-dash: 3}
+```d3 widget=linked-list
+{
+  "title": "Sliding window — start + end stay k=3 hops apart; both advance together",
+  "direction": "single",
+  "nodes": [
+    {"id": "n1", "value": "1"},
+    {"id": "n2", "value": "2"},
+    {"id": "n3", "value": "3"},
+    {"id": "n4", "value": "4"},
+    {"id": "n5", "value": "5"},
+    {"id": "n6", "value": "6"}
+  ],
+  "head": "n1",
+  "steps": [
+    {
+      "links": [["n1","n2"],["n2","n3"],["n3","n4"],["n4","n5"],["n5","n6"]],
+      "markers": [{"name": "start", "nodeId": "n1", "color": "#f59e0b"}, {"name": "end", "nodeId": "n4", "color": "#10b981"}],
+      "msg": "start at node 1, end at node 4 (3 hops ahead). Window = nodes 1..4."
+    },
+    {
+      "links": [["n1","n2"],["n2","n3"],["n3","n4"],["n4","n5"],["n5","n6"]],
+      "markers": [{"name": "start", "nodeId": "n2", "color": "#f59e0b"}, {"name": "end", "nodeId": "n5", "color": "#10b981"}],
+      "msg": "Both advance one step. Window = nodes 2..5."
+    },
+    {
+      "links": [["n1","n2"],["n2","n3"],["n3","n4"],["n4","n5"],["n5","n6"]],
+      "markers": [{"name": "start", "nodeId": "n3", "color": "#f59e0b"}, {"name": "end", "nodeId": "n6", "color": "#10b981"}],
+      "msg": "Both advance. Window = nodes 3..6. end.next is null → loop ends."
+    }
+  ]
+}
 ```
 
 <p align="center"><strong>Sliding-window traversal keeps two pointers — <code>start</code> and <code>end</code> — a fixed distance <code>k</code> apart. They advance together, one node at a time, until <code>end</code> falls off the list.</strong></p>
@@ -62,50 +74,68 @@ We then iterate `k` times and move the `end` reference `k` steps ahead from `st
 
 It is important to note that two nodes that are at a distance `k` from each other denote a window of size `k+1` as both nodes are included in the window.
 
-```d2
-direction: right
-s: start {style.fill: "#fde68a"; style.stroke: "#d97706"}
-a: "·"
-b: "·"
-e: end {style.fill: "#fde68a"; style.stroke: "#d97706"}
-note: |md
-  distance = k = 3 hops
-
-  window size = k + 1 = 4 nodes
-
-  (both endpoints included)
-| {shape: rectangle}
-s -> a
-a -> b
-b -> e
-e -> note: "" {style.stroke-dash: 3}
+```d3 widget=linked-list
+{
+  "title": "k = 3 hops between start and end ⇒ window size = k + 1 = 4 nodes",
+  "direction": "single",
+  "nodes": [
+    {"id": "s", "value": "start"},
+    {"id": "a", "value": "·"},
+    {"id": "b", "value": "·"},
+    {"id": "e", "value": "end"}
+  ],
+  "head": "s",
+  "steps": [
+    {
+      "links": [["s","a"],["a","b"],["b","e"]],
+      "markers": [{"name": "start", "nodeId": "s", "color": "#f59e0b"}, {"name": "end (k=3 hops)", "nodeId": "e", "color": "#10b981"}],
+      "msg": "3 hops between start and end, but 4 nodes in the window (both endpoints included)"
+    }
+  ]
+}
 ```
 
 <p align="center"><strong>A "distance of <code>k</code>" means <code>k</code> hops between <code>start</code> and <code>end</code> — which covers <code>k + 1</code> nodes when both endpoints count. Getting this off-by-one right is the single most common bug in sliding-window code.</strong></p>
 
 We perform the required operations on the nodes held in `start` and `end` and move both of them one step ahead by setting them to their respective next nodes. We repeat this process until `end` hits `null` at the end of the list. At the end of all iterations, we would have applied the given operation on all nodes that are `k` steps away from each other.
 
-```d2
-direction: right
-h: head {shape: oval}
-n1: {value: 1; style.fill: "#fde68a"; style.stroke: "#d97706"}
-n2: "2"
-n3: {value: 3; style.fill: "#fde68a"; style.stroke: "#d97706"}
-n4: "4"
-n5: "5"
-n6: "6"
-n7: "7"
-sp: start {shape: oval; style.stroke-dash: 3}
-ep: end {shape: oval; style.stroke-dash: 3}
-h -> n1.value
-n1.value -> n2
-n2 -> n3.value
-n3.value -> n4
-n4 -> n5
-n5 -> n6
-n6 -> n7
-sp -> n1.value: "" {style.stroke-dash: 3}
-ep -> n3.value: "" {style.stroke-dash: 3}
+```d3 widget=linked-list
+{
+  "title": "Sliding-window tick-by-tick — pair (start, end) processed each iteration",
+  "direction": "single",
+  "nodes": [
+    {"id": "n1", "value": "1"},
+    {"id": "n2", "value": "2"},
+    {"id": "n3", "value": "3"},
+    {"id": "n4", "value": "4"},
+    {"id": "n5", "value": "5"},
+    {"id": "n6", "value": "6"},
+    {"id": "n7", "value": "7"}
+  ],
+  "head": "n1",
+  "steps": [
+    {
+      "links": [["n1","n2"],["n2","n3"],["n3","n4"],["n4","n5"],["n5","n6"],["n6","n7"]],
+      "markers": [{"name": "start", "nodeId": "n1", "color": "#f59e0b"}, {"name": "end", "nodeId": "n3", "color": "#10b981"}],
+      "msg": "Setup: start = n1, end = n3 (k−1 = 2 hops ahead). Process pair (1, 3)."
+    },
+    {
+      "links": [["n1","n2"],["n2","n3"],["n3","n4"],["n4","n5"],["n5","n6"],["n6","n7"]],
+      "markers": [{"name": "start", "nodeId": "n2", "color": "#f59e0b"}, {"name": "end", "nodeId": "n4", "color": "#10b981"}],
+      "msg": "Tick 1: both advance. Process pair (2, 4)."
+    },
+    {
+      "links": [["n1","n2"],["n2","n3"],["n3","n4"],["n4","n5"],["n5","n6"],["n6","n7"]],
+      "markers": [{"name": "start", "nodeId": "n3", "color": "#f59e0b"}, {"name": "end", "nodeId": "n5", "color": "#10b981"}],
+      "msg": "Tick 2: process pair (3, 5)."
+    },
+    {
+      "links": [["n1","n2"],["n2","n3"],["n3","n4"],["n4","n5"],["n5","n6"],["n6","n7"]],
+      "markers": [{"name": "start", "nodeId": "n5", "color": "#f59e0b"}, {"name": "end", "nodeId": "n7", "color": "#10b981"}],
+      "msg": "Tick 4 (skipping ahead): process pair (5, 7). end.next is null → loop ends. Final start = n − k + 1 = 5."
+    }
+  ]
+}
 ```
 
 <p align="center"><strong>Setup — <code>start</code> at head, <code>end</code> exactly <code>k − 1 = 2</code> hops ahead. The three-node window covers nodes 1, 2, 3.</strong></p>
@@ -338,42 +368,52 @@ Let's consider the following problem as an example to better understand how to i
 
 > **Problem statement:** Given a list and a value `k` remove the kth node from the end.
 
-```d2
-direction: right
-
-before: "Before — remove the 3rd node from the end" {
-  direction: right
-  n1: "1"
-  n2: "2"
-  n3: "3"
-  n4: |md
-    **4**
-
-    (3rd from end)
-  | {style.fill: "#fde68a"; style.stroke: "#d97706"}
-  n5: "5"
-  n6: "6"
-  n1 -> n2
-  n2 -> n3
-  n3 -> n4
-  n4 -> n5
-  n5 -> n6
+```d3 widget=linked-list
+{
+  "title": "Remove the 3rd node from the end — single-pass via the k-apart window",
+  "direction": "single",
+  "nodes": [
+    {"id": "n1", "value": "1"},
+    {"id": "n2", "value": "2"},
+    {"id": "n3", "value": "3"},
+    {"id": "n4", "value": "4"},
+    {"id": "n5", "value": "5"},
+    {"id": "n6", "value": "6"}
+  ],
+  "head": "n1",
+  "steps": [
+    {
+      "links": [["n1","n2"],["n2","n3"],["n3","n4"],["n4","n5"],["n5","n6"]],
+      "markers": [{"name": "3rd from end", "nodeId": "n4", "color": "#f59e0b"}],
+      "msg": "Before: target = n4 (3rd from end). Remove it."
+    },
+    {
+      "nodes": [
+        {"id": "n1", "value": "1"},
+        {"id": "n2", "value": "2"},
+        {"id": "n3", "value": "3"},
+        {"id": "n4", "value": "4", "style": "removed"},
+        {"id": "n5", "value": "5"},
+        {"id": "n6", "value": "6"}
+      ],
+      "links": [["n1","n2"],["n2","n3"],["n3","n5"],["n4","n5"],["n5","n6"]],
+      "markers": [{"name": "victim", "nodeId": "n4"}],
+      "msg": "Splice: n3.next = n5 — n4 unreachable"
+    },
+    {
+      "nodes": [
+        {"id": "n1", "value": "1"},
+        {"id": "n2", "value": "2"},
+        {"id": "n3", "value": "3"},
+        {"id": "n5", "value": "5"},
+        {"id": "n6", "value": "6"}
+      ],
+      "links": [["n1","n2"],["n2","n3"],["n3","n5"],["n5","n6"]],
+      "markers": [{"name": "head", "nodeId": "n1"}],
+      "msg": "After: 1 → 2 → 3 → 5 → 6. Sliding window finds the predecessor in a single pass."
+    }
+  ]
 }
-
-after: After {
-  direction: right
-  n1: "1"
-  n2: "2"
-  n3: "3"
-  n5: "5"
-  n6: "6"
-  n1 -> n2
-  n2 -> n3
-  n3 -> n5
-  n5 -> n6
-}
-
-before -> after
 ```
 
 <p align="center"><strong>The classic use case — reach the target in a <em>single</em> pass by keeping two pointers <code>k − 1</code> apart. When <code>end</code> reaches the tail, <code>start</code> is parked exactly on the <code>k</code>-th node from the end.</strong></p>
@@ -520,24 +560,26 @@ The brute-force solution requires two passes through the list: the first to find
 
 If we consider the **last node** of the linked list to be its end, the 1st node from the end is at 0 distance from it, the 2nd node from the end is at a distance of 1 from it, and so the `kth` node from the end is the node that is at a distance of `k-1` before it.
 
-```d2
-direction: right
-n1: "·"
-kn: k-th from end {style.fill: "#fde68a"; style.stroke: "#d97706"}
-m1: "·"
-m2: "·"
-last: last node {style.fill: "#fde68a"; style.stroke: "#d97706"}
-note: |md
-  distance = k − 1
-
-  (k nodes inclusive)
-| {shape: rectangle}
-n1 -> kn
-kn -> m1
-m1 -> m2
-m2 -> last
-kn -> note: "" {style.stroke-dash: 3}
-last -> note: "" {style.stroke-dash: 3}
+```d3 widget=linked-list
+{
+  "title": "k-th-from-end node and the tail are exactly k − 1 hops apart",
+  "direction": "single",
+  "nodes": [
+    {"id": "n1", "value": "·"},
+    {"id": "kn", "value": "k-th"},
+    {"id": "m1", "value": "·"},
+    {"id": "m2", "value": "·"},
+    {"id": "last", "value": "tail"}
+  ],
+  "head": "n1",
+  "steps": [
+    {
+      "links": [["n1","kn"],["kn","m1"],["m1","m2"],["m2","last"]],
+      "markers": [{"name": "k-th from end", "nodeId": "kn", "color": "#f59e0b"}, {"name": "tail", "nodeId": "last", "color": "#10b981"}],
+      "msg": "k − 1 hops between the k-th-from-end node and the tail (here k = 4)"
+    }
+  ]
+}
 ```
 
 <p align="center"><strong>If a node is the <code>k</code>-th from the end, then there are <code>k − 1</code> hops between it and the tail. That's the fixed gap we maintain between our two pointers.</strong></p>

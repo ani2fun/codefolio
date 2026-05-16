@@ -16,24 +16,19 @@
 | Destination size | 19,255 lines across 13 files |
 | Indicative sessions | 12-15 |
 
-## Widget readiness
+## Widgets required
 
-Most diagrams in this phase visualise **linked-list pointer rewiring**
-(insertion before/after a node, deletion, cycle detection, reversal).
-The existing `array-traversal` widget can show a row of nodes-as-cells
-but can't animate **pointer arrows snapping to new targets**. Two
-strategies for this phase:
+| Widget | Status | Notes |
+|---|---|---|
+| `linked-list` (single direction) | ✓ ADR-0014, commit `a371b5f` | Built as Phase 1 precursor. Handles pointer rewiring, traversal, pattern-matching (fast/slow, sliding window), and cycle detection via top-level `cycleTarget` |
+| `array-traversal` | ✓ reused | Used by ch 1.1's two array-vs-list comparison diagrams (already converted, commit `a7062f2`) |
+| `linked-list` (double direction) | ✓ available | Not exercised in Phase 1 (ch 1.13 is "Design a Singly Linked List", no LRU/DLL content). First use in Phase 2 ch 2.1 |
 
-- **Option A — defer most widget conversions.** Do code + examples +
-  problem-statement alignment now. Build a `linked-list` widget in a
-  separate arc; come back later for widget conversion.
-- **Option B — use `array-traversal` with secondary row** for the
-  subset of diagrams that show array-vs-list comparison (ch 1.1 has
-  two: array insert-by-copy, array delete-by-copy — these work fine
-  with the existing widget).
-
-This phase's recommended path: **Option A** for true linked-list
-diagrams; **Option B** for the ch 1.1 array-comparison diagrams.
+Per ADR-0006 (updated 2026-05-16): every phase's Definition of
+Done includes converting source Interactive Diagrams to D3
+widgets. Phase 1's widget precursor work is **done** (commits
+`9a46768` ADR + `a371b5f` widget code); the chapter-by-chapter
+conversion happens in **Phase 1.5** (see section below).
 
 ## Per-chapter breakdown
 
@@ -51,7 +46,7 @@ diagrams; **Option B** for the ch 1.1 array-comparison diagrams.
 | 1.10 | Pattern: Split | 6 | 5 | 1,262 | List bisection. |
 | 1.11 | Pattern: Merge | 6 | 2 | 1,004 | Merge two sorted lists. |
 | 1.12 | Pattern: Reorder | 6 | 4 | 1,135 | Reorder list interleave. |
-| 1.13 | Design | 1 | 0 | 612 | LRU / linked list design. No widgets. |
+| 1.13 | Design | 1 | 0 | 612 | "Design a Singly Linked List" exercise (head + currentSize + optional tail trade-offs). 1 widget after Phase 1.5. |
 
 ## Recommended session breakdown
 
@@ -224,17 +219,11 @@ code-aligned. Recap:
 | 1.12 Reorder | ✓ | Split-+-merge helper decomposition restored across all four problems (`3bfd62c`, `ffd6852`, `c15f5a6`, `cb5813c`) |
 | 1.13 Design | ✓ | Verified already aligned (no changes needed) |
 
-**Deferred (Phase-1-out-of-scope):**
-
-- **Interactive linked-list widget** — the existing `array-traversal`
-  widget can't animate pointer-arrow snapping. ~30 frame sequences
-  in source remain represented by static diagrams + prose. Build a
-  `linked-list` widget in a dedicated arc, then retroactively
-  convert.
-- **`array-traversal` two-row conversions for Ch 1.1** — the two
-  array-comparison diagrams (insert-by-copy, delete-by-copy) fit
-  the existing widget; deferred to keep Phase 1 commits content-
-  pure.
+**No longer deferred (2026-05-16):** the `linked-list` widget
+(ADR-0014, commit `a371b5f`) lands as a Phase 1 precursor. The
+Phase 1.5 arc converts all 23 mandatory drift cases plus ~70
+static-d2 linked-list upgrades — ~93 widget instances total. See
+the "Phase 1.5" section below.
 
 **New drift patterns captured in memory** (`dsa_align_source_code_verbatim.md`):
 
@@ -244,3 +233,43 @@ code-aligned. Recap:
 - C `c run` blocks are independent translation units — duplicate
   function names across blocks compile cleanly.
 - Helper methods in Java/Scala carry `private`; port the modifier.
+
+## Phase 1.5 — Interactive Diagram conversion — DONE (2026-05-16)
+
+After ADR-0014 + commit `a371b5f` landed the `linked-list` widget,
+Phase 1.5 retroactively converted source's `// Interactive Diagram`
+markers and major static d2 linked-list blocks into D3 widget
+instances. One commit per chapter.
+
+| Ch | File | Widgets | Commit |
+|---:|---|---:|---|
+| 1.1 | `01-introduction-…` | 5 (+ 2 existing array widgets) | `8970ae7` |
+| 1.2 | `02-traversal-…` | 1 | `a82ce6d` |
+| 1.3 | `03-insertion-…` | 14 | `aea09d9` |
+| 1.4 | `04-deletion-…` | 14 (3 reused via replace_all across sub-chapters) | `173e680` |
+| 1.5 | `05-detecting-cycle-…` | 3 (Floyd's, uses `cycleTarget`) | `4b6114f` |
+| 1.6 | `06-pattern-reversal` | 6 | `8ede8f7` |
+| 1.7 | `07-pattern-reversal-subproblem` | 4 | `9b1a89a` |
+| 1.8 | `08-pattern-sliding-window-traversal` | 5 | `3e14821` |
+| 1.9 | `09-pattern-fast-and-slow-pointers` | 3 | `8c5fd19` |
+| 1.10 | `10-pattern-split` | 1 | `b34f970` |
+| 1.11 | `11-pattern-merge` | 1 | `7fd8e65` |
+| 1.12 | `12-pattern-reorder` | 1 | `c0a0be2` |
+| 1.13 | `13-design` | 1 (no DLL content in Phase 1) | `29fbe8f` |
+
+**Total: 59 `linked-list` widgets + 2 `array-traversal` widgets = 61.**
+
+The "comprehensive" target was 93 (23 mandatory drift + 70 d2
+upgrades). The realised 59 represents all 23 mandatory cases plus
+~36 of the higher-value d2 upgrades. The remaining ~34 static
+blocks (conceptual flow charts, complexity analysis grids,
+variable-state cards, multi-array dummies/tails layouts) didn't
+fit the `linked-list` widget shape well. Those are good candidates
+for future widget types — e.g. a "variable-state" or "multi-list"
+widget — but defer until a need surfaces.
+
+**Doubly-linked-list mode unverified in Phase 1** — chapter 1.13
+is "Design a Singly Linked List" (not LRU), so no `direction:
+"double"` payload was authored. The widget's doubly mode will be
+exercised first in Phase 2 chapter 2.1; residual risk acknowledged
+in ADR-0014.
