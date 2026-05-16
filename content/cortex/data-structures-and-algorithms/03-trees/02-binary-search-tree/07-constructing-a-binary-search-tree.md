@@ -216,18 +216,28 @@ class Solution:
 ```
 
 ```java run
-class Solution {
-    private TreeNode buildTree(int[] arr, int st, int en) {
-        if (st > en) return null;                                                  // empty range
-        int mid = (st + en) / 2;                                                   // middle as root
-        TreeNode node = new TreeNode(arr[mid]);
-        node.left  = buildTree(arr, st, mid - 1);                                  // left half
-        node.right = buildTree(arr, mid + 1, en);                                  // right half
-        return node;
+public class Main {
+    static class TreeNode { int val; TreeNode left, right; TreeNode(int v){val=v;} }
+
+    static class Solution {
+        private TreeNode buildTree(int[] arr, int st, int en) {
+            if (st > en) return null;                                                  // empty range
+            int mid = (st + en) / 2;                                                   // middle as root
+            TreeNode node = new TreeNode(arr[mid]);
+            node.left  = buildTree(arr, st, mid - 1);                                  // left half
+            node.right = buildTree(arr, mid + 1, en);                                  // right half
+            return node;
+        }
+
+        public TreeNode sortedArrayToBST(int[] arr) {
+            return buildTree(arr, 0, arr.length - 1);
+        }
     }
 
-    public TreeNode sortedArrayToBST(int[] arr) {
-        return buildTree(arr, 0, arr.length - 1);
+    public static void main(String[] args) {
+        int[] arr = {1, 2, 3, 4, 5, 6};
+        TreeNode root = new Solution().sortedArrayToBST(arr);
+        System.out.println(root.val);  // 3
     }
 }
 ```
@@ -251,18 +261,25 @@ struct TreeNode *sortedArrayToBST(int *arr, int n) {
 ```
 
 ```scala run
-object Solution {
-  private def buildTree(arr: Array[Int], st: Int, en: Int): TreeNode = {
-    if (st > en) null                                                                  // empty range
-    else {
-      val mid = (st + en) / 2                                                          // middle as root
-      val node = new TreeNode(arr(mid))
-      node.left  = buildTree(arr, st, mid - 1)
-      node.right = buildTree(arr, mid + 1, en)
-      node
+class TreeNode(var value: Int, var left: TreeNode = null, var right: TreeNode = null)
+
+object Main extends App {
+  class Solution {
+    private def buildTree(arr: Array[Int], st: Int, en: Int): TreeNode = {
+      if (st > en) null                                                                  // empty range
+      else {
+        val mid = (st + en) / 2                                                          // middle as root
+        val node = new TreeNode(arr(mid))
+        node.left  = buildTree(arr, st, mid - 1)
+        node.right = buildTree(arr, mid + 1, en)
+        node
+      }
     }
+    def sortedArrayToBST(arr: Array[Int]): TreeNode = buildTree(arr, 0, arr.length - 1)
   }
-  def sortedArrayToBST(arr: Array[Int]): TreeNode = buildTree(arr, 0, arr.length - 1)
+
+  val root = new Solution().sortedArrayToBST(Array(1, 2, 3, 4, 5, 6))
+  println(root.value)  // 3
 }
 ```
 
@@ -408,18 +425,28 @@ class Solution:
 ```
 
 ```java run
-class Solution {
-    public TreeNode insert(TreeNode root, int data) {
-        if (root == null) return new TreeNode(data);
-        if (data < root.val) root.left  = insert(root.left,  data);
-        else                 root.right = insert(root.right, data);
-        return root;
+public class Main {
+    static class TreeNode { int val; TreeNode left, right; TreeNode(int v){val=v;} }
+
+    static class Solution {
+        public TreeNode insert(TreeNode root, int data) {
+            if (root == null) return new TreeNode(data);
+            if (data < root.val) root.left  = insert(root.left,  data);
+            else                 root.right = insert(root.right, data);
+            return root;
+        }
+
+        public TreeNode unsortedArrayToBST(int[] arr) {
+            TreeNode root = null;
+            for (int v : arr) root = insert(root, v);                                        // grow one at a time
+            return root;
+        }
     }
 
-    public TreeNode unsortedArrayToBST(int[] arr) {
-        TreeNode root = null;
-        for (int v : arr) root = insert(root, v);                                        // grow one at a time
-        return root;
+    public static void main(String[] args) {
+        int[] arr = {2, 1, 6, 5, 3, 4};
+        TreeNode root = new Solution().unsortedArrayToBST(arr);
+        System.out.println(root.val);  // 2
     }
 }
 ```
@@ -446,21 +473,28 @@ struct TreeNode *unsortedArrayToBST(int *arr, int n) {
 ```
 
 ```scala run
-object Solution {
-  private def insert(root: TreeNode, data: Int): TreeNode = {
-    if (root == null) new TreeNode(data)
-    else {
-      if (data < root.value) root.left  = insert(root.left,  data)
-      else                   root.right = insert(root.right, data)
+class TreeNode(var value: Int, var left: TreeNode = null, var right: TreeNode = null)
+
+object Main extends App {
+  class Solution {
+    private def insert(root: TreeNode, data: Int): TreeNode = {
+      if (root == null) new TreeNode(data)
+      else {
+        if (data < root.value) root.left  = insert(root.left,  data)
+        else                   root.right = insert(root.right, data)
+        root
+      }
+    }
+
+    def unsortedArrayToBST(arr: Array[Int]): TreeNode = {
+      var root: TreeNode = null
+      for (v <- arr) root = insert(root, v)                                                   // grow one at a time
       root
     }
   }
 
-  def unsortedArrayToBST(arr: Array[Int]): TreeNode = {
-    var root: TreeNode = null
-    for (v <- arr) root = insert(root, v)                                                   // grow one at a time
-    root
-  }
+  val root = new Solution().unsortedArrayToBST(Array(2, 1, 6, 5, 3, 4))
+  println(root.value)  // 2
 }
 ```
 
@@ -582,26 +616,41 @@ class Solution:
 ```
 
 ```java run
-class Solution {
-    private ListNode findMiddleAndSplit(ListNode head) {
-        ListNode slow = head, fast = head, previous = null;
-        while (fast != null && fast.next != null) {
-            previous = slow;
-            slow = slow.next;
-            fast = fast.next.next;
+public class Main {
+    static class ListNode { int val; ListNode next; ListNode(int v){val=v;} }
+    static class TreeNode { int val; TreeNode left, right; TreeNode(int v){val=v;} }
+
+    static class Solution {
+        private ListNode findMiddleAndSplit(ListNode head) {
+            ListNode slow = head, fast = head, previous = null;
+            while (fast != null && fast.next != null) {
+                previous = slow;
+                slow = slow.next;
+                fast = fast.next.next;
+            }
+            if (previous != null) previous.next = null;                                              // split
+            return slow;
         }
-        if (previous != null) previous.next = null;                                              // split
-        return slow;
+
+        public TreeNode sortedLinkedListToBST(ListNode head) {
+            if (head == null) return null;
+            ListNode middle = findMiddleAndSplit(head);
+            TreeNode root = new TreeNode(middle.val);
+            if (head == middle) return root;                                                          // single element
+            root.left  = sortedLinkedListToBST(head);
+            root.right = sortedLinkedListToBST(middle.next);
+            return root;
+        }
     }
 
-    public TreeNode sortedLinkedListToBST(ListNode head) {
-        if (head == null) return null;
-        ListNode middle = findMiddleAndSplit(head);
-        TreeNode root = new TreeNode(middle.val);
-        if (head == middle) return root;                                                          // single element
-        root.left  = sortedLinkedListToBST(head);
-        root.right = sortedLinkedListToBST(middle.next);
-        return root;
+    public static void main(String[] args) {
+        ListNode head = new ListNode(1);
+        head.next = new ListNode(2); head.next.next = new ListNode(3);
+        head.next.next.next = new ListNode(4);
+        head.next.next.next.next = new ListNode(5);
+        head.next.next.next.next.next = new ListNode(6);
+        TreeNode root = new Solution().sortedLinkedListToBST(head);
+        System.out.println(root.val);  // 4
     }
 }
 ```
@@ -633,27 +682,37 @@ struct TreeNode *sortedLinkedListToBST(struct ListNode *head) {
 ```
 
 ```scala run
-object Solution {
-  private def findMiddleAndSplit(head: ListNode): ListNode = {
-    var slow = head; var fast = head; var previous: ListNode = null
-    while (fast != null && fast.next != null) {
-      previous = slow
-      slow = slow.next
-      fast = fast.next.next
+class ListNode(var value: Int, var next: ListNode = null)
+class TreeNode(var value: Int, var left: TreeNode = null, var right: TreeNode = null)
+
+object Main extends App {
+  class Solution {
+    private def findMiddleAndSplit(head: ListNode): ListNode = {
+      var slow = head; var fast = head; var previous: ListNode = null
+      while (fast != null && fast.next != null) {
+        previous = slow
+        slow = slow.next
+        fast = fast.next.next
+      }
+      if (previous != null) previous.next = null                                                          // split
+      slow
     }
-    if (previous != null) previous.next = null                                                          // split
-    slow
+
+    def sortedLinkedListToBST(head: ListNode): TreeNode = {
+      if (head == null) return null
+      val middle = findMiddleAndSplit(head)
+      val root = new TreeNode(middle.value)
+      if (head == middle) return root                                                                     // single element
+      root.left  = sortedLinkedListToBST(head)
+      root.right = sortedLinkedListToBST(middle.next)
+      root
+    }
   }
 
-  def sortedLinkedListToBST(head: ListNode): TreeNode = {
-    if (head == null) return null
-    val middle = findMiddleAndSplit(head)
-    val root = new TreeNode(middle.value)
-    if (head == middle) return root                                                                     // single element
-    root.left  = sortedLinkedListToBST(head)
-    root.right = sortedLinkedListToBST(middle.next)
-    root
-  }
+  val head = new ListNode(1, new ListNode(2, new ListNode(3,
+    new ListNode(4, new ListNode(5, new ListNode(6))))))
+  val root = new Solution().sortedLinkedListToBST(head)
+  println(root.value)  // 4
 }
 ```
 
