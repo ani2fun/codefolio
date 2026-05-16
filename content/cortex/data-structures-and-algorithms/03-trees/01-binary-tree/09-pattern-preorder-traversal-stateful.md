@@ -288,18 +288,29 @@ int duplicates_in_path(TreeNode *root) {
 ```
 
 ```scala run
-def duplicatesInPath(root: TreeNode): Int = {
-  val freq = scala.collection.mutable.Map[Int, Int]()
-  var duplicates = 0
-  def go(n: TreeNode): Unit = {
-    if (n == null) return
-    if (freq.getOrElse(n.value, 0) > 0) duplicates += 1
-    freq(n.value) = freq.getOrElse(n.value, 0) + 1
-    go(n.left); go(n.right)
-    val c = freq(n.value) - 1
-    if (c == 0) freq.remove(n.value) else freq(n.value) = c
+class TreeNode(var value: Int, var left: TreeNode = null, var right: TreeNode = null)
+
+object Main extends App {
+  class Solution {
+    def duplicatesInPath(root: TreeNode): Int = {
+      val freq = scala.collection.mutable.Map[Int, Int]()
+      var duplicates = 0
+      def go(n: TreeNode): Unit = {
+        if (n == null) return
+        if (freq.getOrElse(n.value, 0) > 0) duplicates += 1
+        freq(n.value) = freq.getOrElse(n.value, 0) + 1
+        go(n.left); go(n.right)
+        val c = freq(n.value) - 1
+        if (c == 0) freq.remove(n.value) else freq(n.value) = c
+      }
+      go(root); duplicates
+    }
   }
-  go(root); duplicates
+
+  val root = new TreeNode(21,
+    new TreeNode(21, new TreeNode(5), new TreeNode(2)),
+    new TreeNode(3, null, new TreeNode(3)))
+  println(new Solution().duplicatesInPath(root))  // 2
 }
 ```
 
@@ -381,18 +392,27 @@ int find_second_minimum(TreeNode *root) {
 ```
 
 ```scala run
-def findSecondMinimum(root: TreeNode): Int = {
-  if (root == null) return -1
-  var minV = root.value
-  var secV = -1
-  def go(n: TreeNode): Unit = {
-    if (n == null) return
-    val v = n.value
-    if (v < minV) { secV = minV; minV = v }
-    else if (v > minV && (secV == -1 || v < secV)) secV = v
-    go(n.left); go(n.right)
+class TreeNode(var value: Int, var left: TreeNode = null, var right: TreeNode = null)
+
+object Main extends App {
+  class Solution {
+    def findSecondMinimum(root: TreeNode): Int = {
+      if (root == null) return -1
+      var minV = root.value
+      var secV = -1
+      def go(n: TreeNode): Unit = {
+        if (n == null) return
+        val v = n.value
+        if (v < minV) { secV = minV; minV = v }
+        else if (v > minV && (secV == -1 || v < secV)) secV = v
+        go(n.left); go(n.right)
+      }
+      go(root); secV
+    }
   }
-  go(root); secV
+
+  val root = new TreeNode(2, new TreeNode(2), new TreeNode(5, new TreeNode(5), new TreeNode(7)))
+  println(new Solution().findSecondMinimum(root))  // 5
 }
 ```
 
@@ -495,15 +515,26 @@ int* left_view(TreeNode *root, int *count) {
 ```
 
 ```scala run
-def leftView(root: TreeNode): List[Int] = {
-  val out = scala.collection.mutable.ListBuffer[Int]()
-  def go(n: TreeNode, level: Int): Unit = {
-    if (n == null) return
-    if (level == out.length) out += n.value
-    go(n.left,  level + 1)
-    go(n.right, level + 1)
+class TreeNode(var value: Int, var left: TreeNode = null, var right: TreeNode = null)
+
+object Main extends App {
+  class Solution {
+    def leftView(root: TreeNode): List[Int] = {
+      val out = scala.collection.mutable.ListBuffer[Int]()
+      def go(n: TreeNode, level: Int): Unit = {
+        if (n == null) return
+        if (level == out.length) out += n.value
+        go(n.left,  level + 1)
+        go(n.right, level + 1)
+      }
+      go(root, 0); out.toList
+    }
   }
-  go(root, 0); out.toList
+
+  val root = new TreeNode(1,
+    new TreeNode(2, new TreeNode(4, new TreeNode(9)), null),
+    new TreeNode(3, null, new TreeNode(7)))
+  println(new Solution().leftView(root))  // List(1, 2, 4, 9)
 }
 ```
 
@@ -570,15 +601,26 @@ int* right_view(TreeNode *root, int *count) {
 ```
 
 ```scala run
-def rightView(root: TreeNode): List[Int] = {
-  val out = scala.collection.mutable.ListBuffer[Int]()
-  def go(n: TreeNode, level: Int): Unit = {
-    if (n == null) return
-    if (level == out.length) out += n.value
-    go(n.right, level + 1)
-    go(n.left,  level + 1)
+class TreeNode(var value: Int, var left: TreeNode = null, var right: TreeNode = null)
+
+object Main extends App {
+  class Solution {
+    def rightView(root: TreeNode): List[Int] = {
+      val out = scala.collection.mutable.ListBuffer[Int]()
+      def go(n: TreeNode, level: Int): Unit = {
+        if (n == null) return
+        if (level == out.length) out += n.value
+        go(n.right, level + 1)
+        go(n.left,  level + 1)
+      }
+      go(root, 0); out.toList
+    }
   }
-  go(root, 0); out.toList
+
+  val root = new TreeNode(1,
+    new TreeNode(2, new TreeNode(4, new TreeNode(9)), null),
+    new TreeNode(3, null, new TreeNode(7)))
+  println(new Solution().rightView(root))  // List(1, 3, 7, 9)
 }
 ```
 
