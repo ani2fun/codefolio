@@ -6,6 +6,22 @@ Existing block types — `runnable-code`, `runnable-group`, `mermaid`, `d2`, `d2
 
 ---
 
+## When to use D3 vs D2 vs Mermaid (ADR-0015)
+
+Each diagram format has one job. Pick by what the diagram is *showing*, not by which one you used last in the chapter.
+
+| Showing | Use |
+|---|---|
+| Data-structure **state over time** — insert, delete, reverse, two-pointer walk, anything with a sequence of frames where nodes/cells/pointers move | **D3 widget** from the closed catalog (` ```d3 widget=linked-list `, `…=array-traversal`, `…=btree-walker`, …) |
+| **Static structural figure** — node anatomy (`val + next` fields), memory layout, single annotated snapshot of a list/tree, a system diagram | **D2** static block (` ```d2 `) |
+| **Algorithm control flow** — `init → loop → end`, decision branches, recursion outline, pseudocode-as-a-graph | **Mermaid** flowchart (` ```mermaid `) |
+
+A chapter may use all three, but never two formats for the same content. The full-list reversal chapter, for example, opens with a `d2` block for the 3-node anatomy figure, drives the three-pointer walk through a `d3 widget=linked-list`, and explains the `while current is not null: …` loop with a `mermaid` flowchart. Each format does the job it was picked for.
+
+Don't ship Mermaid blocks with inline `themeVariables` config — the runtime theme initialiser resolves light/dark from the page's `<html class>`, and an in-block override produces inconsistent colours across the section.
+
+---
+
 ## Quick reference
 
 | What you want | Fence syntax |
@@ -83,6 +99,81 @@ Per-step fields:
 ```
 
 For two pointers, use two markers per step (e.g. `l`, `r`). For sliding window, set `range` to the window bounds. For binary search, three markers (`lo`, `mid`, `hi`) + the range = `lo..hi`.
+
+#### `linked-list` — node-and-pointer stepper (singly + doubly) with rewiring, fades, and Floyd's cycle
+
+A horizontal row of value-bearing nodes connected by `next` arrows, with one or more named markers attached to specific nodes. Steps can add/remove nodes (fade-in / fade-out), rewire arrows (path interpolates between targets), and move markers (slide). One widget covers both singly and doubly via a `direction` field; cycle visualisations set a `cycleTarget` for the dashed back-edge.
+
+**Marker canon (ADR-0016) — closed vocabulary, fixed role colours.** Authors pick names from this set; the widget rejects anything else as an inline `⚠ name` warning badge:
+
+| Name | Role | Colour |
+|---|---|---|
+| `head` | List entry | blue |
+| `tail` | Explicit last-node tracker | slate |
+| `prev` | Trailing pointer (reversal) | amber |
+| `curr` | Active pointer | emerald |
+| `next` | Saved-next reference | violet |
+| `slow` | Slow pointer (Floyd, two-pointer) | blue |
+| `fast` | Fast pointer (Floyd, two-pointer) | rose |
+| `dummy` | Sentinel / dummy head | slate |
+| `start` | Segment start (reversal-of-segment) | amber |
+| `end` | Segment end (reversal-of-segment) | emerald |
+
+The widget *silently drops* any `color` field on a payload marker — the colour is resolved from the canon, not the payload. Per-node `style` is `{new, removed, highlight}` (anything else drops with a dev-mode console warning).
+
+**Schema:**
+
+```jsonc
+{
+  "title":       "Reverse the entire list — three-pointer walk",
+  "direction":   "single",                    // "single" (default) or "double"
+  "nodes": [
+    {"id": "n1", "value": "5"},
+    {"id": "n2", "value": "7"},
+    {"id": "n3", "value": "3"},
+    {"id": "n4", "value": "10"}
+  ],
+  "head":        "n1",                        // optional; defaults to first node
+  "cycleTarget": null,                        // optional; node id the tail loops back to (Floyd's)
+  "wrapAt":      8,                           // optional; row-wrap when chain > N nodes wide
+  "sections": [                               // optional; macro-phase dividers in the progress bar
+    {"name": "Split",   "startIdx": 0},
+    {"name": "Reverse", "startIdx": 12},
+    {"name": "Merge",   "startIdx": 19}
+  ],
+  "steps": [
+    {
+      "links":   [["n1","n2"],["n2","n3"],["n3","n4"]],
+      "markers": [{"name": "prev", "nodeId": "n1"}, {"name": "curr", "nodeId": "n1"}],
+      "msg":     "Init: prev = null, curr = head"
+    },
+    {
+      "links":   [["n2","n1"],["n2","n3"],["n3","n4"]],
+      "markers": [{"name": "prev", "nodeId": "n1"}, {"name": "curr", "nodeId": "n2"}],
+      "msg":     "Tick 1: save next, flip curr.next backward, advance both pointers"
+    }
+  ]
+}
+```
+
+Per-step fields:
+- `links[]` — forward arrows as `[from, to]` pairs. Optional per-link object form `{"from":"a","to":"b","kind":"next|prev|broken"}` when you need finer control. Re-keyed by `from-kind` internally so a rewired `next` reuses the same arrow element and the path interpolates smoothly.
+- `markers[]` — `{name, nodeId}` only (`color` is dropped, see canon above). Two markers at the same node stack vertically; long labels on adjacent nodes auto-stack to avoid overlap.
+- `nodes[]` (optional override) — when present, completely replaces the spec's nodes for *this step*. Use for steps that add (`style: "new"`) or remove (`style: "removed"`) a node. Re-ordering the array also visibly reorders the layout (node identity tracked by `id`, so the SAME node slides to its new slot).
+- `head` (optional override), `msg` (caption, ~one short sentence describing the delta from the previous step).
+
+**Top-level options:**
+- `sections` — payload-driven macro-phase dividers in the segmented progress bar. Use for long-step sequences (≥ 10 steps) with clear macro shape (e.g. split → reverse → merge). Each section spans from its `startIdx` to the next section's `startIdx` (or to the end). Skip for short sequences — the dividers add visual noise without payoff.
+- `wrapAt` — opt-in row-wrap for long chains. When set, nodes split across rows of N columns; cross-row arrows draw as a diagonal Bezier from row N's tail to row N+1's head. Use when the chain has > ~8 nodes; the natural `wrapAt: 8` keeps node size legible.
+
+**Pedagogical guidance:**
+- One source frame ≈ one step. The chapter rebuild against the canon (Phase 4 of plan greedy-munching-feigenbaum) maps every pedagogical frame from `extracted_data/DSA/.../2.singly-linked-list/<chapter>/` to one step in the destination widget, so coverage matches the source.
+- Pedagogical context (`prev = null`, `new head`, `stitched`) belongs in `msg`, not in the marker name. The canon's names are roles; the msg is the role's current state in the algorithm.
+- Multiple widgets per chapter are normal. A chapter with N source sub-sections typically authors N+ widgets, each focused on one operation.
+
+#### `latency-scaled-time` / `partition-simulator` / `queueing-simulator` / `handshake-timeline` / `consistent-hash-ring` / `cache-stampede` / `btree-walker` / `replication-lag` / `hot-shard` / `raft-animator` / `estimation-calculator`
+
+See `D3WidgetBlock.scala` for the catalog and each widget's schema (in its own Scaladoc).
 
 ### Adding a new widget
 
