@@ -148,22 +148,31 @@ def two_pointer(head: Optional["ListNode"], tail: Optional["ListNode"]) -> None:
 ```
 
 ```java run
-/**
- * Definition for doubly-linked list.
- * class ListNode { int val; ListNode prev, next; ... }
- */
-class Solution {
-    public void twoPointer(ListNode head, ListNode tail) {
-        // Trivial cases — empty, single, or two adjacent nodes need no work
-        if (head == null || tail == null || head == tail || head.next == tail) return;
+public class Main {
+    static class ListNode { int val; ListNode prev, next; ListNode(int v){val=v;} }
 
-        ListNode left = head, right = tail;            // Plant walkers at both ends
-        while (left != right && left.prev != right) {  // Stop when they meet OR cross
-            // --- Problem-specific work on (left, right) ---
+    static class Solution {
+        public void twoPointer(ListNode head, ListNode tail) {
+            // Trivial cases — empty, single, or two adjacent nodes need no work
+            if (head == null || tail == null || head == tail || head.next == tail) return;
 
-            if (shouldMoveLeft)  left = left.next;     // Advance from head side
-            if (shouldMoveRight) right = right.prev;   // Retreat from tail side
+            ListNode left = head, right = tail;            // Plant walkers at both ends
+            boolean shouldMoveLeft = true, shouldMoveRight = true;  // Problem-specific flags
+            while (left != right && left.prev != right) {  // Stop when they meet OR cross
+                // --- Problem-specific work on (left, right) ---
+
+                if (shouldMoveLeft)  left = left.next;     // Advance from head side
+                if (shouldMoveRight) right = right.prev;   // Retreat from tail side
+            }
         }
+    }
+
+    public static void main(String[] args) {
+        ListNode n1=new ListNode(1),n2=new ListNode(2),n3=new ListNode(3),n4=new ListNode(4),n5=new ListNode(5);
+        n1.next=n2; n2.prev=n1; n2.next=n3; n3.prev=n2; n3.next=n4; n4.prev=n3; n4.next=n5; n5.prev=n4;
+        new Solution().twoPointer(n1, n5);
+        System.out.println("converged");
+        // converged
     }
 }
 ```
@@ -185,20 +194,30 @@ void twoPointer(ListNode *head, ListNode *tail) {
 ```
 
 ```scala run
-class Solution {
-  def twoPointer(head: ListNode, tail: ListNode): Unit = {
-    // Trivial cases — nothing to converge
-    if (head == null || tail == null || head == tail || head.next == tail) return
+class ListNode(var v: Int, var prev: ListNode = null, var next: ListNode = null)
 
-    var left  = head
-    var right = tail
-    while (left != right && left.prev != right) {       // Meet OR cross
-      // --- Problem-specific work on (left, right) ---
+object Main extends App {
+  class Solution {
+    def twoPointer(head: ListNode, tail: ListNode): Unit = {
+      // Trivial cases — nothing to converge
+      if (head == null || tail == null || head == tail || head.next == tail) return
 
-      if (shouldMoveLeft)  left  = left.next
-      if (shouldMoveRight) right = right.prev
+      var left  = head
+      var right = tail
+      val shouldMoveLeft = true; val shouldMoveRight = true   // Problem-specific flags
+      while (left != right && left.prev != right) {       // Meet OR cross
+        // --- Problem-specific work on (left, right) ---
+
+        if (shouldMoveLeft)  left  = left.next
+        if (shouldMoveRight) right = right.prev
+      }
     }
   }
+
+  val n1 = new ListNode(1); val n2 = new ListNode(2); val n3 = new ListNode(3); val n4 = new ListNode(4); val n5 = new ListNode(5)
+  n1.next = n2; n2.prev = n1; n2.next = n3; n3.prev = n2; n3.next = n4; n4.prev = n3; n4.next = n5; n5.prev = n4
+  new Solution().twoPointer(n1, n5)
+  println("converged")  // converged
 }
 ```
 
@@ -403,16 +422,27 @@ class Solution:
 ```
 
 ```java run
-class Solution {
-    public boolean palindromeNumber(ListNode head, ListNode tail) {
-        if (head == null || head == tail) return true;       // Empty / single = palindrome
-        ListNode left = head, right = tail;
-        while (left != null && right != null && left != right && left.prev != right) {
-            if (left.val != right.val) return false;         // Mismatch — not a palindrome
-            left  = left.next;                               // Shrink from head side
-            right = right.prev;                              // Shrink from tail side
+public class Main {
+    static class ListNode { int val; ListNode prev, next; ListNode(int v){val=v;} }
+
+    static class Solution {
+        public boolean palindromeNumber(ListNode head, ListNode tail) {
+            if (head == null || head == tail) return true;       // Empty / single = palindrome
+            ListNode left = head, right = tail;
+            while (left != null && right != null && left != right && left.prev != right) {
+                if (left.val != right.val) return false;         // Mismatch — not a palindrome
+                left  = left.next;                               // Shrink from head side
+                right = right.prev;                              // Shrink from tail side
+            }
+            return true;
         }
-        return true;
+    }
+
+    public static void main(String[] args) {
+        ListNode n1=new ListNode(1),n2=new ListNode(2),n3=new ListNode(3),n4=new ListNode(2),n5=new ListNode(1);
+        n1.next=n2; n2.prev=n1; n2.next=n3; n3.prev=n2; n3.next=n4; n4.prev=n3; n4.next=n5; n5.prev=n4;
+        System.out.println(new Solution().palindromeNumber(n1, n5));
+        // true
     }
 }
 ```
@@ -431,18 +461,26 @@ bool palindromeNumber(ListNode *head, ListNode *tail) {
 ```
 
 ```scala run
-class Solution {
-  def palindromeNumber(head: ListNode, tail: ListNode): Boolean = {
-    if (head == null || head == tail) return true
-    var left  = head
-    var right = tail
-    while (left != null && right != null && left != right && left.prev != right) {
-      if (left.value != right.value) return false
-      left  = left.next
-      right = right.prev
+class ListNode(var v: Int, var prev: ListNode = null, var next: ListNode = null)
+
+object Main extends App {
+  class Solution {
+    def palindromeNumber(head: ListNode, tail: ListNode): Boolean = {
+      if (head == null || head == tail) return true
+      var left  = head
+      var right = tail
+      while (left != null && right != null && left != right && left.prev != right) {
+        if (left.v != right.v) return false
+        left  = left.next
+        right = right.prev
+      }
+      true
     }
-    true
   }
+
+  val n1 = new ListNode(1); val n2 = new ListNode(2); val n3 = new ListNode(3); val n4 = new ListNode(2); val n5 = new ListNode(1)
+  n1.next = n2; n2.prev = n1; n2.next = n3; n3.prev = n2; n3.next = n4; n4.prev = n3; n4.next = n5; n5.prev = n4
+  println(new Solution().palindromeNumber(n1, n5))  // true
 }
 ```
 
@@ -599,24 +637,35 @@ class Solution:
 
 ```java run
 import java.util.*;
-class Solution {
-    public List<List<Integer>> twoSum(ListNode head, ListNode tail, int target) {
-        if (head == null || head.next == null) return new ArrayList<>();
-        List<List<Integer>> result = new ArrayList<>();
-        ListNode left = head, right = tail;
-        while (left != null && right != null && left.val < right.val) {
-            int sum = left.val + right.val;
-            if (sum == target) {
-                result.add(Arrays.asList(left.val, right.val));
-                left  = left.next;
-                right = right.prev;
-            } else if (sum < target) {
-                left  = left.next;                    // Sum too small — grow it
-            } else {
-                right = right.prev;                   // Sum too large — shrink it
+public class Main {
+    static class ListNode { int val; ListNode prev, next; ListNode(int v){val=v;} }
+
+    static class Solution {
+        public List<List<Integer>> twoSum(ListNode head, ListNode tail, int target) {
+            if (head == null || head.next == null) return new ArrayList<>();
+            List<List<Integer>> result = new ArrayList<>();
+            ListNode left = head, right = tail;
+            while (left != null && right != null && left.val < right.val) {
+                int sum = left.val + right.val;
+                if (sum == target) {
+                    result.add(Arrays.asList(left.val, right.val));
+                    left  = left.next;
+                    right = right.prev;
+                } else if (sum < target) {
+                    left  = left.next;                    // Sum too small — grow it
+                } else {
+                    right = right.prev;                   // Sum too large — shrink it
+                }
             }
+            return result;
         }
-        return result;
+    }
+
+    public static void main(String[] args) {
+        ListNode n1=new ListNode(1),n2=new ListNode(2),n3=new ListNode(3),n4=new ListNode(4),n5=new ListNode(5);
+        n1.next=n2; n2.prev=n1; n2.next=n3; n3.prev=n2; n3.next=n4; n4.prev=n3; n4.next=n5; n5.prev=n4;
+        System.out.println(new Solution().twoSum(n1, n5, 6));
+        // [[1, 5], [2, 4]]
     }
 }
 ```
@@ -650,26 +699,34 @@ int** twoSum(ListNode *head, ListNode *tail, int target, int *outCount) {
 ```
 
 ```scala run
-class Solution {
-  def twoSum(head: ListNode, tail: ListNode, target: Int): List[List[Int]] = {
-    if (head == null || head.next == null) return Nil
-    val buf = scala.collection.mutable.ListBuffer.empty[List[Int]]
-    var left  = head
-    var right = tail
-    while (left != null && right != null && left.value < right.value) {
-      val sum = left.value + right.value
-      if (sum == target) {
-        buf += List(left.value, right.value)
-        left  = left.next
-        right = right.prev
-      } else if (sum < target) {
-        left  = left.next
-      } else {
-        right = right.prev
+class ListNode(var v: Int, var prev: ListNode = null, var next: ListNode = null)
+
+object Main extends App {
+  class Solution {
+    def twoSum(head: ListNode, tail: ListNode, target: Int): List[List[Int]] = {
+      if (head == null || head.next == null) return Nil
+      val buf = scala.collection.mutable.ListBuffer.empty[List[Int]]
+      var left  = head
+      var right = tail
+      while (left != null && right != null && left.v < right.v) {
+        val sum = left.v + right.v
+        if (sum == target) {
+          buf += List(left.v, right.v)
+          left  = left.next
+          right = right.prev
+        } else if (sum < target) {
+          left  = left.next
+        } else {
+          right = right.prev
+        }
       }
+      buf.toList
     }
-    buf.toList
   }
+
+  val n1 = new ListNode(1); val n2 = new ListNode(2); val n3 = new ListNode(3); val n4 = new ListNode(4); val n5 = new ListNode(5)
+  n1.next = n2; n2.prev = n1; n2.next = n3; n3.prev = n2; n3.next = n4; n4.prev = n3; n4.next = n5; n5.prev = n4
+  println(new Solution().twoSum(n1, n5, 6))  // List(List(1, 5), List(2, 4))
 }
 ```
 
@@ -832,36 +889,47 @@ class Solution:
 
 ```java run
 import java.util.*;
-class Solution {
-    private ListNode skipLeft(ListNode left, ListNode right) {
-        while (left != null && left.next != null && left != right && left.val == left.next.val) {
-            left = left.next;
+public class Main {
+    static class ListNode { int val; ListNode prev, next; ListNode(int v){val=v;} }
+
+    static class Solution {
+        private ListNode skipLeft(ListNode left, ListNode right) {
+            while (left != null && left.next != null && left != right && left.val == left.next.val) {
+                left = left.next;
+            }
+            return left.next;
         }
-        return left.next;
-    }
-    private ListNode skipRight(ListNode left, ListNode right) {
-        while (right != null && right.prev != null && left != right && right.val == right.prev.val) {
-            right = right.prev;
-        }
-        return right.prev;
-    }
-    public List<List<Integer>> duplicateAwareTwoSum(ListNode head, ListNode tail, int target) {
-        if (head == null || head.next == null) return new ArrayList<>();
-        List<List<Integer>> result = new ArrayList<>();
-        ListNode left = head, right = tail;
-        while (left != null && right != null && left != right && left.val <= right.val) {
-            int sum = left.val + right.val;
-            if (sum == target) {
-                result.add(Arrays.asList(left.val, right.val));
-                left  = skipLeft(left, right);
-                right = skipRight(left, right);             // Pass NEW left
-            } else if (sum < target) {
-                left  = left.next;
-            } else {
+        private ListNode skipRight(ListNode left, ListNode right) {
+            while (right != null && right.prev != null && left != right && right.val == right.prev.val) {
                 right = right.prev;
             }
+            return right.prev;
         }
-        return result;
+        public List<List<Integer>> duplicateAwareTwoSum(ListNode head, ListNode tail, int target) {
+            if (head == null || head.next == null) return new ArrayList<>();
+            List<List<Integer>> result = new ArrayList<>();
+            ListNode left = head, right = tail;
+            while (left != null && right != null && left != right && left.val <= right.val) {
+                int sum = left.val + right.val;
+                if (sum == target) {
+                    result.add(Arrays.asList(left.val, right.val));
+                    left  = skipLeft(left, right);
+                    right = skipRight(left, right);             // Pass NEW left
+                } else if (sum < target) {
+                    left  = left.next;
+                } else {
+                    right = right.prev;
+                }
+            }
+            return result;
+        }
+    }
+
+    public static void main(String[] args) {
+        ListNode n1=new ListNode(1),n2=new ListNode(2),n3=new ListNode(2),n4=new ListNode(3),n5=new ListNode(4),n6=new ListNode(5);
+        n1.next=n2; n2.prev=n1; n2.next=n3; n3.prev=n2; n3.next=n4; n4.prev=n3; n4.next=n5; n5.prev=n4; n5.next=n6; n6.prev=n5;
+        System.out.println(new Solution().duplicateAwareTwoSum(n1, n6, 6));
+        // [[1, 5], [2, 4]]
     }
 }
 ```
@@ -902,37 +970,45 @@ int** duplicateAwareTwoSum(ListNode *head, ListNode *tail, int target, int *outC
 ```
 
 ```scala run
-class Solution {
-  private def skipLeft(left0: ListNode, right: ListNode): ListNode = {
-    var left = left0
-    while (left != null && left.next != null && left != right && left.value == left.next.value) {
-      left = left.next
+class ListNode(var v: Int, var prev: ListNode = null, var next: ListNode = null)
+
+object Main extends App {
+  class Solution {
+    private def skipLeft(left0: ListNode, right: ListNode): ListNode = {
+      var left = left0
+      while (left != null && left.next != null && left != right && left.v == left.next.v) {
+        left = left.next
+      }
+      left.next
     }
-    left.next
-  }
-  private def skipRight(left: ListNode, right0: ListNode): ListNode = {
-    var right = right0
-    while (right != null && right.prev != null && left != right && right.value == right.prev.value) {
-      right = right.prev
+    private def skipRight(left: ListNode, right0: ListNode): ListNode = {
+      var right = right0
+      while (right != null && right.prev != null && left != right && right.v == right.prev.v) {
+        right = right.prev
+      }
+      right.prev
     }
-    right.prev
-  }
-  def duplicateAwareTwoSum(head: ListNode, tail: ListNode, target: Int): List[List[Int]] = {
-    if (head == null || head.next == null) return Nil
-    val buf = scala.collection.mutable.ListBuffer.empty[List[Int]]
-    var left  = head
-    var right = tail
-    while (left != null && right != null && left != right && left.value <= right.value) {
-      val sum = left.value + right.value
-      if (sum == target) {
-        buf += List(left.value, right.value)
-        left  = skipLeft(left, right)
-        right = skipRight(left, right)
-      } else if (sum < target) left = left.next
-      else right = right.prev
+    def duplicateAwareTwoSum(head: ListNode, tail: ListNode, target: Int): List[List[Int]] = {
+      if (head == null || head.next == null) return Nil
+      val buf = scala.collection.mutable.ListBuffer.empty[List[Int]]
+      var left  = head
+      var right = tail
+      while (left != null && right != null && left != right && left.v <= right.v) {
+        val sum = left.v + right.v
+        if (sum == target) {
+          buf += List(left.v, right.v)
+          left  = skipLeft(left, right)
+          right = skipRight(left, right)
+        } else if (sum < target) left = left.next
+        else right = right.prev
+      }
+      buf.toList
     }
-    buf.toList
   }
+
+  val n1 = new ListNode(1); val n2 = new ListNode(2); val n3 = new ListNode(2); val n4 = new ListNode(3); val n5 = new ListNode(4); val n6 = new ListNode(5)
+  n1.next = n2; n2.prev = n1; n2.next = n3; n3.prev = n2; n3.next = n4; n4.prev = n3; n4.next = n5; n5.prev = n4; n5.next = n6; n6.prev = n5
+  println(new Solution().duplicateAwareTwoSum(n1, n6, 6))  // List(List(1, 5), List(2, 4))
 }
 ```
 
@@ -1094,28 +1170,39 @@ class Solution:
 ```
 
 ```java run
-class Solution {
-    private int closestTwoSum(ListNode indexNode, ListNode tail, int target) {
-        ListNode left = indexNode.next, right = tail;
-        int closestSum = Integer.MAX_VALUE;
-        while (left != null && right != null && left != right && left.prev != right) {
-            int sum = indexNode.val + left.val + right.val;
-            if (Math.abs(sum - target) < Math.abs(closestSum - target)) closestSum = sum;
-            if (sum == target) return sum;
-            else if (sum < target) left = left.next;
-            else right = right.prev;
+public class Main {
+    static class ListNode { int val; ListNode prev, next; ListNode(int v){val=v;} }
+
+    static class Solution {
+        private int closestTwoSum(ListNode indexNode, ListNode tail, int target) {
+            ListNode left = indexNode.next, right = tail;
+            int closestSum = Integer.MAX_VALUE;
+            while (left != null && right != null && left != right && left.prev != right) {
+                int sum = indexNode.val + left.val + right.val;
+                if (Math.abs(sum - target) < Math.abs(closestSum - target)) closestSum = sum;
+                if (sum == target) return sum;
+                else if (sum < target) left = left.next;
+                else right = right.prev;
+            }
+            return closestSum;
         }
-        return closestSum;
+        public int approximateThreeSum(ListNode head, ListNode tail, int target) {
+            int closestSum = Integer.MAX_VALUE;
+            ListNode current = head;
+            while (current != null && current.next != null) {
+                int currentSum = closestTwoSum(current, tail, target);
+                if (Math.abs(currentSum - target) < Math.abs(closestSum - target)) closestSum = currentSum;
+                current = current.next;
+            }
+            return closestSum;
+        }
     }
-    public int approximateThreeSum(ListNode head, ListNode tail, int target) {
-        int closestSum = Integer.MAX_VALUE;
-        ListNode current = head;
-        while (current != null && current.next != null) {
-            int currentSum = closestTwoSum(current, tail, target);
-            if (Math.abs(currentSum - target) < Math.abs(closestSum - target)) closestSum = currentSum;
-            current = current.next;
-        }
-        return closestSum;
+
+    public static void main(String[] args) {
+        ListNode n1=new ListNode(-4),n2=new ListNode(-1),n3=new ListNode(1),n4=new ListNode(2);
+        n1.next=n2; n2.prev=n1; n2.next=n3; n3.prev=n2; n3.next=n4; n4.prev=n3;
+        System.out.println(new Solution().approximateThreeSum(n1, n4, 1));
+        // 2
     }
 }
 ```
@@ -1148,30 +1235,38 @@ int approximateThreeSum(ListNode *head, ListNode *tail, int target) {
 ```
 
 ```scala run
-class Solution {
-  private def closestTwoSum(indexNode: ListNode, tail: ListNode, target: Int): Int = {
-    var left  = indexNode.next
-    var right = tail
-    var closestSum = Int.MaxValue
-    while (left != null && right != null && left != right && left.prev != right) {
-      val sum = indexNode.value + left.value + right.value
-      if (math.abs(sum - target) < math.abs(closestSum - target)) closestSum = sum
-      if (sum == target) return sum
-      else if (sum < target) left = left.next
-      else right = right.prev
+class ListNode(var v: Int, var prev: ListNode = null, var next: ListNode = null)
+
+object Main extends App {
+  class Solution {
+    private def closestTwoSum(indexNode: ListNode, tail: ListNode, target: Int): Int = {
+      var left  = indexNode.next
+      var right = tail
+      var closestSum = Int.MaxValue
+      while (left != null && right != null && left != right && left.prev != right) {
+        val sum = indexNode.v + left.v + right.v
+        if (math.abs(sum - target) < math.abs(closestSum - target)) closestSum = sum
+        if (sum == target) return sum
+        else if (sum < target) left = left.next
+        else right = right.prev
+      }
+      closestSum
     }
-    closestSum
-  }
-  def approximateThreeSum(head: ListNode, tail: ListNode, target: Int): Int = {
-    var closestSum = Int.MaxValue
-    var current = head
-    while (current != null && current.next != null) {
-      val s = closestTwoSum(current, tail, target)
-      if (math.abs(s - target) < math.abs(closestSum - target)) closestSum = s
-      current = current.next
+    def approximateThreeSum(head: ListNode, tail: ListNode, target: Int): Int = {
+      var closestSum = Int.MaxValue
+      var current = head
+      while (current != null && current.next != null) {
+        val s = closestTwoSum(current, tail, target)
+        if (math.abs(s - target) < math.abs(closestSum - target)) closestSum = s
+        current = current.next
+      }
+      closestSum
     }
-    closestSum
   }
+
+  val n1 = new ListNode(-4); val n2 = new ListNode(-1); val n3 = new ListNode(1); val n4 = new ListNode(2)
+  n1.next = n2; n2.prev = n1; n2.next = n3; n3.prev = n2; n3.next = n4; n4.prev = n3
+  println(new Solution().approximateThreeSum(n1, n4, 1))  // 2
 }
 ```
 
