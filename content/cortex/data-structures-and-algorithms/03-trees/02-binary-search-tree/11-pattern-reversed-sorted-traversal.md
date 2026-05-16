@@ -112,24 +112,36 @@ class Solution:
 ```
 
 ```java run
-class Solution {
-    private int aggregate = 0;
+public class Main {
+    static class TreeNode { int val; TreeNode left, right; TreeNode(int v){val=v;} }
 
-    private void reverseInorder(TreeNode node) {
-        if (node == null) return;
-        reverseInorder(node.right);                                                  // larger first
-        int output = f(node.val);                                                    // process
-        aggregate = g(aggregate, output);                                            // fold
-        reverseInorder(node.left);                                                   // smaller next
+    static class Solution {
+        private int aggregate = 0;
+
+        private void reverseInorder(TreeNode node) {
+            if (node == null) return;
+            reverseInorder(node.right);                                                  // larger first
+            int output = f(node.val);                                                    // process
+            aggregate = g(aggregate, output);                                            // fold
+            reverseInorder(node.left);                                                   // smaller next
+        }
+
+        public int callingFunction(TreeNode root) {
+            aggregate = 0;
+            reverseInorder(root);
+            return aggregate;
+        }
+        int f(int v)                  { return v; }
+        int g(int agg, int out)       { return agg + out; }
     }
 
-    public int callingFunction(TreeNode root) {
-        aggregate = 0;
-        reverseInorder(root);
-        return aggregate;
+    public static void main(String[] args) {
+        TreeNode root = new TreeNode(4);
+        root.left  = new TreeNode(2); root.right = new TreeNode(5);
+        root.left.left  = new TreeNode(1); root.left.right = new TreeNode(3);
+        root.right.right = new TreeNode(6);
+        System.out.println(new Solution().callingFunction(root));  // 21
     }
-    int f(int v)                  { return v; }
-    int g(int agg, int out)       { return agg + out; }
 }
 ```
 
@@ -155,24 +167,33 @@ int callingFunction(struct TreeNode *root) {
 ```
 
 ```scala run
-class Solution {
-  private var aggregate: Int = 0
-  private def f(v: Int): Int            = v
-  private def g(agg: Int, out: Int): Int = agg + out
+class TreeNode(var value: Int, var left: TreeNode = null, var right: TreeNode = null)
 
-  private def reverseInorder(node: TreeNode): Unit = {
-    if (node == null) return
-    reverseInorder(node.right)                                                            // larger first
-    val output = f(node.value)                                                            // process
-    aggregate = g(aggregate, output)                                                      // fold
-    reverseInorder(node.left)                                                             // smaller next
+object Main extends App {
+  class Solution {
+    private var aggregate: Int = 0
+    private def f(v: Int): Int            = v
+    private def g(agg: Int, out: Int): Int = agg + out
+
+    private def reverseInorder(node: TreeNode): Unit = {
+      if (node == null) return
+      reverseInorder(node.right)                                                            // larger first
+      val output = f(node.value)                                                            // process
+      aggregate = g(aggregate, output)                                                      // fold
+      reverseInorder(node.left)                                                             // smaller next
+    }
+
+    def callingFunction(root: TreeNode): Int = {
+      aggregate = 0
+      reverseInorder(root)
+      aggregate
+    }
   }
 
-  def callingFunction(root: TreeNode): Int = {
-    aggregate = 0
-    reverseInorder(root)
-    aggregate
-  }
+  val root = new TreeNode(4,
+    new TreeNode(2, new TreeNode(1), new TreeNode(3)),
+    new TreeNode(5, null, new TreeNode(6)))
+  println(new Solution().callingFunction(root))  // 21
 }
 ```
 
@@ -292,20 +313,33 @@ class Solution:
 ```
 
 ```java run
-class Solution {
-    private int rank = 1;
+public class Main {
+    static class TreeNode { int val; TreeNode left, right; TreeNode(int v){val=v;} }
 
-    private void walk(TreeNode node) {
-        if (node == null) return;
-        walk(node.right);                                                                          // larger first
-        node.val = rank++;                                                                         // assign + increment
-        walk(node.left);
+    static class Solution {
+        private int rank = 1;
+
+        private void walk(TreeNode node) {
+            if (node == null) return;
+            walk(node.right);                                                                          // larger first
+            node.val = rank++;                                                                         // assign + increment
+            walk(node.left);
+        }
+
+        public TreeNode rankNodes(TreeNode root) {
+            rank = 1;
+            walk(root);
+            return root;
+        }
     }
 
-    public TreeNode rankNodes(TreeNode root) {
-        rank = 1;
-        walk(root);
-        return root;
+    public static void main(String[] args) {
+        TreeNode root = new TreeNode(4);
+        root.left  = new TreeNode(2); root.right = new TreeNode(5);
+        root.left.left  = new TreeNode(1); root.left.right = new TreeNode(3);
+        root.right.right = new TreeNode(6);
+        TreeNode result = new Solution().rankNodes(root);
+        System.out.println(result.val);  // 3
     }
 }
 ```
@@ -328,22 +362,32 @@ struct TreeNode *rankNodes(struct TreeNode *root) {
 ```
 
 ```scala run
-class Solution {
-  private var rank: Int = 1
+class TreeNode(var value: Int, var left: TreeNode = null, var right: TreeNode = null)
 
-  private def walk(node: TreeNode): Unit = {
-    if (node == null) return
-    walk(node.right)                                                                                   // larger first
-    node.value = rank
-    rank += 1
-    walk(node.left)
+object Main extends App {
+  class Solution {
+    private var rank: Int = 1
+
+    private def walk(node: TreeNode): Unit = {
+      if (node == null) return
+      walk(node.right)                                                                                   // larger first
+      node.value = rank
+      rank += 1
+      walk(node.left)
+    }
+
+    def rankNodes(root: TreeNode): TreeNode = {
+      rank = 1
+      walk(root)
+      root
+    }
   }
 
-  def rankNodes(root: TreeNode): TreeNode = {
-    rank = 1
-    walk(root)
-    root
-  }
+  val root = new TreeNode(4,
+    new TreeNode(2, new TreeNode(1), new TreeNode(3)),
+    new TreeNode(5, null, new TreeNode(6)))
+  val result = new Solution().rankNodes(root)
+  println(result.value)  // 3
 }
 ```
 
@@ -423,23 +467,35 @@ class Solution:
 ```
 
 ```java run
-class Solution {
-    private int count = 0, result = 0;
-    private boolean found = false;
+public class Main {
+    static class TreeNode { int val; TreeNode left, right; TreeNode(int v){val=v;} }
 
-    private void reverseInOrder(TreeNode root, int k) {
-        if (root == null || found) return;
-        reverseInOrder(root.right, k);
-        if (found) return;
-        count++;
-        if (count == k) { result = root.val; found = true; return; }                                              // hit
-        reverseInOrder(root.left, k);
+    static class Solution {
+        private int count = 0, result = 0;
+        private boolean found = false;
+
+        private void reverseInOrder(TreeNode root, int k) {
+            if (root == null || found) return;
+            reverseInOrder(root.right, k);
+            if (found) return;
+            count++;
+            if (count == k) { result = root.val; found = true; return; }                                              // hit
+            reverseInOrder(root.left, k);
+        }
+
+        public int kthLargestElement(TreeNode root, int k) {
+            count = 0; result = 0; found = false;
+            reverseInOrder(root, k);
+            return result;
+        }
     }
 
-    public int kthLargestElement(TreeNode root, int k) {
-        count = 0; result = 0; found = false;
-        reverseInOrder(root, k);
-        return result;
+    public static void main(String[] args) {
+        TreeNode root = new TreeNode(4);
+        root.left  = new TreeNode(2); root.right = new TreeNode(5);
+        root.left.left  = new TreeNode(1); root.left.right = new TreeNode(3);
+        root.right.right = new TreeNode(6);
+        System.out.println(new Solution().kthLargestElement(root, 3));  // 4
     }
 }
 ```
@@ -467,25 +523,34 @@ int kthLargestElement(struct TreeNode *root, int k) {
 ```
 
 ```scala run
-class Solution {
-  private var count: Int  = 0
-  private var result: Int = 0
-  private var found: Boolean = false
+class TreeNode(var value: Int, var left: TreeNode = null, var right: TreeNode = null)
 
-  private def reverseInOrder(root: TreeNode, k: Int): Unit = {
-    if (root == null || found) return
-    reverseInOrder(root.right, k)
-    if (found) return
-    count += 1
-    if (count == k) { result = root.value; found = true; return }                                                       // hit
-    reverseInOrder(root.left, k)
+object Main extends App {
+  class Solution {
+    private var count: Int  = 0
+    private var result: Int = 0
+    private var found: Boolean = false
+
+    private def reverseInOrder(root: TreeNode, k: Int): Unit = {
+      if (root == null || found) return
+      reverseInOrder(root.right, k)
+      if (found) return
+      count += 1
+      if (count == k) { result = root.value; found = true; return }                                                       // hit
+      reverseInOrder(root.left, k)
+    }
+
+    def kthLargestElement(root: TreeNode, k: Int): Int = {
+      count = 0; result = 0; found = false
+      reverseInOrder(root, k)
+      result
+    }
   }
 
-  def kthLargestElement(root: TreeNode, k: Int): Int = {
-    count = 0; result = 0; found = false
-    reverseInOrder(root, k)
-    result
-  }
+  val root = new TreeNode(4,
+    new TreeNode(2, new TreeNode(1), new TreeNode(3)),
+    new TreeNode(5, null, new TreeNode(6)))
+  println(new Solution().kthLargestElement(root, 3))  // 4
 }
 ```
 
@@ -557,21 +622,34 @@ class Solution:
 ```
 
 ```java run
-class Solution {
-    private int sum = 0;
+public class Main {
+    static class TreeNode { int val; TreeNode left, right; TreeNode(int v){val=v;} }
 
-    private void walk(TreeNode node) {
-        if (node == null) return;
-        walk(node.right);                                                                                                  // larger first
-        sum += node.val;                                                                                                   // accumulate
-        node.val = sum;                                                                                                    // overwrite
-        walk(node.left);
+    static class Solution {
+        private int sum = 0;
+
+        private void walk(TreeNode node) {
+            if (node == null) return;
+            walk(node.right);                                                                                                  // larger first
+            sum += node.val;                                                                                                   // accumulate
+            node.val = sum;                                                                                                    // overwrite
+            walk(node.left);
+        }
+
+        public TreeNode enrichedSumTree(TreeNode root) {
+            sum = 0;
+            walk(root);
+            return root;
+        }
     }
 
-    public TreeNode enrichedSumTree(TreeNode root) {
-        sum = 0;
-        walk(root);
-        return root;
+    public static void main(String[] args) {
+        TreeNode root = new TreeNode(4);
+        root.left  = new TreeNode(2); root.right = new TreeNode(5);
+        root.left.left  = new TreeNode(1); root.left.right = new TreeNode(3);
+        root.right.right = new TreeNode(6);
+        TreeNode result = new Solution().enrichedSumTree(root);
+        System.out.println(result.val);  // 15
     }
 }
 ```
@@ -595,22 +673,32 @@ struct TreeNode *enrichedSumTree(struct TreeNode *root) {
 ```
 
 ```scala run
-class Solution {
-  private var sum: Int = 0
+class TreeNode(var value: Int, var left: TreeNode = null, var right: TreeNode = null)
 
-  private def walk(node: TreeNode): Unit = {
-    if (node == null) return
-    walk(node.right)                                                                                                              // larger first
-    sum += node.value
-    node.value = sum
-    walk(node.left)
+object Main extends App {
+  class Solution {
+    private var sum: Int = 0
+
+    private def walk(node: TreeNode): Unit = {
+      if (node == null) return
+      walk(node.right)                                                                                                              // larger first
+      sum += node.value
+      node.value = sum
+      walk(node.left)
+    }
+
+    def enrichedSumTree(root: TreeNode): TreeNode = {
+      sum = 0
+      walk(root)
+      root
+    }
   }
 
-  def enrichedSumTree(root: TreeNode): TreeNode = {
-    sum = 0
-    walk(root)
-    root
-  }
+  val root = new TreeNode(4,
+    new TreeNode(2, new TreeNode(1), new TreeNode(3)),
+    new TreeNode(5, null, new TreeNode(6)))
+  val result = new Solution().enrichedSumTree(root)
+  println(result.value)  // 15
 }
 ```
 
@@ -710,24 +798,37 @@ class Solution:
 ```
 
 ```java run
-class Solution {
-    private int prevVal = 0;
-    private boolean hasPrev = false;
+public class Main {
+    static class TreeNode { int val; TreeNode left, right; TreeNode(int v){val=v;} }
 
-    private void walk(TreeNode node) {
-        if (node == null) return;
-        walk(node.right);                                                                                                                            // larger first
-        int original = node.val;
-        if (hasPrev && prevVal != 0 && prevVal % node.val == 0) node.val = 0;
-        prevVal = original;
-        hasPrev = true;
-        walk(node.left);
+    static class Solution {
+        private int prevVal = 0;
+        private boolean hasPrev = false;
+
+        private void walk(TreeNode node) {
+            if (node == null) return;
+            walk(node.right);                                                                                                                            // larger first
+            int original = node.val;
+            if (hasPrev && prevVal != 0 && prevVal % node.val == 0) node.val = 0;
+            prevVal = original;
+            hasPrev = true;
+            walk(node.left);
+        }
+
+        public TreeNode multipleReplacement(TreeNode root) {
+            prevVal = 0; hasPrev = false;
+            walk(root);
+            return root;
+        }
     }
 
-    public TreeNode multipleReplacement(TreeNode root) {
-        prevVal = 0; hasPrev = false;
-        walk(root);
-        return root;
+    public static void main(String[] args) {
+        TreeNode root = new TreeNode(6);
+        root.left  = new TreeNode(2); root.right = new TreeNode(5);
+        root.left.left  = new TreeNode(1); root.left.right = new TreeNode(4);
+        root.right.right = new TreeNode(10);
+        TreeNode result = new Solution().multipleReplacement(root);
+        System.out.println(result.val);  // 6
     }
 }
 ```
@@ -756,25 +857,35 @@ struct TreeNode *multipleReplacement(struct TreeNode *root) {
 ```
 
 ```scala run
-class Solution {
-  private var prevVal: Int = 0
-  private var hasPrev: Boolean = false
+class TreeNode(var value: Int, var left: TreeNode = null, var right: TreeNode = null)
 
-  private def walk(node: TreeNode): Unit = {
-    if (node == null) return
-    walk(node.right)                                                                                                                                       // larger first
-    val original = node.value
-    if (hasPrev && prevVal != 0 && prevVal % node.value == 0) node.value = 0
-    prevVal = original
-    hasPrev = true
-    walk(node.left)
+object Main extends App {
+  class Solution {
+    private var prevVal: Int = 0
+    private var hasPrev: Boolean = false
+
+    private def walk(node: TreeNode): Unit = {
+      if (node == null) return
+      walk(node.right)                                                                                                                                       // larger first
+      val original = node.value
+      if (hasPrev && prevVal != 0 && prevVal % node.value == 0) node.value = 0
+      prevVal = original
+      hasPrev = true
+      walk(node.left)
+    }
+
+    def multipleReplacement(root: TreeNode): TreeNode = {
+      prevVal = 0; hasPrev = false
+      walk(root)
+      root
+    }
   }
 
-  def multipleReplacement(root: TreeNode): TreeNode = {
-    prevVal = 0; hasPrev = false
-    walk(root)
-    root
-  }
+  val root = new TreeNode(6,
+    new TreeNode(2, new TreeNode(1), new TreeNode(4)),
+    new TreeNode(5, null, new TreeNode(10)))
+  val result = new Solution().multipleReplacement(root)
+  println(result.value)  // 6
 }
 ```
 
