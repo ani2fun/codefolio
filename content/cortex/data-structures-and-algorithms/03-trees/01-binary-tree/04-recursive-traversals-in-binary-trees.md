@@ -264,20 +264,22 @@ int main() {
 class TreeNode(var value: Int, var left: TreeNode = null, var right: TreeNode = null)
 
 object Main extends App {
-  def preorder(root: TreeNode): List[Int] = {
-    val buf = scala.collection.mutable.ListBuffer[Int]()
-    def walk(n: TreeNode): Unit = {
-      if (n == null) return
-      buf += n.value
-      walk(n.left)
-      walk(n.right)
+  class Solution {
+    def preorder(root: TreeNode): List[Int] = {
+      val buf = scala.collection.mutable.ListBuffer[Int]()
+      def walk(n: TreeNode): Unit = {
+        if (n == null) return
+        buf += n.value
+        walk(n.left)
+        walk(n.right)
+      }
+      walk(root)
+      buf.toList
     }
-    walk(root)
-    buf.toList
   }
 
   val root = new TreeNode(1, new TreeNode(2, new TreeNode(4)), new TreeNode(3, null, new TreeNode(7)))
-  println(preorder(root))
+  println(new Solution().preorder(root))
 }
 ```
 
@@ -402,15 +404,24 @@ static void walk(TreeNode *n, int *out, int *k) {
 ```
 
 ```scala run
-def inorder(root: TreeNode): List[Int] = {
-  val buf = scala.collection.mutable.ListBuffer[Int]()
-  def walk(n: TreeNode): Unit = {
-    if (n == null) return
-    walk(n.left)
-    buf += n.value
-    walk(n.right)
+class TreeNode(var value: Int, var left: TreeNode = null, var right: TreeNode = null)
+
+object Main extends App {
+  class Solution {
+    def inorder(root: TreeNode): List[Int] = {
+      val buf = scala.collection.mutable.ListBuffer[Int]()
+      def walk(n: TreeNode): Unit = {
+        if (n == null) return
+        walk(n.left)
+        buf += n.value
+        walk(n.right)
+      }
+      walk(root); buf.toList
+    }
   }
-  walk(root); buf.toList
+
+  val root = new TreeNode(1, new TreeNode(2, new TreeNode(4)), new TreeNode(3, null, new TreeNode(7)))
+  println(new Solution().inorder(root))
 }
 ```
 
@@ -530,15 +541,24 @@ static void walk(TreeNode *n, int *out, int *k) {
 ```
 
 ```scala run
-def postorder(root: TreeNode): List[Int] = {
-  val buf = scala.collection.mutable.ListBuffer[Int]()
-  def walk(n: TreeNode): Unit = {
-    if (n == null) return
-    walk(n.left)
-    walk(n.right)
-    buf += n.value
+class TreeNode(var value: Int, var left: TreeNode = null, var right: TreeNode = null)
+
+object Main extends App {
+  class Solution {
+    def postorder(root: TreeNode): List[Int] = {
+      val buf = scala.collection.mutable.ListBuffer[Int]()
+      def walk(n: TreeNode): Unit = {
+        if (n == null) return
+        walk(n.left)
+        walk(n.right)
+        buf += n.value
+      }
+      walk(root); buf.toList
+    }
   }
-  walk(root); buf.toList
+
+  val root = new TreeNode(1, new TreeNode(2, new TreeNode(4)), new TreeNode(3, null, new TreeNode(7)))
+  println(new Solution().postorder(root))
 }
 ```
 
