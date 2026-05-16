@@ -228,31 +228,43 @@ def sliding_window_traversal(head: Optional[ListNode], k: int) -> None:
 ```
 
 ```java run
-class Solution {
-    public void slidingWindowTraversal(ListNode head, int k) {
+public class Main {
+    static class ListNode { int val; ListNode next; ListNode(int v){val=v;} }
 
-        // Initialize start and end to head
-        ListNode start = head;
-        ListNode end = head;
+    static class Solution {
+        public void slidingWindowTraversal(ListNode head, int k) {
 
-        // Move end k steps ahead
-        for (int i = 0; i < k; i++) {
-            if (end == null) {
-                return; // Exit early if the list is shorter than k
+            // Initialize start and end to head
+            ListNode start = head;
+            ListNode end = head;
+
+            // Move end k steps ahead
+            for (int i = 0; i < k; i++) {
+                if (end == null) {
+                    return; // Exit early if the list is shorter than k
+                }
+                end = end.next;
             }
-            end = end.next;
-        }
 
-        // Traverse the list while end is not null
-        while (end != null) {
-            // Apply operation on start and end
-            // these nodes are k steps apart
-            // Example: start.val = start.val + end.val;
+            // Traverse the list while end is not null
+            while (end != null) {
+                // Apply operation on start and end
+                // these nodes are k steps apart
+                // Example: start.val = start.val + end.val;
 
-            // Move ahead both start and end by one step
-            start = start.next;
-            end = end.next;
+                // Move ahead both start and end by one step
+                start = start.next;
+                end = end.next;
+            }
         }
+    }
+
+    public static void main(String[] args) {
+        // Pattern only — no side effect, just demonstrates compilation
+        ListNode n1=new ListNode(1),n2=new ListNode(2),n3=new ListNode(3),n4=new ListNode(4);
+        n1.next=n2; n2.next=n3; n3.next=n4;
+        new Solution().slidingWindowTraversal(n1, 2);
+        System.out.println("ok"); // ok
     }
 }
 ```
@@ -291,34 +303,43 @@ void slidingWindowTraversal(ListNode *head, int k) {
 ```
 
 ```scala run
-object Solution {
-  def slidingWindowTraversal(head: ListNode, k: Int): Unit = {
+class ListNode(var v: Int, var next: ListNode = null)
 
-    // Initialize start and end to head
-    var start = head
-    var end = head
+object Main extends App {
+  class Solution {
+    def slidingWindowTraversal(head: ListNode, k: Int): Unit = {
 
-    // Move end k steps ahead
-    var i = 0
-    while (i < k) {
-      if (end == null) {
-        return // Exit early if the list is shorter than k
+      // Initialize start and end to head
+      var start = head
+      var end = head
+
+      // Move end k steps ahead
+      var i = 0
+      while (i < k) {
+        if (end == null) {
+          return // Exit early if the list is shorter than k
+        }
+        end = end.next
+        i += 1
       }
-      end = end.next
-      i += 1
-    }
 
-    // Traverse the list while end is not null
-    while (end != null) {
-      // Apply operation on start and end
-      // these nodes are k steps apart
-      // Example: start.val = start.val + end.val
+      // Traverse the list while end is not null
+      while (end != null) {
+        // Apply operation on start and end
+        // these nodes are k steps apart
+        // Example: start.v = start.v + end.v
 
-      // Move ahead both start and end by one step
-      start = start.next
-      end = end.next
+        // Move ahead both start and end by one step
+        start = start.next
+        end = end.next
+      }
     }
   }
+
+  // Pattern only — no side effect, just demonstrates compilation
+  val n4=new ListNode(4); val n3=new ListNode(3,n4); val n2=new ListNode(2,n3); val n1=new ListNode(1,n2)
+  new Solution().slidingWindowTraversal(n1, 2)
+  println("ok") // ok
 }
 ```
 
@@ -470,23 +491,36 @@ class Solution:
 ```
 
 ```java run
-class Solution {
-    public ListNode trimNthNode(ListNode head, int k) {
-        if (head == null) return null;
+public class Main {
+    static class ListNode { int val; ListNode next; ListNode(int v){val=v;} }
 
-        // Pass 1 — count length
-        int length = 0;
-        for (ListNode cur = head; cur != null; cur = cur.next) length++;
+    static class Solution {
+        public ListNode trimNthNode(ListNode head, int k) {
+            if (head == null) return null;
 
-        if (k == length) return head.next;       // head itself is the k-th from end
+            // Pass 1 — count length
+            int length = 0;
+            for (ListNode cur = head; cur != null; cur = cur.next) length++;
 
-        // Pass 2 — walk to predecessor of target
-        int prevIndex = length - k - 1;
-        ListNode prev = head;
-        for (int i = 0; i < prevIndex; i++) prev = prev.next;
+            if (k == length) return head.next;       // head itself is the k-th from end
 
-        prev.next = prev.next.next;
-        return head;
+            // Pass 2 — walk to predecessor of target
+            int prevIndex = length - k - 1;
+            ListNode prev = head;
+            for (int i = 0; i < prevIndex; i++) prev = prev.next;
+
+            prev.next = prev.next.next;
+            return head;
+        }
+    }
+
+    public static void main(String[] args) {
+        // [5, 7, 3, 10], k=2 -> [5, 7, 10]
+        ListNode n1=new ListNode(5),n2=new ListNode(7),n3=new ListNode(3),n4=new ListNode(10);
+        n1.next=n2; n2.next=n3; n3.next=n4;
+        ListNode head = new Solution().trimNthNode(n1, 2);
+        for (ListNode c=head;c!=null;c=c.next) System.out.print(c.val+" ");
+        // 5 7 10
     }
 }
 ```
@@ -510,24 +544,33 @@ ListNode* trimNthNode(ListNode *head, int k) {
 ```
 
 ```scala run
-object Solution {
-  def trimNthNode(head: ListNode, k: Int): ListNode = {
-    if (head == null) return null
+class ListNode(var v: Int, var next: ListNode = null)
 
-    var length = 0
-    var cur = head
-    while (cur != null) { length += 1; cur = cur.next }
+object Main extends App {
+  class Solution {
+    def trimNthNode(head: ListNode, k: Int): ListNode = {
+      if (head == null) return null
 
-    if (k == length) return head.next
+      var length = 0
+      var cur = head
+      while (cur != null) { length += 1; cur = cur.next }
 
-    val prevIndex = length - k - 1
-    var prev = head
-    var i = 0
-    while (i < prevIndex) { prev = prev.next; i += 1 }
+      if (k == length) return head.next
 
-    prev.next = prev.next.next
-    head
+      val prevIndex = length - k - 1
+      var prev = head
+      var i = 0
+      while (i < prevIndex) { prev = prev.next; i += 1 }
+
+      prev.next = prev.next.next
+      head
+    }
   }
+
+  // [5, 7, 3, 10], k=2 -> [5, 7, 10]
+  val n4=new ListNode(10); val n3=new ListNode(3,n4); val n2=new ListNode(7,n3); val n1=new ListNode(5,n2)
+  var head = new Solution().trimNthNode(n1, 2)
+  while (head != null) { print(s"${head.v} "); head = head.next }  // 5 7 10
 }
 ```
 
@@ -688,42 +731,55 @@ class Solution:
 ```
 
 ```java run
-class Solution {
-    public ListNode trimNthNode(ListNode head, int k) {
-        if (head == null) {
-            return null;
-        }
+public class Main {
+    static class ListNode { int val; ListNode next; ListNode(int v){val=v;} }
 
-        ListNode start = head;
-        ListNode prevToStart = null;
-        ListNode end = head;
-
-        // Move the end pointer k steps ahead
-        for (int i = 1; i < k; i++) {
-            if (end == null) {
-                return head;
+    static class Solution {
+        public ListNode trimNthNode(ListNode head, int k) {
+            if (head == null) {
+                return null;
             }
-            end = end.next;
-        }
 
-        // If the end pointer is at the last node, remove the head
-        if (end.next == null) {
-            return head.next;
-        }
+            ListNode start = head;
+            ListNode prevToStart = null;
+            ListNode end = head;
 
-        // Move both pointers until the end pointer reaches the last node
-        while (end != null && end.next != null) {
-            end = end.next;
-            prevToStart = start;
-            start = start.next;
-        }
+            // Move the end pointer k steps ahead
+            for (int i = 1; i < k; i++) {
+                if (end == null) {
+                    return head;
+                }
+                end = end.next;
+            }
 
-        // Remove the k-th node from the end
-        if (prevToStart != null) {
-            prevToStart.next = start.next;
-        }
+            // If the end pointer is at the last node, remove the head
+            if (end.next == null) {
+                return head.next;
+            }
 
-        return head;
+            // Move both pointers until the end pointer reaches the last node
+            while (end != null && end.next != null) {
+                end = end.next;
+                prevToStart = start;
+                start = start.next;
+            }
+
+            // Remove the k-th node from the end
+            if (prevToStart != null) {
+                prevToStart.next = start.next;
+            }
+
+            return head;
+        }
+    }
+
+    public static void main(String[] args) {
+        // [5, 7, 3, 10], k=2 -> [5, 7, 10]
+        ListNode n1=new ListNode(5),n2=new ListNode(7),n3=new ListNode(3),n4=new ListNode(10);
+        n1.next=n2; n2.next=n3; n3.next=n4;
+        ListNode head = new Solution().trimNthNode(n1, 2);
+        for (ListNode c=head;c!=null;c=c.next) System.out.print(c.val+" ");
+        // 5 7 10
     }
 }
 ```
@@ -768,45 +824,54 @@ ListNode* trimNthNode(ListNode *head, int k) {
 ```
 
 ```scala run
-object Solution {
-  def trimNthNode(head: ListNode, k: Int): ListNode = {
-    if (head == null) {
-      return null
-    }
+class ListNode(var v: Int, var next: ListNode = null)
 
-    var start = head
-    var prevToStart: ListNode = null
-    var end = head
-
-    // Move the end pointer k steps ahead
-    var i = 1
-    while (i < k) {
-      if (end == null) {
-        return head
+object Main extends App {
+  class Solution {
+    def trimNthNode(head: ListNode, k: Int): ListNode = {
+      if (head == null) {
+        return null
       }
-      end = end.next
-      i += 1
-    }
 
-    // If the end pointer is at the last node, remove the head
-    if (end.next == null) {
-      return head.next
-    }
+      var start = head
+      var prevToStart: ListNode = null
+      var end = head
 
-    // Move both pointers until the end pointer reaches the last node
-    while (end != null && end.next != null) {
-      end = end.next
-      prevToStart = start
-      start = start.next
-    }
+      // Move the end pointer k steps ahead
+      var i = 1
+      while (i < k) {
+        if (end == null) {
+          return head
+        }
+        end = end.next
+        i += 1
+      }
 
-    // Remove the k-th node from the end
-    if (prevToStart != null) {
-      prevToStart.next = start.next
-    }
+      // If the end pointer is at the last node, remove the head
+      if (end.next == null) {
+        return head.next
+      }
 
-    head
+      // Move both pointers until the end pointer reaches the last node
+      while (end != null && end.next != null) {
+        end = end.next
+        prevToStart = start
+        start = start.next
+      }
+
+      // Remove the k-th node from the end
+      if (prevToStart != null) {
+        prevToStart.next = start.next
+      }
+
+      head
+    }
   }
+
+  // [5, 7, 3, 10], k=2 -> [5, 7, 10]
+  val n4=new ListNode(10); val n3=new ListNode(3,n4); val n2=new ListNode(7,n3); val n1=new ListNode(5,n2)
+  var head = new Solution().trimNthNode(n1, 2)
+  while (head != null) { print(s"${head.v} "); head = head.next }  // 5 7 10
 }
 ```
 
@@ -969,67 +1034,79 @@ class Solution:
 ```
 
 ```java run
-class Solution {
-    public int kMaximumSum(ListNode head, int k) {
+public class Main {
+    static class ListNode { int val; ListNode next; ListNode(int v){val=v;} }
 
-        // Handle edge case: empty list or invalid k
-        if (head == null || k <= 0) {
-            return -1;
-        }
+    static class Solution {
+        public int kMaximumSum(ListNode head, int k) {
 
-        // Pointer to mark the start of the current window
-        ListNode start = head;
-
-        // Pointer to mark the end of the current window
-        ListNode end = head;
-
-        // Variable to store the sum of the current window
-        int sum = 0;
-
-        // Counter to count nodes in the first window
-        int count = 0;
-
-        // Step 1: Calculate the sum of the first window of size k
-        while (end != null && count < k) {
-
-            // Add the current node's value to the sum
-            sum += end.val;
-
-            // Move the end pointer forward
-            end = end.next;
-
-            // Increment the node counter
-            count++;
-        }
-
-        // If there are fewer than k nodes in the list, return -1
-        if (count < k) {
-            return -1;
-        }
-
-        // Initialize maxSum with the sum of the first window
-        int maxSum = sum;
-
-        // Step 2: Slide the window through the rest of the list
-        while (end != null) {
-
-            // Update the current sum by removing the start node and
-            // adding the new end node
-            sum = sum - start.val + end.val;
-
-            // Update maxSum if the current window sum is greater
-            if (sum > maxSum) {
-                maxSum = sum;
+            // Handle edge case: empty list or invalid k
+            if (head == null || k <= 0) {
+                return -1;
             }
 
-            // Move the start and end pointers forward to slide the
-            // window
-            start = start.next;
-            end = end.next;
-        }
+            // Pointer to mark the start of the current window
+            ListNode start = head;
 
-        // Return the maximum sum of any contiguous k nodes
-        return maxSum;
+            // Pointer to mark the end of the current window
+            ListNode end = head;
+
+            // Variable to store the sum of the current window
+            int sum = 0;
+
+            // Counter to count nodes in the first window
+            int count = 0;
+
+            // Step 1: Calculate the sum of the first window of size k
+            while (end != null && count < k) {
+
+                // Add the current node's value to the sum
+                sum += end.val;
+
+                // Move the end pointer forward
+                end = end.next;
+
+                // Increment the node counter
+                count++;
+            }
+
+            // If there are fewer than k nodes in the list, return -1
+            if (count < k) {
+                return -1;
+            }
+
+            // Initialize maxSum with the sum of the first window
+            int maxSum = sum;
+
+            // Step 2: Slide the window through the rest of the list
+            while (end != null) {
+
+                // Update the current sum by removing the start node and
+                // adding the new end node
+                sum = sum - start.val + end.val;
+
+                // Update maxSum if the current window sum is greater
+                if (sum > maxSum) {
+                    maxSum = sum;
+                }
+
+                // Move the start and end pointers forward to slide the
+                // window
+                start = start.next;
+                end = end.next;
+            }
+
+            // Return the maximum sum of any contiguous k nodes
+            return maxSum;
+        }
+    }
+
+    public static void main(String[] args) {
+        // [2, 1, 5, 1, 3, 2], k=3 -> 9 (window [5, 1, 3])
+        ListNode n1=new ListNode(2),n2=new ListNode(1),n3=new ListNode(5),
+                 n4=new ListNode(1),n5=new ListNode(3),n6=new ListNode(2);
+        n1.next=n2; n2.next=n3; n3.next=n4; n4.next=n5; n5.next=n6;
+        System.out.println(new Solution().kMaximumSum(n1, 3)); // 9
     }
 }
 ```
@@ -1099,68 +1176,77 @@ int kMaximumSum(ListNode *head, int k) {
 ```
 
 ```scala run
-object Solution {
-  def kMaximumSum(head: ListNode, k: Int): Int = {
+class ListNode(var v: Int, var next: ListNode = null)
 
-    // Handle edge case: empty list or invalid k
-    if (head == null || k <= 0) {
-      return -1
-    }
+object Main extends App {
+  class Solution {
+    def kMaximumSum(head: ListNode, k: Int): Int = {
 
-    // Pointer to mark the start of the current window
-    var start = head
-
-    // Pointer to mark the end of the current window
-    var end = head
-
-    // Variable to store the sum of the current window
-    var sum = 0
-
-    // Counter to count nodes in the first window
-    var count = 0
-
-    // Step 1: Calculate the sum of the first window of size k
-    while (end != null && count < k) {
-
-      // Add the current node's value to the sum
-      sum += end.v
-
-      // Move the end pointer forward
-      end = end.next
-
-      // Increment the node counter
-      count += 1
-    }
-
-    // If there are fewer than k nodes in the list, return -1
-    if (count < k) {
-      return -1
-    }
-
-    // Initialize maxSum with the sum of the first window
-    var maxSum = sum
-
-    // Step 2: Slide the window through the rest of the list
-    while (end != null) {
-
-      // Update the current sum by removing the start node and
-      // adding the new end node
-      sum = sum - start.v + end.v
-
-      // Update maxSum if the current window sum is greater
-      if (sum > maxSum) {
-        maxSum = sum
+      // Handle edge case: empty list or invalid k
+      if (head == null || k <= 0) {
+        return -1
       }
 
-      // Move the start and end pointers forward to slide the
-      // window
-      start = start.next
-      end = end.next
-    }
+      // Pointer to mark the start of the current window
+      var start = head
 
-    // Return the maximum sum of any contiguous k nodes
-    maxSum
+      // Pointer to mark the end of the current window
+      var end = head
+
+      // Variable to store the sum of the current window
+      var sum = 0
+
+      // Counter to count nodes in the first window
+      var count = 0
+
+      // Step 1: Calculate the sum of the first window of size k
+      while (end != null && count < k) {
+
+        // Add the current node's value to the sum
+        sum += end.v
+
+        // Move the end pointer forward
+        end = end.next
+
+        // Increment the node counter
+        count += 1
+      }
+
+      // If there are fewer than k nodes in the list, return -1
+      if (count < k) {
+        return -1
+      }
+
+      // Initialize maxSum with the sum of the first window
+      var maxSum = sum
+
+      // Step 2: Slide the window through the rest of the list
+      while (end != null) {
+
+        // Update the current sum by removing the start node and
+        // adding the new end node
+        sum = sum - start.v + end.v
+
+        // Update maxSum if the current window sum is greater
+        if (sum > maxSum) {
+          maxSum = sum
+        }
+
+        // Move the start and end pointers forward to slide the
+        // window
+        start = start.next
+        end = end.next
+      }
+
+      // Return the maximum sum of any contiguous k nodes
+      maxSum
+    }
   }
+
+  // [2, 1, 5, 1, 3, 2], k=3 -> 9 (window [5, 1, 3])
+  val n6=new ListNode(2); val n5=new ListNode(3,n6); val n4=new ListNode(1,n5)
+  val n3=new ListNode(5,n4); val n2=new ListNode(1,n3); val n1=new ListNode(2,n2)
+  println(new Solution().kMaximumSum(n1, 3)) // 9
 }
 ```
 
@@ -1274,52 +1360,66 @@ class Solution:
 ```
 
 ```java run
-class Solution {
-    public ListNode trimNthNode(ListNode head, int n) {
+public class Main {
+    static class ListNode { int val; ListNode next; ListNode(int v){val=v;} }
 
-        // Handle edge case for an empty list
-        if (head == null) {
-            return null;
-        }
+    static class Solution {
+        public ListNode trimNthNode(ListNode head, int n) {
 
-        // Pointer to keep track of the end of the list
-        ListNode current = head;
-
-        // Move the current pointer n steps ahead
-        for (int i = 1; i < n; i++) {
-
-            // If n is greater than the length of the list
-            if (current == null) {
-                return head;
+            // Handle edge case for an empty list
+            if (head == null) {
+                return null;
             }
-            current = current.next;
+
+            // Pointer to keep track of the end of the list
+            ListNode current = head;
+
+            // Move the current pointer n steps ahead
+            for (int i = 1; i < n; i++) {
+
+                // If n is greater than the length of the list
+                if (current == null) {
+                    return head;
+                }
+                current = current.next;
+            }
+
+            // If the current pointer is now at the last node, it means we
+            // need to remove the head
+            if (current.next == null) {
+                return head.next;
+            }
+
+            ListNode nthNodeFromEnd = head;
+            ListNode prevToNthNodeFromEnd = null;
+
+            // Move both pointers until the current pointer reaches the last
+            // node
+            while (current != null && current.next != null) {
+                prevToNthNodeFromEnd = nthNodeFromEnd;
+                nthNodeFromEnd = nthNodeFromEnd.next;
+                current = current.next;
+            }
+
+            // Now, prevToNthNodeFromEnd points to the node before the one
+            // we want to remove
+            if (prevToNthNodeFromEnd != null) {
+                prevToNthNodeFromEnd.next = nthNodeFromEnd.next;
+            }
+
+            // Return the modified list
+            return head;
         }
+    }
 
-        // If the current pointer is now at the last node, it means we
-        // need to remove the head
-        if (current.next == null) {
-            return head.next;
-        }
-
-        ListNode nthNodeFromEnd = head;
-        ListNode prevToNthNodeFromEnd = null;
-
-        // Move both pointers until the current pointer reaches the last
-        // node
-        while (current != null && current.next != null) {
-            prevToNthNodeFromEnd = nthNodeFromEnd;
-            nthNodeFromEnd = nthNodeFromEnd.next;
-            current = current.next;
-        }
-
-        // Now, prevToNthNodeFromEnd points to the node before the one
-        // we want to remove
-        if (prevToNthNodeFromEnd != null) {
-            prevToNthNodeFromEnd.next = nthNodeFromEnd.next;
-        }
-
-        // Return the modified list
-        return head;
+    public static void main(String[] args) {
+        // [1, 2, 3, 4, 5], N=2 -> [1, 2, 3, 5]
+        ListNode n1=new ListNode(1),n2=new ListNode(2),n3=new ListNode(3),
+                 n4=new ListNode(4),n5=new ListNode(5);
+        n1.next=n2; n2.next=n3; n3.next=n4; n4.next=n5;
+        ListNode head = new Solution().trimNthNode(n1, 2);
+        for (ListNode c=head;c!=null;c=c.next) System.out.print(c.val+" ");
+        // 1 2 3 5
     }
 }
 ```
@@ -1374,55 +1474,65 @@ ListNode* trimNthNode(ListNode *head, int n) {
 ```
 
 ```scala run
-object Solution {
-  def trimNthNode(head: ListNode, n: Int): ListNode = {
+class ListNode(var v: Int, var next: ListNode = null)
 
-    // Handle edge case for an empty list
-    if (head == null) {
-      return null
-    }
+object Main extends App {
+  class Solution {
+    def trimNthNode(head: ListNode, n: Int): ListNode = {
 
-    // Pointer to keep track of the end of the list
-    var current = head
-
-    // Move the current pointer n steps ahead
-    var i = 1
-    while (i < n) {
-
-      // If n is greater than the length of the list
-      if (current == null) {
-        return head
+      // Handle edge case for an empty list
+      if (head == null) {
+        return null
       }
-      current = current.next
-      i += 1
+
+      // Pointer to keep track of the end of the list
+      var current = head
+
+      // Move the current pointer n steps ahead
+      var i = 1
+      while (i < n) {
+
+        // If n is greater than the length of the list
+        if (current == null) {
+          return head
+        }
+        current = current.next
+        i += 1
+      }
+
+      // If the current pointer is now at the last node, it means we
+      // need to remove the head
+      if (current.next == null) {
+        return head.next
+      }
+
+      var nthNodeFromEnd = head
+      var prevToNthNodeFromEnd: ListNode = null
+
+      // Move both pointers until the current pointer reaches the last
+      // node
+      while (current != null && current.next != null) {
+        prevToNthNodeFromEnd = nthNodeFromEnd
+        nthNodeFromEnd = nthNodeFromEnd.next
+        current = current.next
+      }
+
+      // Now, prevToNthNodeFromEnd points to the node before the one
+      // we want to remove
+      if (prevToNthNodeFromEnd != null) {
+        prevToNthNodeFromEnd.next = nthNodeFromEnd.next
+      }
+
+      // Return the modified list
+      head
     }
-
-    // If the current pointer is now at the last node, it means we
-    // need to remove the head
-    if (current.next == null) {
-      return head.next
-    }
-
-    var nthNodeFromEnd = head
-    var prevToNthNodeFromEnd: ListNode = null
-
-    // Move both pointers until the current pointer reaches the last
-    // node
-    while (current != null && current.next != null) {
-      prevToNthNodeFromEnd = nthNodeFromEnd
-      nthNodeFromEnd = nthNodeFromEnd.next
-      current = current.next
-    }
-
-    // Now, prevToNthNodeFromEnd points to the node before the one
-    // we want to remove
-    if (prevToNthNodeFromEnd != null) {
-      prevToNthNodeFromEnd.next = nthNodeFromEnd.next
-    }
-
-    // Return the modified list
-    head
   }
+
+  // [1, 2, 3, 4, 5], N=2 -> [1, 2, 3, 5]
+  val n5=new ListNode(5); val n4=new ListNode(4,n5); val n3=new ListNode(3,n4)
+  val n2=new ListNode(2,n3); val n1=new ListNode(1,n2)
+  var head = new Solution().trimNthNode(n1, 2)
+  while (head != null) { print(s"${head.v} "); head = head.next }  // 1 2 3 5
 }
 ```
 
@@ -1605,90 +1715,104 @@ class Solution:
 ```
 
 ```java run
-class Solution {
-    private ListNode swapNodes(
-        ListNode head,
-        ListNode prevToNthFromStart,
-        ListNode nthFromStart,
-        ListNode prevToNthFromEnd,
-        ListNode nthFromEnd
-    ) {
+public class Main {
+    static class ListNode { int val; ListNode next; ListNode(int v){val=v;} }
 
-        // If the Nth node from the beginning is the same as the Nth
-        // node from the end, no swapping is needed
-        if (prevToNthFromStart != null) {
-            prevToNthFromStart.next = nthFromEnd;
-        }
+    static class Solution {
+        private ListNode swapNodes(
+            ListNode head,
+            ListNode prevToNthFromStart,
+            ListNode nthFromStart,
+            ListNode prevToNthFromEnd,
+            ListNode nthFromEnd
+        ) {
 
-        // If Nth node from the beginning is the head, update the
-        // head
-        else {
-            head = nthFromEnd;
-        }
+            // If the Nth node from the beginning is the same as the Nth
+            // node from the end, no swapping is needed
+            if (prevToNthFromStart != null) {
+                prevToNthFromStart.next = nthFromEnd;
+            }
 
-        // If the Nth node from the end is the same as the Nth node
-        // from the beginning, no swapping is needed
-        if (prevToNthFromEnd != null) {
-            prevToNthFromEnd.next = nthFromStart;
-        }
+            // If Nth node from the beginning is the head, update the
+            // head
+            else {
+                head = nthFromEnd;
+            }
 
-        // If Nth node from the end is the head, update the head
-        else {
-            head = nthFromStart;
-        }
+            // If the Nth node from the end is the same as the Nth node
+            // from the beginning, no swapping is needed
+            if (prevToNthFromEnd != null) {
+                prevToNthFromEnd.next = nthFromStart;
+            }
 
-        // Swap the next pointers of the two nodes
-        ListNode temp = nthFromStart.next;
-        nthFromStart.next = nthFromEnd.next;
-        nthFromEnd.next = temp;
+            // If Nth node from the end is the head, update the head
+            else {
+                head = nthFromStart;
+            }
 
-        return head;
-    }
+            // Swap the next pointers of the two nodes
+            ListNode temp = nthFromStart.next;
+            nthFromStart.next = nthFromEnd.next;
+            nthFromEnd.next = temp;
 
-    public ListNode swapNthNodes(ListNode head, int n) {
-
-        // If the list is empty or has only one node, no swapping is
-        // needed.
-        if (head == null || head.next == null) {
             return head;
         }
 
-        // Pointer to the Nth node from the beginning
-        ListNode nthFromStart = head;
+        public ListNode swapNthNodes(ListNode head, int n) {
 
-        // Pointer to the node before the nthFromStart node
-        ListNode prevToNthFromStart = null;
+            // If the list is empty or has only one node, no swapping is
+            // needed.
+            if (head == null || head.next == null) {
+                return head;
+            }
 
-        // Pointer to keep track of the end of the list
-        ListNode current = head;
+            // Pointer to the Nth node from the beginning
+            ListNode nthFromStart = head;
 
-        // Traverse to the Nth node from the beginning
-        for (int i = 1; i < n; ++i) {
-            prevToNthFromStart = nthFromStart;
-            nthFromStart = nthFromStart.next;
-            current = current.next;
+            // Pointer to the node before the nthFromStart node
+            ListNode prevToNthFromStart = null;
+
+            // Pointer to keep track of the end of the list
+            ListNode current = head;
+
+            // Traverse to the Nth node from the beginning
+            for (int i = 1; i < n; ++i) {
+                prevToNthFromStart = nthFromStart;
+                nthFromStart = nthFromStart.next;
+                current = current.next;
+            }
+
+            // Pointer to the Nth node from the end
+            ListNode nthFromEnd = head;
+
+            // Pointer to the node before the nthFromEnd node
+            ListNode prevToNthFromEnd = null;
+
+            // Find the Nth node from the end
+            while (current != null && current.next != null) {
+                prevToNthFromEnd = nthFromEnd;
+                nthFromEnd = nthFromEnd.next;
+                current = current.next;
+            }
+
+            return swapNodes(
+                head,
+                prevToNthFromStart,
+                nthFromStart,
+                prevToNthFromEnd,
+                nthFromEnd
+            );
         }
+    }
 
-        // Pointer to the Nth node from the end
-        ListNode nthFromEnd = head;
-
-        // Pointer to the node before the nthFromEnd node
-        ListNode prevToNthFromEnd = null;
-
-        // Find the Nth node from the end
-        while (current != null && current.next != null) {
-            prevToNthFromEnd = nthFromEnd;
-            nthFromEnd = nthFromEnd.next;
-            current = current.next;
-        }
-
-        return swapNodes(
-            head,
-            prevToNthFromStart,
-            nthFromStart,
-            prevToNthFromEnd,
-            nthFromEnd
-        );
+    public static void main(String[] args) {
+        // [1, 2, 3, 4, 5], N=2 -> [1, 4, 3, 2, 5]
+        ListNode n1=new ListNode(1),n2=new ListNode(2),n3=new ListNode(3),
+                 n4=new ListNode(4),n5=new ListNode(5);
+        n1.next=n2; n2.next=n3; n3.next=n4; n4.next=n5;
+        ListNode head = new Solution().swapNthNodes(n1, 2);
+        for (ListNode c=head;c!=null;c=c.next) System.out.print(c.val+" ");
+        // 1 4 3 2 5
     }
 }
 ```
@@ -1775,85 +1899,95 @@ ListNode* swapNthNodes(ListNode *head, int n) {
 ```
 
 ```scala run
-object Solution {
-  private def swapNodes(
-      headIn: ListNode,
-      prevToNthFromStart: ListNode,
-      nthFromStart: ListNode,
-      prevToNthFromEnd: ListNode,
-      nthFromEnd: ListNode
-  ): ListNode = {
-    var head = headIn
+class ListNode(var v: Int, var next: ListNode = null)
 
-    // If the Nth node from the beginning is the same as the Nth
-    // node from the end, no swapping is needed
-    if (prevToNthFromStart != null) {
-      prevToNthFromStart.next = nthFromEnd
-    }
-    // If Nth node from the beginning is the head, update the head
-    else {
-      head = nthFromEnd
+object Main extends App {
+  class Solution {
+    private def swapNodes(
+        headIn: ListNode,
+        prevToNthFromStart: ListNode,
+        nthFromStart: ListNode,
+        prevToNthFromEnd: ListNode,
+        nthFromEnd: ListNode
+    ): ListNode = {
+      var head = headIn
+
+      // If the Nth node from the beginning is the same as the Nth
+      // node from the end, no swapping is needed
+      if (prevToNthFromStart != null) {
+        prevToNthFromStart.next = nthFromEnd
+      }
+      // If Nth node from the beginning is the head, update the head
+      else {
+        head = nthFromEnd
+      }
+
+      // If the Nth node from the end is the same as the Nth node
+      // from the beginning, no swapping is needed
+      if (prevToNthFromEnd != null) {
+        prevToNthFromEnd.next = nthFromStart
+      }
+      // If Nth node from the end is the head, update the head
+      else {
+        head = nthFromStart
+      }
+
+      // Swap the next pointers of the two nodes
+      val temp = nthFromStart.next
+      nthFromStart.next = nthFromEnd.next
+      nthFromEnd.next = temp
+
+      head
     }
 
-    // If the Nth node from the end is the same as the Nth node
-    // from the beginning, no swapping is needed
-    if (prevToNthFromEnd != null) {
-      prevToNthFromEnd.next = nthFromStart
-    }
-    // If Nth node from the end is the head, update the head
-    else {
-      head = nthFromStart
-    }
+    def swapNthNodes(head: ListNode, n: Int): ListNode = {
 
-    // Swap the next pointers of the two nodes
-    val temp = nthFromStart.next
-    nthFromStart.next = nthFromEnd.next
-    nthFromEnd.next = temp
+      // If the list is empty or has only one node, no swapping is
+      // needed.
+      if (head == null || head.next == null) {
+        return head
+      }
 
-    head
+      // Pointer to the Nth node from the beginning
+      var nthFromStart = head
+
+      // Pointer to the node before the nthFromStart node
+      var prevToNthFromStart: ListNode = null
+
+      // Pointer to keep track of the end of the list
+      var current = head
+
+      // Traverse to the Nth node from the beginning
+      var i = 1
+      while (i < n) {
+        prevToNthFromStart = nthFromStart
+        nthFromStart = nthFromStart.next
+        current = current.next
+        i += 1
+      }
+
+      // Pointer to the Nth node from the end
+      var nthFromEnd = head
+
+      // Pointer to the node before the nthFromEnd node
+      var prevToNthFromEnd: ListNode = null
+
+      // Find the Nth node from the end
+      while (current != null && current.next != null) {
+        prevToNthFromEnd = nthFromEnd
+        nthFromEnd = nthFromEnd.next
+        current = current.next
+      }
+
+      swapNodes(head, prevToNthFromStart, nthFromStart, prevToNthFromEnd, nthFromEnd)
+    }
   }
 
-  def swapNthNodes(head: ListNode, n: Int): ListNode = {
-
-    // If the list is empty or has only one node, no swapping is
-    // needed.
-    if (head == null || head.next == null) {
-      return head
-    }
-
-    // Pointer to the Nth node from the beginning
-    var nthFromStart = head
-
-    // Pointer to the node before the nthFromStart node
-    var prevToNthFromStart: ListNode = null
-
-    // Pointer to keep track of the end of the list
-    var current = head
-
-    // Traverse to the Nth node from the beginning
-    var i = 1
-    while (i < n) {
-      prevToNthFromStart = nthFromStart
-      nthFromStart = nthFromStart.next
-      current = current.next
-      i += 1
-    }
-
-    // Pointer to the Nth node from the end
-    var nthFromEnd = head
-
-    // Pointer to the node before the nthFromEnd node
-    var prevToNthFromEnd: ListNode = null
-
-    // Find the Nth node from the end
-    while (current != null && current.next != null) {
-      prevToNthFromEnd = nthFromEnd
-      nthFromEnd = nthFromEnd.next
-      current = current.next
-    }
-
-    swapNodes(head, prevToNthFromStart, nthFromStart, prevToNthFromEnd, nthFromEnd)
-  }
+  // [1, 2, 3, 4, 5], N=2 -> [1, 4, 3, 2, 5]
+  val n5=new ListNode(5); val n4=new ListNode(4,n5); val n3=new ListNode(3,n4)
+  val n2=new ListNode(2,n3); val n1=new ListNode(1,n2)
+  var head = new Solution().swapNthNodes(n1, 2)
+  while (head != null) { print(s"${head.v} "); head = head.next }  // 1 4 3 2 5
 }
 ```
 
@@ -1996,64 +2130,78 @@ class Solution:
 ```
 
 ```java run
-class Solution {
-    private int findLength(ListNode head) {
-        int length = 0;
-        while (head != null) {
-            length++;
-            head = head.next;
+public class Main {
+    static class ListNode { int val; ListNode next; ListNode(int v){val=v;} }
+
+    static class Solution {
+        private int findLength(ListNode head) {
+            int length = 0;
+            while (head != null) {
+                length++;
+                head = head.next;
+            }
+            return length;
         }
-        return length;
+
+        public ListNode kRotations(ListNode head, int k) {
+
+            // If the list is empty or has only one node, no swapping is
+            // needed.
+            if (head == null || head.next == null || k == 0) {
+                return head;
+            }
+
+            // Get the length of the list
+            int length = findLength(head);
+
+            // If k is greater than or equal to the length of the list,
+            // reduce k to its modulo value
+            if (k >= length) {
+                return kRotations(head, k % length);
+            }
+
+            // Pointer to keep track of the end of the list
+            ListNode current = head;
+
+            // Traverse to the kth node from the beginning
+            for (int i = 1; i < k; ++i) {
+                current = current.next;
+            }
+
+            // Pointer to the kth node from the end
+            ListNode kthFromEnd = head;
+
+            // Pointer to the node before the kthFromEnd node
+            ListNode prevToKthFromEnd = null;
+
+            // Find the kth node from the end
+            while (current != null && current.next != null) {
+                prevToKthFromEnd = kthFromEnd;
+                kthFromEnd = kthFromEnd.next;
+                current = current.next;
+            }
+
+            // Since kthFromEnd is the new head node, disconnect the list
+            // at `prevToKthFromEnd`, making `kthFromEnd` the new head.
+            prevToKthFromEnd.next = null;
+
+            // Link the end of the list back to the original head.
+            current.next = head;
+
+            // Return `kthFromEnd` as it becomes the new head of the
+            // rotated list.
+            return kthFromEnd;
+        }
     }
 
-    public ListNode kRotations(ListNode head, int k) {
-
-        // If the list is empty or has only one node, no swapping is
-        // needed.
-        if (head == null || head.next == null || k == 0) {
-            return head;
-        }
-
-        // Get the length of the list
-        int length = findLength(head);
-
-        // If k is greater than or equal to the length of the list,
-        // reduce k to its modulo value
-        if (k >= length) {
-            return kRotations(head, k % length);
-        }
-
-        // Pointer to keep track of the end of the list
-        ListNode current = head;
-
-        // Traverse to the kth node from the beginning
-        for (int i = 1; i < k; ++i) {
-            current = current.next;
-        }
-
-        // Pointer to the kth node from the end
-        ListNode kthFromEnd = head;
-
-        // Pointer to the node before the kthFromEnd node
-        ListNode prevToKthFromEnd = null;
-
-        // Find the kth node from the end
-        while (current != null && current.next != null) {
-            prevToKthFromEnd = kthFromEnd;
-            kthFromEnd = kthFromEnd.next;
-            current = current.next;
-        }
-
-        // Since kthFromEnd is the new head node, disconnect the list
-        // at `prevToKthFromEnd`, making `kthFromEnd` the new head.
-        prevToKthFromEnd.next = null;
-
-        // Link the end of the list back to the original head.
-        current.next = head;
-
-        // Return `kthFromEnd` as it becomes the new head of the
-        // rotated list.
-        return kthFromEnd;
+    public static void main(String[] args) {
+        // [1, 2, 3, 4, 5], k=2 -> [4, 5, 1, 2, 3]
+        ListNode n1=new ListNode(1),n2=new ListNode(2),n3=new ListNode(3),
+                 n4=new ListNode(4),n5=new ListNode(5);
+        n1.next=n2; n2.next=n3; n3.next=n4; n4.next=n5;
+        ListNode head = new Solution().kRotations(n1, 2);
+        for (ListNode c=head;c!=null;c=c.next) System.out.print(c.val+" ");
+        // 4 5 1 2 3
     }
 }
 ```
@@ -2120,68 +2268,78 @@ ListNode* kRotations(ListNode *head, int k) {
 ```
 
 ```scala run
-object Solution {
-  private def findLength(head: ListNode): Int = {
-    var length = 0
-    var cur = head
-    while (cur != null) {
-      length += 1
-      cur = cur.next
+class ListNode(var v: Int, var next: ListNode = null)
+
+object Main extends App {
+  class Solution {
+    private def findLength(head: ListNode): Int = {
+      var length = 0
+      var cur = head
+      while (cur != null) {
+        length += 1
+        cur = cur.next
+      }
+      length
     }
-    length
+
+    def kRotations(head: ListNode, k: Int): ListNode = {
+
+      // If the list is empty or has only one node, no swapping is
+      // needed.
+      if (head == null || head.next == null || k == 0) {
+        return head
+      }
+
+      // Get the length of the list
+      val length = findLength(head)
+
+      // If k is greater than or equal to the length of the list,
+      // reduce k to its modulo value
+      if (k >= length) {
+        return kRotations(head, k % length)
+      }
+
+      // Pointer to keep track of the end of the list
+      var current = head
+
+      // Traverse to the kth node from the beginning
+      var i = 1
+      while (i < k) {
+        current = current.next
+        i += 1
+      }
+
+      // Pointer to the kth node from the end
+      var kthFromEnd = head
+
+      // Pointer to the node before the kthFromEnd node
+      var prevToKthFromEnd: ListNode = null
+
+      // Find the kth node from the end
+      while (current != null && current.next != null) {
+        prevToKthFromEnd = kthFromEnd
+        kthFromEnd = kthFromEnd.next
+        current = current.next
+      }
+
+      // Since kthFromEnd is the new head node, disconnect the list
+      // at prevToKthFromEnd, making kthFromEnd the new head.
+      prevToKthFromEnd.next = null
+
+      // Link the end of the list back to the original head.
+      current.next = head
+
+      // Return kthFromEnd as it becomes the new head of the rotated
+      // list.
+      kthFromEnd
+    }
   }
 
-  def kRotations(head: ListNode, k: Int): ListNode = {
-
-    // If the list is empty or has only one node, no swapping is
-    // needed.
-    if (head == null || head.next == null || k == 0) {
-      return head
-    }
-
-    // Get the length of the list
-    val length = findLength(head)
-
-    // If k is greater than or equal to the length of the list,
-    // reduce k to its modulo value
-    if (k >= length) {
-      return kRotations(head, k % length)
-    }
-
-    // Pointer to keep track of the end of the list
-    var current = head
-
-    // Traverse to the kth node from the beginning
-    var i = 1
-    while (i < k) {
-      current = current.next
-      i += 1
-    }
-
-    // Pointer to the kth node from the end
-    var kthFromEnd = head
-
-    // Pointer to the node before the kthFromEnd node
-    var prevToKthFromEnd: ListNode = null
-
-    // Find the kth node from the end
-    while (current != null && current.next != null) {
-      prevToKthFromEnd = kthFromEnd
-      kthFromEnd = kthFromEnd.next
-      current = current.next
-    }
-
-    // Since kthFromEnd is the new head node, disconnect the list
-    // at prevToKthFromEnd, making kthFromEnd the new head.
-    prevToKthFromEnd.next = null
-
-    // Link the end of the list back to the original head.
-    current.next = head
-
-    // Return kthFromEnd as it becomes the new head of the rotated
-    // list.
-    kthFromEnd
-  }
+  // [1, 2, 3, 4, 5], k=2 -> [4, 5, 1, 2, 3]
+  val n5=new ListNode(5); val n4=new ListNode(4,n5); val n3=new ListNode(3,n4)
+  val n2=new ListNode(2,n3); val n1=new ListNode(1,n2)
+  var head = new Solution().kRotations(n1, 2)
+  while (head != null) { print(s"${head.v} "); head = head.next }  // 4 5 1 2 3
 }
 ```
 
