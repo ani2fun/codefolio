@@ -704,17 +704,29 @@ class Solution:
 ```
 
 ```java run
-class Solution {
-    private boolean isValidHeap(TreeNode root, int parentVal) {
-        if (root == null) return true;                                                                                                          // empty subtree → valid
-        if (root.val < parentVal) return false;                                                                                                 // min-heap rule violated
-        return isValidHeap(root.left,  root.val)
-            && isValidHeap(root.right, root.val);                                                                                               // recurse with this node as parent
+public class Main {
+    static class TreeNode { int val; TreeNode left, right; TreeNode(int v){val=v;} }
+
+    static class Solution {
+        private boolean isValidHeap(TreeNode root, int parentVal) {
+            if (root == null) return true;                                                                                                          // empty subtree → valid
+            if (root.val < parentVal) return false;                                                                                                 // min-heap rule violated
+            return isValidHeap(root.left,  root.val)
+                && isValidHeap(root.right, root.val);                                                                                               // recurse with this node as parent
+        }
+
+        public boolean treeHeapValidator(TreeNode root) {
+            if (root == null) return true;
+            return isValidHeap(root, Integer.MIN_VALUE);                                                                                            // -∞ sentinel for the root
+        }
     }
 
-    public boolean treeHeapValidator(TreeNode root) {
-        if (root == null) return true;
-        return isValidHeap(root, Integer.MIN_VALUE);                                                                                            // -∞ sentinel for the root
+    public static void main(String[] args) {
+        TreeNode root = new TreeNode(1);
+        root.left  = new TreeNode(4); root.right = new TreeNode(3);
+        root.left.left  = new TreeNode(2); root.left.right  = new TreeNode(5);
+        root.right.left = new TreeNode(6); root.right.right = new TreeNode(7);
+        System.out.println(new Solution().treeHeapValidator(root));  // false
     }
 }
 ```
@@ -737,17 +749,26 @@ bool treeHeapValidator(struct TreeNode *root) {
 ```
 
 ```scala run
-object Solution {
-  private def isValidHeap(root: TreeNode, parentVal: Int): Boolean = {
-    if (root == null) return true                                                                                                                     // empty subtree
-    if (root.value < parentVal) return false                                                                                                          // min-heap violation
-    isValidHeap(root.left,  root.value) && isValidHeap(root.right, root.value)
+class TreeNode(var value: Int, var left: TreeNode = null, var right: TreeNode = null)
+
+object Main extends App {
+  class Solution {
+    private def isValidHeap(root: TreeNode, parentVal: Int): Boolean = {
+      if (root == null) return true                                                                                                                     // empty subtree
+      if (root.value < parentVal) return false                                                                                                          // min-heap violation
+      isValidHeap(root.left,  root.value) && isValidHeap(root.right, root.value)
+    }
+
+    def treeHeapValidator(root: TreeNode): Boolean = {
+      if (root == null) return true
+      isValidHeap(root, Int.MinValue)                                                                                                                   // -∞ sentinel
+    }
   }
 
-  def treeHeapValidator(root: TreeNode): Boolean = {
-    if (root == null) return true
-    isValidHeap(root, Int.MinValue)                                                                                                                   // -∞ sentinel
-  }
+  val root = new TreeNode(1,
+    new TreeNode(4, new TreeNode(2), new TreeNode(5)),
+    new TreeNode(3, new TreeNode(6), new TreeNode(7)))
+  println(new Solution().treeHeapValidator(root))  // false
 }
 ```
 
