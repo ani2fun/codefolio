@@ -24,8 +24,8 @@ The reader carries a mental model across the section. When the model has to bend
     | `dummy` | Sentinel / dummy head | slate `#64748b` |
     | `start` | Segment start (reversal-of-segment) | amber `#f59e0b` |
     | `end` | Segment end (reversal-of-segment) | emerald `#10b981` |
-    | `headA`, `headB` | Two-list operations — list A / B entry | blue `#3b82f6`, cyan `#06b6d4` |
-    | `tailA`, `tailB` | Two-list operations — list A / B end | slate `#64748b`, slate-dark `#475569` |
+    | `headA`, `headB`, `headC` | Multi-list operations — list A / B / C entry | blue `#3b82f6`, cyan `#06b6d4`, violet `#a855f7` |
+    | `tailA`, `tailB`, `tailC` | Multi-list operations — list A / B / C end | slate `#64748b`, slate-dark `#475569`, slate-darker `#334155` |
 
     Names match the natural variable names from the source's algorithm code (`previous`, `current`, `next` — not the terser `prev`, `curr`) so the diagram label, the prose, and the runnable code below all read the same.
 

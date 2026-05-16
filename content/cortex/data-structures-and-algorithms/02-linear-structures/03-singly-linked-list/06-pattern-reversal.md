@@ -334,7 +334,7 @@ To connect the first node of the segment back to the list after reversal, we nee
   "steps": [
     {
       "links": [["h","p"],["p","s"],["s","m"],["m","e"],["e","rb"],["rb","q"]],
-      "markers": [{"name": "start", "nodeId": "s"}, {"name": "end", "nodeId": "e"}, {"name": "end", "nodeId": "rb"}],
+      "markers": [{"name": "start", "nodeId": "s"}, {"name": "end", "nodeId": "e"}, {"name": "next", "nodeId": "rb"}],
       "msg": "rightBound = end.next captured upfront. The reversal walks current from start and stops when current == rightBound."
     }
   ]

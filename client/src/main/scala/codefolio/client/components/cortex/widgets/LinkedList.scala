@@ -152,13 +152,17 @@ object LinkedList:
     "dummy"    -> "#64748b", // slate   — sentinel / dummy head
     "start"    -> "#f59e0b", // amber   — segment start
     "end"      -> "#10b981", // emerald — segment end
-    // Two-list operations (merge, split, alternate-merge). The B-list
-    // suffixes share role colours with the A-list versions; the suffix
-    // tells the reader which list, the colour tells which role.
-    "headA" -> "#3b82f6", // blue   — list A entry
-    "headB" -> "#06b6d4", // cyan   — list B entry
-    "tailA" -> "#64748b", // slate  — list A end
-    "tailB" -> "#475569"  // slate-dark — list B end
+    // Multi-list operations (merge, split, round-robin split, alternate-
+    // merge). Suffix letter distinguishes list identity; colours stay
+    // distinct so two or three simultaneously-tracked heads don't blur.
+    // `headC`/`tailC` admitted for round-robin split chapters that route
+    // the original chain into 3 sub-lists (chapter 10).
+    "headA" -> "#3b82f6", // blue         — list A entry
+    "headB" -> "#06b6d4", // cyan         — list B entry
+    "headC" -> "#a855f7", // violet       — list C entry
+    "tailA" -> "#64748b", // slate        — list A end
+    "tailB" -> "#475569", // slate-dark   — list B end
+    "tailC" -> "#334155"  // slate-darker — list C end
   )
 
   // Canonical node-style vocabulary. Unknown styles are dropped at parse

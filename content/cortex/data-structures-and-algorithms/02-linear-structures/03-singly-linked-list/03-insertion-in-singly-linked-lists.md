@@ -98,7 +98,7 @@ In this scenario, we already have some data in the linked list, so the **head** 
         {"id": "n3", "value": "3"}
       ],
       "links": [["n1","n2"],["n2","n3"]],
-      "markers": [{"name": "head", "nodeId": "n1"}, {"name": "current", "nodeId": "new"}],
+      "markers": [{"name": "head", "nodeId": "n1"}],
       "msg": "Step 1: allocate new node with value 6"
     },
     {
@@ -109,7 +109,7 @@ In this scenario, we already have some data in the linked list, so the **head** 
         {"id": "n3", "value": "3"}
       ],
       "links": [["new","n1"],["n1","n2"],["n2","n3"]],
-      "markers": [{"name": "head", "nodeId": "n1"}, {"name": "current", "nodeId": "new"}],
+      "markers": [{"name": "head", "nodeId": "n1"}],
       "msg": "Step 2: newNode.next = head (point new node at old head)"
     },
     {
@@ -546,7 +546,7 @@ We traverse to the last node (whose `next` is `null`) and link the new node afte
         {"id": "new", "value": "6", "style": "new"}
       ],
       "links": [["n1","n2"],["n2","n3"]],
-      "markers": [{"name": "current", "nodeId": "n3"}, {"name": "current", "nodeId": "new"}],
+      "markers": [{"name": "current", "nodeId": "n3"}],
       "msg": "Allocate newNode"
     },
     {
@@ -1008,7 +1008,7 @@ Since the new node will be inserted between two existing nodes, we must ensure t
         {"id": "n3", "value": "3"}
       ],
       "links": [["n1","n2"],["n2","n3"],["new","n3"]],
-      "markers": [{"name": "current", "nodeId": "n2"}, {"name": "current", "nodeId": "new"}],
+      "markers": [{"name": "current", "nodeId": "n2"}],
       "msg": "Step 1: newNode.next = node.next — new bridges over to node 3"
     },
     {
@@ -1487,7 +1487,7 @@ We create a `previous` pointer initialised to `null`. As we traverse, we update 
         {"id": "n4", "value": "10"}
       ],
       "links": [["n1","n2"],["n2","n3"],["n3","n4"]],
-      "markers": [{"name": "previous", "nodeId": "n1"}, {"name": "current", "nodeId": "n2"}, {"name": "current", "nodeId": "n3"}],
+      "markers": [{"name": "previous", "nodeId": "n1"}, {"name": "current", "nodeId": "n2"}, {"name": "next", "nodeId": "n3"}],
       "msg": "Start: previous=head, current=head.next. Given=node(3)."
     },
     {
@@ -1498,7 +1498,7 @@ We create a `previous` pointer initialised to `null`. As we traverse, we update 
         {"id": "n4", "value": "10"}
       ],
       "links": [["n1","n2"],["n2","n3"],["n3","n4"]],
-      "markers": [{"name": "previous", "nodeId": "n2"}, {"name": "current", "nodeId": "n3"}, {"name": "current", "nodeId": "n3"}],
+      "markers": [{"name": "previous", "nodeId": "n2"}, {"name": "current", "nodeId": "n3"}],
       "msg": "Walk forward — current == given (node 3). previous = node(7)."
     },
     {

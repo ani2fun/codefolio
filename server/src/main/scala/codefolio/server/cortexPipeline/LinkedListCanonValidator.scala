@@ -39,8 +39,10 @@ object LinkedListCanonValidator:
       "end",
       "headA",
       "headB",
+      "headC",
       "tailA",
-      "tailB"
+      "tailB",
+      "tailC"
     )
 
   private val CanonicalNodeStyles: Set[String] =

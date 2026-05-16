@@ -56,7 +56,7 @@ flowchart LR
     },
     {
       "links": [["n1","n4"],["n2","n5"],["n3","n6"]],
-      "markers": [{"name": "headA", "nodeId": "n1"}, {"name": "headB", "nodeId": "n2"}, {"name": "headB", "nodeId": "n3"}],
+      "markers": [{"name": "headA", "nodeId": "n1"}, {"name": "headB", "nodeId": "n2"}, {"name": "headC", "nodeId": "n3"}],
       "msg": "After: list 0 = (1,4); list 1 = (2,5); list 2 = (3,6). Same nodes — re-linked into 3 chains."
     }
   ]

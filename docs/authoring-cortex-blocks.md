@@ -118,8 +118,8 @@ A horizontal row of value-bearing nodes connected by `next` arrows, with one or 
 | `dummy` | Sentinel / dummy head | slate |
 | `start` | Segment start (reversal-of-segment) | amber |
 | `end` | Segment end (reversal-of-segment) | emerald |
-| `headA`, `headB` | Two-list operations — list A / B entry | blue, cyan |
-| `tailA`, `tailB` | Two-list operations — list A / B end | slate, slate-dark |
+| `headA`, `headB`, `headC` | Multi-list operations — list A / B / C entry | blue, cyan, violet |
+| `tailA`, `tailB`, `tailC` | Multi-list operations — list A / B / C end | slate, slate-dark, slate-darker |
 
 The widget *silently drops* any `color` field on a payload marker — the colour is resolved from the canon, not the payload. Per-node `style` is `{new, removed, highlight}` (anything else drops with a dev-mode console warning).
 
