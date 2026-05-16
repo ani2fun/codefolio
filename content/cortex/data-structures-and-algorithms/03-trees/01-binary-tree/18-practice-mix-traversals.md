@@ -293,32 +293,43 @@ int* boundary_traversal(TreeNode *root, int *count) {
 ```
 
 ```scala run
-def boundaryTraversal(root: TreeNode): List[Int] = {
-  val out = scala.collection.mutable.ListBuffer[Int]()
-  def isLeaf(n: TreeNode): Boolean = n != null && n.left == null && n.right == null
-  def leftBoundary(n: TreeNode): Unit = {
-    if (n == null || isLeaf(n)) return
-    out += n.value
-    if (n.left  != null) leftBoundary(n.left)
-    else                 leftBoundary(n.right)
+class TreeNode(var value: Int, var left: TreeNode = null, var right: TreeNode = null)
+
+object Main extends App {
+  class Solution {
+    def boundaryTraversal(root: TreeNode): List[Int] = {
+      val out = scala.collection.mutable.ListBuffer[Int]()
+      def isLeaf(n: TreeNode): Boolean = n != null && n.left == null && n.right == null
+      def leftBoundary(n: TreeNode): Unit = {
+        if (n == null || isLeaf(n)) return
+        out += n.value
+        if (n.left  != null) leftBoundary(n.left)
+        else                 leftBoundary(n.right)
+      }
+      def leaves(n: TreeNode): Unit = {
+        if (n == null) return
+        if (isLeaf(n)) { out += n.value; return }
+        leaves(n.left); leaves(n.right)
+      }
+      def rightBoundary(n: TreeNode): Unit = {
+        if (n == null || isLeaf(n)) return
+        if (n.right != null) rightBoundary(n.right)
+        else                 rightBoundary(n.left)
+        out += n.value
+      }
+      if (root == null) return Nil
+      out += root.value
+      leftBoundary(root.left)
+      leaves(root.left); leaves(root.right)
+      rightBoundary(root.right)
+      out.toList
+    }
   }
-  def leaves(n: TreeNode): Unit = {
-    if (n == null) return
-    if (isLeaf(n)) { out += n.value; return }
-    leaves(n.left); leaves(n.right)
-  }
-  def rightBoundary(n: TreeNode): Unit = {
-    if (n == null || isLeaf(n)) return
-    if (n.right != null) rightBoundary(n.right)
-    else                 rightBoundary(n.left)
-    out += n.value
-  }
-  if (root == null) return Nil
-  out += root.value
-  leftBoundary(root.left)
-  leaves(root.left); leaves(root.right)
-  rightBoundary(root.right)
-  out.toList
+
+  val root = new TreeNode(1,
+    new TreeNode(2, new TreeNode(4), null),
+    new TreeNode(3, null, new TreeNode(7)))
+  println(new Solution().boundaryTraversal(root))  // List(1, 2, 4, 7, 3)
 }
 ```
 
