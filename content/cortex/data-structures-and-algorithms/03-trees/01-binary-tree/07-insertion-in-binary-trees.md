@@ -530,17 +530,27 @@ TreeNode* insert_child(TreeNode *root, int parent, int value) {
 ```
 
 ```scala run
-def insertChild(root: TreeNode, parent: Int, value: Int): TreeNode = {
-  def go(n: TreeNode): Boolean = {
-    if (n == null) return false
-    if (n.value == parent) {
-      if      (n.left  == null) { n.left  = new TreeNode(value); return true }
-      else if (n.right == null) { n.right = new TreeNode(value); return true }
-      else                       return false
+class TreeNode(var value: Int, var left: TreeNode = null, var right: TreeNode = null)
+
+object Main extends App {
+  class Solution {
+    def insertChild(root: TreeNode, parent: Int, value: Int): TreeNode = {
+      def go(n: TreeNode): Boolean = {
+        if (n == null) return false
+        if (n.value == parent) {
+          if      (n.left  == null) { n.left  = new TreeNode(value); return true }
+          else if (n.right == null) { n.right = new TreeNode(value); return true }
+          else                       return false
+        }
+        go(n.left) || go(n.right)
+      }
+      go(root); root
     }
-    go(n.left) || go(n.right)
   }
-  go(root); root
+
+  val root = new TreeNode(1, new TreeNode(2), new TreeNode(3))
+  new Solution().insertChild(root, 2, 4)
+  println(s"${root.value} ${root.left.value} ${root.left.left.value} ${root.right.value}")
 }
 ```
 
@@ -703,22 +713,33 @@ TreeNode* insert_parent(TreeNode *root, int target, int value) {
 ```
 
 ```scala run
-def insertParent(root: TreeNode, target: Int, value: Int): TreeNode = {
-  if (root == null) return null
-  if (root.value == target) {
-    val w = new TreeNode(value); w.left = root; return w
-  }
-  def go(n: TreeNode): Unit = {
-    if (n == null) return
-    if (n.left  != null && n.left.value  == target) {
-      val w = new TreeNode(value); w.left = n.left; n.left  = w; return
+class TreeNode(var value: Int, var left: TreeNode = null, var right: TreeNode = null)
+
+object Main extends App {
+  class Solution {
+    def insertParent(root: TreeNode, target: Int, value: Int): TreeNode = {
+      if (root == null) return null
+      var r = root
+      if (r.value == target) {
+        val w = new TreeNode(value); w.left = r; return w
+      }
+      def go(n: TreeNode): Unit = {
+        if (n == null) return
+        if (n.left  != null && n.left.value  == target) {
+          val w = new TreeNode(value); w.left = n.left; n.left  = w; return
+        }
+        if (n.right != null && n.right.value == target) {
+          val w = new TreeNode(value); w.left = n.right; n.right = w; return
+        }
+        go(n.left); go(n.right)
+      }
+      go(r); r
     }
-    if (n.right != null && n.right.value == target) {
-      val w = new TreeNode(value); w.left = n.right; n.right = w; return
-    }
-    go(n.left); go(n.right)
   }
-  go(root); root
+
+  val root = new TreeNode(1, new TreeNode(2), new TreeNode(3))
+  val out  = new Solution().insertParent(root, 2, 9)
+  println(s"${out.value} ${out.left.value} ${out.left.left.value} ${out.right.value}")
 }
 ```
 
