@@ -2781,49 +2781,79 @@ from typing import List
 
 class Solution:
     def row_major_traversal(self, matrix: List[List[int]]) -> List[int]:
+
+        # Check if the matrix is empty
         if not matrix:
             return []
 
+        # Get the number of rows and columns in the matrix
         rows: int = len(matrix)
         cols: int = len(matrix[0])
+
+        # Initialize an empty list to store the path
         path: List[int] = []
 
-        # Outer = rows (slow), inner = cols (fast) → row-major visit order.
+        # Traverse the matrix row by row
         for row in range(rows):
             for col in range(cols):
+
+                # Append each element to the path
                 path.append(matrix[row][col])
+
+        # Return the path
         return path
 
 
 s = Solution()
-print("Example 1:", s.row_major_traversal([[1,2,3],[4,5,6],[7,8,9]]))
-print("Example 2:", s.row_major_traversal([[3,2,1,7],[0,6,3,2]]))
+print("Example 1:", s.row_major_traversal([[1, 2, 3], [4, 5, 6], [7, 8, 9]]))
+print("Example 2:", s.row_major_traversal([[3, 2, 1, 7], [0, 6, 3, 2]]))
 print("Example 3:", s.row_major_traversal([[1]]))
 print("Empty:    ", s.row_major_traversal([]))
 ```
 
 ```java run
-import java.util.*;
+import java.util.Arrays;
 
 public class Main {
-    static List<Integer> rowMajorTraversal(int[][] matrix) {
-        List<Integer> path = new ArrayList<>();
-        if (matrix.length == 0) return path;
-        int rows = matrix.length, cols = matrix[0].length;
-        // Outer = rows (slow), inner = cols (fast).
-        for (int row = 0; row < rows; row++) {
-            for (int col = 0; col < cols; col++) {
-                path.add(matrix[row][col]);
+    static class Solution {
+        public int[] rowMajorTraversal(int[][] matrix) {
+
+            // Check if the matrix is empty
+            if (matrix.length == 0) {
+                return new int[0];
             }
+
+            // Get the number of rows and columns in the matrix
+            int rows = matrix.length;
+            int cols = matrix[0].length;
+
+            // Calculate the total number of elements in the matrix
+            int totalElements = rows * cols;
+
+            // Initialize an array to store the path
+            int[] path = new int[totalElements];
+
+            // Traverse the matrix row by row
+            int index = 0;
+            for (int row = 0; row < rows; row++) {
+                for (int col = 0; col < cols; col++) {
+
+                    // Append each element to the path
+                    path[index++] = matrix[row][col];
+                }
+            }
+
+            // Return the path
+            return path;
         }
-        return path;
     }
 
     public static void main(String[] args) {
-        System.out.println("Example 1: " + rowMajorTraversal(new int[][]{{1,2,3},{4,5,6},{7,8,9}}));
-        System.out.println("Example 2: " + rowMajorTraversal(new int[][]{{3,2,1,7},{0,6,3,2}}));
-        System.out.println("Example 3: " + rowMajorTraversal(new int[][]{{1}}));
-        System.out.println("Empty:     " + rowMajorTraversal(new int[][]{}));
+        Solution sol = new Solution();
+        System.out.println("Example 1: " + Arrays.toString(sol.rowMajorTraversal(new int[][]{{1, 2, 3}, {4, 5, 6}, {7, 8, 9}})));
+        System.out.println("Example 2: " + Arrays.toString(sol.rowMajorTraversal(new int[][]{{3, 2, 1, 7}, {0, 6, 3, 2}})));
+        System.out.println("Example 3: " + Arrays.toString(sol.rowMajorTraversal(new int[][]{{1}})));
+        System.out.println("Empty:     " + Arrays.toString(sol.rowMajorTraversal(new int[][]{})));
     }
 }
 ```
@@ -3980,49 +4010,82 @@ function columnMajorTraversal(matrix):
 from typing import List
 
 class Solution:
-    def column_major_traversal(self, matrix: List[List[int]]) -> List[int]:
+    def column_major_traversal(
+        self, matrix: List[List[int]]
+    ) -> List[int]:
+
+        # Check if the matrix is empty
         if not matrix:
             return []
 
+        # Get the number of rows and columns in the matrix
         rows: int = len(matrix)
         cols: int = len(matrix[0])
+
+        # Initialize an empty list to store the path
         path: List[int] = []
 
-        # Swap of row-major: cols outer (slow), rows inner (fast).
+        # Traverse the matrix column by column
         for col in range(cols):
             for row in range(rows):
+
+                # Append each element to the path
                 path.append(matrix[row][col])
+
+        # Return the path
         return path
 
 
 s = Solution()
-print("Example 1:", s.column_major_traversal([[1,2,3],[4,5,6],[7,8,9]]))
-print("Example 2:", s.column_major_traversal([[3,2,1,7],[0,6,3,2]]))
+print("Example 1:", s.column_major_traversal([[1, 2, 3], [4, 5, 6], [7, 8, 9]]))
+print("Example 2:", s.column_major_traversal([[3, 2, 1, 7], [0, 6, 3, 2]]))
 print("Example 3:", s.column_major_traversal([[1]]))
 print("Empty:    ", s.column_major_traversal([]))
 ```
 
 ```java run
-import java.util.*;
+import java.util.Arrays;
 
 public class Main {
-    static List<Integer> columnMajorTraversal(int[][] matrix) {
-        List<Integer> path = new ArrayList<>();
-        if (matrix.length == 0) return path;
-        int rows = matrix.length, cols = matrix[0].length;
-        for (int col = 0; col < cols; col++) {
-            for (int row = 0; row < rows; row++) {
-                path.add(matrix[row][col]);
+    static class Solution {
+        public int[] columnMajorTraversal(int[][] matrix) {
+
+            // Check if the matrix is empty
+            if (matrix.length == 0) {
+                return new int[0];
             }
+
+            // Get the number of rows and columns in the matrix
+            int rows = matrix.length;
+            int cols = matrix[0].length;
+
+            // Calculate the total number of elements in the matrix
+            int totalElements = rows * cols;
+
+            // Initialize an array to store the path
+            int[] path = new int[totalElements];
+
+            // Traverse the matrix column by column
+            int index = 0;
+            for (int col = 0; col < cols; col++) {
+                for (int row = 0; row < rows; row++) {
+
+                    // Append each element to the path
+                    path[index++] = matrix[row][col];
+                }
+            }
+
+            // Return the path
+            return path;
         }
-        return path;
     }
 
     public static void main(String[] args) {
-        System.out.println("Example 1: " + columnMajorTraversal(new int[][]{{1,2,3},{4,5,6},{7,8,9}}));
-        System.out.println("Example 2: " + columnMajorTraversal(new int[][]{{3,2,1,7},{0,6,3,2}}));
-        System.out.println("Example 3: " + columnMajorTraversal(new int[][]{{1}}));
-        System.out.println("Empty:     " + columnMajorTraversal(new int[][]{}));
+        Solution sol = new Solution();
+        System.out.println("Example 1: " + Arrays.toString(sol.columnMajorTraversal(new int[][]{{1, 2, 3}, {4, 5, 6}, {7, 8, 9}})));
+        System.out.println("Example 2: " + Arrays.toString(sol.columnMajorTraversal(new int[][]{{3, 2, 1, 7}, {0, 6, 3, 2}})));
+        System.out.println("Example 3: " + Arrays.toString(sol.columnMajorTraversal(new int[][]{{1}})));
+        System.out.println("Empty:     " + Arrays.toString(sol.columnMajorTraversal(new int[][]{})));
     }
 }
 ```
