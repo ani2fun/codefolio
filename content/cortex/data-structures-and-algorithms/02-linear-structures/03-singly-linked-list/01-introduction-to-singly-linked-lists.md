@@ -458,9 +458,10 @@ print node1.val, "->", node2.val
 
 ```python run
 class ListNode:
-    def __init__(self, val=0, next=None):
-        self.val  = val   # The data this node holds
-        self.next = next  # Reference to the next node; None if this is the tail
+    def __init__(self, val):
+        self.val = val
+        self.next = None
+
 
 # Usage
 node1 = ListNode(5)
@@ -861,13 +862,17 @@ function boundaryNode(head, node):
 ```
 
 ```python run
+from typing import Optional
+
 class ListNode:
-    def __init__(self, val=0, next=None):
-        self.val  = val
-        self.next = next
+    def __init__(self, val):
+        self.val = val
+        self.next = None
 
 class Solution:
-    def boundary_node(self, head: ListNode, node: ListNode) -> str:
+    def boundary_node(
+        self, head: Optional[ListNode], node: Optional[ListNode]
+    ) -> str:
 
         # If either head or node is None, return "none"
         if not head or not node:
@@ -891,6 +896,7 @@ class Solution:
         # If none of the above conditions are met, return "none"
         return "none"
 
+
 # --- test ---
 def build(vals):
     dummy = ListNode(0)
@@ -902,46 +908,52 @@ def build(vals):
         nodes.append(cur)
     return dummy.next, nodes
 
+sol = Solution()
 head, nodes = build([5, 7, 3, 10])
-print(Solution().boundary_node(head, nodes[0]))  # first
-print(Solution().boundary_node(head, nodes[3]))  # last
-print(Solution().boundary_node(head, nodes[2]))  # none
+print(sol.boundary_node(head, nodes[0]))   # first
+print(sol.boundary_node(head, nodes[3]))   # last
+print(sol.boundary_node(head, nodes[2]))   # none
 ```
 
 ```java run
 public class Main {
     static class ListNode {
-        int val; ListNode next;
-        ListNode(int v) { val = v; }
+        int val;
+        ListNode next;
+
+        ListNode() {}
+        ListNode(int val) { this.val = val; }
     }
 
-    static String boundaryNode(ListNode head, ListNode node) {
+    static class Solution {
+        public String boundaryNode(ListNode head, ListNode node) {
 
-        // If either head or node is null, return "none"
-        if (head == null || node == null) {
+            // If either head or node is null, return "none"
+            if (head == null || node == null) {
+                return "none";
+            }
+
+            // If head and node are the same, and node has no next node,
+            // return "both"
+            else if (node == head && node.next == null) {
+                return "both";
+            }
+
+            // If head and node are the same, but node has a next node,
+            // return "first"
+            else if (node == head) {
+                return "first";
+            }
+
+            // If node is the last node (i.e., it has no next node), return
+            // "last"
+            else if (node.next == null) {
+                return "last";
+            }
+
+            // If none of the above conditions are met, return "none"
             return "none";
         }
-
-        // If head and node are the same, and node has no next node,
-        // return "both"
-        else if (node == head && node.next == null) {
-            return "both";
-        }
-
-        // If head and node are the same, but node has a next node,
-        // return "first"
-        else if (node == head) {
-            return "first";
-        }
-
-        // If node is the last node (i.e., it has no next node), return
-        // "last"
-        else if (node.next == null) {
-            return "last";
-        }
-
-        // If none of the above conditions are met, return "none"
-        return "none";
     }
 
     public static void main(String[] args) {
@@ -949,9 +961,10 @@ public class Main {
                  n3 = new ListNode(3), n4 = new ListNode(10);
         n1.next = n2; n2.next = n3; n3.next = n4;
 
-        System.out.println(boundaryNode(n1, n1));  // first
-        System.out.println(boundaryNode(n1, n4));  // last
-        System.out.println(boundaryNode(n1, n3));  // none
+        Solution sol = new Solution();
+        System.out.println(sol.boundaryNode(n1, n1));   // first
+        System.out.println(sol.boundaryNode(n1, n4));   // last
+        System.out.println(sol.boundaryNode(n1, n3));   // none
     }
 }
 ```
@@ -1014,33 +1027,31 @@ int main() {
 class ListNode(var v: Int, var next: ListNode = null)
 
 object Main extends App {
-  def boundaryNode(head: ListNode, node: ListNode): String = {
+  class Solution {
+    def boundaryNode(head: ListNode, node: ListNode): String = {
 
-    // If either head or node is null, return "none"
-    if (head == null || node == null) {
-      "none"
-    }
-
-    // If head and node are the same, and node has no next node,
-    // return "both"
-    else if ((node eq head) && node.next == null) {
-      "both"
-    }
-
-    // If head and node are the same, but node has a next node,
-    // return "first"
-    else if (node eq head) {
-      "first"
-    }
-
-    // If node is the last node (i.e., it has no next node), return "last"
-    else if (node.next == null) {
-      "last"
-    }
-
-    // If none of the above conditions are met, return "none"
-    else {
-      "none"
+      // If either head or node is null, return "none"
+      if (head == null || node == null) {
+        "none"
+      }
+      // If head and node are the same, and node has no next node,
+      // return "both"
+      else if ((node eq head) && node.next == null) {
+        "both"
+      }
+      // If head and node are the same, but node has a next node,
+      // return "first"
+      else if (node eq head) {
+        "first"
+      }
+      // If node is the last node (i.e., it has no next node), return "last"
+      else if (node.next == null) {
+        "last"
+      }
+      // If none of the above conditions are met, return "none"
+      else {
+        "none"
+      }
     }
   }
 
@@ -1048,9 +1059,10 @@ object Main extends App {
   val n3 = new ListNode(3); val n4 = new ListNode(10)
   n1.next = n2; n2.next = n3; n3.next = n4
 
-  println(boundaryNode(n1, n1))  // first
-  println(boundaryNode(n1, n4))  // last
-  println(boundaryNode(n1, n3))  // none
+  val sol = new Solution
+  println(sol.boundaryNode(n1, n1))   // first
+  println(sol.boundaryNode(n1, n4))   // last
+  println(sol.boundaryNode(n1, n3))   // none
 }
 ```
 
