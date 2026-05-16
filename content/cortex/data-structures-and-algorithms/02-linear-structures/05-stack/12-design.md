@@ -218,23 +218,23 @@ int main() {
 ```scala run
 import scala.collection.mutable
 
-class MinStack {
-  private val stack = mutable.Stack[Int]()
-  private var min   = Int.MaxValue
-
-  def push(v: Int): Unit = {
-    if (v <= min) { stack.push(min); min = v }
-    stack.push(v)
-  }
-  def pop(): Unit = {
-    val top = stack.pop()
-    if (top == min) min = stack.pop()
-  }
-  def top:    Int = stack.top
-  def getMin: Int = min
-}
-
 object Main extends App {
+  class MinStack {
+    private val stack = mutable.Stack[Int]()
+    private var min   = Int.MaxValue
+
+    def push(v: Int): Unit = {
+      if (v <= min) { stack.push(min); min = v }
+      stack.push(v)
+    }
+    def pop(): Unit = {
+      val top = stack.pop()
+      if (top == min) min = stack.pop()
+    }
+    def top:    Int = stack.top
+    def getMin: Int = min
+  }
+
   val s = new MinStack
   s.push(2); s.push(3)
   println(s.top); println(s.getMin)
@@ -411,22 +411,23 @@ int main() {
 ```scala run
 import scala.collection.mutable
 
-class MaxStack {
-  private val stack = mutable.Stack[Int]()
-  private var max   = Int.MinValue
-
-  def push(v: Int): Unit = {
-    if (v >= max) { stack.push(max); max = v }
-    stack.push(v)
-  }
-  def pop(): Unit = {
-    val top = stack.pop()
-    if (top == max) max = stack.pop()
-  }
-  def top:    Int = stack.top
-  def getMax: Int = max
-}
 object Main extends App {
+  class MaxStack {
+    private val stack = mutable.Stack[Int]()
+    private var max   = Int.MinValue
+
+    def push(v: Int): Unit = {
+      if (v >= max) { stack.push(max); max = v }
+      stack.push(v)
+    }
+    def pop(): Unit = {
+      val top = stack.pop()
+      if (top == max) max = stack.pop()
+    }
+    def top:    Int = stack.top
+    def getMax: Int = max
+  }
+
   val s = new MaxStack
   s.push(3); s.push(2)
   println(s.top); println(s.getMax)
