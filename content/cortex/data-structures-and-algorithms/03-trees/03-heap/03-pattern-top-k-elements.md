@@ -219,14 +219,20 @@ class Solution:
 ```java run
 import java.util.*;
 
-class Solution {
-    public int kthLargestElement(int[] arr, int k) {
-        PriorityQueue<Integer> minHeap = new PriorityQueue<>();                    // min-heap by default
-        for (int v : arr) {
-            minHeap.add(v);
-            if (minHeap.size() > k) minHeap.poll();                                // keep only top-K
+public class Main {
+    static class Solution {
+        public int kthLargestElement(int[] arr, int k) {
+            PriorityQueue<Integer> minHeap = new PriorityQueue<>();                    // min-heap by default
+            for (int v : arr) {
+                minHeap.add(v);
+                if (minHeap.size() > k) minHeap.poll();                                // keep only top-K
+            }
+            return minHeap.peek();                                                      // heap top = K-th largest
         }
-        return minHeap.peek();                                                      // heap top = K-th largest
+    }
+
+    public static void main(String[] args) {
+        System.out.println(new Solution().kthLargestElement(new int[]{5, 4, 2, 8}, 2));  // 5
     }
 }
 ```
@@ -275,16 +281,20 @@ int kthLargestElement(int *arr, int n, int k) {
 ```scala run
 import scala.collection.mutable.PriorityQueue
 
-object Solution {
-  def kthLargestElement(arr: Array[Int], k: Int): Int = {
-    // PriorityQueue is max-heap by default; reverse to make a min-heap.
-    val minHeap = PriorityQueue.empty[Int](Ordering[Int].reverse)
-    for (v <- arr) {
-      minHeap.enqueue(v)
-      if (minHeap.size > k) minHeap.dequeue()
+object Main extends App {
+  object Solution {
+    def kthLargestElement(arr: Array[Int], k: Int): Int = {
+      // PriorityQueue is max-heap by default; reverse to make a min-heap.
+      val minHeap = PriorityQueue.empty[Int](Ordering[Int].reverse)
+      for (v <- arr) {
+        minHeap.enqueue(v)
+        if (minHeap.size > k) minHeap.dequeue()
+      }
+      minHeap.head                                                                     // top of min-heap = K-th largest
     }
-    minHeap.head                                                                     // top of min-heap = K-th largest
   }
+
+  println(Solution.kthLargestElement(Array(5, 4, 2, 8), 2))  // 5
 }
 ```
 
@@ -363,15 +373,21 @@ class Solution:
 ```java run
 import java.util.*;
 
-class Solution {
-    public int kthSmallestElement(int[] arr, int k) {
-        // reverseOrder() flips the natural ordering — gives us a max-heap.
-        PriorityQueue<Integer> maxHeap = new PriorityQueue<>(Comparator.reverseOrder());
-        for (int v : arr) {
-            maxHeap.add(v);
-            if (maxHeap.size() > k) maxHeap.poll();                                                       // evict the largest
+public class Main {
+    static class Solution {
+        public int kthSmallestElement(int[] arr, int k) {
+            // reverseOrder() flips the natural ordering — gives us a max-heap.
+            PriorityQueue<Integer> maxHeap = new PriorityQueue<>(Comparator.reverseOrder());
+            for (int v : arr) {
+                maxHeap.add(v);
+                if (maxHeap.size() > k) maxHeap.poll();                                                       // evict the largest
+            }
+            return maxHeap.peek();                                                                             // K-th smallest
         }
-        return maxHeap.peek();                                                                             // K-th smallest
+    }
+
+    public static void main(String[] args) {
+        System.out.println(new Solution().kthSmallestElement(new int[]{5, 4, 2, 8}, 2));  // 4
     }
 }
 ```
@@ -419,15 +435,19 @@ int kthSmallestElement(int *arr, int n, int k) {
 ```scala run
 import scala.collection.mutable.PriorityQueue
 
-object Solution {
-  def kthSmallestElement(arr: Array[Int], k: Int): Int = {
-    val maxHeap = PriorityQueue.empty[Int]                                                                    // max-heap by default
-    for (v <- arr) {
-      maxHeap.enqueue(v)
-      if (maxHeap.size > k) maxHeap.dequeue()
+object Main extends App {
+  object Solution {
+    def kthSmallestElement(arr: Array[Int], k: Int): Int = {
+      val maxHeap = PriorityQueue.empty[Int]                                                                    // max-heap by default
+      for (v <- arr) {
+        maxHeap.enqueue(v)
+        if (maxHeap.size > k) maxHeap.dequeue()
+      }
+      maxHeap.head                                                                                              // K-th smallest
     }
-    maxHeap.head                                                                                              // K-th smallest
   }
+
+  println(Solution.kthSmallestElement(Array(5, 4, 2, 8), 2))  // 4
 }
 ```
 
@@ -515,27 +535,33 @@ class Solution:
 ```java run
 import java.util.*;
 
-class Solution {
-    private int kthLargest(int[] arr, int k) {
-        PriorityQueue<Integer> h = new PriorityQueue<>();
-        for (int v : arr) { h.add(v); if (h.size() > k) h.poll(); }
-        return h.peek();
-    }
-    private int kthSmallest(int[] arr, int k) {
-        PriorityQueue<Integer> h = new PriorityQueue<>(Comparator.reverseOrder());
-        for (int v : arr) { h.add(v); if (h.size() > k) h.poll(); }
-        return h.peek();
+public class Main {
+    static class Solution {
+        private int kthLargest(int[] arr, int k) {
+            PriorityQueue<Integer> h = new PriorityQueue<>();
+            for (int v : arr) { h.add(v); if (h.size() > k) h.poll(); }
+            return h.peek();
+        }
+        private int kthSmallest(int[] arr, int k) {
+            PriorityQueue<Integer> h = new PriorityQueue<>(Comparator.reverseOrder());
+            for (int v : arr) { h.add(v); if (h.size() > k) h.poll(); }
+            return h.peek();
+        }
+
+        public int kRangeSum(int[] arr, int k1, int k2) {
+            int n = arr.length;
+            if (n == 0 || k1 > n || k2 > n) return 0;
+            int a = kthLargest(arr, k1);
+            int b = kthSmallest(arr, k2);
+            int lo = Math.min(a, b), hi = Math.max(a, b);
+            int sum = 0;
+            for (int v : arr) if (v >= lo && v <= hi) sum += v;
+            return sum;
+        }
     }
 
-    public int kRangeSum(int[] arr, int k1, int k2) {
-        int n = arr.length;
-        if (n == 0 || k1 > n || k2 > n) return 0;
-        int a = kthLargest(arr, k1);
-        int b = kthSmallest(arr, k2);
-        int lo = Math.min(a, b), hi = Math.max(a, b);
-        int sum = 0;
-        for (int v : arr) if (v >= lo && v <= hi) sum += v;
-        return sum;
+    public static void main(String[] args) {
+        System.out.println(new Solution().kRangeSum(new int[]{4, 2, 5, 1, 3, 6}, 4, 5));  // 12
     }
 }
 ```
@@ -574,26 +600,30 @@ int kRangeSum(int *arr, int n, int k1, int k2) {
 ```scala run
 import scala.collection.mutable.PriorityQueue
 
-object Solution {
-  private def kthLargest(arr: Array[Int], k: Int): Int = {
-    val h = PriorityQueue.empty[Int](Ordering[Int].reverse)
-    for (v <- arr) { h.enqueue(v); if (h.size > k) h.dequeue() }
-    h.head
-  }
-  private def kthSmallest(arr: Array[Int], k: Int): Int = {
-    val h = PriorityQueue.empty[Int]
-    for (v <- arr) { h.enqueue(v); if (h.size > k) h.dequeue() }
-    h.head
+object Main extends App {
+  object Solution {
+    private def kthLargest(arr: Array[Int], k: Int): Int = {
+      val h = PriorityQueue.empty[Int](Ordering[Int].reverse)
+      for (v <- arr) { h.enqueue(v); if (h.size > k) h.dequeue() }
+      h.head
+    }
+    private def kthSmallest(arr: Array[Int], k: Int): Int = {
+      val h = PriorityQueue.empty[Int]
+      for (v <- arr) { h.enqueue(v); if (h.size > k) h.dequeue() }
+      h.head
+    }
+
+    def kRangeSum(arr: Array[Int], k1: Int, k2: Int): Int = {
+      val n = arr.length
+      if (n == 0 || k1 > n || k2 > n) return 0
+      val a = kthLargest(arr, k1)
+      val b = kthSmallest(arr, k2)
+      val lo = math.min(a, b); val hi = math.max(a, b)
+      arr.filter(v => v >= lo && v <= hi).sum
+    }
   }
 
-  def kRangeSum(arr: Array[Int], k1: Int, k2: Int): Int = {
-    val n = arr.length
-    if (n == 0 || k1 > n || k2 > n) return 0
-    val a = kthLargest(arr, k1)
-    val b = kthSmallest(arr, k2)
-    val lo = math.min(a, b); val hi = math.max(a, b)
-    arr.filter(v => v >= lo && v <= hi).sum
-  }
+  println(Solution.kRangeSum(Array(4, 2, 5, 1, 3, 6), 4, 5))  // 12
 }
 ```
 
@@ -706,19 +736,27 @@ class Solution:
 ```java run
 import java.util.*;
 
-class Solution {
-    public void kSortedArraySorting(int[] arr, int k) {
-        int n = arr.length;
-        if (n == 0 || k == 0) return;
-        PriorityQueue<Integer> heap = new PriorityQueue<>();
-        for (int i = 0; i <= k && i < n; i++) heap.add(arr[i]);                                                       // build size K+1
+public class Main {
+    static class Solution {
+        public void kSortedArraySorting(int[] arr, int k) {
+            int n = arr.length;
+            if (n == 0 || k == 0) return;
+            PriorityQueue<Integer> heap = new PriorityQueue<>();
+            for (int i = 0; i <= k && i < n; i++) heap.add(arr[i]);                                                       // build size K+1
 
-        int outIdx = 0;
-        for (int i = k + 1; i < n; i++) {
-            arr[outIdx++] = heap.poll();                                                                              // pop min → output
-            heap.add(arr[i]);                                                                                          // push next
+            int outIdx = 0;
+            for (int i = k + 1; i < n; i++) {
+                arr[outIdx++] = heap.poll();                                                                              // pop min → output
+                heap.add(arr[i]);                                                                                          // push next
+            }
+            while (!heap.isEmpty()) arr[outIdx++] = heap.poll();                                                           // drain
         }
-        while (!heap.isEmpty()) arr[outIdx++] = heap.poll();                                                           // drain
+    }
+
+    public static void main(String[] args) {
+        int[] arr = {6, 5, 3, 2, 8, 10, 9};
+        new Solution().kSortedArraySorting(arr, 3);
+        System.out.println(Arrays.toString(arr));  // [2, 3, 5, 6, 8, 9, 10]
     }
 }
 ```
@@ -750,20 +788,26 @@ void kSortedArraySorting(int *arr, int n, int k) {
 ```scala run
 import scala.collection.mutable.PriorityQueue
 
-object Solution {
-  def kSortedArraySorting(arr: Array[Int], k: Int): Unit = {
-    val n = arr.length
-    if (n == 0 || k == 0) return
-    val heap = PriorityQueue.empty[Int](Ordering[Int].reverse)
-    var i = 0
-    while (i <= k && i < n) { heap.enqueue(arr(i)); i += 1 }
-    var outIdx = 0
-    while (i < n) {
-      arr(outIdx) = heap.dequeue(); outIdx += 1
-      heap.enqueue(arr(i)); i += 1
+object Main extends App {
+  object Solution {
+    def kSortedArraySorting(arr: Array[Int], k: Int): Unit = {
+      val n = arr.length
+      if (n == 0 || k == 0) return
+      val heap = PriorityQueue.empty[Int](Ordering[Int].reverse)
+      var i = 0
+      while (i <= k && i < n) { heap.enqueue(arr(i)); i += 1 }
+      var outIdx = 0
+      while (i < n) {
+        arr(outIdx) = heap.dequeue(); outIdx += 1
+        heap.enqueue(arr(i)); i += 1
+      }
+      while (heap.nonEmpty) { arr(outIdx) = heap.dequeue(); outIdx += 1 }
     }
-    while (heap.nonEmpty) { arr(outIdx) = heap.dequeue(); outIdx += 1 }
   }
+
+  val arr = Array(6, 5, 3, 2, 8, 10, 9)
+  Solution.kSortedArraySorting(arr, 3)
+  println(arr.mkString(", "))  // 2, 3, 5, 6, 8, 9, 10
 }
 ```
 
