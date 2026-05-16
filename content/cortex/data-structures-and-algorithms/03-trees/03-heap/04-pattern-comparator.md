@@ -161,15 +161,14 @@ import scala.collection.mutable.PriorityQueue
 
 case class Entry(x: Int, y: Int)
 
-object Demo {
+object Main extends App {
   // Default Ordering compares descending; reverse it for a min-heap.
   implicit val entryOrdering: Ordering[Entry] = Ordering.by((e: Entry) => (e.x, e.y))
   val minHeap = PriorityQueue.empty[Entry](entryOrdering.reverse)
-  def main(args: Array[String]): Unit = {
-    minHeap.enqueue(Entry(2, 7))
-    minHeap.enqueue(Entry(1, 9))
-    val top = minHeap.head                                                     // Entry(1, 9)
-  }
+  minHeap.enqueue(Entry(2, 7))
+  minHeap.enqueue(Entry(1, 9))
+  val top = minHeap.head                                                     // Entry(1, 9)
+  println(top)  // Entry(1,9)
 }
 ```
 
@@ -299,20 +298,26 @@ class Solution:
 ```java run
 import java.util.*;
 
-class Solution {
-    public List<Integer> kMostFrequentElements(int[] arr, int k) {
-        Map<Integer, Integer> freq = new HashMap<>();
-        for (int v : arr) freq.merge(v, 1, Integer::sum);
-        // Min-heap by frequency; the "least frequent in the top-K" stays on top.
-        PriorityQueue<int[]> heap = new PriorityQueue<>(
-            (a, b) -> Integer.compare(a[1], b[1]));
-        for (Map.Entry<Integer, Integer> e : freq.entrySet()) {
-            heap.add(new int[]{e.getKey(), e.getValue()});
-            if (heap.size() > k) heap.poll();                                                                                                     // evict
+public class Main {
+    static class Solution {
+        public List<Integer> kMostFrequentElements(int[] arr, int k) {
+            Map<Integer, Integer> freq = new HashMap<>();
+            for (int v : arr) freq.merge(v, 1, Integer::sum);
+            // Min-heap by frequency; the "least frequent in the top-K" stays on top.
+            PriorityQueue<int[]> heap = new PriorityQueue<>(
+                (a, b) -> Integer.compare(a[1], b[1]));
+            for (Map.Entry<Integer, Integer> e : freq.entrySet()) {
+                heap.add(new int[]{e.getKey(), e.getValue()});
+                if (heap.size() > k) heap.poll();                                                                                                     // evict
+            }
+            List<Integer> result = new ArrayList<>();
+            for (int[] entry : heap) result.add(entry[0]);
+            return result;
         }
-        List<Integer> result = new ArrayList<>();
-        for (int[] entry : heap) result.add(entry[0]);
-        return result;
+    }
+
+    public static void main(String[] args) {
+        System.out.println(new Solution().kMostFrequentElements(new int[]{1, 1, 1, 2, 2, 3}, 2));  // [1, 2] (some order)
     }
 }
 ```
@@ -348,17 +353,21 @@ int *kMostFrequentElements(int *arr, int n, int k, int *out_size) {
 ```scala run
 import scala.collection.mutable.PriorityQueue
 
-object Solution {
-  def kMostFrequentElements(arr: Array[Int], k: Int): List[Int] = {
-    val freq = arr.groupBy(identity).view.mapValues(_.length).toMap
-    // Min-heap on freq: smallest freq on top.
-    val heap = PriorityQueue.empty[(Int, Int)](Ordering.by[(Int, Int), Int](-_._2))
-    for ((value, f) <- freq) {
-      heap.enqueue((value, f))
-      if (heap.size > k) heap.dequeue()
+object Main extends App {
+  object Solution {
+    def kMostFrequentElements(arr: Array[Int], k: Int): List[Int] = {
+      val freq = arr.groupBy(identity).view.mapValues(_.length).toMap
+      // Min-heap on freq: smallest freq on top.
+      val heap = PriorityQueue.empty[(Int, Int)](Ordering.by[(Int, Int), Int](-_._2))
+      for ((value, f) <- freq) {
+        heap.enqueue((value, f))
+        if (heap.size > k) heap.dequeue()
+      }
+      heap.iterator.map(_._1).toList
     }
-    heap.iterator.map(_._1).toList
   }
+
+  println(Solution.kMostFrequentElements(Array(1, 1, 1, 2, 2, 3), 2))  // List(1, 2) (some order)
 }
 ```
 
@@ -464,29 +473,36 @@ class Solution:
 ```java run
 import java.util.*;
 
-class Solution {
-    public List<List<Integer>> kSmallestSumPairs(int[] arr1, int[] arr2, int k) {
-        List<List<Integer>> result = new ArrayList<>();
-        int n = arr1.length, m = arr2.length;
-        if (n == 0 || m == 0 || k == 0) return result;
-        PriorityQueue<int[]> heap = new PriorityQueue<>((a, b) -> Integer.compare(a[0], b[0]));
-        Set<Long> visited = new HashSet<>();
-        heap.add(new int[]{arr1[0] + arr2[0], 0, 0});
-        visited.add(0L);
-        while (!heap.isEmpty() && result.size() < k) {
-            int[] top = heap.poll();
-            int i = top[1], j = top[2];
-            result.add(Arrays.asList(arr1[i], arr2[j]));
-            if (i + 1 < n) {
-                long key = ((long)(i + 1) << 32) | j;
-                if (visited.add(key)) heap.add(new int[]{arr1[i + 1] + arr2[j], i + 1, j});
+public class Main {
+    static class Solution {
+        public List<List<Integer>> kSmallestSumPairs(int[] arr1, int[] arr2, int k) {
+            List<List<Integer>> result = new ArrayList<>();
+            int n = arr1.length, m = arr2.length;
+            if (n == 0 || m == 0 || k == 0) return result;
+            PriorityQueue<int[]> heap = new PriorityQueue<>((a, b) -> Integer.compare(a[0], b[0]));
+            Set<Long> visited = new HashSet<>();
+            heap.add(new int[]{arr1[0] + arr2[0], 0, 0});
+            visited.add(0L);
+            while (!heap.isEmpty() && result.size() < k) {
+                int[] top = heap.poll();
+                int i = top[1], j = top[2];
+                result.add(Arrays.asList(arr1[i], arr2[j]));
+                if (i + 1 < n) {
+                    long key = ((long)(i + 1) << 32) | j;
+                    if (visited.add(key)) heap.add(new int[]{arr1[i + 1] + arr2[j], i + 1, j});
+                }
+                if (j + 1 < m) {
+                    long key = ((long)i << 32) | (j + 1);
+                    if (visited.add(key)) heap.add(new int[]{arr1[i] + arr2[j + 1], i, j + 1});
+                }
             }
-            if (j + 1 < m) {
-                long key = ((long)i << 32) | (j + 1);
-                if (visited.add(key)) heap.add(new int[]{arr1[i] + arr2[j + 1], i, j + 1});
-            }
+            return result;
         }
-        return result;
+    }
+
+    public static void main(String[] args) {
+        System.out.println(new Solution().kSmallestSumPairs(new int[]{1, 7, 1}, new int[]{2, 4, 6}, 3));
+        // [[1, 2], [1, 4], [1, 6]]
     }
 }
 ```
@@ -500,23 +516,28 @@ class Solution {
 ```scala run
 import scala.collection.mutable.{PriorityQueue, Set => MSet}
 
-object Solution {
-  def kSmallestSumPairs(arr1: Array[Int], arr2: Array[Int], k: Int): List[List[Int]] = {
-    val n = arr1.length; val m = arr2.length
-    if (n == 0 || m == 0 || k == 0) return Nil
-    val heap = PriorityQueue.empty[(Int, Int, Int)](Ordering.by[(Int, Int, Int), Int](-_._1))
-    val visited = MSet[(Int, Int)]()
-    heap.enqueue((arr1(0) + arr2(0), 0, 0))
-    visited.add((0, 0))
-    val result = scala.collection.mutable.ListBuffer[List[Int]]()
-    while (heap.nonEmpty && result.length < k) {
-      val (_, i, j) = heap.dequeue()
-      result += List(arr1(i), arr2(j))
-      if (i + 1 < n && visited.add((i + 1, j))) heap.enqueue((arr1(i + 1) + arr2(j), i + 1, j))
-      if (j + 1 < m && visited.add((i, j + 1))) heap.enqueue((arr1(i) + arr2(j + 1), i, j + 1))
+object Main extends App {
+  object Solution {
+    def kSmallestSumPairs(arr1: Array[Int], arr2: Array[Int], k: Int): List[List[Int]] = {
+      val n = arr1.length; val m = arr2.length
+      if (n == 0 || m == 0 || k == 0) return Nil
+      val heap = PriorityQueue.empty[(Int, Int, Int)](Ordering.by[(Int, Int, Int), Int](-_._1))
+      val visited = MSet[(Int, Int)]()
+      heap.enqueue((arr1(0) + arr2(0), 0, 0))
+      visited.add((0, 0))
+      val result = scala.collection.mutable.ListBuffer[List[Int]]()
+      while (heap.nonEmpty && result.length < k) {
+        val (_, i, j) = heap.dequeue()
+        result += List(arr1(i), arr2(j))
+        if (i + 1 < n && visited.add((i + 1, j))) heap.enqueue((arr1(i + 1) + arr2(j), i + 1, j))
+        if (j + 1 < m && visited.add((i, j + 1))) heap.enqueue((arr1(i) + arr2(j + 1), i, j + 1))
+      }
+      result.toList
     }
-    result.toList
   }
+
+  println(Solution.kSmallestSumPairs(Array(1, 7, 1), Array(2, 4, 6), 3))
+  // List(List(1, 2), List(1, 4), List(1, 6))
 }
 ```
 
@@ -588,27 +609,38 @@ class Solution:
 ```java run
 import java.util.*;
 
-class Solution {
-    private PriorityQueue<double[]> heap;            // [distance, value]
-    private int kCap;
+public class Main {
+    static class TreeNode { int val; TreeNode left, right; TreeNode(int v){val=v;} }
 
-    private void inorder(TreeNode node, double target) {
-        if (node == null) return;
-        inorder(node.left, target);
-        double d = Math.abs(node.val - target);
-        heap.add(new double[]{d, node.val});
-        if (heap.size() > kCap) heap.poll();
-        inorder(node.right, target);
+    static class Solution {
+        private PriorityQueue<double[]> heap;            // [distance, value]
+        private int kCap;
+
+        private void inorder(TreeNode node, double target) {
+            if (node == null) return;
+            inorder(node.left, target);
+            double d = Math.abs(node.val - target);
+            heap.add(new double[]{d, node.val});
+            if (heap.size() > kCap) heap.poll();
+            inorder(node.right, target);
+        }
+
+        public List<Integer> kClosestValues(TreeNode root, double target, int k) {
+            // Max-heap by distance: largest distance on top → that's what we want to evict.
+            heap = new PriorityQueue<>((a, b) -> Double.compare(b[0], a[0]));
+            kCap = k;
+            inorder(root, target);
+            List<Integer> result = new ArrayList<>();
+            for (double[] e : heap) result.add((int) e[1]);
+            return result;
+        }
     }
 
-    public List<Integer> kClosestValues(TreeNode root, double target, int k) {
-        // Max-heap by distance: largest distance on top → that's what we want to evict.
-        heap = new PriorityQueue<>((a, b) -> Double.compare(b[0], a[0]));
-        kCap = k;
-        inorder(root, target);
-        List<Integer> result = new ArrayList<>();
-        for (double[] e : heap) result.add((int) e[1]);
-        return result;
+    public static void main(String[] args) {
+        TreeNode root = new TreeNode(4);
+        root.left = new TreeNode(2); root.left.left = new TreeNode(1);
+        root.right = new TreeNode(6); root.right.right = new TreeNode(7);
+        System.out.println(new Solution().kClosestValues(root, 4.63, 3));  // [4, 6, 7] (some order)
     }
 }
 ```
@@ -622,21 +654,30 @@ class Solution {
 ```scala run
 import scala.collection.mutable.PriorityQueue
 
-object Solution {
-  def kClosestValues(root: TreeNode, target: Double, k: Int): List[Int] = {
-    // Max-heap by distance.
-    val heap = PriorityQueue.empty[(Double, Int)](Ordering.by[(Double, Int), Double](_._1))
-    def inorder(n: TreeNode): Unit = {
-      if (n == null) return
-      inorder(n.left)
-      val d = math.abs(n.value - target)
-      heap.enqueue((d, n.value))
-      if (heap.size > k) heap.dequeue()
-      inorder(n.right)
+class TreeNode(var value: Int, var left: TreeNode = null, var right: TreeNode = null)
+
+object Main extends App {
+  object Solution {
+    def kClosestValues(root: TreeNode, target: Double, k: Int): List[Int] = {
+      // Max-heap by distance.
+      val heap = PriorityQueue.empty[(Double, Int)](Ordering.by[(Double, Int), Double](_._1))
+      def inorder(n: TreeNode): Unit = {
+        if (n == null) return
+        inorder(n.left)
+        val d = math.abs(n.value - target)
+        heap.enqueue((d, n.value))
+        if (heap.size > k) heap.dequeue()
+        inorder(n.right)
+      }
+      inorder(root)
+      heap.iterator.map(_._2).toList
     }
-    inorder(root)
-    heap.iterator.map(_._2).toList
   }
+
+  val root = new TreeNode(4,
+    new TreeNode(2, new TreeNode(1), null),
+    new TreeNode(6, null, new TreeNode(7)))
+  println(Solution.kClosestValues(root, 4.63, 3))  // List(4, 6, 7) (some order)
 }
 ```
 
@@ -754,30 +795,37 @@ class Solution:
 ```java run
 import java.util.*;
 
-class Solution {
-    public int[] kArraysSmallestRange(int[][] arr) {
-        int k = arr.length;
-        PriorityQueue<int[]> heap = new PriorityQueue<>((a, b) -> Integer.compare(a[0], b[0]));
-        int maxValue = Integer.MIN_VALUE;
-        for (int i = 0; i < k; i++) {
-            if (arr[i].length > 0) {
-                heap.add(new int[]{arr[i][0], i, 0});
-                maxValue = Math.max(maxValue, arr[i][0]);
+public class Main {
+    static class Solution {
+        public int[] kArraysSmallestRange(int[][] arr) {
+            int k = arr.length;
+            PriorityQueue<int[]> heap = new PriorityQueue<>((a, b) -> Integer.compare(a[0], b[0]));
+            int maxValue = Integer.MIN_VALUE;
+            for (int i = 0; i < k; i++) {
+                if (arr[i].length > 0) {
+                    heap.add(new int[]{arr[i][0], i, 0});
+                    maxValue = Math.max(maxValue, arr[i][0]);
+                }
             }
-        }
-        int[] best = {-1, -1};
-        int bestWidth = Integer.MAX_VALUE;
-        while (heap.size() == k) {
-            int[] top = heap.poll();
-            int value = top[0], i = top[1], j = top[2];
-            if (maxValue - value < bestWidth) { bestWidth = maxValue - value; best = new int[]{value, maxValue}; }
-            if (j + 1 < arr[i].length) {
-                int nextVal = arr[i][j + 1];
-                heap.add(new int[]{nextVal, i, j + 1});
-                maxValue = Math.max(maxValue, nextVal);
+            int[] best = {-1, -1};
+            int bestWidth = Integer.MAX_VALUE;
+            while (heap.size() == k) {
+                int[] top = heap.poll();
+                int value = top[0], i = top[1], j = top[2];
+                if (maxValue - value < bestWidth) { bestWidth = maxValue - value; best = new int[]{value, maxValue}; }
+                if (j + 1 < arr[i].length) {
+                    int nextVal = arr[i][j + 1];
+                    heap.add(new int[]{nextVal, i, j + 1});
+                    maxValue = Math.max(maxValue, nextVal);
+                }
             }
+            return best;
         }
-        return best;
+    }
+
+    public static void main(String[] args) {
+        int[][] arr = {{4, 8}, {3, 6}, {4, 5}};
+        System.out.println(Arrays.toString(new Solution().kArraysSmallestRange(arr)));  // [3, 4]
     }
 }
 ```
@@ -791,27 +839,32 @@ class Solution {
 ```scala run
 import scala.collection.mutable.PriorityQueue
 
-object Solution {
-  def kArraysSmallestRange(arr: Array[Array[Int]]): Array[Int] = {
-    val k = arr.length
-    val heap = PriorityQueue.empty[(Int, Int, Int)](Ordering.by[(Int, Int, Int), Int](-_._1))
-    var maxValue = Int.MinValue
-    for (i <- 0 until k if arr(i).nonEmpty) {
-      heap.enqueue((arr(i)(0), i, 0))
-      maxValue = math.max(maxValue, arr(i)(0))
-    }
-    var rs = -1; var re = -1; var width = Int.MaxValue
-    while (heap.size == k) {
-      val (value, i, j) = heap.dequeue()
-      if (maxValue - value < width) { width = maxValue - value; rs = value; re = maxValue }
-      if (j + 1 < arr(i).length) {
-        val nv = arr(i)(j + 1)
-        heap.enqueue((nv, i, j + 1))
-        maxValue = math.max(maxValue, nv)
+object Main extends App {
+  object Solution {
+    def kArraysSmallestRange(arr: Array[Array[Int]]): Array[Int] = {
+      val k = arr.length
+      val heap = PriorityQueue.empty[(Int, Int, Int)](Ordering.by[(Int, Int, Int), Int](-_._1))
+      var maxValue = Int.MinValue
+      for (i <- 0 until k if arr(i).nonEmpty) {
+        heap.enqueue((arr(i)(0), i, 0))
+        maxValue = math.max(maxValue, arr(i)(0))
       }
+      var rs = -1; var re = -1; var width = Int.MaxValue
+      while (heap.size == k) {
+        val (value, i, j) = heap.dequeue()
+        if (maxValue - value < width) { width = maxValue - value; rs = value; re = maxValue }
+        if (j + 1 < arr(i).length) {
+          val nv = arr(i)(j + 1)
+          heap.enqueue((nv, i, j + 1))
+          maxValue = math.max(maxValue, nv)
+        }
+      }
+      Array(rs, re)
     }
-    Array(rs, re)
   }
+
+  val arr = Array(Array(4, 8), Array(3, 6), Array(4, 5))
+  println(Solution.kArraysSmallestRange(arr).mkString(", "))  // 3, 4
 }
 ```
 
@@ -884,18 +937,36 @@ class Solution:
 ```java run
 import java.util.*;
 
-class Solution {
-    public ListNode kWayListMerge(List<ListNode> lists) {
-        PriorityQueue<ListNode> heap = new PriorityQueue<>((a, b) -> Integer.compare(a.val, b.val));
-        for (ListNode head : lists) if (head != null) heap.add(head);
-        ListNode dummy = new ListNode(0), tail = dummy;
-        while (!heap.isEmpty()) {
-            ListNode node = heap.poll();
-            tail.next = node;
-            tail = node;
-            if (node.next != null) heap.add(node.next);
+public class Main {
+    static class ListNode { int val; ListNode next; ListNode(int v){val=v;} }
+
+    static class Solution {
+        public ListNode kWayListMerge(List<ListNode> lists) {
+            PriorityQueue<ListNode> heap = new PriorityQueue<>((a, b) -> Integer.compare(a.val, b.val));
+            for (ListNode head : lists) if (head != null) heap.add(head);
+            ListNode dummy = new ListNode(0), tail = dummy;
+            while (!heap.isEmpty()) {
+                ListNode node = heap.poll();
+                tail.next = node;
+                tail = node;
+                if (node.next != null) heap.add(node.next);
+            }
+            return dummy.next;
         }
-        return dummy.next;
+    }
+
+    static ListNode build(int... vals) {
+        ListNode d = new ListNode(0); ListNode t = d;
+        for (int v : vals) { t.next = new ListNode(v); t = t.next; }
+        return d.next;
+    }
+
+    public static void main(String[] args) {
+        List<ListNode> lists = Arrays.asList(build(1, 4, 5), build(1, 3, 4), build(2, 6));
+        ListNode head = new Solution().kWayListMerge(lists);
+        StringBuilder sb = new StringBuilder();
+        for (ListNode c = head; c != null; c = c.next) sb.append(c.val).append(c.next == null ? "" : ", ");
+        System.out.println("[" + sb + "]");  // [1, 1, 2, 3, 4, 4, 5, 6]
     }
 }
 ```
@@ -909,19 +980,35 @@ class Solution {
 ```scala run
 import scala.collection.mutable.PriorityQueue
 
-object Solution {
-  def kWayListMerge(lists: Array[ListNode]): ListNode = {
-    val heap = PriorityQueue.empty[ListNode](Ordering.by[ListNode, Int](-_.value))
-    for (head <- lists if head != null) heap.enqueue(head)
-    val dummy = new ListNode(0); var tail = dummy
-    while (heap.nonEmpty) {
-      val node = heap.dequeue()
-      tail.next = node
-      tail = node
-      if (node.next != null) heap.enqueue(node.next)
+class ListNode(var value: Int, var next: ListNode = null)
+
+object Main extends App {
+  object Solution {
+    def kWayListMerge(lists: Array[ListNode]): ListNode = {
+      val heap = PriorityQueue.empty[ListNode](Ordering.by[ListNode, Int](-_.value))
+      for (head <- lists if head != null) heap.enqueue(head)
+      val dummy = new ListNode(0); var tail = dummy
+      while (heap.nonEmpty) {
+        val node = heap.dequeue()
+        tail.next = node
+        tail = node
+        if (node.next != null) heap.enqueue(node.next)
+      }
+      dummy.next
     }
-    dummy.next
   }
+
+  val build = (vals: Seq[Int]) => {
+    val d = new ListNode(0); var t = d
+    for (v <- vals) { t.next = new ListNode(v); t = t.next }
+    d.next
+  }
+
+  val lists = Array(build(Seq(1, 4, 5)), build(Seq(1, 3, 4)), build(Seq(2, 6)))
+  var head = Solution.kWayListMerge(lists)
+  val out = scala.collection.mutable.ListBuffer[Int]()
+  while (head != null) { out += head.value; head = head.next }
+  println(out.toList)  // List(1, 1, 2, 3, 4, 4, 5, 6)
 }
 ```
 
