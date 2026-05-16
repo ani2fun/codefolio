@@ -102,9 +102,16 @@ void         bstIteratorFree(BSTIterator *it);
 ```
 
 ```scala run
-class BSTIterator(root: TreeNode) {
-  def hasNext: Boolean = false              // any nodes left?
-  def next:    TreeNode = null              // next node in order
+class TreeNode(var value: Int, var left: TreeNode = null, var right: TreeNode = null)
+
+object Main extends App {
+  class BSTIterator(root: TreeNode) {
+    def hasNext: Boolean = false              // any nodes left?
+    def next:    TreeNode = null              // next node in order
+  }
+
+  val root = new TreeNode(1)
+  println(new BSTIterator(root).hasNext)  // false
 }
 ```
 
@@ -343,23 +350,33 @@ void bSTIteratorFree(ForwardBstIterator *it) { free(it->stack); free(it); }
 ```scala run
 import scala.collection.mutable
 
-class ForwardBstIterator(root: TreeNode) {
-  private val stack = mutable.Stack[TreeNode]()                                                   // ancestor path
-  pushAllLeft(root)                                                                                // prime
+class TreeNode(var value: Int, var left: TreeNode = null, var right: TreeNode = null)
 
-  private def pushAllLeft(node: TreeNode): Unit = {
-    var n = node
-    while (n != null) { stack.push(n); n = n.left }                                                // walk left-spine
+object Main extends App {
+  class ForwardBstIterator(root: TreeNode) {
+    private val stack = mutable.Stack[TreeNode]()                                                   // ancestor path
+    pushAllLeft(root)                                                                                // prime
+
+    private def pushAllLeft(node: TreeNode): Unit = {
+      var n = node
+      while (n != null) { stack.push(n); n = n.left }                                                // walk left-spine
+    }
+
+    def hasNext: Boolean = stack.nonEmpty
+
+    def next: TreeNode = {
+      if (!hasNext) return null
+      val node = stack.pop()                                                                          // top = next
+      pushAllLeft(node.right)                                                                         // queue right
+      node
+    }
   }
 
-  def hasNext: Boolean = stack.nonEmpty
-
-  def next: TreeNode = {
-    if (!hasNext) return null
-    val node = stack.pop()                                                                          // top = next
-    pushAllLeft(node.right)                                                                         // queue right
-    node
-  }
+  val root = new TreeNode(7,
+    new TreeNode(3),
+    new TreeNode(15, new TreeNode(9), new TreeNode(20)))
+  val it = new ForwardBstIterator(root)
+  println(s"${it.next.value} ${it.next.value} ${it.next.value} ${it.next.value} ${it.next.value}")  // 3 7 9 15 20
 }
 ```
 
@@ -566,23 +583,33 @@ void reverseBSTIteratorFree(ReverseBstIterator *it) { free(it->stack); free(it);
 ```scala run
 import scala.collection.mutable
 
-class ReverseBstIterator(root: TreeNode) {
-  private val stack = mutable.Stack[TreeNode]()
-  pushAllRight(root)
+class TreeNode(var value: Int, var left: TreeNode = null, var right: TreeNode = null)
 
-  private def pushAllRight(node: TreeNode): Unit = {
-    var n = node
-    while (n != null) { stack.push(n); n = n.right }
+object Main extends App {
+  class ReverseBstIterator(root: TreeNode) {
+    private val stack = mutable.Stack[TreeNode]()
+    pushAllRight(root)
+
+    private def pushAllRight(node: TreeNode): Unit = {
+      var n = node
+      while (n != null) { stack.push(n); n = n.right }
+    }
+
+    def hasNext: Boolean = stack.nonEmpty
+
+    def next: TreeNode = {
+      if (!hasNext) return null
+      val node = stack.pop()
+      pushAllRight(node.left)                                                                                  // mirror
+      node
+    }
   }
 
-  def hasNext: Boolean = stack.nonEmpty
-
-  def next: TreeNode = {
-    if (!hasNext) return null
-    val node = stack.pop()
-    pushAllRight(node.left)                                                                                  // mirror
-    node
-  }
+  val root = new TreeNode(7,
+    new TreeNode(3),
+    new TreeNode(15, new TreeNode(9), new TreeNode(20)))
+  val it = new ReverseBstIterator(root)
+  println(s"${it.next.value} ${it.next.value} ${it.next.value} ${it.next.value} ${it.next.value}")  // 20 15 9 7 3
 }
 ```
 
