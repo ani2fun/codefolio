@@ -173,7 +173,7 @@ mem: "students[]  —  contiguous memory, every cell fixed" {
   |
 }
 
-ins: "Insert 'Zara'\nbetween Bob & Carol?" {
+ins: "Insert 'Tara'\nbetween Bob & Carol?" {
   shape: oval
   style.fill: "#fee2e2"
   style.stroke: "#dc2626"
@@ -239,7 +239,7 @@ A linked list guarantees the insertion and deletion of items from the **start** 
   "title": "Insert and delete at the head are both O(1) — pointer updates only, no shifting",
   "direction": "single",
   "nodes": [
-    {"id": "z", "value": "Zara"},
+    {"id": "z", "value": "Tara"},
     {"id": "a", "value": "Alice"},
     {"id": "b", "value": "Bob"},
     {"id": "c", "value": "Carol"}
@@ -258,18 +258,18 @@ A linked list guarantees the insertion and deletion of items from the **start** 
     },
     {
       "nodes": [
-        {"id": "z", "value": "Zara", "style": "new"},
+        {"id": "z", "value": "Tara", "style": "new"},
         {"id": "a", "value": "Alice"},
         {"id": "b", "value": "Bob"},
         {"id": "c", "value": "Carol"}
       ],
       "links": [["z","a"],["a","b"],["b","c"]],
       "markers": [{"name": "head", "nodeId": "z"}],
-      "msg": "Insert at head: allocate Zara, point it to old head, repoint head — O(1)"
+      "msg": "Insert at head: allocate Tara, point it to old head, repoint head — O(1)"
     },
     {
       "nodes": [
-        {"id": "z", "value": "Zara"},
+        {"id": "z", "value": "Tara"},
         {"id": "a", "value": "Alice", "style": "removed"},
         {"id": "b", "value": "Bob"},
         {"id": "c", "value": "Carol"}
@@ -280,13 +280,13 @@ A linked list guarantees the insertion and deletion of items from the **start** 
     },
     {
       "nodes": [
-        {"id": "z", "value": "Zara"},
+        {"id": "z", "value": "Tara"},
         {"id": "b", "value": "Bob"},
         {"id": "c", "value": "Carol"}
       ],
       "links": [["z","b"],["b","c"]],
       "markers": [{"name": "head", "nodeId": "z"}],
-      "msg": "Repoint Zara.next → Bob (skipping Alice); free Alice — O(1)"
+      "msg": "Repoint Tara.next → Bob (skipping Alice); free Alice — O(1)"
     }
   ]
 }
@@ -298,12 +298,12 @@ Let us look at an example of insertion in a singly linked list to understand thi
 
 ```d3 widget=linked-list
 {
-  "title": "Insert 'Zara' after 'Bob' — three pointer updates, no shifting",
+  "title": "Insert 'Tara' after 'Bob' — three pointer updates, no shifting",
   "direction": "single",
   "nodes": [
     {"id": "a", "value": "Alice"},
     {"id": "b", "value": "Bob"},
-    {"id": "z", "value": "Zara"},
+    {"id": "z", "value": "Tara"},
     {"id": "c", "value": "Carol"},
     {"id": "d", "value": "David"}
   ],
@@ -324,55 +324,55 @@ Let us look at an example of insertion in a singly linked list to understand thi
       "nodes": [
         {"id": "a", "value": "Alice"},
         {"id": "b", "value": "Bob"},
-        {"id": "z", "value": "Zara", "style": "new"},
+        {"id": "z", "value": "Tara", "style": "new"},
         {"id": "c", "value": "Carol"},
         {"id": "d", "value": "David"}
       ],
       "links": [["a","b"],["b","c"],["c","d"]],
       "markers": [{"name": "current", "nodeId": "z"}],
-      "msg": "Step 1: allocate a new node holding 'Zara'"
+      "msg": "Step 1: allocate a new node holding 'Tara'"
     },
     {
       "nodes": [
         {"id": "a", "value": "Alice"},
         {"id": "b", "value": "Bob"},
-        {"id": "z", "value": "Zara", "style": "new"},
+        {"id": "z", "value": "Tara", "style": "new"},
         {"id": "c", "value": "Carol"},
         {"id": "d", "value": "David"}
       ],
       "links": [["a","b"],["b","c"],["z","c"],["c","d"]],
       "markers": [{"name": "current", "nodeId": "z"}],
-      "msg": "Step 2: new.next = Bob.next (point Zara at Carol)"
+      "msg": "Step 2: new.next = Bob.next (point Tara at Carol)"
     },
     {
       "nodes": [
         {"id": "a", "value": "Alice"},
         {"id": "b", "value": "Bob"},
-        {"id": "z", "value": "Zara"},
+        {"id": "z", "value": "Tara"},
         {"id": "c", "value": "Carol"},
         {"id": "d", "value": "David"}
       ],
       "links": [["a","b"],["b","z"],["z","c"],["c","d"]],
       "markers": [{"name": "current", "nodeId": "b"}],
-      "msg": "Step 3: Bob.next = new (Bob now points to Zara)"
+      "msg": "Step 3: Bob.next = new (Bob now points to Tara)"
     },
     {
       "nodes": [
         {"id": "a", "value": "Alice"},
         {"id": "b", "value": "Bob"},
-        {"id": "z", "value": "Zara"},
+        {"id": "z", "value": "Tara"},
         {"id": "c", "value": "Carol"},
         {"id": "d", "value": "David"}
       ],
       "links": [["a","b"],["b","z"],["z","c"],["c","d"]],
       "markers": [{"name": "head", "nodeId": "a"}],
-      "msg": "Done — Alice → Bob → Zara → Carol → David. Three pointer updates, O(1)."
+      "msg": "Done — Alice → Bob → Tara → Carol → David. Three pointer updates, O(1)."
     }
   ]
 }
 ```
 
-<p align="center"><strong>Inserting 'Zara' after 'Bob' — redirect two pointers; no shifting, no copying, O(1) once the insertion point is known.</strong></p>
+<p align="center"><strong>Inserting 'Tara' after 'Bob' — redirect two pointers; no shifting, no copying, O(1) once the insertion point is known.</strong></p>
 
 ## Advantages
 
