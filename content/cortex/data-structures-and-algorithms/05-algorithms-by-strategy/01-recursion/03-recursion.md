@@ -440,14 +440,16 @@ if __name__ == "__main__":
 ```
 
 ```java run
-public class Solution {
-    int findPosition(int n) {
-        // Base case — front of the line
-        if (n == 1) {
-            return 1;
+public class Main {
+    static class Solution {
+        int findPosition(int n) {
+            // Base case — front of the line
+            if (n == 1) {
+                return 1;
+            }
+            // Recursive case: solve for the person ahead, add 1
+            return 1 + findPosition(n - 1);
         }
-        // Recursive case: solve for the person ahead, add 1
-        return 1 + findPosition(n - 1);
     }
 
     public static void main(String[] args) {
@@ -478,15 +480,15 @@ int main(void) {
 ```
 
 ```scala run
-object Solution {
-  def findPosition(n: Int): Int = {
-    if (n == 1) 1                            // Base case
-    else 1 + findPosition(n - 1)             // Recursive case
+object Main extends App {
+  object Solution {
+    def findPosition(n: Int): Int = {
+      if (n == 1) 1                            // Base case
+      else 1 + findPosition(n - 1)             // Recursive case
+    }
   }
 
-  def main(args: Array[String]): Unit = {
-    println(findPosition(5))                 // 5
-  }
+  println(Solution.findPosition(5))            // 5
 }
 ```
 
