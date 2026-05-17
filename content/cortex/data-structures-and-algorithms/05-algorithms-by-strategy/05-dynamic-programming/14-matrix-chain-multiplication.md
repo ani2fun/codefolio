@@ -260,21 +260,23 @@ if __name__ == "__main__":
 ```
 
 ```java run
-public class Solution {
-    public int matrixChainMultiplication(int[] dimensions) {
-        int n = dimensions.length - 1;
-        int[][] dp = new int[n + 1][n + 1];
-        for (int len = 2; len <= n; len++) {
-            for (int i = 1; i <= n - len + 1; i++) {
-                int j = i + len - 1;
-                dp[i][j] = Integer.MAX_VALUE;
-                for (int k = i; k <= j - 1; k++) {
-                    int cost = dp[i][k] + dp[k + 1][j] + dimensions[i - 1] * dimensions[k] * dimensions[j];
-                    if (cost < dp[i][j]) dp[i][j] = cost;
+public class Main {
+    static class Solution {
+        public int matrixChainMultiplication(int[] dimensions) {
+            int n = dimensions.length - 1;
+            int[][] dp = new int[n + 1][n + 1];
+            for (int len = 2; len <= n; len++) {
+                for (int i = 1; i <= n - len + 1; i++) {
+                    int j = i + len - 1;
+                    dp[i][j] = Integer.MAX_VALUE;
+                    for (int k = i; k <= j - 1; k++) {
+                        int cost = dp[i][k] + dp[k + 1][j] + dimensions[i - 1] * dimensions[k] * dimensions[j];
+                        if (cost < dp[i][j]) dp[i][j] = cost;
+                    }
                 }
             }
+            return dp[1][n];
         }
-        return dp[1][n];
     }
 
     public static void main(String[] args) {
@@ -315,25 +317,25 @@ int main(void) {
 ```
 
 ```scala run
-class Solution {
-  def matrixChainMultiplication(dimensions: Array[Int]): Int = {
-    val n = dimensions.length - 1
-    val dp = Array.fill(n + 1, n + 1)(0)
-    for (len <- 2 to n) {
-      for (i <- 1 to n - len + 1) {
-        val j = i + len - 1
-        dp(i)(j) = Int.MaxValue
-        for (k <- i until j) {
-          val cost = dp(i)(k) + dp(k + 1)(j) + dimensions(i - 1) * dimensions(k) * dimensions(j)
-          if (cost < dp(i)(j)) dp(i)(j) = cost
+object Main extends App {
+  class Solution {
+    def matrixChainMultiplication(dimensions: Array[Int]): Int = {
+      val n = dimensions.length - 1
+      val dp = Array.fill(n + 1, n + 1)(0)
+      for (len <- 2 to n) {
+        for (i <- 1 to n - len + 1) {
+          val j = i + len - 1
+          dp(i)(j) = Int.MaxValue
+          for (k <- i until j) {
+            val cost = dp(i)(k) + dp(k + 1)(j) + dimensions(i - 1) * dimensions(k) * dimensions(j)
+            if (cost < dp(i)(j)) dp(i)(j) = cost
+          }
         }
       }
+      dp(1)(n)
     }
-    dp(1)(n)
   }
-}
 
-object Main extends App {
   println(new Solution().matrixChainMultiplication(Array(4, 5, 3, 2)))    // 70
 }
 ```
