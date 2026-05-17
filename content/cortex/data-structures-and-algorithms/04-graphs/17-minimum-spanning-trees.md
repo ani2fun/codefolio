@@ -215,56 +215,58 @@ if __name__ == "__main__":
 ```java run
 import java.util.*;
 
-class Solution {
-    static class DSU {
-        int[] p, r;
-        DSU(int n) { p = new int[n]; r = new int[n]; for (int i = 0; i < n; i++) p[i] = i; }
-        int find(int x) { return p[x] == x ? x : (p[x] = find(p[x])); }
-        boolean union(int x, int y) {
-            int rx = find(x), ry = find(y);
-            if (rx == ry) return false;
-            if (r[rx] < r[ry]) { int t = rx; rx = ry; ry = t; }
-            p[ry] = rx;
-            if (r[rx] == r[ry]) r[rx]++;
-            return true;
+public class Main {
+    static class Solution {
+        static class DSU {
+            int[] p, r;
+            DSU(int n) { p = new int[n]; r = new int[n]; for (int i = 0; i < n; i++) p[i] = i; }
+            int find(int x) { return p[x] == x ? x : (p[x] = find(p[x])); }
+            boolean union(int x, int y) {
+                int rx = find(x), ry = find(y);
+                if (rx == ry) return false;
+                if (r[rx] < r[ry]) { int t = rx; rx = ry; ry = t; }
+                p[ry] = rx;
+                if (r[rx] == r[ry]) r[rx]++;
+                return true;
+            }
         }
-    }
 
-    static int kruskalMST(int n, int[][] edges) {
-        Arrays.sort(edges, Comparator.comparingInt(e -> e[2]));
-        DSU dsu = new DSU(n);
-        int total = 0, picked = 0;
-        for (int[] e : edges) {
-            if (dsu.union(e[0], e[1])) { total += e[2]; if (++picked == n - 1) break; }
+        static int kruskalMST(int n, int[][] edges) {
+            Arrays.sort(edges, Comparator.comparingInt(e -> e[2]));
+            DSU dsu = new DSU(n);
+            int total = 0, picked = 0;
+            for (int[] e : edges) {
+                if (dsu.union(e[0], e[1])) { total += e[2]; if (++picked == n - 1) break; }
+            }
+            return total;
         }
-        return total;
-    }
 
-    static int primMST(int n, List<int[]>[] adj, int start) {
-        boolean[] inMst = new boolean[n];
-        PriorityQueue<int[]> pq = new PriorityQueue<>((a, b) -> a[0] - b[0]);
-        pq.offer(new int[]{0, start});
-        int total = 0;
-        while (!pq.isEmpty()) {
-            int[] cur = pq.poll();
-            int w = cur[0], u = cur[1];
-            if (inMst[u]) continue;
-            inMst[u] = true;
-            total += w;
-            for (int[] nb : adj[u]) if (!inMst[nb[0]]) pq.offer(new int[]{nb[1], nb[0]});
+        static int primMST(int n, List<int[]>[] adj, int start) {
+            boolean[] inMst = new boolean[n];
+            PriorityQueue<int[]> pq = new PriorityQueue<>((a, b) -> a[0] - b[0]);
+            pq.offer(new int[]{0, start});
+            int total = 0;
+            while (!pq.isEmpty()) {
+                int[] cur = pq.poll();
+                int w = cur[0], u = cur[1];
+                if (inMst[u]) continue;
+                inMst[u] = true;
+                total += w;
+                for (int[] nb : adj[u]) if (!inMst[nb[0]]) pq.offer(new int[]{nb[1], nb[0]});
+            }
+            return total;
         }
-        return total;
     }
 
     public static void main(String[] args) {
         int n = 4;
         int[][] edges = {{0,1,1}, {0,2,3}, {1,2,2}, {1,3,4}, {2,3,5}};
-        System.out.println("Kruskal MST total = " + kruskalMST(n, edges));
+        System.out.println("Kruskal MST total = " + Solution.kruskalMST(n, edges));
 
         List<int[]>[] adj = new List[n];
         for (int i = 0; i < n; i++) adj[i] = new ArrayList<>();
         for (int[] e : edges) { adj[e[0]].add(new int[]{e[1], e[2]}); adj[e[1]].add(new int[]{e[0], e[2]}); }
-        System.out.println("Prim MST total    = " + primMST(n, adj, 0));
+        System.out.println("Prim MST total    = " + Solution.primMST(n, adj, 0));
     }
 }
 ```
@@ -308,56 +310,56 @@ int main(void) {
 ```scala run
 import scala.collection.mutable
 
-object Solution {
-  class DSU(n: Int) {
-    val parent = Array.tabulate(n)(identity)
-    val rank = new Array[Int](n)
-    def find(x: Int): Int = { if (parent(x) != x) parent(x) = find(parent(x)); parent(x) }
-    def union(x: Int, y: Int): Boolean = {
-      var rx = find(x); var ry = find(y)
-      if (rx == ry) return false
-      if (rank(rx) < rank(ry)) { val t = rx; rx = ry; ry = t }
-      parent(ry) = rx
-      if (rank(rx) == rank(ry)) rank(rx) += 1
-      true
-    }
-  }
-
-  def kruskalMST(n: Int, edges: Array[(Int, Int, Int)]): Int = {
-    val sorted = edges.sortBy(_._3)
-    val dsu = new DSU(n)
-    var total = 0; var picked = 0
-    for ((u, v, w) <- sorted if picked < n - 1) {
-      if (dsu.union(u, v)) { total += w; picked += 1 }
-    }
-    total
-  }
-
-  def primMST(n: Int, adj: Array[mutable.ArrayBuffer[(Int, Int)]], start: Int): Int = {
-    val inMst = new Array[Boolean](n)
-    val pq = mutable.PriorityQueue.empty[(Int, Int)](Ordering.by(-_._1))
-    pq.enqueue((0, start))
-    var total = 0
-    while (pq.nonEmpty) {
-      val (w, u) = pq.dequeue()
-      if (!inMst(u)) {
-        inMst(u) = true
-        total += w
-        for ((v, weight) <- adj(u) if !inMst(v)) pq.enqueue((weight, v))
+object Main extends App {
+  object Solution {
+    class DSU(n: Int) {
+      val parent = Array.tabulate(n)(identity)
+      val rank = new Array[Int](n)
+      def find(x: Int): Int = { if (parent(x) != x) parent(x) = find(parent(x)); parent(x) }
+      def union(x: Int, y: Int): Boolean = {
+        var rx = find(x); var ry = find(y)
+        if (rx == ry) return false
+        if (rank(rx) < rank(ry)) { val t = rx; rx = ry; ry = t }
+        parent(ry) = rx
+        if (rank(rx) == rank(ry)) rank(rx) += 1
+        true
       }
     }
-    total
+
+    def kruskalMST(n: Int, edges: Array[(Int, Int, Int)]): Int = {
+      val sorted = edges.sortBy(_._3)
+      val dsu = new DSU(n)
+      var total = 0; var picked = 0
+      for ((u, v, w) <- sorted if picked < n - 1) {
+        if (dsu.union(u, v)) { total += w; picked += 1 }
+      }
+      total
+    }
+
+    def primMST(n: Int, adj: Array[mutable.ArrayBuffer[(Int, Int)]], start: Int): Int = {
+      val inMst = new Array[Boolean](n)
+      val pq = mutable.PriorityQueue.empty[(Int, Int)](Ordering.by(-_._1))
+      pq.enqueue((0, start))
+      var total = 0
+      while (pq.nonEmpty) {
+        val (w, u) = pq.dequeue()
+        if (!inMst(u)) {
+          inMst(u) = true
+          total += w
+          for ((v, weight) <- adj(u) if !inMst(v)) pq.enqueue((weight, v))
+        }
+      }
+      total
+    }
   }
 
-  def main(args: Array[String]): Unit = {
-    val edges = Array((0,1,1), (0,2,3), (1,2,2), (1,3,4), (2,3,5))
-    val n = 4
-    println(s"Kruskal MST total = ${kruskalMST(n, edges)}")
+  val edges = Array((0,1,1), (0,2,3), (1,2,2), (1,3,4), (2,3,5))
+  val n = 4
+  println(s"Kruskal MST total = ${Solution.kruskalMST(n, edges)}")
 
-    val adj = Array.fill(n)(mutable.ArrayBuffer.empty[(Int, Int)])
-    for ((u, v, w) <- edges) { adj(u) += ((v, w)); adj(v) += ((u, w)) }
-    println(s"Prim MST total    = ${primMST(n, adj, 0)}")
-  }
+  val adj = Array.fill(n)(mutable.ArrayBuffer.empty[(Int, Int)])
+  for ((u, v, w) <- edges) { adj(u) += ((v, w)); adj(v) += ((u, w)) }
+  println(s"Prim MST total    = ${Solution.primMST(n, adj, 0)}")
 }
 ```
 
