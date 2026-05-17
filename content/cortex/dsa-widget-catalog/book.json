@@ -1,0 +1,12 @@
+{
+    "title": "DSA Widget Catalog",
+    "description": "Living authoring reference for the D3.js interactive widget catalog used in the Data Structures and Algorithms book. Each chapter exhibits one widget with 3-5 representative payloads, the payload-schema reference card, and a source-frame to widget-step compression note. Used during the catalog-first migration arc (Arc 1) as the visual QA target, and afterward as the authoring lookup for Arc 3 chapter conversions.",
+    "tags": [
+        "internal",
+        "authoring-reference",
+        "dsa",
+        "widgets"
+    ],
+    "estimatedReadingMinutes": 60,
+    "order": 99
+}
