@@ -208,24 +208,30 @@ if __name__ == "__main__":
 ```java run
 import java.util.Arrays;
 
-public class Solution {
-    public int longestCommonSubstringLength(String s1, String s2) {
-        int m = s1.length(), n = s2.length();
-        if (m == 0 || n == 0) return 0;
-        int[][] memo = new int[m][n];
-        for (int[] row : memo) Arrays.fill(row, -1);
-        int best = 0;
-        for (int i = 0; i < m; i++)
-            for (int j = 0; j < n; j++)
-                best = Math.max(best, lcs(i, j, s1, s2, memo));
-        return best;
+public class Main {
+    static class Solution {
+        public int longestCommonSubstringLength(String s1, String s2) {
+            int m = s1.length(), n = s2.length();
+            if (m == 0 || n == 0) return 0;
+            int[][] memo = new int[m][n];
+            for (int[] row : memo) Arrays.fill(row, -1);
+            int best = 0;
+            for (int i = 0; i < m; i++)
+                for (int j = 0; j < n; j++)
+                    best = Math.max(best, lcs(i, j, s1, s2, memo));
+            return best;
+        }
+
+        private int lcs(int i, int j, String s1, String s2, int[][] memo) {
+            if (i < 0 || j < 0) return 0;
+            if (memo[i][j] != -1) return memo[i][j];
+            memo[i][j] = (s1.charAt(i) != s2.charAt(j)) ? 0 : 1 + lcs(i - 1, j - 1, s1, s2, memo);
+            return memo[i][j];
+        }
     }
 
-    private int lcs(int i, int j, String s1, String s2, int[][] memo) {
-        if (i < 0 || j < 0) return 0;
-        if (memo[i][j] != -1) return memo[i][j];
-        memo[i][j] = (s1.charAt(i) != s2.charAt(j)) ? 0 : 1 + lcs(i - 1, j - 1, s1, s2, memo);
-        return memo[i][j];
+    public static void main(String[] args) {
+        System.out.println(new Solution().longestCommonSubstringLength("abcdefgh", "bxcdelx"));   // 3
     }
 }
 ```
@@ -262,21 +268,25 @@ int main(void) {
 ```
 
 ```scala run
-class Solution {
-  def longestCommonSubstringLength(s1: String, s2: String): Int = {
-    val (m, n) = (s1.length, s2.length)
-    if (m == 0 || n == 0) return 0
-    val memo = Array.fill(m, n)(-1)
-    def lcs(i: Int, j: Int): Int = {
-      if (i < 0 || j < 0) return 0
-      if (memo(i)(j) != -1) return memo(i)(j)
-      memo(i)(j) = if (s1(i) != s2(j)) 0 else 1 + lcs(i - 1, j - 1)
-      memo(i)(j)
+object Main extends App {
+  class Solution {
+    def longestCommonSubstringLength(s1: String, s2: String): Int = {
+      val (m, n) = (s1.length, s2.length)
+      if (m == 0 || n == 0) return 0
+      val memo = Array.fill(m, n)(-1)
+      def lcs(i: Int, j: Int): Int = {
+        if (i < 0 || j < 0) return 0
+        if (memo(i)(j) != -1) return memo(i)(j)
+        memo(i)(j) = if (s1(i) != s2(j)) 0 else 1 + lcs(i - 1, j - 1)
+        memo(i)(j)
+      }
+      var best = 0
+      for (i <- 0 until m; j <- 0 until n) best = math.max(best, lcs(i, j))
+      best
     }
-    var best = 0
-    for (i <- 0 until m; j <- 0 until n) best = math.max(best, lcs(i, j))
-    best
   }
+
+  println(new Solution().longestCommonSubstringLength("abcdefgh", "bxcdelx"))   // 3
 }
 ```
 
@@ -374,19 +384,25 @@ if __name__ == "__main__":
 ```
 
 ```java run
-public class Solution {
-    public int longestCommonSubstringLength(String s1, String s2) {
-        int m = s1.length(), n = s2.length();
-        if (m == 0 || n == 0) return 0;
-        int[][] dp = new int[m + 1][n + 1];
-        int best = 0;
-        for (int i = 1; i <= m; i++)
-            for (int j = 1; j <= n; j++)
-                if (s1.charAt(i - 1) == s2.charAt(j - 1)) {
-                    dp[i][j] = dp[i - 1][j - 1] + 1;
-                    if (dp[i][j] > best) best = dp[i][j];
-                }
-        return best;
+public class Main {
+    static class Solution {
+        public int longestCommonSubstringLength(String s1, String s2) {
+            int m = s1.length(), n = s2.length();
+            if (m == 0 || n == 0) return 0;
+            int[][] dp = new int[m + 1][n + 1];
+            int best = 0;
+            for (int i = 1; i <= m; i++)
+                for (int j = 1; j <= n; j++)
+                    if (s1.charAt(i - 1) == s2.charAt(j - 1)) {
+                        dp[i][j] = dp[i - 1][j - 1] + 1;
+                        if (dp[i][j] > best) best = dp[i][j];
+                    }
+            return best;
+        }
+    }
+
+    public static void main(String[] args) {
+        System.out.println(new Solution().longestCommonSubstringLength("abcdefgh", "bxcdelx"));   // 3
     }
 }
 ```
@@ -413,20 +429,24 @@ int longest_common_substring_length(const char *s1, const char *s2) {
 ```
 
 ```scala run
-class Solution {
-  def longestCommonSubstringLength(s1: String, s2: String): Int = {
-    val (m, n) = (s1.length, s2.length)
-    if (m == 0 || n == 0) return 0
-    val dp = Array.fill(m + 1, n + 1)(0)
-    var best = 0
-    for (i <- 1 to m; j <- 1 to n) {
-      if (s1(i - 1) == s2(j - 1)) {
-        dp(i)(j) = dp(i - 1)(j - 1) + 1
-        if (dp(i)(j) > best) best = dp(i)(j)
+object Main extends App {
+  class Solution {
+    def longestCommonSubstringLength(s1: String, s2: String): Int = {
+      val (m, n) = (s1.length, s2.length)
+      if (m == 0 || n == 0) return 0
+      val dp = Array.fill(m + 1, n + 1)(0)
+      var best = 0
+      for (i <- 1 to m; j <- 1 to n) {
+        if (s1(i - 1) == s2(j - 1)) {
+          dp(i)(j) = dp(i - 1)(j - 1) + 1
+          if (dp(i)(j) > best) best = dp(i)(j)
+        }
       }
+      best
     }
-    best
   }
+
+  println(new Solution().longestCommonSubstringLength("abcdefgh", "bxcdelx"))   // 3
 }
 ```
 
@@ -526,20 +546,22 @@ if __name__ == "__main__":
 ```
 
 ```java run
-public class Solution {
-    public String longestCommonSubstring(String s1, String s2) {
-        int m = s1.length(), n = s2.length();
-        if (m == 0 || n == 0) return "";
-        int[][] dp = new int[m + 1][n + 1];
-        int bestLen = 0, bestEnd = 0;
-        for (int i = 1; i <= m; i++)
-            for (int j = 1; j <= n; j++)
-                if (s1.charAt(i - 1) == s2.charAt(j - 1)) {
-                    dp[i][j] = dp[i - 1][j - 1] + 1;
-                    if (dp[i][j] > bestLen) { bestLen = dp[i][j]; bestEnd = i - 1; }
-                }
-        if (bestLen == 0) return "";
-        return s1.substring(bestEnd - bestLen + 1, bestEnd + 1);
+public class Main {
+    static class Solution {
+        public String longestCommonSubstring(String s1, String s2) {
+            int m = s1.length(), n = s2.length();
+            if (m == 0 || n == 0) return "";
+            int[][] dp = new int[m + 1][n + 1];
+            int bestLen = 0, bestEnd = 0;
+            for (int i = 1; i <= m; i++)
+                for (int j = 1; j <= n; j++)
+                    if (s1.charAt(i - 1) == s2.charAt(j - 1)) {
+                        dp[i][j] = dp[i - 1][j - 1] + 1;
+                        if (dp[i][j] > bestLen) { bestLen = dp[i][j]; bestEnd = i - 1; }
+                    }
+            if (bestLen == 0) return "";
+            return s1.substring(bestEnd - bestLen + 1, bestEnd + 1);
+        }
     }
 
     public static void main(String[] args) {
@@ -580,20 +602,24 @@ int main(void) {
 ```
 
 ```scala run
-class Solution {
-  def longestCommonSubstring(s1: String, s2: String): String = {
-    val (m, n) = (s1.length, s2.length)
-    if (m == 0 || n == 0) return ""
-    val dp = Array.fill(m + 1, n + 1)(0)
-    var bestLen = 0; var bestEnd = 0
-    for (i <- 1 to m; j <- 1 to n) {
-      if (s1(i - 1) == s2(j - 1)) {
-        dp(i)(j) = dp(i - 1)(j - 1) + 1
-        if (dp(i)(j) > bestLen) { bestLen = dp(i)(j); bestEnd = i - 1 }
+object Main extends App {
+  class Solution {
+    def longestCommonSubstring(s1: String, s2: String): String = {
+      val (m, n) = (s1.length, s2.length)
+      if (m == 0 || n == 0) return ""
+      val dp = Array.fill(m + 1, n + 1)(0)
+      var bestLen = 0; var bestEnd = 0
+      for (i <- 1 to m; j <- 1 to n) {
+        if (s1(i - 1) == s2(j - 1)) {
+          dp(i)(j) = dp(i - 1)(j - 1) + 1
+          if (dp(i)(j) > bestLen) { bestLen = dp(i)(j); bestEnd = i - 1 }
+        }
       }
+      if (bestLen == 0) "" else s1.substring(bestEnd - bestLen + 1, bestEnd + 1)
     }
-    if (bestLen == 0) "" else s1.substring(bestEnd - bestLen + 1, bestEnd + 1)
   }
+
+  println(new Solution().longestCommonSubstring("abcdefgh", "bxcdelx"))   // cde
 }
 ```
 
