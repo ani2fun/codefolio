@@ -279,20 +279,22 @@ if __name__ == "__main__":
 ```
 
 ```java run
-public class Solution {
-    public int longestIncreasingSubsequence(int[] arr) {
-        int n = arr.length;
-        if (n == 0) return 0;
-        int[] dp = new int[n];
-        java.util.Arrays.fill(dp, 1);
-        int best = 1;
-        for (int i = 1; i < n; i++) {
-            for (int j = 0; j < i; j++) {
-                if (arr[j] < arr[i]) dp[i] = Math.max(dp[i], dp[j] + 1);
+public class Main {
+    static class Solution {
+        public int longestIncreasingSubsequence(int[] arr) {
+            int n = arr.length;
+            if (n == 0) return 0;
+            int[] dp = new int[n];
+            java.util.Arrays.fill(dp, 1);
+            int best = 1;
+            for (int i = 1; i < n; i++) {
+                for (int j = 0; j < i; j++) {
+                    if (arr[j] < arr[i]) dp[i] = Math.max(dp[i], dp[j] + 1);
+                }
+                best = Math.max(best, dp[i]);
             }
-            best = Math.max(best, dp[i]);
+            return best;
         }
-        return best;
     }
 
     public static void main(String[] args) {
@@ -326,23 +328,23 @@ int main(void) {
 ```
 
 ```scala run
-class Solution {
-  def longestIncreasingSubsequence(arr: Array[Int]): Int = {
-    val n = arr.length
-    if (n == 0) return 0
-    val dp = Array.fill(n)(1)
-    var best = 1
-    for (i <- 1 until n) {
-      for (j <- 0 until i) {
-        if (arr(j) < arr(i)) dp(i) = math.max(dp(i), dp(j) + 1)
-      }
-      best = math.max(best, dp(i))
-    }
-    best
-  }
-}
-
 object Main extends App {
+  class Solution {
+    def longestIncreasingSubsequence(arr: Array[Int]): Int = {
+      val n = arr.length
+      if (n == 0) return 0
+      val dp = Array.fill(n)(1)
+      var best = 1
+      for (i <- 1 until n) {
+        for (j <- 0 until i) {
+          if (arr(j) < arr(i)) dp(i) = math.max(dp(i), dp(j) + 1)
+        }
+        best = math.max(best, dp(i))
+      }
+      best
+    }
+  }
+
   println(new Solution().longestIncreasingSubsequence(Array(9, 5, 10, 6, 9, 7, 8)))   // 4
 }
 ```
@@ -576,30 +578,32 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-public class Solution {
-    public List<Integer> largestSumAscending(int[] arr) {
-        int n = arr.length;
-        List<Integer> result = new ArrayList<>();
-        if (n == 0) return result;
-        int[] dp = arr.clone();
-        int[] prev = new int[n];
-        java.util.Arrays.fill(prev, -1);
-        int endIndex = 0;
-        for (int i = 0; i < n; i++) {
-            for (int j = 0; j < i; j++) {
-                if (arr[j] < arr[i] && dp[j] + arr[i] > dp[i]) {
-                    dp[i] = dp[j] + arr[i];
-                    prev[i] = j;
+public class Main {
+    static class Solution {
+        public List<Integer> largestSumAscending(int[] arr) {
+            int n = arr.length;
+            List<Integer> result = new ArrayList<>();
+            if (n == 0) return result;
+            int[] dp = arr.clone();
+            int[] prev = new int[n];
+            java.util.Arrays.fill(prev, -1);
+            int endIndex = 0;
+            for (int i = 0; i < n; i++) {
+                for (int j = 0; j < i; j++) {
+                    if (arr[j] < arr[i] && dp[j] + arr[i] > dp[i]) {
+                        dp[i] = dp[j] + arr[i];
+                        prev[i] = j;
+                    }
                 }
+                if (dp[i] > dp[endIndex]) endIndex = i;
             }
-            if (dp[i] > dp[endIndex]) endIndex = i;
+            while (endIndex != -1) {
+                result.add(arr[endIndex]);
+                endIndex = prev[endIndex];
+            }
+            Collections.reverse(result);
+            return result;
         }
-        while (endIndex != -1) {
-            result.add(arr[endIndex]);
-            endIndex = prev[endIndex];
-        }
-        Collections.reverse(result);
-        return result;
     }
 
     public static void main(String[] args) {
@@ -641,29 +645,29 @@ int main(void) {
 ```
 
 ```scala run
-class Solution {
-  def largestSumAscending(arr: Array[Int]): List[Int] = {
-    val n = arr.length
-    if (n == 0) return Nil
-    val dp = arr.clone()
-    val prev = Array.fill(n)(-1)
-    var endIndex = 0
-    for (i <- 0 until n) {
-      for (j <- 0 until i) {
-        if (arr(j) < arr(i) && dp(j) + arr(i) > dp(i)) {
-          dp(i) = dp(j) + arr(i); prev(i) = j
-        }
-      }
-      if (dp(i) > dp(endIndex)) endIndex = i
-    }
-    val buf = scala.collection.mutable.ListBuffer[Int]()
-    var k = endIndex
-    while (k != -1) { buf.prepend(arr(k)); k = prev(k) }
-    buf.toList
-  }
-}
-
 object Main extends App {
+  class Solution {
+    def largestSumAscending(arr: Array[Int]): List[Int] = {
+      val n = arr.length
+      if (n == 0) return Nil
+      val dp = arr.clone()
+      val prev = Array.fill(n)(-1)
+      var endIndex = 0
+      for (i <- 0 until n) {
+        for (j <- 0 until i) {
+          if (arr(j) < arr(i) && dp(j) + arr(i) > dp(i)) {
+            dp(i) = dp(j) + arr(i); prev(i) = j
+          }
+        }
+        if (dp(i) > dp(endIndex)) endIndex = i
+      }
+      val buf = scala.collection.mutable.ListBuffer[Int]()
+      var k = endIndex
+      while (k != -1) { buf.prepend(arr(k)); k = prev(k) }
+      buf.toList
+    }
+  }
+
   println(new Solution().largestSumAscending(Array(1, 7, 3, 5, 9, 8, 6)))   // List(1, 3, 5, 9)
 }
 ```
