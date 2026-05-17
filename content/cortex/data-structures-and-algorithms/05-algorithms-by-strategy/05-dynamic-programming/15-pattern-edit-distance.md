@@ -171,22 +171,24 @@ if __name__ == "__main__":
 ```
 
 ```java run
-public class Solution {
-    public boolean wildcardMatch(String s, String pattern) {
-        int n = s.length(), m = pattern.length();
-        boolean[][] dp = new boolean[n + 1][m + 1];
-        dp[0][0] = true;
-        for (int j = 1; j <= m; j++) {
-            if (pattern.charAt(j - 1) == '*') dp[0][j] = dp[0][j - 1];
-        }
-        for (int i = 1; i <= n; i++) {
+public class Main {
+    static class Solution {
+        public boolean wildcardMatch(String s, String pattern) {
+            int n = s.length(), m = pattern.length();
+            boolean[][] dp = new boolean[n + 1][m + 1];
+            dp[0][0] = true;
             for (int j = 1; j <= m; j++) {
-                char pc = pattern.charAt(j - 1);
-                if (pc == '?' || pc == s.charAt(i - 1))      dp[i][j] = dp[i - 1][j - 1];
-                else if (pc == '*')                          dp[i][j] = dp[i][j - 1] || dp[i - 1][j];
+                if (pattern.charAt(j - 1) == '*') dp[0][j] = dp[0][j - 1];
             }
+            for (int i = 1; i <= n; i++) {
+                for (int j = 1; j <= m; j++) {
+                    char pc = pattern.charAt(j - 1);
+                    if (pc == '?' || pc == s.charAt(i - 1))      dp[i][j] = dp[i - 1][j - 1];
+                    else if (pc == '*')                          dp[i][j] = dp[i][j - 1] || dp[i - 1][j];
+                }
+            }
+            return dp[n][m];
         }
-        return dp[n][m];
     }
 
     public static void main(String[] args) {
@@ -228,24 +230,24 @@ int main(void) {
 ```
 
 ```scala run
-class Solution {
-  def wildcardMatch(s: String, pattern: String): Boolean = {
-    val n = s.length; val m = pattern.length
-    val dp = Array.fill(n + 1, m + 1)(false)
-    dp(0)(0) = true
-    for (j <- 1 to m) {
-      if (pattern(j - 1) == '*') dp(0)(j) = dp(0)(j - 1)
-    }
-    for (i <- 1 to n; j <- 1 to m) {
-      val pc = pattern(j - 1)
-      if (pc == '?' || pc == s(i - 1)) dp(i)(j) = dp(i - 1)(j - 1)
-      else if (pc == '*')              dp(i)(j) = dp(i)(j - 1) || dp(i - 1)(j)
-    }
-    dp(n)(m)
-  }
-}
-
 object Main extends App {
+  class Solution {
+    def wildcardMatch(s: String, pattern: String): Boolean = {
+      val n = s.length; val m = pattern.length
+      val dp = Array.fill(n + 1, m + 1)(false)
+      dp(0)(0) = true
+      for (j <- 1 to m) {
+        if (pattern(j - 1) == '*') dp(0)(j) = dp(0)(j - 1)
+      }
+      for (i <- 1 to n; j <- 1 to m) {
+        val pc = pattern(j - 1)
+        if (pc == '?' || pc == s(i - 1)) dp(i)(j) = dp(i - 1)(j - 1)
+        else if (pc == '*')              dp(i)(j) = dp(i)(j - 1) || dp(i - 1)(j)
+      }
+      dp(n)(m)
+    }
+  }
+
   println(new Solution().wildcardMatch("abcdef", "abc??f"))   // true
 }
 ```
@@ -361,21 +363,23 @@ if __name__ == "__main__":
 ```
 
 ```java run
-public class Solution {
-    public boolean isInterleave(String s1, String s2, String s3) {
-        int n = s1.length(), m = s2.length();
-        if (n + m != s3.length()) return false;
-        boolean[][] dp = new boolean[n + 1][m + 1];
-        dp[0][0] = true;
-        for (int i = 0; i <= n; i++) {
-            for (int j = 0; j <= m; j++) {
-                if (i > 0 && s1.charAt(i - 1) == s3.charAt(i + j - 1))
-                    dp[i][j] = dp[i][j] || dp[i - 1][j];
-                if (j > 0 && s2.charAt(j - 1) == s3.charAt(i + j - 1))
-                    dp[i][j] = dp[i][j] || dp[i][j - 1];
+public class Main {
+    static class Solution {
+        public boolean isInterleave(String s1, String s2, String s3) {
+            int n = s1.length(), m = s2.length();
+            if (n + m != s3.length()) return false;
+            boolean[][] dp = new boolean[n + 1][m + 1];
+            dp[0][0] = true;
+            for (int i = 0; i <= n; i++) {
+                for (int j = 0; j <= m; j++) {
+                    if (i > 0 && s1.charAt(i - 1) == s3.charAt(i + j - 1))
+                        dp[i][j] = dp[i][j] || dp[i - 1][j];
+                    if (j > 0 && s2.charAt(j - 1) == s3.charAt(i + j - 1))
+                        dp[i][j] = dp[i][j] || dp[i][j - 1];
+                }
             }
+            return dp[n][m];
         }
-        return dp[n][m];
     }
 
     public static void main(String[] args) {
@@ -413,21 +417,21 @@ int main(void) {
 ```
 
 ```scala run
-class Solution {
-  def isInterleave(s1: String, s2: String, s3: String): Boolean = {
-    val (n, m) = (s1.length, s2.length)
-    if (n + m != s3.length) return false
-    val dp = Array.fill(n + 1, m + 1)(false)
-    dp(0)(0) = true
-    for (i <- 0 to n; j <- 0 to m) {
-      if (i > 0 && s1(i - 1) == s3(i + j - 1)) dp(i)(j) = dp(i)(j) || dp(i - 1)(j)
-      if (j > 0 && s2(j - 1) == s3(i + j - 1)) dp(i)(j) = dp(i)(j) || dp(i)(j - 1)
-    }
-    dp(n)(m)
-  }
-}
-
 object Main extends App {
+  class Solution {
+    def isInterleave(s1: String, s2: String, s3: String): Boolean = {
+      val (n, m) = (s1.length, s2.length)
+      if (n + m != s3.length) return false
+      val dp = Array.fill(n + 1, m + 1)(false)
+      dp(0)(0) = true
+      for (i <- 0 to n; j <- 0 to m) {
+        if (i > 0 && s1(i - 1) == s3(i + j - 1)) dp(i)(j) = dp(i)(j) || dp(i - 1)(j)
+        if (j > 0 && s2(j - 1) == s3(i + j - 1)) dp(i)(j) = dp(i)(j) || dp(i)(j - 1)
+      }
+      dp(n)(m)
+    }
+  }
+
   println(new Solution().isInterleave("abc", "def", "adbecf"))   // true
 }
 ```
