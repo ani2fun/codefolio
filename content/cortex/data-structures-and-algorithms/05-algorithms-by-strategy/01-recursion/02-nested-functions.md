@@ -155,21 +155,23 @@ main()
 ```
 
 ```java run
-public class NestedCalls {
-    static void functionC() {
-        // Empty — we're tracing the call stack, not the logic
-    }
+public class Main {
+    static class Solution {
+        static void functionC() {
+            // Empty — we're tracing the call stack, not the logic
+        }
 
-    static void functionB() {
-        functionC();
-    }
+        static void functionB() {
+            functionC();
+        }
 
-    static void functionA() {
-        functionB();
+        static void functionA() {
+            functionB();
+        }
     }
 
     public static void main(String[] args) {
-        functionA();
+        Solution.functionA();
     }
 }
 ```
@@ -194,13 +196,15 @@ int main(void) {
 ```
 
 ```scala run
-object NestedCalls {
-  def functionC(): Unit = ()        // Empty — focus on the stack
+object Main extends App {
+  object Solution {
+    def functionC(): Unit = ()        // Empty — focus on the stack
 
-  def functionB(): Unit = functionC()
-  def functionA(): Unit = functionB()
+    def functionB(): Unit = functionC()
+    def functionA(): Unit = functionB()
+  }
 
-  def main(args: Array[String]): Unit = functionA()
+  Solution.functionA()
 }
 ```
 
@@ -328,15 +332,17 @@ def deep(n: int) -> int:
 ```
 
 ```java run
-public class DeepNesting {
-    static int deep(int n) {
-        if (n == 0) return 0;
-        return deep(n - 1) + 1;     // Each call adds one JVM stack frame
+public class Main {
+    static class Solution {
+        static int deep(int n) {
+            if (n == 0) return 0;
+            return deep(n - 1) + 1;     // Each call adds one JVM stack frame
+        }
     }
 
     public static void main(String[] args) {
         // Default JVM stack ~512 KB; ~10K-30K calls before StackOverflowError.
-        System.out.println(deep(10_000));
+        System.out.println(Solution.deep(10_000));
     }
 }
 ```
@@ -361,15 +367,15 @@ int main(void) {
 // Scala on the JVM. WITHOUT @tailrec the JVM will not optimise this,
 // so each call costs a real frame. Try `import scala.annotation.tailrec`
 // and adding @tailrec — Scala will rewrite tail-recursive calls into a loop.
-object DeepNesting {
-  def deep(n: Int): Int = {
-    if (n == 0) 0
-    else deep(n - 1) + 1   // NOT tail-recursive (we add 1 *after* the call)
+object Main extends App {
+  object Solution {
+    def deep(n: Int): Int = {
+      if (n == 0) 0
+      else deep(n - 1) + 1   // NOT tail-recursive (we add 1 *after* the call)
+    }
   }
 
-  def main(args: Array[String]): Unit = {
-    println(deep(10_000))
-  }
+  println(Solution.deep(10_000))
 }
 ```
 
@@ -421,16 +427,18 @@ def big_local() -> int:
 ```
 
 ```java run
-public class BigLocal {
-    static void bigLocal() {
-        // Java arrays are objects — they live on the heap.
-        // A huge array hits OutOfMemoryError, not StackOverflow.
-        int[] arr = new int[1_000_000_000];
-        System.out.println(arr.length);
+public class Main {
+    static class Solution {
+        static void bigLocal() {
+            // Java arrays are objects — they live on the heap.
+            // A huge array hits OutOfMemoryError, not StackOverflow.
+            int[] arr = new int[1_000_000_000];
+            System.out.println(arr.length);
+        }
     }
 
     public static void main(String[] args) {
-        bigLocal();
+        Solution.bigLocal();
     }
 }
 ```
@@ -455,13 +463,15 @@ int main(void) {
 
 ```scala run
 // Scala arrays are heap-allocated (JVM Array). OOM rather than stack overflow.
-object BigLocal {
-  def bigLocal(): Unit = {
-    val arr = new Array[Int](1000000000)   // Heap; expect OOM
-    println(arr.length)
+object Main extends App {
+  object Solution {
+    def bigLocal(): Unit = {
+      val arr = new Array[Int](1000000000)   // Heap; expect OOM
+      println(arr.length)
+    }
   }
 
-  def main(args: Array[String]): Unit = bigLocal()
+  Solution.bigLocal()
 }
 ```
 
@@ -548,15 +558,17 @@ def chain(n: int) -> int:
 ```
 
 ```java run
-public class Combined {
-    static int chain(int n) {
-        int[] work = new int[10_000];   // Heap (Java arrays are objects)
-        if (n == 0) return 0;
-        return chain(n - 1) + work[0];  // Frames stay small; heap pressure rises
+public class Main {
+    static class Solution {
+        static int chain(int n) {
+            int[] work = new int[10_000];   // Heap (Java arrays are objects)
+            if (n == 0) return 0;
+            return chain(n - 1) + work[0];  // Frames stay small; heap pressure rises
+        }
     }
 
     public static void main(String[] args) {
-        System.out.println(chain(10_000));
+        System.out.println(Solution.chain(10_000));
     }
 }
 ```
@@ -581,16 +593,16 @@ int main(void) {
 ```
 
 ```scala run
-object Combined {
-  def chain(n: Int): Int = {
-    val work = new Array[Int](10000)   // Heap — JVM arrays
-    if (n == 0) 0
-    else chain(n - 1) + work(0)
+object Main extends App {
+  object Solution {
+    def chain(n: Int): Int = {
+      val work = new Array[Int](10000)   // Heap — JVM arrays
+      if (n == 0) 0
+      else chain(n - 1) + work(0)
+    }
   }
 
-  def main(args: Array[String]): Unit = {
-    println(chain(10_000))
-  }
+  println(Solution.chain(10_000))
 }
 ```
 
