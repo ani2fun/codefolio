@@ -210,23 +210,25 @@ if __name__ == "__main__":
 import java.util.ArrayList;
 import java.util.List;
 
-public class Solution {
-    public List<List<Integer>> enumerateAll(int n, int k) {
-        List<List<Integer>> results = new ArrayList<>();
-        List<Integer> state = new ArrayList<>();
-        helper(n, k, state, results);
-        return results;
-    }
-
-    private void helper(int n, int k, List<Integer> state, List<List<Integer>> results) {
-        if (state.size() == n) {
-            results.add(new ArrayList<>(state));   // copy
-            return;
+public class Main {
+    static class Solution {
+        public List<List<Integer>> enumerateAll(int n, int k) {
+            List<List<Integer>> results = new ArrayList<>();
+            List<Integer> state = new ArrayList<>();
+            helper(n, k, state, results);
+            return results;
         }
-        for (int choice = 1; choice <= k; choice++) {
-            state.add(choice);                     // extend
-            helper(n, k, state, results);          // recurse
-            state.remove(state.size() - 1);        // undo
+
+        private void helper(int n, int k, List<Integer> state, List<List<Integer>> results) {
+            if (state.size() == n) {
+                results.add(new ArrayList<>(state));   // copy
+                return;
+            }
+            for (int choice = 1; choice <= k; choice++) {
+                state.add(choice);                     // extend
+                helper(n, k, state, results);          // recurse
+                state.remove(state.size() - 1);        // undo
+            }
         }
     }
 
@@ -276,29 +278,29 @@ int main(void) {
 ```scala run
 import scala.collection.mutable.ArrayBuffer
 
-class Solution {
-  def enumerateAll(n: Int, k: Int): List[List[Int]] = {
-    val results = ArrayBuffer[List[Int]]()
-    val state = ArrayBuffer[Int]()
-    helper(n, k, state, results)
-    results.toList
+object Main extends App {
+  class Solution {
+    def enumerateAll(n: Int, k: Int): List[List[Int]] = {
+      val results = ArrayBuffer[List[Int]]()
+      val state = ArrayBuffer[Int]()
+      helper(n, k, state, results)
+      results.toList
+    }
+
+    private def helper(n: Int, k: Int, state: ArrayBuffer[Int], results: ArrayBuffer[List[Int]]): Unit = {
+      if (state.length == n) {
+        results += state.toList                              // copy
+        return
+      }
+      for (choice <- 1 to k) {
+        state += choice                                       // extend
+        helper(n, k, state, results)                          // recurse
+        state.remove(state.length - 1)                        // undo
+      }
+    }
   }
 
-  private def helper(n: Int, k: Int, state: ArrayBuffer[Int], results: ArrayBuffer[List[Int]]): Unit = {
-    if (state.length == n) {
-      results += state.toList                              // copy
-      return
-    }
-    for (choice <- 1 to k) {
-      state += choice                                       // extend
-      helper(n, k, state, results)                          // recurse
-      state.remove(state.length - 1)                        // undo
-    }
-  }
-}
-
-object Main {
-  def main(args: Array[String]): Unit = println(new Solution().enumerateAll(2, 2))
+  println(new Solution().enumerateAll(2, 2))
 }
 ```
 
@@ -578,25 +580,27 @@ if __name__ == "__main__":
 import java.util.ArrayList;
 import java.util.List;
 
-public class Solution {
-    public List<List<Integer>> uniqueSubsets(int[] arr) {
-        List<List<Integer>> results = new ArrayList<>();
-        List<Integer> current = new ArrayList<>();
-        helper(arr, 0, current, results);
-        return results;
-    }
-
-    private void helper(int[] arr, int index, List<Integer> current, List<List<Integer>> results) {
-        if (index == arr.length) {
-            results.add(new ArrayList<>(current));
-            return;
+public class Main {
+    static class Solution {
+        public List<List<Integer>> uniqueSubsets(int[] arr) {
+            List<List<Integer>> results = new ArrayList<>();
+            List<Integer> current = new ArrayList<>();
+            helper(arr, 0, current, results);
+            return results;
         }
-        // Include
-        current.add(arr[index]);
-        helper(arr, index + 1, current, results);
-        current.remove(current.size() - 1);
-        // Skip
-        helper(arr, index + 1, current, results);
+
+        private void helper(int[] arr, int index, List<Integer> current, List<List<Integer>> results) {
+            if (index == arr.length) {
+                results.add(new ArrayList<>(current));
+                return;
+            }
+            // Include
+            current.add(arr[index]);
+            helper(arr, index + 1, current, results);
+            current.remove(current.size() - 1);
+            // Skip
+            helper(arr, index + 1, current, results);
+        }
     }
 
     public static void main(String[] args) {
@@ -647,28 +651,28 @@ int main(void) {
 ```scala run
 import scala.collection.mutable.ArrayBuffer
 
-class Solution {
-  def uniqueSubsets(arr: Array[Int]): List[List[Int]] = {
-    val results = ArrayBuffer[List[Int]]()
-    val current = ArrayBuffer[Int]()
-    helper(arr, 0, current, results)
-    results.toList
-  }
-
-  private def helper(arr: Array[Int], index: Int, current: ArrayBuffer[Int], results: ArrayBuffer[List[Int]]): Unit = {
-    if (index == arr.length) {
-      results += current.toList
-      return
+object Main extends App {
+  class Solution {
+    def uniqueSubsets(arr: Array[Int]): List[List[Int]] = {
+      val results = ArrayBuffer[List[Int]]()
+      val current = ArrayBuffer[Int]()
+      helper(arr, 0, current, results)
+      results.toList
     }
-    current += arr(index)
-    helper(arr, index + 1, current, results)
-    current.remove(current.length - 1)
-    helper(arr, index + 1, current, results)
-  }
-}
 
-object Main {
-  def main(args: Array[String]): Unit = println(new Solution().uniqueSubsets(Array(1, 2, 3)))
+    private def helper(arr: Array[Int], index: Int, current: ArrayBuffer[Int], results: ArrayBuffer[List[Int]]): Unit = {
+      if (index == arr.length) {
+        results += current.toList
+        return
+      }
+      current += arr(index)
+      helper(arr, index + 1, current, results)
+      current.remove(current.length - 1)
+      helper(arr, index + 1, current, results)
+    }
+  }
+
+  println(new Solution().uniqueSubsets(Array(1, 2, 3)))
 }
 ```
 
@@ -876,30 +880,32 @@ if __name__ == "__main__":
 import java.util.ArrayList;
 import java.util.List;
 
-public class Solution {
-    public List<String> caseTransformations(String s) {
-        List<String> results = new ArrayList<>();
-        StringBuilder current = new StringBuilder();
-        helper(s, 0, current, results);
-        return results;
-    }
-
-    private void helper(String s, int index, StringBuilder current, List<String> results) {
-        if (index == s.length()) {
-            results.add(current.toString());
-            return;
+public class Main {
+    static class Solution {
+        public List<String> caseTransformations(String s) {
+            List<String> results = new ArrayList<>();
+            StringBuilder current = new StringBuilder();
+            helper(s, 0, current, results);
+            return results;
         }
-        char ch = s.charAt(index);
 
-        current.append(ch);
-        helper(s, index + 1, current, results);
-        current.deleteCharAt(current.length() - 1);
+        private void helper(String s, int index, StringBuilder current, List<String> results) {
+            if (index == s.length()) {
+                results.add(current.toString());
+                return;
+            }
+            char ch = s.charAt(index);
 
-        if (Character.isLetter(ch)) {
-            char toggled = Character.isLowerCase(ch) ? Character.toUpperCase(ch) : Character.toLowerCase(ch);
-            current.append(toggled);
+            current.append(ch);
             helper(s, index + 1, current, results);
             current.deleteCharAt(current.length() - 1);
+
+            if (Character.isLetter(ch)) {
+                char toggled = Character.isLowerCase(ch) ? Character.toUpperCase(ch) : Character.toLowerCase(ch);
+                current.append(toggled);
+                helper(s, index + 1, current, results);
+                current.deleteCharAt(current.length() - 1);
+            }
         }
     }
 
@@ -952,35 +958,35 @@ int main(void) {
 ```scala run
 import scala.collection.mutable.ArrayBuffer
 
-class Solution {
-  def caseTransformations(s: String): List[String] = {
-    val results = ArrayBuffer[String]()
-    val current = new StringBuilder
-    helper(s, 0, current, results)
-    results.toList
-  }
-
-  private def helper(s: String, index: Int, current: StringBuilder, results: ArrayBuffer[String]): Unit = {
-    if (index == s.length) {
-      results += current.toString()
-      return
+object Main extends App {
+  class Solution {
+    def caseTransformations(s: String): List[String] = {
+      val results = ArrayBuffer[String]()
+      val current = new StringBuilder
+      helper(s, 0, current, results)
+      results.toList
     }
-    val ch = s.charAt(index)
-    current.append(ch)
-    helper(s, index + 1, current, results)
-    current.deleteCharAt(current.length - 1)
 
-    if (ch.isLetter) {
-      val toggled = if (ch.isLower) ch.toUpper else ch.toLower
-      current.append(toggled)
+    private def helper(s: String, index: Int, current: StringBuilder, results: ArrayBuffer[String]): Unit = {
+      if (index == s.length) {
+        results += current.toString()
+        return
+      }
+      val ch = s.charAt(index)
+      current.append(ch)
       helper(s, index + 1, current, results)
       current.deleteCharAt(current.length - 1)
+
+      if (ch.isLetter) {
+        val toggled = if (ch.isLower) ch.toUpper else ch.toLower
+        current.append(toggled)
+        helper(s, index + 1, current, results)
+        current.deleteCharAt(current.length - 1)
+      }
     }
   }
-}
 
-object Main {
-  def main(args: Array[String]): Unit = println(new Solution().caseTransformations("a1b2"))
+  println(new Solution().caseTransformations("a1b2"))
 }
 ```
 
@@ -1113,23 +1119,25 @@ if __name__ == "__main__":
 import java.util.ArrayList;
 import java.util.List;
 
-public class Solution {
-    public List<List<Integer>> numberSequence(int n, int k) {
-        List<List<Integer>> results = new ArrayList<>();
-        List<Integer> current = new ArrayList<>();
-        helper(n, k, current, results);
-        return results;
-    }
-
-    private void helper(int n, int k, List<Integer> current, List<List<Integer>> results) {
-        if (current.size() == n) {
-            results.add(new ArrayList<>(current));
-            return;
-        }
-        for (int choice = 1; choice <= k; choice++) {
-            current.add(choice);
+public class Main {
+    static class Solution {
+        public List<List<Integer>> numberSequence(int n, int k) {
+            List<List<Integer>> results = new ArrayList<>();
+            List<Integer> current = new ArrayList<>();
             helper(n, k, current, results);
-            current.remove(current.size() - 1);
+            return results;
+        }
+
+        private void helper(int n, int k, List<Integer> current, List<List<Integer>> results) {
+            if (current.size() == n) {
+                results.add(new ArrayList<>(current));
+                return;
+            }
+            for (int choice = 1; choice <= k; choice++) {
+                current.add(choice);
+                helper(n, k, current, results);
+                current.remove(current.size() - 1);
+            }
         }
     }
 
@@ -1178,29 +1186,29 @@ int main(void) {
 ```scala run
 import scala.collection.mutable.ArrayBuffer
 
-class Solution {
-  def numberSequence(n: Int, k: Int): List[List[Int]] = {
-    val results = ArrayBuffer[List[Int]]()
-    val current = ArrayBuffer[Int]()
-    helper(n, k, current, results)
-    results.toList
-  }
-
-  private def helper(n: Int, k: Int, current: ArrayBuffer[Int], results: ArrayBuffer[List[Int]]): Unit = {
-    if (current.length == n) {
-      results += current.toList
-      return
-    }
-    for (choice <- 1 to k) {
-      current += choice
+object Main extends App {
+  class Solution {
+    def numberSequence(n: Int, k: Int): List[List[Int]] = {
+      val results = ArrayBuffer[List[Int]]()
+      val current = ArrayBuffer[Int]()
       helper(n, k, current, results)
-      current.remove(current.length - 1)
+      results.toList
+    }
+
+    private def helper(n: Int, k: Int, current: ArrayBuffer[Int], results: ArrayBuffer[List[Int]]): Unit = {
+      if (current.length == n) {
+        results += current.toList
+        return
+      }
+      for (choice <- 1 to k) {
+        current += choice
+        helper(n, k, current, results)
+        current.remove(current.length - 1)
+      }
     }
   }
-}
 
-object Main {
-  def main(args: Array[String]): Unit = println(new Solution().numberSequence(2, 2))
+  println(new Solution().numberSequence(2, 2))
 }
 ```
 
@@ -1360,27 +1368,29 @@ if __name__ == "__main__":
 import java.util.ArrayList;
 import java.util.List;
 
-public class Solution {
-    private static final String[] PHONE_MAP = {"", "", "abc", "def", "ghi", "jkl", "mno", "pqrs", "tuv", "wxyz"};
+public class Main {
+    static class Solution {
+        private static final String[] PHONE_MAP = {"", "", "abc", "def", "ghi", "jkl", "mno", "pqrs", "tuv", "wxyz"};
 
-    public List<String> phoneCombinations(String digits) {
-        if (digits.isEmpty()) return new ArrayList<>();
-        List<String> results = new ArrayList<>();
-        StringBuilder current = new StringBuilder();
-        helper(digits, 0, current, results);
-        return results;
-    }
-
-    private void helper(String digits, int index, StringBuilder current, List<String> results) {
-        if (index == digits.length()) {
-            results.add(current.toString());
-            return;
+        public List<String> phoneCombinations(String digits) {
+            if (digits.isEmpty()) return new ArrayList<>();
+            List<String> results = new ArrayList<>();
+            StringBuilder current = new StringBuilder();
+            helper(digits, 0, current, results);
+            return results;
         }
-        String letters = PHONE_MAP[digits.charAt(index) - '0'];
-        for (char letter : letters.toCharArray()) {
-            current.append(letter);
-            helper(digits, index + 1, current, results);
-            current.deleteCharAt(current.length() - 1);
+
+        private void helper(String digits, int index, StringBuilder current, List<String> results) {
+            if (index == digits.length()) {
+                results.add(current.toString());
+                return;
+            }
+            String letters = PHONE_MAP[digits.charAt(index) - '0'];
+            for (char letter : letters.toCharArray()) {
+                current.append(letter);
+                helper(digits, index + 1, current, results);
+                current.deleteCharAt(current.length() - 1);
+            }
         }
     }
 
@@ -1427,32 +1437,32 @@ int main(void) {
 ```scala run
 import scala.collection.mutable.ArrayBuffer
 
-class Solution {
-  private val phoneMap = Vector("", "", "abc", "def", "ghi", "jkl", "mno", "pqrs", "tuv", "wxyz")
+object Main extends App {
+  class Solution {
+    private val phoneMap = Vector("", "", "abc", "def", "ghi", "jkl", "mno", "pqrs", "tuv", "wxyz")
 
-  def phoneCombinations(digits: String): List[String] = {
-    if (digits.isEmpty) return List.empty
-    val results = ArrayBuffer[String]()
-    val current = new StringBuilder
-    helper(digits, 0, current, results)
-    results.toList
+    def phoneCombinations(digits: String): List[String] = {
+      if (digits.isEmpty) return List.empty
+      val results = ArrayBuffer[String]()
+      val current = new StringBuilder
+      helper(digits, 0, current, results)
+      results.toList
+    }
+
+    private def helper(digits: String, index: Int, current: StringBuilder, results: ArrayBuffer[String]): Unit = {
+      if (index == digits.length) {
+        results += current.toString()
+        return
+      }
+      for (letter <- phoneMap(digits.charAt(index) - '0')) {
+        current.append(letter)
+        helper(digits, index + 1, current, results)
+        current.deleteCharAt(current.length - 1)
+      }
+    }
   }
 
-  private def helper(digits: String, index: Int, current: StringBuilder, results: ArrayBuffer[String]): Unit = {
-    if (index == digits.length) {
-      results += current.toString()
-      return
-    }
-    for (letter <- phoneMap(digits.charAt(index) - '0')) {
-      current.append(letter)
-      helper(digits, index + 1, current, results)
-      current.deleteCharAt(current.length - 1)
-    }
-  }
-}
-
-object Main {
-  def main(args: Array[String]): Unit = println(new Solution().phoneCombinations("46"))
+  println(new Solution().phoneCombinations("46"))
 }
 ```
 
