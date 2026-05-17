@@ -159,7 +159,7 @@ x = 6            # Even the integer object is on the heap (CPython interns small
 // Java has automatic memory management on the JVM, included here for parity.
 // new int[5] allocates on the heap; the GC will reclaim it when no live
 // reference points at it. We see this fully in the next sub-section.
-public class HeapLowLevel {
+public class Main {
     public static void main(String[] args) {
         int[] arr = new int[5];          // Five-int array on the heap
         Integer x = Integer.valueOf(6);  // Boxed Integer on the heap
@@ -194,12 +194,10 @@ int main(void) {
 ```scala run
 // Scala runs on the JVM. Object creation goes on the heap; GC reclaims.
 // Included here for cross-language parity — Scala has no manual free.
-object HeapLowLevel {
-  def main(args: Array[String]): Unit = {
-    val arr: Array[Int] = new Array[Int](5)   // Five-int array on the JVM heap
-    val x: java.lang.Integer = Integer.valueOf(6)  // Boxed Integer on the heap
-    // The GC will reclaim both when nothing references them.
-  }
+object Main extends App {
+  val arr: Array[Int] = new Array[Int](5)   // Five-int array on the JVM heap
+  val x: java.lang.Integer = Integer.valueOf(6)  // Boxed Integer on the heap
+  // The GC will reclaim both when nothing references them.
 }
 ```
 
@@ -273,7 +271,7 @@ del arr  # The list is unreachable now and will be collected.
 ```
 
 ```java run
-public class HeapHighLevel {
+public class Main {
     public static void main(String[] args) {
         int[] arr = new int[5];               // Heap allocation
         Integer x = Integer.valueOf(6);       // Heap allocation (boxing)
@@ -300,12 +298,10 @@ int main(void) {
 
 ```scala run
 // Scala on the JVM — same GC story as Java.
-object HeapHighLevel {
-  def main(args: Array[String]): Unit = {
-    val arr = new Array[Int](5)
-    val x = Integer.valueOf(6)
-    // GC handles cleanup automatically.
-  }
+object Main extends App {
+  val arr = new Array[Int](5)
+  val x = Integer.valueOf(6)
+  // GC handles cleanup automatically.
 }
 ```
 
@@ -436,16 +432,18 @@ print(total(3, 4))
 ```
 
 ```java run
-public class StackOnly {
-    static int total(int a, int b) {
-        // a, b — parameters on the frame
-        int result = a + b;          // Local on the frame
-        return result;
-        // Frame disappears when total() returns; a, b, result all gone.
+public class Main {
+    static class Solution {
+        static int total(int a, int b) {
+            // a, b — parameters on the frame
+            int result = a + b;          // Local on the frame
+            return result;
+            // Frame disappears when total() returns; a, b, result all gone.
+        }
     }
 
     public static void main(String[] args) {
-        System.out.println(total(3, 4));
+        System.out.println(Solution.total(3, 4));
     }
 }
 ```
@@ -474,15 +472,15 @@ int main(void) {
 // Scala/JVM: parameters + locals are conceptually frame-local.
 // Primitive ints stay on the stack; reference types put the *reference*
 // on the stack and the object on the heap.
-object StackOnly {
-  def total(a: Int, b: Int): Int = {
-    val result = a + b   // Local Int — stack
-    result
+object Main extends App {
+  object Solution {
+    def total(a: Int, b: Int): Int = {
+      val result = a + b   // Local Int — stack
+      result
+    }
   }
 
-  def main(args: Array[String]): Unit = {
-    println(total(3, 4))
-  }
+  println(Solution.total(3, 4))
 }
 ```
 
@@ -693,20 +691,22 @@ print(tick())  # 3
 ```
 
 ```java run
-public class GlobalExample {
+public class Main {
     // Class-level static fields live in the JVM's "method area" /
     // metaspace — Java's flavour of static memory.
-    static int counter = 0;
+    static class Solution {
+        static int counter = 0;
 
-    static int tick() {
-        counter += 1;     // Writes the single shared cell
-        return counter;
+        static int tick() {
+            counter += 1;     // Writes the single shared cell
+            return counter;
+        }
     }
 
     public static void main(String[] args) {
-        System.out.println(tick());  // 1
-        System.out.println(tick());  // 2
-        System.out.println(tick());  // 3
+        System.out.println(Solution.tick());  // 1
+        System.out.println(Solution.tick());  // 2
+        System.out.println(Solution.tick());  // 3
     }
 }
 ```
@@ -734,21 +734,19 @@ int main(void) {
 ```scala run
 // Scala uses `object` for singletons — every field of an object
 // has static-storage semantics on the JVM.
-object Counter {
-  var n: Int = 0
+object Main extends App {
+  object Counter {
+    var n: Int = 0
 
-  def tick(): Int = {
-    n += 1
-    n
+    def tick(): Int = {
+      n += 1
+      n
+    }
   }
-}
 
-object GlobalExample {
-  def main(args: Array[String]): Unit = {
-    println(Counter.tick())  // 1
-    println(Counter.tick())  // 2
-    println(Counter.tick())  // 3
-  }
+  println(Counter.tick())  // 1
+  println(Counter.tick())  // 2
+  println(Counter.tick())  // 3
 }
 ```
 
@@ -816,20 +814,22 @@ print(counter())  # 3
 ```
 
 ```java run
-public class StaticLocal {
+public class Main {
     // Java has no per-function statics, but a class-level static field
     // accessed only from one method is the idiomatic equivalent.
-    private static int n = 0;
+    static class Solution {
+        static int n = 0;
 
-    static int counter() {
-        n += 1;
-        return n;
+        static int counter() {
+            n += 1;
+            return n;
+        }
     }
 
     public static void main(String[] args) {
-        System.out.println(counter());  // 1
-        System.out.println(counter());  // 2
-        System.out.println(counter());  // 3
+        System.out.println(Solution.counter());  // 1
+        System.out.println(Solution.counter());  // 2
+        System.out.println(Solution.counter());  // 3
     }
 }
 ```
@@ -856,20 +856,18 @@ int main(void) {
 ```scala run
 // Scala: a method on an `object` (singleton) has access to that object's
 // fields, which act like statics. There's no per-function static.
-object Counter {
-  private var n: Int = 0
-  def counter(): Int = {
-    n += 1
-    n
+object Main extends App {
+  object Counter {
+    private var n: Int = 0
+    def counter(): Int = {
+      n += 1
+      n
+    }
   }
-}
 
-object StaticLocal {
-  def main(args: Array[String]): Unit = {
-    println(Counter.counter())  // 1
-    println(Counter.counter())  // 2
-    println(Counter.counter())  // 3
-  }
+  println(Counter.counter())  // 1
+  println(Counter.counter())  // 2
+  println(Counter.counter())  // 3
 }
 ```
 
