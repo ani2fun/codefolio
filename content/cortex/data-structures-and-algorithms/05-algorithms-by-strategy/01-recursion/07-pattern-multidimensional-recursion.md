@@ -194,11 +194,13 @@ if __name__ == "__main__":
 ```
 
 ```java run
-public class Solution {
-    public int multiRecursion(int x, int y) {
-        if (x == 0) return 1;          // Left-edge base
-        if (y == 0) return 1;          // Top-edge base
-        return multiRecursion(x - 1, y) + multiRecursion(x, y - 1);
+public class Main {
+    static class Solution {
+        public int multiRecursion(int x, int y) {
+            if (x == 0) return 1;          // Left-edge base
+            if (y == 0) return 1;          // Top-edge base
+            return multiRecursion(x - 1, y) + multiRecursion(x, y - 1);
+        }
     }
 
     public static void main(String[] args) {
@@ -223,18 +225,16 @@ int main(void) {
 ```
 
 ```scala run
-class Solution {
-  def multiRecursion(x: Int, y: Int): Int = {
-    if (x == 0) return 1
-    if (y == 0) return 1
-    multiRecursion(x - 1, y) + multiRecursion(x, y - 1)
+object Main extends App {
+  class Solution {
+    def multiRecursion(x: Int, y: Int): Int = {
+      if (x == 0) return 1
+      if (y == 0) return 1
+      multiRecursion(x - 1, y) + multiRecursion(x, y - 1)
+    }
   }
-}
 
-object Main {
-  def main(args: Array[String]): Unit = {
-    println(new Solution().multiRecursion(3, 3))   // 20
-  }
+  println(new Solution().multiRecursion(3, 3))   // 20
 }
 ```
 
@@ -463,10 +463,12 @@ if __name__ == "__main__":
 ```
 
 ```java run
-public class Solution {
-    public int binomialCoefficient(int n, int k) {
-        if (n == k || k == 0) return 1;
-        return binomialCoefficient(n - 1, k - 1) + binomialCoefficient(n - 1, k);
+public class Main {
+    static class Solution {
+        public int binomialCoefficient(int n, int k) {
+            if (n == k || k == 0) return 1;
+            return binomialCoefficient(n - 1, k - 1) + binomialCoefficient(n - 1, k);
+        }
     }
 
     public static void main(String[] args) {
@@ -490,17 +492,15 @@ int main(void) {
 ```
 
 ```scala run
-class Solution {
-  def binomialCoefficient(n: Int, k: Int): Int = {
-    if (n == k || k == 0) 1
-    else binomialCoefficient(n - 1, k - 1) + binomialCoefficient(n - 1, k)
+object Main extends App {
+  class Solution {
+    def binomialCoefficient(n: Int, k: Int): Int = {
+      if (n == k || k == 0) 1
+      else binomialCoefficient(n - 1, k - 1) + binomialCoefficient(n - 1, k)
+    }
   }
-}
 
-object Main {
-  def main(args: Array[String]): Unit = {
-    println(new Solution().binomialCoefficient(5, 3))   // 10
-  }
+  println(new Solution().binomialCoefficient(5, 3))   // 10
 }
 ```
 
@@ -672,10 +672,12 @@ if __name__ == "__main__":
 ```
 
 ```java run
-public class Solution {
-    public int latticePaths(int rows, int cols) {
-        if (rows == 0 || cols == 0) return 1;
-        return latticePaths(rows - 1, cols) + latticePaths(rows, cols - 1);
+public class Main {
+    static class Solution {
+        public int latticePaths(int rows, int cols) {
+            if (rows == 0 || cols == 0) return 1;
+            return latticePaths(rows - 1, cols) + latticePaths(rows, cols - 1);
+        }
     }
 
     public static void main(String[] args) {
@@ -699,17 +701,15 @@ int main(void) {
 ```
 
 ```scala run
-class Solution {
-  def latticePaths(rows: Int, cols: Int): Int = {
-    if (rows == 0 || cols == 0) 1
-    else latticePaths(rows - 1, cols) + latticePaths(rows, cols - 1)
+object Main extends App {
+  class Solution {
+    def latticePaths(rows: Int, cols: Int): Int = {
+      if (rows == 0 || cols == 0) 1
+      else latticePaths(rows - 1, cols) + latticePaths(rows, cols - 1)
+    }
   }
-}
 
-object Main {
-  def main(args: Array[String]): Unit = {
-    println(new Solution().latticePaths(2, 2))   // 6
-  }
+  println(new Solution().latticePaths(2, 2))   // 6
 }
 ```
 
@@ -890,11 +890,13 @@ if __name__ == "__main__":
 ```
 
 ```java run
-public class Solution {
-    public int ackerman(int m, int n) {
-        if (m == 0) return n + 1;
-        if (n == 0) return ackerman(m - 1, 1);
-        return ackerman(m - 1, ackerman(m, n - 1));
+public class Main {
+    static class Solution {
+        public int ackerman(int m, int n) {
+            if (m == 0) return n + 1;
+            if (n == 0) return ackerman(m - 1, 1);
+            return ackerman(m - 1, ackerman(m, n - 1));
+        }
     }
 
     public static void main(String[] args) {
@@ -919,18 +921,16 @@ int main(void) {
 ```
 
 ```scala run
-class Solution {
-  def ackermann(m: Int, n: Int): Int = {
-    if (m == 0) n + 1
-    else if (n == 0) ackermann(m - 1, 1)
-    else ackermann(m - 1, ackermann(m, n - 1))
+object Main extends App {
+  class Solution {
+    def ackermann(m: Int, n: Int): Int = {
+      if (m == 0) n + 1
+      else if (n == 0) ackermann(m - 1, 1)
+      else ackermann(m - 1, ackermann(m, n - 1))
+    }
   }
-}
 
-object Main {
-  def main(args: Array[String]): Unit = {
-    println(new Solution().ackermann(2, 2))   // 7
-  }
+  println(new Solution().ackermann(2, 2))   // 7
 }
 ```
 
@@ -1147,20 +1147,22 @@ if __name__ == "__main__":
 ```
 
 ```java run
-public class Solution {
-    public int eggDrop(int eggs, int floors) {
-        if (floors == 0) return 0;
-        if (floors == 1) return 1;
-        if (eggs == 1) return floors;
+public class Main {
+    static class Solution {
+        public int eggDrop(int eggs, int floors) {
+            if (floors == 0) return 0;
+            if (floors == 1) return 1;
+            if (eggs == 1) return floors;
 
-        int minDrops = Integer.MAX_VALUE;
-        for (int f = 1; f <= floors; f++) {
-            int broke = eggDrop(eggs - 1, f - 1);
-            int survived = eggDrop(eggs, floors - f);
-            int worst = Math.max(broke, survived);
-            minDrops = Math.min(minDrops, worst + 1);
+            int minDrops = Integer.MAX_VALUE;
+            for (int f = 1; f <= floors; f++) {
+                int broke = eggDrop(eggs - 1, f - 1);
+                int survived = eggDrop(eggs, floors - f);
+                int worst = Math.max(broke, survived);
+                minDrops = Math.min(minDrops, worst + 1);
+            }
+            return minDrops;
         }
-        return minDrops;
     }
 
     public static void main(String[] args) {
@@ -1198,27 +1200,25 @@ int main(void) {
 ```
 
 ```scala run
-class Solution {
-  def eggDrop(eggs: Int, floors: Int): Int = {
-    if (floors == 0) return 0
-    if (floors == 1) return 1
-    if (eggs == 1) return floors
+object Main extends App {
+  class Solution {
+    def eggDrop(eggs: Int, floors: Int): Int = {
+      if (floors == 0) return 0
+      if (floors == 1) return 1
+      if (eggs == 1) return floors
 
-    var minDrops = Int.MaxValue
-    for (f <- 1 to floors) {
-      val broke = eggDrop(eggs - 1, f - 1)
-      val survived = eggDrop(eggs, floors - f)
-      val worst = math.max(broke, survived)
-      minDrops = math.min(minDrops, worst + 1)
+      var minDrops = Int.MaxValue
+      for (f <- 1 to floors) {
+        val broke = eggDrop(eggs - 1, f - 1)
+        val survived = eggDrop(eggs, floors - f)
+        val worst = math.max(broke, survived)
+        minDrops = math.min(minDrops, worst + 1)
+      }
+      minDrops
     }
-    minDrops
   }
-}
 
-object Main {
-  def main(args: Array[String]): Unit = {
-    println(new Solution().eggDrop(2, 10))   // 4
-  }
+  println(new Solution().eggDrop(2, 10))   // 4
 }
 ```
 
