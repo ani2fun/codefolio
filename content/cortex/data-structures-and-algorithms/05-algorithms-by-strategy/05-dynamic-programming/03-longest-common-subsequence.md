@@ -259,24 +259,26 @@ if __name__ == "__main__":
 ```java run
 import java.util.Arrays;
 
-public class Solution {
-    public int longestCommonSubsequence(String s1, String s2) {
-        int m = s1.length(), n = s2.length();
-        if (m == 0 || n == 0) return 0;
-        int[][] memo = new int[m][n];
-        for (int[] row : memo) Arrays.fill(row, -1);
-        return lcs(m - 1, n - 1, s1, s2, memo);
-    }
-
-    private int lcs(int i, int j, String s1, String s2, int[][] memo) {
-        if (i < 0 || j < 0) return 0;
-        if (memo[i][j] != -1) return memo[i][j];
-        if (s1.charAt(i) == s2.charAt(j)) {
-            memo[i][j] = 1 + lcs(i - 1, j - 1, s1, s2, memo);
-        } else {
-            memo[i][j] = Math.max(lcs(i - 1, j, s1, s2, memo), lcs(i, j - 1, s1, s2, memo));
+public class Main {
+    static class Solution {
+        public int longestCommonSubsequence(String s1, String s2) {
+            int m = s1.length(), n = s2.length();
+            if (m == 0 || n == 0) return 0;
+            int[][] memo = new int[m][n];
+            for (int[] row : memo) Arrays.fill(row, -1);
+            return lcs(m - 1, n - 1, s1, s2, memo);
         }
-        return memo[i][j];
+
+        private int lcs(int i, int j, String s1, String s2, int[][] memo) {
+            if (i < 0 || j < 0) return 0;
+            if (memo[i][j] != -1) return memo[i][j];
+            if (s1.charAt(i) == s2.charAt(j)) {
+                memo[i][j] = 1 + lcs(i - 1, j - 1, s1, s2, memo);
+            } else {
+                memo[i][j] = Math.max(lcs(i - 1, j, s1, s2, memo), lcs(i, j - 1, s1, s2, memo));
+            }
+            return memo[i][j];
+        }
     }
 
     public static void main(String[] args) {
@@ -318,25 +320,25 @@ int main(void) {
 ```
 
 ```scala run
-class Solution {
-  def longestCommonSubsequence(s1: String, s2: String): Int = {
-    val (m, n) = (s1.length, s2.length)
-    if (m == 0 || n == 0) return 0
-    val memo = Array.fill(m, n)(-1)
-    lcs(m - 1, n - 1, s1, s2, memo)
-  }
-
-  private def lcs(i: Int, j: Int, s1: String, s2: String, memo: Array[Array[Int]]): Int = {
-    if (i < 0 || j < 0) return 0
-    if (memo(i)(j) != -1) return memo(i)(j)
-    memo(i)(j) =
-      if (s1(i) == s2(j)) 1 + lcs(i - 1, j - 1, s1, s2, memo)
-      else math.max(lcs(i - 1, j, s1, s2, memo), lcs(i, j - 1, s1, s2, memo))
-    memo(i)(j)
-  }
-}
-
 object Main extends App {
+  class Solution {
+    def longestCommonSubsequence(s1: String, s2: String): Int = {
+      val (m, n) = (s1.length, s2.length)
+      if (m == 0 || n == 0) return 0
+      val memo = Array.fill(m, n)(-1)
+      lcs(m - 1, n - 1, s1, s2, memo)
+    }
+
+    private def lcs(i: Int, j: Int, s1: String, s2: String, memo: Array[Array[Int]]): Int = {
+      if (i < 0 || j < 0) return 0
+      if (memo(i)(j) != -1) return memo(i)(j)
+      memo(i)(j) =
+        if (s1(i) == s2(j)) 1 + lcs(i - 1, j - 1, s1, s2, memo)
+        else math.max(lcs(i - 1, j, s1, s2, memo), lcs(i, j - 1, s1, s2, memo))
+      memo(i)(j)
+    }
+  }
+
   println(new Solution().longestCommonSubsequence("abcdefgh", "bxclf"))   // 3
 }
 ```
@@ -508,18 +510,20 @@ if __name__ == "__main__":
 ```
 
 ```java run
-public class Solution {
-    public int longestCommonSubsequence(String s1, String s2) {
-        int m = s1.length(), n = s2.length();
-        if (m == 0 || n == 0) return 0;
-        int[][] dp = new int[m + 1][n + 1];
-        for (int i = 1; i <= m; i++) {
-            for (int j = 1; j <= n; j++) {
-                if (s1.charAt(i - 1) == s2.charAt(j - 1)) dp[i][j] = dp[i - 1][j - 1] + 1;
-                else dp[i][j] = Math.max(dp[i - 1][j], dp[i][j - 1]);
+public class Main {
+    static class Solution {
+        public int longestCommonSubsequence(String s1, String s2) {
+            int m = s1.length(), n = s2.length();
+            if (m == 0 || n == 0) return 0;
+            int[][] dp = new int[m + 1][n + 1];
+            for (int i = 1; i <= m; i++) {
+                for (int j = 1; j <= n; j++) {
+                    if (s1.charAt(i - 1) == s2.charAt(j - 1)) dp[i][j] = dp[i - 1][j - 1] + 1;
+                    else dp[i][j] = Math.max(dp[i - 1][j], dp[i][j - 1]);
+                }
             }
+            return dp[m][n];
         }
-        return dp[m][n];
     }
 
     public static void main(String[] args) {
@@ -554,20 +558,20 @@ int main(void) {
 ```
 
 ```scala run
-class Solution {
-  def longestCommonSubsequence(s1: String, s2: String): Int = {
-    val (m, n) = (s1.length, s2.length)
-    if (m == 0 || n == 0) return 0
-    val dp = Array.fill(m + 1, n + 1)(0)
-    for (i <- 1 to m; j <- 1 to n) {
-      if (s1(i - 1) == s2(j - 1)) dp(i)(j) = dp(i - 1)(j - 1) + 1
-      else dp(i)(j) = math.max(dp(i - 1)(j), dp(i)(j - 1))
-    }
-    dp(m)(n)
-  }
-}
-
 object Main extends App {
+  class Solution {
+    def longestCommonSubsequence(s1: String, s2: String): Int = {
+      val (m, n) = (s1.length, s2.length)
+      if (m == 0 || n == 0) return 0
+      val dp = Array.fill(m + 1, n + 1)(0)
+      for (i <- 1 to m; j <- 1 to n) {
+        if (s1(i - 1) == s2(j - 1)) dp(i)(j) = dp(i - 1)(j - 1) + 1
+        else dp(i)(j) = math.max(dp(i - 1)(j), dp(i)(j - 1))
+      }
+      dp(m)(n)
+    }
+  }
+
   println(new Solution().longestCommonSubsequence("abcdefgh", "bxclf"))   // 3
 }
 ```
@@ -769,33 +773,41 @@ if __name__ == "__main__":
 ```java run
 import java.util.*;
 
-public class Solution {
-    public List<String> allLongestCommonSubsequences(String s1, String s2) {
-        int m = s1.length(), n = s2.length();
-        if (m == 0 || n == 0) return new ArrayList<>();
-        int[][] dp = new int[m + 1][n + 1];
-        for (int i = 1; i <= m; i++) {
-            for (int j = 1; j <= n; j++) {
-                if (s1.charAt(i - 1) == s2.charAt(j - 1)) dp[i][j] = dp[i - 1][j - 1] + 1;
-                else dp[i][j] = Math.max(dp[i - 1][j], dp[i][j - 1]);
+public class Main {
+    static class Solution {
+        public List<String> allLongestCommonSubsequences(String s1, String s2) {
+            int m = s1.length(), n = s2.length();
+            if (m == 0 || n == 0) return new ArrayList<>();
+            int[][] dp = new int[m + 1][n + 1];
+            for (int i = 1; i <= m; i++) {
+                for (int j = 1; j <= n; j++) {
+                    if (s1.charAt(i - 1) == s2.charAt(j - 1)) dp[i][j] = dp[i - 1][j - 1] + 1;
+                    else dp[i][j] = Math.max(dp[i - 1][j], dp[i][j - 1]);
+                }
+            }
+            Set<String> results = new HashSet<>();
+            StringBuilder current = new StringBuilder();
+            backtrack(dp, s1, s2, m, n, current, results);
+            return new ArrayList<>(results);
+        }
+
+        private void backtrack(int[][] dp, String s1, String s2, int i, int j, StringBuilder cur, Set<String> res) {
+            if (i == 0 || j == 0) { res.add(cur.reverse().toString()); cur.reverse(); return; }
+            if (s1.charAt(i - 1) == s2.charAt(j - 1)) {
+                cur.append(s1.charAt(i - 1));
+                backtrack(dp, s1, s2, i - 1, j - 1, cur, res);
+                cur.deleteCharAt(cur.length() - 1);
+            } else {
+                if (dp[i - 1][j] >= dp[i][j - 1]) backtrack(dp, s1, s2, i - 1, j, cur, res);
+                if (dp[i][j - 1] >= dp[i - 1][j]) backtrack(dp, s1, s2, i, j - 1, cur, res);
             }
         }
-        Set<String> results = new HashSet<>();
-        StringBuilder current = new StringBuilder();
-        backtrack(dp, s1, s2, m, n, current, results);
-        return new ArrayList<>(results);
     }
 
-    private void backtrack(int[][] dp, String s1, String s2, int i, int j, StringBuilder cur, Set<String> res) {
-        if (i == 0 || j == 0) { res.add(cur.reverse().toString()); cur.reverse(); return; }
-        if (s1.charAt(i - 1) == s2.charAt(j - 1)) {
-            cur.append(s1.charAt(i - 1));
-            backtrack(dp, s1, s2, i - 1, j - 1, cur, res);
-            cur.deleteCharAt(cur.length() - 1);
-        } else {
-            if (dp[i - 1][j] >= dp[i][j - 1]) backtrack(dp, s1, s2, i - 1, j, cur, res);
-            if (dp[i][j - 1] >= dp[i - 1][j]) backtrack(dp, s1, s2, i, j - 1, cur, res);
-        }
+    public static void main(String[] args) {
+        List<String> r = new Solution().allLongestCommonSubsequences("xyzabc", "xzlfcb");
+        Collections.sort(r);
+        System.out.println(r);   // [xzb, xzc]
     }
 }
 ```
@@ -829,27 +841,31 @@ void backtrack(const char *s1, const char *s2, int i, int j, char *cur, int len)
 ```
 
 ```scala run
-class Solution {
-  def allLongestCommonSubsequences(s1: String, s2: String): List[String] = {
-    val (m, n) = (s1.length, s2.length)
-    if (m == 0 || n == 0) return Nil
-    val dp = Array.fill(m + 1, n + 1)(0)
-    for (i <- 1 to m; j <- 1 to n) {
-      dp(i)(j) = if (s1(i - 1) == s2(j - 1)) dp(i - 1)(j - 1) + 1
-                 else math.max(dp(i - 1)(j), dp(i)(j - 1))
-    }
-    val results = scala.collection.mutable.HashSet[String]()
-    def backtrack(i: Int, j: Int, cur: String): Unit = {
-      if (i == 0 || j == 0) { results += cur.reverse; return }
-      if (s1(i - 1) == s2(j - 1)) backtrack(i - 1, j - 1, cur + s1(i - 1))
-      else {
-        if (dp(i - 1)(j) >= dp(i)(j - 1)) backtrack(i - 1, j, cur)
-        if (dp(i)(j - 1) >= dp(i - 1)(j)) backtrack(i, j - 1, cur)
+object Main extends App {
+  class Solution {
+    def allLongestCommonSubsequences(s1: String, s2: String): List[String] = {
+      val (m, n) = (s1.length, s2.length)
+      if (m == 0 || n == 0) return Nil
+      val dp = Array.fill(m + 1, n + 1)(0)
+      for (i <- 1 to m; j <- 1 to n) {
+        dp(i)(j) = if (s1(i - 1) == s2(j - 1)) dp(i - 1)(j - 1) + 1
+                   else math.max(dp(i - 1)(j), dp(i)(j - 1))
       }
+      val results = scala.collection.mutable.HashSet[String]()
+      def backtrack(i: Int, j: Int, cur: String): Unit = {
+        if (i == 0 || j == 0) { results += cur.reverse; return }
+        if (s1(i - 1) == s2(j - 1)) backtrack(i - 1, j - 1, cur + s1(i - 1))
+        else {
+          if (dp(i - 1)(j) >= dp(i)(j - 1)) backtrack(i - 1, j, cur)
+          if (dp(i)(j - 1) >= dp(i - 1)(j)) backtrack(i, j - 1, cur)
+        }
+      }
+      backtrack(m, n, "")
+      results.toList
     }
-    backtrack(m, n, "")
-    results.toList
   }
+
+  println(new Solution().allLongestCommonSubsequences("xyzabc", "xzlfcb").sorted)   // List(xzb, xzc)
 }
 ```
 
