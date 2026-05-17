@@ -365,7 +365,7 @@ if __name__ == "__main__":
 ```
 
 ```java run
-class Solution {
+public class Main {
     static final int T = 3;
 
     static class BNode {
@@ -437,7 +437,7 @@ class Solution {
     }
 
     public static void main(String[] args) {
-        Solution t = new Solution();
+        Main t = new Main();
         for (int i = 1; i <= 100; i++) t.insert(i);
         System.out.println("inserted 100 keys; height = " + t.height());
         System.out.println("search 42 -> " + t.search(42, t.root));
@@ -526,7 +526,7 @@ int main(void) {
 ```
 
 ```scala run
-object Solution {
+object Main extends App {
   val T = 3
 
   class BNode(var leaf: Boolean = true) {
@@ -585,10 +585,8 @@ object Solution {
     insertNonfull(root, key)
   }
 
-  def main(args: Array[String]): Unit = {
-    for (k <- 1 to 100) insert(k)
-    println(s"search 42 -> ${search(42)}    search 999 -> ${search(999)}")
-  }
+  for (k <- 1 to 100) insert(k)
+  println(s"search 42 -> ${search(42)}    search 999 -> ${search(999)}")
 }
 ```
 

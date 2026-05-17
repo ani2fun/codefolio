@@ -233,14 +233,25 @@ void sum_of_path(TreeNode *root) { sum_of_path_helper(root, 0); }
 ```
 
 ```scala run
-def sumOfPath(root: TreeNode): Unit = {
-  def go(n: TreeNode, acc: Int): Unit = {
-    if (n == null) return
-    n.value += acc
-    go(n.left,  n.value)
-    go(n.right, n.value)
+class TreeNode(var value: Int, var left: TreeNode = null, var right: TreeNode = null)
+
+object Main extends App {
+  class Solution {
+    def sumOfPath(root: TreeNode): Unit = {
+      def go(n: TreeNode, acc: Int): Unit = {
+        if (n == null) return
+        n.value += acc
+        go(n.left,  n.value)
+        go(n.right, n.value)
+      }
+      go(root, 0)
+    }
   }
-  go(root, 0)
+
+  val root = new TreeNode(1, new TreeNode(2, new TreeNode(4)), new TreeNode(3, null, new TreeNode(7)))
+  new Solution().sumOfPath(root)
+  println(s"${root.value} ${root.left.value} ${root.left.left.value} ${root.right.value} ${root.right.right.value}")
+  // 1 3 4 7 11
 }
 ```
 
@@ -301,14 +312,25 @@ void depth_assignment(TreeNode *root) { depth_assignment_helper(root, 0); }
 ```
 
 ```scala run
-def depthAssignment(root: TreeNode): Unit = {
-  def go(n: TreeNode, d: Int): Unit = {
-    if (n == null) return
-    n.value = d
-    go(n.left,  d + 1)
-    go(n.right, d + 1)
+class TreeNode(var value: Int, var left: TreeNode = null, var right: TreeNode = null)
+
+object Main extends App {
+  class Solution {
+    def depthAssignment(root: TreeNode): Unit = {
+      def go(n: TreeNode, d: Int): Unit = {
+        if (n == null) return
+        n.value = d
+        go(n.left,  d + 1)
+        go(n.right, d + 1)
+      }
+      go(root, 0)
+    }
   }
-  go(root, 0)
+
+  val root = new TreeNode(1, new TreeNode(2, new TreeNode(4)), new TreeNode(3, null, new TreeNode(7)))
+  new Solution().depthAssignment(root)
+  println(s"${root.value} ${root.left.value} ${root.left.left.value} ${root.right.value} ${root.right.right.value}")
+  // 0 1 2 1 2
 }
 ```
 
@@ -418,15 +440,26 @@ void concatenated_path(TreeNode *root) { concatenated_path_helper(root, 0); }
 ```
 
 ```scala run
-def concatenatedPath(root: TreeNode): Unit = {
-  def digits(x: Int): Int = if (x == 0) 1 else x.toString.length
-  def go(n: TreeNode, acc: Int): Unit = {
-    if (n == null) return
-    n.value = acc * math.pow(10, digits(n.value)).toInt + n.value
-    go(n.left,  n.value)
-    go(n.right, n.value)
+class TreeNode(var value: Int, var left: TreeNode = null, var right: TreeNode = null)
+
+object Main extends App {
+  class Solution {
+    def concatenatedPath(root: TreeNode): Unit = {
+      def digits(x: Int): Int = if (x == 0) 1 else x.toString.length
+      def go(n: TreeNode, acc: Int): Unit = {
+        if (n == null) return
+        n.value = acc * math.pow(10, digits(n.value)).toInt + n.value
+        go(n.left,  n.value)
+        go(n.right, n.value)
+      }
+      go(root, 0)
+    }
   }
-  go(root, 0)
+
+  val root = new TreeNode(1, new TreeNode(2, new TreeNode(4)), new TreeNode(3, null, new TreeNode(7)))
+  new Solution().concatenatedPath(root)
+  println(s"${root.value} ${root.left.value} ${root.left.left.value} ${root.right.value} ${root.right.right.value}")
+  // 1 12 124 13 137
 }
 ```
 
@@ -539,20 +572,31 @@ void increasing_path(TreeNode *root) {
 ```
 
 ```scala run
-def increasingPath(root: TreeNode): Unit = {
-  def go(n: TreeNode, prev: Int, ok: Boolean): Unit = {
-    if (n == null) return
-    val cur = n.value
-    val ok2 = ok && (prev < cur)
-    n.value = if (ok2) 1 else 0
-    go(n.left,  cur, ok2)
-    go(n.right, cur, ok2)
+class TreeNode(var value: Int, var left: TreeNode = null, var right: TreeNode = null)
+
+object Main extends App {
+  class Solution {
+    def increasingPath(root: TreeNode): Unit = {
+      def go(n: TreeNode, prev: Int, ok: Boolean): Unit = {
+        if (n == null) return
+        val cur = n.value
+        val ok2 = ok && (prev < cur)
+        n.value = if (ok2) 1 else 0
+        go(n.left,  cur, ok2)
+        go(n.right, cur, ok2)
+      }
+      if (root == null) return
+      val cur = root.value
+      root.value = 1
+      go(root.left,  cur, true)
+      go(root.right, cur, true)
+    }
   }
-  if (root == null) return
-  val cur = root.value
-  root.value = 1
-  go(root.left,  cur, true)
-  go(root.right, cur, true)
+
+  val root = new TreeNode(1, new TreeNode(8), new TreeNode(4, new TreeNode(2), new TreeNode(7)))
+  new Solution().increasingPath(root)
+  println(s"${root.value} ${root.left.value} ${root.right.value} ${root.right.left.value} ${root.right.right.value}")
+  // 1 1 1 0 1
 }
 ```
 

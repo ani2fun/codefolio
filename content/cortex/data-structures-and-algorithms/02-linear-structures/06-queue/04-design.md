@@ -277,33 +277,33 @@ int main() {
 ```scala run
 import scala.collection.mutable
 
-class Queue(val capacity: Int) {
-  private val inStack  = mutable.Stack[Int]()
-  private val outStack = mutable.Stack[Int]()
-  private var backVal  = -1
-
-  def size:  Int     = inStack.size + outStack.size
-  def empty: Boolean = size == 0
-  def back:  Int     = if (empty) -1 else backVal
-  def front: Int = {
-    if (empty) return -1
-    if (outStack.isEmpty)
-      while (inStack.nonEmpty) outStack.push(inStack.pop())
-    outStack.top
-  }
-  def enqueue(v: Int): Boolean = {
-    if (size == capacity) return false
-    inStack.push(v); backVal = v; true
-  }
-  def dequeue: Int = {
-    if (empty) return -1
-    if (outStack.isEmpty)
-      while (inStack.nonEmpty) outStack.push(inStack.pop())
-    outStack.pop()
-  }
-}
-
 object Main extends App {
+  class Queue(val capacity: Int) {
+    private val inStack  = mutable.Stack[Int]()
+    private val outStack = mutable.Stack[Int]()
+    private var backVal  = -1
+
+    def size:  Int     = inStack.size + outStack.size
+    def empty: Boolean = size == 0
+    def back:  Int     = if (empty) -1 else backVal
+    def front: Int = {
+      if (empty) return -1
+      if (outStack.isEmpty)
+        while (inStack.nonEmpty) outStack.push(inStack.pop())
+      outStack.top
+    }
+    def enqueue(v: Int): Boolean = {
+      if (size == capacity) return false
+      inStack.push(v); backVal = v; true
+    }
+    def dequeue: Int = {
+      if (empty) return -1
+      if (outStack.isEmpty)
+        while (inStack.nonEmpty) outStack.push(inStack.pop())
+      outStack.pop()
+    }
+  }
+
   val q = new Queue(2)
   println(s"${q.enqueue(2)} ${q.back}")
   println(s"${q.enqueue(3)} ${q.front}")
@@ -549,30 +549,30 @@ int main() {
 ```scala run
 import scala.collection.mutable
 
-class Stack(val capacity: Int) {
-  private var q1 = mutable.Queue[Int]()
-  private var q2 = mutable.Queue[Int]()
-  private var n  = 0
-
-  def size:  Int     = n
-  def empty: Boolean = n == 0
-  def top:   Int     = if (empty) -1 else q1.head
-  def push(v: Int): Boolean = {
-    if (n == capacity) return false
-    q2.enqueue(v)
-    while (q1.nonEmpty) q2.enqueue(q1.dequeue())
-    val t = q1; q1 = q2; q2 = t
-    n += 1
-    true
-  }
-  def pop: Int = {
-    if (empty) return -1
-    n -= 1
-    q1.dequeue()
-  }
-}
-
 object Main extends App {
+  class Stack(val capacity: Int) {
+    private var q1 = mutable.Queue[Int]()
+    private var q2 = mutable.Queue[Int]()
+    private var n  = 0
+
+    def size:  Int     = n
+    def empty: Boolean = n == 0
+    def top:   Int     = if (empty) -1 else q1.head
+    def push(v: Int): Boolean = {
+      if (n == capacity) return false
+      q2.enqueue(v)
+      while (q1.nonEmpty) q2.enqueue(q1.dequeue())
+      val t = q1; q1 = q2; q2 = t
+      n += 1
+      true
+    }
+    def pop: Int = {
+      if (empty) return -1
+      n -= 1
+      q1.dequeue()
+    }
+  }
+
   val s = new Stack(2)
   println(s"${s.push(2)} ${s.push(3)}")
   println(s.top)
@@ -775,23 +775,23 @@ int main() {
 ```scala run
 import scala.collection.mutable
 
-class Stack(val capacity: Int) {
-  private val q = mutable.Queue[Int]()
-
-  def size:  Int     = q.size
-  def empty: Boolean = q.isEmpty
-  def top:   Int     = if (empty) -1 else q.head
-  def push(v: Int): Boolean = {
-    if (q.size == capacity) return false
-    q.enqueue(v)
-    val n = q.size - 1
-    for (_ <- 0 until n) q.enqueue(q.dequeue())
-    true
-  }
-  def pop: Int = if (empty) -1 else q.dequeue()
-}
-
 object Main extends App {
+  class Stack(val capacity: Int) {
+    private val q = mutable.Queue[Int]()
+
+    def size:  Int     = q.size
+    def empty: Boolean = q.isEmpty
+    def top:   Int     = if (empty) -1 else q.head
+    def push(v: Int): Boolean = {
+      if (q.size == capacity) return false
+      q.enqueue(v)
+      val n = q.size - 1
+      for (_ <- 0 until n) q.enqueue(q.dequeue())
+      true
+    }
+    def pop: Int = if (empty) -1 else q.dequeue()
+  }
+
   val s = new Stack(2)
   println(s"${s.push(2)} ${s.push(3)}")
   println(s.top)

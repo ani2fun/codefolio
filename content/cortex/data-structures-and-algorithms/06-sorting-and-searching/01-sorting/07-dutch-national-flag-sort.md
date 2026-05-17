@@ -279,18 +279,20 @@ if __name__ == "__main__":
 ```
 
 ```java run
-public class Solution {
-    public void dutchNationalFlagSort(int[] arr) {
-        int left = 0, mid = 0, right = arr.length - 1;
-        while (mid <= right) {
-            if (arr[mid] == 0) {
-                int t = arr[left]; arr[left] = arr[mid]; arr[mid] = t;
-                left++; mid++;
-            } else if (arr[mid] == 1) {
-                mid++;
-            } else {
-                int t = arr[mid]; arr[mid] = arr[right]; arr[right] = t;
-                right--;
+public class Main {
+    static class Solution {
+        public void dutchNationalFlagSort(int[] arr) {
+            int left = 0, mid = 0, right = arr.length - 1;
+            while (mid <= right) {
+                if (arr[mid] == 0) {
+                    int t = arr[left]; arr[left] = arr[mid]; arr[mid] = t;
+                    left++; mid++;
+                } else if (arr[mid] == 1) {
+                    mid++;
+                } else {
+                    int t = arr[mid]; arr[mid] = arr[right]; arr[right] = t;
+                    right--;
+                }
             }
         }
     }
@@ -333,29 +335,27 @@ int main(void) {
 ```
 
 ```scala run
-class Solution {
-  def dutchNationalFlagSort(arr: Array[Int]): Unit = {
-    var left = 0; var mid = 0; var right = arr.length - 1
-    while (mid <= right) {
-      if (arr(mid) == 0) {
-        val t = arr(left); arr(left) = arr(mid); arr(mid) = t
-        left += 1; mid += 1
-      } else if (arr(mid) == 1) {
-        mid += 1
-      } else {
-        val t = arr(mid); arr(mid) = arr(right); arr(right) = t
-        right -= 1
+object Main extends App {
+  class Solution {
+    def dutchNationalFlagSort(arr: Array[Int]): Unit = {
+      var left = 0; var mid = 0; var right = arr.length - 1
+      while (mid <= right) {
+        if (arr(mid) == 0) {
+          val t = arr(left); arr(left) = arr(mid); arr(mid) = t
+          left += 1; mid += 1
+        } else if (arr(mid) == 1) {
+          mid += 1
+        } else {
+          val t = arr(mid); arr(mid) = arr(right); arr(right) = t
+          right -= 1
+        }
       }
     }
   }
-}
 
-object Main {
-  def main(args: Array[String]): Unit = {
-    val arr = Array(2, 0, 1, 0, 2, 1, 0)
-    new Solution().dutchNationalFlagSort(arr)
-    println(arr.mkString(" "))
-  }
+  val arr = Array(2, 0, 1, 0, 2, 1, 0)
+  new Solution().dutchNationalFlagSort(arr)
+  println(arr.mkString(" "))
 }
 ```
 

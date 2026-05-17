@@ -244,14 +244,25 @@ int is_symmetric(TreeNode *root) { return !root || mirror(root->left, root->righ
 ```
 
 ```scala run
-def isSymmetric(root: TreeNode): Boolean = {
-  def mirror(a: TreeNode, b: TreeNode): Boolean = {
-    if (a == null && b == null) return true
-    if (a == null || b == null) return false
-    if (a.value != b.value)     return false
-    mirror(a.left, b.right) && mirror(a.right, b.left)
+class TreeNode(var value: Int, var left: TreeNode = null, var right: TreeNode = null)
+
+object Main extends App {
+  class Solution {
+    def isSymmetric(root: TreeNode): Boolean = {
+      def mirror(a: TreeNode, b: TreeNode): Boolean = {
+        if (a == null && b == null) return true
+        if (a == null || b == null) return false
+        if (a.value != b.value)     return false
+        mirror(a.left, b.right) && mirror(a.right, b.left)
+      }
+      root == null || mirror(root.left, root.right)
+    }
   }
-  root == null || mirror(root.left, root.right)
+
+  val root = new TreeNode(1,
+    new TreeNode(2, new TreeNode(3), new TreeNode(4)),
+    new TreeNode(2, new TreeNode(4), new TreeNode(3)))
+  println(new Solution().isSymmetric(root))  // true
 }
 ```
 

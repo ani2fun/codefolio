@@ -265,23 +265,25 @@ if __name__ == "__main__":
 ```
 
 ```java run
-public class Solution {
-    public int longestPalindromicSubsequence(String s) {
-        int n = s.length();
-        if (n == 0) return 0;
-        int[][] dp = new int[n][n];
-        for (int i = 0; i < n; i++) dp[i][i] = 1;
-        for (int len = 2; len <= n; len++) {
-            for (int i = 0; i <= n - len; i++) {
-                int j = i + len - 1;
-                if (s.charAt(i) == s.charAt(j)) {
-                    dp[i][j] = (len == 2) ? 2 : dp[i + 1][j - 1] + 2;
-                } else {
-                    dp[i][j] = Math.max(dp[i + 1][j], dp[i][j - 1]);
+public class Main {
+    static class Solution {
+        public int longestPalindromicSubsequence(String s) {
+            int n = s.length();
+            if (n == 0) return 0;
+            int[][] dp = new int[n][n];
+            for (int i = 0; i < n; i++) dp[i][i] = 1;
+            for (int len = 2; len <= n; len++) {
+                for (int i = 0; i <= n - len; i++) {
+                    int j = i + len - 1;
+                    if (s.charAt(i) == s.charAt(j)) {
+                        dp[i][j] = (len == 2) ? 2 : dp[i + 1][j - 1] + 2;
+                    } else {
+                        dp[i][j] = Math.max(dp[i + 1][j], dp[i][j - 1]);
+                    }
                 }
             }
+            return dp[0][n - 1];
         }
-        return dp[0][n - 1];
     }
 
     public static void main(String[] args) {
@@ -322,28 +324,28 @@ int main(void) {
 ```
 
 ```scala run
-class Solution {
-  def longestPalindromicSubsequence(s: String): Int = {
-    val n = s.length
-    if (n == 0) return 0
-    val dp = Array.fill(n, n)(0)
-    for (i <- 0 until n) dp(i)(i) = 1
-    for (len <- 2 to n) {
-      for (i <- 0 to n - len) {
-        val j = i + len - 1
-        dp(i)(j) =
-          if (s(i) == s(j)) {
-            if (len == 2) 2 else dp(i + 1)(j - 1) + 2
-          } else {
-            math.max(dp(i + 1)(j), dp(i)(j - 1))
-          }
-      }
-    }
-    dp(0)(n - 1)
-  }
-}
-
 object Main extends App {
+  class Solution {
+    def longestPalindromicSubsequence(s: String): Int = {
+      val n = s.length
+      if (n == 0) return 0
+      val dp = Array.fill(n, n)(0)
+      for (i <- 0 until n) dp(i)(i) = 1
+      for (len <- 2 to n) {
+        for (i <- 0 to n - len) {
+          val j = i + len - 1
+          dp(i)(j) =
+            if (s(i) == s(j)) {
+              if (len == 2) 2 else dp(i + 1)(j - 1) + 2
+            } else {
+              math.max(dp(i + 1)(j), dp(i)(j - 1))
+            }
+        }
+      }
+      dp(0)(n - 1)
+    }
+  }
+
   println(new Solution().longestPalindromicSubsequence("aacbbdaa"))   // 6
 }
 ```

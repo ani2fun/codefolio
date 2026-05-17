@@ -660,19 +660,48 @@ We apply the fixed sliding window algorithm directly. We initialise `start = 0`,
 
 
 ```pseudocode
-# Sliding window — each element added and removed exactly once. O(n).
-function kSubarrayMaxAverage(arr, k):
+function kSubarrayAverage(arr, k):
     n ← length(arr)
-    start ← 0; end ← 0
-    windowSum ← 0; maxAverage ← −∞
+
+    # to store the starting index of the subarray
+    start ← 0
+
+    # to store the ending index of the subarray
+    end ← 0
+
+    # to store the current subarray sum
+    sum ← 0
+
+    # to store the maximum average
+    maxAverage ← −∞
+
+    # loop through the array
     while end < n:
-        windowSum ← windowSum + arr[end]              # expand
-        if end − start + 1 > k:                       # contract
-            windowSum ← windowSum − arr[start]
+
+        # add the current element to the current subarray sum
+        sum ← sum + arr[end]
+
+        # if the current subarray has more than k elements
+        # then remove elements from the start of the subarray till
+        # the subarray has exactly k elements
+        if end − start + 1 > k:
+
+            # remove the first element from the subarray
+            sum ← sum − arr[start]
+
+            # move the start pointer forward
             start ← start + 1
-        if end − start + 1 = k:                       # process
-            maxAverage ← max(maxAverage, windowSum / k)
+
+        # if the current subarray has exactly k elements
+        # then calculate the average and update the maximum average
+        if end − start + 1 = k:
+
+            # calculate the average and update the maximum average
+            maxAverage ← max(maxAverage, sum / k)
+
+        # move the end pointer forward
         end ← end + 1
+
     return maxAverage
 ```
 
@@ -680,50 +709,110 @@ function kSubarrayMaxAverage(arr, k):
 from typing import List
 
 class Solution:
-    def k_subarray_max_average(self, arr: List[int], k: int) -> float:
+    def k_subarray_average(self, arr: List[int], k: int) -> float:
         n = len(arr)
-        start = end = 0
-        window_sum = 0
-        max_average = float('-inf')
 
+        # to store the starting index of the subarray
+        start: int = 0
+
+        # to store the ending index of the subarray
+        end: int = 0
+
+        # to store the current subarray sum
+        sum: int = 0
+
+        # to store the maximum average
+        max_average = float("-inf")
+
+        # loop through the array
         while end < n:
-            window_sum += arr[end]                          # Step 3.1: extend.
-            if end - start + 1 > k:                         # Step 3.2: trim.
-                window_sum -= arr[start]
+
+            # add the current element to the current subarray sum
+            sum += arr[end]
+
+            # if the current subarray has more than k elements
+            # then remove elements from the start of the subarray till
+            # the subarray has exactly k elements
+            if end - start + 1 > k:
+
+                # remove the first element from the subarray
+                sum -= arr[start]
+
+                # move the start pointer forward
                 start += 1
-            if end - start + 1 == k:                        # Step 3.3: process.
-                max_average = max(max_average, window_sum / k)
-            end += 1                                         # Step 3.4: advance.
+
+            # if the current subarray has exactly k elements
+            # then calculate the average and update the maximum average
+            if end - start + 1 == k:
+
+                # calculate the average and update the maximum average
+                max_average = max(max_average, sum / k)
+
+            # move the end pointer forward
+            end += 1
+
         return max_average
 
 
-print(Solution().k_subarray_max_average([1, 12, -5, -6, 50, 3], 4))  # 12.75
+sol = Solution()
+print(sol.k_subarray_average([1, 12, -5, -6, 50, 3], 4))   # 12.75
 ```
 
 ```java run
 public class Main {
     static class Solution {
-        double kSubarrayMaxAverage(int[] arr, int k) {
-            int n = arr.length, start = 0, end = 0;
-            long windowSum = 0;
+        public double kSubarrayAverage(int[] arr, int k) {
+            int n = arr.length;
+
+            // to store the starting index of the subarray
+            int start = 0;
+
+            // to store the ending index of the subarray
+            int end = 0;
+
+            // to store the current subarray sum
+            int sum = 0;
+
+            // to store the maximum average
             double maxAverage = Double.NEGATIVE_INFINITY;
+
+            // loop through the array
             while (end < n) {
-                windowSum += arr[end];
+
+                // add the current element to the current subarray sum
+                sum += arr[end];
+
+                // if the current subarray has more than k elements
+                // then remove elements from the start of the subarray till
+                // the subarray has exactly k elements
                 if (end - start + 1 > k) {
-                    windowSum -= arr[start];
+
+                    // remove the first element from the subarray
+                    sum -= arr[start];
+
+                    // move the start pointer forward
                     start++;
                 }
+
+                // if the current subarray has exactly k elements
+                // then calculate the average and update the maximum average
                 if (end - start + 1 == k) {
-                    maxAverage = Math.max(maxAverage, windowSum / (double) k);
+
+                    // calculate the average and update the maximum average
+                    maxAverage = Math.max(maxAverage, (double) sum / k);
                 }
+
+                // move the end pointer forward
                 end++;
             }
+
             return maxAverage;
         }
     }
 
     public static void main(String[] args) {
-        System.out.println(new Solution().kSubarrayMaxAverage(new int[]{1, 12, -5, -6, 50, 3}, 4));
+        Solution sol = new Solution();
+        System.out.println(sol.kSubarrayAverage(new int[]{1, 12, -5, -6, 50, 3}, 4));   // 12.75
     }
 }
 ```
@@ -732,28 +821,57 @@ public class Main {
 #include <stdio.h>
 #include <float.h>
 
-double k_subarray_max_average(int* arr, int n, int k) {
-    int start = 0, end = 0;
-    long window_sum = 0;
+double k_subarray_average(int* arr, int n, int k) {
+
+    /* to store the starting index of the subarray */
+    int start = 0;
+
+    /* to store the ending index of the subarray */
+    int end = 0;
+
+    /* to store the current subarray sum */
+    int sum = 0;
+
+    /* to store the maximum average */
     double max_average = -DBL_MAX;
+
+    /* loop through the array */
     while (end < n) {
-        window_sum += arr[end];
+
+        /* add the current element to the current subarray sum */
+        sum += arr[end];
+
+        /* if the current subarray has more than k elements
+         * then remove elements from the start of the subarray till
+         * the subarray has exactly k elements */
         if (end - start + 1 > k) {
-            window_sum -= arr[start];
+
+            /* remove the first element from the subarray */
+            sum -= arr[start];
+
+            /* move the start pointer forward */
             start++;
         }
+
+        /* if the current subarray has exactly k elements
+         * then calculate the average and update the maximum average */
         if (end - start + 1 == k) {
-            double avg = (double) window_sum / k;
+
+            /* calculate the average and update the maximum average */
+            double avg = (double) sum / k;
             if (avg > max_average) max_average = avg;
         }
+
+        /* move the end pointer forward */
         end++;
     }
+
     return max_average;
 }
 
 int main() {
     int arr[] = {1, 12, -5, -6, 50, 3};
-    printf("%.2f\n", k_subarray_max_average(arr, 6, 4));
+    printf("%.2f\n", k_subarray_average(arr, 6, 4));   /* 12.75 */
     return 0;
 }
 ```
@@ -761,28 +879,57 @@ int main() {
 ```scala run
 object Main extends App {
   class Solution {
-    def kSubarrayMaxAverage(arr: Array[Int], k: Int): Double = {
+    def kSubarrayAverage(arr: Array[Int], k: Int): Double = {
       val n = arr.length
+
+      // to store the starting index of the subarray
       var start = 0
+
+      // to store the ending index of the subarray
       var end = 0
-      var windowSum = 0L
+
+      // to store the current subarray sum
+      var sum = 0
+
+      // to store the maximum average
       var maxAverage = Double.NegativeInfinity
+
+      // loop through the array
       while (end < n) {
-        windowSum += arr(end)
+
+        // add the current element to the current subarray sum
+        sum += arr(end)
+
+        // if the current subarray has more than k elements
+        // then remove elements from the start of the subarray till
+        // the subarray has exactly k elements
         if (end - start + 1 > k) {
-          windowSum -= arr(start)
+
+          // remove the first element from the subarray
+          sum -= arr(start)
+
+          // move the start pointer forward
           start += 1
         }
+
+        // if the current subarray has exactly k elements
+        // then calculate the average and update the maximum average
         if (end - start + 1 == k) {
-          maxAverage = math.max(maxAverage, windowSum.toDouble / k)
+
+          // calculate the average and update the maximum average
+          maxAverage = math.max(maxAverage, sum.toDouble / k)
         }
+
+        // move the end pointer forward
         end += 1
       }
+
       maxAverage
     }
   }
 
-  println(new Solution().kSubarrayMaxAverage(Array(1, 12, -5, -6, 50, 3), 4))
+  val sol = new Solution
+  println(sol.kSubarrayAverage(Array(1, 12, -5, -6, 50, 3), 4))   // 12.75
 }
 ```
 

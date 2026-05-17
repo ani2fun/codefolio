@@ -233,19 +233,21 @@ if __name__ == "__main__":
 ```
 
 ```java run
-public class Solution {
-    public void selectionSort(int[] arr) {
-        int n = arr.length;
-        for (int i = 0; i < n - 1; i++) {
-            int minIndex = i;
-            for (int j = i + 1; j < n; j++) {
-                if (arr[j] < arr[minIndex]) {
-                    minIndex = j;
+public class Main {
+    static class Solution {
+        public void selectionSort(int[] arr) {
+            int n = arr.length;
+            for (int i = 0; i < n - 1; i++) {
+                int minIndex = i;
+                for (int j = i + 1; j < n; j++) {
+                    if (arr[j] < arr[minIndex]) {
+                        minIndex = j;
+                    }
                 }
+                int tmp = arr[i];
+                arr[i] = arr[minIndex];
+                arr[minIndex] = tmp;
             }
-            int tmp = arr[i];
-            arr[i] = arr[minIndex];
-            arr[minIndex] = tmp;
         }
     }
 
@@ -284,25 +286,23 @@ int main(void) {
 ```
 
 ```scala run
-class Solution {
-  def selectionSort(arr: Array[Int]): Unit = {
-    val n = arr.length
-    for (i <- 0 until n - 1) {
-      var minIndex = i
-      for (j <- i + 1 until n) {
-        if (arr(j) < arr(minIndex)) minIndex = j
+object Main extends App {
+  class Solution {
+    def selectionSort(arr: Array[Int]): Unit = {
+      val n = arr.length
+      for (i <- 0 until n - 1) {
+        var minIndex = i
+        for (j <- i + 1 until n) {
+          if (arr(j) < arr(minIndex)) minIndex = j
+        }
+        val tmp = arr(i); arr(i) = arr(minIndex); arr(minIndex) = tmp
       }
-      val tmp = arr(i); arr(i) = arr(minIndex); arr(minIndex) = tmp
     }
   }
-}
 
-object Main {
-  def main(args: Array[String]): Unit = {
-    val arr = Array(5, 3, 8, 1, 4)
-    new Solution().selectionSort(arr)
-    println(arr.mkString(" "))
-  }
+  val arr = Array(5, 3, 8, 1, 4)
+  new Solution().selectionSort(arr)
+  println(arr.mkString(" "))
 }
 ```
 
@@ -522,15 +522,17 @@ if __name__ == "__main__":
 ```
 
 ```java run
-public class Solution {
-    public void selectionSort(int[] arr) {
-        int n = arr.length;
-        for (int i = 0; i < n - 1; i++) {
-            int minIndex = i;
-            for (int j = i + 1; j < n; j++) {
-                if (arr[j] < arr[minIndex]) minIndex = j;
+public class Main {
+    static class Solution {
+        public void selectionSort(int[] arr) {
+            int n = arr.length;
+            for (int i = 0; i < n - 1; i++) {
+                int minIndex = i;
+                for (int j = i + 1; j < n; j++) {
+                    if (arr[j] < arr[minIndex]) minIndex = j;
+                }
+                int tmp = arr[i]; arr[i] = arr[minIndex]; arr[minIndex] = tmp;
             }
-            int tmp = arr[i]; arr[i] = arr[minIndex]; arr[minIndex] = tmp;
         }
     }
 
@@ -567,25 +569,23 @@ int main(void) {
 ```
 
 ```scala run
-class Solution {
-  def selectionSort(arr: Array[Int]): Unit = {
-    val n = arr.length
-    for (i <- 0 until n - 1) {
-      var minIndex = i
-      for (j <- i + 1 until n) {
-        if (arr(j) < arr(minIndex)) minIndex = j
+object Main extends App {
+  class Solution {
+    def selectionSort(arr: Array[Int]): Unit = {
+      val n = arr.length
+      for (i <- 0 until n - 1) {
+        var minIndex = i
+        for (j <- i + 1 until n) {
+          if (arr(j) < arr(minIndex)) minIndex = j
+        }
+        val tmp = arr(i); arr(i) = arr(minIndex); arr(minIndex) = tmp
       }
-      val tmp = arr(i); arr(i) = arr(minIndex); arr(minIndex) = tmp
     }
   }
-}
 
-object Main {
-  def main(args: Array[String]): Unit = {
-    val arr = Array(2, 3, 2, 1, 5, 6)
-    new Solution().selectionSort(arr)
-    println(arr.mkString(" "))
-  }
+  val arr = Array(2, 3, 2, 1, 5, 6)
+  new Solution().selectionSort(arr)
+  println(arr.mkString(" "))
 }
 ```
 

@@ -236,15 +236,17 @@ if __name__ == "__main__":
 ```
 
 ```java run
-public class Solution {
-    public void bubbleSort(int[] arr) {
-        int n = arr.length;
-        for (int i = 0; i < n - 1; i++) {
-            for (int j = 0; j < n - i - 1; j++) {
-                if (arr[j] > arr[j + 1]) {
-                    int tmp = arr[j];
-                    arr[j] = arr[j + 1];
-                    arr[j + 1] = tmp;
+public class Main {
+    static class Solution {
+        public void bubbleSort(int[] arr) {
+            int n = arr.length;
+            for (int i = 0; i < n - 1; i++) {
+                for (int j = 0; j < n - i - 1; j++) {
+                    if (arr[j] > arr[j + 1]) {
+                        int tmp = arr[j];
+                        arr[j] = arr[j + 1];
+                        arr[j + 1] = tmp;
+                    }
                 }
             }
         }
@@ -285,25 +287,23 @@ int main(void) {
 ```
 
 ```scala run
-class Solution {
-  def bubbleSort(arr: Array[Int]): Unit = {
-    val n = arr.length
-    for (i <- 0 until n - 1) {
-      for (j <- 0 until n - i - 1) {
-        if (arr(j) > arr(j + 1)) {
-          val tmp = arr(j); arr(j) = arr(j + 1); arr(j + 1) = tmp
+object Main extends App {
+  class Solution {
+    def bubbleSort(arr: Array[Int]): Unit = {
+      val n = arr.length
+      for (i <- 0 until n - 1) {
+        for (j <- 0 until n - i - 1) {
+          if (arr(j) > arr(j + 1)) {
+            val tmp = arr(j); arr(j) = arr(j + 1); arr(j + 1) = tmp
+          }
         }
       }
     }
   }
-}
 
-object Main {
-  def main(args: Array[String]): Unit = {
-    val arr = Array(5, 3, 8, 1, 4)
-    new Solution().bubbleSort(arr)
-    println(arr.mkString(" "))
-  }
+  val arr = Array(5, 3, 8, 1, 4)
+  new Solution().bubbleSort(arr)
+  println(arr.mkString(" "))
 }
 ```
 
@@ -478,20 +478,22 @@ if __name__ == "__main__":
 ```
 
 ```java run
-public class Solution {
-    public void bubbleSort(int[] arr) {
-        int n = arr.length;
-        for (int i = 0; i < n - 1; i++) {
-            boolean swapped = false;
-            for (int j = 0; j < n - i - 1; j++) {
-                if (arr[j] > arr[j + 1]) {
-                    int tmp = arr[j];
-                    arr[j] = arr[j + 1];
-                    arr[j + 1] = tmp;
-                    swapped = true;
+public class Main {
+    static class Solution {
+        public void bubbleSort(int[] arr) {
+            int n = arr.length;
+            for (int i = 0; i < n - 1; i++) {
+                boolean swapped = false;
+                for (int j = 0; j < n - i - 1; j++) {
+                    if (arr[j] > arr[j + 1]) {
+                        int tmp = arr[j];
+                        arr[j] = arr[j + 1];
+                        arr[j + 1] = tmp;
+                        swapped = true;
+                    }
                 }
+                if (!swapped) break;
             }
-            if (!swapped) break;
         }
     }
 
@@ -532,30 +534,28 @@ int main(void) {
 ```
 
 ```scala run
-class Solution {
-  def bubbleSort(arr: Array[Int]): Unit = {
-    val n = arr.length
-    var i = 0
-    while (i < n - 1) {
-      var swapped = false
-      for (j <- 0 until n - i - 1) {
-        if (arr(j) > arr(j + 1)) {
-          val tmp = arr(j); arr(j) = arr(j + 1); arr(j + 1) = tmp
-          swapped = true
+object Main extends App {
+  class Solution {
+    def bubbleSort(arr: Array[Int]): Unit = {
+      val n = arr.length
+      var i = 0
+      while (i < n - 1) {
+        var swapped = false
+        for (j <- 0 until n - i - 1) {
+          if (arr(j) > arr(j + 1)) {
+            val tmp = arr(j); arr(j) = arr(j + 1); arr(j + 1) = tmp
+            swapped = true
+          }
         }
+        if (!swapped) return
+        i += 1
       }
-      if (!swapped) return
-      i += 1
     }
   }
-}
 
-object Main {
-  def main(args: Array[String]): Unit = {
-    val arr = Array(2, 3, 2, 1, 5, 6)
-    new Solution().bubbleSort(arr)
-    println(arr.mkString(" "))
-  }
+  val arr = Array(2, 3, 2, 1, 5, 6)
+  new Solution().bubbleSort(arr)
+  println(arr.mkString(" "))
 }
 ```
 

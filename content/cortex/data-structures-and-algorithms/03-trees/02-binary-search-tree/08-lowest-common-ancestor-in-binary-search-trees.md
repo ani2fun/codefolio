@@ -201,14 +201,27 @@ class Solution:
 ```
 
 ```java run
-class Solution {
-    public TreeNode lowestCommonAncestor(TreeNode root, TreeNode nodeA, TreeNode nodeB) {
-        if (root == null || root == nodeA || root == nodeB) return root;                    // base case
-        if (root.val > nodeA.val && root.val > nodeB.val)
-            return lowestCommonAncestor(root.left,  nodeA, nodeB);                          // both on the left
-        if (root.val < nodeA.val && root.val < nodeB.val)
-            return lowestCommonAncestor(root.right, nodeA, nodeB);                          // both on the right
-        return root;                                                                        // split point
+public class Main {
+    static class TreeNode { int val; TreeNode left, right; TreeNode(int v){val=v;} }
+
+    static class Solution {
+        public TreeNode lowestCommonAncestor(TreeNode root, TreeNode nodeA, TreeNode nodeB) {
+            if (root == null || root == nodeA || root == nodeB) return root;                    // base case
+            if (root.val > nodeA.val && root.val > nodeB.val)
+                return lowestCommonAncestor(root.left,  nodeA, nodeB);                          // both on the left
+            if (root.val < nodeA.val && root.val < nodeB.val)
+                return lowestCommonAncestor(root.right, nodeA, nodeB);                          // both on the right
+            return root;                                                                        // split point
+        }
+    }
+
+    public static void main(String[] args) {
+        TreeNode root = new TreeNode(4);
+        root.left  = new TreeNode(2); root.right = new TreeNode(5);
+        root.left.left  = new TreeNode(1);
+        root.right.right = new TreeNode(7);
+        TreeNode lca = new Solution().lowestCommonAncestor(root, root.left.left, root.right.right);
+        System.out.println(lca.val);  // 4
     }
 }
 ```
@@ -228,15 +241,25 @@ struct TreeNode *lowestCommonAncestor(
 ```
 
 ```scala run
-object Solution {
-  def lowestCommonAncestor(root: TreeNode, nodeA: TreeNode, nodeB: TreeNode): TreeNode = {
-    if (root == null || root == nodeA || root == nodeB) root                                    // base case
-    else if (root.value > nodeA.value && root.value > nodeB.value)
-      lowestCommonAncestor(root.left,  nodeA, nodeB)                                            // both on the left
-    else if (root.value < nodeA.value && root.value < nodeB.value)
-      lowestCommonAncestor(root.right, nodeA, nodeB)                                            // both on the right
-    else root                                                                                    // split point
+class TreeNode(var value: Int, var left: TreeNode = null, var right: TreeNode = null)
+
+object Main extends App {
+  class Solution {
+    def lowestCommonAncestor(root: TreeNode, nodeA: TreeNode, nodeB: TreeNode): TreeNode = {
+      if (root == null || root == nodeA || root == nodeB) root                                    // base case
+      else if (root.value > nodeA.value && root.value > nodeB.value)
+        lowestCommonAncestor(root.left,  nodeA, nodeB)                                            // both on the left
+      else if (root.value < nodeA.value && root.value < nodeB.value)
+        lowestCommonAncestor(root.right, nodeA, nodeB)                                            // both on the right
+      else root                                                                                    // split point
+    }
   }
+
+  val root = new TreeNode(4,
+    new TreeNode(2, new TreeNode(1), null),
+    new TreeNode(5, null, new TreeNode(7)))
+  val lca = new Solution().lowestCommonAncestor(root, root.left.left, root.right.right)
+  println(lca.value)  // 4
 }
 ```
 

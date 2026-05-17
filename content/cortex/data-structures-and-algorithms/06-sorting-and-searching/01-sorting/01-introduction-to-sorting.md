@@ -452,12 +452,14 @@ if __name__ == "__main__":
 ```
 
 ```java run
-public class Solution {
-    public boolean orderCheck(int[] arr) {
-        for (int i = 1; i < arr.length; i++) {
-            if (arr[i] < arr[i - 1]) return false;
+public class Main {
+    static class Solution {
+        public boolean orderCheck(int[] arr) {
+            for (int i = 1; i < arr.length; i++) {
+                if (arr[i] < arr[i - 1]) return false;
+            }
+            return true;
         }
-        return true;
     }
 
     public static void main(String[] args) {
@@ -485,19 +487,17 @@ int main(void) {
 ```
 
 ```scala run
-class Solution {
-  def orderCheck(arr: Array[Int]): Boolean = {
-    for (i <- 1 until arr.length) {
-      if (arr(i) < arr(i - 1)) return false
+object Main extends App {
+  class Solution {
+    def orderCheck(arr: Array[Int]): Boolean = {
+      for (i <- 1 until arr.length) {
+        if (arr(i) < arr(i - 1)) return false
+      }
+      true
     }
-    true
   }
-}
 
-object Main {
-  def main(args: Array[String]): Unit = {
-    println(new Solution().orderCheck(Array(1, 2, 3, 4, 5)))   // true
-  }
+  println(new Solution().orderCheck(Array(1, 2, 3, 4, 5)))   // true
 }
 ```
 

@@ -133,14 +133,26 @@ class Solution:
 ```
 
 ```java run
-class Solution {
-    public TreeNode iterativeSearch(TreeNode root, int target) {
-        while (root != null) {                                              // walk down
-            if (root.val == target) return root;                            // match
-            if (target < root.val) root = root.left;                        // BST rule: left
-            else                   root = root.right;                       //          right
+public class Main {
+    static class TreeNode { int val; TreeNode left, right; TreeNode(int v){val=v;} }
+
+    static class Solution {
+        public TreeNode iterativeSearch(TreeNode root, int target) {
+            while (root != null) {                                              // walk down
+                if (root.val == target) return root;                            // match
+                if (target < root.val) root = root.left;                        // BST rule: left
+                else                   root = root.right;                       //          right
+            }
+            return null;                                                        // not found
         }
-        return null;                                                        // not found
+    }
+
+    public static void main(String[] args) {
+        TreeNode root = new TreeNode(4);
+        root.left  = new TreeNode(2); root.right = new TreeNode(5);
+        root.left.left  = new TreeNode(1); root.left.right = new TreeNode(3);
+        root.right.right = new TreeNode(6);
+        System.out.println(new Solution().iterativeSearch(root, 3).val);  // 3
     }
 }
 ```
@@ -157,15 +169,24 @@ struct TreeNode *iterativeSearch(struct TreeNode *root, int target) {
 ```
 
 ```scala run
-object Solution {
-  def iterativeSearch(root: TreeNode, target: Int): TreeNode = {
-    var cur = root
-    while (cur != null) {                                                   // walk down
-      if (cur.value == target) return cur                                   // match
-      cur = if (target < cur.value) cur.left else cur.right                 // BST rule
+class TreeNode(var value: Int, var left: TreeNode = null, var right: TreeNode = null)
+
+object Main extends App {
+  class Solution {
+    def iterativeSearch(root: TreeNode, target: Int): TreeNode = {
+      var cur = root
+      while (cur != null) {                                                   // walk down
+        if (cur.value == target) return cur                                   // match
+        cur = if (target < cur.value) cur.left else cur.right                 // BST rule
+      }
+      null                                                                     // not found
     }
-    null                                                                     // not found
   }
+
+  val root = new TreeNode(4,
+    new TreeNode(2, new TreeNode(1), new TreeNode(3)),
+    new TreeNode(5, null, new TreeNode(6)))
+  println(new Solution().iterativeSearch(root, 3).value)  // 3
 }
 ```
 
@@ -267,11 +288,23 @@ class Solution:
 ```
 
 ```java run
-class Solution {
-    public TreeNode iterativelyFindMinimum(TreeNode root) {
-        if (root == null) return null;                // empty tree
-        while (root.left != null) root = root.left;   // walk to leftmost
-        return root;
+public class Main {
+    static class TreeNode { int val; TreeNode left, right; TreeNode(int v){val=v;} }
+
+    static class Solution {
+        public TreeNode iterativelyFindMinimum(TreeNode root) {
+            if (root == null) return null;                // empty tree
+            while (root.left != null) root = root.left;   // walk to leftmost
+            return root;
+        }
+    }
+
+    public static void main(String[] args) {
+        TreeNode root = new TreeNode(4);
+        root.left  = new TreeNode(2); root.right = new TreeNode(5);
+        root.left.left  = new TreeNode(1); root.left.right = new TreeNode(3);
+        root.right.right = new TreeNode(6);
+        System.out.println(new Solution().iterativelyFindMinimum(root).val);  // 1
     }
 }
 ```
@@ -285,13 +318,22 @@ struct TreeNode *iterativelyFindMinimum(struct TreeNode *root) {
 ```
 
 ```scala run
-object Solution {
-  def iterativelyFindMinimum(root: TreeNode): TreeNode = {
-    if (root == null) return null                       // empty tree
-    var cur = root
-    while (cur.left != null) cur = cur.left             // walk to leftmost
-    cur
+class TreeNode(var value: Int, var left: TreeNode = null, var right: TreeNode = null)
+
+object Main extends App {
+  class Solution {
+    def iterativelyFindMinimum(root: TreeNode): TreeNode = {
+      if (root == null) return null                       // empty tree
+      var cur = root
+      while (cur.left != null) cur = cur.left             // walk to leftmost
+      cur
+    }
   }
+
+  val root = new TreeNode(4,
+    new TreeNode(2, new TreeNode(1), new TreeNode(3)),
+    new TreeNode(5, null, new TreeNode(6)))
+  println(new Solution().iterativelyFindMinimum(root).value)  // 1
 }
 ```
 
@@ -381,11 +423,23 @@ class Solution:
 ```
 
 ```java run
-class Solution {
-    public TreeNode iterativelyFindMaximum(TreeNode root) {
-        if (root == null) return null;                    // empty tree
-        while (root.right != null) root = root.right;     // walk to rightmost
-        return root;
+public class Main {
+    static class TreeNode { int val; TreeNode left, right; TreeNode(int v){val=v;} }
+
+    static class Solution {
+        public TreeNode iterativelyFindMaximum(TreeNode root) {
+            if (root == null) return null;                    // empty tree
+            while (root.right != null) root = root.right;     // walk to rightmost
+            return root;
+        }
+    }
+
+    public static void main(String[] args) {
+        TreeNode root = new TreeNode(4);
+        root.left  = new TreeNode(2); root.right = new TreeNode(5);
+        root.left.left  = new TreeNode(1); root.left.right = new TreeNode(3);
+        root.right.right = new TreeNode(6);
+        System.out.println(new Solution().iterativelyFindMaximum(root).val);  // 6
     }
 }
 ```
@@ -399,13 +453,22 @@ struct TreeNode *iterativelyFindMaximum(struct TreeNode *root) {
 ```
 
 ```scala run
-object Solution {
-  def iterativelyFindMaximum(root: TreeNode): TreeNode = {
-    if (root == null) return null                           // empty tree
-    var cur = root
-    while (cur.right != null) cur = cur.right               // walk to rightmost
-    cur
+class TreeNode(var value: Int, var left: TreeNode = null, var right: TreeNode = null)
+
+object Main extends App {
+  class Solution {
+    def iterativelyFindMaximum(root: TreeNode): TreeNode = {
+      if (root == null) return null                           // empty tree
+      var cur = root
+      while (cur.right != null) cur = cur.right               // walk to rightmost
+      cur
+    }
   }
+
+  val root = new TreeNode(4,
+    new TreeNode(2, new TreeNode(1), new TreeNode(3)),
+    new TreeNode(5, null, new TreeNode(6)))
+  println(new Solution().iterativelyFindMaximum(root).value)  // 6
 }
 ```
 
@@ -512,21 +575,33 @@ class Solution:
 ```
 
 ```java run
-class Solution {
-    public TreeNode iterativelyFindLowerBound(TreeNode root, int target) {
-        TreeNode lowerBoundNode = null;                                       // best so far
-        while (root != null) {
-            if (target < root.val) {                                          // node ≥ target
-                lowerBoundNode = root;                                        //   candidate
-                root = root.left;                                             //   tighten left
-            } else if (root.val == target) {                                  // exact match
-                lowerBoundNode = root;
-                break;
-            } else {                                                          // node < target
-                root = root.right;                                            //   search right
+public class Main {
+    static class TreeNode { int val; TreeNode left, right; TreeNode(int v){val=v;} }
+
+    static class Solution {
+        public TreeNode iterativelyFindLowerBound(TreeNode root, int target) {
+            TreeNode lowerBoundNode = null;                                       // best so far
+            while (root != null) {
+                if (target < root.val) {                                          // node ≥ target
+                    lowerBoundNode = root;                                        //   candidate
+                    root = root.left;                                             //   tighten left
+                } else if (root.val == target) {                                  // exact match
+                    lowerBoundNode = root;
+                    break;
+                } else {                                                          // node < target
+                    root = root.right;                                            //   search right
+                }
             }
+            return lowerBoundNode;
         }
-        return lowerBoundNode;
+    }
+
+    public static void main(String[] args) {
+        TreeNode root = new TreeNode(4);
+        root.left  = new TreeNode(2); root.right = new TreeNode(5);
+        root.left.left  = new TreeNode(1); root.left.right = new TreeNode(3);
+        root.right.right = new TreeNode(6);
+        System.out.println(new Solution().iterativelyFindLowerBound(root, 3).val);  // 3
     }
 }
 ```
@@ -550,22 +625,31 @@ struct TreeNode *iterativelyFindLowerBound(struct TreeNode *root, int target) {
 ```
 
 ```scala run
-object Solution {
-  def iterativelyFindLowerBound(root: TreeNode, target: Int): TreeNode = {
-    var cur = root
-    var lowerBoundNode: TreeNode = null                                          // best so far
-    var done = false
-    while (cur != null && !done) {
-      if (target < cur.value) {                                                  // node ≥ target
-        lowerBoundNode = cur                                                     //   candidate
-        cur = cur.left                                                           //   tighten
-      } else if (cur.value == target) {                                          // exact match
-        lowerBoundNode = cur
-        done = true
-      } else cur = cur.right                                                     // node < target
+class TreeNode(var value: Int, var left: TreeNode = null, var right: TreeNode = null)
+
+object Main extends App {
+  class Solution {
+    def iterativelyFindLowerBound(root: TreeNode, target: Int): TreeNode = {
+      var cur = root
+      var lowerBoundNode: TreeNode = null                                          // best so far
+      var done = false
+      while (cur != null && !done) {
+        if (target < cur.value) {                                                  // node ≥ target
+          lowerBoundNode = cur                                                     //   candidate
+          cur = cur.left                                                           //   tighten
+        } else if (cur.value == target) {                                          // exact match
+          lowerBoundNode = cur
+          done = true
+        } else cur = cur.right                                                     // node < target
+      }
+      lowerBoundNode
     }
-    lowerBoundNode
   }
+
+  val root = new TreeNode(4,
+    new TreeNode(2, new TreeNode(1), new TreeNode(3)),
+    new TreeNode(5, null, new TreeNode(6)))
+  println(new Solution().iterativelyFindLowerBound(root, 3).value)  // 3
 }
 ```
 
@@ -681,18 +765,30 @@ class Solution:
 ```
 
 ```java run
-class Solution {
-    public TreeNode iterativelyFindUpperBound(TreeNode root, int target) {
-        TreeNode upperBoundNode = null;                                                 // best so far
-        while (root != null) {
-            if (target < root.val) {                                                    // node > target
-                upperBoundNode = root;                                                  //   candidate
-                root = root.left;                                                       //   tighten
-            } else {                                                                    // node ≤ target
-                root = root.right;                                                      //   go right
+public class Main {
+    static class TreeNode { int val; TreeNode left, right; TreeNode(int v){val=v;} }
+
+    static class Solution {
+        public TreeNode iterativelyFindUpperBound(TreeNode root, int target) {
+            TreeNode upperBoundNode = null;                                                 // best so far
+            while (root != null) {
+                if (target < root.val) {                                                    // node > target
+                    upperBoundNode = root;                                                  //   candidate
+                    root = root.left;                                                       //   tighten
+                } else {                                                                    // node ≤ target
+                    root = root.right;                                                      //   go right
+                }
             }
+            return upperBoundNode;
         }
-        return upperBoundNode;
+    }
+
+    public static void main(String[] args) {
+        TreeNode root = new TreeNode(4);
+        root.left  = new TreeNode(2); root.right = new TreeNode(5);
+        root.left.left  = new TreeNode(1); root.left.right = new TreeNode(3);
+        root.right.right = new TreeNode(6);
+        System.out.println(new Solution().iterativelyFindUpperBound(root, 3).val);  // 4
     }
 }
 ```
@@ -713,18 +809,27 @@ struct TreeNode *iterativelyFindUpperBound(struct TreeNode *root, int target) {
 ```
 
 ```scala run
-object Solution {
-  def iterativelyFindUpperBound(root: TreeNode, target: Int): TreeNode = {
-    var cur = root
-    var upperBoundNode: TreeNode = null                                                    // best so far
-    while (cur != null) {
-      if (target < cur.value) {                                                            // node > target
-        upperBoundNode = cur                                                               //   candidate
-        cur = cur.left                                                                     //   tighten
-      } else cur = cur.right                                                               // node ≤ target
+class TreeNode(var value: Int, var left: TreeNode = null, var right: TreeNode = null)
+
+object Main extends App {
+  class Solution {
+    def iterativelyFindUpperBound(root: TreeNode, target: Int): TreeNode = {
+      var cur = root
+      var upperBoundNode: TreeNode = null                                                    // best so far
+      while (cur != null) {
+        if (target < cur.value) {                                                            // node > target
+          upperBoundNode = cur                                                               //   candidate
+          cur = cur.left                                                                     //   tighten
+        } else cur = cur.right                                                               // node ≤ target
+      }
+      upperBoundNode
     }
-    upperBoundNode
   }
+
+  val root = new TreeNode(4,
+    new TreeNode(2, new TreeNode(1), new TreeNode(3)),
+    new TreeNode(5, null, new TreeNode(6)))
+  println(new Solution().iterativelyFindUpperBound(root, 3).value)  // 4
 }
 ```
 
@@ -835,16 +940,28 @@ class Solution:
 ```
 
 ```java run
-class Solution {
-    public int closestValue(TreeNode root, double target) {
-        int closest = root.val;                                          // root is non-null
-        while (root != null) {
-            if (Math.abs(root.val - target) < Math.abs(closest - target)) {
-                closest = root.val;                                      // beat the current best
+public class Main {
+    static class TreeNode { int val; TreeNode left, right; TreeNode(int v){val=v;} }
+
+    static class Solution {
+        public int closestValue(TreeNode root, double target) {
+            int closest = root.val;                                          // root is non-null
+            while (root != null) {
+                if (Math.abs(root.val - target) < Math.abs(closest - target)) {
+                    closest = root.val;                                      // beat the current best
+                }
+                root = (target < root.val) ? root.left : root.right;          // BST descent
             }
-            root = (target < root.val) ? root.left : root.right;          // BST descent
+            return closest;
         }
-        return closest;
+    }
+
+    public static void main(String[] args) {
+        TreeNode root = new TreeNode(4);
+        root.left  = new TreeNode(2); root.right = new TreeNode(6);
+        root.left.left  = new TreeNode(1);
+        root.right.right = new TreeNode(7);
+        System.out.println(new Solution().closestValue(root, 4.63));  // 4
     }
 }
 ```
@@ -864,18 +981,27 @@ int closestValue(struct TreeNode *root, double target) {
 ```
 
 ```scala run
-object Solution {
-  def closestValue(root: TreeNode, target: Double): Int = {
-    var cur = root
-    var closest = root.value                                                  // root non-null
-    while (cur != null) {
-      if (math.abs(cur.value - target) < math.abs(closest - target)) {
-        closest = cur.value                                                   // new best
+class TreeNode(var value: Int, var left: TreeNode = null, var right: TreeNode = null)
+
+object Main extends App {
+  class Solution {
+    def closestValue(root: TreeNode, target: Double): Int = {
+      var cur = root
+      var closest = root.value                                                  // root non-null
+      while (cur != null) {
+        if (math.abs(cur.value - target) < math.abs(closest - target)) {
+          closest = cur.value                                                   // new best
+        }
+        cur = if (target < cur.value) cur.left else cur.right                   // BST descent
       }
-      cur = if (target < cur.value) cur.left else cur.right                   // BST descent
+      closest
     }
-    closest
   }
+
+  val root = new TreeNode(4,
+    new TreeNode(2, new TreeNode(1), null),
+    new TreeNode(6, null, new TreeNode(7)))
+  println(new Solution().closestValue(root, 4.63))  // 4
 }
 ```
 

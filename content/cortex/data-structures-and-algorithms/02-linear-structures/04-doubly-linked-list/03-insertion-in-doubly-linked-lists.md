@@ -132,18 +132,29 @@ class Solution:
 ```
 
 ```java run
-class Solution {
-    public ListNode insertAtBeginning(ListNode head, int data) {
-        ListNode newNode = new ListNode(data);     // 1. Build the new node
-        if (head == null) {                        // Case A: list is empty
-            newNode.next = null;                   //   No neighbours on either side
-            newNode.prev = null;
-            return newNode;
+public class Main {
+    static class ListNode { int val; ListNode prev, next; ListNode(int v){val=v;} }
+
+    static class Solution {
+        public ListNode insertAtBeginning(ListNode head, int data) {
+            ListNode newNode = new ListNode(data);     // 1. Build the new node
+            if (head == null) {                        // Case A: list is empty
+                newNode.next = null;                   //   No neighbours on either side
+                newNode.prev = null;
+                return newNode;
+            }
+            newNode.next = head;                       // 2. New node's next = old head
+            newNode.prev = null;                       // 3. New head has no predecessor
+            head.prev = newNode;                       // 4. Mirror — old head's prev now points back
+            return newNode;                            // 5. Return the new head
         }
-        newNode.next = head;                       // 2. New node's next = old head
-        newNode.prev = null;                       // 3. New head has no predecessor
-        head.prev = newNode;                       // 4. Mirror — old head's prev now points back
-        return newNode;                            // 5. Return the new head
+    }
+
+    public static void main(String[] args) {
+        ListNode n1=new ListNode(5),n2=new ListNode(7); n1.next=n2; n2.prev=n1;
+        ListNode head = new Solution().insertAtBeginning(n1, 6);
+        for (ListNode c=head;c!=null;c=c.next) System.out.print(c.val+" ");
+        // 6 5 7
     }
 }
 ```
@@ -164,19 +175,27 @@ ListNode* insertAtBeginning(ListNode *head, int data) {
 ```
 
 ```scala run
-class Solution {
-  def insertAtBeginning(head: ListNode, data: Int): ListNode = {
-    val newNode = new ListNode(data)
-    if (head == null) {                  // Case A: list is empty
-      newNode.next = null
-      newNode.prev = null
-      return newNode
+class ListNode(var v: Int, var prev: ListNode = null, var next: ListNode = null)
+
+object Main extends App {
+  class Solution {
+    def insertAtBeginning(head: ListNode, data: Int): ListNode = {
+      val newNode = new ListNode(data)
+      if (head == null) {                  // Case A: list is empty
+        newNode.next = null
+        newNode.prev = null
+        return newNode
+      }
+      newNode.next = head                  // 2. New node's next = old head
+      newNode.prev = null                  // 3. New head has no predecessor
+      head.prev    = newNode               // 4. Mirror
+      newNode                              // 5. Return the new head
     }
-    newNode.next = head                  // 2. New node's next = old head
-    newNode.prev = null                  // 3. New head has no predecessor
-    head.prev    = newNode               // 4. Mirror
-    newNode                              // 5. Return the new head
   }
+
+  val n1 = new ListNode(5); val n2 = new ListNode(7); n1.next = n2; n2.prev = n1
+  var head = new Solution().insertAtBeginning(n1, 6)
+  while (head != null) { print(s"${head.v} "); head = head.next }  // 6 5 7
 }
 ```
 
@@ -251,13 +270,25 @@ class Solution:
 ```
 
 ```java run
-class Solution {
-    public ListNode insertAtBeginning(ListNode head, int data) {
-        ListNode newNode = new ListNode(data);
-        if (head == null) return newNode;        // Empty list shortcut
-        newNode.next = head;                     // Link new → old head
-        head.prev    = newNode;                  // Mirror
-        return newNode;
+public class Main {
+    static class ListNode { int val; ListNode prev, next; ListNode(int v){val=v;} }
+
+    static class Solution {
+        public ListNode insertAtBeginning(ListNode head, int data) {
+            ListNode newNode = new ListNode(data);
+            if (head == null) return newNode;        // Empty list shortcut
+            newNode.next = head;                     // Link new → old head
+            head.prev    = newNode;                  // Mirror
+            return newNode;
+        }
+    }
+
+    public static void main(String[] args) {
+        ListNode n1=new ListNode(5),n2=new ListNode(7),n3=new ListNode(3),n4=new ListNode(10);
+        n1.next=n2; n2.prev=n1; n2.next=n3; n3.prev=n2; n3.next=n4; n4.prev=n3;
+        ListNode head = new Solution().insertAtBeginning(n1, 6);
+        for (ListNode c=head;c!=null;c=c.next) System.out.print(c.val+" ");
+        // 6 5 7 3 10
     }
 }
 ```
@@ -273,14 +304,23 @@ ListNode* insertAtBeginning(ListNode *head, int data) {
 ```
 
 ```scala run
-class Solution {
-  def insertAtBeginning(head: ListNode, data: Int): ListNode = {
-    val n = new ListNode(data)
-    if (head == null) return n
-    n.next   = head
-    head.prev = n
-    n
+class ListNode(var v: Int, var prev: ListNode = null, var next: ListNode = null)
+
+object Main extends App {
+  class Solution {
+    def insertAtBeginning(head: ListNode, data: Int): ListNode = {
+      val n = new ListNode(data)
+      if (head == null) return n
+      n.next   = head
+      head.prev = n
+      n
+    }
   }
+
+  val n1 = new ListNode(5); val n2 = new ListNode(7); val n3 = new ListNode(3); val n4 = new ListNode(10)
+  n1.next = n2; n2.prev = n1; n2.next = n3; n3.prev = n2; n3.next = n4; n4.prev = n3
+  var head = new Solution().insertAtBeginning(n1, 6)
+  while (head != null) { print(s"${head.v} "); head = head.next }  // 6 5 7 3 10
 }
 ```
 
@@ -410,18 +450,29 @@ class Solution:
 ```
 
 ```java run
-class Solution {
-    public ListNode insertAtEnd(ListNode tail, int data) {
-        ListNode newNode = new ListNode(data);
-        if (tail == null) {                      // Case A: empty list
-            newNode.next = null;
-            newNode.prev = null;
-            return newNode;
+public class Main {
+    static class ListNode { int val; ListNode prev, next; ListNode(int v){val=v;} }
+
+    static class Solution {
+        public ListNode insertAtEnd(ListNode tail, int data) {
+            ListNode newNode = new ListNode(data);
+            if (tail == null) {                      // Case A: empty list
+                newNode.next = null;
+                newNode.prev = null;
+                return newNode;
+            }
+            tail.next     = newNode;                 // 2. Old tail → new
+            newNode.prev  = tail;                    // 3. Mirror
+            newNode.next  = null;                    // 4. New node is the new tail
+            return newNode;                          // 5. Return the new tail
         }
-        tail.next     = newNode;                 // 2. Old tail → new
-        newNode.prev  = tail;                    // 3. Mirror
-        newNode.next  = null;                    // 4. New node is the new tail
-        return newNode;                          // 5. Return the new tail
+    }
+
+    public static void main(String[] args) {
+        ListNode n1=new ListNode(5),n2=new ListNode(7); n1.next=n2; n2.prev=n1;
+        ListNode tail = new Solution().insertAtEnd(n2, 3);
+        for (ListNode c=n1;c!=null;c=c.next) System.out.print(c.val+" ");
+        // 5 7 3
     }
 }
 ```
@@ -442,15 +493,24 @@ ListNode* insertAtEnd(ListNode *tail, int data) {
 ```
 
 ```scala run
-class Solution {
-  def insertAtEnd(tail: ListNode, data: Int): ListNode = {
-    val n = new ListNode(data)
-    if (tail == null) { n.next = null; n.prev = null; return n }
-    tail.next = n
-    n.prev    = tail
-    n.next    = null
-    n
+class ListNode(var v: Int, var prev: ListNode = null, var next: ListNode = null)
+
+object Main extends App {
+  class Solution {
+    def insertAtEnd(tail: ListNode, data: Int): ListNode = {
+      val n = new ListNode(data)
+      if (tail == null) { n.next = null; n.prev = null; return n }
+      tail.next = n
+      n.prev    = tail
+      n.next    = null
+      n
+    }
   }
+
+  val n1 = new ListNode(5); val n2 = new ListNode(7); n1.next = n2; n2.prev = n1
+  val tail = new Solution().insertAtEnd(n2, 3)
+  var cur = n1
+  while (cur != null) { print(s"${cur.v} "); cur = cur.next }  // 5 7 3
 }
 ```
 
@@ -523,13 +583,26 @@ class Solution:
 ```
 
 ```java run
-class Solution {
-    public ListNode insertAtEnd(ListNode tail, int data) {
-        ListNode n = new ListNode(data);
-        if (tail == null) return n;
-        tail.next = n;
-        n.prev    = tail;
-        return n;
+public class Main {
+    static class ListNode { int val; ListNode prev, next; ListNode(int v){val=v;} }
+
+    static class Solution {
+        public ListNode insertAtEnd(ListNode tail, int data) {
+            ListNode n = new ListNode(data);
+            if (tail == null) return n;
+            tail.next = n;
+            n.prev    = tail;
+            return n;
+        }
+    }
+
+    public static void main(String[] args) {
+        // [5, 7, 3, 10], data=6 -> [5, 7, 3, 10, 6]
+        ListNode n1=new ListNode(5),n2=new ListNode(7),n3=new ListNode(3),n4=new ListNode(10);
+        n1.next=n2; n2.prev=n1; n2.next=n3; n3.prev=n2; n3.next=n4; n4.prev=n3;
+        ListNode tail = new Solution().insertAtEnd(n4, 6);
+        for (ListNode c=n1;c!=null;c=c.next) System.out.print(c.val+" ");
+        // 5 7 3 10 6
     }
 }
 ```
@@ -545,14 +618,25 @@ ListNode* insertAtEnd(ListNode *tail, int data) {
 ```
 
 ```scala run
-class Solution {
-  def insertAtEnd(tail: ListNode, data: Int): ListNode = {
-    val n = new ListNode(data)
-    if (tail == null) return n
-    tail.next = n
-    n.prev    = tail
-    n
+class ListNode(var v: Int, var prev: ListNode = null, var next: ListNode = null)
+
+object Main extends App {
+  class Solution {
+    def insertAtEnd(tail: ListNode, data: Int): ListNode = {
+      val n = new ListNode(data)
+      if (tail == null) return n
+      tail.next = n
+      n.prev    = tail
+      n
+    }
   }
+
+  // [5, 7, 3, 10], data=6 -> [5, 7, 3, 10, 6]
+  val n1 = new ListNode(5); val n2 = new ListNode(7); val n3 = new ListNode(3); val n4 = new ListNode(10)
+  n1.next = n2; n2.prev = n1; n2.next = n3; n3.prev = n2; n3.next = n4; n4.prev = n3
+  val tail = new Solution().insertAtEnd(n4, 6)
+  var cur = n1
+  while (cur != null) { print(s"${cur.v} "); cur = cur.next }  // 5 7 3 10 6
 }
 ```
 
@@ -658,16 +742,27 @@ class Solution:
 ```
 
 ```java run
-class Solution {
-    public void insertAfterTheGivenNode(ListNode node, int data) {
-        if (node == null) return;                    // No anchor → nothing to do
-        ListNode newNode = new ListNode(data);
-        newNode.next = node.next;                    // 2. Successor of new = given's successor
-        newNode.prev = node;                         // 3. Predecessor of new = given
-        node.next    = newNode;                      // 4. Given's successor = new
-        if (newNode.next != null) {                  // 5. Conditional mirror update
-            newNode.next.prev = newNode;
+public class Main {
+    static class ListNode { int val; ListNode prev, next; ListNode(int v){val=v;} }
+
+    static class Solution {
+        public void insertAfterTheGivenNode(ListNode node, int data) {
+            if (node == null) return;                    // No anchor → nothing to do
+            ListNode newNode = new ListNode(data);
+            newNode.next = node.next;                    // 2. Successor of new = given's successor
+            newNode.prev = node;                         // 3. Predecessor of new = given
+            node.next    = newNode;                      // 4. Given's successor = new
+            if (newNode.next != null) {                  // 5. Conditional mirror update
+                newNode.next.prev = newNode;
+            }
         }
+    }
+
+    public static void main(String[] args) {
+        ListNode n1=new ListNode(5),n2=new ListNode(7),n3=new ListNode(3); n1.next=n2; n2.prev=n1; n2.next=n3; n3.prev=n2;
+        new Solution().insertAfterTheGivenNode(n2, 6);
+        for (ListNode c=n1;c!=null;c=c.next) System.out.print(c.val+" ");
+        // 5 7 6 3
     }
 }
 ```
@@ -686,15 +781,25 @@ void insertAfterTheGivenNode(ListNode *node, int data) {
 ```
 
 ```scala run
-class Solution {
-  def insertAfterTheGivenNode(node: ListNode, data: Int): Unit = {
-    if (node == null) return
-    val n = new ListNode(data)
-    n.next   = node.next
-    n.prev   = node
-    node.next = n
-    if (n.next != null) n.next.prev = n
+class ListNode(var v: Int, var prev: ListNode = null, var next: ListNode = null)
+
+object Main extends App {
+  class Solution {
+    def insertAfterTheGivenNode(node: ListNode, data: Int): Unit = {
+      if (node == null) return
+      val n = new ListNode(data)
+      n.next   = node.next
+      n.prev   = node
+      node.next = n
+      if (n.next != null) n.next.prev = n
+    }
   }
+
+  val n1 = new ListNode(5); val n2 = new ListNode(7); val n3 = new ListNode(3)
+  n1.next = n2; n2.prev = n1; n2.next = n3; n3.prev = n2
+  new Solution().insertAfterTheGivenNode(n2, 6)
+  var cur = n1
+  while (cur != null) { print(s"${cur.v} "); cur = cur.next }  // 5 7 6 3
 }
 ```
 
@@ -778,14 +883,27 @@ class Solution:
 ```
 
 ```java run
-class Solution {
-    public void insertAfterTheGivenNode(ListNode node, int data) {
-        if (node == null) return;
-        ListNode n = new ListNode(data);
-        n.next    = node.next;
-        n.prev    = node;
-        node.next = n;
-        if (n.next != null) n.next.prev = n;
+public class Main {
+    static class ListNode { int val; ListNode prev, next; ListNode(int v){val=v;} }
+
+    static class Solution {
+        public void insertAfterTheGivenNode(ListNode node, int data) {
+            if (node == null) return;
+            ListNode n = new ListNode(data);
+            n.next    = node.next;
+            n.prev    = node;
+            node.next = n;
+            if (n.next != null) n.next.prev = n;
+        }
+    }
+
+    public static void main(String[] args) {
+        // [5, 7, 3, 10], node=7, data=6 -> [5, 7, 6, 3, 10]
+        ListNode n1=new ListNode(5),n2=new ListNode(7),n3=new ListNode(3),n4=new ListNode(10);
+        n1.next=n2; n2.prev=n1; n2.next=n3; n3.prev=n2; n3.next=n4; n4.prev=n3;
+        new Solution().insertAfterTheGivenNode(n2, 6);
+        for (ListNode c=n1;c!=null;c=c.next) System.out.print(c.val+" ");
+        // 5 7 6 3 10
     }
 }
 ```
@@ -802,15 +920,26 @@ void insertAfterTheGivenNode(ListNode *node, int data) {
 ```
 
 ```scala run
-class Solution {
-  def insertAfterTheGivenNode(node: ListNode, data: Int): Unit = {
-    if (node == null) return
-    val n = new ListNode(data)
-    n.next    = node.next
-    n.prev    = node
-    node.next = n
-    if (n.next != null) n.next.prev = n
+class ListNode(var v: Int, var prev: ListNode = null, var next: ListNode = null)
+
+object Main extends App {
+  class Solution {
+    def insertAfterTheGivenNode(node: ListNode, data: Int): Unit = {
+      if (node == null) return
+      val n = new ListNode(data)
+      n.next    = node.next
+      n.prev    = node
+      node.next = n
+      if (n.next != null) n.next.prev = n
+    }
   }
+
+  // [5, 7, 3, 10], node=7, data=6 -> [5, 7, 6, 3, 10]
+  val n1 = new ListNode(5); val n2 = new ListNode(7); val n3 = new ListNode(3); val n4 = new ListNode(10)
+  n1.next = n2; n2.prev = n1; n2.next = n3; n3.prev = n2; n3.next = n4; n4.prev = n3
+  new Solution().insertAfterTheGivenNode(n2, 6)
+  var cur = n1
+  while (cur != null) { print(s"${cur.v} "); cur = cur.next }  // 5 7 6 3 10
 }
 ```
 
@@ -983,23 +1112,34 @@ class Solution:
 ```
 
 ```java run
-class Solution {
-    public ListNode insertBeforeTheGivenNode(ListNode head, ListNode node, int data) {
-        if (head == null || node == null) return head;       // Case 1
-        ListNode newNode = new ListNode(data);
-        if (node == head) {                                  // Case 2: given is head
-            newNode.next = head;
-            newNode.prev = null;
-            head.prev    = newNode;
-            return newNode;
+public class Main {
+    static class ListNode { int val; ListNode prev, next; ListNode(int v){val=v;} }
+
+    static class Solution {
+        public ListNode insertBeforeTheGivenNode(ListNode head, ListNode node, int data) {
+            if (head == null || node == null) return head;       // Case 1
+            ListNode newNode = new ListNode(data);
+            if (node == head) {                                  // Case 2: given is head
+                newNode.next = head;
+                newNode.prev = null;
+                head.prev    = newNode;
+                return newNode;
+            }
+            newNode.next = node;                                 // 2. New's next = given
+            newNode.prev = node.prev;                            // 3. New's prev = given.prev (O(1)!)
+            if (newNode.prev != null) {
+                newNode.prev.next = newNode;                     // 4. Predecessor's next = new
+            }
+            node.prev = newNode;                                 // 5. Given's prev = new
+            return head;
         }
-        newNode.next = node;                                 // 2. New's next = given
-        newNode.prev = node.prev;                            // 3. New's prev = given.prev (O(1)!)
-        if (newNode.prev != null) {
-            newNode.prev.next = newNode;                     // 4. Predecessor's next = new
-        }
-        node.prev = newNode;                                 // 5. Given's prev = new
-        return head;
+    }
+
+    public static void main(String[] args) {
+        ListNode n1=new ListNode(5),n2=new ListNode(7),n3=new ListNode(3); n1.next=n2; n2.prev=n1; n2.next=n3; n3.prev=n2;
+        ListNode head = new Solution().insertBeforeTheGivenNode(n1, n2, 6);
+        for (ListNode c=head;c!=null;c=c.next) System.out.print(c.val+" ");
+        // 5 6 7 3
     }
 }
 ```
@@ -1023,22 +1163,31 @@ ListNode* insertBeforeTheGivenNode(ListNode *head, ListNode *node, int data) {
 ```
 
 ```scala run
-class Solution {
-  def insertBeforeTheGivenNode(head: ListNode, node: ListNode, data: Int): ListNode = {
-    if (head == null || node == null) return head
-    val n = new ListNode(data)
-    if (node eq head) {
-      n.next   = head
-      n.prev   = null
-      head.prev = n
-      return n
+class ListNode(var v: Int, var prev: ListNode = null, var next: ListNode = null)
+
+object Main extends App {
+  class Solution {
+    def insertBeforeTheGivenNode(head: ListNode, node: ListNode, data: Int): ListNode = {
+      if (head == null || node == null) return head
+      val n = new ListNode(data)
+      if (node eq head) {
+        n.next   = head
+        n.prev   = null
+        head.prev = n
+        return n
+      }
+      n.next = node
+      n.prev = node.prev
+      if (n.prev != null) n.prev.next = n
+      node.prev = n
+      head
     }
-    n.next = node
-    n.prev = node.prev
-    if (n.prev != null) n.prev.next = n
-    node.prev = n
-    head
   }
+
+  val n1 = new ListNode(5); val n2 = new ListNode(7); val n3 = new ListNode(3)
+  n1.next = n2; n2.prev = n1; n2.next = n3; n3.prev = n2
+  var head = new Solution().insertBeforeTheGivenNode(n1, n2, 6)
+  while (head != null) { print(s"${head.v} "); head = head.next }  // 5 6 7 3
 }
 ```
 
@@ -1128,20 +1277,33 @@ class Solution:
 ```
 
 ```java run
-class Solution {
-    public ListNode insertBeforeTheGivenNode(ListNode head, ListNode node, int data) {
-        if (head == null || node == null) return head;
-        ListNode n = new ListNode(data);
-        if (node == head) {
-            n.next    = head;
-            head.prev = n;
-            return n;
+public class Main {
+    static class ListNode { int val; ListNode prev, next; ListNode(int v){val=v;} }
+
+    static class Solution {
+        public ListNode insertBeforeTheGivenNode(ListNode head, ListNode node, int data) {
+            if (head == null || node == null) return head;
+            ListNode n = new ListNode(data);
+            if (node == head) {
+                n.next    = head;
+                head.prev = n;
+                return n;
+            }
+            n.next        = node;
+            n.prev        = node.prev;
+            n.prev.next   = n;
+            node.prev     = n;
+            return head;
         }
-        n.next        = node;
-        n.prev        = node.prev;
-        n.prev.next   = n;
-        node.prev     = n;
-        return head;
+    }
+
+    public static void main(String[] args) {
+        // [5, 7, 3, 10], node=7, data=6 -> [5, 6, 7, 3, 10]
+        ListNode n1=new ListNode(5),n2=new ListNode(7),n3=new ListNode(3),n4=new ListNode(10);
+        n1.next=n2; n2.prev=n1; n2.next=n3; n3.prev=n2; n3.next=n4; n4.prev=n3;
+        ListNode head = new Solution().insertBeforeTheGivenNode(n1, n2, 6);
+        for (ListNode c=head;c!=null;c=c.next) System.out.print(c.val+" ");
+        // 5 6 7 3 10
     }
 }
 ```
@@ -1164,17 +1326,27 @@ ListNode* insertBeforeTheGivenNode(ListNode *head, ListNode *node, int data) {
 ```
 
 ```scala run
-class Solution {
-  def insertBeforeTheGivenNode(head: ListNode, node: ListNode, data: Int): ListNode = {
-    if (head == null || node == null) return head
-    val n = new ListNode(data)
-    if (node eq head) { n.next = head; head.prev = n; return n }
-    n.next      = node
-    n.prev      = node.prev
-    n.prev.next = n
-    node.prev   = n
-    head
+class ListNode(var v: Int, var prev: ListNode = null, var next: ListNode = null)
+
+object Main extends App {
+  class Solution {
+    def insertBeforeTheGivenNode(head: ListNode, node: ListNode, data: Int): ListNode = {
+      if (head == null || node == null) return head
+      val n = new ListNode(data)
+      if (node eq head) { n.next = head; head.prev = n; return n }
+      n.next      = node
+      n.prev      = node.prev
+      n.prev.next = n
+      node.prev   = n
+      head
+    }
   }
+
+  // [5, 7, 3, 10], node=7, data=6 -> [5, 6, 7, 3, 10]
+  val n1 = new ListNode(5); val n2 = new ListNode(7); val n3 = new ListNode(3); val n4 = new ListNode(10)
+  n1.next = n2; n2.prev = n1; n2.next = n3; n3.prev = n2; n3.next = n4; n4.prev = n3
+  var head = new Solution().insertBeforeTheGivenNode(n1, n2, 6)
+  while (head != null) { print(s"${head.v} "); head = head.next }  // 5 6 7 3 10
 }
 ```
 
@@ -1391,28 +1563,39 @@ class Solution:
 ```
 
 ```java run
-class Solution {
-    public ListNode insertAtGivenDistance(ListNode head, int X, int data) {
-        if (head == null && X > 0) return null;          // Case 1
-        ListNode newNode = new ListNode(data);
-        if (X == 0) {                                    // Case 2
-            newNode.next = head;
-            newNode.prev = null;
-            if (head != null) head.prev = newNode;
-            return newNode;
+public class Main {
+    static class ListNode { int val; ListNode prev, next; ListNode(int v){val=v;} }
+
+    static class Solution {
+        public ListNode insertAtGivenDistance(ListNode head, int X, int data) {
+            if (head == null && X > 0) return null;          // Case 1
+            ListNode newNode = new ListNode(data);
+            if (X == 0) {                                    // Case 2
+                newNode.next = head;
+                newNode.prev = null;
+                if (head != null) head.prev = newNode;
+                return newNode;
+            }
+            ListNode current = head;
+            int counter = 0;
+            while (current != null && counter < X - 1) {     // Walk to position X-1
+                current = current.next;
+                counter++;
+            }
+            if (current == null) return head;                // Case 4: ran off
+            newNode.next = current.next;
+            newNode.prev = current;
+            current.next = newNode;
+            if (newNode.next != null) newNode.next.prev = newNode;
+            return head;
         }
-        ListNode current = head;
-        int counter = 0;
-        while (current != null && counter < X - 1) {     // Walk to position X-1
-            current = current.next;
-            counter++;
-        }
-        if (current == null) return head;                // Case 4: ran off
-        newNode.next = current.next;
-        newNode.prev = current;
-        current.next = newNode;
-        if (newNode.next != null) newNode.next.prev = newNode;
-        return head;
+    }
+
+    public static void main(String[] args) {
+        ListNode n1=new ListNode(5),n2=new ListNode(7),n3=new ListNode(3); n1.next=n2; n2.prev=n1; n2.next=n3; n3.prev=n2;
+        ListNode head = new Solution().insertAtGivenDistance(n1, 1, 6);
+        for (ListNode c=head;c!=null;c=c.next) System.out.print(c.val+" ");
+        // 5 6 7 3
     }
 }
 ```
@@ -1443,29 +1626,38 @@ ListNode* insertAtGivenDistance(ListNode *head, int X, int data) {
 ```
 
 ```scala run
-class Solution {
-  def insertAtGivenDistance(head: ListNode, X: Int, data: Int): ListNode = {
-    if (head == null && X > 0) return null
-    val n = new ListNode(data)
-    if (X == 0) {
-      n.next = head
-      n.prev = null
-      if (head != null) head.prev = n
-      return n
+class ListNode(var v: Int, var prev: ListNode = null, var next: ListNode = null)
+
+object Main extends App {
+  class Solution {
+    def insertAtGivenDistance(head: ListNode, X: Int, data: Int): ListNode = {
+      if (head == null && X > 0) return null
+      val n = new ListNode(data)
+      if (X == 0) {
+        n.next = head
+        n.prev = null
+        if (head != null) head.prev = n
+        return n
+      }
+      var current = head
+      var counter = 0
+      while (current != null && counter < X - 1) {
+        current = current.next
+        counter += 1
+      }
+      if (current == null) return head
+      n.next       = current.next
+      n.prev       = current
+      current.next = n
+      if (n.next != null) n.next.prev = n
+      head
     }
-    var current = head
-    var counter = 0
-    while (current != null && counter < X - 1) {
-      current = current.next
-      counter += 1
-    }
-    if (current == null) return head
-    n.next       = current.next
-    n.prev       = current
-    current.next = n
-    if (n.next != null) n.next.prev = n
-    head
   }
+
+  val n1 = new ListNode(5); val n2 = new ListNode(7); val n3 = new ListNode(3)
+  n1.next = n2; n2.prev = n1; n2.next = n3; n3.prev = n2
+  var head = new Solution().insertAtGivenDistance(n1, 1, 6)
+  while (head != null) { print(s"${head.v} "); head = head.next }  // 5 6 7 3
 }
 ```
 
@@ -1593,27 +1785,40 @@ class Solution:
 ```
 
 ```java run
-class Solution {
-    public ListNode insertAtGivenDistance(ListNode head, int X, int data) {
-        if (head == null && X > 0) return null;
-        ListNode n = new ListNode(data);
-        if (X == 0) {
-            n.next = head;
-            if (head != null) head.prev = n;
-            return n;
+public class Main {
+    static class ListNode { int val; ListNode prev, next; ListNode(int v){val=v;} }
+
+    static class Solution {
+        public ListNode insertAtGivenDistance(ListNode head, int X, int data) {
+            if (head == null && X > 0) return null;
+            ListNode n = new ListNode(data);
+            if (X == 0) {
+                n.next = head;
+                if (head != null) head.prev = n;
+                return n;
+            }
+            ListNode current = head;
+            int counter = 0;
+            while (current != null && counter < X - 1) {
+                current = current.next;
+                counter++;
+            }
+            if (current == null) return head;
+            n.next       = current.next;
+            n.prev       = current;
+            current.next = n;
+            if (n.next != null) n.next.prev = n;
+            return head;
         }
-        ListNode current = head;
-        int counter = 0;
-        while (current != null && counter < X - 1) {
-            current = current.next;
-            counter++;
-        }
-        if (current == null) return head;
-        n.next       = current.next;
-        n.prev       = current;
-        current.next = n;
-        if (n.next != null) n.next.prev = n;
-        return head;
+    }
+
+    public static void main(String[] args) {
+        // [5, 7, 3, 10], X=1, data=6 -> [5, 6, 7, 3, 10]
+        ListNode n1=new ListNode(5),n2=new ListNode(7),n3=new ListNode(3),n4=new ListNode(10);
+        n1.next=n2; n2.prev=n1; n2.next=n3; n3.prev=n2; n3.next=n4; n4.prev=n3;
+        ListNode head = new Solution().insertAtGivenDistance(n1, 1, 6);
+        for (ListNode c=head;c!=null;c=c.next) System.out.print(c.val+" ");
+        // 5 6 7 3 10
     }
 }
 ```
@@ -1643,28 +1848,38 @@ ListNode* insertAtGivenDistance(ListNode *head, int X, int data) {
 ```
 
 ```scala run
-class Solution {
-  def insertAtGivenDistance(head: ListNode, X: Int, data: Int): ListNode = {
-    if (head == null && X > 0) return null
-    val n = new ListNode(data)
-    if (X == 0) {
-      n.next = head
-      if (head != null) head.prev = n
-      return n
+class ListNode(var v: Int, var prev: ListNode = null, var next: ListNode = null)
+
+object Main extends App {
+  class Solution {
+    def insertAtGivenDistance(head: ListNode, X: Int, data: Int): ListNode = {
+      if (head == null && X > 0) return null
+      val n = new ListNode(data)
+      if (X == 0) {
+        n.next = head
+        if (head != null) head.prev = n
+        return n
+      }
+      var current = head
+      var counter = 0
+      while (current != null && counter < X - 1) {
+        current = current.next
+        counter += 1
+      }
+      if (current == null) return head
+      n.next       = current.next
+      n.prev       = current
+      current.next = n
+      if (n.next != null) n.next.prev = n
+      head
     }
-    var current = head
-    var counter = 0
-    while (current != null && counter < X - 1) {
-      current = current.next
-      counter += 1
-    }
-    if (current == null) return head
-    n.next       = current.next
-    n.prev       = current
-    current.next = n
-    if (n.next != null) n.next.prev = n
-    head
   }
+
+  // [5, 7, 3, 10], X=1, data=6 -> [5, 6, 7, 3, 10]
+  val n1 = new ListNode(5); val n2 = new ListNode(7); val n3 = new ListNode(3); val n4 = new ListNode(10)
+  n1.next = n2; n2.prev = n1; n2.next = n3; n3.prev = n2; n3.next = n4; n4.prev = n3
+  var head = new Solution().insertAtGivenDistance(n1, 1, 6)
+  while (head != null) { print(s"${head.v} "); head = head.next }  // 5 6 7 3 10
 }
 ```
 

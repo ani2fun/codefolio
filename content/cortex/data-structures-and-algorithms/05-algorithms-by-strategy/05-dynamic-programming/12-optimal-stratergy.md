@@ -254,24 +254,26 @@ if __name__ == "__main__":
 ```
 
 ```java run
-public class Solution {
-    public int optimalGameStrategy(int[] coins) {
-        int n = coins.length;
-        int[][] dp = new int[n][n];
-        for (int i = 0; i < n; i++) dp[i][i] = coins[i];
-        for (int len = 2; len <= n; len++) {
-            for (int i = 0; i <= n - len; i++) {
-                int j = i + len - 1;
-                int li1 = (i + 2 <= j)     ? dp[i + 2][j]     : 0;
-                int ri1 = (i + 1 <= j - 1) ? dp[i + 1][j - 1] : 0;
-                int li2 = (i + 1 <= j - 1) ? dp[i + 1][j - 1] : 0;
-                int ri2 = (i <= j - 2)     ? dp[i][j - 2]     : 0;
-                int pickLeft  = coins[i] + Math.min(li1, ri1);
-                int pickRight = coins[j] + Math.min(li2, ri2);
-                dp[i][j] = Math.max(pickLeft, pickRight);
+public class Main {
+    static class Solution {
+        public int optimalGameStrategy(int[] coins) {
+            int n = coins.length;
+            int[][] dp = new int[n][n];
+            for (int i = 0; i < n; i++) dp[i][i] = coins[i];
+            for (int len = 2; len <= n; len++) {
+                for (int i = 0; i <= n - len; i++) {
+                    int j = i + len - 1;
+                    int li1 = (i + 2 <= j)     ? dp[i + 2][j]     : 0;
+                    int ri1 = (i + 1 <= j - 1) ? dp[i + 1][j - 1] : 0;
+                    int li2 = (i + 1 <= j - 1) ? dp[i + 1][j - 1] : 0;
+                    int ri2 = (i <= j - 2)     ? dp[i][j - 2]     : 0;
+                    int pickLeft  = coins[i] + Math.min(li1, ri1);
+                    int pickRight = coins[j] + Math.min(li2, ri2);
+                    dp[i][j] = Math.max(pickLeft, pickRight);
+                }
             }
+            return dp[0][n - 1];
         }
-        return dp[0][n - 1];
     }
 
     public static void main(String[] args) {
@@ -314,27 +316,27 @@ int main(void) {
 ```
 
 ```scala run
-class Solution {
-  def optimalGameStrategy(coins: Array[Int]): Int = {
-    val n = coins.length
-    val dp = Array.fill(n, n)(0)
-    for (i <- 0 until n) dp(i)(i) = coins(i)
-    for (len <- 2 to n) {
-      for (i <- 0 to n - len) {
-        val j = i + len - 1
-        val li1 = if (i + 2 <= j)     dp(i + 2)(j)     else 0
-        val ri1 = if (i + 1 <= j - 1) dp(i + 1)(j - 1) else 0
-        val ri2 = if (i <= j - 2)     dp(i)(j - 2)     else 0
-        val pickLeft  = coins(i) + math.min(li1, ri1)
-        val pickRight = coins(j) + math.min(ri1, ri2)
-        dp(i)(j) = math.max(pickLeft, pickRight)
-      }
-    }
-    dp(0)(n - 1)
-  }
-}
-
 object Main extends App {
+  class Solution {
+    def optimalGameStrategy(coins: Array[Int]): Int = {
+      val n = coins.length
+      val dp = Array.fill(n, n)(0)
+      for (i <- 0 until n) dp(i)(i) = coins(i)
+      for (len <- 2 to n) {
+        for (i <- 0 to n - len) {
+          val j = i + len - 1
+          val li1 = if (i + 2 <= j)     dp(i + 2)(j)     else 0
+          val ri1 = if (i + 1 <= j - 1) dp(i + 1)(j - 1) else 0
+          val ri2 = if (i <= j - 2)     dp(i)(j - 2)     else 0
+          val pickLeft  = coins(i) + math.min(li1, ri1)
+          val pickRight = coins(j) + math.min(ri1, ri2)
+          dp(i)(j) = math.max(pickLeft, pickRight)
+        }
+      }
+      dp(0)(n - 1)
+    }
+  }
+
   println(new Solution().optimalGameStrategy(Array(10, 17, 5, 9)))  // 26
 }
 ```

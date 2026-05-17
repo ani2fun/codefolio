@@ -342,18 +342,30 @@ class Solution:
 ```
 
 ```java run
-class Solution {
-    public TreeNode inorderSuccessor(TreeNode root, TreeNode node) {
-        TreeNode successor = null;
-        while (root != null) {
-            if (root.val > node.val) {                                          // candidate
-                successor = root;                                               //   record
-                root = root.left;                                               //   tighten
-            } else {                                                            // ≤ node
-                root = root.right;                                              //   go right
+public class Main {
+    static class TreeNode { int val; TreeNode left, right; TreeNode(int v){val=v;} }
+
+    static class Solution {
+        public TreeNode inorderSuccessor(TreeNode root, TreeNode node) {
+            TreeNode successor = null;
+            while (root != null) {
+                if (root.val > node.val) {                                          // candidate
+                    successor = root;                                               //   record
+                    root = root.left;                                               //   tighten
+                } else {                                                            // ≤ node
+                    root = root.right;                                              //   go right
+                }
             }
+            return successor;
         }
-        return successor;
+    }
+
+    public static void main(String[] args) {
+        TreeNode root = new TreeNode(5);
+        root.left  = new TreeNode(4); root.right = new TreeNode(6);
+        root.left.left  = new TreeNode(2);
+        root.right.right = new TreeNode(7);
+        System.out.println(new Solution().inorderSuccessor(root, root.left).val);  // 5
     }
 }
 ```
@@ -374,18 +386,27 @@ struct TreeNode *inorderSuccessor(struct TreeNode *root, struct TreeNode *node) 
 ```
 
 ```scala run
-object Solution {
-  def inorderSuccessor(root: TreeNode, node: TreeNode): TreeNode = {
-    var cur = root
-    var successor: TreeNode = null
-    while (cur != null) {
-      if (cur.value > node.value) {                                                // candidate
-        successor = cur                                                            //   record
-        cur = cur.left                                                             //   tighten
-      } else cur = cur.right                                                       // ≤ node
+class TreeNode(var value: Int, var left: TreeNode = null, var right: TreeNode = null)
+
+object Main extends App {
+  class Solution {
+    def inorderSuccessor(root: TreeNode, node: TreeNode): TreeNode = {
+      var cur = root
+      var successor: TreeNode = null
+      while (cur != null) {
+        if (cur.value > node.value) {                                                // candidate
+          successor = cur                                                            //   record
+          cur = cur.left                                                             //   tighten
+        } else cur = cur.right                                                       // ≤ node
+      }
+      successor
     }
-    successor
   }
+
+  val root = new TreeNode(5,
+    new TreeNode(4, new TreeNode(2), null),
+    new TreeNode(6, null, new TreeNode(7)))
+  println(new Solution().inorderSuccessor(root, root.left).value)  // 5
 }
 ```
 
@@ -473,24 +494,37 @@ class Solution:
 ```
 
 ```java run
-class Solution {
-    private TreeNode findMin(TreeNode node) {
-        while (node.left != null) node = node.left;                                     // leftmost
-        return node;
+public class Main {
+    static class TreeNode { int val; TreeNode left, right; TreeNode(int v){val=v;} }
+
+    static class Solution {
+        private TreeNode findMin(TreeNode node) {
+            while (node.left != null) node = node.left;                                     // leftmost
+            return node;
+        }
+
+        public TreeNode recursiveDeletion(TreeNode root, int key) {
+            if (root == null) return null;                                                  // empty subtree
+            if (key < root.val)      root.left  = recursiveDeletion(root.left,  key);       // search left
+            else if (key > root.val) root.right = recursiveDeletion(root.right, key);       // search right
+            else {                                                                          // match
+                if (root.left  == null) return root.right;                                  // Case 1/2a
+                if (root.right == null) return root.left;                                   // Case 2b
+                TreeNode successor = findMin(root.right);                                   // Case 3
+                root.val = successor.val;                                                   //   copy value
+                root.right = recursiveDeletion(root.right, successor.val);                  //   delete original
+            }
+            return root;
+        }
     }
 
-    public TreeNode recursiveDeletion(TreeNode root, int key) {
-        if (root == null) return null;                                                  // empty subtree
-        if (key < root.val)      root.left  = recursiveDeletion(root.left,  key);       // search left
-        else if (key > root.val) root.right = recursiveDeletion(root.right, key);       // search right
-        else {                                                                          // match
-            if (root.left  == null) return root.right;                                  // Case 1/2a
-            if (root.right == null) return root.left;                                   // Case 2b
-            TreeNode successor = findMin(root.right);                                   // Case 3
-            root.val = successor.val;                                                   //   copy value
-            root.right = recursiveDeletion(root.right, successor.val);                  //   delete original
-        }
-        return root;
+    public static void main(String[] args) {
+        TreeNode root = new TreeNode(5);
+        root.left  = new TreeNode(4); root.right = new TreeNode(6);
+        root.left.left  = new TreeNode(2);
+        root.right.right = new TreeNode(7);
+        TreeNode result = new Solution().recursiveDeletion(root, 6);
+        System.out.println(result.right.val);  // 7
     }
 }
 ```
@@ -519,26 +553,36 @@ struct TreeNode *recursiveDeletion(struct TreeNode *root, int key) {
 ```
 
 ```scala run
-object Solution {
-  private def findMin(node: TreeNode): TreeNode = {
-    var n = node
-    while (n.left != null) n = n.left
-    n
+class TreeNode(var value: Int, var left: TreeNode = null, var right: TreeNode = null)
+
+object Main extends App {
+  class Solution {
+    private def findMin(node: TreeNode): TreeNode = {
+      var n = node
+      while (n.left != null) n = n.left
+      n
+    }
+
+    def recursiveDeletion(root: TreeNode, key: Int): TreeNode = {
+      if (root == null) return null
+      if (key < root.value)      root.left  = recursiveDeletion(root.left,  key)
+      else if (key > root.value) root.right = recursiveDeletion(root.right, key)
+      else {                                                                                    // match
+        if (root.left == null)  return root.right                                                // Case 1/2a
+        if (root.right == null) return root.left                                                 // Case 2b
+        val successor = findMin(root.right)                                                      // Case 3
+        root.value = successor.value
+        root.right = recursiveDeletion(root.right, successor.value)
+      }
+      root
+    }
   }
 
-  def recursiveDeletion(root: TreeNode, key: Int): TreeNode = {
-    if (root == null) return null
-    if (key < root.value)      root.left  = recursiveDeletion(root.left,  key)
-    else if (key > root.value) root.right = recursiveDeletion(root.right, key)
-    else {                                                                                    // match
-      if (root.left == null)  return root.right                                                // Case 1/2a
-      if (root.right == null) return root.left                                                 // Case 2b
-      val successor = findMin(root.right)                                                      // Case 3
-      root.value = successor.value
-      root.right = recursiveDeletion(root.right, successor.value)
-    }
-    root
-  }
+  val root = new TreeNode(5,
+    new TreeNode(4, new TreeNode(2), null),
+    new TreeNode(6, null, new TreeNode(7)))
+  val result = new Solution().recursiveDeletion(root, 6)
+  println(result.right.value)  // 7
 }
 ```
 
@@ -749,35 +793,48 @@ class Solution:
 ```
 
 ```java run
-class Solution {
-    public TreeNode iterativeDeletion(TreeNode root, int key) {
-        if (root == null) return null;
+public class Main {
+    static class TreeNode { int val; TreeNode left, right; TreeNode(int v){val=v;} }
 
-        TreeNode parent = null, current = root;
-        while (current != null && current.val != key) {                                       // search
-            parent = current;
-            current = (key < current.val) ? current.left : current.right;
-        }
-        if (current == null) return root;                                                     // not found
+    static class Solution {
+        public TreeNode iterativeDeletion(TreeNode root, int key) {
+            if (root == null) return null;
 
-        if (current.left == null || current.right == null) {                                  // Case 1/2
-            TreeNode newCurrent = (current.left == null) ? current.right : current.left;
-            if (parent == null) return newCurrent;                                            // was the root
-            if (current == parent.left) parent.left  = newCurrent;
-            else                        parent.right = newCurrent;
+            TreeNode parent = null, current = root;
+            while (current != null && current.val != key) {                                       // search
+                parent = current;
+                current = (key < current.val) ? current.left : current.right;
+            }
+            if (current == null) return root;                                                     // not found
+
+            if (current.left == null || current.right == null) {                                  // Case 1/2
+                TreeNode newCurrent = (current.left == null) ? current.right : current.left;
+                if (parent == null) return newCurrent;                                            // was the root
+                if (current == parent.left) parent.left  = newCurrent;
+                else                        parent.right = newCurrent;
+                return root;
+            }
+
+            TreeNode inParent = current;                                                          // Case 3
+            TreeNode successor = current.right;
+            while (successor.left != null) {                                                      // leftmost
+                inParent = successor;
+                successor = successor.left;
+            }
+            if (inParent != current) inParent.left  = successor.right;                            // 3.2
+            else                     current.right  = successor.right;                            // 3.1
+            current.val = successor.val;                                                           // copy value
             return root;
         }
+    }
 
-        TreeNode inParent = current;                                                          // Case 3
-        TreeNode successor = current.right;
-        while (successor.left != null) {                                                      // leftmost
-            inParent = successor;
-            successor = successor.left;
-        }
-        if (inParent != current) inParent.left  = successor.right;                            // 3.2
-        else                     current.right  = successor.right;                            // 3.1
-        current.val = successor.val;                                                           // copy value
-        return root;
+    public static void main(String[] args) {
+        TreeNode root = new TreeNode(5);
+        root.left  = new TreeNode(4); root.right = new TreeNode(6);
+        root.left.left  = new TreeNode(2);
+        root.right.right = new TreeNode(7);
+        TreeNode result = new Solution().iterativeDeletion(root, 6);
+        System.out.println(result.right.val);  // 7
     }
 }
 ```
@@ -816,36 +873,46 @@ struct TreeNode *iterativeDeletion(struct TreeNode *root, int key) {
 ```
 
 ```scala run
-object Solution {
-  def iterativeDeletion(root: TreeNode, key: Int): TreeNode = {
-    if (root == null) return null
-    var parent: TreeNode = null
-    var current: TreeNode = root
-    while (current != null && current.value != key) {
-      parent = current
-      current = if (key < current.value) current.left else current.right
-    }
-    if (current == null) return root
+class TreeNode(var value: Int, var left: TreeNode = null, var right: TreeNode = null)
 
-    if (current.left == null || current.right == null) {                                            // Case 1/2
-      val newCurrent: TreeNode = if (current.left == null) current.right else current.left
-      if (parent == null) return newCurrent
-      if (current == parent.left) parent.left  = newCurrent
-      else                        parent.right = newCurrent
-      return root
-    }
+object Main extends App {
+  class Solution {
+    def iterativeDeletion(root: TreeNode, key: Int): TreeNode = {
+      if (root == null) return null
+      var parent: TreeNode = null
+      var current: TreeNode = root
+      while (current != null && current.value != key) {
+        parent = current
+        current = if (key < current.value) current.left else current.right
+      }
+      if (current == null) return root
 
-    var inParent: TreeNode  = current                                                                // Case 3
-    var successor: TreeNode = current.right
-    while (successor.left != null) {
-      inParent  = successor
-      successor = successor.left
+      if (current.left == null || current.right == null) {                                            // Case 1/2
+        val newCurrent: TreeNode = if (current.left == null) current.right else current.left
+        if (parent == null) return newCurrent
+        if (current == parent.left) parent.left  = newCurrent
+        else                        parent.right = newCurrent
+        return root
+      }
+
+      var inParent: TreeNode  = current                                                                // Case 3
+      var successor: TreeNode = current.right
+      while (successor.left != null) {
+        inParent  = successor
+        successor = successor.left
+      }
+      if (inParent != current) inParent.left  = successor.right                                        // 3.2
+      else                     current.right  = successor.right                                        // 3.1
+      current.value = successor.value
+      root
     }
-    if (inParent != current) inParent.left  = successor.right                                        // 3.2
-    else                     current.right  = successor.right                                        // 3.1
-    current.value = successor.value
-    root
   }
+
+  val root = new TreeNode(5,
+    new TreeNode(4, new TreeNode(2), null),
+    new TreeNode(6, null, new TreeNode(7)))
+  val result = new Solution().iterativeDeletion(root, 6)
+  println(result.right.value)  // 7
 }
 ```
 

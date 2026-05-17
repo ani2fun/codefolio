@@ -349,7 +349,7 @@ if __name__ == "__main__":
 ```java run
 import java.util.*;
 
-class Solution {
+public class Main {
     static int binarySearch(int[] arr, int target) {
         // Precondition: arr is sorted.
         for (int i = 0; i < arr.length - 1; i++) {
@@ -371,7 +371,7 @@ class Solution {
     }
 
     public static void main(String[] args) {
-        // Run with: java -ea Solution    (-ea enables assertions)
+        // Run with: java -ea Main    (-ea enables assertions)
         Random rng = new Random(42);
         for (int trial = 0; trial < 1000; trial++) {
             int n = rng.nextInt(100);
@@ -436,7 +436,7 @@ int main(void) {
 ```scala run
 import scala.util.Random
 
-object Solution {
+object Main extends App {
   def binarySearch(arr: Array[Int], target: Int): Int = {
     for (i <- 0 until arr.length - 1) require(arr(i) <= arr(i + 1), "arr must be sorted")
 
@@ -454,18 +454,16 @@ object Solution {
     -1
   }
 
-  def main(args: Array[String]): Unit = {
-    val rng = new Random(42)
-    for (trial <- 0 until 1000) {
-      val n = rng.nextInt(100)
-      val arr = Array.fill(n)(rng.nextInt(50)).sorted
-      val target = rng.nextInt(50)
-      val result = binarySearch(arr, target)
-      if (arr.contains(target)) assert(result != -1 && arr(result) == target)
-      else                      assert(result == -1)
-    }
-    println("All 1000 random tests pass; invariants held throughout.")
+  val rng = new Random(42)
+  for (trial <- 0 until 1000) {
+    val n = rng.nextInt(100)
+    val arr = Array.fill(n)(rng.nextInt(50)).sorted
+    val target = rng.nextInt(50)
+    val result = binarySearch(arr, target)
+    if (arr.contains(target)) assert(result != -1 && arr(result) == target)
+    else                      assert(result == -1)
   }
+  println("All 1000 random tests pass; invariants held throughout.")
 }
 ```
 

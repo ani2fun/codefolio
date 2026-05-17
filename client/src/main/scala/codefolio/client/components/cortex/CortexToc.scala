@@ -43,8 +43,8 @@ object CortexToc:
   val Component =
     ScalaFnComponent
       .withHooks[Props]
-      .useState(false)                       // popover open?
-      .useState(Option.empty[String])        // active heading slug
+      .useState(false)                // popover open?
+      .useState(Option.empty[String]) // active heading slug
       .useEffectWithDepsBy((props, _, _) => props.toc.map(_.slug)) { (props, _, activeS) => _ =>
         if props.toc.isEmpty then Callback.empty
         else
@@ -64,7 +64,14 @@ object CortexToc:
                   visible.headOption.foreach { entry =>
                     val slug = entry.target.asInstanceOf[dom.Element].id
                     if activeS.value.contains(slug) then ()
-                    else activeS.setState(Some(slug)).runNow()
+                    else
+                      activeS.setState(Some(slug)).runNow()
+                      // Broadcast the active heading so the sticky chapter bar + mini-map can update
+                      // without each running its own IntersectionObserver. The detail is the slug.
+                      val init = (new js.Object).asInstanceOf[dom.CustomEventInit]
+                      init.detail = slug
+                      val ev = new dom.CustomEvent("cortex:activeHeading", init)
+                      val _  = dom.window.dispatchEvent(ev)
                   }
 
               val opts = (new js.Object).asInstanceOf[dom.IntersectionObserverInit]
@@ -100,7 +107,7 @@ object CortexToc:
       .render { (props, openS, activeS) =>
         if props.toc.isEmpty then EmptyVdom
         else
-          val baseDepth = props.toc.map(_.depth).min
+          val baseDepth  = props.toc.map(_.depth).min
           val activeSlug = activeS.value
           val activeAncestor = activeSlug.flatMap { slug =>
             val idx = props.toc.indexWhere(_.slug == slug)
@@ -141,7 +148,15 @@ object CortexToc:
                       ^.href      := s"#${item.slug}",
                       ^.className := "cortex-reader-toc-pop__btn",
                       ^.onClick ==> ((e: ReactMouseEvent) =>
-                        HashScroll.onHashLinkClick(e, item.slug) >> close
+                        HashScroll.onHashLinkClick(e, item.slug) >>
+                          Callback {
+                            // Pulse the sibling sidebar tile/row so the two TOC surfaces feel synced.
+                            val init = (new js.Object).asInstanceOf[dom.CustomEventInit]
+                            init.detail = item.slug
+                            val ev = new dom.CustomEvent("cortex:syncFlash", init)
+                            val _  = dom.window.dispatchEvent(ev)
+                          } >>
+                          close
                       ),
                       <.span(^.className := "cortex-reader-toc-pop__tick", ^.aria.hidden := true),
                       <.span(^.className := "cortex-reader-toc-pop__label", item.text)

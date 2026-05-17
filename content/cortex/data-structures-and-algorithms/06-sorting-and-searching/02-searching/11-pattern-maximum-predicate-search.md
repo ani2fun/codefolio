@@ -101,16 +101,22 @@ if __name__ == "__main__":
 ```
 
 ```java run
-public class Solution {
-    public int calculateSquareRoot(int num) {
-        if (num == 0) return 0;
-        int low = 1, high = num;
-        while (low < high) {
-            int mid = low + (high - low + 1) / 2;
-            if (mid <= num / mid) low = mid;
-            else high = mid - 1;
+public class Main {
+    static class Solution {
+        public int calculateSquareRoot(int num) {
+            if (num == 0) return 0;
+            int low = 1, high = num;
+            while (low < high) {
+                int mid = low + (high - low + 1) / 2;
+                if (mid <= num / mid) low = mid;
+                else high = mid - 1;
+            }
+            return low;
         }
-        return low;
+    }
+
+    public static void main(String[] args) {
+        System.out.println(new Solution().calculateSquareRoot(50));   // 7
     }
 }
 ```
@@ -129,16 +135,20 @@ int calculate_square_root(int num) {
 ```
 
 ```scala run
-class Solution {
-  def calculateSquareRoot(num: Int): Int = {
-    if (num == 0) return 0
-    var low = 1; var high = num
-    while (low < high) {
-      val mid = low + (high - low + 1) / 2
-      if (mid <= num / mid) low = mid else high = mid - 1
+object Main extends App {
+  class Solution {
+    def calculateSquareRoot(num: Int): Int = {
+      if (num == 0) return 0
+      var low = 1; var high = num
+      while (low < high) {
+        val mid = low + (high - low + 1) / 2
+        if (mid <= num / mid) low = mid else high = mid - 1
+      }
+      low
     }
-    low
   }
+
+  println(new Solution().calculateSquareRoot(50))   // 7
 }
 ```
 
@@ -198,15 +208,21 @@ if __name__ == "__main__":
 ```
 
 ```java run
-public class Solution {
-    public int buildStaircase(int n) {
-        int low = 0, high = n;
-        while (low < high) {
-            int mid = low + (high - low + 1) / 2;
-            if ((long) mid * (mid + 1) / 2 <= n) low = mid;
-            else high = mid - 1;
+public class Main {
+    static class Solution {
+        public int buildStaircase(int n) {
+            int low = 0, high = n;
+            while (low < high) {
+                int mid = low + (high - low + 1) / 2;
+                if ((long) mid * (mid + 1) / 2 <= n) low = mid;
+                else high = mid - 1;
+            }
+            return low;
         }
-        return low;
+    }
+
+    public static void main(String[] args) {
+        System.out.println(new Solution().buildStaircase(7));   // 3
     }
 }
 ```
@@ -224,15 +240,19 @@ int build_staircase(int n) {
 ```
 
 ```scala run
-class Solution {
-  def buildStaircase(n: Int): Int = {
-    var low = 0; var high = n
-    while (low < high) {
-      val mid = low + (high - low + 1) / 2
-      if (mid.toLong * (mid + 1) / 2 <= n) low = mid else high = mid - 1
+object Main extends App {
+  class Solution {
+    def buildStaircase(n: Int): Int = {
+      var low = 0; var high = n
+      while (low < high) {
+        val mid = low + (high - low + 1) / 2
+        if (mid.toLong * (mid + 1) / 2 <= n) low = mid else high = mid - 1
+      }
+      low
     }
-    low
   }
+
+  println(new Solution().buildStaircase(7))   // 3
 }
 ```
 
@@ -301,21 +321,27 @@ if __name__ == "__main__":
 ```
 
 ```java run
-public class Solution {
-    public int kRibbons(int[] ribbons, int k) {
-        int low = 1, high = 0;
-        for (int r : ribbons) high = Math.max(high, r);
-        while (low < high) {
-            int mid = low + (high - low + 1) / 2;
-            if (canCut(ribbons, mid, k)) low = mid;
-            else high = mid - 1;
+public class Main {
+    static class Solution {
+        public int kRibbons(int[] ribbons, int k) {
+            int low = 1, high = 0;
+            for (int r : ribbons) high = Math.max(high, r);
+            while (low < high) {
+                int mid = low + (high - low + 1) / 2;
+                if (canCut(ribbons, mid, k)) low = mid;
+                else high = mid - 1;
+            }
+            return canCut(ribbons, low, k) ? low : 0;
         }
-        return canCut(ribbons, low, k) ? low : 0;
+        private boolean canCut(int[] ribbons, int length, int k) {
+            long count = 0;
+            for (int r : ribbons) count += r / length;
+            return count >= k;
+        }
     }
-    private boolean canCut(int[] ribbons, int length, int k) {
-        long count = 0;
-        for (int r : ribbons) count += r / length;
-        return count >= k;
+
+    public static void main(String[] args) {
+        System.out.println(new Solution().kRibbons(new int[]{9, 7, 5}, 3));   // 5
     }
 }
 ```
@@ -342,20 +368,24 @@ int k_ribbons(int *ribbons, int n, int k) {
 ```
 
 ```scala run
-class Solution {
-  def kRibbons(ribbons: Array[Int], k: Int): Int = {
-    var low = 1; var high = ribbons.max
-    while (low < high) {
-      val mid = low + (high - low + 1) / 2
-      if (canCut(ribbons, mid, k)) low = mid else high = mid - 1
+object Main extends App {
+  class Solution {
+    def kRibbons(ribbons: Array[Int], k: Int): Int = {
+      var low = 1; var high = ribbons.max
+      while (low < high) {
+        val mid = low + (high - low + 1) / 2
+        if (canCut(ribbons, mid, k)) low = mid else high = mid - 1
+      }
+      if (canCut(ribbons, low, k)) low else 0
     }
-    if (canCut(ribbons, low, k)) low else 0
+    private def canCut(ribbons: Array[Int], length: Int, k: Int): Boolean = {
+      var count = 0L
+      for (r <- ribbons) count += r / length
+      count >= k
+    }
   }
-  private def canCut(ribbons: Array[Int], length: Int, k: Int): Boolean = {
-    var count = 0L
-    for (r <- ribbons) count += r / length
-    count >= k
-  }
+
+  println(new Solution().kRibbons(Array(9, 7, 5), 3))   // 5
 }
 ```
 
@@ -444,29 +474,35 @@ if __name__ == "__main__":
 ```
 
 ```java run
-public class Solution {
-    private static final long SCALE = 100000L;
+public class Main {
+    static class Solution {
+        private static final long SCALE = 100000L;
 
-    public double equaliseWater(int[] buckets, double loss) {
-        long lossInt = (long) loss;
-        long low = 0, high = 0;
-        for (int b : buckets) high = Math.max(high, (long) b * SCALE);
-        while (low < high) {
-            long mid = low + (high - low + 1) / 2;
-            if (canAchieve(buckets, lossInt, mid)) low = mid;
-            else high = mid - 1;
+        public double equaliseWater(int[] buckets, double loss) {
+            long lossInt = (long) loss;
+            long low = 0, high = 0;
+            for (int b : buckets) high = Math.max(high, (long) b * SCALE);
+            while (low < high) {
+                long mid = low + (high - low + 1) / 2;
+                if (canAchieve(buckets, lossInt, mid)) low = mid;
+                else high = mid - 1;
+            }
+            return (double) low / SCALE;
         }
-        return (double) low / SCALE;
+
+        private boolean canAchieve(int[] buckets, long loss, long target) {
+            long excess = 0, deficit = 0;
+            for (int b : buckets) {
+                long water = (long) b * SCALE;
+                if (water > target) excess += (water - target) * (100 - loss) / 100;
+                else deficit += target - water;
+            }
+            return excess >= deficit;
+        }
     }
 
-    private boolean canAchieve(int[] buckets, long loss, long target) {
-        long excess = 0, deficit = 0;
-        for (int b : buckets) {
-            long water = (long) b * SCALE;
-            if (water > target) excess += (water - target) * (100 - loss) / 100;
-            else deficit += target - water;
-        }
-        return excess >= deficit;
+    public static void main(String[] args) {
+        System.out.println(new Solution().equaliseWater(new int[]{1, 5, 10}, 20));   // 5.0
     }
 }
 ```
@@ -500,28 +536,32 @@ double equalise_water(int *buckets, int n, double loss) {
 ```
 
 ```scala run
-class Solution {
-  private val SCALE = 100000L
+object Main extends App {
+  class Solution {
+    private val SCALE = 100000L
 
-  def equaliseWater(buckets: Array[Int], loss: Double): Double = {
-    val lossInt = loss.toLong
-    var low = 0L; var high = buckets.map(_.toLong * SCALE).max
-    while (low < high) {
-      val mid = low + (high - low + 1) / 2
-      if (canAchieve(buckets, lossInt, mid)) low = mid else high = mid - 1
+    def equaliseWater(buckets: Array[Int], loss: Double): Double = {
+      val lossInt = loss.toLong
+      var low = 0L; var high = buckets.map(_.toLong * SCALE).max
+      while (low < high) {
+        val mid = low + (high - low + 1) / 2
+        if (canAchieve(buckets, lossInt, mid)) low = mid else high = mid - 1
+      }
+      low.toDouble / SCALE
     }
-    low.toDouble / SCALE
+
+    private def canAchieve(buckets: Array[Int], loss: Long, target: Long): Boolean = {
+      var excess = 0L; var deficit = 0L
+      for (b <- buckets) {
+        val water = b.toLong * SCALE
+        if (water > target) excess += (water - target) * (100 - loss) / 100
+        else deficit += target - water
+      }
+      excess >= deficit
+    }
   }
 
-  private def canAchieve(buckets: Array[Int], loss: Long, target: Long): Boolean = {
-    var excess = 0L; var deficit = 0L
-    for (b <- buckets) {
-      val water = b.toLong * SCALE
-      if (water > target) excess += (water - target) * (100 - loss) / 100
-      else deficit += target - water
-    }
-    excess >= deficit
-  }
+  println(new Solution().equaliseWater(Array(1, 5, 10), 20))   // 5.0
 }
 ```
 

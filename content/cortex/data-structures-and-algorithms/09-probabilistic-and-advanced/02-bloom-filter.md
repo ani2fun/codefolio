@@ -143,11 +143,11 @@ if __name__ == "__main__":
 import java.security.MessageDigest;
 import java.util.*;
 
-class Solution {
+public class Main {
     int m, k;
     byte[] bits;
 
-    Solution(int n, double p) {
+    Main(int n, double p) {
         m = (int) Math.max(1, -n * Math.log(p) / (Math.log(2) * Math.log(2)));
         k = (int) Math.max(1, (double) m / n * Math.log(2));
         bits = new byte[(m + 7) / 8];
@@ -174,7 +174,7 @@ class Solution {
     }
 
     public static void main(String[] args) throws Exception {
-        Solution bf = new Solution(1000, 0.01);
+        Main bf = new Main(1000, 0.01);
         for (String w : new String[]{"apple", "banana", "cherry"}) bf.add(w);
         for (String w : new String[]{"apple", "fig"}) System.out.println(w + " -> " + bf.contains(w));
     }

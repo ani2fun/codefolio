@@ -401,7 +401,7 @@ if __name__ == "__main__":
 ```java run
 import java.util.*;
 
-class Solution {
+public class Main {
     static int[] mergeSort(int[] a) {
         if (a.length <= 1) return a;
         int mid = a.length / 2;
@@ -503,7 +503,7 @@ int main(void) {
 ```scala run
 import scala.util.Random
 
-object Solution {
+object Main extends App {
   def mergeSort(a: Array[Int]): Array[Int] = {
     if (a.length <= 1) return a
     val mid = a.length / 2
@@ -531,21 +531,19 @@ object Solution {
     -1
   }
 
-  def main(args: Array[String]): Unit = {
-    val sizes = Array(10000, 100000, 1000000)
-    val rng = new Random(42)
-    println(f"${"n"}%10s ${"merge_sort (ms)"}%18s ${"binary_search (µs)"}%22s")
-    for (n <- sizes) {
-      val a = Array.fill(n)(rng.nextInt(1000000000))
-      var t0 = System.nanoTime()
-      val sorted = mergeSort(a)
-      val ms = (System.nanoTime() - t0) / 1e6
-      t0 = System.nanoTime()
-      val step = math.max(1, n / 100)
-      for (i <- 0 until n by step) binarySearch(sorted, sorted(i))
-      val us = (System.nanoTime() - t0) / 1e3
-      println(f"$n%10d $ms%18.1f $us%22.1f")
-    }
+  val sizes = Array(10000, 100000, 1000000)
+  val rng = new Random(42)
+  println(f"${"n"}%10s ${"merge_sort (ms)"}%18s ${"binary_search (µs)"}%22s")
+  for (n <- sizes) {
+    val a = Array.fill(n)(rng.nextInt(1000000000))
+    var t0 = System.nanoTime()
+    val sorted = mergeSort(a)
+    val ms = (System.nanoTime() - t0) / 1e6
+    t0 = System.nanoTime()
+    val step = math.max(1, n / 100)
+    for (i <- 0 until n by step) binarySearch(sorted, sorted(i))
+    val us = (System.nanoTime() - t0) / 1e3
+    println(f"$n%10d $ms%18.1f $us%22.1f")
   }
 }
 ```

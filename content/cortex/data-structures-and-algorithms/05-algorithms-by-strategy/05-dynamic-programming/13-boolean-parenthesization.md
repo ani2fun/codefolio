@@ -289,36 +289,38 @@ if __name__ == "__main__":
 ```
 
 ```java run
-public class Solution {
-    public int booleanParenthesisation(String s) {
-        int n = s.length();
-        int[][] T = new int[n][n];
-        int[][] F = new int[n][n];
-        for (int i = 0; i < n; i += 2) {
-            T[i][i] = (s.charAt(i) == 'T') ? 1 : 0;
-            F[i][i] = (s.charAt(i) == 'F') ? 1 : 0;
-        }
-        for (int len = 3; len <= n; len += 2) {
-            for (int i = 0; i <= n - len; i += 2) {
-                int j = i + len - 1;
-                for (int k = i; k < j; k += 2) {
-                    char op = s.charAt(k + 1);
-                    int tl = T[i][k],     fl = F[i][k];
-                    int tr = T[k + 2][j], fr = F[k + 2][j];
-                    if (op == '&') {
-                        T[i][j] += tl * tr;
-                        F[i][j] += tl * fr + fl * tr + fl * fr;
-                    } else if (op == '|') {
-                        T[i][j] += tl * tr + tl * fr + fl * tr;
-                        F[i][j] += fl * fr;
-                    } else {
-                        T[i][j] += tl * fr + fl * tr;
-                        F[i][j] += tl * tr + fl * fr;
+public class Main {
+    static class Solution {
+        public int booleanParenthesisation(String s) {
+            int n = s.length();
+            int[][] T = new int[n][n];
+            int[][] F = new int[n][n];
+            for (int i = 0; i < n; i += 2) {
+                T[i][i] = (s.charAt(i) == 'T') ? 1 : 0;
+                F[i][i] = (s.charAt(i) == 'F') ? 1 : 0;
+            }
+            for (int len = 3; len <= n; len += 2) {
+                for (int i = 0; i <= n - len; i += 2) {
+                    int j = i + len - 1;
+                    for (int k = i; k < j; k += 2) {
+                        char op = s.charAt(k + 1);
+                        int tl = T[i][k],     fl = F[i][k];
+                        int tr = T[k + 2][j], fr = F[k + 2][j];
+                        if (op == '&') {
+                            T[i][j] += tl * tr;
+                            F[i][j] += tl * fr + fl * tr + fl * fr;
+                        } else if (op == '|') {
+                            T[i][j] += tl * tr + tl * fr + fl * tr;
+                            F[i][j] += fl * fr;
+                        } else {
+                            T[i][j] += tl * fr + fl * tr;
+                            F[i][j] += tl * tr + fl * fr;
+                        }
                     }
                 }
             }
+            return T[0][n - 1];
         }
-        return T[0][n - 1];
     }
 
     public static void main(String[] args) {
@@ -375,33 +377,33 @@ int main(void) {
 ```
 
 ```scala run
-class Solution {
-  def booleanParenthesisation(s: String): Int = {
-    val n = s.length
-    val T = Array.fill(n, n)(0)
-    val F = Array.fill(n, n)(0)
-    for (i <- 0 until n by 2) {
-      T(i)(i) = if (s(i) == 'T') 1 else 0
-      F(i)(i) = if (s(i) == 'F') 1 else 0
-    }
-    for (len <- 3 to n by 2; i <- 0 to n - len by 2) {
-      val j = i + len - 1
-      for (k <- i until j by 2) {
-        val op = s(k + 1)
-        val (tl, fl) = (T(i)(k), F(i)(k))
-        val (tr, fr) = (T(k + 2)(j), F(k + 2)(j))
-        op match {
-          case '&' => T(i)(j) += tl * tr;                              F(i)(j) += tl * fr + fl * tr + fl * fr
-          case '|' => T(i)(j) += tl * tr + tl * fr + fl * tr;          F(i)(j) += fl * fr
-          case '^' => T(i)(j) += tl * fr + fl * tr;                    F(i)(j) += tl * tr + fl * fr
+object Main extends App {
+  class Solution {
+    def booleanParenthesisation(s: String): Int = {
+      val n = s.length
+      val T = Array.fill(n, n)(0)
+      val F = Array.fill(n, n)(0)
+      for (i <- 0 until n by 2) {
+        T(i)(i) = if (s(i) == 'T') 1 else 0
+        F(i)(i) = if (s(i) == 'F') 1 else 0
+      }
+      for (len <- 3 to n by 2; i <- 0 to n - len by 2) {
+        val j = i + len - 1
+        for (k <- i until j by 2) {
+          val op = s(k + 1)
+          val (tl, fl) = (T(i)(k), F(i)(k))
+          val (tr, fr) = (T(k + 2)(j), F(k + 2)(j))
+          op match {
+            case '&' => T(i)(j) += tl * tr;                              F(i)(j) += tl * fr + fl * tr + fl * fr
+            case '|' => T(i)(j) += tl * tr + tl * fr + fl * tr;          F(i)(j) += fl * fr
+            case '^' => T(i)(j) += tl * fr + fl * tr;                    F(i)(j) += tl * tr + fl * fr
+          }
         }
       }
+      T(0)(n - 1)
     }
-    T(0)(n - 1)
   }
-}
 
-object Main extends App {
   println(new Solution().booleanParenthesisation("T^F&T"))   // 2
 }
 ```

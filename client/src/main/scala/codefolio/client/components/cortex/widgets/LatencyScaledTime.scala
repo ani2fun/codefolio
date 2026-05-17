@@ -1,10 +1,10 @@
 package codefolio.client.components.cortex.widgets
 
+import codefolio.client.components.cortex.widgets.PayloadDecoder.*
 import japgolly.scalajs.react.*
 import japgolly.scalajs.react.vdom.html_<^.*
 
-import scala.scalajs.js
-import scala.util.{Failure, Success, Try}
+import scala.util.Try
 
 /**
  * Latency-scaled-time widget — renders a list of computer-operations on a horizontal log-scale axis spanning
@@ -80,30 +80,18 @@ object LatencyScaledTime:
   // ===========================================================================
 
   private def parsePayload(json: String): Either[String, Spec] =
-    Try {
-      val raw           = js.JSON.parse(json).asInstanceOf[js.Dynamic]
-      val title         = raw.title.asInstanceOf[js.UndefOr[String]].toOption.filter(_.nonEmpty)
-      val scaleSecondsR = raw.scaleSeconds.asInstanceOf[js.UndefOr[Double]].toOption.getOrElse(1.0e9)
-      val rawItems = raw.items
-        .asInstanceOf[js.UndefOr[js.Array[js.Dynamic]]]
-        .toOption
-        .getOrElse(js.Array())
-      val items = rawItems.toList.map { it =>
-        Item(
-          label = it.label.asInstanceOf[js.UndefOr[String]].toOption.getOrElse(""),
-          ns = it.ns.asInstanceOf[js.UndefOr[Double]].toOption.getOrElse(0.0),
-          highlight = it.highlight.asInstanceOf[js.UndefOr[Boolean]].toOption.getOrElse(false)
-        )
-      }
-      Spec(title, scaleSecondsR, items)
-    } match
-      case Success(spec) if spec.items.isEmpty                => Left("payload.items must be non-empty")
-      case Success(spec) if spec.scaleSeconds <= 0            => Left("payload.scaleSeconds must be > 0")
-      case Success(spec) if spec.items.exists(i => i.ns <= 0) => Left("every item.ns must be > 0")
-      case Success(spec) if spec.items.exists(i => i.label.trim.isEmpty) =>
-        Left("every item.label must be non-empty")
-      case Success(spec) => Right(spec)
-      case Failure(t)    => Left(Option(t.getMessage).getOrElse("invalid payload JSON"))
+    PayloadDecoder.run(json) { d =>
+      val items = d.dynList("items").map(it =>
+        Item(label = it.string("label"), ns = it.double("ns"), highlight = it.bool("highlight"))
+      )
+      val scale = d.double("scaleSeconds", 1.0e9)
+      if items.isEmpty then throw PayloadDecoder.invalid("items must be non-empty")
+      if scale <= 0 then throw PayloadDecoder.invalid("scaleSeconds must be > 0")
+      if items.exists(_.ns <= 0) then throw PayloadDecoder.invalid("every item.ns must be > 0")
+      if items.exists(_.label.trim.isEmpty) then
+        throw PayloadDecoder.invalid("every item.label must be non-empty")
+      Spec(title = d.optString("title"), scaleSeconds = scale, items = items)
+    }
 
   // ===========================================================================
   // Scales and formatting

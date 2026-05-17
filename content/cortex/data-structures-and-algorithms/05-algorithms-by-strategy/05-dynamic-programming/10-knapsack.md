@@ -292,18 +292,20 @@ if __name__ == "__main__":
 ```
 
 ```java run
-public class Solution {
-    public int zeroOneKnapsack(int[] weights, int[] values, int capacity) {
-        int n = weights.length;
-        int[][] dp = new int[n + 1][capacity + 1];
-        for (int i = 1; i <= n; i++) {
-            int wi = weights[i - 1], vi = values[i - 1];
-            for (int w = 1; w <= capacity; w++) {
-                if (wi <= w) dp[i][w] = Math.max(dp[i - 1][w], vi + dp[i - 1][w - wi]);
-                else         dp[i][w] = dp[i - 1][w];
+public class Main {
+    static class Solution {
+        public int zeroOneKnapsack(int[] weights, int[] values, int capacity) {
+            int n = weights.length;
+            int[][] dp = new int[n + 1][capacity + 1];
+            for (int i = 1; i <= n; i++) {
+                int wi = weights[i - 1], vi = values[i - 1];
+                for (int w = 1; w <= capacity; w++) {
+                    if (wi <= w) dp[i][w] = Math.max(dp[i - 1][w], vi + dp[i - 1][w - wi]);
+                    else         dp[i][w] = dp[i - 1][w];
+                }
             }
+            return dp[n][capacity];
         }
-        return dp[n][capacity];
     }
 
     public static void main(String[] args) {
@@ -347,23 +349,23 @@ int main(void) {
 ```
 
 ```scala run
-class Solution {
-  def zeroOneKnapsack(weights: Array[Int], values: Array[Int], capacity: Int): Int = {
-    val n = weights.length
-    val dp = Array.fill(n + 1, capacity + 1)(0)
-    for (i <- 1 to n) {
-      val wi = weights(i - 1); val vi = values(i - 1)
-      for (w <- 1 to capacity) {
-        dp(i)(w) =
-          if (wi <= w) math.max(dp(i - 1)(w), vi + dp(i - 1)(w - wi))
-          else dp(i - 1)(w)
-      }
-    }
-    dp(n)(capacity)
-  }
-}
-
 object Main extends App {
+  class Solution {
+    def zeroOneKnapsack(weights: Array[Int], values: Array[Int], capacity: Int): Int = {
+      val n = weights.length
+      val dp = Array.fill(n + 1, capacity + 1)(0)
+      for (i <- 1 to n) {
+        val wi = weights(i - 1); val vi = values(i - 1)
+        for (w <- 1 to capacity) {
+          dp(i)(w) =
+            if (wi <= w) math.max(dp(i - 1)(w), vi + dp(i - 1)(w - wi))
+            else dp(i - 1)(w)
+        }
+      }
+      dp(n)(capacity)
+    }
+  }
+
   val sol = new Solution()
   println(sol.zeroOneKnapsack(Array(6, 4, 5, 3), Array(7, 3, 2, 6), 10))  // 13
   println(sol.zeroOneKnapsack(Array(4, 5, 1),    Array(1, 2, 3),    4))   // 3
@@ -564,28 +566,30 @@ if __name__ == "__main__":
 ```java run
 import java.util.*;
 
-public class Solution {
-    public List<Integer> zeroOneKnapsackII(int[] weights, int[] values, int capacity) {
-        int n = weights.length;
-        int[][] dp = new int[n + 1][capacity + 1];
-        for (int i = 1; i <= n; i++) {
-            int wi = weights[i - 1], vi = values[i - 1];
-            for (int w = 1; w <= capacity; w++) {
-                if (wi <= w) dp[i][w] = Math.max(dp[i - 1][w], vi + dp[i - 1][w - wi]);
-                else         dp[i][w] = dp[i - 1][w];
+public class Main {
+    static class Solution {
+        public List<Integer> zeroOneKnapsackII(int[] weights, int[] values, int capacity) {
+            int n = weights.length;
+            int[][] dp = new int[n + 1][capacity + 1];
+            for (int i = 1; i <= n; i++) {
+                int wi = weights[i - 1], vi = values[i - 1];
+                for (int w = 1; w <= capacity; w++) {
+                    if (wi <= w) dp[i][w] = Math.max(dp[i - 1][w], vi + dp[i - 1][w - wi]);
+                    else         dp[i][w] = dp[i - 1][w];
+                }
             }
-        }
-        List<Integer> selected = new ArrayList<>();
-        int i = n, w = capacity;
-        while (i > 0 && w > 0) {
-            if (dp[i][w] != dp[i - 1][w]) {
-                selected.add(i - 1);
-                w -= weights[i - 1];
+            List<Integer> selected = new ArrayList<>();
+            int i = n, w = capacity;
+            while (i > 0 && w > 0) {
+                if (dp[i][w] != dp[i - 1][w]) {
+                    selected.add(i - 1);
+                    w -= weights[i - 1];
+                }
+                i--;
             }
-            i--;
+            Collections.reverse(selected);
+            return selected;
         }
-        Collections.reverse(selected);
-        return selected;
     }
 
     public static void main(String[] args) {
@@ -634,28 +638,28 @@ int main(void) {
 ```
 
 ```scala run
-class Solution {
-  def zeroOneKnapsackII(weights: Array[Int], values: Array[Int], capacity: Int): List[Int] = {
-    val n = weights.length
-    val dp = Array.fill(n + 1, capacity + 1)(0)
-    for (i <- 1 to n) {
-      val wi = weights(i - 1); val vi = values(i - 1)
-      for (w <- 1 to capacity) {
-        dp(i)(w) = if (wi <= w) math.max(dp(i - 1)(w), vi + dp(i - 1)(w - wi))
-                   else dp(i - 1)(w)
-      }
-    }
-    val selected = scala.collection.mutable.ArrayBuffer[Int]()
-    var i = n; var w = capacity
-    while (i > 0 && w > 0) {
-      if (dp(i)(w) != dp(i - 1)(w)) { selected += (i - 1); w -= weights(i - 1) }
-      i -= 1
-    }
-    selected.reverse.toList
-  }
-}
-
 object Main extends App {
+  class Solution {
+    def zeroOneKnapsackII(weights: Array[Int], values: Array[Int], capacity: Int): List[Int] = {
+      val n = weights.length
+      val dp = Array.fill(n + 1, capacity + 1)(0)
+      for (i <- 1 to n) {
+        val wi = weights(i - 1); val vi = values(i - 1)
+        for (w <- 1 to capacity) {
+          dp(i)(w) = if (wi <= w) math.max(dp(i - 1)(w), vi + dp(i - 1)(w - wi))
+                     else dp(i - 1)(w)
+        }
+      }
+      val selected = scala.collection.mutable.ArrayBuffer[Int]()
+      var i = n; var w = capacity
+      while (i > 0 && w > 0) {
+        if (dp(i)(w) != dp(i - 1)(w)) { selected += (i - 1); w -= weights(i - 1) }
+        i -= 1
+      }
+      selected.reverse.toList
+    }
+  }
+
   println(new Solution().zeroOneKnapsackII(Array(6, 4, 5, 3), Array(7, 3, 2, 6), 10))  // List(0, 3)
 }
 ```
@@ -793,19 +797,21 @@ if __name__ == "__main__":
 ```
 
 ```java run
-public class Solution {
-    public int unboundedKnapsack(int[] weights, int[] values, int capacity) {
-        int n = weights.length;
-        int[][] dp = new int[n + 1][capacity + 1];
-        for (int i = 1; i <= n; i++) {
-            int wi = weights[i - 1], vi = values[i - 1];
-            for (int w = 1; w <= capacity; w++) {
-                int exclude = dp[i - 1][w];
-                int include = (wi <= w) ? vi + dp[i][w - wi] : 0;
-                dp[i][w] = Math.max(exclude, include);
+public class Main {
+    static class Solution {
+        public int unboundedKnapsack(int[] weights, int[] values, int capacity) {
+            int n = weights.length;
+            int[][] dp = new int[n + 1][capacity + 1];
+            for (int i = 1; i <= n; i++) {
+                int wi = weights[i - 1], vi = values[i - 1];
+                for (int w = 1; w <= capacity; w++) {
+                    int exclude = dp[i - 1][w];
+                    int include = (wi <= w) ? vi + dp[i][w - wi] : 0;
+                    dp[i][w] = Math.max(exclude, include);
+                }
             }
+            return dp[n][capacity];
         }
-        return dp[n][capacity];
     }
 
     public static void main(String[] args) {
@@ -843,23 +849,23 @@ int main(void) {
 ```
 
 ```scala run
-class Solution {
-  def unboundedKnapsack(weights: Array[Int], values: Array[Int], capacity: Int): Int = {
-    val n = weights.length
-    val dp = Array.fill(n + 1, capacity + 1)(0)
-    for (i <- 1 to n) {
-      val wi = weights(i - 1); val vi = values(i - 1)
-      for (w <- 1 to capacity) {
-        val exclude = dp(i - 1)(w)
-        val include = if (wi <= w) vi + dp(i)(w - wi) else 0
-        dp(i)(w) = math.max(exclude, include)
-      }
-    }
-    dp(n)(capacity)
-  }
-}
-
 object Main extends App {
+  class Solution {
+    def unboundedKnapsack(weights: Array[Int], values: Array[Int], capacity: Int): Int = {
+      val n = weights.length
+      val dp = Array.fill(n + 1, capacity + 1)(0)
+      for (i <- 1 to n) {
+        val wi = weights(i - 1); val vi = values(i - 1)
+        for (w <- 1 to capacity) {
+          val exclude = dp(i - 1)(w)
+          val include = if (wi <= w) vi + dp(i)(w - wi) else 0
+          dp(i)(w) = math.max(exclude, include)
+        }
+      }
+      dp(n)(capacity)
+    }
+  }
+
   println(new Solution().unboundedKnapsack(Array(1, 4, 3), Array(1, 5, 4), 8))  // 10
 }
 ```
@@ -972,22 +978,24 @@ if __name__ == "__main__":
 ```
 
 ```java run
-public class Solution {
-    public int boundedKnapsack(int[] weights, int[] values, int[] counts, int capacity) {
-        int n = weights.length;
-        int[][] dp = new int[n + 1][capacity + 1];
-        for (int i = 1; i <= n; i++) {
-            int wi = weights[i - 1], vi = values[i - 1], ci = counts[i - 1];
-            for (int w = 0; w <= capacity; w++) {
-                int kMax = (wi > 0) ? Math.min(ci, w / wi) : ci;
-                int best = 0;
-                for (int k = 0; k <= kMax; k++) {
-                    best = Math.max(best, k * vi + dp[i - 1][w - k * wi]);
+public class Main {
+    static class Solution {
+        public int boundedKnapsack(int[] weights, int[] values, int[] counts, int capacity) {
+            int n = weights.length;
+            int[][] dp = new int[n + 1][capacity + 1];
+            for (int i = 1; i <= n; i++) {
+                int wi = weights[i - 1], vi = values[i - 1], ci = counts[i - 1];
+                for (int w = 0; w <= capacity; w++) {
+                    int kMax = (wi > 0) ? Math.min(ci, w / wi) : ci;
+                    int best = 0;
+                    for (int k = 0; k <= kMax; k++) {
+                        best = Math.max(best, k * vi + dp[i - 1][w - k * wi]);
+                    }
+                    dp[i][w] = best;
                 }
-                dp[i][w] = best;
             }
+            return dp[n][capacity];
         }
-        return dp[n][capacity];
     }
 
     public static void main(String[] args) {
@@ -1031,27 +1039,27 @@ int main(void) {
 ```
 
 ```scala run
-class Solution {
-  def boundedKnapsack(weights: Array[Int], values: Array[Int], counts: Array[Int], capacity: Int): Int = {
-    val n = weights.length
-    val dp = Array.fill(n + 1, capacity + 1)(0)
-    for (i <- 1 to n) {
-      val wi = weights(i - 1); val vi = values(i - 1); val ci = counts(i - 1)
-      for (w <- 0 to capacity) {
-        val kMax = if (wi > 0) math.min(ci, w / wi) else ci
-        var best = 0
-        for (k <- 0 to kMax) {
-          val candidate = k * vi + dp(i - 1)(w - k * wi)
-          if (candidate > best) best = candidate
-        }
-        dp(i)(w) = best
-      }
-    }
-    dp(n)(capacity)
-  }
-}
-
 object Main extends App {
+  class Solution {
+    def boundedKnapsack(weights: Array[Int], values: Array[Int], counts: Array[Int], capacity: Int): Int = {
+      val n = weights.length
+      val dp = Array.fill(n + 1, capacity + 1)(0)
+      for (i <- 1 to n) {
+        val wi = weights(i - 1); val vi = values(i - 1); val ci = counts(i - 1)
+        for (w <- 0 to capacity) {
+          val kMax = if (wi > 0) math.min(ci, w / wi) else ci
+          var best = 0
+          for (k <- 0 to kMax) {
+            val candidate = k * vi + dp(i - 1)(w - k * wi)
+            if (candidate > best) best = candidate
+          }
+          dp(i)(w) = best
+        }
+      }
+      dp(n)(capacity)
+    }
+  }
+
   println(new Solution().boundedKnapsack(Array(1, 2, 3), Array(1, 3, 4), Array(2, 2, 1), 5))  // 7
 }
 ```

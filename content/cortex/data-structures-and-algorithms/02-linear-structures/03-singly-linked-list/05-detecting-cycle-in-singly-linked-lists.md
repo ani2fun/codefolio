@@ -22,25 +22,27 @@ Floyd came up with something better. His algorithm uses **two pointers**, no has
 
 Sometimes, a linked list may not terminate at a `null` reference but instead, hold the reference to some other node in the next section of its last node. Such a list is said to have a cycle, as now, if we traverse the list from the start, we will loop indefinitely and never reach a `null` reference. Floyd's algorithm, also called the tortoise and hare method, uses the fast and slow pointer technique to identify if a linked list has a cycle in a single pass. It is a really efficient algorithm that can also identify the node at which the cycle starts without using any extra space.
 
-```d2
-direction: right
-h: head {shape: oval}
-n1: {value: 5; next}
-n2: {value: 7; next}
-n3: {
-  value: 3
-  next
-  style.fill: "#fde68a"
-  style.stroke: "#d97706"
+```d3 widget=linked-list
+{
+  "title": "A linked list with a cycle — the tail loops back to node(3) instead of pointing to null",
+  "direction": "single",
+  "nodes": [
+    {"id": "n1", "value": "5"},
+    {"id": "n2", "value": "7"},
+    {"id": "n3", "value": "3", "style": "highlight"},
+    {"id": "n4", "value": "10"},
+    {"id": "n5", "value": "6"}
+  ],
+  "head": "n1",
+  "cycleTarget": "n3",
+  "steps": [
+    {
+      "links": [["n1","n2"],["n2","n3"],["n3","n4"],["n4","n5"]],
+      "markers": [{"name": "head", "nodeId": "n1"}, {"name": "current", "nodeId": "n3"}],
+      "msg": "Tail node(6) loops back to node(3) — naive traversal would never terminate"
+    }
+  ]
 }
-n4: {value: 10; next}
-n5: {value: 6; next}
-h -> n1.value
-n1.next -> n2.value
-n2.next -> n3.value
-n3.next -> n4.value
-n4.next -> n5.value
-n5.next -> n3.value: "cycle back"
 ```
 
 <p align="center"><strong>A cycle exists when the tail's <code>next</code> points back to an earlier node (here the node holding <code>3</code>) instead of <code>null</code>. Traversal never terminates.</strong></p>
@@ -53,63 +55,140 @@ The `fast` and `slow` pointers can meet at any node in the cycle and not necess
 
 Below is an example of a linked list that has a cycle.
 
-```mermaid
----
-config:
-  theme: base
-  themeVariables:
-    primaryColor: "#dbeafe"
-    primaryBorderColor: "#3b82f6"
-    primaryTextColor: "#1e3a5f"
-    lineColor: "#64748b"
-    secondaryColor: "#ede9fe"
-    tertiaryColor: "#fef9c3"
----
-flowchart LR
-    H(["head<br/>slow + fast"]) --> A["5"] --> B["7"] --> C["3"] --> D["10"] --> E["6"]
-    E -->|"cycle"| C
-    TRACE["Tick 1: slow→7, fast→3<br/>Tick 2: slow→3, fast→6<br/>Tick 3: slow→10, fast→10 ★ meet"]
-    E -.-> TRACE
+```d3 widget=linked-list
+{
+  "title": "Floyd Phase 1 — slow advances 1, fast advances 2; they meet inside the loop",
+  "direction": "single",
+  "nodes": [
+    {"id": "n1", "value": "5"},
+    {"id": "n2", "value": "7"},
+    {"id": "n3", "value": "3"},
+    {"id": "n4", "value": "10"},
+    {"id": "n5", "value": "6"}
+  ],
+  "head": "n1",
+  "cycleTarget": "n3",
+  "sections": [
+    {"name": "Init", "startIdx": 0},
+    {"name": "Tick 1", "startIdx": 1},
+    {"name": "Tick 2", "startIdx": 4},
+    {"name": "Tick 3 (meet)", "startIdx": 7}
+  ],
+  "steps": [
+    {
+      "links": [["n1","n2"],["n2","n3"],["n3","n4"],["n4","n5"]],
+      "markers": [{"name": "slow", "nodeId": "n1"}, {"name": "fast", "nodeId": "n1"}],
+      "msg": "Init: slow = fast = head (both at node 5)"
+    },
+    {
+      "links": [["n1","n2"],["n2","n3"],["n3","n4"],["n4","n5"]],
+      "markers": [{"name": "slow", "nodeId": "n2"}, {"name": "fast", "nodeId": "n1"}],
+      "msg": "Tick 1a: slow advances by 1 → node 7"
+    },
+    {
+      "links": [["n1","n2"],["n2","n3"],["n3","n4"],["n4","n5"]],
+      "markers": [{"name": "slow", "nodeId": "n2"}, {"name": "fast", "nodeId": "n2"}],
+      "msg": "Tick 1b: fast advances step 1 of 2 → node 7"
+    },
+    {
+      "links": [["n1","n2"],["n2","n3"],["n3","n4"],["n4","n5"]],
+      "markers": [{"name": "slow", "nodeId": "n2"}, {"name": "fast", "nodeId": "n3"}],
+      "msg": "Tick 1c: fast advances step 2 of 2 → node 3. slow=7, fast=3"
+    },
+    {
+      "links": [["n1","n2"],["n2","n3"],["n3","n4"],["n4","n5"]],
+      "markers": [{"name": "slow", "nodeId": "n3"}, {"name": "fast", "nodeId": "n3"}],
+      "msg": "Tick 2a: slow advances → node 3"
+    },
+    {
+      "links": [["n1","n2"],["n2","n3"],["n3","n4"],["n4","n5"]],
+      "markers": [{"name": "slow", "nodeId": "n3"}, {"name": "fast", "nodeId": "n4"}],
+      "msg": "Tick 2b: fast advances step 1 → node 10"
+    },
+    {
+      "links": [["n1","n2"],["n2","n3"],["n3","n4"],["n4","n5"]],
+      "markers": [{"name": "slow", "nodeId": "n3"}, {"name": "fast", "nodeId": "n5"}],
+      "msg": "Tick 2c: fast advances step 2 → node 6. slow=3, fast=6"
+    },
+    {
+      "links": [["n1","n2"],["n2","n3"],["n3","n4"],["n4","n5"]],
+      "markers": [{"name": "slow", "nodeId": "n4"}, {"name": "fast", "nodeId": "n5"}],
+      "msg": "Tick 3a: slow advances → node 10"
+    },
+    {
+      "links": [["n1","n2"],["n2","n3"],["n3","n4"],["n4","n5"]],
+      "markers": [{"name": "slow", "nodeId": "n4"}, {"name": "fast", "nodeId": "n3"}],
+      "msg": "Tick 3b: fast advances step 1 — wraps via cycle edge → back to node 3"
+    },
+    {
+      "links": [["n1","n2"],["n2","n3"],["n3","n4"],["n4","n5"]],
+      "markers": [{"name": "slow", "nodeId": "n4"}, {"name": "fast", "nodeId": "n4"}],
+      "msg": "Tick 3c: fast advances step 2 → node 10. slow and fast collide — a cycle exists."
+    }
+  ]
+}
 ```
 
 <p align="center"><strong>Slow moves 1 step, fast moves 2. If a cycle exists, fast laps slow and they meet at some node inside the loop. If no cycle exists, fast reaches <code>null</code>.</strong></p>
 
 Once we confirm that a linked list has a cycle, the next step is to find where the cycle starts. After the `fast` and `slow` pointer meet at some node, we move `fast` back to the head of the list and traverse the list again using both `fast` and `slow`. However, this time, both `fast` and `slow` move at the same speed of one step in each iteration until they meet. The node at which they meet this time is where the cycle starts.
 
-```mermaid
----
-config:
-  theme: base
-  themeVariables:
-    primaryColor: "#dbeafe"
-    primaryBorderColor: "#3b82f6"
-    primaryTextColor: "#1e3a5f"
-    lineColor: "#64748b"
-    secondaryColor: "#ede9fe"
-    tertiaryColor: "#fef9c3"
----
-flowchart LR
-    H(["head<br/>(reset fast)"]) --> A["5"] --> B["7"] --> C["3 ★<br/>cycle start"] --> D["10"] --> E["6<br/>meeting point"]
-    E -->|"cycle"| C
-    style C fill:#fef9c3,stroke:#3b82f6
-    NOTE["After they met, move both 1 step at a time.<br/>They will re-meet at the cycle-start node."]
-    E -.-> NOTE
+```d3 widget=linked-list
+{
+  "title": "Floyd Phase 2 — reset fast to head; walk both at speed 1; they meet at the cycle start",
+  "direction": "single",
+  "nodes": [
+    {"id": "n1", "value": "5"},
+    {"id": "n2", "value": "7"},
+    {"id": "n3", "value": "3", "style": "highlight"},
+    {"id": "n4", "value": "10"},
+    {"id": "n5", "value": "6"}
+  ],
+  "head": "n1",
+  "cycleTarget": "n3",
+  "sections": [
+    {"name": "Init",  "startIdx": 0},
+    {"name": "Tick 1", "startIdx": 1},
+    {"name": "Tick 2 (meet)", "startIdx": 3}
+  ],
+  "steps": [
+    {
+      "links": [["n1","n2"],["n2","n3"],["n3","n4"],["n4","n5"]],
+      "markers": [{"name": "fast", "nodeId": "n1"}, {"name": "slow", "nodeId": "n4"}],
+      "msg": "Phase 2 init: fast resets to head; slow stays at the meeting point (node 10)"
+    },
+    {
+      "links": [["n1","n2"],["n2","n3"],["n3","n4"],["n4","n5"]],
+      "markers": [{"name": "fast", "nodeId": "n2"}, {"name": "slow", "nodeId": "n4"}],
+      "msg": "Tick 1a: fast advances one step → node 7"
+    },
+    {
+      "links": [["n1","n2"],["n2","n3"],["n3","n4"],["n4","n5"]],
+      "markers": [{"name": "fast", "nodeId": "n2"}, {"name": "slow", "nodeId": "n5"}],
+      "msg": "Tick 1b: slow advances one step → node 6"
+    },
+    {
+      "links": [["n1","n2"],["n2","n3"],["n3","n4"],["n4","n5"]],
+      "markers": [{"name": "fast", "nodeId": "n3"}, {"name": "slow", "nodeId": "n5"}],
+      "msg": "Tick 2a: fast advances one step → node 3 (the highlighted cycle entry)"
+    },
+    {
+      "links": [["n1","n2"],["n2","n3"],["n3","n4"],["n4","n5"]],
+      "markers": [{"name": "fast", "nodeId": "n3"}, {"name": "slow", "nodeId": "n3"}],
+      "msg": "Tick 2b: slow wraps via cycle edge → node 3. They collide at the cycle start."
+    },
+    {
+      "links": [["n1","n2"],["n2","n3"],["n3","n4"],["n4","n5"]],
+      "markers": [{"name": "fast", "nodeId": "n3"}, {"name": "slow", "nodeId": "n3"}],
+      "msg": "Return slow (= fast) — node 3 is the cycle start. Total: O(n) time, O(1) space."
+    }
+  ]
+}
 ```
 
 <p align="center"><strong>Phase 2 — reset <code>fast</code> to <code>head</code> and advance both pointers one step at a time. They collide at the node where the cycle begins.</strong></p>
 
 ```mermaid
----
-config:
-  theme: base
-  themeVariables:
-    primaryColor: "#dbeafe"
-    primaryBorderColor: "#3b82f6"
-    primaryTextColor: "#1e3a5f"
-    lineColor: "#64748b"
-    secondaryColor: "#ede9fe"
-    tertiaryColor: "#fef9c3"
----
 flowchart TB
     P1["Phase 1 — detect<br/>slow = fast = head<br/>slow += 1, fast += 2 each tick<br/>stop when slow == fast OR fast == null"]
     Q{"fast == null?"}
@@ -214,43 +293,56 @@ def find_cycle(head: Optional[ListNode]) -> Optional[ListNode]:
 ```
 
 ```java run
-class Solution {
-    public ListNode findCycle(ListNode head) {
-        ListNode slow = head;
-        ListNode fast = head;
-        boolean hasLoop = false;
+public class Main {
+    static class ListNode { int val; ListNode next; ListNode(int v){val=v;} }
 
-        // Check if there is a loop in the linked list
-        while (fast != null && fast.next != null) {
+    static class Solution {
+        public ListNode findCycle(ListNode head) {
+            ListNode slow = head;
+            ListNode fast = head;
+            boolean hasLoop = false;
 
-            // Move slow pointer by one step
-            slow = slow.next;
+            // Check if there is a loop in the linked list
+            while (fast != null && fast.next != null) {
 
-            // Move fast pointer by two steps
-            fast = fast.next.next;
+                // Move slow pointer by one step
+                slow = slow.next;
 
-            // If slow and fast pointers meet, there is a loop
-            if (slow == fast) {
-                hasLoop = true;
-                break;
+                // Move fast pointer by two steps
+                fast = fast.next.next;
+
+                // If slow and fast pointers meet, there is a loop
+                if (slow == fast) {
+                    hasLoop = true;
+                    break;
+                }
             }
-        }
 
-        // If no loop is found, return null
-        if (!hasLoop) {
-            return null;
-        }
+            // If no loop is found, return null
+            if (!hasLoop) {
+                return null;
+            }
 
-        // Reset fast pointer to the head and move both pointers at the
-        // same pace
-        fast = head;
-        while (slow != fast) {
-            slow = slow.next;
-            fast = fast.next;
-        }
+            // Reset fast pointer to the head and move both pointers at the
+            // same pace
+            fast = head;
+            while (slow != fast) {
+                slow = slow.next;
+                fast = fast.next;
+            }
 
-        // Return the node where the loop starts
-        return slow;
+            // Return the node where the loop starts
+            return slow;
+        }
+    }
+
+    public static void main(String[] args) {
+        // Cycle at node 7: 5 → 7 → 3 → 10 → back to 7
+        ListNode n1 = new ListNode(5), n2 = new ListNode(7),
+                 n3 = new ListNode(3), n4 = new ListNode(10);
+        n1.next = n2; n2.next = n3; n3.next = n4; n4.next = n2;
+        ListNode start = new Solution().findCycle(n1);
+        System.out.println(start == null ? "null" : start.val); // 7
     }
 }
 ```
@@ -300,43 +392,54 @@ ListNode* findCycle(ListNode *head) {
 ```
 
 ```scala run
-object Solution {
-  def findCycle(head: ListNode): ListNode = {
-    var slow = head
-    var fast = head
-    var hasLoop = false
+class ListNode(var v: Int, var next: ListNode = null)
 
-    // Check if there is a loop in the linked list
-    while (fast != null && fast.next != null && !hasLoop) {
+object Main extends App {
+  class Solution {
+    def findCycle(head: ListNode): ListNode = {
+      var slow = head
+      var fast = head
+      var hasLoop = false
 
-      // Move slow pointer by one step
-      slow = slow.next
+      // Check if there is a loop in the linked list
+      while (fast != null && fast.next != null && !hasLoop) {
 
-      // Move fast pointer by two steps
-      fast = fast.next.next
+        // Move slow pointer by one step
+        slow = slow.next
 
-      // If slow and fast pointers meet, there is a loop
-      if (slow eq fast) {
-        hasLoop = true
+        // Move fast pointer by two steps
+        fast = fast.next.next
+
+        // If slow and fast pointers meet, there is a loop
+        if (slow eq fast) {
+          hasLoop = true
+        }
       }
-    }
 
-    // If no loop is found, return null
-    if (!hasLoop) {
-      return null
-    }
+      // If no loop is found, return null
+      if (!hasLoop) {
+        return null
+      }
 
-    // Reset fast pointer to the head and move both pointers at the
-    // same pace
-    fast = head
-    while (slow ne fast) {
-      slow = slow.next
-      fast = fast.next
-    }
+      // Reset fast pointer to the head and move both pointers at the
+      // same pace
+      fast = head
+      while (slow ne fast) {
+        slow = slow.next
+        fast = fast.next
+      }
 
-    // Return the node where the loop starts
-    slow
+      // Return the node where the loop starts
+      slow
+    }
   }
+
+  // Cycle at node 7: 5 → 7 → 3 → 10 → back to 7
+  val n1 = new ListNode(5); val n2 = new ListNode(7)
+  val n3 = new ListNode(3); val n4 = new ListNode(10)
+  n1.next = n2; n2.next = n3; n3.next = n4; n4.next = n2
+  val start = new Solution().findCycle(n1)
+  println(if (start == null) "null" else start.v) // 7
 }
 ```
 
@@ -606,7 +709,7 @@ print(detect_cycle(n1))  # false
 ```
 
 ```java run
-public class DetectCycle {
+public class Main {
     static class ListNode {
         int val;
         ListNode next;
@@ -614,32 +717,34 @@ public class DetectCycle {
         ListNode(int v, ListNode n) { val = v; next = n; }
     }
 
-    static boolean detectCycle(ListNode head) {
+    static class Solution {
+        public boolean detectCycle(ListNode head) {
 
-        // Initialize the slow pointer to the head of the list
-        ListNode slow = head;
+            // Initialize the slow pointer to the head of the list
+            ListNode slow = head;
 
-        // Initialize the fast pointer to the head of the list
-        ListNode fast = head;
+            // Initialize the fast pointer to the head of the list
+            ListNode fast = head;
 
-        while (fast != null && fast.next != null) {
+            while (fast != null && fast.next != null) {
 
-            // Move the slow pointer one step forward
-            slow = slow.next;
+                // Move the slow pointer one step forward
+                slow = slow.next;
 
-            // Move the fast pointer two steps forward
-            fast = fast.next.next;
+                // Move the fast pointer two steps forward
+                fast = fast.next.next;
 
-            // If the slow and fast pointers meet, there is a cycle in
-            // the list
-            if (slow == fast) {
-                return true;
+                // If the slow and fast pointers meet, there is a cycle in
+                // the list
+                if (slow == fast) {
+                    return true;
+                }
             }
-        }
 
-        // If the loop exits without returning true, there is no cycle in
-        // the list
-        return false;
+            // If the loop exits without returning true, there is no cycle in
+            // the list
+            return false;
+        }
     }
 
     public static void main(String[] args) {
@@ -650,7 +755,7 @@ public class DetectCycle {
         ListNode n4 = new ListNode(10);
         n1.next = n2; n2.next = n3; n3.next = n4;
 
-        System.out.println(detectCycle(n1)); // false
+        System.out.println(new Solution().detectCycle(n1)); // false
     }
 }
 ```
@@ -715,45 +820,45 @@ int main() {
 ```scala run
 class ListNode(var v: Int, var next: ListNode = null)
 
-object DetectCycle {
-  def detectCycle(head: ListNode): Boolean = {
+object Main extends App {
+  class Solution {
+    def detectCycle(head: ListNode): Boolean = {
 
-    // Initialize the slow pointer to the head of the list
-    var slow = head
+      // Initialize the slow pointer to the head of the list
+      var slow = head
 
-    // Initialize the fast pointer to the head of the list
-    var fast = head
+      // Initialize the fast pointer to the head of the list
+      var fast = head
 
-    while (fast != null && fast.next != null) {
+      while (fast != null && fast.next != null) {
 
-      // Move the slow pointer one step forward
-      slow = slow.next
+        // Move the slow pointer one step forward
+        slow = slow.next
 
-      // Move the fast pointer two steps forward
-      fast = fast.next.next
+        // Move the fast pointer two steps forward
+        fast = fast.next.next
 
-      // If the slow and fast pointers meet, there is a cycle in
-      // the list
-      if (slow eq fast) {
-        return true
+        // If the slow and fast pointers meet, there is a cycle in
+        // the list
+        if (slow eq fast) {
+          return true
+        }
       }
+
+      // If the loop exits without returning true, there is no cycle in
+      // the list
+      false
     }
-
-    // If the loop exits without returning true, there is no cycle in
-    // the list
-    false
   }
 
-  def main(args: Array[String]): Unit = {
-    // Non-cyclic list [5, 7, 3, 10]
-    val n1 = new ListNode(5)
-    val n2 = new ListNode(7)
-    val n3 = new ListNode(3)
-    val n4 = new ListNode(10)
-    n1.next = n2; n2.next = n3; n3.next = n4
+  // Non-cyclic list [5, 7, 3, 10]
+  val n1 = new ListNode(5)
+  val n2 = new ListNode(7)
+  val n3 = new ListNode(3)
+  val n4 = new ListNode(10)
+  n1.next = n2; n2.next = n3; n3.next = n4
 
-    println(detectCycle(n1)) // false
-  }
+  println(new Solution().detectCycle(n1)) // false
 }
 ```
 
@@ -934,7 +1039,7 @@ print_list(n1)  # 1 -> 3 -> 4
 ```
 
 ```java run
-public class RemoveLoop {
+public class Main {
     static class ListNode {
         int val;
         ListNode next;
@@ -942,76 +1047,78 @@ public class RemoveLoop {
         ListNode(int v, ListNode n) { val = v; next = n; }
     }
 
-    static void removeLoop(ListNode head) {
+    static class Solution {
+        public void removeLoop(ListNode head) {
 
-        // Check if the list is empty or has only one element (no loop
-        // possible)
-        if (head == null || head.next == null) {
-            return;
-        }
-
-        // Pointer to traverse the list one node at a time
-        ListNode slow = head;
-
-        // Pointer to traverse the list two nodes at a time
-        ListNode fast = head;
-
-        // Flag to indicate if a loop is present
-        boolean hasLoop = false;
-
-        // Detect if there is a loop in the linked list
-        while (fast != null && fast.next != null) {
-
-            // Move slow pointer by one node
-            slow = slow.next;
-
-            // Move fast pointer by two nodes
-            fast = fast.next.next;
-
-            // If slow and fast pointers meet, there is a loop
-            if (slow == fast) {
-                hasLoop = true;
-                break;
+            // Check if the list is empty or has only one element (no loop
+            // possible)
+            if (head == null || head.next == null) {
+                return;
             }
-        }
 
-        // No loop found, return from the function
-        if (!hasLoop) {
-            return;
-        }
+            // Pointer to traverse the list one node at a time
+            ListNode slow = head;
 
-        // If the loop starts at the head of the linked list
-        if (slow == head) {
-            while (slow.next != head) {
+            // Pointer to traverse the list two nodes at a time
+            ListNode fast = head;
+
+            // Flag to indicate if a loop is present
+            boolean hasLoop = false;
+
+            // Detect if there is a loop in the linked list
+            while (fast != null && fast.next != null) {
+
+                // Move slow pointer by one node
                 slow = slow.next;
+
+                // Move fast pointer by two nodes
+                fast = fast.next.next;
+
+                // If slow and fast pointers meet, there is a loop
+                if (slow == fast) {
+                    hasLoop = true;
+                    break;
+                }
             }
-        }
 
-        // Find the start of the loop (where slow and fast pointers meet
-        // again)
-        else {
-
-            // Reset fast pointer to the head of the linked list
-            fast = head;
-            while (slow.next != fast.next) {
-                slow = slow.next;
-                fast = fast.next;
+            // No loop found, return from the function
+            if (!hasLoop) {
+                return;
             }
+
+            // If the loop starts at the head of the linked list
+            if (slow == head) {
+                while (slow.next != head) {
+                    slow = slow.next;
+                }
+            }
+
+            // Find the start of the loop (where slow and fast pointers meet
+            // again)
+            else {
+
+                // Reset fast pointer to the head of the linked list
+                fast = head;
+                while (slow.next != fast.next) {
+                    slow = slow.next;
+                    fast = fast.next;
+                }
+            }
+
+            // Remove the loop by setting the next pointer of the last node
+            // in the loop to null
+            slow.next = null;
         }
 
-        // Remove the loop by setting the next pointer of the last node
-        // in the loop to null
-        slow.next = null;
-    }
-
-    static void printList(ListNode head) {
-        StringBuilder sb = new StringBuilder();
-        while (head != null) {
-            sb.append(head.val);
-            if (head.next != null) sb.append(" -> ");
-            head = head.next;
+        public void printList(ListNode head) {
+            StringBuilder sb = new StringBuilder();
+            while (head != null) {
+                sb.append(head.val);
+                if (head.next != null) sb.append(" -> ");
+                head = head.next;
+            }
+            System.out.println(sb);
         }
-        System.out.println(sb);
     }
 
     public static void main(String[] args) {
@@ -1022,8 +1129,9 @@ public class RemoveLoop {
         n1.next = n2; n2.next = n3;
         n3.next = n2; // Create the loop
 
-        removeLoop(n1);
-        printList(n1); // 1 -> 3 -> 4
+        Solution sol = new Solution();
+        sol.removeLoop(n1);
+        sol.printList(n1); // 1 -> 3 -> 4
     }
 }
 ```
@@ -1131,86 +1239,87 @@ int main() {
 ```scala run
 class ListNode(var v: Int, var next: ListNode = null)
 
-object RemoveLoop {
-  def removeLoop(head: ListNode): Unit = {
+object Main extends App {
+  class Solution {
+    def removeLoop(head: ListNode): Unit = {
 
-    // Check if the list is empty or has only one element (no loop
-    // possible)
-    if (head == null || head.next == null) {
-      return
-    }
-
-    // Pointer to traverse the list one node at a time
-    var slow = head
-
-    // Pointer to traverse the list two nodes at a time
-    var fast = head
-
-    // Flag to indicate if a loop is present
-    var hasLoop = false
-
-    // Detect if there is a loop in the linked list
-    while (fast != null && fast.next != null && !hasLoop) {
-
-      // Move slow pointer by one node
-      slow = slow.next
-
-      // Move fast pointer by two nodes
-      fast = fast.next.next
-
-      // If slow and fast pointers meet, there is a loop
-      if (slow eq fast) {
-        hasLoop = true
+      // Check if the list is empty or has only one element (no loop
+      // possible)
+      if (head == null || head.next == null) {
+        return
       }
-    }
 
-    // No loop found, return from the function
-    if (!hasLoop) {
-      return
-    }
+      // Pointer to traverse the list one node at a time
+      var slow = head
 
-    // If the loop starts at the head of the linked list
-    if (slow eq head) {
-      while (slow.next ne head) {
+      // Pointer to traverse the list two nodes at a time
+      var fast = head
+
+      // Flag to indicate if a loop is present
+      var hasLoop = false
+
+      // Detect if there is a loop in the linked list
+      while (fast != null && fast.next != null && !hasLoop) {
+
+        // Move slow pointer by one node
         slow = slow.next
+
+        // Move fast pointer by two nodes
+        fast = fast.next.next
+
+        // If slow and fast pointers meet, there is a loop
+        if (slow eq fast) {
+          hasLoop = true
+        }
       }
+
+      // No loop found, return from the function
+      if (!hasLoop) {
+        return
+      }
+
+      // If the loop starts at the head of the linked list
+      if (slow eq head) {
+        while (slow.next ne head) {
+          slow = slow.next
+        }
+      }
+
+      // Find the start of the loop (where slow and fast pointers meet
+      // again)
+      else {
+
+        // Reset fast pointer to the head of the linked list
+        fast = head
+        while (slow.next ne fast.next) {
+          slow = slow.next
+          fast = fast.next
+        }
+      }
+
+      // Remove the loop by setting the next pointer of the last node
+      // in the loop to null
+      slow.next = null
     }
 
-    // Find the start of the loop (where slow and fast pointers meet
-    // again)
-    else {
-
-      // Reset fast pointer to the head of the linked list
-      fast = head
-      while (slow.next ne fast.next) {
-        slow = slow.next
-        fast = fast.next
-      }
+    def printList(head: ListNode): Unit = {
+      var cur = head
+      val parts = scala.collection.mutable.ListBuffer[String]()
+      while (cur != null) { parts += cur.v.toString; cur = cur.next }
+      println(parts.mkString(" -> "))
     }
-
-    // Remove the loop by setting the next pointer of the last node
-    // in the loop to null
-    slow.next = null
   }
 
-  def printList(head: ListNode): Unit = {
-    var cur = head
-    val parts = scala.collection.mutable.ListBuffer[String]()
-    while (cur != null) { parts += cur.v.toString; cur = cur.next }
-    println(parts.mkString(" -> "))
-  }
+  // List [1, 3, 4] with loop: 4 -> 3 (X=2)
+  val n1 = new ListNode(1)
+  val n2 = new ListNode(3)
+  val n3 = new ListNode(4)
+  n1.next = n2; n2.next = n3
+  n3.next = n2 // Create the loop
 
-  def main(args: Array[String]): Unit = {
-    // List [1, 3, 4] with loop: 4 -> 3 (X=2)
-    val n1 = new ListNode(1)
-    val n2 = new ListNode(3)
-    val n3 = new ListNode(4)
-    n1.next = n2; n2.next = n3
-    n3.next = n2 // Create the loop
-
-    removeLoop(n1)
-    printList(n1) // 1 -> 3 -> 4
-  }
+  val sol = new Solution()
+  sol.removeLoop(n1)
+  sol.printList(n1) // 1 -> 3 -> 4
 }
 ```
 

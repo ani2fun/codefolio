@@ -239,17 +239,19 @@ if __name__ == "__main__":
 ```
 
 ```java run
-public class Solution {
-    public void insertionSort(int[] arr) {
-        int n = arr.length;
-        for (int i = 1; i < n; i++) {
-            int key = arr[i];
-            int j = i - 1;
-            while (j >= 0 && arr[j] > key) {
-                arr[j + 1] = arr[j];
-                j--;
+public class Main {
+    static class Solution {
+        public void insertionSort(int[] arr) {
+            int n = arr.length;
+            for (int i = 1; i < n; i++) {
+                int key = arr[i];
+                int j = i - 1;
+                while (j >= 0 && arr[j] > key) {
+                    arr[j + 1] = arr[j];
+                    j--;
+                }
+                arr[j + 1] = key;
             }
-            arr[j + 1] = key;
         }
     }
 
@@ -288,27 +290,25 @@ int main(void) {
 ```
 
 ```scala run
-class Solution {
-  def insertionSort(arr: Array[Int]): Unit = {
-    val n = arr.length
-    for (i <- 1 until n) {
-      val key = arr(i)
-      var j = i - 1
-      while (j >= 0 && arr(j) > key) {
-        arr(j + 1) = arr(j)
-        j -= 1
+object Main extends App {
+  class Solution {
+    def insertionSort(arr: Array[Int]): Unit = {
+      val n = arr.length
+      for (i <- 1 until n) {
+        val key = arr(i)
+        var j = i - 1
+        while (j >= 0 && arr(j) > key) {
+          arr(j + 1) = arr(j)
+          j -= 1
+        }
+        arr(j + 1) = key
       }
-      arr(j + 1) = key
     }
   }
-}
 
-object Main {
-  def main(args: Array[String]): Unit = {
-    val arr = Array(5, 3, 8, 1, 4)
-    new Solution().insertionSort(arr)
-    println(arr.mkString(" "))
-  }
+  val arr = Array(5, 3, 8, 1, 4)
+  new Solution().insertionSort(arr)
+  println(arr.mkString(" "))
 }
 ```
 
@@ -458,18 +458,27 @@ if __name__ == "__main__":
 ```
 
 ```java run
-public class Solution {
-    public void insertionSort(int[] arr) {
-        int n = arr.length;
-        for (int i = 1; i < n; i++) {
-            int key = arr[i];
-            int j = i - 1;
-            while (j >= 0 && arr[j] > key) {
-                arr[j + 1] = arr[j];
-                j--;
+public class Main {
+    static class Solution {
+        public void insertionSort(int[] arr) {
+            int n = arr.length;
+            for (int i = 1; i < n; i++) {
+                int key = arr[i];
+                int j = i - 1;
+                while (j >= 0 && arr[j] > key) {
+                    arr[j + 1] = arr[j];
+                    j--;
+                }
+                arr[j + 1] = key;
             }
-            arr[j + 1] = key;
         }
+    }
+
+    public static void main(String[] args) {
+        int[] arr = {2, 3, 2, 1, 5, 6};
+        new Solution().insertionSort(arr);
+        for (int x : arr) System.out.print(x + " ");
+        System.out.println();
     }
 }
 ```
@@ -491,18 +500,24 @@ void insertion_sort(int *arr, int n) {
 ```
 
 ```scala run
-class Solution {
-  def insertionSort(arr: Array[Int]): Unit = {
-    for (i <- 1 until arr.length) {
-      val key = arr(i)
-      var j = i - 1
-      while (j >= 0 && arr(j) > key) {
-        arr(j + 1) = arr(j)
-        j -= 1
+object Main extends App {
+  class Solution {
+    def insertionSort(arr: Array[Int]): Unit = {
+      for (i <- 1 until arr.length) {
+        val key = arr(i)
+        var j = i - 1
+        while (j >= 0 && arr(j) > key) {
+          arr(j + 1) = arr(j)
+          j -= 1
+        }
+        arr(j + 1) = key
       }
-      arr(j + 1) = key
     }
   }
+
+  val arr = Array(2, 3, 2, 1, 5, 6)
+  new Solution().insertionSort(arr)
+  println(arr.mkString(" "))
 }
 ```
 

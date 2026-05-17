@@ -287,7 +287,7 @@ if __name__ == "__main__":
 ```
 
 ```java run
-class Solution {
+public class Main {
     static double sumRowMajor(double[] m, int n) {
         double s = 0;
         for (int i = 0; i < n; i++) {
@@ -374,7 +374,7 @@ int main(void) {
 ```
 
 ```scala run
-object Solution {
+object Main extends App {
   def sumRowMajor(m: Array[Double], n: Int): Double = {
     var s = 0.0; var i = 0
     while (i < n) {
@@ -396,21 +396,19 @@ object Solution {
     s
   }
 
-  def main(args: Array[String]): Unit = {
-    val sizes = Array(128, 256, 512, 1024)
-    println(f"${"n"}%6s ${"matrix MB"}%12s ${"row (ms)"}%12s ${"col (ms)"}%12s ${"col/row"}%10s")
-    for (n <- sizes) {
-      val m = Array.fill(n * n)(1.0)
-      sumRowMajor(m, n); sumColMajor(m, n)                 // warmup
-      var t0 = System.nanoTime()
-      sumRowMajor(m, n)
-      val rowMs = (System.nanoTime() - t0) / 1e6
-      t0 = System.nanoTime()
-      sumColMajor(m, n)
-      val colMs = (System.nanoTime() - t0) / 1e6
-      val sizeMb = m.length * 8 / (1024.0 * 1024.0)
-      println(f"$n%6d $sizeMb%12.1f $rowMs%12.2f $colMs%12.2f ${colMs / rowMs}%9.1fx")
-    }
+  val sizes = Array(128, 256, 512, 1024)
+  println(f"${"n"}%6s ${"matrix MB"}%12s ${"row (ms)"}%12s ${"col (ms)"}%12s ${"col/row"}%10s")
+  for (n <- sizes) {
+    val m = Array.fill(n * n)(1.0)
+    sumRowMajor(m, n); sumColMajor(m, n)                 // warmup
+    var t0 = System.nanoTime()
+    sumRowMajor(m, n)
+    val rowMs = (System.nanoTime() - t0) / 1e6
+    t0 = System.nanoTime()
+    sumColMajor(m, n)
+    val colMs = (System.nanoTime() - t0) / 1e6
+    val sizeMb = m.length * 8 / (1024.0 * 1024.0)
+    println(f"$n%6d $sizeMb%12.1f $rowMs%12.2f $colMs%12.2f ${colMs / rowMs}%9.1fx")
   }
 }
 ```

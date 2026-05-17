@@ -96,14 +96,16 @@ if __name__ == "__main__":
 ```
 
 ```java run
-public class Solution {
-    public int reverseBits(int num) {
-        int result = 0;
-        for (int i = 0; i < 32; i++) {
-            result = (result << 1) | (num & 1);
-            num >>>= 1;                            // Logical right-shift; ignore sign bit
+public class Main {
+    static class Solution {
+        public int reverseBits(int num) {
+            int result = 0;
+            for (int i = 0; i < 32; i++) {
+                result = (result << 1) | (num & 1);
+                num >>>= 1;                            // Logical right-shift; ignore sign bit
+            }
+            return result;
         }
-        return result;
     }
 
     public static void main(String[] args) {
@@ -132,19 +134,19 @@ int main(void) {
 ```
 
 ```scala run
-class Solution {
-  def reverseBits(num: Int): Int = {
-    var result = 0
-    var n = num
-    for (_ <- 0 until 32) {
-      result = (result << 1) | (n & 1)
-      n = n >>> 1                                   // Unsigned right-shift in Scala
-    }
-    result
-  }
-}
-
 object Main extends App {
+  class Solution {
+    def reverseBits(num: Int): Int = {
+      var result = 0
+      var n = num
+      for (_ <- 0 until 32) {
+        result = (result << 1) | (n & 1)
+        n = n >>> 1                                   // Unsigned right-shift in Scala
+      }
+      result
+    }
+  }
+
   println(new Solution().reverseBits(28))   // 939524096
 }
 ```
@@ -277,11 +279,13 @@ if __name__ == "__main__":
 ```
 
 ```java run
-public class Solution {
-    public int circularShiftBits(int num, int k, boolean rotateLeft) {
-        k %= 32;
-        if (rotateLeft) return (num << k) | (num >>> (32 - k));
-        return (num >>> k) | (num << (32 - k));
+public class Main {
+    static class Solution {
+        public int circularShiftBits(int num, int k, boolean rotateLeft) {
+            k %= 32;
+            if (rotateLeft) return (num << k) | (num >>> (32 - k));
+            return (num >>> k) | (num << (32 - k));
+        }
     }
 
     public static void main(String[] args) {
@@ -309,16 +313,16 @@ int main(void) {
 ```
 
 ```scala run
-class Solution {
-  def circularShiftBits(num: Int, k: Int, rotateLeft: Boolean): Int = {
-    val kk = k % 32
-    if (kk == 0) num
-    else if (rotateLeft) (num << kk) | (num >>> (32 - kk))
-    else (num >>> kk) | (num << (32 - kk))
-  }
-}
-
 object Main extends App {
+  class Solution {
+    def circularShiftBits(num: Int, k: Int, rotateLeft: Boolean): Int = {
+      val kk = k % 32
+      if (kk == 0) num
+      else if (rotateLeft) (num << kk) | (num >>> (32 - kk))
+      else (num >>> kk) | (num << (32 - kk))
+    }
+  }
+
   println(new Solution().circularShiftBits(28, 2, true))   // 112
 }
 ```

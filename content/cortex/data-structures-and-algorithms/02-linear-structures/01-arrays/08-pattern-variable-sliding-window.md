@@ -375,56 +375,95 @@ function variableSlidingWindow(arr):
 ```python run
 from typing import List
 
-def f_add(agg, x): return agg + x
-def f_remove(agg, x): return agg - x
-def process(agg): pass
+def f(agg, x): return agg + x
+def f_inverse(agg, x): return agg - x
 
 # Stand-in flags — replace with the real problem-specific predicates.
-should_contract = False
-should_expand   = True
+should_compute_aggregate = True
+should_contract_window   = False
+should_expand_window     = True
 
-def variable_sliding_window(arr: List[int]) -> None:
-    start = end = 0
+
+def sliding_window(arr: List[int]) -> None:
+    # Initialize start and end to 0
+    start = 0
+    end = 0
+
+    # Initialize aggregate to a default value
     aggregate = 0
-    while end < len(arr):
-        aggregate = f_add(aggregate, arr[end])         # Step 3.1: add arr[end].
-        process(aggregate)                              # Step 3.2: process current window.
 
-        if should_contract:                             # Step 3.3: shrink (use while if needed).
-            aggregate = f_remove(aggregate, arr[start])
+    # Move the window one step to the right until
+    # it reaches the end of the array
+    while end < len(arr):
+
+        if should_compute_aggregate:
+            # Add contribution of arr[end]
+            aggregate = f(aggregate, arr[end])
+
+        # Process aggregate
+        # ......
+        # (Add your processing code here)
+
+        if should_contract_window:
+            # Remove contribution of arr[start] using the inverse function
+            aggregate = f_inverse(aggregate, arr[start])
+            # Contract window
             start += 1
 
-        if should_expand:                               # Step 3.4: extend right.
+        if should_expand_window:
             end += 1
+
+
+sliding_window([1, 2, 3, 4])
+print("Template ran.")
 ```
 
 ```java run
 public class Main {
-    static int fAdd(int agg, int x)    { return agg + x; }
-    static int fRemove(int agg, int x) { return agg - x; }
-    static void process(int agg)       { /* problem-specific */ }
+    static int f(int agg, int x)        { return agg + x; }
+    static int fInverse(int agg, int x) { return agg - x; }
 
-    static boolean shouldContract = false;
-    static boolean shouldExpand   = true;
+    static boolean shouldComputeAggregate = true;
+    static boolean shouldContractWindow   = false;
+    static boolean shouldExpandWindow     = true;
 
-    static void variableSlidingWindow(int[] arr) {
-        int start = 0, end = 0, aggregate = 0;
-        while (end < arr.length) {
-            aggregate = fAdd(aggregate, arr[end]);
-            process(aggregate);
+    public static class SlidingWindow {
+        public void slidingWindow(int[] arr) {
+            // Initialize start and end to 0
+            int start = 0, end = 0;
 
-            if (shouldContract) {
-                aggregate = fRemove(aggregate, arr[start]);
-                start++;
-            }
-            if (shouldExpand) {
-                end++;
+            // Initialize aggregate to a default value
+            int aggregate = 0;
+
+            // Move the window one step to the right until
+            // it reaches the end of the array
+            while (end < arr.length) {
+
+                if (shouldComputeAggregate) {
+                    // Add contribution of arr[end]
+                    aggregate = f(aggregate, arr[end]);
+                }
+
+                // Process aggregate
+                // ......
+                // (Add your processing code here)
+
+                if (shouldContractWindow) {
+                    // Remove contribution of arr[start] using the inverse function
+                    aggregate = fInverse(aggregate, arr[start]);
+                    // Contract window
+                    start++;
+                }
+
+                if (shouldExpandWindow) {
+                    end++;
+                }
             }
         }
     }
 
     public static void main(String[] args) {
-        variableSlidingWindow(new int[]{1, 2, 3, 4});
+        new SlidingWindow().slidingWindow(new int[]{1, 2, 3, 4});
         System.out.println("Template ran.");
     }
 }
@@ -434,29 +473,47 @@ public class Main {
 #include <stdio.h>
 #include <stdbool.h>
 
-int  f_add(int agg, int x)    { return agg + x; }
-int  f_remove(int agg, int x) { return agg - x; }
-void process(int agg)         { (void)agg; }
+int  f(int agg, int x)         { return agg + x; }
+int  f_inverse(int agg, int x) { return agg - x; }
 
-bool should_contract = false;
-bool should_expand   = true;
+bool should_compute_aggregate = true;
+bool should_contract_window   = false;
+bool should_expand_window     = true;
 
-void variable_sliding_window(int* arr, int n) {
-    int start = 0, end = 0, aggregate = 0;
+void sliding_window(int* arr, int n) {
+    /* Initialize start and end to 0 */
+    int start = 0, end = 0;
+
+    /* Initialize aggregate to a default value */
+    int aggregate = 0;
+
+    /* Move the window one step to the right until
+     * it reaches the end of the array */
     while (end < n) {
-        aggregate = f_add(aggregate, arr[end]);
-        process(aggregate);
-        if (should_contract) {
-            aggregate = f_remove(aggregate, arr[start]);
+
+        if (should_compute_aggregate) {
+            /* Add contribution of arr[end] */
+            aggregate = f(aggregate, arr[end]);
+        }
+
+        /* Process aggregate */
+        /* ...... */
+        /* (Add your processing code here) */
+
+        if (should_contract_window) {
+            /* Remove contribution of arr[start] using the inverse function */
+            aggregate = f_inverse(aggregate, arr[start]);
+            /* Contract window */
             start++;
         }
-        if (should_expand) end++;
+
+        if (should_expand_window) end++;
     }
 }
 
 int main() {
     int arr[] = {1, 2, 3, 4};
-    variable_sliding_window(arr, 4);
+    sliding_window(arr, 4);
     printf("Template ran.\n");
     return 0;
 }
@@ -464,29 +521,48 @@ int main() {
 
 ```scala run
 object Main extends App {
-  def fAdd(agg: Int, x: Int): Int    = agg + x
-  def fRemove(agg: Int, x: Int): Int = agg - x
-  def process(agg: Int): Unit = ()
+  def f(agg: Int, x: Int): Int        = agg + x
+  def fInverse(agg: Int, x: Int): Int = agg - x
 
-  val shouldContract = false
-  val shouldExpand   = true
+  val shouldComputeAggregate = true
+  val shouldContractWindow   = false
+  val shouldExpandWindow     = true
 
-  def variableSlidingWindow(arr: Array[Int]): Unit = {
-    var start = 0
-    var end = 0
-    var aggregate = 0
-    while (end < arr.length) {
-      aggregate = fAdd(aggregate, arr(end))
-      process(aggregate)
-      if (shouldContract) {
-        aggregate = fRemove(aggregate, arr(start))
-        start += 1
+  class SlidingWindow {
+    def slidingWindow(arr: Array[Int]): Unit = {
+      // Initialize start and end to 0
+      var start = 0
+      var end = 0
+
+      // Initialize aggregate to a default value
+      var aggregate = 0
+
+      // Move the window one step to the right until
+      // it reaches the end of the array
+      while (end < arr.length) {
+
+        if (shouldComputeAggregate) {
+          // Add contribution of arr[end]
+          aggregate = f(aggregate, arr(end))
+        }
+
+        // Process aggregate
+        // ......
+        // (Add your processing code here)
+
+        if (shouldContractWindow) {
+          // Remove contribution of arr[start] using the inverse function
+          aggregate = fInverse(aggregate, arr(start))
+          // Contract window
+          start += 1
+        }
+
+        if (shouldExpandWindow) end += 1
       }
-      if (shouldExpand) end += 1
     }
   }
 
-  variableSlidingWindow(Array(1, 2, 3, 4))
+  new SlidingWindow().slidingWindow(Array(1, 2, 3, 4))
   println("Template ran.")
 }
 ```
@@ -849,72 +925,150 @@ flowchart TB
 
 
 ```pseudocode
-# Kadane's algorithm — sliding-window form. O(n).
-# If the running sum goes negative, restart fresh at the next element.
 function maxSubarraySum(arr):
-    n ← length(arr)
-    if n = 0: return 0
-    current ← arr[0]                              # seed with arr[0] for all-negative inputs
-    maxSum  ← arr[0]
-    end ← 1
-    while end < n:
-        if current < 0:
-            current ← arr[end]                    # negative prefix only hurts — restart
+    if arr is empty: return 0
+
+    # To store the starting index of the subarray
+    start ← 0
+
+    # To store the ending index of the subarray
+    end ← 0
+
+    # Initialize sum to a default value (current sum)
+    sum ← arr[end]
+
+    # To store the maximum subarray sum found so far
+    maxSum ← arr[end]
+
+    # Increment to start from index 1 as index 0 has already been taken
+    end ← end + 1
+
+    # Sliding window
+    while end < length(arr):
+
+        # If the current sum becomes negative, reset the window
+        if sum < 0:
+            sum ← arr[end]
+            start ← end + 1
+
+        # Otherwise, add contribution of arr[end]
         else:
-            current ← current + arr[end]
-        maxSum ← max(maxSum, current)
+            sum ← sum + arr[end]
+
+        # Update the maximum subarray sum found so far
+        maxSum ← max(maxSum, sum)
+
+        # Expand the window from the right
         end ← end + 1
+
     return maxSum
 ```
 
 ```python run
 from typing import List
 
-def max_subarray_sum(arr: List[int]) -> int:
-    n = len(arr)
-    if n == 0:
-        return 0
+class Solution:
+    def max_subarray_sum(self, arr: List[int]) -> int:
+        if not arr:
+            return 0
 
-    # Seed with arr[0] — using 0 would break all-negative inputs like [-3, -1, -2].
-    current = max_sum = arr[0]
-    start = 0
-    end = 1
+        # To store the starting index of the subarray
+        start = 0
 
-    while end < n:
-        if current < 0:
-            # Negative prefix can only hurt — restart fresh at end.
-            current = arr[end]
-            start   = end
-        else:
-            current += arr[end]
-        max_sum = max(max_sum, current)
+        # To store the ending index of the subarray
+        end = 0
+
+        # Initialize sum to a default value (current sum)
+        sum = arr[end]
+
+        # To store the maximum subarray sum found so far
+        max_sum = arr[end]
+
+        # Increment to start from index 1 as index 0 has already been
+        # taken into account
         end += 1
-    return max_sum
+
+        # Sliding window
+        while end < len(arr):
+
+            # If the current sum becomes negative, reset the window
+            if sum < 0:
+                sum = arr[end]
+                start = end + 1
+
+            # Otherwise, add the contribution of arr[end]
+            else:
+                sum += arr[end]
+
+            # Update the maximum subarray sum found so far
+            max_sum = max(max_sum, sum)
+
+            # Expand the window from the right
+            end += 1
+
+        return max_sum
 
 
-print(max_subarray_sum([-2, 1, -3, 4, -1, 2, 1, -5, 4]))   # 6
-print(max_subarray_sum([-3, -1, -2]))                       # -1
-print(max_subarray_sum([1]))                                 # 1
+sol = Solution()
+print(sol.max_subarray_sum([-2, 1, -3, 4, -1, 2, 1, -5, 4]))   # 6
+print(sol.max_subarray_sum([-3, -1, -2]))                       # -1
+print(sol.max_subarray_sum([1]))                                # 1
 ```
 
 ```java run
 public class Main {
-    static int maxSubarraySum(int[] arr) {
-        int n = arr.length;
-        if (n == 0) return 0;
-        int current = arr[0], maxSum = arr[0];
-        for (int end = 1; end < n; end++) {
-            if (current < 0) current = arr[end];
-            else             current += arr[end];
-            if (current > maxSum) maxSum = current;
+    static class Solution {
+        public int maxSubarraySum(int[] arr) {
+            if (arr.length == 0) {
+                return 0;
+            }
+
+            // To store the starting index of the subarray
+            int start = 0;
+
+            // To store the ending index of the subarray
+            int end = 0;
+
+            // Initialize sum to a default value (current sum)
+            int sum = arr[end];
+
+            // To store the maximum subarray sum found so far
+            int maxSum = arr[end];
+
+            // Increment to start from index 1 as index 0 has already been
+            // taken into account
+            end++;
+
+            // Sliding window
+            while (end < arr.length) {
+
+                // If the current sum becomes negative, reset the window
+                if (sum < 0) {
+                    sum = arr[end];
+                    start = end + 1;
+                }
+
+                // Otherwise, add contribution of arr[end]
+                else {
+                    sum += arr[end];
+                }
+
+                // Update the maximum subarray sum found so far
+                maxSum = Math.max(maxSum, sum);
+
+                // Expand the window from the right
+                end++;
+            }
+
+            return maxSum;
         }
-        return maxSum;
     }
 
     public static void main(String[] args) {
-        System.out.println(maxSubarraySum(new int[]{-2, 1, -3, 4, -1, 2, 1, -5, 4}));
-        System.out.println(maxSubarraySum(new int[]{-3, -1, -2}));
-        System.out.println(maxSubarraySum(new int[]{1}));
+        Solution sol = new Solution();
+        System.out.println(sol.maxSubarraySum(new int[]{-2, 1, -3, 4, -1, 2, 1, -5, 4}));  // 6
+        System.out.println(sol.maxSubarraySum(new int[]{-3, -1, -2}));                       // -1
+        System.out.println(sol.maxSubarraySum(new int[]{1}));                                 // 1
     }
 }
 ```
@@ -924,12 +1078,43 @@ public class Main {
 
 int max_subarray_sum(int* arr, int n) {
     if (n == 0) return 0;
-    int current = arr[0], max_sum = arr[0];
-    for (int end = 1; end < n; end++) {
-        if (current < 0) current = arr[end];
-        else             current += arr[end];
-        if (current > max_sum) max_sum = current;
+
+    /* To store the starting index of the subarray */
+    int start = 0;
+
+    /* To store the ending index of the subarray */
+    int end = 0;
+
+    /* Initialize sum to a default value (current sum) */
+    int sum = arr[end];
+
+    /* To store the maximum subarray sum found so far */
+    int max_sum = arr[end];
+
+    /* Increment to start from index 1 as index 0 has already been taken */
+    end++;
+
+    /* Sliding window */
+    while (end < n) {
+
+        /* If the current sum becomes negative, reset the window */
+        if (sum < 0) {
+            sum = arr[end];
+            start = end + 1;
+        }
+
+        /* Otherwise, add contribution of arr[end] */
+        else {
+            sum += arr[end];
+        }
+
+        /* Update the maximum subarray sum found so far */
+        if (sum > max_sum) max_sum = sum;
+
+        /* Expand the window from the right */
+        end++;
     }
+
     return max_sum;
 }
 
@@ -937,29 +1122,63 @@ int main() {
     int a1[] = {-2, 1, -3, 4, -1, 2, 1, -5, 4};
     int a2[] = {-3, -1, -2};
     int a3[] = {1};
-    printf("%d\n", max_subarray_sum(a1, 9));
-    printf("%d\n", max_subarray_sum(a2, 3));
-    printf("%d\n", max_subarray_sum(a3, 1));
+    printf("%d\n", max_subarray_sum(a1, 9));  /*  6 */
+    printf("%d\n", max_subarray_sum(a2, 3));  /* -1 */
+    printf("%d\n", max_subarray_sum(a3, 1));  /*  1 */
     return 0;
 }
 ```
 
 ```scala run
 object Main extends App {
-  def maxSubarraySum(arr: Array[Int]): Int = {
-    if (arr.isEmpty) return 0
-    var current = arr(0)
-    var maxSum = arr(0)
-    for (end <- 1 until arr.length) {
-      current = if (current < 0) arr(end) else current + arr(end)
-      maxSum = math.max(maxSum, current)
+  class Solution {
+    def maxSubarraySum(arr: Array[Int]): Int = {
+      if (arr.isEmpty) return 0
+
+      // To store the starting index of the subarray
+      var start = 0
+
+      // To store the ending index of the subarray
+      var end = 0
+
+      // Initialize sum to a default value (current sum)
+      var sum = arr(end)
+
+      // To store the maximum subarray sum found so far
+      var maxSum = arr(end)
+
+      // Increment to start from index 1 as index 0 has already been
+      // taken into account
+      end += 1
+
+      // Sliding window
+      while (end < arr.length) {
+
+        // If the current sum becomes negative, reset the window
+        if (sum < 0) {
+          sum = arr(end)
+          start = end + 1
+        }
+        // Otherwise, add contribution of arr[end]
+        else {
+          sum += arr(end)
+        }
+
+        // Update the maximum subarray sum found so far
+        maxSum = math.max(maxSum, sum)
+
+        // Expand the window from the right
+        end += 1
+      }
+
+      maxSum
     }
-    maxSum
   }
 
-  println(maxSubarraySum(Array(-2, 1, -3, 4, -1, 2, 1, -5, 4)))
-  println(maxSubarraySum(Array(-3, -1, -2)))
-  println(maxSubarraySum(Array(1)))
+  val sol = new Solution
+  println(sol.maxSubarraySum(Array(-2, 1, -3, 4, -1, 2, 1, -5, 4)))   //  6
+  println(sol.maxSubarraySum(Array(-3, -1, -2)))                       // -1
+  println(sol.maxSubarraySum(Array(1)))                                //  1
 }
 ```
 

@@ -223,29 +223,31 @@ if __name__ == "__main__":
 ```
 
 ```java run
-public class Solution {
-    public String longestPalindromicSubstring(String s) {
-        int n = s.length();
-        if (n == 0) return "";
-        boolean[][] isPalin = new boolean[n][n];
-        int bestStart = 0, bestLen = 1;
-        for (int i = 0; i < n; i++) isPalin[i][i] = true;
-        for (int i = 0; i < n - 1; i++) {
-            if (s.charAt(i) == s.charAt(i + 1)) {
-                isPalin[i][i + 1] = true;
-                if (bestLen < 2) { bestStart = i; bestLen = 2; }
-            }
-        }
-        for (int len = 3; len <= n; len++) {
-            for (int i = 0; i <= n - len; i++) {
-                int j = i + len - 1;
-                if (s.charAt(i) == s.charAt(j) && isPalin[i + 1][j - 1]) {
-                    isPalin[i][j] = true;
-                    if (len > bestLen) { bestStart = i; bestLen = len; }
+public class Main {
+    static class Solution {
+        public String longestPalindromicSubstring(String s) {
+            int n = s.length();
+            if (n == 0) return "";
+            boolean[][] isPalin = new boolean[n][n];
+            int bestStart = 0, bestLen = 1;
+            for (int i = 0; i < n; i++) isPalin[i][i] = true;
+            for (int i = 0; i < n - 1; i++) {
+                if (s.charAt(i) == s.charAt(i + 1)) {
+                    isPalin[i][i + 1] = true;
+                    if (bestLen < 2) { bestStart = i; bestLen = 2; }
                 }
             }
+            for (int len = 3; len <= n; len++) {
+                for (int i = 0; i <= n - len; i++) {
+                    int j = i + len - 1;
+                    if (s.charAt(i) == s.charAt(j) && isPalin[i + 1][j - 1]) {
+                        isPalin[i][j] = true;
+                        if (len > bestLen) { bestStart = i; bestLen = len; }
+                    }
+                }
+            }
+            return s.substring(bestStart, bestStart + bestLen);
         }
-        return s.substring(bestStart, bestStart + bestLen);
     }
 
     public static void main(String[] args) {
@@ -293,26 +295,30 @@ int main(void) {
 ```
 
 ```scala run
-class Solution {
-  def longestPalindromicSubstring(s: String): String = {
-    val n = s.length
-    if (n == 0) return ""
-    val isPalin = Array.fill(n, n)(false)
-    var bestStart = 0; var bestLen = 1
-    for (i <- 0 until n) isPalin(i)(i) = true
-    for (i <- 0 until n - 1; if s(i) == s(i + 1)) {
-      isPalin(i)(i + 1) = true
-      if (bestLen < 2) { bestStart = i; bestLen = 2 }
-    }
-    for (len <- 3 to n; i <- 0 to n - len) {
-      val j = i + len - 1
-      if (s(i) == s(j) && isPalin(i + 1)(j - 1)) {
-        isPalin(i)(j) = true
-        if (len > bestLen) { bestStart = i; bestLen = len }
+object Main extends App {
+  class Solution {
+    def longestPalindromicSubstring(s: String): String = {
+      val n = s.length
+      if (n == 0) return ""
+      val isPalin = Array.fill(n, n)(false)
+      var bestStart = 0; var bestLen = 1
+      for (i <- 0 until n) isPalin(i)(i) = true
+      for (i <- 0 until n - 1; if s(i) == s(i + 1)) {
+        isPalin(i)(i + 1) = true
+        if (bestLen < 2) { bestStart = i; bestLen = 2 }
       }
+      for (len <- 3 to n; i <- 0 to n - len) {
+        val j = i + len - 1
+        if (s(i) == s(j) && isPalin(i + 1)(j - 1)) {
+          isPalin(i)(j) = true
+          if (len > bestLen) { bestStart = i; bestLen = len }
+        }
+      }
+      s.substring(bestStart, bestStart + bestLen)
     }
-    s.substring(bestStart, bestStart + bestLen)
   }
+
+  println(new Solution().longestPalindromicSubstring("forgeeksskeegfor"))
 }
 ```
 

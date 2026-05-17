@@ -263,94 +263,110 @@ class DoublyLinkedList:
 ```
 
 ```java run
-class DoublyLinkedList {
-    ListNode head;
-    ListNode tail;
-    int currentSize;
+public class Main {
+    static class ListNode { int val; ListNode prev, next; ListNode(int v){val=v;} }
 
-    public DoublyLinkedList() {
-        head = null;
-        tail = null;
-        currentSize = 0;
-    }
+    static class DoublyLinkedList {
+        ListNode head;
+        ListNode tail;
+        int currentSize;
 
-    public boolean empty() { return head == null; }
-    public int size()      { return currentSize; }
-
-    public void prepend(int val) {
-        ListNode newNode = new ListNode(val);
-        if (empty()) {                            // Empty: new node is both head and tail
-            head = newNode;
-            tail = newNode;
-        } else {                                  // Non-empty: insert before current head
-            newNode.next = head;
-            head.prev    = newNode;
-            head         = newNode;
+        public DoublyLinkedList() {
+            head = null;
+            tail = null;
+            currentSize = 0;
         }
-        currentSize++;
-    }
 
-    public void append(int val) {
-        ListNode newNode = new ListNode(val);
-        if (empty()) {
-            head = newNode;
-            tail = newNode;
-        } else {
-            newNode.prev = tail;
-            tail.next    = newNode;
-            tail         = newNode;
-        }
-        currentSize++;
-    }
+        public boolean empty() { return head == null; }
+        public int size()      { return currentSize; }
 
-    public void insert(int position, int val) {
-        if (position <= 0)             { prepend(val); return; }
-        if (position >= currentSize)   { append(val);  return; }
-        ListNode newNode = new ListNode(val);
-        ListNode current = head;
-        int idx = 0;
-        while (current != null && idx < position) {
-            current = current.next;
-            idx++;
-        }
-        newNode.prev      = current.prev;
-        newNode.next      = current;
-        current.prev.next = newNode;
-        current.prev      = newNode;
-        currentSize++;
-    }
-
-    public boolean remove(int val) {
-        if (empty()) return false;
-        ListNode current = head;
-        while (current != null) {
-            if (current.val == val) {
-                if (current == head) {
-                    head = current.next;
-                    if (head != null) head.prev = null;
-                    else               tail     = null;
-                } else if (current == tail) {
-                    tail        = current.prev;
-                    tail.next   = null;
-                } else {
-                    current.prev.next = current.next;
-                    current.next.prev = current.prev;
-                }
-                currentSize--;
-                return true;
+        public void prepend(int val) {
+            ListNode newNode = new ListNode(val);
+            if (empty()) {                            // Empty: new node is both head and tail
+                head = newNode;
+                tail = newNode;
+            } else {                                  // Non-empty: insert before current head
+                newNode.next = head;
+                head.prev    = newNode;
+                head         = newNode;
             }
-            current = current.next;
+            currentSize++;
         }
-        return false;
+
+        public void append(int val) {
+            ListNode newNode = new ListNode(val);
+            if (empty()) {
+                head = newNode;
+                tail = newNode;
+            } else {
+                newNode.prev = tail;
+                tail.next    = newNode;
+                tail         = newNode;
+            }
+            currentSize++;
+        }
+
+        public void insert(int position, int val) {
+            if (position <= 0)             { prepend(val); return; }
+            if (position >= currentSize)   { append(val);  return; }
+            ListNode newNode = new ListNode(val);
+            ListNode current = head;
+            int idx = 0;
+            while (current != null && idx < position) {
+                current = current.next;
+                idx++;
+            }
+            newNode.prev      = current.prev;
+            newNode.next      = current;
+            current.prev.next = newNode;
+            current.prev      = newNode;
+            currentSize++;
+        }
+
+        public boolean remove(int val) {
+            if (empty()) return false;
+            ListNode current = head;
+            while (current != null) {
+                if (current.val == val) {
+                    if (current == head) {
+                        head = current.next;
+                        if (head != null) head.prev = null;
+                        else               tail     = null;
+                    } else if (current == tail) {
+                        tail        = current.prev;
+                        tail.next   = null;
+                    } else {
+                        current.prev.next = current.next;
+                        current.next.prev = current.prev;
+                    }
+                    currentSize--;
+                    return true;
+                }
+                current = current.next;
+            }
+            return false;
+        }
+
+        public boolean search(int val) {
+            ListNode current = head;
+            while (current != null) {
+                if (current.val == val) return true;
+                current = current.next;
+            }
+            return false;
+        }
     }
 
-    public boolean search(int val) {
-        ListNode current = head;
-        while (current != null) {
-            if (current.val == val) return true;
-            current = current.next;
-        }
-        return false;
+    public static void main(String[] args) {
+        DoublyLinkedList list = new DoublyLinkedList();
+        list.prepend(2);                      // [2]
+        list.prepend(3);                      // [3, 2]
+        list.append(1);                       // [3, 2, 1]
+        System.out.println(list.size());      // 3
+        System.out.println(list.search(5));   // false
+        list.insert(1, 8);                    // [3, 8, 2, 1]
+        System.out.println(list.remove(2));   // true
+        System.out.println(list.empty());     // false
     }
 }
 ```
@@ -435,74 +451,88 @@ int dll_search(DoublyLinkedList *l, int val) {
 ```
 
 ```scala run
-class DoublyLinkedList {
-  var head: ListNode = null
-  var tail: ListNode = null
-  var currentSize: Int = 0
+class ListNode(var v: Int, var prev: ListNode = null, var next: ListNode = null)
 
-  def empty(): Boolean = head == null
-  def size():  Int     = currentSize
+object Main extends App {
+  class DoublyLinkedList {
+    var head: ListNode = null
+    var tail: ListNode = null
+    var currentSize: Int = 0
 
-  def prepend(v: Int): Unit = {
-    val n = new ListNode(v)
-    if (empty()) { head = n; tail = n }
-    else         { n.next = head; head.prev = n; head = n }
-    currentSize += 1
-  }
+    def empty(): Boolean = head == null
+    def size():  Int     = currentSize
 
-  def append(v: Int): Unit = {
-    val n = new ListNode(v)
-    if (empty()) { head = n; tail = n }
-    else         { n.prev = tail; tail.next = n; tail = n }
-    currentSize += 1
-  }
+    def prepend(v: Int): Unit = {
+      val n = new ListNode(v)
+      if (empty()) { head = n; tail = n }
+      else         { n.next = head; head.prev = n; head = n }
+      currentSize += 1
+    }
 
-  def insert(position: Int, v: Int): Unit = {
-    if (position <= 0)             { prepend(v); return }
-    if (position >= currentSize)   { append (v); return }
-    val n = new ListNode(v)
-    var current = head
-    var idx = 0
-    while (current != null && idx < position) { current = current.next; idx += 1 }
-    n.prev            = current.prev
-    n.next            = current
-    current.prev.next = n
-    current.prev      = n
-    currentSize += 1
-  }
+    def append(v: Int): Unit = {
+      val n = new ListNode(v)
+      if (empty()) { head = n; tail = n }
+      else         { n.prev = tail; tail.next = n; tail = n }
+      currentSize += 1
+    }
 
-  def remove(v: Int): Boolean = {
-    if (empty()) return false
-    var current = head
-    while (current != null) {
-      if (current.v == v) {
-        if (current eq head) {
-          head = current.next
-          if (head != null) head.prev = null
-          else              tail      = null
-        } else if (current eq tail) {
-          tail       = current.prev
-          tail.next  = null
-        } else {
-          current.prev.next = current.next
-          current.next.prev = current.prev
+    def insert(position: Int, v: Int): Unit = {
+      if (position <= 0)             { prepend(v); return }
+      if (position >= currentSize)   { append (v); return }
+      val n = new ListNode(v)
+      var current = head
+      var idx = 0
+      while (current != null && idx < position) { current = current.next; idx += 1 }
+      n.prev            = current.prev
+      n.next            = current
+      current.prev.next = n
+      current.prev      = n
+      currentSize += 1
+    }
+
+    def remove(v: Int): Boolean = {
+      if (empty()) return false
+      var current = head
+      while (current != null) {
+        if (current.v == v) {
+          if (current eq head) {
+            head = current.next
+            if (head != null) head.prev = null
+            else              tail      = null
+          } else if (current eq tail) {
+            tail       = current.prev
+            tail.next  = null
+          } else {
+            current.prev.next = current.next
+            current.next.prev = current.prev
+          }
+          currentSize -= 1
+          return true
         }
-        currentSize -= 1
-        return true
+        current = current.next
       }
-      current = current.next
+      false
     }
-    false
+
+    def search(v: Int): Boolean = {
+      var current = head
+      while (current != null) {
+        if (current.v == v) return true
+        current = current.next
+      }
+      false
+    }
   }
 
-  def search(v: Int): Boolean = {
-    var current = head
-    while (current != null) {
-      if (current.v == v) return true
-      current = current.next
-    }
-    false
-  }
+  val list = new DoublyLinkedList
+  list.prepend(2)                       // [2]
+  list.prepend(3)                       // [3, 2]
+  list.append(1)                        // [3, 2, 1]
+  println(list.size())                  // 3
+  println(list.search(5))               // false
+  list.insert(1, 8)                     // [3, 8, 2, 1]
+  println(list.remove(2))               // true
+  println(list.empty())                 // false
 }
 ```
 

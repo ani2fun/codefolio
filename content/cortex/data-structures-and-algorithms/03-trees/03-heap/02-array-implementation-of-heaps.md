@@ -284,26 +284,34 @@ class MaxHeap:
 ```java run
 import java.util.*;
 
-class MaxHeap {
-    List<Integer> heap = new ArrayList<>();
+public class Main {
+    static class MaxHeap {
+        List<Integer> heap = new ArrayList<>();
 
-    private void swap(int i, int j) {
-        int t = heap.get(i); heap.set(i, heap.get(j)); heap.set(j, t);
-    }
+        private void swap(int i, int j) {
+            int t = heap.get(i); heap.set(i, heap.get(j)); heap.set(j, t);
+        }
 
-    // Restore the max-heap property going UP from `index`. Used after insert.
-    private void upHeapify(int index) {
-        int parent = (index - 1) / 2;
-        while (index > 0 && heap.get(parent) < heap.get(index)) {
-            swap(index, parent);
-            index = parent;
-            parent = (index - 1) / 2;
+        // Restore the max-heap property going UP from `index`. Used after insert.
+        private void upHeapify(int index) {
+            int parent = (index - 1) / 2;
+            while (index > 0 && heap.get(parent) < heap.get(index)) {
+                swap(index, parent);
+                index = parent;
+                parent = (index - 1) / 2;
+            }
+        }
+
+        public void insert(int val) {
+            heap.add(val);                                                          // append (completeness)
+            upHeapify(heap.size() - 1);                                             // sift up (ordering)
         }
     }
 
-    public void insert(int val) {
-        heap.add(val);                                                          // append (completeness)
-        upHeapify(heap.size() - 1);                                             // sift up (ordering)
+    public static void main(String[] args) {
+        MaxHeap h = new MaxHeap();
+        for (int v : new int[]{3, 1, 4}) h.insert(v);
+        System.out.println(h.heap);  // [4, 1, 3]
     }
 }
 ```
@@ -339,28 +347,34 @@ void heap_insert(MaxHeap *h, int val) {
 ```scala run
 import scala.collection.mutable.ArrayBuffer
 
-class MaxHeap {
-  val heap: ArrayBuffer[Int] = ArrayBuffer.empty[Int]
+object Main extends App {
+  class MaxHeap {
+    val heap: ArrayBuffer[Int] = ArrayBuffer.empty[Int]
 
-  private def swap(i: Int, j: Int): Unit = {
-    val t = heap(i); heap(i) = heap(j); heap(j) = t
-  }
+    private def swap(i: Int, j: Int): Unit = {
+      val t = heap(i); heap(i) = heap(j); heap(j) = t
+    }
 
-  // Restore the max-heap property going UP from `index`. Used after insert.
-  private def upHeapify(start: Int): Unit = {
-    var index = start
-    var parent = (index - 1) / 2
-    while (index > 0 && heap(parent) < heap(index)) {
-      swap(index, parent)
-      index = parent
-      parent = (index - 1) / 2
+    // Restore the max-heap property going UP from `index`. Used after insert.
+    private def upHeapify(start: Int): Unit = {
+      var index = start
+      var parent = (index - 1) / 2
+      while (index > 0 && heap(parent) < heap(index)) {
+        swap(index, parent)
+        index = parent
+        parent = (index - 1) / 2
+      }
+    }
+
+    def insert(v: Int): Unit = {
+      heap += v                                                                       // append
+      upHeapify(heap.length - 1)                                                      // sift up
     }
   }
 
-  def insert(v: Int): Unit = {
-    heap += v                                                                       // append
-    upHeapify(heap.length - 1)                                                      // sift up
-  }
+  val h = new MaxHeap
+  Seq(3, 1, 4).foreach(h.insert)
+  println(h.heap.mkString(", "))  // 4, 1, 3
 }
 ```
 
@@ -561,42 +575,51 @@ class MaxHeap:
 ```java run
 import java.util.*;
 
-class MaxHeap {
-    List<Integer> heap = new ArrayList<>();
+public class Main {
+    static class MaxHeap {
+        List<Integer> heap = new ArrayList<>();
 
-    private void swap(int i, int j) { int t = heap.get(i); heap.set(i, heap.get(j)); heap.set(j, t); }
+        private void swap(int i, int j) { int t = heap.get(i); heap.set(i, heap.get(j)); heap.set(j, t); }
 
-    private void upHeapify(int index) {
-        int parent = (index - 1) / 2;
-        while (index > 0 && heap.get(parent) < heap.get(index)) {
-            swap(index, parent); index = parent; parent = (index - 1) / 2;
+        private void upHeapify(int index) {
+            int parent = (index - 1) / 2;
+            while (index > 0 && heap.get(parent) < heap.get(index)) {
+                swap(index, parent); index = parent; parent = (index - 1) / 2;
+            }
+        }
+
+        // Restore the max-heap property going DOWN from `index`. Used after delete/extract.
+        private void downHeapify(int index) {
+            int n = heap.size();
+            while (true) {
+                int largest = index;
+                int left = 2 * index + 1, right = 2 * index + 2;
+                if (left  < n && heap.get(left)  > heap.get(largest)) largest = left;
+                if (right < n && heap.get(right) > heap.get(largest)) largest = right;
+                if (largest == index) return;
+                swap(index, largest);
+                index = largest;
+            }
+        }
+
+        public void insert(int val) {
+            heap.add(val);
+            upHeapify(heap.size() - 1);
+        }
+
+        public void remove(int index) {
+            int last = heap.size() - 1;
+            heap.set(index, heap.get(last));                                                                   // overwrite
+            heap.remove(last);                                                                                  // drop tail
+            if (index < heap.size()) downHeapify(index);
         }
     }
 
-    // Restore the max-heap property going DOWN from `index`. Used after delete/extract.
-    private void downHeapify(int index) {
-        int n = heap.size();
-        while (true) {
-            int largest = index;
-            int left = 2 * index + 1, right = 2 * index + 2;
-            if (left  < n && heap.get(left)  > heap.get(largest)) largest = left;
-            if (right < n && heap.get(right) > heap.get(largest)) largest = right;
-            if (largest == index) return;
-            swap(index, largest);
-            index = largest;
-        }
-    }
-
-    public void insert(int val) {
-        heap.add(val);
-        upHeapify(heap.size() - 1);
-    }
-
-    public void remove(int index) {
-        int last = heap.size() - 1;
-        heap.set(index, heap.get(last));                                                                   // overwrite
-        heap.remove(last);                                                                                  // drop tail
-        if (index < heap.size()) downHeapify(index);
+    public static void main(String[] args) {
+        MaxHeap h = new MaxHeap();
+        for (int v : new int[]{3, 1, 4}) h.insert(v);
+        h.remove(1);
+        System.out.println(h.heap);  // [4, 3]
     }
 }
 ```
@@ -644,42 +667,49 @@ void heap_remove(MaxHeap *h, int index) {
 ```scala run
 import scala.collection.mutable.ArrayBuffer
 
-class MaxHeap {
-  val heap = ArrayBuffer.empty[Int]
+object Main extends App {
+  class MaxHeap {
+    val heap = ArrayBuffer.empty[Int]
 
-  private def swap(i: Int, j: Int): Unit = { val t = heap(i); heap(i) = heap(j); heap(j) = t }
+    private def swap(i: Int, j: Int): Unit = { val t = heap(i); heap(i) = heap(j); heap(j) = t }
 
-  private def upHeapify(start: Int): Unit = {
-    var index = start
-    var parent = (index - 1) / 2
-    while (index > 0 && heap(parent) < heap(index)) {
-      swap(index, parent); index = parent; parent = (index - 1) / 2
+    private def upHeapify(start: Int): Unit = {
+      var index = start
+      var parent = (index - 1) / 2
+      while (index > 0 && heap(parent) < heap(index)) {
+        swap(index, parent); index = parent; parent = (index - 1) / 2
+      }
+    }
+
+    private def downHeapify(start: Int): Unit = {
+      var index = start
+      val n = heap.length
+      var keepGoing = true
+      while (keepGoing) {
+        var largest = index
+        val left  = 2 * index + 1
+        val right = 2 * index + 2
+        if (left  < n && heap(left)  > heap(largest)) largest = left
+        if (right < n && heap(right) > heap(largest)) largest = right
+        if (largest == index) keepGoing = false
+        else { swap(index, largest); index = largest }
+      }
+    }
+
+    def insert(v: Int): Unit = { heap += v; upHeapify(heap.length - 1) }
+
+    def remove(index: Int): Unit = {
+      val last = heap.length - 1
+      heap(index) = heap(last)
+      heap.remove(last)
+      if (index < heap.length) downHeapify(index)
     }
   }
 
-  private def downHeapify(start: Int): Unit = {
-    var index = start
-    val n = heap.length
-    var keepGoing = true
-    while (keepGoing) {
-      var largest = index
-      val left  = 2 * index + 1
-      val right = 2 * index + 2
-      if (left  < n && heap(left)  > heap(largest)) largest = left
-      if (right < n && heap(right) > heap(largest)) largest = right
-      if (largest == index) keepGoing = false
-      else { swap(index, largest); index = largest }
-    }
-  }
-
-  def insert(v: Int): Unit = { heap += v; upHeapify(heap.length - 1) }
-
-  def remove(index: Int): Unit = {
-    val last = heap.length - 1
-    heap(index) = heap(last)
-    heap.remove(last)
-    if (index < heap.length) downHeapify(index)
-  }
+  val h = new MaxHeap
+  Seq(3, 1, 4).foreach(h.insert)
+  h.remove(1)
+  println(h.heap.mkString(", "))  // 4, 3
 }
 ```
 
@@ -749,12 +779,22 @@ class MaxHeap:
 ```
 
 ```java run
-class MaxHeap {
-    List<Integer> heap = new ArrayList<>();
+import java.util.*;
 
-    public Integer peek() {
-        if (heap.isEmpty()) return null;                        // empty heap → no top
-        return heap.get(0);                                     // root is the max
+public class Main {
+    static class MaxHeap {
+        List<Integer> heap = new ArrayList<>();
+
+        public Integer peek() {
+            if (heap.isEmpty()) return null;                        // empty heap → no top
+            return heap.get(0);                                     // root is the max
+        }
+    }
+
+    public static void main(String[] args) {
+        MaxHeap h = new MaxHeap();
+        h.heap.addAll(Arrays.asList(9, 5, 7));
+        System.out.println(h.peek());  // 9
     }
 }
 ```
@@ -770,10 +810,16 @@ bool heap_peek(MaxHeap *h, int *out) {
 ```
 
 ```scala run
-class MaxHeap {
-  val heap = scala.collection.mutable.ArrayBuffer.empty[Int]
-  def peek: Option[Int] =
-    if (heap.isEmpty) None else Some(heap(0))                     // root is the max
+object Main extends App {
+  class MaxHeap {
+    val heap = scala.collection.mutable.ArrayBuffer.empty[Int]
+    def peek: Option[Int] =
+      if (heap.isEmpty) None else Some(heap(0))                     // root is the max
+  }
+
+  val h = new MaxHeap
+  h.heap ++= Seq(9, 5, 7)
+  println(h.peek)  // Some(9)
 }
 ```
 
@@ -919,33 +965,44 @@ class MaxHeap:
 ```
 
 ```java run
-class MaxHeap {
-    List<Integer> heap = new ArrayList<>();
+import java.util.*;
 
-    private void swap(int i, int j) { int t = heap.get(i); heap.set(i, heap.get(j)); heap.set(j, t); }
+public class Main {
+    static class MaxHeap {
+        List<Integer> heap = new ArrayList<>();
 
-    private void downHeapify(int index) {
-        int n = heap.size();
-        while (true) {
-            int largest = index;
-            int left = 2 * index + 1, right = 2 * index + 2;
-            if (left  < n && heap.get(left)  > heap.get(largest)) largest = left;
-            if (right < n && heap.get(right) > heap.get(largest)) largest = right;
-            if (largest == index) return;
-            swap(index, largest);
-            index = largest;
+        private void swap(int i, int j) { int t = heap.get(i); heap.set(i, heap.get(j)); heap.set(j, t); }
+
+        private void downHeapify(int index) {
+            int n = heap.size();
+            while (true) {
+                int largest = index;
+                int left = 2 * index + 1, right = 2 * index + 2;
+                if (left  < n && heap.get(left)  > heap.get(largest)) largest = left;
+                if (right < n && heap.get(right) > heap.get(largest)) largest = right;
+                if (largest == index) return;
+                swap(index, largest);
+                index = largest;
+            }
+        }
+
+        public Integer extract() {
+            if (heap.isEmpty()) return null;
+            int top = heap.get(0);                                                                                      // save the root
+            int last = heap.remove(heap.size() - 1);                                                                     // pop tail
+            if (!heap.isEmpty()) {
+                heap.set(0, last);                                                                                       // tail → root
+                downHeapify(0);                                                                                          // restore
+            }
+            return top;
         }
     }
 
-    public Integer extract() {
-        if (heap.isEmpty()) return null;
-        int top = heap.get(0);                                                                                      // save the root
-        int last = heap.remove(heap.size() - 1);                                                                     // pop tail
-        if (!heap.isEmpty()) {
-            heap.set(0, last);                                                                                       // tail → root
-            downHeapify(0);                                                                                          // restore
-        }
-        return top;
+    public static void main(String[] args) {
+        MaxHeap h = new MaxHeap();
+        h.heap.addAll(Arrays.asList(9, 5, 7, 1, 3));
+        System.out.println(h.extract());  // 9
+        System.out.println(h.heap);       // [7, 5, 3, 1]
     }
 }
 ```
@@ -966,33 +1023,40 @@ bool heap_extract(MaxHeap *h, int *out) {
 ```
 
 ```scala run
-class MaxHeap {
-  val heap = scala.collection.mutable.ArrayBuffer.empty[Int]
+object Main extends App {
+  class MaxHeap {
+    val heap = scala.collection.mutable.ArrayBuffer.empty[Int]
 
-  private def swap(i: Int, j: Int): Unit = { val t = heap(i); heap(i) = heap(j); heap(j) = t }
+    private def swap(i: Int, j: Int): Unit = { val t = heap(i); heap(i) = heap(j); heap(j) = t }
 
-  private def downHeapify(start: Int): Unit = {
-    var index = start; val n = heap.length
-    var go = true
-    while (go) {
-      var largest = index
-      val left = 2 * index + 1; val right = 2 * index + 2
-      if (left  < n && heap(left)  > heap(largest)) largest = left
-      if (right < n && heap(right) > heap(largest)) largest = right
-      if (largest == index) go = false
-      else { swap(index, largest); index = largest }
+    private def downHeapify(start: Int): Unit = {
+      var index = start; val n = heap.length
+      var go = true
+      while (go) {
+        var largest = index
+        val left = 2 * index + 1; val right = 2 * index + 2
+        if (left  < n && heap(left)  > heap(largest)) largest = left
+        if (right < n && heap(right) > heap(largest)) largest = right
+        if (largest == index) go = false
+        else { swap(index, largest); index = largest }
+      }
+    }
+
+    def extract: Option[Int] = {
+      if (heap.isEmpty) None
+      else {
+        val top = heap(0)
+        val last = heap.remove(heap.length - 1)
+        if (heap.nonEmpty) { heap(0) = last; downHeapify(0) }
+        Some(top)
+      }
     }
   }
 
-  def extract: Option[Int] = {
-    if (heap.isEmpty) None
-    else {
-      val top = heap(0)
-      val last = heap.remove(heap.length - 1)
-      if (heap.nonEmpty) { heap(0) = last; downHeapify(0) }
-      Some(top)
-    }
-  }
+  val h = new MaxHeap
+  h.heap ++= Seq(9, 5, 7, 1, 3)
+  println(h.extract)              // Some(9)
+  println(h.heap.mkString(", "))  // 7, 5, 3, 1
 }
 ```
 
@@ -1141,27 +1205,37 @@ class MaxHeap:
 ```
 
 ```java run
-class MaxHeap {
-    int[] heap;
+import java.util.Arrays;
 
-    private void swap(int i, int j) { int t = heap[i]; heap[i] = heap[j]; heap[j] = t; }
+public class Main {
+    static class MaxHeap {
+        int[] heap;
 
-    private void downHeapify(int index, int n) {
-        while (true) {
-            int largest = index;
-            int left = 2 * index + 1, right = 2 * index + 2;
-            if (left  < n && heap[left]  > heap[largest]) largest = left;
-            if (right < n && heap[right] > heap[largest]) largest = right;
-            if (largest == index) return;
-            swap(index, largest);
-            index = largest;
+        private void swap(int i, int j) { int t = heap[i]; heap[i] = heap[j]; heap[j] = t; }
+
+        private void downHeapify(int index, int n) {
+            while (true) {
+                int largest = index;
+                int left = 2 * index + 1, right = 2 * index + 2;
+                if (left  < n && heap[left]  > heap[largest]) largest = left;
+                if (right < n && heap[right] > heap[largest]) largest = right;
+                if (largest == index) return;
+                swap(index, largest);
+                index = largest;
+            }
+        }
+
+        public void construct(int[] arr) {
+            this.heap = arr;
+            int n = heap.length;
+            for (int i = n / 2 - 1; i >= 0; i--) downHeapify(i, n);
         }
     }
 
-    public void construct(int[] arr) {
-        this.heap = arr;
-        int n = heap.length;
-        for (int i = n / 2 - 1; i >= 0; i--) downHeapify(i, n);
+    public static void main(String[] args) {
+        MaxHeap h = new MaxHeap();
+        h.construct(new int[]{3, 1, 6, 5, 2, 4});
+        System.out.println(Arrays.toString(h.heap));  // [6, 5, 4, 1, 2, 3]
     }
 }
 ```
@@ -1185,29 +1259,35 @@ void heap_construct(int *arr, int n) {
 ```
 
 ```scala run
-class MaxHeap {
-  var heap: Array[Int] = Array.empty[Int]
+object Main extends App {
+  class MaxHeap {
+    var heap: Array[Int] = Array.empty[Int]
 
-  private def swap(i: Int, j: Int): Unit = { val t = heap(i); heap(i) = heap(j); heap(j) = t }
+    private def swap(i: Int, j: Int): Unit = { val t = heap(i); heap(i) = heap(j); heap(j) = t }
 
-  private def downHeapify(start: Int, n: Int): Unit = {
-    var index = start; var go = true
-    while (go) {
-      var largest = index
-      val left = 2 * index + 1; val right = 2 * index + 2
-      if (left  < n && heap(left)  > heap(largest)) largest = left
-      if (right < n && heap(right) > heap(largest)) largest = right
-      if (largest == index) go = false
-      else { swap(index, largest); index = largest }
+    private def downHeapify(start: Int, n: Int): Unit = {
+      var index = start; var go = true
+      while (go) {
+        var largest = index
+        val left = 2 * index + 1; val right = 2 * index + 2
+        if (left  < n && heap(left)  > heap(largest)) largest = left
+        if (right < n && heap(right) > heap(largest)) largest = right
+        if (largest == index) go = false
+        else { swap(index, largest); index = largest }
+      }
+    }
+
+    def construct(arr: Array[Int]): Unit = {
+      heap = arr
+      val n = heap.length
+      var i = n / 2 - 1
+      while (i >= 0) { downHeapify(i, n); i -= 1 }
     }
   }
 
-  def construct(arr: Array[Int]): Unit = {
-    heap = arr
-    val n = heap.length
-    var i = n / 2 - 1
-    while (i >= 0) { downHeapify(i, n); i -= 1 }
-  }
+  val h = new MaxHeap
+  h.construct(Array(3, 1, 6, 5, 2, 4))
+  println(h.heap.mkString(" "))  // 6 5 4 1 2 3
 }
 ```
 
@@ -1326,24 +1406,34 @@ class Solution:
 ```
 
 ```java run
-class Solution {
-    private void swap(int[] arr, int i, int j) { int t = arr[i]; arr[i] = arr[j]; arr[j] = t; }
+import java.util.Arrays;
 
-    public void maxHeapify(int[] arr, int n, int index) {
-        while (true) {
-            int largest = index;
-            int left = 2 * index + 1, right = 2 * index + 2;
-            if (left  < n && arr[left]  > arr[largest]) largest = left;
-            if (right < n && arr[right] > arr[largest]) largest = right;
-            if (largest == index) return;
-            swap(arr, index, largest);
-            index = largest;
+public class Main {
+    static class Solution {
+        private void swap(int[] arr, int i, int j) { int t = arr[i]; arr[i] = arr[j]; arr[j] = t; }
+
+        public void maxHeapify(int[] arr, int n, int index) {
+            while (true) {
+                int largest = index;
+                int left = 2 * index + 1, right = 2 * index + 2;
+                if (left  < n && arr[left]  > arr[largest]) largest = left;
+                if (right < n && arr[right] > arr[largest]) largest = right;
+                if (largest == index) return;
+                swap(arr, index, largest);
+                index = largest;
+            }
+        }
+
+        public void minHeapToMaxHeap(int[] arr) {
+            int n = arr.length;
+            for (int i = n / 2 - 1; i >= 0; i--) maxHeapify(arr, n, i);
         }
     }
 
-    public void minHeapToMaxHeap(int[] arr) {
-        int n = arr.length;
-        for (int i = n / 2 - 1; i >= 0; i--) maxHeapify(arr, n, i);
+    public static void main(String[] args) {
+        int[] arr = {1, 4, 3, 7, 8, 5};
+        new Solution().minHeapToMaxHeap(arr);
+        System.out.println(Arrays.toString(arr));  // some max-heap, e.g. [8, 7, 5, 1, 4, 3]
     }
 }
 ```
@@ -1367,26 +1457,32 @@ void minHeapToMaxHeap(int *arr, int n) {
 ```
 
 ```scala run
-object Solution {
-  private def swap(arr: Array[Int], i: Int, j: Int): Unit = { val t = arr(i); arr(i) = arr(j); arr(j) = t }
+object Main extends App {
+  object Solution {
+    private def swap(arr: Array[Int], i: Int, j: Int): Unit = { val t = arr(i); arr(i) = arr(j); arr(j) = t }
 
-  def maxHeapify(arr: Array[Int], n: Int, start: Int): Unit = {
-    var index = start; var go = true
-    while (go) {
-      var largest = index
-      val left = 2 * index + 1; val right = 2 * index + 2
-      if (left  < n && arr(left)  > arr(largest)) largest = left
-      if (right < n && arr(right) > arr(largest)) largest = right
-      if (largest == index) go = false
-      else { swap(arr, index, largest); index = largest }
+    def maxHeapify(arr: Array[Int], n: Int, start: Int): Unit = {
+      var index = start; var go = true
+      while (go) {
+        var largest = index
+        val left = 2 * index + 1; val right = 2 * index + 2
+        if (left  < n && arr(left)  > arr(largest)) largest = left
+        if (right < n && arr(right) > arr(largest)) largest = right
+        if (largest == index) go = false
+        else { swap(arr, index, largest); index = largest }
+      }
+    }
+
+    def minHeapToMaxHeap(arr: Array[Int]): Unit = {
+      val n = arr.length
+      var i = n / 2 - 1
+      while (i >= 0) { maxHeapify(arr, n, i); i -= 1 }
     }
   }
 
-  def minHeapToMaxHeap(arr: Array[Int]): Unit = {
-    val n = arr.length
-    var i = n / 2 - 1
-    while (i >= 0) { maxHeapify(arr, n, i); i -= 1 }
-  }
+  val arr = Array(1, 4, 3, 7, 8, 5)
+  Solution.minHeapToMaxHeap(arr)
+  println(arr.mkString(", "))  // some max-heap, e.g. 8, 7, 5, 1, 4, 3
 }
 ```
 
@@ -1453,24 +1549,34 @@ class Solution:
 ```
 
 ```java run
-class Solution {
-    private void swap(int[] arr, int i, int j) { int t = arr[i]; arr[i] = arr[j]; arr[j] = t; }
+import java.util.Arrays;
 
-    public void minHeapify(int[] arr, int n, int index) {
-        while (true) {
-            int smallest = index;
-            int left = 2 * index + 1, right = 2 * index + 2;
-            if (left  < n && arr[left]  < arr[smallest]) smallest = left;
-            if (right < n && arr[right] < arr[smallest]) smallest = right;
-            if (smallest == index) return;
-            swap(arr, index, smallest);
-            index = smallest;
+public class Main {
+    static class Solution {
+        private void swap(int[] arr, int i, int j) { int t = arr[i]; arr[i] = arr[j]; arr[j] = t; }
+
+        public void minHeapify(int[] arr, int n, int index) {
+            while (true) {
+                int smallest = index;
+                int left = 2 * index + 1, right = 2 * index + 2;
+                if (left  < n && arr[left]  < arr[smallest]) smallest = left;
+                if (right < n && arr[right] < arr[smallest]) smallest = right;
+                if (smallest == index) return;
+                swap(arr, index, smallest);
+                index = smallest;
+            }
+        }
+
+        public void maxHeapToMinHeap(int[] arr) {
+            int n = arr.length;
+            for (int i = n / 2 - 1; i >= 0; i--) minHeapify(arr, n, i);
         }
     }
 
-    public void maxHeapToMinHeap(int[] arr) {
-        int n = arr.length;
-        for (int i = n / 2 - 1; i >= 0; i--) minHeapify(arr, n, i);
+    public static void main(String[] args) {
+        int[] arr = {9, 4, 7, 1, -2, 6, 5};
+        new Solution().maxHeapToMinHeap(arr);
+        System.out.println(Arrays.toString(arr));  // some min-heap, e.g. [-2, 1, 5, 9, 4, 6, 7]
     }
 }
 ```
@@ -1494,26 +1600,32 @@ void maxHeapToMinHeap(int *arr, int n) {
 ```
 
 ```scala run
-object Solution {
-  private def swap(arr: Array[Int], i: Int, j: Int): Unit = { val t = arr(i); arr(i) = arr(j); arr(j) = t }
+object Main extends App {
+  object Solution {
+    private def swap(arr: Array[Int], i: Int, j: Int): Unit = { val t = arr(i); arr(i) = arr(j); arr(j) = t }
 
-  def minHeapify(arr: Array[Int], n: Int, start: Int): Unit = {
-    var index = start; var go = true
-    while (go) {
-      var smallest = index
-      val left = 2 * index + 1; val right = 2 * index + 2
-      if (left  < n && arr(left)  < arr(smallest)) smallest = left
-      if (right < n && arr(right) < arr(smallest)) smallest = right
-      if (smallest == index) go = false
-      else { swap(arr, index, smallest); index = smallest }
+    def minHeapify(arr: Array[Int], n: Int, start: Int): Unit = {
+      var index = start; var go = true
+      while (go) {
+        var smallest = index
+        val left = 2 * index + 1; val right = 2 * index + 2
+        if (left  < n && arr(left)  < arr(smallest)) smallest = left
+        if (right < n && arr(right) < arr(smallest)) smallest = right
+        if (smallest == index) go = false
+        else { swap(arr, index, smallest); index = smallest }
+      }
+    }
+
+    def maxHeapToMinHeap(arr: Array[Int]): Unit = {
+      val n = arr.length
+      var i = n / 2 - 1
+      while (i >= 0) { minHeapify(arr, n, i); i -= 1 }
     }
   }
 
-  def maxHeapToMinHeap(arr: Array[Int]): Unit = {
-    val n = arr.length
-    var i = n / 2 - 1
-    while (i >= 0) { minHeapify(arr, n, i); i -= 1 }
-  }
+  val arr = Array(9, 4, 7, 1, -2, 6, 5)
+  Solution.maxHeapToMinHeap(arr)
+  println(arr.mkString(", "))  // some min-heap, e.g. -2, 1, 5, 9, 4, 6, 7
 }
 ```
 

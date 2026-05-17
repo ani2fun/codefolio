@@ -85,10 +85,19 @@ class BSTIterator:
 ```
 
 ```java run
-class BSTIterator {
-    public BSTIterator(TreeNode root) { /* set up state, do NOT walk whole tree */ }
-    public boolean hasNext()          { /* any nodes left? */ return false; }
-    public TreeNode next()            { /* next node in order */ return null; }
+public class Main {
+    static class TreeNode { int val; TreeNode left, right; TreeNode(int v){val=v;} }
+
+    static class BSTIterator {
+        public BSTIterator(TreeNode root) { /* set up state, do NOT walk whole tree */ }
+        public boolean hasNext()          { /* any nodes left? */ return false; }
+        public TreeNode next()            { /* next node in order */ return null; }
+    }
+
+    public static void main(String[] args) {
+        TreeNode root = new TreeNode(1);
+        System.out.println(new BSTIterator(root).hasNext());  // false
+    }
 }
 ```
 
@@ -102,9 +111,16 @@ void         bstIteratorFree(BSTIterator *it);
 ```
 
 ```scala run
-class BSTIterator(root: TreeNode) {
-  def hasNext: Boolean = false              // any nodes left?
-  def next:    TreeNode = null              // next node in order
+class TreeNode(var value: Int, var left: TreeNode = null, var right: TreeNode = null)
+
+object Main extends App {
+  class BSTIterator(root: TreeNode) {
+    def hasNext: Boolean = false              // any nodes left?
+    def next:    TreeNode = null              // next node in order
+  }
+
+  val root = new TreeNode(1)
+  println(new BSTIterator(root).hasNext)  // false
 }
 ```
 
@@ -283,22 +299,34 @@ class ForwardBstIterator:
 ```java run
 import java.util.*;
 
-class ForwardBstIterator {
-    private final Deque<TreeNode> stack = new ArrayDeque<>();                              // ancestor path
+public class Main {
+    static class TreeNode { int val; TreeNode left, right; TreeNode(int v){val=v;} TreeNode(int v, TreeNode l, TreeNode r){val=v; left=l; right=r;} }
 
-    public ForwardBstIterator(TreeNode root) { pushAllLeft(root); }                         // prime
+    static class ForwardBstIterator {
+        private final Deque<TreeNode> stack = new ArrayDeque<>();                              // ancestor path
 
-    private void pushAllLeft(TreeNode node) {
-        while (node != null) { stack.push(node); node = node.left; }                        // walk left-spine
+        public ForwardBstIterator(TreeNode root) { pushAllLeft(root); }                         // prime
+
+        private void pushAllLeft(TreeNode node) {
+            while (node != null) { stack.push(node); node = node.left; }                        // walk left-spine
+        }
+
+        public boolean hasNext() { return !stack.isEmpty(); }
+
+        public TreeNode next() {
+            if (!hasNext()) return null;
+            TreeNode node = stack.pop();                                                         // top = next in-order
+            pushAllLeft(node.right);                                                             // queue right-spine
+            return node;
+        }
     }
 
-    public boolean hasNext() { return !stack.isEmpty(); }
-
-    public TreeNode next() {
-        if (!hasNext()) return null;
-        TreeNode node = stack.pop();                                                         // top = next in-order
-        pushAllLeft(node.right);                                                             // queue right-spine
-        return node;
+    public static void main(String[] args) {
+        TreeNode root = new TreeNode(7,
+            new TreeNode(3),
+            new TreeNode(15, new TreeNode(9), new TreeNode(20)));
+        ForwardBstIterator it = new ForwardBstIterator(root);
+        System.out.println(it.next().val + " " + it.next().val + " " + it.next().val + " " + it.next().val + " " + it.next().val);  // 3 7 9 15 20
     }
 }
 ```
@@ -343,23 +371,33 @@ void bSTIteratorFree(ForwardBstIterator *it) { free(it->stack); free(it); }
 ```scala run
 import scala.collection.mutable
 
-class ForwardBstIterator(root: TreeNode) {
-  private val stack = mutable.Stack[TreeNode]()                                                   // ancestor path
-  pushAllLeft(root)                                                                                // prime
+class TreeNode(var value: Int, var left: TreeNode = null, var right: TreeNode = null)
 
-  private def pushAllLeft(node: TreeNode): Unit = {
-    var n = node
-    while (n != null) { stack.push(n); n = n.left }                                                // walk left-spine
+object Main extends App {
+  class ForwardBstIterator(root: TreeNode) {
+    private val stack = mutable.Stack[TreeNode]()                                                   // ancestor path
+    pushAllLeft(root)                                                                                // prime
+
+    private def pushAllLeft(node: TreeNode): Unit = {
+      var n = node
+      while (n != null) { stack.push(n); n = n.left }                                                // walk left-spine
+    }
+
+    def hasNext: Boolean = stack.nonEmpty
+
+    def next: TreeNode = {
+      if (!hasNext) return null
+      val node = stack.pop()                                                                          // top = next
+      pushAllLeft(node.right)                                                                         // queue right
+      node
+    }
   }
 
-  def hasNext: Boolean = stack.nonEmpty
-
-  def next: TreeNode = {
-    if (!hasNext) return null
-    val node = stack.pop()                                                                          // top = next
-    pushAllLeft(node.right)                                                                         // queue right
-    node
-  }
+  val root = new TreeNode(7,
+    new TreeNode(3),
+    new TreeNode(15, new TreeNode(9), new TreeNode(20)))
+  val it = new ForwardBstIterator(root)
+  println(s"${it.next.value} ${it.next.value} ${it.next.value} ${it.next.value} ${it.next.value}")  // 3 7 9 15 20
 }
 ```
 
@@ -507,22 +545,34 @@ class ReverseBstIterator:
 ```java run
 import java.util.*;
 
-class ReverseBstIterator {
-    private final Deque<TreeNode> stack = new ArrayDeque<>();
+public class Main {
+    static class TreeNode { int val; TreeNode left, right; TreeNode(int v){val=v;} TreeNode(int v, TreeNode l, TreeNode r){val=v; left=l; right=r;} }
 
-    public ReverseBstIterator(TreeNode root) { pushAllRight(root); }
+    static class ReverseBstIterator {
+        private final Deque<TreeNode> stack = new ArrayDeque<>();
 
-    private void pushAllRight(TreeNode node) {
-        while (node != null) { stack.push(node); node = node.right; }
+        public ReverseBstIterator(TreeNode root) { pushAllRight(root); }
+
+        private void pushAllRight(TreeNode node) {
+            while (node != null) { stack.push(node); node = node.right; }
+        }
+
+        public boolean hasNext() { return !stack.isEmpty(); }
+
+        public TreeNode next() {
+            if (!hasNext()) return null;
+            TreeNode node = stack.pop();
+            pushAllRight(node.left);                                                                       // mirror of forward
+            return node;
+        }
     }
 
-    public boolean hasNext() { return !stack.isEmpty(); }
-
-    public TreeNode next() {
-        if (!hasNext()) return null;
-        TreeNode node = stack.pop();
-        pushAllRight(node.left);                                                                       // mirror of forward
-        return node;
+    public static void main(String[] args) {
+        TreeNode root = new TreeNode(7,
+            new TreeNode(3),
+            new TreeNode(15, new TreeNode(9), new TreeNode(20)));
+        ReverseBstIterator it = new ReverseBstIterator(root);
+        System.out.println(it.next().val + " " + it.next().val + " " + it.next().val + " " + it.next().val + " " + it.next().val);  // 20 15 9 7 3
     }
 }
 ```
@@ -566,23 +616,33 @@ void reverseBSTIteratorFree(ReverseBstIterator *it) { free(it->stack); free(it);
 ```scala run
 import scala.collection.mutable
 
-class ReverseBstIterator(root: TreeNode) {
-  private val stack = mutable.Stack[TreeNode]()
-  pushAllRight(root)
+class TreeNode(var value: Int, var left: TreeNode = null, var right: TreeNode = null)
 
-  private def pushAllRight(node: TreeNode): Unit = {
-    var n = node
-    while (n != null) { stack.push(n); n = n.right }
+object Main extends App {
+  class ReverseBstIterator(root: TreeNode) {
+    private val stack = mutable.Stack[TreeNode]()
+    pushAllRight(root)
+
+    private def pushAllRight(node: TreeNode): Unit = {
+      var n = node
+      while (n != null) { stack.push(n); n = n.right }
+    }
+
+    def hasNext: Boolean = stack.nonEmpty
+
+    def next: TreeNode = {
+      if (!hasNext) return null
+      val node = stack.pop()
+      pushAllRight(node.left)                                                                                  // mirror
+      node
+    }
   }
 
-  def hasNext: Boolean = stack.nonEmpty
-
-  def next: TreeNode = {
-    if (!hasNext) return null
-    val node = stack.pop()
-    pushAllRight(node.left)                                                                                  // mirror
-    node
-  }
+  val root = new TreeNode(7,
+    new TreeNode(3),
+    new TreeNode(15, new TreeNode(9), new TreeNode(20)))
+  val it = new ReverseBstIterator(root)
+  println(s"${it.next.value} ${it.next.value} ${it.next.value} ${it.next.value} ${it.next.value}")  // 20 15 9 7 3
 }
 ```
 

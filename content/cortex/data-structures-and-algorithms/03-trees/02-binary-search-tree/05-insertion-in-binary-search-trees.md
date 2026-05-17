@@ -176,14 +176,27 @@ class Solution:
 ```
 
 ```java run
-class Solution {
-    public TreeNode recursiveInsertion(TreeNode root, int data) {
-        if (root == null) return new TreeNode(data);                            // empty slot
-        if (data < root.val)
-            root.left  = recursiveInsertion(root.left,  data);                  // BST rule: left
-        else
-            root.right = recursiveInsertion(root.right, data);                  //          right
-        return root;                                                            // re-attach
+public class Main {
+    static class TreeNode { int val; TreeNode left, right; TreeNode(int v){val=v;} }
+
+    static class Solution {
+        public TreeNode recursiveInsertion(TreeNode root, int data) {
+            if (root == null) return new TreeNode(data);                            // empty slot
+            if (data < root.val)
+                root.left  = recursiveInsertion(root.left,  data);                  // BST rule: left
+            else
+                root.right = recursiveInsertion(root.right, data);                  //          right
+            return root;                                                            // re-attach
+        }
+    }
+
+    public static void main(String[] args) {
+        TreeNode root = new TreeNode(5);
+        root.left  = new TreeNode(4); root.right = new TreeNode(6);
+        root.left.left  = new TreeNode(2);
+        root.right.right = new TreeNode(7);
+        TreeNode result = new Solution().recursiveInsertion(root, 10);
+        System.out.println(result.right.right.right.val);  // 10
     }
 }
 ```
@@ -206,15 +219,25 @@ struct TreeNode *recursiveInsertion(struct TreeNode *root, int data) {
 ```
 
 ```scala run
-object Solution {
-  def recursiveInsertion(root: TreeNode, data: Int): TreeNode = {
-    if (root == null) new TreeNode(data)                                          // empty slot
-    else {
-      if (data < root.value) root.left  = recursiveInsertion(root.left,  data)    // BST rule: left
-      else                   root.right = recursiveInsertion(root.right, data)    //          right
-      root                                                                        // re-attach
+class TreeNode(var value: Int, var left: TreeNode = null, var right: TreeNode = null)
+
+object Main extends App {
+  class Solution {
+    def recursiveInsertion(root: TreeNode, data: Int): TreeNode = {
+      if (root == null) new TreeNode(data)                                          // empty slot
+      else {
+        if (data < root.value) root.left  = recursiveInsertion(root.left,  data)    // BST rule: left
+        else                   root.right = recursiveInsertion(root.right, data)    //          right
+        root                                                                        // re-attach
+      }
     }
   }
+
+  val root = new TreeNode(5,
+    new TreeNode(4, new TreeNode(2), null),
+    new TreeNode(6, null, new TreeNode(7)))
+  val result = new Solution().recursiveInsertion(root, 10)
+  println(result.right.right.right.value)  // 10
 }
 ```
 
@@ -349,25 +372,38 @@ class Solution:
 ```
 
 ```java run
-class Solution {
-    public TreeNode iterativeInsertion(TreeNode root, int data) {
-        if (root == null) return new TreeNode(data);                                // empty tree
-        TreeNode current = root;
-        while (true) {
-            if (data < current.val) {                                               // go left
-                if (current.left == null) {                                         // empty slot
-                    current.left = new TreeNode(data);
-                    return root;
+public class Main {
+    static class TreeNode { int val; TreeNode left, right; TreeNode(int v){val=v;} }
+
+    static class Solution {
+        public TreeNode iterativeInsertion(TreeNode root, int data) {
+            if (root == null) return new TreeNode(data);                                // empty tree
+            TreeNode current = root;
+            while (true) {
+                if (data < current.val) {                                               // go left
+                    if (current.left == null) {                                         // empty slot
+                        current.left = new TreeNode(data);
+                        return root;
+                    }
+                    current = current.left;                                             // descend left
+                } else {                                                                // go right
+                    if (current.right == null) {                                        // empty slot
+                        current.right = new TreeNode(data);
+                        return root;
+                    }
+                    current = current.right;                                            // descend right
                 }
-                current = current.left;                                             // descend left
-            } else {                                                                // go right
-                if (current.right == null) {                                        // empty slot
-                    current.right = new TreeNode(data);
-                    return root;
-                }
-                current = current.right;                                            // descend right
             }
         }
+    }
+
+    public static void main(String[] args) {
+        TreeNode root = new TreeNode(5);
+        root.left  = new TreeNode(4); root.right = new TreeNode(6);
+        root.left.left  = new TreeNode(2);
+        root.right.right = new TreeNode(7);
+        TreeNode result = new Solution().iterativeInsertion(root, 10);
+        System.out.println(result.right.right.right.val);  // 10
     }
 }
 ```
@@ -403,27 +439,37 @@ struct TreeNode *iterativeInsertion(struct TreeNode *root, int data) {
 ```
 
 ```scala run
-object Solution {
-  def iterativeInsertion(root: TreeNode, data: Int): TreeNode = {
-    if (root == null) return new TreeNode(data)                                          // empty tree
-    var current = root
-    while (true) {
-      if (data < current.value) {                                                        // go left
-        if (current.left == null) {                                                      // empty slot
-          current.left = new TreeNode(data)
-          return root
+class TreeNode(var value: Int, var left: TreeNode = null, var right: TreeNode = null)
+
+object Main extends App {
+  class Solution {
+    def iterativeInsertion(root: TreeNode, data: Int): TreeNode = {
+      if (root == null) return new TreeNode(data)                                          // empty tree
+      var current = root
+      while (true) {
+        if (data < current.value) {                                                        // go left
+          if (current.left == null) {                                                      // empty slot
+            current.left = new TreeNode(data)
+            return root
+          }
+          current = current.left                                                           // descend left
+        } else {                                                                           // go right
+          if (current.right == null) {                                                     // empty slot
+            current.right = new TreeNode(data)
+            return root
+          }
+          current = current.right                                                          // descend right
         }
-        current = current.left                                                           // descend left
-      } else {                                                                           // go right
-        if (current.right == null) {                                                     // empty slot
-          current.right = new TreeNode(data)
-          return root
-        }
-        current = current.right                                                          // descend right
       }
+      root  // unreachable; appeases the compiler
     }
-    root  // unreachable; appeases the compiler
   }
+
+  val root = new TreeNode(5,
+    new TreeNode(4, new TreeNode(2), null),
+    new TreeNode(6, null, new TreeNode(7)))
+  val result = new Solution().iterativeInsertion(root, 10)
+  println(result.right.right.right.value)  // 10
 }
 ```
 

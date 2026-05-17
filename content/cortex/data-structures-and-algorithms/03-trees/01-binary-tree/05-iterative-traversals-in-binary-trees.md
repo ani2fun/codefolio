@@ -237,21 +237,23 @@ import scala.collection.mutable
 class TreeNode(var value: Int, var left: TreeNode = null, var right: TreeNode = null)
 
 object Main extends App {
-  def preorderIter(root: TreeNode): List[Int] = {
-    if (root == null) return Nil
-    val out = mutable.ListBuffer[Int]()
-    val stk = mutable.Stack[TreeNode](root)
-    while (stk.nonEmpty) {
-      val n = stk.pop()
-      out += n.value
-      if (n.right != null) stk.push(n.right)
-      if (n.left  != null) stk.push(n.left)
+  class Solution {
+    def preorderIter(root: TreeNode): List[Int] = {
+      if (root == null) return Nil
+      val out = mutable.ListBuffer[Int]()
+      val stk = mutable.Stack[TreeNode](root)
+      while (stk.nonEmpty) {
+        val n = stk.pop()
+        out += n.value
+        if (n.right != null) stk.push(n.right)
+        if (n.left  != null) stk.push(n.left)
+      }
+      out.toList
     }
-    out.toList
   }
 
   val root = new TreeNode(1, new TreeNode(2, new TreeNode(4), new TreeNode(5)), new TreeNode(3))
-  println(preorderIter(root))
+  println(new Solution().preorderIter(root))
 }
 ```
 

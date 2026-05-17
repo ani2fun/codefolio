@@ -411,19 +411,19 @@ import scala.collection.mutable.ListBuffer
 
 case class Record(key: Int, var value: Int)
 
-class MyHashTable(val capacity: Int) {
-  // Each slot is a ListBuffer that grows on collision.
-  private val table: Array[ListBuffer[Record]] =
-    Array.fill(capacity)(ListBuffer.empty[Record])
-
-  private def hash(key: Int): Int = key % capacity
-
-  def search(key: Int):  Int  = -1
-  def insert(key: Int, value: Int): Unit = ()
-  def remove(key: Int):  Unit = ()
-}
-
 object Main extends App {
+  class MyHashTable(val capacity: Int) {
+    // Each slot is a ListBuffer that grows on collision.
+    private val table: Array[ListBuffer[Record]] =
+      Array.fill(capacity)(ListBuffer.empty[Record])
+
+    private def hash(key: Int): Int = key % capacity
+
+    def search(key: Int):  Int  = -1
+    def insert(key: Int, value: Int): Unit = ()
+    def remove(key: Int):  Unit = ()
+  }
+
   val h = new MyHashTable(4)
   println("created table with capacity 4")
 }
@@ -614,20 +614,20 @@ import scala.collection.mutable.ListBuffer
 
 case class Record(key: Int, var value: Int)
 
-class MyHashTable(val capacity: Int) {
-  private val table: Array[ListBuffer[Record]] =
-    Array.fill(capacity)(ListBuffer.empty[Record])
-
-  private def hash(key: Int): Int = key % capacity
-
-  def search(key: Int): Int = {
-    val index = hash(key)                        // Step 1
-    table(index).find(_.key == key)              // Step 2: walk the chain
-                .map(_.value).getOrElse(-1)      // Step 3: -1 if not found
-  }
-}
-
 object Main extends App {
+  class MyHashTable(val capacity: Int) {
+    private val table: Array[ListBuffer[Record]] =
+      Array.fill(capacity)(ListBuffer.empty[Record])
+
+    private def hash(key: Int): Int = key % capacity
+
+    def search(key: Int): Int = {
+      val index = hash(key)                        // Step 1
+      table(index).find(_.key == key)              // Step 2: walk the chain
+                  .map(_.value).getOrElse(-1)      // Step 3: -1 if not found
+    }
+  }
+
   val h = new MyHashTable(4)
   println(h.search(7))   // -1
 }
@@ -934,24 +934,24 @@ import scala.collection.mutable.ListBuffer
 
 case class Record(key: Int, var value: Int)
 
-class MyHashTable(val capacity: Int) {
-  private val table: Array[ListBuffer[Record]] =
-    Array.fill(capacity)(ListBuffer.empty[Record])
-  private def hash(key: Int): Int = key % capacity
+object Main extends App {
+  class MyHashTable(val capacity: Int) {
+    private val table: Array[ListBuffer[Record]] =
+      Array.fill(capacity)(ListBuffer.empty[Record])
+    private def hash(key: Int): Int = key % capacity
 
-  def search(key: Int): Int =
-    table(hash(key)).find(_.key == key).map(_.value).getOrElse(-1)
+    def search(key: Int): Int =
+      table(hash(key)).find(_.key == key).map(_.value).getOrElse(-1)
 
-  def insert(key: Int, value: Int): Unit = {
-    val chain = table(hash(key))
-    chain.find(_.key == key) match {
-      case Some(rec) => rec.value = value             // Case 1 — update
-      case None      => chain += Record(key, value)   // Case 2 — append
+    def insert(key: Int, value: Int): Unit = {
+      val chain = table(hash(key))
+      chain.find(_.key == key) match {
+        case Some(rec) => rec.value = value             // Case 1 — update
+        case None      => chain += Record(key, value)   // Case 2 — append
+      }
     }
   }
-}
 
-object Main extends App {
   val h = new MyHashTable(4)
   h.insert(1, 10); h.insert(5, 50)
   println(h.search(5))   // 50
@@ -1225,28 +1225,28 @@ import scala.collection.mutable.ListBuffer
 
 case class Record(key: Int, var value: Int)
 
-class MyHashTable(val capacity: Int) {
-  private val table: Array[ListBuffer[Record]] =
-    Array.fill(capacity)(ListBuffer.empty[Record])
-  private def hash(key: Int): Int = key % capacity
+object Main extends App {
+  class MyHashTable(val capacity: Int) {
+    private val table: Array[ListBuffer[Record]] =
+      Array.fill(capacity)(ListBuffer.empty[Record])
+    private def hash(key: Int): Int = key % capacity
 
-  def search(key: Int): Int =
-    table(hash(key)).find(_.key == key).map(_.value).getOrElse(-1)
-  def insert(key: Int, value: Int): Unit = {
-    val c = table(hash(key))
-    c.find(_.key == key) match {
-      case Some(r) => r.value = value
-      case None    => c += Record(key, value)
+    def search(key: Int): Int =
+      table(hash(key)).find(_.key == key).map(_.value).getOrElse(-1)
+    def insert(key: Int, value: Int): Unit = {
+      val c = table(hash(key))
+      c.find(_.key == key) match {
+        case Some(r) => r.value = value
+        case None    => c += Record(key, value)
+      }
+    }
+    def remove(key: Int): Unit = {
+      val c   = table(hash(key))
+      val idx = c.indexWhere(_.key == key)
+      if (idx >= 0) c.remove(idx)            // Found → unlink; else silent no-op
     }
   }
-  def remove(key: Int): Unit = {
-    val c   = table(hash(key))
-    val idx = c.indexWhere(_.key == key)
-    if (idx >= 0) c.remove(idx)            // Found → unlink; else silent no-op
-  }
-}
 
-object Main extends App {
   val h = new MyHashTable(4)
   h.insert(1, 10); h.insert(5, 50); h.insert(9, 90)
   h.remove(5)
@@ -1537,31 +1537,31 @@ import scala.collection.mutable.ListBuffer
 
 case class Record(key: Int, var value: Int)
 
-class MyHashTable(val capacity: Int) {
-  private val table: Array[ListBuffer[Record]] =
-    Array.fill(capacity)(ListBuffer.empty[Record])
-  private def hash(key: Int): Int = key % capacity
-
-  def search(key: Int): Int =
-    table(hash(key)).find(_.key == key).map(_.value).getOrElse(-1)
-  def insert(key: Int, value: Int): Boolean = {
-    val c = table(hash(key))
-    c.find(_.key == key) match {
-      case Some(r) => r.value = value
-      case None    => c += Record(key, value)
-    }
-    true
-  }
-  def remove(key: Int): Unit = {
-    val c = table(hash(key)); val i = c.indexWhere(_.key == key)
-    if (i >= 0) c.remove(i)
-  }
-  def getKeysAtIndex(index: Int): List[Int] =
-    if (index < 0 || index >= capacity) Nil
-    else table(index).iterator.map(_.key).toList
-}
-
 object Main extends App {
+  class MyHashTable(val capacity: Int) {
+    private val table: Array[ListBuffer[Record]] =
+      Array.fill(capacity)(ListBuffer.empty[Record])
+    private def hash(key: Int): Int = key % capacity
+
+    def search(key: Int): Int =
+      table(hash(key)).find(_.key == key).map(_.value).getOrElse(-1)
+    def insert(key: Int, value: Int): Boolean = {
+      val c = table(hash(key))
+      c.find(_.key == key) match {
+        case Some(r) => r.value = value
+        case None    => c += Record(key, value)
+      }
+      true
+    }
+    def remove(key: Int): Unit = {
+      val c = table(hash(key)); val i = c.indexWhere(_.key == key)
+      if (i >= 0) c.remove(i)
+    }
+    def getKeysAtIndex(index: Int): List[Int] =
+      if (index < 0 || index >= capacity) Nil
+      else table(index).iterator.map(_.key).toList
+  }
+
   val h = new MyHashTable(1)
   h.insert(1, 2); h.insert(2, 4)
   println(h.search(1))                              // 2

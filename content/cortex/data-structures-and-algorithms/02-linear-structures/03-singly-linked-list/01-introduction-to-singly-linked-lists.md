@@ -25,34 +25,18 @@ The linked list is the most important data structure you'll ever learn. Everythi
 
 To better understand a linked list, let us first look at some common problems programmers face when designing software systems. When writing a program, we often need a collection of data items that can be accessed sequentially. E.g., a collection of names of all the students in a class. It is common for people to think this is not such a complex problem. What's so hard with it? We can use an **array** to store this data where the size of the array is equal to the number of students.
 
-```d2
-arr: array {
-  grid-columns: 4
-  grid-gap: 0
-  a0: |md
-    **Alice**
-
-    `[0]`
-  |
-  a1: |md
-    **Bob**
-
-    `[1]`
-  |
-  a2: |md
-    **Carol**
-
-    `[2]`
-  |
-  a3: |md
-    **David**
-
-    `[3]`
-  |
+```d3 widget=array-traversal
+{
+  "title": "students[] — 4 names in one contiguous block, addressable by index",
+  "items": ["Alice", "Bob", "Carol", "David"],
+  "steps": [
+    {
+      "range": { "lo": 0, "hi": 3 },
+      "msg": "Every cell sits adjacent to the next — the index doubles as the offset from the array's base, so arr[i] is O(1)."
+    }
+  ]
 }
 ```
-
-<p align="center"><strong>An array of size 4 storing student names at contiguous indices.</strong></p>
 
 This is an easy way to store data, but what if a new student joins the class? In this case, we will have to increase the size of the array by one, which is **not** possible. Well, we can solve this problem by creating a new array of a larger size, copying all the data from the previous array, and then adding the new student to it. However, this will be quite inefficient in terms of space and time complexity.
 
@@ -65,38 +49,38 @@ This is an easy way to store data, but what if a new student joins the class? In
   "secondaryLabel": "Destination array (size 5)",
   "steps": [
     {
-      "markers": [{"name": "src", "index": 0, "color": "#f59e0b"}],
-      "secondaryMarkers": [{"name": "dst", "index": 0, "color": "#10b981"}],
+      "markers": [{"name": "src", "index": 0}],
+      "secondaryMarkers": [{"name": "dst", "index": 0}],
       "msg": "Allocate a new array of size 5. Both indices start at 0; the destination is empty."
     },
     {
       "secondaryItems": ["Alice", "·", "·", "·", "·"],
-      "markers": [{"name": "src", "index": 1, "color": "#f59e0b"}],
-      "secondaryMarkers": [{"name": "dst", "index": 1, "color": "#10b981"}],
+      "markers": [{"name": "src", "index": 1}],
+      "secondaryMarkers": [{"name": "dst", "index": 1}],
       "msg": "Copy src[0]=Alice → dst[0]. Advance both indices."
     },
     {
       "secondaryItems": ["Alice", "Bob", "·", "·", "·"],
-      "markers": [{"name": "src", "index": 2, "color": "#f59e0b"}],
-      "secondaryMarkers": [{"name": "dst", "index": 2, "color": "#10b981"}],
+      "markers": [{"name": "src", "index": 2}],
+      "secondaryMarkers": [{"name": "dst", "index": 2}],
       "msg": "Copy src[1]=Bob → dst[1]. Advance both indices."
     },
     {
       "secondaryItems": ["Alice", "Bob", "Carol", "·", "·"],
-      "markers": [{"name": "src", "index": 3, "color": "#f59e0b"}],
-      "secondaryMarkers": [{"name": "dst", "index": 3, "color": "#10b981"}],
+      "markers": [{"name": "src", "index": 3}],
+      "secondaryMarkers": [{"name": "dst", "index": 3}],
       "msg": "Copy src[2]=Carol → dst[2]. Advance both indices."
     },
     {
       "secondaryItems": ["Alice", "Bob", "Carol", "David", "·"],
-      "markers": [{"name": "src", "index": 4, "color": "#f59e0b"}],
-      "secondaryMarkers": [{"name": "dst", "index": 4, "color": "#10b981"}],
+      "markers": [{"name": "src", "index": 4}],
+      "secondaryMarkers": [{"name": "dst", "index": 4}],
       "msg": "Copy src[3]=David → dst[3]. Source is exhausted; one cell remains in the destination."
     },
     {
       "secondaryItems": ["Alice", "Bob", "Carol", "David", "Eve"],
-      "markers": [{"name": "src", "index": 4, "color": "#f59e0b"}],
-      "secondaryMarkers": [{"name": "dst", "index": 5, "color": "#10b981"}],
+      "markers": [{"name": "src", "index": 4}],
+      "secondaryMarkers": [{"name": "dst", "index": 5}],
       "msg": "Append the new item Eve at dst[4]. Done — 4 copies + 1 write, O(n) work to insert a single element."
     }
   ]
@@ -116,32 +100,32 @@ Now, let's consider another scenario. What if a student leaves the class? We can
   "secondaryLabel": "Destination array (size 3)",
   "steps": [
     {
-      "markers": [{"name": "src", "index": 0, "color": "#f59e0b"}, {"name": "remove", "index": 1, "color": "#dc2626"}],
-      "secondaryMarkers": [{"name": "dst", "index": 0, "color": "#10b981"}],
+      "markers": [{"name": "src", "index": 0}, {"name": "remove", "index": 1}],
+      "secondaryMarkers": [{"name": "dst", "index": 0}],
       "msg": "Allocate a smaller array of size 3. Mark the index to remove (Bob at src[1]). Both indices start at 0."
     },
     {
       "secondaryItems": ["Alice", "·", "·"],
-      "markers": [{"name": "src", "index": 1, "color": "#f59e0b"}, {"name": "remove", "index": 1, "color": "#dc2626"}],
-      "secondaryMarkers": [{"name": "dst", "index": 1, "color": "#10b981"}],
+      "markers": [{"name": "src", "index": 1}, {"name": "remove", "index": 1}],
+      "secondaryMarkers": [{"name": "dst", "index": 1}],
       "msg": "Copy src[0]=Alice → dst[0]. Advance both indices."
     },
     {
       "secondaryItems": ["Alice", "·", "·"],
-      "markers": [{"name": "src", "index": 2, "color": "#f59e0b"}, {"name": "remove", "index": 1, "color": "#dc2626"}],
-      "secondaryMarkers": [{"name": "dst", "index": 1, "color": "#10b981"}],
+      "markers": [{"name": "src", "index": 2}, {"name": "remove", "index": 1}],
+      "secondaryMarkers": [{"name": "dst", "index": 1}],
       "msg": "src[1]=Bob is the deletion target — skip it. Advance src only; dst stays at 1."
     },
     {
       "secondaryItems": ["Alice", "Carol", "·"],
-      "markers": [{"name": "src", "index": 3, "color": "#f59e0b"}, {"name": "remove", "index": 1, "color": "#dc2626"}],
-      "secondaryMarkers": [{"name": "dst", "index": 2, "color": "#10b981"}],
+      "markers": [{"name": "src", "index": 3}, {"name": "remove", "index": 1}],
+      "secondaryMarkers": [{"name": "dst", "index": 2}],
       "msg": "Copy src[2]=Carol → dst[1]. Advance both indices."
     },
     {
       "secondaryItems": ["Alice", "Carol", "David"],
-      "markers": [{"name": "src", "index": 4, "color": "#f59e0b"}, {"name": "remove", "index": 1, "color": "#dc2626"}],
-      "secondaryMarkers": [{"name": "dst", "index": 3, "color": "#10b981"}],
+      "markers": [{"name": "src", "index": 4}, {"name": "remove", "index": 1}],
+      "secondaryMarkers": [{"name": "dst", "index": 3}],
       "msg": "Copy src[3]=David → dst[2]. Source exhausted. Done — 3 copies + 1 skip, still O(n) work to remove a single element."
     }
   ]
@@ -162,9 +146,9 @@ Even though we can solve the problem using an array, it is inefficient if we hav
 An array has other fundamental problems that make it a bad choice for problems like these. For example, we cannot insert or delete data items **in place** in an array.
 
 ```d2
-direction: right
+direction: down
 
-mem: "Contiguous memory — each cell is fixed in place" {
+mem: "students[]  —  contiguous memory, every cell fixed" {
   grid-columns: 4
   grid-gap: 0
   c0: |md
@@ -189,12 +173,19 @@ mem: "Contiguous memory — each cell is fixed in place" {
   |
 }
 
-ins: "Insert 'Zara'\nbetween Bob & Carol?" {
+ins: "Insert 'Tara'\nbetween Bob & Carol?" {
   shape: oval
-  style.fill: "#fde68a"
-  style.stroke: "#d97706"
+  style.fill: "#fee2e2"
+  style.stroke: "#dc2626"
+  style.stroke-width: 2
+  style.bold: true
 }
-ins -> mem.c2: "No free slot!\nMust shift Carol & David\nor reallocate everything"
+
+ins -> mem.c2: "no free slot —\nshift Carol & David\nor reallocate" {
+  style.stroke: "#dc2626"
+  style.stroke-width: 2
+  style.bold: true
+}
 ```
 
 <p align="center"><strong>Arrays occupy a contiguous block of memory — there is no physical gap between elements to insert into, so every in-place insertion forces a cascade of element shifts.</strong></p>
@@ -216,27 +207,25 @@ Now that we know arrays' limitations and the situations where those limitations 
 
 A linked list is a linear and dynamic data structure that stores data sequentially at random memory locations. Instead of storing all the data items in a contiguous block of memory like arrays, a linked list stores them at random locations in memory. Whenever a new item is to be added, a new memory block is dynamically created to store this new value, which is then added to the chain of already existing items, effectively extending the **linked list**.
 
-```d2
-direction: right
-n1: {
-  val: Alice
-  next
+```d3 widget=linked-list
+{
+  "title": "Singly linked list — each node points to the next; the tail points to null",
+  "direction": "single",
+  "nodes": [
+    {"id": "a", "value": "Alice"},
+    {"id": "b", "value": "Bob"},
+    {"id": "c", "value": "Carol"},
+    {"id": "d", "value": "David"}
+  ],
+  "head": "a",
+  "steps": [
+    {
+      "links": [["a","b"],["b","c"],["c","d"]],
+      "markers": [{"name": "head", "nodeId": "a"}],
+      "msg": "head → Alice → Bob → Carol → David → null"
+    }
+  ]
 }
-n2: {
-  val: Bob
-  next
-}
-n3: {
-  val: Carol
-  next
-}
-n4: {
-  val: David
-  next: "null"
-}
-n1.next -> n2.val
-n2.next -> n3.val
-n3.next -> n4.val
 ```
 
 <p align="center"><strong>Abstract representation of a singly linked list — each node holds a value and a pointer to the next node; the last node points to null.</strong></p>
@@ -245,45 +234,61 @@ n3.next -> n4.val
 
 A linked list guarantees the insertion and deletion of items from the **start** and **end** of the list in **O(1)** space and **O(1)** time. It also guarantees the insertion and deletion of any data item **without** using any extra space. You can imagine it as a dynamic sequential container whose size can be increased or decreased at will.
 
-```d2
-insert: "Insert at head — O(1)" {
-  direction: right
-  i0: {
-    val: Zara
-    next
-    style.fill: "#dcfce7"
-    style.stroke: "#16a34a"
-  }
-  i1: {
-    val: Alice
-    next
-  }
-  i2: {
-    val: Bob
-    next: "null"
-  }
-  i0.next -> i1.val: "point to old head"
-  i1.next -> i2.val
-}
-
-delete: "Delete head — O(1)" {
-  direction: right
-  d1: {
-    val: Alice
-    next
-    style.fill: "#fee2e2"
-    style.stroke: "#dc2626"
-  }
-  d2: {
-    val: Bob
-    next
-  }
-  d3: {
-    val: Carol
-    next: "null"
-  }
-  d1.next -> d2.val: "advance head"
-  d2.next -> d3.val
+```d3 widget=linked-list
+{
+  "title": "Insert and delete at the head are both O(1) — pointer updates only, no shifting",
+  "direction": "single",
+  "nodes": [
+    {"id": "z", "value": "Tara"},
+    {"id": "a", "value": "Alice"},
+    {"id": "b", "value": "Bob"},
+    {"id": "c", "value": "Carol"}
+  ],
+  "head": "a",
+  "steps": [
+    {
+      "nodes": [
+        {"id": "a", "value": "Alice"},
+        {"id": "b", "value": "Bob"},
+        {"id": "c", "value": "Carol"}
+      ],
+      "links": [["a","b"],["b","c"]],
+      "markers": [{"name": "head", "nodeId": "a"}],
+      "msg": "Starting list: head → Alice → Bob → Carol → null"
+    },
+    {
+      "nodes": [
+        {"id": "z", "value": "Tara", "style": "new"},
+        {"id": "a", "value": "Alice"},
+        {"id": "b", "value": "Bob"},
+        {"id": "c", "value": "Carol"}
+      ],
+      "links": [["z","a"],["a","b"],["b","c"]],
+      "markers": [{"name": "head", "nodeId": "z"}],
+      "msg": "Insert at head: allocate Tara, point it to old head, repoint head — O(1)"
+    },
+    {
+      "nodes": [
+        {"id": "z", "value": "Tara"},
+        {"id": "a", "value": "Alice", "style": "removed"},
+        {"id": "b", "value": "Bob"},
+        {"id": "c", "value": "Carol"}
+      ],
+      "links": [["z","a"],["a","b"],["b","c"]],
+      "markers": [{"name": "head", "nodeId": "z"}],
+      "msg": "Now delete Alice: mark for removal — pointer fix-ups next"
+    },
+    {
+      "nodes": [
+        {"id": "z", "value": "Tara"},
+        {"id": "b", "value": "Bob"},
+        {"id": "c", "value": "Carol"}
+      ],
+      "links": [["z","b"],["b","c"]],
+      "markers": [{"name": "head", "nodeId": "z"}],
+      "msg": "Repoint Tara.next → Bob (skipping Alice); free Alice — O(1)"
+    }
+  ]
 }
 ```
 
@@ -291,32 +296,83 @@ delete: "Delete head — O(1)" {
 
 Let us look at an example of insertion in a singly linked list to understand this better.
 
-```d2
-direction: right
-
-before: "Before insertion" {
-  direction: right
-  a1: Alice
-  a2: Bob
-  a3: Carol
-  a4: David
-  a1 -> a2 -> a3 -> a4
+```d3 widget=linked-list
+{
+  "title": "Insert 'Tara' after 'Bob' — three pointer updates, no shifting",
+  "direction": "single",
+  "nodes": [
+    {"id": "a", "value": "Alice"},
+    {"id": "b", "value": "Bob"},
+    {"id": "z", "value": "Tara"},
+    {"id": "c", "value": "Carol"},
+    {"id": "d", "value": "David"}
+  ],
+  "head": "a",
+  "steps": [
+    {
+      "nodes": [
+        {"id": "a", "value": "Alice"},
+        {"id": "b", "value": "Bob"},
+        {"id": "c", "value": "Carol"},
+        {"id": "d", "value": "David"}
+      ],
+      "links": [["a","b"],["b","c"],["c","d"]],
+      "markers": [{"name": "current", "nodeId": "b"}],
+      "msg": "Walk to the insertion point — curr at Bob"
+    },
+    {
+      "nodes": [
+        {"id": "a", "value": "Alice"},
+        {"id": "b", "value": "Bob"},
+        {"id": "z", "value": "Tara", "style": "new"},
+        {"id": "c", "value": "Carol"},
+        {"id": "d", "value": "David"}
+      ],
+      "links": [["a","b"],["b","c"],["c","d"]],
+      "markers": [{"name": "current", "nodeId": "z"}],
+      "msg": "Step 1: allocate a new node holding 'Tara'"
+    },
+    {
+      "nodes": [
+        {"id": "a", "value": "Alice"},
+        {"id": "b", "value": "Bob"},
+        {"id": "z", "value": "Tara", "style": "new"},
+        {"id": "c", "value": "Carol"},
+        {"id": "d", "value": "David"}
+      ],
+      "links": [["a","b"],["b","c"],["z","c"],["c","d"]],
+      "markers": [{"name": "current", "nodeId": "z"}],
+      "msg": "Step 2: new.next = Bob.next (point Tara at Carol)"
+    },
+    {
+      "nodes": [
+        {"id": "a", "value": "Alice"},
+        {"id": "b", "value": "Bob"},
+        {"id": "z", "value": "Tara"},
+        {"id": "c", "value": "Carol"},
+        {"id": "d", "value": "David"}
+      ],
+      "links": [["a","b"],["b","z"],["z","c"],["c","d"]],
+      "markers": [{"name": "current", "nodeId": "b"}],
+      "msg": "Step 3: Bob.next = new (Bob now points to Tara)"
+    },
+    {
+      "nodes": [
+        {"id": "a", "value": "Alice"},
+        {"id": "b", "value": "Bob"},
+        {"id": "z", "value": "Tara"},
+        {"id": "c", "value": "Carol"},
+        {"id": "d", "value": "David"}
+      ],
+      "links": [["a","b"],["b","z"],["z","c"],["c","d"]],
+      "markers": [{"name": "head", "nodeId": "a"}],
+      "msg": "Done — Alice → Bob → Tara → Carol → David. Three pointer updates, O(1)."
+    }
+  ]
 }
-
-after: "Insert 'Zara' after 'Bob'" {
-  direction: right
-  b1: Alice
-  b2: Bob
-  new: Zara {style.fill: "#dcfce7"; style.stroke: "#16a34a"}
-  b3: Carol
-  b4: David
-  b1 -> b2 -> new -> b3 -> b4
-}
-
-before -> after: "1. Create new node\n2. new.next = Bob.next\n3. Bob.next = new"
 ```
 
-<p align="center"><strong>Inserting 'Zara' after 'Bob' — redirect two pointers; no shifting, no copying, O(1) once the insertion point is known.</strong></p>
+<p align="center"><strong>Inserting 'Tara' after 'Bob' — redirect two pointers; no shifting, no copying, O(1) once the insertion point is known.</strong></p>
 
 ## Advantages
 
@@ -349,24 +405,37 @@ A singly linked list node has two sections.
 
 ```d2
 direction: right
-node: "A single node" {
+
+node: "A node  —  two fields, one address" {
   grid-columns: 2
   grid-gap: 0
   val: |md
     **val**
 
-    (data)
+    the data (any type)
   |
   next: |md
     **next**
 
-    (pointer)
+    `ListNode *`
   |
 }
-n2: "next node..."
-nullnode: "null — if tail" {shape: oval}
-node.next -> n2: "points to"
-node.next -> nullnode: "or"
+
+n2: "next node in the chain" {
+  shape: rectangle
+  style.fill: "#f1f5f9"
+  style.stroke: "#475569"
+}
+
+nullnode: "null  (if this is the tail)" {
+  shape: oval
+  style.fill: "#fef3c7"
+  style.stroke: "#d97706"
+  style.italic: true
+}
+
+node.next -> n2 {style.stroke-width: 2}
+node.next -> nullnode {style.stroke-dash: 4}
 ```
 
 <p align="center"><strong>A singly linked list node stores two fields: <code>val</code> (the data) and <code>next</code> (the address of the following node, or <code>null</code> if it is the last).</strong></p>
@@ -389,9 +458,10 @@ print node1.val, "->", node2.val
 
 ```python run
 class ListNode:
-    def __init__(self, val=0, next=None):
-        self.val  = val   # The data this node holds
-        self.next = next  # Reference to the next node; None if this is the tail
+    def __init__(self, val):
+        self.val = val
+        self.next = None
+
 
 # Usage
 node1 = ListNode(5)
@@ -464,27 +534,25 @@ object Main extends App {
 
 A linked list is just a chain of nodes. Below is how these nodes chain together to form a singly linked list.
 
-```d2
-direction: right
-n1: {
-  val: 5
-  next
+```d3 widget=linked-list
+{
+  "title": "Logical chain — four nodes connected by next pointers; tail points to null",
+  "direction": "single",
+  "nodes": [
+    {"id": "n1", "value": "5"},
+    {"id": "n2", "value": "7"},
+    {"id": "n3", "value": "3"},
+    {"id": "n4", "value": "9"}
+  ],
+  "head": "n1",
+  "steps": [
+    {
+      "links": [["n1","n2"],["n2","n3"],["n3","n4"]],
+      "markers": [{"name": "head", "nodeId": "n1"}],
+      "msg": "head → 5 → 7 → 3 → 9 → null"
+    }
+  ]
 }
-n2: {
-  val: 7
-  next
-}
-n3: {
-  val: 3
-  next
-}
-n4: {
-  val: 9
-  next: "null"
-}
-n1.next -> n2.val
-n2.next -> n3.val
-n3.next -> n4.val
 ```
 
 <p align="center"><strong>Logical representation — nodes appear sequential left to right, each pointing to the next, with the tail pointing to null.</strong></p>
@@ -596,38 +664,80 @@ Every data structure is essentially used to store, retrieve, and manipulate data
 
 All other complex operations can be implemented by mixing or piggybacking these fundamental operations. Let's examine some operations we can perform on a singly linked list.
 
-```d2
-ops: "Operations on a singly linked list" {
-  grid-rows: 2
-  grid-gap: 24
-  t: |md
-    **Traversal**
-
-    Visit each node once
-
-    `O(n)`
-  |
-  i: |md
-    **Insertion**
-
-    At head / tail / position
-
-    `O(1) head · O(n) middle`
-  |
-  d: |md
-    **Deletion**
-
-    By value / position
-
-    `O(1) head · O(n) middle`
-  |
-  s: |md
-    **Search**
-
-    Find node by value
-
-    `O(n)`
-  |
+```d3 widget=linked-list
+{
+  "title": "Some operations on a singly linked list — traversal, insertion, deletion, search",
+  "direction": "single",
+  "nodes": [
+    {"id": "n1", "value": "5"},
+    {"id": "n2", "value": "7"},
+    {"id": "n3", "value": "3"},
+    {"id": "n4", "value": "9"}
+  ],
+  "head": "n1",
+  "steps": [
+    {
+      "links": [["n1","n2"],["n2","n3"],["n3","n4"]],
+      "markers": [{"name": "head", "nodeId": "n1"}],
+      "msg": "Starting list: head → 5 → 7 → 3 → 9 → null"
+    },
+    {
+      "links": [["n1","n2"],["n2","n3"],["n3","n4"]],
+      "markers": [{"name": "current", "nodeId": "n1"}],
+      "msg": "Traversal — start curr at head"
+    },
+    {
+      "links": [["n1","n2"],["n2","n3"],["n3","n4"]],
+      "markers": [{"name": "current", "nodeId": "n3"}],
+      "msg": "Traversal — curr advances node-by-node (O(n))"
+    },
+    {
+      "nodes": [
+        {"id": "n1", "value": "5"},
+        {"id": "n2", "value": "7"},
+        {"id": "n3", "value": "3"},
+        {"id": "ins", "value": "8", "style": "new"},
+        {"id": "n4", "value": "9"}
+      ],
+      "links": [["n1","n2"],["n2","n3"],["n3","ins"],["ins","n4"]],
+      "markers": [{"name": "current", "nodeId": "ins"}],
+      "msg": "Insertion — splice a new node holding 8 after the node holding 3"
+    },
+    {
+      "nodes": [
+        {"id": "n1", "value": "5"},
+        {"id": "n2", "value": "7", "style": "removed"},
+        {"id": "n3", "value": "3"},
+        {"id": "ins", "value": "8"},
+        {"id": "n4", "value": "9"}
+      ],
+      "links": [["n1","n2"],["n2","n3"],["n3","ins"],["ins","n4"]],
+      "markers": [{"name": "current", "nodeId": "n2"}],
+      "msg": "Deletion — mark the node holding 7 for removal"
+    },
+    {
+      "nodes": [
+        {"id": "n1", "value": "5"},
+        {"id": "n3", "value": "3"},
+        {"id": "ins", "value": "8"},
+        {"id": "n4", "value": "9"}
+      ],
+      "links": [["n1","n3"],["n3","ins"],["ins","n4"]],
+      "markers": [{"name": "head", "nodeId": "n1"}],
+      "msg": "Repoint 5.next → 3, free 7 — list is now 5 → 3 → 8 → 9"
+    },
+    {
+      "nodes": [
+        {"id": "n1", "value": "5"},
+        {"id": "n3", "value": "3", "style": "highlight"},
+        {"id": "ins", "value": "8"},
+        {"id": "n4", "value": "9"}
+      ],
+      "links": [["n1","n3"],["n3","ins"],["ins","n4"]],
+      "markers": [{"name": "current", "nodeId": "n3"}],
+      "msg": "Search for value 3 — walk the chain, match found at this node (O(n))"
+    }
+  ]
 }
 ```
 
@@ -752,13 +862,17 @@ function boundaryNode(head, node):
 ```
 
 ```python run
+from typing import Optional
+
 class ListNode:
-    def __init__(self, val=0, next=None):
-        self.val  = val
-        self.next = next
+    def __init__(self, val):
+        self.val = val
+        self.next = None
 
 class Solution:
-    def boundary_node(self, head: ListNode, node: ListNode) -> str:
+    def boundary_node(
+        self, head: Optional[ListNode], node: Optional[ListNode]
+    ) -> str:
 
         # If either head or node is None, return "none"
         if not head or not node:
@@ -782,6 +896,7 @@ class Solution:
         # If none of the above conditions are met, return "none"
         return "none"
 
+
 # --- test ---
 def build(vals):
     dummy = ListNode(0)
@@ -793,46 +908,52 @@ def build(vals):
         nodes.append(cur)
     return dummy.next, nodes
 
+sol = Solution()
 head, nodes = build([5, 7, 3, 10])
-print(Solution().boundary_node(head, nodes[0]))  # first
-print(Solution().boundary_node(head, nodes[3]))  # last
-print(Solution().boundary_node(head, nodes[2]))  # none
+print(sol.boundary_node(head, nodes[0]))   # first
+print(sol.boundary_node(head, nodes[3]))   # last
+print(sol.boundary_node(head, nodes[2]))   # none
 ```
 
 ```java run
 public class Main {
     static class ListNode {
-        int val; ListNode next;
-        ListNode(int v) { val = v; }
+        int val;
+        ListNode next;
+
+        ListNode() {}
+        ListNode(int val) { this.val = val; }
     }
 
-    static String boundaryNode(ListNode head, ListNode node) {
+    static class Solution {
+        public String boundaryNode(ListNode head, ListNode node) {
 
-        // If either head or node is null, return "none"
-        if (head == null || node == null) {
+            // If either head or node is null, return "none"
+            if (head == null || node == null) {
+                return "none";
+            }
+
+            // If head and node are the same, and node has no next node,
+            // return "both"
+            else if (node == head && node.next == null) {
+                return "both";
+            }
+
+            // If head and node are the same, but node has a next node,
+            // return "first"
+            else if (node == head) {
+                return "first";
+            }
+
+            // If node is the last node (i.e., it has no next node), return
+            // "last"
+            else if (node.next == null) {
+                return "last";
+            }
+
+            // If none of the above conditions are met, return "none"
             return "none";
         }
-
-        // If head and node are the same, and node has no next node,
-        // return "both"
-        else if (node == head && node.next == null) {
-            return "both";
-        }
-
-        // If head and node are the same, but node has a next node,
-        // return "first"
-        else if (node == head) {
-            return "first";
-        }
-
-        // If node is the last node (i.e., it has no next node), return
-        // "last"
-        else if (node.next == null) {
-            return "last";
-        }
-
-        // If none of the above conditions are met, return "none"
-        return "none";
     }
 
     public static void main(String[] args) {
@@ -840,9 +961,10 @@ public class Main {
                  n3 = new ListNode(3), n4 = new ListNode(10);
         n1.next = n2; n2.next = n3; n3.next = n4;
 
-        System.out.println(boundaryNode(n1, n1));  // first
-        System.out.println(boundaryNode(n1, n4));  // last
-        System.out.println(boundaryNode(n1, n3));  // none
+        Solution sol = new Solution();
+        System.out.println(sol.boundaryNode(n1, n1));   // first
+        System.out.println(sol.boundaryNode(n1, n4));   // last
+        System.out.println(sol.boundaryNode(n1, n3));   // none
     }
 }
 ```
@@ -905,33 +1027,31 @@ int main() {
 class ListNode(var v: Int, var next: ListNode = null)
 
 object Main extends App {
-  def boundaryNode(head: ListNode, node: ListNode): String = {
+  class Solution {
+    def boundaryNode(head: ListNode, node: ListNode): String = {
 
-    // If either head or node is null, return "none"
-    if (head == null || node == null) {
-      "none"
-    }
-
-    // If head and node are the same, and node has no next node,
-    // return "both"
-    else if ((node eq head) && node.next == null) {
-      "both"
-    }
-
-    // If head and node are the same, but node has a next node,
-    // return "first"
-    else if (node eq head) {
-      "first"
-    }
-
-    // If node is the last node (i.e., it has no next node), return "last"
-    else if (node.next == null) {
-      "last"
-    }
-
-    // If none of the above conditions are met, return "none"
-    else {
-      "none"
+      // If either head or node is null, return "none"
+      if (head == null || node == null) {
+        "none"
+      }
+      // If head and node are the same, and node has no next node,
+      // return "both"
+      else if ((node eq head) && node.next == null) {
+        "both"
+      }
+      // If head and node are the same, but node has a next node,
+      // return "first"
+      else if (node eq head) {
+        "first"
+      }
+      // If node is the last node (i.e., it has no next node), return "last"
+      else if (node.next == null) {
+        "last"
+      }
+      // If none of the above conditions are met, return "none"
+      else {
+        "none"
+      }
     }
   }
 
@@ -939,9 +1059,10 @@ object Main extends App {
   val n3 = new ListNode(3); val n4 = new ListNode(10)
   n1.next = n2; n2.next = n3; n3.next = n4
 
-  println(boundaryNode(n1, n1))  // first
-  println(boundaryNode(n1, n4))  // last
-  println(boundaryNode(n1, n3))  // none
+  val sol = new Solution
+  println(sol.boundaryNode(n1, n1))   // first
+  println(sol.boundaryNode(n1, n4))   // last
+  println(sol.boundaryNode(n1, n3))   // none
 }
 ```
 

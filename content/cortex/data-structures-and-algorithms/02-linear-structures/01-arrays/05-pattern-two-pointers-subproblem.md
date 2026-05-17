@@ -1837,85 +1837,174 @@ At every step we moved purposefully toward a larger sum because the current tota
 
 
 ```pseudocode
-# Three-sum-closest: find the triplet whose sum is nearest `target`.
-function threeSumClosest(arr, target):
+function closestTwoSum(arr, index, target):
+    left  ← index + 1
+    right ← length(arr) − 1
+    closestSum ← +∞
+
+    # Use a while loop to traverse the array using the two pointers
+    while left < right:
+
+        # Compute the sum of the three numbers
+        sum ← arr[index] + arr[left] + arr[right]
+
+        # Update closestSum if necessary
+        if |sum − target| < |closestSum − target|:
+            closestSum ← sum
+
+        # If the sum equals target, return the sum
+        if sum = target:
+            return sum
+
+        # Move the left pointer to increase the sum
+        else if sum < target:
+            left ← left + 1
+
+        # Move the right pointer to decrease the sum
+        else:
+            right ← right − 1
+
+    return closestSum
+
+function approximateThreeSum(arr, target):
+
+    # Sort the input array in non-decreasing order
     sort arr in place
-    n ← length(arr)
-    closest ← arr[0] + arr[1] + arr[2]            # seed with any valid triplet
-    for i from 0 to n − 3:
-        left ← i + 1; right ← n − 1
-        while left < right:
-            total ← arr[i] + arr[left] + arr[right]
-            if |total − target| < |closest − target|:
-                closest ← total
-            if total = target:
-                return total                      # distance 0 — can't beat that
-            else if total < target:
-                left ← left + 1
-            else:
-                right ← right − 1
-    return closest
+
+    # Initialize closestSum to a large value
+    closestSum ← +∞
+    for i from 0 to length(arr) − 1:
+        currentSum ← closestTwoSum(arr, i, target)
+        if |currentSum − target| < |closestSum − target|:
+            closestSum ← currentSum
+
+    # Return the closest sum of three integers to the target
+    return closestSum
 ```
 
 ```python run
 from typing import List
 
 class Solution:
-    def three_sum_closest(self, arr: List[int], target: int) -> int:
-        arr.sort()
-        n = len(arr)
-        closest = arr[0] + arr[1] + arr[2]      # Seed with any valid triplet.
+    def closest_two_sum(
+        self, arr: List[int], index: int, target: int
+    ) -> int:
+        left = index + 1
+        right = len(arr) - 1
+        closest_sum = float("inf")
 
-        for i in range(n - 2):
-            left, right = i + 1, n - 1
-            while left < right:
-                total = arr[i] + arr[left] + arr[right]
-                if abs(total - target) < abs(closest - target):
-                    closest = total
-                if total == target:
-                    return total                # Distance 0 — can't beat that.
-                elif total < target:
-                    left += 1
-                else:
-                    right -= 1
-        return closest
+        # Use a while loop to traverse the array using the two pointers
+        while left < right:
+
+            # Compute the sum of the three numbers
+            sum = arr[index] + arr[left] + arr[right]
+
+            # Update closest_sum if necessary
+            if abs(sum - target) < abs(closest_sum - target):
+                closest_sum = sum
+
+            # If the sum equals target, return the sum
+            if sum == target:
+                return sum
+
+            # Move the left pointer to increase the sum
+            elif sum < target:
+                left += 1
+
+            # Move the right pointer to decrease the sum
+            else:
+                right -= 1
+
+        return closest_sum
+
+    def approximate_three_sum(self, arr: List[int], target: int) -> int:
+
+        # Sort the input array in non-decreasing order
+        arr.sort()
+
+        # Initialize closest_sum to a large value
+        closest_sum = float("inf")
+        for i in range(len(arr)):
+            current_sum = self.closest_two_sum(arr, i, target)
+            if abs(current_sum - target) < abs(closest_sum - target):
+                closest_sum = current_sum
+
+        # Return the closest sum of three integers to the target
+        return closest_sum
 
 
 sol = Solution()
-print(sol.three_sum_closest([2, 7, 11, 15], 3))   # 20
-print(sol.three_sum_closest([-1, 2, 1, -4], 1))   # 2
-print(sol.three_sum_closest([0, 0, 0], 1))         # 0
+print(sol.approximate_three_sum([2, 7, 11, 15], 3))   # 20
+print(sol.approximate_three_sum([-1, 2, 1, -4], 1))   # 2
+print(sol.approximate_three_sum([0, 0, 0], 1))         # 0
 ```
 
 ```java run
-import java.util.Arrays;
+import java.util.*;
 
 public class Main {
     static class Solution {
-        int threeSumClosest(int[] arr, int target) {
-            Arrays.sort(arr);
-            int n = arr.length;
-            int closest = arr[0] + arr[1] + arr[2];
+        private int closestTwoSum(int[] arr, int index, int target) {
+            int left = index + 1;
+            int right = arr.length - 1;
+            int closestSum = Integer.MAX_VALUE;
 
-            for (int i = 0; i < n - 2; i++) {
-                int left = i + 1, right = n - 1;
-                while (left < right) {
-                    int total = arr[i] + arr[left] + arr[right];
-                    if (Math.abs(total - target) < Math.abs(closest - target)) closest = total;
-                    if (total == target) return total;
-                    else if (total < target) left++;
-                    else                     right--;
+            // Use a while loop to traverse the array using the two pointers
+            while (left < right) {
+
+                // Compute the sum of the three numbers
+                int sum = arr[index] + arr[left] + arr[right];
+
+                // Update closestSum if necessary
+                if (Math.abs(sum - target) < Math.abs(closestSum - target)) {
+                    closestSum = sum;
+                }
+
+                // If the sum equals target, return the sum
+                if (sum == target) {
+                    return sum;
+                }
+
+                // Move the left pointer to increase the sum
+                else if (sum < target) {
+                    left++;
+                }
+
+                // Move the right pointer to decrease the sum
+                else {
+                    right--;
                 }
             }
-            return closest;
+
+            return closestSum;
+        }
+
+        public int approximateThreeSum(int[] arr, int target) {
+
+            // Sort the input array in non-decreasing order
+            Arrays.sort(arr);
+
+            // Initialize closestSum to a large value
+            int closestSum = Integer.MAX_VALUE;
+            for (int i = 0; i < arr.length; i++) {
+                int currentSum = closestTwoSum(arr, i, target);
+                if (
+                    Math.abs(currentSum - target) <
+                    Math.abs(closestSum - target)
+                ) {
+                    closestSum = currentSum;
+                }
+            }
+
+            return closestSum;
         }
     }
 
     public static void main(String[] args) {
         Solution s = new Solution();
-        System.out.println(s.threeSumClosest(new int[]{2, 7, 11, 15}, 3));
-        System.out.println(s.threeSumClosest(new int[]{-1, 2, 1, -4}, 1));
-        System.out.println(s.threeSumClosest(new int[]{0, 0, 0}, 1));
+        System.out.println(s.approximateThreeSum(new int[]{2, 7, 11, 15}, 3));   // 20
+        System.out.println(s.approximateThreeSum(new int[]{-1, 2, 1, -4}, 1));   // 2
+        System.out.println(s.approximateThreeSum(new int[]{0, 0, 0}, 1));         // 0
     }
 }
 ```
@@ -1923,31 +2012,69 @@ public class Main {
 ```c run
 #include <stdio.h>
 #include <stdlib.h>
+#include <limits.h>
 
-int cmp(const void* a, const void* b) { return (*(int*)a) - (*(int*)b); }
+static int cmp(const void* a, const void* b) { return (*(int*)a) - (*(int*)b); }
 
-int abs_int(int x) { return x < 0 ? -x : x; }
+static int abs_int(int x) { return x < 0 ? -x : x; }
 
-int three_sum_closest(int* arr, int n, int target) {
-    qsort(arr, n, sizeof(int), cmp);
-    int closest = arr[0] + arr[1] + arr[2];
-    for (int i = 0; i < n - 2; i++) {
-        int left = i + 1, right = n - 1;
-        while (left < right) {
-            int total = arr[i] + arr[left] + arr[right];
-            if (abs_int(total - target) < abs_int(closest - target)) closest = total;
-            if (total == target) return total;
-            if (total <  target) left++;
-            else                 right--;
+static int closest_two_sum(const int* arr, int n, int index, int target) {
+    int left = index + 1;
+    int right = n - 1;
+    int closest_sum = INT_MAX;
+
+    /* Use a while loop to traverse the array using the two pointers */
+    while (left < right) {
+
+        /* Compute the sum of the three numbers */
+        int sum = arr[index] + arr[left] + arr[right];
+
+        /* Update closest_sum if necessary */
+        if (abs_int(sum - target) < abs_int(closest_sum - target)) {
+            closest_sum = sum;
+        }
+
+        /* If the sum equals target, return the sum */
+        if (sum == target) {
+            return sum;
+        }
+
+        /* Move the left pointer to increase the sum */
+        else if (sum < target) {
+            left++;
+        }
+
+        /* Move the right pointer to decrease the sum */
+        else {
+            right--;
         }
     }
-    return closest;
+
+    return closest_sum;
+}
+
+int approximate_three_sum(int* arr, int n, int target) {
+
+    /* Sort the input array in non-decreasing order */
+    qsort(arr, n, sizeof(int), cmp);
+
+    /* Initialize closest_sum to a large value */
+    int closest_sum = INT_MAX;
+    for (int i = 0; i < n; i++) {
+        int current_sum = closest_two_sum(arr, n, i, target);
+        if (abs_int(current_sum - target) < abs_int(closest_sum - target)) {
+            closest_sum = current_sum;
+        }
+    }
+
+    /* Return the closest sum of three integers to the target */
+    return closest_sum;
 }
 
 int main() {
-    int a1[] = {2, 7, 11, 15};   printf("%d\n", three_sum_closest(a1, 4, 3));
-    int a2[] = {-1, 2, 1, -4};   printf("%d\n", three_sum_closest(a2, 4, 1));
-    int a3[] = {0, 0, 0};        printf("%d\n", three_sum_closest(a3, 3, 1));
+    int a1[] = {2, 7, 11, 15};   printf("%d\n", approximate_three_sum(a1, 4, 3));   /* 20 */
+    int a2[] = {-1, 2, 1, -4};   printf("%d\n", approximate_three_sum(a2, 4, 1));   /*  2 */
+    int a3[] = {0, 0, 0};        printf("%d\n", approximate_three_sum(a3, 3, 1));   /*  0 */
     return 0;
 }
 ```
@@ -1955,31 +2082,63 @@ int main() {
 ```scala run
 object Main extends App {
   class Solution {
-    def threeSumClosest(arr: Array[Int], target: Int): Int = {
-      val sorted = arr.sorted
-      val n = sorted.length
-      var closest = sorted(0) + sorted(1) + sorted(2)
+    private def closestTwoSum(arr: Array[Int], index: Int, target: Int): Int = {
+      var left = index + 1
+      var right = arr.length - 1
+      var closestSum = Int.MaxValue
 
-      for (i <- 0 until n - 2) {
-        var left = i + 1
-        var right = n - 1
-        var done = false
-        while (left < right && !done) {
-          val total = sorted(i) + sorted(left) + sorted(right)
-          if (math.abs(total - target) < math.abs(closest - target)) closest = total
-          if (total == target) done = true
-          else if (total < target) left  += 1
-          else                     right -= 1
+      // Use a while loop to traverse the array using the two pointers
+      var done = false
+      while (left < right && !done) {
+
+        // Compute the sum of the three numbers
+        val sum = arr(index) + arr(left) + arr(right)
+
+        // Update closestSum if necessary
+        if (math.abs(sum - target) < math.abs(closestSum - target)) {
+          closestSum = sum
+        }
+
+        // If the sum equals target, return the sum
+        if (sum == target) {
+          done = true
+        }
+        // Move the left pointer to increase the sum
+        else if (sum < target) {
+          left += 1
+        }
+        // Move the right pointer to decrease the sum
+        else {
+          right -= 1
         }
       }
-      closest
+
+      closestSum
+    }
+
+    def approximateThreeSum(arr: Array[Int], target: Int): Int = {
+
+      // Sort the input array in non-decreasing order
+      val sorted = arr.sorted
+
+      // Initialize closestSum to a large value
+      var closestSum = Int.MaxValue
+      for (i <- sorted.indices) {
+        val currentSum = closestTwoSum(sorted, i, target)
+        if (math.abs(currentSum - target) < math.abs(closestSum - target)) {
+          closestSum = currentSum
+        }
+      }
+
+      // Return the closest sum of three integers to the target
+      closestSum
     }
   }
 
   val sol = new Solution
-  println(sol.threeSumClosest(Array(2, 7, 11, 15), 3))
-  println(sol.threeSumClosest(Array(-1, 2, 1, -4), 1))
-  println(sol.threeSumClosest(Array(0, 0, 0), 1))
+  println(sol.approximateThreeSum(Array(2, 7, 11, 15), 3))   // 20
+  println(sol.approximateThreeSum(Array(-1, 2, 1, -4), 1))   //  2
+  println(sol.approximateThreeSum(Array(0, 0, 0), 1))         //  0
 }
 ```
 

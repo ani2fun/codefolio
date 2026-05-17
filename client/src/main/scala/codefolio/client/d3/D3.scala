@@ -21,6 +21,14 @@ import scala.scalajs.js.annotation.JSImport
  */
 object D3:
 
+  // Note: `selection.prototype.transition` and `.interrupt` are wired up by
+  // d3-transition's side-effect import, which lives in [`client/main.js`].
+  // It has to be there, not here — a Scala.js `@JSImport(_, Namespace)`
+  // reference to `d3-transition` from this object gets DCE'd by the JS
+  // linker because the val is never read, and d3's barrel re-export goes
+  // through d3-selection which is marked `"sideEffects": false`, so the
+  // bundler tree-shakes the path that would touch d3-transition's index.js.
+
   @js.native @JSImport("d3", "select")
   def select(element: dom.Element): Selection = js.native
 
@@ -53,9 +61,14 @@ object D3:
     def each(fn: js.Function2[js.Any, Int, Unit]): Selection                                   = js.native
     def call(fn: js.Function1[Selection, Any]): Selection                                      = js.native
     def transition(): Transition                                                               = js.native
-    def node(): dom.Element                                                                    = js.native
-    def empty(): Boolean                                                                       = js.native
-    def size(): Int                                                                            = js.native
+    // Named transitions don't interrupt each other on the same element — use
+    // distinct names (e.g. "fade" and "move") when running concurrent
+    // transitions on overlapping selections, otherwise the second one
+    // cancels the first by D3 default-namespace rules.
+    def transition(name: String): Transition = js.native
+    def node(): dom.Element                  = js.native
+    def empty(): Boolean                     = js.native
+    def size(): Int                          = js.native
 
   @js.native
   trait Transition extends js.Object:
@@ -66,3 +79,7 @@ object D3:
     def style(name: String, value: js.Any): Transition     = js.native
     def selection(): Selection                             = js.native
     def end(): js.Promise[Unit]                            = js.native
+    // Removes each selected element at the end of the transition (after
+    // duration + delay). Used for fade-out + cleanup of exiting selections —
+    // pairs with an `attr("opacity", 0)` to fade nodes out before they vanish.
+    def remove(): Transition = js.native

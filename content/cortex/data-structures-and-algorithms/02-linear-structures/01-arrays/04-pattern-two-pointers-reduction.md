@@ -375,67 +375,111 @@ R -> arr.a7
     { "markers": [{"name": "left", "index": 3, "color": "#3b82f6"}, {"name": "right", "index": 7, "color": "#f59e0b"}], "range": {"lo": 3, "hi": 7}, "msg": "sum = 4 + 9 = 13 = target → return [4, 9] ✓" }
   ]
 }
-```
-# Each pointer move has a guaranteed direction: ++left grows the sum, --right shrinks it.
+```pseudocode
 function twoSum(arr, target):
+    # Sort the array in non-decreasing order
     sort arr in place
-    left ← 0
+
+    left  ← 0
     right ← length(arr) − 1
+
+    # Use a while loop to traverse the array using the two pointers
     while left < right:
-        currentSum ← arr[left] + arr[right]
-        if currentSum = target:
+        sum ← arr[left] + arr[right]
+
+        # Found a pair that sums up to the target
+        if sum = target:
             return [arr[left], arr[right]]
-        else if currentSum < target:
-            left ← left + 1                       # arr[right] is max — only ++left can grow the sum
+
+        # Move the left pointer to increase the sum
+        else if sum < target:
+            left ← left + 1
+
+        # Move the right pointer to decrease the sum
         else:
-            right ← right − 1                     # arr[left] is min — only --right can shrink the sum
+            right ← right − 1
+
+    # No pair found, return an empty array
     return empty list
 ```
 
 ```python run
 from typing import List
 
-def two_sum(arr: List[int], target: int) -> List[int]:
-    # Reduction step: sort so arr[left] is always the min, arr[right] always the max
-    # of remaining elements. Safe because indices don't matter (Q1 = No).
-    arr.sort()
-    left, right = 0, len(arr) - 1
+class Solution:
+    def two_sum(self, arr: List[int], target: int) -> List[int]:
 
-    while left < right:
-        current_sum = arr[left] + arr[right]
-        if current_sum == target:
-            return [arr[left], arr[right]]
-        elif current_sum < target:
-            # arr[right] is the MAX — left's only chance to grow the sum is to move right.
-            left += 1
-        else:
-            # arr[left] is the MIN — right's only chance to shrink the sum is to move left.
-            right -= 1
+        # Sort the array in non-decreasing order
+        arr.sort()
 
-    return []
+        left  = 0
+        right = len(arr) - 1
 
-print(two_sum([3, 5, 2, 8, 7, 1, 9, 4], 13))  # [4, 9]
+        # Use a while loop to traverse the array using the two pointers
+        while left < right:
+            sum = arr[left] + arr[right]
+
+            # Found a pair that sums up to the target
+            if sum == target:
+                return [arr[left], arr[right]]
+
+            # Move the left pointer to increase the sum
+            elif sum < target:
+                left += 1
+
+            # Move the right pointer to decrease the sum
+            else:
+                right -= 1
+
+        # No pair found, return an empty array
+        return []
+
+
+sol = Solution()
+print(sol.two_sum([3, 5, 2, 8, 7, 1, 9, 4], 13))   # [4, 9]
 ```
 
 ```java run
 import java.util.Arrays;
 
 public class Main {
-    static int[] twoSum(int[] arr, int target) {
-        Arrays.sort(arr);
-        int left = 0, right = arr.length - 1;
+    static class Solution {
+        int[] twoSum(int[] arr, int target) {
 
-        while (left < right) {
-            int currentSum = arr[left] + arr[right];
-            if (currentSum == target) return new int[] { arr[left], arr[right] };
-            else if (currentSum < target) left++;
-            else                          right--;
+            // Sort the array in non-decreasing order
+            Arrays.sort(arr);
+
+            int left  = 0;
+            int right = arr.length - 1;
+
+            // Use a while loop to traverse the array using the two pointers
+            while (left < right) {
+                int sum = arr[left] + arr[right];
+
+                // Found a pair that sums up to the target
+                if (sum == target) {
+                    return new int[] { arr[left], arr[right] };
+                }
+
+                // Move the left pointer to increase the sum
+                else if (sum < target) {
+                    left++;
+                }
+
+                // Move the right pointer to decrease the sum
+                else {
+                    right--;
+                }
+            }
+
+            // No pair found, return an empty array
+            return new int[0];
         }
-        return new int[0];
     }
 
     public static void main(String[] args) {
-        System.out.println(Arrays.toString(twoSum(new int[]{3,5,2,8,7,1,9,4}, 13)));
+        Solution s = new Solution();
+        System.out.println(Arrays.toString(s.twoSum(new int[]{3, 5, 2, 8, 7, 1, 9, 4}, 13)));   // [4, 9]
     }
 }
 ```
@@ -444,24 +488,40 @@ public class Main {
 #include <stdio.h>
 #include <stdlib.h>
 
-int cmp(const void* a, const void* b) {
-    return (*(int*)a) - (*(int*)b);
-}
+static int cmp(const void* a, const void* b) { return (*(int*)a) - (*(int*)b); }
 
 void two_sum(int* arr, int n, int target, int* out, int* found) {
+
+    /* Sort the array in non-decreasing order */
     qsort(arr, n, sizeof(int), cmp);
-    int left = 0, right = n - 1;
+
+    int left  = 0;
+    int right = n - 1;
+
+    /* Use a while loop to traverse the array using the two pointers */
     while (left < right) {
         int sum = arr[left] + arr[right];
+
+        /* Found a pair that sums up to the target */
         if (sum == target) {
             out[0] = arr[left];
             out[1] = arr[right];
             *found = 1;
             return;
         }
-        if (sum < target) left++;
-        else              right--;
+
+        /* Move the left pointer to increase the sum */
+        else if (sum < target) {
+            left++;
+        }
+
+        /* Move the right pointer to decrease the sum */
+        else {
+            right--;
+        }
     }
+
+    /* No pair found */
     *found = 0;
 }
 
@@ -477,21 +537,40 @@ int main() {
 
 ```scala run
 object Main extends App {
-  def twoSum(arr: Array[Int], target: Int): Array[Int] = {
-    val sorted = arr.sorted
-    var left = 0
-    var right = sorted.length - 1
+  class Solution {
+    def twoSum(arr: Array[Int], target: Int): Array[Int] = {
 
-    while (left < right) {
-      val sum = sorted(left) + sorted(right)
-      if (sum == target) return Array(sorted(left), sorted(right))
-      else if (sum < target) left  += 1
-      else                   right -= 1
+      // Sort the array in non-decreasing order
+      val sorted = arr.sorted
+
+      var left  = 0
+      var right = sorted.length - 1
+
+      // Use a while loop to traverse the array using the two pointers
+      while (left < right) {
+        val sum = sorted(left) + sorted(right)
+
+        // Found a pair that sums up to the target
+        if (sum == target) {
+          return Array(sorted(left), sorted(right))
+        }
+        // Move the left pointer to increase the sum
+        else if (sum < target) {
+          left += 1
+        }
+        // Move the right pointer to decrease the sum
+        else {
+          right -= 1
+        }
+      }
+
+      // No pair found, return an empty array
+      Array.empty[Int]
     }
-    Array.empty[Int]
   }
 
-  println(twoSum(Array(3,5,2,8,7,1,9,4), 13).mkString("[", ", ", "]"))
+  val sol = new Solution
+  println(sol.twoSum(Array(3, 5, 2, 8, 7, 1, 9, 4), 13).mkString("[", ", ", "]"))   // [4, 9]
 }
 ```
 

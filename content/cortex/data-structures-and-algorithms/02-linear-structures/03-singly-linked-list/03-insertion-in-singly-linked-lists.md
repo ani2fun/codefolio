@@ -33,26 +33,27 @@ Inserting at the beginning of a linked list is a fundamental and commonly used o
 
 In this scenario, if the linked list is empty, the **head** would be `null`. We need to initialize the **head** node of the linked list and ensure that the pointer of this newly created **head** node is `null`, as this new node will also be the last node of the list.
 
-```d2
-direction: right
-
-before: "Before — empty list" {
-  h1: "head = null" {shape: oval}
+```d3 widget=linked-list
+{
+  "title": "Insert at beginning — empty list: the new node becomes both head and tail",
+  "direction": "single",
+  "nodes": [{"id": "n", "value": "6"}],
+  "head": "n",
+  "steps": [
+    {
+      "nodes": [],
+      "links": [],
+      "markers": [],
+      "msg": "Before: head = null (empty list)"
+    },
+    {
+      "nodes": [{"id": "n", "value": "6", "style": "new"}],
+      "links": [],
+      "markers": [{"name": "head", "nodeId": "n"}],
+      "msg": "Allocate the new node; head ← newNode. newNode.next = null (it's also the tail)."
+    }
+  ]
 }
-
-after: "After — insert val=6" {
-  direction: right
-  h2: head {shape: oval}
-  n: {
-    val: 6
-    next: "null"
-    style.fill: "#dcfce7"
-    style.stroke: "#16a34a"
-  }
-  h2 -> n.val
-}
-
-before -> after: "create new node,\nhead = newNode"
 ```
 
 <p align="center"><strong>Case 1 — empty list: create a single node and make it the head; its <code>next</code> is <code>null</code> since it is also the tail.</strong></p>
@@ -67,39 +68,63 @@ before -> after: "create new node,\nhead = newNode"
 
 In this scenario, we already have some data in the linked list, so the **head** is not `null`. Therefore, to insert a new node at the beginning of the list, we need to update the pointer of the newly created node to store the reference of the existing **head** node.
 
-```d2
-direction: right
-
-before: "Before — list = [5, 7, 3]" {
-  direction: right
-  h: head {shape: oval}
-  b1: {val: 5; next}
-  b2: {val: 7; next}
-  b3: {val: 3; next: "null"}
-  h -> b1.val
-  b1.next -> b2.val
-  b2.next -> b3.val
+```d3 widget=linked-list
+{
+  "title": "Insert at beginning — non-empty list: two pointer updates, O(1)",
+  "direction": "single",
+  "nodes": [
+    {"id": "new", "value": "6"},
+    {"id": "n1", "value": "5"},
+    {"id": "n2", "value": "7"},
+    {"id": "n3", "value": "3"}
+  ],
+  "head": "n1",
+  "steps": [
+    {
+      "nodes": [
+        {"id": "n1", "value": "5"},
+        {"id": "n2", "value": "7"},
+        {"id": "n3", "value": "3"}
+      ],
+      "links": [["n1","n2"],["n2","n3"]],
+      "markers": [{"name": "head", "nodeId": "n1"}],
+      "msg": "Before: head → 5 → 7 → 3"
+    },
+    {
+      "nodes": [
+        {"id": "new", "value": "6", "style": "new"},
+        {"id": "n1", "value": "5"},
+        {"id": "n2", "value": "7"},
+        {"id": "n3", "value": "3"}
+      ],
+      "links": [["n1","n2"],["n2","n3"]],
+      "markers": [{"name": "head", "nodeId": "n1"}],
+      "msg": "Step 1: allocate new node with value 6"
+    },
+    {
+      "nodes": [
+        {"id": "new", "value": "6", "style": "new"},
+        {"id": "n1", "value": "5"},
+        {"id": "n2", "value": "7"},
+        {"id": "n3", "value": "3"}
+      ],
+      "links": [["new","n1"],["n1","n2"],["n2","n3"]],
+      "markers": [{"name": "head", "nodeId": "n1"}],
+      "msg": "Step 2: newNode.next = head (point new node at old head)"
+    },
+    {
+      "nodes": [
+        {"id": "new", "value": "6"},
+        {"id": "n1", "value": "5"},
+        {"id": "n2", "value": "7"},
+        {"id": "n3", "value": "3"}
+      ],
+      "links": [["new","n1"],["n1","n2"],["n2","n3"]],
+      "markers": [{"name": "head", "nodeId": "new"}],
+      "msg": "Step 3: head = newNode — done in O(1)"
+    }
+  ]
 }
-
-after: "After — insert val=6 at beginning" {
-  direction: right
-  h: head {shape: oval}
-  new: {
-    val: 6
-    next
-    style.fill: "#dcfce7"
-    style.stroke: "#16a34a"
-  }
-  c1: {val: 5; next}
-  c2: {val: 7; next}
-  c3: {val: 3; next: "null"}
-  h -> new.val
-  new.next -> c1.val
-  c1.next -> c2.val
-  c2.next -> c3.val
-}
-
-before -> after: "newNode.next = head\nhead = newNode"
 ```
 
 <p align="center"><strong>Case 2 — non-empty list: point the new node's <code>next</code> to the old head, then make the new node the new head.</strong></p>
@@ -156,17 +181,19 @@ print(vals)  # [6, 5, 7, 3]
 public class Main {
     static class ListNode { int val; ListNode next; ListNode(int v){val=v;} }
 
-    static ListNode insertAtBeginning(ListNode head, int data) {
-        ListNode newNode = new ListNode(data);
-        if (head == null) { newNode.next = null; return newNode; }
-        newNode.next = head;  // New node points to old head
-        return newNode;       // New node is now the head
+    static class Solution {
+        public ListNode insertAtBeginning(ListNode head, int data) {
+            ListNode newNode = new ListNode(data);
+            if (head == null) { newNode.next = null; return newNode; }
+            newNode.next = head;  // New node points to old head
+            return newNode;       // New node is now the head
+        }
     }
 
     public static void main(String[] args) {
         ListNode n1=new ListNode(5),n2=new ListNode(7),n3=new ListNode(3);
         n1.next=n2; n2.next=n3;
-        ListNode head = insertAtBeginning(n1, 6);
+        ListNode head = new Solution().insertAtBeginning(n1, 6);
         for (ListNode c=head; c!=null; c=c.next) System.out.print(c.val+" ");
         // 6 5 7 3
     }
@@ -178,19 +205,19 @@ public class Main {
 #include <stdlib.h>
 
 typedef struct ListNode { int val; struct ListNode *next; } ListNode;
-ListNode* newNode(int v){ ListNode*n=malloc(sizeof*n); n->val=v; n->next=NULL; return n; }
+ListNode* makeNode(int v){ ListNode*n=malloc(sizeof*n); n->val=v; n->next=NULL; return n; }
 
-ListNode* insertAtBeginning(ListNode *head, int data) {
-    ListNode *newNode = newNode(data);
+ListNode* insert_at_beginning(ListNode *head, int data) {
+    ListNode *newNode = makeNode(data);
     if (head == NULL) { newNode->next = NULL; return newNode; }
     newNode->next = head;  /* New node points to old head */
     return newNode;        /* New node is now the head */
 }
 
 int main() {
-    ListNode *n1=newNode(5),*n2=newNode(7),*n3=newNode(3);
+    ListNode *n1=makeNode(5),*n2=makeNode(7),*n3=makeNode(3);
     n1->next=n2; n2->next=n3;
-    ListNode *head = insertAtBeginning(n1, 6);
+    ListNode *head = insert_at_beginning(n1, 6);
     for (ListNode *c=head; c!=NULL; c=c->next) printf("%d ", c->val);
     /* 6 5 7 3 */
     return 0;
@@ -201,15 +228,17 @@ int main() {
 class ListNode(var v: Int, var next: ListNode = null)
 
 object Main extends App {
-  def insertAtBeginning(head: ListNode, data: Int): ListNode = {
-    val newNode = new ListNode(data)
-    if (head == null) { newNode.next = null; return newNode }
-    newNode.next = head  // New node points to old head
-    newNode              // New node is now the head
+  class Solution {
+    def insertAtBeginning(head: ListNode, data: Int): ListNode = {
+      val newNode = new ListNode(data)
+      if (head == null) { newNode.next = null; return newNode }
+      newNode.next = head  // New node points to old head
+      newNode              // New node is now the head
+    }
   }
 
   val n3=new ListNode(3); val n2=new ListNode(7,n3); val n1=new ListNode(5,n2)
-  var head = insertAtBeginning(n1, 6)
+  var head = new Solution().insertAtBeginning(n1, 6)
   while (head != null) { print(s"${head.v} "); head = head.next }  // 6 5 7 3
 }
 ```
@@ -219,23 +248,48 @@ object Main extends App {
 
 The time complexity of the above function does not depend on the list size. In all cases, we always need to insert the node at the start of the list, which takes **constant** time, i.e., **O(1)**.
 
-```d2
-direction: right
-new: |md
-  **New node**
-
-  val: 6
-| {style.fill: "#dcfce7"; style.stroke: "#16a34a"}
-n1: "val: 5"
-n2: "val: 7"
-n3: |md
-  val: 3
-
-  `next: null`
-|
-new -> n1: "newNode.next = head\nhead = newNode\n— 2 pointer ops, O(1)"
-n1 -> n2
-n2 -> n3
+```d3 widget=linked-list
+{
+  "title": "Insert before the head — 2 pointer ops, O(1) regardless of list size",
+  "direction": "single",
+  "nodes": [
+    {"id": "n1", "value": "5"},
+    {"id": "n2", "value": "7"},
+    {"id": "n3", "value": "3"}
+  ],
+  "head": "n1",
+  "steps": [
+    {
+      "links": [["n1","n2"],["n2","n3"]],
+      "markers": [],
+      "msg": "Before: head → 5 → 7 → 3 → null"
+    },
+    {
+      "nodes": [
+        {"id": "n0", "value": "6", "style": "new"},
+        {"id": "n1", "value": "5"},
+        {"id": "n2", "value": "7"},
+        {"id": "n3", "value": "3"}
+      ],
+      "links": [["n0","n1"],["n1","n2"],["n2","n3"]],
+      "markers": [{"name": "current", "nodeId": "n0"}],
+      "head": "n1",
+      "msg": "Step 1: newNode.next = head — the new node points at the old head (1 pointer op)"
+    },
+    {
+      "nodes": [
+        {"id": "n0", "value": "6", "style": "new"},
+        {"id": "n1", "value": "5"},
+        {"id": "n2", "value": "7"},
+        {"id": "n3", "value": "3"}
+      ],
+      "links": [["n0","n1"],["n1","n2"],["n2","n3"]],
+      "markers": [],
+      "head": "n0",
+      "msg": "Step 2: head = newNode — head moves to the new node (1 pointer op). Total: O(1), independent of list size."
+    }
+  ]
+}
 ```
 
 <p align="center"><strong>Insert before the head node — only 2 pointer assignments needed, regardless of list size: always O(1) time.</strong></p>
@@ -328,34 +382,36 @@ print(vals)  # [6, 5, 7, 3, 10]
 public class Main {
     static class ListNode { int val; ListNode next; ListNode(int v){val=v;} }
 
-    static ListNode insertAtBeginning(ListNode head, int data) {
+    static class Solution {
+        public ListNode insertAtBeginning(ListNode head, int data) {
 
-        // Create a new node with the given data
-        ListNode newNode = new ListNode(data);
+            // Create a new node with the given data
+            ListNode newNode = new ListNode(data);
 
-        // If the list is empty (head is null)
-        if (head == null) {
+            // If the list is empty (head is null)
+            if (head == null) {
 
-            // Set the next pointer to null since it's the only node
-            newNode.next = null;
+                // Set the next pointer to null since it's the only node
+                newNode.next = null;
+
+                // Return the newNode as this is the new head
+                return newNode;
+            }
+
+            // Set the next pointer of the new node to the current head,
+            // making the new node the new head
+            newNode.next = head;
 
             // Return the newNode as this is the new head
             return newNode;
         }
-
-        // Set the next pointer of the new node to the current head,
-        // making the new node the new head
-        newNode.next = head;
-
-        // Return the newNode as this is the new head
-        return newNode;
     }
 
     public static void main(String[] args) {
         ListNode n1=new ListNode(5),n2=new ListNode(7),
                  n3=new ListNode(3),n4=new ListNode(10);
         n1.next=n2; n2.next=n3; n3.next=n4;
-        ListNode head = insertAtBeginning(n1, 6);
+        ListNode head = new Solution().insertAtBeginning(n1, 6);
         for (ListNode c=head;c!=null;c=c.next) System.out.print(c.val+" ");
         // 6 5 7 3 10
     }
@@ -405,32 +461,34 @@ int main() {
 class ListNode(var v: Int, var next: ListNode = null)
 
 object Main extends App {
-  def insertAtBeginning(head: ListNode, data: Int): ListNode = {
+  class Solution {
+    def insertAtBeginning(head: ListNode, data: Int): ListNode = {
 
-    // Create a new node with the given data
-    val newNode = new ListNode(data)
+      // Create a new node with the given data
+      val newNode = new ListNode(data)
 
-    // If the list is empty (head is null)
-    if (head == null) {
+      // If the list is empty (head is null)
+      if (head == null) {
 
-      // Set the next pointer to null since it's the only node
-      newNode.next = null
+        // Set the next pointer to null since it's the only node
+        newNode.next = null
+
+        // Return the newNode as this is the new head
+        return newNode
+      }
+
+      // Set the next pointer of the new node to the current head,
+      // making the new node the new head
+      newNode.next = head
 
       // Return the newNode as this is the new head
-      return newNode
+      newNode
     }
-
-    // Set the next pointer of the new node to the current head,
-    // making the new node the new head
-    newNode.next = head
-
-    // Return the newNode as this is the new head
-    newNode
   }
 
   val n4=new ListNode(10); val n3=new ListNode(3,n4)
   val n2=new ListNode(7,n3); val n1=new ListNode(5,n2)
-  var head = insertAtBeginning(n1, 6)
+  var head = new Solution().insertAtBeginning(n1, 6)
   while (head!=null) { print(s"${head.v} "); head=head.next }  // 6 5 7 3 10
 }
 ```
@@ -446,26 +504,27 @@ Inserting at the end of a list is a common operation used to extend the list. Un
 
 If the linked list is empty, the **head** is `null`. We create a new node and make it the head — it is also the tail since it's the only node.
 
-```d2
-direction: right
-
-before: "Before — empty list" {
-  h1: "head = null" {shape: oval}
+```d3 widget=linked-list
+{
+  "title": "Insert at end — empty list: same as insert at beginning when there's nothing yet",
+  "direction": "single",
+  "nodes": [{"id": "n", "value": "6"}],
+  "head": "n",
+  "steps": [
+    {
+      "nodes": [],
+      "links": [],
+      "markers": [],
+      "msg": "Before: head = null (empty list)"
+    },
+    {
+      "nodes": [{"id": "n", "value": "6", "style": "new"}],
+      "links": [],
+      "markers": [{"name": "head", "nodeId": "n"}],
+      "msg": "Create newNode and make it the head — newNode.next = null"
+    }
+  ]
 }
-
-after: "After — insert val=6" {
-  direction: right
-  h2: head {shape: oval}
-  n: {
-    val: 6
-    next: "null"
-    style.fill: "#dcfce7"
-    style.stroke: "#16a34a"
-  }
-  h2 -> n.val
-}
-
-before -> after: "create new node,\nhead = newNode"
 ```
 
 <p align="center"><strong>Case 1 — empty list: the new node becomes both head and tail.</strong></p>
@@ -480,36 +539,62 @@ before -> after: "create new node,\nhead = newNode"
 
 We traverse to the last node (whose `next` is `null`) and link the new node after it.
 
-```d2
-direction: right
-
-before: "Before — list = [5, 7, 3]" {
-  direction: right
-  b1: "val: 5"
-  b2: "val: 7"
-  b3: |md
-    val: 3
-
-    `next: null`
-  |
-  b1 -> b2 -> b3
+```d3 widget=linked-list
+{
+  "title": "Insert at end — non-empty list: walk to tail then attach",
+  "direction": "single",
+  "nodes": [
+    {"id": "n1", "value": "5"},
+    {"id": "n2", "value": "7"},
+    {"id": "n3", "value": "3"},
+    {"id": "new", "value": "6"}
+  ],
+  "head": "n1",
+  "steps": [
+    {
+      "nodes": [
+        {"id": "n1", "value": "5"},
+        {"id": "n2", "value": "7"},
+        {"id": "n3", "value": "3"}
+      ],
+      "links": [["n1","n2"],["n2","n3"]],
+      "markers": [{"name": "current", "nodeId": "n1"}],
+      "msg": "Before: head → 5 → 7 → 3. Start curr at head."
+    },
+    {
+      "nodes": [
+        {"id": "n1", "value": "5"},
+        {"id": "n2", "value": "7"},
+        {"id": "n3", "value": "3"}
+      ],
+      "links": [["n1","n2"],["n2","n3"]],
+      "markers": [{"name": "current", "nodeId": "n3"}],
+      "msg": "Walk to the tail (curr.next == null) — O(n)"
+    },
+    {
+      "nodes": [
+        {"id": "n1", "value": "5"},
+        {"id": "n2", "value": "7"},
+        {"id": "n3", "value": "3"},
+        {"id": "new", "value": "6", "style": "new"}
+      ],
+      "links": [["n1","n2"],["n2","n3"]],
+      "markers": [{"name": "current", "nodeId": "n3"}],
+      "msg": "Allocate newNode"
+    },
+    {
+      "nodes": [
+        {"id": "n1", "value": "5"},
+        {"id": "n2", "value": "7"},
+        {"id": "n3", "value": "3"},
+        {"id": "new", "value": "6"}
+      ],
+      "links": [["n1","n2"],["n2","n3"],["n3","new"]],
+      "markers": [{"name": "head", "nodeId": "n1"}],
+      "msg": "tail.next = newNode — done. Total O(n) (walk + attach)."
+    }
+  ]
 }
-
-after: "After — insert val=6 at end" {
-  direction: right
-  c1: "val: 5"
-  c2: "val: 7"
-  c3: "val: 3"
-  new: {
-    val: 6
-    next: "null"
-    style.fill: "#dcfce7"
-    style.stroke: "#16a34a"
-  }
-  c1 -> c2 -> c3 -> new.val
-}
-
-before -> after: "traverse to tail,\ntail.next = newNode"
 ```
 
 <p align="center"><strong>Case 2 — non-empty list: traverse to the tail, then set <code>tail.next = newNode</code>.</strong></p>
@@ -564,20 +649,22 @@ print(vals)  # [5, 7, 3, 6]
 public class Main {
     static class ListNode { int val; ListNode next; ListNode(int v){val=v;} }
 
-    static ListNode insertAtEnd(ListNode head, int data) {
-        ListNode newNode = new ListNode(data);
-        if (head == null) return newNode;
+    static class Solution {
+        public ListNode insertAtEnd(ListNode head, int data) {
+            ListNode newNode = new ListNode(data);
+            if (head == null) return newNode;
 
-        ListNode current = head;
-        while (current.next != null) current = current.next;  // Walk to tail
-        current.next = newNode;  // Attach after tail
-        return head;
+            ListNode current = head;
+            while (current.next != null) current = current.next;  // Walk to tail
+            current.next = newNode;  // Attach after tail
+            return head;
+        }
     }
 
     public static void main(String[] args) {
         ListNode n1=new ListNode(5),n2=new ListNode(7),n3=new ListNode(3);
         n1.next=n2; n2.next=n3;
-        ListNode head = insertAtEnd(n1, 6);
+        ListNode head = new Solution().insertAtEnd(n1, 6);
         for (ListNode c=head;c!=null;c=c.next) System.out.print(c.val+" ");
         // 5 7 3 6
     }
@@ -614,18 +701,20 @@ int main() {
 class ListNode(var v: Int, var next: ListNode = null)
 
 object Main extends App {
-  def insertAtEnd(head: ListNode, data: Int): ListNode = {
-    val newNode = new ListNode(data)
-    if (head == null) return newNode
+  class Solution {
+    def insertAtEnd(head: ListNode, data: Int): ListNode = {
+      val newNode = new ListNode(data)
+      if (head == null) return newNode
 
-    var current = head
-    while (current.next != null) current = current.next  // Walk to tail
-    current.next = newNode  // Attach after tail
-    head
+      var current = head
+      while (current.next != null) current = current.next  // Walk to tail
+      current.next = newNode  // Attach after tail
+      head
+    }
   }
 
   val n3=new ListNode(3); val n2=new ListNode(7,n3); val n1=new ListNode(5,n2)
-  var head = insertAtEnd(n1, 6)
+  var head = new Solution().insertAtEnd(n1, 6)
   while (head!=null) { print(s"${head.v} "); head=head.next }  // 5 7 3 6
 }
 ```
@@ -757,42 +846,44 @@ print(vals)  # [5, 7, 3, 10, 6]
 public class Main {
     static class ListNode { int val; ListNode next; ListNode(int v){val=v;} }
 
-    static ListNode insertAtEnd(ListNode head, int data) {
+    static class Solution {
+        public ListNode insertAtEnd(ListNode head, int data) {
 
-        // Create a new node with the given data
-        ListNode newNode = new ListNode(data);
+            // Create a new node with the given data
+            ListNode newNode = new ListNode(data);
 
-        // If the list is empty
-        if (head == null) {
+            // If the list is empty
+            if (head == null) {
+
+                // Set the next pointer of the new node to null
+                newNode.next = null;
+
+                // Return the new node as the new head of the list
+                return newNode;
+            }
+
+            // Traverse the list to find the last node
+            ListNode current = head;
+            while (current != null && current.next != null) {
+                current = current.next;
+            }
 
             // Set the next pointer of the new node to null
             newNode.next = null;
 
-            // Return the new node as the new head of the list
-            return newNode;
+            // Link the last node to the new node
+            current.next = newNode;
+
+            // Return the original head of the list
+            return head;
         }
-
-        // Traverse the list to find the last node
-        ListNode current = head;
-        while (current != null && current.next != null) {
-            current = current.next;
-        }
-
-        // Set the next pointer of the new node to null
-        newNode.next = null;
-
-        // Link the last node to the new node
-        current.next = newNode;
-
-        // Return the original head of the list
-        return head;
     }
 
     public static void main(String[] args) {
         ListNode n1=new ListNode(5),n2=new ListNode(7),
                  n3=new ListNode(3),n4=new ListNode(10);
         n1.next=n2; n2.next=n3; n3.next=n4;
-        ListNode head = insertAtEnd(n1, 6);
+        ListNode head = new Solution().insertAtEnd(n1, 6);
         for (ListNode c=head;c!=null;c=c.next) System.out.print(c.val+" ");
         // 5 7 3 10 6
     }
@@ -850,40 +941,42 @@ int main() {
 class ListNode(var v: Int, var next: ListNode = null)
 
 object Main extends App {
-  def insertAtEnd(head: ListNode, data: Int): ListNode = {
+  class Solution {
+    def insertAtEnd(head: ListNode, data: Int): ListNode = {
 
-    // Create a new node with the given data
-    val newNode = new ListNode(data)
+      // Create a new node with the given data
+      val newNode = new ListNode(data)
 
-    // If the list is empty
-    if (head == null) {
+      // If the list is empty
+      if (head == null) {
+
+        // Set the next pointer of the new node to null
+        newNode.next = null
+
+        // Return the new node as the new head of the list
+        return newNode
+      }
+
+      // Traverse the list to find the last node
+      var current = head
+      while (current != null && current.next != null) {
+        current = current.next
+      }
 
       // Set the next pointer of the new node to null
       newNode.next = null
 
-      // Return the new node as the new head of the list
-      return newNode
+      // Link the last node to the new node
+      current.next = newNode
+
+      // Return the original head of the list
+      head
     }
-
-    // Traverse the list to find the last node
-    var current = head
-    while (current != null && current.next != null) {
-      current = current.next
-    }
-
-    // Set the next pointer of the new node to null
-    newNode.next = null
-
-    // Link the last node to the new node
-    current.next = newNode
-
-    // Return the original head of the list
-    head
   }
 
   val n4=new ListNode(10); val n3=new ListNode(3,n4)
   val n2=new ListNode(7,n3); val n1=new ListNode(5,n2)
-  var head = insertAtEnd(n1, 6)
+  var head = new Solution().insertAtEnd(n1, 6)
   while (head!=null) { print(s"${head.v} "); head=head.next }  // 5 7 3 10 6
 }
 ```
@@ -899,13 +992,21 @@ Inserting after a given node in a singly linked list is a relatively straightfor
 
 If the list is empty and contains no elements, we cannot find the given node because it does not exist within the list. Inserting a new node after the given node is not possible because there is no reference point within the list to perform the insertion. In such a case, the method would return without making any changes.
 
-```d2
-direction: right
-n1: "node = null" {shape: oval}
-n2: "head = null" {shape: oval}
-n3: "Return — nothing to do" {shape: oval; style.fill: "#fee2e2"; style.stroke: "#dc2626"}
-n1 -> n3
-n2 -> n3
+```d3 widget=linked-list
+{
+  "title": "Insert after given node — empty list or null reference: nothing to do",
+  "direction": "single",
+  "nodes": [{"id": "placeholder", "value": "—"}],
+  "head": "placeholder",
+  "steps": [
+    {
+      "nodes": [],
+      "links": [],
+      "markers": [],
+      "msg": "node = null and/or head = null — no reference point. Return immediately."
+    }
+  ]
+}
 ```
 
 <p align="center"><strong>Case 1 — empty list or null node: the function returns immediately with no changes.</strong></p>
@@ -918,35 +1019,52 @@ n2 -> n3
 
 Since the new node will be inserted between two existing nodes, we must ensure that we properly set up the pointers of these nodes. Inserting after a given node is a three-step process.
 
-```mermaid
----
-config:
-  theme: base
-  themeVariables:
-    primaryColor: "#dbeafe"
-    primaryBorderColor: "#3b82f6"
-    primaryTextColor: "#1e3a5f"
-    lineColor: "#64748b"
-    secondaryColor: "#ede9fe"
-    tertiaryColor: "#fef9c3"
----
-flowchart TB
-    subgraph BEFORE["Before — list = [5, 7, 3], insert 6 after node(7)"]
-        direction LR
-        B1["val: 5"] --> B2["val: 7<br/>(given node)"] --> B3["val: 3<br/>next: null"]
-    end
-    subgraph STEP1["Step 1 — newNode.next = node.next"]
-        direction LR
-        S1["val: 5"] --> S2["val: 7<br/>(given)"] --> S3["val: 3<br/>next: null"]
-        NEW1["val: 6<br/>next: ●"] -->|"points to"| S3
-        style NEW1 fill:#fef9c3,stroke:#3b82f6
-    end
-    subgraph AFTER["Step 2 — node.next = newNode"]
-        direction LR
-        C1["val: 5"] --> C2["val: 7<br/>(given)"] --> NEW2["val: 6<br/>next: ●"] --> C3["val: 3<br/>next: null"]
-        style NEW2 fill:#fef9c3,stroke:#3b82f6
-    end
-    BEFORE --> STEP1 --> AFTER
+```d3 widget=linked-list
+{
+  "title": "Insert 6 after node(7) — bridge new.next first, then redirect node.next",
+  "direction": "single",
+  "nodes": [
+    {"id": "n1", "value": "5"},
+    {"id": "n2", "value": "7"},
+    {"id": "new", "value": "6"},
+    {"id": "n3", "value": "3"}
+  ],
+  "head": "n1",
+  "steps": [
+    {
+      "nodes": [
+        {"id": "n1", "value": "5"},
+        {"id": "n2", "value": "7"},
+        {"id": "n3", "value": "3"}
+      ],
+      "links": [["n1","n2"],["n2","n3"]],
+      "markers": [{"name": "current", "nodeId": "n2"}],
+      "msg": "Before: list = [5, 7, 3]; insert 6 after node(7)"
+    },
+    {
+      "nodes": [
+        {"id": "n1", "value": "5"},
+        {"id": "n2", "value": "7"},
+        {"id": "new", "value": "6", "style": "new"},
+        {"id": "n3", "value": "3"}
+      ],
+      "links": [["n1","n2"],["n2","n3"],["new","n3"]],
+      "markers": [{"name": "current", "nodeId": "n2"}],
+      "msg": "Step 1: newNode.next = node.next — new bridges over to node 3"
+    },
+    {
+      "nodes": [
+        {"id": "n1", "value": "5"},
+        {"id": "n2", "value": "7"},
+        {"id": "new", "value": "6"},
+        {"id": "n3", "value": "3"}
+      ],
+      "links": [["n1","n2"],["n2","new"],["new","n3"]],
+      "markers": [{"name": "head", "nodeId": "n1"}],
+      "msg": "Step 2: node.next = newNode — splice complete. O(1)."
+    }
+  ]
+}
 ```
 
 <p align="center"><strong>Case 2 — non-empty list: bridge the new node in by wiring its <code>next</code> first, then redirecting the given node.</strong></p>
@@ -997,19 +1115,21 @@ print(vals)  # [5, 7, 6, 3, 10]
 public class Main {
     static class ListNode { int val; ListNode next; ListNode(int v){val=v;} }
 
-    static void insertAfterTheGivenNode(ListNode node, int data) {
-        if (node == null) return;  // No reference point — nothing to do
+    static class Solution {
+        public void insertAfterTheGivenNode(ListNode node, int data) {
+            if (node == null) return;  // No reference point — nothing to do
 
-        ListNode newNode = new ListNode(data);
-        newNode.next = node.next;  // Bridge: new node points to what came after given
-        node.next = newNode;       // Given node now points to new node
+            ListNode newNode = new ListNode(data);
+            newNode.next = node.next;  // Bridge: new node points to what came after given
+            node.next = newNode;       // Given node now points to new node
+        }
     }
 
     public static void main(String[] args) {
         ListNode n1=new ListNode(5),n2=new ListNode(7),
                  n3=new ListNode(3),n4=new ListNode(10);
         n1.next=n2; n2.next=n3; n3.next=n4;
-        insertAfterTheGivenNode(n2, 6);  // Insert 6 after node(7)
+        new Solution().insertAfterTheGivenNode(n2, 6);  // Insert 6 after node(7)
         for (ListNode c=n1;c!=null;c=c.next) System.out.print(c.val+" ");
         // 5 7 6 3 10
     }
@@ -1044,17 +1164,19 @@ int main() {
 class ListNode(var v: Int, var next: ListNode = null)
 
 object Main extends App {
-  def insertAfterTheGivenNode(node: ListNode, data: Int): Unit = {
-    if (node == null) return  // No reference point — nothing to do
+  class Solution {
+    def insertAfterTheGivenNode(node: ListNode, data: Int): Unit = {
+      if (node == null) return  // No reference point — nothing to do
 
-    val newNode = new ListNode(data)
-    newNode.next = node.next  // Bridge: new node points to what came after given
-    node.next = newNode       // Given node now points to new node
+      val newNode = new ListNode(data)
+      newNode.next = node.next  // Bridge: new node points to what came after given
+      node.next = newNode       // Given node now points to new node
+    }
   }
 
   val n4=new ListNode(10); val n3=new ListNode(3,n4)
   val n2=new ListNode(7,n3); val n1=new ListNode(5,n2)
-  insertAfterTheGivenNode(n2, 6)  // Insert 6 after node(7)
+  new Solution().insertAfterTheGivenNode(n2, 6)  // Insert 6 after node(7)
   var cur = n1
   while (cur!=null) { print(s"${cur.v} "); cur=cur.next }  // 5 7 6 3 10
 }
@@ -1176,31 +1298,33 @@ print(vals)  # [5, 7, 6, 3, 10]
 public class Main {
     static class ListNode { int val; ListNode next; ListNode(int v){val=v;} }
 
-    static void insertAfterTheGivenNode(ListNode node, int data) {
+    static class Solution {
+        public void insertAfterTheGivenNode(ListNode node, int data) {
 
-        // Check if the given node is null
-        if (node == null) {
+            // Check if the given node is null
+            if (node == null) {
 
-            // If the given node is null, there is nothing to do
-            return;
+                // If the given node is null, there is nothing to do
+                return;
+            }
+
+            // Create a new node with the provided data
+            ListNode newNode = new ListNode(data);
+
+            // Set the next pointer of the new node to the next pointer of
+            // the given node
+            newNode.next = node.next;
+
+            // Set the next pointer of the given node to the new node
+            node.next = newNode;
         }
-
-        // Create a new node with the provided data
-        ListNode newNode = new ListNode(data);
-
-        // Set the next pointer of the new node to the next pointer of
-        // the given node
-        newNode.next = node.next;
-
-        // Set the next pointer of the given node to the new node
-        node.next = newNode;
     }
 
     public static void main(String[] args) {
         ListNode n1=new ListNode(5),n2=new ListNode(7),
                  n3=new ListNode(3),n4=new ListNode(10);
         n1.next=n2; n2.next=n3; n3.next=n4;
-        insertAfterTheGivenNode(n2, 6);
+        new Solution().insertAfterTheGivenNode(n2, 6);
         for (ListNode c=n1;c!=null;c=c.next) System.out.print(c.val+" ");
         // 5 7 6 3 10
     }
@@ -1247,29 +1371,31 @@ int main() {
 class ListNode(var v: Int, var next: ListNode = null)
 
 object Main extends App {
-  def insertAfterTheGivenNode(node: ListNode, data: Int): Unit = {
+  class Solution {
+    def insertAfterTheGivenNode(node: ListNode, data: Int): Unit = {
 
-    // Check if the given node is null
-    if (node == null) {
+      // Check if the given node is null
+      if (node == null) {
 
-      // If the given node is null, there is nothing to do
-      return
+        // If the given node is null, there is nothing to do
+        return
+      }
+
+      // Create a new node with the provided data
+      val newNode = new ListNode(data)
+
+      // Set the next pointer of the new node to the next pointer of
+      // the given node
+      newNode.next = node.next
+
+      // Set the next pointer of the given node to the new node
+      node.next = newNode
     }
-
-    // Create a new node with the provided data
-    val newNode = new ListNode(data)
-
-    // Set the next pointer of the new node to the next pointer of
-    // the given node
-    newNode.next = node.next
-
-    // Set the next pointer of the given node to the new node
-    node.next = newNode
   }
 
   val n4=new ListNode(10); val n3=new ListNode(3,n4)
   val n2=new ListNode(7,n3); val n1=new ListNode(5,n2)
-  insertAfterTheGivenNode(n2, 6)
+  new Solution().insertAfterTheGivenNode(n2, 6)
   var cur = n1
   while (cur!=null) { print(s"${cur.v} "); cur=cur.next }  // 5 7 6 3 10
 }
@@ -1286,11 +1412,21 @@ Inserting before a given node may seem simple, just like inserting after a node.
 
 If the list is empty and contains no elements, we cannot find the given node because it does not exist within the list. Inserting a new node before the given node is not possible. In such a case, we return the **head** node as-is.
 
-```d2
-direction: right
-h: "head = null" {shape: oval}
-r: "Return head — nothing to do" {shape: oval; style.fill: "#fee2e2"; style.stroke: "#dc2626"}
-h -> r
+```d3 widget=linked-list
+{
+  "title": "Insert before given node — empty list: return head unchanged",
+  "direction": "single",
+  "nodes": [{"id": "placeholder", "value": "—"}],
+  "head": "placeholder",
+  "steps": [
+    {
+      "nodes": [],
+      "links": [],
+      "markers": [],
+      "msg": "head = null — given node cannot exist. Return null."
+    }
+  ]
+}
 ```
 
 <p align="center"><strong>Case 1 — empty list: return the head immediately with no changes.</strong></p>
@@ -1303,52 +1439,41 @@ h -> r
 
 This is similar to **inserting at the beginning**, which we learned earlier. To determine if the given node is the first node, we compare it to the **head** node. If both are the same object, the given node is the head.
 
-```d2
-direction: right
-
-before: "Before — node == head" {
-  direction: right
-  h: head {shape: oval}
-  b1: |md
-    val: 7
-
-    (given)
-  |
-  b2: "val: 3"
-  b3: |md
-    val: 10
-
-    `next: null`
-  |
-  h -> b1 -> b2 -> b3
+```d3 widget=linked-list
+{
+  "title": "Insert before given node — given == head: same as insert-at-beginning",
+  "direction": "single",
+  "nodes": [
+    {"id": "new", "value": "6"},
+    {"id": "n1", "value": "7"},
+    {"id": "n2", "value": "3"},
+    {"id": "n3", "value": "10"}
+  ],
+  "head": "n1",
+  "steps": [
+    {
+      "nodes": [
+        {"id": "n1", "value": "7"},
+        {"id": "n2", "value": "3"},
+        {"id": "n3", "value": "10"}
+      ],
+      "links": [["n1","n2"],["n2","n3"]],
+      "markers": [{"name": "head", "nodeId": "n1"}, {"name": "current", "nodeId": "n1"}],
+      "msg": "Before: node == head. Given is node(7)."
+    },
+    {
+      "nodes": [
+        {"id": "new", "value": "6", "style": "new"},
+        {"id": "n1", "value": "7"},
+        {"id": "n2", "value": "3"},
+        {"id": "n3", "value": "10"}
+      ],
+      "links": [["new","n1"],["n1","n2"],["n2","n3"]],
+      "markers": [{"name": "head", "nodeId": "new"}],
+      "msg": "newNode.next = head, return newNode — done in O(1)"
+    }
+  ]
 }
-
-after: "After — insert val=6 before node(7)" {
-  direction: right
-  h: head {shape: oval}
-  new: {
-    val: 6
-    next
-    style.fill: "#dcfce7"
-    style.stroke: "#16a34a"
-  }
-  c1: |md
-    val: 7
-
-    (given)
-  |
-  c2: "val: 3"
-  c3: |md
-    val: 10
-
-    `next: null`
-  |
-  h -> new.val
-  new.next -> c1
-  c1 -> c2 -> c3
-}
-
-before -> after: "newNode.next = head\nreturn newNode"
 ```
 
 <p align="center"><strong>Case 2 — given node is the head: same as insert-at-beginning; the new node becomes the new head.</strong></p>
@@ -1363,24 +1488,24 @@ before -> after: "newNode.next = head\nreturn newNode"
 
 This case is not easy, but it becomes simpler once we understand the concept behind it. The problem is that we don't have a reference to the node just before the given node. Without that predecessor, we can't rewire its `next` pointer after inserting.
 
-```d2
-problem: "Problem — no predecessor reference" {
-  direction: right
-  p1: "val: 5"
-  p2: "val: 7"
-  p3: |md
-    val: 3
-
-    (given)
-  | {style.fill: "#fde68a"; style.stroke: "#d97706"}
-  p4: |md
-    val: 10
-
-    `next: null`
-  |
-  p1 -> p2 -> p3 -> p4
-  q: "We want to insert\nBEFORE node(3)\nbut who points to it?" {shape: oval}
-  q -> p3: "" {style.stroke-dash: 3}
+```d3 widget=linked-list
+{
+  "title": "Problem — singly-linked lists are forward-only, so the predecessor is unknown",
+  "direction": "single",
+  "nodes": [
+    {"id": "n1", "value": "5"},
+    {"id": "n2", "value": "7"},
+    {"id": "n3", "value": "3"},
+    {"id": "n4", "value": "10"}
+  ],
+  "head": "n1",
+  "steps": [
+    {
+      "links": [["n1","n2"],["n2","n3"],["n3","n4"]],
+      "markers": [{"name": "current", "nodeId": "n3"}],
+      "msg": "Want to insert BEFORE node(3). But which node points to node(3)? We have no back-pointer."
+    }
+  ]
 }
 ```
 
@@ -1390,56 +1515,67 @@ problem: "Problem — no predecessor reference" {
 
 We create a `previous` pointer initialised to `null`. As we traverse, we update both `current` and `previous` together at each step. When `current` reaches the given node, `previous` holds its predecessor. The problem then reduces to **inserting after the previous node** — which we already know how to do.
 
-```d2
-direction: right
-
-before: "Before — list = [5, 7, 3, 10], insert 6 before node(3)" {
-  direction: right
-  b1: "val: 5"
-  b2: "val: 7"
-  b3: |md
-    val: 3
-
-    (given)
-  |
-  b4: |md
-    val: 10
-
-    `next: null`
-  |
-  b1 -> b2 -> b3 -> b4
-  pr: previous {shape: oval}
-  cr: current {shape: oval}
-  pr -> b2: "" {style.stroke-dash: 3}
-  cr -> b3: "" {style.stroke-dash: 3}
+```d3 widget=linked-list
+{
+  "title": "Insert before given node — track previous + current as you walk",
+  "direction": "single",
+  "nodes": [
+    {"id": "n1", "value": "5"},
+    {"id": "n2", "value": "7"},
+    {"id": "new", "value": "6"},
+    {"id": "n3", "value": "3"},
+    {"id": "n4", "value": "10"}
+  ],
+  "head": "n1",
+  "steps": [
+    {
+      "nodes": [
+        {"id": "n1", "value": "5"},
+        {"id": "n2", "value": "7"},
+        {"id": "n3", "value": "3"},
+        {"id": "n4", "value": "10"}
+      ],
+      "links": [["n1","n2"],["n2","n3"],["n3","n4"]],
+      "markers": [{"name": "previous", "nodeId": "n1"}, {"name": "current", "nodeId": "n2"}, {"name": "next", "nodeId": "n3"}],
+      "msg": "Start: previous=head, current=head.next. Given=node(3)."
+    },
+    {
+      "nodes": [
+        {"id": "n1", "value": "5"},
+        {"id": "n2", "value": "7"},
+        {"id": "n3", "value": "3"},
+        {"id": "n4", "value": "10"}
+      ],
+      "links": [["n1","n2"],["n2","n3"],["n3","n4"]],
+      "markers": [{"name": "previous", "nodeId": "n2"}, {"name": "current", "nodeId": "n3"}],
+      "msg": "Walk forward — current == given (node 3). previous = node(7)."
+    },
+    {
+      "nodes": [
+        {"id": "n1", "value": "5"},
+        {"id": "n2", "value": "7"},
+        {"id": "new", "value": "6", "style": "new"},
+        {"id": "n3", "value": "3"},
+        {"id": "n4", "value": "10"}
+      ],
+      "links": [["n1","n2"],["n2","n3"],["new","n3"],["n3","n4"]],
+      "markers": [{"name": "current", "nodeId": "new"}],
+      "msg": "Allocate newNode; newNode.next = current (point at node 3)"
+    },
+    {
+      "nodes": [
+        {"id": "n1", "value": "5"},
+        {"id": "n2", "value": "7"},
+        {"id": "new", "value": "6"},
+        {"id": "n3", "value": "3"},
+        {"id": "n4", "value": "10"}
+      ],
+      "links": [["n1","n2"],["n2","new"],["new","n3"],["n3","n4"]],
+      "markers": [{"name": "head", "nodeId": "n1"}],
+      "msg": "previous.next = newNode — splice complete. O(n) walk + O(1) wire."
+    }
+  ]
 }
-
-after: "After — previous.next rewired through new node" {
-  direction: right
-  c1: "val: 5"
-  c2: "val: 7"
-  new: {
-    val: 6
-    next
-    style.fill: "#dcfce7"
-    style.stroke: "#16a34a"
-  }
-  c3: |md
-    val: 3
-
-    (given)
-  |
-  c4: |md
-    val: 10
-
-    `next: null`
-  |
-  c1 -> c2 -> new.val
-  new.next -> c3
-  c3 -> c4
-}
-
-before -> after: "newNode.next = current\nprevious.next = newNode"
 ```
 
 <p align="center"><strong>Case 3 — non-head node: traverse with two pointers until <code>current == given</code>, then wire the new node between <code>previous</code> and <code>current</code>.</strong></p>
@@ -1516,35 +1652,37 @@ print(vals)  # [5, 7, 6, 3, 10]
 public class Main {
     static class ListNode { int val; ListNode next; ListNode(int v){val=v;} }
 
-    static ListNode insertBeforeTheGivenNode(ListNode head, ListNode node, int data) {
-        if (head == null || node == null) return head;
+    static class Solution {
+        public ListNode insertBeforeTheGivenNode(ListNode head, ListNode node, int data) {
+            if (head == null || node == null) return head;
 
-        ListNode newNode = new ListNode(data);
+            ListNode newNode = new ListNode(data);
 
-        if (node == head) {      // Given node is the head — insert at beginning
-            newNode.next = head;
-            return newNode;
+            if (node == head) {      // Given node is the head — insert at beginning
+                newNode.next = head;
+                return newNode;
+            }
+
+            ListNode current = head;
+            ListNode previous = null;
+            while (current != null && current != node) {
+                previous = current;  // Track the predecessor before advancing
+                current = current.next;
+            }
+
+            if (current == null) return head;  // Given node not found
+
+            newNode.next = current;    // New node points to the given node
+            previous.next = newNode;   // Predecessor now points to new node
+            return head;
         }
-
-        ListNode current = head;
-        ListNode previous = null;
-        while (current != null && current != node) {
-            previous = current;  // Track the predecessor before advancing
-            current = current.next;
-        }
-
-        if (current == null) return head;  // Given node not found
-
-        newNode.next = current;    // New node points to the given node
-        previous.next = newNode;   // Predecessor now points to new node
-        return head;
     }
 
     public static void main(String[] args) {
         ListNode n1=new ListNode(5),n2=new ListNode(7),
                  n3=new ListNode(3),n4=new ListNode(10);
         n1.next=n2; n2.next=n3; n3.next=n4;
-        ListNode head = insertBeforeTheGivenNode(n1, n3, 6);
+        ListNode head = new Solution().insertBeforeTheGivenNode(n1, n3, 6);
         for (ListNode c=head;c!=null;c=c.next) System.out.print(c.val+" ");
         // 5 7 6 3 10
     }
@@ -1594,33 +1732,35 @@ int main() {
 class ListNode(var v: Int, var next: ListNode = null)
 
 object Main extends App {
-  def insertBeforeTheGivenNode(head: ListNode, node: ListNode, data: Int): ListNode = {
-    if (head == null || node == null) return head
+  class Solution {
+    def insertBeforeTheGivenNode(head: ListNode, node: ListNode, data: Int): ListNode = {
+      if (head == null || node == null) return head
 
-    val newNode = new ListNode(data)
+      val newNode = new ListNode(data)
 
-    if (node == head) {        // Given node is the head — insert at beginning
-      newNode.next = head
-      return newNode
+      if (node == head) {        // Given node is the head — insert at beginning
+        newNode.next = head
+        return newNode
+      }
+
+      var current = head
+      var previous: ListNode = null
+      while (current != null && current != node) {
+        previous = current       // Track the predecessor before advancing
+        current = current.next
+      }
+
+      if (current == null) return head  // Given node not found
+
+      newNode.next = current     // New node points to the given node
+      previous.next = newNode    // Predecessor now points to new node
+      head
     }
-
-    var current = head
-    var previous: ListNode = null
-    while (current != null && current != node) {
-      previous = current       // Track the predecessor before advancing
-      current = current.next
-    }
-
-    if (current == null) return head  // Given node not found
-
-    newNode.next = current     // New node points to the given node
-    previous.next = newNode    // Predecessor now points to new node
-    head
   }
 
   val n4=new ListNode(10); val n3=new ListNode(3,n4)
   val n2=new ListNode(7,n3); val n1=new ListNode(5,n2)
-  var head = insertBeforeTheGivenNode(n1, n3, 6)
+  var head = new Solution().insertBeforeTheGivenNode(n1, n3, 6)
   while (head!=null) { print(s"${head.v} "); head=head.next }  // 5 7 6 3 10
 }
 ```
@@ -1819,52 +1959,54 @@ print(vals)  # [5, 6, 7, 3, 10]
 public class Main {
     static class ListNode { int val; ListNode next; ListNode(int v){val=v;} }
 
-    static ListNode insertBeforeTheGivenNode(ListNode head, ListNode node, int data) {
+    static class Solution {
+        public ListNode insertBeforeTheGivenNode(ListNode head, ListNode node, int data) {
 
-        // Check if the head or node is null
-        if (head == null || node == null) {
+            // Check if the head or node is null
+            if (head == null || node == null) {
+                return head;
+            }
+
+            // Create a new node with the given data
+            ListNode newNode = new ListNode(data);
+
+            // If the given node is the head, insert the new node before it
+            if (node == head) {
+                newNode.next = head;
+
+                // Return the newNode as this is the new head
+                return newNode;
+            }
+
+            // Traverse the linked list until the current node matches the
+            // given node
+            ListNode current = head;
+            ListNode previous = null;
+            while (current != null && current != node) {
+                previous = current;
+                current = current.next;
+            }
+
+            // If the current node is null, the given node was not found in
+            // the linked list
+            if (current == null) {
+                return head;
+            }
+
+            // Insert the new node before the given node
+            newNode.next = current;
+            previous.next = newNode;
+
+            // Return the head of the modified linked list
             return head;
         }
-
-        // Create a new node with the given data
-        ListNode newNode = new ListNode(data);
-
-        // If the given node is the head, insert the new node before it
-        if (node == head) {
-            newNode.next = head;
-
-            // Return the newNode as this is the new head
-            return newNode;
-        }
-
-        // Traverse the linked list until the current node matches the
-        // given node
-        ListNode current = head;
-        ListNode previous = null;
-        while (current != null && current != node) {
-            previous = current;
-            current = current.next;
-        }
-
-        // If the current node is null, the given node was not found in
-        // the linked list
-        if (current == null) {
-            return head;
-        }
-
-        // Insert the new node before the given node
-        newNode.next = current;
-        previous.next = newNode;
-
-        // Return the head of the modified linked list
-        return head;
     }
 
     public static void main(String[] args) {
         ListNode n1=new ListNode(5),n2=new ListNode(7),
                  n3=new ListNode(3),n4=new ListNode(10);
         n1.next=n2; n2.next=n3; n3.next=n4;
-        ListNode head = insertBeforeTheGivenNode(n1, n2, 6);
+        ListNode head = new Solution().insertBeforeTheGivenNode(n1, n2, 6);
         for (ListNode c=head;c!=null;c=c.next) System.out.print(c.val+" ");
         // 5 6 7 3 10
     }
@@ -1932,50 +2074,52 @@ int main() {
 class ListNode(var v: Int, var next: ListNode = null)
 
 object Main extends App {
-  def insertBeforeTheGivenNode(head: ListNode, node: ListNode, data: Int): ListNode = {
+  class Solution {
+    def insertBeforeTheGivenNode(head: ListNode, node: ListNode, data: Int): ListNode = {
 
-    // Check if the head or node is null
-    if (head == null || node == null) {
-      return head
+      // Check if the head or node is null
+      if (head == null || node == null) {
+        return head
+      }
+
+      // Create a new node with the given data
+      val newNode = new ListNode(data)
+
+      // If the given node is the head, insert the new node before it
+      if (node == head) {
+        newNode.next = head
+
+        // Return the newNode as this is the new head
+        return newNode
+      }
+
+      // Traverse the linked list until the current node matches the
+      // given node
+      var current = head
+      var previous: ListNode = null
+      while (current != null && current != node) {
+        previous = current
+        current = current.next
+      }
+
+      // If the current node is null, the given node was not found in
+      // the linked list
+      if (current == null) {
+        return head
+      }
+
+      // Insert the new node before the given node
+      newNode.next = current
+      previous.next = newNode
+
+      // Return the head of the modified linked list
+      head
     }
-
-    // Create a new node with the given data
-    val newNode = new ListNode(data)
-
-    // If the given node is the head, insert the new node before it
-    if (node == head) {
-      newNode.next = head
-
-      // Return the newNode as this is the new head
-      return newNode
-    }
-
-    // Traverse the linked list until the current node matches the
-    // given node
-    var current = head
-    var previous: ListNode = null
-    while (current != null && current != node) {
-      previous = current
-      current = current.next
-    }
-
-    // If the current node is null, the given node was not found in
-    // the linked list
-    if (current == null) {
-      return head
-    }
-
-    // Insert the new node before the given node
-    newNode.next = current
-    previous.next = newNode
-
-    // Return the head of the modified linked list
-    head
   }
 
   val n4=new ListNode(10); val n3=new ListNode(3,n4)
   val n2=new ListNode(7,n3); val n1=new ListNode(5,n2)
-  var head = insertBeforeTheGivenNode(n1, n2, 6)
+  var head = new Solution().insertBeforeTheGivenNode(n1, n2, 6)
   while (head!=null) { print(s"${head.v} "); head=head.next }  // 5 6 7 3 10
 }
 ```
@@ -1991,15 +2135,21 @@ Just as inserting before a given node is accomplished by piggybacking on the sea
 
 Attempting to insert a node at a position greater than 0 in an empty list is invalid. The only valid position in an empty list is position 0 (making the new node the head). When X > 0 but no nodes exist, we return the existing **head**.
 
-```d2
-direction: right
-h: "head = null" {shape: oval}
-c: "X > 0?" {shape: diamond}
-r: "Return head — invalid position" {shape: oval; style.fill: "#fee2e2"; style.stroke: "#dc2626"}
-n: "Create node, return it as head" {shape: oval; style.fill: "#dcfce7"; style.stroke: "#16a34a"}
-h -> c
-c -> r: "Yes"
-c -> n: "No (X=0)"
+```d3 widget=linked-list
+{
+  "title": "Insert at distance — empty list with X > 0: invalid position, return null",
+  "direction": "single",
+  "nodes": [{"id": "placeholder", "value": "—"}],
+  "head": "placeholder",
+  "steps": [
+    {
+      "nodes": [],
+      "links": [],
+      "markers": [],
+      "msg": "head = null, X > 0 — no valid position. Return null. (X = 0 with empty list is the create-new-head case.)"
+    }
+  ]
+}
 ```
 
 <p align="center"><strong>Case 1 — empty list with X > 0: no position exists to insert at, return unchanged.</strong></p>
@@ -2012,22 +2162,41 @@ c -> n: "No (X=0)"
 
 Inserting at distance 0 means inserting at the **beginning** of the list — exactly what we covered in the very first insertion lesson.
 
-```d2
-direction: right
-new: |md
-  val: 6
-
-  (new)
-| {style.fill: "#dcfce7"; style.stroke: "#16a34a"}
-n1: "val: 5"
-n2: "val: 7"
-n3: |md
-  val: 3
-
-  `next: null`
-|
-new -> n1: "newNode.next = head"
-n1 -> n2 -> n3
+```d3 widget=linked-list
+{
+  "title": "Insert at distance X = 0 — same as insert-at-beginning",
+  "direction": "single",
+  "nodes": [
+    {"id": "new", "value": "6"},
+    {"id": "n1", "value": "5"},
+    {"id": "n2", "value": "7"},
+    {"id": "n3", "value": "3"}
+  ],
+  "head": "n1",
+  "steps": [
+    {
+      "nodes": [
+        {"id": "n1", "value": "5"},
+        {"id": "n2", "value": "7"},
+        {"id": "n3", "value": "3"}
+      ],
+      "links": [["n1","n2"],["n2","n3"]],
+      "markers": [{"name": "head", "nodeId": "n1"}],
+      "msg": "Before: head → 5 → 7 → 3, X = 0"
+    },
+    {
+      "nodes": [
+        {"id": "new", "value": "6", "style": "new"},
+        {"id": "n1", "value": "5"},
+        {"id": "n2", "value": "7"},
+        {"id": "n3", "value": "3"}
+      ],
+      "links": [["new","n1"],["n1","n2"],["n2","n3"]],
+      "markers": [{"name": "head", "nodeId": "new"}],
+      "msg": "newNode.next = head; head = newNode. O(1)."
+    }
+  ]
+}
 ```
 
 <p align="center"><strong>Case 2 — X = 0: insert-at-beginning; new node becomes the new head.</strong></p>
@@ -2042,58 +2211,67 @@ n1 -> n2 -> n3
 
 Traverse the list while keeping a counter starting at 0. Increment the counter on each step. Stop when `counter == X - 1` — this lands us at the node just **before** where we want to insert. The problem then reduces to **inserting after that node**, which we already know.
 
-```d2
-direction: right
-
-before: "Before — list = [5, 7, 3, 10], X = 2" {
-  direction: right
-  b1: |md
-    val: 5
-
-    `idx 0`
-  |
-  b2: |md
-    val: 7
-
-    `idx 1`
-  |
-  b3: |md
-    val: 3
-
-    `idx 2`
-  |
-  b4: |md
-    val: 10
-
-    `next: null`
-  |
-  b1 -> b2 -> b3 -> b4
-  cur: "current stops\nat idx X−1 = 1" {shape: oval}
-  cur -> b2: "" {style.stroke-dash: 3}
+```d3 widget=linked-list
+{
+  "title": "Insert at distance X = 2 — walk X−1 steps, then splice",
+  "direction": "single",
+  "nodes": [
+    {"id": "n1", "value": "5"},
+    {"id": "n2", "value": "7"},
+    {"id": "new", "value": "6"},
+    {"id": "n3", "value": "3"},
+    {"id": "n4", "value": "10"}
+  ],
+  "head": "n1",
+  "steps": [
+    {
+      "nodes": [
+        {"id": "n1", "value": "5"},
+        {"id": "n2", "value": "7"},
+        {"id": "n3", "value": "3"},
+        {"id": "n4", "value": "10"}
+      ],
+      "links": [["n1","n2"],["n2","n3"],["n3","n4"]],
+      "markers": [{"name": "current", "nodeId": "n1"}],
+      "msg": "Start: current=head, counter=0. Target X=2 → stop at counter X−1 = 1."
+    },
+    {
+      "nodes": [
+        {"id": "n1", "value": "5"},
+        {"id": "n2", "value": "7"},
+        {"id": "n3", "value": "3"},
+        {"id": "n4", "value": "10"}
+      ],
+      "links": [["n1","n2"],["n2","n3"],["n3","n4"]],
+      "markers": [{"name": "current", "nodeId": "n2"}],
+      "msg": "Walk: counter=1, current at node(7). Stop."
+    },
+    {
+      "nodes": [
+        {"id": "n1", "value": "5"},
+        {"id": "n2", "value": "7"},
+        {"id": "new", "value": "6", "style": "new"},
+        {"id": "n3", "value": "3"},
+        {"id": "n4", "value": "10"}
+      ],
+      "links": [["n1","n2"],["n2","n3"],["new","n3"],["n3","n4"]],
+      "markers": [{"name": "current", "nodeId": "new"}],
+      "msg": "newNode.next = current.next (point at node 3)"
+    },
+    {
+      "nodes": [
+        {"id": "n1", "value": "5"},
+        {"id": "n2", "value": "7"},
+        {"id": "new", "value": "6"},
+        {"id": "n3", "value": "3"},
+        {"id": "n4", "value": "10"}
+      ],
+      "links": [["n1","n2"],["n2","new"],["new","n3"],["n3","n4"]],
+      "markers": [{"name": "head", "nodeId": "n1"}],
+      "msg": "current.next = newNode — splice complete. List is 5 → 7 → 6 → 3 → 10."
+    }
+  ]
 }
-
-after: "After — insert val=6 at distance 2" {
-  direction: right
-  c1: "val: 5"
-  c2: "val: 7"
-  new: {
-    val: 6
-    next
-    style.fill: "#dcfce7"
-    style.stroke: "#16a34a"
-  }
-  c3: "val: 3"
-  c4: |md
-    val: 10
-
-    `next: null`
-  |
-  c1 -> c2 -> new.val
-  new.next -> c3
-  c3 -> c4
-}
-
-before -> after: "newNode.next = current.next\ncurrent.next = newNode"
 ```
 
 <p align="center"><strong>Case 3 — valid position: traverse X−1 steps to land at the predecessor, then splice in the new node.</strong></p>
@@ -2110,20 +2288,30 @@ before -> after: "newNode.next = current.next\ncurrent.next = newNode"
 
 If `X` exceeds the list's length, the position doesn't exist. For example, inserting at position 5 in a 4-element list is invalid — we return the existing **head** unchanged.
 
-```d2
-direction: right
-n1: "val: 5"
-n2: "val: 7"
-n3: "val: 3"
-n4: |md
-  val: 10
-
-  `next: null`
-|
-n1 -> n2 -> n3 -> n4
-
-oob: "X = 5 > size (4)\ncurrent reaches null\n→ return head unchanged" {shape: oval; style.fill: "#fee2e2"; style.stroke: "#dc2626"}
-oob -> n4: "" {style.stroke-dash: 3}
+```d3 widget=linked-list
+{
+  "title": "Insert at distance X = 5 in size-4 list — traversal falls off, return head unchanged",
+  "direction": "single",
+  "nodes": [
+    {"id": "n1", "value": "5"},
+    {"id": "n2", "value": "7"},
+    {"id": "n3", "value": "3"},
+    {"id": "n4", "value": "10"}
+  ],
+  "head": "n1",
+  "steps": [
+    {
+      "links": [["n1","n2"],["n2","n3"],["n3","n4"]],
+      "markers": [{"name": "current", "nodeId": "n4"}],
+      "msg": "Walking forward — counter reaches 3 at node(10). Target X−1 = 4."
+    },
+    {
+      "links": [["n1","n2"],["n2","n3"],["n3","n4"]],
+      "markers": [{"name": "head", "nodeId": "n1"}],
+      "msg": "current = current.next becomes null before counter hits 4. X = 5 exceeds size 4 → return head unchanged."
+    }
+  ]
+}
 ```
 
 <p align="center"><strong>Case 4 — X exceeds list size: traversal hits null before reaching X−1, return unchanged.</strong></p>
@@ -2197,35 +2385,37 @@ print(vals)  # [5, 7, 6, 3, 10]
 public class Main {
     static class ListNode { int val; ListNode next; ListNode(int v){val=v;} }
 
-    static ListNode insertAtGivenDistance(ListNode head, int X, int data) {
-        if (head == null && X > 0) return null;
+    static class Solution {
+        public ListNode insertAtGivenDistance(ListNode head, int X, int data) {
+            if (head == null && X > 0) return null;
 
-        ListNode newNode = new ListNode(data);
+            ListNode newNode = new ListNode(data);
 
-        if (X == 0) {               // Insert at beginning
-            newNode.next = head;
-            return newNode;
+            if (X == 0) {               // Insert at beginning
+                newNode.next = head;
+                return newNode;
+            }
+
+            ListNode current = head;
+            int counter = 0;
+            while (current != null && counter < X - 1) {
+                current = current.next; // Advance toward position X−1
+                counter++;
+            }
+
+            if (current == null) return head;  // X exceeds list size
+
+            newNode.next = current.next;  // Splice: new node takes what followed current
+            current.next = newNode;       // Current now points to new node
+            return head;
         }
-
-        ListNode current = head;
-        int counter = 0;
-        while (current != null && counter < X - 1) {
-            current = current.next; // Advance toward position X−1
-            counter++;
-        }
-
-        if (current == null) return head;  // X exceeds list size
-
-        newNode.next = current.next;  // Splice: new node takes what followed current
-        current.next = newNode;       // Current now points to new node
-        return head;
     }
 
     public static void main(String[] args) {
         ListNode n1=new ListNode(5),n2=new ListNode(7),
                  n3=new ListNode(3),n4=new ListNode(10);
         n1.next=n2; n2.next=n3; n3.next=n4;
-        ListNode head = insertAtGivenDistance(n1, 2, 6);
+        ListNode head = new Solution().insertAtGivenDistance(n1, 2, 6);
         for (ListNode c=head;c!=null;c=c.next) System.out.print(c.val+" ");
         // 5 7 6 3 10
     }
@@ -2276,33 +2466,35 @@ int main() {
 class ListNode(var v: Int, var next: ListNode = null)
 
 object Main extends App {
-  def insertAtGivenDistance(head: ListNode, X: Int, data: Int): ListNode = {
-    if (head == null && X > 0) return null
+  class Solution {
+    def insertAtGivenDistance(head: ListNode, X: Int, data: Int): ListNode = {
+      if (head == null && X > 0) return null
 
-    val newNode = new ListNode(data)
+      val newNode = new ListNode(data)
 
-    if (X == 0) {               // Insert at beginning
-      newNode.next = head
-      return newNode
+      if (X == 0) {               // Insert at beginning
+        newNode.next = head
+        return newNode
+      }
+
+      var current = head
+      var counter = 0
+      while (current != null && counter < X - 1) {
+        current = current.next    // Advance toward position X−1
+        counter += 1
+      }
+
+      if (current == null) return head  // X exceeds list size
+
+      newNode.next = current.next  // Splice: new node takes what followed current
+      current.next = newNode       // Current now points to new node
+      head
     }
-
-    var current = head
-    var counter = 0
-    while (current != null && counter < X - 1) {
-      current = current.next    // Advance toward position X−1
-      counter += 1
-    }
-
-    if (current == null) return head  // X exceeds list size
-
-    newNode.next = current.next  // Splice: new node takes what followed current
-    current.next = newNode       // Current now points to new node
-    head
   }
 
   val n4=new ListNode(10); val n3=new ListNode(3,n4)
   val n2=new ListNode(7,n3); val n1=new ListNode(5,n2)
-  var head = insertAtGivenDistance(n1, 2, 6)
+  var head = new Solution().insertAtGivenDistance(n1, 2, 6)
   while (head!=null) { print(s"${head.v} "); head=head.next }  // 5 7 6 3 10
 }
 ```
@@ -2511,67 +2703,69 @@ print(vals)  # [5, 6, 7, 3, 10]
 public class Main {
     static class ListNode { int val; ListNode next; ListNode(int v){val=v;} }
 
-    static ListNode insertAtGivenDistance(ListNode head, int X, int data) {
+    static class Solution {
+        public ListNode insertAtGivenDistance(ListNode head, int X, int data) {
 
-        // If the list is empty and X is greater than 0, insertion is not
-        // possible, return null
-        if (head == null && X > 0) {
-            return null;
-        }
+            // If the list is empty and X is greater than 0, insertion is not
+            // possible, return null
+            if (head == null && X > 0) {
+                return null;
+            }
 
-        // Create a new node with the given data
-        ListNode newNode = new ListNode(data);
+            // Create a new node with the given data
+            ListNode newNode = new ListNode(data);
 
-        // If X is 0, insert the new node at the beginning of the list
-        if (X == 0) {
+            // If X is 0, insert the new node at the beginning of the list
+            if (X == 0) {
 
-            // Set the next pointer of the new node to the current head,
-            // making the new node the new head.
-            newNode.next = head;
+                // Set the next pointer of the new node to the current head,
+                // making the new node the new head.
+                newNode.next = head;
 
-            // Return the newNode as this is the new head
-            return newNode;
-        }
+                // Return the newNode as this is the new head
+                return newNode;
+            }
 
-        // Pointer to traverse the list
-        ListNode current = head;
+            // Pointer to traverse the list
+            ListNode current = head;
 
-        // Counter to track the number of nodes traversed
-        int counter = 0;
+            // Counter to track the number of nodes traversed
+            int counter = 0;
 
-        // Traverse the list until reaching the desired distance or the
-        // end of the list
-        while (current != null && counter < X - 1) {
+            // Traverse the list until reaching the desired distance or the
+            // end of the list
+            while (current != null && counter < X - 1) {
 
-            // Move to the next node
-            current = current.next;
+                // Move to the next node
+                current = current.next;
 
-            // Increment the counter
-            counter++;
-        }
+                // Increment the counter
+                counter++;
+            }
 
-        // If the list is shorter than X-1, it's not possible to insert
-        // the new node, so return head.
-        if (current == null) {
+            // If the list is shorter than X-1, it's not possible to insert
+            // the new node, so return head.
+            if (current == null) {
+                return head;
+            }
+
+            // Set the next pointer of the new node to the current node
+            newNode.next = current.next;
+
+            // Update the next pointer of the current node to point to the new
+            // node
+            current.next = newNode;
+
+            // Return the updated head of the list
             return head;
         }
-
-        // Set the next pointer of the new node to the current node
-        newNode.next = current.next;
-
-        // Update the next pointer of the current node to point to the new
-        // node
-        current.next = newNode;
-
-        // Return the updated head of the list
-        return head;
     }
 
     public static void main(String[] args) {
         ListNode n1=new ListNode(5),n2=new ListNode(7),
                  n3=new ListNode(3),n4=new ListNode(10);
         n1.next=n2; n2.next=n3; n3.next=n4;
-        ListNode head = insertAtGivenDistance(n1, 1, 6);
+        ListNode head = new Solution().insertAtGivenDistance(n1, 1, 6);
         for (ListNode c=head;c!=null;c=c.next) System.out.print(c.val+" ");
         // 5 6 7 3 10
     }
@@ -2654,65 +2848,67 @@ int main() {
 class ListNode(var v: Int, var next: ListNode = null)
 
 object Main extends App {
-  def insertAtGivenDistance(head: ListNode, X: Int, data: Int): ListNode = {
+  class Solution {
+    def insertAtGivenDistance(head: ListNode, X: Int, data: Int): ListNode = {
 
-    // If the list is empty and X is greater than 0, insertion is not
-    // possible, return null
-    if (head == null && X > 0) {
-      return null
+      // If the list is empty and X is greater than 0, insertion is not
+      // possible, return null
+      if (head == null && X > 0) {
+        return null
+      }
+
+      // Create a new node with the given data
+      val newNode = new ListNode(data)
+
+      // If X is 0, insert the new node at the beginning of the list
+      if (X == 0) {
+
+        // Set the next pointer of the new node to the current head,
+        // making the new node the new head.
+        newNode.next = head
+
+        // Return the newNode as this is the new head
+        return newNode
+      }
+
+      // Pointer to traverse the list
+      var current = head
+
+      // Counter to track the number of nodes traversed
+      var counter = 0
+
+      // Traverse the list until reaching the desired distance or the
+      // end of the list
+      while (current != null && counter < X - 1) {
+
+        // Move to the next node
+        current = current.next
+
+        // Increment the counter
+        counter += 1
+      }
+
+      // If the list is shorter than X-1, it's not possible to insert
+      // the new node, so return head.
+      if (current == null) {
+        return head
+      }
+
+      // Set the next pointer of the new node to the current node
+      newNode.next = current.next
+
+      // Update the next pointer of the current node to point to the new
+      // node
+      current.next = newNode
+
+      // Return the updated head of the list
+      head
     }
-
-    // Create a new node with the given data
-    val newNode = new ListNode(data)
-
-    // If X is 0, insert the new node at the beginning of the list
-    if (X == 0) {
-
-      // Set the next pointer of the new node to the current head,
-      // making the new node the new head.
-      newNode.next = head
-
-      // Return the newNode as this is the new head
-      return newNode
-    }
-
-    // Pointer to traverse the list
-    var current = head
-
-    // Counter to track the number of nodes traversed
-    var counter = 0
-
-    // Traverse the list until reaching the desired distance or the
-    // end of the list
-    while (current != null && counter < X - 1) {
-
-      // Move to the next node
-      current = current.next
-
-      // Increment the counter
-      counter += 1
-    }
-
-    // If the list is shorter than X-1, it's not possible to insert
-    // the new node, so return head.
-    if (current == null) {
-      return head
-    }
-
-    // Set the next pointer of the new node to the current node
-    newNode.next = current.next
-
-    // Update the next pointer of the current node to point to the new
-    // node
-    current.next = newNode
-
-    // Return the updated head of the list
-    head
   }
 
   val n4=new ListNode(10); val n3=new ListNode(3,n4)
   val n2=new ListNode(7,n3); val n1=new ListNode(5,n2)
-  var head = insertAtGivenDistance(n1, 1, 6)
+  var head = new Solution().insertAtGivenDistance(n1, 1, 6)
   while (head!=null) { print(s"${head.v} "); head=head.next }  // 5 6 7 3 10
 }
 ```

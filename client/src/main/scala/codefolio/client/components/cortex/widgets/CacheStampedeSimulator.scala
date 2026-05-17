@@ -1,10 +1,10 @@
 package codefolio.client.components.cortex.widgets
 
+import codefolio.client.components.cortex.widgets.PayloadDecoder.*
 import japgolly.scalajs.react.*
 import japgolly.scalajs.react.vdom.html_<^.*
 
-import scala.scalajs.js
-import scala.util.{Failure, Success, Try}
+import scala.util.Try
 
 /**
  * Cache-stampede widget — side-by-side timeline rectangles comparing the *origin pressure* of a cold-key
@@ -72,38 +72,24 @@ object CacheStampedeSimulator:
   // Parsing
   // ===========================================================================
 
-  private def parseRange(d: js.Dynamic, default: (Int, Int)): (Int, Int) =
-    d.asInstanceOf[js.UndefOr[js.Array[Double]]].toOption.map(_.toList) match
-      case Some(lo :: hi :: _) => (lo.toInt, hi.toInt)
-      case _                   => default
-
   private def parsePayload(json: String): Either[String, Spec] =
-    Try {
-      val raw     = js.JSON.parse(json).asInstanceOf[js.Dynamic]
-      val title   = raw.title.asInstanceOf[js.UndefOr[String]].toOption.filter(_.nonEmpty)
-      val conc    = raw.concurrency.asInstanceOf[js.UndefOr[Double]].toOption.getOrElse(100.0).toInt
-      val concR   = parseRange(raw.concurrencyRange, (10, 500))
-      val origMs  = raw.originLatencyMs.asInstanceOf[js.UndefOr[Double]].toOption.getOrElse(100.0).toInt
-      val origMsR = parseRange(raw.originLatencyRange, (10, 500))
-      val cap     = raw.originCapacity.asInstanceOf[js.UndefOr[Double]].toOption.getOrElse(50.0).toInt
-      Spec(title, conc, concR._1, concR._2, origMs, origMsR._1, origMsR._2, cap)
-    } match
-      case Success(s) if s.concurrencyMin < 1 || s.concurrencyMax < s.concurrencyMin =>
-        Left("payload.concurrencyRange must satisfy 1 ≤ min ≤ max")
-      case Success(s) if s.originLatencyMin < 1 || s.originLatencyMax < s.originLatencyMin =>
-        Left("payload.originLatencyRange must satisfy 1 ≤ min ≤ max")
-      case Success(s) if s.concurrency < s.concurrencyMin || s.concurrency > s.concurrencyMax =>
-        Left(
-          s"payload.concurrency must fall within concurrencyRange [${s.concurrencyMin}, ${s.concurrencyMax}]"
-        )
-      case Success(s) if s.originLatencyMs < s.originLatencyMin || s.originLatencyMs > s.originLatencyMax =>
-        Left(
-          s"payload.originLatencyMs must fall within originLatencyRange [${s.originLatencyMin}, ${s.originLatencyMax}]"
-        )
-      case Success(s) if s.originCapacity < 1 =>
-        Left("payload.originCapacity must be ≥ 1")
-      case Success(s) => Right(s)
-      case Failure(t) => Left(Option(t.getMessage).getOrElse("invalid payload JSON"))
+    PayloadDecoder.run(json) { d =>
+      val conc        = d.double("concurrency", 100.0).toInt
+      val (cMin, cMx) = d.intRange("concurrencyRange", (10, 500))
+      val origMs      = d.double("originLatencyMs", 100.0).toInt
+      val (oMin, oMx) = d.intRange("originLatencyRange", (10, 500))
+      val cap         = d.double("originCapacity", 50.0).toInt
+      if cMin < 1 || cMx < cMin then
+        throw PayloadDecoder.invalid("concurrencyRange must satisfy 1 ≤ min ≤ max")
+      if oMin < 1 || oMx < oMin then
+        throw PayloadDecoder.invalid("originLatencyRange must satisfy 1 ≤ min ≤ max")
+      if conc < cMin || conc > cMx then
+        throw PayloadDecoder.invalid(s"concurrency must fall within concurrencyRange [$cMin, $cMx]")
+      if origMs < oMin || origMs > oMx then
+        throw PayloadDecoder.invalid(s"originLatencyMs must fall within originLatencyRange [$oMin, $oMx]")
+      if cap < 1 then throw PayloadDecoder.invalid("originCapacity must be ≥ 1")
+      Spec(d.optString("title"), conc, cMin, cMx, origMs, oMin, oMx, cap)
+    }
 
   // ===========================================================================
   // Layout

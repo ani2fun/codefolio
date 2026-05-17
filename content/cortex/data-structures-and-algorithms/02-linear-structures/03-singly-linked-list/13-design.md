@@ -57,20 +57,25 @@ Two design decisions shape every linked-list class you'll ever write:
    *Cached `tail`* — `append` becomes O(1). But every operation that might change the tail (head deletion that empties the list, removal of the last node, insert at position = size) must remember to update it.  
    *No `tail`* — `append` is O(n) but there's one less invariant to maintain.
 
-```d2
-direction: right
-h: head {shape: oval}
-n1: "3"
-n2: "8"
-n3: "2"
-n4: "1"
-t: "tail (optional)" {shape: oval; style.stroke-dash: 3}
-s: "currentSize: 4" {shape: rectangle; style.fill: "#ede9fe"; style.stroke: "#3b82f6"}
-h -> n1
-n1 -> n2
-n2 -> n3
-n3 -> n4
-t -> n4: "" {style.stroke-dash: 3}
+```d3 widget=linked-list
+{
+  "title": "SinglyLinkedList state — head (always) + currentSize (cached) + tail (optional)",
+  "direction": "single",
+  "nodes": [
+    {"id": "n1", "value": "3"},
+    {"id": "n2", "value": "8"},
+    {"id": "n3", "value": "2"},
+    {"id": "n4", "value": "1"}
+  ],
+  "head": "n1",
+  "steps": [
+    {
+      "links": [["n1","n2"],["n2","n3"],["n3","n4"]],
+      "markers": [{"name": "head", "nodeId": "n1"}, {"name": "tail", "nodeId": "n4"}],
+      "msg": "head + cached currentSize is the minimal viable design; tail is optional (makes append O(1) but costs an extra field to maintain)"
+    }
+  ]
+}
 ```
 
 <p align="center"><strong>The <code>SinglyLinkedList</code> object owns three pieces of state — <code>head</code> (always), <code>currentSize</code> (usually cached), and <code>tail</code> (sometimes cached). The trade-offs are the whole design.</strong></p>
@@ -290,81 +295,95 @@ print(lst.empty())       # False
 ```
 
 ```java run
-class SinglyLinkedList {
-    private static class Node {
-        int val; Node next;
-        Node(int v) { val = v; }
-    }
+public class Main {
+    static class SinglyLinkedList {
+        private static class Node {
+            int val; Node next;
+            Node(int v) { val = v; }
+        }
 
-    private Node head;
-    private int  currentSize;
+        private Node head;
+        private int  currentSize;
 
-    public SinglyLinkedList() {
-        head = null;
-        currentSize = 0;
-    }
+        public SinglyLinkedList() {
+            head = null;
+            currentSize = 0;
+        }
 
-    public boolean empty() { return head == null; }
-    public int size()      { return currentSize; }
+        public boolean empty() { return head == null; }
+        public int size()      { return currentSize; }
 
-    public void prepend(int val) {
-        Node n = new Node(val);
-        n.next = head;
-        head = n;
-        currentSize++;
-    }
-
-    public void append(int val) {
-        Node n = new Node(val);
-        if (empty()) {
+        public void prepend(int val) {
+            Node n = new Node(val);
+            n.next = head;
             head = n;
-        } else {
+            currentSize++;
+        }
+
+        public void append(int val) {
+            Node n = new Node(val);
+            if (empty()) {
+                head = n;
+            } else {
+                Node cur = head;
+                while (cur.next != null) cur = cur.next;   // walk to the tail
+                cur.next = n;
+            }
+            currentSize++;
+        }
+
+        public void insert(int position, int val) {
+            if (position <= 0) { prepend(val); return; }
+            if (empty()) return;
+
             Node cur = head;
-            while (cur.next != null) cur = cur.next;   // walk to the tail
-            cur.next = n;
+            int  idx = 0;
+            while (cur.next != null && idx < position - 1) {
+                cur = cur.next;
+                idx++;
+            }
+            Node n = new Node(val);
+            n.next = cur.next;   // new node inherits cur's old successor
+            cur.next = n;        // cur now points at the new node
+            currentSize++;
         }
-        currentSize++;
-    }
 
-    public void insert(int position, int val) {
-        if (position <= 0) { prepend(val); return; }
-        if (empty()) return;
-
-        Node cur = head;
-        int  idx = 0;
-        while (cur.next != null && idx < position - 1) {
-            cur = cur.next;
-            idx++;
-        }
-        Node n = new Node(val);
-        n.next = cur.next;   // new node inherits cur's old successor
-        cur.next = n;        // cur now points at the new node
-        currentSize++;
-    }
-
-    public boolean remove(int val) {
-        if (empty()) return false;
-        if (head.val == val) {
-            head = head.next;           // head special case — no predecessor
-            currentSize--;
-            return true;
-        }
-        Node cur = head;
-        while (cur.next != null) {
-            if (cur.next.val == val) {
-                cur.next = cur.next.next;   // splice out victim
+        public boolean remove(int val) {
+            if (empty()) return false;
+            if (head.val == val) {
+                head = head.next;           // head special case — no predecessor
                 currentSize--;
                 return true;
             }
-            cur = cur.next;
+            Node cur = head;
+            while (cur.next != null) {
+                if (cur.next.val == val) {
+                    cur.next = cur.next.next;   // splice out victim
+                    currentSize--;
+                    return true;
+                }
+                cur = cur.next;
+            }
+            return false;
         }
-        return false;
+
+        public boolean search(int val) {
+            for (Node cur = head; cur != null; cur = cur.next)
+                if (cur.val == val) return true;
+            return false;
+        }
     }
 
-    public boolean search(int val) {
-        for (Node cur = head; cur != null; cur = cur.next)
-            if (cur.val == val) return true;
-        return false;
+    public static void main(String[] args) {
+        SinglyLinkedList lst = new SinglyLinkedList();
+        lst.prepend(2);
+        lst.prepend(3);
+        lst.append(1);
+        System.out.println(lst.size());      // 3
+        System.out.println(lst.search(5));   // false
+        lst.insert(1, 8);                    // list = [3, 8, 2, 1]
+        System.out.println(lst.remove(2));   // true
+        System.out.println(lst.empty());     // false
     }
 }
 ```
@@ -461,68 +480,80 @@ bool sll_search(SinglyLinkedList *l, int val) {
 ```
 
 ```scala run
-class SinglyLinkedList {
-  private class Node(var v: Int, var next: Node = null)
+object Main extends App {
+  class SinglyLinkedList {
+    private class Node(var v: Int, var next: Node = null)
 
-  private var head: Node = null
-  private var currentSize: Int = 0
+    private var head: Node = null
+    private var currentSize: Int = 0
 
-  def empty(): Boolean = head == null
-  def size(): Int = currentSize
+    def empty(): Boolean = head == null
+    def size(): Int = currentSize
 
-  def prepend(v: Int): Unit = {
-    val n = new Node(v, head)
-    head = n
-    currentSize += 1
-  }
-
-  def append(v: Int): Unit = {
-    val n = new Node(v)
-    if (empty()) head = n
-    else {
-      var cur = head
-      while (cur.next != null) cur = cur.next    // walk to tail
-      cur.next = n
+    def prepend(v: Int): Unit = {
+      val n = new Node(v, head)
+      head = n
+      currentSize += 1
     }
-    currentSize += 1
-  }
 
-  def insert(position: Int, v: Int): Unit = {
-    if (position <= 0) { prepend(v); return }
-    if (empty()) return
-
-    var cur = head; var idx = 0
-    while (cur.next != null && idx < position - 1) { cur = cur.next; idx += 1 }
-
-    val n = new Node(v, cur.next)
-    cur.next = n
-    currentSize += 1
-  }
-
-  def remove(v: Int): Boolean = {
-    if (empty()) return false
-    if (head.v == v) { head = head.next; currentSize -= 1; return true }
-
-    var cur = head
-    while (cur.next != null) {
-      if (cur.next.v == v) {
-        cur.next = cur.next.next
-        currentSize -= 1
-        return true
+    def append(v: Int): Unit = {
+      val n = new Node(v)
+      if (empty()) head = n
+      else {
+        var cur = head
+        while (cur.next != null) cur = cur.next    // walk to tail
+        cur.next = n
       }
-      cur = cur.next
+      currentSize += 1
     }
-    false
+
+    def insert(position: Int, v: Int): Unit = {
+      if (position <= 0) { prepend(v); return }
+      if (empty()) return
+
+      var cur = head; var idx = 0
+      while (cur.next != null && idx < position - 1) { cur = cur.next; idx += 1 }
+
+      val n = new Node(v, cur.next)
+      cur.next = n
+      currentSize += 1
+    }
+
+    def remove(v: Int): Boolean = {
+      if (empty()) return false
+      if (head.v == v) { head = head.next; currentSize -= 1; return true }
+
+      var cur = head
+      while (cur.next != null) {
+        if (cur.next.v == v) {
+          cur.next = cur.next.next
+          currentSize -= 1
+          return true
+        }
+        cur = cur.next
+      }
+      false
+    }
+
+    def search(v: Int): Boolean = {
+      var cur = head
+      while (cur != null) {
+        if (cur.v == v) return true
+        cur = cur.next
+      }
+      false
+    }
   }
 
-  def search(v: Int): Boolean = {
-    var cur = head
-    while (cur != null) {
-      if (cur.v == v) return true
-      cur = cur.next
-    }
-    false
-  }
+  val lst = new SinglyLinkedList()
+  lst.prepend(2)
+  lst.prepend(3)
+  lst.append(1)
+  println(lst.size())     // 3
+  println(lst.search(5))  // false
+  lst.insert(1, 8)        // list = [3, 8, 2, 1]
+  println(lst.remove(2))  // true
+  println(lst.empty())    // false
 }
 ```
 

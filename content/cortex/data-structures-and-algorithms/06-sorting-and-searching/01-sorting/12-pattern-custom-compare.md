@@ -299,15 +299,17 @@ if __name__ == "__main__":
 ```java run
 import java.util.Arrays;
 
-public class Solution {
-    public void bitwiseSort(int[] arr) {
-        Integer[] boxed = Arrays.stream(arr).boxed().toArray(Integer[]::new);
-        Arrays.sort(boxed, (a, b) -> {
-            int bitsA = Integer.bitCount(a), bitsB = Integer.bitCount(b);
-            if (bitsA != bitsB) return bitsA - bitsB;
-            return a - b;
-        });
-        for (int i = 0; i < arr.length; i++) arr[i] = boxed[i];
+public class Main {
+    static class Solution {
+        public void bitwiseSort(int[] arr) {
+            Integer[] boxed = Arrays.stream(arr).boxed().toArray(Integer[]::new);
+            Arrays.sort(boxed, (a, b) -> {
+                int bitsA = Integer.bitCount(a), bitsB = Integer.bitCount(b);
+                if (bitsA != bitsB) return bitsA - bitsB;
+                return a - b;
+            });
+            for (int i = 0; i < arr.length; i++) arr[i] = boxed[i];
+        }
     }
 
     public static void main(String[] args) {
@@ -351,19 +353,17 @@ int main(void) {
 ```
 
 ```scala run
-class Solution {
-  def bitwiseSort(arr: Array[Int]): Unit = {
-    val sorted = arr.sortBy(n => (Integer.bitCount(n), n))
-    System.arraycopy(sorted, 0, arr, 0, arr.length)
+object Main extends App {
+  class Solution {
+    def bitwiseSort(arr: Array[Int]): Unit = {
+      val sorted = arr.sortBy(n => (Integer.bitCount(n), n))
+      System.arraycopy(sorted, 0, arr, 0, arr.length)
+    }
   }
-}
 
-object Main {
-  def main(args: Array[String]): Unit = {
-    val arr = Array(7, 10, 12, 18, 26)
-    new Solution().bitwiseSort(arr)
-    println(arr.mkString(" "))
-  }
+  val arr = Array(7, 10, 12, 18, 26)
+  new Solution().bitwiseSort(arr)
+  println(arr.mkString(" "))
 }
 ```
 

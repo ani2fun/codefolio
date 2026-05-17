@@ -158,33 +158,35 @@ if __name__ == "__main__":
 ```
 
 ```java run
-public class Solution {
-    private int[][] dp;
-    private int[][] mat;
-    private int rows, cols;
-    private final int[][] DIR = {{-1,0},{1,0},{0,-1},{0,1}};
+public class Main {
+    static class Solution {
+        private int[][] dp;
+        private int[][] mat;
+        private int rows, cols;
+        private final int[][] DIR = {{-1,0},{1,0},{0,-1},{0,1}};
 
-    private int dfs(int r, int c) {
-        if (dp[r][c] != -1) return dp[r][c];
-        int best = 1;
-        for (int[] d : DIR) {
-            int nr = r + d[0], nc = c + d[1];
-            if (nr >= 0 && nr < rows && nc >= 0 && nc < cols && mat[nr][nc] > mat[r][c]) {
-                best = Math.max(best, 1 + dfs(nr, nc));
+        private int dfs(int r, int c) {
+            if (dp[r][c] != -1) return dp[r][c];
+            int best = 1;
+            for (int[] d : DIR) {
+                int nr = r + d[0], nc = c + d[1];
+                if (nr >= 0 && nr < rows && nc >= 0 && nc < cols && mat[nr][nc] > mat[r][c]) {
+                    best = Math.max(best, 1 + dfs(nr, nc));
+                }
             }
+            dp[r][c] = best;
+            return best;
         }
-        dp[r][c] = best;
-        return best;
-    }
 
-    public int longestAscendingRoute(int[][] matrix) {
-        if (matrix.length == 0 || matrix[0].length == 0) return 0;
-        rows = matrix.length; cols = matrix[0].length; mat = matrix;
-        dp = new int[rows][cols];
-        for (int[] row : dp) java.util.Arrays.fill(row, -1);
-        int ans = 0;
-        for (int r = 0; r < rows; r++) for (int c = 0; c < cols; c++) ans = Math.max(ans, dfs(r, c));
-        return ans;
+        public int longestAscendingRoute(int[][] matrix) {
+            if (matrix.length == 0 || matrix[0].length == 0) return 0;
+            rows = matrix.length; cols = matrix[0].length; mat = matrix;
+            dp = new int[rows][cols];
+            for (int[] row : dp) java.util.Arrays.fill(row, -1);
+            int ans = 0;
+            for (int r = 0; r < rows; r++) for (int c = 0; c < cols; c++) ans = Math.max(ans, dfs(r, c));
+            return ans;
+        }
     }
 
     public static void main(String[] args) {
@@ -236,35 +238,35 @@ int main(void) {
 ```
 
 ```scala run
-class Solution {
-  private var dp: Array[Array[Int]] = _
-  private var mat: Array[Array[Int]] = _
-  private var rows = 0; private var cols = 0
-  private val DR = Array(-1, 1, 0, 0); private val DC = Array(0, 0, -1, 1)
-
-  private def dfs(r: Int, c: Int): Int = {
-    if (dp(r)(c) != -1) return dp(r)(c)
-    var best = 1
-    for (i <- 0 until 4) {
-      val nr = r + DR(i); val nc = c + DC(i)
-      if (nr >= 0 && nr < rows && nc >= 0 && nc < cols && mat(nr)(nc) > mat(r)(c)) {
-        best = math.max(best, 1 + dfs(nr, nc))
-      }
-    }
-    dp(r)(c) = best; best
-  }
-
-  def longestAscendingRoute(matrix: Array[Array[Int]]): Int = {
-    if (matrix.isEmpty || matrix(0).isEmpty) return 0
-    rows = matrix.length; cols = matrix(0).length; mat = matrix
-    dp = Array.fill(rows, cols)(-1)
-    var ans = 0
-    for (r <- 0 until rows; c <- 0 until cols) ans = math.max(ans, dfs(r, c))
-    ans
-  }
-}
-
 object Main extends App {
+  class Solution {
+    private var dp: Array[Array[Int]] = _
+    private var mat: Array[Array[Int]] = _
+    private var rows = 0; private var cols = 0
+    private val DR = Array(-1, 1, 0, 0); private val DC = Array(0, 0, -1, 1)
+
+    private def dfs(r: Int, c: Int): Int = {
+      if (dp(r)(c) != -1) return dp(r)(c)
+      var best = 1
+      for (i <- 0 until 4) {
+        val nr = r + DR(i); val nc = c + DC(i)
+        if (nr >= 0 && nr < rows && nc >= 0 && nc < cols && mat(nr)(nc) > mat(r)(c)) {
+          best = math.max(best, 1 + dfs(nr, nc))
+        }
+      }
+      dp(r)(c) = best; best
+    }
+
+    def longestAscendingRoute(matrix: Array[Array[Int]]): Int = {
+      if (matrix.isEmpty || matrix(0).isEmpty) return 0
+      rows = matrix.length; cols = matrix(0).length; mat = matrix
+      dp = Array.fill(rows, cols)(-1)
+      var ans = 0
+      for (r <- 0 until rows; c <- 0 until cols) ans = math.max(ans, dfs(r, c))
+      ans
+    }
+  }
+
   println(new Solution().longestAscendingRoute(Array(Array(1,2,9), Array(5,3,8), Array(4,6,7))))   // 7
 }
 ```
@@ -390,22 +392,24 @@ if __name__ == "__main__":
 ```
 
 ```java run
-public class Solution {
-    public int largestSquareArea(int[][] matrix) {
-        if (matrix.length == 0 || matrix[0].length == 0) return 0;
-        int rows = matrix.length, cols = matrix[0].length;
-        int[][] dp = new int[rows][cols];
-        int maxSide = 0;
-        for (int r = 0; r < rows; r++) {
-            for (int c = 0; c < cols; c++) {
-                if (matrix[r][c] == 1) {
-                    dp[r][c] = (r == 0 || c == 0) ? 1
-                             : 1 + Math.min(dp[r-1][c-1], Math.min(dp[r-1][c], dp[r][c-1]));
-                    if (dp[r][c] > maxSide) maxSide = dp[r][c];
+public class Main {
+    static class Solution {
+        public int largestSquareArea(int[][] matrix) {
+            if (matrix.length == 0 || matrix[0].length == 0) return 0;
+            int rows = matrix.length, cols = matrix[0].length;
+            int[][] dp = new int[rows][cols];
+            int maxSide = 0;
+            for (int r = 0; r < rows; r++) {
+                for (int c = 0; c < cols; c++) {
+                    if (matrix[r][c] == 1) {
+                        dp[r][c] = (r == 0 || c == 0) ? 1
+                                 : 1 + Math.min(dp[r-1][c-1], Math.min(dp[r-1][c], dp[r][c-1]));
+                        if (dp[r][c] > maxSide) maxSide = dp[r][c];
+                    }
                 }
             }
+            return maxSide * maxSide;
         }
-        return maxSide * maxSide;
     }
 
     public static void main(String[] args) {
@@ -449,24 +453,24 @@ int main(void) {
 ```
 
 ```scala run
-class Solution {
-  def largestSquareArea(matrix: Array[Array[Int]]): Int = {
-    if (matrix.isEmpty || matrix(0).isEmpty) return 0
-    val rows = matrix.length; val cols = matrix(0).length
-    val dp = Array.fill(rows, cols)(0)
-    var maxSide = 0
-    for (r <- 0 until rows; c <- 0 until cols) {
-      if (matrix(r)(c) == 1) {
-        dp(r)(c) = if (r == 0 || c == 0) 1
-                   else 1 + math.min(dp(r-1)(c-1), math.min(dp(r-1)(c), dp(r)(c-1)))
-        if (dp(r)(c) > maxSide) maxSide = dp(r)(c)
-      }
-    }
-    maxSide * maxSide
-  }
-}
-
 object Main extends App {
+  class Solution {
+    def largestSquareArea(matrix: Array[Array[Int]]): Int = {
+      if (matrix.isEmpty || matrix(0).isEmpty) return 0
+      val rows = matrix.length; val cols = matrix(0).length
+      val dp = Array.fill(rows, cols)(0)
+      var maxSide = 0
+      for (r <- 0 until rows; c <- 0 until cols) {
+        if (matrix(r)(c) == 1) {
+          dp(r)(c) = if (r == 0 || c == 0) 1
+                     else 1 + math.min(dp(r-1)(c-1), math.min(dp(r-1)(c), dp(r)(c-1)))
+          if (dp(r)(c) > maxSide) maxSide = dp(r)(c)
+        }
+      }
+      maxSide * maxSide
+    }
+  }
+
   println(new Solution().largestSquareArea(Array(Array(1,1,0,0), Array(0,0,1,1), Array(1,0,1,1), Array(1,0,0,0))))   // 4
 }
 ```
@@ -574,24 +578,26 @@ if __name__ == "__main__":
 ```java run
 import java.util.*;
 
-public class Solution {
-    public int destinationPathCount(int[][] matrix, int cost) {
-        if (matrix.length == 0 || matrix[0].length == 0) return 0;
-        Map<Long, Integer> memo = new HashMap<>();
-        return helper(matrix, matrix.length - 1, matrix[0].length - 1, cost, memo);
-    }
+public class Main {
+    static class Solution {
+        public int destinationPathCount(int[][] matrix, int cost) {
+            if (matrix.length == 0 || matrix[0].length == 0) return 0;
+            Map<Long, Integer> memo = new HashMap<>();
+            return helper(matrix, matrix.length - 1, matrix[0].length - 1, cost, memo);
+        }
 
-    private int helper(int[][] m, int r, int c, int rem, Map<Long, Integer> memo) {
-        if (rem < 0) return 0;
-        if (r == 0 && c == 0) return m[0][0] == rem ? 1 : 0;
-        long key = ((long) r * 10001 + c) * 100001L + rem;
-        Integer cached = memo.get(key);
-        if (cached != null) return cached;
-        int top = (r > 0) ? helper(m, r - 1, c, rem - m[r][c], memo) : 0;
-        int left = (c > 0) ? helper(m, r, c - 1, rem - m[r][c], memo) : 0;
-        int ans = top + left;
-        memo.put(key, ans);
-        return ans;
+        private int helper(int[][] m, int r, int c, int rem, Map<Long, Integer> memo) {
+            if (rem < 0) return 0;
+            if (r == 0 && c == 0) return m[0][0] == rem ? 1 : 0;
+            long key = ((long) r * 10001 + c) * 100001L + rem;
+            Integer cached = memo.get(key);
+            if (cached != null) return cached;
+            int top = (r > 0) ? helper(m, r - 1, c, rem - m[r][c], memo) : 0;
+            int left = (c > 0) ? helper(m, r, c - 1, rem - m[r][c], memo) : 0;
+            int ans = top + left;
+            memo.put(key, ans);
+            return ans;
+        }
     }
 
     public static void main(String[] args) {
@@ -635,24 +641,24 @@ int main(void) {
 ```
 
 ```scala run
-class Solution {
-  def destinationPathCount(matrix: Array[Array[Int]], cost: Int): Int = {
-    if (matrix.isEmpty || matrix(0).isEmpty) return 0
-    val memo = scala.collection.mutable.Map.empty[(Int, Int, Int), Int]
-    def helper(r: Int, c: Int, rem: Int): Int = {
-      if (rem < 0) return 0
-      if (r == 0 && c == 0) return if (matrix(0)(0) == rem) 1 else 0
-      memo.getOrElseUpdate((r, c, rem), {
-        val top  = if (r > 0) helper(r - 1, c, rem - matrix(r)(c)) else 0
-        val left = if (c > 0) helper(r, c - 1, rem - matrix(r)(c)) else 0
-        top + left
-      })
-    }
-    helper(matrix.length - 1, matrix(0).length - 1, cost)
-  }
-}
-
 object Main extends App {
+  class Solution {
+    def destinationPathCount(matrix: Array[Array[Int]], cost: Int): Int = {
+      if (matrix.isEmpty || matrix(0).isEmpty) return 0
+      val memo = scala.collection.mutable.Map.empty[(Int, Int, Int), Int]
+      def helper(r: Int, c: Int, rem: Int): Int = {
+        if (rem < 0) return 0
+        if (r == 0 && c == 0) return if (matrix(0)(0) == rem) 1 else 0
+        memo.getOrElseUpdate((r, c, rem), {
+          val top  = if (r > 0) helper(r - 1, c, rem - matrix(r)(c)) else 0
+          val left = if (c > 0) helper(r, c - 1, rem - matrix(r)(c)) else 0
+          top + left
+        })
+      }
+      helper(matrix.length - 1, matrix(0).length - 1, cost)
+    }
+  }
+
   println(new Solution().destinationPathCount(Array(Array(1,2,9), Array(5,3,8), Array(4,6,7)), 19))   // 1
 }
 ```
@@ -811,35 +817,37 @@ if __name__ == "__main__":
 ```
 
 ```java run
-public class Solution {
-    public int largestPlusOfOnes(int[][] matrix) {
-        if (matrix.length == 0 || matrix[0].length == 0) return 0;
-        int rows = matrix.length, cols = matrix[0].length;
-        int[][] left  = new int[rows][cols];
-        int[][] right = new int[rows][cols];
-        int[][] up    = new int[rows][cols];
-        int[][] down  = new int[rows][cols];
-        for (int r = 0; r < rows; r++) for (int c = 0; c < cols; c++) {
-            if (matrix[r][c] == 1) {
-                left[r][c] = 1 + (c > 0 ? left[r][c - 1] : 0);
-                up[r][c]   = 1 + (r > 0 ? up[r - 1][c]   : 0);
+public class Main {
+    static class Solution {
+        public int largestPlusOfOnes(int[][] matrix) {
+            if (matrix.length == 0 || matrix[0].length == 0) return 0;
+            int rows = matrix.length, cols = matrix[0].length;
+            int[][] left  = new int[rows][cols];
+            int[][] right = new int[rows][cols];
+            int[][] up    = new int[rows][cols];
+            int[][] down  = new int[rows][cols];
+            for (int r = 0; r < rows; r++) for (int c = 0; c < cols; c++) {
+                if (matrix[r][c] == 1) {
+                    left[r][c] = 1 + (c > 0 ? left[r][c - 1] : 0);
+                    up[r][c]   = 1 + (r > 0 ? up[r - 1][c]   : 0);
+                }
             }
-        }
-        for (int r = rows - 1; r >= 0; r--) for (int c = cols - 1; c >= 0; c--) {
-            if (matrix[r][c] == 1) {
-                right[r][c] = 1 + (c < cols - 1 ? right[r][c + 1] : 0);
-                down[r][c]  = 1 + (r < rows - 1 ? down[r + 1][c]  : 0);
+            for (int r = rows - 1; r >= 0; r--) for (int c = cols - 1; c >= 0; c--) {
+                if (matrix[r][c] == 1) {
+                    right[r][c] = 1 + (c < cols - 1 ? right[r][c + 1] : 0);
+                    down[r][c]  = 1 + (r < rows - 1 ? down[r + 1][c]  : 0);
+                }
             }
-        }
-        int maxSize = 0;
-        for (int r = 0; r < rows; r++) for (int c = 0; c < cols; c++) {
-            if (matrix[r][c] == 1) {
-                int arm = Math.min(Math.min(left[r][c], right[r][c]), Math.min(up[r][c], down[r][c]));
-                int size = 4 * arm - 3;
-                if (size > maxSize) maxSize = size;
+            int maxSize = 0;
+            for (int r = 0; r < rows; r++) for (int c = 0; c < cols; c++) {
+                if (matrix[r][c] == 1) {
+                    int arm = Math.min(Math.min(left[r][c], right[r][c]), Math.min(up[r][c], down[r][c]));
+                    int size = 4 * arm - 3;
+                    if (size > maxSize) maxSize = size;
+                }
             }
+            return maxSize;
         }
-        return maxSize;
     }
 
     public static void main(String[] args) {
@@ -894,37 +902,37 @@ int main(void) {
 ```
 
 ```scala run
-class Solution {
-  def largestPlusOfOnes(matrix: Array[Array[Int]]): Int = {
-    if (matrix.isEmpty || matrix(0).isEmpty) return 0
-    val rows = matrix.length; val cols = matrix(0).length
-    val left = Array.fill(rows, cols)(0); val right = Array.fill(rows, cols)(0)
-    val up = Array.fill(rows, cols)(0); val down = Array.fill(rows, cols)(0)
-    for (r <- 0 until rows; c <- 0 until cols) {
-      if (matrix(r)(c) == 1) {
-        left(r)(c) = 1 + (if (c > 0) left(r)(c - 1) else 0)
-        up(r)(c)   = 1 + (if (r > 0) up(r - 1)(c)   else 0)
-      }
-    }
-    for (r <- rows - 1 to 0 by -1; c <- cols - 1 to 0 by -1) {
-      if (matrix(r)(c) == 1) {
-        right(r)(c) = 1 + (if (c < cols - 1) right(r)(c + 1) else 0)
-        down(r)(c)  = 1 + (if (r < rows - 1) down(r + 1)(c)  else 0)
-      }
-    }
-    var maxSize = 0
-    for (r <- 0 until rows; c <- 0 until cols) {
-      if (matrix(r)(c) == 1) {
-        val arm = math.min(math.min(left(r)(c), right(r)(c)), math.min(up(r)(c), down(r)(c)))
-        val size = 4 * arm - 3
-        if (size > maxSize) maxSize = size
-      }
-    }
-    maxSize
-  }
-}
-
 object Main extends App {
+  class Solution {
+    def largestPlusOfOnes(matrix: Array[Array[Int]]): Int = {
+      if (matrix.isEmpty || matrix(0).isEmpty) return 0
+      val rows = matrix.length; val cols = matrix(0).length
+      val left = Array.fill(rows, cols)(0); val right = Array.fill(rows, cols)(0)
+      val up = Array.fill(rows, cols)(0); val down = Array.fill(rows, cols)(0)
+      for (r <- 0 until rows; c <- 0 until cols) {
+        if (matrix(r)(c) == 1) {
+          left(r)(c) = 1 + (if (c > 0) left(r)(c - 1) else 0)
+          up(r)(c)   = 1 + (if (r > 0) up(r - 1)(c)   else 0)
+        }
+      }
+      for (r <- rows - 1 to 0 by -1; c <- cols - 1 to 0 by -1) {
+        if (matrix(r)(c) == 1) {
+          right(r)(c) = 1 + (if (c < cols - 1) right(r)(c + 1) else 0)
+          down(r)(c)  = 1 + (if (r < rows - 1) down(r + 1)(c)  else 0)
+        }
+      }
+      var maxSize = 0
+      for (r <- 0 until rows; c <- 0 until cols) {
+        if (matrix(r)(c) == 1) {
+          val arm = math.min(math.min(left(r)(c), right(r)(c)), math.min(up(r)(c), down(r)(c)))
+          val size = 4 * arm - 3
+          if (size > maxSize) maxSize = size
+        }
+      }
+      maxSize
+    }
+  }
+
   println(new Solution().largestPlusOfOnes(Array(Array(1,1,1,0), Array(0,1,1,1), Array(1,1,1,1), Array(1,0,1,0))))   // 5
 }
 ```

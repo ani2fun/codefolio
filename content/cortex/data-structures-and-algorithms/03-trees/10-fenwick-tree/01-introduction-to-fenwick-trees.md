@@ -190,7 +190,7 @@ if __name__ == "__main__":
 ```
 
 ```java run
-class Solution {
+public class Main {
     static int n;
     static long[] bit;
 
@@ -247,7 +247,7 @@ int main(void) {
 ```
 
 ```scala run
-object Solution {
+object Main extends App {
   val n = 8
   val bit = new Array[Long](n + 1)
 
@@ -264,13 +264,11 @@ object Solution {
 
   def rangeSum(l: Int, r: Int): Long = prefixSum(r) - prefixSum(l - 1)
 
-  def main(args: Array[String]): Unit = {
-    val A = Array(1, 2, 3, 4, 5, 6, 7, 8)
-    for (i <- 1 to n) update(i, A(i - 1))
-    println(s"sum [1..8] = ${rangeSum(1, 8)}")
-    update(5, 100)
-    println(s"after A[5] += 100, sum [1..8] = ${rangeSum(1, 8)}")
-  }
+  val A = Array(1, 2, 3, 4, 5, 6, 7, 8)
+  for (i <- 1 to n) update(i, A(i - 1))
+  println(s"sum [1..8] = ${rangeSum(1, 8)}")
+  update(5, 100)
+  println(s"after A[5] += 100, sum [1..8] = ${rangeSum(1, 8)}")
 }
 ```
 

@@ -28,7 +28,7 @@ In arrays, we have indexes to access the individual items of the array, e.g. `0`
 ```d2
 direction: right
 
-arr: "Array in memory — contiguous, index-addressable" {
+arr: "Array  —  contiguous, index-addressable" {
   grid-columns: 4
   grid-gap: 0
   a0: |md
@@ -52,12 +52,36 @@ arr: "Array in memory — contiguous, index-addressable" {
     **10**
   |
 }
-idx: "i = 0, 1, 2, 3" {shape: oval}
-idx -> arr.a0: "arr[i]"
+
+idx: "i ∈ {0, 1, 2, 3}" {
+  shape: oval
+  style.fill: "#dbeafe"
+  style.stroke: "#1d4ed8"
+  style.stroke-width: 2
+  style.bold: true
+}
+
+idx -> arr.a0: "arr[i] — O(1) direct read" {style.stroke-width: 2; style.bold: true}
 ```
 
 <p align="center"><strong>Array traversal uses an integer index <code>i</code> that increments from <code>0</code> to <code>n-1</code> — direct O(1) access at each step.</strong></p>
 
+```d3 widget=array-traversal
+{
+  "title": "Array traversal — i increments 0 → n-1, arr[i] is O(1) each step",
+  "items": [5, 7, 3, 10],
+  "steps": [
+    { "markers": [{ "name": "i", "index": 0 }], "msg": "i = 0 — enter the loop, condition i < 4 holds" },
+    { "markers": [{ "name": "i", "index": 0 }], "range": { "lo": 0, "hi": 0 }, "msg": "arr[0] = 5 — O(1) direct access via the index" },
+    { "markers": [{ "name": "i", "index": 1 }], "range": { "lo": 1, "hi": 1 }, "msg": "i = 1 → arr[1] = 7" },
+    { "markers": [{ "name": "i", "index": 2 }], "range": { "lo": 2, "hi": 2 }, "msg": "i = 2 → arr[2] = 3" },
+    { "markers": [{ "name": "i", "index": 3 }], "range": { "lo": 3, "hi": 3 }, "msg": "i = 3 → arr[3] = 10" },
+    { "markers": [], "msg": "i = 4 — condition i < 4 fails, loop ends. O(n) total, O(1) per access." }
+  ]
+}
+```
+
+<p align="center"><strong>Step through the array traversal — six frames mirror the source: enter, four O(1) reads, exit. The index <code>i</code> walks the cells; the highlighted band shows what <code>arr[i]</code> resolves to at each step.</strong></p>
 
 ```pseudocode
 arr ← [5, 7, 3, 10]
@@ -157,24 +181,45 @@ Instead of an integer loop control variable representing an item's index in an a
 
 Since linked lists are dynamic, we don't know their length in advance, and therefore, we have to keep traversing until we reach a node with a **`null`** value stored in its pointer. That is how we know we have reached the end of a linked list.
 
-```mermaid
----
-config:
-  theme: base
-  themeVariables:
-    primaryColor: "#dbeafe"
-    primaryBorderColor: "#3b82f6"
-    primaryTextColor: "#1e3a5f"
-    lineColor: "#64748b"
-    secondaryColor: "#ede9fe"
-    tertiaryColor: "#fef9c3"
----
-flowchart LR
-    CUR(["current"]) -->|"step 1"| N1["val: 5<br/>next: ●"]
-    N1 -->|"current = current.next"| N2["val: 7<br/>next: ●"]
-    N2 -->|"current = current.next"| N3["val: 3<br/>next: ●"]
-    N3 -->|"current = current.next"| N4["val: 10<br/>next: null"]
-    N4 -->|"null → stop"| STOP(["end"])
+```d3 widget=linked-list
+{
+  "title": "Linked-list traversal — current hops node-by-node until it reaches null",
+  "direction": "single",
+  "nodes": [
+    {"id": "n1", "value": "5"},
+    {"id": "n2", "value": "7"},
+    {"id": "n3", "value": "3"},
+    {"id": "n4", "value": "10"}
+  ],
+  "head": "n1",
+  "steps": [
+    {
+      "links": [["n1","n2"],["n2","n3"],["n3","n4"]],
+      "markers": [{"name": "current", "nodeId": "n1"}, {"name": "head", "nodeId": "n1"}],
+      "msg": "current ← head — start at node 5"
+    },
+    {
+      "links": [["n1","n2"],["n2","n3"],["n3","n4"]],
+      "markers": [{"name": "current", "nodeId": "n2"}],
+      "msg": "current = current.next — hop to node 7"
+    },
+    {
+      "links": [["n1","n2"],["n2","n3"],["n3","n4"]],
+      "markers": [{"name": "current", "nodeId": "n3"}],
+      "msg": "current = current.next — hop to node 3"
+    },
+    {
+      "links": [["n1","n2"],["n2","n3"],["n3","n4"]],
+      "markers": [{"name": "current", "nodeId": "n4"}],
+      "msg": "current = current.next — hop to node 10 (the tail)"
+    },
+    {
+      "links": [["n1","n2"],["n2","n3"],["n3","n4"]],
+      "markers": [{"name": "head", "nodeId": "n1"}],
+      "msg": "current.next is null — stop. Traversed all 4 nodes in O(n)."
+    }
+  ]
+}
 ```
 
 <p align="center"><strong>Linked list traversal — a <code>current</code> pointer starts at <code>head</code> and hops forward via <code>current = current.next</code> until it reaches <code>null</code>.</strong></p>
@@ -213,9 +258,11 @@ traverse(n1)  # 5 7 3 10
 public class Main {
     static class ListNode { int val; ListNode next; ListNode(int v){val=v;} }
 
-    static void traverse(ListNode head) {
-        for (ListNode current = head; current != null; current = current.next) {
-            System.out.print(current.val + " ");  // Advance: current = current.next
+    static class Solution {
+        public void traverse(ListNode head) {
+            for (ListNode current = head; current != null; current = current.next) {
+                System.out.print(current.val + " ");  // Advance: current = current.next
+            }
         }
     }
 
@@ -223,7 +270,7 @@ public class Main {
         ListNode n1=new ListNode(5), n2=new ListNode(7),
                  n3=new ListNode(3), n4=new ListNode(10);
         n1.next=n2; n2.next=n3; n3.next=n4;
-        traverse(n1);  // 5 7 3 10
+        new Solution().traverse(n1);  // 5 7 3 10
     }
 }
 ```
@@ -255,11 +302,13 @@ int main() {
 class ListNode(var v: Int, var next: ListNode = null)
 
 object Main extends App {
-  def traverse(head: ListNode): Unit = {
-    var current = head
-    while (current != null) {       // Stop when null is reached
-      print(s"${current.v} ")
-      current = current.next        // Advance to next node
+  class Solution {
+    def traverse(head: ListNode): Unit = {
+      var current = head
+      while (current != null) {       // Stop when null is reached
+        print(s"${current.v} ")
+        current = current.next        // Advance to next node
+      }
     }
   }
 
@@ -267,7 +316,7 @@ object Main extends App {
   val n3 = new ListNode(3,  n4)
   val n2 = new ListNode(7,  n3)
   val n1 = new ListNode(5,  n2)
-  traverse(n1)  // 5 7 3 10
+  new Solution().traverse(n1)  // 5 7 3 10
 }
 ```
 
@@ -342,24 +391,26 @@ Solution().node_expedition(n1); print()  # 5, 7, 3, 10
 public class Main {
     static class ListNode { int val; ListNode next; ListNode(int v){val=v;} }
 
-    static void nodeExpedition(ListNode head) {
+    static class Solution {
+        public void nodeExpedition(ListNode head) {
 
-        // Start from the head of the linked list
-        ListNode current = head;
+            // Start from the head of the linked list
+            ListNode current = head;
 
-        // Iterate until the current node is not null
-        while (current != null) {
+            // Iterate until the current node is not null
+            while (current != null) {
 
-            // Print the value of the current node
-            System.out.print(current.val);
+                // Print the value of the current node
+                System.out.print(current.val);
 
-            // If there is a next node, print a comma after the value
-            if (current.next != null) {
-                System.out.print(", ");
+                // If there is a next node, print a comma after the value
+                if (current.next != null) {
+                    System.out.print(", ");
+                }
+
+                // Move to the next node
+                current = current.next;
             }
-
-            // Move to the next node
-            current = current.next;
         }
     }
 
@@ -367,7 +418,7 @@ public class Main {
         ListNode n1=new ListNode(5), n2=new ListNode(7),
                  n3=new ListNode(3), n4=new ListNode(10);
         n1.next=n2; n2.next=n3; n3.next=n4;
-        nodeExpedition(n1); System.out.println();  // 5, 7, 3, 10
+        new Solution().nodeExpedition(n1); System.out.println();  // 5, 7, 3, 10
     }
 }
 ```
@@ -412,30 +463,32 @@ int main() {
 class ListNode(var v: Int, var next: ListNode = null)
 
 object Main extends App {
-  def nodeExpedition(head: ListNode): Unit = {
+  class Solution {
+    def nodeExpedition(head: ListNode): Unit = {
 
-    // Start from the head of the linked list
-    var current = head
+      // Start from the head of the linked list
+      var current = head
 
-    // Iterate until the current node is not null
-    while (current != null) {
+      // Iterate until the current node is not null
+      while (current != null) {
 
-      // Print the value of the current node
-      print(current.v)
+        // Print the value of the current node
+        print(current.v)
 
-      // If there is a next node, print a comma after the value
-      if (current.next != null) {
-        print(", ")
+        // If there is a next node, print a comma after the value
+        if (current.next != null) {
+          print(", ")
+        }
+
+        // Move to the next node
+        current = current.next
       }
-
-      // Move to the next node
-      current = current.next
     }
   }
 
   val n4=new ListNode(10); val n3=new ListNode(3,n4)
   val n2=new ListNode(7,n3); val n1=new ListNode(5,n2)
-  nodeExpedition(n1); println()  // 5, 7, 3, 10
+  new Solution().nodeExpedition(n1); println()  // 5, 7, 3, 10
 }
 ```
 
@@ -514,33 +567,36 @@ print(Solution().node_search(n1, 99))    # None
 public class Main {
     static class ListNode { int val; ListNode next; ListNode(int v){val=v;} }
 
-    static ListNode nodeSearch(ListNode head, int data) {
+    static class Solution {
+        public ListNode nodeSearch(ListNode head, int data) {
 
-        // Start from the head of the linked list
-        ListNode current = head;
+            // Start from the head of the linked list
+            ListNode current = head;
 
-        while (current != null) {
+            while (current != null) {
 
-            // Found the value, return the current node
-            if (current.val == data) {
-                return current;
+                // Found the value, return the current node
+                if (current.val == data) {
+                    return current;
+                }
+
+                // Move to the next node
+                current = current.next;
             }
 
-            // Move to the next node
-            current = current.next;
+            // Value not found in the linked list
+            return null;
         }
-
-        // Value not found in the linked list
-        return null;
     }
 
     public static void main(String[] args) {
         ListNode n1=new ListNode(5),n2=new ListNode(7),
                  n3=new ListNode(3),n4=new ListNode(10);
         n1.next=n2; n2.next=n3; n3.next=n4;
-        ListNode r = nodeSearch(n1, 3);
+        Solution sol = new Solution();
+        ListNode r = sol.nodeSearch(n1, 3);
         System.out.println(r != null ? r.val : "null");  // 3
-        System.out.println(nodeSearch(n1, 99));           // null
+        System.out.println(sol.nodeSearch(n1, 99));      // null
     }
 }
 ```
@@ -586,29 +642,32 @@ int main() {
 class ListNode(var v: Int, var next: ListNode = null)
 
 object Main extends App {
-  def nodeSearch(head: ListNode, data: Int): ListNode = {
+  class Solution {
+    def nodeSearch(head: ListNode, data: Int): ListNode = {
 
-    // Start from the head of the linked list
-    var current = head
+      // Start from the head of the linked list
+      var current = head
 
-    while (current != null) {
+      while (current != null) {
 
-      // Found the value, return the current node
-      if (current.v == data) {
-        return current
+        // Found the value, return the current node
+        if (current.v == data) {
+          return current
+        }
+
+        // Move to the next node
+        current = current.next
       }
 
-      // Move to the next node
-      current = current.next
+      // Value not found in the linked list
+      null
     }
-
-    // Value not found in the linked list
-    null
   }
 
   val n4=new ListNode(10); val n3=new ListNode(3,n4)
   val n2=new ListNode(7,n3); val n1=new ListNode(5,n2)
-  val r = nodeSearch(n1, 3)
+  val sol = new Solution
+  val r = sol.nodeSearch(n1, 3)
   println(if (r != null) r.v else "null")  // 3
 }
 ```
@@ -701,33 +760,36 @@ print(Solution().length_of_the_list(None)) # 0
 public class Main {
     static class ListNode { int val; ListNode next; ListNode(int v){val=v;} }
 
-    static int lengthOfTheList(ListNode head) {
+    static class Solution {
+        public int lengthOfTheList(ListNode head) {
 
-        // Initialize count to 0
-        int count = 0;
+            // Initialize count to 0
+            int count = 0;
 
-        // Set current to hold the head of the list
-        ListNode current = head;
+            // Set current to hold the head of the list
+            ListNode current = head;
 
-        while (current != null) {
+            while (current != null) {
 
-            // Increment count by 1
-            count++;
+                // Increment count by 1
+                count++;
 
-            // Set current to hold the next node in the list
-            current = current.next;
+                // Set current to hold the next node in the list
+                current = current.next;
+            }
+
+            // Return count as the length of the linked list
+            return count;
         }
-
-        // Return count as the length of the linked list
-        return count;
     }
 
     public static void main(String[] args) {
         ListNode n1=new ListNode(5),n2=new ListNode(7),
                  n3=new ListNode(3),n4=new ListNode(10);
         n1.next=n2; n2.next=n3; n3.next=n4;
-        System.out.println(lengthOfTheList(n1));    // 4
-        System.out.println(lengthOfTheList(null));  // 0
+        Solution sol = new Solution();
+        System.out.println(sol.lengthOfTheList(n1));    // 4
+        System.out.println(sol.lengthOfTheList(null));  // 0
     }
 }
 ```
@@ -773,17 +835,34 @@ int main() {
 class ListNode(var v: Int, var next: ListNode = null)
 
 object Main extends App {
-  def lengthOfTheList(head: ListNode): Int = {
-    var count = 0
-    var current = head
-    while (current != null) { count += 1; current = current.next }
-    count
+  class Solution {
+    def lengthOfTheList(head: ListNode): Int = {
+
+      // Initialize count to 0
+      var count = 0
+
+      // Set current to hold the head of the list
+      var current = head
+
+      while (current != null) {
+
+        // Increment count by 1
+        count += 1
+
+        // Set current to hold the next node in the list
+        current = current.next
+      }
+
+      // Return count as the length of the linked list
+      count
+    }
   }
 
   val n4=new ListNode(10); val n3=new ListNode(3,n4)
   val n2=new ListNode(7,n3); val n1=new ListNode(5,n2)
-  println(lengthOfTheList(n1))    // 4
-  println(lengthOfTheList(null))  // 0
+  val sol = new Solution
+  println(sol.lengthOfTheList(n1))    // 4
+  println(sol.lengthOfTheList(null))  // 0
 }
 ```
 

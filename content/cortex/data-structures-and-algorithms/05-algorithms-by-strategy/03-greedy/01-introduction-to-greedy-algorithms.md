@@ -217,7 +217,7 @@ if __name__ == "__main__":
 ```java run
 import java.util.*;
 
-class Solution {
+public class Main {
     static int[][] activitySelection(int[][] activities) {
         Arrays.sort(activities, (a, b) -> a[1] - b[1]);
         List<int[]> selected = new ArrayList<>();
@@ -275,7 +275,7 @@ int main(void) {
 ```
 
 ```scala run
-object Solution {
+object Main extends App {
   def activitySelection(activities: Array[(Int, Int)]): List[(Int, Int)] = {
     val sorted = activities.sortBy(_._2)
     var lastEnd = Int.MinValue
@@ -284,10 +284,8 @@ object Solution {
     out.toList
   }
 
-  def main(args: Array[String]): Unit = {
-    val acts = Array((1, 4), (3, 5), (0, 6), (5, 7), (8, 9), (5, 9), (6, 10))
-    println(activitySelection(acts))
-  }
+  val acts = Array((1, 4), (3, 5), (0, 6), (5, 7), (8, 9), (5, 9), (6, 10))
+  println(activitySelection(acts))
 }
 ```
 

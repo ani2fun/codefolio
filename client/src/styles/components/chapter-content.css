@@ -12,8 +12,13 @@
         @apply prose dark:prose-invert max-w-none
                prose-headings:scroll-mt-28 prose-pre:p-0 prose-pre:bg-transparent
                prose-pre:border-0 prose-img:my-0;
-        font-size: 16.5px;
-        line-height: 1.72;
+        /* Type controls (CortexTypePrefs) write `--reader-fs`, `--reader-lh`,
+           `--reader-font` on `:root`; the prose consumes them with the original
+           values as fallbacks. Keeps the old hardcoded baseline when no prefs
+           are set, swaps to the user's choice once they touch the controls. */
+        font-size: var(--reader-fs, 16.5px);
+        line-height: var(--reader-lh, 1.72);
+        font-family: var(--reader-font, var(--font-sans));
         --tw-prose-body: hsl(var(--foreground) / 0.85);
         --tw-prose-headings: hsl(var(--foreground));
         --tw-prose-lead: hsl(var(--foreground) / 0.85);

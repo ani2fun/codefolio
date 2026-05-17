@@ -92,14 +92,20 @@ if __name__ == "__main__":
 ```
 
 ```java run
-public class Solution {
-    public int searchInsertPosition(int[] arr, int target) {
-        int low = 0, high = arr.length;
-        while (low < high) {
-            int mid = low + (high - low) / 2;
-            if (arr[mid] < target) low = mid + 1; else high = mid;
+public class Main {
+    static class Solution {
+        public int searchInsertPosition(int[] arr, int target) {
+            int low = 0, high = arr.length;
+            while (low < high) {
+                int mid = low + (high - low) / 2;
+                if (arr[mid] < target) low = mid + 1; else high = mid;
+            }
+            return low;
         }
-        return low;
+    }
+
+    public static void main(String[] args) {
+        System.out.println(new Solution().searchInsertPosition(new int[]{1, 2, 7, 8, 9, 10}, 3));   // 2
     }
 }
 ```
@@ -116,15 +122,19 @@ int search_insert_position(int *arr, int n, int target) {
 ```
 
 ```scala run
-class Solution {
-  def searchInsertPosition(arr: Array[Int], target: Int): Int = {
-    var low = 0; var high = arr.length
-    while (low < high) {
-      val mid = low + (high - low) / 2
-      if (arr(mid) < target) low = mid + 1 else high = mid
+object Main extends App {
+  class Solution {
+    def searchInsertPosition(arr: Array[Int], target: Int): Int = {
+      var low = 0; var high = arr.length
+      while (low < high) {
+        val mid = low + (high - low) / 2
+        if (arr(mid) < target) low = mid + 1 else high = mid
+      }
+      low
     }
-    low
   }
+
+  println(new Solution().searchInsertPosition(Array(1, 2, 7, 8, 9, 10), 3))   // 2
 }
 ```
 
@@ -190,20 +200,28 @@ if __name__ == "__main__":
 ```
 
 ```java run
-public class Solution {
-    public int[] firstAndLastPosition(int[] arr, int target) {
-        int first = lowerBound(arr, target);
-        if (first == arr.length || arr[first] != target) return new int[]{-1, -1};
-        int last = lowerBound(arr, target + 1) - 1;
-        return new int[]{first, last};
-    }
-    private int lowerBound(int[] arr, int target) {
-        int low = 0, high = arr.length;
-        while (low < high) {
-            int mid = low + (high - low) / 2;
-            if (arr[mid] < target) low = mid + 1; else high = mid;
+import java.util.Arrays;
+
+public class Main {
+    static class Solution {
+        public int[] firstAndLastPosition(int[] arr, int target) {
+            int first = lowerBound(arr, target);
+            if (first == arr.length || arr[first] != target) return new int[]{-1, -1};
+            int last = lowerBound(arr, target + 1) - 1;
+            return new int[]{first, last};
         }
-        return low;
+        private int lowerBound(int[] arr, int target) {
+            int low = 0, high = arr.length;
+            while (low < high) {
+                int mid = low + (high - low) / 2;
+                if (arr[mid] < target) low = mid + 1; else high = mid;
+            }
+            return low;
+        }
+    }
+
+    public static void main(String[] args) {
+        System.out.println(Arrays.toString(new Solution().firstAndLastPosition(new int[]{1, 2, 2, 2, 3, 4}, 2)));   // [1, 3]
     }
 }
 ```
@@ -232,20 +250,24 @@ int *first_and_last_position(int *arr, int n, int target) {
 ```
 
 ```scala run
-class Solution {
-  def firstAndLastPosition(arr: Array[Int], target: Int): Array[Int] = {
-    val first = lowerBound(arr, target)
-    if (first == arr.length || arr(first) != target) Array(-1, -1)
-    else Array(first, lowerBound(arr, target + 1) - 1)
-  }
-  private def lowerBound(arr: Array[Int], target: Int): Int = {
-    var low = 0; var high = arr.length
-    while (low < high) {
-      val mid = low + (high - low) / 2
-      if (arr(mid) < target) low = mid + 1 else high = mid
+object Main extends App {
+  class Solution {
+    def firstAndLastPosition(arr: Array[Int], target: Int): Array[Int] = {
+      val first = lowerBound(arr, target)
+      if (first == arr.length || arr(first) != target) Array(-1, -1)
+      else Array(first, lowerBound(arr, target + 1) - 1)
     }
-    low
+    private def lowerBound(arr: Array[Int], target: Int): Int = {
+      var low = 0; var high = arr.length
+      while (low < high) {
+        val mid = low + (high - low) / 2
+        if (arr(mid) < target) low = mid + 1 else high = mid
+      }
+      low
+    }
   }
+
+  println(new Solution().firstAndLastPosition(Array(1, 2, 2, 2, 3, 4), 2).mkString("[", ", ", "]"))   // [1, 3]
 }
 ```
 
@@ -318,22 +340,28 @@ if __name__ == "__main__":
 ```
 
 ```java run
-public class Solution {
-    public int closestElement(int[] arr, int target) {
-        if (arr.length == 0) return -1;
-        int idx = lowerBound(arr, target);
-        if (idx == 0) return arr[0];
-        if (idx == arr.length) return arr[arr.length - 1];
-        int lower = arr[idx - 1], upper = arr[idx];
-        return (target - lower <= upper - target) ? lower : upper;
-    }
-    private int lowerBound(int[] arr, int target) {
-        int low = 0, high = arr.length;
-        while (low < high) {
-            int mid = low + (high - low) / 2;
-            if (arr[mid] < target) low = mid + 1; else high = mid;
+public class Main {
+    static class Solution {
+        public int closestElement(int[] arr, int target) {
+            if (arr.length == 0) return -1;
+            int idx = lowerBound(arr, target);
+            if (idx == 0) return arr[0];
+            if (idx == arr.length) return arr[arr.length - 1];
+            int lower = arr[idx - 1], upper = arr[idx];
+            return (target - lower <= upper - target) ? lower : upper;
         }
-        return low;
+        private int lowerBound(int[] arr, int target) {
+            int low = 0, high = arr.length;
+            while (low < high) {
+                int mid = low + (high - low) / 2;
+                if (arr[mid] < target) low = mid + 1; else high = mid;
+            }
+            return low;
+        }
+    }
+
+    public static void main(String[] args) {
+        System.out.println(new Solution().closestElement(new int[]{2, 4, 6, 8, 10, 12}, 5));   // 4
     }
 }
 ```
@@ -359,23 +387,27 @@ int closest_element(int *arr, int n, int target) {
 ```
 
 ```scala run
-class Solution {
-  def closestElement(arr: Array[Int], target: Int): Int = {
-    if (arr.isEmpty) return -1
-    val idx = lowerBound(arr, target)
-    if (idx == 0) return arr(0)
-    if (idx == arr.length) return arr.last
-    val lower = arr(idx - 1); val upper = arr(idx)
-    if (target - lower <= upper - target) lower else upper
-  }
-  private def lowerBound(arr: Array[Int], target: Int): Int = {
-    var low = 0; var high = arr.length
-    while (low < high) {
-      val mid = low + (high - low) / 2
-      if (arr(mid) < target) low = mid + 1 else high = mid
+object Main extends App {
+  class Solution {
+    def closestElement(arr: Array[Int], target: Int): Int = {
+      if (arr.isEmpty) return -1
+      val idx = lowerBound(arr, target)
+      if (idx == 0) return arr(0)
+      if (idx == arr.length) return arr.last
+      val lower = arr(idx - 1); val upper = arr(idx)
+      if (target - lower <= upper - target) lower else upper
     }
-    low
+    private def lowerBound(arr: Array[Int], target: Int): Int = {
+      var low = 0; var high = arr.length
+      while (low < high) {
+        val mid = low + (high - low) / 2
+        if (arr(mid) < target) low = mid + 1 else high = mid
+      }
+      low
+    }
   }
+
+  println(new Solution().closestElement(Array(2, 4, 6, 8, 10, 12), 5))   // 4
 }
 ```
 
@@ -460,28 +492,34 @@ if __name__ == "__main__":
 ```java run
 import java.util.*;
 
-public class Solution {
-    public List<Integer> kClosestElements(int[] arr, int k, int target) {
-        if (arr.length == 0 || k <= 0) return new ArrayList<>();
-        int right = lowerBound(arr, target);
-        int left = right - 1;
-        for (int i = 0; i < k; i++) {
-            if (left < 0) right++;
-            else if (right >= arr.length) left--;
-            else if (target - arr[left] <= arr[right] - target) left--;
-            else right++;
+public class Main {
+    static class Solution {
+        public List<Integer> kClosestElements(int[] arr, int k, int target) {
+            if (arr.length == 0 || k <= 0) return new ArrayList<>();
+            int right = lowerBound(arr, target);
+            int left = right - 1;
+            for (int i = 0; i < k; i++) {
+                if (left < 0) right++;
+                else if (right >= arr.length) left--;
+                else if (target - arr[left] <= arr[right] - target) left--;
+                else right++;
+            }
+            List<Integer> result = new ArrayList<>();
+            for (int i = left + 1; i < right; i++) result.add(arr[i]);
+            return result;
         }
-        List<Integer> result = new ArrayList<>();
-        for (int i = left + 1; i < right; i++) result.add(arr[i]);
-        return result;
+        private int lowerBound(int[] arr, int target) {
+            int low = 0, high = arr.length;
+            while (low < high) {
+                int mid = low + (high - low) / 2;
+                if (arr[mid] < target) low = mid + 1; else high = mid;
+            }
+            return low;
+        }
     }
-    private int lowerBound(int[] arr, int target) {
-        int low = 0, high = arr.length;
-        while (low < high) {
-            int mid = low + (high - low) / 2;
-            if (arr[mid] < target) low = mid + 1; else high = mid;
-        }
-        return low;
+
+    public static void main(String[] args) {
+        System.out.println(new Solution().kClosestElements(new int[]{1, 2, 3, 4, 5, 6}, 3, 4));   // [3, 4, 5]
     }
 }
 ```
@@ -518,27 +556,31 @@ int *k_closest_elements(int *arr, int n, int k, int target, int *outLen) {
 ```
 
 ```scala run
-class Solution {
-  def kClosestElements(arr: Array[Int], k: Int, target: Int): List[Int] = {
-    if (arr.isEmpty || k <= 0) return List.empty
-    var right = lowerBound(arr, target)
-    var left = right - 1
-    for (_ <- 0 until k) {
-      if (left < 0) right += 1
-      else if (right >= arr.length) left -= 1
-      else if (target - arr(left) <= arr(right) - target) left -= 1
-      else right += 1
+object Main extends App {
+  class Solution {
+    def kClosestElements(arr: Array[Int], k: Int, target: Int): List[Int] = {
+      if (arr.isEmpty || k <= 0) return List.empty
+      var right = lowerBound(arr, target)
+      var left = right - 1
+      for (_ <- 0 until k) {
+        if (left < 0) right += 1
+        else if (right >= arr.length) left -= 1
+        else if (target - arr(left) <= arr(right) - target) left -= 1
+        else right += 1
+      }
+      arr.slice(left + 1, right).toList
     }
-    arr.slice(left + 1, right).toList
-  }
-  private def lowerBound(arr: Array[Int], target: Int): Int = {
-    var low = 0; var high = arr.length
-    while (low < high) {
-      val mid = low + (high - low) / 2
-      if (arr(mid) < target) low = mid + 1 else high = mid
+    private def lowerBound(arr: Array[Int], target: Int): Int = {
+      var low = 0; var high = arr.length
+      while (low < high) {
+        val mid = low + (high - low) / 2
+        if (arr(mid) < target) low = mid + 1 else high = mid
+      }
+      low
     }
-    low
   }
+
+  println(new Solution().kClosestElements(Array(1, 2, 3, 4, 5, 6), 3, 4))   // List(3, 4, 5)
 }
 ```
 

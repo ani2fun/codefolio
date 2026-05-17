@@ -216,35 +216,47 @@ class Solution:
 ```java run
 import java.util.*;
 
-class ForwardBstIterator {
-    Deque<TreeNode> stack = new ArrayDeque<>();
-    ForwardBstIterator(TreeNode root) { pushAllLeft(root); }
-    private void pushAllLeft(TreeNode n) { while (n != null) { stack.push(n); n = n.left; } }
-    boolean hasNext() { return !stack.isEmpty(); }
-    TreeNode next() { TreeNode n = stack.pop(); pushAllLeft(n.right); return n; }
-}
+public class Main {
+    static class TreeNode { int val; TreeNode left, right; TreeNode(int v){val=v;} }
 
-class ReverseBstIterator {
-    Deque<TreeNode> stack = new ArrayDeque<>();
-    ReverseBstIterator(TreeNode root) { pushAllRight(root); }
-    private void pushAllRight(TreeNode n) { while (n != null) { stack.push(n); n = n.right; } }
-    boolean hasNext() { return !stack.isEmpty(); }
-    TreeNode next() { TreeNode n = stack.pop(); pushAllRight(n.left); return n; }
-}
+    static class ForwardBstIterator {
+        Deque<TreeNode> stack = new ArrayDeque<>();
+        ForwardBstIterator(TreeNode root) { pushAllLeft(root); }
+        private void pushAllLeft(TreeNode n) { while (n != null) { stack.push(n); n = n.left; } }
+        boolean hasNext() { return !stack.isEmpty(); }
+        TreeNode next() { TreeNode n = stack.pop(); pushAllLeft(n.right); return n; }
+    }
 
-class Solution {
-    public boolean twoSumOnBST(TreeNode root, int target) {
-        if (root == null) return false;
-        ForwardBstIterator left  = new ForwardBstIterator(root);
-        ReverseBstIterator right = new ReverseBstIterator(root);
-        TreeNode leftNode = left.next(), rightNode = right.next();
-        while (leftNode != null && rightNode != null && leftNode.val < rightNode.val) {
-            int s = leftNode.val + rightNode.val;
-            if (s == target) return true;
-            if (s < target) leftNode  = left.next();                                                                                // grow
-            else            rightNode = right.next();                                                                               // shrink
+    static class ReverseBstIterator {
+        Deque<TreeNode> stack = new ArrayDeque<>();
+        ReverseBstIterator(TreeNode root) { pushAllRight(root); }
+        private void pushAllRight(TreeNode n) { while (n != null) { stack.push(n); n = n.right; } }
+        boolean hasNext() { return !stack.isEmpty(); }
+        TreeNode next() { TreeNode n = stack.pop(); pushAllRight(n.left); return n; }
+    }
+
+    static class Solution {
+        public boolean twoSumOnBST(TreeNode root, int target) {
+            if (root == null) return false;
+            ForwardBstIterator left  = new ForwardBstIterator(root);
+            ReverseBstIterator right = new ReverseBstIterator(root);
+            TreeNode leftNode = left.next(), rightNode = right.next();
+            while (leftNode != null && rightNode != null && leftNode.val < rightNode.val) {
+                int s = leftNode.val + rightNode.val;
+                if (s == target) return true;
+                if (s < target) leftNode  = left.next();                                                                                // grow
+                else            rightNode = right.next();                                                                               // shrink
+            }
+            return false;
         }
-        return false;
+    }
+
+    public static void main(String[] args) {
+        TreeNode root = new TreeNode(4);
+        root.left  = new TreeNode(2); root.right = new TreeNode(6);
+        root.left.left  = new TreeNode(1);
+        root.right.right = new TreeNode(7);
+        System.out.println(new Solution().twoSumOnBST(root, 9));  // true
     }
 }
 ```
@@ -298,37 +310,46 @@ bool twoSumOnBST(struct TreeNode *root, int target) {
 ```scala run
 import scala.collection.mutable
 
-class ForwardBstIterator(root: TreeNode) {
-  private val stack = mutable.Stack[TreeNode]()
-  pushAllLeft(root)
-  private def pushAllLeft(n: TreeNode): Unit = { var x = n; while (x != null) { stack.push(x); x = x.left  } }
-  def hasNext: Boolean = stack.nonEmpty
-  def next: TreeNode = { val n = stack.pop(); pushAllLeft(n.right); n }
-}
+class TreeNode(var value: Int, var left: TreeNode = null, var right: TreeNode = null)
 
-class ReverseBstIterator(root: TreeNode) {
-  private val stack = mutable.Stack[TreeNode]()
-  pushAllRight(root)
-  private def pushAllRight(n: TreeNode): Unit = { var x = n; while (x != null) { stack.push(x); x = x.right } }
-  def hasNext: Boolean = stack.nonEmpty
-  def next: TreeNode = { val n = stack.pop(); pushAllRight(n.left); n }
-}
-
-object Solution {
-  def twoSumOnBST(root: TreeNode, target: Int): Boolean = {
-    if (root == null) return false
-    val left  = new ForwardBstIterator(root)
-    val right = new ReverseBstIterator(root)
-    var l: TreeNode = left.next
-    var r: TreeNode = right.next
-    while (l != null && r != null && l.value < r.value) {
-      val s = l.value + r.value
-      if (s == target)      return true
-      else if (s < target)  l = left.next
-      else                  r = right.next
-    }
-    false
+object Main extends App {
+  class ForwardBstIterator(root: TreeNode) {
+    private val stack = mutable.Stack[TreeNode]()
+    pushAllLeft(root)
+    private def pushAllLeft(n: TreeNode): Unit = { var x = n; while (x != null) { stack.push(x); x = x.left  } }
+    def hasNext: Boolean = stack.nonEmpty
+    def next: TreeNode = { val n = stack.pop(); pushAllLeft(n.right); n }
   }
+
+  class ReverseBstIterator(root: TreeNode) {
+    private val stack = mutable.Stack[TreeNode]()
+    pushAllRight(root)
+    private def pushAllRight(n: TreeNode): Unit = { var x = n; while (x != null) { stack.push(x); x = x.right } }
+    def hasNext: Boolean = stack.nonEmpty
+    def next: TreeNode = { val n = stack.pop(); pushAllRight(n.left); n }
+  }
+
+  object Solution {
+    def twoSumOnBST(root: TreeNode, target: Int): Boolean = {
+      if (root == null) return false
+      val left  = new ForwardBstIterator(root)
+      val right = new ReverseBstIterator(root)
+      var l: TreeNode = left.next
+      var r: TreeNode = right.next
+      while (l != null && r != null && l.value < r.value) {
+        val s = l.value + r.value
+        if (s == target)      return true
+        else if (s < target)  l = left.next
+        else                  r = right.next
+      }
+      false
+    }
+  }
+
+  val root = new TreeNode(4,
+    new TreeNode(2, new TreeNode(1), null),
+    new TreeNode(6, null, new TreeNode(7)))
+  println(Solution.twoSumOnBST(root, 9))  // true
 }
 ```
 
@@ -404,17 +425,47 @@ class Solution:
 ```
 
 ```java run
-class Solution {
-    public boolean multipleTree(TreeNode root) {
-        if (root == null) return false;
-        ForwardBstIterator left  = new ForwardBstIterator(root);
-        ReverseBstIterator right = new ReverseBstIterator(root);
-        TreeNode l = left.next(), r = right.next();
-        while (l != null && r != null && l.val < r.val) {
-            if (r.val % l.val != 0) return false;                                                                                                                // failure
-            l = left.next(); r = right.next();                                                                                                                   // advance both
+import java.util.*;
+
+public class Main {
+    static class TreeNode { int val; TreeNode left, right; TreeNode(int v){val=v;} }
+
+    static class ForwardBstIterator {
+        Deque<TreeNode> stack = new ArrayDeque<>();
+        ForwardBstIterator(TreeNode root) { pushAllLeft(root); }
+        private void pushAllLeft(TreeNode n) { while (n != null) { stack.push(n); n = n.left; } }
+        boolean hasNext() { return !stack.isEmpty(); }
+        TreeNode next() { TreeNode n = stack.pop(); pushAllLeft(n.right); return n; }
+    }
+
+    static class ReverseBstIterator {
+        Deque<TreeNode> stack = new ArrayDeque<>();
+        ReverseBstIterator(TreeNode root) { pushAllRight(root); }
+        private void pushAllRight(TreeNode n) { while (n != null) { stack.push(n); n = n.right; } }
+        boolean hasNext() { return !stack.isEmpty(); }
+        TreeNode next() { TreeNode n = stack.pop(); pushAllRight(n.left); return n; }
+    }
+
+    static class Solution {
+        public boolean multipleTree(TreeNode root) {
+            if (root == null) return false;
+            ForwardBstIterator left  = new ForwardBstIterator(root);
+            ReverseBstIterator right = new ReverseBstIterator(root);
+            TreeNode l = left.next(), r = right.next();
+            while (l != null && r != null && l.val < r.val) {
+                if (r.val % l.val != 0) return false;                                                                                                                // failure
+                l = left.next(); r = right.next();                                                                                                                   // advance both
+            }
+            return true;
         }
-        return true;
+    }
+
+    public static void main(String[] args) {
+        TreeNode root = new TreeNode(4);
+        root.left  = new TreeNode(2); root.right = new TreeNode(6);
+        root.left.left  = new TreeNode(1);
+        root.right.right = new TreeNode(7);
+        System.out.println(new Solution().multipleTree(root));  // true
     }
 }
 ```
@@ -437,18 +488,45 @@ bool multipleTree(struct TreeNode *root) {
 ```
 
 ```scala run
-object MultipleSolution {
-  def multipleTree(root: TreeNode): Boolean = {
-    if (root == null) return false
-    val left  = new ForwardBstIterator(root)
-    val right = new ReverseBstIterator(root)
-    var l = left.next; var r = right.next
-    while (l != null && r != null && l.value < r.value) {
-      if (r.value % l.value != 0) return false                                                                                                                      // failure
-      l = left.next; r = right.next
-    }
-    true
+import scala.collection.mutable
+
+class TreeNode(var value: Int, var left: TreeNode = null, var right: TreeNode = null)
+
+object Main extends App {
+  class ForwardBstIterator(root: TreeNode) {
+    private val stack = mutable.Stack[TreeNode]()
+    pushAllLeft(root)
+    private def pushAllLeft(n: TreeNode): Unit = { var x = n; while (x != null) { stack.push(x); x = x.left  } }
+    def hasNext: Boolean = stack.nonEmpty
+    def next: TreeNode = { val n = stack.pop(); pushAllLeft(n.right); n }
   }
+
+  class ReverseBstIterator(root: TreeNode) {
+    private val stack = mutable.Stack[TreeNode]()
+    pushAllRight(root)
+    private def pushAllRight(n: TreeNode): Unit = { var x = n; while (x != null) { stack.push(x); x = x.right } }
+    def hasNext: Boolean = stack.nonEmpty
+    def next: TreeNode = { val n = stack.pop(); pushAllRight(n.left); n }
+  }
+
+  object MultipleSolution {
+    def multipleTree(root: TreeNode): Boolean = {
+      if (root == null) return false
+      val left  = new ForwardBstIterator(root)
+      val right = new ReverseBstIterator(root)
+      var l = left.next; var r = right.next
+      while (l != null && r != null && l.value < r.value) {
+        if (r.value % l.value != 0) return false                                                                                                                      // failure
+        l = left.next; r = right.next
+      }
+      true
+    }
+  }
+
+  val root = new TreeNode(4,
+    new TreeNode(2, new TreeNode(1), null),
+    new TreeNode(6, null, new TreeNode(7)))
+  println(MultipleSolution.multipleTree(root))  // true
 }
 ```
 
@@ -519,19 +597,49 @@ class Solution:
 ```
 
 ```java run
-class Solution {
-    public int medianInBst(TreeNode root) {
-        if (root == null) return -1;
-        ForwardBstIterator left  = new ForwardBstIterator(root);
-        ReverseBstIterator right = new ReverseBstIterator(root);
-        TreeNode l = left.next(), r = right.next();
-        int median = -1;
-        while (l != null && r != null && l.val < r.val) {
-            median = (l.val + r.val) / 2;                                                                                                                                  // straddle pair
-            l = left.next(); r = right.next();
+import java.util.*;
+
+public class Main {
+    static class TreeNode { int val; TreeNode left, right; TreeNode(int v){val=v;} }
+
+    static class ForwardBstIterator {
+        Deque<TreeNode> stack = new ArrayDeque<>();
+        ForwardBstIterator(TreeNode root) { pushAllLeft(root); }
+        private void pushAllLeft(TreeNode n) { while (n != null) { stack.push(n); n = n.left; } }
+        boolean hasNext() { return !stack.isEmpty(); }
+        TreeNode next() { TreeNode n = stack.pop(); pushAllLeft(n.right); return n; }
+    }
+
+    static class ReverseBstIterator {
+        Deque<TreeNode> stack = new ArrayDeque<>();
+        ReverseBstIterator(TreeNode root) { pushAllRight(root); }
+        private void pushAllRight(TreeNode n) { while (n != null) { stack.push(n); n = n.right; } }
+        boolean hasNext() { return !stack.isEmpty(); }
+        TreeNode next() { TreeNode n = stack.pop(); pushAllRight(n.left); return n; }
+    }
+
+    static class Solution {
+        public int medianInBst(TreeNode root) {
+            if (root == null) return -1;
+            ForwardBstIterator left  = new ForwardBstIterator(root);
+            ReverseBstIterator right = new ReverseBstIterator(root);
+            TreeNode l = left.next(), r = right.next();
+            int median = -1;
+            while (l != null && r != null && l.val < r.val) {
+                median = (l.val + r.val) / 2;                                                                                                                                  // straddle pair
+                l = left.next(); r = right.next();
+            }
+            if (l == r && l != null) return l.val;                                                                                                                              // odd count
+            return median;
         }
-        if (l == r && l != null) return l.val;                                                                                                                              // odd count
-        return median;
+    }
+
+    public static void main(String[] args) {
+        TreeNode root = new TreeNode(5);
+        root.left  = new TreeNode(4); root.right = new TreeNode(6);
+        root.left.left  = new TreeNode(2);
+        root.right.right = new TreeNode(7);
+        System.out.println(new Solution().medianInBst(root));  // 5
     }
 }
 ```
@@ -554,19 +662,46 @@ int medianInBst(struct TreeNode *root) {
 ```
 
 ```scala run
-object MedianSolution {
-  def medianInBst(root: TreeNode): Int = {
-    if (root == null) return -1
-    val left  = new ForwardBstIterator(root)
-    val right = new ReverseBstIterator(root)
-    var l = left.next; var r = right.next
-    var median = -1
-    while (l != null && r != null && l.value < r.value) {
-      median = (l.value + r.value) / 2
-      l = left.next; r = right.next
-    }
-    if (l == r && l != null) l.value else median
+import scala.collection.mutable
+
+class TreeNode(var value: Int, var left: TreeNode = null, var right: TreeNode = null)
+
+object Main extends App {
+  class ForwardBstIterator(root: TreeNode) {
+    private val stack = mutable.Stack[TreeNode]()
+    pushAllLeft(root)
+    private def pushAllLeft(n: TreeNode): Unit = { var x = n; while (x != null) { stack.push(x); x = x.left  } }
+    def hasNext: Boolean = stack.nonEmpty
+    def next: TreeNode = { val n = stack.pop(); pushAllLeft(n.right); n }
   }
+
+  class ReverseBstIterator(root: TreeNode) {
+    private val stack = mutable.Stack[TreeNode]()
+    pushAllRight(root)
+    private def pushAllRight(n: TreeNode): Unit = { var x = n; while (x != null) { stack.push(x); x = x.right } }
+    def hasNext: Boolean = stack.nonEmpty
+    def next: TreeNode = { val n = stack.pop(); pushAllRight(n.left); n }
+  }
+
+  object MedianSolution {
+    def medianInBst(root: TreeNode): Int = {
+      if (root == null) return -1
+      val left  = new ForwardBstIterator(root)
+      val right = new ReverseBstIterator(root)
+      var l = left.next; var r = right.next
+      var median = -1
+      while (l != null && r != null && l.value < r.value) {
+        median = (l.value + r.value) / 2
+        l = left.next; r = right.next
+      }
+      if (l == r && l != null) l.value else median
+    }
+  }
+
+  val root = new TreeNode(5,
+    new TreeNode(4, new TreeNode(2), null),
+    new TreeNode(6, null, new TreeNode(7)))
+  println(MedianSolution.medianInBst(root))  // 5
 }
 ```
 
@@ -649,19 +784,53 @@ class Solution:
 ```
 
 ```java run
-class Solution {
-    public boolean bstPairSum(TreeNode rootA, TreeNode rootB, int target) {
-        if (rootA == null || rootB == null) return false;
-        ForwardBstIterator left  = new ForwardBstIterator(rootA);
-        ReverseBstIterator right = new ReverseBstIterator(rootB);
-        TreeNode l = left.next(), r = right.next();
-        while (l != null && r != null) {
-            int s = l.val + r.val;
-            if (s == target) return true;
-            if (s < target) l = left.hasNext()  ? left.next()  : null;                                                                                                                  // grow from A
-            else            r = right.hasNext() ? right.next() : null;                                                                                                                  // shrink from B
+import java.util.*;
+
+public class Main {
+    static class TreeNode { int val; TreeNode left, right; TreeNode(int v){val=v;} }
+
+    static class ForwardBstIterator {
+        Deque<TreeNode> stack = new ArrayDeque<>();
+        ForwardBstIterator(TreeNode root) { pushAllLeft(root); }
+        private void pushAllLeft(TreeNode n) { while (n != null) { stack.push(n); n = n.left; } }
+        boolean hasNext() { return !stack.isEmpty(); }
+        TreeNode next() { TreeNode n = stack.pop(); pushAllLeft(n.right); return n; }
+    }
+
+    static class ReverseBstIterator {
+        Deque<TreeNode> stack = new ArrayDeque<>();
+        ReverseBstIterator(TreeNode root) { pushAllRight(root); }
+        private void pushAllRight(TreeNode n) { while (n != null) { stack.push(n); n = n.right; } }
+        boolean hasNext() { return !stack.isEmpty(); }
+        TreeNode next() { TreeNode n = stack.pop(); pushAllRight(n.left); return n; }
+    }
+
+    static class Solution {
+        public boolean bstPairSum(TreeNode rootA, TreeNode rootB, int target) {
+            if (rootA == null || rootB == null) return false;
+            ForwardBstIterator left  = new ForwardBstIterator(rootA);
+            ReverseBstIterator right = new ReverseBstIterator(rootB);
+            TreeNode l = left.next(), r = right.next();
+            while (l != null && r != null) {
+                int s = l.val + r.val;
+                if (s == target) return true;
+                if (s < target) l = left.hasNext()  ? left.next()  : null;                                                                                                                  // grow from A
+                else            r = right.hasNext() ? right.next() : null;                                                                                                                  // shrink from B
+            }
+            return false;
         }
-        return false;
+    }
+
+    public static void main(String[] args) {
+        TreeNode rootA = new TreeNode(4);
+        rootA.left  = new TreeNode(2); rootA.right = new TreeNode(6);
+        rootA.left.left  = new TreeNode(1);
+        rootA.right.right = new TreeNode(7);
+        TreeNode rootB = new TreeNode(2);
+        rootB.left  = new TreeNode(1); rootB.right = new TreeNode(4);
+        rootB.right.left  = new TreeNode(3);
+        rootB.right.right = new TreeNode(8);
+        System.out.println(new Solution().bstPairSum(rootA, rootB, 15));  // true
     }
 }
 ```
@@ -685,20 +854,50 @@ bool bstPairSum(struct TreeNode *rootA, struct TreeNode *rootB, int target) {
 ```
 
 ```scala run
-object PairSumSolution {
-  def bstPairSum(rootA: TreeNode, rootB: TreeNode, target: Int): Boolean = {
-    if (rootA == null || rootB == null) return false
-    val left  = new ForwardBstIterator(rootA)
-    val right = new ReverseBstIterator(rootB)
-    var l = left.next; var r = right.next
-    while (l != null && r != null) {
-      val s = l.value + r.value
-      if (s == target)      return true
-      else if (s < target)  l = left.next
-      else                  r = right.next
-    }
-    false
+import scala.collection.mutable
+
+class TreeNode(var value: Int, var left: TreeNode = null, var right: TreeNode = null)
+
+object Main extends App {
+  class ForwardBstIterator(root: TreeNode) {
+    private val stack = mutable.Stack[TreeNode]()
+    pushAllLeft(root)
+    private def pushAllLeft(n: TreeNode): Unit = { var x = n; while (x != null) { stack.push(x); x = x.left  } }
+    def hasNext: Boolean = stack.nonEmpty
+    def next: TreeNode = { val n = stack.pop(); pushAllLeft(n.right); n }
   }
+
+  class ReverseBstIterator(root: TreeNode) {
+    private val stack = mutable.Stack[TreeNode]()
+    pushAllRight(root)
+    private def pushAllRight(n: TreeNode): Unit = { var x = n; while (x != null) { stack.push(x); x = x.right } }
+    def hasNext: Boolean = stack.nonEmpty
+    def next: TreeNode = { val n = stack.pop(); pushAllRight(n.left); n }
+  }
+
+  object PairSumSolution {
+    def bstPairSum(rootA: TreeNode, rootB: TreeNode, target: Int): Boolean = {
+      if (rootA == null || rootB == null) return false
+      val left  = new ForwardBstIterator(rootA)
+      val right = new ReverseBstIterator(rootB)
+      var l = left.next; var r = right.next
+      while (l != null && r != null) {
+        val s = l.value + r.value
+        if (s == target)      return true
+        else if (s < target)  l = left.next
+        else                  r = right.next
+      }
+      false
+    }
+  }
+
+  val rootA = new TreeNode(4,
+    new TreeNode(2, new TreeNode(1), null),
+    new TreeNode(6, null, new TreeNode(7)))
+  val rootB = new TreeNode(2,
+    new TreeNode(1),
+    new TreeNode(4, new TreeNode(3), new TreeNode(8)))
+  println(PairSumSolution.bstPairSum(rootA, rootB, 15))  // true
 }
 ```
 

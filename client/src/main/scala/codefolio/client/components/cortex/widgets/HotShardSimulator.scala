@@ -1,11 +1,11 @@
 package codefolio.client.components.cortex.widgets
 
+import codefolio.client.components.cortex.widgets.PayloadDecoder.*
 import japgolly.scalajs.react.*
 import japgolly.scalajs.react.vdom.html_<^.*
 
-import scala.scalajs.js
+import scala.util.Try
 import scala.util.hashing.MurmurHash3
-import scala.util.{Failure, Success, Try}
 
 /**
  * Hot-shard widget — bar chart of per-shard request volume under three partitioning strategies (range, hash,
@@ -71,42 +71,23 @@ object HotShardSimulator:
   // Parsing
   // ===========================================================================
 
-  private def parseIntRange(d: js.Dynamic, default: (Int, Int)): (Int, Int) =
-    d.asInstanceOf[js.UndefOr[js.Array[Double]]].toOption.map(_.toList) match
-      case Some(lo :: hi :: _) => (lo.toInt, hi.toInt)
-      case _                   => default
-
-  private def parseDoubleRange(d: js.Dynamic, default: (Double, Double)): (Double, Double) =
-    d.asInstanceOf[js.UndefOr[js.Array[Double]]].toOption.map(_.toList) match
-      case Some(lo :: hi :: _) => (lo, hi)
-      case _                   => default
-
   private def parsePayload(json: String): Either[String, Spec] =
-    Try {
-      val raw   = js.JSON.parse(json).asInstanceOf[js.Dynamic]
-      val title = raw.title.asInstanceOf[js.UndefOr[String]].toOption.filter(_.nonEmpty)
-      val sc    = raw.shardCount.asInstanceOf[js.UndefOr[Double]].toOption.getOrElse(8.0).toInt
-      val scR   = parseIntRange(raw.shardCountRange, (2, 16))
-      val skew  = raw.skew.asInstanceOf[js.UndefOr[Double]].toOption.getOrElse(1.2)
-      val skewR = parseDoubleRange(raw.skewRange, (0.0, 2.0))
-      val kc    = raw.keyCount.asInstanceOf[js.UndefOr[Double]].toOption.getOrElse(500.0).toInt
-      val vps   = raw.virtualPerShard.asInstanceOf[js.UndefOr[Double]].toOption.getOrElse(50.0).toInt
-      Spec(title, sc, scR._1, scR._2, skew, skewR._1, skewR._2, kc, vps)
-    } match
-      case Success(s) if s.shardMin < 2 || s.shardMax < s.shardMin =>
-        Left("payload.shardCountRange must satisfy 2 ≤ min ≤ max")
-      case Success(s) if s.skewMin < 0 || s.skewMax < s.skewMin =>
-        Left("payload.skewRange must satisfy 0 ≤ min ≤ max")
-      case Success(s) if s.shardCount < s.shardMin || s.shardCount > s.shardMax =>
-        Left("payload.shardCount out of range")
-      case Success(s) if s.skew < s.skewMin || s.skew > s.skewMax =>
-        Left("payload.skew out of range")
-      case Success(s) if s.keyCount < 10 || s.keyCount > 5000 =>
-        Left("payload.keyCount must be in [10, 5000]")
-      case Success(s) if s.virtualPerShard < 1 || s.virtualPerShard > 500 =>
-        Left("payload.virtualPerShard must be in [1, 500]")
-      case Success(s) => Right(s)
-      case Failure(t) => Left(Option(t.getMessage).getOrElse("invalid payload JSON"))
+    PayloadDecoder.run(json) { d =>
+      val sc            = d.double("shardCount", 8.0).toInt
+      val (sMin, sMx)   = d.intRange("shardCountRange", (2, 16))
+      val skew          = d.double("skew", 1.2)
+      val (skMin, skMx) = d.doubleRange("skewRange", (0.0, 2.0))
+      val kc            = d.double("keyCount", 500.0).toInt
+      val vps           = d.double("virtualPerShard", 50.0).toInt
+      if sMin < 2 || sMx < sMin then
+        throw PayloadDecoder.invalid("shardCountRange must satisfy 2 ≤ min ≤ max")
+      if skMin < 0 || skMx < skMin then throw PayloadDecoder.invalid("skewRange must satisfy 0 ≤ min ≤ max")
+      if sc < sMin || sc > sMx then throw PayloadDecoder.invalid("shardCount out of range")
+      if skew < skMin || skew > skMx then throw PayloadDecoder.invalid("skew out of range")
+      if kc < 10 || kc > 5000 then throw PayloadDecoder.invalid("keyCount must be in [10, 5000]")
+      if vps < 1 || vps > 500 then throw PayloadDecoder.invalid("virtualPerShard must be in [1, 500]")
+      Spec(d.optString("title"), sc, sMin, sMx, skew, skMin, skMx, kc, vps)
+    }
 
   // ===========================================================================
   // Workload — Zipfian-weighted keys

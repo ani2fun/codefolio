@@ -138,3 +138,16 @@ lazy val root = (project in file("."))
     name           := "codefolio",
     publish / skip := true
   )
+
+// ---- command aliases -----------------------------------------------------
+
+// `sbt validateCortexPayloads` — build-time canon check for every
+// `d3 widget=linked-list` payload across content/cortex/**/*.md. Exits 1 on
+// violations (with a per-violation report). Wired into CI alongside
+// `scalafmtCheckAll`. The validator lives in the server module because that's
+// where the cortex pipeline already imports circe; reuses the same JSON dep
+// instead of pulling another into the build.
+addCommandAlias(
+  "validateCortexPayloads",
+  "server/runMain codefolio.server.cortexPipeline.LinkedListCanonValidator"
+)

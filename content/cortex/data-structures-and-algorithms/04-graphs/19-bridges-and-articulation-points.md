@@ -202,28 +202,30 @@ if __name__ == "__main__":
 ```java run
 import java.util.*;
 
-class Solution {
-    static int[] disc, low;
-    static boolean[] isArt;
-    static int timer = 0;
-    static List<int[]> bridges = new ArrayList<>();
+public class Main {
+    static class Solution {
+        static int[] disc, low;
+        static boolean[] isArt;
+        static int timer = 0;
+        static List<int[]> bridges = new ArrayList<>();
 
-    static void dfs(int u, int parent, List<List<Integer>> adj) {
-        disc[u] = low[u] = timer++;
-        int children = 0;
-        for (int v : adj.get(u)) {
-            if (v == parent) continue;
-            if (disc[v] == -1) {
-                children++;
-                dfs(v, u, adj);
-                low[u] = Math.min(low[u], low[v]);
-                if (low[v] > disc[u]) bridges.add(new int[]{u, v});
-                if (parent != -1 && low[v] >= disc[u]) isArt[u] = true;
-            } else {
-                low[u] = Math.min(low[u], disc[v]);
+        static void dfs(int u, int parent, List<List<Integer>> adj) {
+            disc[u] = low[u] = timer++;
+            int children = 0;
+            for (int v : adj.get(u)) {
+                if (v == parent) continue;
+                if (disc[v] == -1) {
+                    children++;
+                    dfs(v, u, adj);
+                    low[u] = Math.min(low[u], low[v]);
+                    if (low[v] > disc[u]) bridges.add(new int[]{u, v});
+                    if (parent != -1 && low[v] >= disc[u]) isArt[u] = true;
+                } else {
+                    low[u] = Math.min(low[u], disc[v]);
+                }
             }
+            if (parent == -1 && children >= 2) isArt[u] = true;
         }
-        if (parent == -1 && children >= 2) isArt[u] = true;
     }
 
     public static void main(String[] args) {
@@ -233,11 +235,11 @@ class Solution {
         for (int i = 0; i < n; i++) adj.add(new ArrayList<>());
         for (int[] e : edges) { adj.get(e[0]).add(e[1]); adj.get(e[1]).add(e[0]); }
 
-        disc = new int[n]; low = new int[n]; isArt = new boolean[n];
-        Arrays.fill(disc, -1);
-        for (int i = 0; i < n; i++) if (disc[i] == -1) dfs(i, -1, adj);
-        for (int[] b : bridges) System.out.println("bridge: " + b[0] + "-" + b[1]);
-        for (int i = 0; i < n; i++) if (isArt[i]) System.out.println("articulation: " + i);
+        Solution.disc = new int[n]; Solution.low = new int[n]; Solution.isArt = new boolean[n];
+        Arrays.fill(Solution.disc, -1);
+        for (int i = 0; i < n; i++) if (Solution.disc[i] == -1) Solution.dfs(i, -1, adj);
+        for (int[] b : Solution.bridges) System.out.println("bridge: " + b[0] + "-" + b[1]);
+        for (int i = 0; i < n; i++) if (Solution.isArt[i]) System.out.println("articulation: " + i);
     }
 }
 ```
@@ -285,41 +287,41 @@ int main(void) {
 ```scala run
 import scala.collection.mutable
 
-object Solution {
-  def findBridgesAndArticulations(n: Int, adj: Array[mutable.ArrayBuffer[Int]]) = {
-    val disc = Array.fill(n)(-1)
-    val low = Array.fill(n)(-1)
-    val isArt = Array.fill(n)(false)
-    val bridges = mutable.ListBuffer.empty[(Int, Int)]
-    var timer = 0
+object Main extends App {
+  object Solution {
+    def findBridgesAndArticulations(n: Int, adj: Array[mutable.ArrayBuffer[Int]]) = {
+      val disc = Array.fill(n)(-1)
+      val low = Array.fill(n)(-1)
+      val isArt = Array.fill(n)(false)
+      val bridges = mutable.ListBuffer.empty[(Int, Int)]
+      var timer = 0
 
-    def dfs(u: Int, parent: Int): Unit = {
-      disc(u) = timer; low(u) = timer; timer += 1
-      var children = 0
-      for (v <- adj(u) if v != parent) {
-        if (disc(v) == -1) {
-          children += 1; dfs(v, u)
-          low(u) = math.min(low(u), low(v))
-          if (low(v) > disc(u)) bridges += ((u, v))
-          if (parent != -1 && low(v) >= disc(u)) isArt(u) = true
-        } else low(u) = math.min(low(u), disc(v))
+      def dfs(u: Int, parent: Int): Unit = {
+        disc(u) = timer; low(u) = timer; timer += 1
+        var children = 0
+        for (v <- adj(u) if v != parent) {
+          if (disc(v) == -1) {
+            children += 1; dfs(v, u)
+            low(u) = math.min(low(u), low(v))
+            if (low(v) > disc(u)) bridges += ((u, v))
+            if (parent != -1 && low(v) >= disc(u)) isArt(u) = true
+          } else low(u) = math.min(low(u), disc(v))
+        }
+        if (parent == -1 && children >= 2) isArt(u) = true
       }
-      if (parent == -1 && children >= 2) isArt(u) = true
+
+      for (v <- 0 until n) if (disc(v) == -1) dfs(v, -1)
+      (bridges.toList, (0 until n).filter(isArt(_)).toList)
     }
-
-    for (v <- 0 until n) if (disc(v) == -1) dfs(v, -1)
-    (bridges.toList, (0 until n).filter(isArt(_)).toList)
   }
 
-  def main(args: Array[String]): Unit = {
-    val n = 6
-    val edges = Array((0,1), (1,2), (1,3), (3,4), (4,5), (5,3))
-    val adj = Array.fill(n)(mutable.ArrayBuffer.empty[Int])
-    for ((u, v) <- edges) { adj(u) += v; adj(v) += u }
-    val (bridges, arts) = findBridgesAndArticulations(n, adj)
-    println(s"bridges: $bridges")
-    println(s"articulation points: $arts")
-  }
+  val n = 6
+  val edges = Array((0,1), (1,2), (1,3), (3,4), (4,5), (5,3))
+  val adj = Array.fill(n)(mutable.ArrayBuffer.empty[Int])
+  for ((u, v) <- edges) { adj(u) += v; adj(v) += u }
+  val (bridges, arts) = Solution.findBridgesAndArticulations(n, adj)
+  println(s"bridges: $bridges")
+  println(s"articulation points: $arts")
 }
 ```
 

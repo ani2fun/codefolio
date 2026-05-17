@@ -166,23 +166,25 @@ if __name__ == "__main__":
 ```
 
 ```java run
-public class Solution {
-    public boolean partitionEqualSum(int[] arr) {
-        int total = 0;
-        for (int x : arr) total += x;
-        if (total % 2 != 0) return false;
-        int target = total / 2;
-        int n = arr.length;
-        boolean[][] dp = new boolean[n + 1][target + 1];
-        for (int i = 0; i <= n; i++) dp[i][0] = true;
-        for (int i = 1; i <= n; i++) {
-            int ai = arr[i - 1];
-            for (int s = 1; s <= target; s++) {
-                dp[i][s] = dp[i - 1][s];
-                if (ai <= s && dp[i - 1][s - ai]) dp[i][s] = true;
+public class Main {
+    static class Solution {
+        public boolean partitionEqualSum(int[] arr) {
+            int total = 0;
+            for (int x : arr) total += x;
+            if (total % 2 != 0) return false;
+            int target = total / 2;
+            int n = arr.length;
+            boolean[][] dp = new boolean[n + 1][target + 1];
+            for (int i = 0; i <= n; i++) dp[i][0] = true;
+            for (int i = 1; i <= n; i++) {
+                int ai = arr[i - 1];
+                for (int s = 1; s <= target; s++) {
+                    dp[i][s] = dp[i - 1][s];
+                    if (ai <= s && dp[i - 1][s - ai]) dp[i][s] = true;
+                }
             }
+            return dp[n][target];
         }
-        return dp[n][target];
     }
 
     public static void main(String[] args) {
@@ -224,26 +226,26 @@ int main(void) {
 ```
 
 ```scala run
-class Solution {
-  def partitionEqualSum(arr: Array[Int]): Boolean = {
-    val total = arr.sum
-    if (total % 2 != 0) return false
-    val target = total / 2
-    val n = arr.length
-    val dp = Array.fill(n + 1, target + 1)(false)
-    for (i <- 0 to n) dp(i)(0) = true
-    for (i <- 1 to n) {
-      val ai = arr(i - 1)
-      for (s <- 1 to target) {
-        dp(i)(s) = dp(i - 1)(s)
-        if (ai <= s && dp(i - 1)(s - ai)) dp(i)(s) = true
-      }
-    }
-    dp(n)(target)
-  }
-}
-
 object Main extends App {
+  class Solution {
+    def partitionEqualSum(arr: Array[Int]): Boolean = {
+      val total = arr.sum
+      if (total % 2 != 0) return false
+      val target = total / 2
+      val n = arr.length
+      val dp = Array.fill(n + 1, target + 1)(false)
+      for (i <- 0 to n) dp(i)(0) = true
+      for (i <- 1 to n) {
+        val ai = arr(i - 1)
+        for (s <- 1 to target) {
+          dp(i)(s) = dp(i - 1)(s)
+          if (ai <= s && dp(i - 1)(s - ai)) dp(i)(s) = true
+        }
+      }
+      dp(n)(target)
+    }
+  }
+
   println(new Solution().partitionEqualSum(Array(1, 5, 4, 10)))   // true
 }
 ```
@@ -369,23 +371,25 @@ if __name__ == "__main__":
 ```
 
 ```java run
-public class Solution {
-    public int smallestDiscrepancy(int[] arr) {
-        int n = arr.length, total = 0;
-        for (int x : arr) total += x;
-        boolean[][] dp = new boolean[n + 1][total + 1];
-        for (int i = 0; i <= n; i++) dp[i][0] = true;
-        for (int i = 1; i <= n; i++) {
-            int ai = arr[i - 1];
-            for (int s = 1; s <= total; s++) {
-                dp[i][s] = dp[i - 1][s];
-                if (ai <= s && dp[i - 1][s - ai]) dp[i][s] = true;
+public class Main {
+    static class Solution {
+        public int smallestDiscrepancy(int[] arr) {
+            int n = arr.length, total = 0;
+            for (int x : arr) total += x;
+            boolean[][] dp = new boolean[n + 1][total + 1];
+            for (int i = 0; i <= n; i++) dp[i][0] = true;
+            for (int i = 1; i <= n; i++) {
+                int ai = arr[i - 1];
+                for (int s = 1; s <= total; s++) {
+                    dp[i][s] = dp[i - 1][s];
+                    if (ai <= s && dp[i - 1][s - ai]) dp[i][s] = true;
+                }
             }
+            for (int s = total / 2; s >= 0; s--) {
+                if (dp[n][s]) return total - 2 * s;
+            }
+            return total;
         }
-        for (int s = total / 2; s >= 0; s--) {
-            if (dp[n][s]) return total - 2 * s;
-        }
-        return total;
     }
 
     public static void main(String[] args) {
@@ -427,28 +431,28 @@ int main(void) {
 ```
 
 ```scala run
-class Solution {
-  def smallestDiscrepancy(arr: Array[Int]): Int = {
-    val n = arr.length; val total = arr.sum
-    val dp = Array.fill(n + 1, total + 1)(false)
-    for (i <- 0 to n) dp(i)(0) = true
-    for (i <- 1 to n) {
-      val ai = arr(i - 1)
-      for (s <- 1 to total) {
-        dp(i)(s) = dp(i - 1)(s)
-        if (ai <= s && dp(i - 1)(s - ai)) dp(i)(s) = true
-      }
-    }
-    var s = total / 2
-    while (s >= 0) {
-      if (dp(n)(s)) return total - 2 * s
-      s -= 1
-    }
-    total
-  }
-}
-
 object Main extends App {
+  class Solution {
+    def smallestDiscrepancy(arr: Array[Int]): Int = {
+      val n = arr.length; val total = arr.sum
+      val dp = Array.fill(n + 1, total + 1)(false)
+      for (i <- 0 to n) dp(i)(0) = true
+      for (i <- 1 to n) {
+        val ai = arr(i - 1)
+        for (s <- 1 to total) {
+          dp(i)(s) = dp(i - 1)(s)
+          if (ai <= s && dp(i - 1)(s - ai)) dp(i)(s) = true
+        }
+      }
+      var s = total / 2
+      while (s >= 0) {
+        if (dp(n)(s)) return total - 2 * s
+        s -= 1
+      }
+      total
+    }
+  }
+
   println(new Solution().smallestDiscrepancy(Array(1, 5, 3, 10)))    // 1
 }
 ```

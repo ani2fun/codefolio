@@ -1,3 +1,7 @@
+---
+title: Pseudocode Reference
+essential: false
+---
 # Pseudocode Reference
 
 Every lesson in this section opens with a **🧠 Pseudocode** tab — the algorithm stripped of any specific language's syntax, so you can see the *shape* of the solution before the noise of `public static void`s and `fmt.Println`s.

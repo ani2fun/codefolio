@@ -11,6 +11,17 @@
     .header {
         @apply fixed top-0 left-0 right-0 z-50 bg-background/85 backdrop-blur
                border-b border-border/60;
+        transition: opacity 280ms ease;
+    }
+    /* Focus mode (cortex reader) fades the global header. The body class is set
+       by `CortexReaderLayout` when the user enters focus mode; this rule keeps
+       the fade colocated with the header it affects. */
+    body.cortex-focus-mode .header {
+        opacity: 0;
+        pointer-events: none;
+    }
+    @media (prefers-reduced-motion: reduce) {
+        .header { transition: none; }
     }
     .header__nav {
         @apply px-5 py-4 flex justify-between items-center gap-4;

@@ -45,6 +45,14 @@ jobs:
       - name: Compile + test (Scala)
         run: sbt "compile; test"
 
+      # Validate every `d3 widget=linked-list` payload across content/cortex/
+      # against the ADR-0016 marker canon — names ∈ closed set, no author
+      # `color`, node `style` ∈ {new, removed, highlight}, sections in bounds.
+      # Catches drift in chapters nobody re-opened locally; the widget itself
+      # enforces the same canon at runtime under `bin/dev`.
+      - name: Linked-list canon (cortex payloads)
+        run: sbt validateCortexPayloads
+
       - name: Stage server + link client JS
         run: sbt "server/Universal/stage; client/fullLinkJS"
 

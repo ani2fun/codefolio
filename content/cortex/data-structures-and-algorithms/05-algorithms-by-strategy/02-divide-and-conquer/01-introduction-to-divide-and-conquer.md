@@ -138,7 +138,7 @@ if __name__ == "__main__":
 ```
 
 ```java run
-class Solution {
+public class Main {
     static int maxCrossing(int[] A, int lo, int mid, int hi) {
         int leftSum = Integer.MIN_VALUE, s = 0;
         for (int i = mid; i >= lo; i--) { s += A[i]; if (s > leftSum) leftSum = s; }
@@ -191,7 +191,7 @@ int main(void) {
 ```
 
 ```scala run
-object Solution {
+object Main extends App {
   def maxCrossing(A: Array[Int], lo: Int, mid: Int, hi: Int): Int = {
     var leftSum = Int.MinValue; var s = 0
     var i = mid
@@ -211,10 +211,8 @@ object Solution {
     math.max(math.max(l, r), c)
   }
 
-  def main(args: Array[String]): Unit = {
-    val A = Array(-2, 1, -3, 4, -1, 2, 1, -5, 4)
-    println(s"max sum = ${maxSubarray(A, 0, A.length - 1)}")
-  }
+  val A = Array(-2, 1, -3, 4, -1, 2, 1, -5, 4)
+  println(s"max sum = ${maxSubarray(A, 0, A.length - 1)}")
 }
 ```
 

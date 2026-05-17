@@ -486,20 +486,22 @@ if __name__ == "__main__":
 ```
 
 ```java run
-public class Solution {
-    private static final String PASSWORD = "0101";
+public class Main {
+    static class Solution {
+        private static final String PASSWORD = "0101";
 
-    public void crackPassword(String state) {
-        if (state.length() == 4) {
-            if (state.equals(PASSWORD)) {
-                System.out.println("Password cracked: " + state);
+        public void crackPassword(String state) {
+            if (state.length() == 4) {
+                if (state.equals(PASSWORD)) {
+                    System.out.println("Password cracked: " + state);
+                }
+                return;                              // leaf reached, this branch is done
             }
-            return;                              // leaf reached, this branch is done
-        }
 
-        for (int digit = 0; digit <= 1; digit++) {
-            String newState = state + digit;     // append the choice
-            crackPassword(newState);             // recurse — implicit backtrack on return
+            for (int digit = 0; digit <= 1; digit++) {
+                String newState = state + digit;     // append the choice
+                crackPassword(newState);             // recurse — implicit backtrack on return
+            }
         }
     }
 
@@ -539,24 +541,24 @@ int main(void) {
 ```
 
 ```scala run
-class Solution {
-  private val PASSWORD = "0101"
+object Main extends App {
+  class Solution {
+    private val PASSWORD = "0101"
 
-  def crackPassword(state: String): Unit = {
-    if (state.length == 4) {
-      if (state == PASSWORD) println(s"Password cracked: $state")
-      return
-    }
+    def crackPassword(state: String): Unit = {
+      if (state.length == 4) {
+        if (state == PASSWORD) println(s"Password cracked: $state")
+        return
+      }
 
-    for (digit <- 0 to 1) {
-      val newState = state + digit.toString
-      crackPassword(newState)
+      for (digit <- 0 to 1) {
+        val newState = state + digit.toString
+        crackPassword(newState)
+      }
     }
   }
-}
 
-object Main {
-  def main(args: Array[String]): Unit = new Solution().crackPassword("")
+  new Solution().crackPassword("")
 }
 ```
 

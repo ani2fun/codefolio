@@ -25,36 +25,38 @@ Many linked list problems require us to reverse the entire list or a part of it.
 
 The reversal pattern is a classification of linked list problems that can be solved using the linked list reversal algorithm.
 
-```d2
-direction: down
-
-before: "Before — segment [start, end]" {
-  direction: right
-  a: {grid-columns: 2; grid-gap: 0; value: a; next}
-  s: {grid-columns: 2; grid-gap: 0; value: start; next; style.fill: "#fde68a"; style.stroke: "#d97706"}
-  m: {grid-columns: 2; grid-gap: 0; value: "..."; next}
-  e: {grid-columns: 2; grid-gap: 0; value: end; next; style.fill: "#fde68a"; style.stroke: "#d97706"}
-  z: {grid-columns: 2; grid-gap: 0; value: z; next}
-  a.next -> s.value
-  s.next -> m.value
-  m.next -> e.value
-  e.next -> z.value
+```d3 widget=linked-list
+{
+  "title": "Reversal pattern — flip the segment [start, end] in place; nodes outside untouched",
+  "direction": "single",
+  "nodes": [
+    {"id": "a", "value": "a"},
+    {"id": "s", "value": "start"},
+    {"id": "m", "value": "..."},
+    {"id": "e", "value": "end"},
+    {"id": "z", "value": "z"}
+  ],
+  "head": "a",
+  "steps": [
+    {
+      "links": [["a","s"],["s","m"],["m","e"],["e","z"]],
+      "markers": [{"name": "start", "nodeId": "s"}, {"name": "end", "nodeId": "e"}],
+      "msg": "Before: segment from start to end (the …) flows left → right"
+    },
+    {
+      "nodes": [
+        {"id": "a", "value": "a"},
+        {"id": "e", "value": "end", "style": "new"},
+        {"id": "m", "value": "..."},
+        {"id": "s", "value": "start", "style": "new"},
+        {"id": "z", "value": "z"}
+      ],
+      "links": [["a","e"],["e","m"],["m","s"],["s","z"]],
+      "markers": [{"name": "current", "nodeId": "e"}],
+      "msg": "After: segment reversed in place. a → end → … → start → z. Outside nodes untouched."
+    }
+  ]
 }
-
-after: "After — segment reversed in place" {
-  direction: right
-  a: {grid-columns: 2; grid-gap: 0; value: a; next}
-  e: {grid-columns: 2; grid-gap: 0; value: end; next; style.fill: "#dcfce7"; style.stroke: "#16a34a"}
-  m: {grid-columns: 2; grid-gap: 0; value: "..."; next}
-  s: {grid-columns: 2; grid-gap: 0; value: start; next; style.fill: "#dcfce7"; style.stroke: "#16a34a"}
-  z: {grid-columns: 2; grid-gap: 0; value: z; next}
-  a.next -> e.value
-  e.next -> m.value
-  m.next -> s.value
-  s.next -> z.value
-}
-
-before -> after: "flip each next pointer within the segment"
 ```
 
 <p align="center"><strong>The reversal pattern flips a contiguous segment <code>[start, end]</code> in place — the nodes before <code>start</code> and after <code>end</code> remain untouched. Stitch the reversed segment back to its neighbours and you're done.</strong></p>
@@ -65,36 +67,51 @@ In this course, we will learn more about the linked list reversal algorithm and 
 
 Reversing the entire linked list is a special case of the generic reversal algorithm to reverse a segment between `start` and `end`. We first look at this special case as it has a much simpler implementation and is used in most linked list problems that require a reversal. Consider we are given a linked list denoted by `head` and need to reverse it completely.
 
-```d2
-direction: right
-
-before: Before {
-  direction: right
-  h: head {shape: oval}
-  n1: {grid-columns: 2; grid-gap: 0; value: 5; next}
-  n2: {grid-columns: 2; grid-gap: 0; value: 7; next}
-  n3: {grid-columns: 2; grid-gap: 0; value: 3; next}
-  n4: {grid-columns: 2; grid-gap: 0; value: 10; next: "null"}
-  h -> n1.value
-  n1.next -> n2.value
-  n2.next -> n3.value
-  n3.next -> n4.value
+```d3 widget=linked-list
+{
+  "title": "Reverse the entire list — three-pointer walk; every next flips",
+  "direction": "single",
+  "nodes": [
+    {"id": "n1", "value": "5"},
+    {"id": "n2", "value": "7"},
+    {"id": "n3", "value": "3"},
+    {"id": "n4", "value": "10"}
+  ],
+  "head": "n1",
+  "steps": [
+    {
+      "links": [["n1","n2"],["n2","n3"],["n3","n4"]],
+      "markers": [{"name": "previous", "nodeId": "n1"}, {"name": "current", "nodeId": "n1"}],
+      "msg": "Init: previous = null, current = head"
+    },
+    {
+      "links": [["n2","n1"],["n2","n3"],["n3","n4"]],
+      "markers": [{"name": "previous", "nodeId": "n1"}, {"name": "current", "nodeId": "n2"}],
+      "msg": "Tick 1: next = current.next (n2). current.next = previous (n1 → null). previous = current (n1). current = next (n2)."
+    },
+    {
+      "links": [["n2","n1"],["n3","n2"],["n3","n4"]],
+      "markers": [{"name": "previous", "nodeId": "n2"}, {"name": "current", "nodeId": "n3"}],
+      "msg": "Tick 2: n2.next now points to n1 (former predecessor). Advance."
+    },
+    {
+      "links": [["n2","n1"],["n3","n2"],["n4","n3"]],
+      "markers": [{"name": "previous", "nodeId": "n3"}, {"name": "current", "nodeId": "n4"}],
+      "msg": "Tick 3: n3.next now points to n2. Advance."
+    },
+    {
+      "nodes": [
+        {"id": "n4", "value": "10"},
+        {"id": "n3", "value": "3"},
+        {"id": "n2", "value": "7"},
+        {"id": "n1", "value": "5"}
+      ],
+      "links": [["n4","n3"],["n3","n2"],["n2","n1"]],
+      "markers": [{"name": "head", "nodeId": "n4"}],
+      "msg": "Tick 4: n4.next = n3. current = null → loop ends. Return previous (n4) as new head: 10 → 3 → 7 → 5 → null."
+    }
+  ]
 }
-
-after: After {
-  direction: right
-  h: head {shape: oval}
-  n1: {grid-columns: 2; grid-gap: 0; value: 10; next}
-  n2: {grid-columns: 2; grid-gap: 0; value: 3; next}
-  n3: {grid-columns: 2; grid-gap: 0; value: 7; next}
-  n4: {grid-columns: 2; grid-gap: 0; value: 5; next: "null"}
-  h -> n1.value
-  n1.next -> n2.value
-  n2.next -> n3.value
-  n3.next -> n4.value
-}
-
-before -> after: "flip every next pointer"
 ```
 
 <p align="center"><strong>Full-list reversal — the old tail becomes the new head, every node's <code>next</code> points to its former predecessor.</strong></p>
@@ -104,17 +121,6 @@ We initialize two references and `current` with `nullptr` and the `head` of
 At the end of all iterations, the entire list will be revered, and the will hold the head of the reversed list.
 
 ```mermaid
----
-config:
-  theme: base
-  themeVariables:
-    primaryColor: "#dbeafe"
-    primaryBorderColor: "#3b82f6"
-    primaryTextColor: "#1e3a5f"
-    lineColor: "#64748b"
-    secondaryColor: "#ede9fe"
-    tertiaryColor: "#fef9c3"
----
 flowchart TB
     INIT["previous = null<br/>current = head"]
     LOOP["while current is not null:<br/>1. next = current.next<br/>2. current.next = previous<br/>3. previous = current<br/>4. current = next"]
@@ -186,22 +192,34 @@ def reverse(head: Optional[ListNode]) -> Optional[ListNode]:
 ```
 
 ```java run
-class Solution {
-    public ListNode reverse(ListNode head) {
+public class Main {
+    static class ListNode { int val; ListNode next; ListNode(int v){val=v;} }
 
-        // Initialize references
-        ListNode current = head;
-        ListNode previous = null;
+    static class Solution {
+        public ListNode reverse(ListNode head) {
 
-        // Set the next reference of each node to its previous node
-        while (current != null) {
-            ListNode next = current.next;
-            current.next = previous;
-            previous = current;
-            current = next;
+            // Initialize references
+            ListNode current = head;
+            ListNode previous = null;
+
+            // Set the next reference of each node to its previous node
+            while (current != null) {
+                ListNode next = current.next;
+                current.next = previous;
+                previous = current;
+                current = next;
+            }
+
+            return previous;
         }
+    }
 
-        return previous;
+    public static void main(String[] args) {
+        ListNode n1 = new ListNode(5), n2 = new ListNode(7), n3 = new ListNode(3);
+        n1.next = n2; n2.next = n3;
+        ListNode head = new Solution().reverse(n1);
+        for (ListNode c = head; c != null; c = c.next) System.out.print(c.val + " ");
+        // 3 7 5
     }
 }
 ```
@@ -228,23 +246,31 @@ ListNode* reverse(ListNode *head) {
 ```
 
 ```scala run
-object Solution {
-  def reverse(head: ListNode): ListNode = {
+class ListNode(var v: Int, var next: ListNode = null)
 
-    // Initialize references
-    var current: ListNode = head
-    var previous: ListNode = null
+object Main extends App {
+  class Solution {
+    def reverse(head: ListNode): ListNode = {
 
-    // Set the next reference of each node to its previous node
-    while (current != null) {
-      val next = current.next
-      current.next = previous
-      previous = current
-      current = next
+      // Initialize references
+      var current: ListNode = head
+      var previous: ListNode = null
+
+      // Set the next reference of each node to its previous node
+      while (current != null) {
+        val next = current.next
+        current.next = previous
+        previous = current
+        current = next
+      }
+
+      previous
     }
-
-    previous
   }
+
+  val n3 = new ListNode(3); val n2 = new ListNode(7, n3); val n1 = new ListNode(5, n2)
+  var head = new Solution().reverse(n1)
+  while (head != null) { print(s"${head.v} "); head = head.next }  // 3 7 5
 }
 ```
 
@@ -271,65 +297,68 @@ Reversing a segment between two nodes is the generic case of the reversal algori
 
 For this example, the two references can never be `null` and will always point to some node in the list such that `start` comes before `end` when traversing the list in the forward direction from `head`.
 
-```d2
-direction: right
-
-before: "Before — reverse segment [start, end] inclusive" {
-  direction: right
-  h: head {shape: oval}
-  p: "·"
-  s: start {style.fill: "#fde68a"; style.stroke: "#d97706"}
-  m: "·"
-  e: end {style.fill: "#fde68a"; style.stroke: "#d97706"}
-  q: "·"
-  h -> p
-  p -> s
-  s -> m
-  m -> e
-  e -> q
+```d3 widget=linked-list
+{
+  "title": "Reverse a segment [start, end] inclusive — outer nodes stay intact",
+  "direction": "single",
+  "nodes": [
+    {"id": "h", "value": "head"},
+    {"id": "p", "value": "·"},
+    {"id": "s", "value": "start"},
+    {"id": "m", "value": "·"},
+    {"id": "e", "value": "end"},
+    {"id": "q", "value": "·"}
+  ],
+  "head": "h",
+  "steps": [
+    {
+      "links": [["h","p"],["p","s"],["s","m"],["m","e"],["e","q"]],
+      "markers": [{"name": "start", "nodeId": "s"}, {"name": "end", "nodeId": "e"}],
+      "msg": "Before: outer prefix h → · → ; segment start → · → end; outer suffix ·"
+    },
+    {
+      "nodes": [
+        {"id": "h", "value": "head"},
+        {"id": "p", "value": "·"},
+        {"id": "e", "value": "end", "style": "new"},
+        {"id": "m", "value": "·"},
+        {"id": "s", "value": "start", "style": "new"},
+        {"id": "q", "value": "·"}
+      ],
+      "links": [["h","p"],["p","e"],["e","m"],["m","s"],["s","q"]],
+      "markers": [{"name": "head", "nodeId": "e"}],
+      "msg": "After: segment flipped — outer prefix/suffix untouched"
+    }
+  ]
 }
-
-after: "After — segment flipped, outer nodes intact" {
-  direction: right
-  h: head {shape: oval}
-  p: "·"
-  e: end {style.fill: "#dcfce7"; style.stroke: "#16a34a"}
-  m: "·"
-  s: start {style.fill: "#dcfce7"; style.stroke: "#16a34a"}
-  q: "·"
-  h -> p
-  p -> e
-  e -> m
-  m -> s
-  s -> q
-}
-
-before -> after
 ```
 
 <p align="center"><strong>Both endpoints are included. After reversal, the outer list structure is preserved — only the order of nodes inside <code>[start, end]</code> is flipped.</strong></p>
 
 To connect the first node of the segment back to the list after reversal, we need to know the node after `end`. We create a reference variable `rightBound` and initialize it with the node after `end`.
 
-```d2
-direction: right
-h: head {shape: oval}
-p: "·"
-s: start
-m: "·"
-e: end
-rb: |md
-  **rightBound**
-
-  (= end.next)
-| {style.fill: "#fde68a"; style.stroke: "#d97706"}
-q: "·"
-h -> p
-p -> s
-s -> m
-m -> e
-e -> rb
-rb -> q
+```d3 widget=linked-list
+{
+  "title": "Cache rightBound = end.next before reversing — sentinel for the segment boundary",
+  "direction": "single",
+  "nodes": [
+    {"id": "h", "value": "head"},
+    {"id": "p", "value": "·"},
+    {"id": "s", "value": "start"},
+    {"id": "m", "value": "·"},
+    {"id": "e", "value": "end"},
+    {"id": "rb", "value": "rightBound"},
+    {"id": "q", "value": "·"}
+  ],
+  "head": "h",
+  "steps": [
+    {
+      "links": [["h","p"],["p","s"],["s","m"],["m","e"],["e","rb"],["rb","q"]],
+      "markers": [{"name": "start", "nodeId": "s"}, {"name": "end", "nodeId": "e"}, {"name": "next", "nodeId": "rb"}],
+      "msg": "rightBound = end.next captured upfront. The reversal walks current from start and stops when current == rightBound."
+    }
+  ]
+}
 ```
 
 <p align="center"><strong>Cache <code>rightBound = end.next</code> <em>before</em> reversing. During reversal we walk from <code>start</code> and stop the moment <code>current == rightBound</code> — the sentinel that tells us we've exhausted the segment.</strong></p>
@@ -339,17 +368,6 @@ Next, we initialize two references and `current` with the `rightBound` and `
 In each iteration, we save the reference to the node after `current` in a reference  to use it later. We then set the next section of `current` node to .  We then set to `current` and `current` to for the next iteration. At the end of all iterations, the node held in becomes the new head of the reversed segment.
 
 ```mermaid
----
-config:
-  theme: base
-  themeVariables:
-    primaryColor: "#dbeafe"
-    primaryBorderColor: "#3b82f6"
-    primaryTextColor: "#1e3a5f"
-    lineColor: "#64748b"
-    secondaryColor: "#ede9fe"
-    tertiaryColor: "#fef9c3"
----
 flowchart TB
     INIT["previous = rightBound<br/>current = start"]
     LOOP["while current != rightBound:<br/>1. next = current.next<br/>2. current.next = previous<br/>3. previous = current<br/>4. current = next"]
@@ -361,29 +379,28 @@ flowchart TB
 
 The last step is to connect the reversed head back to the list. As we will see later when solving problems that use the reversal technique, this is generally done by the caller of the reverse algorithm, which has the references to the node before `start`. 
 
-```d2
-direction: right
-h: head {shape: oval}
-p: predecessor of start
-new: |md
-  **end**
-
-  (new segment head)
-| {style.fill: "#fde68a"; style.stroke: "#d97706"}
-m: "·"
-s: |md
-  **start**
-
-  (new segment tail)
-|
-rb: rightBound
-q: "·"
-h -> p
-p -> new: "predecessor.next = new head of segment"
-new -> m
-m -> s
-s -> rb
-rb -> q
+```d3 widget=linked-list
+{
+  "title": "Final stitch — predecessor of start now points at the reversed segment's new head",
+  "direction": "single",
+  "nodes": [
+    {"id": "h", "value": "head"},
+    {"id": "p", "value": "predecessor"},
+    {"id": "e", "value": "end"},
+    {"id": "m", "value": "·"},
+    {"id": "s", "value": "start"},
+    {"id": "rb", "value": "rightBound"},
+    {"id": "q", "value": "·"}
+  ],
+  "head": "h",
+  "steps": [
+    {
+      "links": [["h","p"],["p","e"],["e","m"],["m","s"],["s","rb"],["rb","q"]],
+      "markers": [{"name": "head", "nodeId": "e"}, {"name": "tail", "nodeId": "s"}],
+      "msg": "predecessor.next = end (new segment head); start.next already = rightBound thanks to previous = rightBound init"
+    }
+  ]
+}
 ```
 
 <p align="center"><strong>Final stitch — the predecessor of the original <code>start</code> now points at the reversed segment's new head (<code>end</code>). The reversed segment's tail (<code>start</code>) already points at <code>rightBound</code> thanks to our <code>previous = rightBound</code> initialisation.</strong></p>
@@ -452,23 +469,37 @@ def reverse(start: ListNode, end: ListNode) -> ListNode:
 ```
 
 ```java run
-class Solution {
-    public ListNode reverse(ListNode start, ListNode end) {
+public class Main {
+    static class ListNode { int val; ListNode next; ListNode(int v){val=v;} }
 
-        // Initialize references
-        ListNode current = start;
-        ListNode rightBound = end.next;
-        ListNode previous = rightBound;
+    static class Solution {
+        public ListNode reverse(ListNode start, ListNode end) {
 
-        // Set the next reference of each node to its previous node
-        while (current != rightBound) {
-            ListNode next = current.next;
-            current.next = previous;
-            previous = current;
-            current = next;
+            // Initialize references
+            ListNode current = start;
+            ListNode rightBound = end.next;
+            ListNode previous = rightBound;
+
+            // Set the next reference of each node to its previous node
+            while (current != rightBound) {
+                ListNode next = current.next;
+                current.next = previous;
+                previous = current;
+                current = next;
+            }
+
+            return previous;
         }
+    }
 
-        return previous;
+    public static void main(String[] args) {
+        // List: 1 → 2 → 3 → 4 → 5; reverse segment [2, 4]
+        ListNode n1=new ListNode(1),n2=new ListNode(2),n3=new ListNode(3),n4=new ListNode(4),n5=new ListNode(5);
+        n1.next=n2; n2.next=n3; n3.next=n4; n4.next=n5;
+        ListNode reversedSegmentHead = new Solution().reverse(n2, n4);
+        n1.next = reversedSegmentHead;
+        for (ListNode c=n1; c!=null; c=c.next) System.out.print(c.val+" ");
+        // 1 4 3 2 5
     }
 }
 ```
@@ -496,24 +527,36 @@ ListNode* reverseSegment(ListNode *start, ListNode *end) {
 ```
 
 ```scala run
-object Solution {
-  def reverse(start: ListNode, end: ListNode): ListNode = {
+class ListNode(var v: Int, var next: ListNode = null)
 
-    // Initialize references
-    var current: ListNode = start
-    val rightBound: ListNode = end.next
-    var previous: ListNode = rightBound
+object Main extends App {
+  class Solution {
+    def reverse(start: ListNode, end: ListNode): ListNode = {
 
-    // Set the next reference of each node to its previous node
-    while (current ne rightBound) {
-      val next = current.next
-      current.next = previous
-      previous = current
-      current = next
+      // Initialize references
+      var current: ListNode = start
+      val rightBound: ListNode = end.next
+      var previous: ListNode = rightBound
+
+      // Set the next reference of each node to its previous node
+      while (current ne rightBound) {
+        val next = current.next
+        current.next = previous
+        previous = current
+        current = next
+      }
+
+      previous
     }
-
-    previous
   }
+
+  // List: 1 → 2 → 3 → 4 → 5; reverse segment [2, 4]
+  val n5=new ListNode(5); val n4=new ListNode(4,n5); val n3=new ListNode(3,n4)
+  val n2=new ListNode(2,n3); val n1=new ListNode(1,n2)
+  val reversedSegmentHead = new Solution().reverse(n2, n4)
+  n1.next = reversedSegmentHead
+  var cur = n1
+  while (cur != null) { print(s"${cur.v} "); cur = cur.next }  // 1 4 3 2 5
 }
 ```
 
@@ -557,32 +600,36 @@ To better understand the problems that can be solved by directly applying the li
 
 > **Problem statement:** Given a singly linked list, reverse it in place
 
-```d2
-direction: right
-
-before: Input {
-  direction: right
-  n1: {grid-columns: 2; grid-gap: 0; value: 5; next}
-  n2: {grid-columns: 2; grid-gap: 0; value: 7; next}
-  n3: {grid-columns: 2; grid-gap: 0; value: 3; next}
-  n4: {grid-columns: 2; grid-gap: 0; value: 10; next: "null"}
-  n1.next -> n2.value
-  n2.next -> n3.value
-  n3.next -> n4.value
+```d3 widget=linked-list
+{
+  "title": "In-place reversal — input [5, 7, 3, 10] → output [10, 3, 7, 5]",
+  "direction": "single",
+  "nodes": [
+    {"id": "n1", "value": "5"},
+    {"id": "n2", "value": "7"},
+    {"id": "n3", "value": "3"},
+    {"id": "n4", "value": "10"}
+  ],
+  "head": "n1",
+  "steps": [
+    {
+      "links": [["n1","n2"],["n2","n3"],["n3","n4"]],
+      "markers": [{"name": "head", "nodeId": "n1"}],
+      "msg": "Input: 5 → 7 → 3 → 10 → null"
+    },
+    {
+      "nodes": [
+        {"id": "n4", "value": "10"},
+        {"id": "n3", "value": "3"},
+        {"id": "n2", "value": "7"},
+        {"id": "n1", "value": "5"}
+      ],
+      "links": [["n4","n3"],["n3","n2"],["n2","n1"]],
+      "markers": [{"name": "head", "nodeId": "n4"}],
+      "msg": "Output: same 4 nodes, rewired — 10 → 3 → 7 → 5 → null. No new allocations, O(1) extra space."
+    }
+  ]
 }
-
-after: "Output (in-place reversal)" {
-  direction: right
-  n1: {grid-columns: 2; grid-gap: 0; value: 10; next}
-  n2: {grid-columns: 2; grid-gap: 0; value: 3; next}
-  n3: {grid-columns: 2; grid-gap: 0; value: 7; next}
-  n4: {grid-columns: 2; grid-gap: 0; value: 5; next: "null"}
-  n1.next -> n2.value
-  n2.next -> n3.value
-  n3.next -> n4.value
-}
-
-before -> after
 ```
 
 <p align="center"><strong>"In place" means no auxiliary list is built — the same nodes are rewired, not copied. O(1) extra space.</strong></p>
@@ -598,17 +645,6 @@ Given a linked and two nodes `start` (`head` of the list) and `end` (tail of
 The complete reversal of the singly linked list is a special case of the reversal algorithm that we learned earlier. We initialize two references `current` and with `head` and `nullptr` respectively and traverse the list from the `head` using `current`. In each iteration, we save the reference to the node in a new reference variable, set the the next section of the node to , and update the `current` and for the next iteration. At the end of all iterations, will be the head of the reversed list.
 
 ```mermaid
----
-config:
-  theme: base
-  themeVariables:
-    primaryColor: "#dbeafe"
-    primaryBorderColor: "#3b82f6"
-    primaryTextColor: "#1e3a5f"
-    lineColor: "#64748b"
-    secondaryColor: "#ede9fe"
-    tertiaryColor: "#fef9c3"
----
 flowchart TB
     INIT["previous = null<br/>current = head"]
     LOOP["while current is not null:<br/>1. next = current.next<br/>2. current.next = previous<br/>3. previous = current<br/>4. current = next"]
@@ -681,29 +717,41 @@ class Solution:
 ```
 
 ```java run
-class Solution {
-    public ListNode reverseAList(ListNode head) {
+public class Main {
+    static class ListNode { int val; ListNode next; ListNode(int v){val=v;} }
 
-        // Initialize pointers current and previous
-        ListNode current = head;
-        ListNode previous = null;
+    static class Solution {
+        public ListNode reverseAList(ListNode head) {
 
-        while (current != null) {
+            // Initialize pointers current and previous
+            ListNode current = head;
+            ListNode previous = null;
 
-            // Save the address of next node
-            ListNode next = current.next;
+            while (current != null) {
 
-            // Update the next of current node
-            current.next = previous;
+                // Save the address of next node
+                ListNode next = current.next;
 
-            // Move previous to hold current node
-            previous = current;
+                // Update the next of current node
+                current.next = previous;
 
-            // Move current ahead
-            current = next;
+                // Move previous to hold current node
+                previous = current;
+
+                // Move current ahead
+                current = next;
+            }
+
+            return previous;
         }
+    }
 
-        return previous;
+    public static void main(String[] args) {
+        ListNode n4 = new ListNode(10), n3 = new ListNode(3), n2 = new ListNode(7), n1 = new ListNode(5);
+        n1.next = n2; n2.next = n3; n3.next = n4;
+        ListNode head = new Solution().reverseAList(n1);
+        for (ListNode c = head; c != null; c = c.next) System.out.print(c.val + " ");
+        // 10 3 7 5
     }
 }
 ```
@@ -737,30 +785,38 @@ ListNode* reverseAList(ListNode *head) {
 ```
 
 ```scala run
-object Solution {
-  def reverseAList(head: ListNode): ListNode = {
+class ListNode(var v: Int, var next: ListNode = null)
 
-    // Initialize pointers current and previous
-    var current: ListNode = head
-    var previous: ListNode = null
+object Main extends App {
+  class Solution {
+    def reverseAList(head: ListNode): ListNode = {
 
-    while (current != null) {
+      // Initialize pointers current and previous
+      var current: ListNode = head
+      var previous: ListNode = null
 
-      // Save the address of next node
-      val next = current.next
+      while (current != null) {
 
-      // Update the next of current node
-      current.next = previous
+        // Save the address of next node
+        val next = current.next
 
-      // Move previous to hold current node
-      previous = current
+        // Update the next of current node
+        current.next = previous
 
-      // Move current ahead
-      current = next
+        // Move previous to hold current node
+        previous = current
+
+        // Move current ahead
+        current = next
+      }
+
+      previous
     }
-
-    previous
   }
+
+  val n4=new ListNode(10); val n3=new ListNode(3,n4); val n2=new ListNode(7,n3); val n1=new ListNode(5,n2)
+  var head = new Solution().reverseAList(n1)
+  while (head != null) { print(s"${head.v} "); head = head.next }  // 10 3 7 5
 }
 ```
 
@@ -865,7 +921,7 @@ print_list(result)  # 10 -> 3 -> 7 -> 5
 ```
 
 ```java run
-public class ReverseAList {
+public class Main {
     static class ListNode {
         int val;
         ListNode next;
@@ -873,38 +929,40 @@ public class ReverseAList {
         ListNode(int v, ListNode n) { val = v; next = n; }
     }
 
-    static ListNode reverseAList(ListNode head) {
+    static class Solution {
+        public ListNode reverseAList(ListNode head) {
 
-        // Initialize pointers current and previous
-        ListNode current = head;
-        ListNode previous = null;
+            // Initialize pointers current and previous
+            ListNode current = head;
+            ListNode previous = null;
 
-        while (current != null) {
+            while (current != null) {
 
-            // Save the address of next node
-            ListNode next = current.next;
+                // Save the address of next node
+                ListNode next = current.next;
 
-            // Update the next of current node
-            current.next = previous;
+                // Update the next of current node
+                current.next = previous;
 
-            // Move previous to hold current node
-            previous = current;
+                // Move previous to hold current node
+                previous = current;
 
-            // Move current ahead
-            current = next;
+                // Move current ahead
+                current = next;
+            }
+
+            return previous;
         }
 
-        return previous;
-    }
-
-    static void printList(ListNode head) {
-        StringBuilder sb = new StringBuilder();
-        while (head != null) {
-            sb.append(head.val);
-            if (head.next != null) sb.append(" -> ");
-            head = head.next;
+        public void printList(ListNode head) {
+            StringBuilder sb = new StringBuilder();
+            while (head != null) {
+                sb.append(head.val);
+                if (head.next != null) sb.append(" -> ");
+                head = head.next;
+            }
+            System.out.println(sb);
         }
-        System.out.println(sb);
     }
 
     public static void main(String[] args) {
@@ -913,7 +971,8 @@ public class ReverseAList {
         ListNode n3 = new ListNode(3); ListNode n4 = new ListNode(10);
         n1.next = n2; n2.next = n3; n3.next = n4;
 
-        printList(reverseAList(n1)); // 10 -> 3 -> 7 -> 5
+        Solution sol = new Solution();
+        sol.printList(sol.reverseAList(n1)); // 10 -> 3 -> 7 -> 5
     }
 }
 ```
@@ -980,46 +1039,47 @@ int main() {
 ```scala run
 class ListNode(var v: Int, var next: ListNode = null)
 
-object ReverseAList {
-  def reverseAList(head: ListNode): ListNode = {
+object Main extends App {
+  class Solution {
+    def reverseAList(head: ListNode): ListNode = {
 
-    // Initialize pointers current and previous
-    var current = head
-    var previous: ListNode = null
+      // Initialize pointers current and previous
+      var current = head
+      var previous: ListNode = null
 
-    while (current != null) {
+      while (current != null) {
 
-      // Save the address of next node
-      val next = current.next
+        // Save the address of next node
+        val next = current.next
 
-      // Update the next of current node
-      current.next = previous
+        // Update the next of current node
+        current.next = previous
 
-      // Move previous to hold current node
-      previous = current
+        // Move previous to hold current node
+        previous = current
 
-      // Move current ahead
-      current = next
+        // Move current ahead
+        current = next
+      }
+
+      previous
     }
 
-    previous
+    def printList(head: ListNode): Unit = {
+      var cur = head
+      val parts = scala.collection.mutable.ListBuffer[String]()
+      while (cur != null) { parts += cur.v.toString; cur = cur.next }
+      println(parts.mkString(" -> "))
+    }
   }
 
-  def printList(head: ListNode): Unit = {
-    var cur = head
-    val parts = scala.collection.mutable.ListBuffer[String]()
-    while (cur != null) { parts += cur.v.toString; cur = cur.next }
-    println(parts.mkString(" -> "))
-  }
+  // [5, 7, 3, 10] -> [10, 3, 7, 5]
+  val n1 = new ListNode(5); val n2 = new ListNode(7)
+  val n3 = new ListNode(3); val n4 = new ListNode(10)
+  n1.next = n2; n2.next = n3; n3.next = n4
 
-  def main(args: Array[String]): Unit = {
-    // [5, 7, 3, 10] -> [10, 3, 7, 5]
-    val n1 = new ListNode(5); val n2 = new ListNode(7)
-    val n3 = new ListNode(3); val n4 = new ListNode(10)
-    n1.next = n2; n2.next = n3; n3.next = n4
-
-    printList(reverseAList(n1)) // 10 -> 3 -> 7 -> 5
-  }
+  val sol = new Solution()
+  sol.printList(sol.reverseAList(n1)) // 10 -> 3 -> 7 -> 5
 }
 ```
 
@@ -1126,43 +1186,56 @@ class Solution:
 ```
 
 ```java run
-class Solution {
-    public ListNode reverseFirstKNodes(ListNode head, int k) {
+public class Main {
+    static class ListNode { int val; ListNode next; ListNode(int v){val=v;} }
 
-        // if K is less than or equal to 0, return the original head
-        if (k <= 0) {
-            return head;
+    static class Solution {
+        public ListNode reverseFirstKNodes(ListNode head, int k) {
+
+            // if K is less than or equal to 0, return the original head
+            if (k <= 0) {
+                return head;
+            }
+
+            // Initialize pointers current and previous
+            ListNode current = head;
+            ListNode previous = null;
+            int count = 0;
+
+            while (current != null && count < k) {
+
+                // Save the address of next node
+                ListNode next = current.next;
+
+                // Update the next of current node
+                current.next = previous;
+
+                // Move previous to hold current node
+                previous = current;
+
+                // Move current ahead
+                current = next;
+
+                // Increment count
+                count++;
+            }
+
+            // Connect the reversed sublist with the remaining part
+            if (head != null) {
+                head.next = current;
+            }
+
+            return previous;
         }
+    }
 
-        // Initialize pointers current and previous
-        ListNode current = head;
-        ListNode previous = null;
-        int count = 0;
-
-        while (current != null && count < k) {
-
-            // Save the address of next node
-            ListNode next = current.next;
-
-            // Update the next of current node
-            current.next = previous;
-
-            // Move previous to hold current node
-            previous = current;
-
-            // Move current ahead
-            current = next;
-
-            // Increment count
-            count++;
-        }
-
-        // Connect the reversed sublist with the remaining part
-        if (head != null) {
-            head.next = current;
-        }
-
-        return previous;
+    public static void main(String[] args) {
+        // [5, 7, 3, 10], k = 2 -> [7, 5, 3, 10]
+        ListNode n1=new ListNode(5),n2=new ListNode(7),n3=new ListNode(3),n4=new ListNode(10);
+        n1.next=n2; n2.next=n3; n3.next=n4;
+        ListNode head = new Solution().reverseFirstKNodes(n1, 2);
+        for (ListNode c=head;c!=null;c=c.next) System.out.print(c.val+" ");
+        // 7 5 3 10
     }
 }
 ```
@@ -1210,44 +1283,53 @@ ListNode* reverseFirstKNodes(ListNode *head, int k) {
 ```
 
 ```scala run
-object Solution {
-  def reverseFirstKNodes(head: ListNode, k: Int): ListNode = {
+class ListNode(var v: Int, var next: ListNode = null)
 
-    // if K is less than or equal to 0, return the original head
-    if (k <= 0) {
-      return head
+object Main extends App {
+  class Solution {
+    def reverseFirstKNodes(head: ListNode, k: Int): ListNode = {
+
+      // if K is less than or equal to 0, return the original head
+      if (k <= 0) {
+        return head
+      }
+
+      // Initialize pointers current and previous
+      var current: ListNode = head
+      var previous: ListNode = null
+      var count = 0
+
+      while (current != null && count < k) {
+
+        // Save the address of next node
+        val next = current.next
+
+        // Update the next of current node
+        current.next = previous
+
+        // Move previous to hold current node
+        previous = current
+
+        // Move current ahead
+        current = next
+
+        // Increment count
+        count += 1
+      }
+
+      // Connect the reversed sublist with the remaining part
+      if (head != null) {
+        head.next = current
+      }
+
+      previous
     }
-
-    // Initialize pointers current and previous
-    var current: ListNode = head
-    var previous: ListNode = null
-    var count = 0
-
-    while (current != null && count < k) {
-
-      // Save the address of next node
-      val next = current.next
-
-      // Update the next of current node
-      current.next = previous
-
-      // Move previous to hold current node
-      previous = current
-
-      // Move current ahead
-      current = next
-
-      // Increment count
-      count += 1
-    }
-
-    // Connect the reversed sublist with the remaining part
-    if (head != null) {
-      head.next = current
-    }
-
-    previous
   }
+
+  // [5, 7, 3, 10], k = 2 -> [7, 5, 3, 10]
+  val n4=new ListNode(10); val n3=new ListNode(3,n4); val n2=new ListNode(7,n3); val n1=new ListNode(5,n2)
+  var head = new Solution().reverseFirstKNodes(n1, 2)
+  while (head != null) { print(s"${head.v} "); head = head.next }  // 7 5 3 10
 }
 ```
 
@@ -1395,74 +1477,87 @@ class Solution:
 ```
 
 ```java run
-class Solution {
-    private int lengthOfList(ListNode head) {
-        int length = 0;
+public class Main {
+    static class ListNode { int val; ListNode next; ListNode(int v){val=v;} }
 
-        // Traverse the list and increment the length until the end
-        while (head != null) {
-            length++;
-            head = head.next;
+    static class Solution {
+        private int lengthOfList(ListNode head) {
+            int length = 0;
+
+            // Traverse the list and increment the length until the end
+            while (head != null) {
+                length++;
+                head = head.next;
+            }
+
+            // Return the length
+            return length;
         }
 
-        // Return the length
-        return length;
-    }
+        private ListNode reverseAList(ListNode head) {
 
-    private ListNode reverseAList(ListNode head) {
+            // Initialize pointers current and previous
+            ListNode current = head;
+            ListNode previous = null;
 
-        // Initialize pointers current and previous
-        ListNode current = head;
-        ListNode previous = null;
+            while (current != null) {
 
-        while (current != null) {
+                // Save the address of next node
+                ListNode next = current.next;
 
-            // Save the address of next node
-            ListNode next = current.next;
+                // Update the next of current node
+                current.next = previous;
 
-            // Update the next of current node
-            current.next = previous;
+                // Move previous to hold current node
+                previous = current;
 
-            // Move previous to hold current node
-            previous = current;
+                // Move current ahead
+                current = next;
+            }
 
-            // Move current ahead
-            current = next;
+            return previous;
         }
 
-        return previous;
-    }
+        public ListNode reverseLastKNodes(ListNode head, int k) {
 
-    public ListNode reverseLastKNodes(ListNode head, int k) {
+            // if K is less than or equal to 0, return the original head
+            if (k <= 0) {
+                return head;
+            }
 
-        // if K is less than or equal to 0, return the original head
-        if (k <= 0) {
+            // Find the length of the list
+            int length = lengthOfList(head);
+
+            // If k is greater than or equal to length, reverse the entire
+            // list
+            if (k >= length) {
+                return reverseAList(head);
+            }
+
+            // Find the (length - k)th node after which the reversal should
+            // occur
+            ListNode current = head;
+            for (int i = 1; i < length - k; i++) {
+                current = current.next;
+            }
+
+            // Reverse the last k nodes
+            ListNode lastKReverseHead = reverseAList(current.next);
+
+            // Connect the (length - k)th node to the new head
+            current.next = lastKReverseHead;
+
             return head;
         }
+    }
 
-        // Find the length of the list
-        int length = lengthOfList(head);
-
-        // If k is greater than or equal to length, reverse the entire
-        // list
-        if (k >= length) {
-            return reverseAList(head);
-        }
-
-        // Find the (length - k)th node after which the reversal should
-        // occur
-        ListNode current = head;
-        for (int i = 1; i < length - k; i++) {
-            current = current.next;
-        }
-
-        // Reverse the last k nodes
-        ListNode lastKReverseHead = reverseAList(current.next);
-
-        // Connect the (length - k)th node to the new head
-        current.next = lastKReverseHead;
-
-        return head;
+    public static void main(String[] args) {
+        // [5, 7, 3, 10], k = 2 -> [5, 7, 10, 3]
+        ListNode n1=new ListNode(5),n2=new ListNode(7),n3=new ListNode(3),n4=new ListNode(10);
+        n1.next=n2; n2.next=n3; n3.next=n4;
+        ListNode head = new Solution().reverseLastKNodes(n1, 2);
+        for (ListNode c=head;c!=null;c=c.next) System.out.print(c.val+" ");
+        // 5 7 10 3
     }
 }
 ```
@@ -1539,78 +1634,87 @@ ListNode* reverseLastKNodes(ListNode *head, int k) {
 ```
 
 ```scala run
-object Solution {
-  private def lengthOfList(head: ListNode): Int = {
-    var length = 0
+class ListNode(var v: Int, var next: ListNode = null)
 
-    // Traverse the list and increment the length until the end
-    var cur = head
-    while (cur != null) {
-      length += 1
-      cur = cur.next
+object Main extends App {
+  class Solution {
+    private def lengthOfList(head: ListNode): Int = {
+      var length = 0
+
+      // Traverse the list and increment the length until the end
+      var cur = head
+      while (cur != null) {
+        length += 1
+        cur = cur.next
+      }
+
+      // Return the length
+      length
     }
 
-    // Return the length
-    length
+    private def reverseAList(head: ListNode): ListNode = {
+
+      // Initialize pointers current and previous
+      var current = head
+      var previous: ListNode = null
+
+      while (current != null) {
+
+        // Save the address of next node
+        val next = current.next
+
+        // Update the next of current node
+        current.next = previous
+
+        // Move previous to hold current node
+        previous = current
+
+        // Move current ahead
+        current = next
+      }
+
+      previous
+    }
+
+    def reverseLastKNodes(head: ListNode, k: Int): ListNode = {
+
+      // if K is less than or equal to 0, return the original head
+      if (k <= 0) {
+        return head
+      }
+
+      // Find the length of the list
+      val length = lengthOfList(head)
+
+      // If k is greater than or equal to length, reverse the entire
+      // list
+      if (k >= length) {
+        return reverseAList(head)
+      }
+
+      // Find the (length - k)th node after which the reversal should
+      // occur
+      var current = head
+      var i = 1
+      while (i < length - k) {
+        current = current.next
+        i += 1
+      }
+
+      // Reverse the last k nodes
+      val lastKReverseHead = reverseAList(current.next)
+
+      // Connect the (length - k)th node to the new head
+      current.next = lastKReverseHead
+
+      head
+    }
   }
 
-  private def reverseAList(head: ListNode): ListNode = {
-
-    // Initialize pointers current and previous
-    var current = head
-    var previous: ListNode = null
-
-    while (current != null) {
-
-      // Save the address of next node
-      val next = current.next
-
-      // Update the next of current node
-      current.next = previous
-
-      // Move previous to hold current node
-      previous = current
-
-      // Move current ahead
-      current = next
-    }
-
-    previous
-  }
-
-  def reverseLastKNodes(head: ListNode, k: Int): ListNode = {
-
-    // if K is less than or equal to 0, return the original head
-    if (k <= 0) {
-      return head
-    }
-
-    // Find the length of the list
-    val length = lengthOfList(head)
-
-    // If k is greater than or equal to length, reverse the entire
-    // list
-    if (k >= length) {
-      return reverseAList(head)
-    }
-
-    // Find the (length - k)th node after which the reversal should
-    // occur
-    var current = head
-    var i = 1
-    while (i < length - k) {
-      current = current.next
-      i += 1
-    }
-
-    // Reverse the last k nodes
-    val lastKReverseHead = reverseAList(current.next)
-
-    // Connect the (length - k)th node to the new head
-    current.next = lastKReverseHead
-
-    head
-  }
+  // [5, 7, 3, 10], k = 2 -> [5, 7, 10, 3]
+  val n4=new ListNode(10); val n3=new ListNode(3,n4); val n2=new ListNode(7,n3); val n1=new ListNode(5,n2)
+  var head = new Solution().reverseLastKNodes(n1, 2)
+  while (head != null) { print(s"${head.v} "); head = head.next }  // 5 7 10 3
 }
 ```
 
@@ -1742,61 +1846,75 @@ class Solution:
 ```
 
 ```java run
-class Solution {
-    private ListNode getNodeAtPosition(ListNode head, int position) {
-        ListNode current = head;
-        for (int i = 1; i < position; ++i) {
-            current = current.next;
-        }
-        return current;
-    }
+public class Main {
+    static class ListNode { int val; ListNode next; ListNode(int v){val=v;} }
 
-    private ListNode reverse(ListNode start, ListNode end) {
-        ListNode current = start;
-        ListNode rightBound = end.next;
-        ListNode previous = rightBound;
-
-        while (current != rightBound) {
-            ListNode next = current.next;
-            current.next = previous;
-            previous = current;
-            current = next;
+    static class Solution {
+        private ListNode getNodeAtPosition(ListNode head, int position) {
+            ListNode current = head;
+            for (int i = 1; i < position; ++i) {
+                current = current.next;
+            }
+            return current;
         }
 
-        return previous;
-    }
+        private ListNode reverse(ListNode start, ListNode end) {
+            ListNode current = start;
+            ListNode rightBound = end.next;
+            ListNode previous = rightBound;
 
-    public ListNode reverseTheGivenSegment(
-        ListNode head,
-        int left,
-        int right
-    ) {
+            while (current != rightBound) {
+                ListNode next = current.next;
+                current.next = previous;
+                previous = current;
+                current = next;
+            }
 
-        // Handle cases where reversal is not needed
-        if (head == null || head.next == null || left == right) {
+            return previous;
+        }
+
+        public ListNode reverseTheGivenSegment(
+            ListNode head,
+            int left,
+            int right
+        ) {
+
+            // Handle cases where reversal is not needed
+            if (head == null || head.next == null || left == right) {
+                return head;
+            }
+
+            // Get the end node of the segment
+            ListNode end = getNodeAtPosition(head, right);
+
+            // If the left position is 1, reverse from the head
+            if (left == 1) {
+                return reverse(head, end);
+            }
+
+            // Get the node before the 'left' position to connect after
+            // reversal
+            ListNode leftBound = getNodeAtPosition(head, left - 1);
+
+            // Node at the start of the segment to reverse
+            ListNode start = leftBound.next;
+
+            // Reverse the segment and connect to the leftBound node
+            leftBound.next = reverse(start, end);
+
+            // Return the modified list
             return head;
         }
+    }
 
-        // Get the end node of the segment
-        ListNode end = getNodeAtPosition(head, right);
-
-        // If the left position is 1, reverse from the head
-        if (left == 1) {
-            return reverse(head, end);
-        }
-
-        // Get the node before the 'left' position to connect after
-        // reversal
-        ListNode leftBound = getNodeAtPosition(head, left - 1);
-
-        // Node at the start of the segment to reverse
-        ListNode start = leftBound.next;
-
-        // Reverse the segment and connect to the leftBound node
-        leftBound.next = reverse(start, end);
-
-        // Return the modified list
-        return head;
+    public static void main(String[] args) {
+        // [5, 7, 3, 10, 6], left=2, right=4 -> [5, 10, 3, 7, 6]
+        ListNode n1=new ListNode(5),n2=new ListNode(7),n3=new ListNode(3),
+                 n4=new ListNode(10),n5=new ListNode(6);
+        n1.next=n2; n2.next=n3; n3.next=n4; n4.next=n5;
+        ListNode head = new Solution().reverseTheGivenSegment(n1, 2, 4);
+        for (ListNode c=head;c!=null;c=c.next) System.out.print(c.val+" ");
+        // 5 10 3 7 6
     }
 }
 ```
@@ -1856,60 +1974,70 @@ ListNode* reverseTheGivenSegment(ListNode *head, int left, int right) {
 ```
 
 ```scala run
-object Solution {
-  private def getNodeAtPosition(head: ListNode, position: Int): ListNode = {
-    var current = head
-    var i = 1
-    while (i < position) {
-      current = current.next
-      i += 1
+class ListNode(var v: Int, var next: ListNode = null)
+
+object Main extends App {
+  class Solution {
+    private def getNodeAtPosition(head: ListNode, position: Int): ListNode = {
+      var current = head
+      var i = 1
+      while (i < position) {
+        current = current.next
+        i += 1
+      }
+      current
     }
-    current
+
+    private def reverse(start: ListNode, end: ListNode): ListNode = {
+      var current: ListNode = start
+      val rightBound: ListNode = end.next
+      var previous: ListNode = rightBound
+
+      while (current ne rightBound) {
+        val next = current.next
+        current.next = previous
+        previous = current
+        current = next
+      }
+
+      previous
+    }
+
+    def reverseTheGivenSegment(head: ListNode, left: Int, right: Int): ListNode = {
+
+      // Handle cases where reversal is not needed
+      if (head == null || head.next == null || left == right) {
+        return head
+      }
+
+      // Get the end node of the segment
+      val end = getNodeAtPosition(head, right)
+
+      // If the left position is 1, reverse from the head
+      if (left == 1) {
+        return reverse(head, end)
+      }
+
+      // Get the node before the 'left' position to connect after
+      // reversal
+      val leftBound = getNodeAtPosition(head, left - 1)
+
+      // Node at the start of the segment to reverse
+      val start = leftBound.next
+
+      // Reverse the segment and connect to the leftBound node
+      leftBound.next = reverse(start, end)
+
+      // Return the modified list
+      head
+    }
   }
 
-  private def reverse(start: ListNode, end: ListNode): ListNode = {
-    var current: ListNode = start
-    val rightBound: ListNode = end.next
-    var previous: ListNode = rightBound
-
-    while (current ne rightBound) {
-      val next = current.next
-      current.next = previous
-      previous = current
-      current = next
-    }
-
-    previous
-  }
-
-  def reverseTheGivenSegment(head: ListNode, left: Int, right: Int): ListNode = {
-
-    // Handle cases where reversal is not needed
-    if (head == null || head.next == null || left == right) {
-      return head
-    }
-
-    // Get the end node of the segment
-    val end = getNodeAtPosition(head, right)
-
-    // If the left position is 1, reverse from the head
-    if (left == 1) {
-      return reverse(head, end)
-    }
-
-    // Get the node before the 'left' position to connect after
-    // reversal
-    val leftBound = getNodeAtPosition(head, left - 1)
-
-    // Node at the start of the segment to reverse
-    val start = leftBound.next
-
-    // Reverse the segment and connect to the leftBound node
-    leftBound.next = reverse(start, end)
-
-    // Return the modified list
-    head
-  }
+  // [5, 7, 3, 10, 6], left=2, right=4 -> [5, 10, 3, 7, 6]
+  val n5=new ListNode(6); val n4=new ListNode(10,n5); val n3=new ListNode(3,n4)
+  val n2=new ListNode(7,n3); val n1=new ListNode(5,n2)
+  var head = new Solution().reverseTheGivenSegment(n1, 2, 4)
+  while (head != null) { print(s"${head.v} "); head = head.next }  // 5 10 3 7 6
 }
 ```
 

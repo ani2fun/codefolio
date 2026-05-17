@@ -285,18 +285,18 @@ int main() {
 ```
 
 ```scala run
-class Stack(val capacity: Int) {
-  protected val arr     = new Array[Int](capacity)
-  protected var topIdx  = -1
-
-  def size:  Int     = 0
-  def empty: Boolean = true
-  def top:   Int     = -1
-  def push(v: Int): Boolean = false
-  def pop:   Int     = -1
-}
-
 object Main extends App {
+  class Stack(val capacity: Int) {
+    protected val arr     = new Array[Int](capacity)
+    protected var topIdx  = -1
+
+    def size:  Int     = 0
+    def empty: Boolean = true
+    def top:   Int     = -1
+    def push(v: Int): Boolean = false
+    def pop:   Int     = -1
+  }
+
   val s = new Stack(4)
   println("created stack with capacity 4")
 }
@@ -385,13 +385,14 @@ int main() { Stack *s = stack_create(4); printf("%d\n", stack_size(s)); free(s->
 ```
 
 ```scala run
-class Stack(val capacity: Int) {
-  protected val arr    = new Array[Int](capacity)
-  protected var topIdx = -1
-  def size: Int = topIdx + 1
+object Main extends App {
+  class Stack(val capacity: Int) {
+    protected val arr    = new Array[Int](capacity)
+    protected var topIdx = -1
+    def size: Int = topIdx + 1
+  }
+  println(new Stack(4).size)
 }
-
-object Main extends App { println(new Stack(4).size) }
 ```
 
 
@@ -470,11 +471,13 @@ int main() { Stack *s = stack_create(4); printf("%d\n", stack_empty(s)); free(s-
 ```
 
 ```scala run
-class Stack(val capacity: Int) {
-  protected val arr = new Array[Int](capacity); protected var topIdx = -1
-  def empty: Boolean = topIdx == -1
+object Main extends App {
+  class Stack(val capacity: Int) {
+    protected val arr = new Array[Int](capacity); protected var topIdx = -1
+    def empty: Boolean = topIdx == -1
+  }
+  println(new Stack(4).empty)
 }
-object Main extends App { println(new Stack(4).empty) }
 ```
 
 
@@ -563,10 +566,13 @@ int  stack_top  (Stack *s) { return stack_empty(s) ? -1 : s->arr[s->topIndex]; }
 ```
 
 ```scala run
-class Stack(val capacity: Int) {
-  protected val arr = new Array[Int](capacity); protected var topIdx = -1
-  def empty: Boolean = topIdx == -1
-  def top:   Int     = if (empty) -1 else arr(topIdx)
+object Main extends App {
+  class Stack(val capacity: Int) {
+    protected val arr = new Array[Int](capacity); protected var topIdx = -1
+    def empty: Boolean = topIdx == -1
+    def top:   Int     = if (empty) -1 else arr(topIdx)
+  }
+  println(new Stack(2).top)  // -1 (empty stack)
 }
 ```
 
@@ -677,15 +683,15 @@ int main() {
 ```
 
 ```scala run
-class Stack(val capacity: Int) {
-  protected val arr = new Array[Int](capacity); protected var topIdx = -1
-  def push(v: Int): Boolean = {
-    if (topIdx == capacity - 1) return false
-    topIdx += 1; arr(topIdx) = v
-    true
-  }
-}
 object Main extends App {
+  class Stack(val capacity: Int) {
+    protected val arr = new Array[Int](capacity); protected var topIdx = -1
+    def push(v: Int): Boolean = {
+      if (topIdx == capacity - 1) return false
+      topIdx += 1; arr(topIdx) = v
+      true
+    }
+  }
   val s = new Stack(2)
   println(s"${s.push(7)} ${s.push(9)} ${s.push(11)}")
 }
@@ -814,20 +820,20 @@ int main() {
 ```
 
 ```scala run
-class Stack(val capacity: Int) {
-  protected val arr = new Array[Int](capacity); protected var topIdx = -1
-  def empty: Boolean = topIdx == -1
-  def push(v: Int): Boolean = {
-    if (topIdx == capacity - 1) return false
-    topIdx += 1; arr(topIdx) = v
-    true
-  }
-  def pop: Int = {
-    if (empty) return -1
-    val v = arr(topIdx); topIdx -= 1; v
-  }
-}
 object Main extends App {
+  class Stack(val capacity: Int) {
+    protected val arr = new Array[Int](capacity); protected var topIdx = -1
+    def empty: Boolean = topIdx == -1
+    def push(v: Int): Boolean = {
+      if (topIdx == capacity - 1) return false
+      topIdx += 1; arr(topIdx) = v
+      true
+    }
+    def pop: Int = {
+      if (empty) return -1
+      val v = arr(topIdx); topIdx -= 1; v
+    }
+  }
   val s = new Stack(3); s.push(1); s.push(2); s.push(3)
   println(s"${s.pop} ${s.pop} ${s.pop} ${s.pop}")
 }
@@ -982,24 +988,24 @@ int main() {
 ```
 
 ```scala run
-class Stack(val capacity: Int) {
-  private val arr  = new Array[Int](capacity)
-  private var top_ = -1
-
-  def size:  Int     = top_ + 1
-  def empty: Boolean = top_ == -1
-  def top:   Int     = if (empty) -1 else arr(top_)
-  def push(v: Int): Boolean = {
-    if (top_ == capacity - 1) return false
-    top_ += 1; arr(top_) = v; true
-  }
-  def pop: Int = {
-    if (empty) return -1
-    val v = arr(top_); top_ -= 1; v
-  }
-}
-
 object Main extends App {
+  class Stack(val capacity: Int) {
+    private val arr  = new Array[Int](capacity)
+    private var top_ = -1
+
+    def size:  Int     = top_ + 1
+    def empty: Boolean = top_ == -1
+    def top:   Int     = if (empty) -1 else arr(top_)
+    def push(v: Int): Boolean = {
+      if (top_ == capacity - 1) return false
+      top_ += 1; arr(top_) = v; true
+    }
+    def pop: Int = {
+      if (empty) return -1
+      val v = arr(top_); top_ -= 1; v
+    }
+  }
+
   val s = new Stack(2)
   println(s"${s.push(2)} ${s.push(3)}")
   println(s"${s.top} ${s.empty}")
@@ -1231,26 +1237,26 @@ int main() {
 ```
 
 ```scala run
-class TwoStack(val capacity: Int) {
-  private val arr  = new Array[Int](capacity)
-  private var t1   = -1
-  private var t2   = capacity
-
-  def top1: Int = if (t1 == -1)       -1 else arr(t1)
-  def top2: Int = if (t2 == capacity) -1 else arr(t2)
-  def push1(v: Int): Boolean = {
-    if (t1 + 1 >= t2) return false
-    t1 += 1; arr(t1) = v; true
-  }
-  def push2(v: Int): Boolean = {
-    if (t2 - 1 <= t1) return false
-    t2 -= 1; arr(t2) = v; true
-  }
-  def pop1: Int = { if (t1 == -1)       return -1; val v = arr(t1); t1 -= 1; v }
-  def pop2: Int = { if (t2 == capacity) return -1; val v = arr(t2); t2 += 1; v }
-}
-
 object Main extends App {
+  class TwoStack(val capacity: Int) {
+    private val arr  = new Array[Int](capacity)
+    private var t1   = -1
+    private var t2   = capacity
+
+    def top1: Int = if (t1 == -1)       -1 else arr(t1)
+    def top2: Int = if (t2 == capacity) -1 else arr(t2)
+    def push1(v: Int): Boolean = {
+      if (t1 + 1 >= t2) return false
+      t1 += 1; arr(t1) = v; true
+    }
+    def push2(v: Int): Boolean = {
+      if (t2 - 1 <= t1) return false
+      t2 -= 1; arr(t2) = v; true
+    }
+    def pop1: Int = { if (t1 == -1)       return -1; val v = arr(t1); t1 -= 1; v }
+    def pop2: Int = { if (t2 == capacity) return -1; val v = arr(t2); t2 += 1; v }
+  }
+
   val s = new TwoStack(6)
   println(s"${s.push1(2)} ${s.push2(3)}")
   println(s"${s.pop1} ${s.pop2}")

@@ -270,35 +270,37 @@ if __name__ == "__main__":
 ```java run
 import java.util.Random;
 
-public class Solution {
-    private final Random rand = new Random();
+public class Main {
+    static class Solution {
+        private final Random rand = new Random();
 
-    public int kthSmallestElement(int[] arr, int k) {
-        quickselect(arr, 0, arr.length - 1, k);
-        return arr[k - 1];
-    }
-
-    private void quickselect(int[] arr, int left, int right, int k) {
-        if (left >= right) return;
-        int p = partition(arr, left, right);
-        if (p == k - 1) return;
-        if (p > k - 1) quickselect(arr, left, p - 1, k);
-        else quickselect(arr, p + 1, right, k);
-    }
-
-    private int partition(int[] arr, int left, int right) {
-        int pivotIdx = left + rand.nextInt(right - left + 1);
-        int pivotVal = arr[pivotIdx];
-        swap(arr, pivotIdx, right);
-        int boundary = left;
-        for (int i = left; i < right; i++) {
-            if (arr[i] < pivotVal) { swap(arr, boundary, i); boundary++; }
+        public int kthSmallestElement(int[] arr, int k) {
+            quickselect(arr, 0, arr.length - 1, k);
+            return arr[k - 1];
         }
-        swap(arr, boundary, right);
-        return boundary;
-    }
 
-    private void swap(int[] arr, int i, int j) { int t = arr[i]; arr[i] = arr[j]; arr[j] = t; }
+        private void quickselect(int[] arr, int left, int right, int k) {
+            if (left >= right) return;
+            int p = partition(arr, left, right);
+            if (p == k - 1) return;
+            if (p > k - 1) quickselect(arr, left, p - 1, k);
+            else quickselect(arr, p + 1, right, k);
+        }
+
+        private int partition(int[] arr, int left, int right) {
+            int pivotIdx = left + rand.nextInt(right - left + 1);
+            int pivotVal = arr[pivotIdx];
+            swap(arr, pivotIdx, right);
+            int boundary = left;
+            for (int i = left; i < right; i++) {
+                if (arr[i] < pivotVal) { swap(arr, boundary, i); boundary++; }
+            }
+            swap(arr, boundary, right);
+            return boundary;
+        }
+
+        private void swap(int[] arr, int i, int j) { int t = arr[i]; arr[i] = arr[j]; arr[j] = t; }
+    }
 
     public static void main(String[] args) {
         System.out.println(new Solution().kthSmallestElement(new int[]{5, 4, 2, 8}, 2));
@@ -347,37 +349,35 @@ int main(void) {
 ```scala run
 import scala.util.Random
 
-class Solution {
-  def kthSmallestElement(arr: Array[Int], k: Int): Int = {
-    quickselect(arr, 0, arr.length - 1, k)
-    arr(k - 1)
-  }
-
-  private def quickselect(arr: Array[Int], left: Int, right: Int, k: Int): Unit = {
-    if (left >= right) return
-    val p = partition(arr, left, right)
-    if (p == k - 1) return
-    if (p > k - 1) quickselect(arr, left, p - 1, k)
-    else quickselect(arr, p + 1, right, k)
-  }
-
-  private def partition(arr: Array[Int], left: Int, right: Int): Int = {
-    val pi = left + Random.nextInt(right - left + 1)
-    val pv = arr(pi)
-    val t1 = arr(pi); arr(pi) = arr(right); arr(right) = t1
-    var b = left
-    for (i <- left until right) {
-      if (arr(i) < pv) { val t = arr(b); arr(b) = arr(i); arr(i) = t; b += 1 }
+object Main extends App {
+  class Solution {
+    def kthSmallestElement(arr: Array[Int], k: Int): Int = {
+      quickselect(arr, 0, arr.length - 1, k)
+      arr(k - 1)
     }
-    val t2 = arr(b); arr(b) = arr(right); arr(right) = t2
-    b
-  }
-}
 
-object Main {
-  def main(args: Array[String]): Unit = {
-    println(new Solution().kthSmallestElement(Array(5, 4, 2, 8), 2))
+    private def quickselect(arr: Array[Int], left: Int, right: Int, k: Int): Unit = {
+      if (left >= right) return
+      val p = partition(arr, left, right)
+      if (p == k - 1) return
+      if (p > k - 1) quickselect(arr, left, p - 1, k)
+      else quickselect(arr, p + 1, right, k)
+    }
+
+    private def partition(arr: Array[Int], left: Int, right: Int): Int = {
+      val pi = left + Random.nextInt(right - left + 1)
+      val pv = arr(pi)
+      val t1 = arr(pi); arr(pi) = arr(right); arr(right) = t1
+      var b = left
+      for (i <- left until right) {
+        if (arr(i) < pv) { val t = arr(b); arr(b) = arr(i); arr(i) = t; b += 1 }
+      }
+      val t2 = arr(b); arr(b) = arr(right); arr(right) = t2
+      b
+    }
   }
+
+  println(new Solution().kthSmallestElement(Array(5, 4, 2, 8), 2))
 }
 ```
 

@@ -29,12 +29,23 @@ object Frontmatter:
         Parsed(
           frontmatter = ChapterFrontmatter(
             title = fields.getOrElse("title", fallbackTitle),
-            summary = fields.get("summary")
+            summary = fields.get("summary"),
+            essential = fields.get("essential").flatMap(toBooleanOpt)
           ),
           body = body
         )
-      else Parsed(ChapterFrontmatter(title = fallbackTitle, summary = None), content)
-    else Parsed(ChapterFrontmatter(title = fallbackTitle, summary = None), content)
+      else Parsed(emptyFrontmatter(fallbackTitle), content)
+    else Parsed(emptyFrontmatter(fallbackTitle), content)
+
+  /**
+   * Per-chapter override of the essential/optional status indicator, parsed without splitting the rest of the
+   * frontmatter. Used by the index walker so a per-chapter override can win against the section-level
+   * cascade. Returns `None` when no `---` fence is present, the fence is unterminated, the key is absent, or
+   * the value is anything other than `true|false` (ADR-0001: malformed values fall through to inheritance,
+   * never to an error).
+   */
+  def extractEssential(content: String): Option[Boolean] =
+    parseLines(content).get("essential").flatMap(toBooleanOpt)
 
   /**
    * Title-only parse used during indexing. Falls back through: frontmatter `title:` → first `# ` heading in
@@ -83,3 +94,11 @@ object Frontmatter:
     if (s.startsWith("\"") && s.endsWith("\"")) || (s.startsWith("'") && s.endsWith("'")) then
       if s.length >= 2 then s.substring(1, s.length - 1) else s
     else s
+
+  private def toBooleanOpt(s: String): Option[Boolean] = s.toLowerCase match
+    case "true"  => Some(true)
+    case "false" => Some(false)
+    case _       => None
+
+  private def emptyFrontmatter(fallbackTitle: String): ChapterFrontmatter =
+    ChapterFrontmatter(title = fallbackTitle, summary = None, essential = None)

@@ -177,17 +177,19 @@ if __name__ == "__main__":
 ```
 
 ```java run
-public class Solution {
-    public boolean staircaseSearch(int[][] matrix, int target) {
-        if (matrix.length == 0 || matrix[0].length == 0) return false;
-        int rows = matrix.length, cols = matrix[0].length;
-        int row = 0, col = cols - 1;
-        while (row < rows && col >= 0) {
-            if (matrix[row][col] == target) return true;
-            if (matrix[row][col] < target) row++;
-            else col--;
+public class Main {
+    static class Solution {
+        public boolean staircaseSearch(int[][] matrix, int target) {
+            if (matrix.length == 0 || matrix[0].length == 0) return false;
+            int rows = matrix.length, cols = matrix[0].length;
+            int row = 0, col = cols - 1;
+            while (row < rows && col >= 0) {
+                if (matrix[row][col] == target) return true;
+                if (matrix[row][col] < target) row++;
+                else col--;
+            }
+            return false;
         }
-        return false;
     }
 
     public static void main(String[] args) {
@@ -219,24 +221,22 @@ int main(void) {
 ```
 
 ```scala run
-class Solution {
-  def staircaseSearch(matrix: Array[Array[Int]], target: Int): Boolean = {
-    if (matrix.isEmpty || matrix(0).isEmpty) return false
-    val rows = matrix.length; val cols = matrix(0).length
-    var row = 0; var col = cols - 1
-    while (row < rows && col >= 0) {
-      if (matrix(row)(col) == target) return true
-      if (matrix(row)(col) < target) row += 1 else col -= 1
+object Main extends App {
+  class Solution {
+    def staircaseSearch(matrix: Array[Array[Int]], target: Int): Boolean = {
+      if (matrix.isEmpty || matrix(0).isEmpty) return false
+      val rows = matrix.length; val cols = matrix(0).length
+      var row = 0; var col = cols - 1
+      while (row < rows && col >= 0) {
+        if (matrix(row)(col) == target) return true
+        if (matrix(row)(col) < target) row += 1 else col -= 1
+      }
+      false
     }
-    false
   }
-}
 
-object Main {
-  def main(args: Array[String]): Unit = {
-    val m = Array(Array(1, 4, 7, 11), Array(2, 5, 8, 12), Array(3, 6, 9, 16), Array(10, 13, 14, 17))
-    println(new Solution().staircaseSearch(m, 5))
-  }
+  val m = Array(Array(1, 4, 7, 11), Array(2, 5, 8, 12), Array(3, 6, 9, 16), Array(10, 13, 14, 17))
+  println(new Solution().staircaseSearch(m, 5))
 }
 ```
 

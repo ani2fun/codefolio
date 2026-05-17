@@ -1,10 +1,10 @@
 package codefolio.client.components.cortex.widgets
 
+import codefolio.client.components.cortex.widgets.PayloadDecoder.*
 import japgolly.scalajs.react.*
 import japgolly.scalajs.react.vdom.html_<^.*
 
-import scala.scalajs.js
-import scala.util.{Failure, Success, Try}
+import scala.util.Try
 
 /**
  * Back-of-envelope estimation calculator — the interactive companion to lesson 3's Python BOTE template. The
@@ -79,33 +79,25 @@ object EstimationCalculator:
   // ===========================================================================
 
   private def parsePayload(json: String): Either[String, Spec] =
-    Try {
-      val raw   = js.JSON.parse(json).asInstanceOf[js.Dynamic]
-      val title = raw.title.asInstanceOf[js.UndefOr[String]].toOption.filter(_.nonEmpty)
-      val peakF = raw.peakFactor.asInstanceOf[js.UndefOr[Double]].toOption.getOrElse(3.0)
-      val replF = raw.replicationFactor.asInstanceOf[js.UndefOr[Double]].toOption.getOrElse(3.0)
-      val rawPresets = raw.presets
-        .asInstanceOf[js.UndefOr[js.Array[js.Dynamic]]]
-        .toOption
-        .getOrElse(js.Array())
-      val presets = rawPresets.toList.map { p =>
+    PayloadDecoder.run(json) { d =>
+      val peakF = d.double("peakFactor", 3.0)
+      val replF = d.double("replicationFactor", 3.0)
+      val presets = d.dynList("presets").map(p =>
         Preset(
-          name = p.name.asInstanceOf[js.UndefOr[String]].toOption.getOrElse(""),
-          dau = p.dau.asInstanceOf[js.UndefOr[Double]].toOption.getOrElse(0.0),
-          writesPerUser = p.writesPerUser.asInstanceOf[js.UndefOr[Double]].toOption.getOrElse(0.0),
-          readsPerUser = p.readsPerUser.asInstanceOf[js.UndefOr[Double]].toOption.getOrElse(0.0),
-          bytesPerWrite = p.bytesPerWrite.asInstanceOf[js.UndefOr[Double]].toOption.getOrElse(0.0)
+          name = p.string("name"),
+          dau = p.double("dau"),
+          writesPerUser = p.double("writesPerUser"),
+          readsPerUser = p.double("readsPerUser"),
+          bytesPerWrite = p.double("bytesPerWrite")
         )
-      }
-      Spec(title, peakF, replF, presets)
-    } match
-      case Success(spec) if spec.presets.isEmpty        => Left("payload.presets must be non-empty")
-      case Success(spec) if spec.peakFactor <= 0        => Left("payload.peakFactor must be > 0")
-      case Success(spec) if spec.replicationFactor <= 0 => Left("payload.replicationFactor must be > 0")
-      case Success(spec) if spec.presets.exists(p => p.name.trim.isEmpty) =>
-        Left("every preset.name must be non-empty")
-      case Success(spec) => Right(spec)
-      case Failure(t)    => Left(Option(t.getMessage).getOrElse("invalid payload JSON"))
+      )
+      if presets.isEmpty then throw PayloadDecoder.invalid("presets must be non-empty")
+      if peakF <= 0 then throw PayloadDecoder.invalid("peakFactor must be > 0")
+      if replF <= 0 then throw PayloadDecoder.invalid("replicationFactor must be > 0")
+      if presets.exists(_.name.trim.isEmpty) then
+        throw PayloadDecoder.invalid("every preset.name must be non-empty")
+      Spec(d.optString("title"), peakF, replF, presets)
+    }
 
   // ===========================================================================
   // Formatting helpers

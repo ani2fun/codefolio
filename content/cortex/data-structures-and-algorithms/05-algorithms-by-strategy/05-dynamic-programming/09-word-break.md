@@ -280,21 +280,23 @@ if __name__ == "__main__":
 ```java run
 import java.util.*;
 
-public class Solution {
-    public boolean wordBreak(String s, List<String> wordDict) {
-        int n = s.length();
-        Set<String> wordSet = new HashSet<>(wordDict);
-        boolean[] dp = new boolean[n + 1];
-        dp[0] = true;
-        for (int i = 1; i <= n; i++) {
-            for (int j = 0; j < i; j++) {
-                if (dp[j] && wordSet.contains(s.substring(j, i))) {
-                    dp[i] = true;
-                    break;
+public class Main {
+    static class Solution {
+        public boolean wordBreak(String s, List<String> wordDict) {
+            int n = s.length();
+            Set<String> wordSet = new HashSet<>(wordDict);
+            boolean[] dp = new boolean[n + 1];
+            dp[0] = true;
+            for (int i = 1; i <= n; i++) {
+                for (int j = 0; j < i; j++) {
+                    if (dp[j] && wordSet.contains(s.substring(j, i))) {
+                        dp[i] = true;
+                        break;
+                    }
                 }
             }
+            return dp[n];
         }
-        return dp[n];
     }
 
     public static void main(String[] args) {
@@ -345,28 +347,28 @@ int main(void) {
 ```
 
 ```scala run
-class Solution {
-  def wordBreak(s: String, wordDict: List[String]): Boolean = {
-    val n = s.length
-    val dict = wordDict.toSet
-    val dp = Array.fill(n + 1)(false)
-    dp(0) = true
-    for (i <- 1 to n) {
-      var j = 0
-      var found = false
-      while (j < i && !found) {
-        if (dp(j) && dict.contains(s.substring(j, i))) {
-          dp(i) = true
-          found = true
-        }
-        j += 1
-      }
-    }
-    dp(n)
-  }
-}
-
 object Main extends App {
+  class Solution {
+    def wordBreak(s: String, wordDict: List[String]): Boolean = {
+      val n = s.length
+      val dict = wordDict.toSet
+      val dp = Array.fill(n + 1)(false)
+      dp(0) = true
+      for (i <- 1 to n) {
+        var j = 0
+        var found = false
+        while (j < i && !found) {
+          if (dp(j) && dict.contains(s.substring(j, i))) {
+            dp(i) = true
+            found = true
+          }
+          j += 1
+        }
+      }
+      dp(n)
+    }
+  }
+
   val sol = new Solution()
   println(sol.wordBreak("codeintuition", List("code", "intuition")))  // true
   println(sol.wordBreak("phoneisphone",  List("is", "phone")))        // true

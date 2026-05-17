@@ -138,7 +138,7 @@ if __name__ == "__main__":
 ```java run
 import java.util.*;
 
-class Solution {
+public class Main {
     static class TrieNode {
         Map<Character, TrieNode> children = new HashMap<>();
         boolean isEnd = false;

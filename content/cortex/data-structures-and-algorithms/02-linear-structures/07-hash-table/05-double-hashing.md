@@ -219,15 +219,15 @@ int main() {
 ```
 
 ```scala run
-object RecordType extends Enumeration { val EMPTY, DELETED, OCCUPIED = Value }
-
-class Record(
-  var state: RecordType.Value = RecordType.EMPTY,
-  var key:   Int              = 0,
-  var value: Int              = 0,
-) { def this(k: Int, v: Int) = this(RecordType.OCCUPIED, k, v) }
-
 object Main extends App {
+  object RecordType extends Enumeration { val EMPTY, DELETED, OCCUPIED = Value }
+
+  class Record(
+    var state: RecordType.Value = RecordType.EMPTY,
+    var key:   Int              = 0,
+    var value: Int              = 0,
+  ) { def this(k: Int, v: Int) = this(RecordType.OCCUPIED, k, v) }
+
   val r = new Record(7, 100); println(s"${r.state} ${r.key} ${r.value}")
 }
 ```
@@ -426,26 +426,26 @@ int main() {
 ```
 
 ```scala run
-object RecordType extends Enumeration { val EMPTY, DELETED, OCCUPIED = Value }
-
-class Record(
-  var state: RecordType.Value = RecordType.EMPTY,
-  var key:   Int              = 0,
-  var value: Int              = 0,
-) { def this(k: Int, v: Int) = this(RecordType.OCCUPIED, k, v) }
-
-class MyHashTable(val capacity: Int, val hashPrime: Int) {
-  protected val table: Array[Record] = Array.fill(capacity)(new Record())
-  protected def hash1(key: Int): Int = Math.floorMod(key, capacity)
-  // hashPrime - (key % hashPrime) ∈ [1, hashPrime] — never zero
-  protected def hash2(key: Int): Int = hashPrime - Math.floorMod(key, hashPrime)
-
-  def search(key: Int):              Int     = -1
-  def insert(key: Int, value: Int):  Boolean = false
-  def remove(key: Int):              Unit    = ()
-}
-
 object Main extends App {
+  object RecordType extends Enumeration { val EMPTY, DELETED, OCCUPIED = Value }
+
+  class Record(
+    var state: RecordType.Value = RecordType.EMPTY,
+    var key:   Int              = 0,
+    var value: Int              = 0,
+  ) { def this(k: Int, v: Int) = this(RecordType.OCCUPIED, k, v) }
+
+  class MyHashTable(val capacity: Int, val hashPrime: Int) {
+    protected val table: Array[Record] = Array.fill(capacity)(new Record())
+    protected def hash1(key: Int): Int = Math.floorMod(key, capacity)
+    // hashPrime - (key % hashPrime) ∈ [1, hashPrime] — never zero
+    protected def hash2(key: Int): Int = hashPrime - Math.floorMod(key, hashPrime)
+
+    def search(key: Int):              Int     = -1
+    def insert(key: Int, value: Int):  Boolean = false
+    def remove(key: Int):              Unit    = ()
+  }
+
   val h = new MyHashTable(7, 5)
   println("table created with capacity 7, hashPrime 5")
 }
@@ -633,38 +633,38 @@ int main() {
 ```
 
 ```scala run
-object RecordType extends Enumeration { val EMPTY, DELETED, OCCUPIED = Value }
-
-class Record(
-  var state: RecordType.Value = RecordType.EMPTY,
-  var key:   Int              = 0,
-  var value: Int              = 0,
-) { def this(k: Int, v: Int) = this(RecordType.OCCUPIED, k, v) }
-
-class MyHashTable(val capacity: Int, val hashPrime: Int) {
-  protected val table: Array[Record] = Array.fill(capacity)(new Record())
-  protected def hash1(key: Int): Int = Math.floorMod(key, capacity)
-  protected def hash2(key: Int): Int = hashPrime - Math.floorMod(key, hashPrime)
-
-  protected def probeForOccupied(key: Int, start: Int): Int = {
-    val step = hash2(key)
-    var i = 0
-    while (i < capacity) {
-      val idx = Math.floorMod(start + i * step, capacity)
-      val s   = table(idx)
-      if (s.state == RecordType.EMPTY) return -1
-      if (s.state == RecordType.OCCUPIED && s.key == key) return idx
-      i += 1
-    }; -1
-  }
-
-  def search(key: Int): Int = {
-    val idx = probeForOccupied(key, hash1(key))
-    if (idx == -1) -1 else table(idx).value
-  }
-}
-
 object Main extends App {
+  object RecordType extends Enumeration { val EMPTY, DELETED, OCCUPIED = Value }
+
+  class Record(
+    var state: RecordType.Value = RecordType.EMPTY,
+    var key:   Int              = 0,
+    var value: Int              = 0,
+  ) { def this(k: Int, v: Int) = this(RecordType.OCCUPIED, k, v) }
+
+  class MyHashTable(val capacity: Int, val hashPrime: Int) {
+    protected val table: Array[Record] = Array.fill(capacity)(new Record())
+    protected def hash1(key: Int): Int = Math.floorMod(key, capacity)
+    protected def hash2(key: Int): Int = hashPrime - Math.floorMod(key, hashPrime)
+
+    protected def probeForOccupied(key: Int, start: Int): Int = {
+      val step = hash2(key)
+      var i = 0
+      while (i < capacity) {
+        val idx = Math.floorMod(start + i * step, capacity)
+        val s   = table(idx)
+        if (s.state == RecordType.EMPTY) return -1
+        if (s.state == RecordType.OCCUPIED && s.key == key) return idx
+        i += 1
+      }; -1
+    }
+
+    def search(key: Int): Int = {
+      val idx = probeForOccupied(key, hash1(key))
+      if (idx == -1) -1 else table(idx).value
+    }
+  }
+
   val h = new MyHashTable(7, 5)
   println(h.search(15))   // -1
 }
@@ -909,51 +909,51 @@ int main() {
 ```
 
 ```scala run
-object RecordType extends Enumeration { val EMPTY, DELETED, OCCUPIED = Value }
-
-class Record(
-  var state: RecordType.Value = RecordType.EMPTY,
-  var key:   Int              = 0,
-  var value: Int              = 0,
-) { def this(k: Int, v: Int) = this(RecordType.OCCUPIED, k, v) }
-
-class MyHashTable(val capacity: Int, val hashPrime: Int) {
-  protected val table: Array[Record] = Array.fill(capacity)(new Record())
-  protected def hash1(key: Int): Int = Math.floorMod(key, capacity)
-  protected def hash2(key: Int): Int = hashPrime - Math.floorMod(key, hashPrime)
-
-  protected def probeForOccupied(key: Int, start: Int): Int = {
-    val step = hash2(key); var i = 0
-    while (i < capacity) {
-      val idx = Math.floorMod(start + i * step, capacity)
-      val s   = table(idx)
-      if (s.state == RecordType.EMPTY) return -1
-      if (s.state == RecordType.OCCUPIED && s.key == key) return idx
-      i += 1
-    }; -1
-  }
-  protected def probeForFree(key: Int, start: Int): Int = {
-    val step = hash2(key); var i = 0
-    while (i < capacity) {
-      val idx = Math.floorMod(start + i * step, capacity)
-      if (table(idx).state != RecordType.OCCUPIED) return idx
-      i += 1
-    }; -1
-  }
-
-  def search(key: Int): Int = {
-    val idx = probeForOccupied(key, hash1(key))
-    if (idx == -1) -1 else table(idx).value
-  }
-  def insert(key: Int, value: Int): Boolean = {
-    val start = hash1(key); val occ = probeForOccupied(key, start)
-    if (occ != -1) { table(occ).value = value; return true }
-    val free = probeForFree(key, start); if (free == -1) return false
-    table(free) = new Record(key, value); true
-  }
-}
-
 object Main extends App {
+  object RecordType extends Enumeration { val EMPTY, DELETED, OCCUPIED = Value }
+
+  class Record(
+    var state: RecordType.Value = RecordType.EMPTY,
+    var key:   Int              = 0,
+    var value: Int              = 0,
+  ) { def this(k: Int, v: Int) = this(RecordType.OCCUPIED, k, v) }
+
+  class MyHashTable(val capacity: Int, val hashPrime: Int) {
+    protected val table: Array[Record] = Array.fill(capacity)(new Record())
+    protected def hash1(key: Int): Int = Math.floorMod(key, capacity)
+    protected def hash2(key: Int): Int = hashPrime - Math.floorMod(key, hashPrime)
+
+    protected def probeForOccupied(key: Int, start: Int): Int = {
+      val step = hash2(key); var i = 0
+      while (i < capacity) {
+        val idx = Math.floorMod(start + i * step, capacity)
+        val s   = table(idx)
+        if (s.state == RecordType.EMPTY) return -1
+        if (s.state == RecordType.OCCUPIED && s.key == key) return idx
+        i += 1
+      }; -1
+    }
+    protected def probeForFree(key: Int, start: Int): Int = {
+      val step = hash2(key); var i = 0
+      while (i < capacity) {
+        val idx = Math.floorMod(start + i * step, capacity)
+        if (table(idx).state != RecordType.OCCUPIED) return idx
+        i += 1
+      }; -1
+    }
+
+    def search(key: Int): Int = {
+      val idx = probeForOccupied(key, hash1(key))
+      if (idx == -1) -1 else table(idx).value
+    }
+    def insert(key: Int, value: Int): Boolean = {
+      val start = hash1(key); val occ = probeForOccupied(key, start)
+      if (occ != -1) { table(occ).value = value; return true }
+      val free = probeForFree(key, start); if (free == -1) return false
+      table(free) = new Record(key, value); true
+    }
+  }
+
   val h = new MyHashTable(7, 5)
   h.insert(8, 80); h.insert(15, 150); h.insert(22, 220)
   println(s"${h.search(8)} ${h.search(15)} ${h.search(22)}")
@@ -1199,55 +1199,55 @@ int main() {
 ```
 
 ```scala run
-object RecordType extends Enumeration { val EMPTY, DELETED, OCCUPIED = Value }
-
-class Record(
-  var state: RecordType.Value = RecordType.EMPTY,
-  var key:   Int              = 0,
-  var value: Int              = 0,
-) { def this(k: Int, v: Int) = this(RecordType.OCCUPIED, k, v) }
-
-class MyHashTable(val capacity: Int, val hashPrime: Int) {
-  protected val table: Array[Record] = Array.fill(capacity)(new Record())
-  protected def hash1(key: Int): Int = Math.floorMod(key, capacity)
-  protected def hash2(key: Int): Int = hashPrime - Math.floorMod(key, hashPrime)
-
-  protected def probeForOccupied(key: Int, start: Int): Int = {
-    val step = hash2(key); var i = 0
-    while (i < capacity) {
-      val idx = Math.floorMod(start + i * step, capacity)
-      val s = table(idx)
-      if (s.state == RecordType.EMPTY) return -1
-      if (s.state == RecordType.OCCUPIED && s.key == key) return idx
-      i += 1
-    }; -1
-  }
-  protected def probeForFree(key: Int, start: Int): Int = {
-    val step = hash2(key); var i = 0
-    while (i < capacity) {
-      val idx = Math.floorMod(start + i * step, capacity)
-      if (table(idx).state != RecordType.OCCUPIED) return idx
-      i += 1
-    }; -1
-  }
-
-  def search(key: Int): Int = {
-    val idx = probeForOccupied(key, hash1(key))
-    if (idx == -1) -1 else table(idx).value
-  }
-  def insert(key: Int, value: Int): Boolean = {
-    val start = hash1(key); val occ = probeForOccupied(key, start)
-    if (occ != -1) { table(occ).value = value; return true }
-    val free = probeForFree(key, start); if (free == -1) return false
-    table(free) = new Record(key, value); true
-  }
-  def remove(key: Int): Unit = {
-    val idx = probeForOccupied(key, hash1(key))
-    if (idx != -1) table(idx).state = RecordType.DELETED
-  }
-}
-
 object Main extends App {
+  object RecordType extends Enumeration { val EMPTY, DELETED, OCCUPIED = Value }
+
+  class Record(
+    var state: RecordType.Value = RecordType.EMPTY,
+    var key:   Int              = 0,
+    var value: Int              = 0,
+  ) { def this(k: Int, v: Int) = this(RecordType.OCCUPIED, k, v) }
+
+  class MyHashTable(val capacity: Int, val hashPrime: Int) {
+    protected val table: Array[Record] = Array.fill(capacity)(new Record())
+    protected def hash1(key: Int): Int = Math.floorMod(key, capacity)
+    protected def hash2(key: Int): Int = hashPrime - Math.floorMod(key, hashPrime)
+
+    protected def probeForOccupied(key: Int, start: Int): Int = {
+      val step = hash2(key); var i = 0
+      while (i < capacity) {
+        val idx = Math.floorMod(start + i * step, capacity)
+        val s = table(idx)
+        if (s.state == RecordType.EMPTY) return -1
+        if (s.state == RecordType.OCCUPIED && s.key == key) return idx
+        i += 1
+      }; -1
+    }
+    protected def probeForFree(key: Int, start: Int): Int = {
+      val step = hash2(key); var i = 0
+      while (i < capacity) {
+        val idx = Math.floorMod(start + i * step, capacity)
+        if (table(idx).state != RecordType.OCCUPIED) return idx
+        i += 1
+      }; -1
+    }
+
+    def search(key: Int): Int = {
+      val idx = probeForOccupied(key, hash1(key))
+      if (idx == -1) -1 else table(idx).value
+    }
+    def insert(key: Int, value: Int): Boolean = {
+      val start = hash1(key); val occ = probeForOccupied(key, start)
+      if (occ != -1) { table(occ).value = value; return true }
+      val free = probeForFree(key, start); if (free == -1) return false
+      table(free) = new Record(key, value); true
+    }
+    def remove(key: Int): Unit = {
+      val idx = probeForOccupied(key, hash1(key))
+      if (idx != -1) table(idx).state = RecordType.DELETED
+    }
+  }
+
   val h = new MyHashTable(7, 5)
   h.insert(8, 80); h.insert(15, 150); h.insert(22, 220)
   h.remove(15)
@@ -1539,59 +1539,59 @@ int main() {
 ```
 
 ```scala run
-object RecordType extends Enumeration { val EMPTY, DELETED, OCCUPIED = Value }
-
-class Record(
-  var state: RecordType.Value = RecordType.EMPTY,
-  var key:   Int              = 0,
-  var value: Int              = 0,
-) { def this(k: Int, v: Int) = this(RecordType.OCCUPIED, k, v) }
-
-class MyHashTable(val capacity: Int, val hashPrime: Int) {
-  protected val table: Array[Record] = Array.fill(capacity)(new Record())
-  protected def hash1(key: Int): Int = Math.floorMod(key, capacity)
-  protected def hash2(key: Int): Int = hashPrime - Math.floorMod(key, hashPrime)
-
-  protected def probeForOccupied(key: Int, start: Int): Int = {
-    val step = hash2(key); var i = 0
-    while (i < capacity) {
-      val idx = Math.floorMod(start + i * step, capacity)
-      val s   = table(idx)
-      if (s.state == RecordType.EMPTY) return -1
-      if (s.state == RecordType.OCCUPIED && s.key == key) return idx
-      i += 1
-    }; -1
-  }
-  protected def probeForFree(key: Int, start: Int): Int = {
-    val step = hash2(key); var i = 0
-    while (i < capacity) {
-      val idx = Math.floorMod(start + i * step, capacity)
-      if (table(idx).state != RecordType.OCCUPIED) return idx
-      i += 1
-    }; -1
-  }
-
-  def search(key: Int): Int = {
-    val idx = probeForOccupied(key, hash1(key))
-    if (idx == -1) -1 else table(idx).value
-  }
-  def insert(key: Int, value: Int): Boolean = {
-    val start = hash1(key); val occ = probeForOccupied(key, start)
-    if (occ != -1) { table(occ).value = value; return true }
-    val free = probeForFree(key, start); if (free == -1) return false
-    table(free) = new Record(key, value); true
-  }
-  def remove(key: Int): Unit = {
-    val idx = probeForOccupied(key, hash1(key))
-    if (idx != -1) table(idx).state = RecordType.DELETED
-  }
-  def getKeyAtIndex(index: Int): Int =
-    if (index < 0 || index >= capacity) -1
-    else if (table(index).state == RecordType.OCCUPIED) table(index).key
-    else -1
-}
-
 object Main extends App {
+  object RecordType extends Enumeration { val EMPTY, DELETED, OCCUPIED = Value }
+
+  class Record(
+    var state: RecordType.Value = RecordType.EMPTY,
+    var key:   Int              = 0,
+    var value: Int              = 0,
+  ) { def this(k: Int, v: Int) = this(RecordType.OCCUPIED, k, v) }
+
+  class MyHashTable(val capacity: Int, val hashPrime: Int) {
+    protected val table: Array[Record] = Array.fill(capacity)(new Record())
+    protected def hash1(key: Int): Int = Math.floorMod(key, capacity)
+    protected def hash2(key: Int): Int = hashPrime - Math.floorMod(key, hashPrime)
+
+    protected def probeForOccupied(key: Int, start: Int): Int = {
+      val step = hash2(key); var i = 0
+      while (i < capacity) {
+        val idx = Math.floorMod(start + i * step, capacity)
+        val s   = table(idx)
+        if (s.state == RecordType.EMPTY) return -1
+        if (s.state == RecordType.OCCUPIED && s.key == key) return idx
+        i += 1
+      }; -1
+    }
+    protected def probeForFree(key: Int, start: Int): Int = {
+      val step = hash2(key); var i = 0
+      while (i < capacity) {
+        val idx = Math.floorMod(start + i * step, capacity)
+        if (table(idx).state != RecordType.OCCUPIED) return idx
+        i += 1
+      }; -1
+    }
+
+    def search(key: Int): Int = {
+      val idx = probeForOccupied(key, hash1(key))
+      if (idx == -1) -1 else table(idx).value
+    }
+    def insert(key: Int, value: Int): Boolean = {
+      val start = hash1(key); val occ = probeForOccupied(key, start)
+      if (occ != -1) { table(occ).value = value; return true }
+      val free = probeForFree(key, start); if (free == -1) return false
+      table(free) = new Record(key, value); true
+    }
+    def remove(key: Int): Unit = {
+      val idx = probeForOccupied(key, hash1(key))
+      if (idx != -1) table(idx).state = RecordType.DELETED
+    }
+    def getKeyAtIndex(index: Int): Int =
+      if (index < 0 || index >= capacity) -1
+      else if (table(index).state == RecordType.OCCUPIED) table(index).key
+      else -1
+  }
+
   val h = new MyHashTable(3, 2)
   h.insert(1, 2); h.insert(2, 4); println(h.search(1))
   h.insert(1, 3); println(h.search(1))

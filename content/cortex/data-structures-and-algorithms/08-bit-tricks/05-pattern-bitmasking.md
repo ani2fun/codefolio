@@ -158,11 +158,13 @@ if __name__ == "__main__":
 ```
 
 ```java run
-public class Solution {
-    public int pairwiseBitsSwap(int num) {
-        int evenMask = 0xAAAAAAAA;
-        int oddMask  = 0x55555555;
-        return ((num & evenMask) >>> 1) | ((num & oddMask) << 1);
+public class Main {
+    static class Solution {
+        public int pairwiseBitsSwap(int num) {
+            int evenMask = 0xAAAAAAAA;
+            int oddMask  = 0x55555555;
+            return ((num & evenMask) >>> 1) | ((num & oddMask) << 1);
+        }
     }
 
     public static void main(String[] args) {
@@ -186,13 +188,13 @@ int main(void) {
 ```
 
 ```scala run
-class Solution {
-  def pairwiseBitsSwap(num: Int): Int = {
-    ((num & 0xAAAAAAAA) >>> 1) | ((num & 0x55555555) << 1)
-  }
-}
-
 object Main extends App {
+  class Solution {
+    def pairwiseBitsSwap(num: Int): Int = {
+      ((num & 0xAAAAAAAA) >>> 1) | ((num & 0x55555555) << 1)
+    }
+  }
+
   println(new Solution().pairwiseBitsSwap(1))   // 2
 }
 ```
@@ -303,18 +305,20 @@ if __name__ == "__main__":
 ```java run
 import java.util.*;
 
-public class Solution {
-    public List<List<Integer>> uniqueSubsets(int[] arr) {
-        int n = arr.length;
-        List<List<Integer>> result = new ArrayList<>();
-        for (int mask = 0; mask < (1 << n); mask++) {
-            List<Integer> subset = new ArrayList<>();
-            for (int j = 0; j < n; j++) {
-                if ((mask & (1 << j)) != 0) subset.add(arr[j]);
+public class Main {
+    static class Solution {
+        public List<List<Integer>> uniqueSubsets(int[] arr) {
+            int n = arr.length;
+            List<List<Integer>> result = new ArrayList<>();
+            for (int mask = 0; mask < (1 << n); mask++) {
+                List<Integer> subset = new ArrayList<>();
+                for (int j = 0; j < n; j++) {
+                    if ((mask & (1 << j)) != 0) subset.add(arr[j]);
+                }
+                result.add(subset);
             }
-            result.add(subset);
+            return result;
         }
-        return result;
     }
 
     public static void main(String[] args) {
@@ -350,16 +354,16 @@ int main(void) {
 ```
 
 ```scala run
-class Solution {
-  def uniqueSubsets(arr: Array[Int]): List[List[Int]] = {
-    val n = arr.length
-    (0 until (1 << n)).map { mask =>
-      (0 until n).filter(j => (mask & (1 << j)) != 0).map(arr).toList
-    }.toList
-  }
-}
-
 object Main extends App {
+  class Solution {
+    def uniqueSubsets(arr: Array[Int]): List[List[Int]] = {
+      val n = arr.length
+      (0 until (1 << n)).map { mask =>
+        (0 until n).filter(j => (mask & (1 << j)) != 0).map(arr).toList
+      }.toList
+    }
+  }
+
   println(new Solution().uniqueSubsets(Array(1, 2, 3)))
 }
 ```

@@ -122,19 +122,21 @@ if __name__ == "__main__":
 ```
 
 ```java run
-public class Solution {
-    public boolean subsetSum(int[] arr, int target) {
-        int n = arr.length;
-        boolean[][] dp = new boolean[n + 1][target + 1];
-        for (int i = 0; i <= n; i++) dp[i][0] = true;
-        for (int i = 1; i <= n; i++) {
-            int ai = arr[i - 1];
-            for (int s = 1; s <= target; s++) {
-                dp[i][s] = dp[i - 1][s];
-                if (ai <= s && dp[i - 1][s - ai]) dp[i][s] = true;
+public class Main {
+    static class Solution {
+        public boolean subsetSum(int[] arr, int target) {
+            int n = arr.length;
+            boolean[][] dp = new boolean[n + 1][target + 1];
+            for (int i = 0; i <= n; i++) dp[i][0] = true;
+            for (int i = 1; i <= n; i++) {
+                int ai = arr[i - 1];
+                for (int s = 1; s <= target; s++) {
+                    dp[i][s] = dp[i - 1][s];
+                    if (ai <= s && dp[i - 1][s - ai]) dp[i][s] = true;
+                }
             }
+            return dp[n][target];
         }
-        return dp[n][target];
     }
 
     public static void main(String[] args) {
@@ -176,23 +178,23 @@ int main(void) {
 ```
 
 ```scala run
-class Solution {
-  def subsetSum(arr: Array[Int], target: Int): Boolean = {
-    val n = arr.length
-    val dp = Array.fill(n + 1, target + 1)(false)
-    for (i <- 0 to n) dp(i)(0) = true
-    for (i <- 1 to n) {
-      val ai = arr(i - 1)
-      for (s <- 1 to target) {
-        dp(i)(s) = dp(i - 1)(s)
-        if (ai <= s && dp(i - 1)(s - ai)) dp(i)(s) = true
-      }
-    }
-    dp(n)(target)
-  }
-}
-
 object Main extends App {
+  class Solution {
+    def subsetSum(arr: Array[Int], target: Int): Boolean = {
+      val n = arr.length
+      val dp = Array.fill(n + 1, target + 1)(false)
+      for (i <- 0 to n) dp(i)(0) = true
+      for (i <- 1 to n) {
+        val ai = arr(i - 1)
+        for (s <- 1 to target) {
+          dp(i)(s) = dp(i - 1)(s)
+          if (ai <= s && dp(i - 1)(s - ai)) dp(i)(s) = true
+        }
+      }
+      dp(n)(target)
+    }
+  }
+
   println(new Solution().subsetSum(Array(1, 5, 3, 10), 15))   // true
 }
 ```
@@ -295,17 +297,19 @@ if __name__ == "__main__":
 ```
 
 ```java run
-public class Solution {
-    public int rodCutting(int[] prices, int length) {
-        int[] dp = new int[length + 1];
-        for (int i = 1; i <= length; i++) {
-            int best = prices[i - 1];
-            for (int j = 1; j < i; j++) {
-                best = Math.max(best, prices[j - 1] + dp[i - j]);
+public class Main {
+    static class Solution {
+        public int rodCutting(int[] prices, int length) {
+            int[] dp = new int[length + 1];
+            for (int i = 1; i <= length; i++) {
+                int best = prices[i - 1];
+                for (int j = 1; j < i; j++) {
+                    best = Math.max(best, prices[j - 1] + dp[i - j]);
+                }
+                dp[i] = best;
             }
-            dp[i] = best;
+            return dp[length];
         }
-        return dp[length];
     }
 
     public static void main(String[] args) {
@@ -341,19 +345,19 @@ int main(void) {
 ```
 
 ```scala run
-class Solution {
-  def rodCutting(prices: Array[Int], length: Int): Int = {
-    val dp = Array.fill(length + 1)(0)
-    for (i <- 1 to length) {
-      var best = prices(i - 1)
-      for (j <- 1 until i) best = math.max(best, prices(j - 1) + dp(i - j))
-      dp(i) = best
-    }
-    dp(length)
-  }
-}
-
 object Main extends App {
+  class Solution {
+    def rodCutting(prices: Array[Int], length: Int): Int = {
+      val dp = Array.fill(length + 1)(0)
+      for (i <- 1 to length) {
+        var best = prices(i - 1)
+        for (j <- 1 until i) best = math.max(best, prices(j - 1) + dp(i - j))
+        dp(i) = best
+      }
+      dp(length)
+    }
+  }
+
   println(new Solution().rodCutting(Array(1, 5, 8, 9), 4))  // 10
 }
 ```
@@ -442,18 +446,20 @@ if __name__ == "__main__":
 ```
 
 ```java run
-public class Solution {
-    public int coinChange(int[] coins, int amount) {
-        int INF = amount + 1;
-        int[] dp = new int[amount + 1];
-        java.util.Arrays.fill(dp, INF);
-        dp[0] = 0;
-        for (int i = 1; i <= amount; i++) {
-            for (int c : coins) {
-                if (c <= i && dp[i - c] + 1 < dp[i]) dp[i] = dp[i - c] + 1;
+public class Main {
+    static class Solution {
+        public int coinChange(int[] coins, int amount) {
+            int INF = amount + 1;
+            int[] dp = new int[amount + 1];
+            java.util.Arrays.fill(dp, INF);
+            dp[0] = 0;
+            for (int i = 1; i <= amount; i++) {
+                for (int c : coins) {
+                    if (c <= i && dp[i - c] + 1 < dp[i]) dp[i] = dp[i - c] + 1;
+                }
             }
+            return dp[amount] == INF ? -1 : dp[amount];
         }
-        return dp[amount] == INF ? -1 : dp[amount];
     }
 
     public static void main(String[] args) {
@@ -490,19 +496,19 @@ int main(void) {
 ```
 
 ```scala run
-class Solution {
-  def coinChange(coins: Array[Int], amount: Int): Int = {
-    val INF = amount + 1
-    val dp = Array.fill(amount + 1)(INF)
-    dp(0) = 0
-    for (i <- 1 to amount; c <- coins) {
-      if (c <= i && dp(i - c) + 1 < dp(i)) dp(i) = dp(i - c) + 1
-    }
-    if (dp(amount) == INF) -1 else dp(amount)
-  }
-}
-
 object Main extends App {
+  class Solution {
+    def coinChange(coins: Array[Int], amount: Int): Int = {
+      val INF = amount + 1
+      val dp = Array.fill(amount + 1)(INF)
+      dp(0) = 0
+      for (i <- 1 to amount; c <- coins) {
+        if (c <= i && dp(i - c) + 1 < dp(i)) dp(i) = dp(i - c) + 1
+      }
+      if (dp(amount) == INF) -1 else dp(amount)
+    }
+  }
+
   println(new Solution().coinChange(Array(1, 5, 8, 9), 4))  // 4
 }
 ```
@@ -612,16 +618,18 @@ if __name__ == "__main__":
 ```
 
 ```java run
-public class Solution {
-    public int coinChangeII(int[] coins, int amount) {
-        int[] dp = new int[amount + 1];
-        dp[0] = 1;
-        for (int c : coins) {
-            for (int a = c; a <= amount; a++) {
-                dp[a] += dp[a - c];
+public class Main {
+    static class Solution {
+        public int coinChangeII(int[] coins, int amount) {
+            int[] dp = new int[amount + 1];
+            dp[0] = 1;
+            for (int c : coins) {
+                for (int a = c; a <= amount; a++) {
+                    dp[a] += dp[a - c];
+                }
             }
+            return dp[amount];
         }
-        return dp[amount];
     }
 
     public static void main(String[] args) {
@@ -655,16 +663,16 @@ int main(void) {
 ```
 
 ```scala run
-class Solution {
-  def coinChangeII(coins: Array[Int], amount: Int): Int = {
-    val dp = Array.fill(amount + 1)(0)
-    dp(0) = 1
-    for (c <- coins; a <- c to amount) dp(a) += dp(a - c)
-    dp(amount)
-  }
-}
-
 object Main extends App {
+  class Solution {
+    def coinChangeII(coins: Array[Int], amount: Int): Int = {
+      val dp = Array.fill(amount + 1)(0)
+      dp(0) = 1
+      for (c <- coins; a <- c to amount) dp(a) += dp(a - c)
+      dp(amount)
+    }
+  }
+
   println(new Solution().coinChangeII(Array(3, 4, 8, 9), 13))   // 2
 }
 ```

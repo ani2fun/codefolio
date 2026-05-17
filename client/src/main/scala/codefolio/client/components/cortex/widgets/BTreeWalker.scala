@@ -1,10 +1,10 @@
 package codefolio.client.components.cortex.widgets
 
+import codefolio.client.components.cortex.widgets.PayloadDecoder.*
 import japgolly.scalajs.react.*
 import japgolly.scalajs.react.vdom.html_<^.*
 
-import scala.scalajs.js
-import scala.util.{Failure, Success, Try}
+import scala.util.Try
 
 /**
  * B-tree walker — the senior moment of Lesson 9 made visceral. Shows the *shape* of a B-tree index for a
@@ -72,35 +72,24 @@ object BTreeWalker:
   // Parsing
   // ===========================================================================
 
-  private def parseRange(d: js.Dynamic, default: (Int, Int)): (Int, Int) =
-    d.asInstanceOf[js.UndefOr[js.Array[Double]]].toOption.map(_.toList) match
-      case Some(lo :: hi :: _) => (lo.toInt, hi.toInt)
-      case _                   => default
-
   private def parsePayload(json: String): Either[String, Spec] =
-    Try {
-      val raw    = js.JSON.parse(json).asInstanceOf[js.Dynamic]
-      val title  = raw.title.asInstanceOf[js.UndefOr[String]].toOption.filter(_.nonEmpty)
-      val rc     = raw.rowCount.asInstanceOf[js.UndefOr[Double]].toOption.getOrElse(1_000_000.0).toInt
-      val rcR    = parseRange(raw.rowCountRange, (100, 100_000_000))
-      val fanout = raw.fanout.asInstanceOf[js.UndefOr[Double]].toOption.getOrElse(100.0).toInt
-      val rpp    = raw.rowsPerPage.asInstanceOf[js.UndefOr[Double]].toOption.getOrElse(100.0).toInt
-      val rrMs   = raw.randomReadMs.asInstanceOf[js.UndefOr[Double]].toOption.getOrElse(0.1)
-      val srMs   = raw.sequentialReadMs.asInstanceOf[js.UndefOr[Double]].toOption.getOrElse(0.01)
-      Spec(title, rc, rcR._1, rcR._2, fanout, rpp, rrMs, srMs)
-    } match
-      case Success(s) if s.rowMin < 1 || s.rowMax < s.rowMin =>
-        Left("payload.rowCountRange must satisfy 1 ≤ min ≤ max")
-      case Success(s) if s.rowCount < s.rowMin || s.rowCount > s.rowMax =>
-        Left(s"payload.rowCount must fall within rowCountRange [${s.rowMin}, ${s.rowMax}]")
-      case Success(s) if s.fanout < 2 || s.fanout > 1000 =>
-        Left("payload.fanout must be in [2, 1000]")
-      case Success(s) if s.rowsPerPage < 1 =>
-        Left("payload.rowsPerPage must be ≥ 1")
-      case Success(s) if s.randomReadMs <= 0 || s.sequentialReadMs <= 0 =>
-        Left("payload.randomReadMs and sequentialReadMs must be > 0")
-      case Success(s) => Right(s)
-      case Failure(t) => Left(Option(t.getMessage).getOrElse("invalid payload JSON"))
+    PayloadDecoder.run(json) { d =>
+      val rc          = d.double("rowCount", 1_000_000.0).toInt
+      val (rMin, rMx) = d.intRange("rowCountRange", (100, 100_000_000))
+      val fanout      = d.double("fanout", 100.0).toInt
+      val rpp         = d.double("rowsPerPage", 100.0).toInt
+      val rrMs        = d.double("randomReadMs", 0.1)
+      val srMs        = d.double("sequentialReadMs", 0.01)
+      if rMin < 1 || rMx < rMin then
+        throw PayloadDecoder.invalid("rowCountRange must satisfy 1 ≤ min ≤ max")
+      if rc < rMin || rc > rMx then
+        throw PayloadDecoder.invalid(s"rowCount must fall within rowCountRange [$rMin, $rMx]")
+      if fanout < 2 || fanout > 1000 then throw PayloadDecoder.invalid("fanout must be in [2, 1000]")
+      if rpp < 1 then throw PayloadDecoder.invalid("rowsPerPage must be ≥ 1")
+      if rrMs <= 0 || srMs <= 0 then
+        throw PayloadDecoder.invalid("randomReadMs and sequentialReadMs must be > 0")
+      Spec(d.optString("title"), rc, rMin, rMx, fanout, rpp, rrMs, srMs)
+    }
 
   // ===========================================================================
   // Math

@@ -454,17 +454,28 @@ int is_perfect(TreeNode *root) {
 ```
 
 ```scala run
-def isPerfect(root: TreeNode): Boolean = {
-  if (root == null) return true
-  var depth = 0; var n = root
-  while (n != null) { depth += 1; n = n.left }
-  def go(node: TreeNode, level: Int): Boolean = {
-    if (node == null) return true
-    if (node.left == null && node.right == null) return level == depth
-    if (node.left == null || node.right == null) return false
-    go(node.left, level + 1) && go(node.right, level + 1)
+class TreeNode(var value: Int, var left: TreeNode = null, var right: TreeNode = null)
+
+object Main extends App {
+  class Solution {
+    def isPerfect(root: TreeNode): Boolean = {
+      if (root == null) return true
+      var depth = 0; var n = root
+      while (n != null) { depth += 1; n = n.left }
+      def go(node: TreeNode, level: Int): Boolean = {
+        if (node == null) return true
+        if (node.left == null && node.right == null) return level == depth
+        if (node.left == null || node.right == null) return false
+        go(node.left, level + 1) && go(node.right, level + 1)
+      }
+      go(root, 1)
+    }
   }
-  go(root, 1)
+
+  val perfect   = new TreeNode(1, new TreeNode(2), new TreeNode(3))
+  val imperfect = new TreeNode(1, new TreeNode(2, new TreeNode(4), null), new TreeNode(3))
+  println(new Solution().isPerfect(perfect))    // true
+  println(new Solution().isPerfect(imperfect))  // false
 }
 ```
 
@@ -573,17 +584,28 @@ void collect_leaves(TreeNode *root) {
 ```
 
 ```scala run
-def collectLeaves(root: TreeNode): List[List[Int]] = {
-  val out = scala.collection.mutable.ArrayBuffer[scala.collection.mutable.ListBuffer[Int]]()
-  def go(n: TreeNode): Int = {
-    if (n == null) return -1
-    val h = 1 + math.max(go(n.left), go(n.right))
-    if (h == out.length) out += scala.collection.mutable.ListBuffer[Int]()
-    out(h) += n.value
-    h
+class TreeNode(var value: Int, var left: TreeNode = null, var right: TreeNode = null)
+
+object Main extends App {
+  class Solution {
+    def collectLeaves(root: TreeNode): List[List[Int]] = {
+      val out = scala.collection.mutable.ArrayBuffer[scala.collection.mutable.ListBuffer[Int]]()
+      def go(n: TreeNode): Int = {
+        if (n == null) return -1
+        val h = 1 + math.max(go(n.left), go(n.right))
+        if (h == out.length) out += scala.collection.mutable.ListBuffer[Int]()
+        out(h) += n.value
+        h
+      }
+      go(root)
+      out.map(_.toList).toList
+    }
   }
-  go(root)
-  out.map(_.toList).toList
+
+  val root = new TreeNode(1,
+    new TreeNode(2, new TreeNode(7), null),
+    new TreeNode(1, null, new TreeNode(1)))
+  println(new Solution().collectLeaves(root))  // List(List(7, 1), List(2, 1), List(1))
 }
 ```
 

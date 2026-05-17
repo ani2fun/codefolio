@@ -232,48 +232,62 @@ def reorder_nodes(head: Optional['ListNode'],
 import java.util.function.Predicate;
 import java.util.function.BiPredicate;
 
-class Solution {
-    public ListNode reorderNodes(ListNode head,
-                                 Predicate<ListNode> f1,
-                                 BiPredicate<ListNode, ListNode> f2) {
-        // Phase 1 — split by classifier f1
-        ListNode dummyA = new ListNode(0), tailA = dummyA;
-        ListNode dummyB = new ListNode(0), tailB = dummyB;
-        ListNode current = head;
-        while (current != null) {
-            if (f1.test(current)) {
-                tailA.next   = current;          // forward link
-                current.prev = tailA;            // mirror
-                tailA        = tailA.next;
-            } else {
-                tailB.next   = current;
-                current.prev = tailB;
-                tailB        = tailB.next;
+public class Main {
+    static class ListNode { int val; ListNode prev, next; ListNode(int v){val=v;} }
+
+    static class Solution {
+        public ListNode reorderNodes(ListNode head,
+                                     Predicate<ListNode> f1,
+                                     BiPredicate<ListNode, ListNode> f2) {
+            // Phase 1 — split by classifier f1
+            ListNode dummyA = new ListNode(0), tailA = dummyA;
+            ListNode dummyB = new ListNode(0), tailB = dummyB;
+            ListNode current = head;
+            while (current != null) {
+                if (f1.test(current)) {
+                    tailA.next   = current;          // forward link
+                    current.prev = tailA;            // mirror
+                    tailA        = tailA.next;
+                } else {
+                    tailB.next   = current;
+                    current.prev = tailB;
+                    tailB        = tailB.next;
+                }
+                current = current.next;
             }
-            current = current.next;
-        }
-        tailA.next = null; tailB.next = null;
+            tailA.next = null; tailB.next = null;
 
-        ListNode ca = dummyA.next, cb = dummyB.next;
-        if (ca != null) ca.prev = null;
-        if (cb != null) cb.prev = null;
+            ListNode ca = dummyA.next, cb = dummyB.next;
+            if (ca != null) ca.prev = null;
+            if (cb != null) cb.prev = null;
 
-        // Phase 2 — merge by selector f2
-        ListNode dummy = new ListNode(0), tail = dummy;
-        while (ca != null && cb != null) {
-            if (f2.test(ca, cb)) {
-                tail.next = ca; ca.prev = tail; ca = ca.next;
-            } else {
-                tail.next = cb; cb.prev = tail; cb = cb.next;
+            // Phase 2 — merge by selector f2
+            ListNode dummy = new ListNode(0), tail = dummy;
+            while (ca != null && cb != null) {
+                if (f2.test(ca, cb)) {
+                    tail.next = ca; ca.prev = tail; ca = ca.next;
+                } else {
+                    tail.next = cb; cb.prev = tail; cb = cb.next;
+                }
+                tail = tail.next;
             }
-            tail = tail.next;
-        }
-        if (ca != null) { tail.next = ca; ca.prev = tail; }
-        if (cb != null) { tail.next = cb; cb.prev = tail; }
+            if (ca != null) { tail.next = ca; ca.prev = tail; }
+            if (cb != null) { tail.next = cb; cb.prev = tail; }
 
-        ListNode newHead = dummy.next;
-        if (newHead != null) newHead.prev = null;
-        return newHead;
+            ListNode newHead = dummy.next;
+            if (newHead != null) newHead.prev = null;
+            return newHead;
+        }
+    }
+
+    public static void main(String[] args) {
+        ListNode n1=new ListNode(1),n2=new ListNode(2),n3=new ListNode(3),n4=new ListNode(4),n5=new ListNode(5);
+        n1.next=n2; n2.prev=n1; n2.next=n3; n3.prev=n2; n3.next=n4; n4.prev=n3; n4.next=n5; n5.prev=n4;
+        Predicate<ListNode> f1 = n -> n.val % 2 == 0;          // evens to A, odds to B
+        BiPredicate<ListNode, ListNode> f2 = (a, b) -> a.val <= b.val;  // ascending merge
+        ListNode head = new Solution().reorderNodes(n1, f1, f2);
+        for (ListNode c=head;c!=null;c=c.next) System.out.print(c.val+" ");
+        // 1 2 3 4 5
     }
 }
 ```
@@ -315,37 +329,48 @@ ListNode* reorderNodes(ListNode *head, F1 f1, F2 f2) {
 ```
 
 ```scala run
-object Solution {
-  def reorderNodes(head: ListNode,
-                   f1: ListNode => Boolean,
-                   f2: (ListNode, ListNode) => Boolean): ListNode = {
-    val dummyA = new ListNode(0); var tailA: ListNode = dummyA
-    val dummyB = new ListNode(0); var tailB: ListNode = dummyB
-    var c = head
-    while (c != null) {
-      val nxt = c.next
-      if (f1(c)) { tailA.next = c; c.prev = tailA; tailA = c }
-      else        { tailB.next = c; c.prev = tailB; tailB = c }
-      c = nxt
-    }
-    tailA.next = null; tailB.next = null
+class ListNode(var v: Int, var prev: ListNode = null, var next: ListNode = null)
 
-    var ca = dummyA.next; var cb = dummyB.next
-    if (ca != null) ca.prev = null
-    if (cb != null) cb.prev = null
+object Main extends App {
+  object Solution {
+    def reorderNodes(head: ListNode,
+                     f1: ListNode => Boolean,
+                     f2: (ListNode, ListNode) => Boolean): ListNode = {
+      val dummyA = new ListNode(0); var tailA: ListNode = dummyA
+      val dummyB = new ListNode(0); var tailB: ListNode = dummyB
+      var c = head
+      while (c != null) {
+        val nxt = c.next
+        if (f1(c)) { tailA.next = c; c.prev = tailA; tailA = c }
+        else        { tailB.next = c; c.prev = tailB; tailB = c }
+        c = nxt
+      }
+      tailA.next = null; tailB.next = null
 
-    val dummy = new ListNode(0); var tail: ListNode = dummy
-    while (ca != null && cb != null) {
-      if (f2(ca, cb)) { tail.next = ca; ca.prev = tail; ca = ca.next }
-      else             { tail.next = cb; cb.prev = tail; cb = cb.next }
-      tail = tail.next
+      var ca = dummyA.next; var cb = dummyB.next
+      if (ca != null) ca.prev = null
+      if (cb != null) cb.prev = null
+
+      val dummy = new ListNode(0); var tail: ListNode = dummy
+      while (ca != null && cb != null) {
+        if (f2(ca, cb)) { tail.next = ca; ca.prev = tail; ca = ca.next }
+        else             { tail.next = cb; cb.prev = tail; cb = cb.next }
+        tail = tail.next
+      }
+      if (ca != null) { tail.next = ca; ca.prev = tail }
+      if (cb != null) { tail.next = cb; cb.prev = tail }
+      val newHead = dummy.next
+      if (newHead != null) newHead.prev = null
+      newHead
     }
-    if (ca != null) { tail.next = ca; ca.prev = tail }
-    if (cb != null) { tail.next = cb; cb.prev = tail }
-    val newHead = dummy.next
-    if (newHead != null) newHead.prev = null
-    newHead
   }
+
+  val n1 = new ListNode(1); val n2 = new ListNode(2); val n3 = new ListNode(3); val n4 = new ListNode(4); val n5 = new ListNode(5)
+  n1.next = n2; n2.prev = n1; n2.next = n3; n3.prev = n2; n3.next = n4; n4.prev = n3; n4.next = n5; n5.prev = n4
+  val f1: ListNode => Boolean = n => n.v % 2 == 0                 // evens to A
+  val f2: (ListNode, ListNode) => Boolean = (a, b) => a.v <= b.v  // ascending merge
+  var head = Solution.reorderNodes(n1, f1, f2)
+  while (head != null) { print(s"${head.v} "); head = head.next }  // 1 2 3 4 5
 }
 ```
 
@@ -539,45 +564,57 @@ class Solution:
 ```java run
 import java.util.*;
 
-class Solution {
-    public List<ListNode> splitListByValue(ListNode head, int X) {
-        ListNode lessDummy    = new ListNode(0), lessTail    = lessDummy;
-        ListNode greaterDummy = new ListNode(0), greaterTail = greaterDummy;
-        ListNode current = head;
-        while (current != null) {
-            ListNode nxt = current.next;
-            if (current.val < X) {
-                lessTail.next = current;
-                current.prev  = lessTail;       // mirror
-                lessTail      = lessTail.next;
-            } else {
-                greaterTail.next = current;
-                current.prev     = greaterTail; // mirror
-                greaterTail      = greaterTail.next;
+public class Main {
+    static class ListNode { int val; ListNode prev, next; ListNode(int v){val=v;} }
+
+    static class Solution {
+        public List<ListNode> splitListByValue(ListNode head, int X) {
+            ListNode lessDummy    = new ListNode(0), lessTail    = lessDummy;
+            ListNode greaterDummy = new ListNode(0), greaterTail = greaterDummy;
+            ListNode current = head;
+            while (current != null) {
+                ListNode nxt = current.next;
+                if (current.val < X) {
+                    lessTail.next = current;
+                    current.prev  = lessTail;       // mirror
+                    lessTail      = lessTail.next;
+                } else {
+                    greaterTail.next = current;
+                    current.prev     = greaterTail; // mirror
+                    greaterTail      = greaterTail.next;
+                }
+                current = nxt;
             }
-            current = nxt;
+            if (lessDummy.next    != null) lessDummy.next.prev    = null;
+            lessTail.next    = null;
+            if (greaterDummy.next != null) greaterDummy.next.prev = null;
+            greaterTail.next = null;
+            return Arrays.asList(lessDummy.next, greaterDummy.next);
         }
-        if (lessDummy.next    != null) lessDummy.next.prev    = null;
-        lessTail.next    = null;
-        if (greaterDummy.next != null) greaterDummy.next.prev = null;
-        greaterTail.next = null;
-        return Arrays.asList(lessDummy.next, greaterDummy.next);
+
+        public ListNode mergeLessAndGreaterLists(ListNode lessHead, ListNode greaterHead) {
+            if (lessHead    == null) return greaterHead;
+            if (greaterHead == null) return lessHead;
+            ListNode current = lessHead;
+            while (current.next != null) current = current.next;
+            current.next      = greaterHead;
+            greaterHead.prev  = current;
+            return lessHead;
+        }
+
+        public ListNode valuePartition(ListNode head, int X) {
+            if (head == null || head.next == null) return head;
+            List<ListNode> heads = splitListByValue(head, X);
+            return mergeLessAndGreaterLists(heads.get(0), heads.get(1));
+        }
     }
 
-    public ListNode mergeLessAndGreaterLists(ListNode lessHead, ListNode greaterHead) {
-        if (lessHead    == null) return greaterHead;
-        if (greaterHead == null) return lessHead;
-        ListNode current = lessHead;
-        while (current.next != null) current = current.next;
-        current.next      = greaterHead;
-        greaterHead.prev  = current;
-        return lessHead;
-    }
-
-    public ListNode valuePartition(ListNode head, int X) {
-        if (head == null || head.next == null) return head;
-        List<ListNode> heads = splitListByValue(head, X);
-        return mergeLessAndGreaterLists(heads.get(0), heads.get(1));
+    public static void main(String[] args) {
+        ListNode n1=new ListNode(1),n2=new ListNode(4),n3=new ListNode(3),n4=new ListNode(2),n5=new ListNode(5),n6=new ListNode(2);
+        n1.next=n2; n2.prev=n1; n2.next=n3; n3.prev=n2; n3.next=n4; n4.prev=n3; n4.next=n5; n5.prev=n4; n5.next=n6; n6.prev=n5;
+        ListNode head = new Solution().valuePartition(n1, 3);
+        for (ListNode c=head;c!=null;c=c.next) System.out.print(c.val+" ");
+        // 1 2 2 4 3 5
     }
 }
 ```
@@ -619,37 +656,46 @@ ListNode* valuePartition(ListNode *head, int X) {
 ```
 
 ```scala run
-class Solution {
-  def splitListByValue(head: ListNode, X: Int): (ListNode, ListNode) = {
-    val lessDummy    = new ListNode(0); var lessTail: ListNode    = lessDummy
-    val greaterDummy = new ListNode(0); var greaterTail: ListNode = greaterDummy
-    var c = head
-    while (c != null) {
-      val nxt = c.next
-      if (c.value < X) { lessTail.next = c; c.prev = lessTail; lessTail = c }
-      else              { greaterTail.next = c; c.prev = greaterTail; greaterTail = c }
-      c = nxt
+class ListNode(var v: Int, var prev: ListNode = null, var next: ListNode = null)
+
+object Main extends App {
+  class Solution {
+    def splitListByValue(head: ListNode, X: Int): (ListNode, ListNode) = {
+      val lessDummy    = new ListNode(0); var lessTail: ListNode    = lessDummy
+      val greaterDummy = new ListNode(0); var greaterTail: ListNode = greaterDummy
+      var c = head
+      while (c != null) {
+        val nxt = c.next
+        if (c.v < X) { lessTail.next = c; c.prev = lessTail; lessTail = c }
+        else          { greaterTail.next = c; c.prev = greaterTail; greaterTail = c }
+        c = nxt
+      }
+      if (lessDummy.next    != null) lessDummy.next.prev    = null; lessTail.next    = null
+      if (greaterDummy.next != null) greaterDummy.next.prev = null; greaterTail.next = null
+      (lessDummy.next, greaterDummy.next)
     }
-    if (lessDummy.next    != null) lessDummy.next.prev    = null; lessTail.next    = null
-    if (greaterDummy.next != null) greaterDummy.next.prev = null; greaterTail.next = null
-    (lessDummy.next, greaterDummy.next)
+
+    def mergeLessAndGreaterLists(lessHead: ListNode, greaterHead: ListNode): ListNode = {
+      if (lessHead    == null) return greaterHead
+      if (greaterHead == null) return lessHead
+      var current = lessHead
+      while (current.next != null) current = current.next
+      current.next     = greaterHead
+      greaterHead.prev = current
+      lessHead
+    }
+
+    def valuePartition(head: ListNode, X: Int): ListNode = {
+      if (head == null || head.next == null) return head
+      val (lh, gh) = splitListByValue(head, X)
+      mergeLessAndGreaterLists(lh, gh)
+    }
   }
 
-  def mergeLessAndGreaterLists(lessHead: ListNode, greaterHead: ListNode): ListNode = {
-    if (lessHead    == null) return greaterHead
-    if (greaterHead == null) return lessHead
-    var current = lessHead
-    while (current.next != null) current = current.next
-    current.next     = greaterHead
-    greaterHead.prev = current
-    lessHead
-  }
-
-  def valuePartition(head: ListNode, X: Int): ListNode = {
-    if (head == null || head.next == null) return head
-    val (lh, gh) = splitListByValue(head, X)
-    mergeLessAndGreaterLists(lh, gh)
-  }
+  val n1 = new ListNode(1); val n2 = new ListNode(4); val n3 = new ListNode(3); val n4 = new ListNode(2); val n5 = new ListNode(5); val n6 = new ListNode(2)
+  n1.next = n2; n2.prev = n1; n2.next = n3; n3.prev = n2; n3.next = n4; n4.prev = n3; n4.next = n5; n5.prev = n4; n5.next = n6; n6.prev = n5
+  var head = new Solution().valuePartition(n1, 3)
+  while (head != null) { print(s"${head.v} "); head = head.next }  // 1 2 2 4 3 5
 }
 ```
 
@@ -803,29 +849,41 @@ class Solution:
 ```
 
 ```java run
-class Solution {
-    public ListNode[] splitLastNode(ListNode head) {
-        ListNode current = head, previous = null;
-        while (current.next != null) {
-            previous = current;
-            current  = current.next;
+public class Main {
+    static class ListNode { int val; ListNode prev, next; ListNode(int v){val=v;} }
+
+    static class Solution {
+        public ListNode[] splitLastNode(ListNode head) {
+            ListNode current = head, previous = null;
+            while (current.next != null) {
+                previous = current;
+                current  = current.next;
+            }
+            if (previous != null) previous.next = null;
+            if (current  != null) current.prev  = null;
+            return new ListNode[]{head, current};
         }
-        if (previous != null) previous.next = null;
-        if (current  != null) current.prev  = null;
-        return new ListNode[]{head, current};
+
+        public ListNode mergeLastNode(ListNode lastNode, ListNode firstNode) {
+            if (lastNode == null) return firstNode;
+            lastNode.next = firstNode;
+            if (firstNode != null) firstNode.prev = lastNode;
+            return lastNode;
+        }
+
+        public ListNode relocateNode(ListNode head) {
+            if (head == null || head.next == null) return head;
+            ListNode[] heads = splitLastNode(head);
+            return mergeLastNode(heads[1], heads[0]);
+        }
     }
 
-    public ListNode mergeLastNode(ListNode lastNode, ListNode firstNode) {
-        if (lastNode == null) return firstNode;
-        lastNode.next = firstNode;
-        if (firstNode != null) firstNode.prev = lastNode;
-        return lastNode;
-    }
-
-    public ListNode relocateNode(ListNode head) {
-        if (head == null || head.next == null) return head;
-        ListNode[] heads = splitLastNode(head);
-        return mergeLastNode(heads[1], heads[0]);
+    public static void main(String[] args) {
+        ListNode n1=new ListNode(5),n2=new ListNode(7),n3=new ListNode(3),n4=new ListNode(10),n5=new ListNode(6),n6=new ListNode(8);
+        n1.next=n2; n2.prev=n1; n2.next=n3; n3.prev=n2; n3.next=n4; n4.prev=n3; n4.next=n5; n5.prev=n4; n5.next=n6; n6.prev=n5;
+        ListNode head = new Solution().relocateNode(n1);
+        for (ListNode c=head;c!=null;c=c.next) System.out.print(c.val+" ");
+        // 8 5 7 3 10 6
     }
 }
 ```
@@ -844,18 +902,27 @@ ListNode* relocateNode(ListNode *head) {
 ```
 
 ```scala run
-class Solution {
-  def relocateNode(head: ListNode): ListNode = {
-    if (head == null || head.next == null) return head
-    var current  = head
-    var previous: ListNode = null
-    while (current.next != null) { previous = current; current = current.next }
-    if (previous != null) previous.next = null
-    current.prev = null
-    current.next = head
-    head.prev    = current
-    current
+class ListNode(var v: Int, var prev: ListNode = null, var next: ListNode = null)
+
+object Main extends App {
+  class Solution {
+    def relocateNode(head: ListNode): ListNode = {
+      if (head == null || head.next == null) return head
+      var current  = head
+      var previous: ListNode = null
+      while (current.next != null) { previous = current; current = current.next }
+      if (previous != null) previous.next = null
+      current.prev = null
+      current.next = head
+      head.prev    = current
+      current
+    }
   }
+
+  val n1 = new ListNode(5); val n2 = new ListNode(7); val n3 = new ListNode(3); val n4 = new ListNode(10); val n5 = new ListNode(6); val n6 = new ListNode(8)
+  n1.next = n2; n2.prev = n1; n2.next = n3; n3.prev = n2; n3.next = n4; n4.prev = n3; n4.next = n5; n5.prev = n4; n5.next = n6; n6.prev = n5
+  var head = new Solution().relocateNode(n1)
+  while (head != null) { print(s"${head.v} "); head = head.next }  // 8 5 7 3 10 6
 }
 ```
 
@@ -1051,40 +1118,52 @@ class Solution:
 ```java run
 import java.util.*;
 
-class Solution {
-    public List<ListNode> splitByParity(ListNode head) {
-        ListNode oddDummy  = new ListNode(0), oddTail  = oddDummy;
-        ListNode evenDummy = new ListNode(0), evenTail = evenDummy;
-        ListNode current = head;
-        int counter = 1;
-        while (current != null) {
-            ListNode nxt = current.next;
-            if (counter % 2 == 1) {
-                oddTail.next = current; current.prev = oddTail;  oddTail  = oddTail.next;
-            } else {
-                evenTail.next = current; current.prev = evenTail; evenTail = evenTail.next;
+public class Main {
+    static class ListNode { int val; ListNode prev, next; ListNode(int v){val=v;} }
+
+    static class Solution {
+        public List<ListNode> splitByParity(ListNode head) {
+            ListNode oddDummy  = new ListNode(0), oddTail  = oddDummy;
+            ListNode evenDummy = new ListNode(0), evenTail = evenDummy;
+            ListNode current = head;
+            int counter = 1;
+            while (current != null) {
+                ListNode nxt = current.next;
+                if (counter % 2 == 1) {
+                    oddTail.next = current; current.prev = oddTail;  oddTail  = oddTail.next;
+                } else {
+                    evenTail.next = current; current.prev = evenTail; evenTail = evenTail.next;
+                }
+                current = nxt; counter++;
             }
-            current = nxt; counter++;
+            if (oddDummy.next  != null) oddDummy.next.prev  = null; oddTail.next  = null;
+            if (evenDummy.next != null) evenDummy.next.prev = null; evenTail.next = null;
+            return Arrays.asList(oddDummy.next, evenDummy.next);
         }
-        if (oddDummy.next  != null) oddDummy.next.prev  = null; oddTail.next  = null;
-        if (evenDummy.next != null) evenDummy.next.prev = null; evenTail.next = null;
-        return Arrays.asList(oddDummy.next, evenDummy.next);
+
+        public ListNode mergeOddAndEvenLists(ListNode oddHead, ListNode evenHead) {
+            if (oddHead  == null) return evenHead;
+            if (evenHead == null) return oddHead;
+            ListNode current = oddHead;
+            while (current.next != null) current = current.next;
+            current.next   = evenHead;
+            evenHead.prev  = current;
+            return oddHead;
+        }
+
+        public ListNode parityOrder(ListNode head) {
+            if (head == null || head.next == null) return head;
+            List<ListNode> heads = splitByParity(head);
+            return mergeOddAndEvenLists(heads.get(0), heads.get(1));
+        }
     }
 
-    public ListNode mergeOddAndEvenLists(ListNode oddHead, ListNode evenHead) {
-        if (oddHead  == null) return evenHead;
-        if (evenHead == null) return oddHead;
-        ListNode current = oddHead;
-        while (current.next != null) current = current.next;
-        current.next   = evenHead;
-        evenHead.prev  = current;
-        return oddHead;
-    }
-
-    public ListNode parityOrder(ListNode head) {
-        if (head == null || head.next == null) return head;
-        List<ListNode> heads = splitByParity(head);
-        return mergeOddAndEvenLists(heads.get(0), heads.get(1));
+    public static void main(String[] args) {
+        ListNode n1=new ListNode(2),n2=new ListNode(1),n3=new ListNode(3),n4=new ListNode(4),n5=new ListNode(8);
+        n1.next=n2; n2.prev=n1; n2.next=n3; n3.prev=n2; n3.next=n4; n4.prev=n3; n4.next=n5; n5.prev=n4;
+        ListNode head = new Solution().parityOrder(n1);
+        for (ListNode c=head;c!=null;c=c.next) System.out.print(c.val+" ");
+        // 2 3 8 1 4
     }
 }
 ```
@@ -1117,32 +1196,41 @@ ListNode* parityOrder(ListNode *head) {
 ```
 
 ```scala run
-class Solution {
-  def parityOrder(head: ListNode): ListNode = {
-    if (head == null || head.next == null) return head
-    val oddDummy  = new ListNode(0); var oddTail: ListNode  = oddDummy
-    val evenDummy = new ListNode(0); var evenTail: ListNode = evenDummy
-    var current = head
-    var counter = 1
-    while (current != null) {
-      val nxt = current.next
-      if (counter % 2 == 1) { oddTail.next  = current; current.prev = oddTail;  oddTail  = current }
-      else                   { evenTail.next = current; current.prev = evenTail; evenTail = current }
-      current = nxt; counter += 1
-    }
-    if (oddDummy.next  != null) oddDummy.next.prev  = null; oddTail.next  = null
-    if (evenDummy.next != null) evenDummy.next.prev = null; evenTail.next = null
+class ListNode(var v: Int, var prev: ListNode = null, var next: ListNode = null)
 
-    val oddHead  = oddDummy.next
-    val evenHead = evenDummy.next
-    if (oddHead  == null) return evenHead
-    if (evenHead == null) return oddHead
-    var c = oddHead
-    while (c.next != null) c = c.next
-    c.next        = evenHead
-    evenHead.prev = c
-    oddHead
+object Main extends App {
+  class Solution {
+    def parityOrder(head: ListNode): ListNode = {
+      if (head == null || head.next == null) return head
+      val oddDummy  = new ListNode(0); var oddTail: ListNode  = oddDummy
+      val evenDummy = new ListNode(0); var evenTail: ListNode = evenDummy
+      var current = head
+      var counter = 1
+      while (current != null) {
+        val nxt = current.next
+        if (counter % 2 == 1) { oddTail.next  = current; current.prev = oddTail;  oddTail  = current }
+        else                   { evenTail.next = current; current.prev = evenTail; evenTail = current }
+        current = nxt; counter += 1
+      }
+      if (oddDummy.next  != null) oddDummy.next.prev  = null; oddTail.next  = null
+      if (evenDummy.next != null) evenDummy.next.prev = null; evenTail.next = null
+
+      val oddHead  = oddDummy.next
+      val evenHead = evenDummy.next
+      if (oddHead  == null) return evenHead
+      if (evenHead == null) return oddHead
+      var c = oddHead
+      while (c.next != null) c = c.next
+      c.next        = evenHead
+      evenHead.prev = c
+      oddHead
+    }
   }
+
+  val n1 = new ListNode(2); val n2 = new ListNode(1); val n3 = new ListNode(3); val n4 = new ListNode(4); val n5 = new ListNode(8)
+  n1.next = n2; n2.prev = n1; n2.next = n3; n3.prev = n2; n3.next = n4; n4.prev = n3; n4.next = n5; n5.prev = n4
+  var head = new Solution().parityOrder(n1)
+  while (head != null) { print(s"${head.v} "); head = head.next }  // 2 3 8 1 4
 }
 ```
 
@@ -1339,39 +1427,51 @@ class Solution:
 ```java run
 import java.util.*;
 
-class Solution {
-    public List<ListNode> splitListByValue(ListNode head, int X) {
-        ListNode lessDummy    = new ListNode(0), lessTail    = lessDummy;
-        ListNode greaterDummy = new ListNode(0), greaterTail = greaterDummy;
-        ListNode current = head;
-        while (current != null) {
-            ListNode nxt = current.next;
-            if (current.val < X) {
-                lessTail.next = current; current.prev = lessTail;    lessTail    = lessTail.next;
-            } else {
-                greaterTail.next = current; current.prev = greaterTail; greaterTail = greaterTail.next;
+public class Main {
+    static class ListNode { int val; ListNode prev, next; ListNode(int v){val=v;} }
+
+    static class Solution {
+        public List<ListNode> splitListByValue(ListNode head, int X) {
+            ListNode lessDummy    = new ListNode(0), lessTail    = lessDummy;
+            ListNode greaterDummy = new ListNode(0), greaterTail = greaterDummy;
+            ListNode current = head;
+            while (current != null) {
+                ListNode nxt = current.next;
+                if (current.val < X) {
+                    lessTail.next = current; current.prev = lessTail;    lessTail    = lessTail.next;
+                } else {
+                    greaterTail.next = current; current.prev = greaterTail; greaterTail = greaterTail.next;
+                }
+                current = nxt;
             }
-            current = nxt;
+            if (lessDummy.next    != null) lessDummy.next.prev    = null; lessTail.next    = null;
+            if (greaterDummy.next != null) greaterDummy.next.prev = null; greaterTail.next = null;
+            return Arrays.asList(lessDummy.next, greaterDummy.next);
         }
-        if (lessDummy.next    != null) lessDummy.next.prev    = null; lessTail.next    = null;
-        if (greaterDummy.next != null) greaterDummy.next.prev = null; greaterTail.next = null;
-        return Arrays.asList(lessDummy.next, greaterDummy.next);
+
+        public ListNode mergeLessAndGreaterLists(ListNode lessHead, ListNode greaterHead) {
+            if (lessHead    == null) return greaterHead;
+            if (greaterHead == null) return lessHead;
+            ListNode current = lessHead;
+            while (current.next != null) current = current.next;
+            current.next      = greaterHead;
+            greaterHead.prev  = current;
+            return lessHead;
+        }
+
+        public ListNode valuePartition(ListNode head, int X) {
+            if (head == null || head.next == null) return head;
+            List<ListNode> heads = splitListByValue(head, X);
+            return mergeLessAndGreaterLists(heads.get(0), heads.get(1));
+        }
     }
 
-    public ListNode mergeLessAndGreaterLists(ListNode lessHead, ListNode greaterHead) {
-        if (lessHead    == null) return greaterHead;
-        if (greaterHead == null) return lessHead;
-        ListNode current = lessHead;
-        while (current.next != null) current = current.next;
-        current.next      = greaterHead;
-        greaterHead.prev  = current;
-        return lessHead;
-    }
-
-    public ListNode valuePartition(ListNode head, int X) {
-        if (head == null || head.next == null) return head;
-        List<ListNode> heads = splitListByValue(head, X);
-        return mergeLessAndGreaterLists(heads.get(0), heads.get(1));
+    public static void main(String[] args) {
+        ListNode n1=new ListNode(1),n2=new ListNode(4),n3=new ListNode(3),n4=new ListNode(2),n5=new ListNode(5),n6=new ListNode(2);
+        n1.next=n2; n2.prev=n1; n2.next=n3; n3.prev=n2; n3.next=n4; n4.prev=n3; n4.next=n5; n5.prev=n4; n5.next=n6; n6.prev=n5;
+        ListNode head = new Solution().valuePartition(n1, 3);
+        for (ListNode c=head;c!=null;c=c.next) System.out.print(c.val+" ");
+        // 1 2 2 4 3 5
     }
 }
 ```
@@ -1402,30 +1502,39 @@ ListNode* valuePartition(ListNode *head, int X) {
 ```
 
 ```scala run
-class Solution {
-  def valuePartition(head: ListNode, X: Int): ListNode = {
-    if (head == null || head.next == null) return head
-    val lessDummy    = new ListNode(0); var lessTail: ListNode    = lessDummy
-    val greaterDummy = new ListNode(0); var greaterTail: ListNode = greaterDummy
-    var c = head
-    while (c != null) {
-      val nxt = c.next
-      if (c.value < X) { lessTail.next = c; c.prev = lessTail; lessTail = c }
-      else              { greaterTail.next = c; c.prev = greaterTail; greaterTail = c }
-      c = nxt
-    }
-    if (lessDummy.next    != null) lessDummy.next.prev    = null; lessTail.next    = null
-    if (greaterDummy.next != null) greaterDummy.next.prev = null; greaterTail.next = null
+class ListNode(var v: Int, var prev: ListNode = null, var next: ListNode = null)
 
-    val lh = lessDummy.next; val gh = greaterDummy.next
-    if (lh == null) return gh
-    if (gh == null) return lh
-    var t = lh
-    while (t.next != null) t = t.next
-    t.next  = gh
-    gh.prev = t
-    lh
+object Main extends App {
+  class Solution {
+    def valuePartition(head: ListNode, X: Int): ListNode = {
+      if (head == null || head.next == null) return head
+      val lessDummy    = new ListNode(0); var lessTail: ListNode    = lessDummy
+      val greaterDummy = new ListNode(0); var greaterTail: ListNode = greaterDummy
+      var c = head
+      while (c != null) {
+        val nxt = c.next
+        if (c.v < X) { lessTail.next = c; c.prev = lessTail; lessTail = c }
+        else          { greaterTail.next = c; c.prev = greaterTail; greaterTail = c }
+        c = nxt
+      }
+      if (lessDummy.next    != null) lessDummy.next.prev    = null; lessTail.next    = null
+      if (greaterDummy.next != null) greaterDummy.next.prev = null; greaterTail.next = null
+
+      val lh = lessDummy.next; val gh = greaterDummy.next
+      if (lh == null) return gh
+      if (gh == null) return lh
+      var t = lh
+      while (t.next != null) t = t.next
+      t.next  = gh
+      gh.prev = t
+      lh
+    }
   }
+
+  val n1 = new ListNode(1); val n2 = new ListNode(4); val n3 = new ListNode(3); val n4 = new ListNode(2); val n5 = new ListNode(5); val n6 = new ListNode(2)
+  n1.next = n2; n2.prev = n1; n2.next = n3; n3.prev = n2; n3.next = n4; n4.prev = n3; n4.next = n5; n5.prev = n4; n5.next = n6; n6.prev = n5
+  var head = new Solution().valuePartition(n1, 3)
+  while (head != null) { print(s"${head.v} "); head = head.next }  // 1 2 2 4 3 5
 }
 ```
 
@@ -1650,61 +1759,73 @@ class Solution:
 ```
 
 ```java run
-class Solution {
-    public ListNode reverse(ListNode head) {
-        ListNode current = head, previous = null;
-        while (current != null) {
-            ListNode nxt = current.next;
-            ListNode tmp = current.prev; current.prev = current.next; current.next = tmp; // swap
-            previous = current;
-            current  = nxt;
-        }
-        return previous;
-    }
+public class Main {
+    static class ListNode { int val; ListNode prev, next; ListNode(int v){val=v;} }
 
-    public ListNode[] splitListInHalf(ListNode head) {
-        ListNode slow = head, fast = head;
-        while (fast != null && fast.next != null) { slow = slow.next; fast = fast.next.next; }
-        ListNode secondHalf;
-        if (fast == null) {                           // even length
-            secondHalf      = slow;
-            slow.prev.next  = null;
-            slow.prev       = null;
-        } else {                                       // odd length
-            secondHalf      = slow.next;
-            slow.next.prev  = null;
-            slow.next       = null;
-        }
-        return new ListNode[]{head, secondHalf};
-    }
-
-    public ListNode mergeAlternateNodes(ListNode firstHalf, ListNode secondHalf) {
-        ListNode dummy = new ListNode(0), tail = dummy;
-        boolean mergeFirst = true;
-        while (firstHalf != null && secondHalf != null) {
-            if (mergeFirst) {
-                tail.next       = firstHalf;
-                firstHalf.prev  = tail;
-                firstHalf       = firstHalf.next;
-            } else {
-                tail.next        = secondHalf;
-                secondHalf.prev  = tail;
-                secondHalf       = secondHalf.next;
+    static class Solution {
+        public ListNode reverse(ListNode head) {
+            ListNode current = head, previous = null;
+            while (current != null) {
+                ListNode nxt = current.next;
+                ListNode tmp = current.prev; current.prev = current.next; current.next = tmp; // swap
+                previous = current;
+                current  = nxt;
             }
-            tail = tail.next;
-            mergeFirst = !mergeFirst;
+            return previous;
         }
-        if (firstHalf  != null) { tail.next = firstHalf;  firstHalf.prev  = tail; }
-        if (secondHalf != null) { tail.next = secondHalf; secondHalf.prev = tail; }
-        if (dummy.next != null) dummy.next.prev = null;
-        return dummy.next;
+
+        public ListNode[] splitListInHalf(ListNode head) {
+            ListNode slow = head, fast = head;
+            while (fast != null && fast.next != null) { slow = slow.next; fast = fast.next.next; }
+            ListNode secondHalf;
+            if (fast == null) {                           // even length
+                secondHalf      = slow;
+                slow.prev.next  = null;
+                slow.prev       = null;
+            } else {                                       // odd length
+                secondHalf      = slow.next;
+                slow.next.prev  = null;
+                slow.next       = null;
+            }
+            return new ListNode[]{head, secondHalf};
+        }
+
+        public ListNode mergeAlternateNodes(ListNode firstHalf, ListNode secondHalf) {
+            ListNode dummy = new ListNode(0), tail = dummy;
+            boolean mergeFirst = true;
+            while (firstHalf != null && secondHalf != null) {
+                if (mergeFirst) {
+                    tail.next       = firstHalf;
+                    firstHalf.prev  = tail;
+                    firstHalf       = firstHalf.next;
+                } else {
+                    tail.next        = secondHalf;
+                    secondHalf.prev  = tail;
+                    secondHalf       = secondHalf.next;
+                }
+                tail = tail.next;
+                mergeFirst = !mergeFirst;
+            }
+            if (firstHalf  != null) { tail.next = firstHalf;  firstHalf.prev  = tail; }
+            if (secondHalf != null) { tail.next = secondHalf; secondHalf.prev = tail; }
+            if (dummy.next != null) dummy.next.prev = null;
+            return dummy.next;
+        }
+
+        public void shuffleList(ListNode head) {
+            if (head == null || head.next == null) return;
+            ListNode[] halves = splitListInHalf(head);
+            ListNode reversedSecondHalf = reverse(halves[1]);
+            mergeAlternateNodes(halves[0], reversedSecondHalf);
+        }
     }
 
-    public void shuffleList(ListNode head) {
-        if (head == null || head.next == null) return;
-        ListNode[] halves = splitListInHalf(head);
-        ListNode reversedSecondHalf = reverse(halves[1]);
-        mergeAlternateNodes(halves[0], reversedSecondHalf);
+    public static void main(String[] args) {
+        ListNode n1=new ListNode(1),n2=new ListNode(2),n3=new ListNode(3),n4=new ListNode(4);
+        n1.next=n2; n2.prev=n1; n2.next=n3; n3.prev=n2; n3.next=n4; n4.prev=n3;
+        new Solution().shuffleList(n1);
+        for (ListNode c=n1;c!=null;c=c.next) System.out.print(c.val+" ");
+        // 1 4 2 3
     }
 }
 ```
@@ -1761,47 +1882,56 @@ void shuffleList(ListNode *head) {
 ```
 
 ```scala run
-class Solution {
-  def reverse(head: ListNode): ListNode = {
-    var current = head; var previous: ListNode = null
-    while (current != null) {
-      val nxt = current.next
-      val tmp = current.prev; current.prev = current.next; current.next = tmp
-      previous = current; current = nxt
+class ListNode(var v: Int, var prev: ListNode = null, var next: ListNode = null)
+
+object Main extends App {
+  class Solution {
+    def reverse(head: ListNode): ListNode = {
+      var current = head; var previous: ListNode = null
+      while (current != null) {
+        val nxt = current.next
+        val tmp = current.prev; current.prev = current.next; current.next = tmp
+        previous = current; current = nxt
+      }
+      previous
     }
-    previous
-  }
 
-  def splitListInHalf(head: ListNode): (ListNode, ListNode) = {
-    var slow = head; var fast = head
-    while (fast != null && fast.next != null) { slow = slow.next; fast = fast.next.next }
-    val second: ListNode =
-      if (fast == null) { val s = slow;      slow.prev.next = null; slow.prev = null; s }
-      else               { val s = slow.next; slow.next.prev = null; slow.next = null; s }
-    (head, second)
-  }
-
-  def mergeAlternateNodes(aIn: ListNode, bIn: ListNode): ListNode = {
-    var a = aIn; var b = bIn
-    val dummy = new ListNode(0); var tail: ListNode = dummy
-    var mergeFirst = true
-    while (a != null && b != null) {
-      if (mergeFirst) { tail.next = a; a.prev = tail; a = a.next }
-      else             { tail.next = b; b.prev = tail; b = b.next }
-      tail = tail.next; mergeFirst = !mergeFirst
+    def splitListInHalf(head: ListNode): (ListNode, ListNode) = {
+      var slow = head; var fast = head
+      while (fast != null && fast.next != null) { slow = slow.next; fast = fast.next.next }
+      val second: ListNode =
+        if (fast == null) { val s = slow;      slow.prev.next = null; slow.prev = null; s }
+        else               { val s = slow.next; slow.next.prev = null; slow.next = null; s }
+      (head, second)
     }
-    if (a != null) { tail.next = a; a.prev = tail }
-    if (b != null) { tail.next = b; b.prev = tail }
-    if (dummy.next != null) dummy.next.prev = null
-    dummy.next
+
+    def mergeAlternateNodes(aIn: ListNode, bIn: ListNode): ListNode = {
+      var a = aIn; var b = bIn
+      val dummy = new ListNode(0); var tail: ListNode = dummy
+      var mergeFirst = true
+      while (a != null && b != null) {
+        if (mergeFirst) { tail.next = a; a.prev = tail; a = a.next }
+        else             { tail.next = b; b.prev = tail; b = b.next }
+        tail = tail.next; mergeFirst = !mergeFirst
+      }
+      if (a != null) { tail.next = a; a.prev = tail }
+      if (b != null) { tail.next = b; b.prev = tail }
+      if (dummy.next != null) dummy.next.prev = null
+      dummy.next
+    }
+
+    def shuffleList(head: ListNode): Unit = {
+      if (head == null || head.next == null) return
+      val (first, second) = splitListInHalf(head)
+      val rev = reverse(second)
+      mergeAlternateNodes(first, rev)
+    }
   }
 
-  def shuffleList(head: ListNode): Unit = {
-    if (head == null || head.next == null) return
-    val (first, second) = splitListInHalf(head)
-    val rev = reverse(second)
-    mergeAlternateNodes(first, rev)
-  }
+  val n1 = new ListNode(1); val n2 = new ListNode(2); val n3 = new ListNode(3); val n4 = new ListNode(4)
+  n1.next = n2; n2.prev = n1; n2.next = n3; n3.prev = n2; n3.next = n4; n4.prev = n3
+  new Solution().shuffleList(n1)
+  var c = n1; while (c != null) { print(s"${c.v} "); c = c.next }  // 1 4 2 3
 }
 ```
 

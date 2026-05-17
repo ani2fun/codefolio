@@ -143,15 +143,26 @@ int diameter(TreeNode *root) { g_best = 0; height(root); return g_best; }
 ```
 
 ```scala run
-def diameter(root: TreeNode): Int = {
-  var best = 0
-  def height(n: TreeNode): Int = {
-    if (n == null) return 0
-    val l = height(n.left); val r = height(n.right)
-    best = math.max(best, l + r)
-    1 + math.max(l, r)
+class TreeNode(var value: Int, var left: TreeNode = null, var right: TreeNode = null)
+
+object Main extends App {
+  class Solution {
+    def diameter(root: TreeNode): Int = {
+      var best = 0
+      def height(n: TreeNode): Int = {
+        if (n == null) return 0
+        val l = height(n.left); val r = height(n.right)
+        best = math.max(best, l + r)
+        1 + math.max(l, r)
+      }
+      height(root); best
+    }
   }
-  height(root); best
+
+  val root = new TreeNode(1,
+    new TreeNode(2, new TreeNode(4), new TreeNode(5)),
+    new TreeNode(3))
+  println(new Solution().diameter(root))  // 3
 }
 ```
 
@@ -246,15 +257,24 @@ int descendants_sum_count(TreeNode *root) { g_dsc_count = 0; dsc_sum(root); retu
 ```
 
 ```scala run
-def descendantsSumCount(root: TreeNode): Int = {
-  var count = 0
-  def go(n: TreeNode): Int = {
-    if (n == null) return 0
-    val l = go(n.left); val r = go(n.right)
-    if (n.value == l + r) count += 1
-    n.value + l + r
+class TreeNode(var value: Int, var left: TreeNode = null, var right: TreeNode = null)
+
+object Main extends App {
+  class Solution {
+    def descendantsSumCount(root: TreeNode): Int = {
+      var count = 0
+      def go(n: TreeNode): Int = {
+        if (n == null) return 0
+        val l = go(n.left); val r = go(n.right)
+        if (n.value == l + r) count += 1
+        n.value + l + r
+      }
+      go(root); count
+    }
   }
-  go(root); count
+
+  val root = new TreeNode(10, new TreeNode(6), new TreeNode(4))
+  println(new Solution().descendantsSumCount(root))  // 1
 }
 ```
 
@@ -321,15 +341,24 @@ int distribute_coins(TreeNode *root) { g_moves = 0; excess(root); return g_moves
 ```
 
 ```scala run
-def distributeCoins(root: TreeNode): Int = {
-  var moves = 0
-  def excess(n: TreeNode): Int = {
-    if (n == null) return 0
-    val l = excess(n.left); val r = excess(n.right)
-    moves += math.abs(l) + math.abs(r)
-    l + r + n.value - 1
+class TreeNode(var value: Int, var left: TreeNode = null, var right: TreeNode = null)
+
+object Main extends App {
+  class Solution {
+    def distributeCoins(root: TreeNode): Int = {
+      var moves = 0
+      def excess(n: TreeNode): Int = {
+        if (n == null) return 0
+        val l = excess(n.left); val r = excess(n.right)
+        moves += math.abs(l) + math.abs(r)
+        l + r + n.value - 1
+      }
+      excess(root); moves
+    }
   }
-  excess(root); moves
+
+  val root = new TreeNode(3, new TreeNode(0), new TreeNode(0))
+  println(new Solution().distributeCoins(root))  // 2
 }
 ```
 
@@ -402,19 +431,28 @@ public static List<Integer> mostFrequentSubtreeSum(TreeNode root) {
 ```
 
 ```scala run
-def mostFrequentSubtreeSum(root: TreeNode): List[Int] = {
-  if (root == null) return Nil
-  val freq = scala.collection.mutable.Map[Int, Int]()
-  var maxFreq = 0
-  def go(n: TreeNode): Int = {
-    if (n == null) return 0
-    val s = n.value + go(n.left) + go(n.right)
-    freq(s) = freq.getOrElse(s, 0) + 1
-    if (freq(s) > maxFreq) maxFreq = freq(s)
-    s
+class TreeNode(var value: Int, var left: TreeNode = null, var right: TreeNode = null)
+
+object Main extends App {
+  class Solution {
+    def mostFrequentSubtreeSum(root: TreeNode): List[Int] = {
+      if (root == null) return Nil
+      val freq = scala.collection.mutable.Map[Int, Int]()
+      var maxFreq = 0
+      def go(n: TreeNode): Int = {
+        if (n == null) return 0
+        val s = n.value + go(n.left) + go(n.right)
+        freq(s) = freq.getOrElse(s, 0) + 1
+        if (freq(s) > maxFreq) maxFreq = freq(s)
+        s
+      }
+      go(root)
+      freq.collect { case (k, v) if v == maxFreq => k }.toList
+    }
   }
-  go(root)
-  freq.collect { case (k, v) if v == maxFreq => k }.toList
+
+  val root = new TreeNode(5, new TreeNode(2), new TreeNode(-5))
+  println(new Solution().mostFrequentSubtreeSum(root))  // List(2)
 }
 ```
 
@@ -487,17 +525,28 @@ int longest_monotonic_path(TreeNode *root) { g_lmp_best = 0; lmp(root); return g
 ```
 
 ```scala run
-def longestMonotonicPath(root: TreeNode): Int = {
-  var best = 0
-  def go(n: TreeNode): Int = {
-    if (n == null) return 0
-    val l = go(n.left); val r = go(n.right)
-    val la = if (n.left  != null && n.left.value  == n.value) l + 1 else 0
-    val ra = if (n.right != null && n.right.value == n.value) r + 1 else 0
-    best = math.max(best, la + ra)
-    math.max(la, ra)
+class TreeNode(var value: Int, var left: TreeNode = null, var right: TreeNode = null)
+
+object Main extends App {
+  class Solution {
+    def longestMonotonicPath(root: TreeNode): Int = {
+      var best = 0
+      def go(n: TreeNode): Int = {
+        if (n == null) return 0
+        val l = go(n.left); val r = go(n.right)
+        val la = if (n.left  != null && n.left.value  == n.value) l + 1 else 0
+        val ra = if (n.right != null && n.right.value == n.value) r + 1 else 0
+        best = math.max(best, la + ra)
+        math.max(la, ra)
+      }
+      go(root); best
+    }
   }
-  go(root); best
+
+  val root = new TreeNode(1,
+    new TreeNode(1, new TreeNode(1), null),
+    new TreeNode(1))
+  println(new Solution().longestMonotonicPath(root))  // 3
 }
 ```
 
@@ -574,18 +623,29 @@ int monotonic_subtree_count(TreeNode *root) { g_count = 0; ms(root); return g_co
 ```
 
 ```scala run
-def monotonicSubtreeCount(root: TreeNode): Int = {
-  var count = 0
-  def go(n: TreeNode): Boolean = {
-    if (n == null) return true
-    val lOk = go(n.left); val rOk = go(n.right)
-    if (!lOk || !rOk) return false
-    if (n.left  != null && n.left.value  != n.value) return false
-    if (n.right != null && n.right.value != n.value) return false
-    count += 1
-    true
+class TreeNode(var value: Int, var left: TreeNode = null, var right: TreeNode = null)
+
+object Main extends App {
+  class Solution {
+    def monotonicSubtreeCount(root: TreeNode): Int = {
+      var count = 0
+      def go(n: TreeNode): Boolean = {
+        if (n == null) return true
+        val lOk = go(n.left); val rOk = go(n.right)
+        if (!lOk || !rOk) return false
+        if (n.left  != null && n.left.value  != n.value) return false
+        if (n.right != null && n.right.value != n.value) return false
+        count += 1
+        true
+      }
+      go(root); count
+    }
   }
-  go(root); count
+
+  val root = new TreeNode(5,
+    new TreeNode(1, new TreeNode(5), new TreeNode(5)),
+    new TreeNode(5, null, new TreeNode(5)))
+  println(new Solution().monotonicSubtreeCount(root))  // 4
 }
 ```
 
@@ -660,19 +720,28 @@ public static int pathSumCount(TreeNode root, int target) {
 ```
 
 ```scala run
-def pathSumCount(root: TreeNode, target: Int): Int = {
-  val prefix = scala.collection.mutable.Map[Int, Int](0 -> 1)
-  var answer = 0
-  def go(n: TreeNode, run: Int): Unit = {
-    if (n == null) return
-    val newRun = run + n.value
-    answer += prefix.getOrElse(newRun - target, 0)
-    prefix(newRun) = prefix.getOrElse(newRun, 0) + 1
-    go(n.left,  newRun); go(n.right, newRun)
-    val c = prefix(newRun) - 1
-    if (c == 0) prefix.remove(newRun) else prefix(newRun) = c
+class TreeNode(var value: Int, var left: TreeNode = null, var right: TreeNode = null)
+
+object Main extends App {
+  class Solution {
+    def pathSumCount(root: TreeNode, target: Int): Int = {
+      val prefix = scala.collection.mutable.Map[Int, Int](0 -> 1)
+      var answer = 0
+      def go(n: TreeNode, run: Int): Unit = {
+        if (n == null) return
+        val newRun = run + n.value
+        answer += prefix.getOrElse(newRun - target, 0)
+        prefix(newRun) = prefix.getOrElse(newRun, 0) + 1
+        go(n.left,  newRun); go(n.right, newRun)
+        val c = prefix(newRun) - 1
+        if (c == 0) prefix.remove(newRun) else prefix(newRun) = c
+      }
+      go(root, 0); answer
+    }
   }
-  go(root, 0); answer
+
+  val root = new TreeNode(1, new TreeNode(2), new TreeNode(3))
+  println(new Solution().pathSumCount(root, 4))  // 1
 }
 ```
 

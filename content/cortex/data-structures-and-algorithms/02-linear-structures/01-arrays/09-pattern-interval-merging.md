@@ -443,79 +443,113 @@ The generic merge function below uses `<=` so touching intervals are merged. Fli
 
 
 ```pseudocode
-# Sort by start, then sweep left-to-right merging overlapping intervals into the previous one.
 function mergeOverlapping(arr):
-    if arr is empty: return empty list
-    sort arr by start ascending (tiebreak by end ascending)
-    merged ← [copy of arr[0]]
+
+    # Sort arr by start time
+    sort arr by arr[i][0] ascending
+
+    # Initialize output array and push the first interval
+    merged ← [arr[0]]
+
+    # Loop through arr and merge if overlapping or adjacent
     for i from 1 to length(arr) − 1:
-        last ← last element of merged
-        if arr[i].start ≤ last.end:                   # overlap (or touch) — extend
-            last.end ← max(last.end, arr[i].end)
+
+        # If the current interval overlaps with the last interval in
+        # the merged list, merge them
+        # Change '<=' to '<' for cases where the start of an interval
+        # coinciding with the end of another is not considered an overlap
+        if arr[i][0] ≤ last(merged)[1]:
+            last(merged)[1] ← max(last(merged)[1], arr[i][1])
+
+        # If the current interval is non-overlapping, add it to the
+        # merged list
         else:
-            append copy of arr[i] to merged           # disjoint — start a new run
+            append arr[i] to merged
     return merged
 ```
 
 ```python run
 from typing import List
 
-def merge_overlapping(arr: List[List[int]]) -> List[List[int]]:
-    if not arr:
-        return []
+class Solution:
+    def merge_overlapping(
+        self, arr: List[List[int]]
+    ) -> List[List[int]]:
 
-    # Sort by start ascending; Python's sort is stable so ties on start
-    # naturally break by the original order, but for safety we sort by both.
-    arr.sort(key=lambda x: (x[0], x[1]))
+        # Sort arr by start time
+        arr.sort(key=lambda x: x[0])
 
-    # Seed with the first interval — merged.last is the active highlighter stripe
-    merged = [arr[0][:]]   # copy so we don't mutate input
+        # Initialize output array and push the first interval
+        merged = [arr[0]]
 
-    # Single-pass sweep — compare each interval against the LAST merged one
-    for i in range(1, len(arr)):
-        last = merged[-1]
-        # '<=' treats touching intervals as overlapping. Use '<' to treat
-        # touching intervals (e.g. [1,3] and [3,5]) as separate.
-        if arr[i][0] <= last[1]:
-            # Extend: never shrink — the new interval may sit fully inside last
-            last[1] = max(last[1], arr[i][1])
-        else:
-            # Lift the pen and start a fresh stripe
-            merged.append(arr[i][:])
+        # Loop through arr and merge if overlapping or adjacent
+        for i in range(1, len(arr)):
 
-    return merged
+            # If the current interval overlaps with the last interval in
+            # the merged list, merge them
+            # Change '<=' to '<' for cases where the start of an interval
+            # coinciding with the end of another is not considered an overlap
+            if arr[i][0] <= merged[-1][1]:
+                merged[-1][1] = max(merged[-1][1], arr[i][1])
+
+            # If the current interval is non-overlapping, add it to the
+            # merged list
+            else:
+                merged.append(arr[i])
+        return merged
 
 
-print(merge_overlapping([[1, 3], [2, 6], [8, 10], [15, 18]]))   # [[1,6],[8,10],[15,18]]
-print(merge_overlapping([[1, 4], [4, 5]]))                       # [[1,5]]
-print(merge_overlapping([[1, 4], [2, 3]]))                       # [[1,4]]  (contained)
+sol = Solution()
+print(sol.merge_overlapping([[1, 3], [2, 6], [8, 10], [15, 18]]))   # [[1, 6], [8, 10], [15, 18]]
+print(sol.merge_overlapping([[1, 4], [4, 5]]))                       # [[1, 5]]
+print(sol.merge_overlapping([[1, 4], [2, 3]]))                       # [[1, 4]]
 ```
 
 ```java run
 import java.util.*;
 
-class Solution {
-    public int[][] mergeOverlapping(int[][] arr) {
-        if (arr.length == 0) return new int[0][];
+public class Main {
+    static class Solution {
+        public int[][] mergeOverlapping(int[][] arr) {
 
-        // Sort by start ascending; ties broken by end ascending
-        Arrays.sort(arr, (a, b) -> a[0] != b[0] ? Integer.compare(a[0], b[0])
-                                                : Integer.compare(a[1], b[1]));
+            // Sort arr by start time
+            Arrays.sort(arr, (a, b) -> Integer.compare(a[0], b[0]));
 
-        List<int[]> merged = new ArrayList<>();
-        merged.add(arr[0].clone());   // copy to avoid mutating input row
+            // Initialize output list and push the first interval
+            List<int[]> merged = new ArrayList<>();
+            merged.add(arr[0]);
 
-        for (int i = 1; i < arr.length; i++) {
-            int[] last = merged.get(merged.size() - 1);
-            if (arr[i][0] <= last[1]) {
-                // Extend the active stripe; never shrink — arr[i] may be contained
-                last[1] = Math.max(last[1], arr[i][1]);
-            } else {
-                // Lift the pen and start a new stripe
-                merged.add(arr[i].clone());
+            // Loop through arr and merge if overlapping or adjacent
+            for (int i = 1; i < arr.length; i++) {
+
+                // If the current interval overlaps with the last interval in
+                // the merged list, merge them
+                // Change '<=' to '<' for cases where the start of an interval
+                // coinciding with the end of another is not considered an overlap
+                if (arr[i][0] <= merged.get(merged.size() - 1)[1]) {
+                    merged.get(merged.size() - 1)[1] = Math.max(
+                        merged.get(merged.size() - 1)[1],
+                        arr[i][1]
+                    );
+                }
+
+                // If the current interval is non-overlapping, add it to the
+                // merged list
+                else {
+                    merged.add(arr[i]);
+                }
             }
+
+            // Convert output list to 2D array and return
+            return merged.toArray(new int[merged.size()][]);
         }
-        return merged.toArray(new int[merged.size()][]);
+    }
+
+    public static void main(String[] args) {
+        Solution sol = new Solution();
+        System.out.println(Arrays.deepToString(sol.mergeOverlapping(new int[][]{{1, 3}, {2, 6}, {8, 10}, {15, 18}})));   // [[1, 6], [8, 10], [15, 18]]
+        System.out.println(Arrays.deepToString(sol.mergeOverlapping(new int[][]{{1, 4}, {4, 5}})));                       // [[1, 5]]
+        System.out.println(Arrays.deepToString(sol.mergeOverlapping(new int[][]{{1, 4}, {2, 3}})));                       // [[1, 4]]
     }
 }
 ```
@@ -524,66 +558,110 @@ class Solution {
 #include <stdio.h>
 #include <stdlib.h>
 
-// Comparator: sort by start ascending, then by end ascending
-int cmp(const void* a, const void* b) {
+/* Comparator: sort by start (arr[i][0]) ascending */
+static int cmp(const void* a, const void* b) {
     int* x = *(int**)a;
     int* y = *(int**)b;
-    if (x[0] != y[0]) return x[0] - y[0];
-    return x[1] - y[1];
+    return x[0] - y[0];
 }
 
-// Returns a newly-allocated array of merged intervals; *outSize gets the count
-int** mergeOverlapping(int** arr, int n, int* outSize) {
-    if (n == 0) { *outSize = 0; return NULL; }
+static int int_max(int a, int b) { return a > b ? a : b; }
 
+int** merge_overlapping(int** arr, int n, int* out_size) {
+
+    /* Sort arr by start time */
     qsort(arr, n, sizeof(int*), cmp);
 
+    /* Initialize output array and push the first interval */
     int** merged = (int**)malloc(sizeof(int*) * n);
-    int  count   = 0;
+    int count = 0;
+    merged[count++] = arr[0];
 
-    // Seed with a copy of the first interval
-    merged[count] = (int*)malloc(sizeof(int) * 2);
-    merged[count][0] = arr[0][0];
-    merged[count][1] = arr[0][1];
-    count++;
-
+    /* Loop through arr and merge if overlapping or adjacent */
     for (int i = 1; i < n; i++) {
-        int* last = merged[count - 1];
-        if (arr[i][0] <= last[1]) {
-            // Extend — guard against shrinking when arr[i] is contained
-            if (arr[i][1] > last[1]) last[1] = arr[i][1];
-        } else {
-            merged[count] = (int*)malloc(sizeof(int) * 2);
-            merged[count][0] = arr[i][0];
-            merged[count][1] = arr[i][1];
-            count++;
+
+        /* If the current interval overlaps with the last interval in
+         * the merged list, merge them */
+        /* Change '<=' to '<' for cases where the start of an interval
+         * coinciding with the end of another is not considered an overlap */
+        if (arr[i][0] <= merged[count - 1][1]) {
+            merged[count - 1][1] = int_max(merged[count - 1][1], arr[i][1]);
+        }
+
+        /* If the current interval is non-overlapping, add it to the
+         * merged list */
+        else {
+            merged[count++] = arr[i];
         }
     }
-    *outSize = count;
+    *out_size = count;
     return merged;
+}
+
+static void print_pairs(int** p, int count) {
+    printf("[");
+    for (int i = 0; i < count; i++) {
+        printf("[%d, %d]%s", p[i][0], p[i][1], i + 1 < count ? ", " : "");
+    }
+    printf("]\n");
+}
+
+int main() {
+    int a1[4][2] = {{1, 3}, {2, 6}, {8, 10}, {15, 18}};
+    int* p1[4] = {a1[0], a1[1], a1[2], a1[3]};
+    int c; int** r = merge_overlapping(p1, 4, &c); print_pairs(r, c); free(r);
+
+    int a2[2][2] = {{1, 4}, {4, 5}};
+    int* p2[2] = {a2[0], a2[1]};
+    r = merge_overlapping(p2, 2, &c); print_pairs(r, c); free(r);
+
+    int a3[2][2] = {{1, 4}, {2, 3}};
+    int* p3[2] = {a3[0], a3[1]};
+    r = merge_overlapping(p3, 2, &c); print_pairs(r, c); free(r);
+    return 0;
 }
 ```
 
 ```scala run
-object Solution {
-  def mergeOverlapping(arr: Array[Array[Int]]): Array[Array[Int]] = {
-    if (arr.isEmpty) return Array.empty
+object Main extends App {
+  class Solution {
+    def mergeOverlapping(arr: Array[Array[Int]]): Array[Array[Int]] = {
 
-    // Sort by start ascending; ties broken by end ascending
-    val sorted = arr.sortWith((a, b) => if (a(0) != b(0)) a(0) < b(0) else a(1) < b(1))
-    val merged = scala.collection.mutable.ArrayBuffer[Array[Int]](sorted(0).clone())
+      // Sort arr by start time
+      val sorted = arr.sortBy(_(0))
 
-    for (i <- 1 until sorted.length) {
-      val last = merged.last
-      if (sorted(i)(0) <= last(1)) {
-        // Extend — last(1) might already be larger than sorted(i)(1) (containment)
-        last(1) = math.max(last(1), sorted(i)(1))
-      } else {
-        merged += sorted(i).clone()
+      // Initialize output buffer and push the first interval
+      val merged = scala.collection.mutable.ArrayBuffer[Array[Int]](sorted(0))
+
+      // Loop through arr and merge if overlapping or adjacent
+      for (i <- 1 until sorted.length) {
+
+        // If the current interval overlaps with the last interval in
+        // the merged list, merge them
+        // Change '<=' to '<' for cases where the start of an interval
+        // coinciding with the end of another is not considered an overlap
+        if (sorted(i)(0) <= merged.last(1)) {
+          merged.last(1) = math.max(merged.last(1), sorted(i)(1))
+        }
+        // If the current interval is non-overlapping, add it to the
+        // merged list
+        else {
+          merged += sorted(i)
+        }
       }
+
+      // Convert output buffer to array and return
+      merged.toArray
     }
-    merged.toArray
   }
+
+  val sol = new Solution
+  val r1 = sol.mergeOverlapping(Array(Array(1, 3), Array(2, 6), Array(8, 10), Array(15, 18)))
+  val r2 = sol.mergeOverlapping(Array(Array(1, 4), Array(4, 5)))
+  val r3 = sol.mergeOverlapping(Array(Array(1, 4), Array(2, 3)))
+  println(r1.map(_.mkString("[", ", ", "]")).mkString("[", ", ", "]"))   // [[1, 6], [8, 10], [15, 18]]
+  println(r2.map(_.mkString("[", ", ", "]")).mkString("[", ", ", "]"))   // [[1, 5]]
+  println(r3.map(_.mkString("[", ", ", "]")).mkString("[", ", ", "]"))   // [[1, 4]]
 }
 ```
 
@@ -747,68 +825,105 @@ flowchart TB
 
 
 ```pseudocode
-# Identical algorithm to mergeOverlapping — re-listed here for the delivery scenario.
 function deliveryIntervals(times):
-    if times is empty: return empty list
-    sort times by start ascending (tiebreak by end ascending)
-    merged ← [copy of times[0]]
+
+    # Sort times by start time
+    sort times by times[i][0] ascending
+
+    # Initialize output array and push the first time
+    merged ← [times[0]]
+
+    # Loop through times and merge if overlapping or adjacent
     for i from 1 to length(times) − 1:
-        last ← last element of merged
-        if times[i].start ≤ last.end:
-            last.end ← max(last.end, times[i].end)
+
+        # If the current time overlaps with the last time in
+        # the merged list, merge them
+        if times[i][0] ≤ last(merged)[1]:
+            last(merged)[1] ← max(last(merged)[1], times[i][1])
+
+        # If the current time is non-overlapping, add it to the
+        # merged list
         else:
-            append copy of times[i] to merged
+            append times[i] to merged
     return merged
 ```
 
 ```python run
 from typing import List
 
-def delivery_intervals(times: List[List[int]]) -> List[List[int]]:
-    if not times:
-        return []
+class Solution:
+    def delivery_intervals(
+        self, times: List[List[int]]
+    ) -> List[List[int]]:
 
-    times.sort(key=lambda x: (x[0], x[1]))   # sort by start, then end
-    merged = [times[0][:]]                    # seed with a copy
+        # Sort times by start time
+        times.sort(key=lambda x: x[0])
 
-    for i in range(1, len(times)):
-        last = merged[-1]
-        if times[i][0] <= last[1]:
-            # Overlap — extend the current busy window
-            last[1] = max(last[1], times[i][1])
-        else:
-            # Gap — start a fresh busy window
-            merged.append(times[i][:])
+        # Initialize output array and push the first time
+        merged = [times[0]]
 
-    return merged
+        # Loop through times and merge if overlapping or adjacent
+        for i in range(1, len(times)):
+
+            # If the current time overlaps with the last time in
+            # the merged list, merge them
+            if times[i][0] <= merged[-1][1]:
+                merged[-1][1] = max(merged[-1][1], times[i][1])
+
+            # If the current time is non-overlapping, add it to the
+            # merged list
+            else:
+                merged.append(times[i])
+        return merged
 
 
-print(delivery_intervals([[9, 11], [10, 12], [14, 16], [15, 17], [20, 21]]))
+sol = Solution()
+print(sol.delivery_intervals([[9, 11], [10, 12], [14, 16], [15, 17], [20, 21]]))
 # [[9, 12], [14, 17], [20, 21]]
 ```
 
 ```java run
 import java.util.*;
 
-class Solution {
-    public int[][] deliveryIntervals(int[][] times) {
-        if (times.length == 0) return new int[0][];
+public class Main {
+    static class Solution {
+        public int[][] deliveryIntervals(int[][] times) {
 
-        Arrays.sort(times, (a, b) -> a[0] != b[0] ? Integer.compare(a[0], b[0])
-                                                  : Integer.compare(a[1], b[1]));
+            // Sort times by start time
+            Arrays.sort(times, (a, b) -> Integer.compare(a[0], b[0]));
 
-        List<int[]> merged = new ArrayList<>();
-        merged.add(times[0].clone());
+            // Initialize output list and push the first time
+            List<int[]> merged = new ArrayList<>();
+            merged.add(times[0]);
 
-        for (int i = 1; i < times.length; i++) {
-            int[] last = merged.get(merged.size() - 1);
-            if (times[i][0] <= last[1]) {
-                last[1] = Math.max(last[1], times[i][1]);
-            } else {
-                merged.add(times[i].clone());
+            // Loop through times and merge if overlapping or adjacent
+            for (int i = 1; i < times.length; i++) {
+
+                // If the current time overlaps with the last time in
+                // the merged list, merge them
+                if (times[i][0] <= merged.get(merged.size() - 1)[1]) {
+                    merged.get(merged.size() - 1)[1] = Math.max(
+                        merged.get(merged.size() - 1)[1],
+                        times[i][1]
+                    );
+                }
+
+                // If the current time is non-overlapping, add it to the
+                // merged list
+                else {
+                    merged.add(times[i]);
+                }
             }
+
+            // Convert output list to 2D array and return
+            return merged.toArray(new int[merged.size()][]);
         }
-        return merged.toArray(new int[merged.size()][]);
+    }
+
+    public static void main(String[] args) {
+        Solution sol = new Solution();
+        System.out.println(Arrays.deepToString(sol.deliveryIntervals(new int[][]{{9, 11}, {10, 12}, {14, 16}, {15, 17}, {20, 21}})));
+        // [[9, 12], [14, 17], [20, 21]]
     }
 }
 ```
@@ -817,54 +932,90 @@ class Solution {
 #include <stdio.h>
 #include <stdlib.h>
 
-int cmp(const void* a, const void* b) {
+/* Comparator: sort by start (times[i][0]) ascending */
+static int cmp(const void* a, const void* b) {
     int* x = *(int**)a;
     int* y = *(int**)b;
-    if (x[0] != y[0]) return x[0] - y[0];
-    return x[1] - y[1];
+    return x[0] - y[0];
 }
 
-int** deliveryIntervals(int** times, int n, int* outSize) {
-    if (n == 0) { *outSize = 0; return NULL; }
+static int int_max(int a, int b) { return a > b ? a : b; }
+
+int** delivery_intervals(int** times, int n, int* out_size) {
+
+    /* Sort times by start time */
     qsort(times, n, sizeof(int*), cmp);
 
+    /* Initialize output array and push the first time */
     int** merged = (int**)malloc(sizeof(int*) * n);
-    int  count = 0;
+    int count = 0;
+    merged[count++] = times[0];
 
-    merged[count] = (int*)malloc(sizeof(int) * 2);
-    merged[count][0] = times[0][0];
-    merged[count][1] = times[0][1];
-    count++;
-
+    /* Loop through times and merge if overlapping or adjacent */
     for (int i = 1; i < n; i++) {
-        int* last = merged[count - 1];
-        if (times[i][0] <= last[1]) {
-            if (times[i][1] > last[1]) last[1] = times[i][1];
-        } else {
-            merged[count] = (int*)malloc(sizeof(int) * 2);
-            merged[count][0] = times[i][0];
-            merged[count][1] = times[i][1];
-            count++;
+
+        /* If the current time overlaps with the last time in
+         * the merged list, merge them */
+        if (times[i][0] <= merged[count - 1][1]) {
+            merged[count - 1][1] = int_max(merged[count - 1][1], times[i][1]);
+        }
+
+        /* If the current time is non-overlapping, add it to the
+         * merged list */
+        else {
+            merged[count++] = times[i];
         }
     }
-    *outSize = count;
+    *out_size = count;
     return merged;
+}
+
+int main() {
+    int a[5][2] = {{9, 11}, {10, 12}, {14, 16}, {15, 17}, {20, 21}};
+    int* p[5] = {a[0], a[1], a[2], a[3], a[4]};
+    int c; int** r = delivery_intervals(p, 5, &c);
+    printf("[");
+    for (int i = 0; i < c; i++) printf("[%d, %d]%s", r[i][0], r[i][1], i + 1 < c ? ", " : "");
+    printf("]\n");   /* [[9, 12], [14, 17], [20, 21]] */
+    free(r);
+    return 0;
 }
 ```
 
 ```scala run
-object Solution {
-  def deliveryIntervals(times: Array[Array[Int]]): Array[Array[Int]] = {
-    if (times.isEmpty) return Array.empty
-    val sorted = times.sortWith((a, b) => if (a(0) != b(0)) a(0) < b(0) else a(1) < b(1))
-    val merged = scala.collection.mutable.ArrayBuffer[Array[Int]](sorted(0).clone())
-    for (i <- 1 until sorted.length) {
-      val last = merged.last
-      if (sorted(i)(0) <= last(1)) last(1) = math.max(last(1), sorted(i)(1))
-      else merged += sorted(i).clone()
+object Main extends App {
+  class Solution {
+    def deliveryIntervals(times: Array[Array[Int]]): Array[Array[Int]] = {
+
+      // Sort times by start time
+      val sorted = times.sortBy(_(0))
+
+      // Initialize output buffer and push the first time
+      val merged = scala.collection.mutable.ArrayBuffer[Array[Int]](sorted(0))
+
+      // Loop through times and merge if overlapping or adjacent
+      for (i <- 1 until sorted.length) {
+
+        // If the current time overlaps with the last time in
+        // the merged list, merge them
+        if (sorted(i)(0) <= merged.last(1)) {
+          merged.last(1) = math.max(merged.last(1), sorted(i)(1))
+        }
+        // If the current time is non-overlapping, add it to the
+        // merged list
+        else {
+          merged += sorted(i)
+        }
+      }
+
+      // Convert output buffer to array and return
+      merged.toArray
     }
-    merged.toArray
   }
+
+  val sol = new Solution
+  val r = sol.deliveryIntervals(Array(Array(9, 11), Array(10, 12), Array(14, 16), Array(15, 17), Array(20, 21)))
+  println(r.map(_.mkString("[", ", ", "]")).mkString("[", ", ", "]"))   // [[9, 12], [14, 17], [20, 21]]
 }
 ```
 

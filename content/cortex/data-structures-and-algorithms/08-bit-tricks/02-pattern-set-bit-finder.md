@@ -122,10 +122,12 @@ if __name__ == "__main__":
 ```
 
 ```java run
-public class Solution {
-    public int onlySetBit(int num) {
-        if (num <= 0 || (num & (num - 1)) != 0) return -1;
-        return (int) (Math.log(num) / Math.log(2)) + 1;
+public class Main {
+    static class Solution {
+        public int onlySetBit(int num) {
+            if (num <= 0 || (num & (num - 1)) != 0) return -1;
+            return (int) (Math.log(num) / Math.log(2)) + 1;
+        }
     }
 
     public static void main(String[] args) {
@@ -153,14 +155,14 @@ int main(void) {
 ```
 
 ```scala run
-class Solution {
-  def onlySetBit(num: Int): Int = {
-    if (num <= 0 || (num & (num - 1)) != 0) -1
-    else (math.log(num) / math.log(2)).toInt + 1
-  }
-}
-
 object Main extends App {
+  class Solution {
+    def onlySetBit(num: Int): Int = {
+      if (num <= 0 || (num & (num - 1)) != 0) -1
+      else (math.log(num) / math.log(2)).toInt + 1
+    }
+  }
+
   println(new Solution().onlySetBit(16))   // 5
 }
 ```
@@ -236,10 +238,12 @@ if __name__ == "__main__":
 ```
 
 ```java run
-public class Solution {
-    public int rightmostSetBit(int num) {
-        if (num == 0) return 0;
-        return Integer.numberOfTrailingZeros(num) + 1;
+public class Main {
+    static class Solution {
+        public int rightmostSetBit(int num) {
+            if (num == 0) return 0;
+            return Integer.numberOfTrailingZeros(num) + 1;
+        }
     }
 
     public static void main(String[] args) {
@@ -264,13 +268,13 @@ int main(void) {
 ```
 
 ```scala run
-class Solution {
-  def rightmostSetBit(num: Int): Int = {
-    if (num == 0) 0 else Integer.numberOfTrailingZeros(num) + 1
-  }
-}
-
 object Main extends App {
+  class Solution {
+    def rightmostSetBit(num: Int): Int = {
+      if (num == 0) 0 else Integer.numberOfTrailingZeros(num) + 1
+    }
+  }
+
   println(new Solution().rightmostSetBit(10))   // 2
 }
 ```

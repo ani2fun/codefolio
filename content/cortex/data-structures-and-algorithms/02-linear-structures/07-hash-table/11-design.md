@@ -319,24 +319,24 @@ int main() {
 ```scala run
 import scala.collection.mutable
 
-class LRUCache(capacity: Int) {
-  // LinkedHashMap preserves insertion order; we re-insert on every access.
-  private val map = mutable.LinkedHashMap[Int, Int]()
+object Main extends App {
+  class LRUCache(capacity: Int) {
+    // LinkedHashMap preserves insertion order; we re-insert on every access.
+    private val map = mutable.LinkedHashMap[Int, Int]()
 
-  def get(key: Int): Int = {
-    map.remove(key) match {
-      case Some(v) => map.put(key, v); v
-      case None    => -1
+    def get(key: Int): Int = {
+      map.remove(key) match {
+        case Some(v) => map.put(key, v); v
+        case None    => -1
+      }
+    }
+    def put(key: Int, value: Int): Unit = {
+      map.remove(key)             // re-insertion bumps recency
+      if (map.size == capacity) map.remove(map.head._1)
+      map.put(key, value)
     }
   }
-  def put(key: Int, value: Int): Unit = {
-    map.remove(key)             // re-insertion bumps recency
-    if (map.size == capacity) map.remove(map.head._1)
-    map.put(key, value)
-  }
-}
 
-object Main extends App {
   val c = new LRUCache(2)
   c.put(1, 10); c.put(2, 20)
   println(c.get(1))   // 10
@@ -577,26 +577,26 @@ int main() {
 import scala.collection.mutable
 import scala.util.Random
 
-class RandomisedSet {
-  private val values = mutable.ArrayBuffer[Int]()
-  private val index  = mutable.Map[Int, Int]()
-
-  def insert(v: Int): Boolean = {
-    if (index.contains(v)) false
-    else { index(v) = values.length; values += v; true }
-  }
-  def remove(v: Int): Boolean = index.get(v) match {
-    case None => false
-    case Some(i) =>
-      val last = values.last
-      values(i) = last; index(last) = i
-      values.trimEnd(1); index -= v
-      true
-  }
-  def getRandom(): Int = values(Random.nextInt(values.length))
-}
-
 object Main extends App {
+  class RandomisedSet {
+    private val values = mutable.ArrayBuffer[Int]()
+    private val index  = mutable.Map[Int, Int]()
+
+    def insert(v: Int): Boolean = {
+      if (index.contains(v)) false
+      else { index(v) = values.length; values += v; true }
+    }
+    def remove(v: Int): Boolean = index.get(v) match {
+      case None => false
+      case Some(i) =>
+        val last = values.last
+        values(i) = last; index(last) = i
+        values.trimEnd(1); index -= v
+        true
+    }
+    def getRandom(): Int = values(Random.nextInt(values.length))
+  }
+
   val s = new RandomisedSet
   println(s.insert(2)); println(s.insert(4)); println(s.insert(6))
   println(s.remove(2))

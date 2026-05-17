@@ -209,18 +209,20 @@ if __name__ == "__main__":
 ```
 
 ```java run
-public class Solution {
-    public int multipleRecursion(int n) {
-        // Base cases
-        if (n <= 0) return 0;
-        if (n == 1) return 1;
+public class Main {
+    static class Solution {
+        public int multipleRecursion(int n) {
+            // Base cases
+            if (n <= 0) return 0;
+            if (n == 1) return 1;
 
-        // Two recursive calls
-        int a = multipleRecursion(n - 1);
-        int b = multipleRecursion(n - 2);
+            // Two recursive calls
+            int a = multipleRecursion(n - 1);
+            int b = multipleRecursion(n - 2);
 
-        // Combine
-        return a + b;
+            // Combine
+            return a + b;
+        }
     }
 
     public static void main(String[] args) {
@@ -247,18 +249,16 @@ int main(void) {
 ```
 
 ```scala run
-class Solution {
-  def multipleRecursion(n: Int): Int = {
-    if (n <= 0) 0
-    else if (n == 1) 1
-    else multipleRecursion(n - 1) + multipleRecursion(n - 2)
+object Main extends App {
+  class Solution {
+    def multipleRecursion(n: Int): Int = {
+      if (n <= 0) 0
+      else if (n == 1) 1
+      else multipleRecursion(n - 1) + multipleRecursion(n - 2)
+    }
   }
-}
 
-object Main {
-  def main(args: Array[String]): Unit = {
-    println(new Solution().multipleRecursion(10))   // 55
-  }
+  println(new Solution().multipleRecursion(10))   // 55
 }
 ```
 
@@ -501,11 +501,13 @@ if __name__ == "__main__":
 ```
 
 ```java run
-public class Solution {
-    public int fibonacci(int n) {
-        if (n == 0) return 0;
-        if (n == 1) return 1;
-        return fibonacci(n - 1) + fibonacci(n - 2);
+public class Main {
+    static class Solution {
+        public int fibonacci(int n) {
+            if (n == 0) return 0;
+            if (n == 1) return 1;
+            return fibonacci(n - 1) + fibonacci(n - 2);
+        }
     }
 
     public static void main(String[] args) {
@@ -530,18 +532,16 @@ int main(void) {
 ```
 
 ```scala run
-class Solution {
-  def fibonacci(n: Int): Int = {
-    if (n == 0) 0
-    else if (n == 1) 1
-    else fibonacci(n - 1) + fibonacci(n - 2)
+object Main extends App {
+  class Solution {
+    def fibonacci(n: Int): Int = {
+      if (n == 0) 0
+      else if (n == 1) 1
+      else fibonacci(n - 1) + fibonacci(n - 2)
+    }
   }
-}
 
-object Main {
-  def main(args: Array[String]): Unit = {
-    println(new Solution().fibonacci(10))
-  }
+  println(new Solution().fibonacci(10))
 }
 ```
 
@@ -741,14 +741,16 @@ if __name__ == "__main__":
 ```
 
 ```java run
-public class Solution {
-    public int zigZagSequence(int n) {
-        if (n == 0) return 1;
-        if (n == 1) return 2;
-        if (n == 2) return 3;
-        return zigZagSequence(n - 1)
-             - zigZagSequence(n - 2)
-             + zigZagSequence(n - 3);
+public class Main {
+    static class Solution {
+        public int zigZagSequence(int n) {
+            if (n == 0) return 1;
+            if (n == 1) return 2;
+            if (n == 2) return 3;
+            return zigZagSequence(n - 1)
+                 - zigZagSequence(n - 2)
+                 + zigZagSequence(n - 3);
+        }
     }
 
     public static void main(String[] args) {
@@ -774,19 +776,17 @@ int main(void) {
 ```
 
 ```scala run
-class Solution {
-  def zigZagSequence(n: Int): Int = n match {
-    case 0 => 1
-    case 1 => 2
-    case 2 => 3
-    case _ => zigZagSequence(n - 1) - zigZagSequence(n - 2) + zigZagSequence(n - 3)
+object Main extends App {
+  class Solution {
+    def zigZagSequence(n: Int): Int = n match {
+      case 0 => 1
+      case 1 => 2
+      case 2 => 3
+      case _ => zigZagSequence(n - 1) - zigZagSequence(n - 2) + zigZagSequence(n - 3)
+    }
   }
-}
 
-object Main {
-  def main(args: Array[String]): Unit = {
-    println(new Solution().zigZagSequence(7))
-  }
+  println(new Solution().zigZagSequence(7))
 }
 ```
 
@@ -974,15 +974,17 @@ if __name__ == "__main__":
 ```
 
 ```java run
-public class Solution {
-    public int climbStairs(int n, int[] steps) {
-        if (n < 0) return 0;
-        if (n == 0) return 1;
-        int total = 0;
-        for (int s : steps) {
-            total += climbStairs(n - s, steps);   // One recursive call per step
+public class Main {
+    static class Solution {
+        public int climbStairs(int n, int[] steps) {
+            if (n < 0) return 0;
+            if (n == 0) return 1;
+            int total = 0;
+            for (int s : steps) {
+                total += climbStairs(n - s, steps);   // One recursive call per step
+            }
+            return total;
         }
-        return total;
     }
 
     public static void main(String[] args) {
@@ -1012,18 +1014,16 @@ int main(void) {
 ```
 
 ```scala run
-class Solution {
-  def climbStairs(n: Int, steps: Array[Int]): Int = {
-    if (n < 0) 0
-    else if (n == 0) 1
-    else steps.map(s => climbStairs(n - s, steps)).sum
+object Main extends App {
+  class Solution {
+    def climbStairs(n: Int, steps: Array[Int]): Int = {
+      if (n < 0) 0
+      else if (n == 0) 1
+      else steps.map(s => climbStairs(n - s, steps)).sum
+    }
   }
-}
 
-object Main {
-  def main(args: Array[String]): Unit = {
-    println(new Solution().climbStairs(3, Array(1, 2, 3)))   // 4
-  }
+  println(new Solution().climbStairs(3, Array(1, 2, 3)))   // 4
 }
 ```
 
@@ -1222,14 +1222,16 @@ if __name__ == "__main__":
 ```
 
 ```java run
-public class Solution {
-    public int catalan(int n) {
-        if (n == 0) return 1;
-        int result = 0;
-        for (int i = 0; i < n; i++) {
-            result += catalan(i) * catalan(n - 1 - i);
+public class Main {
+    static class Solution {
+        public int catalan(int n) {
+            if (n == 0) return 1;
+            int result = 0;
+            for (int i = 0; i < n; i++) {
+                result += catalan(i) * catalan(n - 1 - i);
+            }
+            return result;
         }
-        return result;
     }
 
     public static void main(String[] args) {
@@ -1257,21 +1259,19 @@ int main(void) {
 ```
 
 ```scala run
-class Solution {
-  def catalan(n: Int): Long = {
-    if (n == 0) return 1L
-    var result: Long = 0L
-    for (i <- 0 until n) {
-      result += catalan(i) * catalan(n - 1 - i)
+object Main extends App {
+  class Solution {
+    def catalan(n: Int): Long = {
+      if (n == 0) return 1L
+      var result: Long = 0L
+      for (i <- 0 until n) {
+        result += catalan(i) * catalan(n - 1 - i)
+      }
+      result
     }
-    result
   }
-}
 
-object Main {
-  def main(args: Array[String]): Unit = {
-    println(new Solution().catalan(7))   // 429
-  }
+  println(new Solution().catalan(7))   // 429
 }
 ```
 

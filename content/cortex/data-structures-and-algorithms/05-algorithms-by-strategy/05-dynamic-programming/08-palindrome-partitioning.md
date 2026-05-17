@@ -288,25 +288,27 @@ if __name__ == "__main__":
 ```
 
 ```java run
-public class Solution {
-    public int minPalindromeCuts(String s) {
-        int n = s.length();
-        if (n <= 1) return 0;
-        boolean[][] isPalin = new boolean[n][n];
-        int[] cuts = new int[n];
-        for (int end = 0; end < n; end++) {
-            int minCuts = end;
-            for (int start = 0; start <= end; start++) {
-                if (s.charAt(start) == s.charAt(end)
-                        && (end - start <= 2 || isPalin[start + 1][end - 1])) {
-                    isPalin[start][end] = true;
-                    if (start == 0) minCuts = 0;
-                    else minCuts = Math.min(minCuts, cuts[start - 1] + 1);
+public class Main {
+    static class Solution {
+        public int minPalindromeCuts(String s) {
+            int n = s.length();
+            if (n <= 1) return 0;
+            boolean[][] isPalin = new boolean[n][n];
+            int[] cuts = new int[n];
+            for (int end = 0; end < n; end++) {
+                int minCuts = end;
+                for (int start = 0; start <= end; start++) {
+                    if (s.charAt(start) == s.charAt(end)
+                            && (end - start <= 2 || isPalin[start + 1][end - 1])) {
+                        isPalin[start][end] = true;
+                        if (start == 0) minCuts = 0;
+                        else minCuts = Math.min(minCuts, cuts[start - 1] + 1);
+                    }
                 }
+                cuts[end] = minCuts;
             }
-            cuts[end] = minCuts;
+            return cuts[n - 1];
         }
-        return cuts[n - 1];
     }
 
     public static void main(String[] args) {
@@ -352,28 +354,28 @@ int main(void) {
 ```
 
 ```scala run
-class Solution {
-  def minPalindromeCuts(s: String): Int = {
-    val n = s.length
-    if (n <= 1) return 0
-    val isPalin = Array.fill(n, n)(false)
-    val cuts = Array.fill(n)(0)
-    for (end <- 0 until n) {
-      var minCuts = end
-      for (start <- 0 to end) {
-        if (s(start) == s(end) && (end - start <= 2 || isPalin(start + 1)(end - 1))) {
-          isPalin(start)(end) = true
-          if (start == 0) minCuts = 0
-          else minCuts = math.min(minCuts, cuts(start - 1) + 1)
-        }
-      }
-      cuts(end) = minCuts
-    }
-    cuts(n - 1)
-  }
-}
-
 object Main extends App {
+  class Solution {
+    def minPalindromeCuts(s: String): Int = {
+      val n = s.length
+      if (n <= 1) return 0
+      val isPalin = Array.fill(n, n)(false)
+      val cuts = Array.fill(n)(0)
+      for (end <- 0 until n) {
+        var minCuts = end
+        for (start <- 0 to end) {
+          if (s(start) == s(end) && (end - start <= 2 || isPalin(start + 1)(end - 1))) {
+            isPalin(start)(end) = true
+            if (start == 0) minCuts = 0
+            else minCuts = math.min(minCuts, cuts(start - 1) + 1)
+          }
+        }
+        cuts(end) = minCuts
+      }
+      cuts(n - 1)
+    }
+  }
+
   println(new Solution().minPalindromeCuts("abbbc"))    // 2
   println(new Solution().minPalindromeCuts("abcdef"))   // 5
   println(new Solution().minPalindromeCuts("aaa"))      // 0

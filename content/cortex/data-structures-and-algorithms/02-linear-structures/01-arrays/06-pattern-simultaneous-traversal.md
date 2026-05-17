@@ -694,43 +694,86 @@ flowchart LR
 
 
 ```pseudocode
-# Two-pointer subsequence check. Advance s only on a match; advance t every iteration.
 function subsequenceChecker(s, t):
-    index1 ← 0; index2 ← 0
+
+    # pointer for s
+    index1 ← 0
+
+    # pointer for t
+    index2 ← 0
+
     while index1 < length(s) AND index2 < length(t):
         if s[index1] = t[index2]:
+
+            # If the current character matches, move the pointer for s
             index1 ← index1 + 1
+
+        # Move the pointer for t in every iteration
         index2 ← index2 + 1
-    return index1 = length(s)                     # all of s consumed → s is a subsequence
+
+    # If index1 reaches the end of s, it means all characters in s
+    # are found in t in the same order
+    return index1 = length(s)
 ```
 
 ```python run
 class Solution:
     def subsequence_checker(self, s: str, t: str) -> bool:
-        index1, index2 = 0, 0
+
+        # pointer for s
+        index1: int = 0
+
+        # pointer for t
+        index2: int = 0
+
         while index1 < len(s) and index2 < len(t):
             if s[index1] == t[index2]:
-                index1 += 1                  # Advance s only on a match.
-            index2 += 1                      # Always advance t — every char examined once.
-        return index1 == len(s)              # All of s consumed → subsequence.
+
+                # If the current character matches, move the pointer for
+                # s
+                index1 += 1
+
+            # Move the pointer for t in every iteration
+            index2 += 1
+
+        # If index1 reaches the end of s, it means all characters in s
+        # are found in t in the same order
+        return index1 == len(s)
 
 
-print(Solution().subsequence_checker("ace", "abcde"))   # True
-print(Solution().subsequence_checker("aec", "abcde"))   # False
-print(Solution().subsequence_checker("", "abcde"))      # True
-print(Solution().subsequence_checker("abc", ""))        # False
+sol = Solution()
+print(sol.subsequence_checker("ace", "abcde"))   # True
+print(sol.subsequence_checker("aec", "abcde"))   # False
+print(sol.subsequence_checker("", "abcde"))      # True
+print(sol.subsequence_checker("abc", ""))        # False
 ```
 
 ```java run
 public class Main {
     static class Solution {
-        boolean subsequenceChecker(String s, String t) {
-            int i1 = 0, i2 = 0;
-            while (i1 < s.length() && i2 < t.length()) {
-                if (s.charAt(i1) == t.charAt(i2)) i1++;
-                i2++;
+        public boolean subsequenceChecker(String s, String t) {
+
+            // pointer for s
+            int index1 = 0;
+
+            // pointer for t
+            int index2 = 0;
+
+            while (index1 < s.length() && index2 < t.length()) {
+                if (s.charAt(index1) == t.charAt(index2)) {
+
+                    // If the current character matches, move the pointer for
+                    // s
+                    index1++;
+                }
+
+                // Move the pointer for t in every iteration
+                index2++;
             }
-            return i1 == s.length();
+
+            // If index1 reaches the end of s, it means all characters in s
+            // are found in t in the same order
+            return index1 == s.length();
         }
     }
 
@@ -750,13 +793,30 @@ public class Main {
 #include <string.h>
 
 bool subsequence_checker(const char* s, const char* t) {
-    int i1 = 0, i2 = 0;
-    int ns = (int)strlen(s), nt = (int)strlen(t);
-    while (i1 < ns && i2 < nt) {
-        if (s[i1] == t[i2]) i1++;
-        i2++;
+
+    /* pointer for s */
+    int index1 = 0;
+
+    /* pointer for t */
+    int index2 = 0;
+
+    int ns = (int)strlen(s);
+    int nt = (int)strlen(t);
+
+    while (index1 < ns && index2 < nt) {
+        if (s[index1] == t[index2]) {
+
+            /* If the current character matches, move the pointer for s */
+            index1++;
+        }
+
+        /* Move the pointer for t in every iteration */
+        index2++;
     }
-    return i1 == ns;
+
+    /* If index1 reaches the end of s, it means all characters in s
+     * are found in t in the same order */
+    return index1 == ns;
 }
 
 int main() {
@@ -772,13 +832,27 @@ int main() {
 object Main extends App {
   class Solution {
     def subsequenceChecker(s: String, t: String): Boolean = {
-      var i1 = 0
-      var i2 = 0
-      while (i1 < s.length && i2 < t.length) {
-        if (s(i1) == t(i2)) i1 += 1
-        i2 += 1
+
+      // pointer for s
+      var index1 = 0
+
+      // pointer for t
+      var index2 = 0
+
+      while (index1 < s.length && index2 < t.length) {
+        if (s(index1) == t(index2)) {
+
+          // If the current character matches, move the pointer for s
+          index1 += 1
+        }
+
+        // Move the pointer for t in every iteration
+        index2 += 1
       }
-      i1 == s.length
+
+      // If index1 reaches the end of s, it means all characters in s
+      // are found in t in the same order
+      index1 == s.length
     }
   }
 
@@ -1341,53 +1415,90 @@ flowchart TB
 
 
 ```pseudocode
-# Merge arr2 into arr1 in-place. arr1 has m real elements + n trailing zeros.
-# Backward fill: write from the back so we never overwrite unread data.
 function mergeSortedArrays(arr1, m, arr2, n):
-    i1 ← m − 1; i2 ← n − 1; i3 ← m + n − 1
-    while i1 ≥ 0 AND i2 ≥ 0:
-        if arr1[i1] > arr2[i2]:
-            arr1[i3] ← arr1[i1]
-            i1 ← i1 − 1
+
+    # last index of non-zero elements in arr1
+    index1 ← m − 1
+
+    # last index of elements in arr2
+    index2 ← n − 1
+
+    # last index of arr1
+    index3 ← m + n − 1
+
+    # merging arr1 and arr2 from the rightmost end of the arrays
+    while index1 ≥ 0 AND index2 ≥ 0:
+
+        # if the element in arr1 is greater than the element in arr2
+        # then place the element from arr1 to the last index of arr1
+        # and decrement the index of arr1
+        if arr1[index1] > arr2[index2]:
+            arr1[index3] ← arr1[index1]
+            index1 ← index1 − 1
+
+        # if the element in arr2 is greater than the element in arr1
+        # then place the element from arr2 to the last index of arr1
+        # and decrement the index of arr2
         else:
-            arr1[i3] ← arr2[i2]
-            i2 ← i2 − 1
-        i3 ← i3 − 1
-    while i2 ≥ 0:                                 # leftover arr2 elements (smaller than all placed)
-        arr1[i3] ← arr2[i2]
-        i2 ← i2 − 1
-        i3 ← i3 − 1
+            arr1[index3] ← arr2[index2]
+            index2 ← index2 − 1
+        index3 ← index3 − 1
+
+    # if there are still remaining elements in arr2
+    while index2 ≥ 0:
+        arr1[index3] ← arr2[index2]
+        index2 ← index2 − 1
+        index3 ← index3 − 1
 ```
 
 ```python run
 from typing import List
 
 class Solution:
-    def merge_sorted_arrays(self, arr1: List[int], m: int,
-                                  arr2: List[int], n: int) -> None:
-        # Fill arr1 from the back: arr1's tail is reserved zeros, so writes never clobber unread data.
-        i1, i2, i3 = m - 1, n - 1, m + n - 1
-        while i1 >= 0 and i2 >= 0:
-            if arr1[i1] > arr2[i2]:
-                arr1[i3] = arr1[i1]
-                i1 -= 1
+    def merge_sorted_arrays(
+        self, arr_1: List[int], m: int, arr_2: List[int], n: int
+    ) -> None:
+
+        # last index of non-zero elements in arr_1
+        index1: int = m - 1
+
+        # last index of elements in arr_2
+        index2: int = n - 1
+
+        # last index of arr_1
+        index3: int = m + n - 1
+
+        # merging arr_1 and arr_2 from the rightmost end of the arrays
+        while index1 >= 0 and index2 >= 0:
+
+            # if the element in arr_1 is greater than the element in arr_2
+            # then place the element from arr_1 to the last index of arr_1
+            # and decrement the index of arr_1
+            if arr_1[index1] > arr_2[index2]:
+                arr_1[index3] = arr_1[index1]
+                index1 -= 1
+
+            # if the element in arr_2 is greater than the element in arr_1
+            # then place the element from arr_2 to the last index of arr_1
+            # and decrement the index of arr_2
             else:
-                arr1[i3] = arr2[i2]
-                i2 -= 1
-            i3 -= 1
-        # Anything left in arr2 is smaller than everything already placed → copy directly.
-        while i2 >= 0:
-            arr1[i3] = arr2[i2]
-            i2 -= 1
-            i3 -= 1
+                arr_1[index3] = arr_2[index2]
+                index2 -= 1
+            index3 -= 1
+
+        # if there are still remaining elements in arr_2
+        while index2 >= 0:
+            arr_1[index3] = arr_2[index2]
+            index2 -= 1
+            index3 -= 1
 
 
 sol = Solution()
 
-arr1 = [1, 2, 3, 0, 0]; sol.merge_sorted_arrays(arr1, 3, [4, 5], 2); print(arr1)
-arr1 = [1, 2, 5, 0, 0]; sol.merge_sorted_arrays(arr1, 3, [3, 4], 2); print(arr1)
-arr1 = [1];             sol.merge_sorted_arrays(arr1, 1, [], 0);     print(arr1)
-arr1 = [0];             sol.merge_sorted_arrays(arr1, 0, [1], 1);    print(arr1)
+arr_1 = [1, 2, 3, 0, 0]; sol.merge_sorted_arrays(arr_1, 3, [4, 5], 2); print(arr_1)   # [1, 2, 3, 4, 5]
+arr_1 = [1, 2, 5, 0, 0]; sol.merge_sorted_arrays(arr_1, 3, [3, 4], 2); print(arr_1)   # [1, 2, 3, 4, 5]
+arr_1 = [1];             sol.merge_sorted_arrays(arr_1, 1, [], 0);     print(arr_1)   # [1]
+arr_1 = [0];             sol.merge_sorted_arrays(arr_1, 0, [1], 1);    print(arr_1)   # [1]
 ```
 
 ```java run
@@ -1395,14 +1506,39 @@ import java.util.Arrays;
 
 public class Main {
     static class Solution {
-        void mergeSortedArrays(int[] arr1, int m, int[] arr2, int n) {
-            int i1 = m - 1, i2 = n - 1, i3 = m + n - 1;
-            while (i1 >= 0 && i2 >= 0) {
-                if (arr1[i1] > arr2[i2]) { arr1[i3] = arr1[i1]; i1--; }
-                else                     { arr1[i3] = arr2[i2]; i2--; }
-                i3--;
+        public void mergeSortedArrays(int[] arr1, int m, int[] arr2, int n) {
+
+            // last index of non-zero elements in arr1
+            int index1 = m - 1;
+
+            // last index of elements in arr2
+            int index2 = n - 1;
+
+            // last index of arr1
+            int index3 = m + n - 1;
+
+            // merging arr1 and arr2 from the rightmost end of the arrays
+            while (index1 >= 0 && index2 >= 0) {
+
+                // if the element in arr1 is greater than the element in arr2
+                // then place the element from arr1 to the last index of arr1
+                // and decrement the index of arr1
+                if (arr1[index1] > arr2[index2]) {
+                    arr1[index3--] = arr1[index1--];
+                }
+
+                // if the element in arr2 is greater than the element in arr1
+                // then place the element from arr2 to the last index of arr1
+                // and decrement the index of arr2
+                else {
+                    arr1[index3--] = arr2[index2--];
+                }
             }
-            while (i2 >= 0) { arr1[i3] = arr2[i2]; i2--; i3--; }
+
+            // if there are still remaining elements in arr2
+            while (index2 >= 0) {
+                arr1[index3--] = arr2[index2--];
+            }
         }
     }
 
@@ -1411,19 +1547,19 @@ public class Main {
 
         int[] a1 = {1, 2, 3, 0, 0};
         sol.mergeSortedArrays(a1, 3, new int[]{4, 5}, 2);
-        System.out.println(Arrays.toString(a1));
+        System.out.println(Arrays.toString(a1));                    // [1, 2, 3, 4, 5]
 
         int[] a2 = {1, 2, 5, 0, 0};
         sol.mergeSortedArrays(a2, 3, new int[]{3, 4}, 2);
-        System.out.println(Arrays.toString(a2));
+        System.out.println(Arrays.toString(a2));                    // [1, 2, 3, 4, 5]
 
         int[] a3 = {1};
         sol.mergeSortedArrays(a3, 1, new int[]{}, 0);
-        System.out.println(Arrays.toString(a3));
+        System.out.println(Arrays.toString(a3));                    // [1]
 
         int[] a4 = {0};
         sol.mergeSortedArrays(a4, 0, new int[]{1}, 1);
-        System.out.println(Arrays.toString(a4));
+        System.out.println(Arrays.toString(a4));                    // [1]
     }
 }
 ```
@@ -1431,37 +1567,59 @@ public class Main {
 ```c run
 #include <stdio.h>
 
-void merge_sorted_arrays(int* arr1, int m, int* arr2, int n) {
-    int i1 = m - 1, i2 = n - 1, i3 = m + n - 1;
-    while (i1 >= 0 && i2 >= 0) {
-        if (arr1[i1] > arr2[i2]) { arr1[i3] = arr1[i1]; i1--; }
-        else                     { arr1[i3] = arr2[i2]; i2--; }
-        i3--;
+void merge_sorted_arrays(int* arr_1, int m, int* arr_2, int n) {
+
+    /* last index of non-zero elements in arr_1 */
+    int index1 = m - 1;
+
+    /* last index of elements in arr_2 */
+    int index2 = n - 1;
+
+    /* last index of arr_1 */
+    int index3 = m + n - 1;
+
+    /* merging arr_1 and arr_2 from the rightmost end of the arrays */
+    while (index1 >= 0 && index2 >= 0) {
+
+        /* if the element in arr_1 is greater than the element in arr_2
+         * then place the element from arr_1 to the last index of arr_1
+         * and decrement the index of arr_1 */
+        if (arr_1[index1] > arr_2[index2]) {
+            arr_1[index3--] = arr_1[index1--];
+        }
+
+        /* if the element in arr_2 is greater than the element in arr_1
+         * then place the element from arr_2 to the last index of arr_1
+         * and decrement the index of arr_2 */
+        else {
+            arr_1[index3--] = arr_2[index2--];
+        }
     }
-    while (i2 >= 0) { arr1[i3] = arr2[i2]; i2--; i3--; }
+
+    /* if there are still remaining elements in arr_2 */
+    while (index2 >= 0) {
+        arr_1[index3--] = arr_2[index2--];
+    }
 }
 
-void print_arr(int* arr, int n) {
+static void print_arr(int* arr, int n) {
     printf("[");
     for (int i = 0; i < n; i++) printf("%d%s", arr[i], i + 1 < n ? ", " : "");
     printf("]\n");
 }
 
 int main() {
-    int a1[] = {1, 2, 3, 0, 0};
-    int b1[] = {4, 5};
-    merge_sorted_arrays(a1, 3, b1, 2); print_arr(a1, 5);
+    int a1[] = {1, 2, 3, 0, 0}; int b1[] = {4, 5};
+    merge_sorted_arrays(a1, 3, b1, 2); print_arr(a1, 5);    /* [1, 2, 3, 4, 5] */
 
-    int a2[] = {1, 2, 5, 0, 0};
-    int b2[] = {3, 4};
-    merge_sorted_arrays(a2, 3, b2, 2); print_arr(a2, 5);
+    int a2[] = {1, 2, 5, 0, 0}; int b2[] = {3, 4};
+    merge_sorted_arrays(a2, 3, b2, 2); print_arr(a2, 5);    /* [1, 2, 3, 4, 5] */
 
     int a3[] = {1};
-    merge_sorted_arrays(a3, 1, NULL, 0); print_arr(a3, 1);
+    merge_sorted_arrays(a3, 1, NULL, 0); print_arr(a3, 1);  /* [1] */
 
-    int a4[] = {0};
-    int b4[] = {1};
-    merge_sorted_arrays(a4, 0, b4, 1); print_arr(a4, 1);
+    int a4[] = {0}; int b4[] = {1};
+    merge_sorted_arrays(a4, 0, b4, 1); print_arr(a4, 1);    /* [1] */
     return 0;
 }
 ```
@@ -1470,24 +1628,51 @@ int main() {
 object Main extends App {
   class Solution {
     def mergeSortedArrays(arr1: Array[Int], m: Int, arr2: Array[Int], n: Int): Unit = {
-      var i1 = m - 1
-      var i2 = n - 1
-      var i3 = m + n - 1
-      while (i1 >= 0 && i2 >= 0) {
-        if (arr1(i1) > arr2(i2)) { arr1(i3) = arr1(i1); i1 -= 1 }
-        else                      { arr1(i3) = arr2(i2); i2 -= 1 }
-        i3 -= 1
+
+      // last index of non-zero elements in arr1
+      var index1 = m - 1
+
+      // last index of elements in arr2
+      var index2 = n - 1
+
+      // last index of arr1
+      var index3 = m + n - 1
+
+      // merging arr1 and arr2 from the rightmost end of the arrays
+      while (index1 >= 0 && index2 >= 0) {
+
+        // if the element in arr1 is greater than the element in arr2
+        // then place the element from arr1 to the last index of arr1
+        // and decrement the index of arr1
+        if (arr1(index1) > arr2(index2)) {
+          arr1(index3) = arr1(index1)
+          index1 -= 1
+        }
+        // if the element in arr2 is greater than the element in arr1
+        // then place the element from arr2 to the last index of arr1
+        // and decrement the index of arr2
+        else {
+          arr1(index3) = arr2(index2)
+          index2 -= 1
+        }
+        index3 -= 1
       }
-      while (i2 >= 0) { arr1(i3) = arr2(i2); i2 -= 1; i3 -= 1 }
+
+      // if there are still remaining elements in arr2
+      while (index2 >= 0) {
+        arr1(index3) = arr2(index2)
+        index2 -= 1
+        index3 -= 1
+      }
     }
   }
 
   val sol = new Solution
 
-  val a1 = Array(1, 2, 3, 0, 0); sol.mergeSortedArrays(a1, 3, Array(4, 5), 2); println(a1.mkString(", "))
-  val a2 = Array(1, 2, 5, 0, 0); sol.mergeSortedArrays(a2, 3, Array(3, 4), 2); println(a2.mkString(", "))
-  val a3 = Array(1);             sol.mergeSortedArrays(a3, 1, Array.empty[Int], 0); println(a3.mkString(", "))
-  val a4 = Array(0);             sol.mergeSortedArrays(a4, 0, Array(1), 1);    println(a4.mkString(", "))
+  val a1 = Array(1, 2, 3, 0, 0); sol.mergeSortedArrays(a1, 3, Array(4, 5), 2); println(a1.mkString(", "))            // 1, 2, 3, 4, 5
+  val a2 = Array(1, 2, 5, 0, 0); sol.mergeSortedArrays(a2, 3, Array(3, 4), 2); println(a2.mkString(", "))            // 1, 2, 3, 4, 5
+  val a3 = Array(1);             sol.mergeSortedArrays(a3, 1, Array.empty[Int], 0); println(a3.mkString(", "))       // 1
+  val a4 = Array(0);             sol.mergeSortedArrays(a4, 0, Array(1), 1);    println(a4.mkString(", "))            // 1
 }
 ```
 
@@ -1768,22 +1953,36 @@ Works, but rescans `arr2` for every element in `arr1` — O(N × M) and easy to 
 
 
 ```pseudocode
-# Sort both, walk simultaneously. Skip duplicates by comparing against the last recorded result.
 function uniqueIntersections(arr1, arr2):
+    result ← empty list
+
+    # Sorting the two input arrays
     sort arr1 in place
     sort arr2 in place
-    result ← empty list
-    i ← 0; j ← 0
-    while i < length(arr1) AND j < length(arr2):
-        if arr1[i] = arr2[j]:
-            if result is empty OR last(result) ≠ arr1[i]:
-                append arr1[i] to result          # de-dup against previous record
-            i ← i + 1
-            j ← j + 1
-        else if arr1[i] < arr2[j]:
-            i ← i + 1
+
+    # Two pointers to traverse both arrays
+    index1 ← 0
+    index2 ← 0
+
+    # Traverse both arrays until one pointer reaches the end
+    while index1 < length(arr1) AND index2 < length(arr2):
+
+        # If there's an intersection
+        if arr1[index1] = arr2[index2]:
+
+            # Adding only unique elements
+            if result is empty OR last(result) ≠ arr1[index1]:
+                append arr1[index1] to result
+            index1 ← index1 + 1
+            index2 ← index2 + 1
+
+        # If the element in the first array is smaller
+        else if arr1[index1] < arr2[index2]:
+            index1 ← index1 + 1
+
+        # If the element in the second array is smaller
         else:
-            j ← j + 1
+            index2 ← index2 + 1
     return result
 ```
 
@@ -1791,31 +1990,46 @@ function uniqueIntersections(arr1, arr2):
 from typing import List
 
 class Solution:
-    def unique_intersections(self, arr1: List[int], arr2: List[int]) -> List[int]:
-        arr1.sort()
-        arr2.sort()
-        result = []
-        i = j = 0
+    def unique_intersections(
+        self, arr_1: List[int], arr_2: List[int]
+    ) -> List[int]:
+        result: List[int] = []
 
-        while i < len(arr1) and j < len(arr2):
-            if arr1[i] == arr2[j]:
-                # Skip duplicates by comparing against the last recorded result.
-                if not result or result[-1] != arr1[i]:
-                    result.append(arr1[i])
-                i += 1
-                j += 1
-            elif arr1[i] < arr2[j]:
-                i += 1                         # arr1's element is too small → skip.
+        # Sorting the two input arrays
+        arr_1.sort()
+        arr_2.sort()
+
+        # Two pointers to traverse both arrays
+        index1 = 0
+        index2 = 0
+
+        # Traverse both arrays until one pointer reaches the end
+        while index1 < len(arr_1) and index2 < len(arr_2):
+
+            # If there's an intersection
+            if arr_1[index1] == arr_2[index2]:
+
+                # Adding only unique elements
+                if not result or result[-1] != arr_1[index1]:
+                    result.append(arr_1[index1])
+                index1 += 1
+                index2 += 1
+
+            # If the element in the first array is smaller
+            elif arr_1[index1] < arr_2[index2]:
+                index1 += 1
+
+            # If the element in the second array is smaller
             else:
-                j += 1                         # arr2's element is too small → skip.
+                index2 += 1
         return result
 
 
 sol = Solution()
-print(sol.unique_intersections([1, 2, 2, 3, 4], [2, 2, 3, 5]))   # [2, 3]
-print(sol.unique_intersections([1, 3, 5], [2, 4, 6]))             # []
-print(sol.unique_intersections([2, 2, 2], [2, 2]))                # [2]
-print(sol.unique_intersections([1, 2, 3, 4, 5], [1, 3, 5, 7]))   # [1, 3, 5]
+print(sol.unique_intersections([1, 2, 2, 1], [2, 2]))             # [2]
+print(sol.unique_intersections([4, 9, 5], [9, 4, 9, 8, 4]))       # [4, 9]
+print(sol.unique_intersections([4, 9, 5], [1, 2]))                # []
+print(sol.unique_intersections([1, 2, 3, 4, 5], [1, 3, 5, 7]))    # [1, 3, 5]
 print(sol.unique_intersections([], [1, 2, 3]))                    # []
 ```
 
@@ -1824,20 +2038,42 @@ import java.util.*;
 
 public class Main {
     static class Solution {
-        List<Integer> uniqueIntersections(int[] arr1, int[] arr2) {
+        public List<Integer> uniqueIntersections(int[] arr1, int[] arr2) {
+            List<Integer> result = new ArrayList<Integer>();
+
+            // Sorting the two input arrays
             Arrays.sort(arr1);
             Arrays.sort(arr2);
-            List<Integer> result = new ArrayList<>();
-            int i = 0, j = 0;
-            while (i < arr1.length && j < arr2.length) {
-                if (arr1[i] == arr2[j]) {
-                    if (result.isEmpty() || result.get(result.size() - 1) != arr1[i])
-                        result.add(arr1[i]);
-                    i++; j++;
-                } else if (arr1[i] < arr2[j]) {
-                    i++;
-                } else {
-                    j++;
+
+            // Two pointers to traverse both arrays
+            int index1 = 0;
+            int index2 = 0;
+
+            // Traverse both arrays until one pointer reaches the end
+            while (index1 < arr1.length && index2 < arr2.length) {
+
+                // If there's an intersection
+                if (arr1[index1] == arr2[index2]) {
+
+                    // Adding only unique elements
+                    if (
+                        result.isEmpty() ||
+                        result.get(result.size() - 1) != arr1[index1]
+                    ) {
+                        result.add(arr1[index1]);
+                    }
+                    index1++;
+                    index2++;
+                }
+
+                // If the element in the first array is smaller
+                else if (arr1[index1] < arr2[index2]) {
+                    index1++;
+                }
+
+                // If the element in the second array is smaller
+                else {
+                    index2++;
                 }
             }
             return result;
@@ -1846,11 +2082,11 @@ public class Main {
 
     public static void main(String[] args) {
         Solution sol = new Solution();
-        System.out.println(sol.uniqueIntersections(new int[]{1, 2, 2, 3, 4}, new int[]{2, 2, 3, 5}));
-        System.out.println(sol.uniqueIntersections(new int[]{1, 3, 5}, new int[]{2, 4, 6}));
-        System.out.println(sol.uniqueIntersections(new int[]{2, 2, 2}, new int[]{2, 2}));
-        System.out.println(sol.uniqueIntersections(new int[]{1, 2, 3, 4, 5}, new int[]{1, 3, 5, 7}));
-        System.out.println(sol.uniqueIntersections(new int[]{}, new int[]{1, 2, 3}));
+        System.out.println(sol.uniqueIntersections(new int[]{1, 2, 2, 1}, new int[]{2, 2}));             // [2]
+        System.out.println(sol.uniqueIntersections(new int[]{4, 9, 5}, new int[]{9, 4, 9, 8, 4}));       // [4, 9]
+        System.out.println(sol.uniqueIntersections(new int[]{4, 9, 5}, new int[]{1, 2}));                // []
+        System.out.println(sol.uniqueIntersections(new int[]{1, 2, 3, 4, 5}, new int[]{1, 3, 5, 7}));    // [1, 3, 5]
+        System.out.println(sol.uniqueIntersections(new int[]{}, new int[]{1, 2, 3}));                    // []
     }
 }
 ```
@@ -1859,36 +2095,57 @@ public class Main {
 #include <stdio.h>
 #include <stdlib.h>
 
-int cmp(const void* a, const void* b) { return (*(int*)a) - (*(int*)b); }
+static int cmp(const void* a, const void* b) { return (*(int*)a) - (*(int*)b); }
 
-void unique_intersections(int* arr1, int n1, int* arr2, int n2) {
-    qsort(arr1, n1, sizeof(int), cmp);
-    qsort(arr2, n2, sizeof(int), cmp);
+void unique_intersections(int* arr_1, int n1, int* arr_2, int n2) {
 
+    /* Sorting the two input arrays */
+    qsort(arr_1, n1, sizeof(int), cmp);
+    qsort(arr_2, n2, sizeof(int), cmp);
+
+    /* Two pointers to traverse both arrays */
+    int index1 = 0;
+    int index2 = 0;
+
+    int last = 0, has_last = 0, first = 1;
     printf("[");
-    int i = 0, j = 0, last = 0, has_last = 0, first = 1;
-    while (i < n1 && j < n2) {
-        if (arr1[i] == arr2[j]) {
-            if (!has_last || last != arr1[i]) {
+
+    /* Traverse both arrays until one pointer reaches the end */
+    while (index1 < n1 && index2 < n2) {
+
+        /* If there's an intersection */
+        if (arr_1[index1] == arr_2[index2]) {
+
+            /* Adding only unique elements */
+            if (!has_last || last != arr_1[index1]) {
                 if (!first) printf(", ");
-                printf("%d", arr1[i]);
-                last = arr1[i];
+                printf("%d", arr_1[index1]);
+                last = arr_1[index1];
                 has_last = 1;
                 first = 0;
             }
-            i++;
-            j++;
-        } else if (arr1[i] < arr2[j]) i++;
-        else                          j++;
+            index1++;
+            index2++;
+        }
+
+        /* If the element in the first array is smaller */
+        else if (arr_1[index1] < arr_2[index2]) {
+            index1++;
+        }
+
+        /* If the element in the second array is smaller */
+        else {
+            index2++;
+        }
     }
     printf("]\n");
 }
 
 int main() {
-    int a1[] = {1, 2, 2, 3, 4}; int b1[] = {2, 2, 3, 5}; unique_intersections(a1, 5, b1, 4);
-    int a2[] = {1, 3, 5};       int b2[] = {2, 4, 6};    unique_intersections(a2, 3, b2, 3);
-    int a3[] = {2, 2, 2};       int b3[] = {2, 2};       unique_intersections(a3, 3, b3, 2);
-    int a4[] = {1, 2, 3, 4, 5}; int b4[] = {1, 3, 5, 7}; unique_intersections(a4, 5, b4, 4);
+    int a1[] = {1, 2, 2, 1}; int b1[] = {2, 2};          unique_intersections(a1, 4, b1, 2);  /* [2] */
+    int a2[] = {4, 9, 5};    int b2[] = {9, 4, 9, 8, 4}; unique_intersections(a2, 3, b2, 5);  /* [4, 9] */
+    int a3[] = {4, 9, 5};    int b3[] = {1, 2};          unique_intersections(a3, 3, b3, 2);  /* [] */
+    int a4[] = {1, 2, 3, 4, 5}; int b4[] = {1, 3, 5, 7}; unique_intersections(a4, 5, b4, 4);  /* [1, 3, 5] */
     return 0;
 }
 ```
@@ -1897,29 +2154,48 @@ int main() {
 object Main extends App {
   class Solution {
     def uniqueIntersections(arr1: Array[Int], arr2: Array[Int]): List[Int] = {
-      val a = arr1.sorted
-      val b = arr2.sorted
       val result = scala.collection.mutable.ListBuffer.empty[Int]
-      var i = 0
-      var j = 0
-      while (i < a.length && j < b.length) {
-        if (a(i) == b(j)) {
-          if (result.isEmpty || result.last != a(i)) result += a(i)
-          i += 1
-          j += 1
-        } else if (a(i) < b(j)) i += 1
-        else                    j += 1
+
+      // Sorting the two input arrays
+      val sorted1 = arr1.sorted
+      val sorted2 = arr2.sorted
+
+      // Two pointers to traverse both arrays
+      var index1 = 0
+      var index2 = 0
+
+      // Traverse both arrays until one pointer reaches the end
+      while (index1 < sorted1.length && index2 < sorted2.length) {
+
+        // If there's an intersection
+        if (sorted1(index1) == sorted2(index2)) {
+
+          // Adding only unique elements
+          if (result.isEmpty || result.last != sorted1(index1)) {
+            result += sorted1(index1)
+          }
+          index1 += 1
+          index2 += 1
+        }
+        // If the element in the first array is smaller
+        else if (sorted1(index1) < sorted2(index2)) {
+          index1 += 1
+        }
+        // If the element in the second array is smaller
+        else {
+          index2 += 1
+        }
       }
       result.toList
     }
   }
 
   val sol = new Solution
-  println(sol.uniqueIntersections(Array(1, 2, 2, 3, 4), Array(2, 2, 3, 5)))
-  println(sol.uniqueIntersections(Array(1, 3, 5), Array(2, 4, 6)))
-  println(sol.uniqueIntersections(Array(2, 2, 2), Array(2, 2)))
-  println(sol.uniqueIntersections(Array(1, 2, 3, 4, 5), Array(1, 3, 5, 7)))
-  println(sol.uniqueIntersections(Array.empty[Int], Array(1, 2, 3)))
+  println(sol.uniqueIntersections(Array(1, 2, 2, 1), Array(2, 2)))             // List(2)
+  println(sol.uniqueIntersections(Array(4, 9, 5), Array(9, 4, 9, 8, 4)))       // List(4, 9)
+  println(sol.uniqueIntersections(Array(4, 9, 5), Array(1, 2)))                // List()
+  println(sol.uniqueIntersections(Array(1, 2, 3, 4, 5), Array(1, 3, 5, 7)))    // List(1, 3, 5)
+  println(sol.uniqueIntersections(Array.empty[Int], Array(1, 2, 3)))           // List()
 }
 ```
 
@@ -2080,21 +2356,29 @@ flowchart TB
 
 
 ```pseudocode
-# Same as uniqueIntersections, but record EVERY match — duplicates included.
 function repeatedIntersections(arr1, arr2):
+    result ← empty list
     sort arr1 in place
     sort arr2 in place
-    result ← empty list
-    i ← 0; j ← 0
-    while i < length(arr1) AND j < length(arr2):
-        if arr1[i] = arr2[j]:
-            append arr1[i] to result              # always record
-            i ← i + 1
-            j ← j + 1
-        else if arr1[i] < arr2[j]:
-            i ← i + 1
+    index1 ← 0
+    index2 ← 0
+    while index1 < length(arr1) AND index2 < length(arr2):
+
+        # If there's an intersection
+        if arr1[index1] = arr2[index2]:
+
+            # if elements are equal, add to result and move both pointers
+            append arr1[index1] to result
+            index1 ← index1 + 1
+            index2 ← index2 + 1
+
+        # If the element in the first array is smaller
+        else if arr1[index1] < arr2[index2]:
+            index1 ← index1 + 1
+
+        # If the element in the second array is smaller
         else:
-            j ← j + 1
+            index2 ← index2 + 1
     return result
 ```
 
@@ -2102,30 +2386,41 @@ function repeatedIntersections(arr1, arr2):
 from typing import List
 
 class Solution:
-    def repeated_intersections(self, arr1: List[int], arr2: List[int]) -> List[int]:
-        arr1.sort()
-        arr2.sort()
+    def repeated_intersections(
+        self, arr_1: List[int], arr_2: List[int]
+    ) -> List[int]:
         result = []
-        i = j = 0
+        arr_1.sort()
+        arr_2.sort()
+        index1 = 0
+        index2 = 0
+        while index1 < len(arr_1) and index2 < len(arr_2):
 
-        while i < len(arr1) and j < len(arr2):
-            if arr1[i] == arr2[j]:
-                result.append(arr1[i])         # Record EVERY match — duplicates included.
-                i += 1
-                j += 1
-            elif arr1[i] < arr2[j]:
-                i += 1
+            # If there's an intersection
+            if arr_1[index1] == arr_2[index2]:
+
+                # if elements are equal, add to result and move both
+                # pointers
+                result.append(arr_1[index1])
+                index1 += 1
+                index2 += 1
+
+            # If the element in the first array is smaller
+            elif arr_1[index1] < arr_2[index2]:
+                index1 += 1
+
+            # If the element in the second array is smaller
             else:
-                j += 1
+                index2 += 1
         return result
 
 
 sol = Solution()
-print(sol.repeated_intersections([1, 2, 2, 3], [2, 2, 3, 3]))    # [2, 2, 3]
-print(sol.repeated_intersections([2, 2, 2], [2, 2]))              # [2, 2]
-print(sol.repeated_intersections([1, 3, 5], [2, 4, 6]))           # []
-print(sol.repeated_intersections([1, 2, 3], [1, 2, 3]))           # [1, 2, 3]
-print(sol.repeated_intersections([], [1, 2]))                     # []
+print(sol.repeated_intersections([1, 2, 2, 1], [2, 2]))             # [2, 2]
+print(sol.repeated_intersections([4, 9, 5], [9, 4, 9, 8, 4]))       # [4, 9]
+print(sol.repeated_intersections([4, 9, 5], [1, 2]))                # []
+print(sol.repeated_intersections([1, 2, 3], [1, 2, 3]))             # [1, 2, 3]
+print(sol.repeated_intersections([], [1, 2]))                       # []
 ```
 
 ```java run
@@ -2133,19 +2428,32 @@ import java.util.*;
 
 public class Main {
     static class Solution {
-        List<Integer> repeatedIntersections(int[] arr1, int[] arr2) {
+        public List<Integer> repeatedIntersections(int[] arr1, int[] arr2) {
+            List<Integer> result = new ArrayList<>();
             Arrays.sort(arr1);
             Arrays.sort(arr2);
-            List<Integer> result = new ArrayList<>();
-            int i = 0, j = 0;
-            while (i < arr1.length && j < arr2.length) {
-                if (arr1[i] == arr2[j]) {
-                    result.add(arr1[i]);
-                    i++; j++;
-                } else if (arr1[i] < arr2[j]) {
-                    i++;
-                } else {
-                    j++;
+            int index1 = 0;
+            int index2 = 0;
+            while (index1 < arr1.length && index2 < arr2.length) {
+
+                // If there's an intersection
+                if (arr1[index1] == arr2[index2]) {
+
+                    // If elements are equal, add to result and move both
+                    // pointers
+                    result.add(arr1[index1]);
+                    index1++;
+                    index2++;
+                }
+
+                // If the element in the first array is smaller
+                else if (arr1[index1] < arr2[index2]) {
+                    index1++;
+                }
+
+                // If the element in the second array is smaller
+                else {
+                    index2++;
                 }
             }
             return result;
@@ -2154,11 +2462,11 @@ public class Main {
 
     public static void main(String[] args) {
         Solution sol = new Solution();
-        System.out.println(sol.repeatedIntersections(new int[]{1, 2, 2, 3}, new int[]{2, 2, 3, 3}));
-        System.out.println(sol.repeatedIntersections(new int[]{2, 2, 2}, new int[]{2, 2}));
-        System.out.println(sol.repeatedIntersections(new int[]{1, 3, 5}, new int[]{2, 4, 6}));
-        System.out.println(sol.repeatedIntersections(new int[]{1, 2, 3}, new int[]{1, 2, 3}));
-        System.out.println(sol.repeatedIntersections(new int[]{}, new int[]{1, 2}));
+        System.out.println(sol.repeatedIntersections(new int[]{1, 2, 2, 1}, new int[]{2, 2}));             // [2, 2]
+        System.out.println(sol.repeatedIntersections(new int[]{4, 9, 5}, new int[]{9, 4, 9, 8, 4}));       // [4, 9]
+        System.out.println(sol.repeatedIntersections(new int[]{4, 9, 5}, new int[]{1, 2}));                // []
+        System.out.println(sol.repeatedIntersections(new int[]{1, 2, 3}, new int[]{1, 2, 3}));             // [1, 2, 3]
+        System.out.println(sol.repeatedIntersections(new int[]{}, new int[]{1, 2}));                       // []
     }
 }
 ```
@@ -2167,32 +2475,48 @@ public class Main {
 #include <stdio.h>
 #include <stdlib.h>
 
-int cmp(const void* a, const void* b) { return (*(int*)a) - (*(int*)b); }
+static int cmp(const void* a, const void* b) { return (*(int*)a) - (*(int*)b); }
 
-void repeated_intersections(int* arr1, int n1, int* arr2, int n2) {
-    qsort(arr1, n1, sizeof(int), cmp);
-    qsort(arr2, n2, sizeof(int), cmp);
+void repeated_intersections(int* arr_1, int n1, int* arr_2, int n2) {
+    qsort(arr_1, n1, sizeof(int), cmp);
+    qsort(arr_2, n2, sizeof(int), cmp);
 
+    int index1 = 0;
+    int index2 = 0;
+    int first  = 1;
     printf("[");
-    int i = 0, j = 0, first = 1;
-    while (i < n1 && j < n2) {
-        if (arr1[i] == arr2[j]) {
+
+    while (index1 < n1 && index2 < n2) {
+
+        /* If there's an intersection */
+        if (arr_1[index1] == arr_2[index2]) {
+
+            /* if elements are equal, add to result and move both pointers */
             if (!first) printf(", ");
-            printf("%d", arr1[i]);
+            printf("%d", arr_1[index1]);
             first = 0;
-            i++;
-            j++;
-        } else if (arr1[i] < arr2[j]) i++;
-        else                          j++;
+            index1++;
+            index2++;
+        }
+
+        /* If the element in the first array is smaller */
+        else if (arr_1[index1] < arr_2[index2]) {
+            index1++;
+        }
+
+        /* If the element in the second array is smaller */
+        else {
+            index2++;
+        }
     }
     printf("]\n");
 }
 
 int main() {
-    int a1[] = {1, 2, 2, 3}; int b1[] = {2, 2, 3, 3}; repeated_intersections(a1, 4, b1, 4);
-    int a2[] = {2, 2, 2};    int b2[] = {2, 2};       repeated_intersections(a2, 3, b2, 2);
-    int a3[] = {1, 3, 5};    int b3[] = {2, 4, 6};    repeated_intersections(a3, 3, b3, 3);
-    int a4[] = {1, 2, 3};    int b4[] = {1, 2, 3};    repeated_intersections(a4, 3, b4, 3);
+    int a1[] = {1, 2, 2, 1}; int b1[] = {2, 2};          repeated_intersections(a1, 4, b1, 2);  /* [2, 2] */
+    int a2[] = {4, 9, 5};    int b2[] = {9, 4, 9, 8, 4}; repeated_intersections(a2, 3, b2, 5);  /* [4, 9] */
+    int a3[] = {4, 9, 5};    int b3[] = {1, 2};          repeated_intersections(a3, 3, b3, 2);  /* [] */
+    int a4[] = {1, 2, 3};    int b4[] = {1, 2, 3};       repeated_intersections(a4, 3, b4, 3);  /* [1, 2, 3] */
     return 0;
 }
 ```
@@ -2201,29 +2525,40 @@ int main() {
 object Main extends App {
   class Solution {
     def repeatedIntersections(arr1: Array[Int], arr2: Array[Int]): List[Int] = {
-      val a = arr1.sorted
-      val b = arr2.sorted
-      val result = scala.collection.mutable.ListBuffer.empty[Int]
-      var i = 0
-      var j = 0
-      while (i < a.length && j < b.length) {
-        if (a(i) == b(j)) {
-          result += a(i)
-          i += 1
-          j += 1
-        } else if (a(i) < b(j)) i += 1
-        else                    j += 1
+      val result  = scala.collection.mutable.ListBuffer.empty[Int]
+      val sorted1 = arr1.sorted
+      val sorted2 = arr2.sorted
+      var index1 = 0
+      var index2 = 0
+      while (index1 < sorted1.length && index2 < sorted2.length) {
+
+        // If there's an intersection
+        if (sorted1(index1) == sorted2(index2)) {
+
+          // if elements are equal, add to result and move both pointers
+          result += sorted1(index1)
+          index1 += 1
+          index2 += 1
+        }
+        // If the element in the first array is smaller
+        else if (sorted1(index1) < sorted2(index2)) {
+          index1 += 1
+        }
+        // If the element in the second array is smaller
+        else {
+          index2 += 1
+        }
       }
       result.toList
     }
   }
 
   val sol = new Solution
-  println(sol.repeatedIntersections(Array(1, 2, 2, 3), Array(2, 2, 3, 3)))
-  println(sol.repeatedIntersections(Array(2, 2, 2), Array(2, 2)))
-  println(sol.repeatedIntersections(Array(1, 3, 5), Array(2, 4, 6)))
-  println(sol.repeatedIntersections(Array(1, 2, 3), Array(1, 2, 3)))
-  println(sol.repeatedIntersections(Array.empty[Int], Array(1, 2)))
+  println(sol.repeatedIntersections(Array(1, 2, 2, 1), Array(2, 2)))             // List(2, 2)
+  println(sol.repeatedIntersections(Array(4, 9, 5), Array(9, 4, 9, 8, 4)))       // List(4, 9)
+  println(sol.repeatedIntersections(Array(4, 9, 5), Array(1, 2)))                // List()
+  println(sol.repeatedIntersections(Array(1, 2, 3), Array(1, 2, 3)))             // List(1, 2, 3)
+  println(sol.repeatedIntersections(Array.empty[Int], Array(1, 2)))              // List()
 }
 ```
 

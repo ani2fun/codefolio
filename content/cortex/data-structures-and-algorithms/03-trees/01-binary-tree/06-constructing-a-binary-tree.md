@@ -348,22 +348,24 @@ int main() {
 class TreeNode(var value: Int, var left: TreeNode = null, var right: TreeNode = null)
 
 object Main extends App {
-  def buildPreIn(preorder: Array[Int], inorder: Array[Int]): TreeNode = {
-    val pos = inorder.zipWithIndex.toMap
-    var preIdx = 0
-    def build(inStart: Int, inEnd: Int): TreeNode = {
-      if (inStart > inEnd) return null
-      val rootVal = preorder(preIdx); preIdx += 1
-      val n = new TreeNode(rootVal)
-      val idx = pos(rootVal)
-      n.left  = build(inStart, idx - 1)
-      n.right = build(idx + 1, inEnd)
-      n
+  class Solution {
+    def buildPreIn(preorder: Array[Int], inorder: Array[Int]): TreeNode = {
+      val pos = inorder.zipWithIndex.toMap
+      var preIdx = 0
+      def build(inStart: Int, inEnd: Int): TreeNode = {
+        if (inStart > inEnd) return null
+        val rootVal = preorder(preIdx); preIdx += 1
+        val n = new TreeNode(rootVal)
+        val idx = pos(rootVal)
+        n.left  = build(inStart, idx - 1)
+        n.right = build(idx + 1, inEnd)
+        n
+      }
+      build(0, inorder.length - 1)
     }
-    build(0, inorder.length - 1)
   }
 
-  val root = buildPreIn(Array(1, 2, 4, 3, 7), Array(4, 2, 1, 3, 7))
+  val root = new Solution().buildPreIn(Array(1, 2, 4, 3, 7), Array(4, 2, 1, 3, 7))
   println(s"${root.value} ${root.left.value} ${root.right.value}")
 }
 ```
@@ -508,19 +510,28 @@ TreeNode* build_post_in(int *postorder, int *inorder, int n) {
 ```
 
 ```scala run
-def buildPostIn(postorder: Array[Int], inorder: Array[Int]): TreeNode = {
-  val pos = inorder.zipWithIndex.toMap
-  var postIdx = postorder.length - 1
-  def build(inStart: Int, inEnd: Int): TreeNode = {
-    if (inStart > inEnd) return null
-    val rootVal = postorder(postIdx); postIdx -= 1
-    val n = new TreeNode(rootVal)
-    val idx = pos(rootVal)
-    n.right = build(idx + 1, inEnd)              // right first
-    n.left  = build(inStart, idx - 1)
-    n
+class TreeNode(var value: Int, var left: TreeNode = null, var right: TreeNode = null)
+
+object Main extends App {
+  class Solution {
+    def buildPostIn(postorder: Array[Int], inorder: Array[Int]): TreeNode = {
+      val pos = inorder.zipWithIndex.toMap
+      var postIdx = postorder.length - 1
+      def build(inStart: Int, inEnd: Int): TreeNode = {
+        if (inStart > inEnd) return null
+        val rootVal = postorder(postIdx); postIdx -= 1
+        val n = new TreeNode(rootVal)
+        val idx = pos(rootVal)
+        n.right = build(idx + 1, inEnd)              // right first
+        n.left  = build(inStart, idx - 1)
+        n
+      }
+      build(0, inorder.length - 1)
+    }
   }
-  build(0, inorder.length - 1)
+
+  val root = new Solution().buildPostIn(Array(4, 2, 7, 3, 1), Array(4, 2, 1, 3, 7))
+  println(s"${root.value} ${root.left.value} ${root.right.value}")
 }
 ```
 

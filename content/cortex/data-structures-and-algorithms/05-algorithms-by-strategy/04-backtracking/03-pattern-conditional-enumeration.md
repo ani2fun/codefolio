@@ -213,28 +213,30 @@ if __name__ == "__main__":
 import java.util.ArrayList;
 import java.util.List;
 
-public class Solution {
-    public List<String> generateBalanced(int n) {
-        List<String> results = new ArrayList<>();
-        StringBuilder current = new StringBuilder();
-        helper(n, 0, 0, current, results);
-        return results;
-    }
+public class Main {
+    static class Solution {
+        public List<String> generateBalanced(int n) {
+            List<String> results = new ArrayList<>();
+            StringBuilder current = new StringBuilder();
+            helper(n, 0, 0, current, results);
+            return results;
+        }
 
-    private void helper(int n, int opens, int closes, StringBuilder current, List<String> results) {
-        if (current.length() == 2 * n) {
-            results.add(current.toString());
-            return;
-        }
-        if (opens < n) {
-            current.append('(');
-            helper(n, opens + 1, closes, current, results);
-            current.deleteCharAt(current.length() - 1);
-        }
-        if (closes < opens) {
-            current.append(')');
-            helper(n, opens, closes + 1, current, results);
-            current.deleteCharAt(current.length() - 1);
+        private void helper(int n, int opens, int closes, StringBuilder current, List<String> results) {
+            if (current.length() == 2 * n) {
+                results.add(current.toString());
+                return;
+            }
+            if (opens < n) {
+                current.append('(');
+                helper(n, opens + 1, closes, current, results);
+                current.deleteCharAt(current.length() - 1);
+            }
+            if (closes < opens) {
+                current.append(')');
+                helper(n, opens, closes + 1, current, results);
+                current.deleteCharAt(current.length() - 1);
+            }
         }
     }
 
@@ -281,34 +283,34 @@ int main(void) {
 ```scala run
 import scala.collection.mutable.ArrayBuffer
 
-class Solution {
-  def generateBalanced(n: Int): List[String] = {
-    val results = ArrayBuffer[String]()
-    val current = new StringBuilder
-    helper(n, 0, 0, current, results)
-    results.toList
+object Main extends App {
+  class Solution {
+    def generateBalanced(n: Int): List[String] = {
+      val results = ArrayBuffer[String]()
+      val current = new StringBuilder
+      helper(n, 0, 0, current, results)
+      results.toList
+    }
+
+    private def helper(n: Int, opens: Int, closes: Int, current: StringBuilder, results: ArrayBuffer[String]): Unit = {
+      if (current.length == 2 * n) {
+        results += current.toString()
+        return
+      }
+      if (opens < n) {
+        current.append('(')
+        helper(n, opens + 1, closes, current, results)
+        current.deleteCharAt(current.length - 1)
+      }
+      if (closes < opens) {
+        current.append(')')
+        helper(n, opens, closes + 1, current, results)
+        current.deleteCharAt(current.length - 1)
+      }
+    }
   }
 
-  private def helper(n: Int, opens: Int, closes: Int, current: StringBuilder, results: ArrayBuffer[String]): Unit = {
-    if (current.length == 2 * n) {
-      results += current.toString()
-      return
-    }
-    if (opens < n) {
-      current.append('(')
-      helper(n, opens + 1, closes, current, results)
-      current.deleteCharAt(current.length - 1)
-    }
-    if (closes < opens) {
-      current.append(')')
-      helper(n, opens, closes + 1, current, results)
-      current.deleteCharAt(current.length - 1)
-    }
-  }
-}
-
-object Main {
-  def main(args: Array[String]): Unit = println(new Solution().generateBalanced(3))
+  println(new Solution().generateBalanced(3))
 }
 ```
 
@@ -742,25 +744,27 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-public class Solution {
-    public List<List<Integer>> targetSumCombinations(int[] arr, int target) {
-        Arrays.sort(arr);
-        List<List<Integer>> results = new ArrayList<>();
-        List<Integer> current = new ArrayList<>();
-        helper(arr, target, 0, current, results);
-        return results;
-    }
-
-    private void helper(int[] arr, int remaining, int start, List<Integer> current, List<List<Integer>> results) {
-        if (remaining == 0) {
-            results.add(new ArrayList<>(current));
-            return;
+public class Main {
+    static class Solution {
+        public List<List<Integer>> targetSumCombinations(int[] arr, int target) {
+            Arrays.sort(arr);
+            List<List<Integer>> results = new ArrayList<>();
+            List<Integer> current = new ArrayList<>();
+            helper(arr, target, 0, current, results);
+            return results;
         }
-        for (int i = start; i < arr.length; i++) {
-            if (arr[i] > remaining) break;        // sorted → break
-            current.add(arr[i]);
-            helper(arr, remaining - arr[i], i, current, results);
-            current.remove(current.size() - 1);
+
+        private void helper(int[] arr, int remaining, int start, List<Integer> current, List<List<Integer>> results) {
+            if (remaining == 0) {
+                results.add(new ArrayList<>(current));
+                return;
+            }
+            for (int i = start; i < arr.length; i++) {
+                if (arr[i] > remaining) break;        // sorted → break
+                current.add(arr[i]);
+                helper(arr, remaining - arr[i], i, current, results);
+                current.remove(current.size() - 1);
+            }
         }
     }
 
@@ -815,32 +819,32 @@ int main(void) {
 ```scala run
 import scala.collection.mutable.ArrayBuffer
 
-class Solution {
-  def targetSumCombinations(arr: Array[Int], target: Int): List[List[Int]] = {
-    val sorted = arr.sorted
-    val results = ArrayBuffer[List[Int]]()
-    val current = ArrayBuffer[Int]()
-    helper(sorted, target, 0, current, results)
-    results.toList
+object Main extends App {
+  class Solution {
+    def targetSumCombinations(arr: Array[Int], target: Int): List[List[Int]] = {
+      val sorted = arr.sorted
+      val results = ArrayBuffer[List[Int]]()
+      val current = ArrayBuffer[Int]()
+      helper(sorted, target, 0, current, results)
+      results.toList
+    }
+
+    private def helper(arr: Array[Int], remaining: Int, start: Int, current: ArrayBuffer[Int], results: ArrayBuffer[List[Int]]): Unit = {
+      if (remaining == 0) {
+        results += current.toList
+        return
+      }
+      var i = start
+      while (i < arr.length && arr(i) <= remaining) {
+        current += arr(i)
+        helper(arr, remaining - arr(i), i, current, results)
+        current.remove(current.length - 1)
+        i += 1
+      }
+    }
   }
 
-  private def helper(arr: Array[Int], remaining: Int, start: Int, current: ArrayBuffer[Int], results: ArrayBuffer[List[Int]]): Unit = {
-    if (remaining == 0) {
-      results += current.toList
-      return
-    }
-    var i = start
-    while (i < arr.length && arr(i) <= remaining) {
-      current += arr(i)
-      helper(arr, remaining - arr(i), i, current, results)
-      current.remove(current.length - 1)
-      i += 1
-    }
-  }
-}
-
-object Main {
-  def main(args: Array[String]): Unit = println(new Solution().targetSumCombinations(Array(2, 3, 5), 8))
+  println(new Solution().targetSumCombinations(Array(2, 3, 5), 8))
 }
 ```
 
@@ -1064,36 +1068,38 @@ if __name__ == "__main__":
 import java.util.ArrayList;
 import java.util.List;
 
-public class Solution {
-    public List<String> generateIPAddresses(String s) {
-        List<String> results = new ArrayList<>();
-        List<String> segments = new ArrayList<>();
-        helper(s, 0, segments, results);
-        return results;
-    }
-
-    private void helper(String s, int index, List<String> segments, List<String> results) {
-        if (segments.size() == 4) {
-            if (index == s.length()) {
-                results.add(String.join(".", segments));
-            }
-            return;
+public class Main {
+    static class Solution {
+        public List<String> generateIPAddresses(String s) {
+            List<String> results = new ArrayList<>();
+            List<String> segments = new ArrayList<>();
+            helper(s, 0, segments, results);
+            return results;
         }
-        for (int length = 1; length <= 3; length++) {
-            if (index + length > s.length()) break;
-            String part = s.substring(index, index + length);
-            if (isValidPart(part)) {
-                segments.add(part);
-                helper(s, index + length, segments, results);
-                segments.remove(segments.size() - 1);
+
+        private void helper(String s, int index, List<String> segments, List<String> results) {
+            if (segments.size() == 4) {
+                if (index == s.length()) {
+                    results.add(String.join(".", segments));
+                }
+                return;
+            }
+            for (int length = 1; length <= 3; length++) {
+                if (index + length > s.length()) break;
+                String part = s.substring(index, index + length);
+                if (isValidPart(part)) {
+                    segments.add(part);
+                    helper(s, index + length, segments, results);
+                    segments.remove(segments.size() - 1);
+                }
             }
         }
-    }
 
-    private boolean isValidPart(String part) {
-        if (part.length() > 1 && part.charAt(0) == '0') return false;
-        int value = Integer.parseInt(part);
-        return value >= 0 && value <= 255;
+        private boolean isValidPart(String part) {
+            if (part.length() > 1 && part.charAt(0) == '0') return false;
+            int value = Integer.parseInt(part);
+            return value >= 0 && value <= 255;
+        }
     }
 
     public static void main(String[] args) {
@@ -1152,40 +1158,40 @@ int main(void) {
 ```scala run
 import scala.collection.mutable.ArrayBuffer
 
-class Solution {
-  def generateIPAddresses(s: String): List[String] = {
-    val results = ArrayBuffer[String]()
-    val segments = ArrayBuffer[String]()
-    helper(s, 0, segments, results)
-    results.toList
-  }
-
-  private def helper(s: String, index: Int, segments: ArrayBuffer[String], results: ArrayBuffer[String]): Unit = {
-    if (segments.length == 4) {
-      if (index == s.length) results += segments.mkString(".")
-      return
+object Main extends App {
+  class Solution {
+    def generateIPAddresses(s: String): List[String] = {
+      val results = ArrayBuffer[String]()
+      val segments = ArrayBuffer[String]()
+      helper(s, 0, segments, results)
+      results.toList
     }
-    var length = 1
-    while (length <= 3 && index + length <= s.length) {
-      val part = s.substring(index, index + length)
-      if (isValidPart(part)) {
-        segments += part
-        helper(s, index + length, segments, results)
-        segments.remove(segments.length - 1)
+
+    private def helper(s: String, index: Int, segments: ArrayBuffer[String], results: ArrayBuffer[String]): Unit = {
+      if (segments.length == 4) {
+        if (index == s.length) results += segments.mkString(".")
+        return
       }
-      length += 1
+      var length = 1
+      while (length <= 3 && index + length <= s.length) {
+        val part = s.substring(index, index + length)
+        if (isValidPart(part)) {
+          segments += part
+          helper(s, index + length, segments, results)
+          segments.remove(segments.length - 1)
+        }
+        length += 1
+      }
+    }
+
+    private def isValidPart(part: String): Boolean = {
+      if (part.length > 1 && part.charAt(0) == '0') return false
+      val v = part.toInt
+      v >= 0 && v <= 255
     }
   }
 
-  private def isValidPart(part: String): Boolean = {
-    if (part.length > 1 && part.charAt(0) == '0') return false
-    val v = part.toInt
-    v >= 0 && v <= 255
-  }
-}
-
-object Main {
-  def main(args: Array[String]): Unit = println(new Solution().generateIPAddresses("25525512235"))
+  println(new Solution().generateIPAddresses("25525512235"))
 }
 ```
 
@@ -1351,23 +1357,25 @@ if __name__ == "__main__":
 import java.util.ArrayList;
 import java.util.List;
 
-public class Solution {
-    public List<String> stringPermutations(String s) {
-        char[] chars = s.toCharArray();
-        List<String> results = new ArrayList<>();
-        helper(chars, 0, results);
-        return results;
-    }
-
-    private void helper(char[] chars, int index, List<String> results) {
-        if (index == chars.length) {
-            results.add(new String(chars));
-            return;
+public class Main {
+    static class Solution {
+        public List<String> stringPermutations(String s) {
+            char[] chars = s.toCharArray();
+            List<String> results = new ArrayList<>();
+            helper(chars, 0, results);
+            return results;
         }
-        for (int i = index; i < chars.length; i++) {
-            char tmp = chars[index]; chars[index] = chars[i]; chars[i] = tmp;
-            helper(chars, index + 1, results);
-            tmp = chars[index]; chars[index] = chars[i]; chars[i] = tmp;
+
+        private void helper(char[] chars, int index, List<String> results) {
+            if (index == chars.length) {
+                results.add(new String(chars));
+                return;
+            }
+            for (int i = index; i < chars.length; i++) {
+                char tmp = chars[index]; chars[index] = chars[i]; chars[i] = tmp;
+                helper(chars, index + 1, results);
+                tmp = chars[index]; chars[index] = chars[i]; chars[i] = tmp;
+            }
         }
     }
 
@@ -1410,29 +1418,29 @@ int main(void) {
 ```scala run
 import scala.collection.mutable.ArrayBuffer
 
-class Solution {
-  def stringPermutations(s: String): List[String] = {
-    val chars = s.toCharArray
-    val results = ArrayBuffer[String]()
-    helper(chars, 0, results)
-    results.toList
+object Main extends App {
+  class Solution {
+    def stringPermutations(s: String): List[String] = {
+      val chars = s.toCharArray
+      val results = ArrayBuffer[String]()
+      helper(chars, 0, results)
+      results.toList
+    }
+
+    private def helper(chars: Array[Char], index: Int, results: ArrayBuffer[String]): Unit = {
+      if (index == chars.length) {
+        results += new String(chars)
+        return
+      }
+      for (i <- index until chars.length) {
+        val tmp = chars(index); chars(index) = chars(i); chars(i) = tmp
+        helper(chars, index + 1, results)
+        val tmp2 = chars(index); chars(index) = chars(i); chars(i) = tmp2
+      }
+    }
   }
 
-  private def helper(chars: Array[Char], index: Int, results: ArrayBuffer[String]): Unit = {
-    if (index == chars.length) {
-      results += new String(chars)
-      return
-    }
-    for (i <- index until chars.length) {
-      val tmp = chars(index); chars(index) = chars(i); chars(i) = tmp
-      helper(chars, index + 1, results)
-      val tmp2 = chars(index); chars(index) = chars(i); chars(i) = tmp2
-    }
-  }
-}
-
-object Main {
-  def main(args: Array[String]): Unit = println(new Solution().stringPermutations("abc"))
+  println(new Solution().stringPermutations("abc"))
 }
 ```
 

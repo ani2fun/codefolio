@@ -171,7 +171,7 @@ if __name__ == "__main__":
 ```java run
 import java.util.*;
 
-class Solution {
+public class Main {
     static int[] buildSA(String s) {
         int n = s.length();
         Integer[] indices = new Integer[n];

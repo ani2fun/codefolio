@@ -213,15 +213,17 @@ if __name__ == "__main__":
 ```
 
 ```java run
-public class Solution {
-    public int upperBound(int[] arr, int target) {
-        int low = 0, high = arr.length;
-        while (low < high) {
-            int mid = low + (high - low) / 2;
-            if (arr[mid] <= target) low = mid + 1;
-            else high = mid;
+public class Main {
+    static class Solution {
+        public int upperBound(int[] arr, int target) {
+            int low = 0, high = arr.length;
+            while (low < high) {
+                int mid = low + (high - low) / 2;
+                if (arr[mid] <= target) low = mid + 1;
+                else high = mid;
+            }
+            return low;
         }
-        return low;
     }
 
     public static void main(String[] args) {
@@ -251,21 +253,19 @@ int main(void) {
 ```
 
 ```scala run
-class Solution {
-  def upperBound(arr: Array[Int], target: Int): Int = {
-    var low = 0; var high = arr.length
-    while (low < high) {
-      val mid = low + (high - low) / 2
-      if (arr(mid) <= target) low = mid + 1 else high = mid
+object Main extends App {
+  class Solution {
+    def upperBound(arr: Array[Int], target: Int): Int = {
+      var low = 0; var high = arr.length
+      while (low < high) {
+        val mid = low + (high - low) / 2
+        if (arr(mid) <= target) low = mid + 1 else high = mid
+      }
+      low
     }
-    low
   }
-}
 
-object Main {
-  def main(args: Array[String]): Unit = {
-    println(new Solution().upperBound(Array(1, 5, 10, 15, 20, 25), 10))
-  }
+  println(new Solution().upperBound(Array(1, 5, 10, 15, 20, 25), 10))
 }
 ```
 

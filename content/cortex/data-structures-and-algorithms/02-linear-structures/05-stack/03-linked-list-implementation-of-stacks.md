@@ -246,20 +246,20 @@ int main() { Stack *s = stack_create(4); printf("created stack with capacity %d\
 ```
 
 ```scala run
-class ListNode(var v: Int, var next: ListNode = null)
-
-class Stack(val capacity: Int) {
-  protected var head: ListNode = null
-  protected var currentSize    = 0
-
-  def size:  Int     = 0
-  def empty: Boolean = true
-  def top:   Int     = -1
-  def push(v: Int): Boolean = false
-  def pop:   Int     = -1
-}
-
 object Main extends App {
+  class ListNode(var v: Int, var next: ListNode = null)
+
+  class Stack(val capacity: Int) {
+    protected var head: ListNode = null
+    protected var currentSize    = 0
+
+    def size:  Int     = 0
+    def empty: Boolean = true
+    def top:   Int     = -1
+    def push(v: Int): Boolean = false
+    def pop:   Int     = -1
+  }
+
   val s = new Stack(4); println("created stack with capacity 4")
 }
 ```
@@ -322,13 +322,15 @@ int main(){ Stack *s = stack_create(4); printf("%d\n", stack_size(s)); free(s); 
 ```
 
 ```scala run
-class ListNode(var v: Int, var next: ListNode = null)
-class Stack(val capacity: Int) {
-  protected var head: ListNode = null
-  protected var currentSize    = 0
-  def size: Int = currentSize
+object Main extends App {
+  class ListNode(var v: Int, var next: ListNode = null)
+  class Stack(val capacity: Int) {
+    protected var head: ListNode = null
+    protected var currentSize    = 0
+    def size: Int = currentSize
+  }
+  println(new Stack(4).size)
 }
-object Main extends App { println(new Stack(4).size) }
 ```
 
 
@@ -387,12 +389,14 @@ int main(){ Stack *s = stack_create(4); printf("%d\n", stack_empty(s)); free(s);
 ```
 
 ```scala run
-class ListNode(var v: Int, var next: ListNode = null)
-class Stack(val capacity: Int) {
-  protected var head: ListNode = null; protected var currentSize = 0
-  def empty: Boolean = currentSize == 0
+object Main extends App {
+  class ListNode(var v: Int, var next: ListNode = null)
+  class Stack(val capacity: Int) {
+    protected var head: ListNode = null; protected var currentSize = 0
+    def empty: Boolean = currentSize == 0
+  }
+  println(new Stack(4).empty)
 }
-object Main extends App { println(new Stack(4).empty) }
 ```
 
 
@@ -475,11 +479,14 @@ int stack_top(Stack *s){ return s->currentSize == 0 ? -1 : s->head->val; }
 ```
 
 ```scala run
-class ListNode(var v: Int, var next: ListNode = null)
-class Stack(val capacity: Int) {
-  protected var head: ListNode = null; protected var currentSize = 0
-  def empty: Boolean = currentSize == 0
-  def top:   Int     = if (empty) -1 else head.v
+object Main extends App {
+  class ListNode(var v: Int, var next: ListNode = null)
+  class Stack(val capacity: Int) {
+    protected var head: ListNode = null; protected var currentSize = 0
+    def empty: Boolean = currentSize == 0
+    def top:   Int     = if (empty) -1 else head.v
+  }
+  println(new Stack(4).top)  // -1 (empty stack)
 }
 ```
 
@@ -625,21 +632,21 @@ int main() {
 ```
 
 ```scala run
-class ListNode(var v: Int, var next: ListNode = null)
-
-class Stack(val capacity: Int) {
-  protected var head: ListNode = null
-  protected var currentSize    = 0
-  def push(v: Int): Boolean = {
-    if (currentSize == capacity) return false
-    val n = new ListNode(v); n.next = head
-    head  = n
-    currentSize += 1
-    true
-  }
-}
-
 object Main extends App {
+  class ListNode(var v: Int, var next: ListNode = null)
+
+  class Stack(val capacity: Int) {
+    protected var head: ListNode = null
+    protected var currentSize    = 0
+    def push(v: Int): Boolean = {
+      if (currentSize == capacity) return false
+      val n = new ListNode(v); n.next = head
+      head  = n
+      currentSize += 1
+      true
+    }
+  }
+
   val s = new Stack(2)
   println(s"${s.push(7)} ${s.push(9)} ${s.push(11)}")
 }
@@ -807,27 +814,27 @@ int main(){
 ```
 
 ```scala run
-class ListNode(var v: Int, var next: ListNode = null)
-
-class Stack(val capacity: Int) {
-  protected var head: ListNode = null
-  protected var currentSize    = 0
-  def empty: Boolean = currentSize == 0
-  def push(v: Int): Boolean = {
-    if (currentSize == capacity) return false
-    val n = new ListNode(v); n.next = head
-    head  = n; currentSize += 1; true
-  }
-  def pop: Int = {
-    if (empty) return -1
-    val value = head.v
-    head      = head.next      // GC reclaims the old node
-    currentSize -= 1
-    value
-  }
-}
-
 object Main extends App {
+  class ListNode(var v: Int, var next: ListNode = null)
+
+  class Stack(val capacity: Int) {
+    protected var head: ListNode = null
+    protected var currentSize    = 0
+    def empty: Boolean = currentSize == 0
+    def push(v: Int): Boolean = {
+      if (currentSize == capacity) return false
+      val n = new ListNode(v); n.next = head
+      head  = n; currentSize += 1; true
+    }
+    def pop: Int = {
+      if (empty) return -1
+      val value = head.v
+      head      = head.next      // GC reclaims the old node
+      currentSize -= 1
+      value
+    }
+  }
+
   val s = new Stack(3)
   s.push(1); s.push(2); s.push(3)
   println(s"${s.pop} ${s.pop} ${s.pop} ${s.pop}")
@@ -1005,31 +1012,31 @@ int main() {
 ```
 
 ```scala run
-class ListNode(var v: Int, var next: ListNode = null)
-
-class Stack(val capacity: Int) {
-  private var head: ListNode = null
-  private var currentSize    = 0
-
-  def size:  Int     = currentSize
-  def empty: Boolean = currentSize == 0
-  def top:   Int     = if (empty) -1 else head.v
-
-  def push(v: Int): Boolean = {
-    if (currentSize == capacity) return false
-    val n = new ListNode(v); n.next = head
-    head  = n; currentSize += 1; true
-  }
-  def pop: Int = {
-    if (empty) return -1
-    val value = head.v
-    head      = head.next
-    currentSize -= 1
-    value
-  }
-}
-
 object Main extends App {
+  class ListNode(var v: Int, var next: ListNode = null)
+
+  class Stack(val capacity: Int) {
+    private var head: ListNode = null
+    private var currentSize    = 0
+
+    def size:  Int     = currentSize
+    def empty: Boolean = currentSize == 0
+    def top:   Int     = if (empty) -1 else head.v
+
+    def push(v: Int): Boolean = {
+      if (currentSize == capacity) return false
+      val n = new ListNode(v); n.next = head
+      head  = n; currentSize += 1; true
+    }
+    def pop: Int = {
+      if (empty) return -1
+      val value = head.v
+      head      = head.next
+      currentSize -= 1
+      value
+    }
+  }
+
   val s = new Stack(2)
   println(s"${s.push(2)} ${s.push(3)}")
   println(s"${s.top} ${s.empty}")

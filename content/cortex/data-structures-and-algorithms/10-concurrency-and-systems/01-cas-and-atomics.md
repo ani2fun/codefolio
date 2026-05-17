@@ -198,7 +198,7 @@ if __name__ == "__main__":
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.*;
 
-class Solution {
+public class Main {
     static final AtomicInteger counter = new AtomicInteger(0);
 
     static int incrementCAS() {
@@ -252,7 +252,7 @@ int main(void) {
 ```scala run
 import java.util.concurrent.atomic.AtomicInteger
 
-object Solution {
+object Main extends App {
   val counter = new AtomicInteger(0)
 
   def incrementCAS(): Int = {
@@ -261,14 +261,12 @@ object Solution {
     newVal
   }
 
-  def main(args: Array[String]): Unit = {
-    val threads = (0 until 4).map { _ =>
-      new Thread(() => for (_ <- 0 until 10000) incrementCAS())
-    }
-    threads.foreach(_.start())
-    threads.foreach(_.join())
-    println(s"final count: ${counter.get()}")
+  val threads = (0 until 4).map { _ =>
+    new Thread(() => for (_ <- 0 until 10000) incrementCAS())
   }
+  threads.foreach(_.start())
+  threads.foreach(_.join())
+  println(s"final count: ${counter.get()}")
 }
 ```
 

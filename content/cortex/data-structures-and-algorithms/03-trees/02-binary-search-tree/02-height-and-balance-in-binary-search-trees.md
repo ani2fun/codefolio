@@ -575,31 +575,34 @@ class Solution:
 ```
 
 ```java run
-/**
- * Definition for a binary tree node.
- * public class TreeNode {
- *     int val;
- *     TreeNode left, right;
- *     TreeNode() {}
- *     TreeNode(int val) { this.val = val; }
- * }
- */
-class Solution {
-    int findHeight(TreeNode root) {
-        // Empty subtree has height 0.
-        if (root == null) return 0;
-        // Recurse into both children to find the deeper side.
-        int leftHeight  = findHeight(root.left);
-        int rightHeight = findHeight(root.right);
-        // +1 accounts for the current node's level.
-        return Math.max(leftHeight, rightHeight) + 1;
+public class Main {
+    static class TreeNode { int val; TreeNode left, right; TreeNode(int v){val=v;} }
+
+    static class Solution {
+        int findHeight(TreeNode root) {
+            // Empty subtree has height 0.
+            if (root == null) return 0;
+            // Recurse into both children to find the deeper side.
+            int leftHeight  = findHeight(root.left);
+            int rightHeight = findHeight(root.right);
+            // +1 accounts for the current node's level.
+            return Math.max(leftHeight, rightHeight) + 1;
+        }
+
+        public int balanceFactor(TreeNode root) {
+            if (root == null) return 0;                   // empty tree → 0 by convention
+            int leftHeight  = findHeight(root.left);      // height of left subtree
+            int rightHeight = findHeight(root.right);     // height of right subtree
+            return leftHeight - rightHeight;              // sign tells which side leans
+        }
     }
 
-    public int balanceFactor(TreeNode root) {
-        if (root == null) return 0;                   // empty tree → 0 by convention
-        int leftHeight  = findHeight(root.left);      // height of left subtree
-        int rightHeight = findHeight(root.right);     // height of right subtree
-        return leftHeight - rightHeight;              // sign tells which side leans
+    public static void main(String[] args) {
+        TreeNode root = new TreeNode(4);
+        root.left  = new TreeNode(2); root.right = new TreeNode(6);
+        root.left.left  = new TreeNode(1);
+        root.right.right = new TreeNode(7);
+        System.out.println(new Solution().balanceFactor(root));  // 0
     }
 }
 ```
@@ -632,20 +635,24 @@ int balanceFactor(struct TreeNode *root) {
 ```
 
 ```scala run
-// class TreeNode(var _value: Int) {
-//   var value: Int = _value
-//   var left:  TreeNode = null
-//   var right: TreeNode = null
-// }
-object Solution {
-  def findHeight(root: TreeNode): Int =
-    if (root == null) 0                                  // empty contributes nothing
-    else 1 + math.max(findHeight(root.left),             // +1 for current level
-                      findHeight(root.right))
+class TreeNode(var value: Int, var left: TreeNode = null, var right: TreeNode = null)
 
-  def balanceFactor(root: TreeNode): Int =
-    if (root == null) 0
-    else findHeight(root.left) - findHeight(root.right)  // > 0 means left-heavier
+object Main extends App {
+  class Solution {
+    def findHeight(root: TreeNode): Int =
+      if (root == null) 0                                  // empty contributes nothing
+      else 1 + math.max(findHeight(root.left),             // +1 for current level
+                        findHeight(root.right))
+
+    def balanceFactor(root: TreeNode): Int =
+      if (root == null) 0
+      else findHeight(root.left) - findHeight(root.right)  // > 0 means left-heavier
+  }
+
+  val root = new TreeNode(4,
+    new TreeNode(2, new TreeNode(1), null),
+    new TreeNode(6, null, new TreeNode(7)))
+  println(new Solution().balanceFactor(root))  // 0
 }
 ```
 
@@ -733,23 +740,35 @@ class Solution:
 ```
 
 ```java run
-class Solution {
-    TreeNode findNode(TreeNode root, int value) {
-        if (root == null || root.val == value) return root;       // base cases
-        TreeNode left = findNode(root.left, value);
-        if (left != null) return left;                            // short-circuit on hit
-        return findNode(root.right, value);
+public class Main {
+    static class TreeNode { int val; TreeNode left, right; TreeNode(int v){val=v;} }
+
+    static class Solution {
+        TreeNode findNode(TreeNode root, int value) {
+            if (root == null || root.val == value) return root;       // base cases
+            TreeNode left = findNode(root.left, value);
+            if (left != null) return left;                            // short-circuit on hit
+            return findNode(root.right, value);
+        }
+
+        int findHeight(TreeNode root) {
+            if (root == null) return 0;
+            return Math.max(findHeight(root.left), findHeight(root.right)) + 1;
+        }
+
+        public int balanceOfSubtree(TreeNode root, int value) {
+            TreeNode node = findNode(root, value);
+            if (node == null) return 0;                               // value not present
+            return findHeight(node.left) - findHeight(node.right);
+        }
     }
 
-    int findHeight(TreeNode root) {
-        if (root == null) return 0;
-        return Math.max(findHeight(root.left), findHeight(root.right)) + 1;
-    }
-
-    public int balanceOfSubtree(TreeNode root, int value) {
-        TreeNode node = findNode(root, value);
-        if (node == null) return 0;                               // value not present
-        return findHeight(node.left) - findHeight(node.right);
+    public static void main(String[] args) {
+        TreeNode root = new TreeNode(4);
+        root.left  = new TreeNode(2); root.right = new TreeNode(6);
+        root.left.left  = new TreeNode(1);
+        root.right.right = new TreeNode(7);
+        System.out.println(new Solution().balanceOfSubtree(root, 2));  // 1
     }
 }
 ```
@@ -778,25 +797,34 @@ int balanceOfSubtree(struct TreeNode *root, int value) {
 ```
 
 ```scala run
-object Solution {
-  def findNode(root: TreeNode, value: Int): TreeNode = {
-    if (root == null || root.value == value) root                 // base cases
-    else {
-      val left = findNode(root.left, value)
-      if (left != null) left                                      // hit — short-circuit
-      else findNode(root.right, value)
+class TreeNode(var value: Int, var left: TreeNode = null, var right: TreeNode = null)
+
+object Main extends App {
+  class Solution {
+    def findNode(root: TreeNode, value: Int): TreeNode = {
+      if (root == null || root.value == value) root                 // base cases
+      else {
+        val left = findNode(root.left, value)
+        if (left != null) left                                      // hit — short-circuit
+        else findNode(root.right, value)
+      }
+    }
+
+    def findHeight(root: TreeNode): Int =
+      if (root == null) 0
+      else 1 + math.max(findHeight(root.left), findHeight(root.right))
+
+    def balanceOfSubtree(root: TreeNode, value: Int): Int = {
+      val node = findNode(root, value)
+      if (node == null) 0
+      else findHeight(node.left) - findHeight(node.right)
     }
   }
 
-  def findHeight(root: TreeNode): Int =
-    if (root == null) 0
-    else 1 + math.max(findHeight(root.left), findHeight(root.right))
-
-  def balanceOfSubtree(root: TreeNode, value: Int): Int = {
-    val node = findNode(root, value)
-    if (node == null) 0
-    else findHeight(node.left) - findHeight(node.right)
-  }
+  val root = new TreeNode(4,
+    new TreeNode(2, new TreeNode(1), null),
+    new TreeNode(6, null, new TreeNode(7)))
+  println(new Solution().balanceOfSubtree(root, 2))  // 1
 }
 ```
 
@@ -1248,23 +1276,35 @@ class Solution:
 ```
 
 ```java run
-class Solution {
-    int findHeight(TreeNode root) {
-        if (root == null) return 0;
-        return Math.max(findHeight(root.left), findHeight(root.right)) + 1;
+public class Main {
+    static class TreeNode { int val; TreeNode left, right; TreeNode(int v){val=v;} }
+
+    static class Solution {
+        int findHeight(TreeNode root) {
+            if (root == null) return 0;
+            return Math.max(findHeight(root.left), findHeight(root.right)) + 1;
+        }
+
+        public boolean heightBalancedTree(TreeNode root) {
+            if (root == null) return true;                                        // empty → balanced
+
+            int leftHeight  = findHeight(root.left);
+            int rightHeight = findHeight(root.right);
+
+            if (Math.abs(leftHeight - rightHeight) <= 1) {                        // local rule holds...
+                return heightBalancedTree(root.left)                              // ...check both
+                    && heightBalancedTree(root.right);                            //    subtrees
+            }
+            return false;                                                          // local rule failed
+        }
     }
 
-    public boolean heightBalancedTree(TreeNode root) {
-        if (root == null) return true;                                        // empty → balanced
-
-        int leftHeight  = findHeight(root.left);
-        int rightHeight = findHeight(root.right);
-
-        if (Math.abs(leftHeight - rightHeight) <= 1) {                        // local rule holds...
-            return heightBalancedTree(root.left)                              // ...check both
-                && heightBalancedTree(root.right);                            //    subtrees
-        }
-        return false;                                                          // local rule failed
+    public static void main(String[] args) {
+        TreeNode root = new TreeNode(4);
+        root.left  = new TreeNode(2); root.right = new TreeNode(6);
+        root.left.left  = new TreeNode(1);
+        root.right.right = new TreeNode(7);
+        System.out.println(new Solution().heightBalancedTree(root));  // true
     }
 }
 ```
@@ -1295,19 +1335,28 @@ bool heightBalancedTree(struct TreeNode *root) {
 ```
 
 ```scala run
-object Solution {
-  def findHeight(root: TreeNode): Int =
-    if (root == null) 0
-    else 1 + math.max(findHeight(root.left), findHeight(root.right))
+class TreeNode(var value: Int, var left: TreeNode = null, var right: TreeNode = null)
 
-  def heightBalancedTree(root: TreeNode): Boolean = {
-    if (root == null) return true                                              // empty → balanced
-    val l = findHeight(root.left)
-    val r = findHeight(root.right)
-    if (math.abs(l - r) <= 1)
-      heightBalancedTree(root.left) && heightBalancedTree(root.right)          // recurse
-    else false                                                                 // local rule failed
+object Main extends App {
+  class Solution {
+    def findHeight(root: TreeNode): Int =
+      if (root == null) 0
+      else 1 + math.max(findHeight(root.left), findHeight(root.right))
+
+    def heightBalancedTree(root: TreeNode): Boolean = {
+      if (root == null) return true                                              // empty → balanced
+      val l = findHeight(root.left)
+      val r = findHeight(root.right)
+      if (math.abs(l - r) <= 1)
+        heightBalancedTree(root.left) && heightBalancedTree(root.right)          // recurse
+      else false                                                                 // local rule failed
+    }
   }
+
+  val root = new TreeNode(4,
+    new TreeNode(2, new TreeNode(1), null),
+    new TreeNode(6, null, new TreeNode(7)))
+  println(new Solution().heightBalancedTree(root))  // true
 }
 ```
 
