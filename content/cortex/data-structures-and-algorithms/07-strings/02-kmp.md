@@ -144,7 +144,7 @@ if __name__ == "__main__":
 ```
 
 ```java run
-class Solution {
+public class Main {
     static int[] buildFailure(String P) {
         int m = P.length();
         int[] pi = new int[m];
@@ -212,7 +212,7 @@ int main(void) {
 ```
 
 ```scala run
-object Solution {
+object Main extends App {
   def buildFailure(P: String): Array[Int] = {
     val m = P.length
     val pi = new Array[Int](m)
@@ -238,7 +238,7 @@ object Solution {
     out.toList
   }
 
-  def main(args: Array[String]): Unit = println(kmpMatch("ABABDABACDABABCABAB", "ABABCABAB"))
+  println(kmpMatch("ABABDABACDABABCABAB", "ABABCABAB"))
 }
 ```
 

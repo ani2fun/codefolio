@@ -282,25 +282,27 @@ if __name__ == "__main__":
 ```java run
 import java.util.Arrays;
 
-public class Solution {
-    public int[] mergeSort(int[] arr) {
-        if (arr.length <= 1) return arr;
-        int mid = arr.length / 2;
-        int[] left = mergeSort(Arrays.copyOfRange(arr, 0, mid));
-        int[] right = mergeSort(Arrays.copyOfRange(arr, mid, arr.length));
-        return merge(left, right);
-    }
-
-    private int[] merge(int[] left, int[] right) {
-        int[] result = new int[left.length + right.length];
-        int i = 0, j = 0, k = 0;
-        while (i < left.length && j < right.length) {
-            if (left[i] <= right[j]) result[k++] = left[i++];
-            else result[k++] = right[j++];
+public class Main {
+    static class Solution {
+        public int[] mergeSort(int[] arr) {
+            if (arr.length <= 1) return arr;
+            int mid = arr.length / 2;
+            int[] left = mergeSort(Arrays.copyOfRange(arr, 0, mid));
+            int[] right = mergeSort(Arrays.copyOfRange(arr, mid, arr.length));
+            return merge(left, right);
         }
-        while (i < left.length) result[k++] = left[i++];
-        while (j < right.length) result[k++] = right[j++];
-        return result;
+
+        private int[] merge(int[] left, int[] right) {
+            int[] result = new int[left.length + right.length];
+            int i = 0, j = 0, k = 0;
+            while (i < left.length && j < right.length) {
+                if (left[i] <= right[j]) result[k++] = left[i++];
+                else result[k++] = right[j++];
+            }
+            while (i < left.length) result[k++] = left[i++];
+            while (j < right.length) result[k++] = right[j++];
+            return result;
+        }
     }
 
     public static void main(String[] args) {
@@ -352,33 +354,31 @@ int main(void) {
 ```
 
 ```scala run
-class Solution {
-  def mergeSort(arr: Array[Int]): Array[Int] = {
-    if (arr.length <= 1) return arr
-    val mid = arr.length / 2
-    val left = mergeSort(arr.slice(0, mid))
-    val right = mergeSort(arr.slice(mid, arr.length))
-    merge(left, right)
-  }
-
-  private def merge(left: Array[Int], right: Array[Int]): Array[Int] = {
-    val result = new Array[Int](left.length + right.length)
-    var i = 0; var j = 0; var k = 0
-    while (i < left.length && j < right.length) {
-      if (left(i) <= right(j)) { result(k) = left(i); i += 1 }
-      else { result(k) = right(j); j += 1 }
-      k += 1
+object Main extends App {
+  class Solution {
+    def mergeSort(arr: Array[Int]): Array[Int] = {
+      if (arr.length <= 1) return arr
+      val mid = arr.length / 2
+      val left = mergeSort(arr.slice(0, mid))
+      val right = mergeSort(arr.slice(mid, arr.length))
+      merge(left, right)
     }
-    while (i < left.length) { result(k) = left(i); i += 1; k += 1 }
-    while (j < right.length) { result(k) = right(j); j += 1; k += 1 }
-    result
-  }
-}
 
-object Main {
-  def main(args: Array[String]): Unit = {
-    println(new Solution().mergeSort(Array(7, 2, 5, 1, 8, 4, 3, 6)).mkString(" "))
+    private def merge(left: Array[Int], right: Array[Int]): Array[Int] = {
+      val result = new Array[Int](left.length + right.length)
+      var i = 0; var j = 0; var k = 0
+      while (i < left.length && j < right.length) {
+        if (left(i) <= right(j)) { result(k) = left(i); i += 1 }
+        else { result(k) = right(j); j += 1 }
+        k += 1
+      }
+      while (i < left.length) { result(k) = left(i); i += 1; k += 1 }
+      while (j < right.length) { result(k) = right(j); j += 1; k += 1 }
+      result
+    }
   }
+
+  println(new Solution().mergeSort(Array(7, 2, 5, 1, 8, 4, 3, 6)).mkString(" "))
 }
 ```
 
@@ -628,31 +628,37 @@ if __name__ == "__main__":
 ```
 
 ```java run
-public class Solution {
-    public int countInversions(int[] arr) {
-        int[] temp = new int[arr.length];
-        return sortCount(arr, temp, 0, arr.length - 1);
-    }
-
-    private int sortCount(int[] arr, int[] temp, int left, int right) {
-        if (left >= right) return 0;
-        int mid = (left + right) / 2;
-        int inv = sortCount(arr, temp, left, mid);
-        inv += sortCount(arr, temp, mid + 1, right);
-        inv += mergeCount(arr, temp, left, mid, right);
-        return inv;
-    }
-
-    private int mergeCount(int[] arr, int[] temp, int left, int mid, int right) {
-        int i = left, j = mid + 1, k = left, count = 0;
-        while (i <= mid && j <= right) {
-            if (arr[i] <= arr[j]) temp[k++] = arr[i++];
-            else { temp[k++] = arr[j++]; count += mid - i + 1; }
+public class Main {
+    static class Solution {
+        public int countInversions(int[] arr) {
+            int[] temp = new int[arr.length];
+            return sortCount(arr, temp, 0, arr.length - 1);
         }
-        while (i <= mid) temp[k++] = arr[i++];
-        while (j <= right) temp[k++] = arr[j++];
-        for (int t = left; t <= right; t++) arr[t] = temp[t];
-        return count;
+
+        private int sortCount(int[] arr, int[] temp, int left, int right) {
+            if (left >= right) return 0;
+            int mid = (left + right) / 2;
+            int inv = sortCount(arr, temp, left, mid);
+            inv += sortCount(arr, temp, mid + 1, right);
+            inv += mergeCount(arr, temp, left, mid, right);
+            return inv;
+        }
+
+        private int mergeCount(int[] arr, int[] temp, int left, int mid, int right) {
+            int i = left, j = mid + 1, k = left, count = 0;
+            while (i <= mid && j <= right) {
+                if (arr[i] <= arr[j]) temp[k++] = arr[i++];
+                else { temp[k++] = arr[j++]; count += mid - i + 1; }
+            }
+            while (i <= mid) temp[k++] = arr[i++];
+            while (j <= right) temp[k++] = arr[j++];
+            for (int t = left; t <= right; t++) arr[t] = temp[t];
+            return count;
+        }
+    }
+
+    public static void main(String[] args) {
+        System.out.println(new Solution().countInversions(new int[]{1, 10, 5, 3, 4}));   // 5
     }
 }
 ```
@@ -691,33 +697,37 @@ int count_inversions(int *arr, int n) {
 ```
 
 ```scala run
-class Solution {
-  def countInversions(arr: Array[Int]): Int = {
-    val temp = new Array[Int](arr.length)
-    sortCount(arr, temp, 0, arr.length - 1)
-  }
-
-  private def sortCount(arr: Array[Int], temp: Array[Int], left: Int, right: Int): Int = {
-    if (left >= right) return 0
-    val mid = (left + right) / 2
-    var inv = sortCount(arr, temp, left, mid)
-    inv += sortCount(arr, temp, mid + 1, right)
-    inv += mergeCount(arr, temp, left, mid, right)
-    inv
-  }
-
-  private def mergeCount(arr: Array[Int], temp: Array[Int], left: Int, mid: Int, right: Int): Int = {
-    var i = left; var j = mid + 1; var k = left; var count = 0
-    while (i <= mid && j <= right) {
-      if (arr(i) <= arr(j)) { temp(k) = arr(i); i += 1 }
-      else { temp(k) = arr(j); j += 1; count += mid - i + 1 }
-      k += 1
+object Main extends App {
+  class Solution {
+    def countInversions(arr: Array[Int]): Int = {
+      val temp = new Array[Int](arr.length)
+      sortCount(arr, temp, 0, arr.length - 1)
     }
-    while (i <= mid) { temp(k) = arr(i); i += 1; k += 1 }
-    while (j <= right) { temp(k) = arr(j); j += 1; k += 1 }
-    for (t <- left to right) arr(t) = temp(t)
-    count
+
+    private def sortCount(arr: Array[Int], temp: Array[Int], left: Int, right: Int): Int = {
+      if (left >= right) return 0
+      val mid = (left + right) / 2
+      var inv = sortCount(arr, temp, left, mid)
+      inv += sortCount(arr, temp, mid + 1, right)
+      inv += mergeCount(arr, temp, left, mid, right)
+      inv
+    }
+
+    private def mergeCount(arr: Array[Int], temp: Array[Int], left: Int, mid: Int, right: Int): Int = {
+      var i = left; var j = mid + 1; var k = left; var count = 0
+      while (i <= mid && j <= right) {
+        if (arr(i) <= arr(j)) { temp(k) = arr(i); i += 1 }
+        else { temp(k) = arr(j); j += 1; count += mid - i + 1 }
+        k += 1
+      }
+      while (i <= mid) { temp(k) = arr(i); i += 1; k += 1 }
+      while (j <= right) { temp(k) = arr(j); j += 1; k += 1 }
+      for (t <- left to right) arr(t) = temp(t)
+      count
+    }
   }
+
+  println(new Solution().countInversions(Array(1, 10, 5, 3, 4)))   // 5
 }
 ```
 

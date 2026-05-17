@@ -203,19 +203,21 @@ if __name__ == "__main__":
 ```
 
 ```java run
-public class Solution {
-    public boolean binarySearch2D(int[][] matrix, int target) {
-        if (matrix.length == 0 || matrix[0].length == 0) return false;
-        int rows = matrix.length, cols = matrix[0].length;
-        int low = 0, high = rows * cols - 1;
-        while (low <= high) {
-            int mid = low + (high - low) / 2;
-            int r = mid / cols, c = mid % cols;
-            if (matrix[r][c] == target) return true;
-            if (matrix[r][c] < target) low = mid + 1;
-            else high = mid - 1;
+public class Main {
+    static class Solution {
+        public boolean binarySearch2D(int[][] matrix, int target) {
+            if (matrix.length == 0 || matrix[0].length == 0) return false;
+            int rows = matrix.length, cols = matrix[0].length;
+            int low = 0, high = rows * cols - 1;
+            while (low <= high) {
+                int mid = low + (high - low) / 2;
+                int r = mid / cols, c = mid % cols;
+                if (matrix[r][c] == target) return true;
+                if (matrix[r][c] < target) low = mid + 1;
+                else high = mid - 1;
+            }
+            return false;
         }
-        return false;
     }
 
     public static void main(String[] args) {
@@ -249,26 +251,24 @@ int main(void) {
 ```
 
 ```scala run
-class Solution {
-  def binarySearch2D(matrix: Array[Array[Int]], target: Int): Boolean = {
-    if (matrix.isEmpty || matrix(0).isEmpty) return false
-    val rows = matrix.length; val cols = matrix(0).length
-    var low = 0; var high = rows * cols - 1
-    while (low <= high) {
-      val mid = low + (high - low) / 2
-      val r = mid / cols; val c = mid % cols
-      if (matrix(r)(c) == target) return true
-      if (matrix(r)(c) < target) low = mid + 1 else high = mid - 1
+object Main extends App {
+  class Solution {
+    def binarySearch2D(matrix: Array[Array[Int]], target: Int): Boolean = {
+      if (matrix.isEmpty || matrix(0).isEmpty) return false
+      val rows = matrix.length; val cols = matrix(0).length
+      var low = 0; var high = rows * cols - 1
+      while (low <= high) {
+        val mid = low + (high - low) / 2
+        val r = mid / cols; val c = mid % cols
+        if (matrix(r)(c) == target) return true
+        if (matrix(r)(c) < target) low = mid + 1 else high = mid - 1
+      }
+      false
     }
-    false
   }
-}
 
-object Main {
-  def main(args: Array[String]): Unit = {
-    val m = Array(Array(1, 2, 2, 4), Array(5, 5, 5, 5), Array(9, 10, 11, 12))
-    println(new Solution().binarySearch2D(m, 11))
-  }
+  val m = Array(Array(1, 2, 2, 4), Array(5, 5, 5, 5), Array(9, 10, 11, 12))
+  println(new Solution().binarySearch2D(m, 11))
 }
 ```
 

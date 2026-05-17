@@ -146,7 +146,7 @@ if __name__ == "__main__":
 ```java run
 import java.util.*;
 
-class Solution {
+public class Main {
     static List<Integer> rabinKarp(String T, String P) {
         int n = T.length(), m = P.length();
         List<Integer> matches = new ArrayList<>();
@@ -207,7 +207,7 @@ int main(void) {
 ```
 
 ```scala run
-object Solution {
+object Main extends App {
   def rabinKarp(T: String, P: String): List[Int] = {
     val n = T.length; val m = P.length
     if (m > n) return Nil
@@ -233,7 +233,7 @@ object Solution {
     matches.toList
   }
 
-  def main(args: Array[String]): Unit = println(rabinKarp("ababcababcabcabc", "abc"))
+  println(rabinKarp("ababcababcabcabc", "abc"))
 }
 ```
 

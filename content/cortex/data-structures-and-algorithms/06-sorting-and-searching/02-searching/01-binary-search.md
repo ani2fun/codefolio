@@ -192,16 +192,18 @@ if __name__ == "__main__":
 ```
 
 ```java run
-public class Solution {
-    public int binarySearch(int[] arr, int target) {
-        int low = 0, high = arr.length - 1;
-        while (low <= high) {
-            int mid = low + (high - low) / 2;
-            if (arr[mid] == target) return mid;
-            if (arr[mid] < target) low = mid + 1;
-            else high = mid - 1;
+public class Main {
+    static class Solution {
+        public int binarySearch(int[] arr, int target) {
+            int low = 0, high = arr.length - 1;
+            while (low <= high) {
+                int mid = low + (high - low) / 2;
+                if (arr[mid] == target) return mid;
+                if (arr[mid] < target) low = mid + 1;
+                else high = mid - 1;
+            }
+            return -1;
         }
-        return -1;
     }
 
     public static void main(String[] args) {
@@ -232,22 +234,20 @@ int main(void) {
 ```
 
 ```scala run
-class Solution {
-  def binarySearch(arr: Array[Int], target: Int): Int = {
-    var low = 0; var high = arr.length - 1
-    while (low <= high) {
-      val mid = low + (high - low) / 2
-      if (arr(mid) == target) return mid
-      if (arr(mid) < target) low = mid + 1 else high = mid - 1
+object Main extends App {
+  class Solution {
+    def binarySearch(arr: Array[Int], target: Int): Int = {
+      var low = 0; var high = arr.length - 1
+      while (low <= high) {
+        val mid = low + (high - low) / 2
+        if (arr(mid) == target) return mid
+        if (arr(mid) < target) low = mid + 1 else high = mid - 1
+      }
+      -1
     }
-    -1
   }
-}
 
-object Main {
-  def main(args: Array[String]): Unit = {
-    println(new Solution().binarySearch(Array(1, 3, 5, 7, 9, 11, 13), 9))
-  }
+  println(new Solution().binarySearch(Array(1, 3, 5, 7, 9, 11, 13), 9))
 }
 ```
 

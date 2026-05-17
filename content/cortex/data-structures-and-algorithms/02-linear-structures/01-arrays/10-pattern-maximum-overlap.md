@@ -1358,67 +1358,70 @@ print(sol.minimum_meeting_rooms([[1, 15], [15, 17], [17, 18]]))           # 1
 ```java run
 import java.util.*;
 
-// Define a class to store the time and type ('s' or 'e')
-class TimePoint {
+public class Main {
 
-    int time;
-    char type;
+    // Define a class to store the time and type ('s' or 'e')
+    static class TimePoint {
 
-    TimePoint(int time, char type) {
-        this.time = time;
-        this.type = type;
-    }
-}
+        int time;
+        char type;
 
-// Comparator for TimePoint
-class Compare implements Comparator<TimePoint> {
-    public int compare(TimePoint a, TimePoint b) {
-
-        // Sort the times array, end times come before start times
-        // as 'e' < 's'
-        if (a.time == b.time) {
-            return Character.compare(a.type, b.type);
+        TimePoint(int time, char type) {
+            this.time = time;
+            this.type = type;
         }
-
-        return Integer.compare(a.time, b.time);
     }
-}
 
-class Solution {
-    public int minimumMeetingRooms(List<List<Integer>> meetings) {
+    // Comparator for TimePoint
+    static class Compare implements Comparator<TimePoint> {
+        public int compare(TimePoint a, TimePoint b) {
 
-        // Create a dynamic array to store start and end times
-        List<TimePoint> times = new ArrayList<>();
-
-        for (List<Integer> interval : meetings) {
-
-            // Add start and end times to the times array
-            times.add(new TimePoint(interval.get(0), 's'));
-            times.add(new TimePoint(interval.get(1), 'e'));
-        }
-
-        // Sort the times array using the custom compare function
-        times.sort(new Compare());
-
-        // Initialize 'rooms' and 'minRooms' to 0
-        int rooms = 0, minRooms = 0;
-
-        for (TimePoint point : times) {
-
-            // Increment rooms if we encounter a start point
-            if (point.type == 's') {
-                rooms++;
-                minRooms = Math.max(rooms, minRooms);
+            // Sort the times array, end times come before start times
+            // as 'e' < 's'
+            if (a.time == b.time) {
+                return Character.compare(a.type, b.type);
             }
 
-            // Decrement rooms if we encounter an end point
-            else {
-                rooms--;
-            }
+            return Integer.compare(a.time, b.time);
         }
+    }
 
-        // For an overlap we need at least 2 intervals
-        return minRooms;
+    static class Solution {
+        public int minimumMeetingRooms(List<List<Integer>> meetings) {
+
+            // Create a dynamic array to store start and end times
+            List<TimePoint> times = new ArrayList<>();
+
+            for (List<Integer> interval : meetings) {
+
+                // Add start and end times to the times array
+                times.add(new TimePoint(interval.get(0), 's'));
+                times.add(new TimePoint(interval.get(1), 'e'));
+            }
+
+            // Sort the times array using the custom compare function
+            times.sort(new Compare());
+
+            // Initialize 'rooms' and 'minRooms' to 0
+            int rooms = 0, minRooms = 0;
+
+            for (TimePoint point : times) {
+
+                // Increment rooms if we encounter a start point
+                if (point.type == 's') {
+                    rooms++;
+                    minRooms = Math.max(rooms, minRooms);
+                }
+
+                // Decrement rooms if we encounter an end point
+                else {
+                    rooms--;
+                }
+            }
+
+            // For an overlap we need at least 2 intervals
+            return minRooms;
+        }
     }
 
     public static void main(String[] args) {
@@ -1505,7 +1508,7 @@ int main(void) {
 // Define a class to store the time and type ('s' or 'e')
 case class TimePoint(time: Int, `type`: Char)
 
-object Solution {
+object Main extends App {
 
   // Sort the times array, end times come before start times as 'e' < 's'
   private val ordering: Ordering[TimePoint] =
@@ -1548,11 +1551,9 @@ object Solution {
     minRooms
   }
 
-  def main(args: Array[String]): Unit = {
-    println(minimumMeetingRooms(Array(Array(1, 20), Array(10, 30), Array(30, 40), Array(1, 5))))  // 2
-    println(minimumMeetingRooms(Array(Array(1, 10), Array(1, 10), Array(1, 10))))                 // 3
-    println(minimumMeetingRooms(Array(Array(1, 15), Array(15, 17), Array(17, 18))))               // 1
-  }
+  println(minimumMeetingRooms(Array(Array(1, 20), Array(10, 30), Array(30, 40), Array(1, 5))))  // 2
+  println(minimumMeetingRooms(Array(Array(1, 10), Array(1, 10), Array(1, 10))))                 // 3
+  println(minimumMeetingRooms(Array(Array(1, 15), Array(15, 17), Array(17, 18))))               // 1
 }
 ```
 
@@ -1901,41 +1902,43 @@ print(sol.remove_intervals([[1, 5], [5, 7], [7, 8]]))           # 0
 ```java run
 import java.util.*;
 
-class Solution {
-    public int removeIntervals(int[][] intervals) {
+public class Main {
+    static class Solution {
+        public int removeIntervals(int[][] intervals) {
 
-        // if intervals list is empty return 0
-        if (intervals.length == 0) {
-            return 0;
-        }
-
-        // sort the intervals in ascending order of their end times
-        Arrays.sort(intervals, (a, b) -> a[1] - b[1]);
-
-        int n = intervals.length;
-
-        // keep track of the non-overlapping intervals, start with 1
-        int count = 1;
-
-        // end time of the first interval
-        int end = intervals[0][1];
-
-        for (int i = 1; i < n; i++) {
-
-            // if current interval's start time is greater or equal to
-            // the end time of previous interval means it does not
-            // overlap with previous interval so we increase the count
-            // and update the end time to current interval's end time
-            if (intervals[i][0] >= end) {
-                count++;
-                end = intervals[i][1];
+            // if intervals list is empty return 0
+            if (intervals.length == 0) {
+                return 0;
             }
-        }
 
-        // return the number of intervals to be removed, i.e.,
-        // difference between total intervals and non-overlapping
-        // intervals
-        return n - count;
+            // sort the intervals in ascending order of their end times
+            Arrays.sort(intervals, (a, b) -> a[1] - b[1]);
+
+            int n = intervals.length;
+
+            // keep track of the non-overlapping intervals, start with 1
+            int count = 1;
+
+            // end time of the first interval
+            int end = intervals[0][1];
+
+            for (int i = 1; i < n; i++) {
+
+                // if current interval's start time is greater or equal to
+                // the end time of previous interval means it does not
+                // overlap with previous interval so we increase the count
+                // and update the end time to current interval's end time
+                if (intervals[i][0] >= end) {
+                    count++;
+                    end = intervals[i][1];
+                }
+            }
+
+            // return the number of intervals to be removed, i.e.,
+            // difference between total intervals and non-overlapping
+            // intervals
+            return n - count;
+        }
     }
 
     public static void main(String[] args) {
@@ -2006,7 +2009,7 @@ int main(void) {
 ```
 
 ```scala run
-object Solution {
+object Main extends App {
   def removeIntervals(intervals: Array[Array[Int]]): Int = {
 
     // if intervals list is empty return 0
@@ -2040,11 +2043,9 @@ object Solution {
     n - count
   }
 
-  def main(args: Array[String]): Unit = {
-    println(removeIntervals(Array(Array(1, 2), Array(2, 3), Array(3, 4), Array(1, 3))))  // 1
-    println(removeIntervals(Array(Array(1, 5), Array(1, 5), Array(1, 5))))               // 2
-    println(removeIntervals(Array(Array(1, 5), Array(5, 7), Array(7, 8))))               // 0
-  }
+  println(removeIntervals(Array(Array(1, 2), Array(2, 3), Array(3, 4), Array(1, 3))))  // 1
+  println(removeIntervals(Array(Array(1, 5), Array(1, 5), Array(1, 5))))               // 2
+  println(removeIntervals(Array(Array(1, 5), Array(5, 7), Array(7, 8))))               // 0
 }
 ```
 
@@ -2440,103 +2441,106 @@ print(sol.busiest_interval([[1, 5], [5, 10], [10, 15]]))          # (-1, -1)
 ```java run
 import java.util.*;
 
-// Define a class to store the time and type ('s' or 'e')
-class TimePoint {
+public class Main {
 
-    int time;
-    char type;
+    // Define a class to store the time and type ('s' or 'e')
+    static class TimePoint {
 
-    TimePoint(int time, char type) {
-        this.time = time;
-        this.type = type;
-    }
-}
+        int time;
+        char type;
 
-// Comparator for TimePoint
-class Compare implements Comparator<TimePoint> {
-    public int compare(TimePoint a, TimePoint b) {
-
-        // Sort the times array, end times come before start times
-        // as 'e' < 's'
-        if (a.time == b.time) {
-            return Character.compare(a.type, b.type);
+        TimePoint(int time, char type) {
+            this.time = time;
+            this.type = type;
         }
-
-        return Integer.compare(a.time, b.time);
     }
-}
 
-class Solution {
-    public int[] busiestInterval(List<List<Integer>> meetings) {
+    // Comparator for TimePoint
+    static class Compare implements Comparator<TimePoint> {
+        public int compare(TimePoint a, TimePoint b) {
 
-        // Create a dynamic array to store start and end times
-        List<TimePoint> times = new ArrayList<>();
+            // Sort the times array, end times come before start times
+            // as 'e' < 's'
+            if (a.time == b.time) {
+                return Character.compare(a.type, b.type);
+            }
 
-        for (List<Integer> interval : meetings) {
-
-            // Add start and end times to the times array
-            times.add(new TimePoint(interval.get(0), 's'));
-            times.add(new TimePoint(interval.get(1), 'e'));
+            return Integer.compare(a.time, b.time);
         }
+    }
 
-        // Sort the times array using the custom compare function
-        times.sort(new Compare());
+    static class Solution {
+        public int[] busiestInterval(List<List<Integer>> meetings) {
 
-        // Currently overlapping intervals
-        int currentOverlap = 0;
+            // Create a dynamic array to store start and end times
+            List<TimePoint> times = new ArrayList<>();
 
-        // Maximum overlap count
-        int maximumOverlap = 0;
+            for (List<Integer> interval : meetings) {
 
-        // Start of the interval with maximum overlap
-        int intervalStart = 0;
+                // Add start and end times to the times array
+                times.add(new TimePoint(interval.get(0), 's'));
+                times.add(new TimePoint(interval.get(1), 'e'));
+            }
 
-        // End of the interval with maximum overlap
-        int intervalEnd = 0;
+            // Sort the times array using the custom compare function
+            times.sort(new Compare());
 
-        for (TimePoint point : times) {
-            if (point.type == 's') {
+            // Currently overlapping intervals
+            int currentOverlap = 0;
 
-                // If we are at the start of a new maximum overlap
-                // interval
-                currentOverlap++;
+            // Maximum overlap count
+            int maximumOverlap = 0;
 
-                // If the current overlap exceeds the maximum overlap
-                // update the maximum overlap and start of the interval
-                // with maximum overlap
-                if (currentOverlap > maximumOverlap) {
-                    maximumOverlap = currentOverlap;
-                    intervalStart = point.time;
+            // Start of the interval with maximum overlap
+            int intervalStart = 0;
 
-                    // Reset the end of the interval with maximum overlap
-                    intervalEnd = -1;
+            // End of the interval with maximum overlap
+            int intervalEnd = 0;
+
+            for (TimePoint point : times) {
+                if (point.type == 's') {
+
+                    // If we are at the start of a new maximum overlap
+                    // interval
+                    currentOverlap++;
+
+                    // If the current overlap exceeds the maximum overlap
+                    // update the maximum overlap and start of the interval
+                    // with maximum overlap
+                    if (currentOverlap > maximumOverlap) {
+                        maximumOverlap = currentOverlap;
+                        intervalStart = point.time;
+
+                        // Reset the end of the interval with maximum overlap
+                        intervalEnd = -1;
+                    }
+                }
+
+                // 'e' - end of interval
+                else {
+
+                    // If we are at the end of an interval with maximum
+                    // overlap and the current overlap is equal to the
+                    // maximum overlap then update the end of the interval
+                    // with maximum overlap
+                    if (
+                        currentOverlap == maximumOverlap && intervalEnd == -1
+                    ) {
+                        intervalEnd = point.time;
+                    }
+
+                    // Decrement the current overlap count
+                    currentOverlap--;
                 }
             }
 
-            // 'e' - end of interval
-            else {
-
-                // If we are at the end of an interval with maximum
-                // overlap and the current overlap is equal to the
-                // maximum overlap then update the end of the interval
-                // with maximum overlap
-                if (
-                    currentOverlap == maximumOverlap && intervalEnd == -1
-                ) {
-                    intervalEnd = point.time;
-                }
-
-                // Decrement the current overlap count
-                currentOverlap--;
+            // If maximumOverlap <= 1, return {-1, -1} indicating no overlap
+            if (maximumOverlap <= 1) {
+                return new int[] { -1, -1 };
             }
-        }
 
-        // If maximumOverlap <= 1, return {-1, -1} indicating no overlap
-        if (maximumOverlap <= 1) {
-            return new int[] { -1, -1 };
+            return new int[] { intervalStart, intervalEnd };
         }
-
-        return new int[] { intervalStart, intervalEnd };
     }
 
     public static void main(String[] args) {
@@ -2655,7 +2659,7 @@ int main(void) {
 // Define a class to store the time and type ('s' or 'e')
 case class TimePoint(time: Int, `type`: Char)
 
-object Solution {
+object Main extends App {
 
   // Sort the times array, end times come before start times as 'e' < 's'
   private val ordering: Ordering[TimePoint] =
@@ -2726,11 +2730,9 @@ object Solution {
     else Array(intervalStart, intervalEnd)
   }
 
-  def main(args: Array[String]): Unit = {
-    println(busiestInterval(Array(Array(1, 3), Array(2, 4), Array(5, 6))).mkString("[", ", ", "]"))    // [2, 3]
-    println(busiestInterval(Array(Array(1, 8), Array(4, 5), Array(6, 7), Array(7, 8))).mkString("[", ", ", "]"))   // [4, 5]
-    println(busiestInterval(Array(Array(1, 5), Array(5, 10), Array(10, 15))).mkString("[", ", ", "]"))             // [-1, -1]
-  }
+  println(busiestInterval(Array(Array(1, 3), Array(2, 4), Array(5, 6))).mkString("[", ", ", "]"))    // [2, 3]
+  println(busiestInterval(Array(Array(1, 8), Array(4, 5), Array(6, 7), Array(7, 8))).mkString("[", ", ", "]"))   // [4, 5]
+  println(busiestInterval(Array(Array(1, 5), Array(5, 10), Array(10, 15))).mkString("[", ", ", "]"))             // [-1, -1]
 }
 ```
 
@@ -3167,118 +3169,121 @@ print(sol.peak_resource_requirement([[1, 5, 2], [5, 10, 3], [10, 15, 5]]))      
 ```java run
 import java.util.*;
 
-// Define a struct to store the time, type ('s' or 'e') and resources
-class TimePoint {
+public class Main {
 
-    int time;
-    char type;
-    int resources;
+    // Define a struct to store the time, type ('s' or 'e') and resources
+    static class TimePoint {
 
-    TimePoint(int time, char type, int resources) {
-        this.time = time;
-        this.type = type;
-        this.resources = resources;
+        int time;
+        char type;
+        int resources;
+
+        TimePoint(int time, char type, int resources) {
+            this.time = time;
+            this.type = type;
+            this.resources = resources;
+        }
     }
-}
 
-// Comparator for TimePoint
-class Compare implements Comparator<TimePoint> {
-    public int compare(TimePoint a, TimePoint b) {
+    // Comparator for TimePoint
+    static class Compare implements Comparator<TimePoint> {
+        public int compare(TimePoint a, TimePoint b) {
 
-        // Sort the times array, end times come before start times
-        // as 'e' < 's'
-        if (a.time == b.time) {
-            return Character.compare(a.type, b.type);
+            // Sort the times array, end times come before start times
+            // as 'e' < 's'
+            if (a.time == b.time) {
+                return Character.compare(a.type, b.type);
+            }
+
+            return Integer.compare(a.time, b.time);
         }
-
-        return Integer.compare(a.time, b.time);
     }
-}
 
-class Solution {
-    public int[] peakResourceRequirement(List<List<Integer>> jobs) {
+    static class Solution {
+        public int[] peakResourceRequirement(List<List<Integer>> jobs) {
 
-        // Create a dynamic array to store start and end times
-        List<TimePoint> times = new ArrayList<>();
+            // Create a dynamic array to store start and end times
+            List<TimePoint> times = new ArrayList<>();
 
-        for (List<Integer> job : jobs) {
+            for (List<Integer> job : jobs) {
 
-            // Add start and end times to the times array
-            times.add(new TimePoint(job.get(0), 's', job.get(2)));
-            times.add(new TimePoint(job.get(1), 'e', job.get(2)));
-        }
+                // Add start and end times to the times array
+                times.add(new TimePoint(job.get(0), 's', job.get(2)));
+                times.add(new TimePoint(job.get(1), 'e', job.get(2)));
+            }
 
-        // Sort the times array using the custom compare function
-        times.sort(new Compare());
+            // Sort the times array using the custom compare function
+            times.sort(new Compare());
 
-        // Currently required resources
-        int currentResources = 0;
+            // Currently required resources
+            int currentResources = 0;
 
-        // Maximum resources required at any time
-        int maxResources = 0;
+            // Maximum resources required at any time
+            int maxResources = 0;
 
-        // Start of the interval with maximum resources
-        int intervalStart = -1;
+            // Start of the interval with maximum resources
+            int intervalStart = -1;
 
-        // End of the interval with maximum resources
-        int intervalEnd = -1;
+            // End of the interval with maximum resources
+            int intervalEnd = -1;
 
-        // Maximum resources required by a single job
-        int maxSingleJobResources = 0;
+            // Maximum resources required by a single job
+            int maxSingleJobResources = 0;
 
-        // Find the maximum resources required by a single job
-        for (List<Integer> job : jobs) {
-            maxSingleJobResources = Math.max(
-                maxSingleJobResources,
-                job.get(2)
-            );
-        }
+            // Find the maximum resources required by a single job
+            for (List<Integer> job : jobs) {
+                maxSingleJobResources = Math.max(
+                    maxSingleJobResources,
+                    job.get(2)
+                );
+            }
 
-        for (TimePoint point : times) {
-            if (point.type == 's') {
+            for (TimePoint point : times) {
+                if (point.type == 's') {
 
-                // Add the resources of the current job
-                currentResources += point.resources;
+                    // Add the resources of the current job
+                    currentResources += point.resources;
 
-                // If the current resources exceed the maximum resources
-                // update the maximum resources and start of the interval
-                // with maximum resources
-                if (currentResources > maxResources) {
-                    maxResources = currentResources;
-                    intervalStart = point.time;
+                    // If the current resources exceed the maximum resources
+                    // update the maximum resources and start of the interval
+                    // with maximum resources
+                    if (currentResources > maxResources) {
+                        maxResources = currentResources;
+                        intervalStart = point.time;
 
-                    // Reset the end of the interval with maximum
-                    // resources
-                    intervalEnd = -1;
+                        // Reset the end of the interval with maximum
+                        // resources
+                        intervalEnd = -1;
+                    }
+                }
+
+                // 'e' - end of interval
+                else {
+
+                    // If we are at the end of an interval with maximum
+                    // overlap and the current overlap is equal to the
+                    // maximum resources then update the end of the interval
+                    // with maximum resources
+                    if (
+                        currentResources == maxResources && intervalEnd == -1
+                    ) {
+                        intervalEnd = point.time;
+                    }
+
+                    // Decrement the current resources count
+                    currentResources -= point.resources;
                 }
             }
 
-            // 'e' - end of interval
-            else {
-
-                // If we are at the end of an interval with maximum
-                // overlap and the current overlap is equal to the
-                // maximum resources then update the end of the interval
-                // with maximum resources
-                if (
-                    currentResources == maxResources && intervalEnd == -1
-                ) {
-                    intervalEnd = point.time;
-                }
-
-                // Decrement the current resources count
-                currentResources -= point.resources;
+            // If the maximum resources is equal to the maximum resources
+            // required by a single job, return {-1, -1, 0} as there is no
+            // interval with overlapping jobs
+            if (maxResources == maxSingleJobResources) {
+                return new int[] { -1, -1, 0 };
             }
-        }
 
-        // If the maximum resources is equal to the maximum resources
-        // required by a single job, return {-1, -1, 0} as there is no
-        // interval with overlapping jobs
-        if (maxResources == maxSingleJobResources) {
-            return new int[] { -1, -1, 0 };
+            return new int[] { intervalStart, intervalEnd, maxResources };
         }
-
-        return new int[] { intervalStart, intervalEnd, maxResources };
     }
 
     public static void main(String[] args) {
@@ -3411,7 +3416,7 @@ int main(void) {
 // Define a class to store the time, type ('s' or 'e') and resources
 case class TimePoint(time: Int, `type`: Char, resources: Int)
 
-object Solution {
+object Main extends App {
 
   // Sort the times array, end times come before start times as 'e' < 's'
   private val ordering: Ordering[TimePoint] =
@@ -3492,11 +3497,9 @@ object Solution {
     else Array(intervalStart, intervalEnd, maxResources)
   }
 
-  def main(args: Array[String]): Unit = {
-    println(peakResourceRequirement(Array(Array(1, 5, 2), Array(2, 6, 3), Array(4, 7, 4))).mkString("[", ", ", "]"))       // [4, 5, 9]
-    println(peakResourceRequirement(Array(Array(1, 3, 1), Array(2, 4, 5), Array(5, 6, 4))).mkString("[", ", ", "]"))       // [2, 3, 6]
-    println(peakResourceRequirement(Array(Array(1, 5, 2), Array(5, 10, 3), Array(10, 15, 5))).mkString("[", ", ", "]"))    // [-1, -1, 0]
-  }
+  println(peakResourceRequirement(Array(Array(1, 5, 2), Array(2, 6, 3), Array(4, 7, 4))).mkString("[", ", ", "]"))       // [4, 5, 9]
+  println(peakResourceRequirement(Array(Array(1, 3, 1), Array(2, 4, 5), Array(5, 6, 4))).mkString("[", ", ", "]"))       // [2, 3, 6]
+  println(peakResourceRequirement(Array(Array(1, 5, 2), Array(5, 10, 3), Array(10, 15, 5))).mkString("[", ", ", "]"))    // [-1, -1, 0]
 }
 ```
 

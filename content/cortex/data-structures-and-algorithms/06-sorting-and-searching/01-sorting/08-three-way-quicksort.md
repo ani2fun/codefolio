@@ -361,40 +361,42 @@ if __name__ == "__main__":
 ```java run
 import java.util.Random;
 
-public class Solution {
-    private final Random rand = new Random();
+public class Main {
+    static class Solution {
+        private final Random rand = new Random();
 
-    public void threeWayQuickSort(int[] arr) {
-        sort(arr, 0, arr.length - 1);
-    }
-
-    private void sort(int[] arr, int left, int right) {
-        if (left >= right) return;
-        int[] bounds = partition(arr, left, right);
-        sort(arr, left, bounds[0]);
-        sort(arr, bounds[1], right);
-    }
-
-    private int[] partition(int[] arr, int left, int right) {
-        int pivotIdx = left + rand.nextInt(right - left + 1);
-        int pivot = arr[pivotIdx];
-        int l = left, mid = left, r = right;
-        while (mid <= r) {
-            if (arr[mid] < pivot) {
-                swap(arr, l, mid);
-                l++; mid++;
-            } else if (arr[mid] == pivot) {
-                mid++;
-            } else {
-                swap(arr, mid, r);
-                r--;
-            }
+        public void threeWayQuickSort(int[] arr) {
+            sort(arr, 0, arr.length - 1);
         }
-        return new int[]{l - 1, mid};
-    }
 
-    private void swap(int[] arr, int i, int j) {
-        int t = arr[i]; arr[i] = arr[j]; arr[j] = t;
+        private void sort(int[] arr, int left, int right) {
+            if (left >= right) return;
+            int[] bounds = partition(arr, left, right);
+            sort(arr, left, bounds[0]);
+            sort(arr, bounds[1], right);
+        }
+
+        private int[] partition(int[] arr, int left, int right) {
+            int pivotIdx = left + rand.nextInt(right - left + 1);
+            int pivot = arr[pivotIdx];
+            int l = left, mid = left, r = right;
+            while (mid <= r) {
+                if (arr[mid] < pivot) {
+                    swap(arr, l, mid);
+                    l++; mid++;
+                } else if (arr[mid] == pivot) {
+                    mid++;
+                } else {
+                    swap(arr, mid, r);
+                    r--;
+                }
+            }
+            return new int[]{l - 1, mid};
+        }
+
+        private void swap(int[] arr, int i, int j) {
+            int t = arr[i]; arr[i] = arr[j]; arr[j] = t;
+        }
     }
 
     public static void main(String[] args) {
@@ -453,42 +455,40 @@ int main(void) {
 ```scala run
 import scala.util.Random
 
-class Solution {
-  def threeWayQuickSort(arr: Array[Int]): Unit = {
-    sort(arr, 0, arr.length - 1)
-  }
-
-  private def sort(arr: Array[Int], left: Int, right: Int): Unit = {
-    if (left >= right) return
-    val (i, j) = partition3(arr, left, right)
-    sort(arr, left, i)
-    sort(arr, j, right)
-  }
-
-  private def partition3(arr: Array[Int], left: Int, right: Int): (Int, Int) = {
-    val pivot = arr(left + Random.nextInt(right - left + 1))
-    var l = left; var mid = left; var r = right
-    while (mid <= r) {
-      if (arr(mid) < pivot) {
-        val t = arr(l); arr(l) = arr(mid); arr(mid) = t
-        l += 1; mid += 1
-      } else if (arr(mid) == pivot) {
-        mid += 1
-      } else {
-        val t = arr(mid); arr(mid) = arr(r); arr(r) = t
-        r -= 1
-      }
+object Main extends App {
+  class Solution {
+    def threeWayQuickSort(arr: Array[Int]): Unit = {
+      sort(arr, 0, arr.length - 1)
     }
-    (l - 1, mid)
-  }
-}
 
-object Main {
-  def main(args: Array[String]): Unit = {
-    val arr = Array(7, 5, 5, 1, 5, 8, 5, 3)
-    new Solution().threeWayQuickSort(arr)
-    println(arr.mkString(" "))
+    private def sort(arr: Array[Int], left: Int, right: Int): Unit = {
+      if (left >= right) return
+      val (i, j) = partition3(arr, left, right)
+      sort(arr, left, i)
+      sort(arr, j, right)
+    }
+
+    private def partition3(arr: Array[Int], left: Int, right: Int): (Int, Int) = {
+      val pivot = arr(left + Random.nextInt(right - left + 1))
+      var l = left; var mid = left; var r = right
+      while (mid <= r) {
+        if (arr(mid) < pivot) {
+          val t = arr(l); arr(l) = arr(mid); arr(mid) = t
+          l += 1; mid += 1
+        } else if (arr(mid) == pivot) {
+          mid += 1
+        } else {
+          val t = arr(mid); arr(mid) = arr(r); arr(r) = t
+          r -= 1
+        }
+      }
+      (l - 1, mid)
+    }
   }
+
+  val arr = Array(7, 5, 5, 1, 5, 8, 5, 3)
+  new Solution().threeWayQuickSort(arr)
+  println(arr.mkString(" "))
 }
 ```
 

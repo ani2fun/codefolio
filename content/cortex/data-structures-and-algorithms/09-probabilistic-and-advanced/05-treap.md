@@ -179,7 +179,7 @@ if __name__ == "__main__":
 ```java run
 import java.util.*;
 
-class Solution {
+public class Main {
     static Random rng = new Random();
     static class Node {
         int key; double pr; Node left, right;

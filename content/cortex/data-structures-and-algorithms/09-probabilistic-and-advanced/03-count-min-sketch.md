@@ -131,7 +131,7 @@ if __name__ == "__main__":
 ```java run
 import java.util.*;
 
-class Solution {
+public class Main {
     int w = 2718, d = 5;
     int[][] table = new int[d][w];
 
@@ -158,7 +158,7 @@ class Solution {
     }
 
     public static void main(String[] args) {
-        Solution cms = new Solution();
+        Main cms = new Main();
         for (int i = 0; i < 100_000; i++) cms.add("hot");
         System.out.println("query('hot') -> " + cms.query("hot"));
     }

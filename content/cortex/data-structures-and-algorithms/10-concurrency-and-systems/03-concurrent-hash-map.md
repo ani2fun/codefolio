@@ -134,7 +134,7 @@ class StripedConcurrentMap:
 import java.util.concurrent.*;
 import java.util.concurrent.locks.*;
 
-class Solution {
+public class Main {
     // Use Java's built-in ConcurrentHashMap; stripped-down example.
     static ConcurrentHashMap<String, Integer> map = new ConcurrentHashMap<>();
 

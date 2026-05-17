@@ -415,19 +415,21 @@ if __name__ == "__main__":
 ```
 
 ```java run
-public class Solution {
-    public int[] countingSort(int[] arr, int k) {
-        int n = arr.length;
-        int[] count = new int[k + 1];
-        for (int v : arr) count[v]++;
-        for (int i = 1; i <= k; i++) count[i] += count[i - 1];
+public class Main {
+    static class Solution {
+        public int[] countingSort(int[] arr, int k) {
+            int n = arr.length;
+            int[] count = new int[k + 1];
+            for (int v : arr) count[v]++;
+            for (int i = 1; i <= k; i++) count[i] += count[i - 1];
 
-        int[] result = new int[n];
-        for (int i = n - 1; i >= 0; i--) {
-            count[arr[i]]--;
-            result[count[arr[i]]] = arr[i];
+            int[] result = new int[n];
+            for (int i = n - 1; i >= 0; i--) {
+                count[arr[i]]--;
+                result[count[arr[i]]] = arr[i];
+            }
+            return result;
         }
-        return result;
     }
 
     public static void main(String[] args) {
@@ -469,26 +471,24 @@ int main(void) {
 ```
 
 ```scala run
-class Solution {
-  def countingSort(arr: Array[Int], k: Int): Array[Int] = {
-    val n = arr.length
-    val count = Array.fill(k + 1)(0)
-    for (v <- arr) count(v) += 1
-    for (i <- 1 to k) count(i) += count(i - 1)
+object Main extends App {
+  class Solution {
+    def countingSort(arr: Array[Int], k: Int): Array[Int] = {
+      val n = arr.length
+      val count = Array.fill(k + 1)(0)
+      for (v <- arr) count(v) += 1
+      for (i <- 1 to k) count(i) += count(i - 1)
 
-    val result = new Array[Int](n)
-    for (i <- (n - 1) to 0 by -1) {
-      count(arr(i)) -= 1
-      result(count(arr(i))) = arr(i)
+      val result = new Array[Int](n)
+      for (i <- (n - 1) to 0 by -1) {
+        count(arr(i)) -= 1
+        result(count(arr(i))) = arr(i)
+      }
+      result
     }
-    result
   }
-}
 
-object Main {
-  def main(args: Array[String]): Unit = {
-    println(new Solution().countingSort(Array(2, 5, 3, 0, 2, 3, 0, 3), 5).mkString(" "))
-  }
+  println(new Solution().countingSort(Array(2, 5, 3, 0, 2, 3, 0, 3), 5).mkString(" "))
 }
 ```
 

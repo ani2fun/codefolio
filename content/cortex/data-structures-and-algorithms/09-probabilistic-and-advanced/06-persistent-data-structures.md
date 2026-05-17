@@ -154,7 +154,7 @@ if __name__ == "__main__":
 ```
 
 ```java run
-class Solution {
+public class Main {
     static class Node {
         int key; Node left, right;
         Node(int k, Node l, Node r) { key = k; left = l; right = r; }

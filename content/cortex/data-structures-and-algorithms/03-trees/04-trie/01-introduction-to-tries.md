@@ -246,7 +246,7 @@ if __name__ == "__main__":
 ```java run
 import java.util.*;
 
-class Solution {
+public class Main {
     static class TrieNode {
         Map<Character, TrieNode> children = new HashMap<>();
         boolean isEnd = false;
@@ -373,7 +373,7 @@ int main(void) {
 ```scala run
 import scala.collection.mutable
 
-object Solution {
+object Main extends App {
   class TrieNode {
     val children = mutable.HashMap.empty[Char, TrieNode]
     var isEnd = false
@@ -421,13 +421,11 @@ object Solution {
     }
   }
 
-  def main(args: Array[String]): Unit = {
-    val t = new Trie
-    for (w <- List("apple", "app", "apt", "ant", "ants", "and")) t.insert(w)
-    println(s"search('app')      -> ${t.search("app")}")
-    println(s"starts_with('ap')  -> ${t.startsWith("ap")}")
-    println(s"words with 'an'    -> ${t.wordsWithPrefix("an").sorted}")
-  }
+  val t = new Trie
+  for (w <- List("apple", "app", "apt", "ant", "ants", "and")) t.insert(w)
+  println(s"search('app')      -> ${t.search("app")}")
+  println(s"starts_with('ap')  -> ${t.startsWith("ap")}")
+  println(s"words with 'an'    -> ${t.wordsWithPrefix("an").sorted}")
 }
 ```
 

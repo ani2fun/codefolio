@@ -282,7 +282,7 @@ if __name__ == "__main__":
 ```
 
 ```java run
-class Solution {
+public class Main {
     static int n;
     static long[] tree, lazy;
 
@@ -397,7 +397,7 @@ int main(void) {
 ```
 
 ```scala run
-object Solution {
+object Main extends App {
   val A = Array(1, 2, 3, 4, 5, 6, 7, 8)
   val n = A.length
   val tree = new Array[Long](4 * n)
@@ -436,12 +436,10 @@ object Solution {
     rangeQuery(2*node, l, mid, ql, qr) + rangeQuery(2*node + 1, mid + 1, r, ql, qr)
   }
 
-  def main(args: Array[String]): Unit = {
-    build(1, 0, n - 1)
-    println(s"sum [0..7] = ${rangeQuery(1, 0, n - 1, 0, 7)}")
-    rangeUpdate(1, 0, n - 1, 3, 5, 10)
-    println(s"after +10 on [3..5], sum [0..7] = ${rangeQuery(1, 0, n - 1, 0, 7)}")
-  }
+  build(1, 0, n - 1)
+  println(s"sum [0..7] = ${rangeQuery(1, 0, n - 1, 0, 7)}")
+  rangeUpdate(1, 0, n - 1, 3, 5, 10)
+  println(s"after +10 on [3..5], sum [0..7] = ${rangeQuery(1, 0, n - 1, 0, 7)}")
 }
 ```
 

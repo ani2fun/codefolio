@@ -129,23 +129,29 @@ if __name__ == "__main__":
 ```
 
 ```java run
-public class Solution {
-    public int punctualArrivalSpeed(int[] distance, double hour) {
-        int low = 1, high = (int) 1e7;
-        while (low < high) {
-            int mid = low + (high - low) / 2;
-            if (canReach(distance, hour, mid)) high = mid;
-            else low = mid + 1;
+public class Main {
+    static class Solution {
+        public int punctualArrivalSpeed(int[] distance, double hour) {
+            int low = 1, high = (int) 1e7;
+            while (low < high) {
+                int mid = low + (high - low) / 2;
+                if (canReach(distance, hour, mid)) high = mid;
+                else low = mid + 1;
+            }
+            return canReach(distance, hour, low) ? low : -1;
         }
-        return canReach(distance, hour, low) ? low : -1;
+        private boolean canReach(int[] distance, double hour, int speed) {
+            double total = 0;
+            for (int i = 0; i < distance.length; i++) {
+                double t = (double) distance[i] / speed;
+                total += (i < distance.length - 1) ? Math.ceil(t) : t;
+            }
+            return total <= hour;
+        }
     }
-    private boolean canReach(int[] distance, double hour, int speed) {
-        double total = 0;
-        for (int i = 0; i < distance.length; i++) {
-            double t = (double) distance[i] / speed;
-            total += (i < distance.length - 1) ? Math.ceil(t) : t;
-        }
-        return total <= hour;
+
+    public static void main(String[] args) {
+        System.out.println(new Solution().punctualArrivalSpeed(new int[]{1, 3, 5}, 2.5));   // 10
     }
 }
 ```
@@ -175,23 +181,27 @@ int punctual_arrival_speed(int *distance, int n, double hour) {
 ```
 
 ```scala run
-class Solution {
-  def punctualArrivalSpeed(distance: Array[Int], hour: Double): Int = {
-    var low = 1; var high = (1e7).toInt
-    while (low < high) {
-      val mid = low + (high - low) / 2
-      if (canReach(distance, hour, mid)) high = mid else low = mid + 1
+object Main extends App {
+  class Solution {
+    def punctualArrivalSpeed(distance: Array[Int], hour: Double): Int = {
+      var low = 1; var high = (1e7).toInt
+      while (low < high) {
+        val mid = low + (high - low) / 2
+        if (canReach(distance, hour, mid)) high = mid else low = mid + 1
+      }
+      if (canReach(distance, hour, low)) low else -1
     }
-    if (canReach(distance, hour, low)) low else -1
-  }
-  private def canReach(distance: Array[Int], hour: Double, speed: Int): Boolean = {
-    var total: Double = 0
-    for (i <- distance.indices) {
-      val t = distance(i).toDouble / speed
-      total += (if (i < distance.length - 1) math.ceil(t) else t)
+    private def canReach(distance: Array[Int], hour: Double, speed: Int): Boolean = {
+      var total: Double = 0
+      for (i <- distance.indices) {
+        val t = distance(i).toDouble / speed
+        total += (if (i < distance.length - 1) math.ceil(t) else t)
+      }
+      total <= hour
     }
-    total <= hour
   }
+
+  println(new Solution().punctualArrivalSpeed(Array(1, 3, 5), 2.5))   // 10
 }
 ```
 
@@ -267,21 +277,27 @@ if __name__ == "__main__":
 ```
 
 ```java run
-public class Solution {
-    public int penaltyWithBalls(int[] bags, int maxOperations) {
-        int low = 1, high = 0;
-        for (int b : bags) high = Math.max(high, b);
-        while (low < high) {
-            int mid = low + (high - low) / 2;
-            if (canAchieve(bags, maxOperations, mid)) high = mid;
-            else low = mid + 1;
+public class Main {
+    static class Solution {
+        public int penaltyWithBalls(int[] bags, int maxOperations) {
+            int low = 1, high = 0;
+            for (int b : bags) high = Math.max(high, b);
+            while (low < high) {
+                int mid = low + (high - low) / 2;
+                if (canAchieve(bags, maxOperations, mid)) high = mid;
+                else low = mid + 1;
+            }
+            return low;
         }
-        return low;
+        private boolean canAchieve(int[] bags, int maxOps, int penalty) {
+            int ops = 0;
+            for (int b : bags) if (b > penalty) ops += (b - 1) / penalty;
+            return ops <= maxOps;
+        }
     }
-    private boolean canAchieve(int[] bags, int maxOps, int penalty) {
-        int ops = 0;
-        for (int b : bags) if (b > penalty) ops += (b - 1) / penalty;
-        return ops <= maxOps;
+
+    public static void main(String[] args) {
+        System.out.println(new Solution().penaltyWithBalls(new int[]{9, 7, 6}, 3));   // 5
     }
 }
 ```
@@ -308,20 +324,24 @@ int penalty_with_balls(int *bags, int n, int max_operations) {
 ```
 
 ```scala run
-class Solution {
-  def penaltyWithBalls(bags: Array[Int], maxOperations: Int): Int = {
-    var low = 1; var high = bags.max
-    while (low < high) {
-      val mid = low + (high - low) / 2
-      if (canAchieve(bags, maxOperations, mid)) high = mid else low = mid + 1
+object Main extends App {
+  class Solution {
+    def penaltyWithBalls(bags: Array[Int], maxOperations: Int): Int = {
+      var low = 1; var high = bags.max
+      while (low < high) {
+        val mid = low + (high - low) / 2
+        if (canAchieve(bags, maxOperations, mid)) high = mid else low = mid + 1
+      }
+      low
     }
-    low
+    private def canAchieve(bags: Array[Int], maxOps: Int, penalty: Int): Boolean = {
+      var ops = 0
+      for (b <- bags) if (b > penalty) ops += (b - 1) / penalty
+      ops <= maxOps
+    }
   }
-  private def canAchieve(bags: Array[Int], maxOps: Int, penalty: Int): Boolean = {
-    var ops = 0
-    for (b <- bags) if (b > penalty) ops += (b - 1) / penalty
-    ops <= maxOps
-  }
+
+  println(new Solution().penaltyWithBalls(Array(9, 7, 6), 3))   // 5
 }
 ```
 
@@ -400,24 +420,30 @@ if __name__ == "__main__":
 ```
 
 ```java run
-public class Solution {
-    public int minimumShippingCapacity(int[] weights, int days) {
-        int low = 0, high = 0;
-        for (int w : weights) { low = Math.max(low, w); high += w; }
-        while (low < high) {
-            int mid = low + (high - low) / 2;
-            if (canShip(weights, days, mid)) high = mid;
-            else low = mid + 1;
+public class Main {
+    static class Solution {
+        public int minimumShippingCapacity(int[] weights, int days) {
+            int low = 0, high = 0;
+            for (int w : weights) { low = Math.max(low, w); high += w; }
+            while (low < high) {
+                int mid = low + (high - low) / 2;
+                if (canShip(weights, days, mid)) high = mid;
+                else low = mid + 1;
+            }
+            return low;
         }
-        return low;
+        private boolean canShip(int[] weights, int days, int cap) {
+            int d = 1, cur = 0;
+            for (int w : weights) {
+                if (cur + w > cap) { d++; cur = 0; }
+                cur += w;
+            }
+            return d <= days;
+        }
     }
-    private boolean canShip(int[] weights, int days, int cap) {
-        int d = 1, cur = 0;
-        for (int w : weights) {
-            if (cur + w > cap) { d++; cur = 0; }
-            cur += w;
-        }
-        return d <= days;
+
+    public static void main(String[] args) {
+        System.out.println(new Solution().minimumShippingCapacity(new int[]{20, 10, 25, 35}, 3));   // 35
     }
 }
 ```
@@ -447,23 +473,27 @@ int minimum_shipping_capacity(int *weights, int n, int days) {
 ```
 
 ```scala run
-class Solution {
-  def minimumShippingCapacity(weights: Array[Int], days: Int): Int = {
-    var low = weights.max; var high = weights.sum
-    while (low < high) {
-      val mid = low + (high - low) / 2
-      if (canShip(weights, days, mid)) high = mid else low = mid + 1
+object Main extends App {
+  class Solution {
+    def minimumShippingCapacity(weights: Array[Int], days: Int): Int = {
+      var low = weights.max; var high = weights.sum
+      while (low < high) {
+        val mid = low + (high - low) / 2
+        if (canShip(weights, days, mid)) high = mid else low = mid + 1
+      }
+      low
     }
-    low
-  }
-  private def canShip(weights: Array[Int], days: Int, cap: Int): Boolean = {
-    var d = 1; var cur = 0
-    for (w <- weights) {
-      if (cur + w > cap) { d += 1; cur = 0 }
-      cur += w
+    private def canShip(weights: Array[Int], days: Int, cap: Int): Boolean = {
+      var d = 1; var cur = 0
+      for (w <- weights) {
+        if (cur + w > cap) { d += 1; cur = 0 }
+        cur += w
+      }
+      d <= days
     }
-    d <= days
   }
+
+  println(new Solution().minimumShippingCapacity(Array(20, 10, 25, 35), 3))   // 35
 }
 ```
 
@@ -529,23 +559,29 @@ if __name__ == "__main__":
 ```
 
 ```java run
-public class Solution {
-    public long tripCompletionFrenzy(int[] times, int totalTrips) {
-        long low = 0, high = (long) Long.MAX_VALUE / 2;
-        long maxT = 0;
-        for (int t : times) maxT = Math.max(maxT, t);
-        high = maxT * (long) totalTrips;
-        while (low < high) {
-            long mid = low + (high - low) / 2;
-            if (canComplete(times, totalTrips, mid)) high = mid;
-            else low = mid + 1;
+public class Main {
+    static class Solution {
+        public long tripCompletionFrenzy(int[] times, int totalTrips) {
+            long low = 0, high = (long) Long.MAX_VALUE / 2;
+            long maxT = 0;
+            for (int t : times) maxT = Math.max(maxT, t);
+            high = maxT * (long) totalTrips;
+            while (low < high) {
+                long mid = low + (high - low) / 2;
+                if (canComplete(times, totalTrips, mid)) high = mid;
+                else low = mid + 1;
+            }
+            return low;
         }
-        return low;
+        private boolean canComplete(int[] times, int totalTrips, long time) {
+            long completed = 0;
+            for (int t : times) completed += time / t;
+            return completed >= totalTrips;
+        }
     }
-    private boolean canComplete(int[] times, int totalTrips, long time) {
-        long completed = 0;
-        for (int t : times) completed += time / t;
-        return completed >= totalTrips;
+
+    public static void main(String[] args) {
+        System.out.println(new Solution().tripCompletionFrenzy(new int[]{3, 4, 5}, 4));   // 6
     }
 }
 ```
@@ -573,20 +609,24 @@ long long trip_completion_frenzy(int *times, int n, int total_trips) {
 ```
 
 ```scala run
-class Solution {
-  def tripCompletionFrenzy(times: Array[Int], totalTrips: Int): Long = {
-    var low = 0L; var high = times.max.toLong * totalTrips
-    while (low < high) {
-      val mid = low + (high - low) / 2
-      if (canComplete(times, totalTrips, mid)) high = mid else low = mid + 1
+object Main extends App {
+  class Solution {
+    def tripCompletionFrenzy(times: Array[Int], totalTrips: Int): Long = {
+      var low = 0L; var high = times.max.toLong * totalTrips
+      while (low < high) {
+        val mid = low + (high - low) / 2
+        if (canComplete(times, totalTrips, mid)) high = mid else low = mid + 1
+      }
+      low
     }
-    low
+    private def canComplete(times: Array[Int], totalTrips: Int, time: Long): Boolean = {
+      var completed = 0L
+      for (t <- times) completed += time / t
+      completed >= totalTrips
+    }
   }
-  private def canComplete(times: Array[Int], totalTrips: Int, time: Long): Boolean = {
-    var completed = 0L
-    for (t <- times) completed += time / t
-    completed >= totalTrips
-  }
+
+  println(new Solution().tripCompletionFrenzy(Array(3, 4, 5), 4))   // 6
 }
 ```
 

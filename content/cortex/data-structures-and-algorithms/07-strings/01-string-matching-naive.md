@@ -60,7 +60,7 @@ if __name__ == "__main__":
 ```java run
 import java.util.*;
 
-class Solution {
+public class Main {
     static List<Integer> naiveMatch(String T, String P) {
         int n = T.length(), m = P.length();
         List<Integer> matches = new ArrayList<>();
@@ -99,7 +99,7 @@ int main(void) {
 ```
 
 ```scala run
-object Solution {
+object Main extends App {
   def naiveMatch(T: String, P: String): List[Int] = {
     val n = T.length; val m = P.length
     val out = scala.collection.mutable.ListBuffer.empty[Int]
@@ -111,7 +111,7 @@ object Solution {
     out.toList
   }
 
-  def main(args: Array[String]): Unit = println(naiveMatch("ababcababcabc", "abc"))
+  println(naiveMatch("ababcababcabc", "abc"))
 }
 ```
 

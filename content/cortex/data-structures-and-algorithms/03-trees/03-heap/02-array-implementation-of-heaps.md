@@ -284,26 +284,34 @@ class MaxHeap:
 ```java run
 import java.util.*;
 
-class MaxHeap {
-    List<Integer> heap = new ArrayList<>();
+public class Main {
+    static class MaxHeap {
+        List<Integer> heap = new ArrayList<>();
 
-    private void swap(int i, int j) {
-        int t = heap.get(i); heap.set(i, heap.get(j)); heap.set(j, t);
-    }
+        private void swap(int i, int j) {
+            int t = heap.get(i); heap.set(i, heap.get(j)); heap.set(j, t);
+        }
 
-    // Restore the max-heap property going UP from `index`. Used after insert.
-    private void upHeapify(int index) {
-        int parent = (index - 1) / 2;
-        while (index > 0 && heap.get(parent) < heap.get(index)) {
-            swap(index, parent);
-            index = parent;
-            parent = (index - 1) / 2;
+        // Restore the max-heap property going UP from `index`. Used after insert.
+        private void upHeapify(int index) {
+            int parent = (index - 1) / 2;
+            while (index > 0 && heap.get(parent) < heap.get(index)) {
+                swap(index, parent);
+                index = parent;
+                parent = (index - 1) / 2;
+            }
+        }
+
+        public void insert(int val) {
+            heap.add(val);                                                          // append (completeness)
+            upHeapify(heap.size() - 1);                                             // sift up (ordering)
         }
     }
 
-    public void insert(int val) {
-        heap.add(val);                                                          // append (completeness)
-        upHeapify(heap.size() - 1);                                             // sift up (ordering)
+    public static void main(String[] args) {
+        MaxHeap h = new MaxHeap();
+        for (int v : new int[]{3, 1, 4}) h.insert(v);
+        System.out.println(h.heap);  // [4, 1, 3]
     }
 }
 ```
@@ -567,42 +575,51 @@ class MaxHeap:
 ```java run
 import java.util.*;
 
-class MaxHeap {
-    List<Integer> heap = new ArrayList<>();
+public class Main {
+    static class MaxHeap {
+        List<Integer> heap = new ArrayList<>();
 
-    private void swap(int i, int j) { int t = heap.get(i); heap.set(i, heap.get(j)); heap.set(j, t); }
+        private void swap(int i, int j) { int t = heap.get(i); heap.set(i, heap.get(j)); heap.set(j, t); }
 
-    private void upHeapify(int index) {
-        int parent = (index - 1) / 2;
-        while (index > 0 && heap.get(parent) < heap.get(index)) {
-            swap(index, parent); index = parent; parent = (index - 1) / 2;
+        private void upHeapify(int index) {
+            int parent = (index - 1) / 2;
+            while (index > 0 && heap.get(parent) < heap.get(index)) {
+                swap(index, parent); index = parent; parent = (index - 1) / 2;
+            }
+        }
+
+        // Restore the max-heap property going DOWN from `index`. Used after delete/extract.
+        private void downHeapify(int index) {
+            int n = heap.size();
+            while (true) {
+                int largest = index;
+                int left = 2 * index + 1, right = 2 * index + 2;
+                if (left  < n && heap.get(left)  > heap.get(largest)) largest = left;
+                if (right < n && heap.get(right) > heap.get(largest)) largest = right;
+                if (largest == index) return;
+                swap(index, largest);
+                index = largest;
+            }
+        }
+
+        public void insert(int val) {
+            heap.add(val);
+            upHeapify(heap.size() - 1);
+        }
+
+        public void remove(int index) {
+            int last = heap.size() - 1;
+            heap.set(index, heap.get(last));                                                                   // overwrite
+            heap.remove(last);                                                                                  // drop tail
+            if (index < heap.size()) downHeapify(index);
         }
     }
 
-    // Restore the max-heap property going DOWN from `index`. Used after delete/extract.
-    private void downHeapify(int index) {
-        int n = heap.size();
-        while (true) {
-            int largest = index;
-            int left = 2 * index + 1, right = 2 * index + 2;
-            if (left  < n && heap.get(left)  > heap.get(largest)) largest = left;
-            if (right < n && heap.get(right) > heap.get(largest)) largest = right;
-            if (largest == index) return;
-            swap(index, largest);
-            index = largest;
-        }
-    }
-
-    public void insert(int val) {
-        heap.add(val);
-        upHeapify(heap.size() - 1);
-    }
-
-    public void remove(int index) {
-        int last = heap.size() - 1;
-        heap.set(index, heap.get(last));                                                                   // overwrite
-        heap.remove(last);                                                                                  // drop tail
-        if (index < heap.size()) downHeapify(index);
+    public static void main(String[] args) {
+        MaxHeap h = new MaxHeap();
+        for (int v : new int[]{3, 1, 4}) h.insert(v);
+        h.remove(1);
+        System.out.println(h.heap);  // [4, 3]
     }
 }
 ```
@@ -762,12 +779,22 @@ class MaxHeap:
 ```
 
 ```java run
-class MaxHeap {
-    List<Integer> heap = new ArrayList<>();
+import java.util.*;
 
-    public Integer peek() {
-        if (heap.isEmpty()) return null;                        // empty heap → no top
-        return heap.get(0);                                     // root is the max
+public class Main {
+    static class MaxHeap {
+        List<Integer> heap = new ArrayList<>();
+
+        public Integer peek() {
+            if (heap.isEmpty()) return null;                        // empty heap → no top
+            return heap.get(0);                                     // root is the max
+        }
+    }
+
+    public static void main(String[] args) {
+        MaxHeap h = new MaxHeap();
+        h.heap.addAll(Arrays.asList(9, 5, 7));
+        System.out.println(h.peek());  // 9
     }
 }
 ```
@@ -938,33 +965,44 @@ class MaxHeap:
 ```
 
 ```java run
-class MaxHeap {
-    List<Integer> heap = new ArrayList<>();
+import java.util.*;
 
-    private void swap(int i, int j) { int t = heap.get(i); heap.set(i, heap.get(j)); heap.set(j, t); }
+public class Main {
+    static class MaxHeap {
+        List<Integer> heap = new ArrayList<>();
 
-    private void downHeapify(int index) {
-        int n = heap.size();
-        while (true) {
-            int largest = index;
-            int left = 2 * index + 1, right = 2 * index + 2;
-            if (left  < n && heap.get(left)  > heap.get(largest)) largest = left;
-            if (right < n && heap.get(right) > heap.get(largest)) largest = right;
-            if (largest == index) return;
-            swap(index, largest);
-            index = largest;
+        private void swap(int i, int j) { int t = heap.get(i); heap.set(i, heap.get(j)); heap.set(j, t); }
+
+        private void downHeapify(int index) {
+            int n = heap.size();
+            while (true) {
+                int largest = index;
+                int left = 2 * index + 1, right = 2 * index + 2;
+                if (left  < n && heap.get(left)  > heap.get(largest)) largest = left;
+                if (right < n && heap.get(right) > heap.get(largest)) largest = right;
+                if (largest == index) return;
+                swap(index, largest);
+                index = largest;
+            }
+        }
+
+        public Integer extract() {
+            if (heap.isEmpty()) return null;
+            int top = heap.get(0);                                                                                      // save the root
+            int last = heap.remove(heap.size() - 1);                                                                     // pop tail
+            if (!heap.isEmpty()) {
+                heap.set(0, last);                                                                                       // tail → root
+                downHeapify(0);                                                                                          // restore
+            }
+            return top;
         }
     }
 
-    public Integer extract() {
-        if (heap.isEmpty()) return null;
-        int top = heap.get(0);                                                                                      // save the root
-        int last = heap.remove(heap.size() - 1);                                                                     // pop tail
-        if (!heap.isEmpty()) {
-            heap.set(0, last);                                                                                       // tail → root
-            downHeapify(0);                                                                                          // restore
-        }
-        return top;
+    public static void main(String[] args) {
+        MaxHeap h = new MaxHeap();
+        h.heap.addAll(Arrays.asList(9, 5, 7, 1, 3));
+        System.out.println(h.extract());  // 9
+        System.out.println(h.heap);       // [7, 5, 3, 1]
     }
 }
 ```
@@ -1167,27 +1205,37 @@ class MaxHeap:
 ```
 
 ```java run
-class MaxHeap {
-    int[] heap;
+import java.util.Arrays;
 
-    private void swap(int i, int j) { int t = heap[i]; heap[i] = heap[j]; heap[j] = t; }
+public class Main {
+    static class MaxHeap {
+        int[] heap;
 
-    private void downHeapify(int index, int n) {
-        while (true) {
-            int largest = index;
-            int left = 2 * index + 1, right = 2 * index + 2;
-            if (left  < n && heap[left]  > heap[largest]) largest = left;
-            if (right < n && heap[right] > heap[largest]) largest = right;
-            if (largest == index) return;
-            swap(index, largest);
-            index = largest;
+        private void swap(int i, int j) { int t = heap[i]; heap[i] = heap[j]; heap[j] = t; }
+
+        private void downHeapify(int index, int n) {
+            while (true) {
+                int largest = index;
+                int left = 2 * index + 1, right = 2 * index + 2;
+                if (left  < n && heap[left]  > heap[largest]) largest = left;
+                if (right < n && heap[right] > heap[largest]) largest = right;
+                if (largest == index) return;
+                swap(index, largest);
+                index = largest;
+            }
+        }
+
+        public void construct(int[] arr) {
+            this.heap = arr;
+            int n = heap.length;
+            for (int i = n / 2 - 1; i >= 0; i--) downHeapify(i, n);
         }
     }
 
-    public void construct(int[] arr) {
-        this.heap = arr;
-        int n = heap.length;
-        for (int i = n / 2 - 1; i >= 0; i--) downHeapify(i, n);
+    public static void main(String[] args) {
+        MaxHeap h = new MaxHeap();
+        h.construct(new int[]{3, 1, 6, 5, 2, 4});
+        System.out.println(Arrays.toString(h.heap));  // [6, 5, 4, 1, 2, 3]
     }
 }
 ```

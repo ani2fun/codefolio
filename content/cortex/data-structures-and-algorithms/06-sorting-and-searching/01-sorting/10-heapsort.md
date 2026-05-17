@@ -358,24 +358,26 @@ if __name__ == "__main__":
 ```
 
 ```java run
-public class Solution {
-    public void heapSort(int[] arr) {
-        int n = arr.length;
-        for (int i = n / 2 - 1; i >= 0; i--) heapify(arr, n, i);
-        for (int i = n - 1; i > 0; i--) {
-            int t = arr[0]; arr[0] = arr[i]; arr[i] = t;
-            heapify(arr, i, 0);
+public class Main {
+    static class Solution {
+        public void heapSort(int[] arr) {
+            int n = arr.length;
+            for (int i = n / 2 - 1; i >= 0; i--) heapify(arr, n, i);
+            for (int i = n - 1; i > 0; i--) {
+                int t = arr[0]; arr[0] = arr[i]; arr[i] = t;
+                heapify(arr, i, 0);
+            }
         }
-    }
 
-    private void heapify(int[] arr, int n, int i) {
-        int largest = i;
-        int left = 2 * i + 1, right = 2 * i + 2;
-        if (left < n && arr[left] > arr[largest]) largest = left;
-        if (right < n && arr[right] > arr[largest]) largest = right;
-        if (largest != i) {
-            int t = arr[i]; arr[i] = arr[largest]; arr[largest] = t;
-            heapify(arr, n, largest);
+        private void heapify(int[] arr, int n, int i) {
+            int largest = i;
+            int left = 2 * i + 1, right = 2 * i + 2;
+            if (left < n && arr[left] > arr[largest]) largest = left;
+            if (right < n && arr[right] > arr[largest]) largest = right;
+            if (largest != i) {
+                int t = arr[i]; arr[i] = arr[largest]; arr[largest] = t;
+                heapify(arr, n, largest);
+            }
         }
     }
 
@@ -421,34 +423,32 @@ int main(void) {
 ```
 
 ```scala run
-class Solution {
-  def heapSort(arr: Array[Int]): Unit = {
-    val n = arr.length
-    for (i <- (n / 2 - 1) to 0 by -1) heapify(arr, n, i)
-    for (i <- (n - 1) to 1 by -1) {
-      val t = arr(0); arr(0) = arr(i); arr(i) = t
-      heapify(arr, i, 0)
+object Main extends App {
+  class Solution {
+    def heapSort(arr: Array[Int]): Unit = {
+      val n = arr.length
+      for (i <- (n / 2 - 1) to 0 by -1) heapify(arr, n, i)
+      for (i <- (n - 1) to 1 by -1) {
+        val t = arr(0); arr(0) = arr(i); arr(i) = t
+        heapify(arr, i, 0)
+      }
+    }
+
+    private def heapify(arr: Array[Int], n: Int, i: Int): Unit = {
+      var largest = i
+      val left = 2 * i + 1; val right = 2 * i + 2
+      if (left < n && arr(left) > arr(largest)) largest = left
+      if (right < n && arr(right) > arr(largest)) largest = right
+      if (largest != i) {
+        val t = arr(i); arr(i) = arr(largest); arr(largest) = t
+        heapify(arr, n, largest)
+      }
     }
   }
 
-  private def heapify(arr: Array[Int], n: Int, i: Int): Unit = {
-    var largest = i
-    val left = 2 * i + 1; val right = 2 * i + 2
-    if (left < n && arr(left) > arr(largest)) largest = left
-    if (right < n && arr(right) > arr(largest)) largest = right
-    if (largest != i) {
-      val t = arr(i); arr(i) = arr(largest); arr(largest) = t
-      heapify(arr, n, largest)
-    }
-  }
-}
-
-object Main {
-  def main(args: Array[String]): Unit = {
-    val arr = Array(3, 1, 6, 5, 2, 4)
-    new Solution().heapSort(arr)
-    println(arr.mkString(" "))
-  }
+  val arr = Array(3, 1, 6, 5, 2, 4)
+  new Solution().heapSort(arr)
+  println(arr.mkString(" "))
 }
 ```
 

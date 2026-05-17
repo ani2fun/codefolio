@@ -64,9 +64,17 @@ if __name__ == "__main__":
 ```
 
 ```java run
-public class Solution {
-    public String parityChecker(int num) {
-        return (num & 1) != 0 ? "odd" : "even";
+public class Main {
+    static class Solution {
+        public String parityChecker(int num) {
+            return (num & 1) != 0 ? "odd" : "even";
+        }
+    }
+
+    public static void main(String[] args) {
+        Solution sol = new Solution();
+        System.out.println(sol.parityChecker(10));   // even
+        System.out.println(sol.parityChecker(9));    // odd
     }
 }
 ```
@@ -86,11 +94,11 @@ int main(void) {
 ```
 
 ```scala run
-class Solution {
-  def parityChecker(num: Int): String = if ((num & 1) != 0) "odd" else "even"
-}
-
 object Main extends App {
+  class Solution {
+    def parityChecker(num: Int): String = if ((num & 1) != 0) "odd" else "even"
+  }
+
   println(new Solution().parityChecker(10))   // even
 }
 ```
@@ -146,9 +154,18 @@ if __name__ == "__main__":
 ```
 
 ```java run
-public class Solution {
-    public boolean powerOf2(int num) {
-        return num > 0 && (num & (num - 1)) == 0;
+public class Main {
+    static class Solution {
+        public boolean powerOf2(int num) {
+            return num > 0 && (num & (num - 1)) == 0;
+        }
+    }
+
+    public static void main(String[] args) {
+        Solution sol = new Solution();
+        System.out.println(sol.powerOf2(1));   // true
+        System.out.println(sol.powerOf2(8));   // true
+        System.out.println(sol.powerOf2(3));   // false
     }
 }
 ```
@@ -169,11 +186,11 @@ int main(void) {
 ```
 
 ```scala run
-class Solution {
-  def powerOf2(num: Int): Boolean = num > 0 && (num & (num - 1)) == 0
-}
-
 object Main extends App {
+  class Solution {
+    def powerOf2(num: Int): Boolean = num > 0 && (num & (num - 1)) == 0
+  }
+
   println(new Solution().powerOf2(8))   // true
 }
 ```
@@ -242,11 +259,19 @@ if __name__ == "__main__":
 ```
 
 ```java run
-public class Solution {
-    public String parityCheckerII(int num) {
-        boolean flag = false;
-        while (num != 0) { flag = !flag; num &= num - 1; }
-        return flag ? "odd" : "even";
+public class Main {
+    static class Solution {
+        public String parityCheckerII(int num) {
+            boolean flag = false;
+            while (num != 0) { flag = !flag; num &= num - 1; }
+            return flag ? "odd" : "even";
+        }
+    }
+
+    public static void main(String[] args) {
+        Solution sol = new Solution();
+        System.out.println(sol.parityCheckerII(10));   // even
+        System.out.println(sol.parityCheckerII(13));   // odd
     }
 }
 ```
@@ -268,13 +293,13 @@ int main(void) {
 ```
 
 ```scala run
-class Solution {
-  def parityCheckerII(num: Int): String = {
-    if (Integer.bitCount(num) % 2 == 1) "odd" else "even"
-  }
-}
-
 object Main extends App {
+  class Solution {
+    def parityCheckerII(num: Int): String = {
+      if (Integer.bitCount(num) % 2 == 1) "odd" else "even"
+    }
+  }
+
   println(new Solution().parityCheckerII(10))   // even
 }
 ```
@@ -381,16 +406,22 @@ if __name__ == "__main__":
 ```
 
 ```java run
-public class Solution {
-    public long powerFunction(int num, int n) {
-        long result = 1L;
-        long base = num;
-        while (n > 0) {
-            if ((n & 1) != 0) result *= base;
-            base *= base;
-            n >>= 1;
+public class Main {
+    static class Solution {
+        public long powerFunction(int num, int n) {
+            long result = 1L;
+            long base = num;
+            while (n > 0) {
+                if ((n & 1) != 0) result *= base;
+                base *= base;
+                n >>= 1;
+            }
+            return result;
         }
-        return result;
+    }
+
+    public static void main(String[] args) {
+        System.out.println(new Solution().powerFunction(2, 8));   // 256
     }
 }
 ```
@@ -415,19 +446,19 @@ int main(void) {
 ```
 
 ```scala run
-class Solution {
-  def powerFunction(num: Int, n: Int): Long = {
-    var result = 1L; var base = num.toLong; var nn = n
-    while (nn > 0) {
-      if ((nn & 1) != 0) result *= base
-      base *= base
-      nn >>= 1
-    }
-    result
-  }
-}
-
 object Main extends App {
+  class Solution {
+    def powerFunction(num: Int, n: Int): Long = {
+      var result = 1L; var base = num.toLong; var nn = n
+      while (nn > 0) {
+        if ((nn & 1) != 0) result *= base
+        base *= base
+        nn >>= 1
+      }
+      result
+    }
+  }
+
   println(new Solution().powerFunction(2, 8))   // 256
 }
 ```

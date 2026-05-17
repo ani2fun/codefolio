@@ -118,19 +118,25 @@ if __name__ == "__main__":
 ```
 
 ```java run
-public class Solution {
-    public boolean recoveryValidation(int[] recoveryCodes, int[] attempts) {
-        for (int a : attempts) if (binarySearch(recoveryCodes, a) != -1) return true;
-        return false;
-    }
-    private int binarySearch(int[] arr, int target) {
-        int low = 0, high = arr.length - 1;
-        while (low <= high) {
-            int mid = low + (high - low) / 2;
-            if (arr[mid] == target) return mid;
-            if (arr[mid] < target) low = mid + 1; else high = mid - 1;
+public class Main {
+    static class Solution {
+        public boolean recoveryValidation(int[] recoveryCodes, int[] attempts) {
+            for (int a : attempts) if (binarySearch(recoveryCodes, a) != -1) return true;
+            return false;
         }
-        return -1;
+        private int binarySearch(int[] arr, int target) {
+            int low = 0, high = arr.length - 1;
+            while (low <= high) {
+                int mid = low + (high - low) / 2;
+                if (arr[mid] == target) return mid;
+                if (arr[mid] < target) low = mid + 1; else high = mid - 1;
+            }
+            return -1;
+        }
+    }
+
+    public static void main(String[] args) {
+        System.out.println(new Solution().recoveryValidation(new int[]{1, 4, 7}, new int[]{2, 4}));   // true
     }
 }
 ```
@@ -156,19 +162,23 @@ bool recovery_validation(int *codes, int nc, int *attempts, int na) {
 ```
 
 ```scala run
-class Solution {
-  def recoveryValidation(codes: Array[Int], attempts: Array[Int]): Boolean = {
-    attempts.exists(a => binarySearch(codes, a) != -1)
-  }
-  private def binarySearch(arr: Array[Int], target: Int): Int = {
-    var low = 0; var high = arr.length - 1
-    while (low <= high) {
-      val mid = low + (high - low) / 2
-      if (arr(mid) == target) return mid
-      if (arr(mid) < target) low = mid + 1 else high = mid - 1
+object Main extends App {
+  class Solution {
+    def recoveryValidation(codes: Array[Int], attempts: Array[Int]): Boolean = {
+      attempts.exists(a => binarySearch(codes, a) != -1)
     }
-    -1
+    private def binarySearch(arr: Array[Int], target: Int): Int = {
+      var low = 0; var high = arr.length - 1
+      while (low <= high) {
+        val mid = low + (high - low) / 2
+        if (arr(mid) == target) return mid
+        if (arr(mid) < target) low = mid + 1 else high = mid - 1
+      }
+      -1
+    }
   }
+
+  println(new Solution().recoveryValidation(Array(1, 4, 7), Array(2, 4)))   // true
 }
 ```
 
@@ -234,16 +244,22 @@ if __name__ == "__main__":
 ```
 
 ```java run
-public class Solution {
-    public int reverseBinarySearch(int[] arr, int target) {
-        int low = 0, high = arr.length - 1;
-        while (low <= high) {
-            int mid = low + (high - low) / 2;
-            if (arr[mid] == target) return mid;
-            if (arr[mid] < target) high = mid - 1;
-            else low = mid + 1;
+public class Main {
+    static class Solution {
+        public int reverseBinarySearch(int[] arr, int target) {
+            int low = 0, high = arr.length - 1;
+            while (low <= high) {
+                int mid = low + (high - low) / 2;
+                if (arr[mid] == target) return mid;
+                if (arr[mid] < target) high = mid - 1;
+                else low = mid + 1;
+            }
+            return -1;
         }
-        return -1;
+    }
+
+    public static void main(String[] args) {
+        System.out.println(new Solution().reverseBinarySearch(new int[]{6, 5, 4, 3, 2, 1}, 3));   // 3
     }
 }
 ```
@@ -264,16 +280,20 @@ int reverse_binary_search(int *arr, int n, int target) {
 ```
 
 ```scala run
-class Solution {
-  def reverseBinarySearch(arr: Array[Int], target: Int): Int = {
-    var low = 0; var high = arr.length - 1
-    while (low <= high) {
-      val mid = low + (high - low) / 2
-      if (arr(mid) == target) return mid
-      if (arr(mid) < target) high = mid - 1 else low = mid + 1
+object Main extends App {
+  class Solution {
+    def reverseBinarySearch(arr: Array[Int], target: Int): Int = {
+      var low = 0; var high = arr.length - 1
+      while (low <= high) {
+        val mid = low + (high - low) / 2
+        if (arr(mid) == target) return mid
+        if (arr(mid) < target) high = mid - 1 else low = mid + 1
+      }
+      -1
     }
-    -1
   }
+
+  println(new Solution().reverseBinarySearch(Array(6, 5, 4, 3, 2, 1), 3))   // 3
 }
 ```
 
@@ -345,26 +365,33 @@ if __name__ == "__main__":
 ```
 
 ```java run
-public class Solution {
-    public int minimumSharedElement(int[][] matrix) {
-        if (matrix.length == 0) return -1;
-        for (int target : matrix[0]) {
-            boolean ok = true;
-            for (int r = 1; r < matrix.length; r++) {
-                if (binarySearch(matrix[r], target) == -1) { ok = false; break; }
+public class Main {
+    static class Solution {
+        public int minimumSharedElement(int[][] matrix) {
+            if (matrix.length == 0) return -1;
+            for (int target : matrix[0]) {
+                boolean ok = true;
+                for (int r = 1; r < matrix.length; r++) {
+                    if (binarySearch(matrix[r], target) == -1) { ok = false; break; }
+                }
+                if (ok) return target;
             }
-            if (ok) return target;
+            return -1;
         }
-        return -1;
+        private int binarySearch(int[] arr, int target) {
+            int low = 0, high = arr.length - 1;
+            while (low <= high) {
+                int mid = low + (high - low) / 2;
+                if (arr[mid] == target) return mid;
+                if (arr[mid] < target) low = mid + 1; else high = mid - 1;
+            }
+            return -1;
+        }
     }
-    private int binarySearch(int[] arr, int target) {
-        int low = 0, high = arr.length - 1;
-        while (low <= high) {
-            int mid = low + (high - low) / 2;
-            if (arr[mid] == target) return mid;
-            if (arr[mid] < target) low = mid + 1; else high = mid - 1;
-        }
-        return -1;
+
+    public static void main(String[] args) {
+        int[][] m = {{2, 3, 4}, {1, 3, 5}, {1, 2, 3}};
+        System.out.println(new Solution().minimumSharedElement(m));   // 3
     }
 }
 ```
@@ -396,23 +423,28 @@ int minimum_shared_element(int rows, int cols, int matrix[rows][cols]) {
 ```
 
 ```scala run
-class Solution {
-  def minimumSharedElement(matrix: Array[Array[Int]]): Int = {
-    if (matrix.isEmpty) return -1
-    for (target <- matrix(0)) {
-      if (matrix.tail.forall(row => binarySearch(row, target) != -1)) return target
+object Main extends App {
+  class Solution {
+    def minimumSharedElement(matrix: Array[Array[Int]]): Int = {
+      if (matrix.isEmpty) return -1
+      for (target <- matrix(0)) {
+        if (matrix.tail.forall(row => binarySearch(row, target) != -1)) return target
+      }
+      -1
     }
-    -1
-  }
-  private def binarySearch(arr: Array[Int], target: Int): Int = {
-    var low = 0; var high = arr.length - 1
-    while (low <= high) {
-      val mid = low + (high - low) / 2
-      if (arr(mid) == target) return mid
-      if (arr(mid) < target) low = mid + 1 else high = mid - 1
+    private def binarySearch(arr: Array[Int], target: Int): Int = {
+      var low = 0; var high = arr.length - 1
+      while (low <= high) {
+        val mid = low + (high - low) / 2
+        if (arr(mid) == target) return mid
+        if (arr(mid) < target) low = mid + 1 else high = mid - 1
+      }
+      -1
     }
-    -1
   }
+
+  val m = Array(Array(2, 3, 4), Array(1, 3, 5), Array(1, 2, 3))
+  println(new Solution().minimumSharedElement(m))   // 3
 }
 ```
 
@@ -487,27 +519,34 @@ if __name__ == "__main__":
 ```java run
 import java.util.*;
 
-public class Solution {
-    public List<Integer> intersectingElements(int[][] matrix) {
-        List<Integer> result = new ArrayList<>();
-        if (matrix.length == 0) return result;
-        for (int target : matrix[0]) {
-            boolean ok = true;
-            for (int r = 1; r < matrix.length; r++) {
-                if (binarySearch(matrix[r], target) == -1) { ok = false; break; }
+public class Main {
+    static class Solution {
+        public List<Integer> intersectingElements(int[][] matrix) {
+            List<Integer> result = new ArrayList<>();
+            if (matrix.length == 0) return result;
+            for (int target : matrix[0]) {
+                boolean ok = true;
+                for (int r = 1; r < matrix.length; r++) {
+                    if (binarySearch(matrix[r], target) == -1) { ok = false; break; }
+                }
+                if (ok) result.add(target);
             }
-            if (ok) result.add(target);
+            return result;
         }
-        return result;
+        private int binarySearch(int[] arr, int target) {
+            int low = 0, high = arr.length - 1;
+            while (low <= high) {
+                int mid = low + (high - low) / 2;
+                if (arr[mid] == target) return mid;
+                if (arr[mid] < target) low = mid + 1; else high = mid - 1;
+            }
+            return -1;
+        }
     }
-    private int binarySearch(int[] arr, int target) {
-        int low = 0, high = arr.length - 1;
-        while (low <= high) {
-            int mid = low + (high - low) / 2;
-            if (arr[mid] == target) return mid;
-            if (arr[mid] < target) low = mid + 1; else high = mid - 1;
-        }
-        return -1;
+
+    public static void main(String[] args) {
+        int[][] m = {{1, 2, 3, 4}, {0, 1, 4, 5}};
+        System.out.println(new Solution().intersectingElements(m));   // [1, 4]
     }
 }
 ```
@@ -543,20 +582,25 @@ int *intersecting_elements(int rows, int cols, int matrix[rows][cols], int *outL
 ```
 
 ```scala run
-class Solution {
-  def intersectingElements(matrix: Array[Array[Int]]): List[Int] = {
-    if (matrix.isEmpty) return List.empty
-    matrix(0).filter(target => matrix.tail.forall(row => binarySearch(row, target) != -1)).toList
-  }
-  private def binarySearch(arr: Array[Int], target: Int): Int = {
-    var low = 0; var high = arr.length - 1
-    while (low <= high) {
-      val mid = low + (high - low) / 2
-      if (arr(mid) == target) return mid
-      if (arr(mid) < target) low = mid + 1 else high = mid - 1
+object Main extends App {
+  class Solution {
+    def intersectingElements(matrix: Array[Array[Int]]): List[Int] = {
+      if (matrix.isEmpty) return List.empty
+      matrix(0).filter(target => matrix.tail.forall(row => binarySearch(row, target) != -1)).toList
     }
-    -1
+    private def binarySearch(arr: Array[Int], target: Int): Int = {
+      var low = 0; var high = arr.length - 1
+      while (low <= high) {
+        val mid = low + (high - low) / 2
+        if (arr(mid) == target) return mid
+        if (arr(mid) < target) low = mid + 1 else high = mid - 1
+      }
+      -1
+    }
   }
+
+  val m = Array(Array(1, 2, 3, 4), Array(0, 1, 4, 5))
+  println(new Solution().intersectingElements(m))   // List(1, 4)
 }
 ```
 

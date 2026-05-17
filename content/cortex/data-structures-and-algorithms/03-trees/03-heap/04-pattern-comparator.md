@@ -126,12 +126,13 @@ top = heapq.heappop(h)        # Entry(1, 9) — min-heap puts smallest on top
 ```java run
 import java.util.*;
 
-class Entry {
-    int x, y;
-    Entry(int x, int y) { this.x = x; this.y = y; }
-}
+public class Main {
+    static class Entry {
+        int x, y;
+        Entry(int x, int y) { this.x = x; this.y = y; }
+        @Override public String toString() { return "Entry(" + x + "," + y + ")"; }
+    }
 
-class Demo {
     public static void main(String[] args) {
         // Comparator returning negative when `a < b` ⇒ min-heap.
         PriorityQueue<Entry> minHeap = new PriorityQueue<>(
@@ -140,6 +141,7 @@ class Demo {
         minHeap.add(new Entry(2, 7));
         minHeap.add(new Entry(1, 9));
         Entry top = minHeap.poll();                                   // Entry(1, 9)
+        System.out.println(top);  // Entry(1,9)
     }
 }
 ```

@@ -148,7 +148,7 @@ if __name__ == "__main__":
 ```java run
 import java.security.MessageDigest;
 
-class Solution {
+public class Main {
     final int p = 14;
     final int m = 1 << p;
     final byte[] R = new byte[m];
@@ -172,7 +172,7 @@ class Solution {
     }
 
     public static void main(String[] args) throws Exception {
-        Solution hll = new Solution();
+        Main hll = new Main();
         for (int i = 0; i < 1_000_000; i++) hll.add("item_" + i);
         System.out.printf("estimate ~%.0f (true 1,000,000)%n", hll.estimate());
     }

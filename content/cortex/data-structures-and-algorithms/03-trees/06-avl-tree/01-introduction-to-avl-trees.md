@@ -357,7 +357,7 @@ if __name__ == "__main__":
 ```
 
 ```java run
-class Solution {
+public class Main {
     static class Node {
         int key, height = 1;
         Node left, right;
@@ -459,7 +459,7 @@ int main(void) {
 ```
 
 ```scala run
-object Solution {
+object Main extends App {
   class Node(var key: Int) {
     var left: Node = null
     var right: Node = null
@@ -493,12 +493,10 @@ object Solution {
     node
   }
 
-  def main(args: Array[String]): Unit = {
-    var root: Node = null
-    val keys = Array(5, 3, 8, 1, 4, 7, 9, 2, 6, 10, 11, 12, 13, 14, 15)
-    for (k <- keys) root = insert(root, k)
-    println(s"inserted 15 keys; height = ${h(root)}")
-  }
+  var root: Node = null
+  val keys = Array(5, 3, 8, 1, 4, 7, 9, 2, 6, 10, 11, 12, 13, 14, 15)
+  for (k <- keys) root = insert(root, k)
+  println(s"inserted 15 keys; height = ${h(root)}")
 }
 ```
 

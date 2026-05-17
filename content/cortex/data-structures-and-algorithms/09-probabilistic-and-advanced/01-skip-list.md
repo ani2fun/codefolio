@@ -215,7 +215,7 @@ if __name__ == "__main__":
 ```java run
 import java.util.*;
 
-class Solution {
+public class Main {
     static final int MAX_LEVEL = 16;
     static class Node {
         int key; Object value;
@@ -261,7 +261,7 @@ class Solution {
     }
 
     public static void main(String[] args) {
-        Solution sl = new Solution();
+        Main sl = new Main();
         for (int k : new int[]{3, 1, 4, 1, 5, 9, 2, 6, 5, 3, 5, 8, 9, 7}) sl.insert(k, "v" + k);
         for (int k : new int[]{4, 7, 0, 9, 10}) System.out.println("search(" + k + ") -> " + sl.search(k));
     }
@@ -327,7 +327,7 @@ int main(void) {
 ```scala run
 import scala.util.Random
 
-object Solution {
+object Main extends App {
   val MaxLevel = 16
   class Node(val key: Int, var value: String, height: Int) {
     val forward: Array[Node] = new Array[Node](height)
@@ -370,11 +370,9 @@ object Solution {
     }
   }
 
-  def main(args: Array[String]): Unit = {
-    val keys = Array(3, 1, 4, 1, 5, 9, 2, 6, 5, 3, 5, 8, 9, 7)
-    for (k <- keys) insert(k, s"v$k")
-    for (k <- Array(4, 7, 0, 9, 10)) println(s"search($k) -> ${search(k)}")
-  }
+  val keys = Array(3, 1, 4, 1, 5, 9, 2, 6, 5, 3, 5, 8, 9, 7)
+  for (k <- keys) insert(k, s"v$k")
+  for (k <- Array(4, 7, 0, 9, 10)) println(s"search($k) -> ${search(k)}")
 }
 ```
 

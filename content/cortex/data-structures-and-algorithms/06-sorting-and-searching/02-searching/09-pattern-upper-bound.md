@@ -75,15 +75,21 @@ if __name__ == "__main__":
 ```
 
 ```java run
-public class Solution {
-    public int limitCount(int[] arr, int k) { return upperBound(arr, k); }
-    private int upperBound(int[] arr, int target) {
-        int low = 0, high = arr.length;
-        while (low < high) {
-            int mid = low + (high - low) / 2;
-            if (arr[mid] <= target) low = mid + 1; else high = mid;
+public class Main {
+    static class Solution {
+        public int limitCount(int[] arr, int k) { return upperBound(arr, k); }
+        private int upperBound(int[] arr, int target) {
+            int low = 0, high = arr.length;
+            while (low < high) {
+                int mid = low + (high - low) / 2;
+                if (arr[mid] <= target) low = mid + 1; else high = mid;
+            }
+            return low;
         }
-        return low;
+    }
+
+    public static void main(String[] args) {
+        System.out.println(new Solution().limitCount(new int[]{1, 3, 5, 8, 9}, 7));   // 3
     }
 }
 ```
@@ -102,16 +108,20 @@ int limit_count(int *arr, int n, int k) { return upper_bound(arr, n, k); }
 ```
 
 ```scala run
-class Solution {
-  def limitCount(arr: Array[Int], k: Int): Int = upperBound(arr, k)
-  private def upperBound(arr: Array[Int], target: Int): Int = {
-    var low = 0; var high = arr.length
-    while (low < high) {
-      val mid = low + (high - low) / 2
-      if (arr(mid) <= target) low = mid + 1 else high = mid
+object Main extends App {
+  class Solution {
+    def limitCount(arr: Array[Int], k: Int): Int = upperBound(arr, k)
+    private def upperBound(arr: Array[Int], target: Int): Int = {
+      var low = 0; var high = arr.length
+      while (low < high) {
+        val mid = low + (high - low) / 2
+        if (arr(mid) <= target) low = mid + 1 else high = mid
+      }
+      low
     }
-    low
   }
+
+  println(new Solution().limitCount(Array(1, 3, 5, 8, 9), 7))   // 3
 }
 ```
 
@@ -171,18 +181,24 @@ if __name__ == "__main__":
 ```
 
 ```java run
-public class Solution {
-    public int positiveIndex(int[] arr) {
-        int idx = upperBound(arr, 0);
-        return idx < arr.length ? idx : -1;
-    }
-    private int upperBound(int[] arr, int target) {
-        int low = 0, high = arr.length;
-        while (low < high) {
-            int mid = low + (high - low) / 2;
-            if (arr[mid] <= target) low = mid + 1; else high = mid;
+public class Main {
+    static class Solution {
+        public int positiveIndex(int[] arr) {
+            int idx = upperBound(arr, 0);
+            return idx < arr.length ? idx : -1;
         }
-        return low;
+        private int upperBound(int[] arr, int target) {
+            int low = 0, high = arr.length;
+            while (low < high) {
+                int mid = low + (high - low) / 2;
+                if (arr[mid] <= target) low = mid + 1; else high = mid;
+            }
+            return low;
+        }
+    }
+
+    public static void main(String[] args) {
+        System.out.println(new Solution().positiveIndex(new int[]{-5, -3, -1, 0, 2, 4, 6}));   // 4
     }
 }
 ```
@@ -204,19 +220,23 @@ int positive_index(int *arr, int n) {
 ```
 
 ```scala run
-class Solution {
-  def positiveIndex(arr: Array[Int]): Int = {
-    val idx = upperBound(arr, 0)
-    if (idx < arr.length) idx else -1
-  }
-  private def upperBound(arr: Array[Int], target: Int): Int = {
-    var low = 0; var high = arr.length
-    while (low < high) {
-      val mid = low + (high - low) / 2
-      if (arr(mid) <= target) low = mid + 1 else high = mid
+object Main extends App {
+  class Solution {
+    def positiveIndex(arr: Array[Int]): Int = {
+      val idx = upperBound(arr, 0)
+      if (idx < arr.length) idx else -1
     }
-    low
+    private def upperBound(arr: Array[Int], target: Int): Int = {
+      var low = 0; var high = arr.length
+      while (low < high) {
+        val mid = low + (high - low) / 2
+        if (arr(mid) <= target) low = mid + 1 else high = mid
+      }
+      low
+    }
   }
+
+  println(new Solution().positiveIndex(Array(-5, -3, -1, 0, 2, 4, 6)))   // 4
 }
 ```
 
@@ -281,22 +301,28 @@ if __name__ == "__main__":
 ```java run
 import java.util.*;
 
-public class Solution {
-    public List<Integer> ceilingIndex(int[] arr, int[] queries) {
-        List<Integer> result = new ArrayList<>();
-        for (int q : queries) {
-            int idx = upperBound(arr, q);
-            result.add(idx < arr.length ? idx : -1);
+public class Main {
+    static class Solution {
+        public List<Integer> ceilingIndex(int[] arr, int[] queries) {
+            List<Integer> result = new ArrayList<>();
+            for (int q : queries) {
+                int idx = upperBound(arr, q);
+                result.add(idx < arr.length ? idx : -1);
+            }
+            return result;
         }
-        return result;
+        private int upperBound(int[] arr, int target) {
+            int low = 0, high = arr.length;
+            while (low < high) {
+                int mid = low + (high - low) / 2;
+                if (arr[mid] <= target) low = mid + 1; else high = mid;
+            }
+            return low;
+        }
     }
-    private int upperBound(int[] arr, int target) {
-        int low = 0, high = arr.length;
-        while (low < high) {
-            int mid = low + (high - low) / 2;
-            if (arr[mid] <= target) low = mid + 1; else high = mid;
-        }
-        return low;
+
+    public static void main(String[] args) {
+        System.out.println(new Solution().ceilingIndex(new int[]{1, 4, 7}, new int[]{2, 4}));   // [1, 2]
     }
 }
 ```
@@ -325,21 +351,25 @@ int *ceiling_index(int *arr, int n, int *queries, int q, int *outLen) {
 ```
 
 ```scala run
-class Solution {
-  def ceilingIndex(arr: Array[Int], queries: Array[Int]): List[Int] = {
-    queries.map { q =>
-      val idx = upperBound(arr, q)
-      if (idx < arr.length) idx else -1
-    }.toList
-  }
-  private def upperBound(arr: Array[Int], target: Int): Int = {
-    var low = 0; var high = arr.length
-    while (low < high) {
-      val mid = low + (high - low) / 2
-      if (arr(mid) <= target) low = mid + 1 else high = mid
+object Main extends App {
+  class Solution {
+    def ceilingIndex(arr: Array[Int], queries: Array[Int]): List[Int] = {
+      queries.map { q =>
+        val idx = upperBound(arr, q)
+        if (idx < arr.length) idx else -1
+      }.toList
     }
-    low
+    private def upperBound(arr: Array[Int], target: Int): Int = {
+      var low = 0; var high = arr.length
+      while (low < high) {
+        val mid = low + (high - low) / 2
+        if (arr(mid) <= target) low = mid + 1 else high = mid
+      }
+      low
+    }
   }
+
+  println(new Solution().ceilingIndex(Array(1, 4, 7), Array(2, 4)))   // List(1, 2)
 }
 ```
 
@@ -403,20 +433,26 @@ if __name__ == "__main__":
 ```
 
 ```java run
-public class Solution {
-    public int breakingIndex(int[] arr, int delta) {
-        if (arr.length == 0) return -1;
-        int target = arr[0] + delta;
-        int idx = upperBound(arr, target);
-        return idx < arr.length ? idx : -1;
-    }
-    private int upperBound(int[] arr, int target) {
-        int low = 0, high = arr.length;
-        while (low < high) {
-            int mid = low + (high - low) / 2;
-            if (arr[mid] <= target) low = mid + 1; else high = mid;
+public class Main {
+    static class Solution {
+        public int breakingIndex(int[] arr, int delta) {
+            if (arr.length == 0) return -1;
+            int target = arr[0] + delta;
+            int idx = upperBound(arr, target);
+            return idx < arr.length ? idx : -1;
         }
-        return low;
+        private int upperBound(int[] arr, int target) {
+            int low = 0, high = arr.length;
+            while (low < high) {
+                int mid = low + (high - low) / 2;
+                if (arr[mid] <= target) low = mid + 1; else high = mid;
+            }
+            return low;
+        }
+    }
+
+    public static void main(String[] args) {
+        System.out.println(new Solution().breakingIndex(new int[]{1, 5, 10, 15, 20, 25}, 6));   // 2
     }
 }
 ```
@@ -440,21 +476,25 @@ int breaking_index(int *arr, int n, int delta) {
 ```
 
 ```scala run
-class Solution {
-  def breakingIndex(arr: Array[Int], delta: Int): Int = {
-    if (arr.isEmpty) return -1
-    val target = arr(0) + delta
-    val idx = upperBound(arr, target)
-    if (idx < arr.length) idx else -1
-  }
-  private def upperBound(arr: Array[Int], target: Int): Int = {
-    var low = 0; var high = arr.length
-    while (low < high) {
-      val mid = low + (high - low) / 2
-      if (arr(mid) <= target) low = mid + 1 else high = mid
+object Main extends App {
+  class Solution {
+    def breakingIndex(arr: Array[Int], delta: Int): Int = {
+      if (arr.isEmpty) return -1
+      val target = arr(0) + delta
+      val idx = upperBound(arr, target)
+      if (idx < arr.length) idx else -1
     }
-    low
+    private def upperBound(arr: Array[Int], target: Int): Int = {
+      var low = 0; var high = arr.length
+      while (low < high) {
+        val mid = low + (high - low) / 2
+        if (arr(mid) <= target) low = mid + 1 else high = mid
+      }
+      low
+    }
   }
+
+  println(new Solution().breakingIndex(Array(1, 5, 10, 15, 20, 25), 6))   // 2
 }
 ```
 

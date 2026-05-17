@@ -337,7 +337,7 @@ if __name__ == "__main__":
 ```
 
 ```java run
-class Solution {
+public class Main {
     static final boolean RED = true, BLACK = false;
     static class Node {
         int key;
@@ -412,7 +412,7 @@ class Solution {
     }
 
     public static void main(String[] args) {
-        Solution t = new Solution();
+        Main t = new Main();
         int[] keys = {5, 3, 8, 1, 4, 7, 9, 2, 6, 10, 11, 12, 13, 14, 15};
         for (int k : keys) t.insert(k);
         System.out.println("inserted " + keys.length + " keys");
@@ -507,7 +507,7 @@ int main(void) {
 ```
 
 ```scala run
-object Solution {
+object Main extends App {
   sealed trait Colour
   case object Red extends Colour
   case object Black extends Colour
@@ -578,11 +578,9 @@ object Solution {
     root.colour = Black
   }
 
-  def main(args: Array[String]): Unit = {
-    val keys = Array(5, 3, 8, 1, 4, 7, 9, 2, 6, 10, 11, 12, 13, 14, 15)
-    for (k <- keys) insert(k)
-    println(s"inserted ${keys.length} keys; root colour = ${root.colour}")
-  }
+  val keys = Array(5, 3, 8, 1, 4, 7, 9, 2, 6, 10, 11, 12, 13, 14, 15)
+  for (k <- keys) insert(k)
+  println(s"inserted ${keys.length} keys; root colour = ${root.colour}")
 }
 ```
 

@@ -288,7 +288,7 @@ if __name__ == "__main__":
 ```
 
 ```java run
-class Solution {
+public class Main {
     static int[] parent, rank_;
 
     static int find(int x) {
@@ -348,7 +348,7 @@ int main(void) {
 ```
 
 ```scala run
-object Solution {
+object Main extends App {
   val n = 10
   val parent = Array.tabulate(n)(identity)
   val rnk = new Array[Int](n)
@@ -367,12 +367,10 @@ object Solution {
     true
   }
 
-  def main(args: Array[String]): Unit = {
-    val edges = Array((0,1), (1,2), (3,4), (5,6), (6,7))
-    for ((u, v) <- edges) union(u, v)
-    println(s"same_set(0,2)? ${find(0) == find(2)}")
-    println(s"same_set(0,3)? ${find(0) == find(3)}")
-  }
+  val edges = Array((0,1), (1,2), (3,4), (5,6), (6,7))
+  for ((u, v) <- edges) union(u, v)
+  println(s"same_set(0,2)? ${find(0) == find(2)}")
+  println(s"same_set(0,3)? ${find(0) == find(3)}")
 }
 ```
 

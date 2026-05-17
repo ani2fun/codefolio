@@ -418,7 +418,7 @@ if __name__ == "__main__":
 ```java run
 import java.util.*;
 
-class Solution {
+public class Main {
     static boolean hasDuplicateNested(int[] items) {
         for (int i = 0; i < items.length; i++) {
             for (int j = i + 1; j < items.length; j++) {
@@ -518,7 +518,7 @@ int main(void) {
 import scala.collection.mutable
 import scala.util.Random
 
-object Solution {
+object Main extends App {
   def hasDuplicateNested(items: Array[Int]): Boolean = {
     var i = 0
     while (i < items.length) {
@@ -540,18 +540,16 @@ object Solution {
     false
   }
 
-  def main(args: Array[String]): Unit = {
-    val sizes = Array(1000, 5000, 10000, 20000)
-    val rng = new Random(42)
-    println(f"${"n"}%8s ${"nested (ms)"}%14s ${"hash (ms)"}%12s")
-    for (n <- sizes) {
-      val items = rng.shuffle((0 until n).toList).toArray
-      var t0 = System.nanoTime(); hasDuplicateNested(items)
-      val nested = (System.nanoTime() - t0) / 1e6
-      t0 = System.nanoTime(); hasDuplicateHash(items)
-      val hashed = (System.nanoTime() - t0) / 1e6
-      println(f"$n%8d $nested%14.2f $hashed%12.3f")
-    }
+  val sizes = Array(1000, 5000, 10000, 20000)
+  val rng = new Random(42)
+  println(f"${"n"}%8s ${"nested (ms)"}%14s ${"hash (ms)"}%12s")
+  for (n <- sizes) {
+    val items = rng.shuffle((0 until n).toList).toArray
+    var t0 = System.nanoTime(); hasDuplicateNested(items)
+    val nested = (System.nanoTime() - t0) / 1e6
+    t0 = System.nanoTime(); hasDuplicateHash(items)
+    val hashed = (System.nanoTime() - t0) / 1e6
+    println(f"$n%8d $nested%14.2f $hashed%12.3f")
   }
 }
 ```

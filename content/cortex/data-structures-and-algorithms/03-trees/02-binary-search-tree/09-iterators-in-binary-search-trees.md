@@ -85,10 +85,19 @@ class BSTIterator:
 ```
 
 ```java run
-class BSTIterator {
-    public BSTIterator(TreeNode root) { /* set up state, do NOT walk whole tree */ }
-    public boolean hasNext()          { /* any nodes left? */ return false; }
-    public TreeNode next()            { /* next node in order */ return null; }
+public class Main {
+    static class TreeNode { int val; TreeNode left, right; TreeNode(int v){val=v;} }
+
+    static class BSTIterator {
+        public BSTIterator(TreeNode root) { /* set up state, do NOT walk whole tree */ }
+        public boolean hasNext()          { /* any nodes left? */ return false; }
+        public TreeNode next()            { /* next node in order */ return null; }
+    }
+
+    public static void main(String[] args) {
+        TreeNode root = new TreeNode(1);
+        System.out.println(new BSTIterator(root).hasNext());  // false
+    }
 }
 ```
 
@@ -290,22 +299,34 @@ class ForwardBstIterator:
 ```java run
 import java.util.*;
 
-class ForwardBstIterator {
-    private final Deque<TreeNode> stack = new ArrayDeque<>();                              // ancestor path
+public class Main {
+    static class TreeNode { int val; TreeNode left, right; TreeNode(int v){val=v;} TreeNode(int v, TreeNode l, TreeNode r){val=v; left=l; right=r;} }
 
-    public ForwardBstIterator(TreeNode root) { pushAllLeft(root); }                         // prime
+    static class ForwardBstIterator {
+        private final Deque<TreeNode> stack = new ArrayDeque<>();                              // ancestor path
 
-    private void pushAllLeft(TreeNode node) {
-        while (node != null) { stack.push(node); node = node.left; }                        // walk left-spine
+        public ForwardBstIterator(TreeNode root) { pushAllLeft(root); }                         // prime
+
+        private void pushAllLeft(TreeNode node) {
+            while (node != null) { stack.push(node); node = node.left; }                        // walk left-spine
+        }
+
+        public boolean hasNext() { return !stack.isEmpty(); }
+
+        public TreeNode next() {
+            if (!hasNext()) return null;
+            TreeNode node = stack.pop();                                                         // top = next in-order
+            pushAllLeft(node.right);                                                             // queue right-spine
+            return node;
+        }
     }
 
-    public boolean hasNext() { return !stack.isEmpty(); }
-
-    public TreeNode next() {
-        if (!hasNext()) return null;
-        TreeNode node = stack.pop();                                                         // top = next in-order
-        pushAllLeft(node.right);                                                             // queue right-spine
-        return node;
+    public static void main(String[] args) {
+        TreeNode root = new TreeNode(7,
+            new TreeNode(3),
+            new TreeNode(15, new TreeNode(9), new TreeNode(20)));
+        ForwardBstIterator it = new ForwardBstIterator(root);
+        System.out.println(it.next().val + " " + it.next().val + " " + it.next().val + " " + it.next().val + " " + it.next().val);  // 3 7 9 15 20
     }
 }
 ```
@@ -524,22 +545,34 @@ class ReverseBstIterator:
 ```java run
 import java.util.*;
 
-class ReverseBstIterator {
-    private final Deque<TreeNode> stack = new ArrayDeque<>();
+public class Main {
+    static class TreeNode { int val; TreeNode left, right; TreeNode(int v){val=v;} TreeNode(int v, TreeNode l, TreeNode r){val=v; left=l; right=r;} }
 
-    public ReverseBstIterator(TreeNode root) { pushAllRight(root); }
+    static class ReverseBstIterator {
+        private final Deque<TreeNode> stack = new ArrayDeque<>();
 
-    private void pushAllRight(TreeNode node) {
-        while (node != null) { stack.push(node); node = node.right; }
+        public ReverseBstIterator(TreeNode root) { pushAllRight(root); }
+
+        private void pushAllRight(TreeNode node) {
+            while (node != null) { stack.push(node); node = node.right; }
+        }
+
+        public boolean hasNext() { return !stack.isEmpty(); }
+
+        public TreeNode next() {
+            if (!hasNext()) return null;
+            TreeNode node = stack.pop();
+            pushAllRight(node.left);                                                                       // mirror of forward
+            return node;
+        }
     }
 
-    public boolean hasNext() { return !stack.isEmpty(); }
-
-    public TreeNode next() {
-        if (!hasNext()) return null;
-        TreeNode node = stack.pop();
-        pushAllRight(node.left);                                                                       // mirror of forward
-        return node;
+    public static void main(String[] args) {
+        TreeNode root = new TreeNode(7,
+            new TreeNode(3),
+            new TreeNode(15, new TreeNode(9), new TreeNode(20)));
+        ReverseBstIterator it = new ReverseBstIterator(root);
+        System.out.println(it.next().val + " " + it.next().val + " " + it.next().val + " " + it.next().val + " " + it.next().val);  // 20 15 9 7 3
     }
 }
 ```

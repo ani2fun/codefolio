@@ -126,7 +126,7 @@ if __name__ == "__main__":
 ```java run
 import java.util.*;
 
-class Solution {
+public class Main {
     static int[] zArray(String S) {
         int n = S.length();
         int[] Z = new int[n];
@@ -194,7 +194,7 @@ int main(void) {
 ```
 
 ```scala run
-object Solution {
+object Main extends App {
   def zArray(S: String): Array[Int] = {
     val n = S.length
     val Z = new Array[Int](n)
@@ -214,7 +214,7 @@ object Solution {
     (m + 1 until S.length).filter(Z(_) == m).map(_ - m - 1).toList
   }
 
-  def main(args: Array[String]): Unit = println(findPattern("ababab", "ab"))
+  println(findPattern("ababab", "ab"))
 }
 ```
 

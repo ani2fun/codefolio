@@ -717,29 +717,41 @@ class Solution:
 ```
 
 ```java run
-class Solution {
-    public ListNode reverseAList(ListNode head) {
+public class Main {
+    static class ListNode { int val; ListNode next; ListNode(int v){val=v;} }
 
-        // Initialize pointers current and previous
-        ListNode current = head;
-        ListNode previous = null;
+    static class Solution {
+        public ListNode reverseAList(ListNode head) {
 
-        while (current != null) {
+            // Initialize pointers current and previous
+            ListNode current = head;
+            ListNode previous = null;
 
-            // Save the address of next node
-            ListNode next = current.next;
+            while (current != null) {
 
-            // Update the next of current node
-            current.next = previous;
+                // Save the address of next node
+                ListNode next = current.next;
 
-            // Move previous to hold current node
-            previous = current;
+                // Update the next of current node
+                current.next = previous;
 
-            // Move current ahead
-            current = next;
+                // Move previous to hold current node
+                previous = current;
+
+                // Move current ahead
+                current = next;
+            }
+
+            return previous;
         }
+    }
 
-        return previous;
+    public static void main(String[] args) {
+        ListNode n4 = new ListNode(10), n3 = new ListNode(3), n2 = new ListNode(7), n1 = new ListNode(5);
+        n1.next = n2; n2.next = n3; n3.next = n4;
+        ListNode head = new Solution().reverseAList(n1);
+        for (ListNode c = head; c != null; c = c.next) System.out.print(c.val + " ");
+        // 10 3 7 5
     }
 }
 ```

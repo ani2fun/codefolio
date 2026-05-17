@@ -115,9 +115,18 @@ if __name__ == "__main__":
 ```
 
 ```java run
-public class Solution {
-    public boolean haveOppositeSigns(int num1, int num2) {
-        return (num1 ^ num2) < 0;
+public class Main {
+    static class Solution {
+        public boolean haveOppositeSigns(int num1, int num2) {
+            return (num1 ^ num2) < 0;
+        }
+    }
+
+    public static void main(String[] args) {
+        Solution sol = new Solution();
+        System.out.println(sol.haveOppositeSigns(10, -1));   // true
+        System.out.println(sol.haveOppositeSigns(2, -3));    // true
+        System.out.println(sol.haveOppositeSigns(9, 1));     // false
     }
 }
 ```
@@ -137,11 +146,11 @@ int main(void) {
 ```
 
 ```scala run
-class Solution {
-  def haveOppositeSigns(num1: Int, num2: Int): Boolean = (num1 ^ num2) < 0
-}
-
 object Main extends App {
+  class Solution {
+    def haveOppositeSigns(num1: Int, num2: Int): Boolean = (num1 ^ num2) < 0
+  }
+
   println(new Solution().haveOppositeSigns(10, -1))   // true
 }
 ```
@@ -204,14 +213,22 @@ if __name__ == "__main__":
 ```
 
 ```java run
-public class Solution {
-    public int[] swapNumbers(int num1, int num2) {
-        if (num1 != num2) {
-            num1 ^= num2;
-            num2 ^= num1;
-            num1 ^= num2;
+import java.util.Arrays;
+
+public class Main {
+    static class Solution {
+        public int[] swapNumbers(int num1, int num2) {
+            if (num1 != num2) {
+                num1 ^= num2;
+                num2 ^= num1;
+                num1 ^= num2;
+            }
+            return new int[]{num1, num2};
         }
-        return new int[]{num1, num2};
+    }
+
+    public static void main(String[] args) {
+        System.out.println(Arrays.toString(new Solution().swapNumbers(10, 1)));   // [1, 10]
     }
 }
 ```
@@ -236,19 +253,19 @@ int main(void) {
 ```
 
 ```scala run
-class Solution {
-  def swapNumbers(num1: Int, num2: Int): (Int, Int) = {
-    if (num1 == num2) (num1, num2)
-    else {
-      val a = num1 ^ num2
-      val b = a ^ num2
-      val c = a ^ b
-      (c, b)
+object Main extends App {
+  class Solution {
+    def swapNumbers(num1: Int, num2: Int): (Int, Int) = {
+      if (num1 == num2) (num1, num2)
+      else {
+        val a = num1 ^ num2
+        val b = a ^ num2
+        val c = a ^ b
+        (c, b)
+      }
     }
   }
-}
 
-object Main extends App {
   println(new Solution().swapNumbers(10, 1))   // (1,10)
 }
 ```
@@ -310,12 +327,18 @@ if __name__ == "__main__":
 ```
 
 ```java run
-public class Solution {
-    public int toggleCount(int num1, int num2) {
-        int diff = num1 ^ num2;
-        int count = 0;
-        while (diff != 0) { diff &= diff - 1; count++; }
-        return count;
+public class Main {
+    static class Solution {
+        public int toggleCount(int num1, int num2) {
+            int diff = num1 ^ num2;
+            int count = 0;
+            while (diff != 0) { diff &= diff - 1; count++; }
+            return count;
+        }
+    }
+
+    public static void main(String[] args) {
+        System.out.println(new Solution().toggleCount(10, 1));   // 3
     }
 }
 ```
@@ -336,11 +359,11 @@ int main(void) {
 ```
 
 ```scala run
-class Solution {
-  def toggleCount(num1: Int, num2: Int): Int = Integer.bitCount(num1 ^ num2)
-}
-
 object Main extends App {
+  class Solution {
+    def toggleCount(num1: Int, num2: Int): Int = Integer.bitCount(num1 ^ num2)
+  }
+
   println(new Solution().toggleCount(10, 1))   // 3
 }
 ```
@@ -397,11 +420,17 @@ if __name__ == "__main__":
 ```
 
 ```java run
-public class Solution {
-    public int oddOccurringElement(int[] arr) {
-        int result = 0;
-        for (int v : arr) result ^= v;
-        return result;
+public class Main {
+    static class Solution {
+        public int oddOccurringElement(int[] arr) {
+            int result = 0;
+            for (int v : arr) result ^= v;
+            return result;
+        }
+    }
+
+    public static void main(String[] args) {
+        System.out.println(new Solution().oddOccurringElement(new int[]{2, 2, 2, 1, 3, 1, 4, 3, 1, 4, 1}));   // 2
     }
 }
 ```
@@ -423,11 +452,11 @@ int main(void) {
 ```
 
 ```scala run
-class Solution {
-  def oddOccurringElement(arr: Array[Int]): Int = arr.foldLeft(0)(_ ^ _)
-}
-
 object Main extends App {
+  class Solution {
+    def oddOccurringElement(arr: Array[Int]): Int = arr.foldLeft(0)(_ ^ _)
+  }
+
   println(new Solution().oddOccurringElement(Array(2,2,2,1,3,1,4,3,1,4,1)))   // 2
 }
 ```
@@ -527,17 +556,25 @@ if __name__ == "__main__":
 ```
 
 ```java run
-public class Solution {
-    public int[] oddOccurringElementII(int[] arr) {
-        int xorAll = 0;
-        for (int v : arr) xorAll ^= v;
-        int diffBit = xorAll & -xorAll;
-        int a = 0, b = 0;
-        for (int v : arr) {
-            if ((v & diffBit) != 0) a ^= v;
-            else b ^= v;
+import java.util.Arrays;
+
+public class Main {
+    static class Solution {
+        public int[] oddOccurringElementII(int[] arr) {
+            int xorAll = 0;
+            for (int v : arr) xorAll ^= v;
+            int diffBit = xorAll & -xorAll;
+            int a = 0, b = 0;
+            for (int v : arr) {
+                if ((v & diffBit) != 0) a ^= v;
+                else b ^= v;
+            }
+            return new int[]{a, b};
         }
-        return new int[]{a, b};
+    }
+
+    public static void main(String[] args) {
+        System.out.println(Arrays.toString(new Solution().oddOccurringElementII(new int[]{2, 2, 2, 1, 3, 1, 4, 3, 1, 4, 1, 5})));   // [2, 5] (order may vary)
     }
 }
 ```
@@ -567,19 +604,19 @@ int main(void) {
 ```
 
 ```scala run
-class Solution {
-  def oddOccurringElementII(arr: Array[Int]): Array[Int] = {
-    val xorAll = arr.foldLeft(0)(_ ^ _)
-    val diffBit = xorAll & -xorAll
-    var a = 0; var b = 0
-    for (v <- arr) {
-      if ((v & diffBit) != 0) a ^= v else b ^= v
-    }
-    Array(a, b)
-  }
-}
-
 object Main extends App {
+  class Solution {
+    def oddOccurringElementII(arr: Array[Int]): Array[Int] = {
+      val xorAll = arr.foldLeft(0)(_ ^ _)
+      val diffBit = xorAll & -xorAll
+      var a = 0; var b = 0
+      for (v <- arr) {
+        if ((v & diffBit) != 0) a ^= v else b ^= v
+      }
+      Array(a, b)
+    }
+  }
+
   println(new Solution().oddOccurringElementII(Array(2,2,2,1,3,1,4,3,1,4,1,5)).mkString(","))
 }
 ```
@@ -648,12 +685,18 @@ if __name__ == "__main__":
 ```
 
 ```java run
-public class Solution {
-    public int duplicateElement(int[] arr) {
-        int n = arr.length, result = 0;
-        for (int v : arr) result ^= v;
-        for (int i = 1; i < n; i++) result ^= i;
-        return result;
+public class Main {
+    static class Solution {
+        public int duplicateElement(int[] arr) {
+            int n = arr.length, result = 0;
+            for (int v : arr) result ^= v;
+            for (int i = 1; i < n; i++) result ^= i;
+            return result;
+        }
+    }
+
+    public static void main(String[] args) {
+        System.out.println(new Solution().duplicateElement(new int[]{1, 4, 3, 2, 2}));   // 2
     }
 }
 ```
@@ -676,16 +719,16 @@ int main(void) {
 ```
 
 ```scala run
-class Solution {
-  def duplicateElement(arr: Array[Int]): Int = {
-    val n = arr.length
-    var result = arr.foldLeft(0)(_ ^ _)
-    for (i <- 1 until n) result ^= i
-    result
-  }
-}
-
 object Main extends App {
+  class Solution {
+    def duplicateElement(arr: Array[Int]): Int = {
+      val n = arr.length
+      var result = arr.foldLeft(0)(_ ^ _)
+      for (i <- 1 until n) result ^= i
+      result
+    }
+  }
+
   println(new Solution().duplicateElement(Array(1, 4, 3, 2, 2)))   // 2
 }
 ```
@@ -782,21 +825,27 @@ if __name__ == "__main__":
 ```java run
 import java.util.*;
 
-public class Solution {
-    public int[] missingAndDuplicated(int[] arr) {
-        int n = arr.length;
-        int x = n;
-        for (int i = 0; i < n; i++) x ^= arr[i] ^ i;
-        int diffBit = x & -x;
-        int a = 0, b = 0;
-        for (int v : arr) {
-            if ((v & diffBit) != 0) a ^= v; else b ^= v;
+public class Main {
+    static class Solution {
+        public int[] missingAndDuplicated(int[] arr) {
+            int n = arr.length;
+            int x = n;
+            for (int i = 0; i < n; i++) x ^= arr[i] ^ i;
+            int diffBit = x & -x;
+            int a = 0, b = 0;
+            for (int v : arr) {
+                if ((v & diffBit) != 0) a ^= v; else b ^= v;
+            }
+            for (int i = 1; i <= n; i++) {
+                if ((i & diffBit) != 0) a ^= i; else b ^= i;
+            }
+            for (int v : arr) if (v == a) return new int[]{a, b};
+            return new int[]{b, a};
         }
-        for (int i = 1; i <= n; i++) {
-            if ((i & diffBit) != 0) a ^= i; else b ^= i;
-        }
-        for (int v : arr) if (v == a) return new int[]{a, b};
-        return new int[]{b, a};
+    }
+
+    public static void main(String[] args) {
+        System.out.println(Arrays.toString(new Solution().missingAndDuplicated(new int[]{1, 5, 2, 4, 2})));   // [2, 3]
     }
 }
 ```
@@ -832,20 +881,20 @@ int main(void) {
 ```
 
 ```scala run
-class Solution {
-  def missingAndDuplicated(arr: Array[Int]): Array[Int] = {
-    val n = arr.length
-    var x = n
-    for (i <- 0 until n) x ^= arr(i) ^ i
-    val diffBit = x & -x
-    var a = 0; var b = 0
-    for (v <- arr) { if ((v & diffBit) != 0) a ^= v else b ^= v }
-    for (i <- 1 to n) { if ((i & diffBit) != 0) a ^= i else b ^= i }
-    if (!arr.contains(a)) Array(b, a) else Array(a, b)
-  }
-}
-
 object Main extends App {
+  class Solution {
+    def missingAndDuplicated(arr: Array[Int]): Array[Int] = {
+      val n = arr.length
+      var x = n
+      for (i <- 0 until n) x ^= arr(i) ^ i
+      val diffBit = x & -x
+      var a = 0; var b = 0
+      for (v <- arr) { if ((v & diffBit) != 0) a ^= v else b ^= v }
+      for (i <- 1 to n) { if ((i & diffBit) != 0) a ^= i else b ^= i }
+      if (!arr.contains(a)) Array(b, a) else Array(a, b)
+    }
+  }
+
   println(new Solution().missingAndDuplicated(Array(1, 5, 2, 4, 2)).mkString(","))
 }
 ```

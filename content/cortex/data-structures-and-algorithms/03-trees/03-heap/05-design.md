@@ -148,51 +148,61 @@ class MaxHeap:
 ```java run
 import java.util.*;
 
-class MaxHeap {
-    private final List<Integer> heap = new ArrayList<>();
+public class Main {
+    static class MaxHeap {
+        private final List<Integer> heap = new ArrayList<>();
 
-    private void swap(int i, int j) { int t = heap.get(i); heap.set(i, heap.get(j)); heap.set(j, t); }
+        private void swap(int i, int j) { int t = heap.get(i); heap.set(i, heap.get(j)); heap.set(j, t); }
 
-    private void upHeapify(int index) {
-        int parent = (index - 1) / 2;
-        while (index > 0 && heap.get(parent) < heap.get(index)) {
-            swap(index, parent); index = parent; parent = (index - 1) / 2;
+        private void upHeapify(int index) {
+            int parent = (index - 1) / 2;
+            while (index > 0 && heap.get(parent) < heap.get(index)) {
+                swap(index, parent); index = parent; parent = (index - 1) / 2;
+            }
+        }
+
+        private void downHeapify(int index) {
+            int n = heap.size();
+            while (true) {
+                int largest = index;
+                int left = 2 * index + 1, right = 2 * index + 2;
+                if (left  < n && heap.get(left)  > heap.get(largest)) largest = left;
+                if (right < n && heap.get(right) > heap.get(largest)) largest = right;
+                if (largest == index) return;
+                swap(index, largest);
+                index = largest;
+            }
+        }
+
+        public void insert(int val) {
+            heap.add(val);
+            upHeapify(heap.size() - 1);
+        }
+
+        public void remove(int index) {
+            int last = heap.remove(heap.size() - 1);
+            if (index < heap.size()) {
+                heap.set(index, last);
+                downHeapify(index);
+            }
+        }
+
+        public int getMax() { return heap.isEmpty() ? -1 : heap.get(0); }
+
+        public int extractMax() {
+            if (heap.isEmpty()) return -1;
+            int top = heap.get(0);
+            remove(0);
+            return top;
         }
     }
 
-    private void downHeapify(int index) {
-        int n = heap.size();
-        while (true) {
-            int largest = index;
-            int left = 2 * index + 1, right = 2 * index + 2;
-            if (left  < n && heap.get(left)  > heap.get(largest)) largest = left;
-            if (right < n && heap.get(right) > heap.get(largest)) largest = right;
-            if (largest == index) return;
-            swap(index, largest);
-            index = largest;
-        }
-    }
-
-    public void insert(int val) {
-        heap.add(val);
-        upHeapify(heap.size() - 1);
-    }
-
-    public void remove(int index) {
-        int last = heap.remove(heap.size() - 1);
-        if (index < heap.size()) {
-            heap.set(index, last);
-            downHeapify(index);
-        }
-    }
-
-    public int getMax() { return heap.isEmpty() ? -1 : heap.get(0); }
-
-    public int extractMax() {
-        if (heap.isEmpty()) return -1;
-        int top = heap.get(0);
-        remove(0);
-        return top;
+    public static void main(String[] args) {
+        MaxHeap h = new MaxHeap();
+        for (int v : new int[]{3, 1, 4, 1, 5, 9}) h.insert(v);
+        System.out.println(h.getMax());      // 9
+        System.out.println(h.extractMax());  // 9
+        System.out.println(h.getMax());      // 5
     }
 }
 ```
@@ -413,42 +423,52 @@ class MinHeap:
 ```java run
 import java.util.*;
 
-class MinHeap {
-    private final List<Integer> heap = new ArrayList<>();
+public class Main {
+    static class MinHeap {
+        private final List<Integer> heap = new ArrayList<>();
 
-    private void swap(int i, int j) { int t = heap.get(i); heap.set(i, heap.get(j)); heap.set(j, t); }
+        private void swap(int i, int j) { int t = heap.get(i); heap.set(i, heap.get(j)); heap.set(j, t); }
 
-    private void upHeapify(int index) {
-        int parent = (index - 1) / 2;
-        while (index > 0 && heap.get(parent) > heap.get(index)) {
-            swap(index, parent); index = parent; parent = (index - 1) / 2;
+        private void upHeapify(int index) {
+            int parent = (index - 1) / 2;
+            while (index > 0 && heap.get(parent) > heap.get(index)) {
+                swap(index, parent); index = parent; parent = (index - 1) / 2;
+            }
+        }
+
+        private void downHeapify(int index) {
+            int n = heap.size();
+            while (true) {
+                int smallest = index;
+                int left = 2 * index + 1, right = 2 * index + 2;
+                if (left  < n && heap.get(left)  < heap.get(smallest)) smallest = left;
+                if (right < n && heap.get(right) < heap.get(smallest)) smallest = right;
+                if (smallest == index) return;
+                swap(index, smallest); index = smallest;
+            }
+        }
+
+        public void insert(int val) { heap.add(val); upHeapify(heap.size() - 1); }
+
+        public void remove(int index) {
+            int last = heap.remove(heap.size() - 1);
+            if (index < heap.size()) { heap.set(index, last); downHeapify(index); }
+        }
+
+        public int getMin() { return heap.isEmpty() ? -1 : heap.get(0); }
+
+        public int extractMin() {
+            if (heap.isEmpty()) return -1;
+            int top = heap.get(0); remove(0); return top;
         }
     }
 
-    private void downHeapify(int index) {
-        int n = heap.size();
-        while (true) {
-            int smallest = index;
-            int left = 2 * index + 1, right = 2 * index + 2;
-            if (left  < n && heap.get(left)  < heap.get(smallest)) smallest = left;
-            if (right < n && heap.get(right) < heap.get(smallest)) smallest = right;
-            if (smallest == index) return;
-            swap(index, smallest); index = smallest;
-        }
-    }
-
-    public void insert(int val) { heap.add(val); upHeapify(heap.size() - 1); }
-
-    public void remove(int index) {
-        int last = heap.remove(heap.size() - 1);
-        if (index < heap.size()) { heap.set(index, last); downHeapify(index); }
-    }
-
-    public int getMin() { return heap.isEmpty() ? -1 : heap.get(0); }
-
-    public int extractMin() {
-        if (heap.isEmpty()) return -1;
-        int top = heap.get(0); remove(0); return top;
+    public static void main(String[] args) {
+        MinHeap h = new MinHeap();
+        for (int v : new int[]{3, 1, 4, 1, 5, 9}) h.insert(v);
+        System.out.println(h.getMin());      // 1
+        System.out.println(h.extractMin());  // 1
+        System.out.println(h.getMin());      // 1
     }
 }
 ```
@@ -722,23 +742,31 @@ class MedianFinder:
 ```java run
 import java.util.*;
 
-class MedianFinder {
-    private final PriorityQueue<Integer> lower = new PriorityQueue<>(Comparator.reverseOrder());   // max-heap
-    private final PriorityQueue<Integer> upper = new PriorityQueue<>();                             // min-heap
+public class Main {
+    static class MedianFinder {
+        private final PriorityQueue<Integer> lower = new PriorityQueue<>(Comparator.reverseOrder());   // max-heap
+        private final PriorityQueue<Integer> upper = new PriorityQueue<>();                             // min-heap
 
-    public void addNum(int num) {
-        lower.add(num);
-        if (!upper.isEmpty() && lower.peek() > upper.peek()) {                                       // order rebalance
-            int a = lower.poll(), b = upper.poll();
-            lower.add(b); upper.add(a);
+        public void addNum(int num) {
+            lower.add(num);
+            if (!upper.isEmpty() && lower.peek() > upper.peek()) {                                       // order rebalance
+                int a = lower.poll(), b = upper.poll();
+                lower.add(b); upper.add(a);
+            }
+            if (lower.size() > upper.size() + 1) upper.add(lower.poll());                                // size rebalance
+            else if (upper.size() > lower.size()) lower.add(upper.poll());
         }
-        if (lower.size() > upper.size() + 1) upper.add(lower.poll());                                // size rebalance
-        else if (upper.size() > lower.size()) lower.add(upper.poll());
+
+        public double findMedian() {
+            if (lower.size() > upper.size()) return lower.peek();
+            return (lower.peek() + upper.peek()) / 2.0;
+        }
     }
 
-    public double findMedian() {
-        if (lower.size() > upper.size()) return lower.peek();
-        return (lower.peek() + upper.peek()) / 2.0;
+    public static void main(String[] args) {
+        MedianFinder mf = new MedianFinder();
+        mf.addNum(1); mf.addNum(2); mf.addNum(4);
+        System.out.println(mf.findMedian());  // 2.0
     }
 }
 ```

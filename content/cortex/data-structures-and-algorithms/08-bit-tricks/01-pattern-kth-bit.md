@@ -128,9 +128,11 @@ if __name__ == "__main__":
 ```
 
 ```java run
-public class Solution {
-    public boolean kthBitCheck(int num, int k) {
-        return (num & (1 << (k - 1))) != 0;
+public class Main {
+    static class Solution {
+        public boolean kthBitCheck(int num, int k) {
+            return (num & (1 << (k - 1))) != 0;
+        }
     }
 
     public static void main(String[] args) {
@@ -159,11 +161,11 @@ int main(void) {
 ```
 
 ```scala run
-class Solution {
-  def kthBitCheck(num: Int, k: Int): Boolean = (num & (1 << (k - 1))) != 0
-}
-
 object Main extends App {
+  class Solution {
+    def kthBitCheck(num: Int, k: Int): Boolean = (num & (1 << (k - 1))) != 0
+  }
+
   val sol = new Solution()
   println(sol.kthBitCheck(1, 1))   // true
   println(sol.kthBitCheck(3, 2))   // true
@@ -233,9 +235,18 @@ if __name__ == "__main__":
 ```
 
 ```java run
-public class Solution {
-    public int setKthBit(int num, int k) {
-        return num | (1 << (k - 1));
+public class Main {
+    static class Solution {
+        public int setKthBit(int num, int k) {
+            return num | (1 << (k - 1));
+        }
+    }
+
+    public static void main(String[] args) {
+        Solution sol = new Solution();
+        System.out.println(sol.setKthBit(0, 1));   // 1
+        System.out.println(sol.setKthBit(2, 2));   // 2
+        System.out.println(sol.setKthBit(2, 1));   // 3
     }
 }
 ```
@@ -255,11 +266,11 @@ int main(void) {
 ```
 
 ```scala run
-class Solution {
-  def setKthBit(num: Int, k: Int): Int = num | (1 << (k - 1))
-}
-
 object Main extends App {
+  class Solution {
+    def setKthBit(num: Int, k: Int): Int = num | (1 << (k - 1))
+  }
+
   println(new Solution().setKthBit(2, 1))   // 3
 }
 ```
@@ -321,9 +332,18 @@ if __name__ == "__main__":
 ```
 
 ```java run
-public class Solution {
-    public int unsetKthBit(int num, int k) {
-        return num & ~(1 << (k - 1));
+public class Main {
+    static class Solution {
+        public int unsetKthBit(int num, int k) {
+            return num & ~(1 << (k - 1));
+        }
+    }
+
+    public static void main(String[] args) {
+        Solution sol = new Solution();
+        System.out.println(sol.unsetKthBit(1, 1));   // 0
+        System.out.println(sol.unsetKthBit(2, 1));   // 2
+        System.out.println(sol.unsetKthBit(3, 1));   // 2
     }
 }
 ```
@@ -342,11 +362,11 @@ int main(void) {
 ```
 
 ```scala run
-class Solution {
-  def unsetKthBit(num: Int, k: Int): Int = num & ~(1 << (k - 1))
-}
-
 object Main extends App {
+  class Solution {
+    def unsetKthBit(num: Int, k: Int): Int = num & ~(1 << (k - 1))
+  }
+
   println(new Solution().unsetKthBit(3, 1))   // 2
 }
 ```
@@ -407,9 +427,18 @@ if __name__ == "__main__":
 ```
 
 ```java run
-public class Solution {
-    public int toggleKthBit(int num, int k) {
-        return num ^ (1 << (k - 1));
+public class Main {
+    static class Solution {
+        public int toggleKthBit(int num, int k) {
+            return num ^ (1 << (k - 1));
+        }
+    }
+
+    public static void main(String[] args) {
+        Solution sol = new Solution();
+        System.out.println(sol.toggleKthBit(1, 1));   // 0
+        System.out.println(sol.toggleKthBit(3, 1));   // 2
+        System.out.println(sol.toggleKthBit(3, 2));   // 1
     }
 }
 ```
@@ -428,11 +457,11 @@ int main(void) {
 ```
 
 ```scala run
-class Solution {
-  def toggleKthBit(num: Int, k: Int): Int = num ^ (1 << (k - 1))
-}
-
 object Main extends App {
+  class Solution {
+    def toggleKthBit(num: Int, k: Int): Int = num ^ (1 << (k - 1))
+  }
+
   println(new Solution().toggleKthBit(3, 2))   // 1
 }
 ```

@@ -357,38 +357,40 @@ if __name__ == "__main__":
 ```java run
 import java.util.Random;
 
-public class Solution {
-    private final Random rand = new Random();
+public class Main {
+    static class Solution {
+        private final Random rand = new Random();
 
-    public void quickSort(int[] arr) {
-        sort(arr, 0, arr.length - 1);
-    }
-
-    private void sort(int[] arr, int left, int right) {
-        if (left < right) {
-            int p = partition(arr, left, right);
-            sort(arr, left, p - 1);
-            sort(arr, p + 1, right);
+        public void quickSort(int[] arr) {
+            sort(arr, 0, arr.length - 1);
         }
-    }
 
-    private int partition(int[] arr, int left, int right) {
-        int pivotIdx = left + rand.nextInt(right - left + 1);
-        int pivotVal = arr[pivotIdx];
-        swap(arr, pivotIdx, right);
-        int boundary = left;
-        for (int i = left; i < right; i++) {
-            if (arr[i] < pivotVal) {
-                swap(arr, boundary, i);
-                boundary++;
+        private void sort(int[] arr, int left, int right) {
+            if (left < right) {
+                int p = partition(arr, left, right);
+                sort(arr, left, p - 1);
+                sort(arr, p + 1, right);
             }
         }
-        swap(arr, boundary, right);
-        return boundary;
-    }
 
-    private void swap(int[] arr, int i, int j) {
-        int tmp = arr[i]; arr[i] = arr[j]; arr[j] = tmp;
+        private int partition(int[] arr, int left, int right) {
+            int pivotIdx = left + rand.nextInt(right - left + 1);
+            int pivotVal = arr[pivotIdx];
+            swap(arr, pivotIdx, right);
+            int boundary = left;
+            for (int i = left; i < right; i++) {
+                if (arr[i] < pivotVal) {
+                    swap(arr, boundary, i);
+                    boundary++;
+                }
+            }
+            swap(arr, boundary, right);
+            return boundary;
+        }
+
+        private void swap(int[] arr, int i, int j) {
+            int tmp = arr[i]; arr[i] = arr[j]; arr[j] = tmp;
+        }
     }
 
     public static void main(String[] args) {
@@ -446,45 +448,43 @@ int main(void) {
 ```scala run
 import scala.util.Random
 
-class Solution {
-  def quickSort(arr: Array[Int]): Unit = {
-    sort(arr, 0, arr.length - 1)
-  }
-
-  private def sort(arr: Array[Int], left: Int, right: Int): Unit = {
-    if (left < right) {
-      val p = partition(arr, left, right)
-      sort(arr, left, p - 1)
-      sort(arr, p + 1, right)
+object Main extends App {
+  class Solution {
+    def quickSort(arr: Array[Int]): Unit = {
+      sort(arr, 0, arr.length - 1)
     }
-  }
 
-  private def partition(arr: Array[Int], left: Int, right: Int): Int = {
-    val pivotIdx = left + Random.nextInt(right - left + 1)
-    val pivotVal = arr(pivotIdx)
-    swap(arr, pivotIdx, right)
-    var boundary = left
-    for (i <- left until right) {
-      if (arr(i) < pivotVal) {
-        swap(arr, boundary, i)
-        boundary += 1
+    private def sort(arr: Array[Int], left: Int, right: Int): Unit = {
+      if (left < right) {
+        val p = partition(arr, left, right)
+        sort(arr, left, p - 1)
+        sort(arr, p + 1, right)
       }
     }
-    swap(arr, boundary, right)
-    boundary
+
+    private def partition(arr: Array[Int], left: Int, right: Int): Int = {
+      val pivotIdx = left + Random.nextInt(right - left + 1)
+      val pivotVal = arr(pivotIdx)
+      swap(arr, pivotIdx, right)
+      var boundary = left
+      for (i <- left until right) {
+        if (arr(i) < pivotVal) {
+          swap(arr, boundary, i)
+          boundary += 1
+        }
+      }
+      swap(arr, boundary, right)
+      boundary
+    }
+
+    private def swap(arr: Array[Int], i: Int, j: Int): Unit = {
+      val t = arr(i); arr(i) = arr(j); arr(j) = t
+    }
   }
 
-  private def swap(arr: Array[Int], i: Int, j: Int): Unit = {
-    val t = arr(i); arr(i) = arr(j); arr(j) = t
-  }
-}
-
-object Main {
-  def main(args: Array[String]): Unit = {
-    val arr = Array(7, 2, 5, 1, 8, 4)
-    new Solution().quickSort(arr)
-    println(arr.mkString(" "))
-  }
+  val arr = Array(7, 2, 5, 1, 8, 4)
+  new Solution().quickSort(arr)
+  println(arr.mkString(" "))
 }
 ```
 

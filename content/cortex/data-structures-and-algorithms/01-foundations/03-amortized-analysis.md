@@ -299,7 +299,7 @@ if __name__ == "__main__":
 ```
 
 ```java run
-class Solution {
+public class Main {
     static class DynArray {
         int[] buf = new int[1];
         int size = 0;
@@ -381,7 +381,7 @@ int main(void) {
 ```
 
 ```scala run
-object Solution {
+object Main extends App {
   class DynArray {
     var buf: Array[Int] = new Array[Int](1)
     var size: Int = 0
@@ -400,25 +400,23 @@ object Solution {
     }
   }
 
-  def main(args: Array[String]): Unit = {
-    val a = new DynArray
-    val n = 1_000_000
-    val times = new Array[Long](n)
-    val t0 = System.nanoTime()
-    for (i <- 0 until n) {
-      val s = System.nanoTime()
-      a.push(i)
-      times(i) = System.nanoTime() - s
-    }
-    val total = System.nanoTime() - t0
-    val maxNs = times.max
-    java.util.Arrays.sort(times)
-    val p99 = times((n * 0.99).toInt)
-    println(f"Pushed $n%,d items in ${total / 1e6}%.0f ms")
-    println(f"Average per push: ${total / 1e3 / n}%.3f µs (amortized constant)")
-    println(f"99th percentile:  ${p99 / 1e3}%.3f µs")
-    println(f"Max single push:  ${maxNs / 1000} µs (the worst resize)")
+  val a = new DynArray
+  val n = 1_000_000
+  val times = new Array[Long](n)
+  val t0 = System.nanoTime()
+  for (i <- 0 until n) {
+    val s = System.nanoTime()
+    a.push(i)
+    times(i) = System.nanoTime() - s
   }
+  val total = System.nanoTime() - t0
+  val maxNs = times.max
+  java.util.Arrays.sort(times)
+  val p99 = times((n * 0.99).toInt)
+  println(f"Pushed $n%,d items in ${total / 1e6}%.0f ms")
+  println(f"Average per push: ${total / 1e3 / n}%.3f µs (amortized constant)")
+  println(f"99th percentile:  ${p99 / 1e3}%.3f µs")
+  println(f"Max single push:  ${maxNs / 1000} µs (the worst resize)")
 }
 ```
 

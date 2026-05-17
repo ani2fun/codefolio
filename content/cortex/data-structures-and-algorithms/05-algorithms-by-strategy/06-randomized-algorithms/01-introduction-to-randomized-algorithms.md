@@ -210,7 +210,7 @@ if __name__ == "__main__":
 ```java run
 import java.util.*;
 
-class Solution {
+public class Main {
     static Random rng = new Random();
 
     static int partition(int[] A, int lo, int hi) {
@@ -286,7 +286,7 @@ int main(void) {
 ```scala run
 import scala.util.Random
 
-object Solution {
+object Main extends App {
   private val rng = new Random(42)
 
   def partition(A: Array[Int], lo: Int, hi: Int): Int = {
@@ -311,10 +311,8 @@ object Solution {
     B(lo)
   }
 
-  def main(args: Array[String]): Unit = {
-    val A = Array(3, 1, 4, 1, 5, 9, 2, 6, 5, 3, 5)
-    for (k <- A.indices) println(s"k=$k: ${quickselect(A, k)}")
-  }
+  val A = Array(3, 1, 4, 1, 5, 9, 2, 6, 5, 3, 5)
+  for (k <- A.indices) println(s"k=$k: ${quickselect(A, k)}")
 }
 ```
 
