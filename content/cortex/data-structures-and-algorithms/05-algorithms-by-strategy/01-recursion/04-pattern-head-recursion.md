@@ -257,28 +257,30 @@ if __name__ == "__main__":
 ```
 
 ```java run
-public class Solution {
-    int headRecursion(int n) {
-        // Step 1 — base case: anchors the recursion
-        if (n <= 0) {
-            return 0;
+public class Main {
+    static class Solution {
+        int headRecursion(int n) {
+            // Step 1 — base case: anchors the recursion
+            if (n <= 0) {
+                return 0;
+            }
+
+            // Step 2 — reduce
+            int smallerInput = h(n);
+
+            // Step 3 — descend (all the recursion happens here)
+            int smallerAnswer = headRecursion(smallerInput);
+
+            // Step 4 — combine on the ascent
+            int answer = g(smallerAnswer, n);
+
+            // Step 5 — return upward
+            return answer;
         }
 
-        // Step 2 — reduce
-        int smallerInput = h(n);
-
-        // Step 3 — descend (all the recursion happens here)
-        int smallerAnswer = headRecursion(smallerInput);
-
-        // Step 4 — combine on the ascent
-        int answer = g(smallerAnswer, n);
-
-        // Step 5 — return upward
-        return answer;
+        private int g(int smaller, int n) { return smaller + n; }
+        private int h(int n) { return n - 1; }
     }
-
-    private int g(int smaller, int n) { return smaller + n; }
-    private int h(int n) { return n - 1; }
 
     public static void main(String[] args) {
         System.out.println(new Solution().headRecursion(5));   // 15
@@ -313,25 +315,23 @@ int main(void) {
 ```
 
 ```scala run
-class Solution {
-  def headRecursion(n: Int): Int = {
-    if (n <= 0) 0                          // Step 1 — base case
-    else {
-      val smallerInput  = h(n)             // Step 2 — reduce
-      val smallerAnswer = headRecursion(smallerInput)  // Step 3 — descend
-      val answer        = g(smallerAnswer, n)          // Step 4 — combine
-      answer                                           // Step 5 — return
+object Main extends App {
+  class Solution {
+    def headRecursion(n: Int): Int = {
+      if (n <= 0) 0                          // Step 1 — base case
+      else {
+        val smallerInput  = h(n)             // Step 2 — reduce
+        val smallerAnswer = headRecursion(smallerInput)  // Step 3 — descend
+        val answer        = g(smallerAnswer, n)          // Step 4 — combine
+        answer                                           // Step 5 — return
+      }
     }
+
+    private def g(smaller: Int, n: Int): Int = smaller + n
+    private def h(n: Int): Int = n - 1
   }
 
-  private def g(smaller: Int, n: Int): Int = smaller + n
-  private def h(n: Int): Int = n - 1
-}
-
-object Main {
-  def main(args: Array[String]): Unit = {
-    println(new Solution().headRecursion(5))   // 15
-  }
+  println(new Solution().headRecursion(5))   // 15
 }
 ```
 
@@ -596,17 +596,19 @@ if __name__ == "__main__":
 import java.util.ArrayList;
 import java.util.List;
 
-public class Solution {
-    public List<Integer> forwardSequence(int n) {
-        List<Integer> result = new ArrayList<>();
-        helper(n, result);
-        return result;
-    }
+public class Main {
+    static class Solution {
+        public List<Integer> forwardSequence(int n) {
+            List<Integer> result = new ArrayList<>();
+            helper(n, result);
+            return result;
+        }
 
-    private void helper(int n, List<Integer> result) {
-        if (n <= 0) return;          // Base case
-        helper(n - 1, result);       // Recursive call FIRST (head recursion)
-        result.add(n);               // Combine on the ascent
+        private void helper(int n, List<Integer> result) {
+            if (n <= 0) return;          // Base case
+            helper(n - 1, result);       // Recursive call FIRST (head recursion)
+            result.add(n);               // Combine on the ascent
+        }
     }
 
     public static void main(String[] args) {
@@ -642,24 +644,22 @@ int main(void) {
 ```scala run
 import scala.collection.mutable.ArrayBuffer
 
-class Solution {
-  def forwardSequence(n: Int): List[Int] = {
-    val result = ArrayBuffer[Int]()
-    helper(n, result)
-    result.toList
+object Main extends App {
+  class Solution {
+    def forwardSequence(n: Int): List[Int] = {
+      val result = ArrayBuffer[Int]()
+      helper(n, result)
+      result.toList
+    }
+
+    private def helper(n: Int, result: ArrayBuffer[Int]): Unit = {
+      if (n <= 0) return                          // Base case
+      helper(n - 1, result)                       // Recurse FIRST
+      result += n                                 // Combine on ascent
+    }
   }
 
-  private def helper(n: Int, result: ArrayBuffer[Int]): Unit = {
-    if (n <= 0) return                          // Base case
-    helper(n - 1, result)                       // Recurse FIRST
-    result += n                                 // Combine on ascent
-  }
-}
-
-object Main {
-  def main(args: Array[String]): Unit = {
-    println(new Solution().forwardSequence(5))   // List(1, 2, 3, 4, 5)
-  }
+  println(new Solution().forwardSequence(5))   // List(1, 2, 3, 4, 5)
 }
 ```
 
@@ -850,11 +850,13 @@ if __name__ == "__main__":
 ```
 
 ```java run
-public class Solution {
-    public int factorial(int n) {
-        if (n == 0) return 1;                  // Base case
-        int smaller = factorial(n - 1);         // Descend first
-        return n * smaller;                     // Combine on ascent
+public class Main {
+    static class Solution {
+        public int factorial(int n) {
+            if (n == 0) return 1;                  // Base case
+            int smaller = factorial(n - 1);         // Descend first
+            return n * smaller;                     // Combine on ascent
+        }
     }
 
     public static void main(String[] args) {
@@ -882,18 +884,16 @@ int main(void) {
 ```
 
 ```scala run
-class Solution {
-  def factorial(n: Int): Long = {
-    if (n == 0) 1L                          // Base case
-    else n.toLong * factorial(n - 1)        // Descend, then multiply
+object Main extends App {
+  class Solution {
+    def factorial(n: Int): Long = {
+      if (n == 0) 1L                          // Base case
+      else n.toLong * factorial(n - 1)        // Descend, then multiply
+    }
   }
-}
 
-object Main {
-  def main(args: Array[String]): Unit = {
-    println(new Solution().factorial(7))   // 5040
-    println(new Solution().factorial(0))   // 1
-  }
+  println(new Solution().factorial(7))   // 5040
+  println(new Solution().factorial(0))   // 1
 }
 ```
 
@@ -1072,11 +1072,13 @@ if __name__ == "__main__":
 ```
 
 ```java run
-public class Solution {
-    public int sumOfDigits(int n) {
-        if (n == 0) return 0;                          // Base case
-        int smaller = sumOfDigits(n / 10);             // Descend
-        return smaller + (n % 10);                     // Combine on ascent
+public class Main {
+    static class Solution {
+        public int sumOfDigits(int n) {
+            if (n == 0) return 0;                          // Base case
+            int smaller = sumOfDigits(n / 10);             // Descend
+            return smaller + (n % 10);                     // Combine on ascent
+        }
     }
 
     public static void main(String[] args) {
@@ -1101,17 +1103,15 @@ int main(void) {
 ```
 
 ```scala run
-class Solution {
-  def sumOfDigits(n: Int): Int = {
-    if (n == 0) 0                          // Base case
-    else sumOfDigits(n / 10) + (n % 10)    // Descend, add on ascent
+object Main extends App {
+  class Solution {
+    def sumOfDigits(n: Int): Int = {
+      if (n == 0) 0                          // Base case
+      else sumOfDigits(n / 10) + (n % 10)    // Descend, add on ascent
+    }
   }
-}
 
-object Main {
-  def main(args: Array[String]): Unit = {
-    println(new Solution().sumOfDigits(523))   // 10
-  }
+  println(new Solution().sumOfDigits(523))   // 10
 }
 ```
 
@@ -1322,12 +1322,14 @@ if __name__ == "__main__":
 import java.util.LinkedList;
 import java.util.Queue;
 
-public class Solution {
-    public void reverseAQueue(Queue<Integer> q) {
-        if (q.size() <= 1) return;          // Base case
-        int front = q.poll();                // Save front
-        reverseAQueue(q);                    // Recurse on the rest
-        q.add(front);                        // Enqueue saved front on ascent
+public class Main {
+    static class Solution {
+        public void reverseAQueue(Queue<Integer> q) {
+            if (q.size() <= 1) return;          // Base case
+            int front = q.poll();                // Save front
+            reverseAQueue(q);                    // Recurse on the rest
+            q.add(front);                        // Enqueue saved front on ascent
+        }
     }
 
     public static void main(String[] args) {
@@ -1384,21 +1386,19 @@ int main(void) {
 ```scala run
 import scala.collection.mutable
 
-class Solution {
-  def reverseQueue(q: mutable.Queue[Int]): Unit = {
-    if (q.size <= 1) return                  // Base case
-    val front = q.dequeue()                   // Save front
-    reverseQueue(q)                           // Recurse
-    q.enqueue(front)                          // Enqueue saved front on ascent
+object Main extends App {
+  class Solution {
+    def reverseQueue(q: mutable.Queue[Int]): Unit = {
+      if (q.size <= 1) return                  // Base case
+      val front = q.dequeue()                   // Save front
+      reverseQueue(q)                           // Recurse
+      q.enqueue(front)                          // Enqueue saved front on ascent
+    }
   }
-}
 
-object Main {
-  def main(args: Array[String]): Unit = {
-    val q = mutable.Queue[Int](1, 2, 3, 4, 5, 6, 7)
-    new Solution().reverseQueue(q)
-    println(q)   // Queue(7, 6, 5, 4, 3, 2, 1)
-  }
+  val q = mutable.Queue[Int](1, 2, 3, 4, 5, 6, 7)
+  new Solution().reverseQueue(q)
+  println(q)   // Queue(7, 6, 5, 4, 3, 2, 1)
 }
 ```
 
