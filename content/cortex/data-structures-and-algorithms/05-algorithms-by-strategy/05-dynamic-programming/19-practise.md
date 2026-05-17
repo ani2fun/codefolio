@@ -77,16 +77,18 @@ if __name__ == "__main__":
 ```
 
 ```java run
-public class Solution {
-    public int coveringDistance(int distance) {
-        int[] dp = new int[distance + 1];
-        dp[0] = 1;
-        for (int i = 1; i <= distance; i++) {
-            dp[i] = dp[i - 1];
-            if (i >= 2) dp[i] += dp[i - 2];
-            if (i >= 3) dp[i] += dp[i - 3];
+public class Main {
+    static class Solution {
+        public int coveringDistance(int distance) {
+            int[] dp = new int[distance + 1];
+            dp[0] = 1;
+            for (int i = 1; i <= distance; i++) {
+                dp[i] = dp[i - 1];
+                if (i >= 2) dp[i] += dp[i - 2];
+                if (i >= 3) dp[i] += dp[i - 3];
+            }
+            return dp[distance];
         }
-        return dp[distance];
     }
 
     public static void main(String[] args) {
@@ -116,20 +118,20 @@ int main(void) {
 ```
 
 ```scala run
-class Solution {
-  def coveringDistance(distance: Int): Int = {
-    val dp = Array.fill(distance + 1)(0)
-    dp(0) = 1
-    for (i <- 1 to distance) {
-      dp(i) = dp(i - 1)
-      if (i >= 2) dp(i) += dp(i - 2)
-      if (i >= 3) dp(i) += dp(i - 3)
-    }
-    dp(distance)
-  }
-}
-
 object Main extends App {
+  class Solution {
+    def coveringDistance(distance: Int): Int = {
+      val dp = Array.fill(distance + 1)(0)
+      dp(0) = 1
+      for (i <- 1 to distance) {
+        dp(i) = dp(i - 1)
+        if (i >= 2) dp(i) += dp(i - 2)
+        if (i >= 3) dp(i) += dp(i - 3)
+      }
+      dp(distance)
+    }
+  }
+
   println(new Solution().coveringDistance(3))   // 4
 }
 ```
@@ -204,18 +206,24 @@ if __name__ == "__main__":
 ```
 
 ```java run
-public class Solution {
-    public boolean reachabilityCheck(int[] arr) {
-        int n = arr.length;
-        boolean[] dp = new boolean[n];
-        dp[n - 1] = true;
-        for (int i = n - 2; i >= 0; i--) {
-            int maxJump = Math.min(i + arr[i], n - 1);
-            for (int j = i + 1; j <= maxJump; j++) {
-                if (dp[j]) { dp[i] = true; break; }
+public class Main {
+    static class Solution {
+        public boolean reachabilityCheck(int[] arr) {
+            int n = arr.length;
+            boolean[] dp = new boolean[n];
+            dp[n - 1] = true;
+            for (int i = n - 2; i >= 0; i--) {
+                int maxJump = Math.min(i + arr[i], n - 1);
+                for (int j = i + 1; j <= maxJump; j++) {
+                    if (dp[j]) { dp[i] = true; break; }
+                }
             }
+            return dp[0];
         }
-        return dp[0];
+    }
+
+    public static void main(String[] args) {
+        System.out.println(new Solution().reachabilityCheck(new int[]{1, 5, 8, 9}));   // true
     }
 }
 ```
@@ -244,24 +252,24 @@ int main(void) {
 ```
 
 ```scala run
-class Solution {
-  def reachabilityCheck(arr: Array[Int]): Boolean = {
-    val n = arr.length
-    val dp = Array.fill(n)(false)
-    dp(n - 1) = true
-    for (i <- n - 2 to 0 by -1) {
-      val maxJump = math.min(i + arr(i), n - 1)
-      var j = i + 1
-      while (j <= maxJump && !dp(i)) {
-        if (dp(j)) dp(i) = true
-        j += 1
-      }
-    }
-    dp(0)
-  }
-}
-
 object Main extends App {
+  class Solution {
+    def reachabilityCheck(arr: Array[Int]): Boolean = {
+      val n = arr.length
+      val dp = Array.fill(n)(false)
+      dp(n - 1) = true
+      for (i <- n - 2 to 0 by -1) {
+        val maxJump = math.min(i + arr(i), n - 1)
+        var j = i + 1
+        while (j <= maxJump && !dp(i)) {
+          if (dp(j)) dp(i) = true
+          j += 1
+        }
+      }
+      dp(0)
+    }
+  }
+
   println(new Solution().reachabilityCheck(Array(1, 5, 8, 9)))   // true
 }
 ```
@@ -341,20 +349,26 @@ if __name__ == "__main__":
 ```
 
 ```java run
-public class Solution {
-    public int longestBitonicSubsequence(int[] arr) {
-        int n = arr.length;
-        int[] inc = new int[n], dec = new int[n];
-        java.util.Arrays.fill(inc, 1); java.util.Arrays.fill(dec, 1);
-        for (int i = 1; i < n; i++) for (int j = 0; j < i; j++) {
-            if (arr[i] > arr[j] && inc[j] + 1 > inc[i]) inc[i] = inc[j] + 1;
+public class Main {
+    static class Solution {
+        public int longestBitonicSubsequence(int[] arr) {
+            int n = arr.length;
+            int[] inc = new int[n], dec = new int[n];
+            java.util.Arrays.fill(inc, 1); java.util.Arrays.fill(dec, 1);
+            for (int i = 1; i < n; i++) for (int j = 0; j < i; j++) {
+                if (arr[i] > arr[j] && inc[j] + 1 > inc[i]) inc[i] = inc[j] + 1;
+            }
+            for (int i = n - 2; i >= 0; i--) for (int j = n - 1; j > i; j--) {
+                if (arr[i] > arr[j] && dec[j] + 1 > dec[i]) dec[i] = dec[j] + 1;
+            }
+            int max = 0;
+            for (int i = 0; i < n; i++) if (inc[i] + dec[i] - 1 > max) max = inc[i] + dec[i] - 1;
+            return max;
         }
-        for (int i = n - 2; i >= 0; i--) for (int j = n - 1; j > i; j--) {
-            if (arr[i] > arr[j] && dec[j] + 1 > dec[i]) dec[i] = dec[j] + 1;
-        }
-        int max = 0;
-        for (int i = 0; i < n; i++) if (inc[i] + dec[i] - 1 > max) max = inc[i] + dec[i] - 1;
-        return max;
+    }
+
+    public static void main(String[] args) {
+        System.out.println(new Solution().longestBitonicSubsequence(new int[]{1, 7, 3, 5, 9, 8, 6}));   // 6
     }
 }
 ```
@@ -385,17 +399,17 @@ int main(void) {
 ```
 
 ```scala run
-class Solution {
-  def longestBitonicSubsequence(arr: Array[Int]): Int = {
-    val n = arr.length
-    val inc = Array.fill(n)(1); val dec = Array.fill(n)(1)
-    for (i <- 1 until n; j <- 0 until i if arr(i) > arr(j) && inc(j) + 1 > inc(i)) inc(i) = inc(j) + 1
-    for (i <- n - 2 to 0 by -1; j <- n - 1 to i + 1 by -1 if arr(i) > arr(j) && dec(j) + 1 > dec(i)) dec(i) = dec(j) + 1
-    (0 until n).map(i => inc(i) + dec(i) - 1).max
-  }
-}
-
 object Main extends App {
+  class Solution {
+    def longestBitonicSubsequence(arr: Array[Int]): Int = {
+      val n = arr.length
+      val inc = Array.fill(n)(1); val dec = Array.fill(n)(1)
+      for (i <- 1 until n; j <- 0 until i if arr(i) > arr(j) && inc(j) + 1 > inc(i)) inc(i) = inc(j) + 1
+      for (i <- n - 2 to 0 by -1; j <- n - 1 to i + 1 by -1 if arr(i) > arr(j) && dec(j) + 1 > dec(i)) dec(i) = dec(j) + 1
+      (0 until n).map(i => inc(i) + dec(i) - 1).max
+    }
+  }
+
   println(new Solution().longestBitonicSubsequence(Array(1, 7, 3, 5, 9, 8, 6)))   // 6
 }
 ```
@@ -480,21 +494,27 @@ if __name__ == "__main__":
 ```
 
 ```java run
-public class Solution {
-    public int longestAlternatingSubsequence(int[] arr) {
-        int n = arr.length;
-        if (n <= 1) return n;
-        int[][] dp = new int[n][2];
-        for (int i = 0; i < n; i++) { dp[i][0] = 1; dp[i][1] = 1; }
-        int best = 1;
-        for (int i = 1; i < n; i++) {
-            for (int j = 0; j < i; j++) {
-                if (arr[j] < arr[i]) dp[i][1] = Math.max(dp[i][1], dp[j][0] + 1);
-                else if (arr[j] > arr[i]) dp[i][0] = Math.max(dp[i][0], dp[j][1] + 1);
+public class Main {
+    static class Solution {
+        public int longestAlternatingSubsequence(int[] arr) {
+            int n = arr.length;
+            if (n <= 1) return n;
+            int[][] dp = new int[n][2];
+            for (int i = 0; i < n; i++) { dp[i][0] = 1; dp[i][1] = 1; }
+            int best = 1;
+            for (int i = 1; i < n; i++) {
+                for (int j = 0; j < i; j++) {
+                    if (arr[j] < arr[i]) dp[i][1] = Math.max(dp[i][1], dp[j][0] + 1);
+                    else if (arr[j] > arr[i]) dp[i][0] = Math.max(dp[i][0], dp[j][1] + 1);
+                }
+                best = Math.max(best, Math.max(dp[i][0], dp[i][1]));
             }
-            best = Math.max(best, Math.max(dp[i][0], dp[i][1]));
+            return best;
         }
-        return best;
+    }
+
+    public static void main(String[] args) {
+        System.out.println(new Solution().longestAlternatingSubsequence(new int[]{1, 7, 3, 5, 4, 8, 6}));   // 7
     }
 }
 ```
@@ -527,24 +547,24 @@ int main(void) {
 ```
 
 ```scala run
-class Solution {
-  def longestAlternatingSubsequence(arr: Array[Int]): Int = {
-    val n = arr.length
-    if (n <= 1) return n
-    val dp = Array.fill(n, 2)(1)
-    var best = 1
-    for (i <- 1 until n) {
-      for (j <- 0 until i) {
-        if (arr(j) < arr(i)) dp(i)(1) = math.max(dp(i)(1), dp(j)(0) + 1)
-        else if (arr(j) > arr(i)) dp(i)(0) = math.max(dp(i)(0), dp(j)(1) + 1)
-      }
-      best = math.max(best, math.max(dp(i)(0), dp(i)(1)))
-    }
-    best
-  }
-}
-
 object Main extends App {
+  class Solution {
+    def longestAlternatingSubsequence(arr: Array[Int]): Int = {
+      val n = arr.length
+      if (n <= 1) return n
+      val dp = Array.fill(n, 2)(1)
+      var best = 1
+      for (i <- 1 until n) {
+        for (j <- 0 until i) {
+          if (arr(j) < arr(i)) dp(i)(1) = math.max(dp(i)(1), dp(j)(0) + 1)
+          else if (arr(j) > arr(i)) dp(i)(0) = math.max(dp(i)(0), dp(j)(1) + 1)
+        }
+        best = math.max(best, math.max(dp(i)(0), dp(i)(1)))
+      }
+      best
+    }
+  }
+
   println(new Solution().longestAlternatingSubsequence(Array(1, 7, 3, 5, 4, 8, 6)))   // 7
 }
 ```
@@ -621,20 +641,26 @@ if __name__ == "__main__":
 ```
 
 ```java run
-public class Solution {
-    public int patternAsSubsequence(String s, String pattern) {
-        int n = s.length(), m = pattern.length();
-        int[][] dp = new int[m + 1][n + 1];
-        for (int j = 0; j <= n; j++) dp[0][j] = 1;
-        for (int i = 1; i <= m; i++) {
-            for (int j = 1; j <= n; j++) {
-                if (pattern.charAt(i - 1) == s.charAt(j - 1))
-                    dp[i][j] = dp[i - 1][j - 1] + dp[i][j - 1];
-                else
-                    dp[i][j] = dp[i][j - 1];
+public class Main {
+    static class Solution {
+        public int patternAsSubsequence(String s, String pattern) {
+            int n = s.length(), m = pattern.length();
+            int[][] dp = new int[m + 1][n + 1];
+            for (int j = 0; j <= n; j++) dp[0][j] = 1;
+            for (int i = 1; i <= m; i++) {
+                for (int j = 1; j <= n; j++) {
+                    if (pattern.charAt(i - 1) == s.charAt(j - 1))
+                        dp[i][j] = dp[i - 1][j - 1] + dp[i][j - 1];
+                    else
+                        dp[i][j] = dp[i][j - 1];
+                }
             }
+            return dp[m][n];
         }
-        return dp[m][n];
+    }
+
+    public static void main(String[] args) {
+        System.out.println(new Solution().patternAsSubsequence("abacdebgc", "abc"));   // 4
     }
 }
 ```
@@ -665,19 +691,19 @@ int main(void) {
 ```
 
 ```scala run
-class Solution {
-  def patternAsSubsequence(s: String, pattern: String): Int = {
-    val n = s.length; val m = pattern.length
-    val dp = Array.fill(m + 1, n + 1)(0)
-    for (j <- 0 to n) dp(0)(j) = 1
-    for (i <- 1 to m; j <- 1 to n) {
-      dp(i)(j) = if (pattern(i - 1) == s(j - 1)) dp(i - 1)(j - 1) + dp(i)(j - 1) else dp(i)(j - 1)
-    }
-    dp(m)(n)
-  }
-}
-
 object Main extends App {
+  class Solution {
+    def patternAsSubsequence(s: String, pattern: String): Int = {
+      val n = s.length; val m = pattern.length
+      val dp = Array.fill(m + 1, n + 1)(0)
+      for (j <- 0 to n) dp(0)(j) = 1
+      for (i <- 1 to m; j <- 1 to n) {
+        dp(i)(j) = if (pattern(i - 1) == s(j - 1)) dp(i - 1)(j - 1) + dp(i)(j - 1) else dp(i)(j - 1)
+      }
+      dp(m)(n)
+    }
+  }
+
   println(new Solution().patternAsSubsequence("abacdebgc", "abc"))   // 4
 }
 ```
@@ -756,17 +782,23 @@ if __name__ == "__main__":
 ```
 
 ```java run
-public class Solution {
-    public int shortestCommonSupersequence(String s1, String s2) {
-        int n = s1.length(), m = s2.length();
-        int[][] dp = new int[n + 1][m + 1];
-        for (int i = 0; i <= n; i++) dp[i][0] = i;
-        for (int j = 0; j <= m; j++) dp[0][j] = j;
-        for (int i = 1; i <= n; i++) for (int j = 1; j <= m; j++) {
-            if (s1.charAt(i - 1) == s2.charAt(j - 1)) dp[i][j] = dp[i - 1][j - 1] + 1;
-            else dp[i][j] = Math.min(dp[i - 1][j], dp[i][j - 1]) + 1;
+public class Main {
+    static class Solution {
+        public int shortestCommonSupersequence(String s1, String s2) {
+            int n = s1.length(), m = s2.length();
+            int[][] dp = new int[n + 1][m + 1];
+            for (int i = 0; i <= n; i++) dp[i][0] = i;
+            for (int j = 0; j <= m; j++) dp[0][j] = j;
+            for (int i = 1; i <= n; i++) for (int j = 1; j <= m; j++) {
+                if (s1.charAt(i - 1) == s2.charAt(j - 1)) dp[i][j] = dp[i - 1][j - 1] + 1;
+                else dp[i][j] = Math.min(dp[i - 1][j], dp[i][j - 1]) + 1;
+            }
+            return dp[n][m];
         }
-        return dp[n][m];
+    }
+
+    public static void main(String[] args) {
+        System.out.println(new Solution().shortestCommonSupersequence("abc", "abe"));   // 4
     }
 }
 ```
@@ -795,21 +827,21 @@ int main(void) {
 ```
 
 ```scala run
-class Solution {
-  def shortestCommonSupersequence(s1: String, s2: String): Int = {
-    val n = s1.length; val m = s2.length
-    val dp = Array.fill(n + 1, m + 1)(0)
-    for (i <- 0 to n) dp(i)(0) = i
-    for (j <- 0 to m) dp(0)(j) = j
-    for (i <- 1 to n; j <- 1 to m) {
-      dp(i)(j) = if (s1(i - 1) == s2(j - 1)) dp(i - 1)(j - 1) + 1
-                 else math.min(dp(i - 1)(j), dp(i)(j - 1)) + 1
-    }
-    dp(n)(m)
-  }
-}
-
 object Main extends App {
+  class Solution {
+    def shortestCommonSupersequence(s1: String, s2: String): Int = {
+      val n = s1.length; val m = s2.length
+      val dp = Array.fill(n + 1, m + 1)(0)
+      for (i <- 0 to n) dp(i)(0) = i
+      for (j <- 0 to m) dp(0)(j) = j
+      for (i <- 1 to n; j <- 1 to m) {
+        dp(i)(j) = if (s1(i - 1) == s2(j - 1)) dp(i - 1)(j - 1) + 1
+                   else math.min(dp(i - 1)(j), dp(i)(j - 1)) + 1
+      }
+      dp(n)(m)
+    }
+  }
+
   println(new Solution().shortestCommonSupersequence("abc", "abe"))   // 4
 }
 ```
@@ -908,23 +940,29 @@ if __name__ == "__main__":
 ```
 
 ```java run
-public class Solution {
-    public String longestRepeatedSubsequence(String s) {
-        int n = s.length();
-        int[][] dp = new int[n + 1][n + 1];
-        for (int i = 1; i <= n; i++) for (int j = 1; j <= n; j++) {
-            if (s.charAt(i - 1) == s.charAt(j - 1) && i != j) dp[i][j] = dp[i - 1][j - 1] + 1;
-            else dp[i][j] = Math.max(dp[i - 1][j], dp[i][j - 1]);
+public class Main {
+    static class Solution {
+        public String longestRepeatedSubsequence(String s) {
+            int n = s.length();
+            int[][] dp = new int[n + 1][n + 1];
+            for (int i = 1; i <= n; i++) for (int j = 1; j <= n; j++) {
+                if (s.charAt(i - 1) == s.charAt(j - 1) && i != j) dp[i][j] = dp[i - 1][j - 1] + 1;
+                else dp[i][j] = Math.max(dp[i - 1][j], dp[i][j - 1]);
+            }
+            StringBuilder sb = new StringBuilder();
+            int i = n, j = n;
+            while (i > 0 && j > 0) {
+                if (s.charAt(i - 1) == s.charAt(j - 1) && i != j && dp[i][j] == dp[i - 1][j - 1] + 1) {
+                    sb.append(s.charAt(i - 1)); i--; j--;
+                } else if (dp[i - 1][j] >= dp[i][j - 1]) i--;
+                else j--;
+            }
+            return sb.reverse().toString();
         }
-        StringBuilder sb = new StringBuilder();
-        int i = n, j = n;
-        while (i > 0 && j > 0) {
-            if (s.charAt(i - 1) == s.charAt(j - 1) && i != j && dp[i][j] == dp[i - 1][j - 1] + 1) {
-                sb.append(s.charAt(i - 1)); i--; j--;
-            } else if (dp[i - 1][j] >= dp[i][j - 1]) i--;
-            else j--;
-        }
-        return sb.reverse().toString();
+    }
+
+    public static void main(String[] args) {
+        System.out.println(new Solution().longestRepeatedSubsequence("abxcdalbc"));   // abc
     }
 }
 ```
@@ -963,27 +1001,27 @@ int main(void) {
 ```
 
 ```scala run
-class Solution {
-  def longestRepeatedSubsequence(s: String): String = {
-    val n = s.length
-    val dp = Array.fill(n + 1, n + 1)(0)
-    for (i <- 1 to n; j <- 1 to n) {
-      dp(i)(j) = if (s(i - 1) == s(j - 1) && i != j) dp(i - 1)(j - 1) + 1
-                 else math.max(dp(i - 1)(j), dp(i)(j - 1))
-    }
-    val sb = new StringBuilder
-    var i = n; var j = n
-    while (i > 0 && j > 0) {
-      if (s(i - 1) == s(j - 1) && i != j && dp(i)(j) == dp(i - 1)(j - 1) + 1) {
-        sb.append(s(i - 1)); i -= 1; j -= 1
-      } else if (dp(i - 1)(j) >= dp(i)(j - 1)) i -= 1
-      else j -= 1
-    }
-    sb.reverse.toString
-  }
-}
-
 object Main extends App {
+  class Solution {
+    def longestRepeatedSubsequence(s: String): String = {
+      val n = s.length
+      val dp = Array.fill(n + 1, n + 1)(0)
+      for (i <- 1 to n; j <- 1 to n) {
+        dp(i)(j) = if (s(i - 1) == s(j - 1) && i != j) dp(i - 1)(j - 1) + 1
+                   else math.max(dp(i - 1)(j), dp(i)(j - 1))
+      }
+      val sb = new StringBuilder
+      var i = n; var j = n
+      while (i > 0 && j > 0) {
+        if (s(i - 1) == s(j - 1) && i != j && dp(i)(j) == dp(i - 1)(j - 1) + 1) {
+          sb.append(s(i - 1)); i -= 1; j -= 1
+        } else if (dp(i - 1)(j) >= dp(i)(j - 1)) i -= 1
+        else j -= 1
+      }
+      sb.reverse.toString
+    }
+  }
+
   println(new Solution().longestRepeatedSubsequence("abxcdalbc"))   // abc
 }
 ```
