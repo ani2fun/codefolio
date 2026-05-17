@@ -268,19 +268,21 @@ if __name__ == "__main__":
 ```
 
 ```java run
-public class Solution {
-    public int editDistance(String s1, String s2) {
-        int m = s1.length(), n = s2.length();
-        int[][] dp = new int[m + 1][n + 1];
-        for (int i = 0; i <= m; i++) dp[i][0] = i;
-        for (int j = 0; j <= n; j++) dp[0][j] = j;
-        for (int i = 1; i <= m; i++) {
-            for (int j = 1; j <= n; j++) {
-                if (s1.charAt(i - 1) == s2.charAt(j - 1)) dp[i][j] = dp[i - 1][j - 1];
-                else dp[i][j] = 1 + Math.min(dp[i - 1][j - 1], Math.min(dp[i - 1][j], dp[i][j - 1]));
+public class Main {
+    static class Solution {
+        public int editDistance(String s1, String s2) {
+            int m = s1.length(), n = s2.length();
+            int[][] dp = new int[m + 1][n + 1];
+            for (int i = 0; i <= m; i++) dp[i][0] = i;
+            for (int j = 0; j <= n; j++) dp[0][j] = j;
+            for (int i = 1; i <= m; i++) {
+                for (int j = 1; j <= n; j++) {
+                    if (s1.charAt(i - 1) == s2.charAt(j - 1)) dp[i][j] = dp[i - 1][j - 1];
+                    else dp[i][j] = 1 + Math.min(dp[i - 1][j - 1], Math.min(dp[i - 1][j], dp[i][j - 1]));
+                }
             }
+            return dp[m][n];
         }
-        return dp[m][n];
     }
 
     public static void main(String[] args) {
@@ -318,22 +320,22 @@ int main(void) {
 ```
 
 ```scala run
-class Solution {
-  def editDistance(s1: String, s2: String): Int = {
-    val (m, n) = (s1.length, s2.length)
-    val dp = Array.fill(m + 1, n + 1)(0)
-    for (i <- 0 to m) dp(i)(0) = i
-    for (j <- 0 to n) dp(0)(j) = j
-    for (i <- 1 to m; j <- 1 to n) {
-      dp(i)(j) =
-        if (s1(i - 1) == s2(j - 1)) dp(i - 1)(j - 1)
-        else 1 + math.min(dp(i - 1)(j - 1), math.min(dp(i - 1)(j), dp(i)(j - 1)))
-    }
-    dp(m)(n)
-  }
-}
-
 object Main extends App {
+  class Solution {
+    def editDistance(s1: String, s2: String): Int = {
+      val (m, n) = (s1.length, s2.length)
+      val dp = Array.fill(m + 1, n + 1)(0)
+      for (i <- 0 to m) dp(i)(0) = i
+      for (j <- 0 to n) dp(0)(j) = j
+      for (i <- 1 to m; j <- 1 to n) {
+        dp(i)(j) =
+          if (s1(i - 1) == s2(j - 1)) dp(i - 1)(j - 1)
+          else 1 + math.min(dp(i - 1)(j - 1), math.min(dp(i - 1)(j), dp(i)(j - 1)))
+      }
+      dp(m)(n)
+    }
+  }
+
   println(new Solution().editDistance("sunday", "saturday"))   // 3
 }
 ```
