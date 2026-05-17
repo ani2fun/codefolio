@@ -189,26 +189,28 @@ if __name__ == "__main__":
 ```
 
 ```java run
-public class Solution {
-    public boolean findPath(int[][] maze) {
-        if (maze.length == 0 || maze[0].length == 0) return false;
-        return search(maze, 0, 0);
-    }
-
-    private boolean search(int[][] maze, int row, int col) {
-        int rows = maze.length, cols = maze[0].length;
-        if (row < 0 || row >= rows || col < 0 || col >= cols || maze[row][col] != 0) return false;
-        if (row == rows - 1 && col == cols - 1) return true;
-        maze[row][col] = -1;                         // apply
-        int[][] dirs = {{1, 0}, {0, 1}, {-1, 0}, {0, -1}};
-        for (int[] d : dirs) {
-            if (search(maze, row + d[0], col + d[1])) {
-                maze[row][col] = 0;
-                return true;
-            }
+public class Main {
+    static class Solution {
+        public boolean findPath(int[][] maze) {
+            if (maze.length == 0 || maze[0].length == 0) return false;
+            return search(maze, 0, 0);
         }
-        maze[row][col] = 0;                           // undo on failure
-        return false;
+
+        private boolean search(int[][] maze, int row, int col) {
+            int rows = maze.length, cols = maze[0].length;
+            if (row < 0 || row >= rows || col < 0 || col >= cols || maze[row][col] != 0) return false;
+            if (row == rows - 1 && col == cols - 1) return true;
+            maze[row][col] = -1;                         // apply
+            int[][] dirs = {{1, 0}, {0, 1}, {-1, 0}, {0, -1}};
+            for (int[] d : dirs) {
+                if (search(maze, row + d[0], col + d[1])) {
+                    maze[row][col] = 0;
+                    return true;
+                }
+            }
+            maze[row][col] = 0;                           // undo on failure
+            return false;
+        }
     }
 
     public static void main(String[] args) {
@@ -249,36 +251,34 @@ int main(void) {
 ```
 
 ```scala run
-class Solution {
-  private val dirs = Array(Array(1, 0), Array(0, 1), Array(-1, 0), Array(0, -1))
+object Main extends App {
+  class Solution {
+    private val dirs = Array(Array(1, 0), Array(0, 1), Array(-1, 0), Array(0, -1))
 
-  def findPath(maze: Array[Array[Int]]): Boolean = {
-    if (maze.isEmpty || maze(0).isEmpty) false
-    else search(maze, 0, 0)
-  }
-
-  private def search(maze: Array[Array[Int]], row: Int, col: Int): Boolean = {
-    val rows = maze.length
-    val cols = maze(0).length
-    if (row < 0 || row >= rows || col < 0 || col >= cols || maze(row)(col) != 0) return false
-    if (row == rows - 1 && col == cols - 1) return true
-    maze(row)(col) = -1
-    for (d <- dirs) {
-      if (search(maze, row + d(0), col + d(1))) {
-        maze(row)(col) = 0
-        return true
-      }
+    def findPath(maze: Array[Array[Int]]): Boolean = {
+      if (maze.isEmpty || maze(0).isEmpty) false
+      else search(maze, 0, 0)
     }
-    maze(row)(col) = 0
-    false
-  }
-}
 
-object Main {
-  def main(args: Array[String]): Unit = {
-    val maze = Array(Array(0, 1, 0), Array(0, 0, 0), Array(1, 0, 0))
-    println(new Solution().findPath(maze))
+    private def search(maze: Array[Array[Int]], row: Int, col: Int): Boolean = {
+      val rows = maze.length
+      val cols = maze(0).length
+      if (row < 0 || row >= rows || col < 0 || col >= cols || maze(row)(col) != 0) return false
+      if (row == rows - 1 && col == cols - 1) return true
+      maze(row)(col) = -1
+      for (d <- dirs) {
+        if (search(maze, row + d(0), col + d(1))) {
+          maze(row)(col) = 0
+          return true
+        }
+      }
+      maze(row)(col) = 0
+      false
+    }
   }
+
+  val maze = Array(Array(0, 1, 0), Array(0, 0, 0), Array(1, 0, 0))
+  println(new Solution().findPath(maze))
 }
 ```
 
@@ -556,34 +556,36 @@ if __name__ == "__main__":
 ```
 
 ```java run
-public class Solution {
-    private static final int[][] DIRS = {{1, 0}, {0, 1}, {-1, 0}, {0, -1}};
-    private static final char[] DIR_CHAR = {'D', 'R', 'U', 'L'};
+public class Main {
+    static class Solution {
+        private static final int[][] DIRS = {{1, 0}, {0, 1}, {-1, 0}, {0, -1}};
+        private static final char[] DIR_CHAR = {'D', 'R', 'U', 'L'};
 
-    public String ratInAMaze(int[][] maze) {
-        if (maze.length == 0 || maze[0].length == 0 || maze[0][0] != 0) return "";
-        StringBuilder path = new StringBuilder();
-        return search(maze, 0, 0, path) ? path.toString() : "";
-    }
-
-    private boolean search(int[][] maze, int row, int col, StringBuilder path) {
-        int rows = maze.length, cols = maze[0].length;
-        if (row == rows - 1 && col == cols - 1) return true;
-        int orig = maze[row][col];
-        maze[row][col] = -1;
-        for (int i = 0; i < 4; i++) {
-            int nr = row + DIRS[i][0], nc = col + DIRS[i][1];
-            if (nr >= 0 && nr < rows && nc >= 0 && nc < cols && maze[nr][nc] == 0) {
-                path.append(DIR_CHAR[i]);
-                if (search(maze, nr, nc, path)) {
-                    maze[row][col] = orig;
-                    return true;
-                }
-                path.deleteCharAt(path.length() - 1);
-            }
+        public String ratInAMaze(int[][] maze) {
+            if (maze.length == 0 || maze[0].length == 0 || maze[0][0] != 0) return "";
+            StringBuilder path = new StringBuilder();
+            return search(maze, 0, 0, path) ? path.toString() : "";
         }
-        maze[row][col] = orig;
-        return false;
+
+        private boolean search(int[][] maze, int row, int col, StringBuilder path) {
+            int rows = maze.length, cols = maze[0].length;
+            if (row == rows - 1 && col == cols - 1) return true;
+            int orig = maze[row][col];
+            maze[row][col] = -1;
+            for (int i = 0; i < 4; i++) {
+                int nr = row + DIRS[i][0], nc = col + DIRS[i][1];
+                if (nr >= 0 && nr < rows && nc >= 0 && nc < cols && maze[nr][nc] == 0) {
+                    path.append(DIR_CHAR[i]);
+                    if (search(maze, nr, nc, path)) {
+                        maze[row][col] = orig;
+                        return true;
+                    }
+                    path.deleteCharAt(path.length() - 1);
+                }
+            }
+            maze[row][col] = orig;
+            return false;
+        }
     }
 
     public static void main(String[] args) {
@@ -638,42 +640,40 @@ int main(void) {
 ```
 
 ```scala run
-class Solution {
-  private val dirs = Array((1, 0, 'D'), (0, 1, 'R'), (-1, 0, 'U'), (0, -1, 'L'))
+object Main extends App {
+  class Solution {
+    private val dirs = Array((1, 0, 'D'), (0, 1, 'R'), (-1, 0, 'U'), (0, -1, 'L'))
 
-  def ratInAMaze(maze: Array[Array[Int]]): String = {
-    if (maze.isEmpty || maze(0).isEmpty || maze(0)(0) != 0) return ""
-    val path = new StringBuilder
-    if (search(maze, 0, 0, path)) path.toString() else ""
-  }
-
-  private def search(maze: Array[Array[Int]], row: Int, col: Int, path: StringBuilder): Boolean = {
-    val rows = maze.length
-    val cols = maze(0).length
-    if (row == rows - 1 && col == cols - 1) return true
-    val orig = maze(row)(col)
-    maze(row)(col) = -1
-    for ((dr, dc, ch) <- dirs) {
-      val nr = row + dr; val nc = col + dc
-      if (nr >= 0 && nr < rows && nc >= 0 && nc < cols && maze(nr)(nc) == 0) {
-        path.append(ch)
-        if (search(maze, nr, nc, path)) {
-          maze(row)(col) = orig
-          return true
-        }
-        path.deleteCharAt(path.length - 1)
-      }
+    def ratInAMaze(maze: Array[Array[Int]]): String = {
+      if (maze.isEmpty || maze(0).isEmpty || maze(0)(0) != 0) return ""
+      val path = new StringBuilder
+      if (search(maze, 0, 0, path)) path.toString() else ""
     }
-    maze(row)(col) = orig
-    false
-  }
-}
 
-object Main {
-  def main(args: Array[String]): Unit = {
-    val maze = Array(Array(0,1,1,1), Array(0,0,1,0), Array(0,0,1,1), Array(1,0,0,0))
-    println(new Solution().ratInAMaze(maze))
+    private def search(maze: Array[Array[Int]], row: Int, col: Int, path: StringBuilder): Boolean = {
+      val rows = maze.length
+      val cols = maze(0).length
+      if (row == rows - 1 && col == cols - 1) return true
+      val orig = maze(row)(col)
+      maze(row)(col) = -1
+      for ((dr, dc, ch) <- dirs) {
+        val nr = row + dr; val nc = col + dc
+        if (nr >= 0 && nr < rows && nc >= 0 && nc < cols && maze(nr)(nc) == 0) {
+          path.append(ch)
+          if (search(maze, nr, nc, path)) {
+            maze(row)(col) = orig
+            return true
+          }
+          path.deleteCharAt(path.length - 1)
+        }
+      }
+      maze(row)(col) = orig
+      false
+    }
   }
+
+  val maze = Array(Array(0,1,1,1), Array(0,0,1,0), Array(0,0,1,1), Array(1,0,0,0))
+  println(new Solution().ratInAMaze(maze))
 }
 ```
 
@@ -855,37 +855,39 @@ if __name__ == "__main__":
 ```
 
 ```java run
-public class Solution {
-    private static final int[][] DIRS = {{1, 0}, {-1, 0}, {0, 1}, {0, -1}};
+public class Main {
+    static class Solution {
+        private static final int[][] DIRS = {{1, 0}, {-1, 0}, {0, 1}, {0, -1}};
 
-    public boolean wordQuest(char[][] board, String word) {
-        int rows = board.length, cols = board[0].length;
-        for (int r = 0; r < rows; r++) {
-            for (int c = 0; c < cols; c++) {
-                if (board[r][c] == word.charAt(0) && search(board, word, 1, r, c)) {
-                    return true;
+        public boolean wordQuest(char[][] board, String word) {
+            int rows = board.length, cols = board[0].length;
+            for (int r = 0; r < rows; r++) {
+                for (int c = 0; c < cols; c++) {
+                    if (board[r][c] == word.charAt(0) && search(board, word, 1, r, c)) {
+                        return true;
+                    }
                 }
             }
+            return false;
         }
-        return false;
-    }
 
-    private boolean search(char[][] board, String word, int index, int row, int col) {
-        if (index == word.length()) return true;
-        char orig = board[row][col];
-        board[row][col] = '#';
-        for (int[] d : DIRS) {
-            int nr = row + d[0], nc = col + d[1];
-            if (nr >= 0 && nr < board.length && nc >= 0 && nc < board[0].length
-                && board[nr][nc] == word.charAt(index)) {
-                if (search(board, word, index + 1, nr, nc)) {
-                    board[row][col] = orig;
-                    return true;
+        private boolean search(char[][] board, String word, int index, int row, int col) {
+            if (index == word.length()) return true;
+            char orig = board[row][col];
+            board[row][col] = '#';
+            for (int[] d : DIRS) {
+                int nr = row + d[0], nc = col + d[1];
+                if (nr >= 0 && nr < board.length && nc >= 0 && nc < board[0].length
+                    && board[nr][nc] == word.charAt(index)) {
+                    if (search(board, word, index + 1, nr, nc)) {
+                        board[row][col] = orig;
+                        return true;
+                    }
                 }
             }
+            board[row][col] = orig;
+            return false;
         }
-        board[row][col] = orig;
-        return false;
     }
 
     public static void main(String[] args) {
@@ -937,40 +939,38 @@ int main(void) {
 ```
 
 ```scala run
-class Solution {
-  private val dirs = Array((1, 0), (-1, 0), (0, 1), (0, -1))
+object Main extends App {
+  class Solution {
+    private val dirs = Array((1, 0), (-1, 0), (0, 1), (0, -1))
 
-  def wordQuest(board: Array[Array[Char]], word: String): Boolean = {
-    val rows = board.length; val cols = board(0).length
-    for (r <- 0 until rows; c <- 0 until cols) {
-      if (board(r)(c) == word.charAt(0) && search(board, word, 1, r, c)) return true
+    def wordQuest(board: Array[Array[Char]], word: String): Boolean = {
+      val rows = board.length; val cols = board(0).length
+      for (r <- 0 until rows; c <- 0 until cols) {
+        if (board(r)(c) == word.charAt(0) && search(board, word, 1, r, c)) return true
+      }
+      false
     }
-    false
-  }
 
-  private def search(board: Array[Array[Char]], word: String, index: Int, row: Int, col: Int): Boolean = {
-    if (index == word.length) return true
-    val orig = board(row)(col)
-    board(row)(col) = '#'
-    for ((dr, dc) <- dirs) {
-      val nr = row + dr; val nc = col + dc
-      if (nr >= 0 && nr < board.length && nc >= 0 && nc < board(0).length && board(nr)(nc) == word.charAt(index)) {
-        if (search(board, word, index + 1, nr, nc)) {
-          board(row)(col) = orig
-          return true
+    private def search(board: Array[Array[Char]], word: String, index: Int, row: Int, col: Int): Boolean = {
+      if (index == word.length) return true
+      val orig = board(row)(col)
+      board(row)(col) = '#'
+      for ((dr, dc) <- dirs) {
+        val nr = row + dr; val nc = col + dc
+        if (nr >= 0 && nr < board.length && nc >= 0 && nc < board(0).length && board(nr)(nc) == word.charAt(index)) {
+          if (search(board, word, index + 1, nr, nc)) {
+            board(row)(col) = orig
+            return true
+          }
         }
       }
+      board(row)(col) = orig
+      false
     }
-    board(row)(col) = orig
-    false
   }
-}
 
-object Main {
-  def main(args: Array[String]): Unit = {
-    val board = Array(Array('A','B','C','E'), Array('S','F','C','S'), Array('A','D','E','E'))
-    println(new Solution().wordQuest(board, "ABCCED"))
-  }
+  val board = Array(Array('A','B','C','E'), Array('S','F','C','S'), Array('A','D','E','E'))
+  println(new Solution().wordQuest(board, "ABCCED"))
 }
 ```
 
@@ -1147,46 +1147,48 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-public class Solution {
-    public List<List<String>> solveNQueens(int n) {
-        int[] positions = new int[n];
-        Arrays.fill(positions, -1);
-        List<List<String>> results = new ArrayList<>();
-        search(positions, 0, n, results);
-        return results;
-    }
-
-    private void search(int[] positions, int row, int n, List<List<String>> results) {
-        if (row == n) {
-            results.add(makeBoard(positions, n));
-            return;
+public class Main {
+    static class Solution {
+        public List<List<String>> solveNQueens(int n) {
+            int[] positions = new int[n];
+            Arrays.fill(positions, -1);
+            List<List<String>> results = new ArrayList<>();
+            search(positions, 0, n, results);
+            return results;
         }
-        for (int col = 0; col < n; col++) {
-            if (canPlace(positions, row, col)) {
-                positions[row] = col;
-                search(positions, row + 1, n, results);
-                positions[row] = -1;
+
+        private void search(int[] positions, int row, int n, List<List<String>> results) {
+            if (row == n) {
+                results.add(makeBoard(positions, n));
+                return;
+            }
+            for (int col = 0; col < n; col++) {
+                if (canPlace(positions, row, col)) {
+                    positions[row] = col;
+                    search(positions, row + 1, n, results);
+                    positions[row] = -1;
+                }
             }
         }
-    }
 
-    private boolean canPlace(int[] positions, int row, int col) {
-        for (int r = 0; r < row; r++) {
-            if (positions[r] == col) return false;
-            if (Math.abs(positions[r] - col) == row - r) return false;
+        private boolean canPlace(int[] positions, int row, int col) {
+            for (int r = 0; r < row; r++) {
+                if (positions[r] == col) return false;
+                if (Math.abs(positions[r] - col) == row - r) return false;
+            }
+            return true;
         }
-        return true;
-    }
 
-    private List<String> makeBoard(int[] positions, int n) {
-        List<String> board = new ArrayList<>();
-        for (int r = 0; r < n; r++) {
-            char[] row = new char[n];
-            Arrays.fill(row, '.');
-            row[positions[r]] = 'Q';
-            board.add(new String(row));
+        private List<String> makeBoard(int[] positions, int n) {
+            List<String> board = new ArrayList<>();
+            for (int r = 0; r < n; r++) {
+                char[] row = new char[n];
+                Arrays.fill(row, '.');
+                row[positions[r]] = 'Q';
+                board.add(new String(row));
+            }
+            return board;
         }
-        return board;
     }
 
     public static void main(String[] args) {
@@ -1242,47 +1244,47 @@ int main(void) {
 ```scala run
 import scala.collection.mutable.ArrayBuffer
 
-class Solution {
-  def solveNQueens(n: Int): List[List[String]] = {
-    val positions = Array.fill(n)(-1)
-    val results = ArrayBuffer[List[String]]()
-    search(positions, 0, n, results)
-    results.toList
-  }
-
-  private def search(positions: Array[Int], row: Int, n: Int, results: ArrayBuffer[List[String]]): Unit = {
-    if (row == n) {
-      results += makeBoard(positions, n)
-      return
+object Main extends App {
+  class Solution {
+    def solveNQueens(n: Int): List[List[String]] = {
+      val positions = Array.fill(n)(-1)
+      val results = ArrayBuffer[List[String]]()
+      search(positions, 0, n, results)
+      results.toList
     }
-    for (col <- 0 until n) {
-      if (canPlace(positions, row, col)) {
-        positions(row) = col
-        search(positions, row + 1, n, results)
-        positions(row) = -1
+
+    private def search(positions: Array[Int], row: Int, n: Int, results: ArrayBuffer[List[String]]): Unit = {
+      if (row == n) {
+        results += makeBoard(positions, n)
+        return
+      }
+      for (col <- 0 until n) {
+        if (canPlace(positions, row, col)) {
+          positions(row) = col
+          search(positions, row + 1, n, results)
+          positions(row) = -1
+        }
       }
     }
-  }
 
-  private def canPlace(positions: Array[Int], row: Int, col: Int): Boolean = {
-    for (r <- 0 until row) {
-      if (positions(r) == col) return false
-      if (math.abs(positions(r) - col) == row - r) return false
+    private def canPlace(positions: Array[Int], row: Int, col: Int): Boolean = {
+      for (r <- 0 until row) {
+        if (positions(r) == col) return false
+        if (math.abs(positions(r) - col) == row - r) return false
+      }
+      true
     }
-    true
+
+    private def makeBoard(positions: Array[Int], n: Int): List[String] = {
+      (0 until n).map { r =>
+        val sb = new StringBuilder
+        for (c <- 0 until n) sb.append(if (positions(r) == c) 'Q' else '.')
+        sb.toString()
+      }.toList
+    }
   }
 
-  private def makeBoard(positions: Array[Int], n: Int): List[String] = {
-    (0 until n).map { r =>
-      val sb = new StringBuilder
-      for (c <- 0 until n) sb.append(if (positions(r) == c) 'Q' else '.')
-      sb.toString()
-    }.toList
-  }
-}
-
-object Main {
-  def main(args: Array[String]): Unit = println(new Solution().solveNQueens(4))
+  println(new Solution().solveNQueens(4))
 }
 ```
 
@@ -1460,37 +1462,54 @@ if __name__ == "__main__":
 ```
 
 ```java run
-public class Solution {
-    public void solveSudoku(char[][] board) {
-        search(board);
-    }
+public class Main {
+    static class Solution {
+        public void solveSudoku(char[][] board) {
+            search(board);
+        }
 
-    private boolean search(char[][] board) {
-        for (int row = 0; row < 9; row++) {
-            for (int col = 0; col < 9; col++) {
-                if (board[row][col] == 'X') {
-                    for (char d = '1'; d <= '9'; d++) {
-                        if (isValid(board, row, col, d)) {
-                            board[row][col] = d;
-                            if (search(board)) return true;
-                            board[row][col] = 'X';
+        private boolean search(char[][] board) {
+            for (int row = 0; row < 9; row++) {
+                for (int col = 0; col < 9; col++) {
+                    if (board[row][col] == 'X') {
+                        for (char d = '1'; d <= '9'; d++) {
+                            if (isValid(board, row, col, d)) {
+                                board[row][col] = d;
+                                if (search(board)) return true;
+                                board[row][col] = 'X';
+                            }
                         }
+                        return false;
                     }
-                    return false;
                 }
             }
+            return true;
         }
-        return true;
+
+        private boolean isValid(char[][] board, int row, int col, char d) {
+            for (int i = 0; i < 9; i++) {
+                if (board[row][i] == d) return false;
+                if (board[i][col] == d) return false;
+                int br = (row / 3) * 3 + i / 3, bc = (col / 3) * 3 + i % 3;
+                if (board[br][bc] == d) return false;
+            }
+            return true;
+        }
     }
 
-    private boolean isValid(char[][] board, int row, int col, char d) {
-        for (int i = 0; i < 9; i++) {
-            if (board[row][i] == d) return false;
-            if (board[i][col] == d) return false;
-            int br = (row / 3) * 3 + i / 3, bc = (col / 3) * 3 + i % 3;
-            if (board[br][bc] == d) return false;
-        }
-        return true;
+    public static void main(String[] args) {
+        char[][] board = {
+            {'5','3','X','X','7','X','X','X','X'},
+            {'6','X','X','1','9','5','X','X','X'},
+            {'X','9','8','X','X','X','X','6','X'},
+            {'8','X','X','X','6','X','X','X','3'},
+            {'4','X','X','8','X','3','X','X','1'},
+            {'7','X','X','X','2','X','X','X','6'},
+            {'X','6','X','X','X','X','2','8','X'},
+            {'X','X','X','4','1','9','X','X','5'},
+            {'X','X','X','X','8','X','X','7','9'}};
+        new Solution().solveSudoku(board);
+        for (char[] row : board) System.out.println(new String(row));
     }
 }
 ```
@@ -1548,35 +1567,50 @@ int main(void) {
 ```
 
 ```scala run
-class Solution {
-  def solveSudoku(board: Array[Array[Char]]): Unit = { search(board) }
+object Main extends App {
+  class Solution {
+    def solveSudoku(board: Array[Array[Char]]): Unit = { search(board) }
 
-  private def search(board: Array[Array[Char]]): Boolean = {
-    for (row <- 0 until 9; col <- 0 until 9) {
-      if (board(row)(col) == 'X') {
-        for (d <- '1' to '9') {
-          if (isValid(board, row, col, d)) {
-            board(row)(col) = d
-            if (search(board)) return true
-            board(row)(col) = 'X'
+    private def search(board: Array[Array[Char]]): Boolean = {
+      for (row <- 0 until 9; col <- 0 until 9) {
+        if (board(row)(col) == 'X') {
+          for (d <- '1' to '9') {
+            if (isValid(board, row, col, d)) {
+              board(row)(col) = d
+              if (search(board)) return true
+              board(row)(col) = 'X'
+            }
           }
+          return false
         }
-        return false
       }
+      true
     }
-    true
+
+    private def isValid(board: Array[Array[Char]], row: Int, col: Int, d: Char): Boolean = {
+      for (i <- 0 until 9) {
+        if (board(row)(i) == d) return false
+        if (board(i)(col) == d) return false
+        val br = (row / 3) * 3 + i / 3
+        val bc = (col / 3) * 3 + i % 3
+        if (board(br)(bc) == d) return false
+      }
+      true
+    }
   }
 
-  private def isValid(board: Array[Array[Char]], row: Int, col: Int, d: Char): Boolean = {
-    for (i <- 0 until 9) {
-      if (board(row)(i) == d) return false
-      if (board(i)(col) == d) return false
-      val br = (row / 3) * 3 + i / 3
-      val bc = (col / 3) * 3 + i % 3
-      if (board(br)(bc) == d) return false
-    }
-    true
-  }
+  val board = Array(
+    Array('5','3','X','X','7','X','X','X','X'),
+    Array('6','X','X','1','9','5','X','X','X'),
+    Array('X','9','8','X','X','X','X','6','X'),
+    Array('8','X','X','X','6','X','X','X','3'),
+    Array('4','X','X','8','X','3','X','X','1'),
+    Array('7','X','X','X','2','X','X','X','6'),
+    Array('X','6','X','X','X','X','2','8','X'),
+    Array('X','X','X','4','1','9','X','X','5'),
+    Array('X','X','X','X','8','X','X','7','9'))
+  new Solution().solveSudoku(board)
+  for (row <- board) println(row.mkString)
 }
 ```
 
