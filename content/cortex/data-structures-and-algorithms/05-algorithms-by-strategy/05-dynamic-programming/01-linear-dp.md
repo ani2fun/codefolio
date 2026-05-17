@@ -285,14 +285,16 @@ if __name__ == "__main__":
 ```
 
 ```java run
-public class Solution {
-    public long calculateFactorial(int n) {
-        long[] dp = new long[n + 1];             // dp[i] = i!
-        dp[0] = 1;                               // Base case
-        for (int i = 1; i <= n; i++) {
-            dp[i] = i * dp[i - 1];               // Recurrence
+public class Main {
+    static class Solution {
+        public long calculateFactorial(int n) {
+            long[] dp = new long[n + 1];             // dp[i] = i!
+            dp[0] = 1;                               // Base case
+            for (int i = 1; i <= n; i++) {
+                dp[i] = i * dp[i - 1];               // Recurrence
+            }
+            return dp[n];
         }
-        return dp[n];
     }
 
     public static void main(String[] args) {
@@ -320,16 +322,16 @@ int main(void) {
 ```
 
 ```scala run
-class Solution {
-  def calculateFactorial(n: Int): Long = {
-    val dp = Array.fill(n + 1)(0L)
-    dp(0) = 1
-    for (i <- 1 to n) dp(i) = i.toLong * dp(i - 1)
-    dp(n)
-  }
-}
-
 object Main extends App {
+  class Solution {
+    def calculateFactorial(n: Int): Long = {
+      val dp = Array.fill(n + 1)(0L)
+      dp(0) = 1
+      for (i <- 1 to n) dp(i) = i.toLong * dp(i - 1)
+      dp(n)
+    }
+  }
+
   println(new Solution().calculateFactorial(7))  // 5040
 }
 ```
@@ -498,16 +500,18 @@ if __name__ == "__main__":
 ```
 
 ```java run
-public class Solution {
-    public int nthFibonacci(int n) {
-        if (n < 2) return n;
-        final int MOD = 1_000_000_007;
-        long[] dp = new long[n + 1];
-        dp[0] = 0; dp[1] = 1;
-        for (int i = 2; i <= n; i++) {
-            dp[i] = (dp[i - 1] + dp[i - 2]) % MOD;
+public class Main {
+    static class Solution {
+        public int nthFibonacci(int n) {
+            if (n < 2) return n;
+            final int MOD = 1_000_000_007;
+            long[] dp = new long[n + 1];
+            dp[0] = 0; dp[1] = 1;
+            for (int i = 2; i <= n; i++) {
+                dp[i] = (dp[i - 1] + dp[i - 2]) % MOD;
+            }
+            return (int) dp[n];
         }
-        return (int) dp[n];
     }
 
     public static void main(String[] args) {
@@ -538,18 +542,18 @@ int main(void) {
 ```
 
 ```scala run
-class Solution {
-  def nthFibonacci(n: Int): Int = {
-    if (n < 2) return n
-    val MOD = 1000000007L
-    val dp = Array.fill(n + 1)(0L)
-    dp(0) = 0; dp(1) = 1
-    for (i <- 2 to n) dp(i) = (dp(i - 1) + dp(i - 2)) % MOD
-    dp(n).toInt
-  }
-}
-
 object Main extends App {
+  class Solution {
+    def nthFibonacci(n: Int): Int = {
+      if (n < 2) return n
+      val MOD = 1000000007L
+      val dp = Array.fill(n + 1)(0L)
+      dp(0) = 0; dp(1) = 1
+      for (i <- 2 to n) dp(i) = (dp(i - 1) + dp(i - 2)) % MOD
+      dp(n).toInt
+    }
+  }
+
   println(new Solution().nthFibonacci(6))   // 8
 }
 ```
@@ -680,16 +684,18 @@ if __name__ == "__main__":
 import java.util.HashMap;
 import java.util.Map;
 
-public class Solution {
-    private static final int MOD = 1_000_000_007;
-    private final Map<Integer, Integer> memo = new HashMap<>();
+public class Main {
+    static class Solution {
+        private static final int MOD = 1_000_000_007;
+        private final Map<Integer, Integer> memo = new HashMap<>();
 
-    public int fibTopDown(int n) {
-        if (n < 2) return n;
-        if (memo.containsKey(n)) return memo.get(n);
-        int res = (fibTopDown(n - 1) + fibTopDown(n - 2)) % MOD;
-        memo.put(n, res);
-        return res;
+        public int fibTopDown(int n) {
+            if (n < 2) return n;
+            if (memo.containsKey(n)) return memo.get(n);
+            int res = (fibTopDown(n - 1) + fibTopDown(n - 2)) % MOD;
+            memo.put(n, res);
+            return res;
+        }
     }
 
     public static void main(String[] args) {
@@ -724,17 +730,17 @@ int main(void) {
 ```scala run
 import scala.collection.mutable
 
-class Solution {
-  private val memo = mutable.Map[Int, Long]()
-  private val MOD = 1000000007L
-
-  def fibTopDown(n: Int): Int = {
-    if (n < 2) return n
-    memo.getOrElseUpdate(n, (fibTopDown(n - 1) + fibTopDown(n - 2)) % MOD).toInt
-  }
-}
-
 object Main extends App {
+  class Solution {
+    private val memo = mutable.Map[Int, Long]()
+    private val MOD = 1000000007L
+
+    def fibTopDown(n: Int): Int = {
+      if (n < 2) return n
+      memo.getOrElseUpdate(n, (fibTopDown(n - 1) + fibTopDown(n - 2)) % MOD).toInt
+    }
+  }
+
   println(new Solution().fibTopDown(6))    // 8
 }
 ```
@@ -815,17 +821,23 @@ if __name__ == "__main__":
 ```
 
 ```java run
-public class Solution {
-    public int fibOptimised(int n) {
-        if (n < 2) return n;
-        final int MOD = 1_000_000_007;
-        long prev2 = 0, prev1 = 1, curr = 0;
-        for (int i = 2; i <= n; i++) {
-            curr = (prev1 + prev2) % MOD;
-            prev2 = prev1;
-            prev1 = curr;
+public class Main {
+    static class Solution {
+        public int fibOptimised(int n) {
+            if (n < 2) return n;
+            final int MOD = 1_000_000_007;
+            long prev2 = 0, prev1 = 1, curr = 0;
+            for (int i = 2; i <= n; i++) {
+                curr = (prev1 + prev2) % MOD;
+                prev2 = prev1;
+                prev1 = curr;
+            }
+            return (int) prev1;
         }
-        return (int) prev1;
+    }
+
+    public static void main(String[] args) {
+        System.out.println(new Solution().fibOptimised(50));   // Some value mod 1e9+7
     }
 }
 ```
@@ -853,17 +865,21 @@ int main(void) {
 ```
 
 ```scala run
-class Solution {
-  def fibOptimised(n: Int): Int = {
-    if (n < 2) return n
-    val MOD = 1000000007L
-    var prev2 = 0L; var prev1 = 1L
-    for (_ <- 2 to n) {
-      val curr = (prev1 + prev2) % MOD
-      prev2 = prev1; prev1 = curr
+object Main extends App {
+  class Solution {
+    def fibOptimised(n: Int): Int = {
+      if (n < 2) return n
+      val MOD = 1000000007L
+      var prev2 = 0L; var prev1 = 1L
+      for (_ <- 2 to n) {
+        val curr = (prev1 + prev2) % MOD
+        prev2 = prev1; prev1 = curr
+      }
+      prev1.toInt
     }
-    prev1.toInt
   }
+
+  println(new Solution().fibOptimised(50))   // Some value mod 1e9+7
 }
 ```
 
