@@ -247,22 +247,24 @@ if __name__ == "__main__":
 ```
 
 ```java run
-public class Solution {
-    int tailRecursion(int n, int acc) {
-        // Step 1 — base case
-        if (n <= 0) {
-            return acc;
+public class Main {
+    static class Solution {
+        int tailRecursion(int n, int acc) {
+            // Step 1 — base case
+            if (n <= 0) {
+                return acc;
+            }
+            int newAcc = g(acc, n);   // Step 2 — fold
+            int nextN  = h(n);        // Step 3 — reduce
+            // Step 4 — tail call. Note: JVM has NO TCO; this still uses a frame.
+            return tailRecursion(nextN, newAcc);
         }
-        int newAcc = g(acc, n);   // Step 2 — fold
-        int nextN  = h(n);        // Step 3 — reduce
-        // Step 4 — tail call. Note: JVM has NO TCO; this still uses a frame.
-        return tailRecursion(nextN, newAcc);
+
+        int tailRecursion(int n) { return tailRecursion(n, 0); }   // Convenience wrapper
+
+        private int g(int acc, int n) { return acc + n; }
+        private int h(int n) { return n - 1; }
     }
-
-    int tailRecursion(int n) { return tailRecursion(n, 0); }   // Convenience wrapper
-
-    private int g(int acc, int n) { return acc + n; }
-    private int h(int n) { return n - 1; }
 
     public static void main(String[] args) {
         System.out.println(new Solution().tailRecursion(5));   // 15
@@ -294,23 +296,21 @@ int main(void) {
 ```scala run
 import scala.annotation.tailrec
 
-class Solution {
-  // @tailrec instructs the compiler to verify this is a tail call and rewrite
-  // it to a loop. Without the annotation it would still work but might miss TCO.
-  @tailrec
-  final def tailRecursion(n: Int, acc: Int = 0): Int = {
-    if (n <= 0) acc
-    else tailRecursion(h(n), g(acc, n))   // Single tail call — Scala will compile to a loop
+object Main extends App {
+  class Solution {
+    // @tailrec instructs the compiler to verify this is a tail call and rewrite
+    // it to a loop. Without the annotation it would still work but might miss TCO.
+    @tailrec
+    final def tailRecursion(n: Int, acc: Int = 0): Int = {
+      if (n <= 0) acc
+      else tailRecursion(h(n), g(acc, n))   // Single tail call — Scala will compile to a loop
+    }
+
+    private def g(acc: Int, n: Int): Int = acc + n
+    private def h(n: Int): Int = n - 1
   }
 
-  private def g(acc: Int, n: Int): Int = acc + n
-  private def h(n: Int): Int = n - 1
-}
-
-object Main {
-  def main(args: Array[String]): Unit = {
-    println(new Solution().tailRecursion(5))   // 15
-  }
+  println(new Solution().tailRecursion(5))   // 15
 }
 ```
 
@@ -544,17 +544,19 @@ if __name__ == "__main__":
 import java.util.ArrayList;
 import java.util.List;
 
-public class Solution {
-    public List<Integer> reverseSequence(int n) {
-        List<Integer> result = new ArrayList<>();
-        helper(n, result);
-        return result;
-    }
+public class Main {
+    static class Solution {
+        public List<Integer> reverseSequence(int n) {
+            List<Integer> result = new ArrayList<>();
+            helper(n, result);
+            return result;
+        }
 
-    private void helper(int n, List<Integer> result) {
-        if (n <= 0) return;        // Base case
-        result.add(n);             // Work first
-        helper(n - 1, result);     // Tail call (JVM has no TCO)
+        private void helper(int n, List<Integer> result) {
+            if (n <= 0) return;        // Base case
+            result.add(n);             // Work first
+            helper(n - 1, result);     // Tail call (JVM has no TCO)
+        }
     }
 
     public static void main(String[] args) {
@@ -589,25 +591,23 @@ int main(void) {
 import scala.annotation.tailrec
 import scala.collection.mutable.ArrayBuffer
 
-class Solution {
-  def reverseSequence(n: Int): List[Int] = {
-    val result = ArrayBuffer[Int]()
-    helper(n, result)
-    result.toList
+object Main extends App {
+  class Solution {
+    def reverseSequence(n: Int): List[Int] = {
+      val result = ArrayBuffer[Int]()
+      helper(n, result)
+      result.toList
+    }
+
+    @tailrec
+    private def helper(n: Int, result: ArrayBuffer[Int]): Unit = {
+      if (n <= 0) return        // Base case
+      result += n               // Work first
+      helper(n - 1, result)     // Tail call — Scala compiles to a loop
+    }
   }
 
-  @tailrec
-  private def helper(n: Int, result: ArrayBuffer[Int]): Unit = {
-    if (n <= 0) return        // Base case
-    result += n               // Work first
-    helper(n - 1, result)     // Tail call — Scala compiles to a loop
-  }
-}
-
-object Main {
-  def main(args: Array[String]): Unit = {
-    println(new Solution().reverseSequence(5))   // List(5, 4, 3, 2, 1)
-  }
+  println(new Solution().reverseSequence(5))   // List(5, 4, 3, 2, 1)
 }
 ```
 
@@ -796,15 +796,17 @@ if __name__ == "__main__":
 ```
 
 ```java run
-public class Solution {
-    public int searchElement(int[] arr, int target) {
-        return helper(arr, target, 0);
-    }
+public class Main {
+    static class Solution {
+        public int searchElement(int[] arr, int target) {
+            return helper(arr, target, 0);
+        }
 
-    private int helper(int[] arr, int target, int index) {
-        if (index == arr.length) return -1;        // Base 1 — not found
-        if (arr[index] == target) return index;    // Base 2 — found
-        return helper(arr, target, index + 1);     // Tail call (JVM no TCO)
+        private int helper(int[] arr, int target, int index) {
+            if (index == arr.length) return -1;        // Base 1 — not found
+            if (arr[index] == target) return index;    // Base 2 — found
+            return helper(arr, target, index + 1);     // Tail call (JVM no TCO)
+        }
     }
 
     public static void main(String[] args) {
@@ -837,21 +839,19 @@ int main(void) {
 ```scala run
 import scala.annotation.tailrec
 
-class Solution {
-  def searchElement(arr: Array[Int], target: Int): Int = helper(arr, target, 0)
+object Main extends App {
+  class Solution {
+    def searchElement(arr: Array[Int], target: Int): Int = helper(arr, target, 0)
 
-  @tailrec
-  private def helper(arr: Array[Int], target: Int, index: Int): Int = {
-    if (index == arr.length) -1            // Base 1 — not found
-    else if (arr(index) == target) index   // Base 2 — found
-    else helper(arr, target, index + 1)    // Tail call — compiled to a loop
+    @tailrec
+    private def helper(arr: Array[Int], target: Int, index: Int): Int = {
+      if (index == arr.length) -1            // Base 1 — not found
+      else if (arr(index) == target) index   // Base 2 — found
+      else helper(arr, target, index + 1)    // Tail call — compiled to a loop
+    }
   }
-}
 
-object Main {
-  def main(args: Array[String]): Unit = {
-    println(new Solution().searchElement(Array(2, 8, 3, 6, 4), 3))   // 2
-  }
+  println(new Solution().searchElement(Array(2, 8, 3, 6, 4), 3))   // 2
 }
 ```
 
@@ -1034,14 +1034,16 @@ if __name__ == "__main__":
 ```
 
 ```java run
-public class Solution {
-    public boolean isPalindrome(int[] arr) {
-        return helper(arr, 0, arr.length - 1);
-    }
-    private boolean helper(int[] arr, int start, int end) {
-        if (start >= end) return true;             // Base
-        if (arr[start] != arr[end]) return false;  // Mismatch
-        return helper(arr, start + 1, end - 1);    // Tail call
+public class Main {
+    static class Solution {
+        public boolean isPalindrome(int[] arr) {
+            return helper(arr, 0, arr.length - 1);
+        }
+        private boolean helper(int[] arr, int start, int end) {
+            if (start >= end) return true;             // Base
+            if (arr[start] != arr[end]) return false;  // Mismatch
+            return helper(arr, start + 1, end - 1);    // Tail call
+        }
     }
 
     public static void main(String[] args) {
@@ -1074,21 +1076,19 @@ int main(void) {
 ```scala run
 import scala.annotation.tailrec
 
-class Solution {
-  def isPalindrome(arr: Array[Int]): Boolean = helper(arr, 0, arr.length - 1)
+object Main extends App {
+  class Solution {
+    def isPalindrome(arr: Array[Int]): Boolean = helper(arr, 0, arr.length - 1)
 
-  @tailrec
-  private def helper(arr: Array[Int], start: Int, end: Int): Boolean = {
-    if (start >= end) true
-    else if (arr(start) != arr(end)) false
-    else helper(arr, start + 1, end - 1)   // Tail call — Scala compiles to loop
+    @tailrec
+    private def helper(arr: Array[Int], start: Int, end: Int): Boolean = {
+      if (start >= end) true
+      else if (arr(start) != arr(end)) false
+      else helper(arr, start + 1, end - 1)   // Tail call — Scala compiles to loop
+    }
   }
-}
 
-object Main {
-  def main(args: Array[String]): Unit = {
-    println(new Solution().isPalindrome(Array(1, 2, 2, 1)))   // true
-  }
+  println(new Solution().isPalindrome(Array(1, 2, 2, 1)))   // true
 }
 ```
 
@@ -1293,22 +1293,24 @@ if __name__ == "__main__":
 ```
 
 ```java run
-public class Solution {
-    public static class ListNode {
+public class Main {
+    static class ListNode {
         int val;
         ListNode next;
         ListNode(int v) { val = v; }
     }
 
-    public ListNode reverseAList(ListNode head) {
-        return helper(head, null);
-    }
+    static class Solution {
+        public ListNode reverseAList(ListNode head) {
+            return helper(head, null);
+        }
 
-    private ListNode helper(ListNode current, ListNode previous) {
-        if (current == null) return previous;       // Base: previous is the new head
-        ListNode nxt = current.next;                 // Save next BEFORE rewiring
-        current.next = previous;                     // Rewire backward
-        return helper(nxt, current);                 // Tail call (no TCO on JVM)
+        private ListNode helper(ListNode current, ListNode previous) {
+            if (current == null) return previous;       // Base: previous is the new head
+            ListNode nxt = current.next;                 // Save next BEFORE rewiring
+            current.next = previous;                     // Rewire backward
+            return helper(nxt, current);                 // Tail call (no TCO on JVM)
+        }
     }
 }
 ```
@@ -1343,15 +1345,17 @@ import scala.annotation.tailrec
 
 class ListNode(var value: Int, var next: ListNode = null)
 
-class Solution {
-  def reverseAList(head: ListNode): ListNode = helper(head, null)
+object Main extends App {
+  class Solution {
+    def reverseAList(head: ListNode): ListNode = helper(head, null)
 
-  @tailrec
-  private def helper(current: ListNode, previous: ListNode): ListNode = {
-    if (current == null) return previous     // Base
-    val nxt = current.next                    // Save
-    current.next = previous                   // Rewire
-    helper(nxt, current)                      // Tail call — Scala compiles to loop
+    @tailrec
+    private def helper(current: ListNode, previous: ListNode): ListNode = {
+      if (current == null) return previous     // Base
+      val nxt = current.next                    // Save
+      current.next = previous                   // Rewire
+      helper(nxt, current)                      // Tail call — Scala compiles to loop
+    }
   }
 }
 ```
