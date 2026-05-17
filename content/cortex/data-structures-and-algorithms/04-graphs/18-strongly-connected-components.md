@@ -260,34 +260,36 @@ if __name__ == "__main__":
 ```java run
 import java.util.*;
 
-class Solution {
-    static int[] disc, low;
-    static boolean[] onStack;
-    static Deque<Integer> stk = new ArrayDeque<>();
-    static List<List<Integer>> sccs = new ArrayList<>();
-    static int timer = 0;
+public class Main {
+    static class Solution {
+        static int[] disc, low;
+        static boolean[] onStack;
+        static Deque<Integer> stk = new ArrayDeque<>();
+        static List<List<Integer>> sccs = new ArrayList<>();
+        static int timer = 0;
 
-    static void tarjan(int u, List<List<Integer>> adj) {
-        disc[u] = low[u] = timer++;
-        stk.push(u);
-        onStack[u] = true;
-        for (int v : adj.get(u)) {
-            if (disc[v] == -1) {
-                tarjan(v, adj);
-                low[u] = Math.min(low[u], low[v]);
-            } else if (onStack[v]) {
-                low[u] = Math.min(low[u], disc[v]);
+        static void tarjan(int u, List<List<Integer>> adj) {
+            disc[u] = low[u] = timer++;
+            stk.push(u);
+            onStack[u] = true;
+            for (int v : adj.get(u)) {
+                if (disc[v] == -1) {
+                    tarjan(v, adj);
+                    low[u] = Math.min(low[u], low[v]);
+                } else if (onStack[v]) {
+                    low[u] = Math.min(low[u], disc[v]);
+                }
             }
-        }
-        if (low[u] == disc[u]) {
-            List<Integer> scc = new ArrayList<>();
-            while (true) {
-                int w = stk.pop();
-                onStack[w] = false;
-                scc.add(w);
-                if (w == u) break;
+            if (low[u] == disc[u]) {
+                List<Integer> scc = new ArrayList<>();
+                while (true) {
+                    int w = stk.pop();
+                    onStack[w] = false;
+                    scc.add(w);
+                    if (w == u) break;
+                }
+                sccs.add(scc);
             }
-            sccs.add(scc);
         }
     }
 
@@ -298,11 +300,11 @@ class Solution {
         for (int i = 0; i < n; i++) adj.add(new ArrayList<>());
         for (int[] e : edges) adj.get(e[0]).add(e[1]);
 
-        disc = new int[n]; low = new int[n]; onStack = new boolean[n];
-        Arrays.fill(disc, -1);
-        for (int i = 0; i < n; i++) if (disc[i] == -1) tarjan(i, adj);
-        for (List<Integer> scc : sccs) Collections.sort(scc);
-        System.out.println("Tarjan: " + sccs);
+        Solution.disc = new int[n]; Solution.low = new int[n]; Solution.onStack = new boolean[n];
+        Arrays.fill(Solution.disc, -1);
+        for (int i = 0; i < n; i++) if (Solution.disc[i] == -1) Solution.tarjan(i, adj);
+        for (List<Integer> scc : Solution.sccs) Collections.sort(scc);
+        System.out.println("Tarjan: " + Solution.sccs);
     }
 }
 ```
@@ -350,41 +352,41 @@ int main(void) {
 ```scala run
 import scala.collection.mutable
 
-object Solution {
-  def tarjan(n: Int, adj: Array[mutable.ArrayBuffer[Int]]): List[List[Int]] = {
-    val disc = Array.fill(n)(-1)
-    val low = Array.fill(n)(-1)
-    val onStack = Array.fill(n)(false)
-    val stk = mutable.Stack.empty[Int]
-    val sccs = mutable.ListBuffer.empty[List[Int]]
-    var timer = 0
+object Main extends App {
+  object Solution {
+    def tarjan(n: Int, adj: Array[mutable.ArrayBuffer[Int]]): List[List[Int]] = {
+      val disc = Array.fill(n)(-1)
+      val low = Array.fill(n)(-1)
+      val onStack = Array.fill(n)(false)
+      val stk = mutable.Stack.empty[Int]
+      val sccs = mutable.ListBuffer.empty[List[Int]]
+      var timer = 0
 
-    def dfs(u: Int): Unit = {
-      disc(u) = timer; low(u) = timer; timer += 1
-      stk.push(u); onStack(u) = true
-      for (v <- adj(u)) {
-        if (disc(v) == -1) { dfs(v); low(u) = math.min(low(u), low(v)) }
-        else if (onStack(v)) low(u) = math.min(low(u), disc(v))
+      def dfs(u: Int): Unit = {
+        disc(u) = timer; low(u) = timer; timer += 1
+        stk.push(u); onStack(u) = true
+        for (v <- adj(u)) {
+          if (disc(v) == -1) { dfs(v); low(u) = math.min(low(u), low(v)) }
+          else if (onStack(v)) low(u) = math.min(low(u), disc(v))
+        }
+        if (low(u) == disc(u)) {
+          val scc = mutable.ListBuffer.empty[Int]
+          var w = -1
+          do { w = stk.pop(); onStack(w) = false; scc += w } while (w != u)
+          sccs += scc.toList
+        }
       }
-      if (low(u) == disc(u)) {
-        val scc = mutable.ListBuffer.empty[Int]
-        var w = -1
-        do { w = stk.pop(); onStack(w) = false; scc += w } while (w != u)
-        sccs += scc.toList
-      }
+
+      for (v <- 0 until n) if (disc(v) == -1) dfs(v)
+      sccs.toList
     }
-
-    for (v <- 0 until n) if (disc(v) == -1) dfs(v)
-    sccs.toList
   }
 
-  def main(args: Array[String]): Unit = {
-    val n = 6
-    val edges = Array((0,1), (1,2), (2,0), (2,3), (3,4), (4,3), (3,5))
-    val adj = Array.fill(n)(mutable.ArrayBuffer.empty[Int])
-    for ((u, v) <- edges) adj(u) += v
-    println(s"Tarjan SCCs: ${tarjan(n, adj).map(_.sorted)}")
-  }
+  val n = 6
+  val edges = Array((0,1), (1,2), (2,0), (2,3), (3,4), (4,3), (3,5))
+  val adj = Array.fill(n)(mutable.ArrayBuffer.empty[Int])
+  for ((u, v) <- edges) adj(u) += v
+  println(s"Tarjan SCCs: ${Solution.tarjan(n, adj).map(_.sorted)}")
 }
 ```
 
