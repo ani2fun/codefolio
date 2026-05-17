@@ -164,23 +164,25 @@ if __name__ == "__main__":
 ```
 
 ```java run
-public class Solution {
-    public int kLimitedSubmatrixSum(int[][] matrix, int k) {
-        int rows = matrix.length, cols = matrix[0].length;
-        int[][] prefix = new int[rows + 1][cols + 1];
-        for (int i = 1; i <= rows; i++) {
-            for (int j = 1; j <= cols; j++) {
-                prefix[i][j] = prefix[i-1][j] + prefix[i][j-1] - prefix[i-1][j-1] + matrix[i-1][j-1];
+public class Main {
+    static class Solution {
+        public int kLimitedSubmatrixSum(int[][] matrix, int k) {
+            int rows = matrix.length, cols = matrix[0].length;
+            int[][] prefix = new int[rows + 1][cols + 1];
+            for (int i = 1; i <= rows; i++) {
+                for (int j = 1; j <= cols; j++) {
+                    prefix[i][j] = prefix[i-1][j] + prefix[i][j-1] - prefix[i-1][j-1] + matrix[i-1][j-1];
+                }
             }
-        }
-        int maxSum = Integer.MIN_VALUE;
-        for (int i = 0; i + k <= rows; i++) {
-            for (int j = 0; j + k <= cols; j++) {
-                int s = prefix[i+k][j+k] - prefix[i][j+k] - prefix[i+k][j] + prefix[i][j];
-                if (s > maxSum) maxSum = s;
+            int maxSum = Integer.MIN_VALUE;
+            for (int i = 0; i + k <= rows; i++) {
+                for (int j = 0; j + k <= cols; j++) {
+                    int s = prefix[i+k][j+k] - prefix[i][j+k] - prefix[i+k][j] + prefix[i][j];
+                    if (s > maxSum) maxSum = s;
+                }
             }
+            return maxSum;
         }
-        return maxSum;
     }
 
     public static void main(String[] args) {
@@ -221,23 +223,23 @@ int main(void) {
 ```
 
 ```scala run
-class Solution {
-  def kLimitedSubmatrixSum(matrix: Array[Array[Int]], k: Int): Int = {
-    val rows = matrix.length; val cols = matrix(0).length
-    val prefix = Array.fill(rows + 1, cols + 1)(0)
-    for (i <- 1 to rows; j <- 1 to cols) {
-      prefix(i)(j) = prefix(i-1)(j) + prefix(i)(j-1) - prefix(i-1)(j-1) + matrix(i-1)(j-1)
-    }
-    var maxSum = Int.MinValue
-    for (i <- 0 to rows - k; j <- 0 to cols - k) {
-      val s = prefix(i+k)(j+k) - prefix(i)(j+k) - prefix(i+k)(j) + prefix(i)(j)
-      if (s > maxSum) maxSum = s
-    }
-    maxSum
-  }
-}
-
 object Main extends App {
+  class Solution {
+    def kLimitedSubmatrixSum(matrix: Array[Array[Int]], k: Int): Int = {
+      val rows = matrix.length; val cols = matrix(0).length
+      val prefix = Array.fill(rows + 1, cols + 1)(0)
+      for (i <- 1 to rows; j <- 1 to cols) {
+        prefix(i)(j) = prefix(i-1)(j) + prefix(i)(j-1) - prefix(i-1)(j-1) + matrix(i-1)(j-1)
+      }
+      var maxSum = Int.MinValue
+      for (i <- 0 to rows - k; j <- 0 to cols - k) {
+        val s = prefix(i+k)(j+k) - prefix(i)(j+k) - prefix(i+k)(j) + prefix(i)(j)
+        if (s > maxSum) maxSum = s
+      }
+      maxSum
+    }
+  }
+
   println(new Solution().kLimitedSubmatrixSum(Array(Array(1,2,9), Array(5,3,8), Array(4,6,7)), 2))   // 24
 }
 ```
@@ -337,24 +339,26 @@ if __name__ == "__main__":
 ```
 
 ```java run
-public class Solution {
-    public int maximumSubmatrixSum(int[][] matrix) {
-        int n = matrix.length, m = matrix[0].length;
-        int[][] prefix = new int[n + 1][m + 1];
-        for (int i = 1; i <= n; i++) {
-            for (int j = 1; j <= m; j++) {
-                prefix[i][j] = prefix[i-1][j] + prefix[i][j-1] - prefix[i-1][j-1] + matrix[i-1][j-1];
+public class Main {
+    static class Solution {
+        public int maximumSubmatrixSum(int[][] matrix) {
+            int n = matrix.length, m = matrix[0].length;
+            int[][] prefix = new int[n + 1][m + 1];
+            for (int i = 1; i <= n; i++) {
+                for (int j = 1; j <= m; j++) {
+                    prefix[i][j] = prefix[i-1][j] + prefix[i][j-1] - prefix[i-1][j-1] + matrix[i-1][j-1];
+                }
             }
+            int maxSum = Integer.MIN_VALUE;
+            for (int r1 = 1; r1 <= n; r1++)
+                for (int c1 = 1; c1 <= m; c1++)
+                    for (int r2 = r1; r2 <= n; r2++)
+                        for (int c2 = c1; c2 <= m; c2++) {
+                            int s = prefix[r2][c2] - prefix[r1-1][c2] - prefix[r2][c1-1] + prefix[r1-1][c1-1];
+                            if (s > maxSum) maxSum = s;
+                        }
+            return maxSum;
         }
-        int maxSum = Integer.MIN_VALUE;
-        for (int r1 = 1; r1 <= n; r1++)
-            for (int c1 = 1; c1 <= m; c1++)
-                for (int r2 = r1; r2 <= n; r2++)
-                    for (int c2 = c1; c2 <= m; c2++) {
-                        int s = prefix[r2][c2] - prefix[r1-1][c2] - prefix[r2][c1-1] + prefix[r1-1][c1-1];
-                        if (s > maxSum) maxSum = s;
-                    }
-        return maxSum;
     }
 
     public static void main(String[] args) {
@@ -396,23 +400,23 @@ int main(void) {
 ```
 
 ```scala run
-class Solution {
-  def maximumSubmatrixSum(matrix: Array[Array[Int]]): Int = {
-    val n = matrix.length; val m = matrix(0).length
-    val prefix = Array.fill(n + 1, m + 1)(0)
-    for (i <- 1 to n; j <- 1 to m) {
-      prefix(i)(j) = prefix(i-1)(j) + prefix(i)(j-1) - prefix(i-1)(j-1) + matrix(i-1)(j-1)
-    }
-    var maxSum = Int.MinValue
-    for (r1 <- 1 to n; c1 <- 1 to m; r2 <- r1 to n; c2 <- c1 to m) {
-      val s = prefix(r2)(c2) - prefix(r1-1)(c2) - prefix(r2)(c1-1) + prefix(r1-1)(c1-1)
-      if (s > maxSum) maxSum = s
-    }
-    maxSum
-  }
-}
-
 object Main extends App {
+  class Solution {
+    def maximumSubmatrixSum(matrix: Array[Array[Int]]): Int = {
+      val n = matrix.length; val m = matrix(0).length
+      val prefix = Array.fill(n + 1, m + 1)(0)
+      for (i <- 1 to n; j <- 1 to m) {
+        prefix(i)(j) = prefix(i-1)(j) + prefix(i)(j-1) - prefix(i-1)(j-1) + matrix(i-1)(j-1)
+      }
+      var maxSum = Int.MinValue
+      for (r1 <- 1 to n; c1 <- 1 to m; r2 <- r1 to n; c2 <- c1 to m) {
+        val s = prefix(r2)(c2) - prefix(r1-1)(c2) - prefix(r2)(c1-1) + prefix(r1-1)(c1-1)
+        if (s > maxSum) maxSum = s
+      }
+      maxSum
+    }
+  }
+
   println(new Solution().maximumSubmatrixSum(Array(Array(1,2,9), Array(-5,3,8), Array(4,6,-7))))   // 22
 }
 ```
@@ -509,22 +513,24 @@ if __name__ == "__main__":
 ```
 
 ```java run
-public class RangeSumFinder {
-    private final int[][] prefix;
+public class Main {
+    static class RangeSumFinder {
+        private final int[][] prefix;
 
-    public RangeSumFinder(int[][] matrix) {
-        int rows = matrix.length;
-        int cols = (rows == 0) ? 0 : matrix[0].length;
-        prefix = new int[rows + 1][cols + 1];
-        for (int i = 1; i <= rows; i++) {
-            for (int j = 1; j <= cols; j++) {
-                prefix[i][j] = prefix[i-1][j] + prefix[i][j-1] - prefix[i-1][j-1] + matrix[i-1][j-1];
+        public RangeSumFinder(int[][] matrix) {
+            int rows = matrix.length;
+            int cols = (rows == 0) ? 0 : matrix[0].length;
+            prefix = new int[rows + 1][cols + 1];
+            for (int i = 1; i <= rows; i++) {
+                for (int j = 1; j <= cols; j++) {
+                    prefix[i][j] = prefix[i-1][j] + prefix[i][j-1] - prefix[i-1][j-1] + matrix[i-1][j-1];
+                }
             }
         }
-    }
 
-    public int sumRegion(int row1, int col1, int row2, int col2) {
-        return prefix[row2+1][col2+1] - prefix[row1][col2+1] - prefix[row2+1][col1] + prefix[row1][col1];
+        public int sumRegion(int row1, int col1, int row2, int col2) {
+            return prefix[row2+1][col2+1] - prefix[row1][col2+1] - prefix[row2+1][col1] + prefix[row1][col1];
+        }
     }
 
     public static void main(String[] args) {
@@ -566,20 +572,20 @@ int main(void) {
 ```
 
 ```scala run
-class RangeSumFinder(matrix: Array[Array[Int]]) {
-  private val rows = matrix.length
-  private val cols = if (rows == 0) 0 else matrix(0).length
-  private val prefix = Array.fill(rows + 1, cols + 1)(0)
-  for (i <- 1 to rows; j <- 1 to cols) {
-    prefix(i)(j) = prefix(i-1)(j) + prefix(i)(j-1) - prefix(i-1)(j-1) + matrix(i-1)(j-1)
-  }
-
-  def sumRegion(r1: Int, c1: Int, r2: Int, c2: Int): Int = {
-    prefix(r2+1)(c2+1) - prefix(r1)(c2+1) - prefix(r2+1)(c1) + prefix(r1)(c1)
-  }
-}
-
 object Main extends App {
+  class RangeSumFinder(matrix: Array[Array[Int]]) {
+    private val rows = matrix.length
+    private val cols = if (rows == 0) 0 else matrix(0).length
+    private val prefix = Array.fill(rows + 1, cols + 1)(0)
+    for (i <- 1 to rows; j <- 1 to cols) {
+      prefix(i)(j) = prefix(i-1)(j) + prefix(i)(j-1) - prefix(i-1)(j-1) + matrix(i-1)(j-1)
+    }
+
+    def sumRegion(r1: Int, c1: Int, r2: Int, c2: Int): Int = {
+      prefix(r2+1)(c2+1) - prefix(r1)(c2+1) - prefix(r2+1)(c1) + prefix(r1)(c1)
+    }
+  }
+
   val rsf = new RangeSumFinder(Array(Array(1,2,3), Array(4,5,6), Array(7,8,9)))
   println(rsf.sumRegion(1, 1, 1, 1))   // 5
 }
