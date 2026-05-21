@@ -82,23 +82,10 @@ Not every "stateful" problem needs an explicit push/pop. Here are the three shap
 
 The same pattern label applies to all three because they share the structural feature: *one shared mutable object that is read and updated as the recursion proceeds*. The mechanics of update vary; the spirit doesn't.
 
-## Generic pattern in 10 languages
+## Generic pattern
 
 We'll show the **push-pop** flavour as the canonical generic — it's the strictest and the one most likely to bite you. The other two flavours are simpler restrictions of this template.
 
-
-```pseudocode
-function statefulPreorder(root):
-    state ← empty list                  # shared, mutable path state
-    function go(node):
-        if node = null: return
-        push node.val to state           # enter: extend the current path
-        # use state to process node ...
-        go(node.left)
-        go(node.right)
-        pop from state                   # exit: restore path for the parent
-    go(root)
-```
 
 ```python run
 from typing import List, Optional
@@ -132,30 +119,6 @@ static void statefulPreorderHelper(TreeNode node) {
 public static void statefulPreorder(TreeNode root) {
     state = new ArrayList<>();
     statefulPreorderHelper(root);
-}
-```
-
-```c run
-static int state[1024];
-static int top = -1;
-void stateful_preorder(TreeNode *node) {
-    if (!node) return;
-    state[++top] = node->val;                   // push
-    // process
-    stateful_preorder(node->left);
-    stateful_preorder(node->right);
-    top--;                                      // pop
-}
-```
-
-```scala run
-val state = scala.collection.mutable.ArrayBuffer[Int]()
-def statefulPreorder(node: TreeNode): Unit = {
-  if (node == null) return
-  state += node.value                            // push
-  statefulPreorder(node.left)
-  statefulPreorder(node.right)
-  state.remove(state.length - 1)                 // pop
 }
 ```
 
@@ -220,99 +183,208 @@ flowchart TB
 
 <p align="center"><strong>Duplicates in path — at every node, check the frequency map: if the current value already has count ≥ 1, we've found a duplicate. Push on entry, pop on exit, count anything that was already there.</strong></p>
 
-## Solution
+<details>
+<summary><h2>Solution</h2></summary>
 
 
-```pseudocode
-function duplicatesInPath(root):
-    freq   ← empty Map: value → count
-    result ← 0
-    function go(n):
-        if n = null: return
-        if freq[n.val] > 0: result ← result + 1   # n.val already on current path
-        freq[n.val] ← freq[n.val] + 1
-        go(n.left); go(n.right)
-        freq[n.val] ← freq[n.val] − 1             # undo on backtrack
-        if freq[n.val] = 0: remove n.val from freq
-    go(root)
-    return result
-```
 
 ```python run
-def duplicates_in_path(root):
-    freq, result = {}, [0]
-    def go(n):
-        if n is None: return
-        if freq.get(n.val, 0) > 0:
-            result[0] += 1
-        freq[n.val] = freq.get(n.val, 0) + 1
-        go(n.left); go(n.right)
-        freq[n.val] -= 1
-        if freq[n.val] == 0: del freq[n.val]
-    go(root)
-    return result[0]
+from typing import Optional, Dict
+from collections import deque
+
+class TreeNode:
+    def __init__(self, val=0, left=None, right=None):
+        self.val = val
+        self.left = left
+        self.right = right
+
+
+def from_level_order(values):
+    """Build tree from list like [1, 2, 3, None, 4]. None means missing child."""
+    if not values:
+        return None
+    root = TreeNode(values[0])
+    queue = [root]
+    i = 1
+    while queue and i < len(values):
+        node = queue.pop(0)
+        if i < len(values) and values[i] is not None:
+            node.left = TreeNode(values[i])
+            queue.append(node.left)
+        i += 1
+        if i < len(values) and values[i] is not None:
+            node.right = TreeNode(values[i])
+            queue.append(node.right)
+        i += 1
+    return root
+
+
+class Solution:
+    def __init__(self):
+
+        # Map to track frequency of values in the current root-to-node
+        # path
+        self.frequency: Dict[int, int] = {}
+
+        # Counter to track how many nodes have duplicates in their path
+        self.duplicates: int = 0
+
+    def duplicates_in_path_helper(
+        self, root: Optional[TreeNode]
+    ) -> None:
+
+        # If the root is null, return
+        if root is None:
+            return
+
+        # Check if the current node's value already exists in the path
+        if root.val in self.frequency:
+
+            # If it does, it's a duplicate
+            self.duplicates += 1
+
+        # Add the current node's value to the frequency map
+        self.frequency[root.val] = self.frequency.get(root.val, 0) + 1
+
+        # Recursively traverse the left and right subtrees
+        self.duplicates_in_path_helper(root.left)
+        self.duplicates_in_path_helper(root.right)
+
+        # Backtrack: remove the current node's value from the path
+        self.frequency[root.val] -= 1
+
+        # If frequency becomes zero, erase the value from the map
+        if self.frequency[root.val] == 0:
+            del self.frequency[root.val]
+
+    def duplicates_in_path(self, root: Optional[TreeNode]) -> int:
+
+        # If the tree is empty, return 0 as there are no paths
+        if root is None:
+            return 0
+
+        # Start the helper function from the root
+        self.duplicates_in_path_helper(root)
+
+        # Return the total duplicates found
+        return self.duplicates
+
+
+# Examples from the problem statement
+print(Solution().duplicates_in_path(from_level_order([21, 21, 3, 5, 2, None, 3])))  # 2
+print(Solution().duplicates_in_path(from_level_order([5, 7, 3, 1, 2, None, 8])))    # 0
+
+# Edge cases
+print(Solution().duplicates_in_path(None))                                           # 0
+print(Solution().duplicates_in_path(from_level_order([7])))                          # 0
+print(Solution().duplicates_in_path(from_level_order([1, 1, 1])))                    # 2
+print(Solution().duplicates_in_path(from_level_order([1, 2, 3, 4, 5, 6, 7])))       # 0
+print(Solution().duplicates_in_path(from_level_order([5, 5, None, 5])))              # 2
 ```
 
 ```java run
-static Map<Integer, Integer> freq;
-static int duplicates;
-static void dupHelper(TreeNode n) {
-    if (n == null) return;
-    if (freq.getOrDefault(n.val, 0) > 0) duplicates++;
-    freq.merge(n.val, 1, Integer::sum);
-    dupHelper(n.left); dupHelper(n.right);
-    if (freq.get(n.val) == 1) freq.remove(n.val); else freq.merge(n.val, -1, Integer::sum);
-}
-public static int duplicatesInPath(TreeNode root) {
-    freq = new HashMap<>(); duplicates = 0;
-    dupHelper(root); return duplicates;
-}
-```
+import java.util.*;
 
-```c run
-// freq[] hash table (open addressing) for simplicity assume keys 0..1023
-static int freq[1024], duplicates;
-void dup_helper(TreeNode *n) {
-    if (!n) return;
-    if (freq[n->val] > 0) duplicates++;
-    freq[n->val]++;
-    dup_helper(n->left); dup_helper(n->right);
-    freq[n->val]--;
-}
-int duplicates_in_path(TreeNode *root) {
-    duplicates = 0;
-    for (int i = 0; i < 1024; i++) freq[i] = 0;
-    dup_helper(root);
-    return duplicates;
-}
-```
-
-```scala run
-class TreeNode(var value: Int, var left: TreeNode = null, var right: TreeNode = null)
-
-object Main extends App {
-  class Solution {
-    def duplicatesInPath(root: TreeNode): Int = {
-      val freq = scala.collection.mutable.Map[Int, Int]()
-      var duplicates = 0
-      def go(n: TreeNode): Unit = {
-        if (n == null) return
-        if (freq.getOrElse(n.value, 0) > 0) duplicates += 1
-        freq(n.value) = freq.getOrElse(n.value, 0) + 1
-        go(n.left); go(n.right)
-        val c = freq(n.value) - 1
-        if (c == 0) freq.remove(n.value) else freq(n.value) = c
-      }
-      go(root); duplicates
+public class Main {
+    static class TreeNode {
+        int val;
+        TreeNode left;
+        TreeNode right;
+        TreeNode() {}
+        TreeNode(int val) { this.val = val; }
     }
-  }
 
-  val root = new TreeNode(21,
-    new TreeNode(21, new TreeNode(5), new TreeNode(2)),
-    new TreeNode(3, null, new TreeNode(3)))
-  println(new Solution().duplicatesInPath(root))  // 2
+    static TreeNode fromLevelOrder(Integer... values) {
+        if (values.length == 0 || values[0] == null) return null;
+        TreeNode root = new TreeNode(values[0]);
+        java.util.Deque<TreeNode> queue = new java.util.ArrayDeque<>();
+        queue.add(root);
+        int i = 1;
+        while (!queue.isEmpty() && i < values.length) {
+            TreeNode node = queue.poll();
+            if (i < values.length && values[i] != null) {
+                node.left = new TreeNode(values[i]);
+                queue.add(node.left);
+            }
+            i++;
+            if (i < values.length && values[i] != null) {
+                node.right = new TreeNode(values[i]);
+                queue.add(node.right);
+            }
+            i++;
+        }
+        return root;
+    }
+
+    static class Solution {
+
+        // Map to track frequency of values in the current root-to-node path
+        private Map<Integer, Integer> frequency = new HashMap<>();
+
+        // Counter to track how many nodes have duplicates in their path
+        private int duplicates = 0;
+
+        private void duplicatesInPathHelper(TreeNode root) {
+
+            // If the root is null, return
+            if (root == null) {
+                return;
+            }
+
+            // Check if the current node's value already exists in the path
+            if (frequency.containsKey(root.val)) {
+
+                // If it does, it's a duplicate
+                duplicates++;
+            }
+
+            // Add the current node's value to the frequency map
+            frequency.put(root.val, frequency.getOrDefault(root.val, 0) + 1);
+
+            // Recursively traverse the left and right subtrees
+            duplicatesInPathHelper(root.left);
+            duplicatesInPathHelper(root.right);
+
+            // Backtrack: remove the current node's value from the path
+            frequency.put(root.val, frequency.get(root.val) - 1);
+
+            // If frequency becomes zero, erase the value from the map
+            if (frequency.get(root.val) == 0) {
+                frequency.remove(root.val);
+            }
+        }
+
+        public int duplicatesInPath(TreeNode root) {
+
+            // If the tree is empty, return 0 as there are no paths
+            if (root == null) {
+                return 0;
+            }
+
+            // Start the helper function from the root
+            duplicatesInPathHelper(root);
+
+            // Return the total duplicates found
+            return duplicates;
+        }
+    }
+
+    public static void main(String[] args) {
+        // Examples from the problem statement
+        System.out.println(new Solution().duplicatesInPath(fromLevelOrder(21, 21, 3, 5, 2, null, 3)));  // 2
+        System.out.println(new Solution().duplicatesInPath(fromLevelOrder(5, 7, 3, 1, 2, null, 8)));    // 0
+
+        // Edge cases
+        System.out.println(new Solution().duplicatesInPath(null));                                       // 0
+        System.out.println(new Solution().duplicatesInPath(fromLevelOrder(7)));                          // 0
+        System.out.println(new Solution().duplicatesInPath(fromLevelOrder(1, 1, 1)));                    // 2
+        System.out.println(new Solution().duplicatesInPath(fromLevelOrder(1, 2, 3, 4, 5, 6, 7)));       // 0
+        System.out.println(new Solution().duplicatesInPath(fromLevelOrder(5, 5, null, 5)));              // 2
+    }
 }
 ```
+
+</details>
 
 
 ***
@@ -323,98 +395,226 @@ object Main extends App {
 
 This is the **monotone witnesses** flavour. The state is two integers, `min` and `secondMin`, both shared across the recursion. Each visit either improves `min` (and demotes the old min to `secondMin`) or improves `secondMin`. No push/pop needed — once we've seen a smaller value, that's a global fact, not a path-local one.
 
-## Solution
+<details>
+<summary><h2>Solution</h2></summary>
 
 
-```pseudocode
-function findSecondMinimum(root):
-    if root = null: return −1
-    min ← root.val; secondMin ← −1
-    function go(n):
-        if n = null: return
-        v ← n.val
-        if v < min:
-            secondMin ← min; min ← v
-        else if v > min AND (secondMin = −1 OR v < secondMin):
-            secondMin ← v
-        go(n.left); go(n.right)
-    go(root)
-    return secondMin
-```
 
 ```python run
-def find_second_minimum(root):
-    if root is None: return -1
-    state = [root.val, -1]                       # [min, secondMin]
-    def go(n):
-        if n is None: return
-        v = n.val
-        if v < state[0]:
-            state[1] = state[0]
-            state[0] = v
-        elif v > state[0] and (state[1] == -1 or v < state[1]):
-            state[1] = v
-        go(n.left); go(n.right)
-    go(root)
-    return state[1]
+from typing import Optional
+
+class TreeNode:
+    def __init__(self, val=0, left=None, right=None):
+        self.val = val
+        self.left = left
+        self.right = right
+
+
+def from_level_order(values):
+    """Build tree from list like [1, 2, 3, None, 4]. None means missing child."""
+    if not values:
+        return None
+    root = TreeNode(values[0])
+    queue = [root]
+    i = 1
+    while queue and i < len(values):
+        node = queue.pop(0)
+        if i < len(values) and values[i] is not None:
+            node.left = TreeNode(values[i])
+            queue.append(node.left)
+        i += 1
+        if i < len(values) and values[i] is not None:
+            node.right = TreeNode(values[i])
+            queue.append(node.right)
+        i += 1
+    return root
+
+
+class Solution:
+    def __init__(self) -> None:
+        self.minimum: int
+        self.second_minimum: int
+
+    def find_second_minimum_helper(
+        self, root: Optional[TreeNode]
+    ) -> None:
+
+        # Base case: if the root is None, return
+        if root is None:
+            return
+
+        # Check if the value of the current node is less than the current
+        # minimum
+        if root.val < self.minimum:
+
+            # Update the second minimum to the previous minimum
+            self.second_minimum = self.minimum
+
+            # Update the minimum to the value of the current node
+            self.minimum = root.val
+        elif root.val > self.minimum and (
+            root.val < self.second_minimum or self.second_minimum == -1
+        ):
+
+            # Check if the value of the current node is greater than the
+            # current minimum and less than the current second minimum
+            # (or second minimum is not yet set) If so, update the second
+            # minimum to the value of the current node
+            self.second_minimum = root.val
+
+        # Recursively traverse the left and right subtrees
+        self.find_second_minimum_helper(root.left)
+        self.find_second_minimum_helper(root.right)
+
+    def find_second_minimum(self, root: Optional[TreeNode]) -> int:
+
+        # Check if the root is None, return -1 as no second minimum
+        # exists
+        if root is None:
+            return -1
+
+        # Initialize the minimum to the value of the root node
+        self.minimum = root.val
+
+        # Initialize the second minimum to -1, indicating it has not been
+        # set yet
+        self.second_minimum = -1
+
+        # Call the helper function to find the minimum and second minimum
+        # values
+        self.find_second_minimum_helper(root)
+
+        # Return the second minimum value found
+        return self.second_minimum
+
+
+# Examples from the problem statement
+print(Solution().find_second_minimum(from_level_order([1, 2, 5, 7, None, None, 3])))  # 2
+print(Solution().find_second_minimum(from_level_order([1, 8, 4, None, None, 9, 7])))  # 4
+
+# Edge cases
+print(Solution().find_second_minimum(None))                                            # -1
+print(Solution().find_second_minimum(from_level_order([5])))                           # -1
+print(Solution().find_second_minimum(from_level_order([5, 5, 5])))                     # -1 (all same)
+print(Solution().find_second_minimum(from_level_order([1, 2])))                        # 2
+print(Solution().find_second_minimum(from_level_order([3, 1, 4, 1, 5, 9, 2])))        # 2
+print(Solution().find_second_minimum(from_level_order([1, 2, 3, 4, 5, 6, 7])))        # 2
 ```
 
 ```java run
-static int min, secondMin;
-static void smHelper(TreeNode n) {
-    if (n == null) return;
-    int v = n.val;
-    if (v < min) { secondMin = min; min = v; }
-    else if (v > min && (secondMin == -1 || v < secondMin)) secondMin = v;
-    smHelper(n.left); smHelper(n.right);
-}
-public static int findSecondMinimum(TreeNode root) {
-    if (root == null) return -1;
-    min = root.val; secondMin = -1;
-    smHelper(root); return secondMin;
-}
-```
+import java.util.*;
 
-```c run
-static int g_min, g_second;
-void sm_helper(TreeNode *n) {
-    if (!n) return;
-    int v = n->val;
-    if (v < g_min) { g_second = g_min; g_min = v; }
-    else if (v > g_min && (g_second == -1 || v < g_second)) g_second = v;
-    sm_helper(n->left); sm_helper(n->right);
-}
-int find_second_minimum(TreeNode *root) {
-    if (!root) return -1;
-    g_min = root->val; g_second = -1;
-    sm_helper(root); return g_second;
-}
-```
-
-```scala run
-class TreeNode(var value: Int, var left: TreeNode = null, var right: TreeNode = null)
-
-object Main extends App {
-  class Solution {
-    def findSecondMinimum(root: TreeNode): Int = {
-      if (root == null) return -1
-      var minV = root.value
-      var secV = -1
-      def go(n: TreeNode): Unit = {
-        if (n == null) return
-        val v = n.value
-        if (v < minV) { secV = minV; minV = v }
-        else if (v > minV && (secV == -1 || v < secV)) secV = v
-        go(n.left); go(n.right)
-      }
-      go(root); secV
+public class Main {
+    static class TreeNode {
+        int val;
+        TreeNode left;
+        TreeNode right;
+        TreeNode() {}
+        TreeNode(int val) { this.val = val; }
     }
-  }
 
-  val root = new TreeNode(2, new TreeNode(2), new TreeNode(5, new TreeNode(5), new TreeNode(7)))
-  println(new Solution().findSecondMinimum(root))  // 5
+    static TreeNode fromLevelOrder(Integer... values) {
+        if (values.length == 0 || values[0] == null) return null;
+        TreeNode root = new TreeNode(values[0]);
+        java.util.Deque<TreeNode> queue = new java.util.ArrayDeque<>();
+        queue.add(root);
+        int i = 1;
+        while (!queue.isEmpty() && i < values.length) {
+            TreeNode node = queue.poll();
+            if (i < values.length && values[i] != null) {
+                node.left = new TreeNode(values[i]);
+                queue.add(node.left);
+            }
+            i++;
+            if (i < values.length && values[i] != null) {
+                node.right = new TreeNode(values[i]);
+                queue.add(node.right);
+            }
+            i++;
+        }
+        return root;
+    }
+
+    static class Solution {
+
+        // Global variables to store minimum and second minimum values
+        private int minimum;
+        private int secondMinimum;
+
+        private void findSecondMinimumHelper(TreeNode root) {
+
+            // Base case: if the root is null, return
+            if (root == null) {
+                return;
+            }
+
+            // Check if the value of the current node is less than the
+            // current minimum
+            if (root.val < minimum) {
+
+                // Update the second minimum to the previous minimum
+                secondMinimum = minimum;
+
+                // Update the minimum to the value of the current node
+                minimum = root.val;
+            } else if (
+                root.val > minimum &&
+                (root.val < secondMinimum || secondMinimum == -1)
+            ) {
+
+                // Check if the value of the current node is greater than the
+                // current minimum and less than the current second minimum
+                // (or second minimum is not yet set) If so, update the
+                // second minimum to the value of the current node
+                secondMinimum = root.val;
+            }
+
+            // Recursively traverse the left and right subtrees
+            findSecondMinimumHelper(root.left);
+            findSecondMinimumHelper(root.right);
+        }
+
+        public int findSecondMinimum(TreeNode root) {
+
+            // Check if the root is null, return -1 as no second minimum
+            // exists
+            if (root == null) {
+                return -1;
+            }
+
+            // Initialize the minimum to the value of the root node
+            minimum = root.val;
+
+            // Initialize the second minimum to -1, indicating it has not
+            // been set yet
+            secondMinimum = -1;
+
+            // Call the helper function to find the minimum and second
+            // minimum values
+            findSecondMinimumHelper(root);
+
+            // Return the second minimum value found
+            return secondMinimum;
+        }
+    }
+
+    public static void main(String[] args) {
+        // Examples from the problem statement
+        System.out.println(new Solution().findSecondMinimum(fromLevelOrder(1, 2, 5, 7, null, null, 3)));  // 2
+        System.out.println(new Solution().findSecondMinimum(fromLevelOrder(1, 8, 4, null, null, 9, 7)));  // 4
+
+        // Edge cases
+        System.out.println(new Solution().findSecondMinimum(null));                                        // -1
+        System.out.println(new Solution().findSecondMinimum(fromLevelOrder(5)));                           // -1
+        System.out.println(new Solution().findSecondMinimum(fromLevelOrder(5, 5, 5)));                     // -1 (all same)
+        System.out.println(new Solution().findSecondMinimum(fromLevelOrder(1, 2)));                        // 2
+        System.out.println(new Solution().findSecondMinimum(fromLevelOrder(3, 1, 4, 1, 5, 9, 2)));        // 2
+        System.out.println(new Solution().findSecondMinimum(fromLevelOrder(1, 2, 3, 4, 5, 6, 7)));        // 2
+    }
 }
 ```
+
+</details>
 
 
 ***
@@ -459,84 +659,184 @@ flowchart TB
 
 <p align="center"><strong>Left view — recurse left-first; the first node visited at each new level is the leftmost. The state is a single counter that ratchets forward each time we see a deeper level.</strong></p>
 
-## Solution
+<details>
+<summary><h2>Solution</h2></summary>
 
 
-```pseudocode
-function leftView(root):
-    out ← empty list
-    function go(n, level):
-        if n = null: return
-        if level = length(out): append n.val to out   # first node at this depth
-        go(n.left,  level + 1)                        # left-first ensures leftmost wins
-        go(n.right, level + 1)
-    go(root, 0)
-    return out
-```
 
 ```python run
-def left_view(root):
-    out = []
-    def go(n, level):
-        if n is None: return
-        if level == len(out): out.append(n.val)
-        go(n.left,  level + 1)               # left first
-        go(n.right, level + 1)
-    go(root, 0)
-    return out
+from typing import List, Optional
+
+class TreeNode:
+    def __init__(self, val=0, left=None, right=None):
+        self.val = val
+        self.left = left
+        self.right = right
+
+
+def from_level_order(values):
+    """Build tree from list like [1, 2, 3, None, 4]. None means missing child."""
+    if not values:
+        return None
+    root = TreeNode(values[0])
+    queue = [root]
+    i = 1
+    while queue and i < len(values):
+        node = queue.pop(0)
+        if i < len(values) and values[i] is not None:
+            node.left = TreeNode(values[i])
+            queue.append(node.left)
+        i += 1
+        if i < len(values) and values[i] is not None:
+            node.right = TreeNode(values[i])
+            queue.append(node.right)
+        i += 1
+    return root
+
+
+class Solution:
+    def __init__(self):
+
+        # Global variable to keep track of the current level during
+        # recursion
+        self.max_level_reached = 0
+
+    def left_view_helper(
+        self, root: Optional[TreeNode], level: int, result: List[int]
+    ) -> None:
+        if not root:
+            return
+
+        # If this is the first node of the current level, add it to
+        # result
+        if level == self.max_level_reached:
+            result.append(root.val)
+
+            # Increment the level after adding the node to result
+            self.max_level_reached += 1
+
+        # Recur for left, then right (ensures leftmost nodes are visited
+        # first)
+        self.left_view_helper(root.left, level + 1, result)
+        self.left_view_helper(root.right, level + 1, result)
+
+    def left_view(self, root: Optional[TreeNode]) -> List[int]:
+
+        # Stores the left view of the binary tree
+        result = []
+
+        # Find the left view of the binary tree
+        self.left_view_helper(root, 0, result)
+
+        # Return the left view of the binary tree
+        return result
+
+
+# Examples from the problem statement
+print(Solution().left_view(from_level_order([1, 2, 3, 4, None, None, 7, 9])))  # [1, 2, 4, 9]
+print(Solution().left_view(from_level_order([1, 8, 4, None, None, 2, 7])))     # [1, 8, 2]
+
+# Edge cases
+print(Solution().left_view(None))                                                # []
+print(Solution().left_view(from_level_order([5])))                               # [5]
+print(Solution().left_view(from_level_order([1, 2, None, 3])))                   # [1, 2, 3] (left-skew)
+print(Solution().left_view(from_level_order([1, None, 2, None, 3])))             # [1, 2, 3] (right-skew)
+print(Solution().left_view(from_level_order([1, 2, 3, 4, 5, 6, 7])))            # [1, 2, 4]
 ```
 
 ```java run
-static void lvHelper(TreeNode n, int level, List<Integer> out) {
-    if (n == null) return;
-    if (level == out.size()) out.add(n.val);
-    lvHelper(n.left,  level + 1, out);
-    lvHelper(n.right, level + 1, out);
-}
-public static List<Integer> leftView(TreeNode root) {
-    List<Integer> out = new ArrayList<>();
-    lvHelper(root, 0, out);
-    return out;
-}
-```
+import java.util.*;
 
-```c run
-void lv_helper(TreeNode *n, int level, int *out, int *k) {
-    if (!n) return;
-    if (level == *k) out[(*k)++] = n->val;
-    lv_helper(n->left,  level + 1, out, k);
-    lv_helper(n->right, level + 1, out, k);
-}
-int* left_view(TreeNode *root, int *count) {
-    static int out[64]; *count = 0;
-    lv_helper(root, 0, out, count);
-    return out;
-}
-```
-
-```scala run
-class TreeNode(var value: Int, var left: TreeNode = null, var right: TreeNode = null)
-
-object Main extends App {
-  class Solution {
-    def leftView(root: TreeNode): List[Int] = {
-      val out = scala.collection.mutable.ListBuffer[Int]()
-      def go(n: TreeNode, level: Int): Unit = {
-        if (n == null) return
-        if (level == out.length) out += n.value
-        go(n.left,  level + 1)
-        go(n.right, level + 1)
-      }
-      go(root, 0); out.toList
+public class Main {
+    static class TreeNode {
+        int val;
+        TreeNode left;
+        TreeNode right;
+        TreeNode() {}
+        TreeNode(int val) { this.val = val; }
     }
-  }
 
-  val root = new TreeNode(1,
-    new TreeNode(2, new TreeNode(4, new TreeNode(9)), null),
-    new TreeNode(3, null, new TreeNode(7)))
-  println(new Solution().leftView(root))  // List(1, 2, 4, 9)
+    static TreeNode fromLevelOrder(Integer... values) {
+        if (values.length == 0 || values[0] == null) return null;
+        TreeNode root = new TreeNode(values[0]);
+        java.util.Deque<TreeNode> queue = new java.util.ArrayDeque<>();
+        queue.add(root);
+        int i = 1;
+        while (!queue.isEmpty() && i < values.length) {
+            TreeNode node = queue.poll();
+            if (i < values.length && values[i] != null) {
+                node.left = new TreeNode(values[i]);
+                queue.add(node.left);
+            }
+            i++;
+            if (i < values.length && values[i] != null) {
+                node.right = new TreeNode(values[i]);
+                queue.add(node.right);
+            }
+            i++;
+        }
+        return root;
+    }
+
+    static class Solution {
+
+        // Global variable to keep track of the current level during
+        // recursion
+        private int maxLevelReached = 0;
+
+        private void lefViewHelper(
+            TreeNode root,
+            int level,
+            List<Integer> result
+        ) {
+            if (root == null) {
+                return;
+            }
+
+            // If this is the first node of the current level, add it to
+            // result
+            if (level == maxLevelReached) {
+                result.add(root.val);
+
+                // Increment the level after adding the node to result
+                maxLevelReached++;
+            }
+
+            // Recur for left, then right (ensures leftmost nodes are visited
+            // first)
+            lefViewHelper(root.left, level + 1, result);
+            lefViewHelper(root.right, level + 1, result);
+        }
+
+        public List<Integer> leftView(TreeNode root) {
+
+            // Stores the left view of the binary tree
+            List<Integer> result = new ArrayList<>();
+
+            // Find the left view of the binary tree
+            lefViewHelper(root, 0, result);
+
+            // Return the left view of the binary tree
+            return result;
+        }
+    }
+
+    public static void main(String[] args) {
+        // Examples from the problem statement
+        System.out.println(new Solution().leftView(fromLevelOrder(1, 2, 3, 4, null, null, 7, 9)));  // [1, 2, 4, 9]
+        System.out.println(new Solution().leftView(fromLevelOrder(1, 8, 4, null, null, 2, 7)));     // [1, 8, 2]
+
+        // Edge cases
+        System.out.println(new Solution().leftView(null));                                           // []
+        System.out.println(new Solution().leftView(fromLevelOrder(5)));                              // [5]
+        System.out.println(new Solution().leftView(fromLevelOrder(1, 2, null, 3)));                  // [1, 2, 3] (left-skew)
+        System.out.println(new Solution().leftView(fromLevelOrder(1, null, 2, null, 3)));            // [1, 2, 3] (right-skew)
+        System.out.println(new Solution().leftView(fromLevelOrder(1, 2, 3, 4, 5, 6, 7)));           // [1, 2, 4]
+    }
 }
 ```
+
+</details>
 
 
 ***
@@ -547,87 +847,187 @@ object Main extends App {
 
 The trick is *identical* to the left view, with one swap: recurse **right before left**. The first node visited at each new level is now the rightmost.
 
-## Solution
+<details>
+<summary><h2>Solution</h2></summary>
 
 
-```pseudocode
-function rightView(root):
-    out ← empty list
-    function go(n, level):
-        if n = null: return
-        if level = length(out): append n.val to out   # first node at this depth
-        go(n.right, level + 1)                        # right-first ensures rightmost wins
-        go(n.left,  level + 1)
-    go(root, 0)
-    return out
-```
 
 ```python run
-def right_view(root):
-    out = []
-    def go(n, level):
-        if n is None: return
-        if level == len(out): out.append(n.val)
-        go(n.right, level + 1)               # right first
-        go(n.left,  level + 1)
-    go(root, 0)
-    return out
+from typing import Optional, List
+
+class TreeNode:
+    def __init__(self, val=0, left=None, right=None):
+        self.val = val
+        self.left = left
+        self.right = right
+
+
+def from_level_order(values):
+    """Build tree from list like [1, 2, 3, None, 4]. None means missing child."""
+    if not values:
+        return None
+    root = TreeNode(values[0])
+    queue = [root]
+    i = 1
+    while queue and i < len(values):
+        node = queue.pop(0)
+        if i < len(values) and values[i] is not None:
+            node.left = TreeNode(values[i])
+            queue.append(node.left)
+        i += 1
+        if i < len(values) and values[i] is not None:
+            node.right = TreeNode(values[i])
+            queue.append(node.right)
+        i += 1
+    return root
+
+
+class Solution:
+    def __init__(self):
+
+        # Global variable to keep track of the current level during
+        # recursion
+        self.max_level_reached = 0
+
+    def right_view_helper(
+        self, root: Optional[TreeNode], level: int, result: List[int]
+    ) -> None:
+        if not root:
+            return
+
+        # If this is the first node of the current level, add it to
+        # result
+        if level == self.max_level_reached:
+            result.append(root.val)
+
+            # Increment the level after adding the node to result
+            self.max_level_reached += 1
+
+        # Recur for right, then left (ensures rightmost nodes are visited
+        # first)
+        self.right_view_helper(root.right, level + 1, result)
+        self.right_view_helper(root.left, level + 1, result)
+
+    def right_view(self, root: Optional[TreeNode]) -> List[int]:
+
+        # Stores the right view of the binary tree
+        result = []
+
+        # Find the right view of the binary tree
+        self.right_view_helper(root, 0, result)
+
+        # Return the right view of the binary tree
+        return result
+
+
+# Examples from the problem statement
+print(Solution().right_view(from_level_order([1, 2, 3, 4, None, None, 7, 9])))  # [1, 3, 7, 9]
+print(Solution().right_view(from_level_order([1, 8, 4, None, None, 2, 7])))     # [1, 4, 7]
+
+# Edge cases
+print(Solution().right_view(None))                                                # []
+print(Solution().right_view(from_level_order([5])))                               # [5]
+print(Solution().right_view(from_level_order([1, None, 2, None, 3])))             # [1, 2, 3] (right-skew)
+print(Solution().right_view(from_level_order([1, 2, None, 3])))                   # [1, 2, 3] (left-skew)
+print(Solution().right_view(from_level_order([1, 2, 3, 4, 5, 6, 7])))            # [1, 3, 7]
 ```
 
 ```java run
-static void rvHelper(TreeNode n, int level, List<Integer> out) {
-    if (n == null) return;
-    if (level == out.size()) out.add(n.val);
-    rvHelper(n.right, level + 1, out);
-    rvHelper(n.left,  level + 1, out);
-}
-public static List<Integer> rightView(TreeNode root) {
-    List<Integer> out = new ArrayList<>();
-    rvHelper(root, 0, out); return out;
-}
-```
+import java.util.*;
 
-```c run
-void rv_helper(TreeNode *n, int level, int *out, int *k) {
-    if (!n) return;
-    if (level == *k) out[(*k)++] = n->val;
-    rv_helper(n->right, level + 1, out, k);
-    rv_helper(n->left,  level + 1, out, k);
-}
-int* right_view(TreeNode *root, int *count) {
-    static int out[64]; *count = 0;
-    rv_helper(root, 0, out, count); return out;
-}
-```
-
-```scala run
-class TreeNode(var value: Int, var left: TreeNode = null, var right: TreeNode = null)
-
-object Main extends App {
-  class Solution {
-    def rightView(root: TreeNode): List[Int] = {
-      val out = scala.collection.mutable.ListBuffer[Int]()
-      def go(n: TreeNode, level: Int): Unit = {
-        if (n == null) return
-        if (level == out.length) out += n.value
-        go(n.right, level + 1)
-        go(n.left,  level + 1)
-      }
-      go(root, 0); out.toList
+public class Main {
+    static class TreeNode {
+        int val;
+        TreeNode left;
+        TreeNode right;
+        TreeNode() {}
+        TreeNode(int val) { this.val = val; }
     }
-  }
 
-  val root = new TreeNode(1,
-    new TreeNode(2, new TreeNode(4, new TreeNode(9)), null),
-    new TreeNode(3, null, new TreeNode(7)))
-  println(new Solution().rightView(root))  // List(1, 3, 7, 9)
+    static TreeNode fromLevelOrder(Integer... values) {
+        if (values.length == 0 || values[0] == null) return null;
+        TreeNode root = new TreeNode(values[0]);
+        java.util.Deque<TreeNode> queue = new java.util.ArrayDeque<>();
+        queue.add(root);
+        int i = 1;
+        while (!queue.isEmpty() && i < values.length) {
+            TreeNode node = queue.poll();
+            if (i < values.length && values[i] != null) {
+                node.left = new TreeNode(values[i]);
+                queue.add(node.left);
+            }
+            i++;
+            if (i < values.length && values[i] != null) {
+                node.right = new TreeNode(values[i]);
+                queue.add(node.right);
+            }
+            i++;
+        }
+        return root;
+    }
+
+    static class Solution {
+
+        // Global variable to keep track of the current level during
+        // recursion
+        private int maxLevelReached = 0;
+
+        private void rightViewHelper(
+            TreeNode root,
+            int level,
+            List<Integer> result
+        ) {
+            if (root == null) {
+                return;
+            }
+
+            // If this is the first node of the current level, add it to
+            // result
+            if (level == maxLevelReached) {
+                result.add(root.val);
+
+                // Increment the level after adding the node to result
+                maxLevelReached++;
+            }
+
+            // Recur for right, then left (ensures rightmost nodes are
+            // visited first)
+            rightViewHelper(root.right, level + 1, result);
+            rightViewHelper(root.left, level + 1, result);
+        }
+
+        public List<Integer> rightView(TreeNode root) {
+
+            // Stores the right view of the binary tree
+            List<Integer> result = new ArrayList<>();
+
+            // Find the right view of the binary tree
+            rightViewHelper(root, 0, result);
+
+            // Return the right view of the binary tree
+            return result;
+        }
+    }
+
+    public static void main(String[] args) {
+        // Examples from the problem statement
+        System.out.println(new Solution().rightView(fromLevelOrder(1, 2, 3, 4, null, null, 7, 9)));  // [1, 3, 7, 9]
+        System.out.println(new Solution().rightView(fromLevelOrder(1, 8, 4, null, null, 2, 7)));     // [1, 4, 7]
+
+        // Edge cases
+        System.out.println(new Solution().rightView(null));                                           // []
+        System.out.println(new Solution().rightView(fromLevelOrder(5)));                              // [5]
+        System.out.println(new Solution().rightView(fromLevelOrder(1, null, 2, null, 3)));            // [1, 2, 3] (right-skew)
+        System.out.println(new Solution().rightView(fromLevelOrder(1, 2, null, 3)));                  // [1, 2, 3] (left-skew)
+        System.out.println(new Solution().rightView(fromLevelOrder(1, 2, 3, 4, 5, 6, 7)));           // [1, 3, 7]
+    }
 }
 ```
 
+</details>
+<details>
+<summary><h2>Final Takeaway</h2></summary>
 
-***
-
-## Final Takeaway
 
 The stateful preorder pattern is the second-most-common shape in the chapter. Three things to walk away with:
 
@@ -636,3 +1036,5 @@ The stateful preorder pattern is the second-most-common shape in the chapter. Th
 3. **Left-vs-right preference is what gives "first" its meaning.** The view problems all turn on which child you recurse into *first*. Left view: left first. Right view: right first. Top view: process by level *and* horizontal distance. Generalise this — whenever a problem says "first / leftmost / rightmost / topmost", the *recursion order* is doing the work.
 
 > *Coming up — the chapter pivots from the downward-flowing preorder patterns to the upward-flowing <strong>postorder</strong> patterns. Where preorder hands data <em>from parent to child</em>, postorder gathers data <em>from children to parent</em>. The next two lessons (stateless and stateful postorder) cover heights, sums, diameters, and a wealth of other "compute the answer at each node from its subtrees' answers" problems.*
+
+</details>

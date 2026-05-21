@@ -67,7 +67,7 @@ object LinkedList:
 
   final case class Node(id: String, value: String, style: Option[String])
   final case class Link(from: String, to: String, kind: Option[String])
-  // `canonical` is false when the marker name isn't in `CanonicalMarkers` —
+  // `canonical` is false when the marker name isn't in `MarkerCanon.palette` —
   // the widget then renders an inline warning badge at the marker's node
   // instead of the usual triangle + label. Authors fix the typo (or amend
   // ADR-0016 to admit a new name); colours are always resolved from the
@@ -113,52 +113,21 @@ object LinkedList:
   // render their arrowhead between nodes without crowding the cell rects.
   // ---------------------------------------------------------------------------
 
-  private val NodeSize     = 56.0
-  private val NodeGap      = 36.0
-  private val MarkerLaneH  = 44.0
-  private val BackLaneH    = 36.0      // doubly's prev-row + cycle-edge clearance
-  private val PaddingX     = 24.0
-  private val PaddingY     = 12.0
-  private val StepDelayMs  = 1200
-  private val ArrowheadW   = 8.0
-  private val ArrowheadH   = 6.0
-  private val WarningColor = "#ef4444" // rose — used for canon-violation badges
-  private val SvgNs        = "http://www.w3.org/2000/svg"
+  private val NodeSize    = 56.0
+  private val NodeGap     = 36.0
+  private val MarkerLaneH = 44.0
+  private val BackLaneH   = 36.0 // doubly's prev-row + cycle-edge clearance
+  private val PaddingX    = 24.0
+  private val PaddingY    = 12.0
+  private val StepDelayMs = 1200
+  private val ArrowheadW  = 8.0
+  private val ArrowheadH  = 6.0
+  private val SvgNs       = "http://www.w3.org/2000/svg"
 
-  // ── Canon (ADR-0016) ────────────────────────────────────────────────────────
-  // The closed marker vocabulary. Each name carries one role and one colour
-  // across every linked-list diagram in the section, so a reader's mental
-  // model is consistent — `head` is always blue, `curr` is always emerald,
-  // `slow` and `fast` always blue/rose, regardless of which chapter or which
-  // operation. Authors cannot override colours; the `color` field on
-  // payload markers is silently dropped at parse time.
-  //
-  // To grow the canon (e.g. adding `temp` or `pivot` for a future pattern):
-  // amend ADR-0016, then add an entry here. Every other code path reads
-  // through this map.
-  private val CanonicalMarkers: Map[String, String] = Map(
-    "head"     -> "#3b82f6", // blue    — list entry
-    "tail"     -> "#64748b", // slate   — explicit last-node tracker
-    "previous" -> "#f59e0b", // amber   — trailing pointer (reversal)
-    "current"  -> "#10b981", // emerald — active pointer
-    "next"     -> "#a855f7", // violet  — saved-next reference
-    "slow"     -> "#3b82f6", // blue    — slow (Floyd, two-pointer)
-    "fast"     -> "#ef4444", // rose    — fast (Floyd, two-pointer)
-    "dummy"    -> "#64748b", // slate   — sentinel / dummy head
-    "start"    -> "#f59e0b", // amber   — segment start
-    "end"      -> "#10b981", // emerald — segment end
-    // Multi-list operations (merge, split, round-robin split, alternate-
-    // merge). Suffix letter distinguishes list identity; colours stay
-    // distinct so two or three simultaneously-tracked heads don't blur.
-    // `headC`/`tailC` admitted for round-robin split chapters that route
-    // the original chain into 3 sub-lists (chapter 10).
-    "headA" -> "#3b82f6", // blue         — list A entry
-    "headB" -> "#06b6d4", // cyan         — list B entry
-    "headC" -> "#a855f7", // violet       — list C entry
-    "tailA" -> "#64748b", // slate        — list A end
-    "tailB" -> "#475569", // slate-dark   — list B end
-    "tailC" -> "#334155"  // slate-darker — list C end
-  )
+  // Marker canon (ADR-0016) lives in `MarkerCanon` — shared across every Arc 1 widget so a name like `head`
+  // or `current` is the same colour wherever it appears in the DSA book. LinkedList's parser delegates name
+  // resolution and warning emission to that module; the `color` field on payload markers is dropped here
+  // identically to the pre-lift behaviour.
 
   // Canonical node-style vocabulary. Unknown styles are dropped at parse
   // time (the node renders with the default look) and a dev-mode console
@@ -212,17 +181,9 @@ object LinkedList:
     val name      = m.string("name")
     val nodeId    = m.string("nodeId")
     val rawColor  = m.optString("color")
-    val canonical = CanonicalMarkers.contains(name)
-    // Hard-reject author colours (ADR-0016) — log a one-line dev warning
-    // so the author sees they wrote something that's being ignored.
-    if rawColor.isDefined then
-      dom.console.warn(
-        s"linked-list: marker '$name' carries a `color` field — dropping (colour is resolved from the canon, not the payload)."
-      )
-    if name.nonEmpty && !canonical then
-      dom.console.warn(
-        s"linked-list: marker name '$name' is not in the canonical vocabulary. Rendered as an inline warning. Canonical names: ${CanonicalMarkers.keys.toList.sorted.mkString(", ")}."
-      )
+    val canonical = MarkerCanon.isCanonical(name)
+    if rawColor.isDefined then MarkerCanon.warnAuthorColor("linked-list", name)
+    if name.nonEmpty && !canonical then MarkerCanon.warnUnknown("linked-list", name)
     Marker(name, nodeId, canonical)
 
   private def parseSections(d: js.Dynamic, stepCount: Int): List[Section] =
@@ -317,7 +278,7 @@ object LinkedList:
       spec.steps.exists(_.links.exists(_.kind.contains("prev")))
 
   private def colorFor(marker: Marker): String =
-    CanonicalMarkers.getOrElse(marker.name, WarningColor)
+    MarkerCanon.colorFor(marker.name)
 
   // For doubly mode: if author didn't include any prev links, auto-derive them
   // by reversing each forward link.

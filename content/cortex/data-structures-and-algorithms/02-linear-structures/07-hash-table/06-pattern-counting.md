@@ -93,74 +93,32 @@ A subtle but important point: the counting technique *rarely* solves a problem o
 The generic counting helper — one function we'll lean on in every problem in this lesson.
 
 
-```pseudocode
-function count_frequency(s):
-    frequency ← empty Map: char → int
-    for ch in s:
-        frequency[ch] ← frequency[ch] + 1
-    return frequency
-```
-
 ```python run
-from collections import defaultdict
-
-def count_frequency(s: str) -> dict:
-    # defaultdict(int) auto-initialises any missing key to 0,
-    # so frequency[ch] += 1 always works without an existence check.
+def count_frequency(self, s: str) -> Dict[str, int]:
+    # Initialize a hash map to map a character to its frequency
     frequency = defaultdict(int)
-    for ch in s:
-        frequency[ch] += 1
-    return frequency
 
-print(dict(count_frequency("abacba")))   # {'a': 3, 'b': 2, 'c': 1}
+    # Traverse the string and store the frequency of each character in a hash map
+    for ch in s:
+        frequency[ch] = frequency.get(ch, 0) + 1
+
+    return frequency
 ```
 
 ```java run
-import java.util.*;
 
-public class Main {
-    static Map<Character, Integer> countFrequency(String s) {
+class Solution {
+    public Map<Character, Integer> countFrequency(String s) {
+        // Initialize a hash map to map a character to its frequency
         Map<Character, Integer> frequency = new HashMap<>();
+
+        // Traverse the string and store the frequency of each character in a hash map
         for (char ch : s.toCharArray()) {
-            // getOrDefault avoids null-checks on first occurrence
             frequency.put(ch, frequency.getOrDefault(ch, 0) + 1);
         }
+
         return frequency;
     }
-    public static void main(String[] args) {
-        System.out.println(countFrequency("abacba"));   // {a=3, b=2, c=1}
-    }
-}
-```
-
-```c run
-#include <stdio.h>
-#include <string.h>
-
-// For lower-case letters, an array indexed by (ch - 'a') is the
-// fastest "hash map" in C — fixed size, zero collisions.
-void count_frequency(const char *s, int freq[26]) {
-    memset(freq, 0, sizeof(int) * 26);
-    for (; *s; s++) freq[*s - 'a']++;
-}
-
-int main() {
-    int freq[26];
-    count_frequency("abacba", freq);
-    for (int i = 0; i < 26; i++)
-        if (freq[i]) printf("%c=%d ", 'a' + i, freq[i]);
-    printf("\n");   // a=3 b=2 c=1
-    return 0;
-}
-```
-
-```scala run
-def countFrequency(s: String): Map[Char, Int] =
-  // groupBy + mapValues is idiomatic; no manual loop needed
-  s.groupBy(identity).view.mapValues(_.length).toMap
-
-object Main extends App {
-  println(countFrequency("abacba"))   // Map(a -> 3, b -> 2, c -> 1)
 }
 ```
 
@@ -244,17 +202,6 @@ flowchart LR
 <p align="center"><strong>Brute-force flow — nested loops compare every character to every other, giving O(N²) time. Acceptable for tiny strings, prohibitive for anything realistic.</strong></p>
 
 
-```pseudocode
-function first_non_repeating_brute(s):
-    for i from 0 to length(s) − 1:
-        repeated ← false
-        for j from 0 to length(s) − 1:
-            if i ≠ j AND s[i] = s[j]:
-                repeated ← true; break
-        if NOT repeated: return i
-    return -1
-```
-
 ```python run
 def first_non_repeating_brute(s: str) -> int:
     n = len(s)
@@ -294,49 +241,6 @@ public class Main {
 }
 ```
 
-```c run
-#include <stdio.h>
-#include <string.h>
-
-int first_non_repeating_brute(const char *s) {
-    int n = (int)strlen(s);
-    for (int i = 0; i < n; i++) {
-        int repeated = 0;
-        for (int j = 0; j < n; j++) {
-            if (i != j && s[i] == s[j]) { repeated = 1; break; }
-        }
-        if (!repeated) return i;
-    }
-    return -1;
-}
-
-int main() {
-    printf("%d %d %d\n",
-           first_non_repeating_brute("codeintuition"),
-           first_non_repeating_brute("aaabcd"),
-           first_non_repeating_brute("aaabbccdd"));   // 0 3 -1
-}
-```
-
-```scala run
-def firstNonRepeatingBrute(s: String): Int = {
-  for (i <- s.indices) {
-    var repeated = false
-    for (j <- s.indices if !repeated) {
-      if (i != j && s(i) == s(j)) repeated = true
-    }
-    if (!repeated) return i
-  }
-  -1
-}
-
-object Main extends App {
-  println(firstNonRepeatingBrute("codeintuition"))   // 0
-  println(firstNonRepeatingBrute("aaabcd"))          // 3
-  println(firstNonRepeatingBrute("aaabbccdd"))       // -1
-}
-```
-
 
 The brute-force approach is **O(N²)** time. Tolerable up to a few thousand characters; brutal beyond that.
 
@@ -369,14 +273,6 @@ flowchart LR
 
 <p align="center"><strong>Counting solution — first build the freq map (one pass), then walk <code>s</code> a second time looking up each character. Two linear passes total: O(N).</strong></p>
 
-
-```pseudocode
-function first_non_repeating(s):
-    frequency ← count_frequency(s)
-    for i from 0 to length(s) − 1:
-        if frequency[s[i]] = 1: return i
-    return -1
-```
 
 ```python run
 from collections import defaultdict
@@ -412,38 +308,6 @@ public class Main {
         System.out.println(firstNonRepeating("aaabcd"));          // 3
         System.out.println(firstNonRepeating("aaabbccdd"));       // -1
     }
-}
-```
-
-```c run
-#include <stdio.h>
-#include <string.h>
-
-int first_non_repeating(const char *s) {
-    int freq[26] = {0};
-    for (const char *p = s; *p; p++) freq[*p - 'a']++;   // pass 1
-    for (int i = 0; s[i]; i++) if (freq[s[i] - 'a'] == 1) return i;
-    return -1;
-}
-
-int main() {
-    printf("%d %d %d\n",
-        first_non_repeating("codeintuition"),
-        first_non_repeating("aaabcd"),
-        first_non_repeating("aaabbccdd"));   // 0 3 -1
-}
-```
-
-```scala run
-def firstNonRepeating(s: String): Int = {
-  val freq = s.groupBy(identity).view.mapValues(_.length).toMap
-  s.indices.find(i => freq(s(i)) == 1).getOrElse(-1)
-}
-
-object Main extends App {
-  println(firstNonRepeating("codeintuition"))
-  println(firstNonRepeating("aaabcd"))
-  println(firstNonRepeating("aaabbccdd"))
 }
 ```
 
@@ -483,83 +347,108 @@ Given a string `s`, find and return the index of the first non-repeating charact
 > -   **Output:** `-1`
 > -   **Explanation:** No character appears exactly once.
 
-## Solution
+<details>
+<summary><h2>Solution</h2></summary>
+
 
 Two passes: build the frequency map, then re-walk to find the first frequency-1 character.
 
 
-```pseudocode
-function first_non_repeating_character(s):
-    freq ← count_frequency(s)
-    for i from 0 to length(s) − 1:
-        if freq[s[i]] = 1: return i
-    return -1
-```
-
 ```python run
 from collections import defaultdict
+from typing import Dict
 
-def first_non_repeating_character(s: str) -> int:
-    freq = defaultdict(int)
-    for ch in s: freq[ch] += 1
-    for i, ch in enumerate(s):
-        if freq[ch] == 1: return i
-    return -1
+class Solution:
+    def count_frequency(self, s: str) -> Dict[str, int]:
+        frequency = defaultdict(int)
 
-print(first_non_repeating_character("codeintuition"))   # 0
-print(first_non_repeating_character("aaabcd"))          # 3
-print(first_non_repeating_character("aaabbccdd"))       # -1
+        # Traverse the string and store the frequency of each character
+        # in a hash map
+        for ch in s:
+            frequency[ch] = frequency.get(ch, 0) + 1
+
+        return frequency
+
+    def first_non_repeating_character(self, s: str) -> int:
+
+        # Create a map to store the frequency of each character in the
+        # string
+        frequency = self.count_frequency(s)
+
+        # Traverse the string again and return the index of the first
+        # non-repeating character
+        for i, ch in enumerate(s):
+            if frequency[ch] == 1:
+                return i
+
+        return -1
+
+
+# Examples from the problem statement
+print(Solution().first_non_repeating_character("codeintuition"))  # 0
+print(Solution().first_non_repeating_character("aaabcd"))         # 3
+print(Solution().first_non_repeating_character("aaabbccdd"))      # -1
+
+# Edge cases
+print(Solution().first_non_repeating_character(""))               # -1
+print(Solution().first_non_repeating_character("a"))              # 0
+print(Solution().first_non_repeating_character("aabb"))           # -1
+print(Solution().first_non_repeating_character("abcabc"))         # -1
+print(Solution().first_non_repeating_character("abcd"))           # 0
 ```
 
 ```java run
 import java.util.*;
 
 public class Main {
-    static int firstNonRepeatingCharacter(String s) {
-        Map<Character, Integer> freq = new HashMap<>();
-        for (char ch : s.toCharArray()) freq.merge(ch, 1, Integer::sum);
-        for (int i = 0; i < s.length(); i++)
-            if (freq.get(s.charAt(i)) == 1) return i;
-        return -1;
+    static class Solution {
+        private Map<Character, Integer> countFrequency(String s) {
+            Map<Character, Integer> frequency = new HashMap<>();
+
+            // Traverse the string and store the frequency of each character
+            // in a hash map
+            for (char ch : s.toCharArray()) {
+                frequency.put(ch, frequency.getOrDefault(ch, 0) + 1);
+            }
+
+            return frequency;
+        }
+
+        public int firstNonRepeatingCharacter(String s) {
+
+            // Create a map to store the frequency of each character in the
+            // string
+            Map<Character, Integer> frequency = countFrequency(s);
+
+            // Traverse the string again and return the index of the first
+            // non-repeating character
+            for (int i = 0; i < s.length(); i++) {
+                if (frequency.get(s.charAt(i)) == 1) {
+                    return i;
+                }
+            }
+
+            return -1;
+        }
     }
+
     public static void main(String[] args) {
-        System.out.println(firstNonRepeatingCharacter("codeintuition"));   // 0
-        System.out.println(firstNonRepeatingCharacter("aaabcd"));          // 3
-        System.out.println(firstNonRepeatingCharacter("aaabbccdd"));       // -1
+        // Examples from the problem statement
+        System.out.println(new Solution().firstNonRepeatingCharacter("codeintuition")); // 0
+        System.out.println(new Solution().firstNonRepeatingCharacter("aaabcd"));        // 3
+        System.out.println(new Solution().firstNonRepeatingCharacter("aaabbccdd"));     // -1
+
+        // Edge cases
+        System.out.println(new Solution().firstNonRepeatingCharacter(""));              // -1
+        System.out.println(new Solution().firstNonRepeatingCharacter("a"));             // 0
+        System.out.println(new Solution().firstNonRepeatingCharacter("aabb"));          // -1
+        System.out.println(new Solution().firstNonRepeatingCharacter("abcabc"));        // -1
+        System.out.println(new Solution().firstNonRepeatingCharacter("abcd"));          // 0
     }
 }
 ```
 
-```c run
-#include <stdio.h>
-
-int first_non_repeating_character(const char *s) {
-    int freq[26] = {0};
-    for (const char *p = s; *p; p++) freq[*p - 'a']++;
-    for (int i = 0; s[i]; i++) if (freq[s[i] - 'a'] == 1) return i;
-    return -1;
-}
-
-int main() {
-    printf("%d %d %d\n",
-        first_non_repeating_character("codeintuition"),
-        first_non_repeating_character("aaabcd"),
-        first_non_repeating_character("aaabbccdd"));
-}
-```
-
-```scala run
-def firstNonRepeatingCharacter(s: String): Int = {
-  val freq = s.groupBy(identity).view.mapValues(_.length).toMap
-  s.indices.find(i => freq(s(i)) == 1).getOrElse(-1)
-}
-
-object Main extends App {
-  println(firstNonRepeatingCharacter("codeintuition"))
-  println(firstNonRepeatingCharacter("aaabcd"))
-  println(firstNonRepeatingCharacter("aaabbccdd"))
-}
-```
+</details>
 
 
 ***
@@ -582,7 +471,9 @@ Given two strings `s1` and `s2`, return `true` if `s1` can be constructed using 
 > -   **Input:** `s1 = "alpha", s2 = "beta"`
 > -   **Output:** `false`
 
-## Approach
+<details>
+<summary><h2>Approach</h2></summary>
+
 
 Build the frequency map of `s2`. Then walk `s1`; for each character, *consume* one from the map by decrementing it. If any character's count drops to zero (or below) while we still need it, `s2` doesn't have enough letters — return `false`.
 
@@ -607,97 +498,113 @@ flowchart LR
 
 <p align="center"><strong>Constructibility — the s2 frequency map is the "available letters" pool. Walking s1 consumes from the pool. If you ever try to consume a letter that's exhausted, the build fails.</strong></p>
 
-## Solution
+</details>
+<details>
+<summary><h2>Solution</h2></summary>
 
 
-```pseudocode
-function constructibility_check(s1, s2):
-    pool ← count_frequency(s2)
-    for ch in s1:
-        if pool[ch] = 0: return false
-        pool[ch] ← pool[ch] − 1
-    return true
-```
 
 ```python run
-from collections import Counter
+from collections import defaultdict
+from typing import Dict
 
-def constructibility_check(s1: str, s2: str) -> bool:
-    pool = Counter(s2)               # available letters
-    for ch in s1:
-        if pool[ch] == 0: return False  # exhausted → can't build
-        pool[ch] -= 1
-    return True
+class Solution:
+    def count_frequency(self, s: str) -> Dict[str, int]:
+        frequency = defaultdict(int)
+        for ch in s:
+            frequency[ch] += 1
 
-print(constructibility_check("somenote", "enetomoselse"))   # True
-print(constructibility_check("thief",    "hifacqet"))       # True
-print(constructibility_check("alpha",    "beta"))           # False
+        return frequency
+
+    def constructibility_check(self, s1: str, s2: str) -> bool:
+
+        # Create a map to store the frequency of each character in s2
+        s2_frequency = self.count_frequency(s2)
+
+        # Iterate over the characters in s1
+        for ch in s1:
+
+            # If the frequency of the character is zero, return False
+            if s2_frequency.get(ch, 0) == 0:
+                return False
+
+            # Decrement the frequency of the character in the map
+            s2_frequency[ch] -= 1
+
+        # If all characters in s1 can be constructed from s2, return True
+        return True
+
+
+# Examples from the problem statement
+print(Solution().constructibility_check("somenote", "enetomoselse"))  # True
+print(Solution().constructibility_check("thief", "hifacqet"))         # True
+print(Solution().constructibility_check("alpha", "beta"))             # False
+
+# Edge cases
+print(Solution().constructibility_check("", "abc"))                   # True
+print(Solution().constructibility_check("a", ""))                     # False
+print(Solution().constructibility_check("aa", "a"))                   # False
+print(Solution().constructibility_check("a", "a"))                    # True
+print(Solution().constructibility_check("abc", "abc"))                # True
 ```
 
 ```java run
 import java.util.*;
 
 public class Main {
-    static boolean constructibilityCheck(String s1, String s2) {
-        Map<Character, Integer> pool = new HashMap<>();
-        for (char ch : s2.toCharArray()) pool.merge(ch, 1, Integer::sum);
-        for (char ch : s1.toCharArray()) {
-            int n = pool.getOrDefault(ch, 0);
-            if (n == 0) return false;
-            pool.put(ch, n - 1);
+    static class Solution {
+        private Map<Character, Integer> countFrequency(String s) {
+            Map<Character, Integer> frequency = new HashMap<>();
+            for (char ch : s.toCharArray()) {
+                frequency.put(ch, frequency.getOrDefault(ch, 0) + 1);
+            }
+
+            return frequency;
         }
-        return true;
+
+        public boolean constructibilityCheck(String s1, String s2) {
+
+            // Create a map to store the frequency of each character in s2
+            Map<Character, Integer> s2Frequency = countFrequency(s2);
+
+            // Iterate over the characters in s1
+            for (char ch : s1.toCharArray()) {
+
+                // If the frequency of the character is zero, return false
+                if (s2Frequency.getOrDefault(ch, 0) == 0) {
+                    return false;
+                }
+
+                // Decrement the frequency of the character in the map
+                s2Frequency.put(ch, s2Frequency.get(ch) - 1);
+            }
+
+            // If all characters in s1 can be constructed from s2, return
+            // true
+            return true;
+        }
     }
+
     public static void main(String[] args) {
-        System.out.println(constructibilityCheck("somenote", "enetomoselse"));   // true
-        System.out.println(constructibilityCheck("thief",    "hifacqet"));       // true
-        System.out.println(constructibilityCheck("alpha",    "beta"));           // false
+        // Examples from the problem statement
+        System.out.println(new Solution().constructibilityCheck("somenote", "enetomoselse")); // true
+        System.out.println(new Solution().constructibilityCheck("thief", "hifacqet"));        // true
+        System.out.println(new Solution().constructibilityCheck("alpha", "beta"));            // false
+
+        // Edge cases
+        System.out.println(new Solution().constructibilityCheck("", "abc"));                  // true
+        System.out.println(new Solution().constructibilityCheck("a", ""));                    // false
+        System.out.println(new Solution().constructibilityCheck("aa", "a"));                  // false
+        System.out.println(new Solution().constructibilityCheck("a", "a"));                   // true
+        System.out.println(new Solution().constructibilityCheck("abc", "abc"));               // true
     }
-}
-```
-
-```c run
-#include <stdio.h>
-#include <stdbool.h>
-
-bool constructibility_check(const char *s1, const char *s2) {
-    int pool[26] = {0};
-    for (const char *p = s2; *p; p++) pool[*p - 'a']++;
-    for (const char *p = s1; *p; p++) {
-        if (pool[*p - 'a'] == 0) return false;
-        pool[*p - 'a']--;
-    }
-    return true;
-}
-
-int main() {
-    printf("%d %d %d\n",
-        constructibility_check("somenote", "enetomoselse"),
-        constructibility_check("thief", "hifacqet"),
-        constructibility_check("alpha", "beta"));   // 1 1 0
-}
-```
-
-```scala run
-def constructibilityCheck(s1: String, s2: String): Boolean = {
-  val pool = scala.collection.mutable.Map[Char, Int]().withDefaultValue(0)
-  s2.foreach(ch => pool(ch) += 1)
-  for (ch <- s1) {
-    if (pool(ch) == 0) return false
-    pool(ch) -= 1
-  }
-  true
-}
-
-object Main extends App {
-  println(constructibilityCheck("somenote", "enetomoselse"))
-  println(constructibilityCheck("thief", "hifacqet"))
-  println(constructibilityCheck("alpha", "beta"))
 }
 ```
 
 
 **Complexity:** O(|s1| + |s2|) time, O(unique chars in s2) space.
+
+</details>
 
 ***
 
@@ -719,89 +626,129 @@ Given two strings `s` and `p`, return `true` if `p` is an anagram of `s` (same m
 > -   **Input:** `s = "abcdef", p = "dfecba"`
 > -   **Output:** `true`
 
-## Approach
+<details>
+<summary><h2>Approach</h2></summary>
+
 
 Anagrams have the same length and the same character frequency map. Build the frequency of `s`, then walk `p` and decrement; if any character is missing or counts disagree, return `false`. The map ends empty iff the two are anagrams.
 
 > *Mental shortcut* — anagram checking is "does the multiset match?". The frequency map *is* the multiset.
 
-## Solution
+</details>
+<details>
+<summary><h2>Solution</h2></summary>
 
 
-```pseudocode
-function anagram_checker(s, p):
-    if length(s) ≠ length(p): return false
-    return count_frequency(s) = count_frequency(p)
-```
 
 ```python run
-from collections import Counter
+from collections import defaultdict
+from typing import Dict
 
-def anagram_checker(s: str, p: str) -> bool:
-    if len(s) != len(p): return False
-    return Counter(s) == Counter(p)        # multiset equality, one line
+class Solution:
+    def count_frequency(self, s: str) -> Dict[str, int]:
+        frequency = defaultdict(int)
+        for ch in s:
+            frequency[ch] += 1
 
-print(anagram_checker("codeintuition", "cdoenoitiutni"))   # True
-print(anagram_checker("abc", "ade"))                       # False
-print(anagram_checker("abcdef", "dfecba"))                 # True
+        return frequency
+
+    def anagram_checker(self, s: str, t: str) -> bool:
+
+        # If the strings are of different lengths, they cannot be
+        # anagrams
+        if len(s) != len(t):
+            return False
+
+        # Create a map to store the frequency of each character in the
+        # first string
+        s_frequency = self.count_frequency(s)
+
+        # Traverse the second string and decrement the frequency of each
+        # character in the hash map
+        for ch in t:
+            if ch not in s_frequency:
+                return False
+
+            s_frequency[ch] -= 1
+            if s_frequency[ch] == 0:
+                del s_frequency[ch]
+
+        return len(s_frequency) == 0
+
+
+# Examples from the problem statement
+print(Solution().anagram_checker("codeintuition", "cdoenoitiutni"))  # True
+print(Solution().anagram_checker("abc", "ade"))                      # False
+print(Solution().anagram_checker("abcdef", "dfecba"))                # True
+
+# Edge cases
+print(Solution().anagram_checker("", ""))                            # True
+print(Solution().anagram_checker("a", "a"))                          # True
+print(Solution().anagram_checker("a", "b"))                          # False
+print(Solution().anagram_checker("ab", "a"))                         # False
+print(Solution().anagram_checker("aab", "baa"))                      # True
 ```
 
 ```java run
 import java.util.*;
 
 public class Main {
-    static boolean anagramChecker(String s, String p) {
-        if (s.length() != p.length()) return false;
-        Map<Character, Integer> freq = new HashMap<>();
-        for (char ch : s.toCharArray()) freq.merge(ch, 1, Integer::sum);
-        for (char ch : p.toCharArray()) {
-            if (!freq.containsKey(ch)) return false;
-            int n = freq.get(ch) - 1;
-            if (n == 0) freq.remove(ch); else freq.put(ch, n);
+    static class Solution {
+        private Map<Character, Integer> countFrequency(String s) {
+            Map<Character, Integer> frequency = new HashMap<>();
+            for (char ch : s.toCharArray()) {
+                frequency.put(ch, frequency.getOrDefault(ch, 0) + 1);
+            }
+
+            return frequency;
         }
-        return freq.isEmpty();
+
+        public boolean anagramChecker(String s, String t) {
+
+            // If the strings are of different lengths, they cannot be
+            // anagrams
+            if (s.length() != t.length()) {
+                return false;
+            }
+
+            // Create a map to store the frequency of each character in the
+            // first string
+            Map<Character, Integer> sFrequency = countFrequency(s);
+
+            // Traverse the second string and decrement the frequency of each
+            // character in the hash map
+            for (char ch : t.toCharArray()) {
+                if (!sFrequency.containsKey(ch)) {
+                    return false;
+                }
+
+                sFrequency.put(ch, sFrequency.get(ch) - 1);
+                if (sFrequency.get(ch) == 0) {
+                    sFrequency.remove(ch);
+                }
+            }
+
+            return sFrequency.isEmpty();
+        }
     }
+
     public static void main(String[] args) {
-        System.out.println(anagramChecker("codeintuition", "cdoenoitiutni"));   // true
-        System.out.println(anagramChecker("abc", "ade"));                       // false
-        System.out.println(anagramChecker("abcdef", "dfecba"));                 // true
+        // Examples from the problem statement
+        System.out.println(new Solution().anagramChecker("codeintuition", "cdoenoitiutni")); // true
+        System.out.println(new Solution().anagramChecker("abc", "ade"));                     // false
+        System.out.println(new Solution().anagramChecker("abcdef", "dfecba"));               // true
+
+        // Edge cases
+        System.out.println(new Solution().anagramChecker("", ""));                           // true
+        System.out.println(new Solution().anagramChecker("a", "a"));                         // true
+        System.out.println(new Solution().anagramChecker("a", "b"));                         // false
+        System.out.println(new Solution().anagramChecker("ab", "a"));                        // false
+        System.out.println(new Solution().anagramChecker("aab", "baa"));                     // true
     }
 }
 ```
 
-```c run
-#include <stdio.h>
-#include <string.h>
-#include <stdbool.h>
-
-bool anagram_checker(const char *s, const char *p) {
-    if (strlen(s) != strlen(p)) return false;
-    int freq[26] = {0};
-    for (; *s; s++, p++) { freq[*s - 'a']++; freq[*p - 'a']--; }
-    for (int i = 0; i < 26; i++) if (freq[i] != 0) return false;
-    return true;
-}
-
-int main() {
-    printf("%d %d %d\n",
-        anagram_checker("codeintuition", "cdoenoitiutni"),
-        anagram_checker("abc", "ade"),
-        anagram_checker("abcdef", "dfecba"));
-}
-```
-
-```scala run
-def anagramChecker(s: String, p: String): Boolean =
-  s.length == p.length &&
-  s.groupBy(identity).view.mapValues(_.length).toMap ==
-  p.groupBy(identity).view.mapValues(_.length).toMap
-
-object Main extends App {
-  println(anagramChecker("codeintuition", "cdoenoitiutni"))
-  println(anagramChecker("abc", "ade"))
-  println(anagramChecker("abcdef", "dfecba"))
-}
-```
+</details>
 
 
 ***
@@ -826,7 +773,9 @@ Given a case-sensitive string `s`, return the length of the **longest palindrome
 > -   **Input:** `s = "abc"`
 > -   **Output:** `1`
 
-## Approach
+<details>
+<summary><h2>Approach</h2></summary>
+
 
 A palindrome reads the same forward and backward. Every character used in pairs contributes 2 to the length; **at most one** odd-count character can sit alone in the middle. So:
 
@@ -855,96 +804,135 @@ flowchart LR
 
 <p align="center"><strong>Build palindrome — every even-frequency character contributes fully; odd-frequency characters contribute (count − 1); a single bonus +1 for the optional middle character.</strong></p>
 
-## Solution
+</details>
+<details>
+<summary><h2>Solution</h2></summary>
 
 
-```pseudocode
-function build_palindrome(s):
-    freq ← count_frequency(s)
-    length ← 0; has_odd ← false
-    for c in values(freq):
-        if c mod 2 = 0: length ← length + c
-        else: length ← length + c − 1; has_odd ← true
-    if has_odd: return length + 1
-    return length
-```
 
 ```python run
-from collections import Counter
+from collections import defaultdict
+from typing import Dict
 
-def build_palindrome(s: str) -> int:
-    freq = Counter(s)
-    length = 0
-    has_odd = False
-    for c in freq.values():
-        if c % 2 == 0: length += c
-        else:          length += c - 1; has_odd = True
-    return length + (1 if has_odd else 0)
+class Solution:
+    def count_frequency(self, s: str) -> Dict[str, int]:
+        frequency = defaultdict(int)
+        for ch in s:
+            frequency[ch] += 1
 
-print(build_palindrome("AaAaBbBbc"))   # 9
-print(build_palindrome("abbd"))        # 3
-print(build_palindrome("abc"))         # 1
+        return frequency
+
+    def build_palindrome(self, s: str) -> int:
+
+        # Create a map to store the frequency of each character in the
+        # string
+        frequency = self.count_frequency(s)
+
+        # Initialize the length of the longest palindrome
+        length = 0
+
+        # Initialize a boolean flag to check if there are odd counts of
+        # characters
+        odd = False
+
+        # Iterate over the map to calculate the length of the longest
+        # palindrome
+        for count in frequency.values():
+
+            # If the count of the character is even, add it to the length
+            if count % 2 == 0:
+                length += count
+
+            # If the count of the character is odd, add the count minus
+            # one to the length and set the odd flag to true
+            else:
+                length += count - 1
+                odd = True
+
+        # If there are odd counts of characters, add one to the length
+        return length + 1 if odd else length
+
+
+# Examples from the problem statement
+print(Solution().build_palindrome("AaAaBbBbc"))  # 9
+print(Solution().build_palindrome("abbd"))       # 3
+print(Solution().build_palindrome("abc"))        # 1
+
+# Edge cases
+print(Solution().build_palindrome(""))           # 0
+print(Solution().build_palindrome("a"))          # 1
+print(Solution().build_palindrome("aa"))         # 2
+print(Solution().build_palindrome("aabb"))       # 4
+print(Solution().build_palindrome("aaaa"))       # 4
 ```
 
 ```java run
 import java.util.*;
 
 public class Main {
-    static int buildPalindrome(String s) {
-        Map<Character, Integer> freq = new HashMap<>();
-        for (char ch : s.toCharArray()) freq.merge(ch, 1, Integer::sum);
-        int length = 0; boolean hasOdd = false;
-        for (int c : freq.values()) {
-            if (c % 2 == 0) length += c;
-            else            { length += c - 1; hasOdd = true; }
+    static class Solution {
+        private Map<Character, Integer> countFrequency(String s) {
+            Map<Character, Integer> frequency = new HashMap<>();
+            for (char ch : s.toCharArray()) {
+                frequency.put(ch, frequency.getOrDefault(ch, 0) + 1);
+            }
+
+            return frequency;
         }
-        return length + (hasOdd ? 1 : 0);
+
+        public int buildPalindrome(String s) {
+
+            // Create a map to store the frequency of each character in the
+            // string
+            Map<Character, Integer> frequency = countFrequency(s);
+
+            // Initialize the length of the longest palindrome
+            int length = 0;
+
+            // Initialize a boolean flag to check if there are odd counts of
+            // characters
+            boolean odd = false;
+
+            // Iterate over the map to calculate the length of the longest
+            // palindrome
+            for (var entry : frequency.entrySet()) {
+
+                // If the count of the character is even, add it to the
+                // length
+                if (entry.getValue() % 2 == 0) {
+                    length += entry.getValue();
+                }
+
+                // If the count of the character is odd, add the count minus
+                // one to the length and set the odd flag to true
+                else {
+                    length += entry.getValue() - 1;
+                    odd = true;
+                }
+            }
+
+            // If there are odd counts of characters, add one to the length
+            return odd ? length + 1 : length;
+        }
     }
+
     public static void main(String[] args) {
-        System.out.println(buildPalindrome("AaAaBbBbc"));   // 9
-        System.out.println(buildPalindrome("abbd"));        // 3
-        System.out.println(buildPalindrome("abc"));         // 1
+        // Examples from the problem statement
+        System.out.println(new Solution().buildPalindrome("AaAaBbBbc")); // 9
+        System.out.println(new Solution().buildPalindrome("abbd"));      // 3
+        System.out.println(new Solution().buildPalindrome("abc"));       // 1
+
+        // Edge cases
+        System.out.println(new Solution().buildPalindrome(""));          // 0
+        System.out.println(new Solution().buildPalindrome("a"));         // 1
+        System.out.println(new Solution().buildPalindrome("aa"));        // 2
+        System.out.println(new Solution().buildPalindrome("aabb"));      // 4
+        System.out.println(new Solution().buildPalindrome("aaaa"));      // 4
     }
 }
 ```
 
-```c run
-#include <stdio.h>
-
-int build_palindrome(const char *s) {
-    int freq[128] = {0};
-    for (; *s; s++) freq[(unsigned char)*s]++;
-    int length = 0, has_odd = 0;
-    for (int i = 0; i < 128; i++) {
-        if (freq[i] % 2 == 0) length += freq[i];
-        else                  { length += freq[i] - 1; has_odd = 1; }
-    }
-    return length + has_odd;
-}
-
-int main() {
-    printf("%d %d %d\n",
-        build_palindrome("AaAaBbBbc"),
-        build_palindrome("abbd"),
-        build_palindrome("abc"));
-}
-```
-
-```scala run
-def buildPalindrome(s: String): Int = {
-  val freq = s.groupBy(identity).view.mapValues(_.length).values
-  val (sum, hasOdd) = freq.foldLeft((0, false)) { case ((l, odd), c) =>
-    if (c % 2 == 0) (l + c, odd) else (l + c - 1, true)
-  }
-  if (hasOdd) sum + 1 else sum
-}
-
-object Main extends App {
-  println(buildPalindrome("AaAaBbBbc"))
-  println(buildPalindrome("abbd"))
-  println(buildPalindrome("abc"))
-}
-```
+</details>
 
 
 ***
@@ -967,7 +955,9 @@ Given an array of strings `strs`, group all anagrams together. Return the groups
 > -   **Input:** `[]`
 > -   **Output:** `[]`
 
-## Approach
+<details>
+<summary><h2>Approach</h2></summary>
+
 
 Two strings are anagrams iff their character frequency maps match. So the **frequency tuple itself** is a perfect grouping key — any two anagrams produce the same key. Build a hash map from frequency-key to list of strings.
 
@@ -1007,107 +997,177 @@ flowchart LR
 
 <p align="center"><strong>Cluster anagrams — the canonical form (sorted letters or letter-frequency tuple) is the same for every anagram, so anagrams collide into the same hash-map bucket. The buckets <em>are</em> the groups.</strong></p>
 
-## Solution
+</details>
+<details>
+<summary><h2>Solution</h2></summary>
 
 
-```pseudocode
-function cluster_anagrams(strs):
-    groups ← empty Map: string → list
-    for s in strs:
-        key ← sorted characters of s joined as string
-        append s to groups[key]
-    return values(groups)
-```
 
 ```python run
-from collections import defaultdict
+from typing import List, Tuple
 
-def cluster_anagrams(strs: list) -> list:
-    groups = defaultdict(list)
-    for s in strs:
-        # Sorted string is the canonical anagram key.
-        groups[''.join(sorted(s))].append(s)
-    return list(groups.values())
+class Solution:
+    def count_frequency(self, str: str) -> List[int]:
 
-print(cluster_anagrams(["abc","cab","def","dfe","hij"]))
-print(cluster_anagrams(["a","b","c","d","e"]))
-print(cluster_anagrams([]))
+        # Initialize frequency list for 26 letters
+        frequency = [0] * 26
+        for c in str:
+
+            # Increment the count for each character
+            frequency[ord(c) - ord("a")] += 1
+        return frequency
+
+    def cluster_anagrams(self, strs: List[str]) -> List[List[str]]:
+
+        # Map to store character frequency lists as keys and lists of
+        # indices as values
+        frequency_groups = {}
+
+        # Populate the frequency_groups with indices of strings grouped
+        # by character frequencies
+        for i, s in enumerate(strs):
+
+            # Count the frequency of each character in the string
+            frequency = self.count_frequency(s)
+
+            # Group strings with the same frequency list by storing
+            # their indices
+            if tuple(frequency) not in frequency_groups:
+                frequency_groups[tuple(frequency)] = []
+            frequency_groups[tuple(frequency)].append(i)
+
+        # Collect grouped anagrams into the result list
+        result = []
+
+        # Iterate over each group of indices in frequencyGroups
+        for entry in frequency_groups.items():
+            anagram_group = []
+            for index in entry[1]:
+
+                # Use the index to get the original string and add it to
+                # the anagram group
+                anagram_group.append(strs[index])
+
+            # Add the anagram group to the result
+            result.append(anagram_group)
+        return result
+
+
+# Examples from the problem statement
+r1 = Solution().cluster_anagrams(["abc", "cab", "def", "dfe", "hij"])
+print(sorted([sorted(g) for g in r1]))   # [['abc', 'cab'], ['def', 'dfe'], ['hij']]
+
+r2 = Solution().cluster_anagrams(["a", "b", "c", "d", "e"])
+print(sorted([sorted(g) for g in r2]))   # [['a'], ['b'], ['c'], ['d'], ['e']]
+
+print(Solution().cluster_anagrams([]))   # []
+
+# Edge cases
+r4 = Solution().cluster_anagrams(["eat", "tea", "tan", "ate", "nat", "bat"])
+print(sorted([sorted(g) for g in r4]))   # [['ate', 'eat', 'tea'], ['bat'], ['nat', 'tan']]
+
+r5 = Solution().cluster_anagrams(["a"])
+print(r5)                                # [['a']]
 ```
 
 ```java run
 import java.util.*;
+import java.util.stream.*;
 
 public class Main {
-    static List<List<String>> clusterAnagrams(String[] strs) {
-        Map<String, List<String>> groups = new HashMap<>();
-        for (String s : strs) {
-            char[] arr = s.toCharArray(); Arrays.sort(arr);
-            groups.computeIfAbsent(new String(arr), k -> new ArrayList<>()).add(s);
+    static class Solution {
+        private List<Integer> countFrequency(String str) {
+
+            // Initialize frequency list for 26 letters
+            List<Integer> frequency = new ArrayList<>(
+                Collections.nCopies(26, 0)
+            );
+            for (char c : str.toCharArray()) {
+
+                // Increment the count for each character
+                frequency.set(c - 'a', frequency.get(c - 'a') + 1);
+            }
+            return frequency;
         }
-        return new ArrayList<>(groups.values());
+
+        public List<List<String>> clusterAnagrams(String[] strs) {
+
+            // Map to store character frequency lists as keys and lists of
+            // indices as values
+            Map<List<Integer>, List<Integer>> frequencyGroups =
+                new HashMap<>();
+
+            // Populate the frequencyGroups with indices of strings grouped
+            // by character frequencies
+            for (int i = 0; i < strs.length; i++) {
+
+                // Count the frequency of each character in the string
+                List<Integer> frequency = countFrequency(strs[i]);
+
+                // Group strings with the same frequency list by storing
+                // their indices
+                frequencyGroups.put(
+                    frequency,
+                    frequencyGroups.getOrDefault(
+                        frequency,
+                        new ArrayList<>()
+                    )
+                );
+                frequencyGroups.get(frequency).add(i);
+            }
+
+            // Collect grouped anagrams into the result array
+            List<List<String>> result = new ArrayList<>();
+
+            // Iterate over each group of indices in frequencyGroups
+            for (List<Integer> indices : frequencyGroups.values()) {
+
+                // Use the index to get the original string and add it to
+                // the anagram group
+                List<String> anagramGroup = indices
+                    .stream()
+                    .map(i -> strs[i])
+                    .collect(Collectors.toList());
+
+                // Add the anagram group to the result
+                result.add(anagramGroup);
+            }
+
+            return result;
+        }
     }
+
     public static void main(String[] args) {
-        System.out.println(clusterAnagrams(new String[]{"abc","cab","def","dfe","hij"}));
+        // Examples from the problem statement
+        var r1 = new Solution().clusterAnagrams(new String[]{"abc", "cab", "def", "dfe", "hij"});
+        r1.forEach(g -> { Collections.sort(g); System.out.print(g + " "); }); System.out.println();
+        // [abc, cab] [def, dfe] [hij] (order of groups may vary)
+
+        var r2 = new Solution().clusterAnagrams(new String[]{"a", "b", "c", "d", "e"});
+        r2.forEach(g -> System.out.print(g + " ")); System.out.println();
+        // [a] [b] [c] [d] [e] (order may vary)
+
+        var r3 = new Solution().clusterAnagrams(new String[]{});
+        System.out.println(r3);  // []
+
+        // Edge cases
+        var r4 = new Solution().clusterAnagrams(new String[]{"eat", "tea", "tan", "ate", "nat", "bat"});
+        r4.forEach(g -> { Collections.sort(g); System.out.print(g + " "); }); System.out.println();
+        // [ate, eat, tea] [nat, tan] [bat] (order of groups may vary)
+
+        var r5 = new Solution().clusterAnagrams(new String[]{"a"});
+        System.out.println(r5);  // [[a]]
     }
 }
 ```
 
-```c run
-#include <stdio.h>
-#include <string.h>
-#include <stdlib.h>
 
-// Simple O(n²) grouping in C (no hash map in stdlib).
-static int qcmp(const void *a, const void *b) { return *(char*)a - *(char*)b; }
+**Complexity:** O(N · K) where N is the number of strings and K is the average length — this implementation builds a 26-element frequency tuple per string, which costs O(K) and avoids the O(K log K) of sorting each string.
 
-void cluster_anagrams(char **strs, int n) {
-    char **canon = malloc(sizeof(char*) * n);
-    int  *group  = malloc(sizeof(int)  * n);   // -1 = ungrouped
-    for (int i = 0; i < n; i++) {
-        canon[i] = strdup(strs[i]);
-        qsort(canon[i], strlen(canon[i]), 1, qcmp);
-        group[i] = -1;
-    }
-    int gid = 0;
-    for (int i = 0; i < n; i++) {
-        if (group[i] != -1) continue;
-        group[i] = gid;
-        for (int j = i + 1; j < n; j++)
-            if (group[j] == -1 && strcmp(canon[i], canon[j]) == 0) group[j] = gid;
-        gid++;
-    }
-    for (int g = 0; g < gid; g++) {
-        printf("[ "); for (int i = 0; i < n; i++) if (group[i] == g) printf("%s ", strs[i]);
-        printf("]\n");
-    }
-    for (int i = 0; i < n; i++) free(canon[i]);
-    free(canon); free(group);
-}
+</details>
+<details>
+<summary><h2>Final Takeaway</h2></summary>
 
-int main() {
-    char *strs[] = {"abc","cab","def","dfe","hij"};
-    cluster_anagrams(strs, 5);
-    return 0;
-}
-```
-
-```scala run
-def clusterAnagrams(strs: List[String]): List[List[String]] =
-  strs.groupBy(_.sorted).values.toList
-
-object Main extends App {
-  println(clusterAnagrams(List("abc","cab","def","dfe","hij")))
-  println(clusterAnagrams(List("a","b","c","d","e")))
-  println(clusterAnagrams(List()))
-}
-```
-
-
-**Complexity:** O(N · K log K) where N is the number of strings and K is the average length (sorting each string). Linear in N if you use a 26-element frequency tuple instead.
-
-***
-
-## Final Takeaway
 
 Counting is the gateway pattern of hash-table problem solving. The **template** — *build a frequency map first, then answer the question* — is so common that you'll see it in dozens of interview problems and hundreds of production codebases. Five lessons in one paragraph:
 
@@ -1118,3 +1178,5 @@ Counting is the gateway pattern of hash-table problem solving. The **template** 
 - **Counting rarely solves the problem alone.** It builds the *input* to the rest of your algorithm. The map is a tool, not the answer.
 
 > *Coming up — the **key-generation pattern**. Counting answers "how often did X appear?". Key generation answers "have I seen *something equivalent to* X before?" — where "equivalent" means *the same key under some canonical transformation*. We just used it to cluster anagrams (sorted-string key); the next lesson generalises it to deduplication, isomorphism checks, and a host of "is this the same as that?" problems.*
+
+</details>

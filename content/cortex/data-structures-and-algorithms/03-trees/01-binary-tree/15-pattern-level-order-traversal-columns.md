@@ -8,7 +8,7 @@ Imagine standing *above* the tree and looking straight down. The root sits at co
 
 The mechanism is the same level-order BFS as the last lesson, but the queue carries an extra coordinate per entry: **(node, column)**. A `Map<column, …>` then collects whatever per-column data the question wants. The `column` key is computed from the parent's column with a simple offset; the value depends on which view we're computing.
 
-This lesson packs the four canonical column-based problems into a tight set of variations on one template — top view, bottom view, vertical, diagonal — implemented in 10 languages each.
+This lesson packs the four canonical column-based problems into a tight set of variations on one template — top view, bottom view, vertical, diagonal — implemented in Python and Java.
 
 ---
 
@@ -82,101 +82,209 @@ The trick: when we visit a node and its column is **not yet** in the map, record
 >
 > Not directly. DFS visits nodes in *recursion order*, not depth order, so the first node DFS hits in column −1 isn't necessarily the topmost. You'd need to remember each node's *depth* and only update the per-column entry when you find a *shallower* node — which is more work than just using BFS, where the first arrival is automatically the topmost.
 
-## Solution
+<details>
+<summary><h2>Solution</h2></summary>
 
 
-```pseudocode
-function topView(root):
-    if root = null: return empty list
-    cols ← empty sorted Map: column → value
-    q    ← empty queue; enqueue (root, 0) to q
-    minC ← 0; maxC ← 0
-    while q is not empty:
-        (n, c) ← dequeue from q
-        if c not in cols: cols[c] ← n.val      # first arrival = topmost node in this column
-        minC ← min(minC, c); maxC ← max(maxC, c)
-        if n.left  ≠ null: enqueue (n.left,  c − 1) to q
-        if n.right ≠ null: enqueue (n.right, c + 1) to q
-    return [cols[c] for c from minC to maxC]
-```
 
 ```python run
-from collections import deque
+from queue import Queue
 from typing import List, Optional
+
 
 class TreeNode:
     def __init__(self, val=0, left=None, right=None):
-        self.val, self.left, self.right = val, left, right
+        self.val = val
+        self.left = left
+        self.right = right
 
-def top_view(root: Optional[TreeNode]) -> List[int]:
-    if root is None: return []
-    cols = {}
-    q = deque([(root, 0)])
-    min_c, max_c = 0, 0
-    while q:
-        n, c = q.popleft()
-        if c not in cols: cols[c] = n.val
-        min_c, max_c = min(min_c, c), max(max_c, c)
-        if n.left:  q.append((n.left,  c - 1))
-        if n.right: q.append((n.right, c + 1))
-    return [cols[c] for c in range(min_c, max_c + 1)]
+
+def from_level_order(values):
+    """Build tree from list like [1, 2, 3, None, 4]. None means missing child."""
+    if not values:
+        return None
+    root = TreeNode(values[0])
+    queue = [root]
+    i = 1
+    while queue and i < len(values):
+        node = queue.pop(0)
+        if i < len(values) and values[i] is not None:
+            node.left = TreeNode(values[i])
+            queue.append(node.left)
+        i += 1
+        if i < len(values) and values[i] is not None:
+            node.right = TreeNode(values[i])
+            queue.append(node.right)
+        i += 1
+    return root
+
+
+# Define a class to store the node and its column index
+class NodeInfo:
+    def __init__(self, node: TreeNode, column: int) -> None:
+        self.node = node
+        self.column = column
+
+
+class Solution:
+    def top_view(self, root: Optional[TreeNode]) -> List[int]:
+        result: List[int] = []
+        if not root:
+            return result
+
+        # Hash map to store columns and their corresponding nodes
+        columns: dict[int, int] = {}
+
+        # Use a queue to perform a level-order traversal of the tree
+        queue = Queue()
+        queue.put(NodeInfo(root, 0))
+
+        # Loop through each level in the tree
+        while not queue.empty():
+            current = queue.get()
+            node = current.node
+            column = current.column
+
+            # Add the current node if it's the first node in the column
+            if column not in columns:
+                columns[column] = node.val
+
+            # Enqueue the left child with column - 1
+            if node.left:
+                queue.put(NodeInfo(node.left, column - 1))
+
+            # Enqueue the right child with column + 1
+            if node.right:
+                queue.put(NodeInfo(node.right, column + 1))
+
+        # Iterate over the columns in the hash map and add them to the
+        # result
+        for column in sorted(columns):
+            result.append(columns[column])
+
+        return result
+
+
+# Examples from the problem statement
+print(Solution().top_view(from_level_order([1, 2, 3, 4, None, None, 7, 9])))              # [9, 4, 2, 1, 3, 7]
+print(Solution().top_view(from_level_order([1, 8, 4, None, 6, None, None, None, 2, None, 9])))  # [8, 1, 4, 9]
+
+# Edge cases
+print(Solution().top_view(None))                                                           # []
+print(Solution().top_view(TreeNode(1)))                                                    # [1]
+print(Solution().top_view(from_level_order([1, 2, None, 3, None, 4])))                   # [3, 2, 1] left skew
+print(Solution().top_view(from_level_order([1, None, 2, None, None, None, 3])))          # [1, 2, 3] right skew
+print(Solution().top_view(from_level_order([1, 2, 3])))                                  # [2, 1, 3] balanced
 ```
 
 ```java run
-public static List<Integer> topView(TreeNode root) {
-    if (root == null) return new ArrayList<>();
-    TreeMap<Integer, Integer> cols = new TreeMap<>();
-    Queue<Object[]> q = new ArrayDeque<>(); q.offer(new Object[]{root, 0});
-    while (!q.isEmpty()) {
-        Object[] cur = q.poll();
-        TreeNode n = (TreeNode) cur[0]; int c = (int) cur[1];
-        cols.putIfAbsent(c, n.val);
-        if (n.left  != null) q.offer(new Object[]{n.left,  c - 1});
-        if (n.right != null) q.offer(new Object[]{n.right, c + 1});
+import java.util.*;
+
+public class Main {
+    static class TreeNode {
+        int val;
+        TreeNode left;
+        TreeNode right;
+        TreeNode() {}
+        TreeNode(int val) { this.val = val; }
     }
-    return new ArrayList<>(cols.values());
+
+    static TreeNode fromLevelOrder(Integer... values) {
+        if (values.length == 0 || values[0] == null) return null;
+        TreeNode root = new TreeNode(values[0]);
+        java.util.Deque<TreeNode> queue = new java.util.ArrayDeque<>();
+        queue.add(root);
+        int i = 1;
+        while (!queue.isEmpty() && i < values.length) {
+            TreeNode node = queue.poll();
+            if (i < values.length && values[i] != null) {
+                node.left = new TreeNode(values[i]);
+                queue.add(node.left);
+            }
+            i++;
+            if (i < values.length && values[i] != null) {
+                node.right = new TreeNode(values[i]);
+                queue.add(node.right);
+            }
+            i++;
+        }
+        return root;
+    }
+
+    // Define a class to store the node and its column index
+    static class NodeInfo {
+        TreeNode node;
+        int column;
+        NodeInfo(TreeNode node, int column) {
+            this.node = node;
+            this.column = column;
+        }
+    }
+
+    static class Solution {
+        public List<Integer> topView(TreeNode root) {
+            List<Integer> result = new ArrayList<>();
+            if (root == null) {
+                return result;
+            }
+
+            // Hash map to store columns and their corresponding nodes
+            Map<Integer, Integer> columns = new TreeMap<>();
+
+            // Use a queue to perform a level-order traversal of the tree
+            Queue<NodeInfo> queue = new LinkedList<>();
+
+            // Push the root node onto the queue with column index 0
+            queue.add(new NodeInfo(root, 0));
+
+            // Loop through each level in the tree
+            while (!queue.isEmpty()) {
+                NodeInfo current = queue.poll();
+                TreeNode node = current.node;
+                int column = current.column;
+
+                // Add the current node if it's the first node in the column
+                if (!columns.containsKey(column)) {
+                    columns.put(column, node.val);
+                }
+
+                // Enqueue the left child with column - 1
+                if (node.left != null) {
+                    queue.add(new NodeInfo(node.left, column - 1));
+                }
+
+                // Enqueue the right child with column + 1
+                if (node.right != null) {
+                    queue.add(new NodeInfo(node.right, column + 1));
+                }
+            }
+
+            // Iterate over the columns in the hash map and add them to the
+            // result
+            for (int column : columns.keySet()) {
+                result.add(columns.get(column));
+            }
+
+            return result;
+        }
+    }
+
+    public static void main(String[] args) {
+        // Examples from the problem statement
+        System.out.println(new Solution().topView(fromLevelOrder(1, 2, 3, 4, null, null, 7, 9)));              // [9, 4, 2, 1, 3, 7]
+        System.out.println(new Solution().topView(fromLevelOrder(1, 8, 4, null, 6, null, null, null, 2, null, 9)));  // [8, 1, 4, 9]
+
+        // Edge cases
+        System.out.println(new Solution().topView(null));                                                       // []
+        System.out.println(new Solution().topView(new TreeNode(1)));                                           // [1]
+        System.out.println(new Solution().topView(fromLevelOrder(1, 2, null, 3)));                            // [3, 2, 1] left skew
+        System.out.println(new Solution().topView(fromLevelOrder(1, null, 2, null, null, null, 3)));          // [1, 2, 3] right skew
+        System.out.println(new Solution().topView(fromLevelOrder(1, 2, 3)));                                  // [2, 1, 3]
+    }
 }
 ```
 
-```c run
-// Use a balanced BST or a fixed-range int->int array if columns fit in [-512, 511].
-typedef struct { TreeNode *n; int c; } NC;
-int* top_view(TreeNode *root, int *count) {
-    static int cols[1024];   // index = c + 512
-    static int seen[1024];
-    static int out[1024];
-    *count = 0;
-    if (!root) return out;
-    for (int i = 0; i < 1024; i++) seen[i] = 0;
-    NC q[1024]; int h = 0, t = 0; q[t++] = (NC){root, 0};
-    int min_c = 0, max_c = 0;
-    while (h < t) {
-        NC cur = q[h++]; int idx = cur.c + 512;
-        if (!seen[idx]) { seen[idx] = 1; cols[idx] = cur.n->val; }
-        if (cur.c < min_c) min_c = cur.c;
-        if (cur.c > max_c) max_c = cur.c;
-        if (cur.n->left)  q[t++] = (NC){cur.n->left,  cur.c - 1};
-        if (cur.n->right) q[t++] = (NC){cur.n->right, cur.c + 1};
-    }
-    for (int c = min_c; c <= max_c; c++) out[(*count)++] = cols[c + 512];
-    return out;
-}
-```
-
-```scala run
-def topView(root: TreeNode): List[Int] = {
-  if (root == null) return Nil
-  val cols = scala.collection.mutable.TreeMap[Int, Int]()
-  val q = scala.collection.mutable.Queue[(TreeNode, Int)]((root, 0))
-  while (q.nonEmpty) {
-    val (n, c) = q.dequeue()
-    if (!cols.contains(c)) cols(c) = n.value
-    if (n.left  != null) q.enqueue((n.left,  c - 1))
-    if (n.right != null) q.enqueue((n.right, c + 1))
-  }
-  cols.values.toList
-}
-```
+</details>
 
 
 ***
@@ -189,89 +297,208 @@ Trick: instead of "first wins" (`putIfAbsent`), use "**last wins**" (`put` uncon
 
 The implementation is *one line* different from top view: replace the `if c not in cols` guard with an unconditional `cols[c] = n.val`. Apply that one change to each of the 10 implementations above and you have bottom view.
 
-## Solution
+<details>
+<summary><h2>Solution</h2></summary>
 
 
-```pseudocode
-function bottomView(root):
-    if root = null: return empty list
-    cols ← empty sorted Map: column → value
-    q    ← empty queue; enqueue (root, 0) to q
-    minC ← 0; maxC ← 0
-    while q is not empty:
-        (n, c) ← dequeue from q
-        cols[c] ← n.val                           # unconditional overwrite: last = bottommost
-        minC ← min(minC, c); maxC ← max(maxC, c)
-        if n.left  ≠ null: enqueue (n.left,  c − 1) to q
-        if n.right ≠ null: enqueue (n.right, c + 1) to q
-    return [cols[c] for c from minC to maxC]
-```
 
 ```python run
-def bottom_view(root):
-    if root is None: return []
-    cols = {}; q = deque([(root, 0)])
-    min_c, max_c = 0, 0
-    while q:
-        n, c = q.popleft()
-        cols[c] = n.val                               # last write wins
-        min_c, max_c = min(min_c, c), max(max_c, c)
-        if n.left:  q.append((n.left,  c - 1))
-        if n.right: q.append((n.right, c + 1))
-    return [cols[c] for c in range(min_c, max_c + 1) if c in cols]
+from queue import Queue
+from typing import List, Optional
+
+
+class TreeNode:
+    def __init__(self, val=0, left=None, right=None):
+        self.val = val
+        self.left = left
+        self.right = right
+
+
+def from_level_order(values):
+    """Build tree from list like [1, 2, 3, None, 4]. None means missing child."""
+    if not values:
+        return None
+    root = TreeNode(values[0])
+    queue = [root]
+    i = 1
+    while queue and i < len(values):
+        node = queue.pop(0)
+        if i < len(values) and values[i] is not None:
+            node.left = TreeNode(values[i])
+            queue.append(node.left)
+        i += 1
+        if i < len(values) and values[i] is not None:
+            node.right = TreeNode(values[i])
+            queue.append(node.right)
+        i += 1
+    return root
+
+
+# Define a class to store the node and its column index
+class NodeInfo:
+    def __init__(self, node: TreeNode, column: int):
+        self.node = node
+        self.column = column
+
+
+class Solution:
+    def bottom_view(self, root: Optional[TreeNode]) -> List[int]:
+        result: List[int] = []
+        if not root:
+            return result
+
+        # Hash table to store columns and their corresponding nodes
+        columns: dict[int, int] = {}
+
+        # Use a queue to perform a level-order traversal of the tree
+        queue = Queue()
+        queue.put(NodeInfo(root, 0))
+
+        # Loop through each level in the tree
+        while not queue.empty():
+            current = queue.get()
+            node = current.node
+            column = current.column
+
+            # Keep updating the column value for each node, at the end
+            # we will have the bottom view of the tree for that column
+            columns[column] = node.val
+
+            # Enqueue the left child with column - 1
+            if node.left:
+                queue.put(NodeInfo(node.left, column - 1))
+
+            # Enqueue the right child with column + 1
+            if node.right:
+                queue.put(NodeInfo(node.right, column + 1))
+
+        # Iterate over the columns in the hash table and add them to the
+        # result
+        for column in sorted(columns):
+            result.append(columns[column])
+
+        return result
+
+
+# Examples from the problem statement
+print(Solution().bottom_view(from_level_order([1, 2, 3, 4, None, None, 7, 9])))              # [9, 4, 2, 1, 3, 7]
+print(Solution().bottom_view(from_level_order([1, 8, 4, None, 6, None, None, None, 2, None, 9])))  # [8, 6, 2, 9]
+
+# Edge cases
+print(Solution().bottom_view(None))                                                           # []
+print(Solution().bottom_view(TreeNode(1)))                                                    # [1]
+print(Solution().bottom_view(from_level_order([1, 2, None, 3, None, 4])))                   # [4, 3, 1] left skew
+print(Solution().bottom_view(from_level_order([1, None, 2, None, None, None, 3])))          # [1, 2, 3] right skew
+print(Solution().bottom_view(from_level_order([1, 2, 3])))                                  # [2, 1, 3]
 ```
 
 ```java run
-public static List<Integer> bottomView(TreeNode root) {
-    if (root == null) return new ArrayList<>();
-    TreeMap<Integer, Integer> cols = new TreeMap<>();
-    Queue<Object[]> q = new ArrayDeque<>(); q.offer(new Object[]{root, 0});
-    while (!q.isEmpty()) {
-        Object[] cur = q.poll();
-        TreeNode n = (TreeNode) cur[0]; int c = (int) cur[1];
-        cols.put(c, n.val);                           // unconditional overwrite
-        if (n.left  != null) q.offer(new Object[]{n.left,  c - 1});
-        if (n.right != null) q.offer(new Object[]{n.right, c + 1});
+import java.util.*;
+
+public class Main {
+    static class TreeNode {
+        int val;
+        TreeNode left;
+        TreeNode right;
+        TreeNode() {}
+        TreeNode(int val) { this.val = val; }
     }
-    return new ArrayList<>(cols.values());
+
+    static TreeNode fromLevelOrder(Integer... values) {
+        if (values.length == 0 || values[0] == null) return null;
+        TreeNode root = new TreeNode(values[0]);
+        java.util.Deque<TreeNode> queue = new java.util.ArrayDeque<>();
+        queue.add(root);
+        int i = 1;
+        while (!queue.isEmpty() && i < values.length) {
+            TreeNode node = queue.poll();
+            if (i < values.length && values[i] != null) {
+                node.left = new TreeNode(values[i]);
+                queue.add(node.left);
+            }
+            i++;
+            if (i < values.length && values[i] != null) {
+                node.right = new TreeNode(values[i]);
+                queue.add(node.right);
+            }
+            i++;
+        }
+        return root;
+    }
+
+    // Define a class to store the node and its column index
+    static class NodeInfo {
+        TreeNode node;
+        int column;
+        NodeInfo(TreeNode node, int column) {
+            this.node = node;
+            this.column = column;
+        }
+    }
+
+    static class Solution {
+        public List<Integer> bottomView(TreeNode root) {
+            List<Integer> result = new ArrayList<>();
+            if (root == null) {
+                return result;
+            }
+
+            // Hash table to store columns and their corresponding nodes
+            Map<Integer, Integer> columns = new TreeMap<>();
+
+            // Use a queue to perform a level-order traversal of the tree
+            Queue<NodeInfo> queue = new LinkedList<>();
+
+            // Push the root node onto the queue with column index 0
+            queue.add(new NodeInfo(root, 0));
+
+            // Loop through each level in the tree
+            while (!queue.isEmpty()) {
+                NodeInfo current = queue.poll();
+                TreeNode node = current.node;
+                int column = current.column;
+
+                // Keep updating the column value for each node, at the end
+                // we will have the bottom view of the tree for that column
+                columns.put(column, node.val);
+
+                // Enqueue the left child with column - 1
+                if (node.left != null) {
+                    queue.add(new NodeInfo(node.left, column - 1));
+                }
+
+                // Enqueue the right child with column + 1
+                if (node.right != null) {
+                    queue.add(new NodeInfo(node.right, column + 1));
+                }
+            }
+
+            // Iterate over the columns in the hash map and add them to
+            // the result
+            for (int column : columns.keySet()) {
+                result.add(columns.get(column));
+            }
+
+            return result;
+        }
+    }
+
+    public static void main(String[] args) {
+        // Examples from the problem statement
+        System.out.println(new Solution().bottomView(fromLevelOrder(1, 2, 3, 4, null, null, 7, 9)));              // [9, 4, 2, 1, 3, 7]
+        System.out.println(new Solution().bottomView(fromLevelOrder(1, 8, 4, null, 6, null, null, null, 2, null, 9)));  // [8, 6, 2, 9]
+
+        // Edge cases
+        System.out.println(new Solution().bottomView(null));                                                       // []
+        System.out.println(new Solution().bottomView(new TreeNode(1)));                                           // [1]
+        System.out.println(new Solution().bottomView(fromLevelOrder(1, 2, null, 3)));                            // left skew
+        System.out.println(new Solution().bottomView(fromLevelOrder(1, null, 2, null, null, null, 3)));          // right skew
+        System.out.println(new Solution().bottomView(fromLevelOrder(1, 2, 3)));                                  // [2, 1, 3]
+    }
 }
 ```
 
-```c run
-int* bottom_view(TreeNode *root, int *count) {
-    static int cols[1024], seen[1024], out[1024];
-    *count = 0;
-    if (!root) return out;
-    for (int i = 0; i < 1024; i++) seen[i] = 0;
-    NC q[1024]; int h = 0, t = 0; q[t++] = (NC){root, 0};
-    int min_c = 0, max_c = 0;
-    while (h < t) {
-        NC cur = q[h++]; int idx = cur.c + 512;
-        cols[idx] = cur.n->val; seen[idx] = 1;
-        if (cur.c < min_c) min_c = cur.c;
-        if (cur.c > max_c) max_c = cur.c;
-        if (cur.n->left)  q[t++] = (NC){cur.n->left,  cur.c - 1};
-        if (cur.n->right) q[t++] = (NC){cur.n->right, cur.c + 1};
-    }
-    for (int c = min_c; c <= max_c; c++) if (seen[c + 512]) out[(*count)++] = cols[c + 512];
-    return out;
-}
-```
-
-```scala run
-def bottomView(root: TreeNode): List[Int] = {
-  if (root == null) return Nil
-  val cols = scala.collection.mutable.TreeMap[Int, Int]()
-  val q = scala.collection.mutable.Queue[(TreeNode, Int)]((root, 0))
-  while (q.nonEmpty) {
-    val (n, c) = q.dequeue()
-    cols(c) = n.value
-    if (n.left  != null) q.enqueue((n.left,  c - 1))
-    if (n.right != null) q.enqueue((n.right, c + 1))
-  }
-  cols.values.toList
-}
-```
+</details>
 
 
 ***
@@ -282,73 +509,207 @@ def bottomView(root: TreeNode): List[Int] = {
 
 Trick: instead of storing one value per column (top or bottom view), *append* to a list per column. BFS top-to-bottom order means the per-column list is already sorted top-to-bottom for free.
 
-## Solution
+<details>
+<summary><h2>Solution</h2></summary>
 
 
-```pseudocode
-function verticalTraversal(root):
-    if root = null: return empty list
-    cols ← empty sorted Map: column → list
-    q    ← empty queue; enqueue (root, 0) to q
-    minC ← 0; maxC ← 0
-    while q is not empty:
-        (n, c) ← dequeue from q
-        append n.val to cols[c]                   # collect all nodes per column
-        minC ← min(minC, c); maxC ← max(maxC, c)
-        if n.left  ≠ null: enqueue (n.left,  c − 1) to q
-        if n.right ≠ null: enqueue (n.right, c + 1) to q
-    return [cols[c] for c from minC to maxC]
-```
 
 ```python run
-def vertical_traversal(root):
-    if root is None: return []
-    cols = {}; q = deque([(root, 0)])
-    min_c, max_c = 0, 0
-    while q:
-        n, c = q.popleft()
-        cols.setdefault(c, []).append(n.val)
-        min_c, max_c = min(min_c, c), max(max_c, c)
-        if n.left:  q.append((n.left,  c - 1))
-        if n.right: q.append((n.right, c + 1))
-    return [cols[c] for c in range(min_c, max_c + 1) if c in cols]
+from queue import Queue
+from collections import defaultdict
+from typing import List, Optional
+
+
+class TreeNode:
+    def __init__(self, val=0, left=None, right=None):
+        self.val = val
+        self.left = left
+        self.right = right
+
+
+def from_level_order(values):
+    """Build tree from list like [1, 2, 3, None, 4]. None means missing child."""
+    if not values:
+        return None
+    root = TreeNode(values[0])
+    queue = [root]
+    i = 1
+    while queue and i < len(values):
+        node = queue.pop(0)
+        if i < len(values) and values[i] is not None:
+            node.left = TreeNode(values[i])
+            queue.append(node.left)
+        i += 1
+        if i < len(values) and values[i] is not None:
+            node.right = TreeNode(values[i])
+            queue.append(node.right)
+        i += 1
+    return root
+
+
+# Define a class to store the node and its column index
+class NodeInfo:
+    def __init__(self, node: TreeNode, column: int):
+        self.node = node
+        self.column = column
+
+
+class Solution:
+    def vertical_traversal(
+        self, root: Optional[TreeNode]
+    ) -> List[List[int]]:
+        result: List[List[int]] = []
+        if not root:
+            return result
+
+        # HashMap to store columns and their corresponding nodes
+        columns = defaultdict(list)
+
+        # Queue to perform level-order traversal
+        queue = Queue()
+        queue.put(NodeInfo(root, 0))
+
+        # Loop through each level in the tree
+        while not queue.empty():
+            current = queue.get()
+            node = current.node
+            column = current.column
+
+            # Add the current node to its corresponding column
+            columns[column].append(node.val)
+
+            # Enqueue the left child with column - 1
+            if node.left:
+                queue.put(NodeInfo(node.left, column - 1))
+
+            # Enqueue the right child with column + 1
+            if node.right:
+                queue.put(NodeInfo(node.right, column + 1))
+
+        # Sort columns by their column index and add them to the result
+        for column in sorted(columns.keys()):
+            result.append(columns[column])
+
+        return result
+
+
+# Examples from the problem statement
+print(Solution().vertical_traversal(from_level_order([1, 2, 3, 4, None, None, 7])))        # [[4], [2], [1], [3], [7]]
+print(Solution().vertical_traversal(from_level_order([1, 8, 4, None, 6, None, None, 3, 2])))  # [[8, 3], [1, 6], [4, 2]]
+
+# Edge cases
+print(Solution().vertical_traversal(None))                                                   # []
+print(Solution().vertical_traversal(TreeNode(1)))                                            # [[1]]
+print(Solution().vertical_traversal(from_level_order([1, 2, None, 3, None, 4])))           # [[4], [3], [2], [1]] left skew
+print(Solution().vertical_traversal(from_level_order([1, None, 2, None, None, None, 3])))  # [[1], [2], [3]] right skew
+print(Solution().vertical_traversal(from_level_order([1, 2, 3])))                          # [[2], [1], [3]]
 ```
 
 ```java run
-public static List<List<Integer>> verticalTraversal(TreeNode root) {
-    List<List<Integer>> out = new ArrayList<>();
-    if (root == null) return out;
-    TreeMap<Integer, List<Integer>> cols = new TreeMap<>();
-    Queue<Object[]> q = new ArrayDeque<>(); q.offer(new Object[]{root, 0});
-    while (!q.isEmpty()) {
-        Object[] cur = q.poll();
-        TreeNode n = (TreeNode) cur[0]; int c = (int) cur[1];
-        cols.computeIfAbsent(c, k -> new ArrayList<>()).add(n.val);
-        if (n.left  != null) q.offer(new Object[]{n.left,  c - 1});
-        if (n.right != null) q.offer(new Object[]{n.right, c + 1});
+import java.util.*;
+
+public class Main {
+    static class TreeNode {
+        int val;
+        TreeNode left;
+        TreeNode right;
+        TreeNode() {}
+        TreeNode(int val) { this.val = val; }
     }
-    out.addAll(cols.values()); return out;
+
+    static TreeNode fromLevelOrder(Integer... values) {
+        if (values.length == 0 || values[0] == null) return null;
+        TreeNode root = new TreeNode(values[0]);
+        java.util.Deque<TreeNode> queue = new java.util.ArrayDeque<>();
+        queue.add(root);
+        int i = 1;
+        while (!queue.isEmpty() && i < values.length) {
+            TreeNode node = queue.poll();
+            if (i < values.length && values[i] != null) {
+                node.left = new TreeNode(values[i]);
+                queue.add(node.left);
+            }
+            i++;
+            if (i < values.length && values[i] != null) {
+                node.right = new TreeNode(values[i]);
+                queue.add(node.right);
+            }
+            i++;
+        }
+        return root;
+    }
+
+    // Define a class to store the node and its column index
+    static class NodeInfo {
+        TreeNode node;
+        int column;
+        NodeInfo(TreeNode node, int column) {
+            this.node = node;
+            this.column = column;
+        }
+    }
+
+    static class Solution {
+        public List<List<Integer>> verticalTraversal(TreeNode root) {
+            List<List<Integer>> result = new ArrayList<>();
+            if (root == null) {
+                return result;
+            }
+
+            // HashMap to store columns and their corresponding nodes
+            Map<Integer, List<Integer>> columns = new TreeMap<>();
+
+            // Queue to perform level-order traversal
+            Queue<NodeInfo> queue = new LinkedList<>();
+            queue.add(new NodeInfo(root, 0));
+
+            // Loop through each level in the tree
+            while (!queue.isEmpty()) {
+                NodeInfo current = queue.poll();
+                TreeNode node = current.node;
+                int column = current.column;
+
+                // Add the current node to its corresponding column
+                columns.putIfAbsent(column, new ArrayList<>());
+                columns.get(column).add(node.val);
+
+                // Enqueue the left child with column - 1
+                if (node.left != null) {
+                    queue.add(new NodeInfo(node.left, column - 1));
+                }
+
+                // Enqueue the right child with column + 1
+                if (node.right != null) {
+                    queue.add(new NodeInfo(node.right, column + 1));
+                }
+            }
+
+            // Iterate over the columns in the hash table and add them to the
+            // result
+            for (List<Integer> column : columns.values()) {
+                result.add(column);
+            }
+
+            return result;
+        }
+    }
+
+    public static void main(String[] args) {
+        // Examples from the problem statement
+        System.out.println(new Solution().verticalTraversal(fromLevelOrder(1, 2, 3, 4, null, null, 7)));        // [[4], [2], [1], [3], [7]]
+        System.out.println(new Solution().verticalTraversal(fromLevelOrder(1, 8, 4, null, 6, null, null, 3, 2)));  // [[8, 3], [1, 6], [4, 2]]
+
+        // Edge cases
+        System.out.println(new Solution().verticalTraversal(null));                                               // []
+        System.out.println(new Solution().verticalTraversal(new TreeNode(1)));                                   // [[1]]
+        System.out.println(new Solution().verticalTraversal(fromLevelOrder(1, 2, null, 3)));                    // left skew
+        System.out.println(new Solution().verticalTraversal(fromLevelOrder(1, null, 2, null, null, null, 3)));  // right skew
+        System.out.println(new Solution().verticalTraversal(fromLevelOrder(1, 2, 3)));                          // [[2], [1], [3]]
+    }
 }
 ```
 
-```c run
-// (omitted — store per-column dynamic arrays. Algorithm same as above.)
-```
-
-```scala run
-def verticalTraversal(root: TreeNode): List[List[Int]] = {
-  if (root == null) return Nil
-  val cols = scala.collection.mutable.TreeMap[Int, scala.collection.mutable.ListBuffer[Int]]()
-  val q = scala.collection.mutable.Queue[(TreeNode, Int)]((root, 0))
-  while (q.nonEmpty) {
-    val (n, c) = q.dequeue()
-    cols.getOrElseUpdate(c, scala.collection.mutable.ListBuffer[Int]()) += n.value
-    if (n.left  != null) q.enqueue((n.left,  c - 1))
-    if (n.right != null) q.enqueue((n.right, c + 1))
-  }
-  cols.values.map(_.toList).toList
-}
-```
+</details>
 
 
 ***
@@ -390,79 +751,210 @@ flowchart TB
 
 <p align="center"><strong>Diagonal traversal — same-color nodes share a diagonal. The blue diagonal <code>(1, 3, 7)</code> stays "right" the whole way. Going left jumps to a new diagonal.</strong></p>
 
-## Solution
+<details>
+<summary><h2>Solution</h2></summary>
 
 
-```pseudocode
-function diagonalTraversal(root):
-    if root = null: return empty list
-    diags ← empty sorted Map: diagonal → list
-    q     ← empty queue; enqueue (root, 0) to q
-    maxD  ← 0
-    while q is not empty:
-        (n, d) ← dequeue from q
-        append n.val to diags[d]
-        maxD ← max(maxD, d)
-        if n.left  ≠ null: enqueue (n.left,  d + 1) to q   # left edge → new diagonal
-        if n.right ≠ null: enqueue (n.right, d)     to q   # right edge → same diagonal
-    return [diags[d] for d from 0 to maxD]
-```
 
 ```python run
-def diagonal_traversal(root):
-    if root is None: return []
-    diags = {}
-    q = deque([(root, 0)])
-    max_d = 0
-    while q:
-        n, d = q.popleft()
-        diags.setdefault(d, []).append(n.val)
-        max_d = max(max_d, d)
-        if n.left:  q.append((n.left,  d + 1))           # new diagonal
-        if n.right: q.append((n.right, d))               # same diagonal
-    return [diags[d] for d in range(max_d + 1) if d in diags]
+from queue import Queue
+from collections import defaultdict
+from typing import List, Optional
+
+
+class TreeNode:
+    def __init__(self, val=0, left=None, right=None):
+        self.val = val
+        self.left = left
+        self.right = right
+
+
+def from_level_order(values):
+    """Build tree from list like [1, 2, 3, None, 4]. None means missing child."""
+    if not values:
+        return None
+    root = TreeNode(values[0])
+    queue = [root]
+    i = 1
+    while queue and i < len(values):
+        node = queue.pop(0)
+        if i < len(values) and values[i] is not None:
+            node.left = TreeNode(values[i])
+            queue.append(node.left)
+        i += 1
+        if i < len(values) and values[i] is not None:
+            node.right = TreeNode(values[i])
+            queue.append(node.right)
+        i += 1
+    return root
+
+
+# Define a class to store the node and its diagonal index
+class NodeInfo:
+    def __init__(self, node: TreeNode, diagonal: int):
+        self.node = node
+        self.diagonal = diagonal
+
+
+class Solution:
+    def diagonal_traversal(
+        self, root: Optional[TreeNode]
+    ) -> List[List[int]]:
+        result: List[List[int]] = []
+        if not root:
+            return result
+
+        # HashMap to store diagonals and their corresponding nodes
+        diagonals = defaultdict(list)
+
+        # Queue to perform level-order traversal
+        queue = Queue()
+        queue.put(NodeInfo(root, 0))
+
+        # Loop through each level in the tree
+        while not queue.empty():
+            current = queue.get()
+            node = current.node
+            diagonal = current.diagonal
+
+            # Add the current node to its corresponding diagonal
+            diagonals[diagonal].append(node.val)
+
+            # Left child goes to next diagonal (diagonal + 1)
+            if node.left:
+                queue.put(NodeInfo(node.left, diagonal + 1))
+
+            # Right child stays on same diagonal (diagonal)
+            if node.right:
+                queue.put(NodeInfo(node.right, diagonal))
+
+        # Sort diagonals by their diagonal index and add them to the
+        # result
+        for diagonal in sorted(diagonals.keys()):
+            result.append(diagonals[diagonal])
+
+        return result
+
+
+# Examples from the problem statement
+print(Solution().diagonal_traversal(from_level_order([1, 2, 3, 4, None, None, 7])))        # [[1, 3, 7], [2], [4]]
+print(Solution().diagonal_traversal(from_level_order([1, 8, 4, None, 6, None, None, 3, 2])))  # [[1, 4], [8, 6, 2], [3]]
+
+# Edge cases
+print(Solution().diagonal_traversal(None))                                                   # []
+print(Solution().diagonal_traversal(TreeNode(1)))                                            # [[1]]
+print(Solution().diagonal_traversal(from_level_order([1, 2, None, 3, None, 4])))           # left skew: [[1], [2], [3], [4]]
+print(Solution().diagonal_traversal(from_level_order([1, None, 2, None, None, None, 3])))  # right skew: [[1, 2, 3]]
+print(Solution().diagonal_traversal(from_level_order([1, 2, 3])))                          # [[1, 3], [2]]
 ```
 
 ```java run
-public static List<List<Integer>> diagonalTraversal(TreeNode root) {
-    List<List<Integer>> out = new ArrayList<>();
-    if (root == null) return out;
-    TreeMap<Integer, List<Integer>> diags = new TreeMap<>();
-    Queue<Object[]> q = new ArrayDeque<>(); q.offer(new Object[]{root, 0});
-    while (!q.isEmpty()) {
-        Object[] cur = q.poll();
-        TreeNode n = (TreeNode) cur[0]; int d = (int) cur[1];
-        diags.computeIfAbsent(d, k -> new ArrayList<>()).add(n.val);
-        if (n.left  != null) q.offer(new Object[]{n.left,  d + 1});
-        if (n.right != null) q.offer(new Object[]{n.right, d});
+import java.util.*;
+
+public class Main {
+    static class TreeNode {
+        int val;
+        TreeNode left;
+        TreeNode right;
+        TreeNode() {}
+        TreeNode(int val) { this.val = val; }
     }
-    out.addAll(diags.values()); return out;
+
+    static TreeNode fromLevelOrder(Integer... values) {
+        if (values.length == 0 || values[0] == null) return null;
+        TreeNode root = new TreeNode(values[0]);
+        java.util.Deque<TreeNode> queue = new java.util.ArrayDeque<>();
+        queue.add(root);
+        int i = 1;
+        while (!queue.isEmpty() && i < values.length) {
+            TreeNode node = queue.poll();
+            if (i < values.length && values[i] != null) {
+                node.left = new TreeNode(values[i]);
+                queue.add(node.left);
+            }
+            i++;
+            if (i < values.length && values[i] != null) {
+                node.right = new TreeNode(values[i]);
+                queue.add(node.right);
+            }
+            i++;
+        }
+        return root;
+    }
+
+    // Define a class to store the node and its diagonal index
+    static class NodeInfo {
+        TreeNode node;
+        int diagonal;
+        NodeInfo(TreeNode node, int diagonal) {
+            this.node = node;
+            this.diagonal = diagonal;
+        }
+    }
+
+    static class Solution {
+        public List<List<Integer>> diagonalTraversal(TreeNode root) {
+            List<List<Integer>> result = new ArrayList<>();
+            if (root == null) {
+                return result;
+            }
+
+            // HashMap to store diagonals and their corresponding nodes
+            Map<Integer, List<Integer>> diagonals = new TreeMap<>();
+
+            // Queue to perform level-order traversal
+            Queue<NodeInfo> queue = new LinkedList<>();
+            queue.add(new NodeInfo(root, 0));
+
+            // Loop through each level in the tree
+            while (!queue.isEmpty()) {
+                NodeInfo current = queue.poll();
+                TreeNode node = current.node;
+                int diagonal = current.diagonal;
+
+                // Add the current node to its corresponding diagonal
+                diagonals.putIfAbsent(diagonal, new ArrayList<>());
+                diagonals.get(diagonal).add(node.val);
+
+                // Enqueue the left child with diagonal + 1
+                if (node.left != null) {
+                    queue.add(new NodeInfo(node.left, diagonal + 1));
+                }
+
+                // Enqueue the right child with diagonal
+                if (node.right != null) {
+                    queue.add(new NodeInfo(node.right, diagonal));
+                }
+            }
+
+            // Add all diagonals to the vertical order result
+            for (List<Integer> diagonal : diagonals.values()) {
+                result.add(diagonal);
+            }
+
+            return result;
+        }
+    }
+
+    public static void main(String[] args) {
+        // Examples from the problem statement
+        System.out.println(new Solution().diagonalTraversal(fromLevelOrder(1, 2, 3, 4, null, null, 7)));        // [[1, 3, 7], [2], [4]]
+        System.out.println(new Solution().diagonalTraversal(fromLevelOrder(1, 8, 4, null, 6, null, null, 3, 2)));  // [[1, 4], [8, 6, 2], [3]]
+
+        // Edge cases
+        System.out.println(new Solution().diagonalTraversal(null));                                               // []
+        System.out.println(new Solution().diagonalTraversal(new TreeNode(1)));                                   // [[1]]
+        System.out.println(new Solution().diagonalTraversal(fromLevelOrder(1, 2, null, 3)));                    // left skew
+        System.out.println(new Solution().diagonalTraversal(fromLevelOrder(1, null, 2, null, null, null, 3)));  // right skew: [[1, 2, 3]]
+        System.out.println(new Solution().diagonalTraversal(fromLevelOrder(1, 2, 3)));                          // [[1, 3], [2]]
+    }
 }
 ```
 
-```c run
-// (omitted — same shape as vertical)
-```
+</details>
+<details>
+<summary><h2>Final Takeaway</h2></summary>
 
-```scala run
-def diagonalTraversal(root: TreeNode): List[List[Int]] = {
-  if (root == null) return Nil
-  val diags = scala.collection.mutable.TreeMap[Int, scala.collection.mutable.ListBuffer[Int]]()
-  val q = scala.collection.mutable.Queue[(TreeNode, Int)]((root, 0))
-  while (q.nonEmpty) {
-    val (n, d) = q.dequeue()
-    diags.getOrElseUpdate(d, scala.collection.mutable.ListBuffer[Int]()) += n.value
-    if (n.left  != null) q.enqueue((n.left,  d + 1))
-    if (n.right != null) q.enqueue((n.right, d))
-  }
-  diags.values.map(_.toList).toList
-}
-```
-
-
-***
-
-## Final Takeaway
 
 Column-based traversals are tiny variations on one BFS template. Three things to walk away with:
 
@@ -471,3 +963,5 @@ Column-based traversals are tiny variations on one BFS template. Three things to
 3. **Sorted map = output already in order.** Using a `TreeMap`/`std::map`/`BTreeMap` instead of a hash map means iterating the values directly gives them in column order — no post-sorting needed. Reach for the sorted variant whenever the output has a numerical ordering.
 
 > *Coming up — the chapter pivots from traversals to a more <em>relational</em> question: <strong>given two nodes, where do they meet?</strong> The lowest common ancestor (LCA) is one of the most important tree primitives — used in network routing, version-control merges, phylogenetics, and dozens of LeetCode "what's the closest common point" problems. The next lesson covers the canonical recursive LCA algorithm and four related variants.*
+
+</details>

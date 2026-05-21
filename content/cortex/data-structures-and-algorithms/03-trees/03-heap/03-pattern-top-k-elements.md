@@ -182,38 +182,57 @@ Given an array `arr` and a positive integer `k`, return the K-th largest element
 > - **Input:** `arr = [7, 5, 9]`, `k = 3`
 > - **Output:** `5`
 
-## The Strategy
+<details>
+<summary><h2>The Strategy</h2></summary>
+
 
 This is the rawest form of the pattern. After running the loop, the heap's *top* (the smallest element of the K largest) **is** the K-th largest in the original array.
 
-## The Solution
+</details>
+<details>
+<summary><h2>The Solution</h2></summary>
 
 
-```pseudocode
-function kthLargestElement(arr, k):
-    minHeap ← empty min-heap
-    for each v in arr:
-        push v onto minHeap
-        if size(minHeap) > k:
-            pop from minHeap       # evict the smallest — keeps only the K largest
-    return peek(minHeap)           # smallest of the K largest = K-th largest overall
-```
 
 ```python run
-import heapq
 from typing import List
+import heapq
 
 class Solution:
     def kth_largest_element(self, arr: List[int], k: int) -> int:
-        # Min-heap of size K — its top is the K-th largest seen so far.
+
+        # Create a min heap to store the k largest elements
         min_heap: List[int] = []
-        for v in arr:
-            heapq.heappush(min_heap, v)
-            # Heap must never exceed K elements; pop when it does.
+
+        # Populate the min heap with the first k elements
+        for i in range(k):
+            heapq.heappush(min_heap, arr[i])
+
+        # Compare the remaining elements with the top of the min heap
+        for i in range(k, len(arr)):
+
+            # Add the current element to the min heap
+            heapq.heappush(min_heap, arr[i])
+
+            # If the heap size exceeds k, remove the smallest element
             if len(min_heap) > k:
                 heapq.heappop(min_heap)
-        # After all pushes/pops, the smallest in the K-largest set is the answer.
+
+        # The top of the min heap will be the kth largest element
         return min_heap[0]
+
+
+# Examples from the problem statement
+print(Solution().kth_largest_element([5, 4, 2, 8], 2))       # 5
+print(Solution().kth_largest_element([1, 2, 3, 4, 5], 5))    # 1
+print(Solution().kth_largest_element([7, 5, 9], 3))           # 5
+
+# Edge cases
+print(Solution().kth_largest_element([1], 1))                 # 1 — single element
+print(Solution().kth_largest_element([3, 1], 1))              # 3 — largest of two
+print(Solution().kth_largest_element([3, 1], 2))              # 1 — smallest of two
+print(Solution().kth_largest_element([5, 5, 5, 5], 2))        # 5 — all same
+print(Solution().kth_largest_element([10, 1, 2, 9, 3], 3))    # 3 — sorted: [10,9,3,2,1]
 ```
 
 ```java run
@@ -222,79 +241,45 @@ import java.util.*;
 public class Main {
     static class Solution {
         public int kthLargestElement(int[] arr, int k) {
-            PriorityQueue<Integer> minHeap = new PriorityQueue<>();                    // min-heap by default
-            for (int v : arr) {
-                minHeap.add(v);
-                if (minHeap.size() > k) minHeap.poll();                                // keep only top-K
+
+            // Create a min heap to store the k largest elements
+            PriorityQueue<Integer> minHeap = new PriorityQueue<>();
+
+            // Populate the min heap with the first k elements
+            for (int i = 0; i < k; i++) {
+                minHeap.add(arr[i]);
             }
-            return minHeap.peek();                                                      // heap top = K-th largest
+
+            // Compare the remaining elements with the top of the min heap
+            for (int i = k; i < arr.length; i++) {
+
+                // Add the current element to the min heap
+                minHeap.add(arr[i]);
+
+                // If the heap size exceeds k, remove the smallest element
+                if (minHeap.size() > k) {
+                    minHeap.poll();
+                }
+            }
+
+            // The top of the min heap will be the kth largest element
+            return minHeap.peek();
         }
     }
 
     public static void main(String[] args) {
-        System.out.println(new Solution().kthLargestElement(new int[]{5, 4, 2, 8}, 2));  // 5
+        // Examples from the problem statement
+        System.out.println(new Solution().kthLargestElement(new int[]{5, 4, 2, 8}, 2));       // 5
+        System.out.println(new Solution().kthLargestElement(new int[]{1, 2, 3, 4, 5}, 5));    // 1
+        System.out.println(new Solution().kthLargestElement(new int[]{7, 5, 9}, 3));           // 5
+
+        // Edge cases
+        System.out.println(new Solution().kthLargestElement(new int[]{1}, 1));                 // 1 — single element
+        System.out.println(new Solution().kthLargestElement(new int[]{3, 1}, 1));              // 3 — largest of two
+        System.out.println(new Solution().kthLargestElement(new int[]{3, 1}, 2));              // 1 — smallest of two
+        System.out.println(new Solution().kthLargestElement(new int[]{5, 5, 5, 5}, 2));        // 5 — all same
+        System.out.println(new Solution().kthLargestElement(new int[]{10, 1, 2, 9, 3}, 3));    // 3
     }
-}
-```
-
-```c run
-// Minimal binary min-heap on a fixed-size buffer (size cap = k+1 to allow overflow then pop).
-#include <stdlib.h>
-
-static void hswap(int *a, int *b) { int t = *a; *a = *b; *b = t; }
-
-static void heap_push(int *h, int *n, int v) {
-    h[(*n)++] = v;
-    int i = *n - 1;
-    while (i > 0) {
-        int p = (i - 1) / 2;
-        if (h[p] > h[i]) { hswap(&h[p], &h[i]); i = p; } else break;
-    }
-}
-
-static void heap_pop(int *h, int *n) {
-    h[0] = h[--(*n)];
-    int i = 0;
-    while (1) {
-        int l = 2*i+1, r = 2*i+2, smallest = i;
-        if (l < *n && h[l] < h[smallest]) smallest = l;
-        if (r < *n && h[r] < h[smallest]) smallest = r;
-        if (smallest == i) return;
-        hswap(&h[i], &h[smallest]);
-        i = smallest;
-    }
-}
-
-int kthLargestElement(int *arr, int n, int k) {
-    int *heap = malloc(sizeof(int) * (k + 1));
-    int hsize = 0;
-    for (int i = 0; i < n; i++) {
-        heap_push(heap, &hsize, arr[i]);
-        if (hsize > k) heap_pop(heap, &hsize);
-    }
-    int ans = heap[0];                                                              // K-th largest
-    free(heap);
-    return ans;
-}
-```
-
-```scala run
-import scala.collection.mutable.PriorityQueue
-
-object Main extends App {
-  object Solution {
-    def kthLargestElement(arr: Array[Int], k: Int): Int = {
-      // PriorityQueue is max-heap by default; reverse to make a min-heap.
-      val minHeap = PriorityQueue.empty[Int](Ordering[Int].reverse)
-      for (v <- arr) {
-        minHeap.enqueue(v)
-        if (minHeap.size > k) minHeap.dequeue()
-      }
-      minHeap.head                                                                     // top of min-heap = K-th largest
-    }
-  }
-
-  println(Solution.kthLargestElement(Array(5, 4, 2, 8), 2))  // 5
 }
 ```
 
@@ -311,6 +296,8 @@ Step 4 │ push(8)         → heap = [4, 5, 8]              (size 3 > 2 → pop
                          → heap = [5, 8]
 Result: heap.top() = 5  ✓ (the 2nd largest)
 ```
+
+</details>
 
 </details>
 
@@ -337,37 +324,61 @@ Given an array `arr` and a positive integer `k`, return the K-th smallest elemen
 > - **Input:** `arr = [7, 5, 9]`, `k = 3`
 > - **Output:** `9`
 
-## The Strategy
+<details>
+<summary><h2>The Strategy</h2></summary>
+
 
 The mirror image of the previous problem. To track the K *smallest* values, use a **max-heap** of size K — its top is the largest of the bottom-K, which (after we've seen everything) is the K-th smallest in the array.
 
-## The Solution
+</details>
+<details>
+<summary><h2>The Solution</h2></summary>
 
 
-```pseudocode
-function kthSmallestElement(arr, k):
-    maxHeap ← empty max-heap
-    for each v in arr:
-        push v onto maxHeap
-        if size(maxHeap) > k:
-            pop from maxHeap       # evict the largest — keeps only the K smallest
-    return peek(maxHeap)           # largest of the K smallest = K-th smallest overall
-```
 
 ```python run
-import heapq
 from typing import List
+import heapq
 
 class Solution:
     def kth_smallest_element(self, arr: List[int], k: int) -> int:
-        # Python's heapq is min-only. Negate to fake a max-heap.
+
+        # Create a max heap to store the k smallest elements
         max_heap: List[int] = []
-        for v in arr:
-            heapq.heappush(max_heap, -v)         # store negated → smallest-of-negated = largest-of-original
+
+        # Populate the max heap with the first k elements
+        for i in range(k):
+
+            # Push negative numbers to simulate max heap
+            heapq.heappush(
+                max_heap, -arr[i]
+            )
+
+        # Compare the remaining elements with the top of the max heap
+        for i in range(k, len(arr)):
+
+            # Add the current element to the max heap
+            heapq.heappush(max_heap, -arr[i])
+
+            # If the heap size exceeds k, remove the largest element
             if len(max_heap) > k:
-                heapq.heappop(max_heap)          # evict the most negative (largest original)
-        # The top of the max-heap (smallest negated) is the K-th smallest original value.
+                heapq.heappop(max_heap)
+
+        # The top of the max heap will be the kth smallest element
         return -max_heap[0]
+
+
+# Examples from the problem statement
+print(Solution().kth_smallest_element([5, 4, 2, 8], 2))       # 4
+print(Solution().kth_smallest_element([1, 2, 3, 4, 5], 5))    # 5
+print(Solution().kth_smallest_element([7, 5, 9], 3))           # 9
+
+# Edge cases
+print(Solution().kth_smallest_element([1], 1))                 # 1 — single element
+print(Solution().kth_smallest_element([3, 1], 1))              # 1 — smallest of two
+print(Solution().kth_smallest_element([3, 1], 2))              # 3 — largest of two
+print(Solution().kth_smallest_element([5, 5, 5, 5], 2))        # 5 — all same
+print(Solution().kth_smallest_element([10, 1, 2, 9, 3], 3))    # 3 — sorted: [1,2,3,9,10]
 ```
 
 ```java run
@@ -376,80 +387,51 @@ import java.util.*;
 public class Main {
     static class Solution {
         public int kthSmallestElement(int[] arr, int k) {
-            // reverseOrder() flips the natural ordering — gives us a max-heap.
-            PriorityQueue<Integer> maxHeap = new PriorityQueue<>(Comparator.reverseOrder());
-            for (int v : arr) {
-                maxHeap.add(v);
-                if (maxHeap.size() > k) maxHeap.poll();                                                       // evict the largest
+
+            // Create a max heap to store the k smallest elements
+            PriorityQueue<Integer> maxHeap = new PriorityQueue<>(
+                Collections.reverseOrder()
+            );
+
+            // Populate the max heap with the first k elements
+            for (int i = 0; i < k; ++i) {
+                maxHeap.add(arr[i]);
             }
-            return maxHeap.peek();                                                                             // K-th smallest
+
+            // Compare the remaining elements with the top of the max heap
+            for (int i = k; i < arr.length; i++) {
+
+                // Add the current element to the max heap
+                maxHeap.add(arr[i]);
+
+                // If the heap size exceeds k, remove the largest element
+                if (maxHeap.size() > k) {
+                    maxHeap.poll();
+                }
+            }
+
+            // The top of the max heap will be the kth smallest element
+            return maxHeap.peek();
         }
     }
 
     public static void main(String[] args) {
-        System.out.println(new Solution().kthSmallestElement(new int[]{5, 4, 2, 8}, 2));  // 4
+        // Examples from the problem statement
+        System.out.println(new Solution().kthSmallestElement(new int[]{5, 4, 2, 8}, 2));       // 4
+        System.out.println(new Solution().kthSmallestElement(new int[]{1, 2, 3, 4, 5}, 5));    // 5
+        System.out.println(new Solution().kthSmallestElement(new int[]{7, 5, 9}, 3));           // 9
+
+        // Edge cases
+        System.out.println(new Solution().kthSmallestElement(new int[]{1}, 1));                 // 1 — single element
+        System.out.println(new Solution().kthSmallestElement(new int[]{3, 1}, 1));              // 1 — smallest of two
+        System.out.println(new Solution().kthSmallestElement(new int[]{3, 1}, 2));              // 3 — largest of two
+        System.out.println(new Solution().kthSmallestElement(new int[]{5, 5, 5, 5}, 2));        // 5 — all same
+        System.out.println(new Solution().kthSmallestElement(new int[]{10, 1, 2, 9, 3}, 3));    // 3
     }
 }
 ```
 
-```c run
-#include <stdlib.h>
-
-static void hswap2(int *a, int *b) { int t = *a; *a = *b; *b = t; }
-
-static void max_push(int *h, int *n, int v) {
-    h[(*n)++] = v;
-    int i = *n - 1;
-    while (i > 0) {
-        int p = (i - 1) / 2;
-        if (h[p] < h[i]) { hswap2(&h[p], &h[i]); i = p; } else break;
-    }
-}
-
-static void max_pop(int *h, int *n) {
-    h[0] = h[--(*n)];
-    int i = 0;
-    while (1) {
-        int l = 2*i+1, r = 2*i+2, largest = i;
-        if (l < *n && h[l] > h[largest]) largest = l;
-        if (r < *n && h[r] > h[largest]) largest = r;
-        if (largest == i) return;
-        hswap2(&h[i], &h[largest]);
-        i = largest;
-    }
-}
-
-int kthSmallestElement(int *arr, int n, int k) {
-    int *heap = malloc(sizeof(int) * (k + 1));
-    int hsize = 0;
-    for (int i = 0; i < n; i++) {
-        max_push(heap, &hsize, arr[i]);
-        if (hsize > k) max_pop(heap, &hsize);
-    }
-    int ans = heap[0];
-    free(heap);
-    return ans;
-}
-```
-
-```scala run
-import scala.collection.mutable.PriorityQueue
-
-object Main extends App {
-  object Solution {
-    def kthSmallestElement(arr: Array[Int], k: Int): Int = {
-      val maxHeap = PriorityQueue.empty[Int]                                                                    // max-heap by default
-      for (v <- arr) {
-        maxHeap.enqueue(v)
-        if (maxHeap.size > k) maxHeap.dequeue()
-      }
-      maxHeap.head                                                                                              // K-th smallest
-    }
-  }
-
-  println(Solution.kthSmallestElement(Array(5, 4, 2, 8), 2))  // 4
-}
-```
+</details>
 
 
 ***
@@ -476,7 +458,9 @@ Given an array `arr` and two positive integers `k1` and `k2`, return the **sum o
 > - **Input:** `arr = [1, 2, 3, 4, 5]`, `k1 = 1`, `k2 = 1`
 > - **Output:** `15`
 
-## The Strategy
+<details>
+<summary><h2>The Strategy</h2></summary>
+
 
 This is *two* independent top-K queries followed by a linear sum:
 
@@ -484,52 +468,106 @@ This is *two* independent top-K queries followed by a linear sum:
 2. Find the K2-th smallest using a max-heap.
 3. Walk the array once, summing elements whose value lies in `[min(a, b), max(a, b)]` (we use min/max to be defensive — the K1-th largest could in theory be larger or smaller than the K2-th smallest depending on inputs).
 
-## The Solution
+</details>
+<details>
+<summary><h2>The Solution</h2></summary>
 
 
-```pseudocode
-function kRangeSum(arr, k1, k2):
-    a ← kthLargestElement(arr, k1)  # k1-th largest (upper boundary)
-    b ← kthSmallestElement(arr, k2) # k2-th smallest (lower boundary)
-    lo ← min(a, b)
-    hi ← max(a, b)
-    total ← 0
-    for each v in arr:
-        if lo ≤ v ≤ hi: total ← total + v
-    return total
-```
 
 ```python run
-import heapq
 from typing import List
+import heapq
 
 class Solution:
-    def kth_largest(self, arr: List[int], k: int) -> int:
-        h: List[int] = []
-        for v in arr:
-            heapq.heappush(h, v)
-            if len(h) > k:
-                heapq.heappop(h)
-        return h[0]
+    def kth_largest_element(self, arr: List[int], k: int) -> int:
 
-    def kth_smallest(self, arr: List[int], k: int) -> int:
-        # Negate to simulate a max-heap with heapq.
-        h: List[int] = []
-        for v in arr:
-            heapq.heappush(h, -v)
-            if len(h) > k:
-                heapq.heappop(h)
-        return -h[0]
+        # Create a min heap to store the k largest elements
+        min_heap: List[int] = []
+
+        # Populate the min heap with the first k elements
+        for i in range(k):
+            heapq.heappush(min_heap, arr[i])
+
+        # Compare the remaining elements with the top of the min heap
+        for i in range(k, len(arr)):
+
+            # Add the current element to the min heap
+            heapq.heappush(min_heap, arr[i])
+
+            # If the heap size exceeds k, remove the smallest element
+            if len(min_heap) > k:
+                heapq.heappop(min_heap)
+
+        # The top of the min heap will be the kth largest element
+        return min_heap[0]
+
+    def kth_smallest_element(self, arr: List[int], k: int) -> int:
+
+        # Create a max heap to store the k smallest elements
+        max_heap: List[int] = []
+
+        # Populate the max heap with the first k elements
+        for i in range(k):
+            heapq.heappush(
+                max_heap,
+                -arr[i]
+
+                # max heap using negative numbers
+            )
+
+        # Compare the remaining elements with the top of the max heap
+        for i in range(k, len(arr)):
+
+            # Add the current element to the max heap
+            heapq.heappush(max_heap, -arr[i])
+
+            # If the heap size exceeds k, remove the largest element
+            if len(max_heap) > k:
+                heapq.heappop(max_heap)
+
+        # The top of the max heap will be the kth smallest element
+        return -max_heap[0]
 
     def k_range_sum(self, arr: List[int], k1: int, k2: int) -> int:
-        n = len(arr)
-        if n == 0 or k1 > n or k2 > n:
-            return 0                                  # range out of bounds
-        a = self.kth_largest(arr, k1)
-        b = self.kth_smallest(arr, k2)
-        lo, hi = min(a, b), max(a, b)
-        # Sum every value in the (inclusive) range [lo, hi].
-        return sum(v for v in arr if lo <= v <= hi)
+
+        # Edge case: if the array is empty or k1 is greater than k2
+        if not arr or k1 > k2 or k2 > len(arr):
+            return 0
+
+        # Find the k1-th largest element
+        k1th_largest = self.kth_largest_element(arr, k1)
+
+        # Find the k2-th smallest element
+        k2th_smallest = self.kth_smallest_element(arr, k2)
+
+        # Variable to store the sum of elements between the
+        # two bounds
+        sum: int = 0
+
+        # Iterate through the array to calculate the sum of elements
+        for num in arr:
+
+            # Sum elements that are strictly between the two bounds
+            if num >= min(k1th_largest, k2th_smallest) and num <= max(
+                k1th_largest, k2th_smallest
+            ):
+                sum += num
+
+        # Return the sum of elements between the k1-th and k2-th
+        # smallest elements
+        return sum
+
+
+# Examples from the problem statement
+print(Solution().k_range_sum([4, 2, 5, 1, 3, 6], 4, 5))     # 12
+print(Solution().k_range_sum([1, 2, 6, 4, 5], 3, 4))         # 9
+print(Solution().k_range_sum([1, 2, 3, 4, 5], 1, 1))         # 15
+
+# Edge cases
+print(Solution().k_range_sum([], 1, 1))                       # 0 — empty array
+print(Solution().k_range_sum([3], 1, 1))                      # 3 — single element
+print(Solution().k_range_sum([5, 5, 5, 5, 5], 2, 4))         # 15 — all same
+print(Solution().k_range_sum([1, 2, 3, 4, 5], 2, 3))         # 12 — range [3,4], sum=3+4
 ```
 
 ```java run
@@ -537,95 +575,111 @@ import java.util.*;
 
 public class Main {
     static class Solution {
-        private int kthLargest(int[] arr, int k) {
-            PriorityQueue<Integer> h = new PriorityQueue<>();
-            for (int v : arr) { h.add(v); if (h.size() > k) h.poll(); }
-            return h.peek();
+        private int kthLargestElement(int[] arr, int k) {
+
+            // Create a min heap to store the k largest elements
+            PriorityQueue<Integer> minHeap = new PriorityQueue<>();
+
+            // Populate the min heap with the first k elements
+            for (int i = 0; i < k; i++) {
+                minHeap.add(arr[i]);
+            }
+
+            // Compare the remaining elements with the top of the min heap
+            for (int i = k; i < arr.length; i++) {
+
+                // Add the current element to the min heap
+                minHeap.add(arr[i]);
+
+                // If the heap size exceeds k, remove the smallest element
+                if (minHeap.size() > k) {
+                    minHeap.poll();
+                }
+            }
+
+            // The top of the min heap will be the kth largest element
+            return minHeap.peek();
         }
-        private int kthSmallest(int[] arr, int k) {
-            PriorityQueue<Integer> h = new PriorityQueue<>(Comparator.reverseOrder());
-            for (int v : arr) { h.add(v); if (h.size() > k) h.poll(); }
-            return h.peek();
+
+        private int kthSmallestElement(int[] arr, int k) {
+
+            // Create a max heap to store the k smallest elements
+            PriorityQueue<Integer> maxHeap = new PriorityQueue<>(
+                Collections.reverseOrder()
+            );
+
+            // Populate the max heap with the first k elements
+            for (int i = 0; i < k; ++i) {
+                maxHeap.add(arr[i]);
+            }
+
+            // Compare the remaining elements with the top of the max heap
+            for (int i = k; i < arr.length; i++) {
+
+                // Add the current element to the max heap
+                maxHeap.add(arr[i]);
+
+                // If the heap size exceeds k, remove the largest element
+                if (maxHeap.size() > k) {
+                    maxHeap.poll();
+                }
+            }
+
+            // The top of the max heap will be the kth smallest element
+            return maxHeap.peek();
         }
 
         public int kRangeSum(int[] arr, int k1, int k2) {
-            int n = arr.length;
-            if (n == 0 || k1 > n || k2 > n) return 0;
-            int a = kthLargest(arr, k1);
-            int b = kthSmallest(arr, k2);
-            int lo = Math.min(a, b), hi = Math.max(a, b);
+
+            // Edge case: if the array is empty or k1 is greater than k2
+            if (arr.length == 0 || k1 > arr.length || k2 > arr.length) {
+                return 0;
+            }
+
+            // Find the k1-th largest element
+            int k1thLargest = kthLargestElement(arr, k1);
+
+            // Find the k2-th smallest element
+            int k2thSmallest = kthSmallestElement(arr, k2);
+
+            // Variable to store the sum of elements between the
+            // two bounds
             int sum = 0;
-            for (int v : arr) if (v >= lo && v <= hi) sum += v;
+
+            // Iterate through the array to calculate the sum of elements
+            for (int num : arr) {
+
+                // Sum elements that are strictly between the two bounds
+                if (
+                    num >= Math.min(k1thLargest, k2thSmallest) &&
+                    num <= Math.max(k1thLargest, k2thSmallest)
+                ) {
+                    sum += num;
+                }
+            }
+
+            // Return the sum of elements between the k1-th and k2-th
+            // smallest elements
             return sum;
         }
     }
 
     public static void main(String[] args) {
-        System.out.println(new Solution().kRangeSum(new int[]{4, 2, 5, 1, 3, 6}, 4, 5));  // 12
+        // Examples from the problem statement
+        System.out.println(new Solution().kRangeSum(new int[]{4, 2, 5, 1, 3, 6}, 4, 5));     // 12
+        System.out.println(new Solution().kRangeSum(new int[]{1, 2, 6, 4, 5}, 3, 4));         // 9
+        System.out.println(new Solution().kRangeSum(new int[]{1, 2, 3, 4, 5}, 1, 1));         // 15
+
+        // Edge cases
+        System.out.println(new Solution().kRangeSum(new int[]{}, 1, 1));                       // 0 — empty array
+        System.out.println(new Solution().kRangeSum(new int[]{3}, 1, 1));                      // 3 — single element
+        System.out.println(new Solution().kRangeSum(new int[]{5, 5, 5, 5, 5}, 2, 4));         // 15 — all same
+        System.out.println(new Solution().kRangeSum(new int[]{1, 2, 3, 4, 5}, 2, 3));         // 12
     }
 }
 ```
 
-```c run
-// reuses heap_push/heap_pop (min-heap) and max_push/max_pop from earlier blocks
-#include <stdlib.h>
-
-extern void heap_push(int *h, int *n, int v);
-extern void heap_pop (int *h, int *n);
-extern void max_push (int *h, int *n, int v);
-extern void max_pop  (int *h, int *n);
-
-static int kth_largest_local(int *arr, int n, int k) {
-    int *h = malloc(sizeof(int) * (k + 1)); int sz = 0;
-    for (int i = 0; i < n; i++) { heap_push(h, &sz, arr[i]); if (sz > k) heap_pop(h, &sz); }
-    int a = h[0]; free(h); return a;
-}
-static int kth_smallest_local(int *arr, int n, int k) {
-    int *h = malloc(sizeof(int) * (k + 1)); int sz = 0;
-    for (int i = 0; i < n; i++) { max_push(h, &sz, arr[i]); if (sz > k) max_pop(h, &sz); }
-    int a = h[0]; free(h); return a;
-}
-
-int kRangeSum(int *arr, int n, int k1, int k2) {
-    if (n == 0 || k1 > n || k2 > n) return 0;
-    int a = kth_largest_local(arr, n, k1);
-    int b = kth_smallest_local(arr, n, k2);
-    int lo = a < b ? a : b, hi = a > b ? a : b;
-    int sum = 0;
-    for (int i = 0; i < n; i++) if (arr[i] >= lo && arr[i] <= hi) sum += arr[i];
-    return sum;
-}
-```
-
-```scala run
-import scala.collection.mutable.PriorityQueue
-
-object Main extends App {
-  object Solution {
-    private def kthLargest(arr: Array[Int], k: Int): Int = {
-      val h = PriorityQueue.empty[Int](Ordering[Int].reverse)
-      for (v <- arr) { h.enqueue(v); if (h.size > k) h.dequeue() }
-      h.head
-    }
-    private def kthSmallest(arr: Array[Int], k: Int): Int = {
-      val h = PriorityQueue.empty[Int]
-      for (v <- arr) { h.enqueue(v); if (h.size > k) h.dequeue() }
-      h.head
-    }
-
-    def kRangeSum(arr: Array[Int], k1: Int, k2: Int): Int = {
-      val n = arr.length
-      if (n == 0 || k1 > n || k2 > n) return 0
-      val a = kthLargest(arr, k1)
-      val b = kthSmallest(arr, k2)
-      val lo = math.min(a, b); val hi = math.max(a, b)
-      arr.filter(v => v >= lo && v <= hi).sum
-    }
-  }
-
-  println(Solution.kRangeSum(Array(4, 2, 5, 1, 3, 6), 4, 5))  // 12
-}
-```
+</details>
 
 
 ***
@@ -653,7 +707,9 @@ Given an array `arr` where every element is at most `k` positions away from its 
 > - **Input:** `arr = [1, 2, 3]`, `k = 0`
 > - **Output:** `[1, 2, 3]`
 
-## The Strategy
+<details>
+<summary><h2>The Strategy</h2></summary>
+
 
 A general sort is `O(n log n)`. The K-sortedness *constraint* — every element is at most K positions misplaced — lets us do better.
 
@@ -692,45 +748,66 @@ flowchart LR
 
 Total work: `n + 1` pushes, `n` pops, all on a heap of size at most `K+1` → **`O(n log K)`**.
 
-## The Solution
+</details>
+<details>
+<summary><h2>The Solution</h2></summary>
 
 
-```pseudocode
-function kSortedArraySorting(arr, k):
-    if arr is empty OR k = 0: return
-    # Load first K+1 elements — the true arr[0] must be among them.
-    heap ← min-heap of arr[0 .. k]
-    outIdx ← 0
-    for i from k+1 to length(arr) − 1:
-        arr[outIdx] ← pop from heap   # smallest of the window → correct output slot
-        push arr[i] onto heap         # slide window right by one
-        outIdx ← outIdx + 1
-    while heap is NOT empty:          # drain remaining elements
-        arr[outIdx] ← pop from heap
-        outIdx ← outIdx + 1
-```
 
 ```python run
-import heapq
 from typing import List
+import heapq
 
 class Solution:
     def k_sorted_array_sorting(self, arr: List[int], k: int) -> None:
         n = len(arr)
-        if n == 0 or k == 0:
-            return                                          # already sorted (k=0 means "exactly in place")
-        # Build min-heap from the first K+1 elements (all candidates for arr[0]).
-        heap = arr[:k + 1]
-        heapq.heapify(heap)
-        # Stream the remaining elements through, popping into the output.
-        out_idx = 0
+
+        # Create a min heap
+        min_heap = []
+
+        # Build a min heap of size k+1 with elements from the first
+        # k+1 elements of the array
+        for i in range(k + 1):
+            heapq.heappush(min_heap, arr[i])
+
+        # Process the remaining elements of the array
         for i in range(k + 1, n):
-            arr[out_idx] = heapq.heappushpop(heap, arr[i])  # one-step push-then-pop
-            out_idx += 1
-        # Drain the rest.
-        while heap:
-            arr[out_idx] = heapq.heappop(heap)
-            out_idx += 1
+
+            # Replace the current element with the minimum element from
+            # the min heap
+            arr[i - k - 1] = heapq.heappop(min_heap)
+
+            # Push the current element to the min heap
+            heapq.heappush(min_heap, arr[i])
+
+        # Replace the remaining elements with the minimum elements from
+        # the min heap
+        for i in range(n - k - 1, n):
+            arr[i] = heapq.heappop(min_heap)
+
+
+# Examples from the problem statement
+a1 = [6, 5, 3, 2, 8, 10, 9]
+Solution().k_sorted_array_sorting(a1, 3); print(a1)   # [2, 3, 5, 6, 8, 9, 10]
+
+a2 = [10, 9, 8, 7, 4, 70, 60, 50]
+Solution().k_sorted_array_sorting(a2, 4); print(a2)   # [4, 7, 8, 9, 10, 50, 60, 70]
+
+a3 = [1, 2, 3]
+Solution().k_sorted_array_sorting(a3, 0); print(a3)   # [1, 2, 3]
+
+# Edge cases
+a4 = [1]
+Solution().k_sorted_array_sorting(a4, 0); print(a4)   # [1] — single element
+
+a5 = [2, 1]
+Solution().k_sorted_array_sorting(a5, 1); print(a5)   # [1, 2] — two elements, k=1
+
+a6 = [4, 4, 4]
+Solution().k_sorted_array_sorting(a6, 1); print(a6)   # [4, 4, 4] — all same
+
+a7 = [5, 3, 4, 1, 2]
+Solution().k_sorted_array_sorting(a7, 2); print(a7)   # [1, 2, 3, 4, 5]
 ```
 
 ```java run
@@ -740,74 +817,67 @@ public class Main {
     static class Solution {
         public void kSortedArraySorting(int[] arr, int k) {
             int n = arr.length;
-            if (n == 0 || k == 0) return;
-            PriorityQueue<Integer> heap = new PriorityQueue<>();
-            for (int i = 0; i <= k && i < n; i++) heap.add(arr[i]);                                                       // build size K+1
 
-            int outIdx = 0;
-            for (int i = k + 1; i < n; i++) {
-                arr[outIdx++] = heap.poll();                                                                              // pop min → output
-                heap.add(arr[i]);                                                                                          // push next
+            // Create a min heap
+            PriorityQueue<Integer> minHeap = new PriorityQueue<>();
+
+            // Build a min heap of size k+1 with elements from the first
+            // k+1 elements of the array
+            for (int i = 0; i <= k; i++) {
+                minHeap.add(arr[i]);
             }
-            while (!heap.isEmpty()) arr[outIdx++] = heap.poll();                                                           // drain
+
+            // Process the remaining elements of the array
+            for (int i = k + 1; i < n; i++) {
+
+                // Replace the current element with the minimum element from
+                // the min heap
+                arr[i - k - 1] = minHeap.poll();
+
+                // Push the current element to the min heap
+                minHeap.add(arr[i]);
+            }
+
+            // Replace the remaining elements with the minimum elements from
+            // the min heap
+            int idx = n - k - 1;
+            while (!minHeap.isEmpty()) {
+                arr[idx++] = minHeap.poll();
+            }
         }
     }
 
     public static void main(String[] args) {
-        int[] arr = {6, 5, 3, 2, 8, 10, 9};
-        new Solution().kSortedArraySorting(arr, 3);
-        System.out.println(Arrays.toString(arr));  // [2, 3, 5, 6, 8, 9, 10]
+        // Examples from the problem statement
+        int[] a1 = {6, 5, 3, 2, 8, 10, 9};
+        new Solution().kSortedArraySorting(a1, 3);
+        System.out.println(Arrays.toString(a1));   // [2, 3, 5, 6, 8, 9, 10]
+
+        int[] a2 = {10, 9, 8, 7, 4, 70, 60, 50};
+        new Solution().kSortedArraySorting(a2, 4);
+        System.out.println(Arrays.toString(a2));   // [4, 7, 8, 9, 10, 50, 60, 70]
+
+        int[] a3 = {1, 2, 3};
+        new Solution().kSortedArraySorting(a3, 0);
+        System.out.println(Arrays.toString(a3));   // [1, 2, 3]
+
+        // Edge cases
+        int[] a4 = {1};
+        new Solution().kSortedArraySorting(a4, 0);
+        System.out.println(Arrays.toString(a4));   // [1] — single element
+
+        int[] a5 = {2, 1};
+        new Solution().kSortedArraySorting(a5, 1);
+        System.out.println(Arrays.toString(a5));   // [1, 2] — two elements, k=1
+
+        int[] a6 = {4, 4, 4};
+        new Solution().kSortedArraySorting(a6, 1);
+        System.out.println(Arrays.toString(a6));   // [4, 4, 4] — all same
+
+        int[] a7 = {5, 3, 4, 1, 2};
+        new Solution().kSortedArraySorting(a7, 2);
+        System.out.println(Arrays.toString(a7));   // [1, 2, 3, 4, 5]
     }
-}
-```
-
-```c run
-extern void heap_push(int *h, int *n, int v);
-extern void heap_pop (int *h, int *n);
-
-void kSortedArraySorting(int *arr, int n, int k) {
-    if (n == 0 || k == 0) return;
-    int *h = malloc(sizeof(int) * (k + 2));
-    int hsize = 0;
-    for (int i = 0; i <= k && i < n; i++) heap_push(h, &hsize, arr[i]);
-    int out_idx = 0;
-    for (int i = k + 1; i < n; i++) {
-        int top = h[0];
-        heap_pop(h, &hsize);
-        arr[out_idx++] = top;
-        heap_push(h, &hsize, arr[i]);
-    }
-    while (hsize) {
-        arr[out_idx++] = h[0];
-        heap_pop(h, &hsize);
-    }
-    free(h);
-}
-```
-
-```scala run
-import scala.collection.mutable.PriorityQueue
-
-object Main extends App {
-  object Solution {
-    def kSortedArraySorting(arr: Array[Int], k: Int): Unit = {
-      val n = arr.length
-      if (n == 0 || k == 0) return
-      val heap = PriorityQueue.empty[Int](Ordering[Int].reverse)
-      var i = 0
-      while (i <= k && i < n) { heap.enqueue(arr(i)); i += 1 }
-      var outIdx = 0
-      while (i < n) {
-        arr(outIdx) = heap.dequeue(); outIdx += 1
-        heap.enqueue(arr(i)); i += 1
-      }
-      while (heap.nonEmpty) { arr(outIdx) = heap.dequeue(); outIdx += 1 }
-    }
-  }
-
-  val arr = Array(6, 5, 3, 2, 8, 10, 9)
-  Solution.kSortedArraySorting(arr, 3)
-  println(arr.mkString(", "))  // 2, 3, 5, 6, 8, 9, 10
 }
 ```
 
@@ -830,9 +900,10 @@ Result: [2, 3, 5, 6, 8, 9, 10] ✓
 
 </details>
 
-***
+</details>
+<details>
+<summary><h2>Final Takeaway</h2></summary>
 
-## Final Takeaway
 
 The Top-K pattern is one of the highest-leverage idioms in algorithms. **Maintain a fixed-size heap of size K**, stream the data through, and you've reduced an `O(n log n)` sort to **`O(n log K)`** — a strict improvement when `K << n`, and the foundation of every "leaderboard / closest-K / top-rated" feature in production.
 
@@ -843,3 +914,5 @@ Three patterns to internalise:
 3. **K is a budget, not a hard limit.** Even when the problem doesn't explicitly bound K, this pattern works for any "top-K-of-a-stream" where the universe is too big to sort. Logging hot keys in a cache, top error messages by frequency, top-spending users — all the same shape.
 
 The next lesson generalises away from `int` heaps: **comparators**. Once you can give your heap an arbitrary ordering function, "top K" applies to strings, structs, tuples, and any total-order domain you care about — opening the door to half the heap problems you'll meet in interviews and the wild.
+
+</details>

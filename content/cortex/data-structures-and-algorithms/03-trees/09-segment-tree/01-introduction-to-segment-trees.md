@@ -124,44 +124,13 @@ flowchart TB
 
 Build the tree recursively from leaves up. `O(n)` time.
 
-```pseudocode
-function build(node, l, r):
-    if l = r:
-        tree[node] ← A[l]
-        return
-    mid ← (l + r) / 2
-    build(2*node,     l,     mid)
-    build(2*node + 1, mid+1, r)
-    tree[node] ← tree[2*node] + tree[2*node + 1]
-```
-
 ## Range query
 
 Recursively descend; at each node, decide whether the current node's range is *fully inside* the query range, *fully outside*, or *partially overlapping*.
 
-```pseudocode
-function query(node, l, r, ql, qr):
-    if qr < l OR ql > r: return 0           # no overlap
-    if ql ≤ l AND r ≤ qr: return tree[node] # fully inside
-    mid ← (l + r) / 2
-    return query(2*node,     l,     mid, ql, qr)
-         + query(2*node + 1, mid+1, r,   ql, qr)
-```
-
 `O(log n)` because at most 4 "partial overlap" nodes per level.
 
 ## Point update
-
-```pseudocode
-function update(node, l, r, idx, value):
-    if l = r:
-        tree[node] ← value
-        return
-    mid ← (l + r) / 2
-    if idx ≤ mid: update(2*node,     l,     mid, idx, value)
-    else:         update(2*node + 1, mid+1, r,   idx, value)
-    tree[node] ← tree[2*node] + tree[2*node + 1]
-```
 
 `O(log n)` — walk down to the leaf, update it, refresh aggregates on the way back up.
 
@@ -180,36 +149,6 @@ Each node carries a `lazy` field, initially 0. When we visit a node with non-zer
 3. Clear the node's lazy.
 
 Range update walks the tree; at any node whose range is entirely inside the update range, mark `lazy` and stop descending. Otherwise, push pending lazy to children and recurse.
-
-```pseudocode
-function push(node, l, r):
-    if lazy[node] ≠ 0:
-        tree[node] ← tree[node] + lazy[node] * (r − l + 1)
-        if l ≠ r:                                  # not a leaf
-            lazy[2*node]     += lazy[node]
-            lazy[2*node + 1] += lazy[node]
-        lazy[node] ← 0
-
-function range_update(node, l, r, ql, qr, val):
-    push(node, l, r)
-    if qr < l OR ql > r: return
-    if ql ≤ l AND r ≤ qr:
-        lazy[node] += val
-        push(node, l, r)
-        return
-    mid ← (l + r) / 2
-    range_update(2*node,     l,     mid, ql, qr, val)
-    range_update(2*node + 1, mid+1, r,   ql, qr, val)
-    tree[node] ← tree[2*node] + tree[2*node + 1]
-
-function range_query(node, l, r, ql, qr):
-    if qr < l OR ql > r: return 0
-    push(node, l, r)
-    if ql ≤ l AND r ≤ qr: return tree[node]
-    mid ← (l + r) / 2
-    return range_query(2*node, l, mid, ql, qr)
-         + range_query(2*node + 1, mid+1, r, ql, qr)
-```
 
 Both operations are `O(log n)`. The `lazy` array is touched at most `O(log n)` times per call; pending updates accumulate and are pushed only when needed.
 
@@ -341,108 +280,6 @@ public class Main {
 }
 ```
 
-```c run
-#include <stdio.h>
-#include <stdlib.h>
-
-#define N 8
-long tree[4*N], lazy[4*N];
-int A[N] = {1, 2, 3, 4, 5, 6, 7, 8};
-
-void build(int node, int l, int r) {
-    if (l == r) { tree[node] = A[l]; return; }
-    int mid = (l + r) / 2;
-    build(2*node,   l,     mid);
-    build(2*node+1, mid+1, r);
-    tree[node] = tree[2*node] + tree[2*node+1];
-}
-
-void push(int node, int l, int r) {
-    if (lazy[node]) {
-        tree[node] += lazy[node] * (long)(r - l + 1);
-        if (l != r) {
-            lazy[2*node]   += lazy[node];
-            lazy[2*node+1] += lazy[node];
-        }
-        lazy[node] = 0;
-    }
-}
-
-void range_update(int node, int l, int r, int ql, int qr, int val) {
-    push(node, l, r);
-    if (qr < l || ql > r) return;
-    if (ql <= l && r <= qr) { lazy[node] += val; push(node, l, r); return; }
-    int mid = (l + r) / 2;
-    range_update(2*node,   l,     mid, ql, qr, val);
-    range_update(2*node+1, mid+1, r,   ql, qr, val);
-    tree[node] = tree[2*node] + tree[2*node+1];
-}
-
-long range_query(int node, int l, int r, int ql, int qr) {
-    if (qr < l || ql > r) return 0;
-    push(node, l, r);
-    if (ql <= l && r <= qr) return tree[node];
-    int mid = (l + r) / 2;
-    return range_query(2*node,   l,     mid, ql, qr)
-         + range_query(2*node+1, mid+1, r,   ql, qr);
-}
-
-int main(void) {
-    build(1, 0, N-1);
-    printf("sum [0..7] = %ld\n", range_query(1, 0, N-1, 0, 7));
-    range_update(1, 0, N-1, 3, 5, 10);
-    printf("after +10 on [3..5], sum [0..7] = %ld\n", range_query(1, 0, N-1, 0, 7));
-    return 0;
-}
-```
-
-```scala run
-object Main extends App {
-  val A = Array(1, 2, 3, 4, 5, 6, 7, 8)
-  val n = A.length
-  val tree = new Array[Long](4 * n)
-  val lazyA = new Array[Long](4 * n)
-
-  def build(node: Int, l: Int, r: Int): Unit = {
-    if (l == r) { tree(node) = A(l); return }
-    val mid = (l + r) / 2
-    build(2*node, l, mid); build(2*node + 1, mid + 1, r)
-    tree(node) = tree(2*node) + tree(2*node + 1)
-  }
-
-  def push(node: Int, l: Int, r: Int): Unit = {
-    if (lazyA(node) != 0L) {
-      tree(node) += lazyA(node) * (r - l + 1).toLong
-      if (l != r) { lazyA(2*node) += lazyA(node); lazyA(2*node + 1) += lazyA(node) }
-      lazyA(node) = 0L
-    }
-  }
-
-  def rangeUpdate(node: Int, l: Int, r: Int, ql: Int, qr: Int, v: Long): Unit = {
-    push(node, l, r)
-    if (qr < l || ql > r) return
-    if (ql <= l && r <= qr) { lazyA(node) += v; push(node, l, r); return }
-    val mid = (l + r) / 2
-    rangeUpdate(2*node, l, mid, ql, qr, v)
-    rangeUpdate(2*node + 1, mid + 1, r, ql, qr, v)
-    tree(node) = tree(2*node) + tree(2*node + 1)
-  }
-
-  def rangeQuery(node: Int, l: Int, r: Int, ql: Int, qr: Int): Long = {
-    if (qr < l || ql > r) return 0L
-    push(node, l, r)
-    if (ql <= l && r <= qr) return tree(node)
-    val mid = (l + r) / 2
-    rangeQuery(2*node, l, mid, ql, qr) + rangeQuery(2*node + 1, mid + 1, r, ql, qr)
-  }
-
-  build(1, 0, n - 1)
-  println(s"sum [0..7] = ${rangeQuery(1, 0, n - 1, 0, 7)}")
-  rangeUpdate(1, 0, n - 1, 3, 5, 10)
-  println(s"after +10 on [3..5], sum [0..7] = ${rangeQuery(1, 0, n - 1, 0, 7)}")
-}
-```
-
 ***
 
 # Edge cases and pitfalls
@@ -503,63 +340,54 @@ Click any question to reveal the answer.
 **A:** Both `O(log n)`.
 
 </details>
-
 <details>
 <summary><strong>Q:</strong> Worst-case complexity of range update with lazy propagation?</summary>
 
 **A:** `O(log n)` (without lazy it'd be `O(n)`).
 
 </details>
-
 <details>
 <summary><strong>Q:</strong> Required tree-array sizing?</summary>
 
 **A:** `4 · n`. Sizing `2 · n` only works for power-of-2 `n` and corrupts memory otherwise. Always use `4 · n`.
 
 </details>
-
 <details>
 <summary><strong>Q:</strong> What does the lazy <code>push</code> operation do?</summary>
 
 **A:** Applies the pending lazy value to the node's aggregate, propagates it to children (if not a leaf), then clears the node's lazy. Must be called at the start of every recursive descent.
 
 </details>
-
 <details>
 <summary><strong>Q:</strong> Why must <code>push</code> happen before reading a child?</summary>
 
 **A:** A pending lazy on the parent reflects an uncommitted update over the children's range. Reading a child without pushing first returns a stale aggregate.
 
 </details>
-
 <details>
 <summary><strong>Q:</strong> Three node-relationship cases during a recursive query?</summary>
 
 **A:** **No overlap** with query range → return identity. **Fully inside** query range → return the node's aggregate (no descent). **Partial overlap** → push lazy, recurse on both children, combine.
 
 </details>
-
 <details>
 <summary><strong>Q:</strong> When is a Fenwick tree better than a segment tree?</summary>
 
 **A:** When the operation is *invertible* (sum, XOR) and you only need point updates + prefix queries. Half the LOC, half the constant factor.
 
 </details>
-
 <details>
 <summary><strong>Q:</strong> When is a segment tree the only choice (over Fenwick)?</summary>
 
 **A:** Non-invertible operations (min, max, GCD), range updates with lazy propagation, or augmented operations (segment-tree beats, persistent segment trees).
 
 </details>
-
 <details>
 <summary><strong>Q:</strong> Where do segment trees show up in production (vs competitive programming)?</summary>
 
 **A:** Time-series databases (continuous aggregates), spatial indexing (BVH for ray tracing is a 3D segment tree), Linux's `interval_tree.c` for one-dimensional range queries.
 
 </details>
-
 <details>
 <summary><strong>Q:</strong> What's the integer-overflow trap when applying a lazy value over a range?</summary>
 

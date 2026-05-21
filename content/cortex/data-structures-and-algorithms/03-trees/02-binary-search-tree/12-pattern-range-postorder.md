@@ -78,100 +78,102 @@ Because the work happens *after* the children's results come back. The recursive
 ## Generic template
 
 
-```pseudocode
-function processRange(node, low, high):
-    if node is null: return 0
-    if node.val < low:                           # BST prune: entire left is out of range
-        return processRange(node.right, low, high)
-    if node.val > high:                          # BST prune: entire right is out of range
-        return processRange(node.left, low, high)
-    # Both children may contribute — collect their results first (postorder)
-    left  ← processRange(node.left,  low, high)
-    right ← processRange(node.right, low, high)
-    return f(left, right, node.val)              # combine children + this node
-```
-
 ```python run
+"""
+Definition for a binary tree node.
+class TreeNode:
+    def __init__(self, val):
+        self.val = val
+        self.left = None
+        self.right = None
+"""
+
+from typing import Optional, List
+
 class Solution:
-    def process_range(self, node, low, high):
-        # Default contribution of an empty subtree.
-        if node is None:
+    def process_range(self, node: Optional[TreeNode], low: int, high: int) -> int:
+
+        # Return a default value if this is a null node
+        if not node:
             return 0
-        # BST prune: node too small → entire left subtree is < low.
+
         if node.val < low:
+            # If the current node's value is less than low, discard the left subtree
+            # and return the result from the right subtree
             return self.process_range(node.right, low, high)
-        # BST prune: node too large → entire right subtree is > high.
-        if node.val > high:
+        elif node.val > high:
+            # If the current node's value is greater than high, discard the right subtree
+            # and return the result from the left subtree
             return self.process_range(node.left, low, high)
-        # In range: combine results from both children in postorder fashion.
-        left  = self.process_range(node.left,  low, high)
+
+        # Process the node using the values from left and right subtrees
+
+        # If the current node's value is within range
+        # find the aggregated values from left and right subtrees
+        left = self.process_range(node.left, low, high)
         right = self.process_range(node.right, low, high)
-        # Hook for whatever the specific problem needs (mutate node, etc.)
+
+        # Process the node using the aggregates from the left and right subtrees
+        # ... Your code goes here
         # ...
-        return self.f(left, right, node.val)
+
+        # Return the aggregated value of:
+        # 1. aggregate from the left subtree
+        # 2. aggregate from the right subtree
+        # 3. the current node's value
+        return f(left, right, node.val)
 ```
 
 ```java run
-public class Main {
-    static class TreeNode { int val; TreeNode left, right; TreeNode(int v){val=v;} }
+import java.util.*;
 
-    static class Solution {
-        int f(int left, int right, int val) { return left + right + val; }
+/**
+ * Definition for a binary tree node.
+ * class TreeNode {
+ *      int val;
+ *      TreeNode left;
+ *      TreeNode right;
+ *      TreeNode() {}
+ *      TreeNode(int val) { this.val = val; }
+ * }
+ */
 
-        public int processRange(TreeNode node, int low, int high) {
-            if (node == null) return 0;                                                                                // empty
-            if (node.val < low)  return processRange(node.right, low, high);                                           // prune left
-            if (node.val > high) return processRange(node.left,  low, high);                                           // prune right
-            int left  = processRange(node.left,  low, high);
-            int right = processRange(node.right, low, high);
-            return f(left, right, node.val);                                                                            // postorder combine
+public class Solution {
+
+    public int processRange(TreeNode node, int low, int high) {
+
+        // Return a default value if this is a null node
+        if (node == null) {
+            return 0;
         }
+
+        if (node.val < low) {
+            // If the current node's value is less than low, discard the left subtree
+            // and return the result from the right subtree
+            return processRange(node.right, low, high);
+        } else if (node.val > high) {
+            // If the current node's value is greater than high, discard the right subtree
+            // and return the result from the left subtree
+            return processRange(node.left, low, high);
+        }
+
+        // Process the node using the values from left and right subtrees
+
+        // If the current node's value is within range
+        // find the aggregated values from left and right subtrees
+        int left = processRange(node.left, low, high);
+        int right = processRange(node.right, low, high);
+
+        // Process the node using the aggregates from the left and right subtrees
+        // ... Your code goes here
+        // ...
+
+        // Return the aggregated value of:
+        // 1. aggregate from the left subtree
+        // 2. aggregate from the right subtree
+        // 3. the current node's value
+        return f(left, right, node.val);
     }
-
-    public static void main(String[] args) {
-        TreeNode root = new TreeNode(4);
-        root.left  = new TreeNode(2); root.right = new TreeNode(5);
-        root.left.left  = new TreeNode(1); root.left.right = new TreeNode(3);
-        root.right.right = new TreeNode(6);
-        System.out.println(new Solution().processRange(root, 2, 5));  // 14
-    }
-}
-```
-
-```c run
-static int f(int left, int right, int val) { return left + right + val; }
-
-int processRange(struct TreeNode *node, int low, int high) {
-    if (node == NULL)        return 0;                                                                              // empty
-    if (node->val < low)     return processRange(node->right, low, high);                                            // prune left
-    if (node->val > high)    return processRange(node->left,  low, high);                                            // prune right
-    int left  = processRange(node->left,  low, high);
-    int right = processRange(node->right, low, high);
-    return f(left, right, node->val);                                                                                // combine
-}
-```
-
-```scala run
-class TreeNode(var value: Int, var left: TreeNode = null, var right: TreeNode = null)
-
-object Main extends App {
-  object Solution {
-    private def f(left: Int, right: Int, v: Int): Int = left + right + v
-
-    def processRange(node: TreeNode, low: Int, high: Int): Int = {
-      if (node == null)           return 0                                                                                  // empty
-      if (node.value < low)       return processRange(node.right, low, high)                                                // prune left
-      if (node.value > high)      return processRange(node.left,  low, high)                                                // prune right
-      val left  = processRange(node.left,  low, high)
-      val right = processRange(node.right, low, high)
-      f(left, right, node.value)                                                                                            // combine
-    }
-  }
-
-  val root = new TreeNode(4,
-    new TreeNode(2, new TreeNode(1), new TreeNode(3)),
-    new TreeNode(5, null, new TreeNode(6)))
-  println(Solution.processRange(root, 2, 5))  // 14
 }
 ```
 
@@ -218,57 +220,211 @@ Given the **root** of a BST and a range `[low, high]`, update each in-range node
 > - **Input:** `root = [5, 1, 8, null, null, 6, 9]`, `low = 6`, `high = 9`
 > - **Output:** `[5, 1, 23, null, null, 6, 9]`
 
-## The Strategy
+<details>
+<summary><h2>The Strategy</h2></summary>
+
 
 Every in-range node accumulates `leftSum + rightSum + originalVal` and writes that back into `node.val`. The recursion returns the same total to its parent so parents can do the same.
 
-## The Solution
+</details>
+<details>
+<summary><h2>The Solution</h2></summary>
 
 
-```pseudocode
-function rangeSummation(root, low, high):
-    if root is null: return 0
-    if root.val < low: return rangeSummation(root.right, low, high)  # prune left
-    if root.val > high: return rangeSummation(root.left, low, high)  # prune right
-    leftSum  ← rangeSummation(root.left,  low, high)
-    rightSum ← rangeSummation(root.right, low, high)
-    root.val ← root.val + leftSum + rightSum  # overwrite with subtree total
-    return root.val
-```
 
 ```python run
-class Solution:
-    def range_summation_helper(self, root, low, high):
-        if root is None:
-            return 0                                # empty subtree contributes nothing
-        if root.val < low:
-            return self.range_summation_helper(root.right, low, high)   # whole left subtree out of range
-        if root.val > high:
-            return self.range_summation_helper(root.left, low, high)    # whole right subtree out of range
-        # In range: gather sums from both children.
-        left_sum  = self.range_summation_helper(root.left,  low, high)
-        right_sum = self.range_summation_helper(root.right, low, high)
-        # Mutate this node to include the in-range descendants' sum.
-        root.val += left_sum + right_sum
-        return root.val                              # report the new total to the parent
+from typing import Optional
 
-    def range_summation(self, root, low, high):
+
+class TreeNode:
+    def __init__(self, val=0, left=None, right=None):
+        self.val = val
+        self.left = left
+        self.right = right
+
+
+def from_level_order(values):
+    """Build tree from list like [1, 2, 3, None, 4]. None means missing child."""
+    if not values:
+        return None
+    root = TreeNode(values[0])
+    queue = [root]
+    i = 1
+    while queue and i < len(values):
+        node = queue.pop(0)
+        if i < len(values) and values[i] is not None:
+            node.left = TreeNode(values[i])
+            queue.append(node.left)
+        i += 1
+        if i < len(values) and values[i] is not None:
+            node.right = TreeNode(values[i])
+            queue.append(node.right)
+        i += 1
+    return root
+
+
+def level_order_vals(root):
+    if not root:
+        return []
+    result, queue = [], [root]
+    while queue:
+        node = queue.pop(0)
+        if node:
+            result.append(node.val)
+            queue.append(node.left)
+            queue.append(node.right)
+        else:
+            result.append(None)
+    while result and result[-1] is None:
+        result.pop()
+    return result
+
+
+class Solution:
+    def range_summation_helper(
+        self, root: Optional[TreeNode], low: int, high: int
+    ) -> int:
+
+        # Base Case : if root is null return 0
+        if root is None:
+            return 0
+
+        # If the node's value is less than the lower bound,
+        # discard the left subtree and move to the right subtree
+        if root.val < low:
+            return self.range_summation_helper(root.right, low, high)
+
+        # If the node's value is greater than the upper bound,
+        # discard the right subtree and move to the left subtree
+        if root.val > high:
+            return self.range_summation_helper(root.left, low, high)
+
+        # If the node's value is within the range [low, high],
+        # recursively compute the sum of valid left and right subtrees
+        left_sum = self.range_summation_helper(root.left, low, high)
+        right_sum = self.range_summation_helper(root.right, low, high)
+
+        # Add sum of in-range descendants to the current node's value
+        root.val += left_sum + right_sum
+
+        # Return the updated value of the current node
+        # (which now includes valid descendants)
+        return root.val
+
+    def range_summation(
+        self, root: Optional[TreeNode], low: int, high: int
+    ) -> None:
         self.range_summation_helper(root, low, high)
+
+
+# Example 1: [4, 2, 5, 1, 3, null, 6], low=2, high=5 → [14, 5, 5, 1, 3, null, 6]
+t1 = from_level_order([4, 2, 5, 1, 3, None, 6])
+Solution().range_summation(t1, 2, 5)
+print(level_order_vals(t1))   # [14, 5, 5, 1, 3, 6]
+
+# Example 2: [5, 1, 8, null, null, 6, 9], low=6, high=9 → [5, 1, 23, null, null, 6, 9]
+t2 = from_level_order([5, 1, 8, None, None, 6, 9])
+Solution().range_summation(t2, 6, 9)
+print(level_order_vals(t2))   # [5, 1, 23, 6, 9]
+
+# Edge cases
+Solution().range_summation(None, 1, 5)            # no-op
+
+# Single node within range
+t3 = from_level_order([5])
+Solution().range_summation(t3, 1, 10)
+print(t3.val)                 # 5  (leaf node, no descendants)
+
+# Range excludes all nodes
+t4 = from_level_order([4, 2, 5, 1, 3, None, 6])
+Solution().range_summation(t4, 7, 10)
+print(level_order_vals(t4))   # [4, 2, 5, 1, 3, 6]  (unchanged)
+
+# Range covers all nodes
+t5 = from_level_order([2, 1, 3])
+Solution().range_summation(t5, 1, 3)
+print(level_order_vals(t5))   # [5, 1, 3]  (root updated to 2+1+3=6? actually 2+(1)+(3)=6 but note postorder: left=1, right=3 returned; root.val += 1+3 → 6; returns 6)
 ```
 
 ```java run
+import java.util.*;
+
 public class Main {
-    static class TreeNode { int val; TreeNode left, right; TreeNode(int v){val=v;} }
+    static class TreeNode {
+        int val;
+        TreeNode left;
+        TreeNode right;
+        TreeNode() {}
+        TreeNode(int val) { this.val = val; }
+    }
+
+    static TreeNode fromLevelOrder(Integer... values) {
+        if (values.length == 0 || values[0] == null) return null;
+        TreeNode root = new TreeNode(values[0]);
+        java.util.Deque<TreeNode> queue = new java.util.ArrayDeque<>();
+        queue.add(root);
+        int i = 1;
+        while (!queue.isEmpty() && i < values.length) {
+            TreeNode node = queue.poll();
+            if (i < values.length && values[i] != null) {
+                node.left = new TreeNode(values[i]);
+                queue.add(node.left);
+            }
+            i++;
+            if (i < values.length && values[i] != null) {
+                node.right = new TreeNode(values[i]);
+                queue.add(node.right);
+            }
+            i++;
+        }
+        return root;
+    }
+
+    static List<Integer> levelOrderVals(TreeNode root) {
+        if (root == null) return List.of();
+        List<Integer> result = new ArrayList<>();
+        java.util.Deque<TreeNode> q = new java.util.ArrayDeque<>();
+        q.add(root);
+        while (!q.isEmpty()) {
+            TreeNode node = q.poll();
+            result.add(node.val);
+            if (node.left != null) q.add(node.left);
+            if (node.right != null) q.add(node.right);
+        }
+        return result;
+    }
 
     static class Solution {
-        public int rangeSummationHelper(TreeNode root, int low, int high) {
-            if (root == null) return 0;                                                                                                 // empty
-            if (root.val < low)  return rangeSummationHelper(root.right, low, high);                                                    // prune left
-            if (root.val > high) return rangeSummationHelper(root.left,  low, high);                                                    // prune right
-            int leftSum  = rangeSummationHelper(root.left,  low, high);
+        private int rangeSummationHelper(TreeNode root, int low, int high) {
+
+            // Base Case : if root is null return 0
+            if (root == null) {
+                return 0;
+            }
+
+            // If the node's value is less than the lower bound,
+            // discard the left subtree and move to the right subtree
+            if (root.val < low) {
+                return rangeSummationHelper(root.right, low, high);
+            }
+
+            // If the node's value is greater than the upper bound,
+            // discard the right subtree and move to the left subtree
+            if (root.val > high) {
+                return rangeSummationHelper(root.left, low, high);
+            }
+
+            // If the node's value is within the range [low, high],
+            // recursively compute the sum of valid left and right subtrees
+            int leftSum = rangeSummationHelper(root.left, low, high);
             int rightSum = rangeSummationHelper(root.right, low, high);
-            root.val += leftSum + rightSum;                                                                                              // mutate
-            return root.val;                                                                                                             // return new total
+
+            // Add sum of in-range descendants to the current node's value
+            root.val += leftSum + rightSum;
+
+            // Return the updated value of the current node
+            // (which now includes valid descendants)
+            return root.val;
         }
 
         public void rangeSummation(TreeNode root, int low, int high) {
@@ -277,59 +433,38 @@ public class Main {
     }
 
     public static void main(String[] args) {
-        TreeNode root = new TreeNode(4);
-        root.left  = new TreeNode(2); root.right = new TreeNode(5);
-        root.left.left  = new TreeNode(1); root.left.right = new TreeNode(3);
-        root.right.right = new TreeNode(6);
-        new Solution().rangeSummation(root, 2, 5);
-        System.out.println(root.val);  // 14
+        // Example 1
+        TreeNode t1 = fromLevelOrder(4, 2, 5, 1, 3, null, 6);
+        new Solution().rangeSummation(t1, 2, 5);
+        System.out.println(levelOrderVals(t1));   // [14, 5, 5, 1, 3, 6]
+
+        // Example 2
+        TreeNode t2 = fromLevelOrder(5, 1, 8, null, null, 6, 9);
+        new Solution().rangeSummation(t2, 6, 9);
+        System.out.println(levelOrderVals(t2));   // [5, 1, 23, 6, 9]
+
+        // Edge cases
+        new Solution().rangeSummation(null, 1, 5);  // no-op
+
+        // Single node within range
+        TreeNode t3 = fromLevelOrder(5);
+        new Solution().rangeSummation(t3, 1, 10);
+        System.out.println(t3.val);               // 5
+
+        // Range excludes all nodes
+        TreeNode t4 = fromLevelOrder(4, 2, 5, 1, 3, null, 6);
+        new Solution().rangeSummation(t4, 7, 10);
+        System.out.println(levelOrderVals(t4));   // [4, 2, 5, 1, 3, 6]
+
+        // Range covers all nodes [2,1,3]
+        TreeNode t5 = fromLevelOrder(2, 1, 3);
+        new Solution().rangeSummation(t5, 1, 3);
+        System.out.println(levelOrderVals(t5));   // [6, 1, 3]
     }
 }
 ```
 
-```c run
-int rangeSummationHelper(struct TreeNode *root, int low, int high) {
-    if (root == NULL)         return 0;                                                                                                // empty
-    if (root->val < low)      return rangeSummationHelper(root->right, low, high);                                                     // prune left
-    if (root->val > high)     return rangeSummationHelper(root->left,  low, high);                                                     // prune right
-    int leftSum  = rangeSummationHelper(root->left,  low, high);
-    int rightSum = rangeSummationHelper(root->right, low, high);
-    root->val += leftSum + rightSum;                                                                                                   // mutate
-    return root->val;
-}
-
-void rangeSummation(struct TreeNode *root, int low, int high) {
-    rangeSummationHelper(root, low, high);
-}
-```
-
-```scala run
-class TreeNode(var value: Int, var left: TreeNode = null, var right: TreeNode = null)
-
-object Main extends App {
-  object Solution {
-    def rangeSummationHelper(root: TreeNode, low: Int, high: Int): Int = {
-      if (root == null)           return 0
-      if (root.value < low)       return rangeSummationHelper(root.right, low, high)
-      if (root.value > high)      return rangeSummationHelper(root.left,  low, high)
-      val leftSum  = rangeSummationHelper(root.left,  low, high)
-      val rightSum = rangeSummationHelper(root.right, low, high)
-      root.value += leftSum + rightSum
-      root.value
-    }
-
-    def rangeSummation(root: TreeNode, low: Int, high: Int): Unit = {
-      rangeSummationHelper(root, low, high)
-    }
-  }
-
-  val root = new TreeNode(4,
-    new TreeNode(2, new TreeNode(1), new TreeNode(3)),
-    new TreeNode(5, null, new TreeNode(6)))
-  Solution.rangeSummation(root, 2, 5)
-  println(root.value)  // 14
-}
-```
+</details>
 
 
 ***
@@ -350,7 +485,9 @@ Given the **root** of a BST and a range `[low, high]`, return the **diameter** o
 > - **Input:** `root = [5, 1, 8, null, null, 6, 9]`, `low = 6`, `high = 9`
 > - **Output:** `2`
 
-## The Strategy
+<details>
+<summary><h2>The Strategy</h2></summary>
+
 
 Standard "diameter of a binary tree" algorithm: at every node, recursively compute the *height* of each subtree, and update a global `diameter` candidate as `leftHeight + rightHeight`. Return `max(leftHeight, rightHeight) + 1` to the parent.
 
@@ -390,132 +527,228 @@ flowchart TB
 
 <p align="center"><strong>Range <code>[2, 5]</code> excludes <code>1</code> and <code>6</code>. The longest path through in-range nodes is <code>3 → 2 → 4 → 5</code>, diameter <code>3</code>.</strong></p>
 
-## The Solution
+</details>
+<details>
+<summary><h2>The Solution</h2></summary>
 
 
-```pseudocode
-diameter ← 0
-
-function rangeDiameter(root, low, high):   # returns height of in-range subtree
-    if root is null: return 0
-    if root.val < low: return rangeDiameter(root.right, low, high)  # prune left
-    if root.val > high: return rangeDiameter(root.left, low, high)  # prune right
-    leftH  ← rangeDiameter(root.left,  low, high)
-    rightH ← rangeDiameter(root.right, low, high)
-    diameter ← max(diameter, leftH + rightH)   # path through this node
-    return max(leftH, rightH) + 1              # height of this subtree
-```
 
 ```python run
+from typing import Optional
+
+
+class TreeNode:
+    def __init__(self, val=0, left=None, right=None):
+        self.val = val
+        self.left = left
+        self.right = right
+
+
+def from_level_order(values):
+    """Build tree from list like [1, 2, 3, None, 4]. None means missing child."""
+    if not values:
+        return None
+    root = TreeNode(values[0])
+    queue = [root]
+    i = 1
+    while queue and i < len(values):
+        node = queue.pop(0)
+        if i < len(values) and values[i] is not None:
+            node.left = TreeNode(values[i])
+            queue.append(node.left)
+        i += 1
+        if i < len(values) and values[i] is not None:
+            node.right = TreeNode(values[i])
+            queue.append(node.right)
+        i += 1
+    return root
+
+
 class Solution:
     def __init__(self):
-        self.diameter = 0
 
-    def range_diameter_helper(self, root, low, high):
+        # Global variable to calculate the diameter of the tree
+        self.diameter: int = 0
+
+    def range_diameter_helper(
+        self, root: Optional[TreeNode], low: int, high: int
+    ) -> int:
+
+        # Base Case : if root is null return null
         if root is None:
             return 0
-        if root.val < low:
-            return self.range_diameter_helper(root.right, low, high)    # prune left
-        if root.val > high:
-            return self.range_diameter_helper(root.left, low, high)     # prune right
-        # In range: collect heights of both children.
-        left_h  = self.range_diameter_helper(root.left,  low, high)
-        right_h = self.range_diameter_helper(root.right, low, high)
-        # Diameter through this node = path going down-left + path going down-right.
-        self.diameter = max(self.diameter, left_h + right_h)
-        # Height contributed by this node: 1 + tallest child.
-        return max(left_h, right_h) + 1
 
-    def range_diameter(self, root, low, high):
-        self.diameter = 0
+        # If the node's value is less than the lower bound,
+        # discard the left subtree and move to the right subtree
+        if root.val < low:
+            return self.range_diameter_helper(root.right, low, high)
+
+        # If the node's value is greater than the upper bound,
+        # discard the right subtree and move to the left subtree
+        if root.val > high:
+            return self.range_diameter_helper(root.left, low, high)
+
+        # Calculate the height of the left and right subtrees
+        # recursively
+        left_height: int = self.range_diameter_helper(
+            root.left, low, high
+        )
+        right_height: int = self.range_diameter_helper(
+            root.right, low, high
+        )
+
+        # Update the diameter if the sum of the left and right subtree
+        # heights is greater
+        self.diameter = max(self.diameter, left_height + right_height)
+
+        # Return the height of the current subtree
+        # (maximum height of left or right subtree + 1)
+        return max(left_height, right_height) + 1
+
+    def range_diameter(
+        self, root: Optional[TreeNode], low: int, high: int
+    ) -> int:
+
+        # Call the helper function to calculate the height of the tree
+        # in the range [low, high] and update the diameter
         self.range_diameter_helper(root, low, high)
+
         return self.diameter
+
+
+# Example 1: [4, 2, 5, 1, 3, null, 6], low=2, high=5 → 3
+print(Solution().range_diameter(
+    from_level_order([4, 2, 5, 1, 3, None, 6]), 2, 5))   # 3
+
+# Example 2: [5, 1, 8, null, null, 6, 9], low=6, high=9 → 2
+print(Solution().range_diameter(
+    from_level_order([5, 1, 8, None, None, 6, 9]), 6, 9))  # 2
+
+# Edge cases
+print(Solution().range_diameter(None, 1, 5))              # 0  (empty tree)
+
+# Single node in range
+print(Solution().range_diameter(from_level_order([5]), 1, 10))  # 0
+
+# Range excludes all nodes
+print(Solution().range_diameter(
+    from_level_order([4, 2, 5, 1, 3, None, 6]), 7, 10))  # 0
+
+# Balanced BST, full range
+print(Solution().range_diameter(
+    from_level_order([4, 2, 6, 1, 3, 5, 7]), 1, 7))      # 4
 ```
 
 ```java run
+import java.util.*;
+
 public class Main {
-    static class TreeNode { int val; TreeNode left, right; TreeNode(int v){val=v;} }
+    static class TreeNode {
+        int val;
+        TreeNode left;
+        TreeNode right;
+        TreeNode() {}
+        TreeNode(int val) { this.val = val; }
+    }
+
+    static TreeNode fromLevelOrder(Integer... values) {
+        if (values.length == 0 || values[0] == null) return null;
+        TreeNode root = new TreeNode(values[0]);
+        java.util.Deque<TreeNode> queue = new java.util.ArrayDeque<>();
+        queue.add(root);
+        int i = 1;
+        while (!queue.isEmpty() && i < values.length) {
+            TreeNode node = queue.poll();
+            if (i < values.length && values[i] != null) {
+                node.left = new TreeNode(values[i]);
+                queue.add(node.left);
+            }
+            i++;
+            if (i < values.length && values[i] != null) {
+                node.right = new TreeNode(values[i]);
+                queue.add(node.right);
+            }
+            i++;
+        }
+        return root;
+    }
 
     static class Solution {
+
+        // Global variable to calculate the diameter of the tree
         private int diameter = 0;
 
         private int rangeDiameterHelper(TreeNode root, int low, int high) {
-            if (root == null) return 0;
-            if (root.val < low)  return rangeDiameterHelper(root.right, low, high);                                                          // prune left
-            if (root.val > high) return rangeDiameterHelper(root.left,  low, high);                                                          // prune right
-            int leftH  = rangeDiameterHelper(root.left,  low, high);
-            int rightH = rangeDiameterHelper(root.right, low, high);
-            diameter = Math.max(diameter, leftH + rightH);                                                                                    // candidate
-            return Math.max(leftH, rightH) + 1;                                                                                                // height
+
+            // Base Case : if root is null return null
+            if (root == null) {
+                return 0;
+            }
+
+            // If the node's value is less than the lower bound,
+            // discard the left subtree and move to the right subtree
+            if (root.val < low) {
+                return rangeDiameterHelper(root.right, low, high);
+            }
+
+            // If the node's value is greater than the upper bound,
+            // discard the right subtree and move to the left subtree
+            if (root.val > high) {
+                return rangeDiameterHelper(root.left, low, high);
+            }
+
+            // Calculate the height of the left and right subtrees
+            // recursively
+            int leftHeight = rangeDiameterHelper(root.left, low, high);
+            int rightHeight = rangeDiameterHelper(root.right, low, high);
+
+            // Update the diameter if the sum of the left and right subtree
+            // heights is greater
+            diameter = Math.max(diameter, leftHeight + rightHeight);
+
+            // Return the height of the current subtree
+            // (maximum height of left or right subtree + 1)
+            return Math.max(leftHeight, rightHeight) + 1;
         }
 
         public int rangeDiameter(TreeNode root, int low, int high) {
-            diameter = 0;
+
+            // Call the helper function to calculate the height of the tree
+            // in the range [low, high] and update the diameter
             rangeDiameterHelper(root, low, high);
+
             return diameter;
         }
     }
 
     public static void main(String[] args) {
-        TreeNode root = new TreeNode(4);
-        root.left  = new TreeNode(2); root.right = new TreeNode(5);
-        root.left.left  = new TreeNode(1); root.left.right = new TreeNode(3);
-        root.right.right = new TreeNode(6);
-        System.out.println(new Solution().rangeDiameter(root, 2, 5));  // 3
+        // Example 1
+        System.out.println(new Solution().rangeDiameter(
+            fromLevelOrder(4, 2, 5, 1, 3, null, 6), 2, 5));   // 3
+
+        // Example 2
+        System.out.println(new Solution().rangeDiameter(
+            fromLevelOrder(5, 1, 8, null, null, 6, 9), 6, 9));  // 2
+
+        // Edge cases
+        System.out.println(new Solution().rangeDiameter(null, 1, 5));   // 0
+
+        // Single node in range
+        System.out.println(new Solution().rangeDiameter(
+            fromLevelOrder(5), 1, 10));                         // 0
+
+        // Range excludes all nodes
+        System.out.println(new Solution().rangeDiameter(
+            fromLevelOrder(4, 2, 5, 1, 3, null, 6), 7, 10));   // 0
+
+        // Balanced BST, full range
+        System.out.println(new Solution().rangeDiameter(
+            fromLevelOrder(4, 2, 6, 1, 3, 5, 7), 1, 7));       // 4
     }
 }
 ```
 
-```c run
-static int diameter_;
-
-static int helper(struct TreeNode *root, int low, int high) {
-    if (root == NULL)     return 0;
-    if (root->val < low)  return helper(root->right, low, high);
-    if (root->val > high) return helper(root->left,  low, high);
-    int leftH  = helper(root->left,  low, high);
-    int rightH = helper(root->right, low, high);
-    if (leftH + rightH > diameter_) diameter_ = leftH + rightH;
-    return (leftH > rightH ? leftH : rightH) + 1;
-}
-
-int rangeDiameter(struct TreeNode *root, int low, int high) {
-    diameter_ = 0;
-    helper(root, low, high);
-    return diameter_;
-}
-```
-
-```scala run
-class TreeNode(var value: Int, var left: TreeNode = null, var right: TreeNode = null)
-
-object Main extends App {
-  class Solution {
-    private var diameter: Int = 0
-
-    private def helper(root: TreeNode, low: Int, high: Int): Int = {
-      if (root == null)           return 0
-      if (root.value < low)       return helper(root.right, low, high)
-      if (root.value > high)      return helper(root.left,  low, high)
-      val leftH  = helper(root.left,  low, high)
-      val rightH = helper(root.right, low, high)
-      diameter = math.max(diameter, leftH + rightH)
-      math.max(leftH, rightH) + 1
-    }
-
-    def rangeDiameter(root: TreeNode, low: Int, high: Int): Int = {
-      diameter = 0
-      helper(root, low, high)
-      diameter
-    }
-  }
-
-  val root = new TreeNode(4,
-    new TreeNode(2, new TreeNode(1), new TreeNode(3)),
-    new TreeNode(5, null, new TreeNode(6)))
-  println(new Solution().rangeDiameter(root, 2, 5))  // 3
-}
-```
+</details>
 
 
 ***
@@ -538,126 +771,260 @@ Given the **root** of a BST and a range `[low, high]`, replace the value of each
 > - **Input:** `root = [5, 1, 8, null, null, 6, 9]`, `low = 6`, `high = 9`
 > - **Output:** `[5, 1, 2, null, null, 6, 9]`
 
-## The Strategy
+<details>
+<summary><h2>The Strategy</h2></summary>
+
 
 Same skeleton as range summation, but instead of returning the sum of in-range descendants, return the *count of in-range leaves*. A leaf returns `1`; an internal in-range node returns `leftLeaves + rightLeaves` and overwrites its own value with that count.
 
-## The Solution
+</details>
+<details>
+<summary><h2>The Solution</h2></summary>
 
 
-```pseudocode
-function rangeLeaves(root, low, high):   # returns count of in-range leaves below
-    if root is null: return 0
-    if root.val < low: return rangeLeaves(root.right, low, high)  # prune left
-    if root.val > high: return rangeLeaves(root.left, low, high)  # prune right
-    if root.left is null AND root.right is null:
-        return 1                          # in-range leaf
-    leftLeaves  ← rangeLeaves(root.left,  low, high)
-    rightLeaves ← rangeLeaves(root.right, low, high)
-    root.val ← leftLeaves + rightLeaves  # overwrite internal node with leaf count
-    return root.val
-```
 
 ```python run
+from typing import Optional
+
+
+class TreeNode:
+    def __init__(self, val=0, left=None, right=None):
+        self.val = val
+        self.left = left
+        self.right = right
+
+
+def from_level_order(values):
+    """Build tree from list like [1, 2, 3, None, 4]. None means missing child."""
+    if not values:
+        return None
+    root = TreeNode(values[0])
+    queue = [root]
+    i = 1
+    while queue and i < len(values):
+        node = queue.pop(0)
+        if i < len(values) and values[i] is not None:
+            node.left = TreeNode(values[i])
+            queue.append(node.left)
+        i += 1
+        if i < len(values) and values[i] is not None:
+            node.right = TreeNode(values[i])
+            queue.append(node.right)
+        i += 1
+    return root
+
+
+def level_order_vals(root):
+    if not root:
+        return []
+    result, queue = [], [root]
+    while queue:
+        node = queue.pop(0)
+        if node:
+            result.append(node.val)
+            queue.append(node.left)
+            queue.append(node.right)
+        else:
+            result.append(None)
+    while result and result[-1] is None:
+        result.pop()
+    return result
+
+
 class Solution:
-    def range_leaves_helper(self, root, low, high):
+    def range_leaves_helper(
+        self, root: Optional[TreeNode], low: int, high: int
+    ) -> int:
+
+        # Base Case : if root is null return 0
         if root is None:
             return 0
+
+        # If the node's value is less than the lower bound,
+        # discard the left subtree and move to the right subtree
         if root.val < low:
-            return self.range_leaves_helper(root.right, low, high)             # prune left
+            return self.range_leaves_helper(root.right, low, high)
+
+        # If the node's value is greater than the upper bound,
+        # discard the right subtree and move to the left subtree
         if root.val > high:
-            return self.range_leaves_helper(root.left, low, high)              # prune right
-        # In range; check leaf-ness AFTER pruning, because the original tree's
-        # leaves stay leaves regardless of range.
+            return self.range_leaves_helper(root.left, low, high)
+
+        # If it's a leaf node, return 1
         if root.left is None and root.right is None:
-            return 1                                                           # this is an in-range leaf
-        left_leaves  = self.range_leaves_helper(root.left,  low, high)
+
+            # Return 1 since it's a leaf node
+            return 1
+
+        # If the node's value is within the range [low, high],
+        # recursively trim its left and right subtrees
+        left_leaves = self.range_leaves_helper(root.left, low, high)
         right_leaves = self.range_leaves_helper(root.right, low, high)
-        # Internal in-range node: overwrite with count of in-range leaves below.
+
+        # Update the current node's value with the count of leaves in
+        # its subtrees
         root.val = left_leaves + right_leaves
+
+        # Return the total count of leaves in the current subtree
         return root.val
 
-    def range_leaves(self, root, low, high):
+    def range_leaves(
+        self, root: Optional[TreeNode], low: int, high: int
+    ) -> None:
+
+        # Call the helper function to calculate the count of leaves
+        # in the range [low, high] and update the node values
         self.range_leaves_helper(root, low, high)
+
+
+# Example 1: [4, 2, 5, 1, 3, null, 6], low=2, high=5 → [1, 1, 0, 1, 3, null, 6]
+t1 = from_level_order([4, 2, 5, 1, 3, None, 6])
+Solution().range_leaves(t1, 2, 5)
+print(level_order_vals(t1))   # [1, 1, 0, 1, 3, 6]
+
+# Example 2: [5, 1, 8, null, null, 6, 9], low=6, high=9 → [5, 1, 2, null, null, 6, 9]
+t2 = from_level_order([5, 1, 8, None, None, 6, 9])
+Solution().range_leaves(t2, 6, 9)
+print(level_order_vals(t2))   # [5, 1, 2, 6, 9]
+
+# Edge cases
+Solution().range_leaves(None, 1, 5)   # no-op
+
+# Single node in range (leaf)
+t3 = from_level_order([5])
+Solution().range_leaves(t3, 1, 10)
+print(t3.val)                 # 5  (leaf unchanged)
+
+# Range excludes all nodes
+t4 = from_level_order([4, 2, 5, 1, 3, None, 6])
+Solution().range_leaves(t4, 7, 10)
+print(level_order_vals(t4))   # [4, 2, 5, 1, 3, 6]  (unchanged)
 ```
 
 ```java run
+import java.util.*;
+
 public class Main {
-    static class TreeNode { int val; TreeNode left, right; TreeNode(int v){val=v;} }
+    static class TreeNode {
+        int val;
+        TreeNode left;
+        TreeNode right;
+        TreeNode() {}
+        TreeNode(int val) { this.val = val; }
+    }
+
+    static TreeNode fromLevelOrder(Integer... values) {
+        if (values.length == 0 || values[0] == null) return null;
+        TreeNode root = new TreeNode(values[0]);
+        java.util.Deque<TreeNode> queue = new java.util.ArrayDeque<>();
+        queue.add(root);
+        int i = 1;
+        while (!queue.isEmpty() && i < values.length) {
+            TreeNode node = queue.poll();
+            if (i < values.length && values[i] != null) {
+                node.left = new TreeNode(values[i]);
+                queue.add(node.left);
+            }
+            i++;
+            if (i < values.length && values[i] != null) {
+                node.right = new TreeNode(values[i]);
+                queue.add(node.right);
+            }
+            i++;
+        }
+        return root;
+    }
+
+    static List<Integer> levelOrderVals(TreeNode root) {
+        if (root == null) return List.of();
+        List<Integer> result = new ArrayList<>();
+        java.util.Deque<TreeNode> q = new java.util.ArrayDeque<>();
+        q.add(root);
+        while (!q.isEmpty()) {
+            TreeNode node = q.poll();
+            result.add(node.val);
+            if (node.left != null) q.add(node.left);
+            if (node.right != null) q.add(node.right);
+        }
+        return result;
+    }
 
     static class Solution {
-        public int rangeLeavesHelper(TreeNode root, int low, int high) {
-            if (root == null) return 0;
-            if (root.val < low)  return rangeLeavesHelper(root.right, low, high);
-            if (root.val > high) return rangeLeavesHelper(root.left,  low, high);
-            if (root.left == null && root.right == null) return 1;                                                                              // leaf
-            int leftLeaves  = rangeLeavesHelper(root.left,  low, high);
+        private int rangeLeavesHelper(TreeNode root, int low, int high) {
+
+            // Base Case : if root is null return 0
+            if (root == null) {
+                return 0;
+            }
+
+            // If the node's value is less than the lower bound,
+            // discard the left subtree and move to the right subtree
+            if (root.val < low) {
+                return rangeLeavesHelper(root.right, low, high);
+            }
+
+            // If the node's value is greater than the upper bound,
+            // discard the right subtree and move to the left subtree
+            if (root.val > high) {
+                return rangeLeavesHelper(root.left, low, high);
+            }
+
+            // If it's a leaf node, return 1
+            if (root.left == null && root.right == null) {
+
+                // Return 1 since it's a leaf node
+                return 1;
+            }
+
+            // If the node's value is within the range [low, high],
+            // recursively trim its left and right subtrees
+            int leftLeaves = rangeLeavesHelper(root.left, low, high);
             int rightLeaves = rangeLeavesHelper(root.right, low, high);
-            root.val = leftLeaves + rightLeaves;                                                                                                 // mutate
+
+            // Update the current node's value with the count of leaves in
+            // its subtrees
+            root.val = leftLeaves + rightLeaves;
+
+            // Return the total count of leaves in the current subtree
             return root.val;
         }
 
         public void rangeLeaves(TreeNode root, int low, int high) {
+
+            // Call the helper function to calculate the count of leaves
+            // in the range [low, high] and update the node values
             rangeLeavesHelper(root, low, high);
         }
     }
 
     public static void main(String[] args) {
-        TreeNode root = new TreeNode(4);
-        root.left  = new TreeNode(2); root.right = new TreeNode(5);
-        root.left.left  = new TreeNode(1); root.left.right = new TreeNode(3);
-        root.right.right = new TreeNode(6);
-        new Solution().rangeLeaves(root, 2, 5);
-        System.out.println(root.val);  // 1
+        // Example 1
+        TreeNode t1 = fromLevelOrder(4, 2, 5, 1, 3, null, 6);
+        new Solution().rangeLeaves(t1, 2, 5);
+        System.out.println(levelOrderVals(t1));   // [1, 1, 0, 1, 3, 6]
+
+        // Example 2
+        TreeNode t2 = fromLevelOrder(5, 1, 8, null, null, 6, 9);
+        new Solution().rangeLeaves(t2, 6, 9);
+        System.out.println(levelOrderVals(t2));   // [5, 1, 2, 6, 9]
+
+        // Edge cases
+        new Solution().rangeLeaves(null, 1, 5);    // no-op
+
+        // Single node in range (leaf)
+        TreeNode t3 = fromLevelOrder(5);
+        new Solution().rangeLeaves(t3, 1, 10);
+        System.out.println(t3.val);               // 5
+
+        // Range excludes all nodes
+        TreeNode t4 = fromLevelOrder(4, 2, 5, 1, 3, null, 6);
+        new Solution().rangeLeaves(t4, 7, 10);
+        System.out.println(levelOrderVals(t4));   // [4, 2, 5, 1, 3, 6]
     }
 }
 ```
 
-```c run
-int rangeLeavesHelper(struct TreeNode *root, int low, int high) {
-    if (root == NULL)     return 0;
-    if (root->val < low)  return rangeLeavesHelper(root->right, low, high);
-    if (root->val > high) return rangeLeavesHelper(root->left,  low, high);
-    if (!root->left && !root->right) return 1;                                                                                                // leaf
-    int leftLeaves  = rangeLeavesHelper(root->left,  low, high);
-    int rightLeaves = rangeLeavesHelper(root->right, low, high);
-    root->val = leftLeaves + rightLeaves;
-    return root->val;
-}
-
-void rangeLeaves(struct TreeNode *root, int low, int high) {
-    rangeLeavesHelper(root, low, high);
-}
-```
-
-```scala run
-class TreeNode(var value: Int, var left: TreeNode = null, var right: TreeNode = null)
-
-object Main extends App {
-  object Solution {
-    def rangeLeavesHelper(root: TreeNode, low: Int, high: Int): Int = {
-      if (root == null)           return 0
-      if (root.value < low)       return rangeLeavesHelper(root.right, low, high)
-      if (root.value > high)      return rangeLeavesHelper(root.left,  low, high)
-      if (root.left == null && root.right == null) return 1                                                                                          // leaf
-      val leftLeaves  = rangeLeavesHelper(root.left,  low, high)
-      val rightLeaves = rangeLeavesHelper(root.right, low, high)
-      root.value = leftLeaves + rightLeaves
-      root.value
-    }
-
-    def rangeLeaves(root: TreeNode, low: Int, high: Int): Unit = {
-      rangeLeavesHelper(root, low, high)
-    }
-  }
-
-  val root = new TreeNode(4,
-    new TreeNode(2, new TreeNode(1), new TreeNode(3)),
-    new TreeNode(5, null, new TreeNode(6)))
-  Solution.rangeLeaves(root, 2, 5)
-  println(root.value)  // 1
-}
-```
+</details>
 
 
 ***
@@ -678,7 +1045,9 @@ Given the **root** of a BST and two values `low` and `high`, return a new BST th
 > - **Input:** `root = [5, 1, 8, null, null, 6, 9]`, `low = 6`, `high = 9`
 > - **Output:** `[8, 6, 9]`
 
-## The Strategy
+<details>
+<summary><h2>The Strategy</h2></summary>
+
 
 The same pruning rules drive a *structural rewrite*:
 
@@ -688,96 +1057,213 @@ The same pruning rules drive a *structural rewrite*:
 
 The `return` value is the new root of *this* subtree after trimming, which the caller wires back into its own children pointers — exactly the same shape as the recursive insertion idiom we used in lesson 5.
 
-## The Solution
+</details>
+<details>
+<summary><h2>The Solution</h2></summary>
 
 
-```pseudocode
-function rangeExclusiveTrim(root, low, high):
-    if root is null: return null
-    if root.val < low:                              # node + left subtree all out of range
-        return rangeExclusiveTrim(root.right, low, high)
-    if root.val > high:                             # node + right subtree all out of range
-        return rangeExclusiveTrim(root.left, low, high)
-    # In range — keep this node, but trim its children
-    root.left  ← rangeExclusiveTrim(root.left,  low, high)
-    root.right ← rangeExclusiveTrim(root.right, low, high)
-    return root
-```
 
 ```python run
+from typing import Optional
+from collections import deque
+
+class TreeNode:
+    def __init__(self, val=0, left=None, right=None):
+        self.val = val
+        self.left = left
+        self.right = right
+
+
+def from_level_order(values):
+    """Build tree from list like [1, 2, 3, None, 4]. None means missing child."""
+    if not values:
+        return None
+    root = TreeNode(values[0])
+    queue = [root]
+    i = 1
+    while queue and i < len(values):
+        node = queue.pop(0)
+        if i < len(values) and values[i] is not None:
+            node.left = TreeNode(values[i])
+            queue.append(node.left)
+        i += 1
+        if i < len(values) and values[i] is not None:
+            node.right = TreeNode(values[i])
+            queue.append(node.right)
+        i += 1
+    return root
+
+
+def to_level_order(root):
+    if not root:
+        return []
+    result, queue = [], deque([root])
+    while queue:
+        node = queue.popleft()
+        result.append(node.val)
+        if node.left:
+            queue.append(node.left)
+        if node.right:
+            queue.append(node.right)
+    return result
+
+
 class Solution:
-    def range_exclusive_trim(self, root, low, high):
+    def range_exclusive_trim(
+        self, root: Optional[TreeNode], low: int, high: int
+    ) -> Optional[TreeNode]:
+
+        # Base Case: If root is null, return null
         if root is None:
             return None
-        # Node too small → drop it AND its whole left subtree; return the trimmed right.
+
+        # If the node's value is less than the lower bound,
+        # discard the left subtree and trim the right subtree
         if root.val < low:
             return self.range_exclusive_trim(root.right, low, high)
-        # Node too large → drop it AND its whole right subtree; return the trimmed left.
+
+        # If the node's value is greater than the upper bound,
+        # discard the right subtree and trim the left subtree
         if root.val > high:
             return self.range_exclusive_trim(root.left, low, high)
-        # In range: keep the node, trim both children, re-attach the results.
-        root.left  = self.range_exclusive_trim(root.left,  low, high)
+
+        # If the node's value is within the range [low, high],
+        # recursively trim its left and right subtrees
+        root.left = self.range_exclusive_trim(root.left, low, high)
         root.right = self.range_exclusive_trim(root.right, low, high)
+
+        # Return the trimmed root
         return root
+
+
+# Examples from the problem statement
+t1 = from_level_order([4, 2, 5, 1, 3, None, 6])
+print(to_level_order(Solution().range_exclusive_trim(t1, 2, 5)))  # [4, 2, 5, 3]
+
+t2 = from_level_order([5, 1, 8, None, None, 6, 9])
+print(to_level_order(Solution().range_exclusive_trim(t2, 6, 9)))  # [8, 6, 9]
+
+# Edge cases
+print(Solution().range_exclusive_trim(None, 1, 5))               # None
+
+t3 = from_level_order([5])
+print(to_level_order(Solution().range_exclusive_trim(t3, 1, 5))) # [5]
+
+t4 = from_level_order([5])
+print(Solution().range_exclusive_trim(t4, 6, 10))                # None — root out of range
+
+t5 = from_level_order([4, 2, 6, 1, 3, 5, 7])
+print(to_level_order(Solution().range_exclusive_trim(t5, 3, 5))) # [4, 3, 5]
+
+t6 = from_level_order([4, 2, 6, 1, 3, 5, 7])
+print(to_level_order(Solution().range_exclusive_trim(t6, 1, 7))) # [4, 2, 6, 1, 3, 5, 7]
 ```
 
 ```java run
+import java.util.*;
+
 public class Main {
-    static class TreeNode { int val; TreeNode left, right; TreeNode(int v){val=v;} }
+    static class TreeNode {
+        int val;
+        TreeNode left;
+        TreeNode right;
+        TreeNode() {}
+        TreeNode(int val) { this.val = val; }
+    }
+
+    static TreeNode fromLevelOrder(Integer... values) {
+        if (values.length == 0 || values[0] == null) return null;
+        TreeNode root = new TreeNode(values[0]);
+        java.util.Deque<TreeNode> queue = new java.util.ArrayDeque<>();
+        queue.add(root);
+        int i = 1;
+        while (!queue.isEmpty() && i < values.length) {
+            TreeNode node = queue.poll();
+            if (i < values.length && values[i] != null) {
+                node.left = new TreeNode(values[i]);
+                queue.add(node.left);
+            }
+            i++;
+            if (i < values.length && values[i] != null) {
+                node.right = new TreeNode(values[i]);
+                queue.add(node.right);
+            }
+            i++;
+        }
+        return root;
+    }
+
+    static List<Integer> toLevelOrder(TreeNode root) {
+        List<Integer> result = new ArrayList<>();
+        if (root == null) return result;
+        java.util.Deque<TreeNode> queue = new java.util.ArrayDeque<>();
+        queue.add(root);
+        while (!queue.isEmpty()) {
+            TreeNode node = queue.poll();
+            result.add(node.val);
+            if (node.left != null) queue.add(node.left);
+            if (node.right != null) queue.add(node.right);
+        }
+        return result;
+    }
 
     static class Solution {
-        public TreeNode rangeExclusiveTrim(TreeNode root, int low, int high) {
-            if (root == null) return null;
-            if (root.val < low)  return rangeExclusiveTrim(root.right, low, high);                                                                                // drop node + left subtree
-            if (root.val > high) return rangeExclusiveTrim(root.left,  low, high);                                                                                // drop node + right subtree
-            root.left  = rangeExclusiveTrim(root.left,  low, high);                                                                                                // trim and re-attach
+        TreeNode rangeExclusiveTrim(
+            TreeNode root,
+            int low,
+            int high
+        ) {
+
+            // Base Case: If root is null, return null
+            if (root == null) {
+                return null;
+            }
+
+            // If the node's value is less than the lower bound,
+            // discard the left subtree and trim the right subtree
+            if (root.val < low) {
+                return rangeExclusiveTrim(root.right, low, high);
+            }
+
+            // If the node's value is greater than the upper bound,
+            // discard the right subtree and trim the left subtree
+            if (root.val > high) {
+                return rangeExclusiveTrim(root.left, low, high);
+            }
+
+            // If the node's value is within the range [low, high],
+            // recursively trim its left and right subtrees
+            root.left = rangeExclusiveTrim(root.left, low, high);
             root.right = rangeExclusiveTrim(root.right, low, high);
+
+            // Return the trimmed root
             return root;
         }
     }
 
     public static void main(String[] args) {
-        TreeNode root = new TreeNode(4);
-        root.left  = new TreeNode(2); root.right = new TreeNode(5);
-        root.left.left  = new TreeNode(1); root.left.right = new TreeNode(3);
-        root.right.right = new TreeNode(6);
-        TreeNode result = new Solution().rangeExclusiveTrim(root, 2, 5);
-        System.out.println(result.val);  // 4
+        // Examples from the problem statement
+        TreeNode t1 = fromLevelOrder(4, 2, 5, 1, 3, null, 6);
+        System.out.println(toLevelOrder(new Solution().rangeExclusiveTrim(t1, 2, 5)));  // [4, 2, 5, 3]
+
+        TreeNode t2 = fromLevelOrder(5, 1, 8, null, null, 6, 9);
+        System.out.println(toLevelOrder(new Solution().rangeExclusiveTrim(t2, 6, 9)));  // [8, 6, 9]
+
+        // Edge cases
+        System.out.println(new Solution().rangeExclusiveTrim(null, 1, 5));              // null
+
+        TreeNode t3 = fromLevelOrder(5);
+        System.out.println(toLevelOrder(new Solution().rangeExclusiveTrim(t3, 1, 5))); // [5]
+
+        TreeNode t4 = fromLevelOrder(5);
+        System.out.println(new Solution().rangeExclusiveTrim(t4, 6, 10));              // null — root out of range
+
+        TreeNode t5 = fromLevelOrder(4, 2, 6, 1, 3, 5, 7);
+        System.out.println(toLevelOrder(new Solution().rangeExclusiveTrim(t5, 3, 5))); // [4, 3, 5]
+
+        TreeNode t6 = fromLevelOrder(4, 2, 6, 1, 3, 5, 7);
+        System.out.println(toLevelOrder(new Solution().rangeExclusiveTrim(t6, 1, 7))); // [4, 2, 6, 1, 3, 5, 7]
     }
-}
-```
-
-```c run
-struct TreeNode *rangeExclusiveTrim(struct TreeNode *root, int low, int high) {
-    if (root == NULL)     return NULL;
-    if (root->val < low)  return rangeExclusiveTrim(root->right, low, high);
-    if (root->val > high) return rangeExclusiveTrim(root->left,  low, high);
-    root->left  = rangeExclusiveTrim(root->left,  low, high);
-    root->right = rangeExclusiveTrim(root->right, low, high);
-    return root;
-}
-```
-
-```scala run
-class TreeNode(var value: Int, var left: TreeNode = null, var right: TreeNode = null)
-
-object Main extends App {
-  object Solution {
-    def rangeExclusiveTrim(root: TreeNode, low: Int, high: Int): TreeNode = {
-      if (root == null)           return null
-      if (root.value < low)       return rangeExclusiveTrim(root.right, low, high)
-      if (root.value > high)      return rangeExclusiveTrim(root.left,  low, high)
-      root.left  = rangeExclusiveTrim(root.left,  low, high)
-      root.right = rangeExclusiveTrim(root.right, low, high)
-      root
-    }
-  }
-
-  val root = new TreeNode(4,
-    new TreeNode(2, new TreeNode(1), new TreeNode(3)),
-    new TreeNode(5, null, new TreeNode(6)))
-  val result = Solution.rangeExclusiveTrim(root, 2, 5)
-  println(result.value)  // 4
 }
 ```
 
@@ -797,9 +1283,10 @@ After all trims: [4, 2, 5, null, 3, null, null] ≡ [4, 2, 5, null, 3] ✓
 
 </details>
 
-***
+</details>
+<details>
+<summary><h2>Final Takeaway</h2></summary>
 
-## Final Takeaway
 
 Range Postorder = postorder + BST pruning. Whenever a problem asks for an aggregate (sum, count, height, structural rewrite) over the nodes of a BST whose values fall in a range, this is the right tool. The pruning rules collapse out-of-range subtrees in O(1) — not by walking them — and the postorder structure cleanly reduces children's results into a parent's.
 
@@ -810,3 +1297,5 @@ Three patterns to keep:
 3. **Returning the trimmed subtree to the parent** is the same idiom we used for insertion (lesson 5) and deletion (lesson 6): every recursive call returns a pointer to the (possibly modified) subtree, and the caller wires it into its own pointer field.
 
 The next lesson swaps **one descent** for **two pointers** — running a forward iterator and a reverse iterator simultaneously across the BST's sorted sequence. That single move unlocks the classic "two values that sum to target" family of problems on a tree, in O(n) time and O(h) space.
+
+</details>

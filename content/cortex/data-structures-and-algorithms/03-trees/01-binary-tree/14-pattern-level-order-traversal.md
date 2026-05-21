@@ -8,7 +8,7 @@ But many real questions about trees aren't *vertical* — they're **horizontal**
 
 The natural fit for these *horizontal* questions is **breadth-first search** — the level-order traversal you saw in lesson 5, powered by a *queue* instead of a stack. The recursion is replaced by an explicit loop: dequeue a node, do something with it, enqueue its children. The FIFO discipline naturally produces level-by-level visit order. Once you augment the loop to track *level boundaries* — a small trick where you record `queue.size()` at the start of each iteration to know how many nodes belong to the current level — you can compute *anything per level*: sums, maxes, lists, leftmost or rightmost nodes, you name it.
 
-This lesson defines the level-boundary template, walks through five canonical problems (per-level sum, deepest-leaves sum, completeness check, zigzag traversal, cousin check), and implements each in 10 languages.
+This lesson defines the level-boundary template, walks through five canonical problems (per-level sum, deepest-leaves sum, completeness check, zigzag traversal, cousin check), and implements each in Python and Java.
 
 ---
 
@@ -89,27 +89,10 @@ q=[]"]
 >
 > You'd flatten everything into a single global stream and lose the level boundaries — exactly what the basic level-order traversal from lesson 5 produces. Forgetting the snapshot is fine when you only need a flat list. It's catastrophic when you need *per-level* aggregates.
 
-## Generic pattern in 10 languages
+## Generic pattern
 
 The "list each level's values" template — the simplest member of the family.
 
-
-```pseudocode
-function levels(root):
-    if root = null: return empty list
-    out ← empty list
-    q   ← empty queue; enqueue root to q
-    while q is not empty:
-        levelSize ← size of q
-        level     ← empty list
-        for _ from 1 to levelSize:
-            n ← dequeue from q
-            append n.val to level
-            if n.left  ≠ null: enqueue n.left  to q
-            if n.right ≠ null: enqueue n.right to q
-        append level to out
-    return out
-```
 
 ```python run
 from collections import deque
@@ -156,50 +139,6 @@ public static List<List<Integer>> levels(TreeNode root) {
 }
 ```
 
-```c run
-// Output is allocated dynamically; for brevity we assume a fixed cap.
-int** levels(TreeNode *root, int *out_levels, int **out_sizes) {
-    static int *out[64]; static int sizes[64]; int level_count = 0;
-    if (!root) { *out_levels = 0; *out_sizes = sizes; return out; }
-    TreeNode *q[1024]; int head = 0, tail = 0;
-    q[tail++] = root;
-    while (head < tail) {
-        int level_size = tail - head;
-        out[level_count] = malloc(sizeof(int) * level_size);
-        sizes[level_count] = level_size;
-        for (int i = 0; i < level_size; i++) {
-            TreeNode *n = q[head++];
-            out[level_count][i] = n->val;
-            if (n->left)  q[tail++] = n->left;
-            if (n->right) q[tail++] = n->right;
-        }
-        level_count++;
-    }
-    *out_levels = level_count; *out_sizes = sizes;
-    return out;
-}
-```
-
-```scala run
-def levels(root: TreeNode): List[List[Int]] = {
-  val out = scala.collection.mutable.ListBuffer[List[Int]]()
-  if (root == null) return Nil
-  val q = scala.collection.mutable.Queue[TreeNode](root)
-  while (q.nonEmpty) {
-    val levelSize = q.size
-    val level = scala.collection.mutable.ListBuffer[Int]()
-    for (_ <- 0 until levelSize) {
-      val n = q.dequeue()
-      level += n.value
-      if (n.left  != null) q.enqueue(n.left)
-      if (n.right != null) q.enqueue(n.right)
-    }
-    out += level.toList
-  }
-  out.toList
-}
-```
-
 
 ## Complexity
 
@@ -233,97 +172,187 @@ Anti-pattern: if there's no notion of "level" in the question (path sums, subtre
 
 Apply the template directly: at the top of each outer-loop iteration, accumulate `levelSum = 0`; in the inner loop, add each node's value; after the inner loop, append `levelSum` to the output.
 
-## Solution
+<details>
+<summary><h2>Solution</h2></summary>
 
 
-```pseudocode
-function levelSum(root):
-    if root = null: return empty list
-    out ← empty list; q ← empty queue; enqueue root to q
-    while q is not empty:
-        sz ← size of q; s ← 0
-        for _ from 1 to sz:
-            n ← dequeue from q
-            s ← s + n.val
-            if n.left  ≠ null: enqueue n.left  to q
-            if n.right ≠ null: enqueue n.right to q
-        append s to out
-    return out
-```
 
 ```python run
-def level_sum(root):
-    out = []
-    if root is None: return out
-    q = deque([root])
-    while q:
-        sz = len(q); s = 0
-        for _ in range(sz):
-            n = q.popleft()
-            s += n.val
-            if n.left:  q.append(n.left)
-            if n.right: q.append(n.right)
-        out.append(s)
-    return out
+from queue import Queue
+from typing import List, Optional
+
+
+class TreeNode:
+    def __init__(self, val=0, left=None, right=None):
+        self.val = val
+        self.left = left
+        self.right = right
+
+
+def from_level_order(values):
+    """Build tree from list like [1, 2, 3, None, 4]. None means missing child."""
+    if not values:
+        return None
+    root = TreeNode(values[0])
+    queue = [root]
+    i = 1
+    while queue and i < len(values):
+        node = queue.pop(0)
+        if i < len(values) and values[i] is not None:
+            node.left = TreeNode(values[i])
+            queue.append(node.left)
+        i += 1
+        if i < len(values) and values[i] is not None:
+            node.right = TreeNode(values[i])
+            queue.append(node.right)
+        i += 1
+    return root
+
+
+class Solution:
+    def level_sum(self, root: Optional[TreeNode]) -> List[int]:
+        level_sums: List[int] = []
+        if not root:
+            return level_sums
+
+        queue = Queue()
+        queue.put(root)
+
+        # Loop through each level in the tree
+        while not queue.empty():
+
+            # Get the size of the current level
+            level_size = queue.qsize()
+            level_sum = 0
+
+            # Loop through each node in the current level
+            for _ in range(level_size):
+
+                # Get the front node in the queue and remove it
+                node = queue.get()
+
+                # Add the node's value to the current level sum
+                level_sum += node.val
+
+                # Add the node's children to the queue if they exist
+                if node.left:
+                    queue.put(node.left)
+
+                if node.right:
+                    queue.put(node.right)
+
+            # Add the current level sum to the level_sums list
+            level_sums.append(level_sum)
+
+        return level_sums
+
+
+# Examples from the problem statement
+print(Solution().level_sum(from_level_order([1, 2, 3, 4, None, None, 7])))   # [1, 5, 11]
+print(Solution().level_sum(from_level_order([1, 8, 4, None, None, 2, 7])))   # [1, 12, 9]
+
+# Edge cases
+print(Solution().level_sum(None))                                             # []
+print(Solution().level_sum(TreeNode(42)))                                     # [42]
+print(Solution().level_sum(from_level_order([1, 2, None, 3, None, 4])))      # [1, 2, 3, 4] left skew
+print(Solution().level_sum(from_level_order([1, None, 2, None, None, None, 3])))  # [1, 2, 3] right skew
+print(Solution().level_sum(from_level_order([5, 5, 5, 5, 5, 5, 5])))         # [5, 10, 20] full balanced
 ```
 
 ```java run
-public static List<Integer> levelSum(TreeNode root) {
-    List<Integer> out = new ArrayList<>();
-    if (root == null) return out;
-    Queue<TreeNode> q = new ArrayDeque<>(); q.offer(root);
-    while (!q.isEmpty()) {
-        int sz = q.size(), s = 0;
-        for (int i = 0; i < sz; i++) {
-            TreeNode n = q.poll();
-            s += n.val;
-            if (n.left  != null) q.offer(n.left);
-            if (n.right != null) q.offer(n.right);
-        }
-        out.add(s);
+import java.util.*;
+
+public class Main {
+    static class TreeNode {
+        int val;
+        TreeNode left;
+        TreeNode right;
+        TreeNode() {}
+        TreeNode(int val) { this.val = val; }
     }
-    return out;
+
+    static TreeNode fromLevelOrder(Integer... values) {
+        if (values.length == 0 || values[0] == null) return null;
+        TreeNode root = new TreeNode(values[0]);
+        java.util.Deque<TreeNode> queue = new java.util.ArrayDeque<>();
+        queue.add(root);
+        int i = 1;
+        while (!queue.isEmpty() && i < values.length) {
+            TreeNode node = queue.poll();
+            if (i < values.length && values[i] != null) {
+                node.left = new TreeNode(values[i]);
+                queue.add(node.left);
+            }
+            i++;
+            if (i < values.length && values[i] != null) {
+                node.right = new TreeNode(values[i]);
+                queue.add(node.right);
+            }
+            i++;
+        }
+        return root;
+    }
+
+    static class Solution {
+        public List<Integer> levelSum(TreeNode root) {
+            List<Integer> levelSums = new ArrayList<>();
+            if (root == null) {
+                return levelSums;
+            }
+
+            Queue<TreeNode> queue = new LinkedList<>();
+            queue.add(root);
+
+            // Loop through each level in the tree
+            while (!queue.isEmpty()) {
+
+                // Get the size of the current level
+                int levelSize = queue.size();
+                int levelSum = 0;
+
+                // Loop through each node in the current level
+                for (int i = 0; i < levelSize; i++) {
+
+                    // Get the front node in the queue and remove it
+                    TreeNode node = queue.poll();
+
+                    // Add the node's value to the current level sum
+                    levelSum += node.val;
+
+                    // Add the node's children to the queue if they exist
+                    if (node.left != null) {
+                        queue.add(node.left);
+                    }
+
+                    if (node.right != null) {
+                        queue.add(node.right);
+                    }
+                }
+
+                // Add the current level sum to the levelSums list
+                levelSums.add(levelSum);
+            }
+
+            return levelSums;
+        }
+    }
+
+    public static void main(String[] args) {
+        // Examples from the problem statement
+        System.out.println(new Solution().levelSum(fromLevelOrder(1, 2, 3, 4, null, null, 7)));   // [1, 5, 11]
+        System.out.println(new Solution().levelSum(fromLevelOrder(1, 8, 4, null, null, 2, 7)));   // [1, 12, 9]
+
+        // Edge cases
+        System.out.println(new Solution().levelSum(null));                                         // []
+        System.out.println(new Solution().levelSum(new TreeNode(42)));                             // [42]
+        System.out.println(new Solution().levelSum(fromLevelOrder(1, 2, null, 3)));               // [1, 2, 3] left skew
+        System.out.println(new Solution().levelSum(fromLevelOrder(1, null, 2, null, null, null, 3)));  // [1, 2, 3] right skew
+        System.out.println(new Solution().levelSum(fromLevelOrder(5, 5, 5, 5, 5, 5, 5)));         // [5, 10, 20] full balanced
+    }
 }
 ```
 
-```c run
-int* level_sum(TreeNode *root, int *count) {
-    static int out[64]; *count = 0;
-    if (!root) return out;
-    TreeNode *q[1024]; int h = 0, t = 0;
-    q[t++] = root;
-    while (h < t) {
-        int sz = t - h, s = 0;
-        for (int i = 0; i < sz; i++) {
-            TreeNode *n = q[h++];
-            s += n->val;
-            if (n->left)  q[t++] = n->left;
-            if (n->right) q[t++] = n->right;
-        }
-        out[(*count)++] = s;
-    }
-    return out;
-}
-```
-
-```scala run
-def levelSum(root: TreeNode): List[Int] = {
-  if (root == null) return Nil
-  val out = scala.collection.mutable.ListBuffer[Int]()
-  val q = scala.collection.mutable.Queue[TreeNode](root)
-  while (q.nonEmpty) {
-    val sz = q.size; var s = 0
-    for (_ <- 0 until sz) {
-      val n = q.dequeue()
-      s += n.value
-      if (n.left  != null) q.enqueue(n.left)
-      if (n.right != null) q.enqueue(n.right)
-    }
-    out += s
-  }
-  out.toList
-}
-```
+</details>
 
 
 ***
@@ -334,89 +363,195 @@ def levelSum(root: TreeNode): List[Int] = {
 
 Same shape as level-sum, but instead of recording every level we just *overwrite* a single `levelSum` variable each iteration. After the loop ends, `levelSum` holds the sum of the deepest level. (Note: every node on the deepest level is a leaf.)
 
-## Solution
+<details>
+<summary><h2>Solution</h2></summary>
 
 
-```pseudocode
-function deepestLeavesSum(root):
-    if root = null: return 0
-    q ← empty queue; enqueue root to q; s ← 0
-    while q is not empty:
-        s ← 0                              # reset each level; last iteration = deepest
-        for _ from 1 to size of q:
-            n ← dequeue from q
-            s ← s + n.val
-            if n.left  ≠ null: enqueue n.left  to q
-            if n.right ≠ null: enqueue n.right to q
-    return s
-```
 
 ```python run
-def deepest_leaves_sum(root):
-    if root is None: return 0
-    q = deque([root]); s = 0
-    while q:
-        s = 0
-        for _ in range(len(q)):
-            n = q.popleft()
-            s += n.val
-            if n.left:  q.append(n.left)
-            if n.right: q.append(n.right)
-    return s
+from queue import Queue
+from typing import Optional
+
+
+class TreeNode:
+    def __init__(self, val=0, left=None, right=None):
+        self.val = val
+        self.left = left
+        self.right = right
+
+
+def from_level_order(values):
+    """Build tree from list like [1, 2, 3, None, 4]. None means missing child."""
+    if not values:
+        return None
+    root = TreeNode(values[0])
+    queue = [root]
+    i = 1
+    while queue and i < len(values):
+        node = queue.pop(0)
+        if i < len(values) and values[i] is not None:
+            node.left = TreeNode(values[i])
+            queue.append(node.left)
+        i += 1
+        if i < len(values) and values[i] is not None:
+            node.right = TreeNode(values[i])
+            queue.append(node.right)
+        i += 1
+    return root
+
+
+class Solution:
+    def deepest_leaves_sum(self, root: Optional[TreeNode]) -> int:
+
+        # If the tree is empty, return 0
+        if not root:
+            return 0
+
+        queue = Queue()
+        queue.put(root)
+
+        # Variable to store the level_sum of the deepest leaves
+        level_sum = 0
+
+        # Loop through each level in the tree
+        while not queue.empty():
+
+            # Get the size of the current level
+            level_size = queue.qsize()
+
+            # Reset level_sum for the current level
+            level_sum = 0
+
+            # Loop through each node in the current level
+            for _ in range(level_size):
+
+                # Get the front node in the queue and remove it
+                node = queue.get()
+
+                # Add its value to the level_sum
+                level_sum += node.val
+
+                # Add the node's children to the queue if they exist
+                if node.left:
+                    queue.put(node.left)
+
+                if node.right:
+                    queue.put(node.right)
+
+        # The last computed level_sum is for the deepest level
+        return level_sum
+
+
+# Examples from the problem statement
+print(Solution().deepest_leaves_sum(from_level_order([1, 2, 1, 7, None, None, 1])))  # 8
+print(Solution().deepest_leaves_sum(from_level_order([1, 6, 5, None, None, 2, 7])))  # 9
+
+# Edge cases
+print(Solution().deepest_leaves_sum(None))                                            # 0
+print(Solution().deepest_leaves_sum(TreeNode(7)))                                     # 7
+print(Solution().deepest_leaves_sum(from_level_order([1, 2, None, 3, None, 4])))     # 4 left skew
+print(Solution().deepest_leaves_sum(from_level_order([1, None, 2, None, None, None, 3])))  # 3 right skew
+print(Solution().deepest_leaves_sum(from_level_order([1, 2, 3])))                    # 5 balanced two children
 ```
 
 ```java run
-public static int deepestLeavesSum(TreeNode root) {
-    if (root == null) return 0;
-    Queue<TreeNode> q = new ArrayDeque<>(); q.offer(root);
-    int s = 0;
-    while (!q.isEmpty()) {
-        int sz = q.size(); s = 0;
-        for (int i = 0; i < sz; i++) {
-            TreeNode n = q.poll();
-            s += n.val;
-            if (n.left  != null) q.offer(n.left);
-            if (n.right != null) q.offer(n.right);
+import java.util.*;
+
+public class Main {
+    static class TreeNode {
+        int val;
+        TreeNode left;
+        TreeNode right;
+        TreeNode() {}
+        TreeNode(int val) { this.val = val; }
+    }
+
+    static TreeNode fromLevelOrder(Integer... values) {
+        if (values.length == 0 || values[0] == null) return null;
+        TreeNode root = new TreeNode(values[0]);
+        java.util.Deque<TreeNode> queue = new java.util.ArrayDeque<>();
+        queue.add(root);
+        int i = 1;
+        while (!queue.isEmpty() && i < values.length) {
+            TreeNode node = queue.poll();
+            if (i < values.length && values[i] != null) {
+                node.left = new TreeNode(values[i]);
+                queue.add(node.left);
+            }
+            i++;
+            if (i < values.length && values[i] != null) {
+                node.right = new TreeNode(values[i]);
+                queue.add(node.right);
+            }
+            i++;
+        }
+        return root;
+    }
+
+    static class Solution {
+        public int deepestLeavesSum(TreeNode root) {
+
+            // If the tree is empty, return 0
+            if (root == null) {
+                return 0;
+            }
+
+            Queue<TreeNode> queue = new LinkedList<>();
+            queue.add(root);
+
+            // Variable to store the levelSum of the deepest leaves
+            int levelSum = 0;
+
+            // Loop through each level in the tree
+            while (!queue.isEmpty()) {
+
+                // Get the size of the current level
+                int levelSize = queue.size();
+
+                // Reset levelSum for the current level
+                levelSum = 0;
+
+                // Loop through each node in the current level
+                for (int i = 0; i < levelSize; ++i) {
+
+                    // Get the front node in the queue and remove it
+                    TreeNode node = queue.poll();
+
+                    // Add its value to the levelSum
+                    levelSum += node.val;
+
+                    // Add the node's children to the queue if they exist
+                    if (node.left != null) {
+                        queue.add(node.left);
+                    }
+
+                    if (node.right != null) {
+                        queue.add(node.right);
+                    }
+                }
+            }
+
+            // The last computed levelSum is for the deepest level
+            return levelSum;
         }
     }
-    return s;
+
+    public static void main(String[] args) {
+        // Examples from the problem statement
+        System.out.println(new Solution().deepestLeavesSum(fromLevelOrder(1, 2, 1, 7, null, null, 1)));  // 8
+        System.out.println(new Solution().deepestLeavesSum(fromLevelOrder(1, 6, 5, null, null, 2, 7)));  // 9
+
+        // Edge cases
+        System.out.println(new Solution().deepestLeavesSum(null));                                        // 0
+        System.out.println(new Solution().deepestLeavesSum(new TreeNode(7)));                             // 7
+        System.out.println(new Solution().deepestLeavesSum(fromLevelOrder(1, 2, null, 3)));              // 4 left skew
+        System.out.println(new Solution().deepestLeavesSum(fromLevelOrder(1, null, 2, null, null, null, 3)));  // 3 right skew
+        System.out.println(new Solution().deepestLeavesSum(fromLevelOrder(1, 2, 3)));                    // 5 balanced two children
+    }
 }
 ```
 
-```c run
-int deepest_leaves_sum(TreeNode *root) {
-    if (!root) return 0;
-    TreeNode *q[1024]; int h = 0, t = 0; q[t++] = root;
-    int s = 0;
-    while (h < t) {
-        int sz = t - h; s = 0;
-        for (int i = 0; i < sz; i++) {
-            TreeNode *n = q[h++];
-            s += n->val;
-            if (n->left)  q[t++] = n->left;
-            if (n->right) q[t++] = n->right;
-        }
-    }
-    return s;
-}
-```
-
-```scala run
-def deepestLeavesSum(root: TreeNode): Int = {
-  if (root == null) return 0
-  val q = scala.collection.mutable.Queue[TreeNode](root); var s = 0
-  while (q.nonEmpty) {
-    val sz = q.size; s = 0
-    for (_ <- 0 until sz) {
-      val n = q.dequeue()
-      s += n.value
-      if (n.left  != null) q.enqueue(n.left)
-      if (n.right != null) q.enqueue(n.right)
-    }
-  }
-  s
-}
-```
+</details>
 
 
 ***
@@ -465,23 +600,10 @@ flowchart LR
 
 <p align="center"><strong>Completeness check — enqueue every child including nulls. Walk the resulting queue; once you've seen a null, no real node may follow. The left tree fails because node 5 follows a null.</strong></p>
 
-## Solution
+<details>
+<summary><h2>Solution</h2></summary>
 
 
-```pseudocode
-function isComplete(root):
-    if root = null: return true
-    q ← empty queue; enqueue root to q; seenNull ← false
-    while q is not empty:
-        n ← dequeue from q
-        if n = null:
-            seenNull ← true
-        else:
-            if seenNull: return false   # non-null after null → gap → not complete
-            enqueue n.left  to q        # enqueue even if null (sentinel check)
-            enqueue n.right to q
-    return true
-```
 
 ```python run
 def is_complete(root):
@@ -517,40 +639,7 @@ public static boolean isComplete(TreeNode root) {
 }
 ```
 
-```c run
-int is_complete(TreeNode *root) {
-    if (!root) return 1;
-    TreeNode *q[1024]; int h = 0, t = 0;
-    q[t++] = root;
-    int seen_null = 0;
-    while (h < t) {
-        TreeNode *n = q[h++];
-        if (!n) seen_null = 1;
-        else {
-            if (seen_null) return 0;
-            q[t++] = n->left; q[t++] = n->right;
-        }
-    }
-    return 1;
-}
-```
-
-```scala run
-def isComplete(root: TreeNode): Boolean = {
-  if (root == null) return true
-  val q = scala.collection.mutable.Queue[TreeNode](root)
-  var seenNull = false
-  while (q.nonEmpty) {
-    val n = q.dequeue()
-    if (n == null) seenNull = true
-    else {
-      if (seenNull) return false
-      q.enqueue(n.left); q.enqueue(n.right)
-    }
-  }
-  true
-}
-```
+</details>
 
 
 ***
@@ -561,91 +650,216 @@ def isComplete(root: TreeNode): Boolean = {
 
 Same template, but pre-allocate the level array and *write into it from either end* depending on a `reverse` boolean that flips each iteration. Avoids per-level reversal at the cost of one extra index.
 
-## Solution
+<details>
+<summary><h2>Solution</h2></summary>
 
 
-```pseudocode
-function zigzagTraversal(root):
-    if root = null: return empty list
-    out ← empty list; q ← empty queue; enqueue root to q; reverse ← false
-    while q is not empty:
-        sz    ← size of q
-        level ← array of size sz
-        for i from 0 to sz − 1:
-            n ← dequeue from q
-            level[sz − 1 − i if reverse else i] ← n.val   # fill from end on odd levels
-            if n.left  ≠ null: enqueue n.left  to q
-            if n.right ≠ null: enqueue n.right to q
-        append level to out
-        reverse ← NOT reverse
-    return out
-```
 
 ```python run
-def zigzag_traversal(root):
-    out = []
-    if root is None: return out
-    q = deque([root]); reverse = False
-    while q:
-        sz = len(q)
-        level = [0] * sz
-        for i in range(sz):
-            n = q.popleft()
-            level[sz - 1 - i if reverse else i] = n.val
-            if n.left:  q.append(n.left)
-            if n.right: q.append(n.right)
-        out.append(level)
-        reverse = not reverse
-    return out
+from queue import Queue
+from typing import Optional, List
+
+
+class TreeNode:
+    def __init__(self, val=0, left=None, right=None):
+        self.val = val
+        self.left = left
+        self.right = right
+
+
+def from_level_order(values):
+    """Build tree from list like [1, 2, 3, None, 4]. None means missing child."""
+    if not values:
+        return None
+    root = TreeNode(values[0])
+    queue = [root]
+    i = 1
+    while queue and i < len(values):
+        node = queue.pop(0)
+        if i < len(values) and values[i] is not None:
+            node.left = TreeNode(values[i])
+            queue.append(node.left)
+        i += 1
+        if i < len(values) and values[i] is not None:
+            node.right = TreeNode(values[i])
+            queue.append(node.right)
+        i += 1
+    return root
+
+
+class Solution:
+    def zigzag_traversal(
+        self, root: Optional[TreeNode]
+    ) -> List[List[int]]:
+        zigzag_levels: List[List[int]] = []
+        if not root:
+            return zigzag_levels
+
+        queue = Queue()
+        queue.put(root)
+
+        # Flag to indicate the direction of traversal
+        reverse = False
+
+        # Loop through each level in the tree
+        while not queue.empty():
+
+            # Get the size of the current level
+            level_size = queue.qsize()
+
+            # Initialize the list to store the nodes in the current
+            # level. The size of the list is equal to the number of
+            # nodes in the current level.
+            level = [0] * level_size
+
+            # Loop through each node in the current level
+            for i in range(level_size):
+
+                # Get the front node in the queue and remove it
+                node = queue.get()
+
+                # Fill level list based on the direction of traversal
+                if reverse:
+                    level[level_size - i - 1] = node.val
+                else:
+                    level[i] = node.val
+
+                # Add the node's children to the queue if they exist
+                if node.left:
+                    queue.put(node.left)
+
+                if node.right:
+                    queue.put(node.right)
+
+            # Add the current level list to the levels list
+            zigzag_levels.append(level)
+
+            # Flip the direction for the next level
+            reverse = not reverse
+
+        return zigzag_levels
+
+
+# Examples from the problem statement
+print(Solution().zigzag_traversal(from_level_order([1, 2, 3, 4, None, None, 7])))   # [[1], [3, 2], [4, 7]]
+print(Solution().zigzag_traversal(from_level_order([1, 8, 4, None, None, 2, 7])))   # [[1], [4, 8], [2, 7]]
+
+# Edge cases
+print(Solution().zigzag_traversal(None))                                             # []
+print(Solution().zigzag_traversal(TreeNode(1)))                                      # [[1]]
+print(Solution().zigzag_traversal(from_level_order([1, 2, None, 3])))               # [[1], [2], [3]] left skew
+print(Solution().zigzag_traversal(from_level_order([1, None, 2, None, None, None, 3])))  # [[1], [2], [3]] right skew
+print(Solution().zigzag_traversal(from_level_order([1, 2, 3, 4, 5, 6, 7])))         # [[1], [3, 2], [4, 5, 6, 7]]
 ```
 
 ```java run
-public static List<List<Integer>> zigzagTraversal(TreeNode root) {
-    List<List<Integer>> out = new ArrayList<>();
-    if (root == null) return out;
-    Queue<TreeNode> q = new ArrayDeque<>(); q.offer(root);
-    boolean reverse = false;
-    while (!q.isEmpty()) {
-        int sz = q.size();
-        Integer[] level = new Integer[sz];
-        for (int i = 0; i < sz; i++) {
-            TreeNode n = q.poll();
-            level[reverse ? sz - 1 - i : i] = n.val;
-            if (n.left  != null) q.offer(n.left);
-            if (n.right != null) q.offer(n.right);
+import java.util.*;
+
+public class Main {
+    static class TreeNode {
+        int val;
+        TreeNode left;
+        TreeNode right;
+        TreeNode() {}
+        TreeNode(int val) { this.val = val; }
+    }
+
+    static TreeNode fromLevelOrder(Integer... values) {
+        if (values.length == 0 || values[0] == null) return null;
+        TreeNode root = new TreeNode(values[0]);
+        java.util.Deque<TreeNode> queue = new java.util.ArrayDeque<>();
+        queue.add(root);
+        int i = 1;
+        while (!queue.isEmpty() && i < values.length) {
+            TreeNode node = queue.poll();
+            if (i < values.length && values[i] != null) {
+                node.left = new TreeNode(values[i]);
+                queue.add(node.left);
+            }
+            i++;
+            if (i < values.length && values[i] != null) {
+                node.right = new TreeNode(values[i]);
+                queue.add(node.right);
+            }
+            i++;
         }
-        out.add(Arrays.asList(level));
-        reverse = !reverse;
+        return root;
     }
-    return out;
+
+    static class Solution {
+        public List<List<Integer>> zigzagTraversal(TreeNode root) {
+            List<List<Integer>> zigzagLevels = new ArrayList<>();
+            if (root == null) {
+                return zigzagLevels;
+            }
+
+            Queue<TreeNode> queue = new LinkedList<>();
+            queue.add(root);
+
+            // Flag to indicate the direction of traversal
+            boolean reverse = false;
+
+            // Loop through each level in the tree
+            while (!queue.isEmpty()) {
+
+                // Get the size of the current level
+                int levelSize = queue.size();
+
+                // Initialize the list to store the nodes in the current
+                // level. The size of the list is equal to the number of
+                // nodes in the current level.
+                List<Integer> level = new ArrayList<>(levelSize);
+
+                // Loop through each node in the current level
+                for (int i = 0; i < levelSize; i++) {
+                    TreeNode node = queue.poll();
+
+                    // Fill level list based on the direction of traversal
+                    if (reverse) {
+
+                        // Insert at the beginning
+                        level.add(0, node.val);
+                    } else {
+                        level.add(node.val);
+                    }
+
+                    // Add the node's children to the queue if they exist
+                    if (node.left != null) {
+                        queue.add(node.left);
+                    }
+
+                    if (node.right != null) {
+                        queue.add(node.right);
+                    }
+                }
+
+                // Add the current level list to the levels list
+                zigzagLevels.add(level);
+
+                // Flip the direction for the next level
+                reverse = !reverse;
+            }
+
+            return zigzagLevels;
+        }
+    }
+
+    public static void main(String[] args) {
+        // Examples from the problem statement
+        System.out.println(new Solution().zigzagTraversal(fromLevelOrder(1, 2, 3, 4, null, null, 7)));   // [[1], [3, 2], [4, 7]]
+        System.out.println(new Solution().zigzagTraversal(fromLevelOrder(1, 8, 4, null, null, 2, 7)));   // [[1], [4, 8], [2, 7]]
+
+        // Edge cases
+        System.out.println(new Solution().zigzagTraversal(null));                                         // []
+        System.out.println(new Solution().zigzagTraversal(new TreeNode(1)));                              // [[1]]
+        System.out.println(new Solution().zigzagTraversal(fromLevelOrder(1, 2, null, 3)));               // [[1], [2], [3]] left skew
+        System.out.println(new Solution().zigzagTraversal(fromLevelOrder(1, null, 2, null, null, null, 3)));  // [[1], [2], [3]] right skew
+        System.out.println(new Solution().zigzagTraversal(fromLevelOrder(1, 2, 3, 4, 5, 6, 7)));         // [[1], [3, 2], [4, 5, 6, 7]]
+    }
 }
 ```
 
-```c run
-// (omitted — output is a 2D array; algorithm same as above)
-```
-
-```scala run
-def zigzagTraversal(root: TreeNode): List[List[Int]] = {
-  val out = scala.collection.mutable.ListBuffer[List[Int]]()
-  if (root == null) return Nil
-  val q = scala.collection.mutable.Queue[TreeNode](root)
-  var reverse = false
-  while (q.nonEmpty) {
-    val sz = q.size
-    val level = Array.ofDim[Int](sz)
-    for (i <- 0 until sz) {
-      val n = q.dequeue()
-      level(if (reverse) sz - 1 - i else i) = n.value
-      if (n.left  != null) q.enqueue(n.left)
-      if (n.right != null) q.enqueue(n.right)
-    }
-    out += level.toList
-    reverse = !reverse
-  }
-  out.toList
-}
-```
+</details>
 
 
 ***
@@ -656,114 +870,243 @@ def zigzagTraversal(root: TreeNode): List[List[Int]] = {
 
 Augment the BFS so each enqueued item carries *both* the node and its parent. As we walk a level, look for the two target values; if both are found on the same level *and* they have different parents, return `true`. If only one is found on a level, they're not at the same depth, return `false`.
 
-## Solution
+<details>
+<summary><h2>Solution</h2></summary>
 
 
-```pseudocode
-function cousinCheck(root, valA, valB):
-    if root = null: return false
-    q ← empty queue; enqueue (root, null) to q   # (node, parent) pairs
-    while q is not empty:
-        sz ← size of q; pa ← null; pb ← null
-        for _ from 1 to sz:
-            (n, p) ← dequeue from q
-            if n.val = valA: pa ← p
-            if n.val = valB: pb ← p
-            if n.left  ≠ null: enqueue (n.left,  n) to q
-            if n.right ≠ null: enqueue (n.right, n) to q
-        if pa ≠ null AND pb ≠ null: return pa ≠ pb   # same depth, different parents
-        if pa ≠ null OR  pb ≠ null: return false      # different depths
-    return false
-```
 
 ```python run
-def cousin_check(root, val_a, val_b):
-    if root is None: return False
-    q = deque([(root, None)])
-    while q:
-        sz = len(q); pa, pb = None, None
-        for _ in range(sz):
-            n, p = q.popleft()
-            if n.val == val_a: pa = p
-            if n.val == val_b: pb = p
-            if n.left:  q.append((n.left,  n))
-            if n.right: q.append((n.right, n))
-        if pa and pb: return pa is not pb
-        if pa or  pb: return False
-    return False
+from queue import Queue
+from typing import Optional
+
+
+class TreeNode:
+    def __init__(self, val=0, left=None, right=None):
+        self.val = val
+        self.left = left
+        self.right = right
+
+
+def from_level_order(values):
+    """Build tree from list like [1, 2, 3, None, 4]. None means missing child."""
+    if not values:
+        return None
+    root = TreeNode(values[0])
+    queue = [root]
+    i = 1
+    while queue and i < len(values):
+        node = queue.pop(0)
+        if i < len(values) and values[i] is not None:
+            node.left = TreeNode(values[i])
+            queue.append(node.left)
+        i += 1
+        if i < len(values) and values[i] is not None:
+            node.right = TreeNode(values[i])
+            queue.append(node.right)
+        i += 1
+    return root
+
+
+# Define a class to store the node and its parent
+class NodeInfo:
+    def __init__(self, node, parent):
+        self.node = node
+        self.parent = parent
+
+
+class Solution:
+    def cousin_check(
+        self, root: Optional[TreeNode], val_a: int, val_b: int
+    ) -> bool:
+        if not root:
+            return False
+
+        # Use a queue to store the nodes and their parents
+        queue = Queue()
+        queue.put(NodeInfo(root, None))
+
+        # Loop through each level in the tree
+        while not queue.empty():
+
+            # Get the size of the current level
+            level_size = queue.qsize()
+
+            # Initialize the parent nodes for A and B
+            parent_a, parent_b = None, None
+
+            # Loop through each node in the current level
+            for _ in range(level_size):
+
+                # Get the node and the parent node for the first node
+                # in the queue
+                current = queue.get()
+                node, parent = current.node, current.parent
+
+                # Check and assign parents for A and B
+                if node.val == val_a:
+                    parent_a = parent
+
+                if node.val == val_b:
+                    parent_b = parent
+
+                # Add the node's children to the queue if they exist
+                if node.left:
+                    queue.put(NodeInfo(node.left, node))
+
+                if node.right:
+                    queue.put(NodeInfo(node.right, node))
+
+            # If both nodes found at the same level
+            if parent_a and parent_b:
+                return parent_a != parent_b
+
+            # If only one is found, return false (not same depth)
+            if parent_a or parent_b:
+                return False
+
+        # If neither node is found, return false
+        return False
+
+
+# Examples from the problem statement
+print(Solution().cousin_check(from_level_order([1, 2, 3, 4, None, None, 7]), 4, 7))       # True
+print(Solution().cousin_check(from_level_order([1, 8, 4, None, None, 2, 7, None, 9]), 2, 8))  # False
+
+# Edge cases
+print(Solution().cousin_check(None, 1, 2))                                                  # False
+print(Solution().cousin_check(TreeNode(1), 1, 2))                                          # False
+print(Solution().cousin_check(from_level_order([1, 2, 3]), 2, 3))                          # False (siblings not cousins)
+print(Solution().cousin_check(from_level_order([1, 2, 3, 4, 5, 6, 7]), 4, 7))             # True (level 3, different parents)
+print(Solution().cousin_check(from_level_order([1, 2, 3, 4, None, None, 7]), 2, 3))       # False (different depths)
 ```
 
 ```java run
-static class NP { TreeNode n, p; NP(TreeNode n, TreeNode p){ this.n=n; this.p=p; } }
-public static boolean cousinCheck(TreeNode root, int valA, int valB) {
-    if (root == null) return false;
-    Queue<NP> q = new ArrayDeque<>(); q.offer(new NP(root, null));
-    while (!q.isEmpty()) {
-        int sz = q.size();
-        TreeNode pa = null, pb = null;
-        for (int i = 0; i < sz; i++) {
-            NP cur = q.poll();
-            if (cur.n.val == valA) pa = cur.p;
-            if (cur.n.val == valB) pb = cur.p;
-            if (cur.n.left  != null) q.offer(new NP(cur.n.left,  cur.n));
-            if (cur.n.right != null) q.offer(new NP(cur.n.right, cur.n));
+import java.util.*;
+
+public class Main {
+    static class TreeNode {
+        int val;
+        TreeNode left;
+        TreeNode right;
+        TreeNode() {}
+        TreeNode(int val) { this.val = val; }
+    }
+
+    static TreeNode fromLevelOrder(Integer... values) {
+        if (values.length == 0 || values[0] == null) return null;
+        TreeNode root = new TreeNode(values[0]);
+        java.util.Deque<TreeNode> queue = new java.util.ArrayDeque<>();
+        queue.add(root);
+        int i = 1;
+        while (!queue.isEmpty() && i < values.length) {
+            TreeNode node = queue.poll();
+            if (i < values.length && values[i] != null) {
+                node.left = new TreeNode(values[i]);
+                queue.add(node.left);
+            }
+            i++;
+            if (i < values.length && values[i] != null) {
+                node.right = new TreeNode(values[i]);
+                queue.add(node.right);
+            }
+            i++;
         }
-        if (pa != null && pb != null) return pa != pb;
-        if (pa != null || pb != null) return false;
+        return root;
     }
-    return false;
-}
-```
 
-```c run
-typedef struct { TreeNode *n; TreeNode *p; } NP;
-int cousin_check(TreeNode *root, int valA, int valB) {
-    if (!root) return 0;
-    NP q[1024]; int h = 0, t = 0;
-    q[t++] = (NP){root, NULL};
-    while (h < t) {
-        int sz = t - h;
-        TreeNode *pa = NULL, *pb = NULL;
-        for (int i = 0; i < sz; i++) {
-            NP cur = q[h++];
-            if (cur.n->val == valA) pa = cur.p;
-            if (cur.n->val == valB) pb = cur.p;
-            if (cur.n->left)  q[t++] = (NP){cur.n->left,  cur.n};
-            if (cur.n->right) q[t++] = (NP){cur.n->right, cur.n};
+    // Define a class to store the node and its parent
+    static class NodeInfo {
+        TreeNode node;
+        TreeNode parent;
+        NodeInfo(TreeNode node, TreeNode parent) {
+            this.node = node;
+            this.parent = parent;
         }
-        if (pa && pb) return pa != pb;
-        if (pa || pb) return 0;
     }
-    return 0;
+
+    static class Solution {
+        public boolean cousinCheck(TreeNode root, int valA, int valB) {
+            if (root == null) {
+                return false;
+            }
+
+            // Use a queue to store the nodes and their parents
+            Queue<NodeInfo> queue = new LinkedList<>();
+            queue.add(new NodeInfo(root, null));
+
+            // Loop through each level in the tree
+            while (!queue.isEmpty()) {
+
+                // Get the size of the current level
+                int levelSize = queue.size();
+
+                // Initialize the parent nodes for A and B
+                TreeNode parentA = null;
+                TreeNode parentB = null;
+
+                // Loop through each node in the current level
+                for (int i = 0; i < levelSize; ++i) {
+
+                    // Get the node and the parent node for the first node
+                    // in the queue
+                    NodeInfo current = queue.poll();
+                    TreeNode node = current.node;
+                    TreeNode parent = current.parent;
+
+                    // Check and assign parents for A and B
+                    if (node.val == valA) {
+                        parentA = parent;
+                    }
+
+                    if (node.val == valB) {
+                        parentB = parent;
+                    }
+
+                    // Add the node's children to the queue if they exist
+                    if (node.left != null) {
+                        queue.add(new NodeInfo(node.left, node));
+                    }
+
+                    if (node.right != null) {
+                        queue.add(new NodeInfo(node.right, node));
+                    }
+                }
+
+                // If both nodes found at the same level
+                if (parentA != null && parentB != null) {
+                    return parentA != parentB;
+                }
+
+                // If only one is found, return false (not same depth)
+                if (parentA != null || parentB != null) {
+                    return false;
+                }
+            }
+
+            // If neither node is found, return false
+            return false;
+        }
+    }
+
+    public static void main(String[] args) {
+        // Examples from the problem statement
+        System.out.println(new Solution().cousinCheck(fromLevelOrder(1, 2, 3, 4, null, null, 7), 4, 7));       // true
+        System.out.println(new Solution().cousinCheck(fromLevelOrder(1, 8, 4, null, null, 2, 7, null, 9), 2, 8));  // false
+
+        // Edge cases
+        System.out.println(new Solution().cousinCheck(null, 1, 2));                                              // false
+        System.out.println(new Solution().cousinCheck(new TreeNode(1), 1, 2));                                  // false
+        System.out.println(new Solution().cousinCheck(fromLevelOrder(1, 2, 3), 2, 3));                          // false (siblings not cousins)
+        System.out.println(new Solution().cousinCheck(fromLevelOrder(1, 2, 3, 4, 5, 6, 7), 4, 7));             // true
+        System.out.println(new Solution().cousinCheck(fromLevelOrder(1, 2, 3, 4, null, null, 7), 2, 3));       // false (different depths)
+    }
 }
 ```
 
-```scala run
-def cousinCheck(root: TreeNode, valA: Int, valB: Int): Boolean = {
-  if (root == null) return false
-  case class NP(n: TreeNode, p: TreeNode)
-  val q = scala.collection.mutable.Queue[NP](NP(root, null))
-  while (q.nonEmpty) {
-    val sz = q.size
-    var pa: TreeNode = null; var pb: TreeNode = null
-    for (_ <- 0 until sz) {
-      val cur = q.dequeue()
-      if (cur.n.value == valA) pa = cur.p
-      if (cur.n.value == valB) pb = cur.p
-      if (cur.n.left  != null) q.enqueue(NP(cur.n.left,  cur.n))
-      if (cur.n.right != null) q.enqueue(NP(cur.n.right, cur.n))
-    }
-    if (pa != null && pb != null) return pa ne pb
-    if (pa != null || pb != null) return false
-  }
-  false
-}
-```
+</details>
+<details>
+<summary><h2>Final Takeaway</h2></summary>
 
-
-***
-
-## Final Takeaway
 
 Level-order is your hammer for any *horizontal* question about a tree. Three things to walk away with:
 
@@ -772,3 +1115,5 @@ Level-order is your hammer for any *horizontal* question about a tree. Three thi
 3. **Augment the queue when you need parents.** The cousin-check trick — enqueueing `(node, parent)` pairs — generalises: any per-node side-info you need (depth, column, path-from-root, sibling) can travel alongside the node. Don't try to retrofit it; bake it into the queue's element type.
 
 > *Coming up — the next lesson takes level-order to <strong>two dimensions</strong>. Instead of grouping nodes by their <em>level</em>, we'll group by their <em>horizontal column</em> — yielding the tree's "top view", "bottom view", and "vertical traversal". Same BFS engine, an extra coordinate per queue entry.*
+
+</details>

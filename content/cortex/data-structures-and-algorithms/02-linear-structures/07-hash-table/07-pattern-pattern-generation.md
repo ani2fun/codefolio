@@ -157,20 +157,6 @@ The delimiter matters: without it, indices like `1,12` and `11,2` produce the sa
 ### Implementation
 
 
-```pseudocode
-function generate_pattern(s):
-    char_to_index ← empty Map; parts ← empty list; seed ← 0
-    for ch in s:
-        if ch is not in char_to_index:
-            char_to_index[ch] ← seed; seed ← seed + 1
-        append str(char_to_index[ch]) to parts
-    return parts joined by ","
-
-function homomorphic_strings(s, t):
-    if length(s) ≠ length(t): return false
-    return generate_pattern(s) = generate_pattern(t)
-```
-
 ```python run
 def generate_pattern(s: str) -> str:
     char_to_index, parts, seed = {}, [], 0
@@ -216,57 +202,6 @@ public class Main {
 }
 ```
 
-```c run
-#include <stdio.h>
-#include <string.h>
-#include <stdbool.h>
-
-void generate_pattern(const char *s, char *out) {
-    int seed = 0; int map[256]; for (int i = 0; i < 256; i++) map[i] = -1;
-    int p = 0;
-    for (; *s; s++) {
-        if (map[(unsigned char)*s] == -1) map[(unsigned char)*s] = seed++;
-        p += sprintf(out + p, "%d,", map[(unsigned char)*s]);
-    }
-    out[p] = 0;
-}
-
-bool homomorphic_strings(const char *s, const char *t) {
-    if (strlen(s) != strlen(t)) return false;
-    char ps[1024], pt[1024];
-    generate_pattern(s, ps); generate_pattern(t, pt);
-    return strcmp(ps, pt) == 0;
-}
-
-int main() {
-    printf("%d %d %d\n",
-        homomorphic_strings("add", "qpp"),
-        homomorphic_strings("dad", "mom"),
-        homomorphic_strings("all", "mom"));
-}
-```
-
-```scala run
-def generatePattern(s: String): String = {
-  val map = scala.collection.mutable.Map[Char, Int]()
-  val parts = new scala.collection.mutable.ArrayBuffer[String]()
-  var seed = 0
-  for (ch <- s) {
-    if (!map.contains(ch)) { map(ch) = seed; seed += 1 }
-    parts += map(ch).toString
-  }
-  parts.mkString(",")
-}
-def homomorphicStrings(s: String, t: String): Boolean =
-  s.length == t.length && generatePattern(s) == generatePattern(t)
-
-object Main extends App {
-  println(homomorphicStrings("add", "qpp"))
-  println(homomorphicStrings("dad", "mom"))
-  println(homomorphicStrings("all", "mom"))
-}
-```
-
 
 The pattern-generation technique solves the homomorphism problem in **O(N)** time and **O(K)** space, where K is the number of distinct characters.
 
@@ -300,7 +235,9 @@ Given an array of words, return all the words that can be typed using **only one
 ### Example 3
 > -   **Input:** `["him", "else", "bat"]` → **Output:** `[]`
 
-## Approach
+<details>
+<summary><h2>Approach</h2></summary>
+
 
 The "key" here is the **row id** (1, 2, or 3). Each character maps to one of three rows; a word is single-row iff every character maps to the same row. So: look up every character's row, ensure they're all equal.
 
@@ -325,103 +262,162 @@ flowchart LR
 
 <p align="center"><strong>Row-specific words — the key per character is its keyboard row. A word survives the filter only if all its characters share the same key.</strong></p>
 
-## Solution
+</details>
+<details>
+<summary><h2>Solution</h2></summary>
 
 
-```pseudocode
-ROW_OF ← map each char in "qwertyuiop" → 1, "asdfghjkl" → 2, "zxcvbnm" → 3
-
-function row_specific_words(words):
-    out ← empty list
-    for w in words:
-        rows ← {ROW_OF[lowercase(ch)] for ch in w}
-        if size(rows) = 1: append w to out
-    return out
-```
 
 ```python run
-ROW_OF = {ch: 1 for ch in "qwertyuiop"} | {ch: 2 for ch in "asdfghjkl"} | {ch: 3 for ch in "zxcvbnm"}
+from typing import List
 
-def row_specific_words(words):
-    out = []
-    for w in words:
-        rows = {ROW_OF[ch.lower()] for ch in w}     # collapse all rows used
-        if len(rows) == 1: out.append(w)            # single-row word
-    return out
+class Solution:
+    def get_row_1(self) -> set:
+        return {"q", "w", "e", "r", "t", "y", "u", "i", "o", "p"}
 
-print(row_specific_words(["you", "were", "some"]))
-print(row_specific_words(["sdk", "nvm", "hut"]))
-print(row_specific_words(["him", "else", "bat"]))
+    def get_row_2(self) -> set:
+        return {"a", "s", "d", "f", "g", "h", "j", "k", "l"}
+
+    def get_row_3(self) -> set:
+        return {"z", "x", "c", "v", "b", "n", "m"}
+
+    def get_row(self, c: str) -> int:
+        row_1 = self.get_row_1()
+        row_2 = self.get_row_2()
+        row_3 = self.get_row_3()
+
+        if c in row_1:
+            return 1
+        if c in row_2:
+            return 2
+        if c in row_3:
+            return 3
+
+        # This case won't occur as all characters are from valid rows
+        return 0
+
+    def can_be_typed_with_one_row(self, word: str) -> bool:
+
+        # Get the row for the first character
+        row = self.get_row(word[0].lower())
+
+        # Check if all characters belong to the same row
+        for c in word:
+            if self.get_row(c.lower()) != row:
+                return False
+
+        return True
+
+    def row_specific_words(self, words: List[str]) -> List[str]:
+        result = []
+
+        # Iterate over each word
+        for word in words:
+            if self.can_be_typed_with_one_row(word):
+                result.append(word)
+
+        return result
+
+
+# Examples from the problem statement
+print(Solution().row_specific_words(["you", "were", "some"]))   # ['you', 'were']
+print(Solution().row_specific_words(["sdk", "nvm", "hut"]))     # ['sdk', 'nvm']
+print(Solution().row_specific_words(["him", "else", "bat"]))    # []
+
+# Edge cases
+print(Solution().row_specific_words([]))                         # []
+print(Solution().row_specific_words(["a"]))                      # ['a']
+print(Solution().row_specific_words(["type", "row"]))            # ['type']
+print(Solution().row_specific_words(["Alaska", "Dad"]))          # ['Alaska', 'Dad']
 ```
 
 ```java run
 import java.util.*;
 
 public class Main {
-    static int[] ROW = new int[128];
-    static {
-        for (char c : "qwertyuiop".toCharArray()) ROW[c] = 1;
-        for (char c : "asdfghjkl".toCharArray()) ROW[c] = 2;
-        for (char c : "zxcvbnm".toCharArray())   ROW[c] = 3;
-    }
-    static List<String> rowSpecificWords(String[] words) {
-        List<String> out = new ArrayList<>();
-        for (String w : words) {
-            Set<Integer> rows = new HashSet<>();
-            for (char ch : w.toLowerCase().toCharArray()) rows.add(ROW[ch]);
-            if (rows.size() == 1) out.add(w);
+    static class Solution {
+        private Set<Character> getRow1() {
+            return new HashSet<>(
+                List.of('q', 'w', 'e', 'r', 't', 'y', 'u', 'i', 'o', 'p')
+            );
         }
-        return out;
+
+        private Set<Character> getRow2() {
+            return new HashSet<>(
+                List.of('a', 's', 'd', 'f', 'g', 'h', 'j', 'k', 'l')
+            );
+        }
+
+        private Set<Character> getRow3() {
+            return new HashSet<>(List.of('z', 'x', 'c', 'v', 'b', 'n', 'm'));
+        }
+
+        private int getRow(char c) {
+            Set<Character> row1 = getRow1();
+            Set<Character> row2 = getRow2();
+            Set<Character> row3 = getRow3();
+
+            if (row1.contains(c)) {
+                return 1;
+            }
+
+            if (row2.contains(c)) {
+                return 2;
+            }
+
+            if (row3.contains(c)) {
+                return 3;
+            }
+
+            // This case won't occur as all characters are from valid rows
+            return 0;
+        }
+
+        private boolean canBeTypedWithOneRow(String word) {
+
+            // Get the row for the first character
+            int row = getRow(Character.toLowerCase(word.charAt(0)));
+
+            // Check if all characters belong to the same row
+            for (char c : word.toCharArray()) {
+                if (getRow(Character.toLowerCase(c)) != row) {
+                    return false;
+                }
+            }
+
+            return true;
+        }
+
+        public List<String> rowSpecificWords(String[] words) {
+            List<String> result = new ArrayList<>();
+
+            // Iterate over each word
+            for (String word : words) {
+                if (canBeTypedWithOneRow(word)) {
+                    result.add(word);
+                }
+            }
+
+            return result;
+        }
     }
+
     public static void main(String[] args) {
-        System.out.println(rowSpecificWords(new String[]{"you","were","some"}));
-        System.out.println(rowSpecificWords(new String[]{"sdk","nvm","hut"}));
-        System.out.println(rowSpecificWords(new String[]{"him","else","bat"}));
+        // Examples from the problem statement
+        System.out.println(new Solution().rowSpecificWords(new String[]{"you", "were", "some"}));  // [you, were]
+        System.out.println(new Solution().rowSpecificWords(new String[]{"sdk", "nvm", "hut"}));    // [sdk, nvm]
+        System.out.println(new Solution().rowSpecificWords(new String[]{"him", "else", "bat"}));   // []
+
+        // Edge cases
+        System.out.println(new Solution().rowSpecificWords(new String[]{}));                       // []
+        System.out.println(new Solution().rowSpecificWords(new String[]{"a"}));                    // [a]
+        System.out.println(new Solution().rowSpecificWords(new String[]{"type", "row"}));          // [type]
+        System.out.println(new Solution().rowSpecificWords(new String[]{"Alaska", "Dad"}));        // [Alaska, Dad]
     }
 }
 ```
 
-```c run
-#include <stdio.h>
-#include <string.h>
-#include <ctype.h>
-
-static int row_of[128];
-void init_rows(void) {
-    for (const char *p = "qwertyuiop"; *p; p++) row_of[(int)*p] = 1;
-    for (const char *p = "asdfghjkl";  *p; p++) row_of[(int)*p] = 2;
-    for (const char *p = "zxcvbnm";    *p; p++) row_of[(int)*p] = 3;
-}
-
-int single_row(const char *w) {
-    int target = row_of[(int)tolower((unsigned char)w[0])];
-    for (; *w; w++) if (row_of[(int)tolower((unsigned char)*w)] != target) return 0;
-    return 1;
-}
-
-int main() {
-    init_rows();
-    const char *words[] = {"you","were","some"};
-    for (int i = 0; i < 3; i++) if (single_row(words[i])) printf("%s ", words[i]);
-    printf("\n");
-}
-```
-
-```scala run
-def rowSpecificWords(words: List[String]): List[String] = {
-  val rows = Map[Char, Int]() ++
-    "qwertyuiop".map(_ -> 1) ++
-    "asdfghjkl".map(_ -> 2) ++
-    "zxcvbnm".map(_ -> 3)
-  words.filter(w => w.toLowerCase.map(rows).toSet.size == 1)
-}
-
-object Main extends App {
-  println(rowSpecificWords(List("you","were","some")))
-  println(rowSpecificWords(List("sdk","nvm","hut")))
-  println(rowSpecificWords(List("him","else","bat")))
-}
-```
+</details>
 
 
 ***
@@ -441,109 +437,113 @@ Given two strings `s` and `t`, return `true` if they are **homomorphic**: each u
 ### Example 3
 > -   **Input:** `s = "all", t = "mom"` → **Output:** `false`
 
-## Approach
+<details>
+<summary><h2>Approach</h2></summary>
+
 
 Apply the `generatePattern` function we built above to both strings; compare the resulting keys. The first-occurrence-index encoding *is* the canonical shape of a string, so two strings are homomorphic iff their patterns match exactly.
 
-## Solution
+</details>
+<details>
+<summary><h2>Solution</h2></summary>
 
 
-```pseudocode
-function homomorphic_strings(s, t):
-    if length(s) ≠ length(t): return false
-    return generate_pattern(s) = generate_pattern(t)
-```
 
 ```python run
-def generate_pattern(s: str) -> str:
-    char_to_index, parts, seed = {}, [], 0
-    for ch in s:
-        if ch not in char_to_index:
-            char_to_index[ch] = seed; seed += 1
-        parts.append(str(char_to_index[ch]))
-    return ','.join(parts)
+from typing import Dict
 
-def homomorphic_strings(s: str, t: str) -> bool:
-    return len(s) == len(t) and generate_pattern(s) == generate_pattern(t)
+class Solution:
+    def generate_pattern(self, s: str) -> str:
+        char_to_index: Dict[str, int] = {}
+        pattern = ""
+        index = 0
 
-print(homomorphic_strings("add", "qpp"))   # True
-print(homomorphic_strings("dad", "mom"))   # True
-print(homomorphic_strings("all", "mom"))   # False
+        # Create a mapped value based on the first occurrence of each
+        # character
+        for ch in s:
+            if ch not in char_to_index:
+                char_to_index[ch] = index
+                index += 1
+            pattern += str(char_to_index[ch]) + ","
+
+        return pattern
+
+    def homomorphic_strings(self, s: str, t: str) -> bool:
+
+        # Strings of different lengths can't be homomorphic
+        if len(s) != len(t):
+            return False
+
+        # If the generated patterns are the same, the strings are
+        # homomorphic
+        return self.generate_pattern(s) == self.generate_pattern(t)
+
+
+# Examples from the problem statement
+print(Solution().homomorphic_strings("add", "qpp"))   # True
+print(Solution().homomorphic_strings("dad", "mom"))   # True
+print(Solution().homomorphic_strings("all", "mom"))   # False
+
+# Edge cases
+print(Solution().homomorphic_strings("", ""))         # True
+print(Solution().homomorphic_strings("a", "b"))       # True
+print(Solution().homomorphic_strings("ab", "aa"))     # False
+print(Solution().homomorphic_strings("aa", "ab"))     # False
+print(Solution().homomorphic_strings("abc", "xyz"))   # True
 ```
 
 ```java run
 import java.util.*;
 
 public class Main {
-    static String generatePattern(String s) {
-        Map<Character, Integer> map = new HashMap<>();
-        StringBuilder p = new StringBuilder(); int seed = 0;
-        for (char ch : s.toCharArray()) {
-            if (!map.containsKey(ch)) map.put(ch, seed++);
-            p.append(map.get(ch)).append(',');
+    static class Solution {
+        private String generatePattern(String str) {
+            Map<Character, Integer> charToIndex = new HashMap<>();
+            StringBuilder pattern = new StringBuilder();
+            int index = 0;
+
+            // Create a mapped value based on the first occurrence of each
+            // character
+            for (char ch : str.toCharArray()) {
+                if (!charToIndex.containsKey(ch)) {
+                    charToIndex.put(ch, index++);
+                }
+                pattern.append(charToIndex.get(ch)).append(",");
+            }
+
+            return pattern.toString();
         }
-        return p.toString();
+
+        public boolean homomorphicStrings(String s, String t) {
+
+            // Strings of different lengths can't be homomorphic
+            if (s.length() != t.length()) {
+                return false;
+            }
+
+            // If the generated patterns are the same, the strings are
+            // homomorphic
+            return generatePattern(s).equals(generatePattern(t));
+        }
     }
-    static boolean homomorphicStrings(String s, String t) {
-        return s.length() == t.length() && generatePattern(s).equals(generatePattern(t));
-    }
+
     public static void main(String[] args) {
-        System.out.println(homomorphicStrings("add", "qpp"));
-        System.out.println(homomorphicStrings("dad", "mom"));
-        System.out.println(homomorphicStrings("all", "mom"));
+        // Examples from the problem statement
+        System.out.println(new Solution().homomorphicStrings("add", "qpp"));  // true
+        System.out.println(new Solution().homomorphicStrings("dad", "mom"));  // true
+        System.out.println(new Solution().homomorphicStrings("all", "mom"));  // false
+
+        // Edge cases
+        System.out.println(new Solution().homomorphicStrings("", ""));        // true
+        System.out.println(new Solution().homomorphicStrings("a", "b"));      // true
+        System.out.println(new Solution().homomorphicStrings("ab", "aa"));    // false
+        System.out.println(new Solution().homomorphicStrings("aa", "ab"));    // false
+        System.out.println(new Solution().homomorphicStrings("abc", "xyz"));  // true
     }
 }
 ```
 
-```c run
-#include <stdio.h>
-#include <string.h>
-#include <stdbool.h>
-
-void generate_pattern(const char *s, char *out) {
-    int map[256]; for (int i = 0; i < 256; i++) map[i] = -1;
-    int seed = 0, p = 0;
-    for (; *s; s++) {
-        if (map[(unsigned char)*s] == -1) map[(unsigned char)*s] = seed++;
-        p += sprintf(out + p, "%d,", map[(unsigned char)*s]);
-    }
-    out[p] = 0;
-}
-bool homomorphic_strings(const char *s, const char *t) {
-    if (strlen(s) != strlen(t)) return false;
-    char ps[1024], pt[1024];
-    generate_pattern(s, ps); generate_pattern(t, pt);
-    return strcmp(ps, pt) == 0;
-}
-
-int main() {
-    printf("%d %d %d\n",
-        homomorphic_strings("add","qpp"),
-        homomorphic_strings("dad","mom"),
-        homomorphic_strings("all","mom"));
-}
-```
-
-```scala run
-def generatePattern(s: String): String = {
-  val map = scala.collection.mutable.Map[Char, Int]()
-  val parts = scala.collection.mutable.ArrayBuffer[String]()
-  var seed = 0
-  for (ch <- s) {
-    if (!map.contains(ch)) { map(ch) = seed; seed += 1 }
-    parts += map(ch).toString
-  }
-  parts.mkString(",")
-}
-def homomorphicStrings(s: String, t: String): Boolean =
-  s.length == t.length && generatePattern(s) == generatePattern(t)
-
-object Main extends App {
-  println(homomorphicStrings("add","qpp"))
-  println(homomorphicStrings("dad","mom"))
-  println(homomorphicStrings("all","mom"))
-}
-```
+</details>
 
 
 ***
@@ -563,135 +563,133 @@ Given a `pattern` string and a string `s` of space-separated words, return `true
 ### Example 3
 > -   **Input:** `pattern = "abc", s = "hello my my"` → **Output:** `false`
 
-## Approach
+<details>
+<summary><h2>Approach</h2></summary>
+
 
 The key generator works on *any* iterable. Treat `pattern` as a sequence of characters and `s` as a sequence of words; generate a first-occurrence-index pattern for each. The strings match iff the keys are equal.
 
 The bijection requirement is a real constraint: no two pattern letters can map to the same word, *and* no two words can map to the same pattern letter. The first-occurrence-index encoding handles both directions: if it would assign two different items the same index, it doesn't — each gets a fresh index. So if `s` has more distinct words than `pattern` has distinct letters (or vice versa), the keys differ.
 
-## Solution
+</details>
+<details>
+<summary><h2>Solution</h2></summary>
 
 
-```pseudocode
-function pattern_matching(pattern, s):
-    words ← s split by spaces
-    if length(pattern) ≠ length(words): return false
-    return generate_pattern(chars of pattern) = generate_pattern(words)
-```
 
 ```python run
-def generate_pattern(seq) -> str:
-    m, parts, seed = {}, [], 0
-    for x in seq:
-        if x not in m: m[x] = seed; seed += 1
-        parts.append(str(m[x]))
-    return ','.join(parts)
+from typing import List
 
-def pattern_matching(pattern: str, s: str) -> bool:
-    words = s.split()
-    if len(pattern) != len(words): return False
-    return generate_pattern(list(pattern)) == generate_pattern(words)
+class Solution:
+    def generate_pattern(self, words: List[str]) -> str:
+        word_to_index = {}
+        pattern = ""
+        index = 0
 
-print(pattern_matching("mom", "hello world hello"))   # True
-print(pattern_matching("abc", "hello my name"))       # True
-print(pattern_matching("abc", "hello my my"))         # False
+        # Create a mapped value based on the first occurrence of each
+        # word
+        for word in words:
+            if word not in word_to_index:
+                word_to_index[word] = index
+                index += 1
+            pattern += str(word_to_index[word]) + ","
+
+        return pattern
+
+    def pattern_matching(self, pattern: str, s: str) -> bool:
+
+        # Split the string s into an array of words
+        words = s.split(" ")
+
+        # If the length of pattern and words are different, return false
+        if len(pattern) != len(words):
+            return False
+
+        # If the generated patterns are the same, return true
+        return self.generate_pattern(
+            list(pattern)
+        ) == self.generate_pattern(words)
+
+
+# Examples from the problem statement
+print(Solution().pattern_matching("mom", "hello world hello"))  # True
+print(Solution().pattern_matching("abc", "hello my name"))      # True
+print(Solution().pattern_matching("abc", "hello my my"))        # False
+
+# Edge cases
+print(Solution().pattern_matching("a", "hello"))                # True
+print(Solution().pattern_matching("aa", "hello world"))         # False
+print(Solution().pattern_matching("ab", "hello hello"))         # False
+print(Solution().pattern_matching("aab", "x x y"))              # True
+print(Solution().pattern_matching("abc", "a b c"))              # True
 ```
 
 ```java run
 import java.util.*;
 
 public class Main {
-    static <T> String generatePattern(List<T> seq) {
-        Map<T, Integer> m = new HashMap<>();
-        StringBuilder p = new StringBuilder(); int seed = 0;
-        for (T x : seq) {
-            if (!m.containsKey(x)) m.put(x, seed++);
-            p.append(m.get(x)).append(',');
+    static class Solution {
+        private List<String> stringToList(String s) {
+
+            // Convert pattern string into a list of single-character strings
+            List<String> result = new ArrayList<>();
+            for (char c : s.toCharArray()) {
+                result.add(String.valueOf(c));
+            }
+            return result;
         }
-        return p.toString();
+
+        private String generatePattern(List<String> words) {
+            Map<String, Integer> wordToIndex = new HashMap<>();
+            StringBuilder pattern = new StringBuilder();
+            int index = 0;
+
+            // Create a mapped value based on the first occurrence of each
+            // word
+            for (String word : words) {
+                if (!wordToIndex.containsKey(word)) {
+                    wordToIndex.put(word, index++);
+                }
+                pattern.append(wordToIndex.get(word)).append(",");
+            }
+
+            return pattern.toString();
+        }
+
+        public boolean patternMatching(String pattern, String s) {
+
+            // Split the string s into an array of words
+            List<String> words = List.of(s.split(" "));
+
+            // If the length of pattern and words are different, return false
+            if (pattern.length() != words.size()) {
+                return false;
+            }
+
+            // If the generated patterns are the same, return true
+            return generatePattern(stringToList(pattern)).equals(
+                generatePattern(words)
+            );
+        }
     }
-    static boolean patternMatching(String pattern, String s) {
-        String[] words = s.split("\\s+");
-        if (pattern.length() != words.length) return false;
-        List<Character> pc = new ArrayList<>();
-        for (char c : pattern.toCharArray()) pc.add(c);
-        return generatePattern(pc).equals(generatePattern(Arrays.asList(words)));
-    }
+
     public static void main(String[] args) {
-        System.out.println(patternMatching("mom","hello world hello"));   // true
-        System.out.println(patternMatching("abc","hello my name"));       // true
-        System.out.println(patternMatching("abc","hello my my"));         // false
+        // Examples from the problem statement
+        System.out.println(new Solution().patternMatching("mom", "hello world hello")); // true
+        System.out.println(new Solution().patternMatching("abc", "hello my name"));     // true
+        System.out.println(new Solution().patternMatching("abc", "hello my my"));       // false
+
+        // Edge cases
+        System.out.println(new Solution().patternMatching("a", "hello"));               // true
+        System.out.println(new Solution().patternMatching("aa", "hello world"));        // false
+        System.out.println(new Solution().patternMatching("ab", "hello hello"));        // false
+        System.out.println(new Solution().patternMatching("aab", "x x y"));             // true
+        System.out.println(new Solution().patternMatching("abc", "a b c"));             // true
     }
 }
 ```
 
-```c run
-#include <stdio.h>
-#include <string.h>
-#include <stdbool.h>
-
-bool pattern_matching(const char *pattern, const char *s) {
-    // Split s into words; encode both pattern and word stream
-    // by first-occurrence index, then compare encodings.
-    char p_pat[256] = {0}, p_str[256] = {0};
-    int  p_pat_n = 0, p_str_n = 0;
-
-    int  pat_map[256]; for (int i = 0; i < 256; i++) pat_map[i] = -1;
-    int  pat_seed = 0;
-    for (const char *p = pattern; *p; p++) {
-        if (pat_map[(unsigned char)*p] == -1) pat_map[(unsigned char)*p] = pat_seed++;
-        p_pat_n += sprintf(p_pat + p_pat_n, "%d,", pat_map[(unsigned char)*p]);
-    }
-
-    // Tokenise s on spaces; identify first occurrences
-    char buf[256]; strncpy(buf, s, 255); buf[255] = 0;
-    char *tokens[64]; int n_tokens = 0;
-    char *tok = strtok(buf, " ");
-    while (tok && n_tokens < 64) { tokens[n_tokens++] = tok; tok = strtok(NULL, " "); }
-    if ((int)strlen(pattern) != n_tokens) return false;
-
-    int word_seed = 0;
-    char *seen[64] = {0}; int seen_idx[64] = {0}; int seen_n = 0;
-    for (int i = 0; i < n_tokens; i++) {
-        int found = -1;
-        for (int j = 0; j < seen_n; j++) if (strcmp(seen[j], tokens[i]) == 0) { found = seen_idx[j]; break; }
-        if (found == -1) { seen[seen_n] = tokens[i]; seen_idx[seen_n] = word_seed; found = word_seed++; seen_n++; }
-        p_str_n += sprintf(p_str + p_str_n, "%d,", found);
-    }
-    return strcmp(p_pat, p_str) == 0;
-}
-
-int main() {
-    printf("%d %d %d\n",
-        pattern_matching("mom","hello world hello"),
-        pattern_matching("abc","hello my name"),
-        pattern_matching("abc","hello my my"));
-}
-```
-
-```scala run
-def generatePattern[T](seq: Seq[T]): String = {
-  val m = scala.collection.mutable.Map[T, Int]()
-  val parts = scala.collection.mutable.ArrayBuffer[String]()
-  var seed = 0
-  for (x <- seq) {
-    if (!m.contains(x)) { m(x) = seed; seed += 1 }
-    parts += m(x).toString
-  }
-  parts.mkString(",")
-}
-def patternMatching(pattern: String, s: String): Boolean = {
-  val words = s.split("\\s+")
-  if (pattern.length != words.length) return false
-  generatePattern(pattern.toSeq) == generatePattern(words.toSeq)
-}
-
-object Main extends App {
-  println(patternMatching("mom","hello world hello"))
-  println(patternMatching("abc","hello my name"))
-  println(patternMatching("abc","hello my my"))
-}
-```
+</details>
 
 
 ***
@@ -714,7 +712,9 @@ Given an array `strs` of lowercase strings, group strings that belong to the sam
 > -   **Input:** `["abcd","efg","hi","j"]`
 > -   **Output:** `[["abcd"],["efg"],["hi"],["j"]]`
 
-## Approach
+<details>
+<summary><h2>Approach</h2></summary>
+
 
 Two strings are in the same displacing class iff the **gaps between consecutive characters** are identical (modulo 26). `abc` has gaps `(b−a, c−b) = (1, 1)`. `ghi` has gaps `(h−g, i−h) = (1, 1)`. `xyz` has gaps `(y−x, z−y) = (1, 1)`. All three: `(1, 1)`. They cluster.
 
@@ -754,112 +754,157 @@ inputs.s7 -> keys.k3: "no gaps"
 
 <p align="center"><strong>Cluster displaced strings — the key is the sequence of consecutive-character gaps (modulo 26 to handle wrap). Strings with identical gap sequences belong to the same displacing class and collide into the same hash-map bucket.</strong></p>
 
-## Solution
+</details>
+<details>
+<summary><h2>Solution</h2></summary>
 
 
-```pseudocode
-function generate_pattern(s):
-    parts ← empty list
-    for i from 1 to length(s) − 1:
-        diff ← (ord(s[i]) − ord(s[i−1])) mod 26
-        append str(diff) to parts
-    return parts joined by ","
-
-function cluster_displaced_strings(strs):
-    groups ← empty Map: string → list
-    for s in strs: append s to groups[generate_pattern(s)]
-    return values(groups)
-```
 
 ```python run
-from collections import defaultdict
+from typing import List
 
-def generate_pattern(s: str) -> str:
-    parts = []
-    for i in range(1, len(s)):
-        diff = (ord(s[i]) - ord(s[i-1])) % 26   # wrap negatives, e.g. a-z = +1
-        parts.append(str(diff))
-    return ','.join(parts)
+class Solution:
+    def generate_pattern(self, s: str) -> str:
+        pattern = ""
 
-def cluster_displaced_strings(strs):
-    groups = defaultdict(list)
-    for s in strs: groups[generate_pattern(s)].append(s)
-    return list(groups.values())
+        for i in range(1, len(s)):
 
-print(cluster_displaced_strings(["abc","ghi","xyz","b","c","ab","cd"]))
-print(cluster_displaced_strings(["ad","k","cf"]))
-print(cluster_displaced_strings(["abcd","efg","hi","j"]))
+            # Find the difference between consecutive characters
+            difference = ord(s[i]) - ord(s[i - 1])
+            if difference < 0:
+
+                # Handle wrap-around case (e.g., from 'z' to 'a')
+                difference += 26
+
+            # Add the displacement to the pattern
+            pattern += str(difference) + ","
+
+        return pattern
+
+    def cluster_displaced_strings(
+        self, strs: List[str]
+    ) -> List[List[str]]:
+        clusters = {}
+
+        # Process each string and group them by their displacement
+        # pattern
+        for str in strs:
+
+            # Generate the pattern for each string
+            pattern = self.generate_pattern(str)
+
+            # Group the strings with the same pattern
+            if pattern not in clusters:
+                clusters[pattern] = []
+            clusters[pattern].append(str)
+
+        # Prepare the result with all grouped strings
+        result = []
+        for group in clusters.values():
+
+            # Add each group to the result
+            result.append(group)
+
+        return result
+
+
+# Examples from the problem statement
+r1 = Solution().cluster_displaced_strings(["abc", "ghi", "xyz", "b", "c", "ab", "cd"])
+print(sorted([sorted(g) for g in r1]))  # [['abc', 'ghi', 'xyz'], ['ab', 'cd'], ['b', 'c']]
+
+r2 = Solution().cluster_displaced_strings(["ad", "k", "cf"])
+print(sorted([sorted(g) for g in r2]))  # [['ad', 'cf'], ['k']]
+
+r3 = Solution().cluster_displaced_strings(["abcd", "efg", "hi", "j"])
+print(sorted([sorted(g) for g in r3]))  # [['abcd'], ['efg'], ['hi'], ['j']]
+
+# Edge cases
+print(Solution().cluster_displaced_strings([]))              # []
+print(Solution().cluster_displaced_strings(["a"]))           # [['a']]
+r6 = Solution().cluster_displaced_strings(["az", "ba"])
+print(sorted([sorted(g) for g in r6]))  # [['az', 'ba']]
 ```
 
 ```java run
 import java.util.*;
 
 public class Main {
-    static String generatePattern(String s) {
-        StringBuilder p = new StringBuilder();
-        for (int i = 1; i < s.length(); i++) {
-            int diff = ((s.charAt(i) - s.charAt(i-1)) % 26 + 26) % 26;
-            p.append(diff).append(',');
+    static class Solution {
+        private String generatePattern(String s) {
+            StringBuilder pattern = new StringBuilder();
+
+            for (int i = 1; i < s.length(); i++) {
+
+                // Find the difference between consecutive characters
+                int difference = s.charAt(i) - s.charAt(i - 1);
+                if (difference < 0) {
+
+                    // Handle wrap-around case (e.g., from 'z' to 'a')
+                    difference += 26;
+                }
+
+                // Add the displacement to the pattern
+                pattern.append(difference).append(",");
+            }
+
+            return pattern.toString();
         }
-        return p.toString();
+
+        public List<List<String>> clusterDisplacedStrings(String[] strs) {
+            Map<String, List<String>> clusters = new HashMap<>();
+
+            // Process each string and group them by their displacement
+            // pattern
+            for (String str : strs) {
+
+                // Generate the pattern for each string
+                String pattern = generatePattern(str);
+
+                // Group the strings with the same pattern
+                clusters.putIfAbsent(pattern, new ArrayList<>());
+                clusters.get(pattern).add(str);
+            }
+
+            // Prepare the result with all grouped strings
+            List<List<String>> result = new ArrayList<>();
+            for (List<String> group : clusters.values()) {
+
+                // Add each group to the result
+                result.add(group);
+            }
+
+            return result;
+        }
     }
-    static List<List<String>> clusterDisplacedStrings(String[] strs) {
-        Map<String, List<String>> groups = new HashMap<>();
-        for (String s : strs)
-            groups.computeIfAbsent(generatePattern(s), k -> new ArrayList<>()).add(s);
-        return new ArrayList<>(groups.values());
-    }
+
     public static void main(String[] args) {
-        System.out.println(clusterDisplacedStrings(new String[]{"abc","ghi","xyz","b","c","ab","cd"}));
+        // Examples from the problem statement
+        var r1 = new Solution().clusterDisplacedStrings(new String[]{"abc", "ghi", "xyz", "b", "c", "ab", "cd"});
+        r1.forEach(g -> { Collections.sort(g); System.out.print(g + " "); }); System.out.println();
+        // [abc, ghi, xyz] [b, c] [ab, cd] (group order may vary)
+
+        var r2 = new Solution().clusterDisplacedStrings(new String[]{"ad", "k", "cf"});
+        r2.forEach(g -> { Collections.sort(g); System.out.print(g + " "); }); System.out.println();
+        // [ad, cf] [k] (group order may vary)
+
+        var r3 = new Solution().clusterDisplacedStrings(new String[]{"abcd", "efg", "hi", "j"});
+        r3.forEach(g -> System.out.print(g + " ")); System.out.println();
+        // [abcd] [efg] [hi] [j]
+
+        // Edge cases
+        System.out.println(new Solution().clusterDisplacedStrings(new String[]{}));     // []
+        System.out.println(new Solution().clusterDisplacedStrings(new String[]{"a"}));  // [[a]]
+        var r6 = new Solution().clusterDisplacedStrings(new String[]{"az", "ba"});
+        r6.forEach(g -> { Collections.sort(g); System.out.print(g + " "); }); System.out.println();
+        // [az, ba]
     }
 }
 ```
 
-```c run
-#include <stdio.h>
-#include <string.h>
+</details>
+<details>
+<summary><h2>Final Takeaway</h2></summary>
 
-void generate_pattern(const char *s, char *out) {
-    int n = (int)strlen(s); int p = 0;
-    for (int i = 1; i < n; i++) {
-        int diff = ((s[i] - s[i-1]) % 26 + 26) % 26;
-        p += sprintf(out + p, "%d,", diff);
-    }
-    out[p] = 0;
-}
-
-int main() {
-    const char *strs[] = {"abc","ghi","xyz","b","c","ab","cd"};
-    int n = 7; char keys[7][64];
-    for (int i = 0; i < n; i++) generate_pattern(strs[i], keys[i]);
-    int seen[7] = {0};
-    for (int i = 0; i < n; i++) {
-        if (seen[i]) continue;
-        printf("[ %s", strs[i]); seen[i] = 1;
-        for (int j = i + 1; j < n; j++) {
-            if (!seen[j] && strcmp(keys[i], keys[j]) == 0) { printf(", %s", strs[j]); seen[j] = 1; }
-        }
-        printf(" ]\n");
-    }
-}
-```
-
-```scala run
-def generatePattern(s: String): String =
-  s.zip(s.tail).map { case (a, b) => ((b - a) % 26 + 26) % 26 }.mkString(",")
-
-def clusterDisplacedStrings(strs: List[String]): List[List[String]] =
-  strs.groupBy(generatePattern).values.toList
-
-object Main extends App {
-  println(clusterDisplacedStrings(List("abc","ghi","xyz","b","c","ab","cd")))
-}
-```
-
-
-***
-
-## Final Takeaway
 
 The key-generation pattern is the rosetta stone of hash-table problem solving. *Anywhere you can define what makes two inputs "the same"*, you can encode that sameness as a key, throw the keys at a hash map, and let the structure do the grouping for you.
 
@@ -878,3 +923,5 @@ groups[key(x)].append(x)
 ```
 
 > *Coming up — the **fixed-size sliding window** pattern. So far we've used hash maps to summarise *static* sequences. Next we'll learn to slide a fixed-size window across a long sequence while the hash map tracks the multiset *inside* the window in O(1) per shift. Fixed-window anagrams, frequency-bounded substrings, repeating-character runs — the same hash map you've been building for two lessons becomes the engine of a moving picture.*
+
+</details>

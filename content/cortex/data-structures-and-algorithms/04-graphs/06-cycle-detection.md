@@ -140,58 +140,64 @@ That's the whole proof. The key insight: **the parent check is the precise filte
 # Undirected — Implementation
 
 
-```pseudocode
-function hasCycle(graph, node, parent, visited):
-    add node to visited
-    for neighbor in graph[node]:
-        if neighbor is not in visited:
-            if hasCycle(graph, neighbor, node, visited):
-                return true
-        else if neighbor ≠ parent:
-            return true   # visited AND not our parent → cycle found
-    return false
-
-function detectCycleUndirected(graph):
-    visited ← empty set
-    for node from 0 to N−1:
-        if node is not in visited:
-            if hasCycle(graph, node, −1, visited):
-                return true
-    return false
-```
-
 ```python run
 from typing import List, Set
 
 class Solution:
-    def has_cycle(self,
-                  graph: List[List[int]],
-                  node: int,
-                  parent: int,
-                  visited: Set[int]) -> bool:
+    def has_cycle(
+        self,
+        graph: List[List[int]],
+        node: int,
+        parent: int,
+        visited: Set[int],
+    ) -> bool:
+
+        # Mark the current node as visited in the graph to avoid
+        # visiting it again
         visited.add(node)
+
+        # Recursively visit all the adjacent nodes
         for neighbour in graph[node]:
+
+            # If the neighbour node is not visited, visit it recursively
             if neighbour not in visited:
-                # Recurse — pass current node as the new parent.
                 if self.has_cycle(graph, neighbour, node, visited):
                     return True
+
+            # If the neighbour node is already visited and is not the
+            # parent node, a cycle is detected
             elif neighbour != parent:
-                # Visited AND not our parent → we just closed a loop.
                 return True
+
+        # No cycle detected
         return False
 
-    def detect_cycle_undirected(self, graph: List[List[int]]) -> bool:
-        visited: Set[int] = set()
+    def detect_cycle_in_undirected_graph(
+        self, graph: List[List[int]]
+    ) -> bool:
+
+        # Set to keep track of visited nodes
+        visited = set()
+
+        # Perform DFS on each unvisited node
         for node in range(len(graph)):
             if node not in visited:
-                # -1 is the sentinel "no parent" for the first node of a DFS root.
                 if self.has_cycle(graph, node, -1, visited):
                     return True
+
         return False
 
 
-graph = [[1, 2], [0, 2], [0, 1, 3], [2]]   # 0–1–2 forms a triangle
-print(Solution().detect_cycle_undirected(graph))   # True
+# Examples from the problem statement
+print(Solution().detect_cycle_in_undirected_graph([[1,2],[0,4],[0,3],[2,4],[1,3]]))  # True
+print(Solution().detect_cycle_in_undirected_graph([[1],[0,2],[1]]))                  # False
+
+# Edge cases
+print(Solution().detect_cycle_in_undirected_graph([[]]))                             # False — single isolated node
+print(Solution().detect_cycle_in_undirected_graph([[1],[0]]))                        # False — single edge, no cycle
+print(Solution().detect_cycle_in_undirected_graph([[1,2],[0,2],[0,1]]))              # True — triangle
+print(Solution().detect_cycle_in_undirected_graph([[1],[0],[3],[2]]))                # False — two disconnected edges
+print(Solution().detect_cycle_in_undirected_graph([[0]]))                            # True — self-loop
 ```
 
 ```java run
@@ -199,105 +205,77 @@ import java.util.*;
 
 public class Main {
     static class Solution {
-        public boolean hasCycle(List<List<Integer>> graph, int node, int parent, Set<Integer> visited) {
+        private boolean hasCycle(
+            List<List<Integer>> graph,
+            int node,
+            int parent,
+            Set<Integer> visited
+        ) {
+
+            // Mark the current node as visited in the graph to avoid
+            // visiting it again
             visited.add(node);
+
+            // Recursively visit all the adjacent nodes
             for (int neighbour : graph.get(node)) {
+
+                // If the neighbour node is not visited, visit it recursively
                 if (!visited.contains(neighbour)) {
-                    if (hasCycle(graph, neighbour, node, visited)) return true;
-                } else if (neighbour != parent) {
+                    if (hasCycle(graph, neighbour, node, visited)) {
+                        return true;
+                    }
+                }
+
+                // If the neighbour node is already visited and is not the
+                // parent node, a cycle is detected
+                else if (neighbour != parent) {
                     return true;
                 }
             }
+
+            // No cycle detected
             return false;
         }
 
-        public boolean detectCycleUndirected(List<List<Integer>> graph) {
+        public boolean detectCycleInUndirectedGraph(
+            List<List<Integer>> graph
+        ) {
+
+            // Set to keep track of visited nodes
             Set<Integer> visited = new HashSet<>();
+
+            // Perform DFS on each unvisited node
             for (int node = 0; node < graph.size(); node++) {
                 if (!visited.contains(node)) {
-                    if (hasCycle(graph, node, -1, visited)) return true;
+                    if (hasCycle(graph, node, -1, visited)) {
+                        return true;
+                    }
                 }
             }
+
             return false;
         }
     }
 
     public static void main(String[] args) {
-        List<List<Integer>> graph = List.of(
-            List.of(1, 2), List.of(0, 2), List.of(0, 1, 3), List.of(2));
-        System.out.println(new Solution().detectCycleUndirected(graph));
+        // Examples from the problem statement
+        System.out.println(new Solution().detectCycleInUndirectedGraph(
+            List.of(List.of(1,2),List.of(0,4),List.of(0,3),List.of(2,4),List.of(1,3))));  // true
+        System.out.println(new Solution().detectCycleInUndirectedGraph(
+            List.of(List.of(1),List.of(0,2),List.of(1))));            // false
+
+        // Edge cases
+        System.out.println(new Solution().detectCycleInUndirectedGraph(
+            List.of(new ArrayList<>())));                              // false — isolated node
+        System.out.println(new Solution().detectCycleInUndirectedGraph(
+            List.of(List.of(1),List.of(0))));                         // false — single edge
+        System.out.println(new Solution().detectCycleInUndirectedGraph(
+            List.of(List.of(1,2),List.of(0,2),List.of(0,1))));        // true — triangle
+        System.out.println(new Solution().detectCycleInUndirectedGraph(
+            List.of(List.of(1),List.of(0),List.of(3),List.of(2))));   // false — two edges
+        System.out.println(new Solution().detectCycleInUndirectedGraph(
+            List.of(List.of(0))));                                     // true — self-loop
     }
-}
-```
-
-```c run
-#include <stdio.h>
-#include <stdlib.h>
-#include <stdbool.h>
-
-typedef struct { int* data; int size; } AdjList;
-
-static bool has_cycle(AdjList* graph, int node, int parent, bool* visited) {
-    visited[node] = true;
-    for (int i = 0; i < graph[node].size; i++) {
-        int neighbour = graph[node].data[i];
-        if (!visited[neighbour]) {
-            if (has_cycle(graph, neighbour, node, visited)) return true;
-        } else if (neighbour != parent) {
-            return true;
-        }
-    }
-    return false;
-}
-
-bool detect_cycle_undirected(AdjList* graph, int n) {
-    bool* visited = calloc(n, sizeof(bool));
-    bool result = false;
-    for (int node = 0; node < n; node++) {
-        if (!visited[node]) {
-            if (has_cycle(graph, node, -1, visited)) { result = true; break; }
-        }
-    }
-    free(visited);
-    return result;
-}
-
-int main() {
-    int n0[] = {1, 2}, n1[] = {0, 2}, n2[] = {0, 1, 3}, n3[] = {2};
-    AdjList g[] = {{n0, 2}, {n1, 2}, {n2, 3}, {n3, 1}};
-    printf("%s\n", detect_cycle_undirected(g, 4) ? "true" : "false");
-    return 0;
-}
-```
-
-```scala run
-import scala.collection.mutable.HashSet
-
-object Main extends App {
-  class Solution {
-    def hasCycle(graph: Array[Array[Int]], node: Int, parent: Int, visited: HashSet[Int]): Boolean = {
-      visited.add(node)
-      for (neighbour <- graph(node)) {
-        if (!visited.contains(neighbour)) {
-          if (hasCycle(graph, neighbour, node, visited)) return true
-        } else if (neighbour != parent) {
-          return true
-        }
-      }
-      false
-    }
-
-    def detectCycleUndirected(graph: Array[Array[Int]]): Boolean = {
-      val visited = HashSet.empty[Int]
-      for (node <- graph.indices if !visited.contains(node)) {
-        if (hasCycle(graph, node, -1, visited)) return true
-      }
-      false
-    }
-  }
-
-  val graph = Array(Array(1, 2), Array(0, 2), Array(0, 1, 3), Array(2))
-  println(new Solution().detectCycleUndirected(graph))
 }
 ```
 
@@ -434,67 +412,77 @@ The crucial line is `nodesInPath.remove(node)` at step 4 — the **back-tracking
 # Directed — Implementation
 
 
-```pseudocode
-function hasCycle(graph, node, visited, inPath):
-    add node to visited
-    add node to inPath          # mark grey: on current DFS stack
-    for neighbor in graph[node]:
-        if neighbor is in inPath:
-            return true         # back-edge → cycle
-        if neighbor is not in visited:
-            if hasCycle(graph, neighbor, visited, inPath):
-                return true
-    remove node from inPath     # back-track: grey → black
-    return false
-
-function detectCycleDirected(graph):
-    visited ← empty set
-    inPath ← empty set
-    for node from 0 to N−1:
-        if node is not in visited:
-            if hasCycle(graph, node, visited, inPath):
-                return true
-    return false
-```
-
 ```python run
 from typing import List, Set
 
 class Solution:
-    def has_cycle(self,
-                  graph: List[List[int]],
-                  node: int,
-                  visited: Set[int],
-                  in_path: Set[int]) -> bool:
-        visited.add(node)
-        in_path.add(node)               # mark grey
+    def has_cycle(
+        self,
+        graph: List[List[int]],
+        node: int,
+        visited: Set[int],
+        nodes_in_path: Set[int],
+    ) -> bool:
 
+        # Mark the current node as visited in the graph to avoid
+        # visiting it again
+        visited.add(node)
+
+        # Insert the current node into the set of nodes in the current
+        # path to detect cycles
+        nodes_in_path.add(node)
+
+        # Recursively visit all the adjacent nodes
         for neighbour in graph[node]:
-            if neighbour in in_path:
-                # Edge into a node currently on the DFS stack → cycle.
-                return True
+
+            # If the neighbour node is not visited, visit it recursively
             if neighbour not in visited:
-                if self.has_cycle(graph, neighbour, visited, in_path):
+                if self.has_cycle(
+                    graph, neighbour, visited, nodes_in_path
+                ):
                     return True
 
-        in_path.discard(node)           # back-track: grey → black
+            # If the neighbour node is already visited and present in
+            # the current path, a cycle is detected
+            elif neighbour in nodes_in_path:
+                return True
+
+        # Remove the current node from the current path as we are done
+        # exploring it
+        nodes_in_path.remove(node)
+
+        # No cycle detected
         return False
 
-    def detect_cycle_directed(self, graph: List[List[int]]) -> bool:
+    def detect_cycle_in_directed_graph(
+        self, graph: List[List[int]]
+    ) -> bool:
+
+        # Set to keep track of visited nodes
         visited: Set[int] = set()
-        in_path: Set[int] = set()
+
+        # Set to keep track of nodes in the current path
+        nodes_in_path: Set[int] = set()
+
+        # Perform DFS on each unvisited node
         for node in range(len(graph)):
             if node not in visited:
-                if self.has_cycle(graph, node, visited, in_path):
+                if self.has_cycle(graph, node, visited, nodes_in_path):
                     return True
+
         return False
 
 
-graph_dag     = [[1, 2], [3], [3], []]            # diamond, no cycle
-graph_cyclic  = [[1], [2], [0]]                   # 0 → 1 → 2 → 0
+# Examples from the problem statement
+print(Solution().detect_cycle_in_directed_graph([[1,2],[4],[3],[0],[2,3]]))  # True
+print(Solution().detect_cycle_in_directed_graph([[4],[5],[3],[5],[1],[]]))   # False
 
-print(Solution().detect_cycle_directed(graph_dag))      # False
-print(Solution().detect_cycle_directed(graph_cyclic))   # True
+# Edge cases
+print(Solution().detect_cycle_in_directed_graph([[]]))                       # False — isolated node
+print(Solution().detect_cycle_in_directed_graph([[1],[0]]))                  # False — no directed cycle
+print(Solution().detect_cycle_in_directed_graph([[1],[2],[0]]))              # True — 3-node cycle
+print(Solution().detect_cycle_in_directed_graph([[0]]))                      # True — self-loop
+print(Solution().detect_cycle_in_directed_graph([[1],[]]))                   # False — one edge, no cycle
 ```
 
 ```java run
@@ -502,120 +490,88 @@ import java.util.*;
 
 public class Main {
     static class Solution {
-        public boolean hasCycle(List<List<Integer>> graph, int node,
-                                Set<Integer> visited, Set<Integer> inPath) {
+        private boolean hasCycle(
+            List<List<Integer>> graph,
+            int node,
+            Set<Integer> visited,
+            Set<Integer> nodesInPath
+        ) {
+
+            // Mark the current node as visited in the graph to avoid
+            // visiting it again
             visited.add(node);
-            inPath.add(node);
+
+            // Insert the current node into the set of nodes in the current
+            // path to detect cycles
+            nodesInPath.add(node);
+
+            // Recursively visit all the adjacent nodes
             for (int neighbour : graph.get(node)) {
-                if (inPath.contains(neighbour)) return true;
+
+                // If the neighbour node is not visited, visit it recursively
                 if (!visited.contains(neighbour)) {
-                    if (hasCycle(graph, neighbour, visited, inPath)) return true;
+                    if (hasCycle(graph, neighbour, visited, nodesInPath)) {
+                        return true;
+                    }
+                }
+
+                // If the neighbour node is already visited and present in
+                // the current path, a cycle is detected
+                else if (nodesInPath.contains(neighbour)) {
+                    return true;
                 }
             }
-            inPath.remove(node);
+
+            // Remove the current node from the current path as we are done
+            // exploring it
+            nodesInPath.remove(node);
+
+            // No cycle detected
             return false;
         }
 
-        public boolean detectCycleDirected(List<List<Integer>> graph) {
+        public boolean detectCycleInDirectedGraph(
+            List<List<Integer>> graph
+        ) {
+
+            // Set to keep track of visited nodes
             Set<Integer> visited = new HashSet<>();
-            Set<Integer> inPath = new HashSet<>();
+
+            // Set to keep track of nodes in the current path
+            Set<Integer> nodesInPath = new HashSet<>();
+
+            // Perform DFS on each unvisited node
             for (int node = 0; node < graph.size(); node++) {
                 if (!visited.contains(node)) {
-                    if (hasCycle(graph, node, visited, inPath)) return true;
+                    if (hasCycle(graph, node, visited, nodesInPath)) {
+                        return true;
+                    }
                 }
             }
+
             return false;
         }
     }
 
     public static void main(String[] args) {
-        var dag = List.of(List.of(1, 2), List.of(3), List.of(3), List.of());
-        var cyclic = List.of(List.of(1), List.of(2), List.of(0));
-        System.out.println(new Solution().detectCycleDirected(dag));
-        System.out.println(new Solution().detectCycleDirected(cyclic));
+        // Examples from the problem statement
+        System.out.println(new Solution().detectCycleInDirectedGraph(
+            List.of(List.of(1,2),List.of(4),List.of(3),List.of(0),List.of(2,3))));  // true
+        System.out.println(new Solution().detectCycleInDirectedGraph(
+            List.of(List.of(4),List.of(5),List.of(3),List.of(5),List.of(1),new ArrayList<>())));  // false
+
+        // Edge cases
+        System.out.println(new Solution().detectCycleInDirectedGraph(
+            List.of(new ArrayList<>())));                              // false
+        System.out.println(new Solution().detectCycleInDirectedGraph(
+            List.of(List.of(1),List.of(0))));                         // false — no directed cycle
+        System.out.println(new Solution().detectCycleInDirectedGraph(
+            List.of(List.of(1),List.of(2),List.of(0))));              // true — 3-node cycle
+        System.out.println(new Solution().detectCycleInDirectedGraph(
+            List.of(List.of(0))));                                     // true — self-loop
+        System.out.println(new Solution().detectCycleInDirectedGraph(
+            List.of(List.of(1),new ArrayList<>())));                   // false
     }
-}
-```
-
-```c run
-#include <stdio.h>
-#include <stdlib.h>
-#include <stdbool.h>
-
-typedef struct { int* data; int size; } AdjList;
-
-static bool has_cycle(AdjList* graph, int node, bool* visited, bool* in_path) {
-    visited[node] = true;
-    in_path[node] = true;
-    for (int i = 0; i < graph[node].size; i++) {
-        int neighbour = graph[node].data[i];
-        if (in_path[neighbour]) return true;
-        if (!visited[neighbour]) {
-            if (has_cycle(graph, neighbour, visited, in_path)) return true;
-        }
-    }
-    in_path[node] = false;
-    return false;
-}
-
-bool detect_cycle_directed(AdjList* graph, int n) {
-    bool* visited = calloc(n, sizeof(bool));
-    bool* in_path = calloc(n, sizeof(bool));
-    bool result = false;
-    for (int node = 0; node < n; node++) {
-        if (!visited[node] && has_cycle(graph, node, visited, in_path)) {
-            result = true; break;
-        }
-    }
-    free(visited); free(in_path);
-    return result;
-}
-
-int main() {
-    int n0[] = {1, 2}, n1[] = {3}, n2[] = {3}, n3[] = {0};
-    AdjList dag[] = {{n0, 2}, {n1, 1}, {n2, 1}, {(int[]){0}, 0}};
-    dag[3].data = NULL; dag[3].size = 0;
-
-    int c0[] = {1}, c1[] = {2}, c2[] = {0};
-    AdjList cyc[] = {{c0, 1}, {c1, 1}, {c2, 1}};
-
-    printf("%s\n", detect_cycle_directed(dag, 4) ? "true" : "false");
-    printf("%s\n", detect_cycle_directed(cyc, 3) ? "true" : "false");
-    return 0;
-}
-```
-
-```scala run
-import scala.collection.mutable.HashSet
-
-object Main extends App {
-  class Solution {
-    def hasCycle(graph: Array[Array[Int]], node: Int,
-                 visited: HashSet[Int], inPath: HashSet[Int]): Boolean = {
-      visited.add(node); inPath.add(node)
-      for (neighbour <- graph(node)) {
-        if (inPath.contains(neighbour)) return true
-        if (!visited.contains(neighbour)) {
-          if (hasCycle(graph, neighbour, visited, inPath)) return true
-        }
-      }
-      inPath.remove(node)
-      false
-    }
-
-    def detectCycleDirected(graph: Array[Array[Int]]): Boolean = {
-      val visited = HashSet.empty[Int]
-      val inPath  = HashSet.empty[Int]
-      for (node <- graph.indices if !visited.contains(node))
-        if (hasCycle(graph, node, visited, inPath)) return true
-      false
-    }
-  }
-
-  val dag = Array(Array(1, 2), Array(3), Array(3), Array.empty[Int])
-  val cyc = Array(Array(1), Array(2), Array(0))
-  println(new Solution().detectCycleDirected(dag))
-  println(new Solution().detectCycleDirected(cyc))
 }
 ```
 
@@ -624,13 +580,13 @@ object Main extends App {
 <summary><strong>Trace — graph = [[1], [2], [0]] (a 3-cycle)</strong></summary>
 
 ```
-Step │ Stack      │ Action                            │ visited   │ in_path
-─────┼────────────┼───────────────────────────────────┼───────────┼─────────
-1    │ dfs(0)     │ enter 0; mark visited+in_path     │ {0}       │ {0}
-2    │ dfs(1)     │ neighbour 1 unvisited; recurse    │ {0,1}     │ {0,1}
-3    │ dfs(2)     │ neighbour 2 unvisited; recurse    │ {0,1,2}   │ {0,1,2}
-4    │ dfs(2)     │ from 2, neighbour 0 IN in_path!   │           │
-       │            │ → return true (cycle)             │           │
+Step │ Stack      │ Action                                  │ visited   │ nodes_in_path
+─────┼────────────┼─────────────────────────────────────────┼───────────┼───────────────
+1    │ dfs(0)     │ enter 0; mark visited+nodes_in_path     │ {0}       │ {0}
+2    │ dfs(1)     │ neighbour 1 unvisited; recurse          │ {0,1}     │ {0,1}
+3    │ dfs(2)     │ neighbour 2 unvisited; recurse          │ {0,1,2}   │ {0,1,2}
+4    │ dfs(2)     │ from 2, neighbour 0 IN nodes_in_path!   │           │
+       │            │ → return true (cycle)                   │           │
 Result: true ✓
 ```
 
@@ -641,9 +597,9 @@ Result: true ✓
 | | Complexity | Reasoning |
 |---|---|---|
 | **Time** | O(N + E) | Each node visited at most once; each edge examined at most once |
-| **Space** | O(N) | Visited and inPath sets each hold up to N entries; recursion stack at most N deep |
+| **Space** | O(N) | Visited and nodesInPath sets each hold up to N entries; recursion stack at most N deep |
 
-The complexity is identical to the undirected case — the directed version simply tracks an extra bit (`inPath`) per node.
+The complexity is identical to the undirected case — the directed version simply tracks an extra bit (`nodesInPath`) per node.
 
 ---
 

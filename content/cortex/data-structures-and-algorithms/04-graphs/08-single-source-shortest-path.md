@@ -101,13 +101,12 @@ The algorithm is short:
 > 1. Create `distance[]` array; set `distance[source] = 0`, all others `= ∞`.
 > 2. Push `(0, source)` into a min-heap.
 > 3. While the heap is non-empty:
->    - Pop `(d, node)` — the smallest-distance pair.
->    - If `d > distance[node]`, this is a *stale* pair from an earlier push; skip it.
+>    - Pop the smallest pair and take its `node`.
 >    - For each neighbour `(v, w)`:
->      - `new_dist = distance[node] + w`
->      - If `new_dist < distance[v]`: update `distance[v]`, push `(new_dist, v)`.
+>      - If `distance[node] + w < distance[v]`: update `distance[v]`, push `(distance[v], v)`.
+> 4. Replace any still-`∞` distance with `-1` — those nodes are unreachable.
 
-The "stale entry" check is the key trick that makes the priority-queue-based variant of Dijkstra work without the original algorithm's complicated decrease-key operation. Every time we'd want to *update* a heap entry, we instead **just push a new one** — the old one becomes stale, but it's harmless because we skip it when popped.
+Every time we find a shorter route to a node we **just push a new pair** into the heap rather than reaching in to update an existing one — that lets us skip the original algorithm's complicated decrease-key operation. The heap may therefore hold several pairs for the same node; the older ones are *stale*, but they're harmless. When a stale pair is popped, `distance[node]` already holds the better value, so the relaxation check `distance[node] + w < distance[v]` simply finds nothing to improve and the pop does no useful work.
 
 ---
 
@@ -145,20 +144,20 @@ flowchart LR
 
 <p align="center"><strong>Test graph for the Dijkstra dry run. Adjacency list: <code>0:[(1,4),(2,1)], 1:[(0,4),(2,2),(3,1)], 2:[(0,1),(1,2),(3,5)], 3:[(1,1),(2,5)]</code>.</strong></p>
 
-| Step | Heap (d, node) | Pop | distance[] | Push                         |
+| Step | Heap (d, node) | Pop → node | distance[] | Push                         |
 |---|---|---|---|---|
-| 1 | (0,0)                          | (0,0) | [0,∞,∞,∞]   | (4,1), (1,2)             |
-| 2 | (1,2),(4,1)                    | (1,2) | [0,3,1,6]   | (3,1), (6,3) — relax 1 from 4→3 and 3 from ∞→6 |
-| 3 | (3,1),(4,1),(6,3)              | (3,1) | [0,3,1,4]   | (4,3) — relax 3 from 6→4 |
-| 4 | (4,1),(4,3),(6,3)              | (4,1) | [0,3,1,4]   | stale (4 ≠ distance[1]=3); skip |
-| 5 | (4,3),(6,3)                    | (4,3) | [0,3,1,4]   | no relaxations           |
-| 6 | (6,3)                          | (6,3) | [0,3,1,4]   | stale; skip              |
+| 1 | (0,0)                          | (0,0) → 0 | [0,∞,∞,∞]   | (4,1), (1,2)             |
+| 2 | (1,2),(4,1)                    | (1,2) → 2 | [0,3,1,6]   | (3,1), (6,3) — relax 1 from 4→3 and 3 from ∞→6 |
+| 3 | (3,1),(4,1),(6,3)              | (3,1) → 1 | [0,3,1,4]   | (4,3) — relax 3 from 6→4 |
+| 4 | (4,1),(4,3),(6,3)              | (4,1) → 1 | [0,3,1,4]   | stale pair — distance[1] is already 3, no relaxation fires |
+| 5 | (4,3),(6,3)                    | (4,3) → 3 | [0,3,1,4]   | no relaxations           |
+| 6 | (6,3)                          | (6,3) → 3 | [0,3,1,4]   | stale pair — no relaxation fires |
 
-Final: `distance = [0, 3, 1, 4]`. Note how step 4 demonstrates the stale-pair skip — node 1 was first reached with distance 4, but a better path through node 2 brought it down to 3 before we got around to processing the original entry.
+Final: `distance = [0, 3, 1, 4]`. Note step 4: node 1 was first reached with distance 4, but a better path through node 2 brought it down to 3 before we got around to popping the original `(4,1)` pair. When that stale pair is finally popped, `distance[1]` already equals 3, so re-checking node 1's neighbours improves nothing — the pop is wasted work but never *wrong* work.
 
 > *Before reading on — what would happen at step 6 if we had also pushed `(4, 2)` somewhere along the way? Would popping it cause any harm?*
 
-It would be popped, the check `4 > distance[2]=1` would catch it, and it would be skipped. Stale entries always lose this check — that's the whole reason the lazy-update trick works.
+It would be popped, node 2 re-examined, and since `distance[2]` is already 1 every relaxation check (`1 + w < distance[v]`) would fail — nothing changes. Stale pairs cost a wasted pop but can never corrupt the answer, which is exactly why the lazy-update trick is safe.
 
 ***
 
@@ -167,216 +166,187 @@ It would be popped, the check `4 > distance[2]=1` would catch it, and it would b
 The graph is given as an adjacency list of `(neighbour, weight)` pairs. We use the language's built-in min-heap (priority queue).
 
 
-```pseudocode
-function dijkstra(graph, source):
-    dist ← array of ∞, size N
-    dist[source] ← 0
-    pq ← empty min-heap
-    push (0, source) to pq
-    while pq is not empty:
-        (d, node) ← pop (dist, node) from pq
-        if d > dist[node]:
-            continue             # stale entry — a better path was already found
-        for (neighbor, weight) in graph[node]:
-            newDist ← d + weight
-            if newDist < dist[neighbor]:
-                dist[neighbor] ← newDist
-                push (newDist, neighbor) to pq
-    return dist
-```
-
 ```python run
 import heapq
 from typing import List, Tuple
 
-INF = float('inf')
+class Solution:
+    def dijikstras_algorithm(
+        self, graph: List[List[Tuple[int, int]]], source: int
+    ) -> List[int]:
 
-def dijkstra(graph: List[List[Tuple[int, int]]], source: int) -> List[float]:
-    n = len(graph)
-    distance = [INF] * n
-    distance[source] = 0
+        # Number of vertices in the graph
+        N = len(graph)
 
-    # Min-heap of (distance, node) pairs. Python's heapq is a min-heap by default.
-    heap: List[Tuple[float, int]] = [(0, source)]
+        # If the graph is empty, return an empty list
+        if N == 0:
+            return []
 
-    while heap:
-        d, node = heapq.heappop(heap)
+        # Create a list to store the shortest distances from the source
+        # vertex
+        distance = [float("inf")] * N
 
-        # STALE check: an earlier push got a better distance for this node;
-        # skip the outdated pair.
-        if d > distance[node]:
-            continue
+        # Create a min heap using PriorityQueue and customize the
+        # comparator
+        pq = []
 
-        for neighbour, weight in graph[node]:
-            new_dist = d + weight
-            if new_dist < distance[neighbour]:
-                distance[neighbour] = new_dist
-                heapq.heappush(heap, (new_dist, neighbour))
-    return distance
+        # Enqueue starting node to the queue
+        heapq.heapify(pq)
+
+        # Set the distance of the source vertex to 0 and add it to the
+        # min heap
+        distance[source] = 0
+        heapq.heappush(pq, (0, source))
+
+        while pq:
+
+            # Get the vertex with the smallest distance from the min-heap
+            # and remove it
+            node = heapq.heappop(pq)[1]
+
+            # Visit all adjacent vertices of the current vertex
+            for neighbour, weight in graph[node]:
+
+                # If a shorter path is found, update the distance and add
+                # the neighbour to the priority queue
+                if (
+                    distance[node] != float("inf")
+                    and distance[node] + weight < distance[neighbour]
+                ):
+
+                    # Update the distance of the neighbour
+                    distance[neighbour] = distance[node] + weight
+
+                    # Add the neighbour to the min-heap
+                    heapq.heappush(pq, (distance[neighbour], neighbour))
+
+        # Put -1 for all destinations that are not reachable from the
+        # source
+        for i in range(len(distance)):
+            if distance[i] == float("inf"):
+                distance[i] = -1
+
+        return distance
 
 
-graph = [
-    [(1, 4), (2, 1)],
-    [(0, 4), (2, 2), (3, 1)],
-    [(0, 1), (1, 2), (3, 5)],
-    [(1, 1), (2, 5)],
-]
-print(dijkstra(graph, 0))   # [0, 3, 1, 4]
+# Examples from the problem statement
+print(Solution().dijikstras_algorithm([[[1,2],[3,5]],[[4,6]],[[4,1]],[[2,2]],[[3,7]]], 0))  # [0, 2, 7, 5, 8]
+print(Solution().dijikstras_algorithm([[[4,2]],[[3,3],[0,4]],[[4,4],[0,1]],[[2,1],[4,2]],[[1,5]]], 1))  # [4, 0, 4, 3, 5]
+
+# Edge cases
+print(Solution().dijikstras_algorithm([], 0))              # []
+print(Solution().dijikstras_algorithm([[]], 0))             # [0]
+print(Solution().dijikstras_algorithm([[], []], 0))         # [0, -1]
+print(Solution().dijikstras_algorithm([[[1, 5]], []], 0))   # [0, 5]
+print(Solution().dijikstras_algorithm([[[1, 3]], [[2, 4]], []], 0))  # [0, 3, 7]
 ```
 
 ```java run
 import java.util.*;
 
 public class Main {
-    public static int[] dijkstra(List<List<int[]>> graph, int source) {
-        int n = graph.size();
-        int[] distance = new int[n];
-        Arrays.fill(distance, Integer.MAX_VALUE);
-        distance[source] = 0;
+    static class Solution {
+        public int[] dijikstrasAlgorithm(
+            List<List<List<Integer>>> graph,
+            int source
+        ) {
 
-        // (distance, node) — natural ordering by first element.
-        PriorityQueue<int[]> pq = new PriorityQueue<>((a, b) -> a[0] - b[0]);
-        pq.offer(new int[]{0, source});
+            // Number of vertices in the graph
+            int N = graph.size();
 
-        while (!pq.isEmpty()) {
-            int[] cur = pq.poll();
-            int d = cur[0], node = cur[1];
-            if (d > distance[node]) continue;     // stale
-            for (int[] edge : graph.get(node)) {
-                int neighbour = edge[0], weight = edge[1];
-                int nd = d + weight;
-                if (nd < distance[neighbour]) {
-                    distance[neighbour] = nd;
-                    pq.offer(new int[]{nd, neighbour});
+            // If the graph is empty, return an empty list
+            if (N == 0) {
+                return new int[0];
+            }
+
+            // Create an array to store the shortest distances from the
+            // source vertex
+            int[] distance = new int[N];
+            for (int i = 0; i < N; i++) {
+                distance[i] = Integer.MAX_VALUE;
+            }
+
+            // Create a priority queue (min-heap) to store the nodes with
+            // their weights
+            PriorityQueue<List<Integer>> pq = new PriorityQueue<>(
+                Comparator.comparingInt(a -> a.get(0))
+            );
+
+            // Set the distance of the source vertex to 0 and add it to the
+            // min-heap
+            distance[source] = 0;
+
+            // Enqueue starting node to the queue
+            pq.add(List.of(0, source));
+
+            while (!pq.isEmpty()) {
+
+                // Get the vertex with the smallest distance from the
+                // min-heap and remove it
+                int node = pq.poll().get(1);
+
+                // Visit all adjacent vertices of the current vertex
+                for (List<Integer> edge : graph.get(node)) {
+                    int neighbour = edge.get(0);
+                    int weight = edge.get(1);
+
+                    // If a shorter path is found, update the distance and
+                    // add the neighbour to the min-heap
+                    if (
+                        distance[node] != Integer.MAX_VALUE &&
+                        distance[node] + weight < distance[neighbour]
+                    ) {
+
+                        // Update the distance of the neighbour
+                        distance[neighbour] = distance[node] + weight;
+
+                        // Add the neighbour to the min-heap
+                        pq.add(List.of(distance[neighbour], neighbour));
+                    }
                 }
             }
+
+            // Put -1 for all destinations that are not reachable by the
+            // source node
+            for (int i = 0; i < distance.length; i++) {
+                if (distance[i] == Integer.MAX_VALUE) {
+                    distance[i] = -1;
+                }
+            }
+
+            return distance;
         }
-        return distance;
     }
 
     public static void main(String[] args) {
-        List<List<int[]>> g = List.of(
-            List.of(new int[]{1, 4}, new int[]{2, 1}),
-            List.of(new int[]{0, 4}, new int[]{2, 2}, new int[]{3, 1}),
-            List.of(new int[]{0, 1}, new int[]{1, 2}, new int[]{3, 5}),
-            List.of(new int[]{1, 1}, new int[]{2, 5}));
-        System.out.println(Arrays.toString(dijkstra(g, 0)));
+        Solution sol = new Solution();
+
+        // Examples from the problem statement
+        List<List<List<Integer>>> g1 = List.of(
+            List.of(List.of(1,2), List.of(3,5)),
+            List.of(List.of(4,6)),
+            List.of(List.of(4,1)),
+            List.of(List.of(2,2)),
+            List.of(List.of(3,7))
+        );
+        System.out.println(Arrays.toString(sol.dijikstrasAlgorithm(g1, 0)));  // [0, 2, 7, 5, 8]
+
+        List<List<List<Integer>>> g2 = List.of(
+            List.of(List.of(4,2)),
+            List.of(List.of(3,3), List.of(0,4)),
+            List.of(List.of(4,4), List.of(0,1)),
+            List.of(List.of(2,1), List.of(4,2)),
+            List.of(List.of(1,5))
+        );
+        System.out.println(Arrays.toString(sol.dijikstrasAlgorithm(g2, 1)));  // [4, 0, 4, 3, 5]
+
+        // Edge cases
+        System.out.println(Arrays.toString(sol.dijikstrasAlgorithm(new ArrayList<>(), 0)));  // []
+        System.out.println(Arrays.toString(sol.dijikstrasAlgorithm(List.of(new ArrayList<>()), 0)));  // [0]
+        System.out.println(Arrays.toString(sol.dijikstrasAlgorithm(List.of(new ArrayList<>(), new ArrayList<>()), 0)));  // [0, -1]
+        System.out.println(Arrays.toString(sol.dijikstrasAlgorithm(List.of(List.of(List.of(1,5)), new ArrayList<>()), 0)));  // [0, 5]
+        System.out.println(Arrays.toString(sol.dijikstrasAlgorithm(List.of(List.of(List.of(1,3)), List.of(List.of(2,4)), new ArrayList<>()), 0)));  // [0, 3, 7]
     }
-}
-```
-
-```c run
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <limits.h>
-
-typedef struct { int to, weight; } Edge;
-typedef struct { Edge* data; int size; } AdjList;
-
-// Tiny min-heap of (dist, node).
-typedef struct { int d, node; } HeapEntry;
-typedef struct { HeapEntry* data; int size; int capacity; } Heap;
-
-static void heap_push(Heap* h, HeapEntry e) {
-    if (h->size == h->capacity) {
-        h->capacity = h->capacity ? h->capacity * 2 : 16;
-        h->data = realloc(h->data, h->capacity * sizeof(HeapEntry));
-    }
-    int i = h->size++;
-    h->data[i] = e;
-    while (i > 0) {
-        int p = (i - 1) / 2;
-        if (h->data[p].d <= h->data[i].d) break;
-        HeapEntry t = h->data[p]; h->data[p] = h->data[i]; h->data[i] = t;
-        i = p;
-    }
-}
-static HeapEntry heap_pop(Heap* h) {
-    HeapEntry top = h->data[0];
-    h->data[0] = h->data[--h->size];
-    int i = 0;
-    while (true) {
-        int l = 2*i+1, r = 2*i+2, best = i;
-        if (l < h->size && h->data[l].d < h->data[best].d) best = l;
-        if (r < h->size && h->data[r].d < h->data[best].d) best = r;
-        if (best == i) break;
-        HeapEntry t = h->data[i]; h->data[i] = h->data[best]; h->data[best] = t;
-        i = best;
-    }
-    return top;
-}
-
-int* dijkstra(AdjList* graph, int n, int source) {
-    int* distance = malloc(n * sizeof(int));
-    for (int i = 0; i < n; i++) distance[i] = INT_MAX;
-    distance[source] = 0;
-
-    Heap heap = {0};
-    heap_push(&heap, (HeapEntry){0, source});
-
-    while (heap.size > 0) {
-        HeapEntry cur = heap_pop(&heap);
-        if (cur.d > distance[cur.node]) continue;
-        for (int i = 0; i < graph[cur.node].size; i++) {
-            Edge e = graph[cur.node].data[i];
-            int nd = cur.d + e.weight;
-            if (nd < distance[e.to]) {
-                distance[e.to] = nd;
-                heap_push(&heap, (HeapEntry){nd, e.to});
-            }
-        }
-    }
-    free(heap.data);
-    return distance;
-}
-
-int main() {
-    Edge e0[] = {{1,4},{2,1}};
-    Edge e1[] = {{0,4},{2,2},{3,1}};
-    Edge e2[] = {{0,1},{1,2},{3,5}};
-    Edge e3[] = {{1,1},{2,5}};
-    AdjList g[] = {{e0,2},{e1,3},{e2,3},{e3,2}};
-    int* d = dijkstra(g, 4, 0);
-    for (int i = 0; i < 4; i++) printf("%d ", d[i]);
-    printf("\n");
-    free(d);
-    return 0;
-}
-```
-
-```scala run
-import scala.collection.mutable
-
-object Main extends App {
-  def dijkstra(graph: Array[Array[(Int, Int)]], source: Int): Array[Int] = {
-    val n = graph.length
-    val distance = Array.fill(n)(Int.MaxValue)
-    distance(source) = 0
-
-    // Min-heap of (distance, node) — Scala's PriorityQueue is max-heap; reverse the order.
-    val pq = mutable.PriorityQueue.empty[(Int, Int)](Ordering.by[(Int, Int), Int](_._1).reverse)
-    pq.enqueue((0, source))
-
-    while (pq.nonEmpty) {
-      val (d, node) = pq.dequeue()
-      if (d <= distance(node)) {
-        for ((neighbour, weight) <- graph(node)) {
-          val nd = d + weight
-          if (nd < distance(neighbour)) {
-            distance(neighbour) = nd
-            pq.enqueue((nd, neighbour))
-          }
-        }
-      }
-    }
-    distance
-  }
-
-  val g = Array(
-    Array((1, 4), (2, 1)), Array((0, 4), (2, 2), (3, 1)),
-    Array((0, 1), (1, 2), (3, 5)), Array((1, 1), (2, 5)))
-  println(dijkstra(g, 0).mkString(", "))
 }
 ```
 
@@ -516,8 +486,8 @@ This is one reason Bellman-Ford is used in **routing protocols** (RIP) — it do
 > 2. Repeat N-1 times:
 >    - For each edge `(u, v, w)`: if `distance[u] + w < distance[v]`, set `distance[v] = distance[u] + w`.
 > 3. Run one more round:
->    - If any edge would still relax → return "negative cycle".
-> 4. Return `distance`.
+>    - If any edge would still relax → a negative cycle exists; return an array of all `-1`.
+> 4. Replace any still-∞ distance with `-1` (those nodes are unreachable) and return `distance`.
 
 ---
 
@@ -566,204 +536,205 @@ With that edge, every round of Bellman-Ford would lower `distance[0]` by 2 (the 
 # Bellman-Ford Implementation
 
 
-```pseudocode
-function bellmanFord(graph, source):
-    dist ← array of ∞, size N
-    dist[source] ← 0
-    for round from 1 to N−1:   # at most N−1 edges in any shortest path
-        updated ← false
-        for u from 0 to N−1:
-            if dist[u] = ∞: continue
-            for (v, w) in graph[u]:
-                if dist[u] + w < dist[v]:
-                    dist[v] ← dist[u] + w
-                    updated ← true
-        if NOT updated: break   # converged early
-    # extra round: any relaxation here means a negative cycle
-    for u from 0 to N−1:
-        if dist[u] = ∞: continue
-        for (v, w) in graph[u]:
-            if dist[u] + w < dist[v]:
-                return empty list   # negative cycle detected
-    return dist
-```
-
 ```python run
 from typing import List, Tuple
 
-INF = float('inf')
+class Solution:
+    def belman_ford_algorithm(
+        self, graph: List[List[Tuple[int, int]]], source: int
+    ) -> List[int]:
 
-def bellman_ford(graph: List[List[Tuple[int, int]]], source: int) -> List[float]:
-    """Returns distances or empty list if a negative cycle is detected."""
-    n = len(graph)
-    distance: List[float] = [INF] * n
-    distance[source] = 0
+        # Number of nodes in the graph
+        n = len(graph)
 
-    # Round 1..N-1 — every shortest path uses at most N-1 edges.
-    for _ in range(n - 1):
-        updated = False
-        for u in range(n):
-            if distance[u] == INF:           # can't relax from an unreachable node
-                continue
-            for v, w in graph[u]:
-                if distance[u] + w < distance[v]:
-                    distance[v] = distance[u] + w
-                    updated = True
-        if not updated:                       # converged early — common in practice
-            break
+        # If the graph is empty, return an empty list
+        if n == 0:
+            return []
 
-    # One more round — any further relaxation means a negative cycle.
-    for u in range(n):
-        if distance[u] == INF:
-            continue
-        for v, w in graph[u]:
-            if distance[u] + w < distance[v]:
-                return []                     # negative cycle detected
+        # Initialize distance array
+        distance: List[int] = [float("inf")] * n
 
-    return distance
+        # Distance from the source to itself is 0
+        distance[source] = 0
+
+        # Relax graph n-1 times
+        for i in range(n - 1):
+            for node in range(n):
+
+                # Visit all adjacent vertices of the current vertex
+                for neighbour, weight in graph[node]:
+
+                    # Extract the neighbour
+                    # Extract the weight of the edge
+
+                    # Relax the edge if a shorter path is found
+                    if (
+                        distance[node] != float("inf")
+                        and distance[node] + weight < distance[neighbour]
+                    ):
+                        distance[neighbour] = distance[node] + weight
+
+        # Check for negative cycles
+        for node in range(n):
+            for neighbour, weight in graph[node]:
+
+                # Extract the neighbour
+                # Extract the weight of the edge
+
+                # Relax the edge if a shorter path is found
+                if (
+                    distance[node] != float("inf")
+                    and distance[node] + weight < distance[neighbour]
+                ):
+
+                    # Return an empty distance array to indicate a negative
+                    # cycle
+                    return [-1] * n
+
+        # Put -1 for all neighbours that are not reachable by the
+        # source node
+        for i in range(len(distance)):
+            if distance[i] == float("inf"):
+                distance[i] = -1
+
+        # Return the computed distances
+        return distance
 
 
-graph = [
-    [(1, 4), (2, 5)],
-    [(2, -3), (3, 6)],
-    [(3, 4)],
-    [],
-]
-print(bellman_ford(graph, 0))   # [0, 4, 1, 5]
+# Examples from the problem statement
+print(Solution().belman_ford_algorithm([[[1,2],[3,5]],[[4,6]],[[4,1]],[[2,2]],[[3,7]]], 0))  # [0, 2, 7, 5, 8]
+print(Solution().belman_ford_algorithm([[[4,2]],[[3,3],[0,4]],[[4,4],[0,1]],[[2,1],[4,2]],[[1,5]]], 1))  # [4, 0, 4, 3, 5]
+
+# Edge cases
+print(Solution().belman_ford_algorithm([], 0))                                # []
+print(Solution().belman_ford_algorithm([[]], 0))                               # [0]
+print(Solution().belman_ford_algorithm([[], []], 0))                           # [0, -1]
+print(Solution().belman_ford_algorithm([[[1, 5]], []], 0))                     # [0, 5]
+# Negative cycle: 0->1 (w=1), 1->2 (w=-3), 2->0 (w=1) => cycle sum = -1
+print(Solution().belman_ford_algorithm([[[1,1]],[[2,-3]],[[0,1]]], 0))         # [-1, -1, -1]
+print(Solution().belman_ford_algorithm([[[1,3]], [[2,4]], []], 0))              # [0, 3, 7]
 ```
 
 ```java run
 import java.util.*;
 
 public class Main {
-    public static int[] bellmanFord(List<List<int[]>> graph, int source) {
-        int n = graph.size();
-        int[] distance = new int[n];
-        Arrays.fill(distance, Integer.MAX_VALUE);
-        distance[source] = 0;
+    static class Solution {
+        public int[] belmanFordAlgorithm(
+            List<List<List<Integer>>> graph,
+            int source
+        ) {
 
-        for (int i = 0; i < n - 1; i++) {
-            boolean updated = false;
-            for (int u = 0; u < n; u++) {
-                if (distance[u] == Integer.MAX_VALUE) continue;
-                for (int[] e : graph.get(u)) {
-                    int v = e[0], w = e[1];
-                    if (distance[u] + w < distance[v]) {
-                        distance[v] = distance[u] + w;
-                        updated = true;
+            // Number of nodes in the graph
+            int N = graph.size();
+
+            // If the graph is empty, return an empty list
+            if (N == 0) {
+                return new int[0];
+            }
+
+            // Initialize distance array
+            int[] distance = new int[N];
+            Arrays.fill(distance, Integer.MAX_VALUE);
+
+            // Distance from the source to itself is 0
+            distance[source] = 0;
+
+            // Relax graph N-1 times
+            for (int i = 0; i < N - 1; i++) {
+                for (int node = 0; node < N; node++) {
+
+                    // Visit all adjacent vertices of the current vertex
+                    for (List<Integer> edge : graph.get(node)) {
+
+                        // Extract the neighbour
+                        int neighbour = edge.get(0);
+
+                        // Extract the weight of the edge
+                        int weight = edge.get(1);
+
+                        // Relax the edge if a shorter path is found
+                        if (
+                            distance[node] != Integer.MAX_VALUE &&
+                            distance[node] + weight < distance[neighbour]
+                        ) {
+                            distance[neighbour] = distance[node] + weight;
+                        }
                     }
                 }
             }
-            if (!updated) break;
-        }
 
-        for (int u = 0; u < n; u++) {
-            if (distance[u] == Integer.MAX_VALUE) continue;
-            for (int[] e : graph.get(u)) {
-                if (distance[u] + e[1] < distance[e[0]]) {
-                    return new int[0];   // negative cycle
+            // Check for negative cycles
+            for (int node = 0; node < N; node++) {
+                for (List<Integer> edge : graph.get(node)) {
+
+                    // Extract the neighbour
+                    int neighbour = edge.get(0);
+
+                    // Extract the weight of the edge
+                    int weight = edge.get(1);
+
+                    // Relax the edge if a shorter path is found
+                    if (
+                        distance[node] != Integer.MAX_VALUE &&
+                        distance[node] + weight < distance[neighbour]
+                    ) {
+
+                        // Return an empty distance array to indicate a
+                        // negative cycle
+                        Arrays.fill(distance, -1);
+                        return distance;
+                    }
                 }
             }
+
+            // Put -1 for all neighbours that are not reachable by the
+            // source node
+            for (int i = 0; i < distance.length; i++) {
+                if (distance[i] == Integer.MAX_VALUE) {
+                    distance[i] = -1;
+                }
+            }
+
+            // Return the computed distances
+            return distance;
         }
-        return distance;
     }
 
     public static void main(String[] args) {
-        List<List<int[]>> g = List.of(
-            List.of(new int[]{1, 4}, new int[]{2, 5}),
-            List.of(new int[]{2, -3}, new int[]{3, 6}),
-            List.of(new int[]{3, 4}),
-            List.of());
-        System.out.println(Arrays.toString(bellmanFord(g, 0)));
+        Solution sol = new Solution();
+
+        // Examples from the problem statement
+        List<List<List<Integer>>> g1 = List.of(
+            List.of(List.of(1,2), List.of(3,5)),
+            List.of(List.of(4,6)),
+            List.of(List.of(4,1)),
+            List.of(List.of(2,2)),
+            List.of(List.of(3,7))
+        );
+        System.out.println(Arrays.toString(sol.belmanFordAlgorithm(g1, 0)));  // [0, 2, 7, 5, 8]
+
+        List<List<List<Integer>>> g2 = List.of(
+            List.of(List.of(4,2)),
+            List.of(List.of(3,3), List.of(0,4)),
+            List.of(List.of(4,4), List.of(0,1)),
+            List.of(List.of(2,1), List.of(4,2)),
+            List.of(List.of(1,5))
+        );
+        System.out.println(Arrays.toString(sol.belmanFordAlgorithm(g2, 1)));  // [4, 0, 4, 3, 5]
+
+        // Edge cases
+        System.out.println(Arrays.toString(sol.belmanFordAlgorithm(new ArrayList<>(), 0)));  // []
+        System.out.println(Arrays.toString(sol.belmanFordAlgorithm(List.of(new ArrayList<>()), 0)));  // [0]
+        System.out.println(Arrays.toString(sol.belmanFordAlgorithm(List.of(new ArrayList<>(), new ArrayList<>()), 0)));  // [0, -1]
+        System.out.println(Arrays.toString(sol.belmanFordAlgorithm(List.of(List.of(List.of(1,5)), new ArrayList<>()), 0)));  // [0, 5]
+        // Negative cycle
+        List<List<List<Integer>>> negCycle = List.of(
+            List.of(List.of(1,1)), List.of(List.of(2,-3)), List.of(List.of(0,1))
+        );
+        System.out.println(Arrays.toString(sol.belmanFordAlgorithm(negCycle, 0)));  // [-1, -1, -1]
+        System.out.println(Arrays.toString(sol.belmanFordAlgorithm(List.of(List.of(List.of(1,3)), List.of(List.of(2,4)), new ArrayList<>()), 0)));  // [0, 3, 7]
     }
-}
-```
-
-```c run
-#include <stdio.h>
-#include <stdlib.h>
-#include <stdbool.h>
-#include <limits.h>
-
-typedef struct { int to, weight; } Edge;
-typedef struct { Edge* data; int size; } AdjList;
-
-int* bellman_ford(AdjList* graph, int n, int source, bool* has_neg_cycle) {
-    int* distance = malloc(n * sizeof(int));
-    for (int i = 0; i < n; i++) distance[i] = INT_MAX;
-    distance[source] = 0;
-    *has_neg_cycle = false;
-
-    for (int i = 0; i < n - 1; i++) {
-        bool updated = false;
-        for (int u = 0; u < n; u++) {
-            if (distance[u] == INT_MAX) continue;
-            for (int j = 0; j < graph[u].size; j++) {
-                Edge e = graph[u].data[j];
-                if (distance[u] + e.weight < distance[e.to]) {
-                    distance[e.to] = distance[u] + e.weight;
-                    updated = true;
-                }
-            }
-        }
-        if (!updated) break;
-    }
-    for (int u = 0; u < n; u++) {
-        if (distance[u] == INT_MAX) continue;
-        for (int j = 0; j < graph[u].size; j++) {
-            Edge e = graph[u].data[j];
-            if (distance[u] + e.weight < distance[e.to]) {
-                *has_neg_cycle = true;
-                return distance;
-            }
-        }
-    }
-    return distance;
-}
-
-int main() {
-    Edge e0[] = {{1,4},{2,5}};
-    Edge e1[] = {{2,-3},{3,6}};
-    Edge e2[] = {{3,4}};
-    AdjList g[] = {{e0,2},{e1,2},{e2,1},{NULL,0}};
-    bool ncc;
-    int* d = bellman_ford(g, 4, 0, &ncc);
-    if (ncc) printf("negative cycle\n");
-    else { for (int i = 0; i < 4; i++) printf("%d ", d[i]); printf("\n"); }
-    free(d);
-    return 0;
-}
-```
-
-```scala run
-object Main extends App {
-  def bellmanFord(graph: Array[Array[(Int, Int)]], source: Int): Array[Int] = {
-    val n = graph.length
-    val distance = Array.fill(n)(Int.MaxValue)
-    distance(source) = 0
-
-    var i = 0
-    var converged = false
-    while (i < n - 1 && !converged) {
-      var updated = false
-      for (u <- 0 until n if distance(u) != Int.MaxValue;
-           (v, w) <- graph(u)) {
-        if (distance(u) + w < distance(v)) { distance(v) = distance(u) + w; updated = true }
-      }
-      if (!updated) converged = true
-      i += 1
-    }
-    for (u <- 0 until n if distance(u) != Int.MaxValue;
-         (v, w) <- graph(u)) {
-      if (distance(u) + w < distance(v)) return Array.empty
-    }
-    distance
-  }
-
-  val g = Array(
-    Array((1, 4), (2, 5)), Array((2, -3), (3, 6)),
-    Array((3, 4)), Array.empty[(Int, Int)])
-  println(bellmanFord(g, 0).mkString(", "))
 }
 ```
 

@@ -34,6 +34,7 @@ val logbackV      = "1.5.12"
 val zioLogbackV   = "2.4.0"
 val lettuceV      = "6.5.1.RELEASE"
 val mongoV        = "5.2.1"
+val nimbusJoseV   = "9.48"
 
 // ---- shared --------------------------------------------------------------
 //
@@ -102,8 +103,12 @@ lazy val server = (project in file("server"))
       // ZIO blocking effects, matching the JDBC pattern used for Postgres.
       "io.lettuce"  % "lettuce-core"        % lettuceV,
       "org.mongodb" % "mongodb-driver-sync" % mongoV,
-      "dev.zio"    %% "zio-test"            % zioV % Test,
-      "dev.zio"    %% "zio-test-sbt"        % zioV % Test
+      // OIDC token validation. Pure Java; fetches the JWKS lazily on first
+      // verify (RemoteJWKSet's built-in 5-min cache), validates signature
+      // + iss + exp + azp/aud. Wired by server/auth/KeycloakAuthBackend.
+      "com.nimbusds" % "nimbus-jose-jwt" % nimbusJoseV,
+      "dev.zio"     %% "zio-test"        % zioV % Test,
+      "dev.zio"     %% "zio-test-sbt"    % zioV % Test
     ),
     testFrameworks += new TestFramework("zio.test.sbt.ZTestFramework")
   )

@@ -1,22 +1,22 @@
 ---
-title: The Yogurt That Changes Everything
-summary: The complete guide to L. reuteri — the ancient probiotic we've unknowingly lost, and the 36-hour fermentation that brings it back. From the science to the recipe, sterilisation to troubleshooting.
-publishedAt: 2026-05-10
+title: The Two Ferments That Transform & Restore Your Gut
+summary: A complete guide to the precision-targeted probiotic (L. reuteri) and the broad-spectrum microbiome rebuilder (kefir) — how they work, where they differ, and why doing both daily is the most powerful gut protocol you can run from your own kitchen.
+publishedAt: 2026-05-20
 tags: [gut-health, fermentation, recipes]
-readMinutes: 15
-eyebrow: Gut Health · Fermented Foods · Dr. William Davis
-meta: Read Time=15 min; Active Prep=10 minutes; Fermentation=36 Hours; Difficulty=Beginner
+readMinutes: 25
+eyebrow: Gut Health · L. Reuteri · Milk Kefir
+meta: Read Time=25 min; Active Prep=15 minutes; Strains=~50 + yeasts; Difficulty=Beginner
 ---
 
 <header class="blog-post__hero">
   <div class="blog-post__hero-copy">
-    <div class="blog-post__hero-eyebrow">Gut Health · Fermented Foods · Dr. William Davis</div>
-    <h1 class="blog-post__hero-title">The Yogurt That <em>Changes</em> Everything</h1>
-    <p class="blog-post__hero-sub">The complete guide to L. reuteri — the ancient probiotic we've unknowingly lost, and the 36-hour fermentation that brings it back. From the science to the recipe, sterilisation to troubleshooting.</p>
+    <div class="blog-post__hero-eyebrow">Gut Health · L. Reuteri · Milk Kefir</div>
+    <h1 class="blog-post__hero-title">The Two Ferments That <em>Transform</em> &amp; Restore Your Gut</h1>
+    <p class="blog-post__hero-sub">A complete guide to the precision-targeted probiotic (L. reuteri) and the broad-spectrum microbiome rebuilder (kefir) — how they work, where they differ, and why doing both daily is the most powerful gut protocol available.</p>
     <div class="blog-post__hero-meta">
-      <div class="blog-post__hero-meta-item"><span>Read Time</span><span>15 min</span></div>
-      <div class="blog-post__hero-meta-item"><span>Active Prep</span><span>10 minutes</span></div>
-      <div class="blog-post__hero-meta-item"><span>Fermentation</span><span>36 Hours</span></div>
+      <div class="blog-post__hero-meta-item"><span>Read Time</span><span>25 min</span></div>
+      <div class="blog-post__hero-meta-item"><span>Active Prep</span><span>15 minutes</span></div>
+      <div class="blog-post__hero-meta-item"><span>Total Strains</span><span>~50 + yeasts</span></div>
       <div class="blog-post__hero-meta-item"><span>Difficulty</span><span>Beginner</span></div>
     </div>
   </div>
@@ -24,287 +24,339 @@ meta: Read Time=15 min; Active Prep=10 minutes; Fermentation=36 Hours; Difficult
     <svg viewBox="0 0 600 700" fill="none" xmlns="http://www.w3.org/2000/svg">
       <circle cx="300" cy="350" r="260" fill="currentColor" opacity="0.18"/>
       <circle cx="300" cy="350" r="200" fill="currentColor" opacity="0.28"/>
-      <rect x="185" y="240" width="230" height="260" rx="18" fill="#f5ede0"/>
-      <rect x="175" y="210" width="250" height="44" rx="8" fill="#3d2512"/>
-      <rect x="190" y="218" width="220" height="28" rx="5" fill="#c9954a"/>
-      <rect x="220" y="222" width="160" height="10" rx="3" fill="#d4a55a" opacity="0.5"/>
-      <rect x="194" y="257" width="212" height="235" rx="4" fill="#faf0e0"/>
-      <path d="M194 290 Q250 278 306 290 Q362 302 406 290" stroke="#e8d0b0" stroke-width="2" fill="none" opacity="0.6"/>
-      <path d="M194 325 Q240 313 305 325 Q370 337 406 325" stroke="#e8d0b0" stroke-width="2" fill="none" opacity="0.5"/>
-      <path d="M194 360 Q260 348 305 360 Q355 372 406 360" stroke="#e8d0b0" stroke-width="2" fill="none" opacity="0.4"/>
-      <rect x="194" y="420" width="212" height="72" rx="0" fill="#f0e4c8" opacity="0.7"/>
-      <path d="M194 420 Q250 412 305 420 Q360 428 406 420" stroke="#d4b890" stroke-width="1.5" fill="none"/>
-      <circle cx="158" cy="300" r="8" fill="#c9954a" opacity="0.4"/>
-      <circle cx="153" cy="322" r="5" fill="#c9954a" opacity="0.3"/>
-      <circle cx="166" cy="344" r="7" fill="#c9954a" opacity="0.35"/>
-      <circle cx="448" cy="278" r="7" fill="#c9954a" opacity="0.4"/>
-      <circle cx="455" cy="303" r="5" fill="#c9954a" opacity="0.3"/>
-      <circle cx="445" cy="327" r="8" fill="#c9954a" opacity="0.35"/>
-      <text x="300" y="385" font-family="serif" font-size="14" fill="#c9954a" text-anchor="middle" opacity="0.7" font-style="italic">L. Reuteri</text>
-      <text x="300" y="405" font-family="serif" font-size="11" fill="#a07840" text-anchor="middle" opacity="0.55">36 Hour Ferment</text>
-      <rect x="422" y="302" width="9" height="96" rx="4" fill="#8b7355" transform="rotate(-20 422 302)"/>
-      <ellipse cx="428" cy="298" rx="15" ry="9" fill="#a08060" transform="rotate(-20 428 298)"/>
+      <rect x="100" y="240" width="180" height="260" rx="14" fill="#f5ede0"/>
+      <rect x="92" y="210" width="196" height="40" rx="6" fill="#3d2512"/>
+      <rect x="104" y="218" width="172" height="24" rx="4" fill="#c9954a"/>
+      <rect x="108" y="257" width="164" height="235" rx="3" fill="#faf0e0"/>
+      <path d="M108 295 Q170 282 232 295 Q272 305 272 295" stroke="#e8d0b0" stroke-width="2" fill="none" opacity="0.6"/>
+      <path d="M108 330 Q170 318 232 330 Q272 340 272 330" stroke="#e8d0b0" stroke-width="2" fill="none" opacity="0.5"/>
+      <rect x="108" y="430" width="164" height="60" fill="#f0e4c8" opacity="0.7"/>
+      <text x="190" y="385" font-family="serif" font-size="13" fill="#c9954a" text-anchor="middle" opacity="0.7" font-style="italic">L. Reuteri</text>
+      <text x="190" y="403" font-family="serif" font-size="10" fill="#a07840" text-anchor="middle" opacity="0.55">36 Hours · 37°C</text>
+      <rect x="320" y="260" width="170" height="240" rx="14" fill="#e8f0f0"/>
+      <rect x="312" y="232" width="186" height="38" rx="6" fill="#1f4848"/>
+      <rect x="324" y="240" width="162" height="22" rx="4" fill="#7ba6a6"/>
+      <rect x="328" y="277" width="154" height="215" rx="3" fill="#f5fafa"/>
+      <circle cx="370" cy="320" r="6" fill="#fafafa" stroke="#d0d8d8" stroke-width="1"/>
+      <circle cx="425" cy="335" r="7" fill="#fafafa" stroke="#d0d8d8" stroke-width="1"/>
+      <circle cx="395" cy="365" r="5" fill="#fafafa" stroke="#d0d8d8" stroke-width="1"/>
+      <circle cx="440" cy="385" r="6" fill="#fafafa" stroke="#d0d8d8" stroke-width="1"/>
+      <circle cx="380" cy="400" r="7" fill="#fafafa" stroke="#d0d8d8" stroke-width="1"/>
+      <circle cx="415" cy="430" r="5" fill="#fafafa" stroke="#d0d8d8" stroke-width="1"/>
+      <circle cx="358" cy="445" r="6" fill="#fafafa" stroke="#d0d8d8" stroke-width="1"/>
+      <circle cx="350" cy="290" r="2" fill="#a8d0d0" opacity="0.6"/>
+      <circle cx="430" cy="295" r="3" fill="#a8d0d0" opacity="0.5"/>
+      <circle cx="395" cy="285" r="2" fill="#a8d0d0" opacity="0.7"/>
+      <text x="405" y="475" font-family="serif" font-size="13" fill="#7ba6a6" text-anchor="middle" opacity="0.7" font-style="italic">Kefir</text>
+      <text x="405" y="492" font-family="serif" font-size="10" fill="#5a8a8a" text-anchor="middle" opacity="0.55">24 Hours · Room Temp</text>
     </svg>
   </div>
 </header>
 
 <nav class="blog-post__toc" aria-label="On this page">
   <ul>
-    <li><a href="#science">The Science</a></li>
-    <li><a href="#why">Why Homemade</a></li>
-    <li><a href="#equipment">Equipment</a></li>
-    <li><a href="#ingredients">Ingredients</a></li>
-    <li><a href="#vinegar">Vinegar Guide</a></li>
-    <li><a href="#sterilisation">Sterilisation</a></li>
-    <li><a href="#recipe">Recipe Steps</a></li>
-    <li><a href="#timeline">Timeline</a></li>
-    <li><a href="#temperature">Temperature</a></li>
-    <li><a href="#inulin">Inulin</a></li>
-    <li><a href="#multipot">Multi-Pot</a></li>
-    <li><a href="#dosdonts">Do's &amp; Don'ts</a></li>
-    <li><a href="#troubleshooting">Troubleshooting</a></li>
-    <li><a href="#nextbatch">Next Batches</a></li>
+    <li><a href="#science">The Two Ferments</a></li>
+    <li><a href="#reuteri-benefits">L. Reuteri Benefits</a></li>
+    <li><a href="#kefir-benefits">Kefir Benefits</a></li>
+    <li><a href="#comparison">Head-to-Head</a></li>
+    <li><a href="#synergy">The Synergy</a></li>
+    <li><a href="#protocol">Daily Protocol</a></li>
+    <li><a href="#reuteri-recipe">L. Reuteri Recipe</a></li>
+    <li><a href="#kefir-recipe">Kefir Recipe</a></li>
+    <li><a href="#consumption">Consumption</a></li>
+    <li><a href="#symptoms">Symptoms</a></li>
     <li><a href="#buy">Where to Buy</a></li>
-    <li><a href="#consumption">When to Eat</a></li>
   </ul>
 </nav>
 
-<p class="blog-post__lede">"Not all yogurts are created equal. This one ferments for 36 hours, contains hundreds of billions more bacteria than anything on a supermarket shelf, and may be the most impactful thing you can add to your daily routine — for under €2 a week."</p>
+<p class="blog-post__lede">"There are two truly extraordinary fermented foods you can make at home — one ancient, one modern, one broad, one precise. Together they cover almost every dimension of gut health that modern life has quietly destroyed."</p>
 
-<h2 id="science" class="blog-post__section">The Bacteria We Lost</h2>
+<h2 id="science" class="blog-post__section">The Two Ferments — Why You Need Both</h2>
 
-Somewhere between the mass adoption of antibiotics, the chlorination of water supplies, and the industrialisation of food, something happened quietly. A microorganism that lived in the human gut for thousands of years — through hunter-gatherers, ancient civilisations, your great-grandparents — disappeared from most of us.
-
-That organism is *Lactobacillus reuteri*. Studies suggest that while it was once nearly universal in the human microbiome, today only around **30% of people still carry it**. The other 70% have lost it — and most don't know it.
-
-<div class="blog-post__callout blog-post__callout--green">
-  <p><strong>What is L. reuteri?</strong> A probiotic bacteria that colonises the upper GI tract — stomach, duodenum, and small intestine — rather than just the colon like most probiotics. It produces <strong>reuterin</strong>, a natural antimicrobial that selectively suppresses harmful bacteria while leaving beneficial microbes untouched. It's found in human breast milk, saliva, and the intestines of virtually all mammals — a deeply ancient organism.</p>
-</div>
-
-<h3 class="blog-post__sub">What the Research Actually Shows</h3>
-
-Dr. William Davis — cardiologist, author of *Wheat Belly* and *Super Gut* — became fascinated by L. reuteri after noticing striking results in research. Mice with L. reuteri had thicker fur, more lean muscle, higher oxytocin levels, and extraordinary wound healing. Human data, while less dramatic, is accumulating:
+Modern life has been quietly hostile to our gut microbiome. Antibiotics, chlorinated water, ultra-processed foods, low-fibre diets, chronic stress, and the collapse of traditional fermented-food culture have collectively impoverished what was once a rich internal ecosystem. The two most powerful tools to rebuild it are **L. reuteri yogurt** and **milk kefir** — and they do almost entirely different things.
 
 <div class="blog-post__benefits">
   <div class="blog-post__benefit">
-    <span class="blog-post__pill blog-post__pill--good">Well Supported</span>
-    <span class="blog-post__benefit-icon">💉</span>
-    <h4>Cholesterol Reduction</h4>
-    <p>Human trials show LDL reduction of ~11.6%, total cholesterol ~9%, and reduced inflammatory markers CRP and fibrinogen.</p>
+    <span class="blog-post__pill blog-post__pill--good">Precision Tool</span>
+    <span class="blog-post__benefit-icon">🎯</span>
+    <h4>L. Reuteri — The Precision Tool</h4>
+    <p>Two specific strains. Targets the small intestine. Triggers oxytocin via the vagus nerve. Produces reuterin, a natural antimicrobial. Proven cholesterol reduction, SIBO displacement, and infant colic relief.</p>
   </div>
   <div class="blog-post__benefit">
-    <span class="blog-post__pill blog-post__pill--good">Well Supported</span>
-    <span class="blog-post__benefit-icon">🛡️</span>
-    <h4>Gut Barrier &amp; SIBO</h4>
-    <p>Reuterin reduces gut inflammation, strengthens the intestinal lining, and targets SIBO symptoms — bloating, gas, and food intolerances.</p>
-  </div>
-  <div class="blog-post__benefit">
-    <span class="blog-post__pill blog-post__pill--good">Well Supported</span>
-    <span class="blog-post__benefit-icon">👶</span>
-    <h4>Infant &amp; Digestive Health</h4>
-    <p>Strong clinical evidence for reducing diarrhea in children and significantly cutting crying time in colicky breastfed infants.</p>
-  </div>
-  <div class="blog-post__benefit">
-    <span class="blog-post__pill blog-post__pill--good">Well Supported</span>
-    <span class="blog-post__benefit-icon">🦠</span>
-    <h4>Immune Modulation</h4>
-    <p>Promotes gut mucosal integrity, improves nutrient absorption, and modulates immune responses — reducing both over- and under-reactions.</p>
-  </div>
-  <div class="blog-post__benefit">
-    <span class="blog-post__pill blog-post__pill--warn">Emerging</span>
-    <span class="blog-post__benefit-icon">🧠</span>
-    <h4>Oxytocin &amp; Mood</h4>
-    <p>Animal studies show significant hypothalamic oxytocin increases — the "bonding hormone" — influencing social behaviour, appetite, and wellbeing.</p>
-  </div>
-  <div class="blog-post__benefit">
-    <span class="blog-post__pill blog-post__pill--warn">Emerging</span>
-    <span class="blog-post__benefit-icon">💪</span>
-    <h4>Muscle &amp; Skin</h4>
-    <p>Emerging research links L. reuteri to fat distribution, lean muscle maintenance, and improved skin hydration via oxytocin and inflammatory signalling.</p>
+    <span class="blog-post__pill blog-post__pill--good">Ecosystem Rebuilder</span>
+    <span class="blog-post__benefit-icon">🌍</span>
+    <h4>Kefir — The Ecosystem Rebuilder</h4>
+    <p>30–50 bacterial strains plus 10–15 yeasts. Broad colon colonisation. Active anti-Candida from the yeast component. Restores microbiome diversity, pre-digests lactose, supports bone density.</p>
   </div>
 </div>
 
-<div class="blog-post__callout blog-post__callout--bad">
-  <p>⚠️ <strong>Honest caveat:</strong> Dramatic claims — anti-ageing, hair thickness, testosterone increases — come primarily from animal studies or anecdotes. Human trials remain limited. This is promising science, not established medicine. Consult your doctor before using therapeutically. <strong>Not recommended during pregnancy</strong> without explicit medical advice.</p>
-</div>
-
-<div class="blog-post__divider"><span>Why Homemade</span></div>
-
-<h2 id="why" class="blog-post__section">Why You Cannot Simply Buy It</h2>
-
-Standard commercial yogurts ferment in 4–8 hours at high temperatures using fast-acting strains optimised for speed and shelf life. L. reuteri is fundamentally different — it ferments slowly, at body temperature (37°C), over a full 36 hours, requiring inulin to fuel the extended process.
+Think of it this way — **L. reuteri is like installing a specific security system in one room of your house. Kefir is like reseeding your entire garden with diverse plants.** Both matter. Neither replaces the other.
 
 <aside class="blog-post__pullquote">
-  <p>At 37°C, L. reuteri doubles every ~3 hours. Over 36 hours — twelve doublings — a single half-cup serving contains more live bacteria than months of standard probiotic capsules.</p>
-  <cite>Based on independent lab testing — 67B+ CFU per half-cup serving</cite>
+  <p>L. reuteri targets specific mechanisms with surgical precision. Kefir restores broad-spectrum diversity. Both ferments were essentially universal in human diets before the 20th century — bringing them back restores an ecosystem that modern life dismantled.</p>
+  <cite>The principle behind dual-ferment protocols</cite>
 </aside>
 
-Industrial processes cannot accommodate this without compromising cost, shelf life, and scale. Making it at home is the only way to access genuine therapeutic quantities — and it costs roughly **€1.50–2 per litre** with 10 minutes of active prep.
+<div class="blog-post__divider"><span>Part One — L. Reuteri</span></div>
 
-<div class="blog-post__divider"><span>Equipment &amp; Ingredients</span></div>
+<h2 id="reuteri-benefits" class="blog-post__section">L. Reuteri Yogurt — The Precision Probiotic</h2>
 
-<h2 id="equipment" class="blog-post__section">Equipment You'll Need</h2>
+L. reuteri once lived in nearly every human gut — passed from mother to child, reinforced by traditional foods. Today, studies suggest **only ~30% of people still carry it**. Dr. William Davis's 36-hour fermentation protocol uses two specific strains (DSM 17938 + ATCC PTA 6475) to rebuild those bacterial populations back to therapeutic levels.
 
-<div class="blog-post__equipment">
-  <div class="blog-post__equipment-item"><span>🫙</span>Glass jar + lid (min. 1L)</div>
-  <div class="blog-post__equipment-item"><span>🫖</span>Kettle</div>
-  <div class="blog-post__equipment-item"><span>🥣</span>Small bowl (for slurry)</div>
-  <div class="blog-post__equipment-item"><span>🥄</span>Whisk or spoon</div>
-  <div class="blog-post__equipment-item"><span>🥄</span>Measuring spoons</div>
-  <div class="blog-post__equipment-item"><span>🌡️</span>Kitchen thermometer (essential)</div>
-  <div class="blog-post__equipment-item"><span>🛍️</span>Zip-lock bag or baking paper</div>
-  <div class="blog-post__equipment-item"><span>⚗️</span>Mortar &amp; pestle (optional)</div>
-  <div class="blog-post__equipment-item"><span>⚙️</span>Yaourtière / Instant Pot / Oven</div>
+<h3 class="blog-post__sub">What L. Reuteri Yogurt Does</h3>
+
+<div class="blog-post__benefits">
+  <div class="blog-post__benefit">
+    <span class="blog-post__pill blog-post__pill--good">Strong RCT Evidence</span>
+    <span class="blog-post__benefit-icon">💉</span>
+    <h4>Cholesterol Reduction</h4>
+    <p>Human trials: LDL reduced ~11.6%, total cholesterol ~9%, CRP and fibrinogen significantly reduced. Works via bile salt hydrolase activity.</p>
+  </div>
+  <div class="blog-post__benefit">
+    <span class="blog-post__pill blog-post__pill--good">Strong RCT Evidence</span>
+    <span class="blog-post__benefit-icon">🛡️</span>
+    <h4>SIBO &amp; Methane IBS</h4>
+    <p>DSM 17938 reduces breath methane substantially in IBS-C patients. Reuterin specifically targets small intestinal overgrowth.</p>
+  </div>
+  <div class="blog-post__benefit">
+    <span class="blog-post__pill blog-post__pill--good">Strong RCT Evidence</span>
+    <span class="blog-post__benefit-icon">👶</span>
+    <h4>Infant Colic</h4>
+    <p>Meta-analyses (6 RCTs, 423 infants) show a ~45-minute reduction in daily crying time — the strongest paediatric probiotic evidence available.</p>
+  </div>
+  <div class="blog-post__benefit">
+    <span class="blog-post__pill blog-post__pill--good">Strong RCT Evidence</span>
+    <span class="blog-post__benefit-icon">🦴</span>
+    <h4>Bone Density (Older Women)</h4>
+    <p>ATCC PTA 6475 cut tibia bone loss in half in women aged 75–80 with low bone mineral density over 12 months.</p>
+  </div>
+  <div class="blog-post__benefit">
+    <span class="blog-post__pill blog-post__pill--warn">Promising Evidence</span>
+    <span class="blog-post__benefit-icon">😴</span>
+    <h4>Sleep &amp; Vivid Dreams</h4>
+    <p>The most consistently reported real-world benefit. Linked to oxytocin signalling via the vagus nerve — users report deeper REM and less early-morning waking.</p>
+  </div>
+  <div class="blog-post__benefit">
+    <span class="blog-post__pill blog-post__pill--warn">Promising Evidence</span>
+    <span class="blog-post__benefit-icon">🧠</span>
+    <h4>Oxytocin &amp; Mood</h4>
+    <p>Animal studies show more than 2× hypothalamic oxytocin. Human jejunal organoids confirm oxytocin secretion — linked to wound healing, social bonding, appetite regulation.</p>
+  </div>
+  <div class="blog-post__benefit">
+    <span class="blog-post__pill blog-post__pill--neutral">Animal Evidence</span>
+    <span class="blog-post__benefit-icon">💪</span>
+    <h4>Muscle, Skin, Hair</h4>
+    <p>Mice show 35% dermal thickening, preserved muscle, and thicker fur. Human translation is limited to small open-label trials.</p>
+  </div>
+  <div class="blog-post__benefit">
+    <span class="blog-post__pill blog-post__pill--neutral">Animal Evidence</span>
+    <span class="blog-post__benefit-icon">⚡</span>
+    <h4>Testosterone</h4>
+    <p>An 8-fold increase in aged mice via Leydig cell preservation. No published human RCT — Davis's claims should be treated as hypothesis.</p>
+  </div>
+</div>
+
+<div class="blog-post__divider"><span>Part Two — Kefir</span></div>
+
+<h2 id="kefir-benefits" class="blog-post__section">Milk Kefir — The Ancient Microbiome Rebuilder</h2>
+
+Kefir originated in the Caucasus mountains thousands of years ago and was so prized that the grains were guarded as family heirlooms. Unlike yogurt, kefir contains a remarkable **symbiotic culture of 30–50 bacterial strains and 10–15 yeast strains** — a complete miniature ecosystem.
+
+What sets kefir apart from every other fermented food is the **yeast component**. The bacteria-plus-yeast combination gives kefir capabilities that pure bacterial ferments simply cannot match — most importantly, the ability to actively suppress Candida and other fungal overgrowth.
+
+<h3 class="blog-post__sub">What Kefir Does</h3>
+
+<div class="blog-post__benefits">
+  <div class="blog-post__benefit">
+    <span class="blog-post__pill blog-post__pill--good">Strong Evidence</span>
+    <span class="blog-post__benefit-icon">🌿</span>
+    <h4>Microbiome Diversity</h4>
+    <p>30–50 bacterial strains restore broad ecological diversity in the colon — the single best food for rebuilding a depleted gut.</p>
+  </div>
+  <div class="blog-post__benefit">
+    <span class="blog-post__pill blog-post__pill--good">Strong Evidence</span>
+    <span class="blog-post__benefit-icon">🍄</span>
+    <h4>Anti-Candida &amp; Anti-Fungal</h4>
+    <p>Saccharomyces yeasts in kefir actively compete with and suppress Candida albicans — a benefit L. reuteri yogurt cannot provide.</p>
+  </div>
+  <div class="blog-post__benefit">
+    <span class="blog-post__pill blog-post__pill--good">Strong Evidence</span>
+    <span class="blog-post__benefit-icon">🥛</span>
+    <h4>Lactose Tolerance</h4>
+    <p>Kefir's bacteria pre-digest most lactose during fermentation, making it tolerable for many lactose-intolerant people.</p>
+  </div>
+  <div class="blog-post__benefit">
+    <span class="blog-post__pill blog-post__pill--good">Strong Evidence</span>
+    <span class="blog-post__benefit-icon">🦴</span>
+    <h4>Bone Health</h4>
+    <p>Improved calcium absorption, bone formation markers, and vitamin K2 production. Studies show direct human benefit for osteoporosis prevention.</p>
+  </div>
+  <div class="blog-post__benefit">
+    <span class="blog-post__pill blog-post__pill--good">Strong Evidence</span>
+    <span class="blog-post__benefit-icon">🛡️</span>
+    <h4>Immune Modulation</h4>
+    <p>Broad multi-strain immunoregulation. Reduces allergic responses, calms inflammatory tendencies, and supports IgA production.</p>
+  </div>
+  <div class="blog-post__benefit">
+    <span class="blog-post__pill blog-post__pill--good">Strong Evidence</span>
+    <span class="blog-post__benefit-icon">💉</span>
+    <h4>Blood Pressure &amp; Sugar</h4>
+    <p>Modest but consistent human-trial evidence for reduced systolic blood pressure and improved fasting glucose.</p>
+  </div>
+  <div class="blog-post__benefit">
+    <span class="blog-post__pill blog-post__pill--warn">Promising Evidence</span>
+    <span class="blog-post__benefit-icon">😊</span>
+    <h4>Mood &amp; Anxiety</h4>
+    <p>Acts via gut-brain axis modulation rather than a specific oxytocin pathway — a broad microbiome effect on serotonin precursors.</p>
+  </div>
+  <div class="blog-post__benefit">
+    <span class="blog-post__pill blog-post__pill--warn">Promising Evidence</span>
+    <span class="blog-post__benefit-icon">🌟</span>
+    <h4>Skin Health</h4>
+    <p>Some evidence for atopic dermatitis improvement, reduced inflammatory skin conditions, and acne reduction via the gut-skin axis.</p>
+  </div>
+</div>
+
+<div class="blog-post__divider"><span>Head to Head</span></div>
+
+<h2 id="comparison" class="blog-post__section">Head-to-Head Comparison</h2>
+
+The full benefit-by-benefit comparison. A **🏆 Winner** tag indicates which ferment has the stronger evidence or the more dramatic effect for that specific outcome.
+
+<div class="blog-post__table-wrap">
+  <table class="blog-post__table">
+    <thead><tr><th>Benefit / Property</th><th>L. Reuteri Yogurt</th><th>Milk Kefir</th></tr></thead>
+    <tbody>
+      <tr><td><strong>Number of strains</strong></td><td>2 (DSM 17938 + ATCC PTA 6475)</td><td><span class="blog-post__pill blog-post__pill--good">🏆 Winner</span> 30–50 bacteria + 10–15 yeasts</td></tr>
+      <tr><td><strong>CFU per serving</strong></td><td><span class="blog-post__pill blog-post__pill--good">🏆 Winner</span> ~100–300 billion (homemade)</td><td>~10–50 billion</td></tr>
+      <tr><td><strong>Microbiome diversity</strong></td><td>Limited — 2 strains only</td><td><span class="blog-post__pill blog-post__pill--good">🏆 Winner</span> Excellent — full ecosystem restoration</td></tr>
+      <tr><td><strong>Small intestine colonisation</strong></td><td><span class="blog-post__pill blog-post__pill--good">🏆 Winner</span> Specifically targets upper GI</td><td>Primarily colon</td></tr>
+      <tr><td><strong>SIBO / IBS-C treatment</strong></td><td><span class="blog-post__pill blog-post__pill--good">🏆 Winner</span> Strongest evidence — reuterin + methane reduction</td><td>Mild help, indirect</td></tr>
+      <tr><td><strong>Cholesterol (LDL) reduction</strong></td><td><span class="blog-post__pill blog-post__pill--good">🏆 Winner</span> ~11.6% in human RCTs</td><td>Moderate evidence</td></tr>
+      <tr><td><strong>Anti-Candida / anti-fungal</strong></td><td>❌ No yeast component</td><td><span class="blog-post__pill blog-post__pill--good">🏆 Winner</span> Yeasts actively suppress Candida</td></tr>
+      <tr><td><strong>Lactose tolerance</strong></td><td>36-hour ferment reduces but doesn't eliminate</td><td><span class="blog-post__pill blog-post__pill--good">🏆 Winner</span> Bacteria pre-digest most lactose</td></tr>
+      <tr><td><strong>Sleep improvement</strong></td><td><span class="blog-post__pill blog-post__pill--good">🏆 Winner</span> Consistently reported via oxytocin mechanism</td><td>Mild — general gut-brain effect</td></tr>
+      <tr><td><strong>Bone density</strong></td><td>✅ Older women — Nilsson RCT</td><td>✅ Calcium absorption + K2 — comparable evidence</td></tr>
+      <tr><td><strong>Infant colic</strong></td><td><span class="blog-post__pill blog-post__pill--good">🏆 Winner</span> Best probiotic evidence available</td><td>Not specifically studied for colic</td></tr>
+      <tr><td><strong>Immune modulation</strong></td><td>Via IL-10, TNF suppression — narrow</td><td><span class="blog-post__pill blog-post__pill--good">🏆 Winner</span> Broad multi-strain effect</td></tr>
+      <tr><td><strong>Oxytocin / mood / bonding</strong></td><td><span class="blog-post__pill blog-post__pill--good">🏆 Winner</span> Unique vagus-nerve mechanism</td><td>General gut-brain axis only</td></tr>
+      <tr><td><strong>Blood pressure</strong></td><td>Indirect via inflammation</td><td><span class="blog-post__pill blog-post__pill--good">🏆 Winner</span> Direct modest reduction in RCTs</td></tr>
+      <tr><td><strong>H. pylori suppression</strong></td><td><span class="blog-post__pill blog-post__pill--good">🏆 Winner</span> Strong adjunctive evidence</td><td>Mild help</td></tr>
+      <tr><td><strong>Wound healing</strong></td><td><span class="blog-post__pill blog-post__pill--good">🏆 Winner</span> Animal-proven oxytocin pathway</td><td>Indirect via inflammation reduction</td></tr>
+      <tr><td><strong>Skin / dermal thickening</strong></td><td>Animal: 35% increase. Limited human data.</td><td>Moderate human evidence for atopic dermatitis</td></tr>
+      <tr><td><strong>Ease of preparation</strong></td><td>Requires yogurt maker, precise 37°C, 36 hours</td><td><span class="blog-post__pill blog-post__pill--good">🏆 Winner</span> Room temp, no machine, 24 hours</td></tr>
+      <tr><td><strong>Ongoing cost</strong></td><td>Moderate — milk + inulin + occasional new starter</td><td><span class="blog-post__pill blog-post__pill--good">🏆 Winner</span> Near zero — grains self-multiply</td></tr>
+      <tr><td><strong>Failure rate / consistency</strong></td><td>Variable — first batches often separate</td><td><span class="blog-post__pill blog-post__pill--good">🏆 Winner</span> Very forgiving — almost always works</td></tr>
+    </tbody>
+  </table>
+</div>
+
+<div class="blog-post__callout blog-post__callout--warn">
+  <p>💡 <strong>The clear takeaway:</strong> Each ferment has 7–9 categories where it clearly wins. Neither replaces the other. <strong>The strongest gut protocol is to do both daily</strong> — they are complementary, not competing.</p>
+</div>
+
+<div class="blog-post__divider"><span>The Synergy</span></div>
+
+<h2 id="synergy" class="blog-post__section">Why Both Together Is More Than the Sum</h2>
+
+Doing both ferments isn't just additive — it's **genuinely synergistic**. Here's why combining them works better than either one alone.
+
+<h3 class="blog-post__sub">1. Different Gut Regions, Different Bacteria</h3>
+
+L. reuteri colonises the **small intestine** — the stomach, duodenum, and jejunum where SIBO sits. Kefir bacteria colonise the **colon**. Together, you're seeding the entire digestive tract from top to bottom.
+
+<h3 class="blog-post__sub">2. Bacterial Diversity vs. Strain Potency</h3>
+
+L. reuteri delivers an **extreme dose of 2 strains**. Kefir delivers a **moderate dose of 50+ strains**. The combination gives you both peak therapeutic concentration of the most useful strains *and* broad ecological diversity.
+
+<h3 class="blog-post__sub">3. Bacteria + Yeasts = Complete Protection</h3>
+
+L. reuteri's reuterin compound is highly antibacterial. Kefir's Saccharomyces yeasts are highly antifungal. Together they suppress harmful bacterial overgrowth (SIBO) *and* fungal overgrowth (Candida) — neither alone covers both.
+
+<h3 class="blog-post__sub">4. Lactose Buffering</h3>
+
+Many people who don't tolerate dairy actually tolerate kefir very well, because its lactose is pre-digested. Starting with kefir for a few weeks before adding L. reuteri yogurt can pre-train your gut to handle the dairy load.
+
+<h3 class="blog-post__sub">5. Cost and Sustainability</h3>
+
+Kefir grains multiply continuously and cost virtually nothing after the initial purchase. That makes the daily kefir habit essentially free — which in turn makes sticking with the more expensive L. reuteri protocol easier financially.
+
+<div class="blog-post__callout blog-post__callout--green">
+  <p>🌱 <strong>The metaphor:</strong> If your gut is a garden, kefir is the rich compost you spread everywhere, and L. reuteri is the specific high-value crop you plant in targeted spots. Together they create something neither alone could.</p>
+</div>
+
+<div class="blog-post__divider"><span>The Daily Protocol</span></div>
+
+<h2 id="protocol" class="blog-post__section">Daily Protocol — How to Combine Them</h2>
+
+The exact daily rhythm matters less than consistency. But here is the optimal schedule, based on stomach-acid timing, bacterial survival, and the complementary effects of each ferment.
+
+<div class="blog-post__timeline">
+  <div class="blog-post__timeline-item">
+    <span class="blog-post__timeline-week">07:00</span>
+    <h5>L. reuteri yogurt — ½ cup (125ml), empty stomach</h5>
+    <p>Stomach acid is at its lowest in the morning, giving maximum bacterial survival to the small intestine. The yogurt's appetite-suppressing oxytocin effect also helps curb breakfast cravings.</p>
+  </div>
+  <div class="blog-post__timeline-item">
+    <span class="blog-post__timeline-week">07:30</span>
+    <h5>Wait 20–30 minutes — then coffee, tea, breakfast</h5>
+    <p>This gap protects the L. reuteri from coffee's acid spike and gives the bacteria time to begin transit.</p>
+  </div>
+  <div class="blog-post__timeline-item">
+    <span class="blog-post__timeline-week">12:30</span>
+    <h5>Lunch — a normal meal</h5>
+    <p>Regular food. No ferments are required at this point in the day.</p>
+  </div>
+  <div class="blog-post__timeline-item">
+    <span class="blog-post__timeline-week">19:00</span>
+    <h5>Kefir — 100–200ml with dinner or as a digestif</h5>
+    <p>The food and fat in your dinner buffer the kefir's passage. Kefir is colon-targeted anyway, so survival rate matters less. Evening kefir also aids digestion of the day's food.</p>
+  </div>
+  <div class="blog-post__timeline-item">
+    <span class="blog-post__timeline-week">22:30</span>
+    <h5>Sleep — let both ferments do their work</h5>
+    <p>L. reuteri's oxytocin effect supports deeper sleep. Kefir's tryptophan-rich profile supports serotonin production overnight.</p>
+  </div>
 </div>
 
 <div class="blog-post__callout blog-post__callout--info">
-  <p><strong>Fermentation device options:</strong> A <em>yaourtière</em> (yogurt maker) with adjustable temperature and 36+ hour timer — brands SEB, Lagrange, Cuisinart at Fnac, Darty, Amazon.fr — is the easiest. Instant Pot on "Normal" Yogurt mode works perfectly. Oven alternative: preheat to lowest setting for 10 min, switch OFF, and the oven light maintains ~38°C inside.</p>
+  <p><strong>Simpler alternatives if the full schedule is too much:</strong> <strong>Alternate days</strong> — L. reuteri on Mon/Wed/Fri, kefir on Tue/Thu/Sat — eases dairy intake and fridge space. <strong>One morning, one evening</strong> — the full daily double-dose as scheduled above. <strong>Start with kefir, add L. reuteri after a month</strong> — kefir gently rebuilds general diversity first, then L. reuteri delivers the targeted high-dose intervention. The third option is best for sensitive guts or post-antibiotic damage.</p>
 </div>
 
-<h2 id="ingredients" class="blog-post__section">Ingredients — Generic &amp; France Specific</h2>
-
-<h3 class="blog-post__sub">Generic (International)</h3>
-
-<div class="blog-post__table-wrap">
-  <table class="blog-post__table">
-    <thead><tr><th>Ingredient</th><th>Quantity</th><th>Notes</th></tr></thead>
-    <tbody>
-      <tr><td><strong>L. reuteri probiotic tablets/capsules</strong></td><td>10 tablets (first batch only)</td><td>Must contain strains <strong>DSM 17938</strong> + <strong>ATCC PTA 6475</strong> — verify on label</td></tr>
-      <tr><td><strong>Whole full-fat milk</strong></td><td>1 litre</td><td>Min. 3.5% fat — UHT preferred for consistency</td></tr>
-      <tr><td><strong>Inulin powder</strong> (prebiotic fibre)</td><td>2 tablespoons</td><td>Chicory root or agave inulin — plain, unflavoured only</td></tr>
-      <tr><td><strong>Lukewarm milk for slurry</strong></td><td>3 tablespoons</td><td>Taken from the 1 litre above — ~35°C, not hot</td></tr>
-    </tbody>
-  </table>
-</div>
-
-<h3 class="blog-post__sub">🇫🇷 France-Specific Sourcing</h3>
-
-<div class="blog-post__table-wrap">
-  <table class="blog-post__table">
-    <thead><tr><th>Ingredient</th><th>Product</th><th>Where to Buy</th></tr></thead>
-    <tbody>
-      <tr><td><strong>L. reuteri probiotic</strong></td><td><strong>BioGaia Gastrus</strong> — comprimés à croquer, arôme mandarine, boîte de 30. Contains DSM 17938 + ATCC PTA 6475.</td><td>Pharmacie (in-store or online): CityPharma, Pharma-GDD, Newpharma.fr, DocMorris</td></tr>
-      <tr><td><strong>Whole milk (UHT)</strong></td><td><strong>Carrefour Bio Lait Entier UHT</strong> — 3.5% fat. Shelf-stable. No warming needed if stored at room temperature.</td><td>Carrefour, Monoprix, Leclerc, Biocoop</td></tr>
-      <tr><td><strong>Whole milk (Fresh)</strong></td><td><strong>Candia GrandLait Bio Frais Entier</strong> — 3.6% fat. Premium quality. Must be warmed to 35–38°C from fridge before use. Use within 4 days of opening.</td><td>Carrefour, most supermarkets</td></tr>
-      <tr><td><strong>Inulin powder</strong></td><td><em>Inuline de chicorée bio en poudre</em> or <em>inuline d'agave bio</em> — brands: NOW Foods, Nature Diet, HSN</td><td>Amazon.fr, Biocoop, La Vie Claire, Naturalia, iHerb, Naturitas.fr</td></tr>
-      <tr><td><strong>Crème entière</strong> (optional)</td><td><strong>Carrefour Crème Entière Liquide UHT</strong> — mix 50/50 with whole milk for richer texture</td><td>Any supermarket</td></tr>
-    </tbody>
-  </table>
-</div>
-
-<h3 class="blog-post__sub">🚫 Milks to Avoid</h3>
-
-<div class="blog-post__table-wrap">
-  <table class="blog-post__table">
-    <thead><tr><th>Milk</th><th>Fat%</th><th>Why Unsuitable</th></tr></thead>
-    <tbody>
-      <tr><td>Carrefour Bio Demi Écrémé</td><td>1.5%</td><td>Too low in fat — produces thin, watery yogurt; insufficient nutrient base</td></tr>
-      <tr><td>Candia GrandLait Bio Frais Demi-Écrémé</td><td>1.6%</td><td>Despite being organic — still too low in fat. Avoid even though same brand as the recommended version.</td></tr>
-      <tr><td>Lait écrémé (skimmed)</td><td>0.1%</td><td>Entirely unsuitable — bacteria have too little fat and nutrients to work with</td></tr>
-      <tr><td>Lait sans lactose</td><td>Varies</td><td>Altered sugar profile disrupts fermentation and bacterial nutrition</td></tr>
-      <tr><td>Lait cru (raw milk)</td><td>Varies</td><td>Contains competing wild bacteria that can overpower L. reuteri</td></tr>
-    </tbody>
-  </table>
-</div>
-
-<div class="blog-post__divider"><span>Sterilisation</span></div>
-
-<h2 id="vinegar" class="blog-post__section">Sanitising Vinegar Guide</h2>
-
-After the boiling water rinse, a secondary vinegar rinse provides additional protection. Not all vinegars are equally suitable:
-
-<div class="blog-post__table-wrap">
-  <table class="blog-post__table">
-    <thead><tr><th>Product</th><th>Acidity</th><th>Suitable?</th><th>Notes</th></tr></thead>
-    <tbody>
-      <tr><td><strong>Simplo Vinaigre d'Alcool Cristal</strong></td><td>8%</td><td><span class="blog-post__pill blog-post__pill--good">✅ Excellent</span></td><td>Crystal clear, pure alcohol vinegar — no impurities. Ideal choice.</td></tr>
-      <tr><td><strong>Carrefour Bio Vinaigre Blanc</strong></td><td>6%</td><td><span class="blog-post__pill blog-post__pill--good">✅ Good</span></td><td>Organic, food-grade, correct acidity. Reliable option.</td></tr>
-      <tr><td><strong>Carrefour Classic' Vinaigre Blanc</strong></td><td>8%</td><td><span class="blog-post__pill blog-post__pill--good">✅ Good</span></td><td>Standard white alcohol vinegar. Works well.</td></tr>
-      <tr><td><strong>Carrefour Vinaigre Ménager</strong></td><td>12%</td><td><span class="blog-post__pill blog-post__pill--bad">⚠️ Avoid</span></td><td>Household cleaning vinegar — too strong for food contact surfaces.</td></tr>
-    </tbody>
-  </table>
-</div>
-
-<h3 class="blog-post__sub">Why a 100°C Oven for 10 Minutes Doesn't Work</h3>
-
-A common instinct — sterilise jars in the oven at 100°C for 10 minutes. This is ineffective. **Dry heat is significantly weaker than moist heat at the same temperature.** Proper dry-heat sterilisation needs 160–180°C for 60–90 minutes. At 100°C dry heat for 10 minutes, resistant bacterial spores that compete with L. reuteri survive. There is also a serious risk of **thermal shock cracking the glass** when placed cold into a hot oven. Always use the boiling water method.
-
-<h3 class="blog-post__sub">How to Use Vinegar — Step by Step</h3>
-
-<ol class="blog-post__numbered">
-  <li><span class="blog-post__numbered-num">1</span>Complete the boiling water rinse first — allow everything to air dry fully</li>
-  <li><span class="blog-post__numbered-num">2</span>Pour a small splash of white vinegar (6–8% acidity) into the jar</li>
-  <li><span class="blog-post__numbered-num">3</span>Swirl to coat all inner walls for ~10 seconds</li>
-  <li><span class="blog-post__numbered-num">4</span>Pour it out — <strong>do not rinse with water afterwards</strong></li>
-  <li><span class="blog-post__numbered-num">5</span>Air dry completely — acetic acid evaporates fully, leaving zero taste or residue</li>
-</ol>
-
-<h2 id="sterilisation" class="blog-post__section">Sterilisation — Do's and Don'ts</h2>
-
-Sterilisation is the **most critical step**. Any foreign bacteria left in your equipment can overpower L. reuteri and ruin the entire batch.
-
-<div class="blog-post__rules">
-  <div class="blog-post__rules-do">
-    <h4>✅ Do's</h4>
-    <ul>
-      <li><span>✅</span>Pour boiling water over and into the jar, lid, bowl, whisk, and all measuring spoons</li>
-      <li><span>✅</span>Let all equipment <strong>air dry completely</strong> — never wipe</li>
-      <li><span>✅</span>Follow with a white vinegar rinse (6–8%) — swirl, pour out, air dry</li>
-      <li><span>✅</span>Sterilise <strong>immediately before use</strong>, not hours in advance</li>
-      <li><span>✅</span>Wash hands thoroughly with soap before handling sterilised items</li>
-      <li><span>✅</span>Sterilise the <strong>lid</strong> of the jar — it contacts the mixture</li>
-      <li><span>✅</span>Sterilise measuring spoons even if they look clean</li>
-      <li><span>✅</span>Use <strong>glass jars</strong> — sterilise far better than plastic</li>
-    </ul>
-  </div>
-  <div class="blog-post__rules-dont">
-    <h4>❌ Don'ts</h4>
-    <ul>
-      <li><span>❌</span><strong>Do NOT wipe</strong> equipment dry with any cloth — reintroduces bacteria</li>
-      <li><span>❌</span><strong>Do NOT use a 100°C oven</strong> for 10 min — dry heat too weak at this temp</li>
-      <li><span>❌</span><strong>Do NOT use dishwasher-washed jars</strong> directly — rinse aid residue inhibits fermentation</li>
-      <li><span>❌</span><strong>Do NOT touch</strong> the inside of sterilised jars with bare hands after sterilising</li>
-      <li><span>❌</span><strong>Do NOT use plastic containers</strong> — micro-scratches harbour bacteria</li>
-      <li><span>❌</span><strong>Do NOT rush the drying</strong> — a wet jar affects internal fermentation temperature</li>
-      <li><span>❌</span><strong>Do NOT sterilise hours in advance</strong> — do it immediately before use</li>
-    </ul>
-  </div>
-</div>
-
-<section class="blog-post__recipe" id="recipe">
+<section class="blog-post__recipe" id="reuteri-recipe">
   <div class="blog-post__recipe-header">
-    <span class="blog-post__recipe-eyebrow">Complete Method · Dr. William Davis · Super Gut (2022)</span>
+    <span class="blog-post__recipe-eyebrow">Recipe One · Precision Probiotic · Dr. William Davis Method</span>
     <h2>L. Reuteri Probiotic Yogurt</h2>
-    <p>A super-cultured fermented dairy with hundreds of billions of live bacteria per serving. Ten minutes of active prep. Beginner-friendly. Endlessly repeatable.</p>
+    <p>A super-cultured fermented dairy with hundreds of billions of live bacteria per serving. Ten minutes of active prep, 36 hours of fermentation, infinite repeatable batches.</p>
   </div>
   <div class="blog-post__recipe-stats">
     <div><span class="blog-post__recipe-stat-label">Active Prep</span><span class="blog-post__recipe-stat-value">10</span><span class="blog-post__recipe-stat-unit">minutes</span></div>
-    <div><span class="blog-post__recipe-stat-label">Fermentation</span><span class="blog-post__recipe-stat-value">36</span><span class="blog-post__recipe-stat-unit">hours at 36–38°C</span></div>
-    <div><span class="blog-post__recipe-stat-label">Chilling</span><span class="blog-post__recipe-stat-value">6+</span><span class="blog-post__recipe-stat-unit">hours (overnight best)</span></div>
+    <div><span class="blog-post__recipe-stat-label">Fermentation</span><span class="blog-post__recipe-stat-value">36</span><span class="blog-post__recipe-stat-unit">hours at 37°C</span></div>
+    <div><span class="blog-post__recipe-stat-label">Chilling</span><span class="blog-post__recipe-stat-value">6+</span><span class="blog-post__recipe-stat-unit">hours</span></div>
     <div><span class="blog-post__recipe-stat-label">Daily Serving</span><span class="blog-post__recipe-stat-value">½</span><span class="blog-post__recipe-stat-unit">cup / 125ml</span></div>
-    <div><span class="blog-post__recipe-stat-label">Keeps For</span><span class="blog-post__recipe-stat-value">10</span><span class="blog-post__recipe-stat-unit">days in fridge</span></div>
+    <div><span class="blog-post__recipe-stat-label">CFU per Serving</span><span class="blog-post__recipe-stat-value">~250B</span><span class="blog-post__recipe-stat-unit">live cells</span></div>
   </div>
   <div class="blog-post__recipe-grid">
     <div class="blog-post__recipe-ingredients">
       <h3>Ingredients</h3>
       <div class="blog-post__ingredient-group">
-        <span class="blog-post__ingredient-group-label">Starter — First Batch Only</span>
-        <div class="blog-post__ingredient"><span class="blog-post__ingredient-amount">10</span><span class="blog-post__ingredient-name">BioGaia Gastrus tablets<span class="blog-post__ingredient-note">Must contain DSM 17938 + ATCC PTA 6475 — verify on box. French pharmacies.</span></span></div>
+        <span class="blog-post__ingredient-group-label">First Batch Only</span>
+        <div class="blog-post__ingredient"><span class="blog-post__ingredient-amount">10</span><span class="blog-post__ingredient-name">BioGaia Gastrus tablets<span class="blog-post__ingredient-note">Must contain DSM 17938 + ATCC PTA 6475. French pharmacies — CityPharma, Pharma-GDD.</span></span></div>
       </div>
       <div class="blog-post__ingredient-group">
         <span class="blog-post__ingredient-group-label">Main Ingredients</span>
-        <div class="blog-post__ingredient"><span class="blog-post__ingredient-amount">1 litre</span><span class="blog-post__ingredient-name">Whole full-fat milk (min. 3.5%)<span class="blog-post__ingredient-note">Carrefour Bio Lait Entier UHT (easiest) or Candia GrandLait Bio Frais Entier 3.6% (warm from fridge first)</span></span></div>
-        <div class="blog-post__ingredient"><span class="blog-post__ingredient-amount">2 tbsp</span><span class="blog-post__ingredient-name">Inulin powder (prebiotic fibre)<span class="blog-post__ingredient-note">Inuline de chicorée bio — Amazon.fr, Biocoop, La Vie Claire. Brands: NOW Foods, Nature Diet, HSN.</span></span></div>
-        <div class="blog-post__ingredient"><span class="blog-post__ingredient-amount">3 tbsp</span><span class="blog-post__ingredient-name">Lukewarm milk for slurry<span class="blog-post__ingredient-note">Taken from the 1 litre — ~35°C only, not hot</span></span></div>
+        <div class="blog-post__ingredient"><span class="blog-post__ingredient-amount">1 litre</span><span class="blog-post__ingredient-name">Whole milk (min. 3.5% fat)<span class="blog-post__ingredient-note">Carrefour Bio Lait Entier UHT or Candia GrandLait Bio Frais Entier 3.6%</span></span></div>
+        <div class="blog-post__ingredient"><span class="blog-post__ingredient-amount">2 tbsp</span><span class="blog-post__ingredient-name">Inulin powder<span class="blog-post__ingredient-note">Inuline de chicorée bio — Amazon.fr, Biocoop, La Vie Claire</span></span></div>
+        <div class="blog-post__ingredient"><span class="blog-post__ingredient-amount">3 tbsp</span><span class="blog-post__ingredient-name">Lukewarm milk (~35°C)<span class="blog-post__ingredient-note">Taken from the 1 litre — for the starter slurry</span></span></div>
       </div>
       <div class="blog-post__ingredient-group">
-        <span class="blog-post__ingredient-group-label">From Batch 2 Onwards</span>
-        <div class="blog-post__ingredient"><span class="blog-post__ingredient-amount">2 tbsp</span><span class="blog-post__ingredient-name">Previous batch yogurt or whey<span class="blog-post__ingredient-note">Replaces tablets. Save before eating each batch. Label with date. Refresh with new tablets every 10–15 batches.</span></span></div>
+        <span class="blog-post__ingredient-group-label">Batch 2 Onwards</span>
+        <div class="blog-post__ingredient"><span class="blog-post__ingredient-amount">2 tbsp</span><span class="blog-post__ingredient-name">Previous yogurt or whey<span class="blog-post__ingredient-note">Replaces tablets entirely. Refresh with new tablets every 10–15 batches.</span></span></div>
       </div>
       <div class="blog-post__ingredient-group">
-        <span class="blog-post__ingredient-group-label">Milks to Avoid</span>
-        <div class="blog-post__ingredient"><span class="blog-post__ingredient-amount">✗</span><span class="blog-post__ingredient-name">Demi-écrémé / semi-skimmed (1.5–1.6%)<span class="blog-post__ingredient-note">Incl. Carrefour Bio Demi Écrémé and Candia GrandLait Demi-Écrémé</span></span></div>
-        <div class="blog-post__ingredient"><span class="blog-post__ingredient-amount">✗</span><span class="blog-post__ingredient-name">Lait écrémé, sans lactose, or lait cru (raw)</span></div>
+        <span class="blog-post__ingredient-group-label">Avoid</span>
+        <div class="blog-post__ingredient"><span class="blog-post__ingredient-amount">✗</span><span class="blog-post__ingredient-name">Demi-écrémé milk (any brand)<span class="blog-post__ingredient-note">Too low in fat — produces thin, watery yogurt</span></span></div>
+        <div class="blog-post__ingredient"><span class="blog-post__ingredient-amount">✗</span><span class="blog-post__ingredient-name">Lait cru, écrémé, or sans lactose</span></div>
       </div>
     </div>
     <div class="blog-post__recipe-steps">
@@ -313,273 +365,282 @@ Sterilisation is the **most critical step**. Any foreign bacteria left in your e
         <div class="blog-post__step-num">1</div>
         <div class="blog-post__step-body">
           <div class="blog-post__step-title">Sterilise All Equipment</div>
-          <p>Boil a full kettle. Pour boiling water over and into the <strong>glass jar, lid, small bowl, whisk, and measuring spoons</strong>. Air dry completely — never wipe with a cloth or towel. Optionally follow with a swirl of white vinegar (6–8% acidity — Simplo Cristal 8% or Carrefour Bio 6%), pour out, and air dry again. Sterilise immediately before use, not hours in advance.</p>
+          <p>Pour boiling water over and into the <strong>glass jar, lid, bowl, whisk, and spoons</strong>. Air dry — never wipe. An optional white vinegar rinse (6–8% acidity) adds extra protection. <strong>Never use a 100°C oven</strong> — dry heat is far too weak at that temperature.</p>
         </div>
       </div>
       <div class="blog-post__step">
         <div class="blog-post__step-num">2</div>
         <div class="blog-post__step-body">
-          <div class="blog-post__step-title">Crush Tablets to Fine Powder</div>
-          <p>Place <strong>10 BioGaia Gastrus tablets</strong> in a zip-lock bag or fold in baking paper. Crush with the flat bottom of a glass into a <strong>fine white powder — no large chunks</strong>. Undissolved chunks cause uneven bacterial distribution. A mortar and pestle gives the best result.</p>
+          <div class="blog-post__step-title">Crush the Tablets</div>
+          <p>Place <strong>10 BioGaia Gastrus tablets</strong> in a zip-lock bag. Crush to a <strong>fine white powder — no chunks</strong>. A mortar and pestle gives the best result.</p>
         </div>
       </div>
       <div class="blog-post__step">
         <div class="blog-post__step-num">3</div>
         <div class="blog-post__step-body">
           <div class="blog-post__step-title">Make the Starter Slurry</div>
-          <p>In your sterilised bowl, combine crushed powder + <strong>2 tablespoons inulin</strong> + <strong>3 tablespoons lukewarm milk (~35°C)</strong>. Whisk vigorously for <strong>30 seconds until completely smooth</strong>, no lumps visible. This pre-mixing ensures uniform bacterial distribution before adding to the full milk volume.</p>
+          <p>Combine the crushed powder + <strong>2 tbsp inulin</strong> + <strong>3 tbsp lukewarm milk (~35°C)</strong>. Whisk for 30 seconds until completely smooth, with no lumps.</p>
         </div>
       </div>
       <div class="blog-post__step">
         <div class="blog-post__step-num">4</div>
         <div class="blog-post__step-body">
-          <div class="blog-post__step-title">Verify Milk Temperature</div>
-          <p>Milk must be <strong>35–38°C</strong> before combining. UHT at room temperature is usually fine. Cold fresh milk (Candia GrandLait) must be warmed gently on very low heat while stirring — always verify with a thermometer.</p>
-          <span class="blog-post__step-alert">⚠ Never exceed 43°C — bacteria die irreversibly above this point</span>
+          <div class="blog-post__step-title">Check Milk Temperature</div>
+          <p>Milk must be <strong>35–38°C</strong>. UHT at room temperature is usually fine. Cold milk must be warmed gently on low heat.</p>
+          <span class="blog-post__step-alert">⚠ Never exceed 43°C — it kills the bacteria irreversibly</span>
         </div>
       </div>
       <div class="blog-post__step">
         <div class="blog-post__step-num">5</div>
         <div class="blog-post__step-body">
           <div class="blog-post__step-title">Combine and Fill</div>
-          <p>Pour slurry into the jar. Add remaining milk gradually while <strong>stirring gently</strong> — no aggressive whisking. Leave <strong>3cm headspace</strong> at the top (fermentation produces gas and the mixture expands slightly). Seal the lid firmly.</p>
+          <p>Pour the slurry into the jar. Add the milk gradually while <strong>stirring gently</strong>. Leave <strong>3cm of headspace</strong>. Seal the lid firmly.</p>
         </div>
       </div>
       <div class="blog-post__step">
         <div class="blog-post__step-num">6</div>
         <div class="blog-post__step-body">
-          <div class="blog-post__step-title">Ferment 36 Hours — Do Not Disturb</div>
-          <p>Place in fermentation device at <strong>36–38°C for 36 hours</strong>. Instant Pot: Yogurt → Normal mode. <strong>Do not open, shake, or stir</strong> during fermentation. It may look set by hour 12 — this is normal. The bacteria need the full 36 hours to reach therapeutic count.</p>
-          <span class="blog-post__step-alert">✓ A brief smell check (lid open a few seconds, no stirring) is completely harmless</span>
+          <div class="blog-post__step-title">Ferment 36 Hours at 37°C</div>
+          <p>Yogurt maker: <strong>36–38°C for 36 hours</strong>. Do not open, shake, or stir. It may look set at 12 hours — let it run the full time.</p>
+          <span class="blog-post__step-alert">✓ A brief smell check is harmless — just don't stir</span>
         </div>
       </div>
       <div class="blog-post__step">
         <div class="blog-post__step-num">7</div>
         <div class="blog-post__step-body">
           <div class="blog-post__step-title">Save Starter, Then Refrigerate</div>
-          <p><strong>Before eating</strong>, scoop out 2 tablespoons of yogurt or whey into a labelled container — your next batch starter. Refrigerate all jars for <strong>at least 6 hours</strong> (overnight is ideal). Texture firms considerably during chilling — <strong>do not judge the result until after chilling</strong>.</p>
+          <p><strong>Before eating</strong>, scoop 2 tbsp into a labelled container — your next-batch starter. Refrigerate all jars for <strong>at least 6 hours</strong>. Texture firms considerably during chilling.</p>
         </div>
       </div>
       <div class="blog-post__step">
         <div class="blog-post__step-num">8</div>
         <div class="blog-post__step-body">
-          <div class="blog-post__step-title">Serve Cold — ½ Cup Daily</div>
-          <p>Eat <strong>cold, straight from the fridge — never heat</strong>. Half a cup (125ml) per day is the recommended dose. Separation into white curds and yellowish whey is <strong>completely normal</strong> — stir together or eat as-is. For Greek-style thickness, strain through cheesecloth 2–3 hours in the fridge. Optional toppings: berries, honey, chopped nuts.</p>
+          <div class="blog-post__step-title">Serve Cold</div>
+          <p>Eat <strong>cold from the fridge — never heat it</strong>. Half a cup (125ml) daily. Separation into curds and whey is completely normal. For Greek-style thickness, strain for 2–3 hours.</p>
         </div>
       </div>
     </div>
   </div>
-  <div class="blog-post__panel" id="timeline">
-    <span class="blog-post__panel-eyebrow">Reference</span>
-    <h4>⏱️ Fermentation Timeline — What's Happening Inside</h4>
-    <div class="blog-post__panel-table">
-      <table>
-        <thead><tr><th>Time</th><th>What Is Happening</th></tr></thead>
-        <tbody>
-          <tr><td>0–6 hours</td><td>Bacteria activating and beginning to multiply — mixture may look unchanged</td></tr>
-          <tr><td>~12 hours</td><td>Mixture may already look set — do not open or stop here. Bacteria are mid-cycle and need the full time.</td></tr>
-          <tr><td>12–36 hours</td><td>L. reuteri continues doubling every ~3 hours. This is where the therapeutic bacterial count builds. Each 3-hour window = one more doubling.</td></tr>
-          <tr><td>36 hours</td><td>~12 doublings complete. Fermentation done — move immediately to refrigerator.</td></tr>
-        </tbody>
-      </table>
-    </div>
-  </div>
-  <div class="blog-post__panel" id="temperature">
+  <div class="blog-post__panel">
     <span class="blog-post__panel-eyebrow">Critical Reference</span>
-    <h4>🌡️ Temperature Reference — Every Range Explained</h4>
+    <h4>🌡️ Temperature &amp; Inulin Quick Reference</h4>
     <div class="blog-post__panel-table">
       <table>
-        <thead><tr><th>Temperature</th><th>Effect on L. reuteri</th><th>Action Required</th></tr></thead>
+        <thead><tr><th>Range</th><th>Effect</th><th>Action</th></tr></thead>
         <tbody>
-          <tr><td>36–38°C</td><td><span class="blog-post__pill blog-post__pill--good">✅ Optimal</span> — bacteria thrive, doubling every ~3 hours</td><td>Ideal — maintain throughout all 36 hours</td></tr>
-          <tr><td>37.8°C (±1°C variance)</td><td><span class="blog-post__pill blog-post__pill--good">✅ Excellent</span> — normal appliance variance, completely safe</td><td>No action needed</td></tr>
-          <tr><td>39–42°C</td><td><span class="blog-post__pill blog-post__pill--warn">🟡 Safe</span> — still viable but slightly less optimal</td><td>Monitor; no immediate action needed</td></tr>
-          <tr><td>Below 35°C</td><td><span class="blog-post__pill blog-post__pill--neutral">🟠 Slow</span> — bacteria sluggish; doubling slows to every 5–6 hours</td><td>Extend fermentation 6–12 extra hours; fix temperature</td></tr>
-          <tr><td>Below 30°C</td><td><span class="blog-post__pill blog-post__pill--bad">🔴 Near Dormant</span> — fermentation essentially stalls</td><td>Add more hours; insulate jar; fix device</td></tr>
-          <tr><td>43°C and above</td><td><span class="blog-post__pill blog-post__pill--bad">💀 Kill Zone</span> — bacteria begin dying irreversibly</td><td>Batch compromised — do not reuse as starter</td></tr>
+          <tr><td>36–38°C</td><td>✅ Optimal — doubles every ~3h</td><td>Maintain throughout all 36 hours</td></tr>
+          <tr><td>37.8°C variance</td><td>✅ Normal appliance tolerance</td><td>No action needed</td></tr>
+          <tr><td>Below 35°C</td><td>🟠 Slow — doubling every 5–6h</td><td>Extend fermentation 6–12 hours</td></tr>
+          <tr><td>Below 30°C</td><td>🔴 Near dormant</td><td>Insulate the jar; add more hours</td></tr>
+          <tr><td>43°C and above</td><td>💀 Bacteria die</td><td>Batch compromised — do not reuse as starter</td></tr>
         </tbody>
       </table>
     </div>
-    <p class="blog-post__panel-body">💡 <strong>Key insight:</strong> Cold does NOT kill L. reuteri — it only makes them dormant. You can always recover a cold batch by extending fermentation time. Heat above 43°C is the only true point of no return. If your machine runs cool, set it to 38°C instead of 37°C to build in a buffer. Always check the mixture temperature directly — not just the surrounding water.</p>
+    <p class="blog-post__panel-body">💡 Cold does not kill L. reuteri — only heat above 43°C does. Use the full 2 tablespoons of inulin every batch; 1 tablespoon noticeably weakens the final bacterial count.</p>
   </div>
-  <div class="blog-post__panel" id="inulin">
-    <span class="blog-post__panel-eyebrow">Inulin Reference</span>
-    <h4>🥄 Inulin Quantity Guide — Why Every Tablespoon Matters</h4>
-    <p class="blog-post__panel-body">Inulin is the food source for L. reuteri during the 36-hour fermentation. Without it, bacteria rely only on lactose in the milk — much less fuel. The amount directly affects final bacterial count, texture, and taste.</p>
-    <div class="blog-post__panel-table">
-      <table>
-        <thead><tr><th>Amount</th><th>Effect</th><th>Recommendation</th></tr></thead>
-        <tbody>
-          <tr><td>2 tablespoons</td><td><span class="blog-post__pill blog-post__pill--good">✅ Optimal</span> — maximum bacterial count, best texture, full fermentation benefit</td><td>Always aim for this — the standard dose</td></tr>
-          <tr><td>1.5 tablespoons</td><td><span class="blog-post__pill blog-post__pill--warn">🟡 Acceptable</span> — slightly reduced count but still a good result</td><td>Fine if short — top up next batch</td></tr>
-          <tr><td>1 tablespoon</td><td><span class="blog-post__pill blog-post__pill--neutral">🟠 Reduced</span> — noticeably lower bacterial count; thinner texture; milder tang</td><td>Use only if necessary — still probiotic but meaningfully weaker</td></tr>
-          <tr><td>0 tablespoons</td><td><span class="blog-post__pill blog-post__pill--bad">🔴 Poor</span> — bacteria rely only on lactose; significantly weak fermentation</td><td>Avoid — defeats the purpose of extended fermentation</td></tr>
-        </tbody>
-      </table>
-    </div>
-  </div>
-  <div class="blog-post__panel" id="multipot">
-    <span class="blog-post__panel-eyebrow">Multi-Pot Yogurt Makers</span>
-    <h4>🫙 Multi-Pot Yogurt Maker Guide</h4>
-    <p class="blog-post__panel-body">If your machine has multiple small pots (e.g. 8 pots), it is completely normal for results to vary between them.</p>
-    <p class="blog-post__panel-sub">Why pots look different:</p>
-    <ul class="blog-post__panel-list">
-      <li>Pots near the edges receive slightly less consistent heat than centre pots</li>
-      <li>L. reuteri naturally separates more aggressively than conventional yogurt strains</li>
-      <li>Fill level differences between pots also cause texture variation</li>
-    </ul>
-    <p class="blog-post__panel-sub">When some pots are thin and others are thick — what to do:</p>
-    <ul class="blog-post__panel-list">
-      <li><strong>Do NOT</strong> run thin pots for extra hours separately after removing the thick ones</li>
-      <li>Remove <strong>all pots at the same time</strong> at the end of 36 hours</li>
-      <li>Do <strong>not stir</strong> the thin pots — place all in the fridge for 6–8 hours (overnight best)</li>
-      <li>Thin pots firm up considerably during chilling — most beginners underestimate this step</li>
-    </ul>
-    <p class="blog-post__panel-sub">If pots are still thin after chilling:</p>
-    <ul class="blog-post__panel-list">
-      <li>Strain through cheesecloth for 2–3 hours in the fridge → Greek-style consistency</li>
-      <li>Use the whey as a starter for your next batch — it contains the full bacterial count</li>
-      <li>Drink as a probiotic shot — same bacteria count, just liquid form</li>
-    </ul>
-    <p class="blog-post__panel-sub">💡 For next batch — to get more even results across all pots:</p>
-    <ul class="blog-post__panel-list">
-      <li>Add 1 extra teaspoon of inulin to the next batch</li>
-      <li>Ensure all pots are filled to the same level</li>
-      <li>Place pots in the centre of the machine if possible rather than at the edges</li>
-    </ul>
-    <p class="blog-post__panel-sub">Opening a pot mid-fermentation to smell it:</p>
-    <p class="blog-post__panel-body">A quick smell check with the lid open for a few seconds and no stirring is <strong>completely harmless</strong>. It does not damage the culture or introduce meaningful contamination — provided you don't touch the inside or introduce any utensil.</p>
-    <p class="blog-post__panel-sub">Smell guide:</p>
-    <div class="blog-post__panel-table">
-      <table>
-        <thead><tr><th>Smell</th><th>Meaning</th><th>Action</th></tr></thead>
-        <tbody>
-          <tr><td>Tangy, mildly sour, faint cheese-like</td><td><span class="blog-post__pill blog-post__pill--good">✅ Perfect</span></td><td>Proceed normally</td></tr>
-          <tr><td>Very mild, barely any smell</td><td><span class="blog-post__pill blog-post__pill--warn">🟡 Low fermentation</span></td><td>Extend by 2–4 hours; check temperature</td></tr>
-          <tr><td>Very sharp, strong sourness</td><td><span class="blog-post__pill blog-post__pill--warn">🟡 Over-fermented</span></td><td>Reduce to 34 hours in next batch</td></tr>
-          <tr><td>Truly foul, putrid, rotten</td><td><span class="blog-post__pill blog-post__pill--bad">🔴 Contamination</span></td><td>Discard; re-sterilise all equipment; start fresh with new tablets</td></tr>
-          <tr><td>Green, black, or pink colour visible</td><td><span class="blog-post__pill blog-post__pill--bad">🔴 Mould</span></td><td>Discard immediately — do not consume under any circumstances</td></tr>
-        </tbody>
-      </table>
-    </div>
-  </div>
-  <div class="blog-post__panel" id="dosdonts">
+  <div class="blog-post__panel">
     <span class="blog-post__panel-eyebrow">Master Reference</span>
-    <h4>✅ ❌ General Do's and Don'ts</h4>
+    <h4>✅ ❌ L. Reuteri Yogurt Do's and Don'ts</h4>
     <div class="blog-post__panel-rules">
       <div class="blog-post__panel-rules-do">
         <h5>✅ Always Do</h5>
         <ul>
-          <li><span>✅</span>Use full-fat milk — minimum 3.5% fat every batch</li>
-          <li><span>✅</span>UHT milk for the most consistent results</li>
-          <li><span>✅</span>Check temperature with a thermometer — don't guess</li>
-          <li><span>✅</span>Maintain 36–38°C consistently for all 36 hours</li>
-          <li><span>✅</span>Add the full 2 tablespoons of inulin every batch</li>
-          <li><span>✅</span>Run the full 36 hours even if it looks done earlier</li>
-          <li><span>✅</span>Refrigerate at least 6 hours before judging or eating</li>
-          <li><span>✅</span>Save 2 tbsp as starter before eating each batch</li>
-          <li><span>✅</span>Eat cold — straight from the fridge, never heated</li>
+          <li><span>✅</span>Full-fat milk (min. 3.5%) — UHT preferred</li>
+          <li><span>✅</span>Use a thermometer — never guess temperature</li>
+          <li><span>✅</span>Maintain 36–38°C for all 36 hours</li>
+          <li><span>✅</span>Full 2 tablespoons of inulin every batch</li>
+          <li><span>✅</span>Refrigerate 6+ hours before judging</li>
+          <li><span>✅</span>Save 2 tbsp starter before eating</li>
+          <li><span>✅</span>Eat cold, straight from the fridge</li>
           <li><span>✅</span>Verify strain names: DSM 17938 + ATCC PTA 6475</li>
-          <li><span>✅</span>Use glass jars — sterilise far better than plastic</li>
+          <li><span>✅</span>Use glass jars only — they sterilise far better</li>
         </ul>
       </div>
       <div class="blog-post__panel-rules-dont">
         <h5>❌ Never Do</h5>
         <ul>
-          <li><span>❌</span>Use demi-écrémé, écrémé, sans lactose, or raw milk</li>
-          <li><span>❌</span>Heat milk above 43°C — kills bacteria irreversibly</li>
+          <li><span>❌</span>Use demi-écrémé, écrémé, or raw milk</li>
+          <li><span>❌</span>Heat milk above 43°C</li>
           <li><span>❌</span>Stir or shake the jar mid-fermentation</li>
-          <li><span>❌</span>Stop fermentation early because it looks done</li>
-          <li><span>❌</span>Heat the finished yogurt — destroys all probiotic cultures</li>
-          <li><span>❌</span>Blend or whisk aggressively after fermentation</li>
-          <li><span>❌</span>Eat more than ½ cup per day initially — gut needs to adjust</li>
-          <li><span>❌</span>Store beyond 10 days — bacterial viability degrades</li>
-          <li><span>❌</span>Wipe jars dry with any cloth — always air dry</li>
-          <li><span>❌</span>Use plastic containers for fermentation</li>
+          <li><span>❌</span>Stop fermentation early</li>
+          <li><span>❌</span>Heat the finished yogurt</li>
+          <li><span>❌</span>Exceed ½ cup daily initially — the gut needs to adjust</li>
+          <li><span>❌</span>Store beyond 10 days in the fridge</li>
+          <li><span>❌</span>Wipe jars dry — always air dry</li>
           <li><span>❌</span>Consume during pregnancy without medical advice</li>
-          <li><span>❌</span>Use any L. reuteri strain — must be DSM 17938 + ATCC PTA 6475</li>
         </ul>
       </div>
     </div>
   </div>
-  <div class="blog-post__panel" id="troubleshooting">
+  <div class="blog-post__panel">
     <span class="blog-post__panel-eyebrow">When Things Go Wrong</span>
-    <h4>🔧 Troubleshooting — Every Common Problem</h4>
+    <h4>🔧 L. Reuteri Troubleshooting</h4>
     <div class="blog-post__panel-table">
       <table>
         <thead><tr><th>Problem</th><th>Likely Cause</th><th>Solution</th></tr></thead>
         <tbody>
-          <tr><td>Yogurt very thin or watery</td><td>Milk fat too low, or fermentation temp too cold</td><td>Use full-fat milk (3.5%+); check thermometer; refrigerate 6–8 hours before judging</td></tr>
-          <tr><td>Some pots thick, some thin in multi-pot maker</td><td>Uneven heat distribution in machine — normal</td><td>Refrigerate all pots together; thin ones firm up significantly during chilling</td></tr>
-          <tr><td>Strong separation of whey + white curds</td><td>Normal L. reuteri behaviour — not a failure</td><td>Stir together, strain through cheesecloth, or use whey as next batch starter</td></tr>
-          <tr><td>Truly foul or putrid smell</td><td>Contamination by competing foreign bacteria</td><td>Discard entire batch; re-sterilise all equipment; start fresh with new tablets</td></tr>
-          <tr><td>Green, black, or pink colour visible</td><td>Serious mould contamination</td><td>Discard immediately — do not consume under any circumstances</td></tr>
-          <tr><td>Yogurt tastes very sour</td><td>Over-fermented, or temperature slightly too high</td><td>Reduce to 34 hours next batch; verify thermometer accuracy</td></tr>
-          <tr><td>No thickening at all after 36 hours</td><td>Bacteria killed (too hot), temp too cold, or wrong strain</td><td>Verify milk never exceeded 43°C; check fermentation stayed above 33°C; confirm strain names on box</td></tr>
-          <tr><td>Yogurt is grainy or lumpy</td><td>Slurry not fully dissolved in Step 3</td><td>Whisk slurry more vigorously — full 30 seconds, zero visible lumps before adding milk</td></tr>
-          <tr><td>Fermentation stalled — barely set after 36 hours</td><td>Temperature dropped below 30°C during fermentation</td><td>Extend by 6–12 hours; insulate jar with small towel; ensure consistent heat throughout</td></tr>
+          <tr><td>Thin / watery yogurt</td><td>Low-fat milk or temperature too cold</td><td>Use full-fat milk; chill 6–8h before judging</td></tr>
+          <tr><td>Whey / curd separation</td><td>Normal L. reuteri behaviour</td><td>Not a failure — stir together or strain</td></tr>
+          <tr><td>Foul / putrid smell</td><td>Contamination</td><td>Discard; re-sterilise; start with fresh tablets</td></tr>
+          <tr><td>Pink / green / black colour</td><td>Mould contamination</td><td>Discard immediately — do not consume</td></tr>
+          <tr><td>Very sour taste</td><td>Over-fermented or too warm</td><td>Reduce to 34 hours next batch</td></tr>
+          <tr><td>No thickening at all</td><td>Bacteria killed (too hot) or wrong strain</td><td>Verify temp stayed below 43°C; check the strain</td></tr>
+          <tr><td>Grainy / lumpy texture</td><td>Slurry not fully dissolved</td><td>Whisk slurry a full 30 seconds, no lumps</td></tr>
+          <tr><td>Multi-pot — some thick, some thin</td><td>Uneven heat in the machine</td><td>Refrigerate all together — thin pots firm during chilling</td></tr>
         </tbody>
       </table>
     </div>
   </div>
-  <div class="blog-post__panel" id="nextbatch">
-    <span class="blog-post__panel-eyebrow">Ongoing Use</span>
-    <h4>♻️ Subsequent Batches — No More Tablets Needed</h4>
-    <p class="blog-post__panel-body">Once you have one successful batch, the yogurt becomes self-perpetuating. You do not need to buy more tablets.</p>
-    <p class="blog-post__panel-sub">Ingredients for batch 2 onwards:</p>
-    <div class="blog-post__ingredient"><span class="blog-post__ingredient-amount">2 tbsp</span><span class="blog-post__ingredient-name">Previous batch yogurt or whey — saved before eating, labelled with date</span></div>
-    <div class="blog-post__ingredient"><span class="blog-post__ingredient-amount">1 litre</span><span class="blog-post__ingredient-name">Carrefour Bio Lait Entier UHT (or Candia GrandLait Bio Frais Entier)</span></div>
-    <div class="blog-post__ingredient"><span class="blog-post__ingredient-amount">2 tbsp</span><span class="blog-post__ingredient-name">Inulin powder</span></div>
-    <p class="blog-post__panel-body">The method is completely identical — simply replace the crushed tablets with 2 tablespoons of saved starter in Step 3. For long-term maintenance, most people refresh with new BioGaia Gastrus tablets <strong>every 10–15 batches</strong> as a precaution to maintain full strain potency.</p>
+</section>
+
+<section class="blog-post__recipe" id="kefir-recipe">
+  <div class="blog-post__recipe-header">
+    <span class="blog-post__recipe-eyebrow">Recipe Two · Ancient Microbiome Rebuilder · Caucasus Tradition</span>
+    <h2>Milk Kefir</h2>
+    <p>The easiest fermented food on earth. No machine, no thermometer, no timer — just grains, milk, and 24 hours on your counter. Self-perpetuating: your grains will feed your family forever.</p>
   </div>
-  <div class="blog-post__panel" id="buy">
-    <span class="blog-post__panel-eyebrow">France — Alternative Starters</span>
-    <h4>🛍️ Where to Buy Starter Culture Sachets (France)</h4>
-    <p class="blog-post__panel-body">As a convenient alternative to crushing BioGaia Gastrus tablets, ready-made starter culture sachets ship to France. No crushing required — just open and add.</p>
-    <p class="blog-post__panel-warn">⚠️ Some sachets (e.g. Coolinario) instruct fermenting at 42°C for 8 hours — <strong>ignore these instructions entirely</strong>. Always follow the Dr. Davis method: 37°C for 36 hours with 2 tablespoons of inulin.</p>
-    <div class="blog-post__buy-grid">
-      <div class="blog-post__buy-card">
-        <span class="blog-post__buy-card-eyebrow">Best for France — Fastest Delivery</span>
-        <h5>Coolinario L. Reuteri</h5>
-        <p>In stock on Amazon.fr — ships within France. 5-sachet pack. No customs delays. Best starting option for French buyers.</p>
-        <a href="https://www.amazon.fr/Coolinario-Lactique-Cultures-Savoureux-Conservateurs/dp/B0DYWVXT8X" class="blog-post__buy-link" target="_blank" rel="noopener">View on Amazon.fr →</a>
+  <div class="blog-post__recipe-stats">
+    <div><span class="blog-post__recipe-stat-label">Active Prep</span><span class="blog-post__recipe-stat-value">5</span><span class="blog-post__recipe-stat-unit">minutes</span></div>
+    <div><span class="blog-post__recipe-stat-label">Fermentation</span><span class="blog-post__recipe-stat-value">24</span><span class="blog-post__recipe-stat-unit">hours room temp</span></div>
+    <div><span class="blog-post__recipe-stat-label">Equipment</span><span class="blog-post__recipe-stat-value">0</span><span class="blog-post__recipe-stat-unit">machines needed</span></div>
+    <div><span class="blog-post__recipe-stat-label">Daily Serving</span><span class="blog-post__recipe-stat-value">150</span><span class="blog-post__recipe-stat-unit">ml glass</span></div>
+    <div><span class="blog-post__recipe-stat-label">Total Strains</span><span class="blog-post__recipe-stat-value">~50</span><span class="blog-post__recipe-stat-unit">bacteria + yeasts</span></div>
+  </div>
+  <div class="blog-post__recipe-grid">
+    <div class="blog-post__recipe-ingredients">
+      <h3>Ingredients</h3>
+      <div class="blog-post__ingredient-group">
+        <span class="blog-post__ingredient-group-label">Forever Ingredient — One-Time Purchase</span>
+        <div class="blog-post__ingredient"><span class="blog-post__ingredient-amount">1 tbsp</span><span class="blog-post__ingredient-name">Live milk kefir grains<span class="blog-post__ingredient-note">Grains de kéfir de lait — see "Where to Buy". They multiply forever.</span></span></div>
       </div>
-      <div class="blog-post__buy-card">
-        <span class="blog-post__buy-card-eyebrow">Highest Potency — Lab Verified</span>
-        <h5>Cutting Edge Cultures LR Superfood</h5>
-        <p>Lab-verified at 67B+ CFU per serving. 4 sachets = up to 20 batches. Specifically designed for the Davis method.</p>
-        <a href="https://cuttingedgecultures.com/lr-superfood/" class="blog-post__buy-link" target="_blank" rel="noopener">View Official Site →</a>
+      <div class="blog-post__ingredient-group">
+        <span class="blog-post__ingredient-group-label">Daily Ingredient</span>
+        <div class="blog-post__ingredient"><span class="blog-post__ingredient-amount">500ml</span><span class="blog-post__ingredient-name">Whole milk<span class="blog-post__ingredient-note">Carrefour Bio Lait Entier UHT works perfectly. Goat or sheep milk also work beautifully.</span></span></div>
       </div>
-      <div class="blog-post__buy-card">
-        <span class="blog-post__buy-card-eyebrow">EU Shipping — Reliable</span>
-        <h5>Luvele LR Superfood Starter</h5>
-        <p>EU-based operations — reliable shipping to France. Designed specifically for the Dr. Davis L. reuteri method.</p>
-        <a href="https://www.luvele.com/products/l-reuteri-starter-culture-lr-superfood" class="blog-post__buy-link" target="_blank" rel="noopener">View Luvele →</a>
+      <div class="blog-post__ingredient-group">
+        <span class="blog-post__ingredient-group-label">Equipment</span>
+        <div class="blog-post__ingredient"><span class="blog-post__ingredient-amount">1</span><span class="blog-post__ingredient-name">Glass jar (1L)</span></div>
+        <div class="blog-post__ingredient"><span class="blog-post__ingredient-amount">1</span><span class="blog-post__ingredient-name">Cloth or paper coffee filter<span class="blog-post__ingredient-note">For a breathable cover. Never an airtight lid.</span></span></div>
+        <div class="blog-post__ingredient"><span class="blog-post__ingredient-amount">1</span><span class="blog-post__ingredient-name">Rubber band or string</span></div>
+        <div class="blog-post__ingredient"><span class="blog-post__ingredient-amount">1</span><span class="blog-post__ingredient-name">Plastic or wooden strainer<span class="blog-post__ingredient-note">Never metal — it can damage the grains over time</span></span></div>
       </div>
-      <div class="blog-post__buy-card">
-        <span class="blog-post__buy-card-eyebrow">Budget Option — Europe Wide</span>
-        <h5>NPSelection L. Reuteri Starter</h5>
-        <p>5-sachet pack. Ships across Europe in 2–15 days. Affordable entry point for first-time buyers.</p>
-        <a href="https://www.npselection.com/products/starter-cultures-for-l-salivarius-and-l-reuteri-yogurt-pack-of-5-freeze-dried-sachets" class="blog-post__buy-link" target="_blank" rel="noopener">View NPSelection →</a>
+      <div class="blog-post__ingredient-group">
+        <span class="blog-post__ingredient-group-label">Avoid</span>
+        <div class="blog-post__ingredient"><span class="blog-post__ingredient-amount">✗</span><span class="blog-post__ingredient-name">Metal utensils on the grains<span class="blog-post__ingredient-note">Plastic, wood, or silicone only</span></span></div>
+        <div class="blog-post__ingredient"><span class="blog-post__ingredient-amount">✗</span><span class="blog-post__ingredient-name">Chlorinated tap water for rinsing<span class="blog-post__ingredient-note">Use filtered or bottled water if you rinse</span></span></div>
+        <div class="blog-post__ingredient"><span class="blog-post__ingredient-amount">✗</span><span class="blog-post__ingredient-name">Lactose-free milk<span class="blog-post__ingredient-note">Grains need real lactose to survive</span></span></div>
+      </div>
+    </div>
+    <div class="blog-post__recipe-steps">
+      <h3>Method — 5 Steps</h3>
+      <div class="blog-post__step">
+        <div class="blog-post__step-num">1</div>
+        <div class="blog-post__step-body">
+          <div class="blog-post__step-title">Add Grains to Milk</div>
+          <p>Place <strong>1 tablespoon of kefir grains</strong> in a clean glass jar. Pour in <strong>500ml of whole milk</strong> at room temperature. Stir gently with a wooden or plastic spoon — never metal.</p>
+          <span class="blog-post__step-alert">✓ Ratio: 1 tbsp grains per 500ml milk. More grains = faster ferment</span>
+        </div>
+      </div>
+      <div class="blog-post__step">
+        <div class="blog-post__step-num">2</div>
+        <div class="blog-post__step-body">
+          <div class="blog-post__step-title">Cover with Cloth</div>
+          <p>Cover the jar with a <strong>clean cloth or coffee filter</strong> and secure it with a rubber band. <strong>Do not use an airtight lid</strong> — kefir's yeast component produces CO₂ that must escape, and the culture needs to breathe.</p>
+        </div>
+      </div>
+      <div class="blog-post__step">
+        <div class="blog-post__step-num">3</div>
+        <div class="blog-post__step-body">
+          <div class="blog-post__step-title">Leave at Room Temperature 24 Hours</div>
+          <p>Place on your kitchen counter at <strong>18–24°C</strong>, away from direct sunlight. <strong>No machine, no temperature control.</strong> The cooler your kitchen, the slower the ferment.</p>
+          <span class="blog-post__step-alert">⚠ Never put kefir in a yogurt maker — heat kills the yeasts</span>
+        </div>
+      </div>
+      <div class="blog-post__step">
+        <div class="blog-post__step-num">4</div>
+        <div class="blog-post__step-body">
+          <div class="blog-post__step-title">Strain Out the Grains</div>
+          <p>After 24 hours the milk should be <strong>slightly thickened and tangy</strong>. Pour it through a <strong>plastic or wooden strainer</strong> into a clean jar — the grains stay behind, the kefir passes through. Stir gently to help it pass if needed.</p>
+        </div>
+      </div>
+      <div class="blog-post__step">
+        <div class="blog-post__step-num">5</div>
+        <div class="blog-post__step-body">
+          <div class="blog-post__step-title">Restart the Cycle Immediately</div>
+          <p>Place the strained <strong>grains straight into a fresh jar of milk</strong> to start the next batch — they should never sit dry for long. The finished kefir goes in the fridge and keeps for 5–7 days. The cycle repeats forever.</p>
+          <span class="blog-post__step-alert">✓ Grains multiply — share the surplus with friends every few weeks</span>
+        </div>
       </div>
     </div>
   </div>
   <div class="blog-post__panel">
-    <span class="blog-post__panel-eyebrow">Quick Reference</span>
-    <h4>💡 Essential Tips for Success — At a Glance</h4>
-    <div class="blog-post__tips">
-      <div>Temperature between 36–38°C is the single most critical factor — always use a thermometer</div>
-      <div>Do not wipe sterilised equipment dry with any cloth — always air dry</div>
-      <div>Full-fat milk is non-negotiable — minimum 3.5% fat content</div>
-      <div>If some pots look thin, refrigerate all together — thin ones firm during chilling</div>
-      <div>A brief smell check mid-fermentation is fine — no stirring, lid open briefly</div>
-      <div>Cold does not kill L. reuteri — extend time if temperature dropped, don't panic</div>
-      <div>Use the full 2 tablespoons of inulin — 1 tablespoon produces noticeably fewer bacteria</div>
-      <div>Whey separation is normal L. reuteri behaviour — not a failed batch</div>
-      <div>Always save 2 tbsp starter before eating — label with date</div>
-      <div>Refresh with new tablets every 10–15 batches to maintain potency long-term</div>
-      <div>Never heat the finished yogurt — eat always cold from the fridge</div>
-      <div>Verify tablet strain names before first batch: DSM 17938 + ATCC PTA 6475</div>
+    <span class="blog-post__panel-eyebrow">Customisation</span>
+    <h4>🎨 Kefir Variations &amp; Tips</h4>
+    <div class="blog-post__panel-table">
+      <table>
+        <thead><tr><th>Variation</th><th>How</th><th>Result</th></tr></thead>
+        <tbody>
+          <tr><td>Thicker kefir</td><td>Ferment 36 hours instead of 24</td><td>Greek-yogurt-like texture, more tang</td></tr>
+          <tr><td>Milder kefir</td><td>Ferment only 18 hours</td><td>Drinkable, less acidic, gentler</td></tr>
+          <tr><td>Second fermentation with fruit</td><td>Add berries or vanilla to strained kefir, seal, leave at room temp 12h</td><td>Naturally fizzy, fruity, dessert-like</td></tr>
+          <tr><td>Kefir cheese / labneh</td><td>Strain kefir through cheesecloth 12–24h in the fridge</td><td>Spreadable soft cheese, like cream cheese</td></tr>
+          <tr><td>Slow your kefir down</td><td>Use fewer grains per ml of milk</td><td>Slower fermentation, milder taste</td></tr>
+          <tr><td>Pause for travel</td><td>Place grains in a jar of milk in the fridge</td><td>Will slow-ferment safely over 1–2 weeks</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+  <div class="blog-post__panel">
+    <span class="blog-post__panel-eyebrow">Master Reference</span>
+    <h4>✅ ❌ Kefir Do's and Don'ts</h4>
+    <div class="blog-post__panel-rules">
+      <div class="blog-post__panel-rules-do">
+        <h5>✅ Always Do</h5>
+        <ul>
+          <li><span>✅</span>Use whole milk — fat helps the grains thrive</li>
+          <li><span>✅</span>Cover with cloth — never an airtight lid</li>
+          <li><span>✅</span>Ferment at room temperature, 18–24°C</li>
+          <li><span>✅</span>Plastic, wood, or silicone utensils only</li>
+          <li><span>✅</span>Strain into glass for storage</li>
+          <li><span>✅</span>Restart grains in fresh milk immediately</li>
+          <li><span>✅</span>Share surplus grains with friends</li>
+          <li><span>✅</span>Adjust grain quantity to the speed you need</li>
+          <li><span>✅</span>Use filtered water if you rinse the grains</li>
+        </ul>
+      </div>
+      <div class="blog-post__panel-rules-dont">
+        <h5>❌ Never Do</h5>
+        <ul>
+          <li><span>❌</span>Use metal utensils touching the grains</li>
+          <li><span>❌</span>Put kefir in a yogurt maker — heat kills the yeasts</li>
+          <li><span>❌</span>Use an airtight lid — CO₂ pressure builds dangerously</li>
+          <li><span>❌</span>Use lactose-free milk — grains need lactose</li>
+          <li><span>❌</span>Use ultra-pasteurised milk repeatedly — it weakens grains</li>
+          <li><span>❌</span>Rinse grains in chlorinated tap water</li>
+          <li><span>❌</span>Leave grains dry for more than a few hours</li>
+          <li><span>❌</span>Heat the finished kefir — it kills the probiotics</li>
+          <li><span>❌</span>Pour surplus grains down the drain — give them away</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+  <div class="blog-post__panel">
+    <span class="blog-post__panel-eyebrow">When Things Go Wrong</span>
+    <h4>🔧 Kefir Troubleshooting</h4>
+    <div class="blog-post__panel-table">
+      <table>
+        <thead><tr><th>Problem</th><th>Likely Cause</th><th>Solution</th></tr></thead>
+        <tbody>
+          <tr><td>Kefir not thickening</td><td>Not enough grains, too cold, or grains stressed</td><td>Add more grains; move to a warmer spot; give grains a few days to adjust</td></tr>
+          <tr><td>Kefir too sour / strong</td><td>Over-fermented or a warm room</td><td>Reduce fermentation to 18–20 hours next time</td></tr>
+          <tr><td>Grains shrinking / dying</td><td>Stress, contamination, or starvation</td><td>Use fresh whole milk; keep the ratio right; never leave dry</td></tr>
+          <tr><td>Separation (curds + whey)</td><td>Normal sign of finished kefir</td><td>Stir gently before drinking — not a failure</td></tr>
+          <tr><td>Yeasty smell</td><td>Normal if mild; concerning if strong</td><td>A mild yeasty smell is correct; a sharp solvent smell means discard</td></tr>
+          <tr><td>Grains not multiplying</td><td>Adjusting to a new milk source</td><td>Wait 2–3 weeks — multiplication often slows for newcomers</td></tr>
+          <tr><td>Pink / green / black spots</td><td>Mould contamination</td><td>Discard everything — start with new grains</td></tr>
+          <tr><td>Tastes "off" or like cheese</td><td>Very long fermentation or grain imbalance</td><td>Shorten the time; refresh grains in fresh milk daily for a week</td></tr>
+        </tbody>
+      </table>
     </div>
   </div>
 </section>
@@ -587,182 +648,157 @@ Sterilisation is the **most critical step**. Any foreign bacteria left in your e
 <section class="blog-post__consumption" id="consumption">
   <header class="blog-post__consumption-head">
     <span class="blog-post__consumption-eyebrow">Daily Use · Timing · Symptoms</span>
-    <h2>How &amp; When to Eat Your L. Reuteri Yogurt</h2>
-    <p>Timing, dosage, what good feels like, what bad feels like — and exactly when to stop or slow down.</p>
+    <h2>When &amp; How to Consume — Both Ferments</h2>
+    <p>Timing, dosage, what good feels like, what bad feels like — and exactly when to slow down, for both ferments.</p>
   </header>
-<h2 id="whento" class="blog-post__section">🕐 Best Time to Eat It</h2>
-Timing matters more than most people realise. L. reuteri needs to survive your stomach acid to reach its destination — the small intestine. When and how you eat it directly affects how many bacteria make it through alive.
-<div class="blog-post__timing">
-  <div class="blog-post__timing-card">
-    <span class="blog-post__timing-rank">🥇 Best Option</span>
-    <h4>Morning — Empty Stomach</h4>
-    <p>Stomach acid is at its lowest first thing in the morning. Bacteria have the best chance of surviving transit to the small intestine. Eating before any food or drink maximises bacterial colonisation.</p>
-    <span class="blog-post__pill blog-post__pill--good">✅ Ideal</span>
-  </div>
-  <div class="blog-post__timing-card">
-    <span class="blog-post__timing-rank">🥈 Good Option</span>
-    <h4>30 Min Before Breakfast</h4>
-    <p>Eat the yogurt first, then let your stomach settle for 30 minutes before your meal. Good compromise if eating on a fully empty stomach is uncomfortable for you initially.</p>
-    <span class="blog-post__pill blog-post__pill--good">✅ Very Good</span>
-  </div>
-  <div class="blog-post__timing-card">
-    <span class="blog-post__timing-rank">🥉 Acceptable Option</span>
-    <h4>With a Light, Fatty Meal</h4>
-    <p>The fat content in food (butter, eggs, avocado) helps buffer stomach acid and can actually protect the bacteria. Better than eating with a high-fibre meal, which introduces competing prebiotics.</p>
-    <span class="blog-post__pill blog-post__pill--warn">🟡 Acceptable</span>
-  </div>
-</div>
-<div class="blog-post__callout blog-post__callout--warn">
-  <p>💡 <strong>The golden rule:</strong> Consistency matters more than perfect timing. Eating it at a slightly sub-optimal time every day is far better than eating it at the perfect time only occasionally. Pick a time you can stick to — and stick to it.</p>
-</div>
-<h2 id="coffeatea" class="blog-post__section">☕ After Coffee or Tea — What You Need to Know</h2>
-Coffee temporarily spikes stomach acid — which is precisely what you don't want just before sending millions of probiotic bacteria through it. Here's how to handle your morning drink intelligently:
-<div class="blog-post__coffee">
-  <div class="blog-post__coffee-card blog-post__coffee-card--good">
-    <span class="blog-post__coffee-icon">✅</span>
-    <h5>Yogurt First, Then Coffee</h5>
-    <p>The best approach. Eat your yogurt on an empty stomach, then enjoy your coffee or tea 20–30 minutes later. Maximum bacteria survive transit.</p>
-  </div>
-  <div class="blog-post__coffee-card blog-post__coffee-card--ok">
-    <span class="blog-post__coffee-icon">⏱️</span>
-    <h5>Coffee First — Wait 20–30 Min</h5>
-    <p>If you need your coffee first, wait 20–30 minutes after finishing it before eating the yogurt. The acid spike settles and bacteria fare much better.</p>
-  </div>
-  <div class="blog-post__coffee-card blog-post__coffee-card--ok">
-    <span class="blog-post__coffee-icon">🍵</span>
-    <h5>Tea First — Less of an Issue</h5>
-    <p>Tea (especially herbal or green) raises stomach acid much less than coffee. A short 10–15 minute gap is usually sufficient. Herbal teas need no gap at all.</p>
-  </div>
-  <div class="blog-post__coffee-card blog-post__coffee-card--bad">
-    <span class="blog-post__coffee-icon">❌</span>
-    <h5>Espresso Then Yogurt Immediately</h5>
-    <p>The worst combination — concentrated espresso causes a sharp acid spike. If you do this, add milk or cream to your espresso first; fat buffers the acid effect somewhat.</p>
-  </div>
-</div>
+
+<h2 id="timing" class="blog-post__section">🕐 Timing Guide</h2>
+
 <div class="blog-post__table-wrap">
   <table class="blog-post__table">
-    <thead><tr><th>Drink</th><th>Acid Impact</th><th>Recommended Gap Before Yogurt</th></tr></thead>
+    <thead><tr><th>Ferment</th><th>Best Time</th><th>With Food?</th><th>After Coffee</th></tr></thead>
     <tbody>
-      <tr><td>Herbal tea (chamomile, peppermint, rooibos)</td><td>Minimal</td><td>No gap needed — virtually no acid effect</td></tr>
-      <tr><td>Green tea</td><td>Low</td><td>10 minutes is sufficient</td></tr>
-      <tr><td>Black tea</td><td>Low–moderate</td><td>15 minutes recommended</td></tr>
-      <tr><td>Black coffee (with milk or cream)</td><td>Moderate</td><td>20 minutes — fat in milk helps buffer</td></tr>
-      <tr><td>Black coffee (no milk)</td><td>Moderate–high</td><td>20–30 minutes</td></tr>
-      <tr><td>Espresso or strong black coffee</td><td>High</td><td>30 minutes minimum — add milk if you can't wait</td></tr>
+      <tr><td><strong>L. reuteri yogurt</strong></td><td>Morning, empty stomach</td><td>Either — light fat is fine</td><td>Wait 20–30 min</td></tr>
+      <tr><td><strong>Kefir</strong></td><td>Evening, with or after dinner</td><td>Yes — fat helps</td><td>Less sensitive — 10 min is fine</td></tr>
+      <tr><td><strong>Both together</strong></td><td>Split AM / PM as above</td><td>Yogurt before; kefir with</td><td>Same rules as each individually</td></tr>
     </tbody>
   </table>
 </div>
-<h2 id="dosage" class="blog-post__section">💊 Dosage — How to Build Up Gradually</h2>
-Starting with the full half-cup dose immediately can cause digestive discomfort in some people — particularly if your gut has been depleted of beneficial bacteria for years. A gradual ramp-up is always smarter.
-<div class="blog-post__dosage">
-  <h4>Recommended Dosage Ramp-Up</h4>
-  <div class="blog-post__dosage-steps">
-    <div class="blog-post__dosage-step">
-      <span class="blog-post__dosage-week">Week 1</span>
-      <span class="blog-post__dosage-amount">2–3 tbsp</span>
-      <span class="blog-post__dosage-note">~30–45ml daily. Let your gut adjust quietly.</span>
-    </div>
-    <div class="blog-post__dosage-step">
-      <span class="blog-post__dosage-week">Week 2</span>
-      <span class="blog-post__dosage-amount">¼ cup</span>
-      <span class="blog-post__dosage-note">~60ml daily. Increase only if week 1 was comfortable.</span>
-    </div>
-    <div class="blog-post__dosage-step">
-      <span class="blog-post__dosage-week">Week 3</span>
-      <span class="blog-post__dosage-amount">⅓ cup</span>
-      <span class="blog-post__dosage-note">~80ml daily. Most people feel stable by now.</span>
-    </div>
-    <div class="blog-post__dosage-step">
-      <span class="blog-post__dosage-week">Week 4+</span>
-      <span class="blog-post__dosage-amount">½ cup</span>
-      <span class="blog-post__dosage-note">~125ml daily. Standard ongoing dose. Do not exceed.</span>
-    </div>
-  </div>
+
+<h2 id="dosage" class="blog-post__section">💊 Dosage Ramp-Up</h2>
+
+Starting with the full dose immediately can cause digestive discomfort — particularly if your gut has been depleted for years. A gradual ramp-up over four weeks is always smarter, for both ferments.
+
+<div class="blog-post__table-wrap">
+  <table class="blog-post__table">
+    <thead><tr><th>Week</th><th>L. Reuteri</th><th>Kefir</th><th>Why Slow</th></tr></thead>
+    <tbody>
+      <tr><td>Week 1</td><td>2–3 tbsp daily</td><td>50ml daily</td><td>Gut adjusts; minimise die-off</td></tr>
+      <tr><td>Week 2</td><td>¼ cup (60ml)</td><td>100ml</td><td>Build tolerance steadily</td></tr>
+      <tr><td>Week 3</td><td>⅓ cup (80ml)</td><td>150ml</td><td>Approaching the full dose</td></tr>
+      <tr><td>Week 4+</td><td>½ cup (125ml)</td><td>150–200ml</td><td>Ongoing maintenance dose</td></tr>
+    </tbody>
+  </table>
 </div>
-<div class="blog-post__callout blog-post__callout--info">
-  <p><strong>Important:</strong> If at any stage you experience significant discomfort (beyond mild bloating), go back to the previous week's dose and hold there for another week before trying to increase again. There is no rush — the bacteria are colonising regardless of the exact dose. Slow and steady is always better than pushing through pain.</p>
+
+<h2 id="symptoms" class="blog-post__section">🌿 Symptoms — Good and Bad</h2>
+
+Most beneficial changes are gradual and subtle rather than dramatic, building over 2–8 weeks of consistent daily consumption. Here is what to look for — and when to expect it.
+
+<h3 class="blog-post__sub">Good Signs — Expected Benefits</h3>
+
+<div class="blog-post__table-wrap">
+  <table class="blog-post__table">
+    <thead><tr><th>Symptom</th><th>When It Appears</th><th>Which Ferment</th></tr></thead>
+    <tbody>
+      <tr><td>Mild bloating in week 1</td><td>Days 1–7</td><td>Both — adjustment phase</td></tr>
+      <tr><td>Reduced bloating, more regular digestion</td><td>Weeks 2–3</td><td>Both — synergistic</td></tr>
+      <tr><td>Deeper sleep, vivid dreams</td><td>Weeks 2–4</td><td>Primarily L. reuteri</td></tr>
+      <tr><td>Reduced sugar cravings</td><td>Weeks 3–5</td><td>Both — appetite regulation</td></tr>
+      <tr><td>Better skin clarity and hydration</td><td>Weeks 4–8</td><td>Both, different mechanisms</td></tr>
+      <tr><td>Less seasonal illness</td><td>Months 2–3</td><td>Primarily kefir</td></tr>
+      <tr><td>Improved cholesterol panel</td><td>Months 2–3</td><td>Primarily L. reuteri</td></tr>
+      <tr><td>Reduced Candida symptoms</td><td>Weeks 4–8</td><td>Primarily kefir (yeasts)</td></tr>
+    </tbody>
+  </table>
 </div>
-<h2 id="symptoms" class="blog-post__section">🌿 Signs It's Working — Good Symptoms</h2>
-Most beneficial changes from L. reuteri are gradual and subtle rather than dramatic. They tend to build over 2–8 weeks of consistent daily consumption. Here is what to look for — and when to expect it:
-<div class="blog-post__timeline">
-  <div class="blog-post__timeline-item">
-    <span class="blog-post__timeline-week">Days 1–7</span>
-    <h5>Adjustment Phase</h5>
-    <p>Possible mild bloating or gas as gut microbiome shifts. This is normal and usually passes by day 5–7.</p>
-  </div>
-  <div class="blog-post__timeline-item">
-    <span class="blog-post__timeline-week">Weeks 2–3</span>
-    <h5>Gut Settling</h5>
-    <p>Reduced bloating, more regular digestion, less post-meal discomfort. Some people notice improved stool consistency.</p>
-  </div>
-  <div class="blog-post__timeline-item">
-    <span class="blog-post__timeline-week">Weeks 3–5</span>
-    <h5>Deeper Changes</h5>
-    <p>Improved sleep quality reported by many. Subtle mood lift. Reduced sugar cravings. Better appetite regulation.</p>
-  </div>
-  <div class="blog-post__timeline-item">
-    <span class="blog-post__timeline-week">Weeks 6–12</span>
-    <h5>Systemic Benefits</h5>
-    <p>Immune resilience improvements, better skin hydration, sustained energy. Cholesterol improvements visible in bloodwork at this stage.</p>
-  </div>
+
+<h3 class="blog-post__sub">⚠️ When to Slow Down or Stop</h3>
+
+<div class="blog-post__table-wrap">
+  <table class="blog-post__table">
+    <thead><tr><th>Symptom</th><th>Meaning</th><th>Action</th></tr></thead>
+    <tbody>
+      <tr><td>Mild bloating in week 1</td><td>Normal die-off / adjustment</td><td>Continue; reduce the dose if uncomfortable</td></tr>
+      <tr><td>Severe bloating beyond week 2</td><td>Excessive die-off or intolerance</td><td>Stop both; restart at a smaller dose after one week</td></tr>
+      <tr><td>Persistent nausea</td><td>Possible intolerance</td><td>Reduce the dose by 50%; consult a doctor if it continues</td></tr>
+      <tr><td>Diarrhoea lasting &gt; 3 days</td><td>Contaminated batch or intolerance</td><td>Stop immediately; assess batch quality</td></tr>
+      <tr><td>Sharp abdominal pain</td><td>Not a normal adjustment symptom</td><td>Stop; see a healthcare provider</td></tr>
+      <tr><td>Allergic reaction (rash, hives)</td><td>Possible dairy allergy</td><td>Stop immediately; consult a doctor</td></tr>
+      <tr><td>Histamine symptoms (headache, flushing)</td><td>Histamine intolerance</td><td>L. reuteri produces histamine — try kefir alone</td></tr>
+      <tr><td>Starting a course of antibiotics</td><td>Antibiotics kill the probiotics</td><td>Pause both; resume 48–72h after the course</td></tr>
+    </tbody>
+  </table>
 </div>
-<div class="blog-post__symptoms">
-  <div class="blog-post__symptoms-good">
-    <h4>✅ Good Signs — Keep Going</h4>
-    <ul>
-      <li><span>🌿</span><div>Reduced bloating and gas after meals<span class="blog-post__symptom-detail">Typically appears in week 2–3. Sign gut inflammation is reducing.</span></div></li>
-      <li><span>😴</span><div>Improved sleep quality and depth<span class="blog-post__symptom-detail">Often reported around week 3. Linked to oxytocin signalling.</span></div></li>
-      <li><span>😊</span><div>Subtle but noticeable mood lift<span class="blog-post__symptom-detail">Gradual improvement in baseline mood and emotional resilience.</span></div></li>
-      <li><span>🍽️</span><div>Reduced sugar cravings and better appetite control<span class="blog-post__symptom-detail">Gut bacteria influence hunger hormones — a real physiological effect.</span></div></li>
-      <li><span>💩</span><div>More regular, consistent digestion<span class="blog-post__symptom-detail">Improved stool consistency and predictable bowel timing.</span></div></li>
-      <li><span>⚡</span><div>More stable energy through the day<span class="blog-post__symptom-detail">Less post-meal energy crashes. Linked to improved nutrient absorption.</span></div></li>
-      <li><span>🛡️</span><div>Fewer minor illnesses (colds, infections)<span class="blog-post__symptom-detail">Improved immune modulation visible over 6–12 weeks of consistent use.</span></div></li>
-      <li><span>🌟</span><div>Improved skin clarity and hydration<span class="blog-post__symptom-detail">Emerging evidence — some people notice this around weeks 4–8.</span></div></li>
-      <li><span>🤸</span><div>Reduced joint discomfort or general inflammation<span class="blog-post__symptom-detail">Anti-inflammatory effect of reuterin becomes systemic over time.</span></div></li>
-    </ul>
-  </div>
-  <div class="blog-post__symptoms-bad">
-    <h4>⚠️ When to Slow Down or Stop</h4>
-    <ul>
-      <li><span>🌀</span><div>Mild bloating and gas in week 1<span class="blog-post__symptom-detail">Normal adjustment — reduce dose to 2 tbsp and build up more slowly.</span></div></li>
-      <li><span>🔴</span><div>Severe or prolonged bloating beyond week 2<span class="blog-post__symptom-detail">Stop, wait one week, then restart at a smaller dose (1 tbsp). Could indicate existing SIBO being disrupted.</span></div></li>
-      <li><span>🤢</span><div>Persistent nausea after eating<span class="blog-post__symptom-detail">Reduce dose significantly. If nausea continues after a week at lower dose, stop and consult your doctor.</span></div></li>
-      <li><span>💧</span><div>Diarrhoea lasting more than 2–3 days<span class="blog-post__symptom-detail">Stop immediately. Could be a contaminated batch or intolerance. Assess your batch for smell and appearance.</span></div></li>
-      <li><span>🤕</span><div>Stomach cramps or sharp abdominal pain<span class="blog-post__symptom-detail">Stop immediately and consult a healthcare professional. Not a normal adjustment symptom.</span></div></li>
-      <li><span>🔥</span><div>Increased acid reflux or heartburn<span class="blog-post__symptom-detail">Reduce dose. Try eating yogurt with food rather than on an empty stomach.</span></div></li>
-      <li><span>🚫</span><div>Any allergic reaction (rash, hives, swelling)<span class="blog-post__symptom-detail">Stop immediately — likely a dairy allergy. Consult your doctor.</span></div></li>
-      <li><span>🤰</span><div>Pregnancy discovered during consumption<span class="blog-post__symptom-detail">Stop and consult your doctor. L. reuteri during pregnancy is not well-studied.</span></div></li>
-      <li><span>💊</span><div>Starting a course of antibiotics<span class="blog-post__symptom-detail">Pause consumption during antibiotic treatment. Resume 48–72 hours after finishing the course.</span></div></li>
-    </ul>
-  </div>
-</div>
+
 <div class="blog-post__callout blog-post__callout--bad">
-  <p>⚠️ <strong>Important:</strong> Some initial gut discomfort in the first week is completely normal and expected — it is a sign the bacteria are actively changing your gut microbiome. This is called a <strong>Herxheimer-like reaction</strong> (a die-off effect as harmful bacteria are displaced). The key distinction is: <strong>mild + temporary = normal. Severe + persistent = stop and reassess.</strong> When in doubt, always consult a healthcare professional.</p>
-</div>
-<h2 id="quickref" class="blog-post__section">📋 Consumption Quick Reference</h2>
-<div class="blog-post__table-wrap">
-  <table class="blog-post__table">
-    <thead><tr><th>Topic</th><th>Recommendation</th></tr></thead>
-    <tbody>
-      <tr><td><strong>Best time to eat</strong></td><td>Morning, on an empty stomach — 30 min before breakfast</td></tr>
-      <tr><td><strong>After coffee (black)</strong></td><td>Wait 20–30 minutes after finishing coffee before eating yogurt</td></tr>
-      <tr><td><strong>After espresso</strong></td><td>Wait 30 minutes minimum — add milk to your espresso to buffer acid</td></tr>
-      <tr><td><strong>After herbal tea</strong></td><td>No gap needed — eat yogurt immediately after if you wish</td></tr>
-      <tr><td><strong>Ideal order</strong></td><td>Yogurt first → then coffee/tea (always better than the reverse)</td></tr>
-      <tr><td><strong>Starting dose</strong></td><td>2–3 tablespoons daily in week 1 — build up gradually over 4 weeks</td></tr>
-      <tr><td><strong>Full dose</strong></td><td>½ cup (125ml) per day from week 4 onwards — do not exceed</td></tr>
-      <tr><td><strong>Temperature when eating</strong></td><td>Always cold — straight from the fridge. Never heat.</td></tr>
-      <tr><td><strong>During antibiotics</strong></td><td>Pause. Resume 48–72 hours after finishing the antibiotic course.</td></tr>
-      <tr><td><strong>During pregnancy</strong></td><td>Stop and consult your doctor.</td></tr>
-      <tr><td><strong>Mild bloating in week 1</strong></td><td>Normal — reduce dose to 2 tbsp and build up more slowly</td></tr>
-      <tr><td><strong>Severe or persistent symptoms</strong></td><td>Stop immediately — reassess batch quality and consult doctor</td></tr>
-      <tr><td><strong>When to see benefits</strong></td><td>Gut improvement: 2–3 weeks. Systemic benefits: 6–12 weeks. Stay consistent.</td></tr>
-    </tbody>
-  </table>
+  <p>⚠️ <strong>Important:</strong> A "Herxheimer-like reaction" — a mild, temporary worsening in the first week as harmful bacteria are displaced — is normal and a sign things are working. <strong>Mild + temporary = continue. Severe + persistent = stop and reassess.</strong> Pregnant women should consult their doctor before using either ferment, particularly L. reuteri.</p>
 </div>
 </section>
 
+<div class="blog-post__divider"><span>Sourcing — France</span></div>
+
+<h2 id="buy" class="blog-post__section">Where to Buy — France</h2>
+
+Both ferments need a one-time investment in cultures. After that, ongoing cost is minimal — L. reuteri yogurt becomes self-perpetuating from saved starter, and kefir grains multiply continuously and feed you forever.
+
+<h3 class="blog-post__sub">🔬 L. Reuteri Cultures</h3>
+
+<div class="blog-post__buy-grid">
+  <div class="blog-post__buy-card">
+    <span class="blog-post__buy-card-eyebrow">Pharmacy — Easiest in France</span>
+    <h5>BioGaia Gastrus Tablets</h5>
+    <p>Chewable tablets, mandarin flavour, 30-tablet box. Contains both required strains — DSM 17938 + ATCC PTA 6475.</p>
+    <a href="https://www.pharma-gdd.com" class="blog-post__buy-link" target="_blank" rel="noopener">Pharmacy Online →</a>
+  </div>
+  <div class="blog-post__buy-card">
+    <span class="blog-post__buy-card-eyebrow">Amazon France — Fast Delivery</span>
+    <h5>Cutting Edge Cultures LR Superfood</h5>
+    <p>Pre-portioned sachets, lab-verified at 67B+ CFU per serving. Easier than crushing tablets.</p>
+    <a href="https://cuttingedgecultures.com/lr-superfood/" class="blog-post__buy-link" target="_blank" rel="noopener">View Site →</a>
+  </div>
+</div>
+
+<h3 class="blog-post__sub">🌿 Milk Kefir Grains</h3>
+
+Kefir grains in France are easier and cheaper to source than L. reuteri starters. The cheapest option — free — is asking another kefir maker for surplus grains; they multiply continuously and most home fermenters happily share.
+
+<div class="blog-post__buy-grid">
+  <div class="blog-post__buy-card">
+    <span class="blog-post__buy-card-eyebrow">🏆 Best Option — Free</span>
+    <h5>Donations from Other Makers</h5>
+    <p>Active Facebook groups (search "Kéfir France"), the Kefirlandia.com directory, AMAP networks, and fermentation workshops. You get living grains with the full 50+ strain diversity.</p>
+    <a href="https://www.facebook.com/groups/search/groups/?q=kefir%20france" class="blog-post__buy-link" target="_blank" rel="noopener">Search Facebook →</a>
+  </div>
+  <div class="blog-post__buy-card">
+    <span class="blog-post__buy-card-eyebrow">In-Store — Biocoop, Naturalia</span>
+    <h5>Dehydrated Grains (7g sachet)</h5>
+    <p>Biocoop, Naturalia, and La Vie Claire stock dehydrated kefir-grain packets in the fermentation section. €5–10 per sachet. Needs 3–5 reactivation cycles before full activity.</p>
+    <a href="https://www.biocoop.fr" class="blog-post__buy-link" target="_blank" rel="noopener">Find a Store →</a>
+  </div>
+  <div class="blog-post__buy-card">
+    <span class="blog-post__buy-card-eyebrow">Amazon France — Convenient</span>
+    <h5>My Scoby — Kit Kéfir de Lait Bio</h5>
+    <p>Made in France. Living organic grains with a complete French-language guide. Ready to use immediately, no reactivation needed. ~€15–20.</p>
+    <a href="https://www.amazon.fr/s?k=grains+kefir+lait+bio+my+scoby" class="blog-post__buy-link" target="_blank" rel="noopener">Amazon.fr →</a>
+  </div>
+  <div class="blog-post__buy-card">
+    <span class="blog-post__buy-card-eyebrow">Amazon France — Pack with Kombucha</span>
+    <h5>KEFIRALIA — 40g + Kombucha SCOBY</h5>
+    <p>40g of milk kefir grains plus a kombucha SCOBY disk and recipes in French. Best value if you want to ferment both kefir and kombucha. ~€20–25.</p>
+    <a href="https://www.amazon.fr/s?k=KEFIRALIA+kefir+lait" class="blog-post__buy-link" target="_blank" rel="noopener">Amazon.fr →</a>
+  </div>
+</div>
+
+<div class="blog-post__callout blog-post__callout--info">
+  <p>💡 <strong>Why fresh living grains beat dehydrated:</strong> Living grains keep the intact 50+ strain diversity built up through continuous cultivation. Dehydrated grains lose some strain diversity during preservation and need several reactivation cycles. If you can get living grains from another maker, always go that route.</p>
+</div>
+
+<h3 class="blog-post__sub">🥛 Shared Ingredients — France</h3>
+
+<div class="blog-post__table-wrap">
+  <table class="blog-post__table">
+    <thead><tr><th>Ingredient</th><th>Brand (France)</th><th>Where</th><th>For</th></tr></thead>
+    <tbody>
+      <tr><td>Whole milk UHT</td><td>Carrefour Bio Lait Entier UHT</td><td>Carrefour, Monoprix</td><td>Both ferments</td></tr>
+      <tr><td>Whole milk fresh</td><td>Candia GrandLait Bio Frais Entier (3.6%)</td><td>Most supermarkets</td><td>Both ferments</td></tr>
+      <tr><td>Inulin powder</td><td>Inuline de chicorée bio</td><td>Amazon.fr, Biocoop, La Vie Claire</td><td>L. reuteri only</td></tr>
+      <tr><td>White vinegar (sanitising)</td><td>Simplo Cristal 8% or Carrefour Bio 6%</td><td>Any supermarket</td><td>L. reuteri equipment</td></tr>
+    </tbody>
+  </table>
+</div>
+
 <footer class="blog-post__post-footer">
-  <p>Recipe based on Dr. William Davis's L. reuteri yogurt method from <em>Super Gut</em> (2022). Health claims referencing human trials are based on peer-reviewed research; animal-study findings are noted throughout.</p>
-  <p>These statements have not been evaluated by any medical regulatory authority. Always consult a healthcare professional before using fermented foods therapeutically. Not recommended during pregnancy without explicit medical advice.</p>
+  <p>Recipes based on Dr. William Davis's L. reuteri yogurt method (from <em>Super Gut</em>, 2022) and traditional Caucasus kefir-making practices refined over thousands of years.</p>
+  <p>These statements have not been evaluated by any medical regulatory authority. Always consult a healthcare professional before using fermented foods therapeutically. Not recommended during pregnancy without explicit medical advice. People with histamine intolerance, severe SIBO, or immune deficiencies should consult their doctor before starting either ferment.</p>
 </footer>

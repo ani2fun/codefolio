@@ -136,68 +136,34 @@ What changes between languages is **who frees the memory** when you're done with
 
 In low-level languages — C, C++, and (with caveats) Rust — heap memory is managed by the programmer. You ask for it explicitly with `malloc` or `new`, and you must release it explicitly with `free` or `delete`. If you forget, the operating system thinks the memory is still in use, and your process slowly bloats until something kills it. That's a **memory leak**.
 
-> *Before reading on — predict what happens after the C++ code below runs **a million times in a long-running web server**. The pointer `arr` goes out of scope at the end of `main()`. Is the heap memory it pointed to released? What's the long-run consequence?*
+> *Before reading on — predict what happens after a C++ snippet like `int* arr = new int[5];` runs **a million times in a long-running web server** with no matching `delete`. The pointer `arr` goes out of scope at the end of `main()`. Is the heap memory it pointed to released? What's the long-run consequence?*
 
+In Python and Java the same allocations look like the snippets below — but here the runtime, not the programmer, reclaims the memory once nothing references it:
 
-```pseudocode
-# Both objects live on the heap. Cleanup is automatic in GC languages,
-# manual (free / delete) in C/C++.
-arr ← list of 5 zeros          # heap-allocated container
-x ← 6                          # heap-allocated value
-```
 
 ```python run
-# Python doesn't have manual heap management — included here for parity.
-# Every container, every object, every "primitive" is heap-allocated under
-# the hood, and the garbage collector reclaims them when no live reference
-# remains. We'll see Python's flavour properly in the next sub-section.
-arr = [0] * 5    # The list itself is on the heap
-x = 6            # Even the integer object is on the heap (CPython interns small ints)
+# Dynamically allocate a list on the heap
+arr = [0] * 5
+
+# Dynamically allocate an integer
+x = 6
+
+# Memory is automatically managed by Python's
+# garbage collector
 ```
 
 ```java run
-// Java has automatic memory management on the JVM, included here for parity.
-// new int[5] allocates on the heap; the GC will reclaim it when no live
-// reference points at it. We see this fully in the next sub-section.
-public class Main {
+class HeapExample {
     public static void main(String[] args) {
-        int[] arr = new int[5];          // Five-int array on the heap
-        Integer x = Integer.valueOf(6);  // Boxed Integer on the heap
-        // No free / delete needed — the GC handles it.
+        // Dynamically allocate an array on the heap
+        int[] arr = new int[5];
+
+        // Dynamically allocate an Integer object on the heap
+        Integer x = new Integer(6);
+
+        // No need to free memory manually.
+        // Garbage collector handles it
     }
-}
-```
-
-```c run
-#include <stdio.h>
-#include <stdlib.h>
-
-int main(void) {
-    /* malloc returns a pointer to a heap-allocated block of `n * sizeof(int)`
-     * bytes. The block is uninitialised — its contents are whatever was
-     * sitting at that address before. */
-    int *arr = (int *) malloc(5 * sizeof(int));
-    int *x   = (int *) malloc(sizeof(int));
-
-    *x = 6;                       /* Write through the pointer into the heap */
-
-    /* WHY each free() is mandatory: when main() returns, the *pointers*
-     * (arr, x) disappear, but the heap blocks they pointed at do NOT.
-     * Without free(), those bytes stay marked "in use" until the process
-     * exits — fine for a one-shot program, fatal for a long-running server. */
-    free(arr);
-    free(x);
-    return 0;
-}
-```
-
-```scala run
-// Scala runs on the JVM. Object creation goes on the heap; GC reclaims.
-// Included here for cross-language parity — Scala has no manual free.
-object Main extends App {
-  val arr: Array[Int] = new Array[Int](5)   // Five-int array on the JVM heap
-  val x: java.lang.Integer = Integer.valueOf(6)  // Boxed Integer on the heap
-  // The GC will reclaim both when nothing references them.
 }
 ```
 
@@ -250,15 +216,6 @@ High-level languages — Python, Java, Kotlin, Scala, Go, JavaScript, TypeScript
 The point is the same across all of them: **the lumber yard cleans itself.** You take what you need; sweepers come through later.
 
 
-```pseudocode
-arr ← list of 5 zeros                          # heap container
-obj ← empty Map: String → String               # heap container
-populate obj with {"name" → "alice"}
-n ← 10 ^ 100                                   # heap value (big integer)
-
-destroy arr                                    # drop the binding; GC reclaims when unreferenced
-```
-
 ```python run
 # Python: every container is a heap object. The garbage collector
 # (reference counting + cycle collector) reclaims when nothing references it.
@@ -279,29 +236,6 @@ public class Main {
         // No manual free — when nothing references arr or x anymore,
         // the GC will reclaim the bytes on its next sweep.
     }
-}
-```
-
-```c run
-/* C has no garbage collection. Included here for parity:
- * the "high-level" alternative is to use a library like Boehm GC,
- * or simply to follow strict ownership rules. The plain language
- * always requires manual free(). */
-#include <stdlib.h>
-int main(void) {
-    int *arr = (int *) malloc(5 * sizeof(int));
-    /* ... use arr ... */
-    free(arr);   /* Still mandatory */
-    return 0;
-}
-```
-
-```scala run
-// Scala on the JVM — same GC story as Java.
-object Main extends App {
-  val arr = new Array[Int](5)
-  val x = Integer.valueOf(6)
-  // GC handles cleanup automatically.
 }
 ```
 
@@ -343,27 +277,6 @@ before -> after: GC sweep
 ## The Memory-Leak Trap
 
 This is the heap's signature failure. In manually-managed languages, the trap appears every time a long-running program allocates without freeing — even if every individual allocation looks correct. The classic example:
-
-```c run
-#include <stdio.h>
-#include <stdlib.h>
-
-void process_one_request(void) {
-    /* Each request allocates 1 KB on the heap... */
-    char *buffer = (char *) malloc(1024);
-    /* ...uses it briefly... */
-    snprintf(buffer, 1024, "request handled");
-    /* ...and forgets to free. The pointer dies; the bytes don't. */
-}
-
-int main(void) {
-    /* Server-style loop. After 1 million requests we've leaked 1 GB. */
-    for (long i = 0; i < 1000000; i++) {
-        process_one_request();
-    }
-    return 0;
-}
-```
 
 Each `process_one_request()` call leaks 1 KB. After a million calls — about a millisecond of real-world traffic for a busy service — the process has burned a gigabyte of RAM that no code can reach but no GC will reclaim. Eventually the kernel's OOM killer steps in.
 
@@ -409,14 +322,6 @@ Stack-only code is the inverse of heap code: **no `new`, no `malloc`, no list cr
 > *Before reading on — sketch the stack at the moment `int total = x + n` runs inside `main → outer(3) → inner(10)`. How many frames are alive? In what order? Which frame disappears first when execution returns?*
 
 
-```pseudocode
-function total(a, b):
-    result ← a + b               # parameters and locals all sit on the stack frame
-    return result                # frame pops on return — a, b, result all vanish
-
-print total(3, 4)
-```
-
 ```python run
 def total(a: int, b: int) -> int:
     # `a` and `b` are parameters — bound on the call stack frame for total().
@@ -445,42 +350,6 @@ public class Main {
     public static void main(String[] args) {
         System.out.println(Solution.total(3, 4));
     }
-}
-```
-
-```c run
-#include <stdio.h>
-
-int total(int a, int b) {
-    /* Parameters and locals live in this function's stack frame.
-     * No malloc — nothing escapes to the heap. */
-    int result = a + b;
-    int buf[10];                  /* A fixed-size local array IS on the stack — */
-    buf[0] = result;              /* this is the canonical "stack-allocated array". */
-    return result;
-    /* On return, the entire frame (a, b, result, buf[10]) is reclaimed
-     * by moving the stack pointer. One instruction. Zero overhead. */
-}
-
-int main(void) {
-    printf("%d\n", total(3, 4));
-    return 0;
-}
-```
-
-```scala run
-// Scala/JVM: parameters + locals are conceptually frame-local.
-// Primitive ints stay on the stack; reference types put the *reference*
-// on the stack and the object on the heap.
-object Main extends App {
-  object Solution {
-    def total(a: Int, b: Int): Int = {
-      val result = a + b   // Local Int — stack
-      result
-    }
-  }
-
-  println(Solution.total(3, 4))
 }
 ```
 
@@ -664,18 +533,6 @@ A global lives in the static region for the entire run of the program. Every fun
 Globals are useful for genuinely global state — a process-wide counter, a logger handle, a cached configuration. They're also a notorious source of bugs: modifying a global from deep inside a function makes the program harder to reason about and harder to test.
 
 
-```pseudocode
-global counter ← 0               # static-region storage — lives for the whole program
-
-function tick():
-    counter ← counter + 1        # mutate the single shared cell
-    return counter
-
-print tick()                     # 1
-print tick()                     # 2
-print tick()                     # 3
-```
-
 ```python run
 # Python's "global" lives in the module namespace, conceptually static.
 counter = 0
@@ -708,45 +565,6 @@ public class Main {
         System.out.println(Solution.tick());  // 2
         System.out.println(Solution.tick());  // 3
     }
-}
-```
-
-```c run
-#include <stdio.h>
-
-/* `counter` is declared at file scope — it's a global,
- * stored in the BSS segment (initialised to 0 at program start). */
-int counter = 0;
-
-int tick(void) {
-    counter += 1;         /* Mutates the single global cell */
-    return counter;
-}
-
-int main(void) {
-    printf("%d\n", tick());  /* 1 */
-    printf("%d\n", tick());  /* 2 */
-    printf("%d\n", tick());  /* 3 */
-    return 0;
-}
-```
-
-```scala run
-// Scala uses `object` for singletons — every field of an object
-// has static-storage semantics on the JVM.
-object Main extends App {
-  object Counter {
-    var n: Int = 0
-
-    def tick(): Int = {
-      n += 1
-      n
-    }
-  }
-
-  println(Counter.tick())  // 1
-  println(Counter.tick())  // 2
-  println(Counter.tick())  // 3
 }
 ```
 
@@ -788,17 +606,6 @@ C, C++, Java, and a few others let you declare a variable `static` inside a func
 This is the cleanest way to give a function its own private memory without using a global.
 
 
-```pseudocode
-# Persistent per-function counter — value lives in the static region across calls.
-function counter():
-    counter.n ← (counter.n if it exists, else 0) + 1
-    return counter.n
-
-print counter()                  # 1
-print counter()                  # 2
-print counter()                  # 3
-```
-
 ```python run
 # Python has no `static` keyword. The idiomatic substitutes are either
 # a module-level global, or a function attribute (shown here).
@@ -831,43 +638,6 @@ public class Main {
         System.out.println(Solution.counter());  // 2
         System.out.println(Solution.counter());  // 3
     }
-}
-```
-
-```c run
-#include <stdio.h>
-
-int counter(void) {
-    /* `static` here means: storage in the static region (survives across calls),
-     * scope still local to this function (invisible to others). */
-    static int n = 0;
-    n += 1;
-    return n;
-}
-
-int main(void) {
-    printf("%d\n", counter());  /* 1 */
-    printf("%d\n", counter());  /* 2 */
-    printf("%d\n", counter());  /* 3 */
-    return 0;
-}
-```
-
-```scala run
-// Scala: a method on an `object` (singleton) has access to that object's
-// fields, which act like statics. There's no per-function static.
-object Main extends App {
-  object Counter {
-    private var n: Int = 0
-    def counter(): Int = {
-      n += 1
-      n
-    }
-  }
-
-  println(Counter.counter())  // 1
-  println(Counter.counter())  // 2
-  println(Counter.counter())  // 3
 }
 ```
 
@@ -998,28 +768,6 @@ src -> interp -> cpu_interp
 
 You can see the code segment in action with one tiny C program: a function pointer prints the *address* of a function, which is its location inside the code segment. This works because, to the CPU, a function name is just a label for an address inside the code region.
 
-```c run
-#include <stdio.h>
-
-void hello(void) {
-    puts("hi");
-}
-
-int main(void) {
-    /* The function `hello` exists at some address inside the code segment.
-     * `(void *)hello` casts the function pointer to a generic pointer so we
-     * can print it with %p. The exact value depends on:
-     *   — whether the binary is position-independent (PIE)
-     *   — ASLR (address space layout randomization) randomising on each run
-     * If you compile with -no-pie and disable ASLR you'll see the same
-     * address every run; otherwise it'll differ each invocation. */
-    printf("hello() lives at: %p\n", (void *) hello);
-    printf("main()  lives at: %p\n", (void *) main);
-    hello();
-    return 0;
-}
-```
-
 This is why every language can implement function pointers, callbacks, and dynamic dispatch — there's a real address in memory you can take and pass around. It's also why JIT compilers exist: at runtime, V8 and HotSpot generate fresh machine code into newly-mapped executable pages, effectively *adding* to the code-segment region of a running process.
 
 ---
@@ -1049,28 +797,6 @@ You now have the four regions. Let's run a small program through them to lock in
 ## A Single Program, Four Regions Lit Up
 
 Consider this C program:
-
-```c run
-#include <stdio.h>
-#include <stdlib.h>
-
-int request_count = 0;                  /* Global — static region */
-
-int handle(int id) {
-    static int retries = 0;             /* static local — static region */
-    int local_id = id;                  /* parameter and local — stack frame */
-    int *buffer = malloc(1024);         /* malloc'd buffer — heap */
-    request_count += 1;
-    retries += 1;
-    free(buffer);                       /* return the heap chunk */
-    return local_id + retries;
-}
-
-int main(void) {
-    printf("%d\n", handle(7));
-    return 0;
-}
-```
 
 Where does each piece live?
 
@@ -1139,18 +865,6 @@ Every running program is a building under construction with four crews: the heap
 You came in thinking memory was a flat wall of bytes. You're leaving with four regions, four roles, and one analogy you'll keep for every recursion lesson after this.
 
 **Transfer challenge — try before the Nested Functions lesson:** Sketch what the stack looks like for the function below at the moment the deepest call runs. How many frames? What does each one hold? What's the LIFO order they disappear in?
-
-```c run
-#include <stdio.h>
-int factorial(int n) {
-    if (n <= 1) return 1;
-    return n * factorial(n - 1);   /* one nested call per level */
-}
-int main(void) {
-    printf("%d\n", factorial(4));   /* try running before answering */
-    return 0;
-}
-```
 
 <details>
 <summary><strong>Answer — open after you've sketched it</strong></summary>

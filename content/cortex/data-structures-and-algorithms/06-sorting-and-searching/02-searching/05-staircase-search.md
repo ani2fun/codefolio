@@ -131,112 +131,126 @@ Top-right (or bottom-left) is the only valid starting corner. The corner's cell 
 # Implementation
 
 
-```pseudocode
-# Each row sorted ascending, each column sorted ascending. Start at the top-right
-# corner: every move (down or left) eliminates an entire row or column.
-function staircaseSearch(matrix, target):
-    if matrix is empty OR matrix[0] is empty:
-        return false
-    rows ← length(matrix)
-    cols ← length(matrix[0])
-    row ← 0
-    col ← cols − 1                              # start top-right
-    while row < rows AND col ≥ 0:
-        if matrix[row][col] = target:
-            return true
-        if matrix[row][col] < target:
-            row ← row + 1                       # too small — current row's max ruled out
-        else:
-            col ← col − 1                       # too big — current column's min ruled out
-    return false
-```
-
 ```python run
 from typing import List
 
 class Solution:
-    def staircase_search(self, matrix: List[List[int]], target: int) -> bool:
-        if not matrix or not matrix[0]:
-            return False
-        rows, cols = len(matrix), len(matrix[0])
-        row, col = 0, cols - 1                          # start at top-right
+    def staircase_search(
+        self, matrix: List[List[int]], target: int
+    ) -> bool:
+
+        # Get the number of rows in the matrix
+        rows: int = len(matrix)
+
+        # Get the number of columns in the matrix
+        cols: int = len(matrix[0])
+
+        # Start from the first row
+        row: int = 0
+
+        # Start from the last column
+        col: int = cols - 1
+
         while row < rows and col >= 0:
+
+            # Continue until we reach the bottom-left or top-right corner
+            # of the matrix
+
+            # If the current element is equal to the target, return
+            # True
             if matrix[row][col] == target:
                 return True
-            if matrix[row][col] < target:
-                row += 1                                # too small, go down
+
+            # Else if the current element is less than the target, move to
+            # the next row
+            elif matrix[row][col] < target:
+                row += 1
+
+            # Else if the current element is greater than the target, move
+            # to the previous column
             else:
-                col -= 1                                # too big, go left
+                col -= 1
+
+        # Return False if the target is not found
         return False
 
 
-if __name__ == "__main__":
-    matrix = [[1, 4, 7, 11], [2, 5, 8, 12], [3, 6, 9, 16], [10, 13, 14, 17]]
-    print(Solution().staircase_search(matrix, 5))    # True
-    print(Solution().staircase_search(matrix, 15))   # False
+# Examples from the problem statement
+m = [[1, 2, 3, 4], [5, 6, 7, 8], [9, 10, 11, 12]]
+print(Solution().staircase_search(m, 12))   # True
+print(Solution().staircase_search(m, 7))    # True
+print(Solution().staircase_search(m, 13))   # False
+
+# Edge cases
+print(Solution().staircase_search([[5]], 5))                                 # True  — 1x1, present
+print(Solution().staircase_search([[5]], 3))                                 # False — 1x1, absent
+print(Solution().staircase_search([[1, 2, 3, 4]], 3))                        # True  — 1xN, present
+print(Solution().staircase_search([[1, 2, 3, 4]], 5))                        # False — 1xN, absent
+print(Solution().staircase_search([[1, 2, 3, 4], [5, 6, 7, 8], [9, 10, 11, 12]], 1))   # True  — first element
 ```
 
 ```java run
+import java.util.*;
+
 public class Main {
     static class Solution {
         public boolean staircaseSearch(int[][] matrix, int target) {
-            if (matrix.length == 0 || matrix[0].length == 0) return false;
-            int rows = matrix.length, cols = matrix[0].length;
-            int row = 0, col = cols - 1;
+
+            // Get the number of rows in the matrix
+            int rows = matrix.length;
+
+            // Get the number of columns in the matrix
+            int cols = matrix[0].length;
+
+            // Start from the first row
+            int row = 0;
+
+            // Start from the last column
+            int col = cols - 1;
+
             while (row < rows && col >= 0) {
-                if (matrix[row][col] == target) return true;
-                if (matrix[row][col] < target) row++;
-                else col--;
+
+                // Continue until we reach the bottom-left or top-right
+                // corner of the matrix
+
+                // If the current element is equal to the target, return
+                // true
+                if (matrix[row][col] == target) {
+                    return true;
+                }
+
+                // Else if the current element is less than the target, move
+                // to the next row
+                else if (matrix[row][col] < target) {
+                    row++;
+                }
+
+                // Else if the current element is greater than the target,
+                // move to the previous column
+                else {
+                    col--;
+                }
             }
+
+            // Return false if the target is not found
             return false;
         }
     }
 
     public static void main(String[] args) {
-        int[][] m = {{1, 4, 7, 11}, {2, 5, 8, 12}, {3, 6, 9, 16}, {10, 13, 14, 17}};
-        System.out.println(new Solution().staircaseSearch(m, 5));
+        // Examples from the problem statement
+        int[][] m = {{1, 2, 3, 4}, {5, 6, 7, 8}, {9, 10, 11, 12}};
+        System.out.println(new Solution().staircaseSearch(m, 12));   // true
+        System.out.println(new Solution().staircaseSearch(m, 7));    // true
+        System.out.println(new Solution().staircaseSearch(m, 13));   // false
+
+        // Edge cases
+        System.out.println(new Solution().staircaseSearch(new int[][]{{5}}, 5));                                 // true  — 1x1, present
+        System.out.println(new Solution().staircaseSearch(new int[][]{{5}}, 3));                                 // false — 1x1, absent
+        System.out.println(new Solution().staircaseSearch(new int[][]{{1, 2, 3, 4}}, 3));                        // true  — 1xN, present
+        System.out.println(new Solution().staircaseSearch(new int[][]{{1, 2, 3, 4}}, 5));                        // false — 1xN, absent
+        System.out.println(new Solution().staircaseSearch(new int[][]{{1, 2, 3, 4}, {5, 6, 7, 8}, {9, 10, 11, 12}}, 1));  // true — first element
     }
-}
-```
-
-```c run
-#include <stdio.h>
-#include <stdbool.h>
-
-bool staircase_search(int rows, int cols, int matrix[rows][cols], int target) {
-    int row = 0, col = cols - 1;
-    while (row < rows && col >= 0) {
-        if (matrix[row][col] == target) return true;
-        if (matrix[row][col] < target) row++;
-        else col--;
-    }
-    return false;
-}
-
-int main(void) {
-    int m[4][4] = {{1, 4, 7, 11}, {2, 5, 8, 12}, {3, 6, 9, 16}, {10, 13, 14, 17}};
-    printf("%s\n", staircase_search(4, 4, m, 5) ? "true" : "false");
-    return 0;
-}
-```
-
-```scala run
-object Main extends App {
-  class Solution {
-    def staircaseSearch(matrix: Array[Array[Int]], target: Int): Boolean = {
-      if (matrix.isEmpty || matrix(0).isEmpty) return false
-      val rows = matrix.length; val cols = matrix(0).length
-      var row = 0; var col = cols - 1
-      while (row < rows && col >= 0) {
-        if (matrix(row)(col) == target) return true
-        if (matrix(row)(col) < target) row += 1 else col -= 1
-      }
-      false
-    }
-  }
-
-  val m = Array(Array(1, 4, 7, 11), Array(2, 5, 8, 12), Array(3, 6, 9, 16), Array(10, 13, 14, 17))
-  println(new Solution().staircaseSearch(m, 5))
 }
 ```
 
@@ -294,13 +308,14 @@ Output: false
 
 ---
 
-## The Solution
+<details>
+<summary><h2>Solution &amp; Analysis</h2></summary>
 
-The implementation matches the version above. See [Implementation](#implementation) for all 10 languages.
+### The Solution
 
----
+The implementation matches the version above. See [Implementation](#implementation).
 
-## Edge Cases
+### Edge Cases
 
 | Case | Example | Expected |
 |---|---|---|
@@ -311,9 +326,10 @@ The implementation matches the version above. See [Implementation](#implementati
 | Below all | `target < matrix[0][0]` | `false` (col walks off the left immediately) |
 | Above all | `target > matrix[N-1][M-1]` | `false` (row walks off the bottom) |
 
----
+</details>
+<details>
+<summary><h2>Final Takeaway</h2></summary>
 
-## Final Takeaway
 
 Staircase search trades 2D binary search's `O(log(N·M))` for broader applicability — `O(N + M)` on any row-and-column-sorted matrix. The algorithm is mechanically simple: walk from a corner, step row or column at each comparison.
 
@@ -321,6 +337,7 @@ The next lesson handles a different broken-sortedness scenario: a 1D array that'
 
 **Transfer challenge — try before the Sorted Rotated Array lesson:** Modify staircase search to return the *count of cells* equal to target (not just true/false). For a matrix with duplicates, how would you trace the staircase to count them? Hint: the path may need to visit multiple cells.
 
+</details>
 <details>
 <summary><strong>Answer — open after you've thought about it</strong></summary>
 

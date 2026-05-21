@@ -145,32 +145,6 @@ The double-red is gone; we don't need to recurse further. The black-height is pr
 
 ### The full insert algorithm
 
-```pseudocode
-function insert(T, key):
-    Z ← bstInsert(T, key)                      # standard BST insert; new node is red
-    while Z ≠ T.root AND Z.parent.colour = RED:
-        P ← Z.parent
-        G ← P.parent
-        if P = G.left:
-            U ← G.right
-            if U.colour = RED:                 # Case 1
-                P.colour ← BLACK
-                U.colour ← BLACK
-                G.colour ← RED
-                Z ← G                          # propagate up
-            else:
-                if Z = P.right:                # Case 2 → reduce to Case 3
-                    Z ← P
-                    leftRotate(T, Z)
-                P.colour ← BLACK               # Case 3
-                G.colour ← RED
-                rightRotate(T, G)
-        else:                                   # mirror with left/right swapped
-            U ← G.left
-            … (mirror)
-    T.root.colour ← BLACK                       # invariant 2: root is black
-```
-
 **Cost.** At most one Case 2 + one Case 3 per insert (the rotations). Case 1 can repeat as it propagates up — but it's just two recolours, no rotations. Total: `O(log n)` colour flips and `O(1)` rotations per insert.
 
 ***
@@ -420,170 +394,6 @@ public class Main {
 }
 ```
 
-```c run
-#include <stdio.h>
-#include <stdlib.h>
-#include <stdbool.h>
-
-typedef enum { RED, BLACK } Colour;
-typedef struct Node {
-    int key;
-    Colour colour;
-    struct Node *left, *right, *parent;
-} Node;
-
-static Node nil_node = {0, BLACK, NULL, NULL, NULL};
-static Node *NIL = &nil_node;
-static Node *root = &nil_node;
-
-static Node *new_node(int key) {
-    Node *n = malloc(sizeof(Node));
-    n->key = key; n->colour = RED;
-    n->left = n->right = NIL; n->parent = NULL;
-    return n;
-}
-
-static void left_rotate(Node *x) {
-    Node *y = x->right;
-    x->right = y->left;
-    if (y->left != NIL) y->left->parent = x;
-    y->parent = x->parent;
-    if (!x->parent) root = y;
-    else if (x == x->parent->left) x->parent->left = y;
-    else x->parent->right = y;
-    y->left = x; x->parent = y;
-}
-
-static void right_rotate(Node *y) {
-    Node *x = y->left;
-    y->left = x->right;
-    if (x->right != NIL) x->right->parent = y;
-    x->parent = y->parent;
-    if (!y->parent) root = x;
-    else if (y == y->parent->right) y->parent->right = x;
-    else y->parent->left = x;
-    x->right = y; y->parent = x;
-}
-
-static void fixup(Node *z) {
-    while (z->parent && z->parent->colour == RED) {
-        Node *p = z->parent, *g = p->parent;
-        if (p == g->left) {
-            Node *u = g->right;
-            if (u->colour == RED) { p->colour = BLACK; u->colour = BLACK; g->colour = RED; z = g; }
-            else {
-                if (z == p->right) { z = p; left_rotate(z); p = z->parent; g = p->parent; }
-                p->colour = BLACK; g->colour = RED; right_rotate(g);
-            }
-        } else {
-            Node *u = g->left;
-            if (u->colour == RED) { p->colour = BLACK; u->colour = BLACK; g->colour = RED; z = g; }
-            else {
-                if (z == p->left) { z = p; right_rotate(z); p = z->parent; g = p->parent; }
-                p->colour = BLACK; g->colour = RED; left_rotate(g);
-            }
-        }
-    }
-    root->colour = BLACK;
-}
-
-static void insert(int key) {
-    Node *z = new_node(key);
-    Node *y = NULL, *x = root;
-    while (x != NIL) { y = x; x = (z->key < x->key) ? x->left : x->right; }
-    z->parent = y;
-    if (!y) root = z;
-    else if (z->key < y->key) y->left = z;
-    else y->right = z;
-    fixup(z);
-}
-
-int main(void) {
-    int keys[] = {5, 3, 8, 1, 4, 7, 9, 2, 6, 10, 11, 12, 13, 14, 15};
-    for (int i = 0; i < 15; i++) insert(keys[i]);
-    printf("inserted 15 keys; root colour = %s\n", root->colour == BLACK ? "BLACK" : "RED");
-    return 0;
-}
-```
-
-```scala run
-object Main extends App {
-  sealed trait Colour
-  case object Red extends Colour
-  case object Black extends Colour
-
-  class Node(var key: Int) {
-    var colour: Colour = Red
-    var left: Node = NIL
-    var right: Node = NIL
-    var parent: Node = null
-  }
-
-  val NIL = new Node(0); NIL.colour = Black
-  var root: Node = NIL
-
-  def leftRotate(x: Node): Unit = {
-    val y = x.right
-    x.right = y.left
-    if (y.left != NIL) y.left.parent = x
-    y.parent = x.parent
-    if (x.parent == null) root = y
-    else if (x eq x.parent.left) x.parent.left = y
-    else x.parent.right = y
-    y.left = x; x.parent = y
-  }
-
-  def rightRotate(y: Node): Unit = {
-    val x = y.left
-    y.left = x.right
-    if (x.right != NIL) x.right.parent = y
-    x.parent = y.parent
-    if (y.parent == null) root = x
-    else if (y eq y.parent.right) y.parent.right = x
-    else y.parent.left = x
-    x.right = y; y.parent = x
-  }
-
-  def insert(key: Int): Unit = {
-    val z = new Node(key)
-    var y: Node = null; var x: Node = root
-    while (x != NIL) { y = x; x = if (z.key < x.key) x.left else x.right }
-    z.parent = y
-    if (y == null) root = z
-    else if (z.key < y.key) y.left = z
-    else y.right = z
-    fixup(z)
-  }
-
-  def fixup(zIn: Node): Unit = {
-    var z = zIn
-    while (z.parent != null && z.parent.colour == Red) {
-      val p = z.parent; val g = p.parent
-      if (p eq g.left) {
-        val u = g.right
-        if (u.colour == Red) { p.colour = Black; u.colour = Black; g.colour = Red; z = g }
-        else {
-          if (z eq p.right) { z = p; leftRotate(z) }
-          z.parent.colour = Black; z.parent.parent.colour = Red; rightRotate(z.parent.parent)
-        }
-      } else {
-        val u = g.left
-        if (u.colour == Red) { p.colour = Black; u.colour = Black; g.colour = Red; z = g }
-        else {
-          if (z eq p.left) { z = p; rightRotate(z) }
-          z.parent.colour = Black; z.parent.parent.colour = Red; leftRotate(z.parent.parent)
-        }
-      }
-    }
-    root.colour = Black
-  }
-
-  val keys = Array(5, 3, 8, 1, 4, 7, 9, 2, 6, 10, 11, 12, 13, 14, 15)
-  for (k <- keys) insert(k)
-  println(s"inserted ${keys.length} keys; root colour = ${root.colour}")
-}
-```
-
 ***
 
 # Edge cases and pitfalls
@@ -645,63 +455,54 @@ Click any question to reveal the answer.
 **A:** (1) Every node is red or black. (2) The root is black. (3) Every NIL leaf is black. (4) A red node's children are both black (no two reds in a row). (5) Every root-to-leaf path has the same number of black nodes (the *black-height*).
 
 </details>
-
 <details>
 <summary><strong>Q:</strong> Maximum height of an RB-tree with <code>n</code> nodes?</summary>
 
 **A:** `2 · log₂(n + 1)`. Looser than AVL's `1.44 log n` but enough for `O(log n)` operations.
 
 </details>
-
 <details>
 <summary><strong>Q:</strong> Why is the height bound `2 log n`?</summary>
 
 **A:** A subtree of black-height `bh` has ≥ `2^bh − 1` internal nodes (induction). Longest path = ≤ `2 · bh` (alternating red/black; reds can't be adjacent). So `h ≤ 2 · log₂(n + 1)`.
 
 </details>
-
 <details>
 <summary><strong>Q:</strong> Worst-case rotations per insert? Per delete?</summary>
 
 **A:** Insert: ≤ 2 rotations (constant). Delete: ≤ 3 rotations (constant). The colour cascade is `O(log n)` recolours but `O(1)` rotations.
 
 </details>
-
 <details>
 <summary><strong>Q:</strong> Three insert-fixup cases?</summary>
 
 **A:** Named by the uncle's colour. **Case 1:** uncle red → recolour parent + uncle black, grandparent red, propagate up. **Case 2:** uncle black, Z is inner child → rotate parent; reduces to Case 3. **Case 3:** uncle black, Z is outer child → recolour + rotate grandparent.
 
 </details>
-
 <details>
 <summary><strong>Q:</strong> Per-node memory overhead?</summary>
 
 **A:** One colour bit, often packed into the parent pointer's low bit (alignment makes it free). Effectively *zero extra bytes* in the kernel's `lib/rbtree.c`.
 
 </details>
-
 <details>
 <summary><strong>Q:</strong> What does <code>rb_root_cached</code> add over <code>rb_root</code>?</summary>
 
 **A:** A cached pointer to the leftmost node, maintained on every insert/erase. Makes "find smallest" `O(1)` — what CFS's `pick_next_task` relies on.
 
 </details>
-
 <details>
 <summary><strong>Q:</strong> RB-tree vs 2-3-4 tree relationship?</summary>
 
 **A:** RB-trees are isomorphic to 2-3-4 trees. A black node + red children corresponds to a 2-3-4 node with up to 4 children. The colour invariants are the 2-3-4 split rules in disguise.
 
 </details>
-
 <details>
 <summary><strong>Q:</strong> Three places RB-trees ship in production?</summary>
 
 **A:** Java `TreeMap`/`TreeSet`, C++ `std::map`/`std::set`, Linux `lib/rbtree.c` (used in CFS scheduler, epoll, mm/mmap, ext4, ...).
 
 </details>
-
 <details>
 <summary><strong>Q:</strong> Why RB-tree over AVL in production by default?</summary>
 

@@ -318,4 +318,4 @@ The takeaway:
 2. **Postfix evaluation is a stack.** Operands push; operators pop two, compute, push one. Single pass, O(N), no precedence rules anywhere in sight.
 3. **Position is the precedence.** What makes postfix and prefix work is that the *order* of tokens fully determines the order of evaluation. We don't *need* parens or precedence — they're baked in.
 
-> *Coming up — we build the postfix evaluator. Read each token, push or pop on a stack, return the lone item left at the end. Lesson 5 turns this lesson's idea into running code in 10 languages, with edge cases (operand order for non-commutative operators, malformed expressions, single-operand expressions) handled cleanly.*
+> *Coming up — we build the postfix evaluator. Read each token, push or pop on a stack, return the lone item left at the end. Lesson 5 turns this lesson's idea into running code in Python and Java, with edge cases (operand order for non-commutative operators, malformed expressions, single-operand expressions) handled cleanly.*

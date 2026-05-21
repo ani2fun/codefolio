@@ -152,69 +152,99 @@ Output: [[0], [2], [4], [6]]
 
 The "visitable" twist makes the problem more interesting: nodes with `values[i] == 0` block the DFS entirely, so a chain of zeros isolates the visitable nodes from each other.
 
-## Pattern Mapping
+<details>
+<summary><h2>Pattern Mapping</h2></summary>
+
 
 - `f`: append node to current component's list.
 - `g`: append the component to the master result list.
 - *Visitability filter*: only descend into neighbours where `values[neighbour] > 0`.
 
-## The Solution
+</details>
+<details>
+<summary><h2>The Solution</h2></summary>
 
 
-```pseudocode
-function dfs(graph, node, values, visited, component):
-    add node to visited
-    append node to component
-    for neighbor in graph[node]:
-        if neighbor is not in visited AND values[neighbor] > 0:
-            dfs(graph, neighbor, values, visited, component)
-
-function connectedComponents(graph, values):
-    visited ← empty set
-    components ← empty list
-    for node from 0 to N−1:
-        if values[node] > 0 AND node is not in visited:
-            component ← empty list
-            dfs(graph, node, values, visited, component)
-            append component to components
-    return components
-```
 
 ```python run
 from typing import List, Set
 
 class Solution:
-    def dfs(self,
-            graph: List[List[int]],
-            node: int,
-            values: List[int],
-            visited: Set[int],
-            component: List[int]) -> None:
+    def dfs(
+        self,
+        graph: List[List[int]],
+        node: int,
+        values: List[int],
+        visited: Set[int],
+        component: List[int],
+    ) -> None:
+
+        # Mark the current node as visited in the graph to avoid
+        # visiting it again
         visited.add(node)
+
+        # Add the current node to the component list
         component.append(node)
+
+        # Traverse all the neighbours of the current node
         for neighbour in graph[node]:
-            # Two filters: not visited yet AND visitable.
-            if neighbour not in visited and values[neighbour] > 0:
+
+            # If the neighbour is not visited and has a positive value,
+            # recursively visit it
+            if neighbour not in visited and values[neighbour] != 0:
+
+                # Recursively visit all the nodes in the connected
+                # component
                 self.dfs(graph, neighbour, values, visited, component)
 
-    def connected_components(self,
-                             graph: List[List[int]],
-                             values: List[int]) -> List[List[int]]:
+    def connected_components(
+        self, graph: List[List[int]], values: List[int]
+    ) -> List[List[int]]:
+
+        # Number of nodes in the graph
         n = len(graph)
+
+        # Initialize visited set
         visited: Set[int] = set()
+
+        # Initialize a list to store the connected components
         components: List[List[int]] = []
+
+        # Iterate through all nodes in the graph
         for node in range(n):
-            # Skip non-visitable nodes outright; skip already-visited ones.
+
+            # Start DFS only if node is unvisited and has a positive
+            # value, visiting all nodes in the connected component
+            # and adding them to the components list
             if values[node] > 0 and node not in visited:
+
+                # Create a new component to store the nodes in the
+                # connected component
                 component: List[int] = []
+
+                # Start DFS from the current node and find all nodes
+                # in the connected component
                 self.dfs(graph, node, values, visited, component)
+
+                # Add the found component to the components list
                 components.append(component)
+
+        # Return the list of connected components
         return components
 
 
-graph = [[1], [0, 2], [1, 3], [2, 4], [3, 5], [4, 6], [5]]
-values = [1, 0, 1, 0, 1, 0, 1]
-print(Solution().connected_components(graph, values))
+# Examples from the problem statement
+print(Solution().connected_components([[1],[0,2],[1,3],[2,4],[3,5],[4,6],[5]], [1,0,1,0,1,0,1]))  # [[0],[2],[4],[6]]
+print(Solution().connected_components([[1],[0],[],[4],[3]], [1,1,1,1,1]))  # [[0,1],[2],[3,4]]
+
+# Edge cases
+print(Solution().connected_components([], []))                    # []
+print(Solution().connected_components([[]], [1]))                  # [[0]]
+print(Solution().connected_components([[]], [0]))                  # [] — zero value, unvisitable
+print(Solution().connected_components([[1],[0]], [1,1]))           # [[0,1]]
+print(Solution().connected_components([[1],[0]], [1,0]))           # [[0]] — node 1 blocked
+# All zeros
+print(Solution().connected_components([[1],[0]], [0,0]))           # []
 ```
 
 ```java run
@@ -222,114 +252,94 @@ import java.util.*;
 
 public class Main {
     static class Solution {
-        public void dfs(List<List<Integer>> graph, int node, int[] values,
-                        Set<Integer> visited, List<Integer> component) {
+        private void dfs(
+            List<List<Integer>> graph,
+            int node,
+            int[] values,
+            Set<Integer> visited,
+            List<Integer> component
+        ) {
+
+            // Mark the current node as visited in the graph to avoid
+            // visiting it again
             visited.add(node);
+
+            // Add the current node to the component list
             component.add(node);
-            for (int n : graph.get(node)) {
-                if (!visited.contains(n) && values[n] > 0)
-                    dfs(graph, n, values, visited, component);
+
+            // Traverse all the neighbours of the current node
+            for (int neighbour : graph.get(node)) {
+
+                // If the neighbour is not visited and has a positive value,
+                // recursively visit it
+                if (!visited.contains(neighbour) && values[neighbour] != 0) {
+
+                    // Recursively visit all the nodes in the connected
+                    // component
+                    dfs(graph, neighbour, values, visited, component);
+                }
             }
         }
 
-        public List<List<Integer>> connectedComponents(List<List<Integer>> graph, int[] values) {
-            int n = graph.size();
+        public List<List<Integer>> connectedComponents(
+            List<List<Integer>> graph,
+            int[] values
+        ) {
+
+            // Number of nodes in the graph
+            int N = graph.size();
+
+            // Initialize visited set
             Set<Integer> visited = new HashSet<>();
+
+            // Initialize a list to store the connected components
             List<List<Integer>> components = new ArrayList<>();
-            for (int node = 0; node < n; node++) {
+
+            // Iterate through all nodes in the graph
+            for (int node = 0; node < N; node++) {
+
+                // Start DFS only if node is unvisited and has a positive
+                // value, visiting all nodes in the connected component
+                // and adding them to the components list
                 if (values[node] > 0 && !visited.contains(node)) {
+
+                    // Create a new component to store the nodes in the
+                    // connected component
                     List<Integer> component = new ArrayList<>();
+
+                    // Start DFS from the current node and find all nodes
+                    // in the connected component
                     dfs(graph, node, values, visited, component);
+
+                    // Add the found component to the components list
                     components.add(component);
                 }
             }
+
+            // Return the list of connected components
             return components;
         }
     }
 
     public static void main(String[] args) {
-        var graph = List.of(List.of(1), List.of(0, 2), List.of(1, 3),
-                            List.of(2, 4), List.of(3, 5), List.of(4, 6), List.of(5));
-        int[] values = {1, 0, 1, 0, 1, 0, 1};
-        System.out.println(new Solution().connectedComponents(graph, values));
+        Solution sol = new Solution();
+
+        // Examples from the problem statement
+        System.out.println(sol.connectedComponents(List.of(List.of(1),List.of(0,2),List.of(1,3),List.of(2,4),List.of(3,5),List.of(4,6),List.of(5)), new int[]{1,0,1,0,1,0,1}));  // [[0],[2],[4],[6]]
+        System.out.println(sol.connectedComponents(List.of(List.of(1),List.of(0),new ArrayList<>(),List.of(4),List.of(3)), new int[]{1,1,1,1,1}));  // [[0,1],[2],[3,4]]
+
+        // Edge cases
+        System.out.println(sol.connectedComponents(new ArrayList<>(), new int[]{}));  // []
+        System.out.println(sol.connectedComponents(List.of(new ArrayList<>()), new int[]{1}));  // [[0]]
+        System.out.println(sol.connectedComponents(List.of(new ArrayList<>()), new int[]{0}));  // []
+        System.out.println(sol.connectedComponents(List.of(List.of(1), List.of(0)), new int[]{1,1}));  // [[0,1]]
+        System.out.println(sol.connectedComponents(List.of(List.of(1), List.of(0)), new int[]{1,0}));  // [[0]]
+        System.out.println(sol.connectedComponents(List.of(List.of(1), List.of(0)), new int[]{0,0}));  // []
     }
 }
 ```
 
-```c run
-#include <stdio.h>
-#include <stdlib.h>
-#include <stdbool.h>
-
-typedef struct { int* data; int size; } AdjList;
-
-static int** components; static int* component_sizes; static int component_count;
-
-static void dfs(AdjList* graph, int node, int* values, bool* visited, int** comp, int* comp_size) {
-    visited[node] = true;
-    *comp = realloc(*comp, (*comp_size + 1) * sizeof(int));
-    (*comp)[(*comp_size)++] = node;
-    for (int i = 0; i < graph[node].size; i++) {
-        int n = graph[node].data[i];
-        if (!visited[n] && values[n] > 0) dfs(graph, n, values, visited, comp, comp_size);
-    }
-}
-
-int main() {
-    int g0[]={1}, g1[]={0,2}, g2[]={1,3}, g3[]={2,4}, g4[]={3,5}, g5[]={4,6}, g6[]={5};
-    AdjList graph[]={{g0,1},{g1,2},{g2,2},{g3,2},{g4,2},{g5,2},{g6,1}};
-    int values[]={1,0,1,0,1,0,1};
-    int n = 7;
-    bool visited[7] = {false};
-    components = NULL; component_sizes = NULL; component_count = 0;
-    for (int i = 0; i < n; i++) {
-        if (values[i] > 0 && !visited[i]) {
-            int* comp = NULL; int comp_size = 0;
-            dfs(graph, i, values, visited, &comp, &comp_size);
-            components = realloc(components, (component_count + 1) * sizeof(int*));
-            component_sizes = realloc(component_sizes, (component_count + 1) * sizeof(int));
-            components[component_count] = comp;
-            component_sizes[component_count++] = comp_size;
-        }
-    }
-    for (int i = 0; i < component_count; i++) {
-        for (int j = 0; j < component_sizes[i]; j++) printf("%d ", components[i][j]);
-        printf("\n"); free(components[i]);
-    }
-    free(components); free(component_sizes);
-    return 0;
-}
-```
-
-```scala run
-import scala.collection.mutable
-
-object Main extends App {
-  class Solution {
-    def dfs(graph: Array[Array[Int]], node: Int, values: Array[Int],
-            visited: mutable.Set[Int], component: mutable.ArrayBuffer[Int]): Unit = {
-      visited.add(node); component.append(node)
-      for (n <- graph(node) if !visited.contains(n) && values(n) > 0)
-        dfs(graph, n, values, visited, component)
-    }
-
-    def connectedComponents(graph: Array[Array[Int]], values: Array[Int]): Seq[Seq[Int]] = {
-      val visited = mutable.Set.empty[Int]
-      val components = mutable.ArrayBuffer.empty[Seq[Int]]
-      for (node <- graph.indices if values(node) > 0 && !visited.contains(node)) {
-        val comp = mutable.ArrayBuffer.empty[Int]
-        dfs(graph, node, values, visited, comp)
-        components.append(comp.toSeq)
-      }
-      components.toSeq
-    }
-  }
-
-  val g = Array(Array(1), Array(0, 2), Array(1, 3), Array(2, 4), Array(3, 5), Array(4, 6), Array(5))
-  val v = Array(1, 0, 1, 0, 1, 0, 1)
-  println(new Solution().connectedComponents(g, v))
-}
-```
+</details>
 
 
 ***
@@ -348,69 +358,103 @@ Explanation: Component {0, 1, 4} has min(2, 5, 7) = 2.
              2 + 1 = 3.
 ```
 
-## Pattern Mapping
+<details>
+<summary><h2>Pattern Mapping</h2></summary>
+
 
 - `f`: take min of running component-min and current node's value.
 - `g`: sum across components.
 
 The DFS now *returns* the component min instead of building a list. That's a small but important variation: the per-component aggregate doesn't need to be a parameter — it can be the function's return value.
 
-## The Solution
+</details>
+<details>
+<summary><h2>The Solution</h2></summary>
 
 
-```pseudocode
-function dfs(graph, node, visited, values):
-    add node to visited
-    minSoFar ← values[node]
-    for neighbor in graph[node]:
-        if neighbor is not in visited:
-            childMin ← dfs(graph, neighbor, visited, values)
-            if childMin < minSoFar:
-                minSoFar ← childMin
-    return minSoFar
-
-function sumOfMinimums(graph, values):
-    visited ← empty set
-    total ← 0
-    for node from 0 to N−1:
-        if node is not in visited:
-            total ← total + dfs(graph, node, visited, values)
-    return total
-```
 
 ```python run
 from typing import List, Set
 
 class Solution:
-    def dfs(self,
-            graph: List[List[int]],
-            node: int,
-            visited: Set[int],
-            values: List[int]) -> int:
+    def dfs(
+        self,
+        graph: List[List[int]],
+        node: int,
+        visited: Set[int],
+        values: List[int],
+    ) -> int:
+
+        # Mark the current node as visited in the graph to avoid
+        # visiting it again
         visited.add(node)
-        # Initialise component-min as this node's value; reduce as we walk neighbours.
+
+        # Make this as the minimum value so far
         minimum_so_far = values[node]
+
+        # Traverse all the neighbours of the current node
         for neighbour in graph[node]:
+
+            # If the neighbour is not visited, recursively call the DFS
+            # function on the neighbour
             if neighbour not in visited:
-                child_min = self.dfs(graph, neighbour, visited, values)
-                if child_min < minimum_so_far:
-                    minimum_so_far = child_min
+
+                # Get the minimum value from all the connected nodes
+                min_val = self.dfs(graph, neighbour, visited, values)
+
+                # Update minimum_so_far if there was another node smaller
+                # than it
+                minimum_so_far = min(minimum_so_far, min_val)
+
+        # Return the minimum value for this component
         return minimum_so_far
 
-    def sum_of_minimums(self,
-                        graph: List[List[int]],
-                        values: List[int]) -> int:
+    def sum_of_minimums(
+        self, graph: List[List[int]], values: List[int]
+    ) -> int:
+
+        # Number of nodes in the graph
+        n = len(graph)
+
+        # If the graph is empty, return 0
+        if n == 0:
+            return 0
+
+        # Initialize visited set
         visited: Set[int] = set()
-        total = 0
-        for node in range(len(graph)):
-            if node not in visited:
-                total += self.dfs(graph, node, visited, values)
-        return total
+
+        # Initialise the minimum sum to 0
+        min_sum = 0
+
+        # Traverse all nodes in the graph
+        for node in range(n):
+
+            # If the node is already visited, all the nodes connected to
+            # it are also visited
+            if node in visited:
+                continue
+
+            # Perform DFS on this new node to visit all the nodes
+            # connected to it and get the minimum value in it.
+            min_val = self.dfs(graph, node, visited, values)
+
+            # Add the min_val to the min_sum variable
+            min_sum += min_val
+
+        # Return the size of min_sum
+        return min_sum
 
 
-graph = [[1], [0, 4], [3], [2], [1]]
-values = [2, 5, 1, 6, 7]
-print(Solution().sum_of_minimums(graph, values))   # 3
+# Examples from the problem statement
+print(Solution().sum_of_minimums([[1],[0,4],[3],[2],[1]], [2,5,1,6,7]))  # 3
+print(Solution().sum_of_minimums([[1],[0],[],[4],[3]], [2,5,1,6,7]))     # 9
+
+# Edge cases
+print(Solution().sum_of_minimums([], []))                               # 0
+print(Solution().sum_of_minimums([[]], [5]))                             # 5
+print(Solution().sum_of_minimums([[1],[0]], [3,7]))                      # 3
+print(Solution().sum_of_minimums([[],[],[]], [4,2,9]))                   # 15 — 3 isolated nodes
+print(Solution().sum_of_minimums([[1,2],[0],[0]], [1,2,3]))              # 1 — one component
 ```
 
 ```java run
@@ -418,95 +462,95 @@ import java.util.*;
 
 public class Main {
     static class Solution {
-        public int dfs(List<List<Integer>> graph, int node, Set<Integer> visited, int[] values) {
+        private int dfs(
+            List<List<Integer>> graph,
+            int node,
+            Set<Integer> visited,
+            int[] values
+        ) {
+
+            // Mark the current node as visited in the graph to avoid
+            // visiting it again
             visited.add(node);
-            int minSoFar = values[node];
-            for (int n : graph.get(node)) {
-                if (!visited.contains(n))
-                    minSoFar = Math.min(minSoFar, dfs(graph, n, visited, values));
+
+            // Make this as the minimum value so far
+            int minimumSoFar = values[node];
+
+            // Traverse all the neighbours of the current node
+            for (int neighbour : graph.get(node)) {
+
+                // If the neighbour is not visited, recursively call the DFS
+                // function on the neighbour
+                if (!visited.contains(neighbour)) {
+
+                    // Get the minimum value from all the connected nodes
+                    int minVal = dfs(graph, neighbour, visited, values);
+
+                    // Update minimumSoFar if there was another node smaller
+                    // than it
+                    minimumSoFar = Math.min(minimumSoFar, minVal);
+                }
             }
-            return minSoFar;
+
+            // Return the minimum value for this component
+            return minimumSoFar;
         }
 
         public int sumOfMinimums(List<List<Integer>> graph, int[] values) {
-            Set<Integer> visited = new HashSet<>();
-            int total = 0;
-            for (int node = 0; node < graph.size(); node++) {
-                if (!visited.contains(node)) total += dfs(graph, node, visited, values);
+
+            // Number of nodes in the graph
+            int N = graph.size();
+
+            // If the graph is empty, return 0
+            if (N == 0) {
+                return 0;
             }
-            return total;
+
+            // Initialize visited set
+            Set<Integer> visited = new HashSet<>();
+
+            // Initialise the minimum sum to 0
+            int minSum = 0;
+
+            // Traverse all nodes in the graph
+            for (int node = 0; node < N; node++) {
+
+                // If the node is already visited, continue to the next node
+                if (visited.contains(node)) {
+                    continue;
+                }
+
+                // Perform DFS on this new node to visit all the nodes
+                // connected to it and get the minimum value in it.
+                int minVal = dfs(graph, node, visited, values);
+
+                // Add the minVal to the minSum variable
+                minSum += minVal;
+            }
+
+            // Return the size of minSum
+            return minSum;
         }
     }
 
     public static void main(String[] args) {
-        var g = List.of(List.of(1), List.of(0, 4), List.of(3), List.of(2), List.of(1));
-        int[] values = {2, 5, 1, 6, 7};
-        System.out.println(new Solution().sumOfMinimums(g, values));
+        Solution sol = new Solution();
+
+        // Examples from the problem statement
+        System.out.println(sol.sumOfMinimums(List.of(List.of(1),List.of(0,4),List.of(3),List.of(2),List.of(1)), new int[]{2,5,1,6,7}));  // 3
+        System.out.println(sol.sumOfMinimums(List.of(List.of(1),List.of(0),new ArrayList<>(),List.of(4),List.of(3)), new int[]{2,5,1,6,7}));  // 9
+
+        // Edge cases
+        System.out.println(sol.sumOfMinimums(new ArrayList<>(), new int[]{}));  // 0
+        System.out.println(sol.sumOfMinimums(List.of(new ArrayList<>()), new int[]{5}));  // 5
+        System.out.println(sol.sumOfMinimums(List.of(List.of(1), List.of(0)), new int[]{3,7}));  // 3
+        System.out.println(sol.sumOfMinimums(List.of(new ArrayList<>(), new ArrayList<>(), new ArrayList<>()), new int[]{4,2,9}));  // 15
+        System.out.println(sol.sumOfMinimums(List.of(List.of(1,2), List.of(0), List.of(0)), new int[]{1,2,3}));  // 1
     }
 }
 ```
 
-```c run
-#include <stdio.h>
-#include <stdlib.h>
-#include <stdbool.h>
-
-typedef struct { int* data; int size; } AdjList;
-
-static int dfs(AdjList* g, int node, bool* visited, int* values) {
-    visited[node] = true;
-    int min_so_far = values[node];
-    for (int i = 0; i < g[node].size; i++) {
-        int n = g[node].data[i];
-        if (!visited[n]) {
-            int child = dfs(g, n, visited, values);
-            if (child < min_so_far) min_so_far = child;
-        }
-    }
-    return min_so_far;
-}
-
-int main() {
-    int g0[]={1}, g1[]={0,4}, g2[]={3}, g3[]={2}, g4[]={1};
-    AdjList g[]={{g0,1},{g1,2},{g2,1},{g3,1},{g4,1}};
-    int values[]={2,5,1,6,7};
-    bool visited[5]={false};
-    int total = 0;
-    for (int i = 0; i < 5; i++) {
-        if (!visited[i]) total += dfs(g, i, visited, values);
-    }
-    printf("%d\n", total);
-    return 0;
-}
-```
-
-```scala run
-import scala.collection.mutable
-
-object Main extends App {
-  class Solution {
-    def dfs(graph: Array[Array[Int]], node: Int,
-            visited: mutable.Set[Int], values: Array[Int]): Int = {
-      visited.add(node)
-      var minSoFar = values(node)
-      for (n <- graph(node) if !visited.contains(n))
-        minSoFar = math.min(minSoFar, dfs(graph, n, visited, values))
-      minSoFar
-    }
-
-    def sumOfMinimums(graph: Array[Array[Int]], values: Array[Int]): Int = {
-      val visited = mutable.Set.empty[Int]
-      var total = 0
-      for (node <- graph.indices if !visited.contains(node))
-        total += dfs(graph, node, visited, values)
-      total
-    }
-  }
-
-  val g = Array(Array(1), Array(0, 4), Array(3), Array(2), Array(1))
-  println(new Solution().sumOfMinimums(g, Array(2, 5, 1, 6, 7)))
-}
-```
+</details>
 
 
 ***
@@ -527,7 +571,9 @@ Input:  grid = [[1, 1, 0, 0],
 Output: 2
 ```
 
-## Pattern Mapping
+<details>
+<summary><h2>Pattern Mapping</h2></summary>
+
 
 The grid is just a graph in disguise. Each cell is a node. Each "is-adjacent" relation is an edge.
 
@@ -537,69 +583,113 @@ The grid is just a graph in disguise. Each cell is a node. Each "is-adjacent" re
 
 The 8-direction array is the only structural change from grid traversal in lesson 5.
 
-## The Solution
+</details>
+<details>
+<summary><h2>The Solution</h2></summary>
 
 
-```pseudocode
-function dfs(grid, r, c, visited):   # 8-direction DFS
-    visited[r][c] ← true
-    for each (dr, dc) in DIRS_8:
-        nr, nc ← r+dr, c+dc
-        if isValid(grid, nr, nc) AND NOT visited[nr][nc]:
-            dfs(grid, nr, nc, visited)
-
-function islandCount(grid):
-    visited ← rows×cols matrix of false
-    count ← 0
-    for r from 0 to rows−1:
-        for c from 0 to cols−1:
-            if grid[r][c] = 1 AND NOT visited[r][c]:
-                dfs(grid, r, c, visited)
-                count ← count + 1   # one DFS init = one island
-    return count
-```
 
 ```python run
-from typing import List
-
-# 8 directions: 4 cardinals + 4 diagonals.
-DIRS_8 = [(-1, 0), (-1, 1), (0, 1), (1, 1),
-          (1, 0), (1, -1), (0, -1), (-1, -1)]
+from typing import List, Tuple
 
 class Solution:
-    def is_valid(self, grid: List[List[int]], r: int, c: int) -> bool:
-        rows, cols = len(grid), len(grid[0])
-        return 0 <= r < rows and 0 <= c < cols and grid[r][c] == 1
+    def is_valid_cell(
+        self, grid: List[List[int]], row: int, col: int
+    ) -> bool:
 
-    def dfs(self,
-            grid: List[List[int]],
-            r: int, c: int,
-            visited: List[List[bool]]) -> None:
-        visited[r][c] = True
-        for dr, dc in DIRS_8:
-            nr, nc = r + dr, c + dc
-            if self.is_valid(grid, nr, nc) and not visited[nr][nc]:
-                self.dfs(grid, nr, nc, visited)
+        # Check if a cell is valid and belongs to a region of 1's, also
+        # check that the cell is not water
+        return (
+            row >= 0
+            and row < len(grid)
+            and col >= 0
+            and col < len(grid[0])
+            and grid[row][col] == 1
+        )
+
+    def dfs(
+        self,
+        grid: List[List[int]],
+        row: int,
+        col: int,
+        visited: List[List[bool]],
+    ) -> None:
+
+        # Mark the current cell as visited
+        visited[row][col] = True
+
+        # Define the possible movements: all 8 directions (up, right, 
+        # down, left, and diagonals)
+        directions: List[Tuple[int, int]] = [
+            (-1,  0), # Top
+            (-1,  1), # Top-right
+            (0,  1),  # Right
+            (1,  1),  # Bottom-right
+            (1,  0),  # Bottom
+            (1, -1),  # Bottom-left
+            (0, -1),  # Left
+            (-1, -1), # Top-left
+        ]
+
+        # Check all 8 neighbouring cells
+        for dr, dc in directions:
+            new_row = row + dr
+            new_col = col + dc
+
+            # If the neighbour is not visited, recursively call the DFS
+            # function on the neighbour
+            if (
+                self.is_valid_cell(grid, new_row, new_col)
+                and not visited[new_row][new_col]
+            ):
+                self.dfs(grid, new_row, new_col, visited)
 
     def island_count(self, grid: List[List[int]]) -> int:
-        if not grid or not grid[0]:
+        rows = len(grid)
+
+        # Check if the grid is empty
+        if rows == 0:
             return 0
-        rows, cols = len(grid), len(grid[0])
+
+        cols = len(grid[0])
+
+        # Initialise the island count to 0
+        islands = 0
+
+        # Initialize visited array
         visited = [[False] * cols for _ in range(rows)]
-        count = 0
-        for r in range(rows):
-            for c in range(cols):
-                if grid[r][c] == 1 and not visited[r][c]:
-                    self.dfs(grid, r, c, visited)
-                    count += 1                    # one DFS = one island
-        return count
+
+        # Traverse each cell of the grid
+        for row in range(rows):
+            for col in range(cols):
+
+                # If the cell is a water cell or it's already visited,
+                # all the cells connected to it are also visited
+                if grid[row][col] == 0 or visited[row][col]:
+                    continue
+
+                # Found a new land cell
+                islands += 1
+
+                # Perform DFS on this new cell to visit all the cells
+                # connected to it.
+                self.dfs(grid, row, col, visited)
+
+        # Return the number of islands
+        return islands
 
 
-grid = [[1, 1, 0, 0],
-        [0, 0, 1, 1],
-        [1, 0, 1, 1],
-        [1, 0, 0, 0]]
-print(Solution().island_count(grid))     # 2
+# Examples from the problem statement
+print(Solution().island_count([[1,1,0,0],[0,0,1,1],[1,0,1,1],[1,0,0,0]]))  # 2
+print(Solution().island_count([[1,1,0,0],[0,1,1,1],[1,0,1,1],[1,0,0,0]]))  # 1
+
+# Edge cases
+print(Solution().island_count([]))                                          # 0
+print(Solution().island_count([[0]]))                                       # 0
+print(Solution().island_count([[1]]))                                       # 1
+print(Solution().island_count([[0,0,0],[0,0,0]]))                           # 0
+print(Solution().island_count([[1,1],[1,1]]))                               # 1
+print(Solution().island_count([[1,0,1],[0,0,0],[1,0,1]]))                   # 4
 ```
 
 ```java run
@@ -607,114 +697,117 @@ import java.util.*;
 
 public class Main {
     static class Solution {
-        static final int[][] DIRS_8 = {{-1, 0}, {-1, 1}, {0, 1}, {1, 1},
-                                       {1, 0}, {1, -1}, {0, -1}, {-1, -1}};
+        private boolean isValidCell(int[][] grid, int row, int col) {
 
-        boolean isValid(int[][] grid, int r, int c) {
-            return r >= 0 && r < grid.length && c >= 0 && c < grid[0].length && grid[r][c] == 1;
+            // Check if a cell is valid and belongs to a region of 1's, also
+            // check that the cell is not water
+            return (
+                row >= 0 &&
+                row < grid.length &&
+                col >= 0 &&
+                col < grid[0].length &&
+                grid[row][col] == 1
+            );
         }
 
-        void dfs(int[][] grid, int r, int c, boolean[][] visited) {
-            visited[r][c] = true;
-            for (int[] d : DIRS_8) {
-                int nr = r + d[0], nc = c + d[1];
-                if (isValid(grid, nr, nc) && !visited[nr][nc]) dfs(grid, nr, nc, visited);
+        private void dfs(
+            int[][] grid,
+            int row,
+            int col,
+            boolean[][] visited
+        ) {
+
+            // Mark the current cell as visited
+            visited[row][col] = true;
+
+            // Define the possible movements: all 8 directions (up, right, 
+            // down, left, and diagonals)
+            int[][] directions = {
+                {-1,  0}, // Top
+                {-1,  1}, // Top-right
+                {0,  1},  // Right
+                {1,  1},  // Bottom-right
+                {1,  0},  // Bottom
+                {1, -1},  // Bottom-left
+                {0, -1},  // Left
+                {-1, -1}  // Top-left
+            };
+
+            // Check all 8 neighbouring cells
+            for (int[] dir : directions) {
+                int newRow = row + dir[0];
+                int newCol = col + dir[1];
+
+                // If the neighbour is not visited, recursively call the DFS
+                // function on the neighbour
+                if (
+                    isValidCell(grid, newRow, newCol) &&
+                    !visited[newRow][newCol]
+                ) {
+                    dfs(grid, newRow, newCol, visited);
+                }
             }
         }
 
-        int islandCount(int[][] grid) {
-            if (grid.length == 0) return 0;
-            int rows = grid.length, cols = grid[0].length;
+        public int islandCount(int[][] grid) {
+            int rows = grid.length;
+
+            // Check if the grid is empty
+            if (rows == 0) {
+                return 0;
+            }
+
+            int cols = grid[0].length;
+
+            // Initialise the island count to 0
+            int islands = 0;
+
+            // Initialize visited array
             boolean[][] visited = new boolean[rows][cols];
-            int count = 0;
-            for (int r = 0; r < rows; r++)
-                for (int c = 0; c < cols; c++)
-                    if (grid[r][c] == 1 && !visited[r][c]) {
-                        dfs(grid, r, c, visited); count++;
+
+            // Traverse each cell of the grid
+            for (int row = 0; row < rows; row++) {
+                for (int col = 0; col < cols; col++) {
+
+                    // If the cell is a water cell or it's already visited,
+                    // all the cells connected to it are also visited
+                    if (grid[row][col] == 0 || visited[row][col]) {
+                        continue;
                     }
-            return count;
+
+                    // Found a new land cell
+                    islands++;
+
+                    // Perform DFS on this new cell to visit all the cells
+                    // connected to it.
+                    dfs(grid, row, col, visited);
+                }
+            }
+
+            // Return the number of islands
+            return islands;
         }
     }
 
     public static void main(String[] args) {
-        int[][] grid = {{1, 1, 0, 0}, {0, 0, 1, 1}, {1, 0, 1, 1}, {1, 0, 0, 0}};
-        System.out.println(new Solution().islandCount(grid));
+        Solution sol = new Solution();
+
+        // Examples from the problem statement
+        System.out.println(sol.islandCount(new int[][]{{1,1,0,0},{0,0,1,1},{1,0,1,1},{1,0,0,0}}));  // 2
+        System.out.println(sol.islandCount(new int[][]{{1,1,0,0},{0,1,1,1},{1,0,1,1},{1,0,0,0}}));  // 1
+
+        // Edge cases
+        System.out.println(sol.islandCount(new int[][]{}));                          // 0
+        System.out.println(sol.islandCount(new int[][]{{0}}));                       // 0
+        System.out.println(sol.islandCount(new int[][]{{1}}));                       // 1
+        System.out.println(sol.islandCount(new int[][]{{0,0,0},{0,0,0}}));           // 0
+        System.out.println(sol.islandCount(new int[][]{{1,1},{1,1}}));               // 1
+        System.out.println(sol.islandCount(new int[][]{{1,0,1},{0,0,0},{1,0,1}}));   // 4
     }
 }
 ```
 
-```c run
-#include <stdio.h>
-#include <stdlib.h>
-#include <stdbool.h>
-
-static const int DIRS_8[8][2] = {
-    {-1, 0}, {-1, 1}, {0, 1}, {1, 1},
-    {1, 0}, {1, -1}, {0, -1}, {-1, -1}};
-
-static void dfs(int** grid, int rows, int cols, int r, int c, bool** visited) {
-    visited[r][c] = true;
-    for (int d = 0; d < 8; d++) {
-        int nr = r + DIRS_8[d][0], nc = c + DIRS_8[d][1];
-        if (nr >= 0 && nr < rows && nc >= 0 && nc < cols
-            && grid[nr][nc] == 1 && !visited[nr][nc])
-            dfs(grid, rows, cols, nr, nc, visited);
-    }
-}
-
-int main() {
-    int data[4][4] = {{1,1,0,0},{0,0,1,1},{1,0,1,1},{1,0,0,0}};
-    int* grid[4];
-    bool* visited[4];
-    for (int i = 0; i < 4; i++) {
-        grid[i] = data[i];
-        visited[i] = calloc(4, sizeof(bool));
-    }
-    int count = 0;
-    for (int r = 0; r < 4; r++)
-        for (int c = 0; c < 4; c++)
-            if (grid[r][c] == 1 && !visited[r][c]) {
-                dfs(grid, 4, 4, r, c, visited);
-                count++;
-            }
-    printf("%d\n", count);
-    for (int i = 0; i < 4; i++) free(visited[i]);
-    return 0;
-}
-```
-
-```scala run
-object Main extends App {
-  val DIRS_8 = Array(
-    (-1, 0), (-1, 1), (0, 1), (1, 1), (1, 0), (1, -1), (0, -1), (-1, -1))
-
-  class Solution {
-    def isValid(grid: Array[Array[Int]], r: Int, c: Int): Boolean =
-      r >= 0 && r < grid.length && c >= 0 && c < grid(0).length && grid(r)(c) == 1
-
-    def dfs(grid: Array[Array[Int]], r: Int, c: Int, visited: Array[Array[Boolean]]): Unit = {
-      visited(r)(c) = true
-      for ((dr, dc) <- DIRS_8) {
-        val nr = r + dr; val nc = c + dc
-        if (isValid(grid, nr, nc) && !visited(nr)(nc)) dfs(grid, nr, nc, visited)
-      }
-    }
-
-    def islandCount(grid: Array[Array[Int]]): Int = {
-      if (grid.isEmpty) return 0
-      val rows = grid.length; val cols = grid(0).length
-      val visited = Array.ofDim[Boolean](rows, cols)
-      var count = 0
-      for (r <- 0 until rows; c <- 0 until cols
-           if grid(r)(c) == 1 && !visited(r)(c)) { dfs(grid, r, c, visited); count += 1 }
-      count
-    }
-  }
-
-  val grid = Array(Array(1, 1, 0, 0), Array(0, 0, 1, 1), Array(1, 0, 1, 1), Array(1, 0, 0, 0))
-  println(new Solution().islandCount(grid))
-}
-```
+</details>
 
 
 ***
@@ -730,197 +823,250 @@ Input:  same grid as before
 Output: 6
 ```
 
-## Pattern Mapping
+<details>
+<summary><h2>Pattern Mapping</h2></summary>
+
 
 - `f`: +1 per cell visited.
 - `g`: max across components.
 
 The key change: DFS now **returns the size** of the component instead of just side-effecting visited.
 
-## The Solution
+</details>
+<details>
+<summary><h2>Solution &amp; Analysis</h2></summary>
 
-
-```pseudocode
-function dfs(grid, r, c, visited):   # 8-direction DFS, returns island size
-    visited[r][c] ← true
-    size ← 1
-    for each (dr, dc) in DIRS_8:
-        nr, nc ← r+dr, c+dc
-        if isValid(grid, nr, nc) AND NOT visited[nr][nc]:
-            size ← size + dfs(grid, nr, nc, visited)
-    return size
-
-function sizeOfLargestIsland(grid):
-    visited ← rows×cols matrix of false
-    largest ← 0
-    for r from 0 to rows−1:
-        for c from 0 to cols−1:
-            if grid[r][c] = 1 AND NOT visited[r][c]:
-                size ← dfs(grid, r, c, visited)
-                if size > largest: largest ← size
-    return largest
-```
+### The Solution
 
 ```python run
-from typing import List
-
-DIRS_8 = [(-1, 0), (-1, 1), (0, 1), (1, 1),
-          (1, 0), (1, -1), (0, -1), (-1, -1)]
+from typing import List, Tuple
 
 class Solution:
-    def is_valid(self, grid: List[List[int]], r: int, c: int) -> bool:
-        rows, cols = len(grid), len(grid[0])
-        return 0 <= r < rows and 0 <= c < cols and grid[r][c] == 1
+    def is_valid_cell(
+        self, grid: List[List[int]], row: int, col: int
+    ) -> bool:
 
-    def dfs(self,
-            grid: List[List[int]],
-            r: int, c: int,
-            visited: List[List[bool]]) -> int:
-        visited[r][c] = True
-        size = 1                                 # this cell counts
-        for dr, dc in DIRS_8:
-            nr, nc = r + dr, c + dc
-            if self.is_valid(grid, nr, nc) and not visited[nr][nc]:
-                size += self.dfs(grid, nr, nc, visited)
+        # Check if a cell is valid and belongs to a region of 1's, also
+        # check that the cell is not water
+        return (
+            row >= 0
+            and row < len(grid)
+            and col >= 0
+            and col < len(grid[0])
+            and grid[row][col] == 1
+        )
+
+    def dfs(
+        self,
+        grid: List[List[int]],
+        row: int,
+        col: int,
+        visited: List[List[bool]],
+    ) -> int:
+
+        # Mark the current cell as visited
+        visited[row][col] = True
+
+        # Define the possible movements: all 8 directions (up, right, 
+        # down, left, and diagonals)
+        directions: List[Tuple[int, int]] = [
+            (-1,  0), # Top
+            (-1,  1), # Top-right
+            (0,  1),  # Right
+            (1,  1),  # Bottom-right
+            (1,  0),  # Bottom
+            (1, -1),  # Bottom-left
+            (0, -1),  # Left
+            (-1, -1), # Top-left
+        ]
+
+        # Initialize the size of the region
+        size = 1
+
+        # Check all 8 neighbouring cells
+        for dr, dc in directions:
+            new_row = row + dr
+            new_col = col + dc
+
+            # If the neighbour is not visited, recursively call the DFS
+            # function on the neighbour
+            if (
+                self.is_valid_cell(grid, new_row, new_col)
+                and not visited[new_row][new_col]
+            ):
+                size += self.dfs(grid, new_row, new_col, visited)
+
         return size
 
     def size_of_largest_island(self, grid: List[List[int]]) -> int:
-        if not grid or not grid[0]:
+        rows = len(grid)
+
+        # Check if the grid is empty
+        if rows == 0:
             return 0
-        rows, cols = len(grid), len(grid[0])
+
+        cols = len(grid[0])
+
+        # Initialise the largest island size to 0
+        largest_island_size = 0
+
+        # Initialize visited array
         visited = [[False] * cols for _ in range(rows)]
-        largest = 0
-        for r in range(rows):
-            for c in range(cols):
-                if grid[r][c] == 1 and not visited[r][c]:
-                    size = self.dfs(grid, r, c, visited)
-                    if size > largest:
-                        largest = size
-        return largest
+
+        # Traverse each cell of the grid
+        for row in range(rows):
+            for col in range(cols):
+
+                # If the cell is a water cell or it's already visited,
+                # all the cells connected to it are also visited
+                if grid[row][col] == 0 or visited[row][col]:
+                    continue
+
+                # Perform DFS on this new cell to visit all the cells
+                # connected to it and get the size of this island.
+                island_size = self.dfs(grid, row, col, visited)
+
+                # Update the size of the largest island
+                largest_island_size = max(
+                    largest_island_size, island_size
+                )
+
+        # Return the size of the largest island
+        return largest_island_size
 
 
-grid = [[1, 1, 0, 0], [0, 0, 1, 1], [1, 0, 1, 1], [1, 0, 0, 0]]
-print(Solution().size_of_largest_island(grid))   # 6
+# Examples from the problem statement
+print(Solution().size_of_largest_island([[1,1,0,0],[0,0,1,1],[1,0,1,1],[1,0,0,0]]))  # 6
+print(Solution().size_of_largest_island([[1,1,0,0],[0,1,1,1],[1,0,1,1],[1,0,0,0]]))  # 9
+
+# Edge cases
+print(Solution().size_of_largest_island([]))                                          # 0
+print(Solution().size_of_largest_island([[0]]))                                       # 0
+print(Solution().size_of_largest_island([[1]]))                                       # 1
+print(Solution().size_of_largest_island([[1,1],[1,1]]))                               # 4
+print(Solution().size_of_largest_island([[1,0,1],[0,0,0],[1,0,1]]))                   # 1
+print(Solution().size_of_largest_island([[0,0],[0,0]]))                               # 0
 ```
 
 ```java run
+import java.util.*;
+
 public class Main {
     static class Solution {
-        static final int[][] DIRS_8 = {{-1, 0}, {-1, 1}, {0, 1}, {1, 1},
-                                       {1, 0}, {1, -1}, {0, -1}, {-1, -1}};
+        private boolean isValidCell(int[][] grid, int row, int col) {
 
-        boolean isValid(int[][] g, int r, int c) {
-            return r >= 0 && r < g.length && c >= 0 && c < g[0].length && g[r][c] == 1;
+            // Check if a cell is valid and belongs to a region of 1's, also
+            // check that the cell is not water
+            return (
+                row >= 0 &&
+                row < grid.length &&
+                col >= 0 &&
+                col < grid[0].length &&
+                grid[row][col] == 1
+            );
         }
 
-        int dfs(int[][] g, int r, int c, boolean[][] visited) {
-            visited[r][c] = true;
+        private int dfs(int[][] grid, int row, int col, boolean[][] visited) {
+
+            // Mark the current cell as visited
+            visited[row][col] = true;
+
+            // Define the possible movements: all 8 directions (up, right, 
+            // down, left, and diagonals)
+            int[][] directions = {
+                {-1,  0}, // Top
+                {-1,  1}, // Top-right
+                {0,  1},  // Right
+                {1,  1},  // Bottom-right
+                {1,  0},  // Bottom
+                {1, -1},  // Bottom-left
+                {0, -1},  // Left
+                {-1, -1}  // Top-left
+            };
+
+            // Initialize the size of the region
             int size = 1;
-            for (int[] d : DIRS_8) {
-                int nr = r + d[0], nc = c + d[1];
-                if (isValid(g, nr, nc) && !visited[nr][nc]) size += dfs(g, nr, nc, visited);
+
+            // Check all 8 neighbouring cells
+            for (int[] dir : directions) {
+                int newRow = row + dir[0];
+                int newCol = col + dir[1];
+
+                // If the neighbour is not visited, recursively call the DFS
+                // function on the neighbour
+                if (
+                    isValidCell(grid, newRow, newCol) &&
+                    !visited[newRow][newCol]
+                ) {
+                    size += dfs(grid, newRow, newCol, visited);
+                }
             }
+
             return size;
         }
 
-        int sizeOfLargestIsland(int[][] g) {
-            if (g.length == 0) return 0;
-            int rows = g.length, cols = g[0].length;
+        public int sizeOfLargestIsland(int[][] grid) {
+            int rows = grid.length;
+
+            // Check if the grid is empty
+            if (rows == 0) {
+                return 0;
+            }
+
+            int cols = grid[0].length;
+
+            // Initialise the largest island size to 0
+            int largestIslandSize = 0;
+
+            // Initialize visited array
             boolean[][] visited = new boolean[rows][cols];
-            int largest = 0;
-            for (int r = 0; r < rows; r++)
-                for (int c = 0; c < cols; c++)
-                    if (g[r][c] == 1 && !visited[r][c])
-                        largest = Math.max(largest, dfs(g, r, c, visited));
-            return largest;
+
+            // Traverse each cell of the grid
+            for (int row = 0; row < rows; row++) {
+                for (int col = 0; col < cols; col++) {
+
+                    // If the cell is a water cell or it's already visited,
+                    // all the cells connected to it are also visited
+                    if (grid[row][col] == 0 || visited[row][col]) {
+                        continue;
+                    }
+
+                    // Perform DFS on this new cell to visit all the cells
+                    // connected to it and get the size of this island.
+                    int islandSize = dfs(grid, row, col, visited);
+
+                    // Update the size of the largest island
+                    largestIslandSize = Math.max(
+                        largestIslandSize,
+                        islandSize
+                    );
+                }
+            }
+
+            // Return the size of the largest island
+            return largestIslandSize;
         }
     }
 
     public static void main(String[] args) {
-        int[][] grid = {{1, 1, 0, 0}, {0, 0, 1, 1}, {1, 0, 1, 1}, {1, 0, 0, 0}};
-        System.out.println(new Solution().sizeOfLargestIsland(grid));
+        Solution sol = new Solution();
+
+        // Examples from the problem statement
+        System.out.println(sol.sizeOfLargestIsland(new int[][]{{1,1,0,0},{0,0,1,1},{1,0,1,1},{1,0,0,0}}));  // 6
+        System.out.println(sol.sizeOfLargestIsland(new int[][]{{1,1,0,0},{0,1,1,1},{1,0,1,1},{1,0,0,0}}));  // 9
+
+        // Edge cases
+        System.out.println(sol.sizeOfLargestIsland(new int[][]{}));                          // 0
+        System.out.println(sol.sizeOfLargestIsland(new int[][]{{0}}));                       // 0
+        System.out.println(sol.sizeOfLargestIsland(new int[][]{{1}}));                       // 1
+        System.out.println(sol.sizeOfLargestIsland(new int[][]{{1,1},{1,1}}));               // 4
+        System.out.println(sol.sizeOfLargestIsland(new int[][]{{1,0,1},{0,0,0},{1,0,1}}));   // 1
+        System.out.println(sol.sizeOfLargestIsland(new int[][]{{0,0},{0,0}}));               // 0
     }
 }
 ```
 
-```c run
-#include <stdio.h>
-#include <stdlib.h>
-#include <stdbool.h>
-
-static const int DIRS[8][2] = {
-    {-1, 0}, {-1, 1}, {0, 1}, {1, 1},
-    {1, 0}, {1, -1}, {0, -1}, {-1, -1}};
-
-static int dfs(int** g, int rows, int cols, int r, int c, bool** visited) {
-    visited[r][c] = true;
-    int size = 1;
-    for (int d = 0; d < 8; d++) {
-        int nr = r + DIRS[d][0], nc = c + DIRS[d][1];
-        if (nr >= 0 && nr < rows && nc >= 0 && nc < cols
-            && g[nr][nc] == 1 && !visited[nr][nc])
-            size += dfs(g, rows, cols, nr, nc, visited);
-    }
-    return size;
-}
-
-int main() {
-    int data[4][4] = {{1,1,0,0},{0,0,1,1},{1,0,1,1},{1,0,0,0}};
-    int* grid[4]; bool* visited[4];
-    for (int i = 0; i < 4; i++) {
-        grid[i] = data[i]; visited[i] = calloc(4, sizeof(bool));
-    }
-    int largest = 0;
-    for (int r = 0; r < 4; r++)
-        for (int c = 0; c < 4; c++)
-            if (grid[r][c] == 1 && !visited[r][c]) {
-                int s = dfs(grid, 4, 4, r, c, visited);
-                if (s > largest) largest = s;
-            }
-    printf("%d\n", largest);
-    for (int i = 0; i < 4; i++) free(visited[i]);
-    return 0;
-}
-```
-
-```scala run
-object Main extends App {
-  val DIRS_8 = Array(
-    (-1, 0), (-1, 1), (0, 1), (1, 1), (1, 0), (1, -1), (0, -1), (-1, -1))
-
-  class Solution {
-    def isValid(g: Array[Array[Int]], r: Int, c: Int): Boolean =
-      r >= 0 && r < g.length && c >= 0 && c < g(0).length && g(r)(c) == 1
-
-    def dfs(g: Array[Array[Int]], r: Int, c: Int, visited: Array[Array[Boolean]]): Int = {
-      visited(r)(c) = true
-      var size = 1
-      for ((dr, dc) <- DIRS_8) {
-        val nr = r + dr; val nc = c + dc
-        if (isValid(g, nr, nc) && !visited(nr)(nc)) size += dfs(g, nr, nc, visited)
-      }
-      size
-    }
-
-    def sizeOfLargestIsland(g: Array[Array[Int]]): Int = {
-      if (g.isEmpty) return 0
-      val rows = g.length; val cols = g(0).length
-      val visited = Array.ofDim[Boolean](rows, cols)
-      var largest = 0
-      for (r <- 0 until rows; c <- 0 until cols
-           if g(r)(c) == 1 && !visited(r)(c))
-        largest = math.max(largest, dfs(g, r, c, visited))
-      largest
-    }
-  }
-
-  val grid = Array(Array(1, 1, 0, 0), Array(0, 0, 1, 1), Array(1, 0, 1, 1), Array(1, 0, 0, 0))
-  println(new Solution().sizeOfLargestIsland(grid))
-}
-```
-
-
-## Complexity Analysis
+### Complexity Analysis
 
 | Problem | Time | Space |
 |---|---|---|
@@ -931,9 +1077,10 @@ object Main extends App {
 
 Each cell or node is visited exactly once, total. The pattern's strength is that **any number of components** sums to the same `O(N + E)` because each node/edge is processed exactly once across *all* DFS calls combined — the outer-loop iterations don't multiply work, they just spread it.
 
----
+</details>
+<details>
+<summary><h2>Final Takeaway</h2></summary>
 
-## Final Takeaway
 
 The connected-components pattern is a tiny structural addition over a plain traversal: **a per-component aggregate that resets between components**. Once you see this two-level structure, dozens of "find / count / process every group" problems fold into the same template.
 
@@ -943,6 +1090,7 @@ Coming up: **two-colouring** — a cousin of the connected-components pattern th
 
 > **Transfer challenge.** A photo of a chessboard has been corrupted — some squares are white, some black, some grey (unknown). You're told the original was a valid chessboard (white and black alternate). Sketch how connected-components could detect whether the corruption is consistent with an original chessboard.
 
+</details>
 <details>
 <summary><strong>Sketch</strong></summary>
 

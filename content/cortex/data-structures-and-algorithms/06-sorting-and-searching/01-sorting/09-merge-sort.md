@@ -227,158 +227,194 @@ The merge step combines two sorted arrays in `O(n + m)` time with a two-pointer 
 Two functions: `merge` (combines two sorted arrays) and `merge_sort` (the recursive driver).
 
 
-```pseudocode
-function mergeSort(arr):
-    if length(arr) ≤ 1:
-        return arr
-    mid ← length(arr) ÷ 2
-    left  ← mergeSort(arr[0..mid − 1])      # recursively sort each half
-    right ← mergeSort(arr[mid..end])
-    return merge(left, right)               # combine two sorted halves into one
-
-function merge(left, right):
-    result ← empty list
-    i ← 0; j ← 0
-    while i < length(left) AND j < length(right):
-        if left[i] ≤ right[j]:              # ≤ keeps the sort stable
-            append left[i] to result
-            i ← i + 1
-        else:
-            append right[j] to result
-            j ← j + 1
-    append remaining elements of left and right to result
-    return result
-```
-
 ```python run
 from typing import List
 
 class Solution:
+    def merge(
+        self, left_arr: List[int], right_arr: List[int]
+    ) -> List[int]:
+
+        # Create an empty list to store the merged array
+        merged_arr: List[int] = []
+
+        # Initialize two pointers, i for left arr and j for right arr
+        i, j = 0, 0
+
+        # Compare elements from both arrays and add the smaller one to
+        # the merged_arr
+        while i < len(left_arr) and j < len(right_arr):
+
+            # If the element in leftArr is smaller or equal to the
+            # element in rightArr add the element from leftArr to
+            # mergedArr
+            if left_arr[i] <= right_arr[j]:
+
+                # Add element from left arr to merged arr
+                merged_arr.append(left_arr[i])
+
+                # Move the pointer for left arr to the next element
+                i += 1
+
+            # Else if the element in rightArr is smaller than the
+            # element in leftArr add the element from rightArr to
+            # mergedArr
+            else:
+
+                # Add element from right arr to merged arr
+                merged_arr.append(right_arr[j])
+
+                # Move the pointer for right arr to the next element
+                j += 1
+
+        # Add any remaining elements from left arr (if any) to the merged
+        # arr
+        while i < len(left_arr):
+            merged_arr.append(left_arr[i])
+            i += 1
+
+        # Add any remaining elements from right arr (if any) to the
+        # merged arr
+        while j < len(right_arr):
+            merged_arr.append(right_arr[j])
+            j += 1
+
+        # Return the sorted and merged list
+        return merged_arr
+
     def merge_sort(self, arr: List[int]) -> List[int]:
+
+        # Base case: if the list has 1 or fewer elements, it is
+        # already sorted
         if len(arr) <= 1:
             return arr
-        mid = len(arr) // 2
-        left = self.merge_sort(arr[:mid])
-        right = self.merge_sort(arr[mid:])
-        return self._merge(left, right)
 
-    def _merge(self, left: List[int], right: List[int]) -> List[int]:
-        result: List[int] = []
-        i = j = 0
-        while i < len(left) and j < len(right):
-            if left[i] <= right[j]:                   # `<=` for stability
-                result.append(left[i]); i += 1
-            else:
-                result.append(right[j]); j += 1
-        result.extend(left[i:])
-        result.extend(right[j:])
-        return result
+        # Find the middle index of the list
+        mid: int = len(arr) // 2
+
+        # Split the list into two halves
+        left_arr = arr[:mid]
+        right_arr = arr[mid:]
+
+        # Recursively sort the left half
+        left_arr = self.merge_sort(left_arr)
+
+        # Recursively sort the right half
+        right_arr = self.merge_sort(right_arr)
+
+        # Merge the sorted halves and return the result
+        return self.merge(left_arr, right_arr)
 
 
-if __name__ == "__main__":
-    print(Solution().merge_sort([7, 2, 5, 1, 8, 4, 3, 6]))   # [1, 2, 3, 4, 5, 6, 7, 8]
+print(Solution().merge_sort([2, 3, 2, 1, 5, 6]))        # [1, 2, 2, 3, 5, 6]
+print(Solution().merge_sort([6, 5, 4, 4, 4, 3, 2, 1]))  # [1, 2, 3, 4, 4, 4, 5, 6]
+print(Solution().merge_sort([1, 2, 3, 4, 5, 6]))         # [1, 2, 3, 4, 5, 6]
+print(Solution().merge_sort([]))                          # []
+print(Solution().merge_sort([42]))                        # [42]
+print(Solution().merge_sort([2, 1]))                      # [1, 2]
+print(Solution().merge_sort([3, 3, 3]))                   # [3, 3, 3]
+print(Solution().merge_sort([5, 2, 8, 1, 9]))             # [1, 2, 5, 8, 9]
 ```
 
 ```java run
-import java.util.Arrays;
+import java.util.*;
 
 public class Main {
     static class Solution {
-        public int[] mergeSort(int[] arr) {
-            if (arr.length <= 1) return arr;
-            int mid = arr.length / 2;
-            int[] left = mergeSort(Arrays.copyOfRange(arr, 0, mid));
-            int[] right = mergeSort(Arrays.copyOfRange(arr, mid, arr.length));
-            return merge(left, right);
+        private int[] merge(int[] leftArr, int[] rightArr) {
+
+            // Create an empty array to store the merged array
+            int[] mergedArr = new int[leftArr.length + rightArr.length];
+
+            // Initialize two pointers, i for leftArr and j for rightArr
+            int i = 0, j = 0, k = 0;
+
+            // Compare elements from both arrays and add the smaller one to
+            // the mergedArr
+            while (i < leftArr.length && j < rightArr.length) {
+
+                // If the element in leftArr is smaller or equal to the
+                // element in rightArr add the element from leftArr to
+                // mergedArr
+                if (leftArr[i] <= rightArr[j]) {
+
+                    // Add element from leftArr to mergedArr
+                    mergedArr[k] = leftArr[i];
+
+                    // Move the pointer for leftArr to the next element
+                    i++;
+                }
+
+                // Else if the element in rightArr is smaller than the
+                // element in leftArr add the element from rightArr to
+                // mergedArr
+                else {
+
+                    // Add element from rightArr to mergedArr
+                    mergedArr[k] = rightArr[j];
+
+                    // Move the pointer for rightArr to the next element
+                    j++;
+                }
+                k++;
+            }
+
+            // Add any remaining elements from leftArr (if any) to the
+            // mergedArr
+            while (i < leftArr.length) {
+                mergedArr[k] = leftArr[i];
+                i++;
+                k++;
+            }
+
+            // Add any remaining elements from rightArr (if any) to the
+            // mergedArr
+            while (j < rightArr.length) {
+                mergedArr[k] = rightArr[j];
+                j++;
+                k++;
+            }
+
+            // Return the sorted and merged array
+            return mergedArr;
         }
 
-        private int[] merge(int[] left, int[] right) {
-            int[] result = new int[left.length + right.length];
-            int i = 0, j = 0, k = 0;
-            while (i < left.length && j < right.length) {
-                if (left[i] <= right[j]) result[k++] = left[i++];
-                else result[k++] = right[j++];
+        public int[] mergeSort(int[] arr) {
+
+            // Base case: if the array has 1 or fewer elements, it is
+            // already sorted
+            if (arr.length <= 1) {
+                return arr;
             }
-            while (i < left.length) result[k++] = left[i++];
-            while (j < right.length) result[k++] = right[j++];
-            return result;
+
+            // Find the middle index of the array
+            int mid = arr.length / 2;
+
+            // Split the array into two halves
+            int[] leftArr = Arrays.copyOfRange(arr, 0, mid);
+            int[] rightArr = Arrays.copyOfRange(arr, mid, arr.length);
+
+            // Recursively sort the left half
+            leftArr = mergeSort(leftArr);
+
+            // Recursively sort the right half
+            rightArr = mergeSort(rightArr);
+
+            // Merge the sorted halves and return the result
+            return merge(leftArr, rightArr);
         }
     }
 
     public static void main(String[] args) {
-        int[] r = new Solution().mergeSort(new int[]{7, 2, 5, 1, 8, 4, 3, 6});
-        for (int x : r) System.out.print(x + " ");
-        System.out.println();
+        System.out.println(Arrays.toString(new Solution().mergeSort(new int[]{2, 3, 2, 1, 5, 6})));       // [1, 2, 2, 3, 5, 6]
+        System.out.println(Arrays.toString(new Solution().mergeSort(new int[]{6, 5, 4, 4, 4, 3, 2, 1}))); // [1, 2, 3, 4, 4, 4, 5, 6]
+        System.out.println(Arrays.toString(new Solution().mergeSort(new int[]{1, 2, 3, 4, 5, 6})));       // [1, 2, 3, 4, 5, 6]
+        System.out.println(Arrays.toString(new Solution().mergeSort(new int[]{})));                        // []
+        System.out.println(Arrays.toString(new Solution().mergeSort(new int[]{42})));                      // [42]
+        System.out.println(Arrays.toString(new Solution().mergeSort(new int[]{2, 1})));                    // [1, 2]
+        System.out.println(Arrays.toString(new Solution().mergeSort(new int[]{3, 3, 3})));                 // [3, 3, 3]
+        System.out.println(Arrays.toString(new Solution().mergeSort(new int[]{5, 2, 8, 1, 9})));           // [1, 2, 5, 8, 9]
     }
-}
-```
-
-```c run
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-
-void merge(int *arr, int left, int mid, int right, int *temp) {
-    int i = left, j = mid + 1, k = left;
-    while (i <= mid && j <= right) {
-        if (arr[i] <= arr[j]) temp[k++] = arr[i++];
-        else temp[k++] = arr[j++];
-    }
-    while (i <= mid) temp[k++] = arr[i++];
-    while (j <= right) temp[k++] = arr[j++];
-    for (int t = left; t <= right; t++) arr[t] = temp[t];
-}
-
-void merge_sort_helper(int *arr, int left, int right, int *temp) {
-    if (left >= right) return;
-    int mid = left + (right - left) / 2;
-    merge_sort_helper(arr, left, mid, temp);
-    merge_sort_helper(arr, mid + 1, right, temp);
-    merge(arr, left, mid, right, temp);
-}
-
-void merge_sort(int *arr, int n) {
-    int *temp = (int *) malloc(n * sizeof(int));
-    merge_sort_helper(arr, 0, n - 1, temp);
-    free(temp);
-}
-
-int main(void) {
-    int arr[] = {7, 2, 5, 1, 8, 4, 3, 6};
-    int n = 8;
-    merge_sort(arr, n);
-    for (int i = 0; i < n; i++) printf("%d ", arr[i]);
-    printf("\n");
-    return 0;
-}
-```
-
-```scala run
-object Main extends App {
-  class Solution {
-    def mergeSort(arr: Array[Int]): Array[Int] = {
-      if (arr.length <= 1) return arr
-      val mid = arr.length / 2
-      val left = mergeSort(arr.slice(0, mid))
-      val right = mergeSort(arr.slice(mid, arr.length))
-      merge(left, right)
-    }
-
-    private def merge(left: Array[Int], right: Array[Int]): Array[Int] = {
-      val result = new Array[Int](left.length + right.length)
-      var i = 0; var j = 0; var k = 0
-      while (i < left.length && j < right.length) {
-        if (left(i) <= right(j)) { result(k) = left(i); i += 1 }
-        else { result(k) = right(j); j += 1 }
-        k += 1
-      }
-      while (i < left.length) { result(k) = left(i); i += 1; k += 1 }
-      while (j < right.length) { result(k) = right(j); j += 1; k += 1 }
-      result
-    }
-  }
-
-  println(new Solution().mergeSort(Array(7, 2, 5, 1, 8, 4, 3, 6)).mkString(" "))
 }
 ```
 
@@ -459,13 +495,14 @@ Output: [1, 2, 3, 4, 5, 6]
 
 ---
 
-## The Solution
+<details>
+<summary><h2>Solution &amp; Analysis</h2></summary>
 
-The implementation is identical to the version above. See [Implementation](#implementation) for all 10 languages.
+### The Solution
 
----
+The implementation is identical to the version above. See [Implementation](#implementation).
 
-## Edge Cases
+### Edge Cases
 
 | Case | Example | Expected |
 |---|---|---|
@@ -474,6 +511,8 @@ The implementation is identical to the version above. See [Implementation](#impl
 | All equal | `[3, 3, 3, 3]` | `[3, 3, 3, 3]` — `<=` keeps stable. |
 | Already sorted | `[1, 2, 3]` | `[1, 2, 3]` (still does full `O(n log n)` work). |
 | Reverse sorted | `[5, 4, 3, 2, 1]` | `[1, 2, 3, 4, 5]`. |
+
+</details>
 
 ---
 
@@ -501,7 +540,9 @@ Output: 0   (sorted, no inversions)
 
 ---
 
-## Why Merge Sort Solves This
+<details>
+<summary><h2>Why Merge Sort Solves This</h2></summary>
+
 
 The naive `O(n²)` algorithm: nested loops, count pairs where `arr[i] > arr[j]` for `i < j`. Works but slow.
 
@@ -530,9 +571,10 @@ final_merge -> total
 
 <p align="center"><strong>Counting inversions during merge sort. Each merge counts the inversions <em>between</em> its two halves; recursion handles inversions within each half.</strong></p>
 
----
+</details>
+<details>
+<summary><h2>The Algorithm</h2></summary>
 
-## The Algorithm
 
 ```
 function merge_count(arr, temp, left, right):
@@ -558,191 +600,238 @@ function merge_and_count(arr, temp, left, mid, right):
     return count
 ```
 
----
+</details>
+<details>
+<summary><h2>Solution &amp; Analysis</h2></summary>
 
-## The Solution
-
-
-```pseudocode
-function countInversions(arr):
-    temp ← list of length(arr) zeros
-    return sortAndCount(arr, temp, 0, length(arr) − 1)
-
-function sortAndCount(arr, temp, left, right):
-    if left ≥ right:
-        return 0
-    mid ← (left + right) ÷ 2
-    inv ← sortAndCount(arr, temp, left, mid)               # inversions inside the left half
-    inv ← inv + sortAndCount(arr, temp, mid + 1, right)    # inversions inside the right half
-    inv ← inv + mergeAndCount(arr, temp, left, mid, right) # cross-half inversions
-    return inv
-
-function mergeAndCount(arr, temp, left, mid, right):
-    i ← left; j ← mid + 1; k ← left; inv ← 0
-    while i ≤ mid AND j ≤ right:
-        if arr[i] ≤ arr[j]:
-            temp[k] ← arr[i]; i ← i + 1
-        else:
-            temp[k] ← arr[j]; j ← j + 1
-            inv ← inv + (mid − i + 1)         # arr[i..mid] all > arr[j] → that many inversions at once
-        k ← k + 1
-    copy remaining of arr[i..mid] and arr[j..right] into temp[k..]
-    copy temp[left..right] back into arr[left..right]
-    return inv
-```
+### The Solution
 
 ```python run
 from typing import List
 
 class Solution:
-    def count_inversions(self, arr: List[int]) -> int:
-        temp = [0] * len(arr)
-        return self._sort_count(arr, temp, 0, len(arr) - 1)
+    def merge_and_count_inversions(
+        self,
+        arr: List[int],
+        temp: List[int],
+        left: int,
+        mid: int,
+        right: int,
+    ) -> int:
 
-    def _sort_count(self, arr: List[int], temp: List[int], left: int, right: int) -> int:
-        if left >= right: return 0
-        mid = (left + right) // 2
-        inv = self._sort_count(arr, temp, left, mid)
-        inv += self._sort_count(arr, temp, mid + 1, right)
-        inv += self._merge_count(arr, temp, left, mid, right)
-        return inv
+        # Index for left subarray
+        index1: int = left
 
-    def _merge_count(self, arr: List[int], temp: List[int], left: int, mid: int, right: int) -> int:
-        i, j, k, count = left, mid + 1, left, 0
-        while i <= mid and j <= right:
-            if arr[i] <= arr[j]:
-                temp[k] = arr[i]; i += 1
+        # Index for right subarray
+        index2: int = mid + 1
+
+        # Index for merged subarray
+        index3: int = left
+
+        # Count of inversions
+        inversions: int = 0
+
+        while index1 <= mid and index2 <= right:
+            if arr[index1] <= arr[index2]:
+                temp[index3] = arr[index1]
+                index1 += 1
             else:
-                temp[k] = arr[j]; j += 1
-                count += mid - i + 1
-            k += 1
-        while i <= mid: temp[k] = arr[i]; i += 1; k += 1
-        while j <= right: temp[k] = arr[j]; j += 1; k += 1
-        for t in range(left, right + 1):
-            arr[t] = temp[t]
-        return count
+                temp[index3] = arr[index2]
+                index2 += 1
+
+                # Count inversions
+                inversions += mid - index1 + 1
+            index3 += 1
+
+        # Copy the remaining elements of the left subarray
+        while index1 <= mid:
+            temp[index3] = arr[index1]
+            index1 += 1
+            index3 += 1
+
+        # Copy the remaining elements of the right subarray
+        while index2 <= right:
+            temp[index3] = arr[index2]
+            index2 += 1
+            index3 += 1
+
+        # Copy back the merged elements to the original array
+        for i in range(left, right + 1):
+            arr[i] = temp[i]
+
+        return inversions
+
+    def merge_sort_and_count_inversions(
+        self, arr: List[int], temp: List[int], left: int, right: int
+    ) -> int:
+
+        # Count of inversions
+        inversions: int = 0
+
+        if left < right:
+            mid = left + (right - left) // 2
+
+            # Recursive calls to divide the array into subarrays
+            inversions += self.merge_sort_and_count_inversions(
+                arr, temp, left, mid
+            )
+            inversions += self.merge_sort_and_count_inversions(
+                arr, temp, mid + 1, right
+            )
+
+            # Merge the sorted subarrays and count inversions
+            inversions += self.merge_and_count_inversions(
+                arr, temp, left, mid, right
+            )
+
+        return inversions
+
+    def count_inversions(self, arr: List[int]) -> int:
+        n: int = len(arr)
+
+        # Temporary array to store merged subarrays
+        temp: List[int] = [0] * n
+
+        return self.merge_sort_and_count_inversions(arr, temp, 0, n - 1)
 
 
-if __name__ == "__main__":
-    print(Solution().count_inversions([1, 10, 5, 3, 4]))   # 5
+print(Solution().count_inversions([1, 10, 5, 3, 4]))   # 5
+print(Solution().count_inversions([1, 3, 2, 4, 5]))    # 1
+print(Solution().count_inversions([1, 2, 3, 4, 5]))    # 0
+print(Solution().count_inversions([]))                  # 0
+print(Solution().count_inversions([42]))                # 0
+print(Solution().count_inversions([2, 1]))              # 1
+print(Solution().count_inversions([5, 4, 3, 2, 1]))    # 10
+print(Solution().count_inversions([1, 1, 1]))           # 0
 ```
 
 ```java run
+import java.util.*;
+
 public class Main {
     static class Solution {
-        public int countInversions(int[] arr) {
-            int[] temp = new int[arr.length];
-            return sortCount(arr, temp, 0, arr.length - 1);
-        }
+        private int mergeAndCountInversions(
+            int[] arr,
+            int[] temp,
+            int left,
+            int mid,
+            int right
+        ) {
 
-        private int sortCount(int[] arr, int[] temp, int left, int right) {
-            if (left >= right) return 0;
-            int mid = (left + right) / 2;
-            int inv = sortCount(arr, temp, left, mid);
-            inv += sortCount(arr, temp, mid + 1, right);
-            inv += mergeCount(arr, temp, left, mid, right);
-            return inv;
-        }
+            // Index for left subarray
+            int index1 = left;
 
-        private int mergeCount(int[] arr, int[] temp, int left, int mid, int right) {
-            int i = left, j = mid + 1, k = left, count = 0;
-            while (i <= mid && j <= right) {
-                if (arr[i] <= arr[j]) temp[k++] = arr[i++];
-                else { temp[k++] = arr[j++]; count += mid - i + 1; }
+            // Index for right subarray
+            int index2 = mid + 1;
+
+            // Index for merged subarray
+            int index3 = left;
+
+            // Count of inversions
+            int inversions = 0;
+
+            while (index1 <= mid && index2 <= right) {
+                if (arr[index1] <= arr[index2]) {
+                    temp[index3++] = arr[index1++];
+                } else {
+                    temp[index3++] = arr[index2++];
+
+                    // Count inversions
+                    inversions += mid - index1 + 1;
+                }
             }
-            while (i <= mid) temp[k++] = arr[i++];
-            while (j <= right) temp[k++] = arr[j++];
-            for (int t = left; t <= right; t++) arr[t] = temp[t];
-            return count;
+
+            // Copy the remaining elements of the left subarray
+            while (index1 <= mid) {
+                temp[index3++] = arr[index1++];
+            }
+
+            // Copy the remaining elements of the right subarray
+            while (index2 <= right) {
+                temp[index3++] = arr[index2++];
+            }
+
+            // Copy back the merged elements to the original array
+            for (int i = left; i <= right; i++) {
+                arr[i] = temp[i];
+            }
+
+            return inversions;
+        }
+
+        private int mergeSortAndCountInversions(
+            int[] arr,
+            int[] temp,
+            int left,
+            int right
+        ) {
+
+            // Count of inversions
+            int inversions = 0;
+
+            if (left < right) {
+                int mid = left + (right - left) / 2;
+
+                // Recursive calls to divide the array into subarrays
+                inversions += mergeSortAndCountInversions(
+                    arr,
+                    temp,
+                    left,
+                    mid
+                );
+                inversions += mergeSortAndCountInversions(
+                    arr,
+                    temp,
+                    mid + 1,
+                    right
+                );
+
+                // Merge the sorted subarrays and count inversions
+                inversions += mergeAndCountInversions(
+                    arr,
+                    temp,
+                    left,
+                    mid,
+                    right
+                );
+            }
+
+            return inversions;
+        }
+
+        public int countInversions(int[] arr) {
+            int n = arr.length;
+
+            // Temporary array to store merged subarrays
+            int[] temp = new int[n];
+
+            return mergeSortAndCountInversions(arr, temp, 0, n - 1);
         }
     }
 
     public static void main(String[] args) {
-        System.out.println(new Solution().countInversions(new int[]{1, 10, 5, 3, 4}));   // 5
+        System.out.println(new Solution().countInversions(new int[]{1, 10, 5, 3, 4}));  // 5
+        System.out.println(new Solution().countInversions(new int[]{1, 3, 2, 4, 5}));   // 1
+        System.out.println(new Solution().countInversions(new int[]{1, 2, 3, 4, 5}));   // 0
+        System.out.println(new Solution().countInversions(new int[]{}));                 // 0
+        System.out.println(new Solution().countInversions(new int[]{42}));               // 0
+        System.out.println(new Solution().countInversions(new int[]{2, 1}));             // 1
+        System.out.println(new Solution().countInversions(new int[]{5, 4, 3, 2, 1}));   // 10
+        System.out.println(new Solution().countInversions(new int[]{1, 1, 1}));          // 0
     }
 }
 ```
 
-```c run
-#include <stdio.h>
-#include <stdlib.h>
-
-int merge_count(int *arr, int *temp, int left, int mid, int right) {
-    int i = left, j = mid + 1, k = left, count = 0;
-    while (i <= mid && j <= right) {
-        if (arr[i] <= arr[j]) temp[k++] = arr[i++];
-        else { temp[k++] = arr[j++]; count += mid - i + 1; }
-    }
-    while (i <= mid) temp[k++] = arr[i++];
-    while (j <= right) temp[k++] = arr[j++];
-    for (int t = left; t <= right; t++) arr[t] = temp[t];
-    return count;
-}
-
-int sort_count(int *arr, int *temp, int left, int right) {
-    if (left >= right) return 0;
-    int mid = (left + right) / 2;
-    int inv = sort_count(arr, temp, left, mid);
-    inv += sort_count(arr, temp, mid + 1, right);
-    inv += merge_count(arr, temp, left, mid, right);
-    return inv;
-}
-
-int count_inversions(int *arr, int n) {
-    int *temp = (int *) malloc(n * sizeof(int));
-    int r = sort_count(arr, temp, 0, n - 1);
-    free(temp);
-    return r;
-}
-```
-
-```scala run
-object Main extends App {
-  class Solution {
-    def countInversions(arr: Array[Int]): Int = {
-      val temp = new Array[Int](arr.length)
-      sortCount(arr, temp, 0, arr.length - 1)
-    }
-
-    private def sortCount(arr: Array[Int], temp: Array[Int], left: Int, right: Int): Int = {
-      if (left >= right) return 0
-      val mid = (left + right) / 2
-      var inv = sortCount(arr, temp, left, mid)
-      inv += sortCount(arr, temp, mid + 1, right)
-      inv += mergeCount(arr, temp, left, mid, right)
-      inv
-    }
-
-    private def mergeCount(arr: Array[Int], temp: Array[Int], left: Int, mid: Int, right: Int): Int = {
-      var i = left; var j = mid + 1; var k = left; var count = 0
-      while (i <= mid && j <= right) {
-        if (arr(i) <= arr(j)) { temp(k) = arr(i); i += 1 }
-        else { temp(k) = arr(j); j += 1; count += mid - i + 1 }
-        k += 1
-      }
-      while (i <= mid) { temp(k) = arr(i); i += 1; k += 1 }
-      while (j <= right) { temp(k) = arr(j); j += 1; k += 1 }
-      for (t <- left to right) arr(t) = temp(t)
-      count
-    }
-  }
-
-  println(new Solution().countInversions(Array(1, 10, 5, 3, 4)))   // 5
-}
-```
-
-
----
-
-## Complexity
+### Complexity
 
 `O(n log n)` time, `O(n)` space — the same as merge sort itself, since this *is* merge sort with a counter.
 
 The naive `O(n²)` algorithm is to count pairs with nested loops. Merge sort beats it by using the structure of the recursion to count inversions during the merge.
 
----
+</details>
+<details>
+<summary><h2>Why This Pattern Generalises</h2></summary>
 
-## Why This Pattern Generalises
 
 The merge step alone is a primitive that solves several problems related to "count something between two halves." Variations include:
 - **Reverse pairs** (count `(i, j)` where `i < j` and `arr[i] > 2 * arr[j]`).
@@ -751,9 +840,10 @@ The merge step alone is a primitive that solves several problems related to "cou
 
 Anytime you have a "count something across the divide" problem, ask whether merge sort's structure can help. Often it can — and the resulting algorithm is `O(n log n)` instead of `O(n²)`.
 
----
+</details>
+<details>
+<summary><h2>Final Takeaway</h2></summary>
 
-## Final Takeaway
 
 Merge sort is the predictable `O(n log n)` sort: stable, worst-case guaranteed, foundation of TimSort and external sorting. The `O(n)` extra space is the trade-off. Beyond sorting, the merge step is a primitive that solves a whole family of "across the divide" problems — count inversions is the classic example, but the technique generalises.
 
@@ -769,5 +859,7 @@ For descending order, change `if left[i] <= right[j]` to `if left[i] >= right[j]
 But the inversions counter doesn't directly translate — for descending sort, "inversion" would mean `arr[i] < arr[j]` for `i < j`. The same algorithm with the flipped comparison counts those instead. **The general pattern**: merge sort with comparison `f(left, right)` counts pairs that would violate the sort order `f` provides.
 
 This generalisation is why merge sort is the building block for many "count something across pairs" problems. Pick the right comparison; the merge step gives you the count. **You just unlocked half a dozen interview problems that are merge-sort variants in disguise.**
+
+</details>
 
 </details>

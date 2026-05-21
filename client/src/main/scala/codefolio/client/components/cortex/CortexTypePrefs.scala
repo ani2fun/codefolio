@@ -1,5 +1,6 @@
 package codefolio.client.components.cortex
 
+import codefolio.client.components.Theme
 import codefolio.client.components.icons.LucideIcons
 import japgolly.scalajs.react.*
 import japgolly.scalajs.react.vdom.html_<^.*
@@ -16,7 +17,9 @@ import scala.util.Try
  *   - **Leading** — `tight` / `comfortable` / `loose` → `--reader-lh: 1.55 / 1.8 / 2.05`.
  *   - **Family** — `sans` / `serif` → swaps `--reader-font` between the site sans and an Iowan/Charter serif
  *     body stack (Instrument Serif italic is too heavy for body text — used only for display).
- *   - **Dark mode** — toggles `html.dark`, which the existing Tailwind v4 token palette already covers.
+ *   - **Dark mode** — a second surface for the global light/dark theme. Delegates to [[Theme]] (the
+ *     `<html>.dark` class + `localStorage["theme"]`); it does **not** own a separate pref, so it can never
+ *     fight the header/footer toggles.
  *
  * Triggered by the Aa FAB in the right-edge fab stack OR the `T` key (skipped inside editable targets). Panel
  * is dismissed by `Esc`, clicks outside, or pressing `T`/Aa again.
@@ -36,13 +39,12 @@ object CortexTypePrefs:
     "serif" -> "\"Iowan Old Style\", \"Charter\", Georgia, serif"
   )
 
-  private case class Prefs(size: String, lead: String, font: String, dark: Boolean):
+  private case class Prefs(size: String, lead: String, font: String):
     def withSize(s: String): Prefs = copy(size = s)
     def withLead(l: String): Prefs = copy(lead = l)
     def withFont(f: String): Prefs = copy(font = f)
-    def toggleDark: Prefs          = copy(dark = !dark)
 
-  private val Defaults = Prefs("m", "comfortable", "sans", dark = false)
+  private val Defaults = Prefs("m", "comfortable", "sans")
 
   private def readPrefs(): Prefs =
     Try {
@@ -53,13 +55,12 @@ object CortexTypePrefs:
         Prefs(
           size = Option(obj.size.asInstanceOf[String]).getOrElse(Defaults.size),
           lead = Option(obj.lead.asInstanceOf[String]).getOrElse(Defaults.lead),
-          font = Option(obj.font.asInstanceOf[String]).getOrElse(Defaults.font),
-          dark = Option(obj.dark.asInstanceOf[Boolean]).getOrElse(Defaults.dark)
+          font = Option(obj.font.asInstanceOf[String]).getOrElse(Defaults.font)
         )
     }.getOrElse(Defaults)
 
   private def writePrefs(p: Prefs): Unit =
-    val obj = js.Dynamic.literal(size = p.size, lead = p.lead, font = p.font, dark = p.dark)
+    val obj = js.Dynamic.literal(size = p.size, lead = p.lead, font = p.font)
     Try(dom.window.localStorage.setItem(StorageKey, js.JSON.stringify(obj))).getOrElse(())
 
   /**
@@ -71,8 +72,6 @@ object CortexTypePrefs:
     style.setProperty("--reader-fs", SizeMap.getOrElse(p.size, "18.5px"))
     style.setProperty("--reader-lh", LeadMap.getOrElse(p.lead, "1.8"))
     style.setProperty("--reader-font", FontMap.getOrElse(p.font, "var(--font-sans)"))
-    val classList = dom.document.documentElement.classList
-    if p.dark then classList.add("dark") else classList.remove("dark")
     val init = (new js.Object).asInstanceOf[dom.CustomEventInit]
     init.detail = p.size
     val ev = new dom.CustomEvent("cortex:typePrefsChanged", init)
@@ -87,14 +86,27 @@ object CortexTypePrefs:
       .withHooks[Unit]
       .useState(false)
       .useState(Defaults)
-      .useEffectOnMountBy { (_, _, prefsS) =>
+      .useState(Theme.Mode.Light: Theme.Mode)
+      .useEffectOnMountBy { (_, _, prefsS, _) =>
         Callback {
           val initial = readPrefs()
           prefsS.setState(initial).runNow()
           applyPrefs(initial)
         }
       }
-      .useEffectOnMountBy { (_, openS, _) =>
+      // Theme is owned globally by `Theme`; mirror it into local state and keep
+      // it live via `theme:changed` so the Dark-mode switch always reflects the
+      // real theme — even when it was changed from the header toggle.
+      .useEffectOnMountBy { (_, _, _, themeS) =>
+        Callback {
+          themeS.setState(Theme.current).runNow()
+          val onChange: js.Function1[dom.Event, Unit] = (_: dom.Event) =>
+            themeS.setState(Theme.current).runNow()
+          dom.window.addEventListener(Theme.ChangedEvent, onChange)
+          ()
+        }
+      }
+      .useEffectOnMountBy { (_, openS, _, _) =>
         Callback {
           val onKey: js.Function1[dom.KeyboardEvent, Unit] = (e: dom.KeyboardEvent) =>
             if !isEditableTarget(e) then
@@ -108,7 +120,7 @@ object CortexTypePrefs:
       }
       // Click outside dismisses the panel. The FAB stops propagation so clicking it stays as the
       // toggle path rather than dismissing.
-      .useEffectOnMountBy { (_, openS, _) =>
+      .useEffectOnMountBy { (_, openS, _, _) =>
         Callback {
           val onDown: js.Function1[dom.MouseEvent, Unit] = (e: dom.MouseEvent) =>
             if openS.value then
@@ -123,8 +135,9 @@ object CortexTypePrefs:
           ()
         }
       }
-      .render { (_, openS, prefsS) =>
-        val p = prefsS.value
+      .render { (_, openS, prefsS, themeS) =>
+        val p           = prefsS.value
+        val themeIsDark = themeS.value == Theme.Mode.Dark
 
         def setAndPersist(next: Prefs): Callback = Callback {
           prefsS.setState(next).runNow()
@@ -205,14 +218,19 @@ object CortexTypePrefs:
                 seg("font", p.font, "serif", "Serif")
               )
             ),
-            // Dark mode toggle
+            // Dark mode toggle — delegates to the global `Theme` (single source
+            // of truth). `Theme.set` broadcasts `theme:changed`; the listener
+            // above refreshes `themeS`, which re-renders this switch and every
+            // other toggle surface in lock-step.
             <.div(
               ^.className := "cortex-reader-type-prefs__group",
               <.button(
                 ^.tpe          := "button",
                 ^.className    := "cortex-reader-type-prefs__row",
-                ^.aria.pressed := p.dark,
-                ^.onClick --> setAndPersist(p.toggleDark),
+                ^.aria.pressed := themeIsDark,
+                ^.onClick --> Theme.set(
+                  if themeIsDark then Theme.Mode.Light else Theme.Mode.Dark
+                ),
                 <.span(^.className := "cortex-reader-type-prefs__row-label", "Dark mode"),
                 <.span(^.className := "cortex-reader-type-prefs__switch", ^.aria.hidden := true)
               )

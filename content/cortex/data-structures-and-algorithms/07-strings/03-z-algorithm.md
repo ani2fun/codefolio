@@ -59,21 +59,6 @@ Z:    0  1  0  0  3  1  0  0  2  2  1  0
 
 The naive computation: for each `i`, compare character-by-character with the prefix until mismatch. `O(n²)` worst case. The Z-algorithm reduces this to `O(n)` by maintaining a *Z-box* — the rightmost `[l, r]` interval discovered so far that matches a prefix of `S`.
 
-```pseudocode
-function zArray(S):
-    n ← length(S)
-    Z ← array of n zeros
-    l, r ← 0, 0
-    for i from 1 to n − 1:
-        if i < r:
-            Z[i] ← min(r − i, Z[i − l])         # already inside Z-box; can copy
-        while i + Z[i] < n AND S[Z[i]] = S[i + Z[i]]:
-            Z[i] ← Z[i] + 1                     # extend
-        if i + Z[i] > r:
-            l ← i; r ← i + Z[i]                 # update Z-box
-    return Z
-```
-
 The cleverness is the `min(r - i, Z[i - l])` step. If `i` lies within the current Z-box `[l, r]`, then `S[i..r-1]` is a known prefix of `S` (specifically `S[i-l..r-l-1]`). So `Z[i]` is at least `min(r - i, Z[i - l])`. If `Z[i - l]` is small enough that the inferred match doesn't reach `r`, we can copy `Z[i - l]` exactly. Otherwise we need to verify by scanning — but only past `r`, which the amortisation argument shows happens linearly often.
 
 **Cost.** `O(n)`. Each character of `S` is "examined for the first time" at most twice — once when extending `r`, once when used in a copied `Z[i - l]`.
@@ -156,68 +141,6 @@ public class Main {
 }
 ```
 
-```c run
-#include <stdio.h>
-#include <string.h>
-#include <stdlib.h>
-
-void z_array(const char *S, int n, int *Z) {
-    Z[0] = 0;
-    int l = 0, r = 0;
-    for (int i = 1; i < n; i++) {
-        Z[i] = 0;
-        if (i < r) {
-            int diff = r - i; int copy = Z[i - l];
-            Z[i] = diff < copy ? diff : copy;
-        }
-        while (i + Z[i] < n && S[Z[i]] == S[i + Z[i]]) Z[i]++;
-        if (i + Z[i] > r) { l = i; r = i + Z[i]; }
-    }
-}
-
-void find_pattern(const char *T, const char *P) {
-    int m = strlen(P), n = strlen(T);
-    int len = m + 1 + n;
-    char *S = malloc(len + 1);
-    sprintf(S, "%s$%s", P, T);
-    int *Z = malloc(len * sizeof(int));
-    z_array(S, len, Z);
-    for (int i = m + 1; i < len; i++) if (Z[i] == m) printf("%d ", i - m - 1);
-    printf("\n");
-    free(S); free(Z);
-}
-
-int main(void) {
-    find_pattern("ababab", "ab");
-    return 0;
-}
-```
-
-```scala run
-object Main extends App {
-  def zArray(S: String): Array[Int] = {
-    val n = S.length
-    val Z = new Array[Int](n)
-    var l = 0; var r = 0
-    for (i <- 1 until n) {
-      if (i < r) Z(i) = math.min(r - i, Z(i - l))
-      while (i + Z(i) < n && S(Z(i)) == S(i + Z(i))) Z(i) += 1
-      if (i + Z(i) > r) { l = i; r = i + Z(i) }
-    }
-    Z
-  }
-
-  def findPattern(T: String, P: String): List[Int] = {
-    val S = P + "$" + T
-    val Z = zArray(S)
-    val m = P.length
-    (m + 1 until S.length).filter(Z(_) == m).map(_ - m - 1).toList
-  }
-
-  println(findPattern("ababab", "ab"))
-}
-```
-
 ***
 
 # Edge cases and pitfalls
@@ -271,49 +194,42 @@ Click any question to reveal the answer.
 **A:** The length of the longest substring starting at `i` that matches a *prefix* of `S`. By convention `Z[0] = 0`.
 
 </details>
-
 <details>
 <summary><strong>Q:</strong> Time complexity of building Z-array?</summary>
 
 **A:** `O(n)`. Amortised: the Z-box's right edge `r` only moves forward across the loop.
 
 </details>
-
 <details>
 <summary><strong>Q:</strong> What's the Z-box?</summary>
 
 **A:** The interval `[l, r]` representing the rightmost discovered substring matching a prefix of `S`. Maintained across the loop to reuse work.
 
 </details>
-
 <details>
 <summary><strong>Q:</strong> How do you match pattern <code>P</code> in text <code>T</code> using Z-array?</summary>
 
 **A:** Build Z-array for `S = P + '$' + T` (where `$` doesn't appear in either). Any position `i > m` with `Z[i] = m` is a match in `T` at offset `i - m - 1`.
 
 </details>
-
 <details>
 <summary><strong>Q:</strong> Why does the separator <code>$</code> matter?</summary>
 
 **A:** It prevents the Z-array from continuing the match past the pattern boundary into `T`. Must be a character not in `P` or `T`.
 
 </details>
-
 <details>
 <summary><strong>Q:</strong> Smallest period of <code>S</code> via Z-array?</summary>
 
 **A:** Smallest `p` such that `Z[p] + p ≥ n`. The whole string is then a prefix of `(S[0..p-1])^k`.
 
 </details>
-
 <details>
 <summary><strong>Q:</strong> Z-array vs KMP failure function — equivalent or different?</summary>
 
 **A:** Equivalent matching power, both `O(n + m)`. Different mental model. Z-array tends to be slightly faster in practice; KMP is more universally taught.
 
 </details>
-
 <details>
 <summary><strong>Q:</strong> Compute Z for <code>"aabcaabxaaaz"</code>.</summary>
 

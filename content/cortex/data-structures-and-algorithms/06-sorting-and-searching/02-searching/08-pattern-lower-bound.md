@@ -56,90 +56,136 @@ Input:  arr = [1, 2, 7, 9, 10, 11], target = 8
 Output: 3
 ```
 
-## The Solution
+<details>
+<summary><h2>The Solution</h2></summary>
+
 
 Just lower bound.
 
-
-```pseudocode
-# Index where target would be inserted to keep arr sorted = lower bound.
-function searchInsertPosition(arr, target):
-    low ← 0; high ← length(arr)
-    while low < high:
-        mid ← low + (high − low) ÷ 2
-        if arr[mid] < target:
-            low ← mid + 1
-        else:
-            high ← mid
-    return low
-```
 
 ```python run
 from typing import List
 
 class Solution:
-    def search_insert_position(self, arr: List[int], target: int) -> int:
-        low, high = 0, len(arr)
+    def lower_bound(self, arr: List[int], target: int) -> int:
+
+        # Initialise starting index to 0
+        low: int = 0
+
+        # Initialise ending index to len(arr) instead of len(arr) - 1
+        # to cover the entire array as if all elements in the array are less
+        # than target, the lower bound index would be equal to len(arr)
+        high: int = len(arr)
+
+        # 'high' is exclusive (can be len(arr)), so we use 'low < high' instead
+        # of 'low <= high'. This loop finds the first index where the element is
+        # >= the target without going out of bounds.
         while low < high:
-            mid = low + (high - low) // 2
-            if arr[mid] < target: low = mid + 1
-            else: high = mid
+
+            # Find the middle index
+            mid: int = low + (high - low) // 2
+
+            # If arr[mid] is less than arr[target], then find in
+            # right subarray
+            if arr[mid] < target:
+                low = mid + 1
+
+            # If arr[mid] is greater than or equal to target, then it may
+            # be the answer. So, instead of high = mid - 1, we do high = mid
+            # to include mid in the next search space
+            else:
+                high = mid
+
+        # Return the lower bound index, it could be equal to len(arr)
+        # if all elements are less than target
         return low
 
+    def search_insert_position(self, arr: List[int], target: int) -> int:
+        return self.lower_bound(arr, target)
 
-if __name__ == "__main__":
-    print(Solution().search_insert_position([1, 2, 7, 8, 9, 10], 3))   # 2
+
+# Examples from the problem statement
+print(Solution().search_insert_position([1, 2, 3, 4, 5, 6], 3))   # 2
+print(Solution().search_insert_position([1, 2, 7, 8, 9, 10], 3))  # 2
+print(Solution().search_insert_position([1, 2, 7, 9, 10, 11], 8)) # 3
+
+# Edge cases
+print(Solution().search_insert_position([], 5))                    # 0 — empty array
+print(Solution().search_insert_position([5], 5))                   # 0 — single element match
+print(Solution().search_insert_position([5], 3))                   # 0 — insert before only element
+print(Solution().search_insert_position([5], 7))                   # 1 — insert after only element
+print(Solution().search_insert_position([1, 2, 3, 4, 5, 6], 7))   # 6 — insert at end
 ```
 
 ```java run
+import java.util.*;
+
 public class Main {
     static class Solution {
-        public int searchInsertPosition(int[] arr, int target) {
-            int low = 0, high = arr.length;
+        private int lowerBound(int[] arr, int target) {
+
+            // Initialise starting index to 0
+            int low = 0;
+
+            // Initialise ending index to arr.length instead of arr.length -
+            // 1 to cover the entire array as if all elements in the array
+            // are less than target, the lower bound index would be equal to
+            // arr.length
+            int high = arr.length;
+
+            // 'high' is exclusive (can be arr.length), so we use 'low <
+            // high' instead of 'low <= high'. This loop finds the first
+            // index where the element is
+            // >= the target without going out of bounds.
             while (low < high) {
+
+                // Find the middle index
                 int mid = low + (high - low) / 2;
-                if (arr[mid] < target) low = mid + 1; else high = mid;
+
+                // If arr[mid] is less than arr[target], then find in
+                // right subarray
+                if (arr[mid] < target) {
+                    low = mid + 1;
+                }
+
+                // If arr[mid] is greater than or equal to target, then it
+                // may be the answer. So, instead of high = mid - 1, we do
+                // high = mid to include mid in the next search space
+                else {
+                    high = mid;
+                }
             }
+
+            // Return the lower bound index, it could be equal to arr.length
+            // if all elements are less than target
             return low;
+        }
+
+        public int searchInsertPosition(int[] arr, int target) {
+            return lowerBound(arr, target);
         }
     }
 
     public static void main(String[] args) {
-        System.out.println(new Solution().searchInsertPosition(new int[]{1, 2, 7, 8, 9, 10}, 3));   // 2
-    }
-}
-```
+        // Examples from the problem statement
+        System.out.println(new Solution().searchInsertPosition(new int[]{1, 2, 3, 4, 5, 6}, 3));   // 2
+        System.out.println(new Solution().searchInsertPosition(new int[]{1, 2, 7, 8, 9, 10}, 3));  // 2
+        System.out.println(new Solution().searchInsertPosition(new int[]{1, 2, 7, 9, 10, 11}, 8)); // 3
 
-```c run
-int search_insert_position(int *arr, int n, int target) {
-    int low = 0, high = n;
-    while (low < high) {
-        int mid = low + (high - low) / 2;
-        if (arr[mid] < target) low = mid + 1; else high = mid;
+        // Edge cases
+        System.out.println(new Solution().searchInsertPosition(new int[]{}, 5));                    // 0 — empty array
+        System.out.println(new Solution().searchInsertPosition(new int[]{5}, 5));                   // 0 — single element match
+        System.out.println(new Solution().searchInsertPosition(new int[]{5}, 3));                   // 0 — insert before only element
+        System.out.println(new Solution().searchInsertPosition(new int[]{5}, 7));                   // 1 — insert after only element
+        System.out.println(new Solution().searchInsertPosition(new int[]{1, 2, 3, 4, 5, 6}, 7));   // 6 — insert at end
     }
-    return low;
-}
-```
-
-```scala run
-object Main extends App {
-  class Solution {
-    def searchInsertPosition(arr: Array[Int], target: Int): Int = {
-      var low = 0; var high = arr.length
-      while (low < high) {
-        val mid = low + (high - low) / 2
-        if (arr(mid) < target) low = mid + 1 else high = mid
-      }
-      low
-    }
-  }
-
-  println(new Solution().searchInsertPosition(Array(1, 2, 7, 8, 9, 10), 3))   // 2
 }
 ```
 
 
 `O(log n)` time, `O(1)` space.
+
+</details>
 
 ***
 
@@ -162,114 +208,172 @@ Input:  arr = [1, 2, 2, 2, 3, 4], target = 5
 Output: [-1, -1]
 ```
 
-## The Solution
+<details>
+<summary><h2>The Solution</h2></summary>
 
 
-```pseudocode
-# First position = lowerBound(target). Last position = lowerBound(target + 1) − 1.
-function firstAndLastPosition(arr, target):
-    first ← lowerBound(arr, target)
-    if first = length(arr) OR arr[first] ≠ target:
-        return [−1, −1]                         # target absent
-    last ← lowerBound(arr, target + 1) − 1
-    return [first, last]
-```
 
 ```python run
 from typing import List
 
 class Solution:
-    def first_and_last_position(self, arr: List[int], target: int) -> List[int]:
-        first = self._lower_bound(arr, target)
-        if first == len(arr) or arr[first] != target:
-            return [-1, -1]
-        last = self._lower_bound(arr, target + 1) - 1
-        return [first, last]
+    def lower_bound(self, arr: List[int], target: int) -> int:
 
-    def _lower_bound(self, arr, target):
-        low, high = 0, len(arr)
+        # Initialise starting index to 0
+        low: int = 0
+
+        # Initialise ending index to len(arr) instead of len(arr) - 1
+        # to cover the entire array as if all elements in the array are less
+        # than target, the lower bound index would be equal to len(arr)
+        high: int = len(arr)
+
+        # 'high' is exclusive (can be len(arr)), so we use 'low < high' instead
+        # of 'low <= high'. This loop finds the first index where the element is
+        # >= the target without going out of bounds.
         while low < high:
-            mid = low + (high - low) // 2
-            if arr[mid] < target: low = mid + 1
-            else: high = mid
+
+            # Find the middle index
+            mid: int = low + (high - low) // 2
+
+            # If arr[mid] is less than arr[target], then find in
+            # right subarray
+            if arr[mid] < target:
+                low = mid + 1
+
+            # If arr[mid] is greater than or equal to target, then it may
+            # be the answer. So, instead of high = mid - 1, we do high = mid
+            # to include mid in the next search space
+            else:
+                high = mid
+
+        # Return the lower bound index, it could be equal to len(arr)
+        # if all elements are less than target
         return low
 
+    def first_and_last_position(
+        self, arr: List[int], target: int
+    ) -> List[int]:
 
-if __name__ == "__main__":
-    print(Solution().first_and_last_position([1, 2, 2, 2, 3, 4], 2))   # [1, 3]
+        # Initialize the result list with -1 values
+        result = [-1, -1]
+
+        # Find the first occurrence of target
+        first: int = self.lower_bound(arr, target)
+
+        # Find the lower bound of target+1 and subtract 1 to get the
+        # last occurrence of target
+        last: int = self.lower_bound(arr, target + 1) - 1
+
+        # Check if the lower bound index is within the list bounds and if
+        # the value is the target
+        if first < len(arr) and arr[first] == target:
+
+            # Return the range [first, last]
+            return [first, last]
+
+        # Return the default result list
+        return result
+
+
+# Examples from the problem statement
+print(Solution().first_and_last_position([1, 2, 2, 2, 3, 4], 2))  # [1, 3]
+print(Solution().first_and_last_position([1, 2, 2, 2, 3, 4], 3))  # [4, 4]
+print(Solution().first_and_last_position([1, 2, 2, 2, 3, 4], 5))  # [-1, -1]
+
+# Edge cases
+print(Solution().first_and_last_position([], 1))                    # [-1, -1] — empty array
+print(Solution().first_and_last_position([5], 5))                   # [0, 0] — single element match
+print(Solution().first_and_last_position([5], 3))                   # [-1, -1] — single element miss
+print(Solution().first_and_last_position([2, 2, 2, 2], 2))         # [0, 3] — all same
+print(Solution().first_and_last_position([1, 2, 2, 2, 3, 4], 1))   # [0, 0] — target at first
 ```
 
 ```java run
-import java.util.Arrays;
+import java.util.*;
 
 public class Main {
     static class Solution {
-        public int[] firstAndLastPosition(int[] arr, int target) {
-            int first = lowerBound(arr, target);
-            if (first == arr.length || arr[first] != target) return new int[]{-1, -1};
-            int last = lowerBound(arr, target + 1) - 1;
-            return new int[]{first, last};
-        }
         private int lowerBound(int[] arr, int target) {
-            int low = 0, high = arr.length;
+
+            // Initialise starting index to 0
+            int low = 0;
+
+            // Initialise ending index to arr.length instead of arr.length -
+            // 1 to cover the entire array as if all elements in the array
+            // are less than target, the lower bound index would be equal to
+            // arr.length
+            int high = arr.length;
+
+            // 'high' is exclusive (can be arr.length), so we use 'low <
+            // high' instead of 'low <= high'. This loop finds the first
+            // index where the element is
+            // >= the target without going out of bounds.
             while (low < high) {
+
+                // Find the middle index
                 int mid = low + (high - low) / 2;
-                if (arr[mid] < target) low = mid + 1; else high = mid;
+
+                // If arr[mid] is less than arr[target], then find in
+                // right subarray
+                if (arr[mid] < target) {
+                    low = mid + 1;
+                }
+
+                // If arr[mid] is greater than or equal to target, then it
+                // may be the answer. So, instead of high = mid - 1, we do
+                // high = mid to include mid in the next search space
+                else {
+                    high = mid;
+                }
             }
+
+            // Return the lower bound index, it could be equal to arr.length
+            // if all elements are less than target
             return low;
+        }
+
+        public int[] firstAndLastPosition(int[] arr, int target) {
+
+            // Initialize the result array with -1 values
+            int[] result = new int[] { -1, -1 };
+
+            // Find the first occurrence of target
+            int first = lowerBound(arr, target);
+
+            // Find the lower bound of target+1 and subtract 1 to get the
+            // last occurrence of target
+            int last = lowerBound(arr, target + 1) - 1;
+
+            // Check if the lower bound index is within the array bounds and
+            // if the value is the target
+            if (first < arr.length && arr[first] == target) {
+
+                // Return the range [first, last]
+                return new int[] { first, last };
+            }
+
+            // Return the default result array
+            return result;
         }
     }
 
     public static void main(String[] args) {
-        System.out.println(Arrays.toString(new Solution().firstAndLastPosition(new int[]{1, 2, 2, 2, 3, 4}, 2)));   // [1, 3]
+        // Examples from the problem statement
+        System.out.println(Arrays.toString(new Solution().firstAndLastPosition(new int[]{1, 2, 2, 2, 3, 4}, 2)));  // [1, 3]
+        System.out.println(Arrays.toString(new Solution().firstAndLastPosition(new int[]{1, 2, 2, 2, 3, 4}, 3)));  // [4, 4]
+        System.out.println(Arrays.toString(new Solution().firstAndLastPosition(new int[]{1, 2, 2, 2, 3, 4}, 5)));  // [-1, -1]
+
+        // Edge cases
+        System.out.println(Arrays.toString(new Solution().firstAndLastPosition(new int[]{}, 1)));                    // [-1, -1] — empty array
+        System.out.println(Arrays.toString(new Solution().firstAndLastPosition(new int[]{5}, 5)));                   // [0, 0] — single element match
+        System.out.println(Arrays.toString(new Solution().firstAndLastPosition(new int[]{5}, 3)));                   // [-1, -1] — single element miss
+        System.out.println(Arrays.toString(new Solution().firstAndLastPosition(new int[]{2, 2, 2, 2}, 2)));         // [0, 3] — all same
+        System.out.println(Arrays.toString(new Solution().firstAndLastPosition(new int[]{1, 2, 2, 2, 3, 4}, 1)));   // [0, 0] — target at first
     }
 }
 ```
 
-```c run
-#include <stdio.h>
-#include <stdlib.h>
-
-int lower_bound(int *arr, int n, int target) {
-    int low = 0, high = n;
-    while (low < high) {
-        int mid = low + (high - low) / 2;
-        if (arr[mid] < target) low = mid + 1; else high = mid;
-    }
-    return low;
-}
-
-int *first_and_last_position(int *arr, int n, int target) {
-    int *result = (int *) malloc(2 * sizeof(int));
-    int first = lower_bound(arr, n, target);
-    if (first == n || arr[first] != target) { result[0] = result[1] = -1; return result; }
-    result[0] = first;
-    result[1] = lower_bound(arr, n, target + 1) - 1;
-    return result;
-}
-```
-
-```scala run
-object Main extends App {
-  class Solution {
-    def firstAndLastPosition(arr: Array[Int], target: Int): Array[Int] = {
-      val first = lowerBound(arr, target)
-      if (first == arr.length || arr(first) != target) Array(-1, -1)
-      else Array(first, lowerBound(arr, target + 1) - 1)
-    }
-    private def lowerBound(arr: Array[Int], target: Int): Int = {
-      var low = 0; var high = arr.length
-      while (low < high) {
-        val mid = low + (high - low) / 2
-        if (arr(mid) < target) low = mid + 1 else high = mid
-      }
-      low
-    }
-  }
-
-  println(new Solution().firstAndLastPosition(Array(1, 2, 2, 2, 3, 4), 2).mkString("[", ", ", "]"))   // [1, 3]
-}
-```
+</details>
 
 
 ***
@@ -293,123 +397,198 @@ Input:  arr = [1, 10], target = 7
 Output: 10
 ```
 
-## The Solution
+<details>
+<summary><h2>The Solution</h2></summary>
+
 
 `lower_bound(target)` gives the smallest index `i` with `arr[i] >= target`. The closest element is either `arr[i]` or `arr[i - 1]` — compare distances.
 
-
-```pseudocode
-# Closest element to target. The closest must be at lowerBound(target) or just before it.
-function closestElement(arr, target):
-    if arr is empty: return −1
-    idx ← lowerBound(arr, target)
-    if idx = 0:               return arr[0]
-    if idx = length(arr):     return arr[length(arr) − 1]
-    lower ← arr[idx − 1]
-    upper ← arr[idx]
-    if target − lower ≤ upper − target:         # tie → smaller value wins
-        return lower
-    return upper
-```
 
 ```python run
 from typing import List
 
 class Solution:
-    def closest_element(self, arr: List[int], target: int) -> int:
-        if not arr: return -1
-        idx = self._lower_bound(arr, target)
-        if idx == 0: return arr[0]
-        if idx == len(arr): return arr[-1]
-        lower, upper = arr[idx - 1], arr[idx]
-        if target - lower <= upper - target:            # tie → smaller (lower) wins
-            return lower
-        return upper
+    def lower_bound(self, arr: List[int], target: int) -> int:
 
-    def _lower_bound(self, arr, target):
-        low, high = 0, len(arr)
+        # Initialise starting index to 0
+        low: int = 0
+
+        # Initialise ending index to len(arr) instead of len(arr) - 1
+        # to cover the entire array as if all elements in the array are less
+        # than target, the lower bound index would be equal to len(arr)
+        high: int = len(arr)
+
+        # 'high' is exclusive (can be len(arr)), so we use 'low < high' instead
+        # of 'low <= high'. This loop finds the first index where the element is
+        # >= the target without going out of bounds.
         while low < high:
-            mid = low + (high - low) // 2
-            if arr[mid] < target: low = mid + 1
-            else: high = mid
+
+            # Find the middle index
+            mid: int = low + (high - low) // 2
+
+            # If arr[mid] is less than arr[target], then find in
+            # right subarray
+            if arr[mid] < target:
+                low = mid + 1
+
+            # If arr[mid] is greater than or equal to target, then it may
+            # be the answer. So, instead of high = mid - 1, we do high = mid
+            # to include mid in the next search space
+            else:
+                high = mid
+
+        # Return the lower bound index, it could be equal to len(arr)
+        # if all elements are less than target
         return low
 
+    def closest_element(self, arr: List[int], target: int) -> int:
 
-if __name__ == "__main__":
-    print(Solution().closest_element([2, 4, 6, 8, 10, 12], 5))   # 4
+        # Return -1 if the array is empty
+        if not arr:
+            return -1
+
+        lower_bound_index = self.lower_bound(arr, target)
+
+        # If lower bound index is 0, return the first element
+        if lower_bound_index == 0:
+            return arr[0]
+
+        # If lower bound index is equal to the size of the array,
+        # return the last element
+        elif lower_bound_index == len(arr):
+            return arr[-1]
+
+        # Else, return the element which is closest to the target
+        # among the two closest elements
+        else:
+
+            # Get the element strictly less than target
+            lower_element = arr[lower_bound_index - 1]
+
+            # Get the element greater than or equal to target
+            upper_element = arr[lower_bound_index]
+
+            # Return the closest element
+            if target - lower_element <= upper_element - target:
+                return lower_element
+            else:
+                return upper_element
+
+
+# Examples from the problem statement
+print(Solution().closest_element([1, 2, 3, 4, 5, 6], 4))    # 4
+print(Solution().closest_element([2, 4, 6, 8, 10, 12], 5))  # 4
+print(Solution().closest_element([1, 10], 7))                # 10
+
+# Edge cases
+print(Solution().closest_element([], 5))                     # -1 — empty array
+print(Solution().closest_element([5], 5))                    # 5  — single element match
+print(Solution().closest_element([5], 1))                    # 5  — single element, target before
+print(Solution().closest_element([5], 9))                    # 5  — single element, target after
+print(Solution().closest_element([1, 2, 3, 4, 5, 6], 0))    # 1  — target before all elements
 ```
 
 ```java run
+import java.util.*;
+
 public class Main {
     static class Solution {
-        public int closestElement(int[] arr, int target) {
-            if (arr.length == 0) return -1;
-            int idx = lowerBound(arr, target);
-            if (idx == 0) return arr[0];
-            if (idx == arr.length) return arr[arr.length - 1];
-            int lower = arr[idx - 1], upper = arr[idx];
-            return (target - lower <= upper - target) ? lower : upper;
-        }
         private int lowerBound(int[] arr, int target) {
-            int low = 0, high = arr.length;
+
+            // Initialise starting index to 0
+            int low = 0;
+
+            // Initialise ending index to arr.length instead of arr.length -
+            // 1 to cover the entire array as if all elements in the array
+            // are less than target, the lower bound index would be equal to
+            // arr.length
+            int high = arr.length;
+
+            // 'high' is exclusive (can be arr.length), so we use 'low <
+            // high' instead of 'low <= high'. This loop finds the first
+            // index where the element is
+            // >= the target without going out of bounds.
             while (low < high) {
+
+                // Find the middle index
                 int mid = low + (high - low) / 2;
-                if (arr[mid] < target) low = mid + 1; else high = mid;
+
+                // If arr[mid] is less than arr[target], then find in
+                // right subarray
+                if (arr[mid] < target) {
+                    low = mid + 1;
+                }
+
+                // If arr[mid] is greater than or equal to target, then it
+                // may be the answer. So, instead of high = mid - 1, we do
+                // high = mid to include mid in the next search space
+                else {
+                    high = mid;
+                }
             }
+
+            // Return the lower bound index, it could be equal to arr.length
+            // if all elements are less than target
             return low;
+        }
+
+        public int closestElement(int[] arr, int target) {
+
+            // Return -1 if the array is empty
+            if (arr.length == 0) {
+                return -1;
+            }
+
+            int lowerBoundIndex = lowerBound(arr, target);
+
+            // If lower bound index is 0, return the first element
+            if (lowerBoundIndex == 0) {
+                return arr[0];
+            }
+
+            // If lower bound index is equal to the size of the array,
+            // return the last element
+            else if (lowerBoundIndex == arr.length) {
+                return arr[arr.length - 1];
+            }
+
+            // Else, return the element which is closest to the target
+            // among the two closest elements
+            else {
+
+                // Get the element strictly less than target
+                int lowerElement = arr[lowerBoundIndex - 1];
+
+                // Get the element greater than or equal to target
+                int upperElement = arr[lowerBoundIndex];
+
+                // Return the closest element
+                if (target - lowerElement <= upperElement - target) {
+                    return lowerElement;
+                } else {
+                    return upperElement;
+                }
+            }
         }
     }
 
     public static void main(String[] args) {
-        System.out.println(new Solution().closestElement(new int[]{2, 4, 6, 8, 10, 12}, 5));   // 4
+        // Examples from the problem statement
+        System.out.println(new Solution().closestElement(new int[]{1, 2, 3, 4, 5, 6}, 4));    // 4
+        System.out.println(new Solution().closestElement(new int[]{2, 4, 6, 8, 10, 12}, 5));  // 4
+        System.out.println(new Solution().closestElement(new int[]{1, 10}, 7));                // 10
+
+        // Edge cases
+        System.out.println(new Solution().closestElement(new int[]{}, 5));                     // -1 — empty array
+        System.out.println(new Solution().closestElement(new int[]{5}, 5));                    // 5  — single element match
+        System.out.println(new Solution().closestElement(new int[]{5}, 1));                    // 5  — single element, target before
+        System.out.println(new Solution().closestElement(new int[]{5}, 9));                    // 5  — single element, target after
+        System.out.println(new Solution().closestElement(new int[]{1, 2, 3, 4, 5, 6}, 0));    // 1  — target before all elements
     }
 }
 ```
 
-```c run
-int lower_bound_arr(int *arr, int n, int target) {
-    int low = 0, high = n;
-    while (low < high) {
-        int mid = low + (high - low) / 2;
-        if (arr[mid] < target) low = mid + 1; else high = mid;
-    }
-    return low;
-}
-
-int closest_element(int *arr, int n, int target) {
-    if (n == 0) return -1;
-    int idx = lower_bound_arr(arr, n, target);
-    if (idx == 0) return arr[0];
-    if (idx == n) return arr[n - 1];
-    int lower = arr[idx - 1], upper = arr[idx];
-    return (target - lower <= upper - target) ? lower : upper;
-}
-```
-
-```scala run
-object Main extends App {
-  class Solution {
-    def closestElement(arr: Array[Int], target: Int): Int = {
-      if (arr.isEmpty) return -1
-      val idx = lowerBound(arr, target)
-      if (idx == 0) return arr(0)
-      if (idx == arr.length) return arr.last
-      val lower = arr(idx - 1); val upper = arr(idx)
-      if (target - lower <= upper - target) lower else upper
-    }
-    private def lowerBound(arr: Array[Int], target: Int): Int = {
-      var low = 0; var high = arr.length
-      while (low < high) {
-        val mid = low + (high - low) / 2
-        if (arr(mid) < target) low = mid + 1 else high = mid
-      }
-      low
-    }
-  }
-
-  println(new Solution().closestElement(Array(2, 4, 6, 8, 10, 12), 5))   // 4
-}
-```
+</details>
 
 
 ***
@@ -433,60 +612,99 @@ Input:  arr = [1, 5, 8, 10, 12, 13], k = 3, target = 10
 Output: [8, 10, 12]
 ```
 
-## The Solution
+<details>
+<summary><h2>The Solution</h2></summary>
 
-Find lower bound (call it `right`); set `left = right - 1`. Expand outward k times: each step, take whichever side has the closer element.
 
+`lower_bound(target)` gives the first index `>= target`; that splits the array into a left side (all `< target`) and a right side (all `>= target`). Set `right` to that index and `left` to `right - 1` — the two candidates straddling the target. Expand the window outward `k` times: on each step, take whichever of `arr[left]` / `arr[right]` is closer to `target` (ties broken by the smaller value, i.e. the `left` side), stepping that pointer outward; if one side has run off the array, take the other. The `k` elements collected between the final pointers — `arr[left + 1 : right]` — are the answer, already sorted ascending.
 
-```pseudocode
-# Two-pointer expansion outward from lowerBound(target).
-function kClosestElements(arr, k, target):
-    if arr is empty OR k ≤ 0:
-        return empty list
-    right ← lowerBound(arr, target)             # first index with arr[i] ≥ target
-    left  ← right − 1
-    repeat k times:
-        if left < 0:
-            right ← right + 1                   # only the right side has elements left
-        else if right ≥ length(arr):
-            left ← left − 1                     # only the left side has elements left
-        else if target − arr[left] ≤ arr[right] − target:
-            left ← left − 1                     # left element is closer (or tied)
-        else:
-            right ← right + 1
-    return arr[left + 1 .. right − 1]           # the k elements just inside the pointers
-```
 
 ```python run
 from typing import List
 
 class Solution:
-    def k_closest_elements(self, arr: List[int], k: int, target: int) -> List[int]:
-        if not arr or k <= 0: return []
-        right = self._lower_bound(arr, target)
-        left = right - 1
-        for _ in range(k):
-            if left < 0:
-                right += 1
-            elif right >= len(arr):
-                left -= 1
-            elif target - arr[left] <= arr[right] - target:
-                left -= 1
-            else:
-                right += 1
-        return arr[left + 1:right]
+    def lower_bound(self, arr: List[int], target: int) -> int:
 
-    def _lower_bound(self, arr, target):
-        low, high = 0, len(arr)
+        # Initialise starting index to 0
+        low: int = 0
+
+        # Initialise ending index to len(arr) instead of len(arr) - 1
+        # to cover the entire array as if all elements in the array are less
+        # than target, the lower bound index would be equal to len(arr)
+        high: int = len(arr)
+
+        # 'high' is exclusive (can be len(arr)), so we use 'low < high' instead
+        # of 'low <= high'. This loop finds the first index where the element is
+        # >= the target without going out of bounds.
         while low < high:
-            mid = low + (high - low) // 2
-            if arr[mid] < target: low = mid + 1
-            else: high = mid
+
+            # Find the middle index
+            mid: int = low + (high - low) // 2
+
+            # If arr[mid] is less than arr[target], then find in
+            # right subarray
+            if arr[mid] < target:
+                low = mid + 1
+
+            # If arr[mid] is greater than or equal to target, then it may
+            # be the answer. So, instead of high = mid - 1, we do high = mid
+            # to include mid in the next search space
+            else:
+                high = mid
+
+        # Return the lower bound index, it could be equal to len(arr)
+        # if all elements are less than target
         return low
 
+    def k_closest_elements(
+        self, arr: List[int], k: int, target: int
+    ) -> List[int]:
+        if not arr or k <= 0:
+            return []
 
-if __name__ == "__main__":
-    print(Solution().k_closest_elements([1, 2, 3, 4, 5, 6], 3, 4))   # [3, 4, 5]
+        right = self.lower_bound(arr, target)
+        left = right - 1
+
+        # Expand the window to the left and right
+        remaining = k
+        while remaining > 0:
+            remaining -= 1
+
+            # If left pointer is out of bounds,
+            # move the right pointer
+            if left < 0:
+                right += 1
+
+            # If right pointer is out of bounds,
+            # move the left pointer
+            elif right >= len(arr):
+                left -= 1
+
+            # If the element at left pointer is closer to target,
+            # move the left pointer
+            elif target - arr[left] <= arr[right] - target:
+                left -= 1
+
+            # Else, if the element at right pointer is closer to target,
+            # move the right pointer
+            else:
+                right += 1
+
+        # Return the k closest elements collected between left and right
+        # pointers
+        return arr[left + 1: right]
+
+
+# Examples from the problem statement
+print(Solution().k_closest_elements([1, 2, 3, 4, 5, 6], 3, 4))     # [3, 4, 5]
+print(Solution().k_closest_elements([1, 4, 5, 6, 7, 8], 3, 4))     # [4, 5, 6]
+print(Solution().k_closest_elements([1, 5, 8, 10, 12, 13], 3, 10)) # [8, 10, 12]
+
+# Edge cases
+print(Solution().k_closest_elements([], 3, 4))                      # [] — empty array
+print(Solution().k_closest_elements([1, 2, 3, 4, 5, 6], 0, 4))     # [] — k = 0
+print(Solution().k_closest_elements([5], 1, 5))                     # [5] — single element match
+print(Solution().k_closest_elements([1, 2, 3, 4, 5, 6], 6, 4))     # [1, 2, 3, 4, 5, 6] — k = all
 ```
 
 ```java run
@@ -494,103 +712,116 @@ import java.util.*;
 
 public class Main {
     static class Solution {
-        public List<Integer> kClosestElements(int[] arr, int k, int target) {
-            if (arr.length == 0 || k <= 0) return new ArrayList<>();
+        private int lowerBound(int[] arr, int target) {
+
+            // Initialise starting index to 0
+            int low = 0;
+
+            // Initialise ending index to arr.length instead of arr.length -
+            // 1 to cover the entire array as if all elements in the array
+            // are less than target, the lower bound index would be equal to
+            // arr.length
+            int high = arr.length;
+
+            // 'high' is exclusive (can be arr.length), so we use 'low <
+            // high' instead of 'low <= high'. This loop finds the first
+            // index where the element is
+            // >= the target without going out of bounds.
+            while (low < high) {
+
+                // Find the middle index
+                int mid = low + (high - low) / 2;
+
+                // If arr[mid] is less than arr[target], then find in
+                // right subarray
+                if (arr[mid] < target) {
+                    low = mid + 1;
+                }
+
+                // If arr[mid] is greater than or equal to target, then it
+                // may be the answer. So, instead of high = mid - 1, we do
+                // high = mid to include mid in the next search space
+                else {
+                    high = mid;
+                }
+            }
+
+            // Return the lower bound index, it could be equal to arr.length
+            // if all elements are less than target
+            return low;
+        }
+
+        public int[] kClosestElements(int[] arr, int k, int target) {
+            if (arr.length == 0 || k <= 0) {
+                return new int[0];
+            }
+
             int right = lowerBound(arr, target);
             int left = right - 1;
-            for (int i = 0; i < k; i++) {
-                if (left < 0) right++;
-                else if (right >= arr.length) left--;
-                else if (target - arr[left] <= arr[right] - target) left--;
-                else right++;
+
+            // Expand the window to the left and right
+            while (k-- > 0) {
+
+                // If left pointer is out of bounds,
+                // move the right pointer
+                if (left < 0) {
+                    right++;
+                }
+
+                // If right pointer is out of bounds,
+                // move the left pointer
+                else if (right >= arr.length) {
+                    left--;
+                }
+
+                // If the element at left pointer is closer to target,
+                // move the left pointer
+                else if (target - arr[left] <= arr[right] - target) {
+                    left--;
+                }
+
+                // Else, if the element at right pointer is closer to target,
+                // move the right pointer
+                else {
+                    right++;
+                }
             }
-            List<Integer> result = new ArrayList<>();
-            for (int i = left + 1; i < right; i++) result.add(arr[i]);
+
+            // Return the k closest elements collected between left and right
+            // pointers
+            int[] result = new int[right - left - 1];
+            for (int i = left + 1, j = 0; i < right; i++, j++) {
+                result[j] = arr[i];
+            }
+
             return result;
-        }
-        private int lowerBound(int[] arr, int target) {
-            int low = 0, high = arr.length;
-            while (low < high) {
-                int mid = low + (high - low) / 2;
-                if (arr[mid] < target) low = mid + 1; else high = mid;
-            }
-            return low;
         }
     }
 
     public static void main(String[] args) {
-        System.out.println(new Solution().kClosestElements(new int[]{1, 2, 3, 4, 5, 6}, 3, 4));   // [3, 4, 5]
+        // Examples from the problem statement
+        System.out.println(Arrays.toString(new Solution().kClosestElements(new int[]{1, 2, 3, 4, 5, 6}, 3, 4)));     // [3, 4, 5]
+        System.out.println(Arrays.toString(new Solution().kClosestElements(new int[]{1, 4, 5, 6, 7, 8}, 3, 4)));     // [4, 5, 6]
+        System.out.println(Arrays.toString(new Solution().kClosestElements(new int[]{1, 5, 8, 10, 12, 13}, 3, 10))); // [8, 10, 12]
+
+        // Edge cases
+        System.out.println(Arrays.toString(new Solution().kClosestElements(new int[]{}, 3, 4)));                      // [] — empty array
+        System.out.println(Arrays.toString(new Solution().kClosestElements(new int[]{1, 2, 3, 4, 5, 6}, 0, 4)));     // [] — k = 0
+        System.out.println(Arrays.toString(new Solution().kClosestElements(new int[]{5}, 1, 5)));                     // [5] — single element match
+        System.out.println(Arrays.toString(new Solution().kClosestElements(new int[]{1, 2, 3, 4, 5, 6}, 6, 4)));     // [1, 2, 3, 4, 5, 6] — k = all
     }
 }
 ```
 
-```c run
-#include <stdio.h>
-#include <stdlib.h>
+</details>
+<details>
+<summary><h2>Final Takeaway</h2></summary>
 
-int lb(int *arr, int n, int target) {
-    int low = 0, high = n;
-    while (low < high) {
-        int mid = low + (high - low) / 2;
-        if (arr[mid] < target) low = mid + 1; else high = mid;
-    }
-    return low;
-}
-
-int *k_closest_elements(int *arr, int n, int k, int target, int *outLen) {
-    if (n == 0 || k <= 0) { *outLen = 0; return NULL; }
-    int right = lb(arr, n, target);
-    int left = right - 1;
-    for (int i = 0; i < k; i++) {
-        if (left < 0) right++;
-        else if (right >= n) left--;
-        else if (target - arr[left] <= arr[right] - target) left--;
-        else right++;
-    }
-    int len = right - (left + 1);
-    int *result = (int *) malloc(len * sizeof(int));
-    for (int i = 0; i < len; i++) result[i] = arr[left + 1 + i];
-    *outLen = len;
-    return result;
-}
-```
-
-```scala run
-object Main extends App {
-  class Solution {
-    def kClosestElements(arr: Array[Int], k: Int, target: Int): List[Int] = {
-      if (arr.isEmpty || k <= 0) return List.empty
-      var right = lowerBound(arr, target)
-      var left = right - 1
-      for (_ <- 0 until k) {
-        if (left < 0) right += 1
-        else if (right >= arr.length) left -= 1
-        else if (target - arr(left) <= arr(right) - target) left -= 1
-        else right += 1
-      }
-      arr.slice(left + 1, right).toList
-    }
-    private def lowerBound(arr: Array[Int], target: Int): Int = {
-      var low = 0; var high = arr.length
-      while (low < high) {
-        val mid = low + (high - low) / 2
-        if (arr(mid) < target) low = mid + 1 else high = mid
-      }
-      low
-    }
-  }
-
-  println(new Solution().kClosestElements(Array(1, 2, 3, 4, 5, 6), 3, 4))   // List(3, 4, 5)
-}
-```
-
-
-***
-
-## Final Takeaway
 
 Lower bound is the single primitive behind a family of "where should this go?" queries. The four problems showed insertion position, range queries, closest neighbour, and k-closest. Each adds a small post-processing step to the same `O(log n)` lower bound query.
 
 The next lesson (the Upper Bound Pattern lesson) handles the dual — **upper bound pattern** for problems that require the *first index strictly greater than target*.
 
 **Transfer challenge — try before the Upper Bound Pattern lesson:** Use lower bound to count how many elements in a sorted array are *strictly less than* target. (Hint: that's the lower bound's return value.)
+
+</details>

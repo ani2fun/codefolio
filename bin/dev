@@ -96,8 +96,8 @@ if ! docker info >/dev/null 2>&1; then
   exit 1
 fi
 
-log "starting backing stores (db redis mongo code-runner likec4)"
-docker compose up -d --remove-orphans db redis mongo code-runner likec4
+log "starting backing stores (db redis mongo code-runner likec4 keycloak)"
+docker compose up -d --remove-orphans db redis mongo code-runner likec4 keycloak
 
 for svc in db redis mongo; do
   log "waiting for $svc to be healthy…"
@@ -120,6 +120,37 @@ export CODE_RUNNER_URL="${CODE_RUNNER_URL:-http://localhost:2358}"
 log "likec4 SPA reachable at http://127.0.0.1:8090/c4/ (proxied by ZIO server at /c4/*)"
 export LIKEC4_URL="${LIKEC4_URL:-http://127.0.0.1:8090}"
 
+# Auth gate (ADR-0013): ON by default — the `keycloak` compose service
+# (started above) provides a fully local OIDC provider, so the GitHub
+# sign-in flow runs end-to-end with no homelab dependency. On first boot
+# Keycloak imports the `codefolio` realm (public client `codefolio-web`,
+# local user tester/tester). For fast content/runner iteration, skip the
+# whole gate — and the Keycloak wait — with `AUTH_ENABLED=false ./bin/dev`.
+export AUTH_ENABLED="${AUTH_ENABLED:-true}"
+export KEYCLOAK_ISSUER_URL="${KEYCLOAK_ISSUER_URL:-http://localhost:8081/realms/codefolio}"
+export KEYCLOAK_REALM="${KEYCLOAK_REALM:-codefolio}"
+export KEYCLOAK_CLIENT_ID="${KEYCLOAK_CLIENT_ID:-codefolio-web}"
+
+if [[ "$AUTH_ENABLED" == "true" ]]; then
+  # Keycloak has no compose healthcheck; poll the realm's OIDC discovery
+  # endpoint instead (first boot imports the realm — can take ~30-60s).
+  log "waiting for Keycloak realm 'codefolio' to import…"
+  kc_ready=""
+  for _ in $(seq 1 60); do
+    if curl -sf "http://localhost:8081/realms/codefolio/.well-known/openid-configuration" \
+        >/dev/null 2>&1; then
+      kc_ready=1
+      break
+    fi
+    sleep 2
+  done
+  if [[ -n "$kc_ready" ]]; then
+    log "Keycloak ready — admin http://localhost:8081 (admin/admin); sign in as tester/tester"
+  else
+    warn "Keycloak didn't become ready in time — sign-in may not work yet."
+  fi
+fi
+
 # ---- 3. Frontend deps (one-time) ----------------------------------------
 
 if [[ ! -d client/node_modules ]]; then
@@ -127,10 +158,16 @@ if [[ ! -d client/node_modules ]]; then
   (cd client && npm install --no-audit --no-fund) | prefix "npm" "$c_vite"
 fi
 
-# ---- 4. sbt watcher: server reStart + client fastLinkJS in parallel -----
+# ---- 4. sbt watcher: client fastLinkJS + server reStart in parallel -----
 
-log "starting sbt watcher (server/reStart + client/fastLinkJS)…"
-sbt -no-colors "~ all server/reStart client/fastLinkJS" \
+# Order matters: `client/fastLinkJS` MUST come before `server/reStart`.
+# reStart (sbt-revolver) is an InputTask with a greedy argument parser —
+# any task name placed after it on the line is swallowed as a program
+# argument to the forked app (the tell: `Main.main(client/fastLinkJS)` in
+# the log) instead of running as its own watched task, so client sources
+# would never be recompiled on change. Keep reStart last.
+log "starting sbt watcher (client/fastLinkJS + server/reStart)…"
+sbt -no-colors "~ all client/fastLinkJS server/reStart" \
   2> >(prefix "sbt" "$c_sbt" >&2) \
   |  prefix "sbt" "$c_sbt" &
 PIDS+=($!)
@@ -151,5 +188,6 @@ log "  Redis:                      localhost:6379"
 log "  MongoDB:                    localhost:27017 (db: codefolio)"
 log "  Code Runner:                localhost:2358 (POST /submissions/?base64_encoded=true&wait=true)"
 log "  LikeC4 (via proxy):         http://localhost:${SERVER_PORT}/c4/view/index"
+log "  Keycloak:                   http://localhost:8081 (admin/admin) — realm codefolio, user tester/tester"
 
 wait "${PIDS[@]}"

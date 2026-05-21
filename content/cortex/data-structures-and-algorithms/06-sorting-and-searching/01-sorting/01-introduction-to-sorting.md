@@ -368,7 +368,9 @@ Output: false
 
 ---
 
-## What Does "Sorted" Mean Operationally?
+<details>
+<summary><h2>What Does "Sorted" Mean Operationally?</h2></summary>
+
 
 Non-decreasing order means every adjacent pair `(arr[i-1], arr[i])` satisfies `arr[i-1] ≤ arr[i]`. Equivalently: there's no pair where the left element is *strictly larger* than the right.
 
@@ -410,9 +412,10 @@ bad: "Not sorted" {
 
 <p align="center"><strong>The check: every adjacent pair must satisfy <code>a[i-1] ≤ a[i]</code>. The first violation lets us return <code>false</code> immediately.</strong></p>
 
----
+</details>
+<details>
+<summary><h2>The Algorithm</h2></summary>
 
-## The Algorithm
 
 A single linear scan. For each `i` from `1` to `n-1`, compare `arr[i]` with `arr[i-1]`. If we ever see `arr[i] < arr[i-1]`, return `false`. If the loop completes without finding a violation, the array is sorted.
 
@@ -420,84 +423,68 @@ A single linear scan. For each `i` from `1` to `n-1`, compare `arr[i]` with `arr
 
 Both are vacuously sorted — there are no pairs to compare, so the loop body never executes and the function returns `true`. (This is the right convention; many sorts implicitly rely on it.)
 
----
+</details>
+<details>
+<summary><h2>Solution &amp; Analysis</h2></summary>
 
-## The Solution
-
-
-```pseudocode
-function orderCheck(arr):
-    for i from 1 to length(arr) − 1:
-        if arr[i] < arr[i − 1]:        # first violation → not sorted
-            return false
-    return true                        # empty / single-element arrays are vacuously sorted
-```
+### The Solution
 
 ```python run
 from typing import List
 
 class Solution:
     def order_check(self, arr: List[int]) -> bool:
-        # Empty or single-element arrays are vacuously sorted
+
+        # Check each pair of adjacent elements
         for i in range(1, len(arr)):
-            if arr[i] < arr[i - 1]:           # first violation → not sorted
+
+            # If the current element is smaller than the previous
+            # element, the list is not sorted in non-decreasing order
+            if arr[i] < arr[i - 1]:
                 return False
         return True
 
 
-if __name__ == "__main__":
-    print(Solution().order_check([1, 2, 3, 4, 5]))   # True
-    print(Solution().order_check([1, 1, 1, 4, 5]))   # True
-    print(Solution().order_check([1, 3, 1, 4, 5]))   # False
+print(Solution().order_check([1, 2, 3, 4, 5]))    # True
+print(Solution().order_check([1, 1, 1, 4, 5]))    # True
+print(Solution().order_check([1, 3, 1, 4, 5]))    # False
+print(Solution().order_check([]))                  # True
+print(Solution().order_check([42]))                # True
+print(Solution().order_check([2, 1]))              # False
+print(Solution().order_check([1, 1]))              # True
+print(Solution().order_check([5, 4, 3, 2, 1]))    # False
 ```
 
 ```java run
+import java.util.*;
+
 public class Main {
     static class Solution {
         public boolean orderCheck(int[] arr) {
+
+            // Check each pair of adjacent elements
             for (int i = 1; i < arr.length; i++) {
-                if (arr[i] < arr[i - 1]) return false;
+
+                // If the current element is smaller than the previous
+                // element, the array is not sorted in non-decreasing order
+                if (arr[i] < arr[i - 1]) {
+                    return false;
+                }
             }
             return true;
         }
     }
 
     public static void main(String[] args) {
-        System.out.println(new Solution().orderCheck(new int[]{1, 2, 3, 4, 5}));   // true
+        System.out.println(new Solution().orderCheck(new int[]{1, 2, 3, 4, 5}));    // true
+        System.out.println(new Solution().orderCheck(new int[]{1, 1, 1, 4, 5}));    // true
+        System.out.println(new Solution().orderCheck(new int[]{1, 3, 1, 4, 5}));    // false
+        System.out.println(new Solution().orderCheck(new int[]{}));                  // true
+        System.out.println(new Solution().orderCheck(new int[]{42}));                // true
+        System.out.println(new Solution().orderCheck(new int[]{2, 1}));              // false
+        System.out.println(new Solution().orderCheck(new int[]{1, 1}));              // true
+        System.out.println(new Solution().orderCheck(new int[]{5, 4, 3, 2, 1}));    // false
     }
-}
-```
-
-```c run
-#include <stdio.h>
-#include <stdbool.h>
-
-bool order_check(int *arr, int n) {
-    for (int i = 1; i < n; i++) {
-        if (arr[i] < arr[i - 1]) return false;
-    }
-    return true;
-}
-
-int main(void) {
-    int a[] = {1, 2, 3, 4, 5};
-    printf("%s\n", order_check(a, 5) ? "true" : "false");
-    return 0;
-}
-```
-
-```scala run
-object Main extends App {
-  class Solution {
-    def orderCheck(arr: Array[Int]): Boolean = {
-      for (i <- 1 until arr.length) {
-        if (arr(i) < arr(i - 1)) return false
-      }
-      true
-    }
-  }
-
-  println(new Solution().orderCheck(Array(1, 2, 3, 4, 5)))   // true
 }
 ```
 
@@ -514,9 +501,7 @@ Result: false (violation found at index 2)
 
 </details>
 
----
-
-## Complexity Analysis
+### Complexity Analysis
 
 | Resource | Cost | Why |
 |---|---|---|
@@ -526,9 +511,7 @@ Result: false (violation found at index 2)
 
 This is as efficient as any verifier can be — you fundamentally have to look at every adjacent pair (or detect a violation early) to know whether the array is sorted.
 
----
-
-## Edge Cases
+### Edge Cases
 
 | Case | Example | Expected | Reasoning |
 |---|---|---|---|
@@ -539,9 +522,10 @@ This is as efficient as any verifier can be — you fundamentally have to look a
 | All equal | `[5, 5, 5, 5]` | `true` | Every adjacent pair satisfies `≤`. |
 | Strictly descending | `[5, 4, 3, 2, 1]` | `false` | First pair already violates. |
 
----
+</details>
+<details>
+<summary><h2>Final Takeaway</h2></summary>
 
-## Final Takeaway
 
 Order check is a single linear scan — the simplest sort-adjacent function. We'll use this as the validator for every sorting algorithm in the next 11 files, and several adaptive sorts (like the optimised bubble sort in the Bubble Sort lesson) use this idea internally to detect "the array is now sorted, exit early."
 
@@ -568,5 +552,7 @@ print(Solution().first_violation([1, 2, 3, 4, 5]))   # -1
 The change: instead of `return False`, return the index `i`. Same time and space.
 
 This generalises the verifier into a tool that can be used by adaptive sorts. Bubble sort, for instance, can use a variant of this to detect when no swaps were needed in a pass and exit early — the optimisation introduced in the Bubble Sort lesson. The sorted-prefix-detection that adaptive sorts rely on is *exactly* this kind of incremental check.
+
+</details>
 
 </details>

@@ -267,21 +267,6 @@ Sums computed: `11, 16, 15`. The maximum is `16` (window `[5, 1, 3, 7]`). And yo
 Given below is the generic code implementation of the fixed-sized sliding window technique. It maps directly to the four steps in the algorithm above — Step 3.1 (add), Step 3.2 (trim if oversized), Step 3.3 (process if full), Step 3.4 (advance `end`):
 
 
-```pseudocode
-# Generic fixed-window template — four steps per iteration: expand, contract, process, advance.
-function fixedSizeSlidingWindow(arr, k):
-    start ← 0; end ← 0
-    aggregate ← 0
-    while end < length(arr):
-        aggregate ← fAdd(aggregate, arr[end])         # 1. expand right edge
-        if end − start + 1 > k:                       # 2. contract from left if oversized
-            aggregate ← fRemove(aggregate, arr[start])
-            start ← start + 1
-        if end − start + 1 = k:                       # 3. process when window is exactly k
-            process(aggregate)
-        end ← end + 1                                  # 4. advance right edge
-```
-
 ```python run
 from typing import List
 
@@ -332,60 +317,6 @@ public class Main {
         fixedSizeSlidingWindow(new int[]{1, 2, 3, 4, 5}, 3);
         System.out.println("Template ran.");
     }
-}
-```
-
-```c run
-#include <stdio.h>
-
-int  f_add(int agg, int x)    { return agg + x; }
-int  f_remove(int agg, int x) { return agg - x; }
-void process(int agg)         { (void)agg; }
-
-void fixed_size_sliding_window(int* arr, int n, int k) {
-    int start = 0, end = 0, aggregate = 0;
-    while (end < n) {
-        aggregate = f_add(aggregate, arr[end]);
-        if (end - start + 1 > k) {
-            aggregate = f_remove(aggregate, arr[start]);
-            start++;
-        }
-        if (end - start + 1 == k) process(aggregate);
-        end++;
-    }
-}
-
-int main() {
-    int arr[] = {1, 2, 3, 4, 5};
-    fixed_size_sliding_window(arr, 5, 3);
-    printf("Template ran.\n");
-    return 0;
-}
-```
-
-```scala run
-object Main extends App {
-  def fAdd(agg: Int, x: Int): Int    = agg + x
-  def fRemove(agg: Int, x: Int): Int = agg - x
-  def process(agg: Int): Unit = ()
-
-  def fixedSizeSlidingWindow(arr: Array[Int], k: Int): Unit = {
-    var start = 0
-    var end = 0
-    var aggregate = 0
-    while (end < arr.length) {
-      aggregate = fAdd(aggregate, arr(end))
-      if (end - start + 1 > k) {
-        aggregate = fRemove(aggregate, arr(start))
-        start += 1
-      }
-      if (end - start + 1 == k) process(aggregate)
-      end += 1
-    }
-  }
-
-  fixedSizeSlidingWindow(Array(1, 2, 3, 4, 5), 3)
-  println("Template ran.")
 }
 ```
 
@@ -537,19 +468,6 @@ Both operations are O(1) arithmetic on a single variable.
 Fix a starting index `i`, compute the sum of `k` elements starting there, check if it beats the current max:
 
 
-```pseudocode
-# Brute force — recompute the sum of every k-window. O(n × k).
-function kSubarrayMaxAverageBrute(arr, k):
-    n ← length(arr)
-    maxAverage ← −∞
-    for i from 0 to n − k:
-        currentSum ← 0
-        for j from 0 to k − 1:
-            currentSum ← currentSum + arr[i + j]
-        maxAverage ← max(maxAverage, currentSum / k)
-    return maxAverage
-```
-
 ```python run
 from typing import List
 
@@ -587,45 +505,6 @@ public class Main {
 }
 ```
 
-```c run
-#include <stdio.h>
-#include <float.h>
-
-double k_subarray_max_average_brute(int* arr, int n, int k) {
-    double max_average = -DBL_MAX;
-    for (int i = 0; i <= n - k; i++) {
-        double sum = 0;
-        for (int j = 0; j < k; j++) sum += arr[i + j];
-        double avg = sum / k;
-        if (avg > max_average) max_average = avg;
-    }
-    return max_average;
-}
-
-int main() {
-    int arr[] = {1, 12, -5, -6, 50, 3};
-    printf("%.2f\n", k_subarray_max_average_brute(arr, 6, 4));
-    return 0;
-}
-```
-
-```scala run
-object Main extends App {
-  def kSubarrayMaxAverageBrute(arr: Array[Int], k: Int): Double = {
-    val n = arr.length
-    var maxAverage = Double.NegativeInfinity
-    for (i <- 0 to n - k) {
-      var sum = 0.0
-      for (j <- 0 until k) sum += arr(i + j)
-      maxAverage = math.max(maxAverage, sum / k)
-    }
-    maxAverage
-  }
-
-  println(kSubarrayMaxAverageBrute(Array(1, 12, -5, -6, 50, 3), 4))
-}
-```
-
 
 <details>
 <summary><strong>Trace — arr = [1, 12, -5, -6, 50, 3],  k = 4  (brute force)</strong></summary>
@@ -658,52 +537,6 @@ We apply the fixed sliding window algorithm directly. We initialise `start = 0`,
 - **Step 3.3:** If window size equals `k`, evaluate the average against `max_average`
 - **Step 3.4:** Advance `end`
 
-
-```pseudocode
-function kSubarrayAverage(arr, k):
-    n ← length(arr)
-
-    # to store the starting index of the subarray
-    start ← 0
-
-    # to store the ending index of the subarray
-    end ← 0
-
-    # to store the current subarray sum
-    sum ← 0
-
-    # to store the maximum average
-    maxAverage ← −∞
-
-    # loop through the array
-    while end < n:
-
-        # add the current element to the current subarray sum
-        sum ← sum + arr[end]
-
-        # if the current subarray has more than k elements
-        # then remove elements from the start of the subarray till
-        # the subarray has exactly k elements
-        if end − start + 1 > k:
-
-            # remove the first element from the subarray
-            sum ← sum − arr[start]
-
-            # move the start pointer forward
-            start ← start + 1
-
-        # if the current subarray has exactly k elements
-        # then calculate the average and update the maximum average
-        if end − start + 1 = k:
-
-            # calculate the average and update the maximum average
-            maxAverage ← max(maxAverage, sum / k)
-
-        # move the end pointer forward
-        end ← end + 1
-
-    return maxAverage
-```
 
 ```python run
 from typing import List
@@ -817,122 +650,6 @@ public class Main {
 }
 ```
 
-```c run
-#include <stdio.h>
-#include <float.h>
-
-double k_subarray_average(int* arr, int n, int k) {
-
-    /* to store the starting index of the subarray */
-    int start = 0;
-
-    /* to store the ending index of the subarray */
-    int end = 0;
-
-    /* to store the current subarray sum */
-    int sum = 0;
-
-    /* to store the maximum average */
-    double max_average = -DBL_MAX;
-
-    /* loop through the array */
-    while (end < n) {
-
-        /* add the current element to the current subarray sum */
-        sum += arr[end];
-
-        /* if the current subarray has more than k elements
-         * then remove elements from the start of the subarray till
-         * the subarray has exactly k elements */
-        if (end - start + 1 > k) {
-
-            /* remove the first element from the subarray */
-            sum -= arr[start];
-
-            /* move the start pointer forward */
-            start++;
-        }
-
-        /* if the current subarray has exactly k elements
-         * then calculate the average and update the maximum average */
-        if (end - start + 1 == k) {
-
-            /* calculate the average and update the maximum average */
-            double avg = (double) sum / k;
-            if (avg > max_average) max_average = avg;
-        }
-
-        /* move the end pointer forward */
-        end++;
-    }
-
-    return max_average;
-}
-
-int main() {
-    int arr[] = {1, 12, -5, -6, 50, 3};
-    printf("%.2f\n", k_subarray_average(arr, 6, 4));   /* 12.75 */
-    return 0;
-}
-```
-
-```scala run
-object Main extends App {
-  class Solution {
-    def kSubarrayAverage(arr: Array[Int], k: Int): Double = {
-      val n = arr.length
-
-      // to store the starting index of the subarray
-      var start = 0
-
-      // to store the ending index of the subarray
-      var end = 0
-
-      // to store the current subarray sum
-      var sum = 0
-
-      // to store the maximum average
-      var maxAverage = Double.NegativeInfinity
-
-      // loop through the array
-      while (end < n) {
-
-        // add the current element to the current subarray sum
-        sum += arr(end)
-
-        // if the current subarray has more than k elements
-        // then remove elements from the start of the subarray till
-        // the subarray has exactly k elements
-        if (end - start + 1 > k) {
-
-          // remove the first element from the subarray
-          sum -= arr(start)
-
-          // move the start pointer forward
-          start += 1
-        }
-
-        // if the current subarray has exactly k elements
-        // then calculate the average and update the maximum average
-        if (end - start + 1 == k) {
-
-          // calculate the average and update the maximum average
-          maxAverage = math.max(maxAverage, sum.toDouble / k)
-        }
-
-        // move the end pointer forward
-        end += 1
-      }
-
-      maxAverage
-    }
-  }
-
-  val sol = new Solution
-  println(sol.kSubarrayAverage(Array(1, 12, -5, -6, 50, 3), 4))   // 12.75
-}
-```
-
 
 <details>
 <summary><strong>Trace — arr = [1, 12, -5, -6, 50, 3],  k = 4  (sliding window)</strong></summary>
@@ -989,7 +706,9 @@ arr = [1, 2],          k = 5   →  -1   (no size-5 subarray exists)
 
 ---
 
-## Examples
+<details>
+<summary><h2>Examples</h2></summary>
+
 
 **Example 1**
 ```
@@ -1012,9 +731,11 @@ Output: 11
 Explanation: The subarray [1, 2, 3, 5] has a minimum sum of 11 and a size of 4.
 ```
 
----
+</details>
+<details>
+<summary><h2>Intuition &amp; Brute Force</h2></summary>
 
-## Intuition
+### Intuition
 
 There are exactly `n − k + 1` contiguous subarrays of size `k` in an array of length `n`. The brute force sums each one from scratch — recomputing `k − 1` shared elements every time the window slides — and tracks the running minimum.
 
@@ -1064,23 +785,7 @@ flowchart TB
 
 <p align="center"><strong>Subarray Size Equals K — expand the window, contract if oversized, then update <code>min_sum</code> whenever the window reaches exactly size k.</strong></p>
 
----
-
-## Brute Force: Nested Loops, O(N × k)
-
-
-```pseudocode
-function subarraySizeEqualsKBrute(arr, k):
-    n ← length(arr)
-    if k > n: return −1
-    minSum ← +∞
-    for i from 0 to n − k:
-        windowSum ← 0
-        for j from 0 to k − 1:
-            windowSum ← windowSum + arr[i + j]    # re-summed each window — O(k) per i
-        minSum ← min(minSum, windowSum)
-    return minSum
-```
+### Brute Force: Nested Loops, O(N × k)
 
 ```python run
 from typing import List
@@ -1124,49 +829,6 @@ public class Main {
 }
 ```
 
-```c run
-#include <stdio.h>
-#include <limits.h>
-
-int subarray_size_equals_k_brute(int* arr, int n, int k) {
-    if (k > n) return -1;
-    int min_sum = INT_MAX;
-    for (int i = 0; i <= n - k; i++) {
-        int window_sum = 0;
-        for (int j = 0; j < k; j++) window_sum += arr[i + j];
-        if (window_sum < min_sum) min_sum = window_sum;
-    }
-    return min_sum;
-}
-
-int main() {
-    int a1[] = {4, 4, 5, 6, 4};
-    int a2[] = {1, 2, 3, 5};
-    printf("%d\n", subarray_size_equals_k_brute(a1, 5, 3));  /* 13 */
-    printf("%d\n", subarray_size_equals_k_brute(a2, 4, 1));  /* 1 */
-    return 0;
-}
-```
-
-```scala run
-object Main extends App {
-  def subarraySizeEqualsKBrute(arr: Array[Int], k: Int): Int = {
-    val n = arr.length
-    if (k > n) return -1
-    var minSum = Int.MaxValue
-    for (i <- 0 to n - k) {
-      var sum = 0
-      for (j <- 0 until k) sum += arr(i + j)
-      if (sum < minSum) minSum = sum
-    }
-    minSum
-  }
-
-  println(subarraySizeEqualsKBrute(Array(4, 4, 5, 6, 4), 3))  // 13
-  println(subarraySizeEqualsKBrute(Array(1, 2, 3, 5), 1))     // 1
-}
-```
-
 
 <details>
 <summary><strong>Trace — arr = [4, 4, 5, 6, 4],  k = 3  (brute force)</strong></summary>
@@ -1183,56 +845,11 @@ Return: 13 ✓  —  total additions: 9 (3 windows × 3 elements each)
 
 </details>
 
----
+</details>
+<details>
+<summary><h2>Solution &amp; Analysis</h2></summary>
 
-## Solution
-
-
-```pseudocode
-function subarraySizeEqualsK(arr, k):
-    # Edge case: if k is greater than the array size, return -1
-    if k > length(arr): return −1
-
-    # To store the starting index of the subarray
-    start ← 0
-
-    # To store the ending index of the subarray
-    end ← 0
-
-    # To store the current subarray sum
-    sum ← 0
-
-    # We want to find the minimum sum
-    minSum ← +∞
-
-    # Sliding window to process all subarrays of size k
-    while end < length(arr):
-
-        # Add contribution of arr[end] to the current window sum
-        sum ← sum + arr[end]
-
-        # If the current subarray has more than k elements, then
-        # remove elements from the start of the subarray till it has
-        # exactly k elements
-        if end − start + 1 > k:
-
-            # Remove contribution of arr[start] as the window is now too large
-            sum ← sum − arr[start]
-
-            # Contract the window from the left
-            start ← start + 1
-
-        # Check if the window size is exactly k
-        if end − start + 1 = k:
-
-            # Update the minimum sum
-            minSum ← min(minSum, sum)
-
-        # Expand the window from the right
-        end ← end + 1
-
-    return minSum
-```
+### Solution
 
 ```python run
 from typing import List
@@ -1286,11 +903,17 @@ class Solution:
         return min_sum
 
 
-sol = Solution()
-print(sol.subarray_size_equals_k([4, 4, 5, 6, 4], 3))   # 13
-print(sol.subarray_size_equals_k([1, 2, 3, 5], 1))      # 1
-print(sol.subarray_size_equals_k([1, 2, 3, 5], 4))      # 11
-print(sol.subarray_size_equals_k([1, 2], 5))            # -1
+# Examples from the problem statement
+print(Solution().subarray_size_equals_k([4, 4, 5, 6, 4], 3))   # 13
+print(Solution().subarray_size_equals_k([1, 2, 3, 5], 1))       # 1
+print(Solution().subarray_size_equals_k([1, 2, 3, 5], 4))       # 11
+
+# Edge cases
+print(Solution().subarray_size_equals_k([5], 1))                 # 5  — single element
+print(Solution().subarray_size_equals_k([3, 1], 2))              # 4  — two elements
+print(Solution().subarray_size_equals_k([2, 2, 2], 3))           # 6  — all same
+print(Solution().subarray_size_equals_k([10, 1, 2], 5))          # -1 — k > length
+print(Solution().subarray_size_equals_k([-1, -2, -3, -4], 2))   # -7 — negatives
 ```
 
 ```java run
@@ -1350,146 +973,22 @@ public class Main {
     }
 
     public static void main(String[] args) {
-        Solution sol = new Solution();
-        System.out.println(sol.subarraySizeEqualsK(new int[]{4, 4, 5, 6, 4}, 3));   // 13
-        System.out.println(sol.subarraySizeEqualsK(new int[]{1, 2, 3, 5}, 1));      // 1
-        System.out.println(sol.subarraySizeEqualsK(new int[]{1, 2, 3, 5}, 4));      // 11
-        System.out.println(sol.subarraySizeEqualsK(new int[]{1, 2}, 5));            // -1
+        // Examples from the problem statement
+        System.out.println(new Solution().subarraySizeEqualsK(new int[]{4, 4, 5, 6, 4}, 3));   // 13
+        System.out.println(new Solution().subarraySizeEqualsK(new int[]{1, 2, 3, 5}, 1));       // 1
+        System.out.println(new Solution().subarraySizeEqualsK(new int[]{1, 2, 3, 5}, 4));       // 11
+
+        // Edge cases
+        System.out.println(new Solution().subarraySizeEqualsK(new int[]{5}, 1));                 // 5  — single element
+        System.out.println(new Solution().subarraySizeEqualsK(new int[]{3, 1}, 2));              // 4  — two elements
+        System.out.println(new Solution().subarraySizeEqualsK(new int[]{2, 2, 2}, 3));           // 6  — all same
+        System.out.println(new Solution().subarraySizeEqualsK(new int[]{10, 1, 2}, 5));          // -1 — k > length
+        System.out.println(new Solution().subarraySizeEqualsK(new int[]{-1, -2, -3, -4}, 2));   // -7 — negatives
     }
 }
 ```
 
-```c run
-#include <stdio.h>
-#include <limits.h>
-
-int subarray_size_equals_k(int* arr, int n, int k) {
-
-    /* Edge case: If k is greater than the array size, return -1. */
-    if (k > n) return -1;
-
-    /* To store the starting index of the subarray */
-    int start = 0;
-
-    /* To store the ending index of the subarray */
-    int end = 0;
-
-    /* To store the current subarray sum */
-    int sum = 0;
-
-    /* We want to find the minimum sum. */
-    int min_sum = INT_MAX;
-
-    /* Sliding window to process all subarrays of size k */
-    while (end < n) {
-
-        /* Add contribution of arr[end] to the current window sum */
-        sum += arr[end];
-
-        /* If the current subarray has more than k elements then remove
-         * elements from the start of the subarray till the subarray has
-         * exactly k elements */
-        if (end - start + 1 > k) {
-
-            /* Remove contribution of arr[start] as the window is too large */
-            sum -= arr[start];
-
-            /* Contract the window from the left */
-            start++;
-        }
-
-        /* Check if the window size is exactly k */
-        if (end - start + 1 == k) {
-
-            /* Update the minimum sum */
-            if (sum < min_sum) min_sum = sum;
-        }
-
-        /* Expand the window from the right */
-        end++;
-    }
-
-    return min_sum;
-}
-
-int main() {
-    int a1[] = {4, 4, 5, 6, 4};
-    int a2[] = {1, 2, 3, 5};
-    int a3[] = {1, 2, 3, 5};
-    int a4[] = {1, 2};
-    printf("%d\n", subarray_size_equals_k(a1, 5, 3));   /* 13 */
-    printf("%d\n", subarray_size_equals_k(a2, 4, 1));   /* 1 */
-    printf("%d\n", subarray_size_equals_k(a3, 4, 4));   /* 11 */
-    printf("%d\n", subarray_size_equals_k(a4, 2, 5));   /* -1 */
-    return 0;
-}
-```
-
-```scala run
-object Main extends App {
-  class Solution {
-    def subarraySizeEqualsK(arr: Array[Int], k: Int): Int = {
-
-      // Edge case: If k is greater than the array size, return -1.
-      if (k > arr.length) return -1
-
-      // To store the starting index of the subarray
-      var start = 0
-
-      // To store the ending index of the subarray
-      var end = 0
-
-      // To store the current subarray sum
-      var sum = 0
-
-      // We want to find the minimum sum.
-      var minSum = Int.MaxValue
-
-      // Sliding window to process all subarrays of size k
-      while (end < arr.length) {
-
-        // Add contribution of arr[end] to the current window sum
-        sum += arr(end)
-
-        // If the current subarray has more than k elements
-        // then remove elements from the start of the subarray till
-        // the subarray has exactly k elements
-        if (end - start + 1 > k) {
-
-          // Remove contribution of arr[start] as the window is too large
-          sum -= arr(start)
-
-          // Contract the window from the left
-          start += 1
-        }
-
-        // Check if the window size is exactly k
-        if (end - start + 1 == k) {
-
-          // Update the minimum sum
-          minSum = math.min(minSum, sum)
-        }
-
-        // Expand the window from the right
-        end += 1
-      }
-
-      minSum
-    }
-  }
-
-  val sol = new Solution
-  println(sol.subarraySizeEqualsK(Array(4, 4, 5, 6, 4), 3))   // 13
-  println(sol.subarraySizeEqualsK(Array(1, 2, 3, 5), 1))      // 1
-  println(sol.subarraySizeEqualsK(Array(1, 2, 3, 5), 4))      // 11
-  println(sol.subarraySizeEqualsK(Array(1, 2), 5))            // -1
-}
-```
-
-
----
-
-## Dry Run — Example 1
+### Dry Run — Example 1
 
 `arr = [4, 4, 5, 6, 4]`, `k = 3`
 
@@ -1572,9 +1071,7 @@ Return: 13 ✓
 
 </details>
 
----
-
-## Complexity Analysis
+### Complexity Analysis
 
 | | Complexity | Reasoning |
 |---|---|---|
@@ -1583,9 +1080,7 @@ Return: 13 ✓
 
 Versus brute force O(N × k) — the sliding window replaces the inner loop of k additions with one add + one subtract per slide.
 
----
-
-## Edge Cases
+### Edge Cases
 
 | Scenario | Input | Output | Note |
 |---|---|---|---|
@@ -1596,11 +1091,14 @@ Versus brute force O(N × k) — the sliding window replaces the inner loop of k
 | Negative elements | `[-1, 2, -1, 2]`, k=2 | `1` | Works identically — smallest pair is `(-1, 2)` or `(2, -1)`, both sum to 1 |
 | Single element | `[5]`, k=1 | `5` | One window, one element |
 
----
+</details>
+<details>
+<summary><h2>Key Takeaway</h2></summary>
 
-## Key Takeaway
 
 Subarray Size Equals K is the simplest fixed sliding window problem: maintain a running sum, add on expand, subtract on contract, take the minimum on full size. The time drops from O(N × k) to O(N) because the shared elements between adjacent windows are updated in O(1) instead of recomputed. The `k > n` guard is the only edge that needs explicit handling — every other case falls out of the loop body.
+
+</details>
 
 ***
 
@@ -1618,7 +1116,9 @@ arr = [0, 0, 0],                          k = 2  →  0
 
 ---
 
-## Examples
+<details>
+<summary><h2>Examples</h2></summary>
+
 
 **Example 1**
 ```
@@ -1643,9 +1143,11 @@ Output: 0
 Explanation: There are no 1s anywhere, so every size-2 window has zero.
 ```
 
----
+</details>
+<details>
+<summary><h2>Intuition &amp; Brute Force</h2></summary>
 
-## Intuition
+### Intuition
 
 Each element is either a `1` or a `0`. The aggregate we care about is the **count of `1`s** in the current window, not the sum of all elements. When the window slides:
 - A `1` enters from the right → `ones_count += 1`
@@ -1688,23 +1190,7 @@ w1 -> w2: "remove arr[0]=1 (-1), add arr[4]=0 (+0) → ones=2"
 
 <p align="center"><strong>Sliding the window right: remove the outgoing element's contribution to the ones count, add the incoming element's contribution. The max ones count is tracked across all windows.</strong></p>
 
----
-
-## Brute Force: Nested Loops, O(N × k)
-
-
-```pseudocode
-function maxOnesBrute(arr, k):
-    n ← length(arr)
-    maxOnes ← 0
-    for i from 0 to n − k:
-        ones ← 0
-        for j from 0 to k − 1:
-            if arr[i + j] = 1:
-                ones ← ones + 1
-        maxOnes ← max(maxOnes, ones)
-    return maxOnes
-```
+### Brute Force: Nested Loops, O(N × k)
 
 ```python run
 from typing import List
@@ -1745,97 +1231,11 @@ public class Main {
 }
 ```
 
-```c run
-#include <stdio.h>
+</details>
+<details>
+<summary><h2>Solution &amp; Analysis</h2></summary>
 
-int max_ones_brute(int* arr, int n, int k) {
-    int max_ones = 0;
-    for (int i = 0; i <= n - k; i++) {
-        int ones = 0;
-        for (int j = 0; j < k; j++) if (arr[i + j] == 1) ones++;
-        if (ones > max_ones) max_ones = ones;
-    }
-    return max_ones;
-}
-
-int main() {
-    int a1[] = {1, 1, 1, 0, 1, 0, 0, 1, 1, 1, 0};
-    int a2[] = {1, 1, 0, 1, 0, 1, 1, 0, 1, 0};
-    int a3[] = {0, 0, 0};
-    printf("%d\n", max_ones_brute(a1, 11, 5));  /* 4 */
-    printf("%d\n", max_ones_brute(a2, 10, 4));  /* 3 */
-    printf("%d\n", max_ones_brute(a3, 3, 2));   /* 0 */
-    return 0;
-}
-```
-
-```scala run
-object Main extends App {
-  def maxOnesBrute(arr: Array[Int], k: Int): Int = {
-    val n = arr.length
-    var maxOnes = 0
-    for (i <- 0 to n - k) {
-      var ones = 0
-      for (j <- 0 until k) if (arr(i + j) == 1) ones += 1
-      maxOnes = math.max(maxOnes, ones)
-    }
-    maxOnes
-  }
-
-  println(maxOnesBrute(Array(1, 1, 1, 0, 1, 0, 0, 1, 1, 1, 0), 5))  // 4
-  println(maxOnesBrute(Array(1, 1, 0, 1, 0, 1, 1, 0, 1, 0), 4))     // 3
-  println(maxOnesBrute(Array(0, 0, 0), 2))                           // 0
-}
-```
-
-
----
-
-## Solution
-
-
-```pseudocode
-function maximumOnes(arr, k):
-    # To store the starting index of the subarray
-    start ← 0
-
-    # To store the ending index of the subarray
-    end ← 0
-
-    # To store the current count of 1s in the window
-    countOnes ← 0
-
-    # To store the maximum number of 1s in any subarray of size k
-    maxOnes ← 0
-
-    # Loop through the array
-    while end < length(arr):
-
-        # Add the current element to the count if it's 1
-        if arr[end] = 1:
-            countOnes ← countOnes + 1
-
-        # If the current subarray has more than k elements then shrink
-        # it from the start
-        if end − start + 1 > k:
-
-            # Remove the contribution of arr[start] if it was 1
-            if arr[start] = 1:
-                countOnes ← countOnes − 1
-
-            # Move the start pointer forward
-            start ← start + 1
-
-        # If the current subarray has exactly k elements then update
-        # the maximum number of 1s
-        if end − start + 1 = k:
-            maxOnes ← max(maxOnes, countOnes)
-
-        # Move the end pointer forward
-        end ← end + 1
-
-    return maxOnes
-```
+### Solution
 
 ```python run
 from typing import List
@@ -1884,10 +1284,17 @@ class Solution:
         return max_ones
 
 
-sol = Solution()
-print(sol.maximum_ones([1, 1, 1, 0, 1, 0, 0, 1, 1, 1, 0], 5))  # 4
-print(sol.maximum_ones([1, 1, 0, 1, 0, 1, 1, 0, 1, 0], 4))     # 3
-print(sol.maximum_ones([0, 0, 0], 2))                           # 0
+# Examples from the problem statement
+print(Solution().maximum_ones([1, 1, 1, 0, 1, 0, 0, 1, 1, 1, 0], 5))   # 4
+print(Solution().maximum_ones([1, 1, 0, 1, 0, 1, 1, 0, 1, 0], 4))       # 3
+print(Solution().maximum_ones([0, 0, 0], 2))                              # 0
+
+# Edge cases
+print(Solution().maximum_ones([1], 1))                                    # 1  — single element
+print(Solution().maximum_ones([0, 1], 2))                                 # 1  — two elements
+print(Solution().maximum_ones([1, 1, 1], 3))                              # 3  — all ones
+print(Solution().maximum_ones([0, 0, 0, 0], 3))                          # 0  — all zeros
+print(Solution().maximum_ones([1, 0, 1, 0, 1], 2))                       # 1  — alternating
 ```
 
 ```java run
@@ -1943,139 +1350,22 @@ public class Main {
     }
 
     public static void main(String[] args) {
-        Solution sol = new Solution();
-        System.out.println(sol.maximumOnes(new int[]{1, 1, 1, 0, 1, 0, 0, 1, 1, 1, 0}, 5));  // 4
-        System.out.println(sol.maximumOnes(new int[]{1, 1, 0, 1, 0, 1, 1, 0, 1, 0}, 4));     // 3
-        System.out.println(sol.maximumOnes(new int[]{0, 0, 0}, 2));                           // 0
+        // Examples from the problem statement
+        System.out.println(new Solution().maximumOnes(new int[]{1, 1, 1, 0, 1, 0, 0, 1, 1, 1, 0}, 5));   // 4
+        System.out.println(new Solution().maximumOnes(new int[]{1, 1, 0, 1, 0, 1, 1, 0, 1, 0}, 4));       // 3
+        System.out.println(new Solution().maximumOnes(new int[]{0, 0, 0}, 2));                              // 0
+
+        // Edge cases
+        System.out.println(new Solution().maximumOnes(new int[]{1}, 1));                                    // 1  — single element
+        System.out.println(new Solution().maximumOnes(new int[]{0, 1}, 2));                                 // 1  — two elements
+        System.out.println(new Solution().maximumOnes(new int[]{1, 1, 1}, 3));                              // 3  — all ones
+        System.out.println(new Solution().maximumOnes(new int[]{0, 0, 0, 0}, 3));                          // 0  — all zeros
+        System.out.println(new Solution().maximumOnes(new int[]{1, 0, 1, 0, 1}, 2));                       // 1  — alternating
     }
 }
 ```
 
-```c run
-#include <stdio.h>
-
-int maximum_ones(int* arr, int n, int k) {
-
-    /* To store the starting index of the subarray */
-    int start = 0;
-
-    /* To store the ending index of the subarray */
-    int end = 0;
-
-    /* To store the current count of 1s in the window */
-    int count_ones = 0;
-
-    /* To store the maximum number of 1s in any subarray of size k */
-    int max_ones = 0;
-
-    /* Loop through the array */
-    while (end < n) {
-
-        /* Add the current element to the count if it's 1 */
-        if (arr[end] == 1) {
-            count_ones++;
-        }
-
-        /* If the current subarray has more than k elements then shrink it
-         * from the start */
-        if (end - start + 1 > k) {
-
-            /* Remove the contribution of arr[start] if it was 1 */
-            if (arr[start] == 1) {
-                count_ones--;
-            }
-
-            /* Move the start pointer forward */
-            start++;
-        }
-
-        /* If the current subarray has exactly k elements then update the
-         * maximum number of 1s */
-        if (end - start + 1 == k) {
-            if (count_ones > max_ones) max_ones = count_ones;
-        }
-
-        /* Move the end pointer forward */
-        end++;
-    }
-
-    return max_ones;
-}
-
-int main() {
-    int a1[] = {1, 1, 1, 0, 1, 0, 0, 1, 1, 1, 0};
-    int a2[] = {1, 1, 0, 1, 0, 1, 1, 0, 1, 0};
-    int a3[] = {0, 0, 0};
-    printf("%d\n", maximum_ones(a1, 11, 5));  /* 4 */
-    printf("%d\n", maximum_ones(a2, 10, 4));  /* 3 */
-    printf("%d\n", maximum_ones(a3, 3, 2));   /* 0 */
-    return 0;
-}
-```
-
-```scala run
-object Main extends App {
-  class Solution {
-    def maximumOnes(arr: Array[Int], k: Int): Int = {
-
-      // To store the starting index of the subarray
-      var start = 0
-
-      // To store the ending index of the subarray
-      var end = 0
-
-      // To store the current count of 1s in the window
-      var countOnes = 0
-
-      // To store the maximum number of 1s in any subarray of size k
-      var maxOnes = 0
-
-      // Loop through the array
-      while (end < arr.length) {
-
-        // Add the current element to the count if it's 1
-        if (arr(end) == 1) {
-          countOnes += 1
-        }
-
-        // If the current subarray has more than k elements
-        // then shrink it from the start
-        if (end - start + 1 > k) {
-
-          // Remove the contribution of arr[start] if it was 1
-          if (arr(start) == 1) {
-            countOnes -= 1
-          }
-
-          // Move the start pointer forward
-          start += 1
-        }
-
-        // If the current subarray has exactly k elements
-        // then update the maximum number of 1s
-        if (end - start + 1 == k) {
-          maxOnes = math.max(maxOnes, countOnes)
-        }
-
-        // Move the end pointer forward
-        end += 1
-      }
-
-      maxOnes
-    }
-  }
-
-  val sol = new Solution
-  println(sol.maximumOnes(Array(1, 1, 1, 0, 1, 0, 0, 1, 1, 1, 0), 5))  // 4
-  println(sol.maximumOnes(Array(1, 1, 0, 1, 0, 1, 1, 0, 1, 0), 4))     // 3
-  println(sol.maximumOnes(Array(0, 0, 0), 2))                           // 0
-}
-```
-
-
----
-
-## Dry Run — Example 1
+### Dry Run — Example 1
 
 `arr = [1, 1, 1, 0, 1, 0, 0, 1, 1, 1, 0]`, `k = 5`
 
@@ -2105,9 +1395,7 @@ The best window is the very first one — [1, 1, 1, 0, 1] at indices 0..4 with f
 
 </details>
 
----
-
-## Complexity Analysis
+### Complexity Analysis
 
 | | Complexity | Reasoning |
 |---|---|---|
@@ -2116,9 +1404,7 @@ The best window is the very first one — [1, 1, 1, 0, 1] at indices 0..4 with f
 
 Versus brute force O(N × k) — the count updates in O(1) per slide because only one element enters and one leaves.
 
----
-
-## Edge Cases
+### Edge Cases
 
 | Scenario | Input | Output | Note |
 |---|---|---|---|
@@ -2128,11 +1414,14 @@ Versus brute force O(N × k) — the count updates in O(1) per slide because onl
 | k == 1 | `[1, 0, 1, 0]`, k=1 | `1` | Best single-element window is a 1 |
 | Single element | `[1]`, k=1 | `1` | One window, one 1 |
 
----
+</details>
+<details>
+<summary><h2>Key Takeaway</h2></summary>
 
-## Key Takeaway
 
 Maximum Ones shows that the fixed sliding window aggregate doesn't have to be a sum — it can be a count. The add and remove operations are now conditional on the element's value (`if arr[end] == 1` / `if arr[start] == 1`), but the three-step template (expand → contract → process) is identical. Whenever an aggregate can update in O(1) per slide, fixed sliding window applies.
+
+</details>
 
 ***
 
@@ -2150,7 +1439,9 @@ arr = [-1, -2, 3, -5],    k = 4  →  [3]
 
 ---
 
-## Examples
+<details>
+<summary><h2>Examples</h2></summary>
+
 
 **Example 1**
 ```
@@ -2175,9 +1466,10 @@ Output: [3]
 Explanation: One window — the whole array — with 3 negatives.
 ```
 
----
+</details>
+<details>
+<summary><h2>Intuition</h2></summary>
 
-## Intuition
 
 The aggregate here is the **count of negative numbers** in the current window. When the window slides one step:
 - If the element entering from the right is negative → `neg_count += 1`
@@ -2225,53 +1517,11 @@ w2 -> w3: "remove 2 (+0), add -5 (+1) → neg=2"
 
 <p align="center"><strong>Each slide removes the outgoing element's contribution and adds the incoming one. The count updates in O(1) — one conditional check per side per step.</strong></p>
 
----
+</details>
+<details>
+<summary><h2>Solution &amp; Analysis</h2></summary>
 
-## Solution
-
-
-```pseudocode
-function negativeWindow(arr, k):
-    # To store the starting index of the subarray
-    start ← 0
-
-    # To store the ending index of the subarray
-    end ← 0
-
-    # To store the current count of negative numbers in the window
-    negativeCount ← 0
-
-    # To store the count of negative numbers in subarrays of size k
-    result ← empty list
-
-    # Loop through the array
-    while end < length(arr):
-
-        # Add the current element if it is negative
-        if arr[end] < 0:
-            negativeCount ← negativeCount + 1
-
-        # If the current subarray has more than k elements then shrink it
-        # from the start
-        if end − start + 1 > k:
-
-            # Remove the contribution of arr[start]
-            if arr[start] < 0:
-                negativeCount ← negativeCount − 1
-
-            # Move the start pointer forward
-            start ← start + 1
-
-        # If the current subarray has exactly k elements then add the
-        # count to the result
-        if end − start + 1 = k:
-            append negativeCount to result
-
-        # Move the end pointer forward
-        end ← end + 1
-
-    return result
-```
+### Solution
 
 ```python run
 from typing import List
@@ -2320,10 +1570,17 @@ class Solution:
         return result
 
 
-sol = Solution()
-print(sol.negative_window([4, -4, 5, -1, 4], 3))    # [1, 2, 1]
-print(sol.negative_window([1, -2, 3, -5], 1))       # [0, 1, 0, 1]
-print(sol.negative_window([-1, -2, 3, -5], 4))      # [3]
+# Examples from the problem statement
+print(Solution().negative_window([4, -4, 5, -1, 4], 3))     # [1, 2, 1]
+print(Solution().negative_window([1, -2, 3, -5], 1))         # [0, 1, 0, 1]
+print(Solution().negative_window([-1, -2, 3, -5], 4))        # [3]
+
+# Edge cases
+print(Solution().negative_window([-5], 1))                    # [1]  — single negative
+print(Solution().negative_window([3], 1))                     # [0]  — single positive
+print(Solution().negative_window([-1, -2], 2))                # [2]  — two negatives
+print(Solution().negative_window([1, 2, 3, 4], 2))            # [0, 0, 0]  — all positive
+print(Solution().negative_window([-1, -2, -3, -4], 3))        # [3, 3]  — all negative
 ```
 
 ```java run
@@ -2381,142 +1638,22 @@ public class Main {
     }
 
     public static void main(String[] args) {
-        Solution sol = new Solution();
-        System.out.println(sol.negativeWindow(new int[]{4, -4, 5, -1, 4}, 3));   // [1, 2, 1]
-        System.out.println(sol.negativeWindow(new int[]{1, -2, 3, -5}, 1));      // [0, 1, 0, 1]
-        System.out.println(sol.negativeWindow(new int[]{-1, -2, 3, -5}, 4));     // [3]
+        // Examples from the problem statement
+        System.out.println(new Solution().negativeWindow(new int[]{4, -4, 5, -1, 4}, 3));     // [1, 2, 1]
+        System.out.println(new Solution().negativeWindow(new int[]{1, -2, 3, -5}, 1));         // [0, 1, 0, 1]
+        System.out.println(new Solution().negativeWindow(new int[]{-1, -2, 3, -5}, 4));        // [3]
+
+        // Edge cases
+        System.out.println(new Solution().negativeWindow(new int[]{-5}, 1));                    // [1]  — single negative
+        System.out.println(new Solution().negativeWindow(new int[]{3}, 1));                     // [0]  — single positive
+        System.out.println(new Solution().negativeWindow(new int[]{-1, -2}, 2));                // [2]  — two negatives
+        System.out.println(new Solution().negativeWindow(new int[]{1, 2, 3, 4}, 2));            // [0, 0, 0]  — all positive
+        System.out.println(new Solution().negativeWindow(new int[]{-1, -2, -3, -4}, 3));        // [3, 3]  — all negative
     }
 }
 ```
 
-```c run
-#include <stdio.h>
-
-int negative_window(int* arr, int n, int k, int* out) {
-
-    /* To store the starting index of the subarray */
-    int start = 0;
-
-    /* To store the ending index of the subarray */
-    int end = 0;
-
-    /* To store the current count of negative numbers in the window */
-    int negative_count = 0;
-
-    /* To store the count of negative numbers in subarrays of size k */
-    int out_size = 0;
-
-    /* Loop through the array */
-    while (end < n) {
-
-        /* Add the current element if it is negative */
-        if (arr[end] < 0) {
-            negative_count++;
-        }
-
-        /* If the current subarray has more than k elements then shrink it
-         * from the start */
-        if (end - start + 1 > k) {
-
-            /* Remove the contribution of arr[start] */
-            if (arr[start] < 0) {
-                negative_count--;
-            }
-
-            /* Move the start pointer forward */
-            start++;
-        }
-
-        /* If the current subarray has exactly k elements then add the count
-         * to the result */
-        if (end - start + 1 == k) {
-            out[out_size++] = negative_count;
-        }
-
-        /* Move the end pointer forward */
-        end++;
-    }
-
-    return out_size;
-}
-
-static void print_arr(int* a, int n) {
-    printf("[");
-    for (int i = 0; i < n; i++) printf("%d%s", a[i], i + 1 < n ? ", " : "");
-    printf("]\n");
-}
-
-int main() {
-    int a1[] = {4, -4, 5, -1, 4};    int o1[10]; int n1 = negative_window(a1, 5, 3, o1); print_arr(o1, n1);  /* [1, 2, 1] */
-    int a2[] = {1, -2, 3, -5};       int o2[10]; int n2 = negative_window(a2, 4, 1, o2); print_arr(o2, n2);  /* [0, 1, 0, 1] */
-    int a3[] = {-1, -2, 3, -5};      int o3[10]; int n3 = negative_window(a3, 4, 4, o3); print_arr(o3, n3);  /* [3] */
-    return 0;
-}
-```
-
-```scala run
-object Main extends App {
-  class Solution {
-    def negativeWindow(arr: Array[Int], k: Int): List[Int] = {
-
-      // To store the starting index of the subarray
-      var start = 0
-
-      // To store the ending index of the subarray
-      var end = 0
-
-      // To store the current count of negative numbers in the window
-      var negativeCount = 0
-
-      // To store the count of negative numbers in subarrays of size k
-      val result = scala.collection.mutable.ListBuffer.empty[Int]
-
-      // Loop through the array
-      while (end < arr.length) {
-
-        // Add the current element if it is negative
-        if (arr(end) < 0) {
-          negativeCount += 1
-        }
-
-        // If the current subarray has more than k elements
-        // then shrink it from the start
-        if (end - start + 1 > k) {
-
-          // Remove the contribution of arr[start]
-          if (arr(start) < 0) {
-            negativeCount -= 1
-          }
-
-          // Move the start pointer forward
-          start += 1
-        }
-
-        // If the current subarray has exactly k elements
-        // then add the count to the result
-        if (end - start + 1 == k) {
-          result += negativeCount
-        }
-
-        // Move the end pointer forward
-        end += 1
-      }
-
-      result.toList
-    }
-  }
-
-  val sol = new Solution
-  println(sol.negativeWindow(Array(4, -4, 5, -1, 4), 3))    // List(1, 2, 1)
-  println(sol.negativeWindow(Array(1, -2, 3, -5), 1))       // List(0, 1, 0, 1)
-  println(sol.negativeWindow(Array(-1, -2, 3, -5), 4))      // List(3)
-}
-```
-
-
----
-
-## Dry Run — Example 1
+### Dry Run — Example 1
 
 `arr = [4, -4, 5, -1, 4]`, `k = 3`
 
@@ -2544,24 +1681,18 @@ Window [5, -1, 4]  → 1 negative (-1)
 
 </details>
 
----
-
-## Result Size
+### Result Size
 
 The result always has exactly `n − k + 1` elements — one per valid window. For `n=5, k=3`: `5 − 3 + 1 = 3` windows, 3 results. This is consistent with all fixed sliding window "report per window" problems.
 
----
-
-## Complexity Analysis
+### Complexity Analysis
 
 | | Complexity | Reasoning |
 |---|---|---|
 | **Time** | O(N) | `end` visits each element once; `start` moves at most N times total |
 | **Space** | O(N − k + 1) | The result array holds one entry per window; O(1) working space beyond that |
 
----
-
-## Edge Cases
+### Edge Cases
 
 | Scenario | Input | Output | Note |
 |---|---|---|---|
@@ -2572,11 +1703,14 @@ The result always has exactly `n − k + 1` elements — one per valid window. F
 | Single element positive | `[5]`, k=1 | `[0]` | One window, zero negatives |
 | Single element negative | `[-5]`, k=1 | `[1]` | One window, one negative |
 
----
+</details>
+<details>
+<summary><h2>Key Takeaway</h2></summary>
 
-## Key Takeaway
 
 Negative Window demonstrates recording per-window results rather than a single aggregate maximum or count. The aggregate (count of negatives) still updates in O(1) per slide via a conditional increment/decrement. The result array grows by one entry each time the window reaches full size — this is the ③ process step of the template, here recording instead of comparing.
+
+</details>
 
 ***
 
@@ -2594,7 +1728,9 @@ arr = [1, 2, 3, 5],    k = 4   →  [[1, 3]]
 
 ---
 
-## Examples
+<details>
+<summary><h2>Examples</h2></summary>
+
 
 **Example 1**
 ```
@@ -2621,9 +1757,10 @@ Output: [[1, 3]]
 Explanation: One window — the whole array — has 1 even (2) and 3 odd (1, 3, 5).
 ```
 
----
+</details>
+<details>
+<summary><h2>Intuition</h2></summary>
 
-## Intuition
 
 This is a per-window report problem just like Negative Window, but now we track **two** aggregates: the count of evens and the count of odds in the current window. The mechanics are identical to the single-aggregate version — every entering element bumps either `evenCount` or `oddCount`, every leaving element decrements the corresponding counter. At each full-size window the pair `(evenCount, oddCount)` is appended to the result.
 
@@ -2665,60 +1802,11 @@ flowchart TB
 
 <p align="center"><strong>Even Odd Count — two counters slide together; the full-size window appends <code>[evenCount, oddCount]</code> to the result.</strong></p>
 
----
+</details>
+<details>
+<summary><h2>Solution &amp; Analysis</h2></summary>
 
-## Solution
-
-
-```pseudocode
-function evenOddCount(arr, k):
-    # To store the starting index of the subarray
-    start ← 0
-
-    # To store the ending index of the subarray
-    end ← 0
-
-    # To store the current count of even numbers in the window
-    evenCount ← 0
-
-    # To store the current count of odd numbers in the window
-    oddCount ← 0
-
-    # To store the result as pairs {evenCount, oddCount}
-    result ← empty list
-
-    # Loop through the array
-    while end < length(arr):
-
-        # Add the current element to the respective count
-        if arr[end] mod 2 = 0:
-            evenCount ← evenCount + 1
-        else:
-            oddCount ← oddCount + 1
-
-        # If the current subarray has more than k elements then shrink it
-        # from the start
-        if end − start + 1 > k:
-
-            # Remove the contribution of arr[start]
-            if arr[start] mod 2 = 0:
-                evenCount ← evenCount − 1
-            else:
-                oddCount ← oddCount − 1
-
-            # Move the start pointer forward
-            start ← start + 1
-
-        # If the current subarray has exactly k elements then add the
-        # counts to the result
-        if end − start + 1 = k:
-            append [evenCount, oddCount] to result
-
-        # Move the end pointer forward
-        end ← end + 1
-
-    return result
-```
+### Solution
 
 ```python run
 from typing import List, Tuple
@@ -2776,10 +1864,17 @@ class Solution:
         return result
 
 
-sol = Solution()
-print(sol.even_odd_count([4, 4, 5, 1, 4], 3))   # [(2, 1), (1, 2), (1, 2)]
-print(sol.even_odd_count([1, 2, 3, 5], 1))      # [(0, 1), (1, 0), (0, 1), (0, 1)]
-print(sol.even_odd_count([1, 2, 3, 5], 4))      # [(1, 3)]
+# Examples from the problem statement
+print(Solution().even_odd_count([4, 4, 5, 1, 4], 3))    # [(2, 1), (1, 2), (1, 2)]
+print(Solution().even_odd_count([1, 2, 3, 5], 1))        # [(0, 1), (1, 0), (0, 1), (0, 1)]
+print(Solution().even_odd_count([1, 2, 3, 5], 4))        # [(1, 3)]
+
+# Edge cases
+print(Solution().even_odd_count([2], 1))                  # [(1, 0)]  — single even
+print(Solution().even_odd_count([1], 1))                  # [(0, 1)]  — single odd
+print(Solution().even_odd_count([2, 4], 2))               # [(2, 0)]  — all even
+print(Solution().even_odd_count([1, 3, 5], 2))            # [(0, 2), (0, 2)]  — all odd
+print(Solution().even_odd_count([2, 2, 2, 2], 3))         # [(3, 0), (3, 0)]  — all same even
 ```
 
 ```java run
@@ -2844,161 +1939,22 @@ public class Main {
     }
 
     public static void main(String[] args) {
-        Solution sol = new Solution();
-        System.out.println(sol.evenOddCount(new int[]{4, 4, 5, 1, 4}, 3));   // [[2, 1], [1, 2], [1, 2]]
-        System.out.println(sol.evenOddCount(new int[]{1, 2, 3, 5}, 1));      // [[0, 1], [1, 0], [0, 1], [0, 1]]
-        System.out.println(sol.evenOddCount(new int[]{1, 2, 3, 5}, 4));      // [[1, 3]]
+        // Examples from the problem statement
+        System.out.println(new Solution().evenOddCount(new int[]{4, 4, 5, 1, 4}, 3));    // [[2, 1], [1, 2], [1, 2]]
+        System.out.println(new Solution().evenOddCount(new int[]{1, 2, 3, 5}, 1));        // [[0, 1], [1, 0], [0, 1], [0, 1]]
+        System.out.println(new Solution().evenOddCount(new int[]{1, 2, 3, 5}, 4));        // [[1, 3]]
+
+        // Edge cases
+        System.out.println(new Solution().evenOddCount(new int[]{2}, 1));                  // [[1, 0]]  — single even
+        System.out.println(new Solution().evenOddCount(new int[]{1}, 1));                  // [[0, 1]]  — single odd
+        System.out.println(new Solution().evenOddCount(new int[]{2, 4}, 2));               // [[2, 0]]  — all even
+        System.out.println(new Solution().evenOddCount(new int[]{1, 3, 5}, 2));            // [[0, 2], [0, 2]]  — all odd
+        System.out.println(new Solution().evenOddCount(new int[]{2, 2, 2, 2}, 3));         // [[3, 0], [3, 0]]  — all same even
     }
 }
 ```
 
-```c run
-#include <stdio.h>
-
-/* Writes (even, odd) pairs into out_pairs (length 2*max). Returns the number of pairs. */
-int even_odd_count(int* arr, int n, int k, int* out_pairs) {
-
-    /* To store the starting index of the subarray */
-    int start = 0;
-
-    /* To store the ending index of the subarray */
-    int end = 0;
-
-    /* To store the current count of even numbers in the window */
-    int even_count = 0;
-
-    /* To store the current count of odd numbers in the window */
-    int odd_count = 0;
-
-    /* To store the number of recorded pairs */
-    int pair_count = 0;
-
-    /* Loop through the array */
-    while (end < n) {
-
-        /* Add the current element to the respective count */
-        if (arr[end] % 2 == 0) {
-            even_count++;
-        } else {
-            odd_count++;
-        }
-
-        /* If the current subarray has more than k elements then shrink it
-         * from the start */
-        if (end - start + 1 > k) {
-
-            /* Remove the contribution of arr[start] */
-            if (arr[start] % 2 == 0) {
-                even_count--;
-            } else {
-                odd_count--;
-            }
-
-            /* Move the start pointer forward */
-            start++;
-        }
-
-        /* If the current subarray has exactly k elements then add the
-         * counts to the result */
-        if (end - start + 1 == k) {
-            out_pairs[2 * pair_count]     = even_count;
-            out_pairs[2 * pair_count + 1] = odd_count;
-            pair_count++;
-        }
-
-        /* Move the end pointer forward */
-        end++;
-    }
-
-    return pair_count;
-}
-
-static void print_pairs(int* p, int count) {
-    printf("[");
-    for (int i = 0; i < count; i++) {
-        printf("[%d, %d]%s", p[2 * i], p[2 * i + 1], i + 1 < count ? ", " : "");
-    }
-    printf("]\n");
-}
-
-int main() {
-    int a1[] = {4, 4, 5, 1, 4};   int p1[20]; int c1 = even_odd_count(a1, 5, 3, p1); print_pairs(p1, c1);
-    int a2[] = {1, 2, 3, 5};      int p2[20]; int c2 = even_odd_count(a2, 4, 1, p2); print_pairs(p2, c2);
-    int a3[] = {1, 2, 3, 5};      int p3[20]; int c3 = even_odd_count(a3, 4, 4, p3); print_pairs(p3, c3);
-    return 0;
-}
-```
-
-```scala run
-object Main extends App {
-  class Solution {
-    def evenOddCount(arr: Array[Int], k: Int): List[(Int, Int)] = {
-
-      // To store the starting index of the subarray
-      var start = 0
-
-      // To store the ending index of the subarray
-      var end = 0
-
-      // To store the current count of even numbers in the window
-      var evenCount = 0
-
-      // To store the current count of odd numbers in the window
-      var oddCount = 0
-
-      // To store the result as pairs {evenCount, oddCount}
-      val result = scala.collection.mutable.ListBuffer.empty[(Int, Int)]
-
-      // Loop through the array
-      while (end < arr.length) {
-
-        // Add the current element to the respective count
-        if (arr(end) % 2 == 0) {
-          evenCount += 1
-        } else {
-          oddCount += 1
-        }
-
-        // If the current subarray has more than k elements
-        // then shrink it from the start
-        if (end - start + 1 > k) {
-
-          // Remove the contribution of arr[start]
-          if (arr(start) % 2 == 0) {
-            evenCount -= 1
-          } else {
-            oddCount -= 1
-          }
-
-          // Move the start pointer forward
-          start += 1
-        }
-
-        // If the current subarray has exactly k elements
-        // then add the counts to the result
-        if (end - start + 1 == k) {
-          result += ((evenCount, oddCount))
-        }
-
-        // Move the end pointer forward
-        end += 1
-      }
-
-      result.toList
-    }
-  }
-
-  val sol = new Solution
-  println(sol.evenOddCount(Array(4, 4, 5, 1, 4), 3))   // List((2,1), (1,2), (1,2))
-  println(sol.evenOddCount(Array(1, 2, 3, 5), 1))      // List((0,1), (1,0), (0,1), (0,1))
-  println(sol.evenOddCount(Array(1, 2, 3, 5), 4))      // List((1,3))
-}
-```
-
-
----
-
-## Dry Run — Example 1
+### Dry Run — Example 1
 
 `arr = [4, 4, 5, 1, 4]`, `k = 3`
 
@@ -3024,24 +1980,18 @@ Return: [(2, 1), (1, 2), (1, 2)] ✓
 
 </details>
 
----
-
-## Result Size
+### Result Size
 
 The result always has exactly `n − k + 1` pairs — one per valid window. For `n=5, k=3`: `5 − 3 + 1 = 3` windows, 3 pairs.
 
----
-
-## Complexity Analysis
+### Complexity Analysis
 
 | | Complexity | Reasoning |
 |---|---|---|
 | **Time** | O(N) | `end` visits each element once; `start` moves at most N times total |
 | **Space** | O(N − k + 1) | The result holds one pair per window; O(1) working space beyond that |
 
----
-
-## Edge Cases
+### Edge Cases
 
 | Scenario | Input | Output | Note |
 |---|---|---|---|
@@ -3052,9 +2002,10 @@ The result always has exactly `n − k + 1` pairs — one per valid window. For 
 | Single even | `[2]`, k=1 | `[[1, 0]]` | One window, one even, zero odd |
 | Single odd | `[3]`, k=1 | `[[0, 1]]` | One window, zero even, one odd |
 
----
+</details>
+<details>
+<summary><h2>Comparison: All Four Fixed Sliding Window Problems</h2></summary>
 
-## Comparison: All Four Fixed Sliding Window Problems
 
 | Problem | Aggregate | Add operation | Remove operation | Process step |
 |---|---|---|---|---|
@@ -3065,8 +2016,11 @@ The result always has exactly `n − k + 1` pairs — one per valid window. For 
 
 All four use the same template. Only the aggregate definition and the process step differ.
 
----
+</details>
+<details>
+<summary><h2>Key Takeaway</h2></summary>
 
-## Key Takeaway
 
 Even Odd Count tracks **two** aggregates simultaneously — one for evens and one for odds — but the sliding-window mechanics stay identical. Each entering element contributes to exactly one counter; each leaving element subtracts from exactly one. The result is a per-window list of `(evenCount, oddCount)` pairs, generalising the single-counter "report per window" pattern from Negative Window.
+
+</details>

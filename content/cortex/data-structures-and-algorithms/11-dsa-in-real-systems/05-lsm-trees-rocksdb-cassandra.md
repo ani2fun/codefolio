@@ -151,49 +151,42 @@ Click any question to reveal the answer.
 **A:** **WAL** (sequential durability log), **memtable** (in-memory sorted structure, usually skip list), **SSTables** (immutable sorted files on disk after memtable flush).
 
 </details>
-
 <details>
 <summary><strong>Q:</strong> Why do writes go to a memtable + WAL instead of directly to disk?</summary>
 
 **A:** Sequential writes (to WAL + memtable, the latter in-memory) are dramatically cheaper than random writes (to a B-tree page on disk). LSM trades read amplification for write throughput.
 
 </details>
-
 <details>
 <summary><strong>Q:</strong> What does compaction do?</summary>
 
 **A:** Merges multiple SSTables into one (streaming merge sort). Resolves tombstones. Required to keep read amplification bounded — without compaction, reads check ever-more files.
 
 </details>
-
 <details>
 <summary><strong>Q:</strong> Leveled vs tiered compaction?</summary>
 
 **A:** **Leveled**: each level non-overlapping, merge-with-next on flush. Lower read amp, higher write amp. **Tiered**: K SSTables per tier, merge to next when full. Higher read amp, lower write amp.
 
 </details>
-
 <details>
 <summary><strong>Q:</strong> Why does each SSTable carry a Bloom filter?</summary>
 
 **A:** Reads might check every SSTable for a key. Bloom filter says "definitely not in this SSTable" → skip the disk read. Without it, every read = (# SSTables) disk seeks.
 
 </details>
-
 <details>
 <summary><strong>Q:</strong> What's the RUM conjecture?</summary>
 
 **A:** Storage systems trade off **R**ead, **U**pdate, and **M**emory amplifications. LSM minimises update amplification (sequential writes) at the cost of the others. B-trees do the opposite.
 
 </details>
-
 <details>
 <summary><strong>Q:</strong> Typical write amplification for leveled compaction?</summary>
 
 **A:** ~70× (with `T = 10` levels and 7 levels). Every logical write hits disk ~70 times across the lifetime of compactions. Tunable; tiered compaction is lower.
 
 </details>
-
 <details>
 <summary><strong>Q:</strong> Why does delete-heavy workload bloat LSM SSTables?</summary>
 

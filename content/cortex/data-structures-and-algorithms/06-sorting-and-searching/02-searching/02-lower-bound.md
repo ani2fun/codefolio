@@ -170,95 +170,84 @@ Three changes — `high = n`, `low < high`, `high = mid` on equality — convert
 # Implementation
 
 
-```pseudocode
-# Smallest index i with arr[i] ≥ target. Returns length(arr) if no such index exists.
-function lowerBound(arr, target):
-    low ← 0
-    high ← length(arr)                  # exclusive — converges when low = high
-    while low < high:
-        mid ← low + (high − low) ÷ 2
-        if arr[mid] < target:
-            low ← mid + 1               # mid is too small — discard it
-        else:
-            high ← mid                  # mid still a candidate — keep it
-    return low
-```
-
 ```python run
 from typing import List
 
 class Solution:
     def lower_bound(self, arr: List[int], target: int) -> int:
-        low, high = 0, len(arr)                         # high = n (exclusive)
-        while low < high:                               # converges when low == high
-            mid = low + (high - low) // 2
+
+        # Initialise starting index to 0
+        low: int = 0
+
+        # Initialise ending index to len(arr) instead of len(arr) - 1
+        # to cover the entire array as if all elements in the array are less
+        # than target, the lower bound index would be equal to len(arr)
+        high: int = len(arr)
+
+        # 'high' is exclusive (can be len(arr)), so we use 'low < high' instead
+        # of 'low <= high'. This loop finds the first index where the element is
+        # >= the target without going out of bounds.
+        while low < high:
+
+            # Find the middle index
+            mid: int = low + (high - low) // 2
+
+            # If arr[mid] is less than target, then find in
+            # right subarray
             if arr[mid] < target:
-                low = mid + 1                           # mid not a candidate
-            else:                                       # arr[mid] >= target
-                high = mid                              # mid stays as candidate
-        return low                                      # the lower bound index
+                low = mid + 1
 
+            # If arr[mid] is greater than or equal to target, then it may
+            # be the answer. So, instead of high = mid - 1, we do high = mid
+            # to include mid in the next search space
+            else:
+                high = mid
 
-if __name__ == "__main__":
-    print(Solution().lower_bound([1, 5, 10, 15, 20, 25], 10))   # 2
-    print(Solution().lower_bound([1, 5, 10, 15, 20, 25], 17))   # 4
-    print(Solution().lower_bound([1, 5, 10, 15, 20, 25], 30))   # 6 (insertion at end)
+        # Return the lower bound index, it could be equal to len(arr)
+        # if all elements are less than target
+        return low
 ```
 
 ```java run
-public class Main {
-    static class Solution {
-        public int lowerBound(int[] arr, int target) {
-            int low = 0, high = arr.length;
-            while (low < high) {
-                int mid = low + (high - low) / 2;
-                if (arr[mid] < target) low = mid + 1;
-                else high = mid;
+class Solution {
+    public int lowerBound(int[] arr, int target) {
+
+        // Initialise starting index to 0
+        int low = 0;
+
+        // Initialise ending index to arr.length instead of arr.length -
+        // 1 to cover the entire array as if all elements in the array
+        // are less than target, the lower bound index would be equal to
+        // arr.length
+        int high = arr.length;
+
+        // 'high' is exclusive (can be arr.length), so we use 'low <
+        // high' instead of 'low <= high'. This loop finds the first
+        // index where the element is
+        // >= the target without going out of bounds.
+        while (low < high) {
+
+            // Find the middle index
+            int mid = low + (high - low) / 2;
+
+            // If arr[mid] is less than target, then find in
+            // right subarray
+            if (arr[mid] < target) {
+                low = mid + 1;
             }
-            return low;
+
+            // If arr[mid] is greater than or equal to target, then it
+            // may be the answer. So, instead of high = mid - 1, we do
+            // high = mid to include mid in the next search space
+            else {
+                high = mid;
+            }
         }
+
+        // Return the lower bound index, it could be equal to arr.length
+        // if all elements are less than target
+        return low;
     }
-
-    public static void main(String[] args) {
-        System.out.println(new Solution().lowerBound(new int[]{1, 5, 10, 15, 20, 25}, 17));
-    }
-}
-```
-
-```c run
-#include <stdio.h>
-
-int lower_bound(int *arr, int n, int target) {
-    int low = 0, high = n;
-    while (low < high) {
-        int mid = low + (high - low) / 2;
-        if (arr[mid] < target) low = mid + 1;
-        else high = mid;
-    }
-    return low;
-}
-
-int main(void) {
-    int arr[] = {1, 5, 10, 15, 20, 25};
-    printf("%d\n", lower_bound(arr, 6, 17));
-    return 0;
-}
-```
-
-```scala run
-object Main extends App {
-  class Solution {
-    def lowerBound(arr: Array[Int], target: Int): Int = {
-      var low = 0; var high = arr.length
-      while (low < high) {
-        val mid = low + (high - low) / 2
-        if (arr(mid) < target) low = mid + 1 else high = mid
-      }
-      low
-    }
-  }
-
-  println(new Solution().lowerBound(Array(1, 5, 10, 15, 20, 25), 17))
 }
 ```
 
@@ -303,13 +292,14 @@ Output: 5
 
 ---
 
-## The Solution
+<details>
+<summary><h2>Solution &amp; Analysis</h2></summary>
 
-The implementation matches the version above. See [Implementation](#implementation) for all 10 languages.
+### The Solution
 
----
+The implementation matches the version above. See [Implementation](#implementation).
 
-## Edge Cases
+### Edge Cases
 
 | Case | Example | Expected |
 |---|---|---|
@@ -319,9 +309,10 @@ The implementation matches the version above. See [Implementation](#implementati
 | Exact match at start | `[10, 20], target = 10` | `0` |
 | Duplicates | `[1, 2, 2, 2, 3], target = 2` | `1` (first occurrence) |
 
----
+</details>
+<details>
+<summary><h2>Final Takeaway</h2></summary>
 
-## Final Takeaway
 
 Lower bound = first index ≥ target. Three changes from binary search; same `O(log n)` complexity. Foundation of `bisect.bisect_left`, `std::lower_bound`, and the "where would I insert this?" primitive that powers ordered-set implementations.
 
@@ -329,6 +320,7 @@ The next lesson flips the comparison: **upper bound** returns the first index *s
 
 **Transfer challenge — try before the Upper Bound lesson:** Use lower bound to *count* the number of occurrences of a target in a sorted array. Hint: the count is the difference between two well-chosen lower-bound queries.
 
+</details>
 <details>
 <summary><strong>Answer — open after you've thought about it</strong></summary>
 

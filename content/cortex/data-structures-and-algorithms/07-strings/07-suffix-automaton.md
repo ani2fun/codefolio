@@ -186,42 +186,36 @@ Click any question to reveal the answer.
 **A:** Every substring of a fixed string `S`. It's the minimal DFA recognising that language.
 
 </details>
-
 <details>
 <summary><strong>Q:</strong> Maximum number of states for SAM on a string of length <code>n</code>?</summary>
 
 **A:** `2n − 1`. The transition count is at most `3n − 4`. Both linear in `n`.
 
 </details>
-
 <details>
 <summary><strong>Q:</strong> Construction time?</summary>
 
 **A:** `O(n · |Σ|)` with arrays (effectively `O(n)` for fixed alphabet). Online: characters added one at a time.
 
 </details>
-
 <details>
 <summary><strong>Q:</strong> What does a SAM state represent?</summary>
 
 **A:** An *equivalence class* of substrings that end at the same set of positions in `S` (`endpos`). Each state stores the longest substring in its class.
 
 </details>
-
 <details>
 <summary><strong>Q:</strong> What's a suffix link?</summary>
 
 **A:** From state `s`, points to the state representing the longest *proper suffix* of `s`'s longest substring with a different `endpos` set.
 
 </details>
-
 <details>
 <summary><strong>Q:</strong> Distinct substring count via SAM?</summary>
 
 **A:** `Σ (len[s] − len[link[s]])` over all non-initial states `s`. `O(n)` after construction.
 
 </details>
-
 <details>
 <summary><strong>Q:</strong> Why is SAM the right tool for "longest common substring of two strings"?</summary>
 

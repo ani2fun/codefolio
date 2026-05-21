@@ -1,10 +1,14 @@
 # 11. Design a Dynamic Array
 
-## The Hook
+<details>
+<summary><h2>The Hook</h2></summary>
+
 
 You use `list` in Python, `ArrayList` in Java, `vector` in C++, and `Array` in JavaScript without ever thinking about what they cost. You push, push, push — a million values — and it just works. But raw arrays are **fixed-size**: the moment you allocate `int arr[10]`, pushing an 11th element is impossible. So how do these "dynamic" arrays grow? And why is the average cost of `pushBack` still **O(1)** even though every growth step copies every existing element?
 
 The trick — **geometric doubling** — is one of the most elegant ideas in computer science. It turns what *looks* like an O(N) operation into something that averages to O(1). If you understand this, you've just understood how `std::vector`, Go slices, Python lists, and Rust `Vec` all work under the hood.
+
+</details>
 
 ---
 
@@ -38,7 +42,9 @@ Step-by-step:
 
 ---
 
-## What Does "Amortised O(1)" Mean?
+<details>
+<summary><h2>What Does "Amortised O(1)" Mean?</h2></summary>
+
 
 "Amortised" is a word that trips up everyone who meets it for the first time. It does **not** mean "O(1) in the average case". It means something stronger and more precise: **the total cost of any sequence of N operations is O(N), so the average cost per operation is O(1) — even though any individual operation might be expensive.**
 
@@ -86,9 +92,10 @@ cost -> total: "amortise"
 
 <p align="center"><strong>Expensive resizes are rare. Each doubling event pays for itself against the cheap pushes that follow it — the <em>average</em> cost is constant.</strong></p>
 
----
+</details>
+<details>
+<summary><h2>The Core Insight — Grow by Doubling</h2></summary>
 
-## The Core Insight — Grow by Doubling
 
 The naive idea is "when full, make the array one bigger". That's **disastrous**: every `pushBack` becomes O(N), because every push triggers a copy of everything. Total cost of N pushes becomes `1 + 2 + 3 + ... + N = O(N²)`.
 
@@ -103,9 +110,10 @@ The fix is to grow the array **multiplicatively**, not additively. When we run o
 
 Any factor **strictly greater than 1** gives amortised O(1). A factor of 1.01 works mathematically, but in practice you resize so often it's slow by a constant. A factor of 10 wastes memory — you often hold 10× the memory you need. The sweet spot is somewhere between 1.5× (what C++ `std::vector` uses in some implementations) and 2× (what Java and Python use). We'll use **2×** for simplicity.
 
----
+</details>
+<details>
+<summary><h2>Applying the Diagnostic Questions</h2></summary>
 
-## Applying the Diagnostic Questions
 
 | Question | Answer |
 |---|---|
@@ -148,9 +156,10 @@ Any factor **strictly greater than 1** gives amortised O(1). A factor of 1.01 wo
 
 **What breaks otherwise:** if memory is tight (embedded systems, huge arrays), you might prefer growth factor 1.5× (up to 50% overhead) or even shrink-on-pop logic. For most general-purpose use, 2× is the accepted standard.
 
----
+</details>
+<details>
+<summary><h2>The Growth Strategy (Visualised)</h2></summary>
 
-## The Growth Strategy (Visualised)
 
 ```mermaid
 ---
@@ -229,47 +238,11 @@ seq: "Capacity sequence as elements are pushed" {
 
 <p align="center"><strong>Resizes happen at pushes 1, 2, 3, 5, 9, 17, 33, 65 … — every power of two plus one. Between those, pushes are O(1) with no work beyond a pointer bump.</strong></p>
 
----
+</details>
+<details>
+<summary><h2>The Solution</h2></summary>
 
-## The Solution
 
-
-```pseudocode
-class DynamicArray:
-    field arr                                          # Pointer to the dynamically allocated array
-    field currentSize                                  # Current number of elements in the array
-    field capacity                                     # Current capacity of the array
-
-    constructor():
-        arr ← null
-        currentSize ← 0
-        capacity ← 0
-
-    function pushBack(val):
-        if currentSize ≥ capacity:
-
-            # If the capacity is not enough, resize the array
-            newCapacity ← 1 if capacity = 0 else capacity × 2
-            newArr ← list of newCapacity zeros
-
-            # Copy the existing elements to the new array
-            for i from 0 to currentSize − 1:
-                newArr[i] ← arr[i]
-
-            # Assign the new array and update the capacity
-            arr ← newArr
-            capacity ← newCapacity
-
-        # Add the new element to the end of the array
-        arr[currentSize] ← val
-        currentSize ← currentSize + 1
-
-    function get(index):
-        return arr[index]
-
-    function size():
-        return currentSize
-```
 
 ```python run
 from typing import List
@@ -392,138 +365,7 @@ public class Main {
 }
 ```
 
-```c run
-#include <stdio.h>
-#include <stdlib.h>
-
-typedef struct {
-    /* Pointer to the dynamically allocated array */
-    int* arr;
-
-    /* Current number of elements in the array */
-    int current_size;
-
-    /* Current capacity of the array */
-    int capacity;
-} DynamicArray;
-
-DynamicArray* dynamic_array_create(void) {
-    DynamicArray* d = (DynamicArray*)malloc(sizeof(DynamicArray));
-
-    /* Initialize the array */
-    d->arr = NULL;
-
-    /* Initialize the current_size to 0 */
-    d->current_size = 0;
-
-    /* Initialize the capacity to 0 */
-    d->capacity = 0;
-
-    return d;
-}
-
-void push_back(DynamicArray* d, int val) {
-    if (d->current_size >= d->capacity) {
-
-        /* If the capacity is not enough, resize the array */
-        int new_capacity = (d->capacity == 0) ? 1 : d->capacity * 2;
-        int* new_arr = (int*)malloc(sizeof(int) * new_capacity);
-
-        /* Copy the existing elements to the new array */
-        for (int i = 0; i < d->current_size; i++) {
-            new_arr[i] = d->arr[i];
-        }
-
-        /* Assign the new array and update the capacity */
-        free(d->arr);
-        d->arr = new_arr;
-        d->capacity = new_capacity;
-    }
-
-    /* Add the new element to the end of the array */
-    d->arr[d->current_size] = val;
-    d->current_size++;
-}
-
-int get(DynamicArray* d, int index) {
-    return d->arr[index];
-}
-
-int size(DynamicArray* d) {
-    return d->current_size;
-}
-
-void dynamic_array_free(DynamicArray* d) {
-    free(d->arr);
-    free(d);
-}
-
-int main(void) {
-    DynamicArray* da = dynamic_array_create();
-    push_back(da, 2);
-    push_back(da, 3);
-    printf("%d\n", get(da, 1));    /* 3 */
-    printf("%d\n", size(da));      /* 2 */
-    push_back(da, 5);
-    printf("%d\n", size(da));      /* 3 */
-    printf("%d\n", get(da, 0));    /* 2 */
-    dynamic_array_free(da);
-    return 0;
-}
-```
-
-```scala run
-object Main extends App {
-  class DynamicArray {
-
-    // Pointer to the dynamically allocated array
-    private var arr: Array[Int] = null
-
-    // Current number of elements in the array
-    private var currentSize: Int = 0
-
-    // Current capacity of the array
-    private var capacity: Int = 0
-
-    def pushBack(value: Int): Unit = {
-      if (currentSize >= capacity) {
-
-        // If the capacity is not enough, resize the array
-        val newCapacity = if (capacity == 0) 1 else capacity * 2
-        val newArr = new Array[Int](newCapacity)
-
-        // Copy the existing elements to the new array
-        if (arr != null) {
-          Array.copy(arr, 0, newArr, 0, currentSize)
-        }
-
-        // Assign the new array and update the capacity
-        arr = newArr
-        capacity = newCapacity
-      }
-
-      // Add the new element to the end of the array
-      arr(currentSize) = value
-      currentSize += 1
-    }
-
-    def get(index: Int): Int = arr(index)
-
-    def size: Int = currentSize
-  }
-
-  val da = new DynamicArray
-  da.pushBack(2)
-  da.pushBack(3)
-  println(da.get(1))    // 3
-  println(da.size)      // 2
-  da.pushBack(5)
-  println(da.size)      // 3
-  println(da.get(0))    // 2
-}
-```
-
-
+</details>
 <details>
 <summary><strong>Trace — pushBack 2, 3, 5 into empty array</strong></summary>
 
@@ -558,7 +400,6 @@ Notice how after 3 pushes capacity is already 4 — that slot `arr[3] = 0` is wa
 the price we pay for amortised O(1). The next push will fit without resizing.
 
 </details>
-
 <details>
 <summary><strong>Trace — 8 pushes showing resize events</strong></summary>
 
@@ -649,7 +490,10 @@ Resize events fire at pushes 1, 2, 3, 5, 9, 17, 33, ... — exponentially rarer 
 
 ---
 
-## Complexity Analysis
+<details>
+<summary><h2>Solution &amp; Analysis</h2></summary>
+
+### Complexity Analysis
 
 | Operation | Time (worst case) | Time (amortised) | Space |
 |---|---|---|---|
@@ -662,9 +506,7 @@ Resize events fire at pushes 1, 2, 3, 5, 9, 17, 33, ... — exponentially rarer 
 
 **Space:** O(N) for the backing array. Worst case right after a resize: 2× the actual size used (half the slots are unused). This "overhead" is the explicit trade-off for amortised O(1).
 
----
-
-## Edge Cases
+### Edge Cases
 
 | Case | Example | Expected Behaviour |
 |---|---|---|
@@ -678,17 +520,19 @@ Resize events fire at pushes 1, 2, 3, 5, 9, 17, 33, ... — exponentially rarer 
 
 A subtle point: `get` is a raw array read — if the caller passes an invalid index the behaviour is whatever the language does with out-of-range access (Python raises, C is undefined, Java throws). The class doesn't bounds-check because the problem contract doesn't require it.
 
----
+</details>
+<details>
+<summary><h2>Why Not Just Use the Language's Built-In?</h2></summary>
 
-## Why Not Just Use the Language's Built-In?
 
 Every language you'll use in production already gives you a dynamic array — Python `list`, Java `ArrayList`, C++ `std::vector`, JavaScript `Array`, Go slices, Rust `Vec`. **All of them use this exact algorithm internally.** Building it from scratch isn't a production exercise; it's an exercise in **understanding what those built-ins are doing for you**.
 
 Interviewers love this problem because it separates people who *use* data structures from people who *understand* them. If you can explain why Python's `list.append` is O(1) amortised but occasionally takes milliseconds, you've shown you read the source of your tools — not just their API.
 
----
+</details>
+<details>
+<summary><h2>Final Takeaway</h2></summary>
 
-## Final Takeaway
 
 A dynamic array is just a fixed-size array plus two tricks: **track the used size separately from the allocated capacity**, and **double the capacity whenever you run out of room**. That single design unlocks O(1) random access AND O(1) amortised append — the best of both worlds. Every time you write `list.append(x)` or `vec.push(x)`, somewhere below you is this exact state machine, quietly amortising its copy costs over the long run.
 
@@ -699,3 +543,5 @@ A dynamic array is just a fixed-size array plus two tricks: **track the used siz
 > Shrink when `currentSize` drops to **one quarter** (not half) of capacity, and shrink to half the current capacity. The ¼ threshold creates a "buffer zone" between grow and shrink thresholds — after a shrink the array is half-full, far from either trigger. A ½-threshold would oscillate: push past the boundary → double, pop back across it → halve, push again → double, forever.
 >
 > </details>
+
+</details>

@@ -8,7 +8,7 @@ That single shape — *parent accumulates, hands to children, children continue*
 
 Why "stateless"? Because **no information needs to be shared between siblings or come back up the recursion**. Each subtree gets its own copy of the accumulator from its parent, modifies it independently, and the modifications don't leak across siblings. There's no mutable global, no return value to propagate, no "fix this on the way back up". The recursion goes one way — *down* — and you're done.
 
-This pattern handles a *huge* range of problems: path sums, depth assignment, ancestry checks, root-to-node aggregations, ancestor-dependent computations. Once you've seen four or five examples, you'll recognise the shape on sight. This lesson gives you the recipe, the four canonical example problems, and clean implementations for each in 10 languages.
+This pattern handles a *huge* range of problems: path sums, depth assignment, ancestry checks, root-to-node aggregations, ancestor-dependent computations. Once you've seen four or five examples, you'll recognise the shape on sight. This lesson gives you the recipe, the four canonical example problems, and clean implementations for each in Python and Java.
 
 ---
 
@@ -67,20 +67,8 @@ flowchart TB
 
 > **Why "stateless"?** Because the algorithm doesn't carry mutable state across recursive calls. Sibling subtrees see each other's work *not at all* — they each get a fresh copy of the parent's accumulator. Compare this with the *stateful* preorder pattern (next lesson), which uses a single shared mutable accumulator that needs explicit "undo" steps when a sibling subtree is finished.
 
-## Generic pattern in 10 languages
+## Generic pattern
 
-
-```pseudocode
-function f(acc, val):
-    return acc + val               # replace with the real combiner for each problem
-
-function statelessPreorder(node, acc):
-    if node = null: return
-    # use acc to process node here if needed
-    newAcc ← f(acc, node.val)      # fold this node's value into the accumulator
-    statelessPreorder(node.left,  newAcc)
-    statelessPreorder(node.right, newAcc)
-```
 
 ```python run
 from typing import Optional
@@ -108,26 +96,6 @@ static void statelessPreorder(TreeNode node, int acc) {
     int newAcc = f(acc, node.val);
     statelessPreorder(node.left,  newAcc);
     statelessPreorder(node.right, newAcc);
-}
-```
-
-```c run
-int f(int acc, int val) { return acc + val; }
-void stateless_preorder(TreeNode *node, int acc) {
-    if (!node) return;
-    int new_acc = f(acc, node->val);
-    stateless_preorder(node->left,  new_acc);
-    stateless_preorder(node->right, new_acc);
-}
-```
-
-```scala run
-def f(acc: Int, value: Int): Int = acc + value
-def statelessPreorder(node: TreeNode, acc: Int): Unit = {
-  if (node == null) return
-  val newAcc = f(acc, node.value)
-  statelessPreorder(node.left,  newAcc)
-  statelessPreorder(node.right, newAcc)
 }
 ```
 
@@ -187,73 +155,221 @@ flowchart TB
 
 The accumulator here is the **path sum so far** (excluding the current node). At each node: write `acc + node.val` into the node, then descend with `acc + node.val` (the same value) as the new accumulator for both children.
 
-## Solution
+<details>
+<summary><h2>Solution</h2></summary>
 
 
-```pseudocode
-function sumOfPath(root):
-    function go(node, acc):
-        if node = null: return
-        node.val ← node.val + acc   # replace value with running path sum
-        go(node.left,  node.val)
-        go(node.right, node.val)
-    go(root, 0)
-```
 
 ```python run
-def sum_of_path(root):
-    def go(node, acc):
-        if node is None: return
-        node.val += acc
-        go(node.left,  node.val)
-        go(node.right, node.val)
-    go(root, 0)
+from typing import Optional, List
+from collections import deque
+
+class TreeNode:
+    def __init__(self, val=0, left=None, right=None):
+        self.val = val
+        self.left = left
+        self.right = right
+
+
+def from_level_order(values):
+    """Build tree from list like [1, 2, 3, None, 4]. None means missing child."""
+    if not values:
+        return None
+    root = TreeNode(values[0])
+    queue = [root]
+    i = 1
+    while queue and i < len(values):
+        node = queue.pop(0)
+        if i < len(values) and values[i] is not None:
+            node.left = TreeNode(values[i])
+            queue.append(node.left)
+        i += 1
+        if i < len(values) and values[i] is not None:
+            node.right = TreeNode(values[i])
+            queue.append(node.right)
+        i += 1
+    return root
+
+
+def to_level_order(root):
+    if not root:
+        return []
+    result, queue = [], deque([root])
+    while queue:
+        node = queue.popleft()
+        if node:
+            result.append(node.val)
+            queue.append(node.left)
+            queue.append(node.right)
+        else:
+            result.append(None)
+    while result and result[-1] is None:
+        result.pop()
+    return result
+
+
+class Solution:
+    def sum_of_path_helper(
+        self, root: Optional[TreeNode], path_sum: int
+    ) -> None:
+
+        # Base case: if the current node is null, do nothing
+        if root is None:
+            return
+
+        # Calculate the new path sum by adding the current node's value
+        new_path_sum = path_sum + root.val
+
+        # Update the current node's value to the new path sum
+        root.val = new_path_sum
+
+        # Recursively process the left and right children,
+        # passing the updated path sum
+        self.sum_of_path_helper(root.left, new_path_sum)
+        self.sum_of_path_helper(root.right, new_path_sum)
+
+    def sum_of_path(self, root: Optional[TreeNode]) -> None:
+        self.sum_of_path_helper(root, 0)
+
+
+# Examples from the problem statement
+t1 = from_level_order([1, 2, 3, 4, None, None, 7])
+Solution().sum_of_path(t1); print(to_level_order(t1))   # [1, 3, 4, 7, 11]
+
+t2 = from_level_order([1, 8, 4, None, None, 2, 7])
+Solution().sum_of_path(t2); print(to_level_order(t2))   # [1, 9, 5, 7, 12]
+
+# Edge cases
+t3 = from_level_order([])
+Solution().sum_of_path(t3); print(to_level_order(t3))   # []
+
+t4 = from_level_order([5])
+Solution().sum_of_path(t4); print(to_level_order(t4))   # [5]
+
+t5 = from_level_order([1, 2, None, 3])                  # left-skew
+Solution().sum_of_path(t5); print(to_level_order(t5))   # [1, 3, 6]
+
+t6 = from_level_order([1, None, 2, None, 3])            # right-skew
+Solution().sum_of_path(t6); print(to_level_order(t6))   # [1, 3, 6]
+
+t7 = from_level_order([3, 1, 4, 1, 5, 9, 2])
+Solution().sum_of_path(t7); print(to_level_order(t7))   # [3, 4, 7, 5, 9, 16, 9]
 ```
 
 ```java run
-static void sumOfPathHelper(TreeNode node, int acc) {
-    if (node == null) return;
-    node.val += acc;
-    sumOfPathHelper(node.left,  node.val);
-    sumOfPathHelper(node.right, node.val);
-}
-public static void sumOfPath(TreeNode root) {
-    sumOfPathHelper(root, 0);
-}
-```
+import java.util.*;
 
-```c run
-void sum_of_path_helper(TreeNode *n, int acc) {
-    if (!n) return;
-    n->val += acc;
-    sum_of_path_helper(n->left,  n->val);
-    sum_of_path_helper(n->right, n->val);
-}
-void sum_of_path(TreeNode *root) { sum_of_path_helper(root, 0); }
-```
-
-```scala run
-class TreeNode(var value: Int, var left: TreeNode = null, var right: TreeNode = null)
-
-object Main extends App {
-  class Solution {
-    def sumOfPath(root: TreeNode): Unit = {
-      def go(n: TreeNode, acc: Int): Unit = {
-        if (n == null) return
-        n.value += acc
-        go(n.left,  n.value)
-        go(n.right, n.value)
-      }
-      go(root, 0)
+public class Main {
+    static class TreeNode {
+        int val;
+        TreeNode left;
+        TreeNode right;
+        TreeNode() {}
+        TreeNode(int val) { this.val = val; }
     }
-  }
 
-  val root = new TreeNode(1, new TreeNode(2, new TreeNode(4)), new TreeNode(3, null, new TreeNode(7)))
-  new Solution().sumOfPath(root)
-  println(s"${root.value} ${root.left.value} ${root.left.left.value} ${root.right.value} ${root.right.right.value}")
-  // 1 3 4 7 11
+    static TreeNode fromLevelOrder(Integer... values) {
+        if (values.length == 0 || values[0] == null) return null;
+        TreeNode root = new TreeNode(values[0]);
+        java.util.Deque<TreeNode> queue = new java.util.ArrayDeque<>();
+        queue.add(root);
+        int i = 1;
+        while (!queue.isEmpty() && i < values.length) {
+            TreeNode node = queue.poll();
+            if (i < values.length && values[i] != null) {
+                node.left = new TreeNode(values[i]);
+                queue.add(node.left);
+            }
+            i++;
+            if (i < values.length && values[i] != null) {
+                node.right = new TreeNode(values[i]);
+                queue.add(node.right);
+            }
+            i++;
+        }
+        return root;
+    }
+
+    static List<Integer> toLevelOrder(TreeNode root) {
+        if (root == null) return new ArrayList<>();
+        List<Integer> result = new ArrayList<>();
+        java.util.Deque<TreeNode> queue = new java.util.ArrayDeque<>();
+        queue.add(root);
+        while (!queue.isEmpty()) {
+            TreeNode node = queue.poll();
+            if (node != null) {
+                result.add(node.val);
+                queue.add(node.left);
+                queue.add(node.right);
+            } else {
+                result.add(null);
+            }
+        }
+        while (!result.isEmpty() && result.get(result.size() - 1) == null)
+            result.remove(result.size() - 1);
+        return result;
+    }
+
+    static class Solution {
+        private void sumOfPathHelper(TreeNode root, int pathSum) {
+
+            // Base case: if the current node is null, do nothing
+            if (root == null) {
+                return;
+            }
+
+            // Calculate the new path sum by adding the current node's value
+            int newPathSum = pathSum + root.val;
+
+            // Update the current node's value to the new path sum
+            root.val = newPathSum;
+
+            // Recursively process the left and right children,
+            // passing the updated path sum
+            sumOfPathHelper(root.left, newPathSum);
+            sumOfPathHelper(root.right, newPathSum);
+        }
+
+        public void sumOfPath(TreeNode root) {
+            sumOfPathHelper(root, 0);
+        }
+    }
+
+    public static void main(String[] args) {
+        // Examples from the problem statement
+        TreeNode t1 = fromLevelOrder(1, 2, 3, 4, null, null, 7);
+        new Solution().sumOfPath(t1);
+        System.out.println(toLevelOrder(t1));   // [1, 3, 4, 7, 11]
+
+        TreeNode t2 = fromLevelOrder(1, 8, 4, null, null, 2, 7);
+        new Solution().sumOfPath(t2);
+        System.out.println(toLevelOrder(t2));   // [1, 9, 5, 7, 12]
+
+        // Edge cases
+        TreeNode t3 = fromLevelOrder();
+        new Solution().sumOfPath(t3);
+        System.out.println(toLevelOrder(t3));   // []
+
+        TreeNode t4 = fromLevelOrder(5);
+        new Solution().sumOfPath(t4);
+        System.out.println(toLevelOrder(t4));   // [5]
+
+        TreeNode t5 = fromLevelOrder(1, 2, null, 3);   // left-skew
+        new Solution().sumOfPath(t5);
+        System.out.println(toLevelOrder(t5));   // [1, 3, 6]
+
+        TreeNode t6 = fromLevelOrder(1, null, 2, null, 3);  // right-skew
+        new Solution().sumOfPath(t6);
+        System.out.println(toLevelOrder(t6));   // [1, 3, 6]
+
+        TreeNode t7 = fromLevelOrder(3, 1, 4, 1, 5, 9, 2);
+        new Solution().sumOfPath(t7);
+        System.out.println(toLevelOrder(t7));   // [3, 4, 7, 5, 9, 16, 9]
+    }
 }
 ```
+
+</details>
 
 
 ***
@@ -266,73 +382,216 @@ object Main extends App {
 
 The accumulator is just the **current depth**. The root starts at 0; every recursive call passes `depth + 1` to the children.
 
-## Solution
+<details>
+<summary><h2>Solution</h2></summary>
 
 
-```pseudocode
-function depthAssignment(root):
-    function go(node, depth):
-        if node = null: return
-        node.val ← depth            # overwrite value with this node's depth
-        go(node.left,  depth + 1)
-        go(node.right, depth + 1)
-    go(root, 0)
-```
 
 ```python run
-def depth_assignment(root):
-    def go(node, depth):
-        if node is None: return
-        node.val = depth
-        go(node.left,  depth + 1)
-        go(node.right, depth + 1)
-    go(root, 0)
+from typing import Optional
+from collections import deque
+
+class TreeNode:
+    def __init__(self, val=0, left=None, right=None):
+        self.val = val
+        self.left = left
+        self.right = right
+
+
+def from_level_order(values):
+    """Build tree from list like [1, 2, 3, None, 4]. None means missing child."""
+    if not values:
+        return None
+    root = TreeNode(values[0])
+    queue = [root]
+    i = 1
+    while queue and i < len(values):
+        node = queue.pop(0)
+        if i < len(values) and values[i] is not None:
+            node.left = TreeNode(values[i])
+            queue.append(node.left)
+        i += 1
+        if i < len(values) and values[i] is not None:
+            node.right = TreeNode(values[i])
+            queue.append(node.right)
+        i += 1
+    return root
+
+
+def to_level_order(root):
+    if not root:
+        return []
+    result, queue = [], deque([root])
+    while queue:
+        node = queue.popleft()
+        if node:
+            result.append(node.val)
+            queue.append(node.left)
+            queue.append(node.right)
+        else:
+            result.append(None)
+    while result and result[-1] is None:
+        result.pop()
+    return result
+
+
+class Solution:
+    def depth_assignment_helper(
+        self, root: Optional[TreeNode], depth: int
+    ) -> None:
+
+        # Base case: if the current node is null, do nothing
+        if root is None:
+            return
+
+        # Update current node's value with its depth
+        root.val = depth
+
+        # Recursively process the left and right children,
+        # increasing the depth by 1
+        self.depth_assignment_helper(root.left, depth + 1)
+        self.depth_assignment_helper(root.right, depth + 1)
+
+    def depth_assignment(self, root: Optional[TreeNode]) -> None:
+        self.depth_assignment_helper(root, 0)
+
+
+# Examples from the problem statement
+t1 = from_level_order([1, 2, 3, 4, None, None, 7])
+Solution().depth_assignment(t1); print(to_level_order(t1))   # [0, 1, 1, 2, 2]
+
+t2 = from_level_order([1, 8, 4, None, None, 2, 7])
+Solution().depth_assignment(t2); print(to_level_order(t2))   # [0, 1, 1, 2, 2]
+
+# Edge cases
+t3 = from_level_order([])
+Solution().depth_assignment(t3); print(to_level_order(t3))   # []
+
+t4 = from_level_order([42])
+Solution().depth_assignment(t4); print(to_level_order(t4))   # [0]
+
+t5 = from_level_order([5, 3, None, 1])                       # left-skew
+Solution().depth_assignment(t5); print(to_level_order(t5))   # [0, 1, 2]
+
+t6 = from_level_order([5, None, 3, None, 1])                 # right-skew
+Solution().depth_assignment(t6); print(to_level_order(t6))   # [0, 1, 2]
+
+t7 = from_level_order([1, 2, 3, 4, 5, 6, 7])
+Solution().depth_assignment(t7); print(to_level_order(t7))   # [0, 1, 1, 2, 2, 2, 2]
 ```
 
 ```java run
-static void depthAssignmentHelper(TreeNode node, int depth) {
-    if (node == null) return;
-    node.val = depth;
-    depthAssignmentHelper(node.left,  depth + 1);
-    depthAssignmentHelper(node.right, depth + 1);
-}
-public static void depthAssignment(TreeNode root) {
-    depthAssignmentHelper(root, 0);
-}
-```
+import java.util.*;
 
-```c run
-void depth_assignment_helper(TreeNode *n, int d) {
-    if (!n) return;
-    n->val = d;
-    depth_assignment_helper(n->left,  d + 1);
-    depth_assignment_helper(n->right, d + 1);
-}
-void depth_assignment(TreeNode *root) { depth_assignment_helper(root, 0); }
-```
-
-```scala run
-class TreeNode(var value: Int, var left: TreeNode = null, var right: TreeNode = null)
-
-object Main extends App {
-  class Solution {
-    def depthAssignment(root: TreeNode): Unit = {
-      def go(n: TreeNode, d: Int): Unit = {
-        if (n == null) return
-        n.value = d
-        go(n.left,  d + 1)
-        go(n.right, d + 1)
-      }
-      go(root, 0)
+public class Main {
+    static class TreeNode {
+        int val;
+        TreeNode left;
+        TreeNode right;
+        TreeNode() {}
+        TreeNode(int val) { this.val = val; }
     }
-  }
 
-  val root = new TreeNode(1, new TreeNode(2, new TreeNode(4)), new TreeNode(3, null, new TreeNode(7)))
-  new Solution().depthAssignment(root)
-  println(s"${root.value} ${root.left.value} ${root.left.left.value} ${root.right.value} ${root.right.right.value}")
-  // 0 1 2 1 2
+    static TreeNode fromLevelOrder(Integer... values) {
+        if (values.length == 0 || values[0] == null) return null;
+        TreeNode root = new TreeNode(values[0]);
+        java.util.Deque<TreeNode> queue = new java.util.ArrayDeque<>();
+        queue.add(root);
+        int i = 1;
+        while (!queue.isEmpty() && i < values.length) {
+            TreeNode node = queue.poll();
+            if (i < values.length && values[i] != null) {
+                node.left = new TreeNode(values[i]);
+                queue.add(node.left);
+            }
+            i++;
+            if (i < values.length && values[i] != null) {
+                node.right = new TreeNode(values[i]);
+                queue.add(node.right);
+            }
+            i++;
+        }
+        return root;
+    }
+
+    static List<Integer> toLevelOrder(TreeNode root) {
+        if (root == null) return new ArrayList<>();
+        List<Integer> result = new ArrayList<>();
+        java.util.Deque<TreeNode> queue = new java.util.ArrayDeque<>();
+        queue.add(root);
+        while (!queue.isEmpty()) {
+            TreeNode node = queue.poll();
+            if (node != null) {
+                result.add(node.val);
+                queue.add(node.left);
+                queue.add(node.right);
+            } else {
+                result.add(null);
+            }
+        }
+        while (!result.isEmpty() && result.get(result.size() - 1) == null)
+            result.remove(result.size() - 1);
+        return result;
+    }
+
+    static class Solution {
+
+        private void depthAssignmentHelper(TreeNode root, int depth) {
+
+            // Base case: if the current node is null, do nothing
+            if (root == null) {
+                return;
+            }
+
+            // Update current node's value with its depth
+            root.val = depth;
+
+            // Recursively process the left and right children,
+            // increasing the depth by 1
+            depthAssignmentHelper(root.left, depth + 1);
+            depthAssignmentHelper(root.right, depth + 1);
+        }
+
+        public void depthAssignment(TreeNode root) {
+            depthAssignmentHelper(root, 0);
+        }
+    }
+
+    public static void main(String[] args) {
+        // Examples from the problem statement
+        TreeNode t1 = fromLevelOrder(1, 2, 3, 4, null, null, 7);
+        new Solution().depthAssignment(t1);
+        System.out.println(toLevelOrder(t1));   // [0, 1, 1, 2, 2]
+
+        TreeNode t2 = fromLevelOrder(1, 8, 4, null, null, 2, 7);
+        new Solution().depthAssignment(t2);
+        System.out.println(toLevelOrder(t2));   // [0, 1, 1, 2, 2]
+
+        // Edge cases
+        TreeNode t3 = fromLevelOrder();
+        new Solution().depthAssignment(t3);
+        System.out.println(toLevelOrder(t3));   // []
+
+        TreeNode t4 = fromLevelOrder(42);
+        new Solution().depthAssignment(t4);
+        System.out.println(toLevelOrder(t4));   // [0]
+
+        TreeNode t5 = fromLevelOrder(5, 3, null, 1);   // left-skew
+        new Solution().depthAssignment(t5);
+        System.out.println(toLevelOrder(t5));   // [0, 1, 2]
+
+        TreeNode t6 = fromLevelOrder(5, null, 3, null, 1);   // right-skew
+        new Solution().depthAssignment(t6);
+        System.out.println(toLevelOrder(t6));   // [0, 1, 2]
+
+        TreeNode t7 = fromLevelOrder(1, 2, 3, 4, 5, 6, 7);
+        new Solution().depthAssignment(t7);
+        System.out.println(toLevelOrder(t7));   // [0, 1, 1, 2, 2, 2, 2]
+    }
 }
 ```
+
+</details>
 
 
 ***
@@ -375,93 +634,256 @@ flowchart TB
 
 <p align="center"><strong>Concatenated path — each node's value is the integer formed by gluing the digits along the root-to-node path. The accumulator is the path-so-far number.</strong></p>
 
-## Solution
+<details>
+<summary><h2>Solution</h2></summary>
 
 
-```pseudocode
-function concatenatedPath(root):
-    function digits(x):                           # count decimal digits of x
-        if x = 0: return 1
-        d ← 0
-        while x > 0: d ← d + 1; x ← x / 10
-        return d
-    function go(node, acc):
-        if node = null: return
-        # shift acc left by the digit-width of node.val, then append node.val
-        node.val ← acc * 10^digits(node.val) + node.val
-        go(node.left,  node.val)
-        go(node.right, node.val)
-    go(root, 0)
-```
 
 ```python run
-def concatenated_path(root):
-    def digits(x):
-        if x == 0: return 1
-        d = 0
-        while x > 0:
-            d += 1; x //= 10
-        return d
-    def go(node, acc):
-        if node is None: return
-        node.val = acc * (10 ** digits(node.val)) + node.val
-        go(node.left,  node.val)
-        go(node.right, node.val)
-    go(root, 0)
+from typing import Optional
+from collections import deque
+
+class TreeNode:
+    def __init__(self, val=0, left=None, right=None):
+        self.val = val
+        self.left = left
+        self.right = right
+
+
+def from_level_order(values):
+    """Build tree from list like [1, 2, 3, None, 4]. None means missing child."""
+    if not values:
+        return None
+    root = TreeNode(values[0])
+    queue = [root]
+    i = 1
+    while queue and i < len(values):
+        node = queue.pop(0)
+        if i < len(values) and values[i] is not None:
+            node.left = TreeNode(values[i])
+            queue.append(node.left)
+        i += 1
+        if i < len(values) and values[i] is not None:
+            node.right = TreeNode(values[i])
+            queue.append(node.right)
+        i += 1
+    return root
+
+
+def to_level_order(root):
+    if not root:
+        return []
+    result, queue = [], deque([root])
+    while queue:
+        node = queue.popleft()
+        if node:
+            result.append(node.val)
+            queue.append(node.left)
+            queue.append(node.right)
+        else:
+            result.append(None)
+    while result and result[-1] is None:
+        result.pop()
+    return result
+
+
+class Solution:
+    def count_digits(self, num: int) -> int:
+
+        # Handle the case when num is 0
+        if num == 0:
+            return 1
+
+        # Count the number of digits in num
+        digits: int = 0
+        while num > 0:
+            num //= 10
+            digits += 1
+
+        # Return the total count of digits
+        return digits
+
+    def concatenated_path_helper(
+        self, root: Optional[TreeNode], path_val: int
+    ) -> None:
+
+        # Base case: if the current node is null, do nothing
+        if not root:
+            return
+
+        # Shift pathVal by digitCount digits to the left, then
+        # add current node value
+        digit_count: int = self.count_digits(root.val)
+
+        # Update current node's value
+        root.val = path_val * (10**digit_count) + root.val
+
+        # Recursively process the left and right children,
+        # passing updated path value
+        self.concatenated_path_helper(root.left, root.val)
+        self.concatenated_path_helper(root.right, root.val)
+
+    def concatenated_path(self, root: Optional[TreeNode]) -> None:
+        self.concatenated_path_helper(root, 0)
+
+
+# Examples from the problem statement
+t1 = from_level_order([1, 2, 3, 4, None, None, 7])
+Solution().concatenated_path(t1); print(to_level_order(t1))   # [1, 12, 13, 124, 137]
+
+t2 = from_level_order([1, 10, 20, None, None, 211, 7])
+Solution().concatenated_path(t2); print(to_level_order(t2))   # [1, 110, 120, 120211, 1207]
+
+# Edge cases
+t3 = from_level_order([])
+Solution().concatenated_path(t3); print(to_level_order(t3))   # []
+
+t4 = from_level_order([5])
+Solution().concatenated_path(t4); print(to_level_order(t4))   # [5]
+
+t5 = from_level_order([1, 2, None, 3])                        # left-skew
+Solution().concatenated_path(t5); print(to_level_order(t5))   # [1, 12, 123]
+
+t6 = from_level_order([1, None, 2, None, 3])                  # right-skew
+Solution().concatenated_path(t6); print(to_level_order(t6))   # [1, 12, 123]
+
+t7 = from_level_order([9, 8, 7])
+Solution().concatenated_path(t7); print(to_level_order(t7))   # [9, 98, 97]
 ```
 
 ```java run
-static int digits(int x) {
-    if (x == 0) return 1;
-    int d = 0;
-    while (x > 0) { d++; x /= 10; }
-    return d;
-}
-static int pow10(int e) { int p = 1; for (int i = 0; i < e; i++) p *= 10; return p; }
-static void concatenatedPathHelper(TreeNode n, int acc) {
-    if (n == null) return;
-    n.val = acc * pow10(digits(n.val)) + n.val;
-    concatenatedPathHelper(n.left,  n.val);
-    concatenatedPathHelper(n.right, n.val);
-}
-public static void concatenatedPath(TreeNode root) { concatenatedPathHelper(root, 0); }
-```
+import java.util.*;
 
-```c run
-int digits(int x) { if (x == 0) return 1; int d = 0; while (x > 0) { d++; x /= 10; } return d; }
-int pow10(int e)  { int p = 1; for (int i = 0; i < e; i++) p *= 10; return p; }
-void concatenated_path_helper(TreeNode *n, int acc) {
-    if (!n) return;
-    n->val = acc * pow10(digits(n->val)) + n->val;
-    concatenated_path_helper(n->left,  n->val);
-    concatenated_path_helper(n->right, n->val);
-}
-void concatenated_path(TreeNode *root) { concatenated_path_helper(root, 0); }
-```
-
-```scala run
-class TreeNode(var value: Int, var left: TreeNode = null, var right: TreeNode = null)
-
-object Main extends App {
-  class Solution {
-    def concatenatedPath(root: TreeNode): Unit = {
-      def digits(x: Int): Int = if (x == 0) 1 else x.toString.length
-      def go(n: TreeNode, acc: Int): Unit = {
-        if (n == null) return
-        n.value = acc * math.pow(10, digits(n.value)).toInt + n.value
-        go(n.left,  n.value)
-        go(n.right, n.value)
-      }
-      go(root, 0)
+public class Main {
+    static class TreeNode {
+        int val;
+        TreeNode left;
+        TreeNode right;
+        TreeNode() {}
+        TreeNode(int val) { this.val = val; }
     }
-  }
 
-  val root = new TreeNode(1, new TreeNode(2, new TreeNode(4)), new TreeNode(3, null, new TreeNode(7)))
-  new Solution().concatenatedPath(root)
-  println(s"${root.value} ${root.left.value} ${root.left.left.value} ${root.right.value} ${root.right.right.value}")
-  // 1 12 124 13 137
+    static TreeNode fromLevelOrder(Integer... values) {
+        if (values.length == 0 || values[0] == null) return null;
+        TreeNode root = new TreeNode(values[0]);
+        java.util.Deque<TreeNode> queue = new java.util.ArrayDeque<>();
+        queue.add(root);
+        int i = 1;
+        while (!queue.isEmpty() && i < values.length) {
+            TreeNode node = queue.poll();
+            if (i < values.length && values[i] != null) {
+                node.left = new TreeNode(values[i]);
+                queue.add(node.left);
+            }
+            i++;
+            if (i < values.length && values[i] != null) {
+                node.right = new TreeNode(values[i]);
+                queue.add(node.right);
+            }
+            i++;
+        }
+        return root;
+    }
+
+    static List<Integer> toLevelOrder(TreeNode root) {
+        if (root == null) return new ArrayList<>();
+        List<Integer> result = new ArrayList<>();
+        java.util.Deque<TreeNode> queue = new java.util.ArrayDeque<>();
+        queue.add(root);
+        while (!queue.isEmpty()) {
+            TreeNode node = queue.poll();
+            if (node != null) {
+                result.add(node.val);
+                queue.add(node.left);
+                queue.add(node.right);
+            } else {
+                result.add(null);
+            }
+        }
+        while (!result.isEmpty() && result.get(result.size() - 1) == null)
+            result.remove(result.size() - 1);
+        return result;
+    }
+
+    static class Solution {
+        private int countDigits(int num) {
+
+            // Handle the case when num is 0
+            if (num == 0) {
+                return 1;
+            }
+
+            // Count the number of digits in num
+            int digits = 0;
+            while (num > 0) {
+                num /= 10;
+                digits++;
+            }
+
+            // Return the total count of digits
+            return digits;
+        }
+
+        void concatenatedPathHelper(TreeNode root, int pathVal) {
+
+            // Base case: if the current node is null, do nothing
+            if (root == null) {
+                return;
+            }
+
+            // Shift pathVal by digitCount digits to the left, then
+            // add current node value
+            int digitCount = countDigits(root.val);
+
+            // Update current node's value
+            root.val = (int) (pathVal * Math.pow(10, digitCount)) + root.val;
+
+            // Recursively process the left and right children,
+            // passing updated path value
+            concatenatedPathHelper(root.left, root.val);
+            concatenatedPathHelper(root.right, root.val);
+        }
+
+        public void concatenatedPath(TreeNode root) {
+            concatenatedPathHelper(root, 0);
+        }
+    }
+
+    public static void main(String[] args) {
+        // Examples from the problem statement
+        TreeNode t1 = fromLevelOrder(1, 2, 3, 4, null, null, 7);
+        new Solution().concatenatedPath(t1);
+        System.out.println(toLevelOrder(t1));   // [1, 12, 13, 124, 137]
+
+        TreeNode t2 = fromLevelOrder(1, 10, 20, null, null, 211, 7);
+        new Solution().concatenatedPath(t2);
+        System.out.println(toLevelOrder(t2));   // [1, 110, 120, 120211, 1207]
+
+        // Edge cases
+        TreeNode t3 = fromLevelOrder();
+        new Solution().concatenatedPath(t3);
+        System.out.println(toLevelOrder(t3));   // []
+
+        TreeNode t4 = fromLevelOrder(5);
+        new Solution().concatenatedPath(t4);
+        System.out.println(toLevelOrder(t4));   // [5]
+
+        TreeNode t5 = fromLevelOrder(1, 2, null, 3);   // left-skew
+        new Solution().concatenatedPath(t5);
+        System.out.println(toLevelOrder(t5));   // [1, 12, 123]
+
+        TreeNode t6 = fromLevelOrder(1, null, 2, null, 3);   // right-skew
+        new Solution().concatenatedPath(t6);
+        System.out.println(toLevelOrder(t6));   // [1, 12, 123]
+
+        TreeNode t7 = fromLevelOrder(9, 8, 7);
+        new Solution().concatenatedPath(t7);
+        System.out.println(toLevelOrder(t7));   // [9, 98, 97]
+    }
 }
 ```
+
+</details>
 
 
 ***
@@ -500,110 +922,274 @@ flowchart TB
 
 <p align="center"><strong>Increasing path — node 2 breaks the strictly-increasing chain (its parent 4 is bigger), so it gets <code>0</code>; node 7's parent is 4 and 4&lt;7, so the chain continues with <code>1</code>. The decision at each node depends only on the previous value and the current value.</strong></p>
 
-## Solution
+<details>
+<summary><h2>Solution</h2></summary>
 
 
-```pseudocode
-function increasingPath(root):
-    function go(node, prev, ok):
-        if node = null: return
-        cur ← node.val
-        ok  ← ok AND (prev < cur)
-        node.val ← 1 if ok else 0
-        go(node.left,  cur, ok)
-        go(node.right, cur, ok)
-    if root = null: return
-    cur ← root.val
-    root.val ← 1                   # root is trivially "increasing" by itself
-    go(root.left,  cur, true)
-    go(root.right, cur, true)
-```
 
 ```python run
-def increasing_path(root):
-    def go(node, prev, ok):
-        if node is None: return
-        cur = node.val
-        ok  = ok and (prev < cur)
-        node.val = 1 if ok else 0
-        go(node.left,  cur, ok)
-        go(node.right, cur, ok)
-    if root is None: return
-    # Root is always considered "increasing" by itself.
-    cur = root.val
-    root.val = 1
-    go(root.left,  cur, True)
-    go(root.right, cur, True)
+from typing import Optional
+from collections import deque
+
+class TreeNode:
+    def __init__(self, val=0, left=None, right=None):
+        self.val = val
+        self.left = left
+        self.right = right
+
+
+def from_level_order(values):
+    """Build tree from list like [1, 2, 3, None, 4]. None means missing child."""
+    if not values:
+        return None
+    root = TreeNode(values[0])
+    queue = [root]
+    i = 1
+    while queue and i < len(values):
+        node = queue.pop(0)
+        if i < len(values) and values[i] is not None:
+            node.left = TreeNode(values[i])
+            queue.append(node.left)
+        i += 1
+        if i < len(values) and values[i] is not None:
+            node.right = TreeNode(values[i])
+            queue.append(node.right)
+        i += 1
+    return root
+
+
+def to_level_order(root):
+    if not root:
+        return []
+    result, queue = [], deque([root])
+    while queue:
+        node = queue.popleft()
+        if node:
+            result.append(node.val)
+            queue.append(node.left)
+            queue.append(node.right)
+        else:
+            result.append(None)
+    while result and result[-1] is None:
+        result.pop()
+    return result
+
+
+class Solution:
+    def increasing_path_helper(
+        self,
+        root: Optional[TreeNode],
+        parent_val: int,
+        parent_status: int,
+    ) -> None:
+
+        # Base case: if the current node is null, do nothing
+        if root is None:
+            return
+
+        # Store the node's original value before we overwrite it
+        # We need the original value to pass down to children for
+        # comparison
+        original_val = root.val
+
+        # Check if the path from root to this node is strictly increasing
+        if parent_status == 1 and parent_val < original_val:
+            root.val = 1
+
+        # Path is not strictly increasing, mark as 0
+        else:
+            root.val = 0
+
+        # Recursively call for the left and right child with the parent
+        # value and status
+        self.increasing_path_helper(root.left, original_val, root.val)
+        self.increasing_path_helper(root.right, original_val, root.val)
+
+    def increasing_path(self, root: Optional[TreeNode]) -> None:
+        if root is None:
+            return
+
+        # Store the original value of the root
+        original_val = root.val
+
+        # Root is always 1 (path of length 1 is increasing)
+        root.val = 1
+
+        # Recurse for the left subtree
+        self.increasing_path_helper(root.left, original_val, 1)
+
+        # Recurse for the right subtree
+        self.increasing_path_helper(root.right, original_val, 1)
+
+
+# Examples from the problem statement
+t1 = from_level_order([1, 2, 3, 4, None, None, 7])
+Solution().increasing_path(t1); print(to_level_order(t1))   # [1, 1, 1, 1, 1]
+
+t2 = from_level_order([1, 8, 4, None, None, 2, 7])
+Solution().increasing_path(t2); print(to_level_order(t2))   # [1, 1, 1, 0, 1]
+
+# Edge cases
+t3 = from_level_order([])
+Solution().increasing_path(t3); print(to_level_order(t3))   # []
+
+t4 = from_level_order([5])
+Solution().increasing_path(t4); print(to_level_order(t4))   # [1]
+
+t5 = from_level_order([5, 3, 8])                             # left child less, right greater
+Solution().increasing_path(t5); print(to_level_order(t5))   # [1, 0, 1]
+
+t6 = from_level_order([1, 2, None, 3])                       # left-skew strictly increasing
+Solution().increasing_path(t6); print(to_level_order(t6))   # [1, 1, 1]
+
+t7 = from_level_order([3, 3, 3])                              # equal values — not strictly increasing
+Solution().increasing_path(t7); print(to_level_order(t7))   # [1, 0, 0]
 ```
 
 ```java run
-static void incHelper(TreeNode node, int prev, boolean ok) {
-    if (node == null) return;
-    int cur = node.val;
-    ok = ok && (prev < cur);
-    node.val = ok ? 1 : 0;
-    incHelper(node.left,  cur, ok);
-    incHelper(node.right, cur, ok);
-}
-public static void increasingPath(TreeNode root) {
-    if (root == null) return;
-    int cur = root.val;
-    root.val = 1;
-    incHelper(root.left,  cur, true);
-    incHelper(root.right, cur, true);
-}
-```
+import java.util.*;
 
-```c run
-void inc_helper(TreeNode *n, int prev, int ok) {
-    if (!n) return;
-    int cur = n->val;
-    ok = ok && (prev < cur);
-    n->val = ok ? 1 : 0;
-    inc_helper(n->left,  cur, ok);
-    inc_helper(n->right, cur, ok);
-}
-void increasing_path(TreeNode *root) {
-    if (!root) return;
-    int cur = root->val; root->val = 1;
-    inc_helper(root->left,  cur, 1);
-    inc_helper(root->right, cur, 1);
-}
-```
-
-```scala run
-class TreeNode(var value: Int, var left: TreeNode = null, var right: TreeNode = null)
-
-object Main extends App {
-  class Solution {
-    def increasingPath(root: TreeNode): Unit = {
-      def go(n: TreeNode, prev: Int, ok: Boolean): Unit = {
-        if (n == null) return
-        val cur = n.value
-        val ok2 = ok && (prev < cur)
-        n.value = if (ok2) 1 else 0
-        go(n.left,  cur, ok2)
-        go(n.right, cur, ok2)
-      }
-      if (root == null) return
-      val cur = root.value
-      root.value = 1
-      go(root.left,  cur, true)
-      go(root.right, cur, true)
+public class Main {
+    static class TreeNode {
+        int val;
+        TreeNode left;
+        TreeNode right;
+        TreeNode() {}
+        TreeNode(int val) { this.val = val; }
     }
-  }
 
-  val root = new TreeNode(1, new TreeNode(8), new TreeNode(4, new TreeNode(2), new TreeNode(7)))
-  new Solution().increasingPath(root)
-  println(s"${root.value} ${root.left.value} ${root.right.value} ${root.right.left.value} ${root.right.right.value}")
-  // 1 1 1 0 1
+    static TreeNode fromLevelOrder(Integer... values) {
+        if (values.length == 0 || values[0] == null) return null;
+        TreeNode root = new TreeNode(values[0]);
+        java.util.Deque<TreeNode> queue = new java.util.ArrayDeque<>();
+        queue.add(root);
+        int i = 1;
+        while (!queue.isEmpty() && i < values.length) {
+            TreeNode node = queue.poll();
+            if (i < values.length && values[i] != null) {
+                node.left = new TreeNode(values[i]);
+                queue.add(node.left);
+            }
+            i++;
+            if (i < values.length && values[i] != null) {
+                node.right = new TreeNode(values[i]);
+                queue.add(node.right);
+            }
+            i++;
+        }
+        return root;
+    }
+
+    static List<Integer> toLevelOrder(TreeNode root) {
+        if (root == null) return new ArrayList<>();
+        List<Integer> result = new ArrayList<>();
+        java.util.Deque<TreeNode> queue = new java.util.ArrayDeque<>();
+        queue.add(root);
+        while (!queue.isEmpty()) {
+            TreeNode node = queue.poll();
+            if (node != null) {
+                result.add(node.val);
+                queue.add(node.left);
+                queue.add(node.right);
+            } else {
+                result.add(null);
+            }
+        }
+        while (!result.isEmpty() && result.get(result.size() - 1) == null)
+            result.remove(result.size() - 1);
+        return result;
+    }
+
+    static class Solution {
+        public void increasingPathHelper(
+            TreeNode root,
+            int parentVal,
+            int parentStatus
+        ) {
+
+            // Base case: if the current node is null, do nothing
+            if (root == null) {
+                return;
+            }
+
+            // Store the node's original value before we overwrite it
+            // We need the original value to pass down to children for
+            // comparison
+            int originalVal = root.val;
+
+            // Check if the path from root to this node is strictly increasing
+            if (parentStatus == 1 && parentVal < originalVal) {
+                root.val = 1;
+            }
+
+            // Path is not strictly increasing, mark as 0
+            else {
+                root.val = 0;
+            }
+
+            // Recursively call for the left and right child with the parent
+            // value and status
+            increasingPathHelper(root.left, originalVal, root.val);
+            increasingPathHelper(root.right, originalVal, root.val);
+        }
+
+        public void increasingPath(TreeNode root) {
+            if (root == null) {
+                return;
+            }
+
+            // Store the original value of the root
+            int originalVal = root.val;
+
+            // Root is always 1 (path of length 1 is increasing)
+            root.val = 1;
+
+            // Recurse for the left subtree
+            increasingPathHelper(root.left, originalVal, 1);
+
+            // Recurse for the right subtree
+            increasingPathHelper(root.right, originalVal, 1);
+        }
+    }
+
+    public static void main(String[] args) {
+        // Examples from the problem statement
+        TreeNode t1 = fromLevelOrder(1, 2, 3, 4, null, null, 7);
+        new Solution().increasingPath(t1);
+        System.out.println(toLevelOrder(t1));   // [1, 1, 1, 1, 1]
+
+        TreeNode t2 = fromLevelOrder(1, 8, 4, null, null, 2, 7);
+        new Solution().increasingPath(t2);
+        System.out.println(toLevelOrder(t2));   // [1, 1, 1, 0, 1]
+
+        // Edge cases
+        TreeNode t3 = fromLevelOrder();
+        new Solution().increasingPath(t3);
+        System.out.println(toLevelOrder(t3));   // []
+
+        TreeNode t4 = fromLevelOrder(5);
+        new Solution().increasingPath(t4);
+        System.out.println(toLevelOrder(t4));   // [1]
+
+        TreeNode t5 = fromLevelOrder(5, 3, 8);   // left child less, right greater
+        new Solution().increasingPath(t5);
+        System.out.println(toLevelOrder(t5));   // [1, 0, 1]
+
+        TreeNode t6 = fromLevelOrder(1, 2, null, 3);   // left-skew strictly increasing
+        new Solution().increasingPath(t6);
+        System.out.println(toLevelOrder(t6));   // [1, 1, 1]
+
+        TreeNode t7 = fromLevelOrder(3, 3, 3);   // equal values — not strictly increasing
+        new Solution().increasingPath(t7);
+        System.out.println(toLevelOrder(t7));   // [1, 0, 0]
+    }
 }
 ```
 
+</details>
+<details>
+<summary><h2>Final Takeaway</h2></summary>
 
-***
-
-## Final Takeaway
 
 The stateless preorder pattern is the *first* pattern most binary-tree problems will fit into. Three things to walk away with:
 
@@ -612,3 +1198,5 @@ The stateless preorder pattern is the *first* pattern most binary-tree problems 
 3. **The shape is the recipe.** `if null return; process; update; recurse(L, new_acc); recurse(R, new_acc)`. Whenever you read a problem and it says "for each node, given the path from the root to it, compute…" — write that skeleton first, then fill in the `update` and `process`.
 
 > *Coming up — the <strong>stateful</strong> variant of the same pattern. When the accumulator needs to be a mutable shared collection (a path you push and pop nodes onto, a hash set of seen values, a counter), passing copies down becomes too expensive. The stateful version mutates a single shared accumulator and uses an explicit "undo" step on the way back up — the canonical backtracking template.*
+
+</details>

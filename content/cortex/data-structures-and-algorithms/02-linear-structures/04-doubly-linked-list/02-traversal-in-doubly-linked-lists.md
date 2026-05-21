@@ -52,14 +52,6 @@ flowchart LR
 Given below is the code implementation of forward traversal in a doubly linked list, shown in two equivalent forms — a `for` loop that puts initialisation, condition, and advance on a single line, and a `while` loop that spreads them out for clarity.
 
 
-```pseudocode
-# Forward walk from the head.
-current ← head
-while current is not null:
-    # ... process current.val ...
-    current ← current.next                             # advance forward; null at tail
-```
-
 ```python run
 # Python idiom — `while` is the canonical form for pointer-walking
 current = head            # Start at the head — the only entry point given
@@ -79,29 +71,6 @@ ListNode current = head;
 while (current != null) {
     // ... do something with current.val ...
     current = current.next;
-}
-```
-
-```c run
-/* for loop */
-for (ListNode *current = head; current != NULL; current = current->next) {
-    /* ... do something with current->val ... */
-}
-
-/* while loop */
-ListNode *current = head;
-while (current != NULL) {
-    /* ... do something with current->val ... */
-    current = current->next;
-}
-```
-
-```scala run
-// while loop is the cleanest equivalent in Scala
-var current = head            // Start at the head
-while (current != null) {
-  // ... do something with current.v ...
-  current = current.next      // Advance to the successor
 }
 ```
 
@@ -138,14 +107,6 @@ flowchart LR
 Given below is the code implementation of reverse traversal — note how it is the *mirror image* of the forward version, swapping `head ↔ tail` and `next ↔ prev`.
 
 
-```pseudocode
-# Backward walk from the tail — only possible because each node has a `prev` pointer.
-current ← tail
-while current is not null:
-    # ... process current.val ...
-    current ← current.prev                             # advance backward; null at head
-```
-
 ```python run
 # Reverse walk — start at tail, follow prev
 current = tail
@@ -165,28 +126,6 @@ ListNode current = tail;
 while (current != null) {
     // ... do something with current.val ...
     current = current.prev;
-}
-```
-
-```c run
-/* for loop */
-for (ListNode *current = tail; current != NULL; current = current->prev) {
-    /* ... do something with current->val ... */
-}
-
-/* while loop */
-ListNode *current = tail;
-while (current != NULL) {
-    /* ... do something with current->val ... */
-    current = current->prev;
-}
-```
-
-```scala run
-var current = tail
-while (current != null) {
-  // ... do something with current.v ...
-  current = current.prev   // Walk backwards via prev
 }
 ```
 
@@ -238,92 +177,130 @@ flowchart LR
 
 <p align="center"><strong>The "lookahead" trick — print the value first, then look at <code>current.next</code> to decide whether a comma follows. The tail node is the only one whose <code>next</code> is <code>null</code>, and it is the only one that does not get a trailing comma.</strong></p>
 
-## The Solution
+<details>
+<summary><h2>The Solution</h2></summary>
 
 
-```pseudocode
-function nodeExpedition(head):
-    current ← head
-    while current is not null:
-        print current.val
-        if current.next is not null:
-            print ", "
-        current ← current.next
-```
 
 ```python run
+from typing import Optional
+
+
 class ListNode:
-    def __init__(self, val=0, prev=None, next=None):
-        self.val, self.prev, self.next = val, prev, next
+    def __init__(self, val=0, prev=None, nxt=None):
+        self.val = val
+        self.prev = prev
+        self.next = nxt
+
+
+def from_list(values):
+    if not values:
+        return None
+    head = ListNode(values[0])
+    cur = head
+    for v in values[1:]:
+        node = ListNode(v, prev=cur)
+        cur.next = node
+        cur = node
+    return head
+
+
+def to_list(head):
+    out = []
+    while head is not None:
+        out.append(head.val)
+        head = head.next
+    return out
+
 
 class Solution:
-    def node_expedition(self, head: ListNode) -> None:
-        current = head                    # Start from the head — only entry given
-        while current is not None:        # Stop when we step past the tail
-            print(current.val, end="")    # Print value with no newline
-            if current.next is not None:  # If there is a successor, this isn't the tail
-                print(", ", end="")       #   → emit the separator
-            current = current.next        # Advance forward
+    def node_expedition(self, head: Optional[ListNode]) -> None:
+
+        # Start from the head of the linked list
+        current: Optional[ListNode] = head
+
+        # Iterate until the current node is not null
+        while current is not None:
+
+            # Print the value of the current node
+            print(current.val, end="")
+
+            # If there is a next node, print a comma after the value
+            if current.next is not None:
+                print(", ", end="")
+
+            # Move to the next node
+            current = current.next
+
+
+# Examples from the problem statement
+Solution().node_expedition(from_list([5, 7, 3, 10])); print()    # 5, 7, 3, 10
+
+# Edge cases
+Solution().node_expedition(from_list([])); print()               # (empty)
+Solution().node_expedition(from_list([42])); print()             # 42
+Solution().node_expedition(from_list([1, 2])); print()           # 1, 2
+Solution().node_expedition(from_list([1, 2, 3, 4, 5])); print()  # 1, 2, 3, 4, 5
+Solution().node_expedition(from_list([7, 7, 7])); print()        # 7, 7, 7
 ```
 
 ```java run
 public class Main {
-    static class ListNode { int val; ListNode prev, next; ListNode(int v){val=v;} }
+    static class ListNode {
+        int val;
+        ListNode prev;
+        ListNode next;
+        ListNode() {}
+        ListNode(int val) { this.val = val; }
+    }
+
+    static ListNode fromList(int... values) {
+        if (values.length == 0) return null;
+        ListNode head = new ListNode(values[0]);
+        ListNode cur = head;
+        for (int i = 1; i < values.length; i++) {
+            ListNode node = new ListNode(values[i]);
+            node.prev = cur;
+            cur.next = node;
+            cur = node;
+        }
+        return head;
+    }
 
     static class Solution {
         public void nodeExpedition(ListNode head) {
-            ListNode current = head;                    // Start at head
-            while (current != null) {                   // Walk until past the tail
-                System.out.print(current.val);          // Print value (no newline)
-                if (current.next != null) {             // Not the tail?
-                    System.out.print(", ");             //   → emit separator
+
+            // Start from the head of the linked list
+            ListNode current = head;
+
+            // Iterate until the current node is not null
+            while (current != null) {
+
+                // Print the value of the current node
+                System.out.print(current.val);
+
+                // If there is a next node, print a comma after the value
+                if (current.next != null) {
+                    System.out.print(", ");
                 }
-                current = current.next;                 // Advance forward
+
+                // Move to the next node
+                current = current.next;
             }
         }
     }
 
     public static void main(String[] args) {
-        // [5, 7, 3, 10] -> "5, 7, 3, 10"
-        ListNode n1=new ListNode(5),n2=new ListNode(7),n3=new ListNode(3),n4=new ListNode(10);
-        n1.next=n2; n2.prev=n1; n2.next=n3; n3.prev=n2; n3.next=n4; n4.prev=n3;
-        new Solution().nodeExpedition(n1); // 5, 7, 3, 10
+        // Examples from the problem statement
+        new Solution().nodeExpedition(fromList(5, 7, 3, 10)); System.out.println();    // 5, 7, 3, 10
+
+        // Edge cases
+        new Solution().nodeExpedition(fromList()); System.out.println();               // (empty)
+        new Solution().nodeExpedition(fromList(42)); System.out.println();             // 42
+        new Solution().nodeExpedition(fromList(1, 2)); System.out.println();           // 1, 2
+        new Solution().nodeExpedition(fromList(1, 2, 3, 4, 5)); System.out.println(); // 1, 2, 3, 4, 5
+        new Solution().nodeExpedition(fromList(7, 7, 7)); System.out.println();        // 7, 7, 7
     }
-}
-```
-
-```c run
-void nodeExpedition(ListNode *head) {
-    ListNode *current = head;             /* Start at head */
-    while (current != NULL) {             /* Walk until past the tail */
-        printf("%d", current->val);       /* Print value (no newline) */
-        if (current->next != NULL) {      /* Not the tail? */
-            printf(", ");                 /*   → emit separator */
-        }
-        current = current->next;          /* Advance forward */
-    }
-}
-```
-
-```scala run
-class ListNode(var v: Int, var prev: ListNode = null, var next: ListNode = null)
-
-object Main extends App {
-  class Solution {
-    def nodeExpedition(head: ListNode): Unit = {
-      var current = head                    // Start at head
-      while (current != null) {             // Walk until past the tail
-        print(current.v)                    // Print value (no newline)
-        if (current.next != null) print(", ")  // Separator unless this is the tail
-        current = current.next              // Advance forward
-      }
-    }
-  }
-
-  // [5, 7, 3, 10] -> "5, 7, 3, 10"
-  val n1 = new ListNode(5); val n2 = new ListNode(7); val n3 = new ListNode(3); val n4 = new ListNode(10)
-  n1.next = n2; n2.prev = n1; n2.next = n3; n3.prev = n2; n3.next = n4; n4.prev = n3
-  new Solution().nodeExpedition(n1) // 5, 7, 3, 10
 }
 ```
 
@@ -341,6 +318,8 @@ Result: "5, 7, 3, 10" ✓
 ```
 
 The lookahead at `current.next` is what suppresses the trailing comma — the tail is the only node whose successor is `null`, so it's the only one that prints its value alone.
+
+</details>
 
 </details>
 
@@ -386,89 +365,145 @@ flowchart LR
 
 <p align="center"><strong>Reverse expedition — start at <code>tail</code>, advance via <code>prev</code>, suppress the trailing separator on the node whose <code>prev</code> is <code>null</code> (the head).</strong></p>
 
-## The Solution
+<details>
+<summary><h2>The Solution</h2></summary>
 
 
-```pseudocode
-# Same expedition, but starting at the tail and walking backward.
-function nodeExpeditionII(tail):
-    current ← tail
-    while current is not null:
-        print current.val
-        if current.prev is not null:
-            print ", "
-        current ← current.prev
-```
 
 ```python run
+from typing import Optional
+
+
+class ListNode:
+    def __init__(self, val=0, prev=None, nxt=None):
+        self.val = val
+        self.prev = prev
+        self.next = nxt
+
+
+def from_list(values):
+    if not values:
+        return None
+    head = ListNode(values[0])
+    cur = head
+    for v in values[1:]:
+        node = ListNode(v, prev=cur)
+        cur.next = node
+        cur = node
+    return head
+
+
+def to_tail(head):
+    """Return the tail node of a list built with from_list."""
+    if head is None:
+        return None
+    cur = head
+    while cur.next is not None:
+        cur = cur.next
+    return cur
+
+
 class Solution:
-    def node_expedition_ii(self, tail: ListNode) -> None:
-        current = tail                    # Start from the tail — entry point given
-        while current is not None:        # Walk until we step past the head
-            print(current.val, end="")    # Print value (no newline)
-            if current.prev is not None:  # If there is a predecessor, this isn't the head
-                print(", ", end="")       #   → emit separator
-            current = current.prev        # Advance backward
+    def node_expedition_ii(self, tail: Optional[ListNode]) -> None:
+
+        # Start from the tail of the linked list
+        current: Optional[ListNode] = tail
+
+        # Traverse the linked list backwards starting from the current
+        # node
+        while current is not None:
+
+            # Print the value of the current node
+            print(current.val, end="")
+
+            # Check if the current node has a previous node
+            if current.prev is not None:
+
+                # If a previous node exists, print a comma and space
+                print(", ", end="")
+
+            # Move to the previous node
+            current = current.prev
+
+
+# Examples from the problem statement
+Solution().node_expedition_ii(to_tail(from_list([5, 7, 3, 10]))); print()    # 10, 3, 7, 5
+
+# Edge cases
+Solution().node_expedition_ii(None); print()                                  # (empty)
+Solution().node_expedition_ii(to_tail(from_list([42]))); print()              # 42
+Solution().node_expedition_ii(to_tail(from_list([1, 2]))); print()            # 2, 1
+Solution().node_expedition_ii(to_tail(from_list([1, 2, 3, 4, 5]))); print()  # 5, 4, 3, 2, 1
+Solution().node_expedition_ii(to_tail(from_list([7, 7, 7]))); print()         # 7, 7, 7
 ```
 
 ```java run
 public class Main {
-    static class ListNode { int val; ListNode prev, next; ListNode(int v){val=v;} }
+    static class ListNode {
+        int val;
+        ListNode prev;
+        ListNode next;
+        ListNode() {}
+        ListNode(int val) { this.val = val; }
+    }
+
+    static ListNode fromList(int... values) {
+        if (values.length == 0) return null;
+        ListNode head = new ListNode(values[0]);
+        ListNode cur = head;
+        for (int i = 1; i < values.length; i++) {
+            ListNode node = new ListNode(values[i]);
+            node.prev = cur;
+            cur.next = node;
+            cur = node;
+        }
+        return head;
+    }
+
+    static ListNode toTail(ListNode head) {
+        if (head == null) return null;
+        ListNode cur = head;
+        while (cur.next != null) cur = cur.next;
+        return cur;
+    }
 
     static class Solution {
         public void nodeExpeditionII(ListNode tail) {
-            ListNode current = tail;                    // Start at tail
-            while (current != null) {                   // Walk until past the head
-                System.out.print(current.val);          // Print value (no newline)
-                if (current.prev != null) {             // Not the head?
-                    System.out.print(", ");             //   → emit separator
+
+            // Start from the tail of the linked list
+            ListNode current = tail;
+
+            // Traverse the linked list backwards starting from the current
+            // node
+            while (current != null) {
+
+                // Print the value of the current node
+                System.out.print(current.val);
+
+                // Check if the current node has a previous node
+                if (current.prev != null) {
+
+                    // If a previous node exists, print a comma and space
+                    System.out.print(", ");
                 }
-                current = current.prev;                 // Advance backward
+
+                // Move to the previous node
+                current = current.prev;
             }
         }
     }
 
     public static void main(String[] args) {
-        // tail=node(10) of [5, 7, 3, 10] -> "10, 3, 7, 5"
-        ListNode n1=new ListNode(5),n2=new ListNode(7),n3=new ListNode(3),n4=new ListNode(10);
-        n1.next=n2; n2.prev=n1; n2.next=n3; n3.prev=n2; n3.next=n4; n4.prev=n3;
-        new Solution().nodeExpeditionII(n4); // 10, 3, 7, 5
+        // Examples from the problem statement
+        new Solution().nodeExpeditionII(toTail(fromList(5, 7, 3, 10))); System.out.println();    // 10, 3, 7, 5
+
+        // Edge cases
+        new Solution().nodeExpeditionII(null); System.out.println();                             // (empty)
+        new Solution().nodeExpeditionII(toTail(fromList(42))); System.out.println();             // 42
+        new Solution().nodeExpeditionII(toTail(fromList(1, 2))); System.out.println();           // 2, 1
+        new Solution().nodeExpeditionII(toTail(fromList(1, 2, 3, 4, 5))); System.out.println(); // 5, 4, 3, 2, 1
+        new Solution().nodeExpeditionII(toTail(fromList(7, 7, 7))); System.out.println();        // 7, 7, 7
     }
-}
-```
-
-```c run
-void nodeExpeditionII(ListNode *tail) {
-    ListNode *current = tail;             /* Start at tail */
-    while (current != NULL) {             /* Walk until past the head */
-        printf("%d", current->val);
-        if (current->prev != NULL) {      /* Not the head? */
-            printf(", ");                 /*   → emit separator */
-        }
-        current = current->prev;          /* Advance backward */
-    }
-}
-```
-
-```scala run
-class ListNode(var v: Int, var prev: ListNode = null, var next: ListNode = null)
-
-object Main extends App {
-  class Solution {
-    def nodeExpeditionII(tail: ListNode): Unit = {
-      var current = tail
-      while (current != null) {
-        print(current.v)
-        if (current.prev != null) print(", ")
-        current = current.prev      // Walk backwards
-      }
-    }
-  }
-
-  // tail=node(10) of [5, 7, 3, 10] -> "10, 3, 7, 5"
-  val n1 = new ListNode(5); val n2 = new ListNode(7); val n3 = new ListNode(3); val n4 = new ListNode(10)
-  n1.next = n2; n2.prev = n1; n2.next = n3; n3.prev = n2; n3.next = n4; n4.prev = n3
-  new Solution().nodeExpeditionII(n4) // 10, 3, 7, 5
 }
 ```
 
@@ -486,6 +521,8 @@ Result: "10, 3, 7, 5" ✓
 ```
 
 We never called a reversal routine — just walked the chain from the *other* end. **Reverse output for free** is the doubly linked list's signature trick.
+
+</details>
 
 </details>
 
@@ -533,90 +570,172 @@ flowchart LR
 
 > *Why search from the tail when we could've gone from the head? In *this* problem the input is `tail`, so we have no choice — but the takeaway is more general. **Search direction is now a free parameter.** When you have a hint about *where* the target probably lives (recently added items live near the tail in an LRU; older items live near the head), you can pick the direction that statistically wins.*
 
-## The Solution
+<details>
+<summary><h2>Solution &amp; Analysis</h2></summary>
 
-
-```pseudocode
-# Search backwards from the tail. First match wins.
-function nodeSearch(tail, data):
-    current ← tail
-    while current is not null:
-        if current.val = data: return current
-        current ← current.prev
-    return null
-```
+### The Solution
 
 ```python run
+from typing import Optional
+
+
+class ListNode:
+    def __init__(self, val=0, prev=None, nxt=None):
+        self.val = val
+        self.prev = prev
+        self.next = nxt
+
+
+def from_list(values):
+    if not values:
+        return None
+    head = ListNode(values[0])
+    cur = head
+    for v in values[1:]:
+        node = ListNode(v, prev=cur)
+        cur.next = node
+        cur = node
+    return head
+
+
+def to_tail(head):
+    if head is None:
+        return None
+    cur = head
+    while cur.next is not None:
+        cur = cur.next
+    return cur
+
+
 class Solution:
-    def node_search(self, tail: ListNode, data: int) -> ListNode | None:
-        current = tail                    # Start at tail (entry point given)
-        while current is not None:        # Walk until past the head
-            if current.val == data:       # First match wins
+    def node_search(
+        self, tail: Optional[ListNode], data: int
+    ) -> Optional[ListNode]:
+
+        # Start from the tail of the linked list
+        current: Optional[ListNode] = tail
+
+        # Traverse the linked list backwards starting from the current
+        # node
+        while current is not None:
+
+            # If a matching node is found, return the pointer to that
+            # node
+            if current.val == data:
                 return current
-            current = current.prev        # Advance backward
-        return None                       # Walked the whole list, no match
+
+            # Move to the previous node in the linked list
+            current = current.prev
+
+        # If the loop finishes without finding a matching node, return
+        # None
+        return None
+
+
+# Examples from the problem statement
+r1 = Solution().node_search(to_tail(from_list([5, 7, 3, 10])), 3)
+print(r1.val if r1 else None)   # 3
+
+r2 = Solution().node_search(to_tail(from_list([5, 7, 6, 10])), 3)
+print(r2.val if r2 else None)   # None
+
+# Edge cases
+r3 = Solution().node_search(None, 5)
+print(r3.val if r3 else None)   # None
+
+r4 = Solution().node_search(to_tail(from_list([42])), 42)
+print(r4.val if r4 else None)   # 42
+
+r5 = Solution().node_search(to_tail(from_list([42])), 1)
+print(r5.val if r5 else None)   # None
+
+r6 = Solution().node_search(to_tail(from_list([1, 2, 3, 4, 5])), 1)
+print(r6.val if r6 else None)   # 1 (head node found via backward traversal)
+
+r7 = Solution().node_search(to_tail(from_list([1, 2, 3, 4, 5])), 5)
+print(r7.val if r7 else None)   # 5
 ```
 
 ```java run
 public class Main {
-    static class ListNode { int val; ListNode prev, next; ListNode(int v){val=v;} }
+    static class ListNode {
+        int val;
+        ListNode prev;
+        ListNode next;
+        ListNode() {}
+        ListNode(int val) { this.val = val; }
+    }
+
+    static ListNode fromList(int... values) {
+        if (values.length == 0) return null;
+        ListNode head = new ListNode(values[0]);
+        ListNode cur = head;
+        for (int i = 1; i < values.length; i++) {
+            ListNode node = new ListNode(values[i]);
+            node.prev = cur;
+            cur.next = node;
+            cur = node;
+        }
+        return head;
+    }
+
+    static ListNode toTail(ListNode head) {
+        if (head == null) return null;
+        ListNode cur = head;
+        while (cur.next != null) cur = cur.next;
+        return cur;
+    }
 
     static class Solution {
         public ListNode nodeSearch(ListNode tail, int data) {
+
+            // Start from the tail of the linked list
             ListNode current = tail;
+
+            // Traverse the linked list backwards starting from the current
+            // node
             while (current != null) {
-                if (current.val == data) {       // Return the first matching node
+
+                // If a matching node is found, return the pointer to
+                // that node
+                if (current.val == data) {
                     return current;
                 }
-                current = current.prev;          // Move backward
+
+                // Move to the previous node in the linked list
+                current = current.prev;
             }
-            return null;                         // No match anywhere in the list
+
+            // If the loop finishes without finding a matching node, return
+            // null
+            return null;
         }
     }
 
     public static void main(String[] args) {
-        // [5, 7, 3, 10], data=3 -> node(3)
-        ListNode n1=new ListNode(5),n2=new ListNode(7),n3=new ListNode(3),n4=new ListNode(10);
-        n1.next=n2; n2.prev=n1; n2.next=n3; n3.prev=n2; n3.next=n4; n4.prev=n3;
-        ListNode found = new Solution().nodeSearch(n4, 3);
-        System.out.println(found == null ? "null" : found.val); // 3
+        // Examples from the problem statement
+        ListNode r1 = new Solution().nodeSearch(toTail(fromList(5, 7, 3, 10)), 3);
+        System.out.println(r1 != null ? r1.val : null);   // 3
+
+        ListNode r2 = new Solution().nodeSearch(toTail(fromList(5, 7, 6, 10)), 3);
+        System.out.println(r2 != null ? r2.val : null);   // null
+
+        // Edge cases
+        ListNode r3 = new Solution().nodeSearch(null, 5);
+        System.out.println(r3 != null ? r3.val : null);   // null
+
+        ListNode r4 = new Solution().nodeSearch(toTail(fromList(42)), 42);
+        System.out.println(r4 != null ? r4.val : null);   // 42
+
+        ListNode r5 = new Solution().nodeSearch(toTail(fromList(42)), 1);
+        System.out.println(r5 != null ? r5.val : null);   // null
+
+        ListNode r6 = new Solution().nodeSearch(toTail(fromList(1, 2, 3, 4, 5)), 1);
+        System.out.println(r6 != null ? r6.val : null);   // 1
+
+        ListNode r7 = new Solution().nodeSearch(toTail(fromList(1, 2, 3, 4, 5)), 5);
+        System.out.println(r7 != null ? r7.val : null);   // 5
     }
-}
-```
-
-```c run
-ListNode* nodeSearch(ListNode *tail, int data) {
-    ListNode *current = tail;
-    while (current != NULL) {
-        if (current->val == data) {
-            return current;
-        }
-        current = current->prev;
-    }
-    return NULL;
-}
-```
-
-```scala run
-class ListNode(var v: Int, var prev: ListNode = null, var next: ListNode = null)
-
-object Main extends App {
-  class Solution {
-    def nodeSearch(tail: ListNode, data: Int): ListNode = {
-      var current = tail
-      while (current != null) {
-        if (current.v == data) return current   // First match wins
-        current = current.prev
-      }
-      null                                       // No match
-    }
-  }
-
-  // [5, 7, 3, 10], data=3 -> node(3)
-  val n1 = new ListNode(5); val n2 = new ListNode(7); val n3 = new ListNode(3); val n4 = new ListNode(10)
-  n1.next = n2; n2.prev = n1; n2.next = n3; n3.prev = n2; n3.next = n4; n4.prev = n3
-  val found = new Solution().nodeSearch(n4, 3)
-  println(if (found == null) "null" else found.v) // 3
 }
 ```
 
@@ -625,32 +744,31 @@ object Main extends App {
 <summary><strong>Trace 1 — tail = node(10) of [5, 7, 3, 10], data = 3</strong></summary>
 
 ```
-Step 1 │ current = node(10) │ 10 ≠ 3 → continue │ current = node(3)
+Step 1 │ current = node(10) │ 10 ≠ 3 → continue │ current = current.prev = node(3)
 Step 2 │ current = node(3)  │ 3 == 3 ✓          │ return node(3)
 Result: node(3) ✓
 ```
 
-</details>
+The walk starts at `tail` and steps via `current.prev`, so it inspects nodes back-to-front — node(10) then node(3) — and stops the moment the value matches.
 
+</details>
 <details>
 <summary><strong>Trace 2 — tail = node(10) of [5, 7, 6, 10], data = 3</strong></summary>
 
 ```
-Step 1 │ current = node(10) │ 10 ≠ 3 → continue │ current = node(6)
-Step 2 │ current = node(6)  │ 6 ≠ 3 → continue  │ current = node(7)
-Step 3 │ current = node(7)  │ 7 ≠ 3 → continue  │ current = node(5)
-Step 4 │ current = node(5)  │ 5 ≠ 3 → continue  │ current = null
+Step 1 │ current = node(10) │ 10 ≠ 3 → continue │ current = current.prev = node(6)
+Step 2 │ current = node(6)  │ 6 ≠ 3 → continue  │ current = current.prev = node(7)
+Step 3 │ current = node(7)  │ 7 ≠ 3 → continue  │ current = current.prev = node(5)
+Step 4 │ current = node(5)  │ 5 ≠ 3 → continue  │ current = current.prev = null
 Step 5 │ current = null     │ loop terminates   │ return null
 Result: null ✓
 ```
 
-The "no-match" case is what makes the `null` return value non-negotiable — the function must distinguish *"I found nothing"* from *"I found the head"* (which is also a valid return). The terminator pointer carries that information for free.
+The backward walk falls off the head — node(5)'s `prev` is `null` — and the loop ends. The "no-match" case is what makes the `null` return value non-negotiable: the function must distinguish *"I found nothing"* from *"I found the head"* (which is also a valid return). The head's `prev` terminator carries that information for free.
 
 </details>
 
----
-
-## Complexity Analysis
+### Complexity Analysis
 
 | Operation | Time | Space | Why |
 |---|---|---|---|
@@ -660,7 +778,10 @@ The "no-match" case is what makes the `null` return value non-negotiable — the
 
 > *The space term is the headline — every doubly linked list traversal is **O(1) extra space**. We don't allocate a stack, a queue, or a copy. We mutate one pointer in place. This becomes load-bearing later when we attack problems with hard memory budgets — like reversing a list with a million nodes on a constrained system.*
 
-## Final Takeaway
+</details>
+<details>
+<summary><h2>Final Takeaway</h2></summary>
+
 
 A doubly linked list traversal is a *parameterised* singly linked list traversal — same loop, configurable direction. Pick `head + next` to walk forward, `tail + prev` to walk backward, and the same algorithm works for both. This symmetry is what makes the data structure punch above its weight: **every "do this thing forward" operation comes with a free "do it backward" twin** as long as you remember to pass the other endpoint.
 
@@ -674,3 +795,5 @@ A doubly linked list traversal is a *parameterised* singly linked list traversal
 > </details>
 
 In the next lesson we leave traversal behind and start *modifying* the list. Insertion is where the doubly linked list's second pointer earns its keep — we'll see operations the singly linked list literally cannot match in time complexity.
+
+</details>

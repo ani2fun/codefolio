@@ -142,7 +142,9 @@ Output: 8                    You take the larger end
 
 ---
 
-## Applying the Diagnostic Questions
+<details>
+<summary><h2>Applying the Diagnostic Questions</h2></summary>
+
 
 | # | Question | Answer |
 |---|---|---|
@@ -183,41 +185,13 @@ Output: 8                    You take the larger end
 
 **What breaks otherwise.** Using max here would simulate a *cooperative* opponent — they'd leave you the better option. Wrong model; wrong answer.
 
----
+</details>
+<details>
+<summary><h2>The Solution</h2></summary>
 
-## The Solution
 
 Bottom-up tabulation, length-first. We use Formulation A (explicit opponent min).
 
-
-```pseudocode
-# Two-player game: pick from either end. Both play optimally.
-# dp[i][j] = max coins the to-move player can guarantee on coins[i..j].
-# Opponent will play to MIN our next-turn payoff, hence the inner min().
-function optimalGameStrategy(coins):
-    n ← length(coins)
-    dp ← n × n grid of zeros
-    for i from 0 to n − 1:
-        dp[i][i] ← coins[i]                     # length-1: take the only coin
-
-    for length from 2 to n:
-        for i from 0 to n − length:
-            j ← i + length − 1
-
-            # We pick coins[i]. Opponent then picks from [i+1..j], leaving us
-            # with the worse of dp[i+2][j] (they took left) or dp[i+1][j−1] (they took right).
-            leftInner  ← dp[i + 2][j]     if i + 2 ≤ j     else 0
-            rightInner ← dp[i + 1][j − 1] if i + 1 ≤ j − 1 else 0
-            pickLeft  ← coins[i] + min(leftInner, rightInner)
-
-            # We pick coins[j]. Symmetric reasoning.
-            leftInner2  ← dp[i + 1][j − 1] if i + 1 ≤ j − 1 else 0
-            rightInner2 ← dp[i][j − 2]     if i ≤ j − 2     else 0
-            pickRight ← coins[j] + min(leftInner2, rightInner2)
-
-            dp[i][j] ← max(pickLeft, pickRight)
-    return dp[0][n − 1]
-```
 
 ```python run
 from typing import List
@@ -283,65 +257,7 @@ public class Main {
 }
 ```
 
-```c run
-#include <stdio.h>
-
-int dp[1001][1001];
-
-int max(int a, int b) { return a > b ? a : b; }
-int min(int a, int b) { return a < b ? a : b; }
-
-int optimal_game_strategy(const int *coins, int n) {
-    for (int i = 0; i < n; i++) for (int j = 0; j < n; j++) dp[i][j] = 0;
-    for (int i = 0; i < n; i++) dp[i][i] = coins[i];
-    for (int len = 2; len <= n; len++) {
-        for (int i = 0; i <= n - len; i++) {
-            int j = i + len - 1;
-            int li1 = (i + 2 <= j)     ? dp[i + 2][j]     : 0;
-            int ri1 = (i + 1 <= j - 1) ? dp[i + 1][j - 1] : 0;
-            int ri2 = (i <= j - 2)     ? dp[i][j - 2]     : 0;
-            int pick_left  = coins[i] + min(li1, ri1);
-            int pick_right = coins[j] + min(ri1, ri2);
-            dp[i][j] = max(pick_left, pick_right);
-        }
-    }
-    return dp[0][n - 1];
-}
-
-int main(void) {
-    int c[] = {10, 17, 5, 9};
-    printf("%d\n", optimal_game_strategy(c, 4));   /* 26 */
-    return 0;
-}
-```
-
-```scala run
-object Main extends App {
-  class Solution {
-    def optimalGameStrategy(coins: Array[Int]): Int = {
-      val n = coins.length
-      val dp = Array.fill(n, n)(0)
-      for (i <- 0 until n) dp(i)(i) = coins(i)
-      for (len <- 2 to n) {
-        for (i <- 0 to n - len) {
-          val j = i + len - 1
-          val li1 = if (i + 2 <= j)     dp(i + 2)(j)     else 0
-          val ri1 = if (i + 1 <= j - 1) dp(i + 1)(j - 1) else 0
-          val ri2 = if (i <= j - 2)     dp(i)(j - 2)     else 0
-          val pickLeft  = coins(i) + math.min(li1, ri1)
-          val pickRight = coins(j) + math.min(ri1, ri2)
-          dp(i)(j) = math.max(pickLeft, pickRight)
-        }
-      }
-      dp(0)(n - 1)
-    }
-  }
-
-  println(new Solution().optimalGameStrategy(Array(10, 17, 5, 9)))  // 26
-}
-```
-
-
+</details>
 <details>
 <summary><strong>Trace — coins = [10, 17, 5, 9]</strong></summary>
 
@@ -373,19 +289,17 @@ Length 4:
 ```
 
 </details>
+<details>
+<summary><h2>Solution &amp; Analysis</h2></summary>
 
----
-
-## Complexity Analysis
+### Complexity Analysis
 
 | Aspect | Cost | Why |
 |---|---|---|
 | Time | `O(n²)` | One cell per `(i, j)` with `i ≤ j`; constant work each. |
 | Space | `O(n²)` | DP table. Reducible by space-optimisation of interval DP — possible but messy. |
 
----
-
-## Edge Cases
+### Edge Cases
 
 | Case | Example | Expected | Reasoning |
 |---|---|---|---|
@@ -395,6 +309,8 @@ Length 4:
 | Sorted ascending | `[1, 2, 3, 4]` | `6` | First player gets 4 + 2 = 6, second gets 3 + 1. |
 | Sorted descending | `[4, 3, 2, 1]` | `6` | Symmetric to above. |
 | Adversarial pattern | `[10, 17, 5, 9]` | `26` | The 17 is "shielded" — neither end can grab it directly first. |
+
+</details>
 
 ***
 

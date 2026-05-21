@@ -89,28 +89,7 @@ Multiply two `n × n` matrices: naive `Θ(n³)` (eight sub-multiplications, `T(n
 
 # Implementation
 
-The maximum-subarray D&C version, in five languages.
-
-```pseudocode
-function maxSubarray(A, lo, hi):
-    if lo = hi: return A[lo]
-    mid ← (lo + hi) / 2
-    leftMax  ← maxSubarray(A, lo, mid)
-    rightMax ← maxSubarray(A, mid + 1, hi)
-    crossMax ← maxCrossing(A, lo, mid, hi)
-    return max(leftMax, rightMax, crossMax)
-
-function maxCrossing(A, lo, mid, hi):
-    leftSum ← −∞; sum ← 0
-    for i from mid down to lo:
-        sum ← sum + A[i]
-        if sum > leftSum: leftSum ← sum
-    rightSum ← −∞; sum ← 0
-    for j from mid + 1 to hi:
-        sum ← sum + A[j]
-        if sum > rightSum: rightSum ← sum
-    return leftSum + rightSum
-```
+The maximum-subarray D&C version, in Python and Java.
 
 ```python run
 def max_crossing(A, lo, mid, hi):
@@ -158,61 +137,6 @@ public class Main {
         int[] A = {-2, 1, -3, 4, -1, 2, 1, -5, 4};
         System.out.println("max sum = " + maxSubarray(A, 0, A.length - 1));
     }
-}
-```
-
-```c run
-#include <stdio.h>
-#include <limits.h>
-
-int max3(int a, int b, int c) { int m = a > b ? a : b; return m > c ? m : c; }
-
-int max_crossing(int *A, int lo, int mid, int hi) {
-    int left_sum = INT_MIN, s = 0;
-    for (int i = mid; i >= lo; i--) { s += A[i]; if (s > left_sum) left_sum = s; }
-    int right_sum = INT_MIN; s = 0;
-    for (int j = mid + 1; j <= hi; j++) { s += A[j]; if (s > right_sum) right_sum = s; }
-    return left_sum + right_sum;
-}
-
-int max_subarray(int *A, int lo, int hi) {
-    if (lo == hi) return A[lo];
-    int mid = (lo + hi) / 2;
-    return max3(max_subarray(A, lo, mid),
-                max_subarray(A, mid + 1, hi),
-                max_crossing(A, lo, mid, hi));
-}
-
-int main(void) {
-    int A[] = {-2, 1, -3, 4, -1, 2, 1, -5, 4};
-    printf("max sum = %d\n", max_subarray(A, 0, 8));
-    return 0;
-}
-```
-
-```scala run
-object Main extends App {
-  def maxCrossing(A: Array[Int], lo: Int, mid: Int, hi: Int): Int = {
-    var leftSum = Int.MinValue; var s = 0
-    var i = mid
-    while (i >= lo) { s += A(i); if (s > leftSum) leftSum = s; i -= 1 }
-    var rightSum = Int.MinValue; s = 0
-    var j = mid + 1
-    while (j <= hi) { s += A(j); if (s > rightSum) rightSum = s; j += 1 }
-    leftSum + rightSum
-  }
-
-  def maxSubarray(A: Array[Int], lo: Int, hi: Int): Int = {
-    if (lo == hi) return A(lo)
-    val mid = (lo + hi) / 2
-    val l = maxSubarray(A, lo, mid)
-    val r = maxSubarray(A, mid + 1, hi)
-    val c = maxCrossing(A, lo, mid, hi)
-    math.max(math.max(l, r), c)
-  }
-
-  val A = Array(-2, 1, -3, 4, -1, 2, 1, -5, 4)
-  println(s"max sum = ${maxSubarray(A, 0, A.length - 1)}")
 }
 ```
 
@@ -297,49 +221,42 @@ Click any question to reveal the answer.
 **A:** **Divide** the problem into smaller subproblems of the same kind. **Conquer** each (recursively). **Combine** the answers into the original problem's answer.
 
 </details>
-
 <details>
 <summary><strong>Q:</strong> Recurrence for merge sort?</summary>
 
 **A:** `T(n) = 2T(n/2) + n → Θ(n log n)`. Master theorem case 2.
 
 </details>
-
 <details>
 <summary><strong>Q:</strong> Recurrence for binary search?</summary>
 
 **A:** `T(n) = T(n/2) + 1 → Θ(log n)`.
 
 </details>
-
 <details>
 <summary><strong>Q:</strong> Recurrence for Karatsuba multiplication?</summary>
 
 **A:** `T(n) = 3T(n/2) + n → Θ(n^(log₂ 3)) ≈ Θ(n^1.585)`. Beats `Θ(n²)` for large enough `n`.
 
 </details>
-
 <details>
 <summary><strong>Q:</strong> Recurrence for Strassen matrix multiplication?</summary>
 
 **A:** `T(n) = 7T(n/2) + n² → Θ(n^(log₂ 7)) ≈ Θ(n^2.807)`. Beats cubic for large enough matrices.
 
 </details>
-
 <details>
 <summary><strong>Q:</strong> Why is D&C the wrong choice for Fibonacci?</summary>
 
 **A:** Subproblems overlap (`fib(n-1)` and `fib(n-2)` both call `fib(n-3)`). Pure D&C wastes exponential work on duplicates. Use DP (memoisation) instead.
 
 </details>
-
 <details>
 <summary><strong>Q:</strong> What's the canonical "trap" in maximum-subarray D&C?</summary>
 
 **A:** Forgetting the cross-midpoint case. The answer might span the boundary between halves; you must scan outward from `mid` separately.
 
 </details>
-
 <details>
 <summary><strong>Q:</strong> Why is randomised quicksort considered D&C even though it's not balanced?</summary>
 

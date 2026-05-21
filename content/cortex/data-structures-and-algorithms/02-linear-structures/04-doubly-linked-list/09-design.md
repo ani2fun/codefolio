@@ -57,7 +57,9 @@ Trace:
 
 ---
 
-## The Architecture
+<details>
+<summary><h2>The Architecture</h2></summary>
+
 
 Every method below is a thin wrapper around the primitives we already know. Three pieces of internal state hold the entire structure together:
 
@@ -114,425 +116,400 @@ The five mutating methods (`prepend`, `append`, `insert`, `remove`) each follow 
 
 Stick to that order — particularly **size last** — and the bookkeeping never drifts.
 
----
+</details>
+<details>
+<summary><h2>Solution &amp; Analysis</h2></summary>
 
-## The Solution
+### The Solution
 
 The implementation below mirrors the algorithms from lessons 02-04 (traversal, insertion, deletion). Notice how `prepend`, `append`, and `insert` re-use each other when the position lands at a boundary, and how `remove` distinguishes the head/tail/middle cases the same way deletion-by-data did in lesson 04.
 
 
-```pseudocode
-class DoublyLinkedList:
-    head ← null; tail ← null; size ← 0
-
-    function empty(): return head = null
-    function size(): return size
-
-    function prepend(val):
-        node ← new ListNode(val)
-        if empty(): head ← node; tail ← node
-        else: node.next ← head; head.prev ← node; head ← node
-        size ← size + 1
-
-    function append(val):
-        node ← new ListNode(val)
-        if empty(): head ← node; tail ← node
-        else: node.prev ← tail; tail.next ← node; tail ← node
-        size ← size + 1
-
-    function insert(position, val):
-        if position ≤ 0: prepend(val); return
-        if position ≥ size: append(val); return
-        node ← new ListNode(val); current ← head; idx ← 0
-        while idx < position: current ← current.next; idx ← idx + 1
-        node.prev ← current.prev; node.next ← current
-        current.prev.next ← node; current.prev ← node
-        size ← size + 1
-
-    function remove(val):
-        current ← head
-        while current ≠ null:
-            if current.val = val:
-                if current = head:
-                    head ← current.next
-                    if head ≠ null: head.prev ← null else: tail ← null
-                else if current = tail:
-                    tail ← current.prev; tail.next ← null
-                else:
-                    current.prev.next ← current.next
-                    current.next.prev ← current.prev
-                size ← size − 1; return true
-            current ← current.next
-        return false
-
-    function search(val):
-        current ← head
-        while current ≠ null:
-            if current.val = val: return true
-            current ← current.next
-        return false
-```
-
 ```python run
+from typing import Optional
+
+class ListNode:
+    def __init__(self, val=0, prev=None, nxt=None):
+        self.val = val
+        self.prev = prev
+        self.next = nxt
+
+
+def to_list(head):
+    out = []
+    while head is not None:
+        out.append(head.val)
+        head = head.next
+    return out
+
+
 class DoublyLinkedList:
     def __init__(self):
-        self.head = None              # First node, or None if empty
-        self.tail = None              # Last node, or None if empty
-        self._size = 0                # O(1) length — incremented per insert, decremented per remove
+
+        # Pointer to the front node of the list
+        self.head: Optional[ListNode] = None
+
+        # Pointer to the last node of the list
+        self.tail: Optional[ListNode] = None
+
+        # Current number of elements in the list
+        self.currentSize: int = 0
 
     def empty(self) -> bool:
-        return self.head is None      # head == None ⇔ list is empty
+        return self.head is None
 
     def size(self) -> int:
-        return self._size             # No counting — value is maintained on every mutation
+        return self.currentSize
 
     def prepend(self, val: int) -> None:
-        new_node = ListNode(val)
-        if self.empty():              # Boundary: empty list — new node is both head and tail
-            self.head = new_node
-            self.tail = new_node
-        else:                          # Non-empty: new node becomes head, mirror old head's prev
-            new_node.next = self.head
-            self.head.prev = new_node
-            self.head = new_node
-        self._size += 1                # Maintain O(1) size invariant
+        newNode = ListNode(val)
+
+        # If the list is empty, set the new node as both head and tail
+        if self.empty():
+            self.head = newNode
+            self.tail = newNode
+        else:
+            newNode.next = self.head
+            self.head.prev = newNode
+            self.head = newNode
+
+        self.currentSize += 1
 
     def append(self, val: int) -> None:
-        new_node = ListNode(val)
-        if self.empty():              # Boundary: empty list
-            self.head = new_node
-            self.tail = new_node
-        else:                          # Non-empty: new node becomes tail
-            new_node.prev = self.tail
-            self.tail.next = new_node
-            self.tail = new_node
-        self._size += 1
+        newNode = ListNode(val)
+
+        # If the list is empty, set the new node as both head and tail
+        if self.empty():
+            self.head = newNode
+            self.tail = newNode
+        else:
+            newNode.prev = self.tail
+            self.tail.next = newNode
+            self.tail = newNode
+
+        self.currentSize += 1
 
     def insert(self, position: int, val: int) -> None:
-        if position <= 0:              # Clamp: out-of-range left → prepend
+
+        # If the position is less than or equal to 0, prepend the new
+        # node
+        if position <= 0:
             self.prepend(val)
             return
-        if position >= self._size:    # Clamp: out-of-range right → append
+
+        # If the position is greater than or equal to the current size,
+        # append the new node
+        if position >= self.currentSize:
             self.append(val)
             return
-        # General case — splice between current.prev and current
-        new_node = ListNode(val)
-        current  = self.head
-        idx      = 0
-        while current is not None and idx < position:   # Walk to the node currently at `position`
+
+        newNode = ListNode(val)
+        current = self.head
+        currentPosition = 0
+
+        # Traverse the list to reach the desired position
+        while current and currentPosition < position:
             current = current.next
-            idx    += 1
-        # current.prev is guaranteed non-None here because position > 0 was clamped above
-        new_node.prev      = current.prev
-        new_node.next      = current
-        current.prev.next  = new_node                   # Predecessor's forward link
-        current.prev       = new_node                   # Mirror — current's back link
-        self._size += 1
+            currentPosition += 1
+
+        # Insert the new node at the desired position and adjust pointers
+        newNode.prev = current.prev
+        newNode.next = current
+        current.prev.next = newNode
+        current.prev = newNode
+
+        self.currentSize += 1
 
     def remove(self, val: int) -> bool:
+
+        # If the list is empty, no removal is possible
         if self.empty():
             return False
+
         current = self.head
-        while current is not None:
+        while current:
             if current.val == val:
-                # Three sub-cases — head / tail / middle
-                if current is self.head:
+
+                # If the node to remove is the head, update the head
+                # pointer
+                if current == self.head:
                     self.head = current.next
-                    if self.head is not None:
-                        self.head.prev = None             # New head has no predecessor
+
+                    # If the list is not empty, update the prev pointer
+                    if self.head:
+                        self.head.prev = None
                     else:
-                        self.tail = None                  # List became empty — clear tail too
-                elif current is self.tail:
+                        self.tail = None
+
+                # If the node to remove is the tail, update the tail
+                # pointer
+                elif current == self.tail:
                     self.tail = current.prev
-                    self.tail.next = None                 # New tail has no successor
+                    self.tail.next = None
+
+                # Otherwise, remove the node by adjusting the prev and
+                # next pointers of adjacent nodes
                 else:
-                    current.prev.next = current.next      # Splice predecessor → successor
-                    current.next.prev = current.prev      # Mirror back-link
-                self._size -= 1
+                    current.prev.next = current.next
+                    current.next.prev = current.prev
+
+                self.currentSize -= 1
                 return True
-            current = current.next                        # Linear scan continues
-        return False                                      # Value not present
+
+            current = current.next
+
+        return False
 
     def search(self, val: int) -> bool:
         current = self.head
-        while current is not None:
+        while current:
+
+            # If the val is found, return true
             if current.val == val:
                 return True
             current = current.next
+
+        # If the val is not found, return false
         return False
+
+
+# Example from the problem statement
+dll = DoublyLinkedList()
+dll.prepend(2); print(to_list(dll.head))   # [2]
+dll.prepend(3); print(to_list(dll.head))   # [3, 2]
+dll.append(1);  print(to_list(dll.head))   # [3, 2, 1]
+print(dll.size())                          # 3
+print(dll.search(5))                       # False
+dll.insert(1, 8); print(to_list(dll.head)) # [3, 8, 2, 1]
+print(dll.remove(2))                       # True
+print(to_list(dll.head))                   # [3, 8, 1]
+print(dll.empty())                         # False
+
+# Edge cases
+dll2 = DoublyLinkedList()
+print(dll2.empty())                        # True
+print(dll2.size())                         # 0
+print(dll2.remove(5))                      # False
+dll2.append(10); dll2.append(20); dll2.append(30)
+print(to_list(dll2.head))                  # [10, 20, 30]
+print(dll2.search(20))                     # True
+print(dll2.search(99))                     # False
+print(dll2.remove(10)); print(to_list(dll2.head))  # True, [20, 30]
+print(dll2.remove(30)); print(to_list(dll2.head))  # True, [20]
 ```
 
 ```java run
+import java.util.*;
+
 public class Main {
-    static class ListNode { int val; ListNode prev, next; ListNode(int v){val=v;} }
+    static class ListNode {
+        int val;
+        ListNode prev;
+        ListNode next;
+        ListNode() {}
+        ListNode(int val) { this.val = val; }
+    }
+
+    static java.util.List<Integer> toList(ListNode head) {
+        java.util.List<Integer> out = new java.util.ArrayList<>();
+        while (head != null) { out.add(head.val); head = head.next; }
+        return out;
+    }
 
     static class DoublyLinkedList {
-        ListNode head;
-        ListNode tail;
-        int currentSize;
+
+        // Pointer to the front node of the list
+        private ListNode head;
+
+        // Pointer to the last node of the list
+        private ListNode tail;
+
+        // Current number of elements in the list
+        private int currentSize;
 
         public DoublyLinkedList() {
-            head = null;
-            tail = null;
-            currentSize = 0;
+            this.head = null;
+            this.tail = null;
+            this.currentSize = 0;
         }
 
-        public boolean empty() { return head == null; }
-        public int size()      { return currentSize; }
+        public boolean empty() {
+            return head == null;
+        }
+
+        public int size() {
+            return currentSize;
+        }
 
         public void prepend(int val) {
             ListNode newNode = new ListNode(val);
-            if (empty()) {                            // Empty: new node is both head and tail
+
+            // If the list is empty, set the new node as both head and tail
+            if (empty()) {
                 head = newNode;
                 tail = newNode;
-            } else {                                  // Non-empty: insert before current head
-                newNode.next = head;
-                head.prev    = newNode;
-                head         = newNode;
             }
+
+            // Set the new node as the head and adjust pointers
+            else {
+                newNode.next = head;
+                head.prev = newNode;
+                head = newNode;
+            }
+
             currentSize++;
         }
 
         public void append(int val) {
             ListNode newNode = new ListNode(val);
+
+            // If the list is empty, set the new node as both head and tail
             if (empty()) {
                 head = newNode;
                 tail = newNode;
-            } else {
-                newNode.prev = tail;
-                tail.next    = newNode;
-                tail         = newNode;
             }
+
+            // Otherwise, set the new node as the tail and adjust pointers
+            else {
+                newNode.prev = tail;
+                tail.next = newNode;
+                tail = newNode;
+            }
+
             currentSize++;
         }
 
         public void insert(int position, int val) {
-            if (position <= 0)             { prepend(val); return; }
-            if (position >= currentSize)   { append(val);  return; }
-            ListNode newNode = new ListNode(val);
-            ListNode current = head;
-            int idx = 0;
-            while (current != null && idx < position) {
-                current = current.next;
-                idx++;
+
+            // If the position is less than or equal to 0, prepend the new
+            // node
+            if (position <= 0) {
+                prepend(val);
+                return;
             }
-            newNode.prev      = current.prev;
-            newNode.next      = current;
+
+            // If the position is greater than or equal to the current size,
+            // append the new node
+            if (position >= currentSize) {
+                append(val);
+                return;
+            }
+
+            ListNode newNode = new ListNode(val);
+
+            ListNode current = head;
+            int currentPosition = 0;
+
+            // Traverse the list to reach the desired position
+            while (current != null && currentPosition < position) {
+                current = current.next;
+                currentPosition++;
+            }
+
+            // Insert the new node at the desired position and adjust
+            // pointers
+            newNode.prev = current.prev;
+            newNode.next = current;
             current.prev.next = newNode;
-            current.prev      = newNode;
+            current.prev = newNode;
+
             currentSize++;
         }
 
         public boolean remove(int val) {
-            if (empty()) return false;
+
+            // If the list is empty, no removal is possible
+            if (empty()) {
+                return false;
+            }
+
             ListNode current = head;
             while (current != null) {
                 if (current.val == val) {
+
+                    // If the node to remove is the head, update the head
+                    // pointer
                     if (current == head) {
                         head = current.next;
-                        if (head != null) head.prev = null;
-                        else               tail     = null;
-                    } else if (current == tail) {
-                        tail        = current.prev;
-                        tail.next   = null;
-                    } else {
+
+                        // If the list is not empty, update the prev pointer
+                        if (head != null) {
+                            head.prev = null;
+                        }
+
+                        // If the list becomes empty, update the tail pointer
+                        else {
+                            tail = null;
+                        }
+                    }
+
+                    // If the node to remove is the tail, update the tail
+                    // pointer
+                    else if (current == tail) {
+                        tail = current.prev;
+                        tail.next = null;
+                    }
+
+                    // Otherwise, remove the node by adjusting the prev and
+                    // next pointers of adjacent nodes
+                    else {
                         current.prev.next = current.next;
                         current.next.prev = current.prev;
                     }
+
                     currentSize--;
                     return true;
                 }
+
                 current = current.next;
             }
+
             return false;
         }
 
         public boolean search(int val) {
             ListNode current = head;
             while (current != null) {
-                if (current.val == val) return true;
+
+                // If the val is found, return true
+                if (current.val == val) {
+                    return true;
+                }
                 current = current.next;
             }
+
+            // If the val is not found, return false
             return false;
         }
+
+        public ListNode getHead() { return head; }
     }
 
     public static void main(String[] args) {
-        DoublyLinkedList list = new DoublyLinkedList();
-        list.prepend(2);                      // [2]
-        list.prepend(3);                      // [3, 2]
-        list.append(1);                       // [3, 2, 1]
-        System.out.println(list.size());      // 3
-        System.out.println(list.search(5));   // false
-        list.insert(1, 8);                    // [3, 8, 2, 1]
-        System.out.println(list.remove(2));   // true
-        System.out.println(list.empty());     // false
+        // Example from the problem statement
+        DoublyLinkedList dll = new DoublyLinkedList();
+        dll.prepend(2); System.out.println(toList(dll.getHead()));   // [2]
+        dll.prepend(3); System.out.println(toList(dll.getHead()));   // [3, 2]
+        dll.append(1);  System.out.println(toList(dll.getHead()));   // [3, 2, 1]
+        System.out.println(dll.size());                              // 3
+        System.out.println(dll.search(5));                           // false
+        dll.insert(1, 8); System.out.println(toList(dll.getHead())); // [3, 8, 2, 1]
+        System.out.println(dll.remove(2));                           // true
+        System.out.println(toList(dll.getHead()));                   // [3, 8, 1]
+        System.out.println(dll.empty());                             // false
+
+        // Edge cases
+        DoublyLinkedList dll2 = new DoublyLinkedList();
+        System.out.println(dll2.empty());                            // true
+        System.out.println(dll2.size());                             // 0
+        System.out.println(dll2.remove(5));                          // false
+        dll2.append(10); dll2.append(20); dll2.append(30);
+        System.out.println(toList(dll2.getHead()));                  // [10, 20, 30]
+        System.out.println(dll2.search(20));                         // true
+        System.out.println(dll2.search(99));                         // false
+        System.out.println(dll2.remove(10)); System.out.println(toList(dll2.getHead())); // true, [20, 30]
+        System.out.println(dll2.remove(30)); System.out.println(toList(dll2.getHead())); // true, [20]
     }
-}
-```
-
-```c run
-typedef struct DoublyLinkedList {
-    ListNode *head;
-    ListNode *tail;
-    int       currentSize;
-} DoublyLinkedList;
-
-DoublyLinkedList* createDLL(void) {
-    DoublyLinkedList *dll = (DoublyLinkedList*)malloc(sizeof(DoublyLinkedList));
-    dll->head = NULL; dll->tail = NULL; dll->currentSize = 0;
-    return dll;
-}
-
-int  dll_empty(DoublyLinkedList *l) { return l->head == NULL; }
-int  dll_size (DoublyLinkedList *l) { return l->currentSize; }
-
-void dll_prepend(DoublyLinkedList *l, int val) {
-    ListNode *n = newListNode(val);
-    if (dll_empty(l)) { l->head = n; l->tail = n; }
-    else              { n->next = l->head; l->head->prev = n; l->head = n; }
-    l->currentSize++;
-}
-
-void dll_append(DoublyLinkedList *l, int val) {
-    ListNode *n = newListNode(val);
-    if (dll_empty(l)) { l->head = n; l->tail = n; }
-    else              { n->prev = l->tail; l->tail->next = n; l->tail = n; }
-    l->currentSize++;
-}
-
-void dll_insert(DoublyLinkedList *l, int position, int val) {
-    if (position <= 0)              { dll_prepend(l, val); return; }
-    if (position >= l->currentSize) { dll_append (l, val); return; }
-    ListNode *n = newListNode(val);
-    ListNode *current = l->head;
-    int idx = 0;
-    while (current != NULL && idx < position) { current = current->next; idx++; }
-    n->prev            = current->prev;
-    n->next            = current;
-    current->prev->next = n;
-    current->prev      = n;
-    l->currentSize++;
-}
-
-int dll_remove(DoublyLinkedList *l, int val) {
-    if (dll_empty(l)) return 0;
-    ListNode *current = l->head;
-    while (current != NULL) {
-        if (current->val == val) {
-            if (current == l->head) {
-                l->head = current->next;
-                if (l->head != NULL) l->head->prev = NULL;
-                else                 l->tail       = NULL;
-            } else if (current == l->tail) {
-                l->tail        = current->prev;
-                l->tail->next  = NULL;
-            } else {
-                current->prev->next = current->next;
-                current->next->prev = current->prev;
-            }
-            free(current);
-            l->currentSize--;
-            return 1;
-        }
-        current = current->next;
-    }
-    return 0;
-}
-
-int dll_search(DoublyLinkedList *l, int val) {
-    ListNode *current = l->head;
-    while (current != NULL) {
-        if (current->val == val) return 1;
-        current = current->next;
-    }
-    return 0;
-}
-```
-
-```scala run
-class ListNode(var v: Int, var prev: ListNode = null, var next: ListNode = null)
-
-object Main extends App {
-  class DoublyLinkedList {
-    var head: ListNode = null
-    var tail: ListNode = null
-    var currentSize: Int = 0
-
-    def empty(): Boolean = head == null
-    def size():  Int     = currentSize
-
-    def prepend(v: Int): Unit = {
-      val n = new ListNode(v)
-      if (empty()) { head = n; tail = n }
-      else         { n.next = head; head.prev = n; head = n }
-      currentSize += 1
-    }
-
-    def append(v: Int): Unit = {
-      val n = new ListNode(v)
-      if (empty()) { head = n; tail = n }
-      else         { n.prev = tail; tail.next = n; tail = n }
-      currentSize += 1
-    }
-
-    def insert(position: Int, v: Int): Unit = {
-      if (position <= 0)             { prepend(v); return }
-      if (position >= currentSize)   { append (v); return }
-      val n = new ListNode(v)
-      var current = head
-      var idx = 0
-      while (current != null && idx < position) { current = current.next; idx += 1 }
-      n.prev            = current.prev
-      n.next            = current
-      current.prev.next = n
-      current.prev      = n
-      currentSize += 1
-    }
-
-    def remove(v: Int): Boolean = {
-      if (empty()) return false
-      var current = head
-      while (current != null) {
-        if (current.v == v) {
-          if (current eq head) {
-            head = current.next
-            if (head != null) head.prev = null
-            else              tail      = null
-          } else if (current eq tail) {
-            tail       = current.prev
-            tail.next  = null
-          } else {
-            current.prev.next = current.next
-            current.next.prev = current.prev
-          }
-          currentSize -= 1
-          return true
-        }
-        current = current.next
-      }
-      false
-    }
-
-    def search(v: Int): Boolean = {
-      var current = head
-      while (current != null) {
-        if (current.v == v) return true
-        current = current.next
-      }
-      false
-    }
-  }
-
-  val list = new DoublyLinkedList
-  list.prepend(2)                       // [2]
-  list.prepend(3)                       // [3, 2]
-  list.append(1)                        // [3, 2, 1]
-  println(list.size())                  // 3
-  println(list.search(5))               // false
-  list.insert(1, 8)                     // [3, 8, 2, 1]
-  println(list.remove(2))               // true
-  println(list.empty())                 // false
 }
 ```
 
@@ -558,9 +535,7 @@ Notice how `insert(1, 8)` walks to the node currently at position 1 (the `2`), t
 
 </details>
 
----
-
-## Complexity Analysis
+### Complexity Analysis
 
 | Operation | Time | Space | Why |
 |---|---|---|---|
@@ -574,7 +549,7 @@ Notice how `insert(1, 8)` walks to the node currently at position 1 (the `2`), t
 
 > *The headline number above is **O(1) `append`**. In a singly linked list without a tail reference, `append` is O(N) — you have to walk to the end every single time. By spending 8 bytes (one pointer) on a `tail` reference, we make every append a constant-time operation. That trade is **the** reason `collections.deque`, every LRU cache, and every undo-stack implementation reach for a doubly linked list rather than a singly linked one.*
 
-## Edge Cases
+### Edge Cases
 
 | Case | Example | Expected | Reasoning |
 |---|---|---|---|
@@ -589,9 +564,10 @@ Notice how `insert(1, 8)` walks to the node currently at position 1 (the `2`), t
 | `remove` of value not present | `[3,2,1].remove(7)` | `[3,2,1]`, returns `false` | Loop falls off, no mutation, size unchanged. |
 | `search` in empty list | `[].search(5)` | `false` | Loop never enters; falls through to `false`. |
 
----
+</details>
+<details>
+<summary><h2>Where This Class Lives in the Real World</h2></summary>
 
-## Where This Class Lives in the Real World
 
 The `DoublyLinkedList` you just built is the literal foundation of:
 
@@ -604,9 +580,10 @@ The `DoublyLinkedList` you just built is the literal foundation of:
 
 Whenever you see "constant-time insertion and removal at known positions, with bidirectional iteration" in a system design question, the answer almost always starts with a doubly linked list.
 
----
+</details>
+<details>
+<summary><h2>Final Takeaway</h2></summary>
 
-## Final Takeaway
 
 You started this section staring at empty stub files for nine lessons. Now you have a complete working implementation of the data structure — and more importantly, you understand *why each pointer is where it is*. Every method above is a recombination of three primitives: **walk, wire, unwire**. The discipline that ties them together is the same one we drilled in lessons 03 and 04 — **save before clobber, mirror every link, update size last**.
 
@@ -633,3 +610,5 @@ You started this section staring at empty stub files for nine lessons. Now you h
 > </details>
 
 You now own the doubly linked list. The next section in your DSA journey is the **hash table** — and you've already met its most powerful sidekick. Whenever someone says "I need O(1) average lookup *and* ordered access," your answer is now reflexive: **DLL + hash map**. The two are stronger together than either is alone.
+
+</details>

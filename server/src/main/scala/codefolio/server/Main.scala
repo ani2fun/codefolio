@@ -1,19 +1,23 @@
 package codefolio.server
 
+import codefolio.server.auth.Auth
 import codefolio.server.blogPipeline.BlogPipeline
 import codefolio.server.codeRunPipeline.CodeRunPipeline
 import codefolio.server.config.{
   AppConfig,
+  AuthConfig,
   BlogConfig,
   CortexConfig,
   DbConfig,
   MongoConfig,
+  RateLimitConfig,
   RedisConfig,
   RunnerConfig
 }
 import codefolio.server.cortexPipeline.CortexPipeline
 import codefolio.server.db.{DataSource, Migrations}
 import codefolio.server.helloPipeline.HelloPipeline
+import codefolio.server.http.RateLimiter
 import org.slf4j.bridge.SLF4JBridgeHandler
 import zio.*
 import zio.config.typesafe.TypesafeConfigProvider
@@ -75,6 +79,12 @@ object Main extends ZIOAppDefault:
   private val blogCfg: ZLayer[AppConfig, Nothing, BlogConfig] =
     ZLayer.fromFunction((c: AppConfig) => c.blog)
 
+  private val authCfg: ZLayer[AppConfig, Nothing, AuthConfig] =
+    ZLayer.fromFunction((c: AppConfig) => c.auth)
+
+  private val rateLimitCfg: ZLayer[AppConfig, Nothing, RateLimitConfig] =
+    ZLayer.fromFunction((c: AppConfig) => c.runner.rateLimit)
+
   override def run: ZIO[Any, Throwable, Unit] =
     // Run schema migrations *before* binding the HTTP port — if they fail
     // we'd rather crash on boot than serve traffic against a stale schema.
@@ -90,11 +100,15 @@ object Main extends ZIOAppDefault:
         runnerCfg,            // AppConfig → RunnerConfig
         cortexCfg,            // AppConfig → CortexConfig
         blogCfg,              // AppConfig → BlogConfig
+        authCfg,              // AppConfig → AuthConfig
+        rateLimitCfg,         // AppConfig → RateLimitConfig
         DataSource.live,      // HikariCP pool over Postgres
         HelloPipeline.live,   // /api/hello, /api/recent, /api/health (Postgres + Redis + Mongo)
         CodeRunPipeline.live, // /api/run (Piston / Code Runner)
         CortexPipeline.live,  // /api/cortex/*
         BlogPipeline.live,    // /api/blogs/*
+        Auth.live,            // Keycloak JWT verifier (no-op when AUTH_ENABLED=false)
+        RateLimiter.live,     // Redis token bucket for /api/run
         HttpApp.live          // tapir + zio-http + static + SPA fallback
       )
 

@@ -48,7 +48,9 @@ Implement a `MinStack` class with the following operations, all amortised **O(1)
 > | `push(-1)` | `[-1, 2]` | `null` |
 > | `getMin()` | `[-1, 2]` | `-1` |
 
-## Approach — encode the previous minimum into the stack
+<details>
+<summary><h2>Approach — encode the previous minimum into the stack</h2></summary>
+
 
 The clever invariant: maintain a running `min` field; when a *new* minimum arrives, **push the OLD min onto the stack first**, *then* push the new value. Update `min` to the new value.
 
@@ -83,167 +85,158 @@ flowchart LR
 
 > **Why this works** — the key observation is that the only time we need the *previous* min is when we *remove* the current min. At that moment, the value sitting just under the current-min slot is exactly the previous min. So encoding it inline is sufficient — we don't need a parallel auxiliary stack.
 
-## Solution
+</details>
+<details>
+<summary><h2>Solution</h2></summary>
 
 
-```pseudocode
-function MinStack():
-    stack ← empty; min ← +∞
-
-function push(stack, val):
-    if val ≤ min:
-        push min          # bury old min below new min
-        min ← val
-    push val
-
-function pop(stack):
-    top ← pop()
-    if top = min: min ← pop()   # restore buried min
-
-function top(stack):   return peek()
-function getMin(stack): return min
-```
 
 ```python run
-import sys
+import math
 
 class MinStack:
     def __init__(self):
-        self.stack = []
-        self.min = sys.maxsize
+
+        # Variable to track the minimum element
+        self.min = float("inf")
+
+        # Stack to store the elements
+        self.storage_stack = []
 
     def push(self, val: int) -> None:
-        # When a new min lands, push the old min first as a "burial record",
-        # then push val. Otherwise just push val.
+
+        # If the new element is smaller or equal to the current minimum,
+        # push the current minimum onto the stack and update the
+        # minimum
         if val <= self.min:
-            self.stack.append(self.min)
+            self.storage_stack.append(self.min)
             self.min = val
-        self.stack.append(val)
+
+        # Push the element onto the stack
+        self.storage_stack.append(val)
 
     def pop(self) -> None:
-        # If we're popping the current min, also pop the burial record
-        # and restore min to it.
-        top = self.stack.pop()
-        if top == self.min:
-            self.min = self.stack.pop()
+
+        # If the top element is equal to the current minimum,
+        # update the minimum by popping another element from the
+        # stack
+        if self.storage_stack.pop() == self.min:
+            self.min = self.storage_stack.pop()
 
     def top(self) -> int:
-        return self.stack[-1]
 
-    def getMin(self) -> int:
+        # Return the top element of the stack
+        return self.storage_stack[-1]
+
+    def get_min(self) -> int:
+
+        # Return the current minimum element
         return self.min
 
-# Boss-fight demo
-s = MinStack()
-s.push(2); s.push(3)
-print(s.top())     # 3
-print(s.getMin())  # 2
-s.pop()
-print(s.getMin())  # 2
-s.push(-1)
-print(s.getMin())  # -1
+
+# Example from the problem statement
+ms = MinStack()
+ms.push(2); ms.push(3)
+print(ms.top())      # 3
+print(ms.get_min())  # 2
+ms.pop()
+print(ms.get_min())  # 2
+ms.push(-1)
+print(ms.get_min())  # -1
+
+# Edge cases
+ms2 = MinStack()
+ms2.push(5)
+print(ms2.top())     # 5
+print(ms2.get_min()) # 5
+
+ms3 = MinStack()
+ms3.push(10); ms3.push(1); ms3.push(7)
+print(ms3.get_min()) # 1
+ms3.pop()
+print(ms3.get_min()) # 1
+ms3.pop()
+print(ms3.get_min()) # 10
 ```
 
 ```java run
 import java.util.*;
+
 public class Main {
     static class MinStack {
-        private final Deque<Integer> stack = new ArrayDeque<>();
+
+        // Variable to track the minimum element
         private int min = Integer.MAX_VALUE;
 
+        // Stack to store the elements
+        private Stack<Integer> storageStack = new Stack<Integer>();
+
         public void push(int val) {
-            if (val <= min) { stack.push(min); min = val; }
-            stack.push(val);
+
+            // If the new element is smaller or equal to the current
+            // minimum, push the current minimum onto the stack and
+            // update the minimum
+            if (val <= min) {
+                storageStack.push(min);
+                min = val;
+            }
+
+            // Push the element onto the stack
+            storageStack.push(val);
         }
+
         public void pop() {
-            int top = stack.pop();
-            if (top == min) min = stack.pop();
+
+            // If the popped element is equal to the current minimum,
+            // update the minimum by popping another element from the
+            // stack
+            if (storageStack.pop() == min) {
+                min = storageStack.pop();
+            }
         }
-        public int top()    { return stack.peek(); }
-        public int getMin() { return min; }
+
+        public int top() {
+
+            // Return the top element of the stack
+            return storageStack.peek();
+        }
+
+        public int getMin() {
+
+            // Return the current minimum element
+            return min;
+        }
     }
+
     public static void main(String[] args) {
-        MinStack s = new MinStack();
-        s.push(2); s.push(3);
-        System.out.println(s.top());
-        System.out.println(s.getMin());
-        s.pop();
-        System.out.println(s.getMin());
-        s.push(-1);
-        System.out.println(s.getMin());
+        // Example from the problem statement
+        MinStack ms = new MinStack();
+        ms.push(2); ms.push(3);
+        System.out.println(ms.top());    // 3
+        System.out.println(ms.getMin()); // 2
+        ms.pop();
+        System.out.println(ms.getMin()); // 2
+        ms.push(-1);
+        System.out.println(ms.getMin()); // -1
+
+        // Edge cases
+        MinStack ms2 = new MinStack();
+        ms2.push(5);
+        System.out.println(ms2.top());    // 5
+        System.out.println(ms2.getMin()); // 5
+
+        MinStack ms3 = new MinStack();
+        ms3.push(10); ms3.push(1); ms3.push(7);
+        System.out.println(ms3.getMin()); // 1
+        ms3.pop();
+        System.out.println(ms3.getMin()); // 1
+        ms3.pop();
+        System.out.println(ms3.getMin()); // 10
     }
 }
 ```
 
-```c run
-#include <stdio.h>
-#include <stdlib.h>
-#include <limits.h>
-
-typedef struct {
-    int *arr;
-    int  capacity, top;
-    int  min;
-} MinStack;
-
-MinStack* min_stack_new(void) {
-    MinStack *s = malloc(sizeof(*s));
-    s->capacity = 256; s->arr = malloc(sizeof(int) * s->capacity);
-    s->top = -1; s->min = INT_MAX;
-    return s;
-}
-void min_stack_push(MinStack *s, int val) {
-    if (val <= s->min) { s->arr[++s->top] = s->min; s->min = val; }
-    s->arr[++s->top] = val;
-}
-void min_stack_pop(MinStack *s) {
-    int top = s->arr[s->top--];
-    if (top == s->min) s->min = s->arr[s->top--];
-}
-int  min_stack_top(MinStack *s)    { return s->arr[s->top]; }
-int  min_stack_get_min(MinStack *s){ return s->min; }
-
-int main() {
-    MinStack *s = min_stack_new();
-    min_stack_push(s, 2); min_stack_push(s, 3);
-    printf("%d\n", min_stack_top(s));
-    printf("%d\n", min_stack_get_min(s));
-    min_stack_pop(s);
-    printf("%d\n", min_stack_get_min(s));
-    min_stack_push(s, -1);
-    printf("%d\n", min_stack_get_min(s));
-}
-```
-
-```scala run
-import scala.collection.mutable
-
-object Main extends App {
-  class MinStack {
-    private val stack = mutable.Stack[Int]()
-    private var min   = Int.MaxValue
-
-    def push(v: Int): Unit = {
-      if (v <= min) { stack.push(min); min = v }
-      stack.push(v)
-    }
-    def pop(): Unit = {
-      val top = stack.pop()
-      if (top == min) min = stack.pop()
-    }
-    def top:    Int = stack.top
-    def getMin: Int = min
-  }
-
-  val s = new MinStack
-  s.push(2); s.push(3)
-  println(s.top); println(s.getMin)
-  s.pop()
-  println(s.getMin)
-  s.push(-1)
-  println(s.getMin)
-}
-```
+</details>
 
 
 ***
@@ -276,172 +269,168 @@ Identical to Min Stack, but track the **maximum** instead of the minimum.
 > | `push(5)` | `[5, 3]` | `null` |
 > | `getMax()` | `[5, 3]` | `5` |
 
-## Approach
+<details>
+<summary><h2>Approach</h2></summary>
+
 
 Mirror image of MinStack. Maintain a running `max`. When a new max arrives, push the old max as a burial record, then the new value, and update max. When popping a value equal to the current max, also pop the buried record and restore max from it.
 
-## Solution
+</details>
+<details>
+<summary><h2>Solution</h2></summary>
 
 
-```pseudocode
-function MaxStack():
-    stack ← empty; max ← −∞
-
-function push(stack, val):
-    if val ≥ max:
-        push max          # bury old max below new max
-        max ← val
-    push val
-
-function pop(stack):
-    top ← pop()
-    if top = max: max ← pop()   # restore buried max
-
-function top(stack):   return peek()
-function getMax(stack): return max
-```
 
 ```python run
-import sys
+import math
+from typing import List
 
 class MaxStack:
     def __init__(self):
-        self.stack = []
-        self.max = -sys.maxsize
+
+        # Variable to track the maximum element
+        self.max = float("-inf")
+
+        # Stack to store the elements
+        self.storage_stack: List[int] = []
 
     def push(self, val: int) -> None:
+
+        # If the new element is greater or equal to the current maximum,
+        # push the current maximum onto the stack and update the
+        # maximum
         if val >= self.max:
-            self.stack.append(self.max)        # burial record for old max
+            self.storage_stack.append(self.max)
             self.max = val
-        self.stack.append(val)
+
+        # Push the element onto the stack
+        self.storage_stack.append(val)
 
     def pop(self) -> None:
-        top = self.stack.pop()
-        if top == self.max:
-            self.max = self.stack.pop()
+
+        # If the popped element is equal to the current maximum,
+        # update the maximum by popping another element from the
+        # stack
+        if self.storage_stack.pop() == self.max:
+            self.max = self.storage_stack.pop()
 
     def top(self) -> int:
-        return self.stack[-1]
 
-    def getMax(self) -> int:
+        # Return the top element of the stack
+        return self.storage_stack[-1]
+
+    def get_max(self) -> int:
+
+        # Return the current maximum element
         return self.max
 
-# Boss-fight demo
-s = MaxStack()
-s.push(3); s.push(2)
-print(s.top())     # 2
-print(s.getMax())  # 3
-s.pop()
-print(s.getMax())  # 3
-s.push(5)
-print(s.getMax())  # 5
+
+# Example from the problem statement
+ms = MaxStack()
+ms.push(3); ms.push(2)
+print(ms.top())      # 2
+print(ms.get_max())  # 3
+ms.pop()
+print(ms.get_max())  # 3
+ms.push(5)
+print(ms.get_max())  # 5
+
+# Edge cases
+ms2 = MaxStack()
+ms2.push(7)
+print(ms2.top())     # 7
+print(ms2.get_max()) # 7
+
+ms3 = MaxStack()
+ms3.push(1); ms3.push(10); ms3.push(4)
+print(ms3.get_max()) # 10
+ms3.pop()
+print(ms3.get_max()) # 10
+ms3.pop()
+print(ms3.get_max()) # 1
 ```
 
 ```java run
 import java.util.*;
+
 public class Main {
     static class MaxStack {
-        private final Deque<Integer> stack = new ArrayDeque<>();
+
+        // Variable to track the maximum element
         private int max = Integer.MIN_VALUE;
 
+        // Stack to store the elements
+        private Stack<Integer> storageStack = new Stack<Integer>();
+
         public void push(int val) {
-            if (val >= max) { stack.push(max); max = val; }
-            stack.push(val);
+
+            // If the new element is greater or equal to the current
+            // maximum, push the current maximum onto the stack and
+            // update the maximum
+            if (val >= max) {
+                storageStack.push(max);
+                max = val;
+            }
+
+            // Push the element onto the stack
+            storageStack.push(val);
         }
+
         public void pop() {
-            int top = stack.pop();
-            if (top == max) max = stack.pop();
+
+            // If the popped element is equal to the current maximum,
+            // update the maximum by popping another element from the
+            // stack
+            if (storageStack.pop() == max) {
+                max = storageStack.pop();
+            }
         }
-        public int top()    { return stack.peek(); }
-        public int getMax() { return max; }
+
+        public int top() {
+
+            // Return the top element of the stack
+            return storageStack.peek();
+        }
+
+        public int getMax() {
+
+            // Return the current maximum element
+            return max;
+        }
     }
+
     public static void main(String[] args) {
-        MaxStack s = new MaxStack();
-        s.push(3); s.push(2);
-        System.out.println(s.top());
-        System.out.println(s.getMax());
-        s.pop();
-        System.out.println(s.getMax());
-        s.push(5);
-        System.out.println(s.getMax());
+        // Example from the problem statement
+        MaxStack ms = new MaxStack();
+        ms.push(3); ms.push(2);
+        System.out.println(ms.top());    // 2
+        System.out.println(ms.getMax()); // 3
+        ms.pop();
+        System.out.println(ms.getMax()); // 3
+        ms.push(5);
+        System.out.println(ms.getMax()); // 5
+
+        // Edge cases
+        MaxStack ms2 = new MaxStack();
+        ms2.push(7);
+        System.out.println(ms2.top());    // 7
+        System.out.println(ms2.getMax()); // 7
+
+        MaxStack ms3 = new MaxStack();
+        ms3.push(1); ms3.push(10); ms3.push(4);
+        System.out.println(ms3.getMax()); // 10
+        ms3.pop();
+        System.out.println(ms3.getMax()); // 10
+        ms3.pop();
+        System.out.println(ms3.getMax()); // 1
     }
 }
 ```
 
-```c run
-#include <stdio.h>
-#include <stdlib.h>
-#include <limits.h>
+</details>
+<details>
+<summary><h2>Final Takeaway</h2></summary>
 
-typedef struct {
-    int *arr;
-    int  capacity, top;
-    int  max;
-} MaxStack;
-
-MaxStack* max_stack_new(void) {
-    MaxStack *s = malloc(sizeof(*s));
-    s->capacity = 256; s->arr = malloc(sizeof(int) * s->capacity);
-    s->top = -1; s->max = INT_MIN;
-    return s;
-}
-void max_stack_push(MaxStack *s, int val) {
-    if (val >= s->max) { s->arr[++s->top] = s->max; s->max = val; }
-    s->arr[++s->top] = val;
-}
-void max_stack_pop(MaxStack *s) {
-    int top = s->arr[s->top--];
-    if (top == s->max) s->max = s->arr[s->top--];
-}
-int  max_stack_top(MaxStack *s)    { return s->arr[s->top]; }
-int  max_stack_get_max(MaxStack *s){ return s->max; }
-
-int main() {
-    MaxStack *s = max_stack_new();
-    max_stack_push(s, 3); max_stack_push(s, 2);
-    printf("%d\n", max_stack_top(s));
-    printf("%d\n", max_stack_get_max(s));
-    max_stack_pop(s);
-    printf("%d\n", max_stack_get_max(s));
-    max_stack_push(s, 5);
-    printf("%d\n", max_stack_get_max(s));
-}
-```
-
-```scala run
-import scala.collection.mutable
-
-object Main extends App {
-  class MaxStack {
-    private val stack = mutable.Stack[Int]()
-    private var max   = Int.MinValue
-
-    def push(v: Int): Unit = {
-      if (v >= max) { stack.push(max); max = v }
-      stack.push(v)
-    }
-    def pop(): Unit = {
-      val top = stack.pop()
-      if (top == max) max = stack.pop()
-    }
-    def top:    Int = stack.top
-    def getMax: Int = max
-  }
-
-  val s = new MaxStack
-  s.push(3); s.push(2)
-  println(s.top); println(s.getMax)
-  s.pop()
-  println(s.getMax)
-  s.push(5)
-  println(s.getMax)
-}
-```
-
-
-***
-
-## Final Takeaway
 
 Three lessons:
 
@@ -467,3 +456,5 @@ Three lessons:
 > | 12 — Design | Compose stack with auxiliary state | Min/Max stack |
 >
 > You started knowing a stack was a "list with restricted operations". You leave knowing it's the universal tool for *deferred work* — anywhere recency matters, anywhere most-recent-first is the right priority, anywhere parsers nest, anywhere "remember this until I find its match" comes up. Carry the toolkit. Every interview, every parser, every undo-redo system, every CPU you'll ever read assembly for — they all live or die by stacks.
+
+</details>

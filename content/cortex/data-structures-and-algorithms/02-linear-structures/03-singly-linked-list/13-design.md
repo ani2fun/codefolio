@@ -1,10 +1,14 @@
 # 13. Design a Singly Linked List
 
-## The Hook
+<details>
+<summary><h2>The Hook</h2></summary>
+
 
 Every language you'll ever use ships with a linked-list library — Java's `LinkedList`, C++'s `std::list`, Python's `collections.deque`. You've used them. You've never built one. This is the lesson where you stop being a consumer and start being the engineer who understands why `list.addFirst(x)` is O(1) but `list.get(99)` is not.
 
 You've already met every primitive you need — node definition (lesson 1), traversal (lesson 2), insertion (lesson 3), deletion (lesson 4). This lesson ties them together into a single class that exposes a complete public API: `prepend`, `append`, `insert`, `remove`, `search`, `size`, `empty`. Writing this from scratch forces you to confront **every design trade-off** you've been meeting one at a time: cached size vs computed size, head-only vs head + tail, bounds semantics, null safety. The implementation is short; the *choices* are what matter.
+
+</details>
 
 ---
 
@@ -43,7 +47,9 @@ Step-by-step:
 
 ---
 
-## What Does "Design a Linked List" Really Ask?
+<details>
+<summary><h2>What Does "Design a Linked List" Really Ask?</h2></summary>
+
 
 "Design" is the keyword that separates this from the operation-specific lessons. You're not implementing *one* operation — you're deciding **what state the class keeps** so that all seven operations can run efficiently and coexist correctly.
 
@@ -82,9 +88,10 @@ Two design decisions shape every linked-list class you'll ever write:
 
 For this lesson we take the **cached-size, no-tail** design — it matches what the reference expects and highlights the O(n) cost of `append` as a teachable weakness. In the transfer challenge at the end, you'll add a tail pointer and see the change in operation costs.
 
----
+</details>
+<details>
+<summary><h2>Applying the Diagnostic Questions</h2></summary>
 
-## Applying the Diagnostic Questions
 
 | Question | Answer |
 |---|---|
@@ -125,9 +132,10 @@ For this lesson we take the **cached-size, no-tail** design — it matches what 
 
 **What breaks otherwise:** without the head special case, attempting `remove` on the head either crashes with a null-deref (there's no predecessor to follow) or requires contortions like a dummy sentinel. Treating the head as its own case is the conventional, readable answer.
 
----
+</details>
+<details>
+<summary><h2>The Operation Map (Visualised)</h2></summary>
 
-## The Operation Map (Visualised)
 
 ```d2
 direction: right
@@ -156,408 +164,331 @@ slow: "O(n) operations" {
 
 <p align="center"><strong>The cost map. Three operations are O(1) because they touch only <code>head</code> and <code>currentSize</code>. The other four require traversal. Caching a <code>tail</code> pointer would move <code>append</code> into the fast column.</strong></p>
 
----
+</details>
+<details>
+<summary><h2>The Solution</h2></summary>
 
-## The Solution
 
-
-```pseudocode
-class SinglyLinkedList:
-    field head                                          # null when the list is empty
-    field currentSize                                   # cached so size() is O(1)
-
-    constructor():
-        head ← null; currentSize ← 0
-
-    function empty(): return head is null               # O(1) existence check
-    function size(): return currentSize
-
-    function prepend(val):                              # O(1) head insertion
-        head ← new ListNode(val, head)
-        currentSize ← currentSize + 1
-
-    function append(val):
-        node ← new ListNode(val)
-        if empty():
-            head ← node
-        else:
-            cur ← head
-            while cur.next is not null: cur ← cur.next
-            cur.next ← node
-        currentSize ← currentSize + 1
-
-    function insert(position, val):
-        if position ≤ 0: prepend(val); return           # clamp negatives to head
-        if empty(): return                              # no list to insert into
-        # walk to position − 1 (the predecessor) and splice
-        ...
-```
 
 ```python run
+from typing import Optional
+
+
 class ListNode:
     def __init__(self, val=0, nxt=None):
         self.val = val
         self.next = nxt
 
+
+def to_list(head):
+    out = []
+    while head is not None:
+        out.append(head.val)
+        head = head.next
+    return out
+
+
 class SinglyLinkedList:
     def __init__(self):
-        self.head = None      # pointer to the first node; None when the list is empty
-        self.current_size = 0 # cached so size() can answer in O(1)
+
+        # Pointer to the front node of the list
+        self.head: Optional[ListNode] = None
+
+        # Current number of elements in the list
+        self.current_size: int = 0
 
     def empty(self) -> bool:
-        # Existence check — single null comparison, O(1)
         return self.head is None
 
     def size(self) -> int:
-        # Cached counter — kept in sync by every mutator below
         return self.current_size
 
     def prepend(self, val: int) -> None:
-        # Head-insertion: new node points to old head, becomes new head; classic O(1)
-        self.head = ListNode(val, self.head)
+        new_node = ListNode(val)
+        new_node.next = self.head
+        self.head = new_node
         self.current_size += 1
 
     def append(self, val: int) -> None:
-        node = ListNode(val)
+        new_node = ListNode(val)
+
+        # If the list is empty, set the new node as the head
         if self.empty():
-            # No head yet — the new node IS the head
-            self.head = node
+            self.head = new_node
+
+        # Otherwise, find the last node and set the next pointer to the
+        # new node
         else:
-            # Walk to the tail (last node's next is None) and splice on
-            cur = self.head
-            while cur.next is not None:
-                cur = cur.next
-            cur.next = node
+            current = self.head
+            while current.next:
+                current = current.next
+            current.next = new_node
+
         self.current_size += 1
 
     def insert(self, position: int, val: int) -> None:
-        # Clamp-at-zero: negative positions treated as "before the head"
+
+        # If the position is less than or equal to 0, prepend the new
+        # node
         if position <= 0:
             self.prepend(val)
             return
+
+        new_node = ListNode(val)
+
+        # If the list is empty and the position is not 0, ignore the
+        # insertion
         if self.empty():
-            # No list to insert into and position > 0 → no-op per contract
             return
 
-        # Walk to the PREDECESSOR of the target position (or stop at the tail)
-        cur = self.head
-        idx = 0
-        while cur.next is not None and idx < position - 1:
-            cur = cur.next
-            idx += 1
+        current = self.head
+        current_position = 0
 
-        # Splice: new node inherits cur.next, cur now points at new node
-        cur.next = ListNode(val, cur.next)
+        # Traverse the list to reach the position or the end of the
+        # list
+        while current.next and current_position < position - 1:
+            current = current.next
+            current_position += 1
+
+        # Insert the new node at the desired position
+        new_node.next = current.next
+        current.next = new_node
         self.current_size += 1
 
     def remove(self, val: int) -> bool:
+
+        # If the list is empty, no removal is possible
         if self.empty():
             return False
 
-        # Head special case: nothing points AT head except self.head itself
         if self.head.val == val:
+
+            # If the val is in the head node, update the head pointer
             self.head = self.head.next
             self.current_size -= 1
             return True
 
-        # Generic case: find the PREDECESSOR of the victim, then splice
-        cur = self.head
-        while cur.next is not None:
-            if cur.next.val == val:
-                cur.next = cur.next.next   # unlink — GC reclaims the victim
+        current = self.head
+        while current.next:
+
+            # Remove the node by adjusting the next pointer of the
+            # previous node
+            if current.next.val == val:
+                current.next = current.next.next
                 self.current_size -= 1
                 return True
-            cur = cur.next
+            current = current.next
 
-        # Walked the whole list without finding val
         return False
 
     def search(self, val: int) -> bool:
-        # Linear scan; O(n) worst case, O(1) best case (val is at head)
-        cur = self.head
-        while cur is not None:
-            if cur.val == val:
+        current = self.head
+        while current:
+
+            # If the val is found, return True
+            if current.val == val:
                 return True
-            cur = cur.next
+            current = current.next
+
+        # If the value is not found, return False
         return False
 
 
-# --- driver ---
-lst = SinglyLinkedList()
-lst.prepend(2)
-lst.prepend(3)
-lst.append(1)
-print(lst.size())        # 3
-print(lst.search(5))     # False
-lst.insert(1, 8)         # list = [3, 8, 2, 1]
-print(lst.remove(2))     # True
-print(lst.empty())       # False
+# Example from the problem statement
+ll = SinglyLinkedList()
+print(ll.empty())                         # True
+ll.prepend(2); print(to_list(ll.head))    # [2]
+ll.prepend(3); print(to_list(ll.head))    # [3, 2]
+ll.append(1);  print(to_list(ll.head))    # [3, 2, 1]
+print(ll.size())                          # 3
+print(ll.search(5))                       # False
+ll.insert(1, 8); print(to_list(ll.head))  # [3, 8, 2, 1]
+print(ll.remove(2))                       # True
+print(to_list(ll.head))                   # [3, 8, 1]
+print(ll.empty())                         # False
+
+# Edge cases
+ll2 = SinglyLinkedList()
+print(ll2.remove(10))                     # False  (remove from empty)
+print(ll2.search(1))                      # False  (search in empty)
+ll2.append(5); print(ll2.size())          # 1
+ll2.insert(0, 9); print(to_list(ll2.head))# [9, 5]  (insert at position 0)
+print(ll2.remove(9))                      # True   (remove head)
+print(to_list(ll2.head))                  # [5]
 ```
 
 ```java run
-public class Main {
-    static class SinglyLinkedList {
-        private static class Node {
-            int val; Node next;
-            Node(int v) { val = v; }
-        }
+import java.util.*;
 
-        private Node head;
-        private int  currentSize;
+public class Main {
+    static class ListNode {
+        int val;
+        ListNode next;
+        ListNode() {}
+        ListNode(int val) { this.val = val; }
+    }
+
+    static java.util.List<Integer> toList(ListNode head) {
+        java.util.List<Integer> out = new java.util.ArrayList<>();
+        while (head != null) { out.add(head.val); head = head.next; }
+        return out;
+    }
+
+    static class SinglyLinkedList {
+
+        // Pointer to the front node of the list
+        private ListNode head;
+
+        // Current number of elements in the list
+        private int currentSize;
 
         public SinglyLinkedList() {
             head = null;
             currentSize = 0;
         }
 
-        public boolean empty() { return head == null; }
-        public int size()      { return currentSize; }
+        public boolean empty() {
+            return head == null;
+        }
+
+        public int size() {
+            return currentSize;
+        }
 
         public void prepend(int val) {
-            Node n = new Node(val);
-            n.next = head;
-            head = n;
+            ListNode newNode = new ListNode(val);
+            newNode.next = head;
+            head = newNode;
             currentSize++;
         }
 
         public void append(int val) {
-            Node n = new Node(val);
+            ListNode newNode = new ListNode(val);
+
+            // If the list is empty, set the new node as the head
             if (empty()) {
-                head = n;
-            } else {
-                Node cur = head;
-                while (cur.next != null) cur = cur.next;   // walk to the tail
-                cur.next = n;
+                head = newNode;
             }
+
+            // Otherwise, find the last node and set the next pointer to the
+            // new node
+            else {
+                ListNode current = head;
+                while (current.next != null) {
+                    current = current.next;
+                }
+                current.next = newNode;
+            }
+
             currentSize++;
         }
 
         public void insert(int position, int val) {
-            if (position <= 0) { prepend(val); return; }
-            if (empty()) return;
 
-            Node cur = head;
-            int  idx = 0;
-            while (cur.next != null && idx < position - 1) {
-                cur = cur.next;
-                idx++;
+            // If the position is less than or equal to 0, prepend the
+            // new node
+            if (position <= 0) {
+                prepend(val);
+                return;
             }
-            Node n = new Node(val);
-            n.next = cur.next;   // new node inherits cur's old successor
-            cur.next = n;        // cur now points at the new node
+
+            ListNode newNode = new ListNode(val);
+
+            // If the list is empty and the position is not 0, ignore the
+            // insertion
+            if (empty()) {
+                return;
+            }
+
+            ListNode current = head;
+            int currentPosition = 0;
+
+            // Traverse the list to reach the position or the end of the
+            // list
+            while (current.next != null && currentPosition < position - 1) {
+                current = current.next;
+                currentPosition++;
+            }
+
+            // Insert the new node at the desired position
+            newNode.next = current.next;
+            current.next = newNode;
             currentSize++;
         }
 
         public boolean remove(int val) {
-            if (empty()) return false;
+
+            // If the list is empty, no removal is possible
+            if (empty()) {
+                return false;
+            }
+
+            // If the val is in the head node, update the head pointer
             if (head.val == val) {
-                head = head.next;           // head special case — no predecessor
+                head = head.next;
                 currentSize--;
                 return true;
             }
-            Node cur = head;
-            while (cur.next != null) {
-                if (cur.next.val == val) {
-                    cur.next = cur.next.next;   // splice out victim
+
+            ListNode current = head;
+            while (current.next != null) {
+
+                // Remove the node by adjusting the next pointer of the
+                // previous node
+                if (current.next.val == val) {
+                    current.next = current.next.next;
                     currentSize--;
                     return true;
                 }
-                cur = cur.next;
+                current = current.next;
             }
+
             return false;
         }
 
         public boolean search(int val) {
-            for (Node cur = head; cur != null; cur = cur.next)
-                if (cur.val == val) return true;
+            ListNode current = head;
+            while (current != null) {
+
+                // If the val is found, return true
+                if (current.val == val) {
+                    return true;
+                }
+                current = current.next;
+            }
+
+            // If the value is not found, return false
             return false;
         }
     }
 
     public static void main(String[] args) {
-        SinglyLinkedList lst = new SinglyLinkedList();
-        lst.prepend(2);
-        lst.prepend(3);
-        lst.append(1);
-        System.out.println(lst.size());      // 3
-        System.out.println(lst.search(5));   // false
-        lst.insert(1, 8);                    // list = [3, 8, 2, 1]
-        System.out.println(lst.remove(2));   // true
-        System.out.println(lst.empty());     // false
+        // Example from the problem statement
+        SinglyLinkedList ll = new SinglyLinkedList();
+        System.out.println(ll.empty());                         // true
+        ll.prepend(2); System.out.println(toList(ll.head));     // [2]
+        ll.prepend(3); System.out.println(toList(ll.head));     // [3, 2]
+        ll.append(1);  System.out.println(toList(ll.head));     // [3, 2, 1]
+        System.out.println(ll.size());                          // 3
+        System.out.println(ll.search(5));                       // false
+        ll.insert(1, 8); System.out.println(toList(ll.head));   // [3, 8, 2, 1]
+        System.out.println(ll.remove(2));                       // true
+        System.out.println(toList(ll.head));                    // [3, 8, 1]
+        System.out.println(ll.empty());                         // false
+
+        // Edge cases
+        SinglyLinkedList ll2 = new SinglyLinkedList();
+        System.out.println(ll2.remove(10));                     // false  (remove from empty)
+        System.out.println(ll2.search(1));                      // false  (search in empty)
+        ll2.append(5); System.out.println(ll2.size());          // 1
+        ll2.insert(0, 9); System.out.println(toList(ll2.head)); // [9, 5]  (insert at position 0)
+        System.out.println(ll2.remove(9));                      // true   (remove head)
+        System.out.println(toList(ll2.head));                   // [5]
     }
 }
 ```
 
-```c run
-#include <stdio.h>
-#include <stdlib.h>
-#include <stdbool.h>
-
-typedef struct Node {
-    int val;
-    struct Node *next;
-} Node;
-
-typedef struct {
-    Node *head;
-    int   currentSize;
-} SinglyLinkedList;
-
-SinglyLinkedList* sll_create(void) {
-    SinglyLinkedList *l = malloc(sizeof(SinglyLinkedList));
-    l->head = NULL;
-    l->currentSize = 0;
-    return l;
-}
-
-bool sll_empty(SinglyLinkedList *l) { return l->head == NULL; }
-int  sll_size (SinglyLinkedList *l) { return l->currentSize; }
-
-static Node* node_new(int v) {
-    Node *n = malloc(sizeof(Node));
-    n->val = v; n->next = NULL;
-    return n;
-}
-
-void sll_prepend(SinglyLinkedList *l, int val) {
-    Node *n = node_new(val);
-    n->next = l->head;
-    l->head = n;
-    l->currentSize++;
-}
-
-void sll_append(SinglyLinkedList *l, int val) {
-    Node *n = node_new(val);
-    if (sll_empty(l)) { l->head = n; }
-    else {
-        Node *cur = l->head;
-        while (cur->next) cur = cur->next;   /* walk to tail */
-        cur->next = n;
-    }
-    l->currentSize++;
-}
-
-void sll_insert(SinglyLinkedList *l, int position, int val) {
-    if (position <= 0) { sll_prepend(l, val); return; }
-    if (sll_empty(l)) return;
-
-    Node *cur = l->head;
-    int   idx = 0;
-    while (cur->next && idx < position - 1) { cur = cur->next; idx++; }
-
-    Node *n = node_new(val);
-    n->next = cur->next;
-    cur->next = n;
-    l->currentSize++;
-}
-
-bool sll_remove(SinglyLinkedList *l, int val) {
-    if (sll_empty(l)) return false;
-    if (l->head->val == val) {
-        Node *tmp = l->head; l->head = l->head->next; free(tmp);
-        l->currentSize--;
-        return true;
-    }
-    Node *cur = l->head;
-    while (cur->next) {
-        if (cur->next->val == val) {
-            Node *tmp = cur->next;
-            cur->next = cur->next->next;
-            free(tmp);
-            l->currentSize--;
-            return true;
-        }
-        cur = cur->next;
-    }
-    return false;
-}
-
-bool sll_search(SinglyLinkedList *l, int val) {
-    for (Node *cur = l->head; cur; cur = cur->next)
-        if (cur->val == val) return true;
-    return false;
-}
-```
-
-```scala run
-object Main extends App {
-  class SinglyLinkedList {
-    private class Node(var v: Int, var next: Node = null)
-
-    private var head: Node = null
-    private var currentSize: Int = 0
-
-    def empty(): Boolean = head == null
-    def size(): Int = currentSize
-
-    def prepend(v: Int): Unit = {
-      val n = new Node(v, head)
-      head = n
-      currentSize += 1
-    }
-
-    def append(v: Int): Unit = {
-      val n = new Node(v)
-      if (empty()) head = n
-      else {
-        var cur = head
-        while (cur.next != null) cur = cur.next    // walk to tail
-        cur.next = n
-      }
-      currentSize += 1
-    }
-
-    def insert(position: Int, v: Int): Unit = {
-      if (position <= 0) { prepend(v); return }
-      if (empty()) return
-
-      var cur = head; var idx = 0
-      while (cur.next != null && idx < position - 1) { cur = cur.next; idx += 1 }
-
-      val n = new Node(v, cur.next)
-      cur.next = n
-      currentSize += 1
-    }
-
-    def remove(v: Int): Boolean = {
-      if (empty()) return false
-      if (head.v == v) { head = head.next; currentSize -= 1; return true }
-
-      var cur = head
-      while (cur.next != null) {
-        if (cur.next.v == v) {
-          cur.next = cur.next.next
-          currentSize -= 1
-          return true
-        }
-        cur = cur.next
-      }
-      false
-    }
-
-    def search(v: Int): Boolean = {
-      var cur = head
-      while (cur != null) {
-        if (cur.v == v) return true
-        cur = cur.next
-      }
-      false
-    }
-  }
-
-  val lst = new SinglyLinkedList()
-  lst.prepend(2)
-  lst.prepend(3)
-  lst.append(1)
-  println(lst.size())     // 3
-  println(lst.search(5))  // false
-  lst.insert(1, 8)        // list = [3, 8, 2, 1]
-  println(lst.remove(2))  // true
-  println(lst.empty())    // false
-}
-```
-
-
+</details>
 <details>
 <summary><strong>Trace — the canonical example sequence</strong></summary>
 
@@ -581,10 +512,10 @@ empty()                     | head is not null            | false
 ```
 
 </details>
+<details>
+<summary><h2>Solution &amp; Analysis</h2></summary>
 
----
-
-## Complexity Analysis
+### Complexity Analysis
 
 | Operation | Time | Space | Notes |
 |---|---|---|---|
@@ -599,9 +530,7 @@ empty()                     | head is not null            | false
 
 The "**all O(n)**" row is the cost of the **no-tail** design. Caching a `tail` pointer drops `append` to O(1) but requires `tail` updates on every insert/delete that might change the last node.
 
----
-
-## Edge Cases
+### Edge Cases
 
 | Case | Example | Expected behaviour |
 |---|---|---|
@@ -615,9 +544,10 @@ The "**all O(n)**" row is the cost of the **no-tail** design. Caching a `tail` p
 | Remove non-existent value | `remove(99)` on `[1, 2, 3]` | list unchanged, returns `false` |
 | Duplicate values, remove first | `remove(2)` on `[1, 2, 2, 3]` | removes the **first** 2 → `[1, 2, 3]` |
 
----
+</details>
+<details>
+<summary><h2>Final Takeaway</h2></summary>
 
-## Final Takeaway
 
 You just built the linked list. Every operation from lessons 1–4 is here, wired together into a single class with a cohesive API. Two lessons are worth taking away:
 
@@ -641,3 +571,5 @@ When you next see "design a …" for stacks, queues, graphs, trees — reach for
 > The net effect: append becomes O(1), but tail-removal stays O(n). For strict queue-like usage (append + prepend + remove from head), this is the best you can do with a singly linked list. For O(1) on both ends, you need doubly linked (the next chapter).
 >
 > </details>
+
+</details>

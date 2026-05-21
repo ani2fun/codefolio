@@ -124,231 +124,231 @@ Input:  grid = [[9, 4, 9, 9],
 Output: 43
 ```
 
-## Pattern Mapping
+<details>
+<summary><h2>Pattern Mapping</h2></summary>
+
 
 The grid is a graph where each cell is a node and each move is an edge. Edge weight from cell `A` to cell `B` is the cost of cell `B` (the cell you're stepping onto). The starting cell's cost is also added — that's the seed.
 
 Standard Dijkstra from `(0, 0)`. Return `distance[N-1][M-1]`.
 
-## The Solution
+</details>
+<details>
+<summary><h2>The Solution</h2></summary>
 
 
-```pseudocode
-function minimumCostPath(grid):
-    minCost ← rows×cols matrix of ∞
-    minCost[0][0] ← grid[0][0]
-    pq ← empty min-heap
-    push (grid[0][0], 0, 0) to pq
-    while pq is not empty:
-        (cost, r, c) ← pop (cost, r, c) from pq
-        if cost > minCost[r][c]: continue   # stale entry
-        if r = rows−1 AND c = cols−1: return cost
-        for each (dr, dc) in DIRS:
-            nr, nc ← r+dr, c+dc
-            if in bounds:
-                newCost ← cost + grid[nr][nc]
-                if newCost < minCost[nr][nc]:
-                    minCost[nr][nc] ← newCost
-                    push (newCost, nr, nc) to pq
-    return minCost[rows−1][cols−1]
-```
 
 ```python run
-from typing import List
 import heapq
+from typing import List, Tuple
 
-DIRS = [(-1, 0), (0, 1), (1, 0), (0, -1)]
-INF = float('inf')
+# Structure to represent a Cell in the graph
+class Cell:
+    def __init__(self, row: int, col: int, cost: int):
+        self.row = row
+        self.col = col
+        self.cost = cost
+
+    # Comparator function for the priority queue to create a min-heap
+    def __lt__(self, other):
+        return self.cost < other.cost
 
 class Solution:
-    def minimum_cost_path(self, grid: List[List[int]]) -> int:
-        if not grid or not grid[0]:
-            return 0
-        rows, cols = len(grid), len(grid[0])
-        # min_cost[r][c] = lowest known cost from (0,0) to (r,c).
-        min_cost = [[INF] * cols for _ in range(rows)]
-        min_cost[0][0] = grid[0][0]
-        heap = [(grid[0][0], 0, 0)]               # (cost, row, col)
+    def is_valid_cell(
+        self, row: int, col: int, rows: int, cols: int
+    ) -> bool:
+        return row >= 0 and row < rows and col >= 0 and col < cols
 
-        while heap:
-            cost, r, c = heapq.heappop(heap)
-            if cost > min_cost[r][c]:
-                continue                           # stale
-            if r == rows - 1 and c == cols - 1:
-                return cost
-            for dr, dc in DIRS:
-                nr, nc = r + dr, c + dc
-                if 0 <= nr < rows and 0 <= nc < cols:
-                    new_cost = cost + grid[nr][nc]
-                    if new_cost < min_cost[nr][nc]:
-                        min_cost[nr][nc] = new_cost
-                        heapq.heappush(heap, (new_cost, nr, nc))
+    def minimum_cost_path(self, grid: List[List[int]]) -> int:
+        rows = len(grid)
+        if rows == 0:
+            return 0
+
+        cols = len(grid[0])
+
+        # Create a matrix to store the minimum cost to reach each cell
+        min_cost = [[float("inf")] * cols for _ in range(rows)]
+
+        # Create a priority queue (min-heap) to store the cells with
+        # their costs
+        pq = []
+
+        # Assign the minimum cost of the starting point
+        min_cost[0][0] = grid[0][0]
+
+        # Enqueue starting cell and the cost to move on it
+        heapq.heappush(pq, Cell(0, 0, grid[0][0]))
+
+        # Define the possible movements: up, right, down, left
+        directions: List[Tuple[int, int]] = [
+            (-1, 0),  # up
+            (0, 1),   # right
+            (1, 0),   # down
+            (0, -1)   # left
+        ]
+
+        while pq:
+            curr_cell = heapq.heappop(pq)
+            curr_row = curr_cell.row
+            curr_col = curr_cell.col
+            cost = curr_cell.cost
+
+            # Explore the neighbours
+            for dr, dc in directions:
+                new_row = curr_row + dr
+                new_col = curr_col + dc
+
+                # Check if the new cell is within the grid
+                if self.is_valid_cell(new_row, new_col, rows, cols):
+                    new_cost = cost + grid[new_row][new_col]
+
+                    # If a shorter path is found, update the minimum
+                    # cost and add the new cell to the priority queue
+                    if new_cost < min_cost[new_row][new_col]:
+
+                        # Update the minimum cost for the new cell
+                        min_cost[new_row][new_col] = new_cost
+
+                        # Add the new cell to the priority queue
+                        heapq.heappush(
+                            pq, Cell(new_row, new_col, new_cost)
+                        )
+
+        # Return the minimum cost to reach the bottom right cell
         return min_cost[rows - 1][cols - 1]
 
 
-grid = [[9, 4, 9, 9], [6, 7, 6, 4], [8, 3, 3, 7], [7, 4, 9, 10]]
-print(Solution().minimum_cost_path(grid))    # 43
+# Examples from the problem statement
+print(Solution().minimum_cost_path([[9,4,9,9],[6,7,6,4],[8,3,3,7],[7,4,9,10]]))  # 43
+print(Solution().minimum_cost_path([[9,4,9,9],[1,7,6,4],[1,3,3,7],[1,2,2,10]]))  # 26
+
+# Edge cases
+print(Solution().minimum_cost_path([]))                                            # 0 — empty grid
+print(Solution().minimum_cost_path([[5]]))                                         # 5 — single cell
+print(Solution().minimum_cost_path([[1,2],[3,4]]))                                 # 7 — 2x2
+print(Solution().minimum_cost_path([[1,100],[1,1]]))                               # 3 — prefer going down
+print(Solution().minimum_cost_path([[1,1,1],[1,1,1],[1,1,1]]))                     # 5 — all ones
 ```
 
 ```java run
 import java.util.*;
 
 public class Main {
+    // Structure to represent a Cell in the graph
+    static class Cell {
+
+        int row;
+        int col;
+        int cost;
+
+        Cell(int row, int col, int cost) {
+            this.row = row;
+            this.col = col;
+            this.cost = cost;
+        }
+    }
+
+    // Comparator function for the priority queue to create a min-heap
+    static class CompareMinHeap implements Comparator<Cell> {
+        public int compare(Cell a, Cell b) {
+
+            // Min-heap based on cost
+            return Integer.compare(a.cost, b.cost);
+        }
+    }
+
     static class Solution {
-        static final int[][] DIRS = {{-1, 0}, {0, 1}, {1, 0}, {0, -1}};
+
+        boolean isValidCell(int row, int col, int rows, int cols) {
+            return row >= 0 && row < rows && col >= 0 && col < cols;
+        }
 
         public int minimumCostPath(int[][] grid) {
-            int rows = grid.length, cols = grid[0].length;
+            int rows = grid.length;
+            if (rows == 0) {
+                return 0;
+            }
+
+            int cols = grid[0].length;
+
+            // Create a matrix to store the minimum cost to reach each cell
             int[][] minCost = new int[rows][cols];
-            for (int[] row : minCost) Arrays.fill(row, Integer.MAX_VALUE);
+            for (int[] row : minCost) {
+                java.util.Arrays.fill(row, Integer.MAX_VALUE);
+            }
+
+            // Create a priority queue (min-heap) to store the cells with
+            // their costs
+            PriorityQueue<Cell> pq = new PriorityQueue<>(
+                new CompareMinHeap()
+            );
+
+            // Assign the minimum cost of the starting point
             minCost[0][0] = grid[0][0];
-            // Min-heap on first element (cost).
-            PriorityQueue<int[]> pq = new PriorityQueue<>((a, b) -> a[0] - b[0]);
-            pq.offer(new int[]{grid[0][0], 0, 0});
+
+            // Enqueue starting cell and the cost to move on it
+            pq.add(new Cell(0, 0, grid[0][0]));
+
+            // Define the possible movements: up, right, down, left
+            int[][] directions = {
+                {-1, 0}, // up
+                {0, 1},  // right
+                {1, 0},  // down
+                {0, -1}  // left
+            };
+
             while (!pq.isEmpty()) {
-                int[] cur = pq.poll();
-                int cost = cur[0], r = cur[1], c = cur[2];
-                if (cost > minCost[r][c]) continue;
-                if (r == rows - 1 && c == cols - 1) return cost;
-                for (int[] d : DIRS) {
-                    int nr = r + d[0], nc = c + d[1];
-                    if (nr >= 0 && nr < rows && nc >= 0 && nc < cols) {
-                        int nc2 = cost + grid[nr][nc];
-                        if (nc2 < minCost[nr][nc]) {
-                            minCost[nr][nc] = nc2;
-                            pq.offer(new int[]{nc2, nr, nc});
+                Cell currCell = pq.poll();
+                int currRow = currCell.row;
+                int currCol = currCell.col;
+                int cost = currCell.cost;
+
+                // Explore the neighbours
+                for (int[] dir : directions) {
+                    int newRow = currRow + dir[0];
+                    int newCol = currCol + dir[1];
+
+                    // Check if the new cell is within the grid
+                    if (isValidCell(newRow, newCol, rows, cols)) {
+                        int newCost = cost + grid[newRow][newCol];
+
+                        // If a shorter path is found, update the minimum
+                        // cost and add the new cell to the priority queue
+                        if (newCost < minCost[newRow][newCol]) {
+
+                            // Update the minimum cost for the new cell
+                            minCost[newRow][newCol] = newCost;
+
+                            // Add the new cell to the priority queue
+                            pq.add(new Cell(newRow, newCol, newCost));
                         }
                     }
                 }
             }
+
+            // Return the minimum cost to reach the bottom right cell
             return minCost[rows - 1][cols - 1];
         }
     }
 
     public static void main(String[] args) {
-        int[][] grid = {{9, 4, 9, 9}, {6, 7, 6, 4}, {8, 3, 3, 7}, {7, 4, 9, 10}};
-        System.out.println(new Solution().minimumCostPath(grid));
+        Solution sol = new Solution();
+
+        // Examples from the problem statement
+        System.out.println(sol.minimumCostPath(new int[][]{{9,4,9,9},{6,7,6,4},{8,3,3,7},{7,4,9,10}}));  // 43
+        System.out.println(sol.minimumCostPath(new int[][]{{9,4,9,9},{1,7,6,4},{1,3,3,7},{1,2,2,10}}));  // 26
+
+        // Edge cases
+        System.out.println(sol.minimumCostPath(new int[][]{}));                           // 0
+        System.out.println(sol.minimumCostPath(new int[][]{{5}}));                        // 5
+        System.out.println(sol.minimumCostPath(new int[][]{{1,2},{3,4}}));                // 7
+        System.out.println(sol.minimumCostPath(new int[][]{{1,100},{1,1}}));              // 3
+        System.out.println(sol.minimumCostPath(new int[][]{{1,1,1},{1,1,1},{1,1,1}}));   // 5
     }
 }
 ```
 
-```c run
-#include <stdio.h>
-#include <stdlib.h>
-#include <limits.h>
-
-static const int DIRS[4][2] = {{-1, 0}, {0, 1}, {1, 0}, {0, -1}};
-
-typedef struct { int cost, r, c; } Entry;
-typedef struct { Entry* data; int size; int capacity; } Heap;
-
-static void heap_push(Heap* h, Entry e) {
-    if (h->size == h->capacity) {
-        h->capacity = h->capacity ? h->capacity * 2 : 16;
-        h->data = realloc(h->data, h->capacity * sizeof(Entry));
-    }
-    int i = h->size++;
-    h->data[i] = e;
-    while (i > 0) {
-        int p = (i - 1) / 2;
-        if (h->data[p].cost <= h->data[i].cost) break;
-        Entry t = h->data[p]; h->data[p] = h->data[i]; h->data[i] = t;
-        i = p;
-    }
-}
-static Entry heap_pop(Heap* h) {
-    Entry top = h->data[0];
-    h->data[0] = h->data[--h->size];
-    int i = 0;
-    while (1) {
-        int l = i*2+1, r = i*2+2, best = i;
-        if (l < h->size && h->data[l].cost < h->data[best].cost) best = l;
-        if (r < h->size && h->data[r].cost < h->data[best].cost) best = r;
-        if (best == i) break;
-        Entry t = h->data[i]; h->data[i] = h->data[best]; h->data[best] = t;
-        i = best;
-    }
-    return top;
-}
-
-int minimum_cost_path(int** grid, int rows, int cols) {
-    int** min_cost = malloc(rows * sizeof(int*));
-    for (int i = 0; i < rows; i++) {
-        min_cost[i] = malloc(cols * sizeof(int));
-        for (int j = 0; j < cols; j++) min_cost[i][j] = INT_MAX;
-    }
-    min_cost[0][0] = grid[0][0];
-    Heap h = {0};
-    heap_push(&h, (Entry){grid[0][0], 0, 0});
-    int result = INT_MAX;
-    while (h.size > 0) {
-        Entry cur = heap_pop(&h);
-        if (cur.cost > min_cost[cur.r][cur.c]) continue;
-        if (cur.r == rows - 1 && cur.c == cols - 1) { result = cur.cost; break; }
-        for (int d = 0; d < 4; d++) {
-            int nr = cur.r + DIRS[d][0], nc = cur.c + DIRS[d][1];
-            if (nr >= 0 && nr < rows && nc >= 0 && nc < cols) {
-                int new_cost = cur.cost + grid[nr][nc];
-                if (new_cost < min_cost[nr][nc]) {
-                    min_cost[nr][nc] = new_cost;
-                    heap_push(&h, (Entry){new_cost, nr, nc});
-                }
-            }
-        }
-    }
-    free(h.data);
-    for (int i = 0; i < rows; i++) free(min_cost[i]);
-    free(min_cost);
-    return result;
-}
-
-int main() {
-    int data[4][4] = {{9, 4, 9, 9}, {6, 7, 6, 4}, {8, 3, 3, 7}, {7, 4, 9, 10}};
-    int* grid[4];
-    for (int i = 0; i < 4; i++) grid[i] = data[i];
-    printf("%d\n", minimum_cost_path(grid, 4, 4));
-    return 0;
-}
-```
-
-```scala run
-import scala.collection.mutable
-
-object Main extends App {
-  val DIRS = Array((-1, 0), (0, 1), (1, 0), (0, -1))
-
-  class Solution {
-    def minimumCostPath(grid: Array[Array[Int]]): Int = {
-      val rows = grid.length; val cols = grid(0).length
-      val minCost = Array.fill(rows, cols)(Int.MaxValue)
-      minCost(0)(0) = grid(0)(0)
-      val pq = mutable.PriorityQueue.empty[(Int, Int, Int)](
-        Ordering.by[(Int, Int, Int), Int](_._1).reverse)
-      pq.enqueue((grid(0)(0), 0, 0))
-      while (pq.nonEmpty) {
-        val (cost, r, c) = pq.dequeue()
-        if (cost <= minCost(r)(c)) {
-          if (r == rows - 1 && c == cols - 1) return cost
-          for ((dr, dc) <- DIRS) {
-            val nr = r + dr; val nc = c + dc
-            if (nr >= 0 && nr < rows && nc >= 0 && nc < cols) {
-              val newCost = cost + grid(nr)(nc)
-              if (newCost < minCost(nr)(nc)) {
-                minCost(nr)(nc) = newCost
-                pq.enqueue((newCost, nr, nc))
-              }
-            }
-          }
-        }
-      }
-      minCost(rows - 1)(cols - 1)
-    }
-  }
-
-  val grid = Array(Array(9, 4, 9, 9), Array(6, 7, 6, 4), Array(8, 3, 3, 7), Array(7, 4, 9, 10))
-  println(new Solution().minimumCostPath(grid))
-}
-```
+</details>
 
 
 ***
@@ -365,7 +365,9 @@ Input:  flights = [[[1,2],[3,1]], [[4,4]], [[4,1]], [[2,2],[4,5]], []]
 Output: 4 (path 0 → 3 → 2 → 4 with 2 stops)
 ```
 
-## Pattern Mapping — Dijkstra With State
+<details>
+<summary><h2>Pattern Mapping — Dijkstra With State</h2></summary>
+
 
 The crucial twist: you can't use the standard Dijkstra distance array, because two paths to the same city might have different stop counts — and the "fewer stops" path might still be useful even if it costs more.
 
@@ -377,220 +379,214 @@ This is the **stateful Dijkstra** variant — the same pattern, but you augment 
 
 The standard Dijkstra finalises a city's distance the first time it's popped. But here, "first popped" might mean "popped after using K+1 flights" — useless because we've exceeded the budget. A 1D Dijkstra would close off the destination too early. The 2D state (cost + stops) lets us discover *paths within budget* even if they're longer.
 
-## The Solution
+</details>
+<details>
+<summary><h2>The Solution</h2></summary>
 
 
-```pseudocode
-function cheapestFlights(flights, source, dest, K):
-    # 2D state: minCost[city][flightsUsed]
-    minCost ← N×(K+2) matrix of ∞
-    minCost[source][0] ← 0
-    pq ← empty min-heap
-    push (0, source, 0) to pq    # (cost, city, flightsUsed)
-    while pq is not empty:
-        (cost, city, used) ← pop from pq
-        if city = dest: return cost
-        if used > K+1 OR cost > minCost[city][used]: continue
-        for (nextCity, weight) in flights[city]:
-            newCost ← cost + weight
-            nextUsed ← used + 1
-            if nextUsed ≤ K+1 AND newCost < minCost[nextCity][nextUsed]:
-                minCost[nextCity][nextUsed] ← newCost
-                push (newCost, nextCity, nextUsed) to pq
-    return −1
-```
 
 ```python run
-from typing import List
 import heapq
+from typing import List, Tuple, Dict
 
-INF = float('inf')
+# Structure to represent the state of a stop
+class Stop:
+    def __init__(self, city: int, cost: int, flights: int):
+        self.city = city
+        self.cost = cost
+        self.flights = flights
+
+    # Comparator function for the priority queue to create a min-heap
+    def __lt__(self, other):
+        return self.cost < other.cost
 
 class Solution:
-    def cheapest_flights(self,
-                         flights: List[List[List[int]]],
-                         source: int, destination: int, k: int) -> int:
-        n = len(flights)
-        # min_cost[city][flights_used] — flights from 0 to k+1.
-        # k stops = up to k+1 flights (e.g. k=1 → 0->1->2 has 1 stop and 2 flights).
-        min_cost = [[INF] * (k + 2) for _ in range(n)]
-        min_cost[source][0] = 0
-        heap = [(0, source, 0)]                  # (cost, city, flights)
+    def cheapest_flights(
+        self,
+        flights: List[List[List[int]]],
+        source: int,
+        destination: int,
+        k: int,
+    ) -> int:
+        nodes = len(flights)
+        if nodes == 0:
+            return -1
 
-        while heap:
-            cost, city, flights_used = heapq.heappop(heap)
-            if city == destination:
-                return cost
-            if flights_used > k + 1 or cost > min_cost[city][flights_used]:
+        # 2D minCost: nodes x (k + 2) (flights from 0 to k + 1)
+        min_cost = [[float("inf")] * (k + 2) for _ in range(nodes)]
+
+        # Create a priority queue (min-heap) to store the stops with
+        # their costs
+        pq = []
+
+        # Assign the minimum cost of the starting point, need 0 flights
+        # to reach source
+        min_cost[source][0] = 0
+
+        # Enqueue starting stop and the cost to move on it
+        heapq.heappush(pq, Stop(source, 0, 0))
+
+        while pq:
+            curr_stop = heapq.heappop(pq)
+            curr_city = curr_stop.city
+            curr_cost = curr_stop.cost
+            curr_flights = curr_stop.flights
+
+            # If we reached the destination, return the cost. We check for K + 1 as
+            # we can have as for K stops between source and destination we need K + 1 flights.
+            # For example if K = 1, we can have a path like 0 -> 1 -> 2 which has 1 stop
+            # but 2 flights.
+            if curr_city == destination and curr_flights <= k + 1:
+                return curr_cost
+
+            # If the cost is greater than the recorded minimum cost, skip
+            # processing
+            if curr_cost > min_cost[curr_city][curr_flights]:
                 continue
-            for next_city, weight in flights[city]:
-                new_cost = cost + weight
-                next_used = flights_used + 1
-                if next_used <= k + 1 and new_cost < min_cost[next_city][next_used]:
-                    min_cost[next_city][next_used] = new_cost
-                    heapq.heappush(heap, (new_cost, next_city, next_used))
+
+            # Can only take up to k + 1 flights
+            if curr_flights < k + 1:
+                for flight in flights[curr_city]:
+                    new_city, new_cost_flight = flight
+                    new_cost = curr_cost + new_cost_flight
+                    if new_cost < min_cost[new_city][curr_flights + 1]:
+                        min_cost[new_city][curr_flights + 1] = new_cost
+                        heapq.heappush(
+                            pq,
+                            Stop(new_city, new_cost, curr_flights + 1),
+                        )
+
+        # If the destination is unreachable, return -1
         return -1
 
 
-flights = [[[1, 2], [3, 1]], [[4, 4]], [[4, 1]], [[2, 2], [4, 5]], []]
-print(Solution().cheapest_flights(flights, 0, 4, 2))   # 4
+# Examples from the problem statement
+print(Solution().cheapest_flights([[[1,2],[3,1]],[[4,4]],[[4,1]],[[2,2],[4,5]],[]], 0, 4, 2))  # 4
+print(Solution().cheapest_flights([[[4,2]],[[3,3],[0,4]],[[4,3],[0,1]],[[2,1],[4,4]],[[1,5]]], 3, 0, 2))  # 2
+
+# Edge cases
+print(Solution().cheapest_flights([], 0, 0, 0))                                                 # -1 — empty graph
+print(Solution().cheapest_flights([[]], 0, 0, 0))                                               # 0 — source is destination
+print(Solution().cheapest_flights([[[1,5]],[]], 0, 1, 0))                                       # -1 — needs 1 stop, k=0
+print(Solution().cheapest_flights([[[1,5]],[]], 0, 1, 1))                                       # 5 — direct flight, k=1
+print(Solution().cheapest_flights([[[1,10],[2,3]],[[3,2]],[[1,4]],[]], 0, 3, 1))               # 9 — 0->2->1->3 needs 2 stops; within k=1: 0->1->3=12; answer -1 if only k=1
 ```
 
 ```java run
 import java.util.*;
 
 public class Main {
+    // Structure to represent the state of a stop
+    static class Stop {
+
+        int city;
+        int cost;
+        int flights;
+
+        Stop(int city, int cost, int flights) {
+            this.city = city;
+            this.cost = cost;
+            this.flights = flights;
+        }
+    }
+
+    // Comparator function for the priority queue to create a min-heap
+    static class CompareMinHeap implements Comparator<Stop> {
+        public int compare(Stop a, Stop b) {
+
+            // Min-heap based on cost
+            return Integer.compare(a.cost, b.cost);
+        }
+    }
+
     static class Solution {
-        public int cheapestFlights(List<List<int[]>> flights, int source, int destination, int K) {
-            int n = flights.size();
-            int[][] minCost = new int[n][K + 2];
-            for (int[] row : minCost) Arrays.fill(row, Integer.MAX_VALUE);
+        public int cheapestFlights(
+            List<List<List<Integer>>> flights,
+            int source,
+            int destination,
+            int K
+        ) {
+            int nodes = flights.size();
+            if (nodes == 0) {
+                return -1;
+            }
+
+            // 2D minCost: nodes x (K + 2) (flights from 0 to K + 1)
+            int[][] minCost = new int[nodes][K + 2];
+            for (int i = 0; i < nodes; i++) {
+                Arrays.fill(minCost[i], Integer.MAX_VALUE);
+            }
+
+            // Create a priority queue (min-heap) to store the stops with
+            // their costs
+            PriorityQueue<Stop> pq = new PriorityQueue<>(
+                new CompareMinHeap()
+            );
+
+            // Assign the minimum cost of the starting point, need 0 flights
+            // to reach source
             minCost[source][0] = 0;
-            PriorityQueue<int[]> pq = new PriorityQueue<>((a, b) -> a[0] - b[0]);
-            pq.offer(new int[]{0, source, 0});
+
+            // Enqueue starting stop and the cost to move on it
+            pq.add(new Stop(source, 0, 0));
+
             while (!pq.isEmpty()) {
-                int[] cur = pq.poll();
-                int cost = cur[0], city = cur[1], used = cur[2];
-                if (city == destination) return cost;
-                if (used > K + 1 || cost > minCost[city][used]) continue;
-                for (int[] f : flights.get(city)) {
-                    int newCity = f[0], weight = f[1];
-                    int newCost = cost + weight, nextUsed = used + 1;
-                    if (nextUsed <= K + 1 && newCost < minCost[newCity][nextUsed]) {
-                        minCost[newCity][nextUsed] = newCost;
-                        pq.offer(new int[]{newCost, newCity, nextUsed});
+                Stop currStop = pq.poll();
+                int currCity = currStop.city;
+                int currCost = currStop.cost;
+                int currFlights = currStop.flights;
+
+                // If we reached the destination, return the cost. We check
+                // for K + 1 as we can have as for K stops between source and
+                // destination we need K + 1 flights. For example if K = 1,
+                // we can have a path like 0 -> 1 -> 2 which has 1 stop but 2
+                // flights.
+                if (currCity == destination && currFlights <= K + 1) {
+                    return currCost;
+                }
+
+                // If the cost is greater than the recorded minimum cost,
+                // skip processing
+                if (currCost > minCost[currCity][currFlights]) {
+                    continue;
+                }
+
+                if (currFlights < K + 1) {
+                    for (List<Integer> flight : flights.get(currCity)) {
+                        int newCity = flight.get(0);
+                        int newCost = currCost + flight.get(1);
+                        if (newCost < minCost[newCity][currFlights + 1]) {
+                            minCost[newCity][currFlights + 1] = newCost;
+                            pq.add(
+                                new Stop(newCity, newCost, currFlights + 1)
+                            );
+                        }
                     }
                 }
             }
+
+            // If the destination is unreachable, return -1
             return -1;
         }
     }
 
     public static void main(String[] args) {
-        var flights = List.of(
-            List.of(new int[]{1, 2}, new int[]{3, 1}),
-            List.of(new int[]{4, 4}),
-            List.of(new int[]{4, 1}),
-            List.of(new int[]{2, 2}, new int[]{4, 5}),
-            List.<int[]>of());
-        System.out.println(new Solution().cheapestFlights(flights, 0, 4, 2));
+        Solution sol = new Solution();
+
+        // Examples from the problem statement
+        System.out.println(sol.cheapestFlights(List.of(List.of(List.of(1,2),List.of(3,1)),List.of(List.of(4,4)),List.of(List.of(4,1)),List.of(List.of(2,2),List.of(4,5)),new ArrayList<>()), 0, 4, 2));  // 4
+        System.out.println(sol.cheapestFlights(List.of(List.of(List.of(4,2)),List.of(List.of(3,3),List.of(0,4)),List.of(List.of(4,3),List.of(0,1)),List.of(List.of(2,1),List.of(4,4)),List.of(List.of(1,5))), 3, 0, 2));  // 2
+
+        // Edge cases
+        System.out.println(sol.cheapestFlights(new ArrayList<>(), 0, 0, 0));  // -1
+        System.out.println(sol.cheapestFlights(List.of(new ArrayList<>()), 0, 0, 0));  // 0
+        System.out.println(sol.cheapestFlights(List.of(List.of(List.of(1,5)),new ArrayList<>()), 0, 1, 0));  // -1
+        System.out.println(sol.cheapestFlights(List.of(List.of(List.of(1,5)),new ArrayList<>()), 0, 1, 1));  // 5
     }
 }
 ```
 
-```c run
-#include <stdio.h>
-#include <stdlib.h>
-#include <limits.h>
-
-typedef struct { int to, cost; } Flight;
-typedef struct { Flight* data; int size; } AdjList;
-
-typedef struct { int cost, city, used; } Entry;
-typedef struct { Entry* data; int size; int capacity; } Heap;
-
-static void heap_push(Heap* h, Entry e) {
-    if (h->size == h->capacity) {
-        h->capacity = h->capacity ? h->capacity * 2 : 16;
-        h->data = realloc(h->data, h->capacity * sizeof(Entry));
-    }
-    int i = h->size++;
-    h->data[i] = e;
-    while (i > 0) {
-        int p = (i - 1) / 2;
-        if (h->data[p].cost <= h->data[i].cost) break;
-        Entry t = h->data[p]; h->data[p] = h->data[i]; h->data[i] = t;
-        i = p;
-    }
-}
-static Entry heap_pop(Heap* h) {
-    Entry top = h->data[0];
-    h->data[0] = h->data[--h->size];
-    int i = 0;
-    while (1) {
-        int l = i*2+1, r = i*2+2, best = i;
-        if (l < h->size && h->data[l].cost < h->data[best].cost) best = l;
-        if (r < h->size && h->data[r].cost < h->data[best].cost) best = r;
-        if (best == i) break;
-        Entry t = h->data[i]; h->data[i] = h->data[best]; h->data[best] = t;
-        i = best;
-    }
-    return top;
-}
-
-int cheapest_flights(AdjList* flights, int n, int source, int destination, int K) {
-    int** min_cost = malloc(n * sizeof(int*));
-    for (int i = 0; i < n; i++) {
-        min_cost[i] = malloc((K + 2) * sizeof(int));
-        for (int j = 0; j < K + 2; j++) min_cost[i][j] = INT_MAX;
-    }
-    min_cost[source][0] = 0;
-    Heap h = {0};
-    heap_push(&h, (Entry){0, source, 0});
-    int answer = -1;
-    while (h.size > 0) {
-        Entry cur = heap_pop(&h);
-        if (cur.city == destination) { answer = cur.cost; break; }
-        if (cur.used > K + 1 || cur.cost > min_cost[cur.city][cur.used]) continue;
-        for (int i = 0; i < flights[cur.city].size; i++) {
-            Flight f = flights[cur.city].data[i];
-            int new_cost = cur.cost + f.cost, next_used = cur.used + 1;
-            if (next_used <= K + 1 && new_cost < min_cost[f.to][next_used]) {
-                min_cost[f.to][next_used] = new_cost;
-                heap_push(&h, (Entry){new_cost, f.to, next_used});
-            }
-        }
-    }
-    free(h.data);
-    for (int i = 0; i < n; i++) free(min_cost[i]);
-    free(min_cost);
-    return answer;
-}
-
-int main() {
-    Flight f0[] = {{1, 2}, {3, 1}}, f1[] = {{4, 4}}, f2[] = {{4, 1}};
-    Flight f3[] = {{2, 2}, {4, 5}};
-    AdjList flights[] = {{f0, 2}, {f1, 1}, {f2, 1}, {f3, 2}, {NULL, 0}};
-    printf("%d\n", cheapest_flights(flights, 5, 0, 4, 2));
-    return 0;
-}
-```
-
-```scala run
-import scala.collection.mutable
-
-object Main extends App {
-  class Solution {
-    def cheapestFlights(flights: Array[Array[(Int, Int)]], source: Int, destination: Int, K: Int): Int = {
-      val n = flights.length
-      val minCost = Array.fill(n, K + 2)(Int.MaxValue)
-      minCost(source)(0) = 0
-      val pq = mutable.PriorityQueue.empty[(Int, Int, Int)](
-        Ordering.by[(Int, Int, Int), Int](_._1).reverse)
-      pq.enqueue((0, source, 0))
-      while (pq.nonEmpty) {
-        val (cost, city, used) = pq.dequeue()
-        if (city == destination) return cost
-        if (used <= K + 1 && cost <= minCost(city)(used)) {
-          for ((nc, w) <- flights(city)) {
-            val newCost = cost + w; val nextUsed = used + 1
-            if (nextUsed <= K + 1 && newCost < minCost(nc)(nextUsed)) {
-              minCost(nc)(nextUsed) = newCost
-              pq.enqueue((newCost, nc, nextUsed))
-            }
-          }
-        }
-      }
-      -1
-    }
-  }
-
-  val flights = Array(
-    Array((1, 2), (3, 1)), Array((4, 4)), Array((4, 1)),
-    Array((2, 2), (4, 5)), Array.empty[(Int, Int)])
-  println(new Solution().cheapestFlights(flights, 0, 4, 2))
-}
-```
+</details>
 
 
 ***
@@ -610,7 +606,9 @@ Input:  graph = [[[1, 1], [2, 4]], [[2, 2], [3, 2]], [[3, 1]], []]
 Output: 4
 ```
 
-## Pattern Mapping
+<details>
+<summary><h2>Pattern Mapping</h2></summary>
+
 
 A standard Dijkstra computes arrival times. The twist: when we relax an edge, we don't just add the edge weight — we also **add 1 if our current arrival time is odd**.
 
@@ -623,217 +621,202 @@ arrival_time_at_neighbour = cur_time + wait + edge_weight
 
 That tiny addition handles the parity rule cleanly within the standard pattern.
 
-## The Solution
+</details>
+<details>
+<summary><h2>Solution &amp; Analysis</h2></summary>
 
-
-```pseudocode
-function minimumTravelTime(routes, source, dest):
-    minArrival ← array of ∞, size N
-    minArrival[source] ← 0
-    pq ← empty min-heap
-    push (0, source) to pq
-    while pq is not empty:
-        (time, city) ← pop from pq
-        if city = dest: return time
-        if time > minArrival[city]: continue   # stale
-        wait ← 1 if time is odd else 0         # parity-based waiting rule
-        for (nextCity, travel) in routes[city]:
-            newTime ← time + wait + travel
-            if newTime < minArrival[nextCity]:
-                minArrival[nextCity] ← newTime
-                push (newTime, nextCity) to pq
-    return −1
-```
+### The Solution
 
 ```python run
-from typing import List
 import heapq
+from typing import List, Tuple, Dict
 
-INF = float('inf')
+# Structure to represent the state of a travel
+class TravelState:
+    def __init__(self, city: int, time: int):
+        self.city = city
+        self.time = time
+
+    # Comparator function for the priority queue to create a min-heap
+    def __lt__(self, other):
+        return self.time < other.time
 
 class Solution:
-    def minimum_travel_time(self,
-                            routes: List[List[List[int]]],
-                            source: int,
-                            destination: int) -> int:
-        n = len(routes)
-        min_arrival = [INF] * n
-        min_arrival[source] = 0
-        heap = [(0, source)]
-        while heap:
-            time, city = heapq.heappop(heap)
-            if city == destination:
-                return time
-            if time > min_arrival[city]:
+    def minimum_travel_time(
+        self,
+        routes: List[List[Tuple[int, int]]],
+        source: int,
+        destination: int,
+    ) -> int:
+        cities = len(routes)
+        if cities == 0:
+            return -1
+
+        # Create a list to store the minimum arrival time at each city
+        min_arrival_time = [float("inf")] * cities
+
+        # Create a priority queue (min-heap) to store the stops with
+        # their costs
+        pq: List[TravelState] = []
+
+        # Assign the minimum arrival time of the starting point with 0
+        min_arrival_time[source] = 0
+
+        # Enqueue starting city and the time to reach it
+        heapq.heappush(pq, TravelState(source, 0))
+
+        while pq:
+            curr_travel_state = heapq.heappop(pq)
+            curr_city = curr_travel_state.city
+            curr_time = curr_travel_state.time
+
+            # If we reached the destination, return the time
+            if curr_city == destination:
+                return curr_time
+
+            # If the time is greater than the recorded minimum time, skip
+            # processing
+            if curr_time > min_arrival_time[curr_city]:
                 continue
-            # Wait 1 unit if we arrived at an odd time.
-            wait = 1 if time % 2 == 1 else 0
-            for next_city, travel in routes[city]:
-                new_time = time + wait + travel
-                if new_time < min_arrival[next_city]:
-                    min_arrival[next_city] = new_time
-                    heapq.heappush(heap, (new_time, next_city))
+
+            for next_city, road_time in routes[curr_city]:
+
+                # If you arrive at an odd time, wait 1 unit for a red
+                # light.
+                waiting_time = 1 if curr_time % 2 == 1 else 0
+
+                arrival_time = curr_time + waiting_time + road_time
+                if arrival_time < min_arrival_time[next_city]:
+                    min_arrival_time[next_city] = arrival_time
+                    heapq.heappush(
+                        pq, TravelState(next_city, arrival_time)
+                    )
+
+        # If the destination is unreachable, return -1
         return -1
 
 
-graph = [[[1, 1], [2, 4]], [[2, 2], [3, 2]], [[3, 1]], []]
-print(Solution().minimum_travel_time(graph, 0, 3))  # 4
+# Examples from the problem statement
+print(Solution().minimum_travel_time([[[1,1],[2,4]],[[2,2],[3,2]],[[3,1]],[]], 0, 3))  # 4
+print(Solution().minimum_travel_time([[[1,1],[2,2]],[[3,2]],[[3,1]],[]], 0, 3))        # 3
+
+# Edge cases
+print(Solution().minimum_travel_time([], 0, 0))                                         # -1 — empty
+print(Solution().minimum_travel_time([[]], 0, 0))                                       # 0 — source is dest
+print(Solution().minimum_travel_time([[[1,2]],[]], 0, 1))                               # 2 — single edge even time
+print(Solution().minimum_travel_time([[[1,1]],[]], 0, 1))                               # 1 — single edge, arrive at odd; dest reached before wait
+print(Solution().minimum_travel_time([[[1,2]],[[]]], 0, 1))                             # -1 — no path to dest
 ```
 
 ```java run
 import java.util.*;
 
 public class Main {
+    // Structure to represent the state of a stop
+    static class TravelState {
+
+        int city;
+        int time;
+
+        TravelState(int city, int time) {
+            this.city = city;
+            this.time = time;
+        }
+    }
+
+    // Comparator function for the priority queue to create a min-heap
+    static class CompareMinHeap implements Comparator<TravelState> {
+        public int compare(TravelState a, TravelState b) {
+
+            // Min-heap based on time
+            return Integer.compare(a.time, b.time);
+        }
+    }
+
     static class Solution {
-        public int minimumTravelTime(List<List<int[]>> routes, int source, int destination) {
-            int n = routes.size();
-            int[] minArrival = new int[n];
-            Arrays.fill(minArrival, Integer.MAX_VALUE);
-            minArrival[source] = 0;
-            PriorityQueue<int[]> pq = new PriorityQueue<>((a, b) -> a[0] - b[0]);
-            pq.offer(new int[]{0, source});
+        public int minimumTravelTime(
+            List<List<List<Integer>>> routes,
+            int source,
+            int destination
+        ) {
+            int cities = routes.size();
+            if (cities == 0) {
+                return -1;
+            }
+
+            // Create a list to store the minimum arrival time at each city
+            int[] minArrivalTime = new int[cities];
+            Arrays.fill(minArrivalTime, Integer.MAX_VALUE);
+
+            // Create a priority queue (min-heap) to store the stops with
+            // their costs
+            PriorityQueue<TravelState> pq = new PriorityQueue<>(
+                new CompareMinHeap()
+            );
+
+            // Assign the minimum arrival time of the starting point with 0
+            minArrivalTime[source] = 0;
+
+            // Enqueue starting city and the time to reach it
+            pq.add(new TravelState(source, 0));
+
             while (!pq.isEmpty()) {
-                int[] cur = pq.poll();
-                int time = cur[0], city = cur[1];
-                if (city == destination) return time;
-                if (time > minArrival[city]) continue;
-                int wait = (time % 2 == 1) ? 1 : 0;
-                for (int[] r : routes.get(city)) {
-                    int next = r[0], travel = r[1];
-                    int newTime = time + wait + travel;
-                    if (newTime < minArrival[next]) {
-                        minArrival[next] = newTime;
-                        pq.offer(new int[]{newTime, next});
+                TravelState currTravelState = pq.poll();
+                int currCity = currTravelState.city;
+                int currTime = currTravelState.time;
+
+                // If we reached the destination, return the time
+                if (currCity == destination) {
+                    return currTime;
+                }
+
+                // If the time is greater than the recorded minimum time,
+                // skip processing
+                if (currTime > minArrivalTime[currCity]) {
+                    continue;
+                }
+
+                for (List<Integer> neighbor : routes.get(currCity)) {
+                    int nextCity = neighbor.get(0);
+                    int travelTime = neighbor.get(1);
+
+                    // If you arrive at an odd time, wait 1 unit for a red
+                    // light.
+                    int waitingTime = 0;
+                    if (currTime % 2 == 1) {
+                        waitingTime = 1;
+                    }
+
+                    int arrivalTime = currTime + waitingTime + travelTime;
+                    if (arrivalTime < minArrivalTime[nextCity]) {
+                        minArrivalTime[nextCity] = arrivalTime;
+                        pq.add(new TravelState(nextCity, arrivalTime));
                     }
                 }
             }
+
+            // If the destination is unreachable, return -1
             return -1;
         }
     }
 
     public static void main(String[] args) {
-        var graph = List.of(
-            List.of(new int[]{1, 1}, new int[]{2, 4}),
-            List.of(new int[]{2, 2}, new int[]{3, 2}),
-            List.of(new int[]{3, 1}),
-            List.<int[]>of());
-        System.out.println(new Solution().minimumTravelTime(graph, 0, 3));
+        Solution sol = new Solution();
+
+        // Examples from the problem statement
+        System.out.println(sol.minimumTravelTime(List.of(List.of(List.of(1,1),List.of(2,4)),List.of(List.of(2,2),List.of(3,2)),List.of(List.of(3,1)),new ArrayList<>()), 0, 3));  // 4
+        System.out.println(sol.minimumTravelTime(List.of(List.of(List.of(1,1),List.of(2,2)),List.of(List.of(3,2)),List.of(List.of(3,1)),new ArrayList<>()), 0, 3));              // 3
+
+        // Edge cases
+        System.out.println(sol.minimumTravelTime(new ArrayList<>(), 0, 0));                   // -1
+        System.out.println(sol.minimumTravelTime(List.of(new ArrayList<>()), 0, 0));          // 0
+        System.out.println(sol.minimumTravelTime(List.of(List.of(List.of(1,2)),new ArrayList<>()), 0, 1));  // 2
+        System.out.println(sol.minimumTravelTime(List.of(List.of(List.of(1,1)),new ArrayList<>()), 0, 1));  // 1
     }
 }
 ```
 
-```c run
-#include <stdio.h>
-#include <stdlib.h>
-#include <limits.h>
-
-typedef struct { int to, time; } Route;
-typedef struct { Route* data; int size; } AdjList;
-
-typedef struct { int time, city; } Entry;
-typedef struct { Entry* data; int size, capacity; } Heap;
-
-static void heap_push(Heap* h, Entry e) {
-    if (h->size == h->capacity) {
-        h->capacity = h->capacity ? h->capacity * 2 : 16;
-        h->data = realloc(h->data, h->capacity * sizeof(Entry));
-    }
-    int i = h->size++;
-    h->data[i] = e;
-    while (i > 0) {
-        int p = (i - 1) / 2;
-        if (h->data[p].time <= h->data[i].time) break;
-        Entry t = h->data[p]; h->data[p] = h->data[i]; h->data[i] = t;
-        i = p;
-    }
-}
-static Entry heap_pop(Heap* h) {
-    Entry top = h->data[0];
-    h->data[0] = h->data[--h->size];
-    int i = 0;
-    while (1) {
-        int l = i*2+1, r = i*2+2, best = i;
-        if (l < h->size && h->data[l].time < h->data[best].time) best = l;
-        if (r < h->size && h->data[r].time < h->data[best].time) best = r;
-        if (best == i) break;
-        Entry t = h->data[i]; h->data[i] = h->data[best]; h->data[best] = t;
-        i = best;
-    }
-    return top;
-}
-
-int minimum_travel_time(AdjList* routes, int n, int source, int destination) {
-    int* min_arrival = malloc(n * sizeof(int));
-    for (int i = 0; i < n; i++) min_arrival[i] = INT_MAX;
-    min_arrival[source] = 0;
-    Heap h = {0};
-    heap_push(&h, (Entry){0, source});
-    int answer = -1;
-    while (h.size > 0) {
-        Entry cur = heap_pop(&h);
-        if (cur.city == destination) { answer = cur.time; break; }
-        if (cur.time > min_arrival[cur.city]) continue;
-        int wait = cur.time % 2 == 1 ? 1 : 0;
-        for (int i = 0; i < routes[cur.city].size; i++) {
-            Route r = routes[cur.city].data[i];
-            int new_time = cur.time + wait + r.time;
-            if (new_time < min_arrival[r.to]) {
-                min_arrival[r.to] = new_time;
-                heap_push(&h, (Entry){new_time, r.to});
-            }
-        }
-    }
-    free(h.data); free(min_arrival);
-    return answer;
-}
-
-int main() {
-    Route r0[] = {{1, 1}, {2, 4}};
-    Route r1[] = {{2, 2}, {3, 2}};
-    Route r2[] = {{3, 1}};
-    AdjList routes[] = {{r0, 2}, {r1, 2}, {r2, 1}, {NULL, 0}};
-    printf("%d\n", minimum_travel_time(routes, 4, 0, 3));
-    return 0;
-}
-```
-
-```scala run
-import scala.collection.mutable
-
-object Main extends App {
-  class Solution {
-    def minimumTravelTime(routes: Array[Array[(Int, Int)]], source: Int, destination: Int): Int = {
-      val n = routes.length
-      val minArrival = Array.fill(n)(Int.MaxValue)
-      minArrival(source) = 0
-      val pq = mutable.PriorityQueue.empty[(Int, Int)](Ordering.by[(Int, Int), Int](_._1).reverse)
-      pq.enqueue((0, source))
-      while (pq.nonEmpty) {
-        val (time, city) = pq.dequeue()
-        if (city == destination) return time
-        if (time <= minArrival(city)) {
-          val wait = if (time % 2 == 1) 1 else 0
-          for ((next, travel) <- routes(city)) {
-            val newTime = time + wait + travel
-            if (newTime < minArrival(next)) {
-              minArrival(next) = newTime
-              pq.enqueue((newTime, next))
-            }
-          }
-        }
-      }
-      -1
-    }
-  }
-
-  val graph = Array(
-    Array((1, 1), (2, 4)), Array((2, 2), (3, 2)), Array((3, 1)), Array.empty[(Int, Int)])
-  println(new Solution().minimumTravelTime(graph, 0, 3))
-}
-```
-
-
-## Complexity Analysis
+### Complexity Analysis
 
 | Problem | Time | Space |
 |---|---|---|
@@ -843,9 +826,431 @@ object Main extends App {
 
 Adding state dimensions multiplies the search space by the size of the state — so the cheapest-flights problem with K stops is K times slower than vanilla Dijkstra. The trade-off is worth it: a stateful Dijkstra handles a much richer family of constraints than the unstateful one.
 
----
+</details>
 
-## Final Takeaway
+# Problem: Teleporter Grid
+
+## The Problem
+
+Given an **NxM** **grid**, a **source** cell `(r1, c1)`, and a **destination** cell `(r2, c2)`, write a function to find and return the minimum cost to reach from the source to the destination. 
+
+> -   The cost to move from a cell to its adjacent cell is `1`.
+> -   A value of `0` in a cell means the call cannot be visited.
+> -   A value of `1` in a cell means the cell can be visited.
+> -   A value greater than `1` in a cell is a teleporter cell. All cells with the same number represent linked teleporters. Moving into a teleporter costs `1`, and you may instantly teleport to any other teleporter with the same ID at a cost of `1`.
+> -   Each teleporter may be used at most once during the path.
+
+> You must abide by the following constraint:
+>
+> -   You can only move in the four cardinal directions, i.e., `up`, `right`, `down`, and `left`.
+
+```
+Input:  grid = [[1, 5, 0, 2], [0, 1, 1, 0], [2, 0, 1, 1], [1, 5, 5, 1]], source = [0, 0], destination = [3, 3]
+Output: 3
+Input:  grid = [[1, 5, 0, 5], [0, 1, 1, 2], [2, 0, 1, 0], [1, 3, 3, 2]], source = [0, 0], destination = [3, 3]
+Output: 5
+```
+
+<details>
+<summary><h2>Pattern Mapping</h2></summary>
+
+
+This is grid Dijkstra with a state dimension for teleporter usage. The puzzle says a teleporter may be used **at most once** on the whole path, so the search state is `(row, col, teleporter_used)` where `teleporter_used` is `0` or `1` — and `min_cost` becomes a 3D array indexed by that flag. The same cell reached without having teleported is a different state from the same cell reached after teleporting.
+
+Cardinal moves cost `1` and keep the flag unchanged. When the popped cell sits on a teleporter and the flag is still `0`, every linked teleporter (same ID, excluding the current cell) is relaxed at cost `1` with the flag flipped to `1` — capturing the one-shot rule. The standard min-heap, infinity-initialised distances, and lazy stale-skip otherwise behave exactly as in plain Dijkstra.
+
+</details>
+<details>
+<summary><h2>The Solution</h2></summary>
+
+
+
+```python run
+import heapq
+from typing import List, Tuple, Dict
+
+# Structure to represent a Cell in the graph
+class Cell:
+    def __init__(
+        self, row: int, col: int, cost: int, teleporter_used: int
+    ):
+        self.row = row
+        self.col = col
+        self.cost = cost
+        self.teleporter_used = teleporter_used
+
+    # Comparator function for the priority queue to create a min-heap
+    def __lt__(self, other):
+        return self.cost < other.cost
+
+class Solution:
+    def is_valid_cell(
+        self, grid: List[List[int]], row: int, col: int
+    ) -> bool:
+        return (
+            0 <= row < len(grid)
+            and 0 <= col < len(grid[0])
+            and grid[row][col] != 0
+        )
+
+    def build_teleporter_map(
+        self, grid: List[List[int]]
+    ) -> Dict[int, List[Tuple[int, int]]]:
+        teleporters = {}
+        for row in range(len(grid)):
+            for col in range(len(grid[row])):
+                if grid[row][col] > 1:
+                    teleporters.setdefault(grid[row][col], []).append(
+                        (row, col)
+                    )
+        return teleporters
+
+    def teleporter_grid(
+        self,
+        grid: List[List[int]],
+        source: Tuple[int, int],
+        destination: Tuple[int, int],
+    ) -> int:
+        rows = len(grid)
+        if rows == 0:
+            return -1
+
+        cols = len(grid[0])
+
+        # 3D minCost: rows x cols x 2 (teleporter usage state)
+        min_cost = [
+            [[float("inf")] * 2 for _ in range(cols)]
+            for _ in range(rows)
+        ]
+
+        # Build teleporter map for quick access to teleporter pairs
+        teleporters = self.build_teleporter_map(grid)
+
+        # Create a priority queue (min-heap) to store the cells with
+        # their costs
+        pq = []
+
+        # Assign the minimum cost of the starting point with teleporter
+        # unused
+        min_cost[source[0]][source[1]][0] = 0
+
+        # Enqueue starting cell and the cost to move on it
+        heapq.heappush(pq, Cell(source[0], source[1], 0, 0))
+
+        # Define the possible movements: up, right, down, left
+        directions: List[Tuple[int, int]] = [
+            (-1, 0),  # up
+            (0, 1),   # right
+            (1, 0),   # down
+            (0, -1)   # left
+        ]
+
+        while pq:
+            curr_cell = heapq.heappop(pq)
+            curr_row = curr_cell.row
+            curr_col = curr_cell.col
+            cost = curr_cell.cost
+            teleporter_used = curr_cell.teleporter_used
+
+            # If we reached the destination, return the cost
+            if curr_row == destination[0] and curr_col == destination[1]:
+                return cost
+
+            # If the cost is greater than the recorded minimum cost, skip
+            # processing
+            if cost > min_cost[curr_row][curr_col][teleporter_used]:
+                continue
+
+            # Explore the neighbours
+            for dr, dc in directions:
+                new_row = curr_row + dr
+                new_col = curr_col + dc
+
+                # Check if the new cell is within the grid
+                if self.is_valid_cell(grid, new_row, new_col):
+
+                    # Cost to move to an adjacent cell is always 1
+                    new_cost = cost + 1
+
+                    # If a shorter path is found, update the minimum
+                    # cost and add the new cell to the priority queue
+                    if (
+                        new_cost
+                        < min_cost[new_row][new_col][teleporter_used]
+                    ):
+
+                        # Update the minimum cost for the new cell
+                        min_cost[new_row][new_col][
+                            teleporter_used
+                        ] = new_cost
+
+                        # Add the new cell to the priority queue
+                        heapq.heappush(
+                            pq,
+                            Cell(
+                                new_row,
+                                new_col,
+                                new_cost,
+                                teleporter_used,
+                            ),
+                        )
+
+            # Add teleporter usage if on a teleporter cell and teleporter
+            # not used yet
+            if grid[curr_row][curr_col] > 1 and teleporter_used == 0:
+                teleporter_id = grid[curr_row][curr_col]
+                for new_row, new_col in teleporters.get(
+                    teleporter_id, []
+                ):
+
+                    # Skip the current cell
+                    if new_row == curr_row and new_col == curr_col:
+                        continue
+
+                    # Teleportation cost is 1 (same as moving to adjacent
+                    # cell)
+                    new_cost = cost + 1
+
+                    # If a shorter path is found using the teleporter, update the minimum
+                    # cost and add the new cell to the priority queue
+                    if new_cost < min_cost[new_row][new_col][1]:
+                        min_cost[new_row][new_col][1] = new_cost
+                        heapq.heappush(
+                            pq, Cell(new_row, new_col, new_cost, 1)
+                        )
+
+        # If the destination is unreachable, return -1
+        return -1
+
+
+# Examples from the problem statement
+print(Solution().teleporter_grid([[1,5,0,2],[0,1,1,0],[2,0,1,1],[1,5,5,1]], (0,0), (3,3)))  # 3
+print(Solution().teleporter_grid([[1,5,0,5],[0,1,1,2],[2,0,1,0],[1,3,3,2]], (0,0), (3,3)))  # 5
+
+# Edge cases
+print(Solution().teleporter_grid([], (0,0), (0,0)))                                         # -1 — empty grid
+print(Solution().teleporter_grid([[1]], (0,0), (0,0)))                                      # 0 — source is dest
+print(Solution().teleporter_grid([[1,1],[1,1]], (0,0), (1,1)))                              # 2 — no teleporters
+print(Solution().teleporter_grid([[1,0],[0,1]], (0,0), (1,1)))                              # -1 — blocked path
+print(Solution().teleporter_grid([[2,1],[1,2]], (0,0), (1,1)))                              # 1 — teleport shortcut
+```
+
+```java run
+import java.util.*;
+
+public class Main {
+    // Structure to represent a Cell in the graph
+    static class Cell {
+
+        int row;
+        int col;
+        int cost;
+        int teleporterUsed;
+
+        Cell(int row, int col, int cost, int teleporterUsed) {
+            this.row = row;
+            this.col = col;
+            this.cost = cost;
+            this.teleporterUsed = teleporterUsed;
+        }
+    }
+
+    // Comparator function for the priority queue to create a min-heap
+    static class CompareMinHeap implements Comparator<Cell> {
+        public int compare(Cell a, Cell b) {
+
+            // Min-heap based on cost
+            return Integer.compare(a.cost, b.cost);
+        }
+    }
+
+    static class Solution {
+        private boolean isValidCell(int[][] grid, int row, int col) {
+            return (
+                row >= 0 &&
+                row < grid.length &&
+                col >= 0 &&
+                col < grid[0].length &&
+                grid[row][col] != 0
+            );
+        }
+
+        private Map<Integer, List<List<Integer>>> buildTeleporterMap(
+            int[][] grid
+        ) {
+            Map<Integer, List<List<Integer>>> teleporters = new HashMap<>();
+            for (int row = 0; row < grid.length; row++) {
+                for (int col = 0; col < grid[row].length; col++) {
+                    if (grid[row][col] > 1) {
+                        teleporters
+                            .computeIfAbsent(
+                                grid[row][col],
+                                k -> new ArrayList<>()
+                            )
+                            .add(Arrays.asList(row, col));
+                    }
+                }
+            }
+            return teleporters;
+        }
+
+        public int teleporterGrid(
+            int[][] grid,
+            List<Integer> source,
+            List<Integer> destination
+        ) {
+            int rows = grid.length;
+            if (rows == 0) {
+                return -1;
+            }
+
+            int cols = grid[0].length;
+
+            // 3D minCost: rows x cols x 2 (teleporter usage state)
+            int[][][] minCost = new int[rows][cols][2];
+            for (int[][] arr : minCost) {
+                for (int[] a : arr) {
+                    Arrays.fill(a, Integer.MAX_VALUE);
+                }
+            }
+
+            // Build teleporter map for quick access to teleporter pairs
+            Map<Integer, List<List<Integer>>> teleporters =
+                buildTeleporterMap(grid);
+
+            // Create a priority queue (min-heap) to store the cells with
+            // their costs
+            PriorityQueue<Cell> pq = new PriorityQueue<>(
+                new CompareMinHeap()
+            );
+
+            // Assign the minimum cost of the starting point with teleporter
+            // unused
+            minCost[source.get(0)][source.get(1)][0] = 0;
+
+            // Enqueue starting cell and the cost to move on it
+            pq.add(new Cell(source.get(0), source.get(1), 0, 0));
+
+            // Define the possible movements: up, right, down, left
+            int[][] directions = {
+                {-1, 0}, // up
+                {0, 1},  // right
+                {1, 0},  // down
+                {0, -1}  // left
+            };
+
+            while (!pq.isEmpty()) {
+                Cell currCell = pq.poll();
+                int currRow = currCell.row;
+                int currCol = currCell.col;
+                int cost = currCell.cost;
+                int teleporterUsed = currCell.teleporterUsed;
+
+                // If we reached the destination, return the cost
+                if (
+                    currRow == destination.get(0) &&
+                    currCol == destination.get(1)
+                ) {
+                    return cost;
+                }
+
+                // If the cost is greater than the recorded minimum cost,
+                // skip processing
+                if (cost > minCost[currRow][currCol][teleporterUsed]) {
+                    continue;
+                }
+
+                // Explore the neighbours
+                for (int[] dir : directions) {
+                    int newRow = currRow + dir[0];
+                    int newCol = currCol + dir[1];
+
+                    // Check if the new cell is within the grid
+                    if (isValidCell(grid, newRow, newCol)) {
+
+                        // Cost to move to an adjacent cell is always 1
+                        int newCost = cost + 1;
+
+                        // If a shorter path is found, update the minimum
+                        // cost and add the new cell to the priority queue
+                        if (
+                            newCost < minCost[newRow][newCol][teleporterUsed]
+                        ) {
+
+                            // Update the minimum cost for the new cell
+                            minCost[newRow][newCol][teleporterUsed] =
+                                newCost;
+
+                            // Add the new cell to the priority queue
+                            pq.add(
+                                new Cell(
+                                    newRow,
+                                    newCol,
+                                    newCost,
+                                    teleporterUsed
+                                )
+                            );
+                        }
+                    }
+                }
+
+                // Add teleporter usage if on a teleporter cell and
+                // teleporter not used yet
+                if (grid[currRow][currCol] > 1 && teleporterUsed == 0) {
+                    int teleporterID = grid[currRow][currCol];
+                    for (List<Integer> teleporter : teleporters.get(
+                        teleporterID
+                    )) {
+                        int newRow = teleporter.get(0);
+                        int newCol = teleporter.get(1);
+
+                        // Skip the current cell
+                        if (newRow == currRow && newCol == currCol) {
+                            continue;
+                        }
+
+                        // Teleportation cost is 1 (same as moving to
+                        // adjacent cell)
+                        int newCost = cost + 1;
+
+                        // If a shorter path is found using the teleporter,
+                        // update the minimum cost and add the new cell to
+                        // the priority queue
+                        if (newCost < minCost[newRow][newCol][1]) {
+                            minCost[newRow][newCol][1] = newCost;
+                            pq.add(new Cell(newRow, newCol, newCost, 1));
+                        }
+                    }
+                }
+            }
+
+            // If the destination is unreachable, return -1
+            return -1;
+        }
+    }
+
+    public static void main(String[] args) {
+        Solution sol = new Solution();
+
+        // Examples from the problem statement
+        System.out.println(sol.teleporterGrid(new int[][]{{1,5,0,2},{0,1,1,0},{2,0,1,1},{1,5,5,1}}, List.of(0,0), List.of(3,3)));  // 3
+        System.out.println(sol.teleporterGrid(new int[][]{{1,5,0,5},{0,1,1,2},{2,0,1,0},{1,3,3,2}}, List.of(0,0), List.of(3,3)));  // 5
+
+        // Edge cases
+        System.out.println(sol.teleporterGrid(new int[][]{}, List.of(0,0), List.of(0,0)));            // -1
+        System.out.println(sol.teleporterGrid(new int[][]{{1}}, List.of(0,0), List.of(0,0)));         // 0
+        System.out.println(sol.teleporterGrid(new int[][]{{1,1},{1,1}}, List.of(0,0), List.of(1,1))); // 2
+        System.out.println(sol.teleporterGrid(new int[][]{{1,0},{0,1}}, List.of(0,0), List.of(1,1))); // -1
+        System.out.println(sol.teleporterGrid(new int[][]{{2,1},{1,2}}, List.of(0,0), List.of(1,1))); // 1
+    }
+}
+```
+
+</details>
+
+<details>
+<summary><h2>Final Takeaway</h2></summary>
+
 
 Dijkstra is **the** weighted shortest-path tool, and the *pattern* extends naturally to stateful problems by augmenting nodes with extra dimensions (stops, parity, fuel left, …). The four-step recipe — *priority queue keyed by cost, distance array, lazy stale-skip, weight-aware relaxation* — handles essentially every "minimum cumulative cost" problem you'll meet, with or without state.
 
@@ -862,6 +1267,7 @@ You've now completed the **graph chapter**. Together with the data-structure fou
 
 > **Transfer challenge.** A real GPS routing system has to consider *real-time traffic* — edge weights change throughout the day. Sketch (don't implement) how you'd extend the Dijkstra pattern to handle "the cost of edge `u → v` depends on the time you arrive at `u`."
 
+</details>
 <details>
 <summary><strong>Sketch</strong></summary>
 

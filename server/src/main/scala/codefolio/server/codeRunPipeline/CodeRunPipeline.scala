@@ -143,8 +143,8 @@ object CodeRunPipeline:
       .build()
 
   /**
-   * POST `payload` (JSON string) to `${baseUrl}${pathAndQuery}` with the standard JSON content type and a 30s
-   * timeout, then either parse the response body via `parse` or fail with a `${errorPrefix} returned
+   * POST `payload` (JSON string) to `${baseUrl}${pathAndQuery}` with the standard JSON content type and a
+   * 100s timeout, then either parse the response body via `parse` or fail with a `${errorPrefix} returned
    * <status>: <body>` runtime exception. `extraHeaders` lets a backend add per-request auth (e.g. Code
    * Runner's `X-Auth-Token`) without rebuilding the whole request flow.
    *
@@ -166,7 +166,10 @@ object CodeRunPipeline:
         .uri(URI.create(s"$cleanedBase$pathAndQuery"))
         .header("Content-Type", "application/json")
         .header("Accept", "application/json")
-        .timeout(java.time.Duration.ofSeconds(30))
+        // 100 s, not 30: a cold `scala-cli` run in the local Code Runner can
+        // outlast 30 s; its own 90 s per-language budget should fire first so
+        // the failure reads as a clean TLE rather than an opaque HTTP timeout.
+        .timeout(java.time.Duration.ofSeconds(100))
         .POST(HttpRequest.BodyPublishers.ofString(payload, StandardCharsets.UTF_8))
       extraHeaders.foreach { case (k, v) => builder.header(k, v) }
       val resp = httpClient.send(builder.build(), HttpResponse.BodyHandlers.ofString(StandardCharsets.UTF_8))

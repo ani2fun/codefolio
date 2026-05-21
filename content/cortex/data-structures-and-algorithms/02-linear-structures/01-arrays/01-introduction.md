@@ -479,17 +479,6 @@ arr: array {
 Higher-level languages like Python inherently provide a **list** instead of a raw array. A list behaves like an array but has a dynamic size and can store elements of different types. However, the underlying machine-level implementation still uses basic arrays as the core data structure, which has a fixed size and type.
 
 
-```pseudocode
-# Four common ways to allocate / initialise an array.
-numbers  ← list of 5 zeros                                   # fixed size, default values
-numbers2 ← [1, 2, 3, 4, 5]                                   # literal initialiser
-sizeN    ← 5
-numbers3 ← list of sizeN zeros                               # length determined at runtime
-numbers4 ← [i for i from 0 to 4]                             # comprehension form
-
-print numbers, numbers2, numbers3, numbers4
-```
-
 ```python run
 from typing import List
 
@@ -501,91 +490,34 @@ numbers: List[int] = [0] * 5
 # Declaring and initializing an array
 numbers2: List[int] = [1, 2, 3, 4, 5]
 
-# Creating an array of size N
+# Creating an array of size n
 size_n: int = 5
 numbers3: List[int] = [0] * size_n
 
 # Creating and initializing using list comprehension
 numbers4: List[int] = [i for i in range(5)]
-
-print(numbers, numbers2, numbers3, numbers4)
 ```
 
 ```java run
 public class Main {
     public static void main(String[] args) {
-        // Java arrays are fixed-size; the size is part of the type and locked at allocation.
+        // Arrays in Java are always allocated on the heap
+        // and are automatically garbage collected
 
-        // Declaring an array of fixed size with default values (int defaults to 0).
+        // Declaring an array of fixed size 5
         int[] numbers = new int[5];
 
-        // Declaring and initializing an array literal.
+        // Declaring and initializing an array
         int[] numbers2 = {1, 2, 3, 4, 5};
 
-        // Creating an array of size N.
-        int sizeN = 5;
-        int[] numbers3 = new int[sizeN];
+        // Declaring and initializing an array using new keyword
+        int[] numbers3 = new int[]{1, 2, 3, 4, 5};
 
-        // Creating and initializing in a loop (Java has no list comprehension).
-        int[] numbers4 = new int[5];
-        for (int i = 0; i < 5; i++) numbers4[i] = i;
+        // Creating an array of size n
+        int size_n = 5;
+        int[] numbers4 = new int[size_n];
 
-        System.out.println(java.util.Arrays.toString(numbers));
-        System.out.println(java.util.Arrays.toString(numbers2));
-        System.out.println(java.util.Arrays.toString(numbers3));
-        System.out.println(java.util.Arrays.toString(numbers4));
     }
-}
-```
-
-```c run
-#include <stdio.h>
-
-int main() {
-    /* C arrays are fixed-size. Size must be a compile-time constant or a VLA size. */
-
-    /* Default-initialise to zero by giving an empty initializer list. */
-    int numbers[5] = {0};
-
-    /* Declaring and initialising. */
-    int numbers2[5] = {1, 2, 3, 4, 5};
-
-    /* Creating an array of size N (here a constant — runtime sizes need VLA or malloc). */
-    const int size_n = 5;
-    int numbers3[size_n];
-    for (int i = 0; i < size_n; i++) numbers3[i] = 0;
-
-    /* Initialise with a loop. */
-    int numbers4[5];
-    for (int i = 0; i < 5; i++) numbers4[i] = i;
-
-    for (int i = 0; i < 5; i++) printf("%d ", numbers4[i]);
-    printf("\n");
-    return 0;
-}
-```
-
-```scala run
-object Main extends App {
-  // Scala Array is a fixed-size, JVM-backed primitive array.
-
-  // Fixed size with default values (Int defaults to 0).
-  val numbers: Array[Int] = new Array[Int](5)
-
-  // Declaring and initialising.
-  val numbers2: Array[Int] = Array(1, 2, 3, 4, 5)
-
-  // Size known at runtime.
-  val sizeN = 5
-  val numbers3: Array[Int] = new Array[Int](sizeN)
-
-  // Comprehension-style initialisation via tabulate.
-  val numbers4: Array[Int] = Array.tabulate(5)(i => i)
-
-  println(numbers.mkString(", "))
-  println(numbers2.mkString(", "))
-  println(numbers3.mkString(", "))
-  println(numbers4.mkString(", "))
 }
 ```
 
@@ -625,68 +557,30 @@ arr: array {
 Different languages have different syntax, but the underlying access mechanism is the same for all.
 
 
-```pseudocode
-numbers ← [1, 2, 3, 4, 5]
-print numbers[0]                                # O(1) direct access — the 1st value
-print numbers[4]                                # the 5th value
-print numbers[length(numbers) − 1]              # the last value
-```
-
 ```python run
 from typing import List
 
+# Initializing an array (list)
 numbers: List[int] = [1, 2, 3, 4, 5]
 
-# Subscript [] — direct O(1) access by index.
-print("1st value:", numbers[0])   # → 1
-print("5th value:", numbers[4])   # → 5
-
-# Negative indexing — Python-only sugar for "from the end."
-print("Last value:", numbers[-1]) # → 5
+# Array elements are accessed using the
+# subscript [] operator
+print("1st value:", numbers[0])
+print("5th value:", numbers[4])
 ```
 
 ```java run
 public class Main {
     public static void main(String[] args) {
+
+        // Initializing an array
         int[] numbers = {1, 2, 3, 4, 5};
 
-        // Subscript [] — direct O(1) access by index.
-        System.out.println("1st value: " + numbers[0]);   // → 1
-        System.out.println("5th value: " + numbers[4]);   // → 5
-
-        // Java has no negative indexing — compute it from length.
-        System.out.println("Last value: " + numbers[numbers.length - 1]);
+        // Array elements are accessed using the
+        // subscript [] operator
+        System.out.println("1st value: " + numbers[0]);
+        System.out.println("5th value: " + numbers[4]);
     }
-}
-```
-
-```c run
-#include <stdio.h>
-
-int main() {
-    int numbers[] = {1, 2, 3, 4, 5};
-    int n = sizeof(numbers) / sizeof(numbers[0]);
-
-    /* Subscript [] — direct O(1) access by index. */
-    printf("1st value: %d\n", numbers[0]);   /* → 1 */
-    printf("5th value: %d\n", numbers[4]);   /* → 5 */
-
-    /* No negative indexing in C — compute n - 1 manually. */
-    printf("Last value: %d\n", numbers[n - 1]);
-    return 0;
-}
-```
-
-```scala run
-object Main extends App {
-  val numbers = Array(1, 2, 3, 4, 5)
-
-  // arr(i) is Scala's subscript — same O(1) access by index.
-  println(s"1st value: ${numbers(0)}")   // → 1
-  println(s"5th value: ${numbers(4)}")   // → 5
-
-  // Use length - 1 for the last element.
-  println(s"Last value: ${numbers(numbers.length - 1)}")
 }
 ```
 
@@ -720,76 +614,42 @@ arr: array {
 <p align="center"><strong>Array elements can be modified via their indices (highlighted = being updated).</strong></p>
 
 
-```pseudocode
-numbers ← [1, 2, 3, 4, 5]
-# Subscript on the left of ← overwrites the slot in place.
-numbers[0] ← 10
-numbers[2] ← 30
-numbers[4] ← 50
-```
-
 ```python run
 from typing import List
 
+# Initializing an array (list)
 numbers: List[int] = [1, 2, 3, 4, 5]
 
-# Subscript [] on the LHS of = overwrites the slot in place.
+# Modifying array elements using the
+# subscript [] operator
 numbers[0] = 10
 numbers[2] = 30
 numbers[4] = 50
 
-print("1st value:", numbers[0])   # → 10
-print("3rd value:", numbers[2])   # → 30
-print("5th value:", numbers[4])   # → 50
+# Printing modified values
+print("1st value:", numbers[0])
+print("3rd value:", numbers[2])
+print("5th value:", numbers[4])
 ```
 
 ```java run
 public class Main {
     public static void main(String[] args) {
+
+        // Initializing an array
         int[] numbers = {1, 2, 3, 4, 5};
 
-        // Subscript [] on the LHS overwrites the slot in place.
+        // Modifying array elements using the
+        // subscript [] operator
         numbers[0] = 10;
         numbers[2] = 30;
         numbers[4] = 50;
 
-        System.out.println("1st value: " + numbers[0]);   // → 10
-        System.out.println("3rd value: " + numbers[2]);   // → 30
-        System.out.println("5th value: " + numbers[4]);   // → 50
+        // Printing modified values
+        System.out.println("1st value: " + numbers[0]);
+        System.out.println("3rd value: " + numbers[2]);
+        System.out.println("5th value: " + numbers[4]);
     }
-}
-```
-
-```c run
-#include <stdio.h>
-
-int main() {
-    int numbers[] = {1, 2, 3, 4, 5};
-
-    /* Subscript [] on the LHS overwrites the slot in place. */
-    numbers[0] = 10;
-    numbers[2] = 30;
-    numbers[4] = 50;
-
-    printf("1st value: %d\n", numbers[0]);   /* → 10 */
-    printf("3rd value: %d\n", numbers[2]);   /* → 30 */
-    printf("5th value: %d\n", numbers[4]);   /* → 50 */
-    return 0;
-}
-```
-
-```scala run
-object Main extends App {
-  val numbers = Array(1, 2, 3, 4, 5)
-
-  // arr(i) = x — Scala's in-place update syntax (Array is mutable).
-  numbers(0) = 10
-  numbers(2) = 30
-  numbers(4) = 50
-
-  println(s"1st value: ${numbers(0)}")   // → 10
-  println(s"3rd value: ${numbers(2)}")   // → 30
-  println(s"5th value: ${numbers(4)}")   // → 50
 }
 ```
 
@@ -842,129 +702,60 @@ The pointer starts at index `0` and steps forward one cell at a time until it re
 Higher-level languages have built-in functions to get the array's length. For lower-level languages like C/C++, the programmer needs to track the array's size manually.
 
 
-```pseudocode
-numbers ← [1, 2, 3, 4, 5]
-
-# 1. Index-based for — when the index itself matters.
-for index from 0 to length(numbers) − 1:
-    print numbers[index]
-
-# 2. For-each — when only the value matters.
-for each value in numbers:
-    print value
-
-# 3. While loop — explicit step / skip / early exit.
-index ← 0
-while index < length(numbers):
-    print numbers[index]
-    index ← index + 1
-```
-
 ```python run
 from typing import List
 
+# Initializing an array (list)
 numbers: List[int] = [1, 2, 3, 4, 5]
 
-# 1. Index-based for — useful when you need the index itself.
+# 1. Traversal using index-based for loop
 for index in range(len(numbers)):
     print(numbers[index])
 
-# 2. For-each — shorter when only the value matters.
+# 2. Traversal using direct for-each loop
 for value in numbers:
     print(value)
 
-# 3. enumerate — index + value together, no len() / subscript needed.
+# 3. Traversal using enumerate (index + value)
 for index, value in enumerate(numbers):
     print(index, value)
 
-# 4. While loop — finer control (skip indices, step by 2, break early).
+# 4. Traversal using while loop
 index: int = 0
 while index < len(numbers):
     print(numbers[index])
     index += 1
+
+# 5. Reverse traversal
+for index in range(len(numbers) - 1, -1, -1):
+    print(numbers[index])
 ```
 
 ```java run
 public class Main {
     public static void main(String[] args) {
+
+        // Initializing an array
         int[] numbers = {1, 2, 3, 4, 5};
 
-        // 1. Index-based for — pairs naturally with arr.length.
+        // 1. Traversal using index-based for loop
         for (int index = 0; index < numbers.length; index++) {
-            System.out.println(numbers[index]);
+            System.out.print(numbers[index] + " ");
         }
+        System.out.println();
 
-        // 2. Enhanced for (for-each) — when the index isn't needed.
+        // 2. Traversal using enhanced for-each loop
         for (int value : numbers) {
-            System.out.println(value);
+            System.out.print(value + " ");
         }
+        System.out.println();
 
-        // 3. Index + value together — Java has no enumerate, so loop with both.
-        for (int i = 0; i < numbers.length; i++) {
-            System.out.println(i + " " + numbers[i]);
+        // 3. Reverse traversal
+        for (int index = numbers.length - 1; index >= 0; index--) {
+            System.out.print(numbers[index] + " ");
         }
-
-        // 4. While loop — finer control over advancement.
-        int i = 0;
-        while (i < numbers.length) {
-            System.out.println(numbers[i]);
-            i++;
-        }
+        System.out.println();
     }
-}
-```
-
-```c run
-#include <stdio.h>
-
-int main() {
-    int numbers[] = {1, 2, 3, 4, 5};
-    int n = sizeof(numbers) / sizeof(numbers[0]);
-
-    /* 1. Index-based for. */
-    for (int index = 0; index < n; index++) {
-        printf("%d\n", numbers[index]);
-    }
-
-    /* 2. C has no for-each — index-based is the only built-in form. */
-    for (int i = 0; i < n; i++) {
-        printf("%d\n", numbers[i]);
-    }
-
-    /* 3. Index + value together. */
-    for (int i = 0; i < n; i++) {
-        printf("%d %d\n", i, numbers[i]);
-    }
-
-    /* 4. While loop. */
-    int i = 0;
-    while (i < n) {
-        printf("%d\n", numbers[i]);
-        i++;
-    }
-    return 0;
-}
-```
-
-```scala run
-object Main extends App {
-  val numbers = Array(1, 2, 3, 4, 5)
-
-  // 1. Index-based for — `arr.indices` gives the valid index range.
-  for (index <- numbers.indices) println(numbers(index))
-
-  // 2. For-each — direct value iteration.
-  for (value <- numbers) println(value)
-
-  // 3. zipWithIndex pairs each value with its position.
-  for ((value, index) <- numbers.zipWithIndex) println(s"$index $value")
-
-  // 4. While loop.
-  var i = 0
-  while (i < numbers.length) {
-    println(numbers(i))
-    i += 1
-  }
 }
 ```
 
@@ -973,6 +764,7 @@ object Main extends App {
 > - Use `for value in numbers` when you only need the value
 > - Use `for index, value in enumerate(numbers)` when you need both
 > - Use `while` when you need finer control (e.g. skip indices, step by 2)
+> - Walk the index range backwards (`range(len(numbers) - 1, -1, -1)`) for a reverse traversal
 
 ---
 
@@ -1113,18 +905,6 @@ The CPU computes this address **instantly** using a single multiplication and ad
 The power of arrays comes from this formula. Once you know the base address and the datatype size, you can jump to any element in constant time. The CPU doesn't need to scan from the beginning — it does one arithmetic operation and lands exactly at the right memory address.
 
 
-```pseudocode
-# Simulate the subscript operator's address arithmetic for an int array of length 5.
-baseAddress ← 2
-sizeOfInt ← 4                                       # bytes per element
-
-function addressOf(index):
-    return baseAddress + sizeOfInt × index          # the formula every CPU evaluates
-
-for i from 0 to 4:
-    print "value" + (i + 1) + " at index " + i + " → address " + addressOf(i)
-```
-
 ```python run
 # Simulate the subscript-operator's address arithmetic for an int array of length 5.
 base_address = 2
@@ -1151,37 +931,6 @@ public class Main {
             System.out.println("value" + (i + 1) + " at index " + i + " → address " + addressOf(i));
         }
     }
-}
-```
-
-```c run
-#include <stdio.h>
-
-#define BASE_ADDRESS 2
-#define SIZE_OF_INT  4
-
-int address_of(int index) {
-    return BASE_ADDRESS + SIZE_OF_INT * index;
-}
-
-int main() {
-    for (int i = 0; i < 5; i++) {
-        printf("value%d at index %d → address %d\n", i + 1, i, address_of(i));
-    }
-    return 0;
-}
-```
-
-```scala run
-object Main extends App {
-  val baseAddress = 2
-  val sizeOfInt   = 4
-
-  def addressOf(index: Int): Int = baseAddress + sizeOfInt * index
-
-  for (i <- 0 until 5) {
-    println(s"value${i + 1} at index $i → address ${addressOf(i)}")
-  }
 }
 ```
 
@@ -1356,19 +1105,6 @@ All of this happens automatically under the hood in modern programming languages
 The subscript operator `array[i]` is not magic — it's one multiplication, one addition, and one memory read. The CPU knows exactly where to go, reads exactly the right number of bytes, and hands the value back. That's what makes arrays so fast and so fundamental.
 
 
-```pseudocode
-# Full subscript pipeline: address = base + size × index, then read 4 bytes there.
-baseAddress ← 2
-sizeOfInt ← 4
-
-function access(index):
-    addr ← baseAddress + sizeOfInt × index
-    return "array[" + index + "] → address " + addr + " → value" + (index + 1)
-
-for i from 0 to 4:
-    print access(i)
-```
-
 ```python run
 # Full subscript pipeline: address = base + size × index, then read 4 bytes.
 base_address = 2
@@ -1395,37 +1131,6 @@ public class Main {
     public static void main(String[] args) {
         for (int i = 0; i < 5; i++) System.out.println(access(i));
     }
-}
-```
-
-```c run
-#include <stdio.h>
-
-#define BASE 2
-#define SIZE 4
-
-void access_(int index) {
-    int addr = BASE + SIZE * index;
-    printf("array[%d] → address %d → value%d\n", index, addr, index + 1);
-}
-
-int main() {
-    for (int i = 0; i < 5; i++) access_(i);
-    return 0;
-}
-```
-
-```scala run
-object Main extends App {
-  val base = 2
-  val size = 4
-
-  def access(index: Int): String = {
-    val addr = base + size * index
-    s"array[$index] → address $addr → value${index + 1}"
-  }
-
-  for (i <- 0 until 5) println(access(i))
 }
 ```
 
@@ -1498,63 +1203,54 @@ Click any question to reveal the answer.
 **A:** `O(1)`. One multiplication and one addition compute the address; one memory read or write completes the access.
 
 </details>
-
 <details>
 <summary><strong>Q:</strong> Worst-case complexity of inserting at the middle of an array of length <code>n</code>?</summary>
 
 **A:** `O(n)`. Every element from the insertion index to the end shifts one slot to the right.
 
 </details>
-
 <details>
 <summary><strong>Q:</strong> Worst-case complexity of <code>arr.append(x)</code> on a *dynamic* array?</summary>
 
 **A:** `O(n)` worst-case (the resize step), but `O(1)` *amortised* across many appends. The doubling strategy means total resize work is `O(n)` for `n` appends.
 
 </details>
-
 <details>
 <summary><strong>Q:</strong> Why are array indices zero-based?</summary>
 
 **A:** The address formula `addr = base + size × index` lands on the first element when `index = 0`. Starting at `1` would skip the base address and require a subtraction in the formula.
 
 </details>
-
 <details>
 <summary><strong>Q:</strong> Address of element at index <code>i</code> in an int array of base address <code>B</code> with 4-byte ints?</summary>
 
 **A:** `B + 4 × i`.
 
 </details>
-
 <details>
 <summary><strong>Q:</strong> Why are arrays so cache-friendly?</summary>
 
 **A:** Contiguous memory + fixed element size means the CPU's hardware prefetcher can predict the next cache line and fetch it before you ask for it. Linked structures fight this at every step.
 
 </details>
-
 <details>
 <summary><strong>Q:</strong> Difference between Python's <code>list</code> and <code>array.array</code>?</summary>
 
 **A:** `list` is an array of `PyObject*` pointers — heterogeneous, every element a heap-allocated boxed object. `array.array` is a typed primitive array (one contiguous buffer of `int`s, `float`s, etc.) with no boxing. NumPy's `ndarray` is the same idea, generalised to N dimensions.
 
 </details>
-
 <details>
 <summary><strong>Q:</strong> Difference between row-major and column-major layout?</summary>
 
 **A:** Row-major (C, Python, Java) stores `arr[i][j]` and `arr[i][j+1]` in adjacent memory. Column-major (Fortran, MATLAB) stores `arr[i][j]` and `arr[i+1][j]` adjacently. Loop order matters — iterate the *innermost* dimension fastest for cache locality.
 
 </details>
-
 <details>
 <summary><strong>Q:</strong> What does it mean for a Python <code>list</code> slice vs a NumPy slice?</summary>
 
 **A:** `list[1:5]` allocates a *copy*. `numpy[1:5]` returns a *view* — same underlying buffer, mutations write through.
 
 </details>
-
 <details>
 <summary><strong>Q:</strong> Pre-size pattern in Python / Java to avoid resize hiccups?</summary>
 
@@ -1623,7 +1319,7 @@ range_sum_i_to_j = prefix[j + 1] - prefix[i]
 
 - **Prerequisite:** [Asymptotic Analysis](/cortex/data-structures-and-algorithms/foundations-asymptotic-analysis) — what `O(1)`, `O(n)`, and `amortised O(1)` mean, and how to derive them from a loop.
 - **Next chapter:** [Multidimensional Arrays](/cortex/data-structures-and-algorithms/linear-structures-arrays-multidimensional) — extending the address formula to 2D and beyond, with row-major vs column-major in detail.
-- **Patterns built on this chapter:** [Two Pointers](/cortex/data-structures-and-algorithms/linear-structures-arrays-pattern-two-pointers), [Sliding Window](/cortex/data-structures-and-algorithms/linear-structures-arrays-pattern-sliding-window), [Prefix Sum](/cortex/data-structures-and-algorithms/linear-structures-arrays-pattern-prefix-sum) — the three idioms you'll see in nine out of ten array problems.
+- **Patterns built on this chapter:** [Two Pointers](/cortex/data-structures-and-algorithms/linear-structures-arrays-pattern-two-pointers), [Sliding Window](/cortex/data-structures-and-algorithms/linear-structures-arrays-pattern-fixed-sliding-window), [Prefix Sum](/cortex/data-structures-and-algorithms/linear-structures-hash-table-pattern-prefix-sum) — the three idioms you'll see in nine out of ten array problems.
 - **Related structure:** [Hash Tables](/cortex/data-structures-and-algorithms/linear-structures-hash-table-introduction-to-hash-tables) — backed by an array of buckets; the "trade `O(n²)` for `O(n)` with a hash map" move comes up constantly in array problems.
 - **Production deep dive (stub):** [Redis Internal Encodings](/cortex/data-structures-and-algorithms/dsa-in-real-systems-redis-internal-encodings) — where the array form (ziplist / listpack) wins over the "proper" structure for small collections.
 

@@ -203,119 +203,170 @@ The sink-side edges. Each R-`t` edge has capacity 1, so at most 1 unit of flow c
 
 # Implementation
 
-We build the flow network on top of the input bipartite graph and reuse the Ford-Fulkerson code from the previous lesson. The implementation is concise — the heavy lifting was already done.
+We build the flow network on top of the input bipartite graph and reuse the Ford-Fulkerson `maximum_flow` code from the previous lesson verbatim. The implementation is concise — the heavy lifting was already done.
 
 The input is given as:
 - `graph[i]` — list of jobs applicant `i` is qualified for.
 - `left` — list of applicant node IDs.
 - `right` — list of job node IDs.
 
-We add 2 new nodes (source and sink) and wire them up.
+`maximum_bipartite_matching` copies the original edges into a `flow_graph` adjacency list of `(neighbour, capacity)` pairs (every capacity is 1 — the matching constraint), appends 2 new nodes (source and sink), wires the source to every `left` node and every `right` node to the sink, then hands the whole network to `maximum_flow`.
 
-
-```pseudocode
-function fordFulkerson(residual, source, sink):
-    total ← 0
-    while true:
-        visited ← empty set
-        path ← empty list
-        if NOT dfs(residual, visited, path, source, sink): break
-        bottleneck ← min residual[path[i]][path[i+1]] for consecutive pairs
-        for each consecutive (u, v) in path:
-            residual[u][v] ← residual[u][v] − bottleneck
-            residual[v][u] ← residual[v][u] + bottleneck
-        total ← total + bottleneck
-    return total
-
-function maximumBipartiteMatching(graph, left, right):
-    source ← N,  sink ← N+1
-    residual ← (N+2)×(N+2) matrix of 0
-    for u in graph:
-        for v in graph[u]:
-            residual[u][v] ← 1        # L → R edges, capacity 1
-    for u in left:
-        residual[source][u] ← 1       # source → L, capacity 1
-    for v in right:
-        residual[v][sink] ← 1         # R → sink, capacity 1
-    return fordFulkerson(residual, source, sink)
-```
 
 ```python run
-from typing import List
+import sys
+from typing import List, Tuple, Set
 
 class Solution:
-    def dfs(self,
-            residual: List[List[int]],
-            visited: set,
-            path: List[int],
-            node: int,
-            sink: int) -> bool:
+    def dfs(
+        self,
+        residual_graph: List[List[int]],
+        visited: Set[int],
+        path: List[int],
+        node: int,
+        sink: int,
+    ) -> bool:
+
+        # Mark the current node as visited in the graph to avoid
+        # visiting it again
         visited.add(node)
+
+        # Add the current node to the path
         path.append(node)
+
+        # If the current node is the sink, return true
         if node == sink:
             return True
-        for neighbour in range(len(residual)):
-            if neighbour not in visited and residual[node][neighbour] > 0:
-                if self.dfs(residual, visited, path, neighbour, sink):
+
+        # Explore all neighbours of the current node
+        for neighbour in range(len(residual_graph)):
+
+            # If the neighbour is not visited and has a positive
+            # capacity in the residual graph, recursively call DFS
+            if (
+                neighbour not in visited
+                and residual_graph[node][neighbour] > 0
+            ):
+
+                # If the DFS call returns true, propagate the result
+                # back to the previous call
+                if self.dfs(
+                    residual_graph, visited, path, neighbour, sink
+                ):
                     return True
+
+        # If no path to the sink is found, remove the current node
+        # from the path
         path.pop()
+
+        # If no path to the sink is found from this node, backtrack
         return False
 
-    def ford_fulkerson(self,
-                       residual: List[List[int]],
-                       source: int,
-                       sink: int) -> int:
+    def maximum_flow(
+        self, graph: List[List[Tuple[int, int]]], source: int, sink: int
+    ) -> int:
+
+        # Number of nodes in the graph
+        n = len(graph)
+
+        # If the graph is empty, return 0
+        if n == 0:
+            return 0
+
+        # Create a residual graph and initialize it with the original
+        # capacities
+        residual_graph = [[0] * n for _ in range(n)]
+        for node in range(n):
+            for neighbour, capacity in graph[node]:
+                residual_graph[node][neighbour] = capacity
+
+        # Initialize the maximum flow
         max_flow = 0
+
+        # Find augmenting paths in the residual graph using
+        # Depth-First Search
         while True:
-            visited: set = set()
+
+            # Create a set to keep track of visited nodes
+            visited: Set[int] = set()
+
+            # List to store the path from source to sink
             path: List[int] = []
-            if not self.dfs(residual, visited, path, source, sink):
+
+            # If no more augmenting paths exist, break
+            if not self.dfs(residual_graph, visited, path, source, sink):
                 break
-            path_flow = float('inf')
+
+            # Find the minimum capacity along the augmenting path
+            path_flow = sys.maxsize
             for i in range(len(path) - 1):
-                path_flow = min(path_flow, residual[path[i]][path[i + 1]])
+                u = path[i]
+                v = path[i + 1]
+                path_flow = min(path_flow, residual_graph[u][v])
+
+            # Update the residual capacities and reverse edges along the
+            # augmenting path
             for i in range(len(path) - 1):
-                residual[path[i]][path[i + 1]] -= path_flow
-                residual[path[i + 1]][path[i]] += path_flow
+                u = path[i]
+                v = path[i + 1]
+                residual_graph[u][v] -= path_flow
+                residual_graph[v][u] += path_flow
+
+            # Add the path flow to the maximum flow
             max_flow += path_flow
+
         return max_flow
 
-    def maximum_bipartite_matching(self,
-                                   graph: List[List[int]],
-                                   left: List[int],
-                                   right: List[int]) -> int:
-        n = len(graph)
-        # Add 2 new nodes: source = n, sink = n + 1.
-        size = n + 2
-        source, sink = n, n + 1
+    def maximum_bipartite_matching(
+        self, graph: List[List[int]], left: List[int], right: List[int]
+    ) -> int:
+        flow_graph: List[List[Tuple[int, int]]] = [
+            [] for _ in range(len(graph))
+        ]
 
-        # Build the residual matrix from the bipartite graph + the new s/t edges.
-        # Every edge has capacity 1 — this is the matching constraint.
-        residual = [[0] * size for _ in range(size)]
-        for u in range(n):
-            for v in graph[u]:
-                residual[u][v] = 1
-        for u in left:
-            residual[source][u] = 1     # source → L-nodes
-        for v in right:
-            residual[v][sink] = 1       # R-nodes → sink
+        # Copy the connections from the input graph to the flow graph
+        # with capacity 1
+        for node in range(len(graph)):
+            for neighbour in graph[node]:
+                flow_graph[node].append((neighbour, 1))
 
-        return self.ford_fulkerson(residual, source, sink)
+        # Get the index of the source node
+        source = len(flow_graph)
+
+        # Add the source node to the flow graph
+        flow_graph.append([])
+
+        # Connect the source node to all nodes in the left partition with
+        # capacity 1
+        for node in left:
+            flow_graph[source].append((node, 1))
+
+        # Get the index of the sink node
+        sink = len(flow_graph)
+
+        # Add the sink node to the flow graph
+        flow_graph.append([])
+
+        # Connect all nodes in the right partition to the sink node with
+        # capacity 1
+        for node in right:
+            flow_graph[node].append((sink, 1))
+
+        # Call the Ford-Fulkerson maximum flow function to compute the
+        # result
+        return self.maximum_flow(flow_graph, source, sink)
 
 
-# 5 applicants (0..4), 6 jobs (5..10) — total 11 nodes (excluding s, t).
-# Each applicant lists their qualified jobs.
-graph = [
-    [5, 6],            # A1 (0) qualifies for J1 (5), J2 (6)
-    [5, 7],            # A2 (1) qualifies for J1 (5), J3 (7)
-    [6, 8],            # A3 (2) qualifies for J2 (6), J4 (8)
-    [7, 9],            # A4 (3) qualifies for J3 (7), J5 (9)
-    [9, 10],           # A5 (4) qualifies for J5 (9), J6 (10)
-    [], [], [], [], [], [],  # job nodes have no outgoing edges in the bipartite spec
-]
-left  = [0, 1, 2, 3, 4]
-right = [5, 6, 7, 8, 9, 10]
-print(Solution().maximum_bipartite_matching(graph, left, right))   # 5
+# Examples from the problem statement
+print(Solution().maximum_bipartite_matching([[4],[5],[6],[7],[0],[1],[2],[3]], [0,1,2,3], [4,5,6,7]))  # 4
+print(Solution().maximum_bipartite_matching([[4,5],[5],[6],[4,6],[0,3],[0,1],[2,3],[]], [0,1,2,3], [4,5,6,7]))  # 3
+
+# Edge cases
+print(Solution().maximum_bipartite_matching([], [], []))          # 0
+print(Solution().maximum_bipartite_matching([[1],[]], [0], [1]))   # 1
+print(Solution().maximum_bipartite_matching([[],[]], [0], [1]))    # 0
+# Two left, one right — max 1
+print(Solution().maximum_bipartite_matching([[2],[2],[0,1]], [0,1], [2]))  # 1
 ```
 
 ```java run
@@ -323,178 +374,190 @@ import java.util.*;
 
 public class Main {
     static class Solution {
-        public boolean dfs(int[][] residual, Set<Integer> visited,
-                           List<Integer> path, int node, int sink) {
+        private boolean dfs(
+            int[][] residualGraph,
+            Set<Integer> visited,
+            List<Integer> path,
+            int node,
+            int sink
+        ) {
+
+            // Mark the current node as visited in the graph to avoid
+            // visiting it again
             visited.add(node);
+
+            // Add the current node to the path
             path.add(node);
-            if (node == sink) return true;
-            for (int neighbour = 0; neighbour < residual.length; neighbour++) {
-                if (!visited.contains(neighbour) && residual[node][neighbour] > 0) {
-                    if (dfs(residual, visited, path, neighbour, sink)) return true;
+
+            // If the current node is the sink, return true
+            if (node == sink) {
+                return true;
+            }
+
+            // Explore all neighbours of the current node
+            for (
+                int neighbour = 0;
+                neighbour < residualGraph.length;
+                ++neighbour
+            ) {
+
+                // If the neighbour is not visited and has a positive
+                // capacity in the residual graph, recursively call DFS
+                if (
+                    !visited.contains(neighbour) &&
+                    residualGraph[node][neighbour] > 0
+                ) {
+
+                    // If the DFS call returns true, propagate the result
+                    // back to the previous call
+                    if (dfs(residualGraph, visited, path, neighbour, sink)) {
+                        return true;
+                    }
                 }
             }
+
+            // If no path to the sink is found, remove the current node
+            // from the path
             path.remove(path.size() - 1);
+
+            // If no path to the sink is found from this node, backtrack
             return false;
         }
 
-        public int fordFulkerson(int[][] residual, int source, int sink) {
-            int max = 0;
-            while (true) {
-                Set<Integer> visited = new HashSet<>();
-                List<Integer> path = new ArrayList<>();
-                if (!dfs(residual, visited, path, source, sink)) break;
-                int pf = Integer.MAX_VALUE;
-                for (int i = 0; i < path.size() - 1; i++)
-                    pf = Math.min(pf, residual[path.get(i)][path.get(i + 1)]);
-                for (int i = 0; i < path.size() - 1; i++) {
-                    residual[path.get(i)][path.get(i + 1)] -= pf;
-                    residual[path.get(i + 1)][path.get(i)] += pf;
-                }
-                max += pf;
+        private int maximumFlow(
+            List<List<List<Integer>>> graph,
+            int source,
+            int sink
+        ) {
+
+            // Number of nodes in the graph
+            int N = graph.size();
+
+            // If the graph is empty, return 0
+            if (N == 0) {
+                return 0;
             }
-            return max;
+
+            // Create a residual graph and initialize it with the original
+            // capacities
+            int[][] residualGraph = new int[N][N];
+            for (int node = 0; node < N; ++node) {
+                for (List<Integer> edge : graph.get(node)) {
+                    int neighbour = edge.get(0);
+                    int capacity = edge.get(1);
+                    residualGraph[node][neighbour] = capacity;
+                }
+            }
+
+            // Initialize the maximum flow
+            int maxFlow = 0;
+
+            // Find augmenting paths in the residual graph using
+            // Depth-First Search
+            while (true) {
+
+                // Create a set to keep track of visited nodes
+                Set<Integer> visited = new HashSet<>();
+
+                // List to store the path from source to sink
+                List<Integer> path = new ArrayList<>();
+
+                // If no more augmenting paths exist, break
+                if (!dfs(residualGraph, visited, path, source, sink)) {
+                    break;
+                }
+
+                // Find the minimum capacity along the augmenting path
+                int pathFlow = Integer.MAX_VALUE;
+                for (int i = 0; i < path.size() - 1; ++i) {
+                    int u = path.get(i);
+                    int v = path.get(i + 1);
+                    pathFlow = Math.min(pathFlow, residualGraph[u][v]);
+                }
+
+                // Update the residual capacities and reverse edges along the
+                // augmenting path
+                for (int i = 0; i < path.size() - 1; ++i) {
+                    int u = path.get(i);
+                    int v = path.get(i + 1);
+                    residualGraph[u][v] -= pathFlow;
+                    residualGraph[v][u] += pathFlow;
+                }
+
+                // Add the path flow to the maximum flow
+                maxFlow += pathFlow;
+            }
+
+            return maxFlow;
         }
 
-        public int maximumBipartiteMatching(List<List<Integer>> graph, int[] left, int[] right) {
-            int n = graph.size();
-            int size = n + 2, source = n, sink = n + 1;
-            int[][] residual = new int[size][size];
-            for (int u = 0; u < n; u++) for (int v : graph.get(u)) residual[u][v] = 1;
-            for (int u : left) residual[source][u] = 1;
-            for (int v : right) residual[v][sink] = 1;
-            return fordFulkerson(residual, source, sink);
+        public int maximumBipartiteMatching(
+            List<List<Integer>> graph,
+            List<Integer> left,
+            List<Integer> right
+        ) {
+            List<List<List<Integer>>> flowGraph = new ArrayList<>();
+
+            for (int i = 0; i < graph.size(); ++i) {
+                flowGraph.add(new ArrayList<>());
+            }
+
+            // Copy the connections from the input graph to the flow graph
+            // with capacity 1
+            for (int node = 0; node < graph.size(); ++node) {
+                for (int neighbour : graph.get(node)) {
+                    flowGraph.get(node).add(List.of(neighbour, 1));
+                }
+            }
+
+            // Get the index of the source node
+            int source = flowGraph.size();
+
+            // Add the source node to the flow graph
+            flowGraph.add(new ArrayList<>());
+
+            // Connect the source node to all nodes in the left partition
+            // with capacity 1
+            for (int node : left) {
+                flowGraph.get(source).add(List.of(node, 1));
+            }
+
+            // Get the index of the sink node
+            int sink = flowGraph.size();
+
+            // Add the sink node to the flow graph
+            flowGraph.add(new ArrayList<>());
+
+            // Connect all nodes in the right partition
+            // to the sink node with capacity 1
+            for (int node : right) {
+                flowGraph.get(node).add(List.of(sink, 1));
+            }
+
+            // Call the Ford-Fulkerson maximum flow function to compute the
+            // result
+            return maximumFlow(flowGraph, source, sink);
         }
     }
 
     public static void main(String[] args) {
-        List<List<Integer>> g = List.of(
-            List.of(5, 6), List.of(5, 7), List.of(6, 8), List.of(7, 9), List.of(9, 10),
-            List.of(), List.of(), List.of(), List.of(), List.of(), List.of());
-        int[] left = {0, 1, 2, 3, 4};
-        int[] right = {5, 6, 7, 8, 9, 10};
-        System.out.println(new Solution().maximumBipartiteMatching(g, left, right));
+        Solution sol = new Solution();
+
+        // Examples from the problem statement
+        System.out.println(sol.maximumBipartiteMatching(
+            List.of(List.of(4),List.of(5),List.of(6),List.of(7),List.of(0),List.of(1),List.of(2),List.of(3)),
+            List.of(0,1,2,3), List.of(4,5,6,7)));  // 4
+        System.out.println(sol.maximumBipartiteMatching(
+            List.of(List.of(4,5),List.of(5),List.of(6),List.of(4,6),List.of(0,3),List.of(0,1),List.of(2,3),new ArrayList<>()),
+            List.of(0,1,2,3), List.of(4,5,6,7)));  // 3
+
+        // Edge cases
+        System.out.println(sol.maximumBipartiteMatching(new ArrayList<>(), new ArrayList<>(), new ArrayList<>()));  // 0
+        System.out.println(sol.maximumBipartiteMatching(List.of(List.of(1), new ArrayList<>()), List.of(0), List.of(1)));  // 1
+        System.out.println(sol.maximumBipartiteMatching(List.of(new ArrayList<>(), new ArrayList<>()), List.of(0), List.of(1)));  // 0
+        // Two left, one right — max 1
+        System.out.println(sol.maximumBipartiteMatching(List.of(List.of(2), List.of(2), List.of(0,1)), List.of(0,1), List.of(2)));  // 1
     }
-}
-```
-
-```c run
-#include <stdio.h>
-#include <stdlib.h>
-#include <stdbool.h>
-#include <limits.h>
-
-typedef struct { int* data; int size; } AdjList;
-
-static bool dfs(int** r, int n, bool* visited, int* path, int* ps, int node, int sink) {
-    visited[node] = true;
-    path[(*ps)++] = node;
-    if (node == sink) return true;
-    for (int v = 0; v < n; v++) {
-        if (!visited[v] && r[node][v] > 0) {
-            if (dfs(r, n, visited, path, ps, v, sink)) return true;
-        }
-    }
-    (*ps)--;
-    return false;
-}
-
-int max_bipartite(AdjList* graph, int n, int* left, int ln, int* right, int rn) {
-    int size = n + 2, source = n, sink = n + 1;
-    int** r = malloc(size * sizeof(int*));
-    for (int i = 0; i < size; i++) r[i] = calloc(size, sizeof(int));
-    for (int u = 0; u < n; u++)
-        for (int j = 0; j < graph[u].size; j++)
-            r[u][graph[u].data[j]] = 1;
-    for (int i = 0; i < ln; i++) r[source][left[i]] = 1;
-    for (int i = 0; i < rn; i++) r[right[i]][sink] = 1;
-
-    int total = 0;
-    while (true) {
-        bool* visited = calloc(size, sizeof(bool));
-        int* path = malloc(size * sizeof(int));
-        int ps = 0;
-        if (!dfs(r, size, visited, path, &ps, source, sink)) {
-            free(visited); free(path); break;
-        }
-        int pf = INT_MAX;
-        for (int i = 0; i < ps - 1; i++)
-            if (r[path[i]][path[i+1]] < pf) pf = r[path[i]][path[i+1]];
-        for (int i = 0; i < ps - 1; i++) {
-            r[path[i]][path[i+1]] -= pf;
-            r[path[i+1]][path[i]] += pf;
-        }
-        total += pf;
-        free(visited); free(path);
-    }
-    for (int i = 0; i < size; i++) free(r[i]);
-    free(r);
-    return total;
-}
-
-int main() {
-    int g0[]={5,6}, g1[]={5,7}, g2[]={6,8}, g3[]={7,9}, g4[]={9,10};
-    AdjList g[]={{g0,2},{g1,2},{g2,2},{g3,2},{g4,2},
-                 {NULL,0},{NULL,0},{NULL,0},{NULL,0},{NULL,0},{NULL,0}};
-    int left[]={0,1,2,3,4};
-    int right[]={5,6,7,8,9,10};
-    printf("%d\n", max_bipartite(g, 11, left, 5, right, 6));
-    return 0;
-}
-```
-
-```scala run
-import scala.collection.mutable
-
-object Main extends App {
-  class Solution {
-    def dfs(r: Array[Array[Int]], visited: mutable.Set[Int],
-            path: mutable.ArrayBuffer[Int], node: Int, sink: Int): Boolean = {
-      visited.add(node); path.append(node)
-      if (node == sink) return true
-      for (v <- r.indices) {
-        if (!visited.contains(v) && r(node)(v) > 0)
-          if (dfs(r, visited, path, v, sink)) return true
-      }
-      path.remove(path.length - 1)
-      false
-    }
-
-    def fordFulkerson(r: Array[Array[Int]], source: Int, sink: Int): Int = {
-      var total = 0; var keepGoing = true
-      while (keepGoing) {
-        val visited = mutable.Set.empty[Int]
-        val path = mutable.ArrayBuffer.empty[Int]
-        if (!dfs(r, visited, path, source, sink)) keepGoing = false
-        else {
-          var pf = Int.MaxValue
-          for (i <- 0 until path.length - 1) pf = math.min(pf, r(path(i))(path(i+1)))
-          for (i <- 0 until path.length - 1) {
-            r(path(i))(path(i+1)) -= pf
-            r(path(i+1))(path(i)) += pf
-          }
-          total += pf
-        }
-      }
-      total
-    }
-
-    def maximumBipartiteMatching(graph: Array[Array[Int]],
-                                 left: Array[Int], right: Array[Int]): Int = {
-      val n = graph.length
-      val size = n + 2; val source = n; val sink = n + 1
-      val r = Array.ofDim[Int](size, size)
-      for (u <- 0 until n; v <- graph(u)) r(u)(v) = 1
-      for (u <- left) r(source)(u) = 1
-      for (v <- right) r(v)(sink) = 1
-      fordFulkerson(r, source, sink)
-    }
-  }
-
-  val g = Array(
-    Array(5, 6), Array(5, 7), Array(6, 8), Array(7, 9), Array(9, 10),
-    Array.empty[Int], Array.empty[Int], Array.empty[Int],
-    Array.empty[Int], Array.empty[Int], Array.empty[Int])
-  println(new Solution().maximumBipartiteMatching(g, Array(0,1,2,3,4), Array(5,6,7,8,9,10)))
 }
 ```
 

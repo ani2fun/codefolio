@@ -176,7 +176,9 @@ Output: 1                    Only one parenthesisation; evaluates True
 
 ---
 
-## Applying the Diagnostic Questions
+<details>
+<summary><h2>Applying the Diagnostic Questions</h2></summary>
+
 
 | # | Question | Answer |
 |---|---|---|
@@ -209,42 +211,13 @@ Already established — the operator's truth table needs both T and F counts on 
 
 For each split-point `k`, the number of left-tree × right-tree combinations is `(count of left trees) × (count of right trees)` — multiplication, because every pairing forms one whole tree. Different `k`s yield disjoint sets of whole trees, so we sum across `k`.
 
----
+</details>
+<details>
+<summary><h2>The Solution</h2></summary>
 
-## The Solution
 
 Bottom-up tabulation; two parallel tables. We treat operands as living at even string indices and operators at odd indices; the inner loop steps by 2.
 
-
-```pseudocode
-# Count parenthesisations of s that evaluate to True. s alternates operands (T/F) and operators (&|^).
-# T[i][j] / F[i][j] = ways s[i..j] evaluates True / False. Split at each operator k inside [i..j].
-function booleanParenthesisation(s):
-    n ← length(s)
-    T ← n × n grid of zeros
-    F ← n × n grid of zeros
-    for i from 0 to n − 1 step 2:                # operand positions
-        T[i][i] ← 1 if s[i] = 'T' else 0
-        F[i][i] ← 1 if s[i] = 'F' else 0
-
-    for length from 3 to n step 2:               # only odd-length intervals contain a full sub-expression
-        for i from 0 to n − length step 2:
-            j ← i + length − 1
-            for k from i to j − 1 step 2:        # operator at index k+1
-                op ← s[k + 1]
-                tl ← T[i][k];     fl ← F[i][k]
-                tr ← T[k + 2][j]; fr ← F[k + 2][j]
-                if op = '&':
-                    T[i][j] ← T[i][j] + tl × tr
-                    F[i][j] ← F[i][j] + tl × fr + fl × tr + fl × fr
-                else if op = '|':
-                    T[i][j] ← T[i][j] + tl × tr + tl × fr + fl × tr
-                    F[i][j] ← F[i][j] + fl × fr
-                else:                            # XOR
-                    T[i][j] ← T[i][j] + tl × fr + fl × tr
-                    F[i][j] ← F[i][j] + tl × tr + fl × fr
-    return T[0][n − 1]
-```
 
 ```python run
 from typing import List
@@ -332,83 +305,7 @@ public class Main {
 }
 ```
 
-```c run
-#include <stdio.h>
-#include <string.h>
-
-int T[201][201];
-int F[201][201];
-
-int boolean_parenthesisation(const char *s) {
-    int n = (int) strlen(s);
-    for (int i = 0; i < n; i++) for (int j = 0; j < n; j++) { T[i][j] = 0; F[i][j] = 0; }
-    for (int i = 0; i < n; i += 2) {
-        T[i][i] = (s[i] == 'T') ? 1 : 0;
-        F[i][i] = (s[i] == 'F') ? 1 : 0;
-    }
-    for (int len = 3; len <= n; len += 2) {
-        for (int i = 0; i <= n - len; i += 2) {
-            int j = i + len - 1;
-            for (int k = i; k < j; k += 2) {
-                char op = s[k + 1];
-                int tl = T[i][k], fl = F[i][k];
-                int tr = T[k + 2][j], fr = F[k + 2][j];
-                if (op == '&') {
-                    T[i][j] += tl * tr;
-                    F[i][j] += tl * fr + fl * tr + fl * fr;
-                } else if (op == '|') {
-                    T[i][j] += tl * tr + tl * fr + fl * tr;
-                    F[i][j] += fl * fr;
-                } else {
-                    T[i][j] += tl * fr + fl * tr;
-                    F[i][j] += tl * tr + fl * fr;
-                }
-            }
-        }
-    }
-    return T[0][n - 1];
-}
-
-int main(void) {
-    printf("%d\n", boolean_parenthesisation("T^F&T"));  /* 2 */
-    printf("%d\n", boolean_parenthesisation("T|F"));    /* 1 */
-    return 0;
-}
-```
-
-```scala run
-object Main extends App {
-  class Solution {
-    def booleanParenthesisation(s: String): Int = {
-      val n = s.length
-      val T = Array.fill(n, n)(0)
-      val F = Array.fill(n, n)(0)
-      for (i <- 0 until n by 2) {
-        T(i)(i) = if (s(i) == 'T') 1 else 0
-        F(i)(i) = if (s(i) == 'F') 1 else 0
-      }
-      for (len <- 3 to n by 2; i <- 0 to n - len by 2) {
-        val j = i + len - 1
-        for (k <- i until j by 2) {
-          val op = s(k + 1)
-          val (tl, fl) = (T(i)(k), F(i)(k))
-          val (tr, fr) = (T(k + 2)(j), F(k + 2)(j))
-          op match {
-            case '&' => T(i)(j) += tl * tr;                              F(i)(j) += tl * fr + fl * tr + fl * fr
-            case '|' => T(i)(j) += tl * tr + tl * fr + fl * tr;          F(i)(j) += fl * fr
-            case '^' => T(i)(j) += tl * fr + fl * tr;                    F(i)(j) += tl * tr + fl * fr
-          }
-        }
-      }
-      T(0)(n - 1)
-    }
-  }
-
-  println(new Solution().booleanParenthesisation("T^F&T"))   // 2
-}
-```
-
-
+</details>
 <details>
 <summary><strong>Trace — s = "T^F&T"</strong></summary>
 
@@ -447,10 +344,10 @@ Final: T[0][4] = 2.  ✓
 ```
 
 </details>
+<details>
+<summary><h2>Solution &amp; Analysis</h2></summary>
 
----
-
-## Complexity Analysis
+### Complexity Analysis
 
 | Aspect | Cost | Why |
 |---|---|---|
@@ -459,9 +356,7 @@ Final: T[0][4] = 2.  ✓
 
 For very long expressions, modular arithmetic is often required (counts grow as Catalan numbers — exponential). The standard variant on competitive-programming sites returns the answer modulo `1003` or `10^9 + 7`.
 
----
-
-## Edge Cases
+### Edge Cases
 
 | Case | Example | Expected | Reasoning |
 |---|---|---|---|
@@ -469,11 +364,12 @@ For very long expressions, modular arithmetic is often required (counts grow as 
 | Single operand False | `"F"` | `0` | Trivial parsing evaluates False; no True parses. |
 | All Trues with AND | `"T&T&T&T"` | `5` | All parsings evaluate True; count = Catalan(3) = 5. |
 | All Falses with OR | `"F\|F\|F\|F"` | `0` | All evaluate False; no True parses. |
-| Mixed XOR | `"T^F^T"` | `2` | Two parsings; both happen to evaluate True. |
+| Mixed XOR | `"T^F^T"` | `0` | Two parsings: `(T^F)^T = T^T = F` and `T^(F^T) = T^T = F`. Both evaluate False, so `T[0][n-1] = 0`. |
 
----
+</details>
+<details>
+<summary><h2>Final Takeaway</h2></summary>
 
-## Final Takeaway
 
 Boolean parenthesisation is the classic **split-point interval DP**. Unlike interval DPs that pick a left or right endpoint (palindrome-substring, optimal strategy), this one picks a *split inside* the range — that's the same shape used by matrix-chain multiplication, optimal BST construction, and any "combine adjacent ranges" problem.
 
@@ -481,6 +377,7 @@ The new structural lesson: when the combination operator's outcome depends on ea
 
 > *Transfer challenge for the next lesson:* Replace boolean operands and operators with *matrix* operands and matrix multiplication. Now the question is: in what order should you multiply a chain of matrices to minimise the total scalar-multiplication cost? Predict the recurrence shape — note that matrix multiplication is associative but not commutative, and the cost depends on the dimensions of the matrices being combined.
 
+</details>
 <details>
 <summary><strong>Answer</strong></summary>
 

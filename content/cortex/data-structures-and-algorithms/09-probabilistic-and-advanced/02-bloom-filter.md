@@ -246,49 +246,42 @@ Click any question to reveal the answer.
 **A:** False positives only. Never false negatives. "Definitely not in the set" or "probably yes".
 
 </details>
-
 <details>
 <summary><strong>Q:</strong> Tuning formulas — given <code>n</code> items and target false-positive rate <code>p</code>?</summary>
 
 **A:** `m = −n · ln(p) / (ln 2)²` bits; `k = (m / n) · ln 2` hash functions.
 
 </details>
-
 <details>
 <summary><strong>Q:</strong> For <code>n = 10⁹</code> and <code>p = 0.01</code> — what memory?</summary>
 
 **A:** `m ≈ 9.5 GB`, `k ≈ 7`. Compared to a hash set of 32-byte keys: `32 GB`. ~3× compression at 1% FPR.
 
 </details>
-
 <details>
 <summary><strong>Q:</strong> Why can't a standard Bloom filter support deletion?</summary>
 
 **A:** Setting a bit to 0 might affect *other* items that hashed to that bit. Use a Counting Bloom Filter (4-bit counters) for deletes.
 
 </details>
-
 <details>
 <summary><strong>Q:</strong> What's the "double hashing trick"?</summary>
 
 **A:** Generate `k` hashes from just two: `h_i(x) = h_1(x) + i · h_2(x) mod m`. Saves computing `k` independent hashes; quality is good enough for typical FPR targets.
 
 </details>
-
 <details>
 <summary><strong>Q:</strong> When does FPR climb beyond the design target?</summary>
 
 **A:** When you insert significantly more items than `n`. Once roughly half the bits are set, the FPR rises rapidly.
 
 </details>
-
 <details>
 <summary><strong>Q:</strong> Three production places Bloom filters live?</summary>
 
 **A:** **Cassandra/RocksDB SSTables** (skip disk reads), **Chrome's malicious-URL filter** (privacy + speed), **Bitcoin SPV proofs** (lightweight client filtering).
 
 </details>
-
 <details>
 <summary><strong>Q:</strong> Modern alternative to Bloom filter?</summary>
 

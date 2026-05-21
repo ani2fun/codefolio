@@ -202,60 +202,72 @@ If your guess matched: you've internalised "go deep first". If not, trace it onc
 We assume the graph is given as an adjacency list `graph` where `graph[i]` is the list of neighbours of node `i`. Nodes are integers `0..N-1`.
 
 
-```pseudocode
-function dfs(graph, node, visited, result):
-    add node to visited
-    append node to result
-    for neighbor in graph[node]:
-        if neighbor is not in visited:
-            dfs(graph, neighbor, visited, result)
-
-function depthFirstTraversal(graph):
-    visited ← empty set
-    result ← empty list
-    for node from 0 to N−1:
-        if node is not in visited:
-            dfs(graph, node, visited, result)
-    return result
-```
-
 ```python run
 from typing import List, Set
 
 class Solution:
-    def dfs(self,
-            graph: List[List[int]],
-            node: int,
-            visited: Set[int],
-            result: List[int]) -> None:
-        # 1) mark current node visited BEFORE recursing — prevents revisits if a
-        #    cycle leads back here through one of our neighbours.
+    def dfs(
+        self,
+        graph: List[List[int]],
+        node: int,
+        visited: Set[int],
+        result: List[int],
+    ) -> None:
+
+        # Mark the current node as visited
         visited.add(node)
-        # 2) append AFTER marking so that 'visited' and 'result' stay in lock-step.
+
+        # Add the current node to the result list
         result.append(node)
 
+        # Traverse all the neighbours of the current node
         for neighbour in graph[node]:
-            # Skip neighbours we've already covered — without this check, cycles loop forever.
+
+            # If the neighbour is not visited, recursively call the DFS
+            # function on the neighbour
             if neighbour not in visited:
                 self.dfs(graph, neighbour, visited, result)
 
     def depth_first_traversal(self, graph: List[List[int]]) -> List[int]:
+
+        # Number of nodes in the graph
         n = len(graph)
+
+        # If the graph is empty, return an empty result
         if n == 0:
             return []
 
-        visited: Set[int] = set()
+        # Initialize a list to store the result of the DFS which will
+        # contain the nodes visited during the DFS traversal
         result: List[int] = []
 
-        # Outer loop handles disconnected graphs — every component gets its own DFS root.
+        # Initialize visited set
+        visited: Set[int] = set()
+
+        # Traverse all nodes in the graph
         for node in range(n):
-            if node not in visited:
-                self.dfs(graph, node, visited, result)
+
+            # If the node is already visited, continue to the next node
+            if node in visited:
+                continue
+
+            # Perform DFS on this new node to visit all the nodes
+            # connected to it.
+            self.dfs(graph, node, visited, result)
+
         return result
 
 
-graph = [[1], [4], [3], [0], [2, 3]]
-print(Solution().depth_first_traversal(graph))   # → [0, 1, 4, 2, 3]
+# Examples from the problem statement
+print(Solution().depth_first_traversal([[1], [4], [3], [0], [2, 3]]))  # [0, 1, 4, 2, 3]
+print(Solution().depth_first_traversal([[4], [0, 3], [0, 4], [2, 4], [1]]))  # [0, 4, 1, 3, 2]
+
+# Edge cases
+print(Solution().depth_first_traversal([]))                            # []
+print(Solution().depth_first_traversal([[]])  )                        # [0]
+print(Solution().depth_first_traversal([[1], [0]]))                    # [0, 1]
+print(Solution().depth_first_traversal([[], [], []]))                  # [0, 1, 2] — disconnected
+print(Solution().depth_first_traversal([[1], [], [3], []]))            # [0, 1, 2, 3] — two components
 ```
 
 ```java run
@@ -263,100 +275,81 @@ import java.util.*;
 
 public class Main {
     static class Solution {
-        public void dfs(List<List<Integer>> graph, int node,
-                        Set<Integer> visited, List<Integer> result) {
+        private void dfs(
+            List<List<Integer>> graph,
+            int node,
+            Set<Integer> visited,
+            List<Integer> result
+        ) {
+
+            // Mark the current node as visited in the graph to avoid
+            // visiting it again
             visited.add(node);
+
+            // Add the current node to the result list
             result.add(node);
+
+            // Traverse all the neighbours of the current node
             for (int neighbour : graph.get(node)) {
-                if (!visited.contains(neighbour)) dfs(graph, neighbour, visited, result);
+
+                // If the neighbour is not visited, recursively call the DFS
+                // function on the neighbour
+                if (!visited.contains(neighbour)) {
+                    dfs(graph, neighbour, visited, result);
+                }
             }
         }
 
         public List<Integer> depthFirstTraversal(List<List<Integer>> graph) {
-            int n = graph.size();
-            if (n == 0) return new ArrayList<>();
 
-            Set<Integer> visited = new HashSet<>();
+            // Number of nodes in the graph
+            int N = graph.size();
+
+            // If the graph is empty, return an empty result
+            if (N == 0) {
+                return new ArrayList<>();
+            }
+
+            // Initialize a list to store the result of the DFS which will
+            // contain the nodes visited during the DFS traversal
             List<Integer> result = new ArrayList<>();
 
-            // Outer loop seeds DFS for every disconnected component.
-            for (int node = 0; node < n; node++) {
-                if (!visited.contains(node)) dfs(graph, node, visited, result);
+            // Initialize visited set
+            Set<Integer> visited = new HashSet<>();
+
+            // Traverse all nodes in the graph
+            for (int node = 0; node < N; node++) {
+
+                // If the node is already visited, continue to the next node
+                if (visited.contains(node)) {
+                    continue;
+                }
+
+                // Perform DFS on this new node to visit all the nodes
+                // connected to it.
+                dfs(graph, node, visited, result);
             }
+
             return result;
         }
     }
 
     public static void main(String[] args) {
-        List<List<Integer>> graph = List.of(
-            List.of(1), List.of(4), List.of(3), List.of(0), List.of(2, 3));
-        System.out.println(new Solution().depthFirstTraversal(graph));
+        // Examples from the problem statement
+        System.out.println(new Solution().depthFirstTraversal(
+            List.of(List.of(1),List.of(4),List.of(3),List.of(0),List.of(2,3))));  // [0, 1, 4, 2, 3]
+        System.out.println(new Solution().depthFirstTraversal(
+            List.of(List.of(4),List.of(0,3),List.of(0,4),List.of(2,4),List.of(1))));  // [0, 4, 1, 3, 2]
+
+        // Edge cases
+        System.out.println(new Solution().depthFirstTraversal(new ArrayList<>()));  // []
+        System.out.println(new Solution().depthFirstTraversal(List.of(new ArrayList<>())));  // [0]
+        System.out.println(new Solution().depthFirstTraversal(List.of(List.of(1),List.of(0))));  // [0, 1]
+        System.out.println(new Solution().depthFirstTraversal(
+            List.of(new ArrayList<>(),new ArrayList<>(),new ArrayList<>())));  // [0, 1, 2]
+        System.out.println(new Solution().depthFirstTraversal(
+            List.of(List.of(1),new ArrayList<>(),List.of(3),new ArrayList<>())));  // [0, 1, 2, 3]
     }
-}
-```
-
-```c run
-#include <stdio.h>
-#include <stdlib.h>
-#include <stdbool.h>
-
-typedef struct { int* data; int size; } AdjList;
-
-static void dfs(AdjList* graph, int node, bool* visited, int* result, int* idx) {
-    visited[node] = true;
-    result[(*idx)++] = node;
-    for (int i = 0; i < graph[node].size; i++) {
-        int neighbour = graph[node].data[i];
-        if (!visited[neighbour]) dfs(graph, neighbour, visited, result, idx);
-    }
-}
-
-void depth_first_traversal(AdjList* graph, int n, int* result, int* result_size) {
-    bool* visited = calloc(n, sizeof(bool));
-    int idx = 0;
-    for (int node = 0; node < n; node++) {
-        if (!visited[node]) dfs(graph, node, visited, result, &idx);
-    }
-    *result_size = idx;
-    free(visited);
-}
-
-int main() {
-    int n0[] = {1}, n1[] = {4}, n2[] = {3}, n3[] = {0}, n4[] = {2, 3};
-    AdjList g[] = {{n0, 1}, {n1, 1}, {n2, 1}, {n3, 1}, {n4, 2}};
-    int result[5], size;
-    depth_first_traversal(g, 5, result, &size);
-    for (int i = 0; i < size; i++) printf("%d ", result[i]);
-    printf("\n");
-    return 0;
-}
-```
-
-```scala run
-import scala.collection.mutable.{ArrayBuffer, HashSet}
-
-object Main extends App {
-  class Solution {
-    def dfs(graph: Array[Array[Int]], node: Int,
-            visited: HashSet[Int], result: ArrayBuffer[Int]): Unit = {
-      visited.add(node)
-      result.append(node)
-      for (neighbour <- graph(node) if !visited.contains(neighbour))
-        dfs(graph, neighbour, visited, result)
-    }
-
-    def depthFirstTraversal(graph: Array[Array[Int]]): ArrayBuffer[Int] = {
-      val n = graph.length
-      val visited = HashSet.empty[Int]
-      val result = ArrayBuffer.empty[Int]
-      for (node <- 0 until n if !visited.contains(node))
-        dfs(graph, node, visited, result)
-      result
-    }
-  }
-
-  val graph = Array(Array(1), Array(4), Array(3), Array(0), Array(2, 3))
-  println(new Solution().depthFirstTraversal(graph).mkString(", "))
 }
 ```
 
@@ -524,66 +517,90 @@ For *this* graph, DFS and BFS happen to agree because each node has at most one 
 # BFS Implementation
 
 
-```pseudocode
-function bfs(graph, source, visited, result):
-    queue ← empty queue
-    enqueue source to queue
-    add source to visited       # mark at push, not pop
-    while queue is not empty:
-        node ← dequeue from queue
-        append node to result
-        for neighbor in graph[node]:
-            if neighbor is not in visited:
-                add neighbor to visited
-                enqueue neighbor to queue
-
-function breadthFirstTraversal(graph):
-    visited ← empty set
-    result ← empty list
-    for node from 0 to N−1:
-        if node is not in visited:
-            bfs(graph, node, visited, result)
-    return result
-```
-
 ```python run
+from queue import Queue
 from typing import List, Set
-from collections import deque
 
 class Solution:
-    def bfs(self,
-            graph: List[List[int]],
-            source: int,
-            visited: Set[int],
-            result: List[int]) -> None:
-        # deque gives O(1) append/popleft; using a plain list with pop(0) would be O(n).
-        queue = deque([source])
-        # IMPORTANT: mark visited at PUSH, not POP. Otherwise a node can be pushed
-        # multiple times by different parents before it's popped once.
+    def bfs(
+        self,
+        graph: List[List[int]],
+        source: int,
+        visited: Set[int],
+        result: List[int],
+    ) -> None:
+
+        # Create a queue to perform breadth-first search
+        queue = Queue()
+
+        # Add the source node to the queue
+        queue.put(source)
+
+        # Mark the current node as visited
         visited.add(source)
 
-        while queue:
-            node = queue.popleft()
-            result.append(node)
-            for neighbour in graph[node]:
-                if neighbour not in visited:
-                    visited.add(neighbour)
-                    queue.append(neighbour)
+        # Perform BFS from the source node
+        while not queue.empty():
+            node = queue.get()
 
-    def breadth_first_traversal(self, graph: List[List[int]]) -> List[int]:
+            # Add the current node to the result
+            result.append(node)
+
+            # Visit all the neighbours of the current node
+            for neighbour in graph[node]:
+
+                # If the neighbour is not visited, add it to the queue
+                if neighbour not in visited:
+
+                    # Add the neighbour to the queue
+                    queue.put(neighbour)
+
+                    # Mark the neighbour node as visited
+                    visited.add(neighbour)
+
+    def breadth_first_traversal(
+        self, graph: List[List[int]]
+    ) -> List[int]:
+
+        # Number of nodes in the graph
         n = len(graph)
+
+        # If the graph is empty, return an empty result
         if n == 0:
             return []
-        visited: Set[int] = set()
+
+        # Initialize a list to store the result of the BFS which will
+        # contain the nodes visited during the BFS traversal
         result: List[int] = []
+
+        # Initialize visited set
+        visited: Set[int] = set()
+
+        # Traverse all nodes in the graph
         for node in range(n):
-            if node not in visited:
-                self.bfs(graph, node, visited, result)
+
+            # If the node is already visited, all the nodes connected to
+            # it are also visited
+            if node in visited:
+                continue
+
+            # Perform BFS on this new node to visit all the nodes
+            # connected to it.
+            self.bfs(graph, node, visited, result)
+
         return result
 
 
-graph = [[1], [4], [3], [0], [2, 3]]
-print(Solution().breadth_first_traversal(graph))
+# Examples from the problem statement
+print(Solution().breadth_first_traversal([[1, 2], [4], [3], [0], [2, 3]]))  # [0, 1, 2, 4, 3]
+print(Solution().breadth_first_traversal([[4], [0, 3], [0, 4], [2, 4], [1]]))  # [0, 4, 1, 3, 2]
+
+# Edge cases
+print(Solution().breadth_first_traversal([]))                          # []
+print(Solution().breadth_first_traversal([[]]))                        # [0]
+print(Solution().breadth_first_traversal([[1], [0]]))                  # [0, 1]
+print(Solution().breadth_first_traversal([[], [], []]))                # [0, 1, 2] — disconnected
+print(Solution().breadth_first_traversal([[1], [], [3], []]))          # [0, 1, 2, 3]
 ```
 
 ```java run
@@ -591,121 +608,99 @@ import java.util.*;
 
 public class Main {
     static class Solution {
-        public void bfs(List<List<Integer>> graph, int source,
-                        Set<Integer> visited, List<Integer> result) {
-            Queue<Integer> queue = new ArrayDeque<>();
+        private void bfs(
+            List<List<Integer>> graph,
+            int source,
+            Set<Integer> visited,
+            List<Integer> result
+        ) {
+
+            // Create a queue to perform breadth-first search
+            Queue<Integer> queue = new LinkedList<>();
+
+            // Add the source node to the queue
             queue.add(source);
-            visited.add(source);   // mark at push, not pop
+
+            // Mark the source node as visited
+            visited.add(source);
+
+            // Perform BFS
             while (!queue.isEmpty()) {
+
+                // Get the front node from the queue
                 int node = queue.poll();
+
+                // Add the current node to the result
                 result.add(node);
+
+                // Visit all the neighbours of the current node
                 for (int neighbour : graph.get(node)) {
+
+                    // If the neighbour is not visited, add it to the queue
                     if (!visited.contains(neighbour)) {
-                        visited.add(neighbour);
+
+                        // Add the neighbour to the queue
                         queue.add(neighbour);
+
+                        // Mark the neighbour node as visited
+                        visited.add(neighbour);
                     }
                 }
             }
         }
 
-        public List<Integer> breadthFirstTraversal(List<List<Integer>> graph) {
-            int n = graph.size();
-            if (n == 0) return new ArrayList<>();
-            Set<Integer> visited = new HashSet<>();
-            List<Integer> result = new ArrayList<>();
-            for (int node = 0; node < n; node++) {
-                if (!visited.contains(node)) bfs(graph, node, visited, result);
+        public List<Integer> breadthFirstTraversal(
+            List<List<Integer>> graph
+        ) {
+
+            // Number of nodes in the graph
+            int N = graph.size();
+
+            // If the graph is empty, return an empty result
+            if (N == 0) {
+                return new ArrayList<>();
             }
+
+            // Initialize a list to store the result of the BFS which will
+            // contain the nodes visited during the BFS traversal
+            List<Integer> result = new ArrayList<>();
+
+            // Initialize visited set
+            Set<Integer> visited = new HashSet<>();
+
+            // Traverse all nodes in the graph
+            for (int node = 0; node < N; node++) {
+
+                // If the node is already visited, continue to the next node
+                if (visited.contains(node)) {
+                    continue;
+                }
+
+                // Perform DFS on this new node to visit all the nodes
+                // connected to it.
+                bfs(graph, node, visited, result);
+            }
+
             return result;
         }
     }
 
     public static void main(String[] args) {
-        List<List<Integer>> graph = List.of(
-            List.of(1), List.of(4), List.of(3), List.of(0), List.of(2, 3));
-        System.out.println(new Solution().breadthFirstTraversal(graph));
+        // Examples from the problem statement
+        System.out.println(new Solution().breadthFirstTraversal(
+            List.of(List.of(1,2),List.of(4),List.of(3),List.of(0),List.of(2,3))));  // [0, 1, 2, 4, 3]
+        System.out.println(new Solution().breadthFirstTraversal(
+            List.of(List.of(4),List.of(0,3),List.of(0,4),List.of(2,4),List.of(1))));  // [0, 4, 1, 3, 2]
+
+        // Edge cases
+        System.out.println(new Solution().breadthFirstTraversal(new ArrayList<>()));  // []
+        System.out.println(new Solution().breadthFirstTraversal(List.of(new ArrayList<>())));  // [0]
+        System.out.println(new Solution().breadthFirstTraversal(List.of(List.of(1),List.of(0))));  // [0, 1]
+        System.out.println(new Solution().breadthFirstTraversal(
+            List.of(new ArrayList<>(),new ArrayList<>(),new ArrayList<>())));  // [0, 1, 2]
+        System.out.println(new Solution().breadthFirstTraversal(
+            List.of(List.of(1),new ArrayList<>(),List.of(3),new ArrayList<>())));  // [0, 1, 2, 3]
     }
-}
-```
-
-```c run
-#include <stdio.h>
-#include <stdlib.h>
-#include <stdbool.h>
-
-typedef struct { int* data; int size; } AdjList;
-
-static void bfs(AdjList* graph, int source, bool* visited, int* result, int* idx, int n) {
-    int* queue = malloc(n * sizeof(int));
-    int head = 0, tail = 0;
-    queue[tail++] = source;
-    visited[source] = true;
-    while (head < tail) {
-        int node = queue[head++];
-        result[(*idx)++] = node;
-        for (int i = 0; i < graph[node].size; i++) {
-            int neighbour = graph[node].data[i];
-            if (!visited[neighbour]) {
-                visited[neighbour] = true;
-                queue[tail++] = neighbour;
-            }
-        }
-    }
-    free(queue);
-}
-
-void breadth_first_traversal(AdjList* graph, int n, int* result, int* result_size) {
-    bool* visited = calloc(n, sizeof(bool));
-    int idx = 0;
-    for (int node = 0; node < n; node++) {
-        if (!visited[node]) bfs(graph, node, visited, result, &idx, n);
-    }
-    *result_size = idx;
-    free(visited);
-}
-
-int main() {
-    int n0[] = {1}, n1[] = {4}, n2[] = {3}, n3[] = {0}, n4[] = {2, 3};
-    AdjList g[] = {{n0, 1}, {n1, 1}, {n2, 1}, {n3, 1}, {n4, 2}};
-    int result[5], size;
-    breadth_first_traversal(g, 5, result, &size);
-    for (int i = 0; i < size; i++) printf("%d ", result[i]);
-    printf("\n");
-    return 0;
-}
-```
-
-```scala run
-import scala.collection.mutable.{ArrayBuffer, HashSet, Queue}
-
-object Main extends App {
-  class Solution {
-    def bfs(graph: Array[Array[Int]], source: Int,
-            visited: HashSet[Int], result: ArrayBuffer[Int]): Unit = {
-      val queue = Queue[Int]()
-      queue.enqueue(source)
-      visited.add(source)
-      while (queue.nonEmpty) {
-        val node = queue.dequeue()
-        result.append(node)
-        for (n <- graph(node) if !visited.contains(n)) {
-          visited.add(n)
-          queue.enqueue(n)
-        }
-      }
-    }
-
-    def breadthFirstTraversal(graph: Array[Array[Int]]): ArrayBuffer[Int] = {
-      val visited = HashSet.empty[Int]
-      val result = ArrayBuffer.empty[Int]
-      for (node <- graph.indices if !visited.contains(node))
-        bfs(graph, node, visited, result)
-      result
-    }
-  }
-
-  val graph = Array(Array(1), Array(4), Array(3), Array(0), Array(2, 3))
-  println(new Solution().breadthFirstTraversal(graph).mkString(", "))
 }
 ```
 
@@ -806,7 +801,7 @@ DFS and BFS aren't two algorithms — they're **two perspectives on the same act
 You now have:
 - A mental model for each (deep dive / ripple)
 - The two-level structure that handles disconnected graphs
-- Implementations in 10 languages
+- Implementations in Python and Java
 - The selection rule for when to use which
 
 The rest of this chapter weaponises these two patterns. Cycle detection? DFS plus a 3-colour state. Topological sort? DFS plus a "completed" stack. Shortest path on grid? BFS plus directional moves. Once you see the seed pattern, the rest writes itself.

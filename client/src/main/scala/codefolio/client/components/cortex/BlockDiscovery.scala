@@ -66,10 +66,12 @@ object BlockDiscovery:
     override val className: String = "runnable-code"
 
     override def decode(node: dom.HTMLElement): Either[BlockDecodeError, Block] =
-      val lang  = nonEmpty(node.getAttribute("data-lang"))
-      val src   = nonEmpty(node.getAttribute("data-source")).flatMap(uriDecode)
-      val label = nonEmpty(node.getAttribute("data-language-label"))
-      Blocks.decodeRunnableCode(lang, src, label)
+      val lang    = nonEmpty(node.getAttribute("data-lang"))
+      val src     = nonEmpty(node.getAttribute("data-source")).flatMap(uriDecode)
+      val label   = nonEmpty(node.getAttribute("data-language-label"))
+      val viz     = nonEmpty(node.getAttribute("data-viz"))
+      val vizRoot = nonEmpty(node.getAttribute("data-viz-root"))
+      Blocks.decodeRunnableCode(lang, src, label, viz, vizRoot)
 
   private object RunnableGroup extends Discoverer:
     override val className: String = "runnable-group"
@@ -90,7 +92,9 @@ object BlockDiscovery:
             language = obj.language.asInstanceOf[js.UndefOr[String]].toOption.filter(_.nonEmpty),
             languageLabel = obj.languageLabel.asInstanceOf[js.UndefOr[String]].toOption.filter(_.nonEmpty),
             source = obj.source.asInstanceOf[js.UndefOr[String]].toOption.filter(_.nonEmpty),
-            runnable = obj.runnable.asInstanceOf[js.UndefOr[Boolean]].toOption
+            runnable = obj.runnable.asInstanceOf[js.UndefOr[Boolean]].toOption,
+            viz = obj.viz.asInstanceOf[js.UndefOr[String]].toOption.filter(_.nonEmpty),
+            vizRoot = obj.vizRoot.asInstanceOf[js.UndefOr[String]].toOption.filter(_.nonEmpty)
           )
         }
       } match

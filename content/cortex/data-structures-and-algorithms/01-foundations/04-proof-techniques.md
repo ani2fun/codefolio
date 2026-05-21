@@ -274,24 +274,6 @@ The recursive call is correct by strong induction on array length, with the merg
 
 The code below implements binary search with explicit invariant assertions. Run it. Every assertion either holds (invariant maintained, code correct) or fires (bug — somewhere the implementation drifted from the spec).
 
-```pseudocode
-function binarySearchWithInvariants(arr, target):
-    assert arr is sorted                                  # precondition
-    lo ← 0
-    hi ← length(arr) − 1
-    while lo ≤ hi:
-        # invariant: if target is in arr, it is in arr[lo..hi]
-        assert (lo > 0 → arr[lo − 1] < target)
-        assert (hi < length(arr) − 1 → arr[hi + 1] > target)
-        mid ← lo + (hi − lo) / 2
-        if arr[mid] = target: return mid
-        else if arr[mid] < target: lo ← mid + 1
-        else: hi ← mid − 1
-    # postcondition: target is not in arr
-    assert target ∉ arr
-    return −1
-```
-
 ```python run
 def binary_search(arr, target):
     # Precondition: arr is sorted ascending.
@@ -391,82 +373,6 @@ public class Main {
 }
 ```
 
-```c run
-#include <stdio.h>
-#include <stdlib.h>
-#include <assert.h>
-
-int binary_search(const int *arr, int n, int target) {
-    for (int i = 0; i < n - 1; i++) assert(arr[i] <= arr[i + 1]);
-    int lo = 0, hi = n - 1;
-    while (lo <= hi) {
-        if (lo > 0)         assert(arr[lo - 1] < target);
-        if (hi < n - 1)     assert(arr[hi + 1] > target);
-        int mid = lo + (hi - lo) / 2;
-        if (arr[mid] == target) return mid;
-        if (arr[mid] < target) lo = mid + 1;
-        else hi = mid - 1;
-    }
-    return -1;
-}
-
-static int cmp(const void *a, const void *b) { return *(int*)a - *(int*)b; }
-
-int main(void) {
-    srand(42);
-    for (int trial = 0; trial < 1000; trial++) {
-        int n = rand() % 100;
-        int *arr = malloc(n * sizeof(int));
-        for (int i = 0; i < n; i++) arr[i] = rand() % 50;
-        qsort(arr, n, sizeof(int), cmp);
-        int target = rand() % 50;
-        int result = binary_search(arr, n, target);
-        // Check correctness against linear scan.
-        int expected = -1;
-        for (int i = 0; i < n; i++) if (arr[i] == target) { expected = i; break; }
-        if (expected == -1) assert(result == -1);
-        else assert(result != -1 && arr[result] == target);
-        free(arr);
-    }
-    printf("All 1000 random tests pass; invariants held throughout.\n");
-    return 0;
-}
-```
-
-```scala run
-import scala.util.Random
-
-object Main extends App {
-  def binarySearch(arr: Array[Int], target: Int): Int = {
-    for (i <- 0 until arr.length - 1) require(arr(i) <= arr(i + 1), "arr must be sorted")
-
-    var lo = 0
-    var hi = arr.length - 1
-    while (lo <= hi) {
-      if (lo > 0)              assert(arr(lo - 1) < target)
-      if (hi < arr.length - 1) assert(arr(hi + 1) > target)
-
-      val mid = lo + (hi - lo) / 2
-      if (arr(mid) == target) return mid
-      else if (arr(mid) < target) lo = mid + 1
-      else hi = mid - 1
-    }
-    -1
-  }
-
-  val rng = new Random(42)
-  for (trial <- 0 until 1000) {
-    val n = rng.nextInt(100)
-    val arr = Array.fill(n)(rng.nextInt(50)).sorted
-    val target = rng.nextInt(50)
-    val result = binarySearch(arr, target)
-    if (arr.contains(target)) assert(result != -1 && arr(result) == target)
-    else                      assert(result == -1)
-  }
-  println("All 1000 random tests pass; invariants held throughout.")
-}
-```
-
 The assertions never fire, because the implementation respects the invariant. If you change `mid = lo + (hi - lo) // 2` to `mid = lo + (hi - lo) // 2 + 1` (a subtle off-by-one), some assertion will fire on some test case — the loop invariant catches the bug *before* the wrong index gets returned.
 
 ***
@@ -551,63 +457,54 @@ Click any question to reveal the answer.
 **A:** **Base case** — prove `P(n₀)` directly. **Inductive step** — assume `P(k)`, prove `P(k+1)`.
 
 </details>
-
 <details>
 <summary><strong>Q:</strong> Difference between weak and strong induction?</summary>
 
 **A:** Weak: assume `P(k)` to prove `P(k+1)`. Strong: assume `P(j)` for all `n₀ ≤ j ≤ k` to prove `P(k+1)`. Strong is needed for divide-and-conquer correctness and for Fibonacci-style recurrences.
 
 </details>
-
 <details>
 <summary><strong>Q:</strong> Three properties a loop invariant must satisfy?</summary>
 
 **A:** **Initialization** (holds before first iteration), **Maintenance** (held entering iteration → holds entering next), **Termination** (combined with exit condition, implies the postcondition).
 
 </details>
-
 <details>
 <summary><strong>Q:</strong> Loop invariant for binary search?</summary>
 
 **A:** "If `target` is in `arr`, then it is in `arr[lo..hi]` (the inclusive subarray still being searched)."
 
 </details>
-
 <details>
 <summary><strong>Q:</strong> Why <code>mid = lo + (hi - lo) / 2</code> instead of <code>(lo + hi) / 2</code>?</summary>
 
 **A:** Avoids integer overflow when `lo + hi > Int.MaxValue`. Joshua Bloch found this bug in Java's `Arrays.binarySearch` after nine years.
 
 </details>
-
 <details>
 <summary><strong>Q:</strong> Structure of a proof by contradiction?</summary>
 
 **A:** Assume `not P`. Derive an absurdity (a contradiction with established facts). Conclude `P`.
 
 </details>
-
 <details>
 <summary><strong>Q:</strong> Why must you prove termination separately from correctness?</summary>
 
 **A:** Correctness says "*if* the function returns, the answer is right". Termination says "the function returns". A loop that maintains its invariant forever is still wrong.
 
 </details>
-
 <details>
 <summary><strong>Q:</strong> Standard pattern for proving termination?</summary>
 
 **A:** Identify a non-negative integer-valued *measure* that strictly decreases each iteration (or each recursive call). Since it can't go below zero, the loop terminates.
 
 </details>
-
 <details>
 <summary><strong>Q:</strong> Where do invariants live in production code?</summary>
 
 **A:** As comments on the loop, as `assert` statements (debug builds), and in formal contract languages (D's `invariant`, Eiffel's `require`/`ensure`). Compile out in release builds.
 
 </details>
-
 <details>
 <summary><strong>Q:</strong> Why does the Rust borrow checker count as an invariant checker?</summary>
 

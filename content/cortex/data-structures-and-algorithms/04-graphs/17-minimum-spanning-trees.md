@@ -55,19 +55,6 @@ This says: at any moment, if you've identified a "cut" (a way of splitting the v
 
 # Kruskal's algorithm
 
-```pseudocode
-function kruskalMST(V, edges):
-    sort edges by weight ascending
-    dsu ← new DSU(V)
-    mst ← empty list
-    for (u, v, w) in edges:
-        if dsu.find(u) ≠ dsu.find(v):
-            dsu.union(u, v)
-            mst.append((u, v, w))
-            if length(mst) = V − 1: break
-    return mst
-```
-
 Walk edges from cheapest to most expensive. Add an edge iff its endpoints are in different components — that's the cut property in action: the edge is the cheapest edge crossing the cut between its component and the rest. Stop when we have `V − 1` edges; the MST is complete.
 
 **Why DSU?** "Are these two endpoints already in the same component?" is exactly the `same_set` query. Path compression + union by rank makes this `O(α(V))` per check.
@@ -118,24 +105,6 @@ flowchart LR
 ***
 
 # Prim's algorithm
-
-```pseudocode
-function primMST(V, adj, start):
-    inMST ← array of V booleans, all false
-    minHeap ← empty heap of (weight, vertex)
-    minHeap.push((0, start))
-    mst ← empty list; total ← 0
-    while minHeap is not empty:
-        (w, u) ← minHeap.popMin()
-        if inMST[u]: continue
-        inMST[u] ← true
-        total ← total + w
-        if u ≠ start: mst.append(edge to u)
-        for each neighbour (v, weight) of u:
-            if not inMST[v]:
-                minHeap.push((weight, v))
-    return mst, total
-```
 
 Start from an arbitrary vertex. Maintain a frontier of "edges from the tree to outside". Repeatedly pick the cheapest frontier edge; add its outside endpoint to the tree; update the frontier.
 
@@ -271,98 +240,6 @@ public class Main {
 }
 ```
 
-```c run
-#include <stdio.h>
-#include <stdlib.h>
-
-#define MAXN 100
-int parent[MAXN], rnk[MAXN];
-
-int find(int x) { return parent[x] == x ? x : (parent[x] = find(parent[x])); }
-int dsu_union(int x, int y) {
-    int rx = find(x), ry = find(y);
-    if (rx == ry) return 0;
-    if (rnk[rx] < rnk[ry]) { int t = rx; rx = ry; ry = t; }
-    parent[ry] = rx;
-    if (rnk[rx] == rnk[ry]) rnk[rx]++;
-    return 1;
-}
-
-int cmp(const void *a, const void *b) { return ((int*)a)[2] - ((int*)b)[2]; }
-
-int main(void) {
-    int edges[][3] = {{0,1,1}, {0,2,3}, {1,2,2}, {1,3,4}, {2,3,5}};
-    int E = 5, V = 4;
-    qsort(edges, E, sizeof(int)*3, cmp);
-    for (int i = 0; i < V; i++) parent[i] = i;
-    int total = 0, picked = 0;
-    for (int i = 0; i < E && picked < V - 1; i++) {
-        if (dsu_union(edges[i][0], edges[i][1])) {
-            total += edges[i][2];
-            picked++;
-        }
-    }
-    printf("Kruskal MST total = %d\n", total);
-    return 0;
-}
-```
-
-```scala run
-import scala.collection.mutable
-
-object Main extends App {
-  object Solution {
-    class DSU(n: Int) {
-      val parent = Array.tabulate(n)(identity)
-      val rank = new Array[Int](n)
-      def find(x: Int): Int = { if (parent(x) != x) parent(x) = find(parent(x)); parent(x) }
-      def union(x: Int, y: Int): Boolean = {
-        var rx = find(x); var ry = find(y)
-        if (rx == ry) return false
-        if (rank(rx) < rank(ry)) { val t = rx; rx = ry; ry = t }
-        parent(ry) = rx
-        if (rank(rx) == rank(ry)) rank(rx) += 1
-        true
-      }
-    }
-
-    def kruskalMST(n: Int, edges: Array[(Int, Int, Int)]): Int = {
-      val sorted = edges.sortBy(_._3)
-      val dsu = new DSU(n)
-      var total = 0; var picked = 0
-      for ((u, v, w) <- sorted if picked < n - 1) {
-        if (dsu.union(u, v)) { total += w; picked += 1 }
-      }
-      total
-    }
-
-    def primMST(n: Int, adj: Array[mutable.ArrayBuffer[(Int, Int)]], start: Int): Int = {
-      val inMst = new Array[Boolean](n)
-      val pq = mutable.PriorityQueue.empty[(Int, Int)](Ordering.by(-_._1))
-      pq.enqueue((0, start))
-      var total = 0
-      while (pq.nonEmpty) {
-        val (w, u) = pq.dequeue()
-        if (!inMst(u)) {
-          inMst(u) = true
-          total += w
-          for ((v, weight) <- adj(u) if !inMst(v)) pq.enqueue((weight, v))
-        }
-      }
-      total
-    }
-  }
-
-  val edges = Array((0,1,1), (0,2,3), (1,2,2), (1,3,4), (2,3,5))
-  val n = 4
-  println(s"Kruskal MST total = ${Solution.kruskalMST(n, edges)}")
-
-  val adj = Array.fill(n)(mutable.ArrayBuffer.empty[(Int, Int)])
-  for ((u, v, w) <- edges) { adj(u) += ((v, w)); adj(v) += ((u, w)) }
-  println(s"Prim MST total    = ${Solution.primMST(n, adj, 0)}")
-}
-```
-
 ***
 
 # Kruskal vs Prim: which to use
@@ -435,49 +312,42 @@ Click any question to reveal the answer.
 **A:** A subgraph that touches every vertex, has exactly `V − 1` edges, is connected and acyclic. The MST minimises total edge weight.
 
 </details>
-
 <details>
 <summary><strong>Q:</strong> The cut property?</summary>
 
 **A:** For any partition of the vertices, the *lightest edge crossing the partition* is in some MST. Both Kruskal and Prim are corollaries.
 
 </details>
-
 <details>
 <summary><strong>Q:</strong> Time complexity of Kruskal vs Prim?</summary>
 
 **A:** Both `O(E log V)`. Kruskal: sort dominates. Prim with binary heap: `O((V + E) log V)`. Prim with Fibonacci heap: `O(E + V log V)`.
 
 </details>
-
 <details>
 <summary><strong>Q:</strong> Kruskal's algorithm in three lines?</summary>
 
 **A:** Sort edges by weight; iterate; for each edge, if endpoints are in different DSU components, union them and accept the edge. Stop when `V − 1` edges accepted.
 
 </details>
-
 <details>
 <summary><strong>Q:</strong> Prim's algorithm in three lines?</summary>
 
 **A:** Maintain a min-heap of edges from the tree to outside; repeatedly extract the lightest, add the new vertex; push that vertex's outgoing edges. `O(E log V)` total.
 
 </details>
-
 <details>
 <summary><strong>Q:</strong> When does Prim beat Kruskal?</summary>
 
 **A:** Dense graphs (`E ≈ V²`). Prim with adjacency matrix runs in `O(V²)`, beating Kruskal's `O(V² log V)`.
 
 </details>
-
 <details>
 <summary><strong>Q:</strong> Does MST require non-negative edge weights?</summary>
 
 **A:** No. Both Kruskal and Prim handle negative weights without modification. (Unlike Dijkstra's shortest path.)
 
 </details>
-
 <details>
 <summary><strong>Q:</strong> Is the MST unique?</summary>
 
@@ -534,7 +404,7 @@ def prim_mst(n, adj, start=0):
 
 - **Prerequisites:** [Graph introduction](/cortex/data-structures-and-algorithms/graphs-introduction-to-graphs), [DSU](/cortex/data-structures-and-algorithms/trees-disjoint-set-union-introduction-to-disjoint-set-union), [Heap](/cortex/data-structures-and-algorithms/trees-heap-introduction-to-heaps).
 - **Sibling algorithms:** [Single-Source Shortest Path](/cortex/data-structures-and-algorithms/graphs-single-source-shortest-path) — Dijkstra is structurally similar to Prim but with a different relaxation.
-- **Greedy in disguise:** [Greedy Algorithms](/cortex/data-structures-and-algorithms/algorithms-by-strategy-greedy) — Kruskal and Prim are both greedy; the cut property is the proof of optimality.
+- **Greedy in disguise:** [Greedy Algorithms](/cortex/data-structures-and-algorithms/algorithms-by-strategy-greedy-introduction-to-greedy-algorithms) — Kruskal and Prim are both greedy; the cut property is the proof of optimality.
 
 ***
 

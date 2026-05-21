@@ -181,107 +181,207 @@ Given a sorted array `arr`, construct a height-balanced binary search tree from 
 > - **Input:** `arr = [4, 5, 9, 10, 11]`
 > - **Output:** `[9, 4, 10, null, 5, null, 11]`
 
-## The Solution
+<details>
+<summary><h2>The Solution</h2></summary>
 
 
-```pseudocode
-function buildTree(arr, st, en):
-    if st > en: return null          # empty range — no node to create
-    mid ← (st + en) / 2
-    node ← new TreeNode(arr[mid])    # middle element becomes the subtree root
-    node.left  ← buildTree(arr, st, mid − 1)
-    node.right ← buildTree(arr, mid + 1, en)
-    return node
-
-function sortedArrayToBST(arr):
-    return buildTree(arr, 0, length(arr) − 1)
-```
 
 ```python run
+from typing import Optional, List
+from collections import deque
+
+
+class TreeNode:
+    def __init__(self, val=0, left=None, right=None):
+        self.val = val
+        self.left = left
+        self.right = right
+
+
+def to_level_order(root):
+    if not root:
+        return []
+    result, queue = [], deque([root])
+    while queue:
+        node = queue.popleft()
+        result.append(node.val)
+        if node.left:
+            queue.append(node.left)
+        if node.right:
+            queue.append(node.right)
+    return result
+
+
+def inorder(root):
+    if not root:
+        return []
+    return inorder(root.left) + [root.val] + inorder(root.right)
+
+
 class Solution:
-    def build_tree(self, arr, st, en):
-        # Base case: no elements left in this subrange.
+    def build_tree(
+        self, arr: List[int], st: int, en: int
+    ) -> Optional[TreeNode]:
+
+        # Base case: If the start index is greater than
+        # the end index, there are no elements in this subarray
+        # In this case, return None to indicate an empty subtree
         if st > en:
             return None
-        # Pick the middle element as the root — keeps subtrees balanced.
-        mid = (st + en) // 2
-        node = TreeNode(arr[mid])
-        # Recurse on the two halves; they are themselves sorted.
-        node.left  = self.build_tree(arr, st, mid - 1)
+
+        # Calculate the middle index of the current subarray.
+        mid: int = (st + en) // 2
+
+        # Create a new TreeNode using the value at the middle index.
+        node: TreeNode = TreeNode(arr[mid])
+
+        # Recursively build the left subtree using the elements to the
+        # left of the middle index.
+        node.left = self.build_tree(arr, st, mid - 1)
+
+        # Recursively build the right subtree using the elements to the
+        # right of the middle index.
         node.right = self.build_tree(arr, mid + 1, en)
+
+        # Return the root of the constructed binary search tree.
         return node
 
-    def sorted_array_to_bst(self, arr):
+    def sorted_array_to_bst(self, arr: List[int]) -> Optional[TreeNode]:
+
+        # Call the buildTree function with the start index as 0 and the
+        # end index as the last index of the array.
         return self.build_tree(arr, 0, len(arr) - 1)
+
+
+# Example 1: [1, 2, 3, 4, 5, 6]
+r1 = Solution().sorted_array_to_bst([1, 2, 3, 4, 5, 6])
+print(to_level_order(r1))          # [3, 1, 5, 2, 4, 6]
+print(inorder(r1))                 # [1, 2, 3, 4, 5, 6]
+
+# Example 2: [4, 5, 9, 10, 11]
+r2 = Solution().sorted_array_to_bst([4, 5, 9, 10, 11])
+print(to_level_order(r2))          # [9, 4, 10, 5, 11]
+print(inorder(r2))                 # [4, 5, 9, 10, 11]
+
+# Empty array
+r3 = Solution().sorted_array_to_bst([])
+print(to_level_order(r3))          # []
+
+# Single element
+r4 = Solution().sorted_array_to_bst([7])
+print(to_level_order(r4))          # [7]
+
+# Two elements
+r5 = Solution().sorted_array_to_bst([3, 8])
+print(to_level_order(r5))          # [3, 8] or [8, 3] depending on mid
+print(inorder(r5))                 # [3, 8]
+
+# Odd-length array
+r6 = Solution().sorted_array_to_bst([1, 2, 3, 4, 5])
+print(inorder(r6))                 # [1, 2, 3, 4, 5]
 ```
 
 ```java run
+import java.util.*;
+
 public class Main {
-    static class TreeNode { int val; TreeNode left, right; TreeNode(int v){val=v;} }
+    static class TreeNode {
+        int val;
+        TreeNode left;
+        TreeNode right;
+        TreeNode() {}
+        TreeNode(int val) { this.val = val; }
+    }
+
+    static List<Integer> toLevelOrder(TreeNode root) {
+        if (root == null) return new ArrayList<>();
+        List<Integer> result = new ArrayList<>();
+        Deque<TreeNode> queue = new ArrayDeque<>();
+        queue.add(root);
+        while (!queue.isEmpty()) {
+            TreeNode node = queue.poll();
+            result.add(node.val);
+            if (node.left != null) queue.add(node.left);
+            if (node.right != null) queue.add(node.right);
+        }
+        return result;
+    }
+
+    static List<Integer> inorder(TreeNode root) {
+        if (root == null) return new ArrayList<>();
+        List<Integer> result = new ArrayList<>(inorder(root.left));
+        result.add(root.val);
+        result.addAll(inorder(root.right));
+        return result;
+    }
 
     static class Solution {
         private TreeNode buildTree(int[] arr, int st, int en) {
-            if (st > en) return null;                                                  // empty range
-            int mid = (st + en) / 2;                                                   // middle as root
+
+            // Base case: If the start index is greater than
+            // the end index, there are no elements in this subarray
+            // In this case, return null to indicate an empty subtree
+            if (st > en) {
+                return null;
+            }
+
+            // Calculate the middle index of the current subarray
+            int mid = (st + en) / 2;
+
+            // Create a new TreeNode using the value at the middle index
             TreeNode node = new TreeNode(arr[mid]);
-            node.left  = buildTree(arr, st, mid - 1);                                  // left half
-            node.right = buildTree(arr, mid + 1, en);                                  // right half
+
+            // Recursively build the left subtree using the elements to the
+            // left of the middle index
+            node.left = buildTree(arr, st, mid - 1);
+
+            // Recursively build the right subtree using the elements to the
+            // right of the middle index
+            node.right = buildTree(arr, mid + 1, en);
+
+            // Return the root of the constructed binary search tree
             return node;
         }
 
         public TreeNode sortedArrayToBST(int[] arr) {
+
+            // Call the buildTree function with the start index as 0 and the
+            // end index as the last index of the array
             return buildTree(arr, 0, arr.length - 1);
         }
     }
 
     public static void main(String[] args) {
-        int[] arr = {1, 2, 3, 4, 5, 6};
-        TreeNode root = new Solution().sortedArrayToBST(arr);
-        System.out.println(root.val);  // 3
+        // Example 1: [1, 2, 3, 4, 5, 6]
+        TreeNode r1 = new Solution().sortedArrayToBST(new int[]{1, 2, 3, 4, 5, 6});
+        System.out.println(toLevelOrder(r1));   // [3, 1, 5, 2, 4, 6]
+        System.out.println(inorder(r1));        // [1, 2, 3, 4, 5, 6]
+
+        // Example 2: [4, 5, 9, 10, 11]
+        TreeNode r2 = new Solution().sortedArrayToBST(new int[]{4, 5, 9, 10, 11});
+        System.out.println(toLevelOrder(r2));   // [9, 4, 10, 5, 11]
+        System.out.println(inorder(r2));        // [4, 5, 9, 10, 11]
+
+        // Empty array
+        TreeNode r3 = new Solution().sortedArrayToBST(new int[]{});
+        System.out.println(toLevelOrder(r3));   // []
+
+        // Single element
+        TreeNode r4 = new Solution().sortedArrayToBST(new int[]{7});
+        System.out.println(toLevelOrder(r4));   // [7]
+
+        // Two elements
+        TreeNode r5 = new Solution().sortedArrayToBST(new int[]{3, 8});
+        System.out.println(inorder(r5));        // [3, 8]
+
+        // Odd-length array
+        TreeNode r6 = new Solution().sortedArrayToBST(new int[]{1, 2, 3, 4, 5});
+        System.out.println(inorder(r6));        // [1, 2, 3, 4, 5]
     }
 }
 ```
 
-```c run
-#include <stdlib.h>
-
-static struct TreeNode *build_tree(int *arr, int st, int en) {
-    if (st > en) return NULL;                                                       // empty range
-    int mid = (st + en) / 2;                                                        // middle as root
-    struct TreeNode *node = malloc(sizeof(*node));
-    node->val = arr[mid];
-    node->left  = build_tree(arr, st, mid - 1);                                     // left half
-    node->right = build_tree(arr, mid + 1, en);                                     // right half
-    return node;
-}
-
-struct TreeNode *sortedArrayToBST(int *arr, int n) {
-    return build_tree(arr, 0, n - 1);
-}
-```
-
-```scala run
-class TreeNode(var value: Int, var left: TreeNode = null, var right: TreeNode = null)
-
-object Main extends App {
-  class Solution {
-    private def buildTree(arr: Array[Int], st: Int, en: Int): TreeNode = {
-      if (st > en) null                                                                  // empty range
-      else {
-        val mid = (st + en) / 2                                                          // middle as root
-        val node = new TreeNode(arr(mid))
-        node.left  = buildTree(arr, st, mid - 1)
-        node.right = buildTree(arr, mid + 1, en)
-        node
-      }
-    }
-    def sortedArrayToBST(arr: Array[Int]): TreeNode = buildTree(arr, 0, arr.length - 1)
-  }
-
-  val root = new Solution().sortedArrayToBST(Array(1, 2, 3, 4, 5, 6))
-  println(root.value)  // 3
-}
-```
+</details>
 
 
 ***
@@ -388,115 +488,219 @@ Given an unsorted array `arr`, construct a binary search tree by inserting nodes
 > - **Input:** `arr = [10, 5, 9, 4, 11]`
 > - **Output:** `[10, 5, 11, 4, 9]`
 
-## The Solution
+<details>
+<summary><h2>The Solution</h2></summary>
 
 
-```pseudocode
-function insertBST(root, data):
-    if root is null: return new TreeNode(data)
-    if data < root.val: root.left  ← insertBST(root.left,  data)
-    else:               root.right ← insertBST(root.right, data)
-    return root
-
-function unsortedArrayToBST(arr):
-    root ← null
-    for each v in arr:
-        root ← insertBST(root, v)  # insertion order determines tree shape
-    return root
-```
 
 ```python run
+from typing import Optional, List
+from collections import deque
+
+
+class TreeNode:
+    def __init__(self, val=0, left=None, right=None):
+        self.val = val
+        self.left = left
+        self.right = right
+
+
+def to_level_order(root):
+    if not root:
+        return []
+    result, queue = [], deque([root])
+    while queue:
+        node = queue.popleft()
+        result.append(node.val)
+        if node.left:
+            queue.append(node.left)
+        if node.right:
+            queue.append(node.right)
+    return result
+
+
+def inorder(root):
+    if not root:
+        return []
+    return inorder(root.left) + [root.val] + inorder(root.right)
+
+
 class Solution:
-    def insert(self, root, data):
-        if root is None:
+    def insert(
+        self, root: Optional[TreeNode], data: int
+    ) -> Optional[TreeNode]:
+
+        # If the root is null, create a new node with data and return it
+        # as the new root
+        if not root:
             return TreeNode(data)
+
+        # If data is less than the current root's value, insert it in
+        # the left subtree
         if data < root.val:
             root.left = self.insert(root.left, data)
+
+        # If data is greater than or equal to the current root's value,
+        # insert it in the right subtree
         else:
             root.right = self.insert(root.right, data)
+
+        # Return the updated root of the BST after insertion
         return root
 
-    def unsorted_array_to_bst(self, arr):
-        # Start with an empty tree; each insertion grows it by one node.
+    def unsorted_array_to_bst(
+        self, arr: List[int]
+    ) -> Optional[TreeNode]:
+
+        # Initialize the root of the BST as None (empty tree)
         root = None
-        for v in arr:
-            root = self.insert(root, v)
+
+        # Iterate through the elements of the input array
+        for num in arr:
+
+            # Insert the current element into the BST rooted at root
+            root = self.insert(root, num)
+
+        # Return the root of the BST, which represents the root of the
+        # constructed BST
         return root
+
+
+# Example 1: [2, 1, 6, 5, 3, 4]
+r1 = Solution().unsorted_array_to_bst([2, 1, 6, 5, 3, 4])
+print(to_level_order(r1))          # [2, 1, 6, 5, 3, 4]
+print(inorder(r1))                 # [1, 2, 3, 4, 5, 6]
+
+# Example 2: [10, 5, 9, 4, 11]
+r2 = Solution().unsorted_array_to_bst([10, 5, 9, 4, 11])
+print(to_level_order(r2))          # [10, 5, 11, 4, 9]
+print(inorder(r2))                 # [4, 5, 9, 10, 11]
+
+# Empty array
+r3 = Solution().unsorted_array_to_bst([])
+print(to_level_order(r3))          # []
+
+# Single element
+r4 = Solution().unsorted_array_to_bst([7])
+print(to_level_order(r4))          # [7]
+
+# Already sorted — right-skew
+r5 = Solution().unsorted_array_to_bst([1, 2, 3, 4])
+print(inorder(r5))                 # [1, 2, 3, 4]
+
+# Reverse sorted — left-skew
+r6 = Solution().unsorted_array_to_bst([4, 3, 2, 1])
+print(inorder(r6))                 # [1, 2, 3, 4]
 ```
 
 ```java run
+import java.util.*;
+
 public class Main {
-    static class TreeNode { int val; TreeNode left, right; TreeNode(int v){val=v;} }
+    static class TreeNode {
+        int val;
+        TreeNode left;
+        TreeNode right;
+        TreeNode() {}
+        TreeNode(int val) { this.val = val; }
+    }
+
+    static List<Integer> toLevelOrder(TreeNode root) {
+        if (root == null) return new ArrayList<>();
+        List<Integer> result = new ArrayList<>();
+        Deque<TreeNode> queue = new ArrayDeque<>();
+        queue.add(root);
+        while (!queue.isEmpty()) {
+            TreeNode node = queue.poll();
+            result.add(node.val);
+            if (node.left != null) queue.add(node.left);
+            if (node.right != null) queue.add(node.right);
+        }
+        return result;
+    }
+
+    static List<Integer> inorder(TreeNode root) {
+        if (root == null) return new ArrayList<>();
+        List<Integer> result = new ArrayList<>(inorder(root.left));
+        result.add(root.val);
+        result.addAll(inorder(root.right));
+        return result;
+    }
 
     static class Solution {
-        public TreeNode insert(TreeNode root, int data) {
-            if (root == null) return new TreeNode(data);
-            if (data < root.val) root.left  = insert(root.left,  data);
-            else                 root.right = insert(root.right, data);
+        private TreeNode insert(TreeNode root, int data) {
+
+            // If the root is null, create a new node with data and return it
+            // as the new root
+            if (root == null) {
+                return new TreeNode(data);
+            }
+
+            // If data is less than the current root's value, insert it in
+            // the left subtree
+            if (data < root.val) {
+                root.left = insert(root.left, data);
+            }
+
+            // If data is greater than or equal to the current root's value,
+            // insert it in the right subtree
+            else {
+                root.right = insert(root.right, data);
+            }
+
+            // Return the updated root of the BST after insertion
             return root;
         }
 
         public TreeNode unsortedArrayToBST(int[] arr) {
+
+            // Initialize the root of the BST as null (empty tree)
             TreeNode root = null;
-            for (int v : arr) root = insert(root, v);                                        // grow one at a time
+
+            // Iterate through the elements of the input array
+            for (int i = 0; i < arr.length; i++) {
+
+                // Insert the current element into the BST rooted at root
+                root = insert(root, arr[i]);
+            }
+
+            // Return the root of the BST, which represents the root of the
+            // constructed BST
             return root;
         }
     }
 
     public static void main(String[] args) {
-        int[] arr = {2, 1, 6, 5, 3, 4};
-        TreeNode root = new Solution().unsortedArrayToBST(arr);
-        System.out.println(root.val);  // 2
+        // Example 1: [2, 1, 6, 5, 3, 4]
+        TreeNode r1 = new Solution().unsortedArrayToBST(new int[]{2, 1, 6, 5, 3, 4});
+        System.out.println(toLevelOrder(r1));   // [2, 1, 6, 5, 3, 4]
+        System.out.println(inorder(r1));        // [1, 2, 3, 4, 5, 6]
+
+        // Example 2: [10, 5, 9, 4, 11]
+        TreeNode r2 = new Solution().unsortedArrayToBST(new int[]{10, 5, 9, 4, 11});
+        System.out.println(toLevelOrder(r2));   // [10, 5, 11, 4, 9]
+        System.out.println(inorder(r2));        // [4, 5, 9, 10, 11]
+
+        // Empty array
+        TreeNode r3 = new Solution().unsortedArrayToBST(new int[]{});
+        System.out.println(toLevelOrder(r3));   // []
+
+        // Single element
+        TreeNode r4 = new Solution().unsortedArrayToBST(new int[]{7});
+        System.out.println(toLevelOrder(r4));   // [7]
+
+        // Already sorted — right-skew
+        TreeNode r5 = new Solution().unsortedArrayToBST(new int[]{1, 2, 3, 4});
+        System.out.println(inorder(r5));        // [1, 2, 3, 4]
+
+        // Reverse sorted — left-skew
+        TreeNode r6 = new Solution().unsortedArrayToBST(new int[]{4, 3, 2, 1});
+        System.out.println(inorder(r6));        // [1, 2, 3, 4]
     }
 }
 ```
 
-```c run
-#include <stdlib.h>
-
-struct TreeNode *insert_node(struct TreeNode *root, int data) {
-    if (root == NULL) {
-        struct TreeNode *node = malloc(sizeof(*node));
-        node->val = data; node->left = node->right = NULL;
-        return node;
-    }
-    if (data < root->val) root->left  = insert_node(root->left,  data);
-    else                  root->right = insert_node(root->right, data);
-    return root;
-}
-
-struct TreeNode *unsortedArrayToBST(int *arr, int n) {
-    struct TreeNode *root = NULL;
-    for (int i = 0; i < n; i++) root = insert_node(root, arr[i]);                         // grow one at a time
-    return root;
-}
-```
-
-```scala run
-class TreeNode(var value: Int, var left: TreeNode = null, var right: TreeNode = null)
-
-object Main extends App {
-  class Solution {
-    private def insert(root: TreeNode, data: Int): TreeNode = {
-      if (root == null) new TreeNode(data)
-      else {
-        if (data < root.value) root.left  = insert(root.left,  data)
-        else                   root.right = insert(root.right, data)
-        root
-      }
-    }
-
-    def unsortedArrayToBST(arr: Array[Int]): TreeNode = {
-      var root: TreeNode = null
-      for (v <- arr) root = insert(root, v)                                                   // grow one at a time
-      root
-    }
-  }
-
-  val root = new Solution().unsortedArrayToBST(Array(2, 1, 6, 5, 3, 4))
-  println(root.value)  // 2
-}
-```
+</details>
 
 
 ***
@@ -517,7 +721,9 @@ Given the **head** of a sorted singly linked list, construct a height-balanced b
 > - **Input:** `head = [4, 5, 9, 10, 11]`
 > - **Output:** `[9, 5, 11, 4, null, 10]`
 
-## The Strategy
+<details>
+<summary><h2>The Strategy</h2></summary>
+
 
 The high-level idea is identical to the sorted-array case: pick the middle element as the root, recurse on the two halves. The wrinkle is that **a singly linked list does not support O(1) random access**. To find the middle of an `n`-element list we need an O(n) walk — once per recursive call.
 
@@ -550,7 +756,11 @@ The total work per recursion level is O(n) (the slow/fast walk over n nodes), an
 
 > *Aside — there's an O(n) version that walks the list once and builds the tree in-order using a closure that advances the head pointer as it consumes nodes. It's a beautiful trick but harder to read; we'll use the cleaner O(n log n) version here.*
 
-## Complexity
+</details>
+<details>
+<summary><h2>Solution &amp; Analysis</h2></summary>
+
+### Complexity
 
 | Case | Time | Space |
 |---|---|---|
@@ -558,161 +768,286 @@ The total work per recursion level is O(n) (the slow/fast walk over n nodes), an
 
 `n` is the number of list nodes; the resulting tree has the same number of nodes.
 
-## The Solution
-
-
-```pseudocode
-function findMiddleAndSplit(head):
-    slow ← head
-    fast ← head
-    prev ← null
-    while fast is NOT null AND fast.next is NOT null:
-        prev ← slow
-        slow ← slow.next
-        fast ← fast.next.next
-    if prev is NOT null: prev.next ← null   # cut the list just before slow
-    return slow                             # slow is the middle node
-
-function sortedLinkedListToBST(head):
-    if head is null: return null
-    middle ← findMiddleAndSplit(head)
-    root ← new TreeNode(middle.val)
-    if head = middle: return root           # single-element list
-    root.left  ← sortedLinkedListToBST(head)         # left half
-    root.right ← sortedLinkedListToBST(middle.next)  # right half
-    return root
-```
+### The Solution
 
 ```python run
+from typing import Optional, List, Any
+from collections import deque
+
+
+class ListNode:
+    def __init__(self, val=0, nxt=None):
+        self.val = val
+        self.next = nxt
+
+
+def from_list(values):
+    if not values:
+        return None
+    head = ListNode(values[0])
+    cur = head
+    for v in values[1:]:
+        cur.next = ListNode(v)
+        cur = cur.next
+    return head
+
+
+class TreeNode:
+    def __init__(self, val=0, left=None, right=None):
+        self.val = val
+        self.left = left
+        self.right = right
+
+
+def to_level_order(root):
+    if not root:
+        return []
+    result, queue = [], deque([root])
+    while queue:
+        node = queue.popleft()
+        result.append(node.val)
+        if node.left:
+            queue.append(node.left)
+        if node.right:
+            queue.append(node.right)
+    return result
+
+
+def inorder(root):
+    if not root:
+        return []
+    return inorder(root.left) + [root.val] + inorder(root.right)
+
+
 class Solution:
-    def find_middle_and_split(self, head):
-        # Slow/fast walk: when fast reaches the end, slow is at the middle.
+    def find_middle_node_and_split(
+        self, head: Optional[ListNode]
+    ) -> Optional[ListNode]:
+
+        # Initialize slow pointer to the head of the list
         slow = head
+
+        # Initialize fast pointer to the head of the list
         fast = head
+
+        # Previous pointer
         previous = None
-        while fast is not None and fast.next is not None:
+
+        # Iterate until fast pointer reaches the end of the list
+        while fast and fast.next:
             previous = slow
+
+            # Move slow pointer one step forward
             slow = slow.next
+
+            # Move fast pointer two steps forward
             fast = fast.next.next
-        # Cut the list just before slow, so the left half ends cleanly.
-        if previous is not None:
+
+        # Split the list into two halves
+        if previous:
             previous.next = None
+
+        # Return the middle node or the second middle node
+        # (in case of even number of nodes)
         return slow
 
-    def sorted_linked_list_to_bst(self, head):
-        if head is None:
+    def sorted_linked_list_to_bst(
+        self, head: Optional[ListNode]
+    ) -> Optional[TreeNode]:
+        if not head:
             return None
-        # Split the list around its middle node.
-        middle = self.find_middle_and_split(head)
-        # The middle becomes the subtree's root.
-        root = TreeNode(middle.val)
-        # Single-element list — head and middle are the same node; no recursion.
-        if head is middle:
+
+        # Find the middle element of the list
+        middle_node = self.find_middle_node_and_split(head)
+
+        # Create a new TreeNode using the value at the middle node
+        root = TreeNode(middle_node.val)
+
+        # Base case when there's only one element in the list
+        if head == middle_node:
             return root
-        # Recurse on the two halves.
-        root.left  = self.sorted_linked_list_to_bst(head)            # nodes before middle
-        root.right = self.sorted_linked_list_to_bst(middle.next)     # nodes after middle
+
+        # Recursively build the left subtree using the elements to the
+        # left of the middle node
+        root.left = self.sorted_linked_list_to_bst(head)
+
+        # Recursively build the right subtree using the elements to the
+        # right of the middle node
+        root.right = self.sorted_linked_list_to_bst(middle_node.next)
+
+        # Return the root of the constructed binary search tree
         return root
+
+
+# Example 1: [1, 2, 3, 4, 5, 6]
+r1 = Solution().sorted_linked_list_to_bst(from_list([1, 2, 3, 4, 5, 6]))
+print(to_level_order(r1))          # [4, 2, 6, 1, 3, 5]
+print(inorder(r1))                 # [1, 2, 3, 4, 5, 6]
+
+# Example 2: [4, 5, 9, 10, 11]
+r2 = Solution().sorted_linked_list_to_bst(from_list([4, 5, 9, 10, 11]))
+print(to_level_order(r2))          # [9, 5, 11, 4, 10]
+print(inorder(r2))                 # [4, 5, 9, 10, 11]
+
+# Empty list
+r3 = Solution().sorted_linked_list_to_bst(None)
+print(to_level_order(r3))          # []
+
+# Single element
+r4 = Solution().sorted_linked_list_to_bst(from_list([7]))
+print(to_level_order(r4))          # [7]
+
+# Two elements
+r5 = Solution().sorted_linked_list_to_bst(from_list([3, 8]))
+print(inorder(r5))                 # [3, 8]
+
+# Odd-length list
+r6 = Solution().sorted_linked_list_to_bst(from_list([1, 2, 3, 4, 5]))
+print(inorder(r6))                 # [1, 2, 3, 4, 5]
 ```
 
 ```java run
+import java.util.*;
+
 public class Main {
-    static class ListNode { int val; ListNode next; ListNode(int v){val=v;} }
-    static class TreeNode { int val; TreeNode left, right; TreeNode(int v){val=v;} }
+    static class ListNode {
+        int val;
+        ListNode next;
+        ListNode() {}
+        ListNode(int val) { this.val = val; }
+        ListNode(int val, ListNode next) { this.val = val; this.next = next; }
+    }
+
+    static ListNode fromList(int... values) {
+        if (values.length == 0) return null;
+        ListNode head = new ListNode(values[0]);
+        ListNode cur = head;
+        for (int i = 1; i < values.length; i++) {
+            cur.next = new ListNode(values[i]);
+            cur = cur.next;
+        }
+        return head;
+    }
+
+    static class TreeNode {
+        int val;
+        TreeNode left;
+        TreeNode right;
+        TreeNode() {}
+        TreeNode(int val) { this.val = val; }
+    }
+
+    static List<Integer> toLevelOrder(TreeNode root) {
+        if (root == null) return new ArrayList<>();
+        List<Integer> result = new ArrayList<>();
+        Deque<TreeNode> queue = new ArrayDeque<>();
+        queue.add(root);
+        while (!queue.isEmpty()) {
+            TreeNode node = queue.poll();
+            result.add(node.val);
+            if (node.left != null) queue.add(node.left);
+            if (node.right != null) queue.add(node.right);
+        }
+        return result;
+    }
+
+    static List<Integer> inorder(TreeNode root) {
+        if (root == null) return new ArrayList<>();
+        List<Integer> result = new ArrayList<>(inorder(root.left));
+        result.add(root.val);
+        result.addAll(inorder(root.right));
+        return result;
+    }
 
     static class Solution {
-        private ListNode findMiddleAndSplit(ListNode head) {
-            ListNode slow = head, fast = head, previous = null;
+        private ListNode findMiddleNodeAndSplit(ListNode head) {
+
+            // Initialize slow pointer to the head of the list
+            ListNode slow = head;
+
+            // Initialize fast pointer to the head of the list
+            ListNode fast = head;
+
+            // Previous pointer
+            ListNode previous = null;
+
+            // Iterate until fast pointer reaches the end of the list
             while (fast != null && fast.next != null) {
                 previous = slow;
+
+                // Move slow pointer one step forward
                 slow = slow.next;
+
+                // Move fast pointer two steps forward
                 fast = fast.next.next;
             }
-            if (previous != null) previous.next = null;                                              // split
+
+            // Split the list into two halves
+            if (previous != null) {
+                previous.next = null;
+            }
+
+            // Return the middle node or the second middle node
+            // (in case of even number of nodes)
             return slow;
         }
 
         public TreeNode sortedLinkedListToBST(ListNode head) {
-            if (head == null) return null;
-            ListNode middle = findMiddleAndSplit(head);
-            TreeNode root = new TreeNode(middle.val);
-            if (head == middle) return root;                                                          // single element
-            root.left  = sortedLinkedListToBST(head);
-            root.right = sortedLinkedListToBST(middle.next);
+            if (head == null) {
+                return null;
+            }
+
+            // Find the middle element of the list
+            ListNode middleNode = findMiddleNodeAndSplit(head);
+
+            // Create a new TreeNode using the value at the middle node
+            TreeNode root = new TreeNode(middleNode.val);
+
+            // Base case when there's only one element in the list
+            if (head == middleNode) {
+                return root;
+            }
+
+            // Recursively build the left subtree using the elements to the
+            // left of the middle node
+            root.left = sortedLinkedListToBST(head);
+
+            // Recursively build the right subtree using the elements to the
+            // right of the middle node
+            root.right = sortedLinkedListToBST(middleNode.next);
+
+            // Return the root of the constructed binary search tree
             return root;
         }
     }
 
     public static void main(String[] args) {
-        ListNode head = new ListNode(1);
-        head.next = new ListNode(2); head.next.next = new ListNode(3);
-        head.next.next.next = new ListNode(4);
-        head.next.next.next.next = new ListNode(5);
-        head.next.next.next.next.next = new ListNode(6);
-        TreeNode root = new Solution().sortedLinkedListToBST(head);
-        System.out.println(root.val);  // 4
+        // Example 1: [1, 2, 3, 4, 5, 6]
+        TreeNode r1 = new Solution().sortedLinkedListToBST(fromList(1, 2, 3, 4, 5, 6));
+        System.out.println(toLevelOrder(r1));   // [4, 2, 6, 1, 3, 5]
+        System.out.println(inorder(r1));        // [1, 2, 3, 4, 5, 6]
+
+        // Example 2: [4, 5, 9, 10, 11]
+        TreeNode r2 = new Solution().sortedLinkedListToBST(fromList(4, 5, 9, 10, 11));
+        System.out.println(toLevelOrder(r2));   // [9, 5, 11, 4, 10]
+        System.out.println(inorder(r2));        // [4, 5, 9, 10, 11]
+
+        // Empty list
+        TreeNode r3 = new Solution().sortedLinkedListToBST(null);
+        System.out.println(toLevelOrder(r3));   // []
+
+        // Single element
+        TreeNode r4 = new Solution().sortedLinkedListToBST(fromList(7));
+        System.out.println(toLevelOrder(r4));   // [7]
+
+        // Two elements
+        TreeNode r5 = new Solution().sortedLinkedListToBST(fromList(3, 8));
+        System.out.println(inorder(r5));        // [3, 8]
+
+        // Odd-length list
+        TreeNode r6 = new Solution().sortedLinkedListToBST(fromList(1, 2, 3, 4, 5));
+        System.out.println(inorder(r6));        // [1, 2, 3, 4, 5]
     }
-}
-```
-
-```c run
-#include <stdlib.h>
-
-static struct ListNode *find_middle_and_split(struct ListNode *head) {
-    struct ListNode *slow = head, *fast = head, *previous = NULL;
-    while (fast != NULL && fast->next != NULL) {
-        previous = slow;
-        slow = slow->next;
-        fast = fast->next->next;
-    }
-    if (previous != NULL) previous->next = NULL;                                                   // split
-    return slow;
-}
-
-struct TreeNode *sortedLinkedListToBST(struct ListNode *head) {
-    if (head == NULL) return NULL;
-    struct ListNode *middle = find_middle_and_split(head);
-    struct TreeNode *root = malloc(sizeof(*root));
-    root->val = middle->val; root->left = root->right = NULL;
-    if (head == middle) return root;                                                                // single element
-    root->left  = sortedLinkedListToBST(head);
-    root->right = sortedLinkedListToBST(middle->next);
-    return root;
-}
-```
-
-```scala run
-class ListNode(var value: Int, var next: ListNode = null)
-class TreeNode(var value: Int, var left: TreeNode = null, var right: TreeNode = null)
-
-object Main extends App {
-  class Solution {
-    private def findMiddleAndSplit(head: ListNode): ListNode = {
-      var slow = head; var fast = head; var previous: ListNode = null
-      while (fast != null && fast.next != null) {
-        previous = slow
-        slow = slow.next
-        fast = fast.next.next
-      }
-      if (previous != null) previous.next = null                                                          // split
-      slow
-    }
-
-    def sortedLinkedListToBST(head: ListNode): TreeNode = {
-      if (head == null) return null
-      val middle = findMiddleAndSplit(head)
-      val root = new TreeNode(middle.value)
-      if (head == middle) return root                                                                     // single element
-      root.left  = sortedLinkedListToBST(head)
-      root.right = sortedLinkedListToBST(middle.next)
-      root
-    }
-  }
-
-  val head = new ListNode(1, new ListNode(2, new ListNode(3,
-    new ListNode(4, new ListNode(5, new ListNode(6))))))
-  val root = new Solution().sortedLinkedListToBST(head)
-  println(root.value)  // 4
 }
 ```
 
@@ -736,9 +1071,10 @@ Result: tree = [4, 2, 6, 1, 3, 5] ✓
 
 </details>
 
-***
+</details>
+<details>
+<summary><h2>Final Takeaway</h2></summary>
 
-## Final Takeaway
 
 Three constructions, three different cost profiles:
 
@@ -754,3 +1090,5 @@ Two ideas worth banking:
 2. **Insertion order is destiny for naive BSTs.** Sorted input is the adversarial worst case — and unfortunately, sorted input shows up everywhere in the real world (chronological IDs, alphabetised keys, monotone counters). Production code should either pre-shuffle input or use a self-balancing BST.
 
 The next lesson finally puts our shiny new BST to work on a classic interview problem: the **Lowest Common Ancestor**. The BST property turns what would be an O(n) traversal in a generic binary tree into a one-pass O(h) descent.
+
+</details>

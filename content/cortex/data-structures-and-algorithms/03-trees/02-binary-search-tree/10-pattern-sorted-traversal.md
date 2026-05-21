@@ -83,122 +83,102 @@ The reason this template works on every "sorted traversal" problem is that the *
 ## Generic template
 
 
-```pseudocode
-aggregate ← 0
-
-function inorder(node):
-    if node is null: return
-    inorder(node.left)                          # 1. visit left subtree (ascending)
-    output ← f(node.val)                        # 2. process current node
-    aggregate ← g(aggregate, output)            # 3. fold output into running state
-    inorder(node.right)                         # 4. visit right subtree
-
-function callingFunction(root):
-    aggregate ← 0
-    inorder(root)
-    return aggregate
-```
-
 ```python run
+"""
+Definition for a binary tree node.
+class TreeNode:
+    def __init__(self, val):
+        self.val = val
+        self.left = None
+        self.right = None
+"""
+
+from typing import Optional, List
+
 class Solution:
-    def calling_function(self, root):
-        # State shared across all recursive calls.
+    def __init__(self):
+        # Class-level variable to hold the aggregate value
+        self.aggregate: int = 0
+
+    def callingFunction(self, root: Optional[TreeNode]) -> int:
+
+        # Initialize aggregate with a default value
         self.aggregate = 0
+
+        # Traverse the binary tree in inorder traversal
         self.inorder(root)
+
+        # Return the aggregated value
         return self.aggregate
 
-    def inorder(self, node):
-        if node is None:
+    def inorder(self, node: Optional[TreeNode]) -> None:
+
+        if not node:
+            # Return if this is a null node
             return
-        self.inorder(node.left)                        # 1. visit left subtree
-        output = self.f(node.val)                      # 2. process node
-        self.aggregate = self.g(self.aggregate, output)# 3. fold into running state
-        self.inorder(node.right)                       # 4. visit right subtree
+
+        # Traverse the left subtree
+        self.inorder(node.left)
+
+        # Process the current node
+        output = f(node.val)
+        # Add contribution of current node
+        self.aggregate = g(self.aggregate, output)
+
+        # Traverse the right subtree
+        self.inorder(node.right)
 ```
 
 ```java run
-public class Main {
-    static class TreeNode { int val; TreeNode left, right; TreeNode(int v){val=v;} }
+import java.util.*;
 
-    static class Solution {
-        private int aggregate;
+/**
+ * Definition for a binary tree node.
+ * class TreeNode {
+ *      int val;
+ *      TreeNode left;
+ *      TreeNode right;
+ *      TreeNode() {}
+ *      TreeNode(int val) { this.val = val; }
+ * }
+ */
 
-        public int callingFunction(TreeNode root) {
-            aggregate = 0;
-            inorder(root);
-            return aggregate;
+public class Solution {
+
+    // Declare aggregate as a class-level variable since Java does not support pass-by-reference
+    private int aggregate = 0;
+
+    public int callingFunction(TreeNode root) {
+
+        // Initialize aggregate with a default value
+        aggregate = 0;
+
+        // Traverse the binary tree in inorder traversal
+        inorder(root);
+
+        // Return the aggregated value
+        return aggregate;
+    }
+
+    private void inorder(TreeNode node) {
+
+        if (node == null) {
+            // Return if this is a null node;
+            return;
         }
 
-        private void inorder(TreeNode node) {
-            if (node == null) return;
-            inorder(node.left);                                  // 1. left subtree
-            int output = f(node.val);                            // 2. process node
-            aggregate = g(aggregate, output);                    // 3. fold
-            inorder(node.right);                                 // 4. right subtree
-        }
-        int f(int v) { return v; }
-        int g(int agg, int out) { return agg + out; }
+        // Traverse the left subtree
+        inorder(node.left);
+
+        // Process the current node
+        int output = f(node.val);
+
+        // Add contribution of current node
+        aggregate = g(aggregate, output);
+
+        // Traverse the right subtree
+        inorder(node.right);
     }
-
-    public static void main(String[] args) {
-        TreeNode root = new TreeNode(4);
-        root.left  = new TreeNode(2); root.right = new TreeNode(5);
-        root.left.left  = new TreeNode(1); root.left.right = new TreeNode(3);
-        root.right.right = new TreeNode(6);
-        System.out.println(new Solution().callingFunction(root));  // 21
-    }
-}
-```
-
-```c run
-static int aggregate;
-
-static int f(int v)            { return v; }
-static int g(int agg, int out) { return agg + out; }
-
-static void inorder(struct TreeNode *node) {
-    if (node == NULL) return;
-    inorder(node->left);                                     // 1. left subtree
-    int output = f(node->val);                               // 2. process node
-    aggregate = g(aggregate, output);                        // 3. fold
-    inorder(node->right);                                    // 4. right subtree
-}
-
-int callingFunction(struct TreeNode *root) {
-    aggregate = 0;
-    inorder(root);
-    return aggregate;
-}
-```
-
-```scala run
-class TreeNode(var value: Int, var left: TreeNode = null, var right: TreeNode = null)
-
-object Main extends App {
-  class Solution {
-    private var aggregate: Int = 0
-
-    def callingFunction(root: TreeNode): Int = {
-      aggregate = 0
-      inorder(root)
-      aggregate
-    }
-
-    private def inorder(node: TreeNode): Unit = {
-      if (node == null) return
-      inorder(node.left)                                          // 1. left subtree
-      val output = f(node.value)                                  // 2. process node
-      aggregate = g(aggregate, output)                            // 3. fold
-      inorder(node.right)                                         // 4. right subtree
-    }
-    private def f(v: Int): Int            = v
-    private def g(agg: Int, out: Int): Int = agg + out
-  }
-
-  val root = new TreeNode(4,
-    new TreeNode(2, new TreeNode(1), new TreeNode(3)),
-    new TreeNode(5, null, new TreeNode(6)))
-  println(new Solution().callingFunction(root))  // 21
 }
 ```
 
@@ -283,132 +263,210 @@ Given the **root** of a binary search tree, return the lowest absolute variance 
 > - **Output:** `2`
 > - **Explanation:** The smallest gap is `2` (between `8` and `10`, or between `12` and `14`).
 
-## The Solution
+<details>
+<summary><h2>The Solution</h2></summary>
 
 
-```pseudocode
-minDiff ← +∞
-prevNode ← null
-
-function inorder(root):
-    if root is null: return
-    inorder(root.left)
-    if prevNode is NOT null:
-        minDiff ← min(minDiff, root.val − prevNode.val)  # gap to previous in-order node
-    prevNode ← root
-    inorder(root.right)
-
-function lowestAbsoluteVariance(root):
-    inorder(root)
-    return minDiff
-```
 
 ```python run
+from typing import Optional, List
+
+
+class TreeNode:
+    def __init__(self, val=0, left=None, right=None):
+        self.val = val
+        self.left = left
+        self.right = right
+
+
+def from_level_order(values):
+    """Build tree from list like [1, 2, 3, None, 4]. None means missing child."""
+    if not values:
+        return None
+    root = TreeNode(values[0])
+    queue = [root]
+    i = 1
+    while queue and i < len(values):
+        node = queue.pop(0)
+        if i < len(values) and values[i] is not None:
+            node.left = TreeNode(values[i])
+            queue.append(node.left)
+        i += 1
+        if i < len(values) and values[i] is not None:
+            node.right = TreeNode(values[i])
+            queue.append(node.right)
+        i += 1
+    return root
+
+
 class Solution:
     def __init__(self):
-        self.min_diff = float("inf")
-        self.prev_node = None        # last node seen during the in-order walk
 
-    def inorder(self, root):
+        # Variable to keep track of the minimum difference
+        self.min_diff = float("inf")
+
+        # Reference to keep track of the previous node
+        self.prev_node = None
+
+    def inorder(self, root: Optional[TreeNode]):
         if root is None:
             return
+
+        # Traverse left subtree
         self.inorder(root.left)
-        # Process: gap to previous in-order node (if any).
+
+        # Check the difference with the previous node
         if self.prev_node is not None:
-            self.min_diff = min(self.min_diff, root.val - self.prev_node.val)
-        self.prev_node = root        # advance the "previous" pointer
+            self.min_diff = min(
+                self.min_diff, root.val - self.prev_node.val
+            )
+
+        # Update the previous node
+        self.prev_node = root
+
+        # Traverse right subtree
         self.inorder(root.right)
 
-    def lowest_absolute_variance(self, root) -> int:
+    def lowest_absolute_variance(self, root: Optional[TreeNode]) -> int:
+
+        # Perform in-order traversal
         self.inorder(root)
+
+        # Return the minimum difference found
         return self.min_diff
+
+
+# Example 1: [5, 4, 8, 2, null, null, 10] → 1
+print(Solution().lowest_absolute_variance(
+    from_level_order([5, 4, 8, 2, None, None, 10])))   # 1
+
+# Example 2: [10, 8, 14, 5, null, 12, 17] → 2
+print(Solution().lowest_absolute_variance(
+    from_level_order([10, 8, 14, 5, None, 12, 17])))   # 2
+
+# Edge cases
+print(Solution().lowest_absolute_variance(
+    from_level_order([5])))                             # inf (single node)
+
+print(Solution().lowest_absolute_variance(
+    from_level_order([3, 1, 5])))                      # 2
+
+# Left-skew BST: 1, 2, 3, 4
+root_skew = TreeNode(4)
+root_skew.left = TreeNode(3)
+root_skew.left.left = TreeNode(2)
+root_skew.left.left.left = TreeNode(1)
+print(Solution().lowest_absolute_variance(root_skew))  # 1
+
+# Consecutive values: consecutive diffs of 1
+print(Solution().lowest_absolute_variance(
+    from_level_order([5, 3, 7, 2, 4, 6, 8])))         # 1
 ```
 
 ```java run
+import java.util.*;
+
 public class Main {
-    static class TreeNode { int val; TreeNode left, right; TreeNode(int v){val=v;} }
+    static class TreeNode {
+        int val;
+        TreeNode left;
+        TreeNode right;
+        TreeNode() {}
+        TreeNode(int val) { this.val = val; }
+    }
+
+    static TreeNode fromLevelOrder(Integer... values) {
+        if (values.length == 0 || values[0] == null) return null;
+        TreeNode root = new TreeNode(values[0]);
+        java.util.Deque<TreeNode> queue = new java.util.ArrayDeque<>();
+        queue.add(root);
+        int i = 1;
+        while (!queue.isEmpty() && i < values.length) {
+            TreeNode node = queue.poll();
+            if (i < values.length && values[i] != null) {
+                node.left = new TreeNode(values[i]);
+                queue.add(node.left);
+            }
+            i++;
+            if (i < values.length && values[i] != null) {
+                node.right = new TreeNode(values[i]);
+                queue.add(node.right);
+            }
+            i++;
+        }
+        return root;
+    }
 
     static class Solution {
+
+        // Variable to keep track of the minimum difference
         private int minDiff = Integer.MAX_VALUE;
+
+        // Reference to keep track of the previous node
         private TreeNode prevNode = null;
 
         private void inorder(TreeNode root) {
-            if (root == null) return;
+            if (root == null) {
+                return;
+            }
+
+            // Traverse left subtree
             inorder(root.left);
-            if (prevNode != null) minDiff = Math.min(minDiff, root.val - prevNode.val);
+
+            // Check the difference with the previous node
+            if (prevNode != null) {
+                minDiff = Math.min(minDiff, root.val - prevNode.val);
+            }
+
+            // Update the previous node
             prevNode = root;
+
+            // Traverse right subtree
             inorder(root.right);
         }
 
         public int lowestAbsoluteVariance(TreeNode root) {
+
+            // Perform in-order traversal
             inorder(root);
+
+            // Return the minimum difference found
             return minDiff;
         }
     }
 
     public static void main(String[] args) {
-        TreeNode root = new TreeNode(5);
-        root.left  = new TreeNode(4); root.right = new TreeNode(8);
-        root.left.left  = new TreeNode(2);
-        root.right.right = new TreeNode(10);
-        System.out.println(new Solution().lowestAbsoluteVariance(root));  // 1
+        // Example 1: [5, 4, 8, 2, null, null, 10] → 1
+        System.out.println(new Solution().lowestAbsoluteVariance(
+            fromLevelOrder(5, 4, 8, 2, null, null, 10)));   // 1
+
+        // Example 2: [10, 8, 14, 5, null, 12, 17] → 2
+        System.out.println(new Solution().lowestAbsoluteVariance(
+            fromLevelOrder(10, 8, 14, 5, null, 12, 17)));   // 2
+
+        // Single node — no pair exists
+        System.out.println(new Solution().lowestAbsoluteVariance(
+            fromLevelOrder(5)));                             // Integer.MAX_VALUE
+
+        // Balanced BST with min diff = 2
+        System.out.println(new Solution().lowestAbsoluteVariance(
+            fromLevelOrder(3, 1, 5)));                      // 2
+
+        // Left-skew BST: 4-3-2-1
+        TreeNode skew = new TreeNode(4);
+        skew.left = new TreeNode(3);
+        skew.left.left = new TreeNode(2);
+        skew.left.left.left = new TreeNode(1);
+        System.out.println(new Solution().lowestAbsoluteVariance(skew)); // 1
+
+        // Consecutive values: min diff = 1
+        System.out.println(new Solution().lowestAbsoluteVariance(
+            fromLevelOrder(5, 3, 7, 2, 4, 6, 8)));         // 1
     }
 }
 ```
 
-```c run
-#include <limits.h>
-
-static int minDiff;
-static struct TreeNode *prevNode;
-
-static void inorder(struct TreeNode *root) {
-    if (root == NULL) return;
-    inorder(root->left);
-    if (prevNode != NULL) {
-        int d = root->val - prevNode->val;
-        if (d < minDiff) minDiff = d;
-    }
-    prevNode = root;
-    inorder(root->right);
-}
-
-int lowestAbsoluteVariance(struct TreeNode *root) {
-    minDiff  = INT_MAX;
-    prevNode = NULL;
-    inorder(root);
-    return minDiff;
-}
-```
-
-```scala run
-class TreeNode(var value: Int, var left: TreeNode = null, var right: TreeNode = null)
-
-object Main extends App {
-  class Solution {
-    private var minDiff: Int = Int.MaxValue
-    private var prevNode: TreeNode = null
-
-    private def inorder(root: TreeNode): Unit = {
-      if (root == null) return
-      inorder(root.left)
-      if (prevNode != null) minDiff = math.min(minDiff, root.value - prevNode.value)
-      prevNode = root
-      inorder(root.right)
-    }
-
-    def lowestAbsoluteVariance(root: TreeNode): Int = {
-      inorder(root)
-      minDiff
-    }
-  }
-
-  val root = new TreeNode(5,
-    new TreeNode(4, new TreeNode(2), null),
-    new TreeNode(8, null, new TreeNode(10)))
-  println(new Solution().lowestAbsoluteVariance(root))  // 1
-}
-```
+</details>
 
 
 ***
@@ -435,147 +493,226 @@ Given the **root** of a binary search tree, return `true` if the tree is a valid
 > - **Output:** `false`
 > - **Explanation:** Node `11` is in the right subtree of `12` but `11 < 12` — rule violated.
 
-## The Strategy
+<details>
+<summary><h2>The Strategy</h2></summary>
+
 
 A valid BST has a **strictly increasing** in-order traversal. So this is just: walk in-order, keep the previous value, and at every step assert `prev < current`. The moment any pair fails, the tree is invalid.
 
 This is dramatically simpler than the recursive `(min, max)` bounds technique you may have seen — the in-order trick reduces tree validity to *list monotonicity*, which is a one-liner.
 
-## The Solution
+</details>
+<details>
+<summary><h2>The Solution</h2></summary>
 
 
-```pseudocode
-isValid ← true
-prevNode ← null
-
-function inorder(root):
-    if root is null OR NOT isValid: return
-    inorder(root.left)
-    if prevNode is NOT null AND root.val ≤ prevNode.val:
-        isValid ← false   # in-order sequence must be strictly increasing
-        return
-    prevNode ← root
-    inorder(root.right)
-
-function bstValidator(root):
-    inorder(root)
-    return isValid
-```
 
 ```python run
+from typing import Optional
+
+
+class TreeNode:
+    def __init__(self, val=0, left=None, right=None):
+        self.val = val
+        self.left = left
+        self.right = right
+
+
+def from_level_order(values):
+    """Build tree from list like [1, 2, 3, None, 4]. None means missing child."""
+    if not values:
+        return None
+    root = TreeNode(values[0])
+    queue = [root]
+    i = 1
+    while queue and i < len(values):
+        node = queue.pop(0)
+        if i < len(values) and values[i] is not None:
+            node.left = TreeNode(values[i])
+            queue.append(node.left)
+        i += 1
+        if i < len(values) and values[i] is not None:
+            node.right = TreeNode(values[i])
+            queue.append(node.right)
+        i += 1
+    return root
+
+
 class Solution:
     def __init__(self):
-        self.is_valid = True
-        self.prev_node = None
 
-    def inorder(self, root):
-        # Skip work as soon as we know the tree is invalid.
-        if root is None or not self.is_valid:
+        # Variable to keep track of the validity of the BST
+        self.is_valid = True
+
+        # Reference to keep track of the previous node
+        self.prev_node: Optional[TreeNode] = None
+
+    def inorder(self, root: Optional[TreeNode]) -> None:
+        if not root or not self.is_valid:
             return
+
+        # Traverse left subtree
         self.inorder(root.left)
-        # In-order walk must be STRICTLY increasing — equal values also fail.
-        if self.prev_node is not None and root.val <= self.prev_node.val:
+
+        # Current node must be greater than the prevNodeious one in
+        # inorder
+        if self.prev_node and root.val <= self.prev_node.val:
             self.is_valid = False
             return
+
+        # Update prevNodeious node
         self.prev_node = root
+
+        # Traverse right subtree
         self.inorder(root.right)
 
-    def bst_validator(self, root) -> bool:
+    def bst_validator(self, root: Optional[TreeNode]) -> bool:
+
+        # Perform in-order traversal
         self.inorder(root)
+
+        # Return the validity of the BST
         return self.is_valid
+
+
+# Example 1: valid BST
+print(Solution().bst_validator(
+    from_level_order([4, 2, 5, 1, 3, None, 6])))   # True
+
+# Example 2: invalid BST (11 < 12 but placed as right child)
+print(Solution().bst_validator(
+    from_level_order([9, 5, 12, 4, None, None, 11])))  # False
+
+# Edge cases
+print(Solution().bst_validator(None))              # True  (empty tree)
+print(Solution().bst_validator(from_level_order([5])))  # True (single node)
+
+# Left-skew valid BST: 1-2-3-4
+root_skew = TreeNode(4)
+root_skew.left = TreeNode(3)
+root_skew.left.left = TreeNode(2)
+root_skew.left.left.left = TreeNode(1)
+print(Solution().bst_validator(root_skew))         # True
+
+# Duplicate value makes it invalid
+dup = TreeNode(5)
+dup.left = TreeNode(5)
+print(Solution().bst_validator(dup))               # False
+
+# Subtree violation: right child less than root
+bad = TreeNode(10)
+bad.right = TreeNode(8)
+print(Solution().bst_validator(bad))               # False
 ```
 
 ```java run
+import java.util.*;
+
 public class Main {
-    static class TreeNode { int val; TreeNode left, right; TreeNode(int v){val=v;} }
+    static class TreeNode {
+        int val;
+        TreeNode left;
+        TreeNode right;
+        TreeNode() {}
+        TreeNode(int val) { this.val = val; }
+    }
+
+    static TreeNode fromLevelOrder(Integer... values) {
+        if (values.length == 0 || values[0] == null) return null;
+        TreeNode root = new TreeNode(values[0]);
+        java.util.Deque<TreeNode> queue = new java.util.ArrayDeque<>();
+        queue.add(root);
+        int i = 1;
+        while (!queue.isEmpty() && i < values.length) {
+            TreeNode node = queue.poll();
+            if (i < values.length && values[i] != null) {
+                node.left = new TreeNode(values[i]);
+                queue.add(node.left);
+            }
+            i++;
+            if (i < values.length && values[i] != null) {
+                node.right = new TreeNode(values[i]);
+                queue.add(node.right);
+            }
+            i++;
+        }
+        return root;
+    }
 
     static class Solution {
+
+        // Variable to keep track of the validity of the BST
         private boolean isValid = true;
+
+        // Reference to keep track of the previous node
         private TreeNode prevNode = null;
 
         private void inorder(TreeNode root) {
-            if (root == null || !isValid) return;
+            if (root == null || !isValid) {
+                return;
+            }
+
+            // Traverse left subtree
             inorder(root.left);
+
+            // Current node must be greater than the prevNodeious one in
+            // inorder
             if (prevNode != null && root.val <= prevNode.val) {
                 isValid = false;
                 return;
             }
+
+            // Update prevNodeious node
             prevNode = root;
+
+            // Traverse right subtree
             inorder(root.right);
         }
 
         public boolean bstValidator(TreeNode root) {
+
+            // Perform in-order traversal
             inorder(root);
+
+            // Return the validity of the BST
             return isValid;
         }
     }
 
     public static void main(String[] args) {
-        TreeNode root = new TreeNode(4);
-        root.left  = new TreeNode(2); root.right = new TreeNode(5);
-        root.left.left  = new TreeNode(1); root.left.right = new TreeNode(3);
-        root.right.right = new TreeNode(6);
-        System.out.println(new Solution().bstValidator(root));  // true
+        // Example 1: valid BST
+        System.out.println(new Solution().bstValidator(
+            fromLevelOrder(4, 2, 5, 1, 3, null, 6)));   // true
+
+        // Example 2: invalid BST (11 < 12 but placed as right child)
+        System.out.println(new Solution().bstValidator(
+            fromLevelOrder(9, 5, 12, 4, null, null, 11)));  // false
+
+        // Edge cases
+        System.out.println(new Solution().bstValidator(null));          // true
+        System.out.println(new Solution().bstValidator(fromLevelOrder(5))); // true
+
+        // Left-skew valid BST: 4-3-2-1
+        TreeNode skew = new TreeNode(4);
+        skew.left = new TreeNode(3);
+        skew.left.left = new TreeNode(2);
+        skew.left.left.left = new TreeNode(1);
+        System.out.println(new Solution().bstValidator(skew));          // true
+
+        // Duplicate value makes it invalid
+        TreeNode dup = new TreeNode(5);
+        dup.left = new TreeNode(5);
+        System.out.println(new Solution().bstValidator(dup));           // false
+
+        // Subtree violation: right child less than root
+        TreeNode bad = new TreeNode(10);
+        bad.right = new TreeNode(8);
+        System.out.println(new Solution().bstValidator(bad));           // false
     }
 }
 ```
 
-```c run
-#include <stdbool.h>
-
-static bool isValid;
-static struct TreeNode *prevNode;
-
-static void inorder(struct TreeNode *root) {
-    if (root == NULL || !isValid) return;
-    inorder(root->left);
-    if (prevNode != NULL && root->val <= prevNode->val) {
-        isValid = false;
-        return;
-    }
-    prevNode = root;
-    inorder(root->right);
-}
-
-bool bstValidator(struct TreeNode *root) {
-    isValid  = true;
-    prevNode = NULL;
-    inorder(root);
-    return isValid;
-}
-```
-
-```scala run
-class TreeNode(var value: Int, var left: TreeNode = null, var right: TreeNode = null)
-
-object Main extends App {
-  class Solution {
-    private var isValid: Boolean = true
-    private var prevNode: TreeNode = null
-
-    private def inorder(root: TreeNode): Unit = {
-      if (root == null || !isValid) return
-      inorder(root.left)
-      if (prevNode != null && root.value <= prevNode.value) {
-        isValid = false
-        return
-      }
-      prevNode = root
-      inorder(root.right)
-    }
-
-    def bstValidator(root: TreeNode): Boolean = {
-      inorder(root)
-      isValid
-    }
-  }
-
-  val root = new TreeNode(4,
-    new TreeNode(2, new TreeNode(1), new TreeNode(3)),
-    new TreeNode(5, null, new TreeNode(6)))
-  println(new Solution().bstValidator(root))  // true
-}
-```
+</details>
 
 
 ***
@@ -596,116 +733,202 @@ Given the **root** of a binary search tree, return a sorted array containing the
 > - **Input:** `root = [9, 5, 10, 4, null, null, 11]`
 > - **Output:** `[4, 5, 9, 10, 11]`
 
-## The Strategy
+<details>
+<summary><h2>The Strategy</h2></summary>
+
 
 This is the canonical use of the pattern: **f** = "append `node.val` to the result list", **g** = identity. The in-order order *is* the sorted order, so emission == sorted output.
 
-## The Solution
+</details>
+<details>
+<summary><h2>The Solution</h2></summary>
 
 
-```pseudocode
-function inorder(root, result):
-    if root is null: return
-    inorder(root.left, result)
-    append root.val to result          # emit values in ascending order
-    inorder(root.right, result)
-
-function bstToSortedArray(root):
-    result ← []
-    inorder(root, result)
-    return result
-```
 
 ```python run
+from typing import Optional, List
+
+
+class TreeNode:
+    def __init__(self, val=0, left=None, right=None):
+        self.val = val
+        self.left = left
+        self.right = right
+
+
+def from_level_order(values):
+    """Build tree from list like [1, 2, 3, None, 4]. None means missing child."""
+    if not values:
+        return None
+    root = TreeNode(values[0])
+    queue = [root]
+    i = 1
+    while queue and i < len(values):
+        node = queue.pop(0)
+        if i < len(values) and values[i] is not None:
+            node.left = TreeNode(values[i])
+            queue.append(node.left)
+        i += 1
+        if i < len(values) and values[i] is not None:
+            node.right = TreeNode(values[i])
+            queue.append(node.right)
+        i += 1
+    return root
+
+
 class Solution:
-    def inorder(self, root, result):
+    def inorder(
+        self, root: Optional[TreeNode], result: List[int]
+    ) -> None:
+
+        # Base case: If the node is None, return
         if root is None:
             return
+
+        # Recursively traverse the left subtree
         self.inorder(root.left, result)
-        result.append(root.val)            # f: emit; g: list append (associative, order-preserving)
+
+        # Visit the current node and add its value to the result list
+        result.append(root.val)
+
+        # Recursively traverse the right subtree
         self.inorder(root.right, result)
 
-    def bst_to_sorted_array(self, root):
-        result = []
+    def bst_to_sorted_array(self, root: Optional[TreeNode]) -> List[int]:
+        result: List[int] = []
+
+        # Call the helper function to perform inorder traversal
         self.inorder(root, result)
+
+        # Return the result list containing inorder traversal elements
         return result
+
+
+# Example 1
+print(Solution().bst_to_sorted_array(
+    from_level_order([4, 2, 5, 1, 3, None, 6])))   # [1, 2, 3, 4, 5, 6]
+
+# Example 2
+print(Solution().bst_to_sorted_array(
+    from_level_order([9, 5, 10, 4, None, None, 11])))  # [4, 5, 9, 10, 11]
+
+# Edge cases
+print(Solution().bst_to_sorted_array(None))         # []
+print(Solution().bst_to_sorted_array(
+    from_level_order([5])))                         # [5]
+
+# Two-node tree
+print(Solution().bst_to_sorted_array(
+    from_level_order([3, 1])))                      # [1, 3]
+
+# Right-skew BST
+print(Solution().bst_to_sorted_array(
+    from_level_order([1, None, 2, None, 3])))       # [1, 2, 3]
+
+# Left-skew BST
+root_left = TreeNode(4)
+root_left.left = TreeNode(3)
+root_left.left.left = TreeNode(2)
+root_left.left.left.left = TreeNode(1)
+print(Solution().bst_to_sorted_array(root_left))    # [1, 2, 3, 4]
 ```
 
 ```java run
 import java.util.*;
 
 public class Main {
-    static class TreeNode { int val; TreeNode left, right; TreeNode(int v){val=v;} }
+    static class TreeNode {
+        int val;
+        TreeNode left;
+        TreeNode right;
+        TreeNode() {}
+        TreeNode(int val) { this.val = val; }
+    }
+
+    static TreeNode fromLevelOrder(Integer... values) {
+        if (values.length == 0 || values[0] == null) return null;
+        TreeNode root = new TreeNode(values[0]);
+        java.util.Deque<TreeNode> queue = new java.util.ArrayDeque<>();
+        queue.add(root);
+        int i = 1;
+        while (!queue.isEmpty() && i < values.length) {
+            TreeNode node = queue.poll();
+            if (i < values.length && values[i] != null) {
+                node.left = new TreeNode(values[i]);
+                queue.add(node.left);
+            }
+            i++;
+            if (i < values.length && values[i] != null) {
+                node.right = new TreeNode(values[i]);
+                queue.add(node.right);
+            }
+            i++;
+        }
+        return root;
+    }
 
     static class Solution {
         private void inorder(TreeNode root, List<Integer> result) {
-            if (root == null) return;
+
+            // Base case: If the node is null, return
+            if (root == null) {
+                return;
+            }
+
+            // Recursively traverse the left subtree
             inorder(root.left, result);
+
+            // Visit the current node and add its value to the result list
             result.add(root.val);
+
+            // Recursively traverse the right subtree
             inorder(root.right, result);
         }
 
         public List<Integer> bstToSortedArray(TreeNode root) {
             List<Integer> result = new ArrayList<>();
+
+            // Call the helper function to perform inorder traversal
             inorder(root, result);
+
+            // Return the result list containing inorder traversal elements
             return result;
         }
     }
 
     public static void main(String[] args) {
-        TreeNode root = new TreeNode(4);
-        root.left  = new TreeNode(2); root.right = new TreeNode(5);
-        root.left.left  = new TreeNode(1); root.left.right = new TreeNode(3);
-        root.right.right = new TreeNode(6);
-        System.out.println(new Solution().bstToSortedArray(root));  // [1, 2, 3, 4, 5, 6]
+        // Example 1
+        System.out.println(new Solution().bstToSortedArray(
+            fromLevelOrder(4, 2, 5, 1, 3, null, 6)));   // [1, 2, 3, 4, 5, 6]
+
+        // Example 2
+        System.out.println(new Solution().bstToSortedArray(
+            fromLevelOrder(9, 5, 10, 4, null, null, 11)));  // [4, 5, 9, 10, 11]
+
+        // Edge cases
+        System.out.println(new Solution().bstToSortedArray(null));      // []
+        System.out.println(new Solution().bstToSortedArray(
+            fromLevelOrder(5)));                         // [5]
+
+        // Two-node tree
+        System.out.println(new Solution().bstToSortedArray(
+            fromLevelOrder(3, 1)));                      // [1, 3]
+
+        // Right-skew BST
+        System.out.println(new Solution().bstToSortedArray(
+            fromLevelOrder(1, null, 2, null, 3)));       // [1, 2, 3]
+
+        // Left-skew BST
+        TreeNode leftSkew = new TreeNode(4);
+        leftSkew.left = new TreeNode(3);
+        leftSkew.left.left = new TreeNode(2);
+        leftSkew.left.left.left = new TreeNode(1);
+        System.out.println(new Solution().bstToSortedArray(leftSkew));  // [1, 2, 3, 4]
     }
 }
 ```
 
-```c run
-static void inorder(struct TreeNode *root, int *result, int *idx) {
-    if (root == NULL) return;
-    inorder(root->left, result, idx);
-    result[(*idx)++] = root->val;
-    inorder(root->right, result, idx);
-}
-
-int *bstToSortedArray(struct TreeNode *root, int *out_size) {
-    int *result = malloc(sizeof(int) * 10000);                              // assume bounded
-    int idx = 0;
-    inorder(root, result, &idx);
-    *out_size = idx;
-    return result;
-}
-```
-
-```scala run
-import scala.collection.mutable
-
-class TreeNode(var value: Int, var left: TreeNode = null, var right: TreeNode = null)
-
-object Main extends App {
-  object Solution {
-    private def inorder(root: TreeNode, result: mutable.ArrayBuffer[Int]): Unit = {
-      if (root == null) return
-      inorder(root.left, result)
-      result.append(root.value)
-      inorder(root.right, result)
-    }
-
-    def bstToSortedArray(root: TreeNode): List[Int] = {
-      val buf = mutable.ArrayBuffer[Int]()
-      inorder(root, buf)
-      buf.toList
-    }
-  }
-
-  val root = new TreeNode(4,
-    new TreeNode(2, new TreeNode(1), new TreeNode(3)),
-    new TreeNode(5, null, new TreeNode(6)))
-  println(Solution.bstToSortedArray(root))  // List(1, 2, 3, 4, 5, 6)
-}
-```
+</details>
 
 
 ***
@@ -726,7 +949,9 @@ Given the **root** of a binary search tree, convert it **in place** into a sorte
 > - **Input:** `root = [9, 5, 10, 4, null, null, 11]`
 > - **Output:** `[4, 5, 9, 10, 11]` (as a DLL)
 
-## The Strategy
+<details>
+<summary><h2>The Strategy</h2></summary>
+
 
 The in-order walk visits nodes in ascending order, which is exactly the order of a sorted DLL. So during the walk we simply *thread* each node onto the back of a growing list:
 
@@ -768,61 +993,136 @@ flowchart LR
 
 <p align="center"><strong>The result of running the in-order walk over <code>[4, 2, 5, 1, 3, null, 6]</code>: <code>1 ↔ 2 ↔ 3 ↔ 4 ↔ 5 ↔ 6</code>. The original BST nodes have been re-wired in place.</strong></p>
 
-## The Solution
+</details>
+<details>
+<summary><h2>The Solution</h2></summary>
 
 
-```pseudocode
-head ← null
-tail ← null
-
-function inorder(root):
-    if root is null: return
-    inorder(root.left)
-    if tail is NOT null:
-        tail.right ← root   # next pointer of the previous DLL tail
-        root.left ← tail    # prev pointer of the new DLL tail
-    else:
-        head ← root         # first node visited becomes the DLL head
-        root.left ← null
-    tail ← root
-    inorder(root.right)
-
-function bstToSortedDLL(root):
-    if root is null: return null
-    inorder(root)
-    tail.right ← null       # terminate the DLL
-    return head
-```
 
 ```python run
+from typing import Optional, List
+
+
+class TreeNode:
+    def __init__(self, val=0, left=None, right=None):
+        self.val = val
+        self.left = left
+        self.right = right
+
+
+def from_level_order(values):
+    """Build tree from list like [1, 2, 3, None, 4]. None means missing child."""
+    if not values:
+        return None
+    root = TreeNode(values[0])
+    queue = [root]
+    i = 1
+    while queue and i < len(values):
+        node = queue.pop(0)
+        if i < len(values) and values[i] is not None:
+            node.left = TreeNode(values[i])
+            queue.append(node.left)
+        i += 1
+        if i < len(values) and values[i] is not None:
+            node.right = TreeNode(values[i])
+            queue.append(node.right)
+        i += 1
+    return root
+
+
+def dll_to_list(head):
+    out = []
+    while head:
+        out.append(head.val)
+        head = head.right
+    return out
+
+
 class Solution:
     def __init__(self):
-        # head = first node visited; tail = most recent node visited.
-        self.head = None
-        self.tail = None
 
-    def inorder(self, root):
+        # Pointer to keep track of the head of the doubly linked list
+        self.head: Optional[TreeNode] = None
+
+        # Pointer to keep track of the tail of the doubly linked list
+        self.tail: Optional[TreeNode] = None
+
+    def inorder(self, root: Optional[TreeNode]) -> None:
+
+        # Base case: If the node is None, return
         if root is None:
             return
+
+        # Recursively traverse the left subtree
         self.inorder(root.left)
-        # Thread the current node onto the end of the list.
+
+        # If there is a tail, link it with the current root
         if self.tail is not None:
-            self.tail.right = root      # next pointer of the previous tail
-            root.left = self.tail       # prev pointer of the new tail
+
+            # Link the right (next) pointer of the tail to the current
+            # root
+            self.tail.right = root
+
+            # Link the left (previous) pointer of the current root to the
+            # tail
+            root.left = self.tail
         else:
-            self.head = root            # very first node — record as head
+
+            # Set the head to the current root
+            self.head = root
+
+            # Set the left (previous) pointer of the head to None
             root.left = None
+
+        # Update the tail to the current root
         self.tail = root
+
+        # Recursively traverse the right subtree
         self.inorder(root.right)
 
-    def bst_to_sorted_dll(self, root):
+    def bst_to_sorted_dll(
+        self, root: Optional[TreeNode]
+    ) -> Optional[TreeNode]:
+
+        # If the tree is empty, return None
         if root is None:
             return None
+
+        # Call the helper function to perform inorder traversal
         self.inorder(root)
-        # Terminate the list cleanly.
+
+        # Ensure the right (next) pointer of the tail is None
         if self.tail is not None:
             self.tail.right = None
+
+        # Return the head of the doubly linked list
         return self.head
+
+
+# Example 1
+head1 = Solution().bst_to_sorted_dll(
+    from_level_order([4, 2, 5, 1, 3, None, 6]))
+print(dll_to_list(head1))   # [1, 2, 3, 4, 5, 6]
+
+# Example 2
+head2 = Solution().bst_to_sorted_dll(
+    from_level_order([9, 5, 10, 4, None, None, 11]))
+print(dll_to_list(head2))   # [4, 5, 9, 10, 11]
+
+# Edge cases
+print(Solution().bst_to_sorted_dll(None))          # None
+
+head3 = Solution().bst_to_sorted_dll(from_level_order([5]))
+print(dll_to_list(head3))   # [5]
+
+# Two-node tree
+head4 = Solution().bst_to_sorted_dll(from_level_order([3, 1]))
+print(dll_to_list(head4))   # [1, 3]
+
+# Right-skew BST
+head5 = Solution().bst_to_sorted_dll(
+    from_level_order([1, None, 2, None, 3]))
+print(dll_to_list(head5))   # [1, 2, 3]
 ```
 
 ```java run
@@ -870,78 +1170,7 @@ public class Main {
 }
 ```
 
-```c run
-static struct TreeNode *head, *tail;
-
-static void inorder(struct TreeNode *root) {
-    if (root == NULL) return;
-    inorder(root->left);
-    if (tail != NULL) {
-        tail->right = root;
-        root->left  = tail;
-    } else {
-        head = root;
-        root->left = NULL;
-    }
-    tail = root;
-    inorder(root->right);
-}
-
-struct TreeNode *bstToSortedDll(struct TreeNode *root) {
-    if (root == NULL) return NULL;
-    head = NULL; tail = NULL;
-    inorder(root);
-    if (tail != NULL) tail->right = NULL;
-    return head;
-}
-```
-
-```scala run
-class TreeNode(var value: Int, var left: TreeNode = null, var right: TreeNode = null)
-
-object Main extends App {
-  class Solution {
-    private var head: TreeNode = null
-    private var tail: TreeNode = null
-
-    private def inorder(root: TreeNode): Unit = {
-      if (root == null) return
-      inorder(root.left)
-      if (tail != null) {
-        tail.right = root
-        root.left  = tail
-      } else {
-        head = root
-        root.left = null
-      }
-      tail = root
-      inorder(root.right)
-    }
-
-    def bstToSortedDll(root: TreeNode): TreeNode = {
-      if (root == null) return null
-      inorder(root)
-      if (tail != null) tail.right = null
-      head
-    }
-  }
-
-  val root = new TreeNode(4,
-    new TreeNode(2, new TreeNode(1), new TreeNode(3)),
-    new TreeNode(5, null, new TreeNode(6)))
-  val head = new Solution().bstToSortedDll(root)
-  val sb = new StringBuilder
-  var c = head
-  while (c != null) {
-    if (sb.nonEmpty) sb.append(' ')
-    sb.append(c.value)
-    c = c.right
-  }
-  println(sb)  // 1 2 3 4 5 6
-}
-```
-
-
+</details>
 <details>
 <summary><strong>Trace — root = [4, 2, 5, 1, 3, null, 6]</strong></summary>
 
@@ -959,10 +1188,9 @@ Return head = 1 ✓
 ```
 
 </details>
+<details>
+<summary><h2>Final Takeaway</h2></summary>
 
-***
-
-## Final Takeaway
 
 The Sorted Traversal pattern collapses an entire family of BST problems to *"do something to a sorted sequence"*. The algorithm is always the same: walk in-order, carry one or two pieces of state, fold each visit into the running answer. Validation, k-th smallest, ranges, gaps, conversions to other ordered structures — all of these are sorted-sequence problems hiding under tree dressing.
 
@@ -972,3 +1200,5 @@ Two patterns to keep:
 2. **"In-place re-wire during the walk"** — the same in-order skeleton can mutate the structure as it visits, turning a BST into a DLL or rebalancing into a vine. This is the foundation of the **threaded-tree** and **Morris traversal** ideas, and a stepping-stone to in-place tree manipulations in compilers and editors.
 
 The next lesson mirrors this one with a *reverse* in-order traversal, opening up the descending-order analogues — k-th largest, sum of values greater than X, "max-greater BST" rewriting.
+
+</details>

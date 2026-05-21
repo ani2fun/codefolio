@@ -12,7 +12,7 @@ Read in order if you're learning the topic for the first time; jump directly to 
 - [Nested Functions](/cortex/data-structures-and-algorithms/algorithms-by-strategy-recursion-nested-functions) — what's inside a stack frame, how nested calls grow and unwind, the three ways the stack can overflow.
 - [Recursion](/cortex/data-structures-and-algorithms/algorithms-by-strategy-recursion-recursion) — the ATM-queue intuition, base case + recursive relation, recursion trees, and what recursion costs in time and space.
 - [Pattern: Head Recursion](/cortex/data-structures-and-algorithms/algorithms-by-strategy-recursion-pattern-head-recursion) — descend silently, work on the way up. Four worked problems including factorial and reversing a queue.
-- [Pattern: Tail Recursion](/cortex/data-structures-and-algorithms/algorithms-by-strategy-recursion-pattern-tail-recursion) — work on the way down with an accumulator; tail-call optimisation across all 10 languages of this course.
+- [Pattern: Tail Recursion](/cortex/data-structures-and-algorithms/algorithms-by-strategy-recursion-pattern-tail-recursion) — work on the way down with an accumulator; tail-call optimisation across languages.
 - [Pattern: Multiple Recursion](/cortex/data-structures-and-algorithms/algorithms-by-strategy-recursion-pattern-multiple-recursion) — branching call trees, exponential time, and the canonical "this is why memoisation exists" problem.
 - [Pattern: Multidimensional Recursion](/cortex/data-structures-and-algorithms/algorithms-by-strategy-recursion-pattern-multidimensional-recursion) — 2D state spaces, multiple base-case boundaries, the bridge into dynamic programming.
 

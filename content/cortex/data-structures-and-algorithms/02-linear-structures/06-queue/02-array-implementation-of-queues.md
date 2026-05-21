@@ -8,7 +8,7 @@ There's a wrinkle this time. A stack only needs one moving index — the top. A 
 
 The fix is one of the prettiest tricks in introductory data structures: **treat the array as a circle**. When the back hits the last index, the next enqueue wraps around to index 0 and keeps going. The same trick on dequeue. One modulo (`(idx + 1) % capacity`) per operation, and the array's vacated slots are reusable forever. The result is called a **circular** (or *ring*) **buffer**, and it powers everything from kernel I/O ring buffers to Linux `kfifo`, audio pipelines, networking stacks, and Disruptor-style high-frequency-trading queues. Ten lines of code, multibillion-dollar applications.
 
-This lesson builds that circular queue end-to-end in 10 languages, deriving the modulo trick from first principles and showing exactly why every operation is still O(1).
+This lesson builds that circular queue end-to-end in Python and Java, deriving the modulo trick from first principles and showing exactly why every operation is still O(1).
 
 ---
 
@@ -339,22 +339,6 @@ cls: "Queue class" {
 ## Queue class — skeleton
 
 
-```pseudocode
-function Queue(capacity):
-    arr         ← array of size capacity
-    frontIndex  ← 0       # 0 by convention when empty
-    backIndex   ← −1      # −1 by convention when empty
-    currentSize ← 0
-    cap         ← capacity
-
-function size(queue):    stub
-function empty(queue):   stub
-function front(queue):   stub
-function back(queue):    stub
-function enqueue(queue, val): stub
-function dequeue(queue): stub
-```
-
 ```python run
 class Queue:
     def __init__(self, capacity: int):
@@ -401,61 +385,6 @@ public class Main {
 }
 ```
 
-```c run
-#include <stdio.h>
-#include <stdlib.h>
-#include <stdbool.h>
-
-typedef struct {
-    int *arr;
-    int  capacity, frontIndex, backIndex, currentSize;
-} Queue;
-
-Queue* queue_create(int capacity) {
-    Queue *q = malloc(sizeof(Queue));
-    q->arr         = malloc(sizeof(int) * capacity);
-    q->capacity    = capacity;
-    q->frontIndex  = 0;
-    q->backIndex   = -1;
-    q->currentSize = 0;
-    return q;
-}
-
-int  queue_size   (Queue *q)              { return 0; }
-bool queue_empty  (Queue *q)              { return true; }
-int  queue_front  (Queue *q)              { return -1; }
-int  queue_back   (Queue *q)              { return -1; }
-bool queue_enqueue(Queue *q, int val)     { return false; }
-int  queue_dequeue(Queue *q)              { return -1; }
-
-int main() {
-    Queue *q = queue_create(4);
-    printf("created queue with capacity %d\n", q->capacity);
-    free(q->arr); free(q);
-}
-```
-
-```scala run
-object Main extends App {
-  class Queue(val capacity: Int) {
-    protected val arr        = new Array[Int](capacity)
-    protected var frontIdx   = 0
-    protected var backIdx    = -1
-    protected var currSize   = 0
-
-    def size:    Int     = 0
-    def empty:   Boolean = true
-    def front:   Int     = -1
-    def back:    Int     = -1
-    def enqueue(v: Int): Boolean = false
-    def dequeue: Int     = -1
-  }
-
-  val q = new Queue(4)
-  println("created queue with capacity 4")
-}
-```
-
 
 The skeleton is just bookkeeping — five fields, six stubs. The next six sections fill in one stub at a time.
 
@@ -469,33 +398,81 @@ The size operation reports the current number of items in the queue. We've alrea
 >
 > -   **Step 1:** Return the value of `currentSize`.
 
-## Implementation
+<details>
+<summary><h2>Solution &amp; Analysis</h2></summary>
 
-
-```pseudocode
-function size(queue):
-    return queue.currentSize
-```
+### Implementation
 
 ```python run
-def size(self):
-    return self.current_size
+from typing import List
+
+class Queue:
+    def __init__(self, capacity):
+
+        # Pointer to the dynamic array representing the queue
+        self.arr: List[int] = [None] * capacity
+
+        # Maximum capacity of the queue
+        self.capacity: int = capacity
+
+        # Index of the front element in the queue
+        self.front_index: int = 0
+
+        # Index of the back element in the queue
+        self.back_index: int = -1
+
+        # Current number of elements in the queue
+        self.current_size: int = 0
+
+    def size(self):
+
+        # Returns the current size of the queue
+        return self.current_size
 ```
 
 ```java run
-int size() { return currentSize; }
+class Queue {
+
+    // Pointer to the dynamic array representing the queue
+    public int[] arr;
+
+    // Maximum capacity of the queue
+    public int capacity;
+
+    // Index of the front element in the queue
+    public int frontIndex;
+
+    // Index of the back element in the queue
+    public int backIndex;
+
+    // Current number of elements in the queue
+    public int currentSize;
+
+    public Queue(int capacity) {
+        this.capacity = capacity;
+
+        // Allocating memory for the queue
+        this.arr = new int[capacity];
+
+        // Initializing front index to 0
+        this.frontIndex = 0;
+
+        // Initializing back index to -1
+        this.backIndex = -1;
+
+        // Initializing current size to 0
+        this.currentSize = 0;
+    }
+
+    public int size() {
+
+        // Returns the current size of the queue
+        return currentSize;
+    }
+}
 ```
 
-```c run
-int queue_size(Queue *q) { return q->currentSize; }
-```
-
-```scala run
-def size: Int = currSize
-```
-
-
-## Complexity Analysis
+### Complexity Analysis
 
 A single field read.
 
@@ -509,6 +486,8 @@ A single field read.
 > - Time:  **O(1)**
 > - Space: **O(1)**
 
+</details>
+
 ***
 
 # Checking if the queue is empty
@@ -519,33 +498,92 @@ A single field read.
 >
 > -   **Step 1:** Return `true` if `currentSize == 0`, else `false`.
 
-## Implementation
+<details>
+<summary><h2>Solution &amp; Analysis</h2></summary>
 
-
-```pseudocode
-function empty(queue):
-    return size(queue) = 0
-```
+### Implementation
 
 ```python run
-def empty(self):
-    return self.size() == 0
+from typing import List
+
+class Queue:
+    def __init__(self, capacity):
+
+        # Pointer to the dynamic array representing the queue
+        self.arr: List[int] = [None] * capacity
+
+        # Maximum capacity of the queue
+        self.capacity: int = capacity
+
+        # Index of the front element in the queue
+        self.front_index: int = 0
+
+        # Index of the back element in the queue
+        self.back_index: int = -1
+
+        # Current number of elements in the queue
+        self.current_size: int = 0
+
+    def size(self):
+
+        # Returns the current size of the queue
+        return self.current_size
+
+    def empty(self):
+
+        # Returns True if the queue is empty, False otherwise
+        return self.size() == 0
 ```
 
 ```java run
-boolean empty() { return size() == 0; }
+class Queue {
+
+    // Pointer to the dynamic array representing the queue
+    public int[] arr;
+
+    // Maximum capacity of the queue
+    public int capacity;
+
+    // Index of the front element in the queue
+    public int frontIndex;
+
+    // Index of the back element in the queue
+    public int backIndex;
+
+    // Current number of elements in the queue
+    public int currentSize;
+
+    public Queue(int capacity) {
+        this.capacity = capacity;
+
+        // Allocating memory for the queue
+        this.arr = new int[capacity];
+
+        // Initializing front index to 0
+        this.frontIndex = 0;
+
+        // Initializing back index to -1
+        this.backIndex = -1;
+
+        // Initializing current size to 0
+        this.currentSize = 0;
+    }
+
+    public int size() {
+
+        // Returns the current size of the queue
+        return currentSize;
+    }
+
+    public boolean empty() {
+
+        // Returns true if the queue is empty, false otherwise
+        return size() == 0;
+    }
+}
 ```
 
-```c run
-bool queue_empty(Queue *q) { return queue_size(q) == 0; }
-```
-
-```scala run
-def empty: Boolean = size == 0
-```
-
-
-## Complexity Analysis
+### Complexity Analysis
 
 Calls `size`, returns a comparison.
 
@@ -558,6 +596,8 @@ Calls `size`, returns a comparison.
 >
 > - Time:  **O(1)**
 > - Space: **O(1)**
+
+</details>
 
 ***
 
@@ -617,37 +657,112 @@ note -> arr.e1
 > -   **Step 1:** If the queue is empty, return `-1`.
 > -   **Step 2:** Otherwise return `arr[frontIndex]`.
 
-## Implementation
+<details>
+<summary><h2>Solution &amp; Analysis</h2></summary>
 
-
-```pseudocode
-function front(queue):
-    if empty(queue): return −1
-    return queue.arr[queue.frontIndex]
-```
+### Implementation
 
 ```python run
-def front(self):
-    if self.empty(): return -1
-    return self.arr[self.front_index]
+from typing import List
+
+class Queue:
+    def __init__(self, capacity):
+
+        # Pointer to the dynamic array representing the queue
+        self.arr: List[int] = [None] * capacity
+
+        # Maximum capacity of the queue
+        self.capacity: int = capacity
+
+        # Index of the front element in the queue
+        self.front_index: int = 0
+
+        # Index of the back element in the queue
+        self.back_index: int = -1
+
+        # Current number of elements in the queue
+        self.current_size: int = 0
+
+    def size(self):
+
+        # Returns the current size of the queue
+        return self.current_size
+
+    def empty(self):
+
+        # Returns True if the queue is empty, False otherwise
+        return self.size() == 0
+
+    def front(self):
+        if self.empty():
+
+            # Returns -1 if the queue is empty
+            return -1
+
+        # Returns the element at the front of the queue
+        return self.arr[self.front_index]
 ```
 
 ```java run
-int front() { return empty() ? -1 : arr[frontIndex]; }
-```
+class Queue {
 
-```c run
-int queue_front(Queue *q) {
-    return queue_empty(q) ? -1 : q->arr[q->frontIndex];
+    // Pointer to the dynamic array representing the queue
+    public int[] arr;
+
+    // Maximum capacity of the queue
+    public int capacity;
+
+    // Index of the front element in the queue
+    public int frontIndex;
+
+    // Index of the back element in the queue
+    public int backIndex;
+
+    // Current number of elements in the queue
+    public int currentSize;
+
+    public Queue(int capacity) {
+        this.capacity = capacity;
+
+        // Allocating memory for the queue
+        this.arr = new int[capacity];
+
+        // Initializing front index to 0
+        this.frontIndex = 0;
+
+        // Initializing back index to -1
+        this.backIndex = -1;
+
+        // Initializing current size to 0
+        this.currentSize = 0;
+    }
+
+    public int size() {
+
+        // Returns the current size of the queue
+        return currentSize;
+    }
+
+    public boolean empty() {
+
+        // Returns true if the queue is empty, false otherwise
+        return size() == 0;
+    }
+
+    public int front() {
+        if (empty()) {
+
+            // Returns -1 if the queue is empty
+            return -1;
+        }
+
+        // Returns the element at the front of the queue
+        return arr[frontIndex];
+    }
 }
 ```
 
-```scala run
-def front: Int = if (empty) -1 else arr(frontIdx)
-```
-
-
-## Complexity Analysis
+### Complexity Analysis
 
 A predicate plus an array indexing — both O(1).
 
@@ -660,6 +775,8 @@ A predicate plus an array indexing — both O(1).
 >
 > - Time:  **O(1)**
 > - Space: **O(1)**
+
+</details>
 
 ***
 
@@ -716,37 +833,132 @@ note -> arr.e3
 > -   **Step 1:** If the queue is empty, return `-1`.
 > -   **Step 2:** Otherwise return `arr[backIndex]`.
 
-## Implementation
+<details>
+<summary><h2>Solution &amp; Analysis</h2></summary>
 
-
-```pseudocode
-function back(queue):
-    if empty(queue): return −1
-    return queue.arr[queue.backIndex]
-```
+### Implementation
 
 ```python run
-def back(self):
-    if self.empty(): return -1
-    return self.arr[self.back_index]
+from typing import List
+
+class Queue:
+    def __init__(self, capacity):
+
+        # Pointer to the dynamic array representing the queue
+        self.arr: List[int] = [None] * capacity
+
+        # Maximum capacity of the queue
+        self.capacity: int = capacity
+
+        # Index of the front element in the queue
+        self.front_index: int = 0
+
+        # Index of the back element in the queue
+        self.back_index: int = -1
+
+        # Current number of elements in the queue
+        self.current_size: int = 0
+
+    def size(self):
+
+        # Returns the current size of the queue
+        return self.current_size
+
+    def empty(self):
+
+        # Returns True if the queue is empty, False otherwise
+        return self.size() == 0
+
+    def front(self):
+        if self.empty():
+
+            # Returns -1 if the queue is empty
+            return -1
+
+        # Returns the element at the front of the queue
+        return self.arr[self.front_index]
+
+    def back(self):
+        if self.empty():
+
+            # Returns -1 if the queue is empty
+            return -1
+
+        # Returns the element at the back of the queue
+        return self.arr[self.back_index]
 ```
 
 ```java run
-int back() { return empty() ? -1 : arr[backIndex]; }
-```
+class Queue {
 
-```c run
-int queue_back(Queue *q) {
-    return queue_empty(q) ? -1 : q->arr[q->backIndex];
+    // Pointer to the dynamic array representing the queue
+    public int[] arr;
+
+    // Maximum capacity of the queue
+    public int capacity;
+
+    // Index of the front element in the queue
+    public int frontIndex;
+
+    // Index of the back element in the queue
+    public int backIndex;
+
+    // Current number of elements in the queue
+    public int currentSize;
+
+    public Queue(int capacity) {
+        this.capacity = capacity;
+
+        // Allocating memory for the queue
+        this.arr = new int[capacity];
+
+        // Initializing front index to 0
+        this.frontIndex = 0;
+
+        // Initializing back index to -1
+        this.backIndex = -1;
+
+        // Initializing current size to 0
+        this.currentSize = 0;
+    }
+
+    public int size() {
+
+        // Returns the current size of the queue
+        return currentSize;
+    }
+
+    public boolean empty() {
+
+        // Returns true if the queue is empty, false otherwise
+        return size() == 0;
+    }
+
+    public int front() {
+        if (empty()) {
+
+            // Returns -1 if the queue is empty
+            return -1;
+        }
+
+        // Returns the element at the front of the queue
+        return arr[frontIndex];
+    }
+
+    public int back() {
+        if (empty()) {
+
+            // Returns -1 if the queue is empty
+            return -1;
+        }
+
+        // Returns the element at the back of the queue
+        return arr[backIndex];
+    }
 }
 ```
 
-```scala run
-def back: Int = if (empty) -1 else arr(backIdx)
-```
-
-
-## Complexity Analysis
+### Complexity Analysis
 
 > **Best Case**
 >
@@ -757,6 +969,8 @@ def back: Int = if (empty) -1 else arr(backIdx)
 >
 > - Time:  **O(1)**
 > - Space: **O(1)**
+
+</details>
 
 ***
 
@@ -812,17 +1026,10 @@ flowchart TB
 > -   **Step 4:** Increment `currentSize`.
 > -   **Step 5:** Return `true`.
 
-## Implementation
+<details>
+<summary><h2>Solution &amp; Analysis</h2></summary>
 
-
-```pseudocode
-function enqueue(queue, val):
-    if queue.currentSize = queue.capacity: return false
-    queue.backIndex           ← (queue.backIndex + 1) % queue.capacity
-    queue.arr[queue.backIndex] ← val
-    queue.currentSize ← queue.currentSize + 1
-    return true
-```
+### Implementation
 
 ```python run
 def enqueue(self, val):
@@ -843,30 +1050,10 @@ boolean enqueue(int val) {
 }
 ```
 
-```c run
-bool queue_enqueue(Queue *q, int val) {
-    if (q->currentSize == q->capacity) return false;
-    q->backIndex          = (q->backIndex + 1) % q->capacity;
-    q->arr[q->backIndex]  = val;
-    q->currentSize++;
-    return true;
-}
-```
-
-```scala run
-def enqueue(v: Int): Boolean = {
-  if (currSize == capacity) return false
-  backIdx       = (backIdx + 1) % capacity
-  arr(backIdx)  = v
-  currSize     += 1
-  true
-}
-```
-
 
 > **Note on the Rust signature** — we keep `back_index` as `i32` (signed) so the empty sentinel `-1` fits, then `rem_euclid` gives us the correct non-negative remainder for the wrap.
 
-## Complexity Analysis
+### Complexity Analysis
 
 A bounds check, a modulo, an array write, an increment. No allocation. No loop.
 
@@ -879,6 +1066,8 @@ A bounds check, a modulo, an array write, an increment. No allocation. No loop.
 >
 > - Time:  **O(1)**
 > - Space: **O(1)**
+
+</details>
 
 ***
 
@@ -930,59 +1119,212 @@ flowchart TB
 > -   **Step 4:** Decrement `currentSize`.
 > -   **Step 5:** Return `dequeued`.
 
-## Implementation
+<details>
+<summary><h2>Solution &amp; Analysis</h2></summary>
 
-
-```pseudocode
-function dequeue(queue):
-    if empty(queue): return −1
-    val              ← queue.arr[queue.frontIndex]
-    queue.frontIndex ← (queue.frontIndex + 1) % queue.capacity
-    queue.currentSize ← queue.currentSize − 1
-    return val
-```
+### Implementation
 
 ```python run
-def dequeue(self):
-    if self.empty(): return -1
-    val               = self.arr[self.front_index]
-    self.front_index  = (self.front_index + 1) % self.capacity
-    self.current_size -= 1
-    return val
+from typing import List
+
+class Queue:
+    def __init__(self, capacity):
+
+        # Pointer to the dynamic array representing the queue
+        self.arr: List[int] = [None] * capacity
+
+        # Maximum capacity of the queue
+        self.capacity: int = capacity
+
+        # Index of the front element in the queue
+        self.front_index: int = 0
+
+        # Index of the back element in the queue
+        self.back_index: int = -1
+
+        # Current number of elements in the queue
+        self.current_size: int = 0
+
+    def size(self):
+
+        # Returns the current size of the queue
+        return self.current_size
+
+    def empty(self):
+
+        # Returns True if the queue is empty, False otherwise
+        return self.size() == 0
+
+    def front(self):
+        if self.empty():
+
+            # Returns -1 if the queue is empty
+            return -1
+
+        # Returns the element at the front of the queue
+        return self.arr[self.front_index]
+
+    def back(self):
+        if self.empty():
+
+            # Returns -1 if the queue is empty
+            return -1
+
+        # Returns the element at the back of the queue
+        return self.arr[self.back_index]
+
+    def enqueue(self, val):
+        if self.current_size == self.capacity:
+
+            # Returns False if the queue is full and cannot enqueue more
+            # elements
+            return False
+
+        # Calculates the next back index in a circular manner
+        self.back_index = (self.back_index + 1) % self.capacity
+
+        # Inserts the new element at the back of the queue
+        self.arr[self.back_index] = val
+
+        # Increments the current size
+        self.current_size += 1
+
+        # Returns True to indicate a successful enqueue operation
+        return True
+
+    def dequeue(self):
+        if self.empty():
+
+            # Returns -1 if the queue is empty and cannot dequeue
+            # elements
+            return -1
+
+        # Stores the element to be dequeued
+        dequeued_element = self.arr[self.front_index]
+
+        # Calculates the next front index in a circular manner
+        self.front_index = (self.front_index + 1) % self.capacity
+
+        # Decrements the current size
+        self.current_size -= 1
+
+        # Returns the dequeued element
+        return dequeued_element
 ```
 
 ```java run
-int dequeue() {
-    if (empty()) return -1;
-    int val      = arr[frontIndex];
-    frontIndex   = (frontIndex + 1) % capacity;
-    currentSize--;
-    return val;
+class Queue {
+
+    // Pointer to the dynamic array representing the queue
+    public int[] arr;
+
+    // Maximum capacity of the queue
+    public int capacity;
+
+    // Index of the front element in the queue
+    public int frontIndex;
+
+    // Index of the back element in the queue
+    public int backIndex;
+
+    // Current number of elements in the queue
+    public int currentSize;
+
+    public Queue(int capacity) {
+        this.capacity = capacity;
+
+        // Allocating memory for the queue
+        this.arr = new int[capacity];
+
+        // Initializing front index to 0
+        this.frontIndex = 0;
+
+        // Initializing back index to -1
+        this.backIndex = -1;
+
+        // Initializing current size to 0
+        this.currentSize = 0;
+    }
+
+    public int size() {
+
+        // Returns the current size of the queue
+        return currentSize;
+    }
+
+    public boolean empty() {
+
+        // Returns true if the queue is empty, false otherwise
+        return size() == 0;
+    }
+
+    public int front() {
+        if (empty()) {
+
+            // Returns -1 if the queue is empty
+            return -1;
+        }
+
+        // Returns the element at the front of the queue
+        return arr[frontIndex];
+    }
+
+    public int back() {
+        if (empty()) {
+
+            // Returns -1 if the queue is empty
+            return -1;
+        }
+
+        // Returns the element at the back of the queue
+        return arr[backIndex];
+    }
+
+    public boolean enqueue(int val) {
+        if (currentSize == capacity) {
+
+            // Returns false if the queue is full and cannot enqueue more
+            // elements
+            return false;
+        }
+
+        // Calculates the next back index in a circular manner
+        backIndex = (backIndex + 1) % capacity;
+
+        // Inserts the new element at the back of the queue
+        arr[backIndex] = val;
+
+        // Increments the current size
+        currentSize++;
+
+        // Returns true to indicate a successful enqueue operation
+        return true;
+    }
+
+    public int dequeue() {
+        if (empty()) {
+
+            // Returns -1 if the queue is empty and cannot dequeue
+            // elements
+            return -1;
+        }
+
+        // Stores the element to be dequeued
+        int dequeuedElement = arr[frontIndex];
+
+        // Calculates the next front index in a circular manner
+        frontIndex = (frontIndex + 1) % capacity;
+
+        // Decrements the current size
+        currentSize--;
+
+        // Returns the dequeued element
+        return dequeuedElement;
+    }
 }
 ```
 
-```c run
-int queue_dequeue(Queue *q) {
-    if (queue_empty(q)) return -1;
-    int val          = q->arr[q->frontIndex];
-    q->frontIndex    = (q->frontIndex + 1) % q->capacity;
-    q->currentSize--;
-    return val;
-}
-```
-
-```scala run
-def dequeue: Int = {
-  if (empty) return -1
-  val v       = arr(frontIdx)
-  frontIdx    = (frontIdx + 1) % capacity
-  currSize   -= 1
-  v
-}
-```
-
-
-## Complexity Analysis
+### Complexity Analysis
 
 Same shape as enqueue — predicate, modulo, array read, decrement.
 
@@ -995,6 +1337,8 @@ Same shape as enqueue — predicate, modulo, array read, decrement.
 >
 > - Time:  **O(1)**
 > - Space: **O(1)**
+
+</details>
 
 ***
 
@@ -1012,7 +1356,9 @@ Given the skeleton of a **Queue class**, complete it by implementing all the que
 > -   **`enqueue(int val)`** — add `val` at the back; return `true` if successful, `false` if full.
 > -   **`dequeue()`** — remove and return the front element; if empty, return `-1`.
 
-## Constraints
+<details>
+<summary><h2>Constraints</h2></summary>
+
 
 1. Use **a single fixed-size array** as the internal data structure. No additional containers, no nodes.
 2. The implementation **must be circular** — every vacated slot must be reusable before the queue declares itself full.
@@ -1059,7 +1405,10 @@ ring.s5 -> ring.s0: wrap
 
 <p align="center"><strong>Circular queue layout — front=3, back=0 (wrapped), logical order 7→11→13→17. Every slot is reachable; the array is reused indefinitely as long as the size never exceeds capacity.</strong></p>
 
-## Worked Example
+</details>
+<details>
+<summary><h2>Worked Example</h2></summary>
+
 
 > **Input** (operations array, operands array):
 >
@@ -1087,32 +1436,11 @@ ring.s5 -> ring.s0: wrap
 > | `enqueue(9)` | `false` | `[3, 8]` (rejected — full) |
 > | `empty()` | `false` | `[3, 8]` |
 
-## Solution
+</details>
+<details>
+<summary><h2>Solution</h2></summary>
 
 
-```pseudocode
-function Queue(capacity):
-    arr ← array of size capacity; frontIndex ← 0; backIndex ← −1; currentSize ← 0; cap ← capacity
-
-function size(queue):    return queue.currentSize
-function empty(queue):   return queue.currentSize = 0
-function front(queue):   if empty(queue): return −1  else return queue.arr[queue.frontIndex]
-function back(queue):    if empty(queue): return −1  else return queue.arr[queue.backIndex]
-
-function enqueue(queue, val):
-    if queue.currentSize = queue.capacity: return false
-    queue.backIndex            ← (queue.backIndex + 1) % queue.capacity
-    queue.arr[queue.backIndex] ← val
-    queue.currentSize ← queue.currentSize + 1
-    return true
-
-function dequeue(queue):
-    if empty(queue): return −1
-    val              ← queue.arr[queue.frontIndex]
-    queue.frontIndex ← (queue.frontIndex + 1) % queue.capacity
-    queue.currentSize ← queue.currentSize − 1
-    return val
-```
 
 ```python run
 class Queue:
@@ -1191,95 +1519,10 @@ public class Main {
 }
 ```
 
-```c run
-#include <stdio.h>
-#include <stdlib.h>
-#include <stdbool.h>
+</details>
+<details>
+<summary><h2>Final Takeaway</h2></summary>
 
-typedef struct {
-    int *arr;
-    int  capacity, frontIndex, backIndex, currentSize;
-} Queue;
-
-Queue* queue_create(int c) {
-    Queue *q = malloc(sizeof(*q));
-    q->arr = malloc(sizeof(int) * c);
-    q->capacity = c; q->frontIndex = 0; q->backIndex = -1; q->currentSize = 0;
-    return q;
-}
-int  queue_size (Queue *q){ return q->currentSize; }
-bool queue_empty(Queue *q){ return q->currentSize == 0; }
-int  queue_front(Queue *q){ return queue_empty(q) ? -1 : q->arr[q->frontIndex]; }
-int  queue_back (Queue *q){ return queue_empty(q) ? -1 : q->arr[q->backIndex]; }
-bool queue_enqueue(Queue *q, int v) {
-    if (q->currentSize == q->capacity) return false;
-    q->backIndex          = (q->backIndex + 1) % q->capacity;
-    q->arr[q->backIndex]  = v;
-    q->currentSize++;
-    return true;
-}
-int  queue_dequeue(Queue *q) {
-    if (queue_empty(q)) return -1;
-    int v          = q->arr[q->frontIndex];
-    q->frontIndex  = (q->frontIndex + 1) % q->capacity;
-    q->currentSize--;
-    return v;
-}
-
-int main() {
-    Queue *q = queue_create(2);
-    printf("%d %d\n", queue_enqueue(q,2), queue_back(q));
-    printf("%d %d\n", queue_enqueue(q,3), queue_front(q));
-    printf("%d\n",    queue_empty(q));
-    printf("%d %d\n", queue_dequeue(q), queue_front(q));
-    printf("%d %d\n", queue_enqueue(q,8), queue_enqueue(q,9));
-    printf("%d\n",    queue_empty(q));
-    free(q->arr); free(q);
-}
-```
-
-```scala run
-object Main extends App {
-  class Queue(val capacity: Int) {
-    private val arr   = new Array[Int](capacity)
-    private var f     = 0
-    private var b     = -1
-    private var n     = 0
-
-    def size:  Int     = n
-    def empty: Boolean = n == 0
-    def front: Int     = if (empty) -1 else arr(f)
-    def back:  Int     = if (empty) -1 else arr(b)
-    def enqueue(v: Int): Boolean = {
-      if (n == capacity) return false
-      b      = (b + 1) % capacity
-      arr(b) = v
-      n     += 1
-      true
-    }
-    def dequeue: Int = {
-      if (empty) return -1
-      val v = arr(f)
-      f     = (f + 1) % capacity
-      n    -= 1
-      v
-    }
-  }
-
-  val q = new Queue(2)
-  println(s"${q.enqueue(2)} ${q.back}")
-  println(s"${q.enqueue(3)} ${q.front}")
-  println(q.empty)
-  println(s"${q.dequeue} ${q.front}")
-  println(s"${q.enqueue(8)} ${q.enqueue(9)}")
-  println(q.empty)
-}
-```
-
-
-***
-
-## Final Takeaway
 
 A circular array queue is *the* canonical bounded-FIFO data structure — every operation is O(1), no allocation per call, perfect cache locality, and it composes beautifully with hardware features (DMA ring buffers, lock-free ring buffers, the entire networking stack).
 
@@ -1288,3 +1531,5 @@ A circular array queue is *the* canonical bounded-FIFO data structure — every 
 3. **The trade-off is bounded capacity.** A circular array queue cannot grow without copying. If you need an unbounded queue, you either (a) use a linked list — next lesson — or (b) implement a *growable* ring buffer that reallocates and re-rolls when full. The bounded version is what you want for back-pressure-aware producers, fixed-memory environments (kernels, embedded), and lock-free designs.
 
 > *Coming up — the linked-list implementation. Same interface, different trade-offs: O(1) enqueue and dequeue without amortisation, unbounded by default, but each node costs a heap allocation and pointer chasing destroys cache locality. The lesson after that pits stacks and queues against each other in two design problems that test whether you really understand the FIFO contract.*
+
+</details>

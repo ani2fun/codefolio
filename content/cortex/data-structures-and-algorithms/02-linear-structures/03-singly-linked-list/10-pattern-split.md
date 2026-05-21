@@ -134,161 +134,98 @@ The algorithm given below summarizes the linked list split technique to split a 
 Given below is the generic code implementation to split a given linked list into `k` lists based on the outcome of a function `f`. 
 
 
-```pseudocode
-# Generic split. k dummy heads + k tails. Each node is routed to bucket `classify(node)`.
-function splitLists(head, k, classify):
-    dummies ← list of k new ListNodes
-    tails ← copy of dummies
-    current ← head
-    while current is not null:
-        idx ← classify(current)                       # route to bucket idx
-        tails[idx].next ← current
-        tails[idx] ← current
-        current ← current.next
-    for each t in tails:
-        t.next ← null                                  # seal each output list
-    return [d.next for each d in dummies]
-```
-
 ```python run
-from typing import Callable, List, Optional
 
+"""
+Definition for singly-linked list.
 class ListNode:
-    def __init__(self, val=0, next=None):
+    def __init__(self, val):
         self.val = val
-        self.next = next
+        self.next = None
+"""
 
-def split_lists(head: Optional[ListNode], k: int,
-                classify: Callable[[ListNode], int]) -> List[Optional[ListNode]]:
-    # k dummy heads + k tails. Dummy sentinels remove every "first node" special case.
-    dummies = [ListNode() for _ in range(k)]
-    tails   = list(dummies)
+def splitLists(head: ListNode, k: int) -> List[ListNode]:
+    # Create an array of references for dummy and tail nodes
+    dummy = [ListNode() for _ in range(k)]
+    tails = dummy[:]
 
+    # Iterate in the list using current
     current = head
     while current is not None:
-        idx = classify(current)         # route current to bucket `idx`
-        tails[idx].next = current       # splice onto that bucket's tail
-        tails[idx]      = current       # advance the tail pointer
-        current         = current.next  # walk the original list
+        # Use the function `f` to decide which list this node should go to.
+        idx = f(current)
 
-    # Seal every bucket so outputs are independent lists
-    for t in tails:
-        t.next = None
+        # Add node to the list and update tail
+        tails[idx].next = current
+        tails[idx] = current
 
-    # Real heads live one hop past the dummies
-    return [d.next for d in dummies]
+        # Move current ahead
+        current = current.next
+
+        # Set the next of the tail node to None
+        tails[idx].next = None
+
+    # Remove the dummy nodes and return heads of the split lists
+    for i in range(k):
+        dummyNode = dummy[i]
+        dummy[i] = dummy[i].next  # move head to the actual first node
+        del dummyNode  # Python's garbage collection handles memory cleanup
+
+    # Return the array of split lists' heads
+    return dummy
 ```
 
 ```java run
-import java.util.function.Function;
 
-public class Main {
-    static class ListNode {
-        int val; ListNode next;
-        ListNode() {}
-        ListNode(int v) { val = v; }
-    }
+/**
+ * Definition for singly-linked list.
+ * class ListNode {
+ *     int val;
+ *     ListNode next;
+ *     ListNode() {}
+ *     ListNode(int val) { this.val = val; }
+ * };
+ */
 
-    static class Solution {
-        public ListNode[] splitLists(ListNode head, int k, Function<ListNode, Integer> classify) {
-            ListNode[] dummies = new ListNode[k];
-            ListNode[] tails   = new ListNode[k];
-            for (int i = 0; i < k; i++) { dummies[i] = new ListNode(); tails[i] = dummies[i]; }
+class SplitLists {
+    ListNode[] splitLists(ListNode head, int k) {
+        // Create an array of references for dummy and tail nodes
+        ListNode[] dummy = new ListNode[k];
+        ListNode[] tails = new ListNode[k];
 
-            ListNode current = head;
-            while (current != null) {
-                int idx = classify.apply(current);
-                tails[idx].next = current;
-                tails[idx]      = current;
-                current         = current.next;
-            }
-
-            ListNode[] heads = new ListNode[k];
-            for (int i = 0; i < k; i++) {
-                tails[i].next = null;             // seal each bucket
-                heads[i] = dummies[i].next;       // strip the dummy
-            }
-            return heads;
+        // Initialize the dummy and tail nodes
+        for (int i = 0; i < k; i++) {
+            dummy[i] = new ListNode(); // create a new dummy node
+            tails[i] = dummy[i]; // point tail to the dummy node
         }
+
+        // Iterate in the list using current
+        ListNode current = head;
+        while (current != null) {
+            // Use the function `f` to decide which list this node should go to.
+            int idx = f(current);
+
+            // Add node to the list and update tail
+            tails[idx].next = current;
+            tails[idx] = current;
+
+            // Move current ahead
+            current = current.next;
+
+            // Set the next of the current tail node to null
+            tails[idx].next = null;
+        }
+
+        // Remove the dummy nodes and assign actual heads to the dummy array
+        for (int i = 0; i < k; i++) {
+            ListNode dummyNode = dummy[i];
+            dummy[i] = dummy[i].next;  // move the dummy head to the real first node
+            dummyNode = null;          // delete the dummy node
+        }
+
+        // Return the array of split lists' heads
+        return dummy;
     }
-
-    public static void main(String[] args) {
-        // Pattern only — no concrete classifier; just demo with a 2-bucket parity split
-        ListNode n1=new ListNode(1),n2=new ListNode(2),n3=new ListNode(3),n4=new ListNode(4);
-        n1.next=n2; n2.next=n3; n3.next=n4;
-        ListNode[] heads = new Solution().splitLists(n1, 2, n -> n.val % 2);
-        for (int i=0;i<2;i++) { for (ListNode c=heads[i];c!=null;c=c.next) System.out.print(c.val+" "); System.out.print("| "); }
-        // 2 4 | 1 3 |
-    }
-}
-```
-
-```c run
-#include <stdlib.h>
-
-typedef struct ListNode { int val; struct ListNode *next; } ListNode;
-
-static ListNode* new_dummy(void) {
-    ListNode *d = (ListNode*)malloc(sizeof(ListNode));
-    d->val = 0; d->next = NULL;
-    return d;
-}
-
-ListNode** splitLists(ListNode *head, int k, int (*classify)(ListNode*)) {
-    ListNode **dummies = (ListNode**)malloc(sizeof(ListNode*) * k);
-    ListNode **tails   = (ListNode**)malloc(sizeof(ListNode*) * k);
-    for (int i = 0; i < k; i++) { dummies[i] = new_dummy(); tails[i] = dummies[i]; }
-
-    ListNode *current = head;
-    while (current != NULL) {
-        int idx = classify(current);
-        tails[idx]->next = current;
-        tails[idx]       = current;
-        current          = current->next;
-    }
-
-    ListNode **heads = (ListNode**)malloc(sizeof(ListNode*) * k);
-    for (int i = 0; i < k; i++) {
-        tails[i]->next = NULL;
-        heads[i] = dummies[i]->next;
-        free(dummies[i]);
-    }
-    free(dummies); free(tails);
-    return heads;
-}
-```
-
-```scala run
-class ListNode(var v: Int, var next: ListNode = null) { def this() = this(0) }
-
-object Main extends App {
-  class Solution {
-    def splitLists(head: ListNode, k: Int, classify: ListNode => Int): Array[ListNode] = {
-      val dummies = Array.fill(k)(new ListNode(0))
-      val tails   = dummies.clone()
-
-      var current = head
-      while (current != null) {
-        val idx = classify(current)
-        tails(idx).next = current
-        tails(idx)      = current
-        current         = current.next
-      }
-
-      val heads = new Array[ListNode](k)
-      for (i <- 0 until k) {
-        tails(i).next = null
-        heads(i) = dummies(i).next
-      }
-      heads
-    }
-  }
-
-  // Pattern only — no concrete classifier; just demo with a 2-bucket parity split
-  val n4=new ListNode(4); val n3=new ListNode(3,n4); val n2=new ListNode(2,n3); val n1=new ListNode(1,n2)
-  val heads = new Solution().splitLists(n1, 2, n => n.v % 2)
-  for (i <- 0 until 2) { var cur = heads(i); while (cur != null) { print(s"${cur.v} "); cur = cur.next }; print("| ") }
-  // 2 4 | 1 3 |
 }
 ```
 
@@ -429,208 +366,156 @@ flowchart TB
 The implementation of the split list solution is given as follows.
 
 
-```pseudocode
-# Split into k roughly-equal contiguous parts. The first (length mod k) parts are 1 node bigger.
-function kWaySplit(head, k):
-    length ← 0; cur ← head
-    while cur is not null: length ← length + 1; cur ← cur.next
-    baseSize ← length ÷ k
-    bigLists ← length mod k
-
-    dummies ← list of k new ListNodes
-    tails ← copy of dummies
-    current ← head; idx ← 0; count ← 0
-    while current is not null:
-        tails[idx].next ← current
-        tails[idx] ← current
-        current ← current.next
-        count ← count + 1
-        target ← (baseSize + 1) if bigLists > 0 else baseSize
-        if count = target:
-            count ← 0
-            idx ← idx + 1
-            if bigLists > 0: bigLists ← bigLists − 1
-    for each t in tails: t.next ← null
-    return [d.next for each d in dummies]
-```
-
 ```python run
-from typing import List, Optional
 
-class Solution:
-    def k_way_split(self, head: Optional[ListNode], k: int) -> List[Optional[ListNode]]:
-        # Count length so we can pre-compute how many "big" (size base+1) buckets exist
-        length, cur = 0, head
-        while cur:
-            length += 1; cur = cur.next
+"""
+Definition for singly-linked list.
+class ListNode:
+    def __init__(self, val):
+        self.val = val
+        self.next = None
+"""
 
-        base_size = length // k
-        big_lists = length %  k
+from typing import Optional, List
 
-        dummies = [ListNode() for _ in range(k)]
-        tails   = list(dummies)
+# Function to calculate the length of the linked list
+def lengthOfLinkedList(head: Optional[ListNode]) -> int:
+    length = 0
+    while head is not None:
+        length += 1
+        head = head.next
+    return length
 
-        current = head
-        idx, count = 0, 0
-        while current is not None:
-            tails[idx].next = current
-            tails[idx]      = current
-            current         = current.next
-            count += 1
+def kWayListSplit(head: Optional[ListNode], k: int) -> List[Optional[ListNode]]:
+    # Count the number of nodes in the linked list
+    length = lengthOfLinkedList(head)
+    # Calculate the size of each part
+    partSize = length // k
+    # Calculate the number of lists with partSize + 1 nodes
+    bigLists = length % k
 
-            # "big" buckets take base_size + 1; others take base_size
-            target = base_size + 1 if big_lists > 0 else base_size
-            if count == target:
-                count = 0
-                idx   += 1
-                if big_lists > 0: big_lists -= 1
+    # Create an array of dummy and tail nodes
+    dummy = [ListNode(0) for _ in range(k)]
+    tails = dummy[:]
 
-        for t in tails:
-            t.next = None
-        return [d.next for d in dummies]
+    # Iterate in the list using current pointer
+    current = head
+    count = 0
+    idx = 0
+
+    while current is not None:
+        # Add node to the current split list and update tail
+        tails[idx].next = current
+        tails[idx] = current
+
+        # Move current ahead
+        current = current.next
+        # Set the next section of tail node to None
+        tails[idx].next = None
+
+        # Increment count after adding the node
+        count += 1
+
+        # Determine when to move to the next list
+        if bigLists > 0 and count == partSize + 1:
+            count = 0
+            idx += 1
+            bigLists -= 1
+        elif bigLists == 0 and count == partSize:
+            count = 0
+            idx += 1
+
+    # Remove the dummy nodes and return the real heads
+    for i in range(k):
+        dummy[i] = dummy[i].next
+
+    # Return the array of split lists' heads
+    return dummy
 ```
 
 ```java run
-public class Main {
-    static class ListNode {
-        int val; ListNode next;
-        ListNode() {}
-        ListNode(int v) { val = v; }
+
+/**
+ * Definition for singly-linked list.
+ * class ListNode {
+ *     int val;
+ *     ListNode next;
+ *     ListNode() {}
+ *     ListNode(int val) { this.val = val; }
+ * };
+ */
+
+class KWayListSplit {
+
+    // Function to find the length of a linked list
+    int lengthOfLinkedList(ListNode head) {
+        int length = 0;
+        while (head != null) {
+            ++length;
+            head = head.next;
+        }
+        return length;
     }
 
-    static class Solution {
-        public ListNode[] kWayListSplit(ListNode head, int k) {
-            int length = 0;
-            for (ListNode c = head; c != null; c = c.next) length++;
-            int baseSize = length / k;
-            int bigLists = length % k;
+    List<ListNode> kWayListSplit(ListNode head, int k) {
+        // Count the number of nodes in the linked list
+        int length = lengthOfLinkedList(head);
+        // Calculate the size of each part
+        int partSize = length / k;
+        // Calculate the number of lists with partSize + 1 nodes
+        int bigLists = length % k;
 
-            ListNode[] dummies = new ListNode[k];
-            ListNode[] tails   = new ListNode[k];
-            for (int i = 0; i < k; i++) { dummies[i] = new ListNode(); tails[i] = dummies[i]; }
+        // Create an array of references for dummy and tail nodes
+        List<ListNode> dummy = new ArrayList<>(Collections.nCopies(k, null));
+        List<ListNode> tails = new ArrayList<>(Collections.nCopies(k, null));
 
-            ListNode current = head;
-            int idx = 0, count = 0;
-            while (current != null) {
-                tails[idx].next = current;
-                tails[idx]      = current;
-                current         = current.next;
-                count++;
+        for (int i = 0; i < k; i++) {
+            dummy.set(i, new ListNode(0)); // create a new dummy node
+            tails.set(i, dummy.get(i)); // point tail to the dummy node
+        }
 
-                int target = (bigLists > 0) ? baseSize + 1 : baseSize;
-                if (count == target) {
-                    count = 0;
-                    idx++;
-                    if (bigLists > 0) bigLists--;
-                }
+        // Iterate in the list using current
+        ListNode current = head;
+
+        // Initialize counter to count number of nodes
+        // added to current split list
+        int count = 0;
+
+        // Initialize variable to denote current split list
+        int idx = 0;
+
+        while (current != null) {
+            // Add node to the current split list and update tail
+            tails.get(idx).next = current;
+            tails.set(idx, current);
+
+            // Move current ahead
+            current = current.next;
+
+            // Set the next section of tail node to null
+            tails.get(idx).next = null;
+
+            // Increment count after adding the node
+            count++;
+
+            if (bigLists > 0 && count == partSize + 1) {
+                count = 0; // Reset count to 0
+                idx++; // Increment idx to add to next sublist from next iteration
+                bigLists--; // Reduce the number of bigLists left
+            } else if (bigLists == 0 && count == partSize) {
+                count = 0; // Reset count to 0
+                idx++; // Increment idx to add to next sublist from next iteration
             }
-
-            ListNode[] heads = new ListNode[k];
-            for (int i = 0; i < k; i++) {
-                if (tails[i] != null) tails[i].next = null;
-                heads[i] = dummies[i].next;
-            }
-            return heads;
         }
-    }
 
-    public static void main(String[] args) {
-        // [1, 2, 3, 4, 5], k=3 -> [[1, 2], [3, 4], [5]]
-        ListNode n1=new ListNode(1),n2=new ListNode(2),n3=new ListNode(3),n4=new ListNode(4),n5=new ListNode(5);
-        n1.next=n2; n2.next=n3; n3.next=n4; n4.next=n5;
-        ListNode[] heads = new Solution().kWayListSplit(n1, 3);
-        for (int i=0;i<3;i++) { for (ListNode c=heads[i];c!=null;c=c.next) System.out.print(c.val+" "); System.out.print("| "); }
-        // 1 2 | 3 4 | 5 |
-    }
-}
-```
-
-```c run
-ListNode** kWayListSplit(ListNode *head, int k) {
-    int length = 0;
-    for (ListNode *c = head; c != NULL; c = c->next) length++;
-    int baseSize = length / k;
-    int bigLists = length % k;
-
-    ListNode **dummies = (ListNode**)malloc(sizeof(ListNode*) * k);
-    ListNode **tails   = (ListNode**)malloc(sizeof(ListNode*) * k);
-    for (int i = 0; i < k; i++) {
-        dummies[i] = (ListNode*)calloc(1, sizeof(ListNode));
-        tails[i]   = dummies[i];
-    }
-
-    ListNode *current = head;
-    int idx = 0, count = 0;
-    while (current != NULL) {
-        tails[idx]->next = current;
-        tails[idx]       = current;
-        current          = current->next;
-        count++;
-
-        int target = (bigLists > 0) ? baseSize + 1 : baseSize;
-        if (count == target) {
-            count = 0; idx++;
-            if (bigLists > 0) bigLists--;
+        // Delete the dummy nodes
+        for (int i = 0; i < k; i++) {
+            dummy.set(i, dummy.get(i).next); // move the dummy head to the real first node
         }
+
+        // Return the list of split lists' heads
+        return dummy;
     }
-
-    ListNode **heads = (ListNode**)malloc(sizeof(ListNode*) * k);
-    for (int i = 0; i < k; i++) {
-        if (tails[i] != NULL) tails[i]->next = NULL;
-        heads[i] = dummies[i]->next;
-        free(dummies[i]);
-    }
-    free(dummies); free(tails);
-    return heads;
-}
-```
-
-```scala run
-class ListNode(var v: Int, var next: ListNode = null) { def this() = this(0) }
-
-object Main extends App {
-  class Solution {
-    def kWayListSplit(head: ListNode, k: Int): Array[ListNode] = {
-      var length = 0
-      var cur = head
-      while (cur != null) { length += 1; cur = cur.next }
-      val baseSize = length / k
-      var bigLists = length % k
-
-      val dummies = Array.fill(k)(new ListNode(0))
-      val tails   = dummies.clone()
-
-      var current = head
-      var idx = 0
-      var count = 0
-      while (current != null) {
-        tails(idx).next = current
-        tails(idx)      = current
-        current         = current.next
-        count += 1
-
-        val target = if (bigLists > 0) baseSize + 1 else baseSize
-        if (count == target) {
-          count = 0; idx += 1
-          if (bigLists > 0) bigLists -= 1
-        }
-      }
-
-      val heads = new Array[ListNode](k)
-      for (i <- 0 until k) {
-        if (tails(i) != null) tails(i).next = null
-        heads(i) = dummies(i).next
-      }
-      heads
-    }
-  }
-
-  // [1, 2, 3, 4, 5], k=3 -> [[1, 2], [3, 4], [5]]
-  val n5=new ListNode(5); val n4=new ListNode(4,n5); val n3=new ListNode(3,n4)
-  val n2=new ListNode(2,n3); val n1=new ListNode(1,n2)
-  val heads = new Solution().kWayListSplit(n1, 3)
-  for (i <- 0 until 3) { var cur = heads(i); while (cur != null) { print(s"${cur.v} "); cur = cur.next }; print("| ") }
-  // 1 2 | 3 4 | 5 |
 }
 ```
 
@@ -668,28 +553,39 @@ Given the **head** of a singly linked list, write a function to split the list
 > -   **Output:** \[\[4, 2, 6, 10\], \[\]\]
 > -   **Explanation:** Above is the list containing the even and odd-valued nodes, respectively.
 
-## Solution
+<details>
+<summary><h2>Solution</h2></summary>
 
 
-```pseudocode
-# Route each node into one of two buckets based on parity.
-function evenOddSplit(head):
-    evenDummy ← new ListNode; oddDummy ← new ListNode
-    evenTail ← evenDummy; oddTail ← oddDummy
-    current ← head
-    while current is not null:
-        if current.val mod 2 = 0:
-            evenTail.next ← current; evenTail ← current
-        else:
-            oddTail.next ← current; oddTail ← current
-        current ← current.next
-    evenTail.next ← null
-    oddTail.next ← null
-    return [evenDummy.next, oddDummy.next]
-```
 
 ```python run
 from typing import List, Optional
+
+
+class ListNode:
+    def __init__(self, val=0, nxt=None):
+        self.val = val
+        self.next = nxt
+
+
+def from_list(values):
+    if not values:
+        return None
+    head = ListNode(values[0])
+    cur = head
+    for v in values[1:]:
+        cur.next = ListNode(v)
+        cur = cur.next
+    return head
+
+
+def to_list(head):
+    out = []
+    while head is not None:
+        out.append(head.val)
+        head = head.next
+    return out
+
 
 class Solution:
     def even_odd_split(
@@ -738,24 +634,68 @@ class Solution:
         odd_tail.next = None
 
         return [even_dummy.next, odd_dummy.next]
+
+
+e, o = Solution().even_odd_split(from_list([5, 2, 3, 10, 6, 8]))
+print(to_list(e), to_list(o))   # [2, 10, 6, 8] [5, 3]
+
+e, o = Solution().even_odd_split(from_list([4, 2, 6, 10]))
+print(to_list(e), to_list(o))   # [4, 2, 6, 10] []
+
+# Edge cases
+e, o = Solution().even_odd_split(None)
+print(to_list(e), to_list(o))   # [] []
+
+e, o = Solution().even_odd_split(from_list([1]))
+print(to_list(e), to_list(o))   # [] [1]
+
+e, o = Solution().even_odd_split(from_list([2]))
+print(to_list(e), to_list(o))   # [2] []
+
+e, o = Solution().even_odd_split(from_list([1, 3, 5, 7]))
+print(to_list(e), to_list(o))   # [] [1, 3, 5, 7]
+
+e, o = Solution().even_odd_split(from_list([2, 4]))
+print(to_list(e), to_list(o))   # [2, 4] []
 ```
 
 ```java run
+import java.util.*;
+
 public class Main {
     static class ListNode {
-        int val; ListNode next;
+        int val;
+        ListNode next;
         ListNode() {}
-        ListNode(int v) { val = v; }
+        ListNode(int val) { this.val = val; }
+        ListNode(int val, ListNode next) { this.val = val; this.next = next; }
+    }
+
+    static ListNode fromList(int... values) {
+        if (values.length == 0) return null;
+        ListNode head = new ListNode(values[0]);
+        ListNode cur = head;
+        for (int i = 1; i < values.length; i++) {
+            cur.next = new ListNode(values[i]);
+            cur = cur.next;
+        }
+        return head;
+    }
+
+    static java.util.List<Integer> toList(ListNode head) {
+        java.util.List<Integer> out = new java.util.ArrayList<>();
+        while (head != null) { out.add(head.val); head = head.next; }
+        return out;
     }
 
     static class Solution {
-        public ListNode[] evenOddSplit(ListNode head) {
+        public List<ListNode> evenOddSplit(ListNode head) {
 
             // Initialize head and tail references for the two split lists
-            ListNode evenDummy = new ListNode();
+            ListNode evenDummy = new ListNode(0);
             ListNode evenTail = evenDummy;
 
-            ListNode oddDummy = new ListNode();
+            ListNode oddDummy = new ListNode(0);
             ListNode oddTail = oddDummy;
 
             // Create current reference to iterate through the list
@@ -795,139 +735,37 @@ public class Main {
             // Terminate the odd list
             oddTail.next = null;
 
-            return new ListNode[]{evenDummy.next, oddDummy.next};
+            return Arrays.asList(evenDummy.next, oddDummy.next);
         }
     }
 
     public static void main(String[] args) {
-        // [5, 2, 3, 10, 6, 8] -> [[2, 10, 6, 8], [5, 3]]
-        ListNode n1=new ListNode(5),n2=new ListNode(2),n3=new ListNode(3),
-                 n4=new ListNode(10),n5=new ListNode(6),n6=new ListNode(8);
-        n1.next=n2; n2.next=n3; n3.next=n4; n4.next=n5; n5.next=n6;
-        ListNode[] heads = new Solution().evenOddSplit(n1);
-        for (int i=0;i<2;i++) { for (ListNode c=heads[i];c!=null;c=c.next) System.out.print(c.val+" "); System.out.print("| "); }
-        // 2 10 6 8 | 5 3 |
+        List<ListNode> r1 = new Solution().evenOddSplit(fromList(5, 2, 3, 10, 6, 8));
+        System.out.println(toList(r1.get(0)) + " " + toList(r1.get(1)));  // [2, 10, 6, 8] [5, 3]
+
+        List<ListNode> r2 = new Solution().evenOddSplit(fromList(4, 2, 6, 10));
+        System.out.println(toList(r2.get(0)) + " " + toList(r2.get(1)));  // [4, 2, 6, 10] []
+
+        // Edge cases
+        List<ListNode> r3 = new Solution().evenOddSplit(null);
+        System.out.println(toList(r3.get(0)) + " " + toList(r3.get(1)));  // [] []
+
+        List<ListNode> r4 = new Solution().evenOddSplit(fromList(1));
+        System.out.println(toList(r4.get(0)) + " " + toList(r4.get(1)));  // [] [1]
+
+        List<ListNode> r5 = new Solution().evenOddSplit(fromList(2));
+        System.out.println(toList(r5.get(0)) + " " + toList(r5.get(1)));  // [2] []
+
+        List<ListNode> r6 = new Solution().evenOddSplit(fromList(1, 3, 5, 7));
+        System.out.println(toList(r6.get(0)) + " " + toList(r6.get(1)));  // [] [1, 3, 5, 7]
+
+        List<ListNode> r7 = new Solution().evenOddSplit(fromList(2, 4));
+        System.out.println(toList(r7.get(0)) + " " + toList(r7.get(1)));  // [2, 4] []
     }
 }
 ```
 
-```c run
-typedef struct { ListNode *evens; ListNode *odds; } EvenOddSplit;
-
-EvenOddSplit evenOddSplit(ListNode *head) {
-
-    /* Initialize head and tail references for the two split lists */
-    ListNode evenDummy = {0, NULL};
-    ListNode *evenTail = &evenDummy;
-
-    ListNode oddDummy = {0, NULL};
-    ListNode *oddTail = &oddDummy;
-
-    /* Create current reference to iterate through the list */
-    ListNode *current = head;
-
-    /* Iterate through the list and split nodes into two lists */
-    while (current != NULL) {
-
-        /* If the current node's value is even then the node goes to
-           the even list */
-        if (current->val % 2 == 0) {
-
-            /* `current` node goes to the even split list */
-            evenTail->next = current;
-
-            /* Move evenTail forward */
-            evenTail = evenTail->next;
-        }
-
-        /* Otherwise, the node goes to the odd list */
-        else {
-
-            /* `current` node goes to the odd split list */
-            oddTail->next = current;
-
-            /* Move oddTail forward */
-            oddTail = oddTail->next;
-        }
-
-        /* Move to the next node in the original list */
-        current = current->next;
-    }
-
-    /* Terminate the even list */
-    evenTail->next = NULL;
-
-    /* Terminate the odd list */
-    oddTail->next = NULL;
-
-    EvenOddSplit out = {evenDummy.next, oddDummy.next};
-    return out;
-}
-```
-
-```scala run
-class ListNode(var v: Int, var next: ListNode = null) { def this() = this(0) }
-
-object Main extends App {
-  class Solution {
-    def evenOddSplit(head: ListNode): Array[ListNode] = {
-
-      // Initialize head and tail references for the two split lists
-      val evenDummy = new ListNode(0)
-      var evenTail: ListNode = evenDummy
-
-      val oddDummy = new ListNode(0)
-      var oddTail: ListNode = oddDummy
-
-      // Create current reference to iterate through the list
-      var current = head
-
-      // Iterate through the list and split nodes into two lists
-      while (current != null) {
-
-        // If the current node's value is even then the node goes to
-        // the even list
-        if (current.v % 2 == 0) {
-
-          // `current` node goes to the even split list
-          evenTail.next = current
-
-          // Move evenTail forward
-          evenTail = evenTail.next
-        }
-
-        // Otherwise, the node goes to the odd list
-        else {
-
-          // `current` node goes to the odd split list
-          oddTail.next = current
-
-          // Move oddTail forward
-          oddTail = oddTail.next
-        }
-
-        // Move to the next node in the original list
-        current = current.next
-      }
-
-      // Terminate the even list
-      evenTail.next = null
-
-      // Terminate the odd list
-      oddTail.next = null
-
-      Array(evenDummy.next, oddDummy.next)
-    }
-  }
-
-  // [5, 2, 3, 10, 6, 8] -> [[2, 10, 6, 8], [5, 3]]
-  val n6=new ListNode(8); val n5=new ListNode(6,n6); val n4=new ListNode(10,n5)
-  val n3=new ListNode(3,n4); val n2=new ListNode(2,n3); val n1=new ListNode(5,n2)
-  val heads = new Solution().evenOddSplit(n1)
-  for (i <- 0 until 2) { var cur = heads(i); while (cur != null) { print(s"${cur.v} "); cur = cur.next }; print("| ") }
-  // 2 10 6 8 | 5 3 |
-}
-```
+</details>
 
 
 ***
@@ -952,34 +790,39 @@ If the remaining nodes at the end are fewer than k, include all of them in the r
 > -   **Output:** \[\[6, 1, 3, 10, 6\], \[8\]\]
 > -   **Explanation:** The list is split into groups of size 5 and assigned alternately. The first group \[6, 1, 3, 10, 6\] goes to the first list. Only one node \[8\] remains, which is fewer than k, but it still goes to the second list as the next group.
 
-## Solution
+<details>
+<summary><h2>Solution</h2></summary>
 
 
-```pseudocode
-# Take k nodes for bucket A, next k for bucket B, alternate.
-function splitAlternateGroups(head, k):
-    firstDummy ← new ListNode; secondDummy ← new ListNode
-    firstTail ← firstDummy; secondTail ← secondDummy
-    current ← head
-    addToFirst ← true
-    while current is not null:
-        chunkStart ← current
-        prev ← null
-        for i from 1 to k:                            # walk up to k nodes
-            if current is null: break
-            prev ← current
-            current ← current.next
-        prev.next ← null                              # detach the chunk
-        if addToFirst:
-            firstTail.next ← chunkStart; firstTail ← prev
-        else:
-            secondTail.next ← chunkStart; secondTail ← prev
-        addToFirst ← NOT addToFirst
-    return [firstDummy.next, secondDummy.next]
-```
 
 ```python run
 from typing import List, Optional
+
+
+class ListNode:
+    def __init__(self, val=0, nxt=None):
+        self.val = val
+        self.next = nxt
+
+
+def from_list(values):
+    if not values:
+        return None
+    head = ListNode(values[0])
+    cur = head
+    for v in values[1:]:
+        cur.next = ListNode(v)
+        cur = cur.next
+    return head
+
+
+def to_list(head):
+    out = []
+    while head is not None:
+        out.append(head.val)
+        head = head.next
+    return out
+
 
 class Solution:
     def split_alternate_groups(
@@ -1037,117 +880,141 @@ class Solution:
 
         # Return heads of the two lists
         return [first_list_dummy.next, second_list_dummy.next]
+
+
+f, s = Solution().split_alternate_groups(from_list([5, 2, 3, 10, 6, 8]), 2)
+print(to_list(f), to_list(s))   # [5, 2, 6, 8] [3, 10]
+
+f, s = Solution().split_alternate_groups(from_list([6, 1, 3, 10, 6, 8]), 5)
+print(to_list(f), to_list(s))   # [6, 1, 3, 10, 6] [8]
+
+# Edge cases
+f, s = Solution().split_alternate_groups(from_list([1]), 1)
+print(to_list(f), to_list(s))   # [1] []
+
+f, s = Solution().split_alternate_groups(from_list([1, 2]), 1)
+print(to_list(f), to_list(s))   # [1] [2]
+
+f, s = Solution().split_alternate_groups(from_list([1, 2, 3, 4]), 4)
+print(to_list(f), to_list(s))   # [1, 2, 3, 4] []
+
+f, s = Solution().split_alternate_groups(from_list([1, 2, 3, 4, 5, 6]), 3)
+print(to_list(f), to_list(s))   # [1, 2, 3] [4, 5, 6]
 ```
 
 ```java run
+import java.util.*;
+
 public class Main {
     static class ListNode {
-        int val; ListNode next;
+        int val;
+        ListNode next;
         ListNode() {}
-        ListNode(int v) { val = v; }
+        ListNode(int val) { this.val = val; }
+        ListNode(int val, ListNode next) { this.val = val; this.next = next; }
+    }
+
+    static ListNode fromList(int... values) {
+        if (values.length == 0) return null;
+        ListNode head = new ListNode(values[0]);
+        ListNode cur = head;
+        for (int i = 1; i < values.length; i++) {
+            cur.next = new ListNode(values[i]);
+            cur = cur.next;
+        }
+        return head;
+    }
+
+    static java.util.List<Integer> toList(ListNode head) {
+        java.util.List<Integer> out = new java.util.ArrayList<>();
+        while (head != null) { out.add(head.val); head = head.next; }
+        return out;
     }
 
     static class Solution {
-        public ListNode[] splitAlternateGroups(ListNode head, int k) {
-            ListNode firstDummy = new ListNode(), secondDummy = new ListNode();
-            ListNode firstTail  = firstDummy, secondTail = secondDummy;
+        public List<ListNode> splitAlternateGroups(ListNode head, int k) {
+
+            // Head and tail references for the two resulting lists
+            ListNode firstListDummy = new ListNode(0);
+            ListNode firstListTail = firstListDummy;
+
+            ListNode secondListDummy = new ListNode(0);
+            ListNode secondListTail = secondListDummy;
 
             ListNode current = head;
-            boolean addToFirst = true;
+
+            // Flag to alternate between the two lists
+            boolean addToFirstList = true;
+
+            // Iterate through the original list
             while (current != null) {
-                ListNode chunkStart = current, prev = null;
+
+                // Start of the current chunk
+                ListNode chunkStart = current;
+                ListNode previous = null;
+
+                // Traverse up to k nodes for the current chunk
                 for (int i = 0; i < k && current != null; i++) {
-                    prev    = current;
+                    previous = current;
                     current = current.next;
                 }
-                prev.next = null;
 
-                if (addToFirst) { firstTail.next  = chunkStart; firstTail  = prev; }
-                else             { secondTail.next = chunkStart; secondTail = prev; }
-                addToFirst = !addToFirst;
+                // Disconnect the chunk from the rest of the list
+                previous.next = null;
+
+                // Attach chunk to the appropriate list
+                if (addToFirstList) {
+
+                    // Attach chunk to the first list
+                    firstListTail.next = chunkStart;
+
+                    // Move tail to the end of the chunk
+                    firstListTail = previous;
+                }
+
+                // If not the first list, then it must be the second list
+                else {
+
+                    // Attach chunk to the second list
+                    secondListTail.next = chunkStart;
+
+                    // Move tail to the end of the chunk
+                    secondListTail = previous;
+                }
+
+                // Alternate for next chunk
+                addToFirstList = !addToFirstList;
             }
-            return new ListNode[]{firstDummy.next, secondDummy.next};
+
+            // Return heads of the two lists
+            return Arrays.asList(firstListDummy.next, secondListDummy.next);
         }
     }
 
     public static void main(String[] args) {
-        // [5, 2, 3, 10, 6, 8], k=2 -> [[5, 2, 6, 8], [3, 10]]
-        ListNode n1=new ListNode(5),n2=new ListNode(2),n3=new ListNode(3),
-                 n4=new ListNode(10),n5=new ListNode(6),n6=new ListNode(8);
-        n1.next=n2; n2.next=n3; n3.next=n4; n4.next=n5; n5.next=n6;
-        ListNode[] heads = new Solution().splitAlternateGroups(n1, 2);
-        for (int i=0;i<2;i++) { for (ListNode c=heads[i];c!=null;c=c.next) System.out.print(c.val+" "); System.out.print("| "); }
-        // 5 2 6 8 | 3 10 |
+        List<ListNode> r1 = new Solution().splitAlternateGroups(fromList(5, 2, 3, 10, 6, 8), 2);
+        System.out.println(toList(r1.get(0)) + " " + toList(r1.get(1)));  // [5, 2, 6, 8] [3, 10]
+
+        List<ListNode> r2 = new Solution().splitAlternateGroups(fromList(6, 1, 3, 10, 6, 8), 5);
+        System.out.println(toList(r2.get(0)) + " " + toList(r2.get(1)));  // [6, 1, 3, 10, 6] [8]
+
+        // Edge cases
+        List<ListNode> r3 = new Solution().splitAlternateGroups(fromList(1), 1);
+        System.out.println(toList(r3.get(0)) + " " + toList(r3.get(1)));  // [1] []
+
+        List<ListNode> r4 = new Solution().splitAlternateGroups(fromList(1, 2), 1);
+        System.out.println(toList(r4.get(0)) + " " + toList(r4.get(1)));  // [1] [2]
+
+        List<ListNode> r5 = new Solution().splitAlternateGroups(fromList(1, 2, 3, 4), 4);
+        System.out.println(toList(r5.get(0)) + " " + toList(r5.get(1)));  // [1, 2, 3, 4] []
+
+        List<ListNode> r6 = new Solution().splitAlternateGroups(fromList(1, 2, 3, 4, 5, 6), 3);
+        System.out.println(toList(r6.get(0)) + " " + toList(r6.get(1)));  // [1, 2, 3] [4, 5, 6]
     }
 }
 ```
 
-```c run
-typedef struct { ListNode *first; ListNode *second; } AltSplit;
-
-AltSplit splitAlternateGroups(ListNode *head, int k) {
-    ListNode firstDummy = {0, NULL}, secondDummy = {0, NULL};
-    ListNode *firstTail = &firstDummy, *secondTail = &secondDummy;
-
-    ListNode *current = head;
-    int addToFirst = 1;
-    while (current != NULL) {
-        ListNode *chunkStart = current, *prev = NULL;
-        for (int i = 0; i < k && current != NULL; i++) {
-            prev    = current;
-            current = current->next;
-        }
-        prev->next = NULL;
-
-        if (addToFirst) { firstTail->next  = chunkStart; firstTail  = prev; }
-        else             { secondTail->next = chunkStart; secondTail = prev; }
-        addToFirst = !addToFirst;
-    }
-    AltSplit out = {firstDummy.next, secondDummy.next};
-    return out;
-}
-```
-
-```scala run
-class ListNode(var v: Int, var next: ListNode = null) { def this() = this(0) }
-
-object Main extends App {
-  class Solution {
-    def splitAlternateGroups(head: ListNode, k: Int): Array[ListNode] = {
-      val firstDummy = new ListNode(0)
-      val secondDummy = new ListNode(0)
-      var firstTail:  ListNode = firstDummy
-      var secondTail: ListNode = secondDummy
-
-      var current = head
-      var addToFirst = true
-      while (current != null) {
-        val chunkStart = current
-        var prev: ListNode = null
-        var i = 0
-        while (i < k && current != null) {
-          prev    = current
-          current = current.next
-          i += 1
-        }
-        prev.next = null
-
-        if (addToFirst) { firstTail.next  = chunkStart; firstTail  = prev }
-        else             { secondTail.next = chunkStart; secondTail = prev }
-        addToFirst = !addToFirst
-      }
-      Array(firstDummy.next, secondDummy.next)
-    }
-  }
-
-  // [5, 2, 3, 10, 6, 8], k=2 -> [[5, 2, 6, 8], [3, 10]]
-  val n6=new ListNode(8); val n5=new ListNode(6,n6); val n4=new ListNode(10,n5)
-  val n3=new ListNode(3,n4); val n2=new ListNode(2,n3); val n1=new ListNode(5,n2)
-  val heads = new Solution().splitAlternateGroups(n1, 2)
-  for (i <- 0 until 2) { var cur = heads(i); while (cur != null) { print(s"${cur.v} "); cur = cur.next }; print("| ") }
-  // 5 2 6 8 | 3 10 |
-}
-```
+</details>
 
 
 ***
@@ -1170,26 +1037,39 @@ Given the **head** of a singly linked list and a positive integer `**k**`, write
 > -   **Output:** \[\[\], \[4\], \[\]\]
 > -   **Explanation:** The above list is split into k groups based on the remainder when each node’s value is divided by k.
 
-## Solution
+<details>
+<summary><h2>Solution</h2></summary>
 
 
-```pseudocode
-# Hash each node into bucket (val mod k).
-function splitByModulo(head, k):
-    dummies ← list of k new ListNodes
-    tails ← copy of dummies
-    current ← head
-    while current is not null:
-        group ← current.val mod k
-        tails[group].next ← current
-        tails[group] ← current
-        current ← current.next
-    for each t in tails: t.next ← null
-    return [d.next for each d in dummies]
-```
 
 ```python run
 from typing import List, Optional
+
+
+class ListNode:
+    def __init__(self, val=0, nxt=None):
+        self.val = val
+        self.next = nxt
+
+
+def from_list(values):
+    if not values:
+        return None
+    head = ListNode(values[0])
+    cur = head
+    for v in values[1:]:
+        cur.next = ListNode(v)
+        cur = cur.next
+    return head
+
+
+def to_list(head):
+    out = []
+    while head is not None:
+        out.append(head.val)
+        head = head.next
+    return out
+
 
 class Solution:
     def split_by_modulo(
@@ -1228,109 +1108,130 @@ class Solution:
             result.append(dummy_heads[i].next)
 
         return result
+
+
+r = Solution().split_by_modulo(from_list([5, 2, 3, 10, 6, 8]), 3)
+print([to_list(x) for x in r])   # [[3, 6], [10], [5, 2, 8]]
+
+r = Solution().split_by_modulo(from_list([4]), 3)
+print([to_list(x) for x in r])   # [[], [4], []]
+
+# Edge cases
+r = Solution().split_by_modulo(None, 2)
+print([to_list(x) for x in r])   # [[], []]
+
+r = Solution().split_by_modulo(from_list([1, 2, 3, 4]), 2)
+print([to_list(x) for x in r])   # [[2, 4], [1, 3]]
+
+r = Solution().split_by_modulo(from_list([0, 0, 0]), 3)
+print([to_list(x) for x in r])   # [[0, 0, 0], [], []]
+
+r = Solution().split_by_modulo(from_list([1]), 1)
+print([to_list(x) for x in r])   # [[1]]
 ```
 
 ```java run
+import java.util.*;
+
 public class Main {
     static class ListNode {
-        int val; ListNode next;
+        int val;
+        ListNode next;
         ListNode() {}
-        ListNode(int v) { val = v; }
+        ListNode(int val) { this.val = val; }
+        ListNode(int val, ListNode next) { this.val = val; this.next = next; }
+    }
+
+    static ListNode fromList(int... values) {
+        if (values.length == 0) return null;
+        ListNode head = new ListNode(values[0]);
+        ListNode cur = head;
+        for (int i = 1; i < values.length; i++) {
+            cur.next = new ListNode(values[i]);
+            cur = cur.next;
+        }
+        return head;
+    }
+
+    static java.util.List<Integer> toList(ListNode head) {
+        java.util.List<Integer> out = new java.util.ArrayList<>();
+        while (head != null) { out.add(head.val); head = head.next; }
+        return out;
     }
 
     static class Solution {
-        public ListNode[] splitByModulo(ListNode head, int k) {
-            ListNode[] dummies = new ListNode[k];
-            ListNode[] tails   = new ListNode[k];
-            for (int i = 0; i < k; i++) { dummies[i] = new ListNode(); tails[i] = dummies[i]; }
+        public List<ListNode> splitByModulo(ListNode head, int k) {
 
-            for (ListNode c = head; c != null; c = c.next) {
-                int g = Math.floorMod(c.val, k);       // safe against negative values
-                tails[g].next = c;
-                tails[g]      = c;
-            }
-
-            ListNode[] heads = new ListNode[k];
+            // Initialize head and tail references for k split lists
+            List<ListNode> dummyHeads = new ArrayList<>();
+            List<ListNode> tails = new ArrayList<>();
             for (int i = 0; i < k; i++) {
-                tails[i].next = null;
-                heads[i] = dummies[i].next;
+
+                // Dummy head nodes
+                dummyHeads.add(new ListNode(0));
+
+                // Tail starts at dummy
+                tails.add(dummyHeads.get(i));
             }
-            return heads;
+
+            // Create current reference to iterate through the list
+            ListNode current = head;
+
+            // Iterate through the list and split nodes into k lists
+            while (current != null) {
+
+                // Find group index using modulo operation
+                int group = current.val % k;
+
+                // `current` node goes to its modulo group
+                tails.get(group).next = current;
+
+                // Move group tail forward
+                tails.set(group, tails.get(group).next);
+
+                // Move to the next node in the original list
+                current = current.next;
+            }
+
+            // Terminate each list to avoid cycles
+            for (int i = 0; i < k; i++) {
+                tails.get(i).next = null;
+            }
+
+            // Collect heads (excluding dummy nodes)
+            List<ListNode> result = new ArrayList<>();
+            for (int i = 0; i < k; i++) {
+                result.add(dummyHeads.get(i).next);
+            }
+
+            return result;
         }
     }
 
     public static void main(String[] args) {
-        // [5, 2, 3, 10, 6, 8], k=3 -> [[3, 6], [10], [5, 2, 8]]
-        ListNode n1=new ListNode(5),n2=new ListNode(2),n3=new ListNode(3),
-                 n4=new ListNode(10),n5=new ListNode(6),n6=new ListNode(8);
-        n1.next=n2; n2.next=n3; n3.next=n4; n4.next=n5; n5.next=n6;
-        ListNode[] heads = new Solution().splitByModulo(n1, 3);
-        for (int i=0;i<3;i++) { for (ListNode c=heads[i];c!=null;c=c.next) System.out.print(c.val+" "); System.out.print("| "); }
-        // 3 6 | 10 | 5 2 8 |
+        List<ListNode> r1 = new Solution().splitByModulo(fromList(5, 2, 3, 10, 6, 8), 3);
+        System.out.println(r1.stream().map(Main::toList).toList());  // [[3, 6], [10], [5, 2, 8]]
+
+        List<ListNode> r2 = new Solution().splitByModulo(fromList(4), 3);
+        System.out.println(r2.stream().map(Main::toList).toList());  // [[], [4], []]
+
+        // Edge cases
+        List<ListNode> r3 = new Solution().splitByModulo(null, 2);
+        System.out.println(r3.stream().map(Main::toList).toList());  // [[], []]
+
+        List<ListNode> r4 = new Solution().splitByModulo(fromList(1, 2, 3, 4), 2);
+        System.out.println(r4.stream().map(Main::toList).toList());  // [[2, 4], [1, 3]]
+
+        List<ListNode> r5 = new Solution().splitByModulo(fromList(0, 0, 0), 3);
+        System.out.println(r5.stream().map(Main::toList).toList());  // [[0, 0, 0], [], []]
+
+        List<ListNode> r6 = new Solution().splitByModulo(fromList(1), 1);
+        System.out.println(r6.stream().map(Main::toList).toList());  // [[1]]
     }
 }
 ```
 
-```c run
-ListNode** splitByModulo(ListNode *head, int k) {
-    ListNode **dummies = (ListNode**)malloc(sizeof(ListNode*) * k);
-    ListNode **tails   = (ListNode**)malloc(sizeof(ListNode*) * k);
-    for (int i = 0; i < k; i++) {
-        dummies[i] = (ListNode*)calloc(1, sizeof(ListNode));
-        tails[i]   = dummies[i];
-    }
-
-    for (ListNode *c = head; c != NULL; c = c->next) {
-        int g = ((c->val % k) + k) % k;           /* safe against negatives */
-        tails[g]->next = c;
-        tails[g]       = c;
-    }
-
-    ListNode **heads = (ListNode**)malloc(sizeof(ListNode*) * k);
-    for (int i = 0; i < k; i++) {
-        tails[i]->next = NULL;
-        heads[i] = dummies[i]->next;
-        free(dummies[i]);
-    }
-    free(dummies); free(tails);
-    return heads;
-}
-```
-
-```scala run
-class ListNode(var v: Int, var next: ListNode = null) { def this() = this(0) }
-
-object Main extends App {
-  class Solution {
-    def splitByModulo(head: ListNode, k: Int): Array[ListNode] = {
-      val dummies = Array.fill(k)(new ListNode(0))
-      val tails   = dummies.clone()
-
-      var c = head
-      while (c != null) {
-        val g = ((c.v % k) + k) % k
-        tails(g).next = c
-        tails(g)      = c
-        c             = c.next
-      }
-
-      val heads = new Array[ListNode](k)
-      for (i <- 0 until k) {
-        tails(i).next = null
-        heads(i) = dummies(i).next
-      }
-      heads
-    }
-  }
-
-  // [5, 2, 3, 10, 6, 8], k=3 -> [[3, 6], [10], [5, 2, 8]]
-  val n6=new ListNode(8); val n5=new ListNode(6,n6); val n4=new ListNode(10,n5)
-  val n3=new ListNode(3,n4); val n2=new ListNode(2,n3); val n1=new ListNode(5,n2)
-  val heads = new Solution().splitByModulo(n1, 3)
-  for (i <- 0 until 3) { var cur = heads(i); while (cur != null) { print(s"${cur.v} "); cur = cur.next }; print("| ") }
-  // 3 6 | 10 | 5 2 8 |
-}
-```
+</details>
 
 
 ***
@@ -1355,34 +1256,39 @@ Given the **head** of a singly linked list and an integer **k**, write a funct
 > -   **Output:** \[\[1, 2, 3, 4\], \[5, 6, 7\], \[8, 9, 10\]\]
 > -   **Explanation:** As we need to split the list into 3 parts, which should be as equal as possible, we can divide it into parts of sizes 4, 3, and 3, respectively.
 
-## Solution
+<details>
+<summary><h2>Solution</h2></summary>
 
 
-```pseudocode
-# Split into k contiguous parts in place by walking and severing — no dummies.
-function kWayListSplit(head, k):
-    length ← 0; cur ← head
-    while cur is not null: length ← length + 1; cur ← cur.next
-    baseSize ← length ÷ k
-    extra ← length mod k
-
-    parts ← list of k null entries
-    current ← head
-    for i from 0 to k − 1:
-        if current is null: break
-        parts[i] ← current
-        size ← baseSize + (1 if extra > 0 else 0)
-        for j from 1 to size − 1:                     # walk size − 1 nodes
-            current ← current.next
-        nxt ← current.next
-        current.next ← null                           # detach this part
-        current ← nxt
-        if extra > 0: extra ← extra − 1
-    return parts
-```
 
 ```python run
 from typing import List, Optional
+
+
+class ListNode:
+    def __init__(self, val=0, nxt=None):
+        self.val = val
+        self.next = nxt
+
+
+def from_list(values):
+    if not values:
+        return None
+    head = ListNode(values[0])
+    cur = head
+    for v in values[1:]:
+        cur.next = ListNode(v)
+        cur = cur.next
+    return head
+
+
+def to_list(head):
+    out = []
+    while head is not None:
+        out.append(head.val)
+        head = head.next
+    return out
+
 
 class Solution:
     def find_length(self, head: Optional[ListNode]) -> int:
@@ -1435,114 +1341,145 @@ class Solution:
                 extra_nodes -= 1
 
         return parts
+
+
+r = Solution().k_way_list_split(from_list([1, 2, 3]), 5)
+print([to_list(x) for x in r])   # [[1], [2], [3], [], []]
+
+r = Solution().k_way_list_split(from_list([1, 2, 3, 4, 5, 6, 7, 8, 9, 10]), 3)
+print([to_list(x) for x in r])   # [[1, 2, 3, 4], [5, 6, 7], [8, 9, 10]]
+
+# Edge cases
+r = Solution().k_way_list_split(None, 3)
+print([to_list(x) for x in r])   # [[], [], []]
+
+r = Solution().k_way_list_split(from_list([1]), 1)
+print([to_list(x) for x in r])   # [[1]]
+
+r = Solution().k_way_list_split(from_list([1, 2]), 2)
+print([to_list(x) for x in r])   # [[1], [2]]
+
+r = Solution().k_way_list_split(from_list([1, 2, 3, 4, 5, 6]), 2)
+print([to_list(x) for x in r])   # [[1, 2, 3], [4, 5, 6]]
 ```
 
 ```java run
+import java.util.*;
+
 public class Main {
-    static class ListNode { int val; ListNode next; ListNode(int v){val=v;} }
+    static class ListNode {
+        int val;
+        ListNode next;
+        ListNode() {}
+        ListNode(int val) { this.val = val; }
+        ListNode(int val, ListNode next) { this.val = val; this.next = next; }
+    }
+
+    static ListNode fromList(int... values) {
+        if (values.length == 0) return null;
+        ListNode head = new ListNode(values[0]);
+        ListNode cur = head;
+        for (int i = 1; i < values.length; i++) {
+            cur.next = new ListNode(values[i]);
+            cur = cur.next;
+        }
+        return head;
+    }
+
+    static java.util.List<Integer> toList(ListNode head) {
+        java.util.List<Integer> out = new java.util.ArrayList<>();
+        while (head != null) { out.add(head.val); head = head.next; }
+        return out;
+    }
 
     static class Solution {
-        public ListNode[] kWayListSplit(ListNode head, int k) {
+        private int findLength(ListNode head) {
             int length = 0;
-            for (ListNode c = head; c != null; c = c.next) length++;
-            int baseSize = length / k;
-            int extra    = length % k;
-
-            ListNode[] parts = new ListNode[k];
-            ListNode current = head;
-            for (int i = 0; i < k && current != null; i++) {
-                parts[i] = current;
-                int size = baseSize + (extra > 0 ? 1 : 0);
-                for (int j = 1; j < size; j++) current = current.next;
-                ListNode next = current.next;
-                current.next  = null;
-                current       = next;
-                if (extra > 0) extra--;
+            while (head != null) {
+                length++;
+                head = head.next;
             }
+            return length;
+        }
+
+        public List<ListNode> kWayListSplit(ListNode head, int k) {
+
+            // Get total number of nodes
+            int length = findLength(head);
+
+            // Base size of each part
+            int partSize = length / k;
+
+            // Remainder to distribute among parts
+            int extraNodes = length % k;
+
+            // Result list to store part heads
+            List<ListNode> parts = new ArrayList<>(k);
+
+            // Pointer to traverse the list
+            ListNode current = head;
+
+            for (int i = 0; i < k; ++i) {
+
+                // Set the start of the current part
+                parts.add(current);
+
+                // Calculate the size for the current part
+                int currentPartSize = partSize + (extraNodes > 0 ? 1 : 0);
+
+                // Traverse `currentPartSize - 1` nodes ahead in the list
+                for (
+                    int j = 1;
+                    j < currentPartSize && current != null;
+                    ++j
+                ) {
+                    current = current.next;
+                }
+
+                // Move to the start of the next part, breaking the link
+                if (current != null) {
+                    ListNode nextPartHead = current.next;
+                    current.next = null;
+                    current = nextPartHead;
+                }
+
+                // Decrease `extraNodes` only if it was used for this part
+                if (extraNodes > 0) {
+                    extraNodes--;
+                }
+            }
+
             return parts;
         }
     }
 
     public static void main(String[] args) {
-        // [1, 2, 3, 4, 5, 6, 7, 8, 9, 10], k=3 -> [[1, 2, 3, 4], [5, 6, 7], [8, 9, 10]]
-        ListNode n1=new ListNode(1),n2=new ListNode(2),n3=new ListNode(3),n4=new ListNode(4),
-                 n5=new ListNode(5),n6=new ListNode(6),n7=new ListNode(7),n8=new ListNode(8),
-                 n9=new ListNode(9),n10=new ListNode(10);
-        n1.next=n2; n2.next=n3; n3.next=n4; n4.next=n5; n5.next=n6;
-        n6.next=n7; n7.next=n8; n8.next=n9; n9.next=n10;
-        ListNode[] parts = new Solution().kWayListSplit(n1, 3);
-        for (int i=0;i<3;i++) { for (ListNode c=parts[i];c!=null;c=c.next) System.out.print(c.val+" "); System.out.print("| "); }
-        // 1 2 3 4 | 5 6 7 | 8 9 10 |
+        List<ListNode> r1 = new Solution().kWayListSplit(fromList(1, 2, 3), 5);
+        System.out.println(r1.stream().map(Main::toList).toList());  // [[1], [2], [3], [], []]
+
+        List<ListNode> r2 = new Solution().kWayListSplit(fromList(1, 2, 3, 4, 5, 6, 7, 8, 9, 10), 3);
+        System.out.println(r2.stream().map(Main::toList).toList());  // [[1, 2, 3, 4], [5, 6, 7], [8, 9, 10]]
+
+        // Edge cases
+        List<ListNode> r3 = new Solution().kWayListSplit(null, 3);
+        System.out.println(r3.stream().map(Main::toList).toList());  // [[], [], []]
+
+        List<ListNode> r4 = new Solution().kWayListSplit(fromList(1), 1);
+        System.out.println(r4.stream().map(Main::toList).toList());  // [[1]]
+
+        List<ListNode> r5 = new Solution().kWayListSplit(fromList(1, 2), 2);
+        System.out.println(r5.stream().map(Main::toList).toList());  // [[1], [2]]
+
+        List<ListNode> r6 = new Solution().kWayListSplit(fromList(1, 2, 3, 4, 5, 6), 2);
+        System.out.println(r6.stream().map(Main::toList).toList());  // [[1, 2, 3], [4, 5, 6]]
     }
 }
 ```
 
-```c run
-ListNode** kWayListSplitFn(ListNode *head, int k) {
-    int length = 0;
-    for (ListNode *c = head; c != NULL; c = c->next) length++;
-    int baseSize = length / k;
-    int extra    = length % k;
+</details>
+<details>
+<summary><h2>Final Takeaway</h2></summary>
 
-    ListNode **parts = (ListNode**)calloc(k, sizeof(ListNode*));
-    ListNode *current = head;
-    for (int i = 0; i < k && current != NULL; i++) {
-        parts[i] = current;
-        int size = baseSize + (extra > 0 ? 1 : 0);
-        for (int j = 1; j < size; j++) current = current->next;
-        ListNode *nxt  = current->next;
-        current->next  = NULL;
-        current        = nxt;
-        if (extra > 0) extra--;
-    }
-    return parts;
-}
-```
-
-```scala run
-class ListNode(var v: Int, var next: ListNode = null)
-
-object Main extends App {
-  class Solution {
-    def kWayListSplit(head: ListNode, k: Int): Array[ListNode] = {
-      var length = 0
-      var c = head
-      while (c != null) { length += 1; c = c.next }
-      val baseSize = length / k
-      var extra    = length % k
-
-      val parts = new Array[ListNode](k)
-      var current = head
-      var i = 0
-      while (i < k && current != null) {
-        parts(i) = current
-        val size = baseSize + (if (extra > 0) 1 else 0)
-        var j = 1
-        while (j < size) { current = current.next; j += 1 }
-        val nxt = current.next
-        current.next = null
-        current      = nxt
-        if (extra > 0) extra -= 1
-        i += 1
-      }
-      parts
-    }
-  }
-
-  // [1, 2, 3, 4, 5, 6, 7, 8, 9, 10], k=3 -> [[1, 2, 3, 4], [5, 6, 7], [8, 9, 10]]
-  val n10=new ListNode(10); val n9=new ListNode(9,n10); val n8=new ListNode(8,n9)
-  val n7=new ListNode(7,n8); val n6=new ListNode(6,n7); val n5=new ListNode(5,n6)
-  val n4=new ListNode(4,n5); val n3=new ListNode(3,n4); val n2=new ListNode(2,n3); val n1=new ListNode(1,n2)
-  val parts = new Solution().kWayListSplit(n1, 3)
-  for (i <- 0 until 3) { var cur = parts(i); while (cur != null) { print(s"${cur.v} "); cur = cur.next }; print("| ") }
-  // 1 2 3 4 | 5 6 7 | 8 9 10 |
-}
-```
-
-
-***
-
-## Final Takeaway
 
 The split pattern is a single template with a swappable classifier:
 
@@ -1576,3 +1513,5 @@ When you next see "split by rule", "bucket by hash", "round-robin distribute", "
 > Save <code>pivot = head.val</code> <em>before</em> the loop starts (you need it after the head itself gets routed). Then <code>classify(node) = 0 if node.val < pivot else 1</code>. Everything else is the standard 2-bucket template. This is also the partition step of quicksort on a linked list — a template with teeth.
 >
 > </details>
+
+</details>

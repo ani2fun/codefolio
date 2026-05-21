@@ -413,82 +413,35 @@ A recursive implementation is just a function whose body contains a call to itse
 That's it. There's no extra plumbing.
 
 
-```pseudocode
-function findPosition(n):
-    if n = 1:                        # base case — recursion must terminate somewhere
-        return 1
-    return 1 + findPosition(n − 1)   # ask the person ahead, then add 1
-```
-
 ```python run
 class Solution:
-    def find_position(self, n: int) -> int:
-        # Base case: the front of the line knows their answer.
-        # Without this branch, recursion never stops and the stack overflows.
+    def findPosition(self, n: int) -> int:
+        # Base case
         if n == 1:
             return 1
 
-        # Recursive case: ask the person ahead, add 1.
-        # The recursive call creates a new stack frame for find_position(n-1);
-        # control returns here only after that call resolves.
-        return 1 + self.find_position(n - 1)
-
+        return 1 + self.findPosition(n - 1)
 
 if __name__ == "__main__":
     sol = Solution()
-    print(sol.find_position(5))   # 5
+    print(sol.findPosition(4))
 ```
 
 ```java run
-public class Main {
-    static class Solution {
-        int findPosition(int n) {
-            // Base case — front of the line
-            if (n == 1) {
-                return 1;
-            }
-            // Recursive case: solve for the person ahead, add 1
-            return 1 + findPosition(n - 1);
+class Solution {
+    int findPosition(int n) {
+        // Base case
+        if (n == 1) {
+            return 1;
         }
+
+        return 1 + findPosition(n - 1);
     }
 
     public static void main(String[] args) {
         Solution sol = new Solution();
-        System.out.println(sol.findPosition(5));   // 5
+        System.out.println(sol.findPosition(4));
     }
-}
-```
-
-```c run
-#include <stdio.h>
-
-int find_position(int n) {
-    /* Base case: stops the recursion. WITHOUT this, every call would
-     * recurse forever and the process would crash with stack overflow. */
-    if (n == 1) {
-        return 1;
-    }
-    /* Recursive case: build the answer for n from the answer for n-1.
-     * The +1 is the "combine step" — each frame contributes 1 to the total. */
-    return 1 + find_position(n - 1);
-}
-
-int main(void) {
-    printf("%d\n", find_position(5));   /* 5 */
-    return 0;
-}
-```
-
-```scala run
-object Main extends App {
-  object Solution {
-    def findPosition(n: Int): Int = {
-      if (n == 1) 1                            // Base case
-      else 1 + findPosition(n - 1)             // Recursive case
-    }
-  }
-
-  println(Solution.findPosition(5))            // 5
 }
 ```
 
@@ -496,6 +449,8 @@ object Main extends App {
 > *Predict what <code>findPosition(0)</code> would return with the code as written. Does it crash? Loop forever? Give a wrong answer?*
 
 Calling `findPosition(0)` skips the base case (`n == 1` is false) and recurses to `findPosition(-1)`, then `findPosition(-2)`, then `findPosition(-3)` ... forever. In Python you hit `RecursionError`. In Java/Kotlin/Scala you get `StackOverflowError`. In C/C++/Rust you get a segfault. The fix is to either tighten the base case (`if n <= 1`) or to validate the input before the call. This is the kind of off-by-one that recursive code makes painfully easy to miss — drawing the tree (the previous chapter) catches it instantly because you can see the recursion never reaches a leaf.
+
+The runnable snippets above call `findPosition(4)`; the step-by-step trace below walks the slightly deeper `findPosition(5)` so every stage of the recursion is visible.
 
 ---
 
@@ -731,7 +686,7 @@ Recursion is a function whose body calls itself, anchored by a base case, that m
 
 You came in thinking recursion was a niche trick. You're leaving with the two pieces, the tree, the cost model, and the path through the next four pattern lessons.
 
-**Transfer challenge — try before the Head Recursion lesson:** Write a recursive function in any of the 10 languages above that computes the sum of the first `n` natural numbers (`sum(n) = 1 + 2 + ... + n`). Use exactly two pieces: a base case and a recursive relation. Three lines, including the base case.
+**Transfer challenge — try before the Head Recursion lesson:** Write a recursive function in either language above that computes the sum of the first `n` natural numbers (`sum(n) = 1 + 2 + ... + n`). Use exactly two pieces: a base case and a recursive relation. Three lines, including the base case.
 
 <details>
 <summary><strong>Answer — open after you've written it</strong></summary>

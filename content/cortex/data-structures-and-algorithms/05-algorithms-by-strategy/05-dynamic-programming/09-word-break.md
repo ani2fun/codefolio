@@ -191,7 +191,9 @@ Output: false                                  "is" never matches
 
 ---
 
-## Applying the Diagnostic Questions
+<details>
+<summary><h2>Applying the Diagnostic Questions</h2></summary>
+
 
 | # | Question | Answer |
 |---|---|---|
@@ -228,27 +230,13 @@ Same logic as palindrome partitioning. The left edge of the partition is pinned 
 
 **What breaks otherwise.** If we used AND, we'd require *every* split to be valid — vastly stricter, and almost always `false`.
 
----
+</details>
+<details>
+<summary><h2>The Solution</h2></summary>
 
-## The Solution
 
 The implementation uses `dp[i]` for the first `i` characters. `dp[0] = true` is the empty-prefix base case. We hoist the dictionary into a hash set before the loop.
 
-
-```pseudocode
-# dp[i] = true iff s[0..i−1] can be split into dictionary words.
-function wordBreak(s, wordDict):
-    n ← length(s)
-    wordSet ← Set built from wordDict             # O(L) lookup vs O(m·L) list scan
-    dp ← list of (n + 1) false values
-    dp[0] ← true                                   # empty prefix segments trivially
-    for i from 1 to n:
-        for j from 0 to i − 1:
-            if dp[j] AND substring of s from j to i − 1 is in wordSet:
-                dp[i] ← true
-                break                              # OR-aggregator early exit
-    return dp[n]
-```
 
 ```python run
 from typing import List
@@ -308,75 +296,7 @@ public class Main {
 }
 ```
 
-```c run
-#include <stdio.h>
-#include <string.h>
-#include <stdbool.h>
-
-bool dp[1001];
-
-bool word_in_dict(const char *s, int j, int i, const char *dict[], int m) {
-    int len = i - j;
-    for (int k = 0; k < m; k++) {
-        if ((int) strlen(dict[k]) == len && strncmp(s + j, dict[k], len) == 0) return true;
-    }
-    return false;
-}
-
-bool word_break(const char *s, const char *dict[], int m) {
-    int n = (int) strlen(s);
-    for (int i = 0; i <= n; i++) dp[i] = false;
-    dp[0] = true;
-    for (int i = 1; i <= n; i++) {
-        for (int j = 0; j < i; j++) {
-            if (dp[j] && word_in_dict(s, j, i, dict, m)) { dp[i] = true; break; }
-        }
-    }
-    return dp[n];
-}
-
-int main(void) {
-    const char *d1[] = {"code", "intuition"};
-    const char *d2[] = {"is", "phone"};
-    const char *d3[] = {"phone", "and"};
-    printf("%d\n", word_break("codeintuition", d1, 2));   // 1
-    printf("%d\n", word_break("phoneisphone",  d2, 2));   // 1
-    printf("%d\n", word_break("phoneisphone",  d3, 2));   // 0
-    return 0;
-}
-```
-
-```scala run
-object Main extends App {
-  class Solution {
-    def wordBreak(s: String, wordDict: List[String]): Boolean = {
-      val n = s.length
-      val dict = wordDict.toSet
-      val dp = Array.fill(n + 1)(false)
-      dp(0) = true
-      for (i <- 1 to n) {
-        var j = 0
-        var found = false
-        while (j < i && !found) {
-          if (dp(j) && dict.contains(s.substring(j, i))) {
-            dp(i) = true
-            found = true
-          }
-          j += 1
-        }
-      }
-      dp(n)
-    }
-  }
-
-  val sol = new Solution()
-  println(sol.wordBreak("codeintuition", List("code", "intuition")))  // true
-  println(sol.wordBreak("phoneisphone",  List("is", "phone")))        // true
-  println(sol.wordBreak("phoneisphone",  List("phone", "and")))       // false
-}
-```
-
-
+</details>
 <details>
 <summary><strong>Trace — s = "codeintuition", dict = {"code", "intuition"}</strong></summary>
 
@@ -398,10 +318,10 @@ Return dp[13] = true.
 ```
 
 </details>
+<details>
+<summary><h2>Solution &amp; Analysis</h2></summary>
 
----
-
-## Complexity Analysis
+### Complexity Analysis
 
 | Aspect | Cost | Why |
 |---|---|---|
@@ -410,9 +330,7 @@ Return dp[13] = true.
 
 The optimised inner loop bounds `j ∈ [i - L_max, i)`, dropping the algorithm to `O(n · L_max² )` time.
 
----
-
-## Edge Cases
+### Edge Cases
 
 | Case | Example | Expected | Reasoning |
 |---|---|---|---|
@@ -424,14 +342,16 @@ The optimised inner loop bounds `j ∈ [i - L_max, i)`, dropping the algorithm t
 | Word is a prefix of another | `"applepie"`, `["apple", "applepie"]` | `true` | Match `"applepie"` directly at `j = 0`. |
 | Long input, no match | `"abcdef"`, `["x"]` | `false` | All `dp[i]` stay false. |
 
----
+</details>
+<details>
+<summary><h2>Final Takeaway</h2></summary>
 
-## Final Takeaway
 
 Word break is the **boolean** twin of palindrome partitioning. The state stays 1D (we partition a prefix); only the predicate (hash-set lookup vs. palindrome check) and the aggregator (OR vs. min) change. Once you internalise this template — *fix the last piece, predicate-check it, recurse on the prefix* — you have a stencil that solves dozens of "split into satisfying pieces" problems with a single shape. **You didn't just solve word break. You learned that the predicate and the aggregator are the *only* two parts that change between problems in this family — everything else is mechanical.**
 
 > *Transfer challenge for the next lesson:* Drop the partition framing. Imagine you have a backpack with weight capacity `W` and a list of items, each with a weight and a value. You want the most valuable subset that fits. The shape of the recurrence flips: instead of "fix the last piece", you'll "consider one item at a time". Predict what the state looks like.
 
+</details>
 <details>
 <summary><strong>Answer</strong></summary>
 

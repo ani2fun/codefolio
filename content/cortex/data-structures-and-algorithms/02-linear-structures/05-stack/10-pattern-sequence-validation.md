@@ -91,108 +91,138 @@ Given a string `s` containing only `(`, `)`, `[`, `]`, `{`, `}`, return `true` i
 ### Example 3
 > -   **Input:** `s = "({{)[]"` → **Output:** `false`
 
-## Solution
+<details>
+<summary><h2>Solution</h2></summary>
 
 
-```pseudocode
-function parenthesesChecker(s):
-    pair ← { ')':'(', ']':'[', '}':'{' }
-    stack ← empty
-    for each ch in s:
-        if ch in "([{": push ch
-        else:
-            if stack empty OR top ≠ pair[ch]: return false
-            pop
-    return stack is empty
-```
 
 ```python run
-def parentheses_checker(s: str) -> bool:
-    pair = {')': '(', ']': '[', '}': '{'}
-    stack = []
-    for ch in s:
-        if ch in "([{":
-            stack.append(ch)
-        else:
-            if not stack or stack[-1] != pair[ch]:
-                return False
-            stack.pop()
-    return not stack
+from typing import List
 
-print(parentheses_checker("()"))         # True
-print(parentheses_checker("(({}))[]"))   # True
-print(parentheses_checker("({{)[]"))     # False
+class Solution:
+    def is_matching_pair(self, opening: str, closing: str) -> bool:
+        return (
+            (opening == "(" and closing == ")")
+            or (opening == "{" and closing == "}")
+            or (opening == "[" and closing == "]")
+        )
+
+    def parentheses_checker(self, s: str) -> bool:
+
+        # Create a stack to store the opening parentheses
+        stack: List[str] = []
+
+        # Iterate through each character in the string
+        for ch in s:
+
+            # If the character is an opening parenthesis, push it onto
+            # the stack
+            if ch == "(" or ch == "{" or ch == "[":
+
+                # Push opening parentheses onto the stack
+                stack.append(ch)
+
+            # If the character is a closing parenthesis
+            else:
+
+                # If the stack is empty, the closing parenthesis does
+                # not match the corresponding opening parenthesis
+                # Return false as the string is invalid
+                if not stack or not self.is_matching_pair(stack[-1], ch):
+                    return False
+
+                # Remove the corresponding opening parenthesis from the
+                # stack
+                stack.pop()
+
+        # If the stack is empty at the end, the string is valid
+        return not stack
+
+
+# Examples from the problem statement
+print(Solution().parentheses_checker("()"))          # True
+print(Solution().parentheses_checker("(({}))[]{"))  # False — extra open
+print(Solution().parentheses_checker("({{)[]{"))    # False
+
+# Edge cases
+print(Solution().parentheses_checker(""))            # True — empty string is valid
+print(Solution().parentheses_checker("("))           # False — unmatched open
+print(Solution().parentheses_checker(")"))           # False — unmatched close
+print(Solution().parentheses_checker("([{}])"))      # True
+print(Solution().parentheses_checker("([)]"))        # False — wrong order
+print(Solution().parentheses_checker("{[()]}"))      # True
 ```
 
 ```java run
 import java.util.*;
+
 public class Main {
-    static boolean parenthesesChecker(String s) {
-        Map<Character, Character> pair = Map.of(')', '(', ']', '[', '}', '{');
-        Deque<Character> st = new ArrayDeque<>();
-        for (char ch : s.toCharArray()) {
-            if (ch == '(' || ch == '[' || ch == '{') st.push(ch);
-            else {
-                if (st.isEmpty() || st.peek() != pair.get(ch)) return false;
-                st.pop();
+    static class Solution {
+        private boolean isMatchingPair(char opening, char closing) {
+            return (
+                (opening == '(' && closing == ')') ||
+                (opening == '{' && closing == '}') ||
+                (opening == '[' && closing == ']')
+            );
+        }
+
+        public boolean parenthesesChecker(String s) {
+
+            // Create a stack to store the opening parentheses
+            Stack<Character> stack = new Stack<>();
+
+            // Iterate through each character in the string
+            for (char ch : s.toCharArray()) {
+
+                // If the character is an opening parenthesis, push it onto
+                // the stack
+                if (ch == '(' || ch == '{' || ch == '[') {
+
+                    // Push opening parentheses onto the stack
+                    stack.push(ch);
+                }
+
+                // If the character is a closing parenthesis
+                else {
+
+                    // If the stack is empty, the closing parenthesis does
+                    // not match the corresponding opening parenthesis
+                    // Return false as the string is invalid
+                    if (
+                        stack.isEmpty() || !isMatchingPair(stack.peek(), ch)
+                    ) {
+                        return false;
+                    }
+
+                    // Remove the corresponding opening parenthesis from the
+                    // stack
+                    stack.pop();
+                }
             }
+
+            // If the stack is empty at the end, the string is valid
+            return stack.isEmpty();
         }
-        return st.isEmpty();
     }
+
     public static void main(String[] args) {
-        System.out.println(parenthesesChecker("()"));
-        System.out.println(parenthesesChecker("(({}))[]"));
-        System.out.println(parenthesesChecker("({{)[]"));
+        // Examples from the problem statement
+        System.out.println(new Solution().parenthesesChecker("()"));          // true
+        System.out.println(new Solution().parenthesesChecker("(({}))[]{"));  // false
+        System.out.println(new Solution().parenthesesChecker("({{)[]{"));    // false
+
+        // Edge cases
+        System.out.println(new Solution().parenthesesChecker(""));            // true
+        System.out.println(new Solution().parenthesesChecker("("));           // false
+        System.out.println(new Solution().parenthesesChecker(")"));           // false
+        System.out.println(new Solution().parenthesesChecker("([{}])"));      // true
+        System.out.println(new Solution().parenthesesChecker("([)]"));        // false
+        System.out.println(new Solution().parenthesesChecker("{[()]}"));      // true
     }
 }
 ```
 
-```c run
-#include <stdio.h>
-#include <stdbool.h>
-
-char match(char c) { return c == ')' ? '(' : (c == ']' ? '[' : '{'); }
-
-bool parentheses_checker(const char *s) {
-    char st[1024]; int top = -1;
-    for (; *s; s++) {
-        char c = *s;
-        if (c == '(' || c == '[' || c == '{') st[++top] = c;
-        else {
-            if (top < 0 || st[top] != match(c)) return false;
-            top--;
-        }
-    }
-    return top == -1;
-}
-int main() {
-    printf("%d %d %d\n",
-        parentheses_checker("()"),
-        parentheses_checker("(({}))[]"),
-        parentheses_checker("({{)[]"));
-}
-```
-
-```scala run
-import scala.collection.mutable
-def parenthesesChecker(s: String): Boolean = {
-  val pair = Map(')' -> '(', ']' -> '[', '}' -> '{')
-  val st = mutable.Stack[Char]()
-  for (ch <- s) {
-    if (ch == '(' || ch == '[' || ch == '{') st.push(ch)
-    else {
-      if (st.isEmpty || st.top != pair(ch)) return false
-      st.pop()
-    }
-  }
-  st.isEmpty
-}
-object Main extends App {
-  println(parenthesesChecker("()"))
-  println(parenthesesChecker("(({}))[]"))
-  println(parenthesesChecker("({{)[]"))
-}
-```
+</details>
 
 
 ***
@@ -212,7 +242,9 @@ Given a string `s` of `(` and `)` only, return the minimum number of insertions 
 ### Example 3
 > -   **Input:** `s = "(((())))"` → **Output:** `0`
 
-## Approach
+<details>
+<summary><h2>Approach</h2></summary>
+
 
 Walk the string with a stack of `(`s. For each `)`:
 
@@ -221,100 +253,129 @@ Walk the string with a stack of `(`s. For each `)`:
 
 At end of input, the stack holds every unmatched `(`. Each one needs an edit (insert a `)` after it or delete it). **Total edits = unmatched `(` left on stack + unmatched `)` counted on the fly.**
 
-## Solution
+</details>
+<details>
+<summary><h2>Solution</h2></summary>
 
 
-```pseudocode
-function minimumEdits(s):
-    stack ← empty; edits ← 0
-    for each c in s:
-        if c = '(': push c
-        else:
-            if stack not empty: pop   # matched pair
-            else: edits ← edits + 1  # unmatched ')'
-    return size(stack) + edits        # leftover '(' + unmatched ')'
-```
 
 ```python run
-def minimum_edits(s: str) -> int:
-    stack = []
-    edits = 0
-    for c in s:
-        if c == '(':
-            stack.append(c)
-        else:                              # closing
-            if stack and stack[-1] == '(':
-                stack.pop()
-            else:
-                edits += 1                  # unmatched ')'
-    return len(stack) + edits               # leftover '(' + unmatched ')'
+from typing import List
 
-print(minimum_edits("())"))         # 1
-print(minimum_edits("))"))          # 2
-print(minimum_edits("(((())))"))    # 0
+class Solution:
+    def minimum_edits(self, s: str) -> int:
+
+        # Stack to track unmatched '('
+        stack: List[str] = []
+
+        # Count of edits needed
+        edits: int = 0
+
+        for c in s:
+
+            # If '(', push to stack to find a match later
+            if c == "(":
+                stack.append(c)
+
+            # Else if ')', try to match with a '('
+            else:
+
+                # Found a ')', check for matching '('
+                if stack and stack[-1] == "(":
+
+                    # Found a match, pop the '(' from stack
+                    stack.pop()
+
+                # No matching '(', need an edit
+                else:
+
+                    # Need to insert a '(' before this ')' or delete
+                    # this ')' which counts as one edit
+                    edits += 1
+
+        # Any unmatched '(' in stack need to be closed with ')' edits
+        # plus the edits we made for unmatched ')'
+        return len(stack) + edits
+
+
+# Examples from the problem statement
+print(Solution().minimum_edits("())"))       # 1
+print(Solution().minimum_edits("))"))        # 2
+print(Solution().minimum_edits("(((())))"))  # 0
+
+# Edge cases
+print(Solution().minimum_edits(""))          # 0 — empty string is already valid
+print(Solution().minimum_edits("("))         # 1 — one unmatched open
+print(Solution().minimum_edits(")"))         # 1 — one unmatched close
+print(Solution().minimum_edits("()"))        # 0
+print(Solution().minimum_edits("(("))        # 2
+print(Solution().minimum_edits(")()("))      # 2
 ```
 
 ```java run
 import java.util.*;
+
 public class Main {
-    static int minimumEdits(String s) {
-        Deque<Character> st = new ArrayDeque<>();
-        int edits = 0;
-        for (char c : s.toCharArray()) {
-            if (c == '(') st.push(c);
-            else {
-                if (!st.isEmpty() && st.peek() == '(') st.pop();
-                else edits++;
+    static class Solution {
+        public int minimumEdits(String s) {
+
+            // Stack to track unmatched '('
+            Stack<Character> stack = new Stack<>();
+
+            // Count of edits needed
+            int edits = 0;
+
+            for (char c : s.toCharArray()) {
+
+                // If '(', push to stack to find a match later
+                if (c == '(') {
+                    stack.push(c);
+                }
+
+                // Else if ')', try to match with a '('
+                else {
+
+                    // Found a ')', check for matching '('
+                    if (!stack.isEmpty() && stack.peek() == '(') {
+
+                        // Found a match, pop the '(' from stack
+                        stack.pop();
+                    }
+
+                    // No matching '(', need an edit
+                    else {
+
+                        // Need to insert a '(' before this ')' or delete
+                        // this ')' which counts as one edit
+                        edits++;
+                    }
+                }
             }
+
+            // Any unmatched '(' in stack need to be closed with ')' edits
+            // plus the edits we made for unmatched ')'
+            return stack.size() + edits;
         }
-        return st.size() + edits;
     }
+
     public static void main(String[] args) {
-        System.out.println(minimumEdits("())"));
-        System.out.println(minimumEdits("))"));
-        System.out.println(minimumEdits("(((())))"));
+        // Examples from the problem statement
+        System.out.println(new Solution().minimumEdits("())"));       // 1
+        System.out.println(new Solution().minimumEdits("))"));        // 2
+        System.out.println(new Solution().minimumEdits("(((())))"));  // 0
+
+        // Edge cases
+        System.out.println(new Solution().minimumEdits(""));          // 0
+        System.out.println(new Solution().minimumEdits("("));         // 1
+        System.out.println(new Solution().minimumEdits(")"));         // 1
+        System.out.println(new Solution().minimumEdits("()"));        // 0
+        System.out.println(new Solution().minimumEdits("(("));        // 2
+        System.out.println(new Solution().minimumEdits(")()("));      // 2
     }
 }
 ```
 
-```c run
-#include <stdio.h>
-int minimum_edits(const char *s) {
-    int top = -1; int edits = 0;
-    for (; *s; s++) {
-        if (*s == '(') top++;             // push
-        else {
-            if (top >= 0) top--;           // matched pair
-            else edits++;
-        }
-    }
-    return (top + 1) + edits;
-}
-int main() {
-    printf("%d %d %d\n", minimum_edits("())"), minimum_edits("))"), minimum_edits("(((())))"));
-}
-```
-
-```scala run
-import scala.collection.mutable
-def minimumEdits(s: String): Int = {
-  val st = mutable.Stack[Char]()
-  var edits = 0
-  for (c <- s) {
-    if (c == '(') st.push(c)
-    else {
-      if (st.nonEmpty && st.top == '(') st.pop()
-      else edits += 1
-    }
-  }
-  st.size + edits
-}
-object Main extends App {
-  println(minimumEdits("())"))
-  println(minimumEdits("))"))
-  println(minimumEdits("(((())))"))
-}
-```
+</details>
 
 
 ***
@@ -334,7 +395,9 @@ Given a balanced expression `s` (containing operators, operands, and parentheses
 ### Example 3
 > -   **Input:** `s = "((2+3)+7)"` → **Output:** `false`
 
-## Approach
+<details>
+<summary><h2>Approach</h2></summary>
+
 
 Push every character except `)`. When you hit `)`, look at what was pushed *between* the most recent `(` and now. **If only operands and no operators are inside, the parens are redundant.** Equivalently: if the top of the stack is `(` *immediately* (i.e. zero operators between this `)` and its `(`), the pair is redundant.
 
@@ -342,111 +405,130 @@ But we should also detect `(((expr)))` — wrapping an already-parenthesised exp
 
 The simpler formulation that's used in the canonical solution: when `)` arrives, **if the top of the stack is `(`, redundant**. Otherwise pop until matching `(`, also pop the `(`. (This works because operators pushed between `(` and `)` keep the stack from being `(` directly.)
 
-## Solution
+</details>
+<details>
+<summary><h2>Solution</h2></summary>
 
 
-```pseudocode
-function redundantParentheses(s):
-    stack ← empty
-    for each ch in s:
-        if ch = ')':
-            if top = '(': return true     # nothing between '(' and ')' → redundant
-            while top ≠ '(': pop          # discard inner tokens
-            pop                           # discard '('
-        else: push ch
-    return false
-```
 
 ```python run
-def redundant_parentheses(s: str) -> bool:
-    if s == "()": return False
-    stack = []
-    for ch in s:
-        if ch == ')':
-            # If `(` is right on top, this pair contains nothing → redundant
-            if stack and stack[-1] == '(':
-                return True
-            # Otherwise pop everything until the matching `(`
-            while stack and stack[-1] != '(':
-                stack.pop()
-            stack.pop()                    # discard `(`
-        else:
-            stack.append(ch)
-    return False
+from typing import List
 
-print(redundant_parentheses("((2+3))+7"))   # True
-print(redundant_parentheses("(2+3)"))       # False
-print(redundant_parentheses("((2+3)+7)"))   # False
+class Solution:
+    def redundant_parentheses(self, s: str) -> bool:
+
+        # Edge case for single pair of parentheses
+        if s == "()":
+            return False
+
+        # Create a stack to store characters
+        stack: List[str] = []
+
+        # Iterate through each character in the string
+        for ch in s:
+
+            # If the character is a closing parenthesis
+            if ch == ")":
+
+                # If top of stack is an opening parenthesis, it's
+                # redundant
+                if stack and stack[-1] == "(":
+                    return True
+
+                # Pop elements until we find the corresponding '('
+                while stack and stack[-1] != "(":
+                    stack.pop()
+
+                # Pop the '(' as well
+                stack.pop()
+
+            # If the character is not a closing parenthesis, push it
+            # onto the stack
+            else:
+                stack.append(ch)
+
+        # No redundant parentheses found
+        return False
+
+
+# Examples from the problem statement
+print(Solution().redundant_parentheses("((2+3))+7"))   # True
+print(Solution().redundant_parentheses("(2+3)"))       # False
+print(Solution().redundant_parentheses("((2+3)+7)"))   # False
+
+# Edge cases
+print(Solution().redundant_parentheses("()"))          # False — edge case handled explicitly
+print(Solution().redundant_parentheses("(())"))        # True — empty inner parens
+print(Solution().redundant_parentheses("(a+b)"))       # False
+print(Solution().redundant_parentheses("((a+b))"))     # True
+print(Solution().redundant_parentheses("(a+(b+c))"))   # False
 ```
 
 ```java run
 import java.util.*;
+
 public class Main {
-    static boolean redundantParentheses(String s) {
-        if (s.equals("()")) return false;
-        Deque<Character> st = new ArrayDeque<>();
-        for (char ch : s.toCharArray()) {
-            if (ch == ')') {
-                if (!st.isEmpty() && st.peek() == '(') return true;
-                while (!st.isEmpty() && st.peek() != '(') st.pop();
-                if (!st.isEmpty()) st.pop();
-            } else st.push(ch);
+    static class Solution {
+        public boolean redundantParentheses(String s) {
+
+            // Edge case for single pair of parentheses
+            if ("()".equals(s)) {
+                return false;
+            }
+
+            // Create a stack to store characters
+            Stack<Character> stack = new Stack<>();
+
+            // Iterate through each character in the string
+            for (char ch : s.toCharArray()) {
+
+                // If the character is a closing parenthesis
+                if (ch == ')') {
+
+                    // If top of stack is an opening parenthesis, it's
+                    // redundant
+                    if (!stack.isEmpty() && stack.peek() == '(') {
+                        return true;
+                    }
+
+                    // Pop elements until we find the corresponding '('
+                    while (!stack.isEmpty() && stack.peek() != '(') {
+                        stack.pop();
+                    }
+
+                    // Pop the '(' as well
+                    stack.pop();
+                }
+
+                // If the character is not a closing parenthesis, push it
+                // onto the stack
+                else {
+                    stack.push(ch);
+                }
+            }
+
+            // No redundant parentheses found
+            return false;
         }
-        return false;
     }
+
     public static void main(String[] args) {
-        System.out.println(redundantParentheses("((2+3))+7"));
-        System.out.println(redundantParentheses("(2+3)"));
-        System.out.println(redundantParentheses("((2+3)+7)"));
+        // Examples from the problem statement
+        System.out.println(new Solution().redundantParentheses("((2+3))+7"));   // true
+        System.out.println(new Solution().redundantParentheses("(2+3)"));       // false
+        System.out.println(new Solution().redundantParentheses("((2+3)+7)"));   // false
+
+        // Edge cases
+        System.out.println(new Solution().redundantParentheses("()"));          // false
+        System.out.println(new Solution().redundantParentheses("(())"));        // true
+        System.out.println(new Solution().redundantParentheses("(a+b)"));       // false
+        System.out.println(new Solution().redundantParentheses("((a+b))"));     // true
+        System.out.println(new Solution().redundantParentheses("(a+(b+c))"));   // false
     }
 }
 ```
 
-```c run
-#include <stdio.h>
-#include <string.h>
-#include <stdbool.h>
-
-bool redundant_parentheses(const char *s) {
-    if (strcmp(s, "()") == 0) return false;
-    char st[1024]; int top = -1;
-    for (; *s; s++) {
-        if (*s == ')') {
-            if (top >= 0 && st[top] == '(') return true;
-            while (top >= 0 && st[top] != '(') top--;
-            if (top >= 0) top--;
-        } else st[++top] = *s;
-    }
-    return false;
-}
-int main() {
-    printf("%d %d %d\n",
-        redundant_parentheses("((2+3))+7"),
-        redundant_parentheses("(2+3)"),
-        redundant_parentheses("((2+3)+7)"));
-}
-```
-
-```scala run
-import scala.collection.mutable
-def redundantParentheses(s: String): Boolean = {
-  if (s == "()") return false
-  val st = mutable.Stack[Char]()
-  for (ch <- s) {
-    if (ch == ')') {
-      if (st.nonEmpty && st.top == '(') return true
-      while (st.nonEmpty && st.top != '(') st.pop()
-      if (st.nonEmpty) st.pop()
-    } else st.push(ch)
-  }
-  false
-}
-object Main extends App {
-  println(redundantParentheses("((2+3))+7"))
-  println(redundantParentheses("(2+3)"))
-  println(redundantParentheses("((2+3)+7)"))
-}
-```
+</details>
 
 
 ***
@@ -466,7 +548,9 @@ Given a string `s` of `(` and `)`, return the length of the **longest valid (bal
 ### Example 3
 > -   **Input:** `s = "(((("` → **Output:** `0`
 
-## Approach — index stack with sentinel
+<details>
+<summary><h2>Approach — index stack with sentinel</h2></summary>
+
 
 The trick is to push **indices** (not characters), starting with a sentinel `-1` at the bottom. The top of the stack always represents *the index just before the current valid substring started*. When we hit `(`: push its index. When we hit `)`: pop. If the stack is now empty (we popped the sentinel), push the current index as a *new sentinel* (no valid substring can include it). Otherwise, the new top is "one before the current valid run", so the current run length is `i − stack.top()`.
 
@@ -495,117 +579,128 @@ flowchart LR
 
 <p align="center"><strong>Balanced span — index stack with sentinel <code>-1</code>. The top is always "one before the current valid run". Pop on closer; if the stack drops to empty, the current index becomes the new sentinel (no run can cross an unmatched closer).</strong></p>
 
-## Solution
+</details>
+<details>
+<summary><h2>Solution</h2></summary>
 
 
-```pseudocode
-function balancedSpan(s):
-    stack ← [−1]         # sentinel: "one before the first valid run"
-    maxLen ← 0
-    for i from 0 to n − 1:
-        if s[i] = '(': push i
-        else:
-            pop
-            if stack empty: push i   # new sentinel; no run crosses an unmatched ')'
-            else: maxLen ← max(maxLen, i − top)
-    return maxLen
-```
 
 ```python run
-def balanced_span(s: str) -> int:
-    stack = [-1]                    # sentinel
-    max_len = 0
-    for i, c in enumerate(s):
-        if c == '(':
-            stack.append(i)
-        else:
-            stack.pop()
-            if not stack:
-                stack.append(i)     # new sentinel — no run crosses here
-            else:
-                max_len = max(max_len, i - stack[-1])
-    return max_len
+from typing import List
 
-print(balanced_span("((()()"))     # 4
-print(balanced_span("(()())(()"))  # 6
-print(balanced_span("(((("))       # 0
+class Solution:
+    def balanced_span(self, s: str) -> int:
+        stack = []
+        max_length = 0
+
+        # Push -1 to handle base case when there's no match
+        stack.append(-1)
+
+        for i in range(len(s)):
+
+            # If the character is an opening bracket push its index
+            # to the stack
+            if s[i] == "(":
+
+                # Push index of '('
+                stack.append(i)
+
+            # If the character is a closing bracket
+            else:
+
+                # Pop the last element
+                stack.pop()
+
+                # Push the current index if the stack is empty
+                if not stack:
+                    stack.append(i)
+
+                # Otherwise, calculate the length of the valid substring
+                else:
+                    max_length = max(max_length, i - stack[-1])
+
+        return max_length
+
+
+# Examples from the problem statement
+print(Solution().balanced_span("((()()"))    # 4
+print(Solution().balanced_span("(()())(()")) # 6
+print(Solution().balanced_span("(((("))      # 0
+
+# Edge cases
+print(Solution().balanced_span(""))          # 0 — empty string
+print(Solution().balanced_span("()"))        # 2
+print(Solution().balanced_span(")()"))       # 2
+print(Solution().balanced_span("(()"))       # 2
+print(Solution().balanced_span("()()"))      # 4
+print(Solution().balanced_span("))))"))      # 0
 ```
 
 ```java run
 import java.util.*;
+
 public class Main {
-    static int balancedSpan(String s) {
-        Deque<Integer> st = new ArrayDeque<>();
-        st.push(-1);
-        int max = 0;
-        for (int i = 0; i < s.length(); i++) {
-            if (s.charAt(i) == '(') st.push(i);
-            else {
-                st.pop();
-                if (st.isEmpty()) st.push(i);
-                else max = Math.max(max, i - st.peek());
+    static class Solution {
+        public int balancedSpan(String s) {
+            Stack<Integer> stack = new Stack<>();
+            int maxLength = 0;
+
+            // Push -1 to handle base case when there's no match
+            stack.push(-1);
+
+            for (int i = 0; i < s.length(); ++i) {
+
+                // If the character is an opening bracket push the index
+                // to the stack
+                if (s.charAt(i) == '(') {
+
+                    // Push index of '('
+                    stack.push(i);
+                }
+
+                // If the character is a closing bracket
+                else {
+
+                    // Pop the last element
+                    stack.pop();
+
+                    // Push the current index if the stack is empty
+                    if (stack.isEmpty()) {
+                        stack.push(i);
+                    }
+
+                    // Otherwise, calculate the length of the valid substring
+                    else {
+                        maxLength = Math.max(maxLength, i - stack.peek());
+                    }
+                }
             }
+
+            return maxLength;
         }
-        return max;
     }
+
     public static void main(String[] args) {
-        System.out.println(balancedSpan("((()("));
-        System.out.println(balancedSpan("(()())(()"));
-        System.out.println(balancedSpan("(((("));
+        // Examples from the problem statement
+        System.out.println(new Solution().balancedSpan("((()()"));    // 4
+        System.out.println(new Solution().balancedSpan("(()())(()"));  // 6
+        System.out.println(new Solution().balancedSpan("(((("));       // 0
+
+        // Edge cases
+        System.out.println(new Solution().balancedSpan(""));           // 0
+        System.out.println(new Solution().balancedSpan("()"));         // 2
+        System.out.println(new Solution().balancedSpan(")()"));        // 2
+        System.out.println(new Solution().balancedSpan("(()"));        // 2
+        System.out.println(new Solution().balancedSpan("()()"));       // 4
+        System.out.println(new Solution().balancedSpan("))))"));       // 0
     }
 }
 ```
 
-```c run
-#include <stdio.h>
-#include <string.h>
-int balanced_span(const char *s) {
-    int n = (int)strlen(s);
-    int st[1024]; int top = -1;
-    st[++top] = -1;
-    int max = 0;
-    for (int i = 0; i < n; i++) {
-        if (s[i] == '(') st[++top] = i;
-        else {
-            top--;
-            if (top < 0) st[++top] = i;
-            else { int len = i - st[top]; if (len > max) max = len; }
-        }
-    }
-    return max;
-}
-int main() {
-    printf("%d %d %d\n", balanced_span("((()("), balanced_span("(()())(()"), balanced_span("(((("));
-}
-```
+</details>
+<details>
+<summary><h2>Final Takeaway</h2></summary>
 
-```scala run
-import scala.collection.mutable
-def balancedSpan(s: String): Int = {
-  val st = mutable.Stack[Int]()
-  st.push(-1)
-  var max = 0
-  for (i <- s.indices) {
-    if (s(i) == '(') st.push(i)
-    else {
-      st.pop()
-      if (st.isEmpty) st.push(i)
-      else max = math.max(max, i - st.top)
-    }
-  }
-  max
-}
-object Main extends App {
-  println(balancedSpan("((()("))
-  println(balancedSpan("(()())(()"))
-  println(balancedSpan("(((("))
-}
-```
-
-
-***
-
-## Final Takeaway
 
 Three lessons:
 
@@ -614,3 +709,5 @@ Three lessons:
 3. **A sentinel `-1` makes the boundary case disappear.** Pre-pushing `-1` on the balanced-span stack means *every* `i − stack.top()` calculation works even at the start of input, with no special-casing.
 
 > *Coming up — the **linear evaluation** pattern. The last problem-solving pattern in this section. It's the umbrella term for stack-based algorithms that build up an *answer* one element at a time by repeatedly popping until a condition is met, then pushing. Score-of-parentheses, decode-string, simplified-Unix-paths, and the asteroid collision problem all fall here.*
+
+</details>

@@ -109,15 +109,6 @@ The tree is never materialised. The array `bit[]` is the entire data structure.
 
 Walk *down* the tree by repeatedly subtracting the lowest set bit until reaching 0. At each step add the current cell to the running sum.
 
-```pseudocode
-function prefixSum(i):
-    s ← 0
-    while i > 0:
-        s ← s + bit[i]
-        i ← i − (i & −i)              # strip lowest set bit
-    return s
-```
-
 For `i = 13` (binary `1101`), the walk visits `13, 12, 8, 0`: subtract 1, then 4, then 8.
 
 `O(log n)` — at most one bit removed per iteration, so at most `log₂(i)` iterations.
@@ -126,23 +117,11 @@ For `i = 13` (binary `1101`), the walk visits `13, 12, 8, 0`: subtract 1, then 4
 
 Walk *up* the tree by repeatedly adding the lowest set bit until reaching beyond `n`. At each step add `delta` to the current cell.
 
-```pseudocode
-function update(i, delta):
-    while i ≤ n:
-        bit[i] ← bit[i] + delta
-        i ← i + (i & −i)              # add lowest set bit
-```
-
 For `i = 5` (binary `101`), the walk visits `5, 6, 8, 16, …`: add 1, then 2, then 8, …
 
 `O(log n)`.
 
 ## Range sum (`sum of A[l..r]`)
-
-```pseudocode
-function rangeSum(l, r):
-    return prefixSum(r) − prefixSum(l − 1)
-```
 
 `O(log n)` — two prefix-sum calls.
 
@@ -218,60 +197,6 @@ public class Main {
 }
 ```
 
-```c run
-#include <stdio.h>
-
-#define N 8
-long bit[N + 1];
-
-void update(int i, long delta) {
-    while (i <= N) { bit[i] += delta; i += i & -i; }
-}
-
-long prefix_sum(int i) {
-    long s = 0;
-    while (i > 0) { s += bit[i]; i -= i & -i; }
-    return s;
-}
-
-long range_sum(int l, int r) { return prefix_sum(r) - prefix_sum(l - 1); }
-
-int main(void) {
-    int A[] = {1, 2, 3, 4, 5, 6, 7, 8};
-    for (int i = 1; i <= N; i++) update(i, A[i - 1]);
-    printf("sum [1..8] = %ld\n", range_sum(1, 8));
-    update(5, 100);
-    printf("after A[5] += 100, sum [1..8] = %ld\n", range_sum(1, 8));
-    return 0;
-}
-```
-
-```scala run
-object Main extends App {
-  val n = 8
-  val bit = new Array[Long](n + 1)
-
-  def update(iIn: Int, delta: Long): Unit = {
-    var i = iIn
-    while (i <= n) { bit(i) += delta; i += i & -i }
-  }
-
-  def prefixSum(iIn: Int): Long = {
-    var i = iIn; var s = 0L
-    while (i > 0) { s += bit(i); i -= i & -i }
-    s
-  }
-
-  def rangeSum(l: Int, r: Int): Long = prefixSum(r) - prefixSum(l - 1)
-
-  val A = Array(1, 2, 3, 4, 5, 6, 7, 8)
-  for (i <- 1 to n) update(i, A(i - 1))
-  println(s"sum [1..8] = ${rangeSum(1, 8)}")
-  update(5, 100)
-  println(s"after A[5] += 100, sum [1..8] = ${rangeSum(1, 8)}")
-}
-```
-
 That's the entire structure. Six lines for `update`, six lines for `prefix_sum`, one line for `range_sum`. Compare to the segment tree, which needs hundreds of lines for the same functionality.
 
 ***
@@ -333,49 +258,42 @@ Click any question to reveal the answer.
 **A:** `i & (−i)` — isolates the lowest set bit of `i`.
 
 </details>
-
 <details>
 <summary><strong>Q:</strong> Update direction vs query direction?</summary>
 
 **A:** **Update** walks *up*: `i += i & −i` until past `n`. **Query** walks *down*: `i -= i & −i` until 0.
 
 </details>
-
 <details>
 <summary><strong>Q:</strong> Time complexity of update and prefix-sum query?</summary>
 
 **A:** Both `O(log n)`. Each step strips or adds one bit.
 
 </details>
-
 <details>
 <summary><strong>Q:</strong> Why is Fenwick 1-indexed?</summary>
 
 **A:** The `i & −i` trick relies on `i ≠ 0`. `bit[0]` is the loop's terminating sentinel.
 
 </details>
-
 <details>
 <summary><strong>Q:</strong> When can Fenwick replace segment tree?</summary>
 
 **A:** When the operation is *invertible* (sum, XOR, product mod prime) and you need point updates + prefix/range queries. Half the code, half the memory, half the constant factor.
 
 </details>
-
 <details>
 <summary><strong>Q:</strong> When can Fenwick <em>not</em> replace segment tree?</summary>
 
 **A:** Min, max, GCD — there's no "subtract a value" inverse. Range update + range query is also more natural in segment tree.
 
 </details>
-
 <details>
 <summary><strong>Q:</strong> Range sum from <code>l</code> to <code>r</code>?</summary>
 
 **A:** `prefix_sum(r) − prefix_sum(l − 1)`. Two prefix-sum calls, `O(log n)` total.
 
 </details>
-
 <details>
 <summary><strong>Q:</strong> Build cost from a length-<code>n</code> array — naive vs optimal?</summary>
 

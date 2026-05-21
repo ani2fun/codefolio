@@ -47,7 +47,9 @@ Implement a `MaxHeap` class **without using any built-in heap library**. The cla
 > - `getMax()` → returns `5`, heap unchanged
 > - `extractMax()` → returns `5`, heap = `[]`
 
-## The Strategy
+<details>
+<summary><h2>The Strategy</h2></summary>
+
 
 This is exactly the implementation we built in lesson 2, packaged as a class. The pieces:
 
@@ -59,42 +61,11 @@ This is exactly the implementation we built in lesson 2, packaged as a class. Th
 - **`getMax`** — read `heap[0]`.
 - **`extractMax`** — read `heap[0]`, then `remove(0)`.
 
-## The Solution
+</details>
+<details>
+<summary><h2>The Solution</h2></summary>
 
 
-```pseudocode
-class MaxHeap:
-    heap ← []
-
-    function upHeapify(index):
-        parent ← (index − 1) / 2
-        while index > 0 AND heap[parent] < heap[index]:
-            swap heap[index] and heap[parent]
-            index ← parent; parent ← (index − 1) / 2
-
-    function downHeapify(index):
-        n ← length(heap)
-        while true:
-            largest ← index; left ← 2*index+1; right ← 2*index+2
-            if left  < n AND heap[left]  > heap[largest]: largest ← left
-            if right < n AND heap[right] > heap[largest]: largest ← right
-            if largest = index: return
-            swap heap[index] and heap[largest]; index ← largest
-
-    function insert(val):
-        append val to heap; upHeapify(length(heap) − 1)
-
-    function remove(index):
-        last ← pop last element from heap
-        if index < length(heap):
-            heap[index] ← last; downHeapify(index)
-
-    function getMax(): return heap[0] if heap is NOT empty else −1
-
-    function extractMax():
-        if heap is empty: return −1
-        top ← heap[0]; remove(0); return top
-```
 
 ```python run
 from typing import List
@@ -103,46 +74,114 @@ class MaxHeap:
     def __init__(self) -> None:
         self.heap: List[int] = []
 
-    def _up_heapify(self, index: int) -> None:
-        # Restore heap rule going UP from index.
+    # Helper function to restore heap property upwards (used in insert)
+    def up_heapify(self, index: int) -> None:
         parent = (index - 1) // 2
         while index > 0 and self.heap[parent] < self.heap[index]:
-            self.heap[index], self.heap[parent] = self.heap[parent], self.heap[index]
-            index = parent
-            parent = (index - 1) // 2
+            self.heap[parent], self.heap[index] = (
+                self.heap[index],
+                self.heap[parent],
+            )
+            index, parent = parent, (parent - 1) // 2
 
-    def _down_heapify(self, index: int) -> None:
-        # Restore heap rule going DOWN from index.
-        n = len(self.heap)
-        while True:
-            largest = index
-            left, right = 2 * index + 1, 2 * index + 2
-            if left  < n and self.heap[left]  > self.heap[largest]: largest = left
-            if right < n and self.heap[right] > self.heap[largest]: largest = right
-            if largest == index:
-                return
-            self.heap[index], self.heap[largest] = self.heap[largest], self.heap[index]
-            index = largest
+    # Helper function to maintain the max heap property downwards
+    def down_heapify(self, index: int) -> None:
+        largest = index
+        left, right = 2 * index + 1, 2 * index + 2
+
+        # Find the largest among the node and its left child
+        if (
+            left < len(self.heap)
+            and self.heap[left] > self.heap[largest]
+        ):
+            largest = left
+
+        # Find the largest among the node and its right child
+        if (
+            right < len(self.heap)
+            and self.heap[right] > self.heap[largest]
+        ):
+            largest = right
+
+        # If the largest is not the current node, swap and continue
+        # heapify
+        if largest != index:
+            self.heap[index], self.heap[largest] = (
+                self.heap[largest],
+                self.heap[index],
+            )
+            self.down_heapify(largest)
 
     def insert(self, val: int) -> None:
+
+        # Insert the new value at the end of the heap
         self.heap.append(val)
-        self._up_heapify(len(self.heap) - 1)
+
+        # Get the index of the new value
+        index = len(self.heap) - 1
+
+        # Restore the max heap property by comparing with parent nodes
+        self.up_heapify(index)
 
     def remove(self, index: int) -> None:
-        last = self.heap.pop()
-        if index < len(self.heap):
-            self.heap[index] = last
-            self._down_heapify(index)
+
+        # Replace the value with the largest possible value and heapify
+        self.heap[index] = self.heap[-1]
+
+        # Remove the last node
+        self.heap.pop()
+
+        # Restore the max heap property
+        self.down_heapify(index)
 
     def get_max(self) -> int:
-        return self.heap[0] if self.heap else -1
+        if not self.heap:
+            return -1
+
+        # Return the root node
+        return self.heap[0]
 
     def extract_max(self) -> int:
         if not self.heap:
             return -1
-        top = self.heap[0]
+
+        # Extract the root node
+        root = self.heap[0]
+
+        # Delete the root node
         self.remove(0)
-        return top
+
+        # Return the extracted root node
+        return root
+
+
+# Example from the problem statement: [MaxHeap, insert, insert, remove, getMax, extractMax]
+mh = MaxHeap()
+mh.insert(5); mh.insert(3); mh.remove(1)
+print(mh.get_max())     # 5
+print(mh.extract_max()) # 5
+
+# Additional tests — push/pop sequence
+mh2 = MaxHeap()
+mh2.insert(1); mh2.insert(9); mh2.insert(4); mh2.insert(7)
+print(mh2.get_max())     # 9
+print(mh2.extract_max()) # 9
+print(mh2.get_max())     # 7
+
+# Edge cases
+mh3 = MaxHeap()
+print(mh3.get_max())     # -1 — empty heap
+print(mh3.extract_max()) # -1 — empty heap
+
+mh4 = MaxHeap()
+mh4.insert(42)
+print(mh4.get_max())     # 42 — single element
+print(mh4.extract_max()) # 42
+print(mh4.get_max())     # -1 — now empty
+
+mh5 = MaxHeap()
+mh5.insert(3); mh5.insert(3); mh5.insert(3)
+print(mh5.extract_max()) # 3 — all same
 ```
 
 ```java run
@@ -150,166 +189,134 @@ import java.util.*;
 
 public class Main {
     static class MaxHeap {
-        private final List<Integer> heap = new ArrayList<>();
+        private List<Integer> heap;
 
-        private void swap(int i, int j) { int t = heap.get(i); heap.set(i, heap.get(j)); heap.set(j, t); }
+        public MaxHeap() {
+            heap = new ArrayList<>();
+        }
 
+        private void swap(int i, int j) {
+            int temp = heap.get(i);
+            heap.set(i, heap.get(j));
+            heap.set(j, temp);
+        }
+
+        // Helper function to restore heap property upwards (used in insert)
         private void upHeapify(int index) {
             int parent = (index - 1) / 2;
             while (index > 0 && heap.get(parent) < heap.get(index)) {
-                swap(index, parent); index = parent; parent = (index - 1) / 2;
+                swap(index, parent);
+                index = parent;
+                parent = (index - 1) / 2;
             }
         }
 
+        // Helper function to maintain the max heap property downwards
         private void downHeapify(int index) {
-            int n = heap.size();
-            while (true) {
-                int largest = index;
-                int left = 2 * index + 1, right = 2 * index + 2;
-                if (left  < n && heap.get(left)  > heap.get(largest)) largest = left;
-                if (right < n && heap.get(right) > heap.get(largest)) largest = right;
-                if (largest == index) return;
+            int largest = index;
+            int left = 2 * index + 1;
+            int right = 2 * index + 2;
+
+            // Find the largest among the node and its left child
+            if (left < heap.size() && heap.get(left) > heap.get(largest)) {
+                largest = left;
+            }
+
+            // Find the largest among the node and its right child
+            if (right < heap.size() && heap.get(right) > heap.get(largest)) {
+                largest = right;
+            }
+
+            // If the largest is not the current node, swap and continue
+            // heapify
+            if (largest != index) {
                 swap(index, largest);
-                index = largest;
+                downHeapify(largest);
             }
         }
 
         public void insert(int val) {
+
+            // Insert the new value at the end of the heap
             heap.add(val);
-            upHeapify(heap.size() - 1);
+
+            // Get the index of the new value
+            int index = heap.size() - 1;
+
+            // Restore the max heap property by comparing with parent nodes
+            upHeapify(index);
         }
 
         public void remove(int index) {
-            int last = heap.remove(heap.size() - 1);
-            if (index < heap.size()) {
-                heap.set(index, last);
-                downHeapify(index);
-            }
+
+            // Replace the value with the largest possible value and heapify
+            heap.set(index, heap.get(heap.size() - 1));
+
+            // Remove the last node
+            heap.remove(heap.size() - 1);
+
+            // Restore the max heap property
+            downHeapify(index);
         }
 
-        public int getMax() { return heap.isEmpty() ? -1 : heap.get(0); }
+        public int getMax() {
+            if (heap.isEmpty()) {
+                return -1;
+            }
+
+            // Return the root node
+            return heap.get(0);
+        }
 
         public int extractMax() {
-            if (heap.isEmpty()) return -1;
-            int top = heap.get(0);
+            if (heap.isEmpty()) {
+                return -1;
+            }
+
+            // Extract the root node
+            int root = heap.get(0);
+
+            // Delete the root node
             remove(0);
-            return top;
+
+            // Return the extracted root node
+            return root;
         }
     }
 
     public static void main(String[] args) {
-        MaxHeap h = new MaxHeap();
-        for (int v : new int[]{3, 1, 4, 1, 5, 9}) h.insert(v);
-        System.out.println(h.getMax());      // 9
-        System.out.println(h.extractMax());  // 9
-        System.out.println(h.getMax());      // 5
+        // Example from the problem statement
+        MaxHeap mh = new MaxHeap();
+        mh.insert(5); mh.insert(3); mh.remove(1);
+        System.out.println(mh.getMax());     // 5
+        System.out.println(mh.extractMax()); // 5
+
+        // Additional tests — push/pop sequence
+        MaxHeap mh2 = new MaxHeap();
+        mh2.insert(1); mh2.insert(9); mh2.insert(4); mh2.insert(7);
+        System.out.println(mh2.getMax());     // 9
+        System.out.println(mh2.extractMax()); // 9
+        System.out.println(mh2.getMax());     // 7
+
+        // Edge cases
+        MaxHeap mh3 = new MaxHeap();
+        System.out.println(mh3.getMax());     // -1 — empty heap
+        System.out.println(mh3.extractMax()); // -1 — empty heap
+
+        MaxHeap mh4 = new MaxHeap();
+        mh4.insert(42);
+        System.out.println(mh4.getMax());     // 42 — single element
+        System.out.println(mh4.extractMax()); // 42
+        System.out.println(mh4.getMax());     // -1 — now empty
+
+        MaxHeap mh5 = new MaxHeap();
+        mh5.insert(3); mh5.insert(3); mh5.insert(3);
+        System.out.println(mh5.extractMax()); // 3 — all same
     }
 }
 ```
 
-```c run
-#include <stdlib.h>
-
-typedef struct { int *data; int size; int cap; } MaxHeap;
-
-static void mh_swap(int *a, int *b) { int t = *a; *a = *b; *b = t; }
-
-static void mh_up(MaxHeap *h, int index) {
-    int parent = (index - 1) / 2;
-    while (index > 0 && h->data[parent] < h->data[index]) {
-        mh_swap(&h->data[parent], &h->data[index]);
-        index = parent;
-        parent = (index - 1) / 2;
-    }
-}
-
-static void mh_down(MaxHeap *h, int index) {
-    while (1) {
-        int largest = index;
-        int left = 2 * index + 1, right = 2 * index + 2;
-        if (left  < h->size && h->data[left]  > h->data[largest]) largest = left;
-        if (right < h->size && h->data[right] > h->data[largest]) largest = right;
-        if (largest == index) return;
-        mh_swap(&h->data[index], &h->data[largest]);
-        index = largest;
-    }
-}
-
-MaxHeap *maxHeapCreate(void) { return calloc(1, sizeof(MaxHeap)); }
-
-void maxHeapInsert(MaxHeap *h, int val) {
-    if (h->size == h->cap) { h->cap = h->cap ? h->cap * 2 : 8; h->data = realloc(h->data, sizeof(int) * h->cap); }
-    h->data[h->size++] = val;
-    mh_up(h, h->size - 1);
-}
-
-void maxHeapRemove(MaxHeap *h, int index) {
-    int last = h->data[--h->size];
-    if (index < h->size) {
-        h->data[index] = last;
-        mh_down(h, index);
-    }
-}
-
-int maxHeapGetMax(MaxHeap *h) { return h->size == 0 ? -1 : h->data[0]; }
-
-int maxHeapExtractMax(MaxHeap *h) {
-    if (h->size == 0) return -1;
-    int top = h->data[0];
-    maxHeapRemove(h, 0);
-    return top;
-}
-
-void maxHeapFree(MaxHeap *h) { free(h->data); free(h); }
-```
-
-```scala run
-import scala.collection.mutable.ArrayBuffer
-
-object Main extends App {
-  class MaxHeap {
-    private val heap = ArrayBuffer.empty[Int]
-
-    private def swap(i: Int, j: Int): Unit = { val t = heap(i); heap(i) = heap(j); heap(j) = t }
-
-    private def upHeapify(start: Int): Unit = {
-      var index = start; var parent = (index - 1) / 2
-      while (index > 0 && heap(parent) < heap(index)) { swap(index, parent); index = parent; parent = (index - 1) / 2 }
-    }
-
-    private def downHeapify(start: Int): Unit = {
-      var index = start; val n = heap.length; var go = true
-      while (go) {
-        var largest = index
-        val left = 2 * index + 1; val right = 2 * index + 2
-        if (left  < n && heap(left)  > heap(largest)) largest = left
-        if (right < n && heap(right) > heap(largest)) largest = right
-        if (largest == index) go = false else { swap(index, largest); index = largest }
-      }
-    }
-
-    def insert(v: Int): Unit = { heap += v; upHeapify(heap.length - 1) }
-
-    def remove(index: Int): Unit = {
-      val last = heap.remove(heap.length - 1)
-      if (index < heap.length) { heap(index) = last; downHeapify(index) }
-    }
-
-    def getMax: Int = if (heap.isEmpty) -1 else heap(0)
-
-    def extractMax: Int = {
-      if (heap.isEmpty) -1
-      else { val top = heap(0); remove(0); top }
-    }
-  }
-
-  val h = new MaxHeap
-  Seq(3, 1, 4, 1, 5, 9).foreach(h.insert)
-  println(h.getMax)       // 9
-  println(h.extractMax)   // 9
-  println(h.getMax)       // 5
-}
-```
+</details>
 
 
 ***
@@ -332,92 +339,135 @@ Mirror image: implement a `MinHeap` class without built-in libraries. API:
 > - **Input args:** `[[], [5], [3], [1], [], []]`
 > - **Output:** `[null, null, null, null, 3, 3]`
 
-## The Strategy
+<details>
+<summary><h2>The Strategy</h2></summary>
+
 
 Identical to the max-heap, with `<` swapped for `>`. We name the helper "smallest" instead of "largest" for clarity, but the algorithm is mechanically the same.
 
-## The Solution
+</details>
+<details>
+<summary><h2>The Solution</h2></summary>
 
 
-```pseudocode
-class MinHeap:
-    heap ← []
-
-    function upHeapify(index):
-        parent ← (index − 1) / 2
-        while index > 0 AND heap[parent] > heap[index]:   # > for min-heap
-            swap heap[index] and heap[parent]
-            index ← parent; parent ← (index − 1) / 2
-
-    function downHeapify(index):
-        n ← length(heap)
-        while true:
-            smallest ← index; left ← 2*index+1; right ← 2*index+2
-            if left  < n AND heap[left]  < heap[smallest]: smallest ← left
-            if right < n AND heap[right] < heap[smallest]: smallest ← right
-            if smallest = index: return
-            swap heap[index] and heap[smallest]; index ← smallest
-
-    function insert(val):
-        append val to heap; upHeapify(length(heap) − 1)
-
-    function remove(index):
-        last ← pop last element from heap
-        if index < length(heap):
-            heap[index] ← last; downHeapify(index)
-
-    function getMin(): return heap[0] if heap is NOT empty else −1
-
-    function extractMin():
-        if heap is empty: return −1
-        top ← heap[0]; remove(0); return top
-```
 
 ```python run
 from typing import List
 
 class MinHeap:
-    def __init__(self) -> None:
+    def __init__(self):
         self.heap: List[int] = []
 
-    def _up_heapify(self, index: int) -> None:
+    # Helper function to restore heap property upwards (used in insert)
+    def up_heapify(self, index: int) -> None:
         parent = (index - 1) // 2
-        while index > 0 and self.heap[parent] > self.heap[index]:                # `>` for min-heap
-            self.heap[index], self.heap[parent] = self.heap[parent], self.heap[index]
+        while index > 0 and self.heap[parent] > self.heap[index]:
+            self.heap[index], self.heap[parent] = (
+                self.heap[parent],
+                self.heap[index],
+            )
             index = parent
             parent = (index - 1) // 2
 
-    def _down_heapify(self, index: int) -> None:
-        n = len(self.heap)
-        while True:
-            smallest = index
-            left, right = 2 * index + 1, 2 * index + 2
-            if left  < n and self.heap[left]  < self.heap[smallest]: smallest = left
-            if right < n and self.heap[right] < self.heap[smallest]: smallest = right
-            if smallest == index:
-                return
-            self.heap[index], self.heap[smallest] = self.heap[smallest], self.heap[index]
-            index = smallest
+    # Helper function to maintain the min heap property downwards
+    def down_heapify(self, index: int) -> None:
+        smallest = index
+        left = 2 * index + 1
+        right = 2 * index + 2
+
+        # Find the smallest among the node and its left child
+        if (
+            left < len(self.heap)
+            and self.heap[left] < self.heap[smallest]
+        ):
+            smallest = left
+
+        # Find the smallest among the node and its right child
+        if (
+            right < len(self.heap)
+            and self.heap[right] < self.heap[smallest]
+        ):
+            smallest = right
+
+        # If the smallest is not the current node, swap and continue
+        # heapify
+        if smallest != index:
+            self.heap[index], self.heap[smallest] = (
+                self.heap[smallest],
+                self.heap[index],
+            )
+            self.down_heapify(smallest)
 
     def insert(self, val: int) -> None:
+
+        # Insert the new value at the end of the heap
         self.heap.append(val)
-        self._up_heapify(len(self.heap) - 1)
+
+        # Get the index of the new value
+        index = len(self.heap) - 1
+
+        # Restore the min heap property by comparing with parent nodes
+        self.up_heapify(index)
 
     def remove(self, index: int) -> None:
-        last = self.heap.pop()
-        if index < len(self.heap):
-            self.heap[index] = last
-            self._down_heapify(index)
+
+        # Replace the value with the largest possible value and heapify
+        self.heap[index] = self.heap[-1]
+
+        # Remove the last node
+        self.heap.pop()
+
+        # Restore the min heap property
+        self.down_heapify(index)
 
     def get_min(self) -> int:
-        return self.heap[0] if self.heap else -1
+        if not self.heap:
+            return -1
+
+        # Return the root node
+        return self.heap[0]
 
     def extract_min(self) -> int:
         if not self.heap:
             return -1
-        top = self.heap[0]
+
+        # Extract the root node
+        root = self.heap[0]
+
+        # Delete the root node
         self.remove(0)
-        return top
+
+        # Return the extracted root node
+        return root
+
+
+# Example from the problem statement: [MinHeap, insert, insert, remove, getMin, extractMin]
+mh = MinHeap()
+mh.insert(5); mh.insert(3); mh.remove(1)
+print(mh.get_min())     # 3
+print(mh.extract_min()) # 3
+
+# Additional tests — push/pop sequence
+mh2 = MinHeap()
+mh2.insert(9); mh2.insert(1); mh2.insert(4); mh2.insert(7)
+print(mh2.get_min())     # 1
+print(mh2.extract_min()) # 1
+print(mh2.get_min())     # 4
+
+# Edge cases
+mh3 = MinHeap()
+print(mh3.get_min())     # -1 — empty heap
+print(mh3.extract_min()) # -1 — empty heap
+
+mh4 = MinHeap()
+mh4.insert(42)
+print(mh4.get_min())     # 42 — single element
+print(mh4.extract_min()) # 42
+print(mh4.get_min())     # -1 — now empty
+
+mh5 = MinHeap()
+mh5.insert(7); mh5.insert(7); mh5.insert(7)
+print(mh5.extract_min()) # 7 — all same
 ```
 
 ```java run
@@ -425,153 +475,134 @@ import java.util.*;
 
 public class Main {
     static class MinHeap {
-        private final List<Integer> heap = new ArrayList<>();
+        private ArrayList<Integer> heap;
 
-        private void swap(int i, int j) { int t = heap.get(i); heap.set(i, heap.get(j)); heap.set(j, t); }
+        public MinHeap() {
+            heap = new ArrayList<>();
+        }
 
+        // Helper function to restore heap property upwards (used in insert)
         private void upHeapify(int index) {
             int parent = (index - 1) / 2;
             while (index > 0 && heap.get(parent) > heap.get(index)) {
-                swap(index, parent); index = parent; parent = (index - 1) / 2;
+                int temp = heap.get(index);
+                heap.set(index, heap.get(parent));
+                heap.set(parent, temp);
+                index = parent;
+                parent = (index - 1) / 2;
             }
         }
 
+        // Helper function to maintain the min heap property downwards
         private void downHeapify(int index) {
-            int n = heap.size();
-            while (true) {
-                int smallest = index;
-                int left = 2 * index + 1, right = 2 * index + 2;
-                if (left  < n && heap.get(left)  < heap.get(smallest)) smallest = left;
-                if (right < n && heap.get(right) < heap.get(smallest)) smallest = right;
-                if (smallest == index) return;
-                swap(index, smallest); index = smallest;
+            int smallest = index;
+            int left = 2 * index + 1;
+            int right = 2 * index + 2;
+
+            // Find the smallest among the node and its left child
+            if (left < heap.size() && heap.get(left) < heap.get(smallest)) {
+                smallest = left;
+            }
+
+            // Find the smallest among the node and its right child
+            if (
+                right < heap.size() && heap.get(right) < heap.get(smallest)
+            ) {
+                smallest = right;
+            }
+
+            // If the smallest is not the current node, swap and continue
+            // heapify
+            if (smallest != index) {
+                int temp = heap.get(index);
+                heap.set(index, heap.get(smallest));
+                heap.set(smallest, temp);
+                downHeapify(smallest);
             }
         }
 
-        public void insert(int val) { heap.add(val); upHeapify(heap.size() - 1); }
+        public void insert(int val) {
+
+            // Insert the new value at the end of the heap
+            heap.add(val);
+
+            // Get the index of the new value
+            int index = heap.size() - 1;
+
+            // Restore the min heap property by comparing with parent nodes
+            upHeapify(index);
+        }
 
         public void remove(int index) {
-            int last = heap.remove(heap.size() - 1);
-            if (index < heap.size()) { heap.set(index, last); downHeapify(index); }
+
+            // Replace the value with the largest possible value and heapify
+            heap.set(index, heap.get(heap.size() - 1));
+
+            // Remove the last node
+            heap.remove(heap.size() - 1);
+
+            // Restore the min heap property
+            downHeapify(index);
         }
 
-        public int getMin() { return heap.isEmpty() ? -1 : heap.get(0); }
+        public int getMin() {
+            if (heap.isEmpty()) {
+                return -1;
+            }
+
+            // Return the root node
+            return heap.get(0);
+        }
 
         public int extractMin() {
-            if (heap.isEmpty()) return -1;
-            int top = heap.get(0); remove(0); return top;
+            if (heap.isEmpty()) {
+                return -1;
+            }
+
+            // Extract the root node
+            int root = heap.get(0);
+
+            // Delete the root node
+            remove(0);
+
+            // Return the extracted root node
+            return root;
         }
     }
 
     public static void main(String[] args) {
-        MinHeap h = new MinHeap();
-        for (int v : new int[]{3, 1, 4, 1, 5, 9}) h.insert(v);
-        System.out.println(h.getMin());      // 1
-        System.out.println(h.extractMin());  // 1
-        System.out.println(h.getMin());      // 1
+        // Example from the problem statement
+        MinHeap mh = new MinHeap();
+        mh.insert(5); mh.insert(3); mh.remove(1);
+        System.out.println(mh.getMin());     // 3
+        System.out.println(mh.extractMin()); // 3
+
+        // Additional tests — push/pop sequence
+        MinHeap mh2 = new MinHeap();
+        mh2.insert(9); mh2.insert(1); mh2.insert(4); mh2.insert(7);
+        System.out.println(mh2.getMin());     // 1
+        System.out.println(mh2.extractMin()); // 1
+        System.out.println(mh2.getMin());     // 4
+
+        // Edge cases
+        MinHeap mh3 = new MinHeap();
+        System.out.println(mh3.getMin());     // -1 — empty heap
+        System.out.println(mh3.extractMin()); // -1 — empty heap
+
+        MinHeap mh4 = new MinHeap();
+        mh4.insert(42);
+        System.out.println(mh4.getMin());     // 42 — single element
+        System.out.println(mh4.extractMin()); // 42
+        System.out.println(mh4.getMin());     // -1 — now empty
+
+        MinHeap mh5 = new MinHeap();
+        mh5.insert(7); mh5.insert(7); mh5.insert(7);
+        System.out.println(mh5.extractMin()); // 7 — all same
     }
 }
 ```
 
-```c run
-#include <stdlib.h>
-
-typedef struct { int *data; int size; int cap; } MinHeap;
-
-static void mh_swap2(int *a, int *b) { int t = *a; *a = *b; *b = t; }
-
-static void min_up(MinHeap *h, int index) {
-    int parent = (index - 1) / 2;
-    while (index > 0 && h->data[parent] > h->data[index]) {
-        mh_swap2(&h->data[parent], &h->data[index]);
-        index = parent;
-        parent = (index - 1) / 2;
-    }
-}
-
-static void min_down(MinHeap *h, int index) {
-    while (1) {
-        int smallest = index;
-        int left = 2 * index + 1, right = 2 * index + 2;
-        if (left  < h->size && h->data[left]  < h->data[smallest]) smallest = left;
-        if (right < h->size && h->data[right] < h->data[smallest]) smallest = right;
-        if (smallest == index) return;
-        mh_swap2(&h->data[index], &h->data[smallest]);
-        index = smallest;
-    }
-}
-
-MinHeap *minHeapCreate(void) { return calloc(1, sizeof(MinHeap)); }
-
-void minHeapInsert(MinHeap *h, int val) {
-    if (h->size == h->cap) { h->cap = h->cap ? h->cap * 2 : 8; h->data = realloc(h->data, sizeof(int) * h->cap); }
-    h->data[h->size++] = val;
-    min_up(h, h->size - 1);
-}
-
-void minHeapRemove(MinHeap *h, int index) {
-    int last = h->data[--h->size];
-    if (index < h->size) { h->data[index] = last; min_down(h, index); }
-}
-
-int minHeapGetMin(MinHeap *h) { return h->size == 0 ? -1 : h->data[0]; }
-
-int minHeapExtractMin(MinHeap *h) {
-    if (h->size == 0) return -1;
-    int top = h->data[0];
-    minHeapRemove(h, 0);
-    return top;
-}
-
-void minHeapFree(MinHeap *h) { free(h->data); free(h); }
-```
-
-```scala run
-import scala.collection.mutable.ArrayBuffer
-
-object Main extends App {
-  class MinHeap {
-    private val heap = ArrayBuffer.empty[Int]
-
-    private def swap(i: Int, j: Int): Unit = { val t = heap(i); heap(i) = heap(j); heap(j) = t }
-
-    private def upHeapify(start: Int): Unit = {
-      var index = start; var parent = (index - 1) / 2
-      while (index > 0 && heap(parent) > heap(index)) { swap(index, parent); index = parent; parent = (index - 1) / 2 }
-    }
-
-    private def downHeapify(start: Int): Unit = {
-      var index = start; val n = heap.length; var go = true
-      while (go) {
-        var smallest = index
-        val left = 2 * index + 1; val right = 2 * index + 2
-        if (left  < n && heap(left)  < heap(smallest)) smallest = left
-        if (right < n && heap(right) < heap(smallest)) smallest = right
-        if (smallest == index) go = false else { swap(index, smallest); index = smallest }
-      }
-    }
-
-    def insert(v: Int): Unit = { heap += v; upHeapify(heap.length - 1) }
-
-    def remove(index: Int): Unit = {
-      val last = heap.remove(heap.length - 1)
-      if (index < heap.length) { heap(index) = last; downHeapify(index) }
-    }
-
-    def getMin: Int = if (heap.isEmpty) -1 else heap(0)
-
-    def extractMin: Int = {
-      if (heap.isEmpty) -1 else { val top = heap(0); remove(0); top }
-    }
-  }
-
-  val h = new MinHeap
-  Seq(3, 1, 4, 1, 5, 9).foreach(h.insert)
-  println(h.getMin)       // 1
-  println(h.extractMin)   // 1
-  println(h.getMin)       // 1
-}
-```
+</details>
 
 
 ***
@@ -596,7 +627,9 @@ Implement a `MedianFinder` class that maintains the median of a *running stream*
 
 (With `[1, 2]` it would be `1.5`; with `[1, 2, 3, 4]` it would be `2.5`.)
 
-## The Strategy
+<details>
+<summary><h2>The Strategy</h2></summary>
+
 
 The naive approach maintains a sorted list and inserts in O(N) per `addNum` — too slow at scale. A heap-based approach gets us O(log N) per add and O(1) per median query.
 
@@ -686,57 +719,99 @@ Each step is O(log N), so `addNum` is O(log N) overall.
 
 If `lower.size > upper.size`, the median is `lower.top()` (count is odd). Otherwise the count is even and the median is the average of the two tops. **O(1)**.
 
-## The Solution
+</details>
+<details>
+<summary><h2>The Solution</h2></summary>
 
 
-```pseudocode
-class MedianFinder:
-    lower ← empty max-heap   # holds the smaller half
-    upper ← empty min-heap   # holds the larger half
-
-    function addNum(num):
-        push num onto lower                                    # 1. always push to the lower half first
-        if upper is NOT empty AND peek(lower) > peek(upper):  # 2. order rebalance: tops crossed
-            a ← pop from lower; b ← pop from upper
-            push b onto lower; push a onto upper
-        if size(lower) > size(upper) + 1:                     # 3. size rebalance: lower overfull
-            push (pop from lower) onto upper
-        else if size(upper) > size(lower):                     #    or upper overfull
-            push (pop from upper) onto lower
-
-    function findMedian():
-        if size(lower) > size(upper): return peek(lower)       # odd count → exact middle
-        return (peek(lower) + peek(upper)) / 2.0               # even count → average of two middles
-```
 
 ```python run
 import heapq
 
 class MedianFinder:
-    def __init__(self) -> None:
-        # Python heapq is min-only. Negate everything in `lower` to make it a max-heap.
-        self.lower: list = []  # max-heap (stored as negated values) — lower half
-        self.upper: list = []  # min-heap — upper half
+    def __init__(self):
+
+        # Stores the larger half of the numbers
+        self.min_heap = []
+
+        # Stores the smaller half of the numbers
+        self.max_heap = []
 
     def add_num(self, num: int) -> None:
-        # 1. Push to lower (max-heap).
-        heapq.heappush(self.lower, -num)
-        # 2. Order rebalance: if lower's top > upper's top, swap them.
-        if self.upper and -self.lower[0] > self.upper[0]:
-            largest_of_lower = -heapq.heappop(self.lower)
-            smallest_of_upper = heapq.heappop(self.upper)
-            heapq.heappush(self.lower, -smallest_of_upper)
-            heapq.heappush(self.upper, largest_of_lower)
-        # 3. Size rebalance: keep |lower| ∈ {|upper|, |upper| + 1}.
-        if len(self.lower) > len(self.upper) + 1:
-            heapq.heappush(self.upper, -heapq.heappop(self.lower))
-        elif len(self.upper) > len(self.lower):
-            heapq.heappush(self.lower, -heapq.heappop(self.upper))
+
+        # Add the number to the max heap (negated to simulate a max heap)
+        heapq.heappush(self.max_heap, -num)
+
+        # Balance the heaps to maintain the property:
+        # len(max_heap) >= len(min_heap)
+        # or
+        # or len(max_heap) == len(min_heap) + 1
+        if len(self.max_heap) > len(self.min_heap) + 1:
+
+            # The max heap has more elements, so we extract the largest
+            # element from it
+            largest = -heapq.heappop(self.max_heap)
+
+            # Add the largest element to the min heap
+            heapq.heappush(self.min_heap, largest)
+
+        # Balance the heaps to maintain the property:
+        # max_heap[0] <= min_heap[0]
+        if self.min_heap and -self.max_heap[0] > self.min_heap[0]:
+
+            # The max heap's top element is larger than the min heap's
+            # top element. Swap the elements to maintain the property
+
+            # Fetch the smallest element from the max heap
+            smallest = -heapq.heappop(self.max_heap)
+
+            # Fetch the largest element from the min heap
+            largest = heapq.heappop(self.min_heap)
+
+            # Swap the elements
+            heapq.heappush(self.max_heap, -largest)
+            heapq.heappush(self.min_heap, smallest)
 
     def find_median(self) -> float:
-        if len(self.lower) > len(self.upper):
-            return float(-self.lower[0])               # odd count → top of lower
-        return (-self.lower[0] + self.upper[0]) / 2.0  # even count → average of tops
+        if len(self.max_heap) > len(self.min_heap):
+
+            # The max heap has more elements, so the median is the top
+            # element of the max heap
+            return -self.max_heap[0]
+
+        # The max heap and min heap have the same number of elements
+        # Calculate the median as the average of the top elements of
+        # both heaps
+        return (-self.max_heap[0] + self.min_heap[0]) / 2
+
+
+# Example from the problem statement: add 1, 2, 4 → median = 2
+mf = MedianFinder()
+mf.add_num(1); mf.add_num(2); mf.add_num(4)
+print(mf.find_median())   # 2.0 — odd count, middle element
+
+# Even count — median is average of two middle
+mf2 = MedianFinder()
+mf2.add_num(1); mf2.add_num(2)
+print(mf2.find_median())  # 1.5
+
+# Streaming — check after each insertion
+mf3 = MedianFinder()
+mf3.add_num(5)
+print(mf3.find_median())  # 5.0
+mf3.add_num(3)
+print(mf3.find_median())  # 4.0
+mf3.add_num(8)
+print(mf3.find_median())  # 5.0
+
+# Edge cases
+mf4 = MedianFinder()
+mf4.add_num(1); mf4.add_num(1); mf4.add_num(1)
+print(mf4.find_median())  # 1.0 — all same
+
+mf5 = MedianFinder()
+mf5.add_num(100)
+print(mf5.find_median())  # 100.0 — single element
 ```
 
 ```java run
@@ -744,96 +819,104 @@ import java.util.*;
 
 public class Main {
     static class MedianFinder {
-        private final PriorityQueue<Integer> lower = new PriorityQueue<>(Comparator.reverseOrder());   // max-heap
-        private final PriorityQueue<Integer> upper = new PriorityQueue<>();                             // min-heap
+
+        // Stores the smaller half of the numbers
+        private PriorityQueue<Integer> maxHeap;
+
+        // Stores the larger half of the numbers
+        private PriorityQueue<Integer> minHeap;
+
+        private MedianFinder() {
+
+            // Use a max heap for the smaller half
+            maxHeap = new PriorityQueue<>(Collections.reverseOrder());
+
+            // Use a min heap for the larger half
+            minHeap = new PriorityQueue<>();
+        }
 
         public void addNum(int num) {
-            lower.add(num);
-            if (!upper.isEmpty() && lower.peek() > upper.peek()) {                                       // order rebalance
-                int a = lower.poll(), b = upper.poll();
-                lower.add(b); upper.add(a);
+
+            // Add the number to the max heap
+            maxHeap.add(num);
+
+            // Balance the heaps to maintain the property:
+            // maxHeap.size() >= minHeap.size()
+            // or
+            // maxHeap.size() == minHeap.size() + 1
+            if (maxHeap.size() > minHeap.size() + 1) {
+
+                // The max heap has more elements, so we extract the largest
+                // element from it
+                int largest = maxHeap.poll();
+
+                // Add the largest element to the min heap
+                minHeap.add(largest);
             }
-            if (lower.size() > upper.size() + 1) upper.add(lower.poll());                                // size rebalance
-            else if (upper.size() > lower.size()) lower.add(upper.poll());
+
+            // Balance the heaps to maintain the property:
+            // maxHeap.peek() <= minHeap.peek()
+            if (!minHeap.isEmpty() && maxHeap.peek() > minHeap.peek()) {
+
+                // The max heap's top element is larger than the min heap's
+                // top element. Swap the elements to maintain the property
+
+                // Fetch the smallest element from the max heap
+                int smallest = maxHeap.poll();
+
+                // Fetch the largest element from the min heap
+                int largest = minHeap.poll();
+
+                // Swap the elements
+                maxHeap.add(largest);
+                minHeap.add(smallest);
+            }
         }
 
         public double findMedian() {
-            if (lower.size() > upper.size()) return lower.peek();
-            return (lower.peek() + upper.peek()) / 2.0;
+            if (maxHeap.size() > minHeap.size()) {
+
+                // The max heap has more elements, so the median is the top
+                // element of the max heap
+                return maxHeap.peek();
+            }
+
+            // The max heap and min heap have the same number of elements
+            // Calculate the median as the average of the top elements of
+            // both heaps
+            return (maxHeap.peek() + minHeap.peek()) / 2.0;
         }
     }
 
     public static void main(String[] args) {
+        // Example from the problem statement: add 1, 2, 4 → median = 2
         MedianFinder mf = new MedianFinder();
         mf.addNum(1); mf.addNum(2); mf.addNum(4);
-        System.out.println(mf.findMedian());  // 2.0
+        System.out.println(mf.findMedian());   // 2.0 — odd count, middle element
+
+        // Even count — median is average of two middle
+        MedianFinder mf2 = new MedianFinder();
+        mf2.addNum(1); mf2.addNum(2);
+        System.out.println(mf2.findMedian());  // 1.5
+
+        // Streaming — check after each insertion
+        MedianFinder mf3 = new MedianFinder();
+        mf3.addNum(5);
+        System.out.println(mf3.findMedian());  // 5.0
+        mf3.addNum(3);
+        System.out.println(mf3.findMedian());  // 4.0
+        mf3.addNum(8);
+        System.out.println(mf3.findMedian());  // 5.0
+
+        // Edge cases
+        MedianFinder mf4 = new MedianFinder();
+        mf4.addNum(1); mf4.addNum(1); mf4.addNum(1);
+        System.out.println(mf4.findMedian());  // 1.0 — all same
+
+        MedianFinder mf5 = new MedianFinder();
+        mf5.addNum(100);
+        System.out.println(mf5.findMedian());  // 100.0 — single element
     }
-}
-```
-
-```c run
-// Reuses MaxHeap/MinHeap from the previous two problems in this lesson.
-typedef struct {
-    MaxHeap *lower;   // max-heap on smaller half
-    MinHeap *upper;   // min-heap on larger half
-} MedianFinder;
-
-MedianFinder *medianFinderCreate(void) {
-    MedianFinder *m = malloc(sizeof(*m));
-    m->lower = maxHeapCreate();
-    m->upper = minHeapCreate();
-    return m;
-}
-
-void medianFinderAddNum(MedianFinder *m, int num) {
-    maxHeapInsert(m->lower, num);
-    if (m->upper->size && maxHeapGetMax(m->lower) > minHeapGetMin(m->upper)) {                       // order rebalance
-        int a = maxHeapExtractMax(m->lower);
-        int b = minHeapExtractMin(m->upper);
-        maxHeapInsert(m->lower, b);
-        minHeapInsert(m->upper, a);
-    }
-    if (m->lower->size > m->upper->size + 1) {                                                       // size rebalance
-        minHeapInsert(m->upper, maxHeapExtractMax(m->lower));
-    } else if (m->upper->size > m->lower->size) {
-        maxHeapInsert(m->lower, minHeapExtractMin(m->upper));
-    }
-}
-
-double medianFinderFindMedian(MedianFinder *m) {
-    if (m->lower->size > m->upper->size) return (double)maxHeapGetMax(m->lower);
-    return (maxHeapGetMax(m->lower) + minHeapGetMin(m->upper)) / 2.0;
-}
-
-void medianFinderFree(MedianFinder *m) { maxHeapFree(m->lower); minHeapFree(m->upper); free(m); }
-```
-
-```scala run
-import scala.collection.mutable.PriorityQueue
-
-object Main extends App {
-  class MedianFinder {
-    private val lower = PriorityQueue.empty[Int]                                                             // max-heap (default)
-    private val upper = PriorityQueue.empty[Int](Ordering[Int].reverse)                                       // min-heap
-
-    def addNum(num: Int): Unit = {
-      lower.enqueue(num)
-      if (upper.nonEmpty && lower.head > upper.head) {                                                        // order rebalance
-        val a = lower.dequeue(); val b = upper.dequeue()
-        lower.enqueue(b); upper.enqueue(a)
-      }
-      if (lower.size > upper.size + 1) upper.enqueue(lower.dequeue())                                          // size rebalance
-      else if (upper.size > lower.size) lower.enqueue(upper.dequeue())
-    }
-
-    def findMedian: Double =
-      if (lower.size > upper.size) lower.head.toDouble
-      else (lower.head + upper.head) / 2.0
-  }
-
-  val mf = new MedianFinder
-  mf.addNum(1); mf.addNum(2); mf.addNum(4)
-  println(mf.findMedian)  // 2.0
 }
 ```
 
@@ -871,9 +954,10 @@ Result: 2.0 ✓
 
 </details>
 
-***
+</details>
+<details>
+<summary><h2>Final Takeaway</h2></summary>
 
-## Final Takeaway
 
 You've now built three pieces of heap-based machinery from scratch: a max-heap, a min-heap, and the **two-heap median finder** — the canonical illustration of how to compose two heaps into a higher-level data structure.
 
@@ -890,3 +974,5 @@ Three closing patterns from the chapter:
 3. **Custom orderings via comparators.** Once you can plug in a comparator, the heap works on records, structs, distances, frequencies, anything totally ordered. The same five operations cover them all.
 
 The next chapter takes the heap's "implicit tree in an array" idea even further: **graphs** — the most general structure of all, where nodes connect to arbitrary other nodes and the heap reappears as the workhorse inside Dijkstra, Prim, A*, and every weighted-shortest-path algorithm.
+
+</details>

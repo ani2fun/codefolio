@@ -256,42 +256,36 @@ Click any question to reveal the answer.
 **A:** **BST** ordered on keys; **max-heap** ordered on (random) priorities.
 
 </details>
-
 <details>
 <summary><strong>Q:</strong> Expected complexity of insert/search/delete?</summary>
 
 **A:** All `O(log n)` expected. Worst case `O(n)` but exponentially unlikely.
 
 </details>
-
 <details>
 <summary><strong>Q:</strong> What gives the expected balance?</summary>
 
 **A:** Random priorities. Each random shape is equivalent to inserting in random order — expected height is `O(log n)`.
 
 </details>
-
 <details>
 <summary><strong>Q:</strong> Insert procedure?</summary>
 
 **A:** Standard BST insert; assign random priority. Rotate up while the new node's priority exceeds its parent's.
 
 </details>
-
 <details>
 <summary><strong>Q:</strong> Delete procedure?</summary>
 
 **A:** Find by key. Rotate down toward whichever child has higher priority (push the target node toward a leaf). Snip when leaf-reached.
 
 </details>
-
 <details>
 <summary><strong>Q:</strong> What's an implicit treap?</summary>
 
 **A:** A treap where the implicit "key" is each node's *in-order rank*, augmented with subtree size. Supports `split(t, k)`, `merge(a, b)`, `kth(k)` in `O(log n)` — array-like operations with logarithmic cost.
 
 </details>
-
 <details>
 <summary><strong>Q:</strong> Why are treaps rare in production but common in competitive programming?</summary>
 

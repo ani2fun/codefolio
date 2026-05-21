@@ -49,16 +49,6 @@ In practice, you tune Monte Carlo's error probability low enough to be irrelevan
 
 Standard quicksort with one change: *pick the pivot uniformly at random* from the subarray.
 
-```pseudocode
-function randomQuicksort(A, lo, hi):
-    if lo ≥ hi: return
-    pivotIdx ← random integer in [lo, hi]
-    swap A[pivotIdx] with A[hi]
-    p ← partition(A, lo, hi)                          # pivots A[hi] in place
-    randomQuicksort(A, lo, p − 1)
-    randomQuicksort(A, p + 1, hi)
-```
-
 **Expected time.** `O(n log n)`. The proof: each comparison happens between two specific elements `A[i] < A[j]` only if one of them is chosen as a pivot before any element in `(A[i], A[j])` is. The probability is `2 / (j - i + 1)`. Summing over all pairs gives an expected `O(n log n)` total comparisons.
 
 **Worst-case time.** `O(n²)` (the same pathological cases as deterministic quicksort), but the probability of hitting them with `n = 10⁶` is essentially zero.
@@ -70,17 +60,6 @@ The same trick fixes hash tables (random hash seeds), treaps (random priorities)
 # Randomized Quickselect
 
 Find the `k`-th smallest element of an array in *expected* `O(n)` time. (Deterministically `O(n)` is possible via the median-of-medians algorithm, but the constant factor is so much worse that randomised is the production choice.)
-
-```pseudocode
-function quickselect(A, lo, hi, k):
-    if lo = hi: return A[lo]
-    pivotIdx ← random integer in [lo, hi]
-    swap A[pivotIdx] with A[hi]
-    p ← partition(A, lo, hi)
-    if p = k: return A[p]
-    if p < k: return quickselect(A, p + 1, hi, k)
-    return quickselect(A, lo, p − 1, k)
-```
 
 **Expected time.** `O(n)`. The recurrence (informally): half the time the pivot lands in the "good" middle 50%, so the subarray shrinks by at least 25%. The expected size shrinks by a constant factor each call, giving `O(n)` total work. Formal analysis: `T(n) ≤ T(3n/4) + n` in expectation, gives `T(n) = O(n)`.
 
@@ -95,18 +74,6 @@ You're streaming a sequence of items, one at a time, and don't know how long the
 **Algorithm (reservoir sampling, k = 1):** keep the first item. For each subsequent item `x_i` (1-indexed), replace the current sample with `x_i` with probability `1/i`. After processing `n` items, every item has probability `1/n` of being the sample.
 
 **Algorithm (k items):** keep the first `k` items. For each subsequent item `x_i`, generate a random integer `j` in `[1, i]`. If `j ≤ k`, replace `sample[j-1]` with `x_i`. After processing, every item has probability `k/n`.
-
-```pseudocode
-function reservoirSample(stream, k):
-    sample ← first k items of stream
-    i ← k + 1
-    for each subsequent item x in stream:
-        j ← random integer in [1, i]
-        if j ≤ k:
-            sample[j − 1] ← x
-        i ← i + 1
-    return sample
-```
 
 **Cost.** `O(n)` time, `O(k)` space. The space is the magic: we never have to know `n` in advance, and we never have to store more than `k` items.
 
@@ -127,30 +94,6 @@ This is randomisation as defence: not for performance, but for *security*. The s
 ***
 
 # Implementation
-
-```pseudocode
-function quickselect(A, k):
-    lo, hi ← 0, length(A) − 1
-    while lo < hi:
-        pivotIdx ← random in [lo, hi]
-        swap A[pivotIdx] and A[hi]
-        p ← partition(A, lo, hi)
-        if p = k: return A[p]
-        if p < k: lo ← p + 1
-        else:     hi ← p − 1
-    return A[lo]
-
-function reservoirSample(stream, k):
-    sample ← []; i ← 0
-    for x in stream:
-        i ← i + 1
-        if i ≤ k:
-            sample.append(x)
-        else:
-            j ← random in [1, i]
-            if j ≤ k: sample[j − 1] ← x
-    return sample
-```
 
 ```python run
 import random
@@ -246,76 +189,6 @@ public class Main {
 }
 ```
 
-```c run
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-
-int partition(int *A, int lo, int hi) {
-    int pivot = A[hi], i = lo - 1;
-    for (int j = lo; j < hi; j++) {
-        if (A[j] <= pivot) { i++; int t = A[i]; A[i] = A[j]; A[j] = t; }
-    }
-    int t = A[i+1]; A[i+1] = A[hi]; A[hi] = t;
-    return i + 1;
-}
-
-int quickselect(int *A, int n, int k) {
-    int *B = malloc(n * sizeof(int));
-    memcpy(B, A, n * sizeof(int));
-    int lo = 0, hi = n - 1;
-    while (lo < hi) {
-        int pi = lo + rand() % (hi - lo + 1);
-        int t = B[pi]; B[pi] = B[hi]; B[hi] = t;
-        int p = partition(B, lo, hi);
-        if (p == k) { int r = B[p]; free(B); return r; }
-        if (p < k) lo = p + 1; else hi = p - 1;
-    }
-    int r = B[lo]; free(B); return r;
-}
-
-int main(void) {
-    srand(42);
-    int A[] = {3, 1, 4, 1, 5, 9, 2, 6, 5, 3, 5};
-    int n = 11;
-    for (int k = 0; k < n; k++) printf("k=%d: %d\n", k, quickselect(A, n, k));
-    return 0;
-}
-```
-
-```scala run
-import scala.util.Random
-
-object Main extends App {
-  private val rng = new Random(42)
-
-  def partition(A: Array[Int], lo: Int, hi: Int): Int = {
-    val pivot = A(hi); var i = lo - 1
-    for (j <- lo until hi if A(j) <= pivot) {
-      i += 1; val t = A(i); A(i) = A(j); A(j) = t
-    }
-    val t = A(i + 1); A(i + 1) = A(hi); A(hi) = t
-    i + 1
-  }
-
-  def quickselect(A: Array[Int], k: Int): Int = {
-    val B = A.clone()
-    var lo = 0; var hi = B.length - 1
-    while (lo < hi) {
-      val pi = lo + rng.nextInt(hi - lo + 1)
-      val t = B(pi); B(pi) = B(hi); B(hi) = t
-      val p = partition(B, lo, hi)
-      if (p == k) return B(p)
-      if (p < k) lo = p + 1 else hi = p - 1
-    }
-    B(lo)
-  }
-
-  val A = Array(3, 1, 4, 1, 5, 9, 2, 6, 5, 3, 5)
-  for (k <- A.indices) println(s"k=$k: ${quickselect(A, k)}")
-}
-```
-
 ***
 
 # Edge cases and pitfalls
@@ -375,49 +248,42 @@ Click any question to reveal the answer.
 **A:** **Monte Carlo:** always finishes in bounded time, may be *wrong* with bounded probability. **Las Vegas:** always *correct*, running time is a random variable with bounded expectation.
 
 </details>
-
 <details>
 <summary><strong>Q:</strong> Expected complexity of randomised quicksort?</summary>
 
 **A:** `O(n log n)` expected; `O(n²)` worst case. Probability of hitting worst case on `n = 10⁶` is essentially zero.
 
 </details>
-
 <details>
 <summary><strong>Q:</strong> Expected complexity of randomised quickselect?</summary>
 
 **A:** `O(n)` expected; `O(n²)` worst case. Used for `nth_element` in C++ STL.
 
 </details>
-
 <details>
 <summary><strong>Q:</strong> What is reservoir sampling?</summary>
 
 **A:** Pick `k` uniform-random items from a stream of unknown length using `O(k)` memory. Each new item replaces a random slot with probability `k/i`.
 
 </details>
-
 <details>
 <summary><strong>Q:</strong> Why do hash tables use random hash seeds?</summary>
 
 **A:** **HashDoS defence.** Without random seeding, an attacker who knows the hash function can craft keys that all collide, degrading lookup to `O(n)` per operation.
 
 </details>
-
 <details>
 <summary><strong>Q:</strong> Miller-Rabin primality testing — Monte Carlo or Las Vegas?</summary>
 
 **A:** Monte Carlo. False-positive probability is `< 4^-k` for `k` rounds. With 50 rounds, `< 10^-30` — below cosmic-ray bit-flip rate.
 
 </details>
-
 <details>
 <summary><strong>Q:</strong> Why is "power of two choices" load balancing better than random?</summary>
 
 **A:** Pick two random servers; route to the less-loaded. Maximum load grows as `log log n` instead of `log n / log log n` for plain random — exponentially better tail behaviour.
 
 </details>
-
 <details>
 <summary><strong>Q:</strong> Pseudo-random vs cryptographic random — when does the choice matter?</summary>
 

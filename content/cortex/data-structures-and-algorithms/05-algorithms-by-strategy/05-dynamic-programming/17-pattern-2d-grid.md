@@ -82,7 +82,9 @@ Input:  matrix = [[1, 2, 3],
 Output: 5                 Multiple longest paths; e.g. 1 → 2 → 3 → 6 → 9
 ```
 
-## The Recurrence — DFS with Memoization
+<details>
+<summary><h2>The Recurrence — DFS with Memoization</h2></summary>
+
 
 `dp[r][c]` = length of the longest strictly-ascending path *starting* at `(r, c)`. For each of the 4 neighbours `(r', c')` with `matrix[r'][c'] > matrix[r][c]`, recurse and take 1 plus that:
 ```
@@ -96,188 +98,203 @@ The natural fill order is *anti-topological* — from peaks downward — but the
 
 Because every edge points to a strictly greater value, no path can revisit a cell — that would require returning to a smaller value somewhere, contradicting monotonicity. The recursion DAG is acyclic, so DFS terminates after each cell is visited at most once.
 
-## The Solution
+</details>
+<details>
+<summary><h2>Solution &amp; Analysis</h2></summary>
 
-
-```pseudocode
-# Longest strictly increasing path on a grid. dp[r][c] memoizes the answer starting at (r, c).
-DIRS ← [(−1, 0), (1, 0), (0, −1), (0, 1)]
-
-function longestAscendingRoute(matrix):
-    if matrix is empty OR matrix[0] is empty: return 0
-    rows ← length(matrix); cols ← length(matrix[0])
-    dp ← rows × cols grid filled with −1
-    best ← 0
-    for r from 0 to rows − 1:
-        for c from 0 to cols − 1:
-            best ← max(best, dfs(matrix, r, c, dp, rows, cols))
-    return best
-
-function dfs(matrix, r, c, dp, rows, cols):
-    if dp[r][c] ≠ −1:
-        return dp[r][c]
-    best ← 1                                       # the cell itself counts as length 1
-    for each (dr, dc) in DIRS:
-        nr ← r + dr; nc ← c + dc
-        if 0 ≤ nr < rows AND 0 ≤ nc < cols AND matrix[nr][nc] > matrix[r][c]:
-            best ← max(best, 1 + dfs(matrix, nr, nc, dp, rows, cols))
-    dp[r][c] ← best
-    return best
-```
+### The Solution
 
 ```python run
 from typing import List
 
 class Solution:
+    def dfs(
+        self,
+        matrix: List[List[int]],
+        row: int,
+        col: int,
+        dp: List[List[int]],
+    ) -> int:
+        rows = len(matrix)
+        cols = len(matrix[0])
+
+        if dp[row][col] != -1:
+            return dp[row][col]
+
+        max_length = 1
+
+        # Array for row directions: up, right, down, left
+        dx = [-1, 0, 1, 0]
+
+        # Array for column directions: up, right, down, left
+        dy = [0, 1, 0, -1]
+
+        # Explore all four directions
+        for i in range(4):
+
+            # Get the new row index
+            new_row = row + dx[i]
+
+            # Get the new column index
+            new_col = col + dy[i]
+
+            # Check if the new position is within bounds and the value is
+            # greater than the current position
+            if (
+                new_row >= 0
+                and new_row < rows
+                and new_col >= 0
+                and new_col < cols
+                and matrix[new_row][new_col] > matrix[row][col]
+            ):
+
+                # Recursively call dfs and update max_length
+                max_length = max(
+                    max_length,
+                    1 + self.dfs(matrix, new_row, new_col, dp),
+                )
+
+        # Store the computed max_length for current position in the dp
+        # matrix
+        dp[row][col] = max_length
+        return max_length
+
     def longest_ascending_route(self, matrix: List[List[int]]) -> int:
-        if not matrix or not matrix[0]:
-            return 0
-        rows, cols = len(matrix), len(matrix[0])
-        # dp[r][c] = longest ascending path starting at (r, c).
-        dp: List[List[int]] = [[-1] * cols for _ in range(rows)]
-        directions = ((-1, 0), (1, 0), (0, -1), (0, 1))
+        rows = len(matrix)
+        cols = len(matrix[0])
 
-        def dfs(r: int, c: int) -> int:
-            if dp[r][c] != -1:
-                return dp[r][c]
-            best = 1                                 # The cell itself counts as length 1
-            for dr, dc in directions:
-                nr, nc = r + dr, c + dc
-                if 0 <= nr < rows and 0 <= nc < cols and matrix[nr][nc] > matrix[r][c]:
-                    best = max(best, 1 + dfs(nr, nc))
-            dp[r][c] = best
-            return best
+        # Initialize dp matrix with -1s
+        dp = [[-1] * cols for _ in range(rows)]
 
-        return max(dfs(r, c) for r in range(rows) for c in range(cols))
+        max_length = 0
+
+        for row in range(rows):
+            for col in range(cols):
+
+                # Call dfs for each position and update max_length
+                max_length = max(
+                    max_length, self.dfs(matrix, row, col, dp)
+                )
+
+        # Return the final max_length
+        return max_length
 
 
-if __name__ == "__main__":
-    sol = Solution()
-    print(sol.longest_ascending_route([[1, 2, 9], [5, 3, 8], [4, 6, 7]]))   # 7
-    print(sol.longest_ascending_route([[1, 2, 3], [4, 5, 6], [7, 8, 9]]))   # 5
+# Examples from the problem statement
+print(Solution().longest_ascending_route([[1, 2, 9], [5, 3, 8], [4, 6, 7]]))  # 7
+print(Solution().longest_ascending_route([[1, 2, 3], [4, 5, 6], [7, 8, 9]]))  # 5
+
+# Edge cases
+print(Solution().longest_ascending_route([[1]]))                               # 1  — 1x1
+print(Solution().longest_ascending_route([[1, 2]]))                            # 2  — 1x2
+print(Solution().longest_ascending_route([[9, 8, 7], [6, 5, 4], [3, 2, 1]])) # 9  — strictly decreasing grid
+print(Solution().longest_ascending_route([[1, 1], [1, 1]]))                    # 1  — all same
+print(Solution().longest_ascending_route([[3, 4, 5], [3, 2, 6], [2, 2, 1]])) # 4
 ```
 
 ```java run
+import java.util.*;
+
 public class Main {
     static class Solution {
-        private int[][] dp;
-        private int[][] mat;
-        private int rows, cols;
-        private final int[][] DIR = {{-1,0},{1,0},{0,-1},{0,1}};
+        private int dfs(int[][] matrix, int row, int col, int[][] dp) {
+            int rows = matrix.length;
+            int cols = matrix[0].length;
 
-        private int dfs(int r, int c) {
-            if (dp[r][c] != -1) return dp[r][c];
-            int best = 1;
-            for (int[] d : DIR) {
-                int nr = r + d[0], nc = c + d[1];
-                if (nr >= 0 && nr < rows && nc >= 0 && nc < cols && mat[nr][nc] > mat[r][c]) {
-                    best = Math.max(best, 1 + dfs(nr, nc));
+            if (dp[row][col] != -1) {
+                return dp[row][col];
+            }
+
+            int maxLength = 1;
+
+            // Array for row directions: up, right, down, left
+            int[] dx = { -1, 0, 1, 0 };
+
+            // Array for column directions: up, right, down, left
+            int[] dy = { 0, 1, 0, -1 };
+
+            // Explore all four directions
+            for (int i = 0; i < 4; i++) {
+
+                // Get the new row index
+                int newRow = row + dx[i];
+
+                // Get the new column index
+                int newCol = col + dy[i];
+
+                // Check if the new position is within bounds and the value
+                // is greater than the current position
+                if (
+                    newRow >= 0 &&
+                    newRow < rows &&
+                    newCol >= 0 &&
+                    newCol < cols &&
+                    matrix[newRow][newCol] > matrix[row][col]
+                ) {
+
+                    // Recursively call dfs and update maxLength
+                    maxLength = Math.max(
+                        maxLength,
+                        1 + dfs(matrix, newRow, newCol, dp)
+                    );
                 }
             }
-            dp[r][c] = best;
-            return best;
+
+            // Store the computed maxLength for current position in the dp
+            // matrix
+            dp[row][col] = maxLength;
+            return maxLength;
         }
 
         public int longestAscendingRoute(int[][] matrix) {
-            if (matrix.length == 0 || matrix[0].length == 0) return 0;
-            rows = matrix.length; cols = matrix[0].length; mat = matrix;
-            dp = new int[rows][cols];
-            for (int[] row : dp) java.util.Arrays.fill(row, -1);
-            int ans = 0;
-            for (int r = 0; r < rows; r++) for (int c = 0; c < cols; c++) ans = Math.max(ans, dfs(r, c));
-            return ans;
+            int rows = matrix.length;
+            int cols = matrix[0].length;
+
+            // Initialize dp matrix with -1s
+            int[][] dp = new int[rows][cols];
+            for (int[] row : dp) Arrays.fill(row, -1);
+
+            int maxLength = 0;
+
+            for (int row = 0; row < rows; row++) {
+                for (int col = 0; col < cols; col++) {
+
+                    // Call dfs for each position and update maxLength
+                    maxLength = Math.max(
+                        maxLength,
+                        dfs(matrix, row, col, dp)
+                    );
+                }
+            }
+
+            // Return the final maxLength
+            return maxLength;
         }
     }
 
     public static void main(String[] args) {
-        System.out.println(new Solution().longestAscendingRoute(new int[][]{{1,2,9},{5,3,8},{4,6,7}}));   // 7
+        // Examples from the problem statement
+        System.out.println(new Solution().longestAscendingRoute(new int[][]{{1,2,9},{5,3,8},{4,6,7}}));  // 7
+        System.out.println(new Solution().longestAscendingRoute(new int[][]{{1,2,3},{4,5,6},{7,8,9}}));  // 5
+
+        // Edge cases
+        System.out.println(new Solution().longestAscendingRoute(new int[][]{{1}}));                      // 1
+        System.out.println(new Solution().longestAscendingRoute(new int[][]{{1,2}}));                    // 2
+        System.out.println(new Solution().longestAscendingRoute(new int[][]{{9,8,7},{6,5,4},{3,2,1}})); // 9
+        System.out.println(new Solution().longestAscendingRoute(new int[][]{{1,1},{1,1}}));              // 1
+        System.out.println(new Solution().longestAscendingRoute(new int[][]{{3,4,5},{3,2,6},{2,2,1}})); // 4
     }
 }
 ```
 
-```c run
-#include <stdio.h>
-
-int dp[101][101];
-int rows_g, cols_g;
-int (*mat_g)[101];
-int dx_g[] = {-1, 1, 0, 0};
-int dy_g[] = {0, 0, -1, 1};
-
-int dfs(int r, int c) {
-    if (dp[r][c] != -1) return dp[r][c];
-    int best = 1;
-    for (int i = 0; i < 4; i++) {
-        int nr = r + dx_g[i], nc = c + dy_g[i];
-        if (nr >= 0 && nr < rows_g && nc >= 0 && nc < cols_g && mat_g[nr][nc] > mat_g[r][c]) {
-            int cand = 1 + dfs(nr, nc);
-            if (cand > best) best = cand;
-        }
-    }
-    dp[r][c] = best;
-    return best;
-}
-
-int longest_ascending_route(int matrix[][101], int rows, int cols) {
-    if (rows == 0 || cols == 0) return 0;
-    rows_g = rows; cols_g = cols; mat_g = matrix;
-    for (int r = 0; r < rows; r++) for (int c = 0; c < cols; c++) dp[r][c] = -1;
-    int ans = 0;
-    for (int r = 0; r < rows; r++) for (int c = 0; c < cols; c++) {
-        int v = dfs(r, c);
-        if (v > ans) ans = v;
-    }
-    return ans;
-}
-
-int main(void) {
-    int m[101][101] = {{1,2,9},{5,3,8},{4,6,7}};
-    printf("%d\n", longest_ascending_route(m, 3, 3));   /* 7 */
-    return 0;
-}
-```
-
-```scala run
-object Main extends App {
-  class Solution {
-    private var dp: Array[Array[Int]] = _
-    private var mat: Array[Array[Int]] = _
-    private var rows = 0; private var cols = 0
-    private val DR = Array(-1, 1, 0, 0); private val DC = Array(0, 0, -1, 1)
-
-    private def dfs(r: Int, c: Int): Int = {
-      if (dp(r)(c) != -1) return dp(r)(c)
-      var best = 1
-      for (i <- 0 until 4) {
-        val nr = r + DR(i); val nc = c + DC(i)
-        if (nr >= 0 && nr < rows && nc >= 0 && nc < cols && mat(nr)(nc) > mat(r)(c)) {
-          best = math.max(best, 1 + dfs(nr, nc))
-        }
-      }
-      dp(r)(c) = best; best
-    }
-
-    def longestAscendingRoute(matrix: Array[Array[Int]]): Int = {
-      if (matrix.isEmpty || matrix(0).isEmpty) return 0
-      rows = matrix.length; cols = matrix(0).length; mat = matrix
-      dp = Array.fill(rows, cols)(-1)
-      var ans = 0
-      for (r <- 0 until rows; c <- 0 until cols) ans = math.max(ans, dfs(r, c))
-      ans
-    }
-  }
-
-  println(new Solution().longestAscendingRoute(Array(Array(1,2,9), Array(5,3,8), Array(4,6,7))))   // 7
-}
-```
-
-
-## Complexity
+### Complexity
 
 | Aspect | Cost |
 |---|---|
 | Time | `O(rows × cols)` — each cell's DFS is O(1) thanks to memoization |
 | Space | `O(rows × cols)` for the memo table + recursion stack |
+
+</details>
 
 ***
 
@@ -301,7 +318,9 @@ Input:  grid = [[1, 1, 0, 0],
 Output: 4                       Multiple 2 × 2 squares
 ```
 
-## The Recurrence — Three-Neighbour Min Plus One
+<details>
+<summary><h2>The Recurrence — Three-Neighbour Min Plus One</h2></summary>
+
 
 `dp[r][c]` = side length of the largest square *whose bottom-right corner is* `(r, c)`. If `grid[r][c] = 0`, it can't be a corner: `dp[r][c] = 0`. If `grid[r][c] = 1`:
 ```
@@ -343,145 +362,137 @@ flowchart LR
 
 Min ensures the square is *fully* filled with 1s. If any of the three neighbours has a smaller largest-square, that's the binding constraint — extending beyond would require 1s in cells that aren't 1. Using max would let one good corner override missing cells elsewhere — wrong.
 
-## The Solution
+</details>
+<details>
+<summary><h2>Solution &amp; Analysis</h2></summary>
 
-
-```pseudocode
-# dp[r][c] = side length of the largest all-1 square whose bottom-right is (r, c).
-function largestSquareArea(matrix):
-    if matrix is empty OR matrix[0] is empty: return 0
-    rows ← length(matrix); cols ← length(matrix[0])
-    dp ← rows × cols grid of zeros
-    maxSide ← 0
-    for r from 0 to rows − 1:
-        for c from 0 to cols − 1:
-            if matrix[r][c] = 1:
-                if r = 0 OR c = 0:
-                    dp[r][c] ← 1                  # edge cells: largest square is 1×1
-                else:
-                    dp[r][c] ← 1 + min(dp[r − 1][c − 1], dp[r − 1][c], dp[r][c − 1])
-                maxSide ← max(maxSide, dp[r][c])
-    return maxSide × maxSide
-```
+### The Solution
 
 ```python run
 from typing import List
 
 class Solution:
     def largest_square_area(self, matrix: List[List[int]]) -> int:
-        if not matrix or not matrix[0]:
-            return 0
-        rows, cols = len(matrix), len(matrix[0])
+        rows: int = len(matrix)
+        cols: int = len(matrix[0])
+        max_size: int = 0
+
+        # Create a 2D dynamic programming table
         dp: List[List[int]] = [[0] * cols for _ in range(rows)]
-        max_side = 0
-        for r in range(rows):
-            for c in range(cols):
-                if matrix[r][c] == 1:
-                    if r == 0 or c == 0:
-                        dp[r][c] = 1                        # Edge cells: max square is 1 × 1
-                    else:
-                        dp[r][c] = 1 + min(dp[r - 1][c - 1], dp[r - 1][c], dp[r][c - 1])
-                    if dp[r][c] > max_side:
-                        max_side = dp[r][c]
-        return max_side * max_side
+
+        # Fill the first row and column of the dp table
+        for row in range(rows):
+            dp[row][0] = matrix[row][0]
+            max_size = max(max_size, dp[row][0])
+
+        for col in range(cols):
+            dp[0][col] = matrix[0][col]
+            max_size = max(max_size, dp[0][col])
+
+        # Fill the remaining dp table using the recurrence relation
+        for row in range(1, rows):
+            for col in range(1, cols):
+                if matrix[row][col] == 1:
+
+                    # Calculate the size of the square submatrix ending
+                    # at (row, col) based on the sizes of the submatrices
+                    # ending at (row-1, col-1), (row-1, col), and (row,
+                    # col-1)
+                    dp[row][col] = (
+                        min(
+                            dp[row - 1][col - 1],
+                            min(dp[row - 1][col], dp[row][col - 1]),
+                        )
+                        + 1
+                    )
+                    max_size = max(max_size, dp[row][col])
+
+        return max_size * max_size
 
 
-if __name__ == "__main__":
-    sol = Solution()
-    print(sol.largest_square_area([[1, 1, 0, 0], [0, 0, 1, 1], [1, 0, 1, 1], [1, 0, 0, 0]]))   # 4
+# Examples from the problem statement
+print(Solution().largest_square_area([[1,1,0,0],[0,0,1,1],[1,0,1,1],[1,0,0,0]]))  # 4
+print(Solution().largest_square_area([[1,1,0,0],[0,1,1,1],[1,1,1,1],[1,0,0,0]]))  # 4
+
+# Edge cases
+print(Solution().largest_square_area([[1]]))                                       # 1  — 1x1 with 1
+print(Solution().largest_square_area([[0]]))                                       # 0  — 1x1 with 0
+print(Solution().largest_square_area([[0, 0], [0, 0]]))                            # 0  — all zeros
+print(Solution().largest_square_area([[1, 1], [1, 1]]))                            # 4  — all ones 2x2
+print(Solution().largest_square_area([[1, 0, 1], [0, 1, 0], [1, 0, 1]]))          # 1  — checkerboard
 ```
 
 ```java run
+import java.util.*;
+
 public class Main {
     static class Solution {
         public int largestSquareArea(int[][] matrix) {
-            if (matrix.length == 0 || matrix[0].length == 0) return 0;
-            int rows = matrix.length, cols = matrix[0].length;
+            int rows = matrix.length;
+            int cols = matrix[0].length;
+            int maxSize = 0;
+
+            // Create a 2D dynamic programming table
             int[][] dp = new int[rows][cols];
-            int maxSide = 0;
-            for (int r = 0; r < rows; r++) {
-                for (int c = 0; c < cols; c++) {
-                    if (matrix[r][c] == 1) {
-                        dp[r][c] = (r == 0 || c == 0) ? 1
-                                 : 1 + Math.min(dp[r-1][c-1], Math.min(dp[r-1][c], dp[r][c-1]));
-                        if (dp[r][c] > maxSide) maxSide = dp[r][c];
+
+            // Fill the first row and column of the dp table
+            for (int row = 0; row < rows; row++) {
+                dp[row][0] = matrix[row][0];
+                maxSize = Math.max(maxSize, dp[row][0]);
+            }
+
+            for (int col = 0; col < cols; col++) {
+                dp[0][col] = matrix[0][col];
+                maxSize = Math.max(maxSize, dp[0][col]);
+            }
+
+            // Fill the remaining dp table using the recurrence relation
+            for (int row = 1; row < rows; row++) {
+                for (int col = 1; col < cols; col++) {
+                    if (matrix[row][col] == 1) {
+
+                        // Calculate the size of the square submatrix ending
+                        // at (row, col) based on the sizes of the
+                        // submatrices ending at (row-1, col-1), (row-1,
+                        // col), and (row, col-1)
+                        dp[row][col] =
+                            Math.min(
+                                dp[row - 1][col - 1],
+                                Math.min(dp[row - 1][col], dp[row][col - 1])
+                            ) +
+                            1;
+                        maxSize = Math.max(maxSize, dp[row][col]);
                     }
                 }
             }
-            return maxSide * maxSide;
+
+            return maxSize * maxSize;
         }
     }
 
     public static void main(String[] args) {
-        int[][] g = {{1,1,0,0},{0,0,1,1},{1,0,1,1},{1,0,0,0}};
-        System.out.println(new Solution().largestSquareArea(g));   // 4
+        // Examples from the problem statement
+        System.out.println(new Solution().largestSquareArea(new int[][]{{1,1,0,0},{0,0,1,1},{1,0,1,1},{1,0,0,0}}));  // 4
+        System.out.println(new Solution().largestSquareArea(new int[][]{{1,1,0,0},{0,1,1,1},{1,1,1,1},{1,0,0,0}}));  // 4
+
+        // Edge cases
+        System.out.println(new Solution().largestSquareArea(new int[][]{{1}}));                                      // 1
+        System.out.println(new Solution().largestSquareArea(new int[][]{{0}}));                                      // 0
+        System.out.println(new Solution().largestSquareArea(new int[][]{{0,0},{0,0}}));                              // 0
+        System.out.println(new Solution().largestSquareArea(new int[][]{{1,1},{1,1}}));                              // 4
+        System.out.println(new Solution().largestSquareArea(new int[][]{{1,0,1},{0,1,0},{1,0,1}}));                  // 1
     }
 }
 ```
 
-```c run
-#include <stdio.h>
-
-int dp[1001][1001];
-
-int largest_square_area(int matrix[][1001], int rows, int cols) {
-    if (rows == 0 || cols == 0) return 0;
-    int max_side = 0;
-    for (int r = 0; r < rows; r++) for (int c = 0; c < cols; c++) dp[r][c] = 0;
-    for (int r = 0; r < rows; r++) {
-        for (int c = 0; c < cols; c++) {
-            if (matrix[r][c] == 1) {
-                if (r == 0 || c == 0) dp[r][c] = 1;
-                else {
-                    int m = dp[r-1][c-1];
-                    if (dp[r-1][c] < m) m = dp[r-1][c];
-                    if (dp[r][c-1] < m) m = dp[r][c-1];
-                    dp[r][c] = 1 + m;
-                }
-                if (dp[r][c] > max_side) max_side = dp[r][c];
-            }
-        }
-    }
-    return max_side * max_side;
-}
-
-int main(void) {
-    int g[4][1001] = {{1,1,0,0},{0,0,1,1},{1,0,1,1},{1,0,0,0}};
-    printf("%d\n", largest_square_area(g, 4, 4));   /* 4 */
-    return 0;
-}
-```
-
-```scala run
-object Main extends App {
-  class Solution {
-    def largestSquareArea(matrix: Array[Array[Int]]): Int = {
-      if (matrix.isEmpty || matrix(0).isEmpty) return 0
-      val rows = matrix.length; val cols = matrix(0).length
-      val dp = Array.fill(rows, cols)(0)
-      var maxSide = 0
-      for (r <- 0 until rows; c <- 0 until cols) {
-        if (matrix(r)(c) == 1) {
-          dp(r)(c) = if (r == 0 || c == 0) 1
-                     else 1 + math.min(dp(r-1)(c-1), math.min(dp(r-1)(c), dp(r)(c-1)))
-          if (dp(r)(c) > maxSide) maxSide = dp(r)(c)
-        }
-      }
-      maxSide * maxSide
-    }
-  }
-
-  println(new Solution().largestSquareArea(Array(Array(1,1,0,0), Array(0,0,1,1), Array(1,0,1,1), Array(1,0,0,0))))   // 4
-}
-```
-
-
-## Complexity
+### Complexity
 
 | Aspect | Cost |
 |---|---|
 | Time | `O(rows × cols)` |
 | Space | `O(rows × cols)` (reducible to `O(cols)` with rolling rows) |
+
+</details>
 
 ***
 
@@ -505,7 +516,9 @@ Input:  matrix = [[1, 2, 3],
 Output: 2                          Two paths sum to 21
 ```
 
-## The Recurrence — 3D State
+<details>
+<summary><h2>The Recurrence — 3D State</h2></summary>
+
 
 Add a third dimension to the standard "count paths to `(r, c)`" DP: the remaining budget. `dp[r][c][k]` = number of paths from `(0, 0)` to `(r, c)` whose costs sum to exactly `k`.
 
@@ -522,57 +535,95 @@ For implementation, recursion + memoization is cleaner than building a giant 3D 
 
 Because the answer at `(r, c)` depends on the *budget* still available — two different remaining budgets give two different answers, and the budget changes as we walk. 2D `(r, c)` doesn't have enough information.
 
-## The Solution
+</details>
+<details>
+<summary><h2>Solution &amp; Analysis</h2></summary>
 
-
-```pseudocode
-# Count grid paths from (0, 0) to (rows−1, cols−1) (right/down only) whose cell sums equal `cost`.
-# State = (r, c, remaining). Cache it.
-function destinationPathCount(matrix, cost):
-    if matrix is empty OR matrix[0] is empty: return 0
-    rows ← length(matrix); cols ← length(matrix[0])
-    memo ← empty Map: (Integer, Integer, Integer) → Integer
-    return helper(matrix, rows − 1, cols − 1, cost, memo)
-
-function helper(matrix, r, c, remaining, memo):
-    if remaining < 0: return 0                    # overshot the budget
-    if r = 0 AND c = 0:
-        return 1 if matrix[0][0] = remaining else 0
-    if (r, c, remaining) is in memo:
-        return memo[(r, c, remaining)]
-    fromTop  ← helper(matrix, r − 1, c, remaining − matrix[r][c], memo) if r > 0 else 0
-    fromLeft ← helper(matrix, r, c − 1, remaining − matrix[r][c], memo) if c > 0 else 0
-    memo[(r, c, remaining)] ← fromTop + fromLeft
-    return memo[(r, c, remaining)]
-```
+### The Solution
 
 ```python run
-from typing import List, Dict, Tuple
-from functools import lru_cache
+from typing import List, Dict
 
 class Solution:
-    def destination_path_count(self, matrix: List[List[int]], cost: int) -> int:
-        if not matrix or not matrix[0]:
+    def destination_path_count_helper(
+        self,
+        matrix: List[List[int]],
+        row: int,
+        col: int,
+        cost: int,
+        dp: Dict[str, int],
+    ) -> int:
+
+        # base case
+        if cost < 0:
             return 0
-        rows, cols = len(matrix), len(matrix[0])
 
-        @lru_cache(maxsize=None)
-        def helper(r: int, c: int, remaining: int) -> int:
-            if remaining < 0:
-                return 0                                     # Overshot the budget
-            if r == 0 and c == 0:
-                return 1 if matrix[0][0] == remaining else 0
-            from_top = helper(r - 1, c, remaining - matrix[r][c]) if r > 0 else 0
-            from_left = helper(r, c - 1, remaining - matrix[r][c]) if c > 0 else 0
-            return from_top + from_left
+        # if we are at the first cell (0, 0)
+        if row == 0 and col == 0:
+            if matrix[0][0] - cost == 0:
+                return 1
+            else:
+                return 0
 
-        return helper(rows - 1, cols - 1, cost)
+        # construct a unique map key from dynamic elements of the input
+        key = f"{row}|{col}|{cost}"
+
+        # if the subproblem is seen for the first time, solve it and
+        # store its result in a map
+        if key not in dp:
+
+            # if we are at the first row, we can only go left
+            if row == 0:
+                dp[key] = self.destination_path_count_helper(
+                    matrix, 0, col - 1, cost - matrix[row][col], dp
+                )
+
+            # if we are at the first column, we can only go up
+            elif col == 0:
+                dp[key] = self.destination_path_count_helper(
+                    matrix, row - 1, 0, cost - matrix[row][col], dp
+                )
+
+            # recur to count total paths by going both left and top
+            else:
+                dp[key] = self.destination_path_count_helper(
+                    matrix, row - 1, col, cost - matrix[row][col], dp
+                ) + self.destination_path_count_helper(
+                    matrix, row, col - 1, cost - matrix[row][col], dp
+                )
+
+        # return the total number of paths to reach cell (row, col)
+        return dp[key]
+
+    def destination_path_count(
+        self, matrix: List[List[int]], cost: int
+    ) -> int:
+
+        # base case
+        if len(matrix) == 0:
+            return 0
+
+        row: int = len(matrix)
+        col: int = len(matrix[0])
+
+        # create a dictionary to store solutions to subproblems
+        dp: Dict[str, int] = {}
+
+        return self.destination_path_count_helper(
+            matrix, row - 1, col - 1, cost, dp
+        )
 
 
-if __name__ == "__main__":
-    sol = Solution()
-    print(sol.destination_path_count([[1, 2, 9], [5, 3, 8], [4, 6, 7]], 19))   # 1
-    print(sol.destination_path_count([[1, 2, 3], [1, 5, 6], [2, 8, 9]], 21))   # 2
+# Examples from the problem statement
+print(Solution().destination_path_count([[1,2,9],[5,3,8],[4,6,7]], 19))   # 1
+print(Solution().destination_path_count([[1,2,3],[1,5,6],[2,8,9]], 21))   # 2
+
+# Edge cases
+print(Solution().destination_path_count([[5]], 5))                         # 1  — 1x1 exact
+print(Solution().destination_path_count([[5]], 3))                         # 0  — 1x1 wrong cost
+print(Solution().destination_path_count([[1,2],[3,4]], 7))                 # 1  — [1,3,4]
+print(Solution().destination_path_count([[1,2],[3,4]], 8))                 # 0  — no path sums to 8 (paths are 1+2+4=7 or 1+3+4=8)
+print(Solution().destination_path_count([[1,1],[1,1]], 3))                 # 2  — both paths cost 3
 ```
 
 ```java run
@@ -580,96 +631,135 @@ import java.util.*;
 
 public class Main {
     static class Solution {
-        public int destinationPathCount(int[][] matrix, int cost) {
-            if (matrix.length == 0 || matrix[0].length == 0) return 0;
-            Map<Long, Integer> memo = new HashMap<>();
-            return helper(matrix, matrix.length - 1, matrix[0].length - 1, cost, memo);
+        private int destinationPathCountHelper(
+            int[][] matrix,
+            int row,
+            int col,
+            int cost,
+            Map<String, Integer> dp
+        ) {
+
+            // base case
+            if (cost < 0) {
+                return 0;
+            }
+
+            // if we are at the first cell (0, 0)
+            if (row == 0 && col == 0) {
+                if (matrix[0][0] - cost == 0) {
+                    return 1;
+                } else {
+                    return 0;
+                }
+            }
+
+            // construct a unique map key from dynamic elements of the input
+            String key = row + "|" + col + "|" + cost;
+
+            // if the subproblem is seen for the first time, solve it and
+            // store its result in a map
+            if (!dp.containsKey(key)) {
+
+                // if we are at the first row, we can only go left
+                if (row == 0) {
+                    dp.put(
+                        key,
+                        destinationPathCountHelper(
+                            matrix,
+                            0,
+                            col - 1,
+                            cost - matrix[row][col],
+                            dp
+                        )
+                    );
+                }
+
+                // if we are at the first column, we can only go up
+                else if (col == 0) {
+                    dp.put(
+                        key,
+                        destinationPathCountHelper(
+                            matrix,
+                            row - 1,
+                            0,
+                            cost - matrix[row][col],
+                            dp
+                        )
+                    );
+                }
+
+                // recur to count total paths by going both left and top
+                else {
+                    dp.put(
+                        key,
+                        destinationPathCountHelper(
+                            matrix,
+                            row - 1,
+                            col,
+                            cost - matrix[row][col],
+                            dp
+                        ) +
+                        destinationPathCountHelper(
+                            matrix,
+                            row,
+                            col - 1,
+                            cost - matrix[row][col],
+                            dp
+                        )
+                    );
+                }
+            }
+
+            // return the total number of paths to reach cell (m, n)
+            return dp.get(key);
         }
 
-        private int helper(int[][] m, int r, int c, int rem, Map<Long, Integer> memo) {
-            if (rem < 0) return 0;
-            if (r == 0 && c == 0) return m[0][0] == rem ? 1 : 0;
-            long key = ((long) r * 10001 + c) * 100001L + rem;
-            Integer cached = memo.get(key);
-            if (cached != null) return cached;
-            int top = (r > 0) ? helper(m, r - 1, c, rem - m[r][c], memo) : 0;
-            int left = (c > 0) ? helper(m, r, c - 1, rem - m[r][c], memo) : 0;
-            int ans = top + left;
-            memo.put(key, ans);
-            return ans;
+        public int destinationPathCount(int[][] matrix, int cost) {
+
+            // base case
+            if (matrix.length == 0) {
+                return 0;
+            }
+
+            int row = matrix.length;
+            int col = matrix[0].length;
+
+            // create a map to store solutions to subproblems
+            Map<String, Integer> dp = new HashMap<>();
+
+            return destinationPathCountHelper(
+                matrix,
+                row - 1,
+                col - 1,
+                cost,
+                dp
+            );
         }
     }
 
     public static void main(String[] args) {
-        int[][] m = {{1,2,9},{5,3,8},{4,6,7}};
-        System.out.println(new Solution().destinationPathCount(m, 19));   // 1
+        // Examples from the problem statement
+        System.out.println(new Solution().destinationPathCount(new int[][]{{1,2,9},{5,3,8},{4,6,7}}, 19));   // 1
+        System.out.println(new Solution().destinationPathCount(new int[][]{{1,2,3},{1,5,6},{2,8,9}}, 21));   // 2
+
+        // Edge cases
+        System.out.println(new Solution().destinationPathCount(new int[][]{{5}}, 5));                         // 1
+        System.out.println(new Solution().destinationPathCount(new int[][]{{5}}, 3));                         // 0
+        System.out.println(new Solution().destinationPathCount(new int[][]{{1,2},{3,4}}, 7));                 // 1
+        System.out.println(new Solution().destinationPathCount(new int[][]{{1,2},{3,4}}, 8));                 // 0
+        System.out.println(new Solution().destinationPathCount(new int[][]{{1,1},{1,1}}, 3));                 // 2
     }
 }
 ```
 
-```c run
-#include <stdio.h>
-#include <string.h>
-
-#define MAX_R 21
-#define MAX_C 21
-#define MAX_K 1001
-
-int memo[MAX_R][MAX_C][MAX_K];
-int mat_g[MAX_R][MAX_C];
-
-int helper(int r, int c, int rem) {
-    if (rem < 0) return 0;
-    if (r == 0 && c == 0) return mat_g[0][0] == rem ? 1 : 0;
-    if (memo[r][c][rem] != -1) return memo[r][c][rem];
-    int top  = (r > 0) ? helper(r - 1, c, rem - mat_g[r][c]) : 0;
-    int left = (c > 0) ? helper(r, c - 1, rem - mat_g[r][c]) : 0;
-    return memo[r][c][rem] = top + left;
-}
-
-int destination_path_count(int rows, int cols, int target) {
-    memset(memo, -1, sizeof memo);
-    return helper(rows - 1, cols - 1, target);
-}
-
-int main(void) {
-    int m[3][3] = {{1,2,9},{5,3,8},{4,6,7}};
-    for (int r = 0; r < 3; r++) for (int c = 0; c < 3; c++) mat_g[r][c] = m[r][c];
-    printf("%d\n", destination_path_count(3, 3, 19));   /* 1 */
-    return 0;
-}
-```
-
-```scala run
-object Main extends App {
-  class Solution {
-    def destinationPathCount(matrix: Array[Array[Int]], cost: Int): Int = {
-      if (matrix.isEmpty || matrix(0).isEmpty) return 0
-      val memo = scala.collection.mutable.Map.empty[(Int, Int, Int), Int]
-      def helper(r: Int, c: Int, rem: Int): Int = {
-        if (rem < 0) return 0
-        if (r == 0 && c == 0) return if (matrix(0)(0) == rem) 1 else 0
-        memo.getOrElseUpdate((r, c, rem), {
-          val top  = if (r > 0) helper(r - 1, c, rem - matrix(r)(c)) else 0
-          val left = if (c > 0) helper(r, c - 1, rem - matrix(r)(c)) else 0
-          top + left
-        })
-      }
-      helper(matrix.length - 1, matrix(0).length - 1, cost)
-    }
-  }
-
-  println(new Solution().destinationPathCount(Array(Array(1,2,9), Array(5,3,8), Array(4,6,7)), 19))   // 1
-}
-```
-
-
-## Complexity
+### Complexity
 
 | Aspect | Cost |
 |---|---|
 | Time | `O(rows × cols × cost)` — three-dimensional state, each cell `O(1)` work |
 | Space | `O(rows × cols × cost)` for the memo |
+
+</details>
 
 ***
 
@@ -694,15 +784,17 @@ Input:  grid = [[1, 1, 1, 1, 1],
 Output: 9                       Plus of arm length 2: centre + 8 arm cells
 ```
 
-## The Recurrence — Four Direction Arrays
+<details>
+<summary><h2>The Recurrence — Four Direction Arrays</h2></summary>
 
-Build four 2D arrays, one per direction, each measuring how far a contiguous run of 1s extends *to* `(r, c)` from that direction (inclusive of `(r, c)`):
-- `left[r][c]` = consecutive 1s ending at `(r, c)` going leftward.
-- `right[r][c]` = consecutive 1s ending at `(r, c)` going rightward.
-- `up[r][c]` = consecutive 1s ending at `(r, c)` going upward.
-- `down[r][c]` = consecutive 1s ending at `(r, c)` going downward.
 
-For a plus centred at `(r, c)`, each arm needs a contiguous run of 1s on that side. The maximum arm length (including the centre) is `min(left, right, up, down)`. The plus has `1 + 4 × (arm − 1)` cells = `4 × arm − 3` total.
+Build four 2D arrays, one per direction, each measuring how long a contiguous run of 1s reaches `(r, c)` from that direction *excluding* `(r, c)` itself — the run that ends at the neighbouring cell:
+- `left[r][c]` = consecutive 1s immediately to the left of `(r, c)`.
+- `right[r][c]` = consecutive 1s immediately to the right of `(r, c)`.
+- `top[r][c]` = consecutive 1s immediately above `(r, c)`.
+- `bottom[r][c]` = consecutive 1s immediately below `(r, c)`.
+
+For a plus centred at `(r, c)`, each arm needs a contiguous run of 1s on that side. The arm length (not counting the centre) is `min(left, right, top, bottom)`. The plus has the centre plus four arms of that length: `4 × arm + 1` cells total.
 
 ```mermaid
 ---
@@ -720,9 +812,9 @@ flowchart LR
   CENTER["(r, c)<br/>plus centre"]
   CENTER --> L["left run length"]
   CENTER --> R["right run length"]
-  CENTER --> U["up run length"]
-  CENTER --> D["down run length"]
-  L --> MIN["arm = min of all four<br/>plus size = 4 · arm − 3"]
+  CENTER --> U["top run length"]
+  CENTER --> D["bottom run length"]
+  L --> MIN["arm = min of all four<br/>plus size = 4 · arm + 1"]
   R --> MIN
   U --> MIN
   D --> MIN
@@ -730,220 +822,212 @@ flowchart LR
 
 <p align="center"><strong>Four direction arrays, each computed in one pass over the grid. The plus centred at any cell is bounded by the shortest arm.</strong></p>
 
-> *Pause. Why is `4 × arm − 3` the cell count, not `4 × arm + 1`?*
+> *Pause. Why is `4 × arm + 1` the cell count?*
 
-Each arm of length `arm` *includes the centre*. If you sum four arms, you count the centre four times — once per arm. To correct, subtract the three over-counted centres: `4 × arm − 3`. (If you used arm length *excluding* the centre, the formula would be `4 × arm + 1` — same answer, different convention.)
+Here `arm` counts only the run on each side, *not* the centre cell. Four arms contribute `4 × arm` cells, and the centre adds one more: `4 × arm + 1`. (If you used arm length *including* the centre, the formula would be `4 × arm − 3` — same answer, different convention. The code uses the excluding-centre convention.)
 
-## The Solution
+</details>
+<details>
+<summary><h2>Solution &amp; Analysis</h2></summary>
 
-
-```pseudocode
-# Compute four DP tables — left/right/up/down run lengths of 1s through each cell.
-# The plus centred at (r, c) has arm length min of all four; size = 4·arm − 3.
-function largestPlusOfOnes(matrix):
-    if matrix is empty OR matrix[0] is empty: return 0
-    rows ← length(matrix); cols ← length(matrix[0])
-    left  ← rows × cols grid of zeros
-    right ← rows × cols grid of zeros
-    up    ← rows × cols grid of zeros
-    down  ← rows × cols grid of zeros
-
-    # Forward pass — left and up run lengths (cell included).
-    for r from 0 to rows − 1:
-        for c from 0 to cols − 1:
-            if matrix[r][c] = 1:
-                left[r][c] ← 1 + (left[r][c − 1] if c > 0 else 0)
-                up[r][c]   ← 1 + (up[r − 1][c]   if r > 0 else 0)
-
-    # Backward pass — right and down run lengths.
-    for r from rows − 1 down to 0:
-        for c from cols − 1 down to 0:
-            if matrix[r][c] = 1:
-                right[r][c] ← 1 + (right[r][c + 1] if c < cols − 1 else 0)
-                down[r][c]  ← 1 + (down[r + 1][c]  if r < rows − 1 else 0)
-
-    maxSize ← 0
-    for r from 0 to rows − 1:
-        for c from 0 to cols − 1:
-            if matrix[r][c] = 1:
-                arm ← min(left[r][c], right[r][c], up[r][c], down[r][c])
-                size ← 4 × arm − 3                # plus has 1 + 4·(arm − 1) cells
-                if size > maxSize:
-                    maxSize ← size
-    return maxSize
-```
+### The Solution
 
 ```python run
 from typing import List
 
 class Solution:
-    def largest_plus_of_ones(self, matrix: List[List[int]]) -> int:
-        if not matrix or not matrix[0]:
+    def largest_plus_of1s(self, grid: List[List[int]]) -> int:
+        rows: int = len(grid)
+        if rows == 0:
             return 0
-        rows, cols = len(matrix), len(matrix[0])
-        left = [[0] * cols for _ in range(rows)]
-        right = [[0] * cols for _ in range(rows)]
-        up = [[0] * cols for _ in range(rows)]
-        down = [[0] * cols for _ in range(rows)]
-        # Forward pass: left and up run lengths (including the cell).
-        for r in range(rows):
-            for c in range(cols):
-                if matrix[r][c] == 1:
-                    left[r][c] = 1 + (left[r][c - 1] if c > 0 else 0)
-                    up[r][c]   = 1 + (up[r - 1][c]   if r > 0 else 0)
-        # Backward pass: right and down run lengths.
-        for r in range(rows - 1, -1, -1):
-            for c in range(cols - 1, -1, -1):
-                if matrix[r][c] == 1:
-                    right[r][c] = 1 + (right[r][c + 1] if c < cols - 1 else 0)
-                    down[r][c]  = 1 + (down[r + 1][c]  if r < rows - 1 else 0)
-        max_size = 0
-        for r in range(rows):
-            for c in range(cols):
-                if matrix[r][c] == 1:
-                    arm = min(left[r][c], right[r][c], up[r][c], down[r][c])
-                    size = 4 * arm - 3                    # Plus has 1 + 4·(arm-1) cells
-                    if size > max_size:
-                        max_size = size
-        return max_size
+        cols: int = len(grid[0])
+        if cols == 0:
+            return 0
+
+        # Create matrices to store the lengths of continuous 1's in each
+        # direction
+        left: List[List[int]] = [[0] * cols for _ in range(rows)]
+        right: List[List[int]] = [[0] * cols for _ in range(rows)]
+        top: List[List[int]] = [[0] * cols for _ in range(rows)]
+        bottom: List[List[int]] = [[0] * cols for _ in range(rows)]
+
+        # Calculate the lengths of continuous 1's in the left and right
+        # directions for each row
+        for row in range(rows):
+            top[row][0] = grid[row][0]
+            bottom[row][cols - 1] = grid[row][cols - 1]
+            for col in range(1, cols):
+                if grid[row][col] == 1:
+
+                    # Increment the length of continuous 1's from the
+                    # left
+                    left[row][col] = left[row][col - 1] + 1
+                if grid[row][cols - 1 - col] == 1:
+
+                    # Increment the length of continuous 1's from the
+                    # right
+                    right[row][cols - 1 - col] = right[row][cols - col] + 1
+
+        # Calculate the lengths of continuous 1's in the top and bottom
+        # directions for each column
+        for col in range(cols):
+            left[0][col] = grid[0][col]
+            right[rows - 1][col] = grid[rows - 1][col]
+            for row in range(1, rows):
+                if grid[row][col] == 1:
+
+                    # Increment the length of continuous 1's from the top
+                    top[row][col] = top[row - 1][col] + 1
+                if grid[rows - 1 - row][col] == 1:
+
+                    # Increment the length of continuous 1's from the
+                    # bottom
+                    bottom[rows - 1 - row][col] = bottom[rows - row][col] + 1
+
+        max_size: int = 0
+
+        # Find the maximum size of the plus-shaped region
+        for row in range(rows):
+            for col in range(cols):
+
+                # Calculate the size of the plus-shaped region at each
+                # position as the minimum length of continuous 1's in all
+                # directions
+                size = min(
+                    min(left[row][col], right[row][col]),
+                    min(top[row][col], bottom[row][col]),
+                )
+
+                # Update the maximum size if a larger size is found
+                max_size = max(max_size, size)
+
+        # Return the area of the largest plus-shaped region
+        return max_size * 4 + 1
 
 
-if __name__ == "__main__":
-    sol = Solution()
-    print(sol.largest_plus_of_ones(
-        [[1, 1, 1, 0], [0, 1, 1, 1], [1, 1, 1, 1], [1, 0, 1, 0]]))   # 5
-    print(sol.largest_plus_of_ones(
-        [[1]*5, [1]*5, [1]*5, [1]*5, [1]*5]))                        # 9
+# Examples from the problem statement
+print(Solution().largest_plus_of1s([[1,1,1,0],[0,1,1,1],[1,1,1,1],[1,0,1,0]]))           # 5
+print(Solution().largest_plus_of1s([[1,1,1,1,1],[1,1,1,1,1],[1,1,1,1,1],[1,1,1,1,1],[1,1,1,1,1]]))  # 9
+print(Solution().largest_plus_of1s([[1,1,1,0],[0,1,0,1],[1,1,1,1],[1,0,1,0]]))           # 5
+
+# Edge cases
+print(Solution().largest_plus_of1s([[1]]))                                                # 1  — 1x1
+print(Solution().largest_plus_of1s([[0]]))                                                # 1  — 0x0 plus (0*4+1=1 is output for size=0)
+print(Solution().largest_plus_of1s([[0,0],[0,0]]))                                        # 1
+print(Solution().largest_plus_of1s([[0,1,0],[1,1,1],[0,1,0]]))                            # 5  — classic plus
 ```
 
 ```java run
+import java.util.*;
+
 public class Main {
     static class Solution {
-        public int largestPlusOfOnes(int[][] matrix) {
-            if (matrix.length == 0 || matrix[0].length == 0) return 0;
-            int rows = matrix.length, cols = matrix[0].length;
-            int[][] left  = new int[rows][cols];
+        public int largestPlusOf1s(int[][] matrix) {
+            int rows = matrix.length;
+            if (rows == 0) {
+                return 0;
+            }
+            int cols = matrix[0].length;
+            if (cols == 0) {
+                return 0;
+            }
+
+            // Create matrices to store the lengths of continuous 1's in each
+            // direction
+            int[][] left = new int[rows][cols];
             int[][] right = new int[rows][cols];
-            int[][] up    = new int[rows][cols];
-            int[][] down  = new int[rows][cols];
-            for (int r = 0; r < rows; r++) for (int c = 0; c < cols; c++) {
-                if (matrix[r][c] == 1) {
-                    left[r][c] = 1 + (c > 0 ? left[r][c - 1] : 0);
-                    up[r][c]   = 1 + (r > 0 ? up[r - 1][c]   : 0);
+            int[][] top = new int[rows][cols];
+            int[][] bottom = new int[rows][cols];
+
+            // Calculate the lengths of continuous 1's in the left and right
+            // directions for each row
+            for (int row = 0; row < rows; row++) {
+                top[row][0] = matrix[row][0];
+                bottom[row][cols - 1] = matrix[row][cols - 1];
+                for (int col = 1; col < cols; col++) {
+                    if (matrix[row][col] == 1) {
+
+                        // Increment the length of continuous 1's from the
+                        // left
+                        left[row][col] = left[row][col - 1] + 1;
+                    }
+                    if (matrix[row][cols - 1 - col] == 1) {
+
+                        // Increment the length of continuous 1's from the
+                        // right
+                        right[row][cols - 1 - col] = right[row][cols - col] + 1;
+                    }
                 }
             }
-            for (int r = rows - 1; r >= 0; r--) for (int c = cols - 1; c >= 0; c--) {
-                if (matrix[r][c] == 1) {
-                    right[r][c] = 1 + (c < cols - 1 ? right[r][c + 1] : 0);
-                    down[r][c]  = 1 + (r < rows - 1 ? down[r + 1][c]  : 0);
+
+            // Calculate the lengths of continuous 1's in the top and bottom
+            // directions for each column
+            for (int col = 0; col < cols; col++) {
+                left[0][col] = matrix[0][col];
+                right[rows - 1][col] = matrix[rows - 1][col];
+                for (int row = 1; row < rows; row++) {
+                    if (matrix[row][col] == 1) {
+
+                        // Increment the length of continuous 1's from the
+                        // top
+                        top[row][col] = top[row - 1][col] + 1;
+                    }
+                    if (matrix[rows - 1 - row][col] == 1) {
+
+                        // Increment the length of continuous 1's from the
+                        // bottom
+                        bottom[rows - 1 - row][col] = bottom[rows - row][col] + 1;
+                    }
                 }
             }
+
             int maxSize = 0;
-            for (int r = 0; r < rows; r++) for (int c = 0; c < cols; c++) {
-                if (matrix[r][c] == 1) {
-                    int arm = Math.min(Math.min(left[r][c], right[r][c]), Math.min(up[r][c], down[r][c]));
-                    int size = 4 * arm - 3;
-                    if (size > maxSize) maxSize = size;
+
+            // Find the maximum size of the plus-shaped region
+            for (int row = 0; row < rows; row++) {
+                for (int col = 0; col < cols; col++) {
+
+                    // Calculate the size of the plus-shaped region at each
+                    // position as the minimum length of continuous 1's in
+                    // all directions
+                    int size = Math.min(
+                        Math.min(left[row][col], right[row][col]),
+                        Math.min(top[row][col], bottom[row][col])
+                    );
+
+                    // Update the maximum size if a larger size is found
+                    maxSize = Math.max(maxSize, size);
                 }
             }
-            return maxSize;
+
+            // Return the area of the largest plus-shaped region
+            return maxSize * 4 + 1;
         }
     }
 
     public static void main(String[] args) {
-        int[][] g = {{1,1,1,0},{0,1,1,1},{1,1,1,1},{1,0,1,0}};
-        System.out.println(new Solution().largestPlusOfOnes(g));   // 5
+        // Examples from the problem statement
+        System.out.println(new Solution().largestPlusOf1s(new int[][]{{1,1,1,0},{0,1,1,1},{1,1,1,1},{1,0,1,0}}));           // 5
+        System.out.println(new Solution().largestPlusOf1s(new int[][]{{1,1,1,1,1},{1,1,1,1,1},{1,1,1,1,1},{1,1,1,1,1},{1,1,1,1,1}}));  // 9
+        System.out.println(new Solution().largestPlusOf1s(new int[][]{{1,1,1,0},{0,1,0,1},{1,1,1,1},{1,0,1,0}}));           // 5
+
+        // Edge cases
+        System.out.println(new Solution().largestPlusOf1s(new int[][]{{1}}));                                                // 1
+        System.out.println(new Solution().largestPlusOf1s(new int[][]{{0}}));                                                // 1
+        System.out.println(new Solution().largestPlusOf1s(new int[][]{{0,0},{0,0}}));                                        // 1
+        System.out.println(new Solution().largestPlusOf1s(new int[][]{{0,1,0},{1,1,1},{0,1,0}}));                            // 5
     }
 }
 ```
 
-```c run
-#include <stdio.h>
-
-int left_a[101][101], right_a[101][101], up_a[101][101], down_a[101][101];
-
-int min4(int a, int b, int c, int d) {
-    int m = a; if (b < m) m = b; if (c < m) m = c; if (d < m) m = d; return m;
-}
-
-int largest_plus_of_ones(int matrix[][101], int rows, int cols) {
-    if (rows == 0 || cols == 0) return 0;
-    for (int r = 0; r < rows; r++) for (int c = 0; c < cols; c++) {
-        left_a[r][c] = 0; right_a[r][c] = 0; up_a[r][c] = 0; down_a[r][c] = 0;
-    }
-    for (int r = 0; r < rows; r++) for (int c = 0; c < cols; c++) {
-        if (matrix[r][c] == 1) {
-            left_a[r][c] = 1 + (c > 0 ? left_a[r][c - 1] : 0);
-            up_a[r][c]   = 1 + (r > 0 ? up_a[r - 1][c]   : 0);
-        }
-    }
-    for (int r = rows - 1; r >= 0; r--) for (int c = cols - 1; c >= 0; c--) {
-        if (matrix[r][c] == 1) {
-            right_a[r][c] = 1 + (c < cols - 1 ? right_a[r][c + 1] : 0);
-            down_a[r][c]  = 1 + (r < rows - 1 ? down_a[r + 1][c]  : 0);
-        }
-    }
-    int max_size = 0;
-    for (int r = 0; r < rows; r++) for (int c = 0; c < cols; c++) {
-        if (matrix[r][c] == 1) {
-            int arm = min4(left_a[r][c], right_a[r][c], up_a[r][c], down_a[r][c]);
-            int size = 4 * arm - 3;
-            if (size > max_size) max_size = size;
-        }
-    }
-    return max_size;
-}
-
-int main(void) {
-    int g[4][101] = {{1,1,1,0},{0,1,1,1},{1,1,1,1},{1,0,1,0}};
-    printf("%d\n", largest_plus_of_ones(g, 4, 4));   /* 5 */
-    return 0;
-}
-```
-
-```scala run
-object Main extends App {
-  class Solution {
-    def largestPlusOfOnes(matrix: Array[Array[Int]]): Int = {
-      if (matrix.isEmpty || matrix(0).isEmpty) return 0
-      val rows = matrix.length; val cols = matrix(0).length
-      val left = Array.fill(rows, cols)(0); val right = Array.fill(rows, cols)(0)
-      val up = Array.fill(rows, cols)(0); val down = Array.fill(rows, cols)(0)
-      for (r <- 0 until rows; c <- 0 until cols) {
-        if (matrix(r)(c) == 1) {
-          left(r)(c) = 1 + (if (c > 0) left(r)(c - 1) else 0)
-          up(r)(c)   = 1 + (if (r > 0) up(r - 1)(c)   else 0)
-        }
-      }
-      for (r <- rows - 1 to 0 by -1; c <- cols - 1 to 0 by -1) {
-        if (matrix(r)(c) == 1) {
-          right(r)(c) = 1 + (if (c < cols - 1) right(r)(c + 1) else 0)
-          down(r)(c)  = 1 + (if (r < rows - 1) down(r + 1)(c)  else 0)
-        }
-      }
-      var maxSize = 0
-      for (r <- 0 until rows; c <- 0 until cols) {
-        if (matrix(r)(c) == 1) {
-          val arm = math.min(math.min(left(r)(c), right(r)(c)), math.min(up(r)(c), down(r)(c)))
-          val size = 4 * arm - 3
-          if (size > maxSize) maxSize = size
-        }
-      }
-      maxSize
-    }
-  }
-
-  println(new Solution().largestPlusOfOnes(Array(Array(1,1,1,0), Array(0,1,1,1), Array(1,1,1,1), Array(1,0,1,0))))   // 5
-}
-```
-
-
-## Complexity
+### Complexity
 
 | Aspect | Cost |
 |---|---|
 | Time | `O(rows × cols)` — two passes for the four direction arrays plus one for the answer |
 | Space | `O(rows × cols)` for the four arrays |
+
+</details>
 
 ***
 

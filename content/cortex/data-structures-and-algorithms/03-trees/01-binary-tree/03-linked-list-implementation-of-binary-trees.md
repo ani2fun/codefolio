@@ -10,7 +10,7 @@ This representation is the *workhorse* of binary trees. Every textbook problem o
 
 The trade-offs are predictable: **per-node memory is higher** (two extra pointers per node), **cache locality is worse** (each node is its own heap allocation, scattered across RAM), and **going from child to parent is O(height)** unless you also store a parent pointer. In return, you get *unlimited shape freedom* — you can sculpt the tree into any binary shape you want, insert and remove nodes anywhere, and never worry about index arithmetic.
 
-This lesson defines the `TreeNode` type in 10 languages and shows how a tree assembles from nodes. Every lesson that follows in this chapter — recursive and iterative traversals, construction, insertion, all 11 patterns, the practice problems — uses the type defined here as its starting point. Get it right once and the rest of the chapter doesn't have to repeat it.
+This lesson defines the `TreeNode` type in Python and Java and shows how a tree assembles from nodes. Every lesson that follows in this chapter — recursive and iterative traversals, construction, insertion, all 11 patterns, the practice problems — uses the type defined here as its starting point. Get it right once and the rest of the chapter doesn't have to repeat it.
 
 ---
 
@@ -18,7 +18,7 @@ This lesson defines the `TreeNode` type in 10 languages and shows how a tree ass
 
 1. [From singly linked list to binary tree](#from-singly-linked-list-to-binary-tree)
 2. [Anatomy of a TreeNode](#anatomy-of-a-treenode)
-3. [Defining TreeNode in 10 languages](#defining-treenode-in-10-languages)
+3. [Defining TreeNode in Python and Java](#defining-treenode-in-python-and-java)
 4. [Assembling a tree from nodes](#assembling-a-tree-from-nodes)
 5. [Memory layout — what it actually looks like](#memory-layout--what-it-actually-looks-like)
 6. [The role of `null` and the root pointer](#the-role-of-null-and-the-root-pointer)
@@ -99,25 +99,10 @@ n: TreeNode {
 
 ***
 
-# Defining TreeNode in 10 languages
+# Defining TreeNode in Python and Java
 
 Most of the rest of this chapter assumes the type definitions below. Each version exposes the same three fields and provides a small constructor. We follow the LeetCode-style convention used across the chapter: optional left/right that default to `null`.
 
-
-```pseudocode
-structure TreeNode:
-    val   ← integer
-    left  ← TreeNode or null
-    right ← TreeNode or null
-
-# Build a small tree:
-#       1
-#      / \
-#     2   3
-root ← TreeNode(val=1,
-                left=TreeNode(val=2),
-                right=TreeNode(val=3))
-```
 
 ```python run
 class TreeNode:
@@ -147,44 +132,6 @@ public class Main {
         TreeNode root = new TreeNode(1, new TreeNode(2), new TreeNode(3));
         System.out.println(root.val + " " + root.left.val + " " + root.right.val);
     }
-}
-```
-
-```c run
-#include <stdio.h>
-#include <stdlib.h>
-
-typedef struct TreeNode {
-    int               val;
-    struct TreeNode  *left;
-    struct TreeNode  *right;
-} TreeNode;
-
-TreeNode* tn_new(int val) {
-    TreeNode *n = malloc(sizeof(TreeNode));
-    n->val = val; n->left = NULL; n->right = NULL;
-    return n;
-}
-
-int main() {
-    TreeNode *root = tn_new(1);
-    root->left  = tn_new(2);
-    root->right = tn_new(3);
-    printf("%d %d %d\n", root->val, root->left->val, root->right->val);
-    free(root->left); free(root->right); free(root);
-}
-```
-
-```scala run
-class TreeNode(
-    var value: Int            = 0,
-    var left:  TreeNode = null,
-    var right: TreeNode = null
-)
-
-object Main extends App {
-  val root = new TreeNode(1, new TreeNode(2), new TreeNode(3))
-  println(s"${root.value} ${root.left.value} ${root.right.value}")
 }
 ```
 

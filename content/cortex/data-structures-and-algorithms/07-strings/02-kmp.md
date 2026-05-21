@@ -59,20 +59,6 @@ The intuition: `pi[i]` tells you, "if you've matched `P[0..i]` against `T[0..n]`
 
 # Building the failure function
 
-```pseudocode
-function buildFailure(P):
-    m ← length(P)
-    pi ← array of m zeros
-    k ← 0                                    # length of previous longest prefix-suffix
-    for i from 1 to m − 1:
-        while k > 0 AND P[k] ≠ P[i]:
-            k ← pi[k − 1]                    # fall back to next-shorter candidate
-        if P[k] = P[i]:
-            k ← k + 1
-        pi[i] ← k
-    return pi
-```
-
 **Key insight.** When extending from `pi[i-1]` to `pi[i]`, we maintain `k` = "current candidate prefix length". If `P[k] == P[i]`, the prefix extends by one character. If not, we fall back to the next-shorter prefix that *is* also a suffix — `pi[k-1]` — and try again.
 
 **Cost.** `O(m)`. The amortised analysis: `k` is incremented at most `m` times (once per `i`). Each `while` iteration *decreases* `k`. So total `while` iterations are bounded by total increments — at most `m`.
@@ -80,23 +66,6 @@ function buildFailure(P):
 ***
 
 # The matching algorithm
-
-```pseudocode
-function kmpMatch(T, P):
-    pi ← buildFailure(P)
-    n ← length(T); m ← length(P)
-    matches ← []
-    j ← 0                                    # current pattern index
-    for i from 0 to n − 1:
-        while j > 0 AND T[i] ≠ P[j]:
-            j ← pi[j − 1]                    # fall back
-        if T[i] = P[j]:
-            j ← j + 1
-        if j = m:
-            matches.append(i − m + 1)
-            j ← pi[j − 1]                    # don't restart; allow overlapping matches
-    return matches
-```
 
 **Cost.** `O(n)`. Same amortised argument: `j` is incremented at most `n` times; each `while` iteration decreases `j`; total iterations bounded by `n`.
 
@@ -176,72 +145,6 @@ public class Main {
 }
 ```
 
-```c run
-#include <stdio.h>
-#include <string.h>
-#include <stdlib.h>
-
-int *build_failure(const char *P, int m) {
-    int *pi = calloc(m, sizeof(int));
-    int k = 0;
-    for (int i = 1; i < m; i++) {
-        while (k > 0 && P[k] != P[i]) k = pi[k - 1];
-        if (P[k] == P[i]) k++;
-        pi[i] = k;
-    }
-    return pi;
-}
-
-void kmp_match(const char *T, const char *P) {
-    int n = strlen(T), m = strlen(P);
-    int *pi = build_failure(P, m);
-    int j = 0;
-    for (int i = 0; i < n; i++) {
-        while (j > 0 && T[i] != P[j]) j = pi[j - 1];
-        if (T[i] == P[j]) j++;
-        if (j == m) { printf("%d ", i - m + 1); j = pi[j - 1]; }
-    }
-    printf("\n");
-    free(pi);
-}
-
-int main(void) {
-    kmp_match("ABABDABACDABABCABAB", "ABABCABAB");
-    return 0;
-}
-```
-
-```scala run
-object Main extends App {
-  def buildFailure(P: String): Array[Int] = {
-    val m = P.length
-    val pi = new Array[Int](m)
-    var k = 0
-    for (i <- 1 until m) {
-      while (k > 0 && P(k) != P(i)) k = pi(k - 1)
-      if (P(k) == P(i)) k += 1
-      pi(i) = k
-    }
-    pi
-  }
-
-  def kmpMatch(T: String, P: String): List[Int] = {
-    val pi = buildFailure(P)
-    val n = T.length; val m = P.length
-    val out = scala.collection.mutable.ListBuffer.empty[Int]
-    var j = 0
-    for (i <- 0 until n) {
-      while (j > 0 && T(i) != P(j)) j = pi(j - 1)
-      if (T(i) == P(j)) j += 1
-      if (j == m) { out += i - m + 1; j = pi(j - 1) }
-    }
-    out.toList
-  }
-
-  println(kmpMatch("ABABDABACDABABCABAB", "ABABCABAB"))
-}
-```
-
 ***
 
 # Edge cases and pitfalls
@@ -298,63 +201,54 @@ Click any question to reveal the answer.
 **A:** `O(n + m)`. The failure-function build is `O(m)`; the match loop is `O(n)`.
 
 </details>
-
 <details>
 <summary><strong>Q:</strong> Worst-case time of naive substring matching?</summary>
 
 **A:** `O(nm)`. KMP beats this by a factor of `min(n, m)`.
 
 </details>
-
 <details>
 <summary><strong>Q:</strong> What does <code>pi[i]</code> represent in the failure function?</summary>
 
 **A:** The length of the longest *proper* prefix of `P[0..i]` that is also a suffix of `P[0..i]`. *Proper* means strictly shorter than `P[0..i]`.
 
 </details>
-
 <details>
 <summary><strong>Q:</strong> What does the failure function tell you on a mismatch?</summary>
 
 **A:** How much of the matched prefix you can keep without restarting the comparison from `j = 0`.
 
 </details>
-
 <details>
 <summary><strong>Q:</strong> Why are both the build and the match loop <code>O(m)</code> and <code>O(n)</code> respectively, despite the inner <code>while</code>?</summary>
 
 **A:** Amortised: `j` (or `k`) is incremented at most `n` (or `m`) times across the whole loop; each `while` iteration *decreases* it; total iterations ≤ total increments.
 
 </details>
-
 <details>
 <summary><strong>Q:</strong> What's <code>pi[0]</code>?</summary>
 
 **A:** `0`. A single-character prefix has no proper prefix-suffix overlap.
 
 </details>
-
 <details>
 <summary><strong>Q:</strong> After matching the entire pattern (<code>j == m</code>), what do you set <code>j</code> to in order to find <em>overlapping</em> matches?</summary>
 
 **A:** `j = pi[m - 1]`. Setting `j = 0` would skip overlapping occurrences.
 
 </details>
-
 <details>
 <summary><strong>Q:</strong> Compute <code>pi</code> for <code>P = "AABAACAABAA"</code>.</summary>
 
 **A:** `[0, 1, 0, 1, 2, 0, 1, 2, 3, 4, 5]`.
 
 </details>
-
 <details>
 <summary><strong>Q:</strong> Sibling algorithm with the same <code>O(n + m)</code> cost via a different array?</summary>
 
 **A:** Z-algorithm. The Z-array stores prefix-match lengths starting at each index.
 
 </details>
-
 <details>
 <summary><strong>Q:</strong> Generalisation to multi-pattern matching?</summary>
 

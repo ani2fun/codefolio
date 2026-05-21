@@ -4,6 +4,9 @@ import codefolio.client.components.icons.LucideIcons
 import codefolio.client.components.ui.Button
 import japgolly.scalajs.react.*
 import japgolly.scalajs.react.vdom.html_<^.*
+import org.scalajs.dom
+
+import scala.scalajs.js
 
 /**
  * Dark/light theme toggle button. Mirrors portfolio-app's ToggleMode:
@@ -26,6 +29,18 @@ object ToggleMode:
       .useEffectOnMountBy { (_, mounted, mode) =>
         mode.setState(Theme.current) >> mounted.setState(true)
       }
+      // Resync on every theme change — including ones made by *other* toggle
+      // instances or the Cortex reading-prefs panel. The local `mode` state is
+      // only a render mirror of `<html>`; this listener keeps it from drifting,
+      // which is what made the toggle need two clicks to "catch up".
+      .useEffectOnMountBy { (_, _, mode) =>
+        Callback {
+          val onChange: js.Function1[dom.Event, Unit] = (_: dom.Event) =>
+            mode.setState(Theme.current).runNow()
+          dom.window.addEventListener(Theme.ChangedEvent, onChange)
+          ()
+        }
+      }
       .render { (_, mounted, modeS) =>
         if !mounted.value then
           <.button(
@@ -36,7 +51,10 @@ object ToggleMode:
         else
           val isDark   = modeS.value == Theme.Mode.Dark
           val nextMode = if isDark then Theme.Mode.Light else Theme.Mode.Dark
-          val onClick  = Theme.set(nextMode) >> modeS.setState(nextMode)
+          // `Theme.set` broadcasts `theme:changed`; the listener above re-reads
+          // `<html>` into `modeS`, so the click handler doesn't update state
+          // itself — that keeps every toggle surface on one code path.
+          val onClick = Theme.set(nextMode)
           <.button(
             ^.className  := Button.classes(Button.Variant.Outline, Button.Size.Icon),
             ^.aria.label := (if isDark then "Switch to light mode" else "Switch to dark mode"),

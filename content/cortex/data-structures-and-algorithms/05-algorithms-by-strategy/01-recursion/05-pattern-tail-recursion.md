@@ -4,7 +4,7 @@ If head recursion is "ask first, work second," tail recursion is the opposite: *
 
 That timing flip has a major consequence. Tail-recursive functions can — in some languages, with some flags — be compiled into ordinary loops, eliminating the stack-frame cost entirely. This is **tail-call optimisation** (TCO), and it's the reason functional languages like Scala and OCaml lean on tail recursion as their primary loop construct.
 
-By the end of this lesson you'll know what makes a recursive call "tail" vs not, the diagnostic checks for spotting tail-recursion candidates, which of the 10 languages of this course actually optimise tail calls, and four worked problems that drill the pattern.
+By the end of this lesson you'll know what makes a recursive call "tail" vs not, the diagnostic checks for spotting tail-recursion candidates, which languages actually optimise tail calls, and four worked problems that drill the pattern.
 
 ## Table of contents
 
@@ -94,7 +94,7 @@ without -> with: compiler optimises tail calls
 
 <p align="center"><strong>With TCO, the same frame is reused for every tail call — recursion becomes a loop without you writing one.</strong></p>
 
-But not every language optimises tail calls. Here's the per-language reality for the 10 languages of this course:
+But not every language optimises tail calls. Here's the per-language reality across a range of mainstream languages:
 
 | Language | TCO? | How |
 |---|---|---|
@@ -111,7 +111,7 @@ But not every language optimises tail calls. Here's the per-language reality for
 
 > **Practical takeaway.** In Scala and Kotlin, write tail-recursive code freely — the compiler will turn it into a loop. In C/C++/Rust, it's a nice-to-have at high optimisation levels. In **Java, Python, JavaScript, TypeScript, and Go**, tail recursion gives you the *style* of recursion-as-a-loop but **still uses linear stack space**. For very deep recursions in those languages, you should rewrite to iteration explicitly.
 
-> *Predict before reading on — for a function that recurses 100,000 times, which of the 10 languages will crash with a stack overflow if you write the function tail-recursively? List them before reading the answer.*
+> *Predict before reading on — for a function that recurses 100,000 times, which languages in the table will crash with a stack overflow if you write the function tail-recursively? List them before reading the answer.*
 
 In Java, Python, JavaScript, TypeScript, Java, and (for native compilers without explicit TCO flags) sometimes C/C++/Rust as well, you'll crash. Go's growable stacks save you. Scala (with `@tailrec`) and Kotlin (with `tailrec`) compile to loops and run in `O(1)` stack — perfectly safe. The lesson: tail recursion gives you *correctness* in any language, but *space efficiency* only in some.
 
@@ -211,106 +211,89 @@ Steps 2 and 3 are this frame's work; step 4 is the tail call. The function never
 A clean, language-agnostic implementation of the generic template — `g` and `h` are placeholders the problem will fill in. **Pay attention to language-specific TCO annotations** where applicable.
 
 
-```pseudocode
-function tailRecursion(n, acc):
-    if n ≤ 0:                              # base case — return accumulator directly
-        return acc
-    newAcc ← g(acc, n)                     # 1. fold this frame's contribution into the accumulator
-    nextN  ← h(n)                          # 2. reduce the input
-    return tailRecursion(nextN, newAcc)    # 3. tail call — caller has nothing left to do
-```
-
 ```python run
+from typing import List
+
 class Solution:
-    def tail_recursion(self, n: int, acc: int = 0) -> int:
-        # Step 1 — base case: returns accumulated answer directly
+    def tail_recursion(self, n: int, aggregate: List[int]) -> int:
+
+        # Base case: If n is less than or equal to 0, we have reached
+        # the end of recursion
         if n <= 0:
-            return acc
+            return len(aggregate)  # Return the size of the aggregate as an example
 
-        # Step 2 — fold this frame's contribution INTO the accumulator
-        new_acc = self._g(acc, n)
-        # Step 3 — reduce the input for the next call
-        next_n = self._h(n)
+        # Use the function h to reduce the input
+        # for the next step
+        input_value: int = self.h(n)
 
-        # Step 4 — tail call. Note: Python does NOT optimise this.
-        # For deep recursion, rewrite as a loop.
-        return self.tail_recursion(next_n, new_acc)
+        # Use the function g to update aggregate
+        # for the next step
+        self.g(n, aggregate)
 
-    def _g(self, acc: int, n: int) -> int:
-        return acc + n         # Example combine: addition
-    def _h(self, n: int) -> int:
-        return n - 1           # Example reduction: decrement
+        # Recursive call with the reduced input
+        # at the end of the function
+        solution: int = self.tail_recursion(input_value, aggregate)
 
+        # Return the solution for the current input
+        return solution
 
-if __name__ == "__main__":
-    print(Solution().tail_recursion(5))   # 15
+    def g(self, n: int, aggregate: List[int]) -> None:
+        # Placeholder for g - update the aggregate using the
+        # current input on the previous aggregate
+        # Implement your logic here
+        if n % 2 == 0:
+            aggregate.append(n)  # Example implementation
+
+    def h(self, n: int) -> int:
+        # Placeholder for h - get the input for the next step
+        # from the current input
+        return n - 1  # Example implementation
 ```
 
 ```java run
-public class Main {
-    static class Solution {
-        int tailRecursion(int n, int acc) {
-            // Step 1 — base case
-            if (n <= 0) {
-                return acc;
-            }
-            int newAcc = g(acc, n);   // Step 2 — fold
-            int nextN  = h(n);        // Step 3 — reduce
-            // Step 4 — tail call. Note: JVM has NO TCO; this still uses a frame.
-            return tailRecursion(nextN, newAcc);
+import java.util.ArrayList;
+
+class Solution {
+
+    public int tailRecursion(int n, ArrayList<Integer> aggregate) {
+
+        // Base case: If n is less than or equal to 0, we have reached
+        // the end of recursion
+        if (n <= 0) {
+            return aggregate.size(); // Return the size of the aggregate as an example
         }
 
-        int tailRecursion(int n) { return tailRecursion(n, 0); }   // Convenience wrapper
+        // Use the function h to reduce the input
+        // for the next step
+        int input = h(n);
 
-        private int g(int acc, int n) { return acc + n; }
-        private int h(int n) { return n - 1; }
+        // Use the function g to update aggregate
+        // for the next step
+        g(n, aggregate);
+
+        // Recursive call with the reduced input
+        // at the end of the function
+        int solution = tailRecursion(input, aggregate);
+
+        // Return the solution for the current input
+        return solution;
     }
 
-    public static void main(String[] args) {
-        System.out.println(new Solution().tailRecursion(5));   // 15
-    }
-}
-```
-
-```c run
-#include <stdio.h>
-
-/* GCC and Clang at -O2 will typically apply TCO here, turning the recursion
- * into a loop. Without optimisation, this still uses O(n) stack. */
-static int g(int acc, int n) { return acc + n; }
-static int h(int n)          { return n - 1; }
-
-int tail_recursion(int n, int acc) {
-    if (n <= 0) return acc;                /* Step 1 — base case */
-    int new_acc = g(acc, n);                /* Step 2 — fold */
-    int next_n  = h(n);                     /* Step 3 — reduce */
-    return tail_recursion(next_n, new_acc); /* Step 4 — tail call */
-}
-
-int main(void) {
-    printf("%d\n", tail_recursion(5, 0));   /* 15 */
-    return 0;
-}
-```
-
-```scala run
-import scala.annotation.tailrec
-
-object Main extends App {
-  class Solution {
-    // @tailrec instructs the compiler to verify this is a tail call and rewrite
-    // it to a loop. Without the annotation it would still work but might miss TCO.
-    @tailrec
-    final def tailRecursion(n: Int, acc: Int = 0): Int = {
-      if (n <= 0) acc
-      else tailRecursion(h(n), g(acc, n))   // Single tail call — Scala will compile to a loop
+    // Placeholder for g - update the aggregate using the
+    // current input on the previous aggregate
+    private void g(int n, ArrayList<Integer> aggregate) {
+        // Implement your logic here
+        if (n % 2 == 0) {
+            aggregate.add(n); // Example implementation
+        }
     }
 
-    private def g(acc: Int, n: Int): Int = acc + n
-    private def h(n: Int): Int = n - 1
-  }
-
-  println(new Solution().tailRecursion(5))   // 15
+    // Placeholder for h - get the input for the next step
+    // from the current input
+    private int h(int n) {
+        // Implement your logic here
+        return n - 1; // Example implementation
+    }
 }
 ```
 
@@ -412,7 +395,9 @@ Output: [1]
 
 ---
 
-## Why Tail Recursion Fits Here
+<details>
+<summary><h2>Why Tail Recursion Fits Here</h2></summary>
+
 
 Each frame's job is to append its `n`, then recurse on `n-1`. The append happens *before* the recursive call. By the time we hit the base case, the list is fully built. The base case has nothing to do but return.
 
@@ -436,9 +421,10 @@ flowchart TB
 
 <p align="center"><strong>Each descending frame appends and recurses. The list is fully built by the time the base case fires.</strong></p>
 
----
+</details>
+<details>
+<summary><h2>Applying the Diagnostic Questions</h2></summary>
 
-## Applying the Diagnostic Questions
 
 | # | Check | Answer |
 |---|---|---|
@@ -458,9 +444,10 @@ The list is the running answer, mutated as we descend. There's no second piece o
 
 After appending, the recursive call is the function's last action. The return is `return helper(n-1, result)` (or in languages without explicit return, just the call). Nothing wraps it — the language can apply TCO if it supports it. ✓
 
----
+</details>
+<details>
+<summary><h2>The Append-on-Descent Strategy (Visualised)</h2></summary>
 
-## The Append-on-Descent Strategy (Visualised)
 
 <div class="d2-slides" data-caption="Each descending frame appends and recurses. The list is fully built when the base case fires.">
 
@@ -502,112 +489,100 @@ state: "n=0 — base case fires, return" {
 
 </div>
 
----
+</details>
+<details>
+<summary><h2>Solution &amp; Analysis</h2></summary>
 
-## The Solution
-
-
-```pseudocode
-function reverseSequence(n):
-    result ← empty list
-    helper(n, result)
-    return result
-
-function helper(n, result):
-    if n ≤ 0:                              # base case — done
-        return
-    append n to result                     # work BEFORE recurse — tail recursion → n, n−1, …, 1
-    helper(n − 1, result)                  # tail call
-```
+### The Solution
 
 ```python run
 from typing import List
 
 class Solution:
+    def helper(self, n: int, result: List[int]) -> None:
+
+        # Base case: If n is less than or equal to 0, we have reached the
+        # end of recursion
+        if n <= 0:
+
+            # Exit the function, as there are no more numbers to add
+            return
+
+        # First, add the current number n to the result list
+        result.append(n)
+
+        # Recursive call to the helper function with n-1, to move towards
+        # the base case
+        self.helper(n - 1, result)
+
     def reverse_sequence(self, n: int) -> List[int]:
+
+        # Initialize an empty list to store the result
         result: List[int] = []
-        self._helper(n, result)
+
+        # Call the helper function to populate the result list with
+        # numbers from n to 1
+        self.helper(n, result)
+
+        # Return the generated list containing numbers from n to 1
         return result
 
-    def _helper(self, n: int, result: List[int]) -> None:
-        if n <= 0:
-            return                         # Base case
-        result.append(n)                   # Work BEFORE recurse — tail recursion
-        self._helper(n - 1, result)        # Tail call (Python won't optimise it)
 
+# Examples from the problem statement
+print(Solution().reverse_sequence(5))   # [5, 4, 3, 2, 1]
 
-if __name__ == "__main__":
-    print(Solution().reverse_sequence(5))   # [5, 4, 3, 2, 1]
+# Edge cases
+print(Solution().reverse_sequence(1))   # [1]
+print(Solution().reverse_sequence(3))   # [3, 2, 1]
+print(Solution().reverse_sequence(10))  # [10, 9, 8, 7, 6, 5, 4, 3, 2, 1]
 ```
 
 ```java run
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
 
 public class Main {
     static class Solution {
-        public List<Integer> reverseSequence(int n) {
-            List<Integer> result = new ArrayList<>();
-            helper(n, result);
-            return result;
+        private void helper(int N, List<Integer> result) {
+
+            // Base case: If N is less than or equal to 0, we have reached
+            // the end of recursion
+            if (N <= 0) {
+
+                // Exit the function, as there are no more numbers to add
+                return;
+            }
+
+            // First, add the current number N to the result list
+            result.add(N);
+
+            // Recursive call to the helper method with N-1, to move towards
+            // the base case
+            helper(N - 1, result);
         }
 
-        private void helper(int n, List<Integer> result) {
-            if (n <= 0) return;        // Base case
-            result.add(n);             // Work first
-            helper(n - 1, result);     // Tail call (JVM has no TCO)
+        public List<Integer> reverseSquence(int N) {
+
+            // Initialize an empty list to store the result
+            List<Integer> result = new ArrayList<>();
+
+            // Call the helper method to populate the result list with
+            // numbers from N to 1
+            helper(N, result);
+
+            // Return the generated list containing numbers from N to 1
+            return result;
         }
     }
 
     public static void main(String[] args) {
-        System.out.println(new Solution().reverseSequence(5));   // [5, 4, 3, 2, 1]
+        // Examples from the problem statement
+        System.out.println(new Solution().reverseSquence(5));   // [5, 4, 3, 2, 1]
+
+        // Edge cases
+        System.out.println(new Solution().reverseSquence(1));   // [1]
+        System.out.println(new Solution().reverseSquence(3));   // [3, 2, 1]
+        System.out.println(new Solution().reverseSquence(10));  // [10, 9, 8, 7, 6, 5, 4, 3, 2, 1]
     }
-}
-```
-
-```c run
-#include <stdio.h>
-#include <stdlib.h>
-
-static void helper(int n, int *result, int *idx) {
-    if (n <= 0) return;             /* Base case */
-    result[(*idx)++] = n;           /* Work first */
-    helper(n - 1, result, idx);     /* Tail call (GCC -O2 typically optimises) */
-}
-
-int main(void) {
-    int n = 5;
-    int *result = (int *) malloc(sizeof(int) * n);
-    int idx = 0;
-    helper(n, result, &idx);
-    for (int i = 0; i < idx; i++) printf("%d ", result[i]);
-    printf("\n");
-    free(result);
-    return 0;
-}
-```
-
-```scala run
-import scala.annotation.tailrec
-import scala.collection.mutable.ArrayBuffer
-
-object Main extends App {
-  class Solution {
-    def reverseSequence(n: Int): List[Int] = {
-      val result = ArrayBuffer[Int]()
-      helper(n, result)
-      result.toList
-    }
-
-    @tailrec
-    private def helper(n: Int, result: ArrayBuffer[Int]): Unit = {
-      if (n <= 0) return        // Base case
-      result += n               // Work first
-      helper(n - 1, result)     // Tail call — Scala compiles to a loop
-    }
-  }
-
-  println(new Solution().reverseSequence(5))   // List(5, 4, 3, 2, 1)
 }
 ```
 
@@ -630,9 +605,7 @@ The list is fully built during descent. The ascent is silent — every frame jus
 
 </details>
 
----
-
-## Complexity Analysis
+### Complexity Analysis
 
 | Resource | Cost (without TCO) | Cost (with TCO) | Why |
 |---|---|---|---|
@@ -640,9 +613,7 @@ The list is fully built during descent. The ascent is silent — every frame jus
 | **Space (output)** | `O(n)` | `O(n)` | The list has `n` elements. |
 | **Space (stack)** | `O(n)` | `O(1)` | Without TCO, `n` frames; with TCO, one reused. |
 
----
-
-## Edge Cases
+### Edge Cases
 
 | Case | Example | Expected | Reasoning |
 |---|---|---|---|
@@ -651,11 +622,14 @@ The list is fully built during descent. The ascent is silent — every frame jus
 | Negative input | `n = -3` | `[]` | Guard catches it. |
 | Large input | `n = 100_000` | descending list | Stack overflow on Java/Python/JS without TCO; safe on Scala/Kotlin/Go. |
 
----
+</details>
+<details>
+<summary><h2>Final Takeaway</h2></summary>
 
-## Final Takeaway
 
 Reverse Sequence is the tail-recursion mirror of Forward Sequence: same recursion shape, same depth, but the work happens on the way *down* rather than the way back. The next problem applies the same template to *search* — where the accumulator's job is to track "we haven't found it yet" rather than to build output.
+
+</details>
 
 ***
 
@@ -682,7 +656,9 @@ Output: -1
 
 ---
 
-## Why Tail Recursion Fits Here
+<details>
+<summary><h2>Why Tail Recursion Fits Here</h2></summary>
+
 
 The "answer being built" is the *current index*. We start at 0 and advance until either we find the target or we run off the end of the array. At each step we check the current element, return immediately on match, or recurse with the next index.
 
@@ -704,9 +680,10 @@ flowchart LR
 
 <p align="center"><strong>Each call checks one element and either returns or tail-calls with <code>i + 1</code>.</strong></p>
 
----
+</details>
+<details>
+<summary><h2>Applying the Diagnostic Questions</h2></summary>
 
-## Applying the Diagnostic Questions
 
 | # | Check | Answer |
 |---|---|---|
@@ -726,9 +703,10 @@ The only state we need is "where am I in the array?" That's a single integer; pe
 
 The function either returns `index` (match found), `-1` (off the end), or `helper(arr, target, index + 1)`. Each branch is a direct return — no wrapping work. ✓
 
----
+</details>
+<details>
+<summary><h2>The Linear-Scan-with-Index Strategy (Visualised)</h2></summary>
 
-## The Linear-Scan-with-Index Strategy (Visualised)
 
 <div class="d2-slides" data-caption="The index advances; the array is read-only. The accumulator IS the answer.">
 
@@ -755,103 +733,83 @@ state: "Step 2 — i = 2 — MATCH" {
 
 </div>
 
----
+</details>
+<details>
+<summary><h2>Solution &amp; Analysis</h2></summary>
 
-## The Solution
-
-
-```pseudocode
-function searchElement(arr, target):
-    return helper(arr, target, 0)
-
-function helper(arr, target, index):
-    if index = length(arr):                # base case 1 — ran off the end
-        return −1
-    if arr[index] = target:                # base case 2 — found
-        return index
-    return helper(arr, target, index + 1)  # tail call — advance index
-```
+### The Solution
 
 ```python run
 from typing import List
 
 class Solution:
+    def _helper(self, arr: List[int], target: int, index: int) -> int:
+
+        # Base case: If index reaches the size of the array,
+        # the target is not found
+        if index == len(arr):
+            return -1
+
+        # If the current element matches the target, return the index
+        if arr[index] == target:
+            return index
+
+        # Recursive call to check the next element in the array
+        return self._helper(arr, target, index + 1)
+
     def search_element(self, arr: List[int], target: int) -> int:
         return self._helper(arr, target, 0)
 
-    def _helper(self, arr: List[int], target: int, index: int) -> int:
-        # Base case 1: ran off the end without finding target
-        if index == len(arr):
-            return -1
-        # Base case 2: found target — return its index
-        if arr[index] == target:
-            return index
-        # Tail call: advance the index
-        return self._helper(arr, target, index + 1)
 
+# Examples from the problem statement
+print(Solution().search_element([2, 8, 3, 6, 4], 3))   # 2
+print(Solution().search_element([1, 2, 3, 4, 5], 5))   # 4
+print(Solution().search_element([2, 8, 1, 9, 4], 10))  # -1
 
-if __name__ == "__main__":
-    print(Solution().search_element([2, 8, 3, 6, 4], 3))    # 2
-    print(Solution().search_element([2, 8, 1, 9, 4], 10))   # -1
+# Edge cases
+print(Solution().search_element([], 5))                # -1
+print(Solution().search_element([7], 7))               # 0
+print(Solution().search_element([7], 1))               # -1
+print(Solution().search_element([1, 2, 3], 1))         # 0
 ```
 
 ```java run
 public class Main {
     static class Solution {
-        public int searchElement(int[] arr, int target) {
-            return helper(arr, target, 0);
+        private int helper(int[] arr, int target, int index) {
+
+            // Base case: If index reaches the size of the array,
+            // the target is not found
+            if (index == arr.length) {
+                return -1;
+            }
+
+            // If the current element matches the target, return the index
+            if (arr[index] == target) {
+                return index;
+            }
+
+            // Recursive call to check the next element in the array
+            return helper(arr, target, index + 1);
         }
 
-        private int helper(int[] arr, int target, int index) {
-            if (index == arr.length) return -1;        // Base 1 — not found
-            if (arr[index] == target) return index;    // Base 2 — found
-            return helper(arr, target, index + 1);     // Tail call (JVM no TCO)
+        public int searchElement(int[] arr, int target) {
+            return helper(arr, target, 0);
         }
     }
 
     public static void main(String[] args) {
-        int[] arr = {2, 8, 3, 6, 4};
-        System.out.println(new Solution().searchElement(arr, 3));   // 2
+        // Examples from the problem statement
+        System.out.println(new Solution().searchElement(new int[]{2, 8, 3, 6, 4}, 3));   // 2
+        System.out.println(new Solution().searchElement(new int[]{1, 2, 3, 4, 5}, 5));   // 4
+        System.out.println(new Solution().searchElement(new int[]{2, 8, 1, 9, 4}, 10));  // -1
+
+        // Edge cases
+        System.out.println(new Solution().searchElement(new int[]{}, 5));                // -1
+        System.out.println(new Solution().searchElement(new int[]{7}, 7));               // 0
+        System.out.println(new Solution().searchElement(new int[]{7}, 1));               // -1
+        System.out.println(new Solution().searchElement(new int[]{1, 2, 3}, 1));         // 0
     }
-}
-```
-
-```c run
-#include <stdio.h>
-
-int helper(const int *arr, int n, int target, int index) {
-    if (index == n) return -1;                 /* Base 1 — not found */
-    if (arr[index] == target) return index;    /* Base 2 — found */
-    return helper(arr, n, target, index + 1);  /* Tail call */
-}
-
-int search_element(const int *arr, int n, int target) {
-    return helper(arr, n, target, 0);
-}
-
-int main(void) {
-    int arr[] = {2, 8, 3, 6, 4};
-    printf("%d\n", search_element(arr, 5, 3));   /* 2 */
-    return 0;
-}
-```
-
-```scala run
-import scala.annotation.tailrec
-
-object Main extends App {
-  class Solution {
-    def searchElement(arr: Array[Int], target: Int): Int = helper(arr, target, 0)
-
-    @tailrec
-    private def helper(arr: Array[Int], target: Int, index: Int): Int = {
-      if (index == arr.length) -1            // Base 1 — not found
-      else if (arr(index) == target) index   // Base 2 — found
-      else helper(arr, target, index + 1)    // Tail call — compiled to a loop
-    }
-  }
-
-  println(new Solution().searchElement(Array(2, 8, 3, 6, 4), 3))   // 2
 }
 ```
 
@@ -871,18 +829,14 @@ When the match is found, every paused frame returns the same `index` value direc
 
 </details>
 
----
-
-## Complexity Analysis
+### Complexity Analysis
 
 | Resource | Cost | Why |
 |---|---|---|
 | **Time** | `O(n)` worst case | We may scan the entire array. |
 | **Space (stack)** | `O(n)` without TCO, `O(1)` with TCO | Recursion depth = scan length. |
 
----
-
-## Edge Cases
+### Edge Cases
 
 | Case | Example | Expected | Reasoning |
 |---|---|---|---|
@@ -892,11 +846,14 @@ When the match is found, every paused frame returns the same `index` value direc
 | No match | `arr = [..., target absent]` | `-1` | Recurses through all `n` elements. |
 | Duplicates | `arr = [3, 1, 3, 5]` | `0` | Returns the first match — the index of the leftmost occurrence. |
 
----
+</details>
+<details>
+<summary><h2>Final Takeaway</h2></summary>
 
-## Final Takeaway
 
 Search Element shows tail recursion in its simplest "scanner" form: an index accumulator advances until a condition fires. Same template you'll use for "find first negative number," "find first repeated character," and dozens of single-pass tests. The next problem also uses the index-advance template, but with two indices that converge from opposite ends.
+
+</details>
 
 ***
 
@@ -923,7 +880,9 @@ Output: true   (an empty array is trivially a palindrome)
 
 ---
 
-## Why Tail Recursion Fits Here
+<details>
+<summary><h2>Why Tail Recursion Fits Here</h2></summary>
+
 
 Two pointers — `start` and `end` — converge from the array's edges toward the middle. Each call compares `arr[start]` and `arr[end]`. If they differ, return `false`. If they match, recurse with `start + 1` and `end - 1`. When `start >= end`, every pair has been checked.
 
@@ -945,9 +904,10 @@ flowchart LR
 
 <p align="center"><strong>Two pointers march toward each other; mismatch is an early-return false; meeting-or-crossing is a true return.</strong></p>
 
----
+</details>
+<details>
+<summary><h2>Applying the Diagnostic Questions</h2></summary>
 
-## Applying the Diagnostic Questions
 
 | # | Check | Answer |
 |---|---|---|
@@ -967,9 +927,10 @@ There's nothing to *build* — the answer is "no mismatch found, keep going" or 
 
 Three branches: `return true` (done), `return false` (mismatch), `return helper(arr, start + 1, end - 1)` (tail call). All three are direct returns. ✓
 
----
+</details>
+<details>
+<summary><h2>The Two-Pointer Convergence Strategy (Visualised)</h2></summary>
 
-## The Two-Pointer Convergence Strategy (Visualised)
 
 <div class="d2-slides" data-caption="Each call compares one pair and either returns false or recurses with both pointers moved inward.">
 
@@ -993,102 +954,83 @@ state: "start=2, end=1   start ≥ end" {
 
 </div>
 
----
+</details>
+<details>
+<summary><h2>Solution &amp; Analysis</h2></summary>
 
-## The Solution
-
-
-```pseudocode
-function isPalindrome(arr):
-    return helper(arr, 0, length(arr) − 1)
-
-function helper(arr, start, end):
-    if start ≥ end:                        # base case — pointers met or crossed
-        return true
-    if arr[start] ≠ arr[end]:              # mismatch — not a palindrome
-        return false
-    return helper(arr, start + 1, end − 1) # tail call — march inward
-```
+### The Solution
 
 ```python run
 from typing import List
 
 class Solution:
-    def is_palindrome(self, arr: List[int]) -> bool:
-        return self._helper(arr, 0, len(arr) - 1)
+    def helper(self, arr: List[int], start: int, end: int) -> bool:
 
-    def _helper(self, arr: List[int], start: int, end: int) -> bool:
-        # Base case: all pairs checked
+        # Base case: If start index crosses end index,
+        # we have checked all elements
         if start >= end:
             return True
-        # Mismatch: not a palindrome
+
+        # Check if the elements at the current indices are equal
         if arr[start] != arr[end]:
             return False
-        # Tail call: pointers march inward
-        return self._helper(arr, start + 1, end - 1)
+
+        # Recursive call moving towards the center of the list
+        return self.helper(arr, start + 1, end - 1)
+
+    def is_palindrome(self, arr: List[int]) -> bool:
+        return self.helper(arr, 0, len(arr) - 1)
 
 
-if __name__ == "__main__":
-    print(Solution().is_palindrome([1, 2, 2, 1]))   # True
-    print(Solution().is_palindrome([1, 3, 2, 1]))   # False
+# Examples from the problem statement
+print(Solution().is_palindrome([1, 2, 2, 1]))     # True
+print(Solution().is_palindrome([1, 3, 2, 1]))     # False
+print(Solution().is_palindrome([]))               # True
+
+# Edge cases
+print(Solution().is_palindrome([5]))              # True
+print(Solution().is_palindrome([1, 2, 1]))        # True
+print(Solution().is_palindrome([1, 2, 3]))        # False
+print(Solution().is_palindrome([1, 1, 1, 1]))     # True
 ```
 
 ```java run
 public class Main {
     static class Solution {
+        private boolean helper(int[] arr, int start, int end) {
+
+            // Base case: If start index crosses end index,
+            // we have checked all elements
+            if (start >= end) {
+                return true;
+            }
+
+            // Check if the elements at the current indices are equal
+            if (arr[start] != arr[end]) {
+                return false;
+            }
+
+            // Recursive call moving towards the center of the list
+            return helper(arr, start + 1, end - 1);
+        }
+
         public boolean isPalindrome(int[] arr) {
             return helper(arr, 0, arr.length - 1);
-        }
-        private boolean helper(int[] arr, int start, int end) {
-            if (start >= end) return true;             // Base
-            if (arr[start] != arr[end]) return false;  // Mismatch
-            return helper(arr, start + 1, end - 1);    // Tail call
         }
     }
 
     public static void main(String[] args) {
-        System.out.println(new Solution().isPalindrome(new int[]{1, 2, 2, 1}));   // true
+        // Examples from the problem statement
+        System.out.println(new Solution().isPalindrome(new int[]{1, 2, 2, 1}));     // true
+        System.out.println(new Solution().isPalindrome(new int[]{1, 3, 2, 1}));     // false
+        System.out.println(new Solution().isPalindrome(new int[]{}));               // true
+
+        // Edge cases
+        System.out.println(new Solution().isPalindrome(new int[]{5}));              // true
+        System.out.println(new Solution().isPalindrome(new int[]{1, 2, 1}));        // true
+        System.out.println(new Solution().isPalindrome(new int[]{1, 2, 3}));        // false
+        System.out.println(new Solution().isPalindrome(new int[]{1, 1, 1, 1}));     // true
     }
-}
-```
-
-```c run
-#include <stdio.h>
-#include <stdbool.h>
-
-bool helper(const int *arr, int start, int end) {
-    if (start >= end) return true;                /* Base */
-    if (arr[start] != arr[end]) return false;     /* Mismatch */
-    return helper(arr, start + 1, end - 1);       /* Tail call */
-}
-
-bool is_palindrome(const int *arr, int n) {
-    return helper(arr, 0, n - 1);
-}
-
-int main(void) {
-    int a[] = {1, 2, 2, 1};
-    printf("%d\n", is_palindrome(a, 4));   /* 1 (true) */
-    return 0;
-}
-```
-
-```scala run
-import scala.annotation.tailrec
-
-object Main extends App {
-  class Solution {
-    def isPalindrome(arr: Array[Int]): Boolean = helper(arr, 0, arr.length - 1)
-
-    @tailrec
-    private def helper(arr: Array[Int], start: Int, end: Int): Boolean = {
-      if (start >= end) true
-      else if (arr(start) != arr(end)) false
-      else helper(arr, start + 1, end - 1)   // Tail call — Scala compiles to loop
-    }
-  }
-
-  println(new Solution().isPalindrome(Array(1, 2, 2, 1)))   // true
 }
 ```
 
@@ -1107,18 +1049,14 @@ The early-return on mismatch is the algorithm's strength: we stop the moment we 
 
 </details>
 
----
-
-## Complexity Analysis
+### Complexity Analysis
 
 | Resource | Cost | Why |
 |---|---|---|
 | **Time** | `O(n)` worst case | At most `n / 2` comparisons. |
 | **Space (stack)** | `O(n)` without TCO, `O(1)` with TCO | Depth = `n / 2`. |
 
----
-
-## Edge Cases
+### Edge Cases
 
 | Case | Example | Expected | Reasoning |
 |---|---|---|---|
@@ -1128,11 +1066,14 @@ The early-return on mismatch is the algorithm's strength: we stop the moment we 
 | Two different | `arr = [3, 4]` | `false` | Mismatch on first call. |
 | Odd length | `arr = [1, 2, 1]` | `true` | Middle element never compared (correctly). |
 
----
+</details>
+<details>
+<summary><h2>Final Takeaway</h2></summary>
 
-## Final Takeaway
 
 Is-Palindrome is tail recursion with two converging pointers. The accumulator is positional state, not value-building. Once you see this two-pointer convergence pattern, you'll see it again in "find pair summing to target," in "trim a list from both sides," in any problem where the operation is symmetric across the middle. The next problem combines tail-recursion's downward work with a *destructive* operation: rewriting linked-list pointers.
+
+</details>
 
 ***
 
@@ -1153,9 +1094,11 @@ Output: head → 10 → 3 → 7 → 5 → null
 
 ---
 
-## Why Tail Recursion Fits Here
+<details>
+<summary><h2>Why Tail Recursion Fits Here</h2></summary>
 
-Reversing a linked list is a perfect tail-recursion candidate because we can carry both **the current node** and **the previous node** forward as accumulator parameters. Each step rewires `current.next = previous`, then advances both pointers by one.
+
+Reversing a linked list is a perfect tail-recursion candidate because we can carry both **the current node** and **the previous node** forward as accumulator parameters. Each step rewires `current.next = previous`, then advances both pointers by one. Because Python (and Java) have no TCO, the canonical implementation below collapses the tail recursion into its equivalent `while` loop — the logic and the per-step work are identical; only the frame mechanics change.
 
 ```mermaid
 ---
@@ -1173,17 +1116,18 @@ flowchart LR
   S1["helper(5, null)<br/>save 7; 5.next = null<br/>recurse(7, 5)"] --> S2["helper(7, 5)<br/>save 3; 7.next = 5<br/>recurse(3, 7)"] --> S3["helper(3, 7)<br/>save 10; 3.next = 7<br/>recurse(10, 3)"] --> S4["helper(10, 3)<br/>save null; 10.next = 3<br/>recurse(null, 10)"] --> S5["helper(null, 10)<br/>BASE — return 10"]
 ```
 
-<p align="center"><strong>Each frame saves <code>current.next</code> in a local, rewires <code>current.next = previous</code>, then tail-calls with <code>(saved_next, current)</code>. The base case returns the last <code>previous</code> — the new head.</strong></p>
+<p align="center"><strong>The conceptual tail-recursive shape: each frame saves <code>current.next</code> in a local, rewires <code>current.next = previous</code>, then tail-calls with <code>(saved_next, current)</code>. The base case returns the last <code>previous</code> — the new head. The implementation below is the equivalent <code>while</code> loop — same per-step work, one reused frame.</strong></p>
 
----
+</details>
+<details>
+<summary><h2>Applying the Diagnostic Questions</h2></summary>
 
-## Applying the Diagnostic Questions
 
 | # | Check | Answer |
 |---|---|---|
 | **Q1** | Build down without look-back? | **Yes** — we walk forward through the list once, rewiring as we go. |
 | **Q2** | Single accumulator? | **Yes** — the `previous` pointer is the running answer. |
-| **Q3** | Recursive call last? | **Yes** — `return helper(next, current)` is the tail call. |
+| **Q3** | Recursive call last? | **Yes** — the tail-recursive shape `return helper(next, current)` would be the last action; here we collapse that shape into a `while` loop because Python/Java have no TCO. |
 
 ### Q1 — Why "single forward pass, no look-back"?
 
@@ -1193,13 +1137,14 @@ We never revisit a node. Each node is touched exactly once: we save its `.next`,
 
 The "answer being built" is the head of the reversed list — which, at any moment, is the most-recently-rewired node. That's exactly `previous`. ✓
 
-### Q3 — Why "the call is in tail position"?
+### Q3 — Why "the call would be in tail position"?
 
-After rewiring, the function does `return helper(next, current)`. Nothing follows the call. ✓
+After rewiring, a tail-recursive version would end with `return helper(next, current)` — nothing following the call. Because the languages here don't optimise tail calls, the canonical implementation hoists that same logic into a `while` loop: the loop body is the would-be tail-call body, and the `current is None` check is the would-be base case. Logic identical; frames flat. ✓
 
----
+</details>
+<details>
+<summary><h2>The Pointer-Rewire Strategy (Visualised)</h2></summary>
 
-## The Pointer-Rewire Strategy (Visualised)
 
 <div class="d2-slides" data-caption="Each frame rewires one pointer and advances. The accumulator (`previous`) becomes the new head when we run off the end.">
 
@@ -1240,123 +1185,144 @@ state: "After step 4 — current=null, previous=10" {
 
 </div>
 
----
+</details>
+<details>
+<summary><h2>Solution &amp; Analysis</h2></summary>
 
-## The Solution
-
-
-```pseudocode
-function reverseList(head):
-    return helper(head, null)              # previous starts as null (new tail)
-
-function helper(current, previous):
-    if current is null:                    # base case — previous is the new head
-        return previous
-    next ← current.next                    # save next BEFORE rewiring
-    current.next ← previous                # rewire current to point backward
-    return helper(next, current)           # tail call — advance both pointers
-```
+### The Solution
 
 ```python run
-from typing import Optional
+from typing import Optional, List, Any
+
 
 class ListNode:
-    def __init__(self, val: int = 0, nxt: "Optional[ListNode]" = None):
+    def __init__(self, val=0, nxt=None):
         self.val = val
         self.next = nxt
 
-class Solution:
-    def reverse_list(self, head: Optional[ListNode]) -> Optional[ListNode]:
-        return self._helper(head, None)
 
-    def _helper(self, current: Optional[ListNode], previous: Optional[ListNode]) -> Optional[ListNode]:
-        # Base case: ran off the end → previous is the new head
-        if current is None:
-            return previous
-
-        # Save next BEFORE rewiring (otherwise we'd lose the rest of the list)
-        nxt = current.next
-        # Rewire current to point backward
-        current.next = previous
-        # Tail call: advance both pointers
-        return self._helper(nxt, current)
+def from_list(values):
+    if not values:
+        return None
+    head = ListNode(values[0])
+    cur = head
+    for v in values[1:]:
+        cur.next = ListNode(v)
+        cur = cur.next
+    return head
 
 
-if __name__ == "__main__":
-    head = ListNode(5, ListNode(7, ListNode(3, ListNode(10))))
-    new_head = Solution().reverse_list(head)
+def to_list(head):
     out = []
-    while new_head:
-        out.append(new_head.val)
-        new_head = new_head.next
-    print(out)   # [10, 3, 7, 5]
+    while head is not None:
+        out.append(head.val)
+        head = head.next
+    return out
+
+
+class Solution:
+    def reverse_a_list(
+        self, head: Optional[ListNode]
+    ) -> Optional[ListNode]:
+
+        # Initialize pointers current and previous
+        current: Optional[ListNode] = head
+        previous: Optional[ListNode] = None
+
+        while current is not None:
+
+            # Save the address of next node
+            next_node = current.next
+
+            # Update the next of current node
+            current.next = previous
+
+            # Move previous to hold current node
+            previous = current
+
+            # Move current ahead
+            current = next_node
+
+        return previous
+
+
+# Example from the problem statement
+print(to_list(Solution().reverse_a_list(from_list([5, 7, 3, 10]))))   # [10, 3, 7, 5]
+
+# Edge cases
+print(to_list(Solution().reverse_a_list(None)))                        # []
+print(to_list(Solution().reverse_a_list(from_list([42]))))             # [42]
+print(to_list(Solution().reverse_a_list(from_list([1, 2]))))           # [2, 1]
+print(to_list(Solution().reverse_a_list(from_list([1, 2, 3]))))        # [3, 2, 1]
+print(to_list(Solution().reverse_a_list(from_list([1, 1, 1]))))        # [1, 1, 1]
 ```
 
 ```java run
+import java.util.*;
+
 public class Main {
     static class ListNode {
         int val;
         ListNode next;
-        ListNode(int v) { val = v; }
+        ListNode() {}
+        ListNode(int val) { this.val = val; }
+        ListNode(int val, ListNode next) { this.val = val; this.next = next; }
+    }
+
+    static ListNode fromList(int... values) {
+        if (values.length == 0) return null;
+        ListNode head = new ListNode(values[0]);
+        ListNode cur = head;
+        for (int i = 1; i < values.length; i++) {
+            cur.next = new ListNode(values[i]);
+            cur = cur.next;
+        }
+        return head;
+    }
+
+    static List<Integer> toList(ListNode head) {
+        List<Integer> out = new ArrayList<>();
+        while (head != null) { out.add(head.val); head = head.next; }
+        return out;
     }
 
     static class Solution {
         public ListNode reverseAList(ListNode head) {
-            return helper(head, null);
-        }
 
-        private ListNode helper(ListNode current, ListNode previous) {
-            if (current == null) return previous;       // Base: previous is the new head
-            ListNode nxt = current.next;                 // Save next BEFORE rewiring
-            current.next = previous;                     // Rewire backward
-            return helper(nxt, current);                 // Tail call (no TCO on JVM)
+            // Initialize pointers current and previous
+            ListNode current = head;
+            ListNode previous = null;
+
+            while (current != null) {
+
+                // Save the address of next node
+                ListNode next = current.next;
+
+                // Update the next of current node
+                current.next = previous;
+
+                // Move previous to hold current node
+                previous = current;
+
+                // Move current ahead
+                current = next;
+            }
+
+            return previous;
         }
     }
-}
-```
 
-```c run
-#include <stdio.h>
-#include <stdlib.h>
+    public static void main(String[] args) {
+        // Example from the problem statement
+        System.out.println(toList(new Solution().reverseAList(fromList(5, 7, 3, 10))));   // [10, 3, 7, 5]
 
-typedef struct ListNode { int val; struct ListNode *next; } ListNode;
-
-ListNode *helper(ListNode *current, ListNode *previous) {
-    if (current == NULL) return previous;       /* Base */
-    ListNode *next = current->next;              /* Save next */
-    current->next = previous;                    /* Rewire */
-    return helper(next, current);                /* Tail call */
-}
-
-ListNode *reverse_list(ListNode *head) { return helper(head, NULL); }
-
-int main(void) {
-    /* Build 5 → 7 → 3 → 10 */
-    ListNode n4 = {10, NULL}, n3 = {3, &n4}, n2 = {7, &n3}, n1 = {5, &n2};
-    ListNode *h = reverse_list(&n1);
-    while (h) { printf("%d ", h->val); h = h->next; }   /* 10 3 7 5 */
-    printf("\n");
-    return 0;
-}
-```
-
-```scala run
-import scala.annotation.tailrec
-
-class ListNode(var value: Int, var next: ListNode = null)
-
-object Main extends App {
-  class Solution {
-    def reverseAList(head: ListNode): ListNode = helper(head, null)
-
-    @tailrec
-    private def helper(current: ListNode, previous: ListNode): ListNode = {
-      if (current == null) return previous     // Base
-      val nxt = current.next                    // Save
-      current.next = previous                   // Rewire
-      helper(nxt, current)                      // Tail call — Scala compiles to loop
+        // Edge cases
+        System.out.println(toList(new Solution().reverseAList(null)));                     // []
+        System.out.println(toList(new Solution().reverseAList(fromList(42))));             // [42]
+        System.out.println(toList(new Solution().reverseAList(fromList(1, 2))));           // [2, 1]
+        System.out.println(toList(new Solution().reverseAList(fromList(1, 2, 3))));        // [3, 2, 1]
+        System.out.println(toList(new Solution().reverseAList(fromList(1, 1, 1))));        // [1, 1, 1]
     }
-  }
 }
 ```
 
@@ -1384,40 +1350,37 @@ Step 5 │ current=null │ BASE — return previous=10
 Final answer: head → 10 → 3 → 7 → 5 → null  ✓
 ```
 
-The list is reversed in place. With TCO, this whole walk uses constant stack space. Without TCO, it's `O(n)` frames — fine for normal-sized lists, problematic for huge ones (where iteration is the safer choice).
+The trace above tracks the conceptual tail-recursive form; the implementation hoists those same steps into a `while` loop, so each "recurse(...)" line corresponds to one loop iteration's advance of the `(previous, current)` pair, and "BASE" corresponds to the `current is None` loop exit. The list is reversed in place. In a language with TCO (Scala `@tailrec`, Kotlin `tailrec`), the recursive form runs in `O(1)` stack space; in Python/Java/JS/Go the loop form gets you the same `O(1)` stack directly.
 
 </details>
 
----
-
-## Complexity Analysis
+### Complexity Analysis
 
 | Resource | Cost | Why |
 |---|---|---|
 | **Time** | `O(n)` | Each node touched once. |
-| **Space (stack)** | `O(n)` without TCO, `O(1)` with TCO | Depth = list length. |
-| **Space (auxiliary)** | `O(1)` | Only a few pointers held in the frame. |
+| **Space (stack)** | `O(1)` for the loop form here; `O(n)` for a recursive form without TCO, `O(1)` with TCO | The loop reuses one frame; the recursive form would push one frame per node unless the compiler optimises tail calls. |
+| **Space (auxiliary)** | `O(1)` | Only a few pointers held at a time. |
 
----
-
-## Edge Cases
+### Edge Cases
 
 | Case | Example | Expected | Reasoning |
 |---|---|---|---|
-| Empty list | `head = null` | `null` | Base case fires immediately; `previous = null` is returned. |
-| Single node | `head = [5]` | `[5]` | Recurses to `helper(null, 5)` → returns 5 unchanged. |
-| Two nodes | `[5, 7]` | `[7, 5]` | Two rewires before base. |
+| Empty list | `head = null` | `null` | `current is None` on entry; the loop body never runs; `previous = null` is returned. |
+| Single node | `head = [5]` | `[5]` | One iteration: rewire `5.next = null`, advance to `current = null`, exit loop. |
+| Two nodes | `[5, 7]` | `[7, 5]` | Two iterations before the loop exits. |
 | Already reversed | `[10, 3, 7, 5]` | `[5, 7, 3, 10]` | Reversal is its own inverse. |
 
----
+</details>
+<details>
+<summary><h2>Final Takeaway</h2></summary>
 
-## Final Takeaway
 
 Reverse-a-List is the canonical "two-pointer rewire" recursion: walk the list, save `next` before each rewire, advance both pointers in the tail call. The pattern shows up in linked-list rotation, in cycle detection (with care), in nth-from-end problems, and in any structural transformation of a linked list. The accumulator is the partially-reversed list; the recursion ends when we run off the end.
 
-You came in with the timing flip — work first, ask later — as a fragile concept. You're leaving with four worked problems, three diagnostic questions, an understanding of TCO across 10 languages, and a feel for when an accumulator-driven recursion beats the head-recursion alternative. The next lesson lifts the restriction "exactly one recursive call per frame": what happens when a function makes *two* recursive calls? The tree branches, the call count explodes, and we meet our first exponential-time recursion.
+You came in with the timing flip — work first, ask later — as a fragile concept. You're leaving with four worked problems, three diagnostic questions, an understanding of TCO across languages, and a feel for when an accumulator-driven recursion beats the head-recursion alternative. The next lesson lifts the restriction "exactly one recursive call per frame": what happens when a function makes *two* recursive calls? The tree branches, the call count explodes, and we meet our first exponential-time recursion.
 
-**Transfer challenge — try before the Multiple Recursion lesson:** Write a tail-recursive function that computes the **GCD of two non-negative integers** using Euclid's algorithm: `gcd(a, b) = gcd(b, a mod b)`, base case `gcd(a, 0) = a`. Use any of the 10 languages above. Three lines including the base case.
+**Transfer challenge — try before the Multiple Recursion lesson:** Write a tail-recursive function that computes the **GCD of two non-negative integers** using Euclid's algorithm: `gcd(a, b) = gcd(b, a mod b)`, base case `gcd(a, 0) = a`. Use either language above. Three lines including the base case.
 
 <details>
 <summary><strong>Answer — open after you've written it</strong></summary>
@@ -1436,5 +1399,7 @@ print(Solution().gcd(48, 18))   # 6
 The recursive relation `gcd(a, b) = gcd(b, a % b)` is Euclid's algorithm in pure tail-recursion form. The accumulator-style of "carry the running pair forward" is in plain sight. Depth is `O(log min(a, b))` (a beautiful number-theoretic fact). With Scala's `@tailrec` or Kotlin's `tailrec` this is genuinely a loop. Even without TCO, the depth is so shallow you'll never overflow.
 
 **You just wrote one of the most efficient algorithms in human history in three lines.** That's tail recursion's gift: a clean accumulator-driven walk that mirrors the underlying mathematics exactly.
+
+</details>
 
 </details>

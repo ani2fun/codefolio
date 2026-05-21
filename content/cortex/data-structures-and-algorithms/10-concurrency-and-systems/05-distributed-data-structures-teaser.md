@@ -160,42 +160,36 @@ Click any question to reveal the answer.
 **A:** **Conflict-free Replicated Data Type.** Designed so concurrent updates from different nodes merge automatically without conflict resolution. Enables eventual consistency without per-write coordination.
 
 </details>
-
 <details>
 <summary><strong>Q:</strong> State-based vs operation-based CRDTs?</summary>
 
 **A:** **State-based (CvRDT)**: nodes send full state; receivers merge via a commutative-associative-idempotent `merge`. **Op-based (CmRDT)**: nodes broadcast operations; ops must commute; usually requires causal delivery.
 
 </details>
-
 <details>
 <summary><strong>Q:</strong> What does a Merkle tree's root hash uniquely identify?</summary>
 
 **A:** The entire tree's contents. Two trees with identical roots are guaranteed identical (modulo hash collisions, which are cryptographically negligible).
 
 </details>
-
 <details>
 <summary><strong>Q:</strong> Cost of comparing two large replicated trees via Merkle hashing?</summary>
 
 **A:** `O(log n)` round-trips: exchange root hashes; recurse only into subtrees with mismatched hashes. Used by Cassandra and DynamoDB for anti-entropy.
 
 </details>
-
 <details>
 <summary><strong>Q:</strong> Vector clock vs Lamport clock?</summary>
 
 **A:** **Lamport** (single integer per node) — total order, doesn't distinguish concurrent from causally-ordered events. **Vector** (vector indexed by node) — partial order, captures causal relationships and detects concurrency.
 
 </details>
-
 <details>
 <summary><strong>Q:</strong> Two events `a` and `b` are *concurrent* in a vector-clock system iff?</summary>
 
 **A:** Neither `vc(a) ≤ vc(b)` nor `vc(b) ≤ vc(a)`. Both vectors have at least one component the other lacks.
 
 </details>
-
 <details>
 <summary><strong>Q:</strong> Production examples of each?</summary>
 

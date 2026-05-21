@@ -85,7 +85,7 @@ The intuition: walking around an odd cycle, you flip the colour at each step, an
 
 # The Colouring Algorithm
 
-Use any traversal — DFS or BFS — and assign a colour at every step. The first node gets colour 0; every neighbour gets colour 1; their neighbours colour 0; and so on, alternating with depth.
+Use any traversal — DFS or BFS — and assign a colour at every step. The first node gets a starting colour; every neighbour gets the opposite colour; their neighbours flip back; and so on, alternating with depth.
 
 The trick is the *check*: when you encounter a *visited* neighbour, verify that its colour is the *opposite* of the current node's. If not, it's a conflict, and the graph isn't two-colourable.
 
@@ -98,10 +98,10 @@ The trick is the *check*: when you encounter a *visited* neighbour, verify that 
 >
 > **`isTwoColourable(graph)`**
 > 1. Initialise `colour` map (empty).
-> 2. For each unconnected component (= each uncoloured node): call `colourGraph` starting with colour 0. Return false if any component fails.
+> 2. For each unconnected component (= each uncoloured node): call `colourGraph` starting with colour 1. Return false if any component fails.
 > 3. Return true.
 
-The outer-loop wrapper handles disconnected graphs — a graph can have multiple components, each individually 2-colourable. We need *all* of them to succeed.
+The outer-loop wrapper handles disconnected graphs — a graph can have multiple components, each individually 2-colourable. We need *all* of them to succeed. (The reference implementation seeds each component with colour 1 and flips to 0 on the first hop; the two values are interchangeable — only the *alternation* matters. An empty graph has nothing to colour, and the implementation reports `false` for that degenerate input.)
 
 > *Before reading on — what does the algorithm look like with BFS instead of DFS? Sketch the change in one sentence.*
 
@@ -114,57 +114,84 @@ With BFS: maintain a queue, push the source with colour 0, pop nodes, paint each
 We'll use DFS — it's slightly more compact recursively. Colour values are 0 and 1 (or `false`/`true`); flipping is `1 - colour` (or `!colour`).
 
 
-```pseudocode
-function colourGraph(graph, node, colour, colourValue):
-    colour[node] ← colourValue
-    for neighbor in graph[node]:
-        if neighbor is not in colour:
-            if NOT colourGraph(graph, neighbor, colour, 1 − colourValue):
-                return false
-        else if colour[neighbor] = colourValue:
-            return false   # same colour on both endpoints → not bipartite
-    return true
-
-function isTwoColourable(graph):
-    colour ← empty map
-    for node from 0 to N−1:
-        if node is not in colour:
-            if NOT colourGraph(graph, node, colour, 0):
-                return false
-    return true
-```
-
 ```python run
 from typing import List, Dict
 
 class Solution:
-    def colour_graph(self,
-                     graph: List[List[int]],
-                     node: int,
-                     colour: Dict[int, int],
-                     colour_value: int) -> bool:
+    def colour_graph(
+        self,
+        graph: List[List[int]],
+        node: int,
+        colour: Dict[int, int],
+        colour_value: int,
+    ) -> bool:
+
+        # Colour the node with colourValue
         colour[node] = colour_value
+
+        # Traverse all the neighbours of the current node
         for neighbour in graph[node]:
+
+            # If the neighbour is not coloured, colour it with the
+            # opposite colour and recursively call the function on the
+            # neighbour
             if neighbour not in colour:
-                # Flip the colour for the next layer.
-                if not self.colour_graph(graph, neighbour, colour, 1 - colour_value):
+
+                # If the neighbour is not coloured, colour it with the
+                # opposite colour
+                if not self.colour_graph(
+                    graph, neighbour, colour, 1 - colour_value
+                ):
+
+                    # If the colouring fails, return false
+                    # (i.e., if a neighbour has the same colour)
                     return False
+
+            # Else if the neighbour is coloured with the same colour
+            # return false
             elif colour[neighbour] == colour_value:
-                # Same colour on both endpoints of an edge → not bipartite.
                 return False
+
         return True
 
     def is_two_colourable(self, graph: List[List[int]]) -> bool:
+
+        # Number of nodes in the graph
+        n = len(graph)
+
+        # If the graph is empty, return false
+        if n == 0:
+            return False
+
+        # Create a map to store the colour of each node
         colour: Dict[int, int] = {}
+
+        # Traverse all nodes in the graph
         for node in range(len(graph)):
+
+            # If a node is not coloured, start colouring its
+            # connected component recursively starting with colour 1
             if node not in colour:
-                if not self.colour_graph(graph, node, colour, 0):
+
+                # If the colouring fails, return false
+                # (i.e., if a neighbour has the same colour)
+                if not self.colour_graph(graph, node, colour, 1):
                     return False
+
+        # If all nodes are coloured successfully, return true
         return True
 
 
-print(Solution().is_two_colourable([[1, 3], [0, 2], [1, 3], [0, 2]]))   # True
-print(Solution().is_two_colourable([[1, 2], [0, 2], [0, 1]]))           # False (triangle)
+# Examples from the problem statement
+print(Solution().is_two_colourable([[1,3],[0,2],[1,3],[0,2]]))  # True
+print(Solution().is_two_colourable([[1,2],[0,2],[0,1]]))        # False
+
+# Edge cases
+print(Solution().is_two_colourable([]))                         # False
+print(Solution().is_two_colourable([[1],[0]]))                  # True
+print(Solution().is_two_colourable([[1,2],[0,2],[0,1]]))        # False — odd cycle (triangle)
+print(Solution().is_two_colourable([[],[]]))                    # True — disconnected, no edges
+print(Solution().is_two_colourable([[1],[0],[3],[2]]))          # True — two separate edges
 ```
 
 ```java run
@@ -172,114 +199,97 @@ import java.util.*;
 
 public class Main {
     static class Solution {
-        public boolean colourGraph(List<List<Integer>> graph, int node,
-                                   Map<Integer, Integer> colour, int value) {
-            colour.put(node, value);
-            for (int n : graph.get(node)) {
-                if (!colour.containsKey(n)) {
-                    if (!colourGraph(graph, n, colour, 1 - value)) return false;
-                } else if (colour.get(n) == value) {
+        private boolean colourGraph(
+            List<List<Integer>> graph,
+            int node,
+            Map<Integer, Integer> colour,
+            int colourValue
+        ) {
+
+            // Colour the node with colourValue
+            colour.put(node, colourValue);
+
+            // Traverse all the neighbours of the current node
+            for (int neighbour : graph.get(node)) {
+
+                // If the neighbour is not coloured, colour it with the
+                // opposite colour and recursively call the function on the
+                // neighbour
+                if (!colour.containsKey(neighbour)) {
+
+                    // If the neighbour is not coloured, colour it with the
+                    // opposite colour
+                    if (
+                        !colourGraph(
+                            graph,
+                            neighbour,
+                            colour,
+                            1 - colourValue
+                        )
+                    ) {
+
+                        // If the colouring fails, return false
+                        // (i.e., if a neighbour has the same colour)
+                        return false;
+                    }
+                }
+
+                // Else if the neighbour is coloured with the same colour
+                // return false
+                else if (colour.get(neighbour) == colourValue) {
                     return false;
                 }
             }
+
             return true;
         }
 
         public boolean isTwoColourable(List<List<Integer>> graph) {
-            Map<Integer, Integer> colour = new HashMap<>();
-            for (int node = 0; node < graph.size(); node++) {
-                if (!colour.containsKey(node))
-                    if (!colourGraph(graph, node, colour, 0)) return false;
+
+            // Number of nodes in the graph
+            int N = graph.size();
+
+            // If the graph is empty, return false
+            if (N == 0) {
+                return false;
             }
+
+            // Create a map to store the colour of each node
+            Map<Integer, Integer> colour = new HashMap<>();
+
+            // Traverse all nodes in the graph
+            for (int node = 0; node < graph.size(); node++) {
+
+                // If a node is not coloured, start colouring its
+                // connected component recursively starting with colour 1
+                if (!colour.containsKey(node)) {
+
+                    // If the colouring fails, return false
+                    // (i.e., if a neighbour has the same colour)
+                    if (!colourGraph(graph, node, colour, 1)) {
+                        return false;
+                    }
+                }
+            }
+
+            // If all nodes are coloured successfully, return true
             return true;
         }
     }
 
     public static void main(String[] args) {
-        var g1 = List.of(List.of(1, 3), List.of(0, 2), List.of(1, 3), List.of(0, 2));
-        var g2 = List.of(List.of(1, 2), List.of(0, 2), List.of(0, 1));
-        System.out.println(new Solution().isTwoColourable(g1));
-        System.out.println(new Solution().isTwoColourable(g2));
+        Solution sol = new Solution();
+
+        // Examples from the problem statement
+        System.out.println(sol.isTwoColourable(List.of(List.of(1,3),List.of(0,2),List.of(1,3),List.of(0,2))));  // true
+        System.out.println(sol.isTwoColourable(List.of(List.of(1,2),List.of(0,2),List.of(0,1))));               // false
+
+        // Edge cases
+        System.out.println(sol.isTwoColourable(new ArrayList<>()));                         // false
+        System.out.println(sol.isTwoColourable(List.of(List.of(1), List.of(0))));           // true
+        System.out.println(sol.isTwoColourable(List.of(new ArrayList<>(), new ArrayList<>())));  // true
+        System.out.println(sol.isTwoColourable(List.of(List.of(1),List.of(0),List.of(3),List.of(2))));  // true
     }
-}
-```
-
-```c run
-#include <stdio.h>
-#include <stdlib.h>
-#include <stdbool.h>
-
-#define UNCOLOURED -1
-
-typedef struct { int* data; int size; } AdjList;
-
-static bool colour_graph(AdjList* graph, int node, int* colour, int value) {
-    colour[node] = value;
-    for (int i = 0; i < graph[node].size; i++) {
-        int n = graph[node].data[i];
-        if (colour[n] == UNCOLOURED) {
-            if (!colour_graph(graph, n, colour, 1 - value)) return false;
-        } else if (colour[n] == value) {
-            return false;
-        }
-    }
-    return true;
-}
-
-bool is_two_colourable(AdjList* graph, int n) {
-    int* colour = malloc(n * sizeof(int));
-    for (int i = 0; i < n; i++) colour[i] = UNCOLOURED;
-    bool result = true;
-    for (int node = 0; node < n; node++) {
-        if (colour[node] == UNCOLOURED && !colour_graph(graph, node, colour, 0)) {
-            result = false; break;
-        }
-    }
-    free(colour);
-    return result;
-}
-
-int main() {
-    int g0[]={1,3}, g1[]={0,2}, g2[]={1,3}, g3[]={0,2};
-    AdjList g[]={{g0,2},{g1,2},{g2,2},{g3,2}};
-    printf("%s\n", is_two_colourable(g, 4) ? "true" : "false");
-    int t0[]={1,2}, t1[]={0,2}, t2[]={0,1};
-    AdjList t[]={{t0,2},{t1,2},{t2,2}};
-    printf("%s\n", is_two_colourable(t, 3) ? "true" : "false");
-    return 0;
-}
-```
-
-```scala run
-import scala.collection.mutable
-
-object Main extends App {
-  class Solution {
-    def colourGraph(graph: Array[Array[Int]], node: Int,
-                    colour: mutable.Map[Int, Int], value: Int): Boolean = {
-      colour(node) = value
-      for (n <- graph(node)) {
-        if (!colour.contains(n)) {
-          if (!colourGraph(graph, n, colour, 1 - value)) return false
-        } else if (colour(n) == value) {
-          return false
-        }
-      }
-      true
-    }
-
-    def isTwoColourable(graph: Array[Array[Int]]): Boolean = {
-      val colour = mutable.Map.empty[Int, Int]
-      for (node <- graph.indices) {
-        if (!colour.contains(node))
-          if (!colourGraph(graph, node, colour, 0)) return false
-      }
-      true
-    }
-  }
-
-  println(new Solution().isTwoColourable(Array(Array(1, 3), Array(0, 2), Array(1, 3), Array(0, 2))))
-  println(new Solution().isTwoColourable(Array(Array(1, 2), Array(0, 2), Array(0, 1))))
 }
 ```
 
@@ -315,7 +325,9 @@ Input:  N = 3, dislikes = [[0, 1], [1, 2], [2, 0]]
 Output: false (3-cycle of dislikes)
 ```
 
-## Pattern Mapping
+<details>
+<summary><h2>Pattern Mapping</h2></summary>
+
 
 This is *literally* two-colourable in disguise:
 
@@ -333,51 +345,90 @@ Dislikes here are mutual: if A dislikes B, the conflict is the same as if B disl
 The implementation just adds an edge-list-to-adjacency-list build step in front of the colouring code:
 
 
-```pseudocode
-function dislikePairs(n, dislikes):
-    graph ← array of N empty lists
-    for each (a, b) in dislikes:
-        append b to graph[a]
-        append a to graph[b]   # undirected
-    colour ← empty map
-    for node from 0 to N−1:
-        if node is not in colour:
-            if NOT colourGraph(graph, node, colour, 0):
-                return false
-    return true
-```
-
 ```python run
-from typing import List
+from typing import List, Dict
 
 class Solution:
-    def colour_graph(self, graph, node, colour, value):
-        colour[node] = value
+    def colour_graph(
+        self,
+        graph: List[List[int]],
+        node: int,
+        colour: Dict[int, int],
+        colour_value: int,
+    ) -> bool:
+
+        # Colour the node with colourValue
+        colour[node] = colour_value
+
+        # Traverse all the neighbours of the current node
         for neighbour in graph[node]:
+
+            # If the neighbour is not coloured, colour it with the
+            # opposite colour and recursively call the function on the
+            # neighbour
             if neighbour not in colour:
-                if not self.colour_graph(graph, neighbour, colour, 1 - value):
+
+                # If the neighbour is not coloured, colour it with the
+                # opposite colour
+                if not self.colour_graph(
+                    graph, neighbour, colour, 1 - colour_value
+                ):
+
+                    # If the colouring fails, return false
+                    # (i.e., if a neighbour has the same colour)
                     return False
-            elif colour[neighbour] == value:
+
+            # Else if the neighbour is coloured with the same colour
+            # return false
+            elif colour[neighbour] == colour_value:
                 return False
+
         return True
 
     def dislike_pairs(self, n: int, dislikes: List[List[int]]) -> bool:
-        # Build adjacency list — dislikes are mutual, so add both directions.
-        graph: List[List[int]] = [[] for _ in range(n)]
-        for a, b in dislikes:
-            graph[a].append(b)
-            graph[b].append(a)
 
-        colour: dict = {}
-        for node in range(n):
+        # If the number of people is 0 return false
+        if n == 0:
+            return False
+
+        # Create an adjacency list for the graph
+        graph: List[List[int]] = [[] for _ in range(n)]
+
+        # Add edges to the graph nodes by updating
+        # the adjacency list
+        for dislike in dislikes:
+            graph[dislike[0]].append(dislike[1])
+            graph[dislike[1]].append(dislike[0])
+
+        # Create a map to store the colour of each node
+        colour: Dict[int, int] = {}
+
+        for node in range(len(graph)):
+
+            # If a node is not coloured, start coloring its
+            # connected component recursively starting with colour 1
             if node not in colour:
-                if not self.colour_graph(graph, node, colour, 0):
+
+                # If the colouring fails, return false
+                # (i.e., if a neighbour has the same colour)
+                if not self.colour_graph(graph, node, colour, 1):
                     return False
+
+        # If all nodes are coloured successfully, return true
         return True
 
 
-print(Solution().dislike_pairs(4, [[1, 3], [0, 2], [1, 3], [0, 2]]))   # True
-print(Solution().dislike_pairs(3, [[0, 1], [1, 2], [2, 0]]))           # False
+# Examples from the problem statement
+print(Solution().dislike_pairs(4, [[1,3],[0,2],[1,3],[0,2]]))  # True
+print(Solution().dislike_pairs(3, [[0,1],[1,2],[2,0]]))        # False
+
+# Edge cases
+print(Solution().dislike_pairs(0, []))                          # False
+print(Solution().dislike_pairs(1, []))                          # True
+print(Solution().dislike_pairs(2, [[0,1]]))                     # True
+print(Solution().dislike_pairs(4, []))                          # True — no dislikes
+# Triangle = odd cycle
+print(Solution().dislike_pairs(3, [[0,1],[0,2],[1,2]]))         # False
 ```
 
 ```java run
@@ -385,128 +436,111 @@ import java.util.*;
 
 public class Main {
     static class Solution {
-        boolean colourGraph(List<List<Integer>> graph, int node,
-                            Map<Integer, Integer> colour, int value) {
-            colour.put(node, value);
-            for (int n : graph.get(node)) {
-                if (!colour.containsKey(n)) {
-                    if (!colourGraph(graph, n, colour, 1 - value)) return false;
-                } else if (colour.get(n) == value) return false;
+        private boolean colourGraph(
+            List<List<Integer>> graph,
+            int node,
+            Map<Integer, Integer> colour,
+            int colourValue
+        ) {
+
+            // Colour the node with colourValue
+            colour.put(node, colourValue);
+
+            // Traverse all the neighbours of the current node
+            for (int neighbour : graph.get(node)) {
+
+                // If the neighbour is not coloured, colour it with the
+                // opposite colour and recursively call the function on the
+                // neighbour
+                if (!colour.containsKey(neighbour)) {
+
+                    // If the neighbour is not coloured, colour it with the
+                    // opposite colour
+                    if (
+                        !colourGraph(
+                            graph,
+                            neighbour,
+                            colour,
+                            1 - colourValue
+                        )
+                    ) {
+
+                        // If the colouring fails, return false
+                        // (i.e., if a neighbour has the same colour)
+                        return false;
+                    }
+                }
+
+                // Else if the neighbour is coloured with the same colour
+                // return false
+                else if (colour.get(neighbour) == colourValue) {
+                    return false;
+                }
             }
+
             return true;
         }
 
-        public boolean dislikePairs(int n, int[][] dislikes) {
+        public boolean dislikePairs(int N, List<List<Integer>> dislikes) {
+
+            // If the number of people is 0 return false
+            if (N == 0) {
+                return false;
+            }
+
+            // Create an adjacency list for the graph
             List<List<Integer>> graph = new ArrayList<>();
-            for (int i = 0; i < n; i++) graph.add(new ArrayList<>());
-            for (int[] d : dislikes) {
-                graph.get(d[0]).add(d[1]);
-                graph.get(d[1]).add(d[0]);
+            for (int i = 0; i < N; i++) {
+                graph.add(new ArrayList<>());
             }
+
+            // Add edges to the graph nodes by updating the adjacency list
+            for (List<Integer> dislike : dislikes) {
+                graph.get(dislike.get(0)).add(dislike.get(1));
+                graph.get(dislike.get(1)).add(dislike.get(0));
+            }
+
+            // Create a map to store the colour of each node
             Map<Integer, Integer> colour = new HashMap<>();
-            for (int node = 0; node < n; node++) {
-                if (!colour.containsKey(node))
-                    if (!colourGraph(graph, node, colour, 0)) return false;
+
+            // Traverse all nodes in the graph
+            for (int node = 0; node < graph.size(); node++) {
+
+                // If a node is not coloured, start coloring its
+                // connected component recursively starting with colour 1
+                if (!colour.containsKey(node)) {
+
+                    // If the colouring fails, return false
+                    // (i.e., if a neighbour has the same colour)
+                    if (!colourGraph(graph, node, colour, 1)) {
+                        return false;
+                    }
+                }
             }
+
+            // If all nodes are coloured successfully, return true
             return true;
         }
     }
 
     public static void main(String[] args) {
-        System.out.println(new Solution().dislikePairs(4,
-            new int[][]{{1, 3}, {0, 2}, {1, 3}, {0, 2}}));
-        System.out.println(new Solution().dislikePairs(3,
-            new int[][]{{0, 1}, {1, 2}, {2, 0}}));
+        Solution sol = new Solution();
+
+        // Examples from the problem statement
+        System.out.println(sol.dislikePairs(4, List.of(List.of(1,3),List.of(0,2),List.of(1,3),List.of(0,2))));  // true
+        System.out.println(sol.dislikePairs(3, List.of(List.of(0,1),List.of(1,2),List.of(2,0))));               // false
+
+        // Edge cases
+        System.out.println(sol.dislikePairs(0, new ArrayList<>()));          // false
+        System.out.println(sol.dislikePairs(1, new ArrayList<>()));          // true
+        System.out.println(sol.dislikePairs(2, List.of(List.of(0,1))));      // true
+        System.out.println(sol.dislikePairs(4, new ArrayList<>()));          // true
+        System.out.println(sol.dislikePairs(3, List.of(List.of(0,1),List.of(0,2),List.of(1,2))));  // false
     }
 }
 ```
 
-```c run
-#include <stdio.h>
-#include <stdlib.h>
-#include <stdbool.h>
-
-#define UNCOLOURED -1
-
-typedef struct { int* data; int size; int capacity; } Vec;
-
-static void vec_push(Vec* v, int x) {
-    if (v->size == v->capacity) {
-        v->capacity = v->capacity ? v->capacity * 2 : 4;
-        v->data = realloc(v->data, v->capacity * sizeof(int));
-    }
-    v->data[v->size++] = x;
-}
-
-static bool colour_graph(Vec* g, int node, int* colour, int value) {
-    colour[node] = value;
-    for (int i = 0; i < g[node].size; i++) {
-        int n = g[node].data[i];
-        if (colour[n] == UNCOLOURED) {
-            if (!colour_graph(g, n, colour, 1 - value)) return false;
-        } else if (colour[n] == value) return false;
-    }
-    return true;
-}
-
-bool dislike_pairs(int n, int dislikes[][2], int dn) {
-    Vec* graph = calloc(n, sizeof(Vec));
-    for (int i = 0; i < dn; i++) {
-        vec_push(&graph[dislikes[i][0]], dislikes[i][1]);
-        vec_push(&graph[dislikes[i][1]], dislikes[i][0]);
-    }
-    int* colour = malloc(n * sizeof(int));
-    for (int i = 0; i < n; i++) colour[i] = UNCOLOURED;
-    bool ok = true;
-    for (int node = 0; node < n; node++) {
-        if (colour[node] == UNCOLOURED && !colour_graph(graph, node, colour, 0)) {
-            ok = false; break;
-        }
-    }
-    for (int i = 0; i < n; i++) free(graph[i].data);
-    free(graph); free(colour);
-    return ok;
-}
-
-int main() {
-    int d1[][2] = {{1,3},{0,2},{1,3},{0,2}};
-    int d2[][2] = {{0,1},{1,2},{2,0}};
-    printf("%s\n", dislike_pairs(4, d1, 4) ? "true" : "false");
-    printf("%s\n", dislike_pairs(3, d2, 3) ? "true" : "false");
-    return 0;
-}
-```
-
-```scala run
-import scala.collection.mutable
-
-object Main extends App {
-  class Solution {
-    def colourGraph(g: Array[mutable.ArrayBuffer[Int]], node: Int,
-                    colour: mutable.Map[Int, Int], value: Int): Boolean = {
-      colour(node) = value
-      for (n <- g(node)) {
-        if (!colour.contains(n)) {
-          if (!colourGraph(g, n, colour, 1 - value)) return false
-        } else if (colour(n) == value) return false
-      }
-      true
-    }
-
-    def dislikePairs(n: Int, dislikes: Array[Array[Int]]): Boolean = {
-      val g = Array.fill(n)(mutable.ArrayBuffer.empty[Int])
-      for (d <- dislikes) { g(d(0)).append(d(1)); g(d(1)).append(d(0)) }
-      val colour = mutable.Map.empty[Int, Int]
-      for (node <- 0 until n if !colour.contains(node))
-        if (!colourGraph(g, node, colour, 0)) return false
-      true
-    }
-  }
-
-  println(new Solution().dislikePairs(4, Array(Array(1,3), Array(0,2), Array(1,3), Array(0,2))))
-  println(new Solution().dislikePairs(3, Array(Array(0,1), Array(1,2), Array(2,0))))
-}
-```
+</details>
 
 
 ***
@@ -522,7 +556,9 @@ Input:  graph = [[1, 3], [0, 2, 3], [1, 3], [0, 1, 2]]
 Output: true (remove edge 1-3)
 ```
 
-## Pattern Mapping
+<details>
+<summary><h2>Pattern Mapping</h2></summary>
+
 
 The trick: instead of returning `false` immediately at a colour conflict, **record the conflicting edge** and keep colouring. At the end, count distinct conflicts:
 
@@ -532,57 +568,85 @@ The trick: instead of returning `false` immediately at a colour conflict, **reco
 
 Because the graph is undirected, each conflict edge gets recorded twice (once from each endpoint). Divide the count by 2 to get distinct conflicts.
 
-## The Solution
+</details>
+<details>
+<summary><h2>The Solution</h2></summary>
 
 
-```pseudocode
-function colourGraphCR(graph, node, colour, value, conflicts):
-    colour[node] ← value
-    for neighbor in graph[node]:
-        if neighbor is not in colour:
-            colourGraphCR(graph, neighbor, colour, 1 − value, conflicts)
-        else if colour[neighbor] = value:
-            append (node, neighbor) to conflicts   # don't bail — keep colouring
-
-function colourRepair(graph):
-    colour ← empty map
-    conflicts ← empty list
-    for node from 0 to N−1:
-        if node is not in colour:
-            colourGraphCR(graph, node, colour, 0, conflicts)
-    return length of conflicts / 2 ≤ 1   # each edge recorded twice in undirected graph
-```
 
 ```python run
-from typing import List, Tuple
+from typing import List, Dict, Tuple
 
 class Solution:
-    def colour_graph(self,
-                     graph: List[List[int]],
-                     node: int,
-                     colour: dict,
-                     value: int,
-                     conflicts: List[Tuple[int, int]]) -> None:
-        colour[node] = value
+    def colour_graph(
+        self,
+        graph: List[List[int]],
+        node: int,
+        colour: Dict[int, int],
+        colour_value: int,
+        conflicts: List[Tuple[int, int]],
+    ) -> bool:
+
+        # Colour the node with colourValue
+        colour[node] = colour_value
+
+        # Traverse all the neighbours of the current node
         for neighbour in graph[node]:
+
+            # If the neighbour is not coloured, colour it with the
+            # opposite colour
             if neighbour not in colour:
-                self.colour_graph(graph, neighbour, colour, 1 - value, conflicts)
-            elif colour[neighbour] == value:
-                # Don't bail — record the conflict edge and keep going.
+                if not self.colour_graph(
+                    graph, neighbour, colour, 1 - colour_value, conflicts
+                ):
+                    return False
+
+            # Else if the neighbour is coloured with the same colour,
+            # record the conflict
+            elif colour.get(neighbour) == colour_value:
                 conflicts.append((node, neighbour))
 
+        return True
+
     def colour_repair(self, graph: List[List[int]]) -> bool:
-        colour: dict = {}
+        n = len(graph)
+
+        # If the graph is empty, return false
+        if n == 0:
+            return False
+
+        # Create a map to store the colour of each node
+        colour: Dict[int, int] = {}
+
+        # List to store all edges that cause conflicts (same-coloured
+        # endpoints)
         conflicts: List[Tuple[int, int]] = []
-        for node in range(len(graph)):
+
+        # Traverse all nodes in the graph
+        for node in range(n):
+
+            # If a node is not coloured, start colouring its connected
+            # component recursively
             if node not in colour:
                 self.colour_graph(graph, node, colour, 0, conflicts)
-        # Each conflict edge gets recorded twice in undirected graphs.
+
+        # The graph can be made bipartite if there is at most one
+        # conflict edge. Divide by 2 to account for double counting
+        # of edges in an undirected graph
         return len(conflicts) // 2 <= 1
 
 
-print(Solution().colour_repair([[1, 3], [0, 2, 3], [1, 3], [0, 1, 2]]))     # True
-print(Solution().colour_repair([[1, 2, 3], [0, 2], [0, 1], [0]]))           # True
+# Examples from the problem statement
+print(Solution().colour_repair([[1,3],[0,2,3],[1,3],[0,1,2]]))  # True
+print(Solution().colour_repair([[1,2,3],[0,2],[0,1],[0]]))      # True
+
+# Edge cases
+print(Solution().colour_repair([]))                              # False
+print(Solution().colour_repair([[1],[0]]))                       # True — no conflict
+print(Solution().colour_repair([[1,2],[0,2],[0,1]]))             # True — triangle: 1 conflict edge
+# Two conflict edges — needs 2 removals, not possible
+print(Solution().colour_repair([[1,2,3],[0,2,3],[0,1,3],[0,1,2]]))  # False
+print(Solution().colour_repair([[],[]]))                         # True — no edges
 ```
 
 ```java run
@@ -590,103 +654,408 @@ import java.util.*;
 
 public class Main {
     static class Solution {
-        public void colourGraph(List<List<Integer>> graph, int node,
-                                Map<Integer, Integer> colour, int value, List<int[]> conflicts) {
-            colour.put(node, value);
-            for (int n : graph.get(node)) {
-                if (!colour.containsKey(n)) colourGraph(graph, n, colour, 1 - value, conflicts);
-                else if (colour.get(n) == value) conflicts.add(new int[]{node, n});
+        private boolean colourGraph(
+            List<List<Integer>> graph,
+            int node,
+            Map<Integer, Integer> colour,
+            int colourValue,
+            List<List<Integer>> conflicts
+        ) {
+
+            // Colour the node with colourValue
+            colour.put(node, colourValue);
+
+            // Traverse all the neighbours of the current node
+            for (int neighbour : graph.get(node)) {
+
+                // If the neighbour is not coloured, colour it with the
+                // opposite colour
+                if (!colour.containsKey(neighbour)) {
+                    if (
+                        !colourGraph(
+                            graph,
+                            neighbour,
+                            colour,
+                            1 - colourValue,
+                            conflicts
+                        )
+                    ) {
+                        return false;
+                    }
+                }
+
+                // Else if the neighbour is coloured with the same colour,
+                // record the conflict
+                else if (colour.get(neighbour) == colourValue) {
+                    conflicts.add(Arrays.asList(node, neighbour));
+                }
             }
+
+            return true;
         }
 
         public boolean colourRepair(List<List<Integer>> graph) {
+            int N = graph.size();
+
+            // If the graph is empty, return false
+            if (N == 0) {
+                return false;
+            }
+
+            // Create a map to store the colour of each node
             Map<Integer, Integer> colour = new HashMap<>();
-            List<int[]> conflicts = new ArrayList<>();
-            for (int node = 0; node < graph.size(); node++)
-                if (!colour.containsKey(node)) colourGraph(graph, node, colour, 0, conflicts);
+
+            // List to store all edges that cause conflicts (same-coloured
+            // endpoints)
+            List<List<Integer>> conflicts = new ArrayList<>();
+
+            // Traverse all nodes in the graph
+            for (int node = 0; node < N; node++) {
+
+                // If a node is not coloured, start colouring its connected
+                // component recursively
+                if (!colour.containsKey(node)) {
+                    colourGraph(graph, node, colour, 0, conflicts);
+                }
+            }
+
+            // The graph can be made bipartite if there is at most one
+            // conflict edge. Divide by 2 to account for double counting
+            // of edges in an undirected graph
             return conflicts.size() / 2 <= 1;
         }
     }
 
     public static void main(String[] args) {
-        var g = List.of(List.of(1, 3), List.of(0, 2, 3), List.of(1, 3), List.of(0, 1, 2));
-        System.out.println(new Solution().colourRepair(g));
+        Solution sol = new Solution();
+
+        // Examples from the problem statement
+        System.out.println(sol.colourRepair(List.of(List.of(1,3),List.of(0,2,3),List.of(1,3),List.of(0,1,2))));  // true
+        System.out.println(sol.colourRepair(List.of(List.of(1,2,3),List.of(0,2),List.of(0,1),List.of(0))));      // true
+
+        // Edge cases
+        System.out.println(sol.colourRepair(new ArrayList<>()));                   // false
+        System.out.println(sol.colourRepair(List.of(List.of(1), List.of(0))));     // true
+        System.out.println(sol.colourRepair(List.of(List.of(1,2),List.of(0,2),List.of(0,1))));  // true
+        System.out.println(sol.colourRepair(List.of(List.of(1,2,3),List.of(0,2,3),List.of(0,1,3),List.of(0,1,2))));  // false
+        System.out.println(sol.colourRepair(List.of(new ArrayList<>(), new ArrayList<>())));  // true
     }
 }
 ```
 
-```c run
-#include <stdio.h>
-#include <stdlib.h>
-#include <stdbool.h>
+</details>
 
-#define UNCOLOURED -1
+# Problem: Group Colourable
 
-typedef struct { int* data; int size; } AdjList;
+## The Problem
 
-static int conflict_count = 0;
+Given an **undirected** **graph** represented as an adjacency list and a list of **groups**, write a function that returns `true` if the graph can be colored with **two** colours and `false` otherwise.
 
-static void colour_graph(AdjList* g, int node, int* colour, int value) {
-    colour[node] = value;
-    for (int i = 0; i < g[node].size; i++) {
-        int n = g[node].data[i];
-        if (colour[n] == UNCOLOURED) colour_graph(g, n, colour, 1 - value);
-        else if (colour[n] == value) conflict_count++;
+The graph is given as follows: `graph[i]` is a list of all nodes you can visit from node `i` (i.e., there is a directed edge from node `i` to node `graph[i][j]`).
+
+> You must abide by the following constraint:
+>
+> -   You must colour the graph such that no two adjacent vertices of the graph are colored with the same colour.
+> -   All the nodes in a given group should be coloured with the same colour.
+
+```
+Input:  graph = [[1, 3], [0, 2], [1, 3], [0, 2]], groups = [[0, 2], [1, 3]]
+Output: true
+Input:  graph = [[1, 3], [0, 2], [1, 3], [0, 2]], groups = [[0, 1], [2, 3]]
+Output: false
+```
+
+<details>
+<summary><h2>Pattern Mapping</h2></summary>
+
+
+This is two-colouring with an extra constraint stacked on top: every node in a group must share one colour. The solution still alternates colours during DFS, but before exploring a node's neighbours it calls `colorGroup`, which propagates the node's colour to every other member of its group — failing if a group member is already coloured differently. A `group_map` precomputes, for each node, the full list of its group-mates so this check is a quick lookup.
+
+The two failure modes are unchanged in spirit: a same-colour adjacency conflict, or a same-group node that's already been forced into the opposite colour. An empty graph returns `false`, matching the base two-colourable convention.
+
+</details>
+<details>
+<summary><h2>The Solution</h2></summary>
+
+
+
+```python run
+from typing import List, Dict
+
+class Solution:
+    def color_group(
+        self,
+        node: int,
+        colour: Dict[int, int],
+        colour_value: int,
+        group_map: Dict[int, List[int]],
+    ) -> bool:
+
+        # If node belongs to a group, assign the same colour to all
+        # nodes in the group
+        if node in group_map:
+
+            # Traverse all nodes in the group and assign them the same
+            # colour
+            for group_node in group_map[node]:
+
+                # If the group node is not coloured, colour it with the same
+                # colour as the current node
+                if group_node not in colour:
+                    colour[group_node] = colour_value
+
+                # If the group node is coloured with a different
+                # colour, return false
+                elif colour[group_node] != colour_value:
+                    return False
+
+        # If all group nodes are coloured successfully,
+        return True
+
+    def colour_graph(
+        self,
+        graph: List[List[int]],
+        node: int,
+        colour: Dict[int, int],
+        colour_value: int,
+        group_map: Dict[int, List[int]],
+    ) -> bool:
+
+        # Colour the node with colourValue
+        colour[node] = colour_value
+
+        # If node belongs to a group, assign the same colour to all
+        # nodes in the group, if it fails return false
+        if not self.color_group(node, colour, colour_value, group_map):
+            return False
+
+        # Traverse all the neighbours of the current node
+        for neighbour in graph[node]:
+
+            # If the neighbour is not coloured, colour it with the
+            # opposite colour and recursively call the function on the
+            # neighbour
+            if neighbour not in colour:
+
+                # If the neighbour is not coloured, colour it with the
+                # opposite colour
+                if not self.colour_graph(
+                    graph, neighbour, colour, 1 - colour_value, group_map
+                ):
+
+                    # If the colouring fails, return false
+                    # (i.e., if a neighbour has the same colour)
+                    return False
+
+            # Else if the neighbour is coloured with the same colour
+            # return false
+            elif colour[neighbour] == colour_value:
+                return False
+
+        return True
+
+    def group_colourable(
+        self, graph: List[List[int]], groups: List[List[int]]
+    ) -> bool:
+        n = len(graph)
+
+        # If the graph is empty, return false
+        if n == 0:
+            return False
+
+        # Create a map to store the colour of each node
+        colour: Dict[int, int] = {}
+
+        # Map each node to all nodes in its group
+        group_map: Dict[int, List[int]] = {}
+        for group in groups:
+            for node in group:
+                group_map[node] = group
+
+        # Traverse all nodes in the graph
+        for node in range(len(graph)):
+
+            # If a node is not coloured, start colouring its
+            # connected component recursively starting with colour 1
+            if node not in colour:
+
+                # If the colouring fails, return false
+                # (i.e., if a neighbour has the same colour)
+                if not self.colour_graph(
+                    graph, node, colour, 1, group_map
+                ):
+                    return False
+
+        # If all nodes are coloured successfully, return true
+        return True
+
+
+# Examples from the problem statement
+print(Solution().group_colourable([[1,3],[0,2],[1,3],[0,2]], [[0,2],[1,3]]))  # True
+print(Solution().group_colourable([[1,3],[0,2],[1,3],[0,2]], [[0,1],[2,3]]))  # False
+
+# Edge cases
+print(Solution().group_colourable([], []))                                    # False
+print(Solution().group_colourable([[1],[0]], [[0],[1]]))                      # True
+# All in same group adjacent to each other
+print(Solution().group_colourable([[1],[0]], [[0,1]]))                        # False — adjacent grouped nodes
+print(Solution().group_colourable([[1,3],[0,2],[1,3],[0,2]], []))             # True — no group constraints
+```
+
+```java run
+import java.util.*;
+
+public class Main {
+    static class Solution {
+        private boolean colorGroup(
+            int node,
+            Map<Integer, Integer> colour,
+            int colourValue,
+            Map<Integer, List<Integer>> groupMap
+        ) {
+
+            // If node belongs to a group, assign the same colour to all
+            // nodes in the group
+            if (groupMap.containsKey(node)) {
+
+                // Traverse all nodes in the group and assign them the same
+                // colour
+                for (int groupNode : groupMap.get(node)) {
+
+                    // If the group node is not coloured, colour it with the
+                    // same colour as the current node
+                    if (!colour.containsKey(groupNode)) {
+                        colour.put(groupNode, colourValue);
+                    }
+
+                    // If the group node is coloured with a different
+                    // colour, return false
+                    else if (colour.get(groupNode) != colourValue) {
+                        return false;
+                    }
+                }
+            }
+
+            // If all group nodes are coloured successfully,
+            return true;
+        }
+
+        private boolean colourGraph(
+            List<List<Integer>> graph,
+            int node,
+            Map<Integer, Integer> colour,
+            int colourValue,
+            Map<Integer, List<Integer>> groupMap
+        ) {
+
+            // Colour the node with colourValue
+            colour.put(node, colourValue);
+
+            // If node belongs to a group, assign the same colour to all
+            // nodes in the group, if it fails return false
+            if (!colorGroup(node, colour, colourValue, groupMap)) {
+                return false;
+            }
+
+            // Traverse all the neighbours of the current node
+            for (int neighbour : graph.get(node)) {
+
+                // If the neighbour is not coloured, colour it with the
+                // opposite colour and recursively call the function on the
+                // neighbour
+                if (!colour.containsKey(neighbour)) {
+
+                    // If the neighbour is not coloured, colour it with the
+                    // opposite colour
+                    if (
+                        !colourGraph(
+                            graph,
+                            neighbour,
+                            colour,
+                            1 - colourValue,
+                            groupMap
+                        )
+                    ) {
+
+                        // If the colouring fails, return false
+                        // (i.e., if a neighbour has the same colour)
+                        return false;
+                    }
+                }
+
+                // Else if the neighbour is coloured with the same colour
+                // return false
+                else if (colour.get(neighbour) == colourValue) {
+                    return false;
+                }
+            }
+
+            return true;
+        }
+
+        public boolean groupColourable(
+            List<List<Integer>> graph,
+            List<List<Integer>> groups
+        ) {
+            int N = graph.size();
+
+            // If the graph is empty, return false
+            if (N == 0) {
+                return false;
+            }
+
+            // Create a map to store the colour of each node
+            Map<Integer, Integer> colour = new HashMap<>();
+
+            // Map each node to all nodes in its group
+            Map<Integer, List<Integer>> groupMap = new HashMap<>();
+            for (List<Integer> group : groups) {
+                for (int node : group) {
+                    groupMap.put(node, group);
+                }
+            }
+
+            // Traverse all nodes in the graph
+            for (int node = 0; node < graph.size(); node++) {
+
+                // If a node is not coloured, start colouring its
+                // connected component recursively starting with colour 1
+                if (!colour.containsKey(node)) {
+
+                    // If the colouring fails, return false
+                    // (i.e., if a neighbour has the same colour)
+                    if (!colourGraph(graph, node, colour, 1, groupMap)) {
+                        return false;
+                    }
+                }
+            }
+
+            // If all nodes are coloured successfully, return true
+            return true;
+        }
     }
-}
 
-bool colour_repair(AdjList* g, int n) {
-    int* colour = malloc(n * sizeof(int));
-    for (int i = 0; i < n; i++) colour[i] = UNCOLOURED;
-    conflict_count = 0;
-    for (int node = 0; node < n; node++) {
-        if (colour[node] == UNCOLOURED) colour_graph(g, node, colour, 0);
+    public static void main(String[] args) {
+        Solution sol = new Solution();
+
+        // Examples from the problem statement
+        System.out.println(sol.groupColourable(List.of(List.of(1,3),List.of(0,2),List.of(1,3),List.of(0,2)), List.of(List.of(0,2),List.of(1,3))));  // true
+        System.out.println(sol.groupColourable(List.of(List.of(1,3),List.of(0,2),List.of(1,3),List.of(0,2)), List.of(List.of(0,1),List.of(2,3))));  // false
+
+        // Edge cases
+        System.out.println(sol.groupColourable(new ArrayList<>(), new ArrayList<>()));  // false
+        System.out.println(sol.groupColourable(List.of(List.of(1), List.of(0)), List.of(List.of(0), List.of(1))));  // true
+        System.out.println(sol.groupColourable(List.of(List.of(1), List.of(0)), List.of(List.of(0, 1))));  // false
+        System.out.println(sol.groupColourable(List.of(List.of(1,3),List.of(0,2),List.of(1,3),List.of(0,2)), new ArrayList<>()));  // true
     }
-    free(colour);
-    return conflict_count / 2 <= 1;
-}
-
-int main() {
-    int g0[]={1,3}, g1[]={0,2,3}, g2[]={1,3}, g3[]={0,1,2};
-    AdjList g[]={{g0,2},{g1,3},{g2,2},{g3,3}};
-    printf("%s\n", colour_repair(g, 4) ? "true" : "false");
-    return 0;
 }
 ```
 
-```scala run
-import scala.collection.mutable
+</details>
 
-object Main extends App {
-  class Solution {
-    def colourGraph(g: Array[Array[Int]], node: Int,
-                    colour: mutable.Map[Int, Int], value: Int,
-                    conflicts: mutable.ArrayBuffer[(Int, Int)]): Unit = {
-      colour(node) = value
-      for (n <- g(node)) {
-        if (!colour.contains(n)) colourGraph(g, n, colour, 1 - value, conflicts)
-        else if (colour(n) == value) conflicts.append((node, n))
-      }
-    }
+<details>
+<summary><h2>Final Takeaway</h2></summary>
 
-    def colourRepair(g: Array[Array[Int]]): Boolean = {
-      val colour = mutable.Map.empty[Int, Int]
-      val conflicts = mutable.ArrayBuffer.empty[(Int, Int)]
-      for (node <- g.indices if !colour.contains(node))
-        colourGraph(g, node, colour, 0, conflicts)
-      conflicts.length / 2 <= 1
-    }
-  }
-
-  val g = Array(Array(1, 3), Array(0, 2, 3), Array(1, 3), Array(0, 1, 2))
-  println(new Solution().colourRepair(g))
-}
-```
-
-
----
-
-## Final Takeaway
 
 Two-colouring is a deceptively simple algorithm — alternate colours during DFS, conflict on same-colour adjacency — that decides one of the most fundamental properties of a graph: **bipartiteness**. Once you can compute it, an entire family of "split into two" problems becomes a 10-line function.
 
@@ -696,6 +1065,7 @@ Two more pattern lessons remain — **shortest path with BFS** (the unweighted v
 
 > **Transfer challenge.** A meeting room can host two parallel sessions. You have a list of "incompatible-session" pairs (because of overlapping speakers, shared equipment, etc.). Sketch how you'd decide whether you can schedule all sessions in two streams without conflicts.
 
+</details>
 <details>
 <summary><strong>Sketch</strong></summary>
 

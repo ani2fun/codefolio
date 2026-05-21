@@ -221,82 +221,16 @@ flowchart TB
 The implementation of the reversal algorithm solution is given below, where we create a reverse function to reverse segments between `start` and `end`.  We also create helper functions to find the length of the list  two helper functions to find the length of a linked list and reverse the list between `start` and `end` to keep the implementation simple and modular.
 
 
-```pseudocode
-# Reverse the list in groups of k. Walk the list, reverse each k-segment, stitch them together.
-function findLength(head):
-    length ← 0
-    while head is not null:
-        length ← length + 1
-        head ← head.next
-    return length
-
-function getNodeAtPosition(head, position):
-    current ← head
-    for i ← 1 to position − 1:
-        current ← current.next
-    return current
-
-function reverse(start, end):
-    current ← start
-    rightBound ← end.next
-    previous ← rightBound
-
-    while current ≠ rightBound:
-        next ← current.next
-        current.next ← previous
-        previous ← current
-        current ← next
-
-    return previous
-
-function reverseKSegments(head, k):
-
-    # If the list is empty, has only one node, or k is 1, no need to reverse segments
-    if head is null OR head.next is null OR k = 1:
-        return head
-
-    # Start of the current segment to be reversed
-    start ← head
-
-    # Pointer to the last node of the previous segment
-    leftBound ← null
-
-    # Find the total number of segments in the linked list
-    totalSegments ← findLength(head) ÷ k
-
-    # Loop through the list to reverse every k-length segment
-    for i ← 0 to totalSegments − 1:
-
-        # Get the end node of the current segment
-        end ← getNodeAtPosition(start, k)
-
-        # Get the head of the reversed segment.
-        reversedHead ← reverse(start, end)
-
-        # If leftBound is null, we're at the first segment — update head
-        if leftBound is null:
-            head ← reversedHead
-        # Otherwise, connect leftBound's next to the new reversedHead
-        else:
-            leftBound.next ← reversedHead
-
-        # Update leftBound to the current segment's start (which is now the end after reversal)
-        leftBound ← start
-
-        # Move to the next segment
-        start ← leftBound.next
-
-    # Return the head of the modified list
-    return head
-```
-
 ```python run
-from typing import Optional
-
+"""
+Definition for singly-linked list.
 class ListNode:
-    def __init__(self, val=0, next=None):
+    def __init__(self, val):
         self.val = val
-        self.next = next
+        self.next = None
+"""
+
+from typing import Optional
 
 class Solution:
     def find_length(self, head: Optional[ListNode]) -> int:
@@ -381,298 +315,101 @@ class Solution:
 ```
 
 ```java run
-public class Main {
-    static class ListNode { int val; ListNode next; ListNode(int v){val=v;} }
+/**
+ * Definition for singly-linked list.
+ * class ListNode {
+ *     int val;
+ *     ListNode next;
+ *     ListNode() {}
+ *     ListNode(int val) { this.val = val; }
+ * };
+ */
 
-    static class Solution {
-        public int findLength(ListNode head) {
-            int length = 0;
-            while (head != null) {
-                length++;
-                head = head.next;
-            }
-            return length;
+class Solution {
+    public int findLength(ListNode head) {
+        int length = 0;
+        while (head != null) {
+            length++;
+            head = head.next;
+        }
+        return length;
+    }
+
+    public ListNode getNodeAtPosition(ListNode head, int position) {
+        ListNode current = head;
+        for (int i = 1; i < position; ++i) {
+            current = current.next;
+        }
+        return current;
+    }
+
+    public ListNode reverse(ListNode start, ListNode end) {
+        ListNode current = start;
+        ListNode rightBound = end.next;
+        ListNode previous = rightBound;
+
+        while (current != rightBound) {
+            ListNode next = current.next;
+            current.next = previous;
+            previous = current;
+            current = next;
         }
 
-        public ListNode getNodeAtPosition(ListNode head, int position) {
-            ListNode current = head;
-            for (int i = 1; i < position; ++i) {
-                current = current.next;
-            }
-            return current;
-        }
+        return previous;
+    }
 
-        public ListNode reverse(ListNode start, ListNode end) {
-            ListNode current = start;
-            ListNode rightBound = end.next;
-            ListNode previous = rightBound;
+    public ListNode reverseKSegments(ListNode head, int k) {
 
-            while (current != rightBound) {
-                ListNode next = current.next;
-                current.next = previous;
-                previous = current;
-                current = next;
-            }
-
-            return previous;
-        }
-
-        public ListNode reverseKSegments(ListNode head, int k) {
-
-            // If the list is empty, has only one node, or k is 1, no need to
-            // reverse segments
-            if (head == null || head.next == null || k == 1) {
-                return head;
-            }
-
-            // Start of the current segment to be reversed
-            ListNode start = head;
-
-            // Pointer to the last node of the previous segment
-            ListNode leftBound = null;
-
-            // Find the total number of segments in the linked list
-            int totalSegments = findLength(head) / k;
-
-            // Loop through the list to reverse every k-length segment
-            for (int i = 0; i < totalSegments; i++) {
-
-                // Get the end node of the current segment
-                ListNode end = getNodeAtPosition(start, k);
-
-                // Get the head of the reversed segment.
-                ListNode reversedHead = reverse(start, end);
-
-                // Check if there is a previous segment to connect to or
-                // if the existing head needs to be updated.
-                // If leftBound is null, it means we're at the first
-                // segment So, we need to update the head to the
-                // reversedHead
-                if (leftBound == null) {
-                    head = reversedHead;
-                }
-
-                // If there is a leftBound, connect its next to the new
-                // reversedHead
-                else {
-                    leftBound.next = reversedHead;
-                }
-
-                // Update leftBound to the current segment's start (which is
-                // now the end after reversal)
-                leftBound = start;
-
-                // Move to the next segment
-                start = leftBound.next;
-            }
-
-            // Return the head of the modified list
+        // If the list is empty, has only one node, or k is 1, no need to
+        // reverse segments
+        if (head == null || head.next == null || k == 1) {
             return head;
         }
-    }
 
-    public static void main(String[] args) {
-        // [1, 2, 3, 4, 5, 6], k = 2 -> [2, 1, 4, 3, 6, 5]
-        ListNode n1=new ListNode(1),n2=new ListNode(2),n3=new ListNode(3),
-                 n4=new ListNode(4),n5=new ListNode(5),n6=new ListNode(6);
-        n1.next=n2; n2.next=n3; n3.next=n4; n4.next=n5; n5.next=n6;
-        ListNode head = new Solution().reverseKSegments(n1, 2);
-        for (ListNode c=head;c!=null;c=c.next) System.out.print(c.val+" ");
-        // 2 1 4 3 6 5
-    }
-}
-```
+        // Start of the current segment to be reversed
+        ListNode start = head;
 
-```c run
-typedef struct ListNode { int val; struct ListNode *next; } ListNode;
+        // Pointer to the last node of the previous segment
+        ListNode leftBound = null;
 
-int findLength(ListNode *head) {
-    int length = 0;
-    while (head != NULL) {
-        length++;
-        head = head->next;
-    }
-    return length;
-}
+        // Find the total number of segments in the linked list
+        int totalSegments = findLength(head) / k;
 
-ListNode* getNodeAtPosition(ListNode *head, int position) {
-    ListNode *current = head;
-    for (int i = 1; i < position; ++i) {
-        current = current->next;
-    }
-    return current;
-}
+        // Loop through the list to reverse every k-length segment
+        for (int i = 0; i < totalSegments; i++) {
 
-ListNode* reverse(ListNode *start, ListNode *end) {
-    ListNode *current = start;
-    ListNode *rightBound = end->next;
-    ListNode *previous = rightBound;
+            // Get the end node of the current segment
+            ListNode end = getNodeAtPosition(start, k);
 
-    while (current != rightBound) {
-        ListNode *next = current->next;
-        current->next = previous;
-        previous = current;
-        current = next;
-    }
+            // Get the head of the reversed segment.
+            ListNode reversedHead = reverse(start, end);
 
-    return previous;
-}
+            // Check if there is a previous segment to connect to or
+            // if the existing head needs to be updated.
+            // If leftBound is null, it means we're at the first
+            // segment So, we need to update the head to the
+            // reversedHead
+            if (leftBound == null) {
+                head = reversedHead;
+            }
 
-ListNode* reverseKSegments(ListNode *head, int k) {
+            // If there is a leftBound, connect its next to the new
+            // reversedHead
+            else {
+                leftBound.next = reversedHead;
+            }
 
-    /* If the list is empty, has only one node, or k is 1, no need to
-       reverse segments */
-    if (head == NULL || head->next == NULL || k == 1) {
+            // Update leftBound to the current segment's start (which is
+            // now the end after reversal)
+            leftBound = start;
+
+            // Move to the next segment
+            start = leftBound.next;
+        }
+
+        // Return the head of the modified list
         return head;
     }
-
-    /* Start of the current segment to be reversed */
-    ListNode *start = head;
-
-    /* Pointer to the last node of the previous segment */
-    ListNode *leftBound = NULL;
-
-    /* Find the total number of segments in the linked list */
-    int totalSegments = findLength(head) / k;
-
-    /* Loop through the list to reverse every k-length segment */
-    for (int i = 0; i < totalSegments; i++) {
-
-        /* Get the end node of the current segment */
-        ListNode *end = getNodeAtPosition(start, k);
-
-        /* Get the head of the reversed segment. */
-        ListNode *reversedHead = reverse(start, end);
-
-        /* Check if there is a previous segment to connect to or
-           if the existing head needs to be updated.
-           If leftBound is null, it means we're at the first
-           segment So, we need to update the head to the
-           reversedHead */
-        if (leftBound == NULL) {
-            head = reversedHead;
-        }
-
-        /* If there is a leftBound, connect its next to the new
-           reversedHead */
-        else {
-            leftBound->next = reversedHead;
-        }
-
-        /* Update leftBound to the current segment's start (which is
-           now the end after reversal) */
-        leftBound = start;
-
-        /* Move to the next segment */
-        start = leftBound->next;
-    }
-
-    /* Return the head of the modified list */
-    return head;
-}
-```
-
-```scala run
-class ListNode(var v: Int, var next: ListNode = null)
-
-object Main extends App {
-  class Solution {
-    def findLength(head: ListNode): Int = {
-      var length = 0
-      var cur = head
-      while (cur != null) {
-        length += 1
-        cur = cur.next
-      }
-      length
-    }
-
-    def getNodeAtPosition(head: ListNode, position: Int): ListNode = {
-      var current = head
-      var i = 1
-      while (i < position) {
-        current = current.next
-        i += 1
-      }
-      current
-    }
-
-    def reverse(start: ListNode, end: ListNode): ListNode = {
-      var current: ListNode = start
-      val rightBound: ListNode = end.next
-      var previous: ListNode = rightBound
-
-      while (current ne rightBound) {
-        val next = current.next
-        current.next = previous
-        previous = current
-        current = next
-      }
-
-      previous
-    }
-
-    def reverseKSegments(headIn: ListNode, k: Int): ListNode = {
-
-      // If the list is empty, has only one node, or k is 1, no need to
-      // reverse segments
-      if (headIn == null || headIn.next == null || k == 1) {
-        return headIn
-      }
-
-      var head = headIn
-
-      // Start of the current segment to be reversed
-      var start = head
-
-      // Pointer to the last node of the previous segment
-      var leftBound: ListNode = null
-
-      // Find the total number of segments in the linked list
-      val totalSegments = findLength(head) / k
-
-      // Loop through the list to reverse every k-length segment
-      for (_ <- 0 until totalSegments) {
-
-        // Get the end node of the current segment
-        val end = getNodeAtPosition(start, k)
-
-        // Get the head of the reversed segment.
-        val reversedHead = reverse(start, end)
-
-        // Check if there is a previous segment to connect to or
-        // if the existing head needs to be updated.
-        // If leftBound is null, it means we're at the first
-        // segment So, we need to update the head to the
-        // reversedHead
-        if (leftBound == null) {
-          head = reversedHead
-        }
-
-        // If there is a leftBound, connect its next to the new
-        // reversedHead
-        else {
-          leftBound.next = reversedHead
-        }
-
-        // Update leftBound to the current segment's start (which is
-        // now the end after reversal)
-        leftBound = start
-
-        // Move to the next segment
-        start = leftBound.next
-      }
-
-      // Return the head of the modified list
-      head
-    }
-  }
-
-  // [1, 2, 3, 4, 5, 6], k = 2 -> [2, 1, 4, 3, 6, 5]
-  val n6=new ListNode(6); val n5=new ListNode(5,n6); val n4=new ListNode(4,n5)
-  val n3=new ListNode(3,n4); val n2=new ListNode(2,n3); val n1=new ListNode(1,n2)
-  var head = new Solution().reverseKSegments(n1, 2)
-  while (head != null) { print(s"${head.v} "); head = head.next }  // 2 1 4 3 6 5
 }
 ```
 
@@ -706,71 +443,39 @@ The problem needs to be solved without modifying the values in the list's nodes.
 > -   **Output:** \[2, 1, 4, 3\]
 > -   **Explanation:** After swapping in pair, i.e. (1, 2) => (2, 1) and (3, 4) => (4, 3) the list becomes \[2, 1, 4, 3\].
 
-## Solution
+<details>
+<summary><h2>Solution</h2></summary>
 
 
-```pseudocode
-# Reverse-k-segments specialised to k = 2 → swap consecutive pairs.
-function reverse(start, end):
-    current ← start
-    rightBound ← end.next
-    previous ← rightBound
-
-    while current ≠ rightBound:
-        next ← current.next
-        current.next ← previous
-        previous ← current
-        current ← next
-
-    return previous
-
-function pairwiseSwap(head):
-
-    # If the list is empty or has only one element, no reversal needed.
-    if head is null OR head.next is null:
-
-        # Return the original head
-        return head
-
-    # Start of the current pair to be reversed
-    start ← head
-
-    # Initialize the 'leftBound' pointer for the first pair's reversal.
-    leftBound ← null
-
-    # Loop while there are pairs to be swapped
-    while start is not null AND start.next is not null:
-
-        # Get the end node of the current pair
-        end ← start.next
-
-        # Get the head of the reversed pair.
-        reversedHead ← reverse(start, end)
-
-        # If leftBound is null, we're at the first segment — update head
-        if leftBound is null:
-            head ← reversedHead
-        # Otherwise, connect leftBound.next to the new reversedHead
-        else:
-            leftBound.next ← reversedHead
-
-        # Update leftBound to the current pair's start (which is now the end after reversal)
-        leftBound ← start
-
-        # Move start to the next pair
-        start ← start.next
-
-    # Return the head of the modified list
-    return head
-```
 
 ```python run
 from typing import Optional
 
+
 class ListNode:
-    def __init__(self, val=0, next=None):
+    def __init__(self, val=0, nxt=None):
         self.val = val
-        self.next = next
+        self.next = nxt
+
+
+def from_list(values):
+    if not values:
+        return None
+    head = ListNode(values[0])
+    cur = head
+    for v in values[1:]:
+        cur.next = ListNode(v)
+        cur = cur.next
+    return head
+
+
+def to_list(head):
+    out = []
+    while head is not None:
+        out.append(head.val)
+        head = head.next
+    return out
+
 
 class Solution:
     def reverse(
@@ -837,37 +542,51 @@ class Solution:
         # Return the head of the modified list
         return head
 
-# Driver
-def build(vals):
-    dummy = ListNode(0)
-    cur = dummy
-    for v in vals:
-        cur.next = ListNode(v)
-        cur = cur.next
-    return dummy.next
 
-def to_list(head):
-    result = []
-    while head:
-        result.append(head.val)
-        head = head.next
-    return result
+# Examples from the problem statement
+print(to_list(Solution().pairwise_swap(from_list([1, 2, 3, 4]))))        # [2, 1, 4, 3]
 
-head = build([1, 2, 3, 4])
-print(to_list(Solution().pairwise_swap(head)))  # [2, 1, 4, 3]
+# Edge cases
+print(to_list(Solution().pairwise_swap(None)))                            # []
+print(to_list(Solution().pairwise_swap(from_list([1]))))                  # [1]
+print(to_list(Solution().pairwise_swap(from_list([1, 2]))))               # [2, 1]
+print(to_list(Solution().pairwise_swap(from_list([1, 2, 3]))))            # [2, 1, 3]
+print(to_list(Solution().pairwise_swap(from_list([1, 2, 3, 4, 5]))))     # [2, 1, 4, 3, 5]
+print(to_list(Solution().pairwise_swap(from_list([1, 2, 3, 4, 5, 6])))) # [2, 1, 4, 3, 6, 5]
+print(to_list(Solution().pairwise_swap(from_list([5, 5, 5, 5]))))        # [5, 5, 5, 5]
 ```
 
 ```java run
+import java.util.*;
+
 public class Main {
     static class ListNode {
         int val;
         ListNode next;
-        ListNode(int v) { val = v; }
-        ListNode(int v, ListNode n) { val = v; next = n; }
+        ListNode() {}
+        ListNode(int val) { this.val = val; }
+        ListNode(int val, ListNode next) { this.val = val; this.next = next; }
+    }
+
+    static ListNode fromList(int... values) {
+        if (values.length == 0) return null;
+        ListNode head = new ListNode(values[0]);
+        ListNode cur = head;
+        for (int i = 1; i < values.length; i++) {
+            cur.next = new ListNode(values[i]);
+            cur = cur.next;
+        }
+        return head;
+    }
+
+    static List<Integer> toList(ListNode head) {
+        List<Integer> out = new ArrayList<>();
+        while (head != null) { out.add(head.val); head = head.next; }
+        return out;
     }
 
     static class Solution {
-        public ListNode reverse(ListNode start, ListNode end) {
+        private ListNode reverse(ListNode start, ListNode end) {
             ListNode current = start;
             ListNode rightBound = end.next;
             ListNode previous = rightBound;
@@ -933,234 +652,25 @@ public class Main {
             // Return the head of the modified list
             return head;
         }
-
-        public ListNode build(int[] vals) {
-            ListNode dummy = new ListNode(0);
-            ListNode cur = dummy;
-            for (int v : vals) { cur.next = new ListNode(v); cur = cur.next; }
-            return dummy.next;
-        }
-
-        public String toStr(ListNode head) {
-            StringBuilder sb = new StringBuilder("[");
-            while (head != null) {
-                sb.append(head.val);
-                if (head.next != null) sb.append(", ");
-                head = head.next;
-            }
-            return sb.append("]").toString();
-        }
     }
 
     public static void main(String[] args) {
-        Solution sol = new Solution();
-        ListNode head = sol.build(new int[]{1, 2, 3, 4});
-        System.out.println(sol.toStr(sol.pairwiseSwap(head)));  // [2, 1, 4, 3]
+        // Examples from the problem statement
+        System.out.println(toList(new Solution().pairwiseSwap(fromList(1, 2, 3, 4))));        // [2, 1, 4, 3]
+
+        // Edge cases
+        System.out.println(toList(new Solution().pairwiseSwap(null)));                         // []
+        System.out.println(toList(new Solution().pairwiseSwap(fromList(1))));                  // [1]
+        System.out.println(toList(new Solution().pairwiseSwap(fromList(1, 2))));               // [2, 1]
+        System.out.println(toList(new Solution().pairwiseSwap(fromList(1, 2, 3))));            // [2, 1, 3]
+        System.out.println(toList(new Solution().pairwiseSwap(fromList(1, 2, 3, 4, 5))));     // [2, 1, 4, 3, 5]
+        System.out.println(toList(new Solution().pairwiseSwap(fromList(1, 2, 3, 4, 5, 6)))); // [2, 1, 4, 3, 6, 5]
+        System.out.println(toList(new Solution().pairwiseSwap(fromList(5, 5, 5, 5))));        // [5, 5, 5, 5]
     }
 }
 ```
 
-```c run
-#include <stdio.h>
-#include <stdlib.h>
-
-typedef struct ListNode {
-    int val;
-    struct ListNode *next;
-} ListNode;
-
-ListNode* newNode(int v) {
-    ListNode *n = malloc(sizeof *n);
-    n->val = v;
-    n->next = NULL;
-    return n;
-}
-
-ListNode* reverse(ListNode *start, ListNode *end) {
-    ListNode *current = start;
-    ListNode *rightBound = end->next;
-    ListNode *previous = rightBound;
-
-    while (current != rightBound) {
-        ListNode *next = current->next;
-        current->next = previous;
-        previous = current;
-        current = next;
-    }
-
-    return previous;
-}
-
-ListNode* pairwiseSwap(ListNode *head) {
-
-    /* If the list is empty or has only one element, no reversal
-       needed. */
-    if (head == NULL || head->next == NULL) {
-        return head;
-    }
-
-    /* Start of the current pair to be reversed */
-    ListNode *start = head;
-
-    /* Initialize the 'leftBound' pointer for the first pair's
-       reversal. */
-    ListNode *leftBound = NULL;
-
-    /* Loop while there are pairs to be swapped */
-    while (start != NULL && start->next != NULL) {
-
-        /* Get the end node of the current pair */
-        ListNode *end = start->next;
-
-        /* Get the head of the reversed pair. */
-        ListNode *reversedHead = reverse(start, end);
-
-        /* Check if there is a previous segment to connect to or
-           if the existing head needs to be updated.
-           If leftBound is null, it means we're at the first
-           segment So, we need to update the head to the
-           reversedHead */
-        if (leftBound == NULL) {
-            head = reversedHead;
-        }
-
-        /* If there is a leftBound, connect its next to the new
-           reversedHead */
-        else {
-            leftBound->next = reversedHead;
-        }
-
-        /* Update leftBound to the current pair's start
-           (which is now the end after reversal) */
-        leftBound = start;
-
-        /* Move start to the next pair */
-        start = start->next;
-    }
-
-    /* Return the head of the modified list */
-    return head;
-}
-
-void printList(ListNode *head) {
-    printf("[");
-    while (head) {
-        printf("%d", head->val);
-        if (head->next) printf(", ");
-        head = head->next;
-    }
-    printf("]\n");
-}
-
-int main() {
-    ListNode *head = newNode(1);
-    head->next = newNode(2);
-    head->next->next = newNode(3);
-    head->next->next->next = newNode(4);
-
-    printList(pairwiseSwap(head));  /* [2, 1, 4, 3] */
-    return 0;
-}
-```
-
-```scala run
-class ListNode(var v: Int, var next: ListNode = null)
-
-object Main extends App {
-  class Solution {
-    def reverse(start: ListNode, end: ListNode): ListNode = {
-      var current = start
-      val rightBound = end.next
-      var previous = rightBound
-
-      while (current != rightBound) {
-        val next = current.next
-        current.next = previous
-        previous = current
-        current = next
-      }
-
-      // Return the new head of the reversed segment
-      previous
-    }
-
-    def pairwiseSwap(headIn: ListNode): ListNode = {
-
-      // If the list is empty or has only one element, no reversal
-      // needed.
-      if (headIn == null || headIn.next == null) {
-        return headIn
-      }
-
-      var head = headIn
-
-      // Start of the current pair to be reversed
-      var start = head
-
-      // Initialize the 'leftBound' pointer for the first pair's
-      // reversal.
-      var leftBound: ListNode = null
-
-      // Loop while there are pairs to be swapped
-      while (start != null && start.next != null) {
-
-        // Get the end node of the current pair
-        val end = start.next
-
-        // Get the head of the reversed pair.
-        val reversedHead = reverse(start, end)
-
-        // Check if there is a previous segment to connect to or
-        // if the existing head needs to be updated.
-        // If leftBound is null, it means we're at the first
-        // segment So, we need to update the head to the
-        // reversedHead
-        if (leftBound == null) {
-          head = reversedHead
-        }
-
-        // If there is a leftBound, connect its next to the new
-        // reversedHead
-        else {
-          leftBound.next = reversedHead
-        }
-
-        // Update leftBound to the current pair's start
-        // (which is now the end after reversal)
-        leftBound = start
-
-        // Move start to the next pair
-        start = start.next
-      }
-
-      // Return the head of the modified list
-      head
-    }
-
-    def build(vals: List[Int]): ListNode = {
-      val dummy = new ListNode(0)
-      var cur = dummy
-      for (v <- vals) { cur.next = new ListNode(v); cur = cur.next }
-      dummy.next
-    }
-
-    def toStr(head: ListNode): String = {
-      val sb = new StringBuilder("[")
-      var cur = head
-      while (cur != null) {
-        sb.append(cur.v)
-        if (cur.next != null) sb.append(", ")
-        cur = cur.next
-      }
-      sb.append("]").toString
-    }
-  }
-
-  val sol = new Solution()
-  val head = sol.build(List(1, 2, 3, 4))
-  println(sol.toStr(sol.pairwiseSwap(head)))  // [2, 1, 4, 3]
-}
-```
+</details>
 
 
 ***
@@ -1191,83 +701,39 @@ If, at the end, the length of the remaining list is less than k, do not reverse 
 > -   **Output:** \[5, 7, 3, 10, 6\]
 > -   **Explanation:** Since the value of k is 8, we cannot reverse any part of the list as the size of the entire list is 6, which is less than 8.
 
-## Solution
+<details>
+<summary><h2>Solution</h2></summary>
 
 
-```pseudocode
-# Reverse the list in groups of k. Skip any trailing fragment shorter than k.
-function findLength(head):
-    length ← 0
-    while head is not null:
-        length ← length + 1
-        head ← head.next
-    return length
-
-function getNodeAtPosition(head, position):
-    current ← head
-    for i ← 1 to position − 1:
-        current ← current.next
-    return current
-
-function reverse(start, end):
-    current ← start
-    rightBound ← end.next
-    previous ← rightBound
-
-    while current ≠ rightBound:
-        next ← current.next
-        current.next ← previous
-        previous ← current
-        current ← next
-
-    return previous
-
-function reverseKSegments(head, k):
-
-    # If the list is empty, has only one node, or k is 1, no need to reverse segments
-    if head is null OR head.next is null OR k = 1:
-        return head
-
-    # Start of the current segment to be reversed
-    start ← head
-
-    # Pointer to the last node of the previous segment
-    leftBound ← null
-
-    # Find the total number of segments in the linked list
-    totalSegments ← findLength(head) ÷ k
-
-    # Loop through the list to reverse every k-length segment
-    for i ← 0 to totalSegments − 1:
-
-        # Get the end node of the current segment
-        end ← getNodeAtPosition(start, k)
-
-        # Get the head of the reversed segment.
-        reversedHead ← reverse(start, end)
-
-        if leftBound is null:
-            head ← reversedHead
-        else:
-            leftBound.next ← reversedHead
-
-        # Update leftBound to the current segment's start (which is now the end after reversal)
-        leftBound ← start
-
-        # Move to the next segment
-        start ← leftBound.next
-
-    # Return the head of the modified list
-    return head
-```
 
 ```python run
 from typing import Optional
 
+
 class ListNode:
-    def __init__(self, val=0, next=None):
+    def __init__(self, val=0, nxt=None):
         self.val = val
-        self.next = next
+        self.next = nxt
+
+
+def from_list(values):
+    if not values:
+        return None
+    head = ListNode(values[0])
+    cur = head
+    for v in values[1:]:
+        cur.next = ListNode(v)
+        cur = cur.next
+    return head
+
+
+def to_list(head):
+    out = []
+    while head is not None:
+        out.append(head.val)
+        head = head.next
+    return out
+
 
 class Solution:
     def find_length(self, head: Optional[ListNode]) -> int:
@@ -1350,37 +816,51 @@ class Solution:
         # Return the head of the modified list
         return head
 
-# Driver
-def build(vals):
-    dummy = ListNode(0)
-    cur = dummy
-    for v in vals:
-        cur.next = ListNode(v)
-        cur = cur.next
-    return dummy.next
 
-def to_list(head):
-    res = []
-    while head:
-        res.append(head.val)
-        head = head.next
-    return res
+# Examples from the problem statement
+print(to_list(Solution().reverse_k_segments(from_list([5, 7, 3, 10, 6, 8]), 3)))  # [3, 7, 5, 8, 6, 10]
+print(to_list(Solution().reverse_k_segments(from_list([5, 7, 3, 10, 6]), 2)))     # [7, 5, 10, 3, 6]
+print(to_list(Solution().reverse_k_segments(from_list([5, 7, 3, 10, 6]), 8)))     # [5, 7, 3, 10, 6]
 
-head = build([5, 7, 3, 10, 6, 8])
-print(to_list(Solution().reverse_k_segments(head, 3)))  # [3, 7, 5, 8, 6, 10]
+# Edge cases
+print(to_list(Solution().reverse_k_segments(None, 2)))                             # []
+print(to_list(Solution().reverse_k_segments(from_list([1]), 1)))                   # [1]
+print(to_list(Solution().reverse_k_segments(from_list([1, 2]), 1)))                # [1, 2]
+print(to_list(Solution().reverse_k_segments(from_list([1, 2, 3, 4, 5, 6]), 2)))   # [2, 1, 4, 3, 6, 5]
+print(to_list(Solution().reverse_k_segments(from_list([1, 2, 3, 4, 5, 6]), 6)))   # [6, 5, 4, 3, 2, 1]
 ```
 
 ```java run
+import java.util.*;
+
 public class Main {
     static class ListNode {
         int val;
         ListNode next;
-        ListNode(int v) { val = v; }
-        ListNode(int v, ListNode n) { val = v; next = n; }
+        ListNode() {}
+        ListNode(int val) { this.val = val; }
+        ListNode(int val, ListNode next) { this.val = val; this.next = next; }
+    }
+
+    static ListNode fromList(int... values) {
+        if (values.length == 0) return null;
+        ListNode head = new ListNode(values[0]);
+        ListNode cur = head;
+        for (int i = 1; i < values.length; i++) {
+            cur.next = new ListNode(values[i]);
+            cur = cur.next;
+        }
+        return head;
+    }
+
+    static List<Integer> toList(ListNode head) {
+        List<Integer> out = new ArrayList<>();
+        while (head != null) { out.add(head.val); head = head.next; }
+        return out;
     }
 
     static class Solution {
-        public int findLength(ListNode head) {
+        private int findLength(ListNode head) {
             int length = 0;
             while (head != null) {
                 length++;
@@ -1389,7 +869,7 @@ public class Main {
             return length;
         }
 
-        public ListNode getNodeAtPosition(ListNode head, int position) {
+        private ListNode getNodeAtPosition(ListNode head, int position) {
             ListNode current = head;
             for (int i = 1; i < position; ++i) {
                 current = current.next;
@@ -1397,7 +877,7 @@ public class Main {
             return current;
         }
 
-        public ListNode reverse(ListNode start, ListNode end) {
+        private ListNode reverse(ListNode start, ListNode end) {
             ListNode current = start;
             ListNode rightBound = end.next;
             ListNode previous = rightBound;
@@ -1464,269 +944,25 @@ public class Main {
             // Return the head of the modified list
             return head;
         }
-
-        public ListNode build(int[] vals) {
-            ListNode dummy = new ListNode(0);
-            ListNode cur = dummy;
-            for (int v : vals) { cur.next = new ListNode(v); cur = cur.next; }
-            return dummy.next;
-        }
-
-        public String toStr(ListNode head) {
-            StringBuilder sb = new StringBuilder("[");
-            while (head != null) {
-                sb.append(head.val);
-                if (head.next != null) sb.append(", ");
-                head = head.next;
-            }
-            return sb.append("]").toString();
-        }
     }
 
     public static void main(String[] args) {
-        Solution sol = new Solution();
-        ListNode head = sol.build(new int[]{5, 7, 3, 10, 6, 8});
-        System.out.println(sol.toStr(sol.reverseKSegments(head, 3)));  // [3, 7, 5, 8, 6, 10]
+        // Examples from the problem statement
+        System.out.println(toList(new Solution().reverseKSegments(fromList(5, 7, 3, 10, 6, 8), 3))); // [3, 7, 5, 8, 6, 10]
+        System.out.println(toList(new Solution().reverseKSegments(fromList(5, 7, 3, 10, 6), 2)));    // [7, 5, 10, 3, 6]
+        System.out.println(toList(new Solution().reverseKSegments(fromList(5, 7, 3, 10, 6), 8)));    // [5, 7, 3, 10, 6]
+
+        // Edge cases
+        System.out.println(toList(new Solution().reverseKSegments(null, 2)));                          // []
+        System.out.println(toList(new Solution().reverseKSegments(fromList(1), 1)));                   // [1]
+        System.out.println(toList(new Solution().reverseKSegments(fromList(1, 2), 1)));                // [1, 2]
+        System.out.println(toList(new Solution().reverseKSegments(fromList(1, 2, 3, 4, 5, 6), 2)));   // [2, 1, 4, 3, 6, 5]
+        System.out.println(toList(new Solution().reverseKSegments(fromList(1, 2, 3, 4, 5, 6), 6)));   // [6, 5, 4, 3, 2, 1]
     }
 }
 ```
 
-```c run
-#include <stdio.h>
-#include <stdlib.h>
-
-typedef struct ListNode {
-    int val;
-    struct ListNode *next;
-} ListNode;
-
-ListNode* newNode(int v) {
-    ListNode *n = malloc(sizeof *n);
-    n->val = v; n->next = NULL;
-    return n;
-}
-
-int findLength(ListNode *head) {
-    int length = 0;
-    while (head != NULL) {
-        length++;
-        head = head->next;
-    }
-    return length;
-}
-
-ListNode* getNodeAtPosition(ListNode *head, int position) {
-    ListNode *current = head;
-    for (int i = 1; i < position; ++i) {
-        current = current->next;
-    }
-    return current;
-}
-
-ListNode* reverse(ListNode *start, ListNode *end) {
-    ListNode *current = start;
-    ListNode *rightBound = end->next;
-    ListNode *previous = rightBound;
-
-    while (current != rightBound) {
-        ListNode *next = current->next;
-        current->next = previous;
-        previous = current;
-        current = next;
-    }
-
-    return previous;
-}
-
-ListNode* reverseKSegments(ListNode *head, int k) {
-
-    /* If the list is empty, has only one node, or k is 1, no need to
-       reverse segments */
-    if (head == NULL || head->next == NULL || k == 1) {
-        return head;
-    }
-
-    /* Start of the current segment to be reversed */
-    ListNode *start = head;
-
-    /* Pointer to the last node of the previous segment */
-    ListNode *leftBound = NULL;
-
-    /* Find the total number of segments in the linked list */
-    int totalSegments = findLength(head) / k;
-
-    /* Loop through the list to reverse every k-length segment */
-    for (int i = 0; i < totalSegments; i++) {
-
-        /* Get the end node of the current segment */
-        ListNode *end = getNodeAtPosition(start, k);
-
-        /* Get the head of the reversed segment. */
-        ListNode *reversedHead = reverse(start, end);
-
-        /* Check if there is a previous segment to connect to or
-           if the existing head needs to be updated.
-           If leftBound is null, it means we're at the first
-           segment So, we need to update the head to the
-           reversedHead */
-        if (leftBound == NULL) {
-            head = reversedHead;
-        }
-
-        /* If there is a leftBound, connect its next to the new
-           reversedHead */
-        else {
-            leftBound->next = reversedHead;
-        }
-
-        /* Update leftBound to the current segment's start (which is
-           now the end after reversal) */
-        leftBound = start;
-
-        /* Move to the next segment */
-        start = leftBound->next;
-    }
-
-    /* Return the head of the modified list */
-    return head;
-}
-
-void printList(ListNode *head) {
-    printf("[");
-    while (head) {
-        printf("%d", head->val);
-        if (head->next) printf(", ");
-        head = head->next;
-    }
-    printf("]\n");
-}
-
-int main() {
-    ListNode *head = newNode(5);
-    head->next = newNode(7);
-    head->next->next = newNode(3);
-    head->next->next->next = newNode(10);
-    head->next->next->next->next = newNode(6);
-    head->next->next->next->next->next = newNode(8);
-
-    printList(reverseKSegments(head, 3));  /* [3, 7, 5, 8, 6, 10] */
-    return 0;
-}
-```
-
-```scala run
-class ListNode(var v: Int, var next: ListNode = null)
-
-object Main extends App {
-  class Solution {
-    def findLength(head: ListNode): Int = {
-      var length = 0
-      var cur = head
-      while (cur != null) {
-        length += 1
-        cur = cur.next
-      }
-      length
-    }
-
-    def getNodeAtPosition(head: ListNode, position: Int): ListNode = {
-      var current = head
-      var i = 1
-      while (i < position) {
-        current = current.next
-        i += 1
-      }
-      current
-    }
-
-    def reverse(start: ListNode, end: ListNode): ListNode = {
-      var current = start
-      val rightBound = end.next
-      var previous = rightBound
-
-      while (current != rightBound) {
-        val next = current.next
-        current.next = previous
-        previous = current
-        current = next
-      }
-
-      previous
-    }
-
-    def reverseKSegments(headIn: ListNode, k: Int): ListNode = {
-
-      // If the list is empty, has only one node, or k is 1, no need to
-      // reverse segments
-      if (headIn == null || headIn.next == null || k == 1) {
-        return headIn
-      }
-
-      var head = headIn
-
-      // Start of the current segment to be reversed
-      var start = head
-
-      // Pointer to the last node of the previous segment
-      var leftBound: ListNode = null
-
-      // Find the total number of segments in the linked list
-      val totalSegments = findLength(head) / k
-
-      // Loop through the list to reverse every k-length segment
-      for (_ <- 0 until totalSegments) {
-
-        // Get the end node of the current segment
-        val end = getNodeAtPosition(start, k)
-
-        // Get the head of the reversed segment.
-        val reversedHead = reverse(start, end)
-
-        // Check if there is a previous segment to connect to or
-        // if the existing head needs to be updated.
-        // If leftBound is null, it means we're at the first
-        // segment So, we need to update the head to the
-        // reversedHead
-        if (leftBound == null) {
-          head = reversedHead
-        }
-
-        // If there is a leftBound, connect its next to the new
-        // reversedHead
-        else {
-          leftBound.next = reversedHead
-        }
-
-        // Update leftBound to the current segment's start (which is
-        // now the end after reversal)
-        leftBound = start
-
-        // Move to the next segment
-        start = leftBound.next
-      }
-
-      // Return the head of the modified list
-      head
-    }
-
-    def build(vals: List[Int]): ListNode = {
-      val dummy = new ListNode(0); var cur = dummy
-      for (v <- vals) { cur.next = new ListNode(v); cur = cur.next }
-      dummy.next
-    }
-
-    def toStr(head: ListNode): String = {
-      val sb = new StringBuilder("["); var cur = head
-      while (cur != null) { sb.append(cur.v); if (cur.next != null) sb.append(", "); cur = cur.next }
-      sb.append("]").toString
-    }
-  }
-
-  val sol = new Solution()
-  val head = sol.build(List(5, 7, 3, 10, 6, 8))
-  println(sol.toStr(sol.reverseKSegments(head, 3)))  // [3, 7, 5, 8, 6, 10]
-}
-```
+</details>
 
 
 ***
@@ -1757,87 +993,39 @@ If, at the end, the length of the remaining list is less than the required group
 > -   **Output:** \[5\]
 > -   **Explanation:** We get the above list by reversing the first group of size 1.
 
-## Solution
+<details>
+<summary><h2>Solution</h2></summary>
 
 
-```pseudocode
-# Reverse the first 1, then next 2, then next 3, … nodes. Stop when the list is too short for the next group.
-function findLength(head):
-    length ← 0
-    while head is not null:
-        length ← length + 1
-        head ← head.next
-    return length
-
-function getNodeAtPosition(head, position):
-    current ← head
-    for i ← 1 to position − 1:
-        current ← current.next
-    return current
-
-function reverse(start, end):
-    current ← start
-    rightBound ← end.next
-    previous ← rightBound
-
-    while current ≠ rightBound:
-        next ← current.next
-        current.next ← previous
-        previous ← current
-        current ← next
-
-    return previous
-
-function reverseIncreasingGroups(head):
-
-    # If the list is empty or has only one node, no need to reverse segments
-    if head is null OR head.next is null:
-        return head
-
-    # Start of the current segment to be reversed
-    start ← head
-
-    # Pointer to the last node of the previous segment
-    leftBound ← null
-
-    # Find the length of the linked list
-    length ← findLength(head)
-
-    # Start with a group size of 1
-    groupSize ← 1
-
-    # Loop through the list to reverse segments of increasing size
-    while length ≥ groupSize:
-
-        # Get the end node of the current segment
-        end ← getNodeAtPosition(start, groupSize)
-
-        # Get the head of the reversed segment.
-        reversedHead ← reverse(start, end)
-
-        if leftBound is null:
-            head ← reversedHead
-        else:
-            leftBound.next ← reversedHead
-
-        # Update leftBound to the current segment's start (which is now the end after reversal)
-        leftBound ← start
-
-        # Move to the next segment
-        start ← leftBound.next
-
-        # Decrement the remaining length by the size of the current group
-        length ← length − groupSize
-
-        # Increment groupSize for the next segment
-        groupSize ← groupSize + 1
-
-    # Return the head of the modified list
-    return head
-```
 
 ```python run
 from typing import Optional
+
+
+class ListNode:
+    def __init__(self, val=0, nxt=None):
+        self.val = val
+        self.next = nxt
+
+
+def from_list(values):
+    if not values:
+        return None
+    head = ListNode(values[0])
+    cur = head
+    for v in values[1:]:
+        cur.next = ListNode(v)
+        cur = cur.next
+    return head
+
+
+def to_list(head):
+    out = []
+    while head is not None:
+        out.append(head.val)
+        head = head.next
+    return out
+
 
 class Solution:
     def find_length(self, head: Optional[ListNode]) -> int:
@@ -1929,11 +1117,48 @@ class Solution:
 
         # Return the head of the modified list
         return head
+
+
+# Examples from the problem statement
+print(to_list(Solution().reverse_increasing_groups(from_list([5, 7, 3, 10, 6, 8]))))  # [5, 3, 7, 8, 6, 10]
+print(to_list(Solution().reverse_increasing_groups(from_list([5, 7, 3, 10, 6]))))     # [5, 3, 7, 10, 6]
+print(to_list(Solution().reverse_increasing_groups(from_list([5]))))                   # [5]
+
+# Edge cases
+print(to_list(Solution().reverse_increasing_groups(None)))                             # []
+print(to_list(Solution().reverse_increasing_groups(from_list([1, 2]))))                # [1, 2]
+print(to_list(Solution().reverse_increasing_groups(from_list([1, 2, 3]))))             # [1, 3, 2]
+print(to_list(Solution().reverse_increasing_groups(from_list([1, 2, 3, 4, 5, 6, 7, 8, 9, 10]))))  # [1, 3, 2, 6, 5, 4, 10, 9, 8, 7]
 ```
 
 ```java run
+import java.util.*;
+
 public class Main {
-    static class ListNode { int val; ListNode next; ListNode(int v){val=v;} }
+    static class ListNode {
+        int val;
+        ListNode next;
+        ListNode() {}
+        ListNode(int val) { this.val = val; }
+        ListNode(int val, ListNode next) { this.val = val; this.next = next; }
+    }
+
+    static ListNode fromList(int... values) {
+        if (values.length == 0) return null;
+        ListNode head = new ListNode(values[0]);
+        ListNode cur = head;
+        for (int i = 1; i < values.length; i++) {
+            cur.next = new ListNode(values[i]);
+            cur = cur.next;
+        }
+        return head;
+    }
+
+    static List<Integer> toList(ListNode head) {
+        List<Integer> out = new ArrayList<>();
+        while (head != null) { out.add(head.val); head = head.next; }
+        return out;
+    }
 
     static class Solution {
         private int findLength(ListNode head) {
@@ -2033,186 +1258,21 @@ public class Main {
     }
 
     public static void main(String[] args) {
-        // [5, 7, 3, 10, 6, 8] -> [5, 3, 7, 8, 6, 10]
-        ListNode n1=new ListNode(5),n2=new ListNode(7),n3=new ListNode(3),
-                 n4=new ListNode(10),n5=new ListNode(6),n6=new ListNode(8);
-        n1.next=n2; n2.next=n3; n3.next=n4; n4.next=n5; n5.next=n6;
-        ListNode head = new Solution().reverseIncreasingGroups(n1);
-        for (ListNode c=head;c!=null;c=c.next) System.out.print(c.val+" ");
-        // 5 3 7 8 6 10
+        // Examples from the problem statement
+        System.out.println(toList(new Solution().reverseIncreasingGroups(fromList(5, 7, 3, 10, 6, 8)))); // [5, 3, 7, 8, 6, 10]
+        System.out.println(toList(new Solution().reverseIncreasingGroups(fromList(5, 7, 3, 10, 6))));    // [5, 3, 7, 10, 6]
+        System.out.println(toList(new Solution().reverseIncreasingGroups(fromList(5))));                  // [5]
+
+        // Edge cases
+        System.out.println(toList(new Solution().reverseIncreasingGroups(null)));                          // []
+        System.out.println(toList(new Solution().reverseIncreasingGroups(fromList(1, 2))));                // [1, 2]
+        System.out.println(toList(new Solution().reverseIncreasingGroups(fromList(1, 2, 3))));             // [1, 3, 2]
+        System.out.println(toList(new Solution().reverseIncreasingGroups(fromList(1, 2, 3, 4, 5, 6, 7, 8, 9, 10)))); // [1, 3, 2, 6, 5, 4, 10, 9, 8, 7]
     }
 }
 ```
 
-```c run
-ListNode* reverseIncreasingGroups(ListNode *head) {
-
-    /* If the list is empty or has only one node, no need to
-       reverse segments */
-    if (head == NULL || head->next == NULL) {
-        return head;
-    }
-
-    /* Start of the current segment to be reversed */
-    ListNode *start = head;
-
-    /* Pointer to the last node of the previous segment */
-    ListNode *leftBound = NULL;
-
-    /* Find the length of the linked list */
-    int length = findLength(head);
-
-    /* Start with a group size of 1 */
-    int groupSize = 1;
-
-    /* Loop through the list to reverse segments of increasing size */
-    while (length >= groupSize) {
-
-        /* Get the end node of the current segment */
-        ListNode *end = getNodeAtPosition(start, groupSize);
-
-        /* Get the head of the reversed segment. */
-        ListNode *reversedHead = reverse(start, end);
-
-        /* Check if there is a previous segment to connect to or
-           if the existing head needs to be updated.
-           If leftBound is null, it means we're at the first
-           segment So, we need to update the head to the
-           reversedHead */
-        if (leftBound == NULL) {
-            head = reversedHead;
-        }
-
-        /* If there is a leftBound, connect its next to the new
-           reversedHead */
-        else {
-            leftBound->next = reversedHead;
-        }
-
-        /* Update leftBound to the current segment's start (which is
-           now the end after reversal) */
-        leftBound = start;
-
-        /* Move to the next segment */
-        start = leftBound->next;
-
-        /* Decrement the remaining length by the size of the current
-           group */
-        length -= groupSize;
-
-        /* increment groupSize for the next segment */
-        groupSize++;
-    }
-
-    /* Return the head of the modified list */
-    return head;
-}
-```
-
-```scala run
-class ListNode(var v: Int, var next: ListNode = null)
-
-object Main extends App {
-  class Solution {
-    private def findLength(head: ListNode): Int = {
-      var length = 0; var cur = head
-      while (cur != null) { length += 1; cur = cur.next }
-      length
-    }
-
-    private def getNodeAtPosition(head: ListNode, position: Int): ListNode = {
-      var current = head
-      var i = 1
-      while (i < position) { current = current.next; i += 1 }
-      current
-    }
-
-    private def reverse(start: ListNode, end: ListNode): ListNode = {
-      var current = start
-      val rightBound = end.next
-      var previous = rightBound
-      while (current != rightBound) {
-        val next = current.next
-        current.next = previous
-        previous = current
-        current = next
-      }
-      previous
-    }
-
-    def reverseIncreasingGroups(headIn: ListNode): ListNode = {
-
-      // If the list is empty or has only one node, no need to
-      // reverse segments
-      if (headIn == null || headIn.next == null) {
-        return headIn
-      }
-
-      var head = headIn
-
-      // Start of the current segment to be reversed
-      var start = head
-
-      // Pointer to the last node of the previous segment
-      var leftBound: ListNode = null
-
-      // Find the length of the linked list
-      var length = findLength(head)
-
-      // Start with a group size of 1
-      var groupSize = 1
-
-      // Loop through the list to reverse segments of increasing size
-      while (length >= groupSize) {
-
-        // Get the end node of the current segment
-        val end = getNodeAtPosition(start, groupSize)
-
-        // Get the head of the reversed segment.
-        val reversedHead = reverse(start, end)
-
-        // Check if there is a previous segment to connect to or
-        // if the existing head needs to be updated.
-        // If leftBound is null, it means we're at the first
-        // segment So, we need to update the head to the
-        // reversedHead
-        if (leftBound == null) {
-          head = reversedHead
-        }
-
-        // If there is a leftBound, connect its next to the new
-        // reversedHead
-        else {
-          leftBound.next = reversedHead
-        }
-
-        // Update leftBound to the current segment's start (which is
-        // now the end after reversal)
-        leftBound = start
-
-        // Move to the next segment
-        start = leftBound.next
-
-        // Decrement the remaining length by the size of the current
-        // group
-        length -= groupSize
-
-        // increment groupSize for the next segment
-        groupSize += 1
-      }
-
-      // Return the head of the modified list
-      head
-    }
-  }
-
-  // [5, 7, 3, 10, 6, 8] -> [5, 3, 7, 8, 6, 10]
-  val n6=new ListNode(8); val n5=new ListNode(6,n6); val n4=new ListNode(10,n5)
-  val n3=new ListNode(3,n4); val n2=new ListNode(7,n3); val n1=new ListNode(5,n2)
-  var head = new Solution().reverseIncreasingGroups(n1)
-  while (head != null) { print(s"${head.v} "); head = head.next }  // 5 3 7 8 6 10
-}
-```
+</details>
 
 
 ***
@@ -2243,93 +1303,39 @@ If, at the end, the length of the remaining list is less than k, do not reverse 
 > -   **Output:** \[5, 7, 3, 10, 6\]
 > -   **Explanation:** Since the value of k is 8, we cannot reverse any part of the list as the size of the entire list is 6, which is less than 8.
 
-## Solution
+<details>
+<summary><h2>Solution</h2></summary>
 
 
-```pseudocode
-# Reverse only the alternate (1st, 3rd, 5th, ...) k-segments. Toggle a flag each iteration.
-function findLength(head):
-    length ← 0
-    while head is not null:
-        length ← length + 1
-        head ← head.next
-    return length
-
-function getNodeAtPosition(head, position):
-    current ← head
-    for i ← 1 to position − 1:
-        current ← current.next
-    return current
-
-function reverse(start, end):
-    current ← start
-    rightBound ← end.next
-    previous ← rightBound
-
-    while current ≠ rightBound:
-        next ← current.next
-        current.next ← previous
-        previous ← current
-        current ← next
-
-    return previous
-
-function reverseAlternateSegments(head, k):
-
-    # If the list is empty, has only one node, or k is 1, no need to reverse segments
-    if head is null OR head.next is null OR k = 1:
-        return head
-
-    # Flag to determine whether to reverse the current segment
-    shouldReverse ← true
-
-    # Start of the current segment to be reversed
-    start ← head
-
-    # Pointer to the last node of the previous segment
-    leftBound ← null
-
-    # Find the total number of segments in the linked list
-    totalSegments ← findLength(head) ÷ k
-
-    # Loop through the list to reverse every alternate k-length segment
-    for i ← 0 to totalSegments − 1:
-
-        # Get the end node of the current segment
-        end ← getNodeAtPosition(start, k)
-
-        # Reverse the current segment if the flag is set
-        if shouldReverse:
-
-            # Get the head of the reversed segment.
-            reversedHead ← reverse(start, end)
-
-            if leftBound is null:
-                head ← reversedHead
-            else:
-                leftBound.next ← reversedHead
-
-            # Update leftBound to the current segment's start (which is now the end after reversal)
-            leftBound ← start
-
-        # If the flag is not set, skip reversing the current segment
-        else:
-
-            # Skip reversing this segment, move leftBound to the end of the segment
-            leftBound ← end
-
-        # Move to the next segment
-        start ← leftBound.next
-
-        # Toggle the flag for the next segment
-        shouldReverse ← NOT shouldReverse
-
-    # Return the new head of the list
-    return head
-```
 
 ```python run
 from typing import Optional
+
+
+class ListNode:
+    def __init__(self, val=0, nxt=None):
+        self.val = val
+        self.next = nxt
+
+
+def from_list(values):
+    if not values:
+        return None
+    head = ListNode(values[0])
+    cur = head
+    for v in values[1:]:
+        cur.next = ListNode(v)
+        cur = cur.next
+    return head
+
+
+def to_list(head):
+    out = []
+    while head is not None:
+        out.append(head.val)
+        head = head.next
+    return out
+
 
 class Solution:
     def find_length(self, head: Optional[ListNode]) -> int:
@@ -2428,11 +1434,49 @@ class Solution:
 
         # Return the new head of the list
         return head
+
+
+# Examples from the problem statement
+print(to_list(Solution().reverse_alternate_segments(from_list([5, 7, 3, 10, 6, 8]), 2)))  # [7, 5, 3, 10, 8, 6]
+print(to_list(Solution().reverse_alternate_segments(from_list([5, 7, 3, 10, 6]), 3)))     # [3, 7, 5, 10, 6]
+print(to_list(Solution().reverse_alternate_segments(from_list([5, 7, 3, 10, 6]), 8)))     # [5, 7, 3, 10, 6]
+
+# Edge cases
+print(to_list(Solution().reverse_alternate_segments(None, 2)))                             # []
+print(to_list(Solution().reverse_alternate_segments(from_list([1]), 2)))                   # [1]
+print(to_list(Solution().reverse_alternate_segments(from_list([1, 2, 3, 4]), 1)))          # [1, 2, 3, 4]
+print(to_list(Solution().reverse_alternate_segments(from_list([1, 2, 3, 4, 5, 6]), 3)))   # [3, 2, 1, 4, 5, 6]
+print(to_list(Solution().reverse_alternate_segments(from_list([1, 2, 3, 4, 5, 6, 7, 8]), 2)))  # [2, 1, 3, 4, 6, 5, 7, 8]
 ```
 
 ```java run
+import java.util.*;
+
 public class Main {
-    static class ListNode { int val; ListNode next; ListNode(int v){val=v;} }
+    static class ListNode {
+        int val;
+        ListNode next;
+        ListNode() {}
+        ListNode(int val) { this.val = val; }
+        ListNode(int val, ListNode next) { this.val = val; this.next = next; }
+    }
+
+    static ListNode fromList(int... values) {
+        if (values.length == 0) return null;
+        ListNode head = new ListNode(values[0]);
+        ListNode cur = head;
+        for (int i = 1; i < values.length; i++) {
+            cur.next = new ListNode(values[i]);
+            cur = cur.next;
+        }
+        return head;
+    }
+
+    static List<Integer> toList(ListNode head) {
+        List<Integer> out = new ArrayList<>();
+        while (head != null) { out.add(head.val); head = head.next; }
+        return out;
+    }
 
     static class Solution {
         private int findLength(ListNode head) {
@@ -2541,211 +1585,25 @@ public class Main {
     }
 
     public static void main(String[] args) {
-        // [5, 7, 3, 10, 6, 8], k=2 -> [7, 5, 3, 10, 8, 6]
-        ListNode n1=new ListNode(5),n2=new ListNode(7),n3=new ListNode(3),
-                 n4=new ListNode(10),n5=new ListNode(6),n6=new ListNode(8);
-        n1.next=n2; n2.next=n3; n3.next=n4; n4.next=n5; n5.next=n6;
-        ListNode head = new Solution().reverseAlternateSegments(n1, 2);
-        for (ListNode c=head;c!=null;c=c.next) System.out.print(c.val+" ");
-        // 7 5 3 10 8 6
+        // Examples from the problem statement
+        System.out.println(toList(new Solution().reverseAlternateSegments(fromList(5, 7, 3, 10, 6, 8), 2))); // [7, 5, 3, 10, 8, 6]
+        System.out.println(toList(new Solution().reverseAlternateSegments(fromList(5, 7, 3, 10, 6), 3)));    // [3, 7, 5, 10, 6]
+        System.out.println(toList(new Solution().reverseAlternateSegments(fromList(5, 7, 3, 10, 6), 8)));    // [5, 7, 3, 10, 6]
+
+        // Edge cases
+        System.out.println(toList(new Solution().reverseAlternateSegments(null, 2)));                          // []
+        System.out.println(toList(new Solution().reverseAlternateSegments(fromList(1), 2)));                   // [1]
+        System.out.println(toList(new Solution().reverseAlternateSegments(fromList(1, 2, 3, 4), 1)));          // [1, 2, 3, 4]
+        System.out.println(toList(new Solution().reverseAlternateSegments(fromList(1, 2, 3, 4, 5, 6), 3)));   // [3, 2, 1, 4, 5, 6]
+        System.out.println(toList(new Solution().reverseAlternateSegments(fromList(1, 2, 3, 4, 5, 6, 7, 8), 2))); // [2, 1, 3, 4, 6, 5, 7, 8]
     }
 }
 ```
 
-```c run
-ListNode* reverseAlternateSegments(ListNode *head, int k) {
+</details>
+<details>
+<summary><h2>Final Takeaway</h2></summary>
 
-    /* If the list is empty, has only one node, or k is 1, no need to
-       reverse segments */
-    if (head == NULL || head->next == NULL || k == 1) {
-        return head;
-    }
-
-    /* Flag to determine whether to reverse the current segment. */
-    int shouldReverse = 1;
-
-    /* Start of the current segment to be reversed */
-    ListNode *start = head;
-
-    /* Pointer to the last node of the previous segment */
-    ListNode *leftBound = NULL;
-
-    /* Find the total number of segments in the linked list */
-    int totalSegments = findLength(head) / k;
-
-    /* Loop through the list to reverse every alternate k-length
-       segment */
-    for (int i = 0; i < totalSegments; i++) {
-
-        /* Get the end node of the current segment */
-        ListNode *end = getNodeAtPosition(start, k);
-
-        /* Reverse the current segment if the flag is set. */
-        if (shouldReverse) {
-
-            /* Get the head of the reversed segment. */
-            ListNode *reversedHead = reverse(start, end);
-
-            /* Check if there is a previous segment to connect to or
-               if the existing head needs to be updated.
-               If leftBound is null, it means we're at the first
-               segment So, we need to update the head to the
-               reversedHead */
-            if (leftBound == NULL) {
-                head = reversedHead;
-            }
-
-            /* If there is a leftBound, connect its next to the
-               new reversedHead */
-            else {
-                leftBound->next = reversedHead;
-            }
-
-            /* Update leftBound to the current segment's start (which
-               is now the end after reversal) */
-            leftBound = start;
-        }
-
-        /* If the flag is not set, skip reversing the current segment */
-        else {
-
-            /* Skip reversing this segment, move leftBound to the end
-               of the segment. */
-            leftBound = end;
-        }
-
-        /* Move to the next segment */
-        start = leftBound->next;
-
-        /* Toggle the flag for the next segment */
-        shouldReverse = !shouldReverse;
-    }
-
-    /* Return the new head of the list. */
-    return head;
-}
-```
-
-```scala run
-class ListNode(var v: Int, var next: ListNode = null)
-
-object Main extends App {
-  class Solution {
-    private def findLength(head: ListNode): Int = {
-      var length = 0; var cur = head
-      while (cur != null) { length += 1; cur = cur.next }
-      length
-    }
-
-    private def getNodeAtPosition(head: ListNode, position: Int): ListNode = {
-      var current = head
-      var i = 1
-      while (i < position) { current = current.next; i += 1 }
-      current
-    }
-
-    private def reverse(start: ListNode, end: ListNode): ListNode = {
-      var current = start
-      val rightBound = end.next
-      var previous = rightBound
-
-      while (current != rightBound) {
-        val next = current.next
-        current.next = previous
-        previous = current
-        current = next
-      }
-
-      previous
-    }
-
-    def reverseAlternateSegments(headIn: ListNode, k: Int): ListNode = {
-
-      // If the list is empty, has only one node, or k is 1, no need to
-      // reverse segments
-      if (headIn == null || headIn.next == null || k == 1) {
-        return headIn
-      }
-
-      var head = headIn
-
-      // Flag to determine whether to reverse the current segment
-      var shouldReverse = true
-
-      // Start of the current segment to be reversed
-      var start = head
-
-      // Pointer to the last node of the previous segment
-      var leftBound: ListNode = null
-
-      // Find the total number of segments in the linked list
-      val totalSegments = findLength(head) / k
-
-      // Loop through the list to reverse every alternate k-length
-      // segment
-      for (_ <- 0 until totalSegments) {
-
-        // Get the end node of the current segment
-        val end = getNodeAtPosition(start, k)
-
-        // Reverse the current segment if the flag is set
-        if (shouldReverse) {
-
-          // Get the head of the reversed segment.
-          val reversedHead = reverse(start, end)
-
-          // Check if there is a previous segment to connect to or
-          // if the existing head needs to be updated.
-          // If leftBound is null, it means we're at the first
-          // segment So, we need to update the head to the
-          // reversedHead
-          if (leftBound == null) {
-            head = reversedHead
-          }
-
-          // If there is a leftBound, connect its next to the
-          // new reversedHead
-          else {
-            leftBound.next = reversedHead
-          }
-
-          // Update leftBound to the current segment's start (which
-          // is now the end after reversal)
-          leftBound = start
-        }
-
-        // If the flag is not set, skip reversing the current segment
-        else {
-
-          // Skip reversing this segment, move leftBound to the end
-          // of the segment
-          leftBound = end
-        }
-
-        // Move to the next segment
-        start = leftBound.next
-
-        // Toggle the flag for the next segment
-        shouldReverse = !shouldReverse
-      }
-
-      // Return the new head of the list
-      head
-    }
-  }
-
-  // [5, 7, 3, 10, 6, 8], k=2 -> [7, 5, 3, 10, 8, 6]
-  val n6=new ListNode(8); val n5=new ListNode(6,n6); val n4=new ListNode(10,n5)
-  val n3=new ListNode(3,n4); val n2=new ListNode(7,n3); val n1=new ListNode(5,n2)
-  var head = new Solution().reverseAlternateSegments(n1, 2)
-  while (head != null) { print(s"${head.v} "); head = head.next }  // 7 5 3 10 8 6
-}
-```
-
-
-***
-
-## Final Takeaway
 
 Reversal-as-subroutine follows a universal recipe:
 
@@ -2773,3 +1631,5 @@ When you next see "reverse in groups", "swap pairs", "reverse alternate K", or "
 > Maintain a boolean <code>should_reverse</code> that flips each group. On "reverse" groups run the segment-reversal primitive; on "skip" groups just advance <code>leftBound</code> and <code>start</code> by <code>k</code> without touching any pointers inside. Same O(n), same four-boundary dance — just a conditional around step 3.
 >
 > </details>
+
+</details>

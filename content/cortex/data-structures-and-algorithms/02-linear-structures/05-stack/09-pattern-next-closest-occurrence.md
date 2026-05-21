@@ -115,79 +115,61 @@ For **next smaller**, swap the comparison: `arr[stack.top()] > arr[i]`.
 ## Implementation — generic NGE walker
 
 
-```pseudocode
-function nextGreater(arr):
-    nge   ← array of −1, length n
-    stack ← empty stack of indices
-    for i from 0 to n − 1:
-        while stack not empty AND arr[top] < arr[i]:
-            nge[pop()] ← arr[i]   # retroactive resolution
-        push i
-    return nge
-```
-
 ```python run
-def next_greater(arr: list) -> list:
-    n = len(arr)
-    nge = [-1] * n
-    stack = []                                  # stack of INDICES
-    for i in range(n):
-        while stack and arr[stack[-1]] < arr[i]:
-            nge[stack.pop()] = arr[i]            # retroactive resolution
-        stack.append(i)
-    return nge
+from typing import List
 
-print(next_greater([3, 5, 1, 6, 8, 7]))   # [5, 6, 6, 8, -1, -1]
+def next_greater_occurrence(arr: List[int]) -> List[int]:
+    # List to store the next greater elements for arr
+    next_greater: List[int] = [-1] * len(arr)
+
+    # Stack to track indices of elements in decreasing order
+    stack: List[int] = []
+
+    # Iterate over the array
+    for i, num in enumerate(arr):
+        # While the stack is not empty and the current element is greater than
+        # the element at the index stored at the top of the stack
+        while stack and arr[stack[-1]] < num:
+            # Set the next greater element for the index at the top of the stack
+            prev_index = stack.pop()
+            next_greater[prev_index] = num
+
+        # Push the current index onto the stack
+        stack.append(i)
+
+    return next_greater
 ```
 
 ```java run
-import java.util.*;
-public class Main {
-    static int[] nextGreater(int[] arr) {
-        int n = arr.length;
-        int[] nge = new int[n]; Arrays.fill(nge, -1);
-        Deque<Integer> st = new ArrayDeque<>();
-        for (int i = 0; i < n; i++) {
-            while (!st.isEmpty() && arr[st.peek()] < arr[i]) nge[st.pop()] = arr[i];
-            st.push(i);
+public class NextGreaterOccurrence {
+
+    public List<Integer> nextGreaterOccurrence(List<Integer> arr) {
+
+        // List to store the next greater elements for arr
+        List<Integer> nextGreater = new ArrayList<>();
+        for (int i = 0; i < arr.size(); i++) {
+            nextGreater.add(-1);
         }
-        return nge;
-    }
-    public static void main(String[] args) {
-        System.out.println(Arrays.toString(nextGreater(new int[]{3,5,1,6,8,7})));
-    }
-}
-```
 
-```c run
-#include <stdio.h>
-void next_greater(int *arr, int n, int *nge) {
-    int st[256]; int top = -1;
-    for (int i = 0; i < n; i++) nge[i] = -1;
-    for (int i = 0; i < n; i++) {
-        while (top >= 0 && arr[st[top]] < arr[i]) nge[st[top--]] = arr[i];
-        st[++top] = i;
+        // Stack to track indices of elements in decreasing order
+        Stack<Integer> stack = new Stack<>();
+
+        // Iterate over the array
+        for (int i = 0; i < arr.size(); i++) {
+            int num = arr.get(i);
+            while (!stack.isEmpty() && arr.get(stack.peek()) < num) {
+                // If the current item is greater than the value at the top of the stack,
+                // store it in the nextGreater list using the index at the top of the stack
+                int index = stack.pop();
+                nextGreater.set(index, num);
+            }
+            // Push the current index onto the stack
+            stack.push(i);
+        }
+
+        return nextGreater;
     }
 }
-int main() {
-    int a[] = {3,5,1,6,8,7}; int r[6];
-    next_greater(a, 6, r);
-    for (int i = 0; i < 6; i++) printf("%d ", r[i]); printf("\n");
-}
-```
-
-```scala run
-import scala.collection.mutable
-def nextGreater(arr: Array[Int]): Array[Int] = {
-  val nge = Array.fill(arr.length)(-1)
-  val st  = mutable.Stack[Int]()
-  for (i <- arr.indices) {
-    while (st.nonEmpty && arr(st.top) < arr(i)) nge(st.pop()) = arr(i)
-    st.push(i)
-  }
-  nge
-}
-object Main extends App { println(nextGreater(Array(3,5,1,6,8,7)).mkString(", ")) }
 ```
 
 
@@ -220,101 +202,144 @@ Given two arrays `arr1` and `arr2` (where `arr2` is a subset of `arr1` and all e
 > -   **Input:** `arr1 = [5, 9, 7, 8, 1]`, `arr2 = [5, 9, 7]`
 > -   **Output:** `[9, -1, 8]`
 
-## Solution
+<details>
+<summary><h2>Solution</h2></summary>
 
 
-```pseudocode
-function succeedingSuperiorElement(arr1, arr2):
-    nge ← array of −1; stack ← empty; idx ← empty Map
-    for i from 0 to n − 1:
-        while stack not empty AND arr1[top] < arr1[i]: nge[pop()] ← arr1[i]
-        push i; idx[arr1[i]] ← i
-    return [nge[idx[v]] if v is in idx else −1  for v in arr2]
-```
 
 ```python run
-def succeeding_superior_element(arr1: list, arr2: list) -> list:
-    n = len(arr1)
-    nge = [-1] * n
-    st = []
-    for i in range(n):
-        while st and arr1[st[-1]] < arr1[i]:
-            nge[st.pop()] = arr1[i]
-        st.append(i)
-    idx = {v: i for i, v in enumerate(arr1)}
-    return [nge[idx[v]] if v in idx else -1 for v in arr2]
+from typing import List
 
-print(succeeding_superior_element([3,5,1,6,8,7], [3,1,8,7]))   # [5, 6, -1, -1]
-print(succeeding_superior_element([5,9,7,8,1], [5,9,7]))       # [9, -1, 8]
+class Solution:
+    def succeeding_superior_element(
+        self, arr_1: List[int], arr_2: List[int]
+    ) -> List[int]:
+
+        # Array to store the next greater elements for arr_1
+        next_greater = [-1] * len(arr_1)
+
+        # Map to store the last index of each element in arr_1
+        index_map = {}
+
+        # Stack to help find the next greater element efficiently
+        stack = []
+
+        # Step 1: Build the next greater elements array for arr_1
+        # (Traverse in reverse order)
+        for i in range(len(arr_1) - 1, -1, -1):
+            num = arr_1[i]
+
+            # Remove elements from the stack that are smaller than or
+            # equal to the current element
+            while stack and stack[-1] <= num:
+                stack.pop()
+
+            # If the stack is not empty, set the next greater element
+            if stack:
+                next_greater[i] = stack[-1]
+
+            # Push the current element onto the stack for future elements
+            stack.append(num)
+
+            # Store the index of the current element in the index map
+            index_map[num] = i
+
+        # Step 2: Process arr_2 to generate the result
+        result = []
+        for num in arr_2:
+
+            # Push the next greater element if found, otherwise -1
+            result.append(
+                next_greater[index_map[num]] if num in index_map else -1
+            )
+
+        return result
+
+
+# Examples from the problem statement
+print(Solution().succeeding_superior_element([3, 5, 1, 6, 8, 7], [3, 1, 8, 7]))  # [5, 6, -1, -1]
+print(Solution().succeeding_superior_element([5, 9, 7, 8, 1], [5, 9, 7]))        # [9, -1, 8]
+
+# Edge cases
+print(Solution().succeeding_superior_element([1], [1]))                           # [-1]
+print(Solution().succeeding_superior_element([2, 1], [2, 1]))                     # [-1, -1]
+print(Solution().succeeding_superior_element([1, 2], [1, 2]))                     # [2, -1]
+print(Solution().succeeding_superior_element([1, 2, 3, 4], [1, 3]))              # [2, 4]
+print(Solution().succeeding_superior_element([4, 3, 2, 1], [4, 1]))              # [-1, -1]
 ```
 
 ```java run
 import java.util.*;
+
 public class Main {
-    static int[] succeedingSuperiorElement(int[] arr1, int[] arr2) {
-        int n = arr1.length;
-        int[] nge = new int[n]; Arrays.fill(nge, -1);
-        Deque<Integer> st = new ArrayDeque<>();
-        Map<Integer, Integer> idx = new HashMap<>();
-        for (int i = 0; i < n; i++) {
-            while (!st.isEmpty() && arr1[st.peek()] < arr1[i]) nge[st.pop()] = arr1[i];
-            st.push(i); idx.put(arr1[i], i);
+    static class Solution {
+        public int[] succeedingSuperiorElement(int[] arr1, int[] arr2) {
+
+            // Array to store the next greater elements for arr1
+            int[] nextGreater = new int[arr1.length];
+            Arrays.fill(nextGreater, -1);
+
+            // Map to store the last index of each element in arr1
+            Map<Integer, Integer> indexMap = new HashMap<>();
+
+            // Stack to help find the next greater element efficiently
+            Stack<Integer> stack = new Stack<>();
+
+            // Step 1: Build the next greater elements array for arr1
+            // (Traverse in reverse order)
+            for (int i = arr1.length - 1; i >= 0; i--) {
+                int num = arr1[i];
+
+                // Remove elements from the stack that are smaller than or
+                // equal to the current element
+                while (!stack.isEmpty() && stack.peek() <= num) {
+                    stack.pop();
+                }
+
+                // If the stack is not empty, set the next greater element
+                if (!stack.isEmpty()) {
+                    nextGreater[i] = stack.peek();
+                }
+
+                // Push the current element onto the stack for future
+                // elements
+                stack.push(num);
+
+                // Store the index of the current element in the index map
+                indexMap.put(num, i);
+            }
+
+            // Step 2: Process arr2 to generate the result
+            int[] result = new int[arr2.length];
+            for (int i = 0; i < arr2.length; i++) {
+                int num = arr2[i];
+
+                // Push the next greater element if found, otherwise -1
+                result[i] = indexMap.containsKey(num)
+                    ? nextGreater[indexMap.get(num)]
+                    : -1;
+            }
+
+            return result;
         }
-        int[] out = new int[arr2.length];
-        for (int j = 0; j < arr2.length; j++) {
-            Integer i = idx.get(arr2[j]);
-            out[j] = (i == null) ? -1 : nge[i];
-        }
-        return out;
     }
+
     public static void main(String[] args) {
-        System.out.println(Arrays.toString(succeedingSuperiorElement(new int[]{3,5,1,6,8,7}, new int[]{3,1,8,7})));
-        System.out.println(Arrays.toString(succeedingSuperiorElement(new int[]{5,9,7,8,1}, new int[]{5,9,7})));
+        // Examples from the problem statement
+        System.out.println(Arrays.toString(new Solution().succeedingSuperiorElement(new int[]{3, 5, 1, 6, 8, 7}, new int[]{3, 1, 8, 7})));  // [5, 6, -1, -1]
+        System.out.println(Arrays.toString(new Solution().succeedingSuperiorElement(new int[]{5, 9, 7, 8, 1}, new int[]{5, 9, 7})));        // [9, -1, 8]
+
+        // Edge cases
+        System.out.println(Arrays.toString(new Solution().succeedingSuperiorElement(new int[]{1}, new int[]{1})));                          // [-1]
+        System.out.println(Arrays.toString(new Solution().succeedingSuperiorElement(new int[]{2, 1}, new int[]{2, 1})));                    // [-1, -1]
+        System.out.println(Arrays.toString(new Solution().succeedingSuperiorElement(new int[]{1, 2}, new int[]{1, 2})));                    // [2, -1]
+        System.out.println(Arrays.toString(new Solution().succeedingSuperiorElement(new int[]{1, 2, 3, 4}, new int[]{1, 3})));             // [2, 4]
+        System.out.println(Arrays.toString(new Solution().succeedingSuperiorElement(new int[]{4, 3, 2, 1}, new int[]{4, 1})));             // [-1, -1]
     }
 }
 ```
 
-```c run
-#include <stdio.h>
-void succeeding_superior_element(int *arr1, int n, int *arr2, int m, int *out) {
-    int nge[256], st[256]; int top = -1;
-    for (int i = 0; i < n; i++) nge[i] = -1;
-    int kk[256], vv[256], nn = 0;
-    for (int i = 0; i < n; i++) {
-        while (top >= 0 && arr1[st[top]] < arr1[i]) nge[st[top--]] = arr1[i];
-        st[++top] = i;
-        kk[nn] = arr1[i]; vv[nn] = i; nn++;
-    }
-    for (int j = 0; j < m; j++) {
-        int found = -1;
-        for (int k = 0; k < nn; k++) if (kk[k] == arr2[j]) { found = nge[vv[k]]; break; }
-        out[j] = found;
-    }
-}
-int main() {
-    int a[] = {3,5,1,6,8,7}; int q[] = {3,1,8,7}; int r[4];
-    succeeding_superior_element(a, 6, q, 4, r);
-    for (int i = 0; i < 4; i++) printf("%d ", r[i]); printf("\n");
-}
-```
-
-```scala run
-import scala.collection.mutable
-def succeedingSuperiorElement(arr1: Array[Int], arr2: Array[Int]): Array[Int] = {
-  val nge = Array.fill(arr1.length)(-1)
-  val st = mutable.Stack[Int]()
-  val idx = mutable.Map[Int, Int]()
-  for (i <- arr1.indices) {
-    while (st.nonEmpty && arr1(st.top) < arr1(i)) nge(st.pop()) = arr1(i)
-    st.push(i); idx(arr1(i)) = i
-  }
-  arr2.map(v => idx.get(v).map(nge(_)).getOrElse(-1))
-}
-object Main extends App {
-  println(succeedingSuperiorElement(Array(3,5,1,6,8,7), Array(3,1,8,7)).mkString(", "))
-  println(succeedingSuperiorElement(Array(5,9,7,8,1), Array(5,9,7)).mkString(", "))
-}
-```
+</details>
 
 
 ***
@@ -333,101 +358,144 @@ Same as above but **strictly smaller**. Maintain an *increasing* monotonic stack
 > -   **Input:** `arr1 = [5, 9, 7, 8, 1]`, `arr2 = [5, 9, 7]`
 > -   **Output:** `[1, 7, 1]`
 
-## Solution
+<details>
+<summary><h2>Solution</h2></summary>
 
 
-```pseudocode
-function succeedingInferiorElement(arr1, arr2):
-    nse ← array of −1; stack ← empty; idx ← empty Map
-    for i from 0 to n − 1:
-        while stack not empty AND arr1[top] > arr1[i]: nse[pop()] ← arr1[i]
-        push i; idx[arr1[i]] ← i
-    return [nse[idx[v]] if v is in idx else −1  for v in arr2]
-```
 
 ```python run
-def succeeding_inferior_element(arr1: list, arr2: list) -> list:
-    n = len(arr1)
-    nse = [-1] * n
-    st = []
-    for i in range(n):
-        while st and arr1[st[-1]] > arr1[i]:
-            nse[st.pop()] = arr1[i]
-        st.append(i)
-    idx = {v: i for i, v in enumerate(arr1)}
-    return [nse[idx[v]] if v in idx else -1 for v in arr2]
+from typing import List
 
-print(succeeding_inferior_element([3,5,1,6,8,2], [3,1,8,2]))   # [1, -1, 2, -1]
-print(succeeding_inferior_element([5,9,7,8,1], [5,9,7]))       # [1, 7, 1]
+class Solution:
+    def succeeding_inferior_element(
+        self, arr_1: List[int], arr_2: List[int]
+    ) -> List[int]:
+
+        # Array to store the next smaller elements for arr_1
+        next_smaller = [-1] * len(arr_1)
+
+        # Map to store the last index of each element in arr_1
+        index_map = {}
+
+        # Stack to help find the next smaller element efficiently
+        stack = []
+
+        # Step 1: Build the next smaller elements array for arr_1
+        # (Traverse in reverse order)
+        for i in range(len(arr_1) - 1, -1, -1):
+            num = arr_1[i]
+
+            # Remove elements from the stack that are greater than or
+            # equal to the current element
+            while stack and stack[-1] >= num:
+                stack.pop()
+
+            # If the stack is not empty, set the next smaller element
+            if stack:
+                next_smaller[i] = stack[-1]
+
+            # Push the current element onto the stack for future elements
+            stack.append(num)
+
+            # Store the index of the current element in the index map
+            index_map[num] = i
+
+        # Step 2: Process arr_2 to generate the result
+        result = []
+        for num in arr_2:
+
+            # Push the next smaller element if found, otherwise -1
+            result.append(
+                next_smaller[index_map[num]] if num in index_map else -1
+            )
+
+        return result
+
+
+# Examples from the problem statement
+print(Solution().succeeding_inferior_element([3, 5, 1, 6, 8, 9], [3, 1, 8, 9]))  # [1, -1, -1, -1]
+print(Solution().succeeding_inferior_element([5, 9, 7, 8, 1], [5, 9, 7]))        # [1, 7, 1]
+
+# Edge cases
+print(Solution().succeeding_inferior_element([1], [1]))                           # [-1]
+print(Solution().succeeding_inferior_element([1, 2], [1, 2]))                     # [-1, -1]
+print(Solution().succeeding_inferior_element([2, 1], [2, 1]))                     # [1, -1]
+print(Solution().succeeding_inferior_element([4, 3, 2, 1], [4, 2]))              # [3, 1]
+print(Solution().succeeding_inferior_element([1, 2, 3, 4], [4, 1]))              # [-1, -1]
 ```
 
 ```java run
 import java.util.*;
+
 public class Main {
-    static int[] succeedingInferiorElement(int[] arr1, int[] arr2) {
-        int n = arr1.length;
-        int[] nse = new int[n]; Arrays.fill(nse, -1);
-        Deque<Integer> st = new ArrayDeque<>();
-        Map<Integer, Integer> idx = new HashMap<>();
-        for (int i = 0; i < n; i++) {
-            while (!st.isEmpty() && arr1[st.peek()] > arr1[i]) nse[st.pop()] = arr1[i];
-            st.push(i); idx.put(arr1[i], i);
+    static class Solution {
+        public int[] succeedingInferiorElement(int[] arr1, int[] arr2) {
+
+            // Array to store the next smaller elements for arr1
+            int[] nextSmaller = new int[arr1.length];
+            Arrays.fill(nextSmaller, -1);
+
+            // Map to store the last index of each element in arr1
+            Map<Integer, Integer> indexMap = new HashMap<>();
+
+            // Stack to help find the next smaller element efficiently
+            Stack<Integer> stack = new Stack<>();
+
+            // Step 1: Build the next smaller elements array for arr1
+            // (Traverse in reverse order)
+            for (int i = arr1.length - 1; i >= 0; i--) {
+                int num = arr1[i];
+
+                // Remove elements from the stack that are greater than or
+                // equal to the current element
+                while (!stack.isEmpty() && stack.peek() >= num) {
+                    stack.pop();
+                }
+
+                // If the stack is not empty, set the next smaller element
+                if (!stack.isEmpty()) {
+                    nextSmaller[i] = stack.peek();
+                }
+
+                // Push the current element onto the stack for future
+                // elements
+                stack.push(num);
+
+                // Store the index of the current element in the index map
+                indexMap.put(num, i);
+            }
+
+            // Step 2: Process arr2 to generate the result
+            int[] result = new int[arr2.length];
+            for (int i = 0; i < arr2.length; i++) {
+                int num = arr2[i];
+
+                // Push the next smaller element if found, otherwise -1
+                result[i] = indexMap.containsKey(num)
+                    ? nextSmaller[indexMap.get(num)]
+                    : -1;
+            }
+
+            return result;
         }
-        int[] out = new int[arr2.length];
-        for (int j = 0; j < arr2.length; j++) {
-            Integer i = idx.get(arr2[j]);
-            out[j] = (i == null) ? -1 : nse[i];
-        }
-        return out;
     }
+
     public static void main(String[] args) {
-        System.out.println(Arrays.toString(succeedingInferiorElement(new int[]{3,5,1,6,8,2}, new int[]{3,1,8,2})));
-        System.out.println(Arrays.toString(succeedingInferiorElement(new int[]{5,9,7,8,1}, new int[]{5,9,7})));
+        // Examples from the problem statement
+        System.out.println(Arrays.toString(new Solution().succeedingInferiorElement(new int[]{3, 5, 1, 6, 8, 9}, new int[]{3, 1, 8, 9})));  // [1, -1, -1, -1]
+        System.out.println(Arrays.toString(new Solution().succeedingInferiorElement(new int[]{5, 9, 7, 8, 1}, new int[]{5, 9, 7})));        // [1, 7, 1]
+
+        // Edge cases
+        System.out.println(Arrays.toString(new Solution().succeedingInferiorElement(new int[]{1}, new int[]{1})));                          // [-1]
+        System.out.println(Arrays.toString(new Solution().succeedingInferiorElement(new int[]{1, 2}, new int[]{1, 2})));                    // [-1, -1]
+        System.out.println(Arrays.toString(new Solution().succeedingInferiorElement(new int[]{2, 1}, new int[]{2, 1})));                    // [1, -1]
+        System.out.println(Arrays.toString(new Solution().succeedingInferiorElement(new int[]{4, 3, 2, 1}, new int[]{4, 2})));             // [3, 1]
+        System.out.println(Arrays.toString(new Solution().succeedingInferiorElement(new int[]{1, 2, 3, 4}, new int[]{4, 1})));             // [-1, -1]
     }
 }
 ```
 
-```c run
-#include <stdio.h>
-void succeeding_inferior_element(int *arr1, int n, int *arr2, int m, int *out) {
-    int nse[256], st[256]; int top = -1;
-    for (int i = 0; i < n; i++) nse[i] = -1;
-    int kk[256], vv[256], nn = 0;
-    for (int i = 0; i < n; i++) {
-        while (top >= 0 && arr1[st[top]] > arr1[i]) nse[st[top--]] = arr1[i];
-        st[++top] = i;
-        kk[nn] = arr1[i]; vv[nn] = i; nn++;
-    }
-    for (int j = 0; j < m; j++) {
-        int found = -1;
-        for (int k = 0; k < nn; k++) if (kk[k] == arr2[j]) { found = nse[vv[k]]; break; }
-        out[j] = found;
-    }
-}
-int main() {
-    int a[] = {3,5,1,6,8,2}; int q[] = {3,1,8,2}; int r[4];
-    succeeding_inferior_element(a, 6, q, 4, r);
-    for (int i = 0; i < 4; i++) printf("%d ", r[i]); printf("\n");
-}
-```
-
-```scala run
-import scala.collection.mutable
-def succeedingInferiorElement(arr1: Array[Int], arr2: Array[Int]): Array[Int] = {
-  val nse = Array.fill(arr1.length)(-1)
-  val st = mutable.Stack[Int]()
-  val idx = mutable.Map[Int, Int]()
-  for (i <- arr1.indices) {
-    while (st.nonEmpty && arr1(st.top) > arr1(i)) nse(st.pop()) = arr1(i)
-    st.push(i); idx(arr1(i)) = i
-  }
-  arr2.map(v => idx.get(v).map(nse(_)).getOrElse(-1))
-}
-object Main extends App {
-  println(succeedingInferiorElement(Array(3,5,1,6,8,2), Array(3,1,8,2)).mkString(", "))
-  println(succeedingInferiorElement(Array(5,9,7,8,1), Array(5,9,7)).mkString(", "))
-}
-```
+</details>
 
 
 ***
@@ -444,96 +512,130 @@ Circular variant — `arr` is treated as a ring; for each element find the next 
 ### Example 2
 > -   **Input:** `arr = [6, 7, 8, 9, 8]` → **Output:** `[7, 8, 9, -1, 9]`
 
-## Approach
+<details>
+<summary><h2>Approach</h2></summary>
+
 
 Same doubled-array trick from the previous lesson — iterate `2n` indices using `i % n`. Each element gets two passes; the second one resolves answers that depend on wrap-around.
 
-## Solution
+</details>
+<details>
+<summary><h2>Solution</h2></summary>
 
 
-```pseudocode
-function succeedingSuperiorElementII(arr):
-    n ← length(arr); res ← array of −1; stack ← empty
-    for i from 0 to 2n − 1:
-        idx ← i mod n
-        while stack not empty AND arr[top] < arr[idx]: res[pop()] ← arr[idx]
-        if i < n: push idx              # only push in first pass
-    return res
-```
 
 ```python run
-def succeeding_superior_element_ii(arr: list) -> list:
-    n = len(arr)
-    res = [-1] * n
-    st = []
-    for i in range(2 * n):
-        idx = i % n
-        while st and arr[st[-1]] < arr[idx]:
-            res[st.pop()] = arr[idx]
-        if i < n: st.append(idx)        # only push during first pass
-    return res
+from typing import List
 
-print(succeeding_superior_element_ii([2,5,1,6,10,3]))   # [5, 6, 6, 10, -1, 5]
-print(succeeding_superior_element_ii([6,7,8,9,8]))      # [7, 8, 9, -1, 9]
+class Solution:
+    def succeeding_superior_element_ii(
+        self, arr: List[int]
+    ) -> List[int]:
+        n = len(arr)
+        result = [-1] * n
+
+        # Stack to store elements
+        stack = []
+
+        # Iterate twice through the array in reverse order (circularly)
+        for i in range(2 * n - 1, -1, -1):
+
+            # Circular index
+            index = i % n
+            num = arr[index]
+
+            # Check if we can pop elements from the stack
+            # (i.e., find the succeeding greater element for those
+            # elements)
+            while stack and stack[-1] <= num:
+                stack.pop()
+
+            # If stack is not empty, the top element is the succeeding
+            # superior element
+            if stack:
+                result[index] = stack[-1]
+
+            # Always push the element to the stack
+            stack.append(num)
+
+        return result
+
+
+# Examples from the problem statement
+print(Solution().succeeding_superior_element_ii([2, 5, 1, 6, 10, 3]))  # [5, 6, 6, 10, -1, 5]
+print(Solution().succeeding_superior_element_ii([6, 7, 8, 9, 8]))      # [7, 8, 9, -1, 9]
+
+# Edge cases
+print(Solution().succeeding_superior_element_ii([]))                    # []
+print(Solution().succeeding_superior_element_ii([5]))                   # [-1]
+print(Solution().succeeding_superior_element_ii([1, 2]))                # [2, -1]
+print(Solution().succeeding_superior_element_ii([1, 2, 3]))             # [2, 3, -1]
+print(Solution().succeeding_superior_element_ii([3, 2, 1]))             # [-1, 3, 3]
+print(Solution().succeeding_superior_element_ii([5, 5, 5]))             # [-1, -1, -1]
 ```
 
 ```java run
 import java.util.*;
+
 public class Main {
-    static int[] succeedingSuperiorElementII(int[] arr) {
-        int n = arr.length;
-        int[] res = new int[n]; Arrays.fill(res, -1);
-        Deque<Integer> st = new ArrayDeque<>();
-        for (int i = 0; i < 2 * n; i++) {
-            int idx = i % n;
-            while (!st.isEmpty() && arr[st.peek()] < arr[idx]) res[st.pop()] = arr[idx];
-            if (i < n) st.push(idx);
+    static class Solution {
+        public int[] succeedingSuperiorElementII(int[] arr) {
+            int n = arr.length;
+            int[] result = new int[n];
+
+            // Initialize result with -1
+            for (int i = 0; i < n; i++) {
+                result[i] = -1;
+            }
+
+            // Stack to store elements
+            Stack<Integer> stack = new Stack<>();
+
+            // Iterate twice through the array in reverse order (circularly)
+            for (int i = 2 * n - 1; i >= 0; i--) {
+
+                // Circular index
+                int index = i % n;
+                int num = arr[index];
+
+                // Check if we can pop elements from the stack
+                // (i.e., find the succeeding greater element for those
+                // elements)
+                while (!stack.isEmpty() && stack.peek() <= num) {
+                    stack.pop();
+                }
+
+                // If stack is not empty, the top element is the succeeding
+                // superior element
+                if (!stack.isEmpty()) {
+                    result[index] = stack.peek();
+                }
+
+                // Always push the element to the stack
+                stack.push(num);
+            }
+
+            return result;
         }
-        return res;
     }
+
     public static void main(String[] args) {
-        System.out.println(Arrays.toString(succeedingSuperiorElementII(new int[]{2,5,1,6,10,3})));
-        System.out.println(Arrays.toString(succeedingSuperiorElementII(new int[]{6,7,8,9,8})));
+        // Examples from the problem statement
+        System.out.println(Arrays.toString(new Solution().succeedingSuperiorElementII(new int[]{2, 5, 1, 6, 10, 3})));  // [5, 6, 6, 10, -1, 5]
+        System.out.println(Arrays.toString(new Solution().succeedingSuperiorElementII(new int[]{6, 7, 8, 9, 8})));      // [7, 8, 9, -1, 9]
+
+        // Edge cases
+        System.out.println(Arrays.toString(new Solution().succeedingSuperiorElementII(new int[]{})));                   // []
+        System.out.println(Arrays.toString(new Solution().succeedingSuperiorElementII(new int[]{5})));                  // [-1]
+        System.out.println(Arrays.toString(new Solution().succeedingSuperiorElementII(new int[]{1, 2})));               // [2, -1]
+        System.out.println(Arrays.toString(new Solution().succeedingSuperiorElementII(new int[]{1, 2, 3})));            // [2, 3, -1]
+        System.out.println(Arrays.toString(new Solution().succeedingSuperiorElementII(new int[]{3, 2, 1})));            // [-1, 3, 3]
+        System.out.println(Arrays.toString(new Solution().succeedingSuperiorElementII(new int[]{5, 5, 5})));            // [-1, -1, -1]
     }
 }
 ```
 
-```c run
-#include <stdio.h>
-void succeeding_superior_element_ii(int *arr, int n, int *res) {
-    int st[512]; int top = -1;
-    for (int i = 0; i < n; i++) res[i] = -1;
-    for (int i = 0; i < 2 * n; i++) {
-        int idx = i % n;
-        while (top >= 0 && arr[st[top]] < arr[idx]) res[st[top--]] = arr[idx];
-        if (i < n) st[++top] = idx;
-    }
-}
-int main() {
-    int a[] = {2,5,1,6,10,3}; int r[6];
-    succeeding_superior_element_ii(a, 6, r);
-    for (int i = 0; i < 6; i++) printf("%d ", r[i]); printf("\n");
-}
-```
-
-```scala run
-import scala.collection.mutable
-def succeedingSuperiorElementII(arr: Array[Int]): Array[Int] = {
-  val n = arr.length
-  val res = Array.fill(n)(-1)
-  val st = mutable.Stack[Int]()
-  for (i <- 0 until 2 * n) {
-    val idx = i % n
-    while (st.nonEmpty && arr(st.top) < arr(idx)) res(st.pop()) = arr(idx)
-    if (i < n) st.push(idx)
-  }
-  res
-}
-object Main extends App {
-  println(succeedingSuperiorElementII(Array(2,5,1,6,10,3)).mkString(", "))
-  println(succeedingSuperiorElementII(Array(6,7,8,9,8)).mkString(", "))
-}
-```
+</details>
 
 
 ***
@@ -550,92 +652,123 @@ Circular next-smaller. Mirror of the previous problem with the comparison flippe
 ### Example 2
 > -   **Input:** `arr = [6, 7, 8, 9, 8]` → **Output:** `[-1, 6, 6, 8, 6]`
 
-## Solution
+<details>
+<summary><h2>Solution</h2></summary>
 
 
-```pseudocode
-function succeedingInferiorElementII(arr):
-    n ← length(arr); res ← array of −1; stack ← empty
-    for i from 0 to 2n − 1:
-        idx ← i mod n
-        while stack not empty AND arr[top] > arr[idx]: res[pop()] ← arr[idx]
-        if i < n: push idx
-    return res
-```
 
 ```python run
-def succeeding_inferior_element_ii(arr: list) -> list:
-    n = len(arr)
-    res = [-1] * n
-    st = []
-    for i in range(2 * n):
-        idx = i % n
-        while st and arr[st[-1]] > arr[idx]:
-            res[st.pop()] = arr[idx]
-        if i < n: st.append(idx)
-    return res
+from typing import List
 
-print(succeeding_inferior_element_ii([2,5,1,6,10,3]))   # [1, 1, -1, 3, 3, 2]
-print(succeeding_inferior_element_ii([6,7,8,9,8]))      # [-1, 6, 6, 8, 6]
+class Solution:
+    def succeeding_inferior_element_ii(
+        self, arr: List[int]
+    ) -> List[int]:
+        n = len(arr)
+        result = [-1] * n
+
+        # Stack to store elements
+        stack = []
+
+        # Iterate twice through the array in reverse order (circularly)
+        for i in range(2 * n - 1, -1, -1):
+
+            # Circular index
+            index = i % n
+            num = arr[index]
+
+            # Check if we can pop elements from the stack
+            # (i.e., find the succeeding smaller element for those
+            # elements)
+            while stack and stack[-1] >= num:
+                stack.pop()
+
+            # If stack is not empty, the top element is the succeeding
+            # inferior element
+            if stack:
+                result[index] = stack[-1]
+
+            # Always push the element to the stack
+            stack.append(num)
+
+        return result
+
+
+# Examples from the problem statement
+print(Solution().succeeding_inferior_element_ii([2, 5, 1, 6, 10, 3]))  # [1, 1, -1, 3, 3, 2]
+print(Solution().succeeding_inferior_element_ii([6, 7, 8, 9, 8]))      # [-1, 6, 6, 8, 6]
+
+# Edge cases
+print(Solution().succeeding_inferior_element_ii([]))                    # []
+print(Solution().succeeding_inferior_element_ii([5]))                   # [-1]
+print(Solution().succeeding_inferior_element_ii([2, 1]))                # [1, -1]
+print(Solution().succeeding_inferior_element_ii([1, 2, 3]))             # [-1, 1, 1]
+print(Solution().succeeding_inferior_element_ii([3, 2, 1]))             # [2, 1, -1]
+print(Solution().succeeding_inferior_element_ii([5, 5, 5]))             # [-1, -1, -1]
 ```
 
 ```java run
 import java.util.*;
+
 public class Main {
-    static int[] succeedingInferiorElementII(int[] arr) {
-        int n = arr.length;
-        int[] res = new int[n]; Arrays.fill(res, -1);
-        Deque<Integer> st = new ArrayDeque<>();
-        for (int i = 0; i < 2 * n; i++) {
-            int idx = i % n;
-            while (!st.isEmpty() && arr[st.peek()] > arr[idx]) res[st.pop()] = arr[idx];
-            if (i < n) st.push(idx);
+    static class Solution {
+        public int[] succeedingInferiorElementII(int[] arr) {
+            int n = arr.length;
+            int[] result = new int[n];
+
+            // Initialize result with -1
+            for (int i = 0; i < n; i++) {
+                result[i] = -1;
+            }
+
+            // Stack to store elements
+            Stack<Integer> stack = new Stack<>();
+
+            // Iterate twice through the array in reverse order (circularly)
+            for (int i = 2 * n - 1; i >= 0; i--) {
+
+                // Circular index
+                int index = i % n;
+                int num = arr[index];
+
+                // Check if we can pop elements from the stack
+                // (i.e., find the succeeding smaller element for those
+                // elements)
+                while (!stack.isEmpty() && stack.peek() >= num) {
+                    stack.pop();
+                }
+
+                // If stack is not empty, the top element is the succeeding
+                // inferior element
+                if (!stack.isEmpty()) {
+                    result[index] = stack.peek();
+                }
+
+                // Always push the element to the stack
+                stack.push(num);
+            }
+
+            return result;
         }
-        return res;
     }
+
     public static void main(String[] args) {
-        System.out.println(Arrays.toString(succeedingInferiorElementII(new int[]{2,5,1,6,10,3})));
-        System.out.println(Arrays.toString(succeedingInferiorElementII(new int[]{6,7,8,9,8})));
+        // Examples from the problem statement
+        System.out.println(Arrays.toString(new Solution().succeedingInferiorElementII(new int[]{2, 5, 1, 6, 10, 3})));  // [1, 1, -1, 3, 3, 2]
+        System.out.println(Arrays.toString(new Solution().succeedingInferiorElementII(new int[]{6, 7, 8, 9, 8})));      // [-1, 6, 6, 8, 6]
+
+        // Edge cases
+        System.out.println(Arrays.toString(new Solution().succeedingInferiorElementII(new int[]{})));                   // []
+        System.out.println(Arrays.toString(new Solution().succeedingInferiorElementII(new int[]{5})));                  // [-1]
+        System.out.println(Arrays.toString(new Solution().succeedingInferiorElementII(new int[]{2, 1})));               // [1, -1]
+        System.out.println(Arrays.toString(new Solution().succeedingInferiorElementII(new int[]{1, 2, 3})));            // [-1, 1, 1]
+        System.out.println(Arrays.toString(new Solution().succeedingInferiorElementII(new int[]{3, 2, 1})));            // [2, 1, -1]
+        System.out.println(Arrays.toString(new Solution().succeedingInferiorElementII(new int[]{5, 5, 5})));            // [-1, -1, -1]
     }
 }
 ```
 
-```c run
-#include <stdio.h>
-void succeeding_inferior_element_ii(int *arr, int n, int *res) {
-    int st[512]; int top = -1;
-    for (int i = 0; i < n; i++) res[i] = -1;
-    for (int i = 0; i < 2 * n; i++) {
-        int idx = i % n;
-        while (top >= 0 && arr[st[top]] > arr[idx]) res[st[top--]] = arr[idx];
-        if (i < n) st[++top] = idx;
-    }
-}
-int main() {
-    int a[] = {2,5,1,6,10,3}; int r[6];
-    succeeding_inferior_element_ii(a, 6, r);
-    for (int i = 0; i < 6; i++) printf("%d ", r[i]); printf("\n");
-}
-```
-
-```scala run
-import scala.collection.mutable
-def succeedingInferiorElementII(arr: Array[Int]): Array[Int] = {
-  val n = arr.length
-  val res = Array.fill(n)(-1)
-  val st = mutable.Stack[Int]()
-  for (i <- 0 until 2 * n) {
-    val idx = i % n
-    while (st.nonEmpty && arr(st.top) > arr(idx)) res(st.pop()) = arr(idx)
-    if (i < n) st.push(idx)
-  }
-  res
-}
-object Main extends App {
-  println(succeedingInferiorElementII(Array(2,5,1,6,10,3)).mkString(", "))
-  println(succeedingInferiorElementII(Array(6,7,8,9,8)).mkString(", "))
-}
-```
+</details>
 
 
 ***
@@ -652,139 +785,191 @@ Given the head of a singly-linked list, return an array where `result[i]` is the
 ### Example 2
 > -   **Input:** `head = [2, 7, 4, 3, 5]` → **Output:** `[7, 0, 5, 5, 0]`
 
-## Approach
+<details>
+<summary><h2>Approach</h2></summary>
+
 
 Same algorithm — but the data source is a linked list, so we walk it once with a pointer, tracking each node's index. Stack stores `(index, value)` pairs; on each new value, pop and resolve as before.
 
-## Solution
+</details>
+<details>
+<summary><h2>Solution</h2></summary>
 
 
-```pseudocode
-function succeedingSuperiorNodes(head):
-    res ← empty list; stack ← empty stack of (index, value)
-    i ← 0
-    while head ≠ null:
-        append 0 to res
-        while stack not empty AND head.val > top.value:
-            (idx, _) ← pop(); res[idx] ← head.val
-        push (i, head.val)
-        i ← i + 1; head ← head.next
-    return res
-```
 
 ```python run
-class _Node:
-    def __init__(self, val): self.val, self.next = val, None
+from typing import Optional, List
 
-def succeeding_superior_nodes(head):
-    """head is a _Node-style linked list."""
-    res = []
-    stack = []                                 # stack of (index, value)
-    i = 0
-    while head is not None:
-        res.append(0)
-        while stack and head.val > stack[-1][1]:
-            idx, _ = stack.pop()
-            res[idx] = head.val
-        stack.append((i, head.val))
-        i += 1
-        head = head.next
-    return res
 
-# Demo: build [2, 7, 4, 3, 5]
-def make(values):
-    dummy = _Node(0); cur = dummy
-    for v in values: cur.next = _Node(v); cur = cur.next
-    return dummy.next
+class ListNode:
+    def __init__(self, val):
+        self.val = val
+        self.next = None
 
-print(succeeding_superior_nodes(make([2, 1, 5])))         # [5, 5, 0]
-print(succeeding_superior_nodes(make([2, 7, 4, 3, 5])))   # [7, 0, 5, 5, 0]
+
+def from_list(values):
+    if not values:
+        return None
+    head = ListNode(values[0])
+    cur = head
+    for v in values[1:]:
+        cur.next = ListNode(v)
+        cur = cur.next
+    return head
+
+
+# Struct to store index and value of each node
+class NodeInfo:
+    def __init__(self, index: int, value: int):
+        self.index = index
+        self.value = value
+
+class Solution:
+    def succeeding_superior_nodes(
+        self, head: Optional[ListNode]
+    ) -> List[int]:
+
+        # Stores the next larger elements
+        result: List[int] = []
+
+        # Stores the elements in a stack along with their indices
+        stack: List[NodeInfo] = []
+
+        # Keeps track of the current index
+        index = 0
+
+        while head is not None:
+
+            # Initialize the result for the current node as 0
+            result.append(0)
+
+            # While the stack is not empty and the value of the current
+            # node is greater than the value of the element at the top
+            # of the stack
+            while stack and head.val > stack[-1].value:
+
+                # Get the element at the top of the stack
+                top = stack.pop()
+
+                # Set the result at the index of the top element to the
+                # value of the current node
+                result[top.index] = head.val
+
+            # Push the current node's index and value to the stack
+            stack.append(NodeInfo(index, head.val))
+            index += 1
+
+            # Move to the next node
+            head = head.next
+
+        # Return the list containing the next larger elements
+        return result
+
+
+# Examples from the problem statement
+print(Solution().succeeding_superior_nodes(from_list([2, 1, 5])))       # [5, 5, 0]
+print(Solution().succeeding_superior_nodes(from_list([2, 7, 4, 3, 5]))) # [7, 0, 5, 5, 0]
+
+# Edge cases
+print(Solution().succeeding_superior_nodes(None))                       # []
+print(Solution().succeeding_superior_nodes(from_list([1])))             # [0]
+print(Solution().succeeding_superior_nodes(from_list([1, 2])))          # [2, 0]
+print(Solution().succeeding_superior_nodes(from_list([2, 1])))          # [0, 0]
+print(Solution().succeeding_superior_nodes(from_list([1, 2, 3, 4])))    # [2, 3, 4, 0]
+print(Solution().succeeding_superior_nodes(from_list([4, 3, 2, 1])))    # [0, 0, 0, 0]
 ```
 
 ```java run
 import java.util.*;
+
 public class Main {
-    static class ListNode { int val; ListNode next; ListNode(int v){val = v;} }
+    static class ListNode {
+        int val;
+        ListNode next;
+        ListNode() {}
+        ListNode(int val) { this.val = val; }
+    }
 
-    static int[] succeedingSuperiorNodes(ListNode head) {
-        List<Integer> res = new ArrayList<>();
-        Deque<int[]> st = new ArrayDeque<>();    // {index, value}
-        int i = 0;
-        while (head != null) {
-            res.add(0);
-            while (!st.isEmpty() && head.val > st.peek()[1]) {
-                int[] top = st.pop();
-                res.set(top[0], head.val);
-            }
-            st.push(new int[]{i++, head.val});
-            head = head.next;
+    static ListNode fromList(int... values) {
+        if (values.length == 0) return null;
+        ListNode head = new ListNode(values[0]);
+        ListNode cur = head;
+        for (int i = 1; i < values.length; i++) {
+            cur.next = new ListNode(values[i]);
+            cur = cur.next;
         }
-        return res.stream().mapToInt(Integer::intValue).toArray();
+        return head;
     }
+
+    // Class to store index and value of each node
+    static class NodeInfo {
+        int index;
+        int value;
+        NodeInfo(int index, int value) {
+            this.index = index;
+            this.value = value;
+        }
+    }
+
+    static class Solution {
+        public List<Integer> succeedingSuperiorNodes(ListNode head) {
+
+            // Stores the next larger elements
+            List<Integer> result = new ArrayList<>();
+
+            // Stores the elements in a stack along with their indices
+            Stack<NodeInfo> stack = new Stack<>();
+
+            // Keeps track of the current index
+            int index = 0;
+
+            while (head != null) {
+
+                // Initialize the result for the current node as 0
+                result.add(0);
+
+                // While the stack is not empty and the value of the current
+                // node is greater than the value of the element at the top
+                // of the stack
+                while (!stack.isEmpty() && head.val > stack.peek().value) {
+
+                    // Get the element at the top of the stack
+                    NodeInfo top = stack.pop();
+
+                    // Set the result at the index of the top element to the
+                    // value of the current node
+                    result.set(top.index, head.val);
+                }
+
+                // Push the current node's index and value to the stack
+                stack.push(new NodeInfo(index++, head.val));
+
+                // Move to the next node
+                head = head.next;
+            }
+
+            // Return the list containing the next larger elements
+            return result;
+        }
+    }
+
     public static void main(String[] args) {
-        ListNode a = new ListNode(2); a.next = new ListNode(1); a.next.next = new ListNode(5);
-        System.out.println(Arrays.toString(succeedingSuperiorNodes(a)));
+        // Examples from the problem statement
+        System.out.println(new Solution().succeedingSuperiorNodes(fromList(2, 1, 5)));       // [5, 5, 0]
+        System.out.println(new Solution().succeedingSuperiorNodes(fromList(2, 7, 4, 3, 5))); // [7, 0, 5, 5, 0]
+
+        // Edge cases
+        System.out.println(new Solution().succeedingSuperiorNodes(null));                    // []
+        System.out.println(new Solution().succeedingSuperiorNodes(fromList(1)));             // [0]
+        System.out.println(new Solution().succeedingSuperiorNodes(fromList(1, 2)));          // [2, 0]
+        System.out.println(new Solution().succeedingSuperiorNodes(fromList(2, 1)));          // [0, 0]
+        System.out.println(new Solution().succeedingSuperiorNodes(fromList(1, 2, 3, 4)));    // [2, 3, 4, 0]
+        System.out.println(new Solution().succeedingSuperiorNodes(fromList(4, 3, 2, 1)));    // [0, 0, 0, 0]
     }
 }
 ```
 
-```c run
-#include <stdio.h>
-#include <stdlib.h>
-
-typedef struct ListNode { int val; struct ListNode *next; } ListNode;
-
-void succeeding_superior_nodes(ListNode *head, int *res, int *n) {
-    int st_idx[256], st_val[256]; int top = -1; int i = 0;
-    while (head) {
-        res[i] = 0;
-        while (top >= 0 && head->val > st_val[top]) { res[st_idx[top]] = head->val; top--; }
-        st_idx[++top] = i; st_val[top] = head->val;
-        i++; head = head->next;
-    }
-    *n = i;
-}
-
-ListNode* make(int *vals, int n) {
-    ListNode *dummy = malloc(sizeof(ListNode)); dummy->next = NULL;
-    ListNode *cur = dummy;
-    for (int i = 0; i < n; i++) { ListNode *n = malloc(sizeof(ListNode)); n->val = vals[i]; n->next = NULL; cur->next = n; cur = n; }
-    return dummy->next;
-}
-
-int main() {
-    int v[] = {2, 7, 4, 3, 5};
-    ListNode *head = make(v, 5);
-    int res[5]; int n;
-    succeeding_superior_nodes(head, res, &n);
-    for (int i = 0; i < n; i++) printf("%d ", res[i]); printf("\n");
-}
-```
-
-```scala run
-import scala.collection.mutable
-
-class ListNode(var v: Int, var next: ListNode = null)
-
-def succeedingSuperiorNodes(head: ListNode): List[Int] = {
-  val res = mutable.ArrayBuffer[Int]()
-  val st = mutable.Stack[(Int, Int)]()
-  var i = 0; var cur = head
-  while (cur != null) {
-    res.append(0)
-    while (st.nonEmpty && cur.v > st.top._2) {
-      val (idx, _) = st.pop(); res(idx) = cur.v
-    }
-    st.push((i, cur.v)); i += 1
-    cur = cur.next
-  }
-  res.toList
-}
-object Main extends App {
-  val h = new ListNode(2, new ListNode(7, new ListNode(4, new ListNode(3, new ListNode(5)))))
-  println(succeedingSuperiorNodes(h))
-}
-```
+</details>
 
 
 ***
@@ -799,7 +984,9 @@ Given an array `heights` of non-negative integers representing an elevation map 
 > -   **Input:** `heights = [0, 2, 4, 3, 0, 3, 5, 2, 0, 4, 3, 0, 2]`
 > -   **Output:** `14`
 
-## Approach
+<details>
+<summary><h2>Approach</h2></summary>
+
 
 The water trapped above each "valley" is bounded by the heights of the **left and right walls**. The monotonic-stack approach: maintain a *decreasing* stack of bar indices. When a new taller bar arrives, it forms a *right wall* for everything popped off the stack; the *new top of the stack* (after popping) is the *left wall*. The trapped water on top of the popped bar is `(min(left, right) − popped_height) × (right_index − left_index − 1)`.
 
@@ -826,114 +1013,125 @@ flowchart LR
 
 <p align="center"><strong>Trapping rain water — pop the "valley" bar, the new top is the left wall, the current bar is the right wall, and the area trapped on top is one strip. Sum the strips.</strong></p>
 
-## Solution
+</details>
+<details>
+<summary><h2>Solution</h2></summary>
 
 
-```pseudocode
-function retainedRainwater(heights):
-    stack ← empty; water ← 0
-    for i from 0 to n − 1:
-        while stack not empty AND heights[top] < heights[i]:
-            popped ← pop()
-            if stack is empty: break
-            left ← top; width ← i − left − 1
-            height ← min(heights[i], heights[left]) − heights[popped]
-            water ← water + width * height
-        push i
-    return water
-```
 
 ```python run
-def retained_rainwater(heights: list) -> int:
-    st = []                                  # decreasing stack of indices
-    water = 0
-    for i, h in enumerate(heights):
-        while st and heights[st[-1]] < h:
-            popped = st.pop()                # the "valley"
-            if not st: break                  # no left wall
-            left = st[-1]
-            width  = i - left - 1
-            height = min(heights[i], heights[left]) - heights[popped]
-            water += width * height
-        st.append(i)
-    return water
+from typing import List
 
-print(retained_rainwater([0,2,4,3,0,3,5,2,0,4,3,0,2]))   # 14
+class Solution:
+    def retained_rainwater(self, heights: List[int]) -> int:
+        n = len(heights)
+        stack = []
+        water_trapped = 0
+
+        for i in range(n):
+
+            # While the stack is not empty and the current height is
+            # greater than the height of the bar at the top of the stack
+            while stack and heights[i] > heights[stack[-1]]:
+                top = stack.pop()
+
+                # No left boundary for trapping water
+                if not stack:
+                    break
+
+                # Calculate the width of the trapped water
+                width = i - stack[-1] - 1
+
+                # Calculate the height of the trapped water
+                # (min of left and right boundary minus the current
+                # height)
+                height = (
+                    min(heights[i], heights[stack[-1]]) - heights[top]
+                )
+                water_trapped += width * height
+
+            # Push the current bar index to the stack
+            stack.append(i)
+
+        return water_trapped
+
+
+# Example from the problem statement
+print(Solution().retained_rainwater([0, 2, 4, 3, 0, 3, 5, 2, 0, 4, 3, 0, 2]))  # 14
+
+# Edge cases
+print(Solution().retained_rainwater([]))                     # 0
+print(Solution().retained_rainwater([5]))                    # 0
+print(Solution().retained_rainwater([1, 2]))                 # 0
+print(Solution().retained_rainwater([0, 1, 0]))              # 0 — single valley traps nothing (width 0)
+print(Solution().retained_rainwater([3, 0, 3]))              # 3
+print(Solution().retained_rainwater([3, 0, 2]))              # 2
+print(Solution().retained_rainwater([1, 2, 3, 4, 5]))        # 0 — monotonically increasing
+print(Solution().retained_rainwater([5, 4, 3, 2, 1]))        # 0 — monotonically decreasing
 ```
 
 ```java run
 import java.util.*;
+
 public class Main {
-    static int retainedRainwater(int[] h) {
-        Deque<Integer> st = new ArrayDeque<>();
-        int water = 0;
-        for (int i = 0; i < h.length; i++) {
-            while (!st.isEmpty() && h[st.peek()] < h[i]) {
-                int popped = st.pop();
-                if (st.isEmpty()) break;
-                int left = st.peek();
-                int width = i - left - 1;
-                int height = Math.min(h[i], h[left]) - h[popped];
-                water += width * height;
+    static class Solution {
+        public int retainedRainwater(int[] heights) {
+            int n = heights.length;
+            Stack<Integer> stack = new Stack<>();
+            int waterTrapped = 0;
+
+            for (int i = 0; i < n; ++i) {
+
+                // While the stack is not empty and the current height is
+                // greater than the height of the bar at the top of the stack
+                while (
+                    !stack.isEmpty() && heights[i] > heights[stack.peek()]
+                ) {
+                    int top = stack.pop();
+
+                    // No left boundary for trapping water
+                    if (stack.isEmpty()) {
+                        break;
+                    }
+
+                    // Calculate the width of the trapped water
+                    int width = i - stack.peek() - 1;
+
+                    // Calculate the height of the trapped water
+                    // (min of left and right boundary minus the current
+                    // height)
+                    int height =
+                        Math.min(heights[i], heights[stack.peek()]) -
+                        heights[top];
+                    waterTrapped += width * height;
+                }
+
+                // Push the current bar index to the stack
+                stack.push(i);
             }
-            st.push(i);
+
+            return waterTrapped;
         }
-        return water;
     }
+
     public static void main(String[] args) {
-        System.out.println(retainedRainwater(new int[]{0,2,4,3,0,3,5,2,0,4,3,0,2}));
+        // Example from the problem statement
+        System.out.println(new Solution().retainedRainwater(new int[]{0, 2, 4, 3, 0, 3, 5, 2, 0, 4, 3, 0, 2}));  // 14
+
+        // Edge cases
+        System.out.println(new Solution().retainedRainwater(new int[]{}));                    // 0
+        System.out.println(new Solution().retainedRainwater(new int[]{5}));                   // 0
+        System.out.println(new Solution().retainedRainwater(new int[]{1, 2}));                // 0
+        System.out.println(new Solution().retainedRainwater(new int[]{0, 1, 0}));             // 0
+        System.out.println(new Solution().retainedRainwater(new int[]{3, 0, 3}));             // 3
+        System.out.println(new Solution().retainedRainwater(new int[]{3, 0, 2}));             // 2
+        System.out.println(new Solution().retainedRainwater(new int[]{1, 2, 3, 4, 5}));       // 0
+        System.out.println(new Solution().retainedRainwater(new int[]{5, 4, 3, 2, 1}));       // 0
     }
 }
 ```
 
-```c run
-#include <stdio.h>
-int retained_rainwater(int *h, int n) {
-    int st[256]; int top = -1; int water = 0;
-    for (int i = 0; i < n; i++) {
-        while (top >= 0 && h[st[top]] < h[i]) {
-            int popped = st[top--];
-            if (top < 0) break;
-            int left = st[top];
-            int width = i - left - 1;
-            int height = (h[i] < h[left] ? h[i] : h[left]) - h[popped];
-            water += width * height;
-        }
-        st[++top] = i;
-    }
-    return water;
-}
-int main() {
-    int h[] = {0,2,4,3,0,3,5,2,0,4,3,0,2};
-    printf("%d\n", retained_rainwater(h, 13));
-}
-```
-
-```scala run
-import scala.collection.mutable
-def retainedRainwater(h: Array[Int]): Int = {
-  val st = mutable.Stack[Int]()
-  var water = 0
-  for (i <- h.indices) {
-    var done = false
-    while (st.nonEmpty && h(st.top) < h(i) && !done) {
-      val popped = st.pop()
-      if (st.isEmpty) done = true
-      else {
-        val left = st.top
-        val width = i - left - 1
-        val height = math.min(h(i), h(left)) - h(popped)
-        water += width * height
-      }
-    }
-    st.push(i)
-  }
-  water
-}
-object Main extends App {
-  println(retainedRainwater(Array(0,2,4,3,0,3,5,2,0,4,3,0,2)))
-}
-```
+</details>
 
 
 ***
@@ -947,7 +1145,9 @@ Given an array `histogram` of positive integers (heights of bars of unit width),
 ### Example
 > -   **Input:** `histogram = [2, 4, 3, 3, 5, 2, 4, 3, 2]` → **Output:** `18`
 
-## Approach
+<details>
+<summary><h2>Approach</h2></summary>
+
 
 For each bar, the largest rectangle whose *height equals this bar's height* extends from one past the **previous shorter bar** to one before the **next shorter bar**. Using a monotonic *increasing* stack of indices:
 
@@ -978,128 +1178,139 @@ flowchart LR
 
 <p align="center"><strong>When the increasing-stack invariant is broken, every popped bar represents a rectangle whose height is the popped value and whose horizontal extent runs from one past the new top to one before the current bar. Each pop is one candidate rectangle; the global max wins.</strong></p>
 
-## Solution
+</details>
+<details>
+<summary><h2>Solution</h2></summary>
 
 
-```pseudocode
-function largestRectangleArea(histogram):
-    n ← length(histogram); stack ← empty; maxArea ← 0
-    for i from 0 to n − 1:
-        while stack not empty AND histogram[i] < histogram[top]:
-            h     ← histogram[pop()]
-            width ← i if stack empty else i − top − 1
-            maxArea ← max(maxArea, h * width)
-        push i
-    while stack not empty:          # flush; treat index n as a 0-height bar
-        h     ← histogram[pop()]
-        width ← n if stack empty else n − top − 1
-        maxArea ← max(maxArea, h * width)
-    return maxArea
-```
 
 ```python run
-def largest_rectangle_area(histogram: list) -> int:
-    n = len(histogram)
-    st = []
-    max_area = 0
-    for i in range(n):
-        while st and histogram[i] < histogram[st[-1]]:
-            h = histogram[st.pop()]
-            width = i if not st else i - st[-1] - 1
-            max_area = max(max_area, h * width)
-        st.append(i)
-    # Flush remaining bars as if a 0-height bar appeared at index n
-    while st:
-        h = histogram[st.pop()]
-        width = n if not st else n - st[-1] - 1
-        max_area = max(max_area, h * width)
-    return max_area
+from typing import List
 
-print(largest_rectangle_area([2,4,3,3,5,2,4,3,2]))   # 18
+class Solution:
+    def largest_rectangle_area(self, histogram: List[int]) -> int:
+        n = len(histogram)
+
+        # Stack to store indices of bars
+        stack = []
+
+        # To keep track of the maximum area
+        max_area = 0
+
+        # Iterate over all the bars in the histogram
+        for i in range(n):
+
+            # While the stack is not empty and the current height is
+            # smaller than the height of the bar at the top of the stack
+            while stack and histogram[i] < histogram[stack[-1]]:
+                h = histogram[stack.pop()]
+
+                # Calculate the width
+                width = i if not stack else i - stack[-1] - 1
+
+                # Update the maximum area
+                max_area = max(max_area, h * width)
+
+            # Push the current bar index to the stack
+            stack.append(i)
+
+        # After the loop, process any remaining bars in the stack
+        while stack:
+            h = histogram[stack.pop()]
+
+            # Calculate the width
+            width = n if not stack else n - stack[-1] - 1
+
+            # Update the maximum area
+            max_area = max(max_area, h * width)
+
+        return max_area
+
+
+# Example from the problem statement
+print(Solution().largest_rectangle_area([2, 4, 3, 3, 5, 2, 4, 3, 2]))  # 18
+
+# Edge cases
+print(Solution().largest_rectangle_area([]))                            # 0
+print(Solution().largest_rectangle_area([5]))                           # 5
+print(Solution().largest_rectangle_area([2, 2]))                        # 4
+print(Solution().largest_rectangle_area([1, 2, 3, 4, 5]))              # 9
+print(Solution().largest_rectangle_area([5, 4, 3, 2, 1]))              # 9
+print(Solution().largest_rectangle_area([3, 3, 3, 3]))                 # 12
+print(Solution().largest_rectangle_area([1, 100, 1]))                  # 100
 ```
 
 ```java run
 import java.util.*;
+
 public class Main {
-    static int largestRectangleArea(int[] h) {
-        int n = h.length, max = 0;
-        Deque<Integer> st = new ArrayDeque<>();
-        for (int i = 0; i < n; i++) {
-            while (!st.isEmpty() && h[i] < h[st.peek()]) {
-                int height = h[st.pop()];
-                int width  = st.isEmpty() ? i : i - st.peek() - 1;
-                max = Math.max(max, height * width);
+    static class Solution {
+        public int largestRectangleArea(int[] histogram) {
+            int n = histogram.length;
+
+            // Stack to store indices of bars
+            Stack<Integer> stack = new Stack<>();
+
+            // To keep track of the maximum area
+            int maxArea = 0;
+
+            // Iterate over all the bars in the histogram
+            for (int i = 0; i < n; ++i) {
+
+                // While the stack is not empty and the current height is
+                // smaller than the height of the bar at the top of the stack
+                while (
+                    !stack.isEmpty() &&
+                    histogram[i] < histogram[stack.peek()]
+                ) {
+                    int h = histogram[stack.pop()];
+
+                    // Calculate the width
+                    int width = stack.isEmpty() ? i : i - stack.peek() - 1;
+
+                    // Update the maximum area
+                    maxArea = Math.max(maxArea, h * width);
+                }
+
+                // Push the current bar index to the stack
+                stack.push(i);
             }
-            st.push(i);
+
+            // After the loop, process any remaining bars in the stack
+            while (!stack.isEmpty()) {
+                int h = histogram[stack.pop()];
+
+                // Calculate the width
+                int width = stack.isEmpty() ? n : n - stack.peek() - 1;
+
+                // Update the maximum area
+                maxArea = Math.max(maxArea, h * width);
+            }
+
+            return maxArea;
         }
-        while (!st.isEmpty()) {
-            int height = h[st.pop()];
-            int width  = st.isEmpty() ? n : n - st.peek() - 1;
-            max = Math.max(max, height * width);
-        }
-        return max;
     }
+
     public static void main(String[] args) {
-        System.out.println(largestRectangleArea(new int[]{2,4,3,3,5,2,4,3,2}));
+        // Example from the problem statement
+        System.out.println(new Solution().largestRectangleArea(new int[]{2, 4, 3, 3, 5, 2, 4, 3, 2}));  // 18
+
+        // Edge cases
+        System.out.println(new Solution().largestRectangleArea(new int[]{}));                           // 0
+        System.out.println(new Solution().largestRectangleArea(new int[]{5}));                          // 5
+        System.out.println(new Solution().largestRectangleArea(new int[]{2, 2}));                       // 4
+        System.out.println(new Solution().largestRectangleArea(new int[]{1, 2, 3, 4, 5}));             // 9
+        System.out.println(new Solution().largestRectangleArea(new int[]{5, 4, 3, 2, 1}));             // 9
+        System.out.println(new Solution().largestRectangleArea(new int[]{3, 3, 3, 3}));                // 12
+        System.out.println(new Solution().largestRectangleArea(new int[]{1, 100, 1}));                 // 100
     }
 }
 ```
 
-```c run
-#include <stdio.h>
-int largest_rectangle_area(int *h, int n) {
-    int st[256]; int top = -1; int max = 0;
-    for (int i = 0; i < n; i++) {
-        while (top >= 0 && h[i] < h[st[top]]) {
-            int height = h[st[top--]];
-            int width = top < 0 ? i : i - st[top] - 1;
-            int area = height * width;
-            if (area > max) max = area;
-        }
-        st[++top] = i;
-    }
-    while (top >= 0) {
-        int height = h[st[top--]];
-        int width = top < 0 ? n : n - st[top] - 1;
-        int area = height * width;
-        if (area > max) max = area;
-    }
-    return max;
-}
-int main() {
-    int h[] = {2,4,3,3,5,2,4,3,2};
-    printf("%d\n", largest_rectangle_area(h, 9));
-}
-```
+</details>
+<details>
+<summary><h2>Final Takeaway</h2></summary>
 
-```scala run
-import scala.collection.mutable
-def largestRectangleArea(h: Array[Int]): Int = {
-  val n = h.length; val st = mutable.Stack[Int](); var max = 0
-  for (i <- 0 until n) {
-    while (st.nonEmpty && h(i) < h(st.top)) {
-      val height = h(st.pop())
-      val width  = if (st.isEmpty) i else i - st.top - 1
-      max = math.max(max, height * width)
-    }
-    st.push(i)
-  }
-  while (st.nonEmpty) {
-    val height = h(st.pop())
-    val width  = if (st.isEmpty) n else n - st.top - 1
-    max = math.max(max, height * width)
-  }
-  max
-}
-object Main extends App {
-  println(largestRectangleArea(Array(2,4,3,3,5,2,4,3,2)))
-}
-```
-
-
-***
-
-## Final Takeaway
 
 Three lessons:
 
@@ -1108,3 +1319,5 @@ Three lessons:
 3. **The same monotonic-stack skeleton powers a vast family of problems.** Next-greater, next-smaller, daily temperatures, stock span, trapping rain water, histogram rectangles, sum-of-subarray-minimums, score-of-parentheses — all variations on "pop while dominated, resolve answers, push current index". Recognise the family and the implementation almost writes itself.
 
 > *Coming up — **sequence validation**. The next pattern uses a stack as a "matching memory" — push opening symbols, pop on closing ones, and check that everything pairs up. The canonical applications are bracket matching, palindrome checking, and a few delightful permutation-validation puzzles.*
+
+</details>

@@ -134,7 +134,9 @@ Output: "geeksskeeg"
 
 ---
 
-## Applying the Diagnostic Questions
+<details>
+<summary><h2>Applying the Diagnostic Questions</h2></summary>
+
 
 | # | Question | Answer |
 |---|---|---|
@@ -151,71 +153,51 @@ Output: "geeksskeeg"
 
 **What breaks otherwise.** If we required only endpoint equality (no inner check), `"abca"` would be considered a palindrome — wrong.
 
----
+</details>
+<details>
+<summary><h2>Solution &amp; Analysis</h2></summary>
 
-## The Solution
+### The Solution
 
 Track the longest palindrome's length and start position as the table fills.
 
-
-```pseudocode
-# isPalin[i][j] = true iff s[i..j] is a palindrome. Track the longest run as we fill the table.
-function longestPalindromicSubstring(s):
-    n ← length(s)
-    if n = 0: return ""
-    isPalin ← n × n grid of false
-    bestStart ← 0
-    bestLen ← 1
-
-    # Length 1 — diagonals.
-    for i from 0 to n − 1: isPalin[i][i] ← true
-    # Length 2.
-    for i from 0 to n − 2:
-        if s[i] = s[i + 1]:
-            isPalin[i][i + 1] ← true
-            if bestLen < 2:
-                bestStart ← i; bestLen ← 2
-    # Length ≥ 3 — fill in increasing-length order so the interior is ready.
-    for length from 3 to n:
-        for i from 0 to n − length:
-            j ← i + length − 1
-            if s[i] = s[j] AND isPalin[i + 1][j − 1]:
-                isPalin[i][j] ← true
-                if length > bestLen:
-                    bestStart ← i; bestLen ← length
-    return substring of s from bestStart to bestStart + bestLen − 1
-```
 
 ```python run
 from typing import List
 
 class Solution:
     def longest_palindromic_substring(self, s: str) -> str:
-        n = len(s)
+
+        n: int = len(s)
         if n == 0:
             return ""
-        # is_palin[i][j] = True iff s[i..j] is a palindrome.
-        is_palin: List[List[bool]] = [[False] * n for _ in range(n)]
-        best_start = 0
-        best_len = 1                              # Single char always works
-        # Length 1
+
+        # is_palindrome[i][j] stores whether substring s[i..j] is a palindrome
+        is_palindrome: List[List[bool]] = [[False] * n for _ in range(n)]
+
+        max_length: int = 1
+        start: int = 0
+
+        # Base case: every single character is a palindrome
         for i in range(n):
-            is_palin[i][i] = True
-        # Length 2
-        for i in range(n - 1):
-            if s[i] == s[i + 1]:
-                is_palin[i][i + 1] = True
-                if best_len < 2:
-                    best_start, best_len = i, 2
-        # Length ≥ 3 — fill in increasing-length order
-        for length in range(3, n + 1):
+            is_palindrome[i][i] = True
+
+        # Fill the table by increasing substring length
+        for length in range(2, n + 1):
             for i in range(n - length + 1):
-                j = i + length - 1
-                if s[i] == s[j] and is_palin[i + 1][j - 1]:
-                    is_palin[i][j] = True
-                    if length > best_len:
-                        best_start, best_len = i, length
-        return s[best_start : best_start + best_len]
+                j: int = i + length - 1
+
+                # Boundary characters must match for s[i..j] to be a palindrome
+                if s[i] == s[j]:
+                    # Either length is 2, or the inner substring is a palindrome
+                    is_palindrome[i][j] = (length == 2) or is_palindrome[i + 1][j - 1]
+
+                # Update longest palindrome length if current substring is longer
+                if is_palindrome[i][j] and length > max_length:
+                    max_length = length
+                    start = i
+
+        return s[start : start + max_length]
 
 
 if __name__ == "__main__":
@@ -225,28 +207,43 @@ if __name__ == "__main__":
 ```java run
 public class Main {
     static class Solution {
+
         public String longestPalindromicSubstring(String s) {
+
             int n = s.length();
             if (n == 0) return "";
-            boolean[][] isPalin = new boolean[n][n];
-            int bestStart = 0, bestLen = 1;
-            for (int i = 0; i < n; i++) isPalin[i][i] = true;
-            for (int i = 0; i < n - 1; i++) {
-                if (s.charAt(i) == s.charAt(i + 1)) {
-                    isPalin[i][i + 1] = true;
-                    if (bestLen < 2) { bestStart = i; bestLen = 2; }
-                }
+
+            // isPalindrome[i][j] stores whether substring s[i..j] is a palindrome
+            boolean[][] isPalindrome = new boolean[n][n];
+
+            int maxLength = 1;
+            int start = 0;
+
+            // Base case: every single character is a palindrome
+            for (int i = 0; i < n; i++) {
+                isPalindrome[i][i] = true;
             }
-            for (int len = 3; len <= n; len++) {
-                for (int i = 0; i <= n - len; i++) {
-                    int j = i + len - 1;
-                    if (s.charAt(i) == s.charAt(j) && isPalin[i + 1][j - 1]) {
-                        isPalin[i][j] = true;
-                        if (len > bestLen) { bestStart = i; bestLen = len; }
+
+            // Fill the table by increasing substring length
+            for (int length = 2; length <= n; length++) {
+                for (int i = 0; i <= n - length; i++) {
+                    int j = i + length - 1;
+
+                    // Boundary characters must match for s[i..j] to be a palindrome
+                    if (s.charAt(i) == s.charAt(j)) {
+                        // Either length is 2, or the inner substring is a palindrome
+                        isPalindrome[i][j] = (length == 2) || isPalindrome[i + 1][j - 1];
+                    }
+
+                    // Update longest palindrome length if current substring is longer
+                    if (isPalindrome[i][j] && length > maxLength) {
+                        maxLength = length;
+                        start = i;
                     }
                 }
             }
-            return s.substring(bestStart, bestStart + bestLen);
+
+            return s.substring(start, start + maxLength);
         }
     }
 
@@ -256,85 +253,14 @@ public class Main {
 }
 ```
 
-```c run
-#include <stdio.h>
-#include <string.h>
-#include <stdbool.h>
-
-bool is_palin[1001][1001];
-char out_buf[1001];
-
-const char *longest_palindromic_substring(const char *s) {
-    int n = (int) strlen(s);
-    if (n == 0) return "";
-    for (int i = 0; i < n; i++) for (int j = 0; j < n; j++) is_palin[i][j] = false;
-    int best_start = 0, best_len = 1;
-    for (int i = 0; i < n; i++) is_palin[i][i] = true;
-    for (int i = 0; i < n - 1; i++) if (s[i] == s[i + 1]) {
-        is_palin[i][i + 1] = true;
-        if (best_len < 2) { best_start = i; best_len = 2; }
-    }
-    for (int len = 3; len <= n; len++) {
-        for (int i = 0; i <= n - len; i++) {
-            int j = i + len - 1;
-            if (s[i] == s[j] && is_palin[i + 1][j - 1]) {
-                is_palin[i][j] = true;
-                if (len > best_len) { best_start = i; best_len = len; }
-            }
-        }
-    }
-    memcpy(out_buf, s + best_start, best_len);
-    out_buf[best_len] = 0;
-    return out_buf;
-}
-
-int main(void) {
-    printf("%s\n", longest_palindromic_substring("forgeeksskeegfor"));
-    return 0;
-}
-```
-
-```scala run
-object Main extends App {
-  class Solution {
-    def longestPalindromicSubstring(s: String): String = {
-      val n = s.length
-      if (n == 0) return ""
-      val isPalin = Array.fill(n, n)(false)
-      var bestStart = 0; var bestLen = 1
-      for (i <- 0 until n) isPalin(i)(i) = true
-      for (i <- 0 until n - 1; if s(i) == s(i + 1)) {
-        isPalin(i)(i + 1) = true
-        if (bestLen < 2) { bestStart = i; bestLen = 2 }
-      }
-      for (len <- 3 to n; i <- 0 to n - len) {
-        val j = i + len - 1
-        if (s(i) == s(j) && isPalin(i + 1)(j - 1)) {
-          isPalin(i)(j) = true
-          if (len > bestLen) { bestStart = i; bestLen = len }
-        }
-      }
-      s.substring(bestStart, bestStart + bestLen)
-    }
-  }
-
-  println(new Solution().longestPalindromicSubstring("forgeeksskeegfor"))
-}
-```
-
-
----
-
-## Complexity
+### Complexity
 
 | Aspect | Cost | Why |
 |---|---|---|
 | Time | `O(n²)` | One cell per `(i, j)` pair with `i ≤ j`. |
 | Space | `O(n²)` | The boolean table. |
 
----
-
-## Edge Cases
+### Edge Cases
 
 | Case | Example | Expected | Reasoning |
 |---|---|---|---|
@@ -343,6 +269,8 @@ object Main extends App {
 | All same | `"aaaa"` | `"aaaa"` | Whole string is palindromic. |
 | All distinct | `"abc"` | `"a"` | Best is length 1. |
 | Even-length palindrome | `"cbbd"` | `"bb"` | Found via length-2 case. |
+
+</details>
 
 ***
 

@@ -81,7 +81,9 @@ Input:  num = 31568  →  47008
 Input:  num = 5419430  →  10580569
 ```
 
-## The Recurrence — Mask Out, Shift, OR
+<details>
+<summary><h2>The Recurrence — Mask Out, Shift, OR</h2></summary>
+
 
 Two magic constants do the heavy lifting:
 
@@ -127,85 +129,108 @@ flowchart LR
 
 Because each half has 1s only in *complementary* positions: after shifts, the first half occupies even positions and the second occupies odd positions. ORing two non-overlapping bit patterns simply combines them.
 
-## The Solution
+</details>
+<details>
+<summary><h2>Solution &amp; Analysis</h2></summary>
 
-
-```pseudocode
-# Swap each adjacent pair of bits (positions 1↔2, 3↔4, …).
-# 0xAA…A masks the even positions; 0x55…5 masks the odd positions.
-function pairwiseBitsSwap(num):
-    evenMask ← 0xAAAAAAAA                          # bits at positions 2, 4, 6, … (1-indexed)
-    oddMask  ← 0x55555555                          # bits at positions 1, 3, 5, …
-    return ((num bitwise AND evenMask) shifted right by 1)
-            bitwise OR ((num bitwise AND oddMask) shifted left by 1)
-            bitwise AND 0xFFFFFFFF                 # mask to 32 bits
-```
+### The Solution
 
 ```python run
+import sys
+
 class Solution:
     def pairwise_bits_swap(self, num: int) -> int:
-        even_mask = 0xAAAAAAAA                      # Bits at positions 2, 4, 6, ... (1-indexed)
-        odd_mask  = 0x55555555                      # Bits at positions 1, 3, 5, ...
-        # Shift even-positioned bits down by 1; shift odd-positioned bits up by 1; OR.
-        result = ((num & even_mask) >> 1) | ((num & odd_mask) << 1)
-        return result & 0xFFFFFFFF                  # Mask to 32 bits
+
+        # Mask for odd bits (1010...)
+        odd_mask = 0xAAAAAAAA
+
+        # Mask for even bits (0101...)
+        even_mask = 0x55555555
+
+        # Perform sign extension
+        if num < 0:
+            sign_extension = 0xFFFFFFFF
+            num = num & sign_extension
+
+        # Extract odd and even bits
+        odd_bits = num & odd_mask
+        even_bits = num & even_mask
+
+        # Right-shift odd bits and left-shift even bits
+        swapped = (odd_bits >> 1) | (even_bits << 1)
+
+        # Perform sign extension again
+        if num < 0:
+            swapped = swapped | sign_extension
+
+        return swapped
 
 
-if __name__ == "__main__":
-    sol = Solution()
-    print(sol.pairwise_bits_swap(1))         # 2
-    print(sol.pairwise_bits_swap(31568))     # 47008
+# Examples from the problem statement
+print(Solution().pairwise_bits_swap(31568))      # 47008
+print(Solution().pairwise_bits_swap(5419430))    # 10580569
+print(Solution().pairwise_bits_swap(1))          # 2
+
+# Edge cases
+print(Solution().pairwise_bits_swap(0))          # 0
+print(Solution().pairwise_bits_swap(2))          # 1
+print(Solution().pairwise_bits_swap(3))          # 3
+print(Solution().pairwise_bits_swap(4))          # 8
+print(Solution().pairwise_bits_swap(10))         # 5
 ```
 
 ```java run
 public class Main {
     static class Solution {
         public int pairwiseBitsSwap(int num) {
+
+            // Mask for even-positioned bits
+            // (10101010101010101010101010101010 in binary) This mask selects
+            // the bits at positions 0, 2, 4, 6, ...
             int evenMask = 0xAAAAAAAA;
-            int oddMask  = 0x55555555;
-            return ((num & evenMask) >>> 1) | ((num & oddMask) << 1);
+
+            // Mask for odd-positioned bits (01010101010101010101010101010101
+            // in binary) This mask selects the bits at positions 1, 3, 5, 7,
+            // ...
+            int oddMask = 0x55555555;
+
+            // Extract the even-positioned bits and shift them to the right
+            // by 1 position
+            int evenBits = (num & evenMask) >> 1;
+
+            // Extract the odd-positioned bits and shift them to the left by
+            // 1 position
+            int oddBits = (num & oddMask) << 1;
+
+            // Combine the shifted even and odd bits using bitwise OR
+            return (evenBits | oddBits);
         }
     }
 
     public static void main(String[] args) {
-        System.out.println(new Solution().pairwiseBitsSwap(1));   // 2
+        // Examples from the problem statement
+        System.out.println(new Solution().pairwiseBitsSwap(31568));      // 47008
+        System.out.println(new Solution().pairwiseBitsSwap(5419430));    // 10580569
+        System.out.println(new Solution().pairwiseBitsSwap(1));          // 2
+
+        // Edge cases
+        System.out.println(new Solution().pairwiseBitsSwap(0));          // 0
+        System.out.println(new Solution().pairwiseBitsSwap(2));          // 1
+        System.out.println(new Solution().pairwiseBitsSwap(3));          // 3
+        System.out.println(new Solution().pairwiseBitsSwap(4));          // 8
+        System.out.println(new Solution().pairwiseBitsSwap(10));         // 5
     }
 }
 ```
 
-```c run
-#include <stdio.h>
-#include <stdint.h>
-
-uint32_t pairwise_bits_swap(uint32_t num) {
-    return ((num & 0xAAAAAAAA) >> 1) | ((num & 0x55555555) << 1);
-}
-
-int main(void) {
-    printf("%u\n", pairwise_bits_swap(31568));   /* 47008 */
-    return 0;
-}
-```
-
-```scala run
-object Main extends App {
-  class Solution {
-    def pairwiseBitsSwap(num: Int): Int = {
-      ((num & 0xAAAAAAAA) >>> 1) | ((num & 0x55555555) << 1)
-    }
-  }
-
-  println(new Solution().pairwiseBitsSwap(1))   // 2
-}
-```
-
-
-## Complexity
+### Complexity
 
 | Aspect | Cost |
 |---|---|
 | Time | `O(1)` — four bitwise ops |
 | Space | `O(1)` |
+
+</details>
 
 ***
 
@@ -226,20 +251,27 @@ Input:  []
 Output: [[]]
 ```
 
-## The Recurrence — Iterate `mask = 0..2^n - 1`
+<details>
+<summary><h2>The Recipe — Bitmask Enumeration</h2></summary>
 
-For each mask in `[0, 2^n)`, decode it into a subset by checking each bit. If bit `j` is set, include `arr[j]` in the subset.
+
+Every subset is one binary choice per element: *include* `arr[i]` or *don't*. Pack those `n` choices into the bits of an integer — bit `j` set ⇒ `arr[j]` is in — and a single `mask` value *is* a subset. There are `2^n` such masks, so a plain outer loop `mask = 0 .. 2^n - 1` walks every subset exactly once.
+
+The recipe: for each `mask`, build its subset by scanning bit positions `j = 0 .. n - 1` and appending `arr[j]` whenever `(mask >> j) & 1` is set. Collect every subset into the output. No recursion, no backtracking — the loop counter does all the enumeration.
 
 ```
-for mask in 0 .. 2^n - 1:
-    subset = []
-    for j in 0 .. n - 1:
-        if mask & (1 << j):
-            subset.append(arr[j])
-    output.append(subset)
+unique_subsets(arr):
+    n = len(arr)
+    power_set_size = 1 << n            # 2^n subsets
+    for mask in 0 .. power_set_size - 1:
+        subset = []
+        for j in 0 .. n - 1:
+            if (mask >> j) & 1:        # j-th bit set ⇒ include arr[j]
+                subset.append(arr[j])
+        output.append(subset)
 ```
 
-The outer loop runs `2^n` times; the inner runs `n`. Total work `O(n × 2^n)` — and that's *optimal* for outputting every subset, since the total output size is `Σ(n choose k) × k = n × 2^(n-1)`.
+The outer loop runs `2^n` times, the inner bit-scan `n` times, so total work `O(n × 2^n)` — and that's *optimal* for outputting every subset, since the total output size is `Σ(n choose k) × k = n × 2^(n-1)`.
 
 ```d2
 direction: right
@@ -258,48 +290,57 @@ loop: "n = 3, mask runs 0 to 7" {
 }
 ```
 
-<p align="center"><strong>The first four iterations for <code>n = 3</code>. Each mask's bit pattern picks exactly one subset; iterating <code>0..7</code> covers all 8.</strong></p>
+<p align="center"><strong>The 8 subsets for <code>n = 3</code>, each tagged with the bitmask that encodes it. The outer loop visits masks <code>000</code> through <code>111</code> in order, landing on each subset exactly once.</strong></p>
 
-> *Pause. Why does <code>(mask &gt;&gt; j) & 1</code> work as a test for bit j? Predict the consequence of writing <code>mask & j</code>.*
+> *Pause. Why does the loop produce every subset exactly once? Predict before reading on.*
 
-`mask & j` is meaningless — `j` is an integer, not a single-bit mask. To test bit j, you need a *mask with only bit j set*; the simplest is `(1 << j)`, and then AND. The right-shift form `(mask >> j) & 1` is equivalent: shift bit j to position 0, then test whether position 0 is set. Both forms are common; pick whichever reads better in context.
+Because the map from masks to subsets is a *bijection*: each `n`-bit integer encodes exactly one subset (bit `j` decides whether `arr[j]` is in), and every subset corresponds to exactly one integer (read off which elements it contains). The loop runs the counter `mask` over all `2^n` integers `0 .. 2^n - 1` with no repeats, so it visits each subset once and only once.
 
-## The Solution
+</details>
+<details>
+<summary><h2>Solution &amp; Analysis</h2></summary>
 
-
-```pseudocode
-# Iterate every n-bit mask in [0, 2ⁿ); each mask encodes one subset.
-# Bit j set in mask ⇔ include arr[j] in this subset.
-function uniqueSubsets(arr):
-    n ← length(arr)
-    result ← empty list
-    for mask from 0 to (1 shifted left by n) − 1:
-        subset ← empty list
-        for j from 0 to n − 1:
-            if (mask shifted right by j) bitwise AND 1 = 1:
-                append arr[j] to subset
-        append subset to result
-    return result
-```
+### The Solution
 
 ```python run
 from typing import List
 
 class Solution:
     def unique_subsets(self, arr: List[int]) -> List[List[int]]:
-        n = len(arr)
-        # Total subsets = 2^n.  Each mask in [0, 2^n) encodes one subset.
-        result: List[List[int]] = []
-        for mask in range(1 << n):
-            subset = [arr[j] for j in range(n) if (mask >> j) & 1]
-            result.append(subset)
-        return result
+        n: int = len(arr)
+
+        # Total number of unique_subsets will be 2^n
+        power_set_size: int = 1 << n
+
+        # List to store all unique_subsets
+        unique_subsets: List[List[int]] = [
+            [] for _ in range(power_set_size)
+        ]
+
+        # Generate unique_subsets using bitmasking
+        for i in range(power_set_size):
+            subset: List[int] = []
+            for j in range(n):
+
+                # Check if j-th bit is set in i
+                if (i >> j) & 1:
+
+                    # Add arr[j] to the current subset
+                    subset.append(arr[j])
+            unique_subsets[i] = subset
+
+        return unique_subsets
 
 
-if __name__ == "__main__":
-    sol = Solution()
-    print(sol.unique_subsets([1, 2, 3]))
-    # [[], [1], [2], [1, 2], [3], [1, 3], [2, 3], [1, 2, 3]]
+# Examples from the problem statement
+print(Solution().unique_subsets([1, 2, 3]))    # [[], [1], [2], [1, 2], [3], [1, 3], [2, 3], [1, 2, 3]]
+print(Solution().unique_subsets([1]))          # [[], [1]]
+print(Solution().unique_subsets([]))           # [[]]
+
+# Edge cases
+print(len(Solution().unique_subsets([1, 2])))        # 4
+print(len(Solution().unique_subsets([1, 2, 3, 4])))  # 16
+print(Solution().unique_subsets([5]))                # [[], [5]]
 ```
 
 ```java run
@@ -309,72 +350,56 @@ public class Main {
     static class Solution {
         public List<List<Integer>> uniqueSubsets(int[] arr) {
             int n = arr.length;
-            List<List<Integer>> result = new ArrayList<>();
-            for (int mask = 0; mask < (1 << n); mask++) {
+
+            // Total number of uniqueSubsets will be 2^n
+            int powerSetSize = 1 << n;
+
+            // List to store all uniqueSubsets
+            List<List<Integer>> uniqueSubsets = new ArrayList<>(
+                powerSetSize
+            );
+
+            // Generate uniqueSubsets using bitmasking
+            for (int i = 0; i < powerSetSize; i++) {
                 List<Integer> subset = new ArrayList<>();
                 for (int j = 0; j < n; j++) {
-                    if ((mask & (1 << j)) != 0) subset.add(arr[j]);
+
+                    // Check if j-th bit is set in i
+                    if (((i >> j) & 1) == 1) {
+
+                        // Add arr[j] to the current subset
+                        subset.add(arr[j]);
+                    }
                 }
-                result.add(subset);
+                uniqueSubsets.add(subset);
             }
-            return result;
+
+            return uniqueSubsets;
         }
     }
 
     public static void main(String[] args) {
-        System.out.println(new Solution().uniqueSubsets(new int[]{1, 2, 3}));
+        // Examples from the problem statement
+        System.out.println(new Solution().uniqueSubsets(new int[]{1, 2, 3}));    // [[], [1], [2], [1, 2], [3], [1, 3], [2, 3], [1, 2, 3]]
+        System.out.println(new Solution().uniqueSubsets(new int[]{1}));          // [[], [1]]
+        System.out.println(new Solution().uniqueSubsets(new int[]{}));           // [[]]
+
+        // Edge cases
+        System.out.println(new Solution().uniqueSubsets(new int[]{1, 2}).size());        // 4
+        System.out.println(new Solution().uniqueSubsets(new int[]{1, 2, 3, 4}).size());  // 16
+        System.out.println(new Solution().uniqueSubsets(new int[]{5}));                  // [[], [5]]
     }
 }
 ```
 
-```c run
-#include <stdio.h>
-
-void unique_subsets(const int *arr, int n) {
-    int total = 1 << n;
-    for (int mask = 0; mask < total; mask++) {
-        printf("[");
-        int first = 1;
-        for (int j = 0; j < n; j++) {
-            if (mask & (1 << j)) {
-                if (!first) printf(", ");
-                printf("%d", arr[j]);
-                first = 0;
-            }
-        }
-        printf("]\n");
-    }
-}
-
-int main(void) {
-    int a[] = {1, 2, 3};
-    unique_subsets(a, 3);
-    return 0;
-}
-```
-
-```scala run
-object Main extends App {
-  class Solution {
-    def uniqueSubsets(arr: Array[Int]): List[List[Int]] = {
-      val n = arr.length
-      (0 until (1 << n)).map { mask =>
-        (0 until n).filter(j => (mask & (1 << j)) != 0).map(arr).toList
-      }.toList
-    }
-  }
-
-  println(new Solution().uniqueSubsets(Array(1, 2, 3)))
-}
-```
-
-
-## Complexity
+### Complexity
 
 | Aspect | Cost |
 |---|---|
 | Time | `O(n × 2^n)` — optimal: output size is `Θ(n × 2^n)` |
 | Space | `O(n × 2^n)` for the output |
+
+</details>
 
 ***
 

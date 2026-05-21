@@ -119,18 +119,6 @@ The "minimum 50% full" rule is what gives B-trees their famous property: **disk 
 
 Search is straightforward: at each node, do a sorted-array search (binary or linear) to find which child subtree might contain the key, then descend.
 
-```pseudocode
-function bSearch(node, key):
-    i ← 0
-    while i < numKeys(node) AND key > node.keys[i]:
-        i ← i + 1
-    if i < numKeys(node) AND key = node.keys[i]:
-        return node                                     # found
-    if isLeaf(node):
-        return null                                     # not in tree
-    return bSearch(node.children[i], key)
-```
-
 **Cost.** Each level: `O(log m)` to find the right child slot via binary search, plus one disk seek to load the child. Total: `O(log_m n × log m) = O(log n)` work, but the *seek count* is just `O(log_m n)`. On disk that's the only cost that matters.
 
 For order 200, the height of a 1 billion-key tree is about 4. Four disk seeks. That's why every database uses B-trees.
@@ -140,35 +128,6 @@ For order 200, the height of a 1 billion-key tree is about 4. Four disk seeks. T
 # Insert and Split
 
 Inserts always happen at a leaf, then propagate upward if the leaf is full.
-
-```pseudocode
-function insert(tree, key):
-    if root is full (m − 1 keys):
-        newRoot ← new internal node
-        newRoot.children[0] ← root
-        split(newRoot, 0)                               # split the old root into two children of newRoot
-        root ← newRoot
-    insertNonFull(root, key)
-
-function insertNonFull(node, key):
-    i ← numKeys(node) − 1
-    if isLeaf(node):
-        # Shift larger keys right, place new key in the hole
-        while i ≥ 0 AND key < node.keys[i]:
-            node.keys[i + 1] ← node.keys[i]
-            i ← i − 1
-        node.keys[i + 1] ← key
-        node.numKeys ← node.numKeys + 1
-    else:
-        while i ≥ 0 AND key < node.keys[i]:
-            i ← i − 1
-        i ← i + 1
-        if numKeys(node.children[i]) = m − 1:
-            split(node, i)                              # full child: split first
-            if key > node.keys[i]:
-                i ← i + 1                               # may need the new sibling
-        insertNonFull(node.children[i], key)
-```
 
 **Splitting.** When a node fills (reaches `m − 1` keys), it splits into two halves. The middle key moves *up* into the parent. If the parent is also full, splits propagate upward. If the root splits, a new root appears and the tree grows by one level.
 
@@ -445,151 +404,6 @@ public class Main {
 }
 ```
 
-```c run
-#include <stdio.h>
-#include <stdlib.h>
-#include <stdbool.h>
-
-#define T 3
-#define MAX_KEYS (2*T - 1)
-
-typedef struct BNode {
-    int keys[MAX_KEYS];
-    struct BNode *children[2*T];
-    int n;
-    bool leaf;
-} BNode;
-
-static BNode *new_node(bool leaf) {
-    BNode *n = calloc(1, sizeof(BNode));
-    n->leaf = leaf;
-    return n;
-}
-
-static BNode *root;
-
-static bool b_search(BNode *node, int key) {
-    int i = 0;
-    while (i < node->n && key > node->keys[i]) i++;
-    if (i < node->n && node->keys[i] == key) return true;
-    if (node->leaf) return false;
-    return b_search(node->children[i], key);
-}
-
-static void split_child(BNode *parent, int i) {
-    BNode *full = parent->children[i];
-    BNode *sib = new_node(full->leaf);
-    sib->n = T - 1;
-    for (int j = 0; j < T - 1; j++) sib->keys[j] = full->keys[j + T];
-    if (!full->leaf) for (int j = 0; j < T; j++) sib->children[j] = full->children[j + T];
-    full->n = T - 1;
-    for (int j = parent->n; j > i; j--) parent->children[j + 1] = parent->children[j];
-    parent->children[i + 1] = sib;
-    for (int j = parent->n - 1; j >= i; j--) parent->keys[j + 1] = parent->keys[j];
-    parent->keys[i] = full->keys[T - 1];
-    parent->n++;
-}
-
-static void insert_nonfull(BNode *node, int key) {
-    int i = node->n - 1;
-    if (node->leaf) {
-        while (i >= 0 && key < node->keys[i]) { node->keys[i+1] = node->keys[i]; i--; }
-        node->keys[i+1] = key;
-        node->n++;
-    } else {
-        while (i >= 0 && key < node->keys[i]) i--;
-        i++;
-        if (node->children[i]->n == MAX_KEYS) {
-            split_child(node, i);
-            if (key > node->keys[i]) i++;
-        }
-        insert_nonfull(node->children[i], key);
-    }
-}
-
-static void insert(int key) {
-    if (root->n == MAX_KEYS) {
-        BNode *r = new_node(false);
-        r->children[0] = root;
-        root = r;
-        split_child(r, 0);
-    }
-    insert_nonfull(root, key);
-}
-
-int main(void) {
-    root = new_node(true);
-    for (int i = 1; i <= 100; i++) insert(i);
-    printf("search 42 -> %s\n", b_search(root, 42) ? "true" : "false");
-    return 0;
-}
-```
-
-```scala run
-object Main extends App {
-  val T = 3
-
-  class BNode(var leaf: Boolean = true) {
-    val keys = scala.collection.mutable.ArrayBuffer.empty[Int]
-    val children = scala.collection.mutable.ArrayBuffer.empty[BNode]
-  }
-
-  var root = new BNode
-
-  def search(key: Int, node: BNode = root): Boolean = {
-    var i = 0
-    while (i < node.keys.length && key > node.keys(i)) i += 1
-    if (i < node.keys.length && key == node.keys(i)) true
-    else if (node.leaf) false
-    else search(key, node.children(i))
-  }
-
-  def splitChild(parent: BNode, i: Int): Unit = {
-    val full = parent.children(i)
-    val sib = new BNode(full.leaf)
-    val mid = full.keys(T - 1)
-    sib.keys ++= full.keys.drop(T)
-    full.keys.remove(T - 1, full.keys.length - (T - 1))
-    if (!full.leaf) {
-      sib.children ++= full.children.drop(T)
-      full.children.remove(T, full.children.length - T)
-    }
-    parent.keys.insert(i, mid)
-    parent.children.insert(i + 1, sib)
-  }
-
-  def insertNonfull(node: BNode, key: Int): Unit = {
-    if (node.leaf) {
-      var i = node.keys.length - 1
-      while (i >= 0 && key < node.keys(i)) i -= 1
-      node.keys.insert(i + 1, key)
-    } else {
-      var i = node.keys.length - 1
-      while (i >= 0 && key < node.keys(i)) i -= 1
-      i += 1
-      if (node.children(i).keys.length == 2 * T - 1) {
-        splitChild(node, i)
-        if (key > node.keys(i)) i += 1
-      }
-      insertNonfull(node.children(i), key)
-    }
-  }
-
-  def insert(key: Int): Unit = {
-    if (root.keys.length == 2 * T - 1) {
-      val r = new BNode(false)
-      r.children += root
-      root = r
-      splitChild(r, 0)
-    }
-    insertNonfull(root, key)
-  }
-
-  for (k <- 1 to 100) insert(k)
-  println(s"search 42 -> ${search(42)}    search 999 -> ${search(999)}")
-}
-```
-
 ***
 
 # Edge cases and pitfalls
@@ -654,63 +468,54 @@ Click any question to reveal the answer.
 **A:** Each node holds between `⌈m/2⌉ − 1` and `m − 1` keys; up to `m` children. The root is allowed fewer. Sometimes parameterised as "minimum degree `T`" with max keys `2T − 1`.
 
 </details>
-
 <details>
 <summary><strong>Q:</strong> Height of a B-tree with <code>n</code> keys and order <code>m</code>?</summary>
 
 **A:** `O(log_(m/2) n)`. For `m = 200`, a billion-key tree has height ~4. That's 4 disk seeks per lookup.
 
 </details>
-
 <details>
 <summary><strong>Q:</strong> Why are disk B-trees order ~200, but in-memory B-trees order ~16?</summary>
 
 **A:** Order matches the cost of one I/O. Disk: page = 8 KB, fits ~200 keys. Cache: line = 64 bytes, fits ~16 keys. Order is "as many keys as one I/O can carry".
 
 </details>
-
 <details>
 <summary><strong>Q:</strong> What's the storage-utilisation guarantee?</summary>
 
 **A:** Every node (except possibly the root) is at least 50% full. Splits create two half-full siblings; merges restore the invariant on delete. Worst-case disk waste: 50%.
 
 </details>
-
 <details>
 <summary><strong>Q:</strong> Difference between B-tree and B+-tree?</summary>
 
 **A:** B-tree stores data in internal nodes too. B+-tree stores data *only* in leaves; internal nodes hold routing keys. Leaves are linked for `O(n)` range traversal. Every database uses B+-tree.
 
 </details>
-
 <details>
 <summary><strong>Q:</strong> Why does Postgres use B-link concurrency, not the textbook B-tree?</summary>
 
 **A:** B-link adds a right-sibling pointer per node so concurrent inserters don't have to lock the whole path during a split. Readers stumbling onto an in-progress split can follow the right-link to find missing keys.
 
 </details>
-
 <details>
 <summary><strong>Q:</strong> What does WAL guarantee for the B-tree?</summary>
 
 **A:** Every page modification is logged in the Write-Ahead Log *before* the page is flushed. Crash mid-update → replay the WAL forward and the index reconstructs identically.
 
 </details>
-
 <details>
 <summary><strong>Q:</strong> Why does Postgres NOT shrink a B-tree on delete?</summary>
 
 **A:** Deletions create dead tuples / empty slots; `VACUUM` reclaims them later. Shrinking inline would force expensive merges and conflict with MVCC's "still-visible-to-some-transaction" invariant.
 
 </details>
-
 <details>
 <summary><strong>Q:</strong> Default Postgres page size and index fanout?</summary>
 
 **A:** 8 KB page (matches OS page size). Fanout depends on key size; typically hundreds of routing entries per internal node, leading to 4-5 levels for billions of keys.
 
 </details>
-
 <details>
 <summary><strong>Q:</strong> Why does Rust's <code>std::collections::BTreeMap</code> use a B-tree, not RB-tree?</summary>
 

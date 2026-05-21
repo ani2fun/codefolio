@@ -211,127 +211,83 @@ Steps 1 and 5 bookend every call; steps 2-3 are the descent; step 4 is the ascen
 A clean, language-agnostic implementation of the generic template — `g` and `h` are placeholders the problem will fill in.
 
 
-```pseudocode
-function headRecursion(n):
-    if n ≤ 0:                                # base case — recursion must terminate
-        return 0
-    smallerInput  ← h(n)                     # 1. reduce the input toward the base case
-    smallerAnswer ← headRecursion(smallerInput)   # 2. descend — recurse first
-    return g(smallerAnswer, n)               # 3. combine on the ascent
-```
-
 ```python run
 class Solution:
     def head_recursion(self, n: int) -> int:
-        # Step 1 — base case: stops the recursion. Without this branch the
-        # function would call itself forever and the stack would overflow.
+
+        # Base case: If n is less than or equal to 0, we have reached
+        # the end of recursion
         if n <= 0:
-            return 0
+            return 0  # Solution for the base case
 
-        # Step 2 — reduce the input toward the base case.
-        smaller_input = self._h(n)
+        # Use the function h to reduce the input
+        # for the next step
+        input_value: int = self.h(n)
 
-        # Step 3 — descend: ALL the recursion happens here, before any
-        # combine work runs in this frame.
-        smaller_answer = self.head_recursion(smaller_input)
+        # Recursive call with the reduced input
+        # at the beginning of the function
+        result: int = self.head_recursion(input_value)
 
-        # Step 4 — combine: head recursion's "real work" lives here, on the
-        # ascent. By the time we reach this line, every frame below has
-        # finished and returned.
-        answer = self._g(smaller_answer, n)
+        # Use the function g to compute the solution
+        # for this call using the result from the recursive call
+        # and the input to this call
+        solution: int = self.g(result, n)
 
-        # Step 5 — pass the contribution up to the caller.
-        return answer
+        # Return the solution for the current input
+        return solution
 
-    def _g(self, smaller: int, n: int) -> int:
-        # Problem-specific combine. Example: addition.
-        return smaller + n
+    def g(self, input_value: int, n: int) -> int:
+        # Placeholder for g - use the result from recursive call
+        # and the current input to compute the solution
+        return input_value + n  # Example implementation
 
-    def _h(self, n: int) -> int:
-        # Problem-specific reduction. Example: decrement.
-        return n - 1
-
-
-if __name__ == "__main__":
-    print(Solution().head_recursion(5))   # 1+2+3+4+5 = 15
+    def h(self, input_value: int) -> int:
+        # Placeholder for h - get the input for the next step
+        # from the current input
+        return input_value - 1  # Example implementation
 ```
 
 ```java run
-public class Main {
-    static class Solution {
-        int headRecursion(int n) {
-            // Step 1 — base case: anchors the recursion
-            if (n <= 0) {
-                return 0;
-            }
+class Solution {
 
-            // Step 2 — reduce
-            int smallerInput = h(n);
+    public int headRecursion(int n) {
 
-            // Step 3 — descend (all the recursion happens here)
-            int smallerAnswer = headRecursion(smallerInput);
-
-            // Step 4 — combine on the ascent
-            int answer = g(smallerAnswer, n);
-
-            // Step 5 — return upward
-            return answer;
+        // Base case: If n is less than or equal to 0, we have reached
+        // the end of recursion
+        if (n <= 0) {
+            return 0; // Solution for the base case
         }
 
-        private int g(int smaller, int n) { return smaller + n; }
-        private int h(int n) { return n - 1; }
+        // Use the function h to reduce the input
+        // for the next step
+        int input = h(n);
+
+        // Recursive call with the reduced input
+        // at the beginning of the function
+        int result = headRecursion(input);
+
+        // Use the function g to compute the solution
+        // for this call using the result from the recursive call
+        // and the input to this call
+        int solution = g(result, n);
+
+        // Return the solution for the current input
+        return solution;
     }
 
-    public static void main(String[] args) {
-        System.out.println(new Solution().headRecursion(5));   // 15
-    }
-}
-```
-
-```c run
-#include <stdio.h>
-
-/* Forward declarations so g and h can be referenced before definition. */
-int g(int smaller, int n);
-int h(int n);
-
-int head_recursion(int n) {
-    if (n <= 0) {                     /* Step 1 — base case */
-        return 0;
-    }
-    int smaller_input  = h(n);        /* Step 2 — reduce */
-    int smaller_answer = head_recursion(smaller_input);  /* Step 3 — descend */
-    int answer         = g(smaller_answer, n);           /* Step 4 — combine */
-    return answer;                    /* Step 5 — return upward */
-}
-
-int g(int smaller, int n) { return smaller + n; }
-int h(int n)              { return n - 1; }
-
-int main(void) {
-    printf("%d\n", head_recursion(5));   /* 15 */
-    return 0;
-}
-```
-
-```scala run
-object Main extends App {
-  class Solution {
-    def headRecursion(n: Int): Int = {
-      if (n <= 0) 0                          // Step 1 — base case
-      else {
-        val smallerInput  = h(n)             // Step 2 — reduce
-        val smallerAnswer = headRecursion(smallerInput)  // Step 3 — descend
-        val answer        = g(smallerAnswer, n)          // Step 4 — combine
-        answer                                           // Step 5 — return
-      }
+    // Placeholder for g - use the result from recursive call
+    // and the current input to compute the solution
+    private int g(int input, int n) {
+        // Implement your logic here
+        return input + n; // Example implementation
     }
 
-    private def g(smaller: Int, n: Int): Int = smaller + n
-    private def h(n: Int): Int = n - 1
-  }
-
-  println(new Solution().headRecursion(5))   // 15
+    // Placeholder for h - get the input for the next step
+    // from the current input
+    private int h(int input) {
+        // Implement your logic here
+        return input - 1; // Example implementation
+    }
 }
 ```
 
@@ -454,7 +410,9 @@ Output: [1, 2, 3]
 
 ---
 
-## What Does "Build a List Recursively" Mean?
+<details>
+<summary><h2>What Does "Build a List Recursively" Mean?</h2></summary>
+
 
 The natural temptation is to loop: `for i in 1..n: append(i)`. The point of this exercise isn't that recursion is *better* here (it isn't) — it's that you can see the template lock onto a problem whose iterative version is trivial, so you can recognise the same shape later in problems where the recursive version is genuinely shorter than the loop.
 
@@ -483,9 +441,10 @@ flowchart TB
 
 <p align="center"><strong>Recursion tree for <code>forward(5)</code>. Descent is silent; the appends happen on the ascent — classic head recursion.</strong></p>
 
----
+</details>
+<details>
+<summary><h2>Applying the Diagnostic Questions</h2></summary>
 
-## Applying the Diagnostic Questions
 
 | # | Check | Answer |
 |---|---|---|
@@ -505,9 +464,10 @@ To put `n` at the *end* of the list, the list for `n-1` must already exist. Ther
 
 The smallest meaningful input is `0`: there are no integers from `1` to `0`, so the list is empty. The recursion bottoms out cleanly at `forward(0) = []`. (Some people prefer `forward(1) = [1]` as the base case — both work; the `0` choice is slightly more uniform because every integer reduces to `0`.)
 
----
+</details>
+<details>
+<summary><h2>The Append-on-the-Way-Back Strategy (Visualised)</h2></summary>
 
-## The Append-on-the-Way-Back Strategy (Visualised)
 
 The build happens during stack unwinding. We use the *output-by-reference* style — the caller creates the list, passes it as an out-argument, and each recursive frame appends its value on the ascent. This avoids `O(n)` list-copying at every step in low-level languages.
 
@@ -551,115 +511,104 @@ state: "forward(5) appends 5 — final" {
 
 </div>
 
----
+</details>
+<details>
+<summary><h2>Solution &amp; Analysis</h2></summary>
 
-## The Solution
-
-
-```pseudocode
-function forwardSequence(n):
-    result ← empty list
-    helper(n, result)
-    return result
-
-function helper(n, result):
-    if n ≤ 0:                                # base case — nothing to add
-        return
-    helper(n − 1, result)                    # recurse FIRST — head recursion
-    append n to result                       # then append on the ascent → 1, 2, …, n
-```
+### The Solution
 
 ```python run
 from typing import List
 
 class Solution:
-    def forward_sequence(self, n: int) -> List[int]:
-        result: List[int] = []          # Caller-owned list; mutated in place
-        self._helper(n, result)         # Helper recurses; result fills up in place
-        return result
+    def helper(self, n: int, result: List[int]):
 
-    def _helper(self, n: int, result: List[int]) -> None:
-        # Base case: nothing to add for n == 0
+        # Base case: If n is less than or equal to 0, we have reached the
+        # end of recursion
         if n <= 0:
+
+            # Exit the function, as there are no more numbers to add
             return
-        # Recursive call FIRST — head recursion's signature move
-        self._helper(n - 1, result)
-        # On the ascent, append this frame's value
+
+        # Recursive call to the helper function with n-1, to move towards
+        # the base case
+        self.helper(n - 1, result)
+
+        # After the recursive call returns, the result list contains
+        # numbers from 1 to n-1. Now, we add the current number n to the
+        # result list to complete the sequence
         result.append(n)
 
+    def forward_sequence(self, n: int) -> List[int]:
 
-if __name__ == "__main__":
-    print(Solution().forward_sequence(5))   # [1, 2, 3, 4, 5]
+        # Initialize an empty list to store the result
+        result: List[int] = []
+
+        # Call the helper function to populate the result list with
+        # numbers from 1 to n
+        self.helper(n, result)
+
+        # Return the generated list containing numbers from 1 to n
+        return result
+
+
+# Examples from the problem statement
+print(Solution().forward_sequence(5))   # [1, 2, 3, 4, 5]
+
+# Edge cases
+print(Solution().forward_sequence(1))   # [1]
+print(Solution().forward_sequence(3))   # [1, 2, 3]
+print(Solution().forward_sequence(10))  # [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
 ```
 
 ```java run
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
 
 public class Main {
     static class Solution {
-        public List<Integer> forwardSequence(int n) {
-            List<Integer> result = new ArrayList<>();
-            helper(n, result);
-            return result;
+        private void helper(int N, List<Integer> result) {
+
+            // Base case: If N is less than or equal to 0, we have reached
+            // the end of recursion
+            if (N <= 0) {
+
+                // Exit the function, as there are no more numbers to add
+                return;
+            }
+
+            // Recursive call to the helper function with N-1, to move
+            // towards the base case
+            helper(N - 1, result);
+
+            // After the recursive call returns, the result list contains
+            // numbers from 1 to N-1 Now, we add the current number N to the
+            // result list to complete the sequence
+            result.add(N);
         }
 
-        private void helper(int n, List<Integer> result) {
-            if (n <= 0) return;          // Base case
-            helper(n - 1, result);       // Recursive call FIRST (head recursion)
-            result.add(n);               // Combine on the ascent
+        public List<Integer> forwardSequence(int N) {
+
+            // Initialize an empty list to store the result
+            List<Integer> result = new ArrayList<>();
+
+            // Call the helper function to populate the result list with
+            // numbers from 1 to N
+            helper(N, result);
+
+            // Return the generated list containing numbers from 1 to N
+            return result;
         }
     }
 
     public static void main(String[] args) {
+        // Examples from the problem statement
         System.out.println(new Solution().forwardSequence(5));   // [1, 2, 3, 4, 5]
+
+        // Edge cases
+        System.out.println(new Solution().forwardSequence(1));   // [1]
+        System.out.println(new Solution().forwardSequence(3));   // [1, 2, 3]
+        System.out.println(new Solution().forwardSequence(10));  // [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
     }
-}
-```
-
-```c run
-#include <stdio.h>
-#include <stdlib.h>
-
-/* In C we can't return a vector cleanly, so we use the output-reference
- * pattern: caller allocates buffer, recursive helper writes into it. */
-static void helper(int n, int *result, int *idx) {
-    if (n <= 0) return;              /* Base case */
-    helper(n - 1, result, idx);      /* Recurse FIRST */
-    result[(*idx)++] = n;            /* Combine on ascent */
-}
-
-int main(void) {
-    int n = 5;
-    int *result = (int *) malloc(sizeof(int) * n);   /* Caller-owned buffer */
-    int idx = 0;
-    helper(n, result, &idx);
-    for (int i = 0; i < idx; i++) printf("%d ", result[i]);
-    printf("\n");
-    free(result);
-    return 0;
-}
-```
-
-```scala run
-import scala.collection.mutable.ArrayBuffer
-
-object Main extends App {
-  class Solution {
-    def forwardSequence(n: Int): List[Int] = {
-      val result = ArrayBuffer[Int]()
-      helper(n, result)
-      result.toList
-    }
-
-    private def helper(n: Int, result: ArrayBuffer[Int]): Unit = {
-      if (n <= 0) return                          // Base case
-      helper(n - 1, result)                       // Recurse FIRST
-      result += n                                 // Combine on ascent
-    }
-  }
-
-  println(new Solution().forwardSequence(5))   // List(1, 2, 3, 4, 5)
 }
 ```
 
@@ -686,9 +635,7 @@ The list grows by one element per ascending frame. The descent is silent; the wo
 
 </details>
 
----
-
-## Complexity Analysis
+### Complexity Analysis
 
 | Resource | Cost | Why |
 |---|---|---|
@@ -698,9 +645,7 @@ The list grows by one element per ascending frame. The descent is silent; the wo
 
 The output-reference style avoids the `O(n²)` cost of "build the list then return-by-copy at every frame," which is the trap a naive recursive build falls into.
 
----
-
-## Edge Cases
+### Edge Cases
 
 | Case | Example | Expected | Reasoning |
 |---|---|---|---|
@@ -709,11 +654,14 @@ The output-reference style avoids the `O(n²)` cost of "build the list then retu
 | Negative input | `n = -3` | `[]` | The `n <= 0` guard catches it; harmless. |
 | Large input | `n = 100_000` | Output of length 100k; **possible stack overflow** on JVM (default ~10K) | Linear stack depth — trip Failure Mode 1 from the Nested Functions lesson if the stack is small. The fix is to use iteration for very large `n`. |
 
----
+</details>
+<details>
+<summary><h2>Final Takeaway</h2></summary>
 
-## Final Takeaway
 
 Forward Sequence is the head-recursion template applied with `g = append` and `h = decrement`. The recursive call goes first, the append happens on the way back, and the list assembles bottom-up — the same scaffolding-unwind picture from the Memory Model lesson producing observable output this time. The next problem looks similar — until you notice the combine step is *multiplication*, and one base case decision changes everything.
+
+</details>
 
 ***
 
@@ -743,7 +691,9 @@ Explanation: factorial(0) = 1 by convention.
 
 ---
 
-## What Does "Factorial" Mean Recursively?
+<details>
+<summary><h2>What Does "Factorial" Mean Recursively?</h2></summary>
+
 
 Read the definition `n! = n × (n-1)!` and the recursion writes itself: the answer for `n` is `n` times the answer for `n-1`. The base case is the one that needs care: `0! = 1`, not `0`.
 
@@ -771,9 +721,10 @@ flowchart LR
 
 `fact(0) = 0` would propagate `0` all the way up: every multiplication on the ascent is `n × 0 = 0`. The whole computation collapses. **`fact(1) = 1`** is fine and is sometimes preferred — but you must guarantee `n >= 1` at the call site, or `fact(0)` will skip the base and recurse to `fact(-1)` and crash. `fact(0) = 1` is the safer, more general choice.
 
----
+</details>
+<details>
+<summary><h2>Applying the Diagnostic Questions</h2></summary>
 
-## Applying the Diagnostic Questions
 
 | # | Check | Answer |
 |---|---|---|
@@ -793,9 +744,10 @@ Multiplication doesn't help us compute `fact(n)` until we know `fact(n-1)`. We c
 
 `1` is the multiplicative identity: anything times `1` is itself. Picking `1` keeps the multiplicative chain consistent. Picking `0` would zero out the whole answer (`5! = 5 × 4 × 3 × 2 × 1 × 0 = 0`).
 
----
+</details>
+<details>
+<summary><h2>The Multiply-on-the-Way-Back Strategy (Visualised)</h2></summary>
 
-## The Multiply-on-the-Way-Back Strategy (Visualised)
 
 ```mermaid
 ---
@@ -820,80 +772,67 @@ flowchart TB
 
 <p align="center"><strong>The descent walks down to <code>fact(0)</code>; the ascent multiplies each frame's <code>n</code> by the smaller answer. The product accumulates from the bottom up.</strong></p>
 
----
+</details>
+<details>
+<summary><h2>Solution &amp; Analysis</h2></summary>
 
-## The Solution
-
-
-```pseudocode
-function factorial(n):
-    if n = 0:                          # base case — 0! = 1 (multiplicative identity)
-        return 1
-    return n × factorial(n − 1)        # multiply on the ascent
-```
+### The Solution
 
 ```python run
 class Solution:
     def factorial(self, n: int) -> int:
-        # Base case — must be 1 (multiplicative identity)
+
+        # Base case: If n is 0, the factorial is 1
         if n == 0:
             return 1
-        # Descend first; combine (multiply) after the recursive call returns
-        smaller = self.factorial(n - 1)
-        return n * smaller
+
+        # Recursive call to calculate factorial of (n - 1)
+        factorial_of_n_minus_1 = self.factorial(n - 1)
+
+        # Multiply n with the factorial of (n - 1)
+        return n * factorial_of_n_minus_1
 
 
-if __name__ == "__main__":
-    print(Solution().factorial(7))   # 5040
-    print(Solution().factorial(5))   # 120
-    print(Solution().factorial(0))   # 1
+# Examples from the problem statement
+print(Solution().factorial(7))   # 5040
+print(Solution().factorial(5))   # 120
+print(Solution().factorial(0))   # 1
+
+# Edge cases
+print(Solution().factorial(1))   # 1
+print(Solution().factorial(2))   # 2
+print(Solution().factorial(10))  # 3628800
 ```
 
 ```java run
 public class Main {
     static class Solution {
-        public int factorial(int n) {
-            if (n == 0) return 1;                  // Base case
-            int smaller = factorial(n - 1);         // Descend first
-            return n * smaller;                     // Combine on ascent
+        public int factorial(int N) {
+
+            // Base case: If N is 0, the factorial is 1
+            if (N == 0) {
+                return 1;
+            }
+
+            // Recursive call to calculate factorial of (N - 1)
+            int factorialOfNMinus1 = factorial(N - 1);
+
+            // Multiply N with the factorial of (N - 1)
+            return N * factorialOfNMinus1;
         }
     }
 
     public static void main(String[] args) {
-        Solution s = new Solution();
-        System.out.println(s.factorial(7));    // 5040
-        System.out.println(s.factorial(0));    // 1
+        // Examples from the problem statement
+        System.out.println(new Solution().factorial(7));   // 5040
+        System.out.println(new Solution().factorial(5));   // 120
+        System.out.println(new Solution().factorial(0));   // 1
+
+        // Edge cases
+        System.out.println(new Solution().factorial(1));   // 1
+        System.out.println(new Solution().factorial(2));   // 2
+        System.out.println(new Solution().factorial(10));  // 3628800
     }
-}
-```
-
-```c run
-#include <stdio.h>
-
-long long factorial(int n) {
-    if (n == 0) return 1;                     /* Base case */
-    long long smaller = factorial(n - 1);      /* Descend */
-    return (long long) n * smaller;            /* Combine */
-}
-
-int main(void) {
-    printf("%lld\n", factorial(7));   /* 5040 */
-    printf("%lld\n", factorial(0));   /* 1 */
-    return 0;
-}
-```
-
-```scala run
-object Main extends App {
-  class Solution {
-    def factorial(n: Int): Long = {
-      if (n == 0) 1L                          // Base case
-      else n.toLong * factorial(n - 1)        // Descend, then multiply
-    }
-  }
-
-  println(new Solution().factorial(7))   // 5040
-  println(new Solution().factorial(0))   // 1
 }
 ```
 
@@ -920,9 +859,7 @@ The product is built from the base case up to the top. Same shape as Forward Seq
 
 </details>
 
----
-
-## Complexity Analysis
+### Complexity Analysis
 
 | Resource | Cost | Why |
 |---|---|---|
@@ -931,9 +868,7 @@ The product is built from the base case up to the top. Same shape as Forward Seq
 
 For very large `n` the *integer overflow* matters more than the recursion depth. `20!` already exceeds the range of a 64-bit `long long`. Use big-integer types (Python's native `int`, Java `BigInteger`) for `n > 20`.
 
----
-
-## Edge Cases
+### Edge Cases
 
 | Case | Example | Expected | Reasoning |
 |---|---|---|---|
@@ -943,11 +878,14 @@ For very large `n` the *integer overflow* matters more than the recursion depth.
 | Negative input | `n = -3` | undefined | Must be guarded at the entry point — `n < 0` would skip the base and recurse forever. |
 | Large `n` | `n = 100_000` | overflow + stack overflow | Use big-int + iteration. |
 
----
+</details>
+<details>
+<summary><h2>Final Takeaway</h2></summary>
 
-## Final Takeaway
 
 Factorial is the head-recursion template with `g = multiply` and a base case that has to be the multiplicative identity. Different combine, different base case, same scaffolding-unwind shape. The next problem replaces the combine with addition — but adds a twist: the input doesn't shrink by one each time. It shrinks by *a digit*.
+
+</details>
 
 ***
 
@@ -976,7 +914,9 @@ Output: 0
 
 ---
 
-## What Does "Lop Off the Last Digit" Mean?
+<details>
+<summary><h2>What Does "Lop Off the Last Digit" Mean?</h2></summary>
+
 
 For any non-negative integer `n`, the operation `n / 10` (integer division) drops its last digit. The dropped digit itself is `n % 10`. Together, these two operations factor any number into "all but the last digit" plus "the last digit":
 
@@ -995,9 +935,10 @@ n -> mod: modulo
 
 The recursive insight: **`digitSum(n) = digitSum(n / 10) + (n % 10)`.** Drop the last digit to get the smaller subproblem; add the last digit on the ascent.
 
----
+</details>
+<details>
+<summary><h2>Applying the Diagnostic Questions</h2></summary>
 
-## Applying the Diagnostic Questions
 
 | # | Check | Answer |
 |---|---|---|
@@ -1017,9 +958,10 @@ We need the digit-sum of `n / 10` first. Once we have that, adding the last digi
 
 Zero has no nonzero digits to sum. Mathematically, `0 = 0`. Picking `0` as the base case makes the recursion terminate cleanly: the moment `n / 10` reaches `0`, we stop. ✓
 
----
+</details>
+<details>
+<summary><h2>The Add-on-the-Way-Back Strategy (Visualised)</h2></summary>
 
-## The Add-on-the-Way-Back Strategy (Visualised)
 
 ```mermaid
 ---
@@ -1042,76 +984,73 @@ flowchart TB
 
 <p align="center"><strong>Each frame contributes its own last digit on the ascent. The total accumulates bottom-up, frame by frame.</strong></p>
 
----
+</details>
+<details>
+<summary><h2>Solution &amp; Analysis</h2></summary>
 
-## The Solution
-
-
-```pseudocode
-function sumOfDigits(n):
-    if n = 0:                          # base case — empty number contributes 0
-        return 0
-    return sumOfDigits(n ÷ 10) + (n mod 10)   # strip the last digit, recurse, add it back
-```
+### The Solution
 
 ```python run
 class Solution:
     def sum_of_digits(self, n: int) -> int:
-        # Base case — empty number has digit-sum 0
+
+        # Base case: If n is 0, we have reached
+        # the end of recursion
         if n == 0:
             return 0
-        # Descend on n // 10 (integer division strips the last digit)
-        smaller = self.sum_of_digits(n // 10)
-        # Combine on the ascent: add the last digit (n % 10)
-        return smaller + n % 10
+
+        # Recursive call with the remaining number without
+        # the last digit
+        remaining_sum = self.sum_of_digits(n // 10)
+
+        # Combine results with the last digit
+        return remaining_sum + n % 10
 
 
-if __name__ == "__main__":
-    print(Solution().sum_of_digits(523))   # 10
-    print(Solution().sum_of_digits(1005))  # 6
+# Examples from the problem statement
+print(Solution().sum_of_digits(523))   # 10
+print(Solution().sum_of_digits(1005))  # 6
+print(Solution().sum_of_digits(0))     # 0
+
+# Edge cases
+print(Solution().sum_of_digits(9))     # 9
+print(Solution().sum_of_digits(99))    # 18
+print(Solution().sum_of_digits(1000))  # 1
+print(Solution().sum_of_digits(999))   # 27
 ```
 
 ```java run
 public class Main {
     static class Solution {
-        public int sumOfDigits(int n) {
-            if (n == 0) return 0;                          // Base case
-            int smaller = sumOfDigits(n / 10);             // Descend
-            return smaller + (n % 10);                     // Combine on ascent
+        public int sumOfDigits(int N) {
+
+            // Base case: If N is 0, we have reached
+            // the end of recursion
+            if (N == 0) {
+                return 0;
+            }
+
+            // Recursive call with the remaining number without
+            // the last digit
+            int remainingSum = sumOfDigits(N / 10);
+
+            // Combine results with the last digit
+            return remainingSum + (N % 10);
         }
     }
 
     public static void main(String[] args) {
+        // Examples from the problem statement
         System.out.println(new Solution().sumOfDigits(523));   // 10
+        System.out.println(new Solution().sumOfDigits(1005));  // 6
+        System.out.println(new Solution().sumOfDigits(0));     // 0
+
+        // Edge cases
+        System.out.println(new Solution().sumOfDigits(9));     // 9
+        System.out.println(new Solution().sumOfDigits(99));    // 18
+        System.out.println(new Solution().sumOfDigits(1000));  // 1
+        System.out.println(new Solution().sumOfDigits(999));   // 27
     }
-}
-```
-
-```c run
-#include <stdio.h>
-
-int sum_of_digits(int n) {
-    if (n == 0) return 0;                     /* Base case */
-    int smaller = sum_of_digits(n / 10);       /* Descend */
-    return smaller + (n % 10);                 /* Combine on ascent */
-}
-
-int main(void) {
-    printf("%d\n", sum_of_digits(523));   /* 10 */
-    return 0;
-}
-```
-
-```scala run
-object Main extends App {
-  class Solution {
-    def sumOfDigits(n: Int): Int = {
-      if (n == 0) 0                          // Base case
-      else sumOfDigits(n / 10) + (n % 10)    // Descend, add on ascent
-    }
-  }
-
-  println(new Solution().sumOfDigits(523))   // 10
 }
 ```
 
@@ -1137,9 +1076,7 @@ The depth is `4` (number of digits), not `1005` (the value). That's the `O(log n
 
 </details>
 
----
-
-## Complexity Analysis
+### Complexity Analysis
 
 | Resource | Cost | Why |
 |---|---|---|
@@ -1148,9 +1085,7 @@ The depth is `4` (number of digits), not `1005` (the value). That's the `O(log n
 
 The depth here is *much* shallower than the previous two problems. Forward Sequence and Factorial recurse `n` times for input `n`; Sum of Digits recurses `~log₁₀(n)` times. Even `n = 10⁹` only goes ten frames deep — completely safe.
 
----
-
-## Edge Cases
+### Edge Cases
 
 | Case | Example | Expected | Reasoning |
 |---|---|---|---|
@@ -1160,11 +1095,14 @@ The depth here is *much* shallower than the previous two problems. Forward Seque
 | All same digit | `n = 9999` | `36` | `9 + 9 + 9 + 9 = 36`. |
 | Large input | `n = 2_147_483_647` | sum of those 10 digits | Even max-int is only ~10 digits deep. |
 
----
+</details>
+<details>
+<summary><h2>Final Takeaway</h2></summary>
 
-## Final Takeaway
 
 Sum of Digits is head recursion with `g = add` and a `h(n) = n / 10` reduction that shrinks the input by an order of magnitude per call instead of by one unit. The shape is identical to Forward Sequence and Factorial; only the *rate* of descent differs. The next problem stretches the template the furthest yet — the input is a queue, not an integer, and the combine step has to be done with care.
+
+</details>
 
 ***
 
@@ -1185,7 +1123,9 @@ Output: q = [7, 6, 5, 4, 3, 2, 1]
 
 ---
 
-## What Makes Reversing a Queue Recursively Tricky?
+<details>
+<summary><h2>What Makes Reversing a Queue Recursively Tricky?</h2></summary>
+
 
 A queue gives you two operations: dequeue from the front, enqueue to the back. There's no "swap front and back" operation. To reverse, every element has to move from the front to the back — but the order in which they get re-enqueued is the *reverse* of the order in which they were dequeued.
 
@@ -1213,9 +1153,10 @@ flowchart TB
 
 <p align="center"><strong>Recursion tree for reversing a 5-element queue. The descent saves each front in a stack frame's local variable. The ascent re-enqueues them in reverse order.</strong></p>
 
----
+</details>
+<details>
+<summary><h2>Applying the Diagnostic Questions</h2></summary>
 
-## Applying the Diagnostic Questions
 
 | # | Check | Answer |
 |---|---|---|
@@ -1235,9 +1176,10 @@ The saved front has to go *behind* the reversed rest. We can't enqueue it before
 
 A 0- or 1-element queue is identical forwards and backwards. There's nothing to do, and the recursion bottoms out cleanly. ✓
 
----
+</details>
+<details>
+<summary><h2>The Save-and-Re-enqueue Strategy (Visualised)</h2></summary>
 
-## The Save-and-Re-enqueue Strategy (Visualised)
 
 The descent saves each front in a stack-frame local. The ascent drains those locals back into the queue.
 
@@ -1282,123 +1224,103 @@ state: "Continue ascending — enqueue 3, 2, 1" {
 
 The "stash" is conceptual — those saved fronts physically live in `frontElement` locals on each frame. The call stack is doing double duty as both control flow and temporary storage.
 
----
+</details>
+<details>
+<summary><h2>Solution &amp; Analysis</h2></summary>
 
-## The Solution
-
-
-```pseudocode
-function reverseQueue(q):
-    if length(q) ≤ 1:                  # base case — already reversed
-        return
-    front ← dequeue from q             # save the front element
-    reverseQueue(q)                    # recurse on the now-smaller queue
-    enqueue front into q               # append on the ascent → original front lands at the back
-```
+### The Solution
 
 ```python run
-from collections import deque
+from typing import List
 
 class Solution:
-    def reverse_queue(self, q: deque) -> None:
-        # Base case: 0 or 1 element is already reversed
-        if len(q) <= 1:
+    def reverse_a_queue(self, q: List[int]) -> None:
+
+        # Base case: List is empty or has only one element
+        if len(q) == 0 or len(q) == 1:
             return
-        # Save the front; popleft() is O(1) on deque
-        front = q.popleft()
-        # Recurse on the smaller queue (now n-1 elements)
-        self.reverse_queue(q)
-        # Combine on ascent: append the saved front to the (now reversed) rest
-        q.append(front)
+
+        # Dequeue the front element
+        front_element: int = q.pop(0)
+
+        # Reverse the remaining list
+        self.reverse_a_queue(q)
+
+        # Enqueue the front element to the rear
+        q.append(front_element)
 
 
-if __name__ == "__main__":
-    q = deque([1, 2, 3, 4, 5, 6, 7])
-    Solution().reverse_queue(q)
-    print(list(q))   # [7, 6, 5, 4, 3, 2, 1]
+# Examples from the problem statement
+q1 = [1, 2, 3, 4, 5, 6, 7]
+Solution().reverse_a_queue(q1); print(q1)   # [7, 6, 5, 4, 3, 2, 1]
+
+# Edge cases
+q2: List[int] = []
+Solution().reverse_a_queue(q2); print(q2)   # []
+
+q3 = [42]
+Solution().reverse_a_queue(q3); print(q3)   # [42]
+
+q4 = [1, 2]
+Solution().reverse_a_queue(q4); print(q4)   # [2, 1]
+
+q5 = [3, 3, 3]
+Solution().reverse_a_queue(q5); print(q5)   # [3, 3, 3]
+
+q6 = [10, 20, 30, 40, 50]
+Solution().reverse_a_queue(q6); print(q6)   # [50, 40, 30, 20, 10]
 ```
 
 ```java run
-import java.util.LinkedList;
-import java.util.Queue;
+import java.util.*;
 
 public class Main {
     static class Solution {
         public void reverseAQueue(Queue<Integer> q) {
-            if (q.size() <= 1) return;          // Base case
-            int front = q.poll();                // Save front
-            reverseAQueue(q);                    // Recurse on the rest
-            q.add(front);                        // Enqueue saved front on ascent
+
+            // Base case: Queue is empty or has only one element
+            if (q.isEmpty() || q.size() == 1) {
+                return;
+            }
+
+            // Dequeue the front element
+            int frontElement = q.poll();
+
+            // Reverse the remaining queue
+            reverseAQueue(q);
+
+            // Enqueue the front element to the rear
+            q.add(frontElement);
         }
     }
 
     public static void main(String[] args) {
-        Queue<Integer> q = new LinkedList<>();
-        for (int i = 1; i <= 7; i++) q.add(i);
-        new Solution().reverseAQueue(q);
-        System.out.println(q);   // [7, 6, 5, 4, 3, 2, 1]
+        // Examples from the problem statement
+        Queue<Integer> q1 = new LinkedList<>(Arrays.asList(1, 2, 3, 4, 5, 6, 7));
+        new Solution().reverseAQueue(q1);
+        System.out.println(q1);   // [7, 6, 5, 4, 3, 2, 1]
+
+        // Edge cases
+        Queue<Integer> q2 = new LinkedList<>();
+        new Solution().reverseAQueue(q2);
+        System.out.println(q2);   // []
+
+        Queue<Integer> q3 = new LinkedList<>(Arrays.asList(42));
+        new Solution().reverseAQueue(q3);
+        System.out.println(q3);   // [42]
+
+        Queue<Integer> q4 = new LinkedList<>(Arrays.asList(1, 2));
+        new Solution().reverseAQueue(q4);
+        System.out.println(q4);   // [2, 1]
+
+        Queue<Integer> q5 = new LinkedList<>(Arrays.asList(3, 3, 3));
+        new Solution().reverseAQueue(q5);
+        System.out.println(q5);   // [3, 3, 3]
+
+        Queue<Integer> q6 = new LinkedList<>(Arrays.asList(10, 20, 30, 40, 50));
+        new Solution().reverseAQueue(q6);
+        System.out.println(q6);   // [50, 40, 30, 20, 10]
     }
-}
-```
-
-```c run
-#include <stdio.h>
-#include <stdlib.h>
-
-/* Minimal queue (linked list with front+back pointers). */
-typedef struct Node { int val; struct Node *next; } Node;
-typedef struct { Node *front, *back; int size; } Queue;
-
-void enqueue(Queue *q, int x) {
-    Node *n = (Node *) malloc(sizeof(Node));
-    n->val = x; n->next = NULL;
-    if (q->back) q->back->next = n;
-    q->back = n;
-    if (!q->front) q->front = n;
-    q->size++;
-}
-int dequeue(Queue *q) {
-    Node *n = q->front;
-    int v = n->val;
-    q->front = n->next;
-    if (!q->front) q->back = NULL;
-    free(n); q->size--;
-    return v;
-}
-
-void reverse_queue(Queue *q) {
-    if (q->size <= 1) return;            /* Base case */
-    int front = dequeue(q);              /* Save front */
-    reverse_queue(q);                    /* Recurse */
-    enqueue(q, front);                   /* Re-enqueue on ascent */
-}
-
-int main(void) {
-    Queue q = {0};
-    for (int i = 1; i <= 7; i++) enqueue(&q, i);
-    reverse_queue(&q);
-    while (q.size) printf("%d ", dequeue(&q));   /* 7 6 5 4 3 2 1 */
-    printf("\n");
-    return 0;
-}
-```
-
-```scala run
-import scala.collection.mutable
-
-object Main extends App {
-  class Solution {
-    def reverseQueue(q: mutable.Queue[Int]): Unit = {
-      if (q.size <= 1) return                  // Base case
-      val front = q.dequeue()                   // Save front
-      reverseQueue(q)                           // Recurse
-      q.enqueue(front)                          // Enqueue saved front on ascent
-    }
-  }
-
-  val q = mutable.Queue[Int](1, 2, 3, 4, 5, 6, 7)
-  new Solution().reverseQueue(q)
-  println(q)   // Queue(7, 6, 5, 4, 3, 2, 1)
 }
 ```
 
@@ -1424,13 +1346,11 @@ Ascent (each frame enqueues its saved front to the current back):
 Final answer: q = [5, 4, 3, 2, 1] ✓
 ```
 
-The saved fronts (`1, 2, 3, 4` — `5` was the base case) live in the `front` local of their respective frames and drain back into the queue as the stack unwinds. This is a head-recursion problem where the call stack is *itself* the auxiliary data structure.
+The saved fronts (`1, 2, 3, 4` — `5` was the base case) live in the `front_element` local of their respective frames and drain back into the queue as the stack unwinds. This is a head-recursion problem where the call stack is *itself* the auxiliary data structure.
 
 </details>
 
----
-
-## Complexity Analysis
+### Complexity Analysis
 
 | Resource | Cost | Why |
 |---|---|---|
@@ -1440,9 +1360,7 @@ The saved fronts (`1, 2, 3, 4` — `5` was the base case) live in the `front` lo
 
 Pay attention to the `O(n)` *stack* space — for very large queues this is a real concern. A common production alternative is the iterative version using an explicit stack data structure on the heap; same total work, but the frames live in heap memory you can size as needed.
 
----
-
-## Edge Cases
+### Edge Cases
 
 | Case | Example | Expected | Reasoning |
 |---|---|---|---|
@@ -1452,15 +1370,16 @@ Pay attention to the `O(n)` *stack* space — for very large queues this is a re
 | All same | `q = [5, 5, 5]` | `q = [5, 5, 5]` | Reversed but indistinguishable. |
 | Very large queue | `q.size = 100_000` | reversed, but stack overflow risk | Linear stack depth — same caveat as Forward Sequence / Factorial. |
 
----
+</details>
+<details>
+<summary><h2>Final Takeaway</h2></summary>
 
-## Final Takeaway
 
 Reverse-a-Queue is head recursion's hardest standard problem because the combine step (enqueue) and the descent (dequeue) act on the *same* mutable structure. You're not just adding a number to a smaller answer; you're using the call stack itself as a stash and the queue as a workspace. Once you see this trick — *recurse and let the call stack hold the elements for you* — you'll see it again in tree problems, in linked-list reversal, and in dozens of "in-place" interview questions.
 
 You came in with a vague sense that "head recursion does work after the call." You're leaving with a template, three diagnostic questions, four solved problems, and a transferable feel for *which* problems fit. The next lesson flips the timing: tail recursion does its work *before* the call. Same scaffolding, opposite direction of work.
 
-**Transfer challenge — try before the Tail Recursion lesson:** Write a head-recursive function that returns the **length of a singly linked list** (base case: empty list → 0; recursive case: `1 + length(rest)`). Three lines including the base case. Try it in any of the 10 languages above.
+**Transfer challenge — try before the Tail Recursion lesson:** Write a head-recursive function that returns the **length of a singly linked list** (base case: empty list → 0; recursive case: `1 + length(rest)`). Three lines including the base case. Try it in either language above.
 
 <details>
 <summary><strong>Answer — open after you've written it</strong></summary>
@@ -1484,5 +1403,7 @@ print(Solution().length(head))   # 3
 ```
 
 The recursive relation is `length(L) = 1 + length(rest of L)`, base case `length(empty) = 0`. The +1 happens on the ascent — pure head recursion. **You just walked the linked list without a loop.** That's the same trick used in tree height calculations, in stringified-output-of-a-list, and in dozens of structural problems on linked structures.
+
+</details>
 
 </details>

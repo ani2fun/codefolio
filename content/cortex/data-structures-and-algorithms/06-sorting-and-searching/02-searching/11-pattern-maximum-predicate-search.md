@@ -62,95 +62,132 @@ Input:  num = 50
 Output: 7
 ```
 
-## The Solution
+<details>
+<summary><h2>The Solution</h2></summary>
+
 
 Binary-search `x` in `[1, num]`. Predicate: `x * x <= num` (use `x <= num / x` to avoid overflow).
 
 
-```pseudocode
-# Largest integer x such that x² ≤ num. Note the (high − low + 1) ÷ 2 — that's the
-# upper-mid that prevents an infinite loop when low and high are adjacent.
-function calculateSquareRoot(num):
-    if num = 0: return 0
-    low ← 1; high ← num
-    while low < high:
-        mid ← low + (high − low + 1) ÷ 2
-        if mid ≤ num ÷ mid:                     # equivalent to mid² ≤ num, without overflow
-            low ← mid
-        else:
-            high ← mid − 1
-    return low
-```
-
 ```python run
 class Solution:
+
+    # Predicate: checks if square of mid is less than or equal to num
+    def is_square(self, mid: int, num: int) -> bool:
+        return mid <= num // mid
+
     def calculate_square_root(self, num: int) -> int:
-        if num == 0: return 0
-        low, high = 1, num
+        if num == 0:
+            return 0
+
+        # Lowest possible square root
+        low = 1
+
+        # Highest possible square root
+        high = num
+
         while low < high:
+
+            # Calculate the middle value by adding 1 to get upper mid to
+            # prevent infinite loop when low and high are adjacent
             mid = low + (high - low + 1) // 2
-            if mid <= num // mid:
+
+            # If the square of mid is less than or equal to num, low is
+            # a valid candidate. Update the lower boundary to mid
+            if self.is_square(mid, num):
                 low = mid
+
+            # If the square of mid is greater than num, update the
+            # higher boundary
             else:
                 high = mid - 1
+
+        # Return the last valid candidate rounded down to
+        # the nearest integer
         return low
 
 
-if __name__ == "__main__":
-    print(Solution().calculate_square_root(50))   # 7
+# Examples from the problem statement
+print(Solution().calculate_square_root(4))    # 2
+print(Solution().calculate_square_root(5))    # 2
+print(Solution().calculate_square_root(50))   # 7
+
+# Edge cases
+print(Solution().calculate_square_root(0))    # 0   (zero)
+print(Solution().calculate_square_root(1))    # 1   (perfect square)
+print(Solution().calculate_square_root(2))    # 1   (floor of sqrt(2))
+print(Solution().calculate_square_root(9))    # 3   (perfect square)
+print(Solution().calculate_square_root(8))    # 2   (floor of sqrt(8))
+print(Solution().calculate_square_root(100))  # 10  (perfect square)
+print(Solution().calculate_square_root(99))   # 9   (just below perfect square)
 ```
 
 ```java run
 public class Main {
     static class Solution {
+
+        // Predicate: checks if square of mid is less than or equal to num
+        private boolean isSquare(int mid, int num) {
+
+            // avoid overflow
+            return mid <= num / mid;
+        }
+
         public int calculateSquareRoot(int num) {
-            if (num == 0) return 0;
-            int low = 1, high = num;
-            while (low < high) {
-                int mid = low + (high - low + 1) / 2;
-                if (mid <= num / mid) low = mid;
-                else high = mid - 1;
+            if (num == 0) {
+                return 0;
             }
+
+            // Lowest possible square root
+            int low = 1;
+
+            // Highest possible square root
+            int high = num;
+
+            while (low < high) {
+
+                // Calculate the middle value by adding 1 to get upper mid to
+                // prevent infinite loop when low and high are adjacent
+                int mid = low + (high - low + 1) / 2;
+
+                // If the square of mid is less than or equal to num, low is
+                // a valid candidate. Update the lower boundary to mid
+                if (isSquare(mid, num)) {
+                    low = mid;
+                }
+
+                // If the square of mid is greater than num, update the
+                // higher boundary
+                else {
+                    high = mid - 1;
+                }
+            }
+
+            // Return the last valid candidate rounded down to
+            // the nearest integer
             return low;
         }
     }
 
     public static void main(String[] args) {
+        // Examples from the problem statement
+        System.out.println(new Solution().calculateSquareRoot(4));    // 2
+        System.out.println(new Solution().calculateSquareRoot(5));    // 2
         System.out.println(new Solution().calculateSquareRoot(50));   // 7
+
+        // Edge cases
+        System.out.println(new Solution().calculateSquareRoot(0));    // 0
+        System.out.println(new Solution().calculateSquareRoot(1));    // 1
+        System.out.println(new Solution().calculateSquareRoot(2));    // 1
+        System.out.println(new Solution().calculateSquareRoot(9));    // 3
+        System.out.println(new Solution().calculateSquareRoot(8));    // 2
+        System.out.println(new Solution().calculateSquareRoot(100));  // 10
+        System.out.println(new Solution().calculateSquareRoot(99));   // 9
     }
 }
 ```
 
-```c run
-int calculate_square_root(int num) {
-    if (num == 0) return 0;
-    int low = 1, high = num;
-    while (low < high) {
-        int mid = low + (high - low + 1) / 2;
-        if (mid <= num / mid) low = mid;
-        else high = mid - 1;
-    }
-    return low;
-}
-```
-
-```scala run
-object Main extends App {
-  class Solution {
-    def calculateSquareRoot(num: Int): Int = {
-      if (num == 0) return 0
-      var low = 1; var high = num
-      while (low < high) {
-        val mid = low + (high - low + 1) / 2
-        if (mid <= num / mid) low = mid else high = mid - 1
-      }
-      low
-    }
-  }
-
-  println(new Solution().calculateSquareRoot(50))   // 7
-}
-```
+</details>
 
 
 ***
@@ -172,89 +209,123 @@ Input:  n = 7
 Output: 3   (1 + 2 + 3 = 6; 1 coin left over, not enough for 4th)
 ```
 
-## The Solution
+<details>
+<summary><h2>The Solution</h2></summary>
+
 
 Binary-search `k` in `[0, n]`. Predicate: `k(k+1)/2 <= n`.
 
 
-```pseudocode
-# Largest k such that 1 + 2 + … + k = k(k+1)/2 ≤ n.
-function buildStaircase(n):
-    low ← 0; high ← n
-    while low < high:
-        mid ← low + (high − low + 1) ÷ 2
-        if mid × (mid + 1) ÷ 2 ≤ n:
-            low ← mid
-        else:
-            high ← mid − 1
-    return low
-```
-
 ```python run
 class Solution:
+
+    # Predicate: Checks if mid rows can fit within n blocks
+    def can_build(self, mid: int, n: int) -> bool:
+
+        # sum of first mid natural numbers: mid*(mid+1)/2
+        return mid * (mid + 1) // 2 <= n
+
     def build_staircase(self, n: int) -> int:
-        low, high = 0, n
+
+        # Lowest possible value for a complete row
+        low = 0
+
+        # Highest possible value for a complete row
+        high = n
+
         while low < high:
+
+            # Calculate the middle value by adding 1 to get upper mid to
+            # prevent infinite loop when low and high are adjacent
             mid = low + (high - low + 1) // 2
-            if mid * (mid + 1) // 2 <= n:
+
+            # If we can build mid rows, this is a possible answer
+            # Update the lower boundary to mid
+            if self.can_build(mid, n):
                 low = mid
+
+            # The sum is larger, search in the left half
             else:
                 high = mid - 1
+
+        # Return the largest complete row smaller than the given sum
         return low
 
 
-if __name__ == "__main__":
-    print(Solution().build_staircase(7))   # 3
+# Examples from the problem statement
+print(Solution().build_staircase(6))   # 3
+print(Solution().build_staircase(5))   # 2
+print(Solution().build_staircase(7))   # 3
+
+# Edge cases
+print(Solution().build_staircase(0))   # 0   (no coins)
+print(Solution().build_staircase(1))   # 1   (exactly one stair)
+print(Solution().build_staircase(2))   # 1   (1 coin short of 2 stairs)
+print(Solution().build_staircase(3))   # 2   (1+2=3 coins)
+print(Solution().build_staircase(10))  # 4   (1+2+3+4=10)
+print(Solution().build_staircase(11))  # 4   (11 coins, 5th stair needs 5)
 ```
 
 ```java run
 public class Main {
     static class Solution {
+
+        // Predicate: Checks if mid rows can fit within n blocks
+        private boolean canBuild(int mid, int n) {
+
+            // sum of first mid natural numbers: mid*(mid+1)/2
+            return (mid * (mid + 1)) / 2 <= n;
+        }
+
         public int buildStaircase(int n) {
-            int low = 0, high = n;
+
+            // Lowest possible value for a complete row
+            int low = 0;
+
+            // Highest possible value for a complete row
+            int high = n;
+
             while (low < high) {
+
+                // Calculate the middle value by adding 1 to get upper mid to
+                // prevent infinite loop when low and high are adjacent
                 int mid = low + (high - low + 1) / 2;
-                if ((long) mid * (mid + 1) / 2 <= n) low = mid;
-                else high = mid - 1;
+
+                // If we can build mid rows, this is a possible answer
+                // Update the lower boundary to mid
+                if (canBuild(mid, n)) {
+                    low = mid;
+                }
+
+                // The sum is larger, search in the left half
+                else {
+                    high = mid - 1;
+                }
             }
+
+            // Return the largest complete row smaller than the given sum
             return low;
         }
     }
 
     public static void main(String[] args) {
+        // Examples from the problem statement
+        System.out.println(new Solution().buildStaircase(6));   // 3
+        System.out.println(new Solution().buildStaircase(5));   // 2
         System.out.println(new Solution().buildStaircase(7));   // 3
+
+        // Edge cases
+        System.out.println(new Solution().buildStaircase(0));   // 0
+        System.out.println(new Solution().buildStaircase(1));   // 1
+        System.out.println(new Solution().buildStaircase(2));   // 1
+        System.out.println(new Solution().buildStaircase(3));   // 2
+        System.out.println(new Solution().buildStaircase(10));  // 4
+        System.out.println(new Solution().buildStaircase(11));  // 4
     }
 }
 ```
 
-```c run
-int build_staircase(int n) {
-    int low = 0, high = n;
-    while (low < high) {
-        int mid = low + (high - low + 1) / 2;
-        if ((long long) mid * (mid + 1) / 2 <= n) low = mid;
-        else high = mid - 1;
-    }
-    return low;
-}
-```
-
-```scala run
-object Main extends App {
-  class Solution {
-    def buildStaircase(n: Int): Int = {
-      var low = 0; var high = n
-      while (low < high) {
-        val mid = low + (high - low + 1) / 2
-        if (mid.toLong * (mid + 1) / 2 <= n) low = mid else high = mid - 1
-      }
-      low
-    }
-  }
-
-  println(new Solution().buildStaircase(7))   // 3
-}
-```
+</details>
 
 
 ***
@@ -276,118 +347,159 @@ Input:  ribbons = [9, 7, 5], k = 30
 Output: 0
 ```
 
-## The Solution
+<details>
+<summary><h2>The Solution</h2></summary>
 
-Predicate: "can we cut at least `k` ribbons of length `length`?" — sum of `r // length` for each ribbon. Binary-search `length` in `[1, max(ribbons)]`.
 
+Predicate: "can we cut at least `k` ribbons of length `length`?" — sum of `r // length` for each ribbon. Binary-search `length` in `[1, 10^7]` (a safe ceiling from the problem constraints — wider than `max(ribbons)` but still `O(log range)`). After the loop, re-check the predicate at `low` to distinguish "no length works" (return `0`) from a real answer.
 
-```pseudocode
-# Largest cut length that yields ≥ k ribbons of that length.
-function kRibbons(ribbons, k):
-    low ← 1; high ← max(ribbons)
-    while low < high:
-        mid ← low + (high − low + 1) ÷ 2
-        if canCut(ribbons, mid, k):
-            low ← mid
-        else:
-            high ← mid − 1
-    if canCut(ribbons, low, k): return low
-    return 0
-
-function canCut(ribbons, length, k):
-    return sum over r in ribbons of (r ÷ length) ≥ k
-```
 
 ```python run
 from typing import List
 
 class Solution:
+
+    # Predicate: checks if it's possible to cut at least 'k' ribbons of
+    # length 'length'
+    def can_cut(self, ribbons: List[int], length: int, k: int) -> bool:
+        count = 0
+
+        # Count how many pieces of 'length' we can cut from each ribbon
+        for ribbon in ribbons:
+            count += ribbon // length
+
+        # Return true if we can cut at least 'k' ribbons of this length
+        return count >= k
+
     def k_ribbons(self, ribbons: List[int], k: int) -> int:
-        low, high = 1, max(ribbons)
+
+        # Initialize the search range for ribbon lengths
+        low = 1
+
+        # Initialize the search range for ribbon lengths
+        high = int(1e7)
+
         while low < high:
+
+            # Calculate the middle value by adding 1 to get upper mid to
+            # prevent infinite loop when low and high are adjacent
             mid = low + (high - low + 1) // 2
-            if self._can_cut(ribbons, mid, k):
+
+            # If we can cut at least 'k' ribbons of length 'mid' it is a
+            # possible answer, so update the lower boundary to mid
+            if self.can_cut(ribbons, mid, k):
+
+                # Try to find a larger length
                 low = mid
+
+            # Otherwise, we can't cut 'k' ribbons of length 'mid' from
+            # the given ribbons array.
             else:
+
+                # Try to find a smaller length
                 high = mid - 1
-        return low if self._can_cut(ribbons, low, k) else 0
 
-    def _can_cut(self, ribbons, length, k):
-        return sum(r // length for r in ribbons) >= k
+        # After the search, low is the maximum length we can cut
+        # Check if we can actually cut at least 'k' ribbons of this
+        # length
+        if not self.can_cut(ribbons, low, k):
+            return 0
+
+        # Return the maximum ribbon length that can be obtained
+        return low
 
 
-if __name__ == "__main__":
-    print(Solution().k_ribbons([9, 7, 5], 3))   # 5
+# Examples from the problem statement
+print(Solution().k_ribbons([9, 7, 5], 3))    # 5
+print(Solution().k_ribbons([9, 7, 5], 4))    # 4
+print(Solution().k_ribbons([9, 7, 5], 30))   # 0
+
+# Edge cases
+print(Solution().k_ribbons([1], 1))          # 1   (single ribbon, single cut)
+print(Solution().k_ribbons([10], 1))         # 10  (whole ribbon)
+print(Solution().k_ribbons([10], 3))         # 3   (10//3=3 ribbons of length 3)
+print(Solution().k_ribbons([5, 5, 5], 3))    # 5   (each ribbon exactly k length)
+print(Solution().k_ribbons([1, 2, 3], 10))   # 0   (not enough total length)
 ```
 
 ```java run
 public class Main {
     static class Solution {
-        public int kRibbons(int[] ribbons, int k) {
-            int low = 1, high = 0;
-            for (int r : ribbons) high = Math.max(high, r);
-            while (low < high) {
-                int mid = low + (high - low + 1) / 2;
-                if (canCut(ribbons, mid, k)) low = mid;
-                else high = mid - 1;
-            }
-            return canCut(ribbons, low, k) ? low : 0;
-        }
+
+        // Predicate: checks if it's possible to cut at least 'k' ribbons of
+        // length 'length'
         private boolean canCut(int[] ribbons, int length, int k) {
-            long count = 0;
-            for (int r : ribbons) count += r / length;
+            int count = 0;
+
+            // Count how many pieces of 'length' we can cut from each ribbon
+            for (int ribbon : ribbons) {
+                count += ribbon / length;
+            }
+
+            // Return true if we can cut at least 'k' ribbons of this length
             return count >= k;
+        }
+
+        public int kRibbons(int[] ribbons, int k) {
+
+            // Initialize the search range for ribbon lengths
+            int low = 1;
+
+            // Initialize the search range for ribbon lengths
+            int high = (int) 1e7;
+
+            while (low < high) {
+
+                // Calculate the middle value by adding 1 to get upper mid to
+                // prevent infinite loop when low and high are adjacent
+                int mid = low + (high - low + 1) / 2;
+
+                // If we can cut at least 'k' ribbons of length 'mid' it is a
+                // possible answer, so update the lower boundary to mid
+                if (canCut(ribbons, mid, k)) {
+
+                    // Try to find a larger length
+                    low = mid;
+                }
+
+                // Otherwise, we can't cut 'k' ribbons of length 'mid' from
+                // the given ribbons array.
+                else {
+
+                    // Try to find a smaller length
+                    high = mid - 1;
+                }
+            }
+
+            // After the search, low is the maximum length we can cut
+            // Check if we can actually cut at least 'k' ribbons of this
+            // length
+            if (!canCut(ribbons, low, k)) {
+                return 0;
+            }
+
+            // Return the maximum ribbon length that can be obtained
+            return low;
         }
     }
 
     public static void main(String[] args) {
-        System.out.println(new Solution().kRibbons(new int[]{9, 7, 5}, 3));   // 5
+        // Examples from the problem statement
+        System.out.println(new Solution().kRibbons(new int[]{9, 7, 5}, 3));    // 5
+        System.out.println(new Solution().kRibbons(new int[]{9, 7, 5}, 4));    // 4
+        System.out.println(new Solution().kRibbons(new int[]{9, 7, 5}, 30));   // 0
+
+        // Edge cases
+        System.out.println(new Solution().kRibbons(new int[]{1}, 1));          // 1
+        System.out.println(new Solution().kRibbons(new int[]{10}, 1));         // 10
+        System.out.println(new Solution().kRibbons(new int[]{10}, 3));         // 3
+        System.out.println(new Solution().kRibbons(new int[]{5, 5, 5}, 3));    // 5
+        System.out.println(new Solution().kRibbons(new int[]{1, 2, 3}, 10));   // 0
     }
 }
 ```
 
-```c run
-#include <stdbool.h>
-
-bool can_cut(int *ribbons, int n, int length, int k) {
-    long long count = 0;
-    for (int i = 0; i < n; i++) count += ribbons[i] / length;
-    return count >= k;
-}
-
-int k_ribbons(int *ribbons, int n, int k) {
-    int low = 1, high = 0;
-    for (int i = 0; i < n; i++) if (ribbons[i] > high) high = ribbons[i];
-    while (low < high) {
-        int mid = low + (high - low + 1) / 2;
-        if (can_cut(ribbons, n, mid, k)) low = mid;
-        else high = mid - 1;
-    }
-    return can_cut(ribbons, n, low, k) ? low : 0;
-}
-```
-
-```scala run
-object Main extends App {
-  class Solution {
-    def kRibbons(ribbons: Array[Int], k: Int): Int = {
-      var low = 1; var high = ribbons.max
-      while (low < high) {
-        val mid = low + (high - low + 1) / 2
-        if (canCut(ribbons, mid, k)) low = mid else high = mid - 1
-      }
-      if (canCut(ribbons, low, k)) low else 0
-    }
-    private def canCut(ribbons: Array[Int], length: Int, k: Int): Boolean = {
-      var count = 0L
-      for (r <- ribbons) count += r / length
-      count >= k
-    }
-  }
-
-  println(new Solution().kRibbons(Array(9, 7, 5), 3))   // 5
-}
-```
+</details>
 
 
 ***
@@ -409,169 +521,196 @@ Input:  buckets = [10, 10, 10, 10], loss = 40
 Output: 10.00000
 ```
 
-## The Solution
+<details>
+<summary><h2>The Solution</h2></summary>
+
 
 Binary-search the target water level (scaled to avoid floating-point precision). Predicate: total available excess (after loss) ≥ total deficit. Use integer arithmetic with a scale factor of `1e5`.
 
-
-```pseudocode
-# Highest target water level achievable when (loss)% is lost on each transfer.
-# We work in scaled integers (× 10⁵) to avoid float comparison in the binary search.
-SCALE ← 10⁵
-
-function equaliseWater(buckets, loss):
-    lossInt ← integer part of loss
-    low ← 0; high ← max(buckets) × SCALE
-    while low < high:
-        mid ← low + (high − low + 1) ÷ 2
-        if canAchieve(buckets, lossInt, mid):
-            low ← mid
-        else:
-            high ← mid − 1
-    return low / SCALE
-
-function canAchieve(buckets, loss, target):
-    excess ← 0; deficit ← 0
-    for each w in buckets:
-        water ← w × SCALE
-        if water > target:
-            excess  ← excess + (water − target) × (100 − loss) ÷ 100   # apply loss on transfer
-        else:
-            deficit ← deficit + (target − water)
-    return excess ≥ deficit
-```
 
 ```python run
 from typing import List
 
 class Solution:
-    SCALE = 10 ** 5
+
+    # Scale factor to avoid floating-point precision issues while
+    # performing binary search. We scale all water amounts by 1e5
+    # and perform integer arithmetic instead of floating-point.
+    SCALE: int = int(1e5)
+
+    # Predicate: checks if it's possible to make all buckets contain at
+    # least 'target' liters of water
+    def can_achieve_target(
+        self, buckets: List[int], loss: float, target: int
+    ) -> bool:
+        total_excess = 0
+        total_deficit = 0
+
+        for water in buckets:
+
+            # Scale the water amount to avoid floating-point precision
+            water *= self.SCALE
+
+            # If water in the bucket is more than the target, calculate
+            # the excess
+            if water > target:
+
+                # Water that can be effectively transferred
+                total_excess += ((water - target) * (100 - loss)) / 100
+            else:
+
+                # Water needed to fill this bucket
+                total_deficit += target - water
+
+        # We can achieve the target if total_excess is greater than or
+        # equal to total_deficit
+        return total_excess >= total_deficit
 
     def equalise_water(self, buckets: List[int], loss: float) -> float:
-        loss_int = int(loss)
-        low, high = 0, max(buckets) * self.SCALE
+
+        # Binary search range is [0, max(bucket) * SCALE]
+        low = 0
+        high = max(buckets) * self.SCALE
+
+        # Tolerance factor of 1e-5
         while low < high:
+
+            # Calculate the middle target by adding 1 to get upper mid to
+            # prevent infinite loop when low and high are adjacent
             mid = low + (high - low + 1) // 2
-            if self._can_achieve(buckets, loss_int, mid):
+
+            # If we can achieve this target, this is a potential answer
+            # So update the lower boundary to mid
+            if self.can_achieve_target(buckets, loss, mid):
+
+                # Try a larger target
                 low = mid
             else:
+
+                # Try a smaller target
                 high = mid - 1
-        return low / self.SCALE
 
-    def _can_achieve(self, buckets, loss, target):
-        excess = deficit = 0
-        for w in buckets:
-            water = w * self.SCALE
-            if water > target:
-                excess += (water - target) * (100 - loss) // 100
-            else:
-                deficit += target - water
-        return excess >= deficit
+        return high / self.SCALE
 
 
-if __name__ == "__main__":
-    print(Solution().equalise_water([1, 5, 10], 20))   # 5.0
+# Examples from the problem statement
+print(Solution().equalise_water([1, 5, 10], 20))       # 5.0
+print(Solution().equalise_water([2, 4, 6], 50))        # 3.5
+print(Solution().equalise_water([10, 10, 10, 10], 40)) # 10.0
+
+# Edge cases
+print(Solution().equalise_water([5], 0))               # 5.0  (single bucket)
+print(Solution().equalise_water([5], 100))             # 5.0  (single bucket, any loss)
+print(Solution().equalise_water([1, 1], 0))            # 1.0  (already equal, no loss)
+print(Solution().equalise_water([0, 10], 0))           # 5.0  (no loss, perfect split)
+print(Solution().equalise_water([0, 10], 100))         # 0.0  (100% loss — can't transfer)
 ```
 
 ```java run
+import java.util.*;
+
 public class Main {
     static class Solution {
-        private static final long SCALE = 100000L;
 
-        public double equaliseWater(int[] buckets, double loss) {
-            long lossInt = (long) loss;
-            long low = 0, high = 0;
-            for (int b : buckets) high = Math.max(high, (long) b * SCALE);
-            while (low < high) {
-                long mid = low + (high - low + 1) / 2;
-                if (canAchieve(buckets, lossInt, mid)) low = mid;
-                else high = mid - 1;
+        // Scale factor to avoid floating-point precision issues while
+        // performing binary search. We scale all water amounts by 1e5
+        // and perform integer arithmetic instead of floating-point.
+        private final int SCALE = 100000;
+
+        // Predicate: checks if it's possible to make all buckets contain at
+        // least 'target' liters of water
+        private boolean canAchieveTarget(
+            int[] buckets,
+            double loss,
+            int target
+        ) {
+            long totalExcess = 0;
+            long totalDeficit = 0;
+
+            for (long water : buckets) {
+
+                // Scale the water amount to avoid floating-point precision
+                water *= SCALE;
+
+                // If water in the bucket is more than the target, calculate
+                // the excess
+                if (water > target) {
+
+                    // Water that can be effectively transferred
+                    totalExcess +=
+                    ((water - target) * (100 - (long) loss)) / 100;
+                }
+
+                // If water in the bucket is less than the target, calculate
+                // the deficit
+                else {
+
+                    // Water needed to fill this bucket
+                    totalDeficit += target - water;
+                }
             }
-            return (double) low / SCALE;
+
+            // We can achieve the target if totalExcess is greater than or
+            // equal to totalDeficit
+            return totalExcess >= totalDeficit;
         }
 
-        private boolean canAchieve(int[] buckets, long loss, long target) {
-            long excess = 0, deficit = 0;
-            for (int b : buckets) {
-                long water = (long) b * SCALE;
-                if (water > target) excess += (water - target) * (100 - loss) / 100;
-                else deficit += target - water;
+        public double equaliseWater(int[] buckets, double loss) {
+
+            // Binary search range is [0, max(bucket) * SCALE]
+            int low = 0;
+            int high = Arrays.stream(buckets).max().getAsInt() * SCALE;
+
+            // Tolerance factor of 1e-5
+            while (low < high) {
+
+                // Calculate the middle target by adding 1 to get upper mid
+                // to prevent infinite loop when low and high are adjacent
+                int mid = low + (high - low + 1) / 2;
+
+                // If we can achieve this target, this is a potential answer
+                // So update the lower boundary to mid
+                if (canAchieveTarget(buckets, loss, mid)) {
+
+                    // Try a larger target
+                    low = mid;
+                }
+
+                // If we can't achieve this target, try for a smaller target
+                else {
+                    high = mid - 1;
+                }
             }
-            return excess >= deficit;
+
+            return (double) high / SCALE;
         }
     }
 
     public static void main(String[] args) {
-        System.out.println(new Solution().equaliseWater(new int[]{1, 5, 10}, 20));   // 5.0
+        // Examples from the problem statement
+        System.out.println(new Solution().equaliseWater(new int[]{1, 5, 10}, 20));       // 5.0
+        System.out.println(new Solution().equaliseWater(new int[]{2, 4, 6}, 50));        // 3.5
+        System.out.println(new Solution().equaliseWater(new int[]{10, 10, 10, 10}, 40)); // 10.0
+
+        // Edge cases
+        System.out.println(new Solution().equaliseWater(new int[]{5}, 0));               // 5.0
+        System.out.println(new Solution().equaliseWater(new int[]{5}, 100));             // 5.0
+        System.out.println(new Solution().equaliseWater(new int[]{1, 1}, 0));            // 1.0
+        System.out.println(new Solution().equaliseWater(new int[]{0, 10}, 0));           // 5.0
+        System.out.println(new Solution().equaliseWater(new int[]{0, 10}, 100));         // 0.0
     }
 }
 ```
 
-```c run
-#include <stdbool.h>
+</details>
+<details>
+<summary><h2>Final Takeaway</h2></summary>
 
-#define SCALE 100000LL
-
-bool can_achieve(int *buckets, int n, long long loss, long long target) {
-    long long excess = 0, deficit = 0;
-    for (int i = 0; i < n; i++) {
-        long long water = (long long) buckets[i] * SCALE;
-        if (water > target) excess += (water - target) * (100 - loss) / 100;
-        else deficit += target - water;
-    }
-    return excess >= deficit;
-}
-
-double equalise_water(int *buckets, int n, double loss) {
-    long long loss_int = (long long) loss;
-    long long low = 0, high = 0;
-    for (int i = 0; i < n; i++) if ((long long) buckets[i] * SCALE > high) high = (long long) buckets[i] * SCALE;
-    while (low < high) {
-        long long mid = low + (high - low + 1) / 2;
-        if (can_achieve(buckets, n, loss_int, mid)) low = mid;
-        else high = mid - 1;
-    }
-    return (double) low / SCALE;
-}
-```
-
-```scala run
-object Main extends App {
-  class Solution {
-    private val SCALE = 100000L
-
-    def equaliseWater(buckets: Array[Int], loss: Double): Double = {
-      val lossInt = loss.toLong
-      var low = 0L; var high = buckets.map(_.toLong * SCALE).max
-      while (low < high) {
-        val mid = low + (high - low + 1) / 2
-        if (canAchieve(buckets, lossInt, mid)) low = mid else high = mid - 1
-      }
-      low.toDouble / SCALE
-    }
-
-    private def canAchieve(buckets: Array[Int], loss: Long, target: Long): Boolean = {
-      var excess = 0L; var deficit = 0L
-      for (b <- buckets) {
-        val water = b.toLong * SCALE
-        if (water > target) excess += (water - target) * (100 - loss) / 100
-        else deficit += target - water
-      }
-      excess >= deficit
-    }
-  }
-
-  println(new Solution().equaliseWater(Array(1, 5, 10), 20))   // 5.0
-}
-```
-
-
-***
-
-## Final Takeaway
 
 Maximum-predicate-search is the dual of the Minimum Predicate Search Pattern lesson. Same algorithm shell, mirrored direction; the `+ 1` in the mid calculation prevents the infinite-loop pitfall when `low` and `high` become adjacent. The four problems showed integer square root (predicate: `mid² ≤ num`), staircase building (`k(k+1)/2 ≤ n`), ribbon cutting, and water equalisation.
 
 This closes the searching section. You came in with linear scan; you leave with binary search and its variants (lower bound, upper bound), 2D extensions (matrix search, staircase), broken-input handling (rotated array), and the binary-search-on-the-answer family (predicate search) — covering practically every searching problem you'll encounter.
 
 The next major topic is **dynamic programming**. DP builds on memoization (introduced in the Recursion section) and on this section's "binary search on the answer" mindset: many DP problems can be reformulated as predicate searches, and many predicate searches benefit from DP-style state caching inside their predicate.
+
+</details>

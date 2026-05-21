@@ -81,7 +81,9 @@ Three properties cut the other way:
 
 The separate-chaining hash table has three components welded together: a record type for the payload, an internal array of chains, and a hash function that routes keys to chain indices. Let's build each piece in isolation before assembling the full class.
 
-## Record
+<details>
+<summary><h2>Record</h2></summary>
+
 
 A **record** is the unit stored inside a chain — the actual `(key, value)` pair the user cares about. Wrapping it in its own type keeps the chain code clean (the chain stores `Record` objects rather than juggling parallel arrays) and lets us extend the record later (e.g. add timestamps, hit counters) without touching the rest of the table.
 
@@ -113,80 +115,47 @@ rec -> node.val: stored inside
 <p align="center"><strong>The record is the payload, the chain node is the container — every node in the chain holds one record alongside its <code>prev</code> and <code>next</code> pointers.</strong></p>
 
 
-```pseudocode
-class Record:
-    key: integer
-    value: integer
-```
-
 ```python run
-# Each chain entry is a (key, value) pair. We use a small dataclass-style class
-# instead of a raw tuple so the chain code reads cleanly: entry.key, entry.value.
+# Represents an entry in the hash table
 class Record:
     def __init__(self, key: int, value: int):
-        self.key   = key      # The lookup key
-        self.value = value    # The mapped value
+        self.key = key
+        self.value = value
 
-# Demo
-r = Record(1, 99)
-print(r.key, r.value)   # 1 99
+# Definition for doubly-linked list.
+class ListNode:
+    def __init__(self, val):
+        self.val = val
+        self.prev = None
+        self.next = None
 ```
 
 ```java run
-public class Main {
-    // Record encapsulates the (key, value) pair stored in each chain node.
-    static class Record {
-        int key;
-        int value;
-        Record(int key, int value) {
-            this.key   = key;
-            this.value = value;
-        }
-    }
-
-    public static void main(String[] args) {
-        Record r = new Record(1, 99);
-        System.out.println(r.key + " " + r.value);   // 1 99
-    }
-}
-```
-
-```c run
-#include <stdio.h>
-#include <stdlib.h>
-
-// Record stored inside each chain node.
-typedef struct {
+// Represents an entry in the hash table
+class Record {
     int key;
     int value;
-} Record;
 
-// Doubly linked list node holding one record.
-typedef struct ListNode {
+    Record(int key, int value) {
+        this.key = key;
+        this.value = value;
+    }
+}
+
+// Definition for doubly-linked list.
+class ListNode {
     Record val;
-    struct ListNode *prev;
-    struct ListNode *next;
-} ListNode;
-
-int main() {
-    Record r = { .key = 1, .value = 99 };
-    printf("%d %d\n", r.key, r.value);   // 1 99
-    return 0;
-}
+    ListNode prev;
+    ListNode next;
+    ListNode() {}
+    ListNode(Record val) { this.val = val; }
+};
 ```
 
-```scala run
-// Record is the unit of storage inside each chain.
-case class Record(key: Int, var value: Int)
+</details>
+<details>
+<summary><h2>Internal array</h2></summary>
 
-object Main extends App {
-  val r = Record(1, 99)
-  println(s"${r.key} ${r.value}")   // 1 99
-}
-```
-
-
-## Internal array
 
 The internal array of a separate-chaining hash table is **an array of chains**. Each cell of the array holds an entire (initially empty) chain. The hash value of a key picks a cell; the chain at that cell stores all records whose keys hash to it.
 
@@ -241,7 +210,30 @@ populated: "After inserts — chains have grown at colliding slots" {
 
 In this course, the chain inside each slot is a **doubly linked list**. To keep the lessons focused on hashing rather than on re-implementing a linked list, we use the standard library's linked-list type wherever the language provides one. (You already built one in the previous section — feel free to swap in your own version once the table works.)
 
-## Hash function
+```python run
+# Using lists as linked list in python
+table: List[List[Record]] = [[] for _ in range(capacity)]
+```
+
+```java run
+// Import the LinkedList class
+import java.util.LinkedList;
+
+// An array of linked list where the
+// node stores data of type Record
+List<LinkedList<Record>> table;
+
+// Initialize the table with the given capacity
+table = new ArrayList<>(capacity);
+for (int i = 0; i < capacity; i++) {
+    table.add(new LinkedList<>());
+}
+```
+
+</details>
+<details>
+<summary><h2>Hash function</h2></summary>
+
 
 The hash function maps a key to a valid array index. Throughout this section we'll use the simplest possible function — `key mod capacity` — so we can focus all our attention on collision *handling*. A real-world hash table would replace this with a stronger function (the principles of which we covered in [Lesson 1](01-introduction-to-hash-tables.md#examples-of-hash-functions)).
 
@@ -263,6 +255,21 @@ k -> hf -> h -> slot
 <p align="center"><strong>The hash function reduces a key to a valid array index in O(1). For <code>capacity = 4</code> and <code>key = 13</code>, <code>13 mod 4 = 1</code>, so the search continues inside the chain at slot 1.</strong></p>
 
 We'll fold the hash function directly into the hash-table class as a private method, since no caller of the table needs to know how the function is computed.
+
+```python run
+# Implementation of a hash function for this hash table
+def hash_function(self, key: int) -> int:
+    return key % self.capacity
+```
+
+```java run
+// Implementation of a hash function for this hash table
+int hashFunction(int key) {
+    return key % capacity;
+}
+```
+
+</details>
 
 ***
 
@@ -288,149 +295,47 @@ cls: MyHashTable class {
 
 <p align="center"><strong>The hash-table class — public methods (the only things callers see) sit on top of the private internals (capacity, the array of chains, and the hash function). Encapsulation lets the implementation change later without breaking callers.</strong></p>
 
-## Implementation
+<details>
+<summary><h2>Implementation</h2></summary>
 
-Below is the skeleton of the class — the constructor wires up an empty array of chains, but the three operations (`search`, `insert`, `remove`) are stubbed out. We'll fill them in over the next three sections.
 
+Below is how a caller uses the class — instantiate `MyHashTable` with a capacity, then call the three operations (`search`, `insert`, `remove`). The constructor wires up an empty array of chains; we'll build out each operation over the next three sections.
 
-```pseudocode
-class MyHashTable:
-    capacity: integer
-    table: array of empty lists   # length = capacity
-
-    function _hash(key): return key mod capacity
-    function search(key): ...     # filled in next section
-    function insert(key, value): ...
-    function remove(key): ...
-```
 
 ```python run
-# Skeleton of the separate-chaining hash table.
-# Each "chain" is a Python list of Record objects (idiomatic and runnable).
-class Record:
-    def __init__(self, key: int, value: int):
-        self.key   = key
-        self.value = value
+# Instantiate a hash table object from the MyHashTable class
+table = MyHashTable(4)
 
-class MyHashTable:
-    def __init__(self, capacity: int):
-        self.capacity = capacity                       # Number of array slots
-        # One empty chain per slot; chains grow as collisions accumulate
-        self.table    = [[] for _ in range(capacity)]
+table.insert(1, 1234)
 
-    def _hash(self, key: int) -> int:
-        # Division-method hash — keep keys in the valid index range
-        return key % self.capacity
+table.insert(2, 4567)
 
-    def search(self, key: int) -> int:
-        pass    # filled in next section
+table.search(2)
 
-    def insert(self, key: int, value: int) -> None:
-        pass    # filled in next section
+table.insert(4, 8910)
 
-    def remove(self, key: int) -> None:
-        pass    # filled in next section
-
-# Demo — instantiate and inspect
-h = MyHashTable(4)
-print(len(h.table))    # 4 empty chains
+table.remove(1)
 ```
 
 ```java run
-import java.util.*;
+// Instantiate a hash table object from the MyHashTable class
+MyHashTable table = new MyHashTable(4);
 
-public class Main {
-    static class Record {
-        int key;
-        int value;
-        Record(int key, int value) { this.key = key; this.value = value; }
-    }
+table.insert(1, 1234);
 
-    static class MyHashTable {
-        private final int                       capacity;
-        private final List<LinkedList<Record>>  table;     // Array of chains
+table.insert(2, 4567);
 
-        MyHashTable(int capacity) {
-            this.capacity = capacity;
-            this.table    = new ArrayList<>(capacity);
-            // Pre-create one empty chain per slot
-            for (int i = 0; i < capacity; i++) table.add(new LinkedList<>());
-        }
+table.search(2);
 
-        private int hash(int key) { return key % capacity; }   // Division method
+table.insert(4, 8910);
 
-        int  search(int key)              { return -1; }     // filled in next section
-        void insert(int key, int value)   {            }     // filled in next section
-        void remove(int key)              {            }     // filled in next section
-    }
-
-    public static void main(String[] args) {
-        MyHashTable h = new MyHashTable(4);
-        System.out.println("created table with capacity 4");
-    }
-}
+table.remove(1);
 ```
 
-```c run
-#include <stdio.h>
-#include <stdlib.h>
+</details>
+<details>
+<summary><h2>Using the hash table class</h2></summary>
 
-typedef struct Node {
-    int key, value;
-    struct Node *next;
-} Node;
-
-typedef struct {
-    int    capacity;
-    Node **table;       // Array of chain heads
-} MyHashTable;
-
-int hash_fn(MyHashTable *h, int key) { return key % h->capacity; }
-
-MyHashTable* createTable(int capacity) {
-    MyHashTable *h = malloc(sizeof(MyHashTable));
-    h->capacity = capacity;
-    h->table    = calloc(capacity, sizeof(Node*));   // All chain heads start NULL
-    return h;
-}
-
-int  search_op(MyHashTable *h, int key)              { return -1; }
-void insert_op(MyHashTable *h, int key, int value)   {            }
-void remove_op(MyHashTable *h, int key)              {            }
-
-int main() {
-    MyHashTable *h = createTable(4);
-    printf("created table with capacity %d\n", h->capacity);
-    free(h->table); free(h);
-    return 0;
-}
-```
-
-```scala run
-import scala.collection.mutable.ListBuffer
-
-case class Record(key: Int, var value: Int)
-
-object Main extends App {
-  class MyHashTable(val capacity: Int) {
-    // Each slot is a ListBuffer that grows on collision.
-    private val table: Array[ListBuffer[Record]] =
-      Array.fill(capacity)(ListBuffer.empty[Record])
-
-    private def hash(key: Int): Int = key % capacity
-
-    def search(key: Int):  Int  = -1
-    def insert(key: Int, value: Int): Unit = ()
-    def remove(key: Int):  Unit = ()
-  }
-
-  val h = new MyHashTable(4)
-  println("created table with capacity 4")
-}
-```
-
-
-## Using the hash table class
 
 Once the class is defined, callers don't see records, chains, or hash functions. They see three methods: `insert`, `search`, `remove`. The internals can change tomorrow — different chain type, different hash function, different growth policy — and no caller code needs to be touched. This is the discipline that separates a one-off script from a reusable data structure.
 
@@ -463,13 +368,17 @@ api -> internals: delegates to {style.stroke-dash: 3}
 
 With the skeleton in place, we'll now fill in the three operations one at a time — search first (because it's the simplest), then insert (which builds on search), then delete (which builds on both).
 
+</details>
+
 ***
 
 # Search operation in separate chaining
 
 The search operation is the heartbeat of a hash table. Every other operation either *is* a search (lookup) or *contains* a search (insert and delete both walk the chain to find the key first). Get search right, and the rest falls into place.
 
-## Algorithm
+<details>
+<summary><h2>Algorithm</h2></summary>
+
 
 The recipe is two clean steps, plus a careful walk:
 
@@ -508,133 +417,105 @@ flowchart LR
 > -   **Step 2:** Search for the key by walking the chain at the calculated index.
 > -   **Step 3:** If the key is found, return its value. Otherwise, return `-1`.
 
-## Implementation
+</details>
+<details>
+<summary><h2>Solution &amp; Analysis</h2></summary>
 
-
-```pseudocode
-function search(key):
-    index ← _hash(key)
-    for entry in table[index]:
-        if entry.key = key: return entry.value
-    return -1
-```
+### Implementation
 
 ```python run
+from typing import List
+from llist import dllist
+
+# Represents an entry in the hash table
 class Record:
-    def __init__(self, key, value):
-        self.key, self.value = key, value
+    def __init__(self, key: int, value: int):
+        self.key = key
+        self.value = value
 
 class MyHashTable:
-    def __init__(self, capacity):
+    def __init__(self, capacity: int):
         self.capacity = capacity
-        self.table    = [[] for _ in range(capacity)]
 
-    def _hash(self, key):
-        return key % self.capacity      # Division-method hash
+        # Initialize the table with the given capacity
+        self.table = [dllist() for _ in range(capacity)]
 
-    def search(self, key):
-        index = self._hash(key)         # Step 1: route to the chain
-        # Step 2: linear walk through the chain
-        for entry in self.table[index]:
-            if entry.key == key:        # Match — return the stored value
-                return entry.value
-        return -1                       # Step 3: chain exhausted, key absent
+    def hash_function(self, key: int) -> int:
+        return key % self.capacity
 
-# Demo — empty table, lookup misses
-h = MyHashTable(4)
-print(h.search(7))                      # -1
+    def search(self, key: int) -> int:
+
+        # Get the bucket index
+        index = self.hash_function(key)
+
+        # Search for the key in the bucket
+        head = self.table[index].first
+        while head:
+            if head.value.key == key:
+
+                # Return the value if key is found
+                return head.value.value
+            head = head.next
+
+        # Return -1 if the key is not found
+        return -1
 ```
 
 ```java run
 import java.util.*;
 
-public class Main {
-    static class Record { int key, value; Record(int k, int v){key=k;value=v;} }
+// Represents an entry in the hash table
+class Record {
+    int key;
+    int value;
 
-    static class MyHashTable {
-        private final int                      capacity;
-        private final List<LinkedList<Record>> table;
+    Record(int key, int value) {
+        this.key = key;
+        this.value = value;
+    }
+}
 
-        MyHashTable(int capacity) {
-            this.capacity = capacity;
-            this.table    = new ArrayList<>(capacity);
-            for (int i = 0; i < capacity; i++) table.add(new LinkedList<>());
+class MyHashTable {
+
+    // The hashtable
+    private List<LinkedList<Record>> table;
+    private int capacity;
+
+    public MyHashTable(int capacity) {
+        this.capacity = capacity;
+
+        // Initialize the table with the given capacity
+        table = new ArrayList<>(capacity);
+        for (int i = 0; i < capacity; i++) {
+            table.add(new LinkedList<>());
         }
-        private int hash(int key) { return key % capacity; }
+    }
 
-        int search(int key) {
-            int index = hash(key);                    // Step 1
-            for (Record entry : table.get(index)) {   // Step 2: walk the chain
-                if (entry.key == key) return entry.value;
+    private int hashFunction(int key) {
+        return key % capacity;
+    }
+
+    public int search(int key) {
+
+        // Get the bucket index
+        int index = hashFunction(key);
+
+        // Search for the key in the bucket
+        for (Record entry : table.get(index)) {
+            if (entry.key == key) {
+
+                // Return the value if key is found
+                return entry.value;
             }
-            return -1;                                // Step 3: not found
         }
-    }
 
-    public static void main(String[] args) {
-        MyHashTable h = new MyHashTable(4);
-        System.out.println(h.search(7));   // -1
+        // Return -1 if the key is not found
+        return -1;
     }
 }
 ```
 
-```c run
-#include <stdio.h>
-#include <stdlib.h>
-
-typedef struct Node {
-    int key, value;
-    struct Node *next;
-} Node;
-
-typedef struct { int capacity; Node **table; } MyHashTable;
-
-int hash_fn(MyHashTable *h, int key) { return key % h->capacity; }
-
-int search_op(MyHashTable *h, int key) {
-    int index  = hash_fn(h, key);             // Step 1
-    Node *cur  = h->table[index];
-    while (cur) {                             // Step 2: walk the chain
-        if (cur->key == key) return cur->value;
-        cur = cur->next;
-    }
-    return -1;                                // Step 3: not found
-}
-
-int main() {
-    MyHashTable h = { .capacity = 4, .table = calloc(4, sizeof(Node*)) };
-    printf("%d\n", search_op(&h, 7));          // -1
-    free(h.table);
-    return 0;
-}
-```
-
-```scala run
-import scala.collection.mutable.ListBuffer
-
-case class Record(key: Int, var value: Int)
-
-object Main extends App {
-  class MyHashTable(val capacity: Int) {
-    private val table: Array[ListBuffer[Record]] =
-      Array.fill(capacity)(ListBuffer.empty[Record])
-
-    private def hash(key: Int): Int = key % capacity
-
-    def search(key: Int): Int = {
-      val index = hash(key)                        // Step 1
-      table(index).find(_.key == key)              // Step 2: walk the chain
-                  .map(_.value).getOrElse(-1)      // Step 3: -1 if not found
-    }
-  }
-
-  val h = new MyHashTable(4)
-  println(h.search(7))   // -1
-}
-```
-
-
-## Complexity analysis
+### Complexity analysis
 
 The hash function is O(1). The total cost of search is therefore the cost of the chain walk at the resulting index. That walk is what determines best, average, and worst case.
 
@@ -699,13 +580,17 @@ The space cost is constant — a few local variables, no new data structures.
 
 > *Predict before reading on — when we move to insert, we'll need to detect "key already exists" before adding a new record. Which existing operation does that detection look exactly like? (Yes, search. Insert is going to be search-with-an-extra-step.)*
 
+</details>
+
 ***
 
 # Insert operation in separate chaining
 
 Insert stores a new `(key, value)` mapping. There's a subtle but important rule baked into the operation: if the key is *already* in the table, insert doesn't add a duplicate — it **updates** the existing value. This makes the hash table behave like a true dictionary, not a multiset.
 
-## Algorithm
+<details>
+<summary><h2>Algorithm</h2></summary>
+
 
 Insert is search with a twist: walk the chain looking for the key, then *act* depending on whether the search hit or missed.
 
@@ -793,175 +678,142 @@ flowchart LR
 > -   **Step 2:** Walk the chain at the calculated index searching for the key.
 > -   **Step 3:** If the key is not found, append a new record at the end of the chain.
 
-## Implementation
+</details>
+<details>
+<summary><h2>Solution &amp; Analysis</h2></summary>
 
-
-```pseudocode
-function insert(key, value):
-    index ← _hash(key)
-    for entry in table[index]:
-        if entry.key = key:
-            entry.value ← value   # update in place
-            return
-    append Record(key, value) to table[index]
-```
+### Implementation
 
 ```python run
+from typing import List
+from llist import dllist
+
+# Represents an entry in the hash table
 class Record:
-    def __init__(self, key, value):
-        self.key, self.value = key, value
+    def __init__(self, key: int, value: int):
+        self.key = key
+        self.value = value
 
 class MyHashTable:
-    def __init__(self, capacity):
+    def __init__(self, capacity: int):
         self.capacity = capacity
-        self.table    = [[] for _ in range(capacity)]
 
-    def _hash(self, key):
+        # Initialize the table with the given capacity
+        self.table = [dllist() for _ in range(capacity)]
+
+    def hash_function(self, key: int) -> int:
         return key % self.capacity
 
-    def search(self, key):
-        for entry in self.table[self._hash(key)]:
-            if entry.key == key:
-                return entry.value
+    def search(self, key: int) -> int:
+
+        # Get the bucket index
+        index = self.hash_function(key)
+
+        # Search for the key in the bucket
+        head = self.table[index].first
+        while head:
+            if head.value.key == key:
+
+                # Return the value if key is found
+                return head.value.value
+            head = head.next
+
+        # Return -1 if the key is not found
         return -1
 
-    def insert(self, key, value):
-        index = self._hash(key)
-        # Case 1 — key exists, update its value in place
-        for entry in self.table[index]:
-            if entry.key == key:
-                entry.value = value
-                return
-        # Case 2 — key not found, append a new record
-        self.table[index].append(Record(key, value))
+    def insert(self, key: int, value: int) -> None:
 
-# Demo — insert, search, update, search again
-h = MyHashTable(4)
-h.insert(1, 10);  h.insert(5, 50)        # 5 % 4 == 1, collision with key 1
-print(h.search(5))                       # 50
-h.insert(5, 99)                          # update existing
-print(h.search(5))                       # 99
+        # Get the bucket index
+        index = self.hash_function(key)
+
+        # Check if the key already exists and update its value
+        head = self.table[index].first
+        while head:
+            if head.value.key == key:
+
+                # Update value if key exists
+                head.value.value = value
+                return
+            head = head.next
+
+        # Add a new record if the key does not exist
+        self.table[index].append(Record(key, value))
 ```
 
 ```java run
 import java.util.*;
 
-public class Main {
-    static class Record { int key, value; Record(int k, int v){key=k;value=v;} }
+// Represents an entry in the hash table
+class Record {
+    int key;
+    int value;
 
-    static class MyHashTable {
-        private final int capacity;
-        private final List<LinkedList<Record>> table;
-        MyHashTable(int capacity) {
-            this.capacity = capacity;
-            this.table    = new ArrayList<>(capacity);
-            for (int i = 0; i < capacity; i++) table.add(new LinkedList<>());
+    Record(int key, int value) {
+        this.key = key;
+        this.value = value;
+    }
+}
+
+class MyHashTable {
+
+    // The hashtable
+    private List<LinkedList<Record>> table;
+    private int capacity;
+
+    public MyHashTable(int capacity) {
+        this.capacity = capacity;
+
+        // Initialize the table with the given capacity
+        table = new ArrayList<>(capacity);
+        for (int i = 0; i < capacity; i++) {
+            table.add(new LinkedList<>());
         }
-        private int hash(int key) { return key % capacity; }
+    }
 
-        int search(int key) {
-            for (Record entry : table.get(hash(key)))
-                if (entry.key == key) return entry.value;
-            return -1;
-        }
+    private int hashFunction(int key) {
+        return key % capacity;
+    }
 
-        void insert(int key, int value) {
-            int index = hash(key);
-            // Case 1 — key already in chain → update
-            for (Record entry : table.get(index)) {
-                if (entry.key == key) { entry.value = value; return; }
+    public int search(int key) {
+
+        // Get the bucket index
+        int index = hashFunction(key);
+
+        // Search for the key in the bucket
+        for (Record entry : table.get(index)) {
+            if (entry.key == key) {
+
+                // Return the value if key is found
+                return entry.value;
             }
-            // Case 2 — key absent → append a new record
-            table.get(index).add(new Record(key, value));
         }
+
+        // Return -1 if the key is not found
+        return -1;
     }
 
-    public static void main(String[] args) {
-        MyHashTable h = new MyHashTable(4);
-        h.insert(1, 10); h.insert(5, 50);
-        System.out.println(h.search(5));   // 50
-        h.insert(5, 99);
-        System.out.println(h.search(5));   // 99
+    public void insert(int key, int value) {
+
+        // Get the bucket index
+        int index = hashFunction(key);
+
+        // Check if the key already exists and update its value
+        for (Record entry : table.get(index)) {
+            if (entry.key == key) {
+
+                // Update value if key exists
+                entry.value = value;
+                return;
+            }
+        }
+
+        // Add a new record if the key does not exist
+        table.get(index).add(new Record(key, value));
     }
 }
 ```
 
-```c run
-#include <stdio.h>
-#include <stdlib.h>
-
-typedef struct Node {
-    int key, value;
-    struct Node *next;
-} Node;
-
-typedef struct { int capacity; Node **table; } MyHashTable;
-
-int hash_fn(MyHashTable *h, int key) { return key % h->capacity; }
-
-void insert_op(MyHashTable *h, int key, int value) {
-    int index = hash_fn(h, key);
-    // Case 1 — update if key exists
-    for (Node *cur = h->table[index]; cur; cur = cur->next) {
-        if (cur->key == key) { cur->value = value; return; }
-    }
-    // Case 2 — prepend at head (O(1) without a tail pointer)
-    Node *node  = malloc(sizeof(Node));
-    node->key   = key;
-    node->value = value;
-    node->next  = h->table[index];
-    h->table[index] = node;
-}
-
-int search_op(MyHashTable *h, int key) {
-    for (Node *cur = h->table[hash_fn(h, key)]; cur; cur = cur->next)
-        if (cur->key == key) return cur->value;
-    return -1;
-}
-
-int main() {
-    MyHashTable h = { .capacity = 4, .table = calloc(4, sizeof(Node*)) };
-    insert_op(&h, 1, 10); insert_op(&h, 5, 50);
-    printf("%d\n", search_op(&h, 5));   // 50
-    insert_op(&h, 5, 99);
-    printf("%d\n", search_op(&h, 5));   // 99
-    return 0;
-}
-```
-
-```scala run
-import scala.collection.mutable.ListBuffer
-
-case class Record(key: Int, var value: Int)
-
-object Main extends App {
-  class MyHashTable(val capacity: Int) {
-    private val table: Array[ListBuffer[Record]] =
-      Array.fill(capacity)(ListBuffer.empty[Record])
-    private def hash(key: Int): Int = key % capacity
-
-    def search(key: Int): Int =
-      table(hash(key)).find(_.key == key).map(_.value).getOrElse(-1)
-
-    def insert(key: Int, value: Int): Unit = {
-      val chain = table(hash(key))
-      chain.find(_.key == key) match {
-        case Some(rec) => rec.value = value             // Case 1 — update
-        case None      => chain += Record(key, value)   // Case 2 — append
-      }
-    }
-  }
-
-  val h = new MyHashTable(4)
-  h.insert(1, 10); h.insert(5, 50)
-  println(h.search(5))   // 50
-  h.insert(5, 99)
-  println(h.search(5))   // 99
-}
-```
-
-
-## Complexity analysis
+### Complexity analysis
 
 Insert pays the same chain-walk cost as search (we have to confirm whether the key is already present), plus an O(1) update or append. The complexity envelope is therefore the same as search.
 
@@ -1004,13 +856,17 @@ worst: "Worst — chain has all N keys, scan to end, then append" {
 > -   Time: **O(N)**
 > -   Space: **O(1)**
 
+</details>
+
 ***
 
 # Delete operation in separate chaining
 
 Delete is the cleanest of the three operations. It's just search-then-remove: find the record, unlink it from the chain, and you're done.
 
-## Algorithm
+<details>
+<summary><h2>Algorithm</h2></summary>
+
 
 ### Case 1 — Key is present
 
@@ -1081,181 +937,166 @@ flowchart LR
 
 <p align="center"><strong>Delete when the key is absent — the operation completes silently with no change. Most public APIs treat this as success rather than an error.</strong></p>
 
-## Implementation
+</details>
+<details>
+<summary><h2>Solution &amp; Analysis</h2></summary>
 
-
-```pseudocode
-function remove(key):
-    chain ← table[_hash(key)]
-    for i from 0 to length(chain) − 1:
-        if chain[i].key = key:
-            remove chain[i] from chain
-            return
-    # key absent — silent no-op
-```
+### Implementation
 
 ```python run
+from typing import List
+from llist import dllist
+
+# Represents an entry in the hash table
 class Record:
-    def __init__(self, key, value):
-        self.key, self.value = key, value
+    def __init__(self, key: int, value: int):
+        self.key = key
+        self.value = value
 
 class MyHashTable:
-    def __init__(self, capacity):
+    def __init__(self, capacity: int):
         self.capacity = capacity
-        self.table    = [[] for _ in range(capacity)]
-    def _hash(self, key): return key % self.capacity
 
-    def search(self, key):
-        for e in self.table[self._hash(key)]:
-            if e.key == key: return e.value
+        # Initialize the table with the given capacity
+        self.table = [dllist() for _ in range(capacity)]
+
+    def hash_function(self, key: int) -> int:
+        return key % self.capacity
+
+    def search(self, key: int) -> int:
+
+        # Get the bucket index
+        index = self.hash_function(key)
+
+        # Search for the key in the bucket
+        head = self.table[index].first
+        while head:
+            if head.value.key == key:
+
+                # Return the value if key is found
+                return head.value.value
+            head = head.next
+
+        # Return -1 if the key is not found
         return -1
 
-    def insert(self, key, value):
-        index = self._hash(key)
-        for e in self.table[index]:
-            if e.key == key: e.value = value; return
+    def insert(self, key: int, value: int) -> None:
+
+        # Get the bucket index
+        index = self.hash_function(key)
+
+        # Check if the key already exists and update its value
+        head = self.table[index].first
+        while head:
+            if head.value.key == key:
+
+                # Update value if key exists
+                head.value.value = value
+                return
+            head = head.next
+
+        # Add a new record if the key does not exist
         self.table[index].append(Record(key, value))
 
-    def remove(self, key):
-        chain = self.table[self._hash(key)]
-        for i, e in enumerate(chain):
-            if e.key == key:
-                chain.pop(i)        # Unlink the matching record
-                return
-        # Case 2 — key absent → silent no-op
+    def remove(self, key: int) -> None:
 
-# Demo
-h = MyHashTable(4)
-h.insert(1, 10); h.insert(5, 50); h.insert(9, 90)   # all hash to 1
-h.remove(5)
-print(h.search(5))    # -1, gone
-print(h.search(9))    # 90, untouched
+        # Get the bucket index
+        index = self.hash_function(key)
+
+        # Remove the record with the matching key
+        head = self.table[index].first
+        while head:
+            if head.value.key == key:
+
+                # Remove the record
+                self.table[index].remove(head)
+                return
+            head = head.next
 ```
 
 ```java run
 import java.util.*;
 
-public class Main {
-    static class Record { int key, value; Record(int k,int v){key=k;value=v;} }
+// Represents an entry in the hash table
+class Record {
+    int key;
+    int value;
 
-    static class MyHashTable {
-        private final int capacity;
-        private final List<LinkedList<Record>> table;
-        MyHashTable(int capacity) {
-            this.capacity = capacity;
-            this.table    = new ArrayList<>(capacity);
-            for (int i = 0; i < capacity; i++) table.add(new LinkedList<>());
-        }
-        private int hash(int key) { return key % capacity; }
+    Record(int key, int value) {
+        this.key = key;
+        this.value = value;
+    }
+}
 
-        int search(int key) {
-            for (Record e : table.get(hash(key))) if (e.key == key) return e.value;
-            return -1;
-        }
-        void insert(int key, int value) {
-            int idx = hash(key);
-            for (Record e : table.get(idx)) if (e.key == key) { e.value = value; return; }
-            table.get(idx).add(new Record(key, value));
-        }
-        void remove(int key) {
-            // removeIf cleanly handles both cases — match → unlink, no match → no-op
-            table.get(hash(key)).removeIf(e -> e.key == key);
+class MyHashTable {
+
+    // The hashtable
+    private List<LinkedList<Record>> table;
+    private int capacity;
+
+    public MyHashTable(int capacity) {
+        this.capacity = capacity;
+
+        // Initialize the table with the given capacity
+        table = new ArrayList<>(capacity);
+        for (int i = 0; i < capacity; i++) {
+            table.add(new LinkedList<>());
         }
     }
 
-    public static void main(String[] args) {
-        MyHashTable h = new MyHashTable(4);
-        h.insert(1, 10); h.insert(5, 50); h.insert(9, 90);
-        h.remove(5);
-        System.out.println(h.search(5));   // -1
-        System.out.println(h.search(9));   // 90
+    private int hashFunction(int key) {
+        return key % capacity;
+    }
+
+    public int search(int key) {
+
+        // Get the bucket index
+        int index = hashFunction(key);
+
+        // Search for the key in the bucket
+        for (Record entry : table.get(index)) {
+            if (entry.key == key) {
+
+                // Return the value if key is found
+                return entry.value;
+            }
+        }
+
+        // Return -1 if the key is not found
+        return -1;
+    }
+
+    public void insert(int key, int value) {
+
+        // Get the bucket index
+        int index = hashFunction(key);
+
+        // Check if the key already exists and update its value
+        for (Record entry : table.get(index)) {
+            if (entry.key == key) {
+
+                // Update value if key exists
+                entry.value = value;
+                return;
+            }
+        }
+
+        // Add a new record if the key does not exist
+        table.get(index).add(new Record(key, value));
+    }
+
+    public void remove(int key) {
+
+        // Get the bucket index
+        int index = hashFunction(key);
+
+        // Remove the record with the matching key
+        table.get(index).removeIf(entry -> entry.key == key);
     }
 }
 ```
 
-```c run
-#include <stdio.h>
-#include <stdlib.h>
-
-typedef struct Node { int key, value; struct Node *next; } Node;
-typedef struct { int capacity; Node **table; } MyHashTable;
-
-int hash_fn(MyHashTable *h, int key) { return key % h->capacity; }
-
-void insert_op(MyHashTable *h, int key, int value) {
-    int idx = hash_fn(h, key);
-    for (Node *c = h->table[idx]; c; c = c->next)
-        if (c->key == key) { c->value = value; return; }
-    Node *n = malloc(sizeof(Node));
-    n->key = key; n->value = value; n->next = h->table[idx];
-    h->table[idx] = n;
-}
-int search_op(MyHashTable *h, int key) {
-    for (Node *c = h->table[hash_fn(h, key)]; c; c = c->next)
-        if (c->key == key) return c->value;
-    return -1;
-}
-
-void remove_op(MyHashTable *h, int key) {
-    int    idx  = hash_fn(h, key);
-    Node **link = &h->table[idx];          // Pointer-to-pointer trick avoids
-    while (*link) {                        // a special case for the chain head.
-        if ((*link)->key == key) {
-            Node *dead = *link;
-            *link = dead->next;            // Rewire predecessor → successor
-            free(dead);
-            return;
-        }
-        link = &(*link)->next;
-    }
-    // Case 2 — silent no-op
-}
-
-int main() {
-    MyHashTable h = { .capacity = 4, .table = calloc(4, sizeof(Node*)) };
-    insert_op(&h, 1, 10); insert_op(&h, 5, 50); insert_op(&h, 9, 90);
-    remove_op(&h, 5);
-    printf("%d %d\n", search_op(&h, 5), search_op(&h, 9));   // -1 90
-    return 0;
-}
-```
-
-```scala run
-import scala.collection.mutable.ListBuffer
-
-case class Record(key: Int, var value: Int)
-
-object Main extends App {
-  class MyHashTable(val capacity: Int) {
-    private val table: Array[ListBuffer[Record]] =
-      Array.fill(capacity)(ListBuffer.empty[Record])
-    private def hash(key: Int): Int = key % capacity
-
-    def search(key: Int): Int =
-      table(hash(key)).find(_.key == key).map(_.value).getOrElse(-1)
-    def insert(key: Int, value: Int): Unit = {
-      val c = table(hash(key))
-      c.find(_.key == key) match {
-        case Some(r) => r.value = value
-        case None    => c += Record(key, value)
-      }
-    }
-    def remove(key: Int): Unit = {
-      val c   = table(hash(key))
-      val idx = c.indexWhere(_.key == key)
-      if (idx >= 0) c.remove(idx)            // Found → unlink; else silent no-op
-    }
-  }
-
-  val h = new MyHashTable(4)
-  h.insert(1, 10); h.insert(5, 50); h.insert(9, 90)
-  h.remove(5)
-  println(s"${h.search(5)} ${h.search(9)}")   // -1 90
-}
-```
-
-
-## Complexity analysis
+### Complexity analysis
 
 Like search and insert, delete walks a single chain. The only extra work — unlinking a node from a doubly linked list, or splicing it out of an array bucket — is O(1) once the node is found.
 
@@ -1295,6 +1136,8 @@ worst: "Worst — every key in one chain, target at the very end (or absent)" {
 >
 > -   Time: **O(N)**
 > -   Space: **O(1)**
+
+</details>
 
 ***
 
@@ -1352,228 +1195,234 @@ cons: Constraints {
 > | `search(3)` | not in chain | `-1` |
 > | `getKeysAtIndex(0)` | inspect chain at index 0 | `[1, 2]` |
 
-## Solution
+<details>
+<summary><h2>Solution</h2></summary>
 
-The full implementation in 10 languages. Notice how `getKeysAtIndex` is just a shallow walk of the chain at the requested index — useful for testing and for any feature that needs to introspect the table's layout (e.g. iteration, cache eviction policies).
 
+The full implementation in Python and Java. Notice how `getKeysAtIndex` is just a shallow walk of the chain at the requested index — useful for testing and for any feature that needs to introspect the table's layout (e.g. iteration, cache eviction policies).
 
-```pseudocode
-class MyHashTable:
-    capacity: integer
-    table: array of chains
-
-    function _hash(key): return key mod capacity
-
-    function search(key):
-        for e in table[_hash(key)]:
-            if e.key = key: return e.value
-        return -1
-
-    function insert(key, value):
-        idx ← _hash(key)
-        for e in table[idx]:
-            if e.key = key: e.value ← value; return true
-        append Record(key, value) to table[idx]; return true
-
-    function remove(key):
-        chain ← table[_hash(key)]
-        for i from 0 to length(chain) − 1:
-            if chain[i].key = key: remove chain[i]; return
-
-    function getKeysAtIndex(index):
-        if index < 0 OR index ≥ capacity: return empty list
-        return [e.key for e in table[index]]
-```
 
 ```python run
+from typing import List
+
+# Represents an entry in the hash table
 class Record:
-    def __init__(self, key, value):
-        self.key, self.value = key, value
+    def __init__(self, key: int, value: int):
+        self.key = key
+        self.value = value
 
 class MyHashTable:
-    def __init__(self, capacity):
+    def __init__(self, capacity: int):
         self.capacity = capacity
-        self.table    = [[] for _ in range(capacity)]
 
-    def _hash(self, key):
+        # Initialize the table with the given capacity
+        self.table: List[List[Record]] = [[] for _ in range(capacity)]
+
+    def hash_function(self, key: int) -> int:
         return key % self.capacity
 
-    def search(self, key):
-        for e in self.table[self._hash(key)]:
-            if e.key == key: return e.value
+    def search(self, key: int) -> int:
+
+        # Get the bucket index
+        index = self.hash_function(key)
+
+        # Search for the key in the bucket
+        for record in self.table[index]:
+            if record.key == key:
+
+                # Return the value if key is found
+                return record.value
+
+        # Return -1 if the key is not found
         return -1
 
-    def insert(self, key, value):
-        idx = self._hash(key)
-        for e in self.table[idx]:
-            if e.key == key: e.value = value; return True
-        self.table[idx].append(Record(key, value))
+    def insert(self, key: int, value: int) -> bool:
+
+        # Get the bucket index
+        index = self.hash_function(key)
+
+        # Check if the key already exists and update its value
+        for record in self.table[index]:
+            if record.key == key:
+
+                # Update value if key exists
+                record.value = value
+                return True
+
+        # Add a new record if the key does not exist
+        self.table[index].append(Record(key, value))
         return True
 
-    def remove(self, key):
-        chain = self.table[self._hash(key)]
-        for i, e in enumerate(chain):
-            if e.key == key: chain.pop(i); return
+    def remove(self, key: int) -> None:
 
-    def getKeysAtIndex(self, index):
-        if index < 0 or index >= self.capacity: return []
-        return [e.key for e in self.table[index]]
+        # Get the bucket index
+        index = self.hash_function(key)
 
-# Boss-fight demo
-h = MyHashTable(1)
-h.insert(1, 2);  h.insert(2, 4)
-print(h.search(1))                 # 2
-h.insert(1, 3)
-print(h.search(1))                 # 3
-h.insert(2, 5)
-print(h.search(2), h.search(3))    # 5 -1
-print(h.getKeysAtIndex(0))         # [1, 2]
+        # Remove the record with the matching key
+        self.table[index] = [r for r in self.table[index] if r.key != key]
+
+    def get_keys_at_index(self, index: int) -> List[int]:
+
+        # Return an empty list if the index is invalid
+        if index < 0 or index >= self.capacity:
+            return []
+
+        # Collect all keys in the bucket
+        return [r.key for r in self.table[index]]
+
+
+# Example from the problem statement — capacity 1 (all keys collide at index 0)
+t1 = MyHashTable(1)
+print(t1.insert(1, 2))              # True
+print(t1.insert(2, 4))              # True
+print(t1.search(1))                 # 2
+print(t1.insert(1, 3))              # True
+print(t1.search(1))                 # 3
+print(t1.insert(2, 5))              # True
+print(t1.search(2))                 # 5
+print(t1.search(3))                 # -1
+print(t1.get_keys_at_index(0))      # [1, 2]
+
+# Edge cases
+t2 = MyHashTable(3)
+print(t2.search(99))                # -1 — search on empty table
+print(t2.insert(0, 10))             # True — key 0 maps to index 0
+print(t2.search(0))                 # 10
+t2.remove(0)
+print(t2.search(0))                 # -1 — removed
+print(t2.get_keys_at_index(5))      # [] — invalid index
 ```
 
 ```java run
 import java.util.*;
 
 public class Main {
-    static class Record { int key, value; Record(int k,int v){key=k;value=v;} }
+
+    // Represents an entry in the hash table
+    static class Record {
+
+        int key;
+        int value;
+
+        Record(int key, int value) {
+            this.key = key;
+            this.value = value;
+        }
+    }
 
     static class MyHashTable {
-        private final int capacity;
-        private final List<LinkedList<Record>> table;
-        MyHashTable(int capacity) {
-            this.capacity = capacity;
-            this.table    = new ArrayList<>(capacity);
-            for (int i = 0; i < capacity; i++) table.add(new LinkedList<>());
-        }
-        private int hash(int key) { return key % capacity; }
 
-        int search(int key) {
-            for (Record e : table.get(hash(key))) if (e.key == key) return e.value;
+        // The hashtable
+        private List<LinkedList<Record>> table;
+        private int capacity;
+
+        public MyHashTable(int capacity) {
+            this.capacity = capacity;
+
+            // Initialize the table with the given capacity
+            table = new ArrayList<>(capacity);
+            for (int i = 0; i < capacity; i++) {
+                table.add(new LinkedList<>());
+            }
+        }
+
+        private int hashFunction(int key) {
+            return key % capacity;
+        }
+
+        public int search(int key) {
+
+            // Get the bucket index
+            int index = hashFunction(key);
+
+            // Search for the key in the bucket
+            for (Record entry : table.get(index)) {
+                if (entry.key == key) {
+
+                    // Return the value if key is found
+                    return entry.value;
+                }
+            }
+
+            // Return -1 if the key is not found
             return -1;
         }
-        boolean insert(int key, int value) {
-            int idx = hash(key);
-            for (Record e : table.get(idx)) if (e.key == key) { e.value = value; return true; }
-            table.get(idx).add(new Record(key, value));
+
+        public boolean insert(int key, int value) {
+
+            // Get the bucket index
+            int index = hashFunction(key);
+
+            // Check if the key already exists and update its value
+            for (Record entry : table.get(index)) {
+                if (entry.key == key) {
+
+                    // Update value if key exists
+                    entry.value = value;
+                    return true;
+                }
+            }
+
+            // Add a new record if the key does not exist
+            table.get(index).add(new Record(key, value));
             return true;
         }
-        void remove(int key) {
-            table.get(hash(key)).removeIf(e -> e.key == key);
+
+        public void remove(int key) {
+
+            // Get the bucket index
+            int index = hashFunction(key);
+
+            // Remove the record with the matching key
+            table.get(index).removeIf(entry -> entry.key == key);
         }
-        List<Integer> getKeysAtIndex(int index) {
-            if (index < 0 || index >= capacity) return Collections.emptyList();
-            List<Integer> out = new ArrayList<>();
-            for (Record e : table.get(index)) out.add(e.key);
-            return out;
+
+        public List<Integer> getKeysAtIndex(int index) {
+
+            // Return an empty list if the index is invalid
+            if (index < 0 || index >= capacity) {
+                return new ArrayList<>();
+            }
+
+            // Collect all keys in the bucket
+            List<Integer> keys = new ArrayList<>();
+            for (Record entry : table.get(index)) {
+                keys.add(entry.key);
+            }
+
+            return keys;
         }
     }
 
     public static void main(String[] args) {
-        MyHashTable h = new MyHashTable(1);
-        h.insert(1, 2); h.insert(2, 4);
-        System.out.println(h.search(1));       // 2
-        h.insert(1, 3);
-        System.out.println(h.search(1));       // 3
-        h.insert(2, 5);
-        System.out.println(h.search(2) + " " + h.search(3));   // 5 -1
-        System.out.println(h.getKeysAtIndex(0));   // [1, 2]
+        // Example from the problem statement — capacity 1 (all keys collide at index 0)
+        MyHashTable t1 = new MyHashTable(1);
+        System.out.println(t1.insert(1, 2));             // true
+        System.out.println(t1.insert(2, 4));             // true
+        System.out.println(t1.search(1));                // 2
+        System.out.println(t1.insert(1, 3));             // true
+        System.out.println(t1.search(1));                // 3
+        System.out.println(t1.insert(2, 5));             // true
+        System.out.println(t1.search(2));                // 5
+        System.out.println(t1.search(3));                // -1
+        System.out.println(t1.getKeysAtIndex(0));        // [1, 2]
+
+        // Edge cases
+        MyHashTable t2 = new MyHashTable(3);
+        System.out.println(t2.search(99));               // -1 — search on empty table
+        System.out.println(t2.insert(0, 10));            // true — key 0 maps to index 0
+        System.out.println(t2.search(0));                // 10
+        t2.remove(0);
+        System.out.println(t2.search(0));                // -1 — removed
+        System.out.println(t2.getKeysAtIndex(5));        // [] — invalid index
     }
 }
 ```
 
-```c run
-#include <stdio.h>
-#include <stdlib.h>
+</details>
+<details>
+<summary><h2>Final Takeaway</h2></summary>
 
-typedef struct Node { int key, value; struct Node *next; } Node;
-typedef struct { int capacity; Node **table; } MyHashTable;
-
-int hash_fn(MyHashTable *h, int key) { return key % h->capacity; }
-
-int  search_op(MyHashTable *h, int key) {
-    for (Node *c = h->table[hash_fn(h,key)]; c; c = c->next)
-        if (c->key == key) return c->value;
-    return -1;
-}
-int  insert_op(MyHashTable *h, int key, int value) {
-    int idx = hash_fn(h, key);
-    for (Node *c = h->table[idx]; c; c = c->next)
-        if (c->key == key) { c->value = value; return 1; }
-    Node *n = malloc(sizeof(Node));
-    n->key = key; n->value = value; n->next = h->table[idx];
-    h->table[idx] = n;
-    return 1;
-}
-void remove_op(MyHashTable *h, int key) {
-    int idx = hash_fn(h, key);
-    Node **link = &h->table[idx];
-    while (*link) {
-        if ((*link)->key == key) { Node *d = *link; *link = d->next; free(d); return; }
-        link = &(*link)->next;
-    }
-}
-void printKeysAtIndex(MyHashTable *h, int index) {
-    if (index < 0 || index >= h->capacity) { printf("[]\n"); return; }
-    printf("[");
-    for (Node *c = h->table[index]; c; c = c->next)
-        printf("%d%s", c->key, c->next ? ", " : "");
-    printf("]\n");
-}
-
-int main() {
-    MyHashTable h = { .capacity = 1, .table = calloc(1, sizeof(Node*)) };
-    insert_op(&h, 1, 2); insert_op(&h, 2, 4);
-    printf("%d\n", search_op(&h, 1));   // 2
-    insert_op(&h, 1, 3);
-    printf("%d\n", search_op(&h, 1));   // 3
-    insert_op(&h, 2, 5);
-    printf("%d %d\n", search_op(&h, 2), search_op(&h, 3));   // 5 -1
-    printKeysAtIndex(&h, 0);
-    return 0;
-}
-```
-
-```scala run
-import scala.collection.mutable.ListBuffer
-
-case class Record(key: Int, var value: Int)
-
-object Main extends App {
-  class MyHashTable(val capacity: Int) {
-    private val table: Array[ListBuffer[Record]] =
-      Array.fill(capacity)(ListBuffer.empty[Record])
-    private def hash(key: Int): Int = key % capacity
-
-    def search(key: Int): Int =
-      table(hash(key)).find(_.key == key).map(_.value).getOrElse(-1)
-    def insert(key: Int, value: Int): Boolean = {
-      val c = table(hash(key))
-      c.find(_.key == key) match {
-        case Some(r) => r.value = value
-        case None    => c += Record(key, value)
-      }
-      true
-    }
-    def remove(key: Int): Unit = {
-      val c = table(hash(key)); val i = c.indexWhere(_.key == key)
-      if (i >= 0) c.remove(i)
-    }
-    def getKeysAtIndex(index: Int): List[Int] =
-      if (index < 0 || index >= capacity) Nil
-      else table(index).iterator.map(_.key).toList
-  }
-
-  val h = new MyHashTable(1)
-  h.insert(1, 2); h.insert(2, 4)
-  println(h.search(1))                              // 2
-  h.insert(1, 3); println(h.search(1))              // 3
-  h.insert(2, 5)
-  println(s"${h.search(2)} ${h.search(3)}")         // 5 -1
-  println(h.getKeysAtIndex(0))                      // List(1, 2)
-}
-```
-
-
-## Final Takeaway
 
 You just built a complete, working hash table. The whole structure is **a hash function pointing into an array of chains**, and three operations that all do the same thing — hash to a chain, walk that chain, then either read, write, or remove. Once you see that pattern, every separate-chaining hash table looks the same on the inside.
 
@@ -1583,3 +1432,5 @@ The two big lessons to carry forward:
 2. **Cache misses are the price of pointer chasing.** Each chain node is a separate heap allocation, scattered across RAM. Walking a long chain is slow not because of `O(N)` operations but because each step is a *cache miss*. If your data is small and your chains are long, a contiguous-memory alternative will outperform separate chaining even at the same complexity class.
 
 > *Coming up — open addressing solves the cache problem by giving up the chain entirely and resolving collisions <strong>inside the same array</strong>. The next three lessons (linear probing, quadratic probing, double hashing) are three different ways of asking the same question: "if my slot is taken, where do I go next?" The first one — linear probing — is the simplest, and also the one with the most surprising failure mode. We'll see why.*
+
+</details>

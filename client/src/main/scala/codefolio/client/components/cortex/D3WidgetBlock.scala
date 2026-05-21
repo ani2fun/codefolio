@@ -2,18 +2,27 @@ package codefolio.client.components.cortex
 
 import codefolio.client.components.cortex.widgets.{
   ArrayTraversal,
+  BinaryTree,
   BTreeWalker,
   CacheStampedeSimulator,
+  CallStack,
   ConsistentHashRing,
+  DecisionTree,
+  DpTable,
   EstimationCalculator,
+  GraphExplorer,
   HandshakeTimeline,
+  HashTable,
+  HeapTree,
   HotShardSimulator,
   LatencyScaledTime,
   LinkedList,
   PartitionSimulator,
   QueueingSimulator,
   RaftAnimator,
-  ReplicationLagSimulator
+  ReplicationLagSimulator,
+  StackQueue,
+  Trie
 }
 import japgolly.scalajs.react.*
 import japgolly.scalajs.react.vdom.html_<^.*
@@ -37,6 +46,24 @@ object D3WidgetBlock:
         LatencyScaledTime.Component(LatencyScaledTime.Props(props.payload))
       case "linked-list" =>
         LinkedList.Component(LinkedList.Props(props.payload))
+      case "stack-queue" =>
+        StackQueue.Component(StackQueue.Props(props.payload))
+      case "binary-tree" =>
+        BinaryTree.Component(BinaryTree.Props(props.payload))
+      case "graph-explorer" =>
+        GraphExplorer.Component(GraphExplorer.Props(props.payload))
+      case "hash-table" =>
+        HashTable.Component(HashTable.Props(props.payload))
+      case "heap-tree" =>
+        HeapTree.Component(HeapTree.Props(props.payload))
+      case "call-stack" =>
+        CallStack.Component(CallStack.Props(props.payload))
+      case "decision-tree" =>
+        DecisionTree.Component(DecisionTree.Props(props.payload))
+      case "dp-table" =>
+        DpTable.Component(DpTable.Props(props.payload))
+      case "trie" =>
+        Trie.Component(Trie.Props(props.payload))
       case "estimation-calculator" =>
         EstimationCalculator.Component(EstimationCalculator.Props(props.payload))
       case "partition-simulator" =>
@@ -63,7 +90,7 @@ object D3WidgetBlock:
           <.p(^.className := "d3-widget__error-title", "Unknown D3 widget"),
           <.p(
             ^.className := "d3-widget__error-message",
-            s"""Widget "$other" is not registered. Available widgets: array-traversal, linked-list, latency-scaled-time, estimation-calculator, partition-simulator, queueing-simulator, handshake-timeline, consistent-hash-ring, cache-stampede, btree-walker, replication-lag, hot-shard, raft-animator."""
+            s"""Widget "$other" is not registered. Available widgets: array-traversal, linked-list, stack-queue, binary-tree, graph-explorer, hash-table, heap-tree, call-stack, decision-tree, dp-table, trie, latency-scaled-time, estimation-calculator, partition-simulator, queueing-simulator, handshake-timeline, consistent-hash-ring, cache-stampede, btree-walker, replication-lag, hot-shard, raft-animator."""
           )
         )
   }

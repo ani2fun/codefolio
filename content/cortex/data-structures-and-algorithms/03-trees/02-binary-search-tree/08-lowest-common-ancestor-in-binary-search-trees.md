@@ -170,96 +170,240 @@ Given the **root** of a binary search tree and two random nodes, `nodeA` and `no
 > - **Input:** `root = [5, 1, 8, null, null, 6, 9]`, `nodeA = 6`, `nodeB = 9`
 > - **Output:** `8`
 
-## The Solution
+<details>
+<summary><h2>The Solution</h2></summary>
 
 
-```pseudocode
-function lowestCommonAncestor(root, nodeA, nodeB):
-    if root is null OR root = nodeA OR root = nodeB:
-        return root                                        # base case — or A/B is its own ancestor
-    if root.val > nodeA.val AND root.val > nodeB.val:
-        return lowestCommonAncestor(root.left, nodeA, nodeB)   # both targets in left subtree
-    if root.val < nodeA.val AND root.val < nodeB.val:
-        return lowestCommonAncestor(root.right, nodeA, nodeB)  # both targets in right subtree
-    return root                                            # targets straddle this node — LCA found
-```
 
 ```python run
-class Solution:
-    def lowest_common_ancestor(self, root, node_a, node_b):
-        # Walked off the tree, or this node IS one of the targets — that's our answer.
-        if root is None or root is node_a or root is node_b:
+from typing import Optional, List
+from collections import deque
+
+
+class TreeNode:
+    def __init__(self, val=0, left=None, right=None):
+        self.val = val
+        self.left = left
+        self.right = right
+
+
+def from_level_order(values):
+    """Build tree from list like [1, 2, 3, None, 4]. None means missing child."""
+    if not values:
+        return None
+    root = TreeNode(values[0])
+    queue = [root]
+    i = 1
+    while queue and i < len(values):
+        node = queue.pop(0)
+        if i < len(values) and values[i] is not None:
+            node.left = TreeNode(values[i])
+            queue.append(node.left)
+        i += 1
+        if i < len(values) and values[i] is not None:
+            node.right = TreeNode(values[i])
+            queue.append(node.right)
+        i += 1
+    return root
+
+
+def find_node(root, val):
+    while root:
+        if val == root.val:
             return root
-        # Both targets live in the left subtree → recurse left.
-        if root.val > node_a.val and root.val > node_b.val:
-            return self.lowest_common_ancestor(root.left, node_a, node_b)
-        # Both targets live in the right subtree → recurse right.
-        if root.val < node_a.val and root.val < node_b.val:
-            return self.lowest_common_ancestor(root.right, node_a, node_b)
-        # Otherwise the targets straddle this node — it's the LCA.
+        elif val < root.val:
+            root = root.left
+        else:
+            root = root.right
+    return None
+
+
+class Solution:
+    def lowest_common_ancestor(
+        self,
+        root: Optional[TreeNode],
+        node_a: Optional[TreeNode],
+        node_b: Optional[TreeNode],
+    ) -> Optional[TreeNode]:
+
+        # If the root is None or one of the nodes is the root, return
+        # the root
+        if root is None or root == node_a or root == node_b:
+            return root
+
+        if node_a is not None and node_b is not None:
+
+            # If both nodes are in the left subtree, recursively search
+            # in the left subtree
+            if root.val > node_a.val and root.val > node_b.val:
+                return self.lowest_common_ancestor(
+                    root.left, node_a, node_b
+                )
+
+            # If both nodes are in the right subtree, recursively search
+            # in the right subtree
+            if root.val < node_a.val and root.val < node_b.val:
+                return self.lowest_common_ancestor(
+                    root.right, node_a, node_b
+                )
+
+        # If one node is in the left subtree and the other is in the
+        # right subtree, return the root
         return root
+
+
+# Example 1: LCA of 1 and 7 in [4, 2, 5, 1, null, null, 7]
+t1 = from_level_order([4, 2, 5, 1, None, None, 7])
+a1, b1 = find_node(t1, 1), find_node(t1, 7)
+res = Solution().lowest_common_ancestor(t1, a1, b1)
+print(res.val if res else None)    # 4
+
+# Example 2: LCA of 6 and 9 in [5, 1, 8, null, null, 6, 9]
+t2 = from_level_order([5, 1, 8, None, None, 6, 9])
+a2, b2 = find_node(t2, 6), find_node(t2, 9)
+res2 = Solution().lowest_common_ancestor(t2, a2, b2)
+print(res2.val if res2 else None)  # 8
+
+# Both nodes in left subtree
+t3 = from_level_order([10, 5, 15, 2, 7])
+a3, b3 = find_node(t3, 2), find_node(t3, 7)
+res3 = Solution().lowest_common_ancestor(t3, a3, b3)
+print(res3.val if res3 else None)  # 5
+
+# One node is the ancestor of the other
+t4 = from_level_order([10, 5, 15, 2, 7])
+a4, b4 = find_node(t4, 5), find_node(t4, 2)
+res4 = Solution().lowest_common_ancestor(t4, a4, b4)
+print(res4.val if res4 else None)  # 5
+
+# LCA is the root itself
+t5 = from_level_order([10, 5, 15])
+a5, b5 = find_node(t5, 5), find_node(t5, 15)
+res5 = Solution().lowest_common_ancestor(t5, a5, b5)
+print(res5.val if res5 else None)  # 10
+
+# Single-node tree — nodeA is root
+t6 = TreeNode(42)
+res6 = Solution().lowest_common_ancestor(t6, t6, None)
+print(res6.val if res6 else None)  # 42
+
+# Both nodes in right subtree
+t7 = from_level_order([10, 5, 20, None, None, 15, 25])
+a7, b7 = find_node(t7, 15), find_node(t7, 25)
+res7 = Solution().lowest_common_ancestor(t7, a7, b7)
+print(res7.val if res7 else None)  # 20
 ```
 
 ```java run
+import java.util.*;
+
 public class Main {
-    static class TreeNode { int val; TreeNode left, right; TreeNode(int v){val=v;} }
+    static class TreeNode {
+        int val;
+        TreeNode left;
+        TreeNode right;
+        TreeNode() {}
+        TreeNode(int val) { this.val = val; }
+    }
+
+    static TreeNode fromLevelOrder(Integer... values) {
+        if (values.length == 0 || values[0] == null) return null;
+        TreeNode root = new TreeNode(values[0]);
+        Deque<TreeNode> queue = new ArrayDeque<>();
+        queue.add(root);
+        int i = 1;
+        while (!queue.isEmpty() && i < values.length) {
+            TreeNode node = queue.poll();
+            if (i < values.length && values[i] != null) {
+                node.left = new TreeNode(values[i]);
+                queue.add(node.left);
+            }
+            i++;
+            if (i < values.length && values[i] != null) {
+                node.right = new TreeNode(values[i]);
+                queue.add(node.right);
+            }
+            i++;
+        }
+        return root;
+    }
+
+    static TreeNode findNode(TreeNode root, int val) {
+        while (root != null) {
+            if (val == root.val) return root;
+            else if (val < root.val) root = root.left;
+            else root = root.right;
+        }
+        return null;
+    }
 
     static class Solution {
-        public TreeNode lowestCommonAncestor(TreeNode root, TreeNode nodeA, TreeNode nodeB) {
-            if (root == null || root == nodeA || root == nodeB) return root;                    // base case
-            if (root.val > nodeA.val && root.val > nodeB.val)
-                return lowestCommonAncestor(root.left,  nodeA, nodeB);                          // both on the left
-            if (root.val < nodeA.val && root.val < nodeB.val)
-                return lowestCommonAncestor(root.right, nodeA, nodeB);                          // both on the right
-            return root;                                                                        // split point
+        public TreeNode lowestCommonAncestor(
+            TreeNode root,
+            TreeNode nodeA,
+            TreeNode nodeB
+        ) {
+
+            // If the root is null or one of the nodes is the root, return
+            // the root
+            if (root == null || root == nodeA || root == nodeB) {
+                return root;
+            }
+
+            // If both nodes are in the left subtree, recursively search in
+            // the left subtree
+            if (root.val > nodeA.val && root.val > nodeB.val) {
+                return lowestCommonAncestor(root.left, nodeA, nodeB);
+            }
+
+            // If both nodes are in the right subtree, recursively search in
+            // the right subtree
+            if (root.val < nodeA.val && root.val < nodeB.val) {
+                return lowestCommonAncestor(root.right, nodeA, nodeB);
+            }
+
+            // If one node is in the left subtree and the other is in the
+            // right subtree, return the root
+            return root;
         }
     }
 
     public static void main(String[] args) {
-        TreeNode root = new TreeNode(4);
-        root.left  = new TreeNode(2); root.right = new TreeNode(5);
-        root.left.left  = new TreeNode(1);
-        root.right.right = new TreeNode(7);
-        TreeNode lca = new Solution().lowestCommonAncestor(root, root.left.left, root.right.right);
-        System.out.println(lca.val);  // 4
+        // Example 1: LCA of 1 and 7 in [4, 2, 5, 1, null, null, 7]
+        TreeNode t1 = fromLevelOrder(4, 2, 5, 1, null, null, 7);
+        TreeNode r1 = new Solution().lowestCommonAncestor(t1, findNode(t1, 1), findNode(t1, 7));
+        System.out.println(r1 != null ? r1.val : null);    // 4
+
+        // Example 2: LCA of 6 and 9 in [5, 1, 8, null, null, 6, 9]
+        TreeNode t2 = fromLevelOrder(5, 1, 8, null, null, 6, 9);
+        TreeNode r2 = new Solution().lowestCommonAncestor(t2, findNode(t2, 6), findNode(t2, 9));
+        System.out.println(r2 != null ? r2.val : null);    // 8
+
+        // Both nodes in left subtree
+        TreeNode t3 = fromLevelOrder(10, 5, 15, 2, 7);
+        TreeNode r3 = new Solution().lowestCommonAncestor(t3, findNode(t3, 2), findNode(t3, 7));
+        System.out.println(r3 != null ? r3.val : null);    // 5
+
+        // One node is the ancestor of the other
+        TreeNode t4 = fromLevelOrder(10, 5, 15, 2, 7);
+        TreeNode r4 = new Solution().lowestCommonAncestor(t4, findNode(t4, 5), findNode(t4, 2));
+        System.out.println(r4 != null ? r4.val : null);    // 5
+
+        // LCA is the root itself
+        TreeNode t5 = fromLevelOrder(10, 5, 15);
+        TreeNode r5 = new Solution().lowestCommonAncestor(t5, findNode(t5, 5), findNode(t5, 15));
+        System.out.println(r5 != null ? r5.val : null);    // 10
+
+        // Single-node tree — nodeA is root
+        TreeNode t6 = new TreeNode(42);
+        TreeNode r6 = new Solution().lowestCommonAncestor(t6, t6, null);
+        System.out.println(r6 != null ? r6.val : null);    // 42
+
+        // Both nodes in right subtree
+        TreeNode t7 = fromLevelOrder(10, 5, 20, null, null, 15, 25);
+        TreeNode r7 = new Solution().lowestCommonAncestor(t7, findNode(t7, 15), findNode(t7, 25));
+        System.out.println(r7 != null ? r7.val : null);    // 20
     }
-}
-```
-
-```c run
-struct TreeNode *lowestCommonAncestor(
-    struct TreeNode *root,
-    struct TreeNode *nodeA,
-    struct TreeNode *nodeB) {
-    if (root == NULL || root == nodeA || root == nodeB) return root;                         // base case
-    if (root->val > nodeA->val && root->val > nodeB->val)
-        return lowestCommonAncestor(root->left,  nodeA, nodeB);                              // both on the left
-    if (root->val < nodeA->val && root->val < nodeB->val)
-        return lowestCommonAncestor(root->right, nodeA, nodeB);                              // both on the right
-    return root;                                                                              // split point
-}
-```
-
-```scala run
-class TreeNode(var value: Int, var left: TreeNode = null, var right: TreeNode = null)
-
-object Main extends App {
-  class Solution {
-    def lowestCommonAncestor(root: TreeNode, nodeA: TreeNode, nodeB: TreeNode): TreeNode = {
-      if (root == null || root == nodeA || root == nodeB) root                                    // base case
-      else if (root.value > nodeA.value && root.value > nodeB.value)
-        lowestCommonAncestor(root.left,  nodeA, nodeB)                                            // both on the left
-      else if (root.value < nodeA.value && root.value < nodeB.value)
-        lowestCommonAncestor(root.right, nodeA, nodeB)                                            // both on the right
-      else root                                                                                    // split point
-    }
-  }
-
-  val root = new TreeNode(4,
-    new TreeNode(2, new TreeNode(1), null),
-    new TreeNode(5, null, new TreeNode(7)))
-  val lca = new Solution().lowestCommonAncestor(root, root.left.left, root.right.right)
-  println(lca.value)  // 4
 }
 ```
 
@@ -273,7 +417,6 @@ Result: LCA = 4 ✓ (single comparison)
 ```
 
 </details>
-
 <details>
 <summary><strong>Trace — root = [6, 2, 8, 0, 4, 7, 9, null, null, 3, 5], A = 0, B = 5</strong></summary>
 
@@ -285,9 +428,10 @@ Result: LCA = 2 ✓
 
 </details>
 
-***
+</details>
+<details>
+<summary><h2>Final Takeaway</h2></summary>
 
-## Final Takeaway
 
 In a generic binary tree, finding the LCA needs a full O(n) search. In a BST, **the values are signposts**: if both targets are smaller than the current node, both live to the left; if both are larger, both live to the right; if they straddle the current node, you've found the LCA.
 
@@ -299,3 +443,5 @@ Two patterns to keep:
 2. **Generic tree algorithms collapse on a BST** — postorder LCA, inorder validation, level-order construction — all of these have BST-specialised forms that turn O(n) into O(h). Whenever you face a tree problem on a BST, ask *"what does the BST property let me skip?"* before you reach for the generic algorithm.
 
 The next lesson takes a different angle: instead of *searching* for one value, we'll build a **stateful iterator** over the BST that produces values one at a time in sorted order. That's where a BST starts to behave like a *sorted set* — and the iterator pattern unlocks half the remaining problems in this chapter.
+
+</details>

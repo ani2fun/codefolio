@@ -143,7 +143,9 @@ The implementation is structurally identical to quadratic probing — same three
 
 A double-hashing hash table has the same three components as quadratic probing — three-state record, internal array, primary hash function — plus a **secondary hash function** for the step size. The secondary hash function is the only structural addition; everything else is unchanged.
 
-## Record
+<details>
+<summary><h2>Record</h2></summary>
+
 
 Same three-state record as the other open-addressing schemes — `state ∈ {EMPTY, DELETED, OCCUPIED}` plus the `(key, value)` pair. The state machine is identical; the only thing that's different is which slots get visited during a probe.
 
@@ -162,82 +164,34 @@ rec: A single Record {
 <p align="center"><strong>Double-hashing record — same shape and same state machine as the linear and quadratic probing records. Open-addressing schemes share their record type; only the probe walks differ.</strong></p>
 
 
-```pseudocode
-enum RecordType: EMPTY = 0, DELETED = 1, OCCUPIED = 2
-
-class Record:
-    state: RecordType
-    key: integer
-    value: integer
-    # default: state = EMPTY
-```
-
 ```python run
-from enum import Enum
-
-class RecordType(Enum):
-    EMPTY = 0; DELETED = 1; OCCUPIED = 2
-
-class Record:
-    def __init__(self, key=None, value=None):
-        if key is not None and value is not None:
-            self.state, self.key, self.value = RecordType.OCCUPIED, key, value
-        else:
-            self.state, self.key, self.value = RecordType.EMPTY, 0, 0
-
-# Demo
-r = Record(7, 100)
-print(r.state, r.key, r.value)
+# Secondary hash function: Used for probing during collisions
+# Returns hash_prime - (key % hash_prime), ensuring a different step
+# size
+def hash_function2(self, key: int) -> int:
+    return self.hash_prime - (key % self.hash_prime)
 ```
 
 ```java run
-public class Main {
-    enum RecordType { EMPTY, DELETED, OCCUPIED }
-    static class Record {
-        RecordType state = RecordType.EMPTY; int key, value;
-        Record() {}
-        Record(int k, int v) { state = RecordType.OCCUPIED; key = k; value = v; }
-    }
-    public static void main(String[] args) {
-        Record r = new Record(7, 100);
-        System.out.println(r.state + " " + r.key + " " + r.value);
-    }
+// Secondary hash function: Used for probing during collisions
+// Returns hashPrime - (key % hashPrime), ensuring a different step
+// size
+int hashFunction2(int key) {
+    return hashPrime - (key % hashPrime);
 }
 ```
 
-```c run
-#include <stdio.h>
+</details>
+<details>
+<summary><h2>Internal array</h2></summary>
 
-typedef enum { EMPTY = 0, DELETED = 1, OCCUPIED = 2 } RecordType;
-typedef struct { RecordType state; int key, value; } Record;
-
-int main() {
-    Record r = { OCCUPIED, 7, 100 };
-    printf("%d %d %d\n", r.state, r.key, r.value);
-    return 0;
-}
-```
-
-```scala run
-object Main extends App {
-  object RecordType extends Enumeration { val EMPTY, DELETED, OCCUPIED = Value }
-
-  class Record(
-    var state: RecordType.Value = RecordType.EMPTY,
-    var key:   Int              = 0,
-    var value: Int              = 0,
-  ) { def this(k: Int, v: Int) = this(RecordType.OCCUPIED, k, v) }
-
-  val r = new Record(7, 100); println(s"${r.state} ${r.key} ${r.value}")
-}
-```
-
-
-## Internal array
 
 Identical to the linear- and quadratic-probing internal arrays. Same contiguous layout, same all-EMPTY initial state.
 
-## Hash functions — primary and secondary
+</details>
+<details>
+<summary><h2>Hash functions — primary and secondary</h2></summary>
+
 
 Now the meaningful difference. A double-hashing table has **two** hash functions:
 
@@ -277,6 +231,8 @@ flowchart LR
 >
 > If the step size shares a common factor with `capacity`, the probe sequence won't visit every slot — it'll cycle through a *fraction* of them. With `capacity = 8` and step `2`, the probe walks `0, 2, 4, 6, 0, 2, 4, 6, ...` and never reaches the odd slots. The fix is to choose `capacity` to be a **prime number** — then *every* possible step size in `[1, capacity − 1]` is automatically coprime with it, and the probe is guaranteed to visit every slot of the array. This is why double-hashing implementations are typically deployed with prime-sized tables.
 
+</details>
+
 ***
 
 # Implementing the hash table class
@@ -313,142 +269,39 @@ cls: MyHashTable class {
 
 <p align="center"><strong>Class layout — adds <code>hashPrime</code> and <code>hash2</code> on top of the open-addressing template. Notice that <code>probeForOccupied</code> and <code>probeForFree</code> now both depend on the key (because the step is per-key), unlike linear/quadratic where they depended only on the start.</strong></p>
 
-## Implementation
+<details>
+<summary><h2>Implementation</h2></summary>
 
 
-```pseudocode
-class MyHashTable:
-    capacity: integer
-    hash_prime: integer
-    table: array of Record(state=EMPTY)
-
-    function _hash1(key): return key mod capacity
-    function _hash2(key): return hash_prime − (key mod hash_prime)   # always ≥ 1
-    function search(key): ...
-    function insert(key, value): ...
-    function remove(key): ...
-```
 
 ```python run
-from enum import Enum
+# Instantiate a hash table object from the MyHashTable class
+table = MyHashTable(4, 3)
 
-class RecordType(Enum):
-    EMPTY = 0; DELETED = 1; OCCUPIED = 2
+table.insert(1, 1234)
 
-class Record:
-    def __init__(self, key=None, value=None):
-        if key is not None and value is not None:
-            self.state, self.key, self.value = RecordType.OCCUPIED, key, value
-        else:
-            self.state, self.key, self.value = RecordType.EMPTY, 0, 0
+table.insert(2, 4567)
 
-class MyHashTable:
-    def __init__(self, capacity, hash_prime):
-        self.capacity, self.hash_prime = capacity, hash_prime
-        self.table = [Record() for _ in range(capacity)]
+table.search(2)
 
-    def _hash1(self, key): return key % self.capacity
-    def _hash2(self, key):
-        # hashPrime - (key % hashPrime) is in [1, hashPrime] — guaranteed non-zero
-        return self.hash_prime - (key % self.hash_prime)
+table.insert(4, 8910)
 
-    def search(self, key):  pass
-    def insert(self, key, value): pass
-    def remove(self, key):  pass
-
-print("table created with capacity 7, hashPrime 5")
-h = MyHashTable(7, 5)
+table.remove(1)
 ```
 
 ```java run
-import java.util.*;
+// Instantiate a hash table object from the MyHashTable class
+MyHashTable table = new MyHashTable(4, 3);
 
-public class Main {
-    enum RecordType { EMPTY, DELETED, OCCUPIED }
-    static class Record {
-        RecordType state = RecordType.EMPTY; int key, value;
-        Record() {}
-        Record(int k, int v) { state = RecordType.OCCUPIED; key = k; value = v; }
-    }
-    static class MyHashTable {
-        protected final int          capacity, hashPrime;
-        protected final List<Record> table;
-        MyHashTable(int capacity, int hashPrime) {
-            this.capacity = capacity; this.hashPrime = hashPrime;
-            this.table = new ArrayList<>(capacity);
-            for (int i = 0; i < capacity; i++) table.add(new Record());
-        }
-        protected int hash1(int key) { return Math.floorMod(key, capacity); }
-        // hashPrime - (key % hashPrime) ∈ [1, hashPrime] — never zero
-        protected int hash2(int key) { return hashPrime - Math.floorMod(key, hashPrime); }
+table.insert(1, 1234);
 
-        int     search(int key)            { return -1;    }
-        boolean insert(int key, int value) { return false; }
-        void    remove(int key)            {                }
-    }
+table.insert(2, 4567);
 
-    public static void main(String[] args) {
-        MyHashTable h = new MyHashTable(7, 5);
-        System.out.println("table created with capacity 7, hashPrime 5");
-    }
-}
-```
+table.search(2);
 
-```c run
-#include <stdio.h>
-#include <stdlib.h>
+table.insert(4, 8910);
 
-typedef enum { EMPTY = 0, DELETED = 1, OCCUPIED = 2 } RecordType;
-typedef struct { RecordType state; int key, value; } Record;
-typedef struct { int capacity, hash_prime; Record *table; } MyHashTable;
-
-MyHashTable* createTable(int capacity, int hash_prime) {
-    MyHashTable *h = malloc(sizeof(MyHashTable));
-    h->capacity   = capacity;
-    h->hash_prime = hash_prime;
-    h->table      = calloc(capacity, sizeof(Record));
-    return h;
-}
-int hash1(MyHashTable *h, int key) { return key % h->capacity; }
-// hash_prime - (key % hash_prime) ∈ [1, hash_prime] — never zero
-int hash2(MyHashTable *h, int key) { return h->hash_prime - (key % h->hash_prime); }
-
-int  search_op(MyHashTable *h, int key)              { return -1; }
-int  insert_op(MyHashTable *h, int key, int value)   { return 0;  }
-void remove_op(MyHashTable *h, int key)              {            }
-
-int main() {
-    MyHashTable *h = createTable(7, 5);
-    printf("table created with capacity %d, hashPrime %d\n",
-           h->capacity, h->hash_prime);
-    free(h->table); free(h); return 0;
-}
-```
-
-```scala run
-object Main extends App {
-  object RecordType extends Enumeration { val EMPTY, DELETED, OCCUPIED = Value }
-
-  class Record(
-    var state: RecordType.Value = RecordType.EMPTY,
-    var key:   Int              = 0,
-    var value: Int              = 0,
-  ) { def this(k: Int, v: Int) = this(RecordType.OCCUPIED, k, v) }
-
-  class MyHashTable(val capacity: Int, val hashPrime: Int) {
-    protected val table: Array[Record] = Array.fill(capacity)(new Record())
-    protected def hash1(key: Int): Int = Math.floorMod(key, capacity)
-    // hashPrime - (key % hashPrime) ∈ [1, hashPrime] — never zero
-    protected def hash2(key: Int): Int = hashPrime - Math.floorMod(key, hashPrime)
-
-    def search(key: Int):              Int     = -1
-    def insert(key: Int, value: Int):  Boolean = false
-    def remove(key: Int):              Unit    = ()
-  }
-
-  val h = new MyHashTable(7, 5)
-  println("table created with capacity 7, hashPrime 5")
-}
+table.remove(1);
 ```
 
 
@@ -456,13 +309,17 @@ object Main extends App {
 >
 > hash₂ returns values in `{1, 2, 3, 4, 5}`. With capacity 8 and step 2 or 4, the probe walks only even slots — half the array becomes unreachable for keys with those steps. With step 1, 3, or 5, every slot is reachable. The lesson: capacity-and-hashPrime must be coprime with all *possible* step sizes — and the simplest way to guarantee that is to make capacity prime.
 
+</details>
+
 ***
 
 # Search operation in double hashing
 
 Search probes in step-sized increments until it finds the key (return value), hits an EMPTY slot (return `-1`), or completes a full traversal (return `-1`). The shape is identical to linear and quadratic probing; only the offset formula differs.
 
-## Algorithm
+<details>
+<summary><h2>Algorithm</h2></summary>
+
 
 ### 1. Key is present
 
@@ -499,179 +356,191 @@ Hitting `EMPTY` proves the key wasn't inserted along this probe chain. Stop, ret
 
 After `capacity` probes, give up. Return `-1`.
 
-## Implementation
+</details>
+<details>
+<summary><h2>Solution &amp; Analysis</h2></summary>
 
-
-```pseudocode
-function _probe_for_occupied(key, start):
-    step ← _hash2(key)
-    for i from 0 to capacity − 1:
-        idx ← (start + i · step) mod capacity
-        if table[idx].state = EMPTY: return -1
-        if table[idx].state = OCCUPIED AND table[idx].key = key: return idx
-    return -1
-
-function search(key):
-    idx ← _probe_for_occupied(key, _hash1(key))
-    if idx = -1: return -1 else: return table[idx].value
-```
+### Implementation
 
 ```python run
 from enum import Enum
+from typing import List, Optional
 
+# Represents the state of a record in the hash table
 class RecordType(Enum):
-    EMPTY = 0; DELETED = 1; OCCUPIED = 2
+    EMPTY = 0
+    DELETED = 1
+    OCCUPIED = 2
 
+# Represents an entry in the hash table
 class Record:
-    def __init__(self, key=None, value=None):
+    def __init__(
+        self, key: Optional[int] = None, value: Optional[int] = None
+    ):
+
+        # Initialize state as EMPTY by default
+        self.state: RecordType = RecordType.EMPTY
+        self.key: int = 0
+        self.value: int = 0
+
+        # Set state to OCCUPIED when key and value are provided
         if key is not None and value is not None:
-            self.state, self.key, self.value = RecordType.OCCUPIED, key, value
-        else:
-            self.state, self.key, self.value = RecordType.EMPTY, 0, 0
+            self.state = RecordType.OCCUPIED
+            self.key = key
+            self.value = value
 
 class MyHashTable:
-    def __init__(self, capacity, hash_prime):
-        self.capacity, self.hash_prime = capacity, hash_prime
-        self.table = [Record() for _ in range(capacity)]
-    def _hash1(self, key): return key % self.capacity
-    def _hash2(self, key): return self.hash_prime - (key % self.hash_prime)
+    def __init__(self, capacity: int, hash_prime: int):
 
-    def _probe_for_occupied(self, key, start):
-        step = self._hash2(key)
+        # The total number of slots in the hash table
+        self.capacity: int = capacity
+
+        # A prime number used for double hashing
+        self.hash_prime: int = hash_prime
+
+        # The hash table implemented as a list of Records
+        self.table: List[Record] = [Record() for _ in range(capacity)]
+
+    # Primary hash function: Computes the index as key % capacity
+    def hash_function1(self, key: int) -> int:
+        return key % self.capacity
+
+    # Secondary hash function: Used for probing during collisions
+    # Returns hash_prime - (key % hash_prime), ensuring a different step
+    # size
+    def hash_function2(self, key: int) -> int:
+        return self.hash_prime - (key % self.hash_prime)
+
+    def probe_for_occupied_index(
+        self, key: int, start_index: int
+    ) -> int:
         for i in range(self.capacity):
-            idx = (start + i * step) % self.capacity
-            slot = self.table[idx]
-            if slot.state == RecordType.EMPTY:                                return -1
-            if slot.state == RecordType.OCCUPIED and slot.key == key:         return idx
+
+            # Double hashing
+            probe_index = (
+                start_index + i * self.hash_function2(key)
+            ) % self.capacity
+
+            # Check if the slot is occupied and matches the key
+            if (
+                self.table[probe_index].state == RecordType.OCCUPIED
+                and self.table[probe_index].key == key
+            ):
+                return probe_index
+
+        # Return -1 if no matching record is found
         return -1
 
-    def search(self, key):
-        idx = self._probe_for_occupied(key, self._hash1(key))
-        return -1 if idx == -1 else self.table[idx].value
+    def search(self, key: int) -> int:
 
-# Demo
-h = MyHashTable(7, 5)
-print(h.search(15))   # -1
+        # Compute the initial index using the primary hash function
+        start_index = self.hash_function1(key)
+
+        # Find the occupied index for the key
+        occupied_index = self.probe_for_occupied_index(key, start_index)
+
+        # Return the value if found, otherwise -1
+        return (
+            -1
+            if occupied_index == -1
+            else self.table[occupied_index].value
+        )
 ```
 
 ```java run
 import java.util.*;
 
-public class Main {
-    enum RecordType { EMPTY, DELETED, OCCUPIED }
-    static class Record {
-        RecordType state = RecordType.EMPTY; int key, value;
-        Record() {}
-        Record(int k, int v) { state = RecordType.OCCUPIED; key = k; value = v; }
-    }
-    static class MyHashTable {
-        protected final int          capacity, hashPrime;
-        protected final List<Record> table;
-        MyHashTable(int capacity, int hashPrime) {
-            this.capacity = capacity; this.hashPrime = hashPrime;
-            this.table = new ArrayList<>(capacity);
-            for (int i = 0; i < capacity; i++) table.add(new Record());
-        }
-        protected int hash1(int key) { return Math.floorMod(key, capacity); }
-        protected int hash2(int key) { return hashPrime - Math.floorMod(key, hashPrime); }
+// Represents the state of a record in the hash table
+enum RecordType {
+    EMPTY,
+    DELETED,
+    OCCUPIED
+}
 
-        protected int probeForOccupied(int key, int start) {
-            int step = hash2(key);
-            for (int i = 0; i < capacity; i++) {
-                int idx = Math.floorMod(start + i * step, capacity);
-                Record s = table.get(idx);
-                if (s.state == RecordType.EMPTY) return -1;
-                if (s.state == RecordType.OCCUPIED && s.key == key) return idx;
+// Represents an entry in the hash table
+class Record {
+
+    // Use the separately defined RecordType enum
+    RecordType state = RecordType.EMPTY;
+    int key = 0;
+    int value = 0;
+
+    Record() {}
+
+    Record(int key, int value) {
+        this.state = RecordType.OCCUPIED;
+        this.key = key;
+        this.value = value;
+    }
+}
+
+class MyHashTable {
+
+    // The total number of slots in the hash table
+    private int capacity;
+
+    // A prime number used for double hashing
+    private int hashPrime;
+
+    // The hash table implemented as a list of Records
+    private List<Record> table;
+
+    // Primary hash function: Computes the index as key % capacity
+    private int hashFunction1(int key) {
+        return key % capacity;
+    }
+
+    // Secondary hash function: Used for probing during collisions
+    // Returns hashPrime - (key % hashPrime), ensuring a different step
+    // size
+    private int hashFunction2(int key) {
+        return hashPrime - (key % hashPrime);
+    }
+
+    private int probeForOccupiedIndex(int key, int startIndex) {
+        for (int i = 0; i < capacity; ++i) {
+
+            // Double hashing
+            int probeIndex =
+                (startIndex + i * hashFunction2(key)) % capacity;
+
+            // Check if the slot is occupied and matches the key
+            if (
+                table.get(probeIndex).state == RecordType.OCCUPIED &&
+                table.get(probeIndex).key == key
+            ) {
+                return probeIndex;
             }
-            return -1;
         }
 
-        int search(int key) {
-            int idx = probeForOccupied(key, hash1(key));
-            return idx == -1 ? -1 : table.get(idx).value;
+        // Return -1 if no matching record is found
+        return -1;
+    }
+
+    public MyHashTable(int capacity, int hashPrime) {
+        this.capacity = capacity;
+        this.hashPrime = hashPrime;
+        this.table = new ArrayList<>(capacity);
+        for (int i = 0; i < capacity; i++) {
+            table.add(new Record());
         }
     }
 
-    public static void main(String[] args) {
-        MyHashTable h = new MyHashTable(7, 5);
-        System.out.println(h.search(15));   // -1
+    public int search(int key) {
+
+        // Compute the initial index using the primary hash function
+        int startIndex = hashFunction1(key);
+
+        // Find the occupied index for the key
+        int occupiedIndex = probeForOccupiedIndex(key, startIndex);
+
+        // Return the value if found, otherwise -1
+        return occupiedIndex == -1 ? -1 : table.get(occupiedIndex).value;
     }
 }
 ```
 
-```c run
-#include <stdio.h>
-#include <stdlib.h>
-
-typedef enum { EMPTY = 0, DELETED = 1, OCCUPIED = 2 } RecordType;
-typedef struct { RecordType state; int key, value; } Record;
-typedef struct { int capacity, hash_prime; Record *table; } MyHashTable;
-
-int hash1(MyHashTable *h, int key) { return key % h->capacity; }
-int hash2(MyHashTable *h, int key) { return h->hash_prime - (key % h->hash_prime); }
-
-int probe_for_occupied(MyHashTable *h, int key, int start) {
-    int step = hash2(h, key);
-    for (int i = 0; i < h->capacity; i++) {
-        int idx = (start + i * step) % h->capacity;
-        if (h->table[idx].state == EMPTY) return -1;
-        if (h->table[idx].state == OCCUPIED && h->table[idx].key == key) return idx;
-    }
-    return -1;
-}
-int search_op(MyHashTable *h, int key) {
-    int idx = probe_for_occupied(h, key, hash1(h, key));
-    return idx == -1 ? -1 : h->table[idx].value;
-}
-
-int main() {
-    MyHashTable h = { .capacity = 7, .hash_prime = 5,
-                      .table = calloc(7, sizeof(Record)) };
-    printf("%d\n", search_op(&h, 15));   // -1
-    free(h.table); return 0;
-}
-```
-
-```scala run
-object Main extends App {
-  object RecordType extends Enumeration { val EMPTY, DELETED, OCCUPIED = Value }
-
-  class Record(
-    var state: RecordType.Value = RecordType.EMPTY,
-    var key:   Int              = 0,
-    var value: Int              = 0,
-  ) { def this(k: Int, v: Int) = this(RecordType.OCCUPIED, k, v) }
-
-  class MyHashTable(val capacity: Int, val hashPrime: Int) {
-    protected val table: Array[Record] = Array.fill(capacity)(new Record())
-    protected def hash1(key: Int): Int = Math.floorMod(key, capacity)
-    protected def hash2(key: Int): Int = hashPrime - Math.floorMod(key, hashPrime)
-
-    protected def probeForOccupied(key: Int, start: Int): Int = {
-      val step = hash2(key)
-      var i = 0
-      while (i < capacity) {
-        val idx = Math.floorMod(start + i * step, capacity)
-        val s   = table(idx)
-        if (s.state == RecordType.EMPTY) return -1
-        if (s.state == RecordType.OCCUPIED && s.key == key) return idx
-        i += 1
-      }; -1
-    }
-
-    def search(key: Int): Int = {
-      val idx = probeForOccupied(key, hash1(key))
-      if (idx == -1) -1 else table(idx).value
-    }
-  }
-
-  val h = new MyHashTable(7, 5)
-  println(h.search(15))   // -1
-}
-```
-
-
-## Complexity analysis
+### Complexity analysis
 
 > **Best case** — first probe matches
 >
@@ -685,13 +554,17 @@ object Main extends App {
 >
 > -   Time: **O(N)** | Space: **O(1)**
 
+</details>
+
 ***
 
 # Insert operation in double hashing
 
 Insert mirrors the structure of insert in linear and quadratic probing — first probe to confirm the key isn't already there, then probe again to find the first non-OCCUPIED slot. The only thing that changes is that the offset is now `i · hash2(key)`.
 
-## Algorithm
+<details>
+<summary><h2>Algorithm</h2></summary>
+
 
 ### 1. Key already exists
 
@@ -727,241 +600,270 @@ flowchart LR
 
 <p align="center"><strong>Insert with a new key — the second hash gives 15 a step of 5, so it lands at slot 6 instead of slot 2 (which is what linear or quadratic probing would have used). Two keys colliding at slot 1 with different hash₂ values now spread to opposite ends of the array.</strong></p>
 
-## Implementation
+</details>
+<details>
+<summary><h2>Solution &amp; Analysis</h2></summary>
 
-
-```pseudocode
-function _probe_for_free(key, start):
-    step ← _hash2(key)
-    for i from 0 to capacity − 1:
-        idx ← (start + i · step) mod capacity
-        if table[idx].state ≠ OCCUPIED: return idx
-    return -1
-
-function insert(key, value):
-    start ← _hash1(key)
-    occ ← _probe_for_occupied(key, start)
-    if occ ≠ -1: table[occ].value ← value; return true
-    free ← _probe_for_free(key, start)
-    if free = -1: return false
-    table[free] ← Record(key, value, OCCUPIED); return true
-```
+### Implementation
 
 ```python run
 from enum import Enum
+from typing import List, Optional
 
+# Represents the state of a record in the hash table
 class RecordType(Enum):
-    EMPTY = 0; DELETED = 1; OCCUPIED = 2
+    EMPTY = 0
+    DELETED = 1
+    OCCUPIED = 2
 
+# Represents an entry in the hash table
 class Record:
-    def __init__(self, key=None, value=None):
+    def __init__(
+        self, key: Optional[int] = None, value: Optional[int] = None
+    ):
+
+        # Initialize state as EMPTY by default
+        self.state: RecordType = RecordType.EMPTY
+        self.key: int = 0
+        self.value: int = 0
+
+        # Set state to OCCUPIED when key and value are provided
         if key is not None and value is not None:
-            self.state, self.key, self.value = RecordType.OCCUPIED, key, value
-        else:
-            self.state, self.key, self.value = RecordType.EMPTY, 0, 0
+            self.state = RecordType.OCCUPIED
+            self.key = key
+            self.value = value
 
 class MyHashTable:
-    def __init__(self, capacity, hash_prime):
-        self.capacity, self.hash_prime = capacity, hash_prime
-        self.table = [Record() for _ in range(capacity)]
-    def _hash1(self, key): return key % self.capacity
-    def _hash2(self, key): return self.hash_prime - (key % self.hash_prime)
+    def __init__(self, capacity: int, hash_prime: int):
 
-    def _probe_for_occupied(self, key, start):
-        step = self._hash2(key)
+        # The total number of slots in the hash table
+        self.capacity: int = capacity
+
+        # A prime number used for double hashing
+        self.hash_prime: int = hash_prime
+
+        # The hash table implemented as a list of Records
+        self.table: List[Record] = [Record() for _ in range(capacity)]
+
+    # Primary hash function: Computes the index as key % capacity
+    def hash_function1(self, key: int) -> int:
+        return key % self.capacity
+
+    # Secondary hash function: Used for probing during collisions
+    # Returns hash_prime - (key % hash_prime), ensuring a different step
+    # size
+    def hash_function2(self, key: int) -> int:
+        return self.hash_prime - (key % self.hash_prime)
+
+    def probe_for_occupied_index(
+        self, key: int, start_index: int
+    ) -> int:
         for i in range(self.capacity):
-            idx = (start + i * step) % self.capacity
-            if self.table[idx].state == RecordType.EMPTY: return -1
-            if self.table[idx].state == RecordType.OCCUPIED and self.table[idx].key == key: return idx
+
+            # Double hashing
+            probe_index = (
+                start_index + i * self.hash_function2(key)
+            ) % self.capacity
+
+            # Check if the slot is occupied and matches the key
+            if (
+                self.table[probe_index].state == RecordType.OCCUPIED
+                and self.table[probe_index].key == key
+            ):
+                return probe_index
+
+        # Return -1 if no matching record is found
         return -1
-    def _probe_for_free(self, key, start):
-        step = self._hash2(key)
+
+    def probe_for_empty_index(self, key: int, start_index: int) -> int:
         for i in range(self.capacity):
-            idx = (start + i * step) % self.capacity
-            if self.table[idx].state != RecordType.OCCUPIED: return idx
+
+            # Double hashing
+            probe_index = (
+                start_index + i * self.hash_function2(key)
+            ) % self.capacity
+
+            # Check if the slot is available (either EMPTY or DELETED)
+            if self.table[probe_index].state != RecordType.OCCUPIED:
+                return probe_index
+
+        # Return -1 if no available slot is found
         return -1
 
-    def search(self, key):
-        idx = self._probe_for_occupied(key, self._hash1(key))
-        return -1 if idx == -1 else self.table[idx].value
+    def search(self, key: int) -> int:
 
-    def insert(self, key, value):
-        start = self._hash1(key)
-        occ = self._probe_for_occupied(key, start)
-        if occ != -1: self.table[occ].value = value; return True
-        free = self._probe_for_free(key, start)
-        if free == -1: return False
-        self.table[free] = Record(key, value); return True
+        # Compute the initial index using the primary hash function
+        start_index = self.hash_function1(key)
 
-# Demo
-h = MyHashTable(7, 5)
-h.insert(8, 80); h.insert(15, 150); h.insert(22, 220)
-print(h.search(8), h.search(15), h.search(22))
+        # Find the occupied index for the key
+        occupied_index = self.probe_for_occupied_index(key, start_index)
+
+        # Return the value if found, otherwise -1
+        return (
+            -1
+            if occupied_index == -1
+            else self.table[occupied_index].value
+        )
+
+    def insert(self, key: int, value: int) -> bool:
+
+        # Compute the initial index using the primary hash function
+        start_index = self.hash_function1(key)
+
+        # Find the occupied index for the key
+        occupied_index = self.probe_for_occupied_index(key, start_index)
+
+        # Update the value if the key exists
+        if occupied_index != -1:
+            self.table[occupied_index].value = value
+            return True
+
+        # Find an empty slot to insert the new key-value pair
+        empty_index = self.probe_for_empty_index(key, start_index)
+        if empty_index != -1:
+            self.table[empty_index] = Record(key, value)
+            return True
+
+        # Return False if the table is full and insertion fails
+        return False
 ```
 
 ```java run
 import java.util.*;
 
-public class Main {
-    enum RecordType { EMPTY, DELETED, OCCUPIED }
-    static class Record {
-        RecordType state = RecordType.EMPTY; int key, value;
-        Record() {}
-        Record(int k, int v) { state = RecordType.OCCUPIED; key = k; value = v; }
-    }
-    static class MyHashTable {
-        protected final int          capacity, hashPrime;
-        protected final List<Record> table;
-        MyHashTable(int capacity, int hashPrime) {
-            this.capacity = capacity; this.hashPrime = hashPrime;
-            this.table = new ArrayList<>(capacity);
-            for (int i = 0; i < capacity; i++) table.add(new Record());
-        }
-        protected int hash1(int key) { return Math.floorMod(key, capacity); }
-        protected int hash2(int key) { return hashPrime - Math.floorMod(key, hashPrime); }
+// Represents the state of a record in the hash table
+enum RecordType {
+    EMPTY,
+    DELETED,
+    OCCUPIED
+}
 
-        protected int probeForOccupied(int key, int start) {
-            int step = hash2(key);
-            for (int i = 0; i < capacity; i++) {
-                int idx = Math.floorMod(start + i * step, capacity);
-                Record s = table.get(idx);
-                if (s.state == RecordType.EMPTY) return -1;
-                if (s.state == RecordType.OCCUPIED && s.key == key) return idx;
+// Represents an entry in the hash table
+class Record {
+
+    // Use the separately defined RecordType enum
+    RecordType state = RecordType.EMPTY;
+    int key = 0;
+    int value = 0;
+
+    Record() {}
+
+    Record(int key, int value) {
+        this.state = RecordType.OCCUPIED;
+        this.key = key;
+        this.value = value;
+    }
+}
+
+class MyHashTable {
+
+    // The total number of slots in the hash table
+    private int capacity;
+
+    // A prime number used for double hashing
+    private int hashPrime;
+
+    // The hash table implemented as a list of Records
+    private List<Record> table;
+
+    // Primary hash function: Computes the index as key % capacity
+    private int hashFunction1(int key) {
+        return key % capacity;
+    }
+
+    // Secondary hash function: Used for probing during collisions
+    // Returns hashPrime - (key % hashPrime), ensuring a different step
+    // size
+    private int hashFunction2(int key) {
+        return hashPrime - (key % hashPrime);
+    }
+
+    private int probeForOccupiedIndex(int key, int startIndex) {
+        for (int i = 0; i < capacity; ++i) {
+
+            // Double hashing
+            int probeIndex =
+                (startIndex + i * hashFunction2(key)) % capacity;
+
+            // Check if the slot is occupied and matches the key
+            if (
+                table.get(probeIndex).state == RecordType.OCCUPIED &&
+                table.get(probeIndex).key == key
+            ) {
+                return probeIndex;
             }
-            return -1;
         }
-        protected int probeForFree(int key, int start) {
-            int step = hash2(key);
-            for (int i = 0; i < capacity; i++) {
-                int idx = Math.floorMod(start + i * step, capacity);
-                if (table.get(idx).state != RecordType.OCCUPIED) return idx;
+
+        // Return -1 if no matching record is found
+        return -1;
+    }
+
+    private int probeForEmptyIndex(int key, int startIndex) {
+        for (int i = 0; i < capacity; ++i) {
+
+            // Double hashing
+            int probeIndex =
+                (startIndex + i * hashFunction2(key)) % capacity;
+
+            // Check if the slot is available (either EMPTY or DELETED)
+            if (table.get(probeIndex).state != RecordType.OCCUPIED) {
+                return probeIndex;
             }
-            return -1;
         }
 
-        int search(int key) {
-            int idx = probeForOccupied(key, hash1(key));
-            return idx == -1 ? -1 : table.get(idx).value;
-        }
-        boolean insert(int key, int value) {
-            int start = hash1(key); int occ = probeForOccupied(key, start);
-            if (occ != -1) { table.get(occ).value = value; return true; }
-            int free = probeForFree(key, start); if (free == -1) return false;
-            table.set(free, new Record(key, value)); return true;
+        // Return -1 if no available slot is found
+        return -1;
+    }
+
+    public MyHashTable(int capacity, int hashPrime) {
+        this.capacity = capacity;
+        this.hashPrime = hashPrime;
+        this.table = new ArrayList<>(capacity);
+        for (int i = 0; i < capacity; i++) {
+            table.add(new Record());
         }
     }
 
-    public static void main(String[] args) {
-        MyHashTable h = new MyHashTable(7, 5);
-        h.insert(8, 80); h.insert(15, 150); h.insert(22, 220);
-        System.out.println(h.search(8) + " " + h.search(15) + " " + h.search(22));
+    public int search(int key) {
+
+        // Compute the initial index using the primary hash function
+        int startIndex = hashFunction1(key);
+
+        // Find the occupied index for the key
+        int occupiedIndex = probeForOccupiedIndex(key, startIndex);
+
+        // Return the value if found, otherwise -1
+        return occupiedIndex == -1 ? -1 : table.get(occupiedIndex).value;
+    }
+
+    public boolean insert(int key, int value) {
+
+        // Compute the initial index using the primary hash function
+        int startIndex = hashFunction1(key);
+
+        // Find the occupied index for the key
+        int occupiedIndex = probeForOccupiedIndex(key, startIndex);
+
+        // Update the value if the key exists
+        if (occupiedIndex != -1) {
+            table.get(occupiedIndex).value = value;
+            return true;
+        }
+
+        // Find an empty slot to insert the new key-value pair
+        int emptyIndex = probeForEmptyIndex(key, startIndex);
+        if (emptyIndex != -1) {
+            table.set(emptyIndex, new Record(key, value));
+            return true;
+        }
+
+        // Return false if the table is full and insertion fails
+        return false;
     }
 }
 ```
 
-```c run
-#include <stdio.h>
-#include <stdlib.h>
-
-typedef enum { EMPTY = 0, DELETED = 1, OCCUPIED = 2 } RecordType;
-typedef struct { RecordType state; int key, value; } Record;
-typedef struct { int capacity, hash_prime; Record *table; } MyHashTable;
-
-int hash1(MyHashTable *h, int key) { return key % h->capacity; }
-int hash2(MyHashTable *h, int key) { return h->hash_prime - (key % h->hash_prime); }
-
-int probe_for_occupied(MyHashTable *h, int key, int start) {
-    int step = hash2(h, key);
-    for (int i = 0; i < h->capacity; i++) {
-        int idx = (start + i * step) % h->capacity;
-        if (h->table[idx].state == EMPTY) return -1;
-        if (h->table[idx].state == OCCUPIED && h->table[idx].key == key) return idx;
-    }
-    return -1;
-}
-int probe_for_free(MyHashTable *h, int key, int start) {
-    int step = hash2(h, key);
-    for (int i = 0; i < h->capacity; i++) {
-        int idx = (start + i * step) % h->capacity;
-        if (h->table[idx].state != OCCUPIED) return idx;
-    }
-    return -1;
-}
-
-int search_op(MyHashTable *h, int key) {
-    int idx = probe_for_occupied(h, key, hash1(h, key));
-    return idx == -1 ? -1 : h->table[idx].value;
-}
-int insert_op(MyHashTable *h, int key, int value) {
-    int start = hash1(h, key); int occ = probe_for_occupied(h, key, start);
-    if (occ != -1) { h->table[occ].value = value; return 1; }
-    int free = probe_for_free(h, key, start); if (free == -1) return 0;
-    h->table[free] = (Record){OCCUPIED, key, value}; return 1;
-}
-
-int main() {
-    MyHashTable h = { .capacity = 7, .hash_prime = 5,
-                      .table = calloc(7, sizeof(Record)) };
-    insert_op(&h, 8, 80); insert_op(&h, 15, 150); insert_op(&h, 22, 220);
-    printf("%d %d %d\n", search_op(&h, 8), search_op(&h, 15), search_op(&h, 22));
-    free(h.table); return 0;
-}
-```
-
-```scala run
-object Main extends App {
-  object RecordType extends Enumeration { val EMPTY, DELETED, OCCUPIED = Value }
-
-  class Record(
-    var state: RecordType.Value = RecordType.EMPTY,
-    var key:   Int              = 0,
-    var value: Int              = 0,
-  ) { def this(k: Int, v: Int) = this(RecordType.OCCUPIED, k, v) }
-
-  class MyHashTable(val capacity: Int, val hashPrime: Int) {
-    protected val table: Array[Record] = Array.fill(capacity)(new Record())
-    protected def hash1(key: Int): Int = Math.floorMod(key, capacity)
-    protected def hash2(key: Int): Int = hashPrime - Math.floorMod(key, hashPrime)
-
-    protected def probeForOccupied(key: Int, start: Int): Int = {
-      val step = hash2(key); var i = 0
-      while (i < capacity) {
-        val idx = Math.floorMod(start + i * step, capacity)
-        val s   = table(idx)
-        if (s.state == RecordType.EMPTY) return -1
-        if (s.state == RecordType.OCCUPIED && s.key == key) return idx
-        i += 1
-      }; -1
-    }
-    protected def probeForFree(key: Int, start: Int): Int = {
-      val step = hash2(key); var i = 0
-      while (i < capacity) {
-        val idx = Math.floorMod(start + i * step, capacity)
-        if (table(idx).state != RecordType.OCCUPIED) return idx
-        i += 1
-      }; -1
-    }
-
-    def search(key: Int): Int = {
-      val idx = probeForOccupied(key, hash1(key))
-      if (idx == -1) -1 else table(idx).value
-    }
-    def insert(key: Int, value: Int): Boolean = {
-      val start = hash1(key); val occ = probeForOccupied(key, start)
-      if (occ != -1) { table(occ).value = value; return true }
-      val free = probeForFree(key, start); if (free == -1) return false
-      table(free) = new Record(key, value); true
-    }
-  }
-
-  val h = new MyHashTable(7, 5)
-  h.insert(8, 80); h.insert(15, 150); h.insert(22, 220)
-  println(s"${h.search(8)} ${h.search(15)} ${h.search(22)}")
-}
-```
-
-
-## Complexity analysis
+### Complexity analysis
 
 > **Best case** — first probe lands on a writable slot
 >
@@ -975,13 +877,17 @@ object Main extends App {
 >
 > -   Time: **O(N)** | Space: **O(1)**
 
+</details>
+
 ***
 
 # Delete operation in double hashing
 
 Delete works exactly as in linear and quadratic probing — find the matching slot via the probe, then mark it `DELETED`. The tombstone is just as essential here. Removing it would orphan any record placed past this slot during inserts that crossed this point.
 
-## Algorithm
+<details>
+<summary><h2>Algorithm</h2></summary>
+
 
 ### 1. Key is present
 
@@ -1017,246 +923,296 @@ flowchart LR
 
 <p align="center"><strong>Double-hashing delete — same as the other open-addressing schemes, but with a per-key step. The DELETED tombstone keeps probe paths walkable for any record placed past this slot.</strong></p>
 
-## Implementation
+</details>
+<details>
+<summary><h2>Solution &amp; Analysis</h2></summary>
 
-
-```pseudocode
-function remove(key):
-    idx ← _probe_for_occupied(key, _hash1(key))
-    if idx ≠ -1: table[idx].state ← DELETED
-```
+### Implementation
 
 ```python run
 from enum import Enum
+from typing import List, Optional
 
+# Represents the state of a record in the hash table
 class RecordType(Enum):
-    EMPTY = 0; DELETED = 1; OCCUPIED = 2
+    EMPTY = 0
+    DELETED = 1
+    OCCUPIED = 2
 
+# Represents an entry in the hash table
 class Record:
-    def __init__(self, key=None, value=None):
+    def __init__(
+        self, key: Optional[int] = None, value: Optional[int] = None
+    ):
+
+        # Initialize state as EMPTY by default
+        self.state: RecordType = RecordType.EMPTY
+        self.key: int = 0
+        self.value: int = 0
+
+        # Set state to OCCUPIED when key and value are provided
         if key is not None and value is not None:
-            self.state, self.key, self.value = RecordType.OCCUPIED, key, value
-        else:
-            self.state, self.key, self.value = RecordType.EMPTY, 0, 0
+            self.state = RecordType.OCCUPIED
+            self.key = key
+            self.value = value
 
 class MyHashTable:
-    def __init__(self, capacity, hash_prime):
-        self.capacity, self.hash_prime = capacity, hash_prime
-        self.table = [Record() for _ in range(capacity)]
-    def _hash1(self, key): return key % self.capacity
-    def _hash2(self, key): return self.hash_prime - (key % self.hash_prime)
+    def __init__(self, capacity: int, hash_prime: int):
 
-    def _probe_for_occupied(self, key, start):
-        step = self._hash2(key)
+        # The total number of slots in the hash table
+        self.capacity: int = capacity
+
+        # A prime number used for double hashing
+        self.hash_prime: int = hash_prime
+
+        # The hash table implemented as a list of Records
+        self.table: List[Record] = [Record() for _ in range(capacity)]
+
+    # Primary hash function: Computes the index as key % capacity
+    def hash_function1(self, key: int) -> int:
+        return key % self.capacity
+
+    # Secondary hash function: Used for probing during collisions
+    # Returns hash_prime - (key % hash_prime), ensuring a different step
+    # size
+    def hash_function2(self, key: int) -> int:
+        return self.hash_prime - (key % self.hash_prime)
+
+    def probe_for_occupied_index(
+        self, key: int, start_index: int
+    ) -> int:
         for i in range(self.capacity):
-            idx = (start + i * step) % self.capacity
-            if self.table[idx].state == RecordType.EMPTY: return -1
-            if self.table[idx].state == RecordType.OCCUPIED and self.table[idx].key == key: return idx
+
+            # Double hashing
+            probe_index = (
+                start_index + i * self.hash_function2(key)
+            ) % self.capacity
+
+            # Check if the slot is occupied and matches the key
+            if (
+                self.table[probe_index].state == RecordType.OCCUPIED
+                and self.table[probe_index].key == key
+            ):
+                return probe_index
+
+        # Return -1 if no matching record is found
         return -1
-    def _probe_for_free(self, key, start):
-        step = self._hash2(key)
+
+    def probe_for_empty_index(self, key: int, start_index: int) -> int:
         for i in range(self.capacity):
-            idx = (start + i * step) % self.capacity
-            if self.table[idx].state != RecordType.OCCUPIED: return idx
+
+            # Double hashing
+            probe_index = (
+                start_index + i * self.hash_function2(key)
+            ) % self.capacity
+
+            # Check if the slot is available (either EMPTY or DELETED)
+            if self.table[probe_index].state != RecordType.OCCUPIED:
+                return probe_index
+
+        # Return -1 if no available slot is found
         return -1
 
-    def search(self, key):
-        idx = self._probe_for_occupied(key, self._hash1(key))
-        return -1 if idx == -1 else self.table[idx].value
-    def insert(self, key, value):
-        start = self._hash1(key); occ = self._probe_for_occupied(key, start)
-        if occ != -1: self.table[occ].value = value; return True
-        free = self._probe_for_free(key, start); 
-        if free == -1: return False
-        self.table[free] = Record(key, value); return True
-    def remove(self, key):
-        idx = self._probe_for_occupied(key, self._hash1(key))
-        if idx != -1: self.table[idx].state = RecordType.DELETED
+    def search(self, key: int) -> int:
 
-# Demo
-h = MyHashTable(7, 5)
-h.insert(8, 80); h.insert(15, 150); h.insert(22, 220)
-h.remove(15)
-print(h.search(15), h.search(8), h.search(22))    # -1 80 220
+        # Compute the initial index using the primary hash function
+        start_index = self.hash_function1(key)
+
+        # Find the occupied index for the key
+        occupied_index = self.probe_for_occupied_index(key, start_index)
+
+        # Return the value if found, otherwise -1
+        return (
+            -1
+            if occupied_index == -1
+            else self.table[occupied_index].value
+        )
+
+    def insert(self, key: int, value: int) -> bool:
+
+        # Compute the initial index using the primary hash function
+        start_index = self.hash_function1(key)
+
+        # Find the occupied index for the key
+        occupied_index = self.probe_for_occupied_index(key, start_index)
+
+        # Update the value if the key exists
+        if occupied_index != -1:
+            self.table[occupied_index].value = value
+            return True
+
+        # Find an empty slot to insert the new key-value pair
+        empty_index = self.probe_for_empty_index(key, start_index)
+        if empty_index != -1:
+            self.table[empty_index] = Record(key, value)
+            return True
+
+        # Return False if the table is full and insertion fails
+        return False
+
+    def remove(self, key: int) -> None:
+
+        # Compute the initial index using the primary hash function
+        start_index = self.hash_function1(key)
+
+        # Find the occupied index for the key
+        occupied_index = self.probe_for_occupied_index(key, start_index)
+
+        # Mark the slot as DELETED
+        if occupied_index != -1:
+            self.table[occupied_index].state = RecordType.DELETED
 ```
 
 ```java run
 import java.util.*;
 
-public class Main {
-    enum RecordType { EMPTY, DELETED, OCCUPIED }
-    static class Record {
-        RecordType state = RecordType.EMPTY; int key, value;
-        Record() {}
-        Record(int k, int v) { state = RecordType.OCCUPIED; key = k; value = v; }
-    }
-    static class MyHashTable {
-        protected final int          capacity, hashPrime;
-        protected final List<Record> table;
-        MyHashTable(int capacity, int hashPrime) {
-            this.capacity = capacity; this.hashPrime = hashPrime;
-            this.table = new ArrayList<>(capacity);
-            for (int i = 0; i < capacity; i++) table.add(new Record());
-        }
-        protected int hash1(int key) { return Math.floorMod(key, capacity); }
-        protected int hash2(int key) { return hashPrime - Math.floorMod(key, hashPrime); }
+// Represents the state of a record in the hash table
+enum RecordType {
+    EMPTY,
+    DELETED,
+    OCCUPIED
+}
 
-        protected int probeForOccupied(int key, int start) {
-            int step = hash2(key);
-            for (int i = 0; i < capacity; i++) {
-                int idx = Math.floorMod(start + i * step, capacity);
-                Record s = table.get(idx);
-                if (s.state == RecordType.EMPTY) return -1;
-                if (s.state == RecordType.OCCUPIED && s.key == key) return idx;
+// Represents an entry in the hash table
+class Record {
+
+    // Use the separately defined RecordType enum
+    RecordType state = RecordType.EMPTY;
+    int key = 0;
+    int value = 0;
+
+    Record() {}
+
+    Record(int key, int value) {
+        this.state = RecordType.OCCUPIED;
+        this.key = key;
+        this.value = value;
+    }
+}
+
+class MyHashTable {
+
+    // The total number of slots in the hash table
+    private int capacity;
+
+    // A prime number used for double hashing
+    private int hashPrime;
+
+    // The hash table implemented as a list of Records
+    private List<Record> table;
+
+    // Primary hash function: Computes the index as key % capacity
+    private int hashFunction1(int key) {
+        return key % capacity;
+    }
+
+    // Secondary hash function: Used for probing during collisions
+    // Returns hashPrime - (key % hashPrime), ensuring a different step
+    // size
+    private int hashFunction2(int key) {
+        return hashPrime - (key % hashPrime);
+    }
+
+    private int probeForOccupiedIndex(int key, int startIndex) {
+        for (int i = 0; i < capacity; ++i) {
+
+            // Double hashing
+            int probeIndex =
+                (startIndex + i * hashFunction2(key)) % capacity;
+
+            // Check if the slot is occupied and matches the key
+            if (
+                table.get(probeIndex).state == RecordType.OCCUPIED &&
+                table.get(probeIndex).key == key
+            ) {
+                return probeIndex;
             }
-            return -1;
         }
-        protected int probeForFree(int key, int start) {
-            int step = hash2(key);
-            for (int i = 0; i < capacity; i++) {
-                int idx = Math.floorMod(start + i * step, capacity);
-                if (table.get(idx).state != RecordType.OCCUPIED) return idx;
+
+        // Return -1 if no matching record is found
+        return -1;
+    }
+
+    private int probeForEmptyIndex(int key, int startIndex) {
+        for (int i = 0; i < capacity; ++i) {
+
+            // Double hashing
+            int probeIndex =
+                (startIndex + i * hashFunction2(key)) % capacity;
+
+            // Check if the slot is available (either EMPTY or DELETED)
+            if (table.get(probeIndex).state != RecordType.OCCUPIED) {
+                return probeIndex;
             }
-            return -1;
         }
 
-        int search(int key) {
-            int idx = probeForOccupied(key, hash1(key));
-            return idx == -1 ? -1 : table.get(idx).value;
-        }
-        boolean insert(int key, int value) {
-            int start = hash1(key); int occ = probeForOccupied(key, start);
-            if (occ != -1) { table.get(occ).value = value; return true; }
-            int free = probeForFree(key, start); if (free == -1) return false;
-            table.set(free, new Record(key, value)); return true;
-        }
-        void remove(int key) {
-            int idx = probeForOccupied(key, hash1(key));
-            if (idx != -1) table.get(idx).state = RecordType.DELETED;
+        // Return -1 if no available slot is found
+        return -1;
+    }
+
+    public MyHashTable(int capacity, int hashPrime) {
+        this.capacity = capacity;
+        this.hashPrime = hashPrime;
+        this.table = new ArrayList<>(capacity);
+        for (int i = 0; i < capacity; i++) {
+            table.add(new Record());
         }
     }
 
-    public static void main(String[] args) {
-        MyHashTable h = new MyHashTable(7, 5);
-        h.insert(8, 80); h.insert(15, 150); h.insert(22, 220);
-        h.remove(15);
-        System.out.println(h.search(15) + " " + h.search(8) + " " + h.search(22));
+    public int search(int key) {
+
+        // Compute the initial index using the primary hash function
+        int startIndex = hashFunction1(key);
+
+        // Find the occupied index for the key
+        int occupiedIndex = probeForOccupiedIndex(key, startIndex);
+
+        // Return the value if found, otherwise -1
+        return occupiedIndex == -1 ? -1 : table.get(occupiedIndex).value;
+    }
+
+    public boolean insert(int key, int value) {
+
+        // Compute the initial index using the primary hash function
+        int startIndex = hashFunction1(key);
+
+        // Find the occupied index for the key
+        int occupiedIndex = probeForOccupiedIndex(key, startIndex);
+
+        // Update the value if the key exists
+        if (occupiedIndex != -1) {
+            table.get(occupiedIndex).value = value;
+            return true;
+        }
+
+        // Find an empty slot to insert the new key-value pair
+        int emptyIndex = probeForEmptyIndex(key, startIndex);
+        if (emptyIndex != -1) {
+            table.set(emptyIndex, new Record(key, value));
+            return true;
+        }
+
+        // Return false if the table is full and insertion fails
+        return false;
+    }
+
+    public void remove(int key) {
+
+        // Compute the initial index using the primary hash function
+        int startIndex = hashFunction1(key);
+
+        // Find the occupied index for the key
+        int occupiedIndex = probeForOccupiedIndex(key, startIndex);
+
+        // Mark the slot as DELETED
+        if (occupiedIndex != -1) {
+            table.get(occupiedIndex).state = RecordType.DELETED;
+        }
     }
 }
 ```
 
-```c run
-#include <stdio.h>
-#include <stdlib.h>
-
-typedef enum { EMPTY = 0, DELETED = 1, OCCUPIED = 2 } RecordType;
-typedef struct { RecordType state; int key, value; } Record;
-typedef struct { int capacity, hash_prime; Record *table; } MyHashTable;
-
-int hash1(MyHashTable *h, int key) { return key % h->capacity; }
-int hash2(MyHashTable *h, int key) { return h->hash_prime - (key % h->hash_prime); }
-
-int probe_for_occupied(MyHashTable *h, int key, int start) {
-    int step = hash2(h, key);
-    for (int i = 0; i < h->capacity; i++) {
-        int idx = (start + i * step) % h->capacity;
-        if (h->table[idx].state == EMPTY) return -1;
-        if (h->table[idx].state == OCCUPIED && h->table[idx].key == key) return idx;
-    }
-    return -1;
-}
-int probe_for_free(MyHashTable *h, int key, int start) {
-    int step = hash2(h, key);
-    for (int i = 0; i < h->capacity; i++) {
-        int idx = (start + i * step) % h->capacity;
-        if (h->table[idx].state != OCCUPIED) return idx;
-    }
-    return -1;
-}
-int  search_op(MyHashTable *h, int key) {
-    int idx = probe_for_occupied(h, key, hash1(h, key));
-    return idx == -1 ? -1 : h->table[idx].value;
-}
-int  insert_op(MyHashTable *h, int key, int value) {
-    int start = hash1(h, key); int occ = probe_for_occupied(h, key, start);
-    if (occ != -1) { h->table[occ].value = value; return 1; }
-    int free = probe_for_free(h, key, start); if (free == -1) return 0;
-    h->table[free] = (Record){OCCUPIED, key, value}; return 1;
-}
-void remove_op(MyHashTable *h, int key) {
-    int idx = probe_for_occupied(h, key, hash1(h, key));
-    if (idx != -1) h->table[idx].state = DELETED;
-}
-
-int main() {
-    MyHashTable h = { .capacity = 7, .hash_prime = 5,
-                      .table = calloc(7, sizeof(Record)) };
-    insert_op(&h, 8, 80); insert_op(&h, 15, 150); insert_op(&h, 22, 220);
-    remove_op(&h, 15);
-    printf("%d %d %d\n", search_op(&h, 15), search_op(&h, 8), search_op(&h, 22));
-    free(h.table); return 0;
-}
-```
-
-```scala run
-object Main extends App {
-  object RecordType extends Enumeration { val EMPTY, DELETED, OCCUPIED = Value }
-
-  class Record(
-    var state: RecordType.Value = RecordType.EMPTY,
-    var key:   Int              = 0,
-    var value: Int              = 0,
-  ) { def this(k: Int, v: Int) = this(RecordType.OCCUPIED, k, v) }
-
-  class MyHashTable(val capacity: Int, val hashPrime: Int) {
-    protected val table: Array[Record] = Array.fill(capacity)(new Record())
-    protected def hash1(key: Int): Int = Math.floorMod(key, capacity)
-    protected def hash2(key: Int): Int = hashPrime - Math.floorMod(key, hashPrime)
-
-    protected def probeForOccupied(key: Int, start: Int): Int = {
-      val step = hash2(key); var i = 0
-      while (i < capacity) {
-        val idx = Math.floorMod(start + i * step, capacity)
-        val s = table(idx)
-        if (s.state == RecordType.EMPTY) return -1
-        if (s.state == RecordType.OCCUPIED && s.key == key) return idx
-        i += 1
-      }; -1
-    }
-    protected def probeForFree(key: Int, start: Int): Int = {
-      val step = hash2(key); var i = 0
-      while (i < capacity) {
-        val idx = Math.floorMod(start + i * step, capacity)
-        if (table(idx).state != RecordType.OCCUPIED) return idx
-        i += 1
-      }; -1
-    }
-
-    def search(key: Int): Int = {
-      val idx = probeForOccupied(key, hash1(key))
-      if (idx == -1) -1 else table(idx).value
-    }
-    def insert(key: Int, value: Int): Boolean = {
-      val start = hash1(key); val occ = probeForOccupied(key, start)
-      if (occ != -1) { table(occ).value = value; return true }
-      val free = probeForFree(key, start); if (free == -1) return false
-      table(free) = new Record(key, value); true
-    }
-    def remove(key: Int): Unit = {
-      val idx = probeForOccupied(key, hash1(key))
-      if (idx != -1) table(idx).state = RecordType.DELETED
-    }
-  }
-
-  val h = new MyHashTable(7, 5)
-  h.insert(8, 80); h.insert(15, 150); h.insert(22, 220)
-  h.remove(15)
-  println(s"${h.search(15)} ${h.search(8)} ${h.search(22)}")
-}
-```
-
-
-## Complexity analysis
+### Complexity analysis
 
 > **Best case** — first probe matches
 >
@@ -1269,6 +1225,8 @@ object Main extends App {
 > **Worst case** — collision-heavy
 >
 > -   Time: **O(N)** | Space: **O(1)**
+
+</details>
 
 ***
 
@@ -1316,293 +1274,366 @@ cons: Constraints {
 > | `search(3)` | 3 % 3 = 0; index 0 is EMPTY → not found | `-1` |
 > | `getKeyAtIndex(0)` | slot 0 is EMPTY | `-1` |
 
-## Solution
+<details>
+<summary><h2>Solution</h2></summary>
 
-The full 10-language implementation. `getKeyAtIndex` is the same one-liner we used in the linear- and quadratic-probing solutions.
 
+The full implementation. `getKeyAtIndex` is the same one-liner we used in the linear- and quadratic-probing solutions.
 
-```pseudocode
-class MyHashTable:
-    function _hash1(key): return key mod capacity
-    function _hash2(key): return hash_prime − (key mod hash_prime)
-
-    function search(key):
-        idx ← _probe_for_occupied(key, _hash1(key))
-        if idx = -1: return -1 else: return table[idx].value
-
-    function insert(key, value):
-        occ ← _probe_for_occupied(key, _hash1(key))
-        if occ ≠ -1: table[occ].value ← value; return true
-        free ← _probe_for_free(key, _hash1(key))
-        if free = -1: return false
-        table[free] ← Record(key, value, OCCUPIED); return true
-
-    function remove(key):
-        idx ← _probe_for_occupied(key, _hash1(key))
-        if idx ≠ -1: table[idx].state ← DELETED
-
-    function getKeyAtIndex(index):
-        if table[index].state = OCCUPIED: return table[index].key
-        return -1
-```
 
 ```python run
 from enum import Enum
+from typing import List, Optional
 
+# Represents the state of a record in the hash table
 class RecordType(Enum):
-    EMPTY = 0; DELETED = 1; OCCUPIED = 2
+    EMPTY = 0
+    DELETED = 1
+    OCCUPIED = 2
 
+# Represents an entry in the hash table
 class Record:
-    def __init__(self, key=None, value=None):
+    def __init__(
+        self, key: Optional[int] = None, value: Optional[int] = None
+    ):
+
+        # Initialize state as EMPTY by default
+        self.state: RecordType = RecordType.EMPTY
+        self.key: int = 0
+        self.value: int = 0
+
+        # Set state to OCCUPIED when key and value are provided
         if key is not None and value is not None:
-            self.state, self.key, self.value = RecordType.OCCUPIED, key, value
-        else:
-            self.state, self.key, self.value = RecordType.EMPTY, 0, 0
+            self.state = RecordType.OCCUPIED
+            self.key = key
+            self.value = value
 
 class MyHashTable:
-    def __init__(self, capacity, hash_prime):
-        self.capacity, self.hash_prime = capacity, hash_prime
-        self.table = [Record() for _ in range(capacity)]
-    def _hash1(self, key): return key % self.capacity
-    def _hash2(self, key): return self.hash_prime - (key % self.hash_prime)
+    def __init__(self, capacity: int, hash_prime: int):
 
-    def _probe_for_occupied(self, key, start):
-        step = self._hash2(key)
+        # The total number of slots in the hash table
+        self.capacity: int = capacity
+
+        # A prime number used for double hashing
+        self.hash_prime: int = hash_prime
+
+        # The hash table implemented as a list of Records
+        self.table: List[Record] = [Record() for _ in range(capacity)]
+
+    # Primary hash function: Computes the index as key % capacity
+    def hash_function1(self, key: int) -> int:
+        return key % self.capacity
+
+    # Secondary hash function: Used for probing during collisions
+    # Returns hash_prime - (key % hash_prime), ensuring a different step
+    # size
+    def hash_function2(self, key: int) -> int:
+        return self.hash_prime - (key % self.hash_prime)
+
+    def probe_for_occupied_index(
+        self, key: int, start_index: int
+    ) -> int:
         for i in range(self.capacity):
-            idx = (start + i * step) % self.capacity
-            if self.table[idx].state == RecordType.EMPTY: return -1
-            if self.table[idx].state == RecordType.OCCUPIED and self.table[idx].key == key: return idx
+
+            # Double hashing
+            probe_index = (
+                start_index + i * self.hash_function2(key)
+            ) % self.capacity
+
+            # Check if the slot is occupied and matches the key
+            if (
+                self.table[probe_index].state == RecordType.OCCUPIED
+                and self.table[probe_index].key == key
+            ):
+                return probe_index
+
+        # Return -1 if no matching record is found
         return -1
-    def _probe_for_free(self, key, start):
-        step = self._hash2(key)
+
+    def probe_for_empty_index(self, key: int, start_index: int) -> int:
         for i in range(self.capacity):
-            idx = (start + i * step) % self.capacity
-            if self.table[idx].state != RecordType.OCCUPIED: return idx
+
+            # Double hashing
+            probe_index = (
+                start_index + i * self.hash_function2(key)
+            ) % self.capacity
+
+            # Check if the slot is available (either EMPTY or DELETED)
+            if self.table[probe_index].state != RecordType.OCCUPIED:
+                return probe_index
+
+        # Return -1 if no available slot is found
         return -1
 
-    def search(self, key):
-        idx = self._probe_for_occupied(key, self._hash1(key))
-        return -1 if idx == -1 else self.table[idx].value
-    def insert(self, key, value):
-        start = self._hash1(key); occ = self._probe_for_occupied(key, start)
-        if occ != -1: self.table[occ].value = value; return True
-        free = self._probe_for_free(key, start); 
-        if free == -1: return False
-        self.table[free] = Record(key, value); return True
-    def remove(self, key):
-        idx = self._probe_for_occupied(key, self._hash1(key))
-        if idx != -1: self.table[idx].state = RecordType.DELETED
-    def getKeyAtIndex(self, index):
-        if 0 <= index < self.capacity and self.table[index].state == RecordType.OCCUPIED:
-            return self.table[index].key
-        return -1
+    def search(self, key: int) -> int:
 
-# Boss-fight demo
-h = MyHashTable(3, 2)
-h.insert(1, 2); h.insert(2, 4)
-print(h.search(1))                    # 2
-h.insert(1, 3); print(h.search(1))    # 3
-h.insert(2, 5)
-print(h.search(2), h.search(3))       # 5 -1
-print(h.getKeyAtIndex(0))             # -1
+        # Compute the initial index using the primary hash function
+        start_index = self.hash_function1(key)
+
+        # Find the occupied index for the key
+        occupied_index = self.probe_for_occupied_index(key, start_index)
+
+        # Return the value if found, otherwise -1
+        return (
+            -1
+            if occupied_index == -1
+            else self.table[occupied_index].value
+        )
+
+    def insert(self, key: int, value: int) -> bool:
+
+        # Compute the initial index using the primary hash function
+        start_index = self.hash_function1(key)
+
+        # Find the occupied index for the key
+        occupied_index = self.probe_for_occupied_index(key, start_index)
+
+        # Update the value if the key exists
+        if occupied_index != -1:
+            self.table[occupied_index].value = value
+            return True
+
+        # Find an empty slot to insert the new key-value pair
+        empty_index = self.probe_for_empty_index(key, start_index)
+        if empty_index != -1:
+            self.table[empty_index] = Record(key, value)
+            return True
+
+        # Return False if the table is full and insertion fails
+        return False
+
+    def remove(self, key: int) -> None:
+
+        # Compute the initial index using the primary hash function
+        start_index = self.hash_function1(key)
+
+        # Find the occupied index for the key
+        occupied_index = self.probe_for_occupied_index(key, start_index)
+
+        # Mark the slot as DELETED
+        if occupied_index != -1:
+            self.table[occupied_index].state = RecordType.DELETED
+
+    def get_key_at_index(self, index: int) -> int:
+
+        # Return the key at the specified index if it's OCCUPIED,
+        # otherwise -1
+        return (
+            self.table[index].key
+            if self.table[index].state == RecordType.OCCUPIED
+            else -1
+        )
+
+
+# Example from the problem statement (capacity=3, hashPrime=2)
+t1 = MyHashTable(3, 2)
+print(t1.insert(1, 2))              # True
+print(t1.insert(2, 4))              # True
+print(t1.search(1))                 # 2
+print(t1.insert(1, 3))              # True
+print(t1.search(1))                 # 3
+print(t1.insert(2, 5))              # True
+print(t1.search(2))                 # 5
+print(t1.search(3))                 # -1
+print(t1.get_key_at_index(0))       # -1 — index 0 is EMPTY
+
+# Edge cases
+t2 = MyHashTable(7, 5)
+print(t2.search(99))                # -1 — empty table
+print(t2.insert(0, 10))             # True — key 0 at index 0
+print(t2.search(0))                 # 10
+t2.remove(0)
+print(t2.search(0))                 # -1 — removed
+print(t2.insert(7, 20))             # True — key 7 also hashes to index 0, double-hash probes ahead
+print(t2.search(7))                 # 20
 ```
 
 ```java run
 import java.util.*;
 
 public class Main {
-    enum RecordType { EMPTY, DELETED, OCCUPIED }
-    static class Record {
-        RecordType state = RecordType.EMPTY; int key, value;
-        Record() {}
-        Record(int k, int v) { state = RecordType.OCCUPIED; key = k; value = v; }
+
+    // Represents the state of a record in the hash table
+    enum RecordType {
+        EMPTY,
+        DELETED,
+        OCCUPIED
     }
+
+    // Represents an entry in the hash table
+    static class Record {
+
+        // Use the separately defined RecordType enum
+        RecordType state = RecordType.EMPTY;
+        int key = 0;
+        int value = 0;
+
+        Record() {}
+
+        Record(int key, int value) {
+            this.state = RecordType.OCCUPIED;
+            this.key = key;
+            this.value = value;
+        }
+    }
+
     static class MyHashTable {
-        protected final int          capacity, hashPrime;
-        protected final List<Record> table;
-        MyHashTable(int capacity, int hashPrime) {
-            this.capacity = capacity; this.hashPrime = hashPrime;
+
+        // The total number of slots in the hash table
+        private int capacity;
+
+        // A prime number used for double hashing
+        private int hashPrime;
+
+        // The hash table implemented as a list of Records
+        private List<Record> table;
+
+        // Primary hash function: Computes the index as key % capacity
+        private int hashFunction1(int key) {
+            return key % capacity;
+        }
+
+        // Secondary hash function: Used for probing during collisions
+        // Returns hashPrime - (key % hashPrime), ensuring a different step
+        // size
+        private int hashFunction2(int key) {
+            return hashPrime - (key % hashPrime);
+        }
+
+        private int probeForOccupiedIndex(int key, int startIndex) {
+            for (int i = 0; i < capacity; ++i) {
+
+                // Double hashing
+                int probeIndex =
+                    (startIndex + i * hashFunction2(key)) % capacity;
+
+                // Check if the slot is occupied and matches the key
+                if (
+                    table.get(probeIndex).state == RecordType.OCCUPIED &&
+                    table.get(probeIndex).key == key
+                ) {
+                    return probeIndex;
+                }
+            }
+
+            // Return -1 if no matching record is found
+            return -1;
+        }
+
+        private int probeForEmptyIndex(int key, int startIndex) {
+            for (int i = 0; i < capacity; ++i) {
+
+                // Double hashing
+                int probeIndex =
+                    (startIndex + i * hashFunction2(key)) % capacity;
+
+                // Check if the slot is available (either EMPTY or DELETED)
+                if (table.get(probeIndex).state != RecordType.OCCUPIED) {
+                    return probeIndex;
+                }
+            }
+
+            // Return -1 if no available slot is found
+            return -1;
+        }
+
+        public MyHashTable(int capacity, int hashPrime) {
+            this.capacity = capacity;
+            this.hashPrime = hashPrime;
             this.table = new ArrayList<>(capacity);
-            for (int i = 0; i < capacity; i++) table.add(new Record());
-        }
-        protected int hash1(int key) { return Math.floorMod(key, capacity); }
-        protected int hash2(int key) { return hashPrime - Math.floorMod(key, hashPrime); }
-
-        protected int probeForOccupied(int key, int start) {
-            int step = hash2(key);
             for (int i = 0; i < capacity; i++) {
-                int idx = Math.floorMod(start + i * step, capacity);
-                Record s = table.get(idx);
-                if (s.state == RecordType.EMPTY) return -1;
-                if (s.state == RecordType.OCCUPIED && s.key == key) return idx;
+                table.add(new Record());
             }
-            return -1;
-        }
-        protected int probeForFree(int key, int start) {
-            int step = hash2(key);
-            for (int i = 0; i < capacity; i++) {
-                int idx = Math.floorMod(start + i * step, capacity);
-                if (table.get(idx).state != RecordType.OCCUPIED) return idx;
-            }
-            return -1;
         }
 
-        int search(int key) {
-            int idx = probeForOccupied(key, hash1(key));
-            return idx == -1 ? -1 : table.get(idx).value;
+        public int search(int key) {
+
+            // Compute the initial index using the primary hash function
+            int startIndex = hashFunction1(key);
+
+            // Find the occupied index for the key
+            int occupiedIndex = probeForOccupiedIndex(key, startIndex);
+
+            // Return the value if found, otherwise -1
+            return occupiedIndex == -1 ? -1 : table.get(occupiedIndex).value;
         }
-        boolean insert(int key, int value) {
-            int start = hash1(key); int occ = probeForOccupied(key, start);
-            if (occ != -1) { table.get(occ).value = value; return true; }
-            int free = probeForFree(key, start); if (free == -1) return false;
-            table.set(free, new Record(key, value)); return true;
+
+        public boolean insert(int key, int value) {
+
+            // Compute the initial index using the primary hash function
+            int startIndex = hashFunction1(key);
+
+            // Find the occupied index for the key
+            int occupiedIndex = probeForOccupiedIndex(key, startIndex);
+
+            // Update the value if the key exists
+            if (occupiedIndex != -1) {
+                table.get(occupiedIndex).value = value;
+                return true;
+            }
+
+            // Find an empty slot to insert the new key-value pair
+            int emptyIndex = probeForEmptyIndex(key, startIndex);
+            if (emptyIndex != -1) {
+                table.set(emptyIndex, new Record(key, value));
+                return true;
+            }
+
+            // Return false if the table is full and insertion fails
+            return false;
         }
-        void remove(int key) {
-            int idx = probeForOccupied(key, hash1(key));
-            if (idx != -1) table.get(idx).state = RecordType.DELETED;
+
+        public void remove(int key) {
+
+            // Compute the initial index using the primary hash function
+            int startIndex = hashFunction1(key);
+
+            // Find the occupied index for the key
+            int occupiedIndex = probeForOccupiedIndex(key, startIndex);
+
+            // Mark the slot as DELETED
+            if (occupiedIndex != -1) {
+                table.get(occupiedIndex).state = RecordType.DELETED;
+            }
         }
-        int getKeyAtIndex(int index) {
-            if (index < 0 || index >= capacity) return -1;
-            Record s = table.get(index);
-            return s.state == RecordType.OCCUPIED ? s.key : -1;
+
+        public int getKeyAtIndex(int index) {
+            return table.get(index).state == RecordType.OCCUPIED
+                ? table.get(index).key
+                : -1;
         }
     }
 
     public static void main(String[] args) {
-        MyHashTable h = new MyHashTable(3, 2);
-        h.insert(1, 2); h.insert(2, 4); System.out.println(h.search(1));
-        h.insert(1, 3); System.out.println(h.search(1));
-        h.insert(2, 5);
-        System.out.println(h.search(2) + " " + h.search(3));
-        System.out.println(h.getKeyAtIndex(0));
+        // Example from the problem statement (capacity=3, hashPrime=2)
+        MyHashTable t1 = new MyHashTable(3, 2);
+        System.out.println(t1.insert(1, 2));             // true
+        System.out.println(t1.insert(2, 4));             // true
+        System.out.println(t1.search(1));                // 2
+        System.out.println(t1.insert(1, 3));             // true
+        System.out.println(t1.search(1));                // 3
+        System.out.println(t1.insert(2, 5));             // true
+        System.out.println(t1.search(2));                // 5
+        System.out.println(t1.search(3));                // -1
+        System.out.println(t1.getKeyAtIndex(0));         // -1 — index 0 is EMPTY
+
+        // Edge cases
+        MyHashTable t2 = new MyHashTable(7, 5);
+        System.out.println(t2.search(99));               // -1 — empty table
+        System.out.println(t2.insert(0, 10));            // true — key 0 at index 0
+        System.out.println(t2.search(0));                // 10
+        t2.remove(0);
+        System.out.println(t2.search(0));                // -1 — removed
+        System.out.println(t2.insert(7, 20));            // true — key 7 also hashes to index 0
+        System.out.println(t2.search(7));                // 20
     }
 }
 ```
 
-```c run
-#include <stdio.h>
-#include <stdlib.h>
+</details>
+<details>
+<summary><h2>Final Takeaway</h2></summary>
 
-typedef enum { EMPTY = 0, DELETED = 1, OCCUPIED = 2 } RecordType;
-typedef struct { RecordType state; int key, value; } Record;
-typedef struct { int capacity, hash_prime; Record *table; } MyHashTable;
-
-int hash1(MyHashTable *h, int key) { return key % h->capacity; }
-int hash2(MyHashTable *h, int key) { return h->hash_prime - (key % h->hash_prime); }
-
-int probe_for_occupied(MyHashTable *h, int key, int start) {
-    int step = hash2(h, key);
-    for (int i = 0; i < h->capacity; i++) {
-        int idx = (start + i * step) % h->capacity;
-        if (h->table[idx].state == EMPTY) return -1;
-        if (h->table[idx].state == OCCUPIED && h->table[idx].key == key) return idx;
-    }
-    return -1;
-}
-int probe_for_free(MyHashTable *h, int key, int start) {
-    int step = hash2(h, key);
-    for (int i = 0; i < h->capacity; i++) {
-        int idx = (start + i * step) % h->capacity;
-        if (h->table[idx].state != OCCUPIED) return idx;
-    }
-    return -1;
-}
-int  search_op(MyHashTable *h, int key) {
-    int idx = probe_for_occupied(h, key, hash1(h, key));
-    return idx == -1 ? -1 : h->table[idx].value;
-}
-int  insert_op(MyHashTable *h, int key, int value) {
-    int start = hash1(h, key); int occ = probe_for_occupied(h, key, start);
-    if (occ != -1) { h->table[occ].value = value; return 1; }
-    int free = probe_for_free(h, key, start); if (free == -1) return 0;
-    h->table[free] = (Record){OCCUPIED, key, value}; return 1;
-}
-void remove_op(MyHashTable *h, int key) {
-    int idx = probe_for_occupied(h, key, hash1(h, key));
-    if (idx != -1) h->table[idx].state = DELETED;
-}
-int  get_key_at_index(MyHashTable *h, int index) {
-    if (index < 0 || index >= h->capacity) return -1;
-    return h->table[index].state == OCCUPIED ? h->table[index].key : -1;
-}
-
-int main() {
-    MyHashTable h = { .capacity = 3, .hash_prime = 2,
-                      .table = calloc(3, sizeof(Record)) };
-    insert_op(&h, 1, 2); insert_op(&h, 2, 4); printf("%d\n", search_op(&h, 1));
-    insert_op(&h, 1, 3); printf("%d\n", search_op(&h, 1));
-    insert_op(&h, 2, 5);
-    printf("%d %d\n", search_op(&h, 2), search_op(&h, 3));
-    printf("%d\n", get_key_at_index(&h, 0));
-    free(h.table); return 0;
-}
-```
-
-```scala run
-object Main extends App {
-  object RecordType extends Enumeration { val EMPTY, DELETED, OCCUPIED = Value }
-
-  class Record(
-    var state: RecordType.Value = RecordType.EMPTY,
-    var key:   Int              = 0,
-    var value: Int              = 0,
-  ) { def this(k: Int, v: Int) = this(RecordType.OCCUPIED, k, v) }
-
-  class MyHashTable(val capacity: Int, val hashPrime: Int) {
-    protected val table: Array[Record] = Array.fill(capacity)(new Record())
-    protected def hash1(key: Int): Int = Math.floorMod(key, capacity)
-    protected def hash2(key: Int): Int = hashPrime - Math.floorMod(key, hashPrime)
-
-    protected def probeForOccupied(key: Int, start: Int): Int = {
-      val step = hash2(key); var i = 0
-      while (i < capacity) {
-        val idx = Math.floorMod(start + i * step, capacity)
-        val s   = table(idx)
-        if (s.state == RecordType.EMPTY) return -1
-        if (s.state == RecordType.OCCUPIED && s.key == key) return idx
-        i += 1
-      }; -1
-    }
-    protected def probeForFree(key: Int, start: Int): Int = {
-      val step = hash2(key); var i = 0
-      while (i < capacity) {
-        val idx = Math.floorMod(start + i * step, capacity)
-        if (table(idx).state != RecordType.OCCUPIED) return idx
-        i += 1
-      }; -1
-    }
-
-    def search(key: Int): Int = {
-      val idx = probeForOccupied(key, hash1(key))
-      if (idx == -1) -1 else table(idx).value
-    }
-    def insert(key: Int, value: Int): Boolean = {
-      val start = hash1(key); val occ = probeForOccupied(key, start)
-      if (occ != -1) { table(occ).value = value; return true }
-      val free = probeForFree(key, start); if (free == -1) return false
-      table(free) = new Record(key, value); true
-    }
-    def remove(key: Int): Unit = {
-      val idx = probeForOccupied(key, hash1(key))
-      if (idx != -1) table(idx).state = RecordType.DELETED
-    }
-    def getKeyAtIndex(index: Int): Int =
-      if (index < 0 || index >= capacity) -1
-      else if (table(index).state == RecordType.OCCUPIED) table(index).key
-      else -1
-  }
-
-  val h = new MyHashTable(3, 2)
-  h.insert(1, 2); h.insert(2, 4); println(h.search(1))
-  h.insert(1, 3); println(h.search(1))
-  h.insert(2, 5)
-  println(s"${h.search(2)} ${h.search(3)}")
-  println(h.getKeyAtIndex(0))
-}
-```
-
-
-## Final Takeaway
 
 You've now seen the full open-addressing arc — linear, quadratic, double — and each one is a refinement of the same single idea: *resolve collisions by walking the array on a different rhythm*. Linear walks one slot at a time, and pays for it with primary clusters. Quadratic accelerates the steps with `i²`, breaking those clusters but leaving secondary clusters where same-hash keys still walk lock-step. Double hashing finally gives every key its own rhythm — a step size derived from a second hash function — so two keys sharing a starting slot still scatter across the array.
 
@@ -1624,3 +1655,5 @@ Three takeaways to carry forward:
 > Each row trades one weakness for another. There is no single "best" scheme — the right choice depends on key distribution, expected load, deletion rate, and the cost of cache misses on the target hardware.
 
 > *Coming up — we've finished the collision-resolution arc. The next several lessons step *up* a level: how to *use* hash tables to solve problems you'd otherwise need quadratic-time scans for. Pattern counting (find frequencies in O(n) instead of O(n²)), pattern generation (use a hash set as a "have we seen this?" oracle), sliding windows that lean on a rolling-frequency dictionary — every one of them is a small story about how a well-chosen hash table turns a hard problem into an easy one. Onward.*
+
+</details>

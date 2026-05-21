@@ -205,31 +205,33 @@ Insertion sort is `O(n²)` in the worst case but wins on best case (`O(n)`), ada
 The algorithm uses two nested loops: an outer loop that picks the next "key" from the unsorted suffix, and an inner loop that shifts larger elements right until the key's correct position is found.
 
 
-```pseudocode
-function insertionSort(arr):
-    n ← length(arr)
-    for i from 1 to n − 1:                  # arr[0] is trivially sorted
-        key ← arr[i]                         # take the next element from the unsorted suffix
-        j ← i − 1
-        while j ≥ 0 AND arr[j] > key:        # shift larger elements one slot right
-            arr[j + 1] ← arr[j]
-            j ← j − 1
-        arr[j + 1] ← key                     # drop key into the gap
-```
-
 ```python run
 from typing import List
 
 class Solution:
     def insertion_sort(self, arr: List[int]) -> None:
-        n = len(arr)
-        for i in range(1, n):                       # i = 1 because arr[0] is trivially sorted
-            key = arr[i]                             # take the next element from the unsorted suffix
-            j = i - 1
-            while j >= 0 and arr[j] > key:          # shift larger elements right
+
+        # Get the length of the array
+        n: int = len(arr)
+
+        for i in range(1, n):
+
+            # Select the current element as the key
+            key: int = arr[i]
+
+            # Start comparing with the previous element
+            j: int = i - 1
+
+            # Move elements of arr[0..i-1], that are greater than the
+            # key, to one position ahead of their current position
+            while j >= 0 and arr[j] > key:
+
+                # Shift the elements one position to the right
                 arr[j + 1] = arr[j]
                 j -= 1
-            arr[j + 1] = key                         # insert key at the gap
+
+            # Insert the key in its correct position
+            arr[j + 1] = key
 
 
 if __name__ == "__main__":
@@ -242,14 +244,28 @@ if __name__ == "__main__":
 public class Main {
     static class Solution {
         public void insertionSort(int[] arr) {
+
+            // Get the length of the array
             int n = arr.length;
+
             for (int i = 1; i < n; i++) {
+
+                // Select the current element as the key
                 int key = arr[i];
+
+                // Start comparing with the previous element
                 int j = i - 1;
+
+                // Move elements of arr[0..i-1], that are greater than the
+                // key, to one position ahead of their current position
                 while (j >= 0 && arr[j] > key) {
+
+                    // Shift the elements one position to the right
                     arr[j + 1] = arr[j];
                     j--;
                 }
+
+                // Insert the key in its correct position
                 arr[j + 1] = key;
             }
         }
@@ -261,54 +277,6 @@ public class Main {
         for (int x : arr) System.out.print(x + " ");
         System.out.println();
     }
-}
-```
-
-```c run
-#include <stdio.h>
-
-void insertion_sort(int *arr, int n) {
-    for (int i = 1; i < n; i++) {
-        int key = arr[i];
-        int j = i - 1;
-        while (j >= 0 && arr[j] > key) {
-            arr[j + 1] = arr[j];
-            j--;
-        }
-        arr[j + 1] = key;
-    }
-}
-
-int main(void) {
-    int arr[] = {5, 3, 8, 1, 4};
-    int n = 5;
-    insertion_sort(arr, n);
-    for (int i = 0; i < n; i++) printf("%d ", arr[i]);
-    printf("\n");
-    return 0;
-}
-```
-
-```scala run
-object Main extends App {
-  class Solution {
-    def insertionSort(arr: Array[Int]): Unit = {
-      val n = arr.length
-      for (i <- 1 until n) {
-        val key = arr(i)
-        var j = i - 1
-        while (j >= 0 && arr(j) > key) {
-          arr(j + 1) = arr(j)
-          j -= 1
-        }
-        arr(j + 1) = key
-      }
-    }
-  }
-
-  val arr = Array(5, 3, 8, 1, 4)
-  new Solution().insertionSort(arr)
-  println(arr.mkString(" "))
 }
 ```
 
@@ -419,112 +387,138 @@ Output: [1, 2, 3, 4, 5, 6]   (already sorted, runs in O(n))
 
 ---
 
-## The Solution
+<details>
+<summary><h2>Solution &amp; Analysis</h2></summary>
+
+### The Solution
 
 The implementation matches the version above; reproduced below for completeness.
 
-
-```pseudocode
-function insertionSort(arr):
-    n ← length(arr)
-    for i from 1 to n − 1:
-        key ← arr[i]
-        j ← i − 1
-        while j ≥ 0 AND arr[j] > key:
-            arr[j + 1] ← arr[j]
-            j ← j − 1
-        arr[j + 1] ← key
-```
 
 ```python run
 from typing import List
 
 class Solution:
     def insertion_sort(self, arr: List[int]) -> None:
-        n = len(arr)
+
+        # Get the length of the array
+        n: int = len(arr)
+
         for i in range(1, n):
-            key = arr[i]
-            j = i - 1
+
+            # Select the current element as the key
+            key: int = arr[i]
+
+            # Start comparing with the previous element
+            j: int = i - 1
+
+            # Move elements of arr[0..i-1], that are greater than the
+            # key, to one position ahead of their current position
             while j >= 0 and arr[j] > key:
+
+                # Shift the elements one position to the right
                 arr[j + 1] = arr[j]
                 j -= 1
+
+            # Insert the key in its correct position
             arr[j + 1] = key
 
 
-if __name__ == "__main__":
-    arr = [2, 3, 2, 1, 5, 6]
-    Solution().insertion_sort(arr)
-    print(arr)
+a1 = [2, 3, 2, 1, 5, 6]
+Solution().insertion_sort(a1); print(a1)           # [1, 2, 2, 3, 5, 6]
+
+a2 = [6, 5, 4, 4, 4, 3, 2, 1]
+Solution().insertion_sort(a2); print(a2)           # [1, 2, 3, 4, 4, 4, 5, 6]
+
+a3 = [1, 2, 3, 4, 5, 6]
+Solution().insertion_sort(a3); print(a3)           # [1, 2, 3, 4, 5, 6]
+
+a4: List[int] = []
+Solution().insertion_sort(a4); print(a4)           # []
+
+a5 = [42]
+Solution().insertion_sort(a5); print(a5)           # [42]
+
+a6 = [2, 1]
+Solution().insertion_sort(a6); print(a6)           # [1, 2]
+
+a7 = [3, 3, 3]
+Solution().insertion_sort(a7); print(a7)           # [3, 3, 3]
+
+a8 = [5, 2, 8, 1, 9]
+Solution().insertion_sort(a8); print(a8)           # [1, 2, 5, 8, 9]
 ```
 
 ```java run
+import java.util.Arrays;
+
 public class Main {
     static class Solution {
         public void insertionSort(int[] arr) {
+
+            // Get the length of the array
             int n = arr.length;
+
             for (int i = 1; i < n; i++) {
+
+                // Select the current element as the key
                 int key = arr[i];
+
+                // Start comparing with the previous element
                 int j = i - 1;
+
+                // Move elements of arr[0..i-1], that are greater than the
+                // key, to one position ahead of their current position
                 while (j >= 0 && arr[j] > key) {
+
+                    // Shift the elements one position to the right
                     arr[j + 1] = arr[j];
                     j--;
                 }
+
+                // Insert the key in its correct position
                 arr[j + 1] = key;
             }
         }
     }
 
     public static void main(String[] args) {
-        int[] arr = {2, 3, 2, 1, 5, 6};
-        new Solution().insertionSort(arr);
-        for (int x : arr) System.out.print(x + " ");
-        System.out.println();
+        int[] a1 = {2, 3, 2, 1, 5, 6};
+        new Solution().insertionSort(a1);
+        System.out.println(Arrays.toString(a1));   // [1, 2, 2, 3, 5, 6]
+
+        int[] a2 = {6, 5, 4, 4, 4, 3, 2, 1};
+        new Solution().insertionSort(a2);
+        System.out.println(Arrays.toString(a2));   // [1, 2, 3, 4, 4, 4, 5, 6]
+
+        int[] a3 = {1, 2, 3, 4, 5, 6};
+        new Solution().insertionSort(a3);
+        System.out.println(Arrays.toString(a3));   // [1, 2, 3, 4, 5, 6]
+
+        int[] a4 = {};
+        new Solution().insertionSort(a4);
+        System.out.println(Arrays.toString(a4));   // []
+
+        int[] a5 = {42};
+        new Solution().insertionSort(a5);
+        System.out.println(Arrays.toString(a5));   // [42]
+
+        int[] a6 = {2, 1};
+        new Solution().insertionSort(a6);
+        System.out.println(Arrays.toString(a6));   // [1, 2]
+
+        int[] a7 = {3, 3, 3};
+        new Solution().insertionSort(a7);
+        System.out.println(Arrays.toString(a7));   // [3, 3, 3]
+
+        int[] a8 = {5, 2, 8, 1, 9};
+        new Solution().insertionSort(a8);
+        System.out.println(Arrays.toString(a8));   // [1, 2, 5, 8, 9]
     }
 }
 ```
 
-```c run
-#include <stdio.h>
-
-void insertion_sort(int *arr, int n) {
-    for (int i = 1; i < n; i++) {
-        int key = arr[i];
-        int j = i - 1;
-        while (j >= 0 && arr[j] > key) {
-            arr[j + 1] = arr[j];
-            j--;
-        }
-        arr[j + 1] = key;
-    }
-}
-```
-
-```scala run
-object Main extends App {
-  class Solution {
-    def insertionSort(arr: Array[Int]): Unit = {
-      for (i <- 1 until arr.length) {
-        val key = arr(i)
-        var j = i - 1
-        while (j >= 0 && arr(j) > key) {
-          arr(j + 1) = arr(j)
-          j -= 1
-        }
-        arr(j + 1) = key
-      }
-    }
-  }
-
-  val arr = Array(2, 3, 2, 1, 5, 6)
-  new Solution().insertionSort(arr)
-  println(arr.mkString(" "))
-}
-```
-
-
----
-
-## Edge Cases
+### Edge Cases
 
 | Case | Example | Expected |
 |---|---|---|
@@ -535,9 +529,10 @@ object Main extends App {
 | All equal | `[3, 3, 3]` | `[3, 3, 3]` (best case — equality doesn't trigger shift). |
 | Two elements | `[2, 1]` | `[1, 2]`. |
 
----
+</details>
+<details>
+<summary><h2>Final Takeaway</h2></summary>
 
-## Final Takeaway
 
 Insertion sort is the best of the `O(n²)` sorts and the small-input workhorse of every modern sorting library. Adaptive (`O(n)` best case), stable, in-place, online — and unlike bubble or selection sort, you'll *actually use* it in production code (as the small-array fallback inside hybrid sorts).
 
@@ -545,6 +540,7 @@ The next algorithm — counting sort — breaks the comparison-sort family entir
 
 **Transfer challenge — try before the Counting Sort lesson:** Write a *binary insertion sort* — instead of linearly scanning the sorted prefix to find the insertion point, use binary search. What's the new complexity? Why doesn't this make insertion sort `O(n log n)`?
 
+</details>
 <details>
 <summary><strong>Answer — open after you've thought about it</strong></summary>
 

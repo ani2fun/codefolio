@@ -11,8 +11,8 @@ import scala.util.{Failure, Success, Try}
  * `raw.field.asInstanceOf[js.UndefOr[T]].toOption.getOrElse(default)` reads, then a `Success/Failure` match
  * that converts a thrown error into a `Left(message)` so the renderer shows an inline error placeholder
  * instead of crashing the chapter. The schema itself is widget-local — `Blocks.D3Widget` keeps payloads
- * structurally loose (ADR-0006) — but the *mechanics* of pulling typed fields out of a `js.Dynamic` are
- * the same shape every time.
+ * structurally loose (ADR-0006) — but the *mechanics* of pulling typed fields out of a `js.Dynamic` are the
+ * same shape every time.
  *
  * This module owns the parse envelope plus typed extension methods on `js.Dynamic`. A widget writes:
  * {{{
@@ -24,9 +24,9 @@ import scala.util.{Failure, Success, Try}
  *     }
  * }}}
  *
- * Validation lives inside the decoder lambda — any `Throwable` it raises is caught by [[run]] and turned
- * into a `Left(message)`. The widget's `Right(spec)` branch can assume the spec passed validation, so the
- * old `Success(spec) if pred => Left(msg)` ladder collapses into one straight read.
+ * Validation lives inside the decoder lambda — any `Throwable` it raises is caught by [[run]] and turned into
+ * a `Left(message)`. The widget's `Right(spec)` branch can assume the spec passed validation, so the old
+ * `Success(spec) if pred => Left(msg)` ladder collapses into one straight read.
  */
 object PayloadDecoder:
 
@@ -40,22 +40,24 @@ object PayloadDecoder:
       case Success(v) => Right(v)
       case Failure(t) => Left(Option(t.getMessage).filter(_.nonEmpty).getOrElse("invalid payload JSON"))
 
-  /** Build a missing-field exception. Widgets throw this from inside `run`'s lambda to mark a required
-   * field absent; `run` converts it into the `Left` the renderer displays.
+  /**
+   * Build a missing-field exception. Widgets throw this from inside `run`'s lambda to mark a required field
+   * absent; `run` converts it into the `Left` the renderer displays.
    */
   def missing(name: String): IllegalArgumentException =
     IllegalArgumentException(s"payload.$name is required")
 
-  /** Build a validation-failure exception. Widgets throw this from inside `run`'s lambda when a parsed
-   * value fails a domain check (e.g., a probability outside `[0, 1)`).
+  /**
+   * Build a validation-failure exception. Widgets throw this from inside `run`'s lambda when a parsed value
+   * fails a domain check (e.g., a probability outside `[0, 1)`).
    */
   def invalid(message: String): IllegalArgumentException =
     IllegalArgumentException(s"payload.$message")
 
   /**
    * Typed field readers on `js.Dynamic`. The `opt*` variants return `Option`; the variants with a default
-   * return the underlying type. Empty strings collapse to `None` in `optString`. None of these throw —
-   * the widget decides where to demand a value.
+   * return the underlying type. Empty strings collapse to `None` in `optString`. None of these throw — the
+   * widget decides where to demand a value.
    */
   extension (d: js.Dynamic)
 
@@ -108,17 +110,29 @@ object PayloadDecoder:
         .toOption
         .map(_.toList)
 
-    /** Two-element `[lo, hi]` array → `(Int, Int)`. JS numbers are doubles; the truncation matches the
-     * widget convention of expressing ranges as JSON integers but reading them as doubles defensively.
-     * Returns `default` when the field is absent, malformed, or has fewer than 2 elements.
+    /**
+     * Two-dimensional array of primitives → `List[List[String]]`. Each row is coerced like `stringList`
+     * (every element through JS `String(v)`). `None` when the field is absent. Used by widgets with row ×
+     * column grid payloads (array-traversal `layout:"2d"`).
+     */
+    def stringMatrix(name: String): Option[List[List[String]]] =
+      d.selectDynamic(name)
+        .asInstanceOf[js.UndefOr[js.Array[js.Array[js.Any]]]]
+        .toOption
+        .map(_.toList.map(_.toList.map(v => js.Dynamic.global.String(v).asInstanceOf[String])))
+
+    /**
+     * Two-element `[lo, hi]` array → `(Int, Int)`. JS numbers are doubles; the truncation matches the widget
+     * convention of expressing ranges as JSON integers but reading them as doubles defensively. Returns
+     * `default` when the field is absent, malformed, or has fewer than 2 elements.
      */
     def intRange(name: String, default: (Int, Int)): (Int, Int) =
       d.selectDynamic(name).asInstanceOf[js.UndefOr[js.Array[Double]]].toOption.map(_.toList) match
         case Some(lo :: hi :: _) => (lo.toInt, hi.toInt)
         case _                   => default
 
-    /** Two-element `[lo, hi]` array → `(Double, Double)`. Returns `default` on any non-conforming
-     * input.
+    /**
+     * Two-element `[lo, hi]` array → `(Double, Double)`. Returns `default` on any non-conforming input.
      */
     def doubleRange(name: String, default: (Double, Double)): (Double, Double) =
       d.selectDynamic(name).asInstanceOf[js.UndefOr[js.Array[Double]]].toOption.map(_.toList) match

@@ -14,7 +14,7 @@ The classical recursive LCA algorithm is one of the most elegant pieces of code 
 
 That's it. The recursion does all the work — there's no need to compute paths, store maps, or backtrack. The "deepest meeting point" emerges naturally from the way the recursion combines child answers.
 
-This lesson covers the canonical algorithm and four common variants: LCA with existence check, LCA of N nodes, LCA of all deepest leaves, and distance between two nodes (computed via LCA + depths). Each in 10 languages.
+This lesson covers the canonical algorithm and four common variants: LCA with existence check, LCA of N nodes, LCA of all deepest leaves, and distance between two nodes (computed via LCA + depths). Each in Python and Java.
 
 ---
 
@@ -82,65 +82,215 @@ flowchart TB
 >
 > The ancestor itself. Say the targets are `2` and `4`, and `2` is the parent of `4`. The recursion at node `2` triggers the `node == A or node == B` early-exit (returning `2`) *before* it ever recurses to find `4`. From `2`'s parent's perspective, the left side returned `2` and the right side returned null — so `2` propagates up untouched. The algorithm correctly identifies `2` as the LCA. *No special case needed* — it falls out of the structure.
 
-## Generic pattern in 10 languages
+## Generic pattern
 
-
-```pseudocode
-function lca(root, a, b):
-    if root = null:        return null
-    if root = a OR root = b: return root   # found one target — propagate it up
-    left  ← lca(root.left,  a, b)
-    right ← lca(root.right, a, b)
-    if left ≠ null AND right ≠ null: return root   # both sides hit → this IS the LCA
-    return left if left ≠ null else right
-```
 
 ```python run
 from typing import Optional
 
+
 class TreeNode:
     def __init__(self, val=0, left=None, right=None):
-        self.val, self.left, self.right = val, left, right
+        self.val = val
+        self.left = left
+        self.right = right
 
-def lca(root: Optional[TreeNode], a: TreeNode, b: TreeNode) -> Optional[TreeNode]:
-    if root is None:           return None
-    if root is a or root is b: return root
-    left  = lca(root.left,  a, b)
-    right = lca(root.right, a, b)
-    if left and right: return root
-    return left if left else right
+
+def from_level_order(values):
+    """Build tree from list like [1, 2, 3, None, 4]. None means missing child."""
+    if not values:
+        return None
+    root = TreeNode(values[0])
+    queue = [root]
+    i = 1
+    while queue and i < len(values):
+        node = queue.pop(0)
+        if i < len(values) and values[i] is not None:
+            node.left = TreeNode(values[i])
+            queue.append(node.left)
+        i += 1
+        if i < len(values) and values[i] is not None:
+            node.right = TreeNode(values[i])
+            queue.append(node.right)
+        i += 1
+    return root
+
+
+def find(root, val):
+    """Locate a node by value."""
+    if root is None:
+        return None
+    if root.val == val:
+        return root
+    return find(root.left, val) or find(root.right, val)
+
+
+class Solution:
+    def lowest_common_ancestor(
+        self,
+        root: Optional[TreeNode],
+        node_a: Optional[TreeNode],
+        node_b: Optional[TreeNode],
+    ) -> Optional[TreeNode]:
+
+        # If the root is null, return null
+        if root is None:
+            return None
+
+        # If the current node is equal to either nodeA or nodeB
+        # return the current node
+        if root == node_a or root == node_b:
+            return root
+
+        # Recursively search in the left and right subtrees
+        left_lca = self.lowest_common_ancestor(root.left, node_a, node_b)
+        right_lca = self.lowest_common_ancestor(
+            root.right, node_a, node_b
+        )
+
+        # If both subtrees return a non-null value
+        # the current node is the lowest common ancestor
+        if left_lca and right_lca:
+            return root
+
+        # If only one subtree returns a non-null value, return that value
+        return left_lca if left_lca else right_lca
+
+
+# Examples from the problem statement
+root1 = from_level_order([1, 2, 3, 4, None, None, 7])
+lca1 = Solution().lowest_common_ancestor(root1, find(root1, 4), find(root1, 7))
+print(lca1.val)   # 1
+
+root2 = from_level_order([1, 8, 4, None, None, 2, 7])
+lca2 = Solution().lowest_common_ancestor(root2, find(root2, 2), find(root2, 7))
+print(lca2.val)   # 4
+
+# Edge cases
+print(Solution().lowest_common_ancestor(None, None, None))  # None
+
+root3 = from_level_order([1, 2, 3, 4, None, None, 7])      # LCA is root itself
+lca3 = Solution().lowest_common_ancestor(root3, find(root3, 2), find(root3, 3))
+print(lca3.val)   # 1
+
+root4 = from_level_order([1, 2, 3, 4, None, None, 7])      # one node is ancestor of the other
+lca4 = Solution().lowest_common_ancestor(root4, find(root4, 2), find(root4, 4))
+print(lca4.val)   # 2
+
+root5 = from_level_order([1, 8, 4, None, None, 2, 7])      # deep internal node
+lca5 = Solution().lowest_common_ancestor(root5, find(root5, 8), find(root5, 4))
+print(lca5.val)   # 1
+
+root6 = TreeNode(1)                                         # single node
+print(Solution().lowest_common_ancestor(root6, root6, root6).val)  # 1
 ```
 
 ```java run
-public static TreeNode lca(TreeNode root, TreeNode a, TreeNode b) {
-    if (root == null)              return null;
-    if (root == a || root == b)    return root;
-    TreeNode left  = lca(root.left,  a, b);
-    TreeNode right = lca(root.right, a, b);
-    if (left != null && right != null) return root;
-    return left != null ? left : right;
-}
-```
+import java.util.*;
 
-```c run
-TreeNode* lca(TreeNode *root, TreeNode *a, TreeNode *b) {
-    if (!root)              return NULL;
-    if (root == a || root == b) return root;
-    TreeNode *left  = lca(root->left,  a, b);
-    TreeNode *right = lca(root->right, a, b);
-    if (left && right) return root;
-    return left ? left : right;
-}
-```
+public class Main {
+    static class TreeNode {
+        int val;
+        TreeNode left;
+        TreeNode right;
+        TreeNode() {}
+        TreeNode(int val) { this.val = val; }
+    }
 
-```scala run
-def lca(root: TreeNode, a: TreeNode, b: TreeNode): TreeNode = {
-  if (root == null)                       return null
-  if ((root eq a) || (root eq b))         return root
-  val left  = lca(root.left,  a, b)
-  val right = lca(root.right, a, b)
-  if (left != null && right != null) return root
-  if (left != null) left else right
+    static TreeNode fromLevelOrder(Integer... values) {
+        if (values.length == 0 || values[0] == null) return null;
+        TreeNode root = new TreeNode(values[0]);
+        java.util.Deque<TreeNode> queue = new java.util.ArrayDeque<>();
+        queue.add(root);
+        int i = 1;
+        while (!queue.isEmpty() && i < values.length) {
+            TreeNode node = queue.poll();
+            if (i < values.length && values[i] != null) {
+                node.left = new TreeNode(values[i]);
+                queue.add(node.left);
+            }
+            i++;
+            if (i < values.length && values[i] != null) {
+                node.right = new TreeNode(values[i]);
+                queue.add(node.right);
+            }
+            i++;
+        }
+        return root;
+    }
+
+    static TreeNode find(TreeNode root, int val) {
+        if (root == null) return null;
+        if (root.val == val) return root;
+        TreeNode left = find(root.left, val);
+        return left != null ? left : find(root.right, val);
+    }
+
+    static class Solution {
+        public TreeNode lowestCommonAncestor(
+            TreeNode root,
+            TreeNode nodeA,
+            TreeNode nodeB
+        ) {
+
+            // If the root is null, return null
+            if (root == null) {
+                return null;
+            }
+
+            // If the current node is equal to either nodeA or nodeB
+            // return the current node
+            if (root == nodeA || root == nodeB) {
+                return root;
+            }
+
+            // Recursively search in the left and right subtrees
+            TreeNode leftLCA = lowestCommonAncestor(root.left, nodeA, nodeB);
+            TreeNode rightLCA = lowestCommonAncestor(
+                root.right,
+                nodeA,
+                nodeB
+            );
+
+            // If both subtrees return a non-null value
+            // the current node is the lowest common ancestor
+            if (leftLCA != null && rightLCA != null) {
+                return root;
+            }
+
+            // If only one subtree returns a non-null value, return that
+            // value
+            if (leftLCA != null) {
+                return leftLCA;
+            }
+
+            return rightLCA;
+        }
+    }
+
+    public static void main(String[] args) {
+        // Examples from the problem statement
+        TreeNode root1 = fromLevelOrder(1, 2, 3, 4, null, null, 7);
+        System.out.println(new Solution().lowestCommonAncestor(root1, find(root1, 4), find(root1, 7)).val);  // 1
+
+        TreeNode root2 = fromLevelOrder(1, 8, 4, null, null, 2, 7);
+        System.out.println(new Solution().lowestCommonAncestor(root2, find(root2, 2), find(root2, 7)).val);  // 4
+
+        // Edge cases
+        System.out.println(new Solution().lowestCommonAncestor(null, null, null));  // null
+
+        TreeNode root3 = fromLevelOrder(1, 2, 3, 4, null, null, 7);               // LCA is root
+        System.out.println(new Solution().lowestCommonAncestor(root3, find(root3, 2), find(root3, 3)).val);  // 1
+
+        TreeNode root4 = fromLevelOrder(1, 2, 3, 4, null, null, 7);               // one is ancestor of other
+        System.out.println(new Solution().lowestCommonAncestor(root4, find(root4, 2), find(root4, 4)).val);  // 2
+
+        TreeNode root5 = fromLevelOrder(1, 8, 4, null, null, 2, 7);               // deep internal node
+        System.out.println(new Solution().lowestCommonAncestor(root5, find(root5, 8), find(root5, 4)).val);  // 1
+
+        TreeNode root6 = new TreeNode(1);                                          // single node
+        System.out.println(new Solution().lowestCommonAncestor(root6, root6, root6).val);  // 1
+    }
 }
 ```
 
@@ -173,7 +323,7 @@ Anti-pattern: if the tree is a *binary search tree*, there's an O(log N) BST-spe
 
 > Given a tree and two nodes `nodeA` and `nodeB`, find their LCA. Assume both nodes exist in the tree.
 
-This *is* the generic algorithm — see the 10-language code block above. No further specialisation needed.
+This *is* the generic algorithm — see the code block above. No further specialisation needed.
 
 ***
 
@@ -185,71 +335,306 @@ The classical algorithm has a subtle pitfall here: if only `nodeA` exists in the
 
 This adds one O(N) pre-pass, keeping overall complexity at O(N).
 
-## Solution
+<details>
+<summary><h2>Solution</h2></summary>
 
 
-```pseudocode
-function exists(root, target):
-    if root = null:    return false
-    if root = target:  return true
-    return exists(root.left, target) OR exists(root.right, target)
-
-function lcaII(root, a, b):
-    if root = null OR a = null OR b = null: return null
-    if NOT exists(root, a) OR NOT exists(root, b): return null
-    return lca(root, a, b)
-```
 
 ```python run
-def exists(root, target):
-    if root is None: return False
-    if root is target: return True
-    return exists(root.left, target) or exists(root.right, target)
+from typing import Optional
 
-def lca_ii(root, a, b):
-    if root is None or a is None or b is None: return None
-    if not exists(root, a) or not exists(root, b): return None
-    return lca(root, a, b)
+
+class TreeNode:
+    def __init__(self, val=0, left=None, right=None):
+        self.val = val
+        self.left = left
+        self.right = right
+
+
+def from_level_order(values):
+    """Build tree from list like [1, 2, 3, None, 4]. None means missing child."""
+    if not values:
+        return None
+    root = TreeNode(values[0])
+    queue = [root]
+    i = 1
+    while queue and i < len(values):
+        node = queue.pop(0)
+        if i < len(values) and values[i] is not None:
+            node.left = TreeNode(values[i])
+            queue.append(node.left)
+        i += 1
+        if i < len(values) and values[i] is not None:
+            node.right = TreeNode(values[i])
+            queue.append(node.right)
+        i += 1
+    return root
+
+
+def find(root, val):
+    """Locate a node by value."""
+    if root is None:
+        return None
+    if root.val == val:
+        return root
+    return find(root.left, val) or find(root.right, val)
+
+
+class Solution:
+    def node_exists(
+        self, root: Optional[TreeNode], target: Optional[TreeNode]
+    ) -> bool:
+
+        # If the root is null, the target node does not exist
+        if not root:
+            return False
+
+        # If the current node is the target node, return true
+        if root == target:
+            return True
+
+        # Recursively search in the left and right subtrees
+        node_exists_in_left_subtree = self.node_exists(root.left, target)
+        node_exists_in_right_subtree = self.node_exists(
+            root.right, target
+        )
+
+        # Return true if the target node exists in either subtree
+        return (
+            node_exists_in_left_subtree or node_exists_in_right_subtree
+        )
+
+    def lowest_common_ancestor(
+        self,
+        root: Optional[TreeNode],
+        node_a: Optional[TreeNode],
+        node_b: Optional[TreeNode],
+    ) -> Optional[TreeNode]:
+
+        # If the root is null, return null
+        if not root:
+            return None
+
+        # If the current node is equal to either nodeA or nodeB
+        # return the current node
+        if root == node_a or root == node_b:
+            return root
+
+        # Recursively search in the left and right subtrees
+        left_lca = self.lowest_common_ancestor(root.left, node_a, node_b)
+        right_lca = self.lowest_common_ancestor(
+            root.right, node_a, node_b
+        )
+
+        # If both subtrees return a non-null value
+        # the current node is the lowest common ancestor
+        if left_lca and right_lca:
+            return root
+
+        # If only one subtree returns a non-null value, return that value
+        return left_lca if left_lca else right_lca
+
+    def lowest_common_ancestor_ii(
+        self,
+        root: Optional[TreeNode],
+        node_a: Optional[TreeNode],
+        node_b: Optional[TreeNode],
+    ) -> Optional[TreeNode]:
+
+        # If any input is null, return null
+        if not root or not node_a or not node_b:
+            return None
+
+        # Check if both nodes exist in the tree
+        if not self.node_exists(root, node_a) or not self.node_exists(
+            root, node_b
+        ):
+            return None
+
+        return self.lowest_common_ancestor(root, node_a, node_b)
+
+
+# Examples from the problem statement
+root1 = from_level_order([1, 2, 3, 4, None, None, 7])
+lca1 = Solution().lowest_common_ancestor_ii(root1, find(root1, 4), find(root1, 7))
+print(lca1.val)   # 1
+
+root2 = from_level_order([1, 8, 4, None, None, 2, 7])
+ghost = TreeNode(9)  # node not in tree
+print(Solution().lowest_common_ancestor_ii(root2, find(root2, 2), ghost))  # None
+
+# Edge cases
+print(Solution().lowest_common_ancestor_ii(None, None, None))              # None
+
+root3 = from_level_order([1, 2, 3, 4, None, None, 7])                     # LCA is root
+lca3 = Solution().lowest_common_ancestor_ii(root3, find(root3, 2), find(root3, 3))
+print(lca3.val)   # 1
+
+root4 = from_level_order([1, 2, 3, 4, None, None, 7])                     # one is ancestor of the other
+lca4 = Solution().lowest_common_ancestor_ii(root4, find(root4, 2), find(root4, 4))
+print(lca4.val)   # 2
+
+root5 = from_level_order([1, 8, 4, None, None, 2, 7])                     # leaf siblings
+lca5 = Solution().lowest_common_ancestor_ii(root5, find(root5, 2), find(root5, 7))
+print(lca5.val)   # 4
+
+root6 = TreeNode(1)                                                         # single node, both same
+print(Solution().lowest_common_ancestor_ii(root6, root6, root6).val)       # 1
 ```
 
 ```java run
-static boolean exists(TreeNode root, TreeNode target) {
-    if (root == null)   return false;
-    if (root == target) return true;
-    return exists(root.left, target) || exists(root.right, target);
-}
-public static TreeNode lcaII(TreeNode root, TreeNode a, TreeNode b) {
-    if (root == null || a == null || b == null)            return null;
-    if (!exists(root, a) || !exists(root, b))              return null;
-    return lca(root, a, b);
+import java.util.*;
+
+public class Main {
+    static class TreeNode {
+        int val;
+        TreeNode left;
+        TreeNode right;
+        TreeNode() {}
+        TreeNode(int val) { this.val = val; }
+    }
+
+    static TreeNode fromLevelOrder(Integer... values) {
+        if (values.length == 0 || values[0] == null) return null;
+        TreeNode root = new TreeNode(values[0]);
+        java.util.Deque<TreeNode> queue = new java.util.ArrayDeque<>();
+        queue.add(root);
+        int i = 1;
+        while (!queue.isEmpty() && i < values.length) {
+            TreeNode node = queue.poll();
+            if (i < values.length && values[i] != null) {
+                node.left = new TreeNode(values[i]);
+                queue.add(node.left);
+            }
+            i++;
+            if (i < values.length && values[i] != null) {
+                node.right = new TreeNode(values[i]);
+                queue.add(node.right);
+            }
+            i++;
+        }
+        return root;
+    }
+
+    static TreeNode find(TreeNode root, int val) {
+        if (root == null) return null;
+        if (root.val == val) return root;
+        TreeNode left = find(root.left, val);
+        return left != null ? left : find(root.right, val);
+    }
+
+    static class Solution {
+        private boolean nodeExists(TreeNode root, TreeNode target) {
+
+            // If the root is null, the target node does not exist
+            if (root == null) {
+                return false;
+            }
+
+            // If the current node is the target node, return true
+            if (root == target) {
+                return true;
+            }
+
+            // Recursively search in the left and right subtrees
+            boolean nodeExistsInLeftSubtree = nodeExists(root.left, target);
+            boolean nodeExistsInRightSubtree = nodeExists(
+                root.right,
+                target
+            );
+
+            // Return true if the target node exists in either subtree
+            return nodeExistsInLeftSubtree || nodeExistsInRightSubtree;
+        }
+
+        private TreeNode lowestCommonAncestor(
+            TreeNode root,
+            TreeNode nodeA,
+            TreeNode nodeB
+        ) {
+
+            // If the root is null, return null
+            if (root == null) {
+                return null;
+            }
+
+            // If the current node is equal to either nodeA or nodeB
+            // return the current node
+            if (root == nodeA || root == nodeB) {
+                return root;
+            }
+
+            // Recursively search in the left and right subtrees
+            TreeNode leftLCA = lowestCommonAncestor(root.left, nodeA, nodeB);
+            TreeNode rightLCA = lowestCommonAncestor(
+                root.right,
+                nodeA,
+                nodeB
+            );
+
+            // If both subtrees return a non-null value
+            // the current node is the lowest common ancestor
+            if (leftLCA != null && rightLCA != null) {
+                return root;
+            }
+
+            // If only one subtree returns a non-null value, return that
+            // value
+            if (leftLCA != null) {
+                return leftLCA;
+            }
+
+            return rightLCA;
+        }
+
+        public TreeNode lowestCommonAncestorII(
+            TreeNode root,
+            TreeNode nodeA,
+            TreeNode nodeB
+        ) {
+
+            // If any input is null, return null
+            if (root == null || nodeA == null || nodeB == null) {
+                return null;
+            }
+
+            // Check if both nodes exist in the tree
+            if (!nodeExists(root, nodeA) || !nodeExists(root, nodeB)) {
+                return null;
+            }
+
+            return lowestCommonAncestor(root, nodeA, nodeB);
+        }
+    }
+
+    public static void main(String[] args) {
+        // Examples from the problem statement
+        TreeNode root1 = fromLevelOrder(1, 2, 3, 4, null, null, 7);
+        System.out.println(new Solution().lowestCommonAncestorII(root1, find(root1, 4), find(root1, 7)).val);  // 1
+
+        TreeNode root2 = fromLevelOrder(1, 8, 4, null, null, 2, 7);
+        TreeNode ghost = new TreeNode(9);  // node not in tree
+        System.out.println(new Solution().lowestCommonAncestorII(root2, find(root2, 2), ghost));  // null
+
+        // Edge cases
+        System.out.println(new Solution().lowestCommonAncestorII(null, null, null));               // null
+
+        TreeNode root3 = fromLevelOrder(1, 2, 3, 4, null, null, 7);                               // LCA is root
+        System.out.println(new Solution().lowestCommonAncestorII(root3, find(root3, 2), find(root3, 3)).val);  // 1
+
+        TreeNode root4 = fromLevelOrder(1, 2, 3, 4, null, null, 7);                               // one is ancestor
+        System.out.println(new Solution().lowestCommonAncestorII(root4, find(root4, 2), find(root4, 4)).val);  // 2
+
+        TreeNode root5 = fromLevelOrder(1, 8, 4, null, null, 2, 7);                               // leaf siblings
+        System.out.println(new Solution().lowestCommonAncestorII(root5, find(root5, 2), find(root5, 7)).val);  // 4
+
+        TreeNode root6 = new TreeNode(1);                                                          // single node
+        System.out.println(new Solution().lowestCommonAncestorII(root6, root6, root6).val);       // 1
+    }
 }
 ```
 
-```c run
-int exists(TreeNode *root, TreeNode *target) {
-    if (!root)            return 0;
-    if (root == target)   return 1;
-    return exists(root->left, target) || exists(root->right, target);
-}
-TreeNode* lca_ii(TreeNode *root, TreeNode *a, TreeNode *b) {
-    if (!root || !a || !b)                          return NULL;
-    if (!exists(root, a) || !exists(root, b))       return NULL;
-    return lca(root, a, b);
-}
-```
-
-```scala run
-def exists(root: TreeNode, target: TreeNode): Boolean = {
-  if (root == null)       return false
-  if (root eq target)     return true
-  exists(root.left, target) || exists(root.right, target)
-}
-def lcaII(root: TreeNode, a: TreeNode, b: TreeNode): TreeNode = {
-  if (root == null || a == null || b == null)                 return null
-  if (!exists(root, a) || !exists(root, b))                   return null
-  lca(root, a, b)
-}
-```
+</details>
 
 
 ***
@@ -260,78 +645,251 @@ def lcaII(root: TreeNode, a: TreeNode, b: TreeNode): TreeNode = {
 
 Generalise the algorithm: instead of "is this node `A` or `B`?", check "is this node *in the set of targets*?". Use a hash set for O(1) lookup. The combine logic stays exactly the same.
 
-## Solution
+<details>
+<summary><h2>Solution</h2></summary>
 
 
-```pseudocode
-function randomLCA(root, nodes):
-    targetSet ← set of all nodes
-    function go(n):
-        if n = null: return null
-        if n in targetSet: return n
-        left  ← go(n.left)
-        right ← go(n.right)
-        if left ≠ null AND right ≠ null: return n
-        return left if left ≠ null else right
-    return go(root)
-```
 
 ```python run
-def random_lca(root, nodes):
-    target_set = set(id(n) for n in nodes)         # use id() for object identity
-    def go(n):
-        if n is None: return None
-        if id(n) in target_set: return n
-        left  = go(n.left)
-        right = go(n.right)
-        if left and right: return n
-        return left if left else right
-    return go(root)
+from typing import Optional, List
+
+
+class TreeNode:
+    def __init__(self, val=0, left=None, right=None):
+        self.val = val
+        self.left = left
+        self.right = right
+
+
+def from_level_order(values):
+    """Build tree from list like [1, 2, 3, None, 4]. None means missing child."""
+    if not values:
+        return None
+    root = TreeNode(values[0])
+    queue = [root]
+    i = 1
+    while queue and i < len(values):
+        node = queue.pop(0)
+        if i < len(values) and values[i] is not None:
+            node.left = TreeNode(values[i])
+            queue.append(node.left)
+        i += 1
+        if i < len(values) and values[i] is not None:
+            node.right = TreeNode(values[i])
+            queue.append(node.right)
+        i += 1
+    return root
+
+
+def find(root, val):
+    """Locate a node by value."""
+    if root is None:
+        return None
+    if root.val == val:
+        return root
+    return find(root.left, val) or find(root.right, val)
+
+
+class Solution:
+    def lowest_common_ancestor(
+        self, root: Optional[TreeNode], nodes: set
+    ) -> Optional[TreeNode]:
+
+        # If the root is null, return null
+        if not root:
+            return None
+
+        # If the current node is part of the nodes set, return it
+        if root in nodes:
+            return root
+
+        # Recursively search in the left and right subtrees
+        left_lca = self.lowest_common_ancestor(root.left, nodes)
+        right_lca = self.lowest_common_ancestor(root.right, nodes)
+
+        # If both subtrees return a non-null value
+        # the current node is the lowest common ancestor
+        if left_lca and right_lca:
+            return root
+
+        # If only one subtree returns a non-null value, return that value
+        return left_lca if left_lca else right_lca
+
+    def random_lowest_common_ancestor(
+        self, root: Optional[TreeNode], nodes: List[Optional[TreeNode]]
+    ) -> Optional[TreeNode]:
+
+        # Convert the list to a set for faster lookup
+        nodeSet = set(nodes)
+
+        # Find and return the lowest common ancestor
+        return self.lowest_common_ancestor(root, nodeSet)
+
+
+# Examples from the problem statement
+root1 = from_level_order([1, 2, 3, 4, None, None, 7])
+lca1 = Solution().random_lowest_common_ancestor(
+    root1, [find(root1, 2), find(root1, 4), find(root1, 7)]
+)
+print(lca1.val)   # 1
+
+root2 = from_level_order([1, 8, 4, None, None, 2, 7])
+lca2 = Solution().random_lowest_common_ancestor(
+    root2, [find(root2, 2), find(root2, 7)]
+)
+print(lca2.val)   # 4
+
+# Edge cases
+print(Solution().random_lowest_common_ancestor(None, []))              # None
+
+root3 = from_level_order([1, 2, 3, 4, None, None, 7])                 # single node in list
+lca3 = Solution().random_lowest_common_ancestor(root3, [find(root3, 4)])
+print(lca3.val)   # 4
+
+root4 = from_level_order([1, 2, 3, 4, None, None, 7])                 # all leaf nodes → LCA is root
+lca4 = Solution().random_lowest_common_ancestor(
+    root4, [find(root4, 4), find(root4, 7)]
+)
+print(lca4.val)   # 1
+
+root5 = from_level_order([1, 8, 4, None, None, 2, 7])                 # three nodes, deep LCA
+lca5 = Solution().random_lowest_common_ancestor(
+    root5, [find(root5, 8), find(root5, 2), find(root5, 7)]
+)
+print(lca5.val)   # 1
+
+root6 = from_level_order([1, 2, 3])
+lca6 = Solution().random_lowest_common_ancestor(
+    root6, [find(root6, 2), find(root6, 3)]
+)
+print(lca6.val)   # 1 (root)
 ```
 
 ```java run
-public static TreeNode randomLCA(TreeNode root, List<TreeNode> nodes) {
-    Set<TreeNode> set = new HashSet<>(nodes);
-    return rlcaHelper(root, set);
-}
-static TreeNode rlcaHelper(TreeNode root, Set<TreeNode> set) {
-    if (root == null)        return null;
-    if (set.contains(root))  return root;
-    TreeNode left  = rlcaHelper(root.left,  set);
-    TreeNode right = rlcaHelper(root.right, set);
-    if (left != null && right != null) return root;
-    return left != null ? left : right;
-}
-```
+import java.util.*;
 
-```c run
-// (omitted — needs a pointer-set hash; algorithm same as above)
-```
-
-```scala run
-class TreeNode(var value: Int, var left: TreeNode = null, var right: TreeNode = null)
-
-object Main extends App {
-  class Solution {
-    def randomLCA(root: TreeNode, nodes: List[TreeNode]): TreeNode = {
-      val set = nodes.toSet
-      def go(n: TreeNode): TreeNode = {
-        if (n == null)              return null
-        if (set.contains(n))        return n
-        val left  = go(n.left)
-        val right = go(n.right)
-        if (left != null && right != null) return n
-        if (left != null) left else right
-      }
-      go(root)
+public class Main {
+    static class TreeNode {
+        int val;
+        TreeNode left;
+        TreeNode right;
+        TreeNode() {}
+        TreeNode(int val) { this.val = val; }
     }
-  }
 
-  val root = new TreeNode(1, new TreeNode(2), new TreeNode(3))
-  val lca  = new Solution().randomLCA(root, List(root.left, root.right))
-  println(lca.value)  // 1
+    static TreeNode fromLevelOrder(Integer... values) {
+        if (values.length == 0 || values[0] == null) return null;
+        TreeNode root = new TreeNode(values[0]);
+        java.util.Deque<TreeNode> queue = new java.util.ArrayDeque<>();
+        queue.add(root);
+        int i = 1;
+        while (!queue.isEmpty() && i < values.length) {
+            TreeNode node = queue.poll();
+            if (i < values.length && values[i] != null) {
+                node.left = new TreeNode(values[i]);
+                queue.add(node.left);
+            }
+            i++;
+            if (i < values.length && values[i] != null) {
+                node.right = new TreeNode(values[i]);
+                queue.add(node.right);
+            }
+            i++;
+        }
+        return root;
+    }
+
+    static TreeNode find(TreeNode root, int val) {
+        if (root == null) return null;
+        if (root.val == val) return root;
+        TreeNode left = find(root.left, val);
+        return left != null ? left : find(root.right, val);
+    }
+
+    static class Solution {
+        private TreeNode lowestCommonAncestor(
+            TreeNode root,
+            Set<TreeNode> nodes
+        ) {
+
+            // If the root is null, return null
+            if (root == null) {
+                return null;
+            }
+
+            // If the current node is part of the nodes set, return it
+            if (nodes.contains(root)) {
+                return root;
+            }
+
+            // Recursively search in the left and right subtrees
+            TreeNode leftLCA = lowestCommonAncestor(root.left, nodes);
+            TreeNode rightLCA = lowestCommonAncestor(root.right, nodes);
+
+            // If both subtrees return a non-null value
+            // the current node is the lowest common ancestor
+            if (leftLCA != null && rightLCA != null) {
+                return root;
+            }
+
+            // If only one subtree returns a non-null value, return that
+            // value
+            if (leftLCA != null) {
+                return leftLCA;
+            }
+
+            return rightLCA;
+        }
+
+        public TreeNode randomLowestCommonAncestor(
+            TreeNode root,
+            List<TreeNode> nodes
+        ) {
+
+            // Convert the array to a HashSet for faster lookup
+            Set<TreeNode> nodeSet = new HashSet<>();
+            for (TreeNode node : nodes) {
+                nodeSet.add(node);
+            }
+
+            // Find and return the lowest common ancestor
+            return lowestCommonAncestor(root, nodeSet);
+        }
+    }
+
+    public static void main(String[] args) {
+        // Examples from the problem statement
+        TreeNode root1 = fromLevelOrder(1, 2, 3, 4, null, null, 7);
+        System.out.println(new Solution().randomLowestCommonAncestor(
+            root1, Arrays.asList(find(root1, 2), find(root1, 4), find(root1, 7))).val);  // 1
+
+        TreeNode root2 = fromLevelOrder(1, 8, 4, null, null, 2, 7);
+        System.out.println(new Solution().randomLowestCommonAncestor(
+            root2, Arrays.asList(find(root2, 2), find(root2, 7))).val);  // 4
+
+        // Edge cases
+        System.out.println(new Solution().randomLowestCommonAncestor(null, new ArrayList<>()));  // null
+
+        TreeNode root3 = fromLevelOrder(1, 2, 3, 4, null, null, 7);                             // single node
+        System.out.println(new Solution().randomLowestCommonAncestor(
+            root3, Arrays.asList(find(root3, 4))).val);  // 4
+
+        TreeNode root4 = fromLevelOrder(1, 2, 3, 4, null, null, 7);                             // leaf nodes
+        System.out.println(new Solution().randomLowestCommonAncestor(
+            root4, Arrays.asList(find(root4, 4), find(root4, 7))).val);  // 1
+
+        TreeNode root5 = fromLevelOrder(1, 8, 4, null, null, 2, 7);                             // three nodes
+        System.out.println(new Solution().randomLowestCommonAncestor(
+            root5, Arrays.asList(find(root5, 8), find(root5, 2), find(root5, 7))).val);  // 1
+
+        TreeNode root6 = fromLevelOrder(1, 2, 3);
+        System.out.println(new Solution().randomLowestCommonAncestor(
+            root6, Arrays.asList(find(root6, 2), find(root6, 3))).val);  // 1
+    }
 }
 ```
+
+</details>
 
 
 ***
@@ -344,91 +902,286 @@ Two-pass: first do a level-order traversal to find the deepest leaves; then run 
 
 A more elegant *one-pass* solution exists using the stateful postorder pattern from lesson 11 — return `(deepest depth, LCA so far)` from each subtree, and combine at each node. We'll stick with the two-pass version for clarity; the one-pass version is a good exercise.
 
-## Solution
+<details>
+<summary><h2>Solution</h2></summary>
 
 
-```pseudocode
-function deepestLCA(root):
-    if root = null: return null
-    # Pass 1: BFS to collect deepest leaves
-    q ← empty queue; enqueue root to q; deepest ← empty list
-    while q is not empty:
-        deepest ← snapshot of q
-        nxt ← empty queue
-        for n in deepest:
-            if n.left  ≠ null: enqueue n.left  to nxt
-            if n.right ≠ null: enqueue n.right to nxt
-        q ← nxt
-    # Pass 2: N-node LCA over the deepest leaves
-    return randomLCA(root, deepest)
-```
 
 ```python run
-from collections import deque
+from queue import Queue
+from typing import Optional
 
-def deepest_lca(root):
-    if root is None: return None
-    # Pass 1: collect deepest leaves via BFS
-    deepest = []
-    q = deque([root])
-    while q:
-        deepest = list(q)
-        nxt = deque()
-        for n in deepest:
-            if n.left:  nxt.append(n.left)
-            if n.right: nxt.append(n.right)
-        q = nxt
-    # Pass 2: N-node LCA over those leaves
-    target_set = set(id(n) for n in deepest)
-    def go(n):
-        if n is None: return None
-        if id(n) in target_set: return n
-        left, right = go(n.left), go(n.right)
-        if left and right: return n
-        return left if left else right
-    return go(root)
+
+class TreeNode:
+    def __init__(self, val=0, left=None, right=None):
+        self.val = val
+        self.left = left
+        self.right = right
+
+
+def from_level_order(values):
+    """Build tree from list like [1, 2, 3, None, 4]. None means missing child."""
+    if not values:
+        return None
+    root = TreeNode(values[0])
+    queue = [root]
+    i = 1
+    while queue and i < len(values):
+        node = queue.pop(0)
+        if i < len(values) and values[i] is not None:
+            node.left = TreeNode(values[i])
+            queue.append(node.left)
+        i += 1
+        if i < len(values) and values[i] is not None:
+            node.right = TreeNode(values[i])
+            queue.append(node.right)
+        i += 1
+    return root
+
+
+class Solution:
+    def find_deepest_leaves(self, root: Optional[TreeNode]) -> list:
+
+        # Variable to store the deepest leaves
+        deepest_leaves = []
+
+        if not root:
+            return deepest_leaves
+
+        queue = Queue()
+        queue.put(root)
+
+        # Loop through each level in the tree
+        while not queue.empty():
+
+            # Get the size of the current level
+            level_size = queue.qsize()
+
+            # Reset deepestLeaves for the current level
+            deepest_leaves.clear()
+
+            # Loop through each node in the current level
+            for _ in range(level_size):
+
+                # Get the front node in the queue and remove it
+                node = queue.get()
+
+                # Add its value to the deepestLeaves
+                deepest_leaves.append(node)
+
+                # Add the node's children to the queue if they exist
+                if node.left:
+                    queue.put(node.left)
+
+                if node.right:
+                    queue.put(node.right)
+
+        # The last computed deepestLeaves is for the deepest level
+        return deepest_leaves
+
+    def random_lowest_common_ancestor(
+        self, root: Optional[TreeNode], nodes: set
+    ) -> Optional[TreeNode]:
+
+        # If the root is null, return null
+        if not root:
+            return None
+
+        # If the current node is part of the nodes set, return it
+        if root in nodes:
+            return root
+
+        # Recursively search in the left and right subtrees
+        leftLCA = self.random_lowest_common_ancestor(root.left, nodes)
+        rightLCA = self.random_lowest_common_ancestor(root.right, nodes)
+
+        # If both subtrees return a non-null value
+        # the current node is the lowest common ancestor
+        if leftLCA and rightLCA:
+            return root
+
+        # If only one subtree returns a non-null value, return that value
+        return leftLCA if leftLCA else rightLCA
+
+    def deepest_lowest_common_ancestor(
+        self, root: Optional[TreeNode]
+    ) -> Optional[TreeNode]:
+        deepest_leaves = self.find_deepest_leaves(root)
+
+        # Convert the list to a set for faster lookup
+        node_set = set(deepest_leaves)
+
+        # Find and return the lowest common ancestor
+        return self.random_lowest_common_ancestor(root, node_set)
+
+
+# Examples from the problem statement
+root1 = from_level_order([1, 2, 3, 4, 6, None, 7])
+print(Solution().deepest_lowest_common_ancestor(root1).val)   # 1
+
+root2 = from_level_order([1, 8, 4, None, None, 2, 7])
+print(Solution().deepest_lowest_common_ancestor(root2).val)   # 4
+
+# Edge cases
+print(Solution().deepest_lowest_common_ancestor(None))        # None
+
+root3 = TreeNode(1)                                           # single node
+print(Solution().deepest_lowest_common_ancestor(root3).val)   # 1
+
+root4 = from_level_order([1, 2, None, 3])                    # left skew, deepest = 3
+print(Solution().deepest_lowest_common_ancestor(root4).val)   # 3
+
+root5 = from_level_order([1, 2, 3])                          # balanced, two leaves at same depth
+print(Solution().deepest_lowest_common_ancestor(root5).val)   # 1
+
+root6 = from_level_order([1, 2, 3, 4, 5, None, None])       # one side deeper
+print(Solution().deepest_lowest_common_ancestor(root6).val)   # 2
 ```
 
 ```java run
-public static TreeNode deepestLCA(TreeNode root) {
-    if (root == null) return null;
-    Queue<TreeNode> q = new ArrayDeque<>(); q.offer(root);
-    List<TreeNode> deepest = new ArrayList<>();
-    while (!q.isEmpty()) {
-        deepest = new ArrayList<>(q);
-        Queue<TreeNode> nxt = new ArrayDeque<>();
-        for (TreeNode n : deepest) {
-            if (n.left  != null) nxt.offer(n.left);
-            if (n.right != null) nxt.offer(n.right);
+import java.util.*;
+
+public class Main {
+    static class TreeNode {
+        int val;
+        TreeNode left;
+        TreeNode right;
+        TreeNode() {}
+        TreeNode(int val) { this.val = val; }
+    }
+
+    static TreeNode fromLevelOrder(Integer... values) {
+        if (values.length == 0 || values[0] == null) return null;
+        TreeNode root = new TreeNode(values[0]);
+        java.util.Deque<TreeNode> queue = new java.util.ArrayDeque<>();
+        queue.add(root);
+        int i = 1;
+        while (!queue.isEmpty() && i < values.length) {
+            TreeNode node = queue.poll();
+            if (i < values.length && values[i] != null) {
+                node.left = new TreeNode(values[i]);
+                queue.add(node.left);
+            }
+            i++;
+            if (i < values.length && values[i] != null) {
+                node.right = new TreeNode(values[i]);
+                queue.add(node.right);
+            }
+            i++;
         }
-        q = nxt;
+        return root;
     }
-    Set<TreeNode> set = new HashSet<>(deepest);
-    return rlcaHelper(root, set);
+
+    static class Solution {
+        private List<TreeNode> findDeepestLeaves(TreeNode root) {
+            List<TreeNode> deepestLeaves = new ArrayList<>();
+            if (root == null) {
+                return deepestLeaves;
+            }
+
+            Queue<TreeNode> queue = new LinkedList<>();
+            queue.add(root);
+
+            // Loop through each level in the tree
+            while (!queue.isEmpty()) {
+                int levelSize = queue.size();
+
+                // Reset the deepestLeaves list for the current level
+                deepestLeaves.clear();
+
+                // Loop through each node in the current level
+                for (int i = 0; i < levelSize; i++) {
+                    TreeNode node = queue.poll();
+                    deepestLeaves.add(node);
+
+                    // Add the node's children to the queue if they exist
+                    if (node.left != null) {
+                        queue.add(node.left);
+                    }
+
+                    if (node.right != null) {
+                        queue.add(node.right);
+                    }
+                }
+            }
+
+            // The last computed deepestLeaves is for the deepest level
+            return deepestLeaves;
+        }
+
+        private TreeNode randomLowestCommonAncestor(
+            TreeNode root,
+            Set<TreeNode> nodes
+        ) {
+            if (root == null) {
+                return null;
+            }
+
+            // If the current node is part of the nodes set, return it
+            if (nodes.contains(root)) {
+                return root;
+            }
+
+            // Recursively search in the left and right subtrees
+            TreeNode leftLCA = randomLowestCommonAncestor(root.left, nodes);
+            TreeNode rightLCA = randomLowestCommonAncestor(
+                root.right,
+                nodes
+            );
+
+            // If both subtrees return a non-null value
+            // the current node is the lowest common ancestor
+            if (leftLCA != null && rightLCA != null) {
+                return root;
+            }
+
+            // If only one subtree returns a non-null value, return that
+            // value
+            if (leftLCA != null) {
+                return leftLCA;
+            }
+
+            return rightLCA;
+        }
+
+        public TreeNode deepestLowestCommonAncestor(TreeNode root) {
+            List<TreeNode> deepestLeaves = findDeepestLeaves(root);
+
+            // Convert the list to a set for faster lookup
+            Set<TreeNode> nodeSet = new HashSet<>(deepestLeaves);
+
+            // Find and return the lowest common ancestor
+            return randomLowestCommonAncestor(root, nodeSet);
+        }
+    }
+
+    public static void main(String[] args) {
+        // Examples from the problem statement
+        TreeNode root1 = fromLevelOrder(1, 2, 3, 4, 6, null, 7);
+        System.out.println(new Solution().deepestLowestCommonAncestor(root1).val);   // 1
+
+        TreeNode root2 = fromLevelOrder(1, 8, 4, null, null, 2, 7);
+        System.out.println(new Solution().deepestLowestCommonAncestor(root2).val);   // 4
+
+        // Edge cases
+        System.out.println(new Solution().deepestLowestCommonAncestor(null));        // null
+
+        TreeNode root3 = new TreeNode(1);                                            // single node
+        System.out.println(new Solution().deepestLowestCommonAncestor(root3).val);   // 1
+
+        TreeNode root4 = fromLevelOrder(1, 2, null, 3);                             // left skew
+        System.out.println(new Solution().deepestLowestCommonAncestor(root4).val);   // 3
+
+        TreeNode root5 = fromLevelOrder(1, 2, 3);                                   // balanced two leaves
+        System.out.println(new Solution().deepestLowestCommonAncestor(root5).val);   // 1
+
+        TreeNode root6 = fromLevelOrder(1, 2, 3, 4, 5, null, null);                // one side deeper
+        System.out.println(new Solution().deepestLowestCommonAncestor(root6).val);   // 2
+    }
 }
 ```
 
-```c run
-// (omitted — combines deepest-leaves BFS with random-LCA helper)
-```
-
-```scala run
-def deepestLCA(root: TreeNode): TreeNode = {
-  if (root == null) return null
-  var q = scala.collection.mutable.Queue[TreeNode](root)
-  var deepest: List[TreeNode] = Nil
-  while (q.nonEmpty) {
-    deepest = q.toList
-    val nxt = scala.collection.mutable.Queue[TreeNode]()
-    for (n <- deepest) {
-      if (n.left  != null) nxt.enqueue(n.left)
-      if (n.right != null) nxt.enqueue(n.right)
-    }
-    q = nxt
-  }
-  randomLCA(root, deepest)
-}
-```
+</details>
 
 
 ***
@@ -472,118 +1225,261 @@ flowchart TB
 
 <p align="center"><strong>Distance between 4 and 7 — LCA is 1; 4 is 2 edges down, 7 is 2 edges down. Total path length = 2 + 2 = <strong>4 edges</strong>.</strong></p>
 
-## Solution
+<details>
+<summary><h2>Solution</h2></summary>
 
 
-```pseudocode
-function distanceBetweenNodes(root, valA, valB):
-    function lcaByVal(n):
-        if n = null: return null
-        if n.val = valA OR n.val = valB: return n
-        l ← lcaByVal(n.left); r ← lcaByVal(n.right)
-        if l ≠ null AND r ≠ null: return n
-        return l if l ≠ null else r
-    function depth(n, val, d):
-        if n = null: return −1
-        if n.val = val: return d
-        l ← depth(n.left, val, d + 1)
-        if l ≠ −1: return l
-        return depth(n.right, val, d + 1)
-    ancestor ← lcaByVal(root)
-    if ancestor = null: return −1
-    da ← depth(ancestor, valA, 0); db ← depth(ancestor, valB, 0)
-    if da = −1 OR db = −1: return −1
-    return da + db
-```
 
 ```python run
-def distance_between_nodes(root, val_a, val_b):
-    def lca_v(n):
-        if n is None: return None
-        if n.val == val_a or n.val == val_b: return n
-        l, r = lca_v(n.left), lca_v(n.right)
-        if l and r: return n
-        return l if l else r
-    def depth(n, val, d):
-        if n is None: return -1
-        if n.val == val: return d
-        l = depth(n.left, val, d + 1)
-        if l != -1: return l
-        return depth(n.right, val, d + 1)
-    a = lca_v(root)
-    if a is None: return -1
-    da = depth(a, val_a, 0); db = depth(a, val_b, 0)
-    if da == -1 or db == -1: return -1
-    return da + db
+from typing import Optional
+
+
+class TreeNode:
+    def __init__(self, val=0, left=None, right=None):
+        self.val = val
+        self.left = left
+        self.right = right
+
+
+def from_level_order(values):
+    """Build tree from list like [1, 2, 3, None, 4]. None means missing child."""
+    if not values:
+        return None
+    root = TreeNode(values[0])
+    queue = [root]
+    i = 1
+    while queue and i < len(values):
+        node = queue.pop(0)
+        if i < len(values) and values[i] is not None:
+            node.left = TreeNode(values[i])
+            queue.append(node.left)
+        i += 1
+        if i < len(values) and values[i] is not None:
+            node.right = TreeNode(values[i])
+            queue.append(node.right)
+        i += 1
+    return root
+
+
+class Solution:
+    def lowest_common_ancestor(
+        self, root: Optional[TreeNode], val_a: int, val_b: int
+    ) -> Optional[TreeNode]:
+
+        # If the root is null, return null
+        if not root:
+            return None
+
+        # If the value of the current node is equal to either valA or
+        # valB return the current node
+        if root.val == val_a or root.val == val_b:
+            return root
+
+        # Recursively search in the left and right subtrees
+        left_lca = self.lowest_common_ancestor(root.left, val_a, val_b)
+        right_lca = self.lowest_common_ancestor(root.right, val_a, val_b)
+
+        # If both subtrees return a non-null value
+        # the current node is the lowest common ancestor
+        if left_lca and right_lca:
+            return root
+
+        # If only one subtree returns a non-null value, return that value
+        return left_lca if left_lca else right_lca
+
+    def find_depth(
+        self, root: Optional[TreeNode], val: int, depth: int
+    ) -> int:
+
+        # Base case: if the root is null, return -1
+        if not root:
+            return -1
+
+        # If the current node is the target node, return the depth
+        if root.val == val:
+            return depth
+
+        left_depth = self.find_depth(root.left, val, depth + 1)
+
+        # If left_depth is not -1, the target node is in the left subtree
+        if left_depth != -1:
+            return left_depth
+
+        # If left_depth is -1, search in the right subtree
+        return self.find_depth(root.right, val, depth + 1)
+
+    def distance_between_nodes(
+        self, root: Optional[TreeNode], val_a: int, val_b: int
+    ) -> int:
+
+        # If the root is null, return -1
+        if not root:
+            return -1
+
+        # Step 1: Find the LCA of valA and valB
+        lca = self.lowest_common_ancestor(root, val_a, val_b)
+
+        # If either node is missing, return -1
+        if not lca:
+            return -1
+
+        # Step 2: Find the depths of valA, valB from LCA
+        depth_a = self.find_depth(lca, val_a, 0)
+        depth_b = self.find_depth(lca, val_b, 0)
+
+        # Step 3: Compute the distance
+        return depth_a + depth_b
+
+
+# Examples from the problem statement
+print(Solution().distance_between_nodes(from_level_order([1, 2, 3, 4, None, None, 7]), 4, 7))         # 4
+print(Solution().distance_between_nodes(from_level_order([1, 8, 4, None, None, 2, 7, None, 9]), 2, 8))  # 3
+
+# Edge cases
+print(Solution().distance_between_nodes(None, 1, 2))                                                    # -1
+print(Solution().distance_between_nodes(TreeNode(1), 1, 1))                                            # 0 (same node)
+print(Solution().distance_between_nodes(from_level_order([1, 2, 3]), 2, 3))                            # 2 (siblings)
+print(Solution().distance_between_nodes(from_level_order([1, 2, 3, 4, None, None, 7]), 1, 4))         # 2 (root to leaf)
+print(Solution().distance_between_nodes(from_level_order([1, 2, 3, 4, None, None, 7]), 4, 2))         # 1 (parent-child)
 ```
 
 ```java run
-static TreeNode lcaByVal(TreeNode root, int a, int b) {
-    if (root == null)                          return null;
-    if (root.val == a || root.val == b)        return root;
-    TreeNode l = lcaByVal(root.left,  a, b);
-    TreeNode r = lcaByVal(root.right, a, b);
-    if (l != null && r != null) return root;
-    return l != null ? l : r;
-}
-static int depth(TreeNode n, int val, int d) {
-    if (n == null)         return -1;
-    if (n.val == val)      return d;
-    int l = depth(n.left,  val, d + 1);
-    if (l != -1) return l;
-    return depth(n.right, val, d + 1);
-}
-public static int distanceBetweenNodes(TreeNode root, int a, int b) {
-    if (root == null) return -1;
-    TreeNode l = lcaByVal(root, a, b);
-    if (l == null) return -1;
-    int da = depth(l, a, 0), db = depth(l, b, 0);
-    if (da == -1 || db == -1) return -1;
-    return da + db;
-}
-```
+import java.util.*;
 
-```c run
-// (omitted — three helper functions, mechanical)
-```
-
-```scala run
-class TreeNode(var value: Int, var left: TreeNode = null, var right: TreeNode = null)
-
-object Main extends App {
-  class Solution {
-    def distanceBetweenNodes(root: TreeNode, a: Int, b: Int): Int = {
-      def lcaByVal(n: TreeNode): TreeNode = {
-        if (n == null)                          return null
-        if (n.value == a || n.value == b)       return n
-        val l = lcaByVal(n.left); val r = lcaByVal(n.right)
-        if (l != null && r != null) return n
-        if (l != null) l else r
-      }
-      def depth(n: TreeNode, v: Int, d: Int): Int = {
-        if (n == null)         return -1
-        if (n.value == v)      return d
-        val l = depth(n.left,  v, d + 1); if (l != -1) return l
-        depth(n.right, v, d + 1)
-      }
-      if (root == null) return -1
-      val l = lcaByVal(root); if (l == null) return -1
-      val da = depth(l, a, 0); val db = depth(l, b, 0)
-      if (da == -1 || db == -1) -1 else da + db
+public class Main {
+    static class TreeNode {
+        int val;
+        TreeNode left;
+        TreeNode right;
+        TreeNode() {}
+        TreeNode(int val) { this.val = val; }
     }
-  }
 
-  val root = new TreeNode(1,
-    new TreeNode(2, new TreeNode(4), null),
-    new TreeNode(3, null, new TreeNode(7)))
-  println(new Solution().distanceBetweenNodes(root, 4, 7))  // 4
+    static TreeNode fromLevelOrder(Integer... values) {
+        if (values.length == 0 || values[0] == null) return null;
+        TreeNode root = new TreeNode(values[0]);
+        java.util.Deque<TreeNode> queue = new java.util.ArrayDeque<>();
+        queue.add(root);
+        int i = 1;
+        while (!queue.isEmpty() && i < values.length) {
+            TreeNode node = queue.poll();
+            if (i < values.length && values[i] != null) {
+                node.left = new TreeNode(values[i]);
+                queue.add(node.left);
+            }
+            i++;
+            if (i < values.length && values[i] != null) {
+                node.right = new TreeNode(values[i]);
+                queue.add(node.right);
+            }
+            i++;
+        }
+        return root;
+    }
+
+    static class Solution {
+        private TreeNode lowestCommonAncestor(
+            TreeNode root,
+            int valA,
+            int valB
+        ) {
+
+            // If the root is null, return null
+            if (root == null) {
+                return null;
+            }
+
+            // If the value of the current node is equal to either valA or
+            // valB return the current node
+            if (root.val == valA || root.val == valB) {
+                return root;
+            }
+
+            // Recursively search in the left and right subtrees
+            TreeNode leftLCA = lowestCommonAncestor(root.left, valA, valB);
+            TreeNode rightLCA = lowestCommonAncestor(root.right, valA, valB);
+
+            // If both subtrees return a non-null value
+            // the current node is the lowest common ancestor
+            if (leftLCA != null && rightLCA != null) {
+                return root;
+            }
+
+            // If only one subtree returns a non-null value, return that
+            // value
+            if (leftLCA != null) {
+                return leftLCA;
+            }
+
+            return rightLCA;
+        }
+
+        private int findDepth(TreeNode root, int val, int depth) {
+
+            // Base case: if the root is null, return -1
+            if (root == null) {
+                return -1;
+            }
+
+            // If the current node is the target node, return the depth
+            if (root.val == val) {
+                return depth;
+            }
+
+            int leftDepth = findDepth(root.left, val, depth + 1);
+
+            // If leftDepth is not -1, the target node is in the left subtree
+            if (leftDepth != -1) {
+                return leftDepth;
+            }
+
+            // If leftDepth is -1, search in the right subtree
+            return findDepth(root.right, val, depth + 1);
+        }
+
+        public int distanceBetweenNodes(TreeNode root, int valA, int valB) {
+
+            // If the root is null, return -1
+            if (root == null) {
+                return -1;
+            }
+
+            // Step 1: Find the LCA of valA and valB
+            TreeNode lca = lowestCommonAncestor(root, valA, valB);
+
+            // If either node is missing, return -1
+            if (lca == null) {
+                return -1;
+            }
+
+            // Step 2: Find the depths of valA, valB from LCA
+            int depthA = findDepth(lca, valA, 0);
+            int depthB = findDepth(lca, valB, 0);
+
+            // Step 3: Compute the distance
+            return depthA + depthB;
+        }
+    }
+
+    public static void main(String[] args) {
+        // Examples from the problem statement
+        System.out.println(new Solution().distanceBetweenNodes(fromLevelOrder(1, 2, 3, 4, null, null, 7), 4, 7));         // 4
+        System.out.println(new Solution().distanceBetweenNodes(fromLevelOrder(1, 8, 4, null, null, 2, 7, null, 9), 2, 8));  // 3
+
+        // Edge cases
+        System.out.println(new Solution().distanceBetweenNodes(null, 1, 2));                                                // -1
+        System.out.println(new Solution().distanceBetweenNodes(new TreeNode(1), 1, 1));                                    // 0 (same node)
+        System.out.println(new Solution().distanceBetweenNodes(fromLevelOrder(1, 2, 3), 2, 3));                            // 2 (siblings)
+        System.out.println(new Solution().distanceBetweenNodes(fromLevelOrder(1, 2, 3, 4, null, null, 7), 1, 4));         // 2 (root to leaf)
+        System.out.println(new Solution().distanceBetweenNodes(fromLevelOrder(1, 2, 3, 4, null, null, 7), 4, 2));         // 1 (parent-child)
+    }
 }
 ```
 
+</details>
+<details>
+<summary><h2>Final Takeaway</h2></summary>
 
-***
-
-## Final Takeaway
 
 LCA is the single most useful tree primitive after height/depth. Three things to walk away with:
 
@@ -592,3 +1488,5 @@ LCA is the single most useful tree primitive after height/depth. Three things to
 3. **LCA reduces other problems.** Distance between nodes? LCA + depths. "Are X and Y in the same subtree of root R?" LCA(X, Y) descends from R. "Closest node sharing both X and Y as descendants?" That *is* LCA. Internalise the LCA primitive and dozens of "relational" tree questions become two-line wrappers.
 
 > *Coming up — the next lesson covers the **simultaneous traversal** pattern: walking *two* trees in parallel, comparing them node-by-node. The recurring structure handles "are these two trees identical?", "is this tree symmetric to itself?", "is X a subtree of Y?", and "merge two trees node-by-node". Same recursive shape as a single-tree traversal, but with an extra parameter for the second tree.*
+
+</details>

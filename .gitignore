@@ -33,6 +33,7 @@ Thumbs.db
 # Claude / agent context (not committed)
 .claude/
 docs
+tools
 
 # Logs
 *.log

@@ -219,18 +219,6 @@ temp -> copy: "pass 2: copy back"
 ```
 
 
-```pseudocode
-# Brute-force left rotation by k. Build a rotated copy in temp, then write it back.
-function kRotate(arr, k):
-    n ← length(arr)
-    k ← k mod n                                   # k > n is just (k mod n) rotations
-    temp ← list of n zeros
-    for i from 0 to n − 1:
-        temp[i] ← arr[(i + k) mod n]              # source index wraps with mod n
-    for i from 0 to n − 1:
-        arr[i] ← temp[i]
-```
-
 ```python run
 from typing import List
 
@@ -266,44 +254,6 @@ public class Main {
         kRotate(arr, 4);
         System.out.println(Arrays.toString(arr));
     }
-}
-```
-
-```c run
-#include <stdio.h>
-#include <stdlib.h>
-
-void k_rotate(int* arr, int n, int k) {
-    k = k % n;
-    int* temp = (int*)malloc(n * sizeof(int));
-    for (int i = 0; i < n; i++) temp[i] = arr[(i + k) % n];
-    for (int i = 0; i < n; i++) arr[i]  = temp[i];
-    free(temp);
-}
-
-int main() {
-    int arr[] = {1, 2, 3, 4, 5, 6, 7, 8};
-    int n = 8;
-    k_rotate(arr, n, 4);
-    for (int i = 0; i < n; i++) printf("%d ", arr[i]);
-    printf("\n");
-    return 0;
-}
-```
-
-```scala run
-object Main extends App {
-  def kRotate(arr: Array[Int], k0: Int): Unit = {
-    val n = arr.length
-    val k = k0 % n
-    val temp = new Array[Int](n)
-    for (i <- 0 until n) temp(i) = arr((i + k) % n)
-    for (i <- 0 until n) arr(i)  = temp(i)
-  }
-
-  val arr = Array(1, 2, 3, 4, 5, 6, 7, 8)
-  kRotate(arr, 4)
-  println(arr.mkString(", "))
 }
 ```
 
@@ -462,138 +412,57 @@ Each reversal is a direct two-pointer application (`left++`, `right--`, swap unt
 ## Two-Pointer Solution
 
 
-```pseudocode
-# Three-reversal trick — left rotation by k with O(1) extra space.
-# Reverse left half, reverse right half, reverse the whole thing.
-function reverse(arr, start, end):
-    while start < end:
-        swap arr[start] and arr[end]
-        start ← start + 1
-        end ← end − 1
-
-function kRotations(arr, k):
-    n ← length(arr)
-    k ← k mod n
-    reverse(arr, 0, k − 1)                        # reverse left half
-    reverse(arr, k, n − 1)                        # reverse right half
-    reverse(arr, 0, n − 1)                        # reverse the whole array
-```
-
 ```python run
-from typing import List
-
 class Solution:
     def reverse(self, arr: List[int], start: int, end: int) -> None:
-        # Two-pointer in-place reversal of arr[start..end].
         while start < end:
             arr[start], arr[end] = arr[end], arr[start]
             start += 1
-            end   -= 1
+            end -= 1
 
     def k_rotations(self, arr: List[int], k: int) -> None:
         n = len(arr)
-        k %= n                          # k > n is just (k mod n) rotations.
 
-        # Three reversals: left half, right half, then the whole thing.
-        # This swaps the order of the two halves with zero extra space.
+        # Set k to be in the range of [0, n)
+        k %= n
+
+        # Reverse the first k elements using two pointer method
         self.reverse(arr, 0, k - 1)
+
+        # Reverse the remaining elements using two pointer method
         self.reverse(arr, k, n - 1)
+
+        # Reverse the entire array using two pointer method
         self.reverse(arr, 0, n - 1)
-
-
-arr = [1, 2, 3, 4, 5, 6, 7, 8]
-Solution().k_rotations(arr, 4)
-print(arr)   # [5, 6, 7, 8, 1, 2, 3, 4]
 ```
 
 ```java run
-import java.util.Arrays;
-
-public class Main {
-    static class Solution {
-        void reverse(int[] arr, int start, int end) {
-            while (start < end) {
-                int tmp = arr[start];
-                arr[start] = arr[end];
-                arr[end]   = tmp;
-                start++;
-                end--;
-            }
-        }
-
-        void kRotations(int[] arr, int k) {
-            int n = arr.length;
-            k %= n;
-            reverse(arr, 0, k - 1);
-            reverse(arr, k, n - 1);
-            reverse(arr, 0, n - 1);
+class Solution {
+    public void reverse(int[] arr, int start, int end) {
+        while (start < end) {
+            int temp = arr[start];
+            arr[start] = arr[end];
+            arr[end] = temp;
+            start++;
+            end--;
         }
     }
 
-    public static void main(String[] args) {
-        int[] arr = {1, 2, 3, 4, 5, 6, 7, 8};
-        new Solution().kRotations(arr, 4);
-        System.out.println(Arrays.toString(arr));
+    public void kRotations(int[] arr, int k) {
+        int n = arr.length;
+
+        // Set k to be in the range of [0, n)
+        k %= n;
+
+        // Reverse the first k elements using two pointer method
+        reverse(arr, 0, k - 1);
+
+        // Reverse the remaining elements using two pointer method
+        reverse(arr, k, n - 1);
+
+        // Reverse the entire array using two pointer method
+        reverse(arr, 0, n - 1);
     }
-}
-```
-
-```c run
-#include <stdio.h>
-
-void reverse_seg(int* arr, int start, int end) {
-    while (start < end) {
-        int tmp = arr[start];
-        arr[start] = arr[end];
-        arr[end]   = tmp;
-        start++;
-        end--;
-    }
-}
-
-void k_rotations(int* arr, int n, int k) {
-    k %= n;
-    reverse_seg(arr, 0, k - 1);
-    reverse_seg(arr, k, n - 1);
-    reverse_seg(arr, 0, n - 1);
-}
-
-int main() {
-    int arr[] = {1, 2, 3, 4, 5, 6, 7, 8};
-    k_rotations(arr, 8, 4);
-    for (int i = 0; i < 8; i++) printf("%d ", arr[i]);
-    printf("\n");
-    return 0;
-}
-```
-
-```scala run
-object Main extends App {
-  class Solution {
-    def reverse(arr: Array[Int], s0: Int, e0: Int): Unit = {
-      var start = s0
-      var end = e0
-      while (start < end) {
-        val tmp = arr(start)
-        arr(start) = arr(end)
-        arr(end)   = tmp
-        start += 1
-        end   -= 1
-      }
-    }
-
-    def kRotations(arr: Array[Int], k0: Int): Unit = {
-      val n = arr.length
-      val k = k0 % n
-      reverse(arr, 0, k - 1)
-      reverse(arr, k, n - 1)
-      reverse(arr, 0, n - 1)
-    }
-  }
-
-  val arr = Array(1, 2, 3, 4, 5, 6, 7, 8)
-  new Solution().kRotations(arr, 4)
-  println(arr.mkString(", "))
 }
 ```
 
@@ -678,7 +547,9 @@ Output: [1, 2, 3, 4, 5]
 
 ---
 
-## What Does "Rotate Right" Mean?
+<details>
+<summary><h2>What Does "Rotate Right" Mean?</h2></summary>
+
 
 One step to the right means the **last element wraps around to the front**, and every other element shifts one position to the right.
 
@@ -701,9 +572,10 @@ After `k` right rotations, the **last `k` elements** end up at the front, and th
 
 Think of it as splitting the array into two halves: `[HEAD | TAIL]` where `HEAD` = first `n-k` elements and `TAIL` = last `k` elements. The goal is to produce `[TAIL | HEAD]`.
 
----
+</details>
+<details>
+<summary><h2>Applying the Diagnostic Questions</h2></summary>
 
-## Applying the Diagnostic Questions
 
 | Question | Answer |
 |---|---|
@@ -714,22 +586,22 @@ Think of it as splitting the array into two halves: `[HEAD | TAIL]` where `HEAD`
 
 This is the same fundamental insight from the previous lesson, adapted for the direction of rotation.
 
-**Mental model:** Split the array into `[HEAD | TAIL]`. A right rotation by `k` wants to produce `[TAIL | HEAD]`. Reversing each half individually scrambles their internal order, but a final full reversal restores both halves while swapping their positions.
+**Mental model:** Split the array into `[HEAD | TAIL]` (where `HEAD` = first `n-k`, `TAIL` = last `k`). A right rotation by `k` wants to produce `[TAIL | HEAD]`. Reversing the entire array first puts `TAIL` in front and `HEAD` at the back — but both halves are now scrambled internally. Reversing each scrambled half individually restores its original order.
 
 **The three steps:**
-1. Reverse `TAIL` (last `k` elements): internal order flips → `[HEAD | TAIL_reversed]`
-2. Reverse `HEAD` (first `n-k` elements): internal order flips → `[HEAD_reversed | TAIL_reversed]`
-3. Reverse the entire array: everything flips, which **un-reverses both halves** and places `TAIL` before `HEAD` → `[TAIL | HEAD]` ✓
+1. Reverse the entire array: `[HEAD | TAIL]` → `[reverse(TAIL) | reverse(HEAD)]` — `TAIL` is now in front of `HEAD`, but both are scrambled
+2. Reverse the first `k` elements: `reverse(TAIL)` becomes `TAIL` again → `[TAIL | reverse(HEAD)]`
+3. Reverse the last `n-k` elements: `reverse(HEAD)` becomes `HEAD` again → `[TAIL | HEAD]` ✓
 
 **Concrete check with `[1, 2, 3, 4, 5]`, k=3:**
 - `HEAD = [1, 2]` (first 2), `TAIL = [3, 4, 5]` (last 3)
-- Step 1 (reverse TAIL `[2..4]`): `[1, 2, 5, 4, 3]`
-- Step 2 (reverse HEAD `[0..1]`): `[2, 1, 5, 4, 3]`
-- Step 3 (reverse all `[0..4]`): `[3, 4, 5, 1, 2]` ✓
+- Step 1 (reverse all `[0..4]`): `[5, 4, 3, 2, 1]` — `TAIL` reversed in front, `HEAD` reversed at back
+- Step 2 (reverse first `k=3`, indices `[0..2]`): `[3, 4, 5, 2, 1]` — `TAIL` restored to its original order
+- Step 3 (reverse indices `[3..4]`): `[3, 4, 5, 1, 2]` ✓ — `HEAD` restored to its original order
 
-**What breaks if you skip the segment reversals?** If you only reversed the entire array: `[1,2,3,4,5]` → `[5,4,3,2,1]`. That's a full reversal, not a rotation. The two preparatory reversals are what guarantee each half's internal order is preserved after the final flip.
+**What breaks if you skip either segment reversal?** After step 1 alone you have `[5, 4, 3, 2, 1]` — a full reversal, not a rotation. The two segment reversals are what un-scramble each half so the relative order inside `TAIL` and inside `HEAD` matches the original.
 
-**How this differs from left rotation:** The previous lesson solved left rotation by reversing the first `k` elements, then the last `n-k`, then the whole array. For right rotation, the segment sizes are swapped — you reverse the last `k` and the first `n-k` first, then the whole array. The same mechanic, with `HEAD` and `TAIL` switched.
+**How this differs from left rotation:** The previous lesson solved left rotation with the same "reverse all, then reverse each half" trick — only the segment boundaries change. For right rotation by `k`, the first segment is `k` long (it was `n-k` for left rotation), and the second is `n-k`. The same three-reversal mechanic, with the split point shifted.
 
 ### Q2 — Why "in-place reversal is the two-pointer flip"?
 
@@ -742,14 +614,15 @@ Reversing a segment `[start..end]` is the canonical two-pointer direct applicati
 
 **What if you didn't use two pointers?** You'd need a temporary array to hold the reversed segment before writing it back — O(k) extra space per reversal. Two pointers do it with only two index variables — O(1) per reversal, O(1) total.
 
----
+</details>
+<details>
+<summary><h2>The Three-Reversal Strategy (Visualised)</h2></summary>
 
-## The Three-Reversal Strategy (Visualised)
 
 ```d2
 direction: right
 
-s0: "Original:  [1, 2 | 3, 4, 5]  (HEAD=2, TAIL=3)" {
+s0: "Original:  [1, 2 | 3, 4, 5]  (HEAD=[1,2], TAIL=[3,4,5])" {
   grid-columns: 5
   grid-gap: 0
   a0: "1" {style.fill: "#dcfce7"; style.stroke: "#16a34a"}
@@ -759,27 +632,27 @@ s0: "Original:  [1, 2 | 3, 4, 5]  (HEAD=2, TAIL=3)" {
   a4: "5" {style.fill: "#fde68a"; style.stroke: "#d97706"}
 }
 
-s1: "Step 1: Reverse TAIL [2..4]  →  [1, 2, 5, 4, 3]" {
+s1: "Step 1: Reverse all [0..4]  →  [5, 4, 3, 2, 1]" {
   grid-columns: 5
   grid-gap: 0
-  b0: "1"
-  b1: "2"
-  b2: "5" {style.fill: "#fde68a"; style.stroke: "#d97706"}
-  b3: "4" {style.fill: "#fde68a"; style.stroke: "#d97706"}
-  b4: "3" {style.fill: "#fde68a"; style.stroke: "#d97706"}
+  b0: "5" {style.fill: "#fde68a"; style.stroke: "#d97706"}
+  b1: "4" {style.fill: "#fde68a"; style.stroke: "#d97706"}
+  b2: "3" {style.fill: "#fde68a"; style.stroke: "#d97706"}
+  b3: "2" {style.fill: "#dcfce7"; style.stroke: "#16a34a"}
+  b4: "1" {style.fill: "#dcfce7"; style.stroke: "#16a34a"}
 }
 
-s2: "Step 2: Reverse HEAD [0..1]  →  [2, 1, 5, 4, 3]" {
+s2: "Step 2: Reverse first k=3 [0..2]  →  [3, 4, 5, 2, 1]" {
   grid-columns: 5
   grid-gap: 0
-  c0: "2" {style.fill: "#dcfce7"; style.stroke: "#16a34a"}
-  c1: "1" {style.fill: "#dcfce7"; style.stroke: "#16a34a"}
-  c2: "5"
-  c3: "4"
-  c4: "3"
+  c0: "3" {style.fill: "#fde68a"; style.stroke: "#d97706"}
+  c1: "4" {style.fill: "#fde68a"; style.stroke: "#d97706"}
+  c2: "5" {style.fill: "#fde68a"; style.stroke: "#d97706"}
+  c3: "2" {style.fill: "#dcfce7"; style.stroke: "#16a34a"}
+  c4: "1" {style.fill: "#dcfce7"; style.stroke: "#16a34a"}
 }
 
-s3: "Step 3: Reverse all [0..4]  →  [3, 4, 5, 1, 2]  ✓" {
+s3: "Step 3: Reverse last n-k=2 [3..4]  →  [3, 4, 5, 1, 2]  ✓" {
   grid-columns: 5
   grid-gap: 0
   d0: "3" {style.fill: "#dbeafe"; style.stroke: "#3b82f6"}
@@ -789,40 +662,18 @@ s3: "Step 3: Reverse all [0..4]  →  [3, 4, 5, 1, 2]  ✓" {
   d4: "2" {style.fill: "#dbeafe"; style.stroke: "#3b82f6"}
 }
 
-s0 -> s1: "reverse arr[2..4]"
-s1 -> s2: "reverse arr[0..1]"
-s2 -> s3: "reverse arr[0..4]"
+s0 -> s1: "reverse arr[0..4]"
+s1 -> s2: "reverse arr[0..2]"
+s2 -> s3: "reverse arr[3..4]"
 ```
 
 <p align="center"><strong>Right rotation by k=3 via three in-place reversals — each reversal is an independent two-pointer subproblem.</strong></p>
 
----
+</details>
+<details>
+<summary><h2>The Solution</h2></summary>
 
-## The Solution
 
-
-```pseudocode
-function reverse(arr, start, end):
-    while start < end:
-        swap arr[start] and arr[end]
-        start ← start + 1
-        end   ← end − 1
-
-function kRotations(arr, k):
-    n ← length(arr)
-
-    # Set k to be in the range of [0, n)
-    k ← k mod n
-
-    # Reverse the entire array using two pointer method
-    reverse(arr, 0, n − 1)
-
-    # Reverse the first k elements using two pointer method
-    reverse(arr, 0, k − 1)
-
-    # Reverse the remaining elements using two pointer method
-    reverse(arr, k, n − 1)
-```
 
 ```python run
 from typing import List
@@ -895,82 +746,7 @@ public class Main {
 }
 ```
 
-```c run
-#include <stdio.h>
-
-static void reverse_seg(int* arr, int start, int end) {
-    while (start < end) {
-        int tmp    = arr[start];
-        arr[start] = arr[end];
-        arr[end]   = tmp;
-        start++;
-        end--;
-    }
-}
-
-void k_rotations(int* arr, int n, int k) {
-
-    /* Set k to be in the range of [0, n) */
-    k %= n;
-
-    /* Reverse the entire array using two pointer method */
-    reverse_seg(arr, 0, n - 1);
-
-    /* Reverse the first k elements using two pointer method */
-    reverse_seg(arr, 0, k - 1);
-
-    /* Reverse the remaining elements using two pointer method */
-    reverse_seg(arr, k, n - 1);
-}
-
-int main() {
-    int arr[] = {1, 2, 3, 4, 5};
-    k_rotations(arr, 5, 3);
-    for (int i = 0; i < 5; i++) printf("%d ", arr[i]);   /* 3 4 5 1 2 */
-    printf("\n");
-    return 0;
-}
-```
-
-```scala run
-object Main extends App {
-  class Solution {
-    def reverse(arr: Array[Int], s0: Int, e0: Int): Unit = {
-      var start = s0
-      var end   = e0
-      while (start < end) {
-        val tmp    = arr(start)
-        arr(start) = arr(end)
-        arr(end)   = tmp
-        start += 1
-        end   -= 1
-      }
-    }
-
-    def kRotations(arr: Array[Int], k0: Int): Unit = {
-      val n = arr.length
-
-      // Set k to be in the range of [0, n)
-      val k = k0 % n
-
-      // Reverse the entire array using two pointer method
-      reverse(arr, 0, n - 1)
-
-      // Reverse the first k elements using two pointer method
-      reverse(arr, 0, k - 1)
-
-      // Reverse the remaining elements using two pointer method
-      reverse(arr, k, n - 1)
-    }
-  }
-
-  val arr = Array(1, 2, 3, 4, 5)
-  new Solution().kRotations(arr, 3)
-  println(arr.mkString(", "))   // 3, 4, 5, 1, 2
-}
-```
-
-
+</details>
 <details>
 <summary><strong>Trace — arr = [1, 2, 3, 4, 5], k = 3</strong></summary>
 
@@ -978,40 +754,38 @@ object Main extends App {
 n = 5,  k = 3 % 5 = 3
 HEAD = arr[0..1] = [1, 2],  TAIL = arr[2..4] = [3, 4, 5]
 
-━━━ Step 1: reverse(arr, 2, 4) — flip TAIL [2..4] ━━━
-  start=2 (3), end=4 (5)  │  2 < 4 → swap 3↔5  →  [1, 2, 5, 4, 3]  │  start=3, end=3
-  start=3 (4), end=3 (4)  │  3 == 3 → stop (middle element, no swap)
-After step 1: [1, 2, 5, 4, 3]
+━━━ Step 1: reverse(arr, 0, 4) — flip entire array [0..4] ━━━
+  start=0 (1), end=4 (5)  │  0 < 4 → swap 1↔5  →  [5, 2, 3, 4, 1]  │  start=1, end=3
+  start=1 (2), end=3 (4)  │  1 < 3 → swap 2↔4  →  [5, 4, 3, 2, 1]  │  start=2, end=2
+  start=2 (3), end=2 (3)  │  2 == 2 → stop (middle element, no swap)
+After step 1: [5, 4, 3, 2, 1]   (TAIL reversed in front, HEAD reversed at back)
 
-━━━ Step 2: reverse(arr, 0, 1) — flip HEAD [0..1] ━━━
-  start=0 (1), end=1 (2)  │  0 < 1 → swap 1↔2  →  [2, 1, 5, 4, 3]  │  start=1, end=0
-  start=1, end=0           │  1 > 0 → stop
-After step 2: [2, 1, 5, 4, 3]
+━━━ Step 2: reverse(arr, 0, 2) — flip first k=3 elements [0..2] ━━━
+  start=0 (5), end=2 (3)  │  0 < 2 → swap 5↔3  →  [3, 4, 5, 2, 1]  │  start=1, end=1
+  start=1 (4), end=1 (4)  │  1 == 1 → stop (middle element, no swap)
+After step 2: [3, 4, 5, 2, 1]   (TAIL is now back in original order)
 
-━━━ Step 3: reverse(arr, 0, 4) — flip entire array [0..4] ━━━
-  start=0 (2), end=4 (3)  │  0 < 4 → swap 2↔3  →  [3, 1, 5, 4, 2]  │  start=1, end=3
-  start=1 (1), end=3 (4)  │  1 < 3 → swap 1↔4  →  [3, 4, 5, 1, 2]  │  start=2, end=2
-  start=2 (5), end=2 (5)  │  2 == 2 → stop (middle element, no swap)
-After step 3: [3, 4, 5, 1, 2] ✓
+━━━ Step 3: reverse(arr, 3, 4) — flip last n-k=2 elements [3..4] ━━━
+  start=3 (2), end=4 (1)  │  3 < 4 → swap 2↔1  →  [3, 4, 5, 1, 2]  │  start=4, end=3
+  start=4, end=3           │  4 > 3 → stop
+After step 3: [3, 4, 5, 1, 2] ✓   (HEAD is now back in original order)
 
 Result: [3, 4, 5, 1, 2]
 The last 3 elements are now the prefix; original relative order within each group is preserved.
 ```
 
 </details>
+<details>
+<summary><h2>Solution &amp; Analysis</h2></summary>
 
----
-
-## Complexity Analysis
+### Complexity Analysis
 
 | | Complexity | Reason |
 |---|---|---|
 | **Time** | O(n) | Each element is touched exactly twice across all three reversals |
 | **Space** | O(1) | Only `start` and `end` index variables — no auxiliary array |
 
----
-
-## Edge Cases
+### Edge Cases
 
 | Case | What happens |
 |---|---|
@@ -1021,24 +795,28 @@ The last 3 elements are now the prefix; original relative order within each grou
 | Single element (`n = 1`) | Any k reduces to 0 — no swaps occur |
 | `k = 1` | `HEAD = arr[0..n-2]`, `TAIL = arr[n-1..n-1]` — just the last element wraps to front |
 
----
+</details>
+<details>
+<summary><h2>Left vs. Right Rotation — The Relationship</h2></summary>
 
-## Left vs. Right Rotation — The Relationship
 
-Right rotation by `k` is identical to left rotation by `n - k`. Both use the same three-reversal trick; only the segment sizes in steps 1 and 2 are swapped:
+Right rotation by `k` is identical to left rotation by `n - k`. Both use the same three-reversal trick — reverse the entire array, then reverse each of the two halves to restore their internal order. Only the split point changes:
 
 | Operation | Step 1 | Step 2 | Step 3 |
 |---|---|---|---|
-| **Left rotation by k** | Reverse first `k` | Reverse last `n-k` | Reverse all |
-| **Right rotation by k** | Reverse last `k` | Reverse first `n-k` | Reverse all |
+| **Left rotation by k** | Reverse all | Reverse first `n-k` | Reverse last `k` |
+| **Right rotation by k** | Reverse all | Reverse first `k` | Reverse last `n-k` |
 
-The core mechanic is identical — what changes is which segment you call HEAD and which you call TAIL.
+The core mechanic is identical — what changes is which segment you call HEAD and which you call TAIL, which in turn moves the split point used by steps 2 and 3.
 
----
+</details>
+<details>
+<summary><h2>Final Takeaway</h2></summary>
 
-## Final Takeaway
 
-A right rotation by `k` splits the array into `[HEAD | TAIL]` and produces `[TAIL | HEAD]`. The three-reversal trick achieves this in O(n) time, O(1) space: scramble TAIL, scramble HEAD, flip everything — the final reversal restores both halves' internal order while landing them in swapped positions. Always normalize `k` with `k %= n` first to eliminate redundant rotations.
+A right rotation by `k` splits the array into `[HEAD | TAIL]` and produces `[TAIL | HEAD]`. The three-reversal trick achieves this in O(n) time, O(1) space: reverse the entire array to swap the halves' positions (at the cost of scrambling each half), then reverse the first `k` elements and the last `n-k` elements to un-scramble each half in place. Always normalize `k` with `k %= n` first to eliminate redundant rotations.
+
+</details>
 
 ***
 
@@ -1055,7 +833,9 @@ Output: [[-1, -1, 2], [-1, 0, 1]]
 
 ---
 
-## Examples
+<details>
+<summary><h2>Examples</h2></summary>
+
 
 **Example 1**
 ```
@@ -1082,9 +862,10 @@ Input:  arr = [-2, 0, 0, 2, 2]
 Output: [[-2, 0, 2]]
 ```
 
----
+</details>
+<details>
+<summary><h2>Intuition: Fix One, Two-Pointer the Rest</h2></summary>
 
-## Intuition: Fix One, Two-Pointer the Rest
 
 Three Sum extends Two Sum with one extra element fixed. If we pick one element `arr[i]` and fix it, the problem reduces to:
 
@@ -1138,9 +919,10 @@ flowchart TB
 
 <p align="center"><strong>Three Sum — outer loop fixes one element; inner two-pointer finds all valid pairs summing to the negative of that element.</strong></p>
 
----
+</details>
+<details>
+<summary><h2>Applying the Diagnostic Questions</h2></summary>
 
-## Applying the Diagnostic Questions
 
 Three Sum sits at the intersection of two patterns you've already seen — the **subproblem** pattern from this section and the **reduction** technique from the previous one. The diagnostic questions make this explicit.
 
@@ -1172,74 +954,18 @@ Two pointer moves, two results, O(n) total. A three-nested-loop brute force woul
 
 > **Pattern note:** Three Sum is a two-pointer **subproblem** problem at the outer level (decompose by fixing one element), and a two-pointer **reduction** problem at the inner level (sort + two-pointer on the subarray). The nesting of patterns is what makes it an O(n²) solution — one layer of decomposition, one layer of linear two-pointer inside.
 
----
+</details>
+<details>
+<summary><h2>The Early-Exit Optimisation</h2></summary>
 
-## The Early-Exit Optimisation
 
 Since the array is sorted, if `arr[i] > 0`, then `arr[left] ≥ arr[i] > 0` and `arr[right] ≥ arr[i] > 0` — the sum of any three elements from position `i` onward is positive. No triplet can sum to 0. Break early.
 
----
+</details>
+<details>
+<summary><h2>Solution &amp; Analysis</h2></summary>
 
-## Solution
-
-
-```pseudocode
-function skipDuplicatesLeft(arr, left, right):
-    # Skip duplicates from the left pointer
-    while left < right AND arr[left] = arr[left + 1]:
-        left ← left + 1
-    return left + 1
-
-function skipDuplicatesRight(arr, left, right):
-    # Skip duplicates from the right pointer
-    while left < right AND arr[right] = arr[right − 1]:
-        right ← right − 1
-    return right − 1
-
-function duplicateAwareTwoSum(arr, index, result):
-    left  ← index + 1
-    right ← length(arr) − 1
-
-    # Use a while loop to traverse the array using the two pointers
-    while left < right:
-        sum ← arr[index] + arr[left] + arr[right]
-
-        # If the sum is 0, add the triplet to the result
-        if sum = 0:
-            append [arr[index], arr[left], arr[right]] to result
-
-            # Move the left pointer to the next unique element to avoid duplicates
-            left  ← skipDuplicatesLeft(arr, left, right)
-
-            # Move the right pointer to the previous unique element to avoid duplicates
-            right ← skipDuplicatesRight(arr, left, right)
-
-        # Move the left pointer to increase the sum
-        else if sum < 0:
-            left ← left + 1
-
-        # Move the right pointer to decrease the sum
-        else:
-            right ← right − 1
-
-function threeSum(arr):
-    result ← empty list
-
-    # Sort the array in non-decreasing order
-    sort arr in place
-
-    # Traverse the array using 1 pointer
-    for i from 0 to length(arr) − 1:
-
-        # Skip duplicates for the first element
-        if i > 0 AND arr[i] = arr[i − 1]:
-            continue
-
-        # Use the two-pointer technique to find pairs with sum -arr[i]
-        duplicateAwareTwoSum(arr, i, result)
-
-    return result
-```
+### Solution
 
 ```python run
 from typing import List
@@ -1270,7 +996,7 @@ class Solution:
     def duplicate_aware_two_sum(
         self, arr: List[int], index: int, result: List[List[int]]
     ) -> None:
-        left  = index + 1
+        left = index + 1
         right = len(arr) - 1
 
         # Use a while loop to traverse the array using the two pointers
@@ -1298,7 +1024,7 @@ class Solution:
                 right -= 1
 
     def three_sum(self, arr: List[int]) -> List[List[int]]:
-        result: List[List[int]] = []
+        result = []
 
         # Sort the array in non-decreasing order.
         arr.sort()
@@ -1317,11 +1043,16 @@ class Solution:
         return result
 
 
-sol = Solution()
-print(sol.three_sum([-1, 0, 1, 2, -1, -4]))   # [[-1, -1, 2], [-1, 0, 1]]
-print(sol.three_sum([0, 0, 0, 0]))             # [[0, 0, 0]]
-print(sol.three_sum([1, 2, 3]))                # []
-print(sol.three_sum([-2, 0, 0, 2, 2]))         # [[-2, 0, 2]]
+# Examples from the problem statement
+print(Solution().three_sum([-1, 0, 1, 2, -1, -4]))  # [[-1, -1, 2], [-1, 0, 1]]
+print(Solution().three_sum([0, 0, 0]))               # [[0, 0, 0]]
+print(Solution().three_sum([2, 7, 11, 15]))          # []
+
+# Edge cases
+print(Solution().three_sum([]))                      # []
+print(Solution().three_sum([1, 2]))                  # [] — too few elements
+print(Solution().three_sum([-2, 0, 2]))              # [[-2, 0, 2]]
+print(Solution().three_sum([0, 0, 0, 0]))            # [[0, 0, 0]] — no duplicate triplets
 ```
 
 ```java run
@@ -1356,7 +1087,7 @@ public class Main {
             int index,
             List<List<Integer>> result
         ) {
-            int left  = index + 1;
+            int left = index + 1;
             int right = arr.length - 1;
 
             // Use a while loop to traverse the array using the two pointers
@@ -1412,203 +1143,21 @@ public class Main {
     }
 
     public static void main(String[] args) {
-        Solution s = new Solution();
-        System.out.println(s.threeSum(new int[]{-1, 0, 1, 2, -1, -4}));  // [[-1, -1, 2], [-1, 0, 1]]
-        System.out.println(s.threeSum(new int[]{0, 0, 0, 0}));            // [[0, 0, 0]]
-        System.out.println(s.threeSum(new int[]{1, 2, 3}));               // []
-        System.out.println(s.threeSum(new int[]{-2, 0, 0, 2, 2}));        // [[-2, 0, 2]]
+        // Examples from the problem statement
+        System.out.println(new Solution().threeSum(new int[]{-1,0,1,2,-1,-4})); // [[-1, -1, 2], [-1, 0, 1]]
+        System.out.println(new Solution().threeSum(new int[]{0,0,0}));           // [[0, 0, 0]]
+        System.out.println(new Solution().threeSum(new int[]{2,7,11,15}));       // []
+
+        // Edge cases
+        System.out.println(new Solution().threeSum(new int[]{}));                // []
+        System.out.println(new Solution().threeSum(new int[]{1,2}));             // [] — too few elements
+        System.out.println(new Solution().threeSum(new int[]{-2,0,2}));          // [[-2, 0, 2]]
+        System.out.println(new Solution().threeSum(new int[]{0,0,0,0}));         // [[0, 0, 0]] — no duplicate triplets
     }
 }
 ```
 
-```c run
-#include <stdio.h>
-#include <stdlib.h>
-
-static int cmp(const void* a, const void* b) { return (*(int*)a) - (*(int*)b); }
-
-static int skip_duplicates_left(const int* arr, int left, int right) {
-
-    /* Skip duplicates from the left pointer */
-    while (left < right && arr[left] == arr[left + 1]) {
-        left++;
-    }
-
-    /* Return the index of the next unique element */
-    return left + 1;
-}
-
-static int skip_duplicates_right(const int* arr, int left, int right) {
-
-    /* Skip duplicates from the right pointer */
-    while (left < right && arr[right] == arr[right - 1]) {
-        right--;
-    }
-
-    /* Return the index of the next unique element */
-    return right - 1;
-}
-
-static int first = 1;
-
-static void duplicate_aware_two_sum(const int* arr, int n, int index) {
-    int left  = index + 1;
-    int right = n - 1;
-
-    /* Use a while loop to traverse the array using the two pointers */
-    while (left < right) {
-        int sum = arr[index] + arr[left] + arr[right];
-
-        /* If the sum is 0, add the triplet to the result */
-        if (sum == 0) {
-            if (!first) printf(", ");
-            printf("[%d, %d, %d]", arr[index], arr[left], arr[right]);
-            first = 0;
-
-            /* Move the left pointer to the next unique element to avoid duplicates */
-            left = skip_duplicates_left(arr, left, right);
-
-            /* Move the right pointer to the previous unique element to avoid duplicates */
-            right = skip_duplicates_right(arr, left, right);
-        }
-
-        /* Move the left pointer to increase the sum */
-        else if (sum < 0) {
-            left++;
-        }
-
-        /* Move the right pointer to decrease the sum */
-        else {
-            right--;
-        }
-    }
-}
-
-void three_sum(int* arr, int n) {
-
-    /* Sort the array in non-decreasing order */
-    qsort(arr, n, sizeof(int), cmp);
-
-    first = 1;
-    printf("[");
-
-    /* Traverse the array using 1 pointer */
-    for (int i = 0; i < n; i++) {
-
-        /* Skip duplicates for the first element */
-        if (i > 0 && arr[i] == arr[i - 1]) continue;
-
-        /* Use the two-pointer technique to find pairs with sum -arr[i] */
-        duplicate_aware_two_sum(arr, n, i);
-    }
-
-    printf("]\n");
-}
-
-int main() {
-    int a1[] = {-1, 0, 1, 2, -1, -4}; three_sum(a1, 6);
-    int a2[] = {0, 0, 0, 0};          three_sum(a2, 4);
-    int a3[] = {1, 2, 3};             three_sum(a3, 3);
-    int a4[] = {-2, 0, 0, 2, 2};      three_sum(a4, 5);
-    return 0;
-}
-```
-
-```scala run
-object Main extends App {
-  class Solution {
-    private def skipDuplicatesLeft(arr: Array[Int], l: Int, right: Int): Int = {
-      var left = l
-
-      // Skip duplicates from the left pointer
-      while (left < right && arr(left) == arr(left + 1)) {
-        left += 1
-      }
-
-      // Return the index of the next unique element
-      left + 1
-    }
-
-    private def skipDuplicatesRight(arr: Array[Int], left: Int, r: Int): Int = {
-      var right = r
-
-      // Skip duplicates from the right pointer
-      while (left < right && arr(right) == arr(right - 1)) {
-        right -= 1
-      }
-
-      // Return the index of the next unique element
-      right - 1
-    }
-
-    private def duplicateAwareTwoSum(
-        arr: Array[Int],
-        index: Int,
-        result: scala.collection.mutable.ListBuffer[List[Int]]
-    ): Unit = {
-      var left  = index + 1
-      var right = arr.length - 1
-
-      // Use a while loop to traverse the array using the two pointers
-      while (left < right) {
-        val sum = arr(index) + arr(left) + arr(right)
-
-        // If the sum is 0, add the triplet to the result
-        if (sum == 0) {
-          result += List(arr(index), arr(left), arr(right))
-
-          // Move the left pointer to the next unique element to avoid duplicates
-          left = skipDuplicatesLeft(arr, left, right)
-
-          // Move the right pointer to the previous unique element to avoid duplicates
-          right = skipDuplicatesRight(arr, left, right)
-        }
-        // Move the left pointer to increase the sum
-        else if (sum < 0) {
-          left += 1
-        }
-        // Move the right pointer to decrease the sum
-        else {
-          right -= 1
-        }
-      }
-    }
-
-    def threeSum(arr: Array[Int]): List[List[Int]] = {
-      val result = scala.collection.mutable.ListBuffer.empty[List[Int]]
-
-      // Sort the array in non-decreasing order
-      val sorted = arr.sorted
-
-      // Traverse the array using 1 pointer
-      var i = 0
-      while (i < sorted.length) {
-
-        // Skip duplicates for the first element
-        if (!(i > 0 && sorted(i) == sorted(i - 1))) {
-
-          // Use the two-pointer technique to find pairs with sum -arr[i]
-          duplicateAwareTwoSum(sorted, i, result)
-        }
-        i += 1
-      }
-
-      result.toList
-    }
-  }
-
-  val sol = new Solution
-  println(sol.threeSum(Array(-1, 0, 1, 2, -1, -4)))   // List(List(-1, -1, 2), List(-1, 0, 1))
-  println(sol.threeSum(Array(0, 0, 0, 0)))             // List(List(0, 0, 0))
-  println(sol.threeSum(Array(1, 2, 3)))                // List()
-  println(sol.threeSum(Array(-2, 0, 0, 2, 2)))         // List(List(-2, 0, 2))
-}
-```
-
-
----
-
-## Dry Run — Example 1
+### Dry Run — Example 1
 
 `arr = [-1, 0, 1, 2, -1, -4]` → sorted: `[-4, -1, -1, 0, 1, 2]`
 
@@ -1679,18 +1228,14 @@ No triplets for i=0.
 
 **Result: `[[-1,-1,2], [-1,0,1]]`** ✓
 
----
-
-## Complexity Analysis
+### Complexity Analysis
 
 | | Complexity | Reasoning |
 |---|---|---|
 | **Time** | O(n²) | Outer loop O(n) × inner two-pointer O(n) — sort is O(n log n), dominated by O(n²) |
 | **Space** | O(k) | k = number of unique triplets returned; O(1) working space |
 
----
-
-## Edge Cases
+### Edge Cases
 
 | Scenario | Input | Output | Note |
 |---|---|---|---|
@@ -1699,11 +1244,14 @@ No triplets for i=0.
 | Single triplet | `[-1,0,1]` | `[[-1,0,1]]` | Exact minimum case |
 | Array length < 3 | `[1,2]` | `[]` | Loop range `n-2` = 0 — never enters |
 
----
+</details>
+<details>
+<summary><h2>Key Takeaway</h2></summary>
 
-## Key Takeaway
 
 Three Sum = outer fixed element + inner Duplicate Aware Two Sum. The reduction insight: fix one element and reduce to a two-variable sum problem on the sorted remainder. The same duplicate-skipping logic from the two-pointer reduction section applies — now at two levels (the fixed element and both inner pointers). The time complexity is O(n²), which is optimal for this problem.
+
+</details>
 
 ***
 
@@ -1720,7 +1268,9 @@ Output: 2
 
 ---
 
-## Examples
+<details>
+<summary><h2>Examples</h2></summary>
+
 
 **Example 1**
 ```
@@ -1743,9 +1293,10 @@ Output: 0
 Explanation: 0 + 0 + 0 = 0 is the closest sum to 1.
 ```
 
----
+</details>
+<details>
+<summary><h2>Intuition: Three Sum with a Closest Tracker</h2></summary>
 
-## Intuition: Three Sum with a Closest Tracker
 
 This problem is Three Sum's sibling — fix one element, two-pointer the rest — but with one twist: you no longer need an exact match. You need the **minimum distance** to the target across all triplets.
 
@@ -1797,9 +1348,10 @@ flowchart TB
 
 <p align="center"><strong>Approximate Three Sum — fix one element, two-pointer the rest, track the minimum-distance sum seen so far.</strong></p>
 
----
+</details>
+<details>
+<summary><h2>Applying the Diagnostic Questions</h2></summary>
 
-## Applying the Diagnostic Questions
 
 | Question | Answer |
 |---|---|
@@ -1831,56 +1383,11 @@ At every step we moved purposefully toward a larger sum because the current tota
 
 **What breaks without sorting?** Without sorting, `left++` might produce a smaller value, not a larger one. The decisive direction disappears. You'd have to check every pair in the window — O(n²) per fixed element, O(n³) total.
 
----
+</details>
+<details>
+<summary><h2>Solution &amp; Analysis</h2></summary>
 
-## Solution
-
-
-```pseudocode
-function closestTwoSum(arr, index, target):
-    left  ← index + 1
-    right ← length(arr) − 1
-    closestSum ← +∞
-
-    # Use a while loop to traverse the array using the two pointers
-    while left < right:
-
-        # Compute the sum of the three numbers
-        sum ← arr[index] + arr[left] + arr[right]
-
-        # Update closestSum if necessary
-        if |sum − target| < |closestSum − target|:
-            closestSum ← sum
-
-        # If the sum equals target, return the sum
-        if sum = target:
-            return sum
-
-        # Move the left pointer to increase the sum
-        else if sum < target:
-            left ← left + 1
-
-        # Move the right pointer to decrease the sum
-        else:
-            right ← right − 1
-
-    return closestSum
-
-function approximateThreeSum(arr, target):
-
-    # Sort the input array in non-decreasing order
-    sort arr in place
-
-    # Initialize closestSum to a large value
-    closestSum ← +∞
-    for i from 0 to length(arr) − 1:
-        currentSum ← closestTwoSum(arr, i, target)
-        if |currentSum − target| < |closestSum − target|:
-            closestSum ← currentSum
-
-    # Return the closest sum of three integers to the target
-    return closestSum
-```
+### Solution
 
 ```python run
 from typing import List
@@ -1933,10 +1440,16 @@ class Solution:
         return closest_sum
 
 
-sol = Solution()
-print(sol.approximate_three_sum([2, 7, 11, 15], 3))   # 20
-print(sol.approximate_three_sum([-1, 2, 1, -4], 1))   # 2
-print(sol.approximate_three_sum([0, 0, 0], 1))         # 0
+# Examples from the problem statement
+print(Solution().approximate_three_sum([2, 7, 11, 15], 3))   # 20
+print(Solution().approximate_three_sum([-1, 2, 1, -4], 1))   # 2
+print(Solution().approximate_three_sum([0, 0, 0], 1))         # 0
+
+# Edge cases
+print(Solution().approximate_three_sum([1, 1, 1], 10))        # 3 — only one triplet
+print(Solution().approximate_three_sum([-1, 0, 1], 0))        # 0 — exact hit
+print(Solution().approximate_three_sum([1, 2, 3, 4], 6))      # 6 — exact hit: 1+2+3
+print(Solution().approximate_three_sum([-4, -1, 1, 2], -1))   # -1 — negative target
 ```
 
 ```java run
@@ -2001,151 +1514,21 @@ public class Main {
     }
 
     public static void main(String[] args) {
-        Solution s = new Solution();
-        System.out.println(s.approximateThreeSum(new int[]{2, 7, 11, 15}, 3));   // 20
-        System.out.println(s.approximateThreeSum(new int[]{-1, 2, 1, -4}, 1));   // 2
-        System.out.println(s.approximateThreeSum(new int[]{0, 0, 0}, 1));         // 0
+        // Examples from the problem statement
+        System.out.println(new Solution().approximateThreeSum(new int[]{2,7,11,15}, 3));   // 20
+        System.out.println(new Solution().approximateThreeSum(new int[]{-1,2,1,-4}, 1));   // 2
+        System.out.println(new Solution().approximateThreeSum(new int[]{0,0,0}, 1));        // 0
+
+        // Edge cases
+        System.out.println(new Solution().approximateThreeSum(new int[]{1,1,1}, 10));       // 3 — only one triplet
+        System.out.println(new Solution().approximateThreeSum(new int[]{-1,0,1}, 0));       // 0 — exact hit
+        System.out.println(new Solution().approximateThreeSum(new int[]{1,2,3,4}, 6));      // 6 — exact hit: 1+2+3
+        System.out.println(new Solution().approximateThreeSum(new int[]{-4,-1,1,2}, -1));   // -1 — negative target
     }
 }
 ```
 
-```c run
-#include <stdio.h>
-#include <stdlib.h>
-#include <limits.h>
-
-static int cmp(const void* a, const void* b) { return (*(int*)a) - (*(int*)b); }
-
-static int abs_int(int x) { return x < 0 ? -x : x; }
-
-static int closest_two_sum(const int* arr, int n, int index, int target) {
-    int left = index + 1;
-    int right = n - 1;
-    int closest_sum = INT_MAX;
-
-    /* Use a while loop to traverse the array using the two pointers */
-    while (left < right) {
-
-        /* Compute the sum of the three numbers */
-        int sum = arr[index] + arr[left] + arr[right];
-
-        /* Update closest_sum if necessary */
-        if (abs_int(sum - target) < abs_int(closest_sum - target)) {
-            closest_sum = sum;
-        }
-
-        /* If the sum equals target, return the sum */
-        if (sum == target) {
-            return sum;
-        }
-
-        /* Move the left pointer to increase the sum */
-        else if (sum < target) {
-            left++;
-        }
-
-        /* Move the right pointer to decrease the sum */
-        else {
-            right--;
-        }
-    }
-
-    return closest_sum;
-}
-
-int approximate_three_sum(int* arr, int n, int target) {
-
-    /* Sort the input array in non-decreasing order */
-    qsort(arr, n, sizeof(int), cmp);
-
-    /* Initialize closest_sum to a large value */
-    int closest_sum = INT_MAX;
-    for (int i = 0; i < n; i++) {
-        int current_sum = closest_two_sum(arr, n, i, target);
-        if (abs_int(current_sum - target) < abs_int(closest_sum - target)) {
-            closest_sum = current_sum;
-        }
-    }
-
-    /* Return the closest sum of three integers to the target */
-    return closest_sum;
-}
-
-int main() {
-    int a1[] = {2, 7, 11, 15};   printf("%d\n", approximate_three_sum(a1, 4, 3));   /* 20 */
-    int a2[] = {-1, 2, 1, -4};   printf("%d\n", approximate_three_sum(a2, 4, 1));   /*  2 */
-    int a3[] = {0, 0, 0};        printf("%d\n", approximate_three_sum(a3, 3, 1));   /*  0 */
-    return 0;
-}
-```
-
-```scala run
-object Main extends App {
-  class Solution {
-    private def closestTwoSum(arr: Array[Int], index: Int, target: Int): Int = {
-      var left = index + 1
-      var right = arr.length - 1
-      var closestSum = Int.MaxValue
-
-      // Use a while loop to traverse the array using the two pointers
-      var done = false
-      while (left < right && !done) {
-
-        // Compute the sum of the three numbers
-        val sum = arr(index) + arr(left) + arr(right)
-
-        // Update closestSum if necessary
-        if (math.abs(sum - target) < math.abs(closestSum - target)) {
-          closestSum = sum
-        }
-
-        // If the sum equals target, return the sum
-        if (sum == target) {
-          done = true
-        }
-        // Move the left pointer to increase the sum
-        else if (sum < target) {
-          left += 1
-        }
-        // Move the right pointer to decrease the sum
-        else {
-          right -= 1
-        }
-      }
-
-      closestSum
-    }
-
-    def approximateThreeSum(arr: Array[Int], target: Int): Int = {
-
-      // Sort the input array in non-decreasing order
-      val sorted = arr.sorted
-
-      // Initialize closestSum to a large value
-      var closestSum = Int.MaxValue
-      for (i <- sorted.indices) {
-        val currentSum = closestTwoSum(sorted, i, target)
-        if (math.abs(currentSum - target) < math.abs(closestSum - target)) {
-          closestSum = currentSum
-        }
-      }
-
-      // Return the closest sum of three integers to the target
-      closestSum
-    }
-  }
-
-  val sol = new Solution
-  println(sol.approximateThreeSum(Array(2, 7, 11, 15), 3))   // 20
-  println(sol.approximateThreeSum(Array(-1, 2, 1, -4), 1))   //  2
-  println(sol.approximateThreeSum(Array(0, 0, 0), 1))         //  0
-}
-```
-
-
----
-
-## Dry Run
+### Dry Run
 
 `arr = [-1, 2, 1, -4]`, `target = 1`
 Sorted: `[-4, -1, 1, 2]`
@@ -2171,7 +1554,11 @@ Closest after i=0: **−1**
 
 Closest after i=1: **2**
 
-Loop ends (range(n−2) = range(2) covers i=0,1 only).
+**i=2, arr[i]=1, left=3, right=3:** `left ≥ right` immediately — inner loop never runs; closest unchanged.
+
+**i=3, arr[i]=2, left=4, right=3:** `left > right` immediately — inner loop never runs; closest unchanged.
+
+(The outer loop runs over every `i` in `range(len(arr))`. For `i = n-2` and `i = n-1` the inner two-pointer pass has fewer than two remaining elements so the `while left < right` guard skips it instantly.)
 
 **Result: `2`** ✓ (`−1 + 2 + 1 = 2`, distance 1 — the minimum possible)
 
@@ -2196,18 +1583,17 @@ Result: 20 ✓  (2 + 7 + 11 = 20, distance 17 — no triplet gets closer to 3)
 
 </details>
 
----
-
-## Complexity Analysis
+### Complexity Analysis
 
 | | Complexity | Reasoning |
 |---|---|---|
 | **Time** | O(n²) | Outer loop O(n) × inner two-pointer O(n); sort is O(n log n), dominated by O(n²) |
 | **Space** | O(1) | Only a handful of scalar variables — no extra data structure |
 
----
+</details>
+<details>
+<summary><h2>Differences from Exact Three Sum</h2></summary>
 
-## Differences from Exact Three Sum
 
 | Aspect | Three Sum (exact) | Approximate Three Sum |
 |---|---|---|
@@ -2219,9 +1605,10 @@ Result: 20 ✓  (2 + 7 + 11 = 20, distance 17 — no triplet gets closer to 3)
 
 The algorithmic skeleton is identical; only the inner bookkeeping changes.
 
----
+</details>
+<details>
+<summary><h2>Edge Cases</h2></summary>
 
-## Edge Cases
 
 | Scenario | Input | Output | Note |
 |---|---|---|---|
@@ -2230,11 +1617,14 @@ The algorithmic skeleton is identical; only the inner bookkeeping changes.
 | All positive, target very small | `[2, 7, 11, 15]`, target=3 | 20 | Smallest triplet sum (2+7+11) is still the closest |
 | Minimum array size | `[1, 2, 3]`, target=100 | 6 | Only one triplet; 1+2+3=6 returned regardless |
 
----
+</details>
+<details>
+<summary><h2>Key Takeaway</h2></summary>
 
-## Key Takeaway
 
 Approximate Three Sum = Exact Three Sum skeleton + a running closest tracker. Fix one element, two-pointer the rest, update the best answer when `|total − target|` shrinks, and return immediately on an exact hit. The sort-and-two-pointer approach gives O(n²) — the same asymptotic cost as the exact version, because "closest" still provides the same decisive direction as "exact": every pointer move is purposeful.
+
+</details>
 
 ***
 
@@ -2251,7 +1641,9 @@ Output: [[-2, -1, 1, 2], [-2, 0, 0, 2], [-1, 0, 0, 1]]
 
 ---
 
-## Examples
+<details>
+<summary><h2>Examples</h2></summary>
+
 
 **Example 1**
 ```
@@ -2279,9 +1671,10 @@ Input:  arr = [0, 0, 0, 0],  target = 0
 Output: [[0, 0, 0, 0]]
 ```
 
----
+</details>
+<details>
+<summary><h2>Intuition: Fix Two, Two-Pointer the Rest</h2></summary>
 
-## Intuition: Fix Two, Two-Pointer the Rest
 
 You already know the pattern. Three Sum fixed one element and ran a Two Sum two-pointer on the rest. Four Sum takes this one step further: fix **two** elements with a nested outer loop and run a Two Sum two-pointer on the remaining subarray.
 
@@ -2332,9 +1725,10 @@ flowchart TB
 
 <p align="center"><strong>Four Sum — two nested fixed-element loops, each with duplicate skipping, plus an inner two-pointer Two Sum pass.</strong></p>
 
----
+</details>
+<details>
+<summary><h2>Applying the Diagnostic Questions</h2></summary>
 
-## Applying the Diagnostic Questions
 
 Four Sum is the clearest demonstration of the two-pointer subproblem pattern because the decomposition happens at **two levels** before the two-pointer even starts.
 
@@ -2374,9 +1768,10 @@ Each decision eliminates one element permanently, so the inner loop runs at most
 
 > **Pattern nesting in Four Sum:** the outer structure is a two-pointer **subproblem** pattern at two levels (fix `arr[i]`, then fix `arr[j]`), and the innermost operation is a two-pointer **reduction** (sort + Two Sum). The nesting depth of subproblem decompositions determines the exponent in the complexity: Two Sum → O(n), Three Sum → O(n²), Four Sum → O(n³).
 
----
+</details>
+<details>
+<summary><h2>Duplicate Skipping — Three Levels</h2></summary>
 
-## Duplicate Skipping — Three Levels
 
 This is the part that trips people up. Duplicates must be skipped at every level independently:
 
@@ -2388,84 +1783,11 @@ This is the part that trips people up. Duplicates must be skipped at every level
 
 The `j > i+1` guard for the inner skip is important — without it, `j = i+1` would compare against `arr[i]` (a different fixed element), incorrectly skipping valid quadruplets.
 
----
+</details>
+<details>
+<summary><h2>Solution &amp; Analysis</h2></summary>
 
-## Solution
-
-
-```pseudocode
-# Decomposed Four Sum: outer i, inner j, then call duplicateAwareTwoSum on the remaining suffix.
-# skipDuplicatesLeft/skipDuplicatesRight return the NEXT-unique index (not the last duplicate one).
-function skipDuplicatesLeft(arr, left, right):
-    # Skip duplicates from the left pointer
-    while left < right AND arr[left] = arr[left + 1]:
-        left ← left + 1
-    # Return the index of the next unique element
-    return left + 1
-
-function skipDuplicatesRight(arr, left, right):
-    # Skip duplicates from the right pointer
-    while left < right AND arr[right] = arr[right − 1]:
-        right ← right − 1
-    # Return the index of the next unique element
-    return right − 1
-
-function duplicateAwareTwoSum(arr, left, target):
-    right ← length(arr) − 1
-    result ← empty list
-
-    # Use a while loop to traverse the array using the two pointers
-    while left < right:
-        sum ← arr[left] + arr[right]
-
-        # If the sum is equal to target, add the numbers to the result.
-        if sum = target:
-            append (arr[left], arr[right]) to result
-
-            # Move the left pointer to the next unique element to avoid duplicates
-            left  ← skipDuplicatesLeft(arr, left, right)
-
-            # Move the right pointer to the previous unique element to avoid duplicates
-            right ← skipDuplicatesRight(arr, left, right)
-
-        # Move the left pointer to increase the sum
-        else if sum < target:
-            left ← left + 1
-
-        # Move the right pointer to decrease the sum
-        else:
-            right ← right − 1
-    return result
-
-function fourSum(arr, target):
-    result ← empty list
-
-    # Sort the array in non-decreasing order
-    sort arr in place
-
-    # Loop through each element of the array
-    for i from 0 to length(arr) − 1:
-        # Skip duplicates for the first element
-        if i > 0 AND arr[i] = arr[i − 1]:
-            continue
-
-        for j from i + 1 to length(arr) − 1:
-            # Skip duplicates for the second element
-            if j > i + 1 AND arr[j] = arr[j − 1]:
-                continue
-
-            # Define the remaining target for the two-pointer technique
-            remainingTarget ← target − arr[i] − arr[j]
-
-            # Find pairs with sum equal to the remaining target
-            twoSumResults ← duplicateAwareTwoSum(arr, j + 1, remainingTarget)
-
-            # Add the quadruplets to the result
-            for each (a, b) in twoSumResults:
-                append [arr[i], arr[j], a, b] to result
-
-    return result
-```
+### Solution
 
 ```python run
 from typing import List
@@ -2561,11 +1883,15 @@ class Solution:
         return result
 
 
-sol = Solution()
-print(sol.four_sum([1, 0, -1, 0, -2, 2], 0))    # [[-2,-1,1,2],[-2,0,0,2],[-1,0,0,1]]
-print(sol.four_sum([2, 2, 2, 2, 2], 8))          # [[2,2,2,2]]
-print(sol.four_sum([1, 2, 3, 4], 100))            # []
-print(sol.four_sum([0, 0, 0, 0], 0))             # [[0,0,0,0]]
+# Examples from the problem statement
+print(Solution().four_sum([1, 0, -1, 0, -2, 2], 0))  # [[-2, -1, 1, 2], [-2, 0, 0, 2], [-1, 0, 0, 1]]
+print(Solution().four_sum([2, 2, 2, 2, 2], 8))        # [[2, 2, 2, 2]]
+
+# Edge cases
+print(Solution().four_sum([], 0))                      # []
+print(Solution().four_sum([1, 2, 3], 6))               # [] — too few elements
+print(Solution().four_sum([0, 0, 0, 0], 0))            # [[0, 0, 0, 0]]
+print(Solution().four_sum([-3, -2, -1, 0, 0, 1, 2, 3], 0))  # multiple quadruplets
 ```
 
 ```java run
@@ -2680,236 +2006,20 @@ public class Main {
     }
 
     public static void main(String[] args) {
-        Solution s = new Solution();
-        System.out.println(s.fourSum(new int[]{1, 0, -1, 0, -2, 2}, 0));
-        System.out.println(s.fourSum(new int[]{2, 2, 2, 2, 2}, 8));
-        System.out.println(s.fourSum(new int[]{1, 2, 3, 4}, 100));
-        System.out.println(s.fourSum(new int[]{0, 0, 0, 0}, 0));
+        // Examples from the problem statement
+        System.out.println(new Solution().fourSum(new int[]{1,0,-1,0,-2,2}, 0));  // [[-2, -1, 1, 2], [-2, 0, 0, 2], [-1, 0, 0, 1]]
+        System.out.println(new Solution().fourSum(new int[]{2,2,2,2,2}, 8));       // [[2, 2, 2, 2]]
+
+        // Edge cases
+        System.out.println(new Solution().fourSum(new int[]{}, 0));                // []
+        System.out.println(new Solution().fourSum(new int[]{1,2,3}, 6));           // [] — too few elements
+        System.out.println(new Solution().fourSum(new int[]{0,0,0,0}, 0));         // [[0, 0, 0, 0]]
+        System.out.println(new Solution().fourSum(new int[]{-3,-2,-1,0,0,1,2,3}, 0)); // multiple quadruplets
     }
 }
 ```
 
-```c run
-#include <stdio.h>
-#include <stdlib.h>
-
-static int cmp(const void* a, const void* b) { return (*(int*)a) - (*(int*)b); }
-
-static int skip_duplicates_left(const int* arr, int left, int right) {
-
-    // Skip duplicates from the left pointer
-    while (left < right && arr[left] == arr[left + 1]) {
-        left++;
-    }
-
-    // Return the index of the next unique element
-    return left + 1;
-}
-
-static int skip_duplicates_right(const int* arr, int left, int right) {
-
-    // Skip duplicates from the right pointer
-    while (left < right && arr[right] == arr[right - 1]) {
-        right--;
-    }
-
-    // Return the index of the next unique element
-    return right - 1;
-}
-
-static void duplicate_aware_two_sum(
-    const int* arr, int n, int left, int target,
-    int a, int b, int* first
-) {
-    int right = n - 1;
-
-    // Use a while loop to traverse the array using the two pointers
-    while (left < right) {
-        int sum = arr[left] + arr[right];
-
-        // If the sum is equal to target, print the quadruplet
-        if (sum == target) {
-            if (!*first) printf(", ");
-            printf("[%d, %d, %d, %d]", a, b, arr[left], arr[right]);
-            *first = 0;
-
-            // Move the left pointer to the next unique element to avoid duplicates
-            left  = skip_duplicates_left(arr, left, right);
-
-            // Move the right pointer to the previous unique element to avoid duplicates
-            right = skip_duplicates_right(arr, left, right);
-        }
-
-        // Move the left pointer to increase the sum
-        else if (sum < target) {
-            left++;
-        }
-
-        // Move the right pointer to decrease the sum
-        else {
-            right--;
-        }
-    }
-}
-
-void four_sum(int* arr, int n, int target) {
-
-    // Sort the array in non-decreasing order
-    qsort(arr, n, sizeof(int), cmp);
-
-    printf("[");
-    int first = 1;
-
-    // Loop through each element of the array
-    for (int i = 0; i < n; i++) {
-
-        // Skip duplicates for the first element
-        if (i > 0 && arr[i] == arr[i - 1]) continue;
-
-        for (int j = i + 1; j < n; j++) {
-
-            // Skip duplicates for the second element
-            if (j > i + 1 && arr[j] == arr[j - 1]) continue;
-
-            // Define the remaining target for the two-pointer technique
-            int remaining_target = target - arr[i] - arr[j];
-
-            // Find pairs with sum equal to the remaining target
-            duplicate_aware_two_sum(arr, n, j + 1, remaining_target, arr[i], arr[j], &first);
-        }
-    }
-    printf("]\n");
-}
-
-int main() {
-    int a1[] = {1, 0, -1, 0, -2, 2}; four_sum(a1, 6, 0);
-    int a2[] = {2, 2, 2, 2, 2};      four_sum(a2, 5, 8);
-    int a3[] = {1, 2, 3, 4};         four_sum(a3, 4, 100);
-    int a4[] = {0, 0, 0, 0};         four_sum(a4, 4, 0);
-    return 0;
-}
-```
-
-```scala run
-object Main extends App {
-  class Solution {
-    private def skipDuplicatesLeft(arr: Array[Int], left0: Int, right: Int): Int = {
-      var left = left0
-
-      // Skip duplicates from the left pointer
-      while (left < right && arr(left) == arr(left + 1)) {
-        left += 1
-      }
-
-      // Return the index of the next unique element
-      left + 1
-    }
-
-    private def skipDuplicatesRight(arr: Array[Int], left: Int, right0: Int): Int = {
-      var right = right0
-
-      // Skip duplicates from the right pointer
-      while (left < right && arr(right) == arr(right - 1)) {
-        right -= 1
-      }
-
-      // Return the index of the next unique element
-      right - 1
-    }
-
-    private def duplicateAwareTwoSum(
-        arr: Array[Int],
-        left0: Int,
-        target: Int
-    ): List[(Int, Int)] = {
-      var left  = left0
-      var right = arr.length - 1
-      val result = scala.collection.mutable.ListBuffer.empty[(Int, Int)]
-
-      // Use a while loop to traverse the array using the two pointers
-      while (left < right) {
-        val sum = arr(left) + arr(right)
-
-        // If the sum is equal to target, add the numbers to the result.
-        if (sum == target) {
-          result += ((arr(left), arr(right)))
-
-          // Move the left pointer to the next unique element to avoid duplicates
-          left = skipDuplicatesLeft(arr, left, right)
-
-          // Move the right pointer to the previous unique element to avoid duplicates
-          right = skipDuplicatesRight(arr, left, right)
-        }
-
-        // Move the left pointer to increase the sum
-        else if (sum < target) {
-          left += 1
-        }
-
-        // Move the right pointer to decrease the sum
-        else {
-          right -= 1
-        }
-      }
-      result.toList
-    }
-
-    def fourSum(arr: Array[Int], target: Int): List[List[Int]] = {
-
-      // Sort the array in non-decreasing order
-      val sorted = arr.sorted
-      val result = scala.collection.mutable.ListBuffer.empty[List[Int]]
-
-      // Loop through each element of the array
-      var i = 0
-      while (i < sorted.length) {
-
-        // Skip duplicates for the first element
-        if (i > 0 && sorted(i) == sorted(i - 1)) {
-          i += 1
-        } else {
-          var j = i + 1
-          while (j < sorted.length) {
-
-            // Skip duplicates for the second element
-            if (j > i + 1 && sorted(j) == sorted(j - 1)) {
-              j += 1
-            } else {
-
-              // Define the remaining target for the two-pointer technique
-              val remainingTarget = target - sorted(i) - sorted(j)
-
-              // Find pairs with sum equal to the remaining target
-              val twoSumResults = duplicateAwareTwoSum(sorted, j + 1, remainingTarget)
-
-              // Add the quadruplets to the result
-              for ((a, b) <- twoSumResults) {
-                result += List(sorted(i), sorted(j), a, b)
-              }
-
-              j += 1
-            }
-          }
-          i += 1
-        }
-      }
-
-      result.toList
-    }
-  }
-
-  val sol = new Solution
-  println(sol.fourSum(Array(1, 0, -1, 0, -2, 2), 0))
-  println(sol.fourSum(Array(2, 2, 2, 2, 2), 8))
-  println(sol.fourSum(Array(1, 2, 3, 4), 100))
-  println(sol.fourSum(Array(0, 0, 0, 0), 0))
-}
-```
-
-
----
-
-## Dry Run — Example 1
+### Dry Run — Example 1
 
 `arr = [1, 0, -1, 0, -2, 2]` → sorted: `[-2, -1, 0, 0, 1, 2]`, target = 0
 
@@ -2958,13 +2068,17 @@ object Main extends App {
 | 4 (1) | 5 (2) | 3 | > 0 → right-- |
 | 4 (1) | 4 | — | left ≥ right → stop |
 
-**i=3:** `n-3=3`, loop ends.
+**i=3, arr[i]=0:** duplicate of arr[2] → skip outer iteration.
+
+**i=4, arr[i]=1:** j loops from 5 to 5. For each `j`, the inner two-pointer starts at `j+1 ≥ 6`, so `left ≥ right` immediately — no pairs.
+
+**i=5, arr[i]=2:** j range is empty (`i+1 = 6 = len(arr)`) — inner loop does not run.
+
+(The outer loop runs over every `i` in `range(len(arr))`; the duplicate skip handles `i=3`, and for `i ≥ 4` the inner two-pointer's `while left < right` guard exits without recording anything.)
 
 **Result: `[[-2,-1,1,2], [-2,0,0,2], [-1,0,0,1]]`** ✓
 
----
-
-## Complexity Analysis
+### Complexity Analysis
 
 | | Complexity | Reasoning |
 |---|---|---|
@@ -2973,9 +2087,7 @@ object Main extends App {
 
 This is the natural cost of searching for 4 elements — each additional fixed element multiplies by O(n). Two Sum is O(n), Three Sum is O(n²), Four Sum is O(n³). You cannot do better than O(n³) for the general k-sum problem with k ≥ 3.
 
----
-
-## Edge Cases
+### Edge Cases
 
 | Scenario | Input | Output | Note |
 |---|---|---|---|
@@ -2985,9 +2097,10 @@ This is the natural cost of searching for 4 elements — each additional fixed e
 | Large duplicate set | `[0,0,0,0,0,0]`, target=0 | `[[0,0,0,0]]` | All three skip levels fire |
 | Negative target | `[-3,-2,-1,0]`, target=-6 | `[[-3,-2,-1,0]]` | Works identically — no assumption about sign |
 
----
+</details>
+<details>
+<summary><h2>The k-Sum Generalisation</h2></summary>
 
-## The k-Sum Generalisation
 
 The pattern is recursive:
 
@@ -3038,9 +2151,10 @@ fo -> ks: "wrap in k−4 loops"
 
 <p align="center"><strong>The k-Sum family — each level wraps the previous in one more outer loop with duplicate skipping. Two Sum is always the innermost operation.</strong></p>
 
----
+</details>
+<details>
+<summary><h2>Comparison: Three Sum vs Four Sum</h2></summary>
 
-## Comparison: Three Sum vs Four Sum
 
 | | Three Sum | Four Sum |
 |---|---|---|
@@ -3052,8 +2166,11 @@ fo -> ks: "wrap in k−4 loops"
 
 The only structural additions are: one more outer loop, one more duplicate-skip block with a careful guard condition, and the need-variable computed from two fixed elements instead of one.
 
----
+</details>
+<details>
+<summary><h2>Key Takeaway</h2></summary>
 
-## Key Takeaway
 
 Four Sum is the natural extension of Three Sum — add one more fixed-element loop, add one more level of duplicate skipping. The inner two-pointer stays identical. Understanding this telescoping structure reveals the entire k-Sum family: every problem reduces to the same Two Sum core, wrapped in successively more outer loops. Once you have the pattern, adding another level of nesting is mechanical.
+
+</details>

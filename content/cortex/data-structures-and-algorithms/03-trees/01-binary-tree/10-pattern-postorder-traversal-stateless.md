@@ -10,7 +10,7 @@ The **stateless** variant is the cleanest: each recursive call **returns** its s
 
 This pattern is the bread-and-butter of binary-tree problems. *Every* "compute X for the whole tree" question — height, size, sum, max, balance check, structural validation, BST check, depth comparisons — fits this shape. Even the postorder *stateful* pattern in the next lesson is just an enhancement: it adds a side channel for problems where each subtree needs to report *more than one number* back to its parent.
 
-This lesson establishes the recipe, the canonical six example problems (sum-of-leaves, height, max path sum, full-tree check, perfect-tree check, collect-leaves-by-height), and clean implementations for each in 10 languages.
+This lesson establishes the recipe, the canonical six example problems (sum-of-leaves, height, max path sum, full-tree check, perfect-tree check, collect-leaves-by-height), and clean implementations for each in Python and Java.
 
 ---
 
@@ -68,18 +68,10 @@ flowchart TB
 
 > **Why "stateless"?** No mutable state escapes a stack frame. Each call computes its return value purely from its children's return values and the local node — like a functional fold over the tree. Two calls on the same subtree would return the same thing; there's no global accumulator that could give different answers depending on visit order.
 
-## Generic pattern in 10 languages
+## Generic pattern
 
 Below is a "sum of all node values" template — illustrative; substitute the right base case and combine for your problem.
 
-
-```pseudocode
-function statelessPostorder(node):
-    if node = null: return 0        # base case — adapt for each problem
-    left  ← statelessPostorder(node.left)
-    right ← statelessPostorder(node.right)
-    return left + right + node.val  # combine — adapt for each problem
-```
 
 ```python run
 from typing import Optional
@@ -101,24 +93,6 @@ static int statelessPostorder(TreeNode node) {
     int left  = statelessPostorder(node.left);
     int right = statelessPostorder(node.right);
     return left + right + node.val;
-}
-```
-
-```c run
-int stateless_postorder(TreeNode *n) {
-    if (!n) return 0;
-    int left  = stateless_postorder(n->left);
-    int right = stateless_postorder(n->right);
-    return left + right + n->val;
-}
-```
-
-```scala run
-def statelessPostorder(n: TreeNode): Int = {
-  if (n == null) return 0
-  val l = statelessPostorder(n.left)
-  val r = statelessPostorder(n.right)
-  l + r + n.value
 }
 ```
 
@@ -153,47 +127,144 @@ Anti-pattern: if the answer depends on the *path from the root* to a node (info 
 
 Base case: empty tree contributes 0. Leaf returns its own value. Internal node returns `sumOfLeaves(left) + sumOfLeaves(right)` — the node's own value doesn't enter (it's not a leaf).
 
-## Solution
+<details>
+<summary><h2>Solution</h2></summary>
 
 
-```pseudocode
-function sumOfLeaves(root):
-    if root = null: return 0
-    if root.left = null AND root.right = null: return root.val   # leaf
-    return sumOfLeaves(root.left) + sumOfLeaves(root.right)
-```
 
 ```python run
-def sum_of_leaves(root):
-    if root is None: return 0
-    if root.left is None and root.right is None:
-        return root.val
-    return sum_of_leaves(root.left) + sum_of_leaves(root.right)
+from typing import List, Optional
+
+class TreeNode:
+    def __init__(self, val=0, left=None, right=None):
+        self.val = val
+        self.left = left
+        self.right = right
+
+
+def from_level_order(values):
+    """Build tree from list like [1, 2, 3, None, 4]. None means missing child."""
+    if not values:
+        return None
+    root = TreeNode(values[0])
+    queue = [root]
+    i = 1
+    while queue and i < len(values):
+        node = queue.pop(0)
+        if i < len(values) and values[i] is not None:
+            node.left = TreeNode(values[i])
+            queue.append(node.left)
+        i += 1
+        if i < len(values) and values[i] is not None:
+            node.right = TreeNode(values[i])
+            queue.append(node.right)
+        i += 1
+    return root
+
+
+class Solution:
+    def sum_of_leaves(self, root: Optional[TreeNode]) -> int:
+
+        # Base case: if the tree is empty
+        if not root:
+            return 0
+
+        # If it's a leaf node, return its value
+        if not root.left and not root.right:
+            return root.val
+
+        # Recursively sum up leaf nodes in left and right subtrees
+        left_sum = self.sum_of_leaves(root.left)
+        right_sum = self.sum_of_leaves(root.right)
+
+        # Return the sum of leaf nodes in left and right subtrees
+        return left_sum + right_sum
+
+
+# Examples from the problem statement
+print(Solution().sum_of_leaves(from_level_order([1, 2, 5, 7, None, None, 3])))  # 10
+print(Solution().sum_of_leaves(from_level_order([1, 8, 4, None, None, 9, 7])))  # 24
+
+# Edge cases
+print(Solution().sum_of_leaves(None))                                             # 0
+print(Solution().sum_of_leaves(from_level_order([7])))                            # 7
+print(Solution().sum_of_leaves(from_level_order([1, 2, None, 3])))                # 3 (left-skew)
+print(Solution().sum_of_leaves(from_level_order([1, None, 2, None, 3])))          # 3 (right-skew)
+print(Solution().sum_of_leaves(from_level_order([1, 2, 3, 4, 5, 6, 7])))         # 22
 ```
 
 ```java run
-public static int sumOfLeaves(TreeNode root) {
-    if (root == null) return 0;
-    if (root.left == null && root.right == null) return root.val;
-    return sumOfLeaves(root.left) + sumOfLeaves(root.right);
+import java.util.*;
+
+public class Main {
+    static class TreeNode {
+        int val;
+        TreeNode left;
+        TreeNode right;
+        TreeNode() {}
+        TreeNode(int val) { this.val = val; }
+    }
+
+    static TreeNode fromLevelOrder(Integer... values) {
+        if (values.length == 0 || values[0] == null) return null;
+        TreeNode root = new TreeNode(values[0]);
+        java.util.Deque<TreeNode> queue = new java.util.ArrayDeque<>();
+        queue.add(root);
+        int i = 1;
+        while (!queue.isEmpty() && i < values.length) {
+            TreeNode node = queue.poll();
+            if (i < values.length && values[i] != null) {
+                node.left = new TreeNode(values[i]);
+                queue.add(node.left);
+            }
+            i++;
+            if (i < values.length && values[i] != null) {
+                node.right = new TreeNode(values[i]);
+                queue.add(node.right);
+            }
+            i++;
+        }
+        return root;
+    }
+
+    static class Solution {
+        public int sumOfLeaves(TreeNode root) {
+
+            // Base case: if the tree is empty
+            if (root == null) {
+                return 0;
+            }
+
+            // If it's a leaf node, return its value
+            if (root.left == null && root.right == null) {
+                return root.val;
+            }
+
+            // Recursively sum up leaf nodes in left and right subtrees
+            int leftSum = sumOfLeaves(root.left);
+            int rightSum = sumOfLeaves(root.right);
+
+            // Return the sum of leaf nodes in left and right subtrees
+            return leftSum + rightSum;
+        }
+    }
+
+    public static void main(String[] args) {
+        // Examples from the problem statement
+        System.out.println(new Solution().sumOfLeaves(fromLevelOrder(1, 2, 5, 7, null, null, 3)));  // 10
+        System.out.println(new Solution().sumOfLeaves(fromLevelOrder(1, 8, 4, null, null, 9, 7)));  // 24
+
+        // Edge cases
+        System.out.println(new Solution().sumOfLeaves(null));                                        // 0
+        System.out.println(new Solution().sumOfLeaves(fromLevelOrder(7)));                           // 7
+        System.out.println(new Solution().sumOfLeaves(fromLevelOrder(1, 2, null, 3)));               // 3 (left-skew)
+        System.out.println(new Solution().sumOfLeaves(fromLevelOrder(1, null, 2, null, 3)));         // 3 (right-skew)
+        System.out.println(new Solution().sumOfLeaves(fromLevelOrder(1, 2, 3, 4, 5, 6, 7)));        // 22
+    }
 }
 ```
 
-```c run
-int sum_of_leaves(TreeNode *root) {
-    if (!root) return 0;
-    if (!root->left && !root->right) return root->val;
-    return sum_of_leaves(root->left) + sum_of_leaves(root->right);
-}
-```
-
-```scala run
-def sumOfLeaves(root: TreeNode): Int = {
-  if (root == null) return 0
-  if (root.left == null && root.right == null) return root.value
-  sumOfLeaves(root.left) + sumOfLeaves(root.right)
-}
-```
+</details>
 
 
 ***
@@ -206,40 +277,140 @@ Base case: empty tree has height 0 (under the *node-counting* convention used in
 
 > **Note on conventions:** This problem uses the *node-counting* convention (empty = 0, single node = 1). Lesson 1 used the *edge-counting* convention (empty = -1, single node = 0). Both are common; *always read the problem carefully* and pick base cases that make the recurrence consistent.
 
-## Solution
+<details>
+<summary><h2>Solution</h2></summary>
 
 
-```pseudocode
-function height(root):
-    if root = null: return 0
-    return 1 + max(height(root.left), height(root.right))
-```
 
 ```python run
-def height(root):
-    if root is None: return 0
-    return 1 + max(height(root.left), height(root.right))
+from typing import Optional
+
+class TreeNode:
+    def __init__(self, val=0, left=None, right=None):
+        self.val = val
+        self.left = left
+        self.right = right
+
+
+def from_level_order(values):
+    """Build tree from list like [1, 2, 3, None, 4]. None means missing child."""
+    if not values:
+        return None
+    root = TreeNode(values[0])
+    queue = [root]
+    i = 1
+    while queue and i < len(values):
+        node = queue.pop(0)
+        if i < len(values) and values[i] is not None:
+            node.left = TreeNode(values[i])
+            queue.append(node.left)
+        i += 1
+        if i < len(values) and values[i] is not None:
+            node.right = TreeNode(values[i])
+            queue.append(node.right)
+        i += 1
+    return root
+
+
+class Solution:
+    def height_of_binary_tree(self, root: Optional[TreeNode]) -> int:
+
+        # Empty tree has height 0
+        if root is None:
+            return 0
+
+        # Recursively calculate the height of the left and right subtrees
+        left_height = self.height_of_binary_tree(root.left)
+        right_height = self.height_of_binary_tree(root.right)
+
+        # Return the maximum height among the left and right subtrees
+        # plus 1 for the current node
+        return max(left_height, right_height) + 1
+
+
+# Examples from the problem statement
+print(Solution().height_of_binary_tree(from_level_order([1, 2, 3, 4, None, None, 7])))  # 3
+print(Solution().height_of_binary_tree(from_level_order([1, 8, 4, None, None, 2, 7])))  # 3
+
+# Edge cases
+print(Solution().height_of_binary_tree(None))                                            # 0
+print(Solution().height_of_binary_tree(from_level_order([5])))                           # 1
+print(Solution().height_of_binary_tree(from_level_order([1, 2, None, 3])))               # 3 (left-skew)
+print(Solution().height_of_binary_tree(from_level_order([1, None, 2, None, 3])))         # 3 (right-skew)
+print(Solution().height_of_binary_tree(from_level_order([1, 2, 3, 4, 5, 6, 7])))        # 3 (balanced)
+print(Solution().height_of_binary_tree(from_level_order([1, 2])))                        # 2
 ```
 
 ```java run
-public static int height(TreeNode root) {
-    if (root == null) return 0;
-    return 1 + Math.max(height(root.left), height(root.right));
+import java.util.*;
+
+public class Main {
+    static class TreeNode {
+        int val;
+        TreeNode left;
+        TreeNode right;
+        TreeNode() {}
+        TreeNode(int val) { this.val = val; }
+    }
+
+    static TreeNode fromLevelOrder(Integer... values) {
+        if (values.length == 0 || values[0] == null) return null;
+        TreeNode root = new TreeNode(values[0]);
+        java.util.Deque<TreeNode> queue = new java.util.ArrayDeque<>();
+        queue.add(root);
+        int i = 1;
+        while (!queue.isEmpty() && i < values.length) {
+            TreeNode node = queue.poll();
+            if (i < values.length && values[i] != null) {
+                node.left = new TreeNode(values[i]);
+                queue.add(node.left);
+            }
+            i++;
+            if (i < values.length && values[i] != null) {
+                node.right = new TreeNode(values[i]);
+                queue.add(node.right);
+            }
+            i++;
+        }
+        return root;
+    }
+
+    static class Solution {
+        public int heightOfBinaryTree(TreeNode root) {
+
+            // Empty tree has height 0
+            if (root == null) {
+                return 0;
+            }
+
+            // Recursively calculate the height of the left and right
+            // subtrees
+            int leftHeight = heightOfBinaryTree(root.left);
+            int rightHeight = heightOfBinaryTree(root.right);
+
+            // Return the maximum height among the left and right subtrees
+            // plus 1 for the current node
+            return Math.max(leftHeight, rightHeight) + 1;
+        }
+    }
+
+    public static void main(String[] args) {
+        // Examples from the problem statement
+        System.out.println(new Solution().heightOfBinaryTree(fromLevelOrder(1, 2, 3, 4, null, null, 7)));  // 3
+        System.out.println(new Solution().heightOfBinaryTree(fromLevelOrder(1, 8, 4, null, null, 2, 7)));  // 3
+
+        // Edge cases
+        System.out.println(new Solution().heightOfBinaryTree(null));                                        // 0
+        System.out.println(new Solution().heightOfBinaryTree(fromLevelOrder(5)));                           // 1
+        System.out.println(new Solution().heightOfBinaryTree(fromLevelOrder(1, 2, null, 3)));               // 3 (left-skew)
+        System.out.println(new Solution().heightOfBinaryTree(fromLevelOrder(1, null, 2, null, 3)));         // 3 (right-skew)
+        System.out.println(new Solution().heightOfBinaryTree(fromLevelOrder(1, 2, 3, 4, 5, 6, 7)));        // 3 (balanced)
+        System.out.println(new Solution().heightOfBinaryTree(fromLevelOrder(1, 2)));                        // 2
+    }
 }
 ```
 
-```c run
-int height(TreeNode *root) {
-    if (!root) return 0;
-    int l = height(root->left), r = height(root->right);
-    return 1 + (l > r ? l : r);
-}
-```
-
-```scala run
-def height(root: TreeNode): Int =
-  if (root == null) 0 else 1 + math.max(height(root.left), height(root.right))
-```
+</details>
 
 
 ***
@@ -277,41 +448,139 @@ flowchart TB
 
 <p align="center"><strong>Max path sum — each node returns <em>its own value plus the better of the two subtree answers</em>. Empty subtrees contribute 0; the recursion bubbles the maximum up to the root.</strong></p>
 
-## Solution
+<details>
+<summary><h2>Solution</h2></summary>
 
 
-```pseudocode
-function maximumPathSum(root):
-    if root = null: return 0
-    return root.val + max(maximumPathSum(root.left), maximumPathSum(root.right))
-```
 
 ```python run
-def maximum_path_sum(root):
-    if root is None: return 0
-    return root.val + max(maximum_path_sum(root.left), maximum_path_sum(root.right))
+from typing import Optional
+
+class TreeNode:
+    def __init__(self, val=0, left=None, right=None):
+        self.val = val
+        self.left = left
+        self.right = right
+
+
+def from_level_order(values):
+    """Build tree from list like [1, 2, 3, None, 4]. None means missing child."""
+    if not values:
+        return None
+    root = TreeNode(values[0])
+    queue = [root]
+    i = 1
+    while queue and i < len(values):
+        node = queue.pop(0)
+        if i < len(values) and values[i] is not None:
+            node.left = TreeNode(values[i])
+            queue.append(node.left)
+        i += 1
+        if i < len(values) and values[i] is not None:
+            node.right = TreeNode(values[i])
+            queue.append(node.right)
+        i += 1
+    return root
+
+
+class Solution:
+    def maximum_path_sum(self, root: Optional[TreeNode]) -> int:
+        if root is None:
+
+            # Empty tree
+            return 0
+
+        # Recursive calls to calculate the maximum sum of left and
+        # right subtrees
+        left_sum: int = self.maximum_path_sum(root.left)
+        right_sum: int = self.maximum_path_sum(root.right)
+
+        # Return the maximum sum of root-to-leaf paths
+        return root.val + max(left_sum, right_sum)
+
+
+# Examples from the problem statement
+print(Solution().maximum_path_sum(from_level_order([1, 2, 3, 4, None, None, 7])))  # 11
+print(Solution().maximum_path_sum(from_level_order([1, 8, 4, None, None, 2, 7])))  # 12
+
+# Edge cases
+print(Solution().maximum_path_sum(None))                                             # 0
+print(Solution().maximum_path_sum(from_level_order([5])))                            # 5
+print(Solution().maximum_path_sum(from_level_order([1, 2, None, 3])))                # 6 (left-skew)
+print(Solution().maximum_path_sum(from_level_order([1, None, 2, None, 3])))          # 6 (right-skew)
+print(Solution().maximum_path_sum(from_level_order([1, 2, 3])))                      # 4
+print(Solution().maximum_path_sum(from_level_order([10, 5, 20, 3, 7])))              # 30
 ```
 
 ```java run
-public static int maximumPathSum(TreeNode root) {
-    if (root == null) return 0;
-    return root.val + Math.max(maximumPathSum(root.left), maximumPathSum(root.right));
+import java.util.*;
+
+public class Main {
+    static class TreeNode {
+        int val;
+        TreeNode left;
+        TreeNode right;
+        TreeNode() {}
+        TreeNode(int val) { this.val = val; }
+    }
+
+    static TreeNode fromLevelOrder(Integer... values) {
+        if (values.length == 0 || values[0] == null) return null;
+        TreeNode root = new TreeNode(values[0]);
+        java.util.Deque<TreeNode> queue = new java.util.ArrayDeque<>();
+        queue.add(root);
+        int i = 1;
+        while (!queue.isEmpty() && i < values.length) {
+            TreeNode node = queue.poll();
+            if (i < values.length && values[i] != null) {
+                node.left = new TreeNode(values[i]);
+                queue.add(node.left);
+            }
+            i++;
+            if (i < values.length && values[i] != null) {
+                node.right = new TreeNode(values[i]);
+                queue.add(node.right);
+            }
+            i++;
+        }
+        return root;
+    }
+
+    static class Solution {
+        public int maximumPathSum(TreeNode root) {
+
+            // Empty tree
+            if (root == null) {
+                return 0;
+            }
+
+            // Recursive calls to calculate the maximum sum of left and
+            // right subtrees
+            int leftSum = maximumPathSum(root.left);
+            int rightSum = maximumPathSum(root.right);
+
+            // Return the maximum sum of root-to-leaf paths
+            return root.val + Math.max(leftSum, rightSum);
+        }
+    }
+
+    public static void main(String[] args) {
+        // Examples from the problem statement
+        System.out.println(new Solution().maximumPathSum(fromLevelOrder(1, 2, 3, 4, null, null, 7)));  // 11
+        System.out.println(new Solution().maximumPathSum(fromLevelOrder(1, 8, 4, null, null, 2, 7)));  // 12
+
+        // Edge cases
+        System.out.println(new Solution().maximumPathSum(null));                                        // 0
+        System.out.println(new Solution().maximumPathSum(fromLevelOrder(5)));                           // 5
+        System.out.println(new Solution().maximumPathSum(fromLevelOrder(1, 2, null, 3)));               // 6 (left-skew)
+        System.out.println(new Solution().maximumPathSum(fromLevelOrder(1, null, 2, null, 3)));         // 6 (right-skew)
+        System.out.println(new Solution().maximumPathSum(fromLevelOrder(1, 2, 3)));                     // 4
+        System.out.println(new Solution().maximumPathSum(fromLevelOrder(10, 5, 20, 3, 7)));             // 30
+    }
 }
 ```
 
-```c run
-int maximum_path_sum(TreeNode *root) {
-    if (!root) return 0;
-    int l = maximum_path_sum(root->left);
-    int r = maximum_path_sum(root->right);
-    return root->val + (l > r ? l : r);
-}
-```
-
-```scala run
-def maximumPathSum(root: TreeNode): Int =
-  if (root == null) 0 else root.value + math.max(maximumPathSum(root.left), maximumPathSum(root.right))
-```
+</details>
 
 
 ***
@@ -327,51 +596,156 @@ Three cases at each node:
 - Exactly one child null → *not* full → `false`.
 - Both children present → recurse and require both subtrees full.
 
-## Solution
+<details>
+<summary><h2>Solution</h2></summary>
 
 
-```pseudocode
-function isFull(root):
-    if root = null: return true
-    if root.left = null AND root.right = null: return true   # leaf is trivially full
-    if root.left = null OR  root.right = null: return false  # exactly one child → not full
-    return isFull(root.left) AND isFull(root.right)
-```
 
 ```python run
-def is_full(root):
-    if root is None: return True
-    if root.left is None and root.right is None: return True
-    if root.left is None or  root.right is None: return False
-    return is_full(root.left) and is_full(root.right)
+from typing import Optional
+
+class TreeNode:
+    def __init__(self, val=0, left=None, right=None):
+        self.val = val
+        self.left = left
+        self.right = right
+
+
+def from_level_order(values):
+    """Build tree from list like [1, 2, 3, None, 4]. None means missing child."""
+    if not values:
+        return None
+    root = TreeNode(values[0])
+    queue = [root]
+    i = 1
+    while queue and i < len(values):
+        node = queue.pop(0)
+        if i < len(values) and values[i] is not None:
+            node.left = TreeNode(values[i])
+            queue.append(node.left)
+        i += 1
+        if i < len(values) and values[i] is not None:
+            node.right = TreeNode(values[i])
+            queue.append(node.right)
+        i += 1
+    return root
+
+
+class Solution:
+    def full_binary_tree(self, root: Optional[TreeNode]) -> bool:
+
+        # An empty tree is a full binary tree
+        if not root:
+            return True
+
+        # A node with no children is a full binary tree
+        if not root.left and not root.right:
+            return True
+
+        # A node with only one child is not a full binary tree
+        if not root.left or not root.right:
+            return False
+
+        # Check if the left and right subtrees are also full binary trees
+        is_subtree_left_full = self.full_binary_tree(root.left)
+        is_subtree_right_full = self.full_binary_tree(root.right)
+
+        # Return true if both subtrees are full binary trees
+        return is_subtree_left_full and is_subtree_right_full
+
+
+# Examples from the problem statement
+print(Solution().full_binary_tree(from_level_order([1, 2, 3, None, None, 2])))     # False
+print(Solution().full_binary_tree(from_level_order([1, 8, 4, None, None, 3, 5])))  # True
+
+# Edge cases
+print(Solution().full_binary_tree(None))                                             # True
+print(Solution().full_binary_tree(from_level_order([5])))                            # True
+print(Solution().full_binary_tree(from_level_order([1, 2, 3])))                      # True
+print(Solution().full_binary_tree(from_level_order([1, 2, None])))                   # False (only left child)
+print(Solution().full_binary_tree(from_level_order([1, 2, 3, 4, 5, 6, 7])))         # True (perfect)
+print(Solution().full_binary_tree(from_level_order([1, 2, 3, 4, 5])))               # False (node 3 has no children)
 ```
 
 ```java run
-public static boolean isFull(TreeNode root) {
-    if (root == null) return true;
-    if (root.left == null && root.right == null) return true;
-    if (root.left == null || root.right == null) return false;
-    return isFull(root.left) && isFull(root.right);
+import java.util.*;
+
+public class Main {
+    static class TreeNode {
+        int val;
+        TreeNode left;
+        TreeNode right;
+        TreeNode() {}
+        TreeNode(int val) { this.val = val; }
+    }
+
+    static TreeNode fromLevelOrder(Integer... values) {
+        if (values.length == 0 || values[0] == null) return null;
+        TreeNode root = new TreeNode(values[0]);
+        java.util.Deque<TreeNode> queue = new java.util.ArrayDeque<>();
+        queue.add(root);
+        int i = 1;
+        while (!queue.isEmpty() && i < values.length) {
+            TreeNode node = queue.poll();
+            if (i < values.length && values[i] != null) {
+                node.left = new TreeNode(values[i]);
+                queue.add(node.left);
+            }
+            i++;
+            if (i < values.length && values[i] != null) {
+                node.right = new TreeNode(values[i]);
+                queue.add(node.right);
+            }
+            i++;
+        }
+        return root;
+    }
+
+    static class Solution {
+        public boolean fullBinaryTree(TreeNode root) {
+
+            // An empty tree is a full binary tree
+            if (root == null) {
+                return true;
+            }
+
+            // A node with no children is a full binary tree
+            if (root.left == null && root.right == null) {
+                return true;
+            }
+
+            // A node with only one child is not a full binary tree
+            if (root.left == null || root.right == null) {
+                return false;
+            }
+
+            // Check if the left and right subtrees are also full binary
+            // trees
+            boolean isLeftSubtreeFull = fullBinaryTree(root.left);
+            boolean isRightSubtreeFull = fullBinaryTree(root.right);
+
+            // Return true if both subtrees are full binary trees
+            return isLeftSubtreeFull && isRightSubtreeFull;
+        }
+    }
+
+    public static void main(String[] args) {
+        // Examples from the problem statement
+        System.out.println(new Solution().fullBinaryTree(fromLevelOrder(1, 2, 3, null, null, 2)));     // false
+        System.out.println(new Solution().fullBinaryTree(fromLevelOrder(1, 8, 4, null, null, 3, 5)));  // true
+
+        // Edge cases
+        System.out.println(new Solution().fullBinaryTree(null));                                        // true
+        System.out.println(new Solution().fullBinaryTree(fromLevelOrder(5)));                           // true
+        System.out.println(new Solution().fullBinaryTree(fromLevelOrder(1, 2, 3)));                     // true
+        System.out.println(new Solution().fullBinaryTree(fromLevelOrder(1, 2, null)));                  // false (only left child)
+        System.out.println(new Solution().fullBinaryTree(fromLevelOrder(1, 2, 3, 4, 5, 6, 7)));        // true (perfect)
+        System.out.println(new Solution().fullBinaryTree(fromLevelOrder(1, 2, 3, 4, 5)));              // false (node 3 has no children)
+    }
 }
 ```
 
-```c run
-int is_full(TreeNode *root) {
-    if (!root) return 1;
-    if (!root->left && !root->right) return 1;
-    if (!root->left ||  !root->right) return 0;
-    return is_full(root->left) && is_full(root->right);
-}
-```
-
-```scala run
-def isFull(root: TreeNode): Boolean = {
-  if (root == null) return true
-  if (root.left == null && root.right == null) return true
-  if (root.left == null || root.right == null) return false
-  isFull(root.left) && isFull(root.right)
-}
-```
+</details>
 
 
 ***
@@ -387,97 +761,217 @@ A clean two-pass approach:
 
 A one-pass approach also exists (return both `(isPerfect, height)` from each call), but that's the *stateful* postorder pattern from the next lesson. The two-pass version below is pure stateless.
 
-## Solution
+<details>
+<summary><h2>Solution</h2></summary>
 
 
-```pseudocode
-function isPerfect(root):
-    if root = null: return true
-    # step 1: measure depth of leftmost leaf (1-indexed)
-    depth ← 0; n ← root
-    while n ≠ null: depth ← depth + 1; n ← n.left
-    # step 2: every leaf must be at that depth; every internal node must have 2 children
-    function go(node, level):
-        if node = null: return true
-        if node.left = null AND node.right = null: return level = depth
-        if node.left = null OR  node.right = null: return false
-        return go(node.left, level + 1) AND go(node.right, level + 1)
-    return go(root, 1)
-```
 
 ```python run
-def is_perfect(root):
-    if root is None: return True
-    # 1. find leftmost leaf's depth (1-indexed)
-    depth, n = 0, root
-    while n:
-        depth += 1; n = n.left
-    # 2. validate every leaf is at `depth`, every internal node has 2 children
-    def go(node, level):
-        if node is None: return True
-        if node.left is None and node.right is None:
-            return level == depth
-        if node.left is None or node.right is None:
+from typing import Optional
+
+class TreeNode:
+    def __init__(self, val=0, left=None, right=None):
+        self.val = val
+        self.left = left
+        self.right = right
+
+
+def from_level_order(values):
+    """Build tree from list like [1, 2, 3, None, 4]. None means missing child."""
+    if not values:
+        return None
+    root = TreeNode(values[0])
+    queue = [root]
+    i = 1
+    while queue and i < len(values):
+        node = queue.pop(0)
+        if i < len(values) and values[i] is not None:
+            node.left = TreeNode(values[i])
+            queue.append(node.left)
+        i += 1
+        if i < len(values) and values[i] is not None:
+            node.right = TreeNode(values[i])
+            queue.append(node.right)
+        i += 1
+    return root
+
+
+class Solution:
+    def find_depth(self, root: Optional[TreeNode]) -> int:
+        depth = 0
+        while root:
+            depth += 1
+            root = root.left
+        return depth
+
+    def is_perfect_binary_tree(
+        self, root: Optional[TreeNode], depth: int, level: int
+    ) -> bool:
+
+        # An empty tree is a perfect binary tree
+        if not root:
+            return True
+
+        # If it is a leaf node, check if it is at the correct depth
+        if not root.left and not root.right:
+            return depth == level + 1
+
+        # If an internal node has only one child, it's not a perfect
+        # binary tree
+        if not root.left or not root.right:
             return False
-        return go(node.left, level + 1) and go(node.right, level + 1)
-    return go(root, 1)
+
+        # Recursively check the left and right subtrees
+        is_left_subtree_perfect = self.is_perfect_binary_tree(
+            root.left, depth, level + 1
+        )
+        is_right_subtree_perfect = self.is_perfect_binary_tree(
+            root.right, depth, level + 1
+        )
+
+        # Return true if both subtrees are perfect
+        return is_left_subtree_perfect and is_right_subtree_perfect
+
+    def perfect_binary_tree(self, root: Optional[TreeNode]) -> bool:
+
+        # An empty tree is a perfect binary tree
+        if not root:
+            return True
+
+        # Find the depth of the leftmost leaf
+        depth = self.find_depth(root)
+
+        # Check if the tree is perfect
+        return self.is_perfect_binary_tree(root, depth, 0)
+
+
+# Examples from the problem statement
+print(Solution().perfect_binary_tree(from_level_order([1, 2, 3, 4, None, None, 7])))  # False
+print(Solution().perfect_binary_tree(from_level_order([1, 8, 4, 3, 5, 2, 7])))        # True
+
+# Edge cases
+print(Solution().perfect_binary_tree(None))                                             # True
+print(Solution().perfect_binary_tree(from_level_order([5])))                            # True
+print(Solution().perfect_binary_tree(from_level_order([1, 2, 3])))                      # True
+print(Solution().perfect_binary_tree(from_level_order([1, 2, None])))                   # False (only left)
+print(Solution().perfect_binary_tree(from_level_order([1, 2, 3, 4, 5, 6, 7])))         # True
+print(Solution().perfect_binary_tree(from_level_order([1, 2, 3, 4, 5])))               # False (unequal leaves)
 ```
 
 ```java run
-public static boolean isPerfect(TreeNode root) {
-    if (root == null) return true;
-    int depth = 0;
-    for (TreeNode n = root; n != null; n = n.left) depth++;
-    return checkPerfect(root, 1, depth);
-}
-static boolean checkPerfect(TreeNode n, int level, int depth) {
-    if (n == null) return true;
-    if (n.left == null && n.right == null) return level == depth;
-    if (n.left == null || n.right == null) return false;
-    return checkPerfect(n.left, level + 1, depth) && checkPerfect(n.right, level + 1, depth);
-}
-```
+import java.util.*;
 
-```c run
-int check_perfect(TreeNode *n, int level, int depth) {
-    if (!n) return 1;
-    if (!n->left && !n->right) return level == depth;
-    if (!n->left ||  !n->right) return 0;
-    return check_perfect(n->left, level + 1, depth) && check_perfect(n->right, level + 1, depth);
-}
-int is_perfect(TreeNode *root) {
-    if (!root) return 1;
-    int depth = 0;
-    for (TreeNode *n = root; n; n = n->left) depth++;
-    return check_perfect(root, 1, depth);
-}
-```
-
-```scala run
-class TreeNode(var value: Int, var left: TreeNode = null, var right: TreeNode = null)
-
-object Main extends App {
-  class Solution {
-    def isPerfect(root: TreeNode): Boolean = {
-      if (root == null) return true
-      var depth = 0; var n = root
-      while (n != null) { depth += 1; n = n.left }
-      def go(node: TreeNode, level: Int): Boolean = {
-        if (node == null) return true
-        if (node.left == null && node.right == null) return level == depth
-        if (node.left == null || node.right == null) return false
-        go(node.left, level + 1) && go(node.right, level + 1)
-      }
-      go(root, 1)
+public class Main {
+    static class TreeNode {
+        int val;
+        TreeNode left;
+        TreeNode right;
+        TreeNode() {}
+        TreeNode(int val) { this.val = val; }
     }
-  }
 
-  val perfect   = new TreeNode(1, new TreeNode(2), new TreeNode(3))
-  val imperfect = new TreeNode(1, new TreeNode(2, new TreeNode(4), null), new TreeNode(3))
-  println(new Solution().isPerfect(perfect))    // true
-  println(new Solution().isPerfect(imperfect))  // false
+    static TreeNode fromLevelOrder(Integer... values) {
+        if (values.length == 0 || values[0] == null) return null;
+        TreeNode root = new TreeNode(values[0]);
+        java.util.Deque<TreeNode> queue = new java.util.ArrayDeque<>();
+        queue.add(root);
+        int i = 1;
+        while (!queue.isEmpty() && i < values.length) {
+            TreeNode node = queue.poll();
+            if (i < values.length && values[i] != null) {
+                node.left = new TreeNode(values[i]);
+                queue.add(node.left);
+            }
+            i++;
+            if (i < values.length && values[i] != null) {
+                node.right = new TreeNode(values[i]);
+                queue.add(node.right);
+            }
+            i++;
+        }
+        return root;
+    }
+
+    static class Solution {
+        private int findDepth(TreeNode root) {
+            int depth = 0;
+            while (root != null) {
+                depth++;
+                root = root.left;
+            }
+            return depth;
+        }
+
+        private boolean isPerfectBinaryTree(
+            TreeNode root,
+            int depth,
+            int level
+        ) {
+
+            // An empty tree is a perfect binary tree
+            if (root == null) {
+                return true;
+            }
+
+            // If it is a leaf node, check if it is at the correct depth
+            if (root.left == null && root.right == null) {
+                return depth == level + 1;
+            }
+
+            // If an internal node has only one child, it's not a perfect
+            // binary tree
+            if (root.left == null || root.right == null) {
+                return false;
+            }
+
+            // Recursively check the left and right subtrees
+            boolean isLeftSubtreePerfect = isPerfectBinaryTree(
+                root.left,
+                depth,
+                level + 1
+            );
+            boolean isRightSubtreePerfect = isPerfectBinaryTree(
+                root.right,
+                depth,
+                level + 1
+            );
+
+            // Return true if both subtrees are perfect
+            return isLeftSubtreePerfect && isRightSubtreePerfect;
+        }
+
+        public boolean perfectBinaryTree(TreeNode root) {
+
+            // An empty tree is a perfect binary tree
+            if (root == null) {
+                return true;
+            }
+
+            // Find the depth of the leftmost leaf
+            int depth = findDepth(root);
+
+            // Check if the tree is perfect
+            return isPerfectBinaryTree(root, depth, 0);
+        }
+    }
+
+    public static void main(String[] args) {
+        // Examples from the problem statement
+        System.out.println(new Solution().perfectBinaryTree(fromLevelOrder(1, 2, 3, 4, null, null, 7)));  // false
+        System.out.println(new Solution().perfectBinaryTree(fromLevelOrder(1, 8, 4, 3, 5, 2, 7)));        // true
+
+        // Edge cases
+        System.out.println(new Solution().perfectBinaryTree(null));                                        // true
+        System.out.println(new Solution().perfectBinaryTree(fromLevelOrder(5)));                           // true
+        System.out.println(new Solution().perfectBinaryTree(fromLevelOrder(1, 2, 3)));                     // true
+        System.out.println(new Solution().perfectBinaryTree(fromLevelOrder(1, 2, null)));                  // false (only left)
+        System.out.println(new Solution().perfectBinaryTree(fromLevelOrder(1, 2, 3, 4, 5, 6, 7)));        // true
+        System.out.println(new Solution().perfectBinaryTree(fromLevelOrder(1, 2, 3, 4, 5)));              // false (unequal leaves)
+    }
 }
 ```
+
+</details>
 
 
 ***
@@ -521,98 +1015,192 @@ flowchart TB
 
 <p align="center"><strong>Collect leaves by height — every node ends up in the bucket matching its <em>height</em>. Bucket 0 is the originals; bucket 1 is the leaves after peeling; etc. One postorder pass and we're done.</strong></p>
 
-## Solution
+<details>
+<summary><h2>Solution</h2></summary>
 
 
-```pseudocode
-function collectLeaves(root):
-    out ← empty list of lists
-    function go(n):
-        if n = null: return −1
-        h ← 1 + max(go(n.left), go(n.right))   # height of this subtree (leaf=0)
-        if h = length(out): append empty list to out
-        append n.val to out[h]
-        return h
-    go(root)
-    return out
-```
 
 ```python run
-def collect_leaves(root):
-    out = []
-    def go(n):
-        if n is None: return -1
-        h = 1 + max(go(n.left), go(n.right))
-        if h == len(out): out.append([])
-        out[h].append(n.val)
-        return h
-    go(root)
-    return out
+from typing import List, Optional
+
+class TreeNode:
+    def __init__(self, val=0, left=None, right=None):
+        self.val = val
+        self.left = left
+        self.right = right
+
+
+def from_level_order(values):
+    """Build tree from list like [1, 2, 3, None, 4]. None means missing child."""
+    if not values:
+        return None
+    root = TreeNode(values[0])
+    queue = [root]
+    i = 1
+    while queue and i < len(values):
+        node = queue.pop(0)
+        if i < len(values) and values[i] is not None:
+            node.left = TreeNode(values[i])
+            queue.append(node.left)
+        i += 1
+        if i < len(values) and values[i] is not None:
+            node.right = TreeNode(values[i])
+            queue.append(node.right)
+        i += 1
+    return root
+
+
+class Solution:
+    def find_height(
+        self, root: Optional[TreeNode], result: List[List[int]]
+    ) -> int:
+
+        # If root is null, return -1.
+        if not root:
+            return -1
+
+        # Recursively find the height of the left and right subtrees.
+        left_height = self.find_height(root.left, result)
+        right_height = self.find_height(root.right, result)
+
+        # Calculate the height of the current node.
+        height = max(left_height, right_height) + 1
+
+        # If the result list's size is less than or equal to the
+        # height of the node, add a new empty list to the result list.
+        if len(result) <= height:
+            result.append([])
+
+        # Add the current node's value to the list at the current node's
+        # height.
+        result[height].append(root.val)
+
+        # Return the height of the current node.
+        return height
+
+    def collect_leaves(
+        self, root: Optional[TreeNode]
+    ) -> List[List[int]]:
+
+        # List of lists to store leaf nodes at each height.
+        result: List[List[int]] = []
+
+        # Find the height of the tree and collect leaf nodes.
+        self.find_height(root, result)
+
+        # Return result list.
+        return result
+
+
+# Examples from the problem statement
+print(Solution().collect_leaves(from_level_order([1, 2, 1, 7, None, None, 1])))  # [[7, 1], [2, 1], [1]]
+print(Solution().collect_leaves(from_level_order([1, 6, 5, None, None, 2, 7])))  # [[6, 2, 7], [5], [1]]
+
+# Edge cases
+print(Solution().collect_leaves(None))                                             # []
+print(Solution().collect_leaves(from_level_order([5])))                            # [[5]]
+print(Solution().collect_leaves(from_level_order([1, 2, None, 3])))                # [[3], [2], [1]] (left-skew)
+print(Solution().collect_leaves(from_level_order([1, None, 2, None, 3])))          # [[3], [2], [1]] (right-skew)
+print(Solution().collect_leaves(from_level_order([1, 2, 3])))                      # [[2, 3], [1]]
+print(Solution().collect_leaves(from_level_order([1, 2, 3, 4, 5, 6, 7])))         # [[4, 5, 6, 7], [2, 3], [1]]
 ```
 
 ```java run
-static List<List<Integer>> collectLeaves(TreeNode root) {
-    List<List<Integer>> out = new ArrayList<>();
-    clHelper(root, out);
-    return out;
-}
-static int clHelper(TreeNode n, List<List<Integer>> out) {
-    if (n == null) return -1;
-    int h = 1 + Math.max(clHelper(n.left, out), clHelper(n.right, out));
-    if (h == out.size()) out.add(new ArrayList<>());
-    out.get(h).add(n.val);
-    return h;
-}
-```
+import java.util.*;
 
-```c run
-// out is a 2D array; for brevity in C, store as out[64][32] with sizes[].
-static int out[64][32], sizes[64], depth_count;
-int cl_helper(TreeNode *n) {
-    if (!n) return -1;
-    int l = cl_helper(n->left), r = cl_helper(n->right);
-    int h = 1 + (l > r ? l : r);
-    if (h == depth_count) depth_count++;
-    out[h][sizes[h]++] = n->val;
-    return h;
-}
-void collect_leaves(TreeNode *root) {
-    depth_count = 0;
-    for (int i = 0; i < 64; i++) sizes[i] = 0;
-    cl_helper(root);
-}
-```
-
-```scala run
-class TreeNode(var value: Int, var left: TreeNode = null, var right: TreeNode = null)
-
-object Main extends App {
-  class Solution {
-    def collectLeaves(root: TreeNode): List[List[Int]] = {
-      val out = scala.collection.mutable.ArrayBuffer[scala.collection.mutable.ListBuffer[Int]]()
-      def go(n: TreeNode): Int = {
-        if (n == null) return -1
-        val h = 1 + math.max(go(n.left), go(n.right))
-        if (h == out.length) out += scala.collection.mutable.ListBuffer[Int]()
-        out(h) += n.value
-        h
-      }
-      go(root)
-      out.map(_.toList).toList
+public class Main {
+    static class TreeNode {
+        int val;
+        TreeNode left;
+        TreeNode right;
+        TreeNode() {}
+        TreeNode(int val) { this.val = val; }
     }
-  }
 
-  val root = new TreeNode(1,
-    new TreeNode(2, new TreeNode(7), null),
-    new TreeNode(1, null, new TreeNode(1)))
-  println(new Solution().collectLeaves(root))  // List(List(7, 1), List(2, 1), List(1))
+    static TreeNode fromLevelOrder(Integer... values) {
+        if (values.length == 0 || values[0] == null) return null;
+        TreeNode root = new TreeNode(values[0]);
+        java.util.Deque<TreeNode> queue = new java.util.ArrayDeque<>();
+        queue.add(root);
+        int i = 1;
+        while (!queue.isEmpty() && i < values.length) {
+            TreeNode node = queue.poll();
+            if (i < values.length && values[i] != null) {
+                node.left = new TreeNode(values[i]);
+                queue.add(node.left);
+            }
+            i++;
+            if (i < values.length && values[i] != null) {
+                node.right = new TreeNode(values[i]);
+                queue.add(node.right);
+            }
+            i++;
+        }
+        return root;
+    }
+
+    static class Solution {
+        private int findHeight(TreeNode root, List<List<Integer>> result) {
+
+            // If root is null, return -1.
+            if (root == null) {
+                return -1;
+            }
+
+            // Recursively find the height of the left and right subtrees.
+            int leftHeight = findHeight(root.left, result);
+            int rightHeight = findHeight(root.right, result);
+
+            // Calculate the height of the current node.
+            int height = Math.max(leftHeight, rightHeight) + 1;
+
+            // If the result list's size is less than or equal to the
+            // height of the node, add a new empty list to the result list.
+            if (result.size() <= height) {
+                result.add(new ArrayList<>());
+            }
+
+            // Add the current node's value to the list at the current node's
+            // height.
+            result.get(height).add(root.val);
+
+            // Return the height of the current node.
+            return height;
+        }
+
+        public List<List<Integer>> collectLeaves(TreeNode root) {
+
+            // List of lists to store leaf nodes at each height.
+            List<List<Integer>> result = new ArrayList<>();
+
+            // Find the height of the tree and collect leaf nodes.
+            findHeight(root, result);
+
+            // Return result list.
+            return result;
+        }
+    }
+
+    public static void main(String[] args) {
+        // Examples from the problem statement
+        System.out.println(new Solution().collectLeaves(fromLevelOrder(1, 2, 1, 7, null, null, 1)));  // [[7, 1], [2, 1], [1]]
+        System.out.println(new Solution().collectLeaves(fromLevelOrder(1, 6, 5, null, null, 2, 7)));  // [[6, 2, 7], [5], [1]]
+
+        // Edge cases
+        System.out.println(new Solution().collectLeaves(null));                                        // []
+        System.out.println(new Solution().collectLeaves(fromLevelOrder(5)));                           // [[5]]
+        System.out.println(new Solution().collectLeaves(fromLevelOrder(1, 2, null, 3)));               // [[3], [2], [1]] (left-skew)
+        System.out.println(new Solution().collectLeaves(fromLevelOrder(1, null, 2, null, 3)));         // [[3], [2], [1]] (right-skew)
+        System.out.println(new Solution().collectLeaves(fromLevelOrder(1, 2, 3)));                     // [[2, 3], [1]]
+        System.out.println(new Solution().collectLeaves(fromLevelOrder(1, 2, 3, 4, 5, 6, 7)));        // [[4, 5, 6, 7], [2, 3], [1]]
+    }
 }
 ```
 
+</details>
+<details>
+<summary><h2>Final Takeaway</h2></summary>
 
-***
-
-## Final Takeaway
 
 Stateless postorder is the most-used pattern in the chapter. Three things to walk away with:
 
@@ -621,3 +1209,5 @@ Stateless postorder is the most-used pattern in the chapter. Three things to wal
 3. **Empty-tree base case is where the off-by-one bugs live.** Choose your base case to make the recurrence *uniformly applicable* — height of an empty tree is 0 (or -1, depending on convention), sum is 0, max is `-∞`, count is 0, "is a valid X" is `true`. Pick the one that makes the combine work cleanly without special-casing leaves.
 
 > *Coming up — the <strong>stateful</strong> postorder pattern. When a single returned value isn't enough — for instance when each subtree must report both <em>"the longest path entirely within me"</em> AND <em>"the longest path from my root downward"</em> — we either return tuples or thread a shared best-so-far through the recursion. That covers diameter, longest monotonic path, distribute-coins, frequent-subtree-sums, and many more "two answers per call" problems.*
+
+</details>

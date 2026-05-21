@@ -85,17 +85,6 @@ For large hashes (and sets), Redis falls back to a regular hash table. The imple
 - `dictEntry` per element: 16 bytes plus pointers.
 - **Incremental rehashing.** When the load factor hits 1.0, Redis allocates a new table double the size and starts moving entries — but only `1` bucket per operation, amortised across many calls. This avoids the `O(n)` stall a single rehash would cause.
 
-```c
-// src/dict.c
-typedef struct dict {
-    dictEntry **table[2];        // ← two tables; second is during rehash
-    unsigned long size[2];
-    unsigned long sizemask[2];
-    unsigned long used[2];
-    long rehashidx;              // -1 if not rehashing
-} dict;
-```
-
 The `table[2]` array is the rehashing state: while the rehash is in progress, both tables exist; lookups check both; inserts go to the new one. After all entries migrate, the old table is freed.
 
 This is incremental garbage collection's idea applied to hash tables. The result: no single Redis operation ever takes more than a few microseconds, even on a hash table being rehashed.
@@ -151,49 +140,42 @@ Click any question to reveal the answer.
 **A:** Below `hash-max-listpack-entries` (default 128) and `hash-max-listpack-value` (default 64 bytes per field/value): **listpack** (contiguous). Above: **hashtable** (chained).
 
 </details>
-
 <details>
 <summary><strong>Q:</strong> Why does small-data listpack beat hashtable in memory?</summary>
 
 **A:** Listpack is one contiguous allocation with size-prefixed entries. Hashtable adds bucket arrays + per-entry node overhead + pointer indirection. 5-10× memory savings for small data.
 
 </details>
-
 <details>
 <summary><strong>Q:</strong> What replaces ziplist in Redis 7+?</summary>
 
 **A:** **listpack**. Eliminates ziplist's "cascade update" problem (where a size-encoding change could trigger `O(n²)` rewrites).
 
 </details>
-
 <details>
 <summary><strong>Q:</strong> Sorted set internal structure?</summary>
 
 **A:** Two structures in tandem: a **skip list** keyed by score (for `ZRANGE`) plus a **hash table** mapping member → score (for `O(1)` `ZSCORE`/`ZRANK`).
 
 </details>
-
 <details>
 <summary><strong>Q:</strong> What is a quicklist?</summary>
 
 **A:** A linked list of listpacks. Outer linked-list for `O(1)` head/tail push/pop; inner listpacks for memory locality. Used by Redis Lists.
 
 </details>
-
 <details>
 <summary><strong>Q:</strong> Incremental rehashing — what does it solve?</summary>
 
 **A:** A hash-table grow-by-2 would be `O(n)` and stall the single-threaded server. Incremental rehashing migrates one bucket per operation; no individual op exceeds a few microseconds.
 
 </details>
-
 <details>
 <summary><strong>Q:</strong> Encoding upgrade — one-way or reversible?</summary>
 
 **A:** One-way. Once a Hash exceeds the threshold and switches to hashtable, deletes don't bring it back. To shrink, dump and restore.
 
 </details>
-
 <details>
 <summary><strong>Q:</strong> Memory measurement commands?</summary>
 

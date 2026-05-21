@@ -275,7 +275,9 @@ Given the **root** of a binary search tree and a random **node** in the tree, fi
 > - **Input:** `root = [10, 8, 14, 5, null, 12, 17]`, `node = 10`
 > - **Output:** `12`
 
-## The Strategy
+<details>
+<summary><h2>The Strategy</h2></summary>
+
 
 Two cases:
 
@@ -309,106 +311,251 @@ flowchart LR
 
 <p align="center"><strong>Single-pass in-order successor: same shape as upper bound — track the smallest value strictly greater than the given one.</strong></p>
 
-## The Solution
+</details>
+<details>
+<summary><h2>The Solution</h2></summary>
 
 
-```pseudocode
-function inorderSuccessor(root, node):
-    successor ← null
-    while root is NOT null:
-        if root.val > node.val:
-            successor ← root      # root is a valid candidate (strictly greater)
-            root ← root.left      # look for an even smaller candidate
-        else:
-            root ← root.right     # root ≤ node — answer must be to the right
-    return successor
-```
 
 ```python run
+from typing import Optional
+from collections import deque
+
+
+class TreeNode:
+    def __init__(self, val=0, left=None, right=None):
+        self.val = val
+        self.left = left
+        self.right = right
+
+
+def from_level_order(values):
+    """Build tree from list like [1, 2, 3, None, 4]. None means missing child."""
+    if not values:
+        return None
+    root = TreeNode(values[0])
+    queue = [root]
+    i = 1
+    while queue and i < len(values):
+        node = queue.pop(0)
+        if i < len(values) and values[i] is not None:
+            node.left = TreeNode(values[i])
+            queue.append(node.left)
+        i += 1
+        if i < len(values) and values[i] is not None:
+            node.right = TreeNode(values[i])
+            queue.append(node.right)
+        i += 1
+    return root
+
+
+def find_node(root, val):
+    while root:
+        if val == root.val:
+            return root
+        elif val < root.val:
+            root = root.left
+        else:
+            root = root.right
+    return None
+
+
 class Solution:
-    def inorder_successor(self, root, node):
+    def inorder_successor(
+        self, root: Optional[TreeNode], node: Optional[TreeNode]
+    ) -> Optional[TreeNode]:
+
+        # Initialize the successor as None
         successor = None
+
         while root is not None:
+
+            # If the current node's value is greater than the given
+            # node's value
             if root.val > node.val:
-                # Current node is a candidate (strictly greater than target).
-                # Record it, then look left for an even smaller candidate.
+
+                # Set the current node as the potential successor
                 successor = root
+
+                # Move to the left subtree since the successor will be
+                # in the left subtree
                 root = root.left
+
+            # If the current node's value is less than or equal to the
+            # given node's value, move to the right subtree as the
+            # successor cannot be in the current node
             else:
-                # Current node ≤ target → not a candidate; the answer (if any)
-                # lies in the right subtree.
                 root = root.right
+
+        # Return the found successor
         return successor
+
+
+# Example 1: successor of node 4 in [5, 4, 6, 2, null, null, 7]
+t1 = from_level_order([5, 4, 6, 2, None, None, 7])
+n1 = find_node(t1, 4)
+res = Solution().inorder_successor(t1, n1)
+print(res.val if res else None)   # 5
+
+# Example 2: successor of node 10 in [10, 8, 14, 5, null, 12, 17]
+t2 = from_level_order([10, 8, 14, 5, None, 12, 17])
+n2 = find_node(t2, 10)
+res2 = Solution().inorder_successor(t2, n2)
+print(res2.val if res2 else None)  # 12
+
+# Successor of the maximum node (no successor)
+t3 = from_level_order([5, 4, 6, 2, None, None, 7])
+n3 = find_node(t3, 7)
+res3 = Solution().inorder_successor(t3, n3)
+print(res3.val if res3 else None)  # None
+
+# Successor of root in a 3-node tree [5, 3, 7]
+t4 = from_level_order([5, 3, 7])
+n4 = find_node(t4, 5)
+res4 = Solution().inorder_successor(t4, n4)
+print(res4.val if res4 else None)  # 7
+
+# Successor of a leaf that has an ancestor as successor
+t5 = from_level_order([10, 8, 14, 5, None, 12, 17])
+n5 = find_node(t5, 8)
+res5 = Solution().inorder_successor(t5, n5)
+print(res5.val if res5 else None)  # 10
+
+# Successor in right-skew tree
+t6 = from_level_order([1, None, 3, None, 5])
+n6 = find_node(t6, 3)
+res6 = Solution().inorder_successor(t6, n6)
+print(res6.val if res6 else None)  # 5
+
+# Single-node tree — no successor
+t7 = TreeNode(42)
+n7 = find_node(t7, 42)
+res7 = Solution().inorder_successor(t7, n7)
+print(res7.val if res7 else None)  # None
 ```
 
 ```java run
+import java.util.*;
+
 public class Main {
-    static class TreeNode { int val; TreeNode left, right; TreeNode(int v){val=v;} }
+    static class TreeNode {
+        int val;
+        TreeNode left;
+        TreeNode right;
+        TreeNode() {}
+        TreeNode(int val) { this.val = val; }
+    }
+
+    static TreeNode fromLevelOrder(Integer... values) {
+        if (values.length == 0 || values[0] == null) return null;
+        TreeNode root = new TreeNode(values[0]);
+        Deque<TreeNode> queue = new ArrayDeque<>();
+        queue.add(root);
+        int i = 1;
+        while (!queue.isEmpty() && i < values.length) {
+            TreeNode node = queue.poll();
+            if (i < values.length && values[i] != null) {
+                node.left = new TreeNode(values[i]);
+                queue.add(node.left);
+            }
+            i++;
+            if (i < values.length && values[i] != null) {
+                node.right = new TreeNode(values[i]);
+                queue.add(node.right);
+            }
+            i++;
+        }
+        return root;
+    }
+
+    static TreeNode findNode(TreeNode root, int val) {
+        while (root != null) {
+            if (val == root.val) return root;
+            else if (val < root.val) root = root.left;
+            else root = root.right;
+        }
+        return null;
+    }
 
     static class Solution {
         public TreeNode inorderSuccessor(TreeNode root, TreeNode node) {
+
+            // Initialize the successor as null
             TreeNode successor = null;
+
             while (root != null) {
-                if (root.val > node.val) {                                          // candidate
-                    successor = root;                                               //   record
-                    root = root.left;                                               //   tighten
-                } else {                                                            // ≤ node
-                    root = root.right;                                              //   go right
+
+                // If the current node's value is greater than the given
+                // node's value
+                if (root.val > node.val) {
+
+                    // Set the current node as the potential successor
+                    successor = root;
+
+                    // Move to the left subtree since the successor will be
+                    // in the left subtree
+                    root = root.left;
+                }
+
+                // If the current node's value is less than or equal to the
+                // given node's value, move to the right subtree as the
+                // successor cannot be in the current node
+                else {
+                    root = root.right;
                 }
             }
+
+            // Return the found successor
             return successor;
         }
     }
 
     public static void main(String[] args) {
-        TreeNode root = new TreeNode(5);
-        root.left  = new TreeNode(4); root.right = new TreeNode(6);
-        root.left.left  = new TreeNode(2);
-        root.right.right = new TreeNode(7);
-        System.out.println(new Solution().inorderSuccessor(root, root.left).val);  // 5
+        // Example 1: successor of node 4 in [5, 4, 6, 2, null, null, 7]
+        TreeNode t1 = fromLevelOrder(5, 4, 6, 2, null, null, 7);
+        TreeNode n1 = findNode(t1, 4);
+        TreeNode r1 = new Solution().inorderSuccessor(t1, n1);
+        System.out.println(r1 != null ? r1.val : null);   // 5
+
+        // Example 2: successor of node 10 in [10, 8, 14, 5, null, 12, 17]
+        TreeNode t2 = fromLevelOrder(10, 8, 14, 5, null, 12, 17);
+        TreeNode n2 = findNode(t2, 10);
+        TreeNode r2 = new Solution().inorderSuccessor(t2, n2);
+        System.out.println(r2 != null ? r2.val : null);   // 12
+
+        // Successor of the maximum node (no successor)
+        TreeNode t3 = fromLevelOrder(5, 4, 6, 2, null, null, 7);
+        TreeNode n3 = findNode(t3, 7);
+        TreeNode r3 = new Solution().inorderSuccessor(t3, n3);
+        System.out.println(r3 != null ? r3.val : null);   // null
+
+        // Successor of root in a 3-node tree [5, 3, 7]
+        TreeNode t4 = fromLevelOrder(5, 3, 7);
+        TreeNode n4 = findNode(t4, 5);
+        TreeNode r4 = new Solution().inorderSuccessor(t4, n4);
+        System.out.println(r4 != null ? r4.val : null);   // 7
+
+        // Successor of a leaf that has an ancestor as successor
+        TreeNode t5 = fromLevelOrder(10, 8, 14, 5, null, 12, 17);
+        TreeNode n5 = findNode(t5, 8);
+        TreeNode r5 = new Solution().inorderSuccessor(t5, n5);
+        System.out.println(r5 != null ? r5.val : null);   // 10
+
+        // Successor in right-skew tree
+        TreeNode t6 = fromLevelOrder(1, null, 3, null, 5);
+        TreeNode n6 = findNode(t6, 3);
+        TreeNode r6 = new Solution().inorderSuccessor(t6, n6);
+        System.out.println(r6 != null ? r6.val : null);   // 5
+
+        // Single-node tree — no successor
+        TreeNode t7 = new TreeNode(42);
+        TreeNode r7 = new Solution().inorderSuccessor(t7, t7);
+        System.out.println(r7 != null ? r7.val : null);   // null
     }
 }
 ```
 
-```c run
-struct TreeNode *inorderSuccessor(struct TreeNode *root, struct TreeNode *node) {
-    struct TreeNode *successor = NULL;
-    while (root != NULL) {
-        if (root->val > node->val) {                                            // candidate
-            successor = root;                                                   //   record
-            root = root->left;                                                  //   tighten
-        } else {                                                                // ≤ node
-            root = root->right;                                                 //   go right
-        }
-    }
-    return successor;
-}
-```
-
-```scala run
-class TreeNode(var value: Int, var left: TreeNode = null, var right: TreeNode = null)
-
-object Main extends App {
-  class Solution {
-    def inorderSuccessor(root: TreeNode, node: TreeNode): TreeNode = {
-      var cur = root
-      var successor: TreeNode = null
-      while (cur != null) {
-        if (cur.value > node.value) {                                                // candidate
-          successor = cur                                                            //   record
-          cur = cur.left                                                             //   tighten
-        } else cur = cur.right                                                       // ≤ node
-      }
-      successor
-    }
-  }
-
-  val root = new TreeNode(5,
-    new TreeNode(4, new TreeNode(2), null),
-    new TreeNode(6, null, new TreeNode(7)))
-  println(new Solution().inorderSuccessor(root, root.left).value)  // 5
-}
-```
+</details>
 
 
 ***
@@ -431,158 +578,330 @@ You must do this **recursively**.
 > - **Input:** `root = [10, 8, 14, 5, null, 12, 17]`, `key = 14`
 > - **Output:** `[10, 8, 17, 5, null, 12]`
 
-## The Solution
+<details>
+<summary><h2>The Solution</h2></summary>
 
 
-```pseudocode
-function findMin(node):
-    while node.left is NOT null:
-        node ← node.left
-    return node
-
-function recursiveDelete(root, key):
-    if root is null:
-        return null
-    if key < root.val:
-        root.left ← recursiveDelete(root.left, key)
-    else if key > root.val:
-        root.right ← recursiveDelete(root.right, key)
-    else:                                    # match
-        if root.left is null:
-            return root.right                # Case 1/2a — promote right
-        if root.right is null:
-            return root.left                 # Case 2b  — promote left
-        # Case 3 — two children: replace value with in-order successor, then
-        # delete the successor from the right subtree (it has ≤ 1 child).
-        successor ← findMin(root.right)
-        root.val ← successor.val
-        root.right ← recursiveDelete(root.right, successor.val)
-    return root
-```
 
 ```python run
+from typing import Optional
+from collections import deque
+
+
+class TreeNode:
+    def __init__(self, val=0, left=None, right=None):
+        self.val = val
+        self.left = left
+        self.right = right
+
+
+def from_level_order(values):
+    """Build tree from list like [1, 2, 3, None, 4]. None means missing child."""
+    if not values:
+        return None
+    root = TreeNode(values[0])
+    queue = [root]
+    i = 1
+    while queue and i < len(values):
+        node = queue.pop(0)
+        if i < len(values) and values[i] is not None:
+            node.left = TreeNode(values[i])
+            queue.append(node.left)
+        i += 1
+        if i < len(values) and values[i] is not None:
+            node.right = TreeNode(values[i])
+            queue.append(node.right)
+        i += 1
+    return root
+
+
+def to_level_order(root):
+    if not root:
+        return []
+    result, queue = [], deque([root])
+    while queue:
+        node = queue.popleft()
+        result.append(node.val)
+        if node.left:
+            queue.append(node.left)
+        if node.right:
+            queue.append(node.right)
+    return result
+
+
 class Solution:
-    def find_min(self, node):
-        # Helper: leftmost node = smallest value in this subtree.
-        while node.left is not None:
-            node = node.left
-        return node
+    def inorder_successor(
+        self, root: Optional[TreeNode], node: Optional[TreeNode]
+    ) -> Optional[TreeNode]:
+        successor = None
 
-    def recursive_deletion(self, root, key):
+        while root is not None:
+            if root.val > node.val:
+                successor = root
+                root = root.left
+            else:
+                root = root.right
+
+        return successor
+
+    def recursive_deletion(
+        self, root: Optional[TreeNode], key: int
+    ) -> Optional[TreeNode]:
+
+        # Base case: if the root is null, return null
         if root is None:
-            return None                                          # nothing to delete
+            return None
 
-        # Step 1 — search for the node, recurse into the correct subtree.
-        if key < root.val:
-            root.left = self.recursive_deletion(root.left, key)
-        elif key > root.val:
+        # If the key is greater than the current node's value, search in
+        # the right subtree
+        if key > root.val:
             root.right = self.recursive_deletion(root.right, key)
+
+        # If the key is smaller than the current node's value, search in
+        # the left subtree
+        elif key < root.val:
+            root.left = self.recursive_deletion(root.left, key)
+
+        # If the key matches the current node's value, found the node
+        # to delete
         else:
-            # Match — handle the three cases.
-            # Case 1 / 2a: no left child → promote the right subtree.
+
+            # Case 1: Node has no left child
             if root.left is None:
-                return root.right
-            # Case 2b: no right child → promote the left subtree.
-            if root.right is None:
-                return root.left
-            # Case 3: two children — copy the in-order successor's value
-            # into the current node, then delete the successor from the right.
-            successor = self.find_min(root.right)
-            root.val = successor.val
-            root.right = self.recursive_deletion(root.right, successor.val)
+
+                # Save the right child of the current node
+                temp = root.right
+
+                # Delete the current node
+                root = None
+
+                # Return the right child to reconnect it with the parent
+                return temp
+
+            # Case 2: Node has no right child
+            elif root.right is None:
+
+                # Save the left child of the current node
+                temp = root.left
+
+                # Delete the current node
+                root = None
+
+                # Return the left child to reconnect it with the parent
+                return temp
+
+            # Case 3: Node has both left and right children
+            else:
+
+                # Find inorder successor of the node (smallest value in
+                # right subtree)
+                successor = self.inorder_successor(root.right, root)
+
+                # Copy successor's value to current node
+                root.val = successor.val
+
+                # Delete successor
+                root.right = self.recursive_deletion(
+                    root.right, successor.val
+                )
+
+        # Return the updated root node of the binary search tree
         return root
+
+
+# Example 1: delete 6 from [5, 4, 6, 2, null, null, 7]
+t1 = from_level_order([5, 4, 6, 2, None, None, 7])
+print(to_level_order(Solution().recursive_deletion(t1, 6)))    # [5, 4, 7, 2]
+
+# Example 2: delete 14 from [10, 8, 14, 5, null, 12, 17]
+t2 = from_level_order([10, 8, 14, 5, None, 12, 17])
+print(to_level_order(Solution().recursive_deletion(t2, 14)))   # [10, 8, 17, 5, 12]
+
+# Delete leaf node
+t3 = from_level_order([5, 3, 7])
+print(to_level_order(Solution().recursive_deletion(t3, 3)))    # [5, 7]
+
+# Delete node with only right child
+t4 = from_level_order([5, 3, 7, None, 4])
+print(to_level_order(Solution().recursive_deletion(t4, 3)))    # [5, 4, 7]
+
+# Delete root of single-node tree
+t5 = TreeNode(5)
+print(to_level_order(Solution().recursive_deletion(t5, 5)))    # []
+
+# Delete non-existent key (tree unchanged)
+t6 = from_level_order([5, 3, 7])
+print(to_level_order(Solution().recursive_deletion(t6, 99)))   # [5, 3, 7]
+
+# Delete root when it has two children
+t7 = from_level_order([5, 3, 7, 1, 4])
+print(to_level_order(Solution().recursive_deletion(t7, 5)))    # [7, 3, 1, 4]
 ```
 
 ```java run
+import java.util.*;
+
 public class Main {
-    static class TreeNode { int val; TreeNode left, right; TreeNode(int v){val=v;} }
+    static class TreeNode {
+        int val;
+        TreeNode left;
+        TreeNode right;
+        TreeNode() {}
+        TreeNode(int val) { this.val = val; }
+    }
+
+    static TreeNode fromLevelOrder(Integer... values) {
+        if (values.length == 0 || values[0] == null) return null;
+        TreeNode root = new TreeNode(values[0]);
+        Deque<TreeNode> queue = new ArrayDeque<>();
+        queue.add(root);
+        int i = 1;
+        while (!queue.isEmpty() && i < values.length) {
+            TreeNode node = queue.poll();
+            if (i < values.length && values[i] != null) {
+                node.left = new TreeNode(values[i]);
+                queue.add(node.left);
+            }
+            i++;
+            if (i < values.length && values[i] != null) {
+                node.right = new TreeNode(values[i]);
+                queue.add(node.right);
+            }
+            i++;
+        }
+        return root;
+    }
+
+    static List<Integer> toLevelOrder(TreeNode root) {
+        if (root == null) return new ArrayList<>();
+        List<Integer> result = new ArrayList<>();
+        Deque<TreeNode> queue = new ArrayDeque<>();
+        queue.add(root);
+        while (!queue.isEmpty()) {
+            TreeNode node = queue.poll();
+            result.add(node.val);
+            if (node.left != null) queue.add(node.left);
+            if (node.right != null) queue.add(node.right);
+        }
+        return result;
+    }
 
     static class Solution {
-        private TreeNode findMin(TreeNode node) {
-            while (node.left != null) node = node.left;                                     // leftmost
-            return node;
+        private TreeNode inorderSuccessor(TreeNode root, TreeNode node) {
+            TreeNode successor = null;
+
+            while (root != null) {
+                if (root.val > node.val) {
+                    successor = root;
+                    root = root.left;
+                } else {
+                    root = root.right;
+                }
+            }
+
+            return successor;
         }
 
         public TreeNode recursiveDeletion(TreeNode root, int key) {
-            if (root == null) return null;                                                  // empty subtree
-            if (key < root.val)      root.left  = recursiveDeletion(root.left,  key);       // search left
-            else if (key > root.val) root.right = recursiveDeletion(root.right, key);       // search right
-            else {                                                                          // match
-                if (root.left  == null) return root.right;                                  // Case 1/2a
-                if (root.right == null) return root.left;                                   // Case 2b
-                TreeNode successor = findMin(root.right);                                   // Case 3
-                root.val = successor.val;                                                   //   copy value
-                root.right = recursiveDeletion(root.right, successor.val);                  //   delete original
+
+            // Base case: if the root is null, return null
+            if (root == null) {
+                return null;
             }
+
+            // If the key is greater than the current node's value, search in
+            // the right subtree
+            if (root.val < key) {
+                root.right = recursiveDeletion(root.right, key);
+            }
+
+            // If the key is smaller than the current node's value, search in
+            // the left subtree
+            else if (root.val > key) {
+                root.left = recursiveDeletion(root.left, key);
+            }
+
+            // If the key matches the current node's value, found the node
+            // to delete
+            else {
+
+                // Case 1: Node has no left child
+                if (root.left == null) {
+
+                    // Save the right child of the current node
+                    TreeNode temp = root.right;
+
+                    // Delete the current node
+                    root = null;
+
+                    // Return the right child to reconnect it with the parent
+                    return temp;
+                }
+
+                // Case 2: Node has no right child
+                else if (root.right == null) {
+
+                    // Save the left child of the current node
+                    TreeNode temp = root.left;
+
+                    // Delete the current node
+                    root = null;
+
+                    // Return the left child to reconnect it with the parent
+                    return temp;
+                }
+
+                // Case 3: Node has both left and right children
+                else {
+
+                    // Find inorder successor of the node
+                    TreeNode successor = inorderSuccessor(root.right, root);
+
+                    // Copy successor's value to current node
+                    root.val = successor.val;
+
+                    // Delete successor
+                    root.right = recursiveDeletion(
+                        root.right,
+                        successor.val
+                    );
+                }
+            }
+
+            // Return the updated root node of the binary search tree
             return root;
         }
     }
 
     public static void main(String[] args) {
-        TreeNode root = new TreeNode(5);
-        root.left  = new TreeNode(4); root.right = new TreeNode(6);
-        root.left.left  = new TreeNode(2);
-        root.right.right = new TreeNode(7);
-        TreeNode result = new Solution().recursiveDeletion(root, 6);
-        System.out.println(result.right.val);  // 7
+        // Example 1: delete 6 from [5, 4, 6, 2, null, null, 7]
+        TreeNode t1 = fromLevelOrder(5, 4, 6, 2, null, null, 7);
+        System.out.println(toLevelOrder(new Solution().recursiveDeletion(t1, 6)));    // [5, 4, 7, 2]
+
+        // Example 2: delete 14 from [10, 8, 14, 5, null, 12, 17]
+        TreeNode t2 = fromLevelOrder(10, 8, 14, 5, null, 12, 17);
+        System.out.println(toLevelOrder(new Solution().recursiveDeletion(t2, 14)));   // [10, 8, 17, 5, 12]
+
+        // Delete leaf node
+        TreeNode t3 = fromLevelOrder(5, 3, 7);
+        System.out.println(toLevelOrder(new Solution().recursiveDeletion(t3, 3)));    // [5, 7]
+
+        // Delete node with only right child
+        TreeNode t4 = fromLevelOrder(5, 3, 7, null, 4);
+        System.out.println(toLevelOrder(new Solution().recursiveDeletion(t4, 3)));    // [5, 4, 7]
+
+        // Delete root of single-node tree
+        TreeNode t5 = new TreeNode(5);
+        System.out.println(toLevelOrder(new Solution().recursiveDeletion(t5, 5)));    // []
+
+        // Delete non-existent key (tree unchanged)
+        TreeNode t6 = fromLevelOrder(5, 3, 7);
+        System.out.println(toLevelOrder(new Solution().recursiveDeletion(t6, 99)));   // [5, 3, 7]
+
+        // Delete root when it has two children
+        TreeNode t7 = fromLevelOrder(5, 3, 7, 1, 4);
+        System.out.println(toLevelOrder(new Solution().recursiveDeletion(t7, 5)));    // [7, 3, 1, 4]
     }
-}
-```
-
-```c run
-#include <stdlib.h>
-
-static struct TreeNode *findMin(struct TreeNode *node) {
-    while (node->left != NULL) node = node->left;                                        // leftmost
-    return node;
-}
-
-struct TreeNode *recursiveDeletion(struct TreeNode *root, int key) {
-    if (root == NULL) return NULL;                                                       // empty
-    if (key < root->val)      root->left  = recursiveDeletion(root->left,  key);
-    else if (key > root->val) root->right = recursiveDeletion(root->right, key);
-    else {                                                                               // match
-        if (root->left == NULL)  { struct TreeNode *r = root->right; free(root); return r; }
-        if (root->right == NULL) { struct TreeNode *l = root->left;  free(root); return l; }
-        struct TreeNode *successor = findMin(root->right);                               // Case 3
-        root->val = successor->val;
-        root->right = recursiveDeletion(root->right, successor->val);
-    }
-    return root;
-}
-```
-
-```scala run
-class TreeNode(var value: Int, var left: TreeNode = null, var right: TreeNode = null)
-
-object Main extends App {
-  class Solution {
-    private def findMin(node: TreeNode): TreeNode = {
-      var n = node
-      while (n.left != null) n = n.left
-      n
-    }
-
-    def recursiveDeletion(root: TreeNode, key: Int): TreeNode = {
-      if (root == null) return null
-      if (key < root.value)      root.left  = recursiveDeletion(root.left,  key)
-      else if (key > root.value) root.right = recursiveDeletion(root.right, key)
-      else {                                                                                    // match
-        if (root.left == null)  return root.right                                                // Case 1/2a
-        if (root.right == null) return root.left                                                 // Case 2b
-        val successor = findMin(root.right)                                                      // Case 3
-        root.value = successor.value
-        root.right = recursiveDeletion(root.right, successor.value)
-      }
-      root
-    }
-  }
-
-  val root = new TreeNode(5,
-    new TreeNode(4, new TreeNode(2), null),
-    new TreeNode(6, null, new TreeNode(7)))
-  val result = new Solution().recursiveDeletion(root, 6)
-  println(result.right.value)  // 7
 }
 ```
 
@@ -600,6 +919,8 @@ Step 4 │ recursiveDeletion(50.right, 60):
         │   → 70.left becomes null
 Result: [60, 30, 70, 20, 40, null, 80] ✓
 ```
+
+</details>
 
 </details>
 
@@ -709,210 +1030,381 @@ Given the **root** of a binary search tree and an integer **key**, delete the no
 > - **Input:** `root = [10, 8, 14, 5, null, 12, 17]`, `key = 14`
 > - **Output:** `[10, 8, 17, 5, null, 12]`
 
-## The Solution
+<details>
+<summary><h2>The Solution</h2></summary>
 
 
-```pseudocode
-function iterativeDelete(root, key):
-    if root is null: return null
-    parent ← null
-    cur ← root
-    while cur is NOT null AND cur.val ≠ key:   # search for the node
-        parent ← cur
-        if key < cur.val: cur ← cur.left
-        else:             cur ← cur.right
-    if cur is null: return root                # key not in tree
-
-    if cur.left is null OR cur.right is null:  # Case 1/2 — zero or one child
-        child ← cur.right if cur.left is null else cur.left
-        if parent is null: return child        # deleted node was the root
-        if cur = parent.left: parent.left ← child
-        else:                 parent.right ← child
-        return root
-
-    # Case 3 — two children: find in-order successor
-    inParent ← cur
-    successor ← cur.right
-    while successor.left is NOT null:
-        inParent ← successor
-        successor ← successor.left
-    if inParent ≠ cur: inParent.left ← successor.right   # sub-case 3.2
-    else:              cur.right ← successor.right        # sub-case 3.1
-    cur.val ← successor.val
-    return root
-```
 
 ```python run
+from typing import Optional
+from collections import deque
+
+
+class TreeNode:
+    def __init__(self, val=0, left=None, right=None):
+        self.val = val
+        self.left = left
+        self.right = right
+
+
+def from_level_order(values):
+    """Build tree from list like [1, 2, 3, None, 4]. None means missing child."""
+    if not values:
+        return None
+    root = TreeNode(values[0])
+    queue = [root]
+    i = 1
+    while queue and i < len(values):
+        node = queue.pop(0)
+        if i < len(values) and values[i] is not None:
+            node.left = TreeNode(values[i])
+            queue.append(node.left)
+        i += 1
+        if i < len(values) and values[i] is not None:
+            node.right = TreeNode(values[i])
+            queue.append(node.right)
+        i += 1
+    return root
+
+
+def to_level_order(root):
+    if not root:
+        return []
+    result, queue = [], deque([root])
+    while queue:
+        node = queue.popleft()
+        result.append(node.val)
+        if node.left:
+            queue.append(node.left)
+        if node.right:
+            queue.append(node.right)
+    return result
+
+
 class Solution:
-    def iterative_deletion(self, root, key):
+    def iterative_deletion(
+        self, root: Optional[TreeNode], key: int
+    ) -> Optional[TreeNode]:
+
+        # If the root is null, return null (no node to delete)
         if root is None:
             return None
 
-        # Step 1 — find the node and remember its parent.
         parent = None
         current = root
+
         while current is not None and current.val != key:
+
+            # Keep track of the parent of the current node
             parent = current
-            current = current.left if key < current.val else current.right
 
-        if current is None:
-            return root                                               # key not present
+            # Search in the left subtree
+            if key < current.val:
+                current = current.left
 
-        # Case 1/2 — current has zero or one child.
-        if current.left is None or current.right is None:
-            # Pick the surviving child (may be None).
-            new_current = current.right if current.left is None else current.left
-            if parent is None:
-                return new_current                                    # current was the root
-            if current is parent.left:
-                parent.left = new_current                             # rewire parent's left
+            # Search in the right subtree
             else:
-                parent.right = new_current                            # rewire parent's right
-            return root
+                current = current.right
 
-        # Case 3 — two children. Find leftmost of right subtree.
-        in_parent = current
-        successor = current.right
-        while successor.left is not None:
-            in_parent = successor
-            successor = successor.left
+        # If the key was not found, return null (no node to delete)
+        if current is None:
+            return None
 
-        # Cut the successor out of the tree. Two sub-cases:
-        if in_parent is not current:
-            # 3.2 — successor is deep inside the right subtree.
-            # The successor was reached by walking LEFT from in_parent, so
-            # in_parent.left points at it. Replace with successor.right.
-            in_parent.left = successor.right
+        # Case 1: Node has zero or one child.
+        if current.left is None or current.right is None:
+            new_current = None
+
+            # Choose the right child if it exists
+            if current.left is None:
+                new_current = current.right
+
+            # Choose the left child if it exists
+            else:
+                new_current = current.left
+
+            # If the current node is the root, return the new current
+            # node.
+            if parent is None:
+                return new_current
+
+            # Reconnect the left child of the parent to the new current
+            # node.
+            if current == parent.left:
+                parent.left = new_current
+
+            # Reconnect the right child of the parent to the new current
+            # node.
+            else:
+                parent.right = new_current
+
+            # Delete the current node
+            current = None
+
+        # Case 2: Node has both left and right children
         else:
-            # 3.1 — successor is current's direct right child. Splice it out.
-            current.right = successor.right
 
-        # Copy successor's value into the doomed node.
-        current.val = successor.val
+            # Keep track of the parent of the in-order successor
+            in_parent = current
+
+            # Find the in-order successor (the smallest node in the right
+            # subtree)
+            successor = current.right
+
+            while successor and successor.left:
+
+                # Traverse to the leftmost node of the right subtree
+                in_parent = successor
+                successor = successor.left
+
+            # If the parent of the in-order successor is not the current
+            # node
+            if in_parent != current:
+
+                # Reconnect the parent of the in-order successor to its
+                # right child
+                in_parent.left = successor.right
+
+            # If the in-order successor is the right child of the
+            # current node
+            else:
+
+                # Reconnect the current node to the right child of the
+                # in-order successor
+                current.right = successor.right
+
+            # Copy the value of the in-order successor to the current
+            # node
+            current.val = successor.val
+
+            # Delete the in-order successor node
+            successor = None
+
+        # Return the updated root node of the binary search tree
         return root
+
+
+# Example 1: delete 6 from [5, 4, 6, 2, null, null, 7]
+t1 = from_level_order([5, 4, 6, 2, None, None, 7])
+print(to_level_order(Solution().iterative_deletion(t1, 6)))    # [5, 4, 7, 2]
+
+# Example 2: delete 14 from [10, 8, 14, 5, null, 12, 17]
+t2 = from_level_order([10, 8, 14, 5, None, 12, 17])
+print(to_level_order(Solution().iterative_deletion(t2, 14)))   # [10, 8, 17, 5, 12]
+
+# Delete leaf node
+t3 = from_level_order([5, 3, 7])
+print(to_level_order(Solution().iterative_deletion(t3, 3)))    # [5, 7]
+
+# Delete node with only right child
+t4 = from_level_order([5, 3, 7, None, 4])
+print(to_level_order(Solution().iterative_deletion(t4, 3)))    # [5, 4, 7]
+
+# Delete root of single-node tree
+t5 = TreeNode(5)
+print(to_level_order(Solution().iterative_deletion(t5, 5)))    # []
+
+# Delete non-existent key — returns None
+t6 = from_level_order([5, 3, 7])
+print(Solution().iterative_deletion(t6, 99))                   # None
+
+# Delete root when it has two children
+t7 = from_level_order([5, 3, 7, 1, 4])
+print(to_level_order(Solution().iterative_deletion(t7, 5)))    # [7, 3, 1, 4]
 ```
 
 ```java run
+import java.util.*;
+
 public class Main {
-    static class TreeNode { int val; TreeNode left, right; TreeNode(int v){val=v;} }
+    static class TreeNode {
+        int val;
+        TreeNode left;
+        TreeNode right;
+        TreeNode() {}
+        TreeNode(int val) { this.val = val; }
+    }
+
+    static TreeNode fromLevelOrder(Integer... values) {
+        if (values.length == 0 || values[0] == null) return null;
+        TreeNode root = new TreeNode(values[0]);
+        Deque<TreeNode> queue = new ArrayDeque<>();
+        queue.add(root);
+        int i = 1;
+        while (!queue.isEmpty() && i < values.length) {
+            TreeNode node = queue.poll();
+            if (i < values.length && values[i] != null) {
+                node.left = new TreeNode(values[i]);
+                queue.add(node.left);
+            }
+            i++;
+            if (i < values.length && values[i] != null) {
+                node.right = new TreeNode(values[i]);
+                queue.add(node.right);
+            }
+            i++;
+        }
+        return root;
+    }
+
+    static List<Integer> toLevelOrder(TreeNode root) {
+        if (root == null) return new ArrayList<>();
+        List<Integer> result = new ArrayList<>();
+        Deque<TreeNode> queue = new ArrayDeque<>();
+        queue.add(root);
+        while (!queue.isEmpty()) {
+            TreeNode node = queue.poll();
+            result.add(node.val);
+            if (node.left != null) queue.add(node.left);
+            if (node.right != null) queue.add(node.right);
+        }
+        return result;
+    }
 
     static class Solution {
         public TreeNode iterativeDeletion(TreeNode root, int key) {
-            if (root == null) return null;
 
-            TreeNode parent = null, current = root;
-            while (current != null && current.val != key) {                                       // search
+            // If the root is null, return null (no node to delete)
+            if (root == null) {
+                return null;
+            }
+
+            TreeNode parent = null;
+            TreeNode current = root;
+
+            while (current != null && current.val != key) {
+
+                // Keep track of the parent of the current node
                 parent = current;
-                current = (key < current.val) ? current.left : current.right;
-            }
-            if (current == null) return root;                                                     // not found
 
-            if (current.left == null || current.right == null) {                                  // Case 1/2
-                TreeNode newCurrent = (current.left == null) ? current.right : current.left;
-                if (parent == null) return newCurrent;                                            // was the root
-                if (current == parent.left) parent.left  = newCurrent;
-                else                        parent.right = newCurrent;
-                return root;
+                // Search in the left subtree
+                if (key < current.val) {
+                    current = current.left;
+                }
+
+                // Search in the right subtree
+                else {
+                    current = current.right;
+                }
             }
 
-            TreeNode inParent = current;                                                          // Case 3
-            TreeNode successor = current.right;
-            while (successor.left != null) {                                                      // leftmost
-                inParent = successor;
-                successor = successor.left;
+            // If the key was not found, return null (no node to delete)
+            if (current == null) {
+                return null;
             }
-            if (inParent != current) inParent.left  = successor.right;                            // 3.2
-            else                     current.right  = successor.right;                            // 3.1
-            current.val = successor.val;                                                           // copy value
+
+            // Case 1: Node has zero or one child.
+            if (current.left == null || current.right == null) {
+                TreeNode newCurrent = null;
+
+                // Choose the right child if it exists
+                if (current.left == null) {
+                    newCurrent = current.right;
+                }
+
+                // Choose the left child if it exists
+                else {
+                    newCurrent = current.left;
+                }
+
+                // If the current node is the root, return the new current
+                // node.
+                if (parent == null) {
+                    return newCurrent;
+                }
+
+                // Reconnect the left child of the parent to the new current
+                // node.
+                if (current == parent.left) {
+                    parent.left = newCurrent;
+                }
+
+                // Reconnect the right child of the parent to the new current
+                // node.
+                else {
+                    parent.right = newCurrent;
+                }
+
+                // Delete the current node
+                current = null;
+            }
+
+            // Case 2: Node has both left and right children
+            else {
+
+                // Keep track of the parent of the in-order successor
+                TreeNode inParent = current;
+
+                // Find the in-order successor (the smallest node in the
+                // right subtree)
+                TreeNode successor = current.right;
+
+                while (successor != null && successor.left != null) {
+
+                    // Traverse to the leftmost node of the right subtree
+                    inParent = successor;
+                    successor = successor.left;
+                }
+
+                // If the parent of the in-order successor is not the current
+                // node
+                if (inParent != current) {
+
+                    // Reconnect the parent of the in-order successor to its
+                    // right child
+                    inParent.left = successor.right;
+                }
+
+                // If the in-order successor is the right child of the
+                // current node
+                else {
+
+                    // Reconnect the current node to the right child of the
+                    // in-order successor
+                    current.right = successor.right;
+                }
+
+                // Copy the value of the in-order successor to the current
+                // node
+                current.val = successor.val;
+
+                // Delete the in-order successor node
+                successor = null;
+            }
+
+            // Return the updated root node of the binary search tree
             return root;
         }
     }
 
     public static void main(String[] args) {
-        TreeNode root = new TreeNode(5);
-        root.left  = new TreeNode(4); root.right = new TreeNode(6);
-        root.left.left  = new TreeNode(2);
-        root.right.right = new TreeNode(7);
-        TreeNode result = new Solution().iterativeDeletion(root, 6);
-        System.out.println(result.right.val);  // 7
+        // Example 1: delete 6 from [5, 4, 6, 2, null, null, 7]
+        TreeNode t1 = fromLevelOrder(5, 4, 6, 2, null, null, 7);
+        System.out.println(toLevelOrder(new Solution().iterativeDeletion(t1, 6)));    // [5, 4, 7, 2]
+
+        // Example 2: delete 14 from [10, 8, 14, 5, null, 12, 17]
+        TreeNode t2 = fromLevelOrder(10, 8, 14, 5, null, 12, 17);
+        System.out.println(toLevelOrder(new Solution().iterativeDeletion(t2, 14)));   // [10, 8, 17, 5, 12]
+
+        // Delete leaf node
+        TreeNode t3 = fromLevelOrder(5, 3, 7);
+        System.out.println(toLevelOrder(new Solution().iterativeDeletion(t3, 3)));    // [5, 7]
+
+        // Delete node with only right child
+        TreeNode t4 = fromLevelOrder(5, 3, 7, null, 4);
+        System.out.println(toLevelOrder(new Solution().iterativeDeletion(t4, 3)));    // [5, 4, 7]
+
+        // Delete root of single-node tree
+        TreeNode t5 = new TreeNode(5);
+        System.out.println(toLevelOrder(new Solution().iterativeDeletion(t5, 5)));    // []
+
+        // Delete non-existent key — returns null
+        TreeNode t6 = fromLevelOrder(5, 3, 7);
+        System.out.println(new Solution().iterativeDeletion(t6, 99));                 // null
+
+        // Delete root when it has two children
+        TreeNode t7 = fromLevelOrder(5, 3, 7, 1, 4);
+        System.out.println(toLevelOrder(new Solution().iterativeDeletion(t7, 5)));    // [7, 3, 1, 4]
     }
-}
-```
-
-```c run
-struct TreeNode *iterativeDeletion(struct TreeNode *root, int key) {
-    if (root == NULL) return NULL;
-
-    struct TreeNode *parent = NULL, *current = root;
-    while (current != NULL && current->val != key) {                                           // search
-        parent = current;
-        current = (key < current->val) ? current->left : current->right;
-    }
-    if (current == NULL) return root;                                                          // not found
-
-    if (current->left == NULL || current->right == NULL) {                                     // Case 1/2
-        struct TreeNode *newCurrent =
-            (current->left == NULL) ? current->right : current->left;
-        if (parent == NULL) return newCurrent;                                                 // was the root
-        if (current == parent->left) parent->left  = newCurrent;
-        else                          parent->right = newCurrent;
-        return root;
-    }
-
-    struct TreeNode *inParent  = current;                                                       // Case 3
-    struct TreeNode *successor = current->right;
-    while (successor->left != NULL) {                                                           // leftmost
-        inParent  = successor;
-        successor = successor->left;
-    }
-    if (inParent != current) inParent->left = successor->right;                                 // 3.2
-    else                     current->right = successor->right;                                 // 3.1
-    current->val = successor->val;                                                               // copy value
-    return root;
-}
-```
-
-```scala run
-class TreeNode(var value: Int, var left: TreeNode = null, var right: TreeNode = null)
-
-object Main extends App {
-  class Solution {
-    def iterativeDeletion(root: TreeNode, key: Int): TreeNode = {
-      if (root == null) return null
-      var parent: TreeNode = null
-      var current: TreeNode = root
-      while (current != null && current.value != key) {
-        parent = current
-        current = if (key < current.value) current.left else current.right
-      }
-      if (current == null) return root
-
-      if (current.left == null || current.right == null) {                                            // Case 1/2
-        val newCurrent: TreeNode = if (current.left == null) current.right else current.left
-        if (parent == null) return newCurrent
-        if (current == parent.left) parent.left  = newCurrent
-        else                        parent.right = newCurrent
-        return root
-      }
-
-      var inParent: TreeNode  = current                                                                // Case 3
-      var successor: TreeNode = current.right
-      while (successor.left != null) {
-        inParent  = successor
-        successor = successor.left
-      }
-      if (inParent != current) inParent.left  = successor.right                                        // 3.2
-      else                     current.right  = successor.right                                        // 3.1
-      current.value = successor.value
-      root
-    }
-  }
-
-  val root = new TreeNode(5,
-    new TreeNode(4, new TreeNode(2), null),
-    new TreeNode(6, null, new TreeNode(7)))
-  val result = new Solution().iterativeDeletion(root, 6)
-  println(result.right.value)  // 7
 }
 ```
 
@@ -933,9 +1425,10 @@ Result: [60, 30, 70, 20, 40, null, 80] ✓
 
 </details>
 
-***
+</details>
+<details>
+<summary><h2>Final Takeaway</h2></summary>
 
-## Final Takeaway
 
 Deletion in a BST is *search + a 3-case repair*. The first two cases (zero or one child) are easy: rewire the parent. The third case (two children) is the genius move — instead of trying to merge two subtrees, we **swap the doomed value with its in-order successor** and then delete that smaller, simpler node from the right subtree, where it's guaranteed to be a Case-1-or-2 deletion.
 
@@ -946,3 +1439,5 @@ Three patterns to take with you:
 3. **Parent-pointer tracking in iterative tree code** — the iterative analogue of "the call stack remembers the parent". Keep `parent` next to `current`, mutate the parent's child pointer when needed.
 
 The next lesson zooms out: instead of inserting one value at a time, what does it take to *construct* an entire BST from scratch — from an array, from a stream of values, from a sorted source? Spoiler: insertion order is destiny.
+
+</details>

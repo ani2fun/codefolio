@@ -231,44 +231,48 @@ The four-region invariant gives the algorithm its correctness proof. The loop co
 # Implementation
 
 
-```pseudocode
-# Three-way partition over values {0, 1, 2}.
-# Invariant during the loop:
-#   arr[0..low−1]    = 0s (locked)
-#   arr[low..mid−1]  = 1s
-#   arr[mid..high]   = unprocessed
-#   arr[high+1..n−1] = 2s (locked)
-function dutchFlagSort(arr):
-    low ← 0
-    mid ← 0
-    high ← length(arr) − 1
-    while mid ≤ high:
-        if arr[mid] = 0:
-            swap arr[low] and arr[mid]
-            low ← low + 1
-            mid ← mid + 1
-        else if arr[mid] = 2:
-            swap arr[mid] and arr[high]
-            high ← high − 1                  # don't advance mid — swapped value is unprocessed
-        else:                                # arr[mid] = 1 — already in place
-            mid ← mid + 1
-```
-
 ```python run
 from typing import List
 
 class Solution:
     def dutch_national_flag_sort(self, arr: List[int]) -> None:
-        left, mid, right = 0, 0, len(arr) - 1
+
+        # Pointer for the boundary where smallest values should be placed
+        left: int = 0
+
+        # Pointer for the current element being evaluated
+        mid: int = 0
+
+        # Pointer for the boundary where largest values should be placed
+        right: int = len(arr) - 1
+
         while mid <= right:
+
+            # If the current element belongs to the smallest category
             if arr[mid] == 0:
-                arr[left], arr[mid] = arr[mid], arr[left]
+
+                # Swap it with the element at the left boundary
+                arr[mid], arr[left] = arr[left], arr[mid]
+
+                # Expand mid forward
+                mid += 1
+
+                # Expand left forward
                 left += 1
-                mid += 1
+
+            # If the current element belongs to the middle category
             elif arr[mid] == 1:
+
+                # No swap needed, just move mid forward
                 mid += 1
-            else:                                       # arr[mid] == 2
+
+            # If the current element belongs to the largest category
+            else:
+
+                # Swap it with the element at the right boundary
                 arr[mid], arr[right] = arr[right], arr[mid]
+
+                # Shrink the right boundary (do NOT move mid yet)
                 right -= 1
 
 
@@ -282,15 +286,49 @@ if __name__ == "__main__":
 public class Main {
     static class Solution {
         public void dutchNationalFlagSort(int[] arr) {
-            int left = 0, mid = 0, right = arr.length - 1;
+
+            // Pointer for the boundary where smallest values should be placed
+            int left = 0;
+
+            // Pointer for the current element being evaluated
+            int mid = 0;
+
+            // Pointer for the boundary where largest values should be placed
+            int right = arr.length - 1;
+
             while (mid <= right) {
+
+                // If the current element belongs to the smallest category
                 if (arr[mid] == 0) {
-                    int t = arr[left]; arr[left] = arr[mid]; arr[mid] = t;
-                    left++; mid++;
-                } else if (arr[mid] == 1) {
+
+                    // Swap it with the element at the left boundary
+                    int temp = arr[mid];
+                    arr[mid] = arr[left];
+                    arr[left] = temp;
+
+                    // Expand mid forward
                     mid++;
-                } else {
-                    int t = arr[mid]; arr[mid] = arr[right]; arr[right] = t;
+
+                    // Expand left forward
+                    left++;
+                }
+
+                // If the current element belongs to the middle category
+                else if (arr[mid] == 1) {
+
+                    // No swap needed, just move mid forward
+                    mid++;
+                }
+
+                // If the current element belongs to the largest category
+                else {
+
+                    // Swap it with the element at the right boundary
+                    int temp = arr[mid];
+                    arr[mid] = arr[right];
+                    arr[right] = temp;
+
+                    // Shrink the right boundary (do NOT move mid yet)
                     right--;
                 }
             }
@@ -303,59 +341,6 @@ public class Main {
         for (int x : arr) System.out.print(x + " ");
         System.out.println();
     }
-}
-```
-
-```c run
-#include <stdio.h>
-
-void dutch_national_flag_sort(int *arr, int n) {
-    int left = 0, mid = 0, right = n - 1;
-    while (mid <= right) {
-        if (arr[mid] == 0) {
-            int t = arr[left]; arr[left] = arr[mid]; arr[mid] = t;
-            left++; mid++;
-        } else if (arr[mid] == 1) {
-            mid++;
-        } else {
-            int t = arr[mid]; arr[mid] = arr[right]; arr[right] = t;
-            right--;
-        }
-    }
-}
-
-int main(void) {
-    int arr[] = {2, 0, 1, 0, 2, 1, 0};
-    int n = 7;
-    dutch_national_flag_sort(arr, n);
-    for (int i = 0; i < n; i++) printf("%d ", arr[i]);
-    printf("\n");
-    return 0;
-}
-```
-
-```scala run
-object Main extends App {
-  class Solution {
-    def dutchNationalFlagSort(arr: Array[Int]): Unit = {
-      var left = 0; var mid = 0; var right = arr.length - 1
-      while (mid <= right) {
-        if (arr(mid) == 0) {
-          val t = arr(left); arr(left) = arr(mid); arr(mid) = t
-          left += 1; mid += 1
-        } else if (arr(mid) == 1) {
-          mid += 1
-        } else {
-          val t = arr(mid); arr(mid) = arr(right); arr(right) = t
-          right -= 1
-        }
-      }
-    }
-  }
-
-  val arr = Array(2, 0, 1, 0, 2, 1, 0)
-  new Solution().dutchNationalFlagSort(arr)
-  println(arr.mkString(" "))
 }
 ```
 
@@ -413,13 +398,14 @@ Output: [0, 0, 1, 1, 1, 2, 2]   (already sorted)
 
 ---
 
-## The Solution
+<details>
+<summary><h2>Solution &amp; Analysis</h2></summary>
 
-The implementation matches the version above. See the [Implementation](#implementation) section for all 10 languages.
+### The Solution
 
----
+The implementation matches the version above. See the [Implementation](#implementation) section.
 
-## Edge Cases
+### Edge Cases
 
 | Case | Example | Expected |
 |---|---|---|
@@ -431,9 +417,10 @@ The implementation matches the version above. See the [Implementation](#implemen
 | Reverse sorted | `[2, 2, 1, 1, 0, 0]` | `[0, 0, 1, 1, 2, 2]`. |
 | Just twos and zeros | `[2, 0, 2, 0]` | `[0, 0, 2, 2]`. |
 
----
+</details>
+<details>
+<summary><h2>Final Takeaway</h2></summary>
 
-## Final Takeaway
 
 Dutch National Flag is the simplest non-trivial three-way partition: three pointers, three cases, one pass. `O(n)` time, `O(1)` space. The technique generalises to "any three-way classification" and is the missing piece that fixes quicksort's duplicate-element problem.
 
@@ -441,6 +428,7 @@ The next algorithm — **three-way quicksort** — bolts the Dutch flag's three-
 
 **Transfer challenge — try before the Three-Way Quicksort lesson:** Generalise the DNF algorithm to handle a comparison against an arbitrary pivot value `p`. Instead of `== 0`, `== 1`, `== 2`, classify each element as `< p`, `== p`, or `> p`. The algorithm structure stays identical. What's the time complexity? What problem does this solve?
 
+</details>
 <details>
 <summary><strong>Answer — open after you've thought about it</strong></summary>
 

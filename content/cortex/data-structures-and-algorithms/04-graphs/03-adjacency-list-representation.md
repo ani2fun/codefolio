@@ -247,28 +247,18 @@ flowchart LR
 <p align="center"><strong>Two-step build. Each edge appends one entry to each of its two endpoint's lists.</strong></p>
 
 
-```pseudocode
-function createGraph(nodes, edges):
-    adj ← array of N empty lists
-    for each (u, v) in edges:
-        append v to adj[u]
-        append u to adj[v]   # undirected: both directions
-    return adj
-```
-
 ```python run
-from typing import List
+def create_graph(nodes, edges):
+    # Create adjacency list
+    adj = [[] for _ in range(nodes)]
 
-def create_graph(nodes: int, edges: List[List[int]]) -> List[List[int]]:
-    # IMPORTANT: write [[] for _ in range(nodes)], NOT [[]] * nodes.
-    # The latter creates n references to the SAME inner list — appending
-    # to one row mutates every row.
-    adj: List[List[int]] = [[] for _ in range(nodes)]
+    for edge in edges:
+        # Add nodeB (edge[1]) to adjacency list of nodeA (edge[0])
+        adj[edge[0]].append(edge[1])
 
-    for u, v in edges:
-        # Append v to u's list AND u to v's list — the edge is undirected.
-        adj[u].append(v)
-        adj[v].append(u)
+        # Add nodeA (edge[0]) to adjacency list of nodeB (edge[1])
+        adj[edge[1]].append(edge[0])
+
     return adj
 
 
@@ -283,15 +273,25 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class Main {
-    public static List<List<Integer>> createGraph(int nodes, int[][] edges) {
-        // Outer list pre-sized; each slot holds an empty ArrayList ready to grow.
-        List<List<Integer>> adj = new ArrayList<>();
-        for (int i = 0; i < nodes; i++) adj.add(new ArrayList<>());
+    public static List<List<Integer>> createGraph(int nodes, int[][] edges)
+    {
+        // Create adjacency list
+        List<List<Integer>> adj = new ArrayList<List<Integer>>();
 
-        for (int[] e : edges) {
-            adj.get(e[0]).add(e[1]);
-            adj.get(e[1]).add(e[0]);
+        for(int i=0; i<nodes; i++)
+        {
+            adj.add(new ArrayList<Integer>());
         }
+
+        for (int[] edge: edges)
+        {
+            // Add nodeB (edge[1]) to adjacency list of nodeA (edge[0])
+            adj.get(edge[0]).add(edge[1]);
+
+            // Add nodeA (edge[0]) to adjacency list of nodeB (edge[1])
+            adj.get(edge[1]).add(edge[0]);
+        }
+
         return adj;
     }
 
@@ -300,72 +300,6 @@ public class Main {
         List<List<Integer>> adj = createGraph(5, edges);
         for (int i = 0; i < adj.size(); i++) System.out.println(i + ": " + adj.get(i));
     }
-}
-```
-
-```c run
-#include <stdio.h>
-#include <stdlib.h>
-
-// A growable array of neighbours per node — capacity doubles when full.
-typedef struct {
-    int* data;
-    int  size;
-    int  capacity;
-} Vec;
-
-static void vec_push(Vec* v, int x) {
-    if (v->size == v->capacity) {
-        // Double capacity to keep amortised append O(1).
-        v->capacity = v->capacity == 0 ? 4 : v->capacity * 2;
-        v->data = realloc(v->data, v->capacity * sizeof(int));
-    }
-    v->data[v->size++] = x;
-}
-
-Vec* create_graph(int nodes, int edges[][2], int edge_count) {
-    Vec* adj = calloc(nodes, sizeof(Vec));  // calloc → all fields zero, including data=NULL.
-
-    for (int i = 0; i < edge_count; i++) {
-        vec_push(&adj[edges[i][0]], edges[i][1]);
-        vec_push(&adj[edges[i][1]], edges[i][0]);
-    }
-    return adj;
-}
-
-int main() {
-    int edges[][2] = {{0,1},{0,2},{1,2},{1,3},{2,4},{3,4}};
-    Vec* adj = create_graph(5, edges, 6);
-
-    for (int i = 0; i < 5; i++) {
-        printf("%d: ", i);
-        for (int j = 0; j < adj[i].size; j++) printf("%d ", adj[i].data[j]);
-        printf("\n");
-        free(adj[i].data);
-    }
-    free(adj);
-    return 0;
-}
-```
-
-```scala run
-import scala.collection.mutable.ArrayBuffer
-
-object Main extends App {
-  def createGraph(nodes: Int, edges: Array[Array[Int]]): Array[ArrayBuffer[Int]] = {
-    // Array.fill builds N independent ArrayBuffers — no aliasing.
-    val adj = Array.fill(nodes)(ArrayBuffer.empty[Int])
-
-    for (e <- edges) {
-      adj(e(0)).append(e(1))
-      adj(e(1)).append(e(0))
-    }
-    adj
-  }
-
-  val edges = Array(Array(0,1), Array(0,2), Array(1,2), Array(1,3), Array(2,4), Array(3,4))
-  val adj = createGraph(5, edges)
-  adj.zipWithIndex.foreach { case (n, i) => println(s"$i: ${n.mkString(", ")}") }
 }
 ```
 
@@ -416,30 +350,33 @@ list: "Weighted adjacency list" {
 <p align="center"><strong>Each inner list now stores <code>(neighbour, weight)</code> pairs. The graph structure is unchanged; we've simply enriched what every neighbour entry carries.</strong></p>
 
 
-```pseudocode
-function createWeightedGraph(nodes, edges):
-    adj ← array of N empty lists
-    for each (u, v, w) in edges:
-        append (v, w) to adj[u]
-        append (u, w) to adj[v]   # undirected: both directions
-    return adj
-```
-
 ```python run
-from typing import List, Tuple
+"""
+ * Function to create graph
+ * nodes: The number of nodes in the graph
+ * edges[in]: A list of edges. An edge is a list storing
+ * the two nodes it connects and the weight.
+ *
+ * returns: Adjacency list
+"""
+def create_graph(nodes, edges):
+    # Create adjacency list
+    adj = [[] for _ in range(nodes)]
 
-def create_weighted_graph(nodes: int, edges: List[List[int]]) -> List[List[Tuple[int, int]]]:
-    adj: List[List[Tuple[int, int]]] = [[] for _ in range(nodes)]
+    for edge in edges:
+        # Add nodeB (edge[1]) and edge weight (edge[2])
+        # to adjacency list of nodeA (edge[0])
+        adj[edge[0]].append((edge[1], edge[2]))
 
-    for u, v, w in edges:
-        # Each edge is (u, v, w). Append the pair (other_endpoint, weight) to both lists.
-        adj[u].append((v, w))
-        adj[v].append((u, w))
+        # Add nodeA (edge[0]) and edge weight (edge[2])
+        # to adjacency list of nodeB (edge[1])
+        adj[edge[1]].append((edge[0], edge[2]))
+
     return adj
 
 
 edges = [[0,1,5],[0,2,2],[1,2,1],[1,3,7],[2,4,4],[3,4,3]]
-adj = create_weighted_graph(5, edges)
+adj = create_graph(5, edges)
 for i, n in enumerate(adj):
     print(f"{i}: {n}")
 ```
@@ -449,88 +386,51 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class Main {
-    // (neighbour, weight) — int[2] is the lightest pair representation in Java.
-    public static List<List<int[]>> createWeightedGraph(int nodes, int[][] edges) {
-        List<List<int[]>> adj = new ArrayList<>();
-        for (int i = 0; i < nodes; i++) adj.add(new ArrayList<>());
+    /*
+     * Function to create graph
+     * nodes: The number of nodes in the graph
+     * edges[in]: A list of edges. An edge is a list storing
+     * the two nodes it connects and the weight.
+     *
+     * returns: Adjacency list
+     */
+    public static List<List<List<Integer>>> createGraph(int nodes, int[][] edges)
+    {
+        // Create adjacency list
+        List<List<List<Integer>>> adj = new ArrayList<List<List<Integer>>>();
 
-        for (int[] e : edges) {
-            adj.get(e[0]).add(new int[]{e[1], e[2]});
-            adj.get(e[1]).add(new int[]{e[0], e[2]});
+        for(int i=0; i<nodes; i++)
+        {
+            adj.add(new ArrayList<List<Integer>>());
         }
+
+        for (int[] edge: edges)
+        {
+            // Add nodeB (edge[1]) and edge weight (edge[2])
+            // to adjacency list of nodeA (edge[0])
+            List<Integer> pair1 = new ArrayList<Integer>();
+            pair1.add(edge[1]);
+            pair1.add(edge[2]);
+            adj.get(edge[0]).add(pair1);
+
+            // Add nodeA (edge[0]) and edge weight (edge[2])
+            // to adjacency list of nodeB (edge[1])
+            List<Integer> pair2 = new ArrayList<Integer>();
+            pair2.add(edge[0]);
+            pair2.add(edge[2]);
+            adj.get(edge[1]).add(pair2);
+        }
+
         return adj;
     }
 
     public static void main(String[] args) {
         int[][] edges = {{0,1,5},{0,2,2},{1,2,1},{1,3,7},{2,4,4},{3,4,3}};
-        var adj = createWeightedGraph(5, edges);
+        List<List<List<Integer>>> adj = createGraph(5, edges);
         for (int i = 0; i < adj.size(); i++) {
-            System.out.print(i + ": ");
-            for (int[] p : adj.get(i)) System.out.print("(" + p[0] + "," + p[1] + ") ");
-            System.out.println();
+            System.out.println(i + ": " + adj.get(i));
         }
     }
-}
-```
-
-```c run
-#include <stdio.h>
-#include <stdlib.h>
-
-typedef struct { int to; int weight; } Edge;
-typedef struct { Edge* data; int size; int capacity; } Vec;
-
-static void vec_push(Vec* v, Edge e) {
-    if (v->size == v->capacity) {
-        v->capacity = v->capacity == 0 ? 4 : v->capacity * 2;
-        v->data = realloc(v->data, v->capacity * sizeof(Edge));
-    }
-    v->data[v->size++] = e;
-}
-
-Vec* create_weighted_graph(int nodes, int edges[][3], int edge_count) {
-    Vec* adj = calloc(nodes, sizeof(Vec));
-    for (int i = 0; i < edge_count; i++) {
-        Edge a = { edges[i][1], edges[i][2] };
-        Edge b = { edges[i][0], edges[i][2] };
-        vec_push(&adj[edges[i][0]], a);
-        vec_push(&adj[edges[i][1]], b);
-    }
-    return adj;
-}
-
-int main() {
-    int edges[][3] = {{0,1,5},{0,2,2},{1,2,1},{1,3,7},{2,4,4},{3,4,3}};
-    Vec* adj = create_weighted_graph(5, edges, 6);
-    for (int i = 0; i < 5; i++) {
-        printf("%d: ", i);
-        for (int j = 0; j < adj[i].size; j++)
-            printf("(%d,%d) ", adj[i].data[j].to, adj[i].data[j].weight);
-        printf("\n");
-        free(adj[i].data);
-    }
-    free(adj);
-    return 0;
-}
-```
-
-```scala run
-import scala.collection.mutable.ArrayBuffer
-
-object Main extends App {
-  def createWeightedGraph(nodes: Int, edges: Array[Array[Int]]): Array[ArrayBuffer[(Int, Int)]] = {
-    val adj = Array.fill(nodes)(ArrayBuffer.empty[(Int, Int)])
-    for (e <- edges) {
-      adj(e(0)).append((e(1), e(2)))
-      adj(e(1)).append((e(0), e(2)))
-    }
-    adj
-  }
-
-  val edges = Array(Array(0,1,5), Array(0,2,2), Array(1,2,1),
-                    Array(1,3,7), Array(2,4,4), Array(3,4,3))
-  val adj = createWeightedGraph(5, edges)
-  adj.zipWithIndex.foreach { case (n, i) => println(s"$i: ${n.mkString(", ")}") }
 }
 ```
 
@@ -583,34 +483,41 @@ approach2: "Approach 2: nodes as objects" {
 
 <p align="center"><strong>Two equivalent ways to attach per-node data. Both store the same information; the choice is about ergonomics.</strong></p>
 
-Here's the **node-as-object** approach in all 10 languages — it's the more general one because it scales naturally as the per-node payload grows.
+Here's the **node-as-object** approach in Python and Java — it's the more general one because it scales naturally as the per-node payload grows.
 
-
-```pseudocode
-function createGraph(nodeData, edges):
-    nodes ← list of Node(data, empty list) for each item in nodeData
-    for each (u, v, w) in edges:
-        append (v, w) to nodes[u].adj
-        append (u, w) to nodes[v].adj   # undirected: both directions
-    return nodes
-```
 
 ```python run
-from dataclasses import dataclass, field
-from typing import List, Tuple
-
-@dataclass
 class Node:
-    data: str
-    # default_factory ensures every Node gets its OWN empty list — without it,
-    # all nodes would share one default list (a Python class-level footgun).
-    adj: List[Tuple[int, int]] = field(default_factory=list)
+    def __init__(self, data = 0):
+        self.data = data
+        self.adj = []
 
-def create_graph(node_data: List[str], edges: List[List[int]]) -> List[Node]:
-    nodes = [Node(d) for d in node_data]
-    for u, v, w in edges:
-        nodes[u].adj.append((v, w))
-        nodes[v].adj.append((u, w))
+
+"""
+ * Function to create graph
+ * nodeData: A list of node data
+ * edges[in]: A list of edges. An edge is a list storing
+ * the two nodes it connects and the weight.
+ *
+ * returns: graph as array of nodes
+"""
+def create_graph(nodeData, edges):
+    # Create the list of nodes
+    nodes = []
+
+    # Fill in the node data
+    for data in nodeData:
+        nodes.append(Node(data))
+
+    for edge in edges:
+        # Add nodeB (edge[1]) and edge weight (edge[2])
+        # to adjacency list of nodeA (edge[0])
+        nodes[edge[0]].adj.append((edge[1], edge[2]))
+
+        # Add nodeA (edge[0]) and edge weight (edge[2])
+        # to adjacency list of nodeB (edge[1])
+        nodes[edge[1]].adj.append((edge[0], edge[2]))
+
     return nodes
 
 
@@ -626,107 +533,65 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class Main {
-    static class Node {
-        String data;
-        List<int[]> adj = new ArrayList<>();   // (to, weight)
-        Node(String d) { data = d; }
-    }
+    static class Node
+    {
+        public int data;
+        public List<List<Integer>> adj;
 
-    public static List<Node> createGraph(String[] nodeData, int[][] edges) {
-        List<Node> nodes = new ArrayList<>();
-        for (String d : nodeData) nodes.add(new Node(d));
-
-        for (int[] e : edges) {
-            nodes.get(e[0]).adj.add(new int[]{e[1], e[2]});
-            nodes.get(e[1]).adj.add(new int[]{e[0], e[2]});
+        Node(int data)
+        {
+            this.data = data;
+            this.adj = new ArrayList<List<Integer>>();
         }
+    };
+
+    /*
+     * Function to create graph
+     * nodeData: A list of node data
+     * edges[in]: A list of edges. An edge is a list storing
+     * the two nodes it connects and the weight.
+     *
+     * returns: graph as array of nodes
+     */
+    public static List<Node> createGraph(int[] nodeData, int[][] edges)
+    {
+        // Create the list of nodes
+        List<Node> nodes = new ArrayList<Node>();
+
+        // Fill in the node data
+        for(int i=0; i<nodeData.length; i++)
+        {
+            nodes.add(new Node(nodeData[i]));
+        }
+
+        for (int[] edge: edges)
+        {
+            // Add nodeB (edge[1]) and edge weight (edge[2])
+            // to adjacency list of nodeA (edge[0])
+            List<Integer> pair1 = new ArrayList<Integer>();
+            pair1.add(edge[1]);
+            pair1.add(edge[2]);
+            nodes.get(edge[0]).adj.add(pair1);
+
+            // Add nodeA (edge[0]) and edge weight (edge[2])
+            // to adjacency list of nodeB (edge[1])
+            List<Integer> pair2 = new ArrayList<Integer>();
+            pair2.add(edge[0]);
+            pair2.add(edge[2]);
+            nodes.get(edge[1]).adj.add(pair2);
+        }
+
         return nodes;
     }
 
     public static void main(String[] args) {
-        String[] cities = {"Bangalore", "Tokyo", "Paris", "NYC", "London"};
+        int[] cities = {0, 1, 2, 3, 4};
         int[][] edges = {{0,1,5},{0,2,2},{1,2,1},{1,3,7},{2,4,4},{3,4,3}};
         List<Node> g = createGraph(cities, edges);
         for (int i = 0; i < g.size(); i++) {
-            System.out.print(i + " (" + g.get(i).data + "): ");
-            for (int[] p : g.get(i).adj) System.out.print("(" + p[0] + "," + p[1] + ") ");
-            System.out.println();
+            System.out.println(i + " (" + g.get(i).data + "): " + g.get(i).adj);
         }
     }
-}
-```
-
-```c run
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-
-typedef struct { int to; int weight; } Edge;
-typedef struct { Edge* data; int size; int capacity; } Vec;
-
-typedef struct {
-    char* data;
-    Vec   adj;
-} Node;
-
-static void vec_push(Vec* v, Edge e) {
-    if (v->size == v->capacity) {
-        v->capacity = v->capacity == 0 ? 4 : v->capacity * 2;
-        v->data = realloc(v->data, v->capacity * sizeof(Edge));
-    }
-    v->data[v->size++] = e;
-}
-
-Node* create_graph(const char* names[], int n, int edges[][3], int edge_count) {
-    Node* nodes = calloc(n, sizeof(Node));
-    for (int i = 0; i < n; i++) nodes[i].data = strdup(names[i]);
-
-    for (int i = 0; i < edge_count; i++) {
-        Edge a = { edges[i][1], edges[i][2] };
-        Edge b = { edges[i][0], edges[i][2] };
-        vec_push(&nodes[edges[i][0]].adj, a);
-        vec_push(&nodes[edges[i][1]].adj, b);
-    }
-    return nodes;
-}
-
-int main() {
-    const char* names[] = {"Bangalore", "Tokyo", "Paris", "NYC", "London"};
-    int edges[][3] = {{0,1,5},{0,2,2},{1,2,1},{1,3,7},{2,4,4},{3,4,3}};
-    Node* g = create_graph(names, 5, edges, 6);
-
-    for (int i = 0; i < 5; i++) {
-        printf("%d (%s): ", i, g[i].data);
-        for (int j = 0; j < g[i].adj.size; j++)
-            printf("(%d,%d) ", g[i].adj.data[j].to, g[i].adj.data[j].weight);
-        printf("\n");
-        free(g[i].data); free(g[i].adj.data);
-    }
-    free(g);
-    return 0;
-}
-```
-
-```scala run
-import scala.collection.mutable.ArrayBuffer
-
-object Main extends App {
-  case class Node(data: String, adj: ArrayBuffer[(Int, Int)] = ArrayBuffer.empty)
-
-  def createGraph(nodeData: Array[String], edges: Array[Array[Int]]): Array[Node] = {
-    val nodes = nodeData.map(d => Node(d))
-    for (e <- edges) {
-      nodes(e(0)).adj.append((e(1), e(2)))
-      nodes(e(1)).adj.append((e(0), e(2)))
-    }
-    nodes
-  }
-
-  val cities = Array("Bangalore", "Tokyo", "Paris", "NYC", "London")
-  val edges = Array(Array(0,1,5), Array(0,2,2), Array(1,2,1),
-                    Array(1,3,7), Array(2,4,4), Array(3,4,3))
-  val g = createGraph(cities, edges)
-  g.zipWithIndex.foreach { case (n, i) => println(s"$i (${n.data}): ${n.adj.mkString(", ")}") }
 }
 ```
 
@@ -771,7 +636,9 @@ Input:  adjList = [[4], [0, 3], [0, 4], [2, 4], [1]]
 Output: A new list with the same contents [[4], [0, 3], [0, 4], [2, 4], [1]]
 ```
 
-## What "Deep Clone" Means
+<details>
+<summary><h2>What "Deep Clone" Means</h2></summary>
+
 
 A **shallow copy** of a list-of-lists copies only the outer container — the inner lists are still shared references. Mutating `clone[0]` would mutate `original[0]` too. A **deep clone** allocates a brand-new outer container *and* a brand-new inner list for each node, then copies the integer IDs across.
 
@@ -804,7 +671,10 @@ flowchart LR
 
 For a list of integer IDs, "deep" only needs to go one level — the integers themselves are immutable in every language we care about. (If the inner lists held mutable objects, deep cloning would have to recurse further.)
 
-## The Strategy
+</details>
+<details>
+<summary><h2>The Strategy</h2></summary>
+
 
 Two nested loops:
 
@@ -813,127 +683,106 @@ Two nested loops:
 
 That's literally it. No clever insight — just don't share references.
 
-## The Solution
+</details>
+<details>
+<summary><h2>Solution &amp; Analysis</h2></summary>
 
-
-```pseudocode
-function cloneAdjacencyList(adjList):
-    cloned ← array of N empty lists
-    for i from 0 to N−1:
-        for each neighbor in adjList[i]:
-            append neighbor to cloned[i]   # copy IDs into fresh inner list
-    return cloned
-```
+### The Solution
 
 ```python run
 from typing import List
-from copy import deepcopy
 
-def clone_adjacency_list(adj_list: List[List[int]]) -> List[List[int]]:
-    n = len(adj_list)
-    # Build a fresh outer list with a fresh inner list per node.
-    cloned = [[] for _ in range(n)]
-    for i in range(n):
-        for v in adj_list[i]:
-            cloned[i].append(v)
-    return cloned
+class Solution:
+    def clone_adjacency_list(
+        self, adj_list: List[List[int]]
+    ) -> List[List[int]]:
+        n = len(adj_list)
+
+        # Create a new adjacency list for the cloned adj_list
+        cloned_list = [[] for _ in range(n)]
+
+        # Copy each node's neighbours from the original adj_list to the
+        # cloned adj_list
+        for i in range(n):
+
+            # Iterate over the neighbours of node i in the original
+            # adj_list
+            for j in range(len(adj_list[i])):
+
+                # Add the neighbour to the cloned adj_list
+                cloned_list[i].append(adj_list[i][j])
+
+        # Return the cloned adj_list
+        return cloned_list
 
 
-# Idiomatic shortcut: copy.deepcopy(adj_list) does this for you in one line.
-# We write it explicitly above to make the steps visible.
+# Examples from the problem statement
+print(Solution().clone_adjacency_list([[1, 3], [4], [4], [2], [3]]))   # [[1, 3], [4], [4], [2], [3]]
+print(Solution().clone_adjacency_list([[4], [0, 3], [0, 4], [2, 4], [1]]))  # [[4], [0, 3], [0, 4], [2, 4], [1]]
 
-adj_list = [[1, 3], [4], [4], [2], [3]]
-print(clone_adjacency_list(adj_list))
+# Edge cases
+print(Solution().clone_adjacency_list([]))                              # []
+print(Solution().clone_adjacency_list([[]])  )                          # [[]]
+print(Solution().clone_adjacency_list([[1], [0]]))                      # [[1], [0]]
+print(Solution().clone_adjacency_list([[1, 2], [0], [0]]))              # [[1, 2], [0], [0]]
+print(Solution().clone_adjacency_list([[0]]))                           # [[0]]
 ```
 
 ```java run
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
 
 public class Main {
-    public static List<List<Integer>> cloneAdjacencyList(List<List<Integer>> adjList) {
-        int n = adjList.size();
-        List<List<Integer>> cloned = new ArrayList<>();
+    static class Solution {
+        public List<List<Integer>> cloneAdjacencyList(
+            List<List<Integer>> adjList
+        ) {
+            int n = adjList.size();
 
-        for (int i = 0; i < n; i++) {
-            // new ArrayList<>(adjList.get(i)) makes a fresh inner list and copies in the values.
-            cloned.add(new ArrayList<>(adjList.get(i)));
+            // Create a new adjacency list for the cloned adjList
+            List<List<Integer>> clonedList = new ArrayList<>();
+
+            // Copy each node's neighbours from the original adjList to the
+            // cloned adjList
+            for (int i = 0; i < n; i++) {
+                clonedList.add(new ArrayList<Integer>());
+
+                // Iterate over the neighbours of node i in the original
+                // adjList
+                for (int j = 0; j < adjList.get(i).size(); j++) {
+
+                    // Add the neighbour to the cloned adjList
+                    clonedList.get(i).add(adjList.get(i).get(j));
+                }
+            }
+
+            // Return the cloned adjList
+            return clonedList;
         }
-        return cloned;
     }
 
     public static void main(String[] args) {
-        List<List<Integer>> adj = List.of(
-            List.of(1, 3), List.of(4), List.of(4), List.of(2), List.of(3));
-        System.out.println(cloneAdjacencyList(adj));
+        // Examples from the problem statement
+        System.out.println(new Solution().cloneAdjacencyList(List.of(List.of(1,3),List.of(4),List.of(4),List.of(2),List.of(3))));  // [[1, 3], [4], [4], [2], [3]]
+        System.out.println(new Solution().cloneAdjacencyList(List.of(List.of(4),List.of(0,3),List.of(0,4),List.of(2,4),List.of(1))));  // [[4], [0, 3], [0, 4], [2, 4], [1]]
+
+        // Edge cases
+        System.out.println(new Solution().cloneAdjacencyList(new ArrayList<>()));  // []
+        System.out.println(new Solution().cloneAdjacencyList(List.of(new ArrayList<>())));  // [[]]
+        System.out.println(new Solution().cloneAdjacencyList(List.of(List.of(1),List.of(0))));  // [[1], [0]]
+        System.out.println(new Solution().cloneAdjacencyList(List.of(List.of(1,2),List.of(0),List.of(0))));  // [[1, 2], [0], [0]]
+        System.out.println(new Solution().cloneAdjacencyList(List.of(List.of(0))));  // [[0]]
     }
 }
 ```
 
-```c run
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-
-typedef struct { int* data; int size; int capacity; } Vec;
-
-Vec* clone_adjacency_list(Vec* adj, int n) {
-    Vec* cloned = calloc(n, sizeof(Vec));
-    for (int i = 0; i < n; i++) {
-        cloned[i].size = adj[i].size;
-        cloned[i].capacity = adj[i].size;
-        cloned[i].data = malloc(adj[i].size * sizeof(int));
-        // memcpy is the fastest way to duplicate the integer array.
-        memcpy(cloned[i].data, adj[i].data, adj[i].size * sizeof(int));
-    }
-    return cloned;
-}
-
-int main() {
-    int data[][2] = {{1,3},{4,-1},{4,-1},{2,-1},{3,-1}};
-    int sizes[] = {2, 1, 1, 1, 1};
-    Vec adj[5];
-    for (int i = 0; i < 5; i++) {
-        adj[i].data = malloc(sizes[i] * sizeof(int));
-        adj[i].size = sizes[i];
-        adj[i].capacity = sizes[i];
-        for (int j = 0; j < sizes[i]; j++) adj[i].data[j] = data[i][j];
-    }
-
-    Vec* cloned = clone_adjacency_list(adj, 5);
-    for (int i = 0; i < 5; i++) {
-        printf("%d: ", i);
-        for (int j = 0; j < cloned[i].size; j++) printf("%d ", cloned[i].data[j]);
-        printf("\n");
-        free(adj[i].data); free(cloned[i].data);
-    }
-    free(cloned);
-    return 0;
-}
-```
-
-```scala run
-import scala.collection.mutable.ArrayBuffer
-
-object Main extends App {
-  def cloneAdjacencyList(adj: Array[ArrayBuffer[Int]]): Array[ArrayBuffer[Int]] = {
-    // .map(_.clone()) builds fresh inner buffers with the same elements.
-    adj.map(_.clone())
-  }
-
-  val adj = Array(ArrayBuffer(1, 3), ArrayBuffer(4), ArrayBuffer(4), ArrayBuffer(2), ArrayBuffer(3))
-  val c = cloneAdjacencyList(adj)
-  c.foreach(r => println(r.mkString(" ")))
-}
-```
-
-
-## Complexity Analysis
+### Complexity Analysis
 
 | | Complexity | Reasoning |
 |---|---|---|
 | **Time** | O(N + E) | Visit every node and every neighbour entry once |
 | **Space** | O(N + E) | The cloned list is the same size as the original |
+
+</details>
 
 ***
 
@@ -951,7 +800,9 @@ Input:  adjList = [[4], [0, 3], [0, 4], [2, 4], [1]]
 Output: [[0,0,0,0,1],[1,0,0,1,0],[1,0,0,0,1],[0,0,1,0,1],[0,1,0,0,0]]
 ```
 
-## The Strategy
+<details>
+<summary><h2>The Strategy</h2></summary>
+
 
 Allocate an `N×N` zero matrix. Then for each list entry `j` in `adj[i]`, set `matrix[i][j] = 1`. That's it — **no symmetric assignment**, because the input is directed.
 
@@ -973,116 +824,107 @@ flowchart LR
 
 <p align="center"><strong>One row of the input list directly populates one row of the output matrix.</strong></p>
 
-## The Solution
+</details>
+<details>
+<summary><h2>Solution &amp; Analysis</h2></summary>
 
-
-```pseudocode
-function adjListToMatrix(adjList):
-    n ← length of adjList
-    matrix ← N×N matrix of zeros
-    for i from 0 to N−1:
-        for each j in adjList[i]:
-            matrix[i][j] ← 1   # directed: only (i → j), not reverse
-    return matrix
-```
+### The Solution
 
 ```python run
 from typing import List
 
-def adj_list_to_matrix(adj_list: List[List[int]]) -> List[List[int]]:
-    n = len(adj_list)
-    matrix = [[0] * n for _ in range(n)]
+class Solution:
+    def adjacency_list_to_adjacency_matrix(
+        self, adj_list: List[List[int]]
+    ) -> List[List[int]]:
+        n = len(adj_list)
 
-    for i, neighbours in enumerate(adj_list):
-        for j in neighbours:
-            # Directed: only mark the (from → to) cell, NOT the reverse.
-            matrix[i][j] = 1
-    return matrix
+        # Initialize adjacency matrix with 0s
+        adj_matrix = [[0] * n for _ in range(n)]
+
+        for i in range(n):
+            for j in range(len(adj_list[i])):
+                neighbour = adj_list[i][j]
+
+                # Mark the corresponding cell in the matrix as 1
+                adj_matrix[i][neighbour] = 1
+
+        return adj_matrix
 
 
-adj_list = [[1, 3], [4], [4], [2], [3]]
-for row in adj_list_to_matrix(adj_list):
-    print(row)
+# Examples from the problem statement
+print(Solution().adjacency_list_to_adjacency_matrix([[1, 3], [4], [4], [2], [3]]))
+# [[0, 1, 0, 1, 0], [0, 0, 0, 0, 1], [0, 0, 0, 0, 1], [0, 0, 1, 0, 0], [0, 0, 0, 1, 0]]
+
+print(Solution().adjacency_list_to_adjacency_matrix([[4], [0, 3], [0, 4], [2, 4], [1]]))
+# [[0, 0, 0, 0, 1], [1, 0, 0, 1, 0], [1, 0, 0, 0, 1], [0, 0, 1, 0, 1], [0, 1, 0, 0, 0]]
+
+# Edge cases
+print(Solution().adjacency_list_to_adjacency_matrix([[]]))              # [[0]]
+print(Solution().adjacency_list_to_adjacency_matrix([[1], [0]]))        # [[0, 1], [1, 0]]
+print(Solution().adjacency_list_to_adjacency_matrix([[1, 2], [0, 2], [0, 1]]))
+# [[0, 1, 1], [1, 0, 1], [1, 1, 0]]
+print(Solution().adjacency_list_to_adjacency_matrix([[0]]))             # [[1]]
 ```
 
 ```java run
-import java.util.Arrays;
-import java.util.List;
+import java.util.*;
 
 public class Main {
-    public static int[][] adjListToMatrix(List<List<Integer>> adjList) {
-        int n = adjList.size();
-        int[][] matrix = new int[n][n];   // Java default-fills int[] with zero.
+    static class Solution {
+        public int[][] adjacencyListToAdjacencyMatrix(
+            List<List<Integer>> adjList
+        ) {
+            int n = adjList.size();
 
-        for (int i = 0; i < n; i++) {
-            for (int j : adjList.get(i)) {
-                matrix[i][j] = 1;
+            // Initialize adjacency matrix with 0s
+            int[][] adjMatrix = new int[n][n];
+
+            for (int i = 0; i < n; i++) {
+                for (int j = 0; j < adjList.get(i).size(); j++) {
+                    int neighbour = adjList.get(i).get(j);
+
+                    // Mark the corresponding cell in the matrix as 1
+                    adjMatrix[i][neighbour] = 1;
+                }
             }
+
+            return adjMatrix;
         }
-        return matrix;
     }
 
     public static void main(String[] args) {
-        List<List<Integer>> adj = List.of(
-            List.of(1, 3), List.of(4), List.of(4), List.of(2), List.of(3));
-        for (int[] row : adjListToMatrix(adj)) System.out.println(Arrays.toString(row));
+        // Examples from the problem statement
+        System.out.println(Arrays.deepToString(new Solution().adjacencyListToAdjacencyMatrix(
+            List.of(List.of(1,3),List.of(4),List.of(4),List.of(2),List.of(3)))));
+        // [[0, 1, 0, 1, 0], [0, 0, 0, 0, 1], [0, 0, 0, 0, 1], [0, 0, 1, 0, 0], [0, 0, 0, 1, 0]]
+
+        System.out.println(Arrays.deepToString(new Solution().adjacencyListToAdjacencyMatrix(
+            List.of(List.of(4),List.of(0,3),List.of(0,4),List.of(2,4),List.of(1)))));
+        // [[0, 0, 0, 0, 1], [1, 0, 0, 1, 0], [1, 0, 0, 0, 1], [0, 0, 1, 0, 1], [0, 1, 0, 0, 0]]
+
+        // Edge cases
+        System.out.println(Arrays.deepToString(new Solution().adjacencyListToAdjacencyMatrix(
+            List.of(new ArrayList<>()))));                              // [[0]]
+        System.out.println(Arrays.deepToString(new Solution().adjacencyListToAdjacencyMatrix(
+            List.of(List.of(1),List.of(0)))));                         // [[0, 1], [1, 0]]
+        System.out.println(Arrays.deepToString(new Solution().adjacencyListToAdjacencyMatrix(
+            List.of(List.of(1,2),List.of(0,2),List.of(0,1)))));
+        // [[0, 1, 1], [1, 0, 1], [1, 1, 0]]
+        System.out.println(Arrays.deepToString(new Solution().adjacencyListToAdjacencyMatrix(
+            List.of(List.of(0)))));                                    // [[1]]
     }
 }
 ```
 
-```c run
-#include <stdio.h>
-#include <stdlib.h>
-
-typedef struct { int* data; int size; } Vec;
-
-int** adj_list_to_matrix(Vec* adj, int n) {
-    int** m = malloc(n * sizeof(int*));
-    for (int i = 0; i < n; i++) m[i] = calloc(n, sizeof(int));
-
-    for (int i = 0; i < n; i++)
-        for (int j = 0; j < adj[i].size; j++)
-            m[i][adj[i].data[j]] = 1;
-    return m;
-}
-
-int main() {
-    int data0[] = {1, 3}, data1[] = {4}, data2[] = {4}, data3[] = {2}, data4[] = {3};
-    Vec adj[] = {{data0, 2}, {data1, 1}, {data2, 1}, {data3, 1}, {data4, 1}};
-    int** m = adj_list_to_matrix(adj, 5);
-    for (int i = 0; i < 5; i++) {
-        for (int j = 0; j < 5; j++) printf("%d ", m[i][j]);
-        printf("\n");
-        free(m[i]);
-    }
-    free(m);
-    return 0;
-}
-```
-
-```scala run
-import scala.collection.mutable.ArrayBuffer
-
-object Main extends App {
-  def adjListToMatrix(adjList: Array[ArrayBuffer[Int]]): Array[Array[Int]] = {
-    val n = adjList.length
-    val m = Array.ofDim[Int](n, n)
-    for (i <- 0 until n; j <- adjList(i)) m(i)(j) = 1
-    m
-  }
-
-  val adj = Array(ArrayBuffer(1, 3), ArrayBuffer(4), ArrayBuffer(4), ArrayBuffer(2), ArrayBuffer(3))
-  adjListToMatrix(adj).foreach(r => println(r.mkString(" ")))
-}
-```
-
-
-## Complexity Analysis
+### Complexity Analysis
 
 | | Complexity | Reasoning |
 |---|---|---|
 | **Time** | O(N² + E) | The matrix allocation costs O(N²); marking each edge is O(1) and there are E of them |
 | **Space** | O(N²) | The output matrix dominates |
+
+</details>
 
 ***
 
@@ -1100,7 +942,9 @@ Input:  matrix = [[0,0,0,0,1],[1,0,0,1,0],[1,0,0,0,1],[0,0,1,0,1],[0,1,0,0,0]]
 Output: [[4], [0, 3], [0, 4], [2, 4], [1]]
 ```
 
-## The Strategy
+<details>
+<summary><h2>The Strategy</h2></summary>
+
 
 Walk the matrix row by row. For each cell that's `1`, append the column index to the row's adjacency list.
 
@@ -1122,120 +966,102 @@ flowchart LR
 
 <p align="center"><strong>For each row, the adjacency list is just the indices where the cell is 1.</strong></p>
 
-## The Solution
+</details>
+<details>
+<summary><h2>Solution &amp; Analysis</h2></summary>
 
-
-```pseudocode
-function matrixToAdjList(matrix):
-    n ← number of rows in matrix
-    adjList ← array of N empty lists
-    for i from 0 to N−1:
-        for j from 0 to N−1:
-            if matrix[i][j] = 1:
-                append j to adjList[i]   # edge i → j exists
-    return adjList
-```
+### The Solution
 
 ```python run
 from typing import List
 
-def matrix_to_adj_list(matrix: List[List[int]]) -> List[List[int]]:
-    n = len(matrix)
-    adj_list: List[List[int]] = [[] for _ in range(n)]
+class Solution:
+    def adjacency_matrix_to_adjacency_list(
+        self, adj_matrix: List[List[int]]
+    ) -> List[List[int]]:
+        n = len(adj_matrix)
+        adj_list = [[] for _ in range(n)]
 
-    for i in range(n):
-        for j in range(n):
-            # The cell value 1 means "edge from i to j exists".
-            if matrix[i][j] == 1:
-                adj_list[i].append(j)
-    return adj_list
+        # Traverse the adjacency matrix
+        for i in range(n):
+            for j in range(n):
+
+                # If an edge exists between nodes i and j
+                if adj_matrix[i][j] == 1:
+
+                    # Add node j to the adjacency list of node i
+                    adj_list[i].append(j)
+
+        return adj_list
 
 
-matrix = [[0,1,0,1,0],[0,0,0,0,1],[0,0,0,0,1],[0,0,1,0,0],[0,0,0,1,0]]
-print(matrix_to_adj_list(matrix))
+# Examples from the problem statement
+print(Solution().adjacency_matrix_to_adjacency_list(
+    [[0,1,0,1,0],[0,0,0,0,1],[0,0,0,0,1],[0,0,1,0,0],[0,0,0,1,0]]))
+# [[1, 3], [4], [4], [2], [3]]
+
+print(Solution().adjacency_matrix_to_adjacency_list(
+    [[0,0,0,0,1],[1,0,0,1,0],[1,0,0,0,1],[0,0,1,0,1],[0,1,0,0,0]]))
+# [[4], [0, 3], [0, 4], [2, 4], [1]]
+
+# Edge cases
+print(Solution().adjacency_matrix_to_adjacency_list([[0]]))             # [[]]
+print(Solution().adjacency_matrix_to_adjacency_list([[1]]))             # [[0]]
+print(Solution().adjacency_matrix_to_adjacency_list([[0, 1], [1, 0]])) # [[1], [0]]
+print(Solution().adjacency_matrix_to_adjacency_list([[0, 1, 1], [1, 0, 1], [1, 1, 0]]))
+# [[1, 2], [0, 2], [0, 1]]
 ```
 
 ```java run
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
 
 public class Main {
-    public static List<List<Integer>> matrixToAdjList(int[][] matrix) {
-        int n = matrix.length;
-        List<List<Integer>> adj = new ArrayList<>();
-        for (int i = 0; i < n; i++) adj.add(new ArrayList<>());
+    static class Solution {
+        public List<List<Integer>> adjacencyMatrixToAdjacencyList(
+            int[][] adjMatrix
+        ) {
+            int n = adjMatrix.length;
+            List<List<Integer>> adjList = new ArrayList<>();
 
-        for (int i = 0; i < n; i++)
-            for (int j = 0; j < n; j++)
-                if (matrix[i][j] == 1) adj.get(i).add(j);
-        return adj;
+            // Traverse the adjacency matrix
+            for (int i = 0; i < n; i++) {
+                adjList.add(new ArrayList<>());
+                for (int j = 0; j < n; j++) {
+
+                    // If an edge exists between nodes i and j
+                    if (adjMatrix[i][j] == 1) {
+
+                        // Add node j to the adjacency list of node i
+                        adjList.get(i).add(j);
+                    }
+                }
+            }
+
+            return adjList;
+        }
     }
 
     public static void main(String[] args) {
-        int[][] matrix = {{0,1,0,1,0},{0,0,0,0,1},{0,0,0,0,1},{0,0,1,0,0},{0,0,0,1,0}};
-        System.out.println(matrixToAdjList(matrix));
+        // Examples from the problem statement
+        System.out.println(new Solution().adjacencyMatrixToAdjacencyList(
+            new int[][]{{0,1,0,1,0},{0,0,0,0,1},{0,0,0,0,1},{0,0,1,0,0},{0,0,0,1,0}}));
+        // [[1, 3], [4], [4], [2], [3]]
+
+        System.out.println(new Solution().adjacencyMatrixToAdjacencyList(
+            new int[][]{{0,0,0,0,1},{1,0,0,1,0},{1,0,0,0,1},{0,0,1,0,1},{0,1,0,0,0}}));
+        // [[4], [0, 3], [0, 4], [2, 4], [1]]
+
+        // Edge cases
+        System.out.println(new Solution().adjacencyMatrixToAdjacencyList(new int[][]{{0}}));   // [[]]
+        System.out.println(new Solution().adjacencyMatrixToAdjacencyList(new int[][]{{1}}));   // [[0]]
+        System.out.println(new Solution().adjacencyMatrixToAdjacencyList(new int[][]{{0,1},{1,0}}));  // [[1], [0]]
+        System.out.println(new Solution().adjacencyMatrixToAdjacencyList(
+            new int[][]{{0,1,1},{1,0,1},{1,1,0}}));  // [[1, 2], [0, 2], [0, 1]]
     }
 }
 ```
 
-```c run
-#include <stdio.h>
-#include <stdlib.h>
-
-typedef struct { int* data; int size; int capacity; } Vec;
-
-static void vec_push(Vec* v, int x) {
-    if (v->size == v->capacity) {
-        v->capacity = v->capacity == 0 ? 4 : v->capacity * 2;
-        v->data = realloc(v->data, v->capacity * sizeof(int));
-    }
-    v->data[v->size++] = x;
-}
-
-Vec* matrix_to_adj_list(int** matrix, int n) {
-    Vec* adj = calloc(n, sizeof(Vec));
-    for (int i = 0; i < n; i++)
-        for (int j = 0; j < n; j++)
-            if (matrix[i][j] == 1) vec_push(&adj[i], j);
-    return adj;
-}
-
-int main() {
-    int data[5][5] = {{0,1,0,1,0},{0,0,0,0,1},{0,0,0,0,1},{0,0,1,0,0},{0,0,0,1,0}};
-    int* m[5];
-    for (int i = 0; i < 5; i++) m[i] = data[i];
-
-    Vec* adj = matrix_to_adj_list(m, 5);
-    for (int i = 0; i < 5; i++) {
-        printf("%d: ", i);
-        for (int j = 0; j < adj[i].size; j++) printf("%d ", adj[i].data[j]);
-        printf("\n");
-        free(adj[i].data);
-    }
-    free(adj);
-    return 0;
-}
-```
-
-```scala run
-import scala.collection.mutable.ArrayBuffer
-
-object Main extends App {
-  def matrixToAdjList(matrix: Array[Array[Int]]): Array[ArrayBuffer[Int]] = {
-    val n = matrix.length
-    val adj = Array.fill(n)(ArrayBuffer.empty[Int])
-    for (i <- 0 until n; j <- 0 until n if matrix(i)(j) == 1) adj(i).append(j)
-    adj
-  }
-
-  val matrix = Array(Array(0,1,0,1,0), Array(0,0,0,0,1), Array(0,0,0,0,1),
-                     Array(0,0,1,0,0), Array(0,0,0,1,0))
-  matrixToAdjList(matrix).zipWithIndex.foreach { case (r, i) => println(s"$i: ${r.mkString(" ")}") }
-}
-```
-
-
-## Complexity Analysis
+### Complexity Analysis
 
 | | Complexity | Reasoning |
 |---|---|---|
@@ -1244,9 +1070,10 @@ object Main extends App {
 
 The matrix→list conversion is **strictly upper-bound by O(N²)** even when the graph is sparse — you can't avoid scanning every cell because there's no way to know in advance which cells are 1. This is the matrix's last word in the trade-off: even reading it takes quadratic time.
 
----
+</details>
+<details>
+<summary><h2>Final Takeaway</h2></summary>
 
-## Final Takeaway
 
 The adjacency list is the default for almost every graph problem you'll meet from here on. It uses memory proportional to actual edges, makes "iterate over my neighbours" a tight inner loop, and adapts to weighted graphs and per-node data with minor tweaks.
 
@@ -1256,6 +1083,7 @@ But what we've built is just **storage**. We haven't yet made the graph *do* any
 
 > **Transfer challenge.** A social network has 500 million users with an average of 200 friends each. Estimate the memory usage in megabytes for storing the friend graph as (a) an adjacency matrix of bits, (b) an adjacency list of 4-byte ints. Which one fits on a single server, and which one needs a distributed system? *(Numbers in the answer block.)*
 
+</details>
 <details>
 <summary><strong>Solution</strong></summary>
 

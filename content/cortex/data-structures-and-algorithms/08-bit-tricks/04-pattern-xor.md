@@ -79,7 +79,9 @@ Input:  num1 = 2, num2 = -3      →  true
 Input:  num1 = 9, num2 = 1       →  false
 ```
 
-## The Recurrence
+<details>
+<summary><h2>The Recurrence</h2></summary>
+
 
 In two's complement, the highest bit is the sign bit (1 ⇒ negative, 0 ⇒ non-negative). XORing two numbers gives a result with sign-bit set iff the two original sign-bits differ. A negative result therefore signals opposite signs.
 
@@ -91,69 +93,62 @@ opposite = (num1 ^ num2) < 0
 
 Because in two's complement, "less than zero" is determined by the sign bit alone. Lower bits could be anything — the comparison only inspects the top bit. The XOR's top bit equals 1 iff the inputs' top bits differ. So this becomes a pure sign-bit XOR, expressed as a comparison.
 
-## The Solution
+</details>
+<details>
+<summary><h2>The Solution</h2></summary>
 
 
-```pseudocode
-function haveOppositeSigns(num1, num2):
-    # XOR's sign bit is 1 iff the operands' sign bits differ → result is negative.
-    return (num1 bitwise XOR num2) < 0
-```
 
 ```python run
 class Solution:
     def have_opposite_signs(self, num1: int, num2: int) -> bool:
-        # XOR's sign bit is 1 iff the two operands' sign bits differ.
+
+        # XOR operation (^) will result in a negative number
+        # only if the signs of n1 and n2 are different.
         return (num1 ^ num2) < 0
 
 
-if __name__ == "__main__":
-    sol = Solution()
-    print(sol.have_opposite_signs(10, -1))   # True
-    print(sol.have_opposite_signs(2, -3))    # True
-    print(sol.have_opposite_signs(9, 1))     # False
+# Examples from the problem statement
+print(Solution().have_opposite_signs(10, -1))     # True
+print(Solution().have_opposite_signs(2, -3))      # True
+print(Solution().have_opposite_signs(9, 1))       # False
+
+# Edge cases
+print(Solution().have_opposite_signs(-5, -10))    # False
+print(Solution().have_opposite_signs(0, 0))       # False
+print(Solution().have_opposite_signs(0, -1))      # False
+print(Solution().have_opposite_signs(1, -1))      # True
+print(Solution().have_opposite_signs(-1, 1))      # True
 ```
 
 ```java run
 public class Main {
     static class Solution {
         public boolean haveOppositeSigns(int num1, int num2) {
-            return (num1 ^ num2) < 0;
+
+            // XOR operation (^) will result in a negative number
+            // only if the signs of n1 and n2 are different.
+            return ((num1 ^ num2) < 0);
         }
     }
 
     public static void main(String[] args) {
-        Solution sol = new Solution();
-        System.out.println(sol.haveOppositeSigns(10, -1));   // true
-        System.out.println(sol.haveOppositeSigns(2, -3));    // true
-        System.out.println(sol.haveOppositeSigns(9, 1));     // false
+        // Examples from the problem statement
+        System.out.println(new Solution().haveOppositeSigns(10, -1));     // true
+        System.out.println(new Solution().haveOppositeSigns(2, -3));      // true
+        System.out.println(new Solution().haveOppositeSigns(9, 1));       // false
+
+        // Edge cases
+        System.out.println(new Solution().haveOppositeSigns(-5, -10));    // false
+        System.out.println(new Solution().haveOppositeSigns(0, 0));       // false
+        System.out.println(new Solution().haveOppositeSigns(0, -1));      // false
+        System.out.println(new Solution().haveOppositeSigns(1, -1));      // true
+        System.out.println(new Solution().haveOppositeSigns(-1, 1));      // true
     }
 }
 ```
 
-```c run
-#include <stdio.h>
-#include <stdbool.h>
-
-bool have_opposite_signs(int num1, int num2) {
-    return (num1 ^ num2) < 0;
-}
-
-int main(void) {
-    printf("%d\n", have_opposite_signs(10, -1));   /* 1 */
-    return 0;
-}
-```
-
-```scala run
-object Main extends App {
-  class Solution {
-    def haveOppositeSigns(num1: Int, num2: Int): Boolean = (num1 ^ num2) < 0
-  }
-
-  println(new Solution().haveOppositeSigns(10, -1))   // true
-}
-```
+</details>
 
 
 ***
@@ -169,7 +164,9 @@ Input:  num1 = 10, num2 = 1   →  num1 = 1, num2 = 10
 Input:  num1 = 9, num2 = 1    →  num1 = 1, num2 = 9
 ```
 
-## The Recurrence — Three XORs
+<details>
+<summary><h2>The Recurrence — Three XORs</h2></summary>
+
 
 ```
 num1 = num1 ^ num2          (now num1 holds num1 ^ num2)
@@ -183,92 +180,91 @@ Each step relies on the self-inverse property: applying the same XOR twice cance
 
 Disaster. Step 1 sets the location to `x ^ x = 0`. Step 2 sets it to `0 ^ 0 = 0`. Step 3 same. You get `0, 0` instead of the original values. So XOR-swap is *only* safe when the two operands are guaranteed distinct memory locations. Add a guard `if num1 != num2` (or by-pointer-equality) when in doubt — the original C++ code does this.
 
-## The Solution
+</details>
+<details>
+<summary><h2>The Solution</h2></summary>
 
 
-```pseudocode
-# Classic XOR-swap. No temporary variable needed.
-function swapNumbers(num1, num2):
-    if num1 ≠ num2:                                # equal values would zero each other out
-        num1 ← num1 bitwise XOR num2
-        num2 ← num2 bitwise XOR num1               # = original num1
-        num1 ← num1 bitwise XOR num2               # = original num2
-    return (num1, num2)
-```
 
 ```python run
 class Solution:
-    def swap_numbers(self, num1: int, num2: int) -> tuple[int, int]:
+    def swap_numbers(self, num1: int, num2: int) -> None:
+
+        # Check if the numbers are already equal
         if num1 != num2:
-            num1 ^= num2
-            num2 ^= num1                            # = num2 ^ original_num1 ^ num2 = original_num1
-            num1 ^= num2                            # = (num1 ^ num2) ^ original_num1 = original_num2
-        return num1, num2
+
+            # Perform XOR swap_numbers algorithm
+            # Step 1: Perform XOR operation to store the XOR of num1 and
+            # num2 in num1
+            num1 = num1 ^ num2
+
+            # Step 2: Perform XOR operation to store the XOR of updated
+            # num1 and original num2 in num2
+            num2 = num1 ^ num2
+
+            # Step 3: Perform XOR operation to store the XOR of updated
+            # num1 and updated num2 in num1
+            num1 = num1 ^ num2
+
+        # Print the swap_numbersped values
+        print(str(num1) + ", " + str(num2))
 
 
-if __name__ == "__main__":
-    sol = Solution()
-    print(sol.swap_numbers(10, 1))    # (1, 10)
-    print(sol.swap_numbers(2, 3))     # (3, 2)
+# Examples from the problem statement
+Solution().swap_numbers(10, 1)     # 1, 10
+Solution().swap_numbers(2, 3)      # 3, 2
+Solution().swap_numbers(9, 1)      # 1, 9
+
+# Edge cases
+Solution().swap_numbers(0, 0)      # 0, 0
+Solution().swap_numbers(5, 5)      # 5, 5
+Solution().swap_numbers(-1, 1)     # 1, -1
+Solution().swap_numbers(0, 7)      # 7, 0
 ```
 
 ```java run
-import java.util.Arrays;
-
 public class Main {
     static class Solution {
-        public int[] swapNumbers(int num1, int num2) {
+        public void swapNumbers(int num1, int num2) {
+
+            // Check if the numbers are already equal
             if (num1 != num2) {
-                num1 ^= num2;
-                num2 ^= num1;
-                num1 ^= num2;
+
+                // Perform XOR swapNumbers algorithm
+                // Step 1: Perform XOR operation to store the XOR of num1 and
+                // num2 in num1
+                num1 = num1 ^ num2;
+
+                // Step 2: Perform XOR operation to store the XOR of updated
+                // num1 and original num2 in num2
+                num2 = num1 ^ num2;
+
+                // Step 3: Perform XOR operation to store the XOR of updated
+                // num1 and updated num2 in num1
+                num1 = num1 ^ num2;
             }
-            return new int[]{num1, num2};
+
+            // Print the swapNumbersped values
+            System.out.println(num1 + ", " + num2);
         }
     }
 
     public static void main(String[] args) {
-        System.out.println(Arrays.toString(new Solution().swapNumbers(10, 1)));   // [1, 10]
+        // Examples from the problem statement
+        new Solution().swapNumbers(10, 1);     // 1, 10
+        new Solution().swapNumbers(2, 3);      // 3, 2
+        new Solution().swapNumbers(9, 1);      // 1, 9
+
+        // Edge cases
+        new Solution().swapNumbers(0, 0);      // 0, 0
+        new Solution().swapNumbers(5, 5);      // 5, 5
+        new Solution().swapNumbers(-1, 1);     // 1, -1
+        new Solution().swapNumbers(0, 7);      // 7, 0
     }
 }
 ```
 
-```c run
-#include <stdio.h>
-
-void swap_numbers(int *num1, int *num2) {
-    if (*num1 != *num2) {
-        *num1 ^= *num2;
-        *num2 ^= *num1;
-        *num1 ^= *num2;
-    }
-}
-
-int main(void) {
-    int a = 10, b = 1;
-    swap_numbers(&a, &b);
-    printf("%d, %d\n", a, b);   /* 1, 10 */
-    return 0;
-}
-```
-
-```scala run
-object Main extends App {
-  class Solution {
-    def swapNumbers(num1: Int, num2: Int): (Int, Int) = {
-      if (num1 == num2) (num1, num2)
-      else {
-        val a = num1 ^ num2
-        val b = a ^ num2
-        val c = a ^ b
-        (c, b)
-      }
-    }
-  }
-
-  println(new Solution().swapNumbers(10, 1))   // (1,10)
-}
-```
+</details>
 
 
 ***
@@ -284,7 +280,9 @@ Input:  num1 = 10, num2 = 1   →  3       Binary 1010 vs 0001 — 3 differing p
 Input:  num1 = 2, num2 = 3    →  1       Binary 10 vs 11 — only LSB differs
 ```
 
-## The Recurrence — XOR Then Popcount
+<details>
+<summary><h2>The Recurrence — XOR Then Popcount</h2></summary>
+
 
 `num1 ^ num2` has a 1 in every position where `num1` and `num2` *differ*. Counting set bits in the XOR gives the number of differing positions — exactly the toggle count.
 
@@ -294,79 +292,85 @@ The set-bit count uses **Brian Kernighan's algorithm**: repeatedly clear the low
 
 It runs in **O(set-bit count)** rather than O(bit-width). For sparse integers (few bits set), this is much faster — `n = 1` runs one iteration vs. 32. For dense integers it's about the same. CPUs also have a `popcount` instruction that's faster still; we use the manual version here for clarity.
 
-## The Solution
+</details>
+<details>
+<summary><h2>The Solution</h2></summary>
 
 
-```pseudocode
-# Hamming distance — number of differing bits.
-# Brian Kernighan's trick: diff & (diff − 1) clears the lowest set bit each iteration.
-function toggleCount(num1, num2):
-    diff ← num1 bitwise XOR num2                   # 1s where bits differ
-    count ← 0
-    while diff ≠ 0:
-        diff ← diff bitwise AND (diff − 1)         # clear lowest set bit
-        count ← count + 1
-    return count
-```
 
 ```python run
 class Solution:
     def toggle_count(self, num1: int, num2: int) -> int:
-        diff = num1 ^ num2                          # 1s where bits differ
-        count = 0
-        while diff:
-            diff &= diff - 1                        # Clear lowest set bit (Kernighan)
+
+        # take XOR of num1 and num2 and store in num
+        num: int = num1 ^ num2
+
+        # Using Brian Kernighan's algorithm to count set bits
+
+        # count stores the total bits set in num
+        count: int = 0
+        while num:
+
+            # clear the least significant bit set
+            num = num & (num - 1)
             count += 1
+
         return count
 
 
-if __name__ == "__main__":
-    sol = Solution()
-    print(sol.toggle_count(10, 1))   # 3
-    print(sol.toggle_count(2, 3))    # 1
+# Examples from the problem statement
+print(Solution().toggle_count(10, 1))     # 3
+print(Solution().toggle_count(2, 3))      # 1
+print(Solution().toggle_count(9, 1))      # 1
+
+# Edge cases
+print(Solution().toggle_count(0, 0))      # 0
+print(Solution().toggle_count(5, 5))      # 0
+print(Solution().toggle_count(0, 7))      # 3
+print(Solution().toggle_count(15, 0))     # 4
+print(Solution().toggle_count(7, 1))      # 2
 ```
 
 ```java run
 public class Main {
     static class Solution {
         public int toggleCount(int num1, int num2) {
-            int diff = num1 ^ num2;
+
+            // take XOR of num1 and num2 and store in num
+            int num = num1 ^ num2;
+
+            // Using Brian Kernighan's algorithm to count set bits
+
+            // count stores the total bits set in num
             int count = 0;
-            while (diff != 0) { diff &= diff - 1; count++; }
+            while (num != 0) {
+
+                // clear the least significant bit set
+                num = num & (num - 1);
+                count++;
+            }
+
             return count;
         }
     }
 
     public static void main(String[] args) {
-        System.out.println(new Solution().toggleCount(10, 1));   // 3
+        // Examples from the problem statement
+        System.out.println(new Solution().toggleCount(10, 1));     // 3
+        System.out.println(new Solution().toggleCount(2, 3));      // 1
+        System.out.println(new Solution().toggleCount(9, 1));      // 1
+
+        // Edge cases
+        System.out.println(new Solution().toggleCount(0, 0));      // 0
+        System.out.println(new Solution().toggleCount(5, 5));      // 0
+        System.out.println(new Solution().toggleCount(0, 7));      // 3
+        System.out.println(new Solution().toggleCount(15, 0));     // 4
+        System.out.println(new Solution().toggleCount(7, 1));      // 2
     }
 }
 ```
 
-```c run
-#include <stdio.h>
-
-int toggle_count(int num1, int num2) {
-    int diff = num1 ^ num2, count = 0;
-    while (diff) { diff &= diff - 1; count++; }
-    return count;
-}
-
-int main(void) {
-    printf("%d\n", toggle_count(10, 1));   /* 3 */
-    return 0;
-}
-```
-
-```scala run
-object Main extends App {
-  class Solution {
-    def toggleCount(num1: Int, num2: Int): Int = Integer.bitCount(num1 ^ num2)
-  }
-
-  println(new Solution().toggleCount(10, 1))   // 3
-}
-```
+</details>
 
 
 ***
@@ -383,7 +387,9 @@ Input:  [1, 2, 1, 1, 2, 1, 1]                →  1
 Input:  [6, 7, 6, 7, 6, 7, 6]                →  7
 ```
 
-## The Recurrence — XOR All
+<details>
+<summary><h2>The Recurrence — XOR All</h2></summary>
+
 
 XOR every element. Pairs cancel; the odd-out survives. One linear pass; one accumulator variable.
 
@@ -391,32 +397,37 @@ XOR every element. Pairs cancel; the odd-out survives. One linear pass; one accu
 result = arr[0] ^ arr[1] ^ ... ^ arr[n-1]
 ```
 
-## The Solution
+</details>
+<details>
+<summary><h2>The Solution</h2></summary>
 
 
-```pseudocode
-# All elements appear an even number of times except one. XOR everything;
-# even occurrences cancel (a ^ a = 0); the lone odd-occurrence element survives.
-function oddOccurringElement(arr):
-    result ← 0
-    for each v in arr:
-        result ← result bitwise XOR v
-    return result
-```
 
 ```python run
 from typing import List
-from functools import reduce
-from operator import xor
 
 class Solution:
     def odd_occurring_element(self, arr: List[int]) -> int:
-        return reduce(xor, arr, 0)
+        result: int = 0
+        for val in arr:
+
+            # Perform bitwise XOR operation with each element
+            result ^= val
+
+        # Return the result (element with odd occurrences)
+        return result
 
 
-if __name__ == "__main__":
-    sol = Solution()
-    print(sol.odd_occurring_element([2, 2, 2, 1, 3, 1, 4, 3, 1, 4, 1]))   # 2
+# Examples from the problem statement
+print(Solution().odd_occurring_element([2, 2, 2, 1, 3, 1, 4, 3, 1, 4, 1]))    # 2
+print(Solution().odd_occurring_element([1, 2, 1, 1, 2, 1, 1]))                 # 1
+print(Solution().odd_occurring_element([6, 7, 6, 7, 6, 7, 6]))                 # 7
+
+# Edge cases
+print(Solution().odd_occurring_element([5]))                                    # 5
+print(Solution().odd_occurring_element([3, 3, 3]))                              # 3
+print(Solution().odd_occurring_element([1, 1, 2, 2, 3]))                        # 3
+print(Solution().odd_occurring_element([0, 0, 0]))                              # 0
 ```
 
 ```java run
@@ -424,42 +435,33 @@ public class Main {
     static class Solution {
         public int oddOccurringElement(int[] arr) {
             int result = 0;
-            for (int v : arr) result ^= v;
+            for (int val : arr) {
+
+                // Perform bitwise XOR operation with each element
+                result = result ^ val;
+            }
+
+            // Return the result (element with odd occurrences)
             return result;
         }
     }
 
     public static void main(String[] args) {
-        System.out.println(new Solution().oddOccurringElement(new int[]{2, 2, 2, 1, 3, 1, 4, 3, 1, 4, 1}));   // 2
+        // Examples from the problem statement
+        System.out.println(new Solution().oddOccurringElement(new int[]{2, 2, 2, 1, 3, 1, 4, 3, 1, 4, 1}));    // 2
+        System.out.println(new Solution().oddOccurringElement(new int[]{1, 2, 1, 1, 2, 1, 1}));                 // 1
+        System.out.println(new Solution().oddOccurringElement(new int[]{6, 7, 6, 7, 6, 7, 6}));                 // 7
+
+        // Edge cases
+        System.out.println(new Solution().oddOccurringElement(new int[]{5}));                                    // 5
+        System.out.println(new Solution().oddOccurringElement(new int[]{3, 3, 3}));                              // 3
+        System.out.println(new Solution().oddOccurringElement(new int[]{1, 1, 2, 2, 3}));                        // 3
+        System.out.println(new Solution().oddOccurringElement(new int[]{0, 0, 0}));                              // 0
     }
 }
 ```
 
-```c run
-#include <stdio.h>
-
-int odd_occurring_element(const int *arr, int n) {
-    int result = 0;
-    for (int i = 0; i < n; i++) result ^= arr[i];
-    return result;
-}
-
-int main(void) {
-    int a[] = {2, 2, 2, 1, 3, 1, 4, 3, 1, 4, 1};
-    printf("%d\n", odd_occurring_element(a, 11));   /* 2 */
-    return 0;
-}
-```
-
-```scala run
-object Main extends App {
-  class Solution {
-    def oddOccurringElement(arr: Array[Int]): Int = arr.foldLeft(0)(_ ^ _)
-  }
-
-  println(new Solution().oddOccurringElement(Array(2,2,2,1,3,1,4,3,1,4,1)))   // 2
-}
-```
+</details>
 
 
 ***
@@ -476,7 +478,9 @@ Input:  [1, 2, 1, 1, 2, 3, 1, 3, 1, 3]          →  [1, 3]
 Input:  [1, 2]                                  →  [1, 2]
 ```
 
-## The Recurrence — Partition by a Differing Bit
+<details>
+<summary><h2>The Recurrence — Partition by a Differing Bit</h2></summary>
+
 
 XOR everything: result = `a ^ b`, where `a, b` are the two odd-occurring elements.
 
@@ -511,115 +515,134 @@ flow: "Partition the array by the lowest bit where a and b differ" {
 
 Because `a != b` (otherwise they'd be the same element). At least one bit must differ; the *lowest* such bit is just the lowest set bit of `a ^ b`. If `a == b` had been allowed, `a ^ b = 0` and isolation would fail — but the problem rules out that case.
 
-## The Solution
+</details>
+<details>
+<summary><h2>The Solution</h2></summary>
 
 
-```pseudocode
-# Two elements occur an odd number of times. XOR everything → x = a ^ b ≠ 0.
-# Pick any bit set in x (lowest is convenient); a and b differ at that bit, so partition
-# the array by that bit into two buckets and XOR each independently.
-function oddOccurringElementII(arr):
-    xorAll ← 0
-    for each v in arr:
-        xorAll ← xorAll bitwise XOR v              # = a XOR b
-    diffBit ← xorAll bitwise AND (−xorAll)         # isolate any single bit where a, b differ
-    a ← 0; b ← 0
-    for each v in arr:
-        if (v bitwise AND diffBit) ≠ 0:
-            a ← a bitwise XOR v
-        else:
-            b ← b bitwise XOR v
-    return [a, b]
-```
 
 ```python run
 from typing import List
 
 class Solution:
     def odd_occurring_element_ii(self, arr: List[int]) -> List[int]:
-        xor_all = 0
-        for v in arr:
-            xor_all ^= v                            # = a ^ b
-        diff_bit = xor_all & -xor_all               # Isolate lowest differing bit
-        a = b = 0
-        for v in arr:
-            if v & diff_bit:
-                a ^= v                              # Bucket 1 — bit set
+        result: int = 0
+
+        # Finding the XOR of all elements in the array
+        for val in arr:
+            result = result ^ val
+
+        # Finding the position of the rightmost set bit in the result
+        rightMostSetBitPos: int = result & -result
+
+        num1: int = 0
+        num2: int = 0
+
+        # Splitting the array into two subarrays based on the rightmost
+        # set bit
+        for num in arr:
+
+            # If the rightmost set bit is set in the number
+            if num & rightMostSetBitPos:
+
+                # XOR the number with num1 to find the first odd
+                # occurring element
+                num1 = num1 ^ num
             else:
-                b ^= v                              # Bucket 2 — bit unset
-        return [a, b]
+
+                # XOR the number with num2 to find the second odd
+                # occurring element
+                num2 = num2 ^ num
+
+        # Return the two odd occurring elements as a list
+        return [num1, num2]
 
 
-if __name__ == "__main__":
-    sol = Solution()
-    print(sol.odd_occurring_element_ii([2,2,2,1,3,1,4,3,1,4,1,5]))   # [2, 5] (order may vary)
+# Examples from the problem statement
+print(sorted(Solution().odd_occurring_element_ii([2, 2, 2, 1, 3, 1, 4, 3, 1, 4, 1, 5])))    # [2, 5]
+print(sorted(Solution().odd_occurring_element_ii([1, 2, 1, 1, 2, 3, 1, 3, 1, 3])))           # [1, 3]
+print(sorted(Solution().odd_occurring_element_ii([1, 2])))                                    # [1, 2]
+
+# Edge cases
+print(sorted(Solution().odd_occurring_element_ii([3, 5])))                                    # [3, 5]
+print(sorted(Solution().odd_occurring_element_ii([7, 7, 7, 4])))                              # [4, 7]
+print(sorted(Solution().odd_occurring_element_ii([0, 1, 0, 0, 1, 1, 2, 2, 2, 3])))           # [1, 3]
 ```
 
 ```java run
-import java.util.Arrays;
+import java.util.*;
 
 public class Main {
     static class Solution {
-        public int[] oddOccurringElementII(int[] arr) {
-            int xorAll = 0;
-            for (int v : arr) xorAll ^= v;
-            int diffBit = xorAll & -xorAll;
-            int a = 0, b = 0;
-            for (int v : arr) {
-                if ((v & diffBit) != 0) a ^= v;
-                else b ^= v;
+        public List<Integer> oddOccurringElementII(int[] arr) {
+            int result = 0;
+
+            // Finding the XOR of all elements in the array
+            for (int val : arr) {
+                result = result ^ val;
             }
-            return new int[]{a, b};
+
+            // Finding the position of the rightmost set bit in the result
+            int rightMostSetBitPos = Integer.numberOfTrailingZeros(
+                result & -result
+            );
+
+            int num1 = 0, num2 = 0;
+
+            // Splitting the array into two subarrays based on the rightmost
+            // set bit
+            for (int num : arr) {
+
+                // If the rightmost set bit is set in the number
+                if ((num & (1 << rightMostSetBitPos)) != 0) {
+
+                    // XOR the number with num1 to find the first odd
+                    // occurring element
+                    num1 = num1 ^ num;
+                } else {
+
+                    // XOR the number with num2 to find the second odd
+                    // occurring element
+                    num2 = num2 ^ num;
+                }
+            }
+
+            List<Integer> resultArr = new ArrayList<>();
+
+            // Adding the two odd occurring elements to the result list
+            resultArr.add(num1);
+            resultArr.add(num2);
+
+            // Return the two odd occurring elements
+            return resultArr;
         }
     }
 
     public static void main(String[] args) {
-        System.out.println(Arrays.toString(new Solution().oddOccurringElementII(new int[]{2, 2, 2, 1, 3, 1, 4, 3, 1, 4, 1, 5})));   // [2, 5] (order may vary)
+        // Examples from the problem statement
+        List<Integer> r1 = new Solution().oddOccurringElementII(new int[]{2, 2, 2, 1, 3, 1, 4, 3, 1, 4, 1, 5});
+        Collections.sort(r1); System.out.println(r1);    // [2, 5]
+
+        List<Integer> r2 = new Solution().oddOccurringElementII(new int[]{1, 2, 1, 1, 2, 3, 1, 3, 1, 3});
+        Collections.sort(r2); System.out.println(r2);    // [1, 3]
+
+        List<Integer> r3 = new Solution().oddOccurringElementII(new int[]{1, 2});
+        Collections.sort(r3); System.out.println(r3);    // [1, 2]
+
+        // Edge cases
+        List<Integer> r4 = new Solution().oddOccurringElementII(new int[]{3, 5});
+        Collections.sort(r4); System.out.println(r4);    // [3, 5]
+
+        List<Integer> r5 = new Solution().oddOccurringElementII(new int[]{7, 7, 7, 4});
+        Collections.sort(r5); System.out.println(r5);    // [4, 7]
+
+        List<Integer> r6 = new Solution().oddOccurringElementII(new int[]{0, 1, 0, 0, 1, 1, 2, 2, 2, 3});
+        Collections.sort(r6); System.out.println(r6);    // [1, 3]
     }
 }
 ```
 
-```c run
-#include <stdio.h>
-
-void odd_occurring_element_ii(const int *arr, int n, int *out_a, int *out_b) {
-    int xor_all = 0;
-    for (int i = 0; i < n; i++) xor_all ^= arr[i];
-    int diff_bit = xor_all & -xor_all;
-    int a = 0, b = 0;
-    for (int i = 0; i < n; i++) {
-        if (arr[i] & diff_bit) a ^= arr[i];
-        else b ^= arr[i];
-    }
-    *out_a = a; *out_b = b;
-}
-
-int main(void) {
-    int a[] = {2,2,2,1,3,1,4,3,1,4,1,5};
-    int x, y;
-    odd_occurring_element_ii(a, 12, &x, &y);
-    printf("%d, %d\n", x, y);   /* 2, 5 (order may vary) */
-    return 0;
-}
-```
-
-```scala run
-object Main extends App {
-  class Solution {
-    def oddOccurringElementII(arr: Array[Int]): Array[Int] = {
-      val xorAll = arr.foldLeft(0)(_ ^ _)
-      val diffBit = xorAll & -xorAll
-      var a = 0; var b = 0
-      for (v <- arr) {
-        if ((v & diffBit) != 0) a ^= v else b ^= v
-      }
-      Array(a, b)
-    }
-  }
-
-  println(new Solution().oddOccurringElementII(Array(2,2,2,1,3,1,4,3,1,4,1,5)).mkString(","))
-}
-```
+</details>
 
 
 ***
@@ -636,7 +659,9 @@ Input:  [4, 1, 5, 3, 2, 5] →  5
 Input:  [1, 1]             →  1
 ```
 
-## The Recurrence — XOR Array Against XOR of `1..n-1`
+<details>
+<summary><h2>The Recurrence — XOR Array Against XOR of `1..n-1`</h2></summary>
+
 
 XOR all array elements together; XOR `1, 2, …, n-1` together; XOR those two results.
 
@@ -648,90 +673,88 @@ result = (arr[0] ^ arr[1] ^ ... ^ arr[n-1]) ^ (1 ^ 2 ^ ... ^ (n-1))
        = duplicate
 ```
 
-## The Solution
+</details>
+<details>
+<summary><h2>The Solution</h2></summary>
 
 
-```pseudocode
-# arr is 1..(n − 1) with one element repeated. XOR array with 1..(n − 1);
-# every value cancels except the duplicate, which survives.
-function duplicateElement(arr):
-    n ← length(arr)
-    result ← 0
-    for each v in arr:
-        result ← result bitwise XOR v
-    for i from 1 to n − 1:
-        result ← result bitwise XOR i
-    return result
-```
 
 ```python run
 from typing import List
 
 class Solution:
     def duplicate_element(self, arr: List[int]) -> int:
-        n = len(arr)
-        result = 0
-        for v in arr:
-            result ^= v                             # XOR array contents
+        n: int = len(arr)
+        num: int = 0
+
+        # take xor of all array elements
+        for i in range(n):
+            num ^= arr[i]
+
+        # take xor of numbers from 1 to `n-1`
         for i in range(1, n):
-            result ^= i                             # XOR 1..n-1
-        return result
+            num ^= i
+
+        # same elements will cancel each other as a ^ a = 0,
+        # 0 ^ 0 = 0 and a ^ 0 = a
+
+        # num will contain the missing number
+        return num
 
 
-if __name__ == "__main__":
-    sol = Solution()
-    print(sol.duplicate_element([1, 4, 3, 2, 2]))     # 2
-    print(sol.duplicate_element([4, 1, 5, 3, 2, 5]))  # 5
+# Examples from the problem statement
+print(Solution().duplicate_element([1, 4, 3, 2, 2]))     # 2
+print(Solution().duplicate_element([4, 1, 5, 3, 2, 5]))  # 5
+print(Solution().duplicate_element([1, 1]))               # 1
+
+# Edge cases
+print(Solution().duplicate_element([2, 1, 2]))            # 2
+print(Solution().duplicate_element([3, 1, 2, 3]))         # 3
+print(Solution().duplicate_element([1, 2, 3, 3]))         # 3
+print(Solution().duplicate_element([2, 2]))               # 2
 ```
 
 ```java run
 public class Main {
     static class Solution {
         public int duplicateElement(int[] arr) {
-            int n = arr.length, result = 0;
-            for (int v : arr) result ^= v;
-            for (int i = 1; i < n; i++) result ^= i;
-            return result;
+            int n = arr.length;
+            int num = 0;
+
+            // take xor of all array elements
+            for (int i = 0; i < n; i++) {
+                num ^= arr[i];
+            }
+
+            // take xor of numbers from 1 to `n-1`
+            for (int i = 1; i <= n - 1; i++) {
+                num ^= i;
+            }
+
+            // same elements will cancel each other as a ^ a = 0,
+            // 0 ^ 0 = 0 and a ^ 0 = a
+
+            // num will contain the missing number
+            return num;
         }
     }
 
     public static void main(String[] args) {
-        System.out.println(new Solution().duplicateElement(new int[]{1, 4, 3, 2, 2}));   // 2
+        // Examples from the problem statement
+        System.out.println(new Solution().duplicateElement(new int[]{1, 4, 3, 2, 2}));     // 2
+        System.out.println(new Solution().duplicateElement(new int[]{4, 1, 5, 3, 2, 5}));  // 5
+        System.out.println(new Solution().duplicateElement(new int[]{1, 1}));               // 1
+
+        // Edge cases
+        System.out.println(new Solution().duplicateElement(new int[]{2, 1, 2}));            // 2
+        System.out.println(new Solution().duplicateElement(new int[]{3, 1, 2, 3}));         // 3
+        System.out.println(new Solution().duplicateElement(new int[]{1, 2, 3, 3}));         // 3
+        System.out.println(new Solution().duplicateElement(new int[]{2, 2}));               // 2
     }
 }
 ```
 
-```c run
-#include <stdio.h>
-
-int duplicate_element(const int *arr, int n) {
-    int result = 0;
-    for (int i = 0; i < n; i++) result ^= arr[i];
-    for (int i = 1; i < n; i++) result ^= i;
-    return result;
-}
-
-int main(void) {
-    int a[] = {1, 4, 3, 2, 2};
-    printf("%d\n", duplicate_element(a, 5));   /* 2 */
-    return 0;
-}
-```
-
-```scala run
-object Main extends App {
-  class Solution {
-    def duplicateElement(arr: Array[Int]): Int = {
-      val n = arr.length
-      var result = arr.foldLeft(0)(_ ^ _)
-      for (i <- 1 until n) result ^= i
-      result
-    }
-  }
-
-  println(new Solution().duplicateElement(Array(1, 4, 3, 2, 2)))   // 2
-}
-```
+</details>
 
 
 ***
@@ -748,7 +771,9 @@ Input:  [2, 4, 1, 3, 6, 6] →  [5, 6]   (6 is duplicated, 5 is missing)
 Input:  [1, 1]             →  [1, 2]
 ```
 
-## The Recurrence — Same Trick as "Two Odd Elements"
+<details>
+<summary><h2>The Recurrence — Same Trick as "Two Odd Elements"</h2></summary>
+
 
 XOR the array together with `1..n`. Most elements cancel; only the missing and the duplicated survive — with the duplicated appearing 2× in the array and 1× in `1..n` (3 total → survives), and the missing appearing 0× in the array and 1× in `1..n` (1 total → survives). Result is `missing ^ duplicated`.
 
@@ -756,70 +781,80 @@ Now we have two unknowns and one equation — not enough. Apply the **odd-occurr
 
 Final step: figure out which value is the missing one (it's *not* in the array) and which is the duplicate. Linear scan to disambiguate.
 
-## The Solution
+</details>
+<details>
+<summary><h2>The Solution</h2></summary>
 
 
-```pseudocode
-# arr is 1..n with one missing and one duplicated. Combine the previous two tricks:
-# XOR array with 1..n → x = missing XOR duplicated. Partition on a differing bit.
-function missingAndDuplicated(arr):
-    n ← length(arr)
-    x ← 0
-    for each v in arr:
-        x ← x bitwise XOR v
-    for i from 1 to n:
-        x ← x bitwise XOR i
-
-    diffBit ← x bitwise AND (−x)
-    a ← 0; b ← 0
-    for each v in arr:
-        if (v bitwise AND diffBit) ≠ 0:
-            a ← a bitwise XOR v
-        else:
-            b ← b bitwise XOR v
-    for i from 1 to n:
-        if (i bitwise AND diffBit) ≠ 0:
-            a ← a bitwise XOR i
-        else:
-            b ← b bitwise XOR i
-
-    if a is not in arr:                            # a was the missing one
-        return [b, a]                              # [duplicated, missing]
-    return [a, b]
-```
 
 ```python run
 from typing import List
+import math
 
 class Solution:
-    def missing_and_duplicated(self, arr: List[int]) -> List[int]:
-        n = len(arr)
-        # Step 1: XOR array against 1..n.  Result = missing ^ duplicated.
-        x = n                                         # Start with n so we cover 1..n via XOR with i
-        for i, v in enumerate(arr):
-            x ^= v ^ i                                # i covers 0..n-1; combined with starting n we get 1..n
-        # Step 2: pick a differing bit and partition.
-        diff_bit = x & -x
-        a = b = 0
-        for v in arr:
-            if v & diff_bit:
-                a ^= v
+    def missing_and_duplicated_elements(
+        self, arr: List[int]
+    ) -> List[int]:
+        n: int = len(arr)
+
+        result: int = n
+
+        # XOR all the elements of the array with their indices and n
+        # The result will be the XOR of the missing and duplicate numbers
+        for i in range(n):
+            result = result ^ arr[i] ^ i
+
+        num1: int = 0
+        num2: int = 0
+
+        # Find the rightmost set bit position in the result
+        rightmost_set_bit_pos: int = int(math.log2(result & -result))
+
+        # XOR all the elements of the array based on the rightmost set
+        # bit position
+        for num in arr:
+
+            # The numbers with the rightmost set bit as 1 will XOR with
+            # num1
+            if num & (1 << rightmost_set_bit_pos):
+                num1 = num1 ^ num
+
+            # The numbers with the rightmost set bit as 0 will XOR with
+            # num2
             else:
-                b ^= v
+                num2 = num2 ^ num
+
+        # XOR all the numbers from 1 to n based on the rightmost set bit
+        # position
         for i in range(1, n + 1):
-            if i & diff_bit:
-                a ^= i
+
+            # The numbers with the rightmost set bit as 1 will XOR with
+            # num1
+            if i & (1 << rightmost_set_bit_pos):
+                num1 = num1 ^ i
+
+            # The numbers with the rightmost set bit as 0 will XOR with
+            # num2
             else:
-                b ^= i
-        # Step 3: identify which of a, b is the missing one.
-        if a not in arr:
-            return [b, a]                             # [duplicated, missing]
-        return [a, b]
+                num2 = num2 ^ i
+
+        # Check if num1 is missing in the array
+        # If it is missing, return [num2, num1], else return [num1, num2]
+        if num1 not in arr:
+            return [num2, num1]
+
+        return [num1, num2]
 
 
-if __name__ == "__main__":
-    sol = Solution()
-    print(sol.missing_and_duplicated([1, 5, 2, 4, 2]))   # [2, 3]
+# Examples from the problem statement
+print(Solution().missing_and_duplicated_elements([1, 5, 2, 4, 2]))       # [2, 3]
+print(Solution().missing_and_duplicated_elements([2, 4, 1, 3, 6, 6]))    # [5, 6]
+print(Solution().missing_and_duplicated_elements([1, 1]))                 # [1, 2]
+
+# Edge cases
+print(Solution().missing_and_duplicated_elements([2, 2]))                 # [1, 2]
+print(Solution().missing_and_duplicated_elements([1, 3, 3]))              # [2, 3]
+print(Solution().missing_and_duplicated_elements([3, 1, 2, 4, 4]))        # [5, 4]
 ```
 
 ```java run
@@ -827,77 +862,89 @@ import java.util.*;
 
 public class Main {
     static class Solution {
-        public int[] missingAndDuplicated(int[] arr) {
+        public List<Integer> missingAndDuplicatedElements(int[] arr) {
             int n = arr.length;
-            int x = n;
-            for (int i = 0; i < n; i++) x ^= arr[i] ^ i;
-            int diffBit = x & -x;
-            int a = 0, b = 0;
-            for (int v : arr) {
-                if ((v & diffBit) != 0) a ^= v; else b ^= v;
+
+            int result = n;
+
+            // XOR all the elements of the array with their indices and n
+            // The result will be the XOR of the missing and duplicate
+            // numbers
+            for (int i = 0; i < n; i++) {
+                result = result ^ arr[i] ^ i;
             }
+
+            int num1 = 0, num2 = 0;
+
+            // Find the rightmost set bit position in the result
+            int rightMostSetBitPos = Integer.numberOfTrailingZeros(result);
+
+            // XOR all the elements of the array based on the rightmost set
+            // bit position
+            for (int num : arr) {
+
+                // The numbers with the rightmost set bit as 1 will XOR with
+                // num1
+                if ((num & (1 << rightMostSetBitPos)) != 0) {
+                    num1 = num1 ^ num;
+                }
+
+                // The numbers with the rightmost set bit as 0 will XOR with
+                // num2
+                else {
+                    num2 = num2 ^ num;
+                }
+            }
+
+            // XOR all the numbers from 1 to n based on the rightmost set bit
+            // position
             for (int i = 1; i <= n; i++) {
-                if ((i & diffBit) != 0) a ^= i; else b ^= i;
+
+                // The numbers with the rightmost set bit as 1 will XOR with
+                // num1
+                if ((i & (1 << rightMostSetBitPos)) != 0) {
+                    num1 = num1 ^ i;
+                }
+
+                // The numbers with the rightmost set bit as 0 will XOR with
+                // num2
+                else {
+                    num2 = num2 ^ i;
+                }
             }
-            for (int v : arr) if (v == a) return new int[]{a, b};
-            return new int[]{b, a};
+
+            // Linear search for the missing element
+            boolean isNum1Found = false;
+            for (int num : arr) {
+                if (num == num1) {
+                    isNum1Found = true;
+                    break;
+                }
+            }
+
+            if (!isNum1Found) {
+                return List.of(num2, num1);
+            }
+
+            return List.of(num1, num2);
         }
     }
 
     public static void main(String[] args) {
-        System.out.println(Arrays.toString(new Solution().missingAndDuplicated(new int[]{1, 5, 2, 4, 2})));   // [2, 3]
+        // Examples from the problem statement
+        System.out.println(new Solution().missingAndDuplicatedElements(new int[]{1, 5, 2, 4, 2}));       // [2, 3]
+        System.out.println(new Solution().missingAndDuplicatedElements(new int[]{2, 4, 1, 3, 6, 6}));    // [5, 6]
+        System.out.println(new Solution().missingAndDuplicatedElements(new int[]{1, 1}));                 // [1, 2]
+
+        // Edge cases
+        System.out.println(new Solution().missingAndDuplicatedElements(new int[]{2, 2}));                 // [1, 2]
+        System.out.println(new Solution().missingAndDuplicatedElements(new int[]{1, 3, 3}));              // [2, 3]
+        System.out.println(new Solution().missingAndDuplicatedElements(new int[]{3, 1, 2, 4, 4}));        // [5, 4]
     }
 }
 ```
 
-```c run
-#include <stdio.h>
-#include <stdbool.h>
-
-void missing_and_duplicated(const int *arr, int n, int *out_dup, int *out_miss) {
-    int x = n;
-    for (int i = 0; i < n; i++) x ^= arr[i] ^ i;
-    int diff_bit = x & -x;
-    int a = 0, b = 0;
-    for (int i = 0; i < n; i++) {
-        if (arr[i] & diff_bit) a ^= arr[i]; else b ^= arr[i];
-    }
-    for (int i = 1; i <= n; i++) {
-        if (i & diff_bit) a ^= i; else b ^= i;
-    }
-    bool a_in_arr = false;
-    for (int i = 0; i < n; i++) if (arr[i] == a) { a_in_arr = true; break; }
-    if (a_in_arr) { *out_dup = a; *out_miss = b; }
-    else          { *out_dup = b; *out_miss = a; }
-}
-
-int main(void) {
-    int a[] = {1, 5, 2, 4, 2};
-    int dup, miss;
-    missing_and_duplicated(a, 5, &dup, &miss);
-    printf("dup=%d miss=%d\n", dup, miss);   /* dup=2 miss=3 */
-    return 0;
-}
-```
-
-```scala run
-object Main extends App {
-  class Solution {
-    def missingAndDuplicated(arr: Array[Int]): Array[Int] = {
-      val n = arr.length
-      var x = n
-      for (i <- 0 until n) x ^= arr(i) ^ i
-      val diffBit = x & -x
-      var a = 0; var b = 0
-      for (v <- arr) { if ((v & diffBit) != 0) a ^= v else b ^= v }
-      for (i <- 1 to n) { if ((i & diffBit) != 0) a ^= i else b ^= i }
-      if (!arr.contains(a)) Array(b, a) else Array(a, b)
-    }
-  }
-
-  println(new Solution().missingAndDuplicated(Array(1, 5, 2, 4, 2)).mkString(","))
-}
-```
+</details>
 
 
 ***

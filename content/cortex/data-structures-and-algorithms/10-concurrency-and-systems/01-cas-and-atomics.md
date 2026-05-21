@@ -222,54 +222,6 @@ public class Main {
 }
 ```
 
-```c run
-#include <stdio.h>
-#include <pthread.h>
-#include <stdatomic.h>
-
-atomic_int counter = 0;
-
-void *worker(void *arg) {
-    for (int i = 0; i < 10000; i++) {
-        int old, new;
-        do {
-            old = atomic_load(&counter);
-            new = old + 1;
-        } while (!atomic_compare_exchange_weak(&counter, &old, new));
-    }
-    return NULL;
-}
-
-int main(void) {
-    pthread_t threads[4];
-    for (int i = 0; i < 4; i++) pthread_create(&threads[i], NULL, worker, NULL);
-    for (int i = 0; i < 4; i++) pthread_join(threads[i], NULL);
-    printf("final count: %d (expected %d)\n", atomic_load(&counter), 4 * 10000);
-    return 0;
-}
-```
-
-```scala run
-import java.util.concurrent.atomic.AtomicInteger
-
-object Main extends App {
-  val counter = new AtomicInteger(0)
-
-  def incrementCAS(): Int = {
-    var oldVal = 0; var newVal = 0
-    while ({ oldVal = counter.get(); newVal = oldVal + 1; !counter.compareAndSet(oldVal, newVal) }) {}
-    newVal
-  }
-
-  val threads = (0 until 4).map { _ =>
-    new Thread(() => for (_ <- 0 until 10000) incrementCAS())
-  }
-  threads.foreach(_.start())
-  threads.foreach(_.join())
-  println(s"final count: ${counter.get()}")
-}
-```
-
 ***
 
 # Edge cases and pitfalls
@@ -309,49 +261,42 @@ Click any question to reveal the answer.
 **A:** If `*addr == expected`, write `new` and return success; otherwise leave `*addr` unchanged and return failure. All in one indivisible step.
 
 </details>
-
 <details>
 <summary><strong>Q:</strong> Standard idiom for atomic increment with CAS?</summary>
 
 **A:** ```do { old = counter; new = old + 1; } while (!CAS(&counter, old, new))```. Read, compute, retry on failure.
 
 </details>
-
 <details>
 <summary><strong>Q:</strong> What's the ABA problem?</summary>
 
 **A:** Thread A reads `X`. Thread B changes `X → Y → X`. Thread A's CAS succeeds, despite the underlying state having changed. For pointers, the original `X` may have been freed and reallocated.
 
 </details>
-
 <details>
 <summary><strong>Q:</strong> Two standard ABA mitigations?</summary>
 
 **A:** **Tagged pointers** (pair pointer + version counter; CAS the tuple via 128-bit double-CAS). **Hazard pointers / RCU / epoch reclamation** — defer freeing until no thread is reading.
 
 </details>
-
 <details>
 <summary><strong>Q:</strong> Memory orderings — five C++ standard options?</summary>
 
 **A:** `relaxed` (no inter-thread ordering), `acquire` (read), `release` (write), `acq_rel` (read-modify-write), `seq_cst` (sequentially consistent).
 
 </details>
-
 <details>
 <summary><strong>Q:</strong> Standard memory ordering for a CAS in a lock-free queue?</summary>
 
 **A:** `acq_rel` — `release` semantics on the write side, `acquire` semantics on the read side. Establishes the happens-before edge.
 
 </details>
-
 <details>
 <summary><strong>Q:</strong> Difference between <code>compare_exchange_strong</code> and <code>weak</code>?</summary>
 
 **A:** `strong` guarantees no spurious failure. `weak` may fail spuriously even when the comparison would succeed; faster on ARM/POWER. Use `weak` inside a retry loop.
 
 </details>
-
 <details>
 <summary><strong>Q:</strong> ARM / POWER alternative to CAS?</summary>
 
@@ -372,17 +317,6 @@ def increment():
         if counter.compare_and_swap(old, new):
             return new
         # else: someone else won; retry
-```
-
-```c
-// C11 atomics
-#include <stdatomic.h>
-atomic_int counter = 0;
-int old, new_;
-do {
-    old = atomic_load(&counter);
-    new_ = old + 1;
-} while (!atomic_compare_exchange_weak(&counter, &old, new_));
 ```
 
 ## Pattern triggers

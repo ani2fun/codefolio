@@ -12,7 +12,7 @@ So each call needs to *return* its own height (so the parent can compute its dia
 
 This is the **stateful postorder pattern**. Same postorder traversal as the previous lesson, but augmented with a *shared mutable* (a global counter, a hash map, a tuple of running stats) that each call updates as the recursion bubbles up. The state is *not* pushed and popped per node — it monotonically grows or refines as we go. That's the structural difference from stateful *preorder* (lesson 9): preorder mutates and undoes; postorder mutates and accumulates.
 
-This pattern unlocks a wide range of problems: tree diameter, longest mono-value paths, "count subtrees with property X", "distribute coins along edges", "find subtree sums with the highest frequency", and dozens of similar "two answers per node" problems. This lesson walks through the seven canonical examples, each with implementations in 10 languages.
+This pattern unlocks a wide range of problems: tree diameter, longest mono-value paths, "count subtrees with property X", "distribute coins along edges", "find subtree sums with the highest frequency", and dozens of similar "two answers per node" problems. This lesson walks through the seven canonical examples, each with implementations in Python and Java.
 
 ---
 
@@ -80,23 +80,10 @@ flowchart TB
 
 > **Why is the global state safe to share?** Because postorder updates are *monotone* — typically a `max` or `min` or a counter `+= 1`. Order of updates doesn't matter, and there's no need for "undo" because no later subtree's result can invalidate an earlier one's. This is the structural difference from stateful preorder (lesson 9), where state had to be pushed and popped to keep sibling subtrees from polluting each other.
 
-## Generic pattern in 10 languages
+## Generic pattern
 
 The template — diameter of a tree, since it's the canonical example.
 
-
-```pseudocode
-function diameter(root):
-    best ← 0                            # global state updated during traversal
-    function height(node):
-        if node = null: return 0
-        l ← height(node.left)
-        r ← height(node.right)
-        best ← max(best, l + r)         # diameter through this node = left height + right height
-        return 1 + max(l, r)            # height returned to parent
-    height(root)
-    return best
-```
 
 ```python run
 from typing import Optional
@@ -128,41 +115,6 @@ public static int diameter(TreeNode root) {
     best = 0;
     height(root);
     return best;
-}
-```
-
-```c run
-static int g_best;
-int height(TreeNode *n) {
-    if (!n) return 0;
-    int l = height(n->left), r = height(n->right);
-    if (l + r > g_best) g_best = l + r;
-    return 1 + (l > r ? l : r);
-}
-int diameter(TreeNode *root) { g_best = 0; height(root); return g_best; }
-```
-
-```scala run
-class TreeNode(var value: Int, var left: TreeNode = null, var right: TreeNode = null)
-
-object Main extends App {
-  class Solution {
-    def diameter(root: TreeNode): Int = {
-      var best = 0
-      def height(n: TreeNode): Int = {
-        if (n == null) return 0
-        val l = height(n.left); val r = height(n.right)
-        best = math.max(best, l + r)
-        1 + math.max(l, r)
-      }
-      height(root); best
-    }
-  }
-
-  val root = new TreeNode(1,
-    new TreeNode(2, new TreeNode(4), new TreeNode(5)),
-    new TreeNode(3))
-  println(new Solution().diameter(root))  // 3
 }
 ```
 
@@ -203,80 +155,171 @@ The implementation is exactly the generic template. The lesson here is *what to 
 
 Each subtree returns its sum (so the parent can compute its own); along the way, each call updates a global counter if `node.val == leftSum + rightSum`.
 
-## Solution
+<details>
+<summary><h2>Solution</h2></summary>
 
 
-```pseudocode
-function descendantsSumCount(root):
-    count ← 0
-    function sum_(n):
-        if n = null: return 0
-        l ← sum_(n.left); r ← sum_(n.right)
-        if n.val = l + r: count ← count + 1   # node equals sum of its descendants
-        return n.val + l + r
-    sum_(root)
-    return count
-```
 
 ```python run
-def descendants_sum_count(root):
-    count = [0]
-    def sum_(n):
-        if n is None: return 0
-        l = sum_(n.left); r = sum_(n.right)
-        if n.val == l + r: count[0] += 1
-        return n.val + l + r
-    sum_(root)
-    return count[0]
+from typing import Optional
+
+
+class TreeNode:
+    def __init__(self, val=0, left=None, right=None):
+        self.val = val
+        self.left = left
+        self.right = right
+
+
+def from_level_order(values):
+    """Build tree from list like [1, 2, 3, None, 4]. None means missing child."""
+    if not values:
+        return None
+    root = TreeNode(values[0])
+    queue = [root]
+    i = 1
+    while queue and i < len(values):
+        node = queue.pop(0)
+        if i < len(values) and values[i] is not None:
+            node.left = TreeNode(values[i])
+            queue.append(node.left)
+        i += 1
+        if i < len(values) and values[i] is not None:
+            node.right = TreeNode(values[i])
+            queue.append(node.right)
+        i += 1
+    return root
+
+
+class Solution:
+    def __init__(self):
+        self.count: int = 0
+
+    def compute_sum(self, root: Optional[TreeNode]) -> int:
+
+        # Base case: If the current node is NULL, return 0
+        if not root:
+            return 0
+
+        # Recursively compute the sum of the left and right subtrees
+        left_sum = self.compute_sum(root.left)
+        right_sum = self.compute_sum(root.right)
+
+        # If the value of the current node is equal to the sum of its
+        # descendants, increment the count
+        if root.val == left_sum + right_sum:
+            self.count += 1
+
+        # Return the sum of the current subtree, including the value
+        # of the current node
+        return left_sum + right_sum + root.val
+
+    def descendants_sum_count(self, root: Optional[TreeNode]) -> int:
+
+        # Call the compute_sum function to count the number of nodes
+        # satisfying the given condition
+        self.compute_sum(root)
+        return self.count
+
+
+# Examples from the problem statement
+print(Solution().descendants_sum_count(from_level_order([21, 7, 3, 5, 2, None, 4])))   # 2
+print(Solution().descendants_sum_count(from_level_order([5, 7, 3, 1, 2, None, 3])))    # 1
+
+# Edge cases
+print(Solution().descendants_sum_count(None))                                            # 0
+print(Solution().descendants_sum_count(from_level_order([0])))                           # 1 (single leaf: val==0==sum)
+print(Solution().descendants_sum_count(from_level_order([1])))                           # 0 (single leaf: 1!=0)
+print(Solution().descendants_sum_count(from_level_order([3, 1, 2])))                     # 1 (root: 3==1+2)
+print(Solution().descendants_sum_count(from_level_order([1, 2, None, 3, None, 4])))      # 0 (only-left skew)
+print(Solution().descendants_sum_count(from_level_order([6, 3, 3, 1, 2, 1, 2])))        # 3 (root + both internal nodes)
 ```
 
 ```java run
-static int dscCount;
-static int dscSum(TreeNode n) {
-    if (n == null) return 0;
-    int l = dscSum(n.left), r = dscSum(n.right);
-    if (n.val == l + r) dscCount++;
-    return n.val + l + r;
-}
-public static int descendantsSumCount(TreeNode root) {
-    dscCount = 0;
-    dscSum(root);
-    return dscCount;
-}
-```
+import java.util.*;
 
-```c run
-static int g_dsc_count;
-int dsc_sum(TreeNode *n) {
-    if (!n) return 0;
-    int l = dsc_sum(n->left), r = dsc_sum(n->right);
-    if (n->val == l + r) g_dsc_count++;
-    return n->val + l + r;
-}
-int descendants_sum_count(TreeNode *root) { g_dsc_count = 0; dsc_sum(root); return g_dsc_count; }
-```
-
-```scala run
-class TreeNode(var value: Int, var left: TreeNode = null, var right: TreeNode = null)
-
-object Main extends App {
-  class Solution {
-    def descendantsSumCount(root: TreeNode): Int = {
-      var count = 0
-      def go(n: TreeNode): Int = {
-        if (n == null) return 0
-        val l = go(n.left); val r = go(n.right)
-        if (n.value == l + r) count += 1
-        n.value + l + r
-      }
-      go(root); count
+public class Main {
+    static class TreeNode {
+        int val;
+        TreeNode left;
+        TreeNode right;
+        TreeNode() {}
+        TreeNode(int val) { this.val = val; }
     }
-  }
 
-  val root = new TreeNode(10, new TreeNode(6), new TreeNode(4))
-  println(new Solution().descendantsSumCount(root))  // 1
+    static TreeNode fromLevelOrder(Integer... values) {
+        if (values.length == 0 || values[0] == null) return null;
+        TreeNode root = new TreeNode(values[0]);
+        java.util.Deque<TreeNode> queue = new java.util.ArrayDeque<>();
+        queue.add(root);
+        int i = 1;
+        while (!queue.isEmpty() && i < values.length) {
+            TreeNode node = queue.poll();
+            if (i < values.length && values[i] != null) {
+                node.left = new TreeNode(values[i]);
+                queue.add(node.left);
+            }
+            i++;
+            if (i < values.length && values[i] != null) {
+                node.right = new TreeNode(values[i]);
+                queue.add(node.right);
+            }
+            i++;
+        }
+        return root;
+    }
+
+    static class Solution {
+        private int count = 0;
+
+        private int computeSum(TreeNode root) {
+
+            // Base case: If the current node is NULL, return 0
+            if (root == null) {
+                return 0;
+            }
+
+            // Recursively compute the sum of the left and right subtrees
+            int leftSum = computeSum(root.left);
+            int rightSum = computeSum(root.right);
+
+            // If the value of the current node is equal to the sum of its
+            // descendants, increment the count
+            if (root.val == leftSum + rightSum) {
+                count++;
+            }
+
+            // Return the sum of the current subtree, including the value
+            // of the current node
+            return leftSum + rightSum + root.val;
+        }
+
+        public int descendantsSumCount(TreeNode root) {
+
+            // Call the computeSum function to count the number of nodes
+            // satisfying the given condition
+            computeSum(root);
+            return count;
+        }
+    }
+
+    public static void main(String[] args) {
+        // Examples from the problem statement
+        System.out.println(new Solution().descendantsSumCount(fromLevelOrder(21, 7, 3, 5, 2, null, 4)));   // 2
+        System.out.println(new Solution().descendantsSumCount(fromLevelOrder(5, 7, 3, 1, 2, null, 3)));    // 1
+
+        // Edge cases
+        System.out.println(new Solution().descendantsSumCount(null));                                       // 0
+        System.out.println(new Solution().descendantsSumCount(fromLevelOrder(0)));                          // 1 (single leaf: val==0==sum)
+        System.out.println(new Solution().descendantsSumCount(fromLevelOrder(1)));                          // 0 (single leaf: 1!=0)
+        System.out.println(new Solution().descendantsSumCount(fromLevelOrder(3, 1, 2)));                    // 1 (root: 3==1+2)
+        System.out.println(new Solution().descendantsSumCount(fromLevelOrder(1, 2, null, 3)));              // 0 (only-left skew)
+        System.out.println(new Solution().descendantsSumCount(fromLevelOrder(6, 3, 3, 1, 2, 1, 2)));       // 3 (root + both internal nodes)
+    }
 }
 ```
+
+</details>
 
 
 ***
@@ -289,78 +332,177 @@ The trick: at every node, define *excess* = `(coins received from below) + node.
 
 So sum `|leftExcess|` and `|rightExcess|` at every node — that's the total moves through this node's two outgoing edges to its children.
 
-## Solution
+<details>
+<summary><h2>Solution</h2></summary>
 
 
-```pseudocode
-function distributeCoins(root):
-    moves ← 0
-    function excess(n):
-        if n = null: return 0
-        l ← excess(n.left); r ← excess(n.right)
-        moves ← moves + |l| + |r|   # each unit of excess flowing through an edge costs 1 move
-        return l + r + n.val − 1    # excess at this node (positive = surplus, negative = deficit)
-    excess(root)
-    return moves
-```
 
 ```python run
-def distribute_coins(root):
-    moves = [0]
-    def excess(n):
-        if n is None: return 0
-        l = excess(n.left); r = excess(n.right)
-        moves[0] += abs(l) + abs(r)
-        return l + r + n.val - 1
-    excess(root)
-    return moves[0]
+from typing import List, Optional
+
+
+class TreeNode:
+    def __init__(self, val=0, left=None, right=None):
+        self.val = val
+        self.left = left
+        self.right = right
+
+
+def from_level_order(values):
+    """Build tree from list like [1, 2, 3, None, 4]. None means missing child."""
+    if not values:
+        return None
+    root = TreeNode(values[0])
+    queue = [root]
+    i = 1
+    while queue and i < len(values):
+        node = queue.pop(0)
+        if i < len(values) and values[i] is not None:
+            node.left = TreeNode(values[i])
+            queue.append(node.left)
+        i += 1
+        if i < len(values) and values[i] is not None:
+            node.right = TreeNode(values[i])
+            queue.append(node.right)
+        i += 1
+    return root
+
+
+class Solution:
+
+    # Declare moves as a global variable outside the Solution class
+    moves: int = 0
+
+    def balance_coins(self, root: Optional[TreeNode]) -> int:
+
+        # base case: return 0 if the node is None
+        if root is None:
+            return 0
+
+        # recursively calculate the excess values for the left and
+        # right subtrees
+        left_excess: int = self.balance_coins(root.left)
+        right_excess: int = self.balance_coins(root.right)
+
+        # calculate the excess value for the current node
+        excess: int = left_excess + right_excess + root.val - 1
+
+        # add the absolute value of excess values for left and right
+        # subtrees to the total moves
+        self.moves += abs(left_excess) + abs(right_excess)
+        return excess
+
+    def distribute_coins(self, root: Optional[TreeNode]) -> int:
+
+        # call balance_coins function to calculate the excess values and
+        # update the global moves variable
+        self.balance_coins(root)
+
+        # return the total moves required
+        return self.moves
+
+
+# Examples from the problem statement
+print(Solution().distribute_coins(from_level_order([1, 2, 0])))   # 2
+print(Solution().distribute_coins(from_level_order([0, 3, 0])))   # 3
+
+# Edge cases
+print(Solution().distribute_coins(from_level_order([1])))                         # 0 (single node already balanced)
+print(Solution().distribute_coins(from_level_order([2, 0])))                      # 1 (move 1 coin from root to left)
+print(Solution().distribute_coins(from_level_order([0, 0, 3])))                   # 3
+print(Solution().distribute_coins(from_level_order([3, 0, 0])))                   # 2
+print(Solution().distribute_coins(from_level_order([1, 0, 2, None, None, 0, 0])))  # 3
+print(Solution().distribute_coins(from_level_order([1, 1, 1, 1, 1, 1, 1])))       # 0 (all balanced)
 ```
 
 ```java run
-static int g_moves;
-static int excess(TreeNode n) {
-    if (n == null) return 0;
-    int l = excess(n.left), r = excess(n.right);
-    g_moves += Math.abs(l) + Math.abs(r);
-    return l + r + n.val - 1;
-}
-public static int distributeCoins(TreeNode root) {
-    g_moves = 0; excess(root); return g_moves;
-}
-```
+import java.util.*;
 
-```c run
-static int g_moves;
-int excess(TreeNode *n) {
-    if (!n) return 0;
-    int l = excess(n->left), r = excess(n->right);
-    g_moves += (l < 0 ? -l : l) + (r < 0 ? -r : r);
-    return l + r + n->val - 1;
-}
-int distribute_coins(TreeNode *root) { g_moves = 0; excess(root); return g_moves; }
-```
-
-```scala run
-class TreeNode(var value: Int, var left: TreeNode = null, var right: TreeNode = null)
-
-object Main extends App {
-  class Solution {
-    def distributeCoins(root: TreeNode): Int = {
-      var moves = 0
-      def excess(n: TreeNode): Int = {
-        if (n == null) return 0
-        val l = excess(n.left); val r = excess(n.right)
-        moves += math.abs(l) + math.abs(r)
-        l + r + n.value - 1
-      }
-      excess(root); moves
+public class Main {
+    static class TreeNode {
+        int val;
+        TreeNode left;
+        TreeNode right;
+        TreeNode() {}
+        TreeNode(int val) { this.val = val; }
     }
-  }
 
-  val root = new TreeNode(3, new TreeNode(0), new TreeNode(0))
-  println(new Solution().distributeCoins(root))  // 2
+    static TreeNode fromLevelOrder(Integer... values) {
+        if (values.length == 0 || values[0] == null) return null;
+        TreeNode root = new TreeNode(values[0]);
+        java.util.Deque<TreeNode> queue = new java.util.ArrayDeque<>();
+        queue.add(root);
+        int i = 1;
+        while (!queue.isEmpty() && i < values.length) {
+            TreeNode node = queue.poll();
+            if (i < values.length && values[i] != null) {
+                node.left = new TreeNode(values[i]);
+                queue.add(node.left);
+            }
+            i++;
+            if (i < values.length && values[i] != null) {
+                node.right = new TreeNode(values[i]);
+                queue.add(node.right);
+            }
+            i++;
+        }
+        return root;
+    }
+
+    static class Solution {
+
+        // Declare moves as a global variable outside the Solution class
+        private int moves = 0;
+
+        private int balanceCoins(TreeNode root) {
+
+            // base case: return 0 if the node is null
+            if (root == null) {
+                return 0;
+            }
+
+            // recursively calculate the excess values for the left and
+            // right subtrees
+            int leftExcess = balanceCoins(root.left);
+            int rightExcess = balanceCoins(root.right);
+
+            // calculate the excess value for the current node
+            int excess = leftExcess + rightExcess + root.val - 1;
+
+            // add the absolute value of excess values for left and right
+            // subtrees to the total moves
+            moves += Math.abs(leftExcess) + Math.abs(rightExcess);
+            return excess;
+        }
+
+        public int distributeCoins(TreeNode root) {
+
+            // call balanceCoins function to calculate the excess values and
+            // update the global moves variable
+            balanceCoins(root);
+
+            // return the total moves required
+            return moves;
+        }
+    }
+
+    public static void main(String[] args) {
+        // Examples from the problem statement
+        System.out.println(new Solution().distributeCoins(fromLevelOrder(1, 2, 0)));   // 2
+        System.out.println(new Solution().distributeCoins(fromLevelOrder(0, 3, 0)));   // 3
+
+        // Edge cases
+        System.out.println(new Solution().distributeCoins(fromLevelOrder(1)));                          // 0 (single node)
+        System.out.println(new Solution().distributeCoins(fromLevelOrder(2, 0)));                       // 1
+        System.out.println(new Solution().distributeCoins(fromLevelOrder(0, 0, 3)));                    // 3
+        System.out.println(new Solution().distributeCoins(fromLevelOrder(3, 0, 0)));                    // 2
+        System.out.println(new Solution().distributeCoins(fromLevelOrder(1, 0, 2, null, null, 0, 0)));  // 3
+        System.out.println(new Solution().distributeCoins(fromLevelOrder(1, 1, 1, 1, 1, 1, 1)));        // 0 (all balanced)
+    }
 }
 ```
+
+</details>
 
 
 ***
@@ -371,90 +513,206 @@ object Main extends App {
 
 Each call returns its subtree sum (so the parent can compute its own); along the way, increment a frequency map and update a `maxFreq` tracker. After the recursion, scan the frequency map for entries equal to `maxFreq`.
 
-## Solution
+<details>
+<summary><h2>Solution</h2></summary>
 
 
-```pseudocode
-function mostFrequentSubtreeSum(root):
-    if root = null: return empty list
-    freq  ← empty Map: sum → count
-    maxF  ← 0
-    function go(n):
-        if n = null: return 0
-        s ← n.val + go(n.left) + go(n.right)
-        freq[s] ← freq[s] + 1
-        if freq[s] > maxF: maxF ← freq[s]
-        return s
-    go(root)
-    return all keys k in freq where freq[k] = maxF
-```
 
 ```python run
-def most_frequent_subtree_sum(root):
-    if root is None: return []
-    freq = {}
-    max_f = [0]
-    def go(n):
-        if n is None: return 0
-        s = n.val + go(n.left) + go(n.right)
-        freq[s] = freq.get(s, 0) + 1
-        if freq[s] > max_f[0]: max_f[0] = freq[s]
-        return s
-    go(root)
-    return [k for k, v in freq.items() if v == max_f[0]]
+from typing import Optional, List
+from collections import defaultdict
+
+
+class TreeNode:
+    def __init__(self, val=0, left=None, right=None):
+        self.val = val
+        self.left = left
+        self.right = right
+
+
+def from_level_order(values):
+    """Build tree from list like [1, 2, 3, None, 4]. None means missing child."""
+    if not values:
+        return None
+    root = TreeNode(values[0])
+    queue = [root]
+    i = 1
+    while queue and i < len(values):
+        node = queue.pop(0)
+        if i < len(values) and values[i] is not None:
+            node.left = TreeNode(values[i])
+            queue.append(node.left)
+        i += 1
+        if i < len(values) and values[i] is not None:
+            node.right = TreeNode(values[i])
+            queue.append(node.right)
+        i += 1
+    return root
+
+
+class Solution:
+    def __init__(self):
+
+        # Stores frequency of each subtree sum
+        self.freq: dict[int, int] = defaultdict(int)
+
+        # Tracks the highest frequency
+        self.max_freq: int = 0
+
+    def compute_subtree_sum(self, root: Optional[TreeNode]) -> int:
+
+        # Base case: return 0 for null nodes
+        if not root:
+            return 0
+
+        # Compute subtree sum recursively (postorder)
+        left_sum = self.compute_subtree_sum(root.left)
+        right_sum = self.compute_subtree_sum(root.right)
+        subtree_sum = root.val + left_sum + right_sum
+
+        # Update frequency map
+        self.freq[subtree_sum] += 1
+
+        # Track max frequency
+        self.max_freq = max(self.max_freq, self.freq[subtree_sum])
+
+        return subtree_sum
+
+    def most_frequent_subtree_sum(
+        self, root: Optional[TreeNode]
+    ) -> List[int]:
+
+        # Handle empty tree case
+        if not root:
+            return []
+
+        self.compute_subtree_sum(root)
+
+        # Collect all subtree sums with max frequency
+        return [
+            sum_
+            for sum_, count in self.freq.items()
+            if count == self.max_freq
+        ]
+
+
+# Examples from the problem statement
+print(sorted(Solution().most_frequent_subtree_sum(from_level_order([1, 2, 3]))))              # [2, 3, 6]
+print(sorted(Solution().most_frequent_subtree_sum(from_level_order([3, 8, 2, 1, None, 1, 6]))))  # [1, 9]
+
+# Edge cases
+print(Solution().most_frequent_subtree_sum(None))                                              # []
+print(Solution().most_frequent_subtree_sum(from_level_order([5])))                             # [5]
+print(sorted(Solution().most_frequent_subtree_sum(from_level_order([1, 1, 1]))))               # [1, 3] (1 appears twice)
+print(Solution().most_frequent_subtree_sum(from_level_order([1, 2, None, 3])))                 # [6] (root sum is unique max)
+print(Solution().most_frequent_subtree_sum(from_level_order([-1, -2, -3])))                    # [-6] all sums freq 1, root sum uniquely -6... actually all freq 1 so all returned
 ```
 
 ```java run
-static Map<Integer, Integer> g_freq;
-static int g_maxFreq;
-static int subSum(TreeNode n) {
-    if (n == null) return 0;
-    int s = n.val + subSum(n.left) + subSum(n.right);
-    int c = g_freq.merge(s, 1, Integer::sum);
-    if (c > g_maxFreq) g_maxFreq = c;
-    return s;
-}
-public static List<Integer> mostFrequentSubtreeSum(TreeNode root) {
-    g_freq = new HashMap<>(); g_maxFreq = 0;
-    if (root == null) return new ArrayList<>();
-    subSum(root);
-    List<Integer> out = new ArrayList<>();
-    for (Map.Entry<Integer, Integer> e : g_freq.entrySet())
-        if (e.getValue() == g_maxFreq) out.add(e.getKey());
-    return out;
-}
-```
+import java.util.*;
 
-```c run
-// (omitted for brevity — C lacks a hash map in stdlib; implement an open-addressing
-//  hash with the same algorithm)
-```
-
-```scala run
-class TreeNode(var value: Int, var left: TreeNode = null, var right: TreeNode = null)
-
-object Main extends App {
-  class Solution {
-    def mostFrequentSubtreeSum(root: TreeNode): List[Int] = {
-      if (root == null) return Nil
-      val freq = scala.collection.mutable.Map[Int, Int]()
-      var maxFreq = 0
-      def go(n: TreeNode): Int = {
-        if (n == null) return 0
-        val s = n.value + go(n.left) + go(n.right)
-        freq(s) = freq.getOrElse(s, 0) + 1
-        if (freq(s) > maxFreq) maxFreq = freq(s)
-        s
-      }
-      go(root)
-      freq.collect { case (k, v) if v == maxFreq => k }.toList
+public class Main {
+    static class TreeNode {
+        int val;
+        TreeNode left;
+        TreeNode right;
+        TreeNode() {}
+        TreeNode(int val) { this.val = val; }
     }
-  }
 
-  val root = new TreeNode(5, new TreeNode(2), new TreeNode(-5))
-  println(new Solution().mostFrequentSubtreeSum(root))  // List(2)
+    static TreeNode fromLevelOrder(Integer... values) {
+        if (values.length == 0 || values[0] == null) return null;
+        TreeNode root = new TreeNode(values[0]);
+        java.util.Deque<TreeNode> queue = new java.util.ArrayDeque<>();
+        queue.add(root);
+        int i = 1;
+        while (!queue.isEmpty() && i < values.length) {
+            TreeNode node = queue.poll();
+            if (i < values.length && values[i] != null) {
+                node.left = new TreeNode(values[i]);
+                queue.add(node.left);
+            }
+            i++;
+            if (i < values.length && values[i] != null) {
+                node.right = new TreeNode(values[i]);
+                queue.add(node.right);
+            }
+            i++;
+        }
+        return root;
+    }
+
+    static class Solution {
+
+        // Stores frequency of each subtree sum
+        private Map<Integer, Integer> freq = new HashMap<>();
+
+        // Tracks the highest frequency
+        private int maxFreq = 0;
+
+        private int computeSubtreeSum(TreeNode root) {
+
+            // Base case: return 0 for null nodes
+            if (root == null) {
+                return 0;
+            }
+
+            // Compute subtree sum recursively (postorder)
+            int leftSum = computeSubtreeSum(root.left);
+            int rightSum = computeSubtreeSum(root.right);
+            int subtreeSum = root.val + leftSum + rightSum;
+
+            // Update frequency map
+            freq.put(subtreeSum, freq.getOrDefault(subtreeSum, 0) + 1);
+
+            // Track max frequency
+            maxFreq = Math.max(maxFreq, freq.get(subtreeSum));
+
+            return subtreeSum;
+        }
+
+        public List<Integer> mostFrequentSubtreeSum(TreeNode root) {
+
+            // Handle empty tree case
+            if (root == null) {
+                return new ArrayList<>();
+            }
+
+            computeSubtreeSum(root);
+
+            // Collect all subtree sums with max frequency
+            List<Integer> result = new ArrayList<>();
+            for (var entry : freq.entrySet()) {
+                if (entry.getValue() == maxFreq) {
+                    result.add(entry.getKey());
+                }
+            }
+
+            return result;
+        }
+    }
+
+    public static void main(String[] args) {
+        // Examples from the problem statement
+        List<Integer> r1 = new Solution().mostFrequentSubtreeSum(fromLevelOrder(1, 2, 3));
+        Collections.sort(r1); System.out.println(r1);              // [2, 3, 6]
+
+        List<Integer> r2 = new Solution().mostFrequentSubtreeSum(fromLevelOrder(3, 8, 2, 1, null, 1, 6));
+        Collections.sort(r2); System.out.println(r2);              // [1, 9]
+
+        // Edge cases
+        System.out.println(new Solution().mostFrequentSubtreeSum(null));                          // []
+        System.out.println(new Solution().mostFrequentSubtreeSum(fromLevelOrder(5)));             // [5]
+
+        List<Integer> r3 = new Solution().mostFrequentSubtreeSum(fromLevelOrder(1, 1, 1));
+        Collections.sort(r3); System.out.println(r3);              // [1, 3]
+
+        System.out.println(new Solution().mostFrequentSubtreeSum(fromLevelOrder(1, 2, null, 3))); // [6]
+    }
 }
 ```
+
+</details>
 
 
 ***
@@ -465,90 +723,195 @@ object Main extends App {
 
 Same shape as diameter, with one twist: the height contribution from a child only counts if the child has the same value as the current node.
 
-## Solution
+<details>
+<summary><h2>Solution</h2></summary>
 
 
-```pseudocode
-function longestMonotonicPath(root):
-    best ← 0
-    function go(n):
-        if n = null: return 0
-        l ← go(n.left); r ← go(n.right)
-        la ← l + 1 if n.left  ≠ null AND n.left.val  = n.val else 0
-        ra ← r + 1 if n.right ≠ null AND n.right.val = n.val else 0
-        best ← max(best, la + ra)   # longest path through this node
-        return max(la, ra)          # longest arm returned to parent
-    go(root)
-    return best
-```
 
 ```python run
-def longest_monotonic_path(root):
-    best = [0]
-    def go(n):
-        if n is None: return 0
-        l = go(n.left); r = go(n.right)
-        la = l + 1 if n.left  and n.left.val  == n.val else 0
-        ra = r + 1 if n.right and n.right.val == n.val else 0
-        best[0] = max(best[0], la + ra)
-        return max(la, ra)
-    go(root)
-    return best[0]
+from typing import Optional
+
+
+class TreeNode:
+    def __init__(self, val=0, left=None, right=None):
+        self.val = val
+        self.left = left
+        self.right = right
+
+
+def from_level_order(values):
+    """Build tree from list like [1, 2, 3, None, 4]. None means missing child."""
+    if not values:
+        return None
+    root = TreeNode(values[0])
+    queue = [root]
+    i = 1
+    while queue and i < len(values):
+        node = queue.pop(0)
+        if i < len(values) and values[i] is not None:
+            node.left = TreeNode(values[i])
+            queue.append(node.left)
+        i += 1
+        if i < len(values) and values[i] is not None:
+            node.right = TreeNode(values[i])
+            queue.append(node.right)
+        i += 1
+    return root
+
+
+class Solution:
+
+    # Global variable to keep track of max length
+    maxLength: int = 0
+
+    def longest_monotonic_path_helper(
+        self, root: Optional[TreeNode]
+    ) -> int:
+        if not root:
+            return 0
+
+        # Recursively calculate the longest univalued path in the left
+        # subtree
+        leftLength = self.longest_monotonic_path_helper(root.left)
+
+        # Recursively calculate the longest univalued path in the right
+        # subtree
+        rightLength = self.longest_monotonic_path_helper(root.right)
+
+        leftArrow = 0
+        rightArrow = 0
+
+        # If the left child exists and has the same value as the current
+        # node, extend the path to the left
+        if root.left and root.left.val == root.val:
+            leftArrow = leftLength + 1
+
+        # If the right child exists and has the same value as the current
+        # node, extend the path to the right
+        if root.right and root.right.val == root.val:
+            rightArrow = rightLength + 1
+
+        # Update the maxLength if the combined path length is greater
+        self.maxLength = max(self.maxLength, leftArrow + rightArrow)
+
+        # Return the longest univalued path from the current node
+        return max(leftArrow, rightArrow)
+
+    def longest_monotonic_path(self, root: Optional[TreeNode]) -> int:
+        self.longest_monotonic_path_helper(root)
+        return self.maxLength
+
+
+# Examples from the problem statement
+print(Solution().longest_monotonic_path(from_level_order([1, 2, 5, 7, None, None, 3])))   # 0
+print(Solution().longest_monotonic_path(from_level_order([3, 8, 1, 8, None, 1, 1])))      # 2
+
+# Edge cases
+print(Solution().longest_monotonic_path(None))                                             # 0
+print(Solution().longest_monotonic_path(from_level_order([1])))                            # 0
+print(Solution().longest_monotonic_path(from_level_order([5, 5, 5])))                      # 2 (both children match root)
+print(Solution().longest_monotonic_path(from_level_order([5, 5, None, 5])))                # 2 (only-left skew all same)
+print(Solution().longest_monotonic_path(from_level_order([1, 1, 1, 1, 1, 1, 1])))         # 4 (full matching tree)
+print(Solution().longest_monotonic_path(from_level_order([1, 2, 3])))                      # 0 (no matches)
 ```
 
 ```java run
-static int g_lmpBest;
-static int lmp(TreeNode n) {
-    if (n == null) return 0;
-    int l = lmp(n.left), r = lmp(n.right);
-    int la = (n.left  != null && n.left.val  == n.val) ? l + 1 : 0;
-    int ra = (n.right != null && n.right.val == n.val) ? r + 1 : 0;
-    g_lmpBest = Math.max(g_lmpBest, la + ra);
-    return Math.max(la, ra);
-}
-public static int longestMonotonicPath(TreeNode root) {
-    g_lmpBest = 0; lmp(root); return g_lmpBest;
-}
-```
+import java.util.*;
 
-```c run
-static int g_lmp_best;
-int lmp(TreeNode *n) {
-    if (!n) return 0;
-    int l = lmp(n->left), r = lmp(n->right);
-    int la = (n->left  && n->left->val  == n->val) ? l + 1 : 0;
-    int ra = (n->right && n->right->val == n->val) ? r + 1 : 0;
-    if (la + ra > g_lmp_best) g_lmp_best = la + ra;
-    return la > ra ? la : ra;
-}
-int longest_monotonic_path(TreeNode *root) { g_lmp_best = 0; lmp(root); return g_lmp_best; }
-```
-
-```scala run
-class TreeNode(var value: Int, var left: TreeNode = null, var right: TreeNode = null)
-
-object Main extends App {
-  class Solution {
-    def longestMonotonicPath(root: TreeNode): Int = {
-      var best = 0
-      def go(n: TreeNode): Int = {
-        if (n == null) return 0
-        val l = go(n.left); val r = go(n.right)
-        val la = if (n.left  != null && n.left.value  == n.value) l + 1 else 0
-        val ra = if (n.right != null && n.right.value == n.value) r + 1 else 0
-        best = math.max(best, la + ra)
-        math.max(la, ra)
-      }
-      go(root); best
+public class Main {
+    static class TreeNode {
+        int val;
+        TreeNode left;
+        TreeNode right;
+        TreeNode() {}
+        TreeNode(int val) { this.val = val; }
     }
-  }
 
-  val root = new TreeNode(1,
-    new TreeNode(1, new TreeNode(1), null),
-    new TreeNode(1))
-  println(new Solution().longestMonotonicPath(root))  // 3
+    static TreeNode fromLevelOrder(Integer... values) {
+        if (values.length == 0 || values[0] == null) return null;
+        TreeNode root = new TreeNode(values[0]);
+        java.util.Deque<TreeNode> queue = new java.util.ArrayDeque<>();
+        queue.add(root);
+        int i = 1;
+        while (!queue.isEmpty() && i < values.length) {
+            TreeNode node = queue.poll();
+            if (i < values.length && values[i] != null) {
+                node.left = new TreeNode(values[i]);
+                queue.add(node.left);
+            }
+            i++;
+            if (i < values.length && values[i] != null) {
+                node.right = new TreeNode(values[i]);
+                queue.add(node.right);
+            }
+            i++;
+        }
+        return root;
+    }
+
+    static class Solution {
+
+        // Global variable to keep track of max length
+        private int maxLength = 0;
+
+        private int longestMonotonicPathHelper(TreeNode root) {
+            if (root == null) {
+                return 0;
+            }
+
+            // Recursively calculate the longest univalued path in the left
+            // subtree
+            int leftLength = longestMonotonicPathHelper(root.left);
+
+            // Recursively calculate the longest univalued path in the right
+            // subtree
+            int rightLength = longestMonotonicPathHelper(root.right);
+
+            int leftArrow = 0;
+            int rightArrow = 0;
+
+            // If the left child exists and has the same value as the current
+            // node, extend the path to the left
+            if (root.left != null && root.left.val == root.val) {
+                leftArrow = leftLength + 1;
+            }
+
+            // If the right child exists and has the same value as the
+            // current node, extend the path to the right
+            if (root.right != null && root.right.val == root.val) {
+                rightArrow = rightLength + 1;
+            }
+
+            // Update the maxLength if the combined path length is greater
+            maxLength = Math.max(maxLength, leftArrow + rightArrow);
+
+            // Return the longest univalued path from the current node
+            return Math.max(leftArrow, rightArrow);
+        }
+
+        public int longestMonotonicPath(TreeNode root) {
+            longestMonotonicPathHelper(root);
+            return maxLength;
+        }
+    }
+
+    public static void main(String[] args) {
+        // Examples from the problem statement
+        System.out.println(new Solution().longestMonotonicPath(fromLevelOrder(1, 2, 5, 7, null, null, 3)));   // 0
+        System.out.println(new Solution().longestMonotonicPath(fromLevelOrder(3, 8, 1, 8, null, 1, 1)));      // 2
+
+        // Edge cases
+        System.out.println(new Solution().longestMonotonicPath(null));                                         // 0
+        System.out.println(new Solution().longestMonotonicPath(fromLevelOrder(1)));                            // 0
+        System.out.println(new Solution().longestMonotonicPath(fromLevelOrder(5, 5, 5)));                      // 2
+        System.out.println(new Solution().longestMonotonicPath(fromLevelOrder(5, 5, null, 5)));                // 2
+        System.out.println(new Solution().longestMonotonicPath(fromLevelOrder(1, 1, 1, 1, 1, 1, 1)));         // 4
+        System.out.println(new Solution().longestMonotonicPath(fromLevelOrder(1, 2, 3)));                      // 0
+    }
 }
 ```
+
+</details>
 
 
 ***
@@ -559,95 +922,191 @@ object Main extends App {
 
 Each call returns whether *its* subtree is mono-valued; along the way, increment a global counter when it is. A subtree is mono-valued iff: both children's subtrees are mono-valued, *and* both children (if they exist) have the same value as the current node.
 
-## Solution
+<details>
+<summary><h2>Solution</h2></summary>
 
 
-```pseudocode
-function monotonicSubtreeCount(root):
-    count ← 0
-    function go(n):
-        if n = null: return true
-        lOk ← go(n.left); rOk ← go(n.right)
-        if NOT lOk OR NOT rOk: return false   # subtree already broken
-        if n.left  ≠ null AND n.left.val  ≠ n.val: return false
-        if n.right ≠ null AND n.right.val ≠ n.val: return false
-        count ← count + 1
-        return true
-    go(root)
-    return count
-```
 
 ```python run
-def monotonic_subtree_count(root):
-    count = [0]
-    def go(n):
-        if n is None: return True
-        l_ok = go(n.left); r_ok = go(n.right)
-        if not l_ok or not r_ok: return False
-        if n.left  and n.left.val  != n.val: return False
-        if n.right and n.right.val != n.val: return False
-        count[0] += 1
+from typing import Optional, List
+
+
+class TreeNode:
+    def __init__(self, val=0, left=None, right=None):
+        self.val = val
+        self.left = left
+        self.right = right
+
+
+def from_level_order(values):
+    """Build tree from list like [1, 2, 3, None, 4]. None means missing child."""
+    if not values:
+        return None
+    root = TreeNode(values[0])
+    queue = [root]
+    i = 1
+    while queue and i < len(values):
+        node = queue.pop(0)
+        if i < len(values) and values[i] is not None:
+            node.left = TreeNode(values[i])
+            queue.append(node.left)
+        i += 1
+        if i < len(values) and values[i] is not None:
+            node.right = TreeNode(values[i])
+            queue.append(node.right)
+        i += 1
+    return root
+
+
+class Solution:
+    def __init__(self):
+
+        # To store the number of monotonic subtrees
+        self.subtree_count: int = 0
+
+    def is_monotonic_subtree(self, root: Optional[TreeNode]) -> bool:
+
+        # An empty node is trivially monotonic
+        if not root:
+            return True
+
+        # Check if the left child is monotonic
+        left_monotonic = self.is_monotonic_subtree(root.left)
+
+        # Check if the right child is monotonic
+        right_monotonic = self.is_monotonic_subtree(root.right)
+
+        # If either left or right subtree is not monotonic, return False
+        if not left_monotonic or not right_monotonic:
+            return False
+
+        # If the left child exists and does not have the same value,
+        # return False
+        if root.left and root.left.val != root.val:
+            return False
+
+        # If the right child exists and does not have the same value,
+        # return False
+        if root.right and root.right.val != root.val:
+            return False
+
+        # This node and its children form a monotonic subtree
+        self.subtree_count += 1
         return True
-    go(root)
-    return count[0]
+
+    def monotonic_subtree_count(self, root: Optional[TreeNode]) -> int:
+        self.is_monotonic_subtree(root)
+        return self.subtree_count
+
+
+# Examples from the problem statement
+print(Solution().monotonic_subtree_count(from_level_order([1, 1, 5, 1, None, None, 5])))   # 4
+print(Solution().monotonic_subtree_count(from_level_order([3, 8, 1, 8, None, 1, 1])))      # 5
+
+# Edge cases
+print(Solution().monotonic_subtree_count(None))                                              # 0
+print(Solution().monotonic_subtree_count(from_level_order([7])))                             # 1 (single leaf)
+print(Solution().monotonic_subtree_count(from_level_order([1, 2, 3])))                       # 0 (no monotonic subtrees)
+print(Solution().monotonic_subtree_count(from_level_order([2, 2, 2])))                       # 3 (all three)
+print(Solution().monotonic_subtree_count(from_level_order([1, 1, 1, 1, 1, 1, 1])))          # 7 (all subtrees monotonic)
 ```
 
 ```java run
-static int g_msCount;
-static boolean ms(TreeNode n) {
-    if (n == null) return true;
-    boolean l = ms(n.left), r = ms(n.right);
-    if (!l || !r) return false;
-    if (n.left  != null && n.left.val  != n.val) return false;
-    if (n.right != null && n.right.val != n.val) return false;
-    g_msCount++;
-    return true;
-}
-public static int monotonicSubtreeCount(TreeNode root) {
-    g_msCount = 0; ms(root); return g_msCount;
-}
-```
+import java.util.*;
 
-```c run
-static int g_count;
-int ms(TreeNode *n) {
-    if (!n) return 1;
-    int l = ms(n->left), r = ms(n->right);
-    if (!l || !r) return 0;
-    if (n->left  && n->left->val  != n->val) return 0;
-    if (n->right && n->right->val != n->val) return 0;
-    g_count++;
-    return 1;
-}
-int monotonic_subtree_count(TreeNode *root) { g_count = 0; ms(root); return g_count; }
-```
-
-```scala run
-class TreeNode(var value: Int, var left: TreeNode = null, var right: TreeNode = null)
-
-object Main extends App {
-  class Solution {
-    def monotonicSubtreeCount(root: TreeNode): Int = {
-      var count = 0
-      def go(n: TreeNode): Boolean = {
-        if (n == null) return true
-        val lOk = go(n.left); val rOk = go(n.right)
-        if (!lOk || !rOk) return false
-        if (n.left  != null && n.left.value  != n.value) return false
-        if (n.right != null && n.right.value != n.value) return false
-        count += 1
-        true
-      }
-      go(root); count
+public class Main {
+    static class TreeNode {
+        int val;
+        TreeNode left;
+        TreeNode right;
+        TreeNode() {}
+        TreeNode(int val) { this.val = val; }
     }
-  }
 
-  val root = new TreeNode(5,
-    new TreeNode(1, new TreeNode(5), new TreeNode(5)),
-    new TreeNode(5, null, new TreeNode(5)))
-  println(new Solution().monotonicSubtreeCount(root))  // 4
+    static TreeNode fromLevelOrder(Integer... values) {
+        if (values.length == 0 || values[0] == null) return null;
+        TreeNode root = new TreeNode(values[0]);
+        java.util.Deque<TreeNode> queue = new java.util.ArrayDeque<>();
+        queue.add(root);
+        int i = 1;
+        while (!queue.isEmpty() && i < values.length) {
+            TreeNode node = queue.poll();
+            if (i < values.length && values[i] != null) {
+                node.left = new TreeNode(values[i]);
+                queue.add(node.left);
+            }
+            i++;
+            if (i < values.length && values[i] != null) {
+                node.right = new TreeNode(values[i]);
+                queue.add(node.right);
+            }
+            i++;
+        }
+        return root;
+    }
+
+    static class Solution {
+
+        // To store the number of monotonic subtrees
+        private int subtreeCount = 0;
+
+        private boolean isMonotonicSubtree(TreeNode root) {
+
+            // An empty node is trivially monotonic
+            if (root == null) {
+                return true;
+            }
+
+            // Check if the left child is monotonic
+            boolean leftMonotonic = isMonotonicSubtree(root.left);
+
+            // Check if the right child is monotonic
+            boolean rightMonotonic = isMonotonicSubtree(root.right);
+
+            // If either left or right subtree is not monotonic, return false
+            if (!leftMonotonic || !rightMonotonic) {
+                return false;
+            }
+
+            // If the left child exists and does not have the same value,
+            // return false
+            if (root.left != null && root.left.val != root.val) {
+                return false;
+            }
+
+            // If the right child exists and does not have the same value,
+            // return false
+            if (root.right != null && root.right.val != root.val) {
+                return false;
+            }
+
+            // This node and its children form a monotonic subtree
+            subtreeCount++;
+            return true;
+        }
+
+        public int monotonicSubtreeCount(TreeNode root) {
+            isMonotonicSubtree(root);
+            return subtreeCount;
+        }
+    }
+
+    public static void main(String[] args) {
+        // Examples from the problem statement
+        System.out.println(new Solution().monotonicSubtreeCount(fromLevelOrder(1, 1, 5, 1, null, null, 5)));   // 4
+        System.out.println(new Solution().monotonicSubtreeCount(fromLevelOrder(3, 8, 1, 8, null, 1, 1)));      // 5
+
+        // Edge cases
+        System.out.println(new Solution().monotonicSubtreeCount(null));                                         // 0
+        System.out.println(new Solution().monotonicSubtreeCount(fromLevelOrder(7)));                            // 1
+        System.out.println(new Solution().monotonicSubtreeCount(fromLevelOrder(1, 2, 3)));                      // 0
+        System.out.println(new Solution().monotonicSubtreeCount(fromLevelOrder(2, 2, 2)));                      // 3
+        System.out.println(new Solution().monotonicSubtreeCount(fromLevelOrder(1, 1, 1, 1, 1, 1, 1)));         // 7
+    }
 }
 ```
+
+</details>
 
 
 ***
@@ -660,95 +1119,226 @@ This problem is interesting because it combines *both* preorder push-pop *and* p
 
 This is a hybrid pattern, but it's traditionally taught with the postorder patterns because the *answer accumulates* upward like the others.
 
-## Solution
+<details>
+<summary><h2>Solution</h2></summary>
 
 
-```pseudocode
-function pathSumCount(root, target):
-    prefix ← Map: {0 → 1}    # empty prefix has sum 0
-    answer ← 0
-    function go(n, run):
-        if n = null: return
-        run ← run + n.val
-        answer ← answer + prefix.get(run − target, default 0)   # how many earlier prefixes make a valid subpath
-        prefix[run] ← prefix.get(run, 0) + 1
-        go(n.left, run); go(n.right, run)
-        prefix[run] ← prefix[run] − 1   # undo on backtrack
-        if prefix[run] = 0: remove run from prefix
-    go(root, 0)
-    return answer
-```
 
 ```python run
-def path_sum_count(root, target):
-    prefix = {0: 1}                              # base: empty prefix has sum 0
-    answer = [0]
-    def go(n, run):
-        if n is None: return
-        run += n.val
-        answer[0] += prefix.get(run - target, 0)
-        prefix[run] = prefix.get(run, 0) + 1
-        go(n.left, run); go(n.right, run)
-        prefix[run] -= 1
-        if prefix[run] == 0: del prefix[run]
-    go(root, 0)
-    return answer[0]
+from collections import defaultdict
+from typing import Optional
+
+
+class TreeNode:
+    def __init__(self, val=0, left=None, right=None):
+        self.val = val
+        self.left = left
+        self.right = right
+
+
+def from_level_order(values):
+    """Build tree from list like [1, 2, 3, None, 4]. None means missing child."""
+    if not values:
+        return None
+    root = TreeNode(values[0])
+    queue = [root]
+    i = 1
+    while queue and i < len(values):
+        node = queue.pop(0)
+        if i < len(values) and values[i] is not None:
+            node.left = TreeNode(values[i])
+            queue.append(node.left)
+        i += 1
+        if i < len(values) and values[i] is not None:
+            node.right = TreeNode(values[i])
+            queue.append(node.right)
+        i += 1
+    return root
+
+
+class Solution:
+    def __init__(self):
+
+        # Create a map to store the count of prefix sums encountered
+        # so far.
+        self.prefix_sum_count: defaultdict[int, int] = defaultdict(int)
+
+    def find_paths(
+        self, root: Optional[TreeNode], target: int, path_sum: int
+    ) -> int:
+
+        # Base case: If the node is None, we've reached the end of a
+        # path, so return 0.
+        if not root:
+            return 0
+
+        # Calculate the current sum by adding the value of the
+        # current node to the previous sum.
+        path_sum += root.val
+
+        # Check if there is a prefix sum (path_sum - target) in the
+        # prefix_sum_count map. If such a prefix sum exists, it means
+        # there is a subpath with the target sum ending at the current
+        # node. Increment the count of such subpaths.
+        num_paths = self.prefix_sum_count.get(path_sum - target, 0)
+
+        # Add the current sum to the prefix_sum_count map to keep track
+        # of it. This is to be used by future nodes in the recursive
+        # traversal.
+        self.prefix_sum_count[path_sum] = (
+            self.prefix_sum_count.get(path_sum, 0) + 1
+        )
+
+        # Recursively traverse the left and right subtrees, updating the
+        # current sum and counting the subpaths.
+        num_paths += self.find_paths(root.left, target, path_sum)
+        num_paths += self.find_paths(root.right, target, path_sum)
+
+        # Backtrack by removing the current sum from the prefix sum
+        # count map. This is to ensure that the prefix sum count is
+        # accurate for future nodes.
+        self.prefix_sum_count[path_sum] -= 1
+
+        # Return the total number of subpaths with the target sum found
+        # so far.
+        return num_paths
+
+    def path_sum_count(
+        self, root: Optional[TreeNode], target: int
+    ) -> int:
+
+        # Add initial prefix sum of 0
+        self.prefix_sum_count[0] = 1
+
+        # Start the recursive traversal from the root node with an
+        # initial sum of 0.
+        return self.find_paths(root, target, 0)
+
+
+# Examples from the problem statement
+print(Solution().path_sum_count(from_level_order([1, 2, 3, 4, None, None, 7]), 11))   # 1
+print(Solution().path_sum_count(from_level_order([1, 8, 4, None, None, 2, 7]), 11))   # 1
+
+# Edge cases
+print(Solution().path_sum_count(None, 5))                                               # 0
+print(Solution().path_sum_count(from_level_order([5]), 5))                              # 1 (root only)
+print(Solution().path_sum_count(from_level_order([5]), 1))                              # 0
+print(Solution().path_sum_count(from_level_order([1, 2, 3, 4, 5]), 3))                 # 2 (1+2, 3)
+print(Solution().path_sum_count(from_level_order([0, 1, -1, None, None, 1, None]), 0)) # 3
+print(Solution().path_sum_count(from_level_order([1, 1, 1]), 2))                        # 2
 ```
 
 ```java run
-static Map<Integer, Integer> g_prefix;
-static int g_answer;
-static void psc(TreeNode n, int target, int run) {
-    if (n == null) return;
-    run += n.val;
-    g_answer += g_prefix.getOrDefault(run - target, 0);
-    g_prefix.merge(run, 1, Integer::sum);
-    psc(n.left, target, run); psc(n.right, target, run);
-    if (g_prefix.get(run) == 1) g_prefix.remove(run);
-    else g_prefix.merge(run, -1, Integer::sum);
-}
-public static int pathSumCount(TreeNode root, int target) {
-    g_prefix = new HashMap<>(); g_prefix.put(0, 1); g_answer = 0;
-    psc(root, target, 0);
-    return g_answer;
-}
-```
+import java.util.*;
 
-```c run
-// (omitted — needs an int->int hash map; use the same algorithm as above
-//  with a bespoke open-addressing table)
-```
-
-```scala run
-class TreeNode(var value: Int, var left: TreeNode = null, var right: TreeNode = null)
-
-object Main extends App {
-  class Solution {
-    def pathSumCount(root: TreeNode, target: Int): Int = {
-      val prefix = scala.collection.mutable.Map[Int, Int](0 -> 1)
-      var answer = 0
-      def go(n: TreeNode, run: Int): Unit = {
-        if (n == null) return
-        val newRun = run + n.value
-        answer += prefix.getOrElse(newRun - target, 0)
-        prefix(newRun) = prefix.getOrElse(newRun, 0) + 1
-        go(n.left,  newRun); go(n.right, newRun)
-        val c = prefix(newRun) - 1
-        if (c == 0) prefix.remove(newRun) else prefix(newRun) = c
-      }
-      go(root, 0); answer
+public class Main {
+    static class TreeNode {
+        int val;
+        TreeNode left;
+        TreeNode right;
+        TreeNode() {}
+        TreeNode(int val) { this.val = val; }
     }
-  }
 
-  val root = new TreeNode(1, new TreeNode(2), new TreeNode(3))
-  println(new Solution().pathSumCount(root, 4))  // 1
+    static TreeNode fromLevelOrder(Integer... values) {
+        if (values.length == 0 || values[0] == null) return null;
+        TreeNode root = new TreeNode(values[0]);
+        java.util.Deque<TreeNode> queue = new java.util.ArrayDeque<>();
+        queue.add(root);
+        int i = 1;
+        while (!queue.isEmpty() && i < values.length) {
+            TreeNode node = queue.poll();
+            if (i < values.length && values[i] != null) {
+                node.left = new TreeNode(values[i]);
+                queue.add(node.left);
+            }
+            i++;
+            if (i < values.length && values[i] != null) {
+                node.right = new TreeNode(values[i]);
+                queue.add(node.right);
+            }
+            i++;
+        }
+        return root;
+    }
+
+    static class Solution {
+
+        // Create a map to store the count of prefix sums encountered
+        // so far.
+        private Map<Integer, Integer> prefixSumCount = new HashMap<>();
+
+        private int findPaths(TreeNode root, int target, int pathSum) {
+
+            // Base case: If the node is null, we've reached the end of a
+            // path, so return 0.
+            if (root == null) {
+                return 0;
+            }
+
+            // Calculate the current sum by adding the value of the
+            // current node to the previous sum.
+            pathSum += root.val;
+
+            // Check if there is a prefix sum (pathSum - target) in the
+            // prefixSumCount map. If such a prefix sum exists, it means
+            // there is a subpath with the target sum ending at the current
+            // node. Increment the count of such subpaths.
+            int numPaths = prefixSumCount.getOrDefault(pathSum - target, 0);
+
+            // Add the current sum to the prefixSumCount map to keep track of
+            // it. This is to be used by future nodes in the recursive
+            // traversal.
+            prefixSumCount.put(
+                pathSum,
+                prefixSumCount.getOrDefault(pathSum, 0) + 1
+            );
+
+            // Recursively traverse the left and right subtrees, updating the
+            // current sum and counting the subpaths.
+            numPaths += findPaths(root.left, target, pathSum);
+            numPaths += findPaths(root.right, target, pathSum);
+
+            // Backtrack by removing the current sum from the prefix sum
+            // count map. This is to ensure that the prefix sum count is
+            // accurate for future nodes.
+            prefixSumCount.put(pathSum, prefixSumCount.get(pathSum) - 1);
+
+            // Return the total number of subpaths with the target sum found
+            // so far.
+            return numPaths;
+        }
+
+        public int pathSumCount(TreeNode root, int target) {
+
+            // Add initial prefix sum of 0
+            prefixSumCount.put(0, 1);
+
+            // Start the recursive traversal from the root node with an
+            // initial sum of 0.
+            return findPaths(root, target, 0);
+        }
+    }
+
+    public static void main(String[] args) {
+        // Examples from the problem statement
+        System.out.println(new Solution().pathSumCount(fromLevelOrder(1, 2, 3, 4, null, null, 7), 11));   // 1
+        System.out.println(new Solution().pathSumCount(fromLevelOrder(1, 8, 4, null, null, 2, 7), 11));   // 1
+
+        // Edge cases
+        System.out.println(new Solution().pathSumCount(null, 5));                                          // 0
+        System.out.println(new Solution().pathSumCount(fromLevelOrder(5), 5));                             // 1
+        System.out.println(new Solution().pathSumCount(fromLevelOrder(5), 1));                             // 0
+        System.out.println(new Solution().pathSumCount(fromLevelOrder(1, 2, 3, 4, 5), 3));                // 2
+        System.out.println(new Solution().pathSumCount(fromLevelOrder(1, 1, 1), 2));                       // 2
+    }
 }
 ```
 
+</details>
+<details>
+<summary><h2>Final Takeaway</h2></summary>
 
-***
-
-## Final Takeaway
 
 Stateful postorder is the most *flexible* of the binary-tree patterns — it absorbs almost every "compute X for every subtree, also track a global Y" question. Three things to walk away with:
 
@@ -757,3 +1347,5 @@ Stateful postorder is the most *flexible* of the binary-tree patterns — it abs
 3. **Prefix-sum hashing is a force multiplier.** The path-sum-count problem shows how a *combined* preorder-push-pop + postorder-aggregate + prefix-sum-hash can solve in O(N) what a naive O(N²) per-node "look at every ancestor" would do. The same technique recurs in array problems (subarray sum equals K) — internalise the idea.
 
 > *Coming up — the chapter shifts focus from "compute X over the whole tree" to <strong>root-to-leaf path</strong> problems. Where the postorder patterns thought about subtrees, the next two lessons focus on whole paths from the root down to leaves: counting them, listing them, comparing them. The same backtracking template you saw in stateful preorder reappears, but specialised for the path-as-a-unit framing.*
+
+</details>

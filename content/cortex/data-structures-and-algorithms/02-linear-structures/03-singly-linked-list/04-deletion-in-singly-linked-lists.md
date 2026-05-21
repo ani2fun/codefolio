@@ -102,92 +102,74 @@ Update **head** to hold the reference of the next node (the second node), effect
 ## Implementation
 
 
-```pseudocode
-function deleteFirstNode(head):
-    if head is null:
-        return null
-    return head.next                                   # advance head; GC reclaims the old head
-```
-
 ```python run
+"""
+Definition for singly-linked list.
 class ListNode:
-    def __init__(self, val=0, next=None):
-        self.val = val; self.next = next
+    def __init__(self, val):
+        self.val = val
+        self.next = None
+"""
+
+from typing import Optional
 
 class Solution:
-    def delete_first_node(self, head):
-        if head is None:
-            return None       # Empty list — nothing to delete
-        return head.next      # Advance head; GC reclaims the old head node
+    def delete_first_node(
+        self, head: Optional[ListNode]
+    ) -> Optional[ListNode]:
 
-n4=ListNode(10); n3=ListNode(3,n4); n2=ListNode(7,n3); n1=ListNode(5,n2)
-head = Solution().delete_first_node(n1)
-vals=[]; cur=head
-while cur: vals.append(cur.val); cur=cur.next
-print(vals)  # [7, 3, 10]
+        # Check if the list is empty
+        if head is None:
+
+            # Return None since there are no nodes to delete
+            return None
+
+        # Create a temporary pointer to store the current head node
+        node_to_be_deleted: ListNode = head
+
+        # Move the head pointer to the next node
+        head = head.next
+
+        # Delete the original head node to free memory
+        del node_to_be_deleted
+
+        # Return the new head node
+        return head
 ```
 
 ```java run
-public class Main {
-    static class ListNode { int val; ListNode next; ListNode(int v){val=v;} }
+/**
+ * Definition for singly-linked list.
+ * class ListNode {
+ *     int val;
+ *     ListNode next;
+ *     ListNode() {}
+ *     ListNode(int val) { this.val = val; }
+ * };
+ */
 
-    static class Solution {
-        public ListNode deleteFirstNode(ListNode head) {
-            if (head == null) return null;  // Empty list — nothing to delete
-            return head.next;  // Advance head; GC reclaims the old head node
+class Solution {
+    public ListNode deleteFirstNode(ListNode head) {
+
+        // Check if the list is empty
+        if (head == null) {
+
+            // Return null since there are no nodes to delete
+            return null;
         }
+
+        // Create a temporary pointer to store the current head node
+        ListNode nodeToBeDeleted = head;
+
+        // Move the head pointer to the next node
+        head = head.next;
+
+        // Delete the original head node to free memory
+        nodeToBeDeleted = null;
+
+        // Return the new head node
+        return head;
     }
-
-    public static void main(String[] args) {
-        ListNode n1=new ListNode(5),n2=new ListNode(7),
-                 n3=new ListNode(3),n4=new ListNode(10);
-        n1.next=n2; n2.next=n3; n3.next=n4;
-        ListNode head = new Solution().deleteFirstNode(n1);
-        for (ListNode c=head;c!=null;c=c.next) System.out.print(c.val+" ");
-        // 7 3 10
-    }
-}
-```
-
-```c run
-#include <stdio.h>
-#include <stdlib.h>
-
-typedef struct ListNode { int val; struct ListNode *next; } ListNode;
-ListNode* newNode(int v){ ListNode*n=malloc(sizeof*n); n->val=v; n->next=NULL; return n; }
-
-ListNode* deleteFirstNode(ListNode *head) {
-    if (!head) return NULL;       /* Empty list — nothing to delete */
-    ListNode *old = head;
-    head = head->next;            /* Advance head to second node */
-    free(old);                    /* Free the unlinked node to avoid memory leak */
-    return head;
-}
-
-int main() {
-    ListNode *n1=newNode(5),*n2=newNode(7),*n3=newNode(3),*n4=newNode(10);
-    n1->next=n2; n2->next=n3; n3->next=n4;
-    ListNode *head = deleteFirstNode(n1);
-    for (ListNode *c=head;c;c=c->next) printf("%d ",c->val);  /* 7 3 10 */
-    return 0;
-}
-```
-
-```scala run
-class ListNode(var v: Int, var next: ListNode = null)
-
-object Main extends App {
-  class Solution {
-    def deleteFirstNode(head: ListNode): ListNode = {
-      if (head == null) return null  // Empty list — nothing to delete
-      head.next                      // Advance head; GC reclaims the old node
-    }
-  }
-
-  val n4=new ListNode(10); val n3=new ListNode(3,n4)
-  val n2=new ListNode(7,n3); val n1=new ListNode(5,n2)
-  var head = new Solution().deleteFirstNode(n1)
-  while (head!=null) { print(s"${head.v} "); head=head.next }  // 7 3 10
 }
 ```
 
@@ -214,84 +196,101 @@ Given the **head** of a singly linked list, write a function to delete the first
 > -   **Input:** head = \[5, 7, 3, 10\]
 > -   **Output:** \[7, 3, 10\]
 
-## Solution
+<details>
+<summary><h2>Solution</h2></summary>
 
 
-```pseudocode
-function deleteFirstNode(head):
-    # Check if the list is empty
-    if head is null:
-
-        # Return null since there are no nodes to delete
-        return null
-
-    # Create a temporary pointer to store the current head node
-    nodeToBeDeleted ← head
-
-    # Move the head pointer to the next node
-    head ← head.next
-
-    # Delete the original head node to free memory
-    nodeToBeDeleted ← null
-
-    # Return the new head node
-    return head
-```
 
 ```python run
+from typing import Optional
+
+
 class ListNode:
-    def __init__(self, val=0, next=None):
+    def __init__(self, val=0, nxt=None):
         self.val = val
-        self.next = next
+        self.next = nxt
 
-def delete_first_node(head):
 
-    # Check if the list is empty
-    if head is None:
-
-        # Return None since there are no nodes to delete
+def from_list(values):
+    if not values:
         return None
-
-    # Create a temporary pointer to store the current head node
-    node_to_be_deleted = head
-
-    # Move the head pointer to the next node
-    head = head.next
-
-    # Delete the original head node to free memory
-    del node_to_be_deleted
-
-    # Return the new head node
-    return head
-
-# --- driver ---
-def build(vals):
-    dummy = ListNode(0)
-    cur = dummy
-    for v in vals:
+    head = ListNode(values[0])
+    cur = head
+    for v in values[1:]:
         cur.next = ListNode(v)
         cur = cur.next
-    return dummy.next
+    return head
+
 
 def to_list(head):
-    result = []
-    while head:
-        result.append(head.val)
+    out = []
+    while head is not None:
+        out.append(head.val)
         head = head.next
-    return result
+    return out
 
-head = build([5, 7, 3, 10])
-head = delete_first_node(head)
-print(to_list(head))  # [7, 3, 10]
+
+class Solution:
+    def delete_first_node(
+        self, head: Optional[ListNode]
+    ) -> Optional[ListNode]:
+
+        # Check if the list is empty
+        if head is None:
+
+            # Return None since there are no nodes to delete
+            return None
+
+        # Create a temporary pointer to store the current head node
+        node_to_be_deleted: ListNode = head
+
+        # Move the head pointer to the next node
+        head = head.next
+
+        # Delete the original head node to free memory
+        del node_to_be_deleted
+
+        # Return the new head node
+        return head
+
+
+# Example from the problem statement
+print(to_list(Solution().delete_first_node(from_list([5, 7, 3, 10]))))  # [7, 3, 10]
+
+# Edge cases
+print(to_list(Solution().delete_first_node(None)))                       # []
+print(to_list(Solution().delete_first_node(from_list([42]))))            # []
+print(to_list(Solution().delete_first_node(from_list([1, 2]))))          # [2]
+print(to_list(Solution().delete_first_node(from_list([1, 2, 3, 4, 5])))) # [2, 3, 4, 5]
 ```
 
 ```java run
+import java.util.*;
+
 public class Main {
     static class ListNode {
         int val;
         ListNode next;
-        ListNode(int v) { val = v; }
-        ListNode(int v, ListNode n) { val = v; next = n; }
+        ListNode() {}
+        ListNode(int val) { this.val = val; }
+        ListNode(int val, ListNode next) { this.val = val; this.next = next; }
+    }
+
+    static ListNode fromList(int... values) {
+        if (values.length == 0) return null;
+        ListNode head = new ListNode(values[0]);
+        ListNode cur = head;
+        for (int i = 1; i < values.length; i++) {
+            cur.next = new ListNode(values[i]);
+            cur = cur.next;
+        }
+        return head;
+    }
+
+    static List<Integer> toList(ListNode head) {
+        List<Integer> out = new ArrayList<>();
+        while (head != null) { out.add(head.val); head = head.next; }
+        return out;
     }
 
     static class Solution {
@@ -316,145 +315,22 @@ public class Main {
             // Return the new head node
             return head;
         }
-
-        public ListNode build(int[] vals) {
-            ListNode dummy = new ListNode(0);
-            ListNode cur = dummy;
-            for (int v : vals) { cur.next = new ListNode(v); cur = cur.next; }
-            return dummy.next;
-        }
-
-        public String toStr(ListNode head) {
-            StringBuilder sb = new StringBuilder("[");
-            while (head != null) {
-                sb.append(head.val);
-                if (head.next != null) sb.append(", ");
-                head = head.next;
-            }
-            return sb.append("]").toString();
-        }
     }
 
     public static void main(String[] args) {
-        Solution sol = new Solution();
-        ListNode head = sol.build(new int[]{5, 7, 3, 10});
-        head = sol.deleteFirstNode(head);
-        System.out.println(sol.toStr(head)); // [7, 3, 10]
+        // Example from the problem statement
+        System.out.println(toList(new Solution().deleteFirstNode(fromList(5, 7, 3, 10))));  // [7, 3, 10]
+
+        // Edge cases
+        System.out.println(toList(new Solution().deleteFirstNode(null)));                   // []
+        System.out.println(toList(new Solution().deleteFirstNode(fromList(42))));           // []
+        System.out.println(toList(new Solution().deleteFirstNode(fromList(1, 2))));         // [2]
+        System.out.println(toList(new Solution().deleteFirstNode(fromList(1, 2, 3, 4, 5)))); // [2, 3, 4, 5]
     }
 }
 ```
 
-```c run
-#include <stdio.h>
-#include <stdlib.h>
-
-typedef struct ListNode {
-    int val;
-    struct ListNode *next;
-} ListNode;
-
-ListNode* newNode(int v) {
-    ListNode *n = malloc(sizeof(ListNode));
-    n->val = v;
-    n->next = NULL;
-    return n;
-}
-
-ListNode* deleteFirstNode(ListNode *head) {
-
-    /* Check if the list is empty */
-    if (head == NULL) {
-
-        /* Return NULL since there are no nodes to delete */
-        return NULL;
-    }
-
-    /* Create a temporary pointer to store the current head node */
-    ListNode *nodeToBeDeleted = head;
-
-    /* Move the head pointer to the next node */
-    head = head->next;
-
-    /* Delete the original head node to free memory */
-    free(nodeToBeDeleted);
-
-    /* Return the new head node */
-    return head;
-}
-
-ListNode* build(int *vals, int n) {
-    ListNode dummy = {0, NULL};
-    ListNode *cur = &dummy;
-    for (int i = 0; i < n; i++) { cur->next = newNode(vals[i]); cur = cur->next; }
-    return dummy.next;
-}
-
-void printList(ListNode *head) {
-    printf("[");
-    while (head) { printf("%d", head->val); if (head->next) printf(", "); head = head->next; }
-    printf("]\n");
-}
-
-int main() {
-    int vals[] = {5, 7, 3, 10};
-    ListNode *head = build(vals, 4);
-    head = deleteFirstNode(head);
-    printList(head); // [7, 3, 10]
-    return 0;
-}
-```
-
-```scala run
-class ListNode(var v: Int, var next: ListNode = null)
-
-object Main extends App {
-  class Solution {
-    def deleteFirstNode(head: ListNode): ListNode = {
-
-      // Check if the list is empty
-      if (head == null) {
-
-        // Return null since there are no nodes to delete
-        return null
-      }
-
-      // Create a temporary pointer to store the current head node
-      var nodeToBeDeleted = head
-
-      // Move the head pointer to the next node
-      val newHead = head.next
-
-      // Delete the original head node to free memory
-      nodeToBeDeleted = null
-
-      // Return the new head node
-      newHead
-    }
-
-    def build(vals: Int*): ListNode = {
-      val dummy = new ListNode(0)
-      var cur = dummy
-      for (v <- vals) { cur.next = new ListNode(v); cur = cur.next }
-      dummy.next
-    }
-
-    def toStr(head: ListNode): String = {
-      val sb = new StringBuilder("[")
-      var cur = head
-      while (cur != null) {
-        sb.append(cur.v)
-        if (cur.next != null) sb.append(", ")
-        cur = cur.next
-      }
-      sb.append("]").toString
-    }
-  }
-
-  val sol = new Solution()
-  val head = sol.deleteFirstNode(sol.build(5, 7, 3, 10))
-  println(sol.toStr(head)) // [7, 3, 10]
-}
-```
+</details>
 
 
 ***
@@ -861,123 +737,121 @@ Given the **head** of a singly linked list, write a function to delete the last 
 > -   **Input:** head = \[5, 7, 3, 10\]
 > -   **Output:** \[5, 7, 3\]
 
-## Solution
+<details>
+<summary><h2>Solution</h2></summary>
 
 
-```pseudocode
-function deleteLastNode(head):
-
-    # If the list is empty, there's nothing to delete
-    if head is null:
-        return null
-
-    # If there's only one node in the list, delete it and return null
-    if head.next is null:
-        head ← null
-        return null
-
-    # current node being iterated
-    current ← head
-
-    # previous node
-    previous ← null
-
-    # Traverse the list until the last node is reached
-    while current is not null AND current.next is not null:
-
-        # Move the previous pointer to the current node
-        previous ← current
-
-        # Move the current pointer to the next node
-        current ← current.next
-
-    # At this point, current is pointing to the last node and
-    # previous is pointing to the second-to-last node. Update the
-    # next pointer of the second-to-last node to skip the last node
-    previous.next ← current.next
-
-    # Delete the last node
-    current ← null
-
-    # Return the updated head of the list
-    return head
-```
 
 ```python run
+from typing import Optional
+
+
 class ListNode:
-    def __init__(self, val=0, next=None):
+    def __init__(self, val=0, nxt=None):
         self.val = val
-        self.next = next
+        self.next = nxt
 
-def delete_last_node(head):
 
-    if head is None:
-
-        # If the list is empty, there's nothing to delete
+def from_list(values):
+    if not values:
         return None
-
-    if head.next is None:
-
-        # If there's only one node in the list, delete it and return
-        # None
-        head = None
-        return None
-
-    # current node being iterated
-    current = head
-
-    # previous node
-    previous = None
-
-    # Traverse the list until the last node is reached
-    while current is not None and current.next is not None:
-
-        # Move the previous pointer to the current node
-        previous = current
-
-        # Move the current pointer to the next node
-        current = current.next
-
-    # At this point, current is pointing to the last node and
-    # previous is pointing to the second-to-last node. Update the
-    # next pointer of the second-to-last node to skip the last node
-    if previous and current:
-        previous.next = current.next
-
-    # Delete the last node
-    current = None
-
-    # Return the updated head of the list
-    return head
-
-# --- driver ---
-def build(vals):
-    dummy = ListNode(0)
-    cur = dummy
-    for v in vals:
+    head = ListNode(values[0])
+    cur = head
+    for v in values[1:]:
         cur.next = ListNode(v)
         cur = cur.next
-    return dummy.next
+    return head
+
 
 def to_list(head):
-    result = []
-    while head:
-        result.append(head.val)
+    out = []
+    while head is not None:
+        out.append(head.val)
         head = head.next
-    return result
+    return out
 
-head = build([5, 7, 3, 10])
-head = delete_last_node(head)
-print(to_list(head))  # [5, 7, 3]
+
+class Solution:
+    def delete_last_node(
+        self, head: Optional[ListNode]
+    ) -> Optional[ListNode]:
+        if head is None:
+
+            # If the list is empty, there's nothing to delete
+            return None
+
+        if head.next is None:
+
+            # If there's only one node in the list, delete it and return
+            # None
+            head = None
+            return None
+
+        # current node being iterated
+        current: Optional[ListNode] = head
+
+        # previous node
+        previous: Optional[ListNode] = None
+
+        # Traverse the list until the last node is reached
+        while current is not None and current.next is not None:
+
+            # Move the previous pointer to the current node
+            previous = current
+
+            # Move the current pointer to the next node
+            current = current.next
+
+        # At this point, current is pointing to the last node and
+        # previous is pointing to the second-to-last node. Update the
+        # next pointer of the second-to-last node to skip the last node
+        if previous and current:
+            previous.next = current.next
+
+        # Delete the last node
+        current = None
+
+        # Return the updated head of the list
+        return head
+
+
+# Example from the problem statement
+print(to_list(Solution().delete_last_node(from_list([5, 7, 3, 10]))))  # [5, 7, 3]
+
+# Edge cases
+print(to_list(Solution().delete_last_node(None)))                       # []
+print(to_list(Solution().delete_last_node(from_list([42]))))            # []
+print(to_list(Solution().delete_last_node(from_list([1, 2]))))          # [1]
+print(to_list(Solution().delete_last_node(from_list([1, 2, 3, 4, 5])))) # [1, 2, 3, 4]
 ```
 
 ```java run
+import java.util.*;
+
 public class Main {
     static class ListNode {
         int val;
         ListNode next;
-        ListNode(int v) { val = v; }
-        ListNode(int v, ListNode n) { val = v; next = n; }
+        ListNode() {}
+        ListNode(int val) { this.val = val; }
+        ListNode(int val, ListNode next) { this.val = val; this.next = next; }
+    }
+
+    static ListNode fromList(int... values) {
+        if (values.length == 0) return null;
+        ListNode head = new ListNode(values[0]);
+        ListNode cur = head;
+        for (int i = 1; i < values.length; i++) {
+            cur.next = new ListNode(values[i]);
+            cur = cur.next;
+        }
+        return head;
+    }
+
+    static List<Integer> toList(ListNode head) {
+        List<Integer> out = new ArrayList<>();
+        while (head != null) { out.add(head.val); head = head.next; }
+        return out;
     }
 
     static class Solution {
@@ -989,7 +863,7 @@ public class Main {
             }
 
             // If there's only one node in the list, delete it and return
-            // null
+            // nullptr
             if (head.next == null) {
                 head = null;
                 return null;
@@ -1012,7 +886,7 @@ public class Main {
             }
 
             // At this point, current is pointing to the last node and
-            // previous is pointing to the second-to-last node. Update the
+            // previous is pointing to the second-to-last node Update the
             // next pointer of the second-to-last node to skip the last node
             previous.next = current.next;
 
@@ -1022,177 +896,22 @@ public class Main {
             // Return the updated head of the list
             return head;
         }
-
-        public ListNode build(int[] vals) {
-            ListNode dummy = new ListNode(0);
-            ListNode cur = dummy;
-            for (int v : vals) { cur.next = new ListNode(v); cur = cur.next; }
-            return dummy.next;
-        }
-
-        public String toStr(ListNode head) {
-            StringBuilder sb = new StringBuilder("[");
-            while (head != null) {
-                sb.append(head.val);
-                if (head.next != null) sb.append(", ");
-                head = head.next;
-            }
-            return sb.append("]").toString();
-        }
     }
 
     public static void main(String[] args) {
-        Solution sol = new Solution();
-        ListNode head = sol.build(new int[]{5, 7, 3, 10});
-        head = sol.deleteLastNode(head);
-        System.out.println(sol.toStr(head)); // [5, 7, 3]
+        // Example from the problem statement
+        System.out.println(toList(new Solution().deleteLastNode(fromList(5, 7, 3, 10))));  // [5, 7, 3]
+
+        // Edge cases
+        System.out.println(toList(new Solution().deleteLastNode(null)));                   // []
+        System.out.println(toList(new Solution().deleteLastNode(fromList(42))));           // []
+        System.out.println(toList(new Solution().deleteLastNode(fromList(1, 2))));         // [1]
+        System.out.println(toList(new Solution().deleteLastNode(fromList(1, 2, 3, 4, 5)))); // [1, 2, 3, 4]
     }
 }
 ```
 
-```c run
-#include <stdio.h>
-#include <stdlib.h>
-
-typedef struct ListNode {
-    int val;
-    struct ListNode *next;
-} ListNode;
-
-ListNode* newNode(int v) {
-    ListNode *n = malloc(sizeof(ListNode));
-    n->val = v; n->next = NULL;
-    return n;
-}
-
-ListNode* deleteLastNode(ListNode *head) {
-
-    /* If the list is empty, there's nothing to delete */
-    if (head == NULL) {
-        return NULL;
-    }
-
-    /* If there's only one node in the list, delete it and return
-       NULL */
-    if (head->next == NULL) {
-        free(head);
-        return NULL;
-    }
-
-    /* current node being iterated */
-    ListNode *current = head;
-
-    /* previous node */
-    ListNode *previous = NULL;
-
-    /* Traverse the list until the last node is reached */
-    while (current != NULL && current->next != NULL) {
-
-        /* Move the previous pointer to the current node */
-        previous = current;
-
-        /* Move the current pointer to the next node */
-        current = current->next;
-    }
-
-    /* At this point, current is pointing to the last node and
-       previous is pointing to the second-to-last node. Update the
-       next pointer of the second-to-last node to skip the last node */
-    previous->next = current->next;
-
-    /* Delete the last node */
-    free(current);
-
-    /* Return the updated head of the list */
-    return head;
-}
-
-ListNode* build(int *vals, int n) {
-    ListNode dummy = {0, NULL}; ListNode *cur = &dummy;
-    for (int i = 0; i < n; i++) { cur->next = newNode(vals[i]); cur = cur->next; }
-    return dummy.next;
-}
-
-void printList(ListNode *head) {
-    printf("[");
-    while (head) { printf("%d", head->val); if (head->next) printf(", "); head = head->next; }
-    printf("]\n");
-}
-
-int main() {
-    int vals[] = {5, 7, 3, 10};
-    ListNode *head = build(vals, 4);
-    head = deleteLastNode(head);
-    printList(head); // [5, 7, 3]
-    return 0;
-}
-```
-
-```scala run
-class ListNode(var v: Int, var next: ListNode = null)
-
-object Main extends App {
-  class Solution {
-    def deleteLastNode(head: ListNode): ListNode = {
-
-      // If the list is empty, there's nothing to delete
-      if (head == null) {
-        return null
-      }
-
-      // If there's only one node in the list, delete it and return
-      // null
-      if (head.next == null) {
-        return null
-      }
-
-      // current node being iterated
-      var current = head
-
-      // previous node
-      var previous: ListNode = null
-
-      // Traverse the list until the last node is reached
-      while (current != null && current.next != null) {
-
-        // Move the previous pointer to the current node
-        previous = current
-
-        // Move the current pointer to the next node
-        current = current.next
-      }
-
-      // At this point, current is pointing to the last node and
-      // previous is pointing to the second-to-last node. Update the
-      // next pointer of the second-to-last node to skip the last node
-      previous.next = current.next
-
-      // Delete the last node
-      current = null
-
-      // Return the updated head of the list
-      head
-    }
-
-    def build(vals: Int*): ListNode = {
-      val dummy = new ListNode(0)
-      var cur = dummy
-      for (v <- vals) { cur.next = new ListNode(v); cur = cur.next }
-      dummy.next
-    }
-
-    def toStr(head: ListNode): String = {
-      val sb = new StringBuilder("[")
-      var cur = head
-      while (cur != null) { sb.append(cur.v); if (cur.next != null) sb.append(", "); cur = cur.next }
-      sb.append("]").toString
-    }
-  }
-
-  val sol = new Solution()
-  println(sol.toStr(sol.deleteLastNode(sol.build(5, 7, 3, 10)))) // [5, 7, 3]
-}
-```
+</details>
 
 
 ***
@@ -1830,146 +1549,146 @@ Given the **head** of a singly linked list and a **data** value, write a functio
 > -   **Input:** head = \[5, 7, 3, 10\], data = 3
 > -   **Output:** \[5, 7, 10\]
 
-## Solution
+<details>
+<summary><h2>Solution</h2></summary>
 
 
-```pseudocode
-function deleteNodeWithGivenData(head, data):
-
-    # If the list is empty, return null
-    if head is null:
-        return null
-
-    # If the head node contains the given data
-    if head.val = data:
-
-        # Create a temporary pointer to the head node
-        nodeToBeDeleted ← head
-
-        # Update the head pointer to the next node
-        head ← head.next
-
-        # Delete the previous head node
-        nodeToBeDeleted ← null
-
-        # Return the updated head pointer
-        return head
-
-    # Pointer to the current node, starting from the head
-    current ← head
-
-    # Pointer to the previous node, initially null
-    previous ← null
-
-    # If the target data is not in the first node, search for it in
-    # the rest of the list
-    while current is not null AND current.val ≠ data:
-
-        # Move the previous pointer to the current node
-        previous ← current
-
-        # Move the current pointer to the next node
-        current ← current.next
-
-    # If the given data is not found, return the original head
-    # pointer
-    if current is null:
-        return head
-
-    # Update the next pointer of the previous node to skip the
-    # current node
-    previous.next ← current.next
-
-    # Delete the node with the given data
-    current ← null
-
-    # Return the head of the list, with the target data node removed
-    return head
-```
 
 ```python run
+from typing import Optional
+
+
 class ListNode:
-    def __init__(self, val=0, next=None):
+    def __init__(self, val=0, nxt=None):
         self.val = val
-        self.next = next
+        self.next = nxt
 
-def delete_node_with_given_data(head, data):
 
-    # If the list is empty, return None
-    if head is None:
+def from_list(values):
+    if not values:
         return None
-
-    # If the head node contains the given data
-    if head.val == data:
-
-        # Create a temporary pointer to the head node
-        node_to_be_deleted = head
-
-        # Update the head pointer to the next node
-        head = head.next
-
-        # Delete the previous head node
-        del node_to_be_deleted
-
-        # Return the updated head pointer
-        return head
-
-    # Pointer to the current node, starting from the head
-    current = head
-
-    # Pointer to the previous node, initially None
-    previous = None
-
-    # If the target data is not in the first node, search for it in
-    # the rest of the list
-    while current is not None and current.val != data:
-
-        # Move the previous pointer to the current node
-        previous = current
-
-        # Move the current pointer to the next node
-        current = current.next
-
-    # If the given data is not found, return the original head
-    # pointer
-    if current is None:
-        return head
-
-    # Update the next pointer of the previous node to skip the
-    # current node
-    if previous and current:
-        previous.next = current.next
-
-    # Delete the node with the given data
-    del current
-
-    # Return the head of the list, with the target data node removed
+    head = ListNode(values[0])
+    cur = head
+    for v in values[1:]:
+        cur.next = ListNode(v)
+        cur = cur.next
     return head
 
-# --- driver ---
-def build(vals):
-    dummy = ListNode(0)
-    cur = dummy
-    for v in vals:
-        cur.next = ListNode(v); cur = cur.next
-    return dummy.next
 
 def to_list(head):
-    res = []
-    while head: res.append(head.val); head = head.next
-    return res
+    out = []
+    while head is not None:
+        out.append(head.val)
+        head = head.next
+    return out
 
-head = build([5, 7, 3, 10])
-head = delete_node_with_given_data(head, 3)
-print(to_list(head))  # [5, 7, 10]
+
+class Solution:
+    def delete_node_with_given_data(
+        self, head: Optional[ListNode], data: int
+    ) -> Optional[ListNode]:
+
+        # If the list is empty, return None
+        if head is None:
+            return None
+
+        # If the head node contains the given data
+        if head.val == data:
+
+            # Create a temporary pointer to the head node
+            node_to_be_deleted: ListNode = head
+
+            # Update the head pointer to the next node
+            head = head.next
+
+            # Delete the previous head node
+            del node_to_be_deleted
+
+            # Return the updated head pointer
+            return head
+
+        # Pointer to the current node, starting from the head
+        current: Optional[ListNode] = head
+
+        # Pointer to the previous node, initially None
+        previous: Optional[ListNode] = None
+
+        # If the target data is not in the first node, search for it in
+        # the rest of the list
+        while current is not None and current.val != data:
+
+            # Move the previous pointer to the current node
+            previous = current
+
+            # Move the current pointer to the next node
+            current = current.next
+
+        # If the given data is not found, return the original head
+        # pointer
+        if current is None:
+            return head
+
+        # Update the next pointer of the previous node to skip the
+        # current node
+        if previous and current:
+            previous.next = current.next
+
+        # Delete the node with the given data
+        del current
+
+        # Return the head of the list, with the target data node removed
+        return head
+
+
+# Example from the problem statement
+print(to_list(Solution().delete_node_with_given_data(from_list([5, 7, 3, 10]), 3)))  # [5, 7, 10]
+
+# Delete head
+print(to_list(Solution().delete_node_with_given_data(from_list([5, 7, 3, 10]), 5)))  # [7, 3, 10]
+
+# Delete last node
+print(to_list(Solution().delete_node_with_given_data(from_list([5, 7, 3, 10]), 10))) # [5, 7, 3]
+
+# Data not in list
+print(to_list(Solution().delete_node_with_given_data(from_list([1, 2, 3]), 99)))      # [1, 2, 3]
+
+# Empty list
+print(to_list(Solution().delete_node_with_given_data(None, 5)))                       # []
+
+# Single-node list — found
+print(to_list(Solution().delete_node_with_given_data(from_list([7]), 7)))             # []
+
+# Delete first occurrence only (duplicate values)
+print(to_list(Solution().delete_node_with_given_data(from_list([3, 3, 3]), 3)))       # [3, 3]
 ```
 
 ```java run
+import java.util.*;
+
 public class Main {
     static class ListNode {
-        int val; ListNode next;
-        ListNode(int v) { val = v; }
-        ListNode(int v, ListNode n) { val = v; next = n; }
+        int val;
+        ListNode next;
+        ListNode() {}
+        ListNode(int val) { this.val = val; }
+        ListNode(int val, ListNode next) { this.val = val; this.next = next; }
+    }
+
+    static ListNode fromList(int... values) {
+        if (values.length == 0) return null;
+        ListNode head = new ListNode(values[0]);
+        ListNode cur = head;
+        for (int i = 1; i < values.length; i++) {
+            cur.next = new ListNode(values[i]);
+            cur = cur.next;
+        }
+        return head;
+    }
+
+    static List<Integer> toList(ListNode head) {
+        List<Integer> out = new ArrayList<>();
+        while (head != null) { out.add(head.val); head = head.next; }
+        return out;
     }
 
     static class Solution {
@@ -2029,196 +1748,34 @@ public class Main {
             // Return the head of the list, with the target data node removed
             return head;
         }
-
-        public ListNode build(int[] vals) {
-            ListNode dummy = new ListNode(0); ListNode cur = dummy;
-            for (int v : vals) { cur.next = new ListNode(v); cur = cur.next; }
-            return dummy.next;
-        }
-
-        public String toStr(ListNode head) {
-            StringBuilder sb = new StringBuilder("[");
-            while (head != null) { sb.append(head.val); if (head.next != null) sb.append(", "); head = head.next; }
-            return sb.append("]").toString();
-        }
     }
 
     public static void main(String[] args) {
-        Solution sol = new Solution();
-        ListNode head = sol.build(new int[]{5, 7, 3, 10});
-        head = sol.deleteNodeWithGivenData(head, 3);
-        System.out.println(sol.toStr(head)); // [5, 7, 10]
+        // Example from the problem statement
+        System.out.println(toList(new Solution().deleteNodeWithGivenData(fromList(5, 7, 3, 10), 3)));  // [5, 7, 10]
+
+        // Delete head
+        System.out.println(toList(new Solution().deleteNodeWithGivenData(fromList(5, 7, 3, 10), 5)));  // [7, 3, 10]
+
+        // Delete last node
+        System.out.println(toList(new Solution().deleteNodeWithGivenData(fromList(5, 7, 3, 10), 10))); // [5, 7, 3]
+
+        // Data not in list
+        System.out.println(toList(new Solution().deleteNodeWithGivenData(fromList(1, 2, 3), 99)));      // [1, 2, 3]
+
+        // Empty list
+        System.out.println(toList(new Solution().deleteNodeWithGivenData(null, 5)));                    // []
+
+        // Single-node list — found
+        System.out.println(toList(new Solution().deleteNodeWithGivenData(fromList(7), 7)));             // []
+
+        // Delete first occurrence only (duplicate values)
+        System.out.println(toList(new Solution().deleteNodeWithGivenData(fromList(3, 3, 3), 3)));       // [3, 3]
     }
 }
 ```
 
-```c run
-#include <stdio.h>
-#include <stdlib.h>
-
-typedef struct ListNode { int val; struct ListNode *next; } ListNode;
-
-ListNode* newNode(int v) {
-    ListNode *n = malloc(sizeof(ListNode)); n->val = v; n->next = NULL; return n;
-}
-
-ListNode* deleteNodeWithGivenData(ListNode *head, int data) {
-
-    /* If the list is empty, return NULL */
-    if (head == NULL) {
-        return NULL;
-    }
-
-    /* If the head node contains the given data */
-    if (head->val == data) {
-
-        /* Create a temporary pointer to the head node */
-        ListNode *nodeToBeDeleted = head;
-
-        /* Update the head pointer to the next node */
-        head = head->next;
-
-        /* Delete the previous head node */
-        free(nodeToBeDeleted);
-
-        /* Return the updated head pointer */
-        return head;
-    }
-
-    /* Pointer to the current node, starting from the head */
-    ListNode *current = head;
-
-    /* Pointer to the previous node, initially NULL */
-    ListNode *previous = NULL;
-
-    /* If the target data is not in the first node, search for it in
-       the rest of the list */
-    while (current != NULL && current->val != data) {
-
-        /* Move the previous pointer to the current node */
-        previous = current;
-
-        /* Move the current pointer to the next node */
-        current = current->next;
-    }
-
-    /* If the given data is not found, return the original head
-       pointer */
-    if (current == NULL) {
-        return head;
-    }
-
-    /* Update the next pointer of the previous node to skip the
-       current node */
-    previous->next = current->next;
-
-    /* Delete the node with the given data */
-    free(current);
-
-    /* Return the head of the list, with the target data node removed */
-    return head;
-}
-
-ListNode* build(int *vals, int n) {
-    ListNode dummy = {0, NULL}; ListNode *cur = &dummy;
-    for (int i = 0; i < n; i++) { cur->next = newNode(vals[i]); cur = cur->next; }
-    return dummy.next;
-}
-
-void printList(ListNode *head) {
-    printf("[");
-    while (head) { printf("%d", head->val); if (head->next) printf(", "); head = head->next; }
-    printf("]\n");
-}
-
-int main() {
-    int vals[] = {5, 7, 3, 10};
-    ListNode *head = build(vals, 4);
-    head = deleteNodeWithGivenData(head, 3);
-    printList(head); // [5, 7, 10]
-    return 0;
-}
-```
-
-```scala run
-class ListNode(var v: Int, var next: ListNode = null)
-
-object Main extends App {
-  class Solution {
-    def deleteNodeWithGivenData(head: ListNode, data: Int): ListNode = {
-
-      // If the list is empty, return null
-      if (head == null) {
-        return null
-      }
-
-      // If the head node contains the given data
-      if (head.v == data) {
-
-        // Create a temporary pointer to the head node
-        var nodeToBeDeleted = head
-
-        // Update the head pointer to the next node
-        val newHead = head.next
-
-        // Delete the previous head node
-        nodeToBeDeleted = null
-
-        // Return the updated head pointer
-        return newHead
-      }
-
-      // Pointer to the current node, starting from the head
-      var current = head
-
-      // Pointer to the previous node, initially null
-      var previous: ListNode = null
-
-      // If the target data is not in the first node, search for it in
-      // the rest of the list
-      while (current != null && current.v != data) {
-
-        // Move the previous pointer to the current node
-        previous = current
-
-        // Move the current pointer to the next node
-        current = current.next
-      }
-
-      // If the given data is not found, return the original head
-      // pointer
-      if (current == null) {
-        return head
-      }
-
-      // Update the next pointer of the previous node to skip the
-      // current node
-      previous.next = current.next
-
-      // Delete the node with the given data
-      current = null
-
-      // Return the head of the list, with the target data node removed
-      head
-    }
-
-    def build(vals: Int*): ListNode = {
-      val dummy = new ListNode(0); var cur = dummy
-      for (v <- vals) { cur.next = new ListNode(v); cur = cur.next }
-      dummy.next
-    }
-
-    def toStr(head: ListNode): String = {
-      val sb = new StringBuilder("["); var cur = head
-      while (cur != null) { sb.append(cur.v); if (cur.next != null) sb.append(", "); cur = cur.next }
-      sb.append("]").toString
-    }
-  }
-
-  val sol = new Solution()
-  println(sol.toStr(sol.deleteNodeWithGivenData(sol.build(5, 7, 3, 10), 3))) // [5, 7, 10]
-}
-```
+</details>
 
 
 ***
@@ -2234,122 +1791,135 @@ Given the **head** of a singly linked list and a **data** value, write a functio
 > -   **Input:** head = \[5, 7, 3, 10, 3, 12\], data = 3
 > -   **Output:** \[5, 7, 10, 12\]
 
-## Solution
+<details>
+<summary><h2>Solution</h2></summary>
 
 
-```pseudocode
-function deleteNodesWithGivenData(head, data):
-
-    # Check if the list is empty
-    if head is null:
-        return null
-
-    # Remove any nodes at the beginning of the list with the given
-    # data
-    while head is not null AND head.val = data:
-        nodeToBeDeleted ← head
-        head ← head.next
-        nodeToBeDeleted ← null
-
-    # If the list becomes empty after removing nodes, return null
-    if head is null:
-        return null
-
-    # Initialize pointers for previous and current nodes
-    previous ← head
-    current ← head.next
-
-    # Traverse the list and remove nodes with the given data
-    while current is not null:
-
-        # Remove any nodes with the given data
-        while current is not null AND current.val = data:
-            nodeToBeDeleted ← current
-            current ← current.next
-            nodeToBeDeleted ← null
-
-        # Update the links between nodes to bypass the removed nodes
-        previous.next ← current
-        previous ← current
-
-        # Move to the next node
-        if current is not null:
-            current ← current.next
-
-    # Return the modified list
-    return head
-```
 
 ```python run
+from typing import Optional
+
+
 class ListNode:
-    def __init__(self, val=0, next=None):
+    def __init__(self, val=0, nxt=None):
         self.val = val
-        self.next = next
+        self.next = nxt
 
-def delete_nodes_with_given_data(head, data):
 
-    # Check if the list is empty
-    if head is None:
+def from_list(values):
+    if not values:
         return None
-
-    # Remove any nodes at the beginning of the list with the given
-    # data
-    while head is not None and head.val == data:
-        node_to_be_deleted = head
-        head = head.next
-        del node_to_be_deleted
-
-    # If the list becomes empty after removing nodes, return None
-    if head is None:
-        return None
-
-    # Initialize pointers for previous and current nodes
-    previous = head
-    current = head.next
-
-    # Traverse the list and remove nodes with the given data
-    while current is not None:
-
-        # Remove any nodes with the given data
-        while current is not None and current.val == data:
-            node_to_be_deleted = current
-            current = current.next
-            del node_to_be_deleted
-
-        # Update the links between nodes to bypass the removed nodes
-        if previous:
-            previous.next = current
-        previous = current
-
-        # Move to the next node
-        if current is not None:
-            current = current.next
-
-    # Return the modified list
+    head = ListNode(values[0])
+    cur = head
+    for v in values[1:]:
+        cur.next = ListNode(v)
+        cur = cur.next
     return head
 
-# --- driver ---
-def build(vals):
-    dummy = ListNode(0); cur = dummy
-    for v in vals: cur.next = ListNode(v); cur = cur.next
-    return dummy.next
 
 def to_list(head):
-    res = []
-    while head: res.append(head.val); head = head.next
-    return res
+    out = []
+    while head is not None:
+        out.append(head.val)
+        head = head.next
+    return out
 
-head = build([5, 7, 3, 10, 3, 12])
-head = delete_nodes_with_given_data(head, 3)
-print(to_list(head))  # [5, 7, 10, 12]
+
+class Solution:
+    def delete_nodes_with_given_data(
+        self, head: Optional[ListNode], data: int
+    ) -> Optional[ListNode]:
+
+        # Check if the list is empty
+        if head is None:
+            return None
+
+        # Remove any nodes at the beginning of the list with the given
+        # data
+        while head is not None and head.val == data:
+            node_to_be_deleted: ListNode = head
+            head = head.next
+            del node_to_be_deleted
+
+        # If the list becomes empty after removing nodes, return None
+        if head is None:
+            return None
+
+        # Initialize pointers for previous and current nodes
+        previous: Optional[ListNode] = head
+        current: Optional[ListNode] = head.next
+
+        # Traverse the list and remove nodes with the given data
+        while current is not None:
+
+            # Remove any nodes with the given data
+            while current is not None and current.val == data:
+                node_to_be_deleted = current
+                current = current.next
+                del node_to_be_deleted
+
+            # Update the links between nodes to bypass the removed nodes
+            if previous:
+                previous.next = current
+            previous = current
+
+            # Move to the next node
+            if current is not None:
+                current = current.next
+
+        # Return the modified list
+        return head
+
+
+# Example from the problem statement
+print(to_list(Solution().delete_nodes_with_given_data(from_list([5, 7, 3, 10, 3, 12]), 3)))  # [5, 7, 10, 12]
+
+# All nodes match — empty result
+print(to_list(Solution().delete_nodes_with_given_data(from_list([3, 3, 3]), 3)))              # []
+
+# Head matches multiple times, then stops
+print(to_list(Solution().delete_nodes_with_given_data(from_list([3, 3, 1, 2]), 3)))           # [1, 2]
+
+# No match — list unchanged
+print(to_list(Solution().delete_nodes_with_given_data(from_list([1, 2, 3]), 9)))              # [1, 2, 3]
+
+# Empty list
+print(to_list(Solution().delete_nodes_with_given_data(None, 5)))                              # []
+
+# Single-node list, match
+print(to_list(Solution().delete_nodes_with_given_data(from_list([7]), 7)))                    # []
+
+# Duplicates at tail
+print(to_list(Solution().delete_nodes_with_given_data(from_list([1, 2, 5, 5]), 5)))           # [1, 2]
 ```
 
 ```java run
+import java.util.*;
+
 public class Main {
     static class ListNode {
-        int val; ListNode next;
-        ListNode(int v) { val = v; }
-        ListNode(int v, ListNode n) { val = v; next = n; }
+        int val;
+        ListNode next;
+        ListNode() {}
+        ListNode(int val) { this.val = val; }
+        ListNode(int val, ListNode next) { this.val = val; this.next = next; }
+    }
+
+    static ListNode fromList(int... values) {
+        if (values.length == 0) return null;
+        ListNode head = new ListNode(values[0]);
+        ListNode cur = head;
+        for (int i = 1; i < values.length; i++) {
+            cur.next = new ListNode(values[i]);
+            cur = cur.next;
+        }
+        return head;
+    }
+
+    static List<Integer> toList(ListNode head) {
+        List<Integer> out = new ArrayList<>();
+        while (head != null) { out.add(head.val); head = head.next; }
+        return out;
     }
 
     static class Solution {
@@ -2404,183 +1974,34 @@ public class Main {
             // Return the modified list
             return head;
         }
-
-        public ListNode build(int[] vals) {
-            ListNode dummy = new ListNode(0); ListNode cur = dummy;
-            for (int v : vals) { cur.next = new ListNode(v); cur = cur.next; }
-            return dummy.next;
-        }
-
-        public String toStr(ListNode head) {
-            StringBuilder sb = new StringBuilder("[");
-            while (head != null) { sb.append(head.val); if (head.next != null) sb.append(", "); head = head.next; }
-            return sb.append("]").toString();
-        }
     }
 
     public static void main(String[] args) {
-        Solution sol = new Solution();
-        ListNode head = sol.build(new int[]{5, 7, 3, 10, 3, 12});
-        head = sol.deleteNodesWithGivenData(head, 3);
-        System.out.println(sol.toStr(head)); // [5, 7, 10, 12]
+        // Example from the problem statement
+        System.out.println(toList(new Solution().deleteNodesWithGivenData(fromList(5, 7, 3, 10, 3, 12), 3)));  // [5, 7, 10, 12]
+
+        // All nodes match — empty result
+        System.out.println(toList(new Solution().deleteNodesWithGivenData(fromList(3, 3, 3), 3)));              // []
+
+        // Head matches multiple times, then stops
+        System.out.println(toList(new Solution().deleteNodesWithGivenData(fromList(3, 3, 1, 2), 3)));           // [1, 2]
+
+        // No match — list unchanged
+        System.out.println(toList(new Solution().deleteNodesWithGivenData(fromList(1, 2, 3), 9)));              // [1, 2, 3]
+
+        // Empty list
+        System.out.println(toList(new Solution().deleteNodesWithGivenData(null, 5)));                           // []
+
+        // Single-node list, match
+        System.out.println(toList(new Solution().deleteNodesWithGivenData(fromList(7), 7)));                    // []
+
+        // Duplicates at tail
+        System.out.println(toList(new Solution().deleteNodesWithGivenData(fromList(1, 2, 5, 5), 5)));           // [1, 2]
     }
 }
 ```
 
-```c run
-#include <stdio.h>
-#include <stdlib.h>
-
-typedef struct ListNode { int val; struct ListNode *next; } ListNode;
-
-ListNode* newNode(int v) {
-    ListNode *n = malloc(sizeof(ListNode)); n->val = v; n->next = NULL; return n;
-}
-
-ListNode* deleteNodesWithGivenData(ListNode *head, int data) {
-
-    /* Check if the list is empty */
-    if (head == NULL) {
-        return NULL;
-    }
-
-    /* Remove any nodes at the beginning of the list with the given
-       data */
-    while (head != NULL && head->val == data) {
-        ListNode *nodeToBeDeleted = head;
-        head = head->next;
-        free(nodeToBeDeleted);
-    }
-
-    /* If the list becomes empty after removing nodes, return NULL */
-    if (head == NULL) {
-        return NULL;
-    }
-
-    /* Initialize pointers for previous and current nodes */
-    ListNode *previous = head;
-    ListNode *current = head->next;
-
-    /* Traverse the list and remove nodes with the given data */
-    while (current != NULL) {
-
-        /* Remove any nodes with the given data */
-        while (current != NULL && current->val == data) {
-            ListNode *nodeToBeDeleted = current;
-            current = current->next;
-            free(nodeToBeDeleted);
-        }
-
-        /* Update the links between nodes to bypass the removed nodes */
-        previous->next = current;
-        previous = current;
-
-        /* Move to the next node */
-        if (current != NULL) {
-            current = current->next;
-        }
-    }
-
-    /* Return the modified list */
-    return head;
-}
-
-ListNode* build(int *vals, int n) {
-    ListNode dummy = {0, NULL}; ListNode *cur = &dummy;
-    for (int i = 0; i < n; i++) { cur->next = newNode(vals[i]); cur = cur->next; }
-    return dummy.next;
-}
-
-void printList(ListNode *head) {
-    printf("[");
-    while (head) { printf("%d", head->val); if (head->next) printf(", "); head = head->next; }
-    printf("]\n");
-}
-
-int main() {
-    int vals[] = {5, 7, 3, 10, 3, 12};
-    ListNode *head = build(vals, 6);
-    head = deleteNodesWithGivenData(head, 3);
-    printList(head); // [5, 7, 10, 12]
-    return 0;
-}
-```
-
-```scala run
-class ListNode(var v: Int, var next: ListNode = null)
-
-object Main extends App {
-  class Solution {
-    def deleteNodesWithGivenData(head: ListNode, data: Int): ListNode = {
-
-      // Check if the list is empty
-      if (head == null) {
-        return null
-      }
-
-      // Remove any nodes at the beginning of the list with the given
-      // data
-      var h = head
-      while (h != null && h.v == data) {
-        var nodeToBeDeleted = h
-        h = h.next
-
-        // Delete the node
-        nodeToBeDeleted = null
-      }
-
-      // If the list becomes empty after removing nodes, return null
-      if (h == null) {
-        return null
-      }
-
-      // Initialize pointers for previous and current nodes
-      var previous = h
-      var current = h.next
-
-      // Traverse the list and remove nodes with the given data
-      while (current != null) {
-
-        // Remove any nodes with the given data
-        while (current != null && current.v == data) {
-          var nodeToBeDeleted = current
-          current = current.next
-
-          // Delete the node
-          nodeToBeDeleted = null
-        }
-
-        // Update the links between nodes to bypass the removed nodes
-        previous.next = current
-        previous = current
-
-        // Move to the next node
-        if (current != null) {
-          current = current.next
-        }
-      }
-
-      // Return the modified list
-      h
-    }
-
-    def build(vals: Int*): ListNode = {
-      val dummy = new ListNode(0); var cur = dummy
-      for (v <- vals) { cur.next = new ListNode(v); cur = cur.next }
-      dummy.next
-    }
-
-    def toStr(head: ListNode): String = {
-      val sb = new StringBuilder("["); var cur = head
-      while (cur != null) { sb.append(cur.v); if (cur.next != null) sb.append(", "); cur = cur.next }
-      sb.append("]").toString
-    }
-  }
-
-  val sol = new Solution()
-  println(sol.toStr(sol.deleteNodesWithGivenData(sol.build(5, 7, 3, 10, 3, 12), 3))) // [5, 7, 10, 12]
-}
-```
+</details>
 
 
 ***
@@ -2942,99 +2363,128 @@ Given the **head** of a singly linked list and a **random** **node** in a linked
 > -   **Input:** head = \[5, 7, 3, 10\], node = 7
 > -   **Output:** \[5, 7, 10\]
 
-## Solution
+<details>
+<summary><h2>Solution</h2></summary>
 
 
-```pseudocode
-function deleteNodeAfterTheGivenNode(head, node):
-
-    # If the list is empty, there's nothing to delete, so return
-    # null.
-    if head is null:
-        return null
-
-    # If the given node is null or it is the last node in the list,
-    # there's no node to delete, so return the original head.
-    if node is null OR node.next is null:
-        return head
-
-    # Store the next node in a temporary variable.
-    nodeToBeDeleted ← node.next
-
-    # Link the current node (node) to the node after the one being
-    # deleted.
-    node.next ← nodeToBeDeleted.next
-
-    # Delete the node that was after the given node.
-    nodeToBeDeleted ← null
-
-    # Return the original head.
-    return head
-```
 
 ```python run
+from typing import Optional
+
+
 class ListNode:
-    def __init__(self, val=0, next=None):
+    def __init__(self, val=0, nxt=None):
         self.val = val
-        self.next = next
+        self.next = nxt
 
-def delete_node_after_the_given_node(head, node):
 
-    # If the list is empty, there's nothing to delete, so return
-    # None.
-    if head is None:
+def from_list(values):
+    if not values:
         return None
-
-    # If the given node is None or it is the last node in the list,
-    # there's no node to delete, so return the original head.
-    if node is None or node.next is None:
-        return head
-
-    # Store the next node in a temporary variable.
-    node_to_be_deleted = node.next
-
-    # Link the current node (node) to the node after the one being
-    # deleted.
-    node.next = node_to_be_deleted.next
-
-    # Delete the node that was after the given node.
-    del node_to_be_deleted
-
-    # Return the original head.
+    head = ListNode(values[0])
+    cur = head
+    for v in values[1:]:
+        cur.next = ListNode(v)
+        cur = cur.next
     return head
 
-# --- driver ---
-def build(vals):
-    dummy = ListNode(0); cur = dummy
-    for v in vals:
-        cur.next = ListNode(v); cur = cur.next
-    return dummy.next
 
 def to_list(head):
-    res = []
-    while head: res.append(head.val); head = head.next
-    return res
+    out = []
+    while head is not None:
+        out.append(head.val)
+        head = head.next
+    return out
 
-def find(head, val):
-    cur = head
-    while cur and cur.val != val: cur = cur.next
-    return cur
 
-head = build([5, 7, 3, 10])
-head = delete_node_after_the_given_node(head, find(head, 7))
-print(to_list(head))  # [5, 7, 10]
+class Solution:
+    def delete_node_after_the_given_node(
+        self, head: Optional[ListNode], node: Optional[ListNode]
+    ) -> Optional[ListNode]:
+
+        # If the list is empty, there's nothing to delete, so return
+        # None.
+        if head is None:
+            return None
+
+        # If the given node is None or it is the last node in the list,
+        # there's no node to delete, so return the original head.
+        if node is None or node.next is None:
+            return head
+
+        # Store the next node in a temporary variable.
+        node_to_be_deleted: ListNode = node.next
+
+        # Link the current node (node) to the node after the one being
+        # deleted.
+        node.next = node_to_be_deleted.next
+
+        # Delete the node that was after the given node.
+        del node_to_be_deleted
+
+        # Return the original head.
+        return head
+
+
+# Example from the problem statement — delete after node with val 7
+h1 = from_list([5, 7, 3, 10])
+print(to_list(Solution().delete_node_after_the_given_node(h1, h1.next)))      # [5, 7, 10]
+
+# Delete after head
+h2 = from_list([1, 2, 3])
+print(to_list(Solution().delete_node_after_the_given_node(h2, h2)))           # [1, 3]
+
+# Given node is last — no deletion
+h3 = from_list([1, 2, 3])
+last = h3.next.next
+print(to_list(Solution().delete_node_after_the_given_node(h3, last)))         # [1, 2, 3]
+
+# node is None — no deletion
+h4 = from_list([1, 2])
+print(to_list(Solution().delete_node_after_the_given_node(h4, None)))         # [1, 2]
+
+# Empty list
+print(to_list(Solution().delete_node_after_the_given_node(None, None)))       # []
+
+# Two-node list — delete after head
+h5 = from_list([1, 2])
+print(to_list(Solution().delete_node_after_the_given_node(h5, h5)))           # [1]
 ```
 
 ```java run
+import java.util.*;
+
 public class Main {
     static class ListNode {
-        int val; ListNode next;
-        ListNode(int v) { val = v; }
-        ListNode(int v, ListNode n) { val = v; next = n; }
+        int val;
+        ListNode next;
+        ListNode() {}
+        ListNode(int val) { this.val = val; }
+        ListNode(int val, ListNode next) { this.val = val; this.next = next; }
+    }
+
+    static ListNode fromList(int... values) {
+        if (values.length == 0) return null;
+        ListNode head = new ListNode(values[0]);
+        ListNode cur = head;
+        for (int i = 1; i < values.length; i++) {
+            cur.next = new ListNode(values[i]);
+            cur = cur.next;
+        }
+        return head;
+    }
+
+    static List<Integer> toList(ListNode head) {
+        List<Integer> out = new ArrayList<>();
+        while (head != null) { out.add(head.val); head = head.next; }
+        return out;
     }
 
     static class Solution {
-        public ListNode deleteNodeAfterTheGivenNode(ListNode head, ListNode node) {
+        public ListNode deleteNodeAfterTheGivenNode(
+            ListNode head,
+            ListNode node
+        ) {
 
             // If the list is empty, there's nothing to delete, so return
             // null.
@@ -3061,157 +2511,37 @@ public class Main {
             // Return the original head.
             return head;
         }
-
-        public ListNode build(int[] vals) {
-            ListNode dummy = new ListNode(0); ListNode cur = dummy;
-            for (int v : vals) { cur.next = new ListNode(v); cur = cur.next; }
-            return dummy.next;
-        }
-
-        public String toStr(ListNode head) {
-            StringBuilder sb = new StringBuilder("[");
-            while (head != null) { sb.append(head.val); if (head.next != null) sb.append(", "); head = head.next; }
-            return sb.append("]").toString();
-        }
-
-        public ListNode find(ListNode head, int val) {
-            ListNode cur = head;
-            while (cur != null && cur.val != val) cur = cur.next;
-            return cur;
-        }
     }
 
     public static void main(String[] args) {
-        Solution sol = new Solution();
-        ListNode head = sol.build(new int[]{5, 7, 3, 10});
-        head = sol.deleteNodeAfterTheGivenNode(head, sol.find(head, 7));
-        System.out.println(sol.toStr(head)); // [5, 7, 10]
+        // Example from the problem statement — delete after node with val 7
+        ListNode h1 = fromList(5, 7, 3, 10);
+        System.out.println(toList(new Solution().deleteNodeAfterTheGivenNode(h1, h1.next)));      // [5, 7, 10]
+
+        // Delete after head
+        ListNode h2 = fromList(1, 2, 3);
+        System.out.println(toList(new Solution().deleteNodeAfterTheGivenNode(h2, h2)));           // [1, 3]
+
+        // Given node is last — no deletion
+        ListNode h3 = fromList(1, 2, 3);
+        ListNode last = h3.next.next;
+        System.out.println(toList(new Solution().deleteNodeAfterTheGivenNode(h3, last)));         // [1, 2, 3]
+
+        // node is null — no deletion
+        ListNode h4 = fromList(1, 2);
+        System.out.println(toList(new Solution().deleteNodeAfterTheGivenNode(h4, null)));         // [1, 2]
+
+        // Empty list
+        System.out.println(toList(new Solution().deleteNodeAfterTheGivenNode(null, null)));       // []
+
+        // Two-node list — delete after head
+        ListNode h5 = fromList(1, 2);
+        System.out.println(toList(new Solution().deleteNodeAfterTheGivenNode(h5, h5)));           // [1]
     }
 }
 ```
 
-```c run
-#include <stdio.h>
-#include <stdlib.h>
-
-typedef struct ListNode { int val; struct ListNode *next; } ListNode;
-
-ListNode* newNode(int v) {
-    ListNode *n = malloc(sizeof(ListNode)); n->val = v; n->next = NULL; return n;
-}
-
-ListNode* deleteNodeAfterTheGivenNode(ListNode *head, ListNode *node) {
-
-    /* If the list is empty, there's nothing to delete, so return
-       NULL. */
-    if (head == NULL) {
-        return NULL;
-    }
-
-    /* If the given node is NULL or it is the last node in the list,
-       there's no node to delete, so return the original head. */
-    if (node == NULL || node->next == NULL) {
-        return head;
-    }
-
-    /* Store the next node in a temporary variable. */
-    ListNode *nodeToBeDeleted = node->next;
-
-    /* Link the current node (node) to the node after the one being
-       deleted. */
-    node->next = nodeToBeDeleted->next;
-
-    /* Delete the node that was after the given node. */
-    free(nodeToBeDeleted);
-
-    /* Return the original head. */
-    return head;
-}
-
-ListNode* build(int *vals, int n) {
-    ListNode dummy = {0, NULL}; ListNode *cur = &dummy;
-    for (int i = 0; i < n; i++) { cur->next = newNode(vals[i]); cur = cur->next; }
-    return dummy.next;
-}
-
-void printList(ListNode *head) {
-    printf("[");
-    while (head) { printf("%d", head->val); if (head->next) printf(", "); head = head->next; }
-    printf("]\n");
-}
-
-ListNode* find(ListNode *head, int val) {
-    ListNode *cur = head;
-    while (cur != NULL && cur->val != val) cur = cur->next;
-    return cur;
-}
-
-int main() {
-    int vals[] = {5, 7, 3, 10};
-    ListNode *head = build(vals, 4);
-    head = deleteNodeAfterTheGivenNode(head, find(head, 7));
-    printList(head); // [5, 7, 10]
-    return 0;
-}
-```
-
-```scala run
-class ListNode(var v: Int, var next: ListNode = null)
-
-object Main extends App {
-  class Solution {
-    def deleteNodeAfterTheGivenNode(head: ListNode, node: ListNode): ListNode = {
-
-      // If the list is empty, there's nothing to delete, so return
-      // null.
-      if (head == null) {
-        return null
-      }
-
-      // If the given node is null or it is the last node in the list,
-      // there's no node to delete, so return the original head.
-      if (node == null || node.next == null) {
-        return head
-      }
-
-      // Store the next node in a temporary variable.
-      var nodeToBeDeleted = node.next
-
-      // Link the current node (node) to the node after the one being
-      // deleted.
-      node.next = nodeToBeDeleted.next
-
-      // Delete the node that was after the given node.
-      nodeToBeDeleted = null
-
-      // Return the original head.
-      head
-    }
-
-    def build(vals: Int*): ListNode = {
-      val dummy = new ListNode(0); var cur = dummy
-      for (v <- vals) { cur.next = new ListNode(v); cur = cur.next }
-      dummy.next
-    }
-
-    def toStr(head: ListNode): String = {
-      val sb = new StringBuilder("["); var cur = head
-      while (cur != null) { sb.append(cur.v); if (cur.next != null) sb.append(", "); cur = cur.next }
-      sb.append("]").toString
-    }
-
-    def find(head: ListNode, value: Int): ListNode = {
-      var cur = head
-      while (cur != null && cur.v != value) cur = cur.next
-      cur
-    }
-  }
-
-  val sol = new Solution()
-  val head = sol.build(5, 7, 3, 10)
-  println(sol.toStr(sol.deleteNodeAfterTheGivenNode(head, sol.find(head, 7)))) // [5, 7, 10]
-}
-```
+</details>
 
 
 ***
@@ -3848,157 +3178,158 @@ Given the **head** of a singly linked list and a **random node** in the list, wr
 > -   **Input:** head = \[5, 7, 3, 10\], node = 3
 > -   **Output:** \[5, 3, 10\]
 
-## Solution
+<details>
+<summary><h2>Solution</h2></summary>
 
 
-```pseudocode
-function deleteNodeBeforeTheGivenNode(head, node):
-
-    # If the head or the given node is null, there is nothing to
-    # delete. Return the existing head
-    if head is null OR node is null:
-        return head
-
-    # If the given node is the head node, we cannot delete the node
-    # before it
-    if node = head:
-        return head
-
-    # If the node to delete is the immediate next node of the head
-    # Update the head to point to the next node, delete the original
-    # head, and return the updated head
-    if head.next is not null AND head.next = node:
-        nodeToBeDeleted ← head
-        head ← head.next
-
-        # Dereference for garbage collection
-        nodeToBeDeleted ← null
-        return head
-
-    # Initialize variables for traversal
-    # current node being examined
-    current ← head.next
-
-    # Node preceding the current node
-    previous ← head
-
-    # Node preceding the previous node
-    previousToprevious ← null
-
-    # Traverse the linked list until we find the node or reach the
-    # end.
-    while current is not null AND current ≠ node:
-        previousToprevious ← previous
-        previous ← current
-        current ← current.next
-
-    # If the node to delete was not found, return the head as is.
-    if current is null:
-        return head
-
-    # Connect the previous node to the current node, bypassing the
-    # node to delete.
-    previousToprevious.next ← current
-
-    # Dereference for garbage collection
-    previous ← null
-
-    return head
-```
 
 ```python run
+from typing import Optional
+
+
 class ListNode:
-    def __init__(self, val=0, next=None):
+    def __init__(self, val=0, nxt=None):
         self.val = val
-        self.next = next
+        self.next = nxt
 
-def delete_node_before_the_given_node(head, node):
 
-    # If the head or the given node is None, there is nothing to
-    # delete. Return the existing head
-    if head is None or node is None:
-        return head
-
-    # If the given node is the head node, we cannot delete the node
-    # before it
-    if node == head:
-        return head
-
-    # If the node to delete is the immediate next node of the head
-    # Update the head to point to the next node, delete the original
-    # head, and return the updated head
-    if head.next is not None and head.next == node:
-        node_to_be_deleted = head
-        head = head.next
-        node_to_be_deleted = (
-
-            # Dereference for garbage collection
-            None
-        )
-        return head
-
-    # Initialize variables for traversal
-    # current node being examined
-    current = head.next
-
-    # Node preceding the current node
-    previous = head
-
-    # Node preceding the previous node
-    previous_toprevious = None
-
-    # Traverse the linked list until we find the node or reach the
-    # end.
-    while current is not None and current != node:
-        previous_toprevious = previous
-        previous = current
-        current = current.next
-
-    # If the node to delete was not found, return the head as is.
-    if current is None:
-        return head
-
-    # Connect the previous node to the current node, bypassing the
-    # node to delete.
-    previous_toprevious.next = current
-
-    # Dereference for garbage collection
-    previous = None
-
+def from_list(values):
+    if not values:
+        return None
+    head = ListNode(values[0])
+    cur = head
+    for v in values[1:]:
+        cur.next = ListNode(v)
+        cur = cur.next
     return head
 
-# --- driver ---
-def build(vals):
-    dummy = ListNode(0); cur = dummy
-    for v in vals:
-        cur.next = ListNode(v); cur = cur.next
-    return dummy.next
 
 def to_list(head):
-    res = []
-    while head: res.append(head.val); head = head.next
-    return res
+    out = []
+    while head is not None:
+        out.append(head.val)
+        head = head.next
+    return out
 
-def find(head, val):
-    cur = head
-    while cur and cur.val != val: cur = cur.next
-    return cur
 
-head = build([5, 7, 3, 10])
-head = delete_node_before_the_given_node(head, find(head, 3))
-print(to_list(head))  # [5, 3, 10]
+class Solution:
+    def delete_node_before_the_given_node(
+        self, head: Optional[ListNode], node: Optional[ListNode]
+    ) -> Optional[ListNode]:
+
+        # If the head or the given node is None, there is nothing to
+        # delete. Return the existing head
+        if head is None or node is None:
+            return head
+
+        # If the given node is the head node, we cannot delete the node
+        # before it
+        if node == head:
+            return head
+
+        # If the node to delete is the immediate next node of the head
+        # Update the head to point to the next node, delete the original
+        # head, and return the updated head
+        if head.next is not None and head.next == node:
+            node_to_be_deleted = head
+            head = head.next
+            node_to_be_deleted = (
+
+                # Dereference for garbage collection
+                None
+            )
+            return head
+
+        # Initialize variables for traversal
+        # current node being examined
+        current = head.next
+
+        # Node preceding the current node
+        previous = head
+
+        # Node preceding the previous node
+        previous_toprevious = None
+
+        # Traverse the linked list until we find the node or reach the
+        # end.
+        while current is not None and current != node:
+            previous_toprevious = previous
+            previous = current
+            current = current.next
+
+        # If the node to delete was not found, return the head as is.
+        if current is None:
+            return head
+
+        # Connect the previous node to the current node, bypassing the
+        # node to delete.
+        previous_toprevious.next = current
+
+        # Dereference for garbage collection
+        previous = None
+
+        return head
+
+
+# Example from the problem statement — delete before node with val 3
+h1 = from_list([5, 7, 3, 10])
+print(to_list(Solution().delete_node_before_the_given_node(h1, h1.next.next)))  # [5, 3, 10]
+
+# Given node is head — no deletion
+h2 = from_list([1, 2, 3])
+print(to_list(Solution().delete_node_before_the_given_node(h2, h2)))            # [1, 2, 3]
+
+# Delete head (node is second)
+h3 = from_list([1, 2, 3])
+print(to_list(Solution().delete_node_before_the_given_node(h3, h3.next)))       # [2, 3]
+
+# Delete before last node
+h4 = from_list([1, 2, 3, 4])
+print(to_list(Solution().delete_node_before_the_given_node(h4, h4.next.next.next)))  # [1, 2, 4]
+
+# node is None — no deletion
+h5 = from_list([1, 2])
+print(to_list(Solution().delete_node_before_the_given_node(h5, None)))          # [1, 2]
+
+# Two-node list, given node is second
+h6 = from_list([1, 2])
+print(to_list(Solution().delete_node_before_the_given_node(h6, h6.next)))       # [2]
 ```
 
 ```java run
+import java.util.*;
+
 public class Main {
     static class ListNode {
-        int val; ListNode next;
-        ListNode(int v) { val = v; }
-        ListNode(int v, ListNode n) { val = v; next = n; }
+        int val;
+        ListNode next;
+        ListNode() {}
+        ListNode(int val) { this.val = val; }
+        ListNode(int val, ListNode next) { this.val = val; this.next = next; }
+    }
+
+    static ListNode fromList(int... values) {
+        if (values.length == 0) return null;
+        ListNode head = new ListNode(values[0]);
+        ListNode cur = head;
+        for (int i = 1; i < values.length; i++) {
+            cur.next = new ListNode(values[i]);
+            cur = cur.next;
+        }
+        return head;
+    }
+
+    static List<Integer> toList(ListNode head) {
+        List<Integer> out = new ArrayList<>();
+        while (head != null) { out.add(head.val); head = head.next; }
+        return out;
     }
 
     static class Solution {
-        public ListNode deleteNodeBeforeTheGivenNode(ListNode head, ListNode node) {
+        public ListNode deleteNodeBeforeTheGivenNode(
+            ListNode head,
+            ListNode node
+        ) {
 
             // If the head or the given node is null, there is nothing to
             // delete Return the existing head
@@ -4056,215 +3387,37 @@ public class Main {
 
             return head;
         }
-
-        public ListNode build(int[] vals) {
-            ListNode dummy = new ListNode(0); ListNode cur = dummy;
-            for (int v : vals) { cur.next = new ListNode(v); cur = cur.next; }
-            return dummy.next;
-        }
-
-        public String toStr(ListNode head) {
-            StringBuilder sb = new StringBuilder("[");
-            while (head != null) { sb.append(head.val); if (head.next != null) sb.append(", "); head = head.next; }
-            return sb.append("]").toString();
-        }
-
-        public ListNode find(ListNode head, int val) {
-            ListNode cur = head;
-            while (cur != null && cur.val != val) cur = cur.next;
-            return cur;
-        }
     }
 
     public static void main(String[] args) {
-        Solution sol = new Solution();
-        ListNode head = sol.build(new int[]{5, 7, 3, 10});
-        head = sol.deleteNodeBeforeTheGivenNode(head, sol.find(head, 3));
-        System.out.println(sol.toStr(head)); // [5, 3, 10]
+        // Example from the problem statement — delete before node with val 3
+        ListNode h1 = fromList(5, 7, 3, 10);
+        System.out.println(toList(new Solution().deleteNodeBeforeTheGivenNode(h1, h1.next.next)));  // [5, 3, 10]
+
+        // Given node is head — no deletion
+        ListNode h2 = fromList(1, 2, 3);
+        System.out.println(toList(new Solution().deleteNodeBeforeTheGivenNode(h2, h2)));            // [1, 2, 3]
+
+        // Delete head (node is second)
+        ListNode h3 = fromList(1, 2, 3);
+        System.out.println(toList(new Solution().deleteNodeBeforeTheGivenNode(h3, h3.next)));       // [2, 3]
+
+        // Delete before last node
+        ListNode h4 = fromList(1, 2, 3, 4);
+        System.out.println(toList(new Solution().deleteNodeBeforeTheGivenNode(h4, h4.next.next.next)));  // [1, 2, 4]
+
+        // node is null — no deletion
+        ListNode h5 = fromList(1, 2);
+        System.out.println(toList(new Solution().deleteNodeBeforeTheGivenNode(h5, null)));          // [1, 2]
+
+        // Two-node list, given node is second
+        ListNode h6 = fromList(1, 2);
+        System.out.println(toList(new Solution().deleteNodeBeforeTheGivenNode(h6, h6.next)));       // [2]
     }
 }
 ```
 
-```c run
-#include <stdio.h>
-#include <stdlib.h>
-
-typedef struct ListNode { int val; struct ListNode *next; } ListNode;
-
-ListNode* newNode(int v) {
-    ListNode *n = malloc(sizeof(ListNode)); n->val = v; n->next = NULL; return n;
-}
-
-ListNode* deleteNodeBeforeTheGivenNode(ListNode *head, ListNode *node) {
-
-    /* If the head or the given node is NULL, there is nothing to
-       delete Return the existing head */
-    if (head == NULL || node == NULL) {
-        return head;
-    }
-
-    /* If the given node is the head node, we cannot delete the node
-       before it */
-    if (node == head) {
-        return head;
-    }
-
-    /* If the node to delete is the immediate next node of the head
-       Update the head to point to the next node, delete the original
-       head, and return the updated head */
-    if (head->next != NULL && head->next == node) {
-        ListNode *nodeToBeDeleted = head;
-        head = head->next;
-        free(nodeToBeDeleted);
-        return head;
-    }
-
-    /* Initialize variables for traversal */
-    /* current node being examined */
-    ListNode *current = head->next;
-
-    /* Node preceding the current node */
-    ListNode *previous = head;
-
-    /* Node preceding the previous node */
-    ListNode *previousToprevious = NULL;
-
-    /* Traverse the linked list until we find the node or reach the
-       end. */
-    while (current != NULL && current != node) {
-        previousToprevious = previous;
-        previous = current;
-        current = current->next;
-    }
-
-    /* If the node to delete was not found, return the head as is. */
-    if (current == NULL) {
-        return head;
-    }
-
-    /* Connect the previous node to the current node, bypassing the
-       node to delete. */
-    previousToprevious->next = current;
-    free(previous);
-
-    return head;
-}
-
-ListNode* build(int *vals, int n) {
-    ListNode dummy = {0, NULL}; ListNode *cur = &dummy;
-    for (int i = 0; i < n; i++) { cur->next = newNode(vals[i]); cur = cur->next; }
-    return dummy.next;
-}
-
-void printList(ListNode *head) {
-    printf("[");
-    while (head) { printf("%d", head->val); if (head->next) printf(", "); head = head->next; }
-    printf("]\n");
-}
-
-ListNode* find(ListNode *head, int val) {
-    ListNode *cur = head;
-    while (cur != NULL && cur->val != val) cur = cur->next;
-    return cur;
-}
-
-int main() {
-    int vals[] = {5, 7, 3, 10};
-    ListNode *head = build(vals, 4);
-    head = deleteNodeBeforeTheGivenNode(head, find(head, 3));
-    printList(head); // [5, 3, 10]
-    return 0;
-}
-```
-
-```scala run
-class ListNode(var v: Int, var next: ListNode = null)
-
-object Main extends App {
-  class Solution {
-    def deleteNodeBeforeTheGivenNode(head: ListNode, node: ListNode): ListNode = {
-
-      // If the head or the given node is null, there is nothing to
-      // delete Return the existing head
-      if (head == null || node == null) {
-        return head
-      }
-
-      // If the given node is the head node, we cannot delete the node
-      // before it
-      if (node == head) {
-        return head
-      }
-
-      // If the node to delete is the immediate next node of the head
-      // Update the head to point to the next node, delete the original
-      // head, and return the updated head
-      if (head.next != null && head.next == node) {
-        var nodeToBeDeleted = head
-        val newHead = head.next
-
-        // Dereference for garbage collection
-        nodeToBeDeleted = null
-        return newHead
-      }
-
-      // Initialize variables for traversal
-      // current node being examined
-      var current = head.next
-
-      // Node preceding the current node
-      var previous = head
-
-      // Node preceding the previous node
-      var previousToprevious: ListNode = null
-
-      // Traverse the linked list until we find the node or reach the
-      // end.
-      while (current != null && current != node) {
-        previousToprevious = previous
-        previous = current
-        current = current.next
-      }
-
-      // If the node to delete was not found, return the head as is.
-      if (current == null) {
-        return head
-      }
-
-      // Connect the previous node to the current node, bypassing the
-      // node to delete.
-      previousToprevious.next = current
-
-      // Dereference for garbage collection
-      previous = null
-
-      head
-    }
-
-    def build(vals: Int*): ListNode = {
-      val dummy = new ListNode(0); var cur = dummy
-      for (v <- vals) { cur.next = new ListNode(v); cur = cur.next }
-      dummy.next
-    }
-
-    def toStr(head: ListNode): String = {
-      val sb = new StringBuilder("["); var cur = head
-      while (cur != null) { sb.append(cur.v); if (cur.next != null) sb.append(", "); cur = cur.next }
-      sb.append("]").toString
-    }
-
-    def find(head: ListNode, value: Int): ListNode = {
-      var cur = head
-      while (cur != null && cur.v != value) cur = cur.next
-      cur
-    }
-  }
-
-  val sol = new Solution()
-  val head = sol.build(5, 7, 3, 10)
-  println(sol.toStr(sol.deleteNodeBeforeTheGivenNode(head, sol.find(head, 3)))) // [5, 3, 10]
-}
-```
+</details>
 
 
 ***
@@ -4857,146 +4010,150 @@ Given the **head** of a singly linked list and a **random node** in that linked 
 > -   **Input:** head = \[5, 7, 3, 10\], node = 7
 > -   **Output:** \[5, 3, 10\]
 
-## Solution
+<details>
+<summary><h2>Solution</h2></summary>
 
 
-```pseudocode
-function deleteTheGivenNode(head, node):
-
-    # Check if either the head or the given node is null
-    if head is null OR node is null:
-        return head
-
-    # The given node is the head node
-    if node = head:
-
-        # Update the head to the next node
-        head ← head.next
-
-        # Delete the given node
-        node ← null
-
-        # Return the updated head
-        return head
-
-    # Pointer to traverse the list
-    current ← head
-
-    # Pointer to track the previous node
-    previous ← null
-
-    # Traverse the list until the current node matches the given node
-    while current is not null AND current ≠ node:
-
-        # Update the previous node
-        previous ← current
-
-        # Move to the next node
-        current ← current.next
-
-    # If the current node becomes null, the given node was not found
-    # in the list
-    if current is null:
-
-        # Return the original head
-        return head
-
-    # Update the previous node's next pointer to skip the current
-    # node
-    previous.next ← current.next
-
-    # Delete the current node
-    current ← null
-
-    # Return the head of the modified list
-    return head
-```
 
 ```python run
+from typing import Optional, List, Any
+
+
 class ListNode:
-    def __init__(self, val=0, next=None):
+    def __init__(self, val=0, nxt=None):
         self.val = val
-        self.next = next
+        self.next = nxt
 
-def delete_the_given_node(head, node):
 
-    # Check if either the head or the given node is None
-    if head is None or node is None:
-        return head
-
-    # The given node is the head node
-    if node == head:
-
-        # Update the head to the next node
-        head = head.next
-
-        # Delete the given node
-        del node
-
-        # Return the updated head
-        return head
-
-    # Pointer to traverse the list
-    current = head
-
-    # Pointer to track the previous node
-    previous = None
-
-    # Traverse the list until the current node matches the given node
-    while current is not None and current != node:
-
-        # Update the previous node
-        previous = current
-
-        # Move to the next node
-        current = current.next
-
-    # If the current node becomes None, the given node was not found
-    # in the list
-    if current is None:
-
-        # Return the original head
-        return head
-
-    # Update the previous node's next pointer to skip the current
-    # node
-    if previous and current:
-        previous.next = current.next
-
-    # Delete the current node
-    del current
-
-    # Return the head of the modified list
+def from_list(values):
+    if not values:
+        return None
+    head = ListNode(values[0])
+    cur = head
+    for v in values[1:]:
+        cur.next = ListNode(v)
+        cur = cur.next
     return head
 
-# --- driver ---
-def build(vals):
-    dummy = ListNode(0); cur = dummy
-    for v in vals:
-        cur.next = ListNode(v); cur = cur.next
-    return dummy.next
 
 def to_list(head):
-    res = []
-    while head: res.append(head.val); head = head.next
-    return res
+    out = []
+    while head is not None:
+        out.append(head.val)
+        head = head.next
+    return out
 
-def find(head, val):
-    cur = head
-    while cur and cur.val != val: cur = cur.next
-    return cur
 
-head = build([5, 7, 3, 10])
-head = delete_the_given_node(head, find(head, 7))
-print(to_list(head))  # [5, 3, 10]
+class Solution:
+    def delete_the_given_node(
+        self, head: Optional[ListNode], node: Optional[ListNode]
+    ) -> Optional[ListNode]:
+
+        # Check if either the head or the given node is None
+        if head is None or node is None:
+            return head
+
+        # The given node is the head node
+        if node == head:
+
+            # Update the head to the next node
+            head = head.next
+
+            # Delete the given node
+            del node
+
+            # Return the updated head
+            return head
+
+        # Pointer to traverse the list
+        current: Optional[ListNode] = head
+
+        # Pointer to track the previous node
+        previous: Optional[ListNode] = None
+
+        # Traverse the list until the current node matches the given node
+        while current is not None and current != node:
+
+            # Update the previous node
+            previous = current
+
+            # Move to the next node
+            current = current.next
+
+        # If the current node becomes None, the given node was not found
+        # in the list
+        if current is None:
+
+            # Return the original head
+            return head
+
+        # Update the previous node's next pointer to skip the current
+        # node
+        if previous and current:
+            previous.next = current.next
+
+        # Delete the current node
+        del current
+
+        # Return the head of the modified list
+        return head
+
+
+# Example from the problem statement — delete node with val 7
+h1 = from_list([5, 7, 3, 10])
+print(to_list(Solution().delete_the_given_node(h1, h1.next)))          # [5, 3, 10]
+
+# Delete head
+h2 = from_list([1, 2, 3])
+print(to_list(Solution().delete_the_given_node(h2, h2)))                # [2, 3]
+
+# Delete last node
+h3 = from_list([1, 2, 3])
+print(to_list(Solution().delete_the_given_node(h3, h3.next.next)))      # [1, 2]
+
+# Single-node list — delete the only node
+h4 = from_list([42])
+print(to_list(Solution().delete_the_given_node(h4, h4)))                # []
+
+# node is None — no deletion
+h5 = from_list([1, 2])
+print(to_list(Solution().delete_the_given_node(h5, None)))              # [1, 2]
+
+# Empty list
+print(to_list(Solution().delete_the_given_node(None, None)))            # []
+
+# Two-node list — delete first
+h6 = from_list([1, 2])
+print(to_list(Solution().delete_the_given_node(h6, h6)))                # [2]
 ```
 
 ```java run
+import java.util.*;
+
 public class Main {
     static class ListNode {
-        int val; ListNode next;
-        ListNode(int v) { val = v; }
-        ListNode(int v, ListNode n) { val = v; next = n; }
+        int val;
+        ListNode next;
+        ListNode() {}
+        ListNode(int val) { this.val = val; }
+        ListNode(int val, ListNode next) { this.val = val; this.next = next; }
+    }
+
+    static ListNode fromList(int... values) {
+        if (values.length == 0) return null;
+        ListNode head = new ListNode(values[0]);
+        ListNode cur = head;
+        for (int i = 1; i < values.length; i++) {
+            cur.next = new ListNode(values[i]);
+            cur = cur.next;
+        }
+        return head;
+    }
+
+    static List<Integer> toList(ListNode head) {
+        List<Integer> out = new ArrayList<>();
+        while (head != null) { out.add(head.val); head = head.next; }
+        return out;
     }
 
     static class Solution {
@@ -5055,213 +4212,40 @@ public class Main {
             // Return the head of the modified list
             return head;
         }
-
-        public ListNode build(int[] vals) {
-            ListNode dummy = new ListNode(0); ListNode cur = dummy;
-            for (int v : vals) { cur.next = new ListNode(v); cur = cur.next; }
-            return dummy.next;
-        }
-
-        public String toStr(ListNode head) {
-            StringBuilder sb = new StringBuilder("[");
-            while (head != null) { sb.append(head.val); if (head.next != null) sb.append(", "); head = head.next; }
-            return sb.append("]").toString();
-        }
-
-        public ListNode find(ListNode head, int val) {
-            ListNode cur = head;
-            while (cur != null && cur.val != val) cur = cur.next;
-            return cur;
-        }
     }
 
     public static void main(String[] args) {
-        Solution sol = new Solution();
-        ListNode head = sol.build(new int[]{5, 7, 3, 10});
-        head = sol.deleteTheGivenNode(head, sol.find(head, 7));
-        System.out.println(sol.toStr(head)); // [5, 3, 10]
+        // Example from the problem statement — delete node with val 7
+        ListNode h1 = fromList(5, 7, 3, 10);
+        System.out.println(toList(new Solution().deleteTheGivenNode(h1, h1.next)));          // [5, 3, 10]
+
+        // Delete head
+        ListNode h2 = fromList(1, 2, 3);
+        System.out.println(toList(new Solution().deleteTheGivenNode(h2, h2)));               // [2, 3]
+
+        // Delete last node
+        ListNode h3 = fromList(1, 2, 3);
+        System.out.println(toList(new Solution().deleteTheGivenNode(h3, h3.next.next)));     // [1, 2]
+
+        // Single-node list — delete the only node
+        ListNode h4 = fromList(42);
+        System.out.println(toList(new Solution().deleteTheGivenNode(h4, h4)));               // []
+
+        // node is null — no deletion
+        ListNode h5 = fromList(1, 2);
+        System.out.println(toList(new Solution().deleteTheGivenNode(h5, null)));             // [1, 2]
+
+        // Empty list
+        System.out.println(toList(new Solution().deleteTheGivenNode(null, null)));           // []
+
+        // Two-node list — delete first
+        ListNode h6 = fromList(1, 2);
+        System.out.println(toList(new Solution().deleteTheGivenNode(h6, h6)));               // [2]
     }
 }
 ```
 
-```c run
-#include <stdio.h>
-#include <stdlib.h>
-
-typedef struct ListNode { int val; struct ListNode *next; } ListNode;
-
-ListNode* newNode(int v) {
-    ListNode *n = malloc(sizeof(ListNode)); n->val = v; n->next = NULL; return n;
-}
-
-ListNode* deleteTheGivenNode(ListNode *head, ListNode *node) {
-
-    /* Check if either the head or the given node is NULL */
-    if (head == NULL || node == NULL) {
-        return head;
-    }
-
-    /* The given node is the head node */
-    if (node == head) {
-
-        /* Update the head to the next node */
-        head = head->next;
-
-        /* Delete the given node */
-        free(node);
-
-        /* Return the updated head */
-        return head;
-    }
-
-    /* Pointer to traverse the list */
-    ListNode *current = head;
-
-    /* Pointer to track the previous node */
-    ListNode *previous = NULL;
-
-    /* Traverse the list until the current node matches the given
-       node */
-    while (current != NULL && current != node) {
-
-        /* Update the previous node */
-        previous = current;
-
-        /* Move to the next node */
-        current = current->next;
-    }
-
-    /* If the current node becomes NULL, the given node was not found
-       in the list */
-    if (current == NULL) {
-
-        /* Return the original head */
-        return head;
-    }
-
-    /* Update the previous node's next pointer to skip the current
-       node */
-    previous->next = current->next;
-
-    /* Delete the current node */
-    free(current);
-
-    /* Return the head of the modified list */
-    return head;
-}
-
-ListNode* build(int *vals, int n) {
-    ListNode dummy = {0, NULL}; ListNode *cur = &dummy;
-    for (int i = 0; i < n; i++) { cur->next = newNode(vals[i]); cur = cur->next; }
-    return dummy.next;
-}
-
-void printList(ListNode *head) {
-    printf("[");
-    while (head) { printf("%d", head->val); if (head->next) printf(", "); head = head->next; }
-    printf("]\n");
-}
-
-ListNode* find(ListNode *head, int val) {
-    ListNode *cur = head;
-    while (cur != NULL && cur->val != val) cur = cur->next;
-    return cur;
-}
-
-int main() {
-    int vals[] = {5, 7, 3, 10};
-    ListNode *head = build(vals, 4);
-    head = deleteTheGivenNode(head, find(head, 7));
-    printList(head); // [5, 3, 10]
-    return 0;
-}
-```
-
-```scala run
-class ListNode(var v: Int, var next: ListNode = null)
-
-object Main extends App {
-  class Solution {
-    def deleteTheGivenNode(head: ListNode, node: ListNode): ListNode = {
-
-      // Check if either the head or the given node is null
-      if (head == null || node == null) {
-        return head
-      }
-
-      // The given node is the head node
-      if (node == head) {
-
-        // Update the head to the next node
-        val newHead = head.next
-
-        // Delete the given node
-        var n = node
-        n = null
-
-        // Return the updated head
-        return newHead
-      }
-
-      // Pointer to traverse the list
-      var current = head
-
-      // Pointer to track the previous node
-      var previous: ListNode = null
-
-      // Traverse the list until the current node matches the given node
-      while (current != null && current != node) {
-
-        // Update the previous node
-        previous = current
-
-        // Move to the next node
-        current = current.next
-      }
-
-      // If the current node becomes null, the given node was not found
-      // in the list
-      if (current == null) {
-
-        // Return the original head
-        return head
-      }
-
-      // Update the previous node's next pointer to skip the current
-      // node
-      previous.next = current.next
-
-      // Delete the current node
-      current = null
-
-      // Return the head of the modified list
-      head
-    }
-
-    def build(vals: Int*): ListNode = {
-      val dummy = new ListNode(0); var cur = dummy
-      for (v <- vals) { cur.next = new ListNode(v); cur = cur.next }
-      dummy.next
-    }
-
-    def toStr(head: ListNode): String = {
-      val sb = new StringBuilder("["); var cur = head
-      while (cur != null) { sb.append(cur.v); if (cur.next != null) sb.append(", "); cur = cur.next }
-      sb.append("]").toString
-    }
-
-    def find(head: ListNode, value: Int): ListNode = {
-      var cur = head
-      while (cur != null && cur.v != value) cur = cur.next
-      cur
-    }
-  }
-
-  val sol = new Solution()
-  val head = sol.build(5, 7, 3, 10)
-  println(sol.toStr(sol.deleteTheGivenNode(head, sol.find(head, 7)))) // [5, 3, 10]
-}
-```
+</details>
 
 
 ***
@@ -5852,134 +4836,141 @@ Given the **head** of a singly linked list and distance **X**, write a function 
 > -   **Input:** head = \[5, 7, 3, 10\], X = 1
 > -   **Output:** \[5, 3, 10\]
 
-## Solution
+<details>
+<summary><h2>Solution</h2></summary>
 
 
-```pseudocode
-function deleteNodeAtGivenDistance(head, X):
-
-    # If the head is null (empty list), return null
-    if head is null:
-        return null
-
-    # If X is 0, delete the head node
-    if X = 0:
-        nodeToBeDeleted ← head
-
-        # Update the head to the next node
-        head ← head.next
-
-        # Delete the original head node
-        nodeToBeDeleted ← null
-
-        # Return the updated head
-        return head
-
-    counter ← 0
-    current ← head
-
-    # Traverse to the node at position X - 1
-    while current is not null AND counter < X - 1:
-
-        # Move to the next node
-        current ← current.next
-
-        # Increment the counter
-        counter ← counter + 1
-
-    # If the node at position X - 1 is null or the next node is
-    # null, return the head
-    if current is null OR current.next is null:
-        return head
-
-    # Store the node to be deleted
-    nodeToBeDeleted ← current.next
-
-    # Update the next pointer of the current node
-    current.next ← current.next.next
-
-    # Delete the node at position X
-    nodeToBeDeleted ← null
-
-    # Return the head
-    return head
-```
 
 ```python run
+from typing import Optional
+
+
 class ListNode:
-    def __init__(self, val=0, next=None):
+    def __init__(self, val=0, nxt=None):
         self.val = val
-        self.next = next
+        self.next = nxt
 
-def delete_node_at_given_distance(head, x):
 
-    # If the head is None (empty list), return None
-    if head is None:
+def from_list(values):
+    if not values:
         return None
-
-    # If x is 0, delete the head node
-    if x == 0:
-        node_to_be_deleted = head
-
-        # Update the head to the next node
-        head = head.next
-
-        # Delete the original head node
-        del node_to_be_deleted
-
-        # Return the updated head
-        return head
-
-    counter = 0
-    current = head
-
-    # Traverse to the node at position x - 1
-    while current is not None and counter < x - 1:
-
-        # Move to the next node
-        current = current.next
-
-        # Increment the counter
-        counter += 1
-
-    # If the node at position x - 1 is None or the next node is None,
-    # return the head
-    if current is None or current.next is None:
-        return head
-
-    # Store the node to be deleted
-    node_to_be_deleted = current.next
-
-    # Update the next pointer of the current node
-    current.next = current.next.next
-
-    # Delete the node at position x
-    del node_to_be_deleted
-
-    # Return the head
+    head = ListNode(values[0])
+    cur = head
+    for v in values[1:]:
+        cur.next = ListNode(v)
+        cur = cur.next
     return head
 
-# --- driver ---
-def build(vals):
-    dummy = ListNode(0); cur = dummy
-    for v in vals:
-        cur.next = ListNode(v); cur = cur.next
-    return dummy.next
 
 def to_list(head):
-    res = []
-    while head: res.append(head.val); head = head.next
-    return res
+    out = []
+    while head is not None:
+        out.append(head.val)
+        head = head.next
+    return out
 
-print(to_list(delete_node_at_given_distance(build([5, 7, 3, 10]), 1)))  # [5, 3, 10]
+
+class Solution:
+    def delete_node_at_given_distance(
+        self, head: Optional[ListNode], x: int
+    ) -> Optional[ListNode]:
+
+        # If the head is None (empty list), return None
+        if head is None:
+            return None
+
+        # If x is 0, delete the head node
+        if x == 0:
+            node_to_be_deleted: ListNode = head
+
+            # Update the head to the next node
+            head = head.next
+
+            # Delete the original head node
+            del node_to_be_deleted
+
+            # Return the updated head
+            return head
+
+        counter: int = 0
+        current: Optional[ListNode] = head
+
+        # Traverse to the node at position x - 1
+        while current is not None and counter < x - 1:
+
+            # Move to the next node
+            current = current.next
+
+            # Increment the counter
+            counter += 1
+
+        # If the node at position x - 1 is None or the next node is None,
+        # return the head
+        if current is None or current.next is None:
+            return head
+
+        # Store the node to be deleted
+        node_to_be_deleted = current.next
+
+        # Update the next pointer of the current node
+        current.next = current.next.next
+
+        # Delete the node at position x
+        del node_to_be_deleted
+
+        # Return the head
+        return head
+
+
+# Example from the problem statement
+print(to_list(Solution().delete_node_at_given_distance(from_list([5, 7, 3, 10]), 1)))  # [5, 3, 10]
+
+# Delete head (X = 0)
+print(to_list(Solution().delete_node_at_given_distance(from_list([1, 2, 3]), 0)))      # [2, 3]
+
+# Delete last node
+print(to_list(Solution().delete_node_at_given_distance(from_list([1, 2, 3]), 2)))      # [1, 2]
+
+# Empty list
+print(to_list(Solution().delete_node_at_given_distance(None, 0)))                      # []
+
+# Single-node list, X = 0
+print(to_list(Solution().delete_node_at_given_distance(from_list([7]), 0)))            # []
+
+# X out of range — head unchanged
+print(to_list(Solution().delete_node_at_given_distance(from_list([1, 2]), 5)))         # [1, 2]
+
+# Two-node list, X = 1
+print(to_list(Solution().delete_node_at_given_distance(from_list([1, 2]), 1)))         # [1]
 ```
 
 ```java run
+import java.util.*;
+
 public class Main {
     static class ListNode {
-        int val; ListNode next;
-        ListNode(int v) { val = v; }
-        ListNode(int v, ListNode n) { val = v; next = n; }
+        int val;
+        ListNode next;
+        ListNode() {}
+        ListNode(int val) { this.val = val; }
+        ListNode(int val, ListNode next) { this.val = val; this.next = next; }
+    }
+
+    static ListNode fromList(int... values) {
+        if (values.length == 0) return null;
+        ListNode head = new ListNode(values[0]);
+        ListNode cur = head;
+        for (int i = 1; i < values.length; i++) {
+            cur.next = new ListNode(values[i]);
+            cur = cur.next;
+        }
+        return head;
+    }
+
+    static List<Integer> toList(ListNode head) {
+        List<Integer> out = new ArrayList<>();
+        while (head != null) { out.add(head.val); head = head.next; }
+        return out;
     }
 
     static class Solution {
@@ -6035,193 +5026,37 @@ public class Main {
             // Return the head
             return head;
         }
-
-        public ListNode build(int[] vals) {
-            ListNode dummy = new ListNode(0); ListNode cur = dummy;
-            for (int v : vals) { cur.next = new ListNode(v); cur = cur.next; }
-            return dummy.next;
-        }
-
-        public String toStr(ListNode head) {
-            StringBuilder sb = new StringBuilder("[");
-            while (head != null) { sb.append(head.val); if (head.next != null) sb.append(", "); head = head.next; }
-            return sb.append("]").toString();
-        }
     }
 
     public static void main(String[] args) {
-        Solution sol = new Solution();
-        ListNode head = sol.build(new int[]{5, 7, 3, 10});
-        head = sol.deleteNodeAtGivenDistance(head, 1);
-        System.out.println(sol.toStr(head)); // [5, 3, 10]
+        // Example from the problem statement
+        System.out.println(toList(new Solution().deleteNodeAtGivenDistance(fromList(5, 7, 3, 10), 1)));  // [5, 3, 10]
+
+        // Delete head (X = 0)
+        System.out.println(toList(new Solution().deleteNodeAtGivenDistance(fromList(1, 2, 3), 0)));      // [2, 3]
+
+        // Delete last node
+        System.out.println(toList(new Solution().deleteNodeAtGivenDistance(fromList(1, 2, 3), 2)));      // [1, 2]
+
+        // Empty list
+        System.out.println(toList(new Solution().deleteNodeAtGivenDistance(null, 0)));                   // []
+
+        // Single-node list, X = 0
+        System.out.println(toList(new Solution().deleteNodeAtGivenDistance(fromList(7), 0)));            // []
+
+        // X out of range — head unchanged
+        System.out.println(toList(new Solution().deleteNodeAtGivenDistance(fromList(1, 2), 5)));         // [1, 2]
+
+        // Two-node list, X = 1
+        System.out.println(toList(new Solution().deleteNodeAtGivenDistance(fromList(1, 2), 1)));         // [1]
     }
 }
 ```
 
-```c run
-#include <stdio.h>
-#include <stdlib.h>
+</details>
+<details>
+<summary><h2>Final Takeaway</h2></summary>
 
-typedef struct ListNode { int val; struct ListNode *next; } ListNode;
-
-ListNode* newNode(int v) {
-    ListNode *n = malloc(sizeof(ListNode)); n->val = v; n->next = NULL; return n;
-}
-
-ListNode* deleteNodeAtGivenDistance(ListNode *head, int X) {
-
-    /* If the head is NULL (empty list), return NULL */
-    if (head == NULL) {
-        return NULL;
-    }
-
-    /* If X is 0, delete the head node */
-    if (X == 0) {
-        ListNode *nodeToBeDeleted = head;
-
-        /* Update the head to the next node */
-        head = head->next;
-
-        /* Delete the original head node */
-        free(nodeToBeDeleted);
-
-        /* Return the updated head */
-        return head;
-    }
-
-    int counter = 0;
-    ListNode *current = head;
-
-    /* Traverse to the node at position X - 1 */
-    while (current != NULL && counter < X - 1) {
-
-        /* Move to the next node */
-        current = current->next;
-
-        /* Increment the counter */
-        counter++;
-    }
-
-    /* If the node at position X - 1 is NULL or the next node is
-       NULL, return the head */
-    if (current == NULL || current->next == NULL) {
-        return head;
-    }
-
-    /* Store the node to be deleted */
-    ListNode *nodeToBeDeleted = current->next;
-
-    /* Update the next pointer of the current node */
-    current->next = current->next->next;
-
-    /* Delete the node at position X */
-    free(nodeToBeDeleted);
-
-    /* Return the head */
-    return head;
-}
-
-ListNode* build(int *vals, int n) {
-    ListNode dummy = {0, NULL}; ListNode *cur = &dummy;
-    for (int i = 0; i < n; i++) { cur->next = newNode(vals[i]); cur = cur->next; }
-    return dummy.next;
-}
-
-void printList(ListNode *head) {
-    printf("[");
-    while (head) { printf("%d", head->val); if (head->next) printf(", "); head = head->next; }
-    printf("]\n");
-}
-
-int main() {
-    int vals[] = {5, 7, 3, 10};
-    ListNode *head = build(vals, 4);
-    head = deleteNodeAtGivenDistance(head, 1);
-    printList(head); // [5, 3, 10]
-    return 0;
-}
-```
-
-```scala run
-class ListNode(var v: Int, var next: ListNode = null)
-
-object Main extends App {
-  class Solution {
-    def deleteNodeAtGivenDistance(head: ListNode, X: Int): ListNode = {
-
-      // If the head is null (empty list), return null
-      if (head == null) {
-        return null
-      }
-
-      // If X is 0, delete the head node
-      if (X == 0) {
-        var nodeToBeDeleted = head
-
-        // Update the head to the next node
-        val newHead = head.next
-
-        // Delete the original head node
-        nodeToBeDeleted = null
-
-        // Return the updated head
-        return newHead
-      }
-
-      var counter = 0
-      var current = head
-
-      // Traverse to the node at position X - 1
-      while (current != null && counter < X - 1) {
-
-        // Move to the next node
-        current = current.next
-
-        // Increment the counter
-        counter += 1
-      }
-
-      // If the node at position X - 1 is null or the next node is
-      // null, return the head
-      if (current == null || current.next == null) {
-        return head
-      }
-
-      // Store the node to be deleted
-      var nodeToBeDeleted = current.next
-
-      // Update the next pointer of the current node
-      current.next = current.next.next
-
-      // Delete the node at position X
-      nodeToBeDeleted = null
-
-      // Return the head
-      head
-    }
-
-    def build(vals: Int*): ListNode = {
-      val dummy = new ListNode(0); var cur = dummy
-      for (v <- vals) { cur.next = new ListNode(v); cur = cur.next }
-      dummy.next
-    }
-
-    def toStr(head: ListNode): String = {
-      val sb = new StringBuilder("["); var cur = head
-      while (cur != null) { sb.append(cur.v); if (cur.next != null) sb.append(", "); cur = cur.next }
-      sb.append("]").toString
-    }
-  }
-
-  val sol = new Solution()
-  println(sol.toStr(sol.deleteNodeAtGivenDistance(sol.build(5, 7, 3, 10), 1))) // [5, 3, 10]
-}
-```
-
-
-***
-
-## Final Takeaway
 
 Seven deletion variants, one predecessor-hunt pattern:
 
@@ -6249,3 +5084,5 @@ This is why doubly linked lists feel magical: every node already has a `prev` po
 > Yes — use a hash map. One O(n) pass builds `value → (node, predecessor)` entries. Each subsequent deletion is now O(1): look up the pair, splice, update the map. Total: O(n) preprocess + O(n) deletes = **O(n)**. The catch: when you splice out a node, update the map entry for its successor (its predecessor just changed) — still O(1) per op.
 >
 > </details>
+
+</details>

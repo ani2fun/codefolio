@@ -103,90 +103,184 @@ Given the **root** of a binary search tree and a **target** value, return the no
 > - **Input:** `root = [5, 4, 10, null, null, 9, 11]`, `target = 20`
 > - **Output:** `null`
 
-## The Solution
+<details>
+<summary><h2>The Solution</h2></summary>
 
 
-```pseudocode
-function iterativeSearch(root, target):
-    while root is NOT null:
-        if root.val = target:
-            return root
-        if target < root.val:
-            root ← root.left
-        else:
-            root ← root.right
-    return null
-```
 
 ```python run
+from typing import Optional
+
+
+class TreeNode:
+    def __init__(self, val=0, left=None, right=None):
+        self.val = val
+        self.left = left
+        self.right = right
+
+
+def from_level_order(values):
+    """Build tree from list like [1, 2, 3, None, 4]. None means missing child."""
+    if not values:
+        return None
+    root = TreeNode(values[0])
+    queue = [root]
+    i = 1
+    while queue and i < len(values):
+        node = queue.pop(0)
+        if i < len(values) and values[i] is not None:
+            node.left = TreeNode(values[i])
+            queue.append(node.left)
+        i += 1
+        if i < len(values) and values[i] is not None:
+            node.right = TreeNode(values[i])
+            queue.append(node.right)
+        i += 1
+    return root
+
+
 class Solution:
-    def iterative_search(self, root, target):
-        # Walk down the tree until we either find the target or fall off.
-        while root is not None:
+    def iterative_search(
+        self, root: Optional[TreeNode], target: int
+    ) -> Optional[TreeNode]:
+
+        # Loop until we reach the end of the tree (or find the desired
+        # node)
+        while root:
+
+            # Check if the current node's value matches the target data
             if root.val == target:
-                return root                              # match — done
-            if target < root.val:
-                root = root.left                         # BST rule: target < node → go left
+
+                # Return the node since we found it
+                return root
+
+            # If the target data is smaller, move to the left subtree
+            elif target < root.val:
+                root = root.left
+
+            # If the target data is larger, move to the right subtree
             else:
-                root = root.right                        # otherwise go right
-        return None                                       # walked off → not in tree
+                root = root.right
+
+        # If the while loop ends without finding the node, return None
+        return None
+
+
+# Examples from the problem statement
+t1 = from_level_order([4, 2, 5, 1, 3, None, 6])
+r1 = Solution().iterative_search(t1, 3)
+print(r1.val if r1 else None)                      # 3
+
+t2 = from_level_order([5, 4, 10, None, None, 9, 11])
+r2 = Solution().iterative_search(t2, 20)
+print(r2.val if r2 else None)                      # None
+
+# Edge cases
+print(Solution().iterative_search(None, 5))        # None  — empty tree
+
+t4 = TreeNode(5)                                   # single node, found
+r4 = Solution().iterative_search(t4, 5)
+print(r4.val if r4 else None)                      # 5
+
+r5 = Solution().iterative_search(t4, 10)           # single node, not found
+print(r5.val if r5 else None)                      # None
+
+t6 = from_level_order([4, 2, 5, 1, 3, None, 6])
+r6 = Solution().iterative_search(t6, 1)            # leftmost node
+print(r6.val if r6 else None)                      # 1
+
+t7 = from_level_order([4, 2, 5, 1, 3, None, 6])
+r7 = Solution().iterative_search(t7, 6)            # rightmost node
+print(r7.val if r7 else None)                      # 6
 ```
 
 ```java run
+import java.util.*;
+
 public class Main {
-    static class TreeNode { int val; TreeNode left, right; TreeNode(int v){val=v;} }
+    static class TreeNode {
+        int val;
+        TreeNode left;
+        TreeNode right;
+        TreeNode() {}
+        TreeNode(int val) { this.val = val; }
+    }
+
+    static TreeNode fromLevelOrder(Integer... values) {
+        if (values.length == 0 || values[0] == null) return null;
+        TreeNode root = new TreeNode(values[0]);
+        Deque<TreeNode> queue = new ArrayDeque<>();
+        queue.add(root);
+        int i = 1;
+        while (!queue.isEmpty() && i < values.length) {
+            TreeNode node = queue.poll();
+            if (i < values.length && values[i] != null) {
+                node.left = new TreeNode(values[i]);
+                queue.add(node.left);
+            }
+            i++;
+            if (i < values.length && values[i] != null) {
+                node.right = new TreeNode(values[i]);
+                queue.add(node.right);
+            }
+            i++;
+        }
+        return root;
+    }
 
     static class Solution {
         public TreeNode iterativeSearch(TreeNode root, int target) {
-            while (root != null) {                                              // walk down
-                if (root.val == target) return root;                            // match
-                if (target < root.val) root = root.left;                        // BST rule: left
-                else                   root = root.right;                       //          right
+
+            // Loop until we reach the end of the tree (or find the desired
+            // node)
+            while (root != null) {
+
+                // Check if the current node's value matches the target data
+                if (root.val == target) {
+
+                    // Return the node since we found it
+                    return root;
+                }
+
+                // If the target data is smaller, move to the left subtree
+                else if (target < root.val) {
+                    root = root.left;
+                }
+
+                // If the target data is larger, move to the right subtree
+                else {
+                    root = root.right;
+                }
             }
-            return null;                                                        // not found
+
+            // If the while loop ends without finding the node, return null
+            return null;
         }
     }
 
+    static String val(TreeNode n) { return n == null ? "null" : String.valueOf(n.val); }
+
     public static void main(String[] args) {
-        TreeNode root = new TreeNode(4);
-        root.left  = new TreeNode(2); root.right = new TreeNode(5);
-        root.left.left  = new TreeNode(1); root.left.right = new TreeNode(3);
-        root.right.right = new TreeNode(6);
-        System.out.println(new Solution().iterativeSearch(root, 3).val);  // 3
+        // Examples from the problem statement
+        TreeNode t1 = fromLevelOrder(4, 2, 5, 1, 3, null, 6);
+        System.out.println(val(new Solution().iterativeSearch(t1, 3)));    // 3
+
+        TreeNode t2 = fromLevelOrder(5, 4, 10, null, null, 9, 11);
+        System.out.println(val(new Solution().iterativeSearch(t2, 20)));   // null
+
+        // Edge cases
+        System.out.println(val(new Solution().iterativeSearch(null, 5)));  // null — empty tree
+
+        TreeNode t4 = new TreeNode(5);                                     // single node, found
+        System.out.println(val(new Solution().iterativeSearch(t4, 5)));    // 5
+
+        System.out.println(val(new Solution().iterativeSearch(t4, 10)));   // null — single node, not found
+
+        TreeNode t6 = fromLevelOrder(4, 2, 5, 1, 3, null, 6);
+        System.out.println(val(new Solution().iterativeSearch(t6, 1)));    // 1  — leftmost node
+
+        System.out.println(val(new Solution().iterativeSearch(t6, 6)));    // 6  — rightmost node
     }
-}
-```
-
-```c run
-struct TreeNode *iterativeSearch(struct TreeNode *root, int target) {
-    while (root != NULL) {                                                  // walk down
-        if (root->val == target) return root;                               // match
-        if (target < root->val) root = root->left;                          // BST rule: left
-        else                    root = root->right;                         //          right
-    }
-    return NULL;                                                            // not found
-}
-```
-
-```scala run
-class TreeNode(var value: Int, var left: TreeNode = null, var right: TreeNode = null)
-
-object Main extends App {
-  class Solution {
-    def iterativeSearch(root: TreeNode, target: Int): TreeNode = {
-      var cur = root
-      while (cur != null) {                                                   // walk down
-        if (cur.value == target) return cur                                   // match
-        cur = if (target < cur.value) cur.left else cur.right                 // BST rule
-      }
-      null                                                                     // not found
-    }
-  }
-
-  val root = new TreeNode(4,
-    new TreeNode(2, new TreeNode(1), new TreeNode(3)),
-    new TreeNode(5, null, new TreeNode(6)))
-  println(new Solution().iterativeSearch(root, 3).value)  // 3
 }
 ```
 
@@ -200,6 +294,8 @@ Step 2 │ root = 30 │ 40 > 30  → root = root.right (now 40)
 Step 3 │ root = 40 │ 40 == 40 → return root
 Result: node 40 ✓ (3 hops, O(1) extra space)
 ```
+
+</details>
 
 </details>
 
@@ -264,78 +360,189 @@ Given the **root** of a binary search tree, return the node with the minimum val
 > - **Input:** `root = [5, 4, 10, null, null, 9, 11]`
 > - **Output:** `4`
 
-## The Solution
+<details>
+<summary><h2>The Solution</h2></summary>
 
 
-```pseudocode
-function iterativelyFindMinimum(root):
-    if root is null:
-        return null
-    while root.left is NOT null:
-        root ← root.left
-    return root
-```
 
 ```python run
+from typing import Optional
+
+
+class TreeNode:
+    def __init__(self, val=0, left=None, right=None):
+        self.val = val
+        self.left = left
+        self.right = right
+
+
+def from_level_order(values):
+    """Build tree from list like [1, 2, 3, None, 4]. None means missing child."""
+    if not values:
+        return None
+    root = TreeNode(values[0])
+    queue = [root]
+    i = 1
+    while queue and i < len(values):
+        node = queue.pop(0)
+        if i < len(values) and values[i] is not None:
+            node.left = TreeNode(values[i])
+            queue.append(node.left)
+        i += 1
+        if i < len(values) and values[i] is not None:
+            node.right = TreeNode(values[i])
+            queue.append(node.right)
+        i += 1
+    return root
+
+
 class Solution:
-    def iteratively_find_minimum(self, root):
-        if root is None:                              # empty tree → no minimum
-            return None
-        # Keep walking left until there's no left child — that's the minimum.
-        while root.left is not None:
-            root = root.left
+    def iteratively_find_minimum(
+        self, root: Optional[TreeNode]
+    ) -> Optional[TreeNode]:
+
+        # Start from the given root node and iterate until we reach
+        # the leftmost node
+        while root:
+
+            # If the left child of the current node is null, it means
+            # we have reached the leftmost node, which contains the
+            # minimum value in the binary search tree
+            if root.left is None:
+                return root
+
+            # If the left child is not null, move to the left child
+            # to continue the search for the minimum value.
+            else:
+                root = root.left
+
+        # If the tree is empty (root is null), or for some reason,
+        # the while loop exits without finding the minimum node, we
+        # return the current root
         return root
+
+
+# Examples from the problem statement
+t1 = from_level_order([4, 2, 5, 1, 3, None, 6])
+r1 = Solution().iteratively_find_minimum(t1)
+print(r1.val if r1 else None)                      # 1
+
+t2 = from_level_order([5, 4, 10, None, None, 9, 11])
+r2 = Solution().iteratively_find_minimum(t2)
+print(r2.val if r2 else None)                      # 4
+
+# Edge cases
+print(Solution().iteratively_find_minimum(None))   # None  — empty tree
+
+t4 = TreeNode(7)                                   # single node
+r4 = Solution().iteratively_find_minimum(t4)
+print(r4.val if r4 else None)                      # 7
+
+t5 = from_level_order([1, None, 2, None, None, None, 3])  # right-skewed
+r5 = Solution().iteratively_find_minimum(t5)
+print(r5.val if r5 else None)                      # 1  — root is minimum
+
+t6 = from_level_order([5, 4, 6, 3, None, None, 7])
+r6 = Solution().iteratively_find_minimum(t6)
+print(r6.val if r6 else None)                      # 3
+
+t7 = from_level_order([5, 3, 7, 1, 4, 6, 9])      # balanced BST
+r7 = Solution().iteratively_find_minimum(t7)
+print(r7.val if r7 else None)                      # 1
 ```
 
 ```java run
+import java.util.*;
+
 public class Main {
-    static class TreeNode { int val; TreeNode left, right; TreeNode(int v){val=v;} }
+    static class TreeNode {
+        int val;
+        TreeNode left;
+        TreeNode right;
+        TreeNode() {}
+        TreeNode(int val) { this.val = val; }
+    }
+
+    static TreeNode fromLevelOrder(Integer... values) {
+        if (values.length == 0 || values[0] == null) return null;
+        TreeNode root = new TreeNode(values[0]);
+        Deque<TreeNode> queue = new ArrayDeque<>();
+        queue.add(root);
+        int i = 1;
+        while (!queue.isEmpty() && i < values.length) {
+            TreeNode node = queue.poll();
+            if (i < values.length && values[i] != null) {
+                node.left = new TreeNode(values[i]);
+                queue.add(node.left);
+            }
+            i++;
+            if (i < values.length && values[i] != null) {
+                node.right = new TreeNode(values[i]);
+                queue.add(node.right);
+            }
+            i++;
+        }
+        return root;
+    }
 
     static class Solution {
         public TreeNode iterativelyFindMinimum(TreeNode root) {
-            if (root == null) return null;                // empty tree
-            while (root.left != null) root = root.left;   // walk to leftmost
+
+            // Start from the given root node and iterate until we reach
+            // the leftmost node
+            while (root != null) {
+
+                // If the left child of the current node is null, it means
+                // we have reached the leftmost node, which contains the
+                // minimum value in the binary search tree
+                if (root.left == null) {
+                    return root;
+                }
+
+                // If the left child is not null, move to the left child
+                // to continue the search for the minimum value.
+                else {
+                    root = root.left;
+                }
+            }
+
+            // If the tree is empty (root is null), or for some reason,
+            // the while loop exits without finding the minimum node, we
+            // return the current root
             return root;
         }
     }
 
+    static String val(TreeNode n) { return n == null ? "null" : String.valueOf(n.val); }
+
     public static void main(String[] args) {
-        TreeNode root = new TreeNode(4);
-        root.left  = new TreeNode(2); root.right = new TreeNode(5);
-        root.left.left  = new TreeNode(1); root.left.right = new TreeNode(3);
-        root.right.right = new TreeNode(6);
-        System.out.println(new Solution().iterativelyFindMinimum(root).val);  // 1
+        // Examples from the problem statement
+        TreeNode t1 = fromLevelOrder(4, 2, 5, 1, 3, null, 6);
+        System.out.println(val(new Solution().iterativelyFindMinimum(t1)));    // 1
+
+        TreeNode t2 = fromLevelOrder(5, 4, 10, null, null, 9, 11);
+        System.out.println(val(new Solution().iterativelyFindMinimum(t2)));    // 4
+
+        // Edge cases
+        System.out.println(val(new Solution().iterativelyFindMinimum(null)));  // null — empty tree
+
+        TreeNode t4 = new TreeNode(7);                                         // single node
+        System.out.println(val(new Solution().iterativelyFindMinimum(t4)));    // 7
+
+        TreeNode t5 = new TreeNode(1);                                         // right-skewed
+        t5.right = new TreeNode(2); t5.right.right = new TreeNode(3);
+        System.out.println(val(new Solution().iterativelyFindMinimum(t5)));    // 1  — root is minimum
+
+        TreeNode t6 = fromLevelOrder(5, 4, 6, 3, null, null, 7);
+        System.out.println(val(new Solution().iterativelyFindMinimum(t6)));    // 3
+
+        TreeNode t7 = fromLevelOrder(5, 3, 7, 1, 4, 6, 9);                   // balanced BST
+        System.out.println(val(new Solution().iterativelyFindMinimum(t7)));    // 1
     }
 }
 ```
 
-```c run
-struct TreeNode *iterativelyFindMinimum(struct TreeNode *root) {
-    if (root == NULL) return NULL;                     // empty tree
-    while (root->left != NULL) root = root->left;      // walk to leftmost
-    return root;
-}
-```
-
-```scala run
-class TreeNode(var value: Int, var left: TreeNode = null, var right: TreeNode = null)
-
-object Main extends App {
-  class Solution {
-    def iterativelyFindMinimum(root: TreeNode): TreeNode = {
-      if (root == null) return null                       // empty tree
-      var cur = root
-      while (cur.left != null) cur = cur.left             // walk to leftmost
-      cur
-    }
-  }
-
-  val root = new TreeNode(4,
-    new TreeNode(2, new TreeNode(1), new TreeNode(3)),
-    new TreeNode(5, null, new TreeNode(6)))
-  println(new Solution().iterativelyFindMinimum(root).value)  // 1
-}
-```
+</details>
 
 
 ***
@@ -399,78 +606,189 @@ Given the **root** of a binary search tree, return the node with the maximum val
 > - **Input:** `root = [5, 4, 10, null, null, 9, 11]`
 > - **Output:** `11`
 
-## The Solution
+<details>
+<summary><h2>The Solution</h2></summary>
 
 
-```pseudocode
-function iterativelyFindMaximum(root):
-    if root is null:
-        return null
-    while root.right is NOT null:
-        root ← root.right
-    return root
-```
 
 ```python run
+from typing import Optional
+
+
+class TreeNode:
+    def __init__(self, val=0, left=None, right=None):
+        self.val = val
+        self.left = left
+        self.right = right
+
+
+def from_level_order(values):
+    """Build tree from list like [1, 2, 3, None, 4]. None means missing child."""
+    if not values:
+        return None
+    root = TreeNode(values[0])
+    queue = [root]
+    i = 1
+    while queue and i < len(values):
+        node = queue.pop(0)
+        if i < len(values) and values[i] is not None:
+            node.left = TreeNode(values[i])
+            queue.append(node.left)
+        i += 1
+        if i < len(values) and values[i] is not None:
+            node.right = TreeNode(values[i])
+            queue.append(node.right)
+        i += 1
+    return root
+
+
 class Solution:
-    def iteratively_find_maximum(self, root):
-        if root is None:                                  # empty tree → no maximum
-            return None
-        # Keep walking right until there's no right child — that's the maximum.
-        while root.right is not None:
-            root = root.right
+    def iteratively_find_maximum(
+        self, root: Optional[TreeNode]
+    ) -> Optional[TreeNode]:
+
+        # Start from the given root node and iterate until we reach
+        # the rightmost node
+        while root:
+
+            # If the right child of the current node is null, it means
+            # we have reached the rightmost node, which contains the
+            # maximum value in the binary search tree
+            if root.right is None:
+                return root
+
+            # If the right child is not null, move to the right child
+            # to continue the search for the maximum value.
+            else:
+                root = root.right
+
+        # If the tree is empty (root is null), or for some reason,
+        # the while loop exits without finding the maximum node, we
+        # return the current root
         return root
+
+
+# Examples from the problem statement
+t1 = from_level_order([4, 2, 5, 1, 3, None, 6])
+r1 = Solution().iteratively_find_maximum(t1)
+print(r1.val if r1 else None)                      # 6
+
+t2 = from_level_order([5, 4, 10, None, None, 9, 11])
+r2 = Solution().iteratively_find_maximum(t2)
+print(r2.val if r2 else None)                      # 11
+
+# Edge cases
+print(Solution().iteratively_find_maximum(None))   # None  — empty tree
+
+t4 = TreeNode(7)                                   # single node
+r4 = Solution().iteratively_find_maximum(t4)
+print(r4.val if r4 else None)                      # 7
+
+t5 = from_level_order([5, 4, None, 3])            # left-skewed
+r5 = Solution().iteratively_find_maximum(t5)
+print(r5.val if r5 else None)                      # 5  — root is maximum
+
+t6 = from_level_order([1, None, 2, None, None, None, 3])  # right-skewed
+r6 = Solution().iteratively_find_maximum(t6)
+print(r6.val if r6 else None)                      # 2
+
+t7 = from_level_order([5, 3, 7, 1, 4, 6, 9])      # balanced BST
+r7 = Solution().iteratively_find_maximum(t7)
+print(r7.val if r7 else None)                      # 9
 ```
 
 ```java run
+import java.util.*;
+
 public class Main {
-    static class TreeNode { int val; TreeNode left, right; TreeNode(int v){val=v;} }
+    static class TreeNode {
+        int val;
+        TreeNode left;
+        TreeNode right;
+        TreeNode() {}
+        TreeNode(int val) { this.val = val; }
+    }
+
+    static TreeNode fromLevelOrder(Integer... values) {
+        if (values.length == 0 || values[0] == null) return null;
+        TreeNode root = new TreeNode(values[0]);
+        Deque<TreeNode> queue = new ArrayDeque<>();
+        queue.add(root);
+        int i = 1;
+        while (!queue.isEmpty() && i < values.length) {
+            TreeNode node = queue.poll();
+            if (i < values.length && values[i] != null) {
+                node.left = new TreeNode(values[i]);
+                queue.add(node.left);
+            }
+            i++;
+            if (i < values.length && values[i] != null) {
+                node.right = new TreeNode(values[i]);
+                queue.add(node.right);
+            }
+            i++;
+        }
+        return root;
+    }
 
     static class Solution {
         public TreeNode iterativelyFindMaximum(TreeNode root) {
-            if (root == null) return null;                    // empty tree
-            while (root.right != null) root = root.right;     // walk to rightmost
+
+            // Start from the given root node and iterate until we reach
+            // the rightmost node
+            while (root != null) {
+
+                // If the right child of the current node is null, it means
+                // we have reached the rightmost node, which contains the
+                // maximum value in the binary search tree
+                if (root.right == null) {
+                    return root;
+                }
+
+                // If the right child is not null, move to the right child
+                // to continue the search for the maximum value.
+                else {
+                    root = root.right;
+                }
+            }
+
+            // If the tree is empty (root is null), or for some reason,
+            // the while loop exits without finding the maximum node, we
+            // return the current root
             return root;
         }
     }
 
+    static String val(TreeNode n) { return n == null ? "null" : String.valueOf(n.val); }
+
     public static void main(String[] args) {
-        TreeNode root = new TreeNode(4);
-        root.left  = new TreeNode(2); root.right = new TreeNode(5);
-        root.left.left  = new TreeNode(1); root.left.right = new TreeNode(3);
-        root.right.right = new TreeNode(6);
-        System.out.println(new Solution().iterativelyFindMaximum(root).val);  // 6
+        // Examples from the problem statement
+        TreeNode t1 = fromLevelOrder(4, 2, 5, 1, 3, null, 6);
+        System.out.println(val(new Solution().iterativelyFindMaximum(t1)));    // 6
+
+        TreeNode t2 = fromLevelOrder(5, 4, 10, null, null, 9, 11);
+        System.out.println(val(new Solution().iterativelyFindMaximum(t2)));    // 11
+
+        // Edge cases
+        System.out.println(val(new Solution().iterativelyFindMaximum(null)));  // null — empty tree
+
+        TreeNode t4 = new TreeNode(7);                                         // single node
+        System.out.println(val(new Solution().iterativelyFindMaximum(t4)));    // 7
+
+        TreeNode t5 = fromLevelOrder(5, 4, null, 3);                          // left-skewed
+        System.out.println(val(new Solution().iterativelyFindMaximum(t5)));    // 5  — root is maximum
+
+        TreeNode t6 = new TreeNode(1);                                         // right-skewed
+        t6.right = new TreeNode(2); t6.right.right = new TreeNode(3);
+        System.out.println(val(new Solution().iterativelyFindMaximum(t6)));    // 3
+
+        TreeNode t7 = fromLevelOrder(5, 3, 7, 1, 4, 6, 9);                   // balanced BST
+        System.out.println(val(new Solution().iterativelyFindMaximum(t7)));    // 9
     }
 }
 ```
 
-```c run
-struct TreeNode *iterativelyFindMaximum(struct TreeNode *root) {
-    if (root == NULL) return NULL;                         // empty tree
-    while (root->right != NULL) root = root->right;        // walk to rightmost
-    return root;
-}
-```
-
-```scala run
-class TreeNode(var value: Int, var left: TreeNode = null, var right: TreeNode = null)
-
-object Main extends App {
-  class Solution {
-    def iterativelyFindMaximum(root: TreeNode): TreeNode = {
-      if (root == null) return null                           // empty tree
-      var cur = root
-      while (cur.right != null) cur = cur.right               // walk to rightmost
-      cur
-    }
-  }
-
-  val root = new TreeNode(4,
-    new TreeNode(2, new TreeNode(1), new TreeNode(3)),
-    new TreeNode(5, null, new TreeNode(6)))
-  println(new Solution().iterativelyFindMaximum(root).value)  // 6
-}
-```
+</details>
 
 
 ***
@@ -540,116 +858,231 @@ Given the **root** of a binary search tree and a **target**, return the node tha
 > - **Input:** `root = [5, 4, 10, null, null, 9, 11]`, `target = 7`
 > - **Output:** `9`
 
-## The Solution
+<details>
+<summary><h2>The Solution</h2></summary>
 
 
-```pseudocode
-function iterativelyFindLowerBound(root, target):
-    lbNode ← null
-    while root is NOT null:
-        if target ≤ root.val:
-            lbNode ← root
-            root ← root.left
-        else:
-            root ← root.right
-    return lbNode
-```
 
 ```python run
+from typing import Optional
+
+
+class TreeNode:
+    def __init__(self, val=0, left=None, right=None):
+        self.val = val
+        self.left = left
+        self.right = right
+
+
+def from_level_order(values):
+    """Build tree from list like [1, 2, 3, None, 4]. None means missing child."""
+    if not values:
+        return None
+    root = TreeNode(values[0])
+    queue = [root]
+    i = 1
+    while queue and i < len(values):
+        node = queue.pop(0)
+        if i < len(values) and values[i] is not None:
+            node.left = TreeNode(values[i])
+            queue.append(node.left)
+        i += 1
+        if i < len(values) and values[i] is not None:
+            node.right = TreeNode(values[i])
+            queue.append(node.right)
+        i += 1
+    return root
+
+
 class Solution:
-    def iteratively_find_lower_bound(self, root, target):
-        lower_bound_node = None  # best candidate seen so far
-        while root is not None:
+    def iteratively_find_lower_bound(
+        self, root: Optional[TreeNode], target: int
+    ) -> Optional[TreeNode]:
+
+        # Initialize a pointer to the lower bound node as None
+        lower_bound_node = None
+
+        # Traverse the binary search tree iteratively until root becomes
+        # None.
+        while root:
+
+            # If the target is less than the current node's value, move
+            # to the left subtree
             if target < root.val:
-                # root.val > target → it's a candidate; tighten by going left.
+
+                # Update the lower bound node to the current node as it
+                # is the potential lower bound
                 lower_bound_node = root
+
+                # Move to the left subtree to find a closer lower bound
                 root = root.left
+
+            # If the target is equal to the current node's value, we
+            # found an exact match
             elif root.val == target:
-                # Exact match — can't beat equality. Record and stop.
+
+                # Update the lower bound node to the current node
+                # (exact match is also a lower bound)
                 lower_bound_node = root
-                break
+
+                # Return the node as we have found an exact match for
+                # the given target
+                return lower_bound_node
+
+            # If the target is greater than the current node's value,
+            # move to the right subtree.
             else:
-                # root.val < target → not a candidate. Look right for larger values.
+
+                # We are not updating the lower bound node in this case
+                # as the current node is not a lower bound continue
+                # searching in the right subtree to find a closer lower
+                # bound
                 root = root.right
+
+        # Return the lower bound node
         return lower_bound_node
+
+
+# Examples from the problem statement
+t1 = from_level_order([4, 2, 5, 1, 3, None, 6])
+r1 = Solution().iteratively_find_lower_bound(t1, 3)
+print(r1.val if r1 else None)                      # 3
+
+t2 = from_level_order([5, 4, 10, None, None, 9, 11])
+r2 = Solution().iteratively_find_lower_bound(t2, 7)
+print(r2.val if r2 else None)                      # 9
+
+# Edge cases
+print(Solution().iteratively_find_lower_bound(None, 5))  # None — empty tree
+
+t4 = TreeNode(5)
+r4 = Solution().iteratively_find_lower_bound(t4, 5)  # exact match
+print(r4.val if r4 else None)                      # 5
+
+t5 = from_level_order([4, 2, 5, 1, 3, None, 6])
+r5 = Solution().iteratively_find_lower_bound(t5, 7)  # target > all values
+print(r5.val if r5 else None)                      # None
+
+t6 = from_level_order([4, 2, 5, 1, 3, None, 6])
+r6 = Solution().iteratively_find_lower_bound(t6, 0)  # target < all values
+print(r6.val if r6 else None)                      # 1
+
+t7 = from_level_order([4, 2, 5, 1, 3, None, 6])
+r7 = Solution().iteratively_find_lower_bound(t7, 4)  # exact match on root
+print(r7.val if r7 else None)                      # 4
 ```
 
 ```java run
+import java.util.*;
+
 public class Main {
-    static class TreeNode { int val; TreeNode left, right; TreeNode(int v){val=v;} }
+    static class TreeNode {
+        int val;
+        TreeNode left;
+        TreeNode right;
+        TreeNode() {}
+        TreeNode(int val) { this.val = val; }
+    }
+
+    static TreeNode fromLevelOrder(Integer... values) {
+        if (values.length == 0 || values[0] == null) return null;
+        TreeNode root = new TreeNode(values[0]);
+        Deque<TreeNode> queue = new ArrayDeque<>();
+        queue.add(root);
+        int i = 1;
+        while (!queue.isEmpty() && i < values.length) {
+            TreeNode node = queue.poll();
+            if (i < values.length && values[i] != null) {
+                node.left = new TreeNode(values[i]);
+                queue.add(node.left);
+            }
+            i++;
+            if (i < values.length && values[i] != null) {
+                node.right = new TreeNode(values[i]);
+                queue.add(node.right);
+            }
+            i++;
+        }
+        return root;
+    }
 
     static class Solution {
         public TreeNode iterativelyFindLowerBound(TreeNode root, int target) {
-            TreeNode lowerBoundNode = null;                                       // best so far
+
+            // Initialize a pointer to the lower bound node as null
+            TreeNode lowerBoundNode = null;
+
+            // Traverse the binary search tree iteratively until root becomes
+            // null.
             while (root != null) {
-                if (target < root.val) {                                          // node ≥ target
-                    lowerBoundNode = root;                                        //   candidate
-                    root = root.left;                                             //   tighten left
-                } else if (root.val == target) {                                  // exact match
+
+                // If the target is less than the current node's value, move
+                // to the left subtree
+                if (target < root.val) {
+
+                    // Update the lower bound node to the current node as it
+                    // is the potential lower bound
                     lowerBoundNode = root;
-                    break;
-                } else {                                                          // node < target
-                    root = root.right;                                            //   search right
+
+                    // Move to the left subtree to find a closer lower bound
+                    root = root.left;
+                }
+
+                // If the target is equal to the current node's value, we
+                // found an exact match
+                else if (root.val == target) {
+
+                    // Update the lower bound node to the current node
+                    // (exact match is also a lower bound)
+                    lowerBoundNode = root;
+
+                    // Return the node as we have found an exact match for
+                    // the given target
+                    return lowerBoundNode;
+                }
+
+                // If the target is greater than the current node's value,
+                // move to the right subtree.
+                else {
+
+                    // We are not updating the lower bound node in this case
+                    // as the current node is not a lower bound continue
+                    // searching in the right subtree to find a closer lower
+                    // bound
+                    root = root.right;
                 }
             }
+
+            // Return the lower bound node
             return lowerBoundNode;
         }
     }
 
+    static String val(TreeNode n) { return n == null ? "null" : String.valueOf(n.val); }
+
     public static void main(String[] args) {
-        TreeNode root = new TreeNode(4);
-        root.left  = new TreeNode(2); root.right = new TreeNode(5);
-        root.left.left  = new TreeNode(1); root.left.right = new TreeNode(3);
-        root.right.right = new TreeNode(6);
-        System.out.println(new Solution().iterativelyFindLowerBound(root, 3).val);  // 3
+        // Examples from the problem statement
+        TreeNode t1 = fromLevelOrder(4, 2, 5, 1, 3, null, 6);
+        System.out.println(val(new Solution().iterativelyFindLowerBound(t1, 3)));    // 3
+
+        TreeNode t2 = fromLevelOrder(5, 4, 10, null, null, 9, 11);
+        System.out.println(val(new Solution().iterativelyFindLowerBound(t2, 7)));    // 9
+
+        // Edge cases
+        System.out.println(val(new Solution().iterativelyFindLowerBound(null, 5)));  // null — empty tree
+
+        TreeNode t4 = new TreeNode(5);
+        System.out.println(val(new Solution().iterativelyFindLowerBound(t4, 5)));    // 5  — exact match
+
+        TreeNode t5 = fromLevelOrder(4, 2, 5, 1, 3, null, 6);
+        System.out.println(val(new Solution().iterativelyFindLowerBound(t5, 7)));    // null — target > all
+
+        TreeNode t6 = fromLevelOrder(4, 2, 5, 1, 3, null, 6);
+        System.out.println(val(new Solution().iterativelyFindLowerBound(t6, 0)));    // 1  — target < all
+
+        TreeNode t7 = fromLevelOrder(4, 2, 5, 1, 3, null, 6);
+        System.out.println(val(new Solution().iterativelyFindLowerBound(t7, 4)));    // 4  — exact match on root
     }
-}
-```
-
-```c run
-struct TreeNode *iterativelyFindLowerBound(struct TreeNode *root, int target) {
-    struct TreeNode *lowerBoundNode = NULL;                                    // best so far
-    while (root != NULL) {
-        if (target < root->val) {                                              // node ≥ target
-            lowerBoundNode = root;                                             //   candidate
-            root = root->left;                                                 //   tighten left
-        } else if (root->val == target) {                                      // exact match
-            lowerBoundNode = root;
-            break;
-        } else {                                                               // node < target
-            root = root->right;                                                //   search right
-        }
-    }
-    return lowerBoundNode;
-}
-```
-
-```scala run
-class TreeNode(var value: Int, var left: TreeNode = null, var right: TreeNode = null)
-
-object Main extends App {
-  class Solution {
-    def iterativelyFindLowerBound(root: TreeNode, target: Int): TreeNode = {
-      var cur = root
-      var lowerBoundNode: TreeNode = null                                          // best so far
-      var done = false
-      while (cur != null && !done) {
-        if (target < cur.value) {                                                  // node ≥ target
-          lowerBoundNode = cur                                                     //   candidate
-          cur = cur.left                                                           //   tighten
-        } else if (cur.value == target) {                                          // exact match
-          lowerBoundNode = cur
-          done = true
-        } else cur = cur.right                                                     // node < target
-      }
-      lowerBoundNode
-    }
-  }
-
-  val root = new TreeNode(4,
-    new TreeNode(2, new TreeNode(1), new TreeNode(3)),
-    new TreeNode(5, null, new TreeNode(6)))
-  println(new Solution().iterativelyFindLowerBound(root, 3).value)  // 3
 }
 ```
 
@@ -665,6 +1098,8 @@ Step 3 │ cur = 60 │ 54 < 60  → candidate = 60 → cur = cur.left  (now nul
 Step 4 │ cur = null  → loop exits
 Result: candidate = 60 ✓
 ```
+
+</details>
 
 </details>
 
@@ -734,102 +1169,206 @@ Given the **root** of a binary search tree and a **target**, return the node tha
 > - **Input:** `root = [5, 4, 10, null, null, 9, 11]`, `target = 7`
 > - **Output:** `9`
 
-## The Solution
+<details>
+<summary><h2>The Solution</h2></summary>
 
 
-```pseudocode
-function iterativelyFindUpperBound(root, target):
-    ubNode ← null
-    while root is NOT null:
-        if target < root.val:
-            ubNode ← root
-            root ← root.left
-        else:
-            root ← root.right   # equality not a candidate for upper bound
-    return ubNode
-```
 
 ```python run
+from typing import Optional
+
+
+class TreeNode:
+    def __init__(self, val=0, left=None, right=None):
+        self.val = val
+        self.left = left
+        self.right = right
+
+
+def from_level_order(values):
+    """Build tree from list like [1, 2, 3, None, 4]. None means missing child."""
+    if not values:
+        return None
+    root = TreeNode(values[0])
+    queue = [root]
+    i = 1
+    while queue and i < len(values):
+        node = queue.pop(0)
+        if i < len(values) and values[i] is not None:
+            node.left = TreeNode(values[i])
+            queue.append(node.left)
+        i += 1
+        if i < len(values) and values[i] is not None:
+            node.right = TreeNode(values[i])
+            queue.append(node.right)
+        i += 1
+    return root
+
+
 class Solution:
-    def iteratively_find_upper_bound(self, root, target):
-        upper_bound_node = None       # best candidate (strictly > target) so far
-        while root is not None:
+    def iteratively_find_upper_bound(
+        self, root: Optional[TreeNode], target: int
+    ) -> Optional[TreeNode]:
+
+        # Initialize a pointer to the upper bound node as None
+        upper_bound_node = None
+
+        # Traverse the binary search tree iteratively until root becomes
+        # None
+        while root:
+
+            # If the target is less than the current node's value, move
+            # to the left subtree
             if target < root.val:
-                # root.val > target → candidate; tighten by descending left.
+
+                # Update the upper bound node to the current node as it
+                # is the potential upper bound
                 upper_bound_node = root
+
+                # Move to the left subtree to find a closer upper bound
                 root = root.left
+
+            # If the target is greater than or equal to the current
+            # node's value, move to the right subtree
             else:
-                # root.val ≤ target → not a candidate (equality not enough). Go right.
+
+                # We are not updating the upper bound node in this case
+                # as the current node is not an upper bound continue
+                # searching in the right subtree to find a closer upper
+                # bound.
                 root = root.right
+
+        # Return the upper bound node
         return upper_bound_node
+
+
+# Examples from the problem statement
+t1 = from_level_order([4, 2, 5, 1, 3, None, 6])
+r1 = Solution().iteratively_find_upper_bound(t1, 3)
+print(r1.val if r1 else None)                      # 4
+
+t2 = from_level_order([5, 4, 10, None, None, 9, 11])
+r2 = Solution().iteratively_find_upper_bound(t2, 7)
+print(r2.val if r2 else None)                      # 9
+
+# Edge cases
+print(Solution().iteratively_find_upper_bound(None, 5))  # None — empty tree
+
+t4 = TreeNode(5)
+r4 = Solution().iteratively_find_upper_bound(t4, 5)  # exact match — no strict upper
+print(r4.val if r4 else None)                      # None
+
+t5 = from_level_order([4, 2, 5, 1, 3, None, 6])
+r5 = Solution().iteratively_find_upper_bound(t5, 6)  # target = max value
+print(r5.val if r5 else None)                      # None
+
+t6 = from_level_order([4, 2, 5, 1, 3, None, 6])
+r6 = Solution().iteratively_find_upper_bound(t6, 0)  # target < all values
+print(r6.val if r6 else None)                      # 1
+
+t7 = from_level_order([5, 4, 10, None, None, 9, 11])
+r7 = Solution().iteratively_find_upper_bound(t7, 4)  # target = left-child value
+print(r7.val if r7 else None)                      # 5
 ```
 
 ```java run
+import java.util.*;
+
 public class Main {
-    static class TreeNode { int val; TreeNode left, right; TreeNode(int v){val=v;} }
+    static class TreeNode {
+        int val;
+        TreeNode left;
+        TreeNode right;
+        TreeNode() {}
+        TreeNode(int val) { this.val = val; }
+    }
+
+    static TreeNode fromLevelOrder(Integer... values) {
+        if (values.length == 0 || values[0] == null) return null;
+        TreeNode root = new TreeNode(values[0]);
+        Deque<TreeNode> queue = new ArrayDeque<>();
+        queue.add(root);
+        int i = 1;
+        while (!queue.isEmpty() && i < values.length) {
+            TreeNode node = queue.poll();
+            if (i < values.length && values[i] != null) {
+                node.left = new TreeNode(values[i]);
+                queue.add(node.left);
+            }
+            i++;
+            if (i < values.length && values[i] != null) {
+                node.right = new TreeNode(values[i]);
+                queue.add(node.right);
+            }
+            i++;
+        }
+        return root;
+    }
 
     static class Solution {
         public TreeNode iterativelyFindUpperBound(TreeNode root, int target) {
-            TreeNode upperBoundNode = null;                                                 // best so far
+
+            // Initialize a pointer to the upper bound node as null
+            TreeNode upperBoundNode = null;
+
+            // Traverse the binary search tree iteratively until root becomes
+            // null
             while (root != null) {
-                if (target < root.val) {                                                    // node > target
-                    upperBoundNode = root;                                                  //   candidate
-                    root = root.left;                                                       //   tighten
-                } else {                                                                    // node ≤ target
-                    root = root.right;                                                      //   go right
+
+                // If the target is less than the current node's value, move
+                // to the left subtree
+                if (target < root.val) {
+
+                    // Update the upper bound node to the current node as it
+                    // is the potential upper bound
+                    upperBoundNode = root;
+
+                    // Move to the left subtree to find a closer upper bound
+                    root = root.left;
+                }
+
+                // If the target is greater than or equal to the current
+                // node's value, move to the right subtree
+                else {
+
+                    // We are not updating the upper bound node in this case
+                    // as the current node is not an upper bound continue
+                    // searching in the right subtree to find a closer upper
+                    // bound.
+                    root = root.right;
                 }
             }
+
+            // Return the upper bound node
             return upperBoundNode;
         }
     }
 
+    static String val(TreeNode n) { return n == null ? "null" : String.valueOf(n.val); }
+
     public static void main(String[] args) {
-        TreeNode root = new TreeNode(4);
-        root.left  = new TreeNode(2); root.right = new TreeNode(5);
-        root.left.left  = new TreeNode(1); root.left.right = new TreeNode(3);
-        root.right.right = new TreeNode(6);
-        System.out.println(new Solution().iterativelyFindUpperBound(root, 3).val);  // 4
+        // Examples from the problem statement
+        TreeNode t1 = fromLevelOrder(4, 2, 5, 1, 3, null, 6);
+        System.out.println(val(new Solution().iterativelyFindUpperBound(t1, 3)));    // 4
+
+        TreeNode t2 = fromLevelOrder(5, 4, 10, null, null, 9, 11);
+        System.out.println(val(new Solution().iterativelyFindUpperBound(t2, 7)));    // 9
+
+        // Edge cases
+        System.out.println(val(new Solution().iterativelyFindUpperBound(null, 5)));  // null — empty tree
+
+        TreeNode t4 = new TreeNode(5);
+        System.out.println(val(new Solution().iterativelyFindUpperBound(t4, 5)));    // null — exact match, no strict upper
+
+        TreeNode t5 = fromLevelOrder(4, 2, 5, 1, 3, null, 6);
+        System.out.println(val(new Solution().iterativelyFindUpperBound(t5, 6)));    // null — target = max value
+
+        TreeNode t6 = fromLevelOrder(4, 2, 5, 1, 3, null, 6);
+        System.out.println(val(new Solution().iterativelyFindUpperBound(t6, 0)));    // 1  — target < all values
+
+        TreeNode t7 = fromLevelOrder(5, 4, 10, null, null, 9, 11);
+        System.out.println(val(new Solution().iterativelyFindUpperBound(t7, 4)));    // 5  — target = left-child value
     }
-}
-```
-
-```c run
-struct TreeNode *iterativelyFindUpperBound(struct TreeNode *root, int target) {
-    struct TreeNode *upperBoundNode = NULL;                                              // best so far
-    while (root != NULL) {
-        if (target < root->val) {                                                        // node > target
-            upperBoundNode = root;                                                       //   candidate
-            root = root->left;                                                           //   tighten
-        } else {                                                                         // node ≤ target
-            root = root->right;                                                          //   go right
-        }
-    }
-    return upperBoundNode;
-}
-```
-
-```scala run
-class TreeNode(var value: Int, var left: TreeNode = null, var right: TreeNode = null)
-
-object Main extends App {
-  class Solution {
-    def iterativelyFindUpperBound(root: TreeNode, target: Int): TreeNode = {
-      var cur = root
-      var upperBoundNode: TreeNode = null                                                    // best so far
-      while (cur != null) {
-        if (target < cur.value) {                                                            // node > target
-          upperBoundNode = cur                                                               //   candidate
-          cur = cur.left                                                                     //   tighten
-        } else cur = cur.right                                                               // node ≤ target
-      }
-      upperBoundNode
-    }
-  }
-
-  val root = new TreeNode(4,
-    new TreeNode(2, new TreeNode(1), new TreeNode(3)),
-    new TreeNode(5, null, new TreeNode(6)))
-  println(new Solution().iterativelyFindUpperBound(root, 3).value)  // 4
 }
 ```
 
@@ -845,6 +1384,8 @@ Step 3 │ cur = 3 │ 3 ≥ 3  → cur = cur.right (now null)  ← equality is 
 Step 4 │ cur = null  → loop exits
 Result: candidate = 4 ✓
 ```
+
+</details>
 
 </details>
 
@@ -868,7 +1409,9 @@ Given the **root** of a binary search tree and a **target** value (a real number
 > - **Output:** `7`
 > - **Explanation:** The closest value to `7.49` in the tree is `7` (distance `0.49`).
 
-## The Strategy
+<details>
+<summary><h2>The Strategy</h2></summary>
+
 
 This is a hybrid: it's *exactly* a search-style descent, but every node we touch is a candidate worth comparing — even if we keep walking afterwards. So we maintain a `closest` value alongside the descent and update it whenever the current node beats it.
 
@@ -909,99 +1452,178 @@ flowchart LR
 
 Why is the descent direction safe? Because of the BST property. Suppose you're at node `v` with target `t < v`. The right subtree contains only values `> v > t`, so each of those has distance `> v − t`. Meanwhile node `v` itself sits at distance `v − t`. So the right subtree cannot possibly contain anything closer than `v` — and `v` is already in `closest`. Discarding the right subtree is provably safe.
 
-## The Solution
+</details>
+<details>
+<summary><h2>The Solution</h2></summary>
 
 
-```pseudocode
-function closestValue(root, target):
-    closest ← root.val
-    while root is NOT null:
-        if |root.val − target| < |closest − target|:
-            closest ← root.val
-        if target < root.val:
-            root ← root.left
-        else:
-            root ← root.right
-    return closest
-```
 
 ```python run
+from typing import Optional
+
+
+class TreeNode:
+    def __init__(self, val=0, left=None, right=None):
+        self.val = val
+        self.left = left
+        self.right = right
+
+
+def from_level_order(values):
+    """Build tree from list like [1, 2, 3, None, 4]. None means missing child."""
+    if not values:
+        return None
+    root = TreeNode(values[0])
+    queue = [root]
+    i = 1
+    while queue and i < len(values):
+        node = queue.pop(0)
+        if i < len(values) and values[i] is not None:
+            node.left = TreeNode(values[i])
+            queue.append(node.left)
+        i += 1
+        if i < len(values) and values[i] is not None:
+            node.right = TreeNode(values[i])
+            queue.append(node.right)
+        i += 1
+    return root
+
+
 class Solution:
-    def closest_value(self, root, target: float) -> int:
-        # Initialise with the root's value — guaranteed non-null per problem.
+    def closest_value(
+        self, root: Optional[TreeNode], target: float
+    ) -> int:
+
+        # Start with the root as the closest value
         closest = root.val
-        while root is not None:
-            # Update best if this node is closer to target than the current best.
+
+        while root:
+
+            # Update closest if the current node is closer to the target
             if abs(root.val - target) < abs(closest - target):
                 closest = root.val
-            # Descend in the BST direction. Smaller target → answer (if any) is left.
-            root = root.left if target < root.val else root.right
+
+            # Traverse to the left subtree if the target is smaller
+            if target < root.val:
+                root = root.left
+
+            # Traverse to the right subtree if the target is larger
+            else:
+                root = root.right
+
         return closest
+
+
+# Examples from the problem statement
+t1 = from_level_order([4, 2, 6, 1, None, None, 7])
+print(Solution().closest_value(t1, 4.63))          # 4 (note: 5 not in tree)
+
+t2 = from_level_order([2, 1, 4, None, None, 3, 7])
+print(Solution().closest_value(t2, 7.49))          # 7
+
+# Edge cases
+t3 = TreeNode(5)                                   # single node
+print(Solution().closest_value(t3, 99.9))          # 5
+
+t4 = from_level_order([4, 2, 6, 1, None, None, 7])
+print(Solution().closest_value(t4, 4.0))           # 4  — exact match
+
+t5 = from_level_order([4, 2, 6, 1, None, None, 7])
+print(Solution().closest_value(t5, 0.5))           # 1  — target below min
+
+t6 = from_level_order([4, 2, 6, 1, None, None, 7])
+print(Solution().closest_value(t6, 10.0))          # 7  — target above max
+
+t7 = from_level_order([5, 3, 7, 2, 4, 6, 8])
+print(Solution().closest_value(t7, 6.4))           # 6
 ```
 
 ```java run
+import java.util.*;
+
 public class Main {
-    static class TreeNode { int val; TreeNode left, right; TreeNode(int v){val=v;} }
+    static class TreeNode {
+        int val;
+        TreeNode left;
+        TreeNode right;
+        TreeNode() {}
+        TreeNode(int val) { this.val = val; }
+    }
+
+    static TreeNode fromLevelOrder(Integer... values) {
+        if (values.length == 0 || values[0] == null) return null;
+        TreeNode root = new TreeNode(values[0]);
+        Deque<TreeNode> queue = new ArrayDeque<>();
+        queue.add(root);
+        int i = 1;
+        while (!queue.isEmpty() && i < values.length) {
+            TreeNode node = queue.poll();
+            if (i < values.length && values[i] != null) {
+                node.left = new TreeNode(values[i]);
+                queue.add(node.left);
+            }
+            i++;
+            if (i < values.length && values[i] != null) {
+                node.right = new TreeNode(values[i]);
+                queue.add(node.right);
+            }
+            i++;
+        }
+        return root;
+    }
 
     static class Solution {
         public int closestValue(TreeNode root, double target) {
-            int closest = root.val;                                          // root is non-null
+
+            // Start with the root as the closest value
+            int closest = root.val;
+
             while (root != null) {
-                if (Math.abs(root.val - target) < Math.abs(closest - target)) {
-                    closest = root.val;                                      // beat the current best
+
+                // Update closest if the current node is closer to the target
+                if (
+                    Math.abs(root.val - target) < Math.abs(closest - target)
+                ) {
+                    closest = root.val;
                 }
-                root = (target < root.val) ? root.left : root.right;          // BST descent
+
+                // Traverse to the left subtree if the target is smaller
+                if (target < root.val) {
+                    root = root.left;
+                }
+
+                // Traverse to the right subtree if the target is larger
+                else {
+                    root = root.right;
+                }
             }
+
             return closest;
         }
     }
 
     public static void main(String[] args) {
-        TreeNode root = new TreeNode(4);
-        root.left  = new TreeNode(2); root.right = new TreeNode(6);
-        root.left.left  = new TreeNode(1);
-        root.right.right = new TreeNode(7);
-        System.out.println(new Solution().closestValue(root, 4.63));  // 4
+        // Examples from the problem statement
+        TreeNode t1 = fromLevelOrder(4, 2, 6, 1, null, null, 7);
+        System.out.println(new Solution().closestValue(t1, 4.63));         // 4
+
+        TreeNode t2 = fromLevelOrder(2, 1, 4, null, null, 3, 7);
+        System.out.println(new Solution().closestValue(t2, 7.49));         // 7
+
+        // Edge cases
+        TreeNode t3 = new TreeNode(5);                                     // single node
+        System.out.println(new Solution().closestValue(t3, 99.9));         // 5
+
+        TreeNode t4 = fromLevelOrder(4, 2, 6, 1, null, null, 7);
+        System.out.println(new Solution().closestValue(t4, 4.0));          // 4  — exact match
+
+        System.out.println(new Solution().closestValue(t4, 0.5));          // 1  — target below min
+
+        System.out.println(new Solution().closestValue(t4, 10.0));         // 7  — target above max
+
+        TreeNode t7 = fromLevelOrder(5, 3, 7, 2, 4, 6, 8);
+        System.out.println(new Solution().closestValue(t7, 6.4));          // 6
     }
-}
-```
-
-```c run
-#include <math.h>
-int closestValue(struct TreeNode *root, double target) {
-    int closest = root->val;                                              // root is non-null
-    while (root != NULL) {
-        if (fabs(root->val - target) < fabs(closest - target)) {
-            closest = root->val;                                          // new best
-        }
-        root = (target < root->val) ? root->left : root->right;            // BST descent
-    }
-    return closest;
-}
-```
-
-```scala run
-class TreeNode(var value: Int, var left: TreeNode = null, var right: TreeNode = null)
-
-object Main extends App {
-  class Solution {
-    def closestValue(root: TreeNode, target: Double): Int = {
-      var cur = root
-      var closest = root.value                                                  // root non-null
-      while (cur != null) {
-        if (math.abs(cur.value - target) < math.abs(closest - target)) {
-          closest = cur.value                                                   // new best
-        }
-        cur = if (target < cur.value) cur.left else cur.right                   // BST descent
-      }
-      closest
-    }
-  }
-
-  val root = new TreeNode(4,
-    new TreeNode(2, new TreeNode(1), null),
-    new TreeNode(6, null, new TreeNode(7)))
-  println(new Solution().closestValue(root, 4.63))  // 4
 }
 ```
 
@@ -1019,9 +1641,10 @@ Result: closest = 4 ✓
 
 </details>
 
-***
+</details>
+<details>
+<summary><h2>Final Takeaway</h2></summary>
 
-## Final Takeaway
 
 Every search algorithm in the recursive lesson collapses to a `while` loop the moment you notice the recursion is tail-shaped — one descent, no return. The pay-off is real: **O(1) extra space**, no stack overhead, no risk of stack overflow on deep trees. For interview code, library code, or hot paths in a database engine, the iterative form is what you want.
 
@@ -1032,3 +1655,5 @@ Three idioms you'll keep using:
 3. **The BST-direction step is provably safe** — the elimination argument we made for closest value is the *same* argument behind insert, delete, and every range/floor/ceiling query.
 
 The next lesson moves from observation to *modification*: how do you **insert** a new value into a BST while preserving the property? Spoiler — it's another single descent, and the slot you've been "falling off into" all this lesson is exactly where the new node goes.
+
+</details>

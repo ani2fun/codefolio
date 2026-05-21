@@ -105,97 +105,92 @@ flowchart TB
 When implementing the logic for the insert-at-beginning operation, we consider both possible cases (empty / non-empty) and write the code for each in conditional blocks.
 
 
-```pseudocode
-function insertAtBeginning(head, data):
-    newNode ← new ListNode(data)
-    if head is null:
-        newNode.next ← null; newNode.prev ← null      # lone node — both ends
-        return newNode
-    newNode.next ← head                                # forward link
-    newNode.prev ← null                                # new head has no predecessor
-    head.prev ← newNode                                # mirror — old head's prev points back
-    return newNode
-```
-
 ```python run
+"""
+Definition for doubly-linked list.
+class ListNode:
+    def __init__(self, val):
+        self.val = val
+        self.prev = None
+        self.next = None
+"""
+
+from typing import Optional
+
 class Solution:
-    def insert_at_beginning(self, head, data):
-        new_node = ListNode(data)              # 1. Build the new node
-        if head is None:                       # Case A: list is empty
-            new_node.next = None               #   No successor — it's also the tail
-            new_node.prev = None               #   No predecessor — it's the head
-            return new_node                    #   Return the lone node as the new head
-        new_node.next = head                   # 2. New node's next = old head
-        new_node.prev = None                   # 3. New head has no predecessor
-        head.prev = new_node                   # 4. Mirror — old head's prev now points back
-        return new_node                        # 5. Return the new head
+    def insert_at_beginning(
+        self, head: Optional[ListNode], data: int
+    ) -> Optional[ListNode]:
+
+        # Create a new node with the given data
+        new_node: ListNode = ListNode(data)
+
+        # Check if the list is empty
+        if head is None:
+
+            # Set the next pointer to None since it's the only node
+            new_node.next = None
+            new_node.prev = None
+
+            # Return the new_node as this is the new head
+            return new_node
+
+        # Set the next pointer of the new node to the current head
+        new_node.next = head
+
+        # Set the prev pointer of the new node to None since it will be
+        # the new head
+        new_node.prev = None
+
+        # Set the prev pointer of the current head to the new node
+        head.prev = new_node
+
+        # Return the new node as the new head of the list
+        return new_node
 ```
 
 ```java run
-public class Main {
-    static class ListNode { int val; ListNode prev, next; ListNode(int v){val=v;} }
+/**
+ * Definition for doubly-linked list.
+ * class ListNode {
+ *     int val;
+ *     ListNode prev;
+ *     ListNode next;
+ *     ListNode() {}
+ *     ListNode(int val) { this.val = val; }
+ * };
+ */
 
-    static class Solution {
-        public ListNode insertAtBeginning(ListNode head, int data) {
-            ListNode newNode = new ListNode(data);     // 1. Build the new node
-            if (head == null) {                        // Case A: list is empty
-                newNode.next = null;                   //   No neighbours on either side
-                newNode.prev = null;
-                return newNode;
-            }
-            newNode.next = head;                       // 2. New node's next = old head
-            newNode.prev = null;                       // 3. New head has no predecessor
-            head.prev = newNode;                       // 4. Mirror — old head's prev now points back
-            return newNode;                            // 5. Return the new head
+class Solution {
+    public ListNode insertAtBeginning(ListNode head, int data) {
+
+        // Create a new node with the given data
+        ListNode newNode = new ListNode(data);
+
+        // Check if the list is empty
+        if (head == null) {
+
+            // Set the next pointer to null since it's the only node
+            newNode.next = null;
+            newNode.prev = null;
+
+            // Return the newNode as this is the new head
+            return newNode;
         }
-    }
 
-    public static void main(String[] args) {
-        ListNode n1=new ListNode(5),n2=new ListNode(7); n1.next=n2; n2.prev=n1;
-        ListNode head = new Solution().insertAtBeginning(n1, 6);
-        for (ListNode c=head;c!=null;c=c.next) System.out.print(c.val+" ");
-        // 6 5 7
-    }
-}
-```
+        // Set the next pointer of the new node to the current head
+        newNode.next = head;
 
-```c run
-ListNode* insertAtBeginning(ListNode *head, int data) {
-    ListNode *newNode = newListNode(data);
-    if (head == NULL) {                  /* Case A: empty list */
-        newNode->next = NULL;
-        newNode->prev = NULL;
+        // Set the prev pointer of the new node to null since it will be
+        // the new head
+        newNode.prev = null;
+
+        // Set the prev pointer of the current head to the new node
+        head.prev = newNode;
+
+        // Return the new node as the new head of the list
         return newNode;
     }
-    newNode->next = head;                /* New node's next = old head */
-    newNode->prev = NULL;                /* New head has no predecessor */
-    head->prev   = newNode;              /* Mirror — restore bidirectional link */
-    return newNode;
-}
-```
-
-```scala run
-class ListNode(var v: Int, var prev: ListNode = null, var next: ListNode = null)
-
-object Main extends App {
-  class Solution {
-    def insertAtBeginning(head: ListNode, data: Int): ListNode = {
-      val newNode = new ListNode(data)
-      if (head == null) {                  // Case A: list is empty
-        newNode.next = null
-        newNode.prev = null
-        return newNode
-      }
-      newNode.next = head                  // 2. New node's next = old head
-      newNode.prev = null                  // 3. New head has no predecessor
-      head.prev    = newNode               // 4. Mirror
-      newNode                              // 5. Return the new head
-    }
-  }
-
-  val n1 = new ListNode(5); val n2 = new ListNode(7); n1.next = n2; n2.prev = n1
-  var head = new Solution().insertAtBeginning(n1, 6)
-  while (head != null) { print(s"${head.v} "); head = head.next }  // 6 5 7
 }
 ```
 
@@ -245,82 +240,159 @@ Input:  head = [5, 7, 3, 10], data = 6
 Output: [6, 5, 7, 3, 10]
 ```
 
-## The Solution
+<details>
+<summary><h2>The Solution</h2></summary>
 
 
-```pseudocode
-# Compact form — `prev` defaults to null on a fresh node.
-function insertAtBeginning(head, data):
-    newNode ← new ListNode(data)
-    if head is null: return newNode
-    newNode.next ← head
-    head.prev ← newNode                                # mirror the forward link
-    return newNode
-```
 
 ```python run
+from typing import Optional
+
+
+class ListNode:
+    def __init__(self, val=0, prev=None, nxt=None):
+        self.val = val
+        self.prev = prev
+        self.next = nxt
+
+
+def from_list(values):
+    if not values:
+        return None
+    head = ListNode(values[0])
+    cur = head
+    for v in values[1:]:
+        node = ListNode(v, prev=cur)
+        cur.next = node
+        cur = node
+    return head
+
+
+def to_list(head):
+    out = []
+    while head is not None:
+        out.append(head.val)
+        head = head.next
+    return out
+
+
 class Solution:
-    def insert_at_beginning(self, head, data):
-        new_node = ListNode(data)
+    def insert_at_beginning(
+        self, head: Optional[ListNode], data: int
+    ) -> Optional[ListNode]:
+
+        # Create a new node with the given data
+        new_node: ListNode = ListNode(data)
+
+        # Check if the list is empty
         if head is None:
-            return new_node               # Empty list → lone node is the new head
-        new_node.next = head              # Link new → old head
-        head.prev     = new_node          # Mirror — old head ← new
-        return new_node                   # New head returned
+
+            # Set the next pointer to None since it's the only node
+            new_node.next = None
+            new_node.prev = None
+
+            # Return the new_node as this is the new head
+            return new_node
+
+        # Set the next pointer of the new node to the current head
+        new_node.next = head
+
+        # Set the prev pointer of the new node to None since it will be
+        # the new head
+        new_node.prev = None
+
+        # Set the prev pointer of the current head to the new node
+        head.prev = new_node
+
+        # Return the new node as the new head of the list
+        return new_node
+
+
+# Examples from the problem statement
+print(to_list(Solution().insert_at_beginning(from_list([5, 7, 3, 10]), 6)))  # [6, 5, 7, 3, 10]
+
+# Edge cases
+print(to_list(Solution().insert_at_beginning(None, 1)))                       # [1]
+print(to_list(Solution().insert_at_beginning(from_list([42]), 99)))           # [99, 42]
+print(to_list(Solution().insert_at_beginning(from_list([1, 2, 3]), 0)))       # [0, 1, 2, 3]
+print(to_list(Solution().insert_at_beginning(from_list([5, 5, 5]), 5)))       # [5, 5, 5, 5]
+print(to_list(Solution().insert_at_beginning(from_list([10, 20]), 5)))        # [5, 10, 20]
 ```
 
 ```java run
+import java.util.*;
+
 public class Main {
-    static class ListNode { int val; ListNode prev, next; ListNode(int v){val=v;} }
+    static class ListNode {
+        int val;
+        ListNode prev;
+        ListNode next;
+        ListNode() {}
+        ListNode(int val) { this.val = val; }
+    }
+
+    static ListNode fromList(int... values) {
+        if (values.length == 0) return null;
+        ListNode head = new ListNode(values[0]);
+        ListNode cur = head;
+        for (int i = 1; i < values.length; i++) {
+            ListNode node = new ListNode(values[i]);
+            node.prev = cur;
+            cur.next = node;
+            cur = node;
+        }
+        return head;
+    }
+
+    static java.util.List<Integer> toList(ListNode head) {
+        java.util.List<Integer> out = new java.util.ArrayList<>();
+        while (head != null) { out.add(head.val); head = head.next; }
+        return out;
+    }
 
     static class Solution {
         public ListNode insertAtBeginning(ListNode head, int data) {
+
+            // Create a new node with the given data
             ListNode newNode = new ListNode(data);
-            if (head == null) return newNode;        // Empty list shortcut
-            newNode.next = head;                     // Link new → old head
-            head.prev    = newNode;                  // Mirror
+
+            // Check if the list is empty
+            if (head == null) {
+
+                // Set the next pointer to null since it's the only node
+                newNode.next = null;
+                newNode.prev = null;
+
+                // Return the newNode as this is the new head
+                return newNode;
+            }
+
+            // Set the next pointer of the new node to the current head
+            newNode.next = head;
+
+            // Set the prev pointer of the new node to null since it will be
+            // the new head
+            newNode.prev = null;
+
+            // Set the prev pointer of the current head to the new node
+            head.prev = newNode;
+
+            // Return the new node as the new head of the list
             return newNode;
         }
     }
 
     public static void main(String[] args) {
-        ListNode n1=new ListNode(5),n2=new ListNode(7),n3=new ListNode(3),n4=new ListNode(10);
-        n1.next=n2; n2.prev=n1; n2.next=n3; n3.prev=n2; n3.next=n4; n4.prev=n3;
-        ListNode head = new Solution().insertAtBeginning(n1, 6);
-        for (ListNode c=head;c!=null;c=c.next) System.out.print(c.val+" ");
-        // 6 5 7 3 10
+        // Examples from the problem statement
+        System.out.println(toList(new Solution().insertAtBeginning(fromList(5, 7, 3, 10), 6)));  // [6, 5, 7, 3, 10]
+
+        // Edge cases
+        System.out.println(toList(new Solution().insertAtBeginning(null, 1)));                    // [1]
+        System.out.println(toList(new Solution().insertAtBeginning(fromList(42), 99)));            // [99, 42]
+        System.out.println(toList(new Solution().insertAtBeginning(fromList(1, 2, 3), 0)));        // [0, 1, 2, 3]
+        System.out.println(toList(new Solution().insertAtBeginning(fromList(5, 5, 5), 5)));        // [5, 5, 5, 5]
+        System.out.println(toList(new Solution().insertAtBeginning(fromList(10, 20), 5)));         // [5, 10, 20]
     }
-}
-```
-
-```c run
-ListNode* insertAtBeginning(ListNode *head, int data) {
-    ListNode *newNode = newListNode(data);
-    if (head == NULL) return newNode;
-    newNode->next = head;
-    head->prev    = newNode;
-    return newNode;
-}
-```
-
-```scala run
-class ListNode(var v: Int, var prev: ListNode = null, var next: ListNode = null)
-
-object Main extends App {
-  class Solution {
-    def insertAtBeginning(head: ListNode, data: Int): ListNode = {
-      val n = new ListNode(data)
-      if (head == null) return n
-      n.next   = head
-      head.prev = n
-      n
-    }
-  }
-
-  val n1 = new ListNode(5); val n2 = new ListNode(7); val n3 = new ListNode(3); val n4 = new ListNode(10)
-  n1.next = n2; n2.prev = n1; n2.next = n3; n3.prev = n2; n3.next = n4; n4.prev = n3
-  var head = new Solution().insertAtBeginning(n1, 6)
-  while (head != null) { print(s"${head.v} "); head = head.next }  // 6 5 7 3 10
 }
 ```
 
@@ -329,13 +401,19 @@ object Main extends App {
 <summary><strong>Trace — head = [5, 7, 3, 10], data = 6</strong></summary>
 
 ```
-Initial │ head → 5 ↔ 7 ↔ 3 ↔ 10
-Step 1  │ create new(6)        │ new.next = null,  new.prev = null
-Step 2  │ new.next = head       │ new(6) → 5 ↔ 7 ↔ 3 ↔ 10
-Step 3  │ head.prev = new       │ 6 ↔ 5 ↔ 7 ↔ 3 ↔ 10  (mirror complete)
-Step 4  │ return new            │ new head is 6
+Initial │ head → 5 ⇄ 7 ⇄ 3 ⇄ 10
+Step 1  │ create new_node(6)
+Step 2  │ head is not null         │ skip the empty-list branch
+Step 3  │ new_node.next = head     │ new_node(6) → 5 ⇄ 7 ⇄ 3 ⇄ 10
+Step 4  │ new_node.prev = null     │ new_node(6) is the new head — nothing precedes it
+Step 5  │ head.prev = new_node     │ old head 5 now points back: new_node(6) ⇄ 5 ⇄ 7 ⇄ 3 ⇄ 10
+Step 6  │ return new_node          │ new head is 6
 Result: [6, 5, 7, 3, 10] ✓
 ```
+
+The mirror update `head.prev = new_node` is the doubly-linked step the singly linked version never had — without it the backward chain from node 5 would still point at `null` and reverse traversal would lose the new head.
+
+</details>
 
 </details>
 
@@ -423,94 +501,92 @@ flowchart TB
 We consider both cases and handle them in conditional blocks.
 
 
-```pseudocode
-function insertAtEnd(tail, data):
-    newNode ← new ListNode(data)
-    if tail is null:
-        newNode.next ← null; newNode.prev ← null      # lone node
-        return newNode
-    tail.next ← newNode                                # old tail points forward
-    newNode.prev ← tail                                # mirror — new points back
-    newNode.next ← null                                # new tail has no successor
-    return newNode
-```
-
 ```python run
+"""
+Definition for doubly-linked list.
+class ListNode:
+    def __init__(self, val):
+        self.val = val
+        self.prev = None
+        self.next = None
+"""
+
+from typing import Optional
+
 class Solution:
-    def insert_at_end(self, tail, data):
-        new_node = ListNode(data)
-        if tail is None:                         # Case A: empty list
+    def insert_at_end(
+        self, tail: Optional[ListNode], data: int
+    ) -> Optional[ListNode]:
+
+        # Create a new node with the given data
+        new_node: ListNode = ListNode(data)
+
+        # Check if the list is empty
+        if tail is None:
+
+            # Set the next and prev pointer of the new node to None
             new_node.next = None
             new_node.prev = None
+
+            # Return the new_node as this is the new tail
             return new_node
-        tail.next     = new_node                 # 2. Old tail points forward at new
-        new_node.prev = tail                     # 3. Mirror — new points back at old tail
-        new_node.next = None                     # 4. New node is the new tail
-        return new_node                          # 5. Return the new tail
+
+        # Set the next pointer of the tail to the new node
+        tail.next = new_node
+
+        # Set the previous pointer of the new node to the current tail
+        new_node.prev = tail
+
+        # Set the next pointer of the new node to None since it will be
+        # the new tail
+        new_node.next = None
+
+        # Return the new node as the new tail of the list
+        return new_node
 ```
 
 ```java run
-public class Main {
-    static class ListNode { int val; ListNode prev, next; ListNode(int v){val=v;} }
+/**
+ * Definition for doubly-linked list.
+ * class ListNode {
+ *     int val;
+ *     ListNode prev;
+ *     ListNode next;
+ *     ListNode() {}
+ *     ListNode(int val) { this.val = val; }
+ * };
+ */
 
-    static class Solution {
-        public ListNode insertAtEnd(ListNode tail, int data) {
-            ListNode newNode = new ListNode(data);
-            if (tail == null) {                      // Case A: empty list
-                newNode.next = null;
-                newNode.prev = null;
-                return newNode;
-            }
-            tail.next     = newNode;                 // 2. Old tail → new
-            newNode.prev  = tail;                    // 3. Mirror
-            newNode.next  = null;                    // 4. New node is the new tail
-            return newNode;                          // 5. Return the new tail
+class Solution {
+    public ListNode insertAtEnd(ListNode tail, int data) {
+
+        // Create a new node with the given data
+        ListNode newNode = new ListNode(data);
+
+        // Check if the list is empty
+        if (tail == null) {
+
+            // Set the next and prev pointer of the new node to null
+            newNode.next = null;
+            newNode.prev = null;
+
+            // Return the newNode as this is the new tail
+            return newNode;
         }
-    }
 
-    public static void main(String[] args) {
-        ListNode n1=new ListNode(5),n2=new ListNode(7); n1.next=n2; n2.prev=n1;
-        ListNode tail = new Solution().insertAtEnd(n2, 3);
-        for (ListNode c=n1;c!=null;c=c.next) System.out.print(c.val+" ");
-        // 5 7 3
-    }
-}
-```
+        // Set the next pointer of the tail to the new node
+        tail.next = newNode;
 
-```c run
-ListNode* insertAtEnd(ListNode *tail, int data) {
-    ListNode *newNode = newListNode(data);
-    if (tail == NULL) {
-        newNode->next = NULL;
-        newNode->prev = NULL;
+        // Set the previous pointer of the new node to the current tail
+        newNode.prev = tail;
+
+        // Set the next pointer of the new node to null since it will be
+        // the new tail
+        newNode.next = null;
+
+        // Return the new node as the new tail of the list
         return newNode;
     }
-    tail->next    = newNode;
-    newNode->prev = tail;
-    newNode->next = NULL;
-    return newNode;
-}
-```
-
-```scala run
-class ListNode(var v: Int, var prev: ListNode = null, var next: ListNode = null)
-
-object Main extends App {
-  class Solution {
-    def insertAtEnd(tail: ListNode, data: Int): ListNode = {
-      val n = new ListNode(data)
-      if (tail == null) { n.next = null; n.prev = null; return n }
-      tail.next = n
-      n.prev    = tail
-      n.next    = null
-      n
-    }
-  }
-
-  val n1 = new ListNode(5); val n2 = new ListNode(7); n1.next = n2; n2.prev = n1
-  val tail = new Solution().insertAtEnd(n2, 3)
-  var cur = n1
-  while (cur != null) { print(s"${cur.v} "); cur = cur.next }  // 5 7 3
 }
 ```
 
@@ -558,87 +634,216 @@ Input:  head = [5, 7, 3, 10], data = 6
 Output: [5, 7, 3, 10, 6]
 ```
 
-## The Solution
+<details>
+<summary><h2>The Solution</h2></summary>
 
 
-```pseudocode
-# Compact form — `next` defaults to null on a fresh node.
-function insertAtEnd(tail, data):
-    newNode ← new ListNode(data)
-    if tail is null: return newNode
-    tail.next ← newNode
-    newNode.prev ← tail
-    return newNode
-```
 
 ```python run
+from typing import Optional
+
+
+class ListNode:
+    def __init__(self, val=0, prev=None, nxt=None):
+        self.val = val
+        self.prev = prev
+        self.next = nxt
+
+
+def from_list(values):
+    if not values:
+        return None
+    head = ListNode(values[0])
+    cur = head
+    for v in values[1:]:
+        node = ListNode(v, prev=cur)
+        cur.next = node
+        cur = node
+    return head
+
+
+def to_list(head):
+    out = []
+    while head is not None:
+        out.append(head.val)
+        head = head.next
+    return out
+
+
+def to_tail(head):
+    if head is None:
+        return None
+    cur = head
+    while cur.next is not None:
+        cur = cur.next
+    return cur
+
+
+def head_of(tail):
+    """Walk backwards to recover head from the tail node."""
+    if tail is None:
+        return None
+    cur = tail
+    while cur.prev is not None:
+        cur = cur.prev
+    return cur
+
+
 class Solution:
-    def insert_at_end(self, tail, data):
-        new_node = ListNode(data)
+    def insert_at_end(
+        self, tail: Optional[ListNode], data: int
+    ) -> Optional[ListNode]:
+
+        # Create a new node with the given data
+        new_node: ListNode = ListNode(data)
+
+        # Check if the list is empty
         if tail is None:
-            return new_node                  # Empty list → lone node
-        tail.next     = new_node             # Forward link from old tail
-        new_node.prev = tail                 # Mirror back-link
-        return new_node                      # New tail
+
+            # Set the next and prev pointer of the new node to None
+            new_node.next = None
+            new_node.prev = None
+
+            # Return the newNode as this is the new tail
+            return new_node
+
+        # Set the next pointer of the tail to the new node
+        tail.next = new_node
+
+        # Set the previous pointer of the new node to the current tail
+        new_node.prev = tail
+
+        # Set the next pointer of the new node to None since it will be
+        # the new tail
+        new_node.next = None
+
+        # Return the new node as the new tail of the list
+        return new_node
+
+
+# Examples from the problem statement — rebuild full list via head
+t1 = Solution().insert_at_end(to_tail(from_list([5, 7, 3, 10])), 6)
+print(to_list(head_of(t1)))    # [5, 7, 3, 10, 6]
+
+# Edge cases
+t2 = Solution().insert_at_end(None, 1)
+print(to_list(head_of(t2)))    # [1]
+
+t3 = Solution().insert_at_end(to_tail(from_list([42])), 99)
+print(to_list(head_of(t3)))    # [42, 99]
+
+t4 = Solution().insert_at_end(to_tail(from_list([1, 2, 3])), 4)
+print(to_list(head_of(t4)))    # [1, 2, 3, 4]
+
+t5 = Solution().insert_at_end(to_tail(from_list([5, 5])), 5)
+print(to_list(head_of(t5)))    # [5, 5, 5]
+
+t6 = Solution().insert_at_end(to_tail(from_list([10])), 20)
+print(to_list(head_of(t6)))    # [10, 20]
 ```
 
 ```java run
+import java.util.*;
+
 public class Main {
-    static class ListNode { int val; ListNode prev, next; ListNode(int v){val=v;} }
+    static class ListNode {
+        int val;
+        ListNode prev;
+        ListNode next;
+        ListNode() {}
+        ListNode(int val) { this.val = val; }
+    }
+
+    static ListNode fromList(int... values) {
+        if (values.length == 0) return null;
+        ListNode head = new ListNode(values[0]);
+        ListNode cur = head;
+        for (int i = 1; i < values.length; i++) {
+            ListNode node = new ListNode(values[i]);
+            node.prev = cur;
+            cur.next = node;
+            cur = node;
+        }
+        return head;
+    }
+
+    static ListNode toTail(ListNode head) {
+        if (head == null) return null;
+        ListNode cur = head;
+        while (cur.next != null) cur = cur.next;
+        return cur;
+    }
+
+    static ListNode headOf(ListNode tail) {
+        if (tail == null) return null;
+        ListNode cur = tail;
+        while (cur.prev != null) cur = cur.prev;
+        return cur;
+    }
+
+    static java.util.List<Integer> toList(ListNode head) {
+        java.util.List<Integer> out = new java.util.ArrayList<>();
+        while (head != null) { out.add(head.val); head = head.next; }
+        return out;
+    }
 
     static class Solution {
         public ListNode insertAtEnd(ListNode tail, int data) {
-            ListNode n = new ListNode(data);
-            if (tail == null) return n;
-            tail.next = n;
-            n.prev    = tail;
-            return n;
+
+            // Create a new node with the given data
+            ListNode newNode = new ListNode(data);
+
+            // Check if the list is empty
+            if (tail == null) {
+
+                // Set the next and prev pointer of the new node to null
+                newNode.next = null;
+                newNode.prev = null;
+
+                // Return the newNode as this is the new tail
+                return newNode;
+            }
+
+            // Set the next pointer of the tail to the new node
+            tail.next = newNode;
+
+            // Set the previous pointer of the new node to the current tail
+            newNode.prev = tail;
+
+            // Set the next pointer of the new node to null since it will be
+            // the new tail
+            newNode.next = null;
+
+            // Return the new node as the new tail of the list
+            return newNode;
         }
     }
 
     public static void main(String[] args) {
-        // [5, 7, 3, 10], data=6 -> [5, 7, 3, 10, 6]
-        ListNode n1=new ListNode(5),n2=new ListNode(7),n3=new ListNode(3),n4=new ListNode(10);
-        n1.next=n2; n2.prev=n1; n2.next=n3; n3.prev=n2; n3.next=n4; n4.prev=n3;
-        ListNode tail = new Solution().insertAtEnd(n4, 6);
-        for (ListNode c=n1;c!=null;c=c.next) System.out.print(c.val+" ");
-        // 5 7 3 10 6
+        // Examples from the problem statement
+        ListNode t1 = new Solution().insertAtEnd(toTail(fromList(5, 7, 3, 10)), 6);
+        System.out.println(toList(headOf(t1)));    // [5, 7, 3, 10, 6]
+
+        // Edge cases
+        ListNode t2 = new Solution().insertAtEnd(null, 1);
+        System.out.println(toList(headOf(t2)));    // [1]
+
+        ListNode t3 = new Solution().insertAtEnd(toTail(fromList(42)), 99);
+        System.out.println(toList(headOf(t3)));    // [42, 99]
+
+        ListNode t4 = new Solution().insertAtEnd(toTail(fromList(1, 2, 3)), 4);
+        System.out.println(toList(headOf(t4)));    // [1, 2, 3, 4]
+
+        ListNode t5 = new Solution().insertAtEnd(toTail(fromList(5, 5)), 5);
+        System.out.println(toList(headOf(t5)));    // [5, 5, 5]
+
+        ListNode t6 = new Solution().insertAtEnd(toTail(fromList(10)), 20);
+        System.out.println(toList(headOf(t6)));    // [10, 20]
     }
 }
 ```
 
-```c run
-ListNode* insertAtEnd(ListNode *tail, int data) {
-    ListNode *n = newListNode(data);
-    if (tail == NULL) return n;
-    tail->next = n;
-    n->prev    = tail;
-    return n;
-}
-```
-
-```scala run
-class ListNode(var v: Int, var prev: ListNode = null, var next: ListNode = null)
-
-object Main extends App {
-  class Solution {
-    def insertAtEnd(tail: ListNode, data: Int): ListNode = {
-      val n = new ListNode(data)
-      if (tail == null) return n
-      tail.next = n
-      n.prev    = tail
-      n
-    }
-  }
-
-  // [5, 7, 3, 10], data=6 -> [5, 7, 3, 10, 6]
-  val n1 = new ListNode(5); val n2 = new ListNode(7); val n3 = new ListNode(3); val n4 = new ListNode(10)
-  n1.next = n2; n2.prev = n1; n2.next = n3; n3.prev = n2; n3.next = n4; n4.prev = n3
-  val tail = new Solution().insertAtEnd(n4, 6)
-  var cur = n1
-  while (cur != null) { print(s"${cur.v} "); cur = cur.next }  // 5 7 3 10 6
-}
-```
+</details>
 
 
 ***
@@ -717,89 +922,89 @@ flowchart TB
 We will be given the node, **after** which we will perform the insertion.
 
 
-```pseudocode
-function insertAfterTheGivenNode(node, data):
-    if node is null: return
-    newNode ← new ListNode(data)
-    newNode.next ← node.next                           # save before we clobber
-    newNode.prev ← node
-    node.next ← newNode
-    if newNode.next is not null:                       # `node` may have been the tail
-        newNode.next.prev ← newNode                    # mirror — successor's prev = new
-```
-
 ```python run
+"""
+Definition for doubly-linked list.
+class ListNode:
+    def __init__(self, val):
+        self.val = val
+        self.prev = None
+        self.next = None
+"""
+
+from typing import Optional
+
 class Solution:
-    def insert_after_the_given_node(self, node, data):
-        if node is None:                     # No anchor → nothing to do
+    def insert_after_the_given_node(
+        self, node: Optional[ListNode], data: int
+    ) -> None:
+
+        # Check if the given node is valid (not None)
+        if node is None:
+
+            # If the node is None, we cannot insert after it, so return.
             return
-        new_node = ListNode(data)
-        new_node.next = node.next            # 2. New node's successor = given's successor
-        new_node.prev = node                 # 3. New node's predecessor = given
-        node.next     = new_node             # 4. Given's successor = new node
-        if new_node.next is not None:        # 5. Conditional — given might have been the tail
-            new_node.next.prev = new_node    #    Mirror — successor's predecessor = new
+
+        # Create a new node with the given data
+        new_node: ListNode = ListNode(data)
+
+        # Link the new node to the next node in the list
+        new_node.next = node.next
+
+        # Link the new node to the current node as its previous node
+        new_node.prev = node
+
+        # Link the current node to the new node, effectively inserting
+        # the new node after it
+        node.next = new_node
+
+        # If the new node has a valid next node, update its previous node
+        # to point back to the new node
+        if new_node.next is not None:
+            new_node.next.prev = new_node
 ```
 
 ```java run
-public class Main {
-    static class ListNode { int val; ListNode prev, next; ListNode(int v){val=v;} }
+/**
+ * Definition for doubly-linked list.
+ * class ListNode {
+ *     int val;
+ *     ListNode prev;
+ *     ListNode next;
+ *     ListNode() {}
+ *     ListNode(int val) { this.val = val; }
+ * };
+ */
 
-    static class Solution {
-        public void insertAfterTheGivenNode(ListNode node, int data) {
-            if (node == null) return;                    // No anchor → nothing to do
-            ListNode newNode = new ListNode(data);
-            newNode.next = node.next;                    // 2. Successor of new = given's successor
-            newNode.prev = node;                         // 3. Predecessor of new = given
-            node.next    = newNode;                      // 4. Given's successor = new
-            if (newNode.next != null) {                  // 5. Conditional mirror update
-                newNode.next.prev = newNode;
-            }
+class Solution {
+    public void insertAfterTheGivenNode(ListNode node, int data) {
+
+        // Check if the given node is valid (not null)
+        if (node == null) {
+
+            // If the node is null, we cannot insert after it, so return.
+            return;
+        }
+
+        // Create a new node with the given data
+        ListNode newNode = new ListNode(data);
+
+        // Link the new node to the next node in the list
+        newNode.next = node.next;
+
+        // Link the new node to the current node as its previous node
+        newNode.prev = node;
+
+        // Link the current node to the new node, effectively inserting
+        // the new node after it
+        node.next = newNode;
+
+        // If the new node has a valid next node, update its previous
+        // node to point back to the new node
+        if (newNode.next != null) {
+            newNode.next.prev = newNode;
         }
     }
-
-    public static void main(String[] args) {
-        ListNode n1=new ListNode(5),n2=new ListNode(7),n3=new ListNode(3); n1.next=n2; n2.prev=n1; n2.next=n3; n3.prev=n2;
-        new Solution().insertAfterTheGivenNode(n2, 6);
-        for (ListNode c=n1;c!=null;c=c.next) System.out.print(c.val+" ");
-        // 5 7 6 3
-    }
-}
-```
-
-```c run
-void insertAfterTheGivenNode(ListNode *node, int data) {
-    if (node == NULL) return;
-    ListNode *newNode = newListNode(data);
-    newNode->next = node->next;
-    newNode->prev = node;
-    node->next    = newNode;
-    if (newNode->next != NULL) {
-        newNode->next->prev = newNode;
-    }
-}
-```
-
-```scala run
-class ListNode(var v: Int, var prev: ListNode = null, var next: ListNode = null)
-
-object Main extends App {
-  class Solution {
-    def insertAfterTheGivenNode(node: ListNode, data: Int): Unit = {
-      if (node == null) return
-      val n = new ListNode(data)
-      n.next   = node.next
-      n.prev   = node
-      node.next = n
-      if (n.next != null) n.next.prev = n
-    }
-  }
-
-  val n1 = new ListNode(5); val n2 = new ListNode(7); val n3 = new ListNode(3)
-  n1.next = n2; n2.prev = n1; n2.next = n3; n3.prev = n2
-  new Solution().insertAfterTheGivenNode(n2, 6)
-  var cur = n1
-  while (cur != null) { print(s"${cur.v} "); cur = cur.next }  // 5 7 6 3
 }
 ```
 
@@ -854,92 +1059,215 @@ Input:  head = [5, 7, 3, 10], node = 7, data = 6
 Output: [5, 7, 6, 3, 10]
 ```
 
-## The Solution
+<details>
+<summary><h2>The Solution</h2></summary>
 
 
-```pseudocode
-# Same algorithm — re-listed for the second test case.
-function insertAfterTheGivenNode(node, data):
-    if node is null: return
-    newNode ← new ListNode(data)
-    newNode.next ← node.next
-    newNode.prev ← node
-    node.next ← newNode
-    if newNode.next is not null:
-        newNode.next.prev ← newNode
-```
 
 ```python run
+from typing import Optional
+
+
+class ListNode:
+    def __init__(self, val=0, prev=None, nxt=None):
+        self.val = val
+        self.prev = prev
+        self.next = nxt
+
+
+def from_list(values):
+    if not values:
+        return None
+    head = ListNode(values[0])
+    cur = head
+    for v in values[1:]:
+        node = ListNode(v, prev=cur)
+        cur.next = node
+        cur = node
+    return head
+
+
+def to_list(head):
+    out = []
+    while head is not None:
+        out.append(head.val)
+        head = head.next
+    return out
+
+
+def get_node(head, val):
+    """Return first node with the given value."""
+    cur = head
+    while cur is not None:
+        if cur.val == val:
+            return cur
+        cur = cur.next
+    return None
+
+
 class Solution:
-    def insert_after_the_given_node(self, node, data):
+    def insert_after_the_given_node(
+        self, node: Optional[ListNode], data: int
+    ) -> None:
+
+        # Check if the given node is valid (not None)
         if node is None:
+
+            # If the node is None, we cannot insert after it, so return.
             return
-        new_node = ListNode(data)
-        new_node.next = node.next                # Save before clobber
+
+        # Create a new node with the given data
+        new_node: ListNode = ListNode(data)
+
+        # Link the new node to the next node in the list
+        new_node.next = node.next
+
+        # Link the new node to the current node as its previous node
         new_node.prev = node
-        node.next     = new_node
+
+        # Link the current node to the new node, effectively inserting
+        # the new node after it
+        node.next = new_node
+
+        # If the new node has a valid next node, update its previous node
+        # to point back to the new node
         if new_node.next is not None:
             new_node.next.prev = new_node
+
+
+# Examples from the problem statement
+h1 = from_list([5, 7, 3, 10])
+Solution().insert_after_the_given_node(get_node(h1, 7), 6)
+print(to_list(h1))    # [5, 7, 6, 3, 10]
+
+# Edge cases — insert after head
+h2 = from_list([1, 2, 3])
+Solution().insert_after_the_given_node(get_node(h2, 1), 99)
+print(to_list(h2))    # [1, 99, 2, 3]
+
+# Insert after tail
+h3 = from_list([1, 2, 3])
+Solution().insert_after_the_given_node(get_node(h3, 3), 4)
+print(to_list(h3))    # [1, 2, 3, 4]
+
+# Single node list
+h4 = from_list([5])
+Solution().insert_after_the_given_node(get_node(h4, 5), 10)
+print(to_list(h4))    # [5, 10]
+
+# None node — no-op
+h5 = from_list([1, 2])
+Solution().insert_after_the_given_node(None, 9)
+print(to_list(h5))    # [1, 2]
+
+# Insert after middle
+h6 = from_list([10, 20, 30, 40])
+Solution().insert_after_the_given_node(get_node(h6, 20), 25)
+print(to_list(h6))    # [10, 20, 25, 30, 40]
 ```
 
 ```java run
+import java.util.*;
+
 public class Main {
-    static class ListNode { int val; ListNode prev, next; ListNode(int v){val=v;} }
+    static class ListNode {
+        int val;
+        ListNode prev;
+        ListNode next;
+        ListNode() {}
+        ListNode(int val) { this.val = val; }
+    }
+
+    static ListNode fromList(int... values) {
+        if (values.length == 0) return null;
+        ListNode head = new ListNode(values[0]);
+        ListNode cur = head;
+        for (int i = 1; i < values.length; i++) {
+            ListNode node = new ListNode(values[i]);
+            node.prev = cur;
+            cur.next = node;
+            cur = node;
+        }
+        return head;
+    }
+
+    static java.util.List<Integer> toList(ListNode head) {
+        java.util.List<Integer> out = new java.util.ArrayList<>();
+        while (head != null) { out.add(head.val); head = head.next; }
+        return out;
+    }
+
+    static ListNode getNode(ListNode head, int val) {
+        ListNode cur = head;
+        while (cur != null) {
+            if (cur.val == val) return cur;
+            cur = cur.next;
+        }
+        return null;
+    }
 
     static class Solution {
         public void insertAfterTheGivenNode(ListNode node, int data) {
-            if (node == null) return;
-            ListNode n = new ListNode(data);
-            n.next    = node.next;
-            n.prev    = node;
-            node.next = n;
-            if (n.next != null) n.next.prev = n;
+
+            // Check if the given node is valid (not null)
+            if (node == null) {
+
+                // If the node is null, we cannot insert after it, so return.
+                return;
+            }
+
+            // Create a new node with the given data
+            ListNode newNode = new ListNode(data);
+
+            // Link the new node to the next node in the list
+            newNode.next = node.next;
+
+            // Link the new node to the current node as its previous node
+            newNode.prev = node;
+
+            // Link the current node to the new node, effectively inserting
+            // the new node after it
+            node.next = newNode;
+
+            // If the new node has a valid next node, update its previous
+            // node to point back to the new node
+            if (newNode.next != null) {
+                newNode.next.prev = newNode;
+            }
         }
     }
 
     public static void main(String[] args) {
-        // [5, 7, 3, 10], node=7, data=6 -> [5, 7, 6, 3, 10]
-        ListNode n1=new ListNode(5),n2=new ListNode(7),n3=new ListNode(3),n4=new ListNode(10);
-        n1.next=n2; n2.prev=n1; n2.next=n3; n3.prev=n2; n3.next=n4; n4.prev=n3;
-        new Solution().insertAfterTheGivenNode(n2, 6);
-        for (ListNode c=n1;c!=null;c=c.next) System.out.print(c.val+" ");
-        // 5 7 6 3 10
+        // Examples from the problem statement
+        ListNode h1 = fromList(5, 7, 3, 10);
+        new Solution().insertAfterTheGivenNode(getNode(h1, 7), 6);
+        System.out.println(toList(h1));    // [5, 7, 6, 3, 10]
+
+        // Edge cases — insert after head
+        ListNode h2 = fromList(1, 2, 3);
+        new Solution().insertAfterTheGivenNode(getNode(h2, 1), 99);
+        System.out.println(toList(h2));    // [1, 99, 2, 3]
+
+        // Insert after tail
+        ListNode h3 = fromList(1, 2, 3);
+        new Solution().insertAfterTheGivenNode(getNode(h3, 3), 4);
+        System.out.println(toList(h3));    // [1, 2, 3, 4]
+
+        // Single node list
+        ListNode h4 = fromList(5);
+        new Solution().insertAfterTheGivenNode(getNode(h4, 5), 10);
+        System.out.println(toList(h4));    // [5, 10]
+
+        // None node — no-op
+        ListNode h5 = fromList(1, 2);
+        new Solution().insertAfterTheGivenNode(null, 9);
+        System.out.println(toList(h5));    // [1, 2]
+
+        // Insert after middle
+        ListNode h6 = fromList(10, 20, 30, 40);
+        new Solution().insertAfterTheGivenNode(getNode(h6, 20), 25);
+        System.out.println(toList(h6));    // [10, 20, 25, 30, 40]
     }
-}
-```
-
-```c run
-void insertAfterTheGivenNode(ListNode *node, int data) {
-    if (node == NULL) return;
-    ListNode *n = newListNode(data);
-    n->next    = node->next;
-    n->prev    = node;
-    node->next = n;
-    if (n->next != NULL) n->next->prev = n;
-}
-```
-
-```scala run
-class ListNode(var v: Int, var prev: ListNode = null, var next: ListNode = null)
-
-object Main extends App {
-  class Solution {
-    def insertAfterTheGivenNode(node: ListNode, data: Int): Unit = {
-      if (node == null) return
-      val n = new ListNode(data)
-      n.next    = node.next
-      n.prev    = node
-      node.next = n
-      if (n.next != null) n.next.prev = n
-    }
-  }
-
-  // [5, 7, 3, 10], node=7, data=6 -> [5, 7, 6, 3, 10]
-  val n1 = new ListNode(5); val n2 = new ListNode(7); val n3 = new ListNode(3); val n4 = new ListNode(10)
-  n1.next = n2; n2.prev = n1; n2.next = n3; n3.prev = n2; n3.next = n4; n4.prev = n3
-  new Solution().insertAfterTheGivenNode(n2, 6)
-  var cur = n1
-  while (cur != null) { print(s"${cur.v} "); cur = cur.next }  // 5 7 6 3 10
 }
 ```
 
@@ -948,14 +1276,20 @@ object Main extends App {
 <summary><strong>Trace — head = [5, 7, 3, 10], given = node(7), data = 6</strong></summary>
 
 ```
-Initial │ 5 ↔ 7 ↔ 3 ↔ 10
-Step 1  │ create new(6)
-Step 2  │ new.next = 7.next = node(3)        │ new(6) → 3
-Step 3  │ new.prev = node(7)                 │ 7 ← new(6)
-Step 4  │ 7.next = new(6)                    │ 5 ↔ 7 → new(6) → 3 ↔ 10
-Step 5  │ new.next.prev = new                │ 5 ↔ 7 ↔ 6 ↔ 3 ↔ 10  (mirror complete)
+Initial │ 5 ⇄ 7 ⇄ 3 ⇄ 10
+Step 1  │ node = node(7) is not null            │ continue
+Step 2  │ create new_node(6)
+Step 3  │ new_node.next = node.next = node(3)    │ new_node(6) → 3
+Step 4  │ new_node.prev = node = node(7)         │ 7 ← new_node(6)
+Step 5  │ node.next = new_node                  │ 5 ⇄ 7 → new_node(6) → 3 ⇄ 10
+Step 6  │ new_node.next is node(3) ≠ null →     │ node(3).prev = new_node(6)
+        │ new_node.next.prev = new_node          │ 5 ⇄ 7 ⇄ new_node(6) ⇄ 3 ⇄ 10
 Result: [5, 7, 6, 3, 10] ✓
 ```
+
+Four pointers, not two — steps 4 and 6 are the `prev`-side mirror updates. Step 6 is guarded by a null check because the given node could be the tail, in which case there is no successor whose `prev` needs fixing.
+
+</details>
 
 </details>
 
@@ -1073,121 +1407,135 @@ flowchart TB
 ## Implementation
 
 
-```pseudocode
-# In a DLL, `node.prev` gives O(1) access to the predecessor — no traversal needed.
-function insertBeforeTheGivenNode(head, node, data):
-    if head is null OR node is null: return head
-    newNode ← new ListNode(data)
-    if node = head:                                    # special case — insert at head
-        newNode.next ← head
-        newNode.prev ← null
-        head.prev ← newNode
-        return newNode
-    newNode.next ← node
-    newNode.prev ← node.prev                           # O(1) access — DLL's payoff
-    if newNode.prev is not null:
-        newNode.prev.next ← newNode                    # predecessor → new
-    node.prev ← newNode                                # given.prev = new
-    return head
-```
-
 ```python run
+"""
+Definition for doubly-linked list.
+class ListNode:
+    def __init__(self, val):
+        self.val = val
+        self.prev = None
+        self.next = None
+"""
+
+from typing import Optional
+
 class Solution:
-    def insert_before_the_given_node(self, head, node, data):
-        if head is None or node is None:                # Case 1: no anchor
+    def insert_before_the_given_node(
+        self,
+        head: Optional[ListNode],
+        node: Optional[ListNode],
+        data: int,
+    ) -> Optional[ListNode]:
+
+        # Check if the head or the node to insert before is None
+        if head is None or node is None:
             return head
+
+        # Create a new node with the provided data
         new_node = ListNode(data)
-        if node is head:                                # Case 2: given is the head
+
+        # Check if the node to insert before is the head of the list.
+        if node == head:
+
+            # Set the next pointer of the new node to the current head
             new_node.next = head
+
+            # Set the prev pointer of the new node to None since it will
+            # be the new head
             new_node.prev = None
-            head.prev     = new_node
-            return new_node                             # New head
-        # Case 3: given is somewhere in the middle (or tail)
-        new_node.next  = node                           # 2. New's successor   = given
-        new_node.prev  = node.prev                      # 3. New's predecessor = given.prev (the saviour line — O(1) access)
-        if new_node.prev is not None:                   #    Defensive — node.prev should not be None here, but guard anyway
-            new_node.prev.next = new_node               # 4. Predecessor's next = new
-        node.prev = new_node                            # 5. Given's prev      = new
+
+            # Set the prev pointer of the current head to the new node
+            head.prev = new_node
+
+            # Return the new_node as this is the new head
+            return new_node
+
+        # Update the pointers of the new node to connect it with the list.
+        # The next node of the new node is the node given
+        new_node.next = node
+
+        # The previous node of the new node is the prev node of the given
+        # node
+        new_node.prev = node.prev
+
+        # Update the next pointer of the previous node of the node to
+        # point to the new node.
+        if new_node.prev:
+            new_node.prev.next = new_node
+
+        # Update the prev pointer of the node to point back to the new
+        # node
+        node.prev = new_node
+
+        # Return the updated head of the list
         return head
 ```
 
 ```java run
-public class Main {
-    static class ListNode { int val; ListNode prev, next; ListNode(int v){val=v;} }
+/**
+ * Definition for doubly-linked list.
+ * class ListNode {
+ *     int val;
+ *     ListNode prev;
+ *     ListNode next;
+ *     ListNode() {}
+ *     ListNode(int val) { this.val = val; }
+ * };
+ */
 
-    static class Solution {
-        public ListNode insertBeforeTheGivenNode(ListNode head, ListNode node, int data) {
-            if (head == null || node == null) return head;       // Case 1
-            ListNode newNode = new ListNode(data);
-            if (node == head) {                                  // Case 2: given is head
-                newNode.next = head;
-                newNode.prev = null;
-                head.prev    = newNode;
-                return newNode;
-            }
-            newNode.next = node;                                 // 2. New's next = given
-            newNode.prev = node.prev;                            // 3. New's prev = given.prev (O(1)!)
-            if (newNode.prev != null) {
-                newNode.prev.next = newNode;                     // 4. Predecessor's next = new
-            }
-            node.prev = newNode;                                 // 5. Given's prev = new
+class Solution {
+    public ListNode insertBeforeTheGivenNode(
+        ListNode head,
+        ListNode node,
+        int data
+    ) {
+
+        // Check if the head or the node to insert before is null
+        if (head == null || node == null) {
             return head;
         }
+
+        // Create a new node with the provided data
+        ListNode newNode = new ListNode(data);
+
+        // Check if the node to insert before is the head of the list.
+        if (node == head) {
+
+            // Set the next pointer of the new node to the current head
+            newNode.next = head;
+
+            // Set the prev pointer of the new node to null since it will
+            // be the new head
+            newNode.prev = null;
+
+            // Set the prev pointer of the current head to the new node
+            head.prev = newNode;
+
+            // Return the newNode as this is the new head
+            return newNode;
+        }
+
+        // Update the pointers of the new node to connect it with the
+        // list. The next node of the new node is the node given
+        newNode.next = node;
+
+        // The previous node of the new node is the prev node of the
+        // given node
+        newNode.prev = node.prev;
+
+        // Update the next pointer of the previous node of the node to
+        // point to the new node.
+        if (newNode.prev != null) {
+            newNode.prev.next = newNode;
+        }
+
+        // Update the prev pointer of the node to point back to the new
+        // node
+        node.prev = newNode;
+
+        // Return the updated head of the list
+        return head;
     }
-
-    public static void main(String[] args) {
-        ListNode n1=new ListNode(5),n2=new ListNode(7),n3=new ListNode(3); n1.next=n2; n2.prev=n1; n2.next=n3; n3.prev=n2;
-        ListNode head = new Solution().insertBeforeTheGivenNode(n1, n2, 6);
-        for (ListNode c=head;c!=null;c=c.next) System.out.print(c.val+" ");
-        // 5 6 7 3
-    }
-}
-```
-
-```c run
-ListNode* insertBeforeTheGivenNode(ListNode *head, ListNode *node, int data) {
-    if (head == NULL || node == NULL) return head;
-    ListNode *newNode = newListNode(data);
-    if (node == head) {
-        newNode->next = head;
-        newNode->prev = NULL;
-        head->prev    = newNode;
-        return newNode;
-    }
-    newNode->next = node;
-    newNode->prev = node->prev;
-    if (newNode->prev != NULL) newNode->prev->next = newNode;
-    node->prev = newNode;
-    return head;
-}
-```
-
-```scala run
-class ListNode(var v: Int, var prev: ListNode = null, var next: ListNode = null)
-
-object Main extends App {
-  class Solution {
-    def insertBeforeTheGivenNode(head: ListNode, node: ListNode, data: Int): ListNode = {
-      if (head == null || node == null) return head
-      val n = new ListNode(data)
-      if (node eq head) {
-        n.next   = head
-        n.prev   = null
-        head.prev = n
-        return n
-      }
-      n.next = node
-      n.prev = node.prev
-      if (n.prev != null) n.prev.next = n
-      node.prev = n
-      head
-    }
-  }
-
-  val n1 = new ListNode(5); val n2 = new ListNode(7); val n3 = new ListNode(3)
-  n1.next = n2; n2.prev = n1; n2.next = n3; n3.prev = n2
-  var head = new Solution().insertBeforeTheGivenNode(n1, n2, 6)
-  while (head != null) { print(s"${head.v} "); head = head.next }  // 5 6 7 3
 }
 ```
 
@@ -1240,113 +1588,246 @@ Input:  head = [5, 7, 3, 10], node = 7, data = 6
 Output: [5, 6, 7, 3, 10]
 ```
 
-## The Solution
+<details>
+<summary><h2>The Solution</h2></summary>
 
 
-```pseudocode
-# Compact form — assumes node.prev is non-null when node ≠ head.
-function insertBeforeTheGivenNode(head, node, data):
-    if head is null OR node is null: return head
-    newNode ← new ListNode(data)
-    if node = head:
-        newNode.next ← head
-        head.prev ← newNode
-        return newNode
-    newNode.next ← node
-    newNode.prev ← node.prev
-    newNode.prev.next ← newNode
-    node.prev ← newNode
-    return head
-```
 
 ```python run
+from typing import Optional
+
+
+class ListNode:
+    def __init__(self, val=0, prev=None, nxt=None):
+        self.val = val
+        self.prev = prev
+        self.next = nxt
+
+
+def from_list(values):
+    if not values:
+        return None
+    head = ListNode(values[0])
+    cur = head
+    for v in values[1:]:
+        node = ListNode(v, prev=cur)
+        cur.next = node
+        cur = node
+    return head
+
+
+def to_list(head):
+    out = []
+    while head is not None:
+        out.append(head.val)
+        head = head.next
+    return out
+
+
+def get_node(head, val):
+    cur = head
+    while cur is not None:
+        if cur.val == val:
+            return cur
+        cur = cur.next
+    return None
+
+
 class Solution:
-    def insert_before_the_given_node(self, head, node, data):
+    def insert_before_the_given_node(
+        self,
+        head: Optional[ListNode],
+        node: Optional[ListNode],
+        data: int,
+    ) -> Optional[ListNode]:
+
+        # Check if the head or the node to insert before is null
         if head is None or node is None:
             return head
+
+        # Create a new node with the provided data
         new_node = ListNode(data)
-        if node is head:                          # Insert-before-head shortcut
+
+        # Check if the node to insert before is the head of the list.
+        if node == head:
+
+            # Set the next pointer of the new node to the current head
             new_node.next = head
-            head.prev     = new_node
+
+            # Set the prev pointer of the new node to None since it will
+            # be the new head
+            new_node.prev = None
+
+            # Set the prev pointer of the current head to the new node
+            head.prev = new_node
+
+            # Return the newNode as this is the new head
             return new_node
-        new_node.next      = node                 # New is wedged between predecessor and given
-        new_node.prev      = node.prev            # Predecessor in O(1) via .prev
-        new_node.prev.next = new_node             # Predecessor → new
-        node.prev          = new_node             # Given.prev = new
+
+        # Update the pointers of the new node to connect it with the
+        # list. The next node of the new node is the node given
+        new_node.next = node
+
+        # The previous node of the new node is the prev node of the given
+        # node
+        new_node.prev = node.prev
+
+        # Update the next pointer of the previous node of the node to
+        # point to the new node.
+        if new_node.prev:
+            new_node.prev.next = new_node
+
+        # Update the prev pointer of the node to point back to the new
+        # node
+        node.prev = new_node
+
+        # Return the updated head of the list
         return head
+
+
+# Examples from the problem statement
+h1 = from_list([5, 7, 3, 10])
+print(to_list(Solution().insert_before_the_given_node(h1, get_node(h1, 7), 6)))  # [5, 6, 7, 3, 10]
+
+# Insert before head
+h2 = from_list([5, 7, 3, 10])
+print(to_list(Solution().insert_before_the_given_node(h2, get_node(h2, 5), 1)))  # [1, 5, 7, 3, 10]
+
+# Insert before tail
+h3 = from_list([1, 2, 3])
+print(to_list(Solution().insert_before_the_given_node(h3, get_node(h3, 3), 99))) # [1, 2, 99, 3]
+
+# Single node — inserts before the only node
+h4 = from_list([5])
+print(to_list(Solution().insert_before_the_given_node(h4, get_node(h4, 5), 0)))  # [0, 5]
+
+# head is None — returns None
+print(Solution().insert_before_the_given_node(None, None, 9))                     # None
+
+# node is None — returns head unchanged
+h5 = from_list([1, 2])
+print(to_list(Solution().insert_before_the_given_node(h5, None, 9)))              # [1, 2]
 ```
 
 ```java run
+import java.util.*;
+
 public class Main {
-    static class ListNode { int val; ListNode prev, next; ListNode(int v){val=v;} }
+    static class ListNode {
+        int val;
+        ListNode prev;
+        ListNode next;
+        ListNode() {}
+        ListNode(int val) { this.val = val; }
+    }
+
+    static ListNode fromList(int... values) {
+        if (values.length == 0) return null;
+        ListNode head = new ListNode(values[0]);
+        ListNode cur = head;
+        for (int i = 1; i < values.length; i++) {
+            ListNode node = new ListNode(values[i]);
+            node.prev = cur;
+            cur.next = node;
+            cur = node;
+        }
+        return head;
+    }
+
+    static java.util.List<Integer> toList(ListNode head) {
+        java.util.List<Integer> out = new java.util.ArrayList<>();
+        while (head != null) { out.add(head.val); head = head.next; }
+        return out;
+    }
+
+    static ListNode getNode(ListNode head, int val) {
+        ListNode cur = head;
+        while (cur != null) {
+            if (cur.val == val) return cur;
+            cur = cur.next;
+        }
+        return null;
+    }
 
     static class Solution {
-        public ListNode insertBeforeTheGivenNode(ListNode head, ListNode node, int data) {
-            if (head == null || node == null) return head;
-            ListNode n = new ListNode(data);
-            if (node == head) {
-                n.next    = head;
-                head.prev = n;
-                return n;
+        public ListNode insertBeforeTheGivenNode(
+            ListNode head,
+            ListNode node,
+            int data
+        ) {
+
+            // Check if the head or the node to insert before is null
+            if (head == null || node == null) {
+                return head;
             }
-            n.next        = node;
-            n.prev        = node.prev;
-            n.prev.next   = n;
-            node.prev     = n;
+
+            // Create a new node with the provided data
+            ListNode newNode = new ListNode(data);
+
+            // Check if the node to insert before is the head of the list.
+            if (node == head) {
+
+                // Set the next pointer of the new node to the current head
+                newNode.next = head;
+
+                // Set the prev pointer of the new node to null since it will
+                // be the new head
+                newNode.prev = null;
+
+                // Set the prev pointer of the current head to the new node
+                head.prev = newNode;
+
+                // Return the newNode as this is the new head
+                return newNode;
+            }
+
+            // Update the pointers of the new node to connect it with the
+            // list. The next node of the new node is the node given
+            newNode.next = node;
+
+            // The previous node of the new node is the prev node of the
+            // given node
+            newNode.prev = node.prev;
+
+            // Update the next pointer of the previous node of the node to
+            // point to the new node.
+            if (newNode.prev != null) {
+                newNode.prev.next = newNode;
+            }
+
+            // Update the prev pointer of the node to point back to the new
+            // node
+            node.prev = newNode;
+
+            // Return the updated head of the list
             return head;
         }
     }
 
     public static void main(String[] args) {
-        // [5, 7, 3, 10], node=7, data=6 -> [5, 6, 7, 3, 10]
-        ListNode n1=new ListNode(5),n2=new ListNode(7),n3=new ListNode(3),n4=new ListNode(10);
-        n1.next=n2; n2.prev=n1; n2.next=n3; n3.prev=n2; n3.next=n4; n4.prev=n3;
-        ListNode head = new Solution().insertBeforeTheGivenNode(n1, n2, 6);
-        for (ListNode c=head;c!=null;c=c.next) System.out.print(c.val+" ");
-        // 5 6 7 3 10
+        // Examples from the problem statement
+        ListNode h1 = fromList(5, 7, 3, 10);
+        System.out.println(toList(new Solution().insertBeforeTheGivenNode(h1, getNode(h1, 7), 6)));  // [5, 6, 7, 3, 10]
+
+        // Insert before head
+        ListNode h2 = fromList(5, 7, 3, 10);
+        System.out.println(toList(new Solution().insertBeforeTheGivenNode(h2, getNode(h2, 5), 1)));  // [1, 5, 7, 3, 10]
+
+        // Insert before tail
+        ListNode h3 = fromList(1, 2, 3);
+        System.out.println(toList(new Solution().insertBeforeTheGivenNode(h3, getNode(h3, 3), 99))); // [1, 2, 99, 3]
+
+        // Single node — inserts before the only node
+        ListNode h4 = fromList(5);
+        System.out.println(toList(new Solution().insertBeforeTheGivenNode(h4, getNode(h4, 5), 0)));  // [0, 5]
+
+        // head is null — returns null
+        System.out.println(new Solution().insertBeforeTheGivenNode(null, null, 9));                   // null
+
+        // node is null — returns head unchanged
+        ListNode h5 = fromList(1, 2);
+        System.out.println(toList(new Solution().insertBeforeTheGivenNode(h5, null, 9)));             // [1, 2]
     }
-}
-```
-
-```c run
-ListNode* insertBeforeTheGivenNode(ListNode *head, ListNode *node, int data) {
-    if (head == NULL || node == NULL) return head;
-    ListNode *n = newListNode(data);
-    if (node == head) {
-        n->next    = head;
-        head->prev = n;
-        return n;
-    }
-    n->next      = node;
-    n->prev      = node->prev;
-    n->prev->next = n;
-    node->prev   = n;
-    return head;
-}
-```
-
-```scala run
-class ListNode(var v: Int, var prev: ListNode = null, var next: ListNode = null)
-
-object Main extends App {
-  class Solution {
-    def insertBeforeTheGivenNode(head: ListNode, node: ListNode, data: Int): ListNode = {
-      if (head == null || node == null) return head
-      val n = new ListNode(data)
-      if (node eq head) { n.next = head; head.prev = n; return n }
-      n.next      = node
-      n.prev      = node.prev
-      n.prev.next = n
-      node.prev   = n
-      head
-    }
-  }
-
-  // [5, 7, 3, 10], node=7, data=6 -> [5, 6, 7, 3, 10]
-  val n1 = new ListNode(5); val n2 = new ListNode(7); val n3 = new ListNode(3); val n4 = new ListNode(10)
-  n1.next = n2; n2.prev = n1; n2.next = n3; n3.prev = n2; n3.next = n4; n4.prev = n3
-  var head = new Solution().insertBeforeTheGivenNode(n1, n2, 6)
-  while (head != null) { print(s"${head.v} "); head = head.next }  // 5 6 7 3 10
 }
 ```
 
@@ -1355,16 +1836,22 @@ object Main extends App {
 <summary><strong>Trace — head = [5, 7, 3, 10], given = node(7), data = 6</strong></summary>
 
 ```
-Initial │ 5 ↔ 7 ↔ 3 ↔ 10  ;  given = node(7), node(7).prev = node(5)
-Step 1  │ create new(6)
-Step 2  │ new.next = node(7)            │ new(6) → 7
-Step 3  │ new.prev = node(7).prev = 5   │ 5 ← new(6)         (← O(1), no scan!)
-Step 4  │ new.prev.next = new           │ 5 → new(6) → 7 ↔ 3 ↔ 10
-Step 5  │ 7.prev = new                  │ 5 ↔ 6 ↔ 7 ↔ 3 ↔ 10  (mirror complete)
+Initial │ 5 ⇄ 7 ⇄ 3 ⇄ 10  ;  given = node(7)
+Step 1  │ head, node both non-null; node ≠ head → not the head case
+Step 2  │ create new_node(6)
+Step 3  │ new_node.next = node = node(7)         │ new_node(6) → 7
+Step 4  │ new_node.prev = node.prev = node(5)    │ 5 ← new_node(6)
+Step 5  │ new_node.prev is node(5) ≠ null →     │ node(5).next = new_node(6)
+        │ new_node.prev.next = new_node          │ 5 → new_node(6) → 7
+Step 6  │ node.prev = new_node                  │ node(7).prev = new_node(6)
+        │                                        │ 5 ⇄ new_node(6) ⇄ 7 ⇄ 3 ⇄ 10
+Step 7  │ return head                            │ head still node(5)
 Result: [5, 6, 7, 3, 10] ✓
 ```
 
-The line `new.prev = node.prev` would have cost an O(N) scan in a singly linked list. Here it's a single field read.
+The predecessor is read straight off `node.prev` in step 4 — no walk from the head needed. That O(1) lookup of the previous node is exactly the win the second pointer buys: in a singly linked list this operation would have to traverse from the head to find the node before `given`.
+
+</details>
 
 </details>
 
@@ -1507,157 +1994,159 @@ flowchart LR
 When implementing the logic for insert at a distance `X`, we keep all the possible cases in mind and write the code for each in conditional blocks.
 
 
-```pseudocode
-function insertAtGivenDistance(head, X, data):
-    if head is null AND X > 0: return null
-    newNode ← new ListNode(data)
-    if X = 0:                                          # insert at beginning
-        newNode.next ← head
-        newNode.prev ← null
-        if head is not null: head.prev ← newNode
-        return newNode
-
-    # Walk forward to position X − 1.
-    current ← head; counter ← 0
-    while current is not null AND counter < X − 1:
-        current ← current.next
-        counter ← counter + 1
-    if current is null: return head                    # X exceeds list size
-
-    # Splice newNode after `current`. Update both directions.
-    newNode.next ← current.next
-    newNode.prev ← current
-    current.next ← newNode
-    if newNode.next is not null:
-        newNode.next.prev ← newNode
-    return head
-```
-
 ```python run
+"""
+Definition for doubly-linked list.
+class ListNode:
+    def __init__(self, val):
+        self.val = val
+        self.prev = None
+        self.next = None
+"""
+
+from typing import Optional
+
 class Solution:
-    def insert_at_given_distance(self, head, X, data):
-        if head is None and X > 0:                  # Case 1: empty list, invalid X
+    def insert_at_given_distance(
+        self, head: Optional[ListNode], X: int, data: int
+    ) -> Optional[ListNode]:
+
+        # If the list is empty, head is None, and X is greater than 0,
+        # it's not possible to insert the new node, so return None.
+        if head is None and X > 0:
             return None
+
+        # Create a new node with the given data.
         new_node = ListNode(data)
-        if X == 0:                                  # Case 2: insert at beginning
+
+        # If X is 0, insert the new node at the beginning of the list.
+        if X == 0:
+
+            # Set the next pointer of the new node to the current head
             new_node.next = head
+
+            # Set the prev pointer of the new node to None since it will
+            # be the new head
             new_node.prev = None
             if head is not None:
-                head.prev = new_node                # Mirror update if list was non-empty
+
+                # Set the prev pointer of the current head to the new
+                # node
+                head.prev = new_node
+
+            # Return the new node as the new head of the list
             return new_node
-        # Case 3 / 4: walk forward to position X-1
+
+        # Traverse the list to find the node at position X-1.
         current = head
+
+        # Counter to track the number of nodes traversed
         counter = 0
+
         while current is not None and counter < X - 1:
-            current  = current.next
+
+            # Move to the next node
+            current = current.next
+
+            # Increment the counter
             counter += 1
-        if current is None:                         # Case 4: ran off the end
+
+        # If the list is shorter than X-1, it's not possible to insert
+        # the new node, so return head.
+        if current is None:
             return head
-        # Splice new node after current (= position X-1)
+
+        # Insert the new node after the node at position X-1.
         new_node.next = current.next
         new_node.prev = current
-        current.next  = new_node
+        current.next = new_node
         if new_node.next is not None:
-            new_node.next.prev = new_node           # Mirror update on successor
+            new_node.next.prev = new_node
+
+        # Return the updated head of the list
         return head
 ```
 
 ```java run
-public class Main {
-    static class ListNode { int val; ListNode prev, next; ListNode(int v){val=v;} }
+/**
+ * Definition for doubly-linked list.
+ * class ListNode {
+ *     int val;
+ *     ListNode prev;
+ *     ListNode next;
+ *     ListNode() {}
+ *     ListNode(int val) { this.val = val; }
+ * };
+ */
 
-    static class Solution {
-        public ListNode insertAtGivenDistance(ListNode head, int X, int data) {
-            if (head == null && X > 0) return null;          // Case 1
-            ListNode newNode = new ListNode(data);
-            if (X == 0) {                                    // Case 2
-                newNode.next = head;
-                newNode.prev = null;
-                if (head != null) head.prev = newNode;
-                return newNode;
+class Solution {
+    public ListNode insertAtGivenDistance(
+        ListNode head,
+        int X,
+        int data
+    ) {
+
+        // If the list is empty, head is null, and X is greater than 0,
+        // it's not possible to insert the new node, so return null.
+        if (head == null && X > 0) {
+            return null;
+        }
+
+        // Create a new node with the given data.
+        ListNode newNode = new ListNode(data);
+
+        // If X is 0, insert the new node at the beginning of the list.
+        if (X == 0) {
+
+            // Set the next pointer of the new node to the current head
+            newNode.next = head;
+
+            // Set the prev pointer of the new node to null since it will
+            // be the new head
+            newNode.prev = null;
+            if (head != null) {
+
+                // Set the prev pointer of the current head to the new
+                // node
+                head.prev = newNode;
             }
-            ListNode current = head;
-            int counter = 0;
-            while (current != null && counter < X - 1) {     // Walk to position X-1
-                current = current.next;
-                counter++;
-            }
-            if (current == null) return head;                // Case 4: ran off
-            newNode.next = current.next;
-            newNode.prev = current;
-            current.next = newNode;
-            if (newNode.next != null) newNode.next.prev = newNode;
+
+            // Return the new node as the new head of the list
+            return newNode;
+        }
+
+        // Traverse the list to find the node at position X-1.
+        ListNode current = head;
+
+        // Counter to track the number of nodes traversed
+        int counter = 0;
+
+        while (current != null && counter < X - 1) {
+
+            // Move to the next node
+            current = current.next;
+
+            // Increment the counter
+            counter++;
+        }
+
+        // If the list is shorter than X-1, it's not possible to insert
+        // the new node, so return head.
+        if (current == null) {
             return head;
         }
-    }
 
-    public static void main(String[] args) {
-        ListNode n1=new ListNode(5),n2=new ListNode(7),n3=new ListNode(3); n1.next=n2; n2.prev=n1; n2.next=n3; n3.prev=n2;
-        ListNode head = new Solution().insertAtGivenDistance(n1, 1, 6);
-        for (ListNode c=head;c!=null;c=c.next) System.out.print(c.val+" ");
-        // 5 6 7 3
-    }
-}
-```
+        // Insert the new node after the node at position X-1.
+        newNode.next = current.next;
+        newNode.prev = current;
+        current.next = newNode;
+        if (newNode.next != null) {
+            newNode.next.prev = newNode;
+        }
 
-```c run
-ListNode* insertAtGivenDistance(ListNode *head, int X, int data) {
-    if (head == NULL && X > 0) return NULL;
-    ListNode *newNode = newListNode(data);
-    if (X == 0) {
-        newNode->next = head;
-        newNode->prev = NULL;
-        if (head != NULL) head->prev = newNode;
-        return newNode;
+        // Return the updated head of the list
+        return head;
     }
-    ListNode *current = head;
-    int counter = 0;
-    while (current != NULL && counter < X - 1) {
-        current = current->next;
-        counter++;
-    }
-    if (current == NULL) return head;
-    newNode->next = current->next;
-    newNode->prev = current;
-    current->next = newNode;
-    if (newNode->next != NULL) newNode->next->prev = newNode;
-    return head;
-}
-```
-
-```scala run
-class ListNode(var v: Int, var prev: ListNode = null, var next: ListNode = null)
-
-object Main extends App {
-  class Solution {
-    def insertAtGivenDistance(head: ListNode, X: Int, data: Int): ListNode = {
-      if (head == null && X > 0) return null
-      val n = new ListNode(data)
-      if (X == 0) {
-        n.next = head
-        n.prev = null
-        if (head != null) head.prev = n
-        return n
-      }
-      var current = head
-      var counter = 0
-      while (current != null && counter < X - 1) {
-        current = current.next
-        counter += 1
-      }
-      if (current == null) return head
-      n.next       = current.next
-      n.prev       = current
-      current.next = n
-      if (n.next != null) n.next.prev = n
-      head
-    }
-  }
-
-  val n1 = new ListNode(5); val n2 = new ListNode(7); val n3 = new ListNode(3)
-  n1.next = n2; n2.prev = n1; n2.next = n3; n3.prev = n2
-  var head = new Solution().insertAtGivenDistance(n1, 1, 6)
-  while (head != null) { print(s"${head.v} "); head = head.next }  // 5 6 7 3
 }
 ```
 
@@ -1735,151 +2224,228 @@ Input:  head = [5, 7, 3, 10], X = 1, data = 6
 Output: [5, 6, 7, 3, 10]
 ```
 
-## The Solution
+<details>
+<summary><h2>The Solution</h2></summary>
 
 
-```pseudocode
-# Compact form — same algorithm.
-function insertAtGivenDistance(head, X, data):
-    if head is null AND X > 0: return null
-    newNode ← new ListNode(data)
-    if X = 0:
-        newNode.next ← head
-        if head is not null: head.prev ← newNode
-        return newNode
-    current ← head; counter ← 0
-    while current is not null AND counter < X − 1:
-        current ← current.next; counter ← counter + 1
-    if current is null: return head
-    newNode.next ← current.next
-    newNode.prev ← current
-    current.next ← newNode
-    if newNode.next is not null: newNode.next.prev ← newNode
-    return head
-```
 
 ```python run
+from typing import Optional
+
+
+class ListNode:
+    def __init__(self, val=0, prev=None, nxt=None):
+        self.val = val
+        self.prev = prev
+        self.next = nxt
+
+
+def from_list(values):
+    if not values:
+        return None
+    head = ListNode(values[0])
+    cur = head
+    for v in values[1:]:
+        node = ListNode(v, prev=cur)
+        cur.next = node
+        cur = node
+    return head
+
+
+def to_list(head):
+    out = []
+    while head is not None:
+        out.append(head.val)
+        head = head.next
+    return out
+
+
 class Solution:
-    def insert_at_given_distance(self, head, X, data):
-        if head is None and X > 0:                  # Invalid: empty list, X > 0
+    def insert_at_given_distance(
+        self, head: Optional[ListNode], X: int, data: int
+    ) -> Optional[ListNode]:
+
+        # If the list is empty, head is None, and X is greater than 0,
+        # it's not possible to insert the new node, so return None.
+        if head is None and X > 0:
             return None
+
+        # Create a new node with the given data.
         new_node = ListNode(data)
-        if X == 0:                                  # Insert-at-beginning shortcut
+
+        # If X is 0, insert the new node at the beginning of the list.
+        if X == 0:
+
+            # Set the next pointer of the new node to the current head
             new_node.next = head
+
+            # Set the prev pointer of the new node to None since it will
+            # be the new head
+            new_node.prev = None
             if head is not None:
+
+                # Set the prev pointer of the current head to the new
+                # node
                 head.prev = new_node
+
+            # Return the new node as the new head of the list
             return new_node
-        current, counter = head, 0
-        while current is not None and counter < X - 1:   # Walk to predecessor
-            current  = current.next
+
+        # Traverse the list to find the node at position X-1.
+        current = head
+
+        # Counter to track the number of nodes traversed
+        counter = 0
+
+        while current is not None and counter < X - 1:
+
+            # Move to the next node
+            current = current.next
+
+            # Increment the counter
             counter += 1
-        if current is None:                         # X out of range
+
+        # If the list is shorter than X-1, it's not possible to insert
+        # the new node, so return head.
+        if current is None:
             return head
-        # Splice — same as insert-after-the-given-node
+
+        # Insert the new node after the node at position X-1.
         new_node.next = current.next
         new_node.prev = current
-        current.next  = new_node
+        current.next = new_node
         if new_node.next is not None:
             new_node.next.prev = new_node
+
+        # Return the updated head of the list
         return head
+
+
+# Examples from the problem statement
+print(to_list(Solution().insert_at_given_distance(from_list([5, 7, 3, 10]), 1, 6)))   # [5, 6, 7, 3, 10]
+
+# Edge cases
+print(to_list(Solution().insert_at_given_distance(from_list([5, 7, 3, 10]), 0, 6)))   # [6, 5, 7, 3, 10]
+print(to_list(Solution().insert_at_given_distance(from_list([5, 7, 3, 10]), 3, 6)))   # [5, 7, 3, 6, 10]
+print(to_list(Solution().insert_at_given_distance(None, 0, 1)))                         # [1]
+print(Solution().insert_at_given_distance(None, 2, 1))                                  # None
+print(to_list(Solution().insert_at_given_distance(from_list([1]), 0, 9)))              # [9, 1]
+print(to_list(Solution().insert_at_given_distance(from_list([1, 2, 3]), 10, 9)))       # [1, 2, 3] (X beyond length)
 ```
 
 ```java run
+import java.util.*;
+
 public class Main {
-    static class ListNode { int val; ListNode prev, next; ListNode(int v){val=v;} }
+    static class ListNode {
+        int val;
+        ListNode prev;
+        ListNode next;
+        ListNode() {}
+        ListNode(int val) { this.val = val; }
+    }
+
+    static ListNode fromList(int... values) {
+        if (values.length == 0) return null;
+        ListNode head = new ListNode(values[0]);
+        ListNode cur = head;
+        for (int i = 1; i < values.length; i++) {
+            ListNode node = new ListNode(values[i]);
+            node.prev = cur;
+            cur.next = node;
+            cur = node;
+        }
+        return head;
+    }
+
+    static java.util.List<Integer> toList(ListNode head) {
+        java.util.List<Integer> out = new java.util.ArrayList<>();
+        while (head != null) { out.add(head.val); head = head.next; }
+        return out;
+    }
 
     static class Solution {
-        public ListNode insertAtGivenDistance(ListNode head, int X, int data) {
-            if (head == null && X > 0) return null;
-            ListNode n = new ListNode(data);
-            if (X == 0) {
-                n.next = head;
-                if (head != null) head.prev = n;
-                return n;
+        public ListNode insertAtGivenDistance(
+            ListNode head,
+            int X,
+            int data
+        ) {
+
+            // If the list is empty, head is null, and X is greater than 0,
+            // it's not possible to insert the new node, so return null.
+            if (head == null && X > 0) {
+                return null;
             }
+
+            // Create a new node with the given data.
+            ListNode newNode = new ListNode(data);
+
+            // If X is 0, insert the new node at the beginning of the list.
+            if (X == 0) {
+
+                // Set the next pointer of the new node to the current head
+                newNode.next = head;
+
+                // Set the prev pointer of the new node to null since it will
+                // be the new head
+                newNode.prev = null;
+                if (head != null) {
+
+                    // Set the prev pointer of the current head to the new
+                    // node
+                    head.prev = newNode;
+                }
+
+                // Return the new node as the new head of the list
+                return newNode;
+            }
+
+            // Traverse the list to find the node at position X-1.
             ListNode current = head;
+
+            // Counter to track the number of nodes traversed
             int counter = 0;
+
             while (current != null && counter < X - 1) {
+
+                // Move to the next node
                 current = current.next;
+
+                // Increment the counter
                 counter++;
             }
-            if (current == null) return head;
-            n.next       = current.next;
-            n.prev       = current;
-            current.next = n;
-            if (n.next != null) n.next.prev = n;
+
+            // If the list is shorter than X-1, it's not possible to insert
+            // the new node, so return head.
+            if (current == null) {
+                return head;
+            }
+
+            // Insert the new node after the node at position X-1.
+            newNode.next = current.next;
+            newNode.prev = current;
+            current.next = newNode;
+            if (newNode.next != null) {
+                newNode.next.prev = newNode;
+            }
+
+            // Return the updated head of the list
             return head;
         }
     }
 
     public static void main(String[] args) {
-        // [5, 7, 3, 10], X=1, data=6 -> [5, 6, 7, 3, 10]
-        ListNode n1=new ListNode(5),n2=new ListNode(7),n3=new ListNode(3),n4=new ListNode(10);
-        n1.next=n2; n2.prev=n1; n2.next=n3; n3.prev=n2; n3.next=n4; n4.prev=n3;
-        ListNode head = new Solution().insertAtGivenDistance(n1, 1, 6);
-        for (ListNode c=head;c!=null;c=c.next) System.out.print(c.val+" ");
-        // 5 6 7 3 10
-    }
-}
-```
+        // Examples from the problem statement
+        System.out.println(toList(new Solution().insertAtGivenDistance(fromList(5, 7, 3, 10), 1, 6)));  // [5, 6, 7, 3, 10]
 
-```c run
-ListNode* insertAtGivenDistance(ListNode *head, int X, int data) {
-    if (head == NULL && X > 0) return NULL;
-    ListNode *n = newListNode(data);
-    if (X == 0) {
-        n->next = head;
-        if (head != NULL) head->prev = n;
-        return n;
+        // Edge cases
+        System.out.println(toList(new Solution().insertAtGivenDistance(fromList(5, 7, 3, 10), 0, 6)));  // [6, 5, 7, 3, 10]
+        System.out.println(toList(new Solution().insertAtGivenDistance(fromList(5, 7, 3, 10), 3, 6)));  // [5, 7, 3, 6, 10]
+        System.out.println(toList(new Solution().insertAtGivenDistance(null, 0, 1)));                    // [1]
+        System.out.println(new Solution().insertAtGivenDistance(null, 2, 1));                            // null
+        System.out.println(toList(new Solution().insertAtGivenDistance(fromList(1), 0, 9)));            // [9, 1]
+        System.out.println(toList(new Solution().insertAtGivenDistance(fromList(1, 2, 3), 10, 9)));     // [1, 2, 3]
     }
-    ListNode *current = head;
-    int counter = 0;
-    while (current != NULL && counter < X - 1) {
-        current = current->next;
-        counter++;
-    }
-    if (current == NULL) return head;
-    n->next       = current->next;
-    n->prev       = current;
-    current->next = n;
-    if (n->next != NULL) n->next->prev = n;
-    return head;
-}
-```
-
-```scala run
-class ListNode(var v: Int, var prev: ListNode = null, var next: ListNode = null)
-
-object Main extends App {
-  class Solution {
-    def insertAtGivenDistance(head: ListNode, X: Int, data: Int): ListNode = {
-      if (head == null && X > 0) return null
-      val n = new ListNode(data)
-      if (X == 0) {
-        n.next = head
-        if (head != null) head.prev = n
-        return n
-      }
-      var current = head
-      var counter = 0
-      while (current != null && counter < X - 1) {
-        current = current.next
-        counter += 1
-      }
-      if (current == null) return head
-      n.next       = current.next
-      n.prev       = current
-      current.next = n
-      if (n.next != null) n.next.prev = n
-      head
-    }
-  }
-
-  // [5, 7, 3, 10], X=1, data=6 -> [5, 6, 7, 3, 10]
-  val n1 = new ListNode(5); val n2 = new ListNode(7); val n3 = new ListNode(3); val n4 = new ListNode(10)
-  n1.next = n2; n2.prev = n1; n2.next = n3; n3.prev = n2; n3.next = n4; n4.prev = n3
-  var head = new Solution().insertAtGivenDistance(n1, 1, 6)
-  while (head != null) { print(s"${head.v} "); head = head.next }  // 5 6 7 3 10
 }
 ```
 
@@ -1888,22 +2454,26 @@ object Main extends App {
 <summary><strong>Trace — head = [5, 7, 3, 10], X = 1, data = 6</strong></summary>
 
 ```
-Initial │ 5 ↔ 7 ↔ 3 ↔ 10
-Step 1  │ X = 1 ≠ 0  → walk to position X-1 = 0
-        │ counter=0, current=node(5) — loop condition counter<0 false → stop
-Step 2  │ Splice after current (node 5):
-        │   new(6).next = 5.next = node(7)
-        │   new(6).prev = node(5)
-        │   5.next      = new(6)
-        │   7.prev      = new(6)
+Initial │ 5 ⇄ 7 ⇄ 3 ⇄ 10
+Step 1  │ X = 1 ≠ 0  → walk to position X − 1 = 0
+        │ counter=0, current=node(5) — loop condition counter < 0 false → stop
+Step 2  │ current = node(5) is not null → splice
+Step 3  │ new_node(6).next = current.next = node(7)        │ new_node(6) → 7
+Step 4  │ new_node(6).prev = current = node(5)             │ 5 ← new_node(6)
+Step 5  │ current.next = new_node                          │ 5 → new_node(6) → 7
+Step 6  │ new_node.next is node(7) ≠ null →               │ node(7).prev = new_node(6)
+        │ new_node.next.prev = new_node                     │ 5 ⇄ new_node(6) ⇄ 7 ⇄ 3 ⇄ 10
 Result: [5, 6, 7, 3, 10] ✓
 ```
 
+Once the walk lands on the node at position X − 1, the splice is the same four-pointer insert-after we already drilled — steps 4 and 6 wire the `prev` side so the backward chain stays intact.
+
 </details>
 
----
+</details>
+<details>
+<summary><h2>Final Takeaway</h2></summary>
 
-## Final Takeaway
 
 Five insertion variants, one underlying skill: **always update four pointers, in a save-before-clobber order, and always mirror.** The doubly linked list earns its keep when the input is a *node reference* — insert before, insert after, insert at beginning, insert at end all collapse to O(1). When the input is an *index*, you still pay for the walk, just like in a singly linked list — the extra `prev` pointer doesn't help because indices don't dereference.
 
@@ -1926,3 +2496,5 @@ Five insertion variants, one underlying skill: **always update four pointers, in
 > </details>
 
 Up next: **deletion**. Same checklist, played in reverse — except now there's a wrinkle. Deleting a node breaks the chain in *two* places, and the same "save before clobber" discipline that kept insertion safe will save us again.
+
+</details>

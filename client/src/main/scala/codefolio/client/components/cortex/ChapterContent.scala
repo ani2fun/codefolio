@@ -97,8 +97,10 @@ object ChapterContent:
   // Total `Block => VdomElement` dispatch. Adding a new Block variant breaks the match
   // exhaustively at compile time — the missing-case error names exactly what's missing.
   private def render(block: Block): VdomElement = block match
-    case Block.RunnableCode(language, source, languageLabel) =>
-      RunnableCodeBlock.Component(RunnableCodeBlock.Props(language, source, languageLabel))
+    case Block.RunnableCode(language, source, languageLabel, viz, vizRoot) =>
+      RunnableCodeBlock.Component(
+        RunnableCodeBlock.Props(language, source, languageLabel, viz = viz, vizRoot = vizRoot)
+      )
     case Block.RunnableGroup(tabs) =>
       RunnableCodeGroup.Component(RunnableCodeGroup.Props(tabs.map(toGroupTab)))
     case Block.Mermaid(source) =>
@@ -119,7 +121,9 @@ object ChapterContent:
       language = t.language,
       languageLabel = t.languageLabel,
       source = t.source,
-      runnable = t.runnable
+      runnable = t.runnable,
+      viz = t.viz,
+      vizRoot = t.vizRoot
     )
 
   // Delegated click handler for in-article hash links. The rehype-autolink-headings pass adds

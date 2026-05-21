@@ -243,49 +243,42 @@ Click any question to reveal the answer.
 **A:** The starting index of the `i`-th lexicographically smallest suffix of `S`.
 
 </details>
-
 <details>
 <summary><strong>Q:</strong> Time complexity of suffix-array construction (best practical algorithm)?</summary>
 
 **A:** `O(n log n)` (prefix doubling) or `O(n)` (SA-IS / DC3). Naive sort-of-suffixes is `O(n² log n)` and only good for small inputs.
 
 </details>
-
 <details>
 <summary><strong>Q:</strong> What's <code>LCP[i]</code>?</summary>
 
 **A:** Longest common prefix length between `SA[i-1]` and `SA[i]` — adjacent suffixes in lex order.
 
 </details>
-
 <details>
 <summary><strong>Q:</strong> Time to build LCP given SA?</summary>
 
 **A:** `O(n)` via Kasai's algorithm.
 
 </details>
-
 <details>
 <summary><strong>Q:</strong> Pattern-search complexity using SA?</summary>
 
 **A:** `O(m log n)` via binary search on SA. With LCP-aware speedup: `O(m + log n)`.
 
 </details>
-
 <details>
 <summary><strong>Q:</strong> Longest repeated substring via LCP?</summary>
 
 **A:** `max(LCP[i])` — the largest LCP value gives the longest substring shared by two suffixes.
 
 </details>
-
 <details>
 <summary><strong>Q:</strong> Distinct substrings count via SA + LCP?</summary>
 
 **A:** `Σ (n − SA[i] − LCP[i])` over all `i`. `n − SA[i]` is suffix length; `LCP[i]` is what was already counted.
 
 </details>
-
 <details>
 <summary><strong>Q:</strong> Why is the FM-index more popular than raw suffix array in bioinformatics?</summary>
 

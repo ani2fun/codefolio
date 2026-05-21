@@ -10,7 +10,7 @@ Each of these problems is the *same recipe*: the **accumulator descends preorder
 
 The "stateless" qualifier carries the same meaning as before — the accumulator is a small immutable value (a number, a flag, a count) that's *passed down* the recursion by parameter. No mutable shared state. The recursive shape is unmistakably similar to what you've already seen, but the *interpretation* shifts: each leaf says "here's my path's verdict", and the OR / + / max combiner up the tree decides what the answer for the *whole* tree is.
 
-This lesson sets up the recipe and walks through four canonical problems — *path sum exists*, *binary summation of leaf paths*, *all-even path exists*, and *count of odd-length paths*. Each gets a clean implementation in 10 languages.
+This lesson sets up the recipe and walks through four canonical problems — *path sum exists*, *binary summation of leaf paths*, *all-even path exists*, and *count of odd-length paths*. Each gets a clean implementation in Python and Java.
 
 ---
 
@@ -79,20 +79,10 @@ flowchart TB
 >
 > Stateless preorder *processes every node* — the answer is whatever each node computes from its ancestor chain. Root-to-leaf-path *only emits an answer at leaves* — the answer for an internal node is combined from its descendants' leaf-emissions. They share the "accumulator down" mechanic but differ in *where* the answer is born and how it propagates back up.
 
-## Generic pattern in 10 languages
+## Generic pattern
 
 We'll show "does any root-to-leaf path sum to target?" as the canonical generic example.
 
-
-```pseudocode
-function hasPathSum(root, target):
-    function go(n, remaining):
-        if n = null: return false
-        remaining ← remaining − n.val
-        if n.left = null AND n.right = null: return remaining = 0   # leaf verdict
-        return go(n.left, remaining) OR go(n.right, remaining)
-    return go(root, target)
-```
 
 ```python run
 from typing import Optional
@@ -117,24 +107,6 @@ public static boolean hasPathSum(TreeNode root, int target) {
     target -= root.val;
     if (root.left == null && root.right == null) return target == 0;
     return hasPathSum(root.left, target) || hasPathSum(root.right, target);
-}
-```
-
-```c run
-int has_path_sum(TreeNode *root, int target) {
-    if (!root) return 0;
-    target -= root->val;
-    if (!root->left && !root->right) return target == 0;
-    return has_path_sum(root->left, target) || has_path_sum(root->right, target);
-}
-```
-
-```scala run
-def hasPathSum(root: TreeNode, target: Int): Boolean = {
-  if (root == null) return false
-  val rem = target - root.value
-  if (root.left == null && root.right == null) return rem == 0
-  hasPathSum(root.left, rem) || hasPathSum(root.right, rem)
 }
 ```
 
@@ -170,7 +142,7 @@ Anti-pattern: if the path can start or end *anywhere* (not just root and leaf), 
 
 Already covered in the generic skeleton. The accumulator is the *remaining target after subtracting nodes seen*; the verdict at a leaf is *"is remaining exactly 0?"*; the combine is `OR`.
 
-The implementation is exactly the generic template — see the 10-language code block above.
+The implementation is exactly the generic template — see the code block above.
 
 ***
 
@@ -194,71 +166,173 @@ The implementation is exactly the generic template — see the 10-language code 
 
 The accumulator is the *binary number so far* — at each node, shift left and OR in the current bit (`acc = (acc << 1) | node.val`). At a leaf, *return the accumulator itself*. Internal nodes sum their children.
 
-## Solution
+<details>
+<summary><h2>Solution</h2></summary>
 
 
-```pseudocode
-function binarySummationOfTree(root):
-    function go(n, acc):
-        if n = null: return 0
-        acc ← (acc << 1) | n.val   # shift existing bits left, append this bit
-        if n.left = null AND n.right = null: return acc   # leaf: return path number
-        return go(n.left, acc) + go(n.right, acc)
-    return go(root, 0)
-```
 
 ```python run
-def binary_summation_of_tree(root):
-    def go(n, acc):
-        if n is None: return 0
-        acc = (acc << 1) | n.val
-        if n.left is None and n.right is None: return acc
-        return go(n.left, acc) + go(n.right, acc)
-    return go(root, 0)
+from typing import Optional
+
+
+class TreeNode:
+    def __init__(self, val=0, left=None, right=None):
+        self.val = val
+        self.left = left
+        self.right = right
+
+
+def from_level_order(values):
+    """Build tree from list like [1, 2, 3, None, 4]. None means missing child."""
+    if not values:
+        return None
+    root = TreeNode(values[0])
+    queue = [root]
+    i = 1
+    while queue and i < len(values):
+        node = queue.pop(0)
+        if i < len(values) and values[i] is not None:
+            node.left = TreeNode(values[i])
+            queue.append(node.left)
+        i += 1
+        if i < len(values) and values[i] is not None:
+            node.right = TreeNode(values[i])
+            queue.append(node.right)
+        i += 1
+    return root
+
+
+class Solution:
+    def binary_summation_of_tree_helper(
+        self, root: Optional[TreeNode], current_sum: int
+    ) -> int:
+        if not root:
+            return 0
+
+        # Update the current sum by shifting left and adding current
+        # node's value
+        current_sum = (current_sum << 1) | root.val
+
+        # If it's a leaf node, return the current sum
+        if not root.left and not root.right:
+            return current_sum
+
+        # Recursively sum up the left and right subtrees
+        left_sum = self.binary_summation_of_tree_helper(
+            root.left, current_sum
+        )
+        right_sum = self.binary_summation_of_tree_helper(
+            root.right, current_sum
+        )
+
+        # Return the total sum from both left and right subtrees
+        return left_sum + right_sum
+
+    def binary_summation_of_tree(self, root: Optional[TreeNode]) -> int:
+
+        # Start binary_summation_of_tree_helper with current_sum = 0
+        return self.binary_summation_of_tree_helper(root, 0)
+
+
+# Examples from the problem statement
+print(Solution().binary_summation_of_tree(from_level_order([1, 0, 1, 1, None, None, 1])))   # 12
+print(Solution().binary_summation_of_tree(from_level_order([0, 1, 0, None, None, 1, 0])))   # 2
+
+# Edge cases
+print(Solution().binary_summation_of_tree(None))                                              # 0
+print(Solution().binary_summation_of_tree(from_level_order([1])))                             # 1
+print(Solution().binary_summation_of_tree(from_level_order([0])))                             # 0
+print(Solution().binary_summation_of_tree(from_level_order([1, 1])))                          # 3 (11=3)
+print(Solution().binary_summation_of_tree(from_level_order([1, 0, 0])))                       # 4 (10 + 10 = 2+2=4)
+print(Solution().binary_summation_of_tree(from_level_order([1, 1, 1, 0, 1, 0, 1])))          # 22 (110+111+101+111... = 6+7+5+7...)
 ```
 
 ```java run
-static int bsHelper(TreeNode n, int acc) {
-    if (n == null) return 0;
-    acc = (acc << 1) | n.val;
-    if (n.left == null && n.right == null) return acc;
-    return bsHelper(n.left, acc) + bsHelper(n.right, acc);
-}
-public static int binarySummationOfTree(TreeNode root) { return bsHelper(root, 0); }
-```
+import java.util.*;
 
-```c run
-int bs_helper(TreeNode *n, int acc) {
-    if (!n) return 0;
-    acc = (acc << 1) | n->val;
-    if (!n->left && !n->right) return acc;
-    return bs_helper(n->left, acc) + bs_helper(n->right, acc);
-}
-int binary_summation_of_tree(TreeNode *root) { return bs_helper(root, 0); }
-```
-
-```scala run
-class TreeNode(var value: Int, var left: TreeNode = null, var right: TreeNode = null)
-
-object Main extends App {
-  class Solution {
-    def binarySummationOfTree(root: TreeNode): Int = {
-      def go(n: TreeNode, acc: Int): Int = {
-        if (n == null) return 0
-        val a = (acc << 1) | n.value
-        if (n.left == null && n.right == null) return a
-        go(n.left, a) + go(n.right, a)
-      }
-      go(root, 0)
+public class Main {
+    static class TreeNode {
+        int val;
+        TreeNode left;
+        TreeNode right;
+        TreeNode() {}
+        TreeNode(int val) { this.val = val; }
     }
-  }
 
-  val root = new TreeNode(1,
-    new TreeNode(0, new TreeNode(0), new TreeNode(1)),
-    new TreeNode(1, new TreeNode(0), new TreeNode(1)))
-  println(new Solution().binarySummationOfTree(root))  // 22
+    static TreeNode fromLevelOrder(Integer... values) {
+        if (values.length == 0 || values[0] == null) return null;
+        TreeNode root = new TreeNode(values[0]);
+        java.util.Deque<TreeNode> queue = new java.util.ArrayDeque<>();
+        queue.add(root);
+        int i = 1;
+        while (!queue.isEmpty() && i < values.length) {
+            TreeNode node = queue.poll();
+            if (i < values.length && values[i] != null) {
+                node.left = new TreeNode(values[i]);
+                queue.add(node.left);
+            }
+            i++;
+            if (i < values.length && values[i] != null) {
+                node.right = new TreeNode(values[i]);
+                queue.add(node.right);
+            }
+            i++;
+        }
+        return root;
+    }
+
+    static class Solution {
+        private int binarySummationOfTreeHelper(
+            TreeNode root,
+            int currentSum
+        ) {
+            if (root == null) {
+                return 0;
+            }
+
+            // Update the current sum by shifting left and adding current
+            // node's value
+            currentSum = (currentSum << 1) | root.val;
+
+            // If it's a leaf node, return the current sum
+            if (root.left == null && root.right == null) {
+                return currentSum;
+            }
+
+            // Recursively sum up the left and right subtrees
+            int leftSum = binarySummationOfTreeHelper(root.left, currentSum);
+            int rightSum = binarySummationOfTreeHelper(
+                root.right,
+                currentSum
+            );
+
+            // Return the total sum from both left and right subtrees
+            return leftSum + rightSum;
+        }
+
+        public int binarySummationOfTree(TreeNode root) {
+
+            // Start binarySummationOfTreeHelper with currentSum = 0
+            return binarySummationOfTreeHelper(root, 0);
+        }
+    }
+
+    public static void main(String[] args) {
+        // Examples from the problem statement
+        System.out.println(new Solution().binarySummationOfTree(fromLevelOrder(1, 0, 1, 1, null, null, 1)));   // 12
+        System.out.println(new Solution().binarySummationOfTree(fromLevelOrder(0, 1, 0, null, null, 1, 0)));   // 2
+
+        // Edge cases
+        System.out.println(new Solution().binarySummationOfTree(null));                                         // 0
+        System.out.println(new Solution().binarySummationOfTree(fromLevelOrder(1)));                            // 1
+        System.out.println(new Solution().binarySummationOfTree(fromLevelOrder(0)));                            // 0
+        System.out.println(new Solution().binarySummationOfTree(fromLevelOrder(1, 1)));                         // 3
+        System.out.println(new Solution().binarySummationOfTree(fromLevelOrder(1, 0, 0)));                      // 4
+    }
 }
 ```
+
+</details>
 
 
 ***
@@ -269,80 +343,173 @@ object Main extends App {
 
 The accumulator is a *boolean*: "has the path so far been all-even?". Update at each node: `still_even = previously_even AND (current is even)`. At a leaf, return `still_even`. Combine with OR.
 
-## Solution
+<details>
+<summary><h2>Solution</h2></summary>
 
 
-```pseudocode
-function evenPath(root):
-    if root = null: return false
-    function go(n, ok):
-        if n = null: return false
-        ok ← ok AND (n.val mod 2 = 0)
-        if n.left = null AND n.right = null: return ok   # leaf verdict
-        return go(n.left, ok) OR go(n.right, ok)
-    return go(root, true)
-```
 
 ```python run
-def even_path(root):
-    if root is None: return False
-    def go(n, ok):
-        if n is None: return False
-        ok = ok and (n.val % 2 == 0)
-        if n.left is None and n.right is None: return ok
-        return go(n.left, ok) or go(n.right, ok)
-    return go(root, True)
+from typing import Optional
+
+
+class TreeNode:
+    def __init__(self, val=0, left=None, right=None):
+        self.val = val
+        self.left = left
+        self.right = right
+
+
+def from_level_order(values):
+    """Build tree from list like [1, 2, 3, None, 4]. None means missing child."""
+    if not values:
+        return None
+    root = TreeNode(values[0])
+    queue = [root]
+    i = 1
+    while queue and i < len(values):
+        node = queue.pop(0)
+        if i < len(values) and values[i] is not None:
+            node.left = TreeNode(values[i])
+            queue.append(node.left)
+        i += 1
+        if i < len(values) and values[i] is not None:
+            node.right = TreeNode(values[i])
+            queue.append(node.right)
+        i += 1
+    return root
+
+
+class Solution:
+    def even_path_helper(
+        self, root: Optional[TreeNode], even_so_far: int
+    ) -> bool:
+
+        # Base case: if the current node is null, return false
+        if root is None:
+            return False
+
+        # Update current path status: 1 if path so far is all even and
+        # current node is even
+        current_status = even_so_far and (root.val % 2 == 0)
+
+        # If this is a leaf, check if current path is valid
+        if root.left is None and root.right is None:
+            return current_status
+
+        # Check left and right subtrees for valid paths
+        left_path = self.even_path_helper(root.left, current_status)
+        right_path = self.even_path_helper(root.right, current_status)
+
+        return left_path or right_path
+
+    def even_path(self, root: Optional[TreeNode]) -> bool:
+        if root is None:
+            return False
+
+        # Root path is valid if root is even
+        return self.even_path_helper(root, 1)
+
+
+# Examples from the problem statement
+print(Solution().even_path(from_level_order([2, 4, 6, 8, None, None, 9])))   # True
+print(Solution().even_path(from_level_order([1, 8, 4, None, None, 2, 7])))   # False
+
+# Edge cases
+print(Solution().even_path(None))                                              # False
+print(Solution().even_path(from_level_order([2])))                             # True (single even leaf)
+print(Solution().even_path(from_level_order([1])))                             # False (single odd leaf)
+print(Solution().even_path(from_level_order([2, 2, 2])))                       # True (balanced all-even)
+print(Solution().even_path(from_level_order([2, 4, None, 6])))                 # True (only-left all-even)
+print(Solution().even_path(from_level_order([2, 3, 4])))                       # True (right path is 2->4)
+print(Solution().even_path(from_level_order([2, 3, 5])))                       # False (both leaves via odd intermediary)
 ```
 
 ```java run
-static boolean evenHelper(TreeNode n, boolean ok) {
-    if (n == null) return false;
-    ok = ok && (n.val % 2 == 0);
-    if (n.left == null && n.right == null) return ok;
-    return evenHelper(n.left, ok) || evenHelper(n.right, ok);
-}
-public static boolean evenPath(TreeNode root) {
-    if (root == null) return false;
-    return evenHelper(root, true);
-}
-```
+import java.util.*;
 
-```c run
-int even_helper(TreeNode *n, int ok) {
-    if (!n) return 0;
-    ok = ok && (n->val % 2 == 0);
-    if (!n->left && !n->right) return ok;
-    return even_helper(n->left, ok) || even_helper(n->right, ok);
-}
-int even_path(TreeNode *root) {
-    if (!root) return 0;
-    return even_helper(root, 1);
-}
-```
-
-```scala run
-class TreeNode(var value: Int, var left: TreeNode = null, var right: TreeNode = null)
-
-object Main extends App {
-  class Solution {
-    def evenPath(root: TreeNode): Boolean = {
-      if (root == null) return false
-      def go(n: TreeNode, ok: Boolean): Boolean = {
-        if (n == null) return false
-        val ok2 = ok && (n.value % 2 == 0)
-        if (n.left == null && n.right == null) return ok2
-        go(n.left, ok2) || go(n.right, ok2)
-      }
-      go(root, true)
+public class Main {
+    static class TreeNode {
+        int val;
+        TreeNode left;
+        TreeNode right;
+        TreeNode() {}
+        TreeNode(int val) { this.val = val; }
     }
-  }
 
-  val root = new TreeNode(2,
-    new TreeNode(4, new TreeNode(8), null),
-    new TreeNode(3))
-  println(new Solution().evenPath(root))  // true
+    static TreeNode fromLevelOrder(Integer... values) {
+        if (values.length == 0 || values[0] == null) return null;
+        TreeNode root = new TreeNode(values[0]);
+        java.util.Deque<TreeNode> queue = new java.util.ArrayDeque<>();
+        queue.add(root);
+        int i = 1;
+        while (!queue.isEmpty() && i < values.length) {
+            TreeNode node = queue.poll();
+            if (i < values.length && values[i] != null) {
+                node.left = new TreeNode(values[i]);
+                queue.add(node.left);
+            }
+            i++;
+            if (i < values.length && values[i] != null) {
+                node.right = new TreeNode(values[i]);
+                queue.add(node.right);
+            }
+            i++;
+        }
+        return root;
+    }
+
+    static class Solution {
+        private boolean evenPathHelper(TreeNode root, int evenSoFar) {
+
+            // Base case: if the current node is null, return false
+            if (root == null) {
+                return false;
+            }
+
+            // Update current path status: 1 if path so far is all even and
+            // current node is even
+            int currentStatus = evenSoFar & (root.val % 2 == 0 ? 1 : 0);
+
+            // If this is a leaf, check if current path is valid
+            if (root.left == null && root.right == null) {
+                return currentStatus == 1;
+            }
+
+            // Check left and right subtrees for valid paths
+            boolean leftPath = evenPathHelper(root.left, currentStatus);
+            boolean rightPath = evenPathHelper(root.right, currentStatus);
+
+            return leftPath || rightPath;
+        }
+
+        public boolean evenPath(TreeNode root) {
+            if (root == null) {
+                return false;
+            }
+
+            // Root path is valid if root is even
+            return evenPathHelper(root, 1);
+        }
+    }
+
+    public static void main(String[] args) {
+        // Examples from the problem statement
+        System.out.println(new Solution().evenPath(fromLevelOrder(2, 4, 6, 8, null, null, 9)));   // true
+        System.out.println(new Solution().evenPath(fromLevelOrder(1, 8, 4, null, null, 2, 7)));   // false
+
+        // Edge cases
+        System.out.println(new Solution().evenPath(null));                                          // false
+        System.out.println(new Solution().evenPath(fromLevelOrder(2)));                             // true
+        System.out.println(new Solution().evenPath(fromLevelOrder(1)));                             // false
+        System.out.println(new Solution().evenPath(fromLevelOrder(2, 2, 2)));                       // true
+        System.out.println(new Solution().evenPath(fromLevelOrder(2, 4, null, 6)));                 // true
+        System.out.println(new Solution().evenPath(fromLevelOrder(2, 3, 4)));                       // true
+        System.out.println(new Solution().evenPath(fromLevelOrder(2, 3, 5)));                       // false
+    }
 }
 ```
+
+</details>
 
 
 ***
@@ -381,78 +548,185 @@ flowchart TB
 
 <p align="center"><strong>Odd count — both leaves are at depth 3 (path length 3, which is odd), so the answer is <strong>2</strong>. Each leaf's verdict is bubbled up via <code>+</code>.</strong></p>
 
-## Solution
+<details>
+<summary><h2>Solution</h2></summary>
 
 
-```pseudocode
-function oddCount(root):
-    function go(n, length):
-        if n = null: return 0
-        length ← length + 1
-        if n.left = null AND n.right = null:
-            return 1 if length mod 2 = 1 else 0   # leaf: odd-length path?
-        return go(n.left, length) + go(n.right, length)
-    return go(root, 0)
-```
 
 ```python run
-def odd_count(root):
-    def go(n, length):
-        if n is None: return 0
-        length += 1
-        if n.left is None and n.right is None:
-            return 1 if length % 2 == 1 else 0
-        return go(n.left, length) + go(n.right, length)
-    return go(root, 0)
+from typing import Optional
+
+
+class TreeNode:
+    def __init__(self, val=0, left=None, right=None):
+        self.val = val
+        self.left = left
+        self.right = right
+
+
+def from_level_order(values):
+    """Build tree from list like [1, 2, 3, None, 4]. None means missing child."""
+    if not values:
+        return None
+    root = TreeNode(values[0])
+    queue = [root]
+    i = 1
+    while queue and i < len(values):
+        node = queue.pop(0)
+        if i < len(values) and values[i] is not None:
+            node.left = TreeNode(values[i])
+            queue.append(node.left)
+        i += 1
+        if i < len(values) and values[i] is not None:
+            node.right = TreeNode(values[i])
+            queue.append(node.right)
+        i += 1
+    return root
+
+
+class Solution:
+    def odd_count_helper(
+        self, root: Optional[TreeNode], path_len: int
+    ) -> int:
+
+        # Base case: if the current node is null, return 0
+        if root is None:
+            return 0
+
+        # Include current node in path length
+        path_len += 1
+
+        # If this is a leaf, check if path length is odd
+        if root.left is None and root.right is None:
+
+            # Return 1 if path length is odd
+            if path_len % 2 == 1:
+                return 1
+
+            # Return 0 if path length is even
+            else:
+                return 0
+
+        # Recurse separately into left and right subtrees
+        left_count = self.odd_count_helper(root.left, path_len)
+        right_count = self.odd_count_helper(root.right, path_len)
+
+        # Return total count of odd-length paths from both subtrees
+        return left_count + right_count
+
+    def odd_count(self, root: Optional[TreeNode]) -> int:
+
+        # Start odd_count_helper with path_len = 0
+        return self.odd_count_helper(root, 0)
+
+
+# Examples from the problem statement
+print(Solution().odd_count(from_level_order([1, 2, 3, 4, None, None, 7])))   # 2
+print(Solution().odd_count(from_level_order([1, 8, 4, None, None, 2, 7])))   # 2
+
+# Edge cases
+print(Solution().odd_count(None))                                              # 0
+print(Solution().odd_count(from_level_order([1])))                             # 1 (single node, length=1 odd)
+print(Solution().odd_count(from_level_order([1, 2])))                          # 0 (length=2 even)
+print(Solution().odd_count(from_level_order([1, 2, 3])))                       # 0 (both paths length=2)
+print(Solution().odd_count(from_level_order([1, 2, None, 3])))                 # 1 (path 1->2->3 length=3 odd)
+print(Solution().odd_count(from_level_order([1, 2, 3, 4, 5, 6, 7])))          # 4 (all leaves at depth 3, odd)
 ```
 
 ```java run
-static int ocHelper(TreeNode n, int length) {
-    if (n == null) return 0;
-    length++;
-    if (n.left == null && n.right == null) return length % 2 == 1 ? 1 : 0;
-    return ocHelper(n.left, length) + ocHelper(n.right, length);
-}
-public static int oddCount(TreeNode root) { return ocHelper(root, 0); }
-```
+import java.util.*;
 
-```c run
-int oc_helper(TreeNode *n, int length) {
-    if (!n) return 0;
-    length++;
-    if (!n->left && !n->right) return length % 2 == 1 ? 1 : 0;
-    return oc_helper(n->left, length) + oc_helper(n->right, length);
-}
-int odd_count(TreeNode *root) { return oc_helper(root, 0); }
-```
-
-```scala run
-class TreeNode(var value: Int, var left: TreeNode = null, var right: TreeNode = null)
-
-object Main extends App {
-  class Solution {
-    def oddCount(root: TreeNode): Int = {
-      def go(n: TreeNode, length: Int): Int = {
-        if (n == null) return 0
-        val l2 = length + 1
-        if (n.left == null && n.right == null) return if (l2 % 2 == 1) 1 else 0
-        go(n.left, l2) + go(n.right, l2)
-      }
-      go(root, 0)
+public class Main {
+    static class TreeNode {
+        int val;
+        TreeNode left;
+        TreeNode right;
+        TreeNode() {}
+        TreeNode(int val) { this.val = val; }
     }
-  }
 
-  val root = new TreeNode(1,
-    new TreeNode(2, new TreeNode(4), null),
-    new TreeNode(3, null, new TreeNode(7)))
-  println(new Solution().oddCount(root))  // 2
+    static TreeNode fromLevelOrder(Integer... values) {
+        if (values.length == 0 || values[0] == null) return null;
+        TreeNode root = new TreeNode(values[0]);
+        java.util.Deque<TreeNode> queue = new java.util.ArrayDeque<>();
+        queue.add(root);
+        int i = 1;
+        while (!queue.isEmpty() && i < values.length) {
+            TreeNode node = queue.poll();
+            if (i < values.length && values[i] != null) {
+                node.left = new TreeNode(values[i]);
+                queue.add(node.left);
+            }
+            i++;
+            if (i < values.length && values[i] != null) {
+                node.right = new TreeNode(values[i]);
+                queue.add(node.right);
+            }
+            i++;
+        }
+        return root;
+    }
+
+    static class Solution {
+        private int oddCountHelper(TreeNode root, int pathLen) {
+
+            // Base case: if the current node is null, return 0
+            if (root == null) {
+                return 0;
+            }
+
+            // Include current node in path length
+            pathLen++;
+
+            // If this is a leaf, check if path length is odd
+            if (root.left == null && root.right == null) {
+
+                // Return 1 if path length is odd
+                if (pathLen % 2 == 1) {
+                    return 1;
+                }
+
+                // Return 0 if path length is even
+                else {
+                    return 0;
+                }
+            }
+
+            // Recurse separately into left and right subtrees
+            int leftCount = oddCountHelper(root.left, pathLen);
+            int rightCount = oddCountHelper(root.right, pathLen);
+
+            // Return total count of odd-length paths from both subtrees
+            return leftCount + rightCount;
+        }
+
+        public int oddCount(TreeNode root) {
+
+            // Start oddCountHelper with pathLen = 0
+            return oddCountHelper(root, 0);
+        }
+    }
+
+    public static void main(String[] args) {
+        // Examples from the problem statement
+        System.out.println(new Solution().oddCount(fromLevelOrder(1, 2, 3, 4, null, null, 7)));   // 2
+        System.out.println(new Solution().oddCount(fromLevelOrder(1, 8, 4, null, null, 2, 7)));   // 2
+
+        // Edge cases
+        System.out.println(new Solution().oddCount(null));                                          // 0
+        System.out.println(new Solution().oddCount(fromLevelOrder(1)));                             // 1
+        System.out.println(new Solution().oddCount(fromLevelOrder(1, 2)));                          // 0
+        System.out.println(new Solution().oddCount(fromLevelOrder(1, 2, 3)));                       // 0
+        System.out.println(new Solution().oddCount(fromLevelOrder(1, 2, null, 3)));                 // 1
+        System.out.println(new Solution().oddCount(fromLevelOrder(1, 2, 3, 4, 5, 6, 7)));          // 4
+    }
 }
 ```
 
+</details>
+<details>
+<summary><h2>Final Takeaway</h2></summary>
 
-***
-
-## Final Takeaway
 
 The stateless root-to-leaf path pattern fuses preorder and postorder mechanics: **descend with an accumulator, decide at leaves, combine on the way back up**. Three things to walk away with:
 
@@ -461,3 +735,5 @@ The stateless root-to-leaf path pattern fuses preorder and postorder mechanics: 
 3. **The base case identity matters.** When `node` is `null`, return whatever value makes the combine ignore that subtree: `false` for OR, `true` for AND (yes — for AND, an empty subtree should *not* defeat its sibling), `0` for `+`, `-∞` for `max`. Get the identity wrong and you'll silently produce garbage on degenerate trees.
 
 > *Coming up — the <strong>stateful</strong> root-to-leaf path pattern. When you need not just a per-path verdict but the actual <em>nodes</em> in each path (e.g., "list every root-to-leaf path that sums to N"), the accumulator becomes a mutable list with the canonical push-pop discipline. Same recipe, but now we collect actual paths instead of just counting them.*
+
+</details>

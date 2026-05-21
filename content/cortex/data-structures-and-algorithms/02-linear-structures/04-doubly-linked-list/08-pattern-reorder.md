@@ -136,241 +136,199 @@ The algorithm below summarises the reorder technique for **two** lists. It gener
 Below is the generic implementation that splits a DLL into two using `f1` and merges them using `f2`. The structure is identical to the singly-list version with **one extra line per attachment** to keep `prev` correct.
 
 
-```pseudocode
-function reorder_nodes(head, f1, f2):
-    # Phase 1 — split by classifier f1
-    dummyA ← new node; tailA ← dummyA
-    dummyB ← new node; tailB ← dummyB
-    current ← head
-    while current ≠ null:
-        if f1(current):
-            tailA.next ← current; current.prev ← tailA; tailA ← tailA.next
-        else:
-            tailB.next ← current; current.prev ← tailB; tailB ← tailB.next
-        current ← current.next
-    tailA.next ← null; tailB.next ← null
-    currentA ← dummyA.next; currentB ← dummyB.next
-    if currentA ≠ null: currentA.prev ← null
-    if currentB ≠ null: currentB.prev ← null
-    # Phase 2 — merge by selector f2
-    dummy ← new node; tail ← dummy
-    while currentA ≠ null AND currentB ≠ null:
-        if f2(currentA, currentB):
-            tail.next ← currentA; currentA.prev ← tail; currentA ← currentA.next
-        else:
-            tail.next ← currentB; currentB.prev ← tail; currentB ← currentB.next
-        tail ← tail.next
-    if currentA ≠ null: tail.next ← currentA; currentA.prev ← tail
-    if currentB ≠ null: tail.next ← currentB; currentB.prev ← tail
-    new_head ← dummy.next
-    if new_head ≠ null: new_head.prev ← null
-    return new_head
-```
-
 ```python run
+
 """
 Definition for doubly-linked list.
 class ListNode:
     def __init__(self, val):
-        self.val  = val
+        self.val = val
         self.prev = None
         self.next = None
 """
-from typing import Optional, Callable
 
-def reorder_nodes(head: Optional['ListNode'],
-                  f1: Callable[['ListNode'], bool],
-                  f2: Callable[['ListNode', 'ListNode'], bool]) -> Optional['ListNode']:
-    # Phase 1 — SPLIT by classifier f1
-    dummyA = ListNode(0); tailA = dummyA       # Bucket A: nodes where f1(node) is True
-    dummyB = ListNode(0); tailB = dummyB       # Bucket B: nodes where f1(node) is False
+from typing import Optional
+
+def reorder_nodes(head: Optional[ListNode], f1, f2) -> Optional[ListNode]:
+    # Create dummy nodes and tail references for the two split lists
+    dummyA = ListNode(0)
+    tailA = dummyA
+
+    dummyB = ListNode(0)
+    tailB = dummyB
+
+    # Create current reference to iterate through the list
     current = head
-    while current is not None:
-        if f1(current):
-            tailA.next   = current             # Forward link
-            current.prev = tailA               # Mirror — keeps backward chain intact
-            tailA        = tailA.next
-        else:
-            tailB.next   = current
-            current.prev = tailB
-            tailB        = tailB.next
-        current = current.next                 # Advance through original list
-    tailA.next = None; tailB.next = None        # Terminate both sub-lists
 
-    # Lift dummies off the heads and null out prev so each sub-list is a clean DLL
+    while current is not None:
+        # Use the function `f1` to decide which list this node should go to
+        split_first = f1(current)
+
+        if split_first:
+            # `current` node goes to the first split list
+            tailA.next = current
+            current.prev = tailA
+            tailA = tailA.next  # Move tailA forward
+        else:
+            # `current` node goes to the second split list
+            tailB.next = current
+            current.prev = tailB
+            tailB = tailB.next  # Move tailB forward
+
+        # Move to the next node in the original list
+        current = current.next
+
+    # Ensure the two split lists end properly
+    tailA.next = None
+    tailB.next = None
+
+    # Move ahead dummy nodes of split lists to hold the real head
     currentA = dummyA.next
     currentB = dummyB.next
-    if currentA: currentA.prev = None
-    if currentB: currentB.prev = None
 
-    # Phase 2 — MERGE by selector f2
-    dummy = ListNode(0); tail = dummy
+    # Set prev pointer of head of both lists to None
+    if currentA:
+        currentA.prev = None
+    if currentB:
+        currentB.prev = None
+
+    # Create dummy node and tail reference for the merged list
+    dummy = ListNode(0)
+    tail = dummy
+
     while currentA is not None and currentB is not None:
-        if f2(currentA, currentB):
-            tail.next     = currentA           # Forward link
-            currentA.prev = tail               # Mirror
-            currentA      = currentA.next
+        # Use the function `f2` to determine which node to merge
+        merge_A = f2(currentA, currentB)
+
+        if merge_A:
+            tail.next = currentA  # Merge node from currentA
+            currentA.prev = tail  # Connect the prev section to tail
+            currentA = currentA.next  # Move currentA forward
         else:
-            tail.next     = currentB
-            currentB.prev = tail
-            currentB      = currentB.next
+            tail.next = currentB  # Merge node from currentB
+            currentB.prev = tail  # Connect the prev section to tail
+            currentB = currentB.next  # Move currentB forward
+
+        # Move tail forward to the merged node
         tail = tail.next
-    # Drain the leftover sub-list (only one will be non-None)
+
+    # If currentA is not completely traversed, attach remaining nodes
     if currentA is not None:
-        tail.next     = currentA
+        tail.next = currentA
         currentA.prev = tail
+
+    # If currentB is not completely traversed, attach remaining nodes
     if currentB is not None:
-        tail.next     = currentB
+        tail.next = currentB
         currentB.prev = tail
 
+    # Capture the merged list's head
     new_head = dummy.next
-    if new_head: new_head.prev = None          # Detach the throwaway dummy
+    if new_head:
+        new_head.prev = None
+
     return new_head
 ```
 
 ```java run
-import java.util.function.Predicate;
-import java.util.function.BiPredicate;
 
-public class Main {
-    static class ListNode { int val; ListNode prev, next; ListNode(int v){val=v;} }
+/**
+ * Definition for doubly-linked list.
+ * class ListNode {
+ *     int val;
+ *     ListNode prev;
+ *     ListNode next;
+ *     ListNode() {}
+ *     ListNode(int val) { this.val = val; }
+ * };
+ */
 
-    static class Solution {
-        public ListNode reorderNodes(ListNode head,
-                                     Predicate<ListNode> f1,
-                                     BiPredicate<ListNode, ListNode> f2) {
-            // Phase 1 — split by classifier f1
-            ListNode dummyA = new ListNode(0), tailA = dummyA;
-            ListNode dummyB = new ListNode(0), tailB = dummyB;
-            ListNode current = head;
-            while (current != null) {
-                if (f1.test(current)) {
-                    tailA.next   = current;          // forward link
-                    current.prev = tailA;            // mirror
-                    tailA        = tailA.next;
-                } else {
-                    tailB.next   = current;
-                    current.prev = tailB;
-                    tailB        = tailB.next;
-                }
-                current = current.next;
+class ReorderNodes {
+    // Function to reorder nodes based on conditions defined by f1 and f2
+    public ListNode reorderNodes(ListNode head) {
+
+        // Create dummy nodes and tail references for the two split lists
+        ListNode dummyA = new ListNode(0);
+        ListNode tailA = dummyA;
+
+        ListNode dummyB = new ListNode(0);
+        ListNode tailB = dummyB;
+
+        // Create current reference to iterate through the list
+        ListNode current = head;
+
+        while (current != null) {
+            // Use the function `f1` to decide which list this node should go to
+            boolean splitFirst = f1(current);
+
+            if (splitFirst) {
+                // `current` node goes to the first split list
+                tailA.next = current;
+                current.prev = tailA;
+                tailA = tailA.next; // Move tailA forward
+            } else {
+                // `current` node goes to the second split list
+                tailB.next = current;
+                current.prev = tailB;
+                tailB = tailB.next; // Move tailB forward
             }
-            tailA.next = null; tailB.next = null;
 
-            ListNode ca = dummyA.next, cb = dummyB.next;
-            if (ca != null) ca.prev = null;
-            if (cb != null) cb.prev = null;
-
-            // Phase 2 — merge by selector f2
-            ListNode dummy = new ListNode(0), tail = dummy;
-            while (ca != null && cb != null) {
-                if (f2.test(ca, cb)) {
-                    tail.next = ca; ca.prev = tail; ca = ca.next;
-                } else {
-                    tail.next = cb; cb.prev = tail; cb = cb.next;
-                }
-                tail = tail.next;
-            }
-            if (ca != null) { tail.next = ca; ca.prev = tail; }
-            if (cb != null) { tail.next = cb; cb.prev = tail; }
-
-            ListNode newHead = dummy.next;
-            if (newHead != null) newHead.prev = null;
-            return newHead;
+            // Move to the next node in the original list
+            current = current.next;
         }
+
+        // Ensure the two split lists end properly
+        tailA.next = null;
+        tailB.next = null;
+
+        // Move ahead dummy nodes of split lists to hold the real head
+        ListNode currentA = dummyA.next;
+        ListNode currentB = dummyB.next;
+
+        // Set prev pointer of head of both list to null
+        if (currentA != null) currentA.prev = null;
+        if (currentB != null) currentB.prev = null;
+
+        // Create dummy node and tail reference for the merged list
+        ListNode dummy = new ListNode(0);
+        ListNode tail = dummy;
+
+        while (currentA != null && currentB != null) {
+            // Use the function `f2` to determine which node to merge
+            boolean mergeA = f2(currentA, currentB);
+
+            if (mergeA) {
+                tail.next = currentA;     // Merge node from currentA
+                currentA.prev = tail;     // Connect the prev section to tail
+                currentA = currentA.next; // Move currentA forward
+            } else {
+                tail.next = currentB;     // Merge node from currentB
+                currentB.prev = tail;     // Connect the prev section to tail
+                currentB = currentB.next; // Move currentB forward
+            }
+
+            // Move tail forward to the merged node
+            tail = tail.next;
+        }
+
+        // If currentA is not completely traversed, attach remaining nodes
+        if (currentA != null) {
+            tail.next = currentA;
+            currentA.prev = tail;
+        }
+
+        // If currentB is not completely traversed, attach remaining nodes
+        if (currentB != null) {
+            tail.next = currentB;
+            currentB.prev = tail;
+        }
+
+        // Capture the merged list's head
+        ListNode newHead = dummy.next;
+        if (newHead != null) newHead.prev = null;
+
+        return newHead;
     }
-
-    public static void main(String[] args) {
-        ListNode n1=new ListNode(1),n2=new ListNode(2),n3=new ListNode(3),n4=new ListNode(4),n5=new ListNode(5);
-        n1.next=n2; n2.prev=n1; n2.next=n3; n3.prev=n2; n3.next=n4; n4.prev=n3; n4.next=n5; n5.prev=n4;
-        Predicate<ListNode> f1 = n -> n.val % 2 == 0;          // evens to A, odds to B
-        BiPredicate<ListNode, ListNode> f2 = (a, b) -> a.val <= b.val;  // ascending merge
-        ListNode head = new Solution().reorderNodes(n1, f1, f2);
-        for (ListNode c=head;c!=null;c=c.next) System.out.print(c.val+" ");
-        // 1 2 3 4 5
-    }
-}
-```
-
-```c run
-/* Doubly-linked: ListNode { int val; struct ListNode *prev, *next; } */
-typedef int (*F1)(ListNode*);
-typedef int (*F2)(ListNode*, ListNode*);
-
-ListNode* reorderNodes(ListNode *head, F1 f1, F2 f2) {
-    ListNode dummyA = {0,NULL,NULL}, dummyB = {0,NULL,NULL};
-    ListNode *tailA = &dummyA, *tailB = &dummyB;
-    for (ListNode *c = head; c != NULL; ) {
-        ListNode *next = c->next;
-        if (f1(c)) { tailA->next = c; c->prev = tailA; tailA = c; }
-        else        { tailB->next = c; c->prev = tailB; tailB = c; }
-        c = next;
-    }
-    tailA->next = NULL; tailB->next = NULL;
-
-    ListNode *ca = dummyA.next, *cb = dummyB.next;
-    if (ca) ca->prev = NULL;
-    if (cb) cb->prev = NULL;
-
-    ListNode dummy = {0,NULL,NULL};
-    ListNode *tail = &dummy;
-    while (ca && cb) {
-        if (f2(ca, cb)) { tail->next = ca; ca->prev = tail; ca = ca->next; }
-        else             { tail->next = cb; cb->prev = tail; cb = cb->next; }
-        tail = tail->next;
-    }
-    if (ca) { tail->next = ca; ca->prev = tail; }
-    if (cb) { tail->next = cb; cb->prev = tail; }
-
-    ListNode *newHead = dummy.next;
-    if (newHead) newHead->prev = NULL;
-    return newHead;
-}
-```
-
-```scala run
-class ListNode(var v: Int, var prev: ListNode = null, var next: ListNode = null)
-
-object Main extends App {
-  object Solution {
-    def reorderNodes(head: ListNode,
-                     f1: ListNode => Boolean,
-                     f2: (ListNode, ListNode) => Boolean): ListNode = {
-      val dummyA = new ListNode(0); var tailA: ListNode = dummyA
-      val dummyB = new ListNode(0); var tailB: ListNode = dummyB
-      var c = head
-      while (c != null) {
-        val nxt = c.next
-        if (f1(c)) { tailA.next = c; c.prev = tailA; tailA = c }
-        else        { tailB.next = c; c.prev = tailB; tailB = c }
-        c = nxt
-      }
-      tailA.next = null; tailB.next = null
-
-      var ca = dummyA.next; var cb = dummyB.next
-      if (ca != null) ca.prev = null
-      if (cb != null) cb.prev = null
-
-      val dummy = new ListNode(0); var tail: ListNode = dummy
-      while (ca != null && cb != null) {
-        if (f2(ca, cb)) { tail.next = ca; ca.prev = tail; ca = ca.next }
-        else             { tail.next = cb; cb.prev = tail; cb = cb.next }
-        tail = tail.next
-      }
-      if (ca != null) { tail.next = ca; ca.prev = tail }
-      if (cb != null) { tail.next = cb; cb.prev = tail }
-      val newHead = dummy.next
-      if (newHead != null) newHead.prev = null
-      newHead
-    }
-  }
-
-  val n1 = new ListNode(1); val n2 = new ListNode(2); val n3 = new ListNode(3); val n4 = new ListNode(4); val n5 = new ListNode(5)
-  n1.next = n2; n2.prev = n1; n2.next = n3; n3.prev = n2; n3.next = n4; n4.prev = n3; n4.next = n5; n5.prev = n4
-  val f1: ListNode => Boolean = n => n.v % 2 == 0                 // evens to A
-  val f2: (ListNode, ListNode) => Boolean = (a, b) => a.v <= b.v  // ascending merge
-  var head = Solution.reorderNodes(n1, f1, f2)
-  while (head != null) { print(s"${head.v} "); head = head.next }  // 1 2 3 4 5
 }
 ```
 
@@ -476,226 +434,271 @@ flowchart LR
 The implementation of the solution using the reorder technique is given below. Notice that this is the *same* code we'll re-use as the standalone "Value partition" problem later in the lesson.
 
 
-```pseudocode
-function split_list_by_value(head, X):
-    lessDummy ← new node; lessTail ← lessDummy
-    greaterDummy ← new node; greaterTail ← greaterDummy
-    current ← head
-    while current ≠ null:
-        nxt ← current.next
-        if current.val < X:
-            lessTail.next ← current; current.prev ← lessTail; lessTail ← lessTail.next
-        else:
-            greaterTail.next ← current; current.prev ← greaterTail; greaterTail ← greaterTail.next
-        current ← nxt
-    if lessDummy.next ≠ null: lessDummy.next.prev ← null
-    lessTail.next ← null
-    if greaterDummy.next ≠ null: greaterDummy.next.prev ← null
-    greaterTail.next ← null
-    return [lessDummy.next, greaterDummy.next]
-
-function merge_less_and_greater_lists(less_head, greater_head):
-    if less_head = null: return greater_head
-    if greater_head = null: return less_head
-    current ← less_head
-    while current.next ≠ null: current ← current.next
-    current.next ← greater_head; greater_head.prev ← current
-    return less_head
-
-function value_partition(head, X):
-    if head = null OR head.next = null: return head
-    less_head, greater_head ← split_list_by_value(head, X)
-    return merge_less_and_greater_lists(less_head, greater_head)
-```
-
 ```python run
 """
 Definition for doubly-linked list.
 class ListNode:
     def __init__(self, val):
-        self.val  = val
+        self.val = val
         self.prev = None
         self.next = None
 """
-from typing import Optional, List
+
+from typing import Optional
 
 class Solution:
-    def split_list_by_value(self, head: Optional['ListNode'], X: int) -> List[Optional['ListNode']]:
-        # Two buckets: less-than-X, and greater-than-or-equal-to-X
-        less_dummy   = ListNode(0); less_tail    = less_dummy
-        greater_dummy = ListNode(0); greater_tail = greater_dummy
+    def split_list_by_value(
+        self, head: Optional[ListNode], X: int
+    ) -> list:
+
+        # Create dummy nodes to initialize the heads of two separate lists.
+        # List for nodes with values less than X.
+        less_dummy = ListNode(0)
+        less_tail = less_dummy
+
+        # List for nodes with values greater than or equal to X.
+        greater_dummy = ListNode(0)
+        greater_tail = greater_dummy
+
+        # Start traversing the original list from the head.
         current = head
-        while current is not None:
-            nxt = current.next                   # Save next before we overwrite current.next via tail
+
+        # Traverse and split nodes based on the value of X.
+        while current:
+
+            # If the value of the current node is less than X, it should
+            # be appended to the list for nodes < X.
             if current.val < X:
-                less_tail.next   = current
-                current.prev     = less_tail     # Mirror — keeps backward chain intact
-                less_tail        = less_tail.next
+
+                # Append current node to list for nodes < X.
+                less_tail.next = current
+
+                # Set the previous pointer of the current node to
+                # less_tail
+                current.prev = less_tail
+
+                # Move less_tail to the newly added node.
+                less_tail = less_tail.next
+
+            # Otherwise, the value of the current node is greater than
+            # or equal to X, and it should be appended to the list for
+            # nodes >= X.
             else:
+
+                # Append current node to list for nodes >= X.
                 greater_tail.next = current
-                current.prev      = greater_tail
-                greater_tail      = greater_tail.next
-            current = nxt
-        # Terminate both sub-lists; null prev on the heads to detach the dummies cleanly
-        if less_dummy.next    is not None: less_dummy.next.prev    = None
-        less_tail.next    = None
-        if greater_dummy.next is not None: greater_dummy.next.prev = None
+
+                # Set the previous pointer of the current node to
+                # greater_tail
+                current.prev = greater_tail
+
+                # Move greater_tail to the newly added node.
+                greater_tail = greater_tail.next
+
+            # Proceed to the next node in the original list.
+            current = current.next
+
+        # Terminate the less list from the beginning and end
+        if less_dummy.next is not None:
+            less_dummy.next.prev = None
+        less_tail.next = None
+
+        # Terminate the greater list from the beginning and end
+        if greater_dummy.next is not None:
+            greater_dummy.next.prev = None
         greater_tail.next = None
+
+        # Return heads of both lists, excluding dummy nodes.
         return [less_dummy.next, greater_dummy.next]
 
-    def merge_less_and_greater_lists(self, less_head, greater_head):
-        if less_head    is None: return greater_head        # one side empty → return the other
-        if greater_head is None: return less_head
-        # Walk to the end of less_head so we can append greater_head behind it
+    def merge_less_and_greater_lists(
+        self,
+        less_head: Optional[ListNode],
+        greater_head: Optional[ListNode],
+    ) -> Optional[ListNode]:
+
+        # If the first list (less_head) is empty, return greater_head as
+        # the concatenated list.
+        if less_head is None:
+            return greater_head
+
+        # If the second list (greater_head) is empty, return less_head as
+        # the concatenated list.
+        if greater_head is None:
+            return less_head
+
+        # Find the end of the first list (less_head) to append
+        # greater_head.
         current = less_head
-        while current.next is not None:
+        while current and current.next:
             current = current.next
-        current.next      = greater_head                    # forward link
-        greater_head.prev = current                         # mirror
+
+        # Append greater_head to the end of less_head.
+        current.next = greater_head
+
+        # Set the previous pointer of the greater_head node to current
+        greater_head.prev = current
+
         return less_head
 
-    def value_partition(self, head: Optional['ListNode'], X: int) -> Optional['ListNode']:
-        if head is None or head.next is None:               # 0 or 1 node — nothing to do
+    def value_partition(
+        self, head: Optional[ListNode], X: int
+    ) -> Optional[ListNode]:
+
+        # Return the head if the list is empty or has only one node.
+        if head is None or head.next is None:
             return head
-        less_head, greater_head = self.split_list_by_value(head, X)
+
+        # Split the original list into two lists: nodes < X and nodes >=
+        # X.
+        heads = self.split_list_by_value(head, X)
+
+        # Head of list with nodes < X.
+        less_head = heads[0]
+
+        # Head of list with nodes >= X.
+        greater_head = heads[1]
+
+        # Merge both lists and return the head of the combined list.
         return self.merge_less_and_greater_lists(less_head, greater_head)
 ```
 
 ```java run
 import java.util.*;
 
-public class Main {
-    static class ListNode { int val; ListNode prev, next; ListNode(int v){val=v;} }
+/**
+ * Definition for doubly-linked list.
+ * class ListNode {
+ *     int val;
+ *     ListNode prev;
+ *     ListNode next;
+ *     ListNode() {}
+ *     ListNode(int val) { this.val = val; }
+ * };
+ */
 
-    static class Solution {
-        public List<ListNode> splitListByValue(ListNode head, int X) {
-            ListNode lessDummy    = new ListNode(0), lessTail    = lessDummy;
-            ListNode greaterDummy = new ListNode(0), greaterTail = greaterDummy;
-            ListNode current = head;
-            while (current != null) {
-                ListNode nxt = current.next;
-                if (current.val < X) {
-                    lessTail.next = current;
-                    current.prev  = lessTail;       // mirror
-                    lessTail      = lessTail.next;
-                } else {
-                    greaterTail.next = current;
-                    current.prev     = greaterTail; // mirror
-                    greaterTail      = greaterTail.next;
-                }
-                current = nxt;
+class Solution {
+    public List<ListNode> splitListByValue(ListNode head, int X) {
+
+        // Create dummy nodes to initialize the heads of two separate
+        // lists. List for nodes with values less than X.
+        ListNode lessDummy = new ListNode(0);
+        ListNode lessTail = lessDummy;
+
+        // List for nodes with values greater than or equal to X.
+        ListNode greaterDummy = new ListNode(0);
+        ListNode greaterTail = greaterDummy;
+
+        // Start traversing the original list from the head.
+        ListNode current = head;
+
+        // Traverse and split nodes based on the value of X.
+        while (current != null) {
+
+            // If the value of the current node is less than X, it should
+            // be appended to the list for nodes < X.
+            if (current.val < X) {
+
+                // Append current node to list for nodes < X.
+                lessTail.next = current;
+
+                // Set the previous pointer of the current node to
+                // lessTail
+                current.prev = lessTail;
+
+                // Move lessTail to the newly added node.
+                lessTail = lessTail.next;
             }
-            if (lessDummy.next    != null) lessDummy.next.prev    = null;
-            lessTail.next    = null;
-            if (greaterDummy.next != null) greaterDummy.next.prev = null;
-            greaterTail.next = null;
-            return Arrays.asList(lessDummy.next, greaterDummy.next);
+
+            // Otherwise, the value of the current node is greater than
+            // or equal to X, and it should be appended to the list for
+            // nodes >= X.
+            else {
+
+                // Append current node to list for nodes >= X.
+                greaterTail.next = current;
+
+                // Set the previous pointer of the current node to
+                // greaterTail
+                current.prev = greaterTail;
+
+                // Move greaterTail to the newly added node.
+                greaterTail = greaterTail.next;
+            }
+
+            // Proceed to the next node in the original list.
+            current = current.next;
         }
 
-        public ListNode mergeLessAndGreaterLists(ListNode lessHead, ListNode greaterHead) {
-            if (lessHead    == null) return greaterHead;
-            if (greaterHead == null) return lessHead;
-            ListNode current = lessHead;
-            while (current.next != null) current = current.next;
-            current.next      = greaterHead;
-            greaterHead.prev  = current;
+        // Terminate the less list from the beginning and end
+        if (lessDummy.next != null) {
+            lessDummy.next.prev = null;
+        }
+        lessTail.next = null;
+
+        // Terminate the greater list from the beginning and end
+        if (greaterDummy.next != null) {
+            greaterDummy.next.prev = null;
+        }
+        greaterTail.next = null;
+
+        // Return heads of both lists, excluding dummy nodes.
+        return Arrays.asList(lessDummy.next, greaterDummy.next);
+    }
+
+    public ListNode mergeLessAndGreaterLists(
+        ListNode lessHead,
+        ListNode greaterHead
+    ) {
+
+        // If the first list (lessHead) is empty, return greaterHead as
+        // the concatenated list.
+        if (lessHead == null) {
+            return greaterHead;
+        }
+
+        // If the second list (greaterHead) is empty, return lessHead as
+        // the concatenated list.
+        if (greaterHead == null) {
             return lessHead;
         }
 
-        public ListNode valuePartition(ListNode head, int X) {
-            if (head == null || head.next == null) return head;
-            List<ListNode> heads = splitListByValue(head, X);
-            return mergeLessAndGreaterLists(heads.get(0), heads.get(1));
+        // Find the end of the first list (lessHead) to append
+        // greaterHead.
+        ListNode current = lessHead;
+        while (current != null && current.next != null) {
+            current = current.next;
         }
+
+        // Append greaterHead to the end of lessHead.
+        current.next = greaterHead;
+
+        // Set the previous pointer of the greaterHead node to current
+        greaterHead.prev = current;
+
+        return lessHead;
     }
 
-    public static void main(String[] args) {
-        ListNode n1=new ListNode(1),n2=new ListNode(4),n3=new ListNode(3),n4=new ListNode(2),n5=new ListNode(5),n6=new ListNode(2);
-        n1.next=n2; n2.prev=n1; n2.next=n3; n3.prev=n2; n3.next=n4; n4.prev=n3; n4.next=n5; n5.prev=n4; n5.next=n6; n6.prev=n5;
-        ListNode head = new Solution().valuePartition(n1, 3);
-        for (ListNode c=head;c!=null;c=c.next) System.out.print(c.val+" ");
-        // 1 2 2 4 3 5
+    public ListNode valuePartition(ListNode head, int X) {
+
+        // Return the head if the list is empty or has only one node.
+        if (head == null || head.next == null) {
+            return head;
+        }
+
+        // Split the original list into two lists: nodes < X and nodes >=
+        // X.
+        List<ListNode> heads = splitListByValue(head, X);
+
+        // Head of list with nodes < X.
+        ListNode lessHead = heads.get(0);
+
+        // Head of list with nodes >= X.
+        ListNode greaterHead = heads.get(1);
+
+        // Merge both lists and return the head of the combined list.
+        return mergeLessAndGreaterLists(lessHead, greaterHead);
     }
-}
-```
-
-```c run
-typedef struct ListNode { int val; struct ListNode *prev, *next; } ListNode;
-
-static void splitListByValue(ListNode *head, int X, ListNode **lessHead, ListNode **greaterHead) {
-    ListNode lessDummy = {0,NULL,NULL}, greaterDummy = {0,NULL,NULL};
-    ListNode *lessTail = &lessDummy, *greaterTail = &greaterDummy;
-    for (ListNode *c = head; c != NULL; ) {
-        ListNode *nxt = c->next;
-        if (c->val < X) { lessTail->next = c;    c->prev = lessTail;    lessTail    = c; }
-        else             { greaterTail->next = c; c->prev = greaterTail; greaterTail = c; }
-        c = nxt;
-    }
-    if (lessDummy.next)    lessDummy.next->prev    = NULL; lessTail->next    = NULL;
-    if (greaterDummy.next) greaterDummy.next->prev = NULL; greaterTail->next = NULL;
-    *lessHead    = lessDummy.next;
-    *greaterHead = greaterDummy.next;
-}
-
-static ListNode* mergeLessAndGreaterLists(ListNode *lessHead, ListNode *greaterHead) {
-    if (!lessHead)    return greaterHead;
-    if (!greaterHead) return lessHead;
-    ListNode *current = lessHead;
-    while (current->next) current = current->next;
-    current->next     = greaterHead;
-    greaterHead->prev = current;
-    return lessHead;
-}
-
-ListNode* valuePartition(ListNode *head, int X) {
-    if (!head || !head->next) return head;
-    ListNode *lh, *gh;
-    splitListByValue(head, X, &lh, &gh);
-    return mergeLessAndGreaterLists(lh, gh);
-}
-```
-
-```scala run
-class ListNode(var v: Int, var prev: ListNode = null, var next: ListNode = null)
-
-object Main extends App {
-  class Solution {
-    def splitListByValue(head: ListNode, X: Int): (ListNode, ListNode) = {
-      val lessDummy    = new ListNode(0); var lessTail: ListNode    = lessDummy
-      val greaterDummy = new ListNode(0); var greaterTail: ListNode = greaterDummy
-      var c = head
-      while (c != null) {
-        val nxt = c.next
-        if (c.v < X) { lessTail.next = c; c.prev = lessTail; lessTail = c }
-        else          { greaterTail.next = c; c.prev = greaterTail; greaterTail = c }
-        c = nxt
-      }
-      if (lessDummy.next    != null) lessDummy.next.prev    = null; lessTail.next    = null
-      if (greaterDummy.next != null) greaterDummy.next.prev = null; greaterTail.next = null
-      (lessDummy.next, greaterDummy.next)
-    }
-
-    def mergeLessAndGreaterLists(lessHead: ListNode, greaterHead: ListNode): ListNode = {
-      if (lessHead    == null) return greaterHead
-      if (greaterHead == null) return lessHead
-      var current = lessHead
-      while (current.next != null) current = current.next
-      current.next     = greaterHead
-      greaterHead.prev = current
-      lessHead
-    }
-
-    def valuePartition(head: ListNode, X: Int): ListNode = {
-      if (head == null || head.next == null) return head
-      val (lh, gh) = splitListByValue(head, X)
-      mergeLessAndGreaterLists(lh, gh)
-    }
-  }
-
-  val n1 = new ListNode(1); val n2 = new ListNode(4); val n3 = new ListNode(3); val n4 = new ListNode(2); val n5 = new ListNode(5); val n6 = new ListNode(2)
-  n1.next = n2; n2.prev = n1; n2.next = n3; n3.prev = n2; n3.next = n4; n4.prev = n3; n4.next = n5; n5.prev = n4; n5.next = n6; n6.prev = n5
-  var head = new Solution().valuePartition(n1, 3)
-  while (head != null) { print(s"${head.v} "); head = head.next }  // 1 2 2 4 3 5
 }
 ```
 
@@ -738,7 +741,9 @@ Example 3
   Reason: A single node is both head and tail — nothing to move.
 ```
 
-## What Does "Relocate" Mean Here?
+<details>
+<summary><h2>What Does "Relocate" Mean Here?</h2></summary>
+
 
 Picture the list as a chain of train cars. Relocate means: detach the last car, walk it to the front, and re-attach it as the new locomotive. Two splices: one at the back (uncouple the last car) and one at the front (couple it on). In a DLL, each "splice" is a forward link plus a mirror.
 
@@ -768,7 +773,10 @@ flowchart TB
 
 <p align="center"><strong>Relocate the last node — split = (head … penultimate, last); merge = concatenate(last, head). Two pointer splices, both with mirror updates.</strong></p>
 
-## Strategy
+</details>
+<details>
+<summary><h2>Strategy</h2></summary>
+
 
 Reorder skeleton: `f1` selects the last node into bucket B and everything else into bucket A. `f2` is "B then A" (concatenate, with B on the left). For DLLs the only twist is the mirror: when we make the last node the new head, its `prev` must become `null`, and the old head's `prev` must point at it.
 
@@ -780,149 +788,236 @@ Reorder skeleton: `f1` selects the last node into bucket B and everything else i
 > -   **Step 4:** Return `current` as the new head.
 > -   **Edge cases:** empty list and single node — return as-is.
 
-## The Solution
+</details>
+<details>
+<summary><h2>Solution &amp; Analysis</h2></summary>
 
-
-```pseudocode
-function split_last_node(head):
-    current ← head; previous ← null
-    while current.next ≠ null:
-        previous ← current; current ← current.next
-    if previous ≠ null: previous.next ← null
-    current.prev ← null
-    return [head, current]
-
-function merge_last_node(last_node, first_node):
-    if last_node = null: return first_node
-    last_node.next ← first_node
-    if first_node ≠ null: first_node.prev ← last_node
-    return last_node
-
-function relocate_node(head):
-    if head = null OR head.next = null: return head
-    first_node, last_node ← split_last_node(head)
-    return merge_last_node(last_node, first_node)
-```
+### The Solution
 
 ```python run
-"""
-Definition for doubly-linked list.
+from typing import Optional, Tuple
+
 class ListNode:
-    def __init__(self, val):
-        self.val  = val
-        self.prev = None
-        self.next = None
-"""
-from typing import Optional, List
+    def __init__(self, val=0, prev=None, nxt=None):
+        self.val = val
+        self.prev = prev
+        self.next = nxt
+
+
+def from_list(values):
+    if not values:
+        return None
+    head = ListNode(values[0])
+    cur = head
+    for v in values[1:]:
+        node = ListNode(v, prev=cur)
+        cur.next = node
+        cur = node
+    return head
+
+
+def to_list(head):
+    out = []
+    while head is not None:
+        out.append(head.val)
+        head = head.next
+    return out
+
 
 class Solution:
-    def split_last_node(self, head: 'ListNode') -> List[Optional['ListNode']]:
-        # Walk to the last node, remembering the predecessor
-        current  = head
+    def split_last_node(
+        self, head: ListNode
+    ) -> Tuple[ListNode, ListNode]:
+        current = head
         previous = None
+
+        # Traverse the list until the last node is reached
         while current.next is not None:
+
+            # Keep track of the previous node
             previous = current
-            current  = current.next
-        # Detach the last node from its predecessor (forward and mirror)
+
+            # Move to the next node
+            current = current.next
+
+        # Disconnect the last node
         if previous is not None:
             previous.next = None
+
+        # Update last node's prev pointer
         if current is not None:
             current.prev = None
-        # Return [head of the remaining list, the detached last node]
-        return [head, current]
 
-    def merge_last_node(self, last_node, first_node):
-        # No last node → first list is the answer (1-element original)
-        if last_node is None:
+        # Return {head of remaining list, last node}
+        return head, current
+
+    def merge_last_node(
+        self,
+        last_node: Optional[ListNode],
+        first_node: Optional[ListNode],
+    ) -> Optional[ListNode]:
+
+        # If there is no last node, return the first node
+        if not last_node:
             return first_node
-        last_node.next = first_node            # Forward link from new head into old list
-        if first_node is not None:
-            first_node.prev = last_node        # Mirror — old head now points back to new head
-        return last_node                       # New head of the relocated list
 
-    def relocate_node(self, head: Optional['ListNode']) -> Optional['ListNode']:
-        # 0 or 1 nodes — nothing to relocate
-        if head is None or head.next is None:
+        # Connect the last node to the first node
+        last_node.next = first_node
+
+        # Update the first node's prev pointer
+        if first_node is not None:
+            first_node.prev = last_node
+
+        return last_node
+
+    def relocate_node(
+        self, head: Optional[ListNode]
+    ) -> Optional[ListNode]:
+
+        # If the list is empty or contains only one node, no need to
+        # modify it
+        if not head or not head.next:
             return head
+
+        # Split the last node from the list
         first_node, last_node = self.split_last_node(head)
+
+        # Merge the last node at the front
         return self.merge_last_node(last_node, first_node)
+
+
+# Examples from the problem statement
+head = from_list([5, 7, 3, 10, 6, 8])
+print(to_list(Solution().relocate_node(head)))   # [8, 5, 7, 3, 10, 6]
+
+head = from_list([5, 7])
+print(to_list(Solution().relocate_node(head)))   # [7, 5]
+
+head = from_list([5])
+print(to_list(Solution().relocate_node(head)))   # [5]
+
+# Edge cases
+head = from_list([1, 2, 3])
+print(to_list(Solution().relocate_node(head)))   # [3, 1, 2]
+
+head = from_list([1, 2, 3, 4, 5])
+print(to_list(Solution().relocate_node(head)))   # [5, 1, 2, 3, 4]
+
+head = from_list([9, 9])
+print(to_list(Solution().relocate_node(head)))   # [9, 9]
+
+head = from_list([1, 2, 3, 4])
+print(to_list(Solution().relocate_node(head)))   # [4, 1, 2, 3]
 ```
 
 ```java run
+import java.util.*;
+
 public class Main {
-    static class ListNode { int val; ListNode prev, next; ListNode(int v){val=v;} }
+    static class ListNode {
+        int val;
+        ListNode prev;
+        ListNode next;
+        ListNode() {}
+        ListNode(int val) { this.val = val; }
+    }
+
+    static ListNode fromList(int... values) {
+        if (values.length == 0) return null;
+        ListNode head = new ListNode(values[0]);
+        ListNode cur = head;
+        for (int i = 1; i < values.length; i++) {
+            ListNode node = new ListNode(values[i]);
+            node.prev = cur;
+            cur.next = node;
+            cur = node;
+        }
+        return head;
+    }
+
+    static java.util.List<Integer> toList(ListNode head) {
+        java.util.List<Integer> out = new java.util.ArrayList<>();
+        while (head != null) { out.add(head.val); head = head.next; }
+        return out;
+    }
 
     static class Solution {
-        public ListNode[] splitLastNode(ListNode head) {
-            ListNode current = head, previous = null;
+        private List<ListNode> splitLastNode(ListNode head) {
+            ListNode current = head;
+            ListNode previous = null;
+
+            // Traverse the list until the last node is reached
             while (current.next != null) {
+
+                // Keep track of the previous node
                 previous = current;
-                current  = current.next;
+
+                // Move to the next node
+                current = current.next;
             }
-            if (previous != null) previous.next = null;
-            if (current  != null) current.prev  = null;
-            return new ListNode[]{head, current};
+
+            // Disconnect the last node
+            if (previous != null) {
+                previous.next = null;
+            }
+
+            // Update last node's prev pointer
+            if (current != null) {
+                current.prev = null;
+            }
+
+            // Return {head of remaining list, last node}
+            return Arrays.asList(head, current);
         }
 
-        public ListNode mergeLastNode(ListNode lastNode, ListNode firstNode) {
-            if (lastNode == null) return firstNode;
+        private ListNode mergeLastNode(ListNode lastNode, ListNode firstNode) {
+
+            // If there is no last node, return the first node
+            if (lastNode == null) {
+                return firstNode;
+            }
+
+            // Connect the last node to the first node
             lastNode.next = firstNode;
-            if (firstNode != null) firstNode.prev = lastNode;
+
+            // Update the first node's prev pointer
+            if (firstNode != null) {
+                firstNode.prev = lastNode;
+            }
+
             return lastNode;
         }
 
         public ListNode relocateNode(ListNode head) {
-            if (head == null || head.next == null) return head;
-            ListNode[] heads = splitLastNode(head);
-            return mergeLastNode(heads[1], heads[0]);
+
+            // If the list is empty or contains only one node, no need to
+            // modify it
+            if (head == null || head.next == null) {
+                return head;
+            }
+
+            // Split the last node from the list
+            List<ListNode> heads = splitLastNode(head);
+            ListNode firstNode = heads.get(0);
+            ListNode lastNode = heads.get(1);
+
+            // Merge the last node at the front
+            return mergeLastNode(lastNode, firstNode);
         }
     }
 
     public static void main(String[] args) {
-        ListNode n1=new ListNode(5),n2=new ListNode(7),n3=new ListNode(3),n4=new ListNode(10),n5=new ListNode(6),n6=new ListNode(8);
-        n1.next=n2; n2.prev=n1; n2.next=n3; n3.prev=n2; n3.next=n4; n4.prev=n3; n4.next=n5; n5.prev=n4; n5.next=n6; n6.prev=n5;
-        ListNode head = new Solution().relocateNode(n1);
-        for (ListNode c=head;c!=null;c=c.next) System.out.print(c.val+" ");
-        // 8 5 7 3 10 6
+        // Examples from the problem statement
+        System.out.println(toList(new Solution().relocateNode(fromList(5, 7, 3, 10, 6, 8))));  // [8, 5, 7, 3, 10, 6]
+        System.out.println(toList(new Solution().relocateNode(fromList(5, 7))));                // [7, 5]
+        System.out.println(toList(new Solution().relocateNode(fromList(5))));                   // [5]
+
+        // Edge cases
+        System.out.println(toList(new Solution().relocateNode(fromList(1, 2, 3))));             // [3, 1, 2]
+        System.out.println(toList(new Solution().relocateNode(fromList(1, 2, 3, 4, 5))));       // [5, 1, 2, 3, 4]
+        System.out.println(toList(new Solution().relocateNode(fromList(9, 9))));                // [9, 9]
+        System.out.println(toList(new Solution().relocateNode(fromList(1, 2, 3, 4))));          // [4, 1, 2, 3]
     }
-}
-```
-
-```c run
-ListNode* relocateNode(ListNode *head) {
-    if (!head || !head->next) return head;
-    ListNode *current = head, *previous = NULL;
-    while (current->next) { previous = current; current = current->next; }
-    if (previous) previous->next = NULL;       /* detach forward */
-    if (current)  current->prev  = NULL;       /* detach mirror   */
-    current->next = head;                       /* splice at front */
-    if (head)     head->prev = current;
-    return current;
-}
-```
-
-```scala run
-class ListNode(var v: Int, var prev: ListNode = null, var next: ListNode = null)
-
-object Main extends App {
-  class Solution {
-    def relocateNode(head: ListNode): ListNode = {
-      if (head == null || head.next == null) return head
-      var current  = head
-      var previous: ListNode = null
-      while (current.next != null) { previous = current; current = current.next }
-      if (previous != null) previous.next = null
-      current.prev = null
-      current.next = head
-      head.prev    = current
-      current
-    }
-  }
-
-  val n1 = new ListNode(5); val n2 = new ListNode(7); val n3 = new ListNode(3); val n4 = new ListNode(10); val n5 = new ListNode(6); val n6 = new ListNode(8)
-  n1.next = n2; n2.prev = n1; n2.next = n3; n3.prev = n2; n3.next = n4; n4.prev = n3; n4.next = n5; n5.prev = n4; n5.next = n6; n6.prev = n5
-  var head = new Solution().relocateNode(n1)
-  while (head != null) { print(s"${head.v} "); head = head.next }  // 8 5 7 3 10 6
 }
 ```
 
@@ -931,7 +1026,7 @@ object Main extends App {
 <summary><strong>Trace — head = [5, 7, 3, 10, 6, 8]</strong></summary>
 
 ```
-Walk to last:
+Walk to last (split_last_node):
   Step 1 │ current=5, previous=null  → advance
   Step 2 │ current=7, previous=5     → advance
   Step 3 │ current=3, previous=7     → advance
@@ -939,32 +1034,34 @@ Walk to last:
   Step 5 │ current=6, previous=10    → advance
   Step 6 │ current=8 (next is null)  → STOP. previous=6.
 
-Detach last:
-  previous(6).next = null     →  …5⇄7⇄3⇄10⇄6 ⊥     8 (loose)
-  current(8).prev  = null     →                     8 (fully loose)
+Detach last (sever both directions):
+  previous(6).next = null     →  5⇄7⇄3⇄10⇄6  +  8 (detached)
+  current(8).prev = null      →  node 8 drops its back-link to node 6
 
-Splice at front:
-  current(8).next = head(5)   →  8 → 5⇄7⇄3⇄10⇄6
-  head(5).prev    = current   →  8 ⇄ 5⇄7⇄3⇄10⇄6
+Splice at front (merge_last_node — wire both directions):
+  last_node(8).next = first_node(5)   →  8 → 5 ⇄ 7 ⇄ 3 ⇄ 10 ⇄ 6
+  first_node(5).prev = last_node(8)   →  8 ⇄ 5 ⇄ 7 ⇄ 3 ⇄ 10 ⇄ 6
 Result: [8, 5, 7, 3, 10, 6] ✓
 ```
 
 </details>
 
-## Complexity Analysis
+### Complexity Analysis
 
 | Metric | Cost | Why |
 |---|---|---|
 | Time  | **O(N)** | One pass to find the last node. |
 | Space | **O(1)** | Two pointer variables; no allocation. |
 
-## Edge Cases
+### Edge Cases
 
 | Case | Example | Expected | Reasoning |
 |---|---|---|---|
 | Empty list | `[]` | `[]` | `head == null` → return immediately. |
 | Single node | `[5]` | `[5]` | `head.next == null` → already at front. |
 | Two nodes | `[5, 7]` | `[7, 5]` | Just swap; `previous` stops at the first node. |
+
+</details>
 
 ***
 
@@ -986,7 +1083,9 @@ Example 2
   Reason: Empty in, empty out.
 ```
 
-## What Does "Parity Order" Mean?
+<details>
+<summary><h2>What Does "Parity Order" Mean?</h2></summary>
+
 
 Imagine numbering the nodes from 1 at the head. The **odd-indexed** nodes (positions 1, 3, 5, …) form one stripe; the **even-indexed** nodes (2, 4, 6, …) form the other. Parity order means: stripe-1 first, then stripe-2, in their original relative order.
 
@@ -1015,7 +1114,10 @@ flowchart TB
 
 <p align="center"><strong>Parity order — split by index parity, concatenate odd stripe before even stripe. The reorder skeleton with <code>f1 = counter is odd</code> and <code>f2 = simple concat</code>.</strong></p>
 
-## Strategy
+</details>
+<details>
+<summary><h2>Strategy</h2></summary>
+
 
 This is the canonical reorder skeleton. `f1(node) = (counter % 2 == 1)`. `f2` is just concatenation. The only DLL-specific touch is wiring `prev` on every append and on the final concat join.
 
@@ -1026,211 +1128,310 @@ This is the canonical reorder skeleton. `f1(node) = (counter % 2 == 1)`. `f2` is
 > -   **Step 3:** Concatenate — `oddTail.next = evenHead; evenHead.prev = oddTail`.
 > -   **Step 4:** Return `oddHead`.
 
-## The Solution
+</details>
+<details>
+<summary><h2>Solution &amp; Analysis</h2></summary>
 
-
-```pseudocode
-function split_by_parity(head):
-    oddDummy ← new node; oddTail ← oddDummy
-    evenDummy ← new node; evenTail ← evenDummy
-    current ← head; counter ← 1
-    while current ≠ null:
-        nxt ← current.next
-        if counter mod 2 = 1:
-            oddTail.next ← current; current.prev ← oddTail; oddTail ← oddTail.next
-        else:
-            evenTail.next ← current; current.prev ← evenTail; evenTail ← evenTail.next
-        current ← nxt; counter ← counter + 1
-    if oddDummy.next ≠ null: oddDummy.next.prev ← null
-    oddTail.next ← null
-    if evenDummy.next ≠ null: evenDummy.next.prev ← null
-    evenTail.next ← null
-    return [oddDummy.next, evenDummy.next]
-
-function merge_odd_and_even_lists(odd_head, even_head):
-    if odd_head = null: return even_head
-    if even_head = null: return odd_head
-    current ← odd_head
-    while current.next ≠ null: current ← current.next
-    current.next ← even_head; even_head.prev ← current
-    return odd_head
-
-function parity_order(head):
-    if head = null OR head.next = null: return head
-    odd_head, even_head ← split_by_parity(head)
-    return merge_odd_and_even_lists(odd_head, even_head)
-```
+### The Solution
 
 ```python run
-"""
-Definition for doubly-linked list.
+from typing import Optional, Tuple
+
 class ListNode:
-    def __init__(self, val):
-        self.val  = val
-        self.prev = None
-        self.next = None
-"""
-from typing import Optional, List
+    def __init__(self, val=0, prev=None, nxt=None):
+        self.val = val
+        self.prev = prev
+        self.next = nxt
+
+
+def from_list(values):
+    if not values:
+        return None
+    head = ListNode(values[0])
+    cur = head
+    for v in values[1:]:
+        node = ListNode(v, prev=cur)
+        cur.next = node
+        cur = node
+    return head
+
+
+def to_list(head):
+    out = []
+    while head is not None:
+        out.append(head.val)
+        head = head.next
+    return out
+
 
 class Solution:
-    def split_by_parity(self, head: Optional['ListNode']) -> List[Optional['ListNode']]:
-        odd_dummy  = ListNode(0); odd_tail  = odd_dummy
-        even_dummy = ListNode(0); even_tail = even_dummy
-        current = head
-        counter = 1                                        # 1-indexed positions
-        while current is not None:
-            nxt = current.next
-            if counter % 2 == 1:                           # odd index → odd stripe
-                odd_tail.next  = current
-                current.prev   = odd_tail                  # mirror
-                odd_tail       = odd_tail.next
-            else:                                          # even index → even stripe
-                even_tail.next = current
-                current.prev   = even_tail                 # mirror
-                even_tail      = even_tail.next
-            current  = nxt
-            counter += 1
-        # Detach dummies cleanly: terminate tails and null the heads' prev
-        if odd_dummy.next  is not None: odd_dummy.next.prev  = None
-        odd_tail.next  = None
-        if even_dummy.next is not None: even_dummy.next.prev = None
-        even_tail.next = None
-        return [odd_dummy.next, even_dummy.next]
+    def split_by_parity(
+        self, head: Optional[ListNode]
+    ) -> Tuple[Optional[ListNode], Optional[ListNode]]:
 
-    def merge_odd_and_even_lists(self, odd_head, even_head):
-        if odd_head  is None: return even_head
-        if even_head is None: return odd_head
-        # Walk to the end of the odd stripe, then concat the even stripe
-        current = odd_head
-        while current.next is not None:
+        # Initialize head and tail references for the two split lists
+        odd_dummy = ListNode(0)
+        odd_tail = odd_dummy
+
+        even_dummy = ListNode(0)
+        even_tail = even_dummy
+
+        # Create current reference to iterate through the list
+        current = head
+
+        # To track alternate positions
+        counter = 1
+
+        # Iterate through the list and split nodes into two lists
+        while current:
+
+            # If the counter is odd then the node goes to the odd list
+            if counter % 2 == 1:
+
+                # `current` node goes to the odd split list
+                odd_tail.next = current
+                current.prev = odd_tail
+                odd_tail = odd_tail.next
+
+            # Otherwise, the node goes to the even list
+            else:
+
+                # `current` node goes to the even split list
+                even_tail.next = current
+                current.prev = even_tail
+                even_tail = even_tail.next
+
+            # Move to the next node in the original list
             current = current.next
-        current.next   = even_head
-        even_head.prev = current                          # mirror on the join
+            counter += 1
+
+        # Terminate the odd list from the beginning and end
+        if odd_dummy.next is not None:
+            odd_dummy.next.prev = None
+        odd_tail.next = None
+
+        # Terminate the even list from the beginning and end
+        if even_dummy.next is not None:
+            even_dummy.next.prev = None
+        even_tail.next = None
+
+        return odd_dummy.next, even_dummy.next
+
+    def merge_odd_and_even_lists(
+        self, odd_head: Optional[ListNode], even_head: Optional[ListNode]
+    ) -> Optional[ListNode]:
+
+        # If the odd list is empty return the even list
+        if not odd_head:
+            return even_head
+
+        # If the even list is empty return the odd list
+        if not even_head:
+            return odd_head
+
+        # Traverse to the end of the odd list
+        current = odd_head
+        while current.next:
+            current = current.next
+
+        # Connect the even list at the end of the odd list
+        current.next = even_head
+        even_head.prev = current
+
         return odd_head
 
-    def parity_order(self, head: Optional['ListNode']) -> Optional['ListNode']:
-        if head is None or head.next is None:
+    def parity_order(
+        self, head: Optional[ListNode]
+    ) -> Optional[ListNode]:
+
+        # If the list is empty or contains only one node, no splitting is
+        # necessary
+        if not head or not head.next:
             return head
+
+        # Split the list into odd and even lists
         odd_head, even_head = self.split_by_parity(head)
+
+        # Append the  even list at the end of the odd list and
+        # return the head of the merged list
         return self.merge_odd_and_even_lists(odd_head, even_head)
+
+
+# Examples from the problem statement
+head = from_list([2, 1, 3, 4, 8])
+print(to_list(Solution().parity_order(head)))   # [2, 3, 8, 1, 4]
+
+head = from_list([])
+print(to_list(Solution().parity_order(head)))   # []
+
+# Edge cases
+head = from_list([1])
+print(to_list(Solution().parity_order(head)))   # [1]
+
+head = from_list([1, 2])
+print(to_list(Solution().parity_order(head)))   # [1, 2]
+
+head = from_list([1, 2, 3])
+print(to_list(Solution().parity_order(head)))   # [1, 3, 2]
+
+head = from_list([1, 2, 3, 4])
+print(to_list(Solution().parity_order(head)))   # [1, 3, 2, 4]
+
+head = from_list([5, 5, 5, 5, 5])
+print(to_list(Solution().parity_order(head)))   # [5, 5, 5, 5, 5]
+
+head = from_list([1, 2, 3, 4, 5, 6])
+print(to_list(Solution().parity_order(head)))   # [1, 3, 5, 2, 4, 6]
 ```
 
 ```java run
 import java.util.*;
 
 public class Main {
-    static class ListNode { int val; ListNode prev, next; ListNode(int v){val=v;} }
+    static class ListNode {
+        int val;
+        ListNode prev;
+        ListNode next;
+        ListNode() {}
+        ListNode(int val) { this.val = val; }
+    }
+
+    static ListNode fromList(int... values) {
+        if (values.length == 0) return null;
+        ListNode head = new ListNode(values[0]);
+        ListNode cur = head;
+        for (int i = 1; i < values.length; i++) {
+            ListNode node = new ListNode(values[i]);
+            node.prev = cur;
+            cur.next = node;
+            cur = node;
+        }
+        return head;
+    }
+
+    static java.util.List<Integer> toList(ListNode head) {
+        java.util.List<Integer> out = new java.util.ArrayList<>();
+        while (head != null) { out.add(head.val); head = head.next; }
+        return out;
+    }
 
     static class Solution {
-        public List<ListNode> splitByParity(ListNode head) {
-            ListNode oddDummy  = new ListNode(0), oddTail  = oddDummy;
-            ListNode evenDummy = new ListNode(0), evenTail = evenDummy;
+        private List<ListNode> splitByParity(ListNode head) {
+
+            // Initialize head and tail references for the two split lists
+            ListNode oddDummy = new ListNode(0);
+            ListNode oddTail = oddDummy;
+
+            ListNode evenDummy = new ListNode(0);
+            ListNode evenTail = evenDummy;
+
+            // Create current reference to iterate through the list
             ListNode current = head;
+
+            // To track alternate positions
             int counter = 1;
+
+            // Iterate through the list and split nodes into two lists
             while (current != null) {
-                ListNode nxt = current.next;
+
+                // If the counter is odd then the node goes to the odd list
                 if (counter % 2 == 1) {
-                    oddTail.next = current; current.prev = oddTail;  oddTail  = oddTail.next;
-                } else {
-                    evenTail.next = current; current.prev = evenTail; evenTail = evenTail.next;
+
+                    // `current` node goes to the odd split list
+                    oddTail.next = current;
+                    current.prev = oddTail;
+                    oddTail = oddTail.next;
                 }
-                current = nxt; counter++;
+
+                // Otherwise, the node goes to the even list
+                else {
+
+                    // `current` node goes to the even split list
+                    evenTail.next = current;
+                    current.prev = evenTail;
+                    evenTail = evenTail.next;
+                }
+
+                // Move to the next node in the original list
+                current = current.next;
+                counter++;
             }
-            if (oddDummy.next  != null) oddDummy.next.prev  = null; oddTail.next  = null;
-            if (evenDummy.next != null) evenDummy.next.prev = null; evenTail.next = null;
+
+            // Terminate the odd list from the beginning and end
+            if (oddDummy.next != null) {
+                oddDummy.next.prev = null;
+            }
+            oddTail.next = null;
+
+            // Terminate the even list from the beginning and end
+            if (evenDummy.next != null) {
+                evenDummy.next.prev = null;
+            }
+            evenTail.next = null;
+
             return Arrays.asList(oddDummy.next, evenDummy.next);
         }
 
-        public ListNode mergeOddAndEvenLists(ListNode oddHead, ListNode evenHead) {
-            if (oddHead  == null) return evenHead;
-            if (evenHead == null) return oddHead;
+        private ListNode mergeOddAndEvenLists(
+            ListNode oddHead,
+            ListNode evenHead
+        ) {
+
+            // If the odd list is empty return the even list
+            if (oddHead == null) {
+                return evenHead;
+            }
+
+            // If the even list is empty return the odd list
+            if (evenHead == null) {
+                return oddHead;
+            }
+
+            // Traverse to the end of the odd list
             ListNode current = oddHead;
-            while (current.next != null) current = current.next;
-            current.next   = evenHead;
-            evenHead.prev  = current;
+            while (current.next != null) {
+                current = current.next;
+            }
+
+            // Connect the even list at the end of the odd list
+            current.next = evenHead;
+            evenHead.prev = current;
+
             return oddHead;
         }
 
         public ListNode parityOrder(ListNode head) {
-            if (head == null || head.next == null) return head;
+
+            // If the list is empty or contains only one node, no splitting
+            // is necessary
+            if (head == null || head.next == null) {
+                return head;
+            }
+
+            // Split the list into odd and even lists
             List<ListNode> heads = splitByParity(head);
-            return mergeOddAndEvenLists(heads.get(0), heads.get(1));
+            ListNode oddHead = heads.get(0);
+            ListNode evenHead = heads.get(1);
+
+            // Append the  even list at the end of the odd list and
+            // return the head of the merged list
+            return mergeOddAndEvenLists(oddHead, evenHead);
         }
     }
 
     public static void main(String[] args) {
-        ListNode n1=new ListNode(2),n2=new ListNode(1),n3=new ListNode(3),n4=new ListNode(4),n5=new ListNode(8);
-        n1.next=n2; n2.prev=n1; n2.next=n3; n3.prev=n2; n3.next=n4; n4.prev=n3; n4.next=n5; n5.prev=n4;
-        ListNode head = new Solution().parityOrder(n1);
-        for (ListNode c=head;c!=null;c=c.next) System.out.print(c.val+" ");
-        // 2 3 8 1 4
+        // Examples from the problem statement
+        System.out.println(toList(new Solution().parityOrder(fromList(2, 1, 3, 4, 8))));   // [2, 3, 8, 1, 4]
+        System.out.println(toList(new Solution().parityOrder(fromList())));                // []
+
+        // Edge cases
+        System.out.println(toList(new Solution().parityOrder(fromList(1))));               // [1]
+        System.out.println(toList(new Solution().parityOrder(fromList(1, 2))));            // [1, 2]
+        System.out.println(toList(new Solution().parityOrder(fromList(1, 2, 3))));         // [1, 3, 2]
+        System.out.println(toList(new Solution().parityOrder(fromList(1, 2, 3, 4))));      // [1, 3, 2, 4]
+        System.out.println(toList(new Solution().parityOrder(fromList(5, 5, 5, 5, 5))));   // [5, 5, 5, 5, 5]
+        System.out.println(toList(new Solution().parityOrder(fromList(1, 2, 3, 4, 5, 6)))); // [1, 3, 5, 2, 4, 6]
     }
-}
-```
-
-```c run
-ListNode* parityOrder(ListNode *head) {
-    if (!head || !head->next) return head;
-    ListNode oddDummy = {0,NULL,NULL}, evenDummy = {0,NULL,NULL};
-    ListNode *oddTail = &oddDummy, *evenTail = &evenDummy;
-    ListNode *current = head;
-    int counter = 1;
-    while (current) {
-        ListNode *nxt = current->next;
-        if (counter & 1) { oddTail->next  = current; current->prev = oddTail;  oddTail  = current; }
-        else              { evenTail->next = current; current->prev = evenTail; evenTail = current; }
-        current = nxt; counter++;
-    }
-    if (oddDummy.next)  oddDummy.next->prev  = NULL; oddTail->next  = NULL;
-    if (evenDummy.next) evenDummy.next->prev = NULL; evenTail->next = NULL;
-
-    ListNode *oddHead = oddDummy.next, *evenHead = evenDummy.next;
-    if (!oddHead)  return evenHead;
-    if (!evenHead) return oddHead;
-    ListNode *c = oddHead;
-    while (c->next) c = c->next;
-    c->next         = evenHead;
-    evenHead->prev  = c;
-    return oddHead;
-}
-```
-
-```scala run
-class ListNode(var v: Int, var prev: ListNode = null, var next: ListNode = null)
-
-object Main extends App {
-  class Solution {
-    def parityOrder(head: ListNode): ListNode = {
-      if (head == null || head.next == null) return head
-      val oddDummy  = new ListNode(0); var oddTail: ListNode  = oddDummy
-      val evenDummy = new ListNode(0); var evenTail: ListNode = evenDummy
-      var current = head
-      var counter = 1
-      while (current != null) {
-        val nxt = current.next
-        if (counter % 2 == 1) { oddTail.next  = current; current.prev = oddTail;  oddTail  = current }
-        else                   { evenTail.next = current; current.prev = evenTail; evenTail = current }
-        current = nxt; counter += 1
-      }
-      if (oddDummy.next  != null) oddDummy.next.prev  = null; oddTail.next  = null
-      if (evenDummy.next != null) evenDummy.next.prev = null; evenTail.next = null
-
-      val oddHead  = oddDummy.next
-      val evenHead = evenDummy.next
-      if (oddHead  == null) return evenHead
-      if (evenHead == null) return oddHead
-      var c = oddHead
-      while (c.next != null) c = c.next
-      c.next        = evenHead
-      evenHead.prev = c
-      oddHead
-    }
-  }
-
-  val n1 = new ListNode(2); val n2 = new ListNode(1); val n3 = new ListNode(3); val n4 = new ListNode(4); val n5 = new ListNode(8)
-  n1.next = n2; n2.prev = n1; n2.next = n3; n3.prev = n2; n3.next = n4; n4.prev = n3; n4.next = n5; n5.prev = n4
-  var head = new Solution().parityOrder(n1)
-  while (head != null) { print(s"${head.v} "); head = head.next }  // 2 3 8 1 4
 }
 ```
 
@@ -1239,20 +1440,20 @@ object Main extends App {
 <summary><strong>Trace — head = [2, 1, 3, 4, 8]</strong></summary>
 
 ```
-Split (counter starts at 1):
-  Step 1 │ counter=1, val=2 │ odd_tail.next=2,  2.prev=odd_dummy   │ odd:  2
-  Step 2 │ counter=2, val=1 │ even_tail.next=1, 1.prev=even_dummy  │ even: 1
-  Step 3 │ counter=3, val=3 │ odd_tail.next=3,  3.prev=2           │ odd:  2 ⇄ 3
-  Step 4 │ counter=4, val=4 │ even_tail.next=4, 4.prev=1           │ even: 1 ⇄ 4
-  Step 5 │ counter=5, val=8 │ odd_tail.next=8,  8.prev=3           │ odd:  2 ⇄ 3 ⇄ 8
+Split (counter starts at 1) — each append wires tail.next AND current.prev:
+  Step 1 │ counter=1, val=2 │ odd_tail.next=2,  2.prev=odd_tail  │ odd:  2
+  Step 2 │ counter=2, val=1 │ even_tail.next=1, 1.prev=even_tail │ even: 1
+  Step 3 │ counter=3, val=3 │ odd_tail.next=3,  3.prev=odd_tail  │ odd:  2 ⇄ 3
+  Step 4 │ counter=4, val=4 │ even_tail.next=4, 4.prev=even_tail │ even: 1 ⇄ 4
+  Step 5 │ counter=5, val=8 │ odd_tail.next=8,  8.prev=odd_tail  │ odd:  2 ⇄ 3 ⇄ 8
 
-Terminate + detach dummies:
-  odd:  2 ⇄ 3 ⇄ 8   (heads have prev=null)
-  even: 1 ⇄ 4
+Terminate lists (null the head's prev, null the tail's next):
+  odd:  2 ⇄ 3 ⇄ 8   (odd_dummy.next.prev = None; odd_tail.next = None)
+  even: 1 ⇄ 4       (even_dummy.next.prev = None; even_tail.next = None)
 
-Concat:
-  walk odd to 8.   8.next = 1.   1.prev = 8.
-Result: [2, 3, 8, 1, 4] ✓ (forward AND backward chains both honest)
+Concat (merge_odd_and_even_lists — wire both directions):
+  walk odd to 8.   8.next = 1;  1.prev = 8.
+Result: [2, 3, 8, 1, 4] ✓
 ```
 
 </details>
@@ -1261,14 +1462,14 @@ Result: [2, 3, 8, 1, 4] ✓ (forward AND backward chains both honest)
 
 (Answer: nothing wrong — the early returns at the top guard against both being null. But notice we DON'T need to traverse to find `oddTail` here either; in real production code we'd just keep the `oddTail` reference from the split phase and skip the walk. The walk here is for clarity, not necessity.)
 
-## Complexity Analysis
+### Complexity Analysis
 
 | Metric | Cost | Why |
 |---|---|---|
 | Time  | **O(N)** | One split pass + one walk to concat. |
 | Space | **O(1)** | Two dummies and a fixed number of pointers. |
 
-## Edge Cases
+### Edge Cases
 
 | Case | Example | Expected | Reasoning |
 |---|---|---|---|
@@ -1276,6 +1477,8 @@ Result: [2, 3, 8, 1, 4] ✓ (forward AND backward chains both honest)
 | Single node | `[5]` | `[5]` | One node is at index 1 — already in odd stripe alone. |
 | Two nodes | `[5, 7]` | `[5, 7]` | Already partitioned: 5 odd, 7 even. |
 | All odd-length | `[1,2,3]` | `[1, 3, 2]` | Odd stripe gets 2 nodes, even gets 1. |
+
+</details>
 
 ***
 
@@ -1297,7 +1500,9 @@ Example 2
   Reason: <2 → 1  ;  ≥2 → 2
 ```
 
-## What Does "Stable Partition" Mean?
+<details>
+<summary><h2>What Does "Stable Partition" Mean?</h2></summary>
+
 
 Stability is the catch. Sorting would also produce a valid partition, but it would scramble the relative order inside each part. Here we must preserve order: among nodes `< X`, the one that came first stays first; same for the `>= X` group. This is exactly what the split-and-concat skeleton gives us automatically — appending to a tail keeps insertion order intact.
 
@@ -1326,7 +1531,10 @@ flowchart TB
 
 <p align="center"><strong>Stable value partition — appending nodes in scan order to each tail preserves the original ordering inside each bucket. Concat with mirror gives the final DLL.</strong></p>
 
-## Strategy
+</details>
+<details>
+<summary><h2>Strategy</h2></summary>
+
 
 This is the same template you saw at the top of the lesson. `f1(node) = (node.val < X)`. `f2` is plain concatenation. The DLL bookkeeping is what matters: every append wires `prev`, and the join between the two stripes wires both directions.
 
@@ -1337,204 +1545,357 @@ This is the same template you saw at the top of the lesson. `f1(node) = (node.va
 > -   **Step 3:** Concatenate — walk to the end of less-list (or use the saved `lessTail`), then `lessTail.next = greaterHead; greaterHead.prev = lessTail`.
 > -   **Step 4:** Return `lessHead` (or `greaterHead` if less-list is empty).
 
-## The Solution
+</details>
+<details>
+<summary><h2>Solution &amp; Analysis</h2></summary>
+
+### The Solution
 
 This is the same code we showed in the **Identifying the reorder pattern** section earlier — re-presented here as the dedicated problem solution.
 
 
-```pseudocode
-function split_list_by_value(head, X):
-    lessDummy ← new node; lessTail ← lessDummy
-    greaterDummy ← new node; greaterTail ← greaterDummy
-    current ← head
-    while current ≠ null:
-        nxt ← current.next
-        if current.val < X:
-            lessTail.next ← current; current.prev ← lessTail; lessTail ← lessTail.next
-        else:
-            greaterTail.next ← current; current.prev ← greaterTail; greaterTail ← greaterTail.next
-        current ← nxt
-    if lessDummy.next ≠ null: lessDummy.next.prev ← null
-    lessTail.next ← null
-    if greaterDummy.next ≠ null: greaterDummy.next.prev ← null
-    greaterTail.next ← null
-    return [lessDummy.next, greaterDummy.next]
-
-function merge_less_and_greater_lists(less_head, greater_head):
-    if less_head = null: return greater_head
-    if greater_head = null: return less_head
-    current ← less_head
-    while current.next ≠ null: current ← current.next
-    current.next ← greater_head; greater_head.prev ← current
-    return less_head
-
-function value_partition(head, X):
-    if head = null OR head.next = null: return head
-    less_head, greater_head ← split_list_by_value(head, X)
-    return merge_less_and_greater_lists(less_head, greater_head)
-```
-
 ```python run
-"""
-Definition for doubly-linked list.
+from typing import Optional
+
 class ListNode:
-    def __init__(self, val):
-        self.val  = val
-        self.prev = None
-        self.next = None
-"""
-from typing import Optional, List
+    def __init__(self, val=0, prev=None, nxt=None):
+        self.val = val
+        self.prev = prev
+        self.next = nxt
+
+
+def from_list(values):
+    if not values:
+        return None
+    head = ListNode(values[0])
+    cur = head
+    for v in values[1:]:
+        node = ListNode(v, prev=cur)
+        cur.next = node
+        cur = node
+    return head
+
+
+def to_list(head):
+    out = []
+    while head is not None:
+        out.append(head.val)
+        head = head.next
+    return out
+
 
 class Solution:
-    def split_list_by_value(self, head: Optional['ListNode'], X: int) -> List[Optional['ListNode']]:
-        less_dummy    = ListNode(0); less_tail    = less_dummy
-        greater_dummy = ListNode(0); greater_tail = greater_dummy
+    def split_list_by_value(
+        self, head: Optional[ListNode], X: int
+    ) -> list:
+
+        # Create dummy nodes to initialize the heads of two separate
+        # lists. List for nodes with values less than X.
+        less_dummy = ListNode(0)
+        less_tail = less_dummy
+
+        # List for nodes with values greater than or equal to X.
+        greater_dummy = ListNode(0)
+        greater_tail = greater_dummy
+
+        # Start traversing the original list from the head.
         current = head
-        while current is not None:
-            nxt = current.next                     # save next before overwriting
+
+        # Traverse and split nodes based on the value of X.
+        while current:
+
+            # If the value of the current node is less than X, it should
+            # be appended to the list for nodes < X.
             if current.val < X:
+
+                # Append current node to list for nodes < X.
                 less_tail.next = current
-                current.prev   = less_tail         # mirror
-                less_tail      = less_tail.next
+
+                # Set the previous pointer of the current node to
+                # less_tail
+                current.prev = less_tail
+
+                # Move less_tail to the newly added node.
+                less_tail = less_tail.next
+
+            # Otherwise, the value of the current node is greater than
+            # or equal to X, and it should be appended to the list for
+            # nodes >= X.
             else:
+
+                # Append current node to list for nodes >= X.
                 greater_tail.next = current
-                current.prev      = greater_tail   # mirror
-                greater_tail      = greater_tail.next
-            current = nxt
-        if less_dummy.next    is not None: less_dummy.next.prev    = None
-        less_tail.next    = None
-        if greater_dummy.next is not None: greater_dummy.next.prev = None
+
+                # Set the previous pointer of the current node to
+                # greater_tail
+                current.prev = greater_tail
+
+                # Move greater_tail to the newly added node.
+                greater_tail = greater_tail.next
+
+            # Proceed to the next node in the original list.
+            current = current.next
+
+        # Terminate the odd list from the beginning and end
+        if less_dummy.next is not None:
+            less_dummy.next.prev = None
+        less_tail.next = None
+
+        # Terminate the even list from the beginning and end
+        if greater_dummy.next is not None:
+            greater_dummy.next.prev = None
         greater_tail.next = None
+
+        # Return heads of both lists, excluding dummy nodes.
         return [less_dummy.next, greater_dummy.next]
 
-    def merge_less_and_greater_lists(self, less_head, greater_head):
-        if less_head    is None: return greater_head
-        if greater_head is None: return less_head
+    def merge_less_and_greater_lists(
+        self,
+        less_head: Optional[ListNode],
+        greater_head: Optional[ListNode],
+    ) -> Optional[ListNode]:
+
+        # If the first list (less_head) is empty, return greater_head as
+        # the concatenated list.
+        if less_head is None:
+            return greater_head
+
+        # If the second list (greater_head) is empty, return less_head as
+        # the concatenated list.
+        if greater_head is None:
+            return less_head
+
+        # Find the end of the first list (less_head) to append
+        # greater_head.
         current = less_head
-        while current.next is not None:
+        while current and current.next:
             current = current.next
-        current.next      = greater_head
-        greater_head.prev = current                # mirror on the join
+
+        # Append greater_head to the end of less_head.
+        current.next = greater_head
+
+        # Set the previous pointer of the greater_tail node to current
+        greater_head.prev = current
+
         return less_head
 
-    def value_partition(self, head: Optional['ListNode'], X: int) -> Optional['ListNode']:
+    def value_partition(
+        self, head: Optional[ListNode], X: int
+    ) -> Optional[ListNode]:
+
+        # Return the head if the list is empty or has only one node.
         if head is None or head.next is None:
             return head
-        less_head, greater_head = self.split_list_by_value(head, X)
+
+        # Split the original list into two lists: nodes < X and nodes >=
+        # X.
+        heads = self.split_list_by_value(head, X)
+
+        # Head of list with nodes < X.
+        less_head = heads[0]
+
+        # Head of list with nodes >= X.
+        greater_head = heads[1]
+
+        # Merge both lists and return the head of the combined list.
         return self.merge_less_and_greater_lists(less_head, greater_head)
+
+
+# Examples from the problem statement
+head = from_list([1, 4, 3, 2, 5, 2])
+print(to_list(Solution().value_partition(head, 3)))   # [1, 2, 2, 4, 3, 5]
+
+head = from_list([2, 1])
+print(to_list(Solution().value_partition(head, 2)))   # [1, 2]
+
+# Edge cases
+head = from_list([1])
+print(to_list(Solution().value_partition(head, 5)))   # [1]
+
+head = from_list([5, 6, 7])
+print(to_list(Solution().value_partition(head, 3)))   # [5, 6, 7]
+
+head = from_list([1, 2, 3])
+print(to_list(Solution().value_partition(head, 10)))  # [1, 2, 3]
+
+head = from_list([3, 1, 4, 1, 5, 9])
+print(to_list(Solution().value_partition(head, 4)))   # [3, 1, 1, 4, 5, 9]
+
+head = from_list([1, 2, 3, 4, 5])
+print(to_list(Solution().value_partition(head, 3)))   # [1, 2, 3, 4, 5]
+
+head = from_list([5, 4, 3, 2, 1])
+print(to_list(Solution().value_partition(head, 3)))   # [2, 1, 5, 4, 3]
 ```
 
 ```java run
 import java.util.*;
 
 public class Main {
-    static class ListNode { int val; ListNode prev, next; ListNode(int v){val=v;} }
+    static class ListNode {
+        int val;
+        ListNode prev;
+        ListNode next;
+        ListNode() {}
+        ListNode(int val) { this.val = val; }
+    }
+
+    static ListNode fromList(int... values) {
+        if (values.length == 0) return null;
+        ListNode head = new ListNode(values[0]);
+        ListNode cur = head;
+        for (int i = 1; i < values.length; i++) {
+            ListNode node = new ListNode(values[i]);
+            node.prev = cur;
+            cur.next = node;
+            cur = node;
+        }
+        return head;
+    }
+
+    static java.util.List<Integer> toList(ListNode head) {
+        java.util.List<Integer> out = new java.util.ArrayList<>();
+        while (head != null) { out.add(head.val); head = head.next; }
+        return out;
+    }
 
     static class Solution {
-        public List<ListNode> splitListByValue(ListNode head, int X) {
-            ListNode lessDummy    = new ListNode(0), lessTail    = lessDummy;
-            ListNode greaterDummy = new ListNode(0), greaterTail = greaterDummy;
+        private List<ListNode> splitListByValue(ListNode head, int X) {
+
+            // Create dummy nodes to initialize the heads of two separate
+            // lists. List for nodes with values less than X.
+            ListNode lessDummy = new ListNode(0);
+            ListNode lessTail = lessDummy;
+
+            // List for nodes with values greater than or equal to X.
+            ListNode greaterDummy = new ListNode(0);
+            ListNode greaterTail = greaterDummy;
+
+            // Start traversing the original list from the head.
             ListNode current = head;
+
+            // Traverse and split nodes based on the value of X.
             while (current != null) {
-                ListNode nxt = current.next;
+
+                // If the value of the current node is less than X, it should
+                // be appended to the list for nodes < X.
                 if (current.val < X) {
-                    lessTail.next = current; current.prev = lessTail;    lessTail    = lessTail.next;
-                } else {
-                    greaterTail.next = current; current.prev = greaterTail; greaterTail = greaterTail.next;
+
+                    // Append current node to list for nodes < X.
+                    lessTail.next = current;
+
+                    // Set the previous pointer of the current node to
+                    // lessTail
+                    current.prev = lessTail;
+
+                    // Move lessTail to the newly added node.
+                    lessTail = lessTail.next;
                 }
-                current = nxt;
+
+                // Otherwise, the value of the current node is greater than
+                // or equal to X, and it should be appended to the list for
+                // nodes >= X.
+                else {
+
+                    // Append current node to list for nodes >= X.
+                    greaterTail.next = current;
+
+                    // Set the previous pointer of the current node to
+                    // greaterTail
+                    current.prev = greaterTail;
+
+                    // Move greaterTail to the newly added node.
+                    greaterTail = greaterTail.next;
+                }
+
+                // Proceed to the next node in the original list.
+                current = current.next;
             }
-            if (lessDummy.next    != null) lessDummy.next.prev    = null; lessTail.next    = null;
-            if (greaterDummy.next != null) greaterDummy.next.prev = null; greaterTail.next = null;
+
+            // Terminate the odd list from the beginning and end
+            if (lessDummy.next != null) {
+                lessDummy.next.prev = null;
+            }
+            lessTail.next = null;
+
+            // Terminate the even list from the beginning and end
+            if (greaterDummy.next != null) {
+                greaterDummy.next.prev = null;
+            }
+            greaterTail.next = null;
+
+            // Return heads of both lists, excluding dummy nodes.
             return Arrays.asList(lessDummy.next, greaterDummy.next);
         }
 
-        public ListNode mergeLessAndGreaterLists(ListNode lessHead, ListNode greaterHead) {
-            if (lessHead    == null) return greaterHead;
-            if (greaterHead == null) return lessHead;
+        private ListNode mergeLessAndGreaterLists(
+            ListNode lessHead,
+            ListNode greaterHead
+        ) {
+
+            // If the first list (lessHead) is empty, return greaterHead as
+            // the concatenated list.
+            if (lessHead == null) {
+                return greaterHead;
+            }
+
+            // If the second list (greaterHead) is empty, return lessHead as
+            // the concatenated list.
+            if (greaterHead == null) {
+                return lessHead;
+            }
+
+            // Find the end of the first list (lessHead) to append
+            // greaterHead.
             ListNode current = lessHead;
-            while (current.next != null) current = current.next;
-            current.next      = greaterHead;
-            greaterHead.prev  = current;
+            while (current != null && current.next != null) {
+                current = current.next;
+            }
+
+            // Append greaterHead to the end of lessHead.
+            current.next = greaterHead;
+
+            // Set the previous pointer of the greaterTail node to current
+            greaterHead.prev = current;
+
             return lessHead;
         }
 
         public ListNode valuePartition(ListNode head, int X) {
-            if (head == null || head.next == null) return head;
+
+            // Return the head if the list is empty or has only one node.
+            if (head == null || head.next == null) {
+                return head;
+            }
+
+            // Split the original list into two lists: nodes < X and nodes >=
+            // X.
             List<ListNode> heads = splitListByValue(head, X);
-            return mergeLessAndGreaterLists(heads.get(0), heads.get(1));
+
+            // Head of list with nodes < X.
+            ListNode lessHead = heads.get(0);
+
+            // Head of list with nodes >= X.
+            ListNode greaterHead = heads.get(1);
+
+            // Merge both lists and return the head of the combined list.
+            return mergeLessAndGreaterLists(lessHead, greaterHead);
         }
     }
 
     public static void main(String[] args) {
-        ListNode n1=new ListNode(1),n2=new ListNode(4),n3=new ListNode(3),n4=new ListNode(2),n5=new ListNode(5),n6=new ListNode(2);
-        n1.next=n2; n2.prev=n1; n2.next=n3; n3.prev=n2; n3.next=n4; n4.prev=n3; n4.next=n5; n5.prev=n4; n5.next=n6; n6.prev=n5;
-        ListNode head = new Solution().valuePartition(n1, 3);
-        for (ListNode c=head;c!=null;c=c.next) System.out.print(c.val+" ");
-        // 1 2 2 4 3 5
+        // Examples from the problem statement
+        System.out.println(toList(new Solution().valuePartition(fromList(1, 4, 3, 2, 5, 2), 3)));  // [1, 2, 2, 4, 3, 5]
+        System.out.println(toList(new Solution().valuePartition(fromList(2, 1), 2)));               // [1, 2]
+
+        // Edge cases
+        System.out.println(toList(new Solution().valuePartition(fromList(1), 5)));                  // [1]
+        System.out.println(toList(new Solution().valuePartition(fromList(5, 6, 7), 3)));            // [5, 6, 7]
+        System.out.println(toList(new Solution().valuePartition(fromList(1, 2, 3), 10)));           // [1, 2, 3]
+        System.out.println(toList(new Solution().valuePartition(fromList(3, 1, 4, 1, 5, 9), 4)));   // [3, 1, 1, 4, 5, 9]
+        System.out.println(toList(new Solution().valuePartition(fromList(1, 2, 3, 4, 5), 3)));      // [1, 2, 3, 4, 5]
+        System.out.println(toList(new Solution().valuePartition(fromList(5, 4, 3, 2, 1), 3)));      // [2, 1, 5, 4, 3]
     }
-}
-```
-
-```c run
-ListNode* valuePartition(ListNode *head, int X) {
-    if (!head || !head->next) return head;
-    ListNode lessDummy = {0,NULL,NULL}, greaterDummy = {0,NULL,NULL};
-    ListNode *lessTail = &lessDummy, *greaterTail = &greaterDummy;
-    for (ListNode *c = head; c; ) {
-        ListNode *nxt = c->next;
-        if (c->val < X) { lessTail->next = c;    c->prev = lessTail;    lessTail    = c; }
-        else             { greaterTail->next = c; c->prev = greaterTail; greaterTail = c; }
-        c = nxt;
-    }
-    if (lessDummy.next)    lessDummy.next->prev    = NULL; lessTail->next    = NULL;
-    if (greaterDummy.next) greaterDummy.next->prev = NULL; greaterTail->next = NULL;
-
-    ListNode *lh = lessDummy.next, *gh = greaterDummy.next;
-    if (!lh) return gh;
-    if (!gh) return lh;
-    ListNode *c = lh;
-    while (c->next) c = c->next;
-    c->next   = gh;
-    gh->prev  = c;
-    return lh;
-}
-```
-
-```scala run
-class ListNode(var v: Int, var prev: ListNode = null, var next: ListNode = null)
-
-object Main extends App {
-  class Solution {
-    def valuePartition(head: ListNode, X: Int): ListNode = {
-      if (head == null || head.next == null) return head
-      val lessDummy    = new ListNode(0); var lessTail: ListNode    = lessDummy
-      val greaterDummy = new ListNode(0); var greaterTail: ListNode = greaterDummy
-      var c = head
-      while (c != null) {
-        val nxt = c.next
-        if (c.v < X) { lessTail.next = c; c.prev = lessTail; lessTail = c }
-        else          { greaterTail.next = c; c.prev = greaterTail; greaterTail = c }
-        c = nxt
-      }
-      if (lessDummy.next    != null) lessDummy.next.prev    = null; lessTail.next    = null
-      if (greaterDummy.next != null) greaterDummy.next.prev = null; greaterTail.next = null
-
-      val lh = lessDummy.next; val gh = greaterDummy.next
-      if (lh == null) return gh
-      if (gh == null) return lh
-      var t = lh
-      while (t.next != null) t = t.next
-      t.next  = gh
-      gh.prev = t
-      lh
-    }
-  }
-
-  val n1 = new ListNode(1); val n2 = new ListNode(4); val n3 = new ListNode(3); val n4 = new ListNode(2); val n5 = new ListNode(5); val n6 = new ListNode(2)
-  n1.next = n2; n2.prev = n1; n2.next = n3; n3.prev = n2; n3.next = n4; n4.prev = n3; n4.next = n5; n5.prev = n4; n5.next = n6; n6.prev = n5
-  var head = new Solution().valuePartition(n1, 3)
-  while (head != null) { print(s"${head.v} "); head = head.next }  // 1 2 2 4 3 5
 }
 ```
 
@@ -1543,29 +1904,29 @@ object Main extends App {
 <summary><strong>Trace — head = [1, 4, 3, 2, 5, 2], X = 3</strong></summary>
 
 ```
-Split:
-  Step 1 │ val=1, 1 < 3 │ less:    1
-  Step 2 │ val=4, 4 ≥ 3 │ greater: 4
-  Step 3 │ val=3, 3 ≥ 3 │ greater: 4 ⇄ 3
-  Step 4 │ val=2, 2 < 3 │ less:    1 ⇄ 2
-  Step 5 │ val=5, 5 ≥ 3 │ greater: 4 ⇄ 3 ⇄ 5
-  Step 6 │ val=2, 2 < 3 │ less:    1 ⇄ 2 ⇄ 2
+Split (split_list_by_value) — each append wires tail.next AND current.prev:
+  Step 1 │ val=1, 1 < 3 │ less_tail.next=1,    1.prev=less_tail    │ less:    1
+  Step 2 │ val=4, 4 ≥ 3 │ greater_tail.next=4, 4.prev=greater_tail │ greater: 4
+  Step 3 │ val=3, 3 ≥ 3 │ greater_tail.next=3, 3.prev=greater_tail │ greater: 4 ⇄ 3
+  Step 4 │ val=2, 2 < 3 │ less_tail.next=2,    2.prev=less_tail    │ less:    1 ⇄ 2
+  Step 5 │ val=5, 5 ≥ 3 │ greater_tail.next=5, 5.prev=greater_tail │ greater: 4 ⇄ 3 ⇄ 5
+  Step 6 │ val=2, 2 < 3 │ less_tail.next=2,    2.prev=less_tail    │ less:    1 ⇄ 2 ⇄ 2
 
-Concat:
-  walk less to 2 (last). 2.next = 4. 4.prev = 2.
+Concat (merge_less_and_greater_lists — wire both directions):
+  walk less to 2 (last). 2.next = 4;  4.prev = 2.
 Result: [1, 2, 2, 4, 3, 5] ✓
 ```
 
 </details>
 
-## Complexity Analysis
+### Complexity Analysis
 
 | Metric | Cost | Why |
 |---|---|---|
 | Time  | **O(N)** | One split pass + one walk for the join. |
 | Space | **O(1)** | Two dummies, no allocations. |
 
-## Edge Cases
+### Edge Cases
 
 | Case | Example | Expected | Reasoning |
 |---|---|---|---|
@@ -1573,6 +1934,8 @@ Result: [1, 2, 2, 4, 3, 5] ✓
 | All `≥ X` | `[5,7], X=3` | `[5,7]` | Less list empty; return greater list directly. |
 | `X` not present | `[1,4], X=3` | `[1,4]` | Already partitioned — output equals input. |
 | Duplicates of `X` | `[1,3,3,2], X=3` | `[1,2,3,3]` | The two 3's go to greater (since `≥`), order preserved. |
+
+</details>
 
 ***
 
@@ -1594,7 +1957,9 @@ Example 2
   Reason: Same pattern; the middle (3) lands alone at the end.
 ```
 
-## What Makes Shuffle Tricky?
+<details>
+<summary><h2>What Makes Shuffle Tricky?</h2></summary>
+
 
 The output interleaves the **first half** with the **reversed second half**. That's the whole insight — and it's the moment three primitives stack: find the middle, reverse the right half, alternate-merge.
 
@@ -1620,7 +1985,10 @@ flowchart TB
 
 <p align="center"><strong>Shuffle = three primitives stacked. Each is something you've already mastered; the algorithm is the choreography of stacking them in order.</strong></p>
 
-## Strategy
+</details>
+<details>
+<summary><h2>Strategy</h2></summary>
+
 
 This is the *boss fight* of the lesson. The reorder skeleton handles split (via fast/slow) and merge (alternate selector). What's new is the **reverse** in the middle — a primitive from the reversal lesson, where DLL reversal is gloriously short: just `swap(prev, next)` on every node.
 
@@ -1635,303 +2003,357 @@ This is the *boss fight* of the lesson. The reorder skeleton handles split (via 
 
 (Answer: with even length `n=4`, after the fast/slow walk `slow` ends on index `n/2 = 2`, which is the first node of the second half — split there. With odd length `n=5`, `slow` ends on the dead-centre middle (index `2`), which we want to **keep in the first half** so the lone middle ends up last in the shuffled output; the second half therefore starts at `slow.next`.)
 
-## The Solution
+</details>
+<details>
+<summary><h2>Solution &amp; Analysis</h2></summary>
 
-
-```pseudocode
-function reverse(head):
-    current ← head; previous ← null
-    while current ≠ null:
-        nxt ← current.next
-        swap current.next and current.prev
-        previous ← current; current ← nxt
-    return previous
-
-function split_list_in_half(head):
-    slow ← head; fast ← head
-    while fast ≠ null AND fast.next ≠ null:
-        slow ← slow.next; fast ← fast.next.next
-    if fast = null:                      # even length: split AT slow
-        second_half ← slow
-        slow.prev.next ← null; slow.prev ← null
-    else:                                # odd length: split AFTER slow
-        second_half ← slow.next
-        slow.next.prev ← null; slow.next ← null
-    return [head, second_half]
-
-function merge_alternate_nodes(first_half, second_half):
-    dummy ← new node; tail ← dummy; take_first ← true
-    while first_half ≠ null AND second_half ≠ null:
-        if take_first:
-            tail.next ← first_half; first_half.prev ← tail; first_half ← first_half.next
-        else:
-            tail.next ← second_half; second_half.prev ← tail; second_half ← second_half.next
-        tail ← tail.next; take_first ← NOT take_first
-    if first_half ≠ null: tail.next ← first_half; first_half.prev ← tail
-    if second_half ≠ null: tail.next ← second_half; second_half.prev ← tail
-    if dummy.next ≠ null: dummy.next.prev ← null
-    return dummy.next
-
-function shuffle_list(head):
-    if head = null OR head.next = null: return
-    first_half, second_half ← split_list_in_half(head)
-    reversed_second ← reverse(second_half)
-    merge_alternate_nodes(first_half, reversed_second)
-```
+### The Solution
 
 ```python run
-"""
-Definition for doubly-linked list.
-class ListNode:
-    def __init__(self, val):
-        self.val  = val
-        self.prev = None
-        self.next = None
-"""
 from typing import Optional, List
 
-class Solution:
-    def reverse(self, head: Optional['ListNode']) -> Optional['ListNode']:
-        # DLL reversal: swap prev/next on every node — that single swap
-        # flips the direction without needing a temporary `previous`
-        # pointer the way singly lists do.
-        current  = head
-        previous = None
-        while current is not None:
-            nxt = current.next
-            current.next, current.prev = current.prev, current.next  # swap pointers
-            previous = current
-            current  = nxt                                            # advance using saved next
-        return previous                                               # old tail = new head
+class ListNode:
+    def __init__(self, val=0, prev=None, nxt=None):
+        self.val = val
+        self.prev = prev
+        self.next = nxt
 
-    def split_list_in_half(self, head: 'ListNode') -> List[Optional['ListNode']]:
-        # Fast/slow pointer to find the middle
-        slow, fast = head, head
+
+def from_list(values):
+    if not values:
+        return None
+    head = ListNode(values[0])
+    cur = head
+    for v in values[1:]:
+        node = ListNode(v, prev=cur)
+        cur.next = node
+        cur = node
+    return head
+
+
+def to_list(head):
+    out = []
+    while head is not None:
+        out.append(head.val)
+        head = head.next
+    return out
+
+
+class Solution:
+    def reverse(self, head: Optional[ListNode]) -> Optional[ListNode]:
+        current = head
+        previous = None
+
+        while current is not None:
+            next_node = current.next
+            current.prev, current.next = current.next, current.prev
+            previous = current
+            current = next_node
+        return previous
+
+    def split_list_in_half(
+        self, head: Optional[ListNode]
+    ) -> List[Optional[ListNode]]:
+
+        # Initialize slow and fast pointers to find the middle of the
+        # list
+        slow = head
+        fast = head
+
+        # Move slow by one and fast by two nodes until fast reaches the
+        # end
         while fast is not None and fast.next is not None:
             slow = slow.next
             fast = fast.next.next
-        # After loop:
-        #   even length → fast == None,  slow = first node of right half
-        #   odd  length → fast != None,  slow = exact middle (keep with left)
+
+        second_half: Optional[ListNode] = None
+
+        # Split for even length list
         if fast is None:
-            second_half = slow                                        # split AT slow
-            slow.prev.next = None                                     # cut forward link
-            slow.prev      = None                                     # cut mirror
+            second_half = slow
+            slow.prev.next = None
+            slow.prev = None
+
+        # Split for odd length list
         else:
-            second_half = slow.next                                   # split AFTER slow
+            second_half = slow.next
             slow.next.prev = None
-            slow.next      = None
+            slow.next = None
+
         return [head, second_half]
 
-    def merge_alternate_nodes(self, first_half, second_half):
-        dummy = ListNode(0); tail = dummy
-        merge_first = True                                            # toggle: take from A, then B, then A, …
+    def merge_alternate_nodes(
+        self,
+        first_half: Optional[ListNode],
+        second_half: Optional[ListNode],
+    ) -> Optional[ListNode]:
+
+        # Create a dummy node to form the merged list
+        dummy = ListNode(0)
+        tail = dummy
+
+        # Boolean to switch between nodes from each list
+        merge_first = True
+
+        # Alternate between the nodes of each list
         while first_half is not None and second_half is not None:
             if merge_first:
-                tail.next        = first_half
-                first_half.prev  = tail                               # mirror
-                first_half       = first_half.next
+                tail.next = first_half
+                first_half.prev = tail
+                first_half = first_half.next
+                tail = tail.next
             else:
-                tail.next        = second_half
-                second_half.prev = tail                               # mirror
-                second_half      = second_half.next
-            tail = tail.next
+                tail.next = second_half
+                second_half.prev = tail
+                second_half = second_half.next
+                tail = tail.next
+
             merge_first = not merge_first
-        # Drain whichever side has leftovers (will be the longer half)
+
+        # Append any remaining nodes from first_half or second_half
         if first_half is not None:
-            tail.next       = first_half
+            tail.next = first_half
             first_half.prev = tail
         elif second_half is not None:
-            tail.next        = second_half
+            tail.next = second_half
             second_half.prev = tail
-        # Detach the dummy: null out the new head's prev
-        if dummy.next is not None:
-            dummy.next.prev = None
+
+        # Disconnect the dummy node from the merged list
+        dummy.next.prev = None
         return dummy.next
 
-    def shuffle_list(self, head: Optional['ListNode']) -> None:
-        # In-place; nothing to do for 0 or 1 nodes
+    def shuffle_list(self, head: Optional[ListNode]) -> None:
+
+        # No need to reorder if the list is empty or has only one element
         if head is None or head.next is None:
             return
-        first_half, second_half = self.split_list_in_half(head)
-        reversed_second_half    = self.reverse(second_half)
+
+        # Split the list in two halves
+        heads = self.split_list_in_half(head)
+        first_half = heads[0]
+        second_half = heads[1]
+
+        # Reverse the second half of the list
+        reversed_second_half = self.reverse(second_half)
+
+        # Alternatively merge the first list and the reversed second list
         self.merge_alternate_nodes(first_half, reversed_second_half)
+
+
+# Examples from the problem statement
+head = from_list([1, 2, 3, 4])
+sol = Solution()
+sol.shuffle_list(head)
+print(to_list(sol.merge_alternate_nodes(
+    sol.split_list_in_half(from_list([1, 2, 3, 4]))[0],
+    sol.reverse(sol.split_list_in_half(from_list([1, 2, 3, 4]))[1])
+)))                                                              # [1, 4, 2, 3]
+
+head = from_list([1, 2, 3, 4, 5])
+sol = Solution()
+halves = sol.split_list_in_half(head)
+rev2 = sol.reverse(halves[1])
+print(to_list(sol.merge_alternate_nodes(halves[0], rev2)))      # [1, 5, 2, 4, 3]
+
+# Edge cases
+head = from_list([1])
+sol = Solution()
+sol.shuffle_list(head)
+print(to_list(head))                                             # [1]
+
+head = from_list([1, 2])
+sol = Solution()
+halves = sol.split_list_in_half(head)
+rev2 = sol.reverse(halves[1])
+print(to_list(sol.merge_alternate_nodes(halves[0], rev2)))      # [1, 2]
+
+head = from_list([1, 2, 3])
+sol = Solution()
+halves = sol.split_list_in_half(head)
+rev2 = sol.reverse(halves[1])
+print(to_list(sol.merge_alternate_nodes(halves[0], rev2)))      # [1, 3, 2]
+
+head = from_list([1, 2, 3, 4, 5, 6])
+sol = Solution()
+halves = sol.split_list_in_half(head)
+rev2 = sol.reverse(halves[1])
+print(to_list(sol.merge_alternate_nodes(halves[0], rev2)))      # [1, 6, 2, 5, 3, 4]
+
+head = from_list([1, 2, 3, 4, 5, 6, 7])
+sol = Solution()
+halves = sol.split_list_in_half(head)
+rev2 = sol.reverse(halves[1])
+print(to_list(sol.merge_alternate_nodes(halves[0], rev2)))      # [1, 7, 2, 6, 3, 5, 4]
 ```
 
 ```java run
+import java.util.*;
+
 public class Main {
-    static class ListNode { int val; ListNode prev, next; ListNode(int v){val=v;} }
+    static class ListNode {
+        int val;
+        ListNode prev;
+        ListNode next;
+        ListNode() {}
+        ListNode(int val) { this.val = val; }
+    }
+
+    static ListNode fromList(int... values) {
+        if (values.length == 0) return null;
+        ListNode head = new ListNode(values[0]);
+        ListNode cur = head;
+        for (int i = 1; i < values.length; i++) {
+            ListNode node = new ListNode(values[i]);
+            node.prev = cur;
+            cur.next = node;
+            cur = node;
+        }
+        return head;
+    }
+
+    static java.util.List<Integer> toList(ListNode head) {
+        java.util.List<Integer> out = new java.util.ArrayList<>();
+        while (head != null) { out.add(head.val); head = head.next; }
+        return out;
+    }
 
     static class Solution {
-        public ListNode reverse(ListNode head) {
-            ListNode current = head, previous = null;
+        private ListNode reverse(ListNode head) {
+            ListNode current = head;
+            ListNode previous = null;
+
             while (current != null) {
-                ListNode nxt = current.next;
-                ListNode tmp = current.prev; current.prev = current.next; current.next = tmp; // swap
+                ListNode next = current.next;
+                ListNode temp = current.prev;
+                current.prev = current.next;
+                current.next = temp;
                 previous = current;
-                current  = nxt;
+                current = next;
             }
+
             return previous;
         }
 
-        public ListNode[] splitListInHalf(ListNode head) {
-            ListNode slow = head, fast = head;
-            while (fast != null && fast.next != null) { slow = slow.next; fast = fast.next.next; }
-            ListNode secondHalf;
-            if (fast == null) {                           // even length
-                secondHalf      = slow;
-                slow.prev.next  = null;
-                slow.prev       = null;
-            } else {                                       // odd length
-                secondHalf      = slow.next;
-                slow.next.prev  = null;
-                slow.next       = null;
+        private List<ListNode> splitListInHalf(ListNode head) {
+
+            // Initialize slow and fast pointers to find the middle of the
+            // list
+            ListNode slow = head;
+            ListNode fast = head;
+
+            // Move slow by one and fast by two nodes until fast reaches the
+            // end
+            while (fast != null && fast.next != null) {
+                slow = slow.next;
+                fast = fast.next.next;
             }
-            return new ListNode[]{head, secondHalf};
+
+            ListNode secondHalf;
+
+            // Split for even length list
+            if (fast == null) {
+                secondHalf = slow;
+                slow.prev.next = null;
+                slow.prev = null;
+            }
+
+            // Split for odd length list
+            else {
+                secondHalf = slow.next;
+                slow.next.prev = null;
+                slow.next = null;
+            }
+
+            // Return both halves
+            List<ListNode> result = new ArrayList<>();
+            result.add(head);
+            result.add(secondHalf);
+            return result;
         }
 
-        public ListNode mergeAlternateNodes(ListNode firstHalf, ListNode secondHalf) {
-            ListNode dummy = new ListNode(0), tail = dummy;
+        private ListNode mergeAlternateNodes(
+            ListNode firstHalf,
+            ListNode secondHalf
+        ) {
+
+            // Create a dummy node to form the merged list
+            ListNode dummy = new ListNode(0);
+            ListNode tail = dummy;
             boolean mergeFirst = true;
+
+            // Alternate between the nodes of each list
             while (firstHalf != null && secondHalf != null) {
                 if (mergeFirst) {
-                    tail.next       = firstHalf;
-                    firstHalf.prev  = tail;
-                    firstHalf       = firstHalf.next;
+                    tail.next = firstHalf;
+                    firstHalf.prev = tail;
+                    firstHalf = firstHalf.next;
+                    tail = tail.next;
                 } else {
-                    tail.next        = secondHalf;
-                    secondHalf.prev  = tail;
-                    secondHalf       = secondHalf.next;
+                    tail.next = secondHalf;
+                    secondHalf.prev = tail;
+                    secondHalf = secondHalf.next;
+                    tail = tail.next;
                 }
-                tail = tail.next;
+
                 mergeFirst = !mergeFirst;
             }
-            if (firstHalf  != null) { tail.next = firstHalf;  firstHalf.prev  = tail; }
-            if (secondHalf != null) { tail.next = secondHalf; secondHalf.prev = tail; }
-            if (dummy.next != null) dummy.next.prev = null;
+
+            // Append any remaining nodes from firstHalf or secondHalf
+            if (firstHalf != null) {
+                tail.next = firstHalf;
+                firstHalf.prev = tail;
+            } else if (secondHalf != null) {
+                tail.next = secondHalf;
+                secondHalf.prev = tail;
+            }
+
+            // Disconnect the dummy node from the merged list
+            dummy.next.prev = null;
             return dummy.next;
         }
 
         public void shuffleList(ListNode head) {
-            if (head == null || head.next == null) return;
-            ListNode[] halves = splitListInHalf(head);
-            ListNode reversedSecondHalf = reverse(halves[1]);
-            mergeAlternateNodes(halves[0], reversedSecondHalf);
+
+            // No need to reorder if the list is empty or has only one
+            // element
+            if (head == null || head.next == null) {
+                return;
+            }
+
+            // Split the list in two halves
+            List<ListNode> heads = splitListInHalf(head);
+            ListNode firstHalf = heads.get(0);
+            ListNode secondHalf = heads.get(1);
+
+            // Reverse the second half of the list
+            ListNode reversedSecondHalf = reverse(secondHalf);
+
+            // Alternatively merge the first list and the reversed second
+            // list
+            mergeAlternateNodes(firstHalf, reversedSecondHalf);
+        }
+
+        // Convenience wrapper that returns the reordered head
+        public ListNode shuffleAndReturn(ListNode head) {
+            if (head == null || head.next == null) return head;
+            List<ListNode> halves = splitListInHalf(head);
+            ListNode rev2 = reverse(halves.get(1));
+            return mergeAlternateNodes(halves.get(0), rev2);
         }
     }
 
     public static void main(String[] args) {
-        ListNode n1=new ListNode(1),n2=new ListNode(2),n3=new ListNode(3),n4=new ListNode(4);
-        n1.next=n2; n2.prev=n1; n2.next=n3; n3.prev=n2; n3.next=n4; n4.prev=n3;
-        new Solution().shuffleList(n1);
-        for (ListNode c=n1;c!=null;c=c.next) System.out.print(c.val+" ");
-        // 1 4 2 3
+        // Examples from the problem statement
+        System.out.println(toList(new Solution().shuffleAndReturn(fromList(1, 2, 3, 4))));      // [1, 4, 2, 3]
+        System.out.println(toList(new Solution().shuffleAndReturn(fromList(1, 2, 3, 4, 5))));   // [1, 5, 2, 4, 3]
+
+        // Edge cases
+        System.out.println(toList(new Solution().shuffleAndReturn(fromList(1))));               // [1]
+        System.out.println(toList(new Solution().shuffleAndReturn(fromList(1, 2))));            // [1, 2]
+        System.out.println(toList(new Solution().shuffleAndReturn(fromList(1, 2, 3))));         // [1, 3, 2]
+        System.out.println(toList(new Solution().shuffleAndReturn(fromList(1, 2, 3, 4, 5, 6)))); // [1, 6, 2, 5, 3, 4]
+        System.out.println(toList(new Solution().shuffleAndReturn(fromList(1, 2, 3, 4, 5, 6, 7)))); // [1, 7, 2, 6, 3, 5, 4]
     }
-}
-```
-
-```c run
-static ListNode* reverse(ListNode *head) {
-    ListNode *current = head, *previous = NULL;
-    while (current) {
-        ListNode *nxt = current->next;
-        ListNode *tmp = current->prev; current->prev = current->next; current->next = tmp;
-        previous = current; current = nxt;
-    }
-    return previous;
-}
-
-static void splitListInHalf(ListNode *head, ListNode **first, ListNode **second) {
-    ListNode *slow = head, *fast = head;
-    while (fast && fast->next) { slow = slow->next; fast = fast->next->next; }
-    if (!fast) {
-        *second = slow;
-        slow->prev->next = NULL;
-        slow->prev       = NULL;
-    } else {
-        *second = slow->next;
-        slow->next->prev = NULL;
-        slow->next       = NULL;
-    }
-    *first = head;
-}
-
-static ListNode* mergeAlternateNodes(ListNode *a, ListNode *b) {
-    ListNode dummy = {0,NULL,NULL};
-    ListNode *tail = &dummy;
-    int mergeFirst = 1;
-    while (a && b) {
-        if (mergeFirst) { tail->next = a; a->prev = tail; a = a->next; }
-        else             { tail->next = b; b->prev = tail; b = b->next; }
-        tail = tail->next;
-        mergeFirst = !mergeFirst;
-    }
-    if (a) { tail->next = a; a->prev = tail; }
-    if (b) { tail->next = b; b->prev = tail; }
-    if (dummy.next) dummy.next->prev = NULL;
-    return dummy.next;
-}
-
-void shuffleList(ListNode *head) {
-    if (!head || !head->next) return;
-    ListNode *first, *second;
-    splitListInHalf(head, &first, &second);
-    second = reverse(second);
-    mergeAlternateNodes(first, second);
-}
-```
-
-```scala run
-class ListNode(var v: Int, var prev: ListNode = null, var next: ListNode = null)
-
-object Main extends App {
-  class Solution {
-    def reverse(head: ListNode): ListNode = {
-      var current = head; var previous: ListNode = null
-      while (current != null) {
-        val nxt = current.next
-        val tmp = current.prev; current.prev = current.next; current.next = tmp
-        previous = current; current = nxt
-      }
-      previous
-    }
-
-    def splitListInHalf(head: ListNode): (ListNode, ListNode) = {
-      var slow = head; var fast = head
-      while (fast != null && fast.next != null) { slow = slow.next; fast = fast.next.next }
-      val second: ListNode =
-        if (fast == null) { val s = slow;      slow.prev.next = null; slow.prev = null; s }
-        else               { val s = slow.next; slow.next.prev = null; slow.next = null; s }
-      (head, second)
-    }
-
-    def mergeAlternateNodes(aIn: ListNode, bIn: ListNode): ListNode = {
-      var a = aIn; var b = bIn
-      val dummy = new ListNode(0); var tail: ListNode = dummy
-      var mergeFirst = true
-      while (a != null && b != null) {
-        if (mergeFirst) { tail.next = a; a.prev = tail; a = a.next }
-        else             { tail.next = b; b.prev = tail; b = b.next }
-        tail = tail.next; mergeFirst = !mergeFirst
-      }
-      if (a != null) { tail.next = a; a.prev = tail }
-      if (b != null) { tail.next = b; b.prev = tail }
-      if (dummy.next != null) dummy.next.prev = null
-      dummy.next
-    }
-
-    def shuffleList(head: ListNode): Unit = {
-      if (head == null || head.next == null) return
-      val (first, second) = splitListInHalf(head)
-      val rev = reverse(second)
-      mergeAlternateNodes(first, rev)
-    }
-  }
-
-  val n1 = new ListNode(1); val n2 = new ListNode(2); val n3 = new ListNode(3); val n4 = new ListNode(4)
-  n1.next = n2; n2.prev = n1; n2.next = n3; n3.prev = n2; n3.next = n4; n4.prev = n3
-  new Solution().shuffleList(n1)
-  var c = n1; while (c != null) { print(s"${c.v} "); c = c.next }  // 1 4 2 3
 }
 ```
 
@@ -1941,65 +2363,60 @@ object Main extends App {
 
 ```
 Find middle (fast/slow):
-  Step 1 │ slow=1, fast=1   → advance
-  Step 2 │ slow=2, fast=3   → advance
-  Step 3 │ slow=3, fast=5   → advance (fast.next = null after this)
-  Step 4 │ slow=3, fast=null? No — fast was 5, fast.next is null → STOP.
+  Iter 1 │ fast(1).next=2 not null → slow=2, fast=3
+  Iter 2 │ fast(3).next=4 not null → slow=3, fast=5
+  Iter 3 │ fast(5).next is null   → STOP.
   After loop: slow=3, fast=5 (non-null) → ODD case.
 
 Split (odd path uses slow.next):
-  second = slow.next = 4
-  slow(3).next = null;  4.prev = null
+  second_half = slow.next = node(4)
+  slow.next.prev = None   → node(4).prev = None   (sever the back-edge)
+  slow.next = None        → node(3).next = None   (sever the forward edge)
   first half:  1 ⇄ 2 ⇄ 3
   second half: 4 ⇄ 5
 
-Reverse second half:
-  swap(4.prev, 4.next) → 4 now: prev=5, next=null
-  swap(5.prev, 5.next) → 5 now: prev=null, next=4
+Reverse second half (reverse — swap prev/next on each node):
+  current=4: next_node=5, swap 4 → prev=5, next=None, previous=4, current=5
+  current=5: next_node=None, swap 5 → prev=None, next=4, previous=5, current=None
   reversed: 5 ⇄ 4
 
-Alternate-merge (1⇄2⇄3) and (5⇄4):
-  Step 1 │ take A=1   │ tail=1
-  Step 2 │ take B=5   │ tail=5
-  Step 3 │ take A=2   │ tail=2
-  Step 4 │ take B=4   │ tail=4
-  Step 5 │ B exhausted, drain remainder of A=3 → tail.next=3, 3.prev=4
+Alternate-merge (1⇄2⇄3) and (5⇄4) — each attach wires tail.next AND node.prev:
+  Step 1 │ merge_first → tail.next=A(1), A(1).prev=tail  │ tail=1
+  Step 2 │ else        → tail.next=B(5), B(5).prev=tail  │ tail=5
+  Step 3 │ merge_first → tail.next=A(2), A(2).prev=tail  │ tail=2
+  Step 4 │ else        → tail.next=B(4), B(4).prev=tail  │ tail=4
+  Step 5 │ B exhausted → tail.next=remaining A(3), A(3).prev=tail
 
 Result: [1, 5, 2, 4, 3] ✓
 ```
 
 </details>
-
 <details>
 <summary><strong>Trace — head = [1, 2, 3, 4] (even length)</strong></summary>
 
 ```
 Find middle:
-  Step 1 │ slow=1, fast=1 → advance
-  Step 2 │ slow=2, fast=3 → advance
-  Step 3 │ slow=3, fast=null → STOP. (fast was 3, fast.next=4, so we DID advance:
-           actually let's redo carefully)
-           Iter 1: fast(1).next=2 not null → slow=2, fast=3
-           Iter 2: fast(3).next=4 not null → slow=3, fast=null (since 3→4→null)
-           STOP. fast == null → EVEN case.
+  Iter 1 │ fast(1).next=2 not null → slow=2, fast=3
+  Iter 2 │ fast(3).next=4 not null → slow=3, fast=null (since 3→4→null)
+  STOP. fast == null → EVEN case.
 
-Split (even path uses slow itself):
-  second = slow = 3
-  3.prev.next = null  (so 2.next = null)
-  3.prev      = null
+Split (even path — second half starts at slow itself):
+  second_half = slow = node(3)
+  slow.prev.next = None   → node(2).next = None   (sever the forward edge)
+  slow.prev = None        → node(3).prev = None   (sever the back-edge)
   first half:  1 ⇄ 2
   second half: 3 ⇄ 4
 
-Reverse second half:
-  swap(3.prev, 3.next) → 3: prev=4, next=null
-  swap(4.prev, 4.next) → 4: prev=null, next=3
+Reverse second half (reverse — swap prev/next on each node):
+  current=3: next_node=4, swap 3 → prev=4, next=None, previous=3, current=4
+  current=4: next_node=None, swap 4 → prev=None, next=3, previous=4, current=None
   reversed: 4 ⇄ 3
 
-Alternate-merge (1⇄2) and (4⇄3):
-  Step 1 │ take A=1 │ tail=1
-  Step 2 │ take B=4 │ tail=4
-  Step 3 │ take A=2 │ tail=2
-  Step 4 │ take B=3 │ tail=3
+Alternate-merge (1⇄2) and (4⇄3) — each attach wires tail.next AND node.prev:
+  Step 1 │ merge_first → tail.next=A(1), A(1).prev=tail │ tail=1
+  Step 2 │ else        → tail.next=B(4), B(4).prev=tail │ tail=4
+  Step 3 │ merge_first → tail.next=A(2), A(2).prev=tail │ tail=2
+  Step 4 │ else        → tail.next=B(3), B(3).prev=tail │ tail=3
   Both exhausted.
 
 Result: [1, 4, 2, 3] ✓
@@ -2007,18 +2424,18 @@ Result: [1, 4, 2, 3] ✓
 
 </details>
 
-> *Friction prompt — predict before reading on: what would happen if you forgot the line `if dummy.next is not None: dummy.next.prev = None` at the end of `merge_alternate_nodes`? The forward chain prints fine. What's broken?*
+> *Friction prompt — predict before reading on: in `merge_alternate_nodes`, what would happen if you dropped the two `if first_half / elif second_half` lines that drain the leftover tail? Trace `[1, 2, 3, 4, 5]`.*
 
-(Answer: backward traversal from any node would eventually walk into the throwaway `dummy` node and read garbage `val=0` as if it were part of the real list. Forward iteration, which most printers use, would never notice.)
+(Answer: the alternating `while` loop exits as soon as *either* half runs out. For an odd-length input the first half is one node longer, so node `3` would never be linked in — the result would be the truncated `[1, 5, 2, 4]`. The drain step is what reattaches whichever half still has nodes left.)
 
-## Complexity Analysis
+### Complexity Analysis
 
 | Metric | Cost | Why |
 |---|---|---|
 | Time  | **O(N)** | Find middle = N/2; reverse second half = N/2; merge = N. Sum = O(N). |
 | Space | **O(1)** | All three primitives are in-place; only a fixed number of pointers. |
 
-## Edge Cases
+### Edge Cases
 
 | Case | Example | Expected | Reasoning |
 |---|---|---|---|
@@ -2026,6 +2443,8 @@ Result: [1, 4, 2, 3] ✓
 | Single | `[1]` | `[1]` | `head.next == null` — already shuffled. |
 | Two | `[1,2]` | `[1,2]` | Even split: first=[1], second=[2]. Reverse [2]=[2]. Alternate-merge → [1,2]. |
 | Three | `[1,2,3]` | `[1,3,2]` | Odd split: first=[1,2], second=[3]. Reverse=[3]. Alt-merge → [1,3,2]. |
+
+</details>
 
 ***
 

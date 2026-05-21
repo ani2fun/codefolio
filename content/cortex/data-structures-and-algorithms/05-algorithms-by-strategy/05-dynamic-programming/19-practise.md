@@ -36,7 +36,9 @@ Input:  distance = 1
 Output: 1               (1)
 ```
 
-## The Recurrence
+<details>
+<summary><h2>The Recurrence</h2></summary>
+
 
 `dp[i]` = ways to reach distance `i`. The last step is 1, 2, or 3 — sum the ways from each predecessor:
 ```
@@ -44,97 +46,126 @@ dp[i] = dp[i - 1] + dp[i - 2] + dp[i - 3]
 ```
 With `dp[0] = 1` (one way to "stand still") and missing predecessors treated as 0. (Note this is a Tribonacci-flavoured recurrence — same shape as Fibonacci with one extra step.)
 
-## The Solution
+</details>
+<details>
+<summary><h2>The Solution</h2></summary>
 
 
-```pseudocode
-# Number of ways to cover `distance` taking steps of 1, 2, or 3.
-function coveringDistance(distance):
-    dp ← list of (distance + 1) zeros
-    dp[0] ← 1                                     # one way to stand still — empty path
-    for i from 1 to distance:
-        dp[i] ← dp[i − 1]
-        if i ≥ 2: dp[i] ← dp[i] + dp[i − 2]
-        if i ≥ 3: dp[i] ← dp[i] + dp[i − 3]
-    return dp[distance]
-```
 
 ```python run
+from typing import List
+
 class Solution:
     def covering_distance(self, distance: int) -> int:
-        dp = [0] * (distance + 1)
-        dp[0] = 1                              # One way to stand still — the empty path
+
+        # Create a list to store the number of ways to reach each
+        # distance
+        dp: List[int] = [0] * (distance + 1)
+
+        # There is only one way to reach distance 0, which is to not move
+        dp[0] = 1
+
+        # Iterate through each distance from 1 to 'dist'
         for i in range(1, distance + 1):
+
+            # The number of ways to reach the current distance is
+            # initially the same as the number of ways to reach the
+            # previous distance
             dp[i] = dp[i - 1]
-            if i >= 2: dp[i] += dp[i - 2]
-            if i >= 3: dp[i] += dp[i - 3]
+
+            # Check if it is possible to take a step of 2 units
+            if i >= 2:
+
+                # If it is possible, add the number of ways to reach the
+                # distance 'i - 2' to the current number of ways
+                dp[i] += dp[i - 2]
+
+            # Check if it is possible to take a step of 3 units
+            if i >= 3:
+
+                # If it is possible, add the number of ways to reach the
+                # distance 'i - 3' to the current number of ways
+                dp[i] += dp[i - 3]
+
+        # The final element of the 'dp' list will contain the total
+        # number of ways to reach the given distance 'dist'
         return dp[distance]
 
 
-if __name__ == "__main__":
-    print(Solution().covering_distance(3))   # 4
-    print(Solution().covering_distance(5))   # 13
+# Examples from the problem statement
+print(Solution().covering_distance(3))   # 4
+print(Solution().covering_distance(2))   # 2
+print(Solution().covering_distance(1))   # 1
+
+# Edge cases
+print(Solution().covering_distance(4))   # 7
+print(Solution().covering_distance(5))   # 13
+print(Solution().covering_distance(6))   # 24
+print(Solution().covering_distance(10))  # 274
 ```
 
 ```java run
+import java.util.*;
+
 public class Main {
     static class Solution {
         public int coveringDistance(int distance) {
+
+            // Create an array to store the number of ways to reach each
+            // distance
             int[] dp = new int[distance + 1];
+
+            // There is only one way to reach distance 0, which is to not
+            // move
             dp[0] = 1;
+
+            // Iterate through each distance from 1 to 'dist'
             for (int i = 1; i <= distance; i++) {
+
+                // The number of ways to reach the current distance is
+                // initially the same as the number of ways to reach the
+                // previous distance
                 dp[i] = dp[i - 1];
-                if (i >= 2) dp[i] += dp[i - 2];
-                if (i >= 3) dp[i] += dp[i - 3];
+
+                // Check if it is possible to take a step of 2 units
+                if (i >= 2) {
+
+                    // If it is possible, add the number of ways to reach the
+                    // distance 'i - 2' to the current number of ways
+                    dp[i] += dp[i - 2];
+                }
+
+                // Check if it is possible to take a step of 3 units
+                if (i >= 3) {
+
+                    // If it is possible, add the number of ways to reach the
+                    // distance 'i - 3' to the current number of ways
+                    dp[i] += dp[i - 3];
+                }
             }
+
+            // The final element of the 'dp' array will contain the total
+            // number of ways to reach the given distance 'dist'
             return dp[distance];
         }
     }
 
     public static void main(String[] args) {
+        // Examples from the problem statement
         System.out.println(new Solution().coveringDistance(3));   // 4
+        System.out.println(new Solution().coveringDistance(2));   // 2
+        System.out.println(new Solution().coveringDistance(1));   // 1
+
+        // Edge cases
+        System.out.println(new Solution().coveringDistance(4));   // 7
+        System.out.println(new Solution().coveringDistance(5));   // 13
+        System.out.println(new Solution().coveringDistance(6));   // 24
+        System.out.println(new Solution().coveringDistance(10));  // 274
     }
 }
 ```
 
-```c run
-#include <stdio.h>
-
-int covering_distance(int distance) {
-    int dp[1001] = {0};
-    dp[0] = 1;
-    for (int i = 1; i <= distance; i++) {
-        dp[i] = dp[i - 1];
-        if (i >= 2) dp[i] += dp[i - 2];
-        if (i >= 3) dp[i] += dp[i - 3];
-    }
-    return dp[distance];
-}
-
-int main(void) {
-    printf("%d\n", covering_distance(3));    /* 4 */
-    return 0;
-}
-```
-
-```scala run
-object Main extends App {
-  class Solution {
-    def coveringDistance(distance: Int): Int = {
-      val dp = Array.fill(distance + 1)(0)
-      dp(0) = 1
-      for (i <- 1 to distance) {
-        dp(i) = dp(i - 1)
-        if (i >= 2) dp(i) += dp(i - 2)
-        if (i >= 3) dp(i) += dp(i - 3)
-      }
-      dp(distance)
-    }
-  }
-
-  println(new Solution().coveringDistance(3))   // 4
-}
-```
+</details>
 
 
 ***
@@ -158,121 +189,119 @@ Input:  arr = [2, 0, 0, 1]
 Output: false              Stuck at index 1 with arr[1] = 0
 ```
 
-## The Recurrence
+<details>
+<summary><h2>The Recurrence</h2></summary>
+
 
 `dp[i]` = whether the end is reachable from index `i`. Working backward, `dp[n - 1] = true`. For `i < n - 1`, `dp[i] = OR over j ∈ [i+1, i + arr[i]] of dp[j]`.
 
 (There's a slick O(n) greedy alternative — track the farthest reachable index — but the DP form generalises better.)
 
-## The Solution
+</details>
+<details>
+<summary><h2>The Solution</h2></summary>
 
 
-```pseudocode
-# Jump-game variant. dp[i] = true iff we can reach the last index from index i.
-# Walk right-to-left so dp[j] for j > i is already known.
-function reachabilityCheck(arr):
-    n ← length(arr)
-    dp ← list of n false values
-    dp[n − 1] ← true                              # last index trivially reaches itself
-    for i from n − 2 down to 0:
-        maxJump ← min(i + arr[i], n − 1)
-        for j from i + 1 to maxJump:
-            if dp[j]:
-                dp[i] ← true
-                break                              # any reachable target suffices
-    return dp[0]
-```
 
 ```python run
 from typing import List
 
 class Solution:
     def reachability_check(self, arr: List[int]) -> bool:
-        n = len(arr)
-        dp = [False] * n
-        dp[n - 1] = True                           # The last index trivially reaches itself
+        n: int = len(arr)
+        dp: List[bool] = [False] * n
+        dp[n - 1] = True
+
+        # Starting from the second-to-last element and moving towards the
+        # first element
         for i in range(n - 2, -1, -1):
-            max_jump = min(i + arr[i], n - 1)
+
+            # Determine the maximum index we can jump to from the current
+            # position
+            max_jump: int = min(i + arr[i], n - 1)
+
+            # Check all possible indices we can reach from the current
+            # position
             for j in range(i + 1, max_jump + 1):
+
+                # If we can reach an index that is marked as true in dp,
+                # set dp[i] to true
                 if dp[j]:
                     dp[i] = True
                     break
+
+        # Return whether we can reach the first element (index 0)
+        # starting from the last element
         return dp[0]
 
 
-if __name__ == "__main__":
-    print(Solution().reachability_check([1, 5, 8, 9]))   # True
-    print(Solution().reachability_check([2, 0, 0, 1]))   # False
+# Examples from the problem statement
+print(Solution().reachability_check([1, 5, 8, 9]))  # True
+print(Solution().reachability_check([2, 0, 1, 1]))  # True
+print(Solution().reachability_check([2, 0, 0, 1]))  # False
+
+# Edge cases
+print(Solution().reachability_check([0]))            # True  — single element, already at last
+print(Solution().reachability_check([1, 0]))         # True  — two elements, jump 1
+print(Solution().reachability_check([0, 1]))         # False — stuck at 0
+print(Solution().reachability_check([3, 0, 0, 0]))   # True  — jump over zeros
+print(Solution().reachability_check([1, 1, 1, 1]))   # True  — chain of 1-steps
 ```
 
 ```java run
+import java.util.*;
+
 public class Main {
     static class Solution {
         public boolean reachabilityCheck(int[] arr) {
             int n = arr.length;
             boolean[] dp = new boolean[n];
             dp[n - 1] = true;
+
+            // Starting from the second-to-last element and moving towards
+            // the first element
             for (int i = n - 2; i >= 0; i--) {
+
+                // Determine the maximum index we can jump to from the
+                // current position
                 int maxJump = Math.min(i + arr[i], n - 1);
+
+                // Check all possible indices we can reach from the current
+                // position
                 for (int j = i + 1; j <= maxJump; j++) {
-                    if (dp[j]) { dp[i] = true; break; }
+
+                    // If we can reach an index that is marked as true in dp,
+                    // set dp[i] to true
+                    if (dp[j]) {
+                        dp[i] = true;
+                        break;
+                    }
                 }
             }
+
+            // Return whether we can reach the first element (index 0)
+            // starting from the last element
             return dp[0];
         }
     }
 
     public static void main(String[] args) {
-        System.out.println(new Solution().reachabilityCheck(new int[]{1, 5, 8, 9}));   // true
+        // Examples from the problem statement
+        System.out.println(new Solution().reachabilityCheck(new int[]{1, 5, 8, 9}));  // true
+        System.out.println(new Solution().reachabilityCheck(new int[]{2, 0, 1, 1}));  // true
+        System.out.println(new Solution().reachabilityCheck(new int[]{2, 0, 0, 1}));  // false
+
+        // Edge cases
+        System.out.println(new Solution().reachabilityCheck(new int[]{0}));            // true
+        System.out.println(new Solution().reachabilityCheck(new int[]{1, 0}));         // true
+        System.out.println(new Solution().reachabilityCheck(new int[]{0, 1}));         // false
+        System.out.println(new Solution().reachabilityCheck(new int[]{3, 0, 0, 0}));   // true
+        System.out.println(new Solution().reachabilityCheck(new int[]{1, 1, 1, 1}));   // true
     }
 }
 ```
 
-```c run
-#include <stdio.h>
-#include <stdbool.h>
-
-bool reachability_check(const int *arr, int n) {
-    bool dp[1001] = {false};
-    dp[n - 1] = true;
-    for (int i = n - 2; i >= 0; i--) {
-        int max_jump = i + arr[i] < n - 1 ? i + arr[i] : n - 1;
-        for (int j = i + 1; j <= max_jump; j++) {
-            if (dp[j]) { dp[i] = true; break; }
-        }
-    }
-    return dp[0];
-}
-
-int main(void) {
-    int a[] = {1, 5, 8, 9};
-    printf("%d\n", reachability_check(a, 4));    /* 1 */
-    return 0;
-}
-```
-
-```scala run
-object Main extends App {
-  class Solution {
-    def reachabilityCheck(arr: Array[Int]): Boolean = {
-      val n = arr.length
-      val dp = Array.fill(n)(false)
-      dp(n - 1) = true
-      for (i <- n - 2 to 0 by -1) {
-        val maxJump = math.min(i + arr(i), n - 1)
-        var j = i + 1
-        while (j <= maxJump && !dp(i)) {
-          if (dp(j)) dp(i) = true
-          j += 1
-        }
-      }
-      dp(0)
-    }
-  }
-
-  println(new Solution().reachabilityCheck(Array(1, 5, 8, 9)))   // true
-}
-```
+</details>
 
 
 ***
@@ -296,123 +325,173 @@ Input:  arr = [3, 2, 1]
 Output: 3                            Already decreasing — bitonic with empty ascent
 ```
 
-## The Recurrence
+<details>
+<summary><h2>The Recurrence</h2></summary>
+
 
 For each peak candidate `i`, the bitonic length through `i` = `LIS_ending_at(i) + LDS_starting_at(i) - 1` (the peak is counted twice). Compute LIS forward and LDS backward; max over all `i`.
 
-## The Solution
+</details>
+<details>
+<summary><h2>The Solution</h2></summary>
 
 
-```pseudocode
-# Bitonic = strictly increasing then strictly decreasing.
-# inc[i] = LIS ending at i; dec[i] = LDS starting at i. Peak at i contributes inc[i] + dec[i] − 1.
-function longestBitonicSubsequence(arr):
-    n ← length(arr)
-    inc ← list of n ones
-    dec ← list of n ones
-
-    for i from 1 to n − 1:                        # standard LIS
-        for j from 0 to i − 1:
-            if arr[i] > arr[j] AND inc[j] + 1 > inc[i]:
-                inc[i] ← inc[j] + 1
-
-    for i from n − 2 down to 0:                   # LDS, scanning right-to-left
-        for j from n − 1 down to i + 1:
-            if arr[i] > arr[j] AND dec[j] + 1 > dec[i]:
-                dec[i] ← dec[j] + 1
-
-    return max over i of (inc[i] + dec[i] − 1)    # subtract 1 — peak is counted twice
-```
 
 ```python run
 from typing import List
 
 class Solution:
     def longest_bitonic_subsequence(self, arr: List[int]) -> int:
-        n = len(arr)
-        inc = [1] * n                              # Longest increasing subseq ending at i
-        dec = [1] * n                              # Longest decreasing subseq starting at i
+        n: int = len(arr)
+
+        # List to store the lengths of the longest increasing
+        # subsequences
+        increasing: List[int] = [1] * n
+
+        # List to store the lengths of the longest decreasing
+        # subsequences
+        decreasing: List[int] = [1] * n
+
+        # Calculate the lengths of the longest increasing subsequences
         for i in range(1, n):
             for j in range(i):
-                if arr[i] > arr[j] and inc[j] + 1 > inc[i]:
-                    inc[i] = inc[j] + 1
+
+                # If the current element is greater than the previous
+                # element and the length of the increasing subsequence
+                # ending at the previous element plus one is greater
+                # than the current length of the increasing subsequence,
+                # update the current length of the increasing
+                # subsequence
+                if arr[i] > arr[j] and increasing[i] < increasing[j] + 1:
+                    increasing[i] = increasing[j] + 1
+
+        # Calculate the lengths of the longest decreasing subsequences
         for i in range(n - 2, -1, -1):
             for j in range(n - 1, i, -1):
-                if arr[i] > arr[j] and dec[j] + 1 > dec[i]:
-                    dec[i] = dec[j] + 1
-        # Peak at i contributes inc[i] + dec[i] - 1 (peak counted twice).
-        return max(inc[i] + dec[i] - 1 for i in range(n))
+
+                # If the current element is greater than the next
+                # element and the length of the decreasing subsequence
+                # starting at the next element plus one is greater than
+                # the current length of the decreasing subsequence,
+                # update the current length of the decreasing
+                # subsequence
+                if arr[i] > arr[j] and decreasing[i] < decreasing[j] + 1:
+                    decreasing[i] = decreasing[j] + 1
+
+        max_bitonic_len: int = 0
+
+        # Calculate the length of the bitonic subsequence by adding the
+        # lengths of the increasing and decreasing subsequences and
+        # subtracting 1 because the peak element is counted twice
+        for i in range(n):
+            bitonic_len = increasing[i] + decreasing[i] - 1
+
+            # Update the maximum bitonic length if a longer bitonic
+            # subsequence is found
+            if bitonic_len > max_bitonic_len:
+                max_bitonic_len = bitonic_len
+
+        return max_bitonic_len
 
 
-if __name__ == "__main__":
-    print(Solution().longest_bitonic_subsequence([1, 7, 3, 5, 9, 8, 6]))   # 6
+# Examples from the problem statement
+print(Solution().longest_bitonic_subsequence([1, 7, 3, 5, 9, 8, 6]))  # 6
+print(Solution().longest_bitonic_subsequence([1, 2, 3]))               # 3
+print(Solution().longest_bitonic_subsequence([3, 2, 1]))               # 3
+
+# Edge cases
+print(Solution().longest_bitonic_subsequence([1]))                     # 1  — single element
+print(Solution().longest_bitonic_subsequence([1, 2]))                  # 2  — two elements increasing
+print(Solution().longest_bitonic_subsequence([2, 1]))                  # 2  — two elements decreasing
+print(Solution().longest_bitonic_subsequence([1, 3, 1]))               # 3  — classic V-up-V shape
+print(Solution().longest_bitonic_subsequence([5, 5, 5, 5]))            # 1  — all same
 ```
 
 ```java run
+import java.util.*;
+
 public class Main {
     static class Solution {
         public int longestBitonicSubsequence(int[] arr) {
             int n = arr.length;
-            int[] inc = new int[n], dec = new int[n];
-            java.util.Arrays.fill(inc, 1); java.util.Arrays.fill(dec, 1);
-            for (int i = 1; i < n; i++) for (int j = 0; j < i; j++) {
-                if (arr[i] > arr[j] && inc[j] + 1 > inc[i]) inc[i] = inc[j] + 1;
+
+            // Array to store the lengths of the longest increasing
+            // subsequences
+            int[] increasing = new int[n];
+
+            // Array to store the lengths of the longest decreasing
+            // subsequences
+            int[] decreasing = new int[n];
+
+            Arrays.fill(increasing, 1);
+            Arrays.fill(decreasing, 1);
+
+            // Calculate the lengths of the longest increasing subsequences
+            for (int i = 1; i < n; i++) {
+                for (int j = 0; j < i; j++) {
+
+                    // If the current element is greater than the previous
+                    // element and the length of the increasing subsequence
+                    // ending at the previous element plus one is greater
+                    // than the current length of the increasing subsequence,
+                    // update the current length of the increasing
+                    // subsequence
+                    if (
+                        arr[i] > arr[j] && increasing[i] < increasing[j] + 1
+                    ) increasing[i] = increasing[j] + 1;
+                }
             }
-            for (int i = n - 2; i >= 0; i--) for (int j = n - 1; j > i; j--) {
-                if (arr[i] > arr[j] && dec[j] + 1 > dec[i]) dec[i] = dec[j] + 1;
+
+            // Calculate the lengths of the longest decreasing subsequences
+            for (int i = n - 2; i >= 0; i--) {
+                for (int j = n - 1; j > i; j--) {
+
+                    // If the current element is greater than the next
+                    // element and the length of the decreasing subsequence
+                    // starting at the next element plus one is greater than
+                    // the current length of the decreasing subsequence,
+                    // update the current length of the decreasing
+                    // subsequence
+                    if (
+                        arr[i] > arr[j] && decreasing[i] < decreasing[j] + 1
+                    ) decreasing[i] = decreasing[j] + 1;
+                }
             }
-            int max = 0;
-            for (int i = 0; i < n; i++) if (inc[i] + dec[i] - 1 > max) max = inc[i] + dec[i] - 1;
-            return max;
+
+            int maxBitonicLen = 0;
+
+            // Calculate the length of the bitonic subsequence by adding the
+            // lengths of the increasing and decreasing subsequences and
+            // subtracting 1 because the peak element is counted twice
+            for (int i = 0; i < n; i++) {
+                int bitonicLen = increasing[i] + decreasing[i] - 1;
+
+                // Update the maximum bitonic length if a longer bitonic
+                // subsequence is found
+                if (bitonicLen > maxBitonicLen) maxBitonicLen = bitonicLen;
+            }
+
+            return maxBitonicLen;
         }
     }
 
     public static void main(String[] args) {
-        System.out.println(new Solution().longestBitonicSubsequence(new int[]{1, 7, 3, 5, 9, 8, 6}));   // 6
+        // Examples from the problem statement
+        System.out.println(new Solution().longestBitonicSubsequence(new int[]{1, 7, 3, 5, 9, 8, 6}));  // 6
+        System.out.println(new Solution().longestBitonicSubsequence(new int[]{1, 2, 3}));               // 3
+        System.out.println(new Solution().longestBitonicSubsequence(new int[]{3, 2, 1}));               // 3
+
+        // Edge cases
+        System.out.println(new Solution().longestBitonicSubsequence(new int[]{1}));                     // 1
+        System.out.println(new Solution().longestBitonicSubsequence(new int[]{1, 2}));                  // 2
+        System.out.println(new Solution().longestBitonicSubsequence(new int[]{2, 1}));                  // 2
+        System.out.println(new Solution().longestBitonicSubsequence(new int[]{1, 3, 1}));               // 3
+        System.out.println(new Solution().longestBitonicSubsequence(new int[]{5, 5, 5, 5}));            // 1
     }
 }
 ```
 
-```c run
-#include <stdio.h>
-
-int inc_arr[1001], dec_arr[1001];
-
-int longest_bitonic_subsequence(const int *arr, int n) {
-    for (int i = 0; i < n; i++) { inc_arr[i] = 1; dec_arr[i] = 1; }
-    for (int i = 1; i < n; i++) for (int j = 0; j < i; j++) {
-        if (arr[i] > arr[j] && inc_arr[j] + 1 > inc_arr[i]) inc_arr[i] = inc_arr[j] + 1;
-    }
-    for (int i = n - 2; i >= 0; i--) for (int j = n - 1; j > i; j--) {
-        if (arr[i] > arr[j] && dec_arr[j] + 1 > dec_arr[i]) dec_arr[i] = dec_arr[j] + 1;
-    }
-    int best = 0;
-    for (int i = 0; i < n; i++) if (inc_arr[i] + dec_arr[i] - 1 > best) best = inc_arr[i] + dec_arr[i] - 1;
-    return best;
-}
-
-int main(void) {
-    int a[] = {1, 7, 3, 5, 9, 8, 6};
-    printf("%d\n", longest_bitonic_subsequence(a, 7));   /* 6 */
-    return 0;
-}
-```
-
-```scala run
-object Main extends App {
-  class Solution {
-    def longestBitonicSubsequence(arr: Array[Int]): Int = {
-      val n = arr.length
-      val inc = Array.fill(n)(1); val dec = Array.fill(n)(1)
-      for (i <- 1 until n; j <- 0 until i if arr(i) > arr(j) && inc(j) + 1 > inc(i)) inc(i) = inc(j) + 1
-      for (i <- n - 2 to 0 by -1; j <- n - 1 to i + 1 by -1 if arr(i) > arr(j) && dec(j) + 1 > dec(i)) dec(i) = dec(j) + 1
-      (0 until n).map(i => inc(i) + dec(i) - 1).max
-    }
-  }
-
-  println(new Solution().longestBitonicSubsequence(Array(1, 7, 3, 5, 9, 8, 6)))   // 6
-}
-```
+</details>
 
 
 ***
@@ -436,7 +515,9 @@ Input:  arr = [3, 2, 1]
 Output: 2                          Just [3, 2] or [2, 1]
 ```
 
-## The Recurrence
+<details>
+<summary><h2>The Recurrence</h2></summary>
+
 
 `dp[i][0]` = longest alternating subseq ending at `i` with the last move being a *decrease*. `dp[i][1]` = ending at `i` with last move *increase*. Both initialise to 1.
 
@@ -446,128 +527,161 @@ For each `i`, scan all `j < i`:
 
 Answer: max over `i` of `max(dp[i][0], dp[i][1])`.
 
-## The Solution
+</details>
+<details>
+<summary><h2>The Solution</h2></summary>
 
 
-```pseudocode
-# dp[i][0] = longest alt-subseq ending at i where last move was DECREASE.
-# dp[i][1] = longest alt-subseq ending at i where last move was INCREASE.
-function longestAlternatingSubsequence(arr):
-    n ← length(arr)
-    if n ≤ 1: return n
-    dp ← n × 2 grid filled with 1
-    best ← 1
-    for i from 1 to n − 1:
-        for j from 0 to i − 1:
-            if arr[j] < arr[i]:
-                dp[i][1] ← max(dp[i][1], dp[j][0] + 1)   # extend a "down" with this "up" step
-            else if arr[j] > arr[i]:
-                dp[i][0] ← max(dp[i][0], dp[j][1] + 1)
-        best ← max(best, dp[i][0], dp[i][1])
-    return best
-```
 
 ```python run
 from typing import List
 
 class Solution:
     def longest_alternating_subsequence(self, arr: List[int]) -> int:
-        n = len(arr)
+        n: int = len(arr)
         if n <= 1:
+
+            # If the array has only 0 or 1 element, the length of the
+            # longest alternating subsequence is equal to the number of
+            # elements in the array.
             return n
-        # dp[i][0]: ending at i, last move was a decrease.
-        # dp[i][1]: ending at i, last move was an increase.
-        dp = [[1, 1] for _ in range(n)]
-        best = 1
+
+        # dp[i][0] represents the length of the longest alternating
+        # subsequence ending at index i, with the last element being
+        # smaller than its previous element. dp[i][1] represents the
+        # length of the longest alternating subsequence ending at index
+        # i, with the last element being greater than its previous
+        # element.
+        dp: List[List[int]] = [[1, 1] for _ in range(n)]
+
+        # Initialize the maximum length to 1 since we have at least one
+        # element in the array.
+        max_length: int = 1
+
         for i in range(1, n):
             for j in range(i):
                 if arr[j] < arr[i]:
+
+                    # If arr[j] < arr[i], it means we can add arr[i] to
+                    # the subsequence ending at index j to form a longer
+                    # subsequence ending at index i, with the last
+                    # element being greater.
                     dp[i][1] = max(dp[i][1], dp[j][0] + 1)
                 elif arr[j] > arr[i]:
+
+                    # If arr[j] > arr[i], it means we can add arr[i] to
+                    # the subsequence ending at index j to form a longer
+                    # subsequence ending at index i, with the last
+                    # element being smaller.
                     dp[i][0] = max(dp[i][0], dp[j][1] + 1)
-            best = max(best, dp[i][0], dp[i][1])
-        return best
+
+            # Update the maximum length with the maximum of dp[i][0] and
+            # dp[i][1] (the longest alternating subsequences ending at
+            # index i).
+            max_length = max(max_length, max(dp[i][0], dp[i][1]))
+
+        # Return the maximum length of the longest alternating
+        # subsequence.
+        return max_length
 
 
-if __name__ == "__main__":
-    print(Solution().longest_alternating_subsequence([1, 7, 3, 5, 4, 8, 6]))   # 7
+# Examples from the problem statement
+print(Solution().longest_alternating_subsequence([1, 7, 3, 5, 4, 8, 6]))  # 7
+print(Solution().longest_alternating_subsequence([1, 4, 5, 3]))            # 3
+print(Solution().longest_alternating_subsequence([3, 2, 1]))               # 2
+
+# Edge cases
+print(Solution().longest_alternating_subsequence([]))                      # 0  — empty
+print(Solution().longest_alternating_subsequence([5]))                     # 1  — single element
+print(Solution().longest_alternating_subsequence([1, 2]))                  # 2  — two elements
+print(Solution().longest_alternating_subsequence([5, 5, 5]))               # 1  — all same
+print(Solution().longest_alternating_subsequence([1, 2, 1, 2, 1]))         # 5  — perfect alternating
 ```
 
 ```java run
+import java.util.*;
+
 public class Main {
     static class Solution {
         public int longestAlternatingSubsequence(int[] arr) {
             int n = arr.length;
-            if (n <= 1) return n;
+            if (n <= 1) {
+
+                // If the array has only 0 or 1 element, the length of the
+                // longest alternating subsequence is equal to the number of
+                // elements in the array.
+                return n;
+            }
+
+            // dp[i][0] represents the length of the longest alternating
+            // subsequence ending at index i, with the last element being
+            // smaller than its previous element. dp[i][1] represents the
+            // length of the longest alternating subsequence ending at index
+            // i, with the last element being greater than its previous
+            // element.
             int[][] dp = new int[n][2];
-            for (int i = 0; i < n; i++) { dp[i][0] = 1; dp[i][1] = 1; }
-            int best = 1;
+
+            // Initialize the maximum length to 1 since we have at least one
+            // element in the array.
+            int maxLength = 1;
+
+            for (int i = 0; i < n; i++) {
+
+                // Initialize all values to 1
+                Arrays.fill(dp[i], 1);
+            }
+
             for (int i = 1; i < n; i++) {
                 for (int j = 0; j < i; j++) {
-                    if (arr[j] < arr[i]) dp[i][1] = Math.max(dp[i][1], dp[j][0] + 1);
-                    else if (arr[j] > arr[i]) dp[i][0] = Math.max(dp[i][0], dp[j][1] + 1);
+                    if (arr[j] < arr[i]) {
+
+                        // If arr[j] < arr[i], it means we can add arr[i] to
+                        // the subsequence ending at index j to form a longer
+                        // subsequence ending at index i, with the last
+                        // element being greater.
+                        dp[i][1] = Math.max(dp[i][1], dp[j][0] + 1);
+                    } else if (arr[j] > arr[i]) {
+
+                        // If arr[j] > arr[i], it means we can add arr[i] to
+                        // the subsequence ending at index j to form a longer
+                        // subsequence ending at index i, with the last
+                        // element being smaller.
+                        dp[i][0] = Math.max(dp[i][0], dp[j][1] + 1);
+                    }
                 }
-                best = Math.max(best, Math.max(dp[i][0], dp[i][1]));
+
+                // Update the maximum length with the maximum of dp[i][0] and
+                // dp[i][1] (the longest alternating subsequences ending at
+                // index i).
+                maxLength = Math.max(
+                    maxLength,
+                    Math.max(dp[i][0], dp[i][1])
+                );
             }
-            return best;
+
+            // Return the maximum length of the longest alternating
+            // subsequence.
+            return maxLength;
         }
     }
 
     public static void main(String[] args) {
-        System.out.println(new Solution().longestAlternatingSubsequence(new int[]{1, 7, 3, 5, 4, 8, 6}));   // 7
+        // Examples from the problem statement
+        System.out.println(new Solution().longestAlternatingSubsequence(new int[]{1, 7, 3, 5, 4, 8, 6}));  // 7
+        System.out.println(new Solution().longestAlternatingSubsequence(new int[]{1, 4, 5, 3}));            // 3
+        System.out.println(new Solution().longestAlternatingSubsequence(new int[]{3, 2, 1}));               // 2
+
+        // Edge cases
+        System.out.println(new Solution().longestAlternatingSubsequence(new int[]{}));                      // 0
+        System.out.println(new Solution().longestAlternatingSubsequence(new int[]{5}));                     // 1
+        System.out.println(new Solution().longestAlternatingSubsequence(new int[]{1, 2}));                  // 2
+        System.out.println(new Solution().longestAlternatingSubsequence(new int[]{5, 5, 5}));               // 1
+        System.out.println(new Solution().longestAlternatingSubsequence(new int[]{1, 2, 1, 2, 1}));         // 5
     }
 }
 ```
 
-```c run
-#include <stdio.h>
-
-int dp[1001][2];
-
-int longest_alternating_subsequence(const int *arr, int n) {
-    if (n <= 1) return n;
-    for (int i = 0; i < n; i++) { dp[i][0] = 1; dp[i][1] = 1; }
-    int best = 1;
-    for (int i = 1; i < n; i++) {
-        for (int j = 0; j < i; j++) {
-            if (arr[j] < arr[i] && dp[j][0] + 1 > dp[i][1]) dp[i][1] = dp[j][0] + 1;
-            else if (arr[j] > arr[i] && dp[j][1] + 1 > dp[i][0]) dp[i][0] = dp[j][1] + 1;
-        }
-        if (dp[i][0] > best) best = dp[i][0];
-        if (dp[i][1] > best) best = dp[i][1];
-    }
-    return best;
-}
-
-int main(void) {
-    int a[] = {1, 7, 3, 5, 4, 8, 6};
-    printf("%d\n", longest_alternating_subsequence(a, 7));   /* 7 */
-    return 0;
-}
-```
-
-```scala run
-object Main extends App {
-  class Solution {
-    def longestAlternatingSubsequence(arr: Array[Int]): Int = {
-      val n = arr.length
-      if (n <= 1) return n
-      val dp = Array.fill(n, 2)(1)
-      var best = 1
-      for (i <- 1 until n) {
-        for (j <- 0 until i) {
-          if (arr(j) < arr(i)) dp(i)(1) = math.max(dp(i)(1), dp(j)(0) + 1)
-          else if (arr(j) > arr(i)) dp(i)(0) = math.max(dp(i)(0), dp(j)(1) + 1)
-        }
-        best = math.max(best, math.max(dp(i)(0), dp(i)(1)))
-      }
-      best
-    }
-  }
-
-  println(new Solution().longestAlternatingSubsequence(Array(1, 7, 3, 5, 4, 8, 6)))   // 7
-}
-```
+</details>
 
 
 ***
@@ -591,7 +705,9 @@ Input:  s = "abc", pattern = "def"
 Output: 0
 ```
 
-## The Recurrence
+<details>
+<summary><h2>The Recurrence</h2></summary>
+
 
 `dp[i][j]` = ways to form `pattern[0..i-1]` as a subsequence of `s[0..j-1]`. Two cases:
 - `pattern[i-1] == s[j-1]`: include the match (`dp[i-1][j-1]`) or skip `s[j-1]` (`dp[i][j-1]`). Sum.
@@ -599,114 +715,142 @@ Output: 0
 
 Base case: `dp[0][j] = 1` for all `j` — there's exactly one way to form the empty pattern (pick nothing).
 
-## The Solution
+</details>
+<details>
+<summary><h2>The Solution</h2></summary>
 
 
-```pseudocode
-# Number of distinct subsequences of s that equal `pattern`.
-# dp[i][j] = ways pattern[0..i−1] appears in s[0..j−1].
-function patternAsSubsequence(s, pattern):
-    n ← length(s); m ← length(pattern)
-    dp ← (m + 1) × (n + 1) grid of zeros
-    for j from 0 to n: dp[0][j] ← 1                # empty pattern matches anywhere — one way
-    for i from 1 to m:
-        for j from 1 to n:
-            if pattern[i − 1] = s[j − 1]:
-                dp[i][j] ← dp[i − 1][j − 1] + dp[i][j − 1]   # use s[j−1] OR skip it
-            else:
-                dp[i][j] ← dp[i][j − 1]                       # mismatch → must skip s[j−1]
-    return dp[m][n]
-```
 
 ```python run
 from typing import List
 
 class Solution:
     def pattern_as_subsequence(self, s: str, pattern: str) -> int:
-        n, m = len(s), len(pattern)
+
+        # Length of pattern
+        m: int = len(pattern)
+
+        # Length of string s
+        n: int = len(s)
+
+        # Create a 2D list dp to store the dynamic programming values
         dp: List[List[int]] = [[0] * (n + 1) for _ in range(m + 1)]
-        for j in range(n + 1):
-            dp[0][j] = 1                            # Empty pattern: one way (pick nothing)
+
+        # Initialize the base case where pattern is empty (i = 0)
+        # If string s is empty (j = 0), there is one subsequence pattern
+        # (empty pattern) Otherwise, if string s is not empty, there are
+        # no subsequence patterns since pattern is empty
+        for i in range(n + 1):
+            dp[0][i] = 1
+
+        # Fill the dp table using dynamic programming
         for i in range(1, m + 1):
             for j in range(1, n + 1):
                 if pattern[i - 1] == s[j - 1]:
+
+                    # If the current characters match, we have two
+                    # choices:
+                    # 1. Include the current characters in both pattern
+                    # and string, so the count is dp[i - 1][j - 1]
+                    # 2. Exclude the current character from the pattern,
+                    # so the count is dp[i][j - 1]
                     dp[i][j] = dp[i - 1][j - 1] + dp[i][j - 1]
                 else:
+
+                    # If the current characters don't match, we can only
+                    # exclude the current character from the string The
+                    # count remains the same as the previous count
+                    # without considering the current character
                     dp[i][j] = dp[i][j - 1]
+
+        # The final count is stored in dp[m][n], which represents the
+        # number of subsequence patterns
         return dp[m][n]
 
 
-if __name__ == "__main__":
-    print(Solution().pattern_as_subsequence("abacdebgc", "abc"))   # 4
+# Examples from the problem statement
+print(Solution().pattern_as_subsequence("abacdebgc", "abc"))  # 4
+print(Solution().pattern_as_subsequence("xyzabc", "xzc"))     # 1
+print(Solution().pattern_as_subsequence("abc", "def"))         # 0
+
+# Edge cases
+print(Solution().pattern_as_subsequence("", ""))               # 1  — empty both
+print(Solution().pattern_as_subsequence("abc", ""))            # 1  — empty pattern
+print(Solution().pattern_as_subsequence("", "a"))              # 0  — empty string
+print(Solution().pattern_as_subsequence("aaa", "a"))           # 3  — repeated chars
+print(Solution().pattern_as_subsequence("abc", "abc"))         # 1  — identical
 ```
 
 ```java run
+import java.util.*;
+
 public class Main {
     static class Solution {
         public int patternAsSubsequence(String s, String pattern) {
-            int n = s.length(), m = pattern.length();
+
+            // Length of pattern
+            int m = pattern.length();
+
+            // Length of string s
+            int n = s.length();
+
+            // Create a 2D array dp to store the dynamic programming values
             int[][] dp = new int[m + 1][n + 1];
-            for (int j = 0; j <= n; j++) dp[0][j] = 1;
+
+            // Initialize the base case where pattern is empty (i = 0)
+            // If string s is empty (j = 0), there is one subsequence pattern
+            // (empty pattern) Otherwise, if string s is not empty, there are
+            // no subsequence patterns since pattern is empty
+            for (int i = 0; i <= n; i++) {
+                dp[0][i] = 1;
+            }
+
+            // Fill the dp table using dynamic programming
             for (int i = 1; i <= m; i++) {
                 for (int j = 1; j <= n; j++) {
-                    if (pattern.charAt(i - 1) == s.charAt(j - 1))
+                    if (pattern.charAt(i - 1) == s.charAt(j - 1)) {
+
+                        // If the current characters match, we have two
+                        // choices:
+                        // 1. Include the current characters in both pattern
+                        // and string, so the count is dp[i - 1][j - 1]
+                        // 2. Exclude the current character from the pattern,
+                        // so the count is dp[i][j - 1]
                         dp[i][j] = dp[i - 1][j - 1] + dp[i][j - 1];
-                    else
+                    } else {
+
+                        // If the current characters don't match, we can only
+                        // exclude the current character from the string The
+                        // count remains the same as the previous count
+                        // without considering the current character
                         dp[i][j] = dp[i][j - 1];
+                    }
                 }
             }
+
+            // The final count is stored in dp[m][n], which represents the
+            // number of subsequence patterns
             return dp[m][n];
         }
     }
 
     public static void main(String[] args) {
-        System.out.println(new Solution().patternAsSubsequence("abacdebgc", "abc"));   // 4
+        // Examples from the problem statement
+        System.out.println(new Solution().patternAsSubsequence("abacdebgc", "abc"));  // 4
+        System.out.println(new Solution().patternAsSubsequence("xyzabc", "xzc"));     // 1
+        System.out.println(new Solution().patternAsSubsequence("abc", "def"));         // 0
+
+        // Edge cases
+        System.out.println(new Solution().patternAsSubsequence("", ""));               // 1
+        System.out.println(new Solution().patternAsSubsequence("abc", ""));            // 1
+        System.out.println(new Solution().patternAsSubsequence("", "a"));              // 0
+        System.out.println(new Solution().patternAsSubsequence("aaa", "a"));           // 3
+        System.out.println(new Solution().patternAsSubsequence("abc", "abc"));         // 1
     }
 }
 ```
 
-```c run
-#include <stdio.h>
-#include <string.h>
-
-int dp[1001][1001];
-
-int pattern_as_subsequence(const char *s, const char *pattern) {
-    int n = strlen(s), m = strlen(pattern);
-    for (int i = 0; i <= m; i++) for (int j = 0; j <= n; j++) dp[i][j] = 0;
-    for (int j = 0; j <= n; j++) dp[0][j] = 1;
-    for (int i = 1; i <= m; i++) {
-        for (int j = 1; j <= n; j++) {
-            if (pattern[i - 1] == s[j - 1]) dp[i][j] = dp[i - 1][j - 1] + dp[i][j - 1];
-            else dp[i][j] = dp[i][j - 1];
-        }
-    }
-    return dp[m][n];
-}
-
-int main(void) {
-    printf("%d\n", pattern_as_subsequence("abacdebgc", "abc"));   /* 4 */
-    return 0;
-}
-```
-
-```scala run
-object Main extends App {
-  class Solution {
-    def patternAsSubsequence(s: String, pattern: String): Int = {
-      val n = s.length; val m = pattern.length
-      val dp = Array.fill(m + 1, n + 1)(0)
-      for (j <- 0 to n) dp(0)(j) = 1
-      for (i <- 1 to m; j <- 1 to n) {
-        dp(i)(j) = if (pattern(i - 1) == s(j - 1)) dp(i - 1)(j - 1) + dp(i)(j - 1) else dp(i)(j - 1)
-      }
-      dp(m)(n)
-    }
-  }
-
-  println(new Solution().patternAsSubsequence("abacdebgc", "abc"))   // 4
-}
-```
+</details>
 
 
 ***
@@ -730,7 +874,9 @@ Input:  s1 = "aab", s2 = "aab"
 Output: 3                          They're identical
 ```
 
-## The Recurrence
+<details>
+<summary><h2>The Recurrence</h2></summary>
+
 
 `dp[i][j]` = length of the shortest common supersequence of `s1[0..i-1]` and `s2[0..j-1]`. Match keeps both characters once; mismatch grows by one (forced to take one or the other):
 ```
@@ -739,112 +885,142 @@ dp[i][j] = dp[i-1][j-1] + 1                     if s1[i-1] == s2[j-1]
 ```
 Base cases: `dp[i][0] = i`, `dp[0][j] = j` (an empty side forces taking everything from the other).
 
-## The Solution
+</details>
+<details>
+<summary><h2>The Solution</h2></summary>
 
 
-```pseudocode
-# Length of the shortest string that has both s1 and s2 as subsequences.
-# Identity: len(SCS) = len(s1) + len(s2) − len(LCS), but this DP computes it directly.
-function shortestCommonSupersequence(s1, s2):
-    n ← length(s1); m ← length(s2)
-    dp ← (n + 1) × (m + 1) grid of zeros
-    for i from 0 to n: dp[i][0] ← i
-    for j from 0 to m: dp[0][j] ← j
-    for i from 1 to n:
-        for j from 1 to m:
-            if s1[i − 1] = s2[j − 1]:
-                dp[i][j] ← dp[i − 1][j − 1] + 1
-            else:
-                dp[i][j] ← min(dp[i − 1][j], dp[i][j − 1]) + 1
-    return dp[n][m]
-```
 
 ```python run
 from typing import List
 
 class Solution:
     def shortest_common_supersequence(self, s1: str, s2: str) -> int:
-        n, m = len(s1), len(s2)
+        n: int = len(s1)
+        m: int = len(s2)
+
+        # Create a 2D array to store the dynamic programming values
         dp: List[List[int]] = [[0] * (m + 1) for _ in range(n + 1)]
-        for i in range(n + 1): dp[i][0] = i
-        for j in range(m + 1): dp[0][j] = j
+
+        # Initialize the base cases
+        # If one of the strings is empty, the length of the shortest
+        # common supersequence is the length of the other string
+        for i in range(n + 1):
+            dp[i][0] = i
+        for j in range(m + 1):
+            dp[0][j] = j
+
+        # Calculate the lengths of the shortest common supersequences
         for i in range(1, n + 1):
             for j in range(1, m + 1):
+
+                # If the characters at the current positions are equal,
+                # the length of the supersequence is one more than the
+                # length of the supersequence without these characters
                 if s1[i - 1] == s2[j - 1]:
                     dp[i][j] = dp[i - 1][j - 1] + 1
                 else:
-                    dp[i][j] = min(dp[i - 1][j], dp[i][j - 1]) + 1
+
+                    # If the characters are different, we have two
+                    # choices:
+                    # 1. Include the current character from s1 and find
+                    # the shortest supersequence for the remaining
+                    # characters
+                    # 2. Include the current character from s2 and find
+                    # the shortest supersequence for the remaining
+                    # characters We choose the option that results in
+                    # the minimum length
+                    dp[i][j] = min(dp[i - 1][j] + 1, dp[i][j - 1] + 1)
+
+        # Return the length of the shortest common supersequence
         return dp[n][m]
 
 
-if __name__ == "__main__":
-    print(Solution().shortest_common_supersequence("abc", "abe"))   # 4
+# Examples from the problem statement
+print(Solution().shortest_common_supersequence("abc", "abe"))  # 4
+print(Solution().shortest_common_supersequence("lmn", "opq"))  # 6
+print(Solution().shortest_common_supersequence("aab", "aab"))  # 3
+
+# Edge cases
+print(Solution().shortest_common_supersequence("", ""))        # 0  — both empty
+print(Solution().shortest_common_supersequence("abc", ""))     # 3  — s2 empty
+print(Solution().shortest_common_supersequence("", "xyz"))     # 3  — s1 empty
+print(Solution().shortest_common_supersequence("a", "a"))      # 1  — identical single chars
+print(Solution().shortest_common_supersequence("a", "b"))      # 2  — completely different single chars
 ```
 
 ```java run
+import java.util.*;
+
 public class Main {
     static class Solution {
         public int shortestCommonSupersequence(String s1, String s2) {
-            int n = s1.length(), m = s2.length();
+            int n = s1.length();
+            int m = s2.length();
+
+            // Create a 2D array to store the dynamic programming values
             int[][] dp = new int[n + 1][m + 1];
-            for (int i = 0; i <= n; i++) dp[i][0] = i;
-            for (int j = 0; j <= m; j++) dp[0][j] = j;
-            for (int i = 1; i <= n; i++) for (int j = 1; j <= m; j++) {
-                if (s1.charAt(i - 1) == s2.charAt(j - 1)) dp[i][j] = dp[i - 1][j - 1] + 1;
-                else dp[i][j] = Math.min(dp[i - 1][j], dp[i][j - 1]) + 1;
+
+            // Initialize the base cases
+            // If one of the strings is empty, the length of the shortest
+            // common supersequence is the length of the other string
+            for (int i = 0; i <= n; i++) {
+                dp[i][0] = i;
             }
+            for (int j = 0; j <= m; j++) {
+                dp[0][j] = j;
+            }
+
+            // Calculate the lengths of the shortest common supersequences
+            for (int i = 1; i <= n; i++) {
+                for (int j = 1; j <= m; j++) {
+
+                    // If the characters at the current positions are equal,
+                    // the length of the supersequence is one more than the
+                    // length of the supersequence without these characters
+                    if (s1.charAt(i - 1) == s2.charAt(j - 1)) {
+                        dp[i][j] = dp[i - 1][j - 1] + 1;
+                    } else {
+
+                        // If the characters are different, we have two
+                        // choices:
+                        // 1. Include the current character from s1 and find
+                        // the shortest supersequence for the remaining
+                        // characters
+                        // 2. Include the current character from s2 and find
+                        // the shortest supersequence for the remaining
+                        // characters We choose the option that results in
+                        // the minimum length
+                        dp[i][j] = Math.min(
+                            dp[i - 1][j] + 1,
+                            dp[i][j - 1] + 1
+                        );
+                    }
+                }
+            }
+
+            // Return the length of the shortest common supersequence
             return dp[n][m];
         }
     }
 
     public static void main(String[] args) {
-        System.out.println(new Solution().shortestCommonSupersequence("abc", "abe"));   // 4
+        // Examples from the problem statement
+        System.out.println(new Solution().shortestCommonSupersequence("abc", "abe"));  // 4
+        System.out.println(new Solution().shortestCommonSupersequence("lmn", "opq"));  // 6
+        System.out.println(new Solution().shortestCommonSupersequence("aab", "aab"));  // 3
+
+        // Edge cases
+        System.out.println(new Solution().shortestCommonSupersequence("", ""));        // 0
+        System.out.println(new Solution().shortestCommonSupersequence("abc", ""));     // 3
+        System.out.println(new Solution().shortestCommonSupersequence("", "xyz"));     // 3
+        System.out.println(new Solution().shortestCommonSupersequence("a", "a"));      // 1
+        System.out.println(new Solution().shortestCommonSupersequence("a", "b"));      // 2
     }
 }
 ```
 
-```c run
-#include <stdio.h>
-#include <string.h>
-
-int dp[1001][1001];
-
-int shortest_common_supersequence(const char *s1, const char *s2) {
-    int n = strlen(s1), m = strlen(s2);
-    for (int i = 0; i <= n; i++) dp[i][0] = i;
-    for (int j = 0; j <= m; j++) dp[0][j] = j;
-    for (int i = 1; i <= n; i++) for (int j = 1; j <= m; j++) {
-        if (s1[i - 1] == s2[j - 1]) dp[i][j] = dp[i - 1][j - 1] + 1;
-        else { int a = dp[i - 1][j], b = dp[i][j - 1]; dp[i][j] = (a < b ? a : b) + 1; }
-    }
-    return dp[n][m];
-}
-
-int main(void) {
-    printf("%d\n", shortest_common_supersequence("abc", "abe"));   /* 4 */
-    return 0;
-}
-```
-
-```scala run
-object Main extends App {
-  class Solution {
-    def shortestCommonSupersequence(s1: String, s2: String): Int = {
-      val n = s1.length; val m = s2.length
-      val dp = Array.fill(n + 1, m + 1)(0)
-      for (i <- 0 to n) dp(i)(0) = i
-      for (j <- 0 to m) dp(0)(j) = j
-      for (i <- 1 to n; j <- 1 to m) {
-        dp(i)(j) = if (s1(i - 1) == s2(j - 1)) dp(i - 1)(j - 1) + 1
-                   else math.min(dp(i - 1)(j), dp(i)(j - 1)) + 1
-      }
-      dp(n)(m)
-    }
-  }
-
-  println(new Solution().shortestCommonSupersequence("abc", "abe"))   // 4
-}
-```
+</details>
 
 
 ***
@@ -869,7 +1045,9 @@ Input:  s = "abbcc"
 Output: "bc"
 ```
 
-## The Recurrence
+<details>
+<summary><h2>The Recurrence</h2></summary>
+
 
 Compute LCS of `s` with itself, but require `i != j` to enforce disjoint positions:
 ```
@@ -878,153 +1056,184 @@ dp[i][j] = dp[i-1][j-1] + 1               if s[i-1] == s[j-1] AND i != j
 ```
 Then backtrack to reconstruct the subsequence string.
 
-## The Solution
+</details>
+<details>
+<summary><h2>The Solution</h2></summary>
 
 
-```pseudocode
-# LCS of s with itself — but disallow matching the same index (i ≠ j) so each char is reused once.
-# Then backtrack to reconstruct the subsequence.
-function longestRepeatedSubsequence(s):
-    n ← length(s)
-    dp ← (n + 1) × (n + 1) grid of zeros
-    for i from 1 to n:
-        for j from 1 to n:
-            if s[i − 1] = s[j − 1] AND i ≠ j:
-                dp[i][j] ← dp[i − 1][j − 1] + 1
-            else:
-                dp[i][j] ← max(dp[i − 1][j], dp[i][j − 1])
-
-    # Reconstruct the longest repeated subsequence.
-    chars ← empty list
-    i ← n; j ← n
-    while i > 0 AND j > 0:
-        if dp[i][j] = dp[i − 1][j − 1] + 1 AND s[i − 1] = s[j − 1] AND i ≠ j:
-            prepend s[i − 1] to chars
-            i ← i − 1; j ← j − 1
-        else if dp[i − 1][j] ≥ dp[i][j − 1]:
-            i ← i − 1
-        else:
-            j ← j − 1
-    return chars joined as a string
-```
 
 ```python run
 from typing import List
 
 class Solution:
     def longest_repeated_subsequence(self, s: str) -> str:
-        n = len(s)
+        n: int = len(s)
+
+        # Initialize a 2D list for dynamic programming
         dp: List[List[int]] = [[0] * (n + 1) for _ in range(n + 1)]
+
+        # Iterate over the characters of the string
         for i in range(1, n + 1):
+
+            # Iterate over the characters of the string
             for j in range(1, n + 1):
+
+                # If the characters at positions i and j are equal
+                # (excluding the same position)
                 if s[i - 1] == s[j - 1] and i != j:
-                    dp[i][j] = dp[i - 1][j - 1] + 1
+
+                    # Increment the longest repeating subsequence length
+                    # by 1
+                    dp[i][j] = 1 + dp[i - 1][j - 1]
                 else:
+
+                    # If the characters are not equal, take the maximum
+                    # of the previous subsequence lengths
                     dp[i][j] = max(dp[i - 1][j], dp[i][j - 1])
-        # Backtrack to reconstruct the subsequence.
+
+        # Initialize an empty string to store the longest repeating
+        # subsequence
+        lrs: str = ""
+
+        # Start from the bottom right corner of the DP matrix
         i, j = n, n
-        chars: List[str] = []
+
+        # Traverse back to reconstruct the longest repeating subsequence
         while i > 0 and j > 0:
-            if dp[i][j] == dp[i - 1][j - 1] + 1 and s[i - 1] == s[j - 1] and i != j:
-                chars.append(s[i - 1])
-                i -= 1; j -= 1
-            elif dp[i - 1][j] >= dp[i][j - 1]:
+
+            # If the current cell value is one more than the diagonal
+            # cell
+            if dp[i][j] == dp[i - 1][j - 1] + 1:
+
+                # Append the character to the front of the subsequence
+                # string
+                lrs = s[i - 1] + lrs
+
+                # Move diagonally up-left
                 i -= 1
-            else:
                 j -= 1
-        return ''.join(reversed(chars))
+
+            # If the current cell value is equal to the cell above
+            elif dp[i][j] == dp[i - 1][j]:
+
+                # Move up
+                i -= 1
+
+            # If the current cell value is equal to the cell on the left
+            else:
+
+                # Move left
+                j -= 1
+
+        # Return the longest repeating subsequence
+        return lrs
 
 
-if __name__ == "__main__":
-    print(Solution().longest_repeated_subsequence("abxcdalbc"))   # "abc"
+# Examples from the problem statement
+print(Solution().longest_repeated_subsequence("abxcdalbc"))  # abc
+print(Solution().longest_repeated_subsequence("xyzlynkz"))   # yz
+print(Solution().longest_repeated_subsequence("abbcc"))      # bc
+
+# Edge cases
+print(Solution().longest_repeated_subsequence(""))           # ""  — empty string
+print(Solution().longest_repeated_subsequence("a"))          # ""  — single char, no repeat possible
+print(Solution().longest_repeated_subsequence("aa"))         # a   — simplest repeat
+print(Solution().longest_repeated_subsequence("abcd"))       # ""  — all unique, no repeating subsequence
+print(Solution().longest_repeated_subsequence("aabb"))       # ab  — two pairs
 ```
 
 ```java run
+import java.util.*;
+
 public class Main {
     static class Solution {
         public String longestRepeatedSubsequence(String s) {
             int n = s.length();
+
+            // Initialize a 2D array for dynamic programming
             int[][] dp = new int[n + 1][n + 1];
-            for (int i = 1; i <= n; i++) for (int j = 1; j <= n; j++) {
-                if (s.charAt(i - 1) == s.charAt(j - 1) && i != j) dp[i][j] = dp[i - 1][j - 1] + 1;
-                else dp[i][j] = Math.max(dp[i - 1][j], dp[i][j - 1]);
+
+            // Iterate over the characters of the string
+            for (int i = 1; i <= n; i++) {
+
+                // Iterate over the characters of the string
+                for (int j = 1; j <= n; j++) {
+
+                    // If the characters at positions i and j are equal
+                    // (excluding the same position)
+                    if (s.charAt(i - 1) == s.charAt(j - 1) && i != j) {
+
+                        // Increment the longest repeating subsequence length
+                        // by 1
+                        dp[i][j] = 1 + dp[i - 1][j - 1];
+                    } else {
+
+                        // If the characters are not equal, take the maximum
+                        // of the previous subsequence lengths
+                        dp[i][j] = Math.max(dp[i - 1][j], dp[i][j - 1]);
+                    }
+                }
             }
-            StringBuilder sb = new StringBuilder();
+
+            // Initialize an empty string to store the longest repeating
+            // subsequence
+            StringBuilder lrs = new StringBuilder();
+
+            // Start from the bottom right corner of the DP matrix
             int i = n, j = n;
+
+            // Traverse back to reconstruct the longest repeating subsequence
             while (i > 0 && j > 0) {
-                if (s.charAt(i - 1) == s.charAt(j - 1) && i != j && dp[i][j] == dp[i - 1][j - 1] + 1) {
-                    sb.append(s.charAt(i - 1)); i--; j--;
-                } else if (dp[i - 1][j] >= dp[i][j - 1]) i--;
-                else j--;
+
+                // If the current cell value is one more than the diagonal
+                // cell
+                if (dp[i][j] == dp[i - 1][j - 1] + 1) {
+
+                    // Append the character to the front of the subsequence
+                    // string
+                    lrs.insert(0, s.charAt(i - 1));
+
+                    // Move diagonally up-left
+                    i--;
+                    j--;
+
+                    // If the current cell value is equal to the cell above
+                } else if (dp[i][j] == dp[i - 1][j]) {
+
+                    // Move up
+                    i--;
+
+                    // If the current cell value is equal to the cell on the
+                    // left
+                } else {
+
+                    // Move left
+                    j--;
+                }
             }
-            return sb.reverse().toString();
+
+            // Return the longest repeating subsequence
+            return lrs.toString();
         }
     }
 
     public static void main(String[] args) {
-        System.out.println(new Solution().longestRepeatedSubsequence("abxcdalbc"));   // abc
+        // Examples from the problem statement
+        System.out.println(new Solution().longestRepeatedSubsequence("abxcdalbc"));  // abc
+        System.out.println(new Solution().longestRepeatedSubsequence("xyzlynkz"));   // yz
+        System.out.println(new Solution().longestRepeatedSubsequence("abbcc"));      // bc
+
+        // Edge cases
+        System.out.println(new Solution().longestRepeatedSubsequence(""));           // ""
+        System.out.println(new Solution().longestRepeatedSubsequence("a"));          // ""
+        System.out.println(new Solution().longestRepeatedSubsequence("aa"));         // a
+        System.out.println(new Solution().longestRepeatedSubsequence("abcd"));       // ""
+        System.out.println(new Solution().longestRepeatedSubsequence("aabb"));       // ab
     }
 }
 ```
 
-```c run
-#include <stdio.h>
-#include <string.h>
-
-int dp[501][501];
-char out[501];
-
-const char *longest_repeated_subsequence(const char *s) {
-    int n = strlen(s);
-    for (int i = 0; i <= n; i++) for (int j = 0; j <= n; j++) dp[i][j] = 0;
-    for (int i = 1; i <= n; i++) for (int j = 1; j <= n; j++) {
-        if (s[i - 1] == s[j - 1] && i != j) dp[i][j] = dp[i - 1][j - 1] + 1;
-        else { int a = dp[i - 1][j], b = dp[i][j - 1]; dp[i][j] = a > b ? a : b; }
-    }
-    int i = n, j = n, k = 0;
-    while (i > 0 && j > 0) {
-        if (s[i - 1] == s[j - 1] && i != j && dp[i][j] == dp[i - 1][j - 1] + 1) {
-            out[k++] = s[i - 1]; i--; j--;
-        } else if (dp[i - 1][j] >= dp[i][j - 1]) i--;
-        else j--;
-    }
-    out[k] = 0;
-    /* reverse */
-    for (int a = 0, b = k - 1; a < b; a++, b--) { char t = out[a]; out[a] = out[b]; out[b] = t; }
-    return out;
-}
-
-int main(void) {
-    printf("%s\n", longest_repeated_subsequence("abxcdalbc"));   /* abc */
-    return 0;
-}
-```
-
-```scala run
-object Main extends App {
-  class Solution {
-    def longestRepeatedSubsequence(s: String): String = {
-      val n = s.length
-      val dp = Array.fill(n + 1, n + 1)(0)
-      for (i <- 1 to n; j <- 1 to n) {
-        dp(i)(j) = if (s(i - 1) == s(j - 1) && i != j) dp(i - 1)(j - 1) + 1
-                   else math.max(dp(i - 1)(j), dp(i)(j - 1))
-      }
-      val sb = new StringBuilder
-      var i = n; var j = n
-      while (i > 0 && j > 0) {
-        if (s(i - 1) == s(j - 1) && i != j && dp(i)(j) == dp(i - 1)(j - 1) + 1) {
-          sb.append(s(i - 1)); i -= 1; j -= 1
-        } else if (dp(i - 1)(j) >= dp(i)(j - 1)) i -= 1
-        else j -= 1
-      }
-      sb.reverse.toString
-    }
-  }
-
-  println(new Solution().longestRepeatedSubsequence("abxcdalbc"))   // abc
-}
-```
+</details>
 
 
 ***

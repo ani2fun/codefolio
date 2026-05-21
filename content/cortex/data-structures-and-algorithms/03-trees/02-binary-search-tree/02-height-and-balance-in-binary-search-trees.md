@@ -499,7 +499,9 @@ Given the **root** of a binary search tree, write a function to calculate and re
 >   - height of right subtree = 2
 >   - balance factor = 1 − 2 = −1
 
-## The Strategy
+<details>
+<summary><h2>The Strategy</h2></summary>
+
 
 Two pieces. Both are tiny on their own; the trick is composing them.
 
@@ -527,134 +529,195 @@ flowchart LR
 
 <p align="center"><strong>Compute each side's height once, subtract, return.</strong></p>
 
-## The Solution
+</details>
+<details>
+<summary><h2>The Solution</h2></summary>
 
 
-```pseudocode
-function findHeight(root):
-    if root is null:
-        return 0
-    leftH ← findHeight(root.left)
-    rightH ← findHeight(root.right)
-    return max(leftH, rightH) + 1
-
-function balanceFactor(root):
-    if root is null:
-        return 0
-    return findHeight(root.left) − findHeight(root.right)
-```
 
 ```python run
-# Definition for a binary tree node.
-# class TreeNode:
-#     def __init__(self, val=0, left=None, right=None):
-#         self.val = val
-#         self.left = left
-#         self.right = right
+from typing import Optional
+
+
+class TreeNode:
+    def __init__(self, val=0, left=None, right=None):
+        self.val = val
+        self.left = left
+        self.right = right
+
+
+def from_level_order(values):
+    """Build tree from list like [1, 2, 3, None, 4]. None means missing child."""
+    if not values:
+        return None
+    root = TreeNode(values[0])
+    queue = [root]
+    i = 1
+    while queue and i < len(values):
+        node = queue.pop(0)
+        if i < len(values) and values[i] is not None:
+            node.left = TreeNode(values[i])
+            queue.append(node.left)
+        i += 1
+        if i < len(values) and values[i] is not None:
+            node.right = TreeNode(values[i])
+            queue.append(node.right)
+        i += 1
+    return root
+
 
 class Solution:
-    def find_height(self, root):
-        # An empty subtree contributes nothing to height.
+    def find_height(self, root: Optional[TreeNode]) -> int:
+
+        # Empty tree has height 0
         if root is None:
             return 0
-        # Recurse into both children — height is decided by the deeper side.
+
+        # Recursively calculate the height of the left and right subtrees
         left_height = self.find_height(root.left)
         right_height = self.find_height(root.right)
-        # +1 accounts for the current node's own level.
+
+        # Return the maximum height among the left and right subtrees
+        # plus 1 for the current node
         return max(left_height, right_height) + 1
 
-    def balance_factor(self, root):
-        # Conventionally, an empty tree has balance factor 0.
+    def balance_factor(self, root: Optional[TreeNode]) -> int:
         if root is None:
             return 0
-        # Compute the height of each side independently...
+
+        # Calculate the height of the left subtree
         left_height = self.find_height(root.left)
+
+        # Calculate the height of the right subtree
         right_height = self.find_height(root.right)
-        # ...and return left − right (positive = left-leaning, negative = right).
-        return left_height - right_height
+
+        # Calculate the balance factor
+        balance_factor = left_height - right_height
+
+        return balance_factor
+
+
+# Examples from the problem statement
+t1 = from_level_order([4, 2, 6, 1, None, None, 7])
+print(Solution().balance_factor(t1))              # 0
+
+t2 = from_level_order([2, 1, 4, None, None, 3, 7])
+print(Solution().balance_factor(t2))              # -1
+
+# Edge cases
+print(Solution().balance_factor(None))            # 0  — empty tree
+
+t4 = TreeNode(5)                                  # single node
+print(Solution().balance_factor(t4))              # 0
+
+t5 = from_level_order([5, 4, None, 3, None, 2])  # left-skewed
+print(Solution().balance_factor(t5))              # 3
+
+t6 = from_level_order([1, None, 2, None, None, None, 3])  # right-skewed
+print(Solution().balance_factor(t6))              # -1
+
+t7 = from_level_order([4, 2, 6, 1, 3, 5, 7])    # perfect balanced BST
+print(Solution().balance_factor(t7))              # 0
 ```
 
 ```java run
+import java.util.*;
+
 public class Main {
-    static class TreeNode { int val; TreeNode left, right; TreeNode(int v){val=v;} }
+    static class TreeNode {
+        int val;
+        TreeNode left;
+        TreeNode right;
+        TreeNode() {}
+        TreeNode(int val) { this.val = val; }
+    }
+
+    static TreeNode fromLevelOrder(Integer... values) {
+        if (values.length == 0 || values[0] == null) return null;
+        TreeNode root = new TreeNode(values[0]);
+        Deque<TreeNode> queue = new ArrayDeque<>();
+        queue.add(root);
+        int i = 1;
+        while (!queue.isEmpty() && i < values.length) {
+            TreeNode node = queue.poll();
+            if (i < values.length && values[i] != null) {
+                node.left = new TreeNode(values[i]);
+                queue.add(node.left);
+            }
+            i++;
+            if (i < values.length && values[i] != null) {
+                node.right = new TreeNode(values[i]);
+                queue.add(node.right);
+            }
+            i++;
+        }
+        return root;
+    }
 
     static class Solution {
-        int findHeight(TreeNode root) {
-            // Empty subtree has height 0.
-            if (root == null) return 0;
-            // Recurse into both children to find the deeper side.
-            int leftHeight  = findHeight(root.left);
+        private int findHeight(TreeNode root) {
+
+            // Empty tree has height 0
+            if (root == null) {
+                return 0;
+            }
+
+            // Recursively calculate the height of the left and right
+            // subtrees
+            int leftHeight = findHeight(root.left);
             int rightHeight = findHeight(root.right);
-            // +1 accounts for the current node's level.
+
+            // Return the maximum height among the left and right subtrees
+            // plus 1 for the current node
             return Math.max(leftHeight, rightHeight) + 1;
         }
 
         public int balanceFactor(TreeNode root) {
-            if (root == null) return 0;                   // empty tree → 0 by convention
-            int leftHeight  = findHeight(root.left);      // height of left subtree
-            int rightHeight = findHeight(root.right);     // height of right subtree
-            return leftHeight - rightHeight;              // sign tells which side leans
+            if (root == null) {
+                return 0;
+            }
+
+            // Calculate the height of the left subtree
+            int leftHeight = findHeight(root.left);
+
+            // Calculate the height of the right subtree
+            int rightHeight = findHeight(root.right);
+
+            // Calculate the balance factor
+            int balanceFactor = leftHeight - rightHeight;
+
+            return balanceFactor;
         }
     }
 
     public static void main(String[] args) {
-        TreeNode root = new TreeNode(4);
-        root.left  = new TreeNode(2); root.right = new TreeNode(6);
-        root.left.left  = new TreeNode(1);
-        root.right.right = new TreeNode(7);
-        System.out.println(new Solution().balanceFactor(root));  // 0
+        // Examples from the problem statement
+        TreeNode t1 = fromLevelOrder(4, 2, 6, 1, null, null, 7);
+        System.out.println(new Solution().balanceFactor(t1));              // 0
+
+        TreeNode t2 = fromLevelOrder(2, 1, 4, null, null, 3, 7);
+        System.out.println(new Solution().balanceFactor(t2));              // -1
+
+        // Edge cases
+        System.out.println(new Solution().balanceFactor(null));            // 0  — empty tree
+
+        TreeNode t4 = new TreeNode(5);                                     // single node
+        System.out.println(new Solution().balanceFactor(t4));              // 0
+
+        TreeNode t5 = fromLevelOrder(5, 4, null, 3, null, 2);             // left-skewed
+        System.out.println(new Solution().balanceFactor(t5));              // 3
+
+        TreeNode t6 = new TreeNode(1);                                     // right-skewed
+        t6.right = new TreeNode(2); t6.right.right = new TreeNode(3);
+        System.out.println(new Solution().balanceFactor(t6));              // -2
+
+        TreeNode t7 = fromLevelOrder(4, 2, 6, 1, 3, 5, 7);               // perfect balanced BST
+        System.out.println(new Solution().balanceFactor(t7));              // 0
     }
 }
 ```
 
-```c run
-/**
- * struct TreeNode {
- *     int val;
- *     struct TreeNode *left;
- *     struct TreeNode *right;
- * };
- */
-#include <stdlib.h>
-
-static int max_int(int a, int b) { return a > b ? a : b; }
-
-int findHeight(struct TreeNode *root) {
-    if (root == NULL) return 0;                        // empty subtree
-    int leftHeight  = findHeight(root->left);          // recurse left
-    int rightHeight = findHeight(root->right);         // recurse right
-    return max_int(leftHeight, rightHeight) + 1;       // +1 for this level
-}
-
-int balanceFactor(struct TreeNode *root) {
-    if (root == NULL) return 0;                        // 0 by convention
-    int leftHeight  = findHeight(root->left);
-    int rightHeight = findHeight(root->right);
-    return leftHeight - rightHeight;                   // > 0 = left-heavy
-}
-```
-
-```scala run
-class TreeNode(var value: Int, var left: TreeNode = null, var right: TreeNode = null)
-
-object Main extends App {
-  class Solution {
-    def findHeight(root: TreeNode): Int =
-      if (root == null) 0                                  // empty contributes nothing
-      else 1 + math.max(findHeight(root.left),             // +1 for current level
-                        findHeight(root.right))
-
-    def balanceFactor(root: TreeNode): Int =
-      if (root == null) 0
-      else findHeight(root.left) - findHeight(root.right)  // > 0 means left-heavier
-  }
-
-  val root = new TreeNode(4,
-    new TreeNode(2, new TreeNode(1), null),
-    new TreeNode(6, null, new TreeNode(7)))
-  println(new Solution().balanceFactor(root))  // 0
-}
-```
+</details>
 
 
 ***
@@ -685,7 +748,9 @@ The balance factor of a subtree is the difference between the height of its left
 >   - height of right subtree = 1
 >   - balance factor = 1 − 1 = 0
 
-## The Strategy
+<details>
+<summary><h2>The Strategy</h2></summary>
+
 
 This is the previous problem, plus a *find* step at the front. We must locate the target node first, then run the same balance-factor calculation on it.
 
@@ -694,139 +759,229 @@ This is the previous problem, plus a *find* step at the front. We must locate th
 
 If the value isn't in the tree, the find returns `null`/`None`, and we return `0` per the problem spec.
 
-## The Solution
+</details>
+<details>
+<summary><h2>The Solution</h2></summary>
 
 
-```pseudocode
-function findNode(root, value):
-    if root is null OR root.val = value:
-        return root
-    found ← findNode(root.left, value)
-    if found is NOT null:
-        return found
-    return findNode(root.right, value)
-
-function balanceOfSubtree(root, value):
-    node ← findNode(root, value)
-    if node is null:
-        return 0
-    return findHeight(node.left) − findHeight(node.right)
-```
 
 ```python run
+from typing import Optional
+
+
+class TreeNode:
+    def __init__(self, val=0, left=None, right=None):
+        self.val = val
+        self.left = left
+        self.right = right
+
+
+def from_level_order(values):
+    """Build tree from list like [1, 2, 3, None, 4]. None means missing child."""
+    if not values:
+        return None
+    root = TreeNode(values[0])
+    queue = [root]
+    i = 1
+    while queue and i < len(values):
+        node = queue.pop(0)
+        if i < len(values) and values[i] is not None:
+            node.left = TreeNode(values[i])
+            queue.append(node.left)
+        i += 1
+        if i < len(values) and values[i] is not None:
+            node.right = TreeNode(values[i])
+            queue.append(node.right)
+        i += 1
+    return root
+
+
 class Solution:
-    def find_node(self, root, value):
-        # Empty subtree, or this is the node we wanted.
+    def find_node(
+        self, root: Optional[TreeNode], value: int
+    ) -> Optional[TreeNode]:
+
+        # Base cases: empty tree or node with the given value found
         if root is None or root.val == value:
             return root
-        # Search the left subtree first; if found, return early.
+
+        # Recursively search in the left and right subtrees
         left_node = self.find_node(root.left, value)
         if left_node is not None:
             return left_node
-        # Otherwise, the answer (or None) is in the right subtree.
-        return self.find_node(root.right, value)
 
-    def find_height(self, root):
+        right_node = self.find_node(root.right, value)
+        return right_node
+
+    def find_height(self, root: Optional[TreeNode]) -> int:
+
+        # Empty tree has height 0
         if root is None:
             return 0
-        return max(self.find_height(root.left),
-                   self.find_height(root.right)) + 1
 
-    def balance_of_subtree(self, root, value):
+        # Recursively calculate the height of the left and right subtrees
+        left_height = self.find_height(root.left)
+        right_height = self.find_height(root.right)
+
+        # Return the maximum height among the left and right subtrees
+        # plus 1 for the current node
+        return max(left_height, right_height) + 1
+
+    def balance_of_subtree(
+        self, root: Optional[TreeNode], value: int
+    ) -> int:
+
+        # Find the node with the given value
         node = self.find_node(root, value)
-        if node is None:                              # value not present → 0 by spec
+        if node is None:
             return 0
-        return self.find_height(node.left) - self.find_height(node.right)
+
+        # Calculate the height of the left and right subtrees
+        left_height = self.find_height(node.left)
+        right_height = self.find_height(node.right)
+
+        # Calculate the balance factor
+        balance_factor = left_height - right_height
+        return balance_factor
+
+
+# Examples from the problem statement
+t1 = from_level_order([4, 2, 6, 1, None, None, 7])
+print(Solution().balance_of_subtree(t1, 2))       # 1
+
+t2 = from_level_order([2, 1, 4, None, None, 3, 7])
+print(Solution().balance_of_subtree(t2, 4))       # 0
+
+# Edge cases
+print(Solution().balance_of_subtree(None, 5))     # 0  — empty tree
+
+t4 = TreeNode(5)                                  # single node, query root
+print(Solution().balance_of_subtree(t4, 5))       # 0
+
+t5 = from_level_order([4, 2, 6, 1, None, None, 7])
+print(Solution().balance_of_subtree(t5, 99))      # 0  — value not in tree
+
+t6 = from_level_order([4, 2, 6, 1, None, None, 7])
+print(Solution().balance_of_subtree(t6, 4))       # 0  — balanced root
+
+t7 = from_level_order([4, 2, 6, 1, None, None, 7])
+print(Solution().balance_of_subtree(t7, 6))       # -1 — right child of 6 only
 ```
 
 ```java run
+import java.util.*;
+
 public class Main {
-    static class TreeNode { int val; TreeNode left, right; TreeNode(int v){val=v;} }
+    static class TreeNode {
+        int val;
+        TreeNode left;
+        TreeNode right;
+        TreeNode() {}
+        TreeNode(int val) { this.val = val; }
+    }
+
+    static TreeNode fromLevelOrder(Integer... values) {
+        if (values.length == 0 || values[0] == null) return null;
+        TreeNode root = new TreeNode(values[0]);
+        Deque<TreeNode> queue = new ArrayDeque<>();
+        queue.add(root);
+        int i = 1;
+        while (!queue.isEmpty() && i < values.length) {
+            TreeNode node = queue.poll();
+            if (i < values.length && values[i] != null) {
+                node.left = new TreeNode(values[i]);
+                queue.add(node.left);
+            }
+            i++;
+            if (i < values.length && values[i] != null) {
+                node.right = new TreeNode(values[i]);
+                queue.add(node.right);
+            }
+            i++;
+        }
+        return root;
+    }
 
     static class Solution {
-        TreeNode findNode(TreeNode root, int value) {
-            if (root == null || root.val == value) return root;       // base cases
-            TreeNode left = findNode(root.left, value);
-            if (left != null) return left;                            // short-circuit on hit
-            return findNode(root.right, value);
+        private TreeNode findNode(TreeNode root, int value) {
+
+            // Base cases: empty tree or node with the given value found
+            if (root == null || root.val == value) {
+                return root;
+            }
+
+            // Recursively search in the left and right subtrees
+            TreeNode leftNode = findNode(root.left, value);
+            if (leftNode != null) {
+                return leftNode;
+            }
+
+            TreeNode rightNode = findNode(root.right, value);
+            return rightNode;
         }
 
-        int findHeight(TreeNode root) {
-            if (root == null) return 0;
-            return Math.max(findHeight(root.left), findHeight(root.right)) + 1;
+        private int findHeight(TreeNode root) {
+
+            // Empty tree has height 0
+            if (root == null) {
+                return 0;
+            }
+
+            // Recursively calculate the height of the left and right
+            // subtrees
+            int leftHeight = findHeight(root.left);
+            int rightHeight = findHeight(root.right);
+
+            // Return the maximum height among the left and right subtrees
+            // plus 1 for the current node
+            return Math.max(leftHeight, rightHeight) + 1;
         }
 
         public int balanceOfSubtree(TreeNode root, int value) {
+
+            // Find the node with the given value
             TreeNode node = findNode(root, value);
-            if (node == null) return 0;                               // value not present
-            return findHeight(node.left) - findHeight(node.right);
+            if (node == null) {
+                return 0;
+            }
+
+            // Calculate the height of the left and right subtrees
+            int leftHeight = findHeight(node.left);
+            int rightHeight = findHeight(node.right);
+
+            // Calculate the balance factor
+            int balanceFactor = leftHeight - rightHeight;
+            return balanceFactor;
         }
     }
 
     public static void main(String[] args) {
-        TreeNode root = new TreeNode(4);
-        root.left  = new TreeNode(2); root.right = new TreeNode(6);
-        root.left.left  = new TreeNode(1);
-        root.right.right = new TreeNode(7);
-        System.out.println(new Solution().balanceOfSubtree(root, 2));  // 1
+        // Examples from the problem statement
+        TreeNode t1 = fromLevelOrder(4, 2, 6, 1, null, null, 7);
+        System.out.println(new Solution().balanceOfSubtree(t1, 2));       // 1
+
+        TreeNode t2 = fromLevelOrder(2, 1, 4, null, null, 3, 7);
+        System.out.println(new Solution().balanceOfSubtree(t2, 4));       // 0
+
+        // Edge cases
+        System.out.println(new Solution().balanceOfSubtree(null, 5));     // 0  — empty tree
+
+        TreeNode t4 = new TreeNode(5);                                    // single node, query root
+        System.out.println(new Solution().balanceOfSubtree(t4, 5));       // 0
+
+        TreeNode t5 = fromLevelOrder(4, 2, 6, 1, null, null, 7);
+        System.out.println(new Solution().balanceOfSubtree(t5, 99));      // 0  — value not in tree
+
+        TreeNode t6 = fromLevelOrder(4, 2, 6, 1, null, null, 7);
+        System.out.println(new Solution().balanceOfSubtree(t6, 4));       // 0  — balanced root
+
+        TreeNode t7 = fromLevelOrder(4, 2, 6, 1, null, null, 7);
+        System.out.println(new Solution().balanceOfSubtree(t7, 6));       // -1 — right child of 6 only
     }
 }
 ```
 
-```c run
-#include <stdlib.h>
-static int max_int(int a, int b) { return a > b ? a : b; }
-
-struct TreeNode *findNode(struct TreeNode *root, int value) {
-    if (root == NULL || root->val == value) return root;          // base cases
-    struct TreeNode *left = findNode(root->left, value);
-    if (left != NULL) return left;                                // hit — short-circuit
-    return findNode(root->right, value);
-}
-
-int findHeight(struct TreeNode *root) {
-    if (root == NULL) return 0;
-    return max_int(findHeight(root->left), findHeight(root->right)) + 1;
-}
-
-int balanceOfSubtree(struct TreeNode *root, int value) {
-    struct TreeNode *node = findNode(root, value);
-    if (node == NULL) return 0;                                   // not present → 0
-    return findHeight(node->left) - findHeight(node->right);
-}
-```
-
-```scala run
-class TreeNode(var value: Int, var left: TreeNode = null, var right: TreeNode = null)
-
-object Main extends App {
-  class Solution {
-    def findNode(root: TreeNode, value: Int): TreeNode = {
-      if (root == null || root.value == value) root                 // base cases
-      else {
-        val left = findNode(root.left, value)
-        if (left != null) left                                      // hit — short-circuit
-        else findNode(root.right, value)
-      }
-    }
-
-    def findHeight(root: TreeNode): Int =
-      if (root == null) 0
-      else 1 + math.max(findHeight(root.left), findHeight(root.right))
-
-    def balanceOfSubtree(root: TreeNode, value: Int): Int = {
-      val node = findNode(root, value)
-      if (node == null) 0
-      else findHeight(node.left) - findHeight(node.right)
-    }
-  }
-
-  val root = new TreeNode(4,
-    new TreeNode(2, new TreeNode(1), null),
-    new TreeNode(6, null, new TreeNode(7)))
-  println(new Solution().balanceOfSubtree(root, 2))  // 1
-}
-```
+</details>
 
 
 ***
@@ -1222,7 +1377,9 @@ A height-balanced tree is a tree where the balance factor for every node in the 
 > - **Output:** `false`
 > - **Explanation:** At the root, the left subtree has height 0 and the right has height 2 — difference 2, rule violated.
 
-## The Strategy
+<details>
+<summary><h2>The Strategy</h2></summary>
+
 
 Recursion all the way down: a tree is height-balanced if **all three** of these hold simultaneously:
 
@@ -1236,135 +1393,213 @@ The empty tree is balanced by definition. Any node that fails check 1 short-circ
 
 The answer is **O(n²)** in the worst case (a skew tree), because `findHeight` re-walks each subtree from scratch at every level. There's a classic O(n) optimisation that returns height *and* the balanced-flag in one bottom-up pass — we'll meet that idiom many times in this course. Keeping the simpler form here makes the structure crystal clear.
 
-## The Solution
+</details>
+<details>
+<summary><h2>The Solution</h2></summary>
 
 
-```pseudocode
-function heightBalancedTree(root):
-    if root is null:
-        return true
-    lh ← findHeight(root.left)
-    rh ← findHeight(root.right)
-    if |lh − rh| > 1:
-        return false
-    return heightBalancedTree(root.left) AND heightBalancedTree(root.right)
-```
 
 ```python run
+from typing import Optional
+
+
+class TreeNode:
+    def __init__(self, val=0, left=None, right=None):
+        self.val = val
+        self.left = left
+        self.right = right
+
+
+def from_level_order(values):
+    """Build tree from list like [1, 2, 3, None, 4]. None means missing child."""
+    if not values:
+        return None
+    root = TreeNode(values[0])
+    queue = [root]
+    i = 1
+    while queue and i < len(values):
+        node = queue.pop(0)
+        if i < len(values) and values[i] is not None:
+            node.left = TreeNode(values[i])
+            queue.append(node.left)
+        i += 1
+        if i < len(values) and values[i] is not None:
+            node.right = TreeNode(values[i])
+            queue.append(node.right)
+        i += 1
+    return root
+
+
 class Solution:
-    def find_height(self, root):
+    def find_height(self, root: Optional[TreeNode]) -> int:
+
+        # Empty tree has height 0
         if root is None:
             return 0
-        return max(self.find_height(root.left),
-                   self.find_height(root.right)) + 1
 
-    def height_balanced_tree(self, root):
-        # Empty tree is trivially height-balanced.
+        # Recursively calculate the height of the left and right subtrees
+        left_height = self.find_height(root.left)
+        right_height = self.find_height(root.right)
+
+        # Return the maximum height among the left and right subtrees
+        # plus 1 for the current node
+        return max(left_height, right_height) + 1
+
+    def height_balanced_tree(self, root: Optional[TreeNode]) -> bool:
+
+        # Base case: empty tree
         if root is None:
             return True
 
-        left_height  = self.find_height(root.left)
+        left_height = self.find_height(root.left)
         right_height = self.find_height(root.right)
 
-        # Local rule: this node's two subtrees differ by at most 1 in height.
         if abs(left_height - right_height) <= 1:
-            # Local rule holds — now both subtrees must also be balanced themselves.
-            return (self.height_balanced_tree(root.left) and
-                    self.height_balanced_tree(root.right))
-        # Local rule failed — short-circuit the whole tree to False.
+
+            # Check if both left and right subtrees are height-balanced
+            return self.height_balanced_tree(
+                root.left
+            ) and self.height_balanced_tree(root.right)
+
         return False
+
+
+# Examples from the problem statement
+t1 = from_level_order([4, 2, 6, 1, None, None, 7])
+print(Solution().height_balanced_tree(t1))         # True
+
+t2 = from_level_order([1, None, 4, None, None, 2, 7])
+print(Solution().height_balanced_tree(t2))         # False
+
+# Edge cases
+print(Solution().height_balanced_tree(None))       # True  — empty tree
+
+t4 = TreeNode(5)                                   # single node
+print(Solution().height_balanced_tree(t4))         # True
+
+t5 = from_level_order([4, 2, 6, 1, 3, 5, 7])     # perfect balanced BST
+print(Solution().height_balanced_tree(t5))         # True
+
+t6 = TreeNode(1)                                   # right-skewed (3 levels)
+t6.right = TreeNode(2)
+t6.right.right = TreeNode(3)
+print(Solution().height_balanced_tree(t6))         # False
+
+t7 = from_level_order([5, 3, 7, 2, 4, 6, 8])     # balanced 7-node BST
+print(Solution().height_balanced_tree(t7))         # True
 ```
 
 ```java run
+import java.util.*;
+
 public class Main {
-    static class TreeNode { int val; TreeNode left, right; TreeNode(int v){val=v;} }
+    static class TreeNode {
+        int val;
+        TreeNode left;
+        TreeNode right;
+        TreeNode() {}
+        TreeNode(int val) { this.val = val; }
+    }
+
+    static TreeNode fromLevelOrder(Integer... values) {
+        if (values.length == 0 || values[0] == null) return null;
+        TreeNode root = new TreeNode(values[0]);
+        Deque<TreeNode> queue = new ArrayDeque<>();
+        queue.add(root);
+        int i = 1;
+        while (!queue.isEmpty() && i < values.length) {
+            TreeNode node = queue.poll();
+            if (i < values.length && values[i] != null) {
+                node.left = new TreeNode(values[i]);
+                queue.add(node.left);
+            }
+            i++;
+            if (i < values.length && values[i] != null) {
+                node.right = new TreeNode(values[i]);
+                queue.add(node.right);
+            }
+            i++;
+        }
+        return root;
+    }
 
     static class Solution {
-        int findHeight(TreeNode root) {
-            if (root == null) return 0;
-            return Math.max(findHeight(root.left), findHeight(root.right)) + 1;
+        private int findHeight(TreeNode root) {
+
+            // Empty tree has height 0
+            if (root == null) {
+                return 0;
+            }
+
+            // Recursively calculate the height of the left and right
+            // subtrees
+            int leftHeight = findHeight(root.left);
+            int rightHeight = findHeight(root.right);
+
+            // Return the maximum height among the left and right subtrees
+            // plus 1 for the current node
+            return Math.max(leftHeight, rightHeight) + 1;
         }
 
         public boolean heightBalancedTree(TreeNode root) {
-            if (root == null) return true;                                        // empty → balanced
 
-            int leftHeight  = findHeight(root.left);
+            // Base case: empty tree
+            if (root == null) {
+                return true;
+            }
+
+            int leftHeight = findHeight(root.left);
             int rightHeight = findHeight(root.right);
 
-            if (Math.abs(leftHeight - rightHeight) <= 1) {                        // local rule holds...
-                return heightBalancedTree(root.left)                              // ...check both
-                    && heightBalancedTree(root.right);                            //    subtrees
+            if (Math.abs(leftHeight - rightHeight) <= 1) {
+
+                // Check if both left and right subtrees are height-balanced
+                return (
+                    heightBalancedTree(root.left) &&
+                    heightBalancedTree(root.right)
+                );
             }
-            return false;                                                          // local rule failed
+
+            return false;
         }
     }
 
     public static void main(String[] args) {
-        TreeNode root = new TreeNode(4);
-        root.left  = new TreeNode(2); root.right = new TreeNode(6);
-        root.left.left  = new TreeNode(1);
-        root.right.right = new TreeNode(7);
-        System.out.println(new Solution().heightBalancedTree(root));  // true
+        // Examples from the problem statement
+        TreeNode t1 = fromLevelOrder(4, 2, 6, 1, null, null, 7);
+        System.out.println(new Solution().heightBalancedTree(t1));         // true
+
+        TreeNode t2 = new TreeNode(1);                                     // right-skewed (unbalanced)
+        t2.right = new TreeNode(4);
+        t2.right.left = new TreeNode(2); t2.right.right = new TreeNode(7);
+        System.out.println(new Solution().heightBalancedTree(t2));         // false
+
+        // Edge cases
+        System.out.println(new Solution().heightBalancedTree(null));       // true  — empty tree
+
+        TreeNode t4 = new TreeNode(5);                                     // single node
+        System.out.println(new Solution().heightBalancedTree(t4));         // true
+
+        TreeNode t5 = fromLevelOrder(4, 2, 6, 1, 3, 5, 7);               // perfect balanced BST
+        System.out.println(new Solution().heightBalancedTree(t5));         // true
+
+        TreeNode t6 = new TreeNode(1);                                     // right-skewed (3 levels)
+        t6.right = new TreeNode(2); t6.right.right = new TreeNode(3);
+        System.out.println(new Solution().heightBalancedTree(t6));         // false
+
+        TreeNode t7 = fromLevelOrder(5, 3, 7, 2, 4, 6, 8);               // balanced 7-node BST
+        System.out.println(new Solution().heightBalancedTree(t7));         // true
     }
 }
 ```
 
-```c run
-#include <stdlib.h>
-#include <stdbool.h>
-static int max_int(int a, int b) { return a > b ? a : b; }
-static int abs_int(int x) { return x < 0 ? -x : x; }
+</details>
+<details>
+<summary><h2>Final Takeaway</h2></summary>
 
-int findHeight(struct TreeNode *root) {
-    if (root == NULL) return 0;
-    return max_int(findHeight(root->left), findHeight(root->right)) + 1;
-}
-
-bool heightBalancedTree(struct TreeNode *root) {
-    if (root == NULL) return true;                                           // empty → balanced
-
-    int leftHeight  = findHeight(root->left);
-    int rightHeight = findHeight(root->right);
-
-    if (abs_int(leftHeight - rightHeight) <= 1) {                            // local rule holds
-        return heightBalancedTree(root->left) &&
-               heightBalancedTree(root->right);                              // recurse both sides
-    }
-    return false;                                                            // local rule failed
-}
-```
-
-```scala run
-class TreeNode(var value: Int, var left: TreeNode = null, var right: TreeNode = null)
-
-object Main extends App {
-  class Solution {
-    def findHeight(root: TreeNode): Int =
-      if (root == null) 0
-      else 1 + math.max(findHeight(root.left), findHeight(root.right))
-
-    def heightBalancedTree(root: TreeNode): Boolean = {
-      if (root == null) return true                                              // empty → balanced
-      val l = findHeight(root.left)
-      val r = findHeight(root.right)
-      if (math.abs(l - r) <= 1)
-        heightBalancedTree(root.left) && heightBalancedTree(root.right)          // recurse
-      else false                                                                 // local rule failed
-    }
-  }
-
-  val root = new TreeNode(4,
-    new TreeNode(2, new TreeNode(1), null),
-    new TreeNode(6, null, new TreeNode(7)))
-  println(new Solution().heightBalancedTree(root))  // true
-}
-```
-
-
-***
-
-## Final Takeaway
 
 Two numbers govern every BST's performance: its **height** (worst-case path length) and its **absolute balance factor** (how lopsided each node is). Complete trees minimise both, but they're too rigid to maintain under live mutation. Height-balanced trees relax the rule just enough to be cheap to repair *and* still guarantee logarithmic operations. Every self-balancing BST you'll ever use — AVL, red-black, treap — is a different recipe for keeping that absolute balance factor `≤ 1` after each modification.
 
 The next lesson zooms back in to the basic operation that justifies all of this engineering: **search**. We'll first do it recursively, leaning on the BST property at every step to halve the remaining tree.
+
+</details>

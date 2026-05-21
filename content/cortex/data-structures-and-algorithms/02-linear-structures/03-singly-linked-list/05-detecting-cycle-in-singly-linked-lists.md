@@ -216,230 +216,103 @@ flowchart TB
 The implementation is relatively straightforward: we use the `slow` and `fast` pointer technique to traverse the list until they either meet (cycle) or `fast` falls off the end (no cycle). On a cycle, we reset `fast` to `head` and walk both pointers at the same speed until they meet again — that meeting point is where the cycle starts.
 
 
-```pseudocode
-# Floyd's tortoise-and-hare. Phase 1 sets a hasLoop flag on first collision; phase 2 resets fast to head and walks both at speed 1 until they re-meet at the cycle entry.
-function findCycle(head):
-    slow ← head
-    fast ← head
-    hasLoop ← false
-
-    # Check if there is a loop in the linked list
-    while fast is not null AND fast.next is not null:
-
-        # Move slow pointer by one step
-        slow ← slow.next
-
-        # Move fast pointer by two steps
-        fast ← fast.next.next
-
-        # If slow and fast pointers meet, there is a loop
-        if slow = fast:
-            hasLoop ← true
-            break
-
-    # If no loop is found, return null
-    if NOT hasLoop:
-        return null
-
-    # Reset fast pointer to the head and move both pointers at the same pace
-    fast ← head
-    while slow ≠ fast:
-        slow ← slow.next
-        fast ← fast.next
-
-    # Return the node where the loop starts
-    return slow
-```
-
 ```python run
+"""
+Definition for singly-linked list.
+class ListNode:
+    def __init__(self, val):
+        self.val = val
+        self.next = None
+"""
+
 from typing import Optional
 
-class ListNode:
-    def __init__(self, val=0, next=None):
-        self.val = val
-        self.next = next
+class Solution:
+    def find_cycle(
+        self, head: Optional[ListNode]
+    ) -> Optional[ListNode]:
+        slow: Optional[ListNode] = head
+        fast: Optional[ListNode] = head
+        has_loop: bool = False
 
-def find_cycle(head: Optional[ListNode]) -> Optional[ListNode]:
-    slow: Optional[ListNode] = head
-    fast: Optional[ListNode] = head
-    has_loop: bool = False
+        # Check if there is a loop in the linked list
+        while fast and fast.next and slow:
 
-    # Check if there is a loop in the linked list
-    while fast is not None and fast.next is not None and slow:
+            # Move slow pointer by one step
+            slow = slow.next
 
-        # Move slow pointer by one step
-        slow = slow.next
+            # Move fast pointer by two steps
+            fast = fast.next.next
 
-        # Move fast pointer by two steps
-        fast = fast.next.next
+            # If slow and fast pointers meet, there is a loop
+            if slow == fast:
+                has_loop = True
+                break
 
-        # If slow and fast pointers meet, there is a loop
-        if slow == fast:
-            has_loop = True
-            break
+        # If no loop is found, return None
+        if not has_loop:
+            return None
 
-    # If no loop is found, return None
-    if not has_loop:
-        return None
+        # Reset fast pointer to the head and move both pointers at the
+        # same pace
+        fast = head
+        while slow != fast and slow and fast:
+            slow = slow.next
+            fast = fast.next
 
-    # Reset fast pointer to the head and move both pointers at the same pace
-    fast = head
-    while slow != fast and slow and fast:
-        slow = slow.next
-        fast = fast.next
-
-    # Return the node where the loop starts
-    return slow
+        # Return the node where the loop starts
+        return slow
 ```
 
 ```java run
-public class Main {
-    static class ListNode { int val; ListNode next; ListNode(int v){val=v;} }
+/**
+ * Definition for singly-linked list.
+ * class ListNode {
+ *     int val;
+ *     ListNode next;
+ *     ListNode() {}
+ *     ListNode(int val) { this.val = val; }
+ * };
+ */
 
-    static class Solution {
-        public ListNode findCycle(ListNode head) {
-            ListNode slow = head;
-            ListNode fast = head;
-            boolean hasLoop = false;
+class Solution {
+    public ListNode findCycle(ListNode head) {
+        ListNode slow = head;
+        ListNode fast = head;
+        boolean hasLoop = false;
 
-            // Check if there is a loop in the linked list
-            while (fast != null && fast.next != null) {
+        // Check if there is a loop in the linked list
+        while (fast != null && fast.next != null) {
 
-                // Move slow pointer by one step
-                slow = slow.next;
+            // Move slow pointer by one step
+            slow = slow.next;
 
-                // Move fast pointer by two steps
-                fast = fast.next.next;
+            // Move fast pointer by two steps
+            fast = fast.next.next;
 
-                // If slow and fast pointers meet, there is a loop
-                if (slow == fast) {
-                    hasLoop = true;
-                    break;
-                }
+            // If slow and fast pointers meet, there is a loop
+            if (slow == fast) {
+                hasLoop = true;
+                break;
             }
-
-            // If no loop is found, return null
-            if (!hasLoop) {
-                return null;
-            }
-
-            // Reset fast pointer to the head and move both pointers at the
-            // same pace
-            fast = head;
-            while (slow != fast) {
-                slow = slow.next;
-                fast = fast.next;
-            }
-
-            // Return the node where the loop starts
-            return slow;
         }
-    }
 
-    public static void main(String[] args) {
-        // Cycle at node 7: 5 → 7 → 3 → 10 → back to 7
-        ListNode n1 = new ListNode(5), n2 = new ListNode(7),
-                 n3 = new ListNode(3), n4 = new ListNode(10);
-        n1.next = n2; n2.next = n3; n3.next = n4; n4.next = n2;
-        ListNode start = new Solution().findCycle(n1);
-        System.out.println(start == null ? "null" : start.val); // 7
-    }
-}
-```
-
-```c run
-#include <stddef.h>
-
-typedef struct ListNode { int val; struct ListNode *next; } ListNode;
-
-ListNode* findCycle(ListNode *head) {
-    ListNode *slow = head;
-    ListNode *fast = head;
-    int hasLoop = 0;
-
-    /* Check if there is a loop in the linked list */
-    while (fast != NULL && fast->next != NULL) {
-
-        /* Move slow pointer by one step */
-        slow = slow->next;
-
-        /* Move fast pointer by two steps */
-        fast = fast->next->next;
-
-        /* If slow and fast pointers meet, there is a loop */
-        if (slow == fast) {
-            hasLoop = 1;
-            break;
+        // If no loop is found, return null
+        if (!hasLoop) {
+            return null;
         }
-    }
 
-    /* If no loop is found, return NULL */
-    if (!hasLoop) {
-        return NULL;
-    }
-
-    /* Reset fast pointer to the head and move both pointers at the
-       same pace */
-    fast = head;
-    while (slow != fast) {
-        slow = slow->next;
-        fast = fast->next;
-    }
-
-    /* Return the node where the loop starts */
-    return slow;
-}
-```
-
-```scala run
-class ListNode(var v: Int, var next: ListNode = null)
-
-object Main extends App {
-  class Solution {
-    def findCycle(head: ListNode): ListNode = {
-      var slow = head
-      var fast = head
-      var hasLoop = false
-
-      // Check if there is a loop in the linked list
-      while (fast != null && fast.next != null && !hasLoop) {
-
-        // Move slow pointer by one step
-        slow = slow.next
-
-        // Move fast pointer by two steps
-        fast = fast.next.next
-
-        // If slow and fast pointers meet, there is a loop
-        if (slow eq fast) {
-          hasLoop = true
+        // Reset fast pointer to the head and move both pointers at the
+        // same pace
+        fast = head;
+        while (slow != fast) {
+            slow = slow.next;
+            fast = fast.next;
         }
-      }
 
-      // If no loop is found, return null
-      if (!hasLoop) {
-        return null
-      }
-
-      // Reset fast pointer to the head and move both pointers at the
-      // same pace
-      fast = head
-      while (slow ne fast) {
-        slow = slow.next
-        fast = fast.next
-      }
-
-      // Return the node where the loop starts
-      slow
+        // Return the node where the loop starts
+        return slow;
     }
-  }
-
-  // Cycle at node 7: 5 → 7 → 3 → 10 → back to 7
-  val n1 = new ListNode(5); val n2 = new ListNode(7)
-  val n3 = new ListNode(3); val n4 = new ListNode(10)
-  n1.next = n2; n2.next = n3; n3.next = n4; n4.next = n2
-  val start = new Solution().findCycle(n1)
-  println(if (start == null) "null" else start.v) // 7
 }
 ```
 
@@ -636,76 +509,88 @@ Given the **head** of a linked list, write a function to detect if there is a c
 > -   **Input:** head = \[5, 7, 3, 10, 6, 9\], cycleNode = 0
 > -   **Output:** false
 
-## Solution
+<details>
+<summary><h2>Solution</h2></summary>
 
 
-```pseudocode
-# Boolean version of Floyd's algorithm — return true on the first collision, false if fast falls off the list.
-function detectCycle(head):
-
-    # Initialize the slow pointer to the head of the list
-    slow ← head
-
-    # Initialize the fast pointer to the head of the list
-    fast ← head
-
-    while fast is not null AND fast.next is not null:
-
-        # Move the slow pointer one step forward
-        slow ← slow.next
-
-        # Move the fast pointer two steps forward
-        fast ← fast.next.next
-
-        # If the slow and fast pointers meet, there is a cycle in the list
-        if slow = fast:
-            return true
-
-    # If the loop exits without returning true, there is no cycle in the list
-    return false
-```
 
 ```python run
-from typing import Optional
+from typing import Optional, Tuple
+
 
 class ListNode:
-    def __init__(self, val=0, next=None):
+    def __init__(self, val=0, nxt=None):
         self.val = val
-        self.next = next
+        self.next = nxt
 
-def detect_cycle(head: Optional[ListNode]) -> bool:
 
-    # Initialize the slow pointer to the head of the list
-    slow: Optional[ListNode] = head
+def from_list(values):
+    if not values:
+        return None
+    head = ListNode(values[0])
+    cur = head
+    for v in values[1:]:
+        cur.next = ListNode(v)
+        cur = cur.next
+    return head
 
-    # Initialize the fast pointer to the head of the list
-    fast: Optional[ListNode] = head
 
-    while fast is not None and fast.next is not None and slow:
+def from_list_with_cycle(values, cycle_pos):
+    """Build a list and link tail to the node at cycle_pos (0-indexed).
+    cycle_pos = -1 means no cycle."""
+    if not values:
+        return None
+    head = ListNode(values[0])
+    cur = head
+    cycle_entry = head if cycle_pos == 0 else None
+    for i, v in enumerate(values[1:], 1):
+        cur.next = ListNode(v)
+        cur = cur.next
+        if i == cycle_pos:
+            cycle_entry = cur
+    if cycle_pos >= 0 and cycle_entry is not None:
+        cur.next = cycle_entry  # create the cycle
+    return head
 
-        # Move the slow pointer one step forward
-        slow = slow.next
 
-        # Move the fast pointer two steps forward
-        fast = fast.next.next
+class Solution:
+    def detect_cycle(self, head: Optional[ListNode]) -> bool:
 
-        # If the slow and fast pointers meet, there is a cycle in the
-        # list
-        if slow == fast:
-            return True
+        # Initialize the slow pointer to the head of the list
+        slow: Optional[ListNode] = head
 
-    # If the loop exits without returning true, there is no cycle in
-    # the list
-    return False
+        # Initialize the fast pointer to the head of the list
+        fast: Optional[ListNode] = head
 
-# Driver: non-cyclic list [5, 7, 3, 10]
-n1 = ListNode(5)
-n2 = ListNode(7)
-n3 = ListNode(3)
-n4 = ListNode(10)
-n1.next = n2; n2.next = n3; n3.next = n4
+        while fast is not None and fast.next is not None and slow:
 
-print(detect_cycle(n1))  # false
+            # Move the slow pointer one step forward
+            slow = slow.next
+
+            # Move the fast pointer two steps forward
+            fast = fast.next.next
+
+            # If the slow and fast pointers meet, there is a cycle in the
+            # list
+            if slow == fast:
+                return True
+
+        # If the loop exits without returning true, there is no cycle in
+        # the list
+        return False
+
+
+# Examples from the problem statement
+print(Solution().detect_cycle(from_list_with_cycle([5, 7, 9, 10, 6, 9], 3)))  # True
+print(Solution().detect_cycle(from_list_with_cycle([5, 7, 3, 10, 6, 9], -1))) # False
+
+# Edge cases
+print(Solution().detect_cycle(None))                                           # False
+print(Solution().detect_cycle(from_list([42])))                                # False
+print(Solution().detect_cycle(from_list_with_cycle([1, 2], -1)))               # False
+print(Solution().detect_cycle(from_list_with_cycle([1, 2], 0)))                # True (cycle at head)
+print(Solution().detect_cycle(from_list_with_cycle([1, 2, 3, 4], 2)))          # True (cycle in middle)
+print(Solution().detect_cycle(from_list_with_cycle([1, 2, 3], 2)))             # True (cycle at last node)
 ```
 
 ```java run
@@ -713,8 +598,38 @@ public class Main {
     static class ListNode {
         int val;
         ListNode next;
-        ListNode(int v) { val = v; }
-        ListNode(int v, ListNode n) { val = v; next = n; }
+        ListNode() {}
+        ListNode(int val) { this.val = val; }
+        ListNode(int val, ListNode next) { this.val = val; this.next = next; }
+    }
+
+    static ListNode fromList(int... values) {
+        if (values.length == 0) return null;
+        ListNode head = new ListNode(values[0]);
+        ListNode cur = head;
+        for (int i = 1; i < values.length; i++) {
+            cur.next = new ListNode(values[i]);
+            cur = cur.next;
+        }
+        return head;
+    }
+
+    /** Build a list and link tail to the node at cyclePos (0-indexed).
+     *  cyclePos = -1 means no cycle. */
+    static ListNode fromListWithCycle(int cyclePos, int... values) {
+        if (values.length == 0) return null;
+        ListNode head = new ListNode(values[0]);
+        ListNode cur = head;
+        ListNode cycleEntry = (cyclePos == 0) ? head : null;
+        for (int i = 1; i < values.length; i++) {
+            cur.next = new ListNode(values[i]);
+            cur = cur.next;
+            if (i == cyclePos) cycleEntry = cur;
+        }
+        if (cyclePos >= 0 && cycleEntry != null) {
+            cur.next = cycleEntry; // create the cycle
+        }
+        return head;
     }
 
     static class Solution {
@@ -748,121 +663,22 @@ public class Main {
     }
 
     public static void main(String[] args) {
-        // Non-cyclic list [5, 7, 3, 10]
-        ListNode n1 = new ListNode(5);
-        ListNode n2 = new ListNode(7);
-        ListNode n3 = new ListNode(3);
-        ListNode n4 = new ListNode(10);
-        n1.next = n2; n2.next = n3; n3.next = n4;
+        // Examples from the problem statement
+        System.out.println(new Solution().detectCycle(fromListWithCycle(3, 5, 7, 9, 10, 6, 9)));  // true
+        System.out.println(new Solution().detectCycle(fromListWithCycle(-1, 5, 7, 3, 10, 6, 9))); // false
 
-        System.out.println(new Solution().detectCycle(n1)); // false
+        // Edge cases
+        System.out.println(new Solution().detectCycle(null));                                      // false
+        System.out.println(new Solution().detectCycle(fromList(42)));                              // false
+        System.out.println(new Solution().detectCycle(fromListWithCycle(-1, 1, 2)));               // false
+        System.out.println(new Solution().detectCycle(fromListWithCycle(0, 1, 2)));                // true (cycle at head)
+        System.out.println(new Solution().detectCycle(fromListWithCycle(2, 1, 2, 3, 4)));          // true (cycle in middle)
+        System.out.println(new Solution().detectCycle(fromListWithCycle(2, 1, 2, 3)));             // true (cycle at last node)
     }
 }
 ```
 
-```c run
-#include <stdio.h>
-#include <stdlib.h>
-
-typedef struct ListNode {
-    int val;
-    struct ListNode *next;
-} ListNode;
-
-ListNode* newNode(int v) {
-    ListNode *n = malloc(sizeof *n);
-    n->val = v;
-    n->next = NULL;
-    return n;
-}
-
-int detectCycle(ListNode *head) {
-
-    /* Initialize the slow pointer to the head of the list */
-    ListNode *slow = head;
-
-    /* Initialize the fast pointer to the head of the list */
-    ListNode *fast = head;
-
-    while (fast != NULL && fast->next != NULL) {
-
-        /* Move the slow pointer one step forward */
-        slow = slow->next;
-
-        /* Move the fast pointer two steps forward */
-        fast = fast->next->next;
-
-        /* If the slow and fast pointers meet, there is a cycle in
-           the list */
-        if (slow == fast) {
-            return 1;
-        }
-    }
-
-    /* If the loop exits without returning true, there is no cycle in
-       the list */
-    return 0;
-}
-
-int main() {
-    /* Non-cyclic list [5, 7, 3, 10] */
-    ListNode *n1 = newNode(5);
-    ListNode *n2 = newNode(7);
-    ListNode *n3 = newNode(3);
-    ListNode *n4 = newNode(10);
-    n1->next = n2; n2->next = n3; n3->next = n4;
-
-    printf("%s\n", detectCycle(n1) ? "true" : "false"); /* false */
-    return 0;
-}
-```
-
-```scala run
-class ListNode(var v: Int, var next: ListNode = null)
-
-object Main extends App {
-  class Solution {
-    def detectCycle(head: ListNode): Boolean = {
-
-      // Initialize the slow pointer to the head of the list
-      var slow = head
-
-      // Initialize the fast pointer to the head of the list
-      var fast = head
-
-      while (fast != null && fast.next != null) {
-
-        // Move the slow pointer one step forward
-        slow = slow.next
-
-        // Move the fast pointer two steps forward
-        fast = fast.next.next
-
-        // If the slow and fast pointers meet, there is a cycle in
-        // the list
-        if (slow eq fast) {
-          return true
-        }
-      }
-
-      // If the loop exits without returning true, there is no cycle in
-      // the list
-      false
-    }
-  }
-
-  // Non-cyclic list [5, 7, 3, 10]
-  val n1 = new ListNode(5)
-  val n2 = new ListNode(7)
-  val n3 = new ListNode(3)
-  val n4 = new ListNode(10)
-  n1.next = n2; n2.next = n3; n3.next = n4
-
-  println(new Solution().detectCycle(n1)) // false
-}
-```
-
-
+</details>
 # Remove Loop
 
 ## Problem Statement
@@ -898,153 +714,170 @@ n3.next -> n2.value: "loop back (X=2)"
 > -   **Output:** \[1, 8, 3, 4\]
 > -   **Explanation:** The list does not contain any loop as X = 0.
 
-## Solution
+<details>
+<summary><h2>Solution</h2></summary>
 
 
-```pseudocode
-# Floyd Phase 1 to detect the loop; then walk to the node just before the loop entry and null its next pointer.
-function removeLoop(head):
-
-    # Check if the list is empty or has only one element (no loop possible)
-    if head is null OR head.next is null:
-        return
-
-    # Pointer to traverse the list one node at a time
-    slow ← head
-
-    # Pointer to traverse the list two nodes at a time
-    fast ← head
-
-    # Flag to indicate if a loop is present
-    hasLoop ← false
-
-    # Detect if there is a loop in the linked list
-    while fast is not null AND fast.next is not null:
-
-        # Move slow pointer by one node
-        slow ← slow.next
-
-        # Move fast pointer by two nodes
-        fast ← fast.next.next
-
-        # If slow and fast pointers meet, there is a loop
-        if slow = fast:
-            hasLoop ← true
-            break
-
-    # No loop found, return from the function
-    if NOT hasLoop:
-        return
-
-    # If the loop starts at the head of the linked list
-    if slow = head:
-        while slow.next ≠ head:
-            slow ← slow.next
-
-    # Find the start of the loop (where slow and fast pointers meet again)
-    else:
-
-        # Reset fast pointer to the head of the linked list
-        fast ← head
-        while slow.next ≠ fast.next:
-            slow ← slow.next
-            fast ← fast.next
-
-    # Remove the loop by setting the next pointer of the last node in the loop to null
-    slow.next ← null
-```
 
 ```python run
 from typing import Optional
 
+
 class ListNode:
-    def __init__(self, val=0, next=None):
+    def __init__(self, val=0, nxt=None):
         self.val = val
-        self.next = next
+        self.next = nxt
 
-def remove_loop(head: Optional[ListNode]) -> None:
 
-    # Check if the list is empty or has only one element (no loop
-    # possible)
-    if head is None or head.next is None:
-        return
+def from_list_with_cycle(values, cycle_pos):
+    """Build a list and link tail to the node at cycle_pos (1-indexed, matching
+    problem statement convention). cycle_pos = 0 means no cycle."""
+    if not values:
+        return None
+    head = ListNode(values[0])
+    cur = head
+    nodes = [head]
+    for v in values[1:]:
+        cur.next = ListNode(v)
+        cur = cur.next
+        nodes.append(cur)
+    if cycle_pos > 0:
+        cur.next = nodes[cycle_pos - 1]  # 1-indexed
+    return head
 
-    # Pointer to traverse the list one node at a time
-    slow: Optional[ListNode] = head
 
-    # Pointer to traverse the list two nodes at a time
-    fast: Optional[ListNode] = head
-
-    # Flag to indicate if a loop is present
-    has_loop: bool = False
-
-    # Detect if there is a loop in the linked list
-    while (
-        slow is not None
-        and fast is not None
-        and fast.next is not None
-    ):
-
-        # Move slow pointer by one node
-        slow = slow.next
-
-        # Move fast pointer by two nodes
-        fast = fast.next.next
-
-        # If slow and fast pointers meet, there is a loop
-        if slow == fast:
-            has_loop = True
-            break
-
-    # No loop found, return from the function
-    if not has_loop:
-        return
-
-    # If the loop starts at the head of the linked list
-    if slow == head:
-        while slow.next != head:
-            slow = slow.next
-
-    # Find the start of the loop (where slow and fast pointers meet
-    # again)
-    else:
-
-        # Reset fast pointer to the head of the linked list
-        fast = head
-        while slow.next != fast.next:
-            slow = slow.next
-            fast = fast.next
-
-    # Remove the loop by setting the next pointer of the last node in
-    # the loop to None
-    if slow:
-        slow.next = None
-
-def print_list(head):
-    result = []
-    while head:
-        result.append(str(head.val))
+def to_list(head):
+    """Collect values, stopping at already-seen nodes (safe after remove_loop)."""
+    out = []
+    while head is not None:
+        out.append(head.val)
         head = head.next
-    print(" -> ".join(result))
+    return out
 
-# Driver: list [1, 3, 4] with loop: 4 -> 3 (X=2)
-n1 = ListNode(1)
-n2 = ListNode(3)
-n3 = ListNode(4)
-n1.next = n2; n2.next = n3
-n3.next = n2  # Create the loop manually
 
-remove_loop(n1)
-print_list(n1)  # 1 -> 3 -> 4
+class Solution:
+    def remove_loop(self, head: Optional[ListNode]) -> None:
+
+        # Check if the list is empty or has only one element (no loop
+        # possible)
+        if head is None or head.next is None:
+            return
+
+        # Pointer to traverse the list one node at a time
+        slow: Optional[ListNode] = head
+
+        # Pointer to traverse the list two nodes at a time
+        fast: Optional[ListNode] = head
+
+        # Flag to indicate if a loop is present
+        has_loop: bool = False
+
+        # Detect if there is a loop in the linked list
+        while (
+            slow is not None
+            and fast is not None
+            and fast.next is not None
+        ):
+
+            # Move slow pointer by one node
+            slow = slow.next
+
+            # Move fast pointer by two nodes
+            fast = fast.next.next
+
+            # If slow and fast pointers meet, there is a loop
+            if slow == fast:
+                has_loop = True
+                break
+
+        # No loop found, return from the function
+        if not has_loop:
+            return
+
+        # If the loop starts at the head of the linked list
+        if slow == head:
+            while slow.next != head:
+                slow = slow.next
+
+        # Find the start of the loop (where slow and fast pointers meet
+        # again)
+        else:
+
+            # Reset fast pointer to the head of the linked list
+            fast = head
+            while slow.next != fast.next:
+                slow = slow.next
+                fast = fast.next
+
+        # Remove the loop by setting the next pointer of the last node in
+        # the loop to None
+        if slow:
+            slow.next = None
+
+
+# Example 1 — loop at position 2 (1-indexed)
+h1 = from_list_with_cycle([1, 3, 4], 2)
+Solution().remove_loop(h1)
+print(to_list(h1))                                                # [1, 3, 4]
+
+# Example 2 — no loop
+h2 = from_list_with_cycle([1, 8, 3, 4], 0)
+Solution().remove_loop(h2)
+print(to_list(h2))                                                # [1, 8, 3, 4]
+
+# Loop at head (position 1)
+h3 = from_list_with_cycle([1, 2, 3], 1)
+Solution().remove_loop(h3)
+print(to_list(h3))                                                # [1, 2, 3]
+
+# Single node, no loop
+h4 = from_list_with_cycle([5], 0)
+Solution().remove_loop(h4)
+print(to_list(h4))                                                # [5]
+
+# Empty list
+h5 = from_list_with_cycle([], 0)
+Solution().remove_loop(h5)
+print(to_list(h5))                                                # []
+
+# Loop at last node pointing to itself
+h6 = from_list_with_cycle([1, 2, 3], 3)
+Solution().remove_loop(h6)
+print(to_list(h6))                                                # [1, 2, 3]
 ```
 
 ```java run
+import java.util.*;
+
 public class Main {
     static class ListNode {
         int val;
         ListNode next;
-        ListNode(int v) { val = v; }
-        ListNode(int v, ListNode n) { val = v; next = n; }
+        ListNode() {}
+        ListNode(int val) { this.val = val; }
+        ListNode(int val, ListNode next) { this.val = val; this.next = next; }
+    }
+
+    /** Build a list and link tail to the node at cyclePos (1-indexed).
+     *  cyclePos = 0 means no cycle. */
+    static ListNode fromListWithCycle(int cyclePos, int... values) {
+        if (values.length == 0) return null;
+        ListNode[] nodes = new ListNode[values.length];
+        nodes[0] = new ListNode(values[0]);
+        for (int i = 1; i < values.length; i++) {
+            nodes[i] = new ListNode(values[i]);
+            nodes[i - 1].next = nodes[i];
+        }
+        if (cyclePos > 0) {
+            nodes[values.length - 1].next = nodes[cyclePos - 1]; // 1-indexed
+        }
+        return nodes[0];
+    }
+
+    static List<Integer> toList(ListNode head) {
+        List<Integer> out = new ArrayList<>();
+        while (head != null) { out.add(head.val); head = head.next; }
+        return out;
     }
 
     static class Solution {
@@ -1109,224 +942,46 @@ public class Main {
             // in the loop to null
             slow.next = null;
         }
-
-        public void printList(ListNode head) {
-            StringBuilder sb = new StringBuilder();
-            while (head != null) {
-                sb.append(head.val);
-                if (head.next != null) sb.append(" -> ");
-                head = head.next;
-            }
-            System.out.println(sb);
-        }
     }
 
     public static void main(String[] args) {
-        // List [1, 3, 4] with loop: 4 -> 3 (X=2)
-        ListNode n1 = new ListNode(1);
-        ListNode n2 = new ListNode(3);
-        ListNode n3 = new ListNode(4);
-        n1.next = n2; n2.next = n3;
-        n3.next = n2; // Create the loop
+        // Example 1 — loop at position 2 (1-indexed)
+        ListNode h1 = fromListWithCycle(2, 1, 3, 4);
+        new Solution().removeLoop(h1);
+        System.out.println(toList(h1));                           // [1, 3, 4]
 
-        Solution sol = new Solution();
-        sol.removeLoop(n1);
-        sol.printList(n1); // 1 -> 3 -> 4
+        // Example 2 — no loop
+        ListNode h2 = fromListWithCycle(0, 1, 8, 3, 4);
+        new Solution().removeLoop(h2);
+        System.out.println(toList(h2));                           // [1, 8, 3, 4]
+
+        // Loop at head (position 1)
+        ListNode h3 = fromListWithCycle(1, 1, 2, 3);
+        new Solution().removeLoop(h3);
+        System.out.println(toList(h3));                           // [1, 2, 3]
+
+        // Single node, no loop
+        ListNode h4 = fromListWithCycle(0, 5);
+        new Solution().removeLoop(h4);
+        System.out.println(toList(h4));                           // [5]
+
+        // Empty list
+        ListNode h5 = fromListWithCycle(0);
+        new Solution().removeLoop(h5);
+        System.out.println(toList(h5));                           // []
+
+        // Loop at last node pointing to itself
+        ListNode h6 = fromListWithCycle(3, 1, 2, 3);
+        new Solution().removeLoop(h6);
+        System.out.println(toList(h6));                           // [1, 2, 3]
     }
 }
 ```
 
-```c run
-#include <stdio.h>
-#include <stdlib.h>
+</details>
+<details>
+<summary><h2>Final Takeaway</h2></summary>
 
-typedef struct ListNode {
-    int val;
-    struct ListNode *next;
-} ListNode;
-
-ListNode* newNode(int v) {
-    ListNode *n = malloc(sizeof *n);
-    n->val = v; n->next = NULL;
-    return n;
-}
-
-void removeLoop(ListNode *head) {
-
-    /* Check if the list is empty or has only one element (no loop
-       possible) */
-    if (head == NULL || head->next == NULL) {
-        return;
-    }
-
-    /* Pointer to traverse the list one node at a time */
-    ListNode *slow = head;
-
-    /* Pointer to traverse the list two nodes at a time */
-    ListNode *fast = head;
-
-    /* Flag to indicate if a loop is present */
-    int hasLoop = 0;
-
-    /* Detect if there is a loop in the linked list */
-    while (fast != NULL && fast->next != NULL) {
-
-        /* Move slow pointer by one node */
-        slow = slow->next;
-
-        /* Move fast pointer by two nodes */
-        fast = fast->next->next;
-
-        /* If slow and fast pointers meet, there is a loop */
-        if (slow == fast) {
-            hasLoop = 1;
-            break;
-        }
-    }
-
-    /* No loop found, return from the function */
-    if (!hasLoop) {
-        return;
-    }
-
-    /* If the loop starts at the head of the linked list */
-    if (slow == head) {
-        while (slow->next != head) {
-            slow = slow->next;
-        }
-    }
-
-    /* Find the start of the loop (where slow and fast pointers meet
-       again) */
-    else {
-
-        /* Reset fast pointer to the head of the linked list */
-        fast = head;
-        while (slow->next != fast->next) {
-            slow = slow->next;
-            fast = fast->next;
-        }
-    }
-
-    /* Remove the loop by setting the next pointer of the last node
-       in the loop to NULL */
-    slow->next = NULL;
-}
-
-void printList(ListNode *head) {
-    while (head) {
-        printf("%d", head->val);
-        if (head->next) printf(" -> ");
-        head = head->next;
-    }
-    printf("\n");
-}
-
-int main() {
-    /* List [1, 3, 4] with loop: 4 -> 3 (X=2) */
-    ListNode *n1 = newNode(1);
-    ListNode *n2 = newNode(3);
-    ListNode *n3 = newNode(4);
-    n1->next = n2; n2->next = n3;
-    n3->next = n2; /* Create the loop */
-
-    removeLoop(n1);
-    printList(n1); /* 1 -> 3 -> 4 */
-    return 0;
-}
-```
-
-```scala run
-class ListNode(var v: Int, var next: ListNode = null)
-
-object Main extends App {
-  class Solution {
-    def removeLoop(head: ListNode): Unit = {
-
-      // Check if the list is empty or has only one element (no loop
-      // possible)
-      if (head == null || head.next == null) {
-        return
-      }
-
-      // Pointer to traverse the list one node at a time
-      var slow = head
-
-      // Pointer to traverse the list two nodes at a time
-      var fast = head
-
-      // Flag to indicate if a loop is present
-      var hasLoop = false
-
-      // Detect if there is a loop in the linked list
-      while (fast != null && fast.next != null && !hasLoop) {
-
-        // Move slow pointer by one node
-        slow = slow.next
-
-        // Move fast pointer by two nodes
-        fast = fast.next.next
-
-        // If slow and fast pointers meet, there is a loop
-        if (slow eq fast) {
-          hasLoop = true
-        }
-      }
-
-      // No loop found, return from the function
-      if (!hasLoop) {
-        return
-      }
-
-      // If the loop starts at the head of the linked list
-      if (slow eq head) {
-        while (slow.next ne head) {
-          slow = slow.next
-        }
-      }
-
-      // Find the start of the loop (where slow and fast pointers meet
-      // again)
-      else {
-
-        // Reset fast pointer to the head of the linked list
-        fast = head
-        while (slow.next ne fast.next) {
-          slow = slow.next
-          fast = fast.next
-        }
-      }
-
-      // Remove the loop by setting the next pointer of the last node
-      // in the loop to null
-      slow.next = null
-    }
-
-    def printList(head: ListNode): Unit = {
-      var cur = head
-      val parts = scala.collection.mutable.ListBuffer[String]()
-      while (cur != null) { parts += cur.v.toString; cur = cur.next }
-      println(parts.mkString(" -> "))
-    }
-  }
-
-  // List [1, 3, 4] with loop: 4 -> 3 (X=2)
-  val n1 = new ListNode(1)
-  val n2 = new ListNode(3)
-  val n3 = new ListNode(4)
-  n1.next = n2; n2.next = n3
-  n3.next = n2 // Create the loop
-
-  val sol = new Solution()
-  sol.removeLoop(n1)
-  sol.printList(n1) // 1 -> 3 -> 4
-}
-```
-
-
-***
-
-## Final Takeaway
 
 Floyd's algorithm is one of the most elegant algorithms in all of computer science. Two pointers, different speeds, and O(1) extra memory solve what naïvely needs a hash set. Three ideas are worth burning into memory:
 
@@ -1343,3 +998,5 @@ When you next see "detect", "find cycle start", "find middle", or any problem th
 > After the first collision (phase 1), keep <code>slow</code> at the meeting point and walk it one step at a time, counting ticks, until you come back to the same node. The tick count is the cycle length. Total cost: one extra loop over the cycle only — O(n) time, O(1) space.
 >
 > </details>
+
+</details>

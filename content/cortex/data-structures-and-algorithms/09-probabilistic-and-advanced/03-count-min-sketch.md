@@ -214,42 +214,36 @@ Click any question to reveal the answer.
 **A:** `d` rows of `w` counters. Each item hashes to one cell per row.
 
 </details>
-
 <details>
 <summary><strong>Q:</strong> Update operation?</summary>
 
 **A:** For each row `i`, increment `sketch[i][h_i(x)]`. `O(d)` per update.
 
 </details>
-
 <details>
 <summary><strong>Q:</strong> Query operation?</summary>
 
 **A:** Return the *minimum* of `sketch[i][h_i(x)]` over all `d` rows. `O(d)`.
 
 </details>
-
 <details>
 <summary><strong>Q:</strong> Why "min"?</summary>
 
 **A:** Each cell *overestimates* (collisions inflate). The minimum gives the tightest upper bound across rows.
 
 </details>
-
 <details>
 <summary><strong>Q:</strong> Tuning formulas — additive error <code>ε · N</code>, confidence <code>1 − δ</code>?</summary>
 
 **A:** `w = ⌈e / ε⌉`, `d = ⌈ln(1/δ)⌉`. For `ε = 0.001`, `δ = 0.01`: `w ≈ 2718`, `d ≈ 5` → ~14k counters → ~56 KB.
 
 </details>
-
 <details>
 <summary><strong>Q:</strong> Does CMS underestimate?</summary>
 
 **A:** Never. Always `f̂(x) ≥ f(x)`. The "min over rows" gives the tightest upper bound; the actual count can't be larger.
 
 </details>
-
 <details>
 <summary><strong>Q:</strong> How do you find heavy hitters with CMS?</summary>
 

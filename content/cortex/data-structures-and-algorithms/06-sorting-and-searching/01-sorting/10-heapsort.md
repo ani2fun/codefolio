@@ -299,56 +299,45 @@ Heapsort: build heap in `O(n)`, extract one element at a time in `O(n log n)`. T
 Two functions: `heapify` and `heap_sort` (the two-phase driver).
 
 
-```pseudocode
-function heapSort(arr):
-    n ← length(arr)
-    # Phase 1 — build a max-heap from the bottom up.
-    for i from n ÷ 2 − 1 down to 0:
-        siftDown(arr, i, n)
-    # Phase 2 — repeatedly swap the root (max) to the end and shrink the heap.
-    for end from n − 1 down to 1:
-        swap arr[0] and arr[end]            # max of remaining heap → final position
-        siftDown(arr, 0, end)               # restore heap property over arr[0..end−1]
-
-function siftDown(arr, root, size):
-    while true:
-        left  ← 2 × root + 1
-        right ← 2 × root + 2
-        largest ← root
-        if left < size AND arr[left] > arr[largest]:
-            largest ← left
-        if right < size AND arr[right] > arr[largest]:
-            largest ← right
-        if largest = root:                  # heap property holds — done
-            return
-        swap arr[root] and arr[largest]
-        root ← largest                       # continue sifting down the new subtree
-```
-
 ```python run
 from typing import List
 
 class Solution:
-    def heap_sort(self, arr: List[int]) -> None:
-        n = len(arr)
-        # Phase 1: build max heap
-        for i in range(n // 2 - 1, -1, -1):
-            self._heapify(arr, n, i)
-        # Phase 2: extract max one by one
-        for i in range(n - 1, 0, -1):
-            arr[0], arr[i] = arr[i], arr[0]
-            self._heapify(arr, i, 0)
+    def heapify(self, arr: List[int], n: int, index: int) -> None:
 
-    def _heapify(self, arr: List[int], n: int, i: int) -> None:
-        largest = i
-        left, right = 2 * i + 1, 2 * i + 2
+        # Initialize largest as root
+        largest: int = index
+        left: int = 2 * index + 1
+        right: int = 2 * index + 2
+
+        # If left child is larger than root
         if left < n and arr[left] > arr[largest]:
             largest = left
+
+        # If right child is larger than largest so far
         if right < n and arr[right] > arr[largest]:
             largest = right
-        if largest != i:
-            arr[i], arr[largest] = arr[largest], arr[i]
-            self._heapify(arr, n, largest)
+
+        # If largest is not root
+        if largest != index:
+            arr[index], arr[largest] = arr[largest], arr[index]
+
+            # Recursively heapify the affected sub-tree
+            self.heapify(arr, n, largest)
+
+    def heap_sort(self, arr: List[int]) -> None:
+        n: int = len(arr)
+
+        # Build heap (rearrange array)
+        for i in range(n // 2 - 1, -1, -1):
+            self.heapify(arr, n, i)
+
+        # Extract elements from heap one by one
+        for i in range(n - 1, 0, -1):
+            arr[0], arr[i] = arr[i], arr[0]
+
+            # Heapify the reduced heap
+            self.heapify(arr, i, 0)
 
 
 if __name__ == "__main__":
@@ -360,23 +349,52 @@ if __name__ == "__main__":
 ```java run
 public class Main {
     static class Solution {
-        public void heapSort(int[] arr) {
-            int n = arr.length;
-            for (int i = n / 2 - 1; i >= 0; i--) heapify(arr, n, i);
-            for (int i = n - 1; i > 0; i--) {
-                int t = arr[0]; arr[0] = arr[i]; arr[i] = t;
-                heapify(arr, i, 0);
+        private void heapify(int[] arr, int n, int index) {
+
+            // Initialize largest as root
+            int largest = index;
+            int left = 2 * index + 1;
+            int right = 2 * index + 2;
+
+            // If left child is larger than root
+            if (left < n && arr[left] > arr[largest]) {
+                largest = left;
+            }
+
+            // If right child is larger than largest so far
+            if (right < n && arr[right] > arr[largest]) {
+                largest = right;
+            }
+
+            // If largest is not root
+            if (largest != index) {
+                swap(arr, index, largest);
+
+                // Recursively heapify the affected sub-tree
+                heapify(arr, n, largest);
             }
         }
 
-        private void heapify(int[] arr, int n, int i) {
-            int largest = i;
-            int left = 2 * i + 1, right = 2 * i + 2;
-            if (left < n && arr[left] > arr[largest]) largest = left;
-            if (right < n && arr[right] > arr[largest]) largest = right;
-            if (largest != i) {
-                int t = arr[i]; arr[i] = arr[largest]; arr[largest] = t;
-                heapify(arr, n, largest);
+        private void swap(int[] arr, int i, int j) {
+            int temp = arr[i];
+            arr[i] = arr[j];
+            arr[j] = temp;
+        }
+
+        public void heapSort(int[] arr) {
+            int n = arr.length;
+
+            // Build heap (rearrange array)
+            for (int i = n / 2 - 1; i >= 0; i--) {
+                heapify(arr, n, i);
+            }
+
+            // Extract elements from heap one by one
+            for (int i = n - 1; i > 0; i--) {
+                swap(arr, 0, i);
+
+                // Heapify the reduced heap
+                heapify(arr, i, 0);
             }
         }
     }
@@ -387,68 +405,6 @@ public class Main {
         for (int x : arr) System.out.print(x + " ");
         System.out.println();
     }
-}
-```
-
-```c run
-#include <stdio.h>
-
-void heapify(int *arr, int n, int i) {
-    int largest = i;
-    int left = 2 * i + 1, right = 2 * i + 2;
-    if (left < n && arr[left] > arr[largest]) largest = left;
-    if (right < n && arr[right] > arr[largest]) largest = right;
-    if (largest != i) {
-        int t = arr[i]; arr[i] = arr[largest]; arr[largest] = t;
-        heapify(arr, n, largest);
-    }
-}
-
-void heap_sort(int *arr, int n) {
-    for (int i = n / 2 - 1; i >= 0; i--) heapify(arr, n, i);
-    for (int i = n - 1; i > 0; i--) {
-        int t = arr[0]; arr[0] = arr[i]; arr[i] = t;
-        heapify(arr, i, 0);
-    }
-}
-
-int main(void) {
-    int arr[] = {3, 1, 6, 5, 2, 4};
-    int n = 6;
-    heap_sort(arr, n);
-    for (int i = 0; i < n; i++) printf("%d ", arr[i]);
-    printf("\n");
-    return 0;
-}
-```
-
-```scala run
-object Main extends App {
-  class Solution {
-    def heapSort(arr: Array[Int]): Unit = {
-      val n = arr.length
-      for (i <- (n / 2 - 1) to 0 by -1) heapify(arr, n, i)
-      for (i <- (n - 1) to 1 by -1) {
-        val t = arr(0); arr(0) = arr(i); arr(i) = t
-        heapify(arr, i, 0)
-      }
-    }
-
-    private def heapify(arr: Array[Int], n: Int, i: Int): Unit = {
-      var largest = i
-      val left = 2 * i + 1; val right = 2 * i + 2
-      if (left < n && arr(left) > arr(largest)) largest = left
-      if (right < n && arr(right) > arr(largest)) largest = right
-      if (largest != i) {
-        val t = arr(i); arr(i) = arr(largest); arr(largest) = t
-        heapify(arr, n, largest)
-      }
-    }
-  }
-
-  val arr = Array(3, 1, 6, 5, 2, 4)
-  new Solution().heapSort(arr)
-  println(arr.mkString(" "))
 }
 ```
 
@@ -518,13 +474,14 @@ Output: [1, 2, 3, 4, 5, 6]
 
 ---
 
-## The Solution
+<details>
+<summary><h2>Solution &amp; Analysis</h2></summary>
 
-The implementation matches the version above. See [Implementation](#implementation) for all 10 languages.
+### The Solution
 
----
+The implementation matches the version above. See [Implementation](#implementation).
 
-## Edge Cases
+### Edge Cases
 
 | Case | Example | Expected |
 |---|---|---|
@@ -535,9 +492,10 @@ The implementation matches the version above. See [Implementation](#implementati
 | Reverse sorted | `[5, 4, 3, 2, 1]` | `[1, 2, 3, 4, 5]`. |
 | Two elements | `[2, 1]` | `[1, 2]`. |
 
----
+</details>
+<details>
+<summary><h2>Final Takeaway</h2></summary>
 
-## Final Takeaway
 
 Heapsort is the third major `O(n log n)` comparison sort. In-place and worst-case guaranteed; not stable, not adaptive, with worse cache behaviour than quicksort. Used in IntroSort as the recursion-depth fallback, and as the canonical sort for embedded / real-time systems where worst-case time and `O(1)` extra memory are both required.
 
@@ -545,6 +503,7 @@ The next lesson shifts gears entirely. We've spent ten lessons learning algorith
 
 **Transfer challenge — try before the Quickselect lesson:** Implement a function that returns the *largest* element of an array using only the heapsort *build* phase (no extract). What's the complexity? How does this compare with using a full sort?
 
+</details>
 <details>
 <summary><strong>Answer — open after you've thought about it</strong></summary>
 

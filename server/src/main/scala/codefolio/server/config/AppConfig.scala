@@ -8,6 +8,18 @@ final case class RedisConfig(url: String, ttlSecs: Int)
 final case class MongoConfig(uri: String, database: String)
 
 /**
+ * One fixed-window rate-limit bucket: at most `limit` requests per `windowSeconds`.
+ */
+final case class RateLimitBucket(windowSeconds: Int, limit: Int)
+
+/**
+ * Rate-limit policy for `/api/run`. `anonymous` is keyed per client IP (short window); `authenticated` is
+ * keyed per JWT `sub` (hourly window). Enforced by `server/http/RateLimiter.scala`, and bypassed entirely
+ * when `auth.enabled` is false.
+ */
+final case class RateLimitConfig(anonymous: RateLimitBucket, authenticated: RateLimitBucket)
+
+/**
  * Configuration for the code-execution proxy.
  *
  * `pistonUrl` is for the Piston public service (production); `codeRunnerUrl` points at the local
@@ -17,11 +29,14 @@ final case class MongoConfig(uri: String, database: String)
  *
  * `codeRunnerAuthToken` is an optional `X-Auth-Token` header — kept for parity with what the original
  * portfolio-app exposed even though the local Code Runner image doesn't currently require auth.
+ *
+ * `rateLimit` bounds how often `/api/run` can be called — see [[RateLimitConfig]].
  */
 final case class RunnerConfig(
     pistonUrl: Option[String],
     codeRunnerUrl: Option[String],
-    codeRunnerAuthToken: Option[String]
+    codeRunnerAuthToken: Option[String],
+    rateLimit: RateLimitConfig
 )
 
 /**
@@ -51,6 +66,33 @@ final case class CortexConfig(root: String, autoReload: Boolean)
  */
 final case class BlogConfig(root: String, autoReload: Boolean)
 
+/**
+ * Keycloak / OIDC integration for the Cortex-edit auth gate (ADR-0013).
+ *
+ *   - `enabled` is the master switch. When `false` (typical for `bin/dev`), the server still runs but the
+ *     auth verifier short-circuits to `AuthFailure.AuthDisabled` for required-auth endpoints and to "no
+ *     claims" for optional-auth endpoints. `/api/auth/config` reports `enabled=false` to the SPA, which skips
+ *     initialising `keycloak-js` entirely.
+ *   - `issuerUrl` is the Keycloak realm URL (e.g. `https://keycloak.kakde.eu/realms/apps-prod`). Used as both
+ *     the `iss` claim we validate and the base for the JWKS URL
+ *     (`{issuerUrl}/protocol/openid-connect/certs`).
+ *   - `realm` + `clientId` are passed through to the SPA via `/api/auth/config` so `keycloak-js` can boot
+ *     against the same Keycloak install the server is validating against.
+ *   - `audience` is the expected `aud` / `azp` claim value. Keycloak's quirk: tokens issued to a public SPA
+ *     client carry `aud: ["account"]` but `azp: "<clientId>"`; we accept either, so this typically defaults
+ *     to `clientId` and rarely needs overriding.
+ *   - `jwksCacheTtlSec` is informational (Nimbus' `JWKSourceBuilder.cache(...)` carries its own TTL); we keep
+ *     the knob to surface the choice in config rather than burying it in code.
+ */
+final case class AuthConfig(
+    enabled: Boolean,
+    issuerUrl: String,
+    realm: String,
+    clientId: String,
+    audience: String,
+    jwksCacheTtlSec: Int
+)
+
 final case class AppConfig(
     port: Int,
     staticDir: String,
@@ -60,7 +102,8 @@ final case class AppConfig(
     runner: RunnerConfig,
     likec4: LikeC4Config,
     cortex: CortexConfig,
-    blog: BlogConfig
+    blog: BlogConfig,
+    auth: AuthConfig
 )
 
 object AppConfig:

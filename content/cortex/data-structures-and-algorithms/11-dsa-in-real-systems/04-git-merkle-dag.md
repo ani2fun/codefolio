@@ -135,18 +135,6 @@ This is the same path-copying technique covered in the [Persistent Data Structur
 
 `git diff A B` is conceptually:
 
-```pseudocode
-function diff_trees(treeA, treeB):
-    if treeA = treeB: return  # same hash → identical content, skip
-    for each entry name common to A and B:
-        if A[name].hash = B[name].hash: continue  # same hash → unchanged
-        if both are blobs: emit text diff
-        if both are trees: recurse
-        else: emit add/remove
-    for each entry only in A: emit removal
-    for each entry only in B: emit addition
-```
-
 The early-exit "same hash → identical" is the optimisation that makes `git diff` fast even on huge trees. Subdirectories that haven't changed are short-circuited at the hash comparison; you don't have to descend.
 
 ***
@@ -186,49 +174,42 @@ Click any question to reveal the answer.
 **A:** **Blob** (file contents), **tree** (directory listing), **commit** (snapshot + parents + metadata), **tag** (annotated label).
 
 </details>
-
 <details>
 <summary><strong>Q:</strong> What hash function does Git use, and what's it computed over?</summary>
 
 **A:** SHA-1 (transitioning to SHA-256). Hash is over `<type> <length>\0<content>` — including a small header before the bytes.
 
 </details>
-
 <details>
 <summary><strong>Q:</strong> What does "content-addressed" mean for Git?</summary>
 
 **A:** Object's identity = SHA-1 of its content. Two objects with the same content are the same object. Deduplication and tamper detection in one rule.
 
 </details>
-
 <details>
 <summary><strong>Q:</strong> Cost of editing one file in a 100k-file repo, in object terms?</summary>
 
 **A:** 1 new blob + path-length-many new trees + 1 new commit. Other ~99k blobs are *shared* with the prior commit's trees.
 
 </details>
-
 <details>
 <summary><strong>Q:</strong> Why is <code>git diff A B</code> fast on huge trees?</summary>
 
 **A:** Subtrees with identical hashes are short-circuited — equal hash means equal content (modulo collisions). Only differing paths are descended into.
 
 </details>
-
 <details>
 <summary><strong>Q:</strong> What's a pack file?</summary>
 
 **A:** A compacted binary file containing many objects, with delta encoding for similar ones (consecutive versions of a file). Reduces repository size 5-10× over loose objects.
 
 </details>
-
 <details>
 <summary><strong>Q:</strong> What does `git push --force` do to history?</summary>
 
 **A:** Replaces the remote branch's pointer with yours. Old commits become unreachable, eligible for `git gc --prune` after 14 days. Lost work, *not* lost data — until GC runs.
 
 </details>
-
 <details>
 <summary><strong>Q:</strong> What's `git reflog`?</summary>
 

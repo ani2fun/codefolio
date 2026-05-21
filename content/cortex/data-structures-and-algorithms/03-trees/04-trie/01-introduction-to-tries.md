@@ -16,7 +16,7 @@ A hash table can't do this. A hash table maps `"netflix"` to its data; it can't 
 
 The structure that makes prefix queries cost only **O(length of the prefix)**, regardless of how many words are stored, is the **trie** (pronounced "try", from *retrieval*). Every autocomplete, every IP routing table, every spell-checker that suggests "did you mean…", every regex engine that compiles patterns to a state machine — they all run on a trie or one of its compressed cousins.
 
-This chapter is the introduction. By the end you'll be able to insert, search, and prefix-walk a trie in five languages, decide when a trie beats a hash table or a BST, and recognise the trie shape inside Linux's IP routing code.
+This chapter is the introduction. By the end you'll be able to insert, search, and prefix-walk a trie in Python and Java, decide when a trie beats a hash table or a BST, and recognise the trie shape inside Linux's IP routing code.
 
 ---
 
@@ -148,37 +148,6 @@ The fiddly one. Walk to the end of the word; un-mark it as end-of-word. Then wal
 ***
 
 # Implementation
-
-```pseudocode
-class TrieNode:
-    children: Map: Char → TrieNode
-    isEndOfWord: Boolean
-
-class Trie:
-    root: TrieNode (empty)
-
-    function insert(word):
-        node ← root
-        for ch in word:
-            if ch is not in node.children:
-                node.children[ch] ← new TrieNode
-            node ← node.children[ch]
-        node.isEndOfWord ← true
-
-    function search(word):
-        node ← walk(word)
-        return node ≠ null AND node.isEndOfWord
-
-    function startsWith(prefix):
-        return walk(prefix) ≠ null
-
-    function walk(s):
-        node ← root
-        for ch in s:
-            if ch is not in node.children: return null
-            node ← node.children[ch]
-        return node
-```
 
 ```python run
 class TrieNode:
@@ -312,123 +281,6 @@ public class Main {
 }
 ```
 
-```c run
-#include <stdio.h>
-#include <stdlib.h>
-#include <stdbool.h>
-#include <string.h>
-
-#define ALPHABET 26
-
-typedef struct TrieNode {
-    struct TrieNode *children[ALPHABET];
-    bool is_end;
-} TrieNode;
-
-static TrieNode *new_node(void) {
-    TrieNode *n = calloc(1, sizeof(TrieNode));
-    return n;
-}
-
-static void insert(TrieNode *root, const char *word) {
-    TrieNode *node = root;
-    for (const char *p = word; *p; p++) {
-        int idx = *p - 'a';
-        if (!node->children[idx]) node->children[idx] = new_node();
-        node = node->children[idx];
-    }
-    node->is_end = true;
-}
-
-static TrieNode *walk(TrieNode *root, const char *s) {
-    TrieNode *node = root;
-    for (const char *p = s; *p; p++) {
-        int idx = *p - 'a';
-        if (!node->children[idx]) return NULL;
-        node = node->children[idx];
-    }
-    return node;
-}
-
-static bool search(TrieNode *root, const char *word) {
-    TrieNode *n = walk(root, word);
-    return n && n->is_end;
-}
-
-static bool starts_with(TrieNode *root, const char *prefix) {
-    return walk(root, prefix) != NULL;
-}
-
-int main(void) {
-    TrieNode *root = new_node();
-    const char *words[] = {"apple", "app", "apt", "ant", "ants", "and"};
-    for (int i = 0; i < 6; i++) insert(root, words[i]);
-    printf("search('app')      -> %s\n", search(root, "app") ? "true" : "false");
-    printf("search('ap')       -> %s\n", search(root, "ap") ? "true" : "false");
-    printf("starts_with('ap')  -> %s\n", starts_with(root, "ap") ? "true" : "false");
-    return 0;
-}
-```
-
-```scala run
-import scala.collection.mutable
-
-object Main extends App {
-  class TrieNode {
-    val children = mutable.HashMap.empty[Char, TrieNode]
-    var isEnd = false
-  }
-
-  class Trie {
-    private val root = new TrieNode
-
-    def insert(word: String): Unit = {
-      var node = root
-      for (ch <- word) {
-        node = node.children.getOrElseUpdate(ch, new TrieNode)
-      }
-      node.isEnd = true
-    }
-
-    private def walk(s: String): Option[TrieNode] = {
-      var node = root
-      for (ch <- s) {
-        node.children.get(ch) match {
-          case Some(c) => node = c
-          case None    => return None
-        }
-      }
-      Some(node)
-    }
-
-    def search(word: String): Boolean = walk(word).exists(_.isEnd)
-    def startsWith(prefix: String): Boolean = walk(prefix).isDefined
-
-    def wordsWithPrefix(prefix: String): List[String] = {
-      walk(prefix) match {
-        case None => Nil
-        case Some(start) =>
-          val out = mutable.ListBuffer.empty[String]
-          def dfs(n: TrieNode, path: StringBuilder): Unit = {
-            if (n.isEnd) out += path.toString
-            for ((ch, child) <- n.children) {
-              path.append(ch); dfs(child, path); path.deleteCharAt(path.length - 1)
-            }
-          }
-          dfs(start, new StringBuilder(prefix))
-          out.toList
-      }
-    }
-  }
-
-  val t = new Trie
-  for (w <- List("apple", "app", "apt", "ant", "ants", "and")) t.insert(w)
-  println(s"search('app')      -> ${t.search("app")}")
-  println(s"starts_with('ap')  -> ${t.startsWith("ap")}")
-  println(s"words with 'an'    -> ${t.wordsWithPrefix("an").sorted}")
-}
-```
-
 ***
 
 # Compressed Tries (Radix Trees)
@@ -533,63 +385,54 @@ Click any question to reveal the answer.
 **A:** `O(L)` where `L` is the length of the input string. Independent of how many strings are stored.
 
 </details>
-
 <details>
 <summary><strong>Q:</strong> Space complexity of inserting a string of length <code>L</code>?</summary>
 
 **A:** `O(L)` worst case (no shared prefix). With a shared prefix, only the divergent suffix consumes new nodes.
 
 </details>
-
 <details>
 <summary><strong>Q:</strong> Why is the end-of-word marker essential?</summary>
 
 **A:** Without it, you can't distinguish "this string is in the dictionary" from "this string is a prefix of one in the dictionary". `app` and `apple` look identical without it.
 
 </details>
-
 <details>
 <summary><strong>Q:</strong> Three storage choices for a node's children — trade-offs?</summary>
 
 **A:** **Array of 26 pointers** (English): `O(1)` lookup, ~208 bytes/node wasted on null slots. **Hash map**: smaller for sparse, slower constant. **Sorted vector**: tiny memory, `O(log alphabet)` lookup, sorted iteration free.
 
 </details>
-
 <details>
 <summary><strong>Q:</strong> What's a compressed (radix / Patricia) trie?</summary>
 
 **A:** A trie where every chain of single-child nodes is collapsed into one edge labelled with the full substring. Saves space dramatically for deep but sparse trees.
 
 </details>
-
 <details>
 <summary><strong>Q:</strong> Cost of <code>enumerateWithPrefix(prefix)</code>?</summary>
 
 **A:** `O(L + K · L_avg)`. `L` to descend to the prefix node, `K · L_avg` to construct each of `K` matching words.
 
 </details>
-
 <details>
 <summary><strong>Q:</strong> What does Linux's <code>fib_trie.c</code> use a trie for?</summary>
 
 **A:** Longest-prefix match on IP addresses for the routing table. Every packet hits this trie. Optimised as an LC-trie (level-compressed radix trie) with RCU for lock-free reads.
 
 </details>
-
 <details>
 <summary><strong>Q:</strong> Why use a trie instead of a hash set for autocomplete?</summary>
 
 **A:** Hash set can't enumerate "all strings starting with X" efficiently — it has no order. Trie answers prefix queries in `O(L + matches)`, where the L is the prefix length, regardless of dictionary size.
 
 </details>
-
 <details>
 <summary><strong>Q:</strong> When does the trie <em>not</em> save space over storing the strings?</summary>
 
 **A:** When prefixes aren't shared (random keys, hashes, UUIDs). Every node has one child; the trie is a forest of independent paths — same total storage as the strings plus overhead.
 
 </details>
-
 <details>
 <summary><strong>Q:</strong> What does the Adaptive Radix Tree (ART) optimise?</summary>
 

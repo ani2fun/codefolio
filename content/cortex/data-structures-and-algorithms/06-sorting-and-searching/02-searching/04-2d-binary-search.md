@@ -153,122 +153,135 @@ The flattened-index trick: `mid → (mid / M, mid % M)`. Binary search the index
 # Implementation
 
 
-```pseudocode
-# Treat the matrix as one virtual flat array of (rows × cols) sorted elements.
-function binarySearch2D(matrix, target):
-    if matrix is empty OR matrix[0] is empty:
-        return false
-    rows ← length(matrix)
-    cols ← length(matrix[0])
-    low ← 0
-    high ← rows × cols − 1
-    while low ≤ high:
-        mid ← low + (high − low) ÷ 2
-        r ← mid ÷ cols                          # decode flat index → 2D
-        c ← mid mod cols
-        if matrix[r][c] = target:
-            return true
-        if matrix[r][c] < target:
-            low ← mid + 1
-        else:
-            high ← mid − 1
-    return false
-```
-
 ```python run
 from typing import List
 
 class Solution:
-    def binary_search_2d(self, matrix: List[List[int]], target: int) -> bool:
-        if not matrix or not matrix[0]:
-            return False
-        rows, cols = len(matrix), len(matrix[0])
-        low, high = 0, rows * cols - 1
+    def binary_search_2d(
+        self, matrix: List[List[int]], target: int
+    ) -> bool:
+
+        # Get the number of rows in the matrix
+        rows: int = len(matrix)
+
+        # Get the number of columns in the matrix
+        cols: int = len(matrix[0])
+
+        # Initialize the low index
+        low: int = 0
+
+        # Initialize the high index
+        high: int = rows * cols - 1
+
+        # Perform binary search until low index crosses the high index
         while low <= high:
-            mid = low + (high - low) // 2
-            r, c = divmod(mid, cols)                    # flattened → 2D
-            if matrix[r][c] == target:
+
+            # Calculate the middle index
+            mid: int = low + (high - low) // 2
+
+            # Map the middle index to 2D coordinates
+            row, col = mid // cols, mid % cols
+
+            # If the middle value is equal to the target, return
+            # true
+            if matrix[row][col] == target:
                 return True
-            if matrix[r][c] < target:
+
+            # Else if the middle value is less than the target, update
+            # the low index
+            elif matrix[row][col] < target:
                 low = mid + 1
+
+            # Else if the middle value is greater than the target,
+            # update the high index
             else:
                 high = mid - 1
+
+        # Return False if the target is not found
         return False
 
 
-if __name__ == "__main__":
-    matrix = [[1, 2, 2, 4], [5, 5, 5, 5], [9, 10, 11, 12]]
-    print(Solution().binary_search_2d(matrix, 11))   # True
-    print(Solution().binary_search_2d(matrix, 13))   # False
+# Examples from the problem statement
+m = [[1, 2, 2, 4], [5, 5, 5, 5], [9, 10, 11, 12]]
+print(Solution().binary_search_2d(m, 12))   # True
+print(Solution().binary_search_2d(m, 5))    # True
+print(Solution().binary_search_2d(m, 13))   # False
+
+# Edge cases
+print(Solution().binary_search_2d([[7]], 7))                   # True  — 1x1, present
+print(Solution().binary_search_2d([[7]], 3))                   # False — 1x1, absent
+print(Solution().binary_search_2d([[1, 2, 3, 4, 5]], 3))      # True  — 1xN row, present
+print(Solution().binary_search_2d([[1, 2, 3, 4, 5]], 6))      # False — 1xN row, absent
+print(Solution().binary_search_2d([[1, 2, 2, 4], [5, 5, 5, 5], [9, 10, 11, 12]], 1))  # True — first element
 ```
 
 ```java run
+import java.util.*;
+
 public class Main {
     static class Solution {
         public boolean binarySearch2D(int[][] matrix, int target) {
-            if (matrix.length == 0 || matrix[0].length == 0) return false;
-            int rows = matrix.length, cols = matrix[0].length;
-            int low = 0, high = rows * cols - 1;
+
+            // Get the number of rows in the matrix
+            int rows = matrix.length;
+
+            // Get the number of columns in the matrix
+            int cols = matrix[0].length;
+
+            // Initialize the low index
+            int low = 0;
+
+            // Initialize the high index
+            int high = rows * cols - 1;
+
+            // Perform binary search until low index crosses the high index
             while (low <= high) {
+
+                // Calculate the middle index
                 int mid = low + (high - low) / 2;
-                int r = mid / cols, c = mid % cols;
-                if (matrix[r][c] == target) return true;
-                if (matrix[r][c] < target) low = mid + 1;
-                else high = mid - 1;
+
+                // Map the middle index to 2D coordinates
+                int row = mid / cols;
+                int col = mid % cols;
+
+                // If the middle value is equal to the target, return
+                // true
+                if (matrix[row][col] == target) {
+                    return true;
+                }
+
+                // Else if the middle value is less than the target, update
+                // the low index
+                else if (matrix[row][col] < target) {
+                    low = mid + 1;
+                }
+
+                // Else if the middle value is greater than the target,
+                // update the high index
+                else {
+                    high = mid - 1;
+                }
             }
+
+            // Return false if the target is not found
             return false;
         }
     }
 
     public static void main(String[] args) {
-        int[][] matrix = {{1, 2, 2, 4}, {5, 5, 5, 5}, {9, 10, 11, 12}};
-        System.out.println(new Solution().binarySearch2D(matrix, 11));
+        // Examples from the problem statement
+        int[][] m = {{1, 2, 2, 4}, {5, 5, 5, 5}, {9, 10, 11, 12}};
+        System.out.println(new Solution().binarySearch2D(m, 12));   // true
+        System.out.println(new Solution().binarySearch2D(m, 5));    // true
+        System.out.println(new Solution().binarySearch2D(m, 13));   // false
+
+        // Edge cases
+        System.out.println(new Solution().binarySearch2D(new int[][]{{7}}, 7));                   // true  — 1x1, present
+        System.out.println(new Solution().binarySearch2D(new int[][]{{7}}, 3));                   // false — 1x1, absent
+        System.out.println(new Solution().binarySearch2D(new int[][]{{1, 2, 3, 4, 5}}, 3));      // true  — 1xN row, present
+        System.out.println(new Solution().binarySearch2D(new int[][]{{1, 2, 3, 4, 5}}, 6));      // false — 1xN row, absent
+        System.out.println(new Solution().binarySearch2D(new int[][]{{1, 2, 2, 4}, {5, 5, 5, 5}, {9, 10, 11, 12}}, 1));  // true — first element
     }
-}
-```
-
-```c run
-#include <stdio.h>
-#include <stdbool.h>
-
-bool binary_search_2d(int rows, int cols, int matrix[rows][cols], int target) {
-    int low = 0, high = rows * cols - 1;
-    while (low <= high) {
-        int mid = low + (high - low) / 2;
-        int r = mid / cols, c = mid % cols;
-        if (matrix[r][c] == target) return true;
-        if (matrix[r][c] < target) low = mid + 1;
-        else high = mid - 1;
-    }
-    return false;
-}
-
-int main(void) {
-    int matrix[3][4] = {{1, 2, 2, 4}, {5, 5, 5, 5}, {9, 10, 11, 12}};
-    printf("%s\n", binary_search_2d(3, 4, matrix, 11) ? "true" : "false");
-    return 0;
-}
-```
-
-```scala run
-object Main extends App {
-  class Solution {
-    def binarySearch2D(matrix: Array[Array[Int]], target: Int): Boolean = {
-      if (matrix.isEmpty || matrix(0).isEmpty) return false
-      val rows = matrix.length; val cols = matrix(0).length
-      var low = 0; var high = rows * cols - 1
-      while (low <= high) {
-        val mid = low + (high - low) / 2
-        val r = mid / cols; val c = mid % cols
-        if (matrix(r)(c) == target) return true
-        if (matrix(r)(c) < target) low = mid + 1 else high = mid - 1
-      }
-      false
-    }
-  }
-
-  val m = Array(Array(1, 2, 2, 4), Array(5, 5, 5, 5), Array(9, 10, 11, 12))
-  println(new Solution().binarySearch2D(m, 11))
 }
 ```
 
@@ -313,25 +326,28 @@ Output: false
 
 ---
 
-## The Solution
+<details>
+<summary><h2>Solution &amp; Analysis</h2></summary>
 
-The implementation matches the version above. See [Implementation](#implementation) for all 10 languages.
+### The Solution
 
----
+The implementation matches the version above. See [Implementation](#implementation).
 
-## Edge Cases
+### Edge Cases
 
 | Case | Example | Expected |
 |---|---|---|
-| Empty matrix | `[]` | `false` |
-| Empty row | `[[]]` | `false` |
 | Single cell match | `[[5]], target = 5` | `true` |
 | Single cell miss | `[[5]], target = 7` | `false` |
+| Single row | `[[1, 2, 3, 4, 5]], target = 3` | `true` |
+| Single-row miss | `[[1, 2, 3, 4, 5]], target = 6` | `false` |
+| Target in first cell | `[[1,2,2,4],[5,5,5,5],[9,10,11,12]], target = 1` | `true` |
 | Target in last cell | `target = matrix[N-1][M-1]` | `true` |
 
----
+</details>
+<details>
+<summary><h2>Final Takeaway</h2></summary>
 
-## Final Takeaway
 
 2D binary search reuses 1D binary search's exact algorithm by treating the matrix as a flattened sorted array. The index-flattening trick (`r = i / M`, `c = i % M`) is the only addition. `O(log(N·M))` total.
 
@@ -339,6 +355,7 @@ The next lesson handles the looser case: matrices where rows and columns are sor
 
 **Transfer challenge — try before the Staircase Search lesson:** What if the matrix is row-sorted and column-sorted but the row-end-row-start property *doesn't* hold? Example: `[[1, 4, 7], [2, 5, 8], [3, 6, 9]]` (sorted by columns, sorted by rows, but the flattened sequence `[1, 4, 7, 2, 5, 8, 3, 6, 9]` is not sorted). Can 2D binary search still find `target = 5`? Why or why not?
 
+</details>
 <details>
 <summary><strong>Answer — open after you've thought about it</strong></summary>
 

@@ -49,14 +49,6 @@ CFS needs *deterministic* worst-case bounds (a real-time-adjacent kernel can't a
 
 The colour bit is also stored cleverly: the kernel packs it into the *low bit* of the parent pointer (which is always 0 due to alignment), so the per-node memory overhead is *zero*. Reading `rbtree.h`:
 
-```c
-struct rb_node {
-    unsigned long  __rb_parent_color;   // parent pointer + colour bit
-    struct rb_node *rb_right;
-    struct rb_node *rb_left;
-};
-```
-
 Three pointers per node, no extra bytes. The price: every parent-or-colour read is a bit-mask away.
 
 ***
@@ -64,15 +56,6 @@ Three pointers per node, no extra bytes. The price: every parent-or-colour read 
 # `lib/rbtree.c` — the generic tree
 
 `lib/rbtree.c` is the kernel's generic RB-tree. It's *type-erased* — you embed an `rb_node` field in your struct, then the RB-tree functions operate on `rb_node` pointers without knowing your type. Lookup-by-key is delegated to a per-user comparison function (or, more often, inlined at the call site for performance).
-
-```c
-// kernel/sched/fair.c
-struct sched_entity {
-    struct rb_node run_node;
-    u64 vruntime;
-    // ... lots more
-};
-```
 
 The kernel's tree uses macros (`rb_entry`, `container_of`) to translate between `rb_node*` and the containing `sched_entity*`. This is the C idiom for generic data structures pre-C11.
 
@@ -83,18 +66,6 @@ The five RB invariants (covered in the [Red-Black Tree chapter](/cortex/data-str
 # Per-CPU run queues
 
 A multi-CPU system doesn't have *one* RB-tree; it has *one tree per CPU*, called the **CFS run queue** (`struct cfs_rq`). Each CPU's scheduler operates on its own tree, in its own cache.
-
-```c
-// kernel/sched/sched.h
-struct cfs_rq {
-    struct load_weight load;
-    unsigned int nr_running;
-    u64 min_vruntime;
-    struct rb_root_cached tasks_timeline;   // ← the RB-tree of runnable tasks
-    struct sched_entity *curr;              // ← currently running task
-    // ... more
-};
-```
 
 `tasks_timeline` is the per-CPU RB-tree. `min_vruntime` tracks the smallest `vruntime` across the tree (effectively, the leftmost task's vruntime). New tasks added to a CPU adjust their `vruntime` based on `min_vruntime` so they can compete fairly.
 
@@ -110,13 +81,6 @@ A naive implementation walks the tree to find the leftmost — `O(log n)` per sc
 
 The kernel uses **`rb_root_cached`**, a small wrapper:
 
-```c
-struct rb_root_cached {
-    struct rb_root rb_root;
-    struct rb_node *rb_leftmost;       // cached leftmost pointer
-};
-```
-
 Every insert/erase updates `rb_leftmost` (`O(1)` extra work to track it). Picking the next task is now a *pointer dereference*: `rq->tasks_timeline.rb_leftmost`. **`O(1)` to find the next task, regardless of run queue size.**
 
 ***
@@ -124,18 +88,6 @@ Every insert/erase updates `rb_leftmost` (`O(1)` extra work to track it). Pickin
 # Picking the next task
 
 `pick_next_task_fair` (the entry point):
-
-```c
-static struct task_struct *
-pick_next_task_fair(struct rq *rq, struct task_struct *prev, struct rq_flags *rf) {
-    struct cfs_rq *cfs_rq = &rq->cfs;
-    struct sched_entity *se;
-    // ... bookkeeping
-    se = rb_entry(rb_first_cached(&cfs_rq->tasks_timeline),
-                  struct sched_entity, run_node);
-    return task_of(se);
-}
-```
 
 `rb_first_cached` is the `O(1)` leftmost lookup. `rb_entry` translates `rb_node*` to `sched_entity*`. `task_of` extracts the `task_struct`.
 
@@ -175,42 +127,36 @@ Click any question to reveal the answer.
 **A:** Picking the next task to run. Tasks are keyed by `vruntime` (virtual runtime); CFS picks the leftmost (least-run) task in `O(log n)` — or `O(1)` with `rb_root_cached`.
 
 </details>
-
 <details>
 <summary><strong>Q:</strong> Why RB-tree, not AVL or splay?</summary>
 
 **A:** **Deterministic worst case** (no probabilistic structures in a kernel scheduler). **Constant rotation count** on insert/delete (write-heavy: every context switch is insert+delete). **Zero per-node memory overhead** (colour bit packed into parent pointer's low bit).
 
 </details>
-
 <details>
 <summary><strong>Q:</strong> What's <code>rb_root_cached</code>?</summary>
 
 **A:** RB-tree augmented with a cached pointer to the leftmost node. Maintains the pointer on every insert/erase. Makes `pick_next_task_fair` `O(1)` instead of `O(log n)`.
 
 </details>
-
 <details>
 <summary><strong>Q:</strong> Per-CPU run queues — why?</summary>
 
 **A:** One RB-tree per CPU (`cfs_rq` in `struct rq`). Avoids contention. Load balancing migrates tasks across trees periodically.
 
 </details>
-
 <details>
 <summary><strong>Q:</strong> What types of tasks does CFS handle?</summary>
 
 **A:** `SCHED_NORMAL`, `SCHED_BATCH`, `SCHED_IDLE`. Real-time tasks (`SCHED_FIFO`, `SCHED_RR`) bypass CFS — handled by `rt_sched_class`.
 
 </details>
-
 <details>
 <summary><strong>Q:</strong> Why is the kernel's RB-tree implementation type-erased?</summary>
 
 **A:** Generic via macros: you embed an `rb_node` field in your struct, then `container_of` macros translate between `rb_node *` and your struct. Single implementation handles every kernel use of RB-tree.
 
 </details>
-
 <details>
 <summary><strong>Q:</strong> Is `vruntime` precision a problem?</summary>
 

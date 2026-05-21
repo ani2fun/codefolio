@@ -133,13 +133,6 @@ Worst-case `find` cost: `O(tree height)`. Without optimisation, the tree can bec
 
 When `find(x)` walks up to the root, *re-point every node along the path directly to the root* on the way back down. The next `find` on any of those nodes is `O(1)`.
 
-```pseudocode
-function find(x):
-    if parent[x] = x: return x
-    parent[x] ← find(parent[x])    # recursive: returned root; assign on the way back
-    return parent[x]
-```
-
 ```mermaid
 ---
 config:
@@ -191,20 +184,6 @@ When unioning two trees, attach the *shorter* one under the *taller* one — or 
 **Union by rank.** Each root tracks an upper-bound estimate of its tree height (the *rank*). Union the lower-rank root under the higher-rank root. Only when ranks are equal does the resulting root's rank increase by 1.
 
 **Union by size.** Each root tracks the number of nodes in its tree. Union the smaller-size root under the larger-size root. Equivalent in asymptotic behaviour; the implementation is slightly different.
-
-```pseudocode
-function union(x, y):
-    rx ← find(x)
-    ry ← find(y)
-    if rx = ry: return            # already in the same set
-    if rank[rx] < rank[ry]:
-        parent[rx] ← ry
-    else if rank[rx] > rank[ry]:
-        parent[ry] ← rx
-    else:
-        parent[ry] ← rx
-        rank[rx] ← rank[rx] + 1
-```
 
 Without path compression, union-by-rank alone gives `O(log n)` worst-case `find`. With path compression alone, you get `O(log n)` amortised. *Combined*, you get `O(α(n))` amortised — essentially constant.
 
@@ -317,63 +296,6 @@ public class Main {
 }
 ```
 
-```c run
-#include <stdio.h>
-
-#define N 10
-int parent[N], rnk[N];
-
-int find(int x) {
-    if (parent[x] != x) parent[x] = find(parent[x]);
-    return parent[x];
-}
-
-int dsu_union(int x, int y) {
-    int rx = find(x), ry = find(y);
-    if (rx == ry) return 0;
-    if (rnk[rx] < rnk[ry]) { int t = rx; rx = ry; ry = t; }
-    parent[ry] = rx;
-    if (rnk[rx] == rnk[ry]) rnk[rx]++;
-    return 1;
-}
-
-int main(void) {
-    for (int i = 0; i < N; i++) parent[i] = i;
-    int edges[][2] = {{0,1},{1,2},{3,4},{5,6},{6,7}};
-    for (int i = 0; i < 5; i++) dsu_union(edges[i][0], edges[i][1]);
-    printf("same_set(0,2)? %s\n", find(0) == find(2) ? "true" : "false");
-    printf("same_set(0,3)? %s\n", find(0) == find(3) ? "true" : "false");
-    return 0;
-}
-```
-
-```scala run
-object Main extends App {
-  val n = 10
-  val parent = Array.tabulate(n)(identity)
-  val rnk = new Array[Int](n)
-
-  def find(x: Int): Int = {
-    if (parent(x) != x) parent(x) = find(parent(x))
-    parent(x)
-  }
-
-  def union(x: Int, y: Int): Boolean = {
-    var rx = find(x); var ry = find(y)
-    if (rx == ry) return false
-    if (rnk(rx) < rnk(ry)) { val t = rx; rx = ry; ry = t }
-    parent(ry) = rx
-    if (rnk(rx) == rnk(ry)) rnk(rx) += 1
-    true
-  }
-
-  val edges = Array((0,1), (1,2), (3,4), (5,6), (6,7))
-  for ((u, v) <- edges) union(u, v)
-  println(s"same_set(0,2)? ${find(0) == find(2)}")
-  println(s"same_set(0,3)? ${find(0) == find(3)}")
-}
-```
-
 ***
 
 # Edge cases and pitfalls
@@ -442,21 +364,18 @@ Click any question to reveal the answer.
 **A:** **`find(x)`** — return a representative of the set containing `x`. **`union(x, y)`** — merge the two sets containing `x` and `y`.
 
 </details>
-
 <details>
 <summary><strong>Q:</strong> Amortized complexity per operation with both optimisations?</summary>
 
 **A:** `O(α(n))` where `α` is the inverse Ackermann function. For any practical `n`, `α(n) ≤ 4` — effectively constant.
 
 </details>
-
 <details>
 <summary><strong>Q:</strong> Two non-negotiable optimisations?</summary>
 
 **A:** **Path compression** (every node on the find path becomes a child of the root) + **union by rank** (or by size). Either alone gives `O(log n)`; together give `O(α(n))`.
 
 </details>
-
 <details>
 <summary><strong>Q:</strong> What does <code>find(x)</code> with path compression do, in three lines?</summary>
 
@@ -469,35 +388,30 @@ def find(x):
 ```
 
 </details>
-
 <details>
 <summary><strong>Q:</strong> Recursion-depth gotcha for big inputs?</summary>
 
 **A:** Recursive `find` can blow the stack on `n = 10⁶` chains before path compression has kicked in. Use iterative two-pass: walk to the root, then re-walk compressing.
 
 </details>
-
 <details>
 <summary><strong>Q:</strong> Common bug: comparing membership without going through <code>find</code>?</summary>
 
 **A:** `parent[x] == parent[y]` is *not* the same as "same set". Always use `find(x) == find(y)`. Easy mistake.
 
 </details>
-
 <details>
 <summary><strong>Q:</strong> Operation DSU does NOT support?</summary>
 
 **A:** Split. Once unioned, you can't unmerge without rebuilding from scratch. For dynamic-connectivity-with-deletes, use link-cut trees instead.
 
 </details>
-
 <details>
 <summary><strong>Q:</strong> What's the canonical algorithm DSU enables?</summary>
 
 **A:** **Kruskal's MST** — sort edges by weight, walk in order, accept an edge iff its endpoints are in different DSU components.
 
 </details>
-
 <details>
 <summary><strong>Q:</strong> Memory layout?</summary>
 

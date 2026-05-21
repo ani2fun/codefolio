@@ -277,19 +277,6 @@ flowchart LR
 ## Declaring a 2D Array in Python
 
 
-```pseudocode
-rows ← 4
-cols ← 5
-ages ← (rows × cols) grid of zeros        # each inner row is a fresh copy
-
-ages[0][0] ← 6
-ages[1][2] ← 8
-ages[3][4] ← 10
-
-for rowIndex from 0 to rows − 1:
-    print "Class " + rowIndex + ": " + ages[rowIndex]
-```
-
 ```python run
 from typing import List
 
@@ -335,50 +322,6 @@ public class Main {
             System.out.println("Class " + rowIndex + ": " + Arrays.toString(ages[rowIndex]));
         }
     }
-}
-```
-
-```c run
-#include <stdio.h>
-
-int main() {
-    int rows = 4, cols = 5;
-
-    /* True 2D fixed-size array, default 0 thanks to the {0} initializer. */
-    int ages[4][5] = {0};
-
-    ages[0][0] = 6;
-    ages[1][2] = 8;
-    ages[3][4] = 10;
-
-    printf("Class 1, Student 3: %d\n", ages[1][2]);   /* → 8 */
-
-    for (int rowIndex = 0; rowIndex < rows; rowIndex++) {
-        printf("Class %d: ", rowIndex);
-        for (int j = 0; j < cols; j++) printf("%d ", ages[rowIndex][j]);
-        printf("\n");
-    }
-    return 0;
-}
-```
-
-```scala run
-object Main extends App {
-  val rows = 4
-  val cols = 5
-
-  // Array.ofDim builds a true rectangular 2D array with each row independent.
-  val ages: Array[Array[Int]] = Array.ofDim[Int](rows, cols)
-
-  ages(0)(0) = 6
-  ages(1)(2) = 8
-  ages(3)(4) = 10
-
-  println(s"Class 1, Student 3: ${ages(1)(2)}")   // → 8
-
-  for (rowIndex <- 0 until rows) {
-    println(s"Class $rowIndex: ${ages(rowIndex).mkString(", ")}")
-  }
 }
 ```
 
@@ -722,102 +665,64 @@ arr: {
 Higher-level languages like Python and JavaScript inherently provide a **list** instead of a raw array. A list has a dynamic size and can store elements of different types — so the programmer doesn't need to provide a size when declaring or initializing a multidimensional array.
 
 
-```pseudocode
-numbers2d ← [[1, 2, 3], [4, 5, 6]]                          # 2D = list of lists
-numbers3d ← [[[1, 2], [3, 4], [5, 6]],
-             [[7, 8], [9, 10], [11, 12]]]                    # 3D = list of lists of lists
-
-print numbers2d
-print numbers3d
-```
-
 ```python run
+# Since Python lists are dynamic, they can be extended
+# after creation
+
 from typing import List
 
-# 2D = list of lists; 3D = list of lists of lists. The shape is implied by nesting.
-numbers2d: List[List[int]] = [
+# 1. Declaring a 2D array of size 2x3 (zeros)
+numbers2d: List[List[int]] = [[0 for _ in range(3)] for _ in range(2)]
+
+# 2. Declaring a 3D array of size 2x3x2 (zeros)
+numbers3d: List[List[List[int]]] = [[[0 for _ in range(2)] for _ in range(3)] for _ in range(2)]
+
+# 3. Initializing a 2D array
+numbers2d_init: List[List[int]] = [
     [1, 2, 3],
     [4, 5, 6]
 ]
 
-numbers3d: List[List[List[int]]] = [
+# 4. Initializing a 3D array
+numbers3d_init: List[List[List[int]]] = [
     [ [1, 2], [3, 4], [5, 6] ],
     [ [7, 8], [9, 10], [11, 12] ]
 ]
 
-print("2D array:", numbers2d)
-print("3D array:", numbers3d)
+# 5. Dynamic 2D array
+rows: int = 2
+cols: int = 3
+dynamic2d: List[List[int]] = [[0]*cols for _ in range(rows)]
 ```
 
 ```java run
-import java.util.Arrays;
-
 public class Main {
     public static void main(String[] args) {
-        // 2D rectangular array literal.
-        int[][] numbers2d = {
+
+        // 1. Declaring a 2D array of size 2x3
+        int[][] numbers2d = new int[2][3];
+
+        // 2. Declaring a 3D array of size 2x3x2
+        int[][][] numbers3d = new int[2][3][2];
+
+        // 3. Initializing a 2D array
+        int[][] numbers2d_init = {
             {1, 2, 3},
             {4, 5, 6}
         };
 
-        // 3D array literal — nesting depth matches dimension count.
-        int[][][] numbers3d = {
+        // 4. Initializing a 3D array
+        int[][][] numbers3d_init = {
             { {1, 2}, {3, 4}, {5, 6} },
             { {7, 8}, {9, 10}, {11, 12} }
         };
 
-        System.out.println("2D array: " + Arrays.deepToString(numbers2d));
-        System.out.println("3D array: " + Arrays.deepToString(numbers3d));
+        // 5. Dynamic 2D array (rows can vary)
+        int rows = 2;
+        int[][] dynamic2d = new int[rows][];
+        dynamic2d[0] = new int[3];
+        dynamic2d[1] = new int[4]; // jagged array example
     }
-}
-```
-
-```c run
-#include <stdio.h>
-
-int main() {
-    /* Fixed-shape 2D and 3D arrays — sizes baked into the type. */
-    int numbers2d[2][3] = {
-        {1, 2, 3},
-        {4, 5, 6}
-    };
-
-    int numbers3d[2][3][2] = {
-        { {1, 2}, {3, 4}, {5, 6} },
-        { {7, 8}, {9, 10}, {11, 12} }
-    };
-
-    printf("2D array:\n");
-    for (int i = 0; i < 2; i++) {
-        for (int j = 0; j < 3; j++) printf("%d ", numbers2d[i][j]);
-        printf("\n");
-    }
-    printf("3D array:\n");
-    for (int i = 0; i < 2; i++)
-        for (int j = 0; j < 3; j++) {
-            for (int k = 0; k < 2; k++) printf("%d ", numbers3d[i][j][k]);
-            printf("| ");
-        }
-    printf("\n");
-    return 0;
-}
-```
-
-```scala run
-object Main extends App {
-  // Array literals nest naturally; each level is its own Array.
-  val numbers2d: Array[Array[Int]] = Array(
-    Array(1, 2, 3),
-    Array(4, 5, 6)
-  )
-
-  val numbers3d: Array[Array[Array[Int]]] = Array(
-    Array(Array(1, 2), Array(3, 4), Array(5, 6)),
-    Array(Array(7, 8), Array(9, 10), Array(11, 12))
-  )
-
-  println("2D array: " + numbers2d.map(_.mkString("[", ",", "]")).mkString("[", ",", "]"))
-  println("3D first layer first row: " + numbers3d(0)(0).mkString(", "))
 }
 ```
 
@@ -874,103 +779,54 @@ The pattern generalises naturally:
 Different programming languages have different syntax, but the underlying access mechanism is the same.
 
 
-```pseudocode
-numbers2d ← [[1, 2, 3], [4, 5, 6]]
-print numbers2d[0][0]                                       # 1
-print numbers2d[1][2]                                       # 6 — chain [] per dimension
-
-numbers3d ← [[[1, 2], [3, 4], [5, 6]],
-             [[7, 8], [9, 10], [11, 12]]]
-print numbers3d[0][1][1]                                    # 4
-print numbers3d[1][2][0]                                    # 11
-```
-
 ```python run
 from typing import List
 
+# Initializing a 2D array
 numbers2d: List[List[int]] = [
     [1, 2, 3],
     [4, 5, 6]
 ]
 
-# Chain [] once per dimension to reach the value.
-print("Element at (0,0):", numbers2d[0][0])  # → 1
-print("Element at (1,2):", numbers2d[1][2])  # → 6
+# Accessing elements using [row][column]
+print("Element at (0,0):", numbers2d[0][0])
+print("Element at (1,2):", numbers2d[1][2])
 
+# Initializing a 3D array
 numbers3d: List[List[List[int]]] = [
-    [ [1, 2], [3, 4], [5, 6] ],
-    [ [7, 8], [9, 10], [11, 12] ]
+    [ [1,2], [3,4], [5,6] ],
+    [ [7,8], [9,10], [11,12] ]
 ]
 
-print("Element at (0,1,1):", numbers3d[0][1][1])  # → 4
-print("Element at (1,2,0):", numbers3d[1][2][0])  # → 11
+# Accessing elements using [depth][row][column]
+print("Element at (0,1,1):", numbers3d[0][1][1])
+print("Element at (1,2,0):", numbers3d[1][2][0])
 ```
 
 ```java run
 public class Main {
     public static void main(String[] args) {
+
+        // Initializing a 2D array
         int[][] numbers2d = {
             {1, 2, 3},
             {4, 5, 6}
         };
 
-        // Chain [] once per dimension.
-        System.out.println("Element at (0,0): " + numbers2d[0][0]);  // → 1
-        System.out.println("Element at (1,2): " + numbers2d[1][2]);  // → 6
+        // Accessing elements using [row][column]
+        System.out.println("Element at (0,0): " + numbers2d[0][0]);
+        System.out.println("Element at (1,2): " + numbers2d[1][2]);
 
+        // Initializing a 3D array
         int[][][] numbers3d = {
-            { {1, 2}, {3, 4}, {5, 6} },
-            { {7, 8}, {9, 10}, {11, 12} }
+            { {1,2}, {3,4}, {5,6} },
+            { {7,8}, {9,10}, {11,12} }
         };
 
-        System.out.println("Element at (0,1,1): " + numbers3d[0][1][1]);  // → 4
-        System.out.println("Element at (1,2,0): " + numbers3d[1][2][0]);  // → 11
+        // Accessing elements using [depth][row][column]
+        System.out.println("Element at (0,1,1): " + numbers3d[0][1][1]);
+        System.out.println("Element at (1,2,0): " + numbers3d[1][2][0]);
     }
-}
-```
-
-```c run
-#include <stdio.h>
-
-int main() {
-    int numbers2d[2][3] = {
-        {1, 2, 3},
-        {4, 5, 6}
-    };
-
-    /* Chain [] once per dimension. */
-    printf("Element at (0,0): %d\n", numbers2d[0][0]);  /* → 1 */
-    printf("Element at (1,2): %d\n", numbers2d[1][2]);  /* → 6 */
-
-    int numbers3d[2][3][2] = {
-        { {1, 2}, {3, 4}, {5, 6} },
-        { {7, 8}, {9, 10}, {11, 12} }
-    };
-
-    printf("Element at (0,1,1): %d\n", numbers3d[0][1][1]);  /* → 4 */
-    printf("Element at (1,2,0): %d\n", numbers3d[1][2][0]);  /* → 11 */
-    return 0;
-}
-```
-
-```scala run
-object Main extends App {
-  val numbers2d = Array(
-    Array(1, 2, 3),
-    Array(4, 5, 6)
-  )
-
-  // arr(i)(j) chains the apply method once per dimension.
-  println(s"Element at (0,0): ${numbers2d(0)(0)}")  // → 1
-  println(s"Element at (1,2): ${numbers2d(1)(2)}")  // → 6
-
-  val numbers3d = Array(
-    Array(Array(1, 2), Array(3, 4), Array(5, 6)),
-    Array(Array(7, 8), Array(9, 10), Array(11, 12))
-  )
-
-  println(s"Element at (0,1,1): ${numbers3d(0)(1)(1)}")  // → 4
-  println(s"Element at (1,2,0): ${numbers3d(1)(2)(0)}")  // → 11
 }
 ```
 
@@ -1024,113 +880,54 @@ arr.i.style.stroke: "#d97706"
 <p align="center"><strong>Multidimensional array elements can be modified using indices for all dimensions (highlighted = being updated).</strong></p>
 
 
-```pseudocode
-numbers2d ← [[1, 2, 3], [4, 5, 6]]
-numbers2d[1][1] ← 60                                        # in-place overwrite
-
-numbers3d ← [[[1, 2], [3, 4], [5, 6]],
-             [[7, 8], [9, 10], [11, 12]]]
-numbers3d[0][1][1] ← 40
-numbers3d[1][1][1] ← 110
-```
-
 ```python run
 from typing import List
 
+# Initializing a 2D array
 numbers2d: List[List[int]] = [
     [1, 2, 3],
     [4, 5, 6]
 ]
 
-# arr[i][j] = x — overwrite the slot in place.
-numbers2d[1][1] = 60
-print("Modified 2D array:", numbers2d)  # → [[1, 2, 3], [4, 60, 6]]
+# Modifying elements in 2D array
+numbers2d[0][0] = 10
+numbers2d[1][2] = 60
 
+# Initializing a 3D array
 numbers3d: List[List[List[int]]] = [
-    [ [1, 2], [3, 4], [5, 6] ],
-    [ [7, 8], [9, 10], [11, 12] ]
+    [ [1,2], [3,4], [5,6] ],
+    [ [7,8], [9,10], [11,12] ]
 ]
 
+# Modifying elements in 3D array
 numbers3d[0][1][1] = 40
-numbers3d[1][1][1] = 110
-print("Modified 3D array:", numbers3d)
+numbers3d[1][2][0] = 110
 ```
 
 ```java run
-import java.util.Arrays;
-
 public class Main {
     public static void main(String[] args) {
+
+        // Initializing a 2D array
         int[][] numbers2d = {
             {1, 2, 3},
             {4, 5, 6}
         };
 
-        // arr[i][j] = x — overwrite the slot in place.
-        numbers2d[1][1] = 60;
-        System.out.println("Modified 2D array: " + Arrays.deepToString(numbers2d));
+        // Modifying elements in 2D array
+        numbers2d[0][0] = 10;
+        numbers2d[1][2] = 60;
 
+        // Initializing a 3D array
         int[][][] numbers3d = {
-            { {1, 2}, {3, 4}, {5, 6} },
-            { {7, 8}, {9, 10}, {11, 12} }
+            { {1,2}, {3,4}, {5,6} },
+            { {7,8}, {9,10}, {11,12} }
         };
 
+        // Modifying elements in 3D array
         numbers3d[0][1][1] = 40;
-        numbers3d[1][1][1] = 110;
-        System.out.println("Modified 3D array: " + Arrays.deepToString(numbers3d));
+        numbers3d[1][2][0] = 110;
     }
-}
-```
-
-```c run
-#include <stdio.h>
-
-int main() {
-    int numbers2d[2][3] = {
-        {1, 2, 3},
-        {4, 5, 6}
-    };
-
-    /* arr[i][j] = x — overwrite the slot in place. */
-    numbers2d[1][1] = 60;
-    printf("Modified 2D array:\n");
-    for (int i = 0; i < 2; i++) {
-        for (int j = 0; j < 3; j++) printf("%d ", numbers2d[i][j]);
-        printf("\n");
-    }
-
-    int numbers3d[2][3][2] = {
-        { {1, 2}, {3, 4}, {5, 6} },
-        { {7, 8}, {9, 10}, {11, 12} }
-    };
-
-    numbers3d[0][1][1] = 40;
-    numbers3d[1][1][1] = 110;
-    printf("3D[0][1][1] = %d, 3D[1][1][1] = %d\n",
-           numbers3d[0][1][1], numbers3d[1][1][1]);
-    return 0;
-}
-```
-
-```scala run
-object Main extends App {
-  val numbers2d = Array(
-    Array(1, 2, 3),
-    Array(4, 5, 6)
-  )
-
-  // arr(i)(j) = x — Scala's update form for nested arrays.
-  numbers2d(1)(1) = 60
-  println("Modified 2D array: " + numbers2d.map(_.mkString("[", ",", "]")).mkString("[", ",", "]"))
-
-  val numbers3d = Array(
-    Array(Array(1, 2), Array(3, 4), Array(5, 6)),
-    Array(Array(7, 8), Array(9, 10), Array(11, 12))
-  )
-
-  numbers3d(0)(1)(1) = 40
-  numbers3d(1)(1)(1) = 110
-  println(s"3D(0)(1)(1) = ${numbers3d(0)(1)(1)}, 3D(1)(1)(1) = ${numbers3d(1)(1)(1)}")
 }
 ```
 
@@ -1400,36 +1197,23 @@ flowchart LR
 <p align="center"><strong>Traversing a 2D array requires two nested loops — one per dimension.</strong></p>
 
 
-```pseudocode
-numbers2d ← [[1, 2, 3], [4, 5, 6]]
-
-# Style 1 — index-based (when you need (i, j) themselves).
-for i from 0 to length(numbers2d) − 1:
-    for j from 0 to length(numbers2d[i]) − 1:
-        print numbers2d[i][j]
-
-# Style 2 — for-each (when only the values matter).
-for each row in numbers2d:
-    for each value in row:
-        print value
-```
-
 ```python run
 from typing import List
 
+# Initializing a 2D array
 numbers2d: List[List[int]] = [
     [1, 2, 3],
     [4, 5, 6]
 ]
 
-# Style 1 — index-based: when you need (i, j) themselves (writes, neighbours, grid graphs).
+# 1. Index-based for loop (2D)
 print("2D array traversal (index-based):")
 for i in range(len(numbers2d)):
     for j in range(len(numbers2d[i])):
         print(numbers2d[i][j], end=" ")
     print()
 
-# Style 2 — for-each: shorter, no index. Best when only values matter.
+# 2. For-each loop (2D)
 print("2D array traversal (for-each):")
 for row in numbers2d:
     for value in row:
@@ -1440,12 +1224,14 @@ for row in numbers2d:
 ```java run
 public class Main {
     public static void main(String[] args) {
+
+        // Initializing a 2D array
         int[][] numbers2d = {
             {1, 2, 3},
             {4, 5, 6}
         };
 
-        // Style 1 — index-based.
+        // 1. Index-based for loop (2D)
         System.out.println("2D array traversal (index-based):");
         for (int i = 0; i < numbers2d.length; i++) {
             for (int j = 0; j < numbers2d[i].length; j++) {
@@ -1454,115 +1240,11 @@ public class Main {
             System.out.println();
         }
 
-        // Style 2 — enhanced for (for-each).
+        // 2. Enhanced for-each loop (2D)
         System.out.println("2D array traversal (for-each):");
         for (int[] row : numbers2d) {
-            for (int value : row) System.out.print(value + " ");
-            System.out.println();
-        }
-    }
-}
-```
-
-```c run
-#include <stdio.h>
-
-int main() {
-    int numbers2d[2][3] = {
-        {1, 2, 3},
-        {4, 5, 6}
-    };
-    int rows = 2, cols = 3;
-
-    /* Style 1 — index-based. */
-    printf("2D array traversal (index-based):\n");
-    for (int i = 0; i < rows; i++) {
-        for (int j = 0; j < cols; j++) {
-            printf("%d ", numbers2d[i][j]);
-        }
-        printf("\n");
-    }
-
-    /* C has no built-in for-each — index-based is the only built-in form. */
-    printf("2D array traversal (no for-each in C — same loop):\n");
-    for (int i = 0; i < rows; i++) {
-        for (int j = 0; j < cols; j++) printf("%d ", numbers2d[i][j]);
-        printf("\n");
-    }
-    return 0;
-}
-```
-
-```scala run
-object Main extends App {
-  val numbers2d = Array(
-    Array(1, 2, 3),
-    Array(4, 5, 6)
-  )
-
-  // Style 1 — index-based.
-  println("2D array traversal (index-based):")
-  for (i <- numbers2d.indices) {
-    for (j <- numbers2d(i).indices) print(s"${numbers2d(i)(j)} ")
-    println()
-  }
-
-  // Style 2 — for-each.
-  println("2D array traversal (for-each):")
-  for (row <- numbers2d) {
-    for (value <- row) print(s"$value ")
-    println()
-  }
-}
-```
-
-
-For a 3D array, just add one more nesting level:
-
-
-```pseudocode
-numbers3d ← [[[1, 2], [3, 4], [5, 6]],
-             [[7, 8], [9, 10], [11, 12]]]
-
-# Three nested loops — one per dimension.
-for each matrix in numbers3d:
-    for each row in matrix:
-        for each value in row:
-            print value
-```
-
-```python run
-from typing import List
-
-numbers3d: List[List[List[int]]] = [
-    [ [1, 2], [3, 4], [5, 6] ],
-    [ [7, 8], [9, 10], [11, 12] ]
-]
-
-# Three nested loops — one per dimension. The innermost loop walks values.
-print("3D array traversal:")
-for matrix in numbers3d:
-    for row in matrix:
-        for value in row:
-            print(value, end=" ")
-        print(" ", end="")
-    print()
-```
-
-```java run
-public class Main {
-    public static void main(String[] args) {
-        int[][][] numbers3d = {
-            { {1, 2}, {3, 4}, {5, 6} },
-            { {7, 8}, {9, 10}, {11, 12} }
-        };
-
-        // One enhanced for per dimension.
-        System.out.println("3D array traversal:");
-        for (int[][] matrix : numbers3d) {
-            for (int[] row : matrix) {
-                for (int value : row) System.out.print(value + " ");
-                System.out.print("  ");
+            for (int value : row) {
+                System.out.print(value + " ");
             }
             System.out.println();
         }
@@ -1570,43 +1252,51 @@ public class Main {
 }
 ```
 
-```c run
-#include <stdio.h>
 
-int main() {
-    int numbers3d[2][3][2] = {
-        { {1, 2}, {3, 4}, {5, 6} },
-        { {7, 8}, {9, 10}, {11, 12} }
-    };
+For a 3D array, just add one more nesting level:
 
-    /* Three nested index-based loops. */
-    printf("3D array traversal:\n");
-    for (int i = 0; i < 2; i++) {
-        for (int j = 0; j < 3; j++) {
-            for (int k = 0; k < 2; k++) printf("%d ", numbers3d[i][j][k]);
-            printf("  ");
-        }
-        printf("\n");
-    }
-    return 0;
-}
+
+```python run
+from typing import List
+
+# Initializing a 3D array
+numbers3d: List[List[List[int]]] = [
+    [ [1,2], [3,4], [5,6] ],
+    [ [7,8], [9,10], [11,12] ]
+]
+
+# 3D traversal
+print("3D array traversal:")
+for matrix in numbers3d:
+    for row in matrix:
+        for value in row:
+            print(value, end=" ")
+        print("| ", end="")
+    print()
 ```
 
-```scala run
-object Main extends App {
-  val numbers3d = Array(
-    Array(Array(1, 2), Array(3, 4), Array(5, 6)),
-    Array(Array(7, 8), Array(9, 10), Array(11, 12))
-  )
+```java run
+public class Main {
+    public static void main(String[] args) {
 
-  println("3D array traversal:")
-  for (matrix <- numbers3d) {
-    for (row <- matrix) {
-      for (value <- row) print(s"$value ")
-      print("  ")
+        // Initializing a 3D array
+        int[][][] numbers3d = {
+            { {1,2}, {3,4}, {5,6} },
+            { {7,8}, {9,10}, {11,12} }
+        };
+
+        // 3D traversal
+        System.out.println("3D array traversal:");
+        for (int i = 0; i < numbers3d.length; i++) {
+            for (int j = 0; j < numbers3d[i].length; j++) {
+                for (int k = 0; k < numbers3d[i][j].length; k++) {
+                    System.out.print(numbers3d[i][j][k] + " ");
+                }
+                System.out.print("| ");
+            }
+            System.out.println();
+        }
     }
-    println()
-  }
 }
 ```
 
@@ -1877,17 +1567,6 @@ The memory ribbon therefore fills up in this exact sequence:
 You can verify this yourself — run the code below and watch the order elements are visited:
 
 
-```pseudocode
-arr ← [[10, 20, 30, 40],
-       [50, 60, 70, 80],
-       [90, 11, 12, 13]]
-
-# Rows outer (slow), columns inner (fast) — matches row-major memory layout.
-for i from 0 to 2:
-    for j from 0 to 3:
-        print "arr[" + i + "][" + j + "] = " + arr[i][j]
-```
-
 ```python run
 arr = [
     [10, 20, 30, 40],  # Row 0
@@ -1918,41 +1597,6 @@ public class Main {
             }
         }
     }
-}
-```
-
-```c run
-#include <stdio.h>
-
-int main() {
-    int arr[3][4] = {
-        {10, 20, 30, 40},
-        {50, 60, 70, 80},
-        {90, 11, 12, 13}
-    };
-
-    printf("Row-major traversal order:\n");
-    for (int i = 0; i < 3; i++) {
-        for (int j = 0; j < 4; j++) {
-            printf("arr[%d][%d] = %d\n", i, j, arr[i][j]);
-        }
-    }
-    return 0;
-}
-```
-
-```scala run
-object Main extends App {
-  val arr = Array(
-    Array(10, 20, 30, 40),
-    Array(50, 60, 70, 80),
-    Array(90, 11, 12, 13)
-  )
-
-  println("Row-major traversal order:")
-  for (i <- 0 until 3; j <- 0 until 4) {
-    println(s"arr($i)($j) = ${arr(i)(j)}")
-  }
 }
 ```
 
@@ -2038,18 +1682,6 @@ Verify by counting: Row 0 → offsets 0–3 · Row 1 → offsets 4–7 · Row 2 
 The element at `[2][1]` is the 2nd element (j=1) inside Row 2, which starts at offset 8. So offset = 8 + 1 = **9**. ✓
 
 
-```pseudocode
-# Address formula for a 3 × 4 row-major array. arr[i][j] = base + (i × numCols + j) × elementSize.
-baseAddress ← 1000
-elementSize ← 4
-numCols ← 4                                           # row stride
-
-i ← 2; j ← 1
-offset ← i × numCols + j                              # skip i rows, walk j columns
-address ← baseAddress + offset × elementSize          # offset = 9, address = 1036
-print "arr[" + i + "][" + j + "] is at offset " + offset + ", address " + address
-```
-
 ```python run
 # Reproduce the address formula by hand for a 3 x 4 array.
 base_address = 1000
@@ -2079,38 +1711,6 @@ public class Main {
         System.out.println("arr[" + i + "][" + j + "] is at offset " + offset
                          + ", memory address " + address);
     }
-}
-```
-
-```c run
-#include <stdio.h>
-
-int main() {
-    int base_address = 1000;
-    int element_size = 4;
-    int num_cols = 4;
-
-    int i = 2, j = 1;
-
-    int offset  = i * num_cols + j;
-    int address = base_address + offset * element_size;
-    printf("arr[%d][%d] is at offset %d, memory address %d\n", i, j, offset, address);
-    return 0;
-}
-```
-
-```scala run
-object Main extends App {
-  val baseAddress = 1000
-  val elementSize = 4
-  val numCols     = 4
-
-  val i = 2
-  val j = 1
-
-  val offset  = i * numCols + j
-  val address = baseAddress + offset * elementSize
-  println(s"arr($i)($j) is at offset $offset, memory address $address")
 }
 ```
 
@@ -2323,21 +1923,6 @@ mem: {
 Notice the pattern: Layer 0 occupies addresses 2–22, Layer 1 occupies 26–46. Within each layer, Row 0 comes first, Row 1 second. Within each row, the column index climbs 0→1→2.
 
 
-```pseudocode
-# Walk every element of a 2 × 2 × 3 row-major 3D array, printing offset + address.
-# D3 is outermost (slowest), D1 is innermost (fastest) → offset increases by exactly 1 per step.
-base ← 2
-elementSize ← 4
-D3 ← 2; D2 ← 2; D1 ← 3
-
-for i3 from 0 to D3 − 1:
-    for i2 from 0 to D2 − 1:
-        for i1 from 0 to D1 − 1:
-            offset  ← i3 × (D2 × D1) + i2 × D1 + i1
-            address ← base + offset × elementSize
-            print "[" + i3 + "][" + i2 + "][" + i1 + "] offset=" + offset + " address=" + address
-```
-
 ```python run
 # Print offset + address of every element in a 2 x 2 x 3 row-major array.
 base = 2
@@ -2376,45 +1961,6 @@ public class Main {
             }
         }
     }
-}
-```
-
-```c run
-#include <stdio.h>
-
-int main() {
-    int base = 2;
-    int element_size = 4;
-    int D3 = 2, D2 = 2, D1 = 3;
-
-    printf("%-16s %6s %8s\n", "Index", "Offset", "Address");
-    printf("--------------------------------\n");
-    for (int i3 = 0; i3 < D3; i3++) {
-        for (int i2 = 0; i2 < D2; i2++) {
-            for (int i1 = 0; i1 < D1; i1++) {
-                int offset  = i3 * (D2 * D1) + i2 * D1 + i1;
-                int address = base + offset * element_size;
-                printf("[%d][%d][%d]          %6d    %6d\n", i3, i2, i1, offset, address);
-            }
-        }
-    }
-    return 0;
-}
-```
-
-```scala run
-object Main extends App {
-  val base = 2
-  val elementSize = 4
-  val D3 = 2; val D2 = 2; val D1 = 3
-
-  println(f"${"Index"}%-16s ${"Offset"}%6s ${"Address"}%8s")
-  println("-" * 32)
-  for (i3 <- 0 until D3; i2 <- 0 until D2; i1 <- 0 until D1) {
-    val offset  = i3 * (D2 * D1) + i2 * D1 + i1
-    val address = base + offset * elementSize
-    println(f"[$i3][$i2][$i1]          $offset%6d    $address%6d")
-  }
 }
 ```
 
@@ -2477,20 +2023,6 @@ flowchart LR
 Cross-check against the memory layout diagram above: `array[0][0][2]` is at address **10** ✓ and `array[1][1][2]` is the very last element at address **46** ✓.
 
 
-```pseudocode
-# 3D subscript: array[i3][i2][i1] = base + (i3 × D2 × D1 + i2 × D1 + i1) × elementSize.
-base ← 2
-elementSize ← 4
-D2 ← 2; D1 ← 3                                          # one layer = D2 × D1 slots
-
-function addressOf(i3, i2, i1):
-    offset ← i3 × (D2 × D1) + i2 × D1 + i1
-    return (base + offset × elementSize, offset)
-
-print addressOf(0, 0, 2)                                # (10, 2)
-print addressOf(1, 1, 2)                                # (46, 11)
-```
-
 ```python run
 # Reproduce the subscript operator for a 2 x 2 x 3 row-major array.
 base = 2
@@ -2526,48 +2058,6 @@ public class Main {
         int[] r2 = addressOf(1, 1, 2);
         System.out.println("array[1][1][2] → offset=" + r2[1] + ", address=" + r2[0]);
     }
-}
-```
-
-```c run
-#include <stdio.h>
-
-#define BASE 2
-#define SIZE 4
-#define D2   2
-#define D1   3
-
-void address_of(int i3, int i2, int i1, int* addr, int* offset) {
-    *offset = i3 * (D2 * D1) + i2 * D1 + i1;
-    *addr   = BASE + (*offset) * SIZE;
-}
-
-int main() {
-    int addr, offset;
-    address_of(0, 0, 2, &addr, &offset);
-    printf("array[0][0][2] → offset=%d, address=%d\n", offset, addr);
-    address_of(1, 1, 2, &addr, &offset);
-    printf("array[1][1][2] → offset=%d, address=%d\n", offset, addr);
-    return 0;
-}
-```
-
-```scala run
-object Main extends App {
-  val base = 2
-  val size = 4
-  val D2   = 2
-  val D1   = 3
-
-  def addressOf(i3: Int, i2: Int, i1: Int): (Int, Int) = {
-    val offset = i3 * (D2 * D1) + i2 * D1 + i1
-    (base + offset * size, offset)
-  }
-
-  val (a1, o1) = addressOf(0, 0, 2)
-  println(s"array[0][0][2] → offset=$o1, address=$a1")
-  val (a2, o2) = addressOf(1, 1, 2)
-  println(s"array[1][1][2] → offset=$o2, address=$a2")
 }
 ```
 
@@ -2641,7 +2131,9 @@ This is the direct application of everything learned in the previous two lessons
 
 ---
 
-## Examples
+<details>
+<summary><h2>Examples</h2></summary>
+
 
 **Example 1 — 3×3 matrix**
 
@@ -2664,9 +2156,10 @@ Input:  [[1]]
 Output: [1]
 ```
 
----
+</details>
+<details>
+<summary><h2>Intuition</h2></summary>
 
-## Intuition
 
 Row-major traversal is exactly the path your eye naturally takes when reading a grid — left to right along the first row, then drop down and repeat for the next row, and so on.
 
@@ -2720,9 +2213,10 @@ out: {
 
 <p align="center"><strong>Output — all 9 elements in row-major order, as a flat list.</strong></p>
 
----
+</details>
+<details>
+<summary><h2>The Approach</h2></summary>
 
-## The Approach
 
 The key observation is simple:
 
@@ -2760,21 +2254,11 @@ flowchart TB
 
 <p align="center"><strong>Algorithm flow — the inner loop exhausts all columns before the outer loop advances to the next row.</strong></p>
 
----
+</details>
+<details>
+<summary><h2>Solution &amp; Analysis</h2></summary>
 
-## Solution
-
-
-```pseudocode
-function rowMajorTraversal(matrix):
-    if matrix is empty: return empty list
-    rows ← length(matrix); cols ← length(matrix[0])
-    path ← empty list
-    for row from 0 to rows − 1:                         # rows outer (slow), cols inner (fast)
-        for col from 0 to cols − 1:
-            append matrix[row][col] to path
-    return path
-```
+### Solution
 
 ```python run
 from typing import List
@@ -2804,11 +2288,16 @@ class Solution:
         return path
 
 
-s = Solution()
-print("Example 1:", s.row_major_traversal([[1, 2, 3], [4, 5, 6], [7, 8, 9]]))
-print("Example 2:", s.row_major_traversal([[3, 2, 1, 7], [0, 6, 3, 2]]))
-print("Example 3:", s.row_major_traversal([[1]]))
-print("Empty:    ", s.row_major_traversal([]))
+# Examples from the problem statement
+print(Solution().row_major_traversal([[1, 2, 3], [4, 5, 6], [7, 8, 9]]))  # [1, 2, 3, 4, 5, 6, 7, 8, 9]
+print(Solution().row_major_traversal([[3, 2, 1, 7], [0, 6, 3, 2]]))        # [3, 2, 1, 7, 0, 6, 3, 2]
+print(Solution().row_major_traversal([[1]]))                                 # [1]
+
+# Edge cases
+print(Solution().row_major_traversal([]))                                    # []
+print(Solution().row_major_traversal([[5, 6], [7, 8]]))                     # [5, 6, 7, 8]
+print(Solution().row_major_traversal([[1, 2, 3]]))                           # [1, 2, 3] — single row
+print(Solution().row_major_traversal([[1], [2], [3]]))                       # [1, 2, 3] — single column
 ```
 
 ```java run
@@ -2849,62 +2338,21 @@ public class Main {
     }
 
     public static void main(String[] args) {
-        Solution sol = new Solution();
-        System.out.println("Example 1: " + Arrays.toString(sol.rowMajorTraversal(new int[][]{{1, 2, 3}, {4, 5, 6}, {7, 8, 9}})));
-        System.out.println("Example 2: " + Arrays.toString(sol.rowMajorTraversal(new int[][]{{3, 2, 1, 7}, {0, 6, 3, 2}})));
-        System.out.println("Example 3: " + Arrays.toString(sol.rowMajorTraversal(new int[][]{{1}})));
-        System.out.println("Empty:     " + Arrays.toString(sol.rowMajorTraversal(new int[][]{})));
+        // Examples from the problem statement
+        System.out.println(Arrays.toString(new Solution().rowMajorTraversal(new int[][]{{1,2,3},{4,5,6},{7,8,9}})));  // [1, 2, 3, 4, 5, 6, 7, 8, 9]
+        System.out.println(Arrays.toString(new Solution().rowMajorTraversal(new int[][]{{3,2,1,7},{0,6,3,2}})));      // [3, 2, 1, 7, 0, 6, 3, 2]
+        System.out.println(Arrays.toString(new Solution().rowMajorTraversal(new int[][]{{1}})));                       // [1]
+
+        // Edge cases
+        System.out.println(Arrays.toString(new Solution().rowMajorTraversal(new int[0][])));                           // []
+        System.out.println(Arrays.toString(new Solution().rowMajorTraversal(new int[][]{{5,6},{7,8}})));               // [5, 6, 7, 8]
+        System.out.println(Arrays.toString(new Solution().rowMajorTraversal(new int[][]{{1,2,3}})));                   // [1, 2, 3] — single row
+        System.out.println(Arrays.toString(new Solution().rowMajorTraversal(new int[][]{{1},{2},{3}})));               // [1, 2, 3] — single column
     }
 }
 ```
 
-```c run
-#include <stdio.h>
-
-void row_major_traversal(int rows, int cols, int matrix[rows][cols]) {
-    /* Outer = rows (slow), inner = cols (fast). */
-    for (int row = 0; row < rows; row++) {
-        for (int col = 0; col < cols; col++) {
-            printf("%d ", matrix[row][col]);
-        }
-    }
-    printf("\n");
-}
-
-int main() {
-    int m1[3][3] = {{1,2,3},{4,5,6},{7,8,9}};
-    int m2[2][4] = {{3,2,1,7},{0,6,3,2}};
-    int m3[1][1] = {{1}};
-
-    printf("Example 1: "); row_major_traversal(3, 3, m1);
-    printf("Example 2: "); row_major_traversal(2, 4, m2);
-    printf("Example 3: "); row_major_traversal(1, 1, m3);
-    return 0;
-}
-```
-
-```scala run
-object Main extends App {
-  def rowMajorTraversal(matrix: Array[Array[Int]]): List[Int] = {
-    if (matrix.isEmpty) return Nil
-    val buf = scala.collection.mutable.ListBuffer.empty[Int]
-    for (row <- matrix.indices; col <- matrix(row).indices) {
-      buf += matrix(row)(col)
-    }
-    buf.toList
-  }
-
-  println("Example 1: " + rowMajorTraversal(Array(Array(1,2,3), Array(4,5,6), Array(7,8,9))))
-  println("Example 2: " + rowMajorTraversal(Array(Array(3,2,1,7), Array(0,6,3,2))))
-  println("Example 3: " + rowMajorTraversal(Array(Array(1))))
-  println("Empty:     " + rowMajorTraversal(Array.empty[Array[Int]]))
-}
-```
-
-
----
-
-## Dry Run — Example 2
+### Dry Run — Example 2
 
 > *Before reading the trace — for `[[3, 2, 1, 7], [0, 6, 3, 2]]`, write down the output you expect. Eight elements, in the order the nested loop visits them. Then check the trace below.*
 
@@ -2925,9 +2373,7 @@ Let's trace through `[[3, 2, 1, 7], [0, 6, 3, 2]]` step by step.
 
 **Return:** `[3, 2, 1, 7, 0, 6, 3, 2]` ✓
 
----
-
-## Complexity Analysis
+### Complexity Analysis
 
 **Time complexity: O(m × n)**
 
@@ -2939,9 +2385,7 @@ The output list `path` holds every element — it's the same size as the input. 
 
 > **Cache bonus:** Because row-major traversal accesses elements in the exact order they're stored in memory, every access is a cache hit. In practice this means large matrices traverse significantly faster than the equivalent column-major loop, even though the big-O complexity is identical.
 
----
-
-## Edge Cases
+### Edge Cases
 
 | Scenario | Input | Output | Why |
 |---|---|---|---|
@@ -2950,13 +2394,16 @@ The output list `path` holds every element — it's the same size as the input. 
 | Single row | `[[1, 2, 3, 4]]` | `[1, 2, 3, 4]` | Outer loop runs once, inner runs 4 times |
 | Single column | `[[1], [2], [3]]` | `[1, 2, 3]` | Inner loop runs once per outer — same result as column traversal here |
 
----
+</details>
+<details>
+<summary><h2>Key Takeaway</h2></summary>
 
-## Key Takeaway
 
 Row-major traversal is two nested loops — outer over rows, inner over columns. It's cache-optimal, it matches memory layout, and it's the pattern the hardware was designed to reward. Whenever you traverse a 2D array in a row-major language, this is the loop order you want.
 
 > **But not every language stores arrays this way.** Fortran, MATLAB, Julia, and R do the exact opposite — and the same code that's blazing fast in Python becomes the slow path there. To understand why, we need to look at row-major's mirror image.
+
+</details>
 
 ***
 
@@ -3215,20 +2662,6 @@ Column-major offset = 2 × 3 + 1 = 7  → address 1028
 The same logical element `arr[1][2]` lives at **different memory addresses** depending on the storage order. This is why mixing row-major and column-major code (e.g., calling a Fortran library from C) requires explicit transposition.
 
 
-```pseudocode
-# Same arr[1][2] — different offsets depending on storage order.
-# Multiplier is the stride in the dimension you're skipping.
-base ← 1000
-elementSize ← 4
-numRows ← 3; numCols ← 4
-
-i ← 1; j ← 2
-rowMajorOffset ← i × numCols + j                        # skip i rows, walk j columns
-colMajorOffset ← j × numRows + i                        # skip j cols, walk i rows
-print "Row-major:    address=" + (base + rowMajorOffset × elementSize)
-print "Column-major: address=" + (base + colMajorOffset × elementSize)
-```
-
 ```python run
 # Same arr[1][2] — different addresses depending on storage order.
 base = 1000
@@ -3263,44 +2696,6 @@ public class Main {
         System.out.println("  Column-major: offset=" + colMajorOffset
             + ", address=" + (base + colMajorOffset * elementSize));
     }
-}
-```
-
-```c run
-#include <stdio.h>
-
-int main() {
-    int base = 1000, element_size = 4;
-    int num_rows = 3, num_cols = 4;
-    int i = 1, j = 2;
-
-    int row_major_offset = i * num_cols + j;
-    int col_major_offset = j * num_rows + i;
-
-    printf("arr[%d][%d]\n", i, j);
-    printf("  Row-major:    offset=%d, address=%d\n",
-           row_major_offset, base + row_major_offset * element_size);
-    printf("  Column-major: offset=%d, address=%d\n",
-           col_major_offset, base + col_major_offset * element_size);
-    return 0;
-}
-```
-
-```scala run
-object Main extends App {
-  val base = 1000
-  val elementSize = 4
-  val numRows = 3
-  val numCols = 4
-  val i = 1
-  val j = 2
-
-  val rowMajorOffset = i * numCols + j
-  val colMajorOffset = j * numRows + i
-
-  println(s"arr($i)($j)")
-  println(s"  Row-major:    offset=$rowMajorOffset, address=${base + rowMajorOffset * elementSize}")
-  println(s"  Column-major: offset=$colMajorOffset, address=${base + colMajorOffset * elementSize}")
 }
 ```
 
@@ -3524,20 +2919,6 @@ mem: {
 Notice how adjacent slots in memory always differ only in their D₃ index (0 or 1). That's the signature of D₃ moving fastest.
 
 
-```pseudocode
-# Column-major: nesting flipped vs row-major. D1 is OUTERMOST (slowest), D3 INNERMOST (fastest).
-base ← 2
-elementSize ← 4
-D3 ← 2; D2 ← 2; D1 ← 3
-
-for i1 from 0 to D1 − 1:
-    for i2 from 0 to D2 − 1:
-        for i3 from 0 to D3 − 1:
-            offset  ← i1 × (D2 × D3) + i2 × D3 + i3
-            address ← base + offset × elementSize
-            print "[" + i3 + "][" + i2 + "][" + i1 + "] offset=" + offset + " address=" + address
-```
-
 ```python run
 # Column-major offsets + addresses for a 2 x 2 x 3 array.
 base = 2
@@ -3574,44 +2955,6 @@ public class Main {
             }
         }
     }
-}
-```
-
-```c run
-#include <stdio.h>
-
-int main() {
-    int base = 2, element_size = 4;
-    int D3 = 2, D2 = 2, D1 = 3;
-
-    printf("%-16s %6s %8s\n", "Index", "Offset", "Address");
-    printf("--------------------------------\n");
-    for (int i1 = 0; i1 < D1; i1++) {
-        for (int i2 = 0; i2 < D2; i2++) {
-            for (int i3 = 0; i3 < D3; i3++) {
-                int offset  = i1 * (D2 * D3) + i2 * D3 + i3;
-                int address = base + offset * element_size;
-                printf("[%d][%d][%d]          %6d    %6d\n", i3, i2, i1, offset, address);
-            }
-        }
-    }
-    return 0;
-}
-```
-
-```scala run
-object Main extends App {
-  val base = 2
-  val elementSize = 4
-  val D3 = 2; val D2 = 2; val D1 = 3
-
-  println(f"${"Index"}%-16s ${"Offset"}%6s ${"Address"}%8s")
-  println("-" * 32)
-  for (i1 <- 0 until D1; i2 <- 0 until D2; i3 <- 0 until D3) {
-    val offset  = i1 * (D2 * D3) + i2 * D3 + i3
-    val address = base + offset * elementSize
-    println(f"[$i3][$i2][$i1]          $offset%6d    $address%6d")
-  }
 }
 ```
 
@@ -3687,20 +3030,6 @@ Now compare these offsets with the row-major results from the previous chapter:
 `array[1][1][2]` lands at offset 11 in *both* orderings — because it's the last element regardless of how you count. `array[0][0][2]`, however, is at offset 2 in row-major (early) but offset 8 in column-major (late). The storage order completely reshuffles the positions.
 
 
-```pseudocode
-# Compare row-major and column-major offsets for the same (i3, i2, i1).
-D3 ← 2; D2 ← 2; D1 ← 3
-
-function rowMajorOffset(i3, i2, i1):
-    return i3 × (D2 × D1) + i2 × D1 + i1
-
-function colMajorOffset(i3, i2, i1):
-    return i1 × (D2 × D3) + i2 × D3 + i3
-
-for each (i3, i2, i1) in [(0, 0, 2), (1, 1, 2)]:
-    print "row-major=" + rowMajorOffset(i3, i2, i1) + ", col-major=" + colMajorOffset(i3, i2, i1)
-```
-
 ```python run
 # Same (i3, i2, i1), two orderings → typically two offsets.
 D3, D2, D1 = 2, 2, 3
@@ -3737,39 +3066,6 @@ public class Main {
                 + rowMajorOffset(i3, i2, i1) + ", col-major offset=" + colMajorOffset(i3, i2, i1));
         }
     }
-}
-```
-
-```c run
-#include <stdio.h>
-
-#define D3 2
-#define D2 2
-#define D1 3
-
-int row_major_offset(int i3, int i2, int i1) { return i3 * (D2 * D1) + i2 * D1 + i1; }
-int col_major_offset(int i3, int i2, int i1) { return i1 * (D2 * D3) + i2 * D3 + i3; }
-
-int main() {
-    int coords[2][3] = {{0,0,2}, {1,1,2}};
-    for (int k = 0; k < 2; k++) {
-        int i3 = coords[k][0], i2 = coords[k][1], i1 = coords[k][2];
-        printf("array[%d][%d][%d]: row-major offset=%d, col-major offset=%d\n",
-            i3, i2, i1, row_major_offset(i3, i2, i1), col_major_offset(i3, i2, i1));
-    }
-    return 0;
-}
-```
-
-```scala run
-object Main extends App {
-  val D3 = 2; val D2 = 2; val D1 = 3
-  def rowMajor(i3: Int, i2: Int, i1: Int) = i3 * (D2 * D1) + i2 * D1 + i1
-  def colMajor(i3: Int, i2: Int, i1: Int) = i1 * (D2 * D3) + i2 * D3 + i3
-
-  for ((i3, i2, i1) <- Seq((0,0,2), (1,1,2))) {
-    println(s"array($i3)($i2)($i1): row-major offset=${rowMajor(i3,i2,i1)}, col-major offset=${colMajor(i3,i2,i1)}")
-  }
 }
 ```
 
@@ -3843,7 +3139,9 @@ This is the mirror of row-major traversal. Instead of racing across rows, you ra
 
 ---
 
-## Examples
+<details>
+<summary><h2>Examples</h2></summary>
+
 
 **Example 1 — 3×3 matrix**
 
@@ -3866,9 +3164,10 @@ Input:  [[1]]
 Output: [1]
 ```
 
----
+</details>
+<details>
+<summary><h2>Intuition</h2></summary>
 
-## Intuition
 
 In row-major traversal, the column index (`j`) was in the inner loop — it moved fastest. Here we flip that completely:
 
@@ -3954,9 +3253,10 @@ out: {
 
 <p align="center"><strong>Output — all 9 elements in column-major order as a flat list. Compare with row-major: [1, 2, 3, 4, 5, 6, 7, 8, 9].</strong></p>
 
----
+</details>
+<details>
+<summary><h2>The Approach</h2></summary>
 
-## The Approach
 
 ```mermaid
 ---
@@ -3990,21 +3290,11 @@ flowchart TB
 
 The one critical change vs. row-major: **`col` is the outer loop variable, `row` is the inner loop variable**. Swap those two and you go from column-major to row-major.
 
----
+</details>
+<details>
+<summary><h2>Solution &amp; Analysis</h2></summary>
 
-## Solution
-
-
-```pseudocode
-function columnMajorTraversal(matrix):
-    if matrix is empty: return empty list
-    rows ← length(matrix); cols ← length(matrix[0])
-    path ← empty list
-    for col from 0 to cols − 1:                         # cols outer (slow), rows inner (fast)
-        for row from 0 to rows − 1:
-            append matrix[row][col] to path
-    return path
-```
+### Solution
 
 ```python run
 from typing import List
@@ -4036,11 +3326,16 @@ class Solution:
         return path
 
 
-s = Solution()
-print("Example 1:", s.column_major_traversal([[1, 2, 3], [4, 5, 6], [7, 8, 9]]))
-print("Example 2:", s.column_major_traversal([[3, 2, 1, 7], [0, 6, 3, 2]]))
-print("Example 3:", s.column_major_traversal([[1]]))
-print("Empty:    ", s.column_major_traversal([]))
+# Examples from the problem statement
+print(Solution().column_major_traversal([[1, 2, 3], [4, 5, 6], [7, 8, 9]]))  # [1, 4, 7, 2, 5, 8, 3, 6, 9]
+print(Solution().column_major_traversal([[3, 2, 1, 7], [0, 6, 3, 2]]))        # [3, 0, 2, 6, 1, 3, 7, 2]
+print(Solution().column_major_traversal([[1]]))                                 # [1]
+
+# Edge cases
+print(Solution().column_major_traversal([]))                                    # []
+print(Solution().column_major_traversal([[5, 6], [7, 8]]))                     # [5, 7, 6, 8]
+print(Solution().column_major_traversal([[1, 2, 3]]))                           # [1, 2, 3] — single row
+print(Solution().column_major_traversal([[1], [2], [3]]))                       # [1, 2, 3] — single column
 ```
 
 ```java run
@@ -4081,62 +3376,21 @@ public class Main {
     }
 
     public static void main(String[] args) {
-        Solution sol = new Solution();
-        System.out.println("Example 1: " + Arrays.toString(sol.columnMajorTraversal(new int[][]{{1, 2, 3}, {4, 5, 6}, {7, 8, 9}})));
-        System.out.println("Example 2: " + Arrays.toString(sol.columnMajorTraversal(new int[][]{{3, 2, 1, 7}, {0, 6, 3, 2}})));
-        System.out.println("Example 3: " + Arrays.toString(sol.columnMajorTraversal(new int[][]{{1}})));
-        System.out.println("Empty:     " + Arrays.toString(sol.columnMajorTraversal(new int[][]{})));
+        // Examples from the problem statement
+        System.out.println(Arrays.toString(new Solution().columnMajorTraversal(new int[][]{{1,2,3},{4,5,6},{7,8,9}})));  // [1, 4, 7, 2, 5, 8, 3, 6, 9]
+        System.out.println(Arrays.toString(new Solution().columnMajorTraversal(new int[][]{{3,2,1,7},{0,6,3,2}})));      // [3, 0, 2, 6, 1, 3, 7, 2]
+        System.out.println(Arrays.toString(new Solution().columnMajorTraversal(new int[][]{{1}})));                       // [1]
+
+        // Edge cases
+        System.out.println(Arrays.toString(new Solution().columnMajorTraversal(new int[0][])));                           // []
+        System.out.println(Arrays.toString(new Solution().columnMajorTraversal(new int[][]{{5,6},{7,8}})));               // [5, 7, 6, 8]
+        System.out.println(Arrays.toString(new Solution().columnMajorTraversal(new int[][]{{1,2,3}})));                   // [1, 2, 3] — single row
+        System.out.println(Arrays.toString(new Solution().columnMajorTraversal(new int[][]{{1},{2},{3}})));               // [1, 2, 3] — single column
     }
 }
 ```
 
-```c run
-#include <stdio.h>
-
-void column_major_traversal(int rows, int cols, int matrix[rows][cols]) {
-    /* cols outer (slow), rows inner (fast). */
-    for (int col = 0; col < cols; col++) {
-        for (int row = 0; row < rows; row++) {
-            printf("%d ", matrix[row][col]);
-        }
-    }
-    printf("\n");
-}
-
-int main() {
-    int m1[3][3] = {{1,2,3},{4,5,6},{7,8,9}};
-    int m2[2][4] = {{3,2,1,7},{0,6,3,2}};
-    int m3[1][1] = {{1}};
-
-    printf("Example 1: "); column_major_traversal(3, 3, m1);
-    printf("Example 2: "); column_major_traversal(2, 4, m2);
-    printf("Example 3: "); column_major_traversal(1, 1, m3);
-    return 0;
-}
-```
-
-```scala run
-object Main extends App {
-  def columnMajorTraversal(matrix: Array[Array[Int]]): List[Int] = {
-    if (matrix.isEmpty) return Nil
-    val rows = matrix.length
-    val cols = matrix(0).length
-    val buf = scala.collection.mutable.ListBuffer.empty[Int]
-    for (col <- 0 until cols; row <- 0 until rows) buf += matrix(row)(col)
-    buf.toList
-  }
-
-  println("Example 1: " + columnMajorTraversal(Array(Array(1,2,3), Array(4,5,6), Array(7,8,9))))
-  println("Example 2: " + columnMajorTraversal(Array(Array(3,2,1,7), Array(0,6,3,2))))
-  println("Example 3: " + columnMajorTraversal(Array(Array(1))))
-  println("Empty:     " + columnMajorTraversal(Array.empty[Array[Int]]))
-}
-```
-
-
----
-
-## Dry Run — Example 2
+### Dry Run — Example 2
 
 > *Before reading the trace — same matrix as the row-major dry run, `[[3, 2, 1, 7], [0, 6, 3, 2]]`. With the loops swapped (col outer, row inner), what's the new output? Eight elements, predict the order.*
 
@@ -4157,23 +3411,11 @@ Trace through `[[3, 2, 1, 7], [0, 6, 3, 2]]`:
 
 **Return:** `[3, 0, 2, 6, 1, 3, 7, 2]` ✓
 
----
+</details>
+<details>
+<summary><h2>Row-Major vs Column-Major — The Full Comparison</h2></summary>
 
-## Row-Major vs Column-Major — The Full Comparison
 
-
-```pseudocode
-# Same indexing — only the loop nesting differs. The outer loop variable changes slowest.
-matrix ← [[1, 2, 3], [4, 5, 6], [7, 8, 9]]
-rows ← length(matrix)
-cols ← length(matrix[0])
-
-rowMajor ← [matrix[r][c] for r from 0 to rows − 1, then for c from 0 to cols − 1]   # r outer
-colMajor ← [matrix[r][c] for c from 0 to cols − 1, then for r from 0 to rows − 1]   # c outer
-
-print rowMajor                                          # [1, 2, 3, 4, 5, 6, 7, 8, 9]
-print colMajor                                          # [1, 4, 7, 2, 5, 8, 3, 6, 9]
-```
 
 ```python run
 # Same matrix, same indexing — only the loop order differs.
@@ -4213,46 +3455,14 @@ public class Main {
 }
 ```
 
-```c run
-#include <stdio.h>
-
-int main() {
-    int matrix[3][3] = {{1,2,3},{4,5,6},{7,8,9}};
-    int rows = 3, cols = 3;
-
-    printf("Row-major:    ");
-    for (int r = 0; r < rows; r++)
-        for (int c = 0; c < cols; c++) printf("%d ", matrix[r][c]);
-    printf("\n");
-
-    printf("Column-major: ");
-    for (int c = 0; c < cols; c++)
-        for (int r = 0; r < rows; r++) printf("%d ", matrix[r][c]);
-    printf("\n");
-    return 0;
-}
-```
-
-```scala run
-object Main extends App {
-  val matrix = Array(Array(1,2,3), Array(4,5,6), Array(7,8,9))
-  val rows = matrix.length
-  val cols = matrix(0).length
-
-  val rowMajor = for (r <- 0 until rows; c <- 0 until cols) yield matrix(r)(c)
-  val colMajor = for (c <- 0 until cols; r <- 0 until rows) yield matrix(r)(c)
-
-  println("Row-major:    " + rowMajor.mkString(", "))
-  println("Column-major: " + colMajor.mkString(", "))
-}
-```
-
 
 The entire difference is **one loop swap**. That's all that separates row-major from column-major traversal in code.
 
----
+</details>
+<details>
+<summary><h2>Solution &amp; Analysis</h2></summary>
 
-## Complexity Analysis
+### Complexity Analysis
 
 **Time complexity: O(m × n)**
 
@@ -4264,9 +3474,7 @@ The output list holds all elements. If you're processing without storing, it's O
 
 > **Cache note:** In Python and other row-major languages, column-major traversal accesses memory with a stride of `num_cols` between consecutive visits. Each step jumps `num_cols` elements forward in memory instead of 1. For large matrices this causes frequent cache misses and is measurably slower than row-major traversal — even though both are O(m × n).
 
----
-
-## Edge Cases
+### Edge Cases
 
 | Scenario | Input | Output | Note |
 |---|---|---|---|
@@ -4275,8 +3483,11 @@ The output list holds all elements. If you're processing without storing, it's O
 | Single row | `[[1, 2, 3, 4]]` | `[1, 2, 3, 4]` | Outer runs 4 times, inner runs once — same result as row-major here |
 | Single column | `[[1], [2], [3]]` | `[1, 2, 3]` | Outer runs once, inner runs 3 times |
 
----
+</details>
+<details>
+<summary><h2>Key Takeaway</h2></summary>
 
-## Key Takeaway
 
 Column-major traversal is row-major traversal with the two loop variables swapped: `col` goes outer (slow), `row` goes inner (fast). The algorithm, complexity, and guard clauses are identical — only the access order changes. And in a row-major language like Python, that one swap is enough to turn every access into a cache miss on large matrices.
+
+</details>

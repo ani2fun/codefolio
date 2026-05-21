@@ -176,89 +176,132 @@ Step 2 is what makes this multiple recursion: instead of one call, there are `k`
 A clean, language-agnostic implementation of the generic template with two recursive calls (`k = 2`).
 
 
-```pseudocode
-function multipleRecursion(n):
-    if n ≤ 0:                              # base cases — multiple recursion often needs several
-        return 0
-    if n = 1:
-        return 1
-    smaller1 ← multipleRecursion(n − 1)    # k = 2 recursive calls, each on a smaller input
-    smaller2 ← multipleRecursion(n − 2)
-    return smaller1 + smaller2             # combine
-```
-
 ```python run
+from typing import List
+
 class Solution:
-    def multiple_recursion(self, n: int) -> int:
-        # Step 1 — base case (multiple recursion may have several)
-        if n <= 0:
-            return 0
-        if n == 1:
-            return 1
+    def multipleRecursion(self, N: int, aggregate: List[int]) -> int:
 
-        # Step 2 — k = 2 recursive calls, each on a smaller input
-        smaller_1 = self.multiple_recursion(n - 1)
-        smaller_2 = self.multiple_recursion(n - 2)
+        # Base case: If N is less than or equal to 0, we have reached
+        # the end of recursion
+        if N <= 0:
+            # Exit the function, as there are no more numbers to add
+            return 0  # Solution for the base case
 
-        # Step 3 — combine
-        return smaller_1 + smaller_2
+        # Number of recursive calls to make at each level
+        # This is dependent on the problem
+        k = 3
 
+        solution = 0  # Initialize solution to a default value
 
-if __name__ == "__main__":
-    print(Solution().multiple_recursion(10))   # Same shape as Fibonacci → 55
+        for i in range(k):
+            # Compute new input based on i, N, and aggregate
+            new_input = self.h(i, N, aggregate)
+
+            # Add the current iteration's contribution to the aggregate
+            self.g(i, N, aggregate)
+
+            # Recursive call with new values
+            result = self.multipleRecursion(new_input, aggregate)
+
+            # Combine the result with the current solution
+            solution = self.G(N, solution, result)
+
+            # Restore aggregate if necessary
+            self.gInverse(i, N, aggregate)
+
+        return solution  # Return the final solution
+
+    # Placeholder for h - use the iteration, input and aggregate
+    # to compute the new input
+    def h(self, iteration: int, input: int, aggregate: List[int]) -> int:
+        # Implement your logic here
+        return 0
+
+    # Placeholder for g - use the iteration, input and aggregate
+    # to update aggregate
+    def g(self, iteration: int, input: int, aggregate: List[int]) -> None:
+        # Implement your logic here
+        pass
+
+    # Placeholder for gInverse - use the iteration, input and aggregate
+    # to revert the updates made by g
+    def gInverse(self, iteration: int, input: int, aggregate: List[int]) -> None:
+        # Implement your logic here
+        pass
+
+    # Placeholder for G - use the input, existing solution,
+    # and result from the recursive call to compute the new solution
+    def G(self, input: int, solution: int, result: int) -> int:
+        # Implement your logic here
+        return 0
 ```
 
 ```java run
-public class Main {
-    static class Solution {
-        public int multipleRecursion(int n) {
-            // Base cases
-            if (n <= 0) return 0;
-            if (n == 1) return 1;
+import java.util.List;
 
-            // Two recursive calls
-            int a = multipleRecursion(n - 1);
-            int b = multipleRecursion(n - 2);
+class Solution {
 
-            // Combine
-            return a + b;
+    public int multipleRecursion(int N, List<Integer> aggregate) {
+
+        // Base case: If N is less than or equal to 0, we have reached
+        // the end of recursion
+        if (N <= 0) {
+
+            // Exit the function, as there are no more numbers to add
+            return 0; // Solution for the base case
         }
+
+        // Number of recursive calls to make at each level
+        // This is dependent on the problem
+        int k = 3;
+
+        int solution = 0; // Initialize solution to a default value
+
+        for (int i = 0; i < k; i++) {
+            // Compute new input based on i, N, and aggregate
+            int newInput = h(i, N, aggregate);
+
+            // Add the current iteration's contribution to the aggregate
+            g(i, N, aggregate);
+
+            // Recursive call with new values
+            int result = multipleRecursion(newInput, aggregate);
+
+            // Combine the result with the current solution
+            solution = G(N, solution, result);
+
+            // Restore aggregate if necessary
+            gInverse(i, N, aggregate);
+        }
+        return solution; // Return the final solution
     }
 
-    public static void main(String[] args) {
-        System.out.println(new Solution().multipleRecursion(10));   // 55
+    // Placeholder for h - use the iteration, input and aggregate
+    // to compute the new input
+    private int h(int iteration, int input, List<Integer> aggregate) {
+        // Implement your logic here
+        return 0;
     }
-}
-```
 
-```c run
-#include <stdio.h>
-
-int multiple_recursion(int n) {
-    if (n <= 0) return 0;                       /* Base */
-    if (n == 1) return 1;                       /* Base */
-    int a = multiple_recursion(n - 1);          /* First recursive call */
-    int b = multiple_recursion(n - 2);          /* Second recursive call */
-    return a + b;                                /* Combine */
-}
-
-int main(void) {
-    printf("%d\n", multiple_recursion(10));   /* 55 */
-    return 0;
-}
-```
-
-```scala run
-object Main extends App {
-  class Solution {
-    def multipleRecursion(n: Int): Int = {
-      if (n <= 0) 0
-      else if (n == 1) 1
-      else multipleRecursion(n - 1) + multipleRecursion(n - 2)
+    // Placeholder for g - use the iteration, input and aggregate
+    // to update aggregate
+    private void g(int iteration, int input, List<Integer> aggregate) {
+        // Implement your logic here
     }
-  }
 
-  println(new Solution().multipleRecursion(10))   // 55
+    // Placeholder for gInverse - use the iteration, input and aggregate
+    // to revert the updates made by g
+    private void gInverse(int iteration, int input, List<Integer> aggregate) {
+        // Implement your logic here
+    }
+
+    // Placeholder for G - use the input, existing solution,
+    // and result from the recursive call to compute the new solution
+    private int G(int input, int solution, int result) {
+        // Implement your logic here
+        return 0;
+    }
 }
 ```
 
@@ -386,7 +429,9 @@ Output: 0
 
 ---
 
-## What Does the Fibonacci Recurrence Mean?
+<details>
+<summary><h2>What Does the Fibonacci Recurrence Mean?</h2></summary>
+
 
 The recurrence `F(n) = F(n-1) + F(n-2)` says: each Fibonacci number is the sum of the two preceding ones. The base cases anchor the recursion at `F(0) = 0` and `F(1) = 1` — without both, the recursion can't terminate.
 
@@ -412,9 +457,10 @@ flowchart LR
 
 <p align="center"><strong>The Fibonacci recurrence with its two base cases. Both bases are required — drop either one and the recursion runs forever for some inputs.</strong></p>
 
----
+</details>
+<details>
+<summary><h2>Applying the Diagnostic Questions</h2></summary>
 
-## Applying the Diagnostic Questions
 
 | # | Check | Answer |
 |---|---|---|
@@ -434,9 +480,10 @@ The combine `g(a, b) = a + b` is the canonical fold. Both sub-answers are intege
 
 `F(2)` calls `F(1)` and `F(0)`. If we only had `F(0) = 0`, then `F(1) = F(0) + F(-1)` and we'd recurse forever on negative inputs. **Both bases are non-negotiable.** This is why multiple recursion's diagnostic Q3 is stricter than head recursion's. ✓
 
----
+</details>
+<details>
+<summary><h2>The Branching Tree (Visualised)</h2></summary>
 
-## The Branching Tree (Visualised)
 
 The recursion tree for `fib(5)` shows the explosion in slow motion. Notice how `fib(2)` and `fib(3)` appear multiple times — that's the redundant work memoisation eliminates.
 
@@ -471,77 +518,76 @@ flowchart TB
 
 <p align="center"><strong>Recursion tree for <code>fib(5)</code>. <code>fib(3)</code> appears 2×, <code>fib(2)</code> appears 3×, <code>fib(1)</code> appears 5×, <code>fib(0)</code> appears 3×. Every duplicate is wasted work.</strong></p>
 
----
+</details>
+<details>
+<summary><h2>Solution &amp; Analysis</h2></summary>
 
-## The Solution
-
-
-```pseudocode
-function fibonacci(n):
-    if n = 0: return 0                     # base cases — both essential
-    if n = 1: return 1
-    return fibonacci(n − 1) + fibonacci(n − 2)   # without memoisation: O(2ⁿ)
-```
+### The Solution
 
 ```python run
 class Solution:
     def fibonacci(self, n: int) -> int:
-        # Two base cases — both essential
+
+        # Base case: If n is 0, return 0
         if n == 0:
             return 0
+
+        # Base case: If n is 1, return 1
         if n == 1:
             return 1
-        # Multiple recursion: TWO recursive calls, then add
+
+        # To find the nth Fibonacci number, we recursively
+        # sum the (n-1)th and (n-2)th Fibonacci numbers since Fibonacci
+        # series is defined as F(n) = F(n-1) + F(n-2).
         return self.fibonacci(n - 1) + self.fibonacci(n - 2)
 
 
-if __name__ == "__main__":
-    print(Solution().fibonacci(10))   # 55
-    # Try n = 35; works but slow. Try n = 50; effectively hangs.
+# Examples from the problem statement
+print(Solution().fibonacci(3))   # 2
+print(Solution().fibonacci(2))   # 1
+print(Solution().fibonacci(0))   # 0
+
+# Edge cases
+print(Solution().fibonacci(1))   # 1
+print(Solution().fibonacci(5))   # 5
+print(Solution().fibonacci(7))   # 13
+print(Solution().fibonacci(10))  # 55
 ```
 
 ```java run
 public class Main {
     static class Solution {
-        public int fibonacci(int n) {
-            if (n == 0) return 0;
-            if (n == 1) return 1;
-            return fibonacci(n - 1) + fibonacci(n - 2);
+        public int fibonacci(int N) {
+
+            // Base case: If N is 0, return 0
+            if (N == 0) {
+                return 0;
+            }
+
+            // Base case: If N is 1, return 1
+            if (N == 1) {
+                return 1;
+            }
+
+            // To find the Nth Fibonacci number, we recursively
+            // sum the (N-1)th and (N-2)th Fibonacci numbers since Fibonacci
+            // series is defined as F(N) = F(N-1) + F(N-2).
+            return (fibonacci(N - 1) + fibonacci(N - 2));
         }
     }
 
     public static void main(String[] args) {
-        System.out.println(new Solution().fibonacci(10));   // 55
+        // Examples from the problem statement
+        System.out.println(new Solution().fibonacci(3));   // 2
+        System.out.println(new Solution().fibonacci(2));   // 1
+        System.out.println(new Solution().fibonacci(0));   // 0
+
+        // Edge cases
+        System.out.println(new Solution().fibonacci(1));   // 1
+        System.out.println(new Solution().fibonacci(5));   // 5
+        System.out.println(new Solution().fibonacci(7));   // 13
+        System.out.println(new Solution().fibonacci(10));  // 55
     }
-}
-```
-
-```c run
-#include <stdio.h>
-
-int fibonacci(int n) {
-    if (n == 0) return 0;
-    if (n == 1) return 1;
-    return fibonacci(n - 1) + fibonacci(n - 2);
-}
-
-int main(void) {
-    printf("%d\n", fibonacci(10));   /* 55 */
-    return 0;
-}
-```
-
-```scala run
-object Main extends App {
-  class Solution {
-    def fibonacci(n: Int): Int = {
-      if (n == 0) 0
-      else if (n == 1) 1
-      else fibonacci(n - 1) + fibonacci(n - 2)
-    }
-  }
-
-  println(new Solution().fibonacci(10))
 }
 ```
 
@@ -578,9 +624,7 @@ The phrase "redundant" is the engine of memoisation. Every duplicate sub-call is
 
 </details>
 
----
-
-## Complexity Analysis
+### Complexity Analysis
 
 | Resource | Cost | Why |
 |---|---|---|
@@ -591,9 +635,7 @@ The exact count `T(n) = T(n-1) + T(n-2) + 1` grows at the same exponential rate 
 
 **With memoisation:** time collapses to `O(n)` because each `fib(k)` is computed once and reused. Space is `O(n)` for the cache plus `O(n)` for the stack.
 
----
-
-## Edge Cases
+### Edge Cases
 
 | Case | Example | Expected | Reasoning |
 |---|---|---|---|
@@ -603,11 +645,14 @@ The exact count `T(n) = T(n-1) + T(n-2) + 1` grows at the same exponential rate 
 | Medium | `n = 30` | `832040` | Already millions of calls; runs in seconds. |
 | Large | `n = 50` | `12586269025` | Effectively infeasible naively — billions of calls. |
 
----
+</details>
+<details>
+<summary><h2>Final Takeaway</h2></summary>
 
-## Final Takeaway
 
 Naive Fibonacci is the textbook trap of multiple recursion: a one-line definition that runs in exponential time. Memoisation collapses it to linear; you'll meet the technique formally in the dynamic-programming chapter. The next problem widens the recurrence — *three* recursive calls instead of two.
+
+</details>
 
 ***
 
@@ -643,7 +688,9 @@ Output: 1
 
 ---
 
-## What's Special About the Zigzag Recurrence?
+<details>
+<summary><h2>What's Special About the Zigzag Recurrence?</h2></summary>
+
 
 Two things:
 1. The recurrence has **three** recursive calls, not two — making the call tree fan out wider than Fibonacci's.
@@ -651,9 +698,10 @@ Two things:
 
 The "zigzag" name comes from the sequence's alternating-direction pattern: each new term swings up and down relative to its neighbours. The recurrence's mixed signs are what produces the swings.
 
----
+</details>
+<details>
+<summary><h2>Applying the Diagnostic Questions</h2></summary>
 
-## Applying the Diagnostic Questions
 
 | # | Check | Answer |
 |---|---|---|
@@ -673,9 +721,10 @@ The recurrence references `Z(n-1)`, `Z(n-2)`, and `Z(n-3)`. All three values are
 
 The recursion descends by 1, 2, or 3 each step. `Z(2)` calls `Z(1), Z(0), Z(-1)` if the base wasn't there for `n = 2`. We need bases for **every** recursion-depth that could be reached by the deepest call: `Z(0), Z(1), Z(2)`. Miss any one and some inputs recurse forever. ✓
 
----
+</details>
+<details>
+<summary><h2>The Three-Branch Tree (Visualised)</h2></summary>
 
-## The Three-Branch Tree (Visualised)
 
 ```mermaid
 ---
@@ -706,87 +755,99 @@ flowchart TB
 
 <p align="center"><strong>Recursion tree for <code>Z(5)</code>. Each call spawns three children. The tree fans out faster than Fibonacci's by a factor of ~1.5× per level.</strong></p>
 
----
+</details>
+<details>
+<summary><h2>Solution &amp; Analysis</h2></summary>
 
-## The Solution
-
-
-```pseudocode
-function zigzagSequence(n):
-    if n = 0: return 1                     # three base cases — one per reduction path
-    if n = 1: return 2
-    if n = 2: return 3
-    return zigzagSequence(n − 1) − zigzagSequence(n − 2) + zigzagSequence(n − 3)   # alternating signs
-```
+### The Solution
 
 ```python run
 class Solution:
-    def zigzag_sequence(self, n: int) -> int:
-        # Three base cases for three reduction paths
+    def zig_zag_sequence(self, n: int) -> int:
+
+        # Base case: If n is 0, we return 1 as the first
+        # number in the ZigZag sequence
         if n == 0:
             return 1
+
+        # Base case: If n is 1, we return 2 as the second
+        # number in the ZigZag sequence
         if n == 1:
             return 2
+
+        # Base case: If n is 2, we return 3 as the third
+        # number in the ZigZag sequence
         if n == 2:
             return 3
-        # Three recursive calls; combine with alternating signs
-        return (self.zigzag_sequence(n - 1)
-                - self.zigzag_sequence(n - 2)
-                + self.zigzag_sequence(n - 3))
+
+        # Recursive case: For n greater than 2, we calculate
+        # the nth number in the ZigZag sequence using the
+        # recurrence relation
+        return (
+            self.zig_zag_sequence(n - 1)
+            - self.zig_zag_sequence(n - 2)
+            + self.zig_zag_sequence(n - 3)
+        )
 
 
-if __name__ == "__main__":
-    print(Solution().zigzag_sequence(7))   # 2
-    print(Solution().zigzag_sequence(5))   # 2
+# Examples from the problem statement
+print(Solution().zig_zag_sequence(7))   # 2
+print(Solution().zig_zag_sequence(5))   # 2
+print(Solution().zig_zag_sequence(0))   # 1
+
+# Edge cases
+print(Solution().zig_zag_sequence(1))   # 2
+print(Solution().zig_zag_sequence(2))   # 3
+print(Solution().zig_zag_sequence(3))   # 2
+print(Solution().zig_zag_sequence(4))   # 1
 ```
 
 ```java run
 public class Main {
     static class Solution {
-        public int zigZagSequence(int n) {
-            if (n == 0) return 1;
-            if (n == 1) return 2;
-            if (n == 2) return 3;
-            return zigZagSequence(n - 1)
-                 - zigZagSequence(n - 2)
-                 + zigZagSequence(n - 3);
+        public int zigZagSequence(int N) {
+
+            // Base case: If N is 0, we return 1 as the first
+            // number in the ZigZag sequence
+            if (N == 0) {
+                return 1;
+            }
+
+            // Base case: If N is 1, we return 2 as the second
+            // number in the ZigZag sequence
+            if (N == 1) {
+                return 2;
+            }
+
+            // Base case: If N is 2, we return 3 as the third
+            // number in the ZigZag sequence
+            if (N == 2) {
+                return 3;
+            }
+
+            // Recursive case: For N greater than 2, we calculate
+            // the Nth number in the ZigZag sequence using the
+            // recurrence relation
+            return (
+                zigZagSequence(N - 1) -
+                zigZagSequence(N - 2) +
+                zigZagSequence(N - 3)
+            );
         }
     }
 
     public static void main(String[] args) {
+        // Examples from the problem statement
         System.out.println(new Solution().zigZagSequence(7));   // 2
+        System.out.println(new Solution().zigZagSequence(5));   // 2
+        System.out.println(new Solution().zigZagSequence(0));   // 1
+
+        // Edge cases
+        System.out.println(new Solution().zigZagSequence(1));   // 2
+        System.out.println(new Solution().zigZagSequence(2));   // 3
+        System.out.println(new Solution().zigZagSequence(3));   // 2
+        System.out.println(new Solution().zigZagSequence(4));   // 1
     }
-}
-```
-
-```c run
-#include <stdio.h>
-
-int zigzag_sequence(int n) {
-    if (n == 0) return 1;
-    if (n == 1) return 2;
-    if (n == 2) return 3;
-    return zigzag_sequence(n - 1) - zigzag_sequence(n - 2) + zigzag_sequence(n - 3);
-}
-
-int main(void) {
-    printf("%d\n", zigzag_sequence(7));   /* 2 */
-    return 0;
-}
-```
-
-```scala run
-object Main extends App {
-  class Solution {
-    def zigZagSequence(n: Int): Int = n match {
-      case 0 => 1
-      case 1 => 2
-      case 2 => 3
-      case _ => zigZagSequence(n - 1) - zigZagSequence(n - 2) + zigZagSequence(n - 3)
-    }
-  }
-
-  println(new Solution().zigZagSequence(7))
 }
 ```
 
@@ -809,9 +870,7 @@ Result: 2 ✓
 
 </details>
 
----
-
-## Complexity Analysis
+### Complexity Analysis
 
 | Resource | Cost | Why |
 |---|---|---|
@@ -820,9 +879,7 @@ Result: 2 ✓
 
 Same exponential blow-up family as Fibonacci, just with `k = 3` instead of `k = 2`. Memoisation reduces both to `O(n)`.
 
----
-
-## Edge Cases
+### Edge Cases
 
 | Case | Example | Expected | Reasoning |
 |---|---|---|---|
@@ -833,11 +890,14 @@ Same exponential blow-up family as Fibonacci, just with `k = 3` instead of `k = 
 | Mid-range | `n = 10` | computable | Tree is `3^10 = 59,049` calls — slow but tractable. |
 | Large | `n = 30+` | infeasible naively | Use memoisation. |
 
----
+</details>
+<details>
+<summary><h2>Final Takeaway</h2></summary>
 
-## Final Takeaway
 
 Zigzag is multiple recursion with a wider branching factor than Fibonacci. The combine still folds `k` smaller answers into one, but the signs alternate. The next problem generalises this further — instead of fixed `k`, the number of recursive calls depends on the input.
+
+</details>
 
 ***
 
@@ -867,7 +927,9 @@ Explanation: no allowed step size ≤ 2
 
 ---
 
-## Why Multiple Recursion?
+<details>
+<summary><h2>Why Multiple Recursion?</h2></summary>
+
 
 From the bottom of the staircase, your first move can be any of the allowed step sizes. After taking step `s`, you face the same problem on a staircase of `n - s` stairs. Sum across all choices:
 
@@ -877,9 +939,10 @@ climb(n) = climb(n - s₁) + climb(n - s₂) + ... + climb(n - s_k)
 
 Each call's branching factor equals the size of `steps`. With Fibonacci-shaped `steps = [1, 2]`, the recurrence is `climb(n) = climb(n-1) + climb(n-2)` — *exactly Fibonacci*. With more steps, the tree branches wider.
 
----
+</details>
+<details>
+<summary><h2>Applying the Diagnostic Questions</h2></summary>
 
-## Applying the Diagnostic Questions
 
 | # | Check | Answer |
 |---|---|---|
@@ -899,9 +962,10 @@ Different first-step choices produce disjoint sets of climbing sequences (they d
 
 `climb(0) = 1`: there's exactly one "way" to be at the top — do nothing. (This convention is what makes the sum work out.) `climb(n < 0) = 0`: overshot, this branch is invalid. Both are essential — without `n < 0` the recursion goes into negative numbers and never terminates.
 
----
+</details>
+<details>
+<summary><h2>The Variable-Branching Tree (Visualised)</h2></summary>
 
-## The Variable-Branching Tree (Visualised)
 
 For `n = 3, steps = [1, 2, 3]`, the recursion tree:
 
@@ -934,96 +998,105 @@ flowchart TB
 
 <p align="center"><strong>Tree for <code>climb(3, [1, 2, 3])</code>. Branching factor = 3 (one per step). Leaves are <code>climb(0) = 1</code> (valid path) or <code>climb(negative) = 0</code> (overshot path). Sum of leaves = 4 ✓.</strong></p>
 
----
+</details>
+<details>
+<summary><h2>Solution &amp; Analysis</h2></summary>
 
-## The Solution
-
-
-```pseudocode
-function climbStairs(n, steps):
-    if n < 0: return 0                     # base case — overshot, invalid path
-    if n = 0: return 1                     # base case — arrived, exactly one valid path
-    totalWays ← 0
-    for each step in steps:                # one recursive call per allowed step
-        totalWays ← totalWays + climbStairs(n − step, steps)
-    return totalWays
-```
+### The Solution
 
 ```python run
 from typing import List
 
 class Solution:
     def climb_stairs(self, n: int, steps: List[int]) -> int:
-        # Base case: overshot — invalid path, contributes 0
+
+        # Base case: If n is negative, there are no ways to
+        # reach the ground
         if n < 0:
             return 0
-        # Base case: arrived — exactly one valid path (do nothing more)
+
+        # Base case: If n is 0, there is one way to stay
+        # at the ground
         if n == 0:
             return 1
 
-        # Multiple recursion: one call per allowed step
+        # Variable to store the total number of ways to reach
+        # the ground
         total_ways = 0
+
+        # Iterate through each possible step
         for step in steps:
+
+            # Recursive call to climb_stairs with reduced n
+            # Subtract the current step from n and add the
+            # result to total_ways
             total_ways += self.climb_stairs(n - step, steps)
+
+        # Return the total number of ways to reach the ground
         return total_ways
 
 
-if __name__ == "__main__":
-    print(Solution().climb_stairs(3, [1, 2, 3]))   # 4
-    print(Solution().climb_stairs(2, [2, 5, 6, 8]))   # 1
+# Examples from the problem statement
+print(Solution().climb_stairs(3, [1, 2, 3]))      # 4
+print(Solution().climb_stairs(2, [2, 5, 6, 8]))   # 1
+print(Solution().climb_stairs(2, [8, 3, 6, 5]))   # 0
+
+# Edge cases
+print(Solution().climb_stairs(0, [1, 2]))          # 1
+print(Solution().climb_stairs(1, [1]))             # 1
+print(Solution().climb_stairs(4, [1, 2]))          # 5
+print(Solution().climb_stairs(5, [1, 2, 3]))       # 13
 ```
 
 ```java run
+import java.util.*;
+
 public class Main {
     static class Solution {
-        public int climbStairs(int n, int[] steps) {
-            if (n < 0) return 0;
-            if (n == 0) return 1;
-            int total = 0;
-            for (int s : steps) {
-                total += climbStairs(n - s, steps);   // One recursive call per step
+        public int climbStairs(int N, List<Integer> steps) {
+
+            // Base case: If N is negative, there are no ways to
+            // reach the ground
+            if (N < 0) {
+                return 0;
             }
-            return total;
+
+            // Base case: If N is 0, there is one way to stay
+            // at the ground
+            if (N == 0) {
+                return 1;
+            }
+
+            // Variable to store the total number of ways to reach
+            // the ground
+            int totalWays = 0;
+
+            // Iterate through each possible step
+            for (int step : steps) {
+
+                // Recursive call to climbStairs with reduced N
+                // Subtract the current step from N and add the
+                // result to totalWays
+                totalWays += climbStairs(N - step, steps);
+            }
+
+            // Return the total number of ways to reach the ground
+            return totalWays;
         }
     }
 
     public static void main(String[] args) {
-        System.out.println(new Solution().climbStairs(3, new int[]{1, 2, 3}));   // 4
+        // Examples from the problem statement
+        System.out.println(new Solution().climbStairs(3, Arrays.asList(1, 2, 3)));      // 4
+        System.out.println(new Solution().climbStairs(2, Arrays.asList(2, 5, 6, 8)));   // 1
+        System.out.println(new Solution().climbStairs(2, Arrays.asList(8, 3, 6, 5)));   // 0
+
+        // Edge cases
+        System.out.println(new Solution().climbStairs(0, Arrays.asList(1, 2)));          // 1
+        System.out.println(new Solution().climbStairs(1, Arrays.asList(1)));             // 1
+        System.out.println(new Solution().climbStairs(4, Arrays.asList(1, 2)));          // 5
+        System.out.println(new Solution().climbStairs(5, Arrays.asList(1, 2, 3)));       // 13
     }
-}
-```
-
-```c run
-#include <stdio.h>
-
-int climb_stairs(int n, const int *steps, int k) {
-    if (n < 0) return 0;
-    if (n == 0) return 1;
-    int total = 0;
-    for (int i = 0; i < k; i++) {
-        total += climb_stairs(n - steps[i], steps, k);
-    }
-    return total;
-}
-
-int main(void) {
-    int steps[] = {1, 2, 3};
-    printf("%d\n", climb_stairs(3, steps, 3));   /* 4 */
-    return 0;
-}
-```
-
-```scala run
-object Main extends App {
-  class Solution {
-    def climbStairs(n: Int, steps: Array[Int]): Int = {
-      if (n < 0) 0
-      else if (n == 0) 1
-      else steps.map(s => climbStairs(n - s, steps)).sum
-    }
-  }
-
-  println(new Solution().climbStairs(3, Array(1, 2, 3)))   // 4
 }
 ```
 
@@ -1047,9 +1120,7 @@ Result: 4 ✓
 
 </details>
 
----
-
-## Complexity Analysis
+### Complexity Analysis
 
 | Resource | Cost | Why |
 |---|---|---|
@@ -1058,9 +1129,7 @@ Result: 4 ✓
 
 For `steps = [1, 2]` (the simplest case), this collapses to Fibonacci's `O(2^n)`.
 
----
-
-## Edge Cases
+### Edge Cases
 
 | Case | Example | Expected | Reasoning |
 |---|---|---|---|
@@ -1070,11 +1139,14 @@ For `steps = [1, 2]` (the simplest case), this collapses to Fibonacci's `O(2^n)`
 | Single step `[1]` | `n = 5, steps = [1]` | `1` | Only one way: (1,1,1,1,1). |
 | Step ≥ n | `n = 3, steps = [1, 2, 3]` | `4` | Includes the (3) one-shot path. |
 
----
+</details>
+<details>
+<summary><h2>Final Takeaway</h2></summary>
 
-## Final Takeaway
 
 Climb-stairs is multiple recursion with input-dependent branching factor. The pattern naturally extends Fibonacci to arbitrary step sets. Memoisation makes it `O(n × k)` instead of `O(k^n)` — another preview of dynamic programming. The next problem widens the recurrence further: every call to `C(n)` spawns *n* recursive calls, and the combine multiplies pairs.
+
+</details>
 
 ***
 
@@ -1107,7 +1179,9 @@ Output: 1
 
 ---
 
-## What Are Catalan Numbers?
+<details>
+<summary><h2>What Are Catalan Numbers?</h2></summary>
+
 
 Catalan numbers count combinatorial structures: balanced parentheses, binary trees with `n` nodes, ways to triangulate a convex polygon, monotonic lattice paths. The recurrence reflects the structure of these objects: a binary tree with `n` nodes has a root, then partitions the remaining `n - 1` nodes between left and right subtrees in all possible ways. For each split `(i, n - 1 - i)`, multiply the counts and sum across all splits.
 
@@ -1131,9 +1205,10 @@ flowchart LR
 
 <p align="center"><strong>Catalan recurrence: each frame fans out to <code>n</code> recursive-call pairs, multiplied together and summed. Branching factor = <code>n</code> — the widest of the four problems.</strong></p>
 
----
+</details>
+<details>
+<summary><h2>Applying the Diagnostic Questions</h2></summary>
 
-## Applying the Diagnostic Questions
 
 | # | Check | Answer |
 |---|---|---|
@@ -1153,9 +1228,10 @@ Each summand is `C(i) * C(n-1-i)` — a product of two sub-answers. The full com
 
 Every reduction in the loop produces `C(i)` for some `i` in `[0, n-1]`. By induction, every smaller subproblem eventually bottoms out at `C(0)`. The recurrence is "convolutional" — it doesn't need separate bases for `C(1), C(2), ...` because they're derived from `C(0)`. ✓
 
----
+</details>
+<details>
+<summary><h2>The Quadratic-Branching Tree (Visualised)</h2></summary>
 
-## The Quadratic-Branching Tree (Visualised)
 
 The tree fans out enormously. For `C(4)`, there are 4 splits, each with 2 calls = 8 children, and so on at every level.
 
@@ -1185,93 +1261,82 @@ flowchart TB
 
 <p align="center"><strong>Recursion tree for <code>C(3)</code>. Three splits, each with two calls. Lots of <code>C(2)</code> recomputation — the redundancy gets worse as <code>n</code> grows.</strong></p>
 
----
+</details>
+<details>
+<summary><h2>Solution &amp; Analysis</h2></summary>
 
-## The Solution
-
-
-```pseudocode
-function catalan(n):
-    if n = 0:                              # base case
-        return 1
-    result ← 0
-    for i from 0 to n − 1:                 # sum over all (i, n−1−i) partitions
-        result ← result + catalan(i) × catalan(n − 1 − i)
-    return result
-```
+### The Solution
 
 ```python run
 class Solution:
     def catalan(self, n: int) -> int:
-        # Base case
+
+        # Base case: The 0th Catalan number is 1
         if n == 0:
             return 1
 
-        # Sum over all (i, n-1-i) partitions
         result = 0
+
+        # Sum over all partitions
         for i in range(n):
-            # Two recursive calls per partition; multiply, then accumulate
+
+            # Recursive call to calculate the Catalan numbers
+            # for the left and right subtrees
             result += self.catalan(i) * self.catalan(n - 1 - i)
+
+        # Return the Nth Catalan number
         return result
 
 
-if __name__ == "__main__":
-    print(Solution().catalan(7))   # 429
-    print(Solution().catalan(5))   # 42
-    print(Solution().catalan(0))   # 1
+# Examples from the problem statement
+print(Solution().catalan(7))   # 429
+print(Solution().catalan(5))   # 42
+print(Solution().catalan(0))   # 1
+
+# Edge cases
+print(Solution().catalan(1))   # 1
+print(Solution().catalan(2))   # 2
+print(Solution().catalan(3))   # 5
+print(Solution().catalan(4))   # 14
 ```
 
 ```java run
 public class Main {
     static class Solution {
-        public int catalan(int n) {
-            if (n == 0) return 1;
-            int result = 0;
-            for (int i = 0; i < n; i++) {
-                result += catalan(i) * catalan(n - 1 - i);
+        public int catalan(int N) {
+
+            // Base case: The 0th Catalan number is 1
+            if (N == 0) {
+                return 1;
             }
+
+            int result = 0;
+
+            // Sum over all partitions
+            for (int i = 0; i < N; i++) {
+
+                // Recursive call to calculate the Catalan numbers
+                // for the left and right subtrees
+                result += catalan(i) * catalan(N - 1 - i);
+            }
+
+            // Return the Nth Catalan number
             return result;
         }
     }
 
     public static void main(String[] args) {
+        // Examples from the problem statement
         System.out.println(new Solution().catalan(7));   // 429
+        System.out.println(new Solution().catalan(5));   // 42
+        System.out.println(new Solution().catalan(0));   // 1
+
+        // Edge cases
+        System.out.println(new Solution().catalan(1));   // 1
+        System.out.println(new Solution().catalan(2));   // 2
+        System.out.println(new Solution().catalan(3));   // 5
+        System.out.println(new Solution().catalan(4));   // 14
     }
-}
-```
-
-```c run
-#include <stdio.h>
-
-long long catalan(int n) {
-    if (n == 0) return 1;
-    long long result = 0;
-    for (int i = 0; i < n; i++) {
-        result += catalan(i) * catalan(n - 1 - i);
-    }
-    return result;
-}
-
-int main(void) {
-    printf("%lld\n", catalan(7));   /* 429 */
-    return 0;
-}
-```
-
-```scala run
-object Main extends App {
-  class Solution {
-    def catalan(n: Int): Long = {
-      if (n == 0) return 1L
-      var result: Long = 0L
-      for (i <- 0 until n) {
-        result += catalan(i) * catalan(n - 1 - i)
-      }
-      result
-    }
-  }
-
-  println(new Solution().catalan(7))   // 429
 }
 ```
 
@@ -1294,9 +1359,7 @@ Result: 5 ✓ (canonical Catalan value)
 
 </details>
 
----
-
-## Complexity Analysis
+### Complexity Analysis
 
 | Resource | Cost | Why |
 |---|---|---|
@@ -1305,9 +1368,7 @@ Result: 5 ✓ (canonical Catalan value)
 
 This is the most expensive of the four. Without memoisation, even moderate `n` (say 20) is painful. With memoisation, it collapses to `O(n²)` time and `O(n)` space.
 
----
-
-## Edge Cases
+### Edge Cases
 
 | Case | Example | Expected | Reasoning |
 |---|---|---|---|
@@ -1317,9 +1378,10 @@ This is the most expensive of the four. Without memoisation, even moderate `n` (
 | Large | `n = 30+` | infeasible naively | Use memoisation. |
 | Overflow | `n = 33` | exceeds 64-bit | Catalan grows ~4^n; switch to big-int for large `n`. |
 
----
+</details>
+<details>
+<summary><h2>Final Takeaway</h2></summary>
 
-## Final Takeaway
 
 Catalan is multiple recursion at its widest: each frame spawns `2n` calls, the combine multiplies pairs and sums products, the call count grows roughly as `4^n`. It's the canonical "dynamic programming candidate" — the recurrence is mathematically elegant, the naive recursion is catastrophically slow, and memoisation collapses both observations into a textbook algorithm.
 
@@ -1344,5 +1406,7 @@ The next lesson lifts another constraint: what happens when the input has *more 
 - `fib(0)` called 13 times
 
 Each of those 13 evaluations of `fib(2)` does identical work — computing `fib(1) + fib(0) = 1`. **Memoisation eliminates 12 of those 13.** Multiply this saving across every duplicate sub-call and you have the algorithm we'll meet in the dynamic-programming section. **You just rediscovered why memoisation is the single most important idea for taming multiple recursion.**
+
+</details>
 
 </details>

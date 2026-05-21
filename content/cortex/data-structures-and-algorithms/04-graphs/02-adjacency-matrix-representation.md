@@ -261,32 +261,18 @@ flowchart LR
 
 <p align="center"><strong>Two steps to build the adjacency matrix from a node count and edge list.</strong></p>
 
-Here's the same algorithm in ten languages. Pick whichever you read most fluently — the logic is identical across all of them.
+Here's the same algorithm in Python and Java. Pick whichever you read most fluently — the logic is identical across both of them.
 
-
-```pseudocode
-function createGraph(nodes, edges):
-    adj ← N×N matrix of false
-    for each (u, v) in edges:
-        adj[u][v] ← true
-        adj[v][u] ← true   # undirected: set both directions
-    return adj
-```
 
 ```python run
-from typing import List
-
-def create_graph(nodes: int, edges: List[List[int]]) -> List[List[bool]]:
-    # Allocate an N x N matrix of False. Build with nested comprehension —
-    # using [[False] * n] * n creates n references to the SAME list, so
-    # mutating one row mutates them all (a classic Python footgun).
+def create_graph(nodes, edges):
+    # Create adjacency matrix
     adj = [[False] * nodes for _ in range(nodes)]
 
-    for u, v in edges:
-        # Set the cell both ways — undirected edges have no direction,
-        # so the matrix must be symmetric across the diagonal.
-        adj[u][v] = True
-        adj[v][u] = True
+    for edge in edges:
+        # Update cells both ways for undirected graphs
+        adj[edge[0]][edge[1]] = True
+        adj[edge[1]][edge[0]] = True
 
     return adj
 
@@ -302,15 +288,26 @@ for row in matrix:
 import java.util.Arrays;
 
 public class Main {
-    public static boolean[][] createGraph(int nodes, int[][] edges) {
-        // Java initialises boolean arrays to false by default — no manual fill needed.
+    public static boolean[][] createGraph(int nodes, int[][] edges)
+    {
+        // Create adjacency matrix
         boolean[][] adj = new boolean[nodes][nodes];
 
-        for (int[] edge : edges) {
-            // Set the cell both ways for undirected edges.
+        for(int i=0; i<adj.length; i++)
+        {
+            for(int j=0; j< adj[i].length; j++)
+            {
+                adj[i][j] = false;
+            }
+        }
+
+        for (int[] edge: edges)
+        {
+            // Update cells both ways for undirected graphs
             adj[edge[0]][edge[1]] = true;
             adj[edge[1]][edge[0]] = true;
         }
+
         return adj;
     }
 
@@ -319,61 +316,6 @@ public class Main {
         boolean[][] matrix = createGraph(5, edges);
         for (boolean[] row : matrix) System.out.println(Arrays.toString(row));
     }
-}
-```
-
-```c run
-#include <stdio.h>
-#include <stdbool.h>
-#include <stdlib.h>
-
-bool** create_graph(int nodes, int edges[][2], int edge_count) {
-    // Allocate an N x N matrix on the heap; row of pointers, then each row's cells.
-    bool** adj = malloc(nodes * sizeof(bool*));
-    for (int i = 0; i < nodes; i++) {
-        // calloc zeroes memory; false == 0, so this initialises everything to false.
-        adj[i] = calloc(nodes, sizeof(bool));
-    }
-
-    for (int i = 0; i < edge_count; i++) {
-        // Set the cell both ways for undirected edges.
-        adj[edges[i][0]][edges[i][1]] = true;
-        adj[edges[i][1]][edges[i][0]] = true;
-    }
-    return adj;
-}
-
-int main() {
-    int edges[][2] = {{0, 1}, {0, 2}, {1, 2}, {1, 3}, {2, 4}, {3, 4}};
-    bool** adj = create_graph(5, edges, 6);
-
-    for (int i = 0; i < 5; i++) {
-        for (int j = 0; j < 5; j++) printf("%d ", adj[i][j]);
-        printf("\n");
-        free(adj[i]);
-    }
-    free(adj);
-    return 0;
-}
-```
-
-```scala run
-object Main extends App {
-  def createGraph(nodes: Int, edges: Array[Array[Int]]): Array[Array[Boolean]] = {
-    // Array.ofDim allocates an N x N grid; Boolean defaults to false.
-    val adj = Array.ofDim[Boolean](nodes, nodes)
-
-    for (edge <- edges) {
-      // Symmetric assignment for undirected edges.
-      adj(edge(0))(edge(1)) = true
-      adj(edge(1))(edge(0)) = true
-    }
-    adj
-  }
-
-  val edges = Array(Array(0, 1), Array(0, 2), Array(1, 2), Array(1, 3), Array(2, 4), Array(3, 4))
-  val matrix = createGraph(5, edges)
-  matrix.foreach(row => println(row.mkString(" ")))
 }
 ```
 
@@ -467,34 +409,29 @@ matrix: "Weighted adjacency matrix (sentinel = -1)" {
 The implementation is almost identical to the boolean version — swap `bool` for `int` and the sentinel for `-1`.
 
 
-```pseudocode
-function createWeightedGraph(nodes, edges):
-    adj ← N×N matrix filled with NO_EDGE   # NO_EDGE sentinel = -1
-    for each (u, v, w) in edges:
-        adj[u][v] ← w
-        adj[v][u] ← w   # undirected: set both directions
-    return adj
-```
-
 ```python run
-from typing import List
+"""
+ * Function to create graph
+ * nodes: The number of nodes in the graph
+ * edges[in]: A list of edges. An edge is a list storing
+ * the two nodes it connects.
+ *
+ * returns: Adjacency matrix
+"""
+def create_graph(nodes, edges):
+    # Create adjacency matrix, sentinel is -1
+    adj = [[-1] * nodes for _ in range(nodes)]
 
-NO_EDGE = -1  # Sentinel — must be unreachable as a real weight.
-
-def create_weighted_graph(nodes: int, edges: List[List[int]]) -> List[List[int]]:
-    # Initialise the matrix with the sentinel everywhere.
-    adj = [[NO_EDGE] * nodes for _ in range(nodes)]
-
-    for u, v, w in edges:
-        # Each edge entry is (u, v, w). Set both ways for an undirected graph.
-        adj[u][v] = w
-        adj[v][u] = w
+    for edge in edges:
+        # Update cells both ways for undirected graphs
+        adj[edge[0]][edge[1]] = edge[2]
+        adj[edge[1]][edge[0]] = edge[2]
 
     return adj
 
 
 edges = [[0, 1, 5], [0, 2, 2], [1, 2, 1], [1, 3, 7], [2, 4, 4], [3, 4, 3]]
-matrix = create_weighted_graph(5, edges)
+matrix = create_graph(5, edges)
 for row in matrix:
     print(row)
 ```
@@ -503,83 +440,43 @@ for row in matrix:
 import java.util.Arrays;
 
 public class Main {
-    static final int NO_EDGE = -1;
-
-    public static int[][] createWeightedGraph(int nodes, int[][] edges) {
+    /*
+     * Function to create graph
+     * nodes: The number of nodes in the graph
+     * edges[in]: A list of edges. An edge is a list storing
+     * the two nodes it connects.
+     *
+     * returns: Adjacency matrix
+     */
+    public static int[][] createGraph(int nodes, int[][] edges)
+    {
+        // Create adjacency matrix, sentinel is -1
         int[][] adj = new int[nodes][nodes];
-        // Java doesn't auto-fill ints to anything except 0; we want -1 as the sentinel.
-        for (int[] row : adj) Arrays.fill(row, NO_EDGE);
 
-        for (int[] e : edges) {
-            // (u, v, w) — set both directions for undirected.
-            adj[e[0]][e[1]] = e[2];
-            adj[e[1]][e[0]] = e[2];
+        for(int i=0; i<adj.length; i++)
+        {
+            for(int j=0; j< adj[i].length; j++)
+            {
+                adj[i][j] = -1;
+            }
         }
+
+        for (int[] edge: edges)
+        {
+            // Update cells both ways for undirected graphs
+            adj[edge[0]][edge[1]] = edge[2];
+            adj[edge[1]][edge[0]] = edge[2];
+
+        }
+
         return adj;
     }
 
     public static void main(String[] args) {
         int[][] edges = {{0, 1, 5}, {0, 2, 2}, {1, 2, 1}, {1, 3, 7}, {2, 4, 4}, {3, 4, 3}};
-        int[][] matrix = createWeightedGraph(5, edges);
+        int[][] matrix = createGraph(5, edges);
         for (int[] row : matrix) System.out.println(Arrays.toString(row));
     }
-}
-```
-
-```c run
-#include <stdio.h>
-#include <stdlib.h>
-
-#define NO_EDGE -1
-
-int** create_weighted_graph(int nodes, int edges[][3], int edge_count) {
-    int** adj = malloc(nodes * sizeof(int*));
-    for (int i = 0; i < nodes; i++) {
-        adj[i] = malloc(nodes * sizeof(int));
-        // Manual fill — calloc would zero, which clashes with NO_EDGE if 0 were a sentinel.
-        for (int j = 0; j < nodes; j++) adj[i][j] = NO_EDGE;
-    }
-
-    for (int i = 0; i < edge_count; i++) {
-        // (u, v, w) — set both directions.
-        adj[edges[i][0]][edges[i][1]] = edges[i][2];
-        adj[edges[i][1]][edges[i][0]] = edges[i][2];
-    }
-    return adj;
-}
-
-int main() {
-    int edges[][3] = {{0,1,5},{0,2,2},{1,2,1},{1,3,7},{2,4,4},{3,4,3}};
-    int** adj = create_weighted_graph(5, edges, 6);
-    for (int i = 0; i < 5; i++) {
-        for (int j = 0; j < 5; j++) printf("%3d ", adj[i][j]);
-        printf("\n");
-        free(adj[i]);
-    }
-    free(adj);
-    return 0;
-}
-```
-
-```scala run
-object Main extends App {
-  val NO_EDGE = -1
-
-  def createWeightedGraph(nodes: Int, edges: Array[Array[Int]]): Array[Array[Int]] = {
-    val adj = Array.fill(nodes, nodes)(NO_EDGE)
-
-    for (e <- edges) {
-      // (u, v, w) — set both directions.
-      adj(e(0))(e(1)) = e(2)
-      adj(e(1))(e(0)) = e(2)
-    }
-    adj
-  }
-
-  val edges = Array(Array(0,1,5), Array(0,2,2), Array(1,2,1),
-                    Array(1,3,7), Array(2,4,4), Array(3,4,3))
-  val matrix = createWeightedGraph(5, edges)
-  matrix.foreach(row => println(row.mkString(" ")))
 }
 ```
 
@@ -667,35 +564,31 @@ The two-array trick is the standard pattern. Storing node data inside the matrix
 Here's a small example that builds both arrays together.
 
 
-```pseudocode
-function createGraph(nodeData, edges):
-    n ← length of nodeData
-    adj ← N×N matrix filled with NO_EDGE
-    for each (u, v, w) in edges:
-        adj[u][v] ← w
-        adj[v][u] ← w   # undirected: both directions
-    return nodeData, adj  # parallel arrays: nodeData[i] and adj[i][j]
-```
-
 ```python run
-from typing import List, Tuple
+"""
+ * Function to create graph
+ * nodes[in]: A list node data
+ * edges[in]: A list of weighted edges. An edge is a list storing
+ * the nodes it connects and weight respectively
+ *
+ * returns: Adjacency matrix
+"""
+def create_graph(nodes, edges):
+    # Create adjacency matrix, sentinel is -1
+    adj = [[-1] * len(nodes) for _ in range(len(nodes))]
 
-NO_EDGE = -1
+    for edge in edges:
+        # Update cells both ways for undirected graphs
+        adj[edge[0]][edge[1]] = edge[2]
+        adj[edge[1]][edge[0]] = edge[2]
 
-def create_graph(node_data: List[str], edges: List[List[int]]) -> Tuple[List[str], List[List[int]]]:
-    n = len(node_data)
-    # Edge matrix indexed 0..n-1 in lockstep with node_data.
-    adj = [[NO_EDGE] * n for _ in range(n)]
-    for u, v, w in edges:
-        adj[u][v] = w
-        adj[v][u] = w
-    return node_data, adj
+    return adj
 
 
 cities = ["Bangalore", "Tokyo", "Paris", "NYC", "London"]
 edges  = [[0, 1, 5], [0, 2, 2], [1, 2, 1], [1, 3, 7], [2, 4, 4], [3, 4, 3]]
-data, adj = create_graph(cities, edges)
-print("Node data:", data)
+adj = create_graph(cities, edges)
+print("Node data:", cities)
 print("Edge between Tokyo (1) and Paris (2):", adj[1][2])
 ```
 
@@ -703,101 +596,46 @@ print("Edge between Tokyo (1) and Paris (2):", adj[1][2])
 import java.util.Arrays;
 
 public class Main {
-    static final int NO_EDGE = -1;
+    /*
+     * Function to create graph
+     * nodes[in]: A list node data
+     * edges[in]: A list of weighted edges. An edge is a list storing
+     * the nodes it connects and weight respectively
+     *
+     * returns: Adjacency matrix
+    */
+    public static int[][] createGraph(int nodes[], int[][] edges)
+    {
+        // Create adjacency matrix, sentinel is -1
+        int[][] adj = new int[nodes.length][nodes.length];
 
-    static class Graph {
-        String[] nodeData;
-        int[][] adj;
-        Graph(String[] d, int[][] a) { nodeData = d; adj = a; }
-    }
-
-    public static Graph createGraph(String[] nodeData, int[][] edges) {
-        int n = nodeData.length;
-        int[][] adj = new int[n][n];
-        for (int[] row : adj) Arrays.fill(row, NO_EDGE);
-        for (int[] e : edges) {
-            adj[e[0]][e[1]] = e[2];
-            adj[e[1]][e[0]] = e[2];
+        for(int i=0; i<adj.length; i++)
+        {
+            for(int j=0; j< adj[i].length; j++)
+            {
+                adj[i][j] = -1;
+            }
         }
-        return new Graph(nodeData, adj);
+
+        for (int[] edge: edges)
+        {
+            // Update cells both ways for undirected graphs
+            adj[edge[0]][edge[1]] = edge[2];
+            adj[edge[1]][edge[0]] = edge[2];
+
+        }
+
+        return adj;
     }
 
     public static void main(String[] args) {
         String[] cities = {"Bangalore", "Tokyo", "Paris", "NYC", "London"};
+        int[] nodes = {0, 1, 2, 3, 4};
         int[][] edges = {{0,1,5},{0,2,2},{1,2,1},{1,3,7},{2,4,4},{3,4,3}};
-        Graph g = createGraph(cities, edges);
-        System.out.println("Node data: " + Arrays.toString(g.nodeData));
-        System.out.println("Edge Tokyo-Paris: " + g.adj[1][2]);
+        int[][] adj = createGraph(nodes, edges);
+        System.out.println("Node data: " + Arrays.toString(cities));
+        System.out.println("Edge Tokyo-Paris: " + adj[1][2]);
     }
-}
-```
-
-```c run
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-
-#define NO_EDGE -1
-
-typedef struct {
-    char** node_data;
-    int** adj;
-    int n;
-} Graph;
-
-Graph create_graph(const char* names[], int n, int edges[][3], int edge_count) {
-    Graph g;
-    g.n = n;
-    g.node_data = malloc(n * sizeof(char*));
-    for (int i = 0; i < n; i++) g.node_data[i] = strdup(names[i]);
-
-    g.adj = malloc(n * sizeof(int*));
-    for (int i = 0; i < n; i++) {
-        g.adj[i] = malloc(n * sizeof(int));
-        for (int j = 0; j < n; j++) g.adj[i][j] = NO_EDGE;
-    }
-    for (int i = 0; i < edge_count; i++) {
-        g.adj[edges[i][0]][edges[i][1]] = edges[i][2];
-        g.adj[edges[i][1]][edges[i][0]] = edges[i][2];
-    }
-    return g;
-}
-
-int main() {
-    const char* names[] = {"Bangalore", "Tokyo", "Paris", "NYC", "London"};
-    int edges[][3] = {{0,1,5},{0,2,2},{1,2,1},{1,3,7},{2,4,4},{3,4,3}};
-    Graph g = create_graph(names, 5, edges, 6);
-    printf("Node 1 data: %s\n", g.node_data[1]);
-    printf("Edge 1-2 weight: %d\n", g.adj[1][2]);
-
-    for (int i = 0; i < g.n; i++) { free(g.node_data[i]); free(g.adj[i]); }
-    free(g.node_data); free(g.adj);
-    return 0;
-}
-```
-
-```scala run
-object Main extends App {
-  val NO_EDGE = -1
-
-  case class Graph(nodeData: Array[String], adj: Array[Array[Int]])
-
-  def createGraph(nodeData: Array[String], edges: Array[Array[Int]]): Graph = {
-    val n = nodeData.length
-    val adj = Array.fill(n, n)(NO_EDGE)
-    for (e <- edges) {
-      adj(e(0))(e(1)) = e(2)
-      adj(e(1))(e(0)) = e(2)
-    }
-    Graph(nodeData, adj)
-  }
-
-  val cities = Array("Bangalore", "Tokyo", "Paris", "NYC", "London")
-  val edges = Array(Array(0,1,5), Array(0,2,2), Array(1,2,1),
-                    Array(1,3,7), Array(2,4,4), Array(3,4,3))
-  val g = createGraph(cities, edges)
-  println(s"Node 1: ${g.nodeData(1)}")
-  println(s"Edge 1-2: ${g.adj(1)(2)}")
 }
 ```
 

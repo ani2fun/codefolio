@@ -281,107 +281,122 @@ We use a **2D residual matrix** `residual[u][v]` instead of an adjacency list �
 The graph is given as an adjacency list of `(neighbour, capacity)` pairs.
 
 
-```pseudocode
-function dfs(residual, visited, path, node, sink):
-    add node to visited
-    append node to path
-    if node = sink: return true
-    for neighbor from 0 to N−1:
-        if neighbor is not in visited AND residual[node][neighbor] > 0:
-            if dfs(residual, visited, path, neighbor, sink):
-                return true
-    pop from path
-    return false
-
-function maxFlow(graph, source, sink):
-    residual ← N×N matrix of 0
-    for u in graph:
-        for (v, cap) in graph[u]:
-            residual[u][v] ← cap
-    total ← 0
-    while true:
-        visited ← empty set
-        path ← empty list
-        if NOT dfs(residual, visited, path, source, sink): break
-        bottleneck ← min residual[path[i]][path[i+1]] for consecutive pairs
-        for each consecutive (u, v) in path:
-            residual[u][v] ← residual[u][v] − bottleneck
-            residual[v][u] ← residual[v][u] + bottleneck
-        total ← total + bottleneck
-    return total
-```
-
 ```python run
-from typing import List, Tuple
-
-INF = float('inf')
+import sys
+from typing import List, Tuple, Set
 
 class Solution:
-    def dfs(self,
-            residual: List[List[int]],
-            visited: set,
-            path: List[int],
-            node: int,
-            sink: int) -> bool:
+    def dfs(
+        self,
+        residual_graph: List[List[int]],
+        visited: Set[int],
+        path: List[int],
+        node: int,
+        sink: int,
+    ) -> bool:
+
+        # Mark the current node as visited in the graph to avoid
+        # visiting it again
         visited.add(node)
+
+        # Add the current node to the path
         path.append(node)
+
+        # If the current node is the sink, return true
         if node == sink:
             return True
-        # Try every potential neighbour with positive residual capacity.
-        for neighbour in range(len(residual)):
-            if neighbour not in visited and residual[node][neighbour] > 0:
-                if self.dfs(residual, visited, path, neighbour, sink):
+
+        # Explore all neighbours of the current node
+        for neighbour in range(len(residual_graph)):
+
+            # If the neighbour is not visited and has a positive
+            # capacity in the residual graph, recursively call DFS
+            if (
+                neighbour not in visited
+                and residual_graph[node][neighbour] > 0
+            ):
+
+                # If the DFS call returns true, propagate the result
+                # back to the previous call
+                if self.dfs(
+                    residual_graph, visited, path, neighbour, sink
+                ):
                     return True
+
+        # If no path to the sink is found, remove the current node
+        # from the path
         path.pop()
+
+        # If no path to the sink is found from this node, backtrack
         return False
 
-    def max_flow(self,
-                 graph: List[List[Tuple[int, int]]],
-                 source: int,
-                 sink: int) -> int:
+    def maximum_flow(
+        self, graph: List[List[Tuple[int, int]]], source: int, sink: int
+    ) -> int:
+
+        # Number of nodes in the graph
         n = len(graph)
+
+        # If the graph is empty, return 0
         if n == 0:
             return 0
 
-        # Build NxN residual matrix from adjacency list.
-        residual = [[0] * n for _ in range(n)]
-        for u in range(n):
-            for v, cap in graph[u]:
-                residual[u][v] = cap
+        # Create a residual graph and initialize it with the original
+        # capacities
+        residual_graph = [[0] * n for _ in range(n)]
+        for node in range(n):
+            for neighbour, capacity in graph[node]:
+                residual_graph[node][neighbour] = capacity
 
+        # Initialize the maximum flow
         max_flow = 0
+
+        # Find augmenting paths in the residual graph using
+        # Depth-First Search
         while True:
-            visited: set = set()
+
+            # Create a set to keep track of visited nodes
+            visited: Set[int] = set()
+
+            # List to store the path from source to sink
             path: List[int] = []
-            if not self.dfs(residual, visited, path, source, sink):
+
+            # If no more augmenting paths exist, break
+            if not self.dfs(residual_graph, visited, path, source, sink):
                 break
 
-            # Bottleneck — minimum residual on the augmenting path.
-            path_flow = INF
+            # Find the minimum capacity along the augmenting path
+            path_flow = sys.maxsize
             for i in range(len(path) - 1):
-                u, v = path[i], path[i + 1]
-                path_flow = min(path_flow, residual[u][v])
+                u = path[i]
+                v = path[i + 1]
+                path_flow = min(path_flow, residual_graph[u][v])
 
-            # Push: subtract from forward edges, add to reverse edges.
+            # Update the residual capacities and reverse edges along the
+            # augmenting path
             for i in range(len(path) - 1):
-                u, v = path[i], path[i + 1]
-                residual[u][v] -= path_flow
-                residual[v][u] += path_flow      # reverse edge — the magic step.
+                u = path[i]
+                v = path[i + 1]
+                residual_graph[u][v] -= path_flow
+                residual_graph[v][u] += path_flow
 
+            # Add the path flow to the maximum flow
             max_flow += path_flow
+
         return max_flow
 
 
-# Example: 6-node network.
-graph = [
-    [(1, 10), (2, 10)],     # s = 0
-    [(2, 2), (3, 4), (4, 8)],
-    [(4, 9)],
-    [(5, 10)],
-    [(3, 6), (5, 10)],
-    [],                     # t = 5
-]
-print(Solution().max_flow(graph, 0, 5))   # 19
+# Examples from the problem statement
+print(Solution().maximum_flow([[[1,1]],[[4,5]],[[1,2]],[[1,3]],[]], 0, 4))    # 1
+print(Solution().maximum_flow([[[1,8],[2,10]],[],[[3,3]],[[1,2]]], 0, 1))      # 10
+
+# Edge cases
+print(Solution().maximum_flow([], 0, 0))                                        # 0
+print(Solution().maximum_flow([[]], 0, 0))                                      # 0
+print(Solution().maximum_flow([[[1,5]], []], 0, 1))                             # 5
+print(Solution().maximum_flow([[[1,3],[2,4]],[[3,2]],[[3,3]],[]], 0, 3))        # 5
+# Source equals sink
+print(Solution().maximum_flow([[[1,5]], []], 0, 0))                             # 0
 ```
 
 ```java run
@@ -389,176 +404,139 @@ import java.util.*;
 
 public class Main {
     static class Solution {
-        public boolean dfs(int[][] residual, Set<Integer> visited,
-                           List<Integer> path, int node, int sink) {
+        private boolean dfs(
+            int[][] residualGraph,
+            Set<Integer> visited,
+            List<Integer> path,
+            int node,
+            int sink
+        ) {
+
+            // Mark the current node as visited in the graph to avoid
+            // visiting it again
             visited.add(node);
+
+            // Add the current node to the path
             path.add(node);
-            if (node == sink) return true;
-            for (int neighbour = 0; neighbour < residual.length; neighbour++) {
-                if (!visited.contains(neighbour) && residual[node][neighbour] > 0) {
-                    if (dfs(residual, visited, path, neighbour, sink)) return true;
+
+            // If the current node is the sink, return true
+            if (node == sink) {
+                return true;
+            }
+
+            // Explore all neighbours of the current node
+            for (
+                int neighbour = 0;
+                neighbour < residualGraph.length;
+                ++neighbour
+            ) {
+
+                // If the neighbour is not visited and has a positive
+                // capacity in the residual graph, recursively call DFS
+                if (
+                    !visited.contains(neighbour) &&
+                    residualGraph[node][neighbour] > 0
+                ) {
+
+                    // If the DFS call returns true, propagate the result
+                    // back to the previous call
+                    if (dfs(residualGraph, visited, path, neighbour, sink)) {
+                        return true;
+                    }
                 }
             }
+
+            // If no path to the sink is found, remove the current node
+            // from the path
             path.remove(path.size() - 1);
+
+            // If no path to the sink is found from this node, backtrack
             return false;
         }
 
-        public int maxFlow(List<List<int[]>> graph, int source, int sink) {
-            int n = graph.size();
-            if (n == 0) return 0;
-            int[][] residual = new int[n][n];
-            for (int u = 0; u < n; u++)
-                for (int[] e : graph.get(u))
-                    residual[u][e[0]] = e[1];
+        public int maximumFlow(
+            List<List<List<Integer>>> graph,
+            int source,
+            int sink
+        ) {
 
-            int maxFlow = 0;
-            while (true) {
-                Set<Integer> visited = new HashSet<>();
-                List<Integer> path = new ArrayList<>();
-                if (!dfs(residual, visited, path, source, sink)) break;
+            // Number of nodes in the graph
+            int N = graph.size();
 
-                int pathFlow = Integer.MAX_VALUE;
-                for (int i = 0; i < path.size() - 1; i++)
-                    pathFlow = Math.min(pathFlow, residual[path.get(i)][path.get(i + 1)]);
+            // If the graph is empty, return 0
+            if (N == 0) {
+                return 0;
+            }
 
-                for (int i = 0; i < path.size() - 1; i++) {
-                    int u = path.get(i), v = path.get(i + 1);
-                    residual[u][v] -= pathFlow;
-                    residual[v][u] += pathFlow;
+            // Create a residual graph and initialize it with the original
+            // capacities
+            int[][] residualGraph = new int[N][N];
+            for (int node = 0; node < N; ++node) {
+                for (List<Integer> edge : graph.get(node)) {
+                    int neighbour = edge.get(0);
+                    int capacity = edge.get(1);
+                    residualGraph[node][neighbour] = capacity;
                 }
+            }
+
+            // Initialize the maximum flow
+            int maxFlow = 0;
+
+            // Find augmenting paths in the residual graph using
+            // Depth-First Search
+            while (true) {
+
+                // Create a set to keep track of visited nodes
+                Set<Integer> visited = new HashSet<>();
+
+                // List to store the path from source to sink
+                List<Integer> path = new ArrayList<>();
+
+                // If no more augmenting paths exist, break
+                if (!dfs(residualGraph, visited, path, source, sink)) {
+                    break;
+                }
+
+                // Find the minimum capacity along the augmenting path
+                int pathFlow = Integer.MAX_VALUE;
+                for (int i = 0; i < path.size() - 1; ++i) {
+                    int u = path.get(i);
+                    int v = path.get(i + 1);
+                    pathFlow = Math.min(pathFlow, residualGraph[u][v]);
+                }
+
+                // Update the residual capacities and reverse edges along the
+                // augmenting path
+                for (int i = 0; i < path.size() - 1; ++i) {
+                    int u = path.get(i);
+                    int v = path.get(i + 1);
+                    residualGraph[u][v] -= pathFlow;
+                    residualGraph[v][u] += pathFlow;
+                }
+
+                // Add the path flow to the maximum flow
                 maxFlow += pathFlow;
             }
+
             return maxFlow;
         }
     }
 
     public static void main(String[] args) {
-        List<List<int[]>> graph = List.of(
-            List.of(new int[]{1, 10}, new int[]{2, 10}),
-            List.of(new int[]{2, 2}, new int[]{3, 4}, new int[]{4, 8}),
-            List.of(new int[]{4, 9}),
-            List.of(new int[]{5, 10}),
-            List.of(new int[]{3, 6}, new int[]{5, 10}),
-            List.of());
-        System.out.println(new Solution().maxFlow(graph, 0, 5));
+        Solution sol = new Solution();
+
+        // Examples from the problem statement
+        System.out.println(sol.maximumFlow(List.of(List.of(List.of(1,1)), List.of(List.of(4,5)), List.of(List.of(1,2)), List.of(List.of(1,3)), new ArrayList<>()), 0, 4));  // 1
+        System.out.println(sol.maximumFlow(List.of(List.of(List.of(1,8), List.of(2,10)), new ArrayList<>(), List.of(List.of(3,3)), List.of(List.of(1,2))), 0, 1));  // 10
+
+        // Edge cases
+        System.out.println(sol.maximumFlow(new ArrayList<>(), 0, 0));  // 0
+        System.out.println(sol.maximumFlow(List.of(new ArrayList<>()), 0, 0));  // 0
+        System.out.println(sol.maximumFlow(List.of(List.of(List.of(1,5)), new ArrayList<>()), 0, 1));  // 5
+        System.out.println(sol.maximumFlow(List.of(List.of(List.of(1,3), List.of(2,4)), List.of(List.of(3,2)), List.of(List.of(3,3)), new ArrayList<>()), 0, 3));  // 5
+        // Source equals sink
+        System.out.println(sol.maximumFlow(List.of(List.of(List.of(1,5)), new ArrayList<>()), 0, 0));  // 0
     }
-}
-```
-
-```c run
-#include <stdio.h>
-#include <stdlib.h>
-#include <stdbool.h>
-#include <limits.h>
-
-typedef struct { int to, cap; } Edge;
-typedef struct { Edge* data; int size; } AdjList;
-
-static bool dfs(int** residual, int n, bool* visited, int* path, int* path_size,
-                int node, int sink) {
-    visited[node] = true;
-    path[(*path_size)++] = node;
-    if (node == sink) return true;
-    for (int neighbour = 0; neighbour < n; neighbour++) {
-        if (!visited[neighbour] && residual[node][neighbour] > 0) {
-            if (dfs(residual, n, visited, path, path_size, neighbour, sink)) return true;
-        }
-    }
-    (*path_size)--;
-    return false;
-}
-
-int max_flow(AdjList* graph, int n, int source, int sink) {
-    int** r = malloc(n * sizeof(int*));
-    for (int i = 0; i < n; i++) r[i] = calloc(n, sizeof(int));
-    for (int u = 0; u < n; u++)
-        for (int j = 0; j < graph[u].size; j++)
-            r[u][graph[u].data[j].to] = graph[u].data[j].cap;
-
-    int max_flow = 0;
-    while (true) {
-        bool* visited = calloc(n, sizeof(bool));
-        int* path = malloc(n * sizeof(int));
-        int path_size = 0;
-        if (!dfs(r, n, visited, path, &path_size, source, sink)) {
-            free(visited); free(path); break;
-        }
-        int path_flow = INT_MAX;
-        for (int i = 0; i < path_size - 1; i++)
-            if (r[path[i]][path[i+1]] < path_flow) path_flow = r[path[i]][path[i+1]];
-        for (int i = 0; i < path_size - 1; i++) {
-            r[path[i]][path[i+1]] -= path_flow;
-            r[path[i+1]][path[i]] += path_flow;
-        }
-        max_flow += path_flow;
-        free(visited); free(path);
-    }
-    for (int i = 0; i < n; i++) free(r[i]);
-    free(r);
-    return max_flow;
-}
-
-int main() {
-    Edge e0[] = {{1,10},{2,10}};
-    Edge e1[] = {{2,2},{3,4},{4,8}};
-    Edge e2[] = {{4,9}};
-    Edge e3[] = {{5,10}};
-    Edge e4[] = {{3,6},{5,10}};
-    AdjList g[] = {{e0,2},{e1,3},{e2,1},{e3,1},{e4,2},{NULL,0}};
-    printf("%d\n", max_flow(g, 6, 0, 5));
-    return 0;
-}
-```
-
-```scala run
-import scala.collection.mutable
-
-object Main extends App {
-  class Solution {
-    def dfs(residual: Array[Array[Int]], visited: mutable.Set[Int],
-            path: mutable.ArrayBuffer[Int], node: Int, sink: Int): Boolean = {
-      visited.add(node); path.append(node)
-      if (node == sink) return true
-      for (neighbour <- residual.indices) {
-        if (!visited.contains(neighbour) && residual(node)(neighbour) > 0) {
-          if (dfs(residual, visited, path, neighbour, sink)) return true
-        }
-      }
-      path.remove(path.length - 1)
-      false
-    }
-
-    def maxFlow(graph: Array[Array[(Int, Int)]], source: Int, sink: Int): Int = {
-      val n = graph.length
-      val residual = Array.ofDim[Int](n, n)
-      for (u <- 0 until n; (v, cap) <- graph(u)) residual(u)(v) = cap
-
-      var total = 0
-      var continue = true
-      while (continue) {
-        val visited = mutable.Set.empty[Int]
-        val path = mutable.ArrayBuffer.empty[Int]
-        if (!dfs(residual, visited, path, source, sink)) {
-          continue = false
-        } else {
-          var pathFlow = Int.MaxValue
-          for (i <- 0 until path.length - 1) pathFlow = math.min(pathFlow, residual(path(i))(path(i+1)))
-          for (i <- 0 until path.length - 1) {
-            residual(path(i))(path(i+1)) -= pathFlow
-            residual(path(i+1))(path(i)) += pathFlow
-          }
-          total += pathFlow
-        }
-      }
-      total
-    }
-  }
-
-  val g = Array(
-    Array((1, 10), (2, 10)), Array((2, 2), (3, 4), (4, 8)),
-    Array((4, 9)), Array((5, 10)), Array((3, 6), (5, 10)),
-    Array.empty[(Int, Int)])
-  println(new Solution().maxFlow(g, 0, 5))
 }
 ```
 

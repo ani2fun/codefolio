@@ -64,7 +64,7 @@ const RUNNABLE_LANGUAGES: LanguageInfo[] = [
   { id: 62, label: "☕ Java 13 (OpenJDK)", aliases: ["java"], runnable: true },
   // Scala — no emoji; the client renders the real Scala wave-mark next to the
   // label via BrandIcons.Scala (no native emoji evokes the brand cleanly).
-  { id: 81, label: "Scala 2.13", aliases: ["scala"], runnable: true },
+  { id: 81, label: "Scala 3", aliases: ["scala"], runnable: true },
   { id: 50, label: "🔧 C (GCC 9.2)", aliases: ["c"], runnable: true },
   {
     id: 54,
@@ -470,6 +470,10 @@ interface RunnableTabNode {
   languageLabel: string;
   source: string;
   runnable: boolean;
+  // `viz=<layout>` / `viz-root=<var>` from the fence info string — set only on a
+  // Python tab, opting it into the trace-driven "Visualise" button (ADR-0018).
+  viz?: string;
+  vizRoot?: string;
 }
 
 // True when a code fence should join a tab group. Runnable languages still
@@ -505,11 +509,16 @@ const remarkGroupRunnable: Plugin<[], Root> = () => (tree) => {
           const sibling = parent.children[j] as Code;
           if (!isRunnableCode(sibling)) break;
           const lang = resolveLanguage(sibling.lang ?? null)!;
+          const sLang = sibling.lang ?? "";
+          const sMeta = typeof sibling.meta === "string" ? sibling.meta : "";
+          const isPy = /^python/i.test(sLang);
           tabs.push({
-            language: sibling.lang ?? "",
+            language: sLang,
             languageLabel: lang.label,
             source: sibling.value,
             runnable: lang.runnable,
+            viz: isPy ? (parseMetaKv(sMeta, "viz") ?? undefined) : undefined,
+            vizRoot: isPy ? (parseMetaKv(sMeta, "viz-root") ?? undefined) : undefined,
           });
           j++;
         }
@@ -734,15 +743,23 @@ const codeHandler = (state: State, node: Code): Element | undefined => {
   if (runRequested && node.lang) {
     const lang = resolveLanguage(node.lang);
     if (lang && lang.runnable) {
+      // `viz=` / `viz-root=` opt a lone Python runnable fence into the Visualise
+      // button (ADR-0018). Grouped fences carry these per-tab via runnableTabs.
+      const isPy = /^python/i.test(node.lang);
+      const viz = isPy ? parseMetaKv(meta, "viz") : null;
+      const vizRoot = isPy ? parseMetaKv(meta, "viz-root") : null;
+      const properties: Record<string, string | string[]> = {
+        className: ["runnable-code"],
+        "data-lang": node.lang,
+        "data-language-label": lang.label,
+        "data-source": encodeURIComponent(node.value),
+      };
+      if (viz) properties["data-viz"] = viz;
+      if (vizRoot) properties["data-viz-root"] = vizRoot;
       return {
         type: "element",
         tagName: "div",
-        properties: {
-          className: ["runnable-code"],
-          "data-lang": node.lang,
-          "data-language-label": lang.label,
-          "data-source": encodeURIComponent(node.value),
-        },
+        properties,
         children: [],
       };
     }

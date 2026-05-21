@@ -115,15 +115,15 @@ Optimal substructure for partition problems: fix one piece (here, the last), rec
 
 The recurrence asks `"is s[j+1..i] a palindrome?"` inside its inner loop. Naively that's an `O(n)` check, blowing the total cost to `O(n³)`. We need an `O(1)` palindromicity lookup.
 
-The fix is a precomputed `isPalin[i][j]` table — exactly the boolean table from the previous lesson:
+The fix is a precomputed palindromicity table — the code calls it `dp[i][j]` — exactly the boolean table from the previous lesson:
 ```
-isPalin[i][j] = (s[i] == s[j]) AND (j - i ≤ 2 OR isPalin[i+1][j-1])
+dp[i][j] = (s[i] == s[j]) AND (j - i ≤ 2 OR dp[i+1][j-1])
 ```
 
 Two ways to combine the two tables:
 
-1. **Two passes** — first fill the entire `isPalin` table by length (length 1 → length `n`), then sweep `cuts`.
-2. **One pass** — extend `isPalin[start][end]` *as `end` grows*. For each new `end`, scan `start` from `0` to `end`, computing `isPalin[start][end]` and updating `cuts[end]` in the same loop body. Each `isPalin` lookup is `O(1)` because the smaller interval `isPalin[start+1][end-1]` was filled when `end-1` was the outer loop's value.
+1. **Two passes** — first fill the entire `dp` table by length (length 1 → length `n`), then sweep `cuts`.
+2. **One pass** — extend `dp[start][end]` *as `end` grows*. For each new `end`, scan `start` from `0` to `end`, computing `dp[start][end]` and updating `cuts[end]` in the same loop body. Each `dp` lookup is `O(1)` because the smaller interval `dp[start+1][end-1]` was filled when `end-1` was the outer loop's value.
 
 ```mermaid
 ---
@@ -140,18 +140,18 @@ config:
 flowchart LR
   E0["End = 0..n-1<br/>outer loop"]
   E0 --> S0["Start = 0..end<br/>inner loop"]
-  S0 --> ISP["Compute isPalin[start][end]<br/>using s[start]==s[end]<br/>and isPalin[start+1][end-1]"]
-  ISP --> CUTS["If palindromic:<br/>update cuts[end]<br/>= min(cuts[end], cuts[start-1] + 1)"]
+  S0 --> ISP["Compute dp[start][end]<br/>using s[start]==s[end]<br/>and dp[start+1][end-1]"]
+  ISP --> CUTS["If palindromic:<br/>start &gt; 0 → cuts[start-1] + 1,<br/>start == 0 → 0"]
   CUTS --> S0
 ```
 
-<p align="center"><strong>The one-pass shape. Each iteration of the outer loop seals one column of the <code>isPalin</code> table and finalises one cell of <code>cuts</code>. Same <code>O(n²)</code> time as the two-pass version, fewer table writes overall.</strong></p>
+<p align="center"><strong>The one-pass shape. Each iteration of the outer loop seals one column of the <code>dp</code> table and finalises one cell of <code>cuts</code>. Same <code>O(n²)</code> time as the two-pass version, fewer table writes overall.</strong></p>
 
 Both versions are `O(n²)` time and `O(n²)` space — only the loop nesting differs. The one-pass version is what the original CodeIntuition implementation uses, and it's what we'll code below.
 
-> *Predict before reading on — when the inner loop hits `start = 0` (cutting before the first character), the recurrence wants `cuts[start - 1] = cuts[-1]`. What should this represent?*
+> *Predict before reading on — when the inner loop hits `start = 0` (cutting before the first character), how should the recurrence treat the leftover prefix?*
 
-It's the "no cut at all" case — `s[0..end]` is itself a palindrome. We can either special-case `start == 0` to set `cuts[end] = 0` directly, or pad the array with a sentinel `cuts[-1] = -1` so that `cuts[-1] + 1 = 0`. Both work; the special-case version reads more clearly.
+It's the "no cut at all" case — `s[0..end]` is itself a palindrome. The implementation special-cases it: when `start == 0` and the piece is palindromic it sets the running minimum to `0` directly, instead of reaching for a `cuts[start - 1]` that wouldn't exist. The alternative — padding the array with a sentinel `cuts[-1] = -1` so that `cuts[-1] + 1 = 0` — also works; the special-case branch just reads more clearly.
 
 ---
 
@@ -180,7 +180,9 @@ Output: 0                  Already a palindrome — no cuts needed
 
 ---
 
-## Applying the Diagnostic Questions
+<details>
+<summary><h2>Applying the Diagnostic Questions</h2></summary>
+
 
 | # | Question | Answer |
 |---|---|---|
@@ -221,201 +223,165 @@ Output: 0                  Already a palindrome — no cuts needed
 
 **What breaks otherwise.** Reading any earlier index would answer the question for a *strict prefix* of `s`, not the full string.
 
----
-
-## The Solution
-
-The implementation interleaves the `isPalin` table with the `cuts` array — one outer loop on `end`, one inner loop on `start`.
+</details>
+<details>
+<summary><h2>The Solution</h2></summary>
 
 
-```pseudocode
-# cuts[i] = minimum cuts needed to partition s[0..i] into palindromes.
-# isPalin[start][end] is built on the fly as `end` advances.
-function minPalindromeCuts(s):
-    n ← length(s)
-    if n ≤ 1: return 0                              # empty / single char is already palindromic
-    isPalin ← n × n grid of false
-    cuts ← list of n zeros
+The implementation interleaves the boolean `dp` palindromicity table with the `cuts` array — one outer loop on `end`, one inner loop on `start`. The running minimum, `minimum_partitionings`, starts at `sys.maxsize` (`Integer.MAX_VALUE` in Java) and is only ever written inside the palindrome branch — every prefix has at least its single-character last piece, so that branch always fires at least once and the sentinel never survives.
 
-    for end from 0 to n − 1:
-        minCuts ← end                               # worst case: cut between every char
-        for start from 0 to end:
-            # s[start..end] is palindromic iff endpoints match AND interior is palindromic
-            # (interior with ≤ 1 char doesn't need a check).
-            if s[start] = s[end] AND (end − start ≤ 2 OR isPalin[start + 1][end − 1]):
-                isPalin[start][end] ← true
-                if start = 0:
-                    minCuts ← 0                     # whole prefix is one palindrome — no cuts
-                else:
-                    minCuts ← min(minCuts, cuts[start − 1] + 1)   # cut just before `start`
-        cuts[end] ← minCuts
-    return cuts[n − 1]
-```
 
 ```python run
 from typing import List
+import sys
 
 class Solution:
-    def min_palindrome_cuts(self, s: str) -> int:
-        n = len(s)
-        if n <= 1:
-            return 0                               # Empty or single char is already palindromic
-        # is_palin[i][j] is True iff s[i..j] is a palindrome.
-        is_palin: List[List[bool]] = [[False] * n for _ in range(n)]
-        # cuts[i] = minimum cuts needed for s[0..i].
+    def minimum_partitioning(self, s: str) -> int:
+        n: int = len(s)
+
+        # Create a 2D list to store the minimum cuts needed
+        dp: List[List[bool]] = [[False] * n for _ in range(n)]
+
+        # Create a list to store the minimum cuts from each index
         cuts: List[int] = [0] * n
+
+        # Calculate the minimum cuts for all substrings
         for end in range(n):
-            min_cuts = end                         # Worst case: cut between every char → end cuts
+            minimum_partitionings: int = sys.maxsize
             for start in range(end + 1):
-                # s[start..end] is a palindrome iff endpoints match AND
-                # interior is palindromic (or interior has ≤ 1 char, no need to check).
-                if s[start] == s[end] and (end - start <= 2 or is_palin[start + 1][end - 1]):
-                    is_palin[start][end] = True
-                    if start == 0:
-                        # The whole prefix s[0..end] is one palindromic piece — no cut.
-                        min_cuts = 0
+                if s[start] == s[end] and (
+                    end - start <= 2 or dp[start + 1][end - 1]
+                ):
+                    dp[start][end] = True
+
+                    # If the current substring is a palindrome, update
+                    # the minimum cuts
+                    if start > 0:
+                        minimum_partitionings = min(
+                            minimum_partitionings,
+                            cuts[start - 1] + 1,
+                        )
                     else:
-                        # Last piece is s[start..end]; preceding work cost cuts[start-1] + 1.
-                        min_cuts = min(min_cuts, cuts[start - 1] + 1)
-            cuts[end] = min_cuts
+
+                        # No cuts needed if the whole string is a
+                        # palindrome
+                        minimum_partitionings = 0
+            cuts[end] = minimum_partitionings
+
+        # Return the minimum cuts needed for palindrome partitioning
         return cuts[n - 1]
 
 
-if __name__ == "__main__":
-    print(Solution().min_palindrome_cuts("abbbc"))     # 2
-    print(Solution().min_palindrome_cuts("abcdef"))    # 5
-    print(Solution().min_palindrome_cuts("aaa"))       # 0
+# Examples from the problem statement
+print(Solution().minimum_partitioning("abbbc"))   # 2
+print(Solution().minimum_partitioning("abcdef"))  # 5
+print(Solution().minimum_partitioning("aaa"))     # 0
+
+# Edge cases
+print(Solution().minimum_partitioning("a"))       # 0
+print(Solution().minimum_partitioning("aa"))      # 0
+print(Solution().minimum_partitioning("ab"))      # 1
+print(Solution().minimum_partitioning("aba"))     # 0
+print(Solution().minimum_partitioning("abba"))    # 0
+print(Solution().minimum_partitioning("abcd"))    # 3
 ```
 
 ```java run
 public class Main {
     static class Solution {
-        public int minPalindromeCuts(String s) {
+        public int minimumPartitioning(String s) {
             int n = s.length();
-            if (n <= 1) return 0;
-            boolean[][] isPalin = new boolean[n][n];
+
+            // Create a 2D array to store the minimum cuts needed
+            boolean[][] dp = new boolean[n][n];
+
+            // Create an array to store the minimum cuts from each index
             int[] cuts = new int[n];
+
+            // Calculate the minimum cuts for all substrings
             for (int end = 0; end < n; end++) {
-                int minCuts = end;
+                int minimumPartitionings = Integer.MAX_VALUE;
                 for (int start = 0; start <= end; start++) {
-                    if (s.charAt(start) == s.charAt(end)
-                            && (end - start <= 2 || isPalin[start + 1][end - 1])) {
-                        isPalin[start][end] = true;
-                        if (start == 0) minCuts = 0;
-                        else minCuts = Math.min(minCuts, cuts[start - 1] + 1);
+                    if (
+                        s.charAt(start) == s.charAt(end) &&
+                        (end - start <= 2 || dp[start + 1][end - 1])
+                    ) {
+                        dp[start][end] = true;
+
+                        // If the current substring is a palindrome, update
+                        // the minimum cuts
+                        if (start > 0) {
+                            minimumPartitionings = Math.min(
+                                minimumPartitionings,
+                                cuts[start - 1] + 1
+                            );
+                        } else {
+
+                            // No cuts needed if the whole string is a
+                            // palindrome
+                            minimumPartitionings = 0;
+                        }
                     }
                 }
-                cuts[end] = minCuts;
+                cuts[end] = minimumPartitionings;
             }
+
+            // Return the minimum cuts needed for palindrome partitioning
             return cuts[n - 1];
         }
     }
 
     public static void main(String[] args) {
-        System.out.println(new Solution().minPalindromeCuts("abbbc"));    // 2
-        System.out.println(new Solution().minPalindromeCuts("abcdef"));   // 5
-        System.out.println(new Solution().minPalindromeCuts("aaa"));      // 0
+        // Examples from the problem statement
+        System.out.println(new Solution().minimumPartitioning("abbbc"));   // 2
+        System.out.println(new Solution().minimumPartitioning("abcdef"));  // 5
+        System.out.println(new Solution().minimumPartitioning("aaa"));     // 0
+
+        // Edge cases
+        System.out.println(new Solution().minimumPartitioning("a"));       // 0
+        System.out.println(new Solution().minimumPartitioning("aa"));      // 0
+        System.out.println(new Solution().minimumPartitioning("ab"));      // 1
+        System.out.println(new Solution().minimumPartitioning("aba"));     // 0
+        System.out.println(new Solution().minimumPartitioning("abba"));    // 0
+        System.out.println(new Solution().minimumPartitioning("abcd"));    // 3
     }
 }
 ```
 
-```c run
-#include <stdio.h>
-#include <string.h>
-#include <stdbool.h>
-
-bool is_palin[1001][1001];
-int cuts_arr[1001];
-
-int min_palindrome_cuts(const char *s) {
-    int n = (int) strlen(s);
-    if (n <= 1) return 0;
-    for (int i = 0; i < n; i++) for (int j = 0; j < n; j++) is_palin[i][j] = false;
-    for (int end = 0; end < n; end++) {
-        int min_cuts = end;
-        for (int start = 0; start <= end; start++) {
-            if (s[start] == s[end] && (end - start <= 2 || is_palin[start + 1][end - 1])) {
-                is_palin[start][end] = true;
-                if (start == 0) min_cuts = 0;
-                else if (cuts_arr[start - 1] + 1 < min_cuts) min_cuts = cuts_arr[start - 1] + 1;
-            }
-        }
-        cuts_arr[end] = min_cuts;
-    }
-    return cuts_arr[n - 1];
-}
-
-int main(void) {
-    printf("%d\n", min_palindrome_cuts("abbbc"));     // 2
-    printf("%d\n", min_palindrome_cuts("abcdef"));    // 5
-    printf("%d\n", min_palindrome_cuts("aaa"));       // 0
-    return 0;
-}
-```
-
-```scala run
-object Main extends App {
-  class Solution {
-    def minPalindromeCuts(s: String): Int = {
-      val n = s.length
-      if (n <= 1) return 0
-      val isPalin = Array.fill(n, n)(false)
-      val cuts = Array.fill(n)(0)
-      for (end <- 0 until n) {
-        var minCuts = end
-        for (start <- 0 to end) {
-          if (s(start) == s(end) && (end - start <= 2 || isPalin(start + 1)(end - 1))) {
-            isPalin(start)(end) = true
-            if (start == 0) minCuts = 0
-            else minCuts = math.min(minCuts, cuts(start - 1) + 1)
-          }
-        }
-        cuts(end) = minCuts
-      }
-      cuts(n - 1)
-    }
-  }
-
-  println(new Solution().minPalindromeCuts("abbbc"))    // 2
-  println(new Solution().minPalindromeCuts("abcdef"))   // 5
-  println(new Solution().minPalindromeCuts("aaa"))      // 0
-}
-```
-
-
+</details>
 <details>
 <summary><strong>Trace — s = "abbbc"</strong></summary>
 
 ```
-Initial: cuts = [_, _, _, _, _]   isPalin all false
+Initial: cuts = [_, _, _, _, _]   dp all false
 
 end = 0  (char 'a'):
-  start = 0: s[0]='a'==s[0]='a' (length 1) → isPalin[0][0]=true
-             start==0 → minCuts = 0
+  start = 0: s[0]='a'==s[0]='a' (length 1) → dp[0][0]=true
+             start==0 → minimum_partitionings = 0
   cuts[0] = 0
 
 end = 1  (char 'b'):
   start = 0: 'a' != 'b' → skip
-  start = 1: 'b' == 'b' (length 1) → isPalin[1][1]=true
-             cuts[0]+1 = 1 → minCuts = 1
+  start = 1: 'b' == 'b' (length 1) → dp[1][1]=true
+             cuts[0]+1 = 1 → minimum_partitionings = 1
   cuts[1] = 1
 
 end = 2  (char 'b'):
   start = 0: 'a' != 'b' → skip
-  start = 1: 'b' == 'b', length 2 → isPalin[1][2]=true
-             cuts[0]+1 = 1 → minCuts = 1
-  start = 2: 'b' == 'b' (length 1) → isPalin[2][2]=true
-             cuts[1]+1 = 2 → minCuts stays 1
+  start = 1: 'b' == 'b', length 2 → dp[1][2]=true
+             cuts[0]+1 = 1 → minimum_partitionings = 1
+  start = 2: 'b' == 'b' (length 1) → dp[2][2]=true
+             cuts[1]+1 = 2 → minimum_partitionings stays 1
   cuts[2] = 1
 
 end = 3  (char 'b'):
   start = 0: 'a' != 'b' → skip
-  start = 1: 'b' == 'b', interior isPalin[2][2]=true → isPalin[1][3]=true
-             cuts[0]+1 = 1 → minCuts = 1
-  start = 2: 'b' == 'b', length 2 → isPalin[2][3]=true
-             cuts[1]+1 = 2 → minCuts stays 1
-  start = 3: 'b' == 'b' (length 1) → isPalin[3][3]=true
-             cuts[2]+1 = 2 → minCuts stays 1
+  start = 1: 'b' == 'b', interior dp[2][2]=true → dp[1][3]=true
+             cuts[0]+1 = 1 → minimum_partitionings = 1
+  start = 2: 'b' == 'b', length 2 → dp[2][3]=true
+             cuts[1]+1 = 2 → minimum_partitionings stays 1
+  start = 3: 'b' == 'b' (length 1) → dp[3][3]=true
+             cuts[2]+1 = 2 → minimum_partitionings stays 1
   cuts[3] = 1
 
 end = 4  (char 'c'):
@@ -423,8 +389,8 @@ end = 4  (char 'c'):
   start = 1: 'b' != 'c' → skip
   start = 2: 'b' != 'c' → skip
   start = 3: 'b' != 'c' → skip
-  start = 4: 'c' == 'c' (length 1) → isPalin[4][4]=true
-             cuts[3]+1 = 2 → minCuts = 2
+  start = 4: 'c' == 'c' (length 1) → dp[4][4]=true
+             cuts[3]+1 = 2 → minimum_partitionings = 2
   cuts[4] = 2
 
 Final cuts = [0, 1, 1, 1, 2]
@@ -432,41 +398,41 @@ Answer: cuts[4] = 2  ✓  (partition: a | bbb | c)
 ```
 
 </details>
+<details>
+<summary><h2>Solution &amp; Analysis</h2></summary>
 
----
-
-## Complexity Analysis
+### Complexity Analysis
 
 | Aspect | Cost | Why |
 |---|---|---|
-| Time | `O(n²)` | Outer loop is `n`; inner loop is up to `n`; each iteration is `O(1)` thanks to the `isPalin` table. |
-| Space | `O(n²)` | The `isPalin` boolean table dominates; the `cuts` array is `O(n)`. |
+| Time | `O(n²)` | Outer loop is `n`; inner loop is up to `n`; each iteration is `O(1)` thanks to the `dp` table. |
+| Space | `O(n²)` | The `dp` boolean table dominates; the `cuts` array is `O(n)`. |
 
-There's a slicker `O(n)`-space variant that exploits the "expand around centre" trick from the previous lesson — for each centre, expand outward, and at each successful expansion update `cuts[end]` directly. Same `O(n²)` time, drops the `isPalin` table. Beyond this lesson, but worth mentioning.
+There's a slicker `O(n)`-space variant that exploits the "expand around centre" trick from the previous lesson — for each centre, expand outward, and at each successful expansion update `cuts[end]` directly. Same `O(n²)` time, drops the `dp` table. Beyond this lesson, but worth mentioning.
 
----
-
-## Edge Cases
+### Edge Cases
 
 | Case | Example | Expected | Reasoning |
 |---|---|---|---|
-| Empty string | `""` | `0` | Guard returns 0; nothing to partition. |
-| Single char | `"a"` | `0` | A single character is trivially palindromic. |
-| Already a palindrome | `"racecar"` | `0` | `start = 0` branch fires for `end = n-1`. |
-| All distinct chars | `"abcdef"` | `n - 1` | Every cut needed; answer hits the worst-case initial value `end`. |
+| Empty string | `""` | `IndexError` | The code has no empty-input guard — `cuts = []` and `cuts[n - 1]` (i.e. `cuts[-1]`) throws. Defensive callers should short-circuit `if n == 0: return 0`. |
+| Single char | `"a"` | `0` | `end = 0`, `start = 0`: the single char is palindromic, `start == 0` sets `minimum_partitionings = 0`. |
+| Already a palindrome | `"racecar"` | `0` | At `end = n-1` the `start = 0` branch fires; whole string is one piece. |
+| All distinct chars | `"abcdef"` | `n - 1` | Every piece is a single character; each `cuts[end]` extends `cuts[end-1]` by one. |
 | All same chars | `"aaaa"` | `0` | Whole string palindromic; same as "already a palindrome". |
 | Two chars matching | `"aa"` | `0` | Length-2 palindrome. |
 | Two chars different | `"ab"` | `1` | One cut; both pieces single-char palindromes. |
 | Embedded long palindrome | `"abbbc"` | `2` | Cuts surround the central palindrome `bbb`. |
 
----
+</details>
+<details>
+<summary><h2>Final Takeaway</h2></summary>
 
-## Final Takeaway
 
-Palindrome partitioning is the canonical "split into satisfying pieces" DP. State is 1D — minimum cuts for a prefix — because the left endpoint stays pinned at index 0 while only the right endpoint shrinks. The recurrence fixes the *last* piece (palindromic, by predicate lookup) and recurses on the leftover prefix. The `isPalin` table from the previous lesson plugs in directly, giving `O(1)` predicate checks and `O(n²)` total time. **You didn't just solve palindrome partitioning. You learned the shape of every "minimum / maximum / count of partitions where each piece satisfies P" problem — fix the last piece, recurse on the prefix, and combine the predicate's DP with the optimisation's DP.**
+Palindrome partitioning is the canonical "split into satisfying pieces" DP. State is 1D — minimum cuts for a prefix — because the left endpoint stays pinned at index 0 while only the right endpoint shrinks. The recurrence fixes the *last* piece (palindromic, by predicate lookup) and recurses on the leftover prefix. The boolean palindromicity table from the previous lesson plugs in directly, giving `O(1)` predicate checks and `O(n²)` total time. **You didn't just solve palindrome partitioning. You learned the shape of every "minimum / maximum / count of partitions where each piece satisfies P" problem — fix the last piece, recurse on the prefix, and combine the predicate's DP with the optimisation's DP.**
 
 > *Transfer challenge for the next lesson:* Replace "is this piece a palindrome?" with "is this piece a word in a dictionary?" — and switch the goal from "minimum cuts" to "is *any* valid partition possible?". Predict how the recurrence changes shape.
 
+</details>
 <details>
 <summary><strong>Answer</strong></summary>
 

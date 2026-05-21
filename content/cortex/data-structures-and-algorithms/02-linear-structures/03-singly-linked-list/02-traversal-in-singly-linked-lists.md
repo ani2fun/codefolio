@@ -83,18 +83,6 @@ idx -> arr.a0: "arr[i] — O(1) direct read" {style.stroke-width: 2; style.bold:
 
 <p align="center"><strong>Step through the array traversal — six frames mirror the source: enter, four O(1) reads, exit. The index <code>i</code> walks the cells; the highlighted band shows what <code>arr[i]</code> resolves to at each step.</strong></p>
 
-```pseudocode
-arr ← [5, 7, 3, 10]
-
-for i from 0 to length(arr) − 1:                       # for-loop traversal
-    print arr[i]
-
-i ← 0
-while i < length(arr):                                 # while-loop traversal (equivalent)
-    print arr[i]
-    i ← i + 1
-```
-
 ```python run
 arr = [5, 7, 3, 10]
 
@@ -129,46 +117,6 @@ public class Main {
             i++;
         }
     }
-}
-```
-
-```c run
-#include <stdio.h>
-
-int main() {
-    int arr[] = {5, 7, 3, 10};
-    int n = sizeof(arr) / sizeof(arr[0]);
-
-    /* For loop — index-based traversal */
-    for (int i = 0; i < n; i++) {
-        printf("%d ", arr[i]);  /* Direct access via index */
-    }
-    printf("\n");
-
-    /* While loop — equivalent form */
-    int i = 0;
-    while (i < n) {
-        printf("%d ", arr[i]);
-        i++;
-    }
-    return 0;
-}
-```
-
-```scala run
-object Main extends App {
-  val arr = Array(5, 7, 3, 10)
-
-  // For loop — index-based traversal
-  for (i <- arr.indices) print(s"${arr(i)} ")
-  println()
-
-  // While loop — equivalent form
-  var i = 0
-  while (i < arr.length) {
-    print(s"${arr(i)} ")
-    i += 1
-  }
 }
 ```
 
@@ -227,14 +175,6 @@ Since linked lists are dynamic, we don't know their length in advance, and there
 Given below is the code implementation of singly linked list traversal.
 
 
-```pseudocode
-function traverse(head):
-    current ← head                                     # start at the head node
-    while current is not null:                         # stop when current falls off the end
-        print current.val
-        current ← current.next                         # advance one link
-```
-
 ```python run
 class ListNode:
     def __init__(self, val=0, next=None):
@@ -275,51 +215,6 @@ public class Main {
 }
 ```
 
-```c run
-#include <stdio.h>
-#include <stdlib.h>
-
-typedef struct ListNode { int val; struct ListNode *next; } ListNode;
-ListNode* newNode(int v) { ListNode*n=malloc(sizeof*n); n->val=v; n->next=NULL; return n; }
-
-void traverse(ListNode *head) {
-    ListNode *current = head;          /* Start at head */
-    while (current != NULL) {          /* Stop when null is reached */
-        printf("%d ", current->val);
-        current = current->next;       /* Advance to next node */
-    }
-}
-
-int main() {
-    ListNode *n1=newNode(5), *n2=newNode(7), *n3=newNode(3), *n4=newNode(10);
-    n1->next=n2; n2->next=n3; n3->next=n4;
-    traverse(n1);  /* 5 7 3 10 */
-    return 0;
-}
-```
-
-```scala run
-class ListNode(var v: Int, var next: ListNode = null)
-
-object Main extends App {
-  class Solution {
-    def traverse(head: ListNode): Unit = {
-      var current = head
-      while (current != null) {       // Stop when null is reached
-        print(s"${current.v} ")
-        current = current.next        // Advance to next node
-      }
-    }
-  }
-
-  val n4 = new ListNode(10)
-  val n3 = new ListNode(3,  n4)
-  val n2 = new ListNode(7,  n3)
-  val n1 = new ListNode(5,  n2)
-  new Solution().traverse(n1)  // 5 7 3 10
-}
-```
-
 
 Later in the course, we will learn more about how to piggyback on this generic traversal logic to do various things as we traverse the singly linked list.
 
@@ -336,38 +231,37 @@ Given the **head** of a singly linked list, write a function to print a comma (`
 > -   **Input:** head = \[5, 7, 3, 10\]
 > -   **Output:** 5, 7, 3, 10
 
-## Solution
+<details>
+<summary><h2>Solution</h2></summary>
 
 
-```pseudocode
-function nodeExpedition(head):
-    # Start from the head of the linked list
-    current ← head
-
-    # Iterate until the current node is not null
-    while current is not null:
-
-        # Print the value of the current node
-        print current.val
-
-        # If there is a next node, print a comma after the value
-        if current.next is not null:
-            print ", "
-
-        # Move to the next node
-        current ← current.next
-```
 
 ```python run
+from typing import Optional
+
+
 class ListNode:
-    def __init__(self, val=0, next=None):
-        self.val = val; self.next = next
+    def __init__(self, val=0, nxt=None):
+        self.val = val
+        self.next = nxt
+
+
+def from_list(values):
+    if not values:
+        return None
+    head = ListNode(values[0])
+    cur = head
+    for v in values[1:]:
+        cur.next = ListNode(v)
+        cur = cur.next
+    return head
+
 
 class Solution:
-    def node_expedition(self, head: ListNode) -> None:
+    def node_expedition(self, head: Optional[ListNode]) -> None:
 
         # Start from the head of the linked list
-        current = head
+        current: Optional[ListNode] = head
 
         # Iterate until the current node is not null
         while current is not None:
@@ -382,14 +276,38 @@ class Solution:
             # Move to the next node
             current = current.next
 
-# Build list 5 → 7 → 3 → 10
-n4=ListNode(10); n3=ListNode(3,n4); n2=ListNode(7,n3); n1=ListNode(5,n2)
-Solution().node_expedition(n1); print()  # 5, 7, 3, 10
+
+# Examples from the problem statement
+Solution().node_expedition(from_list([5, 7, 3, 10])); print()  # 5, 7, 3, 10
+
+# Edge cases
+Solution().node_expedition(from_list([])); print()             # (empty)
+Solution().node_expedition(from_list([42])); print()           # 42
+Solution().node_expedition(from_list([1, 2])); print()         # 1, 2
+Solution().node_expedition(from_list([1, 1, 1])); print()      # 1, 1, 1
+Solution().node_expedition(from_list([10, 20, 30, 40, 50])); print()  # 10, 20, 30, 40, 50
 ```
 
 ```java run
 public class Main {
-    static class ListNode { int val; ListNode next; ListNode(int v){val=v;} }
+    static class ListNode {
+        int val;
+        ListNode next;
+        ListNode() {}
+        ListNode(int val) { this.val = val; }
+        ListNode(int val, ListNode next) { this.val = val; this.next = next; }
+    }
+
+    static ListNode fromList(int... values) {
+        if (values.length == 0) return null;
+        ListNode head = new ListNode(values[0]);
+        ListNode cur = head;
+        for (int i = 1; i < values.length; i++) {
+            cur.next = new ListNode(values[i]);
+            cur = cur.next;
+        }
+        return head;
+    }
 
     static class Solution {
         public void nodeExpedition(ListNode head) {
@@ -415,80 +333,16 @@ public class Main {
     }
 
     public static void main(String[] args) {
-        ListNode n1=new ListNode(5), n2=new ListNode(7),
-                 n3=new ListNode(3), n4=new ListNode(10);
-        n1.next=n2; n2.next=n3; n3.next=n4;
-        new Solution().nodeExpedition(n1); System.out.println();  // 5, 7, 3, 10
+        // Examples from the problem statement
+        new Solution().nodeExpedition(fromList(5, 7, 3, 10)); System.out.println();  // 5, 7, 3, 10
+
+        // Edge cases
+        new Solution().nodeExpedition(fromList()); System.out.println();             // (empty)
+        new Solution().nodeExpedition(fromList(42)); System.out.println();           // 42
+        new Solution().nodeExpedition(fromList(1, 2)); System.out.println();         // 1, 2
+        new Solution().nodeExpedition(fromList(1, 1, 1)); System.out.println();      // 1, 1, 1
+        new Solution().nodeExpedition(fromList(10, 20, 30, 40, 50)); System.out.println(); // 10, 20, 30, 40, 50
     }
-}
-```
-
-```c run
-#include <stdio.h>
-#include <stdlib.h>
-
-typedef struct ListNode { int val; struct ListNode *next; } ListNode;
-ListNode* newNode(int v){ ListNode*n=malloc(sizeof*n); n->val=v; n->next=NULL; return n; }
-
-void nodeExpedition(ListNode *head) {
-
-    /* Start from the head of the linked list */
-    ListNode *current = head;
-
-    /* Iterate until the current node is not null */
-    while (current != NULL) {
-
-        /* Print the value of the current node */
-        printf("%d", current->val);
-
-        /* If there is a next node, print a comma after the value */
-        if (current->next != NULL) {
-            printf(", ");
-        }
-
-        /* Move to the next node */
-        current = current->next;
-    }
-}
-
-int main() {
-    ListNode *n1=newNode(5),*n2=newNode(7),*n3=newNode(3),*n4=newNode(10);
-    n1->next=n2; n2->next=n3; n3->next=n4;
-    nodeExpedition(n1); printf("\n");  /* 5, 7, 3, 10 */
-    return 0;
-}
-```
-
-```scala run
-class ListNode(var v: Int, var next: ListNode = null)
-
-object Main extends App {
-  class Solution {
-    def nodeExpedition(head: ListNode): Unit = {
-
-      // Start from the head of the linked list
-      var current = head
-
-      // Iterate until the current node is not null
-      while (current != null) {
-
-        // Print the value of the current node
-        print(current.v)
-
-        // If there is a next node, print a comma after the value
-        if (current.next != null) {
-          print(", ")
-        }
-
-        // Move to the next node
-        current = current.next
-      }
-    }
-  }
-
-  val n4=new ListNode(10); val n3=new ListNode(3,n4)
-  val n2=new ListNode(7,n3); val n1=new ListNode(5,n2)
-  new Solution().nodeExpedition(n1); println()  // 5, 7, 3, 10
 }
 ```
 
@@ -501,6 +355,8 @@ object Main extends App {
 | **Space** | O(1) | One pointer variable; output stream is not counted |
 
 The **only** subtlety is the comma placement — emit a comma *before* every value except the first, or *after* every value except the last. The `current.next != null` check is the "am I the last?" test you already know from the previous lesson's boundary-node problem. Look how quickly the primitives compound.
+
+</details>
 
 ***
 
@@ -520,29 +376,39 @@ Given the **head** of a singly linked list and a **data** value, write a functio
 > -   **Input:** head = \[5, 7, 6, 10\], data = 3
 > -   **Output:** null
 
-## Solution
+<details>
+<summary><h2>Solution</h2></summary>
 
 
-```pseudocode
-function nodeSearch(head, data):
-    current ← head
-    while current is not null:
-        if current.val = data:
-            return current                             # found — return the node
-        current ← current.next
-    return null                                         # not in list
-```
 
 ```python run
+from typing import Optional
+
+
 class ListNode:
-    def __init__(self, val=0, next=None):
-        self.val = val; self.next = next
+    def __init__(self, val=0, nxt=None):
+        self.val = val
+        self.next = nxt
+
+
+def from_list(values):
+    if not values:
+        return None
+    head = ListNode(values[0])
+    cur = head
+    for v in values[1:]:
+        cur.next = ListNode(v)
+        cur = cur.next
+    return head
+
 
 class Solution:
-    def node_search(self, head: ListNode, data: int) -> ListNode | None:
+    def node_search(
+        self, head: Optional[ListNode], data: int
+    ) -> Optional[ListNode]:
 
         # Start from the head of the linked list
-        current = head
+        current: Optional[ListNode] = head
 
         while current is not None:
 
@@ -556,16 +422,51 @@ class Solution:
         # Value not found in the linked list
         return None
 
-# Build list 5 → 7 → 3 → 10
-n4=ListNode(10); n3=ListNode(3,n4); n2=ListNode(7,n3); n1=ListNode(5,n2)
-result = Solution().node_search(n1, 3)
-print(result.val if result else "null")  # 3
-print(Solution().node_search(n1, 99))    # None
+
+# Examples from the problem statement
+result = Solution().node_search(from_list([5, 7, 3, 10]), 3)
+print(result.val if result else None)                        # 3
+
+result = Solution().node_search(from_list([5, 7, 6, 10]), 3)
+print(result.val if result else None)                        # None
+
+# Edge cases
+result = Solution().node_search(None, 5)
+print(result.val if result else None)                        # None
+
+result = Solution().node_search(from_list([7]), 7)
+print(result.val if result else None)                        # 7
+
+result = Solution().node_search(from_list([7]), 1)
+print(result.val if result else None)                        # None
+
+result = Solution().node_search(from_list([1, 2, 3, 4]), 1)
+print(result.val if result else None)                        # 1 (head match)
+
+result = Solution().node_search(from_list([1, 2, 3, 4]), 4)
+print(result.val if result else None)                        # 4 (tail match)
 ```
 
 ```java run
 public class Main {
-    static class ListNode { int val; ListNode next; ListNode(int v){val=v;} }
+    static class ListNode {
+        int val;
+        ListNode next;
+        ListNode() {}
+        ListNode(int val) { this.val = val; }
+        ListNode(int val, ListNode next) { this.val = val; this.next = next; }
+    }
+
+    static ListNode fromList(int... values) {
+        if (values.length == 0) return null;
+        ListNode head = new ListNode(values[0]);
+        ListNode cur = head;
+        for (int i = 1; i < values.length; i++) {
+            cur.next = new ListNode(values[i]);
+            cur = cur.next;
+        }
+        return head;
+    }
 
     static class Solution {
         public ListNode nodeSearch(ListNode head, int data) {
@@ -590,85 +491,29 @@ public class Main {
     }
 
     public static void main(String[] args) {
-        ListNode n1=new ListNode(5),n2=new ListNode(7),
-                 n3=new ListNode(3),n4=new ListNode(10);
-        n1.next=n2; n2.next=n3; n3.next=n4;
-        Solution sol = new Solution();
-        ListNode r = sol.nodeSearch(n1, 3);
-        System.out.println(r != null ? r.val : "null");  // 3
-        System.out.println(sol.nodeSearch(n1, 99));      // null
+        // Examples from the problem statement
+        ListNode r1 = new Solution().nodeSearch(fromList(5, 7, 3, 10), 3);
+        System.out.println(r1 != null ? r1.val : null);      // 3
+
+        ListNode r2 = new Solution().nodeSearch(fromList(5, 7, 6, 10), 3);
+        System.out.println(r2 != null ? r2.val : null);      // null
+
+        // Edge cases
+        ListNode r3 = new Solution().nodeSearch(null, 5);
+        System.out.println(r3 != null ? r3.val : null);      // null
+
+        ListNode r4 = new Solution().nodeSearch(fromList(7), 7);
+        System.out.println(r4 != null ? r4.val : null);      // 7
+
+        ListNode r5 = new Solution().nodeSearch(fromList(7), 1);
+        System.out.println(r5 != null ? r5.val : null);      // null
+
+        ListNode r6 = new Solution().nodeSearch(fromList(1, 2, 3, 4), 1);
+        System.out.println(r6 != null ? r6.val : null);      // 1 (head match)
+
+        ListNode r7 = new Solution().nodeSearch(fromList(1, 2, 3, 4), 4);
+        System.out.println(r7 != null ? r7.val : null);      // 4 (tail match)
     }
-}
-```
-
-```c run
-#include <stdio.h>
-#include <stdlib.h>
-
-typedef struct ListNode { int val; struct ListNode *next; } ListNode;
-ListNode* newNode(int v){ ListNode*n=malloc(sizeof*n); n->val=v; n->next=NULL; return n; }
-
-ListNode* nodeSearch(ListNode *head, int data) {
-
-    /* Start from the head of the linked list */
-    ListNode *current = head;
-
-    while (current != NULL) {
-
-        /* Found the value, return the current node */
-        if (current->val == data) {
-            return current;
-        }
-
-        /* Move to the next node */
-        current = current->next;
-    }
-
-    /* Value not found in the linked list */
-    return NULL;
-}
-
-int main() {
-    ListNode *n1=newNode(5),*n2=newNode(7),*n3=newNode(3),*n4=newNode(10);
-    n1->next=n2; n2->next=n3; n3->next=n4;
-    ListNode *r = nodeSearch(n1, 3);
-    printf("%s\n", r ? "3" : "null");  /* 3 */
-    printf("%s\n", nodeSearch(n1, 99) ? "found" : "null");  /* null */
-    return 0;
-}
-```
-
-```scala run
-class ListNode(var v: Int, var next: ListNode = null)
-
-object Main extends App {
-  class Solution {
-    def nodeSearch(head: ListNode, data: Int): ListNode = {
-
-      // Start from the head of the linked list
-      var current = head
-
-      while (current != null) {
-
-        // Found the value, return the current node
-        if (current.v == data) {
-          return current
-        }
-
-        // Move to the next node
-        current = current.next
-      }
-
-      // Value not found in the linked list
-      null
-    }
-  }
-
-  val n4=new ListNode(10); val n3=new ListNode(3,n4)
-  val n2=new ListNode(7,n3); val n1=new ListNode(5,n2)
-  val sol = new Solution
-  val r = sol.nodeSearch(n1, 3)
-  println(if (r != null) r.v else "null")  // 3
 }
 ```
 
@@ -683,6 +528,8 @@ object Main extends App {
 Notice the **early return**: the instant we find a match, we exit — we don't keep walking "just to be sure". This is linear search on a linked list, identical in shape to linear search on an array. The only difference is how we advance the cursor (`cur = cur.next` vs `i++`).
 
 > *Before the next section — predict: if we need the list's length, does counting require any extra data? Or can we piggyback on the traversal we already wrote?*
+
+</details>
 
 ***
 
@@ -702,42 +549,40 @@ Given the **head** of a singly linked list, write a function that returns the le
 > -   **Input:** head = \[\]
 > -   **Output:** 0
 
-## Solution
+<details>
+<summary><h2>Solution</h2></summary>
 
 
-```pseudocode
-function lengthOfTheList(head):
-    # Initialize count to 0
-    count ← 0
-
-    # Set current to hold the head of the list
-    current ← head
-
-    while current is not null:
-
-        # Increment count by 1
-        count ← count + 1
-
-        # Set current to hold the next node in the list
-        current ← current.next
-
-    # Return count as the length of the linked list
-    return count
-```
 
 ```python run
+from typing import Optional
+
+
 class ListNode:
-    def __init__(self, val=0, next=None):
-        self.val = val; self.next = next
+    def __init__(self, val=0, nxt=None):
+        self.val = val
+        self.next = nxt
+
+
+def from_list(values):
+    if not values:
+        return None
+    head = ListNode(values[0])
+    cur = head
+    for v in values[1:]:
+        cur.next = ListNode(v)
+        cur = cur.next
+    return head
+
 
 class Solution:
-    def length_of_the_list(self, head: ListNode) -> int:
+    def length_of_the_list(self, head: Optional[ListNode]) -> int:
 
         # Initialize count to 0
-        count = 0
+        count: int = 0
 
         # Set current to hold the head of the list
-        current = head
+        current: Optional[ListNode] = head
 
         while current is not None:
 
@@ -750,15 +595,37 @@ class Solution:
         # Return count as the length of the linked list
         return count
 
-# Build list 5 → 7 → 3 → 10
-n4=ListNode(10); n3=ListNode(3,n4); n2=ListNode(7,n3); n1=ListNode(5,n2)
-print(Solution().length_of_the_list(n1))   # 4
-print(Solution().length_of_the_list(None)) # 0
+
+# Examples from the problem statement
+print(Solution().length_of_the_list(from_list([5, 7, 3, 10])))  # 4
+print(Solution().length_of_the_list(from_list([])))              # 0
+
+# Edge cases
+print(Solution().length_of_the_list(from_list([42])))            # 1
+print(Solution().length_of_the_list(from_list([1, 2])))          # 2
+print(Solution().length_of_the_list(from_list([1, 1, 1, 1, 1]))) # 5
 ```
 
 ```java run
 public class Main {
-    static class ListNode { int val; ListNode next; ListNode(int v){val=v;} }
+    static class ListNode {
+        int val;
+        ListNode next;
+        ListNode() {}
+        ListNode(int val) { this.val = val; }
+        ListNode(int val, ListNode next) { this.val = val; this.next = next; }
+    }
+
+    static ListNode fromList(int... values) {
+        if (values.length == 0) return null;
+        ListNode head = new ListNode(values[0]);
+        ListNode cur = head;
+        for (int i = 1; i < values.length; i++) {
+            cur.next = new ListNode(values[i]);
+            cur = cur.next;
+        }
+        return head;
+    }
 
     static class Solution {
         public int lengthOfTheList(ListNode head) {
@@ -784,85 +651,15 @@ public class Main {
     }
 
     public static void main(String[] args) {
-        ListNode n1=new ListNode(5),n2=new ListNode(7),
-                 n3=new ListNode(3),n4=new ListNode(10);
-        n1.next=n2; n2.next=n3; n3.next=n4;
-        Solution sol = new Solution();
-        System.out.println(sol.lengthOfTheList(n1));    // 4
-        System.out.println(sol.lengthOfTheList(null));  // 0
+        // Examples from the problem statement
+        System.out.println(new Solution().lengthOfTheList(fromList(5, 7, 3, 10)));  // 4
+        System.out.println(new Solution().lengthOfTheList(fromList()));              // 0
+
+        // Edge cases
+        System.out.println(new Solution().lengthOfTheList(fromList(42)));            // 1
+        System.out.println(new Solution().lengthOfTheList(fromList(1, 2)));          // 2
+        System.out.println(new Solution().lengthOfTheList(fromList(1, 1, 1, 1, 1))); // 5
     }
-}
-```
-
-```c run
-#include <stdio.h>
-#include <stdlib.h>
-
-typedef struct ListNode { int val; struct ListNode *next; } ListNode;
-ListNode* newNode(int v){ ListNode*n=malloc(sizeof*n); n->val=v; n->next=NULL; return n; }
-
-int lengthOfTheList(ListNode *head) {
-
-    /* Initialize count to 0 */
-    int count = 0;
-
-    /* Set current to hold the head of the list */
-    ListNode *current = head;
-
-    while (current != NULL) {
-
-        /* Increment count by 1 */
-        count++;
-
-        /* Set current to hold the next node in the list */
-        current = current->next;
-    }
-
-    /* Return count as the length of the linked list */
-    return count;
-}
-
-int main() {
-    ListNode *n1=newNode(5),*n2=newNode(7),*n3=newNode(3),*n4=newNode(10);
-    n1->next=n2; n2->next=n3; n3->next=n4;
-    printf("%d\n", lengthOfTheList(n1));    /* 4 */
-    printf("%d\n", lengthOfTheList(NULL));  /* 0 */
-    return 0;
-}
-```
-
-```scala run
-class ListNode(var v: Int, var next: ListNode = null)
-
-object Main extends App {
-  class Solution {
-    def lengthOfTheList(head: ListNode): Int = {
-
-      // Initialize count to 0
-      var count = 0
-
-      // Set current to hold the head of the list
-      var current = head
-
-      while (current != null) {
-
-        // Increment count by 1
-        count += 1
-
-        // Set current to hold the next node in the list
-        current = current.next
-      }
-
-      // Return count as the length of the linked list
-      count
-    }
-  }
-
-  val n4=new ListNode(10); val n3=new ListNode(3,n4)
-  val n2=new ListNode(7,n3); val n1=new ListNode(5,n2)
-  val sol = new Solution
-  println(sol.lengthOfTheList(n1))    // 4
-  println(sol.lengthOfTheList(null))  // 0
 }
 ```
 
@@ -876,9 +673,10 @@ object Main extends App {
 
 This is the painful part of linked lists: **there is no `.length` you can read in O(1)**. Every length query walks the entire list. That's why production linked-list implementations often cache a `size` field on the list object itself and update it on every insert/delete — trading a tiny bit of bookkeeping for O(1) size queries.
 
----
+</details>
+<details>
+<summary><h2>Final Takeaway</h2></summary>
 
-## Final Takeaway
 
 Three problems, three variants of the same five-line loop:
 
@@ -898,3 +696,5 @@ Everything else in this course — every pattern, every interview problem — is
 > Both need a full walk — calling them separately costs 2n hops. A combined walk costs n hops. Pass both accumulators as local variables; return a tuple `(length, sum)`. Same pattern extends to "return min, max, length, sum" in one pass.
 >
 > </details>
+
+</details>

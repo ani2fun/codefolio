@@ -1,6 +1,6 @@
 # Data Structures and Algorithms
 
-A curriculum for engineers who want to *understand* how computers store and manipulate information — not just memorise enough to pass an interview. The book starts with the foundations every later chapter assumes (asymptotic analysis, recurrence relations, the memory model), walks through every classical structure and algorithm with worked examples in five languages, and ends with a synthesis module showing where each idea lives inside Postgres, Linux, Redis, Git, and other production systems.
+A curriculum for engineers who want to *understand* how computers store and manipulate information — not just memorise enough to pass an interview. The book starts with the foundations every later chapter assumes (asymptotic analysis, recurrence relations, the memory model), walks through every classical structure and algorithm with worked examples in Python and Java, and ends with a synthesis module showing where each idea lives inside Postgres, Linux, Redis, Git, and other production systems.
 
 The goal is not breadth-as-a-checklist. The goal is for you to be able to **reach for the right structure under pressure**, **derive its complexity from first principles**, and **debug the production version when it goes wrong** — the three things that separate engineers who *use* DSA from engineers who *understand* it.
 
@@ -30,6 +30,8 @@ The curriculum is organised as **Modules → Topics → Tutorials**. Each module
 9. [**Probabilistic and Advanced**](/cortex/data-structures-and-algorithms/probabilistic-and-advanced-index) — skip lists, Bloom filters, Count-Min sketch, HyperLogLog, treaps, persistent structures.
 10. [**Concurrency and Systems**](/cortex/data-structures-and-algorithms/concurrency-and-systems-index) — CAS, lock-free queues, concurrent hash maps, hazard pointers.
 11. [**DSA in Real Systems**](/cortex/data-structures-and-algorithms/dsa-in-real-systems-index) — Postgres B-trees, Linux RB-trees, Redis encodings, Git's DAG, LSM trees, routing tables.
+
+**Appendix:** [**Widget Catalog**](/cortex/data-structures-and-algorithms/appendix-widget-catalog-index) — the authoring reference for the D3.js interactive widgets used throughout this book: one chapter per widget with representative payloads and payload-schema cards.
 
 **Revision:** [**Quick Reference**](/cortex/data-structures-and-algorithms/quick-reference) — a dense, collapsible cheat-sheet of every pattern's intuition, triggers, complexity, and Python skeleton. Built for fast recall, not first reads.
 

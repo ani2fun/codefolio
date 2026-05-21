@@ -225,170 +225,178 @@ Final matrix:
 
 # Implementation
 
-The graph is given as an adjacency list of `(neighbour, weight)` pairs. We initialise the distance matrix from the adjacency list, then run the triple loop.
+The graph is given as an adjacency list of `(neighbour, weight)` pairs. We build the distance matrix from the adjacency list — using `-1` as the "not reachable" sentinel, `0` on the diagonal, and the edge weight for direct edges — then run the triple loop.
 
-
-```pseudocode
-function floydWarshall(graph):
-    dist ← N×N matrix of ∞
-    for i from 0 to N−1:
-        dist[i][i] ← 0           # distance to self is zero
-    for u from 0 to N−1:
-        for (v, w) in graph[u]:
-            dist[u][v] ← w        # direct edges
-    # triple loop — k MUST be outermost
-    for k from 0 to N−1:
-        for s from 0 to N−1:
-            for t from 0 to N−1:
-                if dist[s][k] + dist[k][t] < dist[s][t]:
-                    dist[s][t] ← dist[s][k] + dist[k][t]
-    return dist
-```
 
 ```python run
 from typing import List, Tuple
 
-INF = float('inf')
+class Solution:
+    def floyd_warshall_algorithm(
+        self, graph: List[List[Tuple[int, int]]]
+    ) -> List[List[int]]:
 
-def floyd_warshall(graph: List[List[Tuple[int, int]]]) -> List[List[float]]:
-    n = len(graph)
+        # Build adjacency distance from adjacency list
+        n: int = len(graph)
+        distance: List[List[int]] = [[-1] * n for _ in range(n)]
 
-    # Step 1 — initialise NxN distance matrix.
-    distance = [[INF] * n for _ in range(n)]
+        # Initialize distance with weights from graph
+        for node in range(n):
 
-    # Step 2 — distance to self is 0.
-    for i in range(n):
-        distance[i][i] = 0
+            # distance to self is zero
+            distance[node][node] = 0
 
-    # Step 3 — direct edges.
-    for u in range(n):
-        for v, w in graph[u]:
-            distance[u][v] = w
+            # Iterate through all edges from node i and set the distance
+            # to the neighbour node as the weight of the edge
+            for neighbour, weight in graph[node]:
+                distance[node][neighbour] = weight
 
-    # Step 4 — the famous triple loop. ORDER MATTERS: k must be the OUTERMOST loop.
-    # Putting k inside would compute incorrect results.
-    for k in range(n):
-        for s in range(n):
-            for t in range(n):
-                if distance[s][k] + distance[k][t] < distance[s][t]:
-                    distance[s][t] = distance[s][k] + distance[k][t]
+        # Iterate over all the nodes as intermediate nodes
+        for k in range(n):
 
-    return distance
+            # Iterate over all the nodes as source nodes
+            for i in range(n):
+
+                # Iterate over all the nodes as neighbour nodes
+                for j in range(n):
+
+                    # If k is an intermediate node that exisits between
+                    # i and j
+                    if distance[i][k] != -1 and distance[k][j] != -1:
+
+                        # Check if this intermediate node provides a
+                        # shorter path between i and j
+                        if (
+                            distance[i][j] == -1
+                            or distance[i][j]
+                            > distance[i][k] + distance[k][j]
+                        ):
+
+                            # Update the shortest path between i and j
+                            distance[i][j] = (
+                                distance[i][k] + distance[k][j]
+                            )
+
+        return distance
 
 
-graph = [
-    [(1, 3), (3, 7)],
-    [(2, 1)],
-    [(3, 2)],
-    [(0, 6)],
-]
-for row in floyd_warshall(graph):
-    print(row)
+# Examples from the problem statement
+print(Solution().floyd_warshall_algorithm([[[1,2],[3,5]],[[4,6]],[[4,1]],[[2,2]],[[3,7]]]))
+# [[0,2,7,5,8],[-1,0,15,13,6],[-1,-1,0,8,1],[-1,-1,2,0,3],[-1,-1,9,7,0]]
+
+print(Solution().floyd_warshall_algorithm([[[4,2]],[[3,3],[0,4]],[[4,4],[0,1]],[[2,1],[4,2]],[[1,5]]]))
+# [[0,7,11,10,2],[4,0,4,3,5],[1,8,0,11,3],[2,7,1,0,2],[9,5,9,8,0]]
+
+# Edge cases
+print(Solution().floyd_warshall_algorithm([]))            # []
+print(Solution().floyd_warshall_algorithm([[]]))          # [[0]]
+print(Solution().floyd_warshall_algorithm([[], []]))      # [[0, -1], [-1, 0]]
+print(Solution().floyd_warshall_algorithm([[[1, 3]], []])) # [[0, 3], [-1, 0]]
 ```
 
 ```java run
 import java.util.*;
 
 public class Main {
-    public static int[][] floydWarshall(List<List<int[]>> graph) {
-        int n = graph.size();
-        int[][] distance = new int[n][n];
-        for (int[] row : distance) Arrays.fill(row, Integer.MAX_VALUE / 2);   // /2 avoids overflow on add
-        for (int i = 0; i < n; i++) distance[i][i] = 0;
-        for (int u = 0; u < n; u++)
-            for (int[] e : graph.get(u))
-                distance[u][e[0]] = e[1];
+    static class Solution {
+        public int[][] floydWarshallAlgorithm(
+            List<List<List<Integer>>> graph
+        ) {
 
-        // Triple loop — k must be outermost.
-        for (int k = 0; k < n; k++)
-            for (int s = 0; s < n; s++)
-                for (int t = 0; t < n; t++)
-                    if (distance[s][k] + distance[k][t] < distance[s][t])
-                        distance[s][t] = distance[s][k] + distance[k][t];
+            // Build adjacency distance from adjacency list
+            int N = graph.size();
+            int[][] distance = new int[N][N];
 
-        return distance;
+            // Initialize distance with weights from graph
+            for (int node = 0; node < N; node++) {
+
+                // distance to self is zero
+                for (int neighbour = 0; neighbour < N; neighbour++) {
+                    distance[node][neighbour] = -1;
+                }
+
+                distance[node][node] = 0;
+
+                // Iterate through all edges from the node and set the
+                // distance to the destination node as the weight of the edge
+                for (List<Integer> edge : graph.get(node)) {
+                    int neighbour = edge.get(0);
+                    int weight = edge.get(1);
+                    distance[node][neighbour] = weight;
+                }
+            }
+
+            // Iterate over all the nodes as intermediate nodes
+            for (int k = 0; k < N; k++) {
+
+                // Iterate over all the nodes as source nodes
+                for (int i = 0; i < N; i++) {
+
+                    // Iterate over all the nodes as neighbour nodes
+                    for (int j = 0; j < N; j++) {
+
+                        // If k is an intermediate node that exisits between
+                        // i and j
+                        if (distance[i][k] != -1 && distance[k][j] != -1) {
+
+                            // Check if this intermediate node provides a
+                            // shorter path between i and j
+                            if (
+                                distance[i][j] == -1 ||
+                                distance[i][j] >
+                                distance[i][k] + distance[k][j]
+                            ) {
+
+                                // Update the shortest path between i and j
+                                distance[i][j] =
+                                    distance[i][k] + distance[k][j];
+                            }
+                        }
+                    }
+                }
+            }
+
+            return distance;
+        }
     }
 
     public static void main(String[] args) {
-        List<List<int[]>> g = List.of(
-            List.of(new int[]{1, 3}, new int[]{3, 7}),
-            List.of(new int[]{2, 1}),
-            List.of(new int[]{3, 2}),
-            List.of(new int[]{0, 6}));
-        for (int[] row : floydWarshall(g)) System.out.println(Arrays.toString(row));
+        Solution sol = new Solution();
+
+        // Examples from the problem statement
+        List<List<List<Integer>>> g1 = List.of(
+            List.of(List.of(1,2), List.of(3,5)),
+            List.of(List.of(4,6)),
+            List.of(List.of(4,1)),
+            List.of(List.of(2,2)),
+            List.of(List.of(3,7))
+        );
+        for (int[] row : sol.floydWarshallAlgorithm(g1))
+            System.out.println(Arrays.toString(row));
+        // [0,2,7,5,8] [-1,0,15,13,6] [-1,-1,0,8,1] [-1,-1,2,0,3] [-1,-1,9,7,0]
+
+        List<List<List<Integer>>> g2 = List.of(
+            List.of(List.of(4,2)),
+            List.of(List.of(3,3), List.of(0,4)),
+            List.of(List.of(4,4), List.of(0,1)),
+            List.of(List.of(2,1), List.of(4,2)),
+            List.of(List.of(1,5))
+        );
+        for (int[] row : sol.floydWarshallAlgorithm(g2))
+            System.out.println(Arrays.toString(row));
+        // [0,7,11,10,2] [4,0,4,3,5] [1,8,0,11,3] [2,7,1,0,2] [9,5,9,8,0]
+
+        // Edge cases
+        System.out.println(Arrays.deepToString(sol.floydWarshallAlgorithm(new ArrayList<>())));  // []
+        System.out.println(Arrays.deepToString(sol.floydWarshallAlgorithm(List.of(new ArrayList<>()))));  // [[0]]
+        System.out.println(Arrays.deepToString(sol.floydWarshallAlgorithm(List.of(new ArrayList<>(), new ArrayList<>()))));  // [[0, -1], [-1, 0]]
+        System.out.println(Arrays.deepToString(sol.floydWarshallAlgorithm(List.of(List.of(List.of(1,3)), new ArrayList<>()))));  // [[0, 3], [-1, 0]]
     }
 }
 ```
 
-```c run
-#include <stdio.h>
-#include <stdlib.h>
-#include <limits.h>
 
-#define INF (INT_MAX / 2)
-
-typedef struct { int to, weight; } Edge;
-typedef struct { Edge* data; int size; } AdjList;
-
-int** floyd_warshall(AdjList* graph, int n) {
-    int** d = malloc(n * sizeof(int*));
-    for (int i = 0; i < n; i++) {
-        d[i] = malloc(n * sizeof(int));
-        for (int j = 0; j < n; j++) d[i][j] = (i == j) ? 0 : INF;
-    }
-    for (int u = 0; u < n; u++)
-        for (int j = 0; j < graph[u].size; j++)
-            d[u][graph[u].data[j].to] = graph[u].data[j].weight;
-
-    for (int k = 0; k < n; k++)
-        for (int s = 0; s < n; s++)
-            for (int t = 0; t < n; t++)
-                if (d[s][k] + d[k][t] < d[s][t])
-                    d[s][t] = d[s][k] + d[k][t];
-    return d;
-}
-
-int main() {
-    Edge e0[] = {{1,3},{3,7}};
-    Edge e1[] = {{2,1}};
-    Edge e2[] = {{3,2}};
-    Edge e3[] = {{0,6}};
-    AdjList g[] = {{e0,2},{e1,1},{e2,1},{e3,1}};
-    int** d = floyd_warshall(g, 4);
-    for (int i = 0; i < 4; i++) {
-        for (int j = 0; j < 4; j++) printf("%d ", d[i][j]);
-        printf("\n"); free(d[i]);
-    }
-    free(d);
-    return 0;
-}
-```
-
-```scala run
-object Main extends App {
-  val INF = Int.MaxValue / 2
-
-  def floydWarshall(graph: Array[Array[(Int, Int)]]): Array[Array[Int]] = {
-    val n = graph.length
-    val d = Array.fill(n, n)(INF)
-    for (i <- 0 until n) d(i)(i) = 0
-    for (u <- 0 until n; (v, w) <- graph(u)) d(u)(v) = w
-
-    for (k <- 0 until n; s <- 0 until n; t <- 0 until n) {
-      if (d(s)(k) + d(k)(t) < d(s)(t))
-        d(s)(t) = d(s)(k) + d(k)(t)
-    }
-    d
-  }
-
-  val g = Array(
-    Array((1, 3), (3, 7)), Array((2, 1)), Array((3, 2)), Array((0, 6)))
-  floydWarshall(g).foreach(r => println(r.mkString(" ")))
-}
-```
-
-
-> **Implementation note.** Use `INT_MAX / 2` instead of `INT_MAX` as the "infinity" sentinel. With `INT_MAX`, `INF + INF` overflows to a negative number and silently produces wrong results. Halving keeps additions safe.
+> **Implementation note.** This version uses `-1` (per the problem's "not reachable" constraint) rather than a numeric infinity. The `distance[i][k] != -1 and distance[k][j] != -1` guard means we only ever *add* two real distances, so there's no overflow to worry about. If you instead pick a numeric sentinel, use `INT_MAX / 2` rather than `INT_MAX` — with `INT_MAX`, `INF + INF` overflows to a negative number and silently produces wrong results.
 
 ## Complexity Analysis
 

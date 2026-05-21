@@ -69,141 +69,179 @@ Input:  distance = [1, 8, 10], hour = 2
 Output: -1
 ```
 
-## The Solution
+<details>
+<summary><h2>The Solution</h2></summary>
+
 
 Predicate `can_reach(speed)`: simulate the rides; for the last leg, partial time counts; for prior legs, you must round up to the next integer. Binary-search speed in `[1, 10^7]`.
 
-
-```pseudocode
-# Smallest integer speed s such that the trip can be finished within `hour` hours.
-function punctualArrivalSpeed(distance, hour):
-    low ← 1; high ← 10⁷
-    while low < high:
-        mid ← low + (high − low) ÷ 2
-        if canReach(distance, hour, mid):
-            high ← mid                          # mid works → look for smaller
-        else:
-            low ← mid + 1
-    if canReach(distance, hour, low): return low
-    return −1                                    # impossible
-
-function canReach(distance, hour, speed):
-    total ← 0
-    for i from 0 to length(distance) − 1:
-        t ← distance[i] / speed
-        if i < length(distance) − 1:
-            total ← total + ceil(t)             # all but last leg waste fractional hour
-        else:
-            total ← total + t
-    return total ≤ hour
-```
 
 ```python run
 import math
 from typing import List
 
 class Solution:
-    def punctual_arrival_speed(self, distance: List[int], hour: float) -> int:
-        low, high = 1, 10 ** 7
+
+    # Predicate: checks if it's possible to reach the destination on
+    # time with a given speed
+    def can_reach_on_time(
+        self, distance: List[int], hour: float, speed: int
+    ) -> bool:
+        total_time = 0
+
+        # Calculate the total time required to reach each checkpoint
+        for i in range(len(distance) - 1):
+            total_time += math.ceil(distance[i] / speed)
+
+        # Add the time required to reach the final destination
+        total_time += distance[-1] / speed
+
+        # Check if the total time is less than or equal to the given hour
+        return total_time <= hour
+
+    def punctual_arrival_speed(
+        self, distance: List[int], hour: float
+    ) -> int:
+
+        # Initialise the search space for speed with low as 1
+        low: int = 1
+
+        # Initialise high to a large value (1e7) as per problem
+        # constraints
+        high: int = int(1e7)
+
+        # Perform binary search to find the minimum speed required to
+        # reach the destination on time
         while low < high:
+
+            # Find the middle speed to check if it is possible to reach
+            # the destination on time
             mid = low + (high - low) // 2
-            if self._can_reach(distance, hour, mid):
+
+            # mid is a possible speed, update the result and search
+            # for a smaller speed
+            if self.can_reach_on_time(distance, hour, mid):
+
+                # Try to find a smaller speed
                 high = mid
+
+            # mid is not a possible speed, search for a larger speed
             else:
+
+                # Try to find a larger speed
                 low = mid + 1
-        return low if self._can_reach(distance, hour, low) else -1
 
-    def _can_reach(self, distance, hour, speed):
-        total = 0.0
-        for i, d in enumerate(distance):
-            t = d / speed
-            if i < len(distance) - 1:
-                total += math.ceil(t)
-            else:
-                total += t
-        return total <= hour
+        # After the search, low is the candidate minimum speed
+        # Check if it actually works, as it could be possible that no
+        # speed allows reaching on time
+        if not self.can_reach_on_time(distance, hour, low):
+            return -1
+
+        # Return the minimum speed found
+        return low
 
 
-if __name__ == "__main__":
-    print(Solution().punctual_arrival_speed([1, 3, 5], 2.5))   # 10
+# Examples from the problem statement
+print(Solution().punctual_arrival_speed([1, 3, 5], 2.5))   # 10
+print(Solution().punctual_arrival_speed([1, 4, 9], 6))     # 3
+print(Solution().punctual_arrival_speed([1, 8, 10], 2))    # -1
+
+# Edge cases
+print(Solution().punctual_arrival_speed([1], 1))           # 1   (single ride, exactly on time)
+print(Solution().punctual_arrival_speed([5], 1))           # 5   (single ride, speed = distance)
+print(Solution().punctual_arrival_speed([1, 1, 1], 3))     # 1   (minimal speed)
+print(Solution().punctual_arrival_speed([1, 2], 1.9))      # -1  (impossible — need integer depart)
+print(Solution().punctual_arrival_speed([10, 10, 10], 5))  # 10  (last ride is exact)
 ```
 
 ```java run
 public class Main {
     static class Solution {
-        public int punctualArrivalSpeed(int[] distance, double hour) {
-            int low = 1, high = (int) 1e7;
-            while (low < high) {
-                int mid = low + (high - low) / 2;
-                if (canReach(distance, hour, mid)) high = mid;
-                else low = mid + 1;
+
+        // Predicate: checks if it's possible to reach the destination on
+        // time with a given speed
+        private boolean canReachOnTime(
+            int[] distance,
+            double hour,
+            int speed
+        ) {
+            double totalTime = 0;
+
+            // Calculate the total time required to reach each checkpoint
+            for (int i = 0; i < distance.length - 1; i++) {
+                totalTime += Math.ceil((double) distance[i] / speed);
             }
-            return canReach(distance, hour, low) ? low : -1;
+
+            // Add the time required to reach the final destination
+            totalTime += (double) distance[distance.length - 1] / speed;
+
+            // Check if the total time is less than or equal to the given
+            // hour
+            return totalTime <= hour;
         }
-        private boolean canReach(int[] distance, double hour, int speed) {
-            double total = 0;
-            for (int i = 0; i < distance.length; i++) {
-                double t = (double) distance[i] / speed;
-                total += (i < distance.length - 1) ? Math.ceil(t) : t;
+
+        public int punctualArrivalSpeed(int[] distance, double hour) {
+
+            // Initialise the search space for speed with low as 1
+            int low = 1;
+
+            // Initialise high to a large value (1e7) as per problem
+            // constraints
+            int high = (int) 1e7;
+
+            // Perform binary search to find the minimum speed required to
+            // reach the destination on time
+            while (low < high) {
+
+                // Find the middle speed to check if it is possible to reach
+                // the destination on time
+                int mid = low + (high - low) / 2;
+
+                // mid is a possible speed, update the result and search
+                // for a smaller speed
+                if (canReachOnTime(distance, hour, mid)) {
+
+                    // Try to find a smaller speed
+                    high = mid;
+                }
+
+                // mid is not a possible speed, search for a larger speed
+                else {
+
+                    // Try to find a larger speed
+                    low = mid + 1;
+                }
             }
-            return total <= hour;
+
+            // After the search, low is the candidate minimum speed
+            // Check if it actually works, as it could be possible that no
+            // speed allows reaching on time
+            if (!canReachOnTime(distance, hour, low)) {
+                return -1;
+            }
+
+            // Return the minimum speed found
+            return low;
         }
     }
 
     public static void main(String[] args) {
+        // Examples from the problem statement
         System.out.println(new Solution().punctualArrivalSpeed(new int[]{1, 3, 5}, 2.5));   // 10
+        System.out.println(new Solution().punctualArrivalSpeed(new int[]{1, 4, 9}, 6));     // 3
+        System.out.println(new Solution().punctualArrivalSpeed(new int[]{1, 8, 10}, 2));    // -1
+
+        // Edge cases
+        System.out.println(new Solution().punctualArrivalSpeed(new int[]{1}, 1));           // 1
+        System.out.println(new Solution().punctualArrivalSpeed(new int[]{5}, 1));           // 5
+        System.out.println(new Solution().punctualArrivalSpeed(new int[]{1, 1, 1}, 3));     // 1
+        System.out.println(new Solution().punctualArrivalSpeed(new int[]{1, 2}, 1.9));      // -1
+        System.out.println(new Solution().punctualArrivalSpeed(new int[]{10, 10, 10}, 5));  // 10
     }
 }
 ```
 
-```c run
-#include <math.h>
-#include <stdbool.h>
-
-bool can_reach(int *distance, int n, double hour, int speed) {
-    double total = 0;
-    for (int i = 0; i < n; i++) {
-        double t = (double) distance[i] / speed;
-        total += (i < n - 1) ? ceil(t) : t;
-    }
-    return total <= hour;
-}
-
-int punctual_arrival_speed(int *distance, int n, double hour) {
-    int low = 1, high = 10000000;
-    while (low < high) {
-        int mid = low + (high - low) / 2;
-        if (can_reach(distance, n, hour, mid)) high = mid;
-        else low = mid + 1;
-    }
-    return can_reach(distance, n, hour, low) ? low : -1;
-}
-```
-
-```scala run
-object Main extends App {
-  class Solution {
-    def punctualArrivalSpeed(distance: Array[Int], hour: Double): Int = {
-      var low = 1; var high = (1e7).toInt
-      while (low < high) {
-        val mid = low + (high - low) / 2
-        if (canReach(distance, hour, mid)) high = mid else low = mid + 1
-      }
-      if (canReach(distance, hour, low)) low else -1
-    }
-    private def canReach(distance: Array[Int], hour: Double, speed: Int): Boolean = {
-      var total: Double = 0
-      for (i <- distance.indices) {
-        val t = distance(i).toDouble / speed
-        total += (if (i < distance.length - 1) math.ceil(t) else t)
-      }
-      total <= hour
-    }
-  }
-
-  println(new Solution().punctualArrivalSpeed(Array(1, 3, 5), 2.5))   // 10
-}
-```
+</details>
 
 
 ***
@@ -225,125 +263,165 @@ Input:  bags = [4, 2], maxOperations = 4
 Output: 1
 ```
 
-## The Solution
+<details>
+<summary><h2>The Solution</h2></summary>
+
 
 Predicate: "can we achieve max-bag-size = penalty?" — a bag of size `b > penalty` needs `(b - 1) // penalty` splits. Sum and check against `maxOperations`. Binary-search penalty in `[1, max(bags)]`.
 
-
-```pseudocode
-# Smallest penalty p such that splitting every bag into pieces of size ≤ p uses ≤ maxOps splits.
-function penaltyWithBalls(bags, maxOperations):
-    low ← 1; high ← max(bags)
-    while low < high:
-        mid ← low + (high − low) ÷ 2
-        if canAchieve(bags, maxOperations, mid):
-            high ← mid
-        else:
-            low ← mid + 1
-    return low
-
-function canAchieve(bags, maxOps, penalty):
-    ops ← 0
-    for each b in bags:
-        if b > penalty:
-            ops ← ops + (b − 1) ÷ penalty       # number of cuts needed for this bag
-    return ops ≤ maxOps
-```
 
 ```python run
 from typing import List
 
 class Solution:
-    def penalty_with_balls(self, bags: List[int], max_operations: int) -> int:
-        low, high = 1, max(bags)
+
+    # Predicate: checks if it's possible to achieve a given penalty
+    # (max number of balls in any bag)
+    def can_achieve_penalty(
+        self, bags: List[int], max_operations: int, penalty: int
+    ) -> bool:
+        operations = 0
+        for balls in bags:
+
+            # If a bag has more than 'penalty' balls, we need to split
+            # it. The number of splits required for a bag with 'balls'
+            # is (balls - 1) / penalty
+            if balls > penalty:
+
+                # This is the number of splits required
+                operations += (balls - 1) // penalty
+
+        # Check if we can do the splits within max_operations
+        return operations <= max_operations
+
+    def penalty_with_balls(
+        self, bags: List[int], max_operations: int
+    ) -> int:
+
+        # The minimum penalty is at least 1 ball in a bag
+        low = 1
+
+        # The maximum penalty is the maximum number of balls in a
+        # single bag
+        high = max(bags)
+
         while low < high:
+
+            # Calculate the middle penalty
             mid = low + (high - low) // 2
-            if self._can_achieve(bags, max_operations, mid):
+
+            # If we can achieve this penalty, this is a potential answer
+            # so try to find a smaller one
+            if self.can_achieve_penalty(bags, max_operations, mid):
+
+                # Try a smaller penalty
                 high = mid
+
+            # If we can't achieve this penalty, try a larger one
             else:
+
+                # Try a larger penalty
                 low = mid + 1
+
+        # After the search, low is the minimum penalty achievable
         return low
 
-    def _can_achieve(self, bags, max_ops, penalty):
-        ops = 0
-        for b in bags:
-            if b > penalty:
-                ops += (b - 1) // penalty
-        return ops <= max_ops
 
+# Examples from the problem statement
+print(Solution().penalty_with_balls([9, 7, 6], 3))   # 5
+print(Solution().penalty_with_balls([4, 8], 1))      # 4
+print(Solution().penalty_with_balls([4, 2], 4))      # 1
 
-if __name__ == "__main__":
-    print(Solution().penalty_with_balls([9, 7, 6], 3))   # 5
+# Edge cases
+print(Solution().penalty_with_balls([1], 0))         # 1   (single bag, no ops)
+print(Solution().penalty_with_balls([1], 5))         # 1   (already size 1)
+print(Solution().penalty_with_balls([10], 1))        # 5   (split once: [5,5])
+print(Solution().penalty_with_balls([6, 6], 0))      # 6   (no operations)
+print(Solution().penalty_with_balls([2, 4, 6], 6))   # 1   (enough ops for penalty=1)
 ```
 
 ```java run
+import java.util.*;
+
 public class Main {
     static class Solution {
-        public int penaltyWithBalls(int[] bags, int maxOperations) {
-            int low = 1, high = 0;
-            for (int b : bags) high = Math.max(high, b);
-            while (low < high) {
-                int mid = low + (high - low) / 2;
-                if (canAchieve(bags, maxOperations, mid)) high = mid;
-                else low = mid + 1;
+
+        // Predicate: checks if it's possible to achieve a given penalty
+        // (max number of balls in any bag)
+        private boolean canAchievePenalty(
+            int[] bags,
+            int maxOperations,
+            int penalty
+        ) {
+            int operations = 0;
+            for (int balls : bags) {
+
+                // If a bag has more than 'penalty' balls, we need to split
+                // it. The number of splits required for a bag with 'balls'
+                // is (balls - 1) / penalty
+                if (balls > penalty) {
+
+                    // This is the number of splits required
+                    operations += (balls - 1) / penalty;
+                }
             }
-            return low;
+
+            // Check if we can do the splits within maxOperations
+            return operations <= maxOperations;
         }
-        private boolean canAchieve(int[] bags, int maxOps, int penalty) {
-            int ops = 0;
-            for (int b : bags) if (b > penalty) ops += (b - 1) / penalty;
-            return ops <= maxOps;
+
+        public int penaltyWithBalls(int[] bags, int maxOperations) {
+
+            // The minimum penalty is at least 1 ball in a bag
+            int low = 1;
+
+            // The maximum penalty is the maximum number of balls in a
+            // single bag
+            int high = Arrays.stream(bags).max().getAsInt();
+
+            while (low < high) {
+
+                // Calculate the middle penalty
+                int mid = low + (high - low) / 2;
+
+                // If we can achieve this penalty, this is a potential answer
+                // so try to find a smaller one
+                if (canAchievePenalty(bags, maxOperations, mid)) {
+
+                    // Try a smaller penalty
+                    high = mid;
+                }
+
+                // If we can't achieve this penalty, try a larger one
+                else {
+
+                    // Try a larger penalty
+                    low = mid + 1;
+                }
+            }
+
+            // After the search, low is the minimum penalty achievable
+            return low;
         }
     }
 
     public static void main(String[] args) {
+        // Examples from the problem statement
         System.out.println(new Solution().penaltyWithBalls(new int[]{9, 7, 6}, 3));   // 5
+        System.out.println(new Solution().penaltyWithBalls(new int[]{4, 8}, 1));      // 4
+        System.out.println(new Solution().penaltyWithBalls(new int[]{4, 2}, 4));      // 1
+
+        // Edge cases
+        System.out.println(new Solution().penaltyWithBalls(new int[]{1}, 0));         // 1
+        System.out.println(new Solution().penaltyWithBalls(new int[]{1}, 5));         // 1
+        System.out.println(new Solution().penaltyWithBalls(new int[]{10}, 1));        // 5
+        System.out.println(new Solution().penaltyWithBalls(new int[]{6, 6}, 0));      // 6
+        System.out.println(new Solution().penaltyWithBalls(new int[]{2, 4, 6}, 6));   // 1
     }
 }
 ```
 
-```c run
-#include <stdbool.h>
-
-bool can_achieve(int *bags, int n, int max_ops, int penalty) {
-    int ops = 0;
-    for (int i = 0; i < n; i++) if (bags[i] > penalty) ops += (bags[i] - 1) / penalty;
-    return ops <= max_ops;
-}
-
-int penalty_with_balls(int *bags, int n, int max_operations) {
-    int low = 1, high = 0;
-    for (int i = 0; i < n; i++) if (bags[i] > high) high = bags[i];
-    while (low < high) {
-        int mid = low + (high - low) / 2;
-        if (can_achieve(bags, n, max_operations, mid)) high = mid;
-        else low = mid + 1;
-    }
-    return low;
-}
-```
-
-```scala run
-object Main extends App {
-  class Solution {
-    def penaltyWithBalls(bags: Array[Int], maxOperations: Int): Int = {
-      var low = 1; var high = bags.max
-      while (low < high) {
-        val mid = low + (high - low) / 2
-        if (canAchieve(bags, maxOperations, mid)) high = mid else low = mid + 1
-      }
-      low
-    }
-    private def canAchieve(bags: Array[Int], maxOps: Int, penalty: Int): Boolean = {
-      var ops = 0
-      for (b <- bags) if (b > penalty) ops += (b - 1) / penalty
-      ops <= maxOps
-    }
-  }
-
-  println(new Solution().penaltyWithBalls(Array(9, 7, 6), 3))   // 5
-}
-```
+</details>
 
 
 ***
@@ -365,137 +443,183 @@ Input:  weights = [6, 3, 9], days = 3
 Output: 18
 ```
 
-## The Solution
+<details>
+<summary><h2>The Solution</h2></summary>
+
 
 Predicate: "can we ship within `days` days at capacity `cap`?" — greedy: sum weights into a bucket; when adding next would exceed `cap`, start a new day. Count days. Binary-search `cap` in `[max(weights), sum(weights)]`.
 
-
-```pseudocode
-# Smallest capacity that lets the cargo ship in ≤ `days` days.
-function minimumShippingCapacity(weights, days):
-    low ← max(weights)                          # capacity must hold the heaviest single package
-    high ← sum(weights)                          # one-day extreme: ship everything at once
-    while low < high:
-        mid ← low + (high − low) ÷ 2
-        if canShip(weights, days, mid):
-            high ← mid
-        else:
-            low ← mid + 1
-    return low
-
-function canShip(weights, days, cap):
-    d ← 1; current ← 0
-    for each w in weights:
-        if current + w > cap:                   # this package starts a new day
-            d ← d + 1
-            current ← 0
-        current ← current + w
-    return d ≤ days
-```
 
 ```python run
 from typing import List
 
 class Solution:
-    def minimum_shipping_capacity(self, weights: List[int], days: int) -> int:
-        low, high = max(weights), sum(weights)
+
+    # Predicate: checks if it's possible to ship all packages within D days
+    # given a maximum ship capacity
+    def can_ship_capacity(
+        self, weights: List[int], days: int, capacity: int
+    ) -> bool:
+        days_required = 1
+        current_load = 0
+
+        for weight in weights:
+
+            # If a single package exceeds capacity, it's impossible
+            if weight > capacity:
+                return False
+
+            # If adding this package doesn't exceed capacity, add it to
+            # current day
+            if current_load + weight <= capacity:
+                current_load += weight
+            else:
+
+                # Otherwise, start a new day and put this package there
+                days_required += 1
+                current_load = weight
+
+        # Return true if all packages can be shipped within D days
+        return days_required <= days
+
+    def minimum_shipping_capacity(
+        self, weights: List[int], days: int
+    ) -> int:
+
+        # Minimum possible capacity is at least the heaviest package
+        low = max(weights)
+
+        # Maximum possible capacity is sum of all packages
+        high = sum(weights)
+
         while low < high:
+
+            # Calculate the middle capacity
             mid = low + (high - low) // 2
-            if self._can_ship(weights, days, mid): high = mid
-            else: low = mid + 1
+
+            # If it's possible, this is a potential answer
+            # so try to find a smaller capacity
+            if self.can_ship_capacity(weights, days, mid):
+
+                # Try a smaller capacity
+                high = mid
+
+            # If it's not possible to ship with this capacity, try a
+            # larger one
+            else:
+
+                # Try a larger capacity
+                low = mid + 1
+
+        # low is the minimum capacity to ship within D days
         return low
 
-    def _can_ship(self, weights, days, cap):
-        d, current = 1, 0
-        for w in weights:
-            if current + w > cap:
-                d += 1
-                current = 0
-            current += w
-        return d <= days
 
+# Examples from the problem statement
+print(Solution().minimum_shipping_capacity([20, 10, 25, 35], 3))  # 35
+print(Solution().minimum_shipping_capacity([20, 10, 40, 30], 3))  # 40
+print(Solution().minimum_shipping_capacity([6, 3, 9], 3))         # 18
 
-if __name__ == "__main__":
-    print(Solution().minimum_shipping_capacity([20, 10, 25, 35], 3))   # 35
+# Edge cases
+print(Solution().minimum_shipping_capacity([1], 1))               # 1   (single package)
+print(Solution().minimum_shipping_capacity([5], 1))               # 5   (single heavy package)
+print(Solution().minimum_shipping_capacity([1, 2, 3, 4, 5], 5))   # 5   (one package per day)
+print(Solution().minimum_shipping_capacity([1, 2, 3, 4, 5], 1))   # 15  (all in one day)
+print(Solution().minimum_shipping_capacity([3, 2, 2, 4, 1, 4], 3))  # 6
 ```
 
 ```java run
+import java.util.*;
+
 public class Main {
     static class Solution {
-        public int minimumShippingCapacity(int[] weights, int days) {
-            int low = 0, high = 0;
-            for (int w : weights) { low = Math.max(low, w); high += w; }
-            while (low < high) {
-                int mid = low + (high - low) / 2;
-                if (canShip(weights, days, mid)) high = mid;
-                else low = mid + 1;
+
+        // Predicate: checks if it's possible to ship all packages within D
+        // days given a maximum ship capacity
+        private boolean canShipCapacity(
+            int[] weights,
+            int days,
+            int capacity
+        ) {
+            int daysRequired = 1;
+            int currentLoad = 0;
+
+            for (int weight : weights) {
+
+                // If a single package exceeds capacity, it's impossible
+                if (weight > capacity) {
+                    return false;
+                }
+
+                // If adding this package doesn't exceed capacity, add it to
+                // current day
+                if (currentLoad + weight <= capacity) {
+                    currentLoad += weight;
+                }
+
+                // Otherwise, start a new day and put this package there
+                else {
+                    daysRequired++;
+                    currentLoad = weight;
+                }
             }
-            return low;
+
+            // Return true if all packages can be shipped within D days
+            return daysRequired <= days;
         }
-        private boolean canShip(int[] weights, int days, int cap) {
-            int d = 1, cur = 0;
-            for (int w : weights) {
-                if (cur + w > cap) { d++; cur = 0; }
-                cur += w;
+
+        public int minimumShippingCapacity(int[] weights, int days) {
+
+            // Minimum possible capacity is at least the heaviest package
+            int low = Arrays.stream(weights).max().getAsInt();
+
+            // Maximum possible capacity is sum of all packages
+            int high = Arrays.stream(weights).sum();
+
+            while (low < high) {
+
+                // Calculate the middle capacity
+                int mid = low + (high - low) / 2;
+
+                // If it's possible, this is a potential answer
+                // so try to find a smaller capacity
+                if (canShipCapacity(weights, days, mid)) {
+
+                    // Try a smaller capacity
+                    high = mid;
+                }
+
+                // If it's not possible to ship with this capacity, try a
+                // larger one
+                else {
+
+                    // Try a larger capacity
+                    low = mid + 1;
+                }
             }
-            return d <= days;
+
+            // low is the minimum capacity to ship within D days
+            return low;
         }
     }
 
     public static void main(String[] args) {
-        System.out.println(new Solution().minimumShippingCapacity(new int[]{20, 10, 25, 35}, 3));   // 35
+        // Examples from the problem statement
+        System.out.println(new Solution().minimumShippingCapacity(new int[]{20, 10, 25, 35}, 3));  // 35
+        System.out.println(new Solution().minimumShippingCapacity(new int[]{20, 10, 40, 30}, 3));  // 40
+        System.out.println(new Solution().minimumShippingCapacity(new int[]{6, 3, 9}, 3));         // 18
+
+        // Edge cases
+        System.out.println(new Solution().minimumShippingCapacity(new int[]{1}, 1));               // 1
+        System.out.println(new Solution().minimumShippingCapacity(new int[]{5}, 1));               // 5
+        System.out.println(new Solution().minimumShippingCapacity(new int[]{1, 2, 3, 4, 5}, 5));   // 5
+        System.out.println(new Solution().minimumShippingCapacity(new int[]{1, 2, 3, 4, 5}, 1));   // 15
+        System.out.println(new Solution().minimumShippingCapacity(new int[]{3, 2, 2, 4, 1, 4}, 3));  // 6
     }
 }
 ```
 
-```c run
-#include <stdbool.h>
-
-bool can_ship(int *weights, int n, int days, int cap) {
-    int d = 1, cur = 0;
-    for (int i = 0; i < n; i++) {
-        if (cur + weights[i] > cap) { d++; cur = 0; }
-        cur += weights[i];
-    }
-    return d <= days;
-}
-
-int minimum_shipping_capacity(int *weights, int n, int days) {
-    int low = 0, high = 0;
-    for (int i = 0; i < n; i++) { if (weights[i] > low) low = weights[i]; high += weights[i]; }
-    while (low < high) {
-        int mid = low + (high - low) / 2;
-        if (can_ship(weights, n, days, mid)) high = mid;
-        else low = mid + 1;
-    }
-    return low;
-}
-```
-
-```scala run
-object Main extends App {
-  class Solution {
-    def minimumShippingCapacity(weights: Array[Int], days: Int): Int = {
-      var low = weights.max; var high = weights.sum
-      while (low < high) {
-        val mid = low + (high - low) / 2
-        if (canShip(weights, days, mid)) high = mid else low = mid + 1
-      }
-      low
-    }
-    private def canShip(weights: Array[Int], days: Int, cap: Int): Boolean = {
-      var d = 1; var cur = 0
-      for (w <- weights) {
-        if (cur + w > cap) { d += 1; cur = 0 }
-        cur += w
-      }
-      d <= days
-    }
-  }
-
-  println(new Solution().minimumShippingCapacity(Array(20, 10, 25, 35), 3))   // 35
-}
-```
+</details>
 
 
 ***
@@ -517,124 +641,158 @@ Input:  times = [1], totalTrips = 5
 Output: 5
 ```
 
-## The Solution
+<details>
+<summary><h2>The Solution</h2></summary>
 
-Predicate: "in time `t`, can we complete `totalTrips`?" — each plane finishes `t / times[i]` trips. Sum and check ≥ totalTrips. Binary-search `t` in `[0, min(times) * totalTrips]`.
 
+Predicate: "in time `t`, can we complete `totalTrips`?" — each plane finishes `t / times[i]` trips. Sum and check ≥ totalTrips. Binary-search `t` in `[0, max(times) * totalTrips]` (the slowest plane finishing every trip alone is a safe upper bound).
 
-```pseudocode
-# Smallest time t such that the buses (with periods `times`) collectively run ≥ totalTrips trips.
-function tripCompletionFrenzy(times, totalTrips):
-    low ← 0; high ← max(times) × totalTrips     # upper bound: slowest bus alone
-    while low < high:
-        mid ← low + (high − low) ÷ 2
-        if canComplete(times, totalTrips, mid):
-            high ← mid
-        else:
-            low ← mid + 1
-    return low
-
-function canComplete(times, totalTrips, time):
-    return sum over t in times of (time ÷ t) ≥ totalTrips
-```
 
 ```python run
 from typing import List
 
 class Solution:
-    def trip_completion_frenzy(self, times: List[int], total_trips: int) -> int:
-        low, high = 0, max(times) * total_trips
+
+    # Predicate: checks if it's possible to complete at least
+    # 'totalTrips' in 'time' time
+    def can_complete_trips(
+        self, times: List[int], total_trips: int, time: int
+    ) -> bool:
+        trips_completed = 0
+        for t in times:
+
+            # Calculate how many trips each plane can complete in 'time'
+            trips_completed += time // t
+
+        # Check if the total trips are enough
+        return trips_completed >= total_trips
+
+    def trip_completion_frenzy(
+        self, times: List[int], total_trips: int
+    ) -> int:
+
+        # The minimum time required is 0
+        low = 0
+
+        # The high boundary is the maximum time taken by any plane
+        high = max(times) * total_trips
+
         while low < high:
+
+            # Calculate the middle time
             mid = low + (high - low) // 2
-            if self._can_complete(times, total_trips, mid): high = mid
-            else: low = mid + 1
+
+            # If we can complete the trips in 'mid' time, try for
+            # smaller time
+            if self.can_complete_trips(times, total_trips, mid):
+
+                # Try a smaller time
+                high = mid
+
+            # If we can't complete the trips, try larger time
+            else:
+
+                # Try a larger time
+                low = mid + 1
+
+        # After the search, low is the minimum time required
         return low
 
-    def _can_complete(self, times, total_trips, time):
-        return sum(time // t for t in times) >= total_trips
 
+# Examples from the problem statement
+print(Solution().trip_completion_frenzy([3, 4, 5], 4))   # 6
+print(Solution().trip_completion_frenzy([1, 2, 3], 5))   # 3
+print(Solution().trip_completion_frenzy([1], 5))         # 5
 
-if __name__ == "__main__":
-    print(Solution().trip_completion_frenzy([3, 4, 5], 4))   # 6
+# Edge cases
+print(Solution().trip_completion_frenzy([1], 1))         # 1   (single plane, one trip)
+print(Solution().trip_completion_frenzy([2], 3))         # 6   (single slow plane)
+print(Solution().trip_completion_frenzy([1, 1], 4))      # 2   (two identical fast planes)
+print(Solution().trip_completion_frenzy([5, 10], 1))     # 5   (fastest plane handles single trip)
+print(Solution().trip_completion_frenzy([1, 2, 3], 10))  # 6
 ```
 
 ```java run
+import java.util.*;
+
 public class Main {
     static class Solution {
-        public long tripCompletionFrenzy(int[] times, int totalTrips) {
-            long low = 0, high = (long) Long.MAX_VALUE / 2;
-            long maxT = 0;
-            for (int t : times) maxT = Math.max(maxT, t);
-            high = maxT * (long) totalTrips;
-            while (low < high) {
-                long mid = low + (high - low) / 2;
-                if (canComplete(times, totalTrips, mid)) high = mid;
-                else low = mid + 1;
+
+        // Predicate: checks if it's possible to complete at least
+        // 'totalTrips' in 'time' time
+        private boolean canCompleteTrips(
+            int[] times,
+            int totalTrips,
+            int time
+        ) {
+            int tripsCompleted = 0;
+            for (int t : times) {
+
+                // Calculate how many trips each plane can complete in 'time'
+                tripsCompleted += time / t;
             }
-            return low;
+
+            // Check if the total trips are enough
+            return tripsCompleted >= totalTrips;
         }
-        private boolean canComplete(int[] times, int totalTrips, long time) {
-            long completed = 0;
-            for (int t : times) completed += time / t;
-            return completed >= totalTrips;
+
+        public int tripCompletionFrenzy(int[] times, int totalTrips) {
+
+            // The minimum time required is 0
+            int low = 0;
+
+            // The high boundary is the maximum time taken by any plane
+            int high = Arrays.stream(times).max().getAsInt() * totalTrips;
+
+            while (low < high) {
+
+                // Calculate the middle time
+                int mid = low + (high - low) / 2;
+
+                // If we can complete the trips in 'mid' time, try for
+                // smaller time
+                if (canCompleteTrips(times, totalTrips, mid)) {
+
+                    // Try a smaller time
+                    high = mid;
+                }
+
+                // If we can't complete the trips, try larger time
+                else {
+
+                    // Try a larger time
+                    low = mid + 1;
+                }
+            }
+
+            // After the search, low is the minimum time required
+            return low;
         }
     }
 
     public static void main(String[] args) {
+        // Examples from the problem statement
         System.out.println(new Solution().tripCompletionFrenzy(new int[]{3, 4, 5}, 4));   // 6
+        System.out.println(new Solution().tripCompletionFrenzy(new int[]{1, 2, 3}, 5));   // 3
+        System.out.println(new Solution().tripCompletionFrenzy(new int[]{1}, 5));         // 5
+
+        // Edge cases
+        System.out.println(new Solution().tripCompletionFrenzy(new int[]{1}, 1));         // 1
+        System.out.println(new Solution().tripCompletionFrenzy(new int[]{2}, 3));         // 6
+        System.out.println(new Solution().tripCompletionFrenzy(new int[]{1, 1}, 4));      // 2
+        System.out.println(new Solution().tripCompletionFrenzy(new int[]{5, 10}, 1));     // 5
+        System.out.println(new Solution().tripCompletionFrenzy(new int[]{1, 2, 3}, 10));  // 6
     }
 }
 ```
 
-```c run
-#include <stdbool.h>
+</details>
+<details>
+<summary><h2>Final Takeaway</h2></summary>
 
-bool can_complete(int *times, int n, int total_trips, long long time) {
-    long long completed = 0;
-    for (int i = 0; i < n; i++) completed += time / times[i];
-    return completed >= total_trips;
-}
-
-long long trip_completion_frenzy(int *times, int n, int total_trips) {
-    long long low = 0, high = 0, maxT = 0;
-    for (int i = 0; i < n; i++) if (times[i] > maxT) maxT = times[i];
-    high = maxT * (long long) total_trips;
-    while (low < high) {
-        long long mid = low + (high - low) / 2;
-        if (can_complete(times, n, total_trips, mid)) high = mid;
-        else low = mid + 1;
-    }
-    return low;
-}
-```
-
-```scala run
-object Main extends App {
-  class Solution {
-    def tripCompletionFrenzy(times: Array[Int], totalTrips: Int): Long = {
-      var low = 0L; var high = times.max.toLong * totalTrips
-      while (low < high) {
-        val mid = low + (high - low) / 2
-        if (canComplete(times, totalTrips, mid)) high = mid else low = mid + 1
-      }
-      low
-    }
-    private def canComplete(times: Array[Int], totalTrips: Int, time: Long): Boolean = {
-      var completed = 0L
-      for (t <- times) completed += time / t
-      completed >= totalTrips
-    }
-  }
-
-  println(new Solution().tripCompletionFrenzy(Array(3, 4, 5), 4))   // 6
-}
-```
-
-
-***
-
-## Final Takeaway
 
 The minimum-predicate-search pattern: when you're optimizing for the smallest value satisfying a monotonic predicate, binary-search the value range. The four problems showed four different predicate functions — "can-reach," "can-achieve-penalty," "can-ship," "can-complete-trips" — each independently a creative greedy/simulation, but all sharing the same outer binary-search shell.
 
 The next lesson (the Maximum Predicate Search Pattern lesson) is the dual: **maximum-predicate-search** — when you're optimizing for the largest value satisfying a predicate that's true-then-false (instead of false-then-true).
+
+</details>

@@ -659,7 +659,9 @@ Given the **root** of a binary tree, return `true` if the tree represents a vali
 > - **Output:** `false`
 > - **Explanation:** `2` (left grandchild of root) is less than its parent `4`, violating the min-heap rule.
 
-## The Strategy
+<details>
+<summary><h2>The Strategy</h2></summary>
+
 
 The min-heap rule is purely local: every node's value is `≥` its parent's value. Walk the tree recursively, passing the parent's value down. At each node:
 
@@ -668,107 +670,190 @@ The min-heap rule is purely local: every node's value is `≥` its parent's valu
 
 The root has no parent, so we use `-∞` as a sentinel — it's smaller than anything, so any root passes.
 
-## The Solution
+</details>
+<details>
+<summary><h2>The Solution</h2></summary>
 
 
-```pseudocode
-function isValidHeap(root, parentVal):
-    if root is null: return true           # empty subtree is trivially valid
-    if root.val < parentVal: return false  # min-heap rule: child must be ≥ parent
-    return isValidHeap(root.left,  root.val)
-       AND isValidHeap(root.right, root.val)
-
-function treeHeapValidator(root):
-    if root is null: return true
-    return isValidHeap(root, −∞)           # −∞ sentinel so root passes unconditionally
-```
 
 ```python run
+from typing import Optional
+
+class TreeNode:
+    def __init__(self, val=0, left=None, right=None):
+        self.val = val
+        self.left = left
+        self.right = right
+
+
+def from_level_order(values):
+    """Build tree from list like [1, 2, 3, None, 4]. None means missing child."""
+    if not values:
+        return None
+    root = TreeNode(values[0])
+    queue = [root]
+    i = 1
+    while queue and i < len(values):
+        node = queue.pop(0)
+        if i < len(values) and values[i] is not None:
+            node.left = TreeNode(values[i])
+            queue.append(node.left)
+        i += 1
+        if i < len(values) and values[i] is not None:
+            node.right = TreeNode(values[i])
+            queue.append(node.right)
+        i += 1
+    return root
+
+
 class Solution:
-    def is_valid_heap(self, root, parent_val):
-        # Empty subtree trivially satisfies the heap rule.
+    def is_valid_heap(
+        self, root: Optional[TreeNode], parent_val: int
+    ) -> bool:
+
+        # Base case: if the current root is None, it's a valid heap root
         if root is None:
             return True
-        # Min-heap rule: each node must be ≥ its parent.
+
+        # Check if the current root violates the min-heap property
         if root.val < parent_val:
             return False
-        # Recurse into both children, passing this node as their parent.
-        return (self.is_valid_heap(root.left,  root.val) and
-                self.is_valid_heap(root.right, root.val))
 
-    def tree_heap_validator(self, root):
-        if root is None:                          # empty tree is a valid heap by convention
+        # Recursively check the left and right subtrees
+        is_left_subtree_valid = self.is_valid_heap(root.left, root.val)
+        is_right_subtree_valid = self.is_valid_heap(root.right, root.val)
+
+        # Return True only if both subtrees are valid heaps
+        return is_left_subtree_valid and is_right_subtree_valid
+
+    def tree_heap_validator(self, root: Optional[TreeNode]) -> bool:
+
+        # Check if the root is None (empty tree), which is considered
+        # a valid min-heap
+        if root is None:
             return True
-        # Use -infinity as the sentinel parent for the root.
+
+        # Start the depth-first search (DFS) from the root with an
+        # initial parent value of positive infinity
         return self.is_valid_heap(root, float("-inf"))
+
+
+# Examples from the problem statement
+t1 = from_level_order([1, 2, 3, 4, 5, 6, 7])
+print(Solution().tree_heap_validator(t1))  # True — valid min heap
+
+t2 = from_level_order([1, 4, 3, 2, 5, 6, 7])
+print(Solution().tree_heap_validator(t2))  # False — 2 < parent 4 violates
+
+# Edge cases
+print(Solution().tree_heap_validator(None))                   # True  — empty tree
+
+t3 = from_level_order([5])
+print(Solution().tree_heap_validator(t3))                     # True  — single node
+
+t4 = from_level_order([1, 2])
+print(Solution().tree_heap_validator(t4))                     # True  — two nodes, valid
+
+t5 = from_level_order([2, 1])
+print(Solution().tree_heap_validator(t5))                     # False — child smaller than root
+
+t6 = from_level_order([1, 2, 3, 4, 5, 6, 0])
+print(Solution().tree_heap_validator(t6))                     # False — 0 < parent 3
 ```
 
 ```java run
+import java.util.*;
+
 public class Main {
-    static class TreeNode { int val; TreeNode left, right; TreeNode(int v){val=v;} }
+    static class TreeNode {
+        int val;
+        TreeNode left;
+        TreeNode right;
+        TreeNode() {}
+        TreeNode(int val) { this.val = val; }
+    }
+
+    static TreeNode fromLevelOrder(Integer... values) {
+        if (values.length == 0 || values[0] == null) return null;
+        TreeNode root = new TreeNode(values[0]);
+        java.util.Deque<TreeNode> queue = new java.util.ArrayDeque<>();
+        queue.add(root);
+        int i = 1;
+        while (!queue.isEmpty() && i < values.length) {
+            TreeNode node = queue.poll();
+            if (i < values.length && values[i] != null) {
+                node.left = new TreeNode(values[i]);
+                queue.add(node.left);
+            }
+            i++;
+            if (i < values.length && values[i] != null) {
+                node.right = new TreeNode(values[i]);
+                queue.add(node.right);
+            }
+            i++;
+        }
+        return root;
+    }
 
     static class Solution {
         private boolean isValidHeap(TreeNode root, int parentVal) {
-            if (root == null) return true;                                                                                                          // empty subtree → valid
-            if (root.val < parentVal) return false;                                                                                                 // min-heap rule violated
-            return isValidHeap(root.left,  root.val)
-                && isValidHeap(root.right, root.val);                                                                                               // recurse with this node as parent
+
+            // Base case: if the current root is null, it's a valid
+            // heap root
+            if (root == null) {
+                return true;
+            }
+
+            // Check if the current root violates the min-heap property
+            if (root.val < parentVal) {
+                return false;
+            }
+
+            // Recursively check the left and right subtrees
+            boolean isLeftSubtreeValid = isValidHeap(root.left, root.val);
+            boolean isRightSubtreeValid = isValidHeap(root.right, root.val);
+
+            // Return true only if both subtrees are valid heaps
+            return isLeftSubtreeValid && isRightSubtreeValid;
         }
 
         public boolean treeHeapValidator(TreeNode root) {
-            if (root == null) return true;
-            return isValidHeap(root, Integer.MIN_VALUE);                                                                                            // -∞ sentinel for the root
+
+            // Check if the root is null (empty tree), which is considered
+            // a valid min-heap
+            if (root == null) {
+                return true;
+            }
+
+            // Start the depth-first search (DFS) from the root with an
+            // initial parent value of negative infinity
+            return isValidHeap(root, Integer.MIN_VALUE);
         }
     }
 
     public static void main(String[] args) {
-        TreeNode root = new TreeNode(1);
-        root.left  = new TreeNode(4); root.right = new TreeNode(3);
-        root.left.left  = new TreeNode(2); root.left.right  = new TreeNode(5);
-        root.right.left = new TreeNode(6); root.right.right = new TreeNode(7);
-        System.out.println(new Solution().treeHeapValidator(root));  // false
+        // Examples from the problem statement
+        TreeNode t1 = fromLevelOrder(1, 2, 3, 4, 5, 6, 7);
+        System.out.println(new Solution().treeHeapValidator(t1));  // true — valid min heap
+
+        TreeNode t2 = fromLevelOrder(1, 4, 3, 2, 5, 6, 7);
+        System.out.println(new Solution().treeHeapValidator(t2));  // false — 2 < parent 4
+
+        // Edge cases
+        System.out.println(new Solution().treeHeapValidator(null));                    // true  — empty tree
+
+        TreeNode t3 = fromLevelOrder(5);
+        System.out.println(new Solution().treeHeapValidator(t3));                      // true  — single node
+
+        TreeNode t4 = fromLevelOrder(1, 2);
+        System.out.println(new Solution().treeHeapValidator(t4));                      // true  — two nodes, valid
+
+        TreeNode t5 = fromLevelOrder(2, 1);
+        System.out.println(new Solution().treeHeapValidator(t5));                      // false — child smaller than root
+
+        TreeNode t6 = fromLevelOrder(1, 2, 3, 4, 5, 6, 0);
+        System.out.println(new Solution().treeHeapValidator(t6));                      // false — 0 < parent 3
     }
-}
-```
-
-```c run
-#include <limits.h>
-#include <stdbool.h>
-
-static bool is_valid_heap(struct TreeNode *root, int parent_val) {
-    if (root == NULL) return true;                                                                                                                // empty subtree
-    if (root->val < parent_val) return false;                                                                                                     // min-heap violation
-    return is_valid_heap(root->left,  root->val)
-        && is_valid_heap(root->right, root->val);
-}
-
-bool treeHeapValidator(struct TreeNode *root) {
-    if (root == NULL) return true;
-    return is_valid_heap(root, INT_MIN);                                                                                                          // -∞ sentinel
-}
-```
-
-```scala run
-class TreeNode(var value: Int, var left: TreeNode = null, var right: TreeNode = null)
-
-object Main extends App {
-  class Solution {
-    private def isValidHeap(root: TreeNode, parentVal: Int): Boolean = {
-      if (root == null) return true                                                                                                                     // empty subtree
-      if (root.value < parentVal) return false                                                                                                          // min-heap violation
-      isValidHeap(root.left,  root.value) && isValidHeap(root.right, root.value)
-    }
-
-    def treeHeapValidator(root: TreeNode): Boolean = {
-      if (root == null) return true
-      isValidHeap(root, Int.MinValue)                                                                                                                   // -∞ sentinel
-    }
-  }
-
-  val root = new TreeNode(1,
-    new TreeNode(4, new TreeNode(2), new TreeNode(5)),
-    new TreeNode(3, new TreeNode(6), new TreeNode(7)))
-  println(new Solution().treeHeapValidator(root))  // false
 }
 ```
 
@@ -789,6 +874,8 @@ Step 2 │ root=4, parent=1  → 4 ≥ 1  ✓ → recurse with parent=4
 Step 3 │ root=2, parent=4  → 2 < 4  ✗ → return FALSE
 Result: false ✓ (the rule fails at node 2)
 ```
+
+</details>
 
 </details>
 
@@ -816,7 +903,7 @@ The heap is one of the most-deployed data structures on the planet. The five pla
 - **CPython's `heapq`** ([`Lib/heapq.py`](https://github.com/python/cpython/blob/main/Lib/heapq.py)) — pure-Python min-heap operating in-place on an ordinary `list`. The `heappush` / `heappop` you reach for in interview answers and most production Python; ~250 lines of well-commented source, worth reading once end-to-end. The "min-heap by default; tuple `(neg, x)` for max-heap" idiom is the language's way of saying it doesn't intend to ship a separate `heapq.maxheap`.
 - **Java's `java.util.PriorityQueue`** — array-backed binary min-heap; `O(log n)` add and poll; *not* synchronised. The single most common priority queue you'll see in JVM-language production code. The contract on the comparator is documented but easy to break by accident.
 - **C++'s `std::priority_queue`** (in `<queue>`) plus the lower-level `std::make_heap` / `push_heap` / `pop_heap` (in `<algorithm>`). These ship as templates, so the comparator is inlined at the call site — measurably faster than the Python and Java versions for tight loops.
-- **The Linux process scheduler** is *not* heap-based — note the contrast. The **Completely Fair Scheduler (CFS)** keys tasks by virtual runtime in a **red-black tree**, not a heap, because the kernel needs ordered iteration and lookup-by-key, neither of which a binary heap supports cheaply. Heaps win when you only need "give me the most important". RB-trees take over the moment you also need ordered traversal. We'll cover the contrast in the [self-balancing BST overview](/cortex/data-structures-and-algorithms/trees-self-balancing-bst-overview).
+- **The Linux process scheduler** is *not* heap-based — note the contrast. The **Completely Fair Scheduler (CFS)** keys tasks by virtual runtime in a **red-black tree**, not a heap, because the kernel needs ordered iteration and lookup-by-key, neither of which a binary heap supports cheaply. Heaps win when you only need "give me the most important". RB-trees take over the moment you also need ordered traversal. We'll cover the contrast in the [self-balancing BST overview](/cortex/data-structures-and-algorithms/trees-self-balancing-bst-overview-self-balancing-bst-overview).
 - **Dijkstra's shortest-path inside graph engines** — every BGP daemon, every routing engine, every map application runs Dijkstra with a binary or Fibonacci heap as the *open set*. The heap is what makes "shortest path between two cities" feel instant on a graph of fifty million road segments. You'll see this in detail in [Single-Source Shortest Path](/cortex/data-structures-and-algorithms/graphs-single-source-shortest-path).
 - **Streaming top-K analytics** — when you need "the top 10 most-frequent IPs in the last hour" without holding every IP in memory, the standard move is a fixed-size min-heap of size K. Push every observation; evict the smallest if the heap exceeds K. Total cost: O(n log K). The pattern is so common it has its own lesson — see [Pattern: Top K Elements](/cortex/data-structures-and-algorithms/trees-heap-pattern-top-k-elements).
 
@@ -859,63 +946,54 @@ Click any question to reveal the answer.
 **A:** O(log n). Sift-down walks one root-to-leaf path.
 
 </details>
-
 <details>
 <summary><strong>Q:</strong> Worst-case complexity of <code>heap.insert(x)</code>?</summary>
 
 **A:** O(log n). Sift-up walks one leaf-to-root path.
 
 </details>
-
 <details>
 <summary><strong>Q:</strong> Worst-case complexity of <code>heap.peek()</code>?</summary>
 
 **A:** O(1). Read the root.
 
 </details>
-
 <details>
 <summary><strong>Q:</strong> Cost of building a heap from an array of <code>n</code> items?</summary>
 
 **A:** O(n) via bottom-up heapify. The naive insert-one-by-one approach is O(n log n).
 
 </details>
-
 <details>
 <summary><strong>Q:</strong> Cost of <code>heap.delete(arbitrary value)</code> (not the root)?</summary>
 
 **A:** O(n). Heaps aren't searchable; the find is linear, the structural fix is O(log n).
 
 </details>
-
 <details>
 <summary><strong>Q:</strong> What invariant must every heap node satisfy?</summary>
 
 **A:** Parent has higher priority than both children. (Nothing about left vs right — that's a BST rule.)
 
 </details>
-
 <details>
 <summary><strong>Q:</strong> How is a binary heap stored in memory?</summary>
 
 **A:** Flat array. Parent of index `i` is `(i-1)/2`; left child is `2i+1`; right child is `2i+2`.
 
 </details>
-
 <details>
 <summary><strong>Q:</strong> How do you implement a max-heap with Python's <code>heapq</code> (which is min-heap only)?</summary>
 
 **A:** Negate keys on push and pop, or push `(-priority, value)` tuples.
 
 </details>
-
 <details>
 <summary><strong>Q:</strong> Is Java's <code>PriorityQueue</code> thread-safe?</summary>
 
 **A:** No. Use `PriorityBlockingQueue` for concurrent producers.
 
 </details>
-
 <details>
 <summary><strong>Q:</strong> Why does Linux's CFS scheduler use an RB-tree, not a heap, when both are O(log n)?</summary>
 

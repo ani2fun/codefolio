@@ -10,7 +10,7 @@ The solution is the **mutate-then-undo** discipline you already met in stateful 
 
 This is the **stateful root-to-leaf path pattern**. It's the workhorse for any tree problem where the *answer is the path*, not just a property of the path. *Path enumeration*, *equal-counts paths*, *duplicate path detection*, *prefix-sum tricks on paths* — all the same recipe with different per-leaf checks.
 
-This lesson defines the recipe, walks through four canonical problems (collect paths summing to a target, equal-evens-and-odds paths, duplicate paths, prefix-sum paths), and implements each in 10 languages.
+This lesson defines the recipe, walks through four canonical problems (collect paths summing to a target, equal-evens-and-odds paths, duplicate paths, prefix-sum paths), and implements each in Python and Java.
 
 ---
 
@@ -71,26 +71,10 @@ flowchart TB
 
 > **Why copy at the leaf?** Because the live `path` list is going to be popped from on the way back up. If you saved a *reference*, you'd end up with a dozen different paths in your output that all secretly point at the same (now empty) list. Always copy when extracting from a shared mutable.
 
-## Generic pattern in 10 languages
+## Generic pattern
 
 The "collect all root-to-leaf paths" template — the simplest member of the family.
 
-
-```pseudocode
-function allRootToLeafPaths(root):
-    out  ← empty list
-    path ← empty list
-    function go(n):
-        if n = null: return
-        push n.val to path                        # enter
-        if n.left = null AND n.right = null:
-            append copy of path to out            # leaf: snapshot the path
-        else:
-            go(n.left); go(n.right)
-        pop from path                             # exit: restore for parent
-    go(root)
-    return out
-```
 
 ```python run
 from typing import List, Optional
@@ -134,50 +118,6 @@ public static List<List<Integer>> allRootToLeafPaths(TreeNode root) {
 }
 ```
 
-```c run
-// out is a 2D array; path is a stack; both bounded for the demo
-static int path[64], path_top = -1;
-static int out[64][64], out_lens[64], out_count = 0;
-void all_helper(TreeNode *n) {
-    if (!n) return;
-    path[++path_top] = n->val;
-    if (!n->left && !n->right) {
-        for (int i = 0; i <= path_top; i++) out[out_count][i] = path[i];
-        out_lens[out_count++] = path_top + 1;
-    } else {
-        all_helper(n->left); all_helper(n->right);
-    }
-    path_top--;
-}
-```
-
-```scala run
-class TreeNode(var value: Int, var left: TreeNode = null, var right: TreeNode = null)
-
-object Main extends App {
-  class Solution {
-    def allRootToLeafPaths(root: TreeNode): List[List[Int]] = {
-      val path = scala.collection.mutable.ListBuffer[Int]()
-      val out  = scala.collection.mutable.ListBuffer[List[Int]]()
-      def go(n: TreeNode): Unit = {
-        if (n == null) return
-        path += n.value
-        if (n.left == null && n.right == null) out += path.toList
-        else { go(n.left); go(n.right) }
-        path.remove(path.length - 1)
-      }
-      go(root)
-      out.toList
-    }
-  }
-
-  val root = new TreeNode(1,
-    new TreeNode(2, new TreeNode(4), null),
-    new TreeNode(3, null, new TreeNode(7)))
-  println(new Solution().allRootToLeafPaths(root))  // List(List(1, 2, 4), List(1, 3, 7))
-}
-```
-
 
 ## Complexity
 
@@ -206,109 +146,219 @@ Anti-pattern: if all you need is a count, sum, or boolean per path, use the *sta
 
 > Return *all* root-to-leaf paths whose node values sum to `target`.
 
-The accumulator is *the path so far* (push-pop) plus *the running sum* (passed by value). At each leaf, if the running sum equals the target, snapshot the path.
+The accumulator is *the path so far* (push-pop) plus a *countdown of the target* (passed by value). Each call subtracts the current node's value from `target` before recursing; at a leaf the path qualifies when the leaf's own value equals the remaining `target` — i.e. the whole path summed to the original target. Snapshot the path when that holds.
 
-## Solution
+<details>
+<summary><h2>Solution</h2></summary>
 
 
-```pseudocode
-function rootToLeafPaths(root, target):
-    out  ← empty list
-    path ← empty list
-    function go(n, remaining):
-        if n = null: return
-        push n.val to path
-        remaining ← remaining − n.val
-        if n.left = null AND n.right = null:
-            if remaining = 0: append copy of path to out
-        else:
-            go(n.left, remaining); go(n.right, remaining)
-        pop from path
-    go(root, target)
-    return out
-```
 
 ```python run
-def root_to_leaf_paths(root, target):
-    out, path = [], []
-    def go(n, remaining):
-        if n is None: return
-        path.append(n.val)
-        remaining -= n.val
-        if n.left is None and n.right is None:
-            if remaining == 0: out.append(path.copy())
-        else:
-            go(n.left, remaining); go(n.right, remaining)
-        path.pop()
-    go(root, target)
-    return out
+from typing import List, Optional
+
+
+class TreeNode:
+    def __init__(self, val=0, left=None, right=None):
+        self.val = val
+        self.left = left
+        self.right = right
+
+
+def from_level_order(values):
+    """Build tree from list like [1, 2, 3, None, 4]. None means missing child."""
+    if not values:
+        return None
+    root = TreeNode(values[0])
+    queue = [root]
+    i = 1
+    while queue and i < len(values):
+        node = queue.pop(0)
+        if i < len(values) and values[i] is not None:
+            node.left = TreeNode(values[i])
+            queue.append(node.left)
+        i += 1
+        if i < len(values) and values[i] is not None:
+            node.right = TreeNode(values[i])
+            queue.append(node.right)
+        i += 1
+    return root
+
+
+class Solution:
+    def __init__(self):
+
+        # To store the current path as we traverse
+        self.path: List[int] = []
+
+    def root_to_leaf_paths_helper(
+        self,
+        root: Optional[TreeNode],
+        target: int,
+        result: List[List[int]],
+    ) -> None:
+
+        # If the root is null, there is no path, so return
+        if root is None:
+            return
+
+        # Add the current node to the path
+        self.path.append(root.val)
+
+        # If it is a leaf node and the target matches the node value,
+        # add the current path to the result
+        if (
+            root.left is None
+            and root.right is None
+            and root.val == target
+        ):
+            result.append(self.path.copy())
+
+        # Otherwise, subtract the current node's value from target and
+        # continue traversal to left and right subtrees
+        target -= root.val
+
+        # Recursively search in left and right subtrees with updated
+        # target
+        self.root_to_leaf_paths_helper(root.left, target, result)
+        self.root_to_leaf_paths_helper(root.right, target, result)
+
+        # Backtrack by removing the current node from the path
+        self.path.pop()
+
+    def root_to_leaf_paths(
+        self, root: Optional[TreeNode], target: int
+    ) -> List[List[int]]:
+
+        # To store all valid paths
+        result: List[List[int]] = []
+
+        # Start the recursive search from the root node
+        self.root_to_leaf_paths_helper(root, target, result)
+
+        # Return the list of all valid paths
+        return result
+
+
+# Examples from the problem statement
+print(Solution().root_to_leaf_paths(from_level_order([1, 2, 3, 4, None, None, 7]), 11))   # [[1, 3, 7]]
+print(Solution().root_to_leaf_paths(from_level_order([1, 8, 4, None, None, 2, 4]), 13))   # []
+
+# Edge cases
+print(Solution().root_to_leaf_paths(None, 0))                                               # []
+print(Solution().root_to_leaf_paths(from_level_order([5]), 5))                              # [[5]]
+print(Solution().root_to_leaf_paths(from_level_order([5]), 0))                              # []
+print(Solution().root_to_leaf_paths(from_level_order([1, 2, 3]), 3))                        # [[1, 2]]
+print(Solution().root_to_leaf_paths(from_level_order([1, 2, 3]), 4))                        # [[1, 3]]
+print(Solution().root_to_leaf_paths(from_level_order([1, 2, 2]), 3))                        # [[1, 2], [1, 2]] (two identical paths)
 ```
 
 ```java run
-static List<Integer> path;
-static List<List<Integer>> out;
-static void rtlpHelper(TreeNode n, int remaining) {
-    if (n == null) return;
-    path.add(n.val);
-    remaining -= n.val;
-    if (n.left == null && n.right == null) {
-        if (remaining == 0) out.add(new ArrayList<>(path));
-    } else {
-        rtlpHelper(n.left, remaining); rtlpHelper(n.right, remaining);
-    }
-    path.remove(path.size() - 1);
-}
-public static List<List<Integer>> rootToLeafPaths(TreeNode root, int target) {
-    out = new ArrayList<>(); path = new ArrayList<>();
-    rtlpHelper(root, target);
-    return out;
-}
-```
+import java.util.*;
 
-```c run
-static int path[64], path_top = -1;
-static int out[64][64], out_lens[64], out_count = 0;
-void rtlp_helper(TreeNode *n, int remaining) {
-    if (!n) return;
-    path[++path_top] = n->val;
-    remaining -= n->val;
-    if (!n->left && !n->right) {
-        if (remaining == 0) {
-            for (int i = 0; i <= path_top; i++) out[out_count][i] = path[i];
-            out_lens[out_count++] = path_top + 1;
+public class Main {
+    static class TreeNode {
+        int val;
+        TreeNode left;
+        TreeNode right;
+        TreeNode() {}
+        TreeNode(int val) { this.val = val; }
+    }
+
+    static TreeNode fromLevelOrder(Integer... values) {
+        if (values.length == 0 || values[0] == null) return null;
+        TreeNode root = new TreeNode(values[0]);
+        java.util.Deque<TreeNode> queue = new java.util.ArrayDeque<>();
+        queue.add(root);
+        int i = 1;
+        while (!queue.isEmpty() && i < values.length) {
+            TreeNode node = queue.poll();
+            if (i < values.length && values[i] != null) {
+                node.left = new TreeNode(values[i]);
+                queue.add(node.left);
+            }
+            i++;
+            if (i < values.length && values[i] != null) {
+                node.right = new TreeNode(values[i]);
+                queue.add(node.right);
+            }
+            i++;
         }
-    } else {
-        rtlp_helper(n->left, remaining); rtlp_helper(n->right, remaining);
+        return root;
     }
-    path_top--;
+
+    static class Solution {
+
+        // To store the current path as we traverse
+        private List<Integer> path = new ArrayList<>();
+
+        private void rootToLeafPathsHelper(
+            TreeNode root,
+            int target,
+            List<List<Integer>> result
+        ) {
+
+            // If the root is null, there is no path, so return
+            if (root == null) {
+                return;
+            }
+
+            // Add the current node to the path
+            path.add(root.val);
+
+            // If it is a leaf node and the target matches the node value,
+            // add the current path to the result
+            if (
+                root.left == null && root.right == null && root.val == target
+            ) {
+                result.add(new ArrayList<>(path));
+            }
+
+            // Otherwise, subtract the current node's value from target and
+            // continue traversal to left and right subtrees
+            target -= root.val;
+
+            // Recursively search in left and right subtrees with updated
+            // target
+            rootToLeafPathsHelper(root.left, target, result);
+            rootToLeafPathsHelper(root.right, target, result);
+
+            // Backtrack by removing the current node from the path
+            path.remove(path.size() - 1);
+        }
+
+        public List<List<Integer>> rootToLeafPaths(
+            TreeNode root,
+            int target
+        ) {
+
+            // To store all valid paths
+            List<List<Integer>> result = new ArrayList<>();
+
+            // Start the recursive search from the root node
+            rootToLeafPathsHelper(root, target, result);
+
+            // Return the list of all valid paths
+            return result;
+        }
+    }
+
+    public static void main(String[] args) {
+        // Examples from the problem statement
+        System.out.println(new Solution().rootToLeafPaths(fromLevelOrder(1, 2, 3, 4, null, null, 7), 11));   // [[1, 3, 7]]
+        System.out.println(new Solution().rootToLeafPaths(fromLevelOrder(1, 8, 4, null, null, 2, 4), 13));   // []
+
+        // Edge cases
+        System.out.println(new Solution().rootToLeafPaths(null, 0));                                          // []
+        System.out.println(new Solution().rootToLeafPaths(fromLevelOrder(5), 5));                             // [[5]]
+        System.out.println(new Solution().rootToLeafPaths(fromLevelOrder(5), 0));                             // []
+        System.out.println(new Solution().rootToLeafPaths(fromLevelOrder(1, 2, 3), 3));                       // [[1, 2]]
+        System.out.println(new Solution().rootToLeafPaths(fromLevelOrder(1, 2, 3), 4));                       // [[1, 3]]
+        System.out.println(new Solution().rootToLeafPaths(fromLevelOrder(1, 2, 2), 3));                       // [[1, 2], [1, 2]]
+    }
 }
 ```
 
-```scala run
-class TreeNode(var value: Int, var left: TreeNode = null, var right: TreeNode = null)
-
-object Main extends App {
-  class Solution {
-    def rootToLeafPaths(root: TreeNode, target: Int): List[List[Int]] = {
-      val path = scala.collection.mutable.ListBuffer[Int]()
-      val out  = scala.collection.mutable.ListBuffer[List[Int]]()
-      def go(n: TreeNode, remaining: Int): Unit = {
-        if (n == null) return
-        path += n.value
-        val rem = remaining - n.value
-        if (n.left == null && n.right == null) {
-          if (rem == 0) out += path.toList
-        } else { go(n.left, rem); go(n.right, rem) }
-        path.remove(path.length - 1)
-      }
-      go(root, target); out.toList
-    }
-  }
-
-  val root = new TreeNode(1, new TreeNode(2), new TreeNode(3))
-  println(new Solution().rootToLeafPaths(root, 4))  // List(List(1, 3))
-}
-```
+</details>
 
 
 ***
@@ -319,102 +369,227 @@ object Main extends App {
 
 Same shape as Problem 1, but the per-path bookkeeping is *two counters* (`evenCount`, `oddCount`) instead of one running sum. At each leaf, snapshot the path if the counts match.
 
-## Solution
+<details>
+<summary><h2>Solution</h2></summary>
 
 
-```pseudocode
-function equalPaths(root):
-    out  ← empty list
-    path ← empty list
-    function go(n, even, odd):
-        if n = null: return
-        push n.val to path
-        if n.val mod 2 = 0: even ← even + 1
-        else:                odd  ← odd  + 1
-        if n.left = null AND n.right = null:
-            if even = odd: append copy of path to out
-        else:
-            go(n.left, even, odd); go(n.right, even, odd)
-        pop from path
-    go(root, 0, 0)
-    return out
-```
 
 ```python run
-def equal_paths(root):
-    out, path = [], []
-    def go(n, even, odd):
-        if n is None: return
-        path.append(n.val)
-        if n.val % 2 == 0: even += 1
-        else:              odd  += 1
-        if n.left is None and n.right is None:
-            if even == odd: out.append(path.copy())
+from typing import List, Optional
+
+
+class TreeNode:
+    def __init__(self, val=0, left=None, right=None):
+        self.val = val
+        self.left = left
+        self.right = right
+
+
+def from_level_order(values):
+    """Build tree from list like [1, 2, 3, None, 4]. None means missing child."""
+    if not values:
+        return None
+    root = TreeNode(values[0])
+    queue = [root]
+    i = 1
+    while queue and i < len(values):
+        node = queue.pop(0)
+        if i < len(values) and values[i] is not None:
+            node.left = TreeNode(values[i])
+            queue.append(node.left)
+        i += 1
+        if i < len(values) and values[i] is not None:
+            node.right = TreeNode(values[i])
+            queue.append(node.right)
+        i += 1
+    return root
+
+
+class Solution:
+
+    # To store the current path as we traverse
+    def __init__(self):
+        self.path: List[int] = []
+
+    def equal_paths_helper(
+        self,
+        root: Optional[TreeNode],
+        even_count: int,
+        odd_count: int,
+        result: List[List[int]],
+    ) -> None:
+
+        # If the root is null, there is no path, so return
+        if root is None:
+            return
+
+        # Add the current node to the path
+        self.path.append(root.val)
+
+        # If the current node is even, increment even count
+        if root.val % 2 == 0:
+            even_count += 1
+
+        # Else, increment odd count
         else:
-            go(n.left, even, odd); go(n.right, even, odd)
-        path.pop()
-    go(root, 0, 0)
-    return out
+            odd_count += 1
+
+        # If current node is a leaf, check if even and odd counts are
+        # equal
+        if root.left is None and root.right is None:
+
+            # If the counts are equal, add the current path to the result
+            if even_count == odd_count:
+                result.append(self.path.copy())
+
+        # Recursively traverse left and right subtrees
+        self.equal_paths_helper(
+            root.left, even_count, odd_count, result
+        )
+        self.equal_paths_helper(
+            root.right, even_count, odd_count, result
+        )
+
+        # Backtrack by removing the current node from the path
+        self.path.pop()
+
+    def equal_paths(
+        self, root: Optional[TreeNode]
+    ) -> List[List[int]]:
+
+        # To store all valid paths
+        result: List[List[int]] = []
+
+        # Start the recursive search from the root node with initial even
+        # and odd counts as 0
+        self.equal_paths_helper(root, 0, 0, result)
+        return result
+
+
+# Examples from the problem statement
+print(Solution().equal_paths(from_level_order([1, 2, 4])))                     # [[1, 2], [1, 4]]
+print(Solution().equal_paths(from_level_order([1, 8, 4, None, None, 2, 4])))   # [[1, 8]]
+
+# Edge cases
+print(Solution().equal_paths(None))                                              # []
+print(Solution().equal_paths(from_level_order([1])))                             # [] (odd only, 1 odd 0 even)
+print(Solution().equal_paths(from_level_order([2])))                             # [] (even only)
+print(Solution().equal_paths(from_level_order([1, 2])))                          # [[1, 2]] (1 odd, 1 even)
+print(Solution().equal_paths(from_level_order([1, 2, 3])))                       # [[1, 2]] (1+2: 1 odd 1 even; 1+3: 2 odd 0 even)
+print(Solution().equal_paths(from_level_order([2, 1, 3, None, None, None, 4])))  # [[2, 3, 4]] (2+3+4: 2 even 1 odd; 2+1: 1 each yes; 2+3+4: 2 even 1 odd no)
 ```
 
 ```java run
-static List<Integer> path;
-static List<List<Integer>> out;
-static void epHelper(TreeNode n, int even, int odd) {
-    if (n == null) return;
-    path.add(n.val);
-    if (n.val % 2 == 0) even++; else odd++;
-    if (n.left == null && n.right == null) {
-        if (even == odd) out.add(new ArrayList<>(path));
-    } else { epHelper(n.left, even, odd); epHelper(n.right, even, odd); }
-    path.remove(path.size() - 1);
-}
-public static List<List<Integer>> equalPaths(TreeNode root) {
-    out = new ArrayList<>(); path = new ArrayList<>();
-    epHelper(root, 0, 0); return out;
-}
-```
+import java.util.*;
 
-```c run
-void ep_helper(TreeNode *n, int even, int odd) {
-    if (!n) return;
-    path[++path_top] = n->val;
-    if (n->val % 2 == 0) even++; else odd++;
-    if (!n->left && !n->right) {
-        if (even == odd) {
-            for (int i = 0; i <= path_top; i++) out[out_count][i] = path[i];
-            out_lens[out_count++] = path_top + 1;
-        }
-    } else { ep_helper(n->left, even, odd); ep_helper(n->right, even, odd); }
-    path_top--;
-}
-```
-
-```scala run
-class TreeNode(var value: Int, var left: TreeNode = null, var right: TreeNode = null)
-
-object Main extends App {
-  class Solution {
-    def equalPaths(root: TreeNode): List[List[Int]] = {
-      val path = scala.collection.mutable.ListBuffer[Int]()
-      val out  = scala.collection.mutable.ListBuffer[List[Int]]()
-      def go(n: TreeNode, even: Int, odd: Int): Unit = {
-        if (n == null) return
-        path += n.value
-        val (e, o) = if (n.value % 2 == 0) (even + 1, odd) else (even, odd + 1)
-        if (n.left == null && n.right == null) {
-          if (e == o) out += path.toList
-        } else { go(n.left, e, o); go(n.right, e, o) }
-        path.remove(path.length - 1)
-      }
-      go(root, 0, 0); out.toList
+public class Main {
+    static class TreeNode {
+        int val;
+        TreeNode left;
+        TreeNode right;
+        TreeNode() {}
+        TreeNode(int val) { this.val = val; }
     }
-  }
 
-  val root = new TreeNode(1, new TreeNode(2), new TreeNode(3))
-  println(new Solution().equalPaths(root))  // List(List(1, 2))
+    static TreeNode fromLevelOrder(Integer... values) {
+        if (values.length == 0 || values[0] == null) return null;
+        TreeNode root = new TreeNode(values[0]);
+        java.util.Deque<TreeNode> queue = new java.util.ArrayDeque<>();
+        queue.add(root);
+        int i = 1;
+        while (!queue.isEmpty() && i < values.length) {
+            TreeNode node = queue.poll();
+            if (i < values.length && values[i] != null) {
+                node.left = new TreeNode(values[i]);
+                queue.add(node.left);
+            }
+            i++;
+            if (i < values.length && values[i] != null) {
+                node.right = new TreeNode(values[i]);
+                queue.add(node.right);
+            }
+            i++;
+        }
+        return root;
+    }
+
+    static class Solution {
+
+        // To store the current path as we traverse
+        private List<Integer> path = new ArrayList<>();
+
+        private void equalPathsHelper(
+            TreeNode root,
+            int evenCount,
+            int oddCount,
+            List<List<Integer>> result
+        ) {
+
+            // If the root is null, there is no path, so return
+            if (root == null) {
+                return;
+            }
+
+            // Add the current node to the path
+            path.add(root.val);
+
+            // If the current node is even, increment even count
+            if (root.val % 2 == 0) {
+                evenCount++;
+            }
+
+            // Else, increment odd count
+            else {
+                oddCount++;
+            }
+
+            // If current node is a leaf, check if even and odd counts are
+            // equal
+            if (root.left == null && root.right == null) {
+
+                // If the counts are equal, add the current path to the
+                // result
+                if (evenCount == oddCount) {
+                    result.add(new ArrayList<>(path));
+                }
+            }
+
+            // Recursively traverse left and right subtrees
+            equalPathsHelper(root.left, evenCount, oddCount, result);
+            equalPathsHelper(root.right, evenCount, oddCount, result);
+
+            // Backtrack by removing the current node from the path
+            path.remove(path.size() - 1);
+        }
+
+        public List<List<Integer>> equalPaths(TreeNode root) {
+
+            // To store all valid paths
+            List<List<Integer>> result = new ArrayList<>();
+
+            // Start the recursive search from the root node with initial
+            // even and odd counts as 0
+            equalPathsHelper(root, 0, 0, result);
+            return result;
+        }
+    }
+
+    public static void main(String[] args) {
+        // Examples from the problem statement
+        System.out.println(new Solution().equalPaths(fromLevelOrder(1, 2, 4)));                     // [[1, 2], [1, 4]]
+        System.out.println(new Solution().equalPaths(fromLevelOrder(1, 8, 4, null, null, 2, 4)));   // [[1, 8]]
+
+        // Edge cases
+        System.out.println(new Solution().equalPaths(null));                                         // []
+        System.out.println(new Solution().equalPaths(fromLevelOrder(1)));                            // []
+        System.out.println(new Solution().equalPaths(fromLevelOrder(2)));                            // []
+        System.out.println(new Solution().equalPaths(fromLevelOrder(1, 2)));                         // [[1, 2]]
+        System.out.println(new Solution().equalPaths(fromLevelOrder(1, 2, 3)));                      // [[1, 2]]
+    }
 }
 ```
+
+</details>
 
 
 ***
@@ -425,100 +600,237 @@ object Main extends App {
 
 Two ingredients: the push-pop path discipline, plus a **hash map of path-string → count**. At each leaf, serialise the path into a hash-friendly key (e.g. comma-joined string), bump its count, and record the path *exactly once* — when the count first hits 2.
 
-## Solution
+<details>
+<summary><h2>Solution</h2></summary>
 
 
-```pseudocode
-function duplicatePaths(root):
-    out  ← empty list
-    path ← empty list
-    seen ← empty Map: key → count
-    function go(n):
-        if n = null: return
-        push n.val to path
-        if n.left = null AND n.right = null:
-            key ← string representation of path
-            seen[key] ← seen[key] + 1
-            if seen[key] = 2: append copy of path to out   # second occurrence
-        else:
-            go(n.left); go(n.right)
-        pop from path
-    go(root)
-    return out
-```
 
 ```python run
-def duplicate_paths(root):
-    out, path, seen = [], [], {}
-    def go(n):
-        if n is None: return
-        path.append(n.val)
-        if n.left is None and n.right is None:
-            key = ",".join(map(str, path))
-            seen[key] = seen.get(key, 0) + 1
-            if seen[key] == 2: out.append(path.copy())
-        else:
-            go(n.left); go(n.right)
-        path.pop()
-    go(root)
-    return out
+from typing import List, Optional, Dict
+
+
+class TreeNode:
+    def __init__(self, val=0, left=None, right=None):
+        self.val = val
+        self.left = left
+        self.right = right
+
+
+def from_level_order(values):
+    """Build tree from list like [1, 2, 3, None, 4]. None means missing child."""
+    if not values:
+        return None
+    root = TreeNode(values[0])
+    queue = [root]
+    i = 1
+    while queue and i < len(values):
+        node = queue.pop(0)
+        if i < len(values) and values[i] is not None:
+            node.left = TreeNode(values[i])
+            queue.append(node.left)
+        i += 1
+        if i < len(values) and values[i] is not None:
+            node.right = TreeNode(values[i])
+            queue.append(node.right)
+        i += 1
+    return root
+
+
+class Solution:
+    def __init__(self):
+
+        # To store the current path as we traverse
+        self.path: List[int] = []
+
+        # To store frequency of each root-to-leaf path (serialized as a
+        # string)
+        self.path_count: Dict[str, int] = {}
+
+    def serialize_path(self, path: List[int]) -> str:
+
+        # Join all elements of the path with commas
+        return ",".join(map(str, path))
+
+    def duplicate_paths_helper(
+        self, root: Optional[TreeNode], result: List[List[int]]
+    ) -> None:
+
+        # If the root is null, there is no path, so return
+        if root is None:
+            return
+
+        # Add the current node to the path
+        self.path.append(root.val)
+
+        # If it's a leaf, serialize and check frequency
+        if root.left is None and root.right is None:
+
+            # Serialize current path
+            serialized_path = self.serialize_path(self.path)
+
+            # Increment frequency count for this path
+            self.path_count[serialized_path] = (
+                self.path_count.get(serialized_path, 0) + 1
+            )
+
+            # If path occurs exactly twice, record it as duplicate
+            if self.path_count[serialized_path] == 2:
+                result.append(self.path.copy())
+
+        # Recursively traverse left and right subtrees
+        self.duplicate_paths_helper(root.left, result)
+        self.duplicate_paths_helper(root.right, result)
+
+        # Backtrack by removing the current node from the path
+        self.path.pop()
+
+    def duplicate_paths(
+        self, root: Optional[TreeNode]
+    ) -> List[List[int]]:
+
+        # To store all valid paths
+        result: List[List[int]] = []
+
+        # Start the recursive search from the root node
+        self.duplicate_paths_helper(root, result)
+
+        # Return the list of all valid paths
+        return result
+
+
+# Examples from the problem statement
+print(Solution().duplicate_paths(from_level_order([1, 2, 2])))                     # [[1, 2]]
+print(Solution().duplicate_paths(from_level_order([1, 8, 4, None, None, 2, 4])))   # []
+
+# Edge cases
+print(Solution().duplicate_paths(None))                                              # []
+print(Solution().duplicate_paths(from_level_order([5])))                             # [] (single node, can't duplicate)
+print(Solution().duplicate_paths(from_level_order([1, 1, 1])))                       # [[1, 1]] (both paths are [1,1])
+print(Solution().duplicate_paths(from_level_order([1, 2, 3])))                       # [] (different paths)
+print(Solution().duplicate_paths(from_level_order([1, 2, 2, 3, None, None, 3])))     # [[1, 2, 3]] (left and right paths match)
 ```
 
 ```java run
-static List<Integer> path;
-static List<List<Integer>> out;
-static Map<String, Integer> seen;
-static void dpHelper(TreeNode n) {
-    if (n == null) return;
-    path.add(n.val);
-    if (n.left == null && n.right == null) {
-        String key = path.toString();
-        int c = seen.merge(key, 1, Integer::sum);
-        if (c == 2) out.add(new ArrayList<>(path));
-    } else { dpHelper(n.left); dpHelper(n.right); }
-    path.remove(path.size() - 1);
-}
-public static List<List<Integer>> duplicatePaths(TreeNode root) {
-    out = new ArrayList<>(); path = new ArrayList<>(); seen = new HashMap<>();
-    dpHelper(root); return out;
-}
-```
+import java.util.*;
+import java.util.stream.Collectors;
 
-```c run
-// Practical C requires a string-keyed hash map; the algorithm is identical:
-// serialise the path into a comma-joined string, increment its count,
-// emit the path when the count reaches 2. (Implementation omitted for brevity.)
-```
-
-```scala run
-class TreeNode(var value: Int, var left: TreeNode = null, var right: TreeNode = null)
-
-object Main extends App {
-  class Solution {
-    def duplicatePaths(root: TreeNode): List[List[Int]] = {
-      val path = scala.collection.mutable.ListBuffer[Int]()
-      val out  = scala.collection.mutable.ListBuffer[List[Int]]()
-      val seen = scala.collection.mutable.Map[String, Int]()
-      def go(n: TreeNode): Unit = {
-        if (n == null) return
-        path += n.value
-        if (n.left == null && n.right == null) {
-          val key = path.mkString(",")
-          seen(key) = seen.getOrElse(key, 0) + 1
-          if (seen(key) == 2) out += path.toList
-        } else { go(n.left); go(n.right) }
-        path.remove(path.length - 1)
-      }
-      go(root); out.toList
+public class Main {
+    static class TreeNode {
+        int val;
+        TreeNode left;
+        TreeNode right;
+        TreeNode() {}
+        TreeNode(int val) { this.val = val; }
     }
-  }
 
-  val root = new TreeNode(1,
-    new TreeNode(1, new TreeNode(1), null),
-    new TreeNode(1, null, new TreeNode(1)))
-  println(new Solution().duplicatePaths(root))  // List(List(1, 1, 1))
+    static TreeNode fromLevelOrder(Integer... values) {
+        if (values.length == 0 || values[0] == null) return null;
+        TreeNode root = new TreeNode(values[0]);
+        java.util.Deque<TreeNode> queue = new java.util.ArrayDeque<>();
+        queue.add(root);
+        int i = 1;
+        while (!queue.isEmpty() && i < values.length) {
+            TreeNode node = queue.poll();
+            if (i < values.length && values[i] != null) {
+                node.left = new TreeNode(values[i]);
+                queue.add(node.left);
+            }
+            i++;
+            if (i < values.length && values[i] != null) {
+                node.right = new TreeNode(values[i]);
+                queue.add(node.right);
+            }
+            i++;
+        }
+        return root;
+    }
+
+    static class Solution {
+
+        // To store the current path as we traverse
+        private List<Integer> path = new ArrayList<>();
+
+        // To store frequency of each root-to-leaf path (serialized as a
+        // string)
+        private Map<String, Integer> pathCount = new HashMap<>();
+
+        private String serializePath(List<Integer> path) {
+
+            // Join all elements of the path with commas
+            return path
+                .stream()
+                .map(Object::toString)
+                .collect(Collectors.joining(","));
+        }
+
+        private void duplicatePathsHelper(
+            TreeNode root,
+            List<List<Integer>> result
+        ) {
+
+            // If the root is null, there is no path, so return
+            if (root == null) {
+                return;
+            }
+
+            // Add the current node to the path
+            path.add(root.val);
+
+            // If it's a leaf, serialize and check frequency
+            if (root.left == null && root.right == null) {
+
+                // Serialize current path
+                String serializedPath = serializePath(path);
+
+                // Increment frequency count for this path
+                pathCount.put(
+                    serializedPath,
+                    pathCount.getOrDefault(serializedPath, 0) + 1
+                );
+
+                // If path occurs exactly twice, record it as duplicate
+                if (pathCount.get(serializedPath) == 2) {
+                    result.add(new ArrayList<>(path));
+                }
+            }
+
+            // Recursively traverse left and right subtrees
+            duplicatePathsHelper(root.left, result);
+            duplicatePathsHelper(root.right, result);
+
+            // Backtrack by removing the current node from the path
+            path.remove(path.size() - 1);
+        }
+
+        public List<List<Integer>> duplicatePaths(TreeNode root) {
+
+            // To store all valid paths
+            List<List<Integer>> result = new ArrayList<>();
+
+            // Start the recursive search from the root node
+            duplicatePathsHelper(root, result);
+
+            // Return the list of all valid paths
+            return result;
+        }
+    }
+
+    public static void main(String[] args) {
+        // Examples from the problem statement
+        System.out.println(new Solution().duplicatePaths(fromLevelOrder(1, 2, 2)));                     // [[1, 2]]
+        System.out.println(new Solution().duplicatePaths(fromLevelOrder(1, 8, 4, null, null, 2, 4)));   // []
+
+        // Edge cases
+        System.out.println(new Solution().duplicatePaths(null));                                         // []
+        System.out.println(new Solution().duplicatePaths(fromLevelOrder(5)));                            // []
+        System.out.println(new Solution().duplicatePaths(fromLevelOrder(1, 1, 1)));                      // [[1, 1]]
+        System.out.println(new Solution().duplicatePaths(fromLevelOrder(1, 2, 3)));                      // []
+        System.out.println(new Solution().duplicatePaths(fromLevelOrder(1, 2, 2, 3, null, null, 3)));    // [[1, 2, 3]]
+    }
 }
 ```
+
+</details>
 
 
 ***
@@ -531,108 +843,236 @@ object Main extends App {
 
 Combine the path discipline with a **prefix-sum frequency map**. As we descend, increment the count of the running prefix-sum at the current depth. At a leaf, if the running sum has been seen *more than once* (count > 1), it means a strictly earlier prefix of the path had the same sum — qualifying the path.
 
-## Solution
+<details>
+<summary><h2>Solution</h2></summary>
 
 
-```pseudocode
-function prefixPaths(root):
-    out  ← empty list
-    path ← empty list
-    freq ← empty Map: sum → count
-    function go(n, run):
-        if n = null: return
-        push n.val to path
-        run ← run + n.val
-        freq[run] ← freq.get(run, 0) + 1
-        if n.left = null AND n.right = null:
-            if freq[run] > 1: append copy of path to out   # same prefix sum seen before
-        else:
-            go(n.left, run); go(n.right, run)
-        freq[run] ← freq[run] − 1
-        if freq[run] = 0: remove run from freq
-        pop from path
-    go(root, 0)
-    return out
-```
 
 ```python run
-def prefix_paths(root):
-    out, path, freq = [], [], {}
-    def go(n, run):
-        if n is None: return
-        path.append(n.val)
-        run += n.val
-        freq[run] = freq.get(run, 0) + 1
-        if n.left is None and n.right is None:
-            if freq[run] > 1: out.append(path.copy())
-        else:
-            go(n.left, run); go(n.right, run)
-        freq[run] -= 1
-        if freq[run] == 0: del freq[run]
-        path.pop()
-    go(root, 0)
-    return out
+from typing import List, Optional
+from collections import defaultdict
+
+
+class TreeNode:
+    def __init__(self, val=0, left=None, right=None):
+        self.val = val
+        self.left = left
+        self.right = right
+
+
+def from_level_order(values):
+    """Build tree from list like [1, 2, 3, None, 4]. None means missing child."""
+    if not values:
+        return None
+    root = TreeNode(values[0])
+    queue = [root]
+    i = 1
+    while queue and i < len(values):
+        node = queue.pop(0)
+        if i < len(values) and values[i] is not None:
+            node.left = TreeNode(values[i])
+            queue.append(node.left)
+        i += 1
+        if i < len(values) and values[i] is not None:
+            node.right = TreeNode(values[i])
+            queue.append(node.right)
+        i += 1
+    return root
+
+
+class Solution:
+    def __init__(self):
+
+        # To store the current path as we traverse
+        self.path: List[int] = []
+
+        # To store prefix sum counts for paths using defaultdict
+        self.prefix_sum_count: defaultdict[int, int] = defaultdict(int)
+
+    def prefix_paths_helper(
+        self,
+        root: Optional[TreeNode],
+        path_sum: int,
+        result: List[List[int]],
+    ) -> None:
+
+        # If the root is null, there is no path, so return
+        if root is None:
+            return
+
+        # Add the current node to the path
+        self.path.append(root.val)
+
+        # Calculate the current sum by adding the value of the
+        # current node to the previous sum.
+        path_sum += root.val
+
+        # Add the current sum to the prefix_sum_count map
+        self.prefix_sum_count[path_sum] += 1
+
+        # If it's a leaf node, check if the total sum has occurred
+        if root.left is None and root.right is None:
+
+            # Check if total sum already exists as a prefix (excluding
+            # last occurrence)
+            if self.prefix_sum_count[path_sum] > 1:
+                result.append(self.path.copy())
+
+        # Recursively traverse left and right subtrees
+        self.prefix_paths_helper(root.left, path_sum, result)
+        self.prefix_paths_helper(root.right, path_sum, result)
+
+        # Backtrack by removing the current sum from the prefix sum count
+        self.prefix_sum_count[path_sum] -= 1
+
+        # Backtrack by removing the current node from the path
+        self.path.pop()
+
+    def prefix_paths(self, root: Optional[TreeNode]) -> List[List[int]]:
+
+        # To store all valid paths
+        result: List[List[int]] = []
+
+        # Start the recursive search from the root node
+        self.prefix_paths_helper(root, 0, result)
+
+        # Return the list of all valid paths
+        return result
+
+
+# Examples from the problem statement
+print(Solution().prefix_paths(from_level_order([1, -3, None, None, 3])))  # [[1, -3, 3]]
+print(Solution().prefix_paths(from_level_order([1, 8, 4, None, None, 2, 4])))  # []
+
+# Edge cases
+print(Solution().prefix_paths(None))                                       # []
+print(Solution().prefix_paths(TreeNode(5)))                                # [] (single node, sum=5 first time)
+print(Solution().prefix_paths(from_level_order([0, 0])))                   # [[0, 0]] (0+0=0, prefix [0]=0)
+print(Solution().prefix_paths(from_level_order([1, 2, 3])))               # []
+print(Solution().prefix_paths(from_level_order([2, 2, None, None, -2])))  # [] (path 2,-2 sum=0 != prefix sums 2,0... wait prefix sum 0 occurs once at node -2)
 ```
 
 ```java run
-static List<Integer> path;
-static List<List<Integer>> out;
-static Map<Integer, Integer> freq;
-static void ppHelper(TreeNode n, int run) {
-    if (n == null) return;
-    path.add(n.val);
-    run += n.val;
-    int c = freq.merge(run, 1, Integer::sum);
-    if (n.left == null && n.right == null) {
-        if (c > 1) out.add(new ArrayList<>(path));
-    } else { ppHelper(n.left, run); ppHelper(n.right, run); }
-    if (freq.get(run) == 1) freq.remove(run); else freq.merge(run, -1, Integer::sum);
-    path.remove(path.size() - 1);
-}
-public static List<List<Integer>> prefixPaths(TreeNode root) {
-    out = new ArrayList<>(); path = new ArrayList<>(); freq = new HashMap<>();
-    ppHelper(root, 0); return out;
-}
-```
+import java.util.*;
 
-```c run
-// Same as duplicate-paths: requires a hash map. Algorithm omitted for brevity.
-```
-
-```scala run
-class TreeNode(var value: Int, var left: TreeNode = null, var right: TreeNode = null)
-
-object Main extends App {
-  class Solution {
-    def prefixPaths(root: TreeNode): List[List[Int]] = {
-      val path = scala.collection.mutable.ListBuffer[Int]()
-      val out  = scala.collection.mutable.ListBuffer[List[Int]]()
-      val freq = scala.collection.mutable.Map[Int, Int]()
-      def go(n: TreeNode, run: Int): Unit = {
-        if (n == null) return
-        path += n.value
-        val newRun = run + n.value
-        freq(newRun) = freq.getOrElse(newRun, 0) + 1
-        if (n.left == null && n.right == null) {
-          if (freq(newRun) > 1) out += path.toList
-        } else { go(n.left, newRun); go(n.right, newRun) }
-        val c = freq(newRun) - 1
-        if (c == 0) freq.remove(newRun) else freq(newRun) = c
-        path.remove(path.length - 1)
-      }
-      go(root, 0); out.toList
+public class Main {
+    static class TreeNode {
+        int val;
+        TreeNode left;
+        TreeNode right;
+        TreeNode() {}
+        TreeNode(int val) { this.val = val; }
     }
-  }
 
-  val root = new TreeNode(1, new TreeNode(-3, null, new TreeNode(3)), null)
-  println(new Solution().prefixPaths(root))  // List(List(1, -3, 3))
+    static TreeNode fromLevelOrder(Integer... values) {
+        if (values.length == 0 || values[0] == null) return null;
+        TreeNode root = new TreeNode(values[0]);
+        java.util.Deque<TreeNode> queue = new java.util.ArrayDeque<>();
+        queue.add(root);
+        int i = 1;
+        while (!queue.isEmpty() && i < values.length) {
+            TreeNode node = queue.poll();
+            if (i < values.length && values[i] != null) {
+                node.left = new TreeNode(values[i]);
+                queue.add(node.left);
+            }
+            i++;
+            if (i < values.length && values[i] != null) {
+                node.right = new TreeNode(values[i]);
+                queue.add(node.right);
+            }
+            i++;
+        }
+        return root;
+    }
+
+    static class Solution {
+
+        // To store the current path as we traverse
+        private List<Integer> path = new ArrayList<>();
+
+        // To store prefix sum counts for paths
+        private Map<Integer, Integer> prefixSumCount = new HashMap<>();
+
+        private void prefixPathsHelper(
+            TreeNode root,
+            int pathSum,
+            List<List<Integer>> result
+        ) {
+
+            // If the root is null, there is no path, so return
+            if (root == null) return;
+
+            // Add the current node to the path
+            path.add(root.val);
+
+            // Calculate the current sum by adding the value of the
+            // current node to the previous sum.
+            pathSum += root.val;
+
+            // Add the current sum to the prefixSumCount map to keep track of
+            // it. This is to be used by future nodes in the recursive
+            // traversal.
+            prefixSumCount.put(
+                pathSum,
+                prefixSumCount.getOrDefault(pathSum, 0) + 1
+            );
+
+            // If it's a leaf node, check if the total sum has occurred
+            if (root.left == null && root.right == null) {
+
+                // Check if total sum already exists as a prefix (excluding
+                // last occurrence)
+                if (prefixSumCount.get(pathSum) > 1) {
+                    result.add(new ArrayList<>(path));
+                }
+            }
+
+            // Recursively traverse left and right subtrees
+            prefixPathsHelper(root.left, pathSum, result);
+            prefixPathsHelper(root.right, pathSum, result);
+
+            // Backtrack by removing the current sum from the prefix sum
+            // count map. This is to ensure that the prefix sum count is
+            // accurate for future nodes.
+            prefixSumCount.put(pathSum, prefixSumCount.get(pathSum) - 1);
+
+            // Backtrack by removing the current node from the path
+            path.remove(path.size() - 1);
+        }
+
+        public List<List<Integer>> prefixPaths(TreeNode root) {
+
+            // To store all valid paths
+            List<List<Integer>> result = new ArrayList<>();
+
+            // Start the recursive search from the root node
+            prefixPathsHelper(root, 0, result);
+
+            // Return the list of all valid paths
+            return result;
+        }
+    }
+
+    public static void main(String[] args) {
+        // Examples from the problem statement
+        System.out.println(new Solution().prefixPaths(fromLevelOrder(1, -3, null, null, 3)));  // [[1, -3, 3]]
+        System.out.println(new Solution().prefixPaths(fromLevelOrder(1, 8, 4, null, null, 2, 4)));  // []
+
+        // Edge cases
+        System.out.println(new Solution().prefixPaths(null));               // []
+        System.out.println(new Solution().prefixPaths(new TreeNode(5)));    // []
+        System.out.println(new Solution().prefixPaths(fromLevelOrder(0, 0)));  // [[0, 0]]
+        System.out.println(new Solution().prefixPaths(fromLevelOrder(1, 2, 3)));  // []
+        System.out.println(new Solution().prefixPaths(fromLevelOrder(2, 2, null, null, -2)));  // []
+    }
 }
 ```
 
+</details>
+<details>
+<summary><h2>Final Takeaway</h2></summary>
 
-***
-
-## Final Takeaway
 
 The stateful root-to-leaf path pattern is the natural sibling of stateless preorder backtracking. Three things to walk away with:
 
@@ -641,3 +1081,5 @@ The stateful root-to-leaf path pattern is the natural sibling of stateless preor
 3. **Returning paths is expensive even when the algorithm is cheap.** Recording matched paths is O(L) per match. If you're collecting *every* path, total output size is O(N · L) — that's irreducible. The recursion stays O(N) but the output dominates the cost.
 
 > *Coming up — the chapter shifts from depth-first patterns to **level-order** patterns. The next two lessons cover BFS-based tree problems: per-level aggregations, deepest-leaf computations, completeness checks, zigzag traversal, cousin checks, and column-based traversals (top view, bottom view, vertical, diagonal). The queue from chapter 6 finally takes centre stage.*
+
+</details>

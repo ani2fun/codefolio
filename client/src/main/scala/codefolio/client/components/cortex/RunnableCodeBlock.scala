@@ -1,10 +1,11 @@
 package codefolio.client.components.cortex
 
 import codefolio.client.api.ApiClient
+import codefolio.client.auth.{AuthStore, IdentityChip}
 import codefolio.client.components.icons.{BrandIcons, LucideIcons}
-import codefolio.shared.api.Endpoints.{RunRequest, RunResult}
+import codefolio.shared.api.Endpoints.{RunRequest, RunResult, UserInfo}
 import codefolio.shared.runner.CodeExecutor
-import codefolio.shared.runner.CodeExecutor.RunState
+import codefolio.shared.runner.CodeExecutor.{EditMode, RunState}
 import japgolly.scalajs.react.*
 import japgolly.scalajs.react.vdom.html_<^.*
 
@@ -15,16 +16,22 @@ import scala.scalajs.js.annotation.JSImport
 import scala.util.{Failure, Success}
 
 /**
- * Renders an editable code editor + Run/Cancel/Reset controls + an output panel. State machine lives in
- * [[CodeExecutor]] (shared module — testable on the JVM); this file owns the React surface only:
- * `useStateBy(...)`, callback wiring, and presentation.
+ * Renders a code editor + Run/Edit/Cancel controls + an output panel. State machine lives in [[CodeExecutor]]
+ * (shared module — testable on the JVM); this file owns the React surface only.
+ *
+ * **Auth gate (ADR-0013).** Editing is gated behind a signed-in identity:
+ *   - anonymous (or auth still booting) — the source renders as a read-only highlighted block; the **Edit**
+ *     button wears a lock badge and opens the sign-in modal on click; **Run** still works (the canonical
+ *     source executes, metered per-IP);
+ *   - signed in — **Edit** is unlocked; clicking it swaps in the live editor; an identity chip shows in the
+ *     header and an hourly-quota notice slides in under the block as the budget runs low;
+ *   - auth disabled server-side (`AUTH_ENABLED=false`, dev) — editing is open to everyone, no chip.
  *
  * `bare = true` skips the outer card wrapper (used by RunnableCodeGroup, which provides its own);
  * `hideLanguageLabel = true` hides the in-header language name (the group renders it as a tab instead).
  *
  * The `RunHandle` issued by `CodeExecutor.started` doesn't actually cancel the in-flight HTTP request (sttp's
- * FetchBackend has no signal hook); it only discards late results for stale runs. See
- * `CodeExecutor.completed` for the filter.
+ * FetchBackend has no signal hook); it only discards late results for stale runs.
  */
 object RunnableCodeBlock:
 
@@ -52,13 +59,29 @@ object RunnableCodeBlock:
       languageLabel: Option[String] = None,
       bare: Boolean = false,
       hideLanguageLabel: Boolean = false,
-      // false → display-only tab (e.g. pseudocode). Suppresses Run/Reset/Cancel
-      // controls, the output panel, and swaps the editable editor for a static
-      // syntax-highlighted <pre>.
-      runnable: Boolean = true
+      // false → display-only tab (e.g. pseudocode). Suppresses Run/Edit/Cancel
+      // controls, the output panel, and the auth gate entirely.
+      runnable: Boolean = true,
+      // When set, a "Visualise" button opens VisualiseModal and traces the live
+      // editor content. `viz` is the layout hint (e.g. "binary-tree"); `vizRoot`
+      // optionally names the structure's root variable. Set only on Python tabs.
+      viz: Option[String] = None,
+      vizRoot: Option[String] = None
   )
 
   private val StatusOk = 3
+
+  // Show the quota notice once the signed-in user has burned ≥ 70% of the hourly bucket.
+  // Integer compare (used*10 ≥ limit*7) avoids floating point.
+  private def quotaRunningLow(q: codefolio.shared.api.Endpoints.Quota): Boolean =
+    q.limit > 0 && q.used * 10 >= q.limit * 7
+
+  /** Format an epoch-millis instant as `HH:MM` in UTC, for the quota-reset caption. */
+  private def resetClockUtc(epochMs: Long): String =
+    val d  = new js.Date(epochMs.toDouble)
+    val hh = d.getUTCHours().toInt
+    val mm = d.getUTCMinutes().toInt
+    f"$hh%02d:$mm%02d"
 
   private given ExecutionContext = JSExecutionContext.queue
 
@@ -66,19 +89,45 @@ object RunnableCodeBlock:
     ScalaFnComponent
       .withHooks[Props]
       .useStateBy(p => CodeExecutor.initial(p.source))
-      .render { (props, st) =>
-        val s     = st.value
-        val dirty = CodeExecutor.isDirty(s, props.source)
+      .useState(AuthStore.current)
+      // Mirror the global auth snapshot into local state so the block re-renders on sign-in/out.
+      .useEffectOnMountBy { (_, _, authS) =>
+        CallbackTo {
+          val unsubscribe = AuthStore.subscribe(s => authS.setState(s).runNow())
+          Callback(unsubscribe())
+        }
+      }
+      .useState(false) // VisualiseModal open state
+      .render { (props, st, authS, vizOpenS) =>
+        val s = st.value
+
+        val status  = authS.value.status
+        val editing = s.editMode == EditMode.Editing
+
+        // Who may edit: a signed-in user, or anyone when auth is switched off server-side.
+        val canEdit = status match
+          case AuthStore.Status.Disabled     => true
+          case AuthStore.Status.Authed(_, _) => true
+          case _                             => false
+
+        val authedUser: Option[UserInfo] = status match
+          case AuthStore.Status.Authed(user, _) => Some(user)
+          case _                                => None
 
         val minHeight =
           val lines = math.max(props.source.split("\n").length, 5)
           math.min(lines * 22 + 24, 600)
 
-        val resetCb: Callback =
-          st.modState(_ => CodeExecutor.reset(props.source))
-
-        val cancelCb: Callback =
+        val cancelRunCb: Callback =
           st.modState(CodeExecutor.cancel)
+
+        // Edit button: signed-in → enter edit mode; otherwise → open the sign-in modal.
+        val onEditClick: Callback =
+          if canEdit then st.modState(CodeExecutor.enterEdit)
+          else Callback(AuthStore.openSignIn())
+
+        val onCancelEdit: Callback =
+          st.modState(prev => CodeExecutor.cancelEdit(prev, props.source))
 
         def runCb: Callback = Callback.suspend {
           val snapshot  = st.value
@@ -97,19 +146,18 @@ object RunnableCodeBlock:
         }
 
         val onKeyDown: ReactKeyboardEvent => Callback = (e: ReactKeyboardEvent) =>
-          if (e.metaKey || e.ctrlKey) && e.key == "Enter" then
-            e.preventDefaultCB >> runCb
+          if (e.metaKey || e.ctrlKey) && e.key == "Enter" then e.preventDefaultCB >> runCb
+          else if e.key == "Escape" && editing then e.preventDefaultCB >> onCancelEdit
+          // ⌥V opens the Visualise modal. macOS Option+V emits "√" as `key`, so accept both.
+          else if e.altKey && props.viz.isDefined && (e.key.equalsIgnoreCase("v") || e.key == "√") then
+            e.preventDefaultCB >> vizOpenS.setState(true)
           else Callback.empty
 
         val labelText =
           if props.hideLanguageLabel then "" else props.languageLabel.getOrElse(props.language)
 
         // Real brand icons for languages where the emoji-only label is too vague
-        // (e.g. Scala, where 🌀 reads as a generic swirl). Other languages keep
-        // the emoji prefix in the label string. Suppressed alongside the text
-        // when `hideLanguageLabel` is set — the group tab strip already shows
-        // the brand icon, and emitting it again here would double-render it
-        // inside the active tab's bare block.
+        // (e.g. Scala). Suppressed alongside the text when `hideLanguageLabel` is set.
         val labelNode: VdomNode =
           <.span(
             ^.className := "rcb__language-label",
@@ -118,90 +166,157 @@ object RunnableCodeBlock:
             else labelText
           )
 
-        // Display-only tabs (pseudocode) drop the Run/Cancel/Reset controls and
-        // the output panel, and swap the editable editor for a static <pre>
-        // with the same Prism highlighting hook (which falls back to
-        // escapeHtml for unknown grammars — fine for pseudocode).
+        val identityNode: VdomNode =
+          authedUser match
+            case Some(user) =>
+              IdentityChip.Component(
+                IdentityChip.Props(user.preferredUsername, Callback(AuthStore.signOut()))
+              )
+            case None => EmptyVdom
+
+        // Edit / Cancel-edit control.
+        val editControl: VdomNode =
+          if editing then
+            <.button(
+              ^.tpe := "button",
+              ^.onClick --> onCancelEdit,
+              ^.className := "rcb__button",
+              LucideIcons.RotateCcw(LucideIcons.withClass("rcb__button-icon")),
+              "Cancel"
+            )
+          else
+            <.button(
+              ^.tpe   := "button",
+              ^.title := (if canEdit then "Edit and run" else "Sign in with GitHub to edit"),
+              ^.onClick --> onEditClick,
+              ^.className := "rcb__button" + (if canEdit then "" else " rcb__button--locked"),
+              if canEdit then EmptyVdom
+              else
+                <.span(
+                  ^.className := "rcb__lock",
+                  LucideIcons.Lock(LucideIcons.withClass("rcb__lock-icon"))
+                )
+              ,
+              LucideIcons.Pencil(LucideIcons.withClass("rcb__button-icon")),
+              "Edit"
+            )
+
+        // Run / Cancel-run control.
+        val runControl: VdomNode =
+          if s.runState == RunState.Running then
+            <.button(
+              ^.tpe := "button",
+              ^.onClick --> cancelRunCb,
+              ^.className := "rcb__button rcb__button--cancel",
+              LucideIcons.Square(LucideIcons.withClass("rcb__button-icon")),
+              "Cancel"
+            )
+          else
+            <.button(
+              ^.tpe   := "button",
+              ^.title := "Run (⌘+Enter)",
+              ^.onClick --> runCb,
+              ^.className := "rcb__button rcb__button--run",
+              LucideIcons.Play(LucideIcons.withClass("rcb__button-icon")),
+              if editing then "Run edit" else "Run"
+            )
+
+        // Visualise — opens VisualiseModal and traces the live editor content.
+        val vizControl: VdomNode =
+          if props.viz.isDefined then
+            <.button(
+              ^.tpe   := "button",
+              ^.title := "Visualise (⌥V)",
+              ^.onClick --> vizOpenS.setState(true),
+              ^.aria.label := "Visualise code",
+              ^.className  := "rcb__button rcb__button--viz",
+              LucideIcons.Network(LucideIcons.withClass("rcb__button-icon")),
+              "Visualise"
+            )
+          else EmptyVdom
+
+        // Display-only tabs (pseudocode): no controls, no auth, static <pre>.
         val header: VdomNode =
           if !props.runnable then
             if props.hideLanguageLabel then EmptyVdom
-            else
-              <.div(
-                ^.className := "rcb__header",
-                labelNode
-              )
+            else <.div(^.className := "rcb__header", labelNode)
           else
             <.div(
               ^.className := "rcb__header",
               labelNode,
               <.div(
                 ^.className := "rcb__controls",
-                if dirty && s.runState != RunState.Running then
-                  <.button(
-                    ^.tpe := "button",
-                    ^.onClick --> resetCb,
-                    ^.className := "rcb__button",
-                    LucideIcons.RotateCcw(LucideIcons.withClass("rcb__button-icon")),
-                    "Reset"
-                  )
-                else EmptyVdom,
-                if s.runState == RunState.Running then
-                  <.button(
-                    ^.tpe := "button",
-                    ^.onClick --> cancelCb,
-                    ^.className := "rcb__button rcb__button--cancel",
-                    LucideIcons.Square(LucideIcons.withClass("rcb__button-icon")),
-                    "Cancel"
-                  )
-                else
-                  <.button(
-                    ^.tpe   := "button",
-                    ^.title := "Run (⌘+Enter)",
-                    ^.onClick --> runCb,
-                    ^.className := "rcb__button rcb__button--run",
-                    LucideIcons.Play(LucideIcons.withClass("rcb__button-icon")),
-                    "Run"
-                  )
+                identityNode,
+                editControl,
+                vizControl,
+                runControl
               )
             )
 
-        val editor: VdomNode =
-          if !props.runnable then
-            // `not-prose` is required: .chapter-content is a `prose` container,
-            // and Tailwind Typography forces `padding: 0; background: transparent`
-            // (with !important) on every descendant <pre> so rehype-pretty-code
-            // blocks can style themselves. Opt out so the editor styling wins.
-            <.pre(
-              ^.className               := "rcb__editor rcb__editor--static not-prose",
-              ^.style                   := js.Dynamic.literal(minHeight = minHeight).asInstanceOf[js.Object],
-              ^.dangerouslySetInnerHtml := s"<code>${highlightWithPrism(props.source, props.language)}</code>"
-            )
-          else
-            val editorProps = (new js.Object).asInstanceOf[EditorProps]
-            editorProps.value = s.code
-            editorProps.onValueChange = (next: String) =>
-              st.modState(prev => CodeExecutor.setCode(prev, next)).runNow()
-            editorProps.highlight = (c: String) => highlightWithPrism(c, props.language)
-            editorProps.padding = 16
-            editorProps.tabSize = 4
-            editorProps.insertSpaces = true
-            editorProps.textareaClassName = "rcb__editor-textarea"
-            editorProps.style = js.Dynamic
-              .literal(
-                fontFamily =
-                  "ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, \"Liberation Mono\", \"Courier New\", monospace",
-                fontSize = 13,
-                lineHeight = 1.6,
-                minHeight = minHeight
-              )
-              .asInstanceOf[js.Object]
+        // The source as a static, syntax-highlighted, read-only block. Used for
+        // pseudocode tabs AND for the anonymous / not-editing runnable view.
+        val staticView: VdomNode =
+          // `not-prose` opts out of Tailwind Typography's <pre> overrides so the
+          // editor styling wins.
+          <.pre(
+            ^.className               := "rcb__editor rcb__editor--static not-prose",
+            ^.style                   := js.Dynamic.literal(minHeight = minHeight).asInstanceOf[js.Object],
+            ^.dangerouslySetInnerHtml := s"<code>${highlightWithPrism(props.source, props.language)}</code>"
+          )
 
+        val editableView: VdomNode =
+          val editorProps = (new js.Object).asInstanceOf[EditorProps]
+          editorProps.value = s.code
+          editorProps.onValueChange = (next: String) =>
+            st.modState(prev => CodeExecutor.setCode(prev, next)).runNow()
+          editorProps.highlight = (c: String) => highlightWithPrism(c, props.language)
+          editorProps.padding = 16
+          editorProps.tabSize = 4
+          editorProps.insertSpaces = true
+          editorProps.textareaClassName = "rcb__editor-textarea"
+          editorProps.style = js.Dynamic
+            .literal(
+              fontFamily =
+                "ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, \"Liberation Mono\", \"Courier New\", monospace",
+              fontSize = 13,
+              lineHeight = 1.6,
+              minHeight = minHeight
+            )
+            .asInstanceOf[js.Object]
+
+          <.div(
+            ^.className := "rsce-editor rcb__editor",
+            ^.style     := js.Dynamic.literal(minHeight = minHeight).asInstanceOf[js.Object],
+            ^.onKeyDown ==> onKeyDown,
+            Editor(editorProps)
+          )
+
+        // Editing → the live editor; otherwise (pseudocode, or signed-out, or
+        // signed-in-but-not-editing) → the read-only highlighted block.
+        val editor: VdomNode = if editing then editableView else staticView
+
+        // Bottom edit bar — visible only while editing.
+        val editBar: VdomNode =
+          if editing then
+            val changed = CodeExecutor.changedLineCount(s, props.source)
             <.div(
-              ^.className := "rsce-editor rcb__editor",
-              ^.style     := js.Dynamic.literal(minHeight = minHeight).asInstanceOf[js.Object],
-              ^.onKeyDown ==> onKeyDown,
-              Editor(editorProps)
+              ^.className := "rcb__edit-bar",
+              <.span(
+                ^.className := "rcb__edit-bar-dirty",
+                s"● $changed ${if changed == 1 then "line" else "lines"} changed"
+              ),
+              <.span(^.className := "rcb__edit-bar-spacer"),
+              <.span(
+                ^.className := "rcb__edit-bar-hint",
+                <.kbd("⌘"),
+                " ",
+                <.kbd("↵"),
+                " Run · ",
+                <.kbd("Esc"),
+                " Cancel · session limited to 30s, 64MB"
+              )
             )
+          else EmptyVdom
 
         val output: VdomNode =
           if !props.runnable then EmptyVdom
@@ -220,14 +335,51 @@ object RunnableCodeBlock:
               s.result.map(renderResult).getOrElse(EmptyVdom)
             )
 
-        if props.bare then React.Fragment(header, editor, output)
-        else
-          <.div(
-            ^.className := "rcb",
-            header,
-            editor,
-            output
-          )
+        // Quota notice — slides in under the block when the signed-in user's
+        // hourly run budget is running low.
+        val quotaNotice: VdomNode =
+          authedUser.map(_.quota).filter(quotaRunningLow) match
+            case Some(q) =>
+              <.div(
+                ^.className := "quota-notice",
+                ^.role      := "status",
+                <.span(
+                  ^.className := "quota-notice__icon",
+                  LucideIcons.AlertTriangle(LucideIcons.withClass("quota-notice__icon-svg"))
+                ),
+                <.div(
+                  <.div(^.className := "quota-notice__title", "Sandbox quota"),
+                  <.div(
+                    ^.className := "quota-notice__body",
+                    "You've used ",
+                    <.span(^.className := "quota-notice__figure", s"${q.used} / ${q.limit}"),
+                    " runs this hour. Quota resets at ",
+                    <.span(^.className := "quota-notice__figure", s"${resetClockUtc(q.resetEpochMs)} UTC"),
+                    ". Anonymous read-only runs are unaffected."
+                  )
+                )
+              )
+            case None => EmptyVdom
+
+        val vizModal: VdomNode =
+          props.viz match
+            case Some(hint) =>
+              VisualiseModal.Component(
+                VisualiseModal.Props(
+                  isOpen = vizOpenS.value,
+                  onClose = vizOpenS.setState(false),
+                  pythonSource = s.code,
+                  vizHint = hint,
+                  vizRoot = props.vizRoot,
+                  title = "Code visualisation"
+                )
+              )
+            case None => EmptyVdom
+
+        val body = React.Fragment(header, editor, editBar, output, quotaNotice)
+
+        if props.bare then React.Fragment(body, vizModal)
+        else React.Fragment(<.div(^.className := "rcb", body), vizModal)
       }
 
   private def renderResult(r: RunResult): VdomNode =

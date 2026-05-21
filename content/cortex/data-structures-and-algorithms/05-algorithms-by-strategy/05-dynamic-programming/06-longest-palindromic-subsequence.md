@@ -188,7 +188,9 @@ Output: 1                Just any single character
 
 ---
 
-## Applying the Diagnostic Questions
+<details>
+<summary><h2>Applying the Diagnostic Questions</h2></summary>
+
 
 | # | Question | Answer |
 |---|---|---|
@@ -206,62 +208,74 @@ Output: 1                Just any single character
 
 **What breaks otherwise.** If you tried row-by-row, computing `dp[0][3]` would reach for `dp[1][2]` — which lives in row 1, not yet filled. Length-first avoids the dependency violation.
 
----
+</details>
+<details>
+<summary><h2>Solution &amp; Analysis</h2></summary>
 
-## The Solution
-
-
-```pseudocode
-# dp[i][j] = LPS length on the substring s[i..j].
-# Fill by interval length to ensure (i+1, j−1) is computed before (i, j).
-function longestPalindromicSubsequence(s):
-    n ← length(s)
-    if n = 0: return 0
-    dp ← n × n grid of zeros
-    for i from 0 to n − 1:
-        dp[i][i] ← 1                             # length-1 palindromes (the diagonal)
-
-    for length from 2 to n:
-        for i from 0 to n − length:
-            j ← i + length − 1
-            if s[i] = s[j]:
-                if length = 2:
-                    dp[i][j] ← 2                 # empty interior contributes 0
-                else:
-                    dp[i][j] ← dp[i + 1][j − 1] + 2
-            else:
-                dp[i][j] ← max(dp[i + 1][j], dp[i][j − 1])
-    return dp[0][n − 1]
-```
+### The Solution
 
 ```python run
 from typing import List
 
 class Solution:
     def longest_palindromic_subsequence(self, s: str) -> int:
-        n = len(s)
-        if n == 0:
-            return 0
-        # dp[i][j] = LPS of s[i..j]. Diagonal (length 1) initialised to 1.
+        n: int = len(s)
+
+        # Create a 2D list 'dp' of size n x n and initialize all elements
+        # to 0
         dp: List[List[int]] = [[0] * n for _ in range(n)]
+
+        # Initialize the diagonal elements of 'dp' to 1 (base case for
+        # subsequences of length 1)
         for i in range(n):
             dp[i][i] = 1
-        # Fill by interval length, 2 through n.
+
+        # Iterate over different lengths of subsequences
         for length in range(2, n + 1):
+
+            # Iterate over the starting indices of the subsequences
             for i in range(n - length + 1):
                 j = i + length - 1
-                if s[i] == s[j]:
-                    if length == 2:
-                        dp[i][j] = 2                 # Special: empty interior contributes 0
-                    else:
-                        dp[i][j] = dp[i + 1][j - 1] + 2
+
+                # If the characters at positions 'i' and 'j' are equal
+                # and the length is 2, set the value of 'dp[i][j]' to 2
+                # (base case for subsequences of length 2)
+                if s[i] == s[j] and length == 2:
+                    dp[i][j] = 2
+
+                # If the characters at positions 'i' and 'j' are equal,
+                # update the value of 'dp[i][j]' by adding 2 to the
+                # length of the palindrome found in the subsequence
+                # excluding the first and last characters (i.e., 'dp[i +
+                # 1][j - 1]')
+                elif s[i] == s[j]:
+                    dp[i][j] = dp[i + 1][j - 1] + 2
+
+                # If the characters at positions 'i' and 'j' are not
+                # equal, update the value of 'dp[i][j]' by taking the
+                # maximum length of palindromic subsequences either by
+                # excluding the first character or by excluding the last
+                # character
                 else:
                     dp[i][j] = max(dp[i + 1][j], dp[i][j - 1])
+
+        # The length of the longest palindromic subsequence is stored in
+        # 'dp[0][n - 1]'
         return dp[0][n - 1]
 
 
-if __name__ == "__main__":
-    print(Solution().longest_palindromic_subsequence("aacbbdaa"))   # 6
+# Examples from the problem statement
+print(Solution().longest_palindromic_subsequence("aacbbdaa"))   # 6
+print(Solution().longest_palindromic_subsequence("xyxzlxnx"))   # 5
+print(Solution().longest_palindromic_subsequence("abc"))        # 1
+
+# Edge cases
+print(Solution().longest_palindromic_subsequence("a"))          # 1
+print(Solution().longest_palindromic_subsequence("aa"))         # 2
+print(Solution().longest_palindromic_subsequence("ab"))         # 1
+print(Solution().longest_palindromic_subsequence("racecar"))    # 7
+print(Solution().longest_palindromic_subsequence("abcba"))      # 5
+print(Solution().longest_palindromic_subsequence("abcd"))       # 1
 ```
 
 ```java run
@@ -269,84 +283,71 @@ public class Main {
     static class Solution {
         public int longestPalindromicSubsequence(String s) {
             int n = s.length();
-            if (n == 0) return 0;
+
+            // Create a 2D array 'dp' of size n x n and initialize all
+            // elements to 0
             int[][] dp = new int[n][n];
-            for (int i = 0; i < n; i++) dp[i][i] = 1;
+
+            // Initialize the diagonal elements of 'dp' to 1 (base case for
+            // subsequences of length 1)
+            for (int i = 0; i < n; i++) {
+                dp[i][i] = 1;
+            }
+
+            // Iterate over different lengths of subsequences
             for (int len = 2; len <= n; len++) {
-                for (int i = 0; i <= n - len; i++) {
+
+                // Iterate over the starting indices of the subsequences
+                for (int i = 0; i < n - len + 1; i++) {
                     int j = i + len - 1;
-                    if (s.charAt(i) == s.charAt(j)) {
-                        dp[i][j] = (len == 2) ? 2 : dp[i + 1][j - 1] + 2;
-                    } else {
+
+                    // If the characters at positions 'i' and 'j' are equal
+                    // and the length is 2, set the value of 'dp[i][j]' to 2
+                    // (base case for subsequences of length 2)
+                    if (s.charAt(i) == s.charAt(j) && len == 2) {
+                        dp[i][j] = 2;
+                    }
+
+                    // If the characters at positions 'i' and 'j' are equal,
+                    // update the value of 'dp[i][j]' by adding 2 to the
+                    // length of the palindrome found in the subsequence
+                    // excluding the first and last characters (i.e., 'dp[i +
+                    // 1][j - 1]')
+                    else if (s.charAt(i) == s.charAt(j)) {
+                        dp[i][j] = dp[i + 1][j - 1] + 2;
+                    }
+
+                    // If the characters at positions 'i' and 'j' are not
+                    // equal, update the value of 'dp[i][j]' by taking the
+                    // maximum length of palindromic subsequences either by
+                    // excluding the first character or by excluding the last
+                    // character
+                    else {
                         dp[i][j] = Math.max(dp[i + 1][j], dp[i][j - 1]);
                     }
                 }
             }
+
+            // The length of the longest palindromic subsequence is stored in
+            // 'dp[0][n - 1]'
             return dp[0][n - 1];
         }
     }
 
     public static void main(String[] args) {
+        // Examples from the problem statement
         System.out.println(new Solution().longestPalindromicSubsequence("aacbbdaa"));   // 6
+        System.out.println(new Solution().longestPalindromicSubsequence("xyxzlxnx"));   // 5
+        System.out.println(new Solution().longestPalindromicSubsequence("abc"));        // 1
+
+        // Edge cases
+        System.out.println(new Solution().longestPalindromicSubsequence("a"));          // 1
+        System.out.println(new Solution().longestPalindromicSubsequence("aa"));         // 2
+        System.out.println(new Solution().longestPalindromicSubsequence("ab"));         // 1
+        System.out.println(new Solution().longestPalindromicSubsequence("racecar"));    // 7
+        System.out.println(new Solution().longestPalindromicSubsequence("abcba"));      // 5
+        System.out.println(new Solution().longestPalindromicSubsequence("abcd"));       // 1
     }
-}
-```
-
-```c run
-#include <stdio.h>
-#include <string.h>
-
-int dp[1001][1001];
-
-int longest_palindromic_subsequence(const char *s) {
-    int n = (int) strlen(s);
-    if (n == 0) return 0;
-    for (int i = 0; i < n; i++) for (int j = 0; j < n; j++) dp[i][j] = 0;
-    for (int i = 0; i < n; i++) dp[i][i] = 1;
-    for (int len = 2; len <= n; len++) {
-        for (int i = 0; i <= n - len; i++) {
-            int j = i + len - 1;
-            if (s[i] == s[j]) {
-                dp[i][j] = (len == 2) ? 2 : dp[i + 1][j - 1] + 2;
-            } else {
-                int a = dp[i + 1][j], b = dp[i][j - 1];
-                dp[i][j] = a > b ? a : b;
-            }
-        }
-    }
-    return dp[0][n - 1];
-}
-
-int main(void) {
-    printf("%d\n", longest_palindromic_subsequence("aacbbdaa"));   // 6
-    return 0;
-}
-```
-
-```scala run
-object Main extends App {
-  class Solution {
-    def longestPalindromicSubsequence(s: String): Int = {
-      val n = s.length
-      if (n == 0) return 0
-      val dp = Array.fill(n, n)(0)
-      for (i <- 0 until n) dp(i)(i) = 1
-      for (len <- 2 to n) {
-        for (i <- 0 to n - len) {
-          val j = i + len - 1
-          dp(i)(j) =
-            if (s(i) == s(j)) {
-              if (len == 2) 2 else dp(i + 1)(j - 1) + 2
-            } else {
-              math.max(dp(i + 1)(j), dp(i)(j - 1))
-            }
-        }
-      }
-      dp(0)(n - 1)
-    }
-  }
-
-  println(new Solution().longestPalindromicSubsequence("aacbbdaa"))   // 6
 }
 ```
 
@@ -383,30 +384,27 @@ dp[0][7] = dp[1][6] + 2 = 4 + 2 = 6 ✓
 
 </details>
 
----
-
-## Complexity Analysis
+### Complexity Analysis
 
 | Aspect | Cost | Why |
 |---|---|---|
 | Time | `O(n²)` | One cell per `(i, j)` pair with `i ≤ j`; `n × (n+1) / 2` cells, constant work each. |
 | Space | `O(n²)` | DP table. Reducible to `O(n)` (rolling) but trickier than 1D rolling. |
 
----
-
-## Edge Cases
+### Edge Cases
 
 | Case | Example | Expected | Reasoning |
 |---|---|---|---|
-| Empty | `""` | `0` | Guard returns 0. |
-| Single char | `"a"` | `1` | Base case. |
+| Empty | `""` | `0` (or `IndexError`) | The code has no empty-input guard — `dp = []` and `dp[0][n-1]` would throw `IndexError`. Defensive callers should add an `if n == 0: return 0` short-circuit. |
+| Single char | `"a"` | `1` | The diagonal-initialisation loop sets `dp[0][0] = 1`; the length-2+ loop never runs (`range(2, 2)` is empty); answer is `dp[0][0] = 1`. |
 | All same | `"aaaa"` | `4` | The whole string is already a palindrome. |
 | All distinct | `"abc"` | `1` | No two characters match; max LPS is single character. |
 | Already palindrome | `"racecar"` | `7` | Same reason — full string is the LPS. |
 
----
+</details>
+<details>
+<summary><h2>Final Takeaway</h2></summary>
 
-## Final Takeaway
 
 LPS is the canonical interval DP. State is `(i, j)` describing a substring; recurrence walks inward from the endpoints; filling order is by length. Same shape recurs in matrix-chain multiplication and other "operate on a range" problems coming later.
 
@@ -416,5 +414,7 @@ LPS is the canonical interval DP. State is `(i, j)` describing a substring; recu
 <summary><strong>Answer</strong></summary>
 
 It changes shape. For a *substring*, the inner cells must themselves be palindromic substrings — there's no "drop one side" option, since dropping breaks contiguity. The next lesson formalises this as **Longest Palindromic Substring** with a recurrence on a *boolean* "is it palindromic?" table.
+
+</details>
 
 </details>

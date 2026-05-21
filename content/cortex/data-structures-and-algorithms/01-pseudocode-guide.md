@@ -66,17 +66,6 @@ The function arrow is how academia writes the type of a map/dictionary: a hash m
 The pseudocode tab below is the algorithm for **Two-Sum** — given an array `nums` and a `target`, return the indices of two numbers that add up to the target. Click between the tabs to see how each layer of detail compares.
 
 
-```pseudocode
-function twoSum(nums, target):
-    seen ← empty Map: Number → Index
-    for i from 0 to length(nums) − 1:
-        complement ← target − nums[i]
-        if complement is in seen:
-            return [seen[complement], i]
-        seen[nums[i]] ← i
-    return []
-```
-
 ```python run
 def two_sum(nums, target):
     seen = {}                       # value -> index

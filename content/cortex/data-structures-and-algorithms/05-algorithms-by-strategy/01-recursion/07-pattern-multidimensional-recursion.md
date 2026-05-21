@@ -163,78 +163,114 @@ The crucial difference from multiple recursion is step 1's *boundary* check (mul
 A clean, language-agnostic implementation of the generic 2D template.
 
 
-```pseudocode
-function multiRecursion(x, y):
-    if x = 0: return 1                     # left-edge base
-    if y = 0: return 1                     # top-edge base
-    smaller1 ← multiRecursion(x − 1, y)    # reduce along x-axis
-    smaller2 ← multiRecursion(x, y − 1)    # reduce along y-axis
-    return smaller1 + smaller2             # combine
-```
-
 ```python run
+from typing import List
+
 class Solution:
-    def multi_recursion(self, x: int, y: int) -> int:
-        # Multiple base cases on different boundaries
-        if x == 0:
-            return 1                       # Left-edge base
-        if y == 0:
-            return 1                       # Top-edge base
+    def multidimensionalRecursion(self, d1: int, d2: int, d3: int) -> int:
+        # If any of the inputs are less than or equal to 0,
+        # we have reached the base case
+        if d1 <= 0 or d2 <= 0 or d3 <= 0:
+            # Return the base case solution for these values
+            return self.B(d1, d2, d3)
 
-        # Two recursive calls reducing along different axes
-        smaller_1 = self.multi_recursion(x - 1, y)        # Reduce x
-        smaller_2 = self.multi_recursion(x, y - 1)        # Reduce y
+        solution = 0  # Initialize solution to a default value
 
-        # Combine — example: addition
-        return smaller_1 + smaller_2
+        # Get the list of shift values for the current inputs
+        shifts: List[List[int]] = self.S(d1, d2, d3)
 
+        for shift in shifts:
+            # Compute new inputs by applying the shift and
+            # recursively call the function with new inputs
+            result = self.multidimensionalRecursion(
+                d1 + shift[0],
+                d2 + shift[1],
+                d3 + shift[2]
+            )
 
-if __name__ == "__main__":
-    print(Solution().multi_recursion(3, 3))   # Lattice-paths shape → 20
+            # Combine the result with the current solution
+            solution = self.G(d1, d2, d3, solution, result)
+
+        return solution  # Return the final solution
+
+    # Placeholder for B - to return the base case solution
+    # for the given inputs
+    def B(self, d1: int, d2: int, d3: int) -> int:
+        # Implement your logic here
+        return 0
+
+    # Placeholder for S - to return the list of shift values
+    # for every dimension given the input
+    def S(self, d1: int, d2: int, d3: int) -> List[List[int]]:
+        # Implement your logic here
+        return [[1, 0, 1], [-1, 0, 1]]
+
+    # Placeholder for G - use the inputs, existing solution,
+    # and result from the recursive call to compute the new solution
+    def G(self, d1: int, d2: int, d3: int, solution: int, result: int) -> int:
+        # Implement your logic here
+        return 0
 ```
 
 ```java run
-public class Main {
-    static class Solution {
-        public int multiRecursion(int x, int y) {
-            if (x == 0) return 1;          // Left-edge base
-            if (y == 0) return 1;          // Top-edge base
-            return multiRecursion(x - 1, y) + multiRecursion(x, y - 1);
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+
+class Solution {
+
+    public int multidimensionalRecursion(int d1, int d2, int d3) {
+        // If any of the inputs are less than or equal to 0,
+        // we have reached the base case
+        if (d1 <= 0 || d2 <= 0 || d3 <= 0) {
+            // Return the base case solution for these values
+            return B(d1, d2, d3);
         }
+
+        int solution = 0; // Initialize solution to a default value
+
+        // Get the list of shift values for the current inputs
+        List<List<Integer>> shifts = S(d1, d2, d3);
+
+        for (List<Integer> shift : shifts) {
+            // Compute new inputs by applying the shift and
+            // recursively call the function with new inputs
+            int result = multidimensionalRecursion(
+                d1 + shift.get(0),
+                d2 + shift.get(1),
+                d3 + shift.get(2)
+            );
+
+            // Combine the result with the current solution
+            solution = G(d1, d2, d3, solution, result);
+        }
+
+        return solution; // Return the final solution
     }
 
-    public static void main(String[] args) {
-        System.out.println(new Solution().multiRecursion(3, 3));   // 20
+    // Placeholder for B - to return the base case solution
+    // for the given inputs
+    private int B(int d1, int d2, int d3) {
+        // Implement your logic here
+        return 0;
     }
-}
-```
 
-```c run
-#include <stdio.h>
-
-int multi_recursion(int x, int y) {
-    if (x == 0) return 1;
-    if (y == 0) return 1;
-    return multi_recursion(x - 1, y) + multi_recursion(x, y - 1);
-}
-
-int main(void) {
-    printf("%d\n", multi_recursion(3, 3));   /* 20 */
-    return 0;
-}
-```
-
-```scala run
-object Main extends App {
-  class Solution {
-    def multiRecursion(x: Int, y: Int): Int = {
-      if (x == 0) return 1
-      if (y == 0) return 1
-      multiRecursion(x - 1, y) + multiRecursion(x, y - 1)
+    // Placeholder for S - to return the list of shift values
+    // for every dimension given the input
+    private List<List<Integer>> S(int d1, int d2, int d3) {
+        // Example implementation
+        return Arrays.asList(
+            Arrays.asList(1, 0, 1),
+            Arrays.asList(-1, 0, 1)
+        );
     }
-  }
 
-  println(new Solution().multiRecursion(3, 3))   // 20
+    // Placeholder for G - use the inputs, existing solution,
+    // and result from the recursive call to compute the new solution
+    private int G(int d1, int d2, int d3, int solution, int result) {
+        // Implement your logic here
+        return 0;
+    }
 }
 ```
 
@@ -351,7 +387,9 @@ Output: 1
 
 ---
 
-## What Does the Recurrence Mean?
+<details>
+<summary><h2>What Does the Recurrence Mean?</h2></summary>
+
 
 Pick any one element of the set of `n`. Either you include it in your subset of `k`, or you don't:
 - **Include it.** You now need `k - 1` more elements from the remaining `n - 1`. That's `C(n-1, k-1)`.
@@ -389,9 +427,10 @@ flowchart LR
 
 <p align="center"><strong>Pascal's triangle's recurrence with both boundary base cases. Drop either boundary and some inputs run forever.</strong></p>
 
----
+</details>
+<details>
+<summary><h2>Applying the Diagnostic Questions</h2></summary>
 
-## Applying the Diagnostic Questions
 
 | # | Check | Answer |
 |---|---|---|
@@ -411,9 +450,10 @@ The first recursive call reduces both `n` and `k` (descending the diagonal). The
 
 `C(n, 0) = 1` catches the left edge. `C(n, n) = 1` catches the diagonal. Together they cover every reduction path: any descent eventually hits either the left edge (when `k` reaches 0) or the diagonal (when `k = n`). Drop either and some calls recurse into negative `k` and never terminate. ✓
 
----
+</details>
+<details>
+<summary><h2>The 2D State Space (Visualised)</h2></summary>
 
-## The 2D State Space (Visualised)
 
 The recursion descends the grid one row at a time, reducing `n` per call. The two children of `C(n, k)` are the cell directly above (`C(n-1, k)`) and the cell diagonally above-left (`C(n-1, k-1)`).
 
@@ -434,73 +474,76 @@ table: "C(n, k) recursion grid (Pascal's triangle)" {
 
 <p align="center"><strong>The 2D state space for binomial coefficient. Yellow = base cases on the boundaries. Each interior cell is the sum of the cell directly above and diagonally above-left.</strong></p>
 
----
+</details>
+<details>
+<summary><h2>Solution &amp; Analysis</h2></summary>
 
-## The Solution
-
-
-```pseudocode
-function binomialCoefficient(n, k):
-    if n = k OR k = 0:                                            # boundary bases
-        return 1
-    return binomialCoefficient(n − 1, k − 1) + binomialCoefficient(n − 1, k)   # Pascal's identity
-```
+### The Solution
 
 ```python run
 class Solution:
     def binomial_coefficient(self, n: int, k: int) -> int:
-        # Boundary base cases — both required
+
+        # Base cases: If n equals k or k is 0, then C(n, k) is 1.
         if n == k or k == 0:
             return 1
-        # Two recursive calls reducing along different axes
-        return (self.binomial_coefficient(n - 1, k - 1)
-                + self.binomial_coefficient(n - 1, k))
+
+        # Recursive step:
+        # C(n, k) = C(n - 1, k - 1) + C(n - 1, k)
+        # Recursively calculate C(n - 1, k - 1) for choosing k elements
+        # from n-1 elements, and C(n - 1, k) for choosing k elements from
+        # n-1 elements.
+        return self.binomial_coefficient(
+            n - 1, k - 1
+        ) + self.binomial_coefficient(n - 1, k)
 
 
-if __name__ == "__main__":
-    print(Solution().binomial_coefficient(5, 3))   # 10
-    print(Solution().binomial_coefficient(10, 4))  # 210
+# Examples from the problem statement
+print(Solution().binomial_coefficient(5, 3))    # 10
+print(Solution().binomial_coefficient(10, 4))   # 210
+print(Solution().binomial_coefficient(0, 0))    # 1
+
+# Edge cases
+print(Solution().binomial_coefficient(5, 0))    # 1
+print(Solution().binomial_coefficient(5, 5))    # 1
+print(Solution().binomial_coefficient(6, 2))    # 15
+print(Solution().binomial_coefficient(7, 3))    # 35
 ```
 
 ```java run
 public class Main {
     static class Solution {
-        public int binomialCoefficient(int n, int k) {
-            if (n == k || k == 0) return 1;
-            return binomialCoefficient(n - 1, k - 1) + binomialCoefficient(n - 1, k);
+        public int binomialCoefficient(int N, int K) {
+
+            // Base cases: If N equals K or K is 0, then C(N, K) is 1.
+            if (N == K || K == 0) {
+                return 1;
+            }
+
+            // Recursive step:
+            // C(N, K) = C(N - 1, K - 1) + C(N - 1, K)
+            // Recursively calculate C(N - 1, K - 1) for choosing K elements
+            // from N-1 elements, and C(N - 1, K) for choosing K elements
+            // from N-1 elements.
+            return (
+                binomialCoefficient(N - 1, K - 1) +
+                binomialCoefficient(N - 1, K)
+            );
         }
     }
 
     public static void main(String[] args) {
-        System.out.println(new Solution().binomialCoefficient(5, 3));   // 10
+        // Examples from the problem statement
+        System.out.println(new Solution().binomialCoefficient(5, 3));    // 10
+        System.out.println(new Solution().binomialCoefficient(10, 4));   // 210
+        System.out.println(new Solution().binomialCoefficient(0, 0));    // 1
+
+        // Edge cases
+        System.out.println(new Solution().binomialCoefficient(5, 0));    // 1
+        System.out.println(new Solution().binomialCoefficient(5, 5));    // 1
+        System.out.println(new Solution().binomialCoefficient(6, 2));    // 15
+        System.out.println(new Solution().binomialCoefficient(7, 3));    // 35
     }
-}
-```
-
-```c run
-#include <stdio.h>
-
-int binomial_coefficient(int n, int k) {
-    if (n == k || k == 0) return 1;
-    return binomial_coefficient(n - 1, k - 1) + binomial_coefficient(n - 1, k);
-}
-
-int main(void) {
-    printf("%d\n", binomial_coefficient(5, 3));   /* 10 */
-    return 0;
-}
-```
-
-```scala run
-object Main extends App {
-  class Solution {
-    def binomialCoefficient(n: Int, k: Int): Int = {
-      if (n == k || k == 0) 1
-      else binomialCoefficient(n - 1, k - 1) + binomialCoefficient(n - 1, k)
-    }
-  }
-
-  println(new Solution().binomialCoefficient(5, 3))   // 10
 }
 ```
 
@@ -526,9 +569,7 @@ C(4, 2) = 3 + 3 = 6 ✓
 
 </details>
 
----
-
-## Complexity Analysis
+### Complexity Analysis
 
 | Resource | Cost | Why |
 |---|---|---|
@@ -537,9 +578,7 @@ C(4, 2) = 3 + 3 = 6 ✓
 | **Space (with memo)** | `O(n · k)` | Cache one entry per `(n, k)` cell. |
 | **Time (with memo)** | `O(n · k)` | Each cell computed once. |
 
----
-
-## Edge Cases
+### Edge Cases
 
 | Case | Example | Expected | Reasoning |
 |---|---|---|---|
@@ -550,11 +589,14 @@ C(4, 2) = 3 + 3 = 6 ✓
 | Symmetry | `C(10, 4)` vs `C(10, 6)` | both `210` | `C(n, k) = C(n, n-k)` (mathematical property). |
 | Large | `C(50, 25)` | `1.26 × 10¹⁴` | Naive recursion infeasible without memoisation. |
 
----
+</details>
+<details>
+<summary><h2>Final Takeaway</h2></summary>
 
-## Final Takeaway
 
 Binomial coefficient is the canonical 2D recurrence — clean, symmetric, with two boundary base cases. The recursion navigates Pascal's triangle one cell at a time, branching into two cells per level. Memoisation collapses the exponential blow-up; the next problem has the same shape but a different physical interpretation.
+
+</details>
 
 ***
 
@@ -583,7 +625,9 @@ Explanation: already at the bottom-right corner — exactly one "do-nothing" pat
 
 ---
 
-## What Does "Only Right or Down" Mean Recursively?
+<details>
+<summary><h2>What Does "Only Right or Down" Mean Recursively?</h2></summary>
+
 
 The first move from the top-left corner is either **right** or **down**:
 - **Right.** You're now in a `(rows, cols-1)` subgrid; count its paths.
@@ -601,9 +645,10 @@ Base cases:
 
 This is *the same recurrence* as binomial coefficient. In fact `paths(r, c) = C(r + c, r)` — one of the most elegant identities in combinatorics. Use it to sanity-check answers.
 
----
+</details>
+<details>
+<summary><h2>Applying the Diagnostic Questions</h2></summary>
 
-## Applying the Diagnostic Questions
 
 | # | Check | Answer |
 |---|---|---|
@@ -623,9 +668,10 @@ The two recursive calls reduce different axes. `paths(r, c-1)` reduces only `col
 
 A path that goes all-right hits the right edge of the grid and must then go all-down, ending in `(rows, 0)`. A path that goes all-down does the opposite. Both edges must be base cases or those paths never terminate. ✓
 
----
+</details>
+<details>
+<summary><h2>The Grid Navigation Strategy (Visualised)</h2></summary>
 
-## The Grid Navigation Strategy (Visualised)
 
 ```d2
 direction: down
@@ -643,73 +689,73 @@ table: "Cells of paths(r, c) — number of paths from (0,0) to (r,c)" {
 
 <p align="center"><strong>Path counts for the bottom-right corner of a 2×2 grid: <code>paths(2, 2) = 6</code>. Yellow cells are the boundary base cases; interior cells = sum of cell above + cell to the left.</strong></p>
 
----
+</details>
+<details>
+<summary><h2>Solution &amp; Analysis</h2></summary>
 
-## The Solution
-
-
-```pseudocode
-function latticePaths(rows, cols):
-    if rows = 0 OR cols = 0:                                  # boundary — only one path along an edge
-        return 1
-    return latticePaths(rows − 1, cols) + latticePaths(rows, cols − 1)
-```
+### The Solution
 
 ```python run
 class Solution:
     def lattice_paths(self, rows: int, cols: int) -> int:
-        # Boundary bases — top row or leftmost column
+
+        # Base case: If either rows or cols is 0, there is only
+        # one unique path (all the way down or all the way right)
         if rows == 0 or cols == 0:
             return 1
-        # Two recursive calls
-        return (self.lattice_paths(rows - 1, cols)
-                + self.lattice_paths(rows, cols - 1))
+
+        # Recursive case: The number of unique paths to the bottom-right
+        # corner is the sum of the unique paths from the cell directly
+        # above and the cell directly to the left
+        return self.lattice_paths(rows - 1, cols) + self.lattice_paths(
+            rows, cols - 1
+        )
 
 
-if __name__ == "__main__":
-    print(Solution().lattice_paths(2, 2))   # 6
-    print(Solution().lattice_paths(3, 3))   # 20
+# Examples from the problem statement
+print(Solution().lattice_paths(2, 2))   # 6
+print(Solution().lattice_paths(3, 3))   # 20
+print(Solution().lattice_paths(0, 0))   # 1
+
+# Edge cases
+print(Solution().lattice_paths(1, 1))   # 2
+print(Solution().lattice_paths(0, 5))   # 1
+print(Solution().lattice_paths(5, 0))   # 1
+print(Solution().lattice_paths(2, 3))   # 10
 ```
 
 ```java run
 public class Main {
     static class Solution {
         public int latticePaths(int rows, int cols) {
-            if (rows == 0 || cols == 0) return 1;
-            return latticePaths(rows - 1, cols) + latticePaths(rows, cols - 1);
+
+            // Base case: If either rows or cols is 0, there is only
+            // one unique path (all the way down or all the way right)
+            if (rows == 0 || cols == 0) {
+                return 1;
+            }
+
+            // Recursive case: The number of unique paths to the bottom-right
+            // corner is the sum of the unique paths from the cell directly
+            // above and the cell directly to the left
+            return (
+                latticePaths(rows - 1, cols) + latticePaths(rows, cols - 1)
+            );
         }
     }
 
     public static void main(String[] args) {
+        // Examples from the problem statement
         System.out.println(new Solution().latticePaths(2, 2));   // 6
+        System.out.println(new Solution().latticePaths(3, 3));   // 20
+        System.out.println(new Solution().latticePaths(0, 0));   // 1
+
+        // Edge cases
+        System.out.println(new Solution().latticePaths(1, 1));   // 2
+        System.out.println(new Solution().latticePaths(0, 5));   // 1
+        System.out.println(new Solution().latticePaths(5, 0));   // 1
+        System.out.println(new Solution().latticePaths(2, 3));   // 10
     }
-}
-```
-
-```c run
-#include <stdio.h>
-
-int lattice_paths(int rows, int cols) {
-    if (rows == 0 || cols == 0) return 1;
-    return lattice_paths(rows - 1, cols) + lattice_paths(rows, cols - 1);
-}
-
-int main(void) {
-    printf("%d\n", lattice_paths(2, 2));   /* 6 */
-    return 0;
-}
-```
-
-```scala run
-object Main extends App {
-  class Solution {
-    def latticePaths(rows: Int, cols: Int): Int = {
-      if (rows == 0 || cols == 0) 1
-      else latticePaths(rows - 1, cols) + latticePaths(rows, cols - 1)
-    }
-  }
-
-  println(new Solution().latticePaths(2, 2))   // 6
 }
 ```
 
@@ -737,9 +783,7 @@ Same shape as binomial coefficient — different surface meaning, identical math
 
 </details>
 
----
-
-## Complexity Analysis
+### Complexity Analysis
 
 | Resource | Cost | Why |
 |---|---|---|
@@ -748,9 +792,7 @@ Same shape as binomial coefficient — different surface meaning, identical math
 | **Space (stack)** | `O(r + c)` | Deepest path reduces both axes to 0. |
 | **Space (memo)** | `O(r · c)` | One cache entry per cell. |
 
----
-
-## Edge Cases
+### Edge Cases
 
 | Case | Example | Expected | Reasoning |
 |---|---|---|---|
@@ -761,11 +803,14 @@ Same shape as binomial coefficient — different surface meaning, identical math
 | Asymmetric | `rows = 2, cols = 4` | `15` | `C(6, 2) = 15`. |
 | Large | `rows = 20, cols = 20` | `137846528820` | Memo essential. |
 
----
+</details>
+<details>
+<summary><h2>Final Takeaway</h2></summary>
 
-## Final Takeaway
 
 Lattice paths is binomial coefficient with a geometric interpretation: every path through the grid corresponds to a way of choosing which moves go right (and the rest go down). The same recurrence appears in dozens of grid-based problems — minimum-cost path, count of obstacle-free paths, etc. The next problem is the most extreme multidimensional recursion in this lesson — a function with such a wild branching structure it isn't even primitive recursive.
+
+</details>
 
 ***
 
@@ -800,15 +845,18 @@ Output: 1
 
 ---
 
-## What Makes Ackermann Wild
+<details>
+<summary><h2>What Makes Ackermann Wild</h2></summary>
+
 
 Look at the recurrence's third case: `A(m, n) = A(m - 1, A(m, n - 1))`. The inner `A(m, n - 1)` is itself a recursive call whose result is the *second argument* of the outer call. The function recurses twice — but the second recursion's input depends on the first recursion's output. The state space isn't a tidy 2D grid; it's a wild spiral of dependencies.
 
 Despite the chaos, the recurrence is genuinely multidimensional — it has two parameters that both shrink, just in unusual ways.
 
----
+</details>
+<details>
+<summary><h2>Applying the Diagnostic Questions</h2></summary>
 
-## Applying the Diagnostic Questions
 
 | # | Check | Answer |
 |---|---|---|
@@ -833,9 +881,10 @@ Each case targets a different region of the grid. ✓
 
 Eventually every recursion path reaches a frame with `m = 0`, where the base case fires and returns `n + 1`. The other case (`n = 0` with `m > 0`) is a *recursive* case that bridges to the `m = 0` base. So strictly there's one base case, but the `n = 0` case is special enough to merit a separate code branch. ✓
 
----
+</details>
+<details>
+<summary><h2>The Spiral State Space (Visualised)</h2></summary>
 
-## The Spiral State Space (Visualised)
 
 There's no clean 2D grid for Ackermann — the state explodes nonlinearly. But we can visualise the small values:
 
@@ -856,81 +905,85 @@ table: "Ackermann's small values — A(m, n)" {
 
 <p align="center"><strong>Small Ackermann values. Yellow row = base cases (<code>m = 0</code> ⇒ <code>n + 1</code>). Notice how <code>m = 3</code> already grows non-trivially. <code>m = 4</code>'s first value is <code>2^65536 − 3</code>.</strong></p>
 
----
+</details>
+<details>
+<summary><h2>Solution &amp; Analysis</h2></summary>
 
-## The Solution
-
-
-```pseudocode
-function ackermann(m, n):
-    if m = 0:                                                 # base case
-        return n + 1
-    if n = 0:
-        return ackermann(m − 1, 1)
-    return ackermann(m − 1, ackermann(m, n − 1))              # nested recursive calls
-```
+### The Solution
 
 ```python run
 class Solution:
-    def ackermann(self, m: int, n: int) -> int:
-        # Base case: m == 0
+    def ackerman(self, m: int, n: int) -> int:
+
+        # Base case: If m is 0, return n + 1
         if m == 0:
             return n + 1
-        # Recursive case: m > 0, n == 0
-        if n == 0:
-            return self.ackermann(m - 1, 1)
-        # Recursive case: m > 0, n > 0 — TWO nested recursive calls
-        return self.ackermann(m - 1, self.ackermann(m, n - 1))
+
+        # If m is greater than 0 and n is 0, make a recursive call
+        # with m - 1 and 1 as arguments
+        if m > 0 and n == 0:
+            return self.ackerman(m - 1, 1)
+
+        # If both m and n are greater than 0, make a recursive call
+        # with m - 1 and the result of ackerman(m, n - 1) as arguments
+        if m > 0 and n > 0:
+            return self.ackerman(m - 1, self.ackerman(m, n - 1))
+
+        # If none of the above conditions are met, return 0
+        return 0
 
 
-if __name__ == "__main__":
-    print(Solution().ackermann(2, 2))   # 7
-    print(Solution().ackermann(1, 1))   # 3
-    # Don't try (3, 5+) or (4, _) — too slow
+# Examples from the problem statement
+print(Solution().ackerman(2, 2))   # 7
+print(Solution().ackerman(1, 1))   # 3
+print(Solution().ackerman(0, 0))   # 1
+
+# Edge cases
+print(Solution().ackerman(0, 5))   # 6
+print(Solution().ackerman(1, 0))   # 2
+print(Solution().ackerman(2, 0))   # 3
+print(Solution().ackerman(2, 3))   # 9
 ```
 
 ```java run
 public class Main {
     static class Solution {
-        public int ackerman(int m, int n) {
-            if (m == 0) return n + 1;
-            if (n == 0) return ackerman(m - 1, 1);
-            return ackerman(m - 1, ackerman(m, n - 1));
+        public int ackerman(int M, int N) {
+
+            // Base case: If M is 0, return N + 1
+            if (M == 0) {
+                return N + 1;
+            }
+
+            // If M is greater than 0 and N is 0, make a recursive call
+            // with M - 1 and 1 as arguments
+            if (M > 0 && N == 0) {
+                return ackerman(M - 1, 1);
+            }
+
+            // If both M and N are greater than 0, make a recursive call
+            // with M - 1 and the result of ackerman(M, N - 1) as arguments
+            if (M > 0 && N > 0) {
+                return ackerman(M - 1, ackerman(M, N - 1));
+            }
+
+            // If none of the above conditions are met, return 0
+            return 0;
         }
     }
 
     public static void main(String[] args) {
+        // Examples from the problem statement
         System.out.println(new Solution().ackerman(2, 2));   // 7
+        System.out.println(new Solution().ackerman(1, 1));   // 3
+        System.out.println(new Solution().ackerman(0, 0));   // 1
+
+        // Edge cases
+        System.out.println(new Solution().ackerman(0, 5));   // 6
+        System.out.println(new Solution().ackerman(1, 0));   // 2
+        System.out.println(new Solution().ackerman(2, 0));   // 3
+        System.out.println(new Solution().ackerman(2, 3));   // 9
     }
-}
-```
-
-```c run
-#include <stdio.h>
-
-int ackermann(int m, int n) {
-    if (m == 0) return n + 1;
-    if (n == 0) return ackermann(m - 1, 1);
-    return ackermann(m - 1, ackermann(m, n - 1));
-}
-
-int main(void) {
-    printf("%d\n", ackermann(2, 2));   /* 7 */
-    return 0;
-}
-```
-
-```scala run
-object Main extends App {
-  class Solution {
-    def ackermann(m: Int, n: Int): Int = {
-      if (m == 0) n + 1
-      else if (n == 0) ackermann(m - 1, 1)
-      else ackermann(m - 1, ackermann(m, n - 1))
-    }
-  }
-
-  println(new Solution().ackermann(2, 2))   // 7
 }
 ```
 
@@ -964,9 +1017,7 @@ The trace shows how nested calls compose — each `A(m, n - 1)`'s result becomes
 
 </details>
 
----
-
-## Complexity Analysis
+### Complexity Analysis
 
 | Resource | Cost | Why |
 |---|---|---|
@@ -975,9 +1026,7 @@ The trace shows how nested calls compose — each `A(m, n - 1)`'s result becomes
 
 Memoisation helps only modestly here — the values themselves grow so fast that storing them isn't enough to make `m ≥ 4` tractable. Ackermann is a counterexample to "you can always speed up a recursion with memoisation."
 
----
-
-## Edge Cases
+### Edge Cases
 
 | Case | Example | Expected | Reasoning |
 |---|---|---|---|
@@ -988,11 +1037,14 @@ Memoisation helps only modestly here — the values themselves grow so fast that
 | Pathological | `A(4, 1)` | `65533` | Calls explode; will likely overflow stack on most systems. |
 | Insane | `A(4, 2)` | `2^65536 − 3` | Larger than any number ever counted. |
 
----
+</details>
+<details>
+<summary><h2>Final Takeaway</h2></summary>
 
-## Final Takeaway
 
 Ackermann is multidimensional recursion's wildest example. Its existence proves that not every recursion can be tamed into a `for` loop or made tractable by memoisation. It's also a nice contrast to the previous three problems, which *can* be tamed by 2D dynamic programming. The next problem brings us back to a memoisable, optimisation-flavoured 2D recursion — and is the canonical "this is why DP exists" lesson.
+
+</details>
 
 ***
 
@@ -1021,7 +1073,9 @@ Output: 1
 
 ---
 
-## What Does the Recurrence Mean?
+<details>
+<summary><h2>What Does the Recurrence Mean?</h2></summary>
+
 
 Imagine you have `eggs` eggs and `floors` floors. You decide to drop an egg from some floor `f`. Two things can happen:
 
@@ -1043,9 +1097,10 @@ Base cases:
 - `eggDrop(_, 1) = 1` — one floor, one drop tells you everything.
 - `eggDrop(1, floors) = floors` — with one egg, you must scan linearly from floor 1 (any other strategy risks breaking your only egg too high).
 
----
+</details>
+<details>
+<summary><h2>Applying the Diagnostic Questions</h2></summary>
 
-## Applying the Diagnostic Questions
 
 | # | Check | Answer |
 |---|---|---|
@@ -1069,9 +1124,10 @@ The break-case `eggDrop(eggs - 1, f - 1)` reduces both axes. The survive-case `e
 
 Drop any one and the recursion either runs forever or gives wrong answers for some inputs. ✓
 
----
+</details>
+<details>
+<summary><h2>The Optimisation Tree (Visualised)</h2></summary>
 
-## The Optimisation Tree (Visualised)
 
 For each cell `(e, f)`, the recursion tries every floor `1..f` and picks the minimum worst-case. That's an `O(f)` inner loop, plus two recursive calls per inner-loop iteration. Without memoisation, the work is enormous.
 
@@ -1098,127 +1154,120 @@ flowchart TB
 
 <p align="center"><strong>For <code>eggDrop(2, 3)</code> the recursion tries each of three floors. Each floor yields two sub-calls (break, survive). The minimum-of-maxima search is what makes this an *optimisation* recursion, not just a counting one.</strong></p>
 
----
+</details>
+<details>
+<summary><h2>Solution &amp; Analysis</h2></summary>
 
-## The Solution
-
-
-```pseudocode
-function eggDrop(eggs, floors):
-    if floors = 0: return 0
-    if floors = 1: return 1
-    if eggs = 1:                                              # one egg → linear scan is forced
-        return floors
-
-    minDrops ← +∞
-    for floor from 1 to floors:                               # try every drop floor
-        broke    ← eggDrop(eggs − 1, floor − 1)               # if egg breaks, search below
-        survived ← eggDrop(eggs,     floors − floor)          # if egg survives, search above
-        worst    ← max(broke, survived)                       # adversary picks the worse outcome
-        minDrops ← min(minDrops, worst + 1)                   # +1 for this drop
-    return minDrops
-```
+### The Solution
 
 ```python run
+import sys
+
 class Solution:
     def egg_drop(self, eggs: int, floors: int) -> int:
-        # Base cases
+
+        # Base case: If there are no floors, no trials are needed.
         if floors == 0:
             return 0
+
+        # Base case: If there is one floor, one trial is needed.
         if floors == 1:
             return 1
+
+        # Base case: If there is only one egg, we have to do a linear
+        # search
         if eggs == 1:
-            return floors        # Linear scan is forced
+            return floors
 
-        # Try every floor; pick the strategy minimising the worst case
-        min_drops = float('inf')
+        # Initialize minimum number of drops to a large value
+        min_drops = sys.maxsize
+
+        # Try dropping from each floor
         for floor in range(1, floors + 1):
-            broke    = self.egg_drop(eggs - 1, floor - 1)        # Egg breaks
-            survived = self.egg_drop(eggs,     floors - floor)   # Egg survives
-            worst    = max(broke, survived)                       # Worst of the two
-            min_drops = min(min_drops, worst + 1)                 # Plus this drop
 
-        return int(min_drops)
+            # if the egg breaks
+            egg_breaks = self.egg_drop(eggs - 1, floor - 1)
+
+            # if the egg survives
+            egg_survives = self.egg_drop(eggs, floors - floor)
+
+            # The worst-case scenario is the maximum of the two cases
+            worst_case = max(egg_breaks, egg_survives)
+
+            # Update the minimum number of drops needed
+            min_drops = min(min_drops, worst_case + 1)
+
+        return min_drops
 
 
-if __name__ == "__main__":
-    print(Solution().egg_drop(4, 2))   # 2
-    print(Solution().egg_drop(2, 10))  # 4 — classic answer
+# Examples from the problem statement
+print(Solution().egg_drop(4, 2))   # 2
+print(Solution().egg_drop(2, 1))   # 1
+print(Solution().egg_drop(1, 1))   # 1
+
+# Edge cases
+print(Solution().egg_drop(2, 0))   # 0
+print(Solution().egg_drop(1, 5))   # 5
+print(Solution().egg_drop(2, 6))   # 3
+print(Solution().egg_drop(3, 5))   # 3
 ```
 
 ```java run
 public class Main {
     static class Solution {
         public int eggDrop(int eggs, int floors) {
-            if (floors == 0) return 0;
-            if (floors == 1) return 1;
-            if (eggs == 1) return floors;
 
-            int minDrops = Integer.MAX_VALUE;
-            for (int f = 1; f <= floors; f++) {
-                int broke = eggDrop(eggs - 1, f - 1);
-                int survived = eggDrop(eggs, floors - f);
-                int worst = Math.max(broke, survived);
-                minDrops = Math.min(minDrops, worst + 1);
+            // Base case: If there are no floors, no trials are needed.
+            if (floors == 0) {
+                return 0;
             }
+
+            // Base case: If there is one floor, one trial is needed.
+            if (floors == 1) {
+                return 1;
+            }
+
+            // Base case: If there is only one egg, we have to do a linear
+            // search
+            if (eggs == 1) {
+                return floors;
+            }
+
+            // Initialize minimum number of drops to a large value
+            int minDrops = Integer.MAX_VALUE;
+
+            // Try dropping from each floor
+            for (int floor = 1; floor <= floors; floor++) {
+
+                // if the egg breaks
+                int eggBreaks = eggDrop(eggs - 1, floor - 1);
+
+                // if the egg survives
+                int eggSurvives = eggDrop(eggs, floors - floor);
+
+                // The worst-case scenario is the maximum of the two cases
+                int worstCase = Math.max(eggBreaks, eggSurvives);
+
+                // Update the minimum number of drops needed
+                minDrops = Math.min(minDrops, worstCase + 1);
+            }
+
             return minDrops;
         }
     }
 
     public static void main(String[] args) {
-        System.out.println(new Solution().eggDrop(2, 10));   // 4
+        // Examples from the problem statement
+        System.out.println(new Solution().eggDrop(4, 2));   // 2
+        System.out.println(new Solution().eggDrop(2, 1));   // 1
+        System.out.println(new Solution().eggDrop(1, 1));   // 1
+
+        // Edge cases
+        System.out.println(new Solution().eggDrop(2, 0));   // 0
+        System.out.println(new Solution().eggDrop(1, 5));   // 5
+        System.out.println(new Solution().eggDrop(2, 6));   // 3
+        System.out.println(new Solution().eggDrop(3, 5));   // 3
     }
-}
-```
-
-```c run
-#include <stdio.h>
-#include <limits.h>
-
-int max(int a, int b) { return a > b ? a : b; }
-int min(int a, int b) { return a < b ? a : b; }
-
-int egg_drop(int eggs, int floors) {
-    if (floors == 0) return 0;
-    if (floors == 1) return 1;
-    if (eggs == 1) return floors;
-
-    int min_drops = INT_MAX;
-    for (int f = 1; f <= floors; f++) {
-        int broke = egg_drop(eggs - 1, f - 1);
-        int survived = egg_drop(eggs, floors - f);
-        int worst = max(broke, survived);
-        min_drops = min(min_drops, worst + 1);
-    }
-    return min_drops;
-}
-
-int main(void) {
-    printf("%d\n", egg_drop(2, 10));   /* 4 */
-    return 0;
-}
-```
-
-```scala run
-object Main extends App {
-  class Solution {
-    def eggDrop(eggs: Int, floors: Int): Int = {
-      if (floors == 0) return 0
-      if (floors == 1) return 1
-      if (eggs == 1) return floors
-
-      var minDrops = Int.MaxValue
-      for (f <- 1 to floors) {
-        val broke = eggDrop(eggs - 1, f - 1)
-        val survived = eggDrop(eggs, floors - f)
-        val worst = math.max(broke, survived)
-        minDrops = math.min(minDrops, worst + 1)
-      }
-      minDrops
-    }
-  }
-
-  println(new Solution().eggDrop(2, 10))   // 4
 }
 ```
 
@@ -1258,9 +1307,7 @@ The optimal strategy is to drop from floor 2 first.
 
 </details>
 
----
-
-## Complexity Analysis
+### Complexity Analysis
 
 | Resource | Cost (no memo) | Cost (with memo) | Why |
 |---|---|---|---|
@@ -1270,9 +1317,7 @@ The optimal strategy is to drop from floor 2 first.
 
 **With binary-search optimisation on the `f` loop**, time drops further to `O(eggs · floors · log floors)`. Both improvements are part of the dynamic programming chapter.
 
----
-
-## Edge Cases
+### Edge Cases
 
 | Case | Example | Expected | Reasoning |
 |---|---|---|---|
@@ -1282,9 +1327,10 @@ The optimal strategy is to drop from floor 2 first.
 | Two eggs, 100 floors | `eggDrop(2, 100)` | `14` | Famous classroom answer. |
 | Many eggs | `eggDrop(100, 100)` | `7` | With ≥ `log₂(floors)` eggs, you can effectively binary-search. |
 
----
+</details>
+<details>
+<summary><h2>Final Takeaway</h2></summary>
 
-## Final Takeaway
 
 Egg dropping is multidimensional recursion's textbook optimisation problem. Two axes (`eggs`, `floors`), three base cases, an inner loop choosing the optimal floor, and an exponential blow-up that screams for memoisation. **This is the canonical "this is why DP exists" lesson** — a problem where the recurrence is intuitive and correct, but only memoisation makes it tractable.
 
@@ -1308,5 +1354,7 @@ The exact answer for `(eggs=3, floors=100)` is **9 drops** in the worst case. Wi
 That cache is the entire content of the dynamic-programming chapter coming up next. Every DP problem you'll meet — knapsack, edit distance, palindrome partitioning, matrix chain multiplication — is a multidimensional recursion you've already learned to recognise, with a memo table added.
 
 You came into this section thinking recursion was a niche trick. You're leaving with a complete map of the four patterns (head, tail, multiple, multidimensional), seven lessons of internalised material, four files of worked problems, the diagnostic questions to recognise each pattern on sight, and the keys to the dynamic programming chapter that comes next. **Recursion is no longer dark magic. It's a tool you reach for.**
+
+</details>
 
 </details>

@@ -87,28 +87,6 @@ The same `low[]` array, two different criteria. One DFS computes both at once.
 
 # Bridge-finding algorithm
 
-```pseudocode
-function findBridges(graph):
-    disc, low ← arrays of size V, all -1
-    bridges ← []
-    timer ← 0
-
-    function dfs(u, parent):
-        disc[u] ← timer; low[u] ← timer; timer ← timer + 1
-        for each neighbour v of u:
-            if v = parent: continue                    # don't go back along tree edge
-            if disc[v] = -1:
-                dfs(v, u)
-                low[u] ← min(low[u], low[v])
-                if low[v] > disc[u]:
-                    bridges.append((u, v))
-            else:
-                low[u] ← min(low[u], disc[v])
-
-    for v: if disc[v] = -1: dfs(v, -1)
-    return bridges
-```
-
 `O(V + E)`. The single tweak from SCC's algorithm: we ignore the parent edge when scanning neighbours (otherwise we'd "find a back-edge" along the tree edge itself, breaking the criterion).
 
 **Multi-edge gotcha.** If two distinct edges go between the same pair of vertices, neither is a bridge (one is a backup for the other). Track edges by ID, not by endpoint pairs, when this matters.
@@ -116,32 +94,6 @@ function findBridges(graph):
 ***
 
 # Articulation-point algorithm
-
-```pseudocode
-function findArticulations(graph):
-    disc, low ← arrays of size V, all -1
-    is_art ← all false
-    timer ← 0
-
-    function dfs(u, parent):
-        disc[u] ← timer; low[u] ← timer; timer ← timer + 1
-        children ← 0
-        for each neighbour v of u:
-            if v = parent: continue
-            if disc[v] = -1:
-                children ← children + 1
-                dfs(v, u)
-                low[u] ← min(low[u], low[v])
-                if parent ≠ -1 AND low[v] ≥ disc[u]:
-                    is_art[u] ← true
-            else:
-                low[u] ← min(low[u], disc[v])
-        if parent = -1 AND children ≥ 2:                  # root special case
-            is_art[u] ← true
-
-    for v: if disc[v] = -1: dfs(v, -1)
-    return [v for v if is_art[v]]
-```
 
 The root special case: a DFS root is an articulation point iff it has ≥ 2 tree children, because removing it disconnects those children's subtrees.
 
@@ -244,87 +196,6 @@ public class Main {
 }
 ```
 
-```c run
-#include <stdio.h>
-#include <string.h>
-
-#define N 100
-int adj[N][N], adjsz[N];
-int disc[N], low[N], is_art[N], timer = 0;
-
-static int min(int a, int b) { return a < b ? a : b; }
-
-void dfs(int u, int parent) {
-    disc[u] = low[u] = timer++;
-    int children = 0;
-    for (int i = 0; i < adjsz[u]; i++) {
-        int v = adj[u][i];
-        if (v == parent) continue;
-        if (disc[v] == -1) {
-            children++; dfs(v, u);
-            low[u] = min(low[u], low[v]);
-            if (low[v] > disc[u]) printf("bridge: %d-%d\n", u, v);
-            if (parent != -1 && low[v] >= disc[u]) is_art[u] = 1;
-        } else low[u] = min(low[u], disc[v]);
-    }
-    if (parent == -1 && children >= 2) is_art[u] = 1;
-}
-
-int main(void) {
-    memset(disc, -1, sizeof disc);
-    int edges[][2] = {{0,1}, {1,2}, {1,3}, {3,4}, {4,5}, {5,3}};
-    int E = 6, V = 6;
-    for (int i = 0; i < E; i++) {
-        adj[edges[i][0]][adjsz[edges[i][0]]++] = edges[i][1];
-        adj[edges[i][1]][adjsz[edges[i][1]]++] = edges[i][0];
-    }
-    for (int i = 0; i < V; i++) if (disc[i] == -1) dfs(i, -1);
-    for (int i = 0; i < V; i++) if (is_art[i]) printf("articulation: %d\n", i);
-    return 0;
-}
-```
-
-```scala run
-import scala.collection.mutable
-
-object Main extends App {
-  object Solution {
-    def findBridgesAndArticulations(n: Int, adj: Array[mutable.ArrayBuffer[Int]]) = {
-      val disc = Array.fill(n)(-1)
-      val low = Array.fill(n)(-1)
-      val isArt = Array.fill(n)(false)
-      val bridges = mutable.ListBuffer.empty[(Int, Int)]
-      var timer = 0
-
-      def dfs(u: Int, parent: Int): Unit = {
-        disc(u) = timer; low(u) = timer; timer += 1
-        var children = 0
-        for (v <- adj(u) if v != parent) {
-          if (disc(v) == -1) {
-            children += 1; dfs(v, u)
-            low(u) = math.min(low(u), low(v))
-            if (low(v) > disc(u)) bridges += ((u, v))
-            if (parent != -1 && low(v) >= disc(u)) isArt(u) = true
-          } else low(u) = math.min(low(u), disc(v))
-        }
-        if (parent == -1 && children >= 2) isArt(u) = true
-      }
-
-      for (v <- 0 until n) if (disc(v) == -1) dfs(v, -1)
-      (bridges.toList, (0 until n).filter(isArt(_)).toList)
-    }
-  }
-
-  val n = 6
-  val edges = Array((0,1), (1,2), (1,3), (3,4), (4,5), (5,3))
-  val adj = Array.fill(n)(mutable.ArrayBuffer.empty[Int])
-  for ((u, v) <- edges) { adj(u) += v; adj(v) += u }
-  val (bridges, arts) = Solution.findBridgesAndArticulations(n, adj)
-  println(s"bridges: $bridges")
-  println(s"articulation points: $arts")
-}
-```
-
 ***
 
 # Edge cases and pitfalls
@@ -383,49 +254,42 @@ Click any question to reveal the answer.
 **A:** An edge whose removal disconnects the graph (increases the number of connected components).
 
 </details>
-
 <details>
 <summary><strong>Q:</strong> Define an articulation point.</summary>
 
 **A:** A vertex whose removal (with all its incident edges) disconnects the graph.
 
 </details>
-
 <details>
 <summary><strong>Q:</strong> Bridge criterion?</summary>
 
 **A:** A tree edge `(u, v)` (with `v` discovered from `u`) is a bridge iff `low[v] > disc[u]`. The subtree under `v` has no back-edge to `u` or above.
 
 </details>
-
 <details>
 <summary><strong>Q:</strong> Articulation criterion (non-root vertex)?</summary>
 
 **A:** A non-root `u` is an articulation point iff some tree-child `v` has `low[v] ≥ disc[u]`. The subtree under `v` can't bypass `u`.
 
 </details>
-
 <details>
 <summary><strong>Q:</strong> When is the DFS root an articulation point?</summary>
 
 **A:** Iff it has ≥ 2 tree children. Removing it disconnects those children's subtrees.
 
 </details>
-
 <details>
 <summary><strong>Q:</strong> Bridge vs articulation criterion — what's the one-character difference?</summary>
 
 **A:** Bridge: `low[v] > disc[u]` (strict). Articulation: `low[v] ≥ disc[u]` (non-strict). That's the entire algorithmic difference.
 
 </details>
-
 <details>
 <summary><strong>Q:</strong> Time complexity?</summary>
 
 **A:** `O(V + E)`. Single DFS pass with `disc` and `low` arrays.
 
 </details>
-
 <details>
 <summary><strong>Q:</strong> Multi-edge gotcha?</summary>
 

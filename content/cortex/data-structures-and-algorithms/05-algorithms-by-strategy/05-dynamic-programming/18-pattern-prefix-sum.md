@@ -102,155 +102,150 @@ Input:  matrix = [[1, 2, 3],
 Output: 45                         The whole matrix is the only k × k submatrix
 ```
 
-## The Approach
+<details>
+<summary><h2>The Approach</h2></summary>
+
 
 Naively: enumerate every `k × k` submatrix (there are `(n-k+1) × (m-k+1)` of them), and sum each in `O(k²)` — total `O(n × m × k²)`. With prefix sums precomputed in `O(n × m)`, each submatrix sum is `O(1)` — total drops to `O(n × m)`.
 
-## The Solution
+</details>
+<details>
+<summary><h2>Solution &amp; Analysis</h2></summary>
 
-
-```pseudocode
-# 2D prefix sum + scan over every k×k window.
-# prefix[i][j] = sum of matrix[0..i−1][0..j−1] (inclusion-exclusion build).
-function kLimitedSubmatrixSum(matrix, k):
-    rows ← length(matrix); cols ← length(matrix[0])
-    prefix ← (rows + 1) × (cols + 1) grid of zeros
-    for i from 1 to rows:
-        for j from 1 to cols:
-            prefix[i][j] ← prefix[i − 1][j] + prefix[i][j − 1] − prefix[i − 1][j − 1] + matrix[i − 1][j − 1]
-
-    maxSum ← −∞
-    for i from 0 to rows − k:
-        for j from 0 to cols − k:
-            # k×k window with top-left (i, j); corners (i, j) and (i+k, j+k) in prefix coords.
-            s ← prefix[i + k][j + k] − prefix[i][j + k] − prefix[i + k][j] + prefix[i][j]
-            maxSum ← max(maxSum, s)
-    return maxSum
-```
+### The Solution
 
 ```python run
 from typing import List
+import sys
 
 class Solution:
-    def k_limited_submatrix_sum(self, matrix: List[List[int]], k: int) -> int:
-        rows, cols = len(matrix), len(matrix[0])
-        # prefix[i][j] = sum of matrix[0..i-1][0..j-1].
-        prefix: List[List[int]] = [[0] * (cols + 1) for _ in range(rows + 1)]
+    def k_limited_submatrix_sum(
+        self, matrix: List[List[int]], k: int
+    ) -> int:
+        rows: int = len(matrix)
+        cols: int = len(matrix[0])
+
+        # Precompute the prefix sum matrix
+        prefix_sum: List[List[int]] = [
+            [0] * (cols + 1) for _ in range(rows + 1)
+        ]
         for i in range(1, rows + 1):
             for j in range(1, cols + 1):
-                prefix[i][j] = (
-                    prefix[i - 1][j] + prefix[i][j - 1] - prefix[i - 1][j - 1] + matrix[i - 1][j - 1]
+
+                # Calculate the sum of values in the submatrix (0,0) to
+                # (i-1,j-1) and store it in prefix_sum[i][j]
+                prefix_sum[i][j] = (
+                    prefix_sum[i - 1][j]
+                    + prefix_sum[i][j - 1]
+                    - prefix_sum[i - 1][j - 1]
+                    + matrix[i - 1][j - 1]
                 )
-        max_sum = float('-inf')
+
+        max_sum: int = -sys.maxsize
+        max_sum_submatrix: List[List[int]] = [[0] * k for _ in range(k)]
+
+        # Find the maximum sum submatrix
         for i in range(rows - k + 1):
             for j in range(cols - k + 1):
-                # k × k submatrix at (i, j) → bottom-right at (i+k-1, j+k-1).
-                # In prefix coords: corners (i, j) and (i+k, j+k).
-                s = (
-                    prefix[i + k][j + k]
-                    - prefix[i][j + k]
-                    - prefix[i + k][j]
-                    + prefix[i][j]
+
+                # Calculate the sum of values in the submatrix (i,j) to
+                # (i+k-1,j+k-1)
+                sum_ = (
+                    prefix_sum[i + k][j + k]
+                    - prefix_sum[i][j + k]
+                    - prefix_sum[i + k][j]
+                    + prefix_sum[i][j]
                 )
-                if s > max_sum:
-                    max_sum = s
+
+                if sum_ > max_sum:
+                    max_sum = sum_
         return max_sum
 
 
-if __name__ == "__main__":
-    sol = Solution()
-    print(sol.k_limited_submatrix_sum([[1, 2, 9], [5, 3, 8], [4, 6, 7]], 2))   # 24
-    print(sol.k_limited_submatrix_sum([[1, 2, 3], [4, 5, 6], [7, 8, 9]], 3))   # 45
+# Examples from the problem statement
+print(Solution().k_limited_submatrix_sum([[1,2,9],[5,3,8],[4,6,7]], 2))   # 24
+print(Solution().k_limited_submatrix_sum([[1,2,3],[4,5,6],[7,8,9]], 3))   # 45
+
+# Edge cases
+print(Solution().k_limited_submatrix_sum([[5]], 1))                        # 5  — 1x1 matrix, k=1
+print(Solution().k_limited_submatrix_sum([[1,2],[3,4]], 1))                # 4  — k=1, max element
+print(Solution().k_limited_submatrix_sum([[1,2],[3,4]], 2))                # 10 — whole 2x2
+print(Solution().k_limited_submatrix_sum([[-1,-2],[-3,-4]], 1))            # -1 — negative matrix
+print(Solution().k_limited_submatrix_sum([[1,2,3],[4,5,6],[7,8,9]], 2))   # 28 — bottom-right 2x2
 ```
 
 ```java run
+import java.util.*;
+
 public class Main {
     static class Solution {
         public int kLimitedSubmatrixSum(int[][] matrix, int k) {
-            int rows = matrix.length, cols = matrix[0].length;
-            int[][] prefix = new int[rows + 1][cols + 1];
+            int rows = matrix.length;
+            int cols = matrix[0].length;
+
+            // Precompute the prefix sum matrix
+            int[][] prefixSum = new int[rows + 1][cols + 1];
             for (int i = 1; i <= rows; i++) {
                 for (int j = 1; j <= cols; j++) {
-                    prefix[i][j] = prefix[i-1][j] + prefix[i][j-1] - prefix[i-1][j-1] + matrix[i-1][j-1];
+
+                    // Calculate the sum of values in the submatrix (0,0) to
+                    // (i-1,j-1) and store it in prefixSum[i][j]
+                    prefixSum[i][j] =
+                        prefixSum[i - 1][j] +
+                        prefixSum[i][j - 1] -
+                        prefixSum[i - 1][j - 1] +
+                        matrix[i - 1][j - 1];
                 }
             }
+
             int maxSum = Integer.MIN_VALUE;
-            for (int i = 0; i + k <= rows; i++) {
-                for (int j = 0; j + k <= cols; j++) {
-                    int s = prefix[i+k][j+k] - prefix[i][j+k] - prefix[i+k][j] + prefix[i][j];
-                    if (s > maxSum) maxSum = s;
+            int[][] maxSumSubmatrix = new int[k][k];
+
+            // Find the maximum sum submatrix
+            for (int i = 0; i <= rows - k; i++) {
+                for (int j = 0; j <= cols - k; j++) {
+
+                    // Calculate the sum of values in the submatrix (i,j) to
+                    // (i+k-1,j+k-1)
+                    int sum =
+                        prefixSum[i + k][j + k] -
+                        prefixSum[i][j + k] -
+                        prefixSum[i + k][j] +
+                        prefixSum[i][j];
+
+                    if (sum > maxSum) {
+                        maxSum = sum;
+                    }
                 }
             }
+
             return maxSum;
         }
     }
 
     public static void main(String[] args) {
-        int[][] m = {{1,2,9},{5,3,8},{4,6,7}};
-        System.out.println(new Solution().kLimitedSubmatrixSum(m, 2));   // 24
+        // Examples from the problem statement
+        System.out.println(new Solution().kLimitedSubmatrixSum(new int[][]{{1,2,9},{5,3,8},{4,6,7}}, 2));   // 24
+        System.out.println(new Solution().kLimitedSubmatrixSum(new int[][]{{1,2,3},{4,5,6},{7,8,9}}, 3));   // 45
+
+        // Edge cases
+        System.out.println(new Solution().kLimitedSubmatrixSum(new int[][]{{5}}, 1));                        // 5
+        System.out.println(new Solution().kLimitedSubmatrixSum(new int[][]{{1,2},{3,4}}, 1));                // 4
+        System.out.println(new Solution().kLimitedSubmatrixSum(new int[][]{{1,2},{3,4}}, 2));                // 10
+        System.out.println(new Solution().kLimitedSubmatrixSum(new int[][]{{-1,-2},{-3,-4}}, 1));            // -1
+        System.out.println(new Solution().kLimitedSubmatrixSum(new int[][]{{1,2,3},{4,5,6},{7,8,9}}, 2));   // 28
     }
 }
 ```
 
-```c run
-#include <stdio.h>
-#include <limits.h>
-
-int prefix[101][101];
-
-int k_limited_submatrix_sum(int matrix[][101], int rows, int cols, int k) {
-    for (int i = 0; i <= rows; i++) for (int j = 0; j <= cols; j++) prefix[i][j] = 0;
-    for (int i = 1; i <= rows; i++) {
-        for (int j = 1; j <= cols; j++) {
-            prefix[i][j] = prefix[i-1][j] + prefix[i][j-1] - prefix[i-1][j-1] + matrix[i-1][j-1];
-        }
-    }
-    int max_sum = INT_MIN;
-    for (int i = 0; i + k <= rows; i++) {
-        for (int j = 0; j + k <= cols; j++) {
-            int s = prefix[i+k][j+k] - prefix[i][j+k] - prefix[i+k][j] + prefix[i][j];
-            if (s > max_sum) max_sum = s;
-        }
-    }
-    return max_sum;
-}
-
-int main(void) {
-    int m[3][101] = {{1,2,9},{5,3,8},{4,6,7}};
-    printf("%d\n", k_limited_submatrix_sum(m, 3, 3, 2));   /* 24 */
-    return 0;
-}
-```
-
-```scala run
-object Main extends App {
-  class Solution {
-    def kLimitedSubmatrixSum(matrix: Array[Array[Int]], k: Int): Int = {
-      val rows = matrix.length; val cols = matrix(0).length
-      val prefix = Array.fill(rows + 1, cols + 1)(0)
-      for (i <- 1 to rows; j <- 1 to cols) {
-        prefix(i)(j) = prefix(i-1)(j) + prefix(i)(j-1) - prefix(i-1)(j-1) + matrix(i-1)(j-1)
-      }
-      var maxSum = Int.MinValue
-      for (i <- 0 to rows - k; j <- 0 to cols - k) {
-        val s = prefix(i+k)(j+k) - prefix(i)(j+k) - prefix(i+k)(j) + prefix(i)(j)
-        if (s > maxSum) maxSum = s
-      }
-      maxSum
-    }
-  }
-
-  println(new Solution().kLimitedSubmatrixSum(Array(Array(1,2,9), Array(5,3,8), Array(4,6,7)), 2))   // 24
-}
-```
-
-
-## Complexity
+### Complexity
 
 | Aspect | Cost |
 |---|---|
 | Time | `O(n × m)` — `O(n × m)` precompute + `O((n-k+1) × (m-k+1))` queries |
 | Space | `O(n × m)` for the prefix table |
+
+</details>
 
 ***
 
@@ -272,7 +267,9 @@ Input:  matrix = [[1, -2, -3],
 Output: 1                          Single cell (0, 0)
 ```
 
-## The Approach
+<details>
+<summary><h2>The Approach</h2></summary>
+
 
 There are `O(n²)` choices of top-left corner and `O(n²)` choices of bottom-right corner — `O(n⁴)` submatrices total. With prefix sums, each is `O(1)` to evaluate. Total: `O(n⁴)`.
 
@@ -282,152 +279,150 @@ There are `O(n²)` choices of top-left corner and `O(n²)` choices of bottom-rig
 
 Without prefix sums, computing each submatrix's sum requires scanning all its cells — up to `O(n²)` per submatrix, total `O(n⁶)`. Prefix sums kill the inner sum loop, dropping the total by a factor of `n²`.
 
-## The Solution
+</details>
+<details>
+<summary><h2>Solution &amp; Analysis</h2></summary>
 
-
-```pseudocode
-# Brute O(n²m²) over every (top-left, bottom-right) pair, sums via 2D prefix.
-function maximumSubmatrixSum(matrix):
-    n ← length(matrix); m ← length(matrix[0])
-    prefix ← (n + 1) × (m + 1) grid of zeros
-    for i from 1 to n:
-        for j from 1 to m:
-            prefix[i][j] ← prefix[i − 1][j] + prefix[i][j − 1] − prefix[i − 1][j − 1] + matrix[i − 1][j − 1]
-
-    maxSum ← −∞
-    for r1 from 1 to n:
-        for c1 from 1 to m:
-            for r2 from r1 to n:
-                for c2 from c1 to m:
-                    s ← prefix[r2][c2] − prefix[r1 − 1][c2] − prefix[r2][c1 − 1] + prefix[r1 − 1][c1 − 1]
-                    maxSum ← max(maxSum, s)
-    return maxSum
-```
+### The Solution
 
 ```python run
 from typing import List
+import sys
 
 class Solution:
     def maximum_submatrix_sum(self, matrix: List[List[int]]) -> int:
-        n = len(matrix)
-        m = len(matrix[0])
-        prefix: List[List[int]] = [[0] * (m + 1) for _ in range(n + 1)]
+        n: int = len(matrix)
+
+        # Create a prefix sum matrix with size (n+1) x (n+1)
+        prefix_sum: List[List[int]] = [
+            [0] * (n + 1) for _ in range(n + 1)
+        ]
+
+        # Compute the prefix sum matrix
         for i in range(1, n + 1):
-            for j in range(1, m + 1):
-                prefix[i][j] = (
-                    prefix[i - 1][j] + prefix[i][j - 1] - prefix[i - 1][j - 1] + matrix[i - 1][j - 1]
+            for j in range(1, n + 1):
+
+                # Each cell in the prefix sum matrix is the sum of the
+                # corresponding submatrix in the original matrix
+                prefix_sum[i][j] = (
+                    prefix_sum[i - 1][j]
+                    + prefix_sum[i][j - 1]
+                    - prefix_sum[i - 1][j - 1]
+                    + matrix[i - 1][j - 1]
                 )
-        max_sum = float('-inf')
-        # Enumerate every (top-left, bottom-right) corner pair.
+
+        max_sum: int = -sys.maxsize
+
+        # Iterate over all possible submatrices
         for r1 in range(1, n + 1):
-            for c1 in range(1, m + 1):
+            for c1 in range(1, n + 1):
                 for r2 in range(r1, n + 1):
-                    for c2 in range(c1, m + 1):
-                        s = (
-                            prefix[r2][c2] - prefix[r1 - 1][c2]
-                            - prefix[r2][c1 - 1] + prefix[r1 - 1][c1 - 1]
+                    for c2 in range(c1, n + 1):
+
+                        # Compute the sum of the submatrix using the
+                        # prefix sum matrix
+                        sum: int = (
+                            prefix_sum[r2][c2]
+                            - prefix_sum[r1 - 1][c2]
+                            - prefix_sum[r2][c1 - 1]
+                            + prefix_sum[r1 - 1][c1 - 1]
                         )
-                        if s > max_sum:
-                            max_sum = s
+
+                        # Update the maximum sum if the current sum is
+                        # greater
+                        max_sum = max(max_sum, sum)
+
         return max_sum
 
 
-if __name__ == "__main__":
-    sol = Solution()
-    print(sol.maximum_submatrix_sum([[1, 2, 9], [-5, 3, 8], [4, 6, -7]]))     # 22
-    print(sol.maximum_submatrix_sum([[1, -2, -3], [-4, -5, -6], [-7, -8, -9]]))  # 1
+# Examples from the problem statement
+print(Solution().maximum_submatrix_sum([[1,2,9],[-5,3,8],[4,6,-7]]))      # 22
+print(Solution().maximum_submatrix_sum([[1,-2,-3],[-4,-5,-6],[-7,-8,-9]])) # 1
+
+# Edge cases
+print(Solution().maximum_submatrix_sum([[5]]))                             # 5  — 1x1
+print(Solution().maximum_submatrix_sum([[-1]]))                            # -1 — all negative 1x1
+print(Solution().maximum_submatrix_sum([[1,2],[3,4]]))                     # 10 — whole 2x2
+print(Solution().maximum_submatrix_sum([[-1,-2],[-3,-4]]))                 # -1 — all negative
+print(Solution().maximum_submatrix_sum([[1,2,3],[4,5,6],[7,8,9]]))         # 45 — all positive
 ```
 
 ```java run
+import java.util.*;
+
 public class Main {
     static class Solution {
         public int maximumSubmatrixSum(int[][] matrix) {
-            int n = matrix.length, m = matrix[0].length;
-            int[][] prefix = new int[n + 1][m + 1];
+            int n = matrix.length;
+
+            // Create a prefix sum matrix with size (n+1) x (n+1)
+            int[][] prefixSum = new int[n + 1][n + 1];
+
+            // Compute the prefix sum matrix
             for (int i = 1; i <= n; i++) {
-                for (int j = 1; j <= m; j++) {
-                    prefix[i][j] = prefix[i-1][j] + prefix[i][j-1] - prefix[i-1][j-1] + matrix[i-1][j-1];
+                for (int j = 1; j <= n; j++) {
+
+                    // Each cell in the prefix sum matrix is the sum of the
+                    // corresponding submatrix in the original matrix
+                    prefixSum[i][j] =
+                        prefixSum[i - 1][j] +
+                        prefixSum[i][j - 1] -
+                        prefixSum[i - 1][j - 1] +
+                        matrix[i - 1][j - 1];
                 }
             }
+
             int maxSum = Integer.MIN_VALUE;
-            for (int r1 = 1; r1 <= n; r1++)
-                for (int c1 = 1; c1 <= m; c1++)
-                    for (int r2 = r1; r2 <= n; r2++)
-                        for (int c2 = c1; c2 <= m; c2++) {
-                            int s = prefix[r2][c2] - prefix[r1-1][c2] - prefix[r2][c1-1] + prefix[r1-1][c1-1];
-                            if (s > maxSum) maxSum = s;
+
+            // Iterate over all possible submatrices
+            for (int r1 = 1; r1 <= n; r1++) {
+                for (int c1 = 1; c1 <= n; c1++) {
+                    for (int r2 = r1; r2 <= n; r2++) {
+                        for (int c2 = c1; c2 <= n; c2++) {
+
+                            // Compute the sum of the submatrix using the
+                            // prefix sum matrix
+                            int sum =
+                                prefixSum[r2][c2] -
+                                prefixSum[r1 - 1][c2] -
+                                prefixSum[r2][c1 - 1] +
+                                prefixSum[r1 - 1][c1 - 1];
+
+                            // Update the maximum sum if the current sum is
+                            // greater
+                            maxSum = Math.max(maxSum, sum);
                         }
+                    }
+                }
+            }
+
             return maxSum;
         }
     }
 
     public static void main(String[] args) {
-        int[][] m = {{1,2,9},{-5,3,8},{4,6,-7}};
-        System.out.println(new Solution().maximumSubmatrixSum(m));   // 22
+        // Examples from the problem statement
+        System.out.println(new Solution().maximumSubmatrixSum(new int[][]{{1,2,9},{-5,3,8},{4,6,-7}}));       // 22
+        System.out.println(new Solution().maximumSubmatrixSum(new int[][]{{1,-2,-3},{-4,-5,-6},{-7,-8,-9}})); // 1
+
+        // Edge cases
+        System.out.println(new Solution().maximumSubmatrixSum(new int[][]{{5}}));                             // 5
+        System.out.println(new Solution().maximumSubmatrixSum(new int[][]{{-1}}));                            // -1
+        System.out.println(new Solution().maximumSubmatrixSum(new int[][]{{1,2},{3,4}}));                     // 10
+        System.out.println(new Solution().maximumSubmatrixSum(new int[][]{{-1,-2},{-3,-4}}));                 // -1
+        System.out.println(new Solution().maximumSubmatrixSum(new int[][]{{1,2,3},{4,5,6},{7,8,9}}));         // 45
     }
 }
 ```
 
-```c run
-#include <stdio.h>
-#include <limits.h>
-
-int prefix[101][101];
-
-int maximum_submatrix_sum(int matrix[][101], int n, int m) {
-    for (int i = 0; i <= n; i++) for (int j = 0; j <= m; j++) prefix[i][j] = 0;
-    for (int i = 1; i <= n; i++) {
-        for (int j = 1; j <= m; j++) {
-            prefix[i][j] = prefix[i-1][j] + prefix[i][j-1] - prefix[i-1][j-1] + matrix[i-1][j-1];
-        }
-    }
-    int max_sum = INT_MIN;
-    for (int r1 = 1; r1 <= n; r1++)
-        for (int c1 = 1; c1 <= m; c1++)
-            for (int r2 = r1; r2 <= n; r2++)
-                for (int c2 = c1; c2 <= m; c2++) {
-                    int s = prefix[r2][c2] - prefix[r1-1][c2] - prefix[r2][c1-1] + prefix[r1-1][c1-1];
-                    if (s > max_sum) max_sum = s;
-                }
-    return max_sum;
-}
-
-int main(void) {
-    int m[3][101] = {{1,2,9},{-5,3,8},{4,6,-7}};
-    printf("%d\n", maximum_submatrix_sum(m, 3, 3));   /* 22 */
-    return 0;
-}
-```
-
-```scala run
-object Main extends App {
-  class Solution {
-    def maximumSubmatrixSum(matrix: Array[Array[Int]]): Int = {
-      val n = matrix.length; val m = matrix(0).length
-      val prefix = Array.fill(n + 1, m + 1)(0)
-      for (i <- 1 to n; j <- 1 to m) {
-        prefix(i)(j) = prefix(i-1)(j) + prefix(i)(j-1) - prefix(i-1)(j-1) + matrix(i-1)(j-1)
-      }
-      var maxSum = Int.MinValue
-      for (r1 <- 1 to n; c1 <- 1 to m; r2 <- r1 to n; c2 <- c1 to m) {
-        val s = prefix(r2)(c2) - prefix(r1-1)(c2) - prefix(r2)(c1-1) + prefix(r1-1)(c1-1)
-        if (s > maxSum) maxSum = s
-      }
-      maxSum
-    }
-  }
-
-  println(new Solution().maximumSubmatrixSum(Array(Array(1,2,9), Array(-5,3,8), Array(4,6,-7))))   // 22
-}
-```
-
-
-## Complexity
+### Complexity
 
 | Aspect | Cost |
 |---|---|
 | Time | `O(n⁴)` for the brute-force enumeration (`O(n³)` possible with Kadane variant) |
 | Space | `O(n²)` for prefix table |
+
+</details>
 
 ***
 
@@ -449,7 +444,9 @@ Output:     [null, 5, 45, 28]
 
 The interface is the standard `(row1, col1, row2, col2)` rectangle. The contract: each query *must* be `O(1)` after construction.
 
-## The Approach
+<details>
+<summary><h2>The Approach</h2></summary>
+
 
 Build a prefix-sum table once in `O(n × m)`. Each `sumRegion` is then a four-term inclusion-exclusion subtraction — `O(1)`.
 
@@ -457,148 +454,173 @@ Build a prefix-sum table once in `O(n × m)`. Each `sumRegion` is then a four-te
 
 Because the query rate dominates the cost. If `k` queries each take `O(n × m)` work, total is `O(k × n × m)`. With prefix sums, `O(n × m + k)` — almost `n × m` cheaper for large `k`. Many real systems answer billions of range queries per day; the constant-time per-query is critical.
 
-## The Solution
+</details>
+<details>
+<summary><h2>Solution &amp; Analysis</h2></summary>
 
-
-```pseudocode
-# Precompute the 2D prefix once at construction; every sumRegion query is O(1) via inclusion-exclusion.
-class RangeSumFinder:
-    field prefix                                       # (rows + 1) × (cols + 1) grid
-
-    constructor(matrix):
-        rows ← length(matrix)
-        cols ← length(matrix[0]) if rows > 0 else 0
-        prefix ← (rows + 1) × (cols + 1) grid of zeros
-        for i from 1 to rows:
-            for j from 1 to cols:
-                prefix[i][j] ← prefix[i − 1][j] + prefix[i][j − 1] − prefix[i − 1][j − 1] + matrix[i − 1][j − 1]
-
-    function sumRegion(row1, col1, row2, col2):
-        return prefix[row2 + 1][col2 + 1]
-                − prefix[row1][col2 + 1]
-                − prefix[row2 + 1][col1]
-                + prefix[row1][col1]
-```
+### The Solution
 
 ```python run
 from typing import List
 
 class RangeSumFinder:
     def __init__(self, matrix: List[List[int]]):
-        rows = len(matrix)
-        cols = len(matrix[0]) if rows else 0
-        # prefix[i][j] = sum of matrix[0..i-1][0..j-1].
-        self.prefix: List[List[int]] = [[0] * (cols + 1) for _ in range(rows + 1)]
+
+        # Number of rows in the matrix
+        rows: int = len(matrix)
+
+        # Number of columns in the matrix
+        cols: int = len(matrix[0])
+
+        # Create a new matrix with dimensions (rows+1) x (cols+1) and
+        # initialize all elements to 0
+        self.prefix_sum: List[List[int]] = [
+            [0] * (cols + 1) for _ in range(rows + 1)
+        ]
+
+        # Fill in the values of the new matrix using dynamic programming
         for i in range(1, rows + 1):
             for j in range(1, cols + 1):
-                self.prefix[i][j] = (
-                    self.prefix[i - 1][j] + self.prefix[i][j - 1] - self.prefix[i - 1][j - 1] + matrix[i - 1][j - 1]
+
+                # The value at prefix_sum[i][j] is the sum of the current
+                # element in matrix, the value above it, the value to its
+                # left, and the value in the top-left corner, all
+                # subtracted by the value in the top-left corner (to
+                # avoid double counting)
+                self.prefix_sum[i][j] = (
+                    matrix[i - 1][j - 1]
+                    + self.prefix_sum[i - 1][j]
+                    + self.prefix_sum[i][j - 1]
+                    - self.prefix_sum[i - 1][j - 1]
                 )
 
-    def sumRegion(self, row1: int, col1: int, row2: int, col2: int) -> int:
-        # Inclusion-exclusion to extract the rectangle's sum in O(1).
+    # Method to calculate the sum of elements within a given rectangle
+    def sum_region(
+        self, row1: int, col1: int, row2: int, col2: int
+    ) -> int:
+
+        # The sum of the rectangle is calculated using the values in the
+        # new matrix prefixSum The formula is: sum =
+        # prefixSum[row2+1][col2+1] - prefixSum[row1][col2 + 1] -
+        # prefixSum[row2 + 1][col1] + prefixSum[row1][col1] It subtracts
+        # the sum of elements above and to the left of the rectangle,
+        # and adds back the sum of the elements above and to the left of
+        # the rectangle, to avoid double subtraction
         return (
-            self.prefix[row2 + 1][col2 + 1]
-            - self.prefix[row1][col2 + 1]
-            - self.prefix[row2 + 1][col1]
-            + self.prefix[row1][col1]
+            self.prefix_sum[row2 + 1][col2 + 1]
+            - self.prefix_sum[row1][col2 + 1]
+            - self.prefix_sum[row2 + 1][col1]
+            + self.prefix_sum[row1][col1]
         )
 
 
-if __name__ == "__main__":
-    rsf = RangeSumFinder([[1, 2, 3], [4, 5, 6], [7, 8, 9]])
-    print(rsf.sumRegion(1, 1, 1, 1))   # 5
-    print(rsf.sumRegion(0, 0, 2, 2))   # 45
-    print(rsf.sumRegion(1, 1, 2, 2))   # 28
+# Example from the problem statement
+rsf = RangeSumFinder([[1,2,3],[4,5,6],[7,8,9]])
+print(rsf.sum_region(1, 1, 1, 1))  # 5
+print(rsf.sum_region(0, 0, 2, 2))  # 45
+print(rsf.sum_region(1, 1, 2, 2))  # 28
+
+# Edge cases
+rsf2 = RangeSumFinder([[1]])
+print(rsf2.sum_region(0, 0, 0, 0)) # 1  — single cell
+
+rsf3 = RangeSumFinder([[1,2],[3,4]])
+print(rsf3.sum_region(0, 0, 0, 0)) # 1  — top-left cell
+print(rsf3.sum_region(1, 1, 1, 1)) # 4  — bottom-right cell
+print(rsf3.sum_region(0, 0, 1, 1)) # 10 — whole matrix
+
+rsf4 = RangeSumFinder([[-1,-2],[-3,-4]])
+print(rsf4.sum_region(0, 0, 1, 1)) # -10 — negative values
 ```
 
 ```java run
+import java.util.*;
+
 public class Main {
     static class RangeSumFinder {
-        private final int[][] prefix;
+        private int[][] prefixSum;
 
+        // Constructor
         public RangeSumFinder(int[][] matrix) {
+
+            // Number of rows in the matrix
             int rows = matrix.length;
-            int cols = (rows == 0) ? 0 : matrix[0].length;
-            prefix = new int[rows + 1][cols + 1];
+
+            // Number of columns in the matrix
+            int cols = matrix[0].length;
+
+            // Create a new matrix with dimensions (rows+1) x (cols+1) and
+            // initialize all elements to 0
+            prefixSum = new int[rows + 1][cols + 1];
+
+            // Fill in the values of the new matrix using dynamic programming
             for (int i = 1; i <= rows; i++) {
                 for (int j = 1; j <= cols; j++) {
-                    prefix[i][j] = prefix[i-1][j] + prefix[i][j-1] - prefix[i-1][j-1] + matrix[i-1][j-1];
+
+                    // The value at prefixSum[i][j] is the sum of the current
+                    // element in matrix, the value above it, the value to
+                    // its left, and the value in the top-left corner, all
+                    // subtracted by the value in the top-left corner (to
+                    // avoid double counting)
+                    prefixSum[i][j] =
+                        matrix[i - 1][j - 1] +
+                        prefixSum[i - 1][j] +
+                        prefixSum[i][j - 1] -
+                        prefixSum[i - 1][j - 1];
                 }
             }
         }
 
+        // Method to calculate the sum of elements within a given rectangle
         public int sumRegion(int row1, int col1, int row2, int col2) {
-            return prefix[row2+1][col2+1] - prefix[row1][col2+1] - prefix[row2+1][col1] + prefix[row1][col1];
+
+            // The sum of the rectangle is calculated using the values in the
+            // new matrix prefixSum The formula is: sum =
+            // prefixSum[row2+1][col2+1] - prefixSum[row1][col2 + 1] -
+            // prefixSum[row2 + 1][col1] + prefixSum[row1][col1] It subtracts
+            // the sum of elements above and to the left of the rectangle,
+            // and adds back the sum of the elements above and to the left of
+            // the rectangle, to avoid double subtraction
+            return (
+                prefixSum[row2 + 1][col2 + 1] -
+                prefixSum[row1][col2 + 1] -
+                prefixSum[row2 + 1][col1] +
+                prefixSum[row1][col1]
+            );
         }
     }
 
     public static void main(String[] args) {
-        int[][] m = {{1,2,3},{4,5,6},{7,8,9}};
-        RangeSumFinder rsf = new RangeSumFinder(m);
-        System.out.println(rsf.sumRegion(1, 1, 1, 1));   // 5
-        System.out.println(rsf.sumRegion(0, 0, 2, 2));   // 45
+        // Example from the problem statement
+        RangeSumFinder rsf = new RangeSumFinder(new int[][]{{1,2,3},{4,5,6},{7,8,9}});
+        System.out.println(rsf.sumRegion(1, 1, 1, 1));  // 5
+        System.out.println(rsf.sumRegion(0, 0, 2, 2));  // 45
+        System.out.println(rsf.sumRegion(1, 1, 2, 2));  // 28
+
+        // Edge cases
+        RangeSumFinder rsf2 = new RangeSumFinder(new int[][]{{1}});
+        System.out.println(rsf2.sumRegion(0, 0, 0, 0)); // 1
+
+        RangeSumFinder rsf3 = new RangeSumFinder(new int[][]{{1,2},{3,4}});
+        System.out.println(rsf3.sumRegion(0, 0, 0, 0)); // 1
+        System.out.println(rsf3.sumRegion(1, 1, 1, 1)); // 4
+        System.out.println(rsf3.sumRegion(0, 0, 1, 1)); // 10
+
+        RangeSumFinder rsf4 = new RangeSumFinder(new int[][]{{-1,-2},{-3,-4}});
+        System.out.println(rsf4.sumRegion(0, 0, 1, 1)); // -10
     }
 }
 ```
 
-```c run
-#include <stdio.h>
-
-int prefix[1001][1001];
-int rows_g, cols_g;
-
-void rsf_init(int matrix[][1001], int rows, int cols) {
-    rows_g = rows; cols_g = cols;
-    for (int i = 0; i <= rows; i++) for (int j = 0; j <= cols; j++) prefix[i][j] = 0;
-    for (int i = 1; i <= rows; i++) {
-        for (int j = 1; j <= cols; j++) {
-            prefix[i][j] = prefix[i-1][j] + prefix[i][j-1] - prefix[i-1][j-1] + matrix[i-1][j-1];
-        }
-    }
-}
-
-int rsf_sum_region(int r1, int c1, int r2, int c2) {
-    return prefix[r2+1][c2+1] - prefix[r1][c2+1] - prefix[r2+1][c1] + prefix[r1][c1];
-}
-
-int main(void) {
-    int m[3][1001] = {{1,2,3},{4,5,6},{7,8,9}};
-    rsf_init(m, 3, 3);
-    printf("%d\n", rsf_sum_region(1, 1, 1, 1));   /* 5 */
-    printf("%d\n", rsf_sum_region(0, 0, 2, 2));   /* 45 */
-    return 0;
-}
-```
-
-```scala run
-object Main extends App {
-  class RangeSumFinder(matrix: Array[Array[Int]]) {
-    private val rows = matrix.length
-    private val cols = if (rows == 0) 0 else matrix(0).length
-    private val prefix = Array.fill(rows + 1, cols + 1)(0)
-    for (i <- 1 to rows; j <- 1 to cols) {
-      prefix(i)(j) = prefix(i-1)(j) + prefix(i)(j-1) - prefix(i-1)(j-1) + matrix(i-1)(j-1)
-    }
-
-    def sumRegion(r1: Int, c1: Int, r2: Int, c2: Int): Int = {
-      prefix(r2+1)(c2+1) - prefix(r1)(c2+1) - prefix(r2+1)(c1) + prefix(r1)(c1)
-    }
-  }
-
-  val rsf = new RangeSumFinder(Array(Array(1,2,3), Array(4,5,6), Array(7,8,9)))
-  println(rsf.sumRegion(1, 1, 1, 1))   // 5
-}
-```
-
-
-## Complexity
+### Complexity
 
 | Aspect | Cost |
 |---|---|
 | Construction | `O(n × m)` |
 | Each query | `O(1)` |
 | Space | `O(n × m)` |
+
+</details>
 
 ***
 

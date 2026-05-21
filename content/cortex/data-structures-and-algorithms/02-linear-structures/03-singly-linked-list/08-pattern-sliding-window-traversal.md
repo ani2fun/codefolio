@@ -168,43 +168,16 @@ The algorithm given below outlines the sliding window traversal technique for a 
 Given below is the generic code implementation of the fixed-size sliding window traversal technique on a linked list with window size `k` using references `start` and `end` as the boundaries of the window.
 
 
-```pseudocode
-# Generic fixed-size sliding window over a linked list. `start` and `end` stay k steps apart.
-function slidingWindowTraversal(head, k):
-
-    # Initialize start and end to head
-    start ← head
-    end ← head
-
-    # Move end k steps ahead
-    for i ← 1 to k:
-        if end is null:
-            return                                     # Exit early if the list is shorter than k
-        end ← end.next
-
-    while end is not null:
-
-        # Apply operation on start and end
-        # these nodes are k steps apart
-        # Example: start.val = start.val + end.val
-
-        # Move ahead both start and end by one step
-        start ← start.next
-        end ← end.next
-
-    return
-```
-
 ```python run
-from typing import Optional
-
+"""
+Definition for singly-linked list.
 class ListNode:
-    def __init__(self, val=0, next=None):
+    def __init__(self, val):
         self.val = val
-        self.next = next
+        self.next = None
+"""
 
-def sliding_window_traversal(head: Optional[ListNode], k: int) -> None:
-
+def slidingWindowTraversal(head: ListNode, k: int) -> None:
     # Initialize start and end to head
     start = head
     end = head
@@ -212,7 +185,7 @@ def sliding_window_traversal(head: Optional[ListNode], k: int) -> None:
     # Move end k steps ahead
     for _ in range(k):
         if end is None:
-            return  # Exit early if the list is shorter than k
+            return # Exit early if the list is shorter than k
         end = end.next
 
     while end is not None:
@@ -228,118 +201,42 @@ def sliding_window_traversal(head: Optional[ListNode], k: int) -> None:
 ```
 
 ```java run
-public class Main {
-    static class ListNode { int val; ListNode next; ListNode(int v){val=v;} }
 
-    static class Solution {
-        public void slidingWindowTraversal(ListNode head, int k) {
+/**
+ * Definition for singly-linked list.
+ * class ListNode {
+ *     int val;
+ *     ListNode next;
+ *     ListNode() {}
+ *     ListNode(int val) { this.val = val; }
+ * };
+ */
 
-            // Initialize start and end to head
-            ListNode start = head;
-            ListNode end = head;
+class SlidingWindowTraversal {
+    void slidingWindowTraversal(ListNode head, int k) {
+        // Initialize start and end to head
+        ListNode start = head;
+        ListNode end = head;
 
-            // Move end k steps ahead
-            for (int i = 0; i < k; i++) {
-                if (end == null) {
-                    return; // Exit early if the list is shorter than k
-                }
-                end = end.next;
+        // Move end k steps ahead
+        for (int i = 0; i < k; i++) {
+            if (end == null) {
+                return; // Exit early if the list is shorter than k
             }
+            end = end.next;
+        }
 
-            // Traverse the list while end is not null
-            while (end != null) {
-                // Apply operation on start and end
-                // these nodes are k steps apart
-                // Example: start.val = start.val + end.val;
+        // Traverse the list while end is not null
+        while (end != null) {
+            // Apply operation on start and end
+            // these nodes are k steps apart
+            // Example: start.val = start.val + end.val;
 
-                // Move ahead both start and end by one step
-                start = start.next;
-                end = end.next;
-            }
+            // Move ahead both start and end by one step
+            start = start.next;
+            end = end.next;
         }
     }
-
-    public static void main(String[] args) {
-        // Pattern only — no side effect, just demonstrates compilation
-        ListNode n1=new ListNode(1),n2=new ListNode(2),n3=new ListNode(3),n4=new ListNode(4);
-        n1.next=n2; n2.next=n3; n3.next=n4;
-        new Solution().slidingWindowTraversal(n1, 2);
-        System.out.println("ok"); // ok
-    }
-}
-```
-
-```c run
-typedef struct ListNode { int val; struct ListNode *next; } ListNode;
-
-void slidingWindowTraversal(ListNode *head, int k) {
-
-    /* Initialize start and end to head */
-    ListNode *start = head;
-    ListNode *end = head;
-
-    /* Move end k steps ahead */
-    /* This creates a window of size k+1 */
-    for (int i = 0; i < k; i++) {
-        if (end == NULL) {
-            return; /* Exit early if the list is shorter than k */
-        }
-        end = end->next;
-    }
-
-    while (end != NULL) {
-
-        /* Apply operation on start and end
-           these nodes are k steps apart
-           Example: start->val = start->val + end->val */
-
-        /* Move ahead both start and end by one step */
-        start = start->next;
-        end = end->next;
-    }
-
-    return;
-}
-```
-
-```scala run
-class ListNode(var v: Int, var next: ListNode = null)
-
-object Main extends App {
-  class Solution {
-    def slidingWindowTraversal(head: ListNode, k: Int): Unit = {
-
-      // Initialize start and end to head
-      var start = head
-      var end = head
-
-      // Move end k steps ahead
-      var i = 0
-      while (i < k) {
-        if (end == null) {
-          return // Exit early if the list is shorter than k
-        }
-        end = end.next
-        i += 1
-      }
-
-      // Traverse the list while end is not null
-      while (end != null) {
-        // Apply operation on start and end
-        // these nodes are k steps apart
-        // Example: start.v = start.v + end.v
-
-        // Move ahead both start and end by one step
-        start = start.next
-        end = end.next
-      }
-    }
-  }
-
-  // Pattern only — no side effect, just demonstrates compilation
-  val n4=new ListNode(4); val n3=new ListNode(3,n4); val n2=new ListNode(2,n3); val n1=new ListNode(1,n2)
-  new Solution().slidingWindowTraversal(n1, 2)
-  println("ok") // ok
 }
 ```
 
@@ -448,20 +345,6 @@ flowchart TB
 The implementation of the brute force solution is given as follows.
 
 
-```pseudocode
-# Two-pass approach: first count length, then walk to the (length − k − 1)-th node.
-function trimNthNode(head, k):
-    if head is null: return null
-    length ← 0; cur ← head
-    while cur is not null: length ← length + 1; cur ← cur.next
-    if k = length: return head.next                    # head is the k-th from end
-    prev ← head
-    for i from 1 to (length − k − 1):
-        prev ← prev.next
-    prev.next ← prev.next.next                         # splice out the target
-    return head
-```
-
 ```python run
 from typing import Optional
 
@@ -522,55 +405,6 @@ public class Main {
         for (ListNode c=head;c!=null;c=c.next) System.out.print(c.val+" ");
         // 5 7 10
     }
-}
-```
-
-```c run
-ListNode* trimNthNode(ListNode *head, int k) {
-    if (head == NULL) return NULL;
-
-    int length = 0;
-    for (ListNode *cur = head; cur != NULL; cur = cur->next) length++;
-
-    if (k == length) return head->next;
-
-    int prevIndex = length - k - 1;
-    ListNode *prev = head;
-    for (int i = 0; i < prevIndex; i++) prev = prev->next;
-
-    prev->next = prev->next->next;
-    return head;
-}
-```
-
-```scala run
-class ListNode(var v: Int, var next: ListNode = null)
-
-object Main extends App {
-  class Solution {
-    def trimNthNode(head: ListNode, k: Int): ListNode = {
-      if (head == null) return null
-
-      var length = 0
-      var cur = head
-      while (cur != null) { length += 1; cur = cur.next }
-
-      if (k == length) return head.next
-
-      val prevIndex = length - k - 1
-      var prev = head
-      var i = 0
-      while (i < prevIndex) { prev = prev.next; i += 1 }
-
-      prev.next = prev.next.next
-      head
-    }
-  }
-
-  // [5, 7, 3, 10], k=2 -> [5, 7, 10]
-  val n4=new ListNode(10); val n3=new ListNode(3,n4); val n2=new ListNode(7,n3); val n1=new ListNode(5,n2)
-  var head = new Solution().trimNthNode(n1, 2)
-  while (head != null) { print(s"${head.v} "); head = head.next }  // 5 7 10
 }
 ```
 
@@ -653,42 +487,6 @@ flowchart TB
 
 The implementation of the sliding window traversal solution is given as follows.
 
-
-```pseudocode
-# Single-pass trim of the k-th node from the end using the sliding window pattern.
-function trimNthNode(head, k):
-
-    # Handle edge case for an empty list
-    if head is null:
-        return null
-
-    start ← head
-    prevToStart ← null
-    end ← head
-
-    # Move the end pointer k steps ahead
-    for i ← 1 to k − 1:
-        # If k is greater than the length of the list
-        if end is null:
-            return head
-        end ← end.next
-
-    # If the end pointer is now at the last node, it means we need to remove the head
-    if end.next is null:
-        return head.next
-
-    # Move both pointers until the end pointer reaches the last node
-    while end is not null AND end.next is not null:
-        end ← end.next
-        prevToStart ← start
-        start ← start.next
-
-    # Now, prevToStart points to the node before the one we want to remove
-    prevToStart.next ← start.next
-
-    # Return the modified list
-    return head
-```
 
 ```python run
 from typing import Optional
@@ -784,97 +582,6 @@ public class Main {
 }
 ```
 
-```c run
-ListNode* trimNthNode(ListNode *head, int k) {
-    if (head == NULL) {
-        return NULL;
-    }
-
-    ListNode *start = head;
-    ListNode *prevToStart = NULL;
-    ListNode *end = head;
-
-    /* Move the end pointer k steps ahead */
-    for (int i = 1; i < k; i++) {
-        if (end == NULL) {
-            return head;
-        }
-        end = end->next;
-    }
-
-    /* If the end pointer is at the last node, remove the head */
-    if (end->next == NULL) {
-        return head->next;
-    }
-
-    /* Move both pointers until the end pointer reaches the last node */
-    while (end != NULL && end->next != NULL) {
-        end = end->next;
-        prevToStart = start;
-        start = start->next;
-    }
-
-    /* Remove the k-th node from the end */
-    if (prevToStart != NULL) {
-        prevToStart->next = start->next;
-    }
-
-    return head;
-}
-```
-
-```scala run
-class ListNode(var v: Int, var next: ListNode = null)
-
-object Main extends App {
-  class Solution {
-    def trimNthNode(head: ListNode, k: Int): ListNode = {
-      if (head == null) {
-        return null
-      }
-
-      var start = head
-      var prevToStart: ListNode = null
-      var end = head
-
-      // Move the end pointer k steps ahead
-      var i = 1
-      while (i < k) {
-        if (end == null) {
-          return head
-        }
-        end = end.next
-        i += 1
-      }
-
-      // If the end pointer is at the last node, remove the head
-      if (end.next == null) {
-        return head.next
-      }
-
-      // Move both pointers until the end pointer reaches the last node
-      while (end != null && end.next != null) {
-        end = end.next
-        prevToStart = start
-        start = start.next
-      }
-
-      // Remove the k-th node from the end
-      if (prevToStart != null) {
-        prevToStart.next = start.next
-      }
-
-      head
-    }
-  }
-
-  // [5, 7, 3, 10], k=2 -> [5, 7, 10]
-  val n4=new ListNode(10); val n3=new ListNode(3,n4); val n2=new ListNode(7,n3); val n1=new ListNode(5,n2)
-  var head = new Solution().trimNthNode(n1, 2)
-  while (head != null) { print(s"${head.v} "); head = head.next }  // 5 7 10
-}
-```
-
 
 As the code above demonstrates, using the sliding window traversal technique, we delete the kth node from the end in a single pass.
 
@@ -910,95 +617,64 @@ Given the **head** of a singly linked list and a positive integer **k**, writ
 > -   **Output:** -1
 > -   **Explanation:** There are no contiguous nodes of length 4 because the list has only 3 nodes, so we return -1.
 
-## Solution
+<details>
+<summary><h2>Solution</h2></summary>
 
 
-```pseudocode
-# Maximum sum of any k consecutive nodes. Standard fixed-window sum on a linked list.
-function kMaximumSum(head, k):
-
-    # Handle edge case: empty list or invalid k
-    if head is null OR k ≤ 0:
-        return −1
-
-    # Pointer to mark the start of the current window
-    start ← head
-
-    # Pointer to mark the end of the current window
-    end ← head
-
-    # Variable to store the sum of the current window
-    sum ← 0
-
-    # Counter to count nodes in the first window
-    count ← 0
-
-    # Step 1: Calculate the sum of the first window of size k
-    while end is not null AND count < k:
-
-        # Add the current node's value to the sum
-        sum ← sum + end.val
-
-        # Move the end pointer forward
-        end ← end.next
-
-        # Increment the node counter
-        count ← count + 1
-
-    # If there are fewer than k nodes in the list, return -1
-    if count < k:
-        return −1
-
-    # Initialize maxSum with the sum of the first window
-    maxSum ← sum
-
-    # Step 2: Slide the window through the rest of the list
-    while end is not null:
-
-        # Update the current sum by removing the start node and adding the new end node
-        sum ← sum − start.val + end.val
-
-        # Update maxSum if the current window sum is greater
-        if sum > maxSum:
-            maxSum ← sum
-
-        # Move the start and end pointers forward to slide the window
-        start ← start.next
-        end ← end.next
-
-    # Return the maximum sum of any contiguous k nodes
-    return maxSum
-```
 
 ```python run
 from typing import Optional
 
+
+class ListNode:
+    def __init__(self, val=0, nxt=None):
+        self.val = val
+        self.next = nxt
+
+
+def from_list(values):
+    if not values:
+        return None
+    head = ListNode(values[0])
+    cur = head
+    for v in values[1:]:
+        cur.next = ListNode(v)
+        cur = cur.next
+    return head
+
+
+def to_list(head):
+    out = []
+    while head is not None:
+        out.append(head.val)
+        head = head.next
+    return out
+
+
 class Solution:
-    def k_maximum_sum(
-        self, head: Optional[ListNode], k: int
-    ) -> int:
+    def k_maximum_sum(self, head: Optional[ListNode], k: int) -> int:
 
         # Handle edge case: empty list or invalid k
         if head is None or k <= 0:
             return -1
 
         # Pointer to mark the start of the current window
-        start = head
+        start: Optional[ListNode] = head
 
         # Pointer to mark the end of the current window
-        end = head
+        end: Optional[ListNode] = head
 
         # Variable to store the sum of the current window
-        sum_ = 0
+        current_sum: int = 0
 
         # Counter to count nodes in the first window
-        count = 0
+        count: int = 0
 
         # Step 1: Calculate the sum of the first window of size k
         while end is not None and count < k:
 
             # Add the current node's value to the sum
-            sum_ += end.val
+            current_sum += end.val
 
             # Move the end pointer forward
             end = end.next
@@ -1011,31 +687,62 @@ class Solution:
             return -1
 
         # Initialize max_sum with the sum of the first window
-        max_sum = sum_
+        max_sum: int = current_sum
 
         # Step 2: Slide the window through the rest of the list
         while end is not None:
 
             # Update the current sum by removing the start node and
             # adding the new end node
-            sum_ = sum_ - start.val + end.val
+            current_sum = current_sum - start.val + end.val
 
             # Update max_sum if the current window sum is greater
-            if sum_ > max_sum:
-                max_sum = sum_
+            if current_sum > max_sum:
+                max_sum = current_sum
 
-            # Move the start and end pointers forward to slide the
-            # window
+            # Move the start and end pointers forward to slide the window
             start = start.next
             end = end.next
 
         # Return the maximum sum of any contiguous k nodes
         return max_sum
+
+
+print(Solution().k_maximum_sum(from_list([1, 2, -3, 4, 5]), 2))  # 9
+print(Solution().k_maximum_sum(from_list([0, 1, 2]), 4))          # -1
+
+# Edge cases
+print(Solution().k_maximum_sum(None, 2))                          # -1
+print(Solution().k_maximum_sum(from_list([5]), 1))                # 5
+print(Solution().k_maximum_sum(from_list([5]), 2))                # -1
+print(Solution().k_maximum_sum(from_list([1, 2]), 2))             # 3
+print(Solution().k_maximum_sum(from_list([-1, -2, -3, -4]), 2))  # -3
+print(Solution().k_maximum_sum(from_list([10, 1, 1, 10]), 3))    # 12
+print(Solution().k_maximum_sum(from_list([3, 3, 3, 3, 3]), 3))   # 9
 ```
 
 ```java run
+import java.util.*;
+
 public class Main {
-    static class ListNode { int val; ListNode next; ListNode(int v){val=v;} }
+    static class ListNode {
+        int val;
+        ListNode next;
+        ListNode() {}
+        ListNode(int val) { this.val = val; }
+        ListNode(int val, ListNode next) { this.val = val; this.next = next; }
+    }
+
+    static ListNode fromList(int... values) {
+        if (values.length == 0) return null;
+        ListNode head = new ListNode(values[0]);
+        ListNode cur = head;
+        for (int i = 1; i < values.length; i++) {
+            cur.next = new ListNode(values[i]);
+            cur = cur.next;
+        }
+        return head;
+    }
 
     static class Solution {
         public int kMaximumSum(ListNode head, int k) {
@@ -1102,153 +809,22 @@ public class Main {
     }
 
     public static void main(String[] args) {
-        // [2, 1, 5, 1, 3, 2], k=3 -> 9 (window [5, 1, 3])
-        ListNode n1=new ListNode(2),n2=new ListNode(1),n3=new ListNode(5),
-                 n4=new ListNode(1),n5=new ListNode(3),n6=new ListNode(2);
-        n1.next=n2; n2.next=n3; n3.next=n4; n4.next=n5; n5.next=n6;
-        System.out.println(new Solution().kMaximumSum(n1, 3)); // 9
+        System.out.println(new Solution().kMaximumSum(fromList(1, 2, -3, 4, 5), 2));  // 9
+        System.out.println(new Solution().kMaximumSum(fromList(0, 1, 2), 4));          // -1
+
+        // Edge cases
+        System.out.println(new Solution().kMaximumSum(null, 2));                       // -1
+        System.out.println(new Solution().kMaximumSum(fromList(5), 1));                // 5
+        System.out.println(new Solution().kMaximumSum(fromList(5), 2));                // -1
+        System.out.println(new Solution().kMaximumSum(fromList(1, 2), 2));             // 3
+        System.out.println(new Solution().kMaximumSum(fromList(-1, -2, -3, -4), 2));  // -3
+        System.out.println(new Solution().kMaximumSum(fromList(10, 1, 1, 10), 3));    // 12
+        System.out.println(new Solution().kMaximumSum(fromList(3, 3, 3, 3, 3), 3));   // 9
     }
 }
 ```
 
-```c run
-int kMaximumSum(ListNode *head, int k) {
-
-    /* Handle edge case: empty list or invalid k */
-    if (head == NULL || k <= 0) {
-        return -1;
-    }
-
-    /* Pointer to mark the start of the current window */
-    ListNode *start = head;
-
-    /* Pointer to mark the end of the current window */
-    ListNode *end = head;
-
-    /* Variable to store the sum of the current window */
-    int sum = 0;
-
-    /* Counter to count nodes in the first window */
-    int count = 0;
-
-    /* Step 1: Calculate the sum of the first window of size k */
-    while (end != NULL && count < k) {
-
-        /* Add the current node's value to the sum */
-        sum += end->val;
-
-        /* Move the end pointer forward */
-        end = end->next;
-
-        /* Increment the node counter */
-        count++;
-    }
-
-    /* If there are fewer than k nodes in the list, return -1 */
-    if (count < k) {
-        return -1;
-    }
-
-    /* Initialize maxSum with the sum of the first window */
-    int maxSum = sum;
-
-    /* Step 2: Slide the window through the rest of the list */
-    while (end != NULL) {
-
-        /* Update the current sum by removing the start node and
-           adding the new end node */
-        sum = sum - start->val + end->val;
-
-        /* Update maxSum if the current window sum is greater */
-        if (sum > maxSum) {
-            maxSum = sum;
-        }
-
-        /* Move the start and end pointers forward to slide the
-           window */
-        start = start->next;
-        end = end->next;
-    }
-
-    /* Return the maximum sum of any contiguous k nodes */
-    return maxSum;
-}
-```
-
-```scala run
-class ListNode(var v: Int, var next: ListNode = null)
-
-object Main extends App {
-  class Solution {
-    def kMaximumSum(head: ListNode, k: Int): Int = {
-
-      // Handle edge case: empty list or invalid k
-      if (head == null || k <= 0) {
-        return -1
-      }
-
-      // Pointer to mark the start of the current window
-      var start = head
-
-      // Pointer to mark the end of the current window
-      var end = head
-
-      // Variable to store the sum of the current window
-      var sum = 0
-
-      // Counter to count nodes in the first window
-      var count = 0
-
-      // Step 1: Calculate the sum of the first window of size k
-      while (end != null && count < k) {
-
-        // Add the current node's value to the sum
-        sum += end.v
-
-        // Move the end pointer forward
-        end = end.next
-
-        // Increment the node counter
-        count += 1
-      }
-
-      // If there are fewer than k nodes in the list, return -1
-      if (count < k) {
-        return -1
-      }
-
-      // Initialize maxSum with the sum of the first window
-      var maxSum = sum
-
-      // Step 2: Slide the window through the rest of the list
-      while (end != null) {
-
-        // Update the current sum by removing the start node and
-        // adding the new end node
-        sum = sum - start.v + end.v
-
-        // Update maxSum if the current window sum is greater
-        if (sum > maxSum) {
-          maxSum = sum
-        }
-
-        // Move the start and end pointers forward to slide the
-        // window
-        start = start.next
-        end = end.next
-      }
-
-      // Return the maximum sum of any contiguous k nodes
-      maxSum
-    }
-  }
-
-  // [2, 1, 5, 1, 3, 2], k=3 -> 9 (window [5, 1, 3])
-  val n6=new ListNode(2); val n5=new ListNode(3,n6); val n4=new ListNode(1,n5)
-  val n3=new ListNode(5,n4); val n2=new ListNode(1,n3); val n1=new ListNode(2,n2)
-  println(new Solution().kMaximumSum(n1, 3)) // 9
-}
-```
+</details>
 
 
 ***
@@ -1271,50 +847,39 @@ Given the **head** of a singly linked list and a non-negative integer **N**, 
 > -   **Output:** \[\]
 > -   **Explanation:** The first node from the last is only 1. After removing it, we are left with an empty list.
 
-## Solution
+<details>
+<summary><h2>Solution</h2></summary>
 
 
-```pseudocode
-# Single-pass trim using source's nth_node_from_end / prev_to_nth_node_from_end naming.
-function trimNthNode(head, n):
-
-    # Handle edge case for an empty list
-    if head is null:
-        return null
-
-    # Pointer to keep track of the end of the list
-    current ← head
-
-    # Move the current pointer n steps ahead
-    for i ← 1 to n − 1:
-
-        # If n is greater than the length of the list
-        if current is null:
-            return head
-        current ← current.next
-
-    # If the current pointer is now at the last node, it means we need to remove the head
-    if current.next is null:
-        return head.next
-
-    nthNodeFromEnd ← head
-    prevToNthNodeFromEnd ← null
-
-    # Move both pointers until the current pointer reaches the last node
-    while current is not null AND current.next is not null:
-        prevToNthNodeFromEnd ← nthNodeFromEnd
-        nthNodeFromEnd ← nthNodeFromEnd.next
-        current ← current.next
-
-    # Now, prevToNthNodeFromEnd points to the node before the one we want to remove
-    prevToNthNodeFromEnd.next ← nthNodeFromEnd.next
-
-    # Return the modified list
-    return head
-```
 
 ```python run
 from typing import Optional
+
+
+class ListNode:
+    def __init__(self, val=0, nxt=None):
+        self.val = val
+        self.next = nxt
+
+
+def from_list(values):
+    if not values:
+        return None
+    head = ListNode(values[0])
+    cur = head
+    for v in values[1:]:
+        cur.next = ListNode(v)
+        cur = cur.next
+    return head
+
+
+def to_list(head):
+    out = []
+    while head is not None:
+        out.append(head.val)
+        head = head.next
+    return out
+
 
 class Solution:
     def trim_nth_node(
@@ -1357,14 +922,51 @@ class Solution:
 
         # Return the modified list
         return head
+
+
+print(to_list(Solution().trim_nth_node(from_list([1, 2, 3, 4, 5]), 2)))  # [1, 2, 3, 5]
+print(to_list(Solution().trim_nth_node(from_list([1]), 1)))               # []
+
+# Edge cases
+print(to_list(Solution().trim_nth_node(from_list([1, 2]), 1)))            # [1]
+print(to_list(Solution().trim_nth_node(from_list([1, 2]), 2)))            # [2]
+print(to_list(Solution().trim_nth_node(from_list([1, 2, 3]), 3)))         # [2, 3]
+print(to_list(Solution().trim_nth_node(from_list([1, 2, 3]), 1)))         # [1, 2]
+print(to_list(Solution().trim_nth_node(from_list([1, 2, 3, 4, 5]), 5)))  # [2, 3, 4, 5]
+print(to_list(Solution().trim_nth_node(from_list([1, 2, 3, 4, 5]), 1)))  # [1, 2, 3, 4]
 ```
 
 ```java run
+import java.util.*;
+
 public class Main {
-    static class ListNode { int val; ListNode next; ListNode(int v){val=v;} }
+    static class ListNode {
+        int val;
+        ListNode next;
+        ListNode() {}
+        ListNode(int val) { this.val = val; }
+        ListNode(int val, ListNode next) { this.val = val; this.next = next; }
+    }
+
+    static ListNode fromList(int... values) {
+        if (values.length == 0) return null;
+        ListNode head = new ListNode(values[0]);
+        ListNode cur = head;
+        for (int i = 1; i < values.length; i++) {
+            cur.next = new ListNode(values[i]);
+            cur = cur.next;
+        }
+        return head;
+    }
+
+    static java.util.List<Integer> toList(ListNode head) {
+        java.util.List<Integer> out = new java.util.ArrayList<>();
+        while (head != null) { out.add(head.val); head = head.next; }
+        return out;
+    }
 
     static class Solution {
-        public ListNode trimNthNode(ListNode head, int n) {
+        public ListNode trimNthNode(ListNode head, int N) {
 
             // Handle edge case for an empty list
             if (head == null) {
@@ -1374,10 +976,10 @@ public class Main {
             // Pointer to keep track of the end of the list
             ListNode current = head;
 
-            // Move the current pointer n steps ahead
-            for (int i = 1; i < n; i++) {
+            // Move the current pointer N steps ahead
+            for (int i = 1; i < N; i++) {
 
-                // If n is greater than the length of the list
+                // If N is greater than the length of the list
                 if (current == null) {
                     return head;
                 }
@@ -1401,11 +1003,9 @@ public class Main {
                 current = current.next;
             }
 
-            // Now, prevToNthNodeFromEnd points to the node before the one
-            // we want to remove
-            if (prevToNthNodeFromEnd != null) {
-                prevToNthNodeFromEnd.next = nthNodeFromEnd.next;
-            }
+            // Now, prevToNthNodeFromEnd points to the node before the one we
+            // want to remove
+            prevToNthNodeFromEnd.next = nthNodeFromEnd.next;
 
             // Return the modified list
             return head;
@@ -1413,128 +1013,21 @@ public class Main {
     }
 
     public static void main(String[] args) {
-        // [1, 2, 3, 4, 5], N=2 -> [1, 2, 3, 5]
-        ListNode n1=new ListNode(1),n2=new ListNode(2),n3=new ListNode(3),
-                 n4=new ListNode(4),n5=new ListNode(5);
-        n1.next=n2; n2.next=n3; n3.next=n4; n4.next=n5;
-        ListNode head = new Solution().trimNthNode(n1, 2);
-        for (ListNode c=head;c!=null;c=c.next) System.out.print(c.val+" ");
-        // 1 2 3 5
+        System.out.println(toList(new Solution().trimNthNode(fromList(1, 2, 3, 4, 5), 2)));  // [1, 2, 3, 5]
+        System.out.println(toList(new Solution().trimNthNode(fromList(1), 1)));               // []
+
+        // Edge cases
+        System.out.println(toList(new Solution().trimNthNode(fromList(1, 2), 1)));            // [1]
+        System.out.println(toList(new Solution().trimNthNode(fromList(1, 2), 2)));            // [2]
+        System.out.println(toList(new Solution().trimNthNode(fromList(1, 2, 3), 3)));         // [2, 3]
+        System.out.println(toList(new Solution().trimNthNode(fromList(1, 2, 3), 1)));         // [1, 2]
+        System.out.println(toList(new Solution().trimNthNode(fromList(1, 2, 3, 4, 5), 5)));  // [2, 3, 4, 5]
+        System.out.println(toList(new Solution().trimNthNode(fromList(1, 2, 3, 4, 5), 1)));  // [1, 2, 3, 4]
     }
 }
 ```
 
-```c run
-ListNode* trimNthNode(ListNode *head, int n) {
-
-    /* Handle edge case for an empty list */
-    if (head == NULL) {
-        return NULL;
-    }
-
-    /* Pointer to keep track of the end of the list */
-    ListNode *current = head;
-
-    /* Move the current pointer n steps ahead */
-    for (int i = 1; i < n; i++) {
-
-        /* If n is greater than the length of the list */
-        if (current == NULL) {
-            return head;
-        }
-        current = current->next;
-    }
-
-    /* If the current pointer is now at the last node, it means we
-       need to remove the head */
-    if (current->next == NULL) {
-        return head->next;
-    }
-
-    ListNode *nthNodeFromEnd = head;
-    ListNode *prevToNthNodeFromEnd = NULL;
-
-    /* Move both pointers until the current pointer reaches the last
-       node */
-    while (current != NULL && current->next != NULL) {
-        prevToNthNodeFromEnd = nthNodeFromEnd;
-        nthNodeFromEnd = nthNodeFromEnd->next;
-        current = current->next;
-    }
-
-    /* Now, prevToNthNodeFromEnd points to the node before the one
-       we want to remove */
-    if (prevToNthNodeFromEnd != NULL) {
-        prevToNthNodeFromEnd->next = nthNodeFromEnd->next;
-    }
-
-    /* Return the modified list */
-    return head;
-}
-```
-
-```scala run
-class ListNode(var v: Int, var next: ListNode = null)
-
-object Main extends App {
-  class Solution {
-    def trimNthNode(head: ListNode, n: Int): ListNode = {
-
-      // Handle edge case for an empty list
-      if (head == null) {
-        return null
-      }
-
-      // Pointer to keep track of the end of the list
-      var current = head
-
-      // Move the current pointer n steps ahead
-      var i = 1
-      while (i < n) {
-
-        // If n is greater than the length of the list
-        if (current == null) {
-          return head
-        }
-        current = current.next
-        i += 1
-      }
-
-      // If the current pointer is now at the last node, it means we
-      // need to remove the head
-      if (current.next == null) {
-        return head.next
-      }
-
-      var nthNodeFromEnd = head
-      var prevToNthNodeFromEnd: ListNode = null
-
-      // Move both pointers until the current pointer reaches the last
-      // node
-      while (current != null && current.next != null) {
-        prevToNthNodeFromEnd = nthNodeFromEnd
-        nthNodeFromEnd = nthNodeFromEnd.next
-        current = current.next
-      }
-
-      // Now, prevToNthNodeFromEnd points to the node before the one
-      // we want to remove
-      if (prevToNthNodeFromEnd != null) {
-        prevToNthNodeFromEnd.next = nthNodeFromEnd.next
-      }
-
-      // Return the modified list
-      head
-    }
-  }
-
-  // [1, 2, 3, 4, 5], N=2 -> [1, 2, 3, 5]
-  val n5=new ListNode(5); val n4=new ListNode(4,n5); val n3=new ListNode(3,n4)
-  val n2=new ListNode(2,n3); val n1=new ListNode(1,n2)
-  var head = new Solution().trimNthNode(n1, 2)
-  while (head != null) { print(s"${head.v} "); head = head.next }  // 1 2 3 5
-}
-```
+</details>
 
 
 ***
@@ -1565,73 +1058,39 @@ Swapping of data is not allowed. Only references should be changed. You can assu
 > -   **Output:** \[5, 2, 3, 4, 1\]
 > -   **Explanation:** After swapping the 5th node from the start and the 5th node from the end, the list becomes \[5, 2, 3, 4, 1\].
 
-## Solution
+<details>
+<summary><h2>Solution</h2></summary>
 
 
-```pseudocode
-# Swap the n-th node from the start with the n-th node from the end.
-# Locate both nodes (and their predecessors) in one pass via the cursor trick.
-function swapNthNodes(head, n):
-
-    # If the list is empty or has only one node, no swapping is needed.
-    if head is null OR head.next is null:
-        return head
-
-    # Pointer to the Nth node from the beginning
-    nthFromStart ← head
-
-    # Pointer to the node before the nthFromStart node
-    prevToNthFromStart ← null
-
-    # Pointer to keep track of the end of the list
-    current ← head
-
-    # Traverse to the Nth node from the beginning
-    for i ← 1 to n − 1:
-        prevToNthFromStart ← nthFromStart
-        nthFromStart ← nthFromStart.next
-        current ← current.next
-
-    # Pointer to the Nth node from the end
-    nthFromEnd ← head
-
-    # Pointer to the node before the nthFromEnd node
-    prevToNthFromEnd ← null
-
-    # Find the Nth node from the end
-    while current is not null AND current.next is not null:
-        prevToNthFromEnd ← nthFromEnd
-        nthFromEnd ← nthFromEnd.next
-        current ← current.next
-
-    return swapNodes(head, prevToNthFromStart, nthFromStart, prevToNthFromEnd, nthFromEnd)
-
-function swapNodes(head, prevToNthFromStart, nthFromStart, prevToNthFromEnd, nthFromEnd):
-
-    # If the Nth node from the beginning is the same as the Nth node from the end, no swapping is needed
-    if prevToNthFromStart is not null:
-        prevToNthFromStart.next ← nthFromEnd
-    # If Nth node from the beginning is the head, update the head
-    else:
-        head ← nthFromEnd
-
-    # If the Nth node from the end is the same as the Nth node from the beginning, no swapping is needed
-    if prevToNthFromEnd is not null:
-        prevToNthFromEnd.next ← nthFromStart
-    # If Nth node from the end is the head, update the head
-    else:
-        head ← nthFromStart
-
-    # Swap the next pointers of the two nodes
-    temp ← nthFromStart.next
-    nthFromStart.next ← nthFromEnd.next
-    nthFromEnd.next ← temp
-
-    return head
-```
 
 ```python run
 from typing import Optional
+
+
+class ListNode:
+    def __init__(self, val=0, nxt=None):
+        self.val = val
+        self.next = nxt
+
+
+def from_list(values):
+    if not values:
+        return None
+    head = ListNode(values[0])
+    cur = head
+    for v in values[1:]:
+        cur.next = ListNode(v)
+        cur = cur.next
+    return head
+
+
+def to_list(head):
+    out = []
+    while head is not None:
+        out.append(head.val)
+        head = head.next
+    return out
+
 
 class Solution:
     def swap_nodes(
@@ -1682,7 +1141,7 @@ class Solution:
         nth_from_start = head
 
         # Pointer to the node before the nth_from_start node
-        prev_to_nth_from_start: Optional[ListNode] = None
+        prev_to_nth_from_start = None
 
         # Pointer to keep track of the end of the list
         current = head
@@ -1697,7 +1156,7 @@ class Solution:
         nth_from_end = head
 
         # Pointer to the node before the nth_from_end node
-        prev_to_nth_from_end: Optional[ListNode] = None
+        prev_to_nth_from_end = None
 
         # Find the Nth node from the end
         while current is not None and current.next is not None:
@@ -1712,11 +1171,47 @@ class Solution:
             prev_to_nth_from_end,
             nth_from_end,
         )
+
+
+print(to_list(Solution().swap_nth_nodes(from_list([1, 2, 3, 4, 5]), 2)))  # [1, 4, 3, 2, 5]
+print(to_list(Solution().swap_nth_nodes(from_list([1, 2, 3, 4, 5]), 3)))  # [1, 2, 3, 4, 5]
+print(to_list(Solution().swap_nth_nodes(from_list([1, 2, 3, 4, 5]), 5)))  # [5, 2, 3, 4, 1]
+
+# Edge cases
+print(to_list(Solution().swap_nth_nodes(from_list([1]), 1)))               # [1]
+print(to_list(Solution().swap_nth_nodes(from_list([1, 2]), 1)))            # [2, 1]
+print(to_list(Solution().swap_nth_nodes(from_list([1, 2]), 2)))            # [2, 1]
+print(to_list(Solution().swap_nth_nodes(from_list([1, 2, 3, 4, 5]), 1)))  # [5, 2, 3, 4, 1]
 ```
 
 ```java run
+import java.util.*;
+
 public class Main {
-    static class ListNode { int val; ListNode next; ListNode(int v){val=v;} }
+    static class ListNode {
+        int val;
+        ListNode next;
+        ListNode() {}
+        ListNode(int val) { this.val = val; }
+        ListNode(int val, ListNode next) { this.val = val; this.next = next; }
+    }
+
+    static ListNode fromList(int... values) {
+        if (values.length == 0) return null;
+        ListNode head = new ListNode(values[0]);
+        ListNode cur = head;
+        for (int i = 1; i < values.length; i++) {
+            cur.next = new ListNode(values[i]);
+            cur = cur.next;
+        }
+        return head;
+    }
+
+    static java.util.List<Integer> toList(ListNode head) {
+        java.util.List<Integer> out = new java.util.ArrayList<>();
+        while (head != null) { out.add(head.val); head = head.next; }
+        return out;
+    }
 
     static class Solution {
         private ListNode swapNodes(
@@ -1758,7 +1253,7 @@ public class Main {
             return head;
         }
 
-        public ListNode swapNthNodes(ListNode head, int n) {
+        public ListNode swapNthNodes(ListNode head, int N) {
 
             // If the list is empty or has only one node, no swapping is
             // needed.
@@ -1776,7 +1271,7 @@ public class Main {
             ListNode current = head;
 
             // Traverse to the Nth node from the beginning
-            for (int i = 1; i < n; ++i) {
+            for (int i = 1; i < N; ++i) {
                 prevToNthFromStart = nthFromStart;
                 nthFromStart = nthFromStart.next;
                 current = current.next;
@@ -1806,190 +1301,20 @@ public class Main {
     }
 
     public static void main(String[] args) {
-        // [1, 2, 3, 4, 5], N=2 -> [1, 4, 3, 2, 5]
-        ListNode n1=new ListNode(1),n2=new ListNode(2),n3=new ListNode(3),
-                 n4=new ListNode(4),n5=new ListNode(5);
-        n1.next=n2; n2.next=n3; n3.next=n4; n4.next=n5;
-        ListNode head = new Solution().swapNthNodes(n1, 2);
-        for (ListNode c=head;c!=null;c=c.next) System.out.print(c.val+" ");
-        // 1 4 3 2 5
+        System.out.println(toList(new Solution().swapNthNodes(fromList(1, 2, 3, 4, 5), 2)));  // [1, 4, 3, 2, 5]
+        System.out.println(toList(new Solution().swapNthNodes(fromList(1, 2, 3, 4, 5), 3)));  // [1, 2, 3, 4, 5]
+        System.out.println(toList(new Solution().swapNthNodes(fromList(1, 2, 3, 4, 5), 5)));  // [5, 2, 3, 4, 1]
+
+        // Edge cases
+        System.out.println(toList(new Solution().swapNthNodes(fromList(1), 1)));               // [1]
+        System.out.println(toList(new Solution().swapNthNodes(fromList(1, 2), 1)));            // [2, 1]
+        System.out.println(toList(new Solution().swapNthNodes(fromList(1, 2), 2)));            // [2, 1]
+        System.out.println(toList(new Solution().swapNthNodes(fromList(1, 2, 3, 4, 5), 1)));  // [5, 2, 3, 4, 1]
     }
 }
 ```
 
-```c run
-static ListNode* swapNodes(
-    ListNode *head,
-    ListNode *prevToNthFromStart,
-    ListNode *nthFromStart,
-    ListNode *prevToNthFromEnd,
-    ListNode *nthFromEnd
-) {
-
-    /* If the Nth node from the beginning is the same as the Nth
-       node from the end, no swapping is needed */
-    if (prevToNthFromStart != NULL) {
-        prevToNthFromStart->next = nthFromEnd;
-    }
-
-    /* If Nth node from the beginning is the head, update the
-       head */
-    else {
-        head = nthFromEnd;
-    }
-
-    /* If the Nth node from the end is the same as the Nth node
-       from the beginning, no swapping is needed */
-    if (prevToNthFromEnd != NULL) {
-        prevToNthFromEnd->next = nthFromStart;
-    }
-
-    /* If Nth node from the end is the head, update the head */
-    else {
-        head = nthFromStart;
-    }
-
-    /* Swap the next pointers of the two nodes */
-    ListNode *temp = nthFromStart->next;
-    nthFromStart->next = nthFromEnd->next;
-    nthFromEnd->next = temp;
-
-    return head;
-}
-
-ListNode* swapNthNodes(ListNode *head, int n) {
-
-    /* If the list is empty or has only one node, no swapping is
-       needed. */
-    if (head == NULL || head->next == NULL) {
-        return head;
-    }
-
-    /* Pointer to the Nth node from the beginning */
-    ListNode *nthFromStart = head;
-
-    /* Pointer to the node before the nthFromStart node */
-    ListNode *prevToNthFromStart = NULL;
-
-    /* Pointer to keep track of the end of the list */
-    ListNode *current = head;
-
-    /* Traverse to the Nth node from the beginning */
-    for (int i = 1; i < n; ++i) {
-        prevToNthFromStart = nthFromStart;
-        nthFromStart = nthFromStart->next;
-        current = current->next;
-    }
-
-    /* Pointer to the Nth node from the end */
-    ListNode *nthFromEnd = head;
-
-    /* Pointer to the node before the nthFromEnd node */
-    ListNode *prevToNthFromEnd = NULL;
-
-    /* Find the Nth node from the end */
-    while (current != NULL && current->next != NULL) {
-        prevToNthFromEnd = nthFromEnd;
-        nthFromEnd = nthFromEnd->next;
-        current = current->next;
-    }
-
-    return swapNodes(head, prevToNthFromStart, nthFromStart, prevToNthFromEnd, nthFromEnd);
-}
-```
-
-```scala run
-class ListNode(var v: Int, var next: ListNode = null)
-
-object Main extends App {
-  class Solution {
-    private def swapNodes(
-        headIn: ListNode,
-        prevToNthFromStart: ListNode,
-        nthFromStart: ListNode,
-        prevToNthFromEnd: ListNode,
-        nthFromEnd: ListNode
-    ): ListNode = {
-      var head = headIn
-
-      // If the Nth node from the beginning is the same as the Nth
-      // node from the end, no swapping is needed
-      if (prevToNthFromStart != null) {
-        prevToNthFromStart.next = nthFromEnd
-      }
-      // If Nth node from the beginning is the head, update the head
-      else {
-        head = nthFromEnd
-      }
-
-      // If the Nth node from the end is the same as the Nth node
-      // from the beginning, no swapping is needed
-      if (prevToNthFromEnd != null) {
-        prevToNthFromEnd.next = nthFromStart
-      }
-      // If Nth node from the end is the head, update the head
-      else {
-        head = nthFromStart
-      }
-
-      // Swap the next pointers of the two nodes
-      val temp = nthFromStart.next
-      nthFromStart.next = nthFromEnd.next
-      nthFromEnd.next = temp
-
-      head
-    }
-
-    def swapNthNodes(head: ListNode, n: Int): ListNode = {
-
-      // If the list is empty or has only one node, no swapping is
-      // needed.
-      if (head == null || head.next == null) {
-        return head
-      }
-
-      // Pointer to the Nth node from the beginning
-      var nthFromStart = head
-
-      // Pointer to the node before the nthFromStart node
-      var prevToNthFromStart: ListNode = null
-
-      // Pointer to keep track of the end of the list
-      var current = head
-
-      // Traverse to the Nth node from the beginning
-      var i = 1
-      while (i < n) {
-        prevToNthFromStart = nthFromStart
-        nthFromStart = nthFromStart.next
-        current = current.next
-        i += 1
-      }
-
-      // Pointer to the Nth node from the end
-      var nthFromEnd = head
-
-      // Pointer to the node before the nthFromEnd node
-      var prevToNthFromEnd: ListNode = null
-
-      // Find the Nth node from the end
-      while (current != null && current.next != null) {
-        prevToNthFromEnd = nthFromEnd
-        nthFromEnd = nthFromEnd.next
-        current = current.next
-      }
-
-      swapNodes(head, prevToNthFromStart, nthFromStart, prevToNthFromEnd, nthFromEnd)
-    }
-  }
-
-  // [1, 2, 3, 4, 5], N=2 -> [1, 4, 3, 2, 5]
-  val n5=new ListNode(5); val n4=new ListNode(4,n5); val n3=new ListNode(3,n4)
-  val n2=new ListNode(2,n3); val n1=new ListNode(1,n2)
-  var head = new Solution().swapNthNodes(n1, 2)
-  while (head != null) { print(s"${head.v} "); head = head.next }  // 1 4 3 2 5
-}
-```
+</details>
 
 
 ***
@@ -2016,62 +1341,39 @@ Given the **head** of a singly linked list and a non-negative integer **k**, 
 >
 > **1st rotation:** \[2, 0, 1\] **2nd rotation:** \[1, 2, 0\] **3rd rotation:** \[0, 1, 2\] **4th rotation:** \[2, 0, 1\]
 
-## Solution
+<details>
+<summary><h2>Solution</h2></summary>
 
 
-```pseudocode
-# Right-rotate by k. Find the k-th-from-end node, split there, wrap the original tail to the old head.
-function findLength(head):
-    length ← 0
-    while head is not null:
-        length ← length + 1
-        head ← head.next
-    return length
-
-function kRotations(head, k):
-
-    # If the list is empty or has only one node, no swapping is needed.
-    if head is null OR head.next is null OR k = 0:
-        return head
-
-    # Get the length of the list
-    length ← findLength(head)
-
-    # If k is greater than or equal to the length of the list, reduce k to its modulo value
-    if k ≥ length:
-        return kRotations(head, k mod length)
-
-    # Pointer to keep track of the end of the list
-    current ← head
-
-    # Traverse to the kth node from the beginning
-    for i ← 1 to k − 1:
-        current ← current.next
-
-    # Pointer to the kth node from the end
-    kthFromEnd ← head
-
-    # Pointer to the node before the kthFromEnd node
-    prevToKthFromEnd ← null
-
-    # Find the kth node from the end
-    while current is not null AND current.next is not null:
-        prevToKthFromEnd ← kthFromEnd
-        kthFromEnd ← kthFromEnd.next
-        current ← current.next
-
-    # Since kthFromEnd is the new head node, disconnect the list at prevToKthFromEnd
-    prevToKthFromEnd.next ← null
-
-    # Link the end of the list back to the original head.
-    current.next ← head
-
-    # Return kthFromEnd as it becomes the new head of the rotated list.
-    return kthFromEnd
-```
 
 ```python run
 from typing import Optional
+
+
+class ListNode:
+    def __init__(self, val=0, nxt=None):
+        self.val = val
+        self.next = nxt
+
+
+def from_list(values):
+    if not values:
+        return None
+    head = ListNode(values[0])
+    cur = head
+    for v in values[1:]:
+        cur.next = ListNode(v)
+        cur = cur.next
+    return head
+
+
+def to_list(head):
+    out = []
+    while head is not None:
+        out.append(head.val)
+        head = head.next
+    return out
+
 
 class Solution:
     def find_length(self, head: Optional[ListNode]) -> int:
@@ -2127,11 +1429,48 @@ class Solution:
         # Return `kth_from_end` as it becomes the new head of the rotated
         # list.
         return kth_from_end
+
+
+print(to_list(Solution().k_rotations(from_list([1, 2, 3, 4, 5]), 2)))  # [4, 5, 1, 2, 3]
+print(to_list(Solution().k_rotations(from_list([0, 1, 2]), 4)))         # [2, 0, 1]
+
+# Edge cases
+print(to_list(Solution().k_rotations(from_list([1]), 3)))               # [1]
+print(to_list(Solution().k_rotations(from_list([1, 2]), 1)))            # [2, 1]
+print(to_list(Solution().k_rotations(from_list([1, 2, 3]), 3)))         # [1, 2, 3]
+print(to_list(Solution().k_rotations(from_list([1, 2, 3, 4, 5]), 0)))  # [1, 2, 3, 4, 5]
+print(to_list(Solution().k_rotations(from_list([1, 2, 3, 4, 5]), 5)))  # [1, 2, 3, 4, 5]
+print(to_list(Solution().k_rotations(from_list([1, 2, 3, 4, 5]), 1)))  # [5, 1, 2, 3, 4]
 ```
 
 ```java run
+import java.util.*;
+
 public class Main {
-    static class ListNode { int val; ListNode next; ListNode(int v){val=v;} }
+    static class ListNode {
+        int val;
+        ListNode next;
+        ListNode() {}
+        ListNode(int val) { this.val = val; }
+        ListNode(int val, ListNode next) { this.val = val; this.next = next; }
+    }
+
+    static ListNode fromList(int... values) {
+        if (values.length == 0) return null;
+        ListNode head = new ListNode(values[0]);
+        ListNode cur = head;
+        for (int i = 1; i < values.length; i++) {
+            cur.next = new ListNode(values[i]);
+            cur = cur.next;
+        }
+        return head;
+    }
+
+    static java.util.List<Integer> toList(ListNode head) {
+        java.util.List<Integer> out = new java.util.ArrayList<>();
+        while (head != null) { out.add(head.val); head = head.next; }
+        return out;
+    }
 
     static class Solution {
         private int findLength(ListNode head) {
@@ -2181,173 +1520,38 @@ public class Main {
                 current = current.next;
             }
 
-            // Since kthFromEnd is the new head node, disconnect the list
+            // Since kthNodeFromEnd is the new head node, disconnect the list
             // at `prevToKthFromEnd`, making `kthFromEnd` the new head.
             prevToKthFromEnd.next = null;
 
             // Link the end of the list back to the original head.
             current.next = head;
 
-            // Return `kthFromEnd` as it becomes the new head of the
-            // rotated list.
+            // Return `kthFromEnd` as it becomes the new head of the rotated
+            // list.
             return kthFromEnd;
         }
     }
 
     public static void main(String[] args) {
-        // [1, 2, 3, 4, 5], k=2 -> [4, 5, 1, 2, 3]
-        ListNode n1=new ListNode(1),n2=new ListNode(2),n3=new ListNode(3),
-                 n4=new ListNode(4),n5=new ListNode(5);
-        n1.next=n2; n2.next=n3; n3.next=n4; n4.next=n5;
-        ListNode head = new Solution().kRotations(n1, 2);
-        for (ListNode c=head;c!=null;c=c.next) System.out.print(c.val+" ");
-        // 4 5 1 2 3
+        System.out.println(toList(new Solution().kRotations(fromList(1, 2, 3, 4, 5), 2)));  // [4, 5, 1, 2, 3]
+        System.out.println(toList(new Solution().kRotations(fromList(0, 1, 2), 4)));         // [2, 0, 1]
+
+        // Edge cases
+        System.out.println(toList(new Solution().kRotations(fromList(1), 3)));               // [1]
+        System.out.println(toList(new Solution().kRotations(fromList(1, 2), 1)));            // [2, 1]
+        System.out.println(toList(new Solution().kRotations(fromList(1, 2, 3), 3)));         // [1, 2, 3]
+        System.out.println(toList(new Solution().kRotations(fromList(1, 2, 3, 4, 5), 0)));  // [1, 2, 3, 4, 5]
+        System.out.println(toList(new Solution().kRotations(fromList(1, 2, 3, 4, 5), 5)));  // [1, 2, 3, 4, 5]
+        System.out.println(toList(new Solution().kRotations(fromList(1, 2, 3, 4, 5), 1)));  // [5, 1, 2, 3, 4]
     }
 }
 ```
 
-```c run
-static int findLength(ListNode *head) {
-    int length = 0;
-    while (head != NULL) {
-        length++;
-        head = head->next;
-    }
-    return length;
-}
+</details>
+<details>
+<summary><h2>Final Takeaway</h2></summary>
 
-ListNode* kRotations(ListNode *head, int k) {
-
-    /* If the list is empty or has only one node, no swapping is
-       needed. */
-    if (head == NULL || head->next == NULL || k == 0) {
-        return head;
-    }
-
-    /* Get the length of the list */
-    int length = findLength(head);
-
-    /* If k is greater than or equal to the length of the list,
-       reduce k to its modulo value */
-    if (k >= length) {
-        return kRotations(head, k % length);
-    }
-
-    /* Pointer to keep track of the end of the list */
-    ListNode *current = head;
-
-    /* Traverse to the kth node from the beginning */
-    for (int i = 1; i < k; ++i) {
-        current = current->next;
-    }
-
-    /* Pointer to the kth node from the end */
-    ListNode *kthFromEnd = head;
-
-    /* Pointer to the node before the kthFromEnd node */
-    ListNode *prevToKthFromEnd = NULL;
-
-    /* Find the kth node from the end */
-    while (current != NULL && current->next != NULL) {
-        prevToKthFromEnd = kthFromEnd;
-        kthFromEnd = kthFromEnd->next;
-        current = current->next;
-    }
-
-    /* Since kthFromEnd is the new head node, disconnect the list
-       at prevToKthFromEnd, making kthFromEnd the new head. */
-    prevToKthFromEnd->next = NULL;
-
-    /* Link the end of the list back to the original head. */
-    current->next = head;
-
-    /* Return kthFromEnd as it becomes the new head of the rotated
-       list. */
-    return kthFromEnd;
-}
-```
-
-```scala run
-class ListNode(var v: Int, var next: ListNode = null)
-
-object Main extends App {
-  class Solution {
-    private def findLength(head: ListNode): Int = {
-      var length = 0
-      var cur = head
-      while (cur != null) {
-        length += 1
-        cur = cur.next
-      }
-      length
-    }
-
-    def kRotations(head: ListNode, k: Int): ListNode = {
-
-      // If the list is empty or has only one node, no swapping is
-      // needed.
-      if (head == null || head.next == null || k == 0) {
-        return head
-      }
-
-      // Get the length of the list
-      val length = findLength(head)
-
-      // If k is greater than or equal to the length of the list,
-      // reduce k to its modulo value
-      if (k >= length) {
-        return kRotations(head, k % length)
-      }
-
-      // Pointer to keep track of the end of the list
-      var current = head
-
-      // Traverse to the kth node from the beginning
-      var i = 1
-      while (i < k) {
-        current = current.next
-        i += 1
-      }
-
-      // Pointer to the kth node from the end
-      var kthFromEnd = head
-
-      // Pointer to the node before the kthFromEnd node
-      var prevToKthFromEnd: ListNode = null
-
-      // Find the kth node from the end
-      while (current != null && current.next != null) {
-        prevToKthFromEnd = kthFromEnd
-        kthFromEnd = kthFromEnd.next
-        current = current.next
-      }
-
-      // Since kthFromEnd is the new head node, disconnect the list
-      // at prevToKthFromEnd, making kthFromEnd the new head.
-      prevToKthFromEnd.next = null
-
-      // Link the end of the list back to the original head.
-      current.next = head
-
-      // Return kthFromEnd as it becomes the new head of the rotated
-      // list.
-      kthFromEnd
-    }
-  }
-
-  // [1, 2, 3, 4, 5], k=2 -> [4, 5, 1, 2, 3]
-  val n5=new ListNode(5); val n4=new ListNode(4,n5); val n3=new ListNode(3,n4)
-  val n2=new ListNode(2,n3); val n1=new ListNode(1,n2)
-  var head = new Solution().kRotations(n1, 2)
-  while (head != null) { print(s"${head.v} "); head = head.next }  // 4 5 1 2 3
-}
-```
-
-
-
-***
-
-## Final Takeaway
 
 Sliding window traversal is a two-line insight with a hundred applications:
 
@@ -2371,3 +1575,5 @@ When you next see "K-th from end", "N-th from both ends", "rotate by K", "find a
 > Use two pointers starting at head. Move <code>slow</code> 1 step per tick and <code>fast</code> 2 steps per tick. When <code>fast</code> reaches the end, <code>slow</code> is at the middle — because <code>slow</code> has moved half as many times. This is the same family as Floyd's cycle detection (lesson 5) — two pointers at different speeds. Fixed-gap and different-speed are cousins; both single-pass, both O(1) space.
 >
 > </details>
+
+</details>

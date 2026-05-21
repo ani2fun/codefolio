@@ -24,6 +24,9 @@ export default defineConfig({
       // `@markdown` → `client/src/markdown`. Same idea, for the Prism +
       // markdown-pipeline TS helpers Scala.js calls into.
       "@markdown": path.resolve(import.meta.dirname, "src/markdown"),
+      // `@d3` → `client/src/d3`. The pure-TypeScript + D3 engine-driven widget
+      // renderers the Scala.js bridge `@JSImport`s. See ADR-0017.
+      "@d3":       path.resolve(import.meta.dirname, "src/d3"),
     },
   },
 

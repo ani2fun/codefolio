@@ -151,7 +151,7 @@ Three changes:
 2. **Partition returns two indices** instead of one.
 3. **Recursion has two calls** but neither one descends into the equal region.
 
-Everything else — random pivot selection, base case, in-place mutation — is identical to two-way quicksort. The complexity changes are explained below.
+Everything else — pivot selection, base case, in-place mutation — is identical to two-way quicksort. The complexity changes are explained below.
 
 > *Predict before reading on — for an array of <code>n</code> identical elements, what's three-way quicksort's time complexity?*
 
@@ -171,7 +171,7 @@ Everything else — random pivot selection, base case, in-place mutation — is 
 | Limitation | Detail |
 |---|---|
 | **Not stable** | Long-distance swaps in the partition flip equal elements' order — though equal elements are indistinguishable, so this rarely matters. |
-| **`O(n²)` worst case still possible** | If the pivot is always the smallest or largest element on truly unique input. Random pivot selection mitigates this. |
+| **`O(n²)` worst case still possible** | The implementation here fixes the pivot at `arr[right]`, so already-sorted or reverse-sorted unique input degrades to `O(n²)`. Randomising the pivot index mitigates this. |
 | **More complex than two-way** | Slightly larger constant factor on inputs with no duplicates. |
 
 In practice, three-way quicksort is what most modern libraries actually implement (often called "dual-pivot" quicksort, which is a refinement of three-way). Java's `Arrays.sort(int[])` is dual-pivot quicksort. Rust's `slice::sort_unstable` is PDQsort, which uses three-way partitioning when duplicates are detected.
@@ -288,207 +288,230 @@ Three-way partition is Dutch National Flag with `pivot` instead of `1` as the mi
 
 # Implementation
 
-We implement two functions: `partition` (three-way, returning two boundary indices) and `quicksort` (the recursive driver).
+We implement three functions: `partition` (three-way, returning the two boundary indices `i` and `j`), `quicksort` (the recursive driver), and `three_way_quick_sort` (the entry point that kicks off the recursion over the whole array). This version takes the **last element** `arr[right]` as the pivot; `partition` also handles a 0-or-1-element subarray directly with a single compare-and-swap.
 
-
-```pseudocode
-function threeWayQuickSort(arr):
-    sort(arr, 0, length(arr) − 1)
-
-function sort(arr, left, right):
-    if left ≥ right:
-        return
-    (lt, gt) ← partition3(arr, left, right)   # arr[lt..gt] = pivot region (locked)
-    sort(arr, left, lt − 1)                    # < pivot
-    sort(arr, gt + 1, right)                   # > pivot
-
-function partition3(arr, left, right):
-    pivot ← arr[random integer in [left, right]]
-    lt ← left                                  # arr[left..lt−1] < pivot
-    gt ← right                                 # arr[gt+1..right] > pivot
-    i ← left                                   # arr[lt..i−1] = pivot
-    while i ≤ gt:
-        if arr[i] < pivot:
-            swap arr[lt] and arr[i]
-            lt ← lt + 1
-            i ← i + 1
-        else if arr[i] > pivot:
-            swap arr[i] and arr[gt]
-            gt ← gt − 1
-        else:                                  # arr[i] = pivot
-            i ← i + 1
-    return (lt, gt)
-```
 
 ```python run
-import random
 from typing import List, Tuple
 
 class Solution:
-    def three_way_quick_sort(self, arr: List[int]) -> None:
-        self._sort(arr, 0, len(arr) - 1)
+    def partition(
+        self, arr: List[int], left: int, right: int
+    ) -> Tuple[int, int]:
 
-    def _sort(self, arr: List[int], left: int, right: int) -> None:
-        if left >= right:
-            return
-        i, j = self._partition(arr, left, right)
-        self._sort(arr, left, i)
-        self._sort(arr, j, right)
+        # If the subarray has 0 or 1 element, no need to partition
+        if right - left <= 1:
 
-    def _partition(self, arr: List[int], left: int, right: int) -> Tuple[int, int]:
-        pivot_idx = random.randint(left, right)
-        pivot = arr[pivot_idx]
-        l, mid, r = left, left, right                # work-pointers
-        while mid <= r:
+            # If the last element is smaller than the first element, swap
+            # them
+            if arr[right] < arr[left]:
+                arr[right], arr[left] = arr[left], arr[right]
+            return left, right
+
+        mid: int = left
+
+        # Choosing the last element as the pivot
+        pivot: int = arr[right]
+        while mid <= right:
+
+            # If the current element is smaller than the pivot, move
+            # elements smaller than pivot to the left side
             if arr[mid] < pivot:
-                arr[l], arr[mid] = arr[mid], arr[l]
-                l += 1
+                arr[mid], arr[left] = arr[left], arr[mid]
+
+                # Move mid to the next element
                 mid += 1
+
+                # Move left to the next element
+                left += 1
+
+            # If the current element is equal to the pivot, move to the
+            # next element
             elif arr[mid] == pivot:
                 mid += 1
-            else:                                    # arr[mid] > pivot
-                arr[mid], arr[r] = arr[r], arr[mid]
-                r -= 1
-        return l - 1, mid                            # last index of <, first index of >
+
+            # If the current element is greater than the pivot, move
+            # elements greater than pivot to the right side
+            elif arr[mid] > pivot:
+                arr[mid], arr[right] = arr[right], arr[mid]
+
+                # Move right to the previous element
+                right -= 1
+
+        # Index of the last element smaller than pivot
+        i: int = left - 1
+
+        # Index of the first element greater than pivot
+        j: int = mid
+        return i, j
+
+    def quicksort(self, arr: List[int], left: int, right: int) -> None:
+        if left >= right:
+            return
+
+        i, j = self.partition(arr, left, right)
+
+        # Recursively sort the subarrays
+        self.quicksort(arr, left, i)
+        self.quicksort(arr, j, right)
+
+    def three_way_quick_sort(self, arr: List[int]) -> None:
+        n: int = len(arr)
+        self.quicksort(arr, 0, n - 1)
 
 
-if __name__ == "__main__":
-    arr = [7, 5, 5, 1, 5, 8, 5, 3]
-    Solution().three_way_quick_sort(arr)
-    print(arr)   # [1, 3, 5, 5, 5, 5, 7, 8]
+a1 = [2, 3, 2, 1, 5, 6]
+Solution().three_way_quick_sort(a1); print(a1)     # [1, 2, 2, 3, 5, 6]
+
+a2 = [6, 5, 4, 4, 4, 3, 2, 1]
+Solution().three_way_quick_sort(a2); print(a2)     # [1, 2, 3, 4, 4, 4, 5, 6]
+
+a3 = [1, 2, 3, 4, 5, 6]
+Solution().three_way_quick_sort(a3); print(a3)     # [1, 2, 3, 4, 5, 6]
+
+a4: List[int] = []
+Solution().three_way_quick_sort(a4); print(a4)     # []
+
+a5 = [42]
+Solution().three_way_quick_sort(a5); print(a5)     # [42]
+
+a6 = [2, 1]
+Solution().three_way_quick_sort(a6); print(a6)     # [1, 2]
+
+a7 = [3, 3, 3]
+Solution().three_way_quick_sort(a7); print(a7)     # [3, 3, 3]
+
+a8 = [5, 2, 8, 1, 9, 3]
+Solution().three_way_quick_sort(a8); print(a8)     # [1, 2, 3, 5, 8, 9]
 ```
 
 ```java run
-import java.util.Random;
+import java.util.Arrays;
 
 public class Main {
     static class Solution {
-        private final Random rand = new Random();
+        private void partition(
+            int[] arr,
+            int left,
+            int right,
+            int[] i,
+            int[] j
+        ) {
 
-        public void threeWayQuickSort(int[] arr) {
-            sort(arr, 0, arr.length - 1);
-        }
+            // If the subarray has 0 or 1 element, no need to partition
+            if (right - left <= 1) {
 
-        private void sort(int[] arr, int left, int right) {
-            if (left >= right) return;
-            int[] bounds = partition(arr, left, right);
-            sort(arr, left, bounds[0]);
-            sort(arr, bounds[1], right);
-        }
+                // If the last element is smaller than the first element,
+                // swap them
+                if (arr[right] < arr[left]) {
+                    int temp = arr[right];
+                    arr[right] = arr[left];
+                    arr[left] = temp;
+                }
 
-        private int[] partition(int[] arr, int left, int right) {
-            int pivotIdx = left + rand.nextInt(right - left + 1);
-            int pivot = arr[pivotIdx];
-            int l = left, mid = left, r = right;
-            while (mid <= r) {
+                i[0] = left;
+                j[0] = right;
+                return;
+            }
+
+            int mid = left;
+
+            // Choosing the last element as the pivot
+            int pivot = arr[right];
+            while (mid <= right) {
+
+                // If the current element is smaller than the pivot, move
+                // elements smaller than pivot to the left side
                 if (arr[mid] < pivot) {
-                    swap(arr, l, mid);
-                    l++; mid++;
-                } else if (arr[mid] == pivot) {
+                    int temp = arr[mid];
+                    arr[mid] = arr[left];
+                    arr[left] = temp;
+
+                    // Move mid to the next element
                     mid++;
-                } else {
-                    swap(arr, mid, r);
-                    r--;
+
+                    // Move left to the next element
+                    left++;     
+                }
+
+                // If the current element is equal to the pivot, move to the
+                // next element
+                else if (arr[mid] == pivot) {
+                    mid++;
+                }
+
+                // If the current element is greater than the pivot, move
+                // elements greater than pivot to the right side
+                else if (arr[mid] > pivot) {
+                    int temp = arr[mid];
+                    arr[mid] = arr[right];
+                    arr[right--] = temp;
+
+                    // Move right to the previous element
+                    right--;
                 }
             }
-            return new int[]{l - 1, mid};
+
+            // Index of the last element smaller than pivot
+            i[0] = left - 1;
+
+            // Index of the first element greater than pivot
+            j[0] = mid;
         }
 
-        private void swap(int[] arr, int i, int j) {
-            int t = arr[i]; arr[i] = arr[j]; arr[j] = t;
+        private void quicksort(int[] arr, int left, int right) {
+            if (left >= right) {
+                return;
+            }
+
+            int[] i = new int[1];
+            int[] j = new int[1];
+            partition(arr, left, right, i, j);
+
+            // Recursively sort the subarrays
+            quicksort(arr, left, i[0]);
+            quicksort(arr, j[0], right);
+        }
+
+        public void threeWayQuickSort(int[] arr) {
+            int n = arr.length;
+            quicksort(arr, 0, n - 1);
         }
     }
 
     public static void main(String[] args) {
-        int[] arr = {7, 5, 5, 1, 5, 8, 5, 3};
-        new Solution().threeWayQuickSort(arr);
-        for (int x : arr) System.out.print(x + " ");
-        System.out.println();
+        int[] a1 = {2, 3, 2, 1, 5, 6};
+        new Solution().threeWayQuickSort(a1);
+        System.out.println(Arrays.toString(a1));   // [1, 2, 2, 3, 5, 6]
+
+        int[] a2 = {6, 5, 4, 4, 4, 3, 2, 1};
+        new Solution().threeWayQuickSort(a2);
+        System.out.println(Arrays.toString(a2));   // [1, 2, 3, 4, 4, 4, 5, 6]
+
+        int[] a3 = {1, 2, 3, 4, 5, 6};
+        new Solution().threeWayQuickSort(a3);
+        System.out.println(Arrays.toString(a3));   // [1, 2, 3, 4, 5, 6]
+
+        int[] a4 = {};
+        new Solution().threeWayQuickSort(a4);
+        System.out.println(Arrays.toString(a4));   // []
+
+        int[] a5 = {42};
+        new Solution().threeWayQuickSort(a5);
+        System.out.println(Arrays.toString(a5));   // [42]
+
+        int[] a6 = {2, 1};
+        new Solution().threeWayQuickSort(a6);
+        System.out.println(Arrays.toString(a6));   // [1, 2]
+
+        int[] a7 = {3, 3, 3};
+        new Solution().threeWayQuickSort(a7);
+        System.out.println(Arrays.toString(a7));   // [3, 3, 3]
+
+        int[] a8 = {5, 2, 8, 1, 9, 3};
+        new Solution().threeWayQuickSort(a8);
+        System.out.println(Arrays.toString(a8));   // [1, 2, 3, 5, 8, 9]
     }
-}
-```
-
-```c run
-#include <stdio.h>
-#include <stdlib.h>
-
-void swap(int *a, int *b) { int t = *a; *a = *b; *b = t; }
-
-void partition3(int *arr, int left, int right, int *outI, int *outJ) {
-    int pivot = arr[left + rand() % (right - left + 1)];
-    int l = left, mid = left, r = right;
-    while (mid <= r) {
-        if (arr[mid] < pivot) {
-            swap(&arr[l], &arr[mid]); l++; mid++;
-        } else if (arr[mid] == pivot) {
-            mid++;
-        } else {
-            swap(&arr[mid], &arr[r]); r--;
-        }
-    }
-    *outI = l - 1;
-    *outJ = mid;
-}
-
-void sort3(int *arr, int left, int right) {
-    if (left >= right) return;
-    int i, j;
-    partition3(arr, left, right, &i, &j);
-    sort3(arr, left, i);
-    sort3(arr, j, right);
-}
-
-void three_way_quick_sort(int *arr, int n) {
-    sort3(arr, 0, n - 1);
-}
-
-int main(void) {
-    int arr[] = {7, 5, 5, 1, 5, 8, 5, 3};
-    int n = 8;
-    three_way_quick_sort(arr, n);
-    for (int i = 0; i < n; i++) printf("%d ", arr[i]);
-    printf("\n");
-    return 0;
-}
-```
-
-```scala run
-import scala.util.Random
-
-object Main extends App {
-  class Solution {
-    def threeWayQuickSort(arr: Array[Int]): Unit = {
-      sort(arr, 0, arr.length - 1)
-    }
-
-    private def sort(arr: Array[Int], left: Int, right: Int): Unit = {
-      if (left >= right) return
-      val (i, j) = partition3(arr, left, right)
-      sort(arr, left, i)
-      sort(arr, j, right)
-    }
-
-    private def partition3(arr: Array[Int], left: Int, right: Int): (Int, Int) = {
-      val pivot = arr(left + Random.nextInt(right - left + 1))
-      var l = left; var mid = left; var r = right
-      while (mid <= r) {
-        if (arr(mid) < pivot) {
-          val t = arr(l); arr(l) = arr(mid); arr(mid) = t
-          l += 1; mid += 1
-        } else if (arr(mid) == pivot) {
-          mid += 1
-        } else {
-          val t = arr(mid); arr(mid) = arr(r); arr(r) = t
-          r -= 1
-        }
-      }
-      (l - 1, mid)
-    }
-  }
-
-  val arr = Array(7, 5, 5, 1, 5, 8, 5, 3)
-  new Solution().threeWayQuickSort(arr)
-  println(arr.mkString(" "))
 }
 ```
 
@@ -512,9 +535,9 @@ object Main extends App {
 
 **Best case (`O(n log n)`)** — Mixed input with many duplicates and balanced partitions. The duplicates collapse into the middle; recursion handles the unique elements in `O(log n)` levels.
 
-**Average case (`O(n log n)`)** — Random input with random pivots. Same as two-way quicksort.
+**Average case (`O(n log n)`)** — Random input. Same as two-way quicksort.
 
-**Worst case (`O(n²)`)** — Pivot is always smallest or largest on truly unique input. Random pivot selection makes this practically unreachable.
+**Worst case (`O(n²)`)** — The pivot is always the smallest or largest element on truly unique input. With the last element fixed as the pivot, already-sorted and reverse-sorted inputs trigger exactly this; randomising the pivot index makes the worst case practically unreachable.
 
 ---
 
@@ -535,7 +558,7 @@ This is why production sorts (Java's dual-pivot quicksort, Rust's PDQsort) use t
 
 ## Why the Stack Stays `O(log n)` on Average
 
-Each partition splits the array into three regions. Even though the recursion descends into two of them (and skips the middle), the depth is bounded by `log n` on average — same as two-way quicksort. Random pivot selection keeps the partitions balanced.
+Each partition splits the array into three regions. Even though the recursion descends into two of them (and skips the middle), the depth is bounded by `log n` on average — same as two-way quicksort. On random input the pivot lands near the middle often enough to keep the partitions balanced; randomising the pivot index guarantees this regardless of input order.
 
 In the worst case (smallest/largest pivot on unique input), depth is `O(n)` — same as two-way. Tail-call elimination and depth-limit fallbacks (used in production sorts) guarantee `O(log n)` worst-case stack.
 
@@ -568,13 +591,14 @@ Output: [1, 2, 3, 4, 5, 6]   (no duplicates; behaves like two-way quicksort)
 
 ---
 
-## The Solution
+<details>
+<summary><h2>Solution &amp; Analysis</h2></summary>
 
-The implementation matches the version above. See the [Implementation](#implementation) section for all 10 languages.
+### The Solution
 
----
+The implementation matches the version above. See the [Implementation](#implementation) section.
 
-## Edge Cases
+### Edge Cases
 
 | Case | Example | Expected |
 |---|---|---|
@@ -585,9 +609,10 @@ The implementation matches the version above. See the [Implementation](#implemen
 | Reverse sorted | `[4, 3, 2, 1]` | `[1, 2, 3, 4]`. |
 | Two distinct values | `[1, 2, 1, 2, 1]` | `[1, 1, 1, 2, 2]` — middle region absorbs the majority value efficiently. |
 
----
+</details>
+<details>
+<summary><h2>Final Takeaway</h2></summary>
 
-## Final Takeaway
 
 Three-way quicksort marries quicksort's recursive divide-and-conquer with Dutch National Flag's three-way partition. The result: linear time on duplicate-heavy input, `O(n log n)` average on unique inputs, in-place, with `O(log n)` stack. This is the algorithm production sorts actually use.
 
@@ -595,6 +620,7 @@ The next algorithm — **merge sort** — takes a fundamentally different approa
 
 **Transfer challenge — try before the Merge Sort lesson:** Three-way quicksort uses *one* pivot. **Dual-pivot quicksort** (Java's default) uses *two* pivots, splitting the array into four regions: `< p1`, `[p1, p2]`, `> p2`, and `== p1 or p2`. What's the recurrence and what's the speed-up over single-pivot? Don't write the code — just sketch the partition shape on paper.
 
+</details>
 <details>
 <summary><strong>Answer — open after you've sketched it</strong></summary>
 

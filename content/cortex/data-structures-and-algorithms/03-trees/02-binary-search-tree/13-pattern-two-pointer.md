@@ -143,213 +143,305 @@ Given the **root** of a BST and an integer **target**, return `true` if some pai
 > - **Input:** `root = [2, 1, 4, null, null, 3, 7]`, `target = 16`
 > - **Output:** `false`
 
-## The Solution
+<details>
+<summary><h2>The Solution</h2></summary>
 
 
-```pseudocode
-# ForwardBstIterator and ReverseBstIterator — same as lesson 9.
-# left  = ForwardBstIterator(root)   → ascending order
-# right = ReverseBstIterator(root)   → descending order
-
-function twoSumOnBST(root, target):
-    if root is null: return false
-    left  ← ForwardBstIterator(root)
-    right ← ReverseBstIterator(root)
-    l ← left.next()
-    r ← right.next()
-    while l is NOT null AND r is NOT null AND l.val < r.val:
-        s ← l.val + r.val
-        if s = target: return true
-        if s < target: l ← left.next()     # sum too small — advance smaller pointer
-        else:          r ← right.next()    # sum too large — advance larger pointer
-    return false
-```
 
 ```python run
+from typing import Optional, List
+
+class TreeNode:
+    def __init__(self, val=0, left=None, right=None):
+        self.val = val
+        self.left = left
+        self.right = right
+
+
+def from_level_order(values):
+    """Build tree from list like [1, 2, 3, None, 4]. None means missing child."""
+    if not values:
+        return None
+    root = TreeNode(values[0])
+    queue = [root]
+    i = 1
+    while queue and i < len(values):
+        node = queue.pop(0)
+        if i < len(values) and values[i] is not None:
+            node.left = TreeNode(values[i])
+            queue.append(node.left)
+        i += 1
+        if i < len(values) and values[i] is not None:
+            node.right = TreeNode(values[i])
+            queue.append(node.right)
+        i += 1
+    return root
+
+
 class ForwardBstIterator:
-    def __init__(self, root):
-        self.stack = []
-        self._push_all_left(root)
-    def _push_all_left(self, node):
+    def __init__(self, root: Optional[TreeNode]):
+        self.stack: List[TreeNode] = []
+        self.push_all_left(root)
+
+    def push_all_left(self, node: Optional[TreeNode]) -> None:
         while node:
-            self.stack.append(node); node = node.left
-    def has_next(self):  return bool(self.stack)
-    def next(self):
+            self.stack.append(node)
+            node = node.left
+
+    def has_next(self) -> bool:
+        return bool(self.stack)
+
+    def next(self) -> Optional[TreeNode]:
+        if not self.has_next():
+            return None
+
         node = self.stack.pop()
-        self._push_all_left(node.right)
+        self.push_all_left(node.right)
         return node
 
 class ReverseBstIterator:
-    def __init__(self, root):
-        self.stack = []
-        self._push_all_right(root)
-    def _push_all_right(self, node):
+    def __init__(self, root: Optional[TreeNode]):
+        self.stack: List[TreeNode] = []
+        self.push_all_right(root)
+
+    def push_all_right(self, node: Optional[TreeNode]) -> None:
         while node:
-            self.stack.append(node); node = node.right
-    def has_next(self):  return bool(self.stack)
-    def next(self):
+            self.stack.append(node)
+            node = node.right
+
+    def has_next(self) -> bool:
+        return bool(self.stack)
+
+    def next(self) -> Optional[TreeNode]:
+        if not self.has_next():
+            return None
+
         node = self.stack.pop()
-        self._push_all_right(node.left)
+        self.push_all_right(node.left)
         return node
 
 class Solution:
-    def two_sum_on_bst(self, root, target):
-        if root is None:
+    def two_sum_on_bst(
+        self, root: Optional[TreeNode], target: int
+    ) -> bool:
+        if not root:
             return False
-        left  = ForwardBstIterator(root)
-        right = ReverseBstIterator(root)
-        left_node, right_node = left.next(), right.next()
-        # Loop while pointers haven't crossed.
-        while left_node and right_node and left_node.val < right_node.val:
-            s = left_node.val + right_node.val
-            if s == target:                   # exact pair found
+
+        # Initialize the left and right iterators
+        left_iterator: ForwardBstIterator = ForwardBstIterator(root)
+        right_iterator: ReverseBstIterator = ReverseBstIterator(root)
+
+        left_node: Optional[TreeNode] = left_iterator.next()
+        right_node: Optional[TreeNode] = right_iterator.next()
+
+        while (
+            left_node is not None
+            and right_node is not None
+            and left_node.val < right_node.val
+        ):
+
+            # Check if the sum of the two nodes equals the target
+            if left_node.val + right_node.val == target:
                 return True
-            if s < target:
-                # Sum too small → grow it by advancing the smaller (left) pointer.
-                left_node = left.next()
+
+            # If the sum is less than target, move the left pointer
+            # to the right
+            elif left_node.val + right_node.val < target:
+                left_node = left_iterator.next()
+
+            # If the sum is greater than target, move the right pointer
+            # to the left
             else:
-                # Sum too large → shrink it by advancing the larger (right) pointer.
-                right_node = right.next()
+                right_node = right_iterator.next()
+
+        # No pair found
         return False
+
+
+# Examples from the problem statement
+t1 = from_level_order([4, 2, 6, 1, None, None, 7])
+print(Solution().two_sum_on_bst(t1, 9))   # True  (2+7)
+
+t2 = from_level_order([2, 1, 4, None, None, 3, 7])
+print(Solution().two_sum_on_bst(t2, 16))  # False
+
+# Edge cases
+print(Solution().two_sum_on_bst(None, 5)) # False — empty tree
+
+t3 = from_level_order([5])
+print(Solution().two_sum_on_bst(t3, 10))  # False — single node, no pair
+
+t4 = from_level_order([4, 2, 6, 1, None, None, 7])
+print(Solution().two_sum_on_bst(t4, 3))   # True  (1+2)
+
+t5 = from_level_order([4, 2, 6, 1, None, None, 7])
+print(Solution().two_sum_on_bst(t5, 13))  # True  (6+7)
+
+t6 = from_level_order([4, 2, 6, 1, None, None, 7])
+print(Solution().two_sum_on_bst(t6, 14))  # False — exceeds max pair sum
 ```
 
 ```java run
 import java.util.*;
 
 public class Main {
-    static class TreeNode { int val; TreeNode left, right; TreeNode(int v){val=v;} }
+    static class TreeNode {
+        int val;
+        TreeNode left;
+        TreeNode right;
+        TreeNode() {}
+        TreeNode(int val) { this.val = val; }
+    }
+
+    static TreeNode fromLevelOrder(Integer... values) {
+        if (values.length == 0 || values[0] == null) return null;
+        TreeNode root = new TreeNode(values[0]);
+        java.util.Deque<TreeNode> queue = new java.util.ArrayDeque<>();
+        queue.add(root);
+        int i = 1;
+        while (!queue.isEmpty() && i < values.length) {
+            TreeNode node = queue.poll();
+            if (i < values.length && values[i] != null) {
+                node.left = new TreeNode(values[i]);
+                queue.add(node.left);
+            }
+            i++;
+            if (i < values.length && values[i] != null) {
+                node.right = new TreeNode(values[i]);
+                queue.add(node.right);
+            }
+            i++;
+        }
+        return root;
+    }
 
     static class ForwardBstIterator {
-        Deque<TreeNode> stack = new ArrayDeque<>();
-        ForwardBstIterator(TreeNode root) { pushAllLeft(root); }
-        private void pushAllLeft(TreeNode n) { while (n != null) { stack.push(n); n = n.left; } }
-        boolean hasNext() { return !stack.isEmpty(); }
-        TreeNode next() { TreeNode n = stack.pop(); pushAllLeft(n.right); return n; }
+
+        private Stack<TreeNode> stack;
+
+        public ForwardBstIterator(TreeNode root) {
+            stack = new Stack<>();
+            pushAllLeft(root);
+        }
+
+        private void pushAllLeft(TreeNode node) {
+            while (node != null) {
+                stack.push(node);
+                node = node.left;
+            }
+        }
+
+        public boolean hasNext() {
+            return !stack.empty();
+        }
+
+        public TreeNode next() {
+            if (!hasNext()) {
+                return null;
+            }
+
+            TreeNode node = stack.pop();
+            pushAllLeft(node.right);
+            return node;
+        }
     }
 
     static class ReverseBstIterator {
-        Deque<TreeNode> stack = new ArrayDeque<>();
-        ReverseBstIterator(TreeNode root) { pushAllRight(root); }
-        private void pushAllRight(TreeNode n) { while (n != null) { stack.push(n); n = n.right; } }
-        boolean hasNext() { return !stack.isEmpty(); }
-        TreeNode next() { TreeNode n = stack.pop(); pushAllRight(n.left); return n; }
+
+        private Stack<TreeNode> stack;
+
+        public ReverseBstIterator(TreeNode root) {
+            stack = new Stack<>();
+            pushAllRight(root);
+        }
+
+        private void pushAllRight(TreeNode node) {
+            while (node != null) {
+                stack.push(node);
+                node = node.right;
+            }
+        }
+
+        public boolean hasNext() {
+            return !stack.empty();
+        }
+
+        public TreeNode next() {
+            if (!hasNext()) {
+                return null;
+            }
+
+            TreeNode node = stack.pop();
+            pushAllRight(node.left);
+            return node;
+        }
     }
 
     static class Solution {
         public boolean twoSumOnBST(TreeNode root, int target) {
-            if (root == null) return false;
-            ForwardBstIterator left  = new ForwardBstIterator(root);
-            ReverseBstIterator right = new ReverseBstIterator(root);
-            TreeNode leftNode = left.next(), rightNode = right.next();
-            while (leftNode != null && rightNode != null && leftNode.val < rightNode.val) {
-                int s = leftNode.val + rightNode.val;
-                if (s == target) return true;
-                if (s < target) leftNode  = left.next();                                                                                // grow
-                else            rightNode = right.next();                                                                               // shrink
+            if (root == null) {
+                return false;
             }
+
+            // Initialize the left and right iterators
+            ForwardBstIterator leftIterator = new ForwardBstIterator(root);
+            ReverseBstIterator rightIterator = new ReverseBstIterator(root);
+
+            TreeNode leftNode = leftIterator.next();
+            TreeNode rightNode = rightIterator.next();
+
+            while (
+                leftNode != null &&
+                rightNode != null &&
+                leftNode.val < rightNode.val
+            ) {
+
+                // Check if the sum of the two nodes equals the target
+                if (leftNode.val + rightNode.val == target) {
+                    return true;
+                }
+
+                // If the sum is less than target, move the left pointer
+                // to the right
+                else if (leftNode.val + rightNode.val < target) {
+                    leftNode = leftIterator.next();
+                }
+
+                // If the sum is greater than target, move the right pointer
+                // to the left
+                else {
+                    rightNode = rightIterator.next();
+                }
+            }
+
+            // No pair found
             return false;
         }
     }
 
     public static void main(String[] args) {
-        TreeNode root = new TreeNode(4);
-        root.left  = new TreeNode(2); root.right = new TreeNode(6);
-        root.left.left  = new TreeNode(1);
-        root.right.right = new TreeNode(7);
-        System.out.println(new Solution().twoSumOnBST(root, 9));  // true
+        // Examples from the problem statement
+        TreeNode t1 = fromLevelOrder(4, 2, 6, 1, null, null, 7);
+        System.out.println(new Solution().twoSumOnBST(t1, 9));   // true  (2+7)
+
+        TreeNode t2 = fromLevelOrder(2, 1, 4, null, null, 3, 7);
+        System.out.println(new Solution().twoSumOnBST(t2, 16));  // false
+
+        // Edge cases
+        System.out.println(new Solution().twoSumOnBST(null, 5)); // false — empty tree
+
+        TreeNode t3 = fromLevelOrder(5);
+        System.out.println(new Solution().twoSumOnBST(t3, 10));  // false — single node, no pair
+
+        TreeNode t4 = fromLevelOrder(4, 2, 6, 1, null, null, 7);
+        System.out.println(new Solution().twoSumOnBST(t4, 3));   // true  (1+2)
+
+        TreeNode t5 = fromLevelOrder(4, 2, 6, 1, null, null, 7);
+        System.out.println(new Solution().twoSumOnBST(t5, 13));  // true  (6+7)
+
+        TreeNode t6 = fromLevelOrder(4, 2, 6, 1, null, null, 7);
+        System.out.println(new Solution().twoSumOnBST(t6, 14));  // false — exceeds max pair sum
     }
-}
-```
-
-```c run
-#include <stdlib.h>
-#include <stdbool.h>
-
-typedef struct { struct TreeNode **stack; int top; } Iter;
-
-static Iter *iter_new(int cap) {
-    Iter *it = malloc(sizeof(*it));
-    it->stack = malloc(sizeof(struct TreeNode *) * cap);
-    it->top = -1;
-    return it;
-}
-
-static void push_left(Iter *it, struct TreeNode *n)  { while (n) { it->stack[++it->top] = n; n = n->left;  } }
-static void push_right(Iter *it, struct TreeNode *n) { while (n) { it->stack[++it->top] = n; n = n->right; } }
-
-static struct TreeNode *fwd_next(Iter *it) {
-    if (it->top < 0) return NULL;
-    struct TreeNode *n = it->stack[it->top--];
-    push_left(it, n->right);
-    return n;
-}
-static struct TreeNode *rev_next(Iter *it) {
-    if (it->top < 0) return NULL;
-    struct TreeNode *n = it->stack[it->top--];
-    push_right(it, n->left);
-    return n;
-}
-
-bool twoSumOnBST(struct TreeNode *root, int target) {
-    if (!root) return false;
-    Iter *left  = iter_new(1024); push_left(left,  root);
-    Iter *right = iter_new(1024); push_right(right, root);
-    struct TreeNode *l = fwd_next(left), *r = rev_next(right);
-    bool ans = false;
-    while (l && r && l->val < r->val) {
-        int s = l->val + r->val;
-        if (s == target)      { ans = true; break; }
-        else if (s < target)  l = fwd_next(left);                                                                                          // grow
-        else                  r = rev_next(right);                                                                                          // shrink
-    }
-    free(left->stack); free(left); free(right->stack); free(right);
-    return ans;
-}
-```
-
-```scala run
-import scala.collection.mutable
-
-class TreeNode(var value: Int, var left: TreeNode = null, var right: TreeNode = null)
-
-object Main extends App {
-  class ForwardBstIterator(root: TreeNode) {
-    private val stack = mutable.Stack[TreeNode]()
-    pushAllLeft(root)
-    private def pushAllLeft(n: TreeNode): Unit = { var x = n; while (x != null) { stack.push(x); x = x.left  } }
-    def hasNext: Boolean = stack.nonEmpty
-    def next: TreeNode = { val n = stack.pop(); pushAllLeft(n.right); n }
-  }
-
-  class ReverseBstIterator(root: TreeNode) {
-    private val stack = mutable.Stack[TreeNode]()
-    pushAllRight(root)
-    private def pushAllRight(n: TreeNode): Unit = { var x = n; while (x != null) { stack.push(x); x = x.right } }
-    def hasNext: Boolean = stack.nonEmpty
-    def next: TreeNode = { val n = stack.pop(); pushAllRight(n.left); n }
-  }
-
-  object Solution {
-    def twoSumOnBST(root: TreeNode, target: Int): Boolean = {
-      if (root == null) return false
-      val left  = new ForwardBstIterator(root)
-      val right = new ReverseBstIterator(root)
-      var l: TreeNode = left.next
-      var r: TreeNode = right.next
-      while (l != null && r != null && l.value < r.value) {
-        val s = l.value + r.value
-        if (s == target)      return true
-        else if (s < target)  l = left.next
-        else                  r = right.next
-      }
-      false
-    }
-  }
-
-  val root = new TreeNode(4,
-    new TreeNode(2, new TreeNode(1), null),
-    new TreeNode(6, null, new TreeNode(7)))
-  println(Solution.twoSumOnBST(root, 9))  // true
 }
 ```
 
@@ -363,6 +455,8 @@ Sorted view: [1, 2, 4, 6, 7]
 Step 1 │ leftNode=1, rightNode=7 │ sum=8 < 9 → advance left
 Step 2 │ leftNode=2, rightNode=7 │ sum=9 ✓  → return true
 ```
+
+</details>
 
 </details>
 
@@ -386,149 +480,306 @@ Given the **root** of a BST, return `true` if for **every** pair of nodes formed
 > - **Output:** `false`
 > - **Explanation:** Sorted: `[1, 2, 3, 5, 7]`. Pair `(2, 5)` fails (`5 % 2 ≠ 0`).
 
-## The Strategy
+<details>
+<summary><h2>The Strategy</h2></summary>
+
 
 Same shape as two-sum, but the predicate is "right.val % left.val == 0", and we always advance both pointers (each iteration consumes a unique pair). Stop early on any failure.
 
-## The Solution
+</details>
+<details>
+<summary><h2>The Solution</h2></summary>
 
 
-```pseudocode
-function multipleTree(root):
-    if root is null: return false
-    left  ← ForwardBstIterator(root)
-    right ← ReverseBstIterator(root)
-    l ← left.next()
-    r ← right.next()
-    while l is NOT null AND r is NOT null AND l.val < r.val:
-        if r.val mod l.val ≠ 0: return false  # i-th largest must be a multiple of i-th smallest
-        l ← left.next()
-        r ← right.next()
-    return true
-```
 
 ```python run
-# Reuse the iterator classes defined in the previous problem.
+from typing import Optional, List
+
+class TreeNode:
+    def __init__(self, val=0, left=None, right=None):
+        self.val = val
+        self.left = left
+        self.right = right
+
+
+def from_level_order(values):
+    """Build tree from list like [1, 2, 3, None, 4]. None means missing child."""
+    if not values:
+        return None
+    root = TreeNode(values[0])
+    queue = [root]
+    i = 1
+    while queue and i < len(values):
+        node = queue.pop(0)
+        if i < len(values) and values[i] is not None:
+            node.left = TreeNode(values[i])
+            queue.append(node.left)
+        i += 1
+        if i < len(values) and values[i] is not None:
+            node.right = TreeNode(values[i])
+            queue.append(node.right)
+        i += 1
+    return root
+
+
+class ForwardBstIterator:
+    def __init__(self, root: Optional[TreeNode]):
+        self.stack: List[TreeNode] = []
+        self.push_all_left(root)
+
+    def push_all_left(self, node: Optional[TreeNode]) -> None:
+        while node:
+            self.stack.append(node)
+            node = node.left
+
+    def has_next(self) -> bool:
+        return bool(self.stack)
+
+    def next(self) -> Optional[TreeNode]:
+        if not self.has_next():
+            return None
+
+        node = self.stack.pop()
+        self.push_all_left(node.right)
+        return node
+
+class ReverseBstIterator:
+    def __init__(self, root: Optional[TreeNode]):
+        self.stack: List[TreeNode] = []
+        self.push_all_right(root)
+
+    def push_all_right(self, node: Optional[TreeNode]) -> None:
+        while node:
+            self.stack.append(node)
+            node = node.right
+
+    def has_next(self) -> bool:
+        return bool(self.stack)
+
+    def next(self) -> Optional[TreeNode]:
+        if not self.has_next():
+            return None
+
+        node = self.stack.pop()
+        self.push_all_right(node.left)
+        return node
+
 class Solution:
-    def multiple_tree(self, root):
-        if root is None:
+    def multiple_tree(self, root: Optional[TreeNode]) -> bool:
+        if not root:
             return False
-        left  = ForwardBstIterator(root)
-        right = ReverseBstIterator(root)
-        l, r = left.next(), right.next()
-        # Step both pointers in tandem: each pair is (i-th smallest, i-th largest).
-        while l and r and l.val < r.val:
-            if r.val % l.val != 0:        # any pair failing kills the whole answer
+
+        # Initialize the left and right iterators
+        left_iterator: ForwardBstIterator = ForwardBstIterator(root)
+        right_iterator: ReverseBstIterator = ReverseBstIterator(root)
+
+        left_node: Optional[TreeNode] = left_iterator.next()
+        right_node: Optional[TreeNode] = right_iterator.next()
+
+        while (
+            left_node is not None
+            and right_node is not None
+            and left_node.val < right_node.val
+        ):
+
+            # Check if the right node's value is a multiple of the left
+            # node's value
+            if right_node.val % left_node.val != 0:
                 return False
-            l, r = left.next(), right.next()
+
+            # Move to the left node to the next node in in-order
+            left_node = left_iterator.next()
+
+            # Move the right node to the next node in reverse in-order
+            right_node = right_iterator.next()
+
+        # If all pairs satisfy the condition, return true
         return True
+
+
+# Examples from the problem statement
+t1 = from_level_order([4, 2, 6, 1, None, None, 7])
+print(Solution().multiple_tree(t1))  # True  (7%1=0, 6%2=0)
+
+t2 = from_level_order([2, 1, 5, None, None, 3, 7])
+print(Solution().multiple_tree(t2))  # False (5%2 != 0)
+
+# Edge cases
+print(Solution().multiple_tree(None))                  # False — empty tree
+
+t3 = from_level_order([6])
+print(Solution().multiple_tree(t3))                    # True  — single node
+
+t4 = from_level_order([3, 1, 6])
+print(Solution().multiple_tree(t4))                    # True  (6%1=0, 6%3=0)
+
+t5 = from_level_order([4, 2, 6, 1, None, None, 9])
+print(Solution().multiple_tree(t5))                    # False (9%2 != 0)
+
+t6 = from_level_order([6, 2, 12, 1, None, None, 24])
+print(Solution().multiple_tree(t6))                    # True  (24%1=0, 12%2=0)
 ```
 
 ```java run
 import java.util.*;
 
 public class Main {
-    static class TreeNode { int val; TreeNode left, right; TreeNode(int v){val=v;} }
+    static class TreeNode {
+        int val;
+        TreeNode left;
+        TreeNode right;
+        TreeNode() {}
+        TreeNode(int val) { this.val = val; }
+    }
+
+    static TreeNode fromLevelOrder(Integer... values) {
+        if (values.length == 0 || values[0] == null) return null;
+        TreeNode root = new TreeNode(values[0]);
+        java.util.Deque<TreeNode> queue = new java.util.ArrayDeque<>();
+        queue.add(root);
+        int i = 1;
+        while (!queue.isEmpty() && i < values.length) {
+            TreeNode node = queue.poll();
+            if (i < values.length && values[i] != null) {
+                node.left = new TreeNode(values[i]);
+                queue.add(node.left);
+            }
+            i++;
+            if (i < values.length && values[i] != null) {
+                node.right = new TreeNode(values[i]);
+                queue.add(node.right);
+            }
+            i++;
+        }
+        return root;
+    }
 
     static class ForwardBstIterator {
-        Deque<TreeNode> stack = new ArrayDeque<>();
-        ForwardBstIterator(TreeNode root) { pushAllLeft(root); }
-        private void pushAllLeft(TreeNode n) { while (n != null) { stack.push(n); n = n.left; } }
-        boolean hasNext() { return !stack.isEmpty(); }
-        TreeNode next() { TreeNode n = stack.pop(); pushAllLeft(n.right); return n; }
+
+        private Stack<TreeNode> stack;
+
+        public ForwardBstIterator(TreeNode root) {
+            stack = new Stack<>();
+            pushAllLeft(root);
+        }
+
+        private void pushAllLeft(TreeNode node) {
+            while (node != null) {
+                stack.push(node);
+                node = node.left;
+            }
+        }
+
+        public boolean hasNext() {
+            return !stack.empty();
+        }
+
+        public TreeNode next() {
+            if (!hasNext()) {
+                return null;
+            }
+
+            TreeNode node = stack.pop();
+            pushAllLeft(node.right);
+            return node;
+        }
     }
 
     static class ReverseBstIterator {
-        Deque<TreeNode> stack = new ArrayDeque<>();
-        ReverseBstIterator(TreeNode root) { pushAllRight(root); }
-        private void pushAllRight(TreeNode n) { while (n != null) { stack.push(n); n = n.right; } }
-        boolean hasNext() { return !stack.isEmpty(); }
-        TreeNode next() { TreeNode n = stack.pop(); pushAllRight(n.left); return n; }
+
+        private Stack<TreeNode> stack;
+
+        public ReverseBstIterator(TreeNode root) {
+            stack = new Stack<>();
+            pushAllRight(root);
+        }
+
+        private void pushAllRight(TreeNode node) {
+            while (node != null) {
+                stack.push(node);
+                node = node.right;
+            }
+        }
+
+        public boolean hasNext() {
+            return !stack.empty();
+        }
+
+        public TreeNode next() {
+            if (!hasNext()) {
+                return null;
+            }
+
+            TreeNode node = stack.pop();
+            pushAllRight(node.left);
+            return node;
+        }
     }
 
     static class Solution {
         public boolean multipleTree(TreeNode root) {
-            if (root == null) return false;
-            ForwardBstIterator left  = new ForwardBstIterator(root);
-            ReverseBstIterator right = new ReverseBstIterator(root);
-            TreeNode l = left.next(), r = right.next();
-            while (l != null && r != null && l.val < r.val) {
-                if (r.val % l.val != 0) return false;                                                                                                                // failure
-                l = left.next(); r = right.next();                                                                                                                   // advance both
+            if (root == null) {
+                return false;
             }
+
+            // Initialize the left and right iterators
+            ForwardBstIterator leftIterator = new ForwardBstIterator(root);
+            ReverseBstIterator rightIterator = new ReverseBstIterator(root);
+
+            TreeNode leftNode = leftIterator.next();
+            TreeNode rightNode = rightIterator.next();
+
+            while (
+                leftNode != null &&
+                rightNode != null &&
+                leftNode.val < rightNode.val
+            ) {
+
+                // Check if the right node's value is a multiple of the left
+                // node's value
+                if (rightNode.val % leftNode.val != 0) {
+                    return false;
+                }
+
+                // Move to the left node to the next node in in-order
+                leftNode = leftIterator.next();
+
+                // Move the right node to the next node in reverse in-order
+                rightNode = rightIterator.next();
+            }
+
+            // If all pairs satisfy the condition, return true
             return true;
         }
     }
 
     public static void main(String[] args) {
-        TreeNode root = new TreeNode(4);
-        root.left  = new TreeNode(2); root.right = new TreeNode(6);
-        root.left.left  = new TreeNode(1);
-        root.right.right = new TreeNode(7);
-        System.out.println(new Solution().multipleTree(root));  // true
+        // Examples from the problem statement
+        TreeNode t1 = fromLevelOrder(4, 2, 6, 1, null, null, 7);
+        System.out.println(new Solution().multipleTree(t1));  // true  (7%1=0, 6%2=0)
+
+        TreeNode t2 = fromLevelOrder(2, 1, 5, null, null, 3, 7);
+        System.out.println(new Solution().multipleTree(t2));  // false (5%2 != 0)
+
+        // Edge cases
+        System.out.println(new Solution().multipleTree(null));                   // false — empty tree
+
+        TreeNode t3 = fromLevelOrder(6);
+        System.out.println(new Solution().multipleTree(t3));                     // true  — single node
+
+        TreeNode t4 = fromLevelOrder(3, 1, 6);
+        System.out.println(new Solution().multipleTree(t4));                     // true  (6%1=0, 6%3=0)
+
+        TreeNode t5 = fromLevelOrder(4, 2, 6, 1, null, null, 9);
+        System.out.println(new Solution().multipleTree(t5));                     // false (9%2 != 0)
+
+        TreeNode t6 = fromLevelOrder(6, 2, 12, 1, null, null, 24);
+        System.out.println(new Solution().multipleTree(t6));                     // true  (24%1=0, 12%2=0)
     }
 }
 ```
 
-```c run
-// Re-uses the Iter helpers from "Two sum on BST".
-bool multipleTree(struct TreeNode *root) {
-    if (!root) return false;
-    Iter *left  = iter_new(1024); push_left(left,  root);
-    Iter *right = iter_new(1024); push_right(right, root);
-    struct TreeNode *l = fwd_next(left), *r = rev_next(right);
-    bool ans = true;
-    while (l && r && l->val < r->val) {
-        if (r->val % l->val != 0) { ans = false; break; }                                                                                                          // failure
-        l = fwd_next(left); r = rev_next(right);
-    }
-    free(left->stack); free(left); free(right->stack); free(right);
-    return ans;
-}
-```
-
-```scala run
-import scala.collection.mutable
-
-class TreeNode(var value: Int, var left: TreeNode = null, var right: TreeNode = null)
-
-object Main extends App {
-  class ForwardBstIterator(root: TreeNode) {
-    private val stack = mutable.Stack[TreeNode]()
-    pushAllLeft(root)
-    private def pushAllLeft(n: TreeNode): Unit = { var x = n; while (x != null) { stack.push(x); x = x.left  } }
-    def hasNext: Boolean = stack.nonEmpty
-    def next: TreeNode = { val n = stack.pop(); pushAllLeft(n.right); n }
-  }
-
-  class ReverseBstIterator(root: TreeNode) {
-    private val stack = mutable.Stack[TreeNode]()
-    pushAllRight(root)
-    private def pushAllRight(n: TreeNode): Unit = { var x = n; while (x != null) { stack.push(x); x = x.right } }
-    def hasNext: Boolean = stack.nonEmpty
-    def next: TreeNode = { val n = stack.pop(); pushAllRight(n.left); n }
-  }
-
-  object MultipleSolution {
-    def multipleTree(root: TreeNode): Boolean = {
-      if (root == null) return false
-      val left  = new ForwardBstIterator(root)
-      val right = new ReverseBstIterator(root)
-      var l = left.next; var r = right.next
-      while (l != null && r != null && l.value < r.value) {
-        if (r.value % l.value != 0) return false                                                                                                                      // failure
-        l = left.next; r = right.next
-      }
-      true
-    }
-  }
-
-  val root = new TreeNode(4,
-    new TreeNode(2, new TreeNode(1), null),
-    new TreeNode(6, null, new TreeNode(7)))
-  println(MultipleSolution.multipleTree(root))  // true
-}
-```
+</details>
 
 
 ***
@@ -553,155 +804,321 @@ Given the **root** of a BST, return the **median** value, rounded down to the ne
 > - **Output:** `11`
 > - **Explanation:** Sorted: `[5, 8, 10, 13, 14, 17]`. Middle pair: `(10, 13)`. Average: `11`.
 
-## The Strategy
+<details>
+<summary><h2>The Strategy</h2></summary>
+
 
 The two-pointer pattern *naturally* finds the median: walk both iterators forward step-by-step. If the count is odd, eventually `leftNode == rightNode` — that single node's value is the median. If even, the loop ends when the two pointers cross, with `leftNode` and `rightNode` straddling the middle — the most recent pair's *average* is the median (rounded down).
 
-## The Solution
+</details>
+<details>
+<summary><h2>The Solution</h2></summary>
 
 
-```pseudocode
-function medianInBST(root):
-    if root is null: return −1
-    left  ← ForwardBstIterator(root)
-    right ← ReverseBstIterator(root)
-    l ← left.next()
-    r ← right.next()
-    median ← −1
-    while l is NOT null AND r is NOT null AND l.val < r.val:
-        median ← (l.val + r.val) / 2   # straddle pair — last one wins for even count
-        l ← left.next()
-        r ← right.next()
-    if l = r AND l is NOT null: return l.val  # pointers met — odd count, exact middle
-    return median
-```
 
 ```python run
+from typing import Optional, List
+
+class TreeNode:
+    def __init__(self, val=0, left=None, right=None):
+        self.val = val
+        self.left = left
+        self.right = right
+
+
+def from_level_order(values):
+    """Build tree from list like [1, 2, 3, None, 4]. None means missing child."""
+    if not values:
+        return None
+    root = TreeNode(values[0])
+    queue = [root]
+    i = 1
+    while queue and i < len(values):
+        node = queue.pop(0)
+        if i < len(values) and values[i] is not None:
+            node.left = TreeNode(values[i])
+            queue.append(node.left)
+        i += 1
+        if i < len(values) and values[i] is not None:
+            node.right = TreeNode(values[i])
+            queue.append(node.right)
+        i += 1
+    return root
+
+
+class ForwardBstIterator:
+    def __init__(self, root: Optional[TreeNode]):
+        self.stack: List[TreeNode] = []
+        self.push_all_left(root)
+
+    def push_all_left(self, node: Optional[TreeNode]) -> None:
+        while node:
+            self.stack.append(node)
+            node = node.left
+
+    def has_next(self) -> bool:
+        return bool(self.stack)
+
+    def next(self) -> Optional[TreeNode]:
+        if not self.has_next():
+            return None
+
+        node = self.stack.pop()
+        self.push_all_left(node.right)
+        return node
+
+class ReverseBstIterator:
+    def __init__(self, root: Optional[TreeNode]):
+        self.stack: List[TreeNode] = []
+        self.push_all_right(root)
+
+    def push_all_right(self, node: Optional[TreeNode]) -> None:
+        while node:
+            self.stack.append(node)
+            node = node.right
+
+    def has_next(self) -> bool:
+        return bool(self.stack)
+
+    def next(self) -> Optional[TreeNode]:
+        if not self.has_next():
+            return None
+
+        node = self.stack.pop()
+        self.push_all_right(node.left)
+        return node
+
 class Solution:
-    def median_in_bst(self, root):
-        if root is None:
+    def median_in_bst(self, root: Optional[TreeNode]) -> int:
+        if not root:
             return -1
-        left  = ForwardBstIterator(root)
-        right = ReverseBstIterator(root)
-        l, r = left.next(), right.next()
+
+        # Initialize the left and right iterators
+        left_iterator: ForwardBstIterator = ForwardBstIterator(root)
+        right_iterator: ReverseBstIterator = ReverseBstIterator(root)
+
+        left_node: Optional[TreeNode] = left_iterator.next()
+        right_node: Optional[TreeNode] = right_iterator.next()
+
+        # Variable to store the median value
         median = -1
-        # Each iteration advances *both* pointers, eating one pair at a time.
-        while l and r and l.val < r.val:
-            # Even-count case: the last l, r before crossing are the two middles.
-            median = (l.val + r.val) // 2
-            l, r = left.next(), right.next()
-        # If we exited because l and r met at the same node, count was odd → that's the median.
-        if l is r and l is not None:
-            return l.val
+
+        while (
+            left_node is not None
+            and right_node is not None
+            and left_node.val < right_node.val
+        ):
+
+            # Update the median with the average of the two nodes, if the
+            # tree has an even number of nodes, the median will be the
+            # average of the two middle nodes before exiting the loop
+            median = (left_node.val + right_node.val) // 2
+
+            # Move to the left node to the next node in in-order
+            left_node = left_iterator.next()
+
+            # Move the right node to the next node in reverse in-order
+            right_node = right_iterator.next()
+
+        # If both iterators meet at the same node, it means the tree has
+        # an odd number of nodes
+        if left_node == right_node:
+            return left_node.val
+
+        # If the tree has an even number of nodes, return the last
+        # computed median
         return median
+
+
+# Examples from the problem statement
+t1 = from_level_order([5, 4, 6, 2, None, None, 7])
+print(Solution().median_in_bst(t1))  # 5  — odd count, middle node
+
+t2 = from_level_order([10, 8, 14, 5, None, 13, 17])
+print(Solution().median_in_bst(t2))  # 11 — even count, floor((10+13)/2)
+
+# Edge cases
+print(Solution().median_in_bst(None))                 # -1 — empty tree
+
+t3 = from_level_order([7])
+print(Solution().median_in_bst(t3))                   # 7  — single node
+
+t4 = from_level_order([3, 1, 5])
+print(Solution().median_in_bst(t4))                   # 3  — odd, three nodes
+
+t5 = from_level_order([4, 2, 6, 1, 3])
+print(Solution().median_in_bst(t5))                   # 3  — odd, five nodes, sorted [1,2,3,4,6]
+
+t6 = from_level_order([4, 2, 6, 1, 3, 5, 7])
+print(Solution().median_in_bst(t6))                   # 4  — odd, seven nodes, middle
 ```
 
 ```java run
 import java.util.*;
 
 public class Main {
-    static class TreeNode { int val; TreeNode left, right; TreeNode(int v){val=v;} }
+    static class TreeNode {
+        int val;
+        TreeNode left;
+        TreeNode right;
+        TreeNode() {}
+        TreeNode(int val) { this.val = val; }
+    }
+
+    static TreeNode fromLevelOrder(Integer... values) {
+        if (values.length == 0 || values[0] == null) return null;
+        TreeNode root = new TreeNode(values[0]);
+        java.util.Deque<TreeNode> queue = new java.util.ArrayDeque<>();
+        queue.add(root);
+        int i = 1;
+        while (!queue.isEmpty() && i < values.length) {
+            TreeNode node = queue.poll();
+            if (i < values.length && values[i] != null) {
+                node.left = new TreeNode(values[i]);
+                queue.add(node.left);
+            }
+            i++;
+            if (i < values.length && values[i] != null) {
+                node.right = new TreeNode(values[i]);
+                queue.add(node.right);
+            }
+            i++;
+        }
+        return root;
+    }
 
     static class ForwardBstIterator {
-        Deque<TreeNode> stack = new ArrayDeque<>();
-        ForwardBstIterator(TreeNode root) { pushAllLeft(root); }
-        private void pushAllLeft(TreeNode n) { while (n != null) { stack.push(n); n = n.left; } }
-        boolean hasNext() { return !stack.isEmpty(); }
-        TreeNode next() { TreeNode n = stack.pop(); pushAllLeft(n.right); return n; }
+
+        private Stack<TreeNode> stack;
+
+        public ForwardBstIterator(TreeNode root) {
+            stack = new Stack<>();
+            pushAllLeft(root);
+        }
+
+        private void pushAllLeft(TreeNode node) {
+            while (node != null) {
+                stack.push(node);
+                node = node.left;
+            }
+        }
+
+        public boolean hasNext() {
+            return !stack.empty();
+        }
+
+        public TreeNode next() {
+            if (!hasNext()) {
+                return null;
+            }
+
+            TreeNode node = stack.pop();
+            pushAllLeft(node.right);
+            return node;
+        }
     }
 
     static class ReverseBstIterator {
-        Deque<TreeNode> stack = new ArrayDeque<>();
-        ReverseBstIterator(TreeNode root) { pushAllRight(root); }
-        private void pushAllRight(TreeNode n) { while (n != null) { stack.push(n); n = n.right; } }
-        boolean hasNext() { return !stack.isEmpty(); }
-        TreeNode next() { TreeNode n = stack.pop(); pushAllRight(n.left); return n; }
+
+        private Stack<TreeNode> stack;
+
+        public ReverseBstIterator(TreeNode root) {
+            stack = new Stack<>();
+            pushAllRight(root);
+        }
+
+        private void pushAllRight(TreeNode node) {
+            while (node != null) {
+                stack.push(node);
+                node = node.right;
+            }
+        }
+
+        public boolean hasNext() {
+            return !stack.empty();
+        }
+
+        public TreeNode next() {
+            if (!hasNext()) {
+                return null;
+            }
+
+            TreeNode node = stack.pop();
+            pushAllRight(node.left);
+            return node;
+        }
     }
 
     static class Solution {
         public int medianInBst(TreeNode root) {
-            if (root == null) return -1;
-            ForwardBstIterator left  = new ForwardBstIterator(root);
-            ReverseBstIterator right = new ReverseBstIterator(root);
-            TreeNode l = left.next(), r = right.next();
-            int median = -1;
-            while (l != null && r != null && l.val < r.val) {
-                median = (l.val + r.val) / 2;                                                                                                                                  // straddle pair
-                l = left.next(); r = right.next();
+            if (root == null) {
+                return -1;
             }
-            if (l == r && l != null) return l.val;                                                                                                                              // odd count
+
+            // Initialize the left and right iterators
+            ForwardBstIterator leftIterator = new ForwardBstIterator(root);
+            ReverseBstIterator rightIterator = new ReverseBstIterator(root);
+
+            TreeNode leftNode = leftIterator.next();
+            TreeNode rightNode = rightIterator.next();
+
+            // Variable to store the median value
+            int median = -1;
+
+            while (
+                leftNode != null &&
+                rightNode != null &&
+                leftNode.val < rightNode.val
+            ) {
+
+                // Update the median with the average of the two nodes, if
+                // the tree has an even number of nodes, the median will be
+                // the average of the two middle nodes before exiting the
+                // loop
+                median = (leftNode.val + rightNode.val) / 2;
+
+                // Move to the left node to the next node in in-order
+                leftNode = leftIterator.next();
+
+                // Move the right node to the next node in reverse in-order
+                rightNode = rightIterator.next();
+            }
+
+            // If both iterators meet at the same node, it means the tree has
+            // an odd number of nodes
+            if (leftNode == rightNode) {
+                return leftNode.val;
+            }
+
+            // If the tree has an even number of nodes, return the last
+            // computed median
             return median;
         }
     }
 
     public static void main(String[] args) {
-        TreeNode root = new TreeNode(5);
-        root.left  = new TreeNode(4); root.right = new TreeNode(6);
-        root.left.left  = new TreeNode(2);
-        root.right.right = new TreeNode(7);
-        System.out.println(new Solution().medianInBst(root));  // 5
+        // Examples from the problem statement
+        TreeNode t1 = fromLevelOrder(5, 4, 6, 2, null, null, 7);
+        System.out.println(new Solution().medianInBst(t1));  // 5  — odd count, middle node
+
+        TreeNode t2 = fromLevelOrder(10, 8, 14, 5, null, 13, 17);
+        System.out.println(new Solution().medianInBst(t2));  // 11 — even count, floor((10+13)/2)
+
+        // Edge cases
+        System.out.println(new Solution().medianInBst(null));                  // -1 — empty tree
+
+        TreeNode t3 = fromLevelOrder(7);
+        System.out.println(new Solution().medianInBst(t3));                    // 7  — single node
+
+        TreeNode t4 = fromLevelOrder(3, 1, 5);
+        System.out.println(new Solution().medianInBst(t4));                    // 3  — odd, three nodes
+
+        TreeNode t5 = fromLevelOrder(4, 2, 6, 1, 3);
+        System.out.println(new Solution().medianInBst(t5));                    // 3  — odd, five nodes
+
+        TreeNode t6 = fromLevelOrder(4, 2, 6, 1, 3, 5, 7);
+        System.out.println(new Solution().medianInBst(t6));                    // 4  — odd, seven nodes
     }
-}
-```
-
-```c run
-int medianInBst(struct TreeNode *root) {
-    if (!root) return -1;
-    Iter *left  = iter_new(1024); push_left(left,  root);
-    Iter *right = iter_new(1024); push_right(right, root);
-    struct TreeNode *l = fwd_next(left), *r = rev_next(right);
-    int median = -1;
-    while (l && r && l->val < r->val) {
-        median = (l->val + r->val) / 2;                                                                                                                                       // straddle pair
-        l = fwd_next(left); r = rev_next(right);
-    }
-    int ans = (l == r && l != NULL) ? l->val : median;
-    free(left->stack); free(left); free(right->stack); free(right);
-    return ans;
-}
-```
-
-```scala run
-import scala.collection.mutable
-
-class TreeNode(var value: Int, var left: TreeNode = null, var right: TreeNode = null)
-
-object Main extends App {
-  class ForwardBstIterator(root: TreeNode) {
-    private val stack = mutable.Stack[TreeNode]()
-    pushAllLeft(root)
-    private def pushAllLeft(n: TreeNode): Unit = { var x = n; while (x != null) { stack.push(x); x = x.left  } }
-    def hasNext: Boolean = stack.nonEmpty
-    def next: TreeNode = { val n = stack.pop(); pushAllLeft(n.right); n }
-  }
-
-  class ReverseBstIterator(root: TreeNode) {
-    private val stack = mutable.Stack[TreeNode]()
-    pushAllRight(root)
-    private def pushAllRight(n: TreeNode): Unit = { var x = n; while (x != null) { stack.push(x); x = x.right } }
-    def hasNext: Boolean = stack.nonEmpty
-    def next: TreeNode = { val n = stack.pop(); pushAllRight(n.left); n }
-  }
-
-  object MedianSolution {
-    def medianInBst(root: TreeNode): Int = {
-      if (root == null) return -1
-      val left  = new ForwardBstIterator(root)
-      val right = new ReverseBstIterator(root)
-      var l = left.next; var r = right.next
-      var median = -1
-      while (l != null && r != null && l.value < r.value) {
-        median = (l.value + r.value) / 2
-        l = left.next; r = right.next
-      }
-      if (l == r && l != null) l.value else median
-    }
-  }
-
-  val root = new TreeNode(5,
-    new TreeNode(4, new TreeNode(2), null),
-    new TreeNode(6, null, new TreeNode(7)))
-  println(MedianSolution.medianInBst(root))  // 5
 }
 ```
 
@@ -718,6 +1135,8 @@ Step 3 │ l=10, r=13 │ 10 < 13 → median candidate = (10+13)/2 = 11 → adva
 Step 4 │ l=13, r=10 │ 13 > 10 → loop exits (crossed)
 l != r → even count → return 11 ✓
 ```
+
+</details>
 
 </details>
 
@@ -740,164 +1159,315 @@ Given the **roots** of two BSTs `rootA` and `rootB`, and an integer **target**, 
 > - **Input:** `rootA = [4, 2, 6, 1, null, null, 7]`, `rootB = [2, 1, 4, null, null, 3, 8]`, `target = 35`
 > - **Output:** `false`
 
-## The Strategy
+<details>
+<summary><h2>The Strategy</h2></summary>
+
 
 This is the multi-tree generalisation of "two sum on BST". Run the **forward iterator on the first tree** and the **reverse iterator on the second tree**, and apply the same step rule. The crossing condition no longer applies — we stop when *either* iterator runs out (it won't cross because the two trees are independent).
 
-## The Solution
+</details>
+<details>
+<summary><h2>The Solution</h2></summary>
 
 
-```pseudocode
-function bstPairSum(rootA, rootB, target):
-    if rootA is null OR rootB is null: return false
-    left  ← ForwardBstIterator(rootA)   # ascending across tree A
-    right ← ReverseBstIterator(rootB)   # descending across tree B
-    l ← left.next()
-    r ← right.next()
-    while l is NOT null AND r is NOT null:
-        s ← l.val + r.val
-        if s = target: return true
-        if s < target: l ← left.next() if left.hasNext() else null   # grow from A
-        else:          r ← right.next() if right.hasNext() else null  # shrink from B
-    return false
-```
 
 ```python run
+from typing import Optional, List
+
+class TreeNode:
+    def __init__(self, val=0, left=None, right=None):
+        self.val = val
+        self.left = left
+        self.right = right
+
+
+def from_level_order(values):
+    """Build tree from list like [1, 2, 3, None, 4]. None means missing child."""
+    if not values:
+        return None
+    root = TreeNode(values[0])
+    queue = [root]
+    i = 1
+    while queue and i < len(values):
+        node = queue.pop(0)
+        if i < len(values) and values[i] is not None:
+            node.left = TreeNode(values[i])
+            queue.append(node.left)
+        i += 1
+        if i < len(values) and values[i] is not None:
+            node.right = TreeNode(values[i])
+            queue.append(node.right)
+        i += 1
+    return root
+
+
+class ForwardBstIterator:
+    def __init__(self, root: Optional[TreeNode]):
+        self.stack: List[TreeNode] = []
+        self.push_all_left(root)
+
+    def push_all_left(self, node: Optional[TreeNode]) -> None:
+        while node:
+            self.stack.append(node)
+            node = node.left
+
+    def has_next(self) -> bool:
+        return bool(self.stack)
+
+    def next(self) -> Optional[TreeNode]:
+        if not self.has_next():
+            return None
+
+        node = self.stack.pop()
+        self.push_all_left(node.right)
+        return node
+
+class ReverseBstIterator:
+    def __init__(self, root: Optional[TreeNode]):
+        self.stack: List[TreeNode] = []
+        self.push_all_right(root)
+
+    def push_all_right(self, node: Optional[TreeNode]) -> None:
+        while node:
+            self.stack.append(node)
+            node = node.right
+
+    def has_next(self) -> bool:
+        return bool(self.stack)
+
+    def next(self) -> Optional[TreeNode]:
+        if not self.has_next():
+            return None
+
+        node = self.stack.pop()
+        self.push_all_right(node.left)
+        return node
+
 class Solution:
-    def bst_pair_sum(self, root_a, root_b, target):
-        if root_a is None or root_b is None:
+    def bst_pair_sum(
+        self,
+        root_a: Optional[TreeNode],
+        root_b: Optional[TreeNode],
+        target: int,
+    ) -> bool:
+        if not root_a or not root_b:
             return False
-        left  = ForwardBstIterator(root_a)            # ascending across tree A
-        right = ReverseBstIterator(root_b)            # descending across tree B
-        l, r = left.next(), right.next()
-        while l and r:
-            s = l.val + r.val
-            if s == target:
+
+        # Initialize the left and right iterators
+        left_iterator: ForwardBstIterator = ForwardBstIterator(root_a)
+        right_iterator: ReverseBstIterator = ReverseBstIterator(root_b)
+
+        left_node: Optional[TreeNode] = left_iterator.next()
+        right_node: Optional[TreeNode] = right_iterator.next()
+
+        while left_node is not None and right_node is not None:
+
+            # Check if the sum of the two nodes equals the target
+            if left_node.val + right_node.val == target:
                 return True
-            if s < target:
-                # Sum too small → grow it from A's side.
-                l = left.next() if left.has_next() else None
+
+            # If the sum is less than target, move the left pointer
+            # to the right
+            elif left_node.val + right_node.val < target:
+                left_node = left_iterator.next()
+
+            # If the sum is greater than target, move the right pointer
+            # to the left
             else:
-                # Sum too large → shrink from B's side.
-                r = right.next() if right.has_next() else None
+                right_node = right_iterator.next()
+
+        # No pair found
         return False
+
+
+# Examples from the problem statement
+rA = from_level_order([4, 2, 6, 1, None, None, 7])
+rB = from_level_order([2, 1, 4, None, None, 3, 8])
+print(Solution().bst_pair_sum(rA, rB, 15))  # True  (7+8)
+
+rA2 = from_level_order([4, 2, 6, 1, None, None, 7])
+rB2 = from_level_order([2, 1, 4, None, None, 3, 8])
+print(Solution().bst_pair_sum(rA2, rB2, 35))  # False
+
+# Edge cases
+print(Solution().bst_pair_sum(None, rB, 5))   # False — rootA is None
+
+t1 = from_level_order([3])
+t2 = from_level_order([4])
+print(Solution().bst_pair_sum(t1, t2, 7))     # True  (3+4)
+
+t3 = from_level_order([3])
+t4 = from_level_order([4])
+print(Solution().bst_pair_sum(t3, t4, 8))     # False
+
+rC = from_level_order([4, 2, 6, 1, None, None, 7])
+rD = from_level_order([2, 1, 4, None, None, 3, 8])
+print(Solution().bst_pair_sum(rC, rD, 2))     # False — min possible is 1+1=2? wait: 1+1=2 True
 ```
 
 ```java run
 import java.util.*;
 
 public class Main {
-    static class TreeNode { int val; TreeNode left, right; TreeNode(int v){val=v;} }
+    static class TreeNode {
+        int val;
+        TreeNode left;
+        TreeNode right;
+        TreeNode() {}
+        TreeNode(int val) { this.val = val; }
+    }
+
+    static TreeNode fromLevelOrder(Integer... values) {
+        if (values.length == 0 || values[0] == null) return null;
+        TreeNode root = new TreeNode(values[0]);
+        java.util.Deque<TreeNode> queue = new java.util.ArrayDeque<>();
+        queue.add(root);
+        int i = 1;
+        while (!queue.isEmpty() && i < values.length) {
+            TreeNode node = queue.poll();
+            if (i < values.length && values[i] != null) {
+                node.left = new TreeNode(values[i]);
+                queue.add(node.left);
+            }
+            i++;
+            if (i < values.length && values[i] != null) {
+                node.right = new TreeNode(values[i]);
+                queue.add(node.right);
+            }
+            i++;
+        }
+        return root;
+    }
 
     static class ForwardBstIterator {
-        Deque<TreeNode> stack = new ArrayDeque<>();
-        ForwardBstIterator(TreeNode root) { pushAllLeft(root); }
-        private void pushAllLeft(TreeNode n) { while (n != null) { stack.push(n); n = n.left; } }
-        boolean hasNext() { return !stack.isEmpty(); }
-        TreeNode next() { TreeNode n = stack.pop(); pushAllLeft(n.right); return n; }
+
+        private Stack<TreeNode> stack;
+
+        public ForwardBstIterator(TreeNode root) {
+            stack = new Stack<>();
+            pushAllLeft(root);
+        }
+
+        private void pushAllLeft(TreeNode node) {
+            while (node != null) {
+                stack.push(node);
+                node = node.left;
+            }
+        }
+
+        public boolean hasNext() {
+            return !stack.empty();
+        }
+
+        public TreeNode next() {
+            if (!hasNext()) {
+                return null;
+            }
+
+            TreeNode node = stack.pop();
+            pushAllLeft(node.right);
+            return node;
+        }
     }
 
     static class ReverseBstIterator {
-        Deque<TreeNode> stack = new ArrayDeque<>();
-        ReverseBstIterator(TreeNode root) { pushAllRight(root); }
-        private void pushAllRight(TreeNode n) { while (n != null) { stack.push(n); n = n.right; } }
-        boolean hasNext() { return !stack.isEmpty(); }
-        TreeNode next() { TreeNode n = stack.pop(); pushAllRight(n.left); return n; }
+
+        private Stack<TreeNode> stack;
+
+        public ReverseBstIterator(TreeNode root) {
+            stack = new Stack<>();
+            pushAllRight(root);
+        }
+
+        private void pushAllRight(TreeNode node) {
+            while (node != null) {
+                stack.push(node);
+                node = node.right;
+            }
+        }
+
+        public boolean hasNext() {
+            return !stack.empty();
+        }
+
+        public TreeNode next() {
+            if (!hasNext()) {
+                return null;
+            }
+
+            TreeNode node = stack.pop();
+            pushAllRight(node.left);
+            return node;
+        }
     }
 
     static class Solution {
-        public boolean bstPairSum(TreeNode rootA, TreeNode rootB, int target) {
-            if (rootA == null || rootB == null) return false;
-            ForwardBstIterator left  = new ForwardBstIterator(rootA);
-            ReverseBstIterator right = new ReverseBstIterator(rootB);
-            TreeNode l = left.next(), r = right.next();
-            while (l != null && r != null) {
-                int s = l.val + r.val;
-                if (s == target) return true;
-                if (s < target) l = left.hasNext()  ? left.next()  : null;                                                                                                                  // grow from A
-                else            r = right.hasNext() ? right.next() : null;                                                                                                                  // shrink from B
+        public boolean bstPairSum(
+            TreeNode rootA,
+            TreeNode rootB,
+            int target
+        ) {
+            if (rootA == null || rootB == null) {
+                return false;
             }
+
+            // Initialize the left and right iterators
+            ForwardBstIterator leftIterator = new ForwardBstIterator(rootA);
+            ReverseBstIterator rightIterator = new ReverseBstIterator(rootB);
+
+            TreeNode leftNode = leftIterator.next();
+            TreeNode rightNode = rightIterator.next();
+
+            while (leftNode != null && rightNode != null) {
+
+                // Check if the sum of the two nodes equals the target
+                if (leftNode.val + rightNode.val == target) {
+                    return true;
+                }
+
+                // If the sum is less than target, move the left pointer
+                // to the right
+                else if (leftNode.val + rightNode.val < target) {
+                    leftNode = leftIterator.next();
+                }
+
+                // If the sum is greater than target, move the right pointer
+                // to the left
+                else {
+                    rightNode = rightIterator.next();
+                }
+            }
+
+            // No pair found
             return false;
         }
     }
 
     public static void main(String[] args) {
-        TreeNode rootA = new TreeNode(4);
-        rootA.left  = new TreeNode(2); rootA.right = new TreeNode(6);
-        rootA.left.left  = new TreeNode(1);
-        rootA.right.right = new TreeNode(7);
-        TreeNode rootB = new TreeNode(2);
-        rootB.left  = new TreeNode(1); rootB.right = new TreeNode(4);
-        rootB.right.left  = new TreeNode(3);
-        rootB.right.right = new TreeNode(8);
-        System.out.println(new Solution().bstPairSum(rootA, rootB, 15));  // true
+        // Examples from the problem statement
+        TreeNode rA = fromLevelOrder(4, 2, 6, 1, null, null, 7);
+        TreeNode rB = fromLevelOrder(2, 1, 4, null, null, 3, 8);
+        System.out.println(new Solution().bstPairSum(rA, rB, 15));  // true  (7+8)
+
+        TreeNode rA2 = fromLevelOrder(4, 2, 6, 1, null, null, 7);
+        TreeNode rB2 = fromLevelOrder(2, 1, 4, null, null, 3, 8);
+        System.out.println(new Solution().bstPairSum(rA2, rB2, 35));  // false
+
+        // Edge cases
+        System.out.println(new Solution().bstPairSum(null, rB, 5));    // false — rootA is null
+
+        TreeNode t1 = fromLevelOrder(3);
+        TreeNode t2 = fromLevelOrder(4);
+        System.out.println(new Solution().bstPairSum(t1, t2, 7));      // true  (3+4)
+
+        TreeNode t3 = fromLevelOrder(3);
+        TreeNode t4 = fromLevelOrder(4);
+        System.out.println(new Solution().bstPairSum(t3, t4, 8));      // false
+
+        TreeNode rC = fromLevelOrder(4, 2, 6, 1, null, null, 7);
+        TreeNode rD = fromLevelOrder(2, 1, 4, null, null, 3, 8);
+        System.out.println(new Solution().bstPairSum(rC, rD, 2));      // true  (1+1)
     }
-}
-```
-
-```c run
-bool bstPairSum(struct TreeNode *rootA, struct TreeNode *rootB, int target) {
-    if (!rootA || !rootB) return false;
-    Iter *left  = iter_new(1024); push_left(left,  rootA);
-    Iter *right = iter_new(1024); push_right(right, rootB);
-    struct TreeNode *l = fwd_next(left), *r = rev_next(right);
-    bool ans = false;
-    while (l && r) {
-        int s = l->val + r->val;
-        if (s == target)      { ans = true; break; }
-        else if (s < target)  l = fwd_next(left);                                                                                                                                          // grow from A
-        else                  r = rev_next(right);                                                                                                                                          // shrink from B
-    }
-    free(left->stack); free(left); free(right->stack); free(right);
-    return ans;
-}
-```
-
-```scala run
-import scala.collection.mutable
-
-class TreeNode(var value: Int, var left: TreeNode = null, var right: TreeNode = null)
-
-object Main extends App {
-  class ForwardBstIterator(root: TreeNode) {
-    private val stack = mutable.Stack[TreeNode]()
-    pushAllLeft(root)
-    private def pushAllLeft(n: TreeNode): Unit = { var x = n; while (x != null) { stack.push(x); x = x.left  } }
-    def hasNext: Boolean = stack.nonEmpty
-    def next: TreeNode = { val n = stack.pop(); pushAllLeft(n.right); n }
-  }
-
-  class ReverseBstIterator(root: TreeNode) {
-    private val stack = mutable.Stack[TreeNode]()
-    pushAllRight(root)
-    private def pushAllRight(n: TreeNode): Unit = { var x = n; while (x != null) { stack.push(x); x = x.right } }
-    def hasNext: Boolean = stack.nonEmpty
-    def next: TreeNode = { val n = stack.pop(); pushAllRight(n.left); n }
-  }
-
-  object PairSumSolution {
-    def bstPairSum(rootA: TreeNode, rootB: TreeNode, target: Int): Boolean = {
-      if (rootA == null || rootB == null) return false
-      val left  = new ForwardBstIterator(rootA)
-      val right = new ReverseBstIterator(rootB)
-      var l = left.next; var r = right.next
-      while (l != null && r != null) {
-        val s = l.value + r.value
-        if (s == target)      return true
-        else if (s < target)  l = left.next
-        else                  r = right.next
-      }
-      false
-    }
-  }
-
-  val rootA = new TreeNode(4,
-    new TreeNode(2, new TreeNode(1), null),
-    new TreeNode(6, null, new TreeNode(7)))
-  val rootB = new TreeNode(2,
-    new TreeNode(1),
-    new TreeNode(4, new TreeNode(3), new TreeNode(8)))
-  println(PairSumSolution.bstPairSum(rootA, rootB, 15))  // true
 }
 ```
 
@@ -918,9 +1488,10 @@ Step 5 │ l=7, r=8                  │ sum=15 ✓   → return true
 
 </details>
 
-***
+</details>
+<details>
+<summary><h2>Final Takeaway</h2></summary>
 
-## Final Takeaway
 
 The Two Pointer pattern on BSTs is the meeting of two ideas you've already mastered: **iterators** that walk a BST in sorted order on demand (lesson 9), and **two-pointer reductions** familiar from sorted arrays. Run a forward iterator and a reverse iterator simultaneously, and you have a working `(small, large)` pair you can use to drive any sum/multiple/distance/comparison decision — without ever materialising the sorted array.
 
@@ -932,10 +1503,13 @@ Three patterns to keep:
 2. **Two iterators, two directions.** This is the BST analogue of the array two-pointer template — and it solves the same problem family (sum-to-target, pair properties, median, ranges).
 3. **Two BSTs at once.** Different sources of the left and right pointers gives us cross-tree operations like *bst-pair-sum*. The same trick scales further: streaming joins between two sorted indexes in a database use exactly this idea.
 
----
+</details>
+<details>
+<summary><h2>Closing the Chapter</h2></summary>
 
-## Closing the Chapter
 
 You started this chapter with a static binary tree decorated with one extra rule, and you finish it able to **search, insert, delete, validate, range-query, iterate, and pair-traverse** with confidence. The single thread tying every lesson together is the **binary search property** — the small invariant that turns "look at every node" into "look at one path", and that turns ordered-set problems into single-pass tree walks. Every BST operation, every pattern, every pair of iterators in this chapter is a different way of leaning on that one rule.
 
 Heaps, the next chapter, change the rule — instead of "left smaller, right larger" it's "parent smaller than children". The shape becomes a different tool, optimised not for sorted iteration but for repeatedly extracting the minimum (or maximum). The mental model you've built here will transfer cleanly: it's still a tree, still a property, still a discipline on where values live. Different rule, different superpower.
+
+</details>

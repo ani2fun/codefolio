@@ -81,7 +81,9 @@ Input:  num = 10
 Output: -1                   Binary 1010 — two set bits
 ```
 
-## The Recurrence
+<details>
+<summary><h2>The Recurrence</h2></summary>
+
 
 Two steps:
 
@@ -92,88 +94,84 @@ Two steps:
 
 For `num = 0`, `num - 1` wraps to `-1` (or all-1s in two's-complement), so `num & (num - 1) = 0`. The first test passes — it thinks zero has "≤ 1 set bit" (true). Then `log₂(0)` is undefined. Most implementations either special-case `num == 0` or rely on the platform's `log` returning `-inf` and the conversion landing somewhere harmless. The C++ original assumes `num > 0` per the problem; we'll guard explicitly here.
 
-## The Solution
+</details>
+<details>
+<summary><h2>Solution &amp; Analysis</h2></summary>
 
-
-```pseudocode
-# Returns the 1-indexed bit position if num is a power of 2 (exactly one set bit). Else −1.
-# (num & (num − 1)) = 0 ⇔ num is a power of 2.
-function onlySetBit(num):
-    if num ≤ 0 OR (num bitwise AND (num − 1)) ≠ 0:
-        return −1
-    return ⌊log₂(num)⌋ + 1                       # +1 because positions are 1-indexed
-```
+### The Solution
 
 ```python run
 import math
 
 class Solution:
     def only_set_bit(self, num: int) -> int:
-        if num <= 0 or (num & (num - 1)) != 0:
-            return -1                              # Zero, negative, or multi-set-bit
-        return int(math.log2(num)) + 1             # Power of 2 → integer log; +1 for 1-indexing
+
+        # Check if num is not a power of 2 (has more than one set bit)
+        if num & (num - 1):
+
+            # Return -1 if num is not a power of 2
+            return -1
+
+        # Calculate the position of the set bit by taking the base-2
+        # logarithm of num and adding 1
+        return int(math.log2(num) + 1)
 
 
-if __name__ == "__main__":
-    sol = Solution()
-    print(sol.only_set_bit(16))   # 5
-    print(sol.only_set_bit(2))    # 2
-    print(sol.only_set_bit(10))   # -1
+# Examples from the problem statement
+print(Solution().only_set_bit(16))    # 5
+print(Solution().only_set_bit(2))     # 2
+print(Solution().only_set_bit(10))    # -1
+
+# Edge cases
+print(Solution().only_set_bit(1))     # 1
+print(Solution().only_set_bit(4))     # 3
+print(Solution().only_set_bit(8))     # 4
+print(Solution().only_set_bit(7))     # -1
+print(Solution().only_set_bit(3))     # -1
 ```
 
 ```java run
 public class Main {
     static class Solution {
         public int onlySetBit(int num) {
-            if (num <= 0 || (num & (num - 1)) != 0) return -1;
+
+            // Check if num is not a power of 2 (has more than one set bit)
+            if ((num & (num - 1)) != 0) {
+
+                // Return -1 if num is not a power of 2
+                return -1;
+            }
+
+            // Calculate the position of the set bit by taking the base-2
+            // logarithm of num and adding 1
             return (int) (Math.log(num) / Math.log(2)) + 1;
         }
     }
 
     public static void main(String[] args) {
-        Solution sol = new Solution();
-        System.out.println(sol.onlySetBit(16));   // 5
-        System.out.println(sol.onlySetBit(10));   // -1
+        // Examples from the problem statement
+        System.out.println(new Solution().onlySetBit(16));    // 5
+        System.out.println(new Solution().onlySetBit(2));     // 2
+        System.out.println(new Solution().onlySetBit(10));    // -1
+
+        // Edge cases
+        System.out.println(new Solution().onlySetBit(1));     // 1
+        System.out.println(new Solution().onlySetBit(4));     // 3
+        System.out.println(new Solution().onlySetBit(8));     // 4
+        System.out.println(new Solution().onlySetBit(7));     // -1
+        System.out.println(new Solution().onlySetBit(3));     // -1
     }
 }
 ```
 
-```c run
-#include <stdio.h>
-#include <math.h>
-
-int only_set_bit(int num) {
-    if (num <= 0 || (num & (num - 1)) != 0) return -1;
-    return (int) log2(num) + 1;
-}
-
-int main(void) {
-    printf("%d\n", only_set_bit(16));   /* 5 */
-    printf("%d\n", only_set_bit(10));   /* -1 */
-    return 0;
-}
-```
-
-```scala run
-object Main extends App {
-  class Solution {
-    def onlySetBit(num: Int): Int = {
-      if (num <= 0 || (num & (num - 1)) != 0) -1
-      else (math.log(num) / math.log(2)).toInt + 1
-    }
-  }
-
-  println(new Solution().onlySetBit(16))   // 5
-}
-```
-
-
-## Complexity
+### Complexity
 
 | Aspect | Cost |
 |---|---|
 | Time | `O(1)` — constant-time bitwise check + log |
 | Space | `O(1)` |
+
+</details>
 
 ***
 
@@ -194,98 +192,133 @@ Input:  num = 17
 Output: 1                   Binary 0001 0001 — bit 1 is the rightmost set bit
 ```
 
-## The Recurrence
-
-Two clean approaches:
-
-**Approach A — Isolate then log.** `num & -num` isolates the rightmost set bit (a power of 2). Take `log₂` plus 1 to recover the 1-indexed position. Same trick as "only set bit", but applied after isolation — which works for any `num`, not just powers of 2.
-
-**Approach B — Trailing-zero count.** Most languages have `trailing_zeros` / `Integer.numberOfTrailingZeros` / `__builtin_ctz` — these return the 0-indexed position of the lowest set bit, which is what we want minus one.
-
-Either works; both run in O(1) on modern CPUs (the trailing-zero count is a single instruction on x86 and ARM).
-
-> *Pause. Why does <code>num & -num</code> isolate the lowest set bit? Predict the two's-complement reasoning.*
-
-In two's complement, `-num = ~num + 1`. The `~num` flips every bit; adding 1 propagates carries through the trailing zeros until it hits the first 0 bit (which was the original first 1 bit), flipping it back to 1. Result: bits below the lowest set bit are 0, the lowest set bit is 1, bits above are flipped. AND with the original `num`: only the lowest set bit survives (it's 1 in both `num` and `-num`); every other bit has at least one 0.
-
-## The Solution
+<details>
+<summary><h2>The Recurrence</h2></summary>
 
 
-```pseudocode
-# 1-indexed position of the lowest set bit (0 if num has no set bits).
-# Trick: num & −num isolates the lowest set bit (two's-complement identity).
-function rightmostSetBit(num):
-    if num = 0: return 0
-    isolated ← num bitwise AND (−num)
-    return bitLength(isolated)                    # bitLength of a power-of-2 = position
+Three steps:
+
+1. **Fast path** — if the LSB is set (`num & 1`), bit 1 is already the rightmost set bit; return 1 immediately.
+2. **Isolate the rightmost set bit** — `num & (num - 1)` clears it, and XOR-ing that against `num` leaves just the rightmost set bit standing. (Equivalent to `num & -num`, but written in terms of the lesson's primary `n & (n - 1)` identity.)
+3. **Find its position by right-shifting** — repeatedly shift the isolated bit one position to the right and count iterations until it falls off. The final count is the 1-indexed position.
+
 ```
+if num & 1: return 1
+num = num ^ (num & (num - 1))     # isolate rightmost set bit
+index = 0
+while num != 0:
+    num >>= 1
+    index += 1
+return index
+```
+
+> *Pause. Why does <code>num ^ (num & (num - 1))</code> isolate the lowest set bit? Predict before reading on.*
+
+`num & (num - 1)` clears the rightmost set bit and leaves every other bit untouched. XOR-ing that with the original `num` cancels every bit they share — i.e. every higher set bit — and the only bit that differs is the one that was cleared. The result has a 1 in exactly that position. (Alternative single-step form: `num & -num`, which uses two's complement to achieve the same isolation.)
+
+</details>
+<details>
+<summary><h2>Solution &amp; Analysis</h2></summary>
+
+### The Solution
 
 ```python run
 class Solution:
     def rightmost_set_bit(self, num: int) -> int:
-        if num == 0:
-            return 0                                # No set bits at all
-        # Isolate the lowest set bit, then count trailing zeros to get 1-indexed position.
-        isolated = num & -num
-        return isolated.bit_length()                # bit_length of a power of 2 is position + 1
+
+        # Check if the least significant bit is set (num & 1)
+        # If it is set, return 1 as the rightmost set bit position
+        if num & 1:
+            return 1
+
+        # Clear the rightmost set bit using XOR operation
+        num = num ^ (num & (num - 1))
+
+        # Variable to store the index of the rightmost set bit
+        index: int = 0
+
+        # Iterate until num becomes zero
+        while num:
+
+            # Right shift num by 1 to check the next bit
+            num = num >> 1
+
+            # Increment the index by 1
+            index += 1
+
+        # Return the index of the rightmost set bit
+        return index
 
 
-if __name__ == "__main__":
-    sol = Solution()
-    print(sol.rightmost_set_bit(10))   # 2
-    print(sol.rightmost_set_bit(16))   # 5
-    print(sol.rightmost_set_bit(17))   # 1
+# Examples from the problem statement
+print(Solution().rightmost_set_bit(10))    # 2
+print(Solution().rightmost_set_bit(16))    # 5
+print(Solution().rightmost_set_bit(17))    # 1
+
+# Edge cases
+print(Solution().rightmost_set_bit(1))     # 1
+print(Solution().rightmost_set_bit(2))     # 2
+print(Solution().rightmost_set_bit(4))     # 3
+print(Solution().rightmost_set_bit(8))     # 4
+print(Solution().rightmost_set_bit(12))    # 3
 ```
 
 ```java run
 public class Main {
     static class Solution {
         public int rightmostSetBit(int num) {
-            if (num == 0) return 0;
-            return Integer.numberOfTrailingZeros(num) + 1;
+
+            // Check if the least significant bit is set (num & 1)
+            // If it is set, return 1 as the rightmost set bit position
+            if ((num & 1) != 0) {
+                return 1;
+            }
+
+            // Clear the rightmost set bit using XOR operation
+            num = num ^ (num & (num - 1));
+
+            // Variable to store the index of the rightmost set bit
+            int index = 0;
+
+            // Iterate until num becomes zero
+            while (num != 0) {
+
+                // Right shift num by 1 to check the next bit
+                num = num >> 1;
+
+                // Increment the index by 1
+                index++;
+            }
+
+            // Return the index of the rightmost set bit
+            return index;
         }
     }
 
     public static void main(String[] args) {
-        Solution sol = new Solution();
-        System.out.println(sol.rightmostSetBit(10));   // 2
+        // Examples from the problem statement
+        System.out.println(new Solution().rightmostSetBit(10));    // 2
+        System.out.println(new Solution().rightmostSetBit(16));    // 5
+        System.out.println(new Solution().rightmostSetBit(17));    // 1
+
+        // Edge cases
+        System.out.println(new Solution().rightmostSetBit(1));     // 1
+        System.out.println(new Solution().rightmostSetBit(2));     // 2
+        System.out.println(new Solution().rightmostSetBit(4));     // 3
+        System.out.println(new Solution().rightmostSetBit(8));     // 4
+        System.out.println(new Solution().rightmostSetBit(12));    // 3
     }
 }
 ```
 
-```c run
-#include <stdio.h>
-
-int rightmost_set_bit(int num) {
-    if (num == 0) return 0;
-    return __builtin_ctz(num) + 1;       /* count trailing zeros, GCC/Clang built-in */
-}
-
-int main(void) {
-    printf("%d\n", rightmost_set_bit(10));   /* 2 */
-    return 0;
-}
-```
-
-```scala run
-object Main extends App {
-  class Solution {
-    def rightmostSetBit(num: Int): Int = {
-      if (num == 0) 0 else Integer.numberOfTrailingZeros(num) + 1
-    }
-  }
-
-  println(new Solution().rightmostSetBit(10))   // 2
-}
-```
-
-
-## Complexity
+### Complexity
 
 | Aspect | Cost |
 |---|---|
-| Time | `O(1)` — single intrinsic instruction on most CPUs |
+| Time | `O(p)` where `p` is the position of the rightmost set bit — bounded by the bit-width (32 for an `int`), so `O(1)` for fixed-width integers |
 | Space | `O(1)` |
+
+</details>
 
 ***
 

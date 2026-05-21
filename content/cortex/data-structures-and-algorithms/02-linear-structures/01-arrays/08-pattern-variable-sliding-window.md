@@ -356,33 +356,7 @@ The four adaptations you make when solving a specific problem:
 Given below is the generic code implementation of the variable-sized sliding window technique on an array `arr`, using `start` and `end` as the boundaries of the window.
 
 
-```pseudocode
-# Generic variable-window template. Predicates `shouldContract` / `shouldExpand` are
-# problem-specific. Often `shouldContract` is a `while` loop, not just an `if`.
-function variableSlidingWindow(arr):
-    start ← 0; end ← 0
-    aggregate ← 0
-    while end < length(arr):
-        aggregate ← fAdd(aggregate, arr[end])         # 1. add arr[end]
-        process(aggregate)                            # 2. record this window's answer
-        if shouldContract():                          # 3. shrink (use `while` if needed)
-            aggregate ← fRemove(aggregate, arr[start])
-            start ← start + 1
-        if shouldExpand():                            # 4. extend right
-            end ← end + 1
-```
-
 ```python run
-from typing import List
-
-def f(agg, x): return agg + x
-def f_inverse(agg, x): return agg - x
-
-# Stand-in flags — replace with the real problem-specific predicates.
-should_compute_aggregate = True
-should_contract_window   = False
-should_expand_window     = True
-
 
 def sliding_window(arr: List[int]) -> None:
     # Initialize start and end to 0
@@ -412,158 +386,43 @@ def sliding_window(arr: List[int]) -> None:
 
         if should_expand_window:
             end += 1
-
-
-sliding_window([1, 2, 3, 4])
-print("Template ran.")
 ```
 
 ```java run
-public class Main {
-    static int f(int agg, int x)        { return agg + x; }
-    static int fInverse(int agg, int x) { return agg - x; }
 
-    static boolean shouldComputeAggregate = true;
-    static boolean shouldContractWindow   = false;
-    static boolean shouldExpandWindow     = true;
+public class SlidingWindow {
+    public void slidingWindow(int[] arr) {
+        // Initialize start and end to 0
+        int start = 0, end = 0;
 
-    public static class SlidingWindow {
-        public void slidingWindow(int[] arr) {
-            // Initialize start and end to 0
-            int start = 0, end = 0;
+        // Initialize aggregate to a default value
+        int aggregate = 0;
 
-            // Initialize aggregate to a default value
-            int aggregate = 0;
+        // Move the window one step to the right until
+        // it reaches the end of the array
+        while (end < arr.length) {
 
-            // Move the window one step to the right until
-            // it reaches the end of the array
-            while (end < arr.length) {
+            if (shouldComputeAggregate) {
+                // Add contribution of arr[end]
+                aggregate = f(aggregate, arr[end]);
+            }
 
-                if (shouldComputeAggregate) {
-                    // Add contribution of arr[end]
-                    aggregate = f(aggregate, arr[end]);
-                }
+            // Process aggregate
+            // ......
+            // (Add your processing code here)
 
-                // Process aggregate
-                // ......
-                // (Add your processing code here)
+            if (shouldContractWindow) {
+                // Remove contribution of arr[start] using the inverse function
+                aggregate = fInverse(aggregate, arr[start]);
+                // Contract window
+                start++;
+            }
 
-                if (shouldContractWindow) {
-                    // Remove contribution of arr[start] using the inverse function
-                    aggregate = fInverse(aggregate, arr[start]);
-                    // Contract window
-                    start++;
-                }
-
-                if (shouldExpandWindow) {
-                    end++;
-                }
+            if (shouldExpandWindow) {
+                end++;
             }
         }
     }
-
-    public static void main(String[] args) {
-        new SlidingWindow().slidingWindow(new int[]{1, 2, 3, 4});
-        System.out.println("Template ran.");
-    }
-}
-```
-
-```c run
-#include <stdio.h>
-#include <stdbool.h>
-
-int  f(int agg, int x)         { return agg + x; }
-int  f_inverse(int agg, int x) { return agg - x; }
-
-bool should_compute_aggregate = true;
-bool should_contract_window   = false;
-bool should_expand_window     = true;
-
-void sliding_window(int* arr, int n) {
-    /* Initialize start and end to 0 */
-    int start = 0, end = 0;
-
-    /* Initialize aggregate to a default value */
-    int aggregate = 0;
-
-    /* Move the window one step to the right until
-     * it reaches the end of the array */
-    while (end < n) {
-
-        if (should_compute_aggregate) {
-            /* Add contribution of arr[end] */
-            aggregate = f(aggregate, arr[end]);
-        }
-
-        /* Process aggregate */
-        /* ...... */
-        /* (Add your processing code here) */
-
-        if (should_contract_window) {
-            /* Remove contribution of arr[start] using the inverse function */
-            aggregate = f_inverse(aggregate, arr[start]);
-            /* Contract window */
-            start++;
-        }
-
-        if (should_expand_window) end++;
-    }
-}
-
-int main() {
-    int arr[] = {1, 2, 3, 4};
-    sliding_window(arr, 4);
-    printf("Template ran.\n");
-    return 0;
-}
-```
-
-```scala run
-object Main extends App {
-  def f(agg: Int, x: Int): Int        = agg + x
-  def fInverse(agg: Int, x: Int): Int = agg - x
-
-  val shouldComputeAggregate = true
-  val shouldContractWindow   = false
-  val shouldExpandWindow     = true
-
-  class SlidingWindow {
-    def slidingWindow(arr: Array[Int]): Unit = {
-      // Initialize start and end to 0
-      var start = 0
-      var end = 0
-
-      // Initialize aggregate to a default value
-      var aggregate = 0
-
-      // Move the window one step to the right until
-      // it reaches the end of the array
-      while (end < arr.length) {
-
-        if (shouldComputeAggregate) {
-          // Add contribution of arr[end]
-          aggregate = f(aggregate, arr(end))
-        }
-
-        // Process aggregate
-        // ......
-        // (Add your processing code here)
-
-        if (shouldContractWindow) {
-          // Remove contribution of arr[start] using the inverse function
-          aggregate = fInverse(aggregate, arr(start))
-          // Contract window
-          start += 1
-        }
-
-        if (shouldExpandWindow) end += 1
-      }
-    }
-  }
-
-  new SlidingWindow().slidingWindow(Array(1, 2, 3, 4))
-  println("Template ran.")
 }
 ```
 
@@ -767,18 +626,6 @@ i3: "Outer loop i=3: all subarrays starting at index 3" {
 ```
 
 
-```pseudocode
-# Brute force — every subarray (i, j). O(n²).
-function maxSubarraySumBrute(arr):
-    maxSum ← −∞
-    for i from 0 to length(arr) − 1:
-        currentSum ← 0
-        for j from i to length(arr) − 1:
-            currentSum ← currentSum + arr[j]
-            maxSum ← max(maxSum, currentSum)
-    return maxSum
-```
-
 ```python run
 from typing import List
 
@@ -811,47 +658,6 @@ public class Main {
     public static void main(String[] args) {
         System.out.println(maxSubarraySumBrute(new int[]{-2, 1, -3, 4, -1, 2, 1, -5, 4}));
     }
-}
-```
-
-```c run
-#include <stdio.h>
-#include <limits.h>
-
-int max_subarray_sum_brute(int* arr, int n) {
-    int max_sum = INT_MIN;
-    for (int i = 0; i < n; i++) {
-        int current = 0;
-        for (int j = i; j < n; j++) {
-            current += arr[j];
-            if (current > max_sum) max_sum = current;
-        }
-    }
-    return max_sum;
-}
-
-int main() {
-    int arr[] = {-2, 1, -3, 4, -1, 2, 1, -5, 4};
-    printf("%d\n", max_subarray_sum_brute(arr, 9));
-    return 0;
-}
-```
-
-```scala run
-object Main extends App {
-  def maxSubarraySumBrute(arr: Array[Int]): Int = {
-    var maxSum = Int.MinValue
-    for (i <- arr.indices) {
-      var current = 0
-      for (j <- i until arr.length) {
-        current += arr(j)
-        maxSum = math.max(maxSum, current)
-      }
-    }
-    maxSum
-  }
-
-  println(maxSubarraySumBrute(Array(-2, 1, -3, 4, -1, 2, 1, -5, 4)))
 }
 ```
 
@@ -923,46 +729,6 @@ flowchart TB
 
 <p align="center"><strong>The variable-sized sliding window skips all subarrays starting between <code>start+1</code> and <code>end</code>, and all subarrays starting at <code>start</code> and ending beyond <code>end</code>. Two resets occur — at <code>end=1</code> and <code>end=3</code> — discarding all subarrays rooted in those negative prefixes.</strong></p>
 
-
-```pseudocode
-function maxSubarraySum(arr):
-    if arr is empty: return 0
-
-    # To store the starting index of the subarray
-    start ← 0
-
-    # To store the ending index of the subarray
-    end ← 0
-
-    # Initialize sum to a default value (current sum)
-    sum ← arr[end]
-
-    # To store the maximum subarray sum found so far
-    maxSum ← arr[end]
-
-    # Increment to start from index 1 as index 0 has already been taken
-    end ← end + 1
-
-    # Sliding window
-    while end < length(arr):
-
-        # If the current sum becomes negative, reset the window
-        if sum < 0:
-            sum ← arr[end]
-            start ← end + 1
-
-        # Otherwise, add contribution of arr[end]
-        else:
-            sum ← sum + arr[end]
-
-        # Update the maximum subarray sum found so far
-        maxSum ← max(maxSum, sum)
-
-        # Expand the window from the right
-        end ← end + 1
-
-    return maxSum
-```
 
 ```python run
 from typing import List
@@ -1070,115 +836,6 @@ public class Main {
         System.out.println(sol.maxSubarraySum(new int[]{-3, -1, -2}));                       // -1
         System.out.println(sol.maxSubarraySum(new int[]{1}));                                 // 1
     }
-}
-```
-
-```c run
-#include <stdio.h>
-
-int max_subarray_sum(int* arr, int n) {
-    if (n == 0) return 0;
-
-    /* To store the starting index of the subarray */
-    int start = 0;
-
-    /* To store the ending index of the subarray */
-    int end = 0;
-
-    /* Initialize sum to a default value (current sum) */
-    int sum = arr[end];
-
-    /* To store the maximum subarray sum found so far */
-    int max_sum = arr[end];
-
-    /* Increment to start from index 1 as index 0 has already been taken */
-    end++;
-
-    /* Sliding window */
-    while (end < n) {
-
-        /* If the current sum becomes negative, reset the window */
-        if (sum < 0) {
-            sum = arr[end];
-            start = end + 1;
-        }
-
-        /* Otherwise, add contribution of arr[end] */
-        else {
-            sum += arr[end];
-        }
-
-        /* Update the maximum subarray sum found so far */
-        if (sum > max_sum) max_sum = sum;
-
-        /* Expand the window from the right */
-        end++;
-    }
-
-    return max_sum;
-}
-
-int main() {
-    int a1[] = {-2, 1, -3, 4, -1, 2, 1, -5, 4};
-    int a2[] = {-3, -1, -2};
-    int a3[] = {1};
-    printf("%d\n", max_subarray_sum(a1, 9));  /*  6 */
-    printf("%d\n", max_subarray_sum(a2, 3));  /* -1 */
-    printf("%d\n", max_subarray_sum(a3, 1));  /*  1 */
-    return 0;
-}
-```
-
-```scala run
-object Main extends App {
-  class Solution {
-    def maxSubarraySum(arr: Array[Int]): Int = {
-      if (arr.isEmpty) return 0
-
-      // To store the starting index of the subarray
-      var start = 0
-
-      // To store the ending index of the subarray
-      var end = 0
-
-      // Initialize sum to a default value (current sum)
-      var sum = arr(end)
-
-      // To store the maximum subarray sum found so far
-      var maxSum = arr(end)
-
-      // Increment to start from index 1 as index 0 has already been
-      // taken into account
-      end += 1
-
-      // Sliding window
-      while (end < arr.length) {
-
-        // If the current sum becomes negative, reset the window
-        if (sum < 0) {
-          sum = arr(end)
-          start = end + 1
-        }
-        // Otherwise, add contribution of arr[end]
-        else {
-          sum += arr(end)
-        }
-
-        // Update the maximum subarray sum found so far
-        maxSum = math.max(maxSum, sum)
-
-        // Expand the window from the right
-        end += 1
-      }
-
-      maxSum
-    }
-  }
-
-  val sol = new Solution
-  println(sol.maxSubarraySum(Array(-2, 1, -3, 4, -1, 2, 1, -5, 4)))   //  6
-  println(sol.maxSubarraySum(Array(-3, -1, -2)))                       // -1
-  println(sol.maxSubarraySum(Array(1)))                                //  1
 }
 ```
 
@@ -1469,7 +1126,9 @@ arr = [0, 0, 0]                            →  0
 
 ---
 
-## Examples
+<details>
+<summary><h2>Examples</h2></summary>
+
 
 **Example 1**
 ```
@@ -1494,9 +1153,10 @@ Output: 0
 Explanation: The maximum number of consecutive ones is 0.
 ```
 
----
+</details>
+<details>
+<summary><h2>Intuition</h2></summary>
 
-## Intuition
 
 Walk through the array once. Track two values:
 
@@ -1507,48 +1167,11 @@ Every time we see a `1`, the current run grows by one. Every time we see a `0`, 
 
 One subtlety: when the array ends on a run of `1`s (no trailing `0` to trigger the comparison), we need a **final check** after the loop to make sure that last run is folded into `max_ones`.
 
----
+</details>
+<details>
+<summary><h2>Solution &amp; Analysis</h2></summary>
 
-## The Solution
-
-
-```pseudocode
-function consecutiveOnes(arr):
-    # To store the starting index of the subarray
-    start ← 0
-
-    # To store the ending index of the subarray
-    end ← 0
-
-    # To store the current count of 1s in the window
-    countOnes ← 0
-
-    # To store the maximum number of 1s in any subarray
-    maxOnes ← 0
-
-    # Move the window one step to the right until it reaches the end of the array
-    while end < length(arr):
-
-        # Add the current element to the count if it's 1
-        if arr[end] = 1:
-            countOnes ← countOnes + 1
-
-        # Otherwise, process the aggregate and reset count
-        else:
-            # Process aggregate when we encounter a 0
-            maxOnes ← max(maxOnes, countOnes)
-
-            # Reset count for consecutive ones
-            countOnes ← 0
-
-        # Expand the window
-        end ← end + 1
-
-    # Final check for the last segment of ones
-    maxOnes ← max(maxOnes, countOnes)
-
-    return maxOnes
-```
+### The Solution
 
 ```python run
 from typing import List
@@ -1594,10 +1217,17 @@ class Solution:
         return max_ones
 
 
-sol = Solution()
-print(sol.consecutive_ones([1, 1, 1, 0, 0, 0, 1, 1, 1, 1, 0]))   # 4
-print(sol.consecutive_ones([1, 1, 0, 0, 0, 1, 1, 0, 1, 0]))      # 2
-print(sol.consecutive_ones([0, 0, 0]))                            # 0
+# Examples from the problem statement
+print(Solution().consecutive_ones([1, 1, 1, 0, 0, 0, 1, 1, 1, 1, 0]))   # 4
+print(Solution().consecutive_ones([1, 1, 0, 0, 0, 1, 1, 0, 1, 0]))       # 2
+print(Solution().consecutive_ones([0, 0, 0]))                              # 0
+
+# Edge cases
+print(Solution().consecutive_ones([1]))                                    # 1  — single one
+print(Solution().consecutive_ones([0]))                                    # 0  — single zero
+print(Solution().consecutive_ones([1, 0]))                                 # 1  — two elements
+print(Solution().consecutive_ones([1, 1, 1, 1]))                           # 4  — all ones
+print(Solution().consecutive_ones([1, 1, 1, 1, 0, 1]))                    # 4  — ones at end
 ```
 
 ```java run
@@ -1617,8 +1247,8 @@ public class Main {
             // To store the maximum number of 1s in any subarray
             int maxOnes = 0;
 
-            // Move the window one step to the right until it reaches the
-            // end of the array
+            // Move the window one step to the right until it reaches the end
+            // of the array
             while (end < arr.length) {
 
                 // Add the current element to the count if it's 1
@@ -1648,121 +1278,18 @@ public class Main {
     }
 
     public static void main(String[] args) {
-        Solution sol = new Solution();
-        System.out.println(sol.consecutiveOnes(new int[]{1, 1, 1, 0, 0, 0, 1, 1, 1, 1, 0}));  // 4
-        System.out.println(sol.consecutiveOnes(new int[]{1, 1, 0, 0, 0, 1, 1, 0, 1, 0}));     // 2
-        System.out.println(sol.consecutiveOnes(new int[]{0, 0, 0}));                           // 0
+        // Examples from the problem statement
+        System.out.println(new Solution().consecutiveOnes(new int[]{1, 1, 1, 0, 0, 0, 1, 1, 1, 1, 0}));   // 4
+        System.out.println(new Solution().consecutiveOnes(new int[]{1, 1, 0, 0, 0, 1, 1, 0, 1, 0}));       // 2
+        System.out.println(new Solution().consecutiveOnes(new int[]{0, 0, 0}));                              // 0
+
+        // Edge cases
+        System.out.println(new Solution().consecutiveOnes(new int[]{1}));                                    // 1  — single one
+        System.out.println(new Solution().consecutiveOnes(new int[]{0}));                                    // 0  — single zero
+        System.out.println(new Solution().consecutiveOnes(new int[]{1, 0}));                                 // 1  — two elements
+        System.out.println(new Solution().consecutiveOnes(new int[]{1, 1, 1, 1}));                           // 4  — all ones
+        System.out.println(new Solution().consecutiveOnes(new int[]{1, 1, 1, 1, 0, 1}));                    // 4  — ones at end
     }
-}
-```
-
-```c run
-#include <stdio.h>
-
-int consecutive_ones(int* arr, int n) {
-
-    /* To store the starting index of the subarray */
-    int start = 0;
-
-    /* To store the ending index of the subarray */
-    int end = 0;
-
-    /* To store the current count of 1s in the window */
-    int count_ones = 0;
-
-    /* To store the maximum number of 1s in any subarray */
-    int max_ones = 0;
-
-    /* Move the window one step to the right until it reaches the end of
-     * the array */
-    while (end < n) {
-
-        /* Add the current element to the count if it's 1 */
-        if (arr[end] == 1) {
-            count_ones++;
-        }
-
-        /* Otherwise, process the aggregate and reset count */
-        else {
-
-            /* Process aggregate when we encounter a 0 */
-            if (count_ones > max_ones) max_ones = count_ones;
-
-            /* Reset count for consecutive ones */
-            count_ones = 0;
-        }
-
-        /* Expand the window */
-        end++;
-    }
-
-    /* Final check for the last segment of ones */
-    if (count_ones > max_ones) max_ones = count_ones;
-
-    return max_ones;
-}
-
-int main() {
-    int a1[] = {1, 1, 1, 0, 0, 0, 1, 1, 1, 1, 0};
-    int a2[] = {1, 1, 0, 0, 0, 1, 1, 0, 1, 0};
-    int a3[] = {0, 0, 0};
-    printf("%d\n", consecutive_ones(a1, 11));  /* 4 */
-    printf("%d\n", consecutive_ones(a2, 10));  /* 2 */
-    printf("%d\n", consecutive_ones(a3, 3));   /* 0 */
-    return 0;
-}
-```
-
-```scala run
-object Main extends App {
-  class Solution {
-    def consecutiveOnes(arr: Array[Int]): Int = {
-
-      // To store the starting index of the subarray
-      var start = 0
-
-      // To store the ending index of the subarray
-      var end = 0
-
-      // To store the current count of 1s in the window
-      var countOnes = 0
-
-      // To store the maximum number of 1s in any subarray
-      var maxOnes = 0
-
-      // Move the window one step to the right until it reaches the end
-      // of the array
-      while (end < arr.length) {
-
-        // Add the current element to the count if it's 1
-        if (arr(end) == 1) {
-          countOnes += 1
-        }
-        // Otherwise, process the aggregate and reset count
-        else {
-
-          // Process aggregate when we encounter a 0
-          maxOnes = math.max(maxOnes, countOnes)
-
-          // Reset count for consecutive ones
-          countOnes = 0
-        }
-
-        // Expand the window
-        end += 1
-      }
-
-      // Final check for the last segment of ones
-      maxOnes = math.max(maxOnes, countOnes)
-
-      maxOnes
-    }
-  }
-
-  val sol = new Solution
-  println(sol.consecutiveOnes(Array(1, 1, 1, 0, 0, 0, 1, 1, 1, 1, 0)))   // 4
-  println(sol.consecutiveOnes(Array(1, 1, 0, 0, 0, 1, 1, 0, 1, 0)))      // 2
-  println(sol.consecutiveOnes(Array(0, 0, 0)))                            // 0
 }
 ```
 
@@ -1836,18 +1363,14 @@ Return: 4 ✓  (the run at indices 6..9)
 
 </details>
 
----
-
-## Complexity Analysis
+### Complexity Analysis
 
 | | Complexity | Reasoning |
 |---|---|---|
 | **Time** | O(N) | One pass through the array; constant work per element |
 | **Space** | O(1) | Two integer counters (`count_ones`, `max_ones`) |
 
----
-
-## Edge Cases
+### Edge Cases
 
 | Case | Example | Expected | Reasoning |
 |---|---|---|---|
@@ -1857,11 +1380,14 @@ Return: 4 ✓  (the run at indices 6..9)
 | Single one | `[1]` | `1` | One iteration, then final check returns 1 |
 | Trailing ones | `[0, 1, 1]` | `2` | Final check catches the run that didn't see a closing 0 |
 
----
+</details>
+<details>
+<summary><h2>Key Takeaway</h2></summary>
 
-## Key Takeaway
 
 Consecutive Ones is the simplest aggregate-then-reset variation of the sliding window. The `count_ones` counter is the aggregate; each `0` triggers a process-and-reset step. The **final check after the loop** is the part that's easy to miss — without it, an array ending on a run of `1`s would silently lose its best run.
+
+</details>
 
 ***
 
@@ -1879,7 +1405,9 @@ arr = [1],            k = 1     →  0
 
 ---
 
-## Examples
+<details>
+<summary><h2>Examples</h2></summary>
+
 
 **Example 1**
 ```
@@ -1907,9 +1435,10 @@ Output: 0
 Explanation: There are no subarrays whose product is less than k.
 ```
 
----
+</details>
+<details>
+<summary><h2>Intuition</h2></summary>
 
-## Intuition
 
 The invariant: `product(arr[start..end]) < k`. When we expand `end`, the product can only grow (all elements are ≥ 1). When it crosses or equals `k`, we contract.
 
@@ -1917,49 +1446,11 @@ The invariant: `product(arr[start..end]) < k`. When we expand `end`, the product
 
 **Counting the subarrays.** Once the invariant holds for `arr[start..end]`, every subarray *ending at `end`* with start position in `[start, end]` also satisfies it (since shorter windows have smaller products). That's exactly `end − start + 1` valid subarrays ending at the current `end`. Accumulate this count at every step and the total at the end is the answer.
 
----
+</details>
+<details>
+<summary><h2>Solution &amp; Analysis</h2></summary>
 
-## The Solution
-
-
-```pseudocode
-function productConundrum(arr, k):
-    # To store the starting index of the subarray
-    start ← 0
-
-    # To store the ending index of the subarray
-    end ← 0
-
-    # Initialize product to 1
-    product ← 1
-
-    # Initialize answer to 0
-    answer ← 0
-
-    # Move the window one step to the right until it reaches the end
-    # of the array
-    while end < length(arr):
-
-        # Add contribution of arr[end]
-        product ← product × arr[end]
-
-        # Process aggregate
-        while start ≤ end AND product ≥ k:
-
-            # Remove contribution of arr[start] using the inverse function
-            product ← product ÷ arr[start]
-
-            # Contract window
-            start ← start + 1
-
-        # Count valid subarrays
-        answer ← answer + (end − start + 1)
-
-        # Expand the window
-        end ← end + 1
-
-    return answer
-```
+### The Solution
 
 ```python run
 from typing import List
@@ -1991,7 +1482,7 @@ class Solution:
 
                 # Remove contribution of arr[start] using the inverse
                 # function
-                product //= arr[start]
+                product /= arr[start]
 
                 # Contract window
                 start += 1
@@ -2005,10 +1496,17 @@ class Solution:
         return answer
 
 
-sol = Solution()
-print(sol.product_conundrum([10, 5, 2, 6], 100))   # 8
-print(sol.product_conundrum([10, 5], 50))           # 2
-print(sol.product_conundrum([1], 1))                # 0
+# Examples from the problem statement
+print(Solution().product_conundrum([10, 5, 2, 6], 100))   # 8
+print(Solution().product_conundrum([10, 5], 50))           # 2
+print(Solution().product_conundrum([1], 1))                # 0
+
+# Edge cases
+print(Solution().product_conundrum([1], 2))                # 1  — single element less than k
+print(Solution().product_conundrum([2, 3], 7))             # 3  — two elements
+print(Solution().product_conundrum([1, 1, 1], 2))          # 6  — all ones
+print(Solution().product_conundrum([5, 5, 5], 5))          # 0  — all equal to k
+print(Solution().product_conundrum([1, 2, 3], 0))          # 0  — k=0 no valid subarray
 ```
 
 ```java run
@@ -2023,13 +1521,13 @@ public class Main {
             int end = 0;
 
             // Initialize product to 1
-            long product = 1;
+            int product = 1;
 
             // Initialize answer to 0
             int answer = 0;
 
-            // Move the window one step to the right until it reaches the
-            // end of the array
+            // Move the window one step to the right until it reaches the end
+            // of the array
             while (end < arr.length) {
 
                 // Add contribution of arr[end]
@@ -2058,115 +1556,18 @@ public class Main {
     }
 
     public static void main(String[] args) {
-        Solution sol = new Solution();
-        System.out.println(sol.productConundrum(new int[]{10, 5, 2, 6}, 100));   // 8
-        System.out.println(sol.productConundrum(new int[]{10, 5}, 50));           // 2
-        System.out.println(sol.productConundrum(new int[]{1}, 1));                // 0
+        // Examples from the problem statement
+        System.out.println(new Solution().productConundrum(new int[]{10, 5, 2, 6}, 100));   // 8
+        System.out.println(new Solution().productConundrum(new int[]{10, 5}, 50));           // 2
+        System.out.println(new Solution().productConundrum(new int[]{1}, 1));                // 0
+
+        // Edge cases
+        System.out.println(new Solution().productConundrum(new int[]{1}, 2));                // 1  — single element less than k
+        System.out.println(new Solution().productConundrum(new int[]{2, 3}, 7));             // 3  — two elements
+        System.out.println(new Solution().productConundrum(new int[]{1, 1, 1}, 2));          // 6  — all ones
+        System.out.println(new Solution().productConundrum(new int[]{5, 5, 5}, 5));          // 0  — all equal to k
+        System.out.println(new Solution().productConundrum(new int[]{1, 2, 3}, 0));          // 0  — k=0 no valid subarray
     }
-}
-```
-
-```c run
-#include <stdio.h>
-
-int product_conundrum(int* arr, int n, int k) {
-
-    /* To store the starting index of the subarray */
-    int start = 0;
-
-    /* To store the ending index of the subarray */
-    int end = 0;
-
-    /* Initialize product to 1 */
-    long long product = 1;
-
-    /* Initialize answer to 0 */
-    int answer = 0;
-
-    /* Move the window one step to the right until it reaches the end of
-     * the array */
-    while (end < n) {
-
-        /* Add contribution of arr[end] */
-        product *= arr[end];
-
-        /* Process aggregate */
-        while (start <= end && product >= k) {
-
-            /* Remove contribution of arr[start] using the inverse function */
-            product /= arr[start];
-
-            /* Contract window */
-            start++;
-        }
-
-        /* Count valid subarrays */
-        answer += end - start + 1;
-
-        /* Expand the window */
-        end++;
-    }
-
-    return answer;
-}
-
-int main() {
-    int a1[] = {10, 5, 2, 6};  printf("%d\n", product_conundrum(a1, 4, 100));  /* 8 */
-    int a2[] = {10, 5};        printf("%d\n", product_conundrum(a2, 2, 50));   /* 2 */
-    int a3[] = {1};            printf("%d\n", product_conundrum(a3, 1, 1));    /* 0 */
-    return 0;
-}
-```
-
-```scala run
-object Main extends App {
-  class Solution {
-    def productConundrum(arr: Array[Int], k: Int): Int = {
-
-      // To store the starting index of the subarray
-      var start = 0
-
-      // To store the ending index of the subarray
-      var end = 0
-
-      // Initialize product to 1
-      var product = 1L
-
-      // Initialize answer to 0
-      var answer = 0
-
-      // Move the window one step to the right until it reaches the end
-      // of the array
-      while (end < arr.length) {
-
-        // Add contribution of arr[end]
-        product *= arr(end)
-
-        // Process aggregate
-        while (start <= end && product >= k) {
-
-          // Remove contribution of arr[start] using the inverse function
-          product /= arr(start)
-
-          // Contract window
-          start += 1
-        }
-
-        // Count valid subarrays
-        answer += end - start + 1
-
-        // Expand the window
-        end += 1
-      }
-
-      answer
-    }
-  }
-
-  val sol = new Solution
-  println(sol.productConundrum(Array(10, 5, 2, 6), 100))   // 8
-  println(sol.productConundrum(Array(10, 5), 50))           // 2
-  println(sol.productConundrum(Array(1), 1))                // 0
 }
 ```
 
@@ -2192,9 +1593,7 @@ Return: 8 ✓
 
 </details>
 
----
-
-## Complexity Analysis
+### Complexity Analysis
 
 | | Complexity | Reasoning |
 |---|---|---|
@@ -2203,9 +1602,7 @@ Return: 8 ✓
 
 The amortised argument matters: the inner `while` looks quadratic, but across the *whole* run, `start` moves forward at most `N` times total, so the sum of all inner iterations is bounded by `N`.
 
----
-
-## Edge Cases
+### Edge Cases
 
 | Case | Example | Expected | Reasoning |
 |---|---|---|---|
@@ -2215,11 +1612,14 @@ The amortised argument matters: the inner `while` looks quadratic, but across th
 | Empty array | `arr=[]`, `k=10` | `0` | Loop never executes |
 | Product exactly equals `k` | `arr=[2, 5]`, `k=10` | `2` | `2 * 5 = 10` not strictly less — only `[2]` and `[5]` count |
 
----
+</details>
+<details>
+<summary><h2>Key Takeaway</h2></summary>
 
-## Key Takeaway
 
 Product Conundrum upgrades the variable window in two ways at once: contraction becomes a `while` (one expansion can force several shrinks), and the aggregate is a **count of subarrays**, not a single max/min. The trick to counting is recognising that once the invariant holds for `[start..end]`, every shorter window ending at `end` is also valid — so `end − start + 1` new subarrays land in the answer at each step.
+
+</details>
 
 ***
 
@@ -2237,7 +1637,9 @@ arr = [1]                                →  1
 
 ---
 
-## Examples
+<details>
+<summary><h2>Examples</h2></summary>
+
 
 **Example 1**
 ```
@@ -2260,9 +1662,10 @@ Output: 1
 Explanation: The subarray [1] has the largest sum of 1.
 ```
 
----
+</details>
+<details>
+<summary><h2>Intuition</h2></summary>
 
-## Intuition
 
 Kadane's algorithm in sliding-window form. The invariant:
 
@@ -2273,50 +1676,11 @@ When the running `sum` goes negative, every subarray ending at `end` with a non-
 
 We seed `sum` and `max_sum` with `arr[0]` (not `0`) so that an all-negative array still returns the single largest element rather than `0`.
 
----
+</details>
+<details>
+<summary><h2>Solution &amp; Analysis</h2></summary>
 
-## The Solution
-
-
-```pseudocode
-function maxSubarraySum(arr):
-    if arr is empty: return 0
-
-    # To store the starting index of the subarray
-    start ← 0
-
-    # To store the ending index of the subarray
-    end ← 0
-
-    # Initialize sum to a default value (current sum)
-    sum ← arr[end]
-
-    # To store the maximum subarray sum found so far
-    maxSum ← arr[end]
-
-    # Increment to start from index 1 as index 0 has already been taken
-    end ← end + 1
-
-    # Sliding window
-    while end < length(arr):
-
-        # If the current sum becomes negative, reset the window
-        if sum < 0:
-            sum ← arr[end]
-            start ← end + 1
-
-        # Otherwise, add contribution of arr[end]
-        else:
-            sum ← sum + arr[end]
-
-        # Update the maximum subarray sum found so far
-        maxSum ← max(maxSum, sum)
-
-        # Expand the window from the right
-        end ← end + 1
-
-    return maxSum
-```
+### The Solution
 
 ```python run
 from typing import List
@@ -2363,10 +1727,17 @@ class Solution:
         return max_sum
 
 
-sol = Solution()
-print(sol.max_subarray_sum([-2, 1, -3, 4, -1, 2, 1, -5, 4]))   # 6
-print(sol.max_subarray_sum([5, 4, -1, 7, 8]))                   # 23
-print(sol.max_subarray_sum([1]))                                # 1
+# Examples from the problem statement
+print(Solution().max_subarray_sum([-2, 1, -3, 4, -1, 2, 1, -5, 4]))   # 6
+print(Solution().max_subarray_sum([5, 4, -1, 7, 8]))                   # 23
+print(Solution().max_subarray_sum([1]))                                 # 1
+
+# Edge cases
+print(Solution().max_subarray_sum([-1]))                                # -1  — single negative
+print(Solution().max_subarray_sum([2, -1]))                             # 2   — two elements
+print(Solution().max_subarray_sum([-3, -1, -2]))                        # -1  — all negative
+print(Solution().max_subarray_sum([0, 0, 0]))                           # 0   — all zeros
+print(Solution().max_subarray_sum([1, 2, 3, 4, 5]))                     # 15  — all positive
 ```
 
 ```java run
@@ -2419,121 +1790,18 @@ public class Main {
     }
 
     public static void main(String[] args) {
-        Solution sol = new Solution();
-        System.out.println(sol.maxSubarraySum(new int[]{-2, 1, -3, 4, -1, 2, 1, -5, 4}));  // 6
-        System.out.println(sol.maxSubarraySum(new int[]{5, 4, -1, 7, 8}));                   // 23
-        System.out.println(sol.maxSubarraySum(new int[]{1}));                                 // 1
+        // Examples from the problem statement
+        System.out.println(new Solution().maxSubarraySum(new int[]{-2, 1, -3, 4, -1, 2, 1, -5, 4}));   // 6
+        System.out.println(new Solution().maxSubarraySum(new int[]{5, 4, -1, 7, 8}));                   // 23
+        System.out.println(new Solution().maxSubarraySum(new int[]{1}));                                 // 1
+
+        // Edge cases
+        System.out.println(new Solution().maxSubarraySum(new int[]{-1}));                                // -1  — single negative
+        System.out.println(new Solution().maxSubarraySum(new int[]{2, -1}));                             // 2   — two elements
+        System.out.println(new Solution().maxSubarraySum(new int[]{-3, -1, -2}));                        // -1  — all negative
+        System.out.println(new Solution().maxSubarraySum(new int[]{0, 0, 0}));                           // 0   — all zeros
+        System.out.println(new Solution().maxSubarraySum(new int[]{1, 2, 3, 4, 5}));                     // 15  — all positive
     }
-}
-```
-
-```c run
-#include <stdio.h>
-
-int max_subarray_sum(int* arr, int n) {
-    if (n == 0) return 0;
-
-    /* To store the starting index of the subarray */
-    int start = 0;
-
-    /* To store the ending index of the subarray */
-    int end = 0;
-
-    /* Initialize sum to a default value (current sum) */
-    int sum = arr[end];
-
-    /* To store the maximum subarray sum found so far */
-    int max_sum = arr[end];
-
-    /* Increment to start from index 1 as index 0 has already been taken */
-    end++;
-
-    /* Sliding window */
-    while (end < n) {
-
-        /* If the current sum becomes negative, reset the window */
-        if (sum < 0) {
-            sum = arr[end];
-            start = end + 1;
-        }
-
-        /* Otherwise, add contribution of arr[end] */
-        else {
-            sum += arr[end];
-        }
-
-        /* Update the maximum subarray sum found so far */
-        if (sum > max_sum) max_sum = sum;
-
-        /* Expand the window from the right */
-        end++;
-    }
-
-    return max_sum;
-}
-
-int main() {
-    int a1[] = {-2, 1, -3, 4, -1, 2, 1, -5, 4};
-    int a2[] = {5, 4, -1, 7, 8};
-    int a3[] = {1};
-    printf("%d\n", max_subarray_sum(a1, 9));   /* 6 */
-    printf("%d\n", max_subarray_sum(a2, 5));   /* 23 */
-    printf("%d\n", max_subarray_sum(a3, 1));   /* 1 */
-    return 0;
-}
-```
-
-```scala run
-object Main extends App {
-  class Solution {
-    def maxSubarraySum(arr: Array[Int]): Int = {
-      if (arr.isEmpty) {
-        return 0
-      }
-
-      // To store the starting index of the subarray
-      var start = 0
-
-      // To store the ending index of the subarray
-      var end = 0
-
-      // Initialize sum to a default value (current sum)
-      var sum = arr(end)
-
-      // To store the maximum subarray sum found so far
-      var maxSum = arr(end)
-
-      // Increment to start from index 1 as index 0 has already been taken
-      end += 1
-
-      // Sliding window
-      while (end < arr.length) {
-
-        // If the current sum becomes negative, reset the window
-        if (sum < 0) {
-          sum = arr(end)
-          start = end + 1
-        }
-        // Otherwise, add contribution of arr[end]
-        else {
-          sum += arr(end)
-        }
-
-        // Update the maximum subarray sum found so far
-        maxSum = math.max(maxSum, sum)
-
-        // Expand the window from the right
-        end += 1
-      }
-
-      maxSum
-    }
-  }
-
-  val sol = new Solution
-  println(sol.maxSubarraySum(Array(-2, 1, -3, 4, -1, 2, 1, -5, 4)))   // 6
-  println(sol.maxSubarraySum(Array(5, 4, -1, 7, 8)))                    // 23
-  println(sol.maxSubarraySum(Array(1)))                                 // 1
 }
 ```
 
@@ -2558,18 +1826,14 @@ Return: 6 ✓   (the subarray [4, -1, 2, 1], indices 3..6)
 
 </details>
 
----
-
-## Complexity Analysis
+### Complexity Analysis
 
 | | Complexity | Reasoning |
 |---|---|---|
 | **Time** | O(N) | Single pass; every element visited exactly once |
 | **Space** | O(1) | Constant — `start`, `end`, `sum`, `maxSum` |
 
----
-
-## Edge Cases
+### Edge Cases
 
 | Case | Example | Expected | Reasoning |
 |---|---|---|---|
@@ -2580,11 +1844,14 @@ Return: 6 ✓   (the subarray [4, -1, 2, 1], indices 3..6)
 | Zero prefix | `[0, 0, -1, 5]` | `5` | Zeros are non-negative — invariant holds until the `-1`; code still correct |
 | Empty array | `[]` | `0` | Early-return guard |
 
----
+</details>
+<details>
+<summary><h2>Key Takeaway</h2></summary>
 
-## Key Takeaway
 
 Maximum Subarray Sum is Kadane's algorithm written in the variable-sliding-window shape. The invariant is "the running `sum` from `start` to `end` is non-negative"; when adding `arr[end]` pushes that sum below zero, every subarray with a non-empty negative prefix is provably dominated by one starting at `end + 1`, so we leap `start` past the dead region. The seed value `arr[0]` (instead of `0`) keeps the algorithm correct for all-negative arrays.
+
+</details>
 
 ***
 
@@ -2602,7 +1869,9 @@ arr = [0, 0, 0, 0],                        k = 2   →  2    (flip any 2 consecu
 
 ---
 
-## Examples
+<details>
+<summary><h2>Examples</h2></summary>
+
 
 **Example 1**
 ```
@@ -2628,9 +1897,10 @@ Explanation: The maximum number of consecutive 1s is 2 if we flip any 2
              consecutive 0s.
 ```
 
----
+</details>
+<details>
+<summary><h2>Intuition</h2></summary>
 
-## Intuition
 
 The invariant: **the window contains at most `k` zeros**. As long as we can fit all the zeros we've seen into our flip budget, the whole window is a valid candidate — we'd just flip every zero in it.
 
@@ -2642,55 +1912,11 @@ Answer: five. `start` must walk from `0` past the first zero at index `4`, so `s
 
 And here is the payoff: set `k = 0`, and this code becomes **identical in behaviour** to Consecutive Ones. Same invariant ("at most 0 zeros" = "all ones"), same outcome. Consecutive Ones was a special case all along.
 
----
+</details>
+<details>
+<summary><h2>Solution &amp; Analysis</h2></summary>
 
-## The Solution
-
-
-```pseudocode
-function consecutiveOnesWithKFlips(arr, k):
-    # To store the starting index of the subarray
-    start ← 0
-
-    # To store the ending index of the subarray
-    end ← 0
-
-    # To store the current count of 0s in the window
-    countZeros ← 0
-
-    # To store the maximum number of 1s in any subarray
-    maxOnes ← 0
-
-    # Move the window one step to the right until it reaches the end of
-    # the array
-    while end < length(arr):
-
-        # Add contribution of arr[end]
-        if arr[end] = 0:
-
-            # Increment count of zeros
-            countZeros ← countZeros + 1
-
-        # Process aggregate
-        while countZeros > k:
-
-            # Remove contribution of arr[start] using the inverse function
-            if arr[start] = 0:
-
-                # Decrement count of zeros if we move past a zero
-                countZeros ← countZeros − 1
-
-            # Contract window
-            start ← start + 1
-
-        # Update the maximum number of consecutive ones seen so far
-        maxOnes ← max(maxOnes, end − start + 1)
-
-        # Expand the window
-        end ← end + 1
-
-    return maxOnes
-```
+### The Solution
 
 ```python run
 from typing import List
@@ -2744,10 +1970,17 @@ class Solution:
         return max_ones
 
 
-sol = Solution()
-print(sol.consecutive_ones_with_k_flips([1, 1, 1, 0, 0, 0, 1, 1, 1, 1, 0], 1))   # 5
-print(sol.consecutive_ones_with_k_flips([1, 1, 1, 0, 1, 0, 1, 1, 1, 0, 0], 2))   # 9
-print(sol.consecutive_ones_with_k_flips([0, 0, 0, 0], 2))                         # 2
+# Examples from the problem statement
+print(Solution().consecutive_ones_with_k_flips([1, 1, 1, 0, 0, 0, 1, 1, 1, 1, 0], 1))   # 5
+print(Solution().consecutive_ones_with_k_flips([1, 1, 1, 0, 1, 0, 1, 1, 1, 0, 0], 2))   # 9
+print(Solution().consecutive_ones_with_k_flips([0, 0, 0, 0], 2))                          # 2
+
+# Edge cases
+print(Solution().consecutive_ones_with_k_flips([1], 0))                                    # 1  — single one, k=0
+print(Solution().consecutive_ones_with_k_flips([0], 1))                                    # 1  — single zero flipped
+print(Solution().consecutive_ones_with_k_flips([1, 0], 1))                                 # 2  — two elements, flip one
+print(Solution().consecutive_ones_with_k_flips([1, 1, 1, 1], 0))                           # 4  — all ones, no flips needed
+print(Solution().consecutive_ones_with_k_flips([0, 0, 0], 0))                              # 0  — all zeros, no flips
 ```
 
 ```java run
@@ -2767,8 +2000,8 @@ public class Main {
             // To store the maximum number of 1s in any subarray
             int maxOnes = 0;
 
-            // Move the window one step to the right until it reaches the
-            // end of the array
+            // Move the window one step to the right until it reaches the end
+            // of the array
             while (end < arr.length) {
 
                 // Add contribution of arr[end]
@@ -2805,131 +2038,18 @@ public class Main {
     }
 
     public static void main(String[] args) {
-        Solution sol = new Solution();
-        System.out.println(sol.consecutiveOnesWithKFlips(new int[]{1, 1, 1, 0, 0, 0, 1, 1, 1, 1, 0}, 1));  // 5
-        System.out.println(sol.consecutiveOnesWithKFlips(new int[]{1, 1, 1, 0, 1, 0, 1, 1, 1, 0, 0}, 2));  // 9
-        System.out.println(sol.consecutiveOnesWithKFlips(new int[]{0, 0, 0, 0}, 2));                       // 2
+        // Examples from the problem statement
+        System.out.println(new Solution().consecutiveOnesWithKFlips(new int[]{1, 1, 1, 0, 0, 0, 1, 1, 1, 1, 0}, 1));   // 5
+        System.out.println(new Solution().consecutiveOnesWithKFlips(new int[]{1, 1, 1, 0, 1, 0, 1, 1, 1, 0, 0}, 2));   // 9
+        System.out.println(new Solution().consecutiveOnesWithKFlips(new int[]{0, 0, 0, 0}, 2));                          // 2
+
+        // Edge cases
+        System.out.println(new Solution().consecutiveOnesWithKFlips(new int[]{1}, 0));                                    // 1  — single one, k=0
+        System.out.println(new Solution().consecutiveOnesWithKFlips(new int[]{0}, 1));                                    // 1  — single zero flipped
+        System.out.println(new Solution().consecutiveOnesWithKFlips(new int[]{1, 0}, 1));                                 // 2  — two elements, flip one
+        System.out.println(new Solution().consecutiveOnesWithKFlips(new int[]{1, 1, 1, 1}, 0));                           // 4  — all ones, no flips needed
+        System.out.println(new Solution().consecutiveOnesWithKFlips(new int[]{0, 0, 0}, 0));                              // 0  — all zeros, no flips
     }
-}
-```
-
-```c run
-#include <stdio.h>
-
-int consecutive_ones_with_k_flips(int* arr, int n, int k) {
-
-    /* To store the starting index of the subarray */
-    int start = 0;
-
-    /* To store the ending index of the subarray */
-    int end = 0;
-
-    /* To store the current count of 0s in the window */
-    int count_zeros = 0;
-
-    /* To store the maximum number of 1s in any subarray */
-    int max_ones = 0;
-
-    /* Move the window one step to the right until it reaches the end of
-     * the array */
-    while (end < n) {
-
-        /* Add contribution of arr[end] */
-        if (arr[end] == 0) {
-
-            /* Increment count of zeros */
-            count_zeros++;
-        }
-
-        /* Process aggregate */
-        while (count_zeros > k) {
-
-            /* Remove contribution of arr[start] using the inverse function */
-            if (arr[start] == 0) {
-
-                /* Decrement count of zeros if we move past a zero */
-                count_zeros--;
-            }
-
-            /* Contract window */
-            start++;
-        }
-
-        /* Update the maximum number of consecutive ones seen so far */
-        if (end - start + 1 > max_ones) max_ones = end - start + 1;
-
-        /* Expand the window */
-        end++;
-    }
-
-    return max_ones;
-}
-
-int main() {
-    int a1[] = {1, 1, 1, 0, 0, 0, 1, 1, 1, 1, 0}; printf("%d\n", consecutive_ones_with_k_flips(a1, 11, 1));  /* 5 */
-    int a2[] = {1, 1, 1, 0, 1, 0, 1, 1, 1, 0, 0}; printf("%d\n", consecutive_ones_with_k_flips(a2, 11, 2));  /* 9 */
-    int a3[] = {0, 0, 0, 0};                       printf("%d\n", consecutive_ones_with_k_flips(a3, 4, 2));   /* 2 */
-    return 0;
-}
-```
-
-```scala run
-object Main extends App {
-  class Solution {
-    def consecutiveOnesWithKFlips(arr: Array[Int], k: Int): Int = {
-
-      // To store the starting index of the subarray
-      var start = 0
-
-      // To store the ending index of the subarray
-      var end = 0
-
-      // To store the current count of 0s in the window
-      var countZeros = 0
-
-      // To store the maximum number of 1s in any subarray
-      var maxOnes = 0
-
-      // Move the window one step to the right until it reaches the end
-      // of the array
-      while (end < arr.length) {
-
-        // Add contribution of arr[end]
-        if (arr(end) == 0) {
-
-          // Increment count of zeros
-          countZeros += 1
-        }
-
-        // Process aggregate
-        while (countZeros > k) {
-
-          // Remove contribution of arr[start] using the inverse function
-          if (arr(start) == 0) {
-
-            // Decrement count of zeros if we move past a zero
-            countZeros -= 1
-          }
-
-          // Contract window
-          start += 1
-        }
-
-        // Update the maximum number of consecutive ones seen so far
-        maxOnes = math.max(maxOnes, end - start + 1)
-
-        // Expand the window
-        end += 1
-      }
-
-      maxOnes
-    }
-  }
-
-  val sol = new Solution
-  println(sol.consecutiveOnesWithKFlips(Array(1, 1, 1, 0, 0, 0, 1, 1, 1, 1, 0), 1))  // 5
-  println(sol.consecutiveOnesWithKFlips(Array(1, 1, 1, 0, 1, 0, 1, 1, 1, 0, 0), 2))  // 9
-  println(sol.consecutiveOnesWithKFlips(Array(0, 0, 0, 0), 2))                       // 2
 }
 ```
 
@@ -2962,18 +2082,14 @@ shrinks needed to eject one troublesome 0.
 
 </details>
 
----
-
-## Complexity Analysis
+### Complexity Analysis
 
 | | Complexity | Reasoning |
 |---|---|---|
 | **Time** | O(N) | `end` advances `N` times; `start` also advances at most `N` times in total (amortised) |
 | **Space** | O(1) | Three integers: `start`, `zeros`, `max_len` |
 
----
-
-## Edge Cases
+### Edge Cases
 
 | Case | Example | Expected | Reasoning |
 |---|---|---|---|
@@ -2983,9 +2099,10 @@ shrinks needed to eject one troublesome 0.
 | All zeros, `k=0` | `arr=[0,0,0]`, `k=0` | `0` | Every expansion breaks the invariant; `start` chases `end` forever |
 | All zeros, `k ≥ n` | `arr=[0,0,0]`, `k=3` | `3` | Every zero fits; entire array is a valid window |
 
----
+</details>
+<details>
+<summary><h2>Comparison: The Four Problems at a Glance</h2></summary>
 
-## Comparison: The Four Problems at a Glance
 
 | Problem | Invariant | Contract with | Key insight |
 |---|---|---|---|
@@ -2996,9 +2113,10 @@ shrinks needed to eject one troublesome 0.
 
 The leap variants trade a potential slow shrink for a single jump; the `while` variants earn their amortised O(N) by only ever moving `start` forward. Every problem in this section is one of these two shapes.
 
----
+</details>
+<details>
+<summary><h2>Final Takeaway</h2></summary>
 
-## Final Takeaway
 
 Consecutive Ones with K flips is the capstone — a window that tolerates a bounded amount of "badness" and uses that tolerance to find a longer run. The `while`-loop contraction is the general-purpose tool; the single leap (seen in problems 1 and 3) is an optimised special case. If you can answer **"what is my invariant?"** and **"how do I restore it after a bad element enters?"**, every variable-window problem on the rest of this course — and most on any interview whiteboard — will yield to the same two-pointer dance.
 
@@ -3013,3 +2131,5 @@ Consecutive Ones with K flips is the capstone — a window that tolerates a boun
 ---
 
 With the four problems complete, you have every move the variable-sized sliding window knows. The next section — **pattern interval merging** — takes the sliding idea off the raw array and applies it to a sorted list of intervals. The window gets replaced by a sweeping line, but the two-pointer shape you have internalised here stays exactly the same.
+
+</details>

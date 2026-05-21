@@ -227,42 +227,36 @@ Click any question to reveal the answer.
 **A:** Modifications produce *new versions* while preserving older ones. Both old and new are accessible.
 
 </details>
-
 <details>
 <summary><strong>Q:</strong> Three flavours of persistence?</summary>
 
 **A:** **Partial** — old versions readable, only latest modifiable. **Full** — every version readable + modifiable. **Confluent** — versions can be merged.
 
 </details>
-
 <details>
 <summary><strong>Q:</strong> Path-copying cost on a balanced BST?</summary>
 
 **A:** `O(log n)` time and space per modification. Only the path from root to modified node is copied; everything else is shared.
 
 </details>
-
 <details>
 <summary><strong>Q:</strong> Why does this share so much with previous versions?</summary>
 
 **A:** Unmodified subtrees are referenced by both versions. Editing one node changes only `O(log n)` nodes' references along the path; `O(n − log n)` nodes are untouched.
 
 </details>
-
 <details>
 <summary><strong>Q:</strong> Why do functional languages "get persistence for free"?</summary>
 
 **A:** Immutability means nodes never change. New versions naturally share references with old ones. The cost (`log n` overhead) is the price of immutability.
 
 </details>
-
 <details>
 <summary><strong>Q:</strong> Production systems built on persistence?</summary>
 
 **A:** **Git** (Merkle DAG of commits/trees/blobs), **Clojure / Scala / Haskell** persistent collections, **Postgres MVCC** (each transaction sees a snapshot), **VS Code / IntelliJ undo** (rope structure).
 
 </details>
-
 <details>
 <summary><strong>Q:</strong> When is path copying the wrong choice?</summary>
 

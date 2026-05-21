@@ -95,24 +95,41 @@ object CortexReaderLayout:
             if !isEditableTarget(e) && e.key == "[" && !e.metaKey && !e.ctrlKey && !e.altKey then
               e.preventDefault()
               overrideRef.value = true
-              val next = !collapsedS.value
-              writeStoredCollapse(next)
-              collapsedS.setState(next).runNow()
+              // `modState`, not `setState(!collapsedS.value)`: this listener is
+              // installed once on mount, so `collapsedS.value` is frozen at the
+              // mount-render value. The functional update form always receives
+              // the current state, so `[` toggles both ways instead of only
+              // ever collapsing.
+              collapsedS
+                .modState { current =>
+                  val next = !current
+                  writeStoredCollapse(next)
+                  next
+                }
+                .runNow()
           dom.window.addEventListener("keydown", onKey, useCapture = false)
           ()
         }
       }
-      // `F` key — toggle focus mode. `Esc` exits when focused (but the right-TOC popover Esc
-      // handler runs first; we only fire when no popover-class element captured it).
+      // `F` key — toggle focus mode; `Esc` — exit focus mode. Both run off a
+      // mount-installed listener, so they use `modState` to act on the *live*
+      // state rather than the stale captured `focusedS.value`.
       .useEffectOnMountBy { (_, _, _, focusedS, _, _, _) =>
         Callback {
           val onKey: js.Function1[dom.KeyboardEvent, Unit] = (e: dom.KeyboardEvent) =>
             if !isEditableTarget(e) then
               if (e.key == "f" || e.key == "F") && !e.metaKey && !e.ctrlKey && !e.altKey then
                 e.preventDefault()
-                focusedS.setState(!focusedS.value).runNow()
-              else if e.key == "Escape" && focusedS.value then
-                focusedS.setState(false).runNow()
+                // Same mount-installed stale-closure trap as the `[` handler
+                // above — `modState` so `F` toggles focus mode both ways.
+                focusedS.modState(!_).runNow()
+              else if e.key == "Escape" then
+                // `modState`, not `setState(false)` gated on `focusedS.value`:
+                // the captured `focusedS.value` is frozen at the mount-render
+                // value (`false`), so the old guard never passed and `Esc`
+                // never exited focus mode. Setting `false` unconditionally is a
+                // harmless no-op (no re-render) when not already focused.
+                focusedS.modState(_ => false).runNow()
           dom.window.addEventListener("keydown", onKey, useCapture = false)
           ()
         }

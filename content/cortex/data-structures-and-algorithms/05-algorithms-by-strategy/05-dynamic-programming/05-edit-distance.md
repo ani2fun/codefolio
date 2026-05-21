@@ -181,7 +181,9 @@ Output: 0                    No edits needed
 
 ---
 
-## Applying the Diagnostic Questions
+<details>
+<summary><h2>Applying the Diagnostic Questions</h2></summary>
+
 
 | # | Question | Answer |
 |---|---|---|
@@ -212,135 +214,137 @@ Output: 0                    No edits needed
 
 **What breaks otherwise.** Reading any other cell would answer "how many edits to transform a *prefix* of `s1` into a *prefix* of `s2`" — not the full strings.
 
----
+</details>
+<details>
+<summary><h2>The Solution (Bottom-Up)</h2></summary>
 
-## The Solution (Bottom-Up)
 
-
-```pseudocode
-# Classic Levenshtein distance.
-# dp[i][j] = edit distance to transform s1[0..i−1] into s2[0..j−1].
-function editDistance(s1, s2):
-    m ← length(s1); n ← length(s2)
-    dp ← (m + 1) × (n + 1) grid of zeros
-    for i from 0 to m: dp[i][0] ← i              # i deletions to empty s1
-    for j from 0 to n: dp[0][j] ← j              # j insertions to grow from empty
-    for i from 1 to m:
-        for j from 1 to n:
-            if s1[i − 1] = s2[j − 1]:
-                dp[i][j] ← dp[i − 1][j − 1]      # no operation
-            else:
-                dp[i][j] ← 1 + min(
-                    dp[i − 1][j],                # delete s1[i−1]
-                    dp[i][j − 1],                # insert s2[j−1]
-                    dp[i − 1][j − 1]             # substitute s1[i−1] → s2[j−1]
-                )
-    return dp[m][n]
-```
 
 ```python run
 from typing import List
 
 class Solution:
     def edit_distance(self, s1: str, s2: str) -> int:
-        m, n = len(s1), len(s2)
-        # dp[i][j] = edit distance to transform first i chars of s1 into first j chars of s2.
-        dp: List[List[int]] = [[0] * (n + 1) for _ in range(m + 1)]
-        for i in range(m + 1):
-            dp[i][0] = i                         # i deletions to empty s1
-        for j in range(n + 1):
-            dp[0][j] = j                         # j insertions to grow from empty
-        for i in range(1, m + 1):
-            for j in range(1, n + 1):
+        n: int = len(s1)
+        m: int = len(s2)
+
+        # Create a 2D list to store the dynamic programming table
+        dp: List[List[int]] = [[0] * (m + 1) for _ in range(n + 1)]
+
+        # Initialize the base cases
+        for i in range(n + 1):
+            dp[i][0] = i
+        for j in range(m + 1):
+            dp[0][j] = j
+
+        # Fill in the dynamic programming table
+        for i in range(1, n + 1):
+            for j in range(1, m + 1):
+
+                # If the current characters are the same, no edit is
+                # needed
                 if s1[i - 1] == s2[j - 1]:
-                    dp[i][j] = dp[i - 1][j - 1]  # No operation
+                    dp[i][j] = dp[i - 1][j - 1]
+
+                # If the characters are different, choose the
+                # minimum of the three operations:
+                # 1. Deletion: dp[i-1][j] represents the minimum
+                # edit distance without the current character of s1
+                # 2. Insertion: dp[i][j-1] represents the minimum
+                # edit distance without the current character of s2
+                # 3. Substitution: dp[i-1][j-1] represents the
+                # minimum edit distance without both the current
+                # characters
                 else:
                     dp[i][j] = 1 + min(
-                        dp[i - 1][j],            # delete s1[i-1]
-                        dp[i][j - 1],            # insert s2[j-1]
-                        dp[i - 1][j - 1],        # substitute s1[i-1] with s2[j-1]
+                        dp[i - 1][j], dp[i][j - 1], dp[i - 1][j - 1]
                     )
-        return dp[m][n]
+
+        # Return the minimum edit distance
+        return dp[n][m]
 
 
-if __name__ == "__main__":
-    print(Solution().edit_distance("sunday", "saturday"))   # 3
+# Examples from the problem statement
+print(Solution().edit_distance("sunday", "saturday"))  # 3
+print(Solution().edit_distance("abc", "abcd"))         # 1
+print(Solution().edit_distance("abc", "abc"))          # 0
+
+# Edge cases
+print(Solution().edit_distance("", ""))                # 0
+print(Solution().edit_distance("abc", ""))             # 3
+print(Solution().edit_distance("", "abc"))             # 3
+print(Solution().edit_distance("a", "b"))              # 1
+print(Solution().edit_distance("kitten", "sitting"))   # 3
+print(Solution().edit_distance("ab", "ba"))            # 2
 ```
 
 ```java run
 public class Main {
     static class Solution {
         public int editDistance(String s1, String s2) {
-            int m = s1.length(), n = s2.length();
-            int[][] dp = new int[m + 1][n + 1];
-            for (int i = 0; i <= m; i++) dp[i][0] = i;
-            for (int j = 0; j <= n; j++) dp[0][j] = j;
-            for (int i = 1; i <= m; i++) {
-                for (int j = 1; j <= n; j++) {
-                    if (s1.charAt(i - 1) == s2.charAt(j - 1)) dp[i][j] = dp[i - 1][j - 1];
-                    else dp[i][j] = 1 + Math.min(dp[i - 1][j - 1], Math.min(dp[i - 1][j], dp[i][j - 1]));
+            int n = s1.length();
+            int m = s2.length();
+
+            // Create a 2D array to store the dynamic programming table
+            int[][] dp = new int[n + 1][m + 1];
+
+            // Initialize the base cases
+            for (int i = 0; i <= n; i++) dp[i][0] = i;
+            for (int j = 0; j <= m; j++) dp[0][j] = j;
+
+            // Fill in the dynamic programming table
+            for (int i = 1; i <= n; i++) {
+                for (int j = 1; j <= m; j++) {
+
+                    // If the current characters are the same, no edit is
+                    // needed
+                    if (s1.charAt(i - 1) == s2.charAt(j - 1)) {
+                        dp[i][j] = dp[i - 1][j - 1];
+                    }
+
+                    // If the characters are different, choose the
+                    // minimum of the three operations:
+                    // 1. Deletion: dp[i-1][j] represents the minimum
+                    // edit distance without the current character of s1
+                    // 2. Insertion: dp[i][j-1] represents the minimum
+                    // edit distance without the current character of s2
+                    // 3. Substitution: dp[i-1][j-1] represents the
+                    // minimum edit distance without both the current
+                    // characters
+                    else {
+                        dp[i][j] =
+                            1 +
+                            Math.min(
+                                Math.min(dp[i - 1][j], dp[i][j - 1]),
+                                dp[i - 1][j - 1]
+                            );
+                    }
                 }
             }
-            return dp[m][n];
+
+            // Return the minimum edit distance
+            return dp[n][m];
         }
     }
 
     public static void main(String[] args) {
-        System.out.println(new Solution().editDistance("sunday", "saturday"));   // 3
+        // Examples from the problem statement
+        System.out.println(new Solution().editDistance("sunday", "saturday"));  // 3
+        System.out.println(new Solution().editDistance("abc", "abcd"));         // 1
+        System.out.println(new Solution().editDistance("abc", "abc"));          // 0
+
+        // Edge cases
+        System.out.println(new Solution().editDistance("", ""));                // 0
+        System.out.println(new Solution().editDistance("abc", ""));             // 3
+        System.out.println(new Solution().editDistance("", "abc"));             // 3
+        System.out.println(new Solution().editDistance("a", "b"));              // 1
+        System.out.println(new Solution().editDistance("kitten", "sitting"));   // 3
+        System.out.println(new Solution().editDistance("ab", "ba"));            // 2
     }
 }
 ```
 
-```c run
-#include <stdio.h>
-#include <string.h>
-
-int dp[1001][1001];
-
-static inline int min3(int a, int b, int c) {
-    int m = a < b ? a : b;
-    return m < c ? m : c;
-}
-
-int edit_distance(const char *s1, const char *s2) {
-    int m = (int) strlen(s1), n = (int) strlen(s2);
-    for (int i = 0; i <= m; i++) dp[i][0] = i;
-    for (int j = 0; j <= n; j++) dp[0][j] = j;
-    for (int i = 1; i <= m; i++)
-        for (int j = 1; j <= n; j++)
-            if (s1[i - 1] == s2[j - 1]) dp[i][j] = dp[i - 1][j - 1];
-            else dp[i][j] = 1 + min3(dp[i - 1][j], dp[i][j - 1], dp[i - 1][j - 1]);
-    return dp[m][n];
-}
-
-int main(void) {
-    printf("%d\n", edit_distance("sunday", "saturday"));   // 3
-    return 0;
-}
-```
-
-```scala run
-object Main extends App {
-  class Solution {
-    def editDistance(s1: String, s2: String): Int = {
-      val (m, n) = (s1.length, s2.length)
-      val dp = Array.fill(m + 1, n + 1)(0)
-      for (i <- 0 to m) dp(i)(0) = i
-      for (j <- 0 to n) dp(0)(j) = j
-      for (i <- 1 to m; j <- 1 to n) {
-        dp(i)(j) =
-          if (s1(i - 1) == s2(j - 1)) dp(i - 1)(j - 1)
-          else 1 + math.min(dp(i - 1)(j - 1), math.min(dp(i - 1)(j), dp(i)(j - 1)))
-      }
-      dp(m)(n)
-    }
-  }
-
-  println(new Solution().editDistance("sunday", "saturday"))   // 3
-}
-```
-
-
+</details>
 <details>
 <summary><strong>Trace — s1 = "abc", s2 = "abd"</strong></summary>
 
@@ -371,19 +375,17 @@ Final dp[3][3] = 1 ✓ (substitute 'c' → 'd')
 ```
 
 </details>
+<details>
+<summary><h2>Solution &amp; Analysis</h2></summary>
 
----
-
-## Complexity Analysis
+### Complexity Analysis
 
 | Aspect | Cost | Why |
 |---|---|---|
 | Time | `O(m × n)` | Each cell computed once; constant work. |
 | Space | `O(m × n)` | DP table. Reducible to `O(min(m, n))` with rolling rows — only the previous row is needed. |
 
----
-
-## Edge Cases
+### Edge Cases
 
 | Case | Example | Expected | Reasoning |
 |---|---|---|---|
@@ -395,14 +397,16 @@ Final dp[3][3] = 1 ✓ (substitute 'c' → 'd')
 | Repeated character | `"aaa", "a"` | `2` | Two deletions. |
 | Anagram | `"abc", "cba"` | `2` | Substitute 'a'→'c' and 'c'→'a'; 'b' stays. |
 
----
+</details>
+<details>
+<summary><h2>Final Takeaway</h2></summary>
 
-## Final Takeaway
 
 Edit distance is the canonical "transform one sequence into another" DP. Match → no cost; mismatch → 1 + min of three predecessors. The base row and column count linearly because turning empty into something requires that-many insertions. **Every difference between this and LCS comes from substitution being a single primitive operation**.
 
 > *Transfer challenge for the next lesson:* Edit distance compares two *different* strings. What if we compared a string against *its own reverse* — looking for the longest *palindromic* subsequence inside it? Predict the recurrence shape.
 
+</details>
 <details>
 <summary><strong>Answer</strong></summary>
 

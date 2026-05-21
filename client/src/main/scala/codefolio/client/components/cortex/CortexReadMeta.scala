@@ -4,15 +4,13 @@ import japgolly.scalajs.react.*
 import japgolly.scalajs.react.vdom.html_<^.*
 
 /**
- * Small editorial mono strip rendered under the chapter title: `<words> words · <author>`.
+ * Small editorial mono strip rendered under the chapter title: `<words> words`.
  *
  * Per chat-4 user feedback the time-based signals ("4 min read", percentage indicators) were dropped — the
- * reader shouldn't feel pressure to finish in a specific time. Word count + author still help frame the
- * chapter (length expectation, attribution) without putting a clock on the user.
+ * reader shouldn't feel pressure to finish in a specific time. Word count helps frame the chapter (length
+ * expectation) without putting a clock on the user.
  */
 object CortexReadMeta:
-
-  private val Author = "Aniket Kakde"
 
   /**
    * Compute words from the raw markdown body. Whitespace split; markdown punctuation is irrelevant at this
@@ -44,8 +42,6 @@ object CortexReadMeta:
       <.div(
         ^.className  := "cortex-reader-readmeta",
         ^.aria.label := "Article metadata",
-        <.span(<.strong(formatWords(words)), " words"),
-        <.span(^.className := "cortex-reader-readmeta__dot", ^.aria.hidden := true),
-        <.span(<.strong(Author))
+        <.span(<.strong(formatWords(words)), " words")
       )
   }

@@ -200,35 +200,30 @@ Click any question to reveal the answer.
 **A:** When you need *prefix queries* (autocomplete, "all strings starting with X") or sorted iteration. Hash sets can't do either efficiently.
 
 </details>
-
 <details>
 <summary><strong>Q:</strong> Time to find all words in a 2D board (Word Search II)?</summary>
 
 **A:** `O(rows · cols · 4^maxLen)` with trie pruning. Without the trie, you'd repeat work for shared prefixes.
 
 </details>
-
 <details>
 <summary><strong>Q:</strong> DP-on-trie for word break — complexity?</summary>
 
 **A:** `O(|s| · max_word_len)` instead of `O(|s|² · |dict|)` for naive substring lookup.
 
 </details>
-
 <details>
 <summary><strong>Q:</strong> Why does Linux use a level-compressed trie for IP routing?</summary>
 
 **A:** Cache-friendly layout (children stored contiguously per level), shallow tree (8 levels for IPv4), RCU-friendly for lock-free reads. Plain binary tries are 32 levels deep.
 
 </details>
-
 <details>
 <summary><strong>Q:</strong> Trie + edit-distance budget — what does it solve?</summary>
 
 **A:** "Did you mean..." spell-correction. DFS the trie with an edit budget (deletions, insertions, substitutions). Prune subtrees once the budget exceeds the threshold.
 
 </details>
-
 <details>
 <summary><strong>Q:</strong> Stream-of-characters: match against a set of fixed patterns at the END of the seen text?</summary>
 

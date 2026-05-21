@@ -364,23 +364,6 @@ Amortized is the trickiest and the most useful. It says "the *long-run* average 
 
 Reading about quadratic vs linear is one thing; *seeing it* is another. The code below implements the two `has_duplicate` functions from the opening section and times them on inputs of growing size. Run it for yourself — the gap between the two columns is the gap this chapter is teaching you to predict.
 
-```pseudocode
-function hasDuplicateNested(items):
-    for i from 0 to length(items) − 1:
-        for j from i + 1 to length(items) − 1:
-            if items[i] = items[j]:
-                return true
-    return false
-
-function hasDuplicateHash(items):
-    seen ← empty set
-    for x in items:
-        if x is in seen:
-            return true
-        add x to seen
-    return false
-```
-
 ```python run
 import time, random
 
@@ -456,101 +439,6 @@ public class Main {
             System.out.printf("%8d %14.2f %12.3f%n", n, nested, hashed);
         }
     }
-}
-```
-
-```c run
-#include <stdio.h>
-#include <stdlib.h>
-#include <stdbool.h>
-#include <time.h>
-#include <string.h>
-
-bool has_duplicate_nested(const int *items, int n) {
-    for (int i = 0; i < n; i++)
-        for (int j = i + 1; j < n; j++)
-            if (items[i] == items[j]) return true;
-    return false;
-}
-
-bool has_duplicate_hash(const int *items, int n) {
-    int cap = n * 2;                                                                                                                                        // open-addressed table sized 2n
-    int *table = malloc(cap * sizeof(int));
-    for (int i = 0; i < cap; i++) table[i] = -1;                                                                                                            // -1 sentinel for "empty"
-    bool found = false;
-    for (int i = 0; i < n; i++) {
-        int x = items[i];
-        int h = ((unsigned)x * 2654435761u) % cap;                                                                                                          // Knuth multiplicative hash
-        while (table[h] != -1 && table[h] != x) h = (h + 1) % cap;
-        if (table[h] == x) { found = true; break; }
-        table[h] = x;
-    }
-    free(table);
-    return found;
-}
-
-double ms(clock_t t0, clock_t t1) { return (double)(t1 - t0) * 1000.0 / CLOCKS_PER_SEC; }
-
-int main(void) {
-    int sizes[] = {1000, 5000, 10000, 20000};
-    srand(42);
-    printf("%8s %14s %12s\n", "n", "nested (ms)", "hash (ms)");
-    for (int s = 0; s < 4; s++) {
-        int n = sizes[s];
-        int *items = malloc(n * sizeof(int));
-        for (int i = 0; i < n; i++) items[i] = i;
-        for (int i = n - 1; i > 0; i--) {                                                                                                                    // Fisher-Yates shuffle
-            int j = rand() % (i + 1);
-            int t = items[i]; items[i] = items[j]; items[j] = t;
-        }
-        clock_t t0 = clock(); has_duplicate_nested(items, n);
-        double nested = ms(t0, clock());
-        t0 = clock(); has_duplicate_hash(items, n);
-        double hashed = ms(t0, clock());
-        printf("%8d %14.2f %12.3f\n", n, nested, hashed);
-        free(items);
-    }
-    return 0;
-}
-```
-
-```scala run
-import scala.collection.mutable
-import scala.util.Random
-
-object Main extends App {
-  def hasDuplicateNested(items: Array[Int]): Boolean = {
-    var i = 0
-    while (i < items.length) {
-      var j = i + 1
-      while (j < items.length) {
-        if (items(i) == items(j)) return true
-        j += 1
-      }
-      i += 1
-    }
-    false
-  }
-
-  def hasDuplicateHash(items: Array[Int]): Boolean = {
-    val seen = mutable.HashSet.empty[Int]
-    for (x <- items) {
-      if (!seen.add(x)) return true
-    }
-    false
-  }
-
-  val sizes = Array(1000, 5000, 10000, 20000)
-  val rng = new Random(42)
-  println(f"${"n"}%8s ${"nested (ms)"}%14s ${"hash (ms)"}%12s")
-  for (n <- sizes) {
-    val items = rng.shuffle((0 until n).toList).toArray
-    var t0 = System.nanoTime(); hasDuplicateNested(items)
-    val nested = (System.nanoTime() - t0) / 1e6
-    t0 = System.nanoTime(); hasDuplicateHash(items)
-    val hashed = (System.nanoTime() - t0) / 1e6
-    println(f"$n%8d $nested%14.2f $hashed%12.3f")
-  }
 }
 ```
 
@@ -676,63 +564,54 @@ Click any question to reveal the answer.
 **A:** There exist positive constants `c` and `n₀` such that for all `n ≥ n₀`, `f(n) ≤ c · g(n)`.
 
 </details>
-
 <details>
 <summary><strong>Q:</strong> Difference between <code>O</code>, <code>Θ</code>, <code>Ω</code>?</summary>
 
 **A:** `O` = upper bound. `Θ` = tight bound (both upper and lower). `Ω` = lower bound.
 
 </details>
-
 <details>
 <summary><strong>Q:</strong> Is <code>n</code> in <code>O(n²)</code>?</summary>
 
 **A:** Yes. Big-O is an upper bound, not necessarily tight. `Θ(n)` would be the tight one.
 
 </details>
-
 <details>
 <summary><strong>Q:</strong> Is <code>100n</code> in <code>O(n)</code>?</summary>
 
 **A:** Yes. Big-O hides constants. `100n` and `n` are in the same class.
 
 </details>
-
 <details>
 <summary><strong>Q:</strong> Order from slowest to fastest growing: <code>O(n!)</code>, <code>O(2ⁿ)</code>, <code>O(n log n)</code>, <code>O(log n)</code>, <code>O(n²)</code>.</summary>
 
 **A:** `O(log n) < O(n log n) < O(n²) < O(2ⁿ) < O(n!)`.
 
 </details>
-
 <details>
 <summary><strong>Q:</strong> Three rules for deriving complexity from straight-line code?</summary>
 
 **A:** Sequential statements **add**. Nested loops **multiply**. Recursive calls **solve to a recurrence**.
 
 </details>
-
 <details>
 <summary><strong>Q:</strong> Closed form for <code>T(n) = 2T(n/2) + n</code>?</summary>
 
 **A:** `Θ(n log n)` — Master theorem case 2 (merge sort, balanced quicksort).
 
 </details>
-
 <details>
 <summary><strong>Q:</strong> Closed form for <code>T(n) = T(n/2) + 1</code>?</summary>
 
 **A:** `Θ(log n)` — binary search.
 
 </details>
-
 <details>
 <summary><strong>Q:</strong> Worst, average, amortized — example of each in a hash table?</summary>
 
 **A:** Worst lookup = `O(n)` (every key collides into one bucket). Average = `O(1)` (good hash). Amortized insert = `O(1)` (resize amortises across many inserts).
 
 </details>
-
 <details>
 <summary><strong>Q:</strong> Rough operation counts at <code>n = 10⁶</code>?</summary>
 

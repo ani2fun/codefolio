@@ -58,18 +58,6 @@ You have `n` activities, each with a start time `s_i` and end time `e_i`. Pick t
 
 **Greedy strategy: sort by end time; greedily pick the next activity that starts after the last one ended.**
 
-```pseudocode
-function activitySelection(activities):
-    sort activities by end time ascending
-    selected ← []
-    last_end ← −∞
-    for (s, e) in activities:
-        if s ≥ last_end:
-            selected.append((s, e))
-            last_end ← e
-    return selected
-```
-
 **Cost.** `O(n log n)` for the sort.
 
 ```mermaid
@@ -143,26 +131,6 @@ Used in production for: data compression (DEFLATE/gzip uses static Huffman table
 ***
 
 # Implementation
-
-```pseudocode
-function activitySelection(activities):
-    sort activities by end time
-    selected ← []; last_end ← −∞
-    for (s, e) in activities:
-        if s ≥ last_end:
-            selected.append((s, e))
-            last_end ← e
-    return selected
-
-function huffmanCode(frequencies):
-    heap ← min-heap of (freq, leaf) for each symbol
-    while size(heap) > 1:
-        (f1, t1) ← heap.popMin()
-        (f2, t2) ← heap.popMin()
-        combined ← internal node with t1 (left), t2 (right)
-        heap.push((f1 + f2, combined))
-    return heap.popMin()
-```
 
 ```python run
 def activity_selection(activities):
@@ -250,42 +218,6 @@ public class Main {
         int[][] acts = {{1,4}, {3,5}, {0,6}, {5,7}, {8,9}, {5,9}, {6,10}};
         for (int[] s : activitySelection(acts)) System.out.println("[" + s[0] + ", " + s[1] + "]");
     }
-}
-```
-
-```c run
-#include <stdio.h>
-#include <stdlib.h>
-
-int cmp(const void *a, const void *b) { return ((int*)a)[1] - ((int*)b)[1]; }
-
-int main(void) {
-    int activities[][2] = {{1,4}, {3,5}, {0,6}, {5,7}, {8,9}, {5,9}, {6,10}};
-    int n = 7;
-    qsort(activities, n, sizeof(activities[0]), cmp);
-    int last_end = -1;
-    for (int i = 0; i < n; i++) {
-        if (activities[i][0] >= last_end) {
-            printf("[%d, %d]\n", activities[i][0], activities[i][1]);
-            last_end = activities[i][1];
-        }
-    }
-    return 0;
-}
-```
-
-```scala run
-object Main extends App {
-  def activitySelection(activities: Array[(Int, Int)]): List[(Int, Int)] = {
-    val sorted = activities.sortBy(_._2)
-    var lastEnd = Int.MinValue
-    val out = scala.collection.mutable.ListBuffer.empty[(Int, Int)]
-    for ((s, e) <- sorted if s >= lastEnd) { out += ((s, e)); lastEnd = e }
-    out.toList
-  }
-
-  val acts = Array((1, 4), (3, 5), (0, 6), (5, 7), (8, 9), (5, 9), (6, 10))
-  println(activitySelection(acts))
 }
 ```
 
@@ -381,49 +313,42 @@ Click any question to reveal the answer.
 **A:** At each step, make the choice that looks best *now* — without looking ahead to whether that choice constrains future choices badly.
 
 </details>
-
 <details>
 <summary><strong>Q:</strong> What property must a problem have for greedy to be correct?</summary>
 
 **A:** The *greedy-choice property*: a globally-optimal solution can always be reached by making a locally-best first choice. (Plus optimal substructure.)
 
 </details>
-
 <details>
 <summary><strong>Q:</strong> Standard sort key for activity selection?</summary>
 
 **A:** End time. Earliest-ending compatible activity is always in some optimal solution. Sorting by start time is a common wrong answer.
 
 </details>
-
 <details>
 <summary><strong>Q:</strong> What is the exchange argument?</summary>
 
 **A:** Take any optimum; swap one of its choices for the corresponding greedy choice; show the result is still optimal. Repeat until you've transformed the optimum into the greedy solution.
 
 </details>
-
 <details>
 <summary><strong>Q:</strong> Famous greedy failure?</summary>
 
 **A:** **0/1 knapsack.** Greedy by value-per-weight gives wrong answers when items can't be split. Use DP. (Fractional knapsack *is* greedy-amenable.)
 
 </details>
-
 <details>
 <summary><strong>Q:</strong> Famous greedy success — and the proof technique?</summary>
 
 **A:** **Huffman coding.** Repeatedly combine two least-frequent symbols. Exchange argument: in any optimal tree, the two least-frequent symbols can be made deepest siblings, reducing to the next level.
 
 </details>
-
 <details>
 <summary><strong>Q:</strong> Three classical greedy graph algorithms?</summary>
 
 **A:** **Kruskal MST**, **Prim MST**, **Dijkstra shortest path**. All proved correct by exchange-argument variants.
 
 </details>
-
 <details>
 <summary><strong>Q:</strong> When is the coin-change greedy correct?</summary>
 

@@ -201,7 +201,9 @@ Output: 0                            All items too heavy to fit
 
 ---
 
-## Applying the Diagnostic Questions
+<details>
+<summary><h2>Applying the Diagnostic Questions</h2></summary>
+
 
 | # | Question | Answer |
 |---|---|---|
@@ -238,193 +240,157 @@ Output: 0                            All items too heavy to fit
 
 The problem says "maximum value." We want as much value as possible inside the budget. (Edit distance and palindrome partitioning minimise; knapsack maximises. Same recurrence shape, opposite direction.)
 
----
-
-## The Solution
-
-Bottom-up tabulation. `dp[i][w]` = max value using the first `i` items with capacity `w`. Two nested loops: outer on items, inner on capacity. Final answer: `dp[n][capacity]`.
+</details>
+<details>
+<summary><h2>The Solution</h2></summary>
 
 
-```pseudocode
-# 0/1 Knapsack — each item used at most once.
-# dp[i][w] = max value using the first i items within capacity w.
-function zeroOneKnapsack(weights, values, capacity):
-    n ← length(weights)
-    dp ← (n + 1) × (capacity + 1) grid of zeros
-    for i from 1 to n:
-        wi ← weights[i − 1]
-        vi ← values[i − 1]
-        for w from 1 to capacity:
-            if wi ≤ w:
-                dp[i][w] ← max(dp[i − 1][w],                # exclude item i−1
-                                vi + dp[i − 1][w − wi])      # include item i−1
-            else:
-                dp[i][w] ← dp[i − 1][w]                      # too heavy → only exclude is legal
-    return dp[n][capacity]
-```
+Bottom-up tabulation. `maxValue[i][c]` = max value using the first `i` items with capacity `c`. Two nested loops: outer on items, inner on capacity. Final answer: `maxValue[n][capacity]`.
+
 
 ```python run
 from typing import List
 
 class Solution:
-    def zero_one_knapsack(self, weights: List[int], values: List[int], capacity: int) -> int:
-        n = len(weights)
-        # dp[i][w] = max value using the first i items within capacity w.
-        # Row 0 is the no-items base case → all zeros.
-        dp: List[List[int]] = [[0] * (capacity + 1) for _ in range(n + 1)]
+    def knapsack(self, weights: List[int], values: List[int], capacity: int) -> int:
+
+        n: int = len(weights)
+
+        # If there are no items or no capacity, max value is 0
+        if capacity == 0 or n == 0:
+            return 0
+
+        # maxValue[i][c] represents the maximum value achievable using:
+        # the first i items (weights[0..i-1], values[0..i-1])
+        # with a capacity of c
+        maxValue: List[List[int]] = [[0] * (capacity + 1) for _ in range(n + 1)]
+
+        # Build the DP table row by row
         for i in range(1, n + 1):
-            wi, vi = weights[i - 1], values[i - 1]   # Item i-1 in 0-indexed arrays
-            for w in range(1, capacity + 1):
-                if wi <= w:
-                    # Include item i-1 (gain vi, drop capacity by wi) OR exclude it (carry).
-                    dp[i][w] = max(dp[i - 1][w], vi + dp[i - 1][w - wi])
-                else:
-                    # Item too heavy for this w → only exclude is legal.
-                    dp[i][w] = dp[i - 1][w]
-        return dp[n][capacity]
+            for c in range(1, capacity + 1):
+
+                # Exclude the current item
+                maxValue[i][c] = maxValue[i - 1][c]
+
+                # Include the current item if it fits
+                if weights[i - 1] <= c:
+                    maxValue[i][c] = max(
+                        maxValue[i][c],
+                        maxValue[i - 1][c - weights[i - 1]] + values[i - 1]
+                    )
+
+        # The final cell contains the max value for all n items and the full capacity
+        return maxValue[n][capacity]
 
 
 if __name__ == "__main__":
     sol = Solution()
-    print(sol.zero_one_knapsack([6, 4, 5, 3], [7, 3, 2, 6], 10))   # 13
-    print(sol.zero_one_knapsack([4, 5, 1],    [1, 2, 3],    4))    # 3
-    print(sol.zero_one_knapsack([4, 5, 6],    [1, 2, 3],    3))    # 0
+    print(sol.knapsack([6, 4, 5, 3], [7, 3, 2, 6], 10))   # 13
+    print(sol.knapsack([4, 5, 1],    [1, 2, 3],    4))    # 3
+    print(sol.knapsack([4, 5, 6],    [1, 2, 3],    3))    # 0
 ```
 
 ```java run
 public class Main {
     static class Solution {
-        public int zeroOneKnapsack(int[] weights, int[] values, int capacity) {
+
+        public int knapsack(int[] weights, int[] values, int capacity) {
+
             int n = weights.length;
-            int[][] dp = new int[n + 1][capacity + 1];
+
+            // If there are no items or no capacity, max value is 0
+            if (capacity == 0 || n == 0) return 0;
+
+            // maxValue[i][c] represents the maximum value achievable using:
+            // the first i items (weights[0..i-1], values[0..i-1])
+            // with a capacity of c
+            int[][] maxValue = new int[n + 1][capacity + 1];
+
+            // Build the DP table row by row
             for (int i = 1; i <= n; i++) {
-                int wi = weights[i - 1], vi = values[i - 1];
-                for (int w = 1; w <= capacity; w++) {
-                    if (wi <= w) dp[i][w] = Math.max(dp[i - 1][w], vi + dp[i - 1][w - wi]);
-                    else         dp[i][w] = dp[i - 1][w];
+                for (int c = 1; c <= capacity; c++) {
+
+                    // Exclude the current item
+                    maxValue[i][c] = maxValue[i - 1][c];
+
+                    // Include the current item if it fits
+                    if (weights[i - 1] <= c) {
+                        maxValue[i][c] = Math.max(
+                            maxValue[i][c],
+                            maxValue[i - 1][c - weights[i - 1]] + values[i - 1]
+                        );
+                    }
                 }
             }
-            return dp[n][capacity];
+
+            // The final cell contains the max value for all n items and the full capacity
+            return maxValue[n][capacity];
         }
     }
 
     public static void main(String[] args) {
         Solution sol = new Solution();
-        System.out.println(sol.zeroOneKnapsack(new int[]{6, 4, 5, 3}, new int[]{7, 3, 2, 6}, 10));  // 13
-        System.out.println(sol.zeroOneKnapsack(new int[]{4, 5, 1},    new int[]{1, 2, 3},    4));   // 3
-        System.out.println(sol.zeroOneKnapsack(new int[]{4, 5, 6},    new int[]{1, 2, 3},    3));   // 0
+        System.out.println(sol.knapsack(new int[]{6, 4, 5, 3}, new int[]{7, 3, 2, 6}, 10));  // 13
+        System.out.println(sol.knapsack(new int[]{4, 5, 1},    new int[]{1, 2, 3},    4));   // 3
+        System.out.println(sol.knapsack(new int[]{4, 5, 6},    new int[]{1, 2, 3},    3));   // 0
     }
 }
 ```
 
-```c run
-#include <stdio.h>
-
-int dp[1001][10001];
-
-int max(int a, int b) { return a > b ? a : b; }
-
-int zero_one_knapsack(const int *weights, const int *values, int n, int capacity) {
-    for (int i = 0; i <= n; i++)
-        for (int w = 0; w <= capacity; w++) dp[i][w] = 0;
-    for (int i = 1; i <= n; i++) {
-        int wi = weights[i - 1], vi = values[i - 1];
-        for (int w = 1; w <= capacity; w++) {
-            if (wi <= w) dp[i][w] = max(dp[i - 1][w], vi + dp[i - 1][w - wi]);
-            else         dp[i][w] = dp[i - 1][w];
-        }
-    }
-    return dp[n][capacity];
-}
-
-int main(void) {
-    int w1[] = {6, 4, 5, 3}, v1[] = {7, 3, 2, 6};
-    int w2[] = {4, 5, 1},    v2[] = {1, 2, 3};
-    int w3[] = {4, 5, 6},    v3[] = {1, 2, 3};
-    printf("%d\n", zero_one_knapsack(w1, v1, 4, 10));   // 13
-    printf("%d\n", zero_one_knapsack(w2, v2, 3, 4));    // 3
-    printf("%d\n", zero_one_knapsack(w3, v3, 3, 3));    // 0
-    return 0;
-}
-```
-
-```scala run
-object Main extends App {
-  class Solution {
-    def zeroOneKnapsack(weights: Array[Int], values: Array[Int], capacity: Int): Int = {
-      val n = weights.length
-      val dp = Array.fill(n + 1, capacity + 1)(0)
-      for (i <- 1 to n) {
-        val wi = weights(i - 1); val vi = values(i - 1)
-        for (w <- 1 to capacity) {
-          dp(i)(w) =
-            if (wi <= w) math.max(dp(i - 1)(w), vi + dp(i - 1)(w - wi))
-            else dp(i - 1)(w)
-        }
-      }
-      dp(n)(capacity)
-    }
-  }
-
-  val sol = new Solution()
-  println(sol.zeroOneKnapsack(Array(6, 4, 5, 3), Array(7, 3, 2, 6), 10))  // 13
-  println(sol.zeroOneKnapsack(Array(4, 5, 1),    Array(1, 2, 3),    4))   // 3
-  println(sol.zeroOneKnapsack(Array(4, 5, 6),    Array(1, 2, 3),    3))   // 0
-}
-```
-
-
+</details>
 <details>
 <summary><strong>Trace — weights = [6, 4, 5, 3], values = [7, 3, 2, 6], capacity = 10</strong></summary>
 
 ```
-dp dimensions: 5 rows (i = 0..4) × 11 columns (w = 0..10).
+maxValue dimensions: 5 rows (i = 0..4) × 11 columns (c = 0..10).
 Row 0 (no items): all zeros.
 
 i = 1  (item 0: w=6, v=7)
-  Capacities 0..5: item too heavy → dp[1][0..5] = 0
-  Capacities 6..10: include is legal → dp[1][6..10] = max(0, 7) = 7
+  Capacities 0..5: item too heavy → maxValue[1][0..5] = 0
+  Capacities 6..10: include is legal → maxValue[1][6..10] = max(0, 7) = 7
 
 i = 2  (item 1: w=4, v=3)
-  w=4: max(dp[1][4]=0, 3 + dp[1][0]=0)  = 3
-  w=5: max(dp[1][5]=0, 3 + dp[1][1]=0)  = 3
-  w=6: max(dp[1][6]=7, 3 + dp[1][2]=0)  = 7
-  w=7: max(dp[1][7]=7, 3 + dp[1][3]=0)  = 7
-  w=8: max(dp[1][8]=7, 3 + dp[1][4]=0)  = 7
-  w=9: max(dp[1][9]=7, 3 + dp[1][5]=0)  = 7
-  w=10: max(dp[1][10]=7, 3 + dp[1][6]=7) = 10
-  (lower w's: too heavy, copy from above)
+  c=4: max(maxValue[1][4]=0, 3 + maxValue[1][0]=0)  = 3
+  c=5: max(maxValue[1][5]=0, 3 + maxValue[1][1]=0)  = 3
+  c=6: max(maxValue[1][6]=7, 3 + maxValue[1][2]=0)  = 7
+  c=7: max(maxValue[1][7]=7, 3 + maxValue[1][3]=0)  = 7
+  c=8: max(maxValue[1][8]=7, 3 + maxValue[1][4]=0)  = 7
+  c=9: max(maxValue[1][9]=7, 3 + maxValue[1][5]=0)  = 7
+  c=10: max(maxValue[1][10]=7, 3 + maxValue[1][6]=7) = 10
+  (lower c's: too heavy, copy from above)
 
 i = 3  (item 2: w=5, v=2)  — values are mostly the same; only marginal changes
   Items 0+2 give w=11 (overflow); item 2 alone gives v=2 — strictly worse than v=3 from item 1.
   So row 3 mostly mirrors row 2 (item 2 isn't worth picking unless it leaves room for item 1).
-  dp[3][10] = max(dp[2][10]=10, 2 + dp[2][5]=3) = 10
+  maxValue[3][10] = max(maxValue[2][10]=10, 2 + maxValue[2][5]=3) = 10
 
 i = 4  (item 3: w=3, v=6)
-  w=3: max(dp[3][3]=0, 6 + dp[3][0]=0)   = 6
-  w=4: max(dp[3][4]=3, 6 + dp[3][1]=0)   = 6
-  w=5: max(dp[3][5]=3, 6 + dp[3][2]=0)   = 6
-  w=6: max(dp[3][6]=7, 6 + dp[3][3]=0)   = 7
-  w=7: max(dp[3][7]=7, 6 + dp[3][4]=3)   = 9    (items 1+3)
-  w=8: max(dp[3][8]=7, 6 + dp[3][5]=3)   = 9
-  w=9: max(dp[3][9]=7, 6 + dp[3][6]=7)   = 13   (items 0+3) ✓
-  w=10: max(dp[3][10]=10, 6 + dp[3][7]=7) = 13   (items 0+3) ✓
+  c=3: max(maxValue[3][3]=0, 6 + maxValue[3][0]=0)   = 6
+  c=4: max(maxValue[3][4]=3, 6 + maxValue[3][1]=0)   = 6
+  c=5: max(maxValue[3][5]=3, 6 + maxValue[3][2]=0)   = 6
+  c=6: max(maxValue[3][6]=7, 6 + maxValue[3][3]=0)   = 7
+  c=7: max(maxValue[3][7]=7, 6 + maxValue[3][4]=3)   = 9    (items 1+3)
+  c=8: max(maxValue[3][8]=7, 6 + maxValue[3][5]=3)   = 9
+  c=9: max(maxValue[3][9]=7, 6 + maxValue[3][6]=7)   = 13   (items 0+3) ✓
+  c=10: max(maxValue[3][10]=10, 6 + maxValue[3][7]=7) = 13   (items 0+3) ✓
 
-Final dp[4][10] = 13. ✓
+Final maxValue[4][10] = 13. ✓
 ```
 
 </details>
+<details>
+<summary><h2>Complexity Analysis</h2></summary>
 
----
-
-## Complexity Analysis
 
 | Aspect | Cost | Why |
 |---|---|---|
 | Time | `O(n × capacity)` | Two nested loops; constant work per cell. Pseudo-polynomial: linear in `capacity`'s magnitude, *not* its bit length. |
 | Space | `O(n × capacity)` | Full table. Reducible to `O(capacity)` with a 1D rolling array — see below. |
 
-## Space Optimisation — Rolling 1D Array
+</details>
+<details>
+<summary><h2>Space Optimisation — Rolling 1D Array</h2></summary>
+
 
 `dp[i][w]` only reads from `dp[i - 1][*]` — the previous row. So one 1D array suffices, *if* you iterate `w` from `capacity` down to `weights[i - 1]`. Iterating downward ensures `dp[w - weights[i - 1]]` still holds the *previous* row's value when we read it — going upward would let item `i` get picked twice.
 
@@ -441,9 +407,10 @@ def zero_one_knapsack_1d(weights, values, capacity):
 
 Same `O(n × capacity)` time; `O(capacity)` space. Beautiful and the standard interview answer once you've shown the 2D version.
 
----
+</details>
+<details>
+<summary><h2>Edge Cases</h2></summary>
 
-## Edge Cases
 
 | Case | Example | Expected | Reasoning |
 |---|---|---|---|
@@ -454,13 +421,17 @@ Same `O(n × capacity)` time; `O(capacity)` space. Beautiful and the standard in
 | All items fit together | `weights=[1, 1]`, `values=[5, 5]`, `capacity=10` | `10` | Both included. |
 | Equal weights | `weights=[3, 3]`, `values=[5, 6]`, `capacity=3` | `6` | Pick the higher-value one. |
 
+</details>
+
 ***
 
 # 0/1 Knapsack II — Recovering Which Items
 
 The standard knapsack returns just the *value*. But often we want the actual *set of items* — the burglar wants to know *what* to grab, not just how much they're worth. We can recover the selection by *backtracking* through the DP table after it's filled.
 
-## The Idea
+<details>
+<summary><h2>The Idea</h2></summary>
+
 
 After the table is computed, walk from `dp[n][capacity]` backward toward `dp[0][0]`. At each step `(i, w)`:
 - If `dp[i][w] != dp[i - 1][w]`, item `i - 1` *was* included (its inclusion improved the value). Add `i - 1` to the selection; drop `w` by `weights[i - 1]`.
@@ -499,68 +470,88 @@ flowchart LR
 
 (Edge case: if both branches happen to tie, the algorithm picks "exclude" and skips the item. Either choice is valid; the *value* is the same, only one of possibly many optimal subsets is recovered.)
 
----
+</details>
+<details>
+<summary><h2>The Solution</h2></summary>
 
-## The Solution
 
-
-```pseudocode
-# Same DP as Knapsack-I, plus reconstruction by walking the table backwards.
-function zeroOneKnapsackII(weights, values, capacity):
-    n ← length(weights)
-    dp ← (n + 1) × (capacity + 1) grid of zeros
-    for i from 1 to n:
-        wi ← weights[i − 1]; vi ← values[i − 1]
-        for w from 1 to capacity:
-            if wi ≤ w:
-                dp[i][w] ← max(dp[i − 1][w], vi + dp[i − 1][w − wi])
-            else:
-                dp[i][w] ← dp[i − 1][w]
-
-    # Backtrack — value changing across rows means item i−1 was included.
-    selected ← empty list
-    i ← n; w ← capacity
-    while i > 0 AND w > 0:
-        if dp[i][w] ≠ dp[i − 1][w]:
-            prepend (i − 1) to selected
-            w ← w − weights[i − 1]
-        i ← i − 1
-    return selected
-```
 
 ```python run
 from typing import List
 
 class Solution:
-    def zero_one_knapsack_ii(self, weights: List[int], values: List[int], capacity: int) -> List[int]:
-        n = len(weights)
-        # Build the same DP table as before.
-        dp: List[List[int]] = [[0] * (capacity + 1) for _ in range(n + 1)]
+    def zero_one_knapsack_ii(
+        self, weights: List[int], profits: List[int], capacity: int
+    ) -> List[int]:
+        n: int = len(weights)
+
+        # Create a 2D DP array to store the maximum profit at each
+        # capacity for different items
+        dp: List[List[int]] = [
+            [0] * (capacity + 1) for _ in range(n + 1)
+        ]
+
+        # Iterate through each item
         for i in range(1, n + 1):
-            wi, vi = weights[i - 1], values[i - 1]
+
+            # Iterate through each capacity from 1 to the total capacity
             for w in range(1, capacity + 1):
-                if wi <= w:
-                    dp[i][w] = max(dp[i - 1][w], vi + dp[i - 1][w - wi])
+
+                # If the weight of the current item is less than or equal
+                # to the current capacity
+                if weights[i - 1] <= w:
+
+                    # Include the current item and calculate the maximum
+                    # profit by considering the remaining capacity and
+                    # previous items' profits
+                    dp[i][w] = max(
+                        profits[i - 1] + dp[i - 1][w - weights[i - 1]],
+                        dp[i - 1][w],
+                    )
                 else:
+
+                    # If the weight of the current item is greater than
+                    # the current capacity, skip including the item and
+                    # carry forward the previous maximum profit
                     dp[i][w] = dp[i - 1][w]
-        # Backtrack to recover the selected items.
-        selected: List[int] = []
-        i, w = n, capacity
+
+        # Track the selected items that contribute to the maximum profit
+        selected_items: List[int] = []
+        i = n
+        w = capacity
+
+        # Starting from the last item and capacity, backtrack to find the
+        # selected items
         while i > 0 and w > 0:
+
+            # If the current item was included in the optimal solution,
+            # add it to the selected items and reduce the remaining
+            # capacity
             if dp[i][w] != dp[i - 1][w]:
-                # Value changed across rows → item i-1 was included.
-                selected.append(i - 1)
+                selected_items.append(i - 1)
                 w -= weights[i - 1]
+
+            # Move to the previous item
             i -= 1
-        selected.reverse()                    # We collected them last-to-first; sort ascending
-        return selected
+
+        # Reverse the selected items to get them in the correct order
+        selected_items.reverse()
+
+        # Return the selected items
+        return selected_items
 
 
-if __name__ == "__main__":
-    sol = Solution()
-    print(sol.zero_one_knapsack_ii([6, 4, 5, 3], [7, 3, 2, 6], 10))   # [0, 3]
-    print(sol.zero_one_knapsack_ii([4, 5, 1],    [1, 2, 3],    4))    # [2]
-    print(sol.zero_one_knapsack_ii([4, 5, 6],    [1, 2, 3],    3))    # []
+# Examples from the problem statement
+print(Solution().zero_one_knapsack_ii([6, 4, 5, 3], [7, 3, 2, 6], 10))  # [0, 3]
+print(Solution().zero_one_knapsack_ii([4, 5, 1], [1, 2, 3], 4))         # [2]
+print(Solution().zero_one_knapsack_ii([4, 5, 6], [1, 2, 3], 3))         # []
+
+# Edge cases
+print(Solution().zero_one_knapsack_ii([], [], 10))                       # []
+print(Solution().zero_one_knapsack_ii([5], [10], 0))                     # []
+print(Solution().zero_one_knapsack_ii([5], [10], 5))                     # [0]
+print(Solution().zero_one_knapsack_ii([1, 2, 3], [6, 10, 12], 5))       # [0, 1, 2] or [1, 2]
+print(Solution().zero_one_knapsack_ii([10], [100], 5))                   # []
 ```
 
 ```java run
@@ -568,103 +559,96 @@ import java.util.*;
 
 public class Main {
     static class Solution {
-        public List<Integer> zeroOneKnapsackII(int[] weights, int[] values, int capacity) {
+        public int[] zeroOneKnapsackII(
+            int[] weights,
+            int[] profits,
+            int capacity
+        ) {
             int n = weights.length;
+
+            // Create a 2D DP array to store the maximum profit at each
+            // capacity for different items
             int[][] dp = new int[n + 1][capacity + 1];
+
+            // Iterate through each item
             for (int i = 1; i <= n; i++) {
-                int wi = weights[i - 1], vi = values[i - 1];
+
+                // Iterate through each capacity from 1 to the total capacity
                 for (int w = 1; w <= capacity; w++) {
-                    if (wi <= w) dp[i][w] = Math.max(dp[i - 1][w], vi + dp[i - 1][w - wi]);
-                    else         dp[i][w] = dp[i - 1][w];
+
+                    // If the weight of the current item is less than or
+                    // equal to the current capacity
+                    if (weights[i - 1] <= w) {
+
+                        // Include the current item and calculate the maximum
+                        // profit by considering the remaining capacity and
+                        // previous items' profits
+                        dp[i][w] = Math.max(
+                            profits[i - 1] + dp[i - 1][w - weights[i - 1]],
+                            dp[i - 1][w]
+                        );
+                    } else {
+
+                        // If the weight of the current item is greater than
+                        // the current capacity, skip including the item and
+                        // carry forward the previous maximum profit
+                        dp[i][w] = dp[i - 1][w];
+                    }
                 }
             }
-            List<Integer> selected = new ArrayList<>();
-            int i = n, w = capacity;
+
+            // Track the selected items that contribute to the maximum profit
+            List<Integer> selectedItems = new ArrayList<>();
+            int i = n;
+            int w = capacity;
+
+            // Starting from the last item and capacity, backtrack to find
+            // the selected items
             while (i > 0 && w > 0) {
+
+                // If the current item was included in the optimal solution,
+                // add it to the selected items and reduce the remaining
+                // capacity
                 if (dp[i][w] != dp[i - 1][w]) {
-                    selected.add(i - 1);
+                    selectedItems.add(i - 1);
                     w -= weights[i - 1];
                 }
+
+                // Move to the previous item
                 i--;
             }
-            Collections.reverse(selected);
-            return selected;
+
+            // Reverse the selected items to get them in the correct order
+            Collections.reverse(selectedItems);
+
+            // Convert the List to int[]
+            int[] result = new int[selectedItems.size()];
+            for (int j = 0; j < selectedItems.size(); j++) {
+                result[j] = selectedItems.get(j);
+            }
+
+            // Return the selected items
+            return result;
         }
     }
 
     public static void main(String[] args) {
-        Solution sol = new Solution();
-        System.out.println(sol.zeroOneKnapsackII(new int[]{6, 4, 5, 3}, new int[]{7, 3, 2, 6}, 10));  // [0, 3]
-        System.out.println(sol.zeroOneKnapsackII(new int[]{4, 5, 1},    new int[]{1, 2, 3},    4));   // [2]
-        System.out.println(sol.zeroOneKnapsackII(new int[]{4, 5, 6},    new int[]{1, 2, 3},    3));   // []
+        // Examples from the problem statement
+        System.out.println(Arrays.toString(new Solution().zeroOneKnapsackII(new int[]{6, 4, 5, 3}, new int[]{7, 3, 2, 6}, 10)));  // [0, 3]
+        System.out.println(Arrays.toString(new Solution().zeroOneKnapsackII(new int[]{4, 5, 1}, new int[]{1, 2, 3}, 4)));         // [2]
+        System.out.println(Arrays.toString(new Solution().zeroOneKnapsackII(new int[]{4, 5, 6}, new int[]{1, 2, 3}, 3)));         // []
+
+        // Edge cases
+        System.out.println(Arrays.toString(new Solution().zeroOneKnapsackII(new int[]{}, new int[]{}, 10)));                       // []
+        System.out.println(Arrays.toString(new Solution().zeroOneKnapsackII(new int[]{5}, new int[]{10}, 0)));                     // []
+        System.out.println(Arrays.toString(new Solution().zeroOneKnapsackII(new int[]{5}, new int[]{10}, 5)));                     // [0]
+        System.out.println(Arrays.toString(new Solution().zeroOneKnapsackII(new int[]{1, 2, 3}, new int[]{6, 10, 12}, 5)));       // [1, 2]
+        System.out.println(Arrays.toString(new Solution().zeroOneKnapsackII(new int[]{10}, new int[]{100}, 5)));                   // []
     }
 }
 ```
 
-```c run
-#include <stdio.h>
-
-int dp[1001][10001];
-int selected[1001];
-
-int max(int a, int b) { return a > b ? a : b; }
-
-int zero_one_knapsack_ii(const int *weights, const int *values, int n, int capacity, int *out) {
-    for (int i = 0; i <= n; i++)
-        for (int w = 0; w <= capacity; w++) dp[i][w] = 0;
-    for (int i = 1; i <= n; i++) {
-        int wi = weights[i - 1], vi = values[i - 1];
-        for (int w = 1; w <= capacity; w++) {
-            if (wi <= w) dp[i][w] = max(dp[i - 1][w], vi + dp[i - 1][w - wi]);
-            else         dp[i][w] = dp[i - 1][w];
-        }
-    }
-    int len = 0, i = n, w = capacity;
-    while (i > 0 && w > 0) {
-        if (dp[i][w] != dp[i - 1][w]) { selected[len++] = i - 1; w -= weights[i - 1]; }
-        i--;
-    }
-    for (int k = 0; k < len; k++) out[k] = selected[len - 1 - k];     /* reverse */
-    return len;
-}
-
-int main(void) {
-    int w1[] = {6, 4, 5, 3}, v1[] = {7, 3, 2, 6}, out[10];
-    int len = zero_one_knapsack_ii(w1, v1, 4, 10, out);
-    for (int i = 0; i < len; i++) printf("%d ", out[i]);
-    printf("\n");                                                     /* 0 3 */
-    return 0;
-}
-```
-
-```scala run
-object Main extends App {
-  class Solution {
-    def zeroOneKnapsackII(weights: Array[Int], values: Array[Int], capacity: Int): List[Int] = {
-      val n = weights.length
-      val dp = Array.fill(n + 1, capacity + 1)(0)
-      for (i <- 1 to n) {
-        val wi = weights(i - 1); val vi = values(i - 1)
-        for (w <- 1 to capacity) {
-          dp(i)(w) = if (wi <= w) math.max(dp(i - 1)(w), vi + dp(i - 1)(w - wi))
-                     else dp(i - 1)(w)
-        }
-      }
-      val selected = scala.collection.mutable.ArrayBuffer[Int]()
-      var i = n; var w = capacity
-      while (i > 0 && w > 0) {
-        if (dp(i)(w) != dp(i - 1)(w)) { selected += (i - 1); w -= weights(i - 1) }
-        i -= 1
-      }
-      selected.reverse.toList
-    }
-  }
-
-  println(new Solution().zeroOneKnapsackII(Array(6, 4, 5, 3), Array(7, 3, 2, 6), 10))  // List(0, 3)
-}
-```
-
-
+</details>
 <details>
 <summary><strong>Trace — backtracking from dp[4][10] for the running example</strong></summary>
 
@@ -689,10 +673,10 @@ Collected: [3, 0].  Reverse → [0, 3].  ✓
 ```
 
 </details>
+<details>
+<summary><h2>Solution &amp; Analysis</h2></summary>
 
----
-
-## Complexity Analysis
+### Complexity Analysis
 
 | Aspect | Cost | Why |
 |---|---|---|
@@ -701,16 +685,16 @@ Collected: [3, 0].  Reverse → [0, 3].  ✓
 
 The 1D rolling-array trick from earlier *cannot* directly reconstruct the path — overwriting rows loses the trail. Reconstruction needs the full 2D history (or some clever bit-packing variants beyond this lesson).
 
----
-
-## Edge Cases
+### Edge Cases
 
 | Case | Example | Expected | Reasoning |
 |---|---|---|---|
 | Nothing fits | `weights=[10]`, `capacity=5` | `[]` | Backtrack starts; `dp[1][5] == dp[0][5] == 0` → no inclusion ever recorded. |
 | One item exactly fills | `weights=[5]`, `values=[10]`, `capacity=5` | `[0]` | `dp[1][5] = 10 != 0` → record 0. |
-| Tie between two items, same weight | `weights=[3, 3]`, `values=[5, 5]`, `capacity=3` | `[1]` | Either index is correct; backtrack picks the later one due to the equality check. |
+| Tie between two items, same weight | `weights=[3, 3]`, `values=[5, 5]`, `capacity=3` | `[0]` | Either index is correct; at row `i=2` the include/exclude tie makes `dp[2][3] == dp[1][3]`, so the equality check treats item 1 as *excluded* and the backtrack keeps walking up until item 0's row, where the value changes — so it recovers the earlier index. |
 | Multiple equally-good subsets | various | one valid subset | Algorithm returns *one* maximum — the one the backtrack walks. |
+
+</details>
 
 ***
 
@@ -754,119 +738,95 @@ In 0/1, each `(i, c)` is reached from at most two parents — include-or-exclude
 We use a `(n + 1) × (capacity + 1)` table, same shape as 0/1. The only difference: the include term reads from the *same* row.
 
 
-```pseudocode
-# Unbounded knapsack — each item can be used unlimited times.
-# Note the include branch: dp[i][w − wi] (same row), not dp[i − 1][w − wi].
-function unboundedKnapsack(weights, values, capacity):
-    n ← length(weights)
-    dp ← (n + 1) × (capacity + 1) grid of zeros
-    for i from 1 to n:
-        wi ← weights[i − 1]; vi ← values[i − 1]
-        for w from 1 to capacity:
-            exclude ← dp[i − 1][w]                          # don't use item i
-            include ← (vi + dp[i][w − wi]) if wi ≤ w else 0  # use item i, item still available
-            dp[i][w] ← max(exclude, include)
-    return dp[n][capacity]
-```
-
 ```python run
 from typing import List
 
 class Solution:
-    def unbounded_knapsack(self, weights: List[int], values: List[int], capacity: int) -> int:
-        n = len(weights)
-        dp: List[List[int]] = [[0] * (capacity + 1) for _ in range(n + 1)]
+    def knapsack(self, weights: List[int], values: List[int], capacity: int) -> int:
+
+        n: int = len(weights)
+
+        # If there are no items or no capacity, max value is 0
+        if capacity == 0 or n == 0:
+            return 0
+
+        # maxValue[i][c] represents the maximum value achievable using:
+        # the first i items (weights[0..i-1], values[0..i-1])
+        # with a capacity of c, where each item can be used unlimited times
+        maxValue: List[List[int]] = [[0] * (capacity + 1) for _ in range(n + 1)]
+
+        # Build the DP table row by row
         for i in range(1, n + 1):
-            wi, vi = weights[i - 1], values[i - 1]
-            for w in range(1, capacity + 1):
-                # Exclude: dp[i-1][w] — move on without using item i.
-                exclude = dp[i - 1][w]
-                # Include: stay at row i — same item still available for re-use.
-                include = vi + dp[i][w - wi] if wi <= w else 0
-                dp[i][w] = max(exclude, include)
-        return dp[n][capacity]
+            for c in range(1, capacity + 1):
+
+                # Exclude the current item
+                maxValue[i][c] = maxValue[i - 1][c]
+
+                # Include the current item if it fits
+                # Note: we use maxValue[i][...] not maxValue[i - 1][...]
+                # because the current item can be reused
+                if weights[i - 1] <= c:
+                    maxValue[i][c] = max(
+                        maxValue[i][c],
+                        maxValue[i][c - weights[i - 1]] + values[i - 1]
+                    )
+
+        # The final cell contains the max value for all n items and the full capacity
+        return maxValue[n][capacity]
 
 
 if __name__ == "__main__":
     sol = Solution()
     # 5 weight 1 value 1, weight 4 value 5, weight 3 value 4 — capacity 8.
     # Best: 2× item with w=4, v=5 → total weight 8, value 10.
-    print(sol.unbounded_knapsack([1, 4, 3], [1, 5, 4], 8))   # 10
+    print(sol.knapsack([1, 4, 3], [1, 5, 4], 8))   # 10
     # Coin change in disguise: w=v=[1, 3, 4], capacity 6 → 6 (six 1-coins).
-    print(sol.unbounded_knapsack([1, 3, 4], [1, 3, 4], 6))   # 6
+    print(sol.knapsack([1, 3, 4], [1, 3, 4], 6))   # 6
 ```
 
 ```java run
 public class Main {
     static class Solution {
-        public int unboundedKnapsack(int[] weights, int[] values, int capacity) {
+
+        public int knapsack(int[] weights, int[] values, int capacity) {
+
             int n = weights.length;
-            int[][] dp = new int[n + 1][capacity + 1];
+
+            // If there are no items or no capacity, max value is 0
+            if (capacity == 0 || n == 0) return 0;
+
+            // maxValue[i][c] represents the maximum value achievable using:
+            // the first i items (weights[0..i-1], values[0..i-1])
+            // with a capacity of c, where each item can be used unlimited times
+            int[][] maxValue = new int[n + 1][capacity + 1];
+
+            // Build the DP table row by row
             for (int i = 1; i <= n; i++) {
-                int wi = weights[i - 1], vi = values[i - 1];
-                for (int w = 1; w <= capacity; w++) {
-                    int exclude = dp[i - 1][w];
-                    int include = (wi <= w) ? vi + dp[i][w - wi] : 0;
-                    dp[i][w] = Math.max(exclude, include);
+                for (int c = 1; c <= capacity; c++) {
+
+                    // Exclude the current item
+                    maxValue[i][c] = maxValue[i - 1][c];
+
+                    // Include the current item if it fits
+                    // Note: we use maxValue[i][...] not maxValue[i - 1][...]
+                    // because the current item can be reused
+                    if (weights[i - 1] <= c) {
+                        maxValue[i][c] = Math.max(
+                            maxValue[i][c],
+                            maxValue[i][c - weights[i - 1]] + values[i - 1]
+                        );
+                    }
                 }
             }
-            return dp[n][capacity];
+
+            // The final cell contains the max value for all n items and the full capacity
+            return maxValue[n][capacity];
         }
     }
 
     public static void main(String[] args) {
-        System.out.println(new Solution().unboundedKnapsack(new int[]{1, 4, 3}, new int[]{1, 5, 4}, 8));  // 10
+        System.out.println(new Solution().knapsack(new int[]{1, 4, 3}, new int[]{1, 5, 4}, 8));  // 10
     }
-}
-```
-
-```c run
-#include <stdio.h>
-
-int dp[1001][10001];
-
-int max(int a, int b) { return a > b ? a : b; }
-
-int unbounded_knapsack(const int *weights, const int *values, int n, int capacity) {
-    for (int i = 0; i <= n; i++)
-        for (int w = 0; w <= capacity; w++) dp[i][w] = 0;
-    for (int i = 1; i <= n; i++) {
-        int wi = weights[i - 1], vi = values[i - 1];
-        for (int w = 1; w <= capacity; w++) {
-            int exclude = dp[i - 1][w];
-            int include = (wi <= w) ? vi + dp[i][w - wi] : 0;
-            dp[i][w] = max(exclude, include);
-        }
-    }
-    return dp[n][capacity];
-}
-
-int main(void) {
-    int w[] = {1, 4, 3}, v[] = {1, 5, 4};
-    printf("%d\n", unbounded_knapsack(w, v, 3, 8));   // 10
-    return 0;
-}
-```
-
-```scala run
-object Main extends App {
-  class Solution {
-    def unboundedKnapsack(weights: Array[Int], values: Array[Int], capacity: Int): Int = {
-      val n = weights.length
-      val dp = Array.fill(n + 1, capacity + 1)(0)
-      for (i <- 1 to n) {
-        val wi = weights(i - 1); val vi = values(i - 1)
-        for (w <- 1 to capacity) {
-          val exclude = dp(i - 1)(w)
-          val include = if (wi <= w) vi + dp(i)(w - wi) else 0
-          dp(i)(w) = math.max(exclude, include)
-        }
-      }
-      dp(n)(capacity)
-    }
-  }
-
-  println(new Solution().unboundedKnapsack(Array(1, 4, 3), Array(1, 5, 4), 8))  // 10
 }
 ```
 
@@ -935,132 +895,92 @@ If we drop `min(counts[i], ...)` from the recurrence and just iterate `k` from 0
 ## The Algorithm
 
 
-```pseudocode
-# Bounded knapsack — each item type i has a usage cap counts[i].
-function boundedKnapsack(weights, values, counts, capacity):
-    n ← length(weights)
-    dp ← (n + 1) × (capacity + 1) grid of zeros
-    for i from 1 to n:
-        wi ← weights[i − 1]; vi ← values[i − 1]; ci ← counts[i − 1]
-        for w from 0 to capacity:
-            kMax ← min(ci, w ÷ wi)                          # most copies of item i that still fit
-            best ← 0
-            for k from 0 to kMax:
-                best ← max(best, k × vi + dp[i − 1][w − k × wi])
-            dp[i][w] ← best
-    return dp[n][capacity]
-```
-
 ```python run
 from typing import List
 
 class Solution:
-    def bounded_knapsack(self, weights: List[int], values: List[int], counts: List[int], capacity: int) -> int:
-        n = len(weights)
-        dp: List[List[int]] = [[0] * (capacity + 1) for _ in range(n + 1)]
+    def knapsack(self, weights: List[int], values: List[int], counts: List[int], capacity: int) -> int:
+
+        n: int = len(weights)
+
+        # If there are no items or no capacity, max value is 0
+        if capacity == 0 or n == 0:
+            return 0
+
+        # maxValue[i][c] represents the maximum value achievable using:
+        # the first i item types (weights[0..i-1], values[0..i-1], counts[0..i-1])
+        # with a capacity of c, respecting the count limit of each item type
+        maxValue: List[List[int]] = [[0] * (capacity + 1) for _ in range(n + 1)]
+
+        # Build the DP table row by row
         for i in range(1, n + 1):
-            wi, vi, ci = weights[i - 1], values[i - 1], counts[i - 1]
-            for w in range(capacity + 1):
-                # Try every legal count k of item i-1.
-                k_max = min(ci, w // wi) if wi > 0 else ci
-                best = 0
-                for k in range(k_max + 1):
-                    best = max(best, k * vi + dp[i - 1][w - k * wi])
-                dp[i][w] = best
-        return dp[n][capacity]
+            for c in range(1, capacity + 1):
+
+                # Start by taking 0 copies of the current item type
+                maxValue[i][c] = maxValue[i - 1][c]
+
+                # Try taking 1 to min(counts[i - 1], c // weights[i - 1]) copies
+                max_copies = min(counts[i - 1], c // weights[i - 1])
+                for k in range(1, max_copies + 1):
+                    maxValue[i][c] = max(
+                        maxValue[i][c],
+                        maxValue[i - 1][c - k * weights[i - 1]] + k * values[i - 1]
+                    )
+
+        # The final cell contains the max value for all n item types and the full capacity
+        return maxValue[n][capacity]
 
 
 if __name__ == "__main__":
     sol = Solution()
     # 3 item types: (w=1,v=1, ≤2), (w=2,v=3, ≤2), (w=3,v=4, ≤1).  capacity=5.
     # Best: 2 of item 1 + 1 of item 0 → w=5, v=7.   Or 1 of item 1 + 1 of item 2 → w=5, v=7. Tie.
-    print(sol.bounded_knapsack([1, 2, 3], [1, 3, 4], [2, 2, 1], 5))   # 7
+    print(sol.knapsack([1, 2, 3], [1, 3, 4], [2, 2, 1], 5))   # 7
 ```
 
 ```java run
 public class Main {
     static class Solution {
-        public int boundedKnapsack(int[] weights, int[] values, int[] counts, int capacity) {
+
+        public int knapsack(int[] weights, int[] values, int[] counts, int capacity) {
+
             int n = weights.length;
-            int[][] dp = new int[n + 1][capacity + 1];
+
+            // If there are no items or no capacity, max value is 0
+            if (capacity == 0 || n == 0) return 0;
+
+            // maxValue[i][c] represents the maximum value achievable using:
+            // the first i item types (weights[0..i-1], values[0..i-1], counts[0..i-1])
+            // with a capacity of c, respecting the count limit of each item type
+            int[][] maxValue = new int[n + 1][capacity + 1];
+
+            // Build the DP table row by row
             for (int i = 1; i <= n; i++) {
-                int wi = weights[i - 1], vi = values[i - 1], ci = counts[i - 1];
-                for (int w = 0; w <= capacity; w++) {
-                    int kMax = (wi > 0) ? Math.min(ci, w / wi) : ci;
-                    int best = 0;
-                    for (int k = 0; k <= kMax; k++) {
-                        best = Math.max(best, k * vi + dp[i - 1][w - k * wi]);
+                for (int c = 1; c <= capacity; c++) {
+
+                    // Start by taking 0 copies of the current item type
+                    maxValue[i][c] = maxValue[i - 1][c];
+
+                    // Try taking 1 to min(counts[i - 1], c / weights[i - 1]) copies
+                    int maxCopies = Math.min(counts[i - 1], c / weights[i - 1]);
+                    for (int k = 1; k <= maxCopies; k++) {
+                        maxValue[i][c] = Math.max(
+                            maxValue[i][c],
+                            maxValue[i - 1][c - k * weights[i - 1]] + k * values[i - 1]
+                        );
                     }
-                    dp[i][w] = best;
                 }
             }
-            return dp[n][capacity];
+
+            // The final cell contains the max value for all n item types and the full capacity
+            return maxValue[n][capacity];
         }
     }
 
     public static void main(String[] args) {
-        System.out.println(new Solution().boundedKnapsack(
+        System.out.println(new Solution().knapsack(
             new int[]{1, 2, 3}, new int[]{1, 3, 4}, new int[]{2, 2, 1}, 5));  // 7
     }
-}
-```
-
-```c run
-#include <stdio.h>
-
-int dp[1001][10001];
-
-int max(int a, int b) { return a > b ? a : b; }
-int min(int a, int b) { return a < b ? a : b; }
-
-int bounded_knapsack(const int *weights, const int *values, const int *counts, int n, int capacity) {
-    for (int i = 0; i <= n; i++)
-        for (int w = 0; w <= capacity; w++) dp[i][w] = 0;
-    for (int i = 1; i <= n; i++) {
-        int wi = weights[i - 1], vi = values[i - 1], ci = counts[i - 1];
-        for (int w = 0; w <= capacity; w++) {
-            int k_max = (wi > 0) ? min(ci, w / wi) : ci;
-            int best = 0;
-            for (int k = 0; k <= k_max; k++) {
-                int candidate = k * vi + dp[i - 1][w - k * wi];
-                if (candidate > best) best = candidate;
-            }
-            dp[i][w] = best;
-        }
-    }
-    return dp[n][capacity];
-}
-
-int main(void) {
-    int w[] = {1, 2, 3}, v[] = {1, 3, 4}, c[] = {2, 2, 1};
-    printf("%d\n", bounded_knapsack(w, v, c, 3, 5));    // 7
-    return 0;
-}
-```
-
-```scala run
-object Main extends App {
-  class Solution {
-    def boundedKnapsack(weights: Array[Int], values: Array[Int], counts: Array[Int], capacity: Int): Int = {
-      val n = weights.length
-      val dp = Array.fill(n + 1, capacity + 1)(0)
-      for (i <- 1 to n) {
-        val wi = weights(i - 1); val vi = values(i - 1); val ci = counts(i - 1)
-        for (w <- 0 to capacity) {
-          val kMax = if (wi > 0) math.min(ci, w / wi) else ci
-          var best = 0
-          for (k <- 0 to kMax) {
-            val candidate = k * vi + dp(i - 1)(w - k * wi)
-            if (candidate > best) best = candidate
-          }
-          dp(i)(w) = best
-        }
-      }
-      dp(n)(capacity)
-    }
-  }
-
-  println(new Solution().boundedKnapsack(Array(1, 2, 3), Array(1, 3, 4), Array(2, 2, 1), 5))  // 7
 }
 ```
 

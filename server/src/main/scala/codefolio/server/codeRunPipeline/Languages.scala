@@ -47,7 +47,7 @@ object Languages:
       pistonName = Some("java")
     ),
     Language(
-      RunnableLanguageInfo(id = 81, label = "Scala 2.13", aliases = Seq("scala")),
+      RunnableLanguageInfo(id = 81, label = "Scala 3", aliases = Seq("scala")),
       pistonName = Some("scala")
     ),
     Language(

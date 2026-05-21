@@ -121,37 +121,6 @@ This template handles "find one" search. For "find all," replace step 3's "if tr
 A clean, language-agnostic skeleton illustrating the search recipe with explicit undo. The scenario is a generic maze-style "can I reach the goal?" search.
 
 
-```pseudocode
-DIRS ← [(1, 0), (0, 1), (−1, 0), (0, −1)]      # down, right, up, left
-
-function findPath(maze):
-    if maze is empty OR maze[0] is empty:
-        return false
-    return search(maze, 0, 0)
-
-function search(maze, row, col):
-    rows ← length(maze)
-    cols ← length(maze[0])
-
-    # Boundary, obstacle, or already-visited cell.
-    if NOT (0 ≤ row < rows AND 0 ≤ col < cols) OR maze[row][col] ≠ 0:
-        return false
-
-    # Goal cell — bottom-right.
-    if row = rows − 1 AND col = cols − 1:
-        return true
-
-    maze[row][col] ← −1                         # apply: mark visited
-
-    for each (dr, dc) in DIRS:
-        if search(maze, row + dr, col + dc):
-            maze[row][col] ← 0                  # restore on success
-            return true
-
-    maze[row][col] ← 0                          # undo on failure
-    return false
-```
-
 ```python run
 from typing import List
 
@@ -217,68 +186,6 @@ public class Main {
         int[][] maze = {{0, 1, 0}, {0, 0, 0}, {1, 0, 0}};
         System.out.println(new Solution().findPath(maze));
     }
-}
-```
-
-```c run
-#include <stdio.h>
-#include <stdbool.h>
-
-#define R 3
-#define C 3
-
-static const int dirs[4][2] = {{1, 0}, {0, 1}, {-1, 0}, {0, -1}};
-
-bool search(int maze[R][C], int row, int col) {
-    if (row < 0 || row >= R || col < 0 || col >= C || maze[row][col] != 0) return false;
-    if (row == R - 1 && col == C - 1) return true;
-    maze[row][col] = -1;                         /* apply */
-    for (int i = 0; i < 4; i++) {
-        if (search(maze, row + dirs[i][0], col + dirs[i][1])) {
-            maze[row][col] = 0;
-            return true;
-        }
-    }
-    maze[row][col] = 0;                           /* undo */
-    return false;
-}
-
-int main(void) {
-    int maze[R][C] = {{0, 1, 0}, {0, 0, 0}, {1, 0, 0}};
-    printf("%s\n", search(maze, 0, 0) ? "true" : "false");
-    return 0;
-}
-```
-
-```scala run
-object Main extends App {
-  class Solution {
-    private val dirs = Array(Array(1, 0), Array(0, 1), Array(-1, 0), Array(0, -1))
-
-    def findPath(maze: Array[Array[Int]]): Boolean = {
-      if (maze.isEmpty || maze(0).isEmpty) false
-      else search(maze, 0, 0)
-    }
-
-    private def search(maze: Array[Array[Int]], row: Int, col: Int): Boolean = {
-      val rows = maze.length
-      val cols = maze(0).length
-      if (row < 0 || row >= rows || col < 0 || col >= cols || maze(row)(col) != 0) return false
-      if (row == rows - 1 && col == cols - 1) return true
-      maze(row)(col) = -1
-      for (d <- dirs) {
-        if (search(maze, row + d(0), col + d(1))) {
-          maze(row)(col) = 0
-          return true
-        }
-      }
-      maze(row)(col) = 0
-      false
-    }
-  }
-
-  val maze = Array(Array(0, 1, 0), Array(0, 0, 0), Array(1, 0, 0))
-  println(new Solution().findPath(maze))
 }
 ```
 
@@ -388,7 +295,9 @@ Output: "DDRDRR"   (or "DRDDRR" — any valid path)
 
 ---
 
-## What Makes This a Search Problem?
+<details>
+<summary><h2>What Makes This a Search Problem?</h2></summary>
+
 
 Three signs:
 1. The world (the maze grid) is the state we're navigating.
@@ -417,9 +326,10 @@ flowchart TB
 
 <p align="center"><strong>Search descends through the grid, marking visited cells. On a dead end, the recursion returns false, the cell is unmarked, and the parent tries another direction.</strong></p>
 
----
+</details>
+<details>
+<summary><h2>Applying the Diagnostic Questions</h2></summary>
 
-## Applying the Diagnostic Questions
 
 | # | Check | Answer |
 |---|---|---|
@@ -439,9 +349,10 @@ Each recursion asks "from this cell, can I reach the goal?" The answer is yes or
 
 If we don't unmark a cell after a failed exploration from it, subsequent sibling branches can't traverse that cell — even though they could legitimately. The unmark restores the maze for siblings. ✓
 
----
+</details>
+<details>
+<summary><h2>The Visit-Mark-Recurse-Unmark Strategy (Visualised)</h2></summary>
 
-## The Visit-Mark-Recurse-Unmark Strategy (Visualised)
 
 <div class="d2-slides" data-caption="The maze gets mutated as we descend; on failure, mutations are undone before sibling branches run.">
 
@@ -477,210 +388,271 @@ state: "Continue exploring; eventual success → 'DDRDRR'" {
 
 </div>
 
----
+</details>
+<details>
+<summary><h2>Solution &amp; Analysis</h2></summary>
 
-## The Solution
-
-
-```pseudocode
-DIRS ← [('D', 1, 0), ('R', 0, 1), ('U', −1, 0), ('L', 0, −1)]
-
-function ratInAMaze(maze):
-    if maze is empty OR maze[0] is empty OR maze[0][0] ≠ 0:
-        return ""
-    path ← empty list of characters
-    if search(maze, 0, 0, path):
-        return join(path)
-    return ""
-
-function search(maze, row, col, path):
-    rows ← length(maze)
-    cols ← length(maze[0])
-
-    # Goal reached — bottom-right cell.
-    if row = rows − 1 AND col = cols − 1:
-        return true
-
-    original ← maze[row][col]
-    maze[row][col] ← −1                          # apply: mark visited
-
-    for each (dirChar, dr, dc) in DIRS:
-        nr ← row + dr
-        nc ← col + dc
-        if 0 ≤ nr < rows AND 0 ≤ nc < cols AND maze[nr][nc] = 0:
-            append dirChar to path
-            if search(maze, nr, nc, path):
-                maze[row][col] ← original       # restore on success
-                return true
-            remove last element of path         # undo path step
-
-    maze[row][col] ← original                    # undo visit mark
-    return false
-```
+### The Solution
 
 ```python run
-from typing import List
+from typing import List, Tuple
 
 class Solution:
-    DIRS = [('D', 1, 0), ('R', 0, 1), ('U', -1, 0), ('L', 0, -1)]
+
+    # Choices: (direction char, row change, col change)
+    choices: List[Tuple[str, int, int]] = [
+        ("D", 1, 0),
+        ("R", 0, 1),
+        ("U", -1, 0),
+        ("L", 0, -1),
+    ]
+
+    # Check if a cell is valid for movement
+    def is_valid(
+        self, maze: List[List[int]], row: int, col: int
+    ) -> bool:
+        return (
+            0 <= row < len(maze)
+            and 0 <= col < len(maze[0])
+            and maze[row][col] == 0
+        )
+
+    def search(
+        self, maze: List[List[int]], row: int, col: int, path: List[str]
+    ) -> bool:
+
+        # If we reached the destination (bottom-right corner of the
+        # maze),
+        if row == len(maze) - 1 and col == len(maze[0]) - 1:
+
+            # Valid path is now already stored in path
+            return True
+
+        # Store the value of the current cell to mark it as visited
+        cell_value = maze[row][col]
+
+        # Mark the current cell as visited to avoid revisiting it
+        maze[row][col] = -1
+
+        # Loop through all possible choices (directions)
+        for dir, dx, dy in self.choices:
+            new_row = row + dx
+            new_col = col + dy
+
+            # Check if the new position can be visited
+            if self.is_valid(maze, new_row, new_col):
+
+                # Make choice: append direction to current path
+                path.append(dir)
+
+                # Recurse to explore further from the new cell
+                if self.search(maze, new_row, new_col, path):
+
+                    # Unmake choice: mark the current cell as unvisited
+                    maze[row][col] = cell_value
+
+                    # If a valid path is found, return true
+                    return True
+
+                # Unmake choice: remove the last added direction
+                path.pop()
+
+        # Unmake choice: mark the current cell as unvisited
+        maze[row][col] = cell_value
+
+        # No path found from this cell, return false
+        return False
 
     def rat_in_a_maze(self, maze: List[List[int]]) -> str:
         if not maze or not maze[0] or maze[0][0] != 0:
             return ""
+
+        # Current path (state)
         path: List[str] = []
-        if self._search(maze, 0, 0, path):
-            return "".join(path)
-        return ""
 
-    def _search(self, maze: List[List[int]], row: int, col: int, path: List[str]) -> bool:
-        rows, cols = len(maze), len(maze[0])
-        if row == rows - 1 and col == cols - 1:
-            return True                      # goal reached; path holds the answer
-        original = maze[row][col]
-        maze[row][col] = -1                  # mark visited (apply)
-        for dir_char, dr, dc in self.DIRS:
-            nr, nc = row + dr, col + dc
-            if 0 <= nr < rows and 0 <= nc < cols and maze[nr][nc] == 0:
-                path.append(dir_char)
-                if self._search(maze, nr, nc, path):
-                    maze[row][col] = original
-                    return True               # propagate success
-                path.pop()                    # undo the path step
-        maze[row][col] = original             # undo the visit mark
-        return False
+        # Start backtracking from the top-left corner (0,0)
+        self.search(maze, 0, 0, path)
+
+        # Return the found path
+        return "".join(path)
 
 
-if __name__ == "__main__":
-    maze = [[0, 1, 1, 1], [0, 0, 1, 0], [0, 0, 1, 1], [1, 0, 0, 0]]
-    print(Solution().rat_in_a_maze(maze))
+# Example from the problem statement — one valid path exists
+maze1 = [[0, 1, 1, 1], [0, 0, 1, 0], [0, 0, 1, 1], [1, 0, 0, 0]]
+print(Solution().rat_in_a_maze(maze1))                # DDRDRR (or DRDDRR)
+
+# Simple 2x2 open maze — single step right then down
+maze2 = [[0, 0], [0, 0]]
+print(Solution().rat_in_a_maze(maze2))                # DR (or similar valid path)
+
+# 1x1 maze — already at destination
+maze3 = [[0]]
+print(Solution().rat_in_a_maze(maze3))                # (empty string — already there)
+
+# No path — start blocked
+maze4 = [[1, 0], [0, 0]]
+print(Solution().rat_in_a_maze(maze4))                # (empty string)
+
+# No path — destination blocked
+maze5 = [[0, 0], [0, 1]]
+print(Solution().rat_in_a_maze(maze5))                # (empty string)
+
+# Straight right path only
+maze6 = [[0, 0, 0, 0]]
+print(Solution().rat_in_a_maze(maze6))                # RRR
+
+# Straight down path only
+maze7 = [[0], [0], [0], [0]]
+print(Solution().rat_in_a_maze(maze7))                # DDD
+
+# Longer maze with single winding path
+maze8 = [[0, 0, 1], [1, 0, 1], [1, 0, 0]]
+print(Solution().rat_in_a_maze(maze8))                # RDRDD (or similar valid path)
 ```
 
 ```java run
 public class Main {
     static class Solution {
-        private static final int[][] DIRS = {{1, 0}, {0, 1}, {-1, 0}, {0, -1}};
-        private static final char[] DIR_CHAR = {'D', 'R', 'U', 'L'};
 
-        public String ratInAMaze(int[][] maze) {
-            if (maze.length == 0 || maze[0].length == 0 || maze[0][0] != 0) return "";
-            StringBuilder path = new StringBuilder();
-            return search(maze, 0, 0, path) ? path.toString() : "";
+        // Direction list: (direction char, row change, col change)
+        private final char[] dirs = { 'D', 'R', 'U', 'L' };
+        private final int[] dx = { 1, 0, -1, 0 };
+        private final int[] dy = { 0, 1, 0, -1 };
+
+        // Check if a cell is valid for movement
+        private boolean isValid(
+            int[][] maze,
+            int rows,
+            int cols,
+            int row,
+            int col
+        ) {
+            return (
+                row >= 0 &&
+                row < rows &&
+                col >= 0 &&
+                col < cols &&
+                maze[row][col] == 0
+            );
         }
 
-        private boolean search(int[][] maze, int row, int col, StringBuilder path) {
-            int rows = maze.length, cols = maze[0].length;
-            if (row == rows - 1 && col == cols - 1) return true;
-            int orig = maze[row][col];
+        private boolean search(
+            int[][] maze,
+            int rows,
+            int cols,
+            int row,
+            int col,
+            StringBuilder path
+        ) {
+
+            // If we reached the destination (bottom-right corner of the
+            // maze),
+            if (row == rows - 1 && col == cols - 1) {
+
+                // Valid path is now already stored in path
+                return true;
+            }
+
+            // Store the value of the current cell to mark it as visited
+            int cellValue = maze[row][col];
+
+            // Mark the current cell as visited to avoid revisiting it
             maze[row][col] = -1;
+
+            // Loop through all possible choices (directions)
             for (int i = 0; i < 4; i++) {
-                int nr = row + DIRS[i][0], nc = col + DIRS[i][1];
-                if (nr >= 0 && nr < rows && nc >= 0 && nc < cols && maze[nr][nc] == 0) {
-                    path.append(DIR_CHAR[i]);
-                    if (search(maze, nr, nc, path)) {
-                        maze[row][col] = orig;
+                int newRow = row + dx[i];
+                int newCol = col + dy[i];
+
+                // Check if the new position can be visited
+                if (isValid(maze, rows, cols, newRow, newCol)) {
+
+                    // Make choice: append direction to current path
+                    path.append(dirs[i]);
+
+                    // Recurse to explore further from the new cell
+                    if (search(maze, rows, cols, newRow, newCol, path)) {
+
+                        // Unmake choice: mark the current cell as unvisited
+                        maze[row][col] = cellValue;
+
+                        // If a valid path is found, return true
                         return true;
                     }
+
+                    // Unmake choice: remove the last added direction
                     path.deleteCharAt(path.length() - 1);
                 }
             }
-            maze[row][col] = orig;
+
+            // Unmake choice: mark the current cell as unvisited
+            maze[row][col] = cellValue;
+
+            // No path found from this cell, return false
             return false;
+        }
+
+        public String ratInAMaze(int[][] maze) {
+            if (
+                maze == null ||
+                maze.length == 0 ||
+                maze[0].length == 0 ||
+                maze[0][0] != 0
+            ) {
+                return "";
+            }
+
+            int rows = maze.length;
+            int cols = maze[0].length;
+
+            // Current path (state)
+            StringBuilder path = new StringBuilder();
+
+            // Start backtracking from the top-left corner (0,0)
+            search(maze, rows, cols, 0, 0, path);
+
+            // Return the found path
+            return path.toString();
         }
     }
 
     public static void main(String[] args) {
-        int[][] maze = {{0, 1, 1, 1}, {0, 0, 1, 0}, {0, 0, 1, 1}, {1, 0, 0, 0}};
-        System.out.println(new Solution().ratInAMaze(maze));
+        // Example from the problem statement — one valid path exists
+        int[][] maze1 = {{0,1,1,1},{0,0,1,0},{0,0,1,1},{1,0,0,0}};
+        System.out.println(new Solution().ratInAMaze(maze1));   // DDRDRR (or DRDDRR)
+
+        // Simple 2x2 open maze
+        int[][] maze2 = {{0,0},{0,0}};
+        System.out.println(new Solution().ratInAMaze(maze2));   // DR (or similar valid path)
+
+        // 1x1 maze — already at destination
+        int[][] maze3 = {{0}};
+        System.out.println(new Solution().ratInAMaze(maze3));   // (empty string)
+
+        // No path — start blocked
+        int[][] maze4 = {{1,0},{0,0}};
+        System.out.println(new Solution().ratInAMaze(maze4));   // (empty string)
+
+        // No path — destination blocked
+        int[][] maze5 = {{0,0},{0,1}};
+        System.out.println(new Solution().ratInAMaze(maze5));   // (empty string)
+
+        // Straight right path only
+        int[][] maze6 = {{0,0,0,0}};
+        System.out.println(new Solution().ratInAMaze(maze6));   // RRR
+
+        // Straight down path only
+        int[][] maze7 = {{0},{0},{0},{0}};
+        System.out.println(new Solution().ratInAMaze(maze7));   // DDD
+
+        // Longer maze with single winding path
+        int[][] maze8 = {{0,0,1},{1,0,1},{1,0,0}};
+        System.out.println(new Solution().ratInAMaze(maze8));   // RDRDD (or similar valid path)
     }
 }
 ```
 
-```c run
-#include <stdio.h>
-#include <string.h>
-#include <stdbool.h>
-
-#define R 4
-#define C 4
-
-static const int dirs[4][2] = {{1, 0}, {0, 1}, {-1, 0}, {0, -1}};
-static const char DC[4] = {'D', 'R', 'U', 'L'};
-
-bool search(int maze[R][C], int row, int col, char *path, int *pl) {
-    if (row == R - 1 && col == C - 1) return true;
-    int orig = maze[row][col];
-    maze[row][col] = -1;
-    for (int i = 0; i < 4; i++) {
-        int nr = row + dirs[i][0], nc = col + dirs[i][1];
-        if (nr >= 0 && nr < R && nc >= 0 && nc < C && maze[nr][nc] == 0) {
-            path[(*pl)++] = DC[i];
-            if (search(maze, nr, nc, path, pl)) {
-                maze[row][col] = orig;
-                return true;
-            }
-            (*pl)--;
-        }
-    }
-    maze[row][col] = orig;
-    return false;
-}
-
-int main(void) {
-    int maze[R][C] = {{0, 1, 1, 1}, {0, 0, 1, 0}, {0, 0, 1, 1}, {1, 0, 0, 0}};
-    char path[100] = "";
-    int pl = 0;
-    if (search(maze, 0, 0, path, &pl)) {
-        path[pl] = '\0';
-        printf("%s\n", path);
-    } else {
-        printf("(no path)\n");
-    }
-    return 0;
-}
-```
-
-```scala run
-object Main extends App {
-  class Solution {
-    private val dirs = Array((1, 0, 'D'), (0, 1, 'R'), (-1, 0, 'U'), (0, -1, 'L'))
-
-    def ratInAMaze(maze: Array[Array[Int]]): String = {
-      if (maze.isEmpty || maze(0).isEmpty || maze(0)(0) != 0) return ""
-      val path = new StringBuilder
-      if (search(maze, 0, 0, path)) path.toString() else ""
-    }
-
-    private def search(maze: Array[Array[Int]], row: Int, col: Int, path: StringBuilder): Boolean = {
-      val rows = maze.length
-      val cols = maze(0).length
-      if (row == rows - 1 && col == cols - 1) return true
-      val orig = maze(row)(col)
-      maze(row)(col) = -1
-      for ((dr, dc, ch) <- dirs) {
-        val nr = row + dr; val nc = col + dc
-        if (nr >= 0 && nr < rows && nc >= 0 && nc < cols && maze(nr)(nc) == 0) {
-          path.append(ch)
-          if (search(maze, nr, nc, path)) {
-            maze(row)(col) = orig
-            return true
-          }
-          path.deleteCharAt(path.length - 1)
-        }
-      }
-      maze(row)(col) = orig
-      false
-    }
-  }
-
-  val maze = Array(Array(0,1,1,1), Array(0,0,1,0), Array(0,0,1,1), Array(1,0,0,0))
-  println(new Solution().ratInAMaze(maze))
-}
-```
-
-
----
-
-## Complexity Analysis
+### Complexity Analysis
 
 | Resource | Cost | Why |
 |---|---|---|
@@ -689,9 +661,7 @@ object Main extends App {
 
 In practice, the visited-mark prevents revisiting cells, so the search is much faster than the naive `4^(R·C)` bound — closer to `O(R·C)` for typical mazes.
 
----
-
-## Edge Cases
+### Edge Cases
 
 | Case | Example | Expected |
 |---|---|---|
@@ -701,11 +671,14 @@ In practice, the visited-mark prevents revisiting cells, so the search is much f
 | All open | `[[0,0],[0,0]]` | `"DR"` or `"RD"`. |
 | Disconnected | obstacles isolate the goal | `""`. |
 
----
+</details>
+<details>
+<summary><h2>Final Takeaway</h2></summary>
 
-## Final Takeaway
 
 Rat in a Maze is the canonical "find one path" search problem. Mark visited, recurse, propagate true on success, undo on failure. Same recipe applies to flood-fill, island-counting (when finding any cell of an island), and many graph reachability problems. The next problem keeps the 2D-grid setting but flips the goal: instead of reaching a destination, we're matching a sequence of characters.
+
+</details>
 
 ***
 
@@ -729,7 +702,9 @@ Output: true
 
 ---
 
-## What's the Recursion Doing?
+<details>
+<summary><h2>What's the Recursion Doing?</h2></summary>
+
 
 Try starting from every cell that matches `word[0]`. From each starting cell, recurse into the four neighbours; at each step, the next cell must match `word[index]`. Use the visited-mark trick to prevent reusing cells. When `index` reaches `len(word)`, the chain is complete — return `true`.
 
@@ -759,9 +734,10 @@ flowchart TB
 
 <p align="center"><strong>Backtracking search for word matching. The mark-visit-recurse-unmark dance is identical to the maze; only the validation differs (character match instead of cell type).</strong></p>
 
----
+</details>
+<details>
+<summary><h2>Applying the Diagnostic Questions</h2></summary>
 
-## Applying the Diagnostic Questions
 
 | # | Check | Answer |
 |---|---|---|
@@ -781,203 +757,279 @@ We want a yes/no answer. If any starting cell can spell the word, return `true`;
 
 Different starting cells should each get a clean view of the board. If we forget to unmark, one starting cell's pollution prevents another from working. ✓
 
----
+</details>
+<details>
+<summary><h2>Solution &amp; Analysis</h2></summary>
 
-## The Solution
-
-
-```pseudocode
-DIRS ← [(1, 0), (−1, 0), (0, 1), (0, −1)]
-
-function wordQuest(board, word):
-    rows ← length(board)
-    cols ← length(board[0])
-    for r from 0 to rows − 1:
-        for c from 0 to cols − 1:
-            if board[r][c] = word[0] AND search(board, word, 1, r, c):
-                return true
-    return false
-
-function search(board, word, index, row, col):
-    if index = length(word):
-        return true                              # entire word matched
-
-    rows ← length(board)
-    cols ← length(board[0])
-    original ← board[row][col]
-    board[row][col] ← '#'                        # mark visited (sentinel)
-
-    for each (dr, dc) in DIRS:
-        nr ← row + dr
-        nc ← col + dc
-        if 0 ≤ nr < rows AND 0 ≤ nc < cols AND board[nr][nc] = word[index]:
-            if search(board, word, index + 1, nr, nc):
-                board[row][col] ← original      # restore on success
-                return true
-
-    board[row][col] ← original                   # undo on failure
-    return false
-```
+### The Solution
 
 ```python run
-from typing import List
+from typing import List, Tuple
 
 class Solution:
-    DIRS = [(1, 0), (-1, 0), (0, 1), (0, -1)]
+
+    # Directions list: (row change, col change)
+    choices: List[Tuple[int, int]] = [
+        (1, 0),   # Down
+        (-1, 0),  # Up
+        (0, 1),   # Right
+        (0, -1)   # Left
+    ]
+
+    # Check if moving to (row,col) is valid for the current character
+    def is_valid_move(
+        self, board: List[List[str]], row: int, col: int, target: str
+    ) -> bool:
+
+        # Check boundaries
+        if (
+            row < 0
+            or col < 0
+            or row >= len(board)
+            or col >= len(board[0])
+        ):
+            return False
+
+        # Check if the cell matches the target character
+        return board[row][col] == target
+
+    # Recursive backtracking function
+    def search_word(
+        self,
+        board: List[List[str]],
+        word: str,
+        index: int,
+        row: int,
+        col: int,
+    ) -> bool:
+
+        # Base case: entire word matched (solution state)
+        if index == len(word):
+            return True
+
+        # Make choice: mark current cell as visited
+        original_char = board[row][col]
+        board[row][col] = "#"
+
+        # Explore all possible choices
+        for dx, dy in self.choices:
+            new_row = row + dx
+            new_col = col + dy
+
+            # Only recurse if this move is valid
+            if self.is_valid_move(board, new_row, new_col, word[index]):
+
+                # Recurse to next character in word
+                if self.search_word(
+                    board, word, index + 1, new_row, new_col
+                ):
+
+                    # Unmake choice: restore original character
+                    board[row][col] = original_char
+
+                    # Early return: solution found
+                    return True
+
+        # Unmake choice: restore the original character to allow other
+        # paths
+        board[row][col] = original_char
+
+        # Return false if word not found along this path
+        return False
 
     def word_quest(self, board: List[List[str]], word: str) -> bool:
-        rows, cols = len(board), len(board[0])
-        for r in range(rows):
-            for c in range(cols):
-                if board[r][c] == word[0] and self._search(board, word, 1, r, c):
-                    return True
-        return False
+        rows = len(board)
+        cols = len(board[0])
 
-    def _search(self, board: List[List[str]], word: str, index: int, row: int, col: int) -> bool:
-        if index == len(word):
-            return True                              # entire word matched
-        rows, cols = len(board), len(board[0])
-        original = board[row][col]
-        board[row][col] = "#"                        # mark visited (sentinel value)
-        for dr, dc in self.DIRS:
-            nr, nc = row + dr, col + dc
-            if 0 <= nr < rows and 0 <= nc < cols and board[nr][nc] == word[index]:
-                if self._search(board, word, index + 1, nr, nc):
-                    board[row][col] = original
-                    return True
-        board[row][col] = original                   # undo on failure
+        # Start backtracking search from every cell on the board
+        for row in range(rows):
+            for col in range(cols):
+
+                # Only start if the first character matches
+                if board[row][col] == word[0]:
+
+                    # Start recursive backtracking
+                    if self.search_word(board, word, 1, row, col):
+                        return True
+
+        # No path leads to the word
         return False
 
 
-if __name__ == "__main__":
-    board = [['A','B','C','E'], ['S','F','C','S'], ['A','D','E','E']]
-    print(Solution().word_quest(board, "ABCCED"))
+# Example from the problem statement
+b1 = [['A','B','C','E'],['S','F','C','S'],['A','D','E','E']]
+print(Solution().word_quest(b1, "ABCCED"))            # True
+
+# Another word on the same board
+b2 = [['A','B','C','E'],['S','F','C','S'],['A','D','E','E']]
+print(Solution().word_quest(b2, "SEE"))               # True
+
+# Word not on board
+b3 = [['A','B','C','E'],['S','F','C','S'],['A','D','E','E']]
+print(Solution().word_quest(b3, "ABCB"))              # False
+
+# Single-cell board — word present
+b4 = [['A']]
+print(Solution().word_quest(b4, "A"))                 # True
+
+# Single-cell board — word absent
+b5 = [['A']]
+print(Solution().word_quest(b5, "B"))                 # False
+
+# Word requires same cell twice — not allowed
+b6 = [['A','B'],['C','D']]
+print(Solution().word_quest(b6, "ABBA"))              # False
+
+# Word spans entire board
+b7 = [['A','B'],['C','D']]
+print(Solution().word_quest(b7, "ABDC"))              # True
+
+# Word found going upward
+b8 = [['C'],['B'],['A']]
+print(Solution().word_quest(b8, "ABC"))               # True
 ```
 
 ```java run
 public class Main {
     static class Solution {
-        private static final int[][] DIRS = {{1, 0}, {-1, 0}, {0, 1}, {0, -1}};
 
-        public boolean wordQuest(char[][] board, String word) {
-            int rows = board.length, cols = board[0].length;
-            for (int r = 0; r < rows; r++) {
-                for (int c = 0; c < cols; c++) {
-                    if (board[r][c] == word.charAt(0) && search(board, word, 1, r, c)) {
+        // Directions list: (row change, col change)
+        private final int[][] choices = {
+            {1, 0},   // Down
+            {-1, 0},  // Up
+            {0, 1},   // Right
+            {0, -1}   // Left
+        };
+
+        // Check if moving to (row,col) is valid for the current character
+        private boolean isValidMove(
+            char[][] board,
+            int row,
+            int col,
+            char target
+        ) {
+
+            // Check boundaries
+            if (
+                row < 0 ||
+                col < 0 ||
+                row >= board.length ||
+                col >= board[0].length
+            ) {
+                return false;
+            }
+
+            // Check if the cell matches the target character
+            return board[row][col] == target;
+        }
+
+        // Recursive backtracking function
+        private boolean searchWord(
+            char[][] board,
+            String word,
+            int index,
+            int row,
+            int col
+        ) {
+
+            // Base case: entire word matched (solution state)
+            if (index == word.length()) {
+                return true;
+            }
+
+            // Make choice: mark current cell as visited
+            char originalChar = board[row][col];
+            board[row][col] = '#';
+
+            // Explore all possible choices
+            for (int[] choice : choices) {
+                int newRow = row + choice[0];
+                int newCol = col + choice[1];
+
+                // Only recurse if this move is valid
+                if (isValidMove(board, newRow, newCol, word.charAt(index))) {
+
+                    // Recurse to next character in word
+                    if (searchWord(board, word, index + 1, newRow, newCol)) {
+
+                        // Unmake choice: restore original character
+                        board[row][col] = originalChar;
+
+                        // Early return: solution found
                         return true;
                     }
                 }
             }
+
+            // Unmake choice: restore the original character to allow other
+            // paths
+            board[row][col] = originalChar;
+
+            // Return false if word not found along this path
             return false;
         }
 
-        private boolean search(char[][] board, String word, int index, int row, int col) {
-            if (index == word.length()) return true;
-            char orig = board[row][col];
-            board[row][col] = '#';
-            for (int[] d : DIRS) {
-                int nr = row + d[0], nc = col + d[1];
-                if (nr >= 0 && nr < board.length && nc >= 0 && nc < board[0].length
-                    && board[nr][nc] == word.charAt(index)) {
-                    if (search(board, word, index + 1, nr, nc)) {
-                        board[row][col] = orig;
-                        return true;
+        public boolean wordQuest(char[][] board, String word) {
+            int rows = board.length;
+            int cols = board[0].length;
+
+            // Start backtracking search from every cell on the board
+            for (int row = 0; row < rows; row++) {
+                for (int col = 0; col < cols; col++) {
+
+                    // Only start if the first character matches
+                    if (board[row][col] == word.charAt(0)) {
+
+                        // Start recursive backtracking
+                        if (searchWord(board, word, 1, row, col)) {
+                            return true;
+                        }
                     }
                 }
             }
-            board[row][col] = orig;
+
+            // No path leads to the word
             return false;
         }
     }
 
     public static void main(String[] args) {
-        char[][] board = {{'A','B','C','E'}, {'S','F','C','S'}, {'A','D','E','E'}};
-        System.out.println(new Solution().wordQuest(board, "ABCCED"));
+        // Example from the problem statement
+        char[][] b1 = {{'A','B','C','E'},{'S','F','C','S'},{'A','D','E','E'}};
+        System.out.println(new Solution().wordQuest(b1, "ABCCED"));   // true
+
+        // Another word on the same board
+        char[][] b2 = {{'A','B','C','E'},{'S','F','C','S'},{'A','D','E','E'}};
+        System.out.println(new Solution().wordQuest(b2, "SEE"));       // true
+
+        // Word not on board
+        char[][] b3 = {{'A','B','C','E'},{'S','F','C','S'},{'A','D','E','E'}};
+        System.out.println(new Solution().wordQuest(b3, "ABCB"));      // false
+
+        // Single-cell board — word present
+        char[][] b4 = {{'A'}};
+        System.out.println(new Solution().wordQuest(b4, "A"));         // true
+
+        // Single-cell board — word absent
+        char[][] b5 = {{'A'}};
+        System.out.println(new Solution().wordQuest(b5, "B"));         // false
+
+        // Word requires same cell twice — not allowed
+        char[][] b6 = {{'A','B'},{'C','D'}};
+        System.out.println(new Solution().wordQuest(b6, "ABBA"));      // false
+
+        // Word spans entire board
+        char[][] b7 = {{'A','B'},{'C','D'}};
+        System.out.println(new Solution().wordQuest(b7, "ABDC"));      // true
+
+        // Word found going upward
+        char[][] b8 = {{'C'},{'B'},{'A'}};
+        System.out.println(new Solution().wordQuest(b8, "ABC"));       // true
     }
 }
 ```
 
-```c run
-#include <stdio.h>
-#include <string.h>
-#include <stdbool.h>
-
-#define R 3
-#define C 4
-
-static const int dirs[4][2] = {{1, 0}, {-1, 0}, {0, 1}, {0, -1}};
-
-bool search(char board[R][C], const char *word, int index, int row, int col) {
-    if (index == (int) strlen(word)) return true;
-    char orig = board[row][col];
-    board[row][col] = '#';
-    for (int i = 0; i < 4; i++) {
-        int nr = row + dirs[i][0], nc = col + dirs[i][1];
-        if (nr >= 0 && nr < R && nc >= 0 && nc < C && board[nr][nc] == word[index]) {
-            if (search(board, word, index + 1, nr, nc)) {
-                board[row][col] = orig;
-                return true;
-            }
-        }
-    }
-    board[row][col] = orig;
-    return false;
-}
-
-int main(void) {
-    char board[R][C] = {{'A','B','C','E'}, {'S','F','C','S'}, {'A','D','E','E'}};
-    const char *word = "ABCCED";
-    bool found = false;
-    for (int r = 0; r < R && !found; r++) {
-        for (int c = 0; c < C && !found; c++) {
-            if (board[r][c] == word[0] && search(board, word, 1, r, c)) found = true;
-        }
-    }
-    printf("%s\n", found ? "true" : "false");
-    return 0;
-}
-```
-
-```scala run
-object Main extends App {
-  class Solution {
-    private val dirs = Array((1, 0), (-1, 0), (0, 1), (0, -1))
-
-    def wordQuest(board: Array[Array[Char]], word: String): Boolean = {
-      val rows = board.length; val cols = board(0).length
-      for (r <- 0 until rows; c <- 0 until cols) {
-        if (board(r)(c) == word.charAt(0) && search(board, word, 1, r, c)) return true
-      }
-      false
-    }
-
-    private def search(board: Array[Array[Char]], word: String, index: Int, row: Int, col: Int): Boolean = {
-      if (index == word.length) return true
-      val orig = board(row)(col)
-      board(row)(col) = '#'
-      for ((dr, dc) <- dirs) {
-        val nr = row + dr; val nc = col + dc
-        if (nr >= 0 && nr < board.length && nc >= 0 && nc < board(0).length && board(nr)(nc) == word.charAt(index)) {
-          if (search(board, word, index + 1, nr, nc)) {
-            board(row)(col) = orig
-            return true
-          }
-        }
-      }
-      board(row)(col) = orig
-      false
-    }
-  }
-
-  val board = Array(Array('A','B','C','E'), Array('S','F','C','S'), Array('A','D','E','E'))
-  println(new Solution().wordQuest(board, "ABCCED"))
-}
-```
-
-
----
-
-## Complexity Analysis
+### Complexity Analysis
 
 | Resource | Cost | Why |
 |---|---|---|
@@ -986,9 +1038,7 @@ object Main extends App {
 
 In practice the visited-mark prunes the search aggressively — most paths fail at length 2-3.
 
----
-
-## Edge Cases
+### Edge Cases
 
 | Case | Example | Expected |
 |---|---|---|
@@ -997,11 +1047,14 @@ In practice the visited-mark prunes the search aggressively — most paths fail 
 | Single-char word | word = "X" | `true` iff the board contains 'X'. |
 | Word reuses a cell | needs same cell twice | `false` by problem statement. |
 
----
+</details>
+<details>
+<summary><h2>Final Takeaway</h2></summary>
 
-## Final Takeaway
 
 Word Quest is the canonical "match a sequence on a grid" search problem. Same recipe as the maze; only the validation function differs (character match vs walkability). The next problem changes the world from a 2D grid to an `n × n` chessboard, and the algorithm collects *all* valid configurations rather than just one.
+
+</details>
 
 ***
 
@@ -1027,7 +1080,9 @@ There are exactly two solutions for `n = 4`. For `n = 8`, the famous answer is 9
 
 ---
 
-## Why This Is a Search With "Find All"
+<details>
+<summary><h2>Why This Is a Search With "Find All"</h2></summary>
+
 
 Two structural choices simplify the problem:
 1. **One queen per row.** No two queens can share a row, so we place exactly one per row. Reduces the choice set per level from `n²` cells to `n` columns.
@@ -1035,9 +1090,10 @@ Two structural choices simplify the problem:
 
 The constraint check at each placement: **the chosen column must not conflict with any already-placed queen** — same column, same diagonal, or same anti-diagonal.
 
----
+</details>
+<details>
+<summary><h2>Applying the Diagnostic Questions</h2></summary>
 
-## Applying the Diagnostic Questions
 
 | # | Check | Answer |
 |---|---|---|
@@ -1057,234 +1113,238 @@ For the maze and word problems, we wanted *one* solution and propagated `true` t
 
 After fully exploring "what configurations exist with the queen for row 0 in column 0?", we move on to "...with the queen in column 1." That requires resetting `queenPositions[0]` so it doesn't pollute later rows' conflict checks. ✓
 
----
+</details>
+<details>
+<summary><h2>Solution &amp; Analysis</h2></summary>
 
-## The Solution
-
-
-```pseudocode
-function solveNQueens(n):
-    positions ← list of n entries, each set to −1   # positions[r] = column of queen in row r
-    results ← empty list
-    search(positions, 0, n, results)
-    return results
-
-function search(positions, row, n, results):
-    if row = n:
-        append makeBoard(positions, n) to results
-        return
-    for col from 0 to n − 1:
-        if canPlace(positions, row, col):
-            positions[row] ← col                    # apply
-            search(positions, row + 1, n, results)
-            positions[row] ← −1                     # undo
-
-function canPlace(positions, row, col):
-    # Check every previously-placed queen in rows 0..row-1.
-    for r from 0 to row − 1:
-        if positions[r] = col:
-            return false                            # same column
-        if |positions[r] − col| = row − r:
-            return false                            # same diagonal (Δcol = Δrow)
-    return true
-
-function makeBoard(positions, n):
-    board ← empty list of strings
-    for r from 0 to n − 1:
-        rowStr ← string of n '.' characters
-        rowStr[positions[r]] ← 'Q'
-        append rowStr to board
-    return board
-```
+### The Solution
 
 ```python run
 from typing import List
 
 class Solution:
-    def solve_n_queens(self, n: int) -> List[List[str]]:
-        positions = [-1] * n          # positions[r] = col of queen in row r
-        results: List[List[str]] = []
-        self._search(positions, 0, n, results)
-        return results
 
-    def _search(self, positions: List[int], row: int, n: int, results: List[List[str]]) -> None:
-        if row == n:
-            results.append(self._make_board(positions, n))
-            return
-        for col in range(n):
-            if self._can_place(positions, row, col):
-                positions[row] = col              # apply
-                self._search(positions, row + 1, n, results)
-                positions[row] = -1               # undo
+    # Helper function to check if a queen can be safely placed at (row,
+    # col)
+    def can_place_queen(
+        self, queen_positions: List[int], row: int, col: int
+    ) -> bool:
+        for i in range(row):
 
-    @staticmethod
-    def _can_place(positions: List[int], row: int, col: int) -> bool:
-        for r in range(row):
-            if positions[r] == col:               # same column
-                return False
-            if abs(positions[r] - col) == row - r: # same diagonal (|Δcol| == Δrow)
+            # Check for column conflict: no other queen should be in the same column
+            # Check for diagonal conflict: no other queen should be in
+            # the same diagonal
+            if queen_positions[i] == col or row - i == abs(
+                col - queen_positions[i]
+            ):
                 return False
         return True
 
-    @staticmethod
-    def _make_board(positions: List[int], n: int) -> List[str]:
+    # Helper function to convert the current state list into a board
+    # representation
+    def make_solution(
+        self, queen_positions: List[int], n: int
+    ) -> List[str]:
+
+        # Create an n x n board initialized with '.'
         board = []
-        for r in range(n):
-            row_str = ['.'] * n
-            row_str[positions[r]] = 'Q'
-            board.append("".join(row_str))
+        for i in range(n):
+            row = ["."] * n
+
+            # Place queens on the board based on the state list
+            row[queen_positions[i]] = "Q"
+            board.append("".join(row))
+
+        # Return the board representation
         return board
 
+    def search_solutions(
+        self,
+        queen_positions: List[int],
+        row: int,
+        n: int,
+        solutions: List[List[str]],
+    ) -> None:
 
-if __name__ == "__main__":
-    for sol in Solution().solve_n_queens(4):
-        for row in sol: print(row)
-        print()
+        # Check if all queens have been successfully placed
+        if row == n:
+
+            # Current state represents a valid solution, convert it to
+            # board format and store
+            solutions.append(self.make_solution(queen_positions, n))
+
+            # Stop searching further as we found a valid solution
+            return
+
+        # Loop through each column in the current row to try placing a
+        # queen (all choices)
+        for col in range(n):
+
+            # Check if placing a queen at (row, col) is safe
+            if self.can_place_queen(queen_positions, row, col):
+
+                # Place the queen in the current row at column col (make
+                # choice)
+                queen_positions[row] = col
+
+                # Recursively try to place queens in the next row
+                self.search_solutions(
+                    queen_positions, row + 1, n, solutions
+                )
+
+                # Remove the queen from the current row to backtrack and
+                # try the next column (revert choice)
+                queen_positions[row] = -1
+
+    def solve_n_queens(self, n: int) -> List[List[str]]:
+
+        # List to store all valid board configurations (solution states)
+        solutions: List[List[str]] = []
+
+        # State list: queen_positions[i] stores the column index of the
+        # queen placed in row i
+        queen_positions: List[int] = [-1] * n
+
+        # Start the search process from the first row (row 0)
+        self.search_solutions(queen_positions, 0, n, solutions)
+
+        # Return all valid solutions found
+        return solutions
+
+
+# Example from the problem statement
+result4 = Solution().solve_n_queens(4)
+print(len(result4))                                   # 2
+for board in sorted(result4):
+    print(board)
+
+# Edge cases
+print(len(Solution().solve_n_queens(1)))              # 1
+print(Solution().solve_n_queens(1))                   # [['Q']]
+print(len(Solution().solve_n_queens(2)))              # 0 — no solution for n=2
+print(len(Solution().solve_n_queens(3)))              # 0 — no solution for n=3
+print(len(Solution().solve_n_queens(5)))              # 10
+print(len(Solution().solve_n_queens(6)))              # 4
 ```
 
 ```java run
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
+import java.util.*;
 
 public class Main {
     static class Solution {
-        public List<List<String>> solveNQueens(int n) {
-            int[] positions = new int[n];
-            Arrays.fill(positions, -1);
-            List<List<String>> results = new ArrayList<>();
-            search(positions, 0, n, results);
-            return results;
-        }
 
-        private void search(int[] positions, int row, int n, List<List<String>> results) {
-            if (row == n) {
-                results.add(makeBoard(positions, n));
-                return;
-            }
-            for (int col = 0; col < n; col++) {
-                if (canPlace(positions, row, col)) {
-                    positions[row] = col;
-                    search(positions, row + 1, n, results);
-                    positions[row] = -1;
+        // Helper function to check if a queen can be safely placed at (row,
+        // col)
+        private boolean canPlaceQueen(
+            int[] queenPositions,
+            int row,
+            int col
+        ) {
+            for (int i = 0; i < row; i++) {
+
+                // Check for column conflict: no other queen should be in the
+                // same column Check for diagonal conflict: no other queen
+                // should be in the same diagonal
+                if (
+                    queenPositions[i] == col ||
+                    row - i == Math.abs(col - queenPositions[i])
+                ) {
+                    return false;
                 }
-            }
-        }
-
-        private boolean canPlace(int[] positions, int row, int col) {
-            for (int r = 0; r < row; r++) {
-                if (positions[r] == col) return false;
-                if (Math.abs(positions[r] - col) == row - r) return false;
             }
             return true;
         }
 
-        private List<String> makeBoard(int[] positions, int n) {
+        // Helper function to convert the current state list into a board
+        // representation
+        private List<String> makeSolution(int[] queenPositions, int n) {
+
+            // Create an n x n board initialized with '.'
             List<String> board = new ArrayList<>();
-            for (int r = 0; r < n; r++) {
+            for (int i = 0; i < n; i++) {
                 char[] row = new char[n];
                 Arrays.fill(row, '.');
-                row[positions[r]] = 'Q';
+
+                // Place queens on the board based on the state list
+                row[queenPositions[i]] = 'Q';
                 board.add(new String(row));
             }
+
+            // Return the board representation
             return board;
+        }
+
+        private void searchSolutions(
+            int[] queenPositions,
+            int row,
+            int n,
+            List<List<String>> solutions
+        ) {
+
+            // Check if all queens have been successfully placed
+            if (row == n) {
+
+                // Current state represents a valid solution, convert it to
+                // board format and store
+                solutions.add(makeSolution(queenPositions, n));
+
+                // Stop searching further as we found a valid solution
+                return;
+            }
+
+            // Loop through each column in the current row to try placing a
+            // queen (all choices)
+            for (int col = 0; col < n; col++) {
+
+                // Check if placing a queen at (row, col) is safe
+                if (canPlaceQueen(queenPositions, row, col)) {
+
+                    // Place the queen in the current row at column col (make
+                    // choice)
+                    queenPositions[row] = col;
+
+                    // Recursively try to place queens in the next row
+                    searchSolutions(queenPositions, row + 1, n, solutions);
+
+                    // Remove the queen from the current row to backtrack and
+                    // try the next column (revert choice)
+                    queenPositions[row] = -1;
+                }
+            }
+        }
+
+        public List<List<String>> solveNQueens(int n) {
+
+            // List to store all valid board configurations (solution states)
+            List<List<String>> solutions = new ArrayList<>();
+
+            // State list: queenPositions[i] stores the column index of the
+            // queen placed in row i
+            int[] queenPositions = new int[n];
+            Arrays.fill(queenPositions, -1);
+
+            // Start the search process from the first row (row 0)
+            searchSolutions(queenPositions, 0, n, solutions);
+
+            // Return all valid solutions found
+            return solutions;
         }
     }
 
     public static void main(String[] args) {
-        System.out.println(new Solution().solveNQueens(4));
+        // Example from the problem statement
+        List<List<String>> result4 = new Solution().solveNQueens(4);
+        System.out.println(result4.size());                           // 2
+        result4.stream().map(Object::toString).sorted().forEach(System.out::println);
+
+        // Edge cases
+        System.out.println(new Solution().solveNQueens(1).size());    // 1
+        System.out.println(new Solution().solveNQueens(1));           // [[Q]]
+        System.out.println(new Solution().solveNQueens(2).size());    // 0 — no solution for n=2
+        System.out.println(new Solution().solveNQueens(3).size());    // 0 — no solution for n=3
+        System.out.println(new Solution().solveNQueens(5).size());    // 10
+        System.out.println(new Solution().solveNQueens(6).size());    // 4
     }
-}
-```
-
-```c run
-#include <stdio.h>
-#include <stdlib.h>
-#include <stdbool.h>
-
-static bool can_place(int *positions, int row, int col) {
-    for (int r = 0; r < row; r++) {
-        if (positions[r] == col) return false;
-        if (abs(positions[r] - col) == row - r) return false;
-    }
-    return true;
-}
-
-static void print_board(int *positions, int n) {
-    for (int r = 0; r < n; r++) {
-        for (int c = 0; c < n; c++) putchar(positions[r] == c ? 'Q' : '.');
-        putchar('\n');
-    }
-    putchar('\n');
-}
-
-static void search(int *positions, int row, int n, int *count) {
-    if (row == n) { print_board(positions, n); (*count)++; return; }
-    for (int col = 0; col < n; col++) {
-        if (can_place(positions, row, col)) {
-            positions[row] = col;
-            search(positions, row + 1, n, count);
-            positions[row] = -1;
-        }
-    }
-}
-
-int main(void) {
-    int n = 4;
-    int *positions = (int *) malloc(sizeof(int) * n);
-    for (int i = 0; i < n; i++) positions[i] = -1;
-    int count = 0;
-    search(positions, 0, n, &count);
-    printf("Total: %d solutions\n", count);
-    free(positions);
-    return 0;
-}
-```
-
-```scala run
-import scala.collection.mutable.ArrayBuffer
-
-object Main extends App {
-  class Solution {
-    def solveNQueens(n: Int): List[List[String]] = {
-      val positions = Array.fill(n)(-1)
-      val results = ArrayBuffer[List[String]]()
-      search(positions, 0, n, results)
-      results.toList
-    }
-
-    private def search(positions: Array[Int], row: Int, n: Int, results: ArrayBuffer[List[String]]): Unit = {
-      if (row == n) {
-        results += makeBoard(positions, n)
-        return
-      }
-      for (col <- 0 until n) {
-        if (canPlace(positions, row, col)) {
-          positions(row) = col
-          search(positions, row + 1, n, results)
-          positions(row) = -1
-        }
-      }
-    }
-
-    private def canPlace(positions: Array[Int], row: Int, col: Int): Boolean = {
-      for (r <- 0 until row) {
-        if (positions(r) == col) return false
-        if (math.abs(positions(r) - col) == row - r) return false
-      }
-      true
-    }
-
-    private def makeBoard(positions: Array[Int], n: Int): List[String] = {
-      (0 until n).map { r =>
-        val sb = new StringBuilder
-        for (c <- 0 until n) sb.append(if (positions(r) == c) 'Q' else '.')
-        sb.toString()
-      }.toList
-    }
-  }
-
-  println(new Solution().solveNQueens(4))
 }
 ```
 
@@ -1308,9 +1368,7 @@ Result for n=4: 2 solutions, matching the expected.
 
 </details>
 
----
-
-## Complexity Analysis
+### Complexity Analysis
 
 | Resource | Cost | Why |
 |---|---|---|
@@ -1320,9 +1378,7 @@ Result for n=4: 2 solutions, matching the expected.
 
 For `n = 8`, the algorithm finds 92 solutions; for `n = 12`, 14,200; growth is super-exponential.
 
----
-
-## Edge Cases
+### Edge Cases
 
 | Case | Example | Expected |
 |---|---|---|
@@ -1331,11 +1387,14 @@ For `n = 8`, the algorithm finds 92 solutions; for `n = 12`, 14,200; growth is s
 | `n = 4` | n = 4 | 2 solutions. |
 | `n = 8` | n = 8 | 92 solutions. |
 
----
+</details>
+<details>
+<summary><h2>Final Takeaway</h2></summary>
 
-## Final Takeaway
 
 N-Queens is the canonical "find all configurations" search problem. Place-recurse-undo, with a `canPlace` pruning function that catches conflicts early. The next problem turns the dial up to its maximum — every cell of the world has 9 possible values, and we have to fill 81 of them.
+
+</details>
 
 ***
 
@@ -1356,15 +1415,18 @@ The grid is mutated in place.
 
 ---
 
-## What's the Recursion Doing?
+<details>
+<summary><h2>What's the Recursion Doing?</h2></summary>
+
 
 Find the first empty cell. Try every digit `1`-`9` that doesn't conflict with the row, column, or sub-box. For each viable digit, place it and recurse. If the recursion solves the rest, return `true`. If not, undo the placement and try the next digit. If no digit works, return `false`.
 
 The world is the grid; the answer *is* the grid; the validation check is "does placing `d` here satisfy all three constraints (row, col, box)?"
 
----
+</details>
+<details>
+<summary><h2>Applying the Diagnostic Questions</h2></summary>
 
-## Applying the Diagnostic Questions
 
 | # | Check | Answer |
 |---|---|---|
@@ -1384,101 +1446,197 @@ Sudoku has a unique solution (in well-formed puzzles). We propagate `true` upwar
 
 If a digit doesn't lead to a solution, we have to clear that cell so we can try the next digit (or so the parent's loop can try a different placement). ✓
 
----
+</details>
+<details>
+<summary><h2>Solution &amp; Analysis</h2></summary>
 
-## The Solution
-
-
-```pseudocode
-function solveSudoku(board):
-    search(board)                                    # mutates board in place
-
-function search(board):
-    for row from 0 to 8:
-        for col from 0 to 8:
-            if board[row][col] = 'X':                # 'X' marks an empty cell
-                for each digit in "123456789":
-                    if isValid(board, row, col, digit):
-                        board[row][col] ← digit      # apply
-                        if search(board):
-                            return true              # propagate success
-                        board[row][col] ← 'X'        # undo
-                return false                         # tried all digits, none worked
-    return true                                       # no empty cell remains → solved
-
-function isValid(board, row, col, digit):
-    # Check row, column, and 3×3 sub-grid for an existing copy of digit.
-    for i from 0 to 8:
-        if board[row][i] = digit: return false      # row clash
-        if board[i][col] = digit: return false      # column clash
-        br ← (row ÷ 3) × 3 + i ÷ 3                  # top-left of the 3×3 sub-grid
-        bc ← (col ÷ 3) × 3 + i mod 3
-        if board[br][bc] = digit: return false      # sub-grid clash
-    return true
-```
+### The Solution
 
 ```python run
 from typing import List
 
 class Solution:
-    def solve_sudoku(self, board: List[List[str]]) -> None:
-        self._search(board)
 
-    def _search(self, board: List[List[str]]) -> bool:
-        for row in range(9):
-            for col in range(9):
-                if board[row][col] == "X":
-                    for digit in "123456789":
-                        if self._is_valid(board, row, col, digit):
-                            board[row][col] = digit
-                            if self._search(board):
-                                return True
-                            board[row][col] = "X"      # undo
-                    return False
-        return True                                     # all cells filled
-
-    @staticmethod
-    def _is_valid(board: List[List[str]], row: int, col: int, digit: str) -> bool:
-        for i in range(9):
-            if board[row][i] == digit: return False
-            if board[i][col] == digit: return False
-            br, bc = (row // 3) * 3 + i // 3, (col // 3) * 3 + i % 3
-            if board[br][bc] == digit: return False
+    # Checks if placing 'num' in the specified row is valid
+    def is_valid_row(
+        self, board: List[List[str]], row: int, num: str
+    ) -> bool:
+        for col in range(9):
+            if board[row][col] == num:
+                return False
         return True
 
+    # Checks if placing 'num' in the specified column is valid
+    def is_valid_col(
+        self, board: List[List[str]], col: int, num: str
+    ) -> bool:
+        for row in range(9):
+            if board[row][col] == num:
+                return False
+        return True
 
-if __name__ == "__main__":
-    board = [["5","3","X","X","7","X","X","X","X"],
-             ["6","X","X","1","9","5","X","X","X"],
-             ["X","9","8","X","X","X","X","6","X"],
-             ["8","X","X","X","6","X","X","X","3"],
-             ["4","X","X","8","X","3","X","X","1"],
-             ["7","X","X","X","2","X","X","X","6"],
-             ["X","6","X","X","X","X","2","8","X"],
-             ["X","X","X","4","1","9","X","X","5"],
-             ["X","X","X","X","8","X","X","7","9"]]
-    Solution().solve_sudoku(board)
-    for row in board: print(" ".join(row))
+    # Checks if placing 'num' in the 3x3 sub-grid containing (row, col)
+    # is valid
+    def is_valid_subgrid(
+        self, board: List[List[str]], row: int, col: int, num: str
+    ) -> bool:
+        start_row = (row // 3) * 3
+        start_col = (col // 3) * 3
+        for r in range(start_row, start_row + 3):
+            for c in range(start_col, start_col + 3):
+                if board[r][c] == num:
+                    return False
+        return True
+
+    # Checks if placing 'num' at (row, col) is valid in all respects
+    def is_valid_placement(
+        self, board: List[List[str]], row: int, col: int, num: str
+    ) -> bool:
+
+        # Check row, column, and sub-grid constraints
+        return (
+            self.is_valid_row(board, row, num)
+            and self.is_valid_col(board, col, num)
+            and self.is_valid_subgrid(board, row, col, num)
+        )
+
+    # Recursive search function to fill the Sudoku board
+    def search_solution(self, board: List[List[str]]) -> bool:
+
+        # Iterate through each cell of the board
+        for row in range(9):
+            for col in range(9):
+
+                # Only attempt to fill empty cells
+                if board[row][col] == "X":
+
+                    # Try all digits from "1" to "9" in this cell
+                    for num in map(str, range(1, 10)):
+
+                        # Check if placing the number is valid (solution
+                        # state possible)
+                        if self.is_valid_placement(board, row, col, num):
+
+                            # Place the number in the cell (make choice)
+                            board[row][col] = num
+
+                            # Recursively attempt to fill the rest of the
+                            # board
+                            if self.search_solution(board):
+                                return True
+
+                            # If it did not lead to a solution, remove
+                            # the number (revert choice)
+                            board[row][col] = "X"
+
+                    # If no valid number can be placed in this cell,
+                    # backtrack
+                    return False
+
+        # If all cells are filled successfully, the board is solved
+        return True
+
+    def solve_sudoku(self, board: List[List[str]]) -> None:
+
+        # Start the search process to fill the board
+        self.search_solution(board)
+
+
+# Example from the problem statement
+board1 = [
+    ['5','3','X','X','7','X','X','X','X'],
+    ['6','X','X','1','9','5','X','X','X'],
+    ['X','9','8','X','X','X','X','6','X'],
+    ['8','X','X','X','6','X','X','X','3'],
+    ['4','X','X','8','X','3','X','X','1'],
+    ['7','X','X','X','2','X','X','X','6'],
+    ['X','6','X','X','X','X','2','8','X'],
+    ['X','X','X','4','1','9','X','X','5'],
+    ['X','X','X','X','8','X','X','7','9'],
+]
+Solution().solve_sudoku(board1)
+for row in board1:
+    print(row)
+# [5,3,4,6,7,8,9,1,2]
+# [6,7,2,1,9,5,3,4,8]
+# [1,9,8,3,4,2,5,6,7]
+# [8,5,9,7,6,1,4,2,3]
+# [4,2,6,8,5,3,7,9,1]
+# [7,1,3,9,2,4,8,5,6]
+# [9,6,1,5,3,7,2,8,4]
+# [2,8,7,4,1,9,6,3,5]
+# [3,4,5,2,8,6,1,7,9]
+
+# Nearly full board — only one empty cell
+board2 = [
+    ['5','3','4','6','7','8','9','1','2'],
+    ['6','7','2','1','9','5','3','4','8'],
+    ['1','9','8','3','4','2','5','6','7'],
+    ['8','5','9','7','6','1','4','2','3'],
+    ['4','2','6','8','5','3','7','9','1'],
+    ['7','1','3','9','2','4','8','5','6'],
+    ['9','6','1','5','3','7','2','8','4'],
+    ['2','8','7','4','1','9','6','3','5'],
+    ['3','4','5','2','8','6','1','7','X'],
+]
+Solution().solve_sudoku(board2)
+print(board2[8][8])                                   # 9
+
+# Already solved board — no-op
+board3 = [
+    ['5','3','4','6','7','8','9','1','2'],
+    ['6','7','2','1','9','5','3','4','8'],
+    ['1','9','8','3','4','2','5','6','7'],
+    ['8','5','9','7','6','1','4','2','3'],
+    ['4','2','6','8','5','3','7','9','1'],
+    ['7','1','3','9','2','4','8','5','6'],
+    ['9','6','1','5','3','7','2','8','4'],
+    ['2','8','7','4','1','9','6','3','5'],
+    ['3','4','5','2','8','6','1','7','9'],
+]
+Solution().solve_sudoku(board3)
+print(board3[0][0])                                   # 5
 ```
 
 ```java run
+import java.util.*;
+
 public class Main {
     static class Solution {
-        public void solveSudoku(char[][] board) {
-            search(board);
+
+        // Checks if placing 'num' in the specified row is valid
+        private boolean isValidRow(char[][] board, int row, char num) {
+            for (int col = 0; col < 9; col++) {
+                if (board[row][col] == num) {
+                    return false;
+                }
+            }
+            return true;
         }
 
-        private boolean search(char[][] board) {
+        // Checks if placing 'num' in the specified column is valid
+        private boolean isValidCol(char[][] board, int col, char num) {
             for (int row = 0; row < 9; row++) {
-                for (int col = 0; col < 9; col++) {
-                    if (board[row][col] == 'X') {
-                        for (char d = '1'; d <= '9'; d++) {
-                            if (isValid(board, row, col, d)) {
-                                board[row][col] = d;
-                                if (search(board)) return true;
-                                board[row][col] = 'X';
-                            }
-                        }
+                if (board[row][col] == num) {
+                    return false;
+                }
+            }
+            return true;
+        }
+
+        // Checks if placing 'num' in the 3x3 sub-grid containing (row, col)
+        // is valid
+        private boolean isValidSubGrid(
+            char[][] board,
+            int row,
+            int col,
+            char num
+        ) {
+            int startRow = (row / 3) * 3;
+            int startCol = (col / 3) * 3;
+            for (int r = startRow; r < startRow + 3; r++) {
+                for (int c = startCol; c < startCol + 3; c++) {
+                    if (board[r][c] == num) {
                         return false;
                     }
                 }
@@ -1486,19 +1644,78 @@ public class Main {
             return true;
         }
 
-        private boolean isValid(char[][] board, int row, int col, char d) {
-            for (int i = 0; i < 9; i++) {
-                if (board[row][i] == d) return false;
-                if (board[i][col] == d) return false;
-                int br = (row / 3) * 3 + i / 3, bc = (col / 3) * 3 + i % 3;
-                if (board[br][bc] == d) return false;
+        // Checks if placing 'num' at (row, col) is valid in all respects
+        private boolean isValidPlacement(
+            char[][] board,
+            int row,
+            int col,
+            char num
+        ) {
+
+            // Check row, column, and sub-grid constraints
+            return (
+                isValidRow(board, row, num) &&
+                isValidCol(board, col, num) &&
+                isValidSubGrid(board, row, col, num)
+            );
+        }
+
+        // Recursive search function to fill the Sudoku board
+        private boolean searchSolution(char[][] board) {
+
+            // Iterate through each cell of the board
+            for (int row = 0; row < 9; row++) {
+                for (int col = 0; col < 9; col++) {
+
+                    // Only attempt to fill empty cells
+                    if (board[row][col] == 'X') {
+
+                        // Try all digits from "1" to "9" in this cell
+                        for (int num = 1; num <= 9; num++) {
+                            char strNum = (char) (num + '0');
+
+                            // Check if placing the number is valid (solution
+                            // state possible)
+                            if (isValidPlacement(board, row, col, strNum)) {
+
+                                // Place the number in the cell (make choice)
+                                board[row][col] = strNum;
+
+                                // Recursively attempt to fill the rest of
+                                // the board
+                                if (searchSolution(board)) {
+
+                                    // If successful, propagate success back
+                                    return true;
+                                }
+
+                                // If it did not lead to a solution, remove
+                                // the number (revert choice)
+                                board[row][col] = 'X';
+                            }
+                        }
+
+                        // If no valid number can be placed in this cell,
+                        // backtrack
+                        return false;
+                    }
+                }
             }
+
+            // If all cells are filled successfully, the board is solved
             return true;
+        }
+
+        public void solveSudoku(char[][] board) {
+
+            // Start the search process to fill the board
+            searchSolution(board);
         }
     }
 
     public static void main(String[] args) {
-        char[][] board = {
+        // Example from the problem statement
+        char[][] board1 = {
             {'5','3','X','X','7','X','X','X','X'},
             {'6','X','X','1','9','5','X','X','X'},
             {'X','9','8','X','X','X','X','6','X'},
@@ -1507,117 +1724,54 @@ public class Main {
             {'7','X','X','X','2','X','X','X','6'},
             {'X','6','X','X','X','X','2','8','X'},
             {'X','X','X','4','1','9','X','X','5'},
-            {'X','X','X','X','8','X','X','7','9'}};
-        new Solution().solveSudoku(board);
-        for (char[] row : board) System.out.println(new String(row));
+            {'X','X','X','X','8','X','X','7','9'},
+        };
+        new Solution().solveSudoku(board1);
+        for (char[] row : board1) System.out.println(Arrays.toString(row));
+        // [5,3,4,6,7,8,9,1,2]
+        // [6,7,2,1,9,5,3,4,8]
+        // [1,9,8,3,4,2,5,6,7]
+        // [8,5,9,7,6,1,4,2,3]
+        // [4,2,6,8,5,3,7,9,1]
+        // [7,1,3,9,2,4,8,5,6]
+        // [9,6,1,5,3,7,2,8,4]
+        // [2,8,7,4,1,9,6,3,5]
+        // [3,4,5,2,8,6,1,7,9]
+
+        // Nearly full board — only one empty cell
+        char[][] board2 = {
+            {'5','3','4','6','7','8','9','1','2'},
+            {'6','7','2','1','9','5','3','4','8'},
+            {'1','9','8','3','4','2','5','6','7'},
+            {'8','5','9','7','6','1','4','2','3'},
+            {'4','2','6','8','5','3','7','9','1'},
+            {'7','1','3','9','2','4','8','5','6'},
+            {'9','6','1','5','3','7','2','8','4'},
+            {'2','8','7','4','1','9','6','3','5'},
+            {'3','4','5','2','8','6','1','7','X'},
+        };
+        new Solution().solveSudoku(board2);
+        System.out.println(board2[8][8]);                             // 9
+
+        // Already solved board — no-op
+        char[][] board3 = {
+            {'5','3','4','6','7','8','9','1','2'},
+            {'6','7','2','1','9','5','3','4','8'},
+            {'1','9','8','3','4','2','5','6','7'},
+            {'8','5','9','7','6','1','4','2','3'},
+            {'4','2','6','8','5','3','7','9','1'},
+            {'7','1','3','9','2','4','8','5','6'},
+            {'9','6','1','5','3','7','2','8','4'},
+            {'2','8','7','4','1','9','6','3','5'},
+            {'3','4','5','2','8','6','1','7','9'},
+        };
+        new Solution().solveSudoku(board3);
+        System.out.println(board3[0][0]);                             // 5
     }
 }
 ```
 
-```c run
-#include <stdio.h>
-#include <stdbool.h>
-
-static bool is_valid(char board[9][9], int row, int col, char d) {
-    for (int i = 0; i < 9; i++) {
-        if (board[row][i] == d) return false;
-        if (board[i][col] == d) return false;
-        int br = (row / 3) * 3 + i / 3, bc = (col / 3) * 3 + i % 3;
-        if (board[br][bc] == d) return false;
-    }
-    return true;
-}
-
-static bool search(char board[9][9]) {
-    for (int row = 0; row < 9; row++) {
-        for (int col = 0; col < 9; col++) {
-            if (board[row][col] == 'X') {
-                for (char d = '1'; d <= '9'; d++) {
-                    if (is_valid(board, row, col, d)) {
-                        board[row][col] = d;
-                        if (search(board)) return true;
-                        board[row][col] = 'X';
-                    }
-                }
-                return false;
-            }
-        }
-    }
-    return true;
-}
-
-int main(void) {
-    char board[9][9] = {
-        {'5','3','X','X','7','X','X','X','X'},
-        {'6','X','X','1','9','5','X','X','X'},
-        {'X','9','8','X','X','X','X','6','X'},
-        {'8','X','X','X','6','X','X','X','3'},
-        {'4','X','X','8','X','3','X','X','1'},
-        {'7','X','X','X','2','X','X','X','6'},
-        {'X','6','X','X','X','X','2','8','X'},
-        {'X','X','X','4','1','9','X','X','5'},
-        {'X','X','X','X','8','X','X','7','9'}};
-    search(board);
-    for (int r = 0; r < 9; r++) {
-        for (int c = 0; c < 9; c++) putchar(board[r][c]);
-        putchar('\n');
-    }
-    return 0;
-}
-```
-
-```scala run
-object Main extends App {
-  class Solution {
-    def solveSudoku(board: Array[Array[Char]]): Unit = { search(board) }
-
-    private def search(board: Array[Array[Char]]): Boolean = {
-      for (row <- 0 until 9; col <- 0 until 9) {
-        if (board(row)(col) == 'X') {
-          for (d <- '1' to '9') {
-            if (isValid(board, row, col, d)) {
-              board(row)(col) = d
-              if (search(board)) return true
-              board(row)(col) = 'X'
-            }
-          }
-          return false
-        }
-      }
-      true
-    }
-
-    private def isValid(board: Array[Array[Char]], row: Int, col: Int, d: Char): Boolean = {
-      for (i <- 0 until 9) {
-        if (board(row)(i) == d) return false
-        if (board(i)(col) == d) return false
-        val br = (row / 3) * 3 + i / 3
-        val bc = (col / 3) * 3 + i % 3
-        if (board(br)(bc) == d) return false
-      }
-      true
-    }
-  }
-
-  val board = Array(
-    Array('5','3','X','X','7','X','X','X','X'),
-    Array('6','X','X','1','9','5','X','X','X'),
-    Array('X','9','8','X','X','X','X','6','X'),
-    Array('8','X','X','X','6','X','X','X','3'),
-    Array('4','X','X','8','X','3','X','X','1'),
-    Array('7','X','X','X','2','X','X','X','6'),
-    Array('X','6','X','X','X','X','2','8','X'),
-    Array('X','X','X','4','1','9','X','X','5'),
-    Array('X','X','X','X','8','X','X','7','9'))
-  new Solution().solveSudoku(board)
-  for (row <- board) println(row.mkString)
-}
-```
-
-
----
-
-## Complexity Analysis
+### Complexity Analysis
 
 | Resource | Cost |
 |---|---|
@@ -1626,9 +1780,7 @@ object Main extends App {
 
 In practice, the constraint propagation (rule out digits that conflict with row/col/box) reduces this enormously — typical Sudokus solve in milliseconds.
 
----
-
-## Edge Cases
+### Edge Cases
 
 | Case | Example | Expected |
 |---|---|---|
@@ -1637,9 +1789,10 @@ In practice, the constraint propagation (rule out digits that conflict with row/
 | Empty board | All cells 'X' | Generates *some* valid Sudoku (not unique). |
 | Multiple solutions | Some easier puzzles | Returns the first found. |
 
----
+</details>
+<details>
+<summary><h2>Final Takeaway</h2></summary>
 
-## Final Takeaway
 
 Sudoku is backtracking search at maximum complexity: 81 cells, up to 9 choices per cell, three constraints to validate per placement. The recipe — find empty cell, try digits, recurse, undo — is identical to the maze and N-Queens. Only the constraint check is richer.
 
@@ -1675,5 +1828,7 @@ class Solution:
 The change: instead of returning `true` and propagating, *continue exploring* even after a solution is found. The undo step now always runs (no "if true: return"). Time complexity is much worse — we no longer get the exponential speedup of early termination — but the recipe is otherwise identical.
 
 This is the same enumeration-vs-search distinction we set up at the top of this lesson. **Search → Enumeration just by removing the early-termination return.** The world is your candidate; the world is your output; the world is your accumulator. You've now seen all four backtracking patterns and built the muscle memory to spot them on sight.
+
+</details>
 
 </details>

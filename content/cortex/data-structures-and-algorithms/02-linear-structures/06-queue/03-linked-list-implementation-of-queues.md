@@ -10,7 +10,7 @@ But there's a twist. A *stack* puts everything at the head — push and pop both
 
 The trade-off is the usual one for linked structures: every node is a separate heap allocation, scattered across RAM, and the CPU's prefetcher loses. Wall-clock latency of a linked queue is typically 2–5× higher than an array queue *for the same operation count*, despite identical asymptotics. Production systems pick the array queue when capacity is bounded and predictable, and the linked queue when bursts are unpredictable or memory is a hard ceiling on growth.
 
-This lesson builds the linked-list queue end-to-end in 10 languages — same five-method interface as before, but a completely different memory model.
+This lesson builds the linked-list queue end-to-end in Python and Java — same five-method interface as before, but a completely different memory model.
 
 ---
 
@@ -145,21 +145,6 @@ n: ListNode {
 The class encapsulates `head`, `tail`, `currentSize`, and `capacity`, exposing the same six operations as the array version.
 
 
-```pseudocode
-function Queue(capacity):
-    head        ← null    # front pointer
-    tail        ← null    # back pointer
-    currentSize ← 0
-    cap         ← capacity
-
-function size(queue):    stub
-function empty(queue):   stub
-function front(queue):   stub
-function back(queue):    stub
-function enqueue(queue, val): stub
-function dequeue(queue): stub
-```
-
 ```python run
 class _ListNode:
     __slots__ = ('val', 'next')
@@ -211,66 +196,6 @@ public class Main {
 }
 ```
 
-```c run
-#include <stdio.h>
-#include <stdlib.h>
-#include <stdbool.h>
-
-typedef struct ListNode {
-    int               val;
-    struct ListNode  *next;
-} ListNode;
-
-typedef struct {
-    ListNode *head;
-    ListNode *tail;
-    int       capacity, currentSize;
-} Queue;
-
-Queue* queue_create(int capacity) {
-    Queue *q = malloc(sizeof(Queue));
-    q->head = q->tail = NULL;
-    q->capacity = capacity;
-    q->currentSize = 0;
-    return q;
-}
-
-int  queue_size   (Queue *q)              { return 0; }
-bool queue_empty  (Queue *q)              { return true; }
-int  queue_front  (Queue *q)              { return -1; }
-int  queue_back   (Queue *q)              { return -1; }
-bool queue_enqueue(Queue *q, int val)     { return false; }
-int  queue_dequeue(Queue *q)              { return -1; }
-
-int main() {
-    Queue *q = queue_create(4);
-    printf("created queue with capacity %d\n", q->capacity);
-    free(q);
-}
-```
-
-```scala run
-object Main extends App {
-  class Queue(val capacity: Int) {
-    private class Node(val value: Int, var next: Node = null)
-
-    private var head: Node = null
-    private var tail: Node = null
-    private var currSize    = 0
-
-    def size:    Int     = 0
-    def empty:   Boolean = true
-    def front:   Int     = -1
-    def back:    Int     = -1
-    def enqueue(v: Int): Boolean = false
-    def dequeue: Int     = -1
-  }
-
-  val q = new Queue(4)
-  println("created queue with capacity 4")
-}
-```
-
 
 The Rust skeleton is unusual — see the comment in the code. The mainstream Rust answer is "use `std::collections::VecDeque`", which is itself a circular array under the hood. We're showing the linked version for parity with the other languages.
 
@@ -284,33 +209,84 @@ We've established the invariant — `currentSize` is updated on every enqueue an
 >
 > -   **Step 1:** Return the value of `currentSize`.
 
-## Implementation
+<details>
+<summary><h2>Solution &amp; Analysis</h2></summary>
 
-
-```pseudocode
-function size(queue):
-    return queue.currentSize
-```
+### Implementation
 
 ```python run
-def size(self):
-    return self.current_size
+from typing import Optional
+
+"""
+Definition for singly-linked list.
+class ListNode:
+    def __init__(self, val):
+        self.val = val
+        self.next = None
+"""
+
+class Queue:
+    def __init__(self, capacity: int):
+
+        # Capacity of the queue (maximum number of elements it can hold)
+        self.capacity: int = capacity
+
+        # Current number of elements in the queue
+        self.current_size: int = 0
+
+        # Reference to the front of the queue
+        self.head: Optional[ListNode] = None
+
+        # Reference to the rear of the queue
+        self.tail: Optional[ListNode] = None
+
+    def size(self) -> int:
+
+        # Returns the current number of elements in the queue
+        return self.current_size
 ```
 
 ```java run
-int size() { return currentSize; }
+/**
+ * Definition for singly-linked list.
+ * class ListNode {
+ *     int val;
+ *     ListNode next;
+ *     ListNode() {}
+ *     ListNode(int val) { this.val = val; }
+ * };
+ */
+
+class Queue {
+
+    // Capacity of the queue (maximum number of elements it can hold)
+    public int capacity;
+
+    // Current number of elements in the queue
+    public int currentSize;
+
+    // Reference to the front of the queue
+    public ListNode head;
+
+    // Reference to the rear of the queue
+    public ListNode tail;
+
+    public Queue(int capacity) {
+        this.capacity = capacity;
+        currentSize = 0;
+        head = null;
+        tail = null;
+    }
+
+    public int size() {
+
+        // Returns the current number of elements in the queue
+        return currentSize;
+    }
+}
 ```
 
-```c run
-int queue_size(Queue *q) { return q->currentSize; }
-```
-
-```scala run
-def size: Int = currSize
-```
-
-
-## Complexity Analysis
+### Complexity Analysis
 
 > **Best Case**
 >
@@ -321,6 +297,8 @@ def size: Int = currSize
 >
 > - Time:  **O(1)**
 > - Space: **O(1)**
+
+</details>
 
 ***
 
@@ -336,33 +314,95 @@ def size: Int = currSize
 >
 > Yes — `head` being null is logically equivalent to `currentSize == 0`. Both invariants hold simultaneously after every operation. We use `currentSize == 0` for symmetry with the array implementation and because it composes cleanly with `currentSize == capacity` (the full check). In a tight inner loop you might prefer the pointer compare to save a memory load — both are correct.
 
-## Implementation
+<details>
+<summary><h2>Solution &amp; Analysis</h2></summary>
 
-
-```pseudocode
-function empty(queue):
-    return size(queue) = 0
-```
+### Implementation
 
 ```python run
-def empty(self):
-    return self.size() == 0
+from typing import Optional
+
+"""
+Definition for singly-linked list.
+class ListNode:
+    def __init__(self, val):
+        self.val = val
+        self.next = None
+"""
+
+class Queue:
+    def __init__(self, capacity: int):
+
+        # Capacity of the queue (maximum number of elements it can hold)
+        self.capacity: int = capacity
+
+        # Current number of elements in the queue
+        self.current_size: int = 0
+
+        # Reference to the front of the queue
+        self.head: Optional[ListNode] = None
+
+        # Reference to the rear of the queue
+        self.tail: Optional[ListNode] = None
+
+    def size(self) -> int:
+
+        # Returns the current number of elements in the queue
+        return self.current_size
+
+    def empty(self) -> bool:
+
+        # Returns True if the queue is empty, False otherwise
+        return self.current_size == 0
 ```
 
 ```java run
-boolean empty() { return size() == 0; }
+/**
+ * Definition for singly-linked list.
+ * class ListNode {
+ *     int val;
+ *     ListNode next;
+ *     ListNode() {}
+ *     ListNode(int val) { this.val = val; }
+ * };
+ */
+
+class Queue {
+
+    // Capacity of the queue (maximum number of elements it can hold)
+    public int capacity;
+
+    // Current number of elements in the queue
+    public int currentSize;
+
+    // Reference to the front of the queue
+    public ListNode head;
+
+    // Reference to the rear of the queue
+    public ListNode tail;
+
+    public Queue(int capacity) {
+        this.capacity = capacity;
+        currentSize = 0;
+        head = null;
+        tail = null;
+    }
+
+    public int size() {
+
+        // Returns the current number of elements in the queue
+        return currentSize;
+    }
+
+    public boolean empty() {
+
+        // Returns true if the queue is empty, false otherwise
+        return currentSize == 0;
+    }
+}
 ```
 
-```c run
-bool queue_empty(Queue *q) { return queue_size(q) == 0; }
-```
-
-```scala run
-def empty: Boolean = size == 0
-```
-
-
-## Complexity Analysis
+### Complexity Analysis
 
 > **Best Case**
 >
@@ -373,6 +413,8 @@ def empty: Boolean = size == 0
 >
 > - Time:  **O(1)**
 > - Space: **O(1)**
+
+</details>
 
 ***
 
@@ -408,37 +450,118 @@ note -> n1
 > -   **Step 1:** If the queue is empty, return `-1`.
 > -   **Step 2:** Otherwise return `head.val`.
 
-## Implementation
+<details>
+<summary><h2>Solution &amp; Analysis</h2></summary>
 
-
-```pseudocode
-function front(queue):
-    if empty(queue): return −1
-    return queue.head.val
-```
+### Implementation
 
 ```python run
-def front(self):
-    if self.empty(): return -1
-    return self.head.val
+from typing import Optional
+
+"""
+Definition for singly-linked list.
+class ListNode:
+    def __init__(self, val):
+        self.val = val
+        self.next = None
+"""
+
+class Queue:
+    def __init__(self, capacity: int):
+
+        # Capacity of the queue (maximum number of elements it can hold)
+        self.capacity: int = capacity
+
+        # Current number of elements in the queue
+        self.current_size: int = 0
+
+        # Reference to the front of the queue
+        self.head: Optional[ListNode] = None
+
+        # Reference to the rear of the queue
+        self.tail: Optional[ListNode] = None
+
+    def size(self) -> int:
+
+        # Returns the current number of elements in the queue
+        return self.current_size
+
+    def empty(self) -> bool:
+
+        # Returns True if the queue is empty, False otherwise
+        return self.current_size == 0
+
+    def front(self) -> int:
+
+        # Returns -1 if the queue is empty
+        if self.empty():
+            return -1
+
+        # Returns the value of the element at the front of the queue
+        if self.head:
+            return self.head.val
+
+        return -1
 ```
 
 ```java run
-int front() { return empty() ? -1 : head.val; }
-```
+/**
+ * Definition for singly-linked list.
+ * class ListNode {
+ *     int val;
+ *     ListNode next;
+ *     ListNode() {}
+ *     ListNode(int val) { this.val = val; }
+ * };
+ */
 
-```c run
-int queue_front(Queue *q) {
-    return queue_empty(q) ? -1 : q->head->val;
+class Queue {
+
+    // Capacity of the queue (maximum number of elements it can hold)
+    public int capacity;
+
+    // Current number of elements in the queue
+    public int currentSize;
+
+    // Reference to the front of the queue
+    public ListNode head;
+
+    // Reference to the rear of the queue
+    public ListNode tail;
+
+    public Queue(int capacity) {
+        this.capacity = capacity;
+        currentSize = 0;
+        head = null;
+        tail = null;
+    }
+
+    public int size() {
+
+        // Returns the current number of elements in the queue
+        return currentSize;
+    }
+
+    public boolean empty() {
+
+        // Returns true if the queue is empty, false otherwise
+        return currentSize == 0;
+    }
+
+    public int front() {
+
+        // Returns -1 if the queue is empty
+        if (empty()) {
+            return -1;
+        }
+
+        // Returns the value of the element at the front of the queue
+        return head.val;
+    }
 }
 ```
 
-```scala run
-def front: Int = if (empty) -1 else head.value
-```
-
-
-## Complexity Analysis
+### Complexity Analysis
 
 > **Best Case**
 >
@@ -449,6 +572,8 @@ def front: Int = if (empty) -1 else head.value
 >
 > - Time:  **O(1)**
 > - Space: **O(1)**
+
+</details>
 
 ***
 
@@ -484,37 +609,141 @@ note -> n3
 > -   **Step 1:** If the queue is empty, return `-1`.
 > -   **Step 2:** Otherwise return `tail.val`.
 
-## Implementation
+<details>
+<summary><h2>Solution &amp; Analysis</h2></summary>
 
-
-```pseudocode
-function back(queue):
-    if empty(queue): return −1
-    return queue.tail.val
-```
+### Implementation
 
 ```python run
-def back(self):
-    if self.empty(): return -1
-    return self.tail.val
+from typing import Optional
+
+"""
+Definition for singly-linked list.
+class ListNode:
+    def __init__(self, val):
+        self.val = val
+        self.next = None
+"""
+
+class Queue:
+    def __init__(self, capacity: int):
+
+        # Capacity of the queue (maximum number of elements it can hold)
+        self.capacity: int = capacity
+
+        # Current number of elements in the queue
+        self.current_size: int = 0
+
+        # Reference to the front of the queue
+        self.head: Optional[ListNode] = None
+
+        # Reference to the rear of the queue
+        self.tail: Optional[ListNode] = None
+
+    def size(self) -> int:
+
+        # Returns the current number of elements in the queue
+        return self.current_size
+
+    def empty(self) -> bool:
+
+        # Returns True if the queue is empty, False otherwise
+        return self.current_size == 0
+
+    def front(self) -> int:
+
+        # Returns -1 if the queue is empty
+        if self.empty():
+            return -1
+
+        # Returns the value of the element at the front of the queue
+        if self.head:
+            return self.head.val
+
+        return -1
+
+    def back(self) -> int:
+
+        # Returns -1 if the queue is empty
+        if self.empty():
+            return -1
+
+        # Returns the value of the element at the back of the queue
+        if self.tail:
+            return self.tail.val
+
+        return -1
 ```
 
 ```java run
-int back() { return empty() ? -1 : tail.val; }
-```
+/**
+ * Definition for singly-linked list.
+ * class ListNode {
+ *     int val;
+ *     ListNode next;
+ *     ListNode() {}
+ *     ListNode(int val) { this.val = val; }
+ * };
+ */
 
-```c run
-int queue_back(Queue *q) {
-    return queue_empty(q) ? -1 : q->tail->val;
+class Queue {
+
+    // Capacity of the queue (maximum number of elements it can hold)
+    public int capacity;
+
+    // Current number of elements in the queue
+    public int currentSize;
+
+    // Reference to the front of the queue
+    public ListNode head;
+
+    // Reference to the rear of the queue
+    public ListNode tail;
+
+    public Queue(int capacity) {
+        this.capacity = capacity;
+        currentSize = 0;
+        head = null;
+        tail = null;
+    }
+
+    public int size() {
+
+        // Returns the current number of elements in the queue
+        return currentSize;
+    }
+
+    public boolean empty() {
+
+        // Returns true if the queue is empty, false otherwise
+        return currentSize == 0;
+    }
+
+    public int front() {
+
+        // Returns -1 if the queue is empty
+        if (empty()) {
+            return -1;
+        }
+
+        // Returns the value of the element at the front of the queue
+        return head.val;
+    }
+
+    public int back() {
+
+        // Returns -1 if the queue is empty
+        if (empty()) {
+            return -1;
+        }
+
+        // Returns the value of the element at the back of the queue
+        return tail.val;
+    }
 }
 ```
 
-```scala run
-def back: Int = if (empty) -1 else tail.value
-```
-
-
-## Complexity Analysis
+### Complexity Analysis
 
 > **Best Case**
 >
@@ -525,6 +754,8 @@ def back: Int = if (empty) -1 else tail.value
 >
 > - Time:  **O(1)**
 > - Space: **O(1)**
+
+</details>
 
 ***
 
@@ -578,20 +809,10 @@ flowchart TB
 > -   **Step 4:** Otherwise, set `tail.next = newNode`, then `tail = newNode`.
 > -   **Step 5:** Increment `currentSize` and return `true`.
 
-## Implementation
+<details>
+<summary><h2>Solution &amp; Analysis</h2></summary>
 
-
-```pseudocode
-function enqueue(queue, val):
-    if queue.currentSize = queue.capacity: return false
-    node ← new ListNode(val)
-    if queue.head = null:
-        queue.head ← node; queue.tail ← node   # first item: set both pointers
-    else:
-        queue.tail.next ← node; queue.tail ← node
-    queue.currentSize ← queue.currentSize + 1
-    return true
-```
+### Implementation
 
 ```python run
 def enqueue(self, val):
@@ -623,41 +844,7 @@ boolean enqueue(int val) {
 }
 ```
 
-```c run
-bool queue_enqueue(Queue *q, int val) {
-    if (q->currentSize == q->capacity) return false;
-    ListNode *n = malloc(sizeof(ListNode));
-    n->val = val; n->next = NULL;
-    if (q->head == NULL) {
-        q->head = n;
-        q->tail = n;
-    } else {
-        q->tail->next = n;
-        q->tail       = n;
-    }
-    q->currentSize++;
-    return true;
-}
-```
-
-```scala run
-def enqueue(v: Int): Boolean = {
-  if (currSize == capacity) return false
-  val n = new Node(v)
-  if (head == null) {
-    head = n
-    tail = n
-  } else {
-    tail.next = n
-    tail      = n
-  }
-  currSize += 1
-  true
-}
-```
-
-
-## Complexity Analysis
+### Complexity Analysis
 
 A bounds check, an allocation, two or three pointer assignments, an increment. No traversal, no scaling with the queue size.
 
@@ -670,6 +857,8 @@ A bounds check, an allocation, two or three pointer assignments, an increment. N
 >
 > - Time:  **O(1)**
 > - Space: **O(1)**
+
+</details>
 
 ***
 
@@ -722,67 +911,278 @@ flowchart TB
 > -   **Step 5:** Free the old head node (where applicable).
 > -   **Step 6:** Decrement `currentSize`. Return `val`.
 
-## Implementation
+<details>
+<summary><h2>Solution &amp; Analysis</h2></summary>
 
-
-```pseudocode
-function dequeue(queue):
-    if empty(queue): return −1
-    val        ← queue.head.val
-    queue.head ← queue.head.next
-    if queue.head = null: queue.tail ← null   # last item removed; reset tail too
-    queue.currentSize ← queue.currentSize − 1
-    return val
-```
+### Implementation
 
 ```python run
-def dequeue(self):
-    if self.empty(): return -1
-    val       = self.head.val
-    self.head = self.head.next
-    if self.head is None:
-        self.tail = None
-    self.current_size -= 1
-    return val
+from typing import Optional
+
+"""
+Definition for singly-linked list.
+class ListNode:
+    def __init__(self, val):
+        self.val = val
+        self.next = None
+"""
+
+class Queue:
+    def __init__(self, capacity: int):
+
+        # Capacity of the queue (maximum number of elements it can hold)
+        self.capacity: int = capacity
+
+        # Current number of elements in the queue
+        self.current_size: int = 0
+
+        # Reference to the front of the queue
+        self.head: Optional[ListNode] = None
+
+        # Reference to the rear of the queue
+        self.tail: Optional[ListNode] = None
+
+    def size(self) -> int:
+
+        # Returns the current number of elements in the queue
+        return self.current_size
+
+    def empty(self) -> bool:
+
+        # Returns True if the queue is empty, False otherwise
+        return self.current_size == 0
+
+    def front(self) -> int:
+
+        # Returns -1 if the queue is empty
+        if self.empty():
+            return -1
+
+        # Returns the value of the element at the front of the queue
+        if self.head:
+            return self.head.val
+
+        return -1
+
+    def back(self) -> int:
+
+        # Returns -1 if the queue is empty
+        if self.empty():
+            return -1
+
+        # Returns the value of the element at the back of the queue
+        if self.tail:
+            return self.tail.val
+
+        return -1
+
+    def enqueue(self, val: int) -> bool:
+
+        # Returns False if the queue is full and cannot enqueue more
+        # elements
+        if self.current_size == self.capacity:
+            return False
+
+        # Create a new node with the given val
+        new_node: ListNode = ListNode(val)
+
+        # If the queue is empty, the new node becomes both the front
+        # and rear node
+        if self.empty():
+            self.head = new_node
+            self.tail = new_node
+
+        # Otherwise, add the new node to the end of the queue and update
+        # the rear reference
+        else:
+
+            # Add the new node to the end of the queue
+            if self.tail:
+                self.tail.next = new_node
+
+            # Update the rear reference to the new node
+            self.tail = new_node
+
+        # Increase the current size of the queue
+        self.current_size += 1
+
+        # Return True to indicate successful enqueue operation
+        return True
+
+    def dequeue(self) -> int:
+
+        # Returns -1 if the queue is empty and cannot dequeue any
+        # elements
+        if self.empty():
+            return -1
+
+        # Create a temporary reference to the front node
+        front_node: Optional[ListNode] = self.head
+
+        # Get the value of the front node
+        dequeued_val: int = -1
+        if front_node:
+            dequeued_val = front_node.val
+
+        # Update the front reference to the next node in the queue
+        if self.head:
+            self.head = self.head.next
+
+        # Release the reference to the previous front node so it can be
+        # garbage collected
+        del front_node
+
+        # If the front reference is None after dequeue, the queue
+        # becomes empty, so update the rear reference as well
+        if self.head is None:
+            self.tail = None
+
+        # Decrease the current size of the queue
+        self.current_size -= 1
+
+        # Return the dequeued value
+        return dequeued_val
 ```
 
 ```java run
-int dequeue() {
-    if (empty()) return -1;
-    int val   = head.val;
-    head      = head.next;
-    if (head == null) tail = null;
-    currentSize--;
-    return val;
+/**
+ * Definition for singly-linked list.
+ * class ListNode {
+ *     int val;
+ *     ListNode next;
+ *     ListNode() {}
+ *     ListNode(int val) { this.val = val; }
+ * };
+ */
+
+class Queue {
+
+    // Capacity of the queue (maximum number of elements it can hold)
+    public int capacity;
+
+    // Current number of elements in the queue
+    public int currentSize;
+
+    // Reference to the front of the queue
+    public ListNode head;
+
+    // Reference to the rear of the queue
+    public ListNode tail;
+
+    public Queue(int capacity) {
+        this.capacity = capacity;
+        currentSize = 0;
+        head = null;
+        tail = null;
+    }
+
+    public int size() {
+
+        // Returns the current number of elements in the queue
+        return currentSize;
+    }
+
+    public boolean empty() {
+
+        // Returns true if the queue is empty, false otherwise
+        return currentSize == 0;
+    }
+
+    public int front() {
+
+        // Returns -1 if the queue is empty
+        if (empty()) {
+            return -1;
+        }
+
+        // Returns the value of the element at the front of the queue
+        return head.val;
+    }
+
+    public int back() {
+
+        // Returns -1 if the queue is empty
+        if (empty()) {
+            return -1;
+        }
+
+        // Returns the value of the element at the back of the queue
+        return tail.val;
+    }
+
+    public boolean enqueue(int val) {
+
+        // Returns false if the queue is full and cannot enqueue more
+        // elements
+        if (currentSize == capacity) {
+            return false;
+        }
+
+        // Create a new node with the given val
+        ListNode newNode = new ListNode(val);
+
+        // If the queue is empty, the new node becomes both the front
+        // and rear node
+        if (empty()) {
+            head = newNode;
+            tail = newNode;
+        }
+
+        // Otherwise, add the new node to the end of the queue and update
+        // the tail reference
+        else {
+
+            // Add the new node to the end of the queue
+            tail.next = newNode;
+
+            // Update the tail reference to the new node
+            tail = newNode;
+        }
+
+        // Increase the current size of the queue
+        currentSize++;
+
+        // Return true to indicate successful enqueue operation
+        return true;
+    }
+
+    public int dequeue() {
+
+        // Returns -1 if the queue is empty and cannot dequeue any
+        // elements
+        if (empty()) {
+            return -1;
+        }
+
+        // Create a temporary reference to the front node
+        ListNode frontNode = head;
+
+        // Get the value of the front node
+        int dequeuedData = frontNode.val;
+
+        // Update the front reference to the next node in the queue
+        head = head.next;
+
+        // Release the reference to the previous front node so it can be
+        // garbage collected
+        frontNode = null;
+
+        // If the front reference is null after dequeue, the queue
+        // becomes empty, so update the tail reference as well
+        if (head == null) {
+            tail = null;
+        }
+
+        // Decrease the current size of the queue
+        currentSize--;
+
+        // Return the dequeued value
+        return dequeuedData;
+    }
 }
 ```
 
-```c run
-int queue_dequeue(Queue *q) {
-    if (queue_empty(q)) return -1;
-    ListNode *old = q->head;
-    int       val = old->val;
-    q->head       = old->next;
-    if (q->head == NULL) q->tail = NULL;
-    free(old);
-    q->currentSize--;
-    return val;
-}
-```
-
-```scala run
-def dequeue: Int = {
-  if (empty) return -1
-  val v = head.value
-  head  = head.next
-  if (head == null) tail = null
-  currSize -= 1
-  v
-}
-```
-
-
-## Complexity Analysis
+### Complexity Analysis
 
 A predicate, a value read, two pointer assignments, a free, a decrement. Independent of queue size.
 
@@ -795,6 +1195,8 @@ A predicate, a value read, two pointer assignments, a free, a decrement. Indepen
 >
 > - Time:  **O(1)**
 > - Space: **O(1)**
+
+</details>
 
 ***
 
@@ -812,7 +1214,9 @@ Given the skeleton of a **Queue class**, complete it by implementing all the que
 > -   **`enqueue(int val)`** — add `val` at the back; return `true` on success, `false` if full.
 > -   **`dequeue()`** — remove and return the front element; if empty, return `-1`.
 
-## Constraints
+<details>
+<summary><h2>Constraints</h2></summary>
+
 
 1. Use a **singly linked list** as the internal storage. Maintain both `head` (front) and `tail` (back) pointers so all operations are O(1).
 2. The implementation should be **bounded** by `capacity` (mirroring the array-queue interface).
@@ -837,7 +1241,10 @@ t -> n3
 
 <p align="center"><strong>Linked-list queue — head at the front, tail at the back, chain flows front→back. Every operation is O(1) because both ends are directly addressable.</strong></p>
 
-## Worked Example
+</details>
+<details>
+<summary><h2>Worked Example</h2></summary>
+
 
 > **Input:**
 >
@@ -865,35 +1272,11 @@ t -> n3
 > | `enqueue(9)` | `false` | `head→3→8, tail→8` (rejected) |
 > | `empty()` | `false` | `head→3→8, tail→8` |
 
-## Solution
+</details>
+<details>
+<summary><h2>Solution</h2></summary>
 
 
-```pseudocode
-function Queue(capacity):
-    head ← null; tail ← null; currentSize ← 0; cap ← capacity
-
-function size(queue):    return queue.currentSize
-function empty(queue):   return queue.currentSize = 0
-function front(queue):   if empty(queue): return −1  else return queue.head.val
-function back(queue):    if empty(queue): return −1  else return queue.tail.val
-
-function enqueue(queue, val):
-    if queue.currentSize = queue.capacity: return false
-    node ← new ListNode(val)
-    if queue.head = null: queue.head ← node
-    else:                 queue.tail.next ← node
-    queue.tail ← node
-    queue.currentSize ← queue.currentSize + 1
-    return true
-
-function dequeue(queue):
-    if empty(queue): return −1
-    val        ← queue.head.val
-    queue.head ← queue.head.next
-    if queue.head = null: queue.tail ← null
-    queue.currentSize ← queue.currentSize − 1
-    return val
-```
 
 ```python run
 class _ListNode:
@@ -984,111 +1367,10 @@ public class Main {
 }
 ```
 
-```c run
-#include <stdio.h>
-#include <stdlib.h>
-#include <stdbool.h>
+</details>
+<details>
+<summary><h2>Final Takeaway</h2></summary>
 
-typedef struct ListNode { int val; struct ListNode *next; } ListNode;
-
-typedef struct {
-    ListNode *head, *tail;
-    int       capacity, currentSize;
-} Queue;
-
-Queue* queue_create(int c) {
-    Queue *q = malloc(sizeof(*q));
-    q->head = q->tail = NULL;
-    q->capacity = c; q->currentSize = 0;
-    return q;
-}
-int  queue_size (Queue *q){ return q->currentSize; }
-bool queue_empty(Queue *q){ return q->currentSize == 0; }
-int  queue_front(Queue *q){ return queue_empty(q) ? -1 : q->head->val; }
-int  queue_back (Queue *q){ return queue_empty(q) ? -1 : q->tail->val; }
-bool queue_enqueue(Queue *q, int v) {
-    if (q->currentSize == q->capacity) return false;
-    ListNode *n = malloc(sizeof(*n));
-    n->val = v; n->next = NULL;
-    if (q->head == NULL) q->head = n;
-    else                 q->tail->next = n;
-    q->tail = n;
-    q->currentSize++;
-    return true;
-}
-int queue_dequeue(Queue *q) {
-    if (queue_empty(q)) return -1;
-    ListNode *old = q->head;
-    int       v   = old->val;
-    q->head       = old->next;
-    if (q->head == NULL) q->tail = NULL;
-    free(old);
-    q->currentSize--;
-    return v;
-}
-void queue_destroy(Queue *q) {
-    while (q->head) { ListNode *n = q->head->next; free(q->head); q->head = n; }
-    free(q);
-}
-
-int main() {
-    Queue *q = queue_create(2);
-    printf("%d %d\n", queue_enqueue(q,2), queue_back(q));
-    printf("%d %d\n", queue_enqueue(q,3), queue_front(q));
-    printf("%d\n",    queue_empty(q));
-    printf("%d %d\n", queue_dequeue(q), queue_front(q));
-    printf("%d %d\n", queue_enqueue(q,8), queue_enqueue(q,9));
-    printf("%d\n",    queue_empty(q));
-    queue_destroy(q);
-}
-```
-
-```scala run
-object Main extends App {
-  class Queue(val capacity: Int) {
-    private class Node(val value: Int, var next: Node = null)
-
-    private var head: Node = null
-    private var tail: Node = null
-    private var n          = 0
-
-    def size:  Int     = n
-    def empty: Boolean = n == 0
-    def front: Int     = if (empty) -1 else head.value
-    def back:  Int     = if (empty) -1 else tail.value
-    def enqueue(v: Int): Boolean = {
-      if (n == capacity) return false
-      val node = new Node(v)
-      if (head == null) head = node
-      else              tail.next = node
-      tail = node
-      n   += 1
-      true
-    }
-    def dequeue: Int = {
-      if (empty) return -1
-      val v = head.value
-      head  = head.next
-      if (head == null) tail = null
-      n -= 1
-      v
-    }
-  }
-
-  val q = new Queue(2)
-  println(s"${q.enqueue(2)} ${q.back}")
-  println(s"${q.enqueue(3)} ${q.front}")
-  println(q.empty)
-  println(s"${q.dequeue} ${q.front}")
-  println(s"${q.enqueue(8)} ${q.enqueue(9)}")
-  println(q.empty)
-}
-```
-
-
-***
-
-## Final Takeaway
 
 The linked-list queue is the natural counterpart to the array queue: same FIFO contract, same O(1) per operation, but unbounded growth and no resize discontinuity. The implementation is uglier — pointer juggling, edge cases on the empty/non-empty transition — but the trade-off is exactly what production systems often want.
 
@@ -1097,3 +1379,5 @@ The linked-list queue is the natural counterpart to the array queue: same FIFO c
 3. **Pick the implementation, don't default.** Array queue: contiguous, cache-friendly, fixed capacity, predictable cost — perfect for fixed-size buffers, kernel ring buffers, lock-free designs. Linked queue: unbounded, no resize spike, allocation-per-op, scattered memory — perfect when bursts are unpredictable and memory is the only ceiling. Both are "just" queues; the right answer depends on the workload.
 
 > *Coming up — the duo of cross-data-structure design problems. **Queue using two stacks** uses the LIFO–FIFO inversion to bend a stack into a queue. **Stack using two queues** does the inverse. Both appear in real interview cycles, and both are excellent stress tests for whether you really understand the FIFO/LIFO contracts these structures live by.*
+
+</details>

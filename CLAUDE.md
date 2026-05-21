@@ -28,9 +28,10 @@
 | JSON | circe (chosen because the codegen plugin doesn't support zio-json) |
 | Config | zio-config + typesafe HOCON; root key is `codefolio` |
 | DB | Postgres + plain JDBC + HikariCP |
-| Cache | Redis via `io.lettuce:lettuce-core` 6.5.x (async, wrapped with `ZIO.fromCompletionStage`) |
+| Cache | Redis via `io.lettuce:lettuce-core` 6.5.x (async, wrapped with `ZIO.fromCompletionStage`) — also backs the `/api/run` rate limiter |
 | Event log | MongoDB via `org.mongodb:mongodb-driver-sync` 5.2.x (blocking, wrapped with `ZIO.attemptBlocking`) |
 | Migrations | Liquibase 4.x, YAML master changelog including SQL changesets |
+| Auth | OIDC via Keycloak (`apps-prod` realm, GitHub IdP); server validates JWTs with `com.nimbusds:nimbus-jose-jwt` 9.x; SPA uses `keycloak-js` 26.x (PKCE). See ADR-0013 |
 | Logging | Logback + JUL→SLF4J bridge so Liquibase logs aren't tagged `[ERROR]` |
 | ScalaJS | 1.17+ via `sbt-scalajs` 1.21.0 |
 | React binding | `scalajs-react` 3.0.x |
@@ -192,6 +193,8 @@ Failures in Redis or Mongo are caught and *logged-then-ignored* — `/api/hello`
 
 - **Stale forked JVMs on :8080.** `sbt server/run` forks; `kill $sbt_pid` kills sbt but leaves the child JVM holding port 8080. `bin/dev` has a port pre-flight that detects and kills these. If you're not using `bin/dev`, run `sbt server/reStop` (or `kill $(lsof -ti:8080)`) before relaunching.
 
+- **Auth in dev: a local Keycloak container.** `docker-compose.yml` has a `keycloak` service (dev mode, in-memory H2) that imports the `codefolio` realm from `docker/keycloak/import/` on first boot — a public PKCE client `codefolio-web` plus a local `tester` / `tester` user, so the whole GitHub-sign-in flow runs end-to-end with no homelab dependency or GitHub OAuth app. `bin/dev` starts it, waits for the realm import, and defaults `AUTH_ENABLED=true` (pointing the server + SPA at `http://localhost:8081/realms/codefolio`). For fast content/runner iteration with no auth and no Keycloak wait, run `AUTH_ENABLED=false ./bin/dev` — then the JWT verifier short-circuits, the `/api/run` rate limiter no-ops, the editor is unlocked for everyone, and the SPA skips `keycloak-js`. The local realm has no GitHub IdP, so the modal's "Continue with GitHub" lands on Keycloak's own login form (sign in as `tester`/`tester`); production points at the homelab Keycloak which does federate GitHub. Full-stack `docker compose up` keeps auth off by default — browser-side OIDC needs Keycloak on one origin for both browser and the in-container server, which `bin/dev` (server on the host) satisfies but full-docker doesn't without pinning `KC_HOSTNAME`. See ADR-0013.
+
 - **The Vite plugin's `cwd: ".."`** in [client/vite.config.mjs](client/vite.config.mjs) — without it, `@scala-js/vite-plugin-scalajs` invokes a fresh sbt inside `client/` which has no build there.
 
 - **Liquibase logs through `java.util.logging`** by default; `sbt-revolver` then tags everything on stderr as `[ERROR]`. We bridge JUL→SLF4J in `Main.scala` (`SLF4JBridgeHandler.install()`) and `logback.xml` adds a `LevelChangePropagator` to keep the bridge cheap. The `Database is up to date, no changesets to execute` line is a hardcoded `println` inside Liquibase — bypasses any logger, can't easily be silenced.
@@ -211,6 +214,22 @@ Failures in Redis or Mongo are caught and *logged-then-ignored* — `/api/hello`
 - **MongoDB indexes are created at startup** (`HelloEventLog.live`'s `createIndex` call). `createIndex` is idempotent in MongoDB so re-running is safe; if you change the index spec, give it a new `name` or drop the old one.
 
 - **Lettuce `RedisClient.shutdown()` blocks** for ~2s by default while it gracefully closes Netty resources. The `ZIO.acquireRelease` guard handles this on layer teardown — visible if you Ctrl-C `bin/dev`.
+
+## DSA book migration (active project)
+
+The Cortex book at `content/cortex/data-structures-and-algorithms/` is in the middle of a multi-phase migration from a 4-language tutorial (pseudocode + Python + Java + C + Scala, verbose per-problem scaffolding) to a Python+Java-only book with a strict collapsible problem-section spec. **Before editing any DSA chapter, read [tools/DSA_MIGRATION.md](tools/DSA_MIGRATION.md)** — it covers:
+
+- The corrected source location at `~/Development/others/tutorial_dsa/code_block_corrected_version/data-structures-and-algorithms/` (outside this repo).
+- The 6-script pipeline under `tools/dsa_*.py` (strip → extract → replace → wrap → merge → tidy) with order and idempotence.
+- The problem-section spec — flat `## Problem Statement`, then `<details>` for Examples / Intuition & Brute Force (merged) / Solution & Analysis (merged: Solution + Dry Run + Result Size + Complexity + Edge Cases) / Key Takeaway.
+- Six real gotchas (wrap boundary bug, slug drift, misnamed source files, multi-token info strings, pre-existing malformed fences, `python` vs `python run`).
+- Verification recipes — `<details>` balance check, no-legacy-langs grep, browser DOM walk.
+
+Quick-reference rules for in-flight DSA edits:
+
+- Source code is canonical for `## Solution` / `## The Solution` / `## Implementation` blocks. Replace destination Py/Java with source verbatim — but only if the info string is exactly `python run` / `java run` (plain `python`/`java` are inline snippets that stay).
+- Never re-create what `dsa_fence_parser.py` already does. Import `iter_blocks` / `FenceBlock` for any tool that touches code fences.
+- After any wrap/merge/edit pass on a chapter, run `dsa_tidy_details_gaps.py` to normalise sibling-collapsible spacing — otherwise the chapter renders with too-large gaps compared to other chapters.
 
 ## Useful upstream docs
 

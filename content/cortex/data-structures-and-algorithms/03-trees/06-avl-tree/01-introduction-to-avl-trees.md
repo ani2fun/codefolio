@@ -14,7 +14,7 @@ In 1962, Soviet mathematicians Adelson-Velsky and Landis published a six-page pa
 
 For sixty-plus years since, AVL trees have been the *shallowest* of the self-balancing BSTs — a tree of `n` nodes has height at most `1.44 · log₂(n)`, the tightest bound achievable for any height-balanced binary search tree. That's why they're the right pick for **read-heavy workloads**: lookups walk fewer levels than red-black trees, splay trees, or treaps. The cost is more rotation work on writes — a fair trade when reads dominate.
 
-This chapter is the implementation. By the end you'll be able to insert and delete from an AVL tree in five languages, recognise the four rotation cases on sight, and explain why the height bound is `1.44 log n` instead of `log n`.
+This chapter is the implementation. By the end you'll be able to insert and delete from an AVL tree in Python and Java, recognise the four rotation cases on sight, and explain why the height bound is `1.44 log n` instead of `log n`.
 
 ---
 
@@ -217,34 +217,6 @@ After the rotation, the imbalanced subtree's height has decreased by 1, the AVL 
 
 # Insert with rebalance
 
-```pseudocode
-function insert(node, key):
-    if node is null: return new Node(key)
-    if key < node.key: node.left  ← insert(node.left,  key)
-    else if key > node.key: node.right ← insert(node.right, key)
-    else: return node                                              # duplicate, no-op
-
-    node.height ← 1 + max(height(node.left), height(node.right))
-    bf ← balanceFactor(node)
-
-    # LL
-    if bf > 1 AND key < node.left.key:
-        return rightRotate(node)
-    # RR
-    if bf < −1 AND key > node.right.key:
-        return leftRotate(node)
-    # LR
-    if bf > 1 AND key > node.left.key:
-        node.left ← leftRotate(node.left)
-        return rightRotate(node)
-    # RL
-    if bf < −1 AND key < node.right.key:
-        node.right ← rightRotate(node.right)
-        return leftRotate(node)
-
-    return node
-```
-
 The four `if` blocks are the four cases above. The `key < node.left.key` test distinguishes LL from LR (the key went left from `node.left` versus right from `node.left`). Symmetrically for the right side.
 
 ***
@@ -252,39 +224,6 @@ The four `if` blocks are the four cases above. The `key < node.left.key` test di
 # Delete with rebalance
 
 Standard BST delete, plus rebalance on the way up. The case-detection is slightly different because we don't have the inserted key as a guide; we use the *taller* child instead.
-
-```pseudocode
-function delete(node, key):
-    if node is null: return null
-    if key < node.key: node.left  ← delete(node.left,  key)
-    else if key > node.key: node.right ← delete(node.right, key)
-    else:                                                          # found the node
-        if node.left is null: return node.right
-        if node.right is null: return node.left
-        successor ← minNode(node.right)
-        node.key ← successor.key
-        node.right ← delete(node.right, successor.key)
-
-    node.height ← 1 + max(height(node.left), height(node.right))
-    bf ← balanceFactor(node)
-
-    # LL: left subtree taller, and its left child taller
-    if bf > 1 AND balanceFactor(node.left) ≥ 0:
-        return rightRotate(node)
-    # LR: left subtree taller, but its right child taller
-    if bf > 1 AND balanceFactor(node.left) < 0:
-        node.left ← leftRotate(node.left)
-        return rightRotate(node)
-    # RR
-    if bf < −1 AND balanceFactor(node.right) ≤ 0:
-        return leftRotate(node)
-    # RL
-    if bf < −1 AND balanceFactor(node.right) > 0:
-        node.right ← rightRotate(node.right)
-        return leftRotate(node)
-
-    return node
-```
 
 Delete can require up to `O(log n)` rotations because the rebalance may propagate up the tree (each rotation may decrease the subtree height by 1 and trigger a rebalance one level up). In practice, both insert and delete average around 1–2 rotations.
 
@@ -407,99 +346,6 @@ public class Main {
 }
 ```
 
-```c run
-#include <stdio.h>
-#include <stdlib.h>
-
-typedef struct Node {
-    int key, height;
-    struct Node *left, *right;
-} Node;
-
-static int h(Node *n) { return n ? n->height : 0; }
-static int max(int a, int b) { return a > b ? a : b; }
-static int bf(Node *n) { return n ? h(n->left) - h(n->right) : 0; }
-static void update(Node *n) { n->height = 1 + max(h(n->left), h(n->right)); }
-
-static Node *rot_right(Node *p) {
-    Node *l = p->left; p->left = l->right; l->right = p;
-    update(p); update(l); return l;
-}
-static Node *rot_left(Node *p) {
-    Node *r = p->right; p->right = r->left; r->left = p;
-    update(p); update(r); return r;
-}
-
-static Node *new_node(int key) {
-    Node *n = malloc(sizeof(Node));
-    n->key = key; n->left = n->right = NULL; n->height = 1; return n;
-}
-
-static Node *insert(Node *node, int key) {
-    if (!node) return new_node(key);
-    if (key < node->key) node->left = insert(node->left, key);
-    else if (key > node->key) node->right = insert(node->right, key);
-    else return node;
-    update(node);
-    int b = bf(node);
-    if (b >  1 && key < node->left->key)  return rot_right(node);
-    if (b < -1 && key > node->right->key) return rot_left(node);
-    if (b >  1 && key > node->left->key)  { node->left = rot_left(node->left); return rot_right(node); }
-    if (b < -1 && key < node->right->key) { node->right = rot_right(node->right); return rot_left(node); }
-    return node;
-}
-
-int main(void) {
-    Node *root = NULL;
-    int keys[] = {5, 3, 8, 1, 4, 7, 9, 2, 6, 10, 11, 12, 13, 14, 15};
-    for (int i = 0; i < 15; i++) root = insert(root, keys[i]);
-    printf("inserted 15 keys; height = %d\n", h(root));
-    return 0;
-}
-```
-
-```scala run
-object Main extends App {
-  class Node(var key: Int) {
-    var left: Node = null
-    var right: Node = null
-    var height: Int = 1
-  }
-
-  def h(n: Node): Int = if (n == null) 0 else n.height
-  def bf(n: Node): Int = if (n == null) 0 else h(n.left) - h(n.right)
-  def update(n: Node): Unit = n.height = 1 + math.max(h(n.left), h(n.right))
-
-  def rotRight(p: Node): Node = {
-    val l = p.left; p.left = l.right; l.right = p
-    update(p); update(l); l
-  }
-  def rotLeft(p: Node): Node = {
-    val r = p.right; p.right = r.left; r.left = p
-    update(p); update(r); r
-  }
-
-  def insert(node: Node, key: Int): Node = {
-    if (node == null) return new Node(key)
-    if (key < node.key) node.left = insert(node.left, key)
-    else if (key > node.key) node.right = insert(node.right, key)
-    else return node
-    update(node)
-    val b = bf(node)
-    if (b > 1 && key < node.left.key) return rotRight(node)
-    if (b < -1 && key > node.right.key) return rotLeft(node)
-    if (b > 1 && key > node.left.key) { node.left = rotLeft(node.left); return rotRight(node) }
-    if (b < -1 && key < node.right.key) { node.right = rotRight(node.right); return rotLeft(node) }
-    node
-  }
-
-  var root: Node = null
-  val keys = Array(5, 3, 8, 1, 4, 7, 9, 2, 6, 10, 11, 12, 13, 14, 15)
-  for (k <- keys) root = insert(root, k)
-  println(s"inserted 15 keys; height = ${h(root)}")
-}
-```
-
 ***
 
 # Edge cases and pitfalls
@@ -558,63 +404,54 @@ Click any question to reveal the answer.
 **A:** For every node, `|height(left) − height(right)| ≤ 1`. The difference is the *balance factor*; legal values are `{−1, 0, +1}`.
 
 </details>
-
 <details>
 <summary><strong>Q:</strong> Maximum height of an AVL tree with <code>n</code> nodes?</summary>
 
 **A:** `1.44 · log₂(n)`. Tighter than red-black's `2 log₂(n)`.
 
 </details>
-
 <details>
 <summary><strong>Q:</strong> Why is the height bound <code>1.44 log n</code> and not <code>log n</code>?</summary>
 
 **A:** The minimum-node AVL tree of height `h` follows the Fibonacci recurrence `N(h) = N(h-1) + N(h-2) + 1`. Solving gives `N(h) ≈ φ^h / √5`, so `h ≤ log_φ(n) ≈ 1.44 · log₂(n)`.
 
 </details>
-
 <details>
 <summary><strong>Q:</strong> The four AVL rebalance cases?</summary>
 
 **A:** **LL** (insert in P.left.left → right-rotate P), **RR** (insert in P.right.right → left-rotate P), **LR** (insert in P.left.right → left-rotate P.left, then right-rotate P), **RL** (insert in P.right.left → right-rotate P.right, then left-rotate P).
 
 </details>
-
 <details>
 <summary><strong>Q:</strong> What does a single rotation cost?</summary>
 
 **A:** `O(1)` work — three pointer reassignments and two height updates. The recursion stack handles propagation.
 
 </details>
-
 <details>
 <summary><strong>Q:</strong> How many rotations does an AVL <em>insert</em> trigger in the worst case?</summary>
 
 **A:** One single or one double rotation. After it, the height of the affected subtree is restored, and the recursion unwinds without further rotations.
 
 </details>
-
 <details>
 <summary><strong>Q:</strong> How many rotations does an AVL <em>delete</em> trigger in the worst case?</summary>
 
 **A:** Up to `O(log n)` — rebalances can cascade up the tree because a delete can shorten a subtree by 1, which may unbalance the parent.
 
 </details>
-
 <details>
 <summary><strong>Q:</strong> Per-node overhead?</summary>
 
 **A:** 4 bytes for height (or 2 bits for balance factor; 4 bytes is more flexible and the default).
 
 </details>
-
 <details>
 <summary><strong>Q:</strong> Where does AVL appear in production code?</summary>
 
 **A:** PostgreSQL's GiST indexes (in-memory parts), some in-memory database engines (Memgraph). Most standard libraries use RB-tree instead.
 
 </details>
-
 <details>
 <summary><strong>Q:</strong> When should you reach for AVL over RB-tree?</summary>
 

@@ -8,7 +8,7 @@ For a *binary search tree*, the answer is dictated by the BST invariant — ther
 
 The four insertion variants share a structure but differ in their precise mechanics. **Inserting at the root** is the easiest — no traversal, just allocate and re-link. **Inserting a leaf** is the next easiest — do any traversal, attach the new node to the first available `null` slot. **Inserting a child** of a *named* node requires a *search*: find the right place, then attach. **Inserting a parent** is the trickiest — you must find the affected node *and* the affected node's *parent*, so you can re-route the parent's pointer through the new node.
 
-Each variant in this lesson appears in real codebases: insert-at-root for top-down rebuilds, insert-a-leaf for breadth-first expansion (BFS-based tree builders), insert-a-child for ad-hoc tree mutation (browser DOM `appendChild`), insert-a-parent for tree-rewriting passes in compilers (introducing wrapper nodes). All four implementations land in 10 languages each, with mermaid diagrams showing exactly which pointers change.
+Each variant in this lesson appears in real codebases: insert-at-root for top-down rebuilds, insert-a-leaf for breadth-first expansion (BFS-based tree builders), insert-a-child for ad-hoc tree mutation (browser DOM `appendChild`), insert-a-parent for tree-rewriting passes in compilers (introducing wrapper nodes). All four implementations land in Python and Java, with mermaid diagrams showing exactly which pointers change.
 
 ---
 
@@ -76,65 +76,176 @@ flowchart LR
 > -   **Step 2:** If the tree is non-empty, set `newRoot.left = oldRoot` (or `newRoot.right`, your call).
 > -   **Step 3:** Return `newRoot`.
 
-## Implementation
+<details>
+<summary><h2>Solution &amp; Analysis</h2></summary>
 
-
-```pseudocode
-function insertRoot(root, value):
-    newRoot ← TreeNode(value)
-    newRoot.left ← root       # old tree becomes left subtree
-    return newRoot
-```
+### Implementation
 
 ```python run
+from typing import Optional
+from collections import deque
+
+
 class TreeNode:
     def __init__(self, val=0, left=None, right=None):
-        self.val, self.left, self.right = val, left, right
+        self.val = val
+        self.left = left
+        self.right = right
 
-def insert_root(root, value):
-    new_root = TreeNode(value)
-    new_root.left = root
-    return new_root
 
-# tree:    1
-#         / \
-#        2   3
-root = TreeNode(1, TreeNode(2), TreeNode(3))
-new = insert_root(root, 99)
-# new is 99, with old tree as left child
-print(new.val, new.left.val, new.left.left.val, new.left.right.val)   # 99 1 2 3
+def from_level_order(values):
+    """Build tree from list like [1, 2, 3, None, 4]. None means missing child."""
+    if not values:
+        return None
+    root = TreeNode(values[0])
+    queue = [root]
+    i = 1
+    while queue and i < len(values):
+        node = queue.pop(0)
+        if i < len(values) and values[i] is not None:
+            node.left = TreeNode(values[i])
+            queue.append(node.left)
+        i += 1
+        if i < len(values) and values[i] is not None:
+            node.right = TreeNode(values[i])
+            queue.append(node.right)
+        i += 1
+    return root
+
+
+def to_level_order(root):
+    """Serialize tree to level-order list with None for missing children."""
+    if not root:
+        return []
+    result = []
+    queue = deque([root])
+    while queue:
+        node = queue.popleft()
+        if node:
+            result.append(node.val)
+            queue.append(node.left)
+            queue.append(node.right)
+        else:
+            result.append(None)
+    while result and result[-1] is None:
+        result.pop()
+    return result
+
+
+class Solution:
+    def insert_root(
+        self, root: Optional[TreeNode], data: int
+    ) -> Optional[TreeNode]:
+
+        # Create a new node with the given data value
+        new_root = TreeNode(data)
+
+        # Set the current root as the left child of the new node
+        new_root.left = root
+
+        # Return the new root
+        return new_root
+
+
+# Examples from the problem statement
+print(to_level_order(Solution().insert_root(from_level_order([1, 2, 3, 4, None, None, 7, 9]), 5)))   # [5, 1, None, 2, 3, 4, None, None, 7, 9]
+print(to_level_order(Solution().insert_root(from_level_order([1, 8, 4, None, 6]), 10)))               # [10, 1, None, 8, 4, None, 6]
+
+# Edge cases
+print(to_level_order(Solution().insert_root(None, 1)))                                                # [1]
+print(to_level_order(Solution().insert_root(from_level_order([1]), 2)))                               # [2, 1]
+print(to_level_order(Solution().insert_root(from_level_order([1, None, 2, None, 3]), 0)))             # [0, 1, None, None, 2, None, 3]
+print(to_level_order(Solution().insert_root(from_level_order([5, 5, 5]), 5)))                         # [5, 5, None, 5, 5]
 ```
 
 ```java run
-static TreeNode insertRoot(TreeNode root, int value) {
-    TreeNode newRoot = new TreeNode(value);
-    newRoot.left = root;
-    return newRoot;
+import java.util.*;
+
+public class Main {
+    static class TreeNode {
+        int val;
+        TreeNode left;
+        TreeNode right;
+        TreeNode() {}
+        TreeNode(int val) { this.val = val; }
+    }
+
+    static TreeNode fromLevelOrder(Integer... values) {
+        if (values.length == 0 || values[0] == null) return null;
+        TreeNode root = new TreeNode(values[0]);
+        java.util.Deque<TreeNode> queue = new java.util.ArrayDeque<>();
+        queue.add(root);
+        int i = 1;
+        while (!queue.isEmpty() && i < values.length) {
+            TreeNode node = queue.poll();
+            if (i < values.length && values[i] != null) {
+                node.left = new TreeNode(values[i]);
+                queue.add(node.left);
+            }
+            i++;
+            if (i < values.length && values[i] != null) {
+                node.right = new TreeNode(values[i]);
+                queue.add(node.right);
+            }
+            i++;
+        }
+        return root;
+    }
+
+    static List<Integer> toLevelOrder(TreeNode root) {
+        List<Integer> result = new ArrayList<>();
+        if (root == null) return result;
+        Deque<TreeNode> queue = new ArrayDeque<>();
+        queue.add(root);
+        while (!queue.isEmpty()) {
+            TreeNode node = queue.poll();
+            if (node != null) {
+                result.add(node.val);
+                queue.add(node.left);
+                queue.add(node.right);
+            } else {
+                result.add(null);
+            }
+        }
+        while (!result.isEmpty() && result.get(result.size() - 1) == null) {
+            result.remove(result.size() - 1);
+        }
+        return result;
+    }
+
+    static class Solution {
+        public TreeNode insertRoot(TreeNode root, int data) {
+
+            // Create a new node with the given data value
+            TreeNode newRoot = new TreeNode(data);
+
+            // Set the current root as the left child of the new node
+            newRoot.left = root;
+
+            // Return the new root
+            return newRoot;
+        }
+    }
+
+    public static void main(String[] args) {
+        // Examples from the problem statement
+        System.out.println(toLevelOrder(new Solution().insertRoot(fromLevelOrder(1, 2, 3, 4, null, null, 7, 9), 5)));   // [5, 1, null, 2, 3, 4, null, null, 7, 9]
+        System.out.println(toLevelOrder(new Solution().insertRoot(fromLevelOrder(1, 8, 4, null, 6), 10)));               // [10, 1, null, 8, 4, null, 6]
+
+        // Edge cases
+        System.out.println(toLevelOrder(new Solution().insertRoot(null, 1)));                                            // [1]
+        System.out.println(toLevelOrder(new Solution().insertRoot(fromLevelOrder(1), 2)));                               // [2, 1]
+        System.out.println(toLevelOrder(new Solution().insertRoot(fromLevelOrder(1, null, 2, null, 3), 0)));             // [0, 1, null, null, 2, null, 3]
+        System.out.println(toLevelOrder(new Solution().insertRoot(fromLevelOrder(5, 5, 5), 5)));                         // [5, 5, null, 5, 5]
+    }
 }
 ```
 
-```c run
-TreeNode* insert_root(TreeNode *root, int value) {
-    TreeNode *new_root = malloc(sizeof(TreeNode));
-    new_root->val   = value;
-    new_root->left  = root;
-    new_root->right = NULL;
-    return new_root;
-}
-```
-
-```scala run
-def insertRoot(root: TreeNode, value: Int): TreeNode = {
-  val newRoot = new TreeNode(value)
-  newRoot.left = root
-  newRoot
-}
-```
-
-
-## Complexity
+### Complexity
 
 > **Time:** O(1) — one allocation, two assignments. **Space:** O(1) — one new node.
+
+</details>
 
 ***
 
@@ -142,16 +253,20 @@ def insertRoot(root: TreeNode, value: Int): TreeNode = {
 
 If the application doesn't care *where* the new node lands as long as it's a leaf, the easiest option is to walk the tree until you find a `null` child slot, then attach there. The recursive version walks left-first; the iterative version (next section) walks level-by-level.
 
-## Algorithm — recursive
+<details>
+<summary><h2>Algorithm — recursive</h2></summary>
+
 
 > **Algorithm**
 >
-> -   **insertLeaf(node, value):**
->     -   If `node` is `null`, return `TreeNode(value)`.
->     -   If `node.left` is `null`, set `node.left = TreeNode(value)` and return `node`.
->     -   Else recurse: `node.left = insertLeaf(node.left, value)`, return `node`.
+> -   **recursivelyInsertALeaf(root, data):**
+>     -   If `root` is `null`, return a new `TreeNode(data)` — it becomes the root.
+>     -   Else if `root.left` is `null`, set `root.left = TreeNode(data)`.
+>     -   Else if `root.right` is `null`, set `root.right = TreeNode(data)`.
+>     -   Else (both children present) recurse into the left subtree: `recursivelyInsertALeaf(root.left, data)`.
+>     -   Return `root`.
 
-This biased "always go left" walk is the simplest correct policy. It produces a deeply *left-skewed* tree if you call it repeatedly, which is fine when you don't care about balance — and is one of the reasons applications that *do* care use BSTs / balanced trees instead.
+At each node the policy is "fill a missing child here if there is one — left first, then right — otherwise descend left". This is the simplest correct policy. It still leans left when it has to descend, so calling it repeatedly produces a *left-leaning* tree, which is fine when you don't care about balance — and is one of the reasons applications that *do* care use BSTs / balanced trees instead.
 
 ```mermaid
 ---
@@ -192,61 +307,205 @@ flowchart LR
 
 <p align="center"><strong>Recursive leaf insertion — descends left until it hits a <code>null</code>, then attaches the new node. The result accumulates as a left chain if you keep inserting.</strong></p>
 
-## Implementation
+</details>
+<details>
+<summary><h2>Solution &amp; Analysis</h2></summary>
 
-
-```pseudocode
-function insertLeafRec(node, value):
-    if node = null: return TreeNode(value)
-    if node.left = null:
-        node.left ← TreeNode(value)
-    else:
-        node.left ← insertLeafRec(node.left, value)   # keep descending left
-    return node
-```
+### Implementation
 
 ```python run
-def insert_leaf_rec(node, value):
-    if node is None:
-        return TreeNode(value)
-    if node.left is None:
-        node.left = TreeNode(value)
-    else:
-        node.left = insert_leaf_rec(node.left, value)
-    return node
+from typing import Optional
+from collections import deque
+
+
+class TreeNode:
+    def __init__(self, val=0, left=None, right=None):
+        self.val = val
+        self.left = left
+        self.right = right
+
+
+def from_level_order(values):
+    """Build tree from list like [1, 2, 3, None, 4]. None means missing child."""
+    if not values:
+        return None
+    root = TreeNode(values[0])
+    queue = [root]
+    i = 1
+    while queue and i < len(values):
+        node = queue.pop(0)
+        if i < len(values) and values[i] is not None:
+            node.left = TreeNode(values[i])
+            queue.append(node.left)
+        i += 1
+        if i < len(values) and values[i] is not None:
+            node.right = TreeNode(values[i])
+            queue.append(node.right)
+        i += 1
+    return root
+
+
+def to_level_order(root):
+    """Serialize tree to level-order list with None for missing children."""
+    if not root:
+        return []
+    result = []
+    queue = deque([root])
+    while queue:
+        node = queue.popleft()
+        if node:
+            result.append(node.val)
+            queue.append(node.left)
+            queue.append(node.right)
+        else:
+            result.append(None)
+    while result and result[-1] is None:
+        result.pop()
+    return result
+
+
+class Solution:
+    def recursively_insert_a_leaf(
+        self, root: Optional[TreeNode], data: int
+    ) -> Optional[TreeNode]:
+
+        # If the tree is empty, create a new node and return it
+        # as the root
+        if root is None:
+            return TreeNode(data)
+
+        # Recursively insert into the left subtree
+        if root.left is None:
+            root.left = TreeNode(data)
+
+        # Recursively insert into the right subtree
+        elif root.right is None:
+            root.right = TreeNode(data)
+
+        # If both left and right subtrees are not None,
+        # recursively try inserting into the left subtree
+        else:
+            self.recursively_insert_a_leaf(root.left, data)
+
+        return root
+
+
+# Examples from the problem statement
+print(to_level_order(Solution().recursively_insert_a_leaf(from_level_order([1, 2, 3, 4, None, None, 7, 9]), 5)))  # [1, 2, 3, 4, 5, None, 7, 9]
+print(to_level_order(Solution().recursively_insert_a_leaf(from_level_order([1, 8, 4, None, 6]), 10)))              # [1, 8, 4, 10, 6]
+
+# Edge cases
+print(to_level_order(Solution().recursively_insert_a_leaf(None, 1)))                                               # [1]
+print(to_level_order(Solution().recursively_insert_a_leaf(from_level_order([1]), 2)))                              # [1, 2]
+print(to_level_order(Solution().recursively_insert_a_leaf(from_level_order([1, 2]), 3)))                           # [1, 2, 3]
+print(to_level_order(Solution().recursively_insert_a_leaf(from_level_order([1, 2, 3, 4, 5, 6, 7]), 8)))           # [1, 2, 3, 4, 5, 6, 7, 8]
+print(to_level_order(Solution().recursively_insert_a_leaf(from_level_order([1, None, 2, None, 3]), 4)))            # [1, 4, 2, None, 3]
 ```
 
 ```java run
-static TreeNode insertLeafRec(TreeNode node, int value) {
-    if (node == null)        return new TreeNode(value);
-    if (node.left == null) { node.left = new TreeNode(value); return node; }
-    node.left = insertLeafRec(node.left, value);
-    return node;
+import java.util.*;
+
+public class Main {
+    static class TreeNode {
+        int val;
+        TreeNode left;
+        TreeNode right;
+        TreeNode() {}
+        TreeNode(int val) { this.val = val; }
+    }
+
+    static TreeNode fromLevelOrder(Integer... values) {
+        if (values.length == 0 || values[0] == null) return null;
+        TreeNode root = new TreeNode(values[0]);
+        java.util.Deque<TreeNode> queue = new java.util.ArrayDeque<>();
+        queue.add(root);
+        int i = 1;
+        while (!queue.isEmpty() && i < values.length) {
+            TreeNode node = queue.poll();
+            if (i < values.length && values[i] != null) {
+                node.left = new TreeNode(values[i]);
+                queue.add(node.left);
+            }
+            i++;
+            if (i < values.length && values[i] != null) {
+                node.right = new TreeNode(values[i]);
+                queue.add(node.right);
+            }
+            i++;
+        }
+        return root;
+    }
+
+    static List<Integer> toLevelOrder(TreeNode root) {
+        List<Integer> result = new ArrayList<>();
+        if (root == null) return result;
+        Deque<TreeNode> queue = new ArrayDeque<>();
+        queue.add(root);
+        while (!queue.isEmpty()) {
+            TreeNode node = queue.poll();
+            if (node != null) {
+                result.add(node.val);
+                queue.add(node.left);
+                queue.add(node.right);
+            } else {
+                result.add(null);
+            }
+        }
+        while (!result.isEmpty() && result.get(result.size() - 1) == null) {
+            result.remove(result.size() - 1);
+        }
+        return result;
+    }
+
+    static class Solution {
+        public TreeNode recursivelyInsertALeaf(TreeNode root, int data) {
+
+            // If the tree is empty, create a new node and return it
+            // as the root
+            if (root == null) {
+                return new TreeNode(data);
+            }
+
+            // Recursively insert into the left subtree
+            if (root.left == null) {
+                root.left = new TreeNode(data);
+            }
+
+            // Recursively insert into the right subtree
+            else if (root.right == null) {
+                root.right = new TreeNode(data);
+            }
+
+            // If both left and right subtrees are not null,
+            // recursively try inserting into the left subtree
+            else {
+                recursivelyInsertALeaf(root.left, data);
+            }
+
+            return root;
+        }
+    }
+
+    public static void main(String[] args) {
+        // Examples from the problem statement
+        System.out.println(toLevelOrder(new Solution().recursivelyInsertALeaf(fromLevelOrder(1, 2, 3, 4, null, null, 7, 9), 5)));  // [1, 2, 3, 4, 5, null, 7, 9]
+        System.out.println(toLevelOrder(new Solution().recursivelyInsertALeaf(fromLevelOrder(1, 8, 4, null, 6), 10)));              // [1, 8, 4, 10, 6]
+
+        // Edge cases
+        System.out.println(toLevelOrder(new Solution().recursivelyInsertALeaf(null, 1)));                                           // [1]
+        System.out.println(toLevelOrder(new Solution().recursivelyInsertALeaf(fromLevelOrder(1), 2)));                              // [1, 2]
+        System.out.println(toLevelOrder(new Solution().recursivelyInsertALeaf(fromLevelOrder(1, 2), 3)));                           // [1, 2, 3]
+        System.out.println(toLevelOrder(new Solution().recursivelyInsertALeaf(fromLevelOrder(1, 2, 3, 4, 5, 6, 7), 8)));           // [1, 2, 3, 4, 5, 6, 7, 8]
+        System.out.println(toLevelOrder(new Solution().recursivelyInsertALeaf(fromLevelOrder(1, null, 2, null, 3), 4)));            // [1, 4, 2, null, 3]
+    }
 }
 ```
 
-```c run
-TreeNode* insert_leaf_rec(TreeNode *node, int value) {
-    if (!node)        { TreeNode *n = malloc(sizeof(*n)); n->val = value; n->left = n->right = NULL; return n; }
-    if (!node->left)  { TreeNode *n = malloc(sizeof(*n)); n->val = value; n->left = n->right = NULL; node->left = n; return node; }
-    node->left = insert_leaf_rec(node->left, value);
-    return node;
-}
-```
-
-```scala run
-def insertLeafRec(node: TreeNode, value: Int): TreeNode = {
-  if (node == null)       return new TreeNode(value)
-  if (node.left == null) { node.left = new TreeNode(value); return node }
-  node.left = insertLeafRec(node.left, value)
-  node
-}
-```
-
-
-## Complexity
+### Complexity
 
 > **Time:** O(h) where `h` is the path the recursion takes (depth of the leftmost null). **Space:** O(h) for the recursion stack.
+
+</details>
 
 ***
 
@@ -254,7 +513,9 @@ def insertLeafRec(node: TreeNode, value: Int): TreeNode = {
 
 A nicer policy when you want to keep the tree *roughly balanced* by default: do a level-order (BFS) traversal and insert at the *first* `null` slot you encounter. This produces a *complete* binary tree as you insert — exactly what a binary heap requires.
 
-## Algorithm
+<details>
+<summary><h2>Algorithm</h2></summary>
+
 
 > **Algorithm**
 >
@@ -309,109 +570,238 @@ flowchart LR
 
 <p align="center"><strong>Iterative leaf insertion using BFS — the queue marches level by level, finds the first <code>null</code> slot (left of node 2), and attaches there. Repeated insertions keep the tree complete.</strong></p>
 
-## Implementation
+</details>
+<details>
+<summary><h2>Solution &amp; Analysis</h2></summary>
 
-
-```pseudocode
-function insertLeafIter(root, value):
-    if root = null: return TreeNode(value)
-    q ← empty queue
-    enqueue root to q
-    while q is not empty:
-        n ← dequeue from q
-        if n.left = null:
-            n.left ← TreeNode(value); return root
-        enqueue n.left to q
-        if n.right = null:
-            n.right ← TreeNode(value); return root
-        enqueue n.right to q
-    return root
-```
+### Implementation
 
 ```python run
+from typing import Optional
+from queue import Queue
 from collections import deque
 
-def insert_leaf_iter(root, value):
-    if root is None:
-        return TreeNode(value)
-    q = deque([root])
-    while q:
-        n = q.popleft()
-        if n.left is None:
-            n.left = TreeNode(value); return root
-        q.append(n.left)
-        if n.right is None:
-            n.right = TreeNode(value); return root
-        q.append(n.right)
-    return root  # unreachable
+
+class TreeNode:
+    def __init__(self, val=0, left=None, right=None):
+        self.val = val
+        self.left = left
+        self.right = right
+
+
+def from_level_order(values):
+    """Build tree from list like [1, 2, 3, None, 4]. None means missing child."""
+    if not values:
+        return None
+    root = TreeNode(values[0])
+    queue = [root]
+    i = 1
+    while queue and i < len(values):
+        node = queue.pop(0)
+        if i < len(values) and values[i] is not None:
+            node.left = TreeNode(values[i])
+            queue.append(node.left)
+        i += 1
+        if i < len(values) and values[i] is not None:
+            node.right = TreeNode(values[i])
+            queue.append(node.right)
+        i += 1
+    return root
+
+
+def to_level_order(root):
+    """Serialize tree to level-order list with None for missing children."""
+    if not root:
+        return []
+    result = []
+    queue = deque([root])
+    while queue:
+        node = queue.popleft()
+        if node:
+            result.append(node.val)
+            queue.append(node.left)
+            queue.append(node.right)
+        else:
+            result.append(None)
+    while result and result[-1] is None:
+        result.pop()
+    return result
+
+
+class Solution:
+    def iteratively_insert_a_leaf(
+        self, root: Optional[TreeNode], data: int
+    ) -> Optional[TreeNode]:
+
+        # If the tree is empty, create a new node and return it
+        if root is None:
+            return TreeNode(data)
+
+        # Use a queue to perform level-order traversal
+        queue = Queue()
+        queue.put(root)
+
+        while not queue.empty():
+            node = queue.get()
+
+            # Check if the left child is null, if so, insert the new node
+            # here
+            if node.left is None:
+                node.left = TreeNode(data)
+                return root
+            else:
+                queue.put(node.left)
+
+            # Check if the right child is null, if so, insert the new
+            # node here
+            if node.right is None:
+                node.right = TreeNode(data)
+                return root
+            else:
+                queue.put(node.right)
+
+        return root
+
+
+# Examples from the problem statement
+print(to_level_order(Solution().iteratively_insert_a_leaf(from_level_order([1, 2, 3, 4, None, None, 7, 9]), 5)))  # [1, 2, 3, 4, 5, None, 7, 9]
+print(to_level_order(Solution().iteratively_insert_a_leaf(from_level_order([1, 8, 4, None, 6]), 10)))              # [1, 8, 4, 10, 6]
+
+# Edge cases
+print(to_level_order(Solution().iteratively_insert_a_leaf(None, 1)))                                               # [1]
+print(to_level_order(Solution().iteratively_insert_a_leaf(from_level_order([1]), 2)))                              # [1, 2]
+print(to_level_order(Solution().iteratively_insert_a_leaf(from_level_order([1, 2]), 3)))                           # [1, 2, 3]
+print(to_level_order(Solution().iteratively_insert_a_leaf(from_level_order([1, 2, 3, 4, 5, 6, 7]), 8)))           # [1, 2, 3, 4, 5, 6, 7, 8]
+print(to_level_order(Solution().iteratively_insert_a_leaf(from_level_order([1, None, 2, None, 3]), 4)))            # [1, 4, 2, None, 3]
 ```
 
 ```java run
-static TreeNode insertLeafIter(TreeNode root, int value) {
-    if (root == null) return new TreeNode(value);
-    Queue<TreeNode> q = new ArrayDeque<>();
-    q.offer(root);
-    while (!q.isEmpty()) {
-        TreeNode n = q.poll();
-        if (n.left  == null) { n.left  = new TreeNode(value); return root; }
-        q.offer(n.left);
-        if (n.right == null) { n.right = new TreeNode(value); return root; }
-        q.offer(n.right);
+import java.util.*;
+
+public class Main {
+    static class TreeNode {
+        int val;
+        TreeNode left;
+        TreeNode right;
+        TreeNode() {}
+        TreeNode(int val) { this.val = val; }
     }
-    return root;
-}
-```
 
-```c run
-TreeNode* insert_leaf_iter(TreeNode *root, int value) {
-    if (!root) { TreeNode *n = malloc(sizeof(*n)); n->val=value; n->left=n->right=NULL; return n; }
-    TreeNode *q[1024]; int head=0, tail=0;
-    q[tail++] = root;
-    while (head < tail) {
-        TreeNode *n = q[head++];
-        if (!n->left)  { n->left  = malloc(sizeof(*n->left));  n->left ->val=value; n->left ->left=n->left ->right=NULL; return root; }
-        q[tail++] = n->left;
-        if (!n->right) { n->right = malloc(sizeof(*n->right)); n->right->val=value; n->right->left=n->right->right=NULL; return root; }
-        q[tail++] = n->right;
+    static TreeNode fromLevelOrder(Integer... values) {
+        if (values.length == 0 || values[0] == null) return null;
+        TreeNode root = new TreeNode(values[0]);
+        java.util.Deque<TreeNode> queue = new java.util.ArrayDeque<>();
+        queue.add(root);
+        int i = 1;
+        while (!queue.isEmpty() && i < values.length) {
+            TreeNode node = queue.poll();
+            if (i < values.length && values[i] != null) {
+                node.left = new TreeNode(values[i]);
+                queue.add(node.left);
+            }
+            i++;
+            if (i < values.length && values[i] != null) {
+                node.right = new TreeNode(values[i]);
+                queue.add(node.right);
+            }
+            i++;
+        }
+        return root;
     }
-    return root;
-}
-```
 
-```scala run
-import scala.collection.mutable
+    static List<Integer> toLevelOrder(TreeNode root) {
+        List<Integer> result = new ArrayList<>();
+        if (root == null) return result;
+        Deque<TreeNode> queue = new ArrayDeque<>();
+        queue.add(root);
+        while (!queue.isEmpty()) {
+            TreeNode node = queue.poll();
+            if (node != null) {
+                result.add(node.val);
+                queue.add(node.left);
+                queue.add(node.right);
+            } else {
+                result.add(null);
+            }
+        }
+        while (!result.isEmpty() && result.get(result.size() - 1) == null) {
+            result.remove(result.size() - 1);
+        }
+        return result;
+    }
 
-def insertLeafIter(root: TreeNode, value: Int): TreeNode = {
-  if (root == null) return new TreeNode(value)
-  val q = mutable.Queue[TreeNode](root)
-  while (q.nonEmpty) {
-    val n = q.dequeue()
-    if (n.left  == null) { n.left  = new TreeNode(value); return root }
-    q.enqueue(n.left)
-    if (n.right == null) { n.right = new TreeNode(value); return root }
-    q.enqueue(n.right)
-  }
-  root
+    static class Solution {
+        public TreeNode iterativelyInsertALeaf(TreeNode root, int data) {
+
+            // If the tree is empty, create a new node and return it
+            if (root == null) {
+                return new TreeNode(data);
+            }
+
+            // Use a queue to perform level-order traversal
+            Queue<TreeNode> queue = new LinkedList<>();
+            queue.add(root);
+
+            while (!queue.isEmpty()) {
+                TreeNode node = queue.poll();
+
+                // Check if the left child is null, if so, insert the new
+                // node here
+                if (node.left == null) {
+                    node.left = new TreeNode(data);
+                    return root;
+                } else {
+                    queue.add(node.left);
+                }
+
+                // Check if the right child is null, if so, insert the new
+                // node here
+                if (node.right == null) {
+                    node.right = new TreeNode(data);
+                    return root;
+                } else {
+                    queue.add(node.right);
+                }
+            }
+
+            return root;
+        }
+    }
+
+    public static void main(String[] args) {
+        // Examples from the problem statement
+        System.out.println(toLevelOrder(new Solution().iterativelyInsertALeaf(fromLevelOrder(1, 2, 3, 4, null, null, 7, 9), 5)));  // [1, 2, 3, 4, 5, null, 7, 9]
+        System.out.println(toLevelOrder(new Solution().iterativelyInsertALeaf(fromLevelOrder(1, 8, 4, null, 6), 10)));              // [1, 8, 4, 10, 6]
+
+        // Edge cases
+        System.out.println(toLevelOrder(new Solution().iterativelyInsertALeaf(null, 1)));                                           // [1]
+        System.out.println(toLevelOrder(new Solution().iterativelyInsertALeaf(fromLevelOrder(1), 2)));                              // [1, 2]
+        System.out.println(toLevelOrder(new Solution().iterativelyInsertALeaf(fromLevelOrder(1, 2), 3)));                           // [1, 2, 3]
+        System.out.println(toLevelOrder(new Solution().iterativelyInsertALeaf(fromLevelOrder(1, 2, 3, 4, 5, 6, 7), 8)));           // [1, 2, 3, 4, 5, 6, 7, 8]
+        System.out.println(toLevelOrder(new Solution().iterativelyInsertALeaf(fromLevelOrder(1, null, 2, null, 3), 4)));            // [1, 4, 2, null, 3]
+    }
 }
 ```
 
 
 > **Note on the Rust implementation:** True BFS over a Rust `Option<Box<TreeNode>>` tree requires either `unsafe` (for raw-pointer queues) or `Rc<RefCell<...>>` (for shared mutable references). For teaching purposes we substitute a recursive variant that achieves the same result — pre-order rather than BFS, so the *ordering policy* differs slightly but the contract ("attach to the first available null slot") is preserved.
 
-## Complexity
+### Complexity
 
 > **Time:** O(N) worst case (visit every node before finding a slot in a complete tree). **Space:** O(W) for the queue, where W is the maximum width.
+
+</details>
 
 ***
 
 # Insert a child of a named node
 
-Given a *parent value* and a *new value*, find the parent in the tree and attach a new child to it. Two design choices:
+Given a *parent value* and a *new value*, find the parent in the tree and slip a new node in as its **left child**. Two design points:
 
-1. **Where to attach** — left if free, else right; or right if free, else left; or always-left and replace; etc. We'll use the policy "**left if free, else right**".
-2. **What if the parent isn't found** — error, no-op, return tree unchanged. We'll do "no-op".
+1. **Where to attach** — the policy here is "**always left**": the new node becomes the parent's left child, and whatever the parent had as its left subtree gets re-hung underneath the new node. The insert always succeeds — there is no "both slots full" rejection.
+2. **What if the parent isn't found** — return the tree unchanged (no-op).
 
-The implementation is a straightforward DFS that prunes whenever it succeeds.
+The implementation is a straightforward DFS over the whole tree, re-linking when it finds the parent.
 
 ```mermaid
 ---
@@ -454,110 +844,230 @@ flowchart LR
     style A9 fill:#fef9c3,stroke:#f59e0b
 ```
 
-<p align="center"><strong>Insert as a child — locate the parent node first, then attach the new node into its first free slot. If both slots are full, the operation is rejected (or you'd need a different policy).</strong></p>
+<p align="center"><strong>Insert as a child — locate the parent node first, then slip the new node in as its left child. The parent's previous left subtree is re-hung under the new node (here it was empty, so the new node ends up a leaf).</strong></p>
 
 > **Algorithm**
 >
-> -   **insertChild(node, parent, value):**
->     -   If `node` is `null`, return `false` (not found in this subtree).
->     -   If `node.val == parent`:
->         -   If `node.left`  is `null` → attach `TreeNode(value)` there, return `true`.
->         -   Else if `node.right` is `null` → attach there, return `true`.
->         -   Else return `false` (no slot available).
->     -   Else recurse left; if it succeeded, return `true`. Else recurse right.
+> -   **insertChild(root, parent, data):**
+>     -   If `root` is `null`, return `null` (empty subtree, nothing to do).
+>     -   If `root.val == parent`:
+>         -   Create `newNode = TreeNode(data)`.
+>         -   Set `newNode.left = root.left` (re-hang the old left subtree).
+>         -   Set `root.left = newNode`.
+>         -   Return `root`.
+>     -   Else recurse into both subtrees: `root.left = insertChild(root.left, …)`, `root.right = insertChild(root.right, …)`.
+>     -   Return `root`.
 
-## Implementation
+<details>
+<summary><h2>Solution &amp; Analysis</h2></summary>
 
-
-```pseudocode
-function insertChild(root, parent, value):
-    function go(node):
-        if node = null: return false
-        if node.val = parent:
-            if   node.left  = null: node.left  ← TreeNode(value); return true
-            else if node.right = null: node.right ← TreeNode(value); return true
-            else: return false           # parent already has two children
-        return go(node.left) OR go(node.right)
-    go(root)
-    return root
-```
+### Implementation
 
 ```python run
-def insert_child(root, parent, value):
-    def go(node):
-        if node is None: return False
-        if node.val == parent:
-            if   node.left  is None: node.left  = TreeNode(value); return True
-            elif node.right is None: node.right = TreeNode(value); return True
-            else:                    return False
-        return go(node.left) or go(node.right)
-    go(root)
+from typing import Optional
+from collections import deque
+
+
+class TreeNode:
+    def __init__(self, val=0, left=None, right=None):
+        self.val = val
+        self.left = left
+        self.right = right
+
+
+def from_level_order(values):
+    """Build tree from list like [1, 2, 3, None, 4]. None means missing child."""
+    if not values:
+        return None
+    root = TreeNode(values[0])
+    queue = [root]
+    i = 1
+    while queue and i < len(values):
+        node = queue.pop(0)
+        if i < len(values) and values[i] is not None:
+            node.left = TreeNode(values[i])
+            queue.append(node.left)
+        i += 1
+        if i < len(values) and values[i] is not None:
+            node.right = TreeNode(values[i])
+            queue.append(node.right)
+        i += 1
     return root
+
+
+def to_level_order(root):
+    """Serialize tree to level-order list with None for missing children."""
+    if not root:
+        return []
+    result = []
+    queue = deque([root])
+    while queue:
+        node = queue.popleft()
+        if node:
+            result.append(node.val)
+            queue.append(node.left)
+            queue.append(node.right)
+        else:
+            result.append(None)
+    while result and result[-1] is None:
+        result.pop()
+    return result
+
+
+class Solution:
+    def insert_child(
+        self, root: Optional[TreeNode], parent: int, data: int
+    ) -> Optional[TreeNode]:
+
+        # If the root is null, there's nothing to do, return null
+        if not root:
+            return root
+
+        # Search for the parent node in the tree
+        if root.val == parent:
+
+            # If the parent is found, insert the new node as the left
+            # child
+            new_node = TreeNode(data)
+
+            # Attach the existing left child to the new node
+            new_node.left = root.left
+
+            # Set the new node as the left child of the parent
+            root.left = new_node
+
+            # Return the root (no change to the root itself)
+            return root
+
+        # Recurse for the left and right subtrees
+        root.left = self.insert_child(root.left, parent, data)
+        root.right = self.insert_child(root.right, parent, data)
+
+        # Return the root of the tree
+        return root
+
+
+# Examples from the problem statement
+print(to_level_order(Solution().insert_child(from_level_order([1, 2, 3, 4, None, None, 7, 9]), 3, 5)))  # [1, 2, 3, 4, None, 5, 7, 9]
+print(to_level_order(Solution().insert_child(from_level_order([1, 8, 4, None, 6]), 10, 20)))             # [1, 8, 4, None, 6]
+
+# Edge cases
+print(to_level_order(Solution().insert_child(None, 1, 5)))                                               # []
+print(to_level_order(Solution().insert_child(from_level_order([1]), 1, 2)))                              # [1, 2]
+print(to_level_order(Solution().insert_child(from_level_order([1, 2, 3]), 1, 9)))                        # [1, 9, 3, 2]
+print(to_level_order(Solution().insert_child(from_level_order([1, 2, 3, 4, 5, 6, 7]), 5, 99)))          # [1, 2, 3, 4, 5, 6, 7, None, None, 99]
+print(to_level_order(Solution().insert_child(from_level_order([1, 2, 3]), 99, 0)))                       # [1, 2, 3]
 ```
 
 ```java run
-static boolean insertChildHelper(TreeNode node, int parent, int value) {
-    if (node == null) return false;
-    if (node.val == parent) {
-        if      (node.left  == null) { node.left  = new TreeNode(value); return true; }
-        else if (node.right == null) { node.right = new TreeNode(value); return true; }
-        else                          return false;
+import java.util.*;
+
+public class Main {
+    static class TreeNode {
+        int val;
+        TreeNode left;
+        TreeNode right;
+        TreeNode() {}
+        TreeNode(int val) { this.val = val; }
     }
-    return insertChildHelper(node.left, parent, value) || insertChildHelper(node.right, parent, value);
-}
-static TreeNode insertChild(TreeNode root, int parent, int value) {
-    insertChildHelper(root, parent, value);
-    return root;
-}
-```
 
-```c run
-int insert_child_helper(TreeNode *node, int parent, int value) {
-    if (!node) return 0;
-    if (node->val == parent) {
-        TreeNode *child = malloc(sizeof(*child));
-        child->val = value; child->left = child->right = NULL;
-        if      (!node->left)  { node->left  = child; return 1; }
-        else if (!node->right) { node->right = child; return 1; }
-        else                   { free(child); return 0; }
-    }
-    return insert_child_helper(node->left, parent, value) || insert_child_helper(node->right, parent, value);
-}
-TreeNode* insert_child(TreeNode *root, int parent, int value) {
-    insert_child_helper(root, parent, value);
-    return root;
-}
-```
-
-```scala run
-class TreeNode(var value: Int, var left: TreeNode = null, var right: TreeNode = null)
-
-object Main extends App {
-  class Solution {
-    def insertChild(root: TreeNode, parent: Int, value: Int): TreeNode = {
-      def go(n: TreeNode): Boolean = {
-        if (n == null) return false
-        if (n.value == parent) {
-          if      (n.left  == null) { n.left  = new TreeNode(value); return true }
-          else if (n.right == null) { n.right = new TreeNode(value); return true }
-          else                       return false
+    static TreeNode fromLevelOrder(Integer... values) {
+        if (values.length == 0 || values[0] == null) return null;
+        TreeNode root = new TreeNode(values[0]);
+        java.util.Deque<TreeNode> queue = new java.util.ArrayDeque<>();
+        queue.add(root);
+        int i = 1;
+        while (!queue.isEmpty() && i < values.length) {
+            TreeNode node = queue.poll();
+            if (i < values.length && values[i] != null) {
+                node.left = new TreeNode(values[i]);
+                queue.add(node.left);
+            }
+            i++;
+            if (i < values.length && values[i] != null) {
+                node.right = new TreeNode(values[i]);
+                queue.add(node.right);
+            }
+            i++;
         }
-        go(n.left) || go(n.right)
-      }
-      go(root); root
+        return root;
     }
-  }
 
-  val root = new TreeNode(1, new TreeNode(2), new TreeNode(3))
-  new Solution().insertChild(root, 2, 4)
-  println(s"${root.value} ${root.left.value} ${root.left.left.value} ${root.right.value}")
+    static List<Integer> toLevelOrder(TreeNode root) {
+        List<Integer> result = new ArrayList<>();
+        if (root == null) return result;
+        Deque<TreeNode> queue = new ArrayDeque<>();
+        queue.add(root);
+        while (!queue.isEmpty()) {
+            TreeNode node = queue.poll();
+            if (node != null) {
+                result.add(node.val);
+                queue.add(node.left);
+                queue.add(node.right);
+            } else {
+                result.add(null);
+            }
+        }
+        while (!result.isEmpty() && result.get(result.size() - 1) == null) {
+            result.remove(result.size() - 1);
+        }
+        return result;
+    }
+
+    static class Solution {
+        public TreeNode insertChild(TreeNode root, int parent, int data) {
+
+            // If the root is null, there's nothing to do, return null
+            if (root == null) {
+                return root;
+            }
+
+            // Search for the parent node in the tree
+            if (root.val == parent) {
+
+                // If the parent is found, insert the new node as the left
+                // child
+                TreeNode newNode = new TreeNode(data);
+
+                // Attach the existing left child to the new node
+                newNode.left = root.left;
+
+                // Set the new node as the left child of the parent
+                root.left = newNode;
+
+                // Return the root (no change to the root itself)
+                return root;
+            }
+
+            // Recurse for the left and right subtrees
+            root.left = insertChild(root.left, parent, data);
+            root.right = insertChild(root.right, parent, data);
+
+            // Return the root of the tree
+            return root;
+        }
+    }
+
+    public static void main(String[] args) {
+        // Examples from the problem statement
+        System.out.println(toLevelOrder(new Solution().insertChild(fromLevelOrder(1, 2, 3, 4, null, null, 7, 9), 3, 5)));  // [1, 2, 3, 4, null, 5, 7, 9]
+        System.out.println(toLevelOrder(new Solution().insertChild(fromLevelOrder(1, 8, 4, null, 6), 10, 20)));             // [1, 8, 4, null, 6]
+
+        // Edge cases
+        System.out.println(toLevelOrder(new Solution().insertChild(null, 1, 5)));                                           // []
+        System.out.println(toLevelOrder(new Solution().insertChild(fromLevelOrder(1), 1, 2)));                              // [1, 2]
+        System.out.println(toLevelOrder(new Solution().insertChild(fromLevelOrder(1, 2, 3), 1, 9)));                        // [1, 9, 3, 2]
+        System.out.println(toLevelOrder(new Solution().insertChild(fromLevelOrder(1, 2, 3, 4, 5, 6, 7), 5, 99)));          // [1, 2, 3, 4, 5, 6, 7, null, null, 99]
+        System.out.println(toLevelOrder(new Solution().insertChild(fromLevelOrder(1, 2, 3), 99, 0)));                       // [1, 2, 3]
+    }
 }
 ```
 
-
-## Complexity
+### Complexity
 
 > **Time:** O(N) worst case — the parent might be the last node we visit. **Space:** O(h) for recursion.
+
+</details>
 
 ***
 
@@ -570,7 +1080,7 @@ There are two cases to handle separately:
 1. **Target is the root** → no original parent to re-route. The new node becomes the new root, with the old root as its child. (Same shape as "insert at root".)
 2. **Target is not the root** → find the target's *parent*, swap pointers.
 
-The trick is that you need to find *both* the target *and* the target's parent — you can't re-link the parent's pointer if you don't have the parent. The cleanest way: have the recursion return *whether the target was found below*, and have the *caller* (i.e., the parent) do the re-link.
+The trick is that you need *both* the target *and* the target's parent — you can't re-route the parent's pointer if you don't have the parent. The clean way: at every node, *check its own children* for a value match. The node that owns the target as a child is exactly the parent, so it can do the re-link itself. One more detail — the new node must take over the *same side* the target was on: if the target was a left child, the target becomes the new node's **left** child; if it was a right child, the **right** child. That keeps the rest of the tree's shape intact.
 
 ```mermaid
 ---
@@ -621,136 +1131,251 @@ flowchart LR
 
 > **Algorithm**
 >
-> -   **Step 1:** If the root itself is the target, return a new node with `root` as its left child.
-> -   **Step 2:** Otherwise recurse: at each node, if either child is the target, allocate a new wrapper node, set the target as its left child, replace the original child pointer with the wrapper, return.
-> -   **Step 3:** If neither child is the target, recurse into both subtrees.
+> -   **Step 1:** If `root` is `null`, return `null`.
+> -   **Step 2:** If the root itself is the target (`root.val == child`), return a new node with `root` as its left child — it becomes the new tree root.
+> -   **Step 3:** If `root.left` is the target, allocate a new wrapper node, set the wrapper's *left* child to the old `root.left`, point `root.left` at the wrapper, return `root`.
+> -   **Step 4:** If `root.right` is the target, do the mirror: set the wrapper's *right* child to the old `root.right`, point `root.right` at the wrapper, return `root`.
+> -   **Step 5:** Otherwise recurse into both subtrees and return `root`.
 
-## Implementation
+<details>
+<summary><h2>Solution &amp; Analysis</h2></summary>
 
-
-```pseudocode
-function insertParent(root, target, value):
-    if root = null: return null
-    if root.val = target:
-        new ← TreeNode(value); new.left ← root; return new
-    function go(node):
-        if node = null: return
-        if node.left ≠ null AND node.left.val = target:
-            new ← TreeNode(value); new.left ← node.left; node.left ← new; return
-        if node.right ≠ null AND node.right.val = target:
-            new ← TreeNode(value); new.left ← node.right; node.right ← new; return
-        go(node.left); go(node.right)
-    go(root)
-    return root
-```
+### Implementation
 
 ```python run
-def insert_parent(root, target, value):
-    if root is None: return None
-    if root.val == target:
-        new = TreeNode(value); new.left = root; return new
-    def go(node):
-        if node is None: return
-        if node.left and node.left.val == target:
-            new = TreeNode(value); new.left = node.left; node.left = new; return
-        if node.right and node.right.val == target:
-            new = TreeNode(value); new.left = node.right; node.right = new; return
-        go(node.left); go(node.right)
-    go(root)
+from typing import Optional
+from collections import deque
+
+
+class TreeNode:
+    def __init__(self, val=0, left=None, right=None):
+        self.val = val
+        self.left = left
+        self.right = right
+
+
+def from_level_order(values):
+    """Build tree from list like [1, 2, 3, None, 4]. None means missing child."""
+    if not values:
+        return None
+    root = TreeNode(values[0])
+    queue = [root]
+    i = 1
+    while queue and i < len(values):
+        node = queue.pop(0)
+        if i < len(values) and values[i] is not None:
+            node.left = TreeNode(values[i])
+            queue.append(node.left)
+        i += 1
+        if i < len(values) and values[i] is not None:
+            node.right = TreeNode(values[i])
+            queue.append(node.right)
+        i += 1
     return root
+
+
+def to_level_order(root):
+    """Serialize tree to level-order list with None for missing children."""
+    if not root:
+        return []
+    result = []
+    queue = deque([root])
+    while queue:
+        node = queue.popleft()
+        if node:
+            result.append(node.val)
+            queue.append(node.left)
+            queue.append(node.right)
+        else:
+            result.append(None)
+    while result and result[-1] is None:
+        result.pop()
+    return result
+
+
+class Solution:
+    def insert_parent(
+        self, root: Optional[TreeNode], child: int, data: int
+    ) -> Optional[TreeNode]:
+
+        # If root is null, return null (base case)
+        if root is None:
+            return None
+
+        # If root itself is the child, new node becomes the root
+        if root.val == child:
+            new_node = TreeNode(data)
+            new_node.left = root
+            return new_node
+
+        # Check if the left child matches the child
+        if root.left and root.left.val == child:
+            new_node = TreeNode(data)
+
+            # Set existing left child as new node's left child
+            new_node.left = root.left
+
+            # Update parent's left child to new node
+            root.left = new_node
+            return root
+
+        # Check if the right child matches the child
+        if root.right and root.right.val == child:
+            new_node = TreeNode(data)
+
+            # Set existing right child as new node's right child
+            new_node.right = root.right
+
+            # Update parent's right child to new node
+            root.right = new_node
+            return root
+
+        # Recurse for the left and right subtrees
+        root.left = self.insert_parent(root.left, child, data)
+        root.right = self.insert_parent(root.right, child, data)
+
+        # Return the root of the tree
+        return root
+
+
+# Examples from the problem statement
+print(to_level_order(Solution().insert_parent(from_level_order([1, 2, 3, 4, None, None, 7, 9]), 7, 5)))   # [1, 2, 3, 4, None, None, 5, 9, None, None, 7]
+print(to_level_order(Solution().insert_parent(from_level_order([1, 8, 4, None, 6]), 10, 20)))              # [1, 8, 4, None, 6]
+
+# Edge cases
+print(to_level_order(Solution().insert_parent(None, 1, 5)))                                                # []
+print(to_level_order(Solution().insert_parent(from_level_order([1]), 1, 0)))                               # [0, 1]
+print(to_level_order(Solution().insert_parent(from_level_order([1, 2, 3]), 2, 9)))                         # [1, 9, 3, 2]
+print(to_level_order(Solution().insert_parent(from_level_order([1, 2, 3]), 3, 9)))                         # [1, 2, 9, None, None, 3]
+print(to_level_order(Solution().insert_parent(from_level_order([1, 2, 3]), 99, 0)))                        # [1, 2, 3]
 ```
 
 ```java run
-static void insertParentHelper(TreeNode node, int target, int value) {
-    if (node == null) return;
-    if (node.left != null && node.left.val == target) {
-        TreeNode wrapper = new TreeNode(value);
-        wrapper.left = node.left;
-        node.left = wrapper;
-        return;
-    }
-    if (node.right != null && node.right.val == target) {
-        TreeNode wrapper = new TreeNode(value);
-        wrapper.left = node.right;
-        node.right = wrapper;
-        return;
-    }
-    insertParentHelper(node.left,  target, value);
-    insertParentHelper(node.right, target, value);
-}
-static TreeNode insertParent(TreeNode root, int target, int value) {
-    if (root == null) return null;
-    if (root.val == target) {
-        TreeNode wrapper = new TreeNode(value);
-        wrapper.left = root;
-        return wrapper;
-    }
-    insertParentHelper(root, target, value);
-    return root;
-}
-```
+import java.util.*;
 
-```c run
-void insert_parent_helper(TreeNode *n, int target, int value) {
-    if (!n) return;
-    if (n->left  && n->left->val  == target) {
-        TreeNode *w = malloc(sizeof(*w)); w->val = value; w->left = n->left;  w->right = NULL; n->left  = w; return;
+public class Main {
+    static class TreeNode {
+        int val;
+        TreeNode left;
+        TreeNode right;
+        TreeNode() {}
+        TreeNode(int val) { this.val = val; }
     }
-    if (n->right && n->right->val == target) {
-        TreeNode *w = malloc(sizeof(*w)); w->val = value; w->left = n->right; w->right = NULL; n->right = w; return;
-    }
-    insert_parent_helper(n->left,  target, value);
-    insert_parent_helper(n->right, target, value);
-}
-TreeNode* insert_parent(TreeNode *root, int target, int value) {
-    if (!root) return NULL;
-    if (root->val == target) {
-        TreeNode *w = malloc(sizeof(*w)); w->val = value; w->left = root; w->right = NULL; return w;
-    }
-    insert_parent_helper(root, target, value);
-    return root;
-}
-```
 
-```scala run
-class TreeNode(var value: Int, var left: TreeNode = null, var right: TreeNode = null)
-
-object Main extends App {
-  class Solution {
-    def insertParent(root: TreeNode, target: Int, value: Int): TreeNode = {
-      if (root == null) return null
-      var r = root
-      if (r.value == target) {
-        val w = new TreeNode(value); w.left = r; return w
-      }
-      def go(n: TreeNode): Unit = {
-        if (n == null) return
-        if (n.left  != null && n.left.value  == target) {
-          val w = new TreeNode(value); w.left = n.left; n.left  = w; return
+    static TreeNode fromLevelOrder(Integer... values) {
+        if (values.length == 0 || values[0] == null) return null;
+        TreeNode root = new TreeNode(values[0]);
+        java.util.Deque<TreeNode> queue = new java.util.ArrayDeque<>();
+        queue.add(root);
+        int i = 1;
+        while (!queue.isEmpty() && i < values.length) {
+            TreeNode node = queue.poll();
+            if (i < values.length && values[i] != null) {
+                node.left = new TreeNode(values[i]);
+                queue.add(node.left);
+            }
+            i++;
+            if (i < values.length && values[i] != null) {
+                node.right = new TreeNode(values[i]);
+                queue.add(node.right);
+            }
+            i++;
         }
-        if (n.right != null && n.right.value == target) {
-          val w = new TreeNode(value); w.left = n.right; n.right = w; return
-        }
-        go(n.left); go(n.right)
-      }
-      go(r); r
+        return root;
     }
-  }
 
-  val root = new TreeNode(1, new TreeNode(2), new TreeNode(3))
-  val out  = new Solution().insertParent(root, 2, 9)
-  println(s"${out.value} ${out.left.value} ${out.left.left.value} ${out.right.value}")
+    static List<Integer> toLevelOrder(TreeNode root) {
+        List<Integer> result = new ArrayList<>();
+        if (root == null) return result;
+        Deque<TreeNode> queue = new ArrayDeque<>();
+        queue.add(root);
+        while (!queue.isEmpty()) {
+            TreeNode node = queue.poll();
+            if (node != null) {
+                result.add(node.val);
+                queue.add(node.left);
+                queue.add(node.right);
+            } else {
+                result.add(null);
+            }
+        }
+        while (!result.isEmpty() && result.get(result.size() - 1) == null) {
+            result.remove(result.size() - 1);
+        }
+        return result;
+    }
+
+    static class Solution {
+        public TreeNode insertParent(TreeNode root, int child, int data) {
+
+            // If root is null, return null (base case)
+            if (root == null) {
+                return null;
+            }
+
+            // If root itself is the child, new node becomes the root
+            if (root.val == child) {
+                TreeNode newNode = new TreeNode(data);
+                newNode.left = root;
+                return newNode;
+            }
+
+            // Check if the left child matches the child
+            if (root.left != null && root.left.val == child) {
+                TreeNode newNode = new TreeNode(data);
+
+                // Set existing left child as new node's left child
+                newNode.left = root.left;
+
+                // Update parent's left child to new node
+                root.left = newNode;
+                return root;
+            }
+
+            // Check if the right child matches the child
+            if (root.right != null && root.right.val == child) {
+                TreeNode newNode = new TreeNode(data);
+
+                // Set existing right child as new node's right child
+                newNode.right = root.right;
+
+                // Update parent's right child to new node
+                root.right = newNode;
+                return root;
+            }
+
+            // Recurse for the left and right subtrees
+            root.left = insertParent(root.left, child, data);
+            root.right = insertParent(root.right, child, data);
+
+            // Return the root of the tree
+            return root;
+        }
+    }
+
+    public static void main(String[] args) {
+        // Examples from the problem statement
+        System.out.println(toLevelOrder(new Solution().insertParent(fromLevelOrder(1, 2, 3, 4, null, null, 7, 9), 7, 5)));   // [1, 2, 3, 4, null, null, 5, 9, null, null, 7]
+        System.out.println(toLevelOrder(new Solution().insertParent(fromLevelOrder(1, 8, 4, null, 6), 10, 20)));              // [1, 8, 4, null, 6]
+
+        // Edge cases
+        System.out.println(toLevelOrder(new Solution().insertParent(null, 1, 5)));                                            // []
+        System.out.println(toLevelOrder(new Solution().insertParent(fromLevelOrder(1), 1, 0)));                               // [0, 1]
+        System.out.println(toLevelOrder(new Solution().insertParent(fromLevelOrder(1, 2, 3), 2, 9)));                         // [1, 9, 3, 2]
+        System.out.println(toLevelOrder(new Solution().insertParent(fromLevelOrder(1, 2, 3), 3, 9)));                         // [1, 2, 9, null, null, 3]
+        System.out.println(toLevelOrder(new Solution().insertParent(fromLevelOrder(1, 2, 3), 99, 0)));                        // [1, 2, 3]
+    }
 }
 ```
 
-
-## Complexity
+### Complexity
 
 > **Time:** O(N) — worst case the target is the last node visited. **Space:** O(h) for recursion.
 
-***
+</details>
+<details>
+<summary><h2>Final Takeaway</h2></summary>
 
-## Final Takeaway
 
 Four insertion variants, four characteristic shapes — knowing which one to reach for is half the work in any tree-mutation interview. Three things to walk away with:
 
@@ -759,3 +1384,5 @@ Four insertion variants, four characteristic shapes — knowing which one to rea
 3. **Insert-a-parent is the canonical "rewrite" pass.** Compilers, optimisers, and tree-rewriting systems use exactly this shape: find a target, allocate a wrapper, splice it in. Once you're comfortable with it on a binary tree, the same pattern generalises to ASTs and IRs.
 
 > *Coming up — with the basic CRUD operations done, the chapter pivots to <strong>traversal patterns</strong>. The next eleven lessons each codify a recurring problem-solving recipe — preorder stateless, preorder stateful, postorder stateless, postorder stateful, root-to-leaf, level-order, LCA, simultaneous traversal, and a final practice mix. Together they cover the vast majority of binary-tree interview problems you'll ever see.*
+
+</details>

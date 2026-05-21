@@ -144,102 +144,214 @@ You must do this **recursively**.
 > - **Output:** `[10, 8, 14, 5, 9, 12, 17]`
 > - **Explanation:** Walk: 10 (9 < 10, left) → 8 (9 > 8, right) → null. Insert 9 as right child of 8.
 
-## The Solution
+<details>
+<summary><h2>The Solution</h2></summary>
 
 
-```pseudocode
-function recursiveInsert(root, data):
-    if root is null:
-        return new TreeNode(data)     # empty slot — this is exactly where data belongs
-    if data < root.val:
-        root.left ← recursiveInsert(root.left, data)   # BST rule: smaller goes left
-    else:
-        root.right ← recursiveInsert(root.right, data) # equal-or-greater goes right
-    return root                       # re-attach the (possibly new) subtree to the parent
-```
 
 ```python run
+from typing import Optional, List
+from collections import deque
+
+
+class TreeNode:
+    def __init__(self, val=0, left=None, right=None):
+        self.val = val
+        self.left = left
+        self.right = right
+
+
+def from_level_order(values):
+    """Build tree from list like [1, 2, 3, None, 4]. None means missing child."""
+    if not values:
+        return None
+    root = TreeNode(values[0])
+    queue = [root]
+    i = 1
+    while queue and i < len(values):
+        node = queue.pop(0)
+        if i < len(values) and values[i] is not None:
+            node.left = TreeNode(values[i])
+            queue.append(node.left)
+        i += 1
+        if i < len(values) and values[i] is not None:
+            node.right = TreeNode(values[i])
+            queue.append(node.right)
+        i += 1
+    return root
+
+
+def to_level_order(root):
+    if not root:
+        return []
+    result, q = [], deque([root])
+    while q:
+        node = q.popleft()
+        result.append(node.val)
+        if node.left:
+            q.append(node.left)
+        if node.right:
+            q.append(node.right)
+    return result
+
+
 class Solution:
-    def recursive_insertion(self, root, data):
-        # Base case: empty slot — this is where data belongs.
+    def recursive_insertion(
+        self, root: Optional[TreeNode], data: int
+    ) -> Optional[TreeNode]:
+
+        # If the root is None, it means the tree is empty,
+        # so create a new node and return it as the new root
         if root is None:
             return TreeNode(data)
-        # BST rule: smaller values live in the left subtree.
+
+        # If the data is less than the value of the current root node,
+        # it should be inserted in the left subtree of the current root
         if data < root.val:
             root.left = self.recursive_insertion(root.left, data)
+
+        # If the data is greater than or equal to the value of the
+        # current root node,it should be inserted in the right subtree
+        # of the current root
         else:
-            # Equal-or-greater goes right. (Many libraries reject duplicates instead;
-            # this version permits them by sending equality to the right subtree.)
             root.right = self.recursive_insertion(root.right, data)
-        # Return the (possibly unchanged) subtree so the parent can re-attach it.
+
+        # Return the root of the tree after insertion
         return root
+
+
+# Examples from the problem statement
+t1 = from_level_order([5, 4, 6, 2, None, None, 7])
+r1 = Solution().recursive_insertion(t1, 10)
+print(to_level_order(r1))                          # [5, 4, 6, 2, 7, 10]
+
+t2 = from_level_order([10, 8, 14, 5, None, 12, 17])
+r2 = Solution().recursive_insertion(t2, 9)
+print(to_level_order(r2))                          # [10, 8, 14, 5, 9, 12, 17]
+
+# Edge cases
+r3 = Solution().recursive_insertion(None, 5)       # insert into empty tree
+print(to_level_order(r3))                          # [5]
+
+t4 = TreeNode(10)                                  # single node, insert smaller
+r4 = Solution().recursive_insertion(t4, 5)
+print(to_level_order(r4))                          # [10, 5]
+
+t5 = TreeNode(10)                                  # single node, insert larger
+r5 = Solution().recursive_insertion(t5, 15)
+print(to_level_order(r5))                          # [10, 15]
+
+t6 = from_level_order([5, 3, 7])
+r6 = Solution().recursive_insertion(t6, 1)         # insert at leftmost position
+print(to_level_order(r6))                          # [5, 3, 7, 1]
+
+t7 = from_level_order([5, 3, 7])
+r7 = Solution().recursive_insertion(t7, 5)         # insert duplicate (goes right)
+print(to_level_order(r7))                          # [5, 3, 7, 5]
 ```
 
 ```java run
+import java.util.*;
+
 public class Main {
-    static class TreeNode { int val; TreeNode left, right; TreeNode(int v){val=v;} }
+    static class TreeNode {
+        int val;
+        TreeNode left;
+        TreeNode right;
+        TreeNode() {}
+        TreeNode(int val) { this.val = val; }
+    }
+
+    static TreeNode fromLevelOrder(Integer... values) {
+        if (values.length == 0 || values[0] == null) return null;
+        TreeNode root = new TreeNode(values[0]);
+        Deque<TreeNode> queue = new ArrayDeque<>();
+        queue.add(root);
+        int i = 1;
+        while (!queue.isEmpty() && i < values.length) {
+            TreeNode node = queue.poll();
+            if (i < values.length && values[i] != null) {
+                node.left = new TreeNode(values[i]);
+                queue.add(node.left);
+            }
+            i++;
+            if (i < values.length && values[i] != null) {
+                node.right = new TreeNode(values[i]);
+                queue.add(node.right);
+            }
+            i++;
+        }
+        return root;
+    }
+
+    static List<Integer> toLevelOrder(TreeNode root) {
+        List<Integer> result = new ArrayList<>();
+        if (root == null) return result;
+        Deque<TreeNode> q = new ArrayDeque<>();
+        q.add(root);
+        while (!q.isEmpty()) {
+            TreeNode node = q.poll();
+            result.add(node.val);
+            if (node.left != null) q.add(node.left);
+            if (node.right != null) q.add(node.right);
+        }
+        return result;
+    }
 
     static class Solution {
         public TreeNode recursiveInsertion(TreeNode root, int data) {
-            if (root == null) return new TreeNode(data);                            // empty slot
-            if (data < root.val)
-                root.left  = recursiveInsertion(root.left,  data);                  // BST rule: left
-            else
-                root.right = recursiveInsertion(root.right, data);                  //          right
-            return root;                                                            // re-attach
+
+            // If the root is null, it means the tree is empty,
+            // so create a new node and return it as the new root
+            if (root == null) {
+                return new TreeNode(data);
+            }
+
+            // If the data is less than the value of the current root node,
+            // it should be inserted in the left subtree of the current root
+            if (data < root.val) {
+                root.left = recursiveInsertion(root.left, data);
+            }
+
+            // If the data is greater than or equal to the value of the
+            // current root node,it should be inserted in the right subtree
+            // of the current root
+            else {
+                root.right = recursiveInsertion(root.right, data);
+            }
+
+            // Return the root of the tree after insertion
+            return root;
         }
     }
 
     public static void main(String[] args) {
-        TreeNode root = new TreeNode(5);
-        root.left  = new TreeNode(4); root.right = new TreeNode(6);
-        root.left.left  = new TreeNode(2);
-        root.right.right = new TreeNode(7);
-        TreeNode result = new Solution().recursiveInsertion(root, 10);
-        System.out.println(result.right.right.right.val);  // 10
+        // Examples from the problem statement
+        TreeNode t1 = fromLevelOrder(5, 4, 6, 2, null, null, 7);
+        System.out.println(toLevelOrder(new Solution().recursiveInsertion(t1, 10)));  // [5, 4, 6, 2, 7, 10]
+
+        TreeNode t2 = fromLevelOrder(10, 8, 14, 5, null, 12, 17);
+        System.out.println(toLevelOrder(new Solution().recursiveInsertion(t2, 9)));   // [10, 8, 14, 5, 9, 12, 17]
+
+        // Edge cases
+        System.out.println(toLevelOrder(new Solution().recursiveInsertion(null, 5))); // [5]
+
+        TreeNode t4 = new TreeNode(10);                                               // insert smaller
+        System.out.println(toLevelOrder(new Solution().recursiveInsertion(t4, 5)));   // [10, 5]
+
+        TreeNode t5 = new TreeNode(10);                                               // insert larger
+        System.out.println(toLevelOrder(new Solution().recursiveInsertion(t5, 15)));  // [10, 15]
+
+        TreeNode t6 = fromLevelOrder(5, 3, 7);
+        System.out.println(toLevelOrder(new Solution().recursiveInsertion(t6, 1)));   // [5, 3, 7, 1]
+
+        TreeNode t7 = fromLevelOrder(5, 3, 7);
+        System.out.println(toLevelOrder(new Solution().recursiveInsertion(t7, 5)));   // [5, 3, 7, 5]
     }
 }
 ```
 
-```c run
-#include <stdlib.h>
-
-struct TreeNode *recursiveInsertion(struct TreeNode *root, int data) {
-    if (root == NULL) {                                                         // empty slot
-        struct TreeNode *node = malloc(sizeof(*node));
-        node->val = data; node->left = node->right = NULL;
-        return node;
-    }
-    if (data < root->val)
-        root->left  = recursiveInsertion(root->left,  data);                    // BST rule: left
-    else
-        root->right = recursiveInsertion(root->right, data);                    //          right
-    return root;                                                                // re-attach
-}
-```
-
-```scala run
-class TreeNode(var value: Int, var left: TreeNode = null, var right: TreeNode = null)
-
-object Main extends App {
-  class Solution {
-    def recursiveInsertion(root: TreeNode, data: Int): TreeNode = {
-      if (root == null) new TreeNode(data)                                          // empty slot
-      else {
-        if (data < root.value) root.left  = recursiveInsertion(root.left,  data)    // BST rule: left
-        else                   root.right = recursiveInsertion(root.right, data)    //          right
-        root                                                                        // re-attach
-      }
-    }
-  }
-
-  val root = new TreeNode(5,
-    new TreeNode(4, new TreeNode(2), null),
-    new TreeNode(6, null, new TreeNode(7)))
-  val result = new Solution().recursiveInsertion(root, 10)
-  println(result.right.right.right.value)  // 10
-}
-```
+</details>
 
 
 ***
@@ -325,151 +437,268 @@ You must do this **iteratively**.
 > - **Input:** `root = [10, 8, 14, 5, null, 12, 17]`, `data = 9`
 > - **Output:** `[10, 8, 14, 5, 9, 12, 17]`
 
-## The Solution
+<details>
+<summary><h2>The Solution</h2></summary>
 
 
-```pseudocode
-function iterativeInsert(root, data):
-    newNode ← new TreeNode(data)
-    if root is null:
-        return newNode                # empty tree — new node becomes root
-    cur ← root
-    while true:
-        if data < cur.val:
-            if cur.left is null:
-                cur.left ← newNode   # found the empty slot on the left
-                return root
-            cur ← cur.left           # not null — keep descending
-        else:
-            if cur.right is null:
-                cur.right ← newNode  # found the empty slot on the right
-                return root
-            cur ← cur.right          # not null — keep descending
-```
 
 ```python run
+from typing import Optional
+from collections import deque
+
+
+class TreeNode:
+    def __init__(self, val=0, left=None, right=None):
+        self.val = val
+        self.left = left
+        self.right = right
+
+
+def from_level_order(values):
+    """Build tree from list like [1, 2, 3, None, 4]. None means missing child."""
+    if not values:
+        return None
+    root = TreeNode(values[0])
+    queue = [root]
+    i = 1
+    while queue and i < len(values):
+        node = queue.pop(0)
+        if i < len(values) and values[i] is not None:
+            node.left = TreeNode(values[i])
+            queue.append(node.left)
+        i += 1
+        if i < len(values) and values[i] is not None:
+            node.right = TreeNode(values[i])
+            queue.append(node.right)
+        i += 1
+    return root
+
+
+def to_level_order(root):
+    if not root:
+        return []
+    result, queue = [], deque([root])
+    while queue:
+        node = queue.popleft()
+        result.append(node.val)
+        if node.left:
+            queue.append(node.left)
+        if node.right:
+            queue.append(node.right)
+    return result
+
+
 class Solution:
-    def iterative_insertion(self, root, data):
-        # Empty tree → the new node becomes the root.
+    def iterative_insertion(
+        self, root: Optional[TreeNode], data: int
+    ) -> Optional[TreeNode]:
+
+        # If the root is None, create a new node with data and make it
+        # the root
         if root is None:
             return TreeNode(data)
 
+        # Initialize a pointer current to traverse the tree starting
+        # from the root
         current = root
-        while True:
-            # Descend in the BST direction; check the child *before* stepping in.
+
+        # Traverse the tree until we find the appropriate position to
+        # insert the data
+        while current:
+
+            # If the data is less than the current node's value, move to
+            # the left subtree
             if data < current.val:
+
+                # If the left child of the current node is None, insert
+                # data as the left child. Otherwise, move to the left
+                # child and continue searching
                 if current.left is None:
-                    # Found an empty slot on the left — wire the new node in.
                     current.left = TreeNode(data)
                     return root
-                current = current.left            # otherwise descend left
+
+                # Move to the left child
+                else:
+                    current = current.left
+
+            # If data is greater than or equal to the current node's
+            # valueIf the right child of the current node is None,
+            # insert data as the right child. Otherwise, move to the
+            # right child and continue searching.
             else:
                 if current.right is None:
-                    # Empty slot on the right — wire it in.
                     current.right = TreeNode(data)
                     return root
-                current = current.right           # otherwise descend right
+
+                # Move to the right child
+                else:
+                    current = current.right
+
+        # Return the root of the tree after all insertions
+        return root
+
+
+# Example 1: insert 10 into [5, 4, 6, 2, null, null, 7]
+t1 = from_level_order([5, 4, 6, 2, None, None, 7])
+print(to_level_order(Solution().iterative_insertion(t1, 10)))  # [5, 4, 6, 2, 7, 10]
+
+# Example 2: insert 9 into [10, 8, 14, 5, null, 12, 17]
+t2 = from_level_order([10, 8, 14, 5, None, 12, 17])
+print(to_level_order(Solution().iterative_insertion(t2, 9)))   # [10, 8, 14, 5, 9, 12, 17]
+
+# Insert into empty tree
+print(to_level_order(Solution().iterative_insertion(None, 5))) # [5]
+
+# Insert into single-node tree
+t3 = TreeNode(10)
+print(to_level_order(Solution().iterative_insertion(t3, 3)))   # [10, 3]
+
+# Insert larger value into single-node tree
+t4 = TreeNode(10)
+print(to_level_order(Solution().iterative_insertion(t4, 15)))  # [10, 15]
+
+# Insert into left-skew tree (all lefts)
+t5 = from_level_order([10, 8, None, 6, None, 4])
+print(to_level_order(Solution().iterative_insertion(t5, 5)))   # [10, 8, 6, 4, 5]
+
+# Insert duplicate (goes right)
+t6 = from_level_order([5, 3, 7])
+print(to_level_order(Solution().iterative_insertion(t6, 5)))   # [5, 3, 7, 5]
 ```
 
 ```java run
+import java.util.*;
+
 public class Main {
-    static class TreeNode { int val; TreeNode left, right; TreeNode(int v){val=v;} }
+    static class TreeNode {
+        int val;
+        TreeNode left;
+        TreeNode right;
+        TreeNode() {}
+        TreeNode(int val) { this.val = val; }
+    }
+
+    static TreeNode fromLevelOrder(Integer... values) {
+        if (values.length == 0 || values[0] == null) return null;
+        TreeNode root = new TreeNode(values[0]);
+        Deque<TreeNode> queue = new ArrayDeque<>();
+        queue.add(root);
+        int i = 1;
+        while (!queue.isEmpty() && i < values.length) {
+            TreeNode node = queue.poll();
+            if (i < values.length && values[i] != null) {
+                node.left = new TreeNode(values[i]);
+                queue.add(node.left);
+            }
+            i++;
+            if (i < values.length && values[i] != null) {
+                node.right = new TreeNode(values[i]);
+                queue.add(node.right);
+            }
+            i++;
+        }
+        return root;
+    }
+
+    static List<Integer> toLevelOrder(TreeNode root) {
+        if (root == null) return new ArrayList<>();
+        List<Integer> result = new ArrayList<>();
+        Deque<TreeNode> queue = new ArrayDeque<>();
+        queue.add(root);
+        while (!queue.isEmpty()) {
+            TreeNode node = queue.poll();
+            result.add(node.val);
+            if (node.left != null) queue.add(node.left);
+            if (node.right != null) queue.add(node.right);
+        }
+        return result;
+    }
 
     static class Solution {
         public TreeNode iterativeInsertion(TreeNode root, int data) {
-            if (root == null) return new TreeNode(data);                                // empty tree
+
+            // If the root is null, create a new node with data and make it
+            // the root
+            if (root == null) {
+                return new TreeNode(data);
+            }
+
+            // Initialize a pointer current to traverse the tree starting
+            // from the root
             TreeNode current = root;
-            while (true) {
-                if (data < current.val) {                                               // go left
-                    if (current.left == null) {                                         // empty slot
+
+            // Traverse the tree until we find the appropriate position to
+            // insert the data
+            while (current != null) {
+
+                // If the data is less than the current node's value, move to
+                // the left subtree
+                if (data < current.val) {
+
+                    // If the left child of the current node is null, insert
+                    // data as the left child. Otherwise, move to the left
+                    // child and continue searching
+                    if (current.left == null) {
                         current.left = new TreeNode(data);
                         return root;
                     }
-                    current = current.left;                                             // descend left
-                } else {                                                                // go right
-                    if (current.right == null) {                                        // empty slot
+
+                    // Move to the left child
+                    else {
+                        current = current.left;
+                    }
+                }
+
+                // If data is greater than or equal to the current node's
+                // valueIf the right child of the current node is null,
+                // insert data as the right child. Otherwise, move to the
+                // right child and continue searching.
+                else {
+                    if (current.right == null) {
                         current.right = new TreeNode(data);
                         return root;
                     }
-                    current = current.right;                                            // descend right
+
+                    // Move to the right child
+                    else {
+                        current = current.right;
+                    }
                 }
             }
+
+            // Return the root of the tree after all insertions
+            return root;
         }
     }
 
     public static void main(String[] args) {
-        TreeNode root = new TreeNode(5);
-        root.left  = new TreeNode(4); root.right = new TreeNode(6);
-        root.left.left  = new TreeNode(2);
-        root.right.right = new TreeNode(7);
-        TreeNode result = new Solution().iterativeInsertion(root, 10);
-        System.out.println(result.right.right.right.val);  // 10
+        // Example 1: insert 10 into [5, 4, 6, 2, null, null, 7]
+        TreeNode t1 = fromLevelOrder(5, 4, 6, 2, null, null, 7);
+        System.out.println(toLevelOrder(new Solution().iterativeInsertion(t1, 10)));  // [5, 4, 6, 2, 7, 10]
+
+        // Example 2: insert 9 into [10, 8, 14, 5, null, 12, 17]
+        TreeNode t2 = fromLevelOrder(10, 8, 14, 5, null, 12, 17);
+        System.out.println(toLevelOrder(new Solution().iterativeInsertion(t2, 9)));   // [10, 8, 14, 5, 9, 12, 17]
+
+        // Insert into empty tree
+        System.out.println(toLevelOrder(new Solution().iterativeInsertion(null, 5))); // [5]
+
+        // Insert into single-node tree
+        TreeNode t3 = new TreeNode(10);
+        System.out.println(toLevelOrder(new Solution().iterativeInsertion(t3, 3)));   // [10, 3]
+
+        // Insert larger value into single-node tree
+        TreeNode t4 = new TreeNode(10);
+        System.out.println(toLevelOrder(new Solution().iterativeInsertion(t4, 15)));  // [10, 15]
+
+        // Insert into left-skew tree (all lefts)
+        TreeNode t5 = fromLevelOrder(10, 8, null, 6, null, 4);
+        System.out.println(toLevelOrder(new Solution().iterativeInsertion(t5, 5)));   // [10, 8, 6, 4, 5]
+
+        // Insert duplicate (goes right)
+        TreeNode t6 = fromLevelOrder(5, 3, 7);
+        System.out.println(toLevelOrder(new Solution().iterativeInsertion(t6, 5)));   // [5, 3, 7, 5]
     }
-}
-```
-
-```c run
-#include <stdlib.h>
-
-static struct TreeNode *make_node(int v) {
-    struct TreeNode *node = malloc(sizeof(*node));
-    node->val = v; node->left = node->right = NULL;
-    return node;
-}
-
-struct TreeNode *iterativeInsertion(struct TreeNode *root, int data) {
-    if (root == NULL) return make_node(data);                                        // empty tree
-    struct TreeNode *current = root;
-    for (;;) {
-        if (data < current->val) {                                                   // go left
-            if (current->left == NULL) {                                             // empty slot
-                current->left = make_node(data);
-                return root;
-            }
-            current = current->left;                                                 // descend left
-        } else {                                                                     // go right
-            if (current->right == NULL) {                                            // empty slot
-                current->right = make_node(data);
-                return root;
-            }
-            current = current->right;                                                // descend right
-        }
-    }
-}
-```
-
-```scala run
-class TreeNode(var value: Int, var left: TreeNode = null, var right: TreeNode = null)
-
-object Main extends App {
-  class Solution {
-    def iterativeInsertion(root: TreeNode, data: Int): TreeNode = {
-      if (root == null) return new TreeNode(data)                                          // empty tree
-      var current = root
-      while (true) {
-        if (data < current.value) {                                                        // go left
-          if (current.left == null) {                                                      // empty slot
-            current.left = new TreeNode(data)
-            return root
-          }
-          current = current.left                                                           // descend left
-        } else {                                                                           // go right
-          if (current.right == null) {                                                     // empty slot
-            current.right = new TreeNode(data)
-            return root
-          }
-          current = current.right                                                          // descend right
-        }
-      }
-      root  // unreachable; appeases the compiler
-    }
-  }
-
-  val root = new TreeNode(5,
-    new TreeNode(4, new TreeNode(2), null),
-    new TreeNode(6, null, new TreeNode(7)))
-  val result = new Solution().iterativeInsertion(root, 10)
-  println(result.right.right.right.value)  // 10
 }
 ```
 
@@ -487,9 +716,10 @@ Result: tree now has 25 as the right child of 20 ✓
 
 </details>
 
-***
+</details>
+<details>
+<summary><h2>Final Takeaway</h2></summary>
 
-## Final Takeaway
 
 Insertion in a BST is just **search that doesn't fail** — instead of returning `null` when the descent walks off the tree, we *create a node* and wire it into the parent's child pointer. Single root-to-leaf path. O(h) time. The recursive version returns the (possibly new) subtree at every level so the parent can re-attach it; the iterative version peeks at the child before descending so it can attach in-place.
 
@@ -504,3 +734,5 @@ Two non-obvious points to remember:
 - **Duplicates have no canonical home.** Some libraries reject them, some send them right (this lesson), some send them left, some allow multi-sets. Whichever rule you pick, *be consistent* — every operation (insert, delete, search) must agree.
 
 Now that we can grow a BST, the next reasonable question is: how do we *shrink* it? Removing a value is much trickier than adding one — especially when the doomed node has two children. That's the next lesson.
+
+</details>

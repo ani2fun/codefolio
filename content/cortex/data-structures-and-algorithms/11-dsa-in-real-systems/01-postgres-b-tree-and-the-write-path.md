@@ -50,20 +50,6 @@ Every Postgres index is stored as a sequence of **pages**, each `BLCKSZ` bytes (
 
 The metadata in the special area:
 
-```c
-// Definition in src/include/access/nbtree.h
-typedef struct BTPageOpaqueData {
-    BlockNumber btpo_prev;       // left sibling page (0 for leftmost)
-    BlockNumber btpo_next;       // right sibling page = the B-link!
-    union {
-        uint32 level;            // tree level (0 = leaf)
-        TransactionId xact;      // for deleted pages
-    } btpo;
-    uint16 btpo_flags;           // BTP_LEAF, BTP_ROOT, BTP_DELETED, etc.
-    BTCycleId btpo_cycleid;
-} BTPageOpaqueData;
-```
-
 The `btpo_next` field is the **B-link** — the right-sibling pointer that the B-link variant adds to a B+-tree. Every page knows its right neighbour. This unlocks a subtler concurrency model than the textbook B-tree.
 
 Why 8 KB? The default page size matches the OS page size on most platforms (4 KB on Linux × 2 for lower fragmentation). With 8 KB pages and ~50-byte average tuples, a leaf node holds ~150 keys. Internal nodes hold ~250 routing keys (smaller payloads). Tree height for a 1-billion-row table: 4-5. Five disk seeks per index lookup, in the worst case.
@@ -75,19 +61,6 @@ Why 8 KB? The default page size matches the OS page size on most platforms (4 KB
 The standard B+-tree descent: start at the root, find the right child based on key comparison, descend until reaching a leaf. The leaf either has the key (with a TID — Tuple Identifier — pointing to the actual row in the heap) or doesn't.
 
 The wrinkle: the B-link. After descending to a leaf, the search may find that the desired key is actually on the *right neighbour* (the B-link target). This happens when a concurrent split moved the key range. The reader simply follows `btpo_next` and continues searching there.
-
-```c
-// Sketch of nbtsearch.c::_bt_search
-buf = _bt_getroot(rel, BT_READ);
-for (;;) {
-    page = BufferGetPage(buf);
-    opaque = BTPageGetOpaque(page);
-    if (P_ISLEAF(opaque)) break;             // reached a leaf
-    offnum = _bt_binsrch(rel, &state, scankey);
-    childblkno = ItemIdGetTID(...);
-    buf = _bt_relandgetbuf(rel, buf, childblkno, BT_READ);
-}
-```
 
 `_bt_binsrch` is binary search on the page's items. Page reads are protected by buffer-pool latches, not heavyweight locks — they're cheap and short-lived.
 
@@ -103,16 +76,6 @@ for (;;) {
 4. If not, calls `_bt_split` to split the page.
 
 The descent uses *crabbing* — the algorithm holds a shared lock on the current page, acquires a lock on the child, releases the parent lock, repeats. This avoids holding parent locks during long descents.
-
-```c
-// Sketch of nbtinsert.c
-state = _bt_search(rel, key, &stack, BT_WRITE, snapshot);
-if (page_has_space) {
-    _bt_insertonpg(rel, state, item, NULL, false, ...);
-} else {
-    _bt_split(rel, state, item, ...);
-}
-```
 
 ***
 
@@ -187,49 +150,42 @@ Click any question to reveal the answer.
 **A:** 8 KB. Matches OS page size (4 KB × 2). Tunable at compile time via `BLCKSZ`.
 
 </details>
-
 <details>
 <summary><strong>Q:</strong> Postgres B-tree variant — what does "B-link" add over textbook B-tree?</summary>
 
 **A:** A right-sibling pointer per node. Lets concurrent inserters split without locking the whole path; readers stumbling onto in-progress splits follow the right-link to find missing keys.
 
 </details>
-
 <details>
 <summary><strong>Q:</strong> Why doesn't <code>DELETE</code> shrink a Postgres B-tree?</summary>
 
 **A:** MVCC retains dead tuples until VACUUM. Inline shrinkage would conflict with "still-visible-to-some-transaction" semantics. VACUUM reclaims pages later.
 
 </details>
-
 <details>
 <summary><strong>Q:</strong> What does WAL guarantee?</summary>
 
 **A:** Every page modification is logged in the Write-Ahead Log *before* the page is flushed. Crash → replay WAL forward; index reconstructs identically.
 
 </details>
-
 <details>
 <summary><strong>Q:</strong> Approximate height of a B+-tree on a 1-billion-row Postgres index?</summary>
 
 **A:** 4-5 levels. Default page = 8 KB; ~200 keys per internal node; `log_200(10⁹) ≈ 4`.
 
 </details>
-
 <details>
 <summary><strong>Q:</strong> Why is <code>CREATE INDEX</code> the default B+-tree (not B-tree)?</summary>
 
 **A:** B+-tree stores data only at leaves; internal nodes are pure routing → higher fanout → shallower tree. Plus linked leaves give cheap range queries.
 
 </details>
-
 <details>
 <summary><strong>Q:</strong> What's "index bloat" and how do you diagnose it?</summary>
 
 **A:** Dead-tuple accumulation in leaves; index grows monotonically without VACUUM. Diagnose with `pg_stat_user_indexes` and the `pgstattuple` extension. Fix: tune autovacuum or `REINDEX`.
 
 </details>
-
 <details>
 <summary><strong>Q:</strong> Maximum key size?</summary>
 

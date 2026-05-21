@@ -88,7 +88,9 @@ Input:  s = "abcdef", pattern = "ab?"
 Output: false                         Pattern length 3, but ? matches 1 char — too short
 ```
 
-## The Recurrence
+<details>
+<summary><h2>The Recurrence</h2></summary>
+
 
 `dp[i][j]` = whether `pattern[0..j-1]` matches `s[0..i-1]`.
 
@@ -109,158 +111,154 @@ Output: false                         Pattern length 3, but ? matches 1 char —
 
 Because the same `*` can keep matching more characters. After consuming one `s[i-1]`, the `*` is still alive — same column `j`, with `i` decremented. If we recursed on `dp[i-1][j-1]`, we'd be saying `*` matched exactly one character, losing the "match many more" semantics.
 
-## The Solution
+</details>
+<details>
+<summary><h2>Solution &amp; Analysis</h2></summary>
 
-
-```pseudocode
-# Wildcard match: '?' matches any single char, '*' matches any (possibly empty) substring.
-# dp[i][j] = true iff pattern[0..j−1] matches s[0..i−1].
-function wildcardMatch(s, pattern):
-    n ← length(s); m ← length(pattern)
-    dp ← (n + 1) × (m + 1) grid of false
-    dp[0][0] ← true
-
-    # Leading run of '*' can match the empty string.
-    for j from 1 to m:
-        if pattern[j − 1] = '*':
-            dp[0][j] ← dp[0][j − 1]
-
-    for i from 1 to n:
-        for j from 1 to m:
-            pc ← pattern[j − 1]
-            if pc = '?' OR pc = s[i − 1]:
-                dp[i][j] ← dp[i − 1][j − 1]       # consume one char on each side
-            else if pc = '*':
-                dp[i][j] ← dp[i][j − 1]            # '*' matches 0 chars
-                            OR dp[i − 1][j]        # '*' matches 1+ chars
-            # else: literal mismatch — dp[i][j] stays false
-    return dp[n][m]
-```
+### The Solution
 
 ```python run
 from typing import List
 
 class Solution:
-    def wildcard_match(self, s: str, pattern: str) -> bool:
-        n, m = len(s), len(pattern)
-        # dp[i][j] = True iff pattern[0..j-1] matches s[0..i-1].
+    def wildcard_pattern_matching(self, s: str, pattern: str) -> bool:
+        n: int = len(s)
+        m: int = len(pattern)
+
+        # Create a 2D list to store the dynamic programming results
         dp: List[List[bool]] = [[False] * (m + 1) for _ in range(n + 1)]
+
+        # Initialize the base case
         dp[0][0] = True
-        # Leading run of '*' can match the empty string.
+
+        # Fill in the first row of dp
         for j in range(1, m + 1):
-            if pattern[j - 1] == '*':
+
+            # If the current character is '*', copy the result from the
+            # previous column
+            if pattern[j - 1] == "*":
                 dp[0][j] = dp[0][j - 1]
+
+        # Fill in the remaining cells of dp
         for i in range(1, n + 1):
             for j in range(1, m + 1):
-                pc = pattern[j - 1]
-                if pc == '?' or pc == s[i - 1]:
-                    dp[i][j] = dp[i - 1][j - 1]            # consume one on each side
-                elif pc == '*':
-                    # *  matches 0 chars  → dp[i][j-1]
-                    # *  matches 1+ chars → dp[i-1][j]
-                    dp[i][j] = dp[i][j - 1] or dp[i - 1][j]
-                # else: literal mismatch — dp[i][j] stays False
+
+                # If the characters at the current positions match or if
+                # the pattern has a '?', copy the result from the
+                # diagonal element (top-left)
+                if pattern[j - 1] == "?" or pattern[j - 1] == s[i - 1]:
+                    dp[i][j] = dp[i - 1][j - 1]
+
+                # If the current character in the pattern is '*', we have
+                # two options:
+                # 1. Use '*' to match 0 characters, so copy the result
+                # from the cell above (dp[i - 1][j]).
+                # 2. Use '*' to match 1 or more characters, so copy the
+                # result from the cell to the left (dp[i][j - 1]).
+                elif pattern[j - 1] == "*":
+                    dp[i][j] = dp[i - 1][j] or dp[i][j - 1]
+
+        # Return the result stored in the bottom-right cell of dp
         return dp[n][m]
 
 
-if __name__ == "__main__":
-    sol = Solution()
-    print(sol.wildcard_match("abcdef", "abc??f"))   # True
-    print(sol.wildcard_match("abcdef", "ab*"))      # True
-    print(sol.wildcard_match("abcdef", "ab?"))      # False
+# Examples from the problem statement
+print(Solution().wildcard_pattern_matching("abcdef", "abc??f"))   # True
+print(Solution().wildcard_pattern_matching("abcdef", "ab*"))      # True
+print(Solution().wildcard_pattern_matching("abcdef", "ab?"))      # False
+
+# Edge cases
+print(Solution().wildcard_pattern_matching("", ""))               # True  — empty matches empty
+print(Solution().wildcard_pattern_matching("", "*"))              # True  — star matches empty
+print(Solution().wildcard_pattern_matching("abc", ""))            # False — empty pattern, non-empty string
+print(Solution().wildcard_pattern_matching("abc", "abc"))         # True  — exact match
+print(Solution().wildcard_pattern_matching("abc", "???"))         # True  — all question marks
+print(Solution().wildcard_pattern_matching("abc", "a*c"))         # True  — star in middle
+print(Solution().wildcard_pattern_matching("abc", "a*d"))         # False — star can't fix tail mismatch
 ```
 
 ```java run
+import java.util.*;
+
 public class Main {
     static class Solution {
-        public boolean wildcardMatch(String s, String pattern) {
-            int n = s.length(), m = pattern.length();
+        public boolean wildcardPatternMatching(String s, String pattern) {
+            int n = s.length();
+            int m = pattern.length();
+
+            // Create a 2D array to store the dynamic programming results
             boolean[][] dp = new boolean[n + 1][m + 1];
+
+            // Initialize the base case
             dp[0][0] = true;
+
+            // Fill in the first row of dp
             for (int j = 1; j <= m; j++) {
-                if (pattern.charAt(j - 1) == '*') dp[0][j] = dp[0][j - 1];
-            }
-            for (int i = 1; i <= n; i++) {
-                for (int j = 1; j <= m; j++) {
-                    char pc = pattern.charAt(j - 1);
-                    if (pc == '?' || pc == s.charAt(i - 1))      dp[i][j] = dp[i - 1][j - 1];
-                    else if (pc == '*')                          dp[i][j] = dp[i][j - 1] || dp[i - 1][j];
+
+                // If the current character is '*', copy the result from the
+                // previous column
+                if (pattern.charAt(j - 1) == '*') {
+                    dp[0][j] = dp[0][j - 1];
                 }
             }
+
+            // Fill in the remaining cells of dp
+            for (int i = 1; i <= n; i++) {
+                for (int j = 1; j <= m; j++) {
+
+                    // If the characters at the current positions match or if
+                    // the pattern has a '?', copy the result from the
+                    // diagonal element (top-left)
+                    if (
+                        pattern.charAt(j - 1) == '?' ||
+                        pattern.charAt(j - 1) == s.charAt(i - 1)
+                    ) {
+                        dp[i][j] = dp[i - 1][j - 1];
+                    }
+
+                    // If the current character in the pattern is '*', we
+                    // have two options:
+                    // 1. Use '*' to match 0 characters, so copy the result
+                    // from the cell above (dp[i - 1][j]).
+                    // 2. Use '*' to match 1 or more characters, so copy the
+                    // result from the cell to the left (dp[i][j - 1]).
+                    else if (pattern.charAt(j - 1) == '*') {
+                        dp[i][j] = dp[i - 1][j] || dp[i][j - 1];
+                    }
+                }
+            }
+
+            // Return the result stored in the bottom-right cell of dp
             return dp[n][m];
         }
     }
 
     public static void main(String[] args) {
-        Solution sol = new Solution();
-        System.out.println(sol.wildcardMatch("abcdef", "abc??f"));   // true
-        System.out.println(sol.wildcardMatch("abcdef", "ab*"));      // true
+        // Examples from the problem statement
+        System.out.println(new Solution().wildcardPatternMatching("abcdef", "abc??f"));   // true
+        System.out.println(new Solution().wildcardPatternMatching("abcdef", "ab*"));      // true
+        System.out.println(new Solution().wildcardPatternMatching("abcdef", "ab?"));      // false
+
+        // Edge cases
+        System.out.println(new Solution().wildcardPatternMatching("", ""));               // true
+        System.out.println(new Solution().wildcardPatternMatching("", "*"));              // true
+        System.out.println(new Solution().wildcardPatternMatching("abc", ""));            // false
+        System.out.println(new Solution().wildcardPatternMatching("abc", "abc"));         // true
+        System.out.println(new Solution().wildcardPatternMatching("abc", "???"));         // true
+        System.out.println(new Solution().wildcardPatternMatching("abc", "a*c"));         // true
+        System.out.println(new Solution().wildcardPatternMatching("abc", "a*d"));         // false
     }
 }
 ```
 
-```c run
-#include <stdio.h>
-#include <string.h>
-#include <stdbool.h>
-
-bool dp[1001][1001];
-
-bool wildcard_match(const char *s, const char *pattern) {
-    int n = (int) strlen(s), m = (int) strlen(pattern);
-    for (int i = 0; i <= n; i++) for (int j = 0; j <= m; j++) dp[i][j] = false;
-    dp[0][0] = true;
-    for (int j = 1; j <= m; j++) {
-        if (pattern[j - 1] == '*') dp[0][j] = dp[0][j - 1];
-    }
-    for (int i = 1; i <= n; i++) {
-        for (int j = 1; j <= m; j++) {
-            char pc = pattern[j - 1];
-            if (pc == '?' || pc == s[i - 1])      dp[i][j] = dp[i - 1][j - 1];
-            else if (pc == '*')                   dp[i][j] = dp[i][j - 1] || dp[i - 1][j];
-        }
-    }
-    return dp[n][m];
-}
-
-int main(void) {
-    printf("%d\n", wildcard_match("abcdef", "abc??f"));   /* 1 */
-    return 0;
-}
-```
-
-```scala run
-object Main extends App {
-  class Solution {
-    def wildcardMatch(s: String, pattern: String): Boolean = {
-      val n = s.length; val m = pattern.length
-      val dp = Array.fill(n + 1, m + 1)(false)
-      dp(0)(0) = true
-      for (j <- 1 to m) {
-        if (pattern(j - 1) == '*') dp(0)(j) = dp(0)(j - 1)
-      }
-      for (i <- 1 to n; j <- 1 to m) {
-        val pc = pattern(j - 1)
-        if (pc == '?' || pc == s(i - 1)) dp(i)(j) = dp(i - 1)(j - 1)
-        else if (pc == '*')              dp(i)(j) = dp(i)(j - 1) || dp(i - 1)(j)
-      }
-      dp(n)(m)
-    }
-  }
-
-  println(new Solution().wildcardMatch("abcdef", "abc??f"))   // true
-}
-```
-
-
-## Complexity
+### Complexity
 
 | Aspect | Cost |
 |---|---|
 | Time | `O(n × m)` |
 | Space | `O(n × m)` (reducible to `O(m)` with rolling rows) |
 
-## Edge Cases
+### Edge Cases
 
 | Case | Example | Expected | Reasoning |
 |---|---|---|---|
@@ -269,6 +267,8 @@ object Main extends App {
 | Pattern empty, string non-empty | `s="abc", pattern=""` | `false` | Column 0 stays false past row 0. |
 | Multiple `*`s | `s="abcd", pattern="*c*"` | `true` | Two `*`s coverage. |
 | Adversarial mismatch | `s="abc", pattern="abd"` | `false` | Literal mismatch at position 2. |
+
+</details>
 
 ***
 
@@ -294,7 +294,9 @@ Output: false
         s3 has c before b — violates s1's internal order.
 ```
 
-## The Recurrence
+<details>
+<summary><h2>The Recurrence</h2></summary>
+
 
 `dp[i][j]` = whether `s3[0..i+j-1]` is an interleaving of `s1[0..i-1]` and `s2[0..j-1]`. Note: `s3`'s position is *implicit* — `i + j - 1`.
 
@@ -316,135 +318,140 @@ Because each character of `s3` must come from *exactly one* of `s1` or `s2` — 
 
 **Fast fail.** If `len(s3) != len(s1) + len(s2)`, return `false` immediately. Lengths must add up by the pigeonhole-style accounting.
 
-## The Solution
+</details>
+<details>
+<summary><h2>Solution &amp; Analysis</h2></summary>
 
-
-```pseudocode
-# dp[i][j] = true iff s3[0..i+j−1] is an interleaving of s1[0..i−1] and s2[0..j−1].
-function isInterleave(s1, s2, s3):
-    n ← length(s1); m ← length(s2)
-    if n + m ≠ length(s3): return false           # length mismatch — quick reject
-    dp ← (n + 1) × (m + 1) grid of false
-    dp[0][0] ← true
-    for i from 0 to n:
-        for j from 0 to m:
-            if i > 0 AND s1[i − 1] = s3[i + j − 1]:
-                dp[i][j] ← dp[i][j] OR dp[i − 1][j]   # next char came from s1
-            if j > 0 AND s2[j − 1] = s3[i + j − 1]:
-                dp[i][j] ← dp[i][j] OR dp[i][j − 1]   # next char came from s2
-    return dp[n][m]
-```
+### The Solution
 
 ```python run
 from typing import List
 
 class Solution:
-    def is_interleave(self, s1: str, s2: str, s3: str) -> bool:
-        n, m = len(s1), len(s2)
+    def interleaving_check(self, s1: str, s2: str, s3: str) -> bool:
+        n: int = len(s1)
+        m: int = len(s2)
+
+        # base case: length of given strings doesn't match
         if n + m != len(s3):
-            return False                            # Quick reject on length mismatch
-        # dp[i][j] = True iff s3[0..i+j-1] interleaves s1[0..i-1] and s2[0..j-1].
+            return False
+
+        # Create a 2D matrix to store the intermediate results
+        # dp[i][j] will represent whether s3[0...i+j-1] can be formed by
+        # interleaving s1[0...i-1] and s2[0...j-1]
         dp: List[List[bool]] = [[False] * (m + 1) for _ in range(n + 1)]
+
+        # Base case: an empty s1 and s2 can form an empty s3
         dp[0][0] = True
+
+        # Fill the matrix in a bottom-up manner
         for i in range(n + 1):
             for j in range(m + 1):
+
+                # Check if s1's current character matches with s3's
+                # current character and the previous characters of s1 and
+                # s2 have already formed s3
                 if i > 0 and s1[i - 1] == s3[i + j - 1]:
                     dp[i][j] = dp[i][j] or dp[i - 1][j]
+
+                # Check if s2's current character matches with s3's
+                # current character and the previous characters of s1 and
+                # s2 have already formed s3
                 if j > 0 and s2[j - 1] == s3[i + j - 1]:
                     dp[i][j] = dp[i][j] or dp[i][j - 1]
+
+        # The bottom-right element of the matrix represents whether
+        # s3 can be formed by interleaving s1 and s2
         return dp[n][m]
 
 
-if __name__ == "__main__":
-    sol = Solution()
-    print(sol.is_interleave("code", "intuition", "cointuitionde"))   # True
-    print(sol.is_interleave("abc",  "def",       "adbecf"))          # True
-    print(sol.is_interleave("abc",  "def",       "adcebf"))          # False
+# Examples from the problem statement
+print(Solution().interleaving_check("code", "intuition", "cointuitionde"))  # True
+print(Solution().interleaving_check("abc", "def", "adbecf"))                # True
+print(Solution().interleaving_check("abc", "def", "adcebf"))                # False
+
+# Edge cases
+print(Solution().interleaving_check("", "", ""))                            # True  — all empty
+print(Solution().interleaving_check("a", "", "a"))                          # True  — s2 empty
+print(Solution().interleaving_check("", "b", "b"))                          # True  — s1 empty
+print(Solution().interleaving_check("ab", "cd", "abcd"))                    # True  — s1 then s2
+print(Solution().interleaving_check("ab", "cd", "acbd"))                    # True  — interleaved
+print(Solution().interleaving_check("ab", "cd", "abdc"))                    # False — wrong order
 ```
 
 ```java run
+import java.util.*;
+
 public class Main {
     static class Solution {
-        public boolean isInterleave(String s1, String s2, String s3) {
-            int n = s1.length(), m = s2.length();
-            if (n + m != s3.length()) return false;
+        public boolean interleavingCheck(String s1, String s2, String s3) {
+            int n = s1.length();
+            int m = s2.length();
+
+            // base case: length of given strings doesn't match
+            if (n + m != s3.length()) {
+                return false;
+            }
+
+            // Create a 2D matrix to store the intermediate results
+            // dp[i][j] will represent whether s3[0...i+j-1] can be formed by
+            // interleaving s1[0...i-1] and s2[0...j-1]
             boolean[][] dp = new boolean[n + 1][m + 1];
+
+            // Base case: an empty s1 and s2 can form an empty s3
             dp[0][0] = true;
+
+            // Fill the matrix in a bottom-up manner
             for (int i = 0; i <= n; i++) {
                 for (int j = 0; j <= m; j++) {
-                    if (i > 0 && s1.charAt(i - 1) == s3.charAt(i + j - 1))
-                        dp[i][j] = dp[i][j] || dp[i - 1][j];
-                    if (j > 0 && s2.charAt(j - 1) == s3.charAt(i + j - 1))
-                        dp[i][j] = dp[i][j] || dp[i][j - 1];
+
+                    // Check if s1's current character matches with s3's
+                    // current character and the previous characters of s1
+                    // and s2 have already formed s3
+                    if (
+                        i > 0 && s1.charAt(i - 1) == s3.charAt(i + j - 1)
+                    ) dp[i][j] = dp[i][j] || dp[i - 1][j];
+
+                    // Check if s2's current character matches with s3's
+                    // current character and the previous characters of s1
+                    // and s2 have already formed s3
+                    if (
+                        j > 0 && s2.charAt(j - 1) == s3.charAt(i + j - 1)
+                    ) dp[i][j] = dp[i][j] || dp[i][j - 1];
                 }
             }
+
+            // The bottom-right element of the matrix represents whether
+            // s3 can be formed by interleaving s1 and s2
             return dp[n][m];
         }
     }
 
     public static void main(String[] args) {
-        System.out.println(new Solution().isInterleave("code", "intuition", "cointuitionde"));   // true
-        System.out.println(new Solution().isInterleave("abc",  "def",       "adcebf"));          // false
+        // Examples from the problem statement
+        System.out.println(new Solution().interleavingCheck("code", "intuition", "cointuitionde"));  // true
+        System.out.println(new Solution().interleavingCheck("abc", "def", "adbecf"));                // true
+        System.out.println(new Solution().interleavingCheck("abc", "def", "adcebf"));                // false
+
+        // Edge cases
+        System.out.println(new Solution().interleavingCheck("", "", ""));                            // true
+        System.out.println(new Solution().interleavingCheck("a", "", "a"));                          // true
+        System.out.println(new Solution().interleavingCheck("", "b", "b"));                          // true
+        System.out.println(new Solution().interleavingCheck("ab", "cd", "abcd"));                    // true
+        System.out.println(new Solution().interleavingCheck("ab", "cd", "acbd"));                    // true
+        System.out.println(new Solution().interleavingCheck("ab", "cd", "abdc"));                    // false
     }
 }
 ```
 
-```c run
-#include <stdio.h>
-#include <string.h>
-#include <stdbool.h>
-
-bool dp[501][501];
-
-bool is_interleave(const char *s1, const char *s2, const char *s3) {
-    int n = (int) strlen(s1), m = (int) strlen(s2);
-    if (n + m != (int) strlen(s3)) return false;
-    for (int i = 0; i <= n; i++) for (int j = 0; j <= m; j++) dp[i][j] = false;
-    dp[0][0] = true;
-    for (int i = 0; i <= n; i++) {
-        for (int j = 0; j <= m; j++) {
-            if (i > 0 && s1[i - 1] == s3[i + j - 1]) dp[i][j] = dp[i][j] || dp[i - 1][j];
-            if (j > 0 && s2[j - 1] == s3[i + j - 1]) dp[i][j] = dp[i][j] || dp[i][j - 1];
-        }
-    }
-    return dp[n][m];
-}
-
-int main(void) {
-    printf("%d\n", is_interleave("abc", "def", "adbecf"));   /* 1 */
-    return 0;
-}
-```
-
-```scala run
-object Main extends App {
-  class Solution {
-    def isInterleave(s1: String, s2: String, s3: String): Boolean = {
-      val (n, m) = (s1.length, s2.length)
-      if (n + m != s3.length) return false
-      val dp = Array.fill(n + 1, m + 1)(false)
-      dp(0)(0) = true
-      for (i <- 0 to n; j <- 0 to m) {
-        if (i > 0 && s1(i - 1) == s3(i + j - 1)) dp(i)(j) = dp(i)(j) || dp(i - 1)(j)
-        if (j > 0 && s2(j - 1) == s3(i + j - 1)) dp(i)(j) = dp(i)(j) || dp(i)(j - 1)
-      }
-      dp(n)(m)
-    }
-  }
-
-  println(new Solution().isInterleave("abc", "def", "adbecf"))   // true
-}
-```
-
-
-## Complexity
+### Complexity
 
 | Aspect | Cost |
 |---|---|
 | Time | `O(n × m)` |
 | Space | `O(n × m)` (reducible to `O(m)` with rolling rows) |
 
-## Edge Cases
+### Edge Cases
 
 | Case | Example | Expected | Reasoning |
 |---|---|---|---|
@@ -452,6 +459,8 @@ object Main extends App {
 | One source empty, target equals other | `("", "abc", "abc")` | `true` | Pure pass-through. |
 | Length mismatch | `("a", "b", "abc")` | `false` | Quick reject. |
 | Same character on both sides | `("aa", "ab", "aaba")` | `true` | Multiple valid interleavings; OR collects them. |
+
+</details>
 
 ***
 

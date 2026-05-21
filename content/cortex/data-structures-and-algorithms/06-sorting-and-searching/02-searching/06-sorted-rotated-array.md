@@ -74,7 +74,9 @@ A rotated sorted array has two sorted segments with all-bigger followed by all-s
 
 The minimum is at the start of segment 2 — the only place where `arr[i-1] > arr[i]` (the unique "discontinuity"). Find that index.
 
-## Algorithm
+<details>
+<summary><h2>Algorithm</h2></summary>
+
 
 Compare `arr[mid]` with `arr[high]`:
 - If `arr[mid] > arr[high]`: the discontinuity is in the right half — the minimum is somewhere in `(mid, high]`. Set `low = mid + 1`.
@@ -92,102 +94,108 @@ low=3, high=3 → loop exits
 return 3 (arr[3] = 1, the minimum). ✓
 ```
 
-## Why Compare with `arr[high]` (Not `arr[low]`)?
+</details>
+<details>
+<summary><h2>Why Compare with `arr[high]` (Not `arr[low]`)?</h2></summary>
+
 
 Comparing with `arr[high]` is unambiguous. If `arr[mid] > arr[high]`, the second segment must be in `(mid, high]` (because `arr[high]` is in segment 2 and `arr[mid]` is in segment 1, so the boundary is between them). Comparing with `arr[low]` works for distinct elements but breaks if duplicates are allowed (e.g., `arr[mid] == arr[low]` doesn't tell us which segment `mid` is in).
 
-## Implementation
+</details>
+<details>
+<summary><h2>Implementation</h2></summary>
 
 
-```pseudocode
-function rotatedArrayMinimum(arr):
-    low ← 0
-    high ← length(arr) − 1
-    while low < high:
-        mid ← low + (high − low) ÷ 2
-        if arr[mid] > arr[high]:
-            low ← mid + 1                       # min lies strictly to the right
-        else:
-            high ← mid                          # min is at mid or to the left
-    return low                                   # low = high = index of minimum
-```
 
 ```python run
 from typing import List
 
 class Solution:
     def rotated_array_minimum(self, arr: List[int]) -> int:
-        low, high = 0, len(arr) - 1
+        low: int = 0
+        high: int = len(arr) - 1
+
+        # Perform binary search until low becomes equal to high
         while low < high:
-            mid = low + (high - low) // 2
+            mid: int = low + (high - low) // 2
+
+            # If the middle element is greater than the element at high
+            # index, it means the minimum element lies in the right part
+            # of the array.
             if arr[mid] > arr[high]:
-                low = mid + 1                           # min is in the right half
+                low = mid + 1
+
+            # Otherwise, the minimum element lies in the left part of the
+            # array.
             else:
-                high = mid                              # min is in the left half (incl. mid)
+                high = mid
+
+        # Return the index of the minimum element
         return low
 
 
-if __name__ == "__main__":
-    print(Solution().rotated_array_minimum([4, 5, 6, 1, 2, 3]))   # 3
-    print(Solution().rotated_array_minimum([5, 6, 1, 2, 3, 4]))   # 2
+# Examples from the problem statement
+print(Solution().rotated_array_minimum([4, 5, 6, 1, 2, 3]))  # 3
+print(Solution().rotated_array_minimum([5, 6, 1, 2, 3, 4]))  # 2
+print(Solution().rotated_array_minimum([6, 7, 2, 3, 4, 5]))  # 2
+
+# Edge cases
+print(Solution().rotated_array_minimum([1]))                  # 0 — single element
+print(Solution().rotated_array_minimum([2, 1]))               # 1 — two elements, rotated by 1
+print(Solution().rotated_array_minimum([1, 2]))               # 0 — two elements, no rotation
+print(Solution().rotated_array_minimum([1, 2, 3, 4, 5]))     # 0 — no rotation (pivot = 0)
+print(Solution().rotated_array_minimum([2, 3, 4, 5, 1]))     # 4 — rotated by N-1
 ```
 
 ```java run
+import java.util.*;
+
 public class Main {
     static class Solution {
         public int rotatedArrayMinimum(int[] arr) {
-            int low = 0, high = arr.length - 1;
+            int low = 0;
+            int high = arr.length - 1;
+
+            // Perform binary search until low becomes equal to high
             while (low < high) {
                 int mid = low + (high - low) / 2;
-                if (arr[mid] > arr[high]) low = mid + 1;
-                else high = mid;
+
+                // If the middle element is greater than the element at high
+                // index, it means the minimum element lies in the right part
+                // of the array.
+                if (arr[mid] > arr[high]) {
+                    low = mid + 1;
+                }
+
+                // Otherwise, the minimum element lies in the left part of
+                // the array.
+                else {
+                    high = mid;
+                }
             }
+
+            // Return the index of the minimum element
             return low;
         }
     }
 
     public static void main(String[] args) {
-        System.out.println(new Solution().rotatedArrayMinimum(new int[]{4, 5, 6, 1, 2, 3}));
+        // Examples from the problem statement
+        System.out.println(new Solution().rotatedArrayMinimum(new int[]{4, 5, 6, 1, 2, 3}));  // 3
+        System.out.println(new Solution().rotatedArrayMinimum(new int[]{5, 6, 1, 2, 3, 4}));  // 2
+        System.out.println(new Solution().rotatedArrayMinimum(new int[]{6, 7, 2, 3, 4, 5}));  // 2
+
+        // Edge cases
+        System.out.println(new Solution().rotatedArrayMinimum(new int[]{1}));                  // 0 — single element
+        System.out.println(new Solution().rotatedArrayMinimum(new int[]{2, 1}));               // 1 — two elements, rotated by 1
+        System.out.println(new Solution().rotatedArrayMinimum(new int[]{1, 2}));               // 0 — two elements, no rotation
+        System.out.println(new Solution().rotatedArrayMinimum(new int[]{1, 2, 3, 4, 5}));     // 0 — no rotation (pivot = 0)
+        System.out.println(new Solution().rotatedArrayMinimum(new int[]{2, 3, 4, 5, 1}));     // 4 — rotated by N-1
     }
 }
 ```
 
-```c run
-#include <stdio.h>
-
-int rotated_array_minimum(int *arr, int n) {
-    int low = 0, high = n - 1;
-    while (low < high) {
-        int mid = low + (high - low) / 2;
-        if (arr[mid] > arr[high]) low = mid + 1;
-        else high = mid;
-    }
-    return low;
-}
-
-int main(void) {
-    int arr[] = {4, 5, 6, 1, 2, 3};
-    printf("%d\n", rotated_array_minimum(arr, 6));
-    return 0;
-}
-```
-
-```scala run
-object Main extends App {
-  class Solution {
-    def rotatedArrayMinimum(arr: Array[Int]): Int = {
-      var low = 0; var high = arr.length - 1
-      while (low < high) {
-        val mid = low + (high - low) / 2
-        if (arr(mid) > arr(high)) low = mid + 1 else high = mid
-      }
-      low
-    }
-  }
-
-  println(new Solution().rotatedArrayMinimum(Array(4, 5, 6, 1, 2, 3)))
-}
-```
+</details>
 
 
 ***
@@ -196,7 +204,9 @@ object Main extends App {
 
 Standard binary search structure plus one extra check: identify the sorted half and decide whether the target is in it.
 
-## Algorithm
+<details>
+<summary><h2>Algorithm</h2></summary>
+
 
 ```
 while low <= high:
@@ -216,7 +226,10 @@ The decision tree at each iteration:
 2. Otherwise, identify the sorted half by checking `arr[mid] >= arr[low]` (left sorted) or `arr[mid] < arr[low]` (right sorted).
 3. If target falls within the sorted half's value range → search there. Else → search the other half.
 
-## A Walkthrough
+</details>
+<details>
+<summary><h2>A Walkthrough</h2></summary>
+
 
 `arr = [4, 5, 6, 1, 2, 3]`, `target = 2`.
 
@@ -231,133 +244,142 @@ low=3, high=5, mid=4, arr[mid]=2.
 
 Two iterations to find the target on a 6-element array.
 
-## Implementation
+</details>
+<details>
+<summary><h2>Implementation</h2></summary>
 
 
-```pseudocode
-# Binary-search a rotated sorted array. At each mid, exactly one half is normally sorted;
-# decide which by comparing arr[mid] with arr[low].
-function rotatedArraySearch(arr, target):
-    low ← 0
-    high ← length(arr) − 1
-    while low ≤ high:
-        mid ← low + (high − low) ÷ 2
-        if arr[mid] = target:
-            return mid
-        if arr[mid] ≥ arr[low]:                 # left half [low..mid] is sorted
-            if arr[low] ≤ target < arr[mid]:
-                high ← mid − 1                  # target lies in the sorted left half
-            else:
-                low ← mid + 1
-        else:                                    # right half [mid..high] is sorted
-            if arr[mid] < target ≤ arr[high]:
-                low ← mid + 1
-            else:
-                high ← mid − 1
-    return −1
-```
 
 ```python run
 from typing import List
 
 class Solution:
     def rotated_array_search(self, arr: List[int], target: int) -> int:
-        low, high = 0, len(arr) - 1
+        low = 0
+        high = len(arr) - 1
+
         while low <= high:
             mid = low + (high - low) // 2
+
+            # If the middle element is the target, return its index
             if arr[mid] == target:
                 return mid
-            if arr[mid] >= arr[low]:                    # left half sorted
-                if arr[low] <= target < arr[mid]:
+
+            # If the left half is sorted
+            if arr[mid] >= arr[low]:
+
+                # If the target is within the range of the left half
+                # Update the high index to search in the left half
+                if arr[low] <= target and target < arr[mid]:
                     high = mid - 1
+
+                # Otherwise, update the low index to search in the right
+                # half
                 else:
                     low = mid + 1
-            else:                                       # right half sorted
-                if arr[mid] < target <= arr[high]:
+
+            # Otherwise, if the right half is sorted
+            else:
+
+                # If the target is within the range of the right half
+                # Update the low index to search in the right half
+                if arr[mid] < target and target <= arr[high]:
                     low = mid + 1
+
+                # Otherwise, update the high index to search in the left
+                # half
                 else:
                     high = mid - 1
+
+        # Target not found
         return -1
 
 
-if __name__ == "__main__":
-    print(Solution().rotated_array_search([4, 5, 6, 1, 2, 3], 2))   # 4
-    print(Solution().rotated_array_search([4, 5, 6, 1, 2, 3], 10))  # -1
+# Examples from the problem statement
+print(Solution().rotated_array_search([4, 5, 6, 1, 2, 3], 3))   # 5
+print(Solution().rotated_array_search([5, 6, 1, 2, 3, 4], 6))   # 1
+print(Solution().rotated_array_search([6, 1, 2, 3, 4, 5], 10))  # -1
+
+# Edge cases
+print(Solution().rotated_array_search([1], 1))                   # 0 — single element present
+print(Solution().rotated_array_search([1], 2))                   # -1 — single element absent
+print(Solution().rotated_array_search([1, 2, 3, 4, 5], 3))      # 2 — no rotation
+print(Solution().rotated_array_search([2, 3, 4, 5, 1], 1))      # 4 — target at last position
+print(Solution().rotated_array_search([4, 5, 6, 1, 2, 3], 4))   # 0 — target at first position
 ```
 
 ```java run
+import java.util.*;
+
 public class Main {
     static class Solution {
         public int rotatedArraySearch(int[] arr, int target) {
-            int low = 0, high = arr.length - 1;
+            int low = 0;
+            int high = arr.length - 1;
+
             while (low <= high) {
                 int mid = low + (high - low) / 2;
-                if (arr[mid] == target) return mid;
+
+                // If the middle element is the target, return its index
+                if (arr[mid] == target) {
+                    return mid;
+                }
+
+                // If the left half is sorted
                 if (arr[mid] >= arr[low]) {
-                    if (arr[low] <= target && target < arr[mid]) high = mid - 1;
-                    else low = mid + 1;
-                } else {
-                    if (arr[mid] < target && target <= arr[high]) low = mid + 1;
-                    else high = mid - 1;
+
+                    // If the target is within the range of the left half
+                    // Update the high index to search in the left half
+                    if (arr[low] <= target && target < arr[mid]) {
+                        high = mid - 1;
+                    }
+
+                    // Otherwise, update the low index to search in the right
+                    // half
+                    else {
+                        low = mid + 1;
+                    }
+                }
+
+                // Otherwise, if the right half is sorted
+                else {
+
+                    // If the target is within the range of the right half
+                    // Update the low index to search in the right half
+                    if (arr[mid] < target && target <= arr[high]) {
+                        low = mid + 1;
+                    }
+
+                    // Otherwise, update the high index to search in the left
+                    // half
+                    else {
+                        high = mid - 1;
+                    }
                 }
             }
+
+            // Target not found
             return -1;
         }
     }
 
     public static void main(String[] args) {
-        System.out.println(new Solution().rotatedArraySearch(new int[]{4, 5, 6, 1, 2, 3}, 2));
+        // Examples from the problem statement
+        System.out.println(new Solution().rotatedArraySearch(new int[]{4, 5, 6, 1, 2, 3}, 3));   // 5
+        System.out.println(new Solution().rotatedArraySearch(new int[]{5, 6, 1, 2, 3, 4}, 6));   // 1
+        System.out.println(new Solution().rotatedArraySearch(new int[]{6, 1, 2, 3, 4, 5}, 10));  // -1
+
+        // Edge cases
+        System.out.println(new Solution().rotatedArraySearch(new int[]{1}, 1));                   // 0 — single element present
+        System.out.println(new Solution().rotatedArraySearch(new int[]{1}, 2));                   // -1 — single element absent
+        System.out.println(new Solution().rotatedArraySearch(new int[]{1, 2, 3, 4, 5}, 3));      // 2 — no rotation
+        System.out.println(new Solution().rotatedArraySearch(new int[]{2, 3, 4, 5, 1}, 1));      // 4 — target at last position
+        System.out.println(new Solution().rotatedArraySearch(new int[]{4, 5, 6, 1, 2, 3}, 4));   // 0 — target at first position
     }
 }
 ```
 
-```c run
-#include <stdio.h>
-
-int rotated_array_search(int *arr, int n, int target) {
-    int low = 0, high = n - 1;
-    while (low <= high) {
-        int mid = low + (high - low) / 2;
-        if (arr[mid] == target) return mid;
-        if (arr[mid] >= arr[low]) {
-            if (arr[low] <= target && target < arr[mid]) high = mid - 1;
-            else low = mid + 1;
-        } else {
-            if (arr[mid] < target && target <= arr[high]) low = mid + 1;
-            else high = mid - 1;
-        }
-    }
-    return -1;
-}
-
-int main(void) {
-    int arr[] = {4, 5, 6, 1, 2, 3};
-    printf("%d\n", rotated_array_search(arr, 6, 2));
-    return 0;
-}
-```
-
-```scala run
-object Main extends App {
-  class Solution {
-    def rotatedArraySearch(arr: Array[Int], target: Int): Int = {
-      var low = 0; var high = arr.length - 1
-      while (low <= high) {
-        val mid = low + (high - low) / 2
-        if (arr(mid) == target) return mid
-        if (arr(mid) >= arr(low)) {
-          if (arr(low) <= target && target < arr(mid)) high = mid - 1 else low = mid + 1
-        } else {
-          if (arr(mid) < target && target <= arr(high)) low = mid + 1 else high = mid - 1
-        }
-      }
-      -1
-    }
-  }
-
-  println(new Solution().rotatedArraySearch(Array(4, 5, 6, 1, 2, 3), 2))
-}
-```
+</details>
 
 
 ***
@@ -388,7 +410,7 @@ Input:  arr = [6, 7, 2, 3, 4, 5]
 Output: 2
 ```
 
-The implementation matches the version above. See [Finding the Minimum](#finding-the-minimum) for all 10 languages.
+The implementation matches the version above. See [Finding the Minimum](#finding-the-minimum).
 
 ---
 
@@ -418,7 +440,7 @@ Input:  arr = [6, 1, 2, 3, 4, 5], target = 10
 Output: -1
 ```
 
-The implementation matches the version above. See [Searching for a Target](#searching-for-a-target) for all 10 languages.
+The implementation matches the version above. See [Searching for a Target](#searching-for-a-target).
 
 ---
 

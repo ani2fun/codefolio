@@ -89,37 +89,6 @@ Two DFS passes:
 
 Why does this work? In the original graph, the latest-to-finish vertex of pass 1 is in the SCC that is "first" in the condensation DAG (no incoming SCC edges). In the transpose, that SCC has no outgoing inter-SCC edges, so DFS from any of its vertices can't escape it. The SCC is captured cleanly. Recurse with the next stack element.
 
-```pseudocode
-function kosaraju(graph):
-    stack ← empty stack
-    visited ← all false
-    for each vertex v:
-        if not visited[v]: dfs1(graph, v, visited, stack)
-
-    transpose ← reverse all edges of graph
-    visited ← all false
-    sccs ← empty list
-    while stack is not empty:
-        v ← stack.pop()
-        if not visited[v]:
-            scc ← empty list
-            dfs2(transpose, v, visited, scc)
-            sccs.append(scc)
-    return sccs
-
-function dfs1(graph, u, visited, stack):
-    visited[u] ← true
-    for each neighbour v of u:
-        if not visited[v]: dfs1(graph, v, visited, stack)
-    stack.push(u)
-
-function dfs2(transpose, u, visited, scc):
-    visited[u] ← true
-    scc.append(u)
-    for each neighbour v of u:
-        if not visited[v]: dfs2(transpose, v, visited, scc)
-```
-
 `O(V + E)` — two linear-time DFS passes.
 
 ***
@@ -134,35 +103,6 @@ Single DFS pass. Maintains:
 - A flag `on_stack[v]` to make stack membership `O(1)`.
 
 The key insight: a vertex `u` is the **root of an SCC** iff `low[u] = disc[u]`. When DFS finishes such a `u`, every vertex still on the stack from `u` upward is in `u`'s SCC. Pop them all together.
-
-```pseudocode
-function tarjan(graph):
-    disc, low ← arrays of size V, all -1
-    stack, on_stack ← empty
-    sccs ← []
-    timer ← 0
-
-    function dfs(u):
-        disc[u] ← timer; low[u] ← timer; timer ← timer + 1
-        stack.push(u); on_stack[u] ← true
-        for each neighbour v of u:
-            if disc[v] = -1:
-                dfs(v)
-                low[u] ← min(low[u], low[v])
-            else if on_stack[v]:
-                low[u] ← min(low[u], disc[v])
-        if low[u] = disc[u]:                              # u is the SCC root
-            scc ← []
-            repeat:
-                w ← stack.pop()
-                on_stack[w] ← false
-                scc.append(w)
-            until w = u
-            sccs.append(scc)
-
-    for each v: if disc[v] = -1: dfs(v)
-    return sccs
-```
 
 `O(V + E)` — every vertex and edge is visited once.
 
@@ -309,87 +249,6 @@ public class Main {
 }
 ```
 
-```c run
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-
-#define N 100
-int adj[N][N], adjsz[N];
-int disc[N], low[N], on_stack[N], stk[N], top = 0;
-int timer = 0;
-int scc_id[N], scc_count = 0;
-
-void tarjan(int u) {
-    disc[u] = low[u] = timer++;
-    stk[top++] = u; on_stack[u] = 1;
-    for (int i = 0; i < adjsz[u]; i++) {
-        int v = adj[u][i];
-        if (disc[v] == -1) { tarjan(v); if (low[v] < low[u]) low[u] = low[v]; }
-        else if (on_stack[v] && disc[v] < low[u]) low[u] = disc[v];
-    }
-    if (low[u] == disc[u]) {
-        while (1) {
-            int w = stk[--top]; on_stack[w] = 0; scc_id[w] = scc_count;
-            if (w == u) break;
-        }
-        scc_count++;
-    }
-}
-
-int main(void) {
-    memset(disc, -1, sizeof disc);
-    int edges[][2] = {{0,1}, {1,2}, {2,0}, {2,3}, {3,4}, {4,3}, {3,5}};
-    int E = 7, V = 6;
-    for (int i = 0; i < E; i++) adj[edges[i][0]][adjsz[edges[i][0]]++] = edges[i][1];
-    for (int i = 0; i < V; i++) if (disc[i] == -1) tarjan(i);
-    printf("SCC count = %d\n", scc_count);
-    for (int i = 0; i < V; i++) printf("vertex %d -> SCC %d\n", i, scc_id[i]);
-    return 0;
-}
-```
-
-```scala run
-import scala.collection.mutable
-
-object Main extends App {
-  object Solution {
-    def tarjan(n: Int, adj: Array[mutable.ArrayBuffer[Int]]): List[List[Int]] = {
-      val disc = Array.fill(n)(-1)
-      val low = Array.fill(n)(-1)
-      val onStack = Array.fill(n)(false)
-      val stk = mutable.Stack.empty[Int]
-      val sccs = mutable.ListBuffer.empty[List[Int]]
-      var timer = 0
-
-      def dfs(u: Int): Unit = {
-        disc(u) = timer; low(u) = timer; timer += 1
-        stk.push(u); onStack(u) = true
-        for (v <- adj(u)) {
-          if (disc(v) == -1) { dfs(v); low(u) = math.min(low(u), low(v)) }
-          else if (onStack(v)) low(u) = math.min(low(u), disc(v))
-        }
-        if (low(u) == disc(u)) {
-          val scc = mutable.ListBuffer.empty[Int]
-          var w = -1
-          do { w = stk.pop(); onStack(w) = false; scc += w } while (w != u)
-          sccs += scc.toList
-        }
-      }
-
-      for (v <- 0 until n) if (disc(v) == -1) dfs(v)
-      sccs.toList
-    }
-  }
-
-  val n = 6
-  val edges = Array((0,1), (1,2), (2,0), (2,3), (3,4), (4,3), (3,5))
-  val adj = Array.fill(n)(mutable.ArrayBuffer.empty[Int])
-  for ((u, v) <- edges) adj(u) += v
-  println(s"Tarjan SCCs: ${Solution.tarjan(n, adj).map(_.sorted)}")
-}
-```
-
 ***
 
 # The condensation graph
@@ -460,49 +319,42 @@ Click any question to reveal the answer.
 **A:** A maximal set of vertices in a directed graph where every vertex can reach every other. The relation "mutually reachable" is an equivalence relation; SCCs partition the vertex set.
 
 </details>
-
 <details>
 <summary><strong>Q:</strong> Time complexity of Kosaraju? Of Tarjan?</summary>
 
 **A:** Both `O(V + E)`. Kosaraju does two DFS passes; Tarjan does one with the lowlink trick.
 
 </details>
-
 <details>
 <summary><strong>Q:</strong> Two passes of Kosaraju?</summary>
 
 **A:** **Pass 1** — DFS the original graph, push vertices onto a stack as they finish. **Pass 2** — DFS the *transpose* graph in stack-pop order; each DFS tree is one SCC.
 
 </details>
-
 <details>
 <summary><strong>Q:</strong> What does <code>low[u]</code> mean in Tarjan's algorithm?</summary>
 
 **A:** The smallest discovery time reachable from `u` via tree edges followed by *at most one* back-edge. If `low[u] == disc[u]`, `u` is the root of an SCC.
 
 </details>
-
 <details>
 <summary><strong>Q:</strong> Why does Tarjan need the <code>on_stack</code> flag?</summary>
 
 **A:** To distinguish "still in current SCC" from "already assigned to another SCC". Without it, you'd update `low[u]` from cross-edges into other SCCs and merge them incorrectly.
 
 </details>
-
 <details>
 <summary><strong>Q:</strong> What's the condensation graph?</summary>
 
 **A:** Collapse each SCC into a single super-vertex. The result is a *DAG*. Many problems on directed graphs reduce to "find SCCs, solve on the DAG".
 
 </details>
-
 <details>
 <summary><strong>Q:</strong> When does Tarjan beat Kosaraju in production?</summary>
 
 **A:** Almost always — single pass, smaller constant factor. Production code (Boost, NetworkX) uses Tarjan by default.
 
 </details>
-
 <details>
 <summary><strong>Q:</strong> Does a directed graph have a cycle iff some SCC has size ≥ 2?</summary>
 

@@ -88,23 +88,6 @@ For example, the node `"she"` (after walking `s`, `h`, `e`) has failure link to 
 
 Failure links are computed by BFS from the root. The construction parallels KMP's failure function but on the tree:
 
-```pseudocode
-function buildFailureLinks(root):
-    queue ← FIFO of (depth-1) trie nodes
-    for each child c of root:
-        fail[c] ← root
-        queue.push(c)
-    while queue is not empty:
-        u ← queue.pop()
-        for each (char, v) in children(u):
-            queue.push(v)
-            f ← fail[u]
-            while f ≠ root AND char not in children(f):
-                f ← fail[f]
-            fail[v] ← children(f).get(char, root)
-            if fail[v] = v: fail[v] ← root
-```
-
 ***
 
 # Output links
@@ -116,24 +99,6 @@ Optimisation: precompute the **output link** — for each node `u`, the closest 
 ***
 
 # The matching algorithm
-
-```pseudocode
-function ahoCorasickMatch(T, root):
-    state ← root
-    matches ← []
-    for i from 0 to length(T) − 1:
-        while state ≠ root AND T[i] not in children(state):
-            state ← fail[state]
-        if T[i] in children(state):
-            state ← children(state)[T[i]]
-        # Report any patterns ending here, including via output links
-        u ← state
-        while u ≠ root:
-            if u is a pattern terminal:
-                matches.append((i, pattern_at(u)))
-            u ← output[u]
-    return matches
-```
 
 **Cost.** `O(n + Σm_i + matches)`. The text is scanned once; the trie has `Σm_i` nodes; each match takes `O(1)` to report (with output links).
 
@@ -252,42 +217,36 @@ Click any question to reveal the answer.
 **A:** `O(n + Σ m_i + matches)`. Build is `O(Σ m_i)`; match scan is `O(n)`; reporting matches adds proportional cost.
 
 </details>
-
 <details>
 <summary><strong>Q:</strong> What is a failure link in Aho-Corasick?</summary>
 
 **A:** From a trie node `u` representing string `w`, points to the node representing the longest proper suffix of `w` that's also a prefix of some pattern.
 
 </details>
-
 <details>
 <summary><strong>Q:</strong> Why is the construction BFS, not DFS?</summary>
 
 **A:** Failure links at depth `d` depend on failure links at depth `d-1`. BFS visits in depth order; DFS doesn't.
 
 </details>
-
 <details>
 <summary><strong>Q:</strong> What are output links and why precompute them?</summary>
 
 **A:** From node `u`, point to the closest pattern-terminal ancestor reachable via failure links. Lets you report all matches at a position in `O(1)` per match instead of walking the failure chain each time.
 
 </details>
-
 <details>
 <summary><strong>Q:</strong> Aho-Corasick vs running KMP K times?</summary>
 
 **A:** AC: `O(n + Σ m_i + matches)`, single pass over text. K KMPs: `O(K(n + m_avg))`. AC scales independently of `K`.
 
 </details>
-
 <details>
 <summary><strong>Q:</strong> Where does AC ship in production?</summary>
 
 **A:** `grep -F`, Snort/Suricata IDS, spam filters, content moderation, search-engine entity routing. The 1975 paper described the bibliographic-search use case at Bell Labs.
 
 </details>
-
 <details>
 <summary><strong>Q:</strong> Memory cost for `K` patterns of avg length `L`?</summary>
 

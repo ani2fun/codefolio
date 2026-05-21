@@ -114,190 +114,212 @@ Input:  grid = [[1, 0, 1, 1],
 Output: 5
 ```
 
-## Pattern Mapping
+<details>
+<summary><h2>Pattern Mapping</h2></summary>
+
 
 The grid is a graph with implicit edges. BFS from `(0,0)`. As soon as the dequeued cell is `(N-1, M-1)`, return the carried distance. If the queue empties without finding the destination, return -1.
 
-## The Solution
+</details>
+<details>
+<summary><h2>The Solution</h2></summary>
 
 
-```pseudocode
-function minimumStepsInAGrid(grid):
-    if start or end is a wall: return −1
-    visited ← rows×cols matrix of false
-    queue ← empty queue
-    enqueue (0, 0, 0) to queue     # (row, col, steps)
-    visited[0][0] ← true
-    while queue is not empty:
-        (r, c, steps) ← dequeue from queue
-        if r = rows−1 AND c = cols−1: return steps
-        for each (dr, dc) in DIRS:
-            nr, nc ← r+dr, c+dc
-            if isValid(grid, nr, nc) AND NOT visited[nr][nc]:
-                visited[nr][nc] ← true
-                enqueue (nr, nc, steps+1) to queue
-    return −1
-```
 
 ```python run
-from typing import List
-from collections import deque
+from typing import List, Tuple
+from queue import Queue
 
-DIRS = [(-1, 0), (0, 1), (1, 0), (0, -1)]
+class Cell:
+    def __init__(self, row: int, col: int, steps: int):
+        self.row = row
+        self.col = col
+        self.steps = steps
 
 class Solution:
-    def is_valid(self, grid: List[List[int]], r: int, c: int) -> bool:
-        rows, cols = len(grid), len(grid[0])
-        return 0 <= r < rows and 0 <= c < cols and grid[r][c] == 1
+    def is_valid_cell(
+        self, grid: List[List[int]], row: int, col: int
+    ) -> bool:
+        return (
+            0 <= row < len(grid)
+            and 0 <= col < len(grid[0])
+            and grid[row][col] == 1
+        )
 
     def minimum_steps_in_a_grid(self, grid: List[List[int]]) -> int:
-        if not grid or not grid[0]:
-            return -1
-        rows, cols = len(grid), len(grid[0])
-        if grid[0][0] == 0 or grid[rows - 1][cols - 1] == 0:
-            return -1                          # start or end is a wall
+        rows = len(grid)
+        cols = len(grid[0])
 
+        # Create a visited matrix to keep track of visited cells
         visited = [[False] * cols for _ in range(rows)]
-        # Queue carries (row, col, steps_so_far).
-        queue = deque([(0, 0, 0)])
+
+        # Create a queue for BFS traversal
+        queue = Queue()
+        queue.put(Cell(0, 0, 0))
         visited[0][0] = True
 
-        while queue:
-            r, c, steps = queue.popleft()
-            # Early exit: BFS guarantees this is the minimum.
-            if r == rows - 1 and c == cols - 1:
-                return steps
-            for dr, dc in DIRS:
-                nr, nc = r + dr, c + dc
-                if self.is_valid(grid, nr, nc) and not visited[nr][nc]:
-                    visited[nr][nc] = True       # mark at PUSH
-                    queue.append((nr, nc, steps + 1))
+        # Define the possible movements: up, right, down, left
+        directions: List[Tuple[int, int]] = [
+            (-1, 0),  # up
+            (0, 1),   # right
+            (1, 0),   # down
+            (0, -1)   # left
+        ]
+
+        while not queue.empty():
+            curr_cell = queue.get()
+
+            curr_row = curr_cell.row
+            curr_col = curr_cell.col
+            curr_steps = curr_cell.steps
+
+            # Check if reached the destination cell
+            if curr_row == rows - 1 and curr_col == cols - 1:
+                return curr_steps
+
+            # Explore the neighbours
+            for dr, dc in directions:
+                new_row = curr_row + dr
+                new_col = curr_col + dc
+
+                # Check if the new cell is within the grid boundaries
+                # and contains 1
+                if self.is_valid_cell(grid, new_row, new_col):
+
+                    # Check if the new cell has not been visited before
+                    if not visited[new_row][new_col]:
+
+                        # Add the new cell to the queue
+                        queue.put(Cell(new_row, new_col, curr_steps + 1))
+
+                        # Mark the new cell as visited
+                        visited[new_row][new_col] = True
+
+        # No path found
         return -1
 
 
-grid = [[1, 0, 1, 1], [1, 1, 1, 1], [0, 1, 0, 1]]
-print(Solution().minimum_steps_in_a_grid(grid))   # 5
+# Examples from the problem statement
+print(Solution().minimum_steps_in_a_grid([[1,0,1,1],[1,1,1,1],[0,1,0,1]]))  # 5
+print(Solution().minimum_steps_in_a_grid([[1,1,1,1],[1,1,1,1],[1,1,0,1]]))  # 5
+
+# Edge cases
+print(Solution().minimum_steps_in_a_grid([[1]]))                             # 0 — 1x1 passable
+print(Solution().minimum_steps_in_a_grid([[0]]))                             # -1 — 1x1 wall
+print(Solution().minimum_steps_in_a_grid([[1,1],[1,1]]))                     # 2 — 2x2 all passable
+print(Solution().minimum_steps_in_a_grid([[1,0],[0,1]]))                     # -1 — no path
+print(Solution().minimum_steps_in_a_grid([[0,1,1],[1,1,1],[1,1,1]]))         # -1 — blocked start
+print(Solution().minimum_steps_in_a_grid([[1,1,1],[1,1,1],[1,1,0]]))         # -1 — blocked end
 ```
 
 ```java run
 import java.util.*;
 
 public class Main {
-    static class Solution {
-        static final int[][] DIRS = {{-1, 0}, {0, 1}, {1, 0}, {0, -1}};
+    static class Cell {
 
-        boolean isValid(int[][] grid, int r, int c) {
-            return r >= 0 && r < grid.length && c >= 0 && c < grid[0].length && grid[r][c] == 1;
+        int row;
+        int col;
+        int steps;
+
+        public Cell(int row, int col, int steps) {
+            this.row = row;
+            this.col = col;
+            this.steps = steps;
+        }
+    }
+
+    static class Solution {
+        private boolean isValidCell(int[][] grid, int row, int col) {
+            return (
+                row >= 0 &&
+                row < grid.length &&
+                col >= 0 &&
+                col < grid[0].length &&
+                grid[row][col] == 1
+            );
         }
 
         public int minimumStepsInAGrid(int[][] grid) {
-            int rows = grid.length, cols = grid[0].length;
-            if (grid[0][0] == 0 || grid[rows-1][cols-1] == 0) return -1;
+            int rows = grid.length;
+            int cols = grid[0].length;
+
+            // Create a visited matrix to keep track of visited cells
             boolean[][] visited = new boolean[rows][cols];
-            Queue<int[]> q = new ArrayDeque<>();
-            q.offer(new int[]{0, 0, 0});
+
+            // Create a queue for BFS traversal
+            Queue<Cell> queue = new LinkedList<>();
+            queue.add(new Cell(0, 0, 0));
             visited[0][0] = true;
-            while (!q.isEmpty()) {
-                int[] cur = q.poll();
-                if (cur[0] == rows - 1 && cur[1] == cols - 1) return cur[2];
-                for (int[] d : DIRS) {
-                    int nr = cur[0] + d[0], nc = cur[1] + d[1];
-                    if (isValid(grid, nr, nc) && !visited[nr][nc]) {
-                        visited[nr][nc] = true;
-                        q.offer(new int[]{nr, nc, cur[2] + 1});
+
+            // Define the possible movements: up, right, down, left
+            int[][] directions = {
+                {-1, 0}, // up
+                {0, 1},  // right
+                {1, 0},  // down
+                {0, -1}  // left
+            };
+
+            while (!queue.isEmpty()) {
+                Cell currCell = queue.poll();
+
+                int currRow = currCell.row;
+                int currCol = currCell.col;
+                int currSteps = currCell.steps;
+
+                // Check if reached the destination cell
+                if (currRow == rows - 1 && currCol == cols - 1) {
+                    return currSteps;
+                }
+
+                // Explore the neighbours
+                for (int[] dir : directions) {
+                    int newRow = currRow + dir[0];
+                    int newCol = currCol + dir[1];
+
+                    // Check if the new cell is within the grid boundaries
+                    // and contains 1
+                    if (isValidCell(grid, newRow, newCol)) {
+
+                        // Check if the new cell has not been visited before
+                        if (!visited[newRow][newCol]) {
+
+                            // Add the new cell to the queue
+                            queue.add(
+                                new Cell(newRow, newCol, currSteps + 1)
+                            );
+
+                            // Mark the new cell as visited
+                            visited[newRow][newCol] = true;
+                        }
                     }
                 }
             }
+
+            // No path found
             return -1;
         }
     }
 
     public static void main(String[] args) {
-        int[][] grid = {{1, 0, 1, 1}, {1, 1, 1, 1}, {0, 1, 0, 1}};
-        System.out.println(new Solution().minimumStepsInAGrid(grid));
+        Solution sol = new Solution();
+
+        // Examples from the problem statement
+        System.out.println(sol.minimumStepsInAGrid(new int[][]{{1,0,1,1},{1,1,1,1},{0,1,0,1}}));  // 5
+        System.out.println(sol.minimumStepsInAGrid(new int[][]{{1,1,1,1},{1,1,1,1},{1,1,0,1}}));  // 5
+
+        // Edge cases
+        System.out.println(sol.minimumStepsInAGrid(new int[][]{{1}}));                             // 0
+        System.out.println(sol.minimumStepsInAGrid(new int[][]{{0}}));                             // -1
+        System.out.println(sol.minimumStepsInAGrid(new int[][]{{1,1},{1,1}}));                     // 2
+        System.out.println(sol.minimumStepsInAGrid(new int[][]{{1,0},{0,1}}));                     // -1
+        System.out.println(sol.minimumStepsInAGrid(new int[][]{{0,1,1},{1,1,1},{1,1,1}}));         // -1
+        System.out.println(sol.minimumStepsInAGrid(new int[][]{{1,1,1},{1,1,1},{1,1,0}}));         // -1
     }
 }
 ```
 
-```c run
-#include <stdio.h>
-#include <stdlib.h>
-#include <stdbool.h>
-
-static const int DIRS[4][2] = {{-1, 0}, {0, 1}, {1, 0}, {0, -1}};
-
-int minimum_steps_in_a_grid(int** grid, int rows, int cols) {
-    if (grid[0][0] == 0 || grid[rows-1][cols-1] == 0) return -1;
-    bool** visited = malloc(rows * sizeof(bool*));
-    for (int i = 0; i < rows; i++) visited[i] = calloc(cols, sizeof(bool));
-    int (*queue)[3] = malloc(rows * cols * sizeof(*queue));
-    int head = 0, tail = 0;
-    queue[tail][0] = 0; queue[tail][1] = 0; queue[tail][2] = 0; tail++;
-    visited[0][0] = true;
-    int answer = -1;
-    while (head < tail) {
-        int r = queue[head][0], c = queue[head][1], steps = queue[head][2]; head++;
-        if (r == rows - 1 && c == cols - 1) { answer = steps; break; }
-        for (int d = 0; d < 4; d++) {
-            int nr = r + DIRS[d][0], nc = c + DIRS[d][1];
-            if (nr >= 0 && nr < rows && nc >= 0 && nc < cols
-                && grid[nr][nc] == 1 && !visited[nr][nc]) {
-                visited[nr][nc] = true;
-                queue[tail][0] = nr; queue[tail][1] = nc; queue[tail][2] = steps + 1; tail++;
-            }
-        }
-    }
-    free(queue);
-    for (int i = 0; i < rows; i++) free(visited[i]);
-    free(visited);
-    return answer;
-}
-
-int main() {
-    int data[3][4] = {{1, 0, 1, 1}, {1, 1, 1, 1}, {0, 1, 0, 1}};
-    int* grid[3];
-    for (int i = 0; i < 3; i++) grid[i] = data[i];
-    printf("%d\n", minimum_steps_in_a_grid(grid, 3, 4));
-    return 0;
-}
-```
-
-```scala run
-import scala.collection.mutable
-
-object Main extends App {
-  val DIRS = Array((-1, 0), (0, 1), (1, 0), (0, -1))
-
-  class Solution {
-    def isValid(grid: Array[Array[Int]], r: Int, c: Int): Boolean =
-      r >= 0 && r < grid.length && c >= 0 && c < grid(0).length && grid(r)(c) == 1
-
-    def minimumStepsInAGrid(grid: Array[Array[Int]]): Int = {
-      val rows = grid.length; val cols = grid(0).length
-      if (grid(0)(0) == 0 || grid(rows-1)(cols-1) == 0) return -1
-      val visited = Array.ofDim[Boolean](rows, cols)
-      val q = mutable.Queue[(Int, Int, Int)]()
-      q.enqueue((0, 0, 0))
-      visited(0)(0) = true
-      while (q.nonEmpty) {
-        val (r, c, steps) = q.dequeue()
-        if (r == rows - 1 && c == cols - 1) return steps
-        for ((dr, dc) <- DIRS) {
-          val nr = r + dr; val nc = c + dc
-          if (isValid(grid, nr, nc) && !visited(nr)(nc)) {
-            visited(nr)(nc) = true
-            q.enqueue((nr, nc, steps + 1))
-          }
-        }
-      }
-      -1
-    }
-  }
-
-  val grid = Array(Array(1, 0, 1, 1), Array(1, 1, 1, 1), Array(0, 1, 0, 1))
-  println(new Solution().minimumStepsInAGrid(grid))
-}
-```
+</details>
 
 
 ***
@@ -319,7 +341,9 @@ Output: [[3, 2, 1, 2],
          [4, 3, 2, 3]]
 ```
 
-## Pattern Mapping — Multi-Source BFS
+<details>
+<summary><h2>Pattern Mapping — Multi-Source BFS</h2></summary>
+
 
 The trick: instead of running BFS from each `1` separately (`O(N * (R*C))`), **enqueue every `1` simultaneously at distance 0**, then BFS once. This is **multi-source BFS** — and it's a beautiful, common, often-missed pattern.
 
@@ -348,186 +372,204 @@ flowchart LR
 
 Because BFS is **breadth-first** — it dequeues all distance-0 nodes before any distance-1 node, all distance-1 before any distance-2, and so on. The starting set is just bigger than usual; the order property still holds. Every cell still gets reached at its true minimum distance to *any* 1.
 
-## The Solution
+</details>
+<details>
+<summary><h2>The Solution</h2></summary>
 
 
-```pseudocode
-function nearestDistance(grid):
-    result ← rows×cols matrix of ∞
-    queue ← empty queue
-    for each cell (r, c) where grid[r][c] = 1:
-        result[r][c] ← 0
-        enqueue (r, c, 0) to queue   # multi-source: all 1s start at distance 0
-    while queue is not empty:
-        (r, c, d) ← dequeue from queue
-        for each (dr, dc) in DIRS:
-            nr, nc ← r+dr, c+dc
-            if in bounds AND d+1 < result[nr][nc]:
-                result[nr][nc] ← d+1
-                enqueue (nr, nc, d+1) to queue
-    return result
-```
 
 ```python run
-from typing import List
-from collections import deque
+from typing import List, Tuple
+from queue import Queue
 
-DIRS = [(-1, 0), (0, 1), (1, 0), (0, -1)]
-INF = float('inf')
+class Cell:
+    def __init__(self, row: int, col: int, distance: int):
+        self.row = row
+        self.col = col
+        self.distance = distance
 
 class Solution:
+    def is_valid_cell(
+        self, row: int, col: int, rows: int, cols: int
+    ) -> bool:
+        return 0 <= row < rows and 0 <= col < cols
+
     def nearest_distance(self, grid: List[List[int]]) -> List[List[int]]:
-        rows, cols = len(grid), len(grid[0])
-        result = [[INF] * cols for _ in range(rows)]
-        queue = deque()
+        rows = len(grid)
+        cols = len(grid[0])
 
-        # Multi-source BFS: enqueue every '1' at distance 0.
-        for r in range(rows):
-            for c in range(cols):
-                if grid[r][c] == 1:
-                    result[r][c] = 0
-                    queue.append((r, c, 0))
+        # Create a result matrix to store the nearest distances
+        result = [[float("inf")] * cols for _ in range(rows)]
 
-        while queue:
-            r, c, d = queue.popleft()
-            for dr, dc in DIRS:
-                nr, nc = r + dr, c + dc
-                if 0 <= nr < rows and 0 <= nc < cols and d + 1 < result[nr][nc]:
-                    # Update only when strictly better — naturally avoids re-queues.
-                    result[nr][nc] = d + 1
-                    queue.append((nr, nc, d + 1))
+        # Create a queue for BFS traversal
+        queue = Queue()
+
+        # Enqueue all the cells with value 1 and initialize their
+        # distance as 0
+        for row in range(rows):
+            for col in range(cols):
+                if grid[row][col] == 1:
+                    queue.put(Cell(row, col, 0))
+                    result[row][col] = 0
+
+        # Define the possible movements: up, right, down, left
+        directions: List[Tuple[int, int]] = [
+            (-1, 0),  # up
+            (0, 1),   # right
+            (1, 0),   # down
+            (0, -1)   # left
+        ]
+
+        while not queue.empty():
+            curr_cell = queue.get()
+
+            curr_row = curr_cell.row
+            curr_col = curr_cell.col
+            curr_distance = curr_cell.distance
+
+            # Explore the neighbours
+            for dr, dc in directions:
+                new_row = curr_row + dr
+                new_col = curr_col + dc
+
+                # Check if the new cell is within the grid boundaries
+                # and has a greater distance than the current distance
+                if self.is_valid_cell(new_row, new_col, rows, cols) and \
+                   curr_distance + 1 < result[new_row][new_col]:
+
+                    # Update the distance for the new cell
+                    result[new_row][new_col] = curr_distance + 1
+
+                    # Add the new cell to the queue    
+                    queue.put(
+                        Cell(new_row, new_col, curr_distance + 1)
+                    )
+
         return result
 
 
-grid = [[0, 0, 0, 0], [0, 0, 1, 0], [0, 0, 0, 0], [0, 0, 0, 0]]
-for row in Solution().nearest_distance(grid):
-    print(row)
+# Examples from the problem statement
+print(Solution().nearest_distance([[0,0,0,0],[0,0,1,0],[0,0,0,0],[0,0,0,0]]))
+# [[3,2,1,2],[2,1,0,1],[3,2,1,2],[4,3,2,3]]
+print(Solution().nearest_distance([[1,0,0],[0,1,0],[0,0,0]]))
+# [[0,1,2],[1,0,1],[2,1,2]]
+
+# Edge cases
+print(Solution().nearest_distance([[1]]))               # [[0]] — single cell is 1
+print(Solution().nearest_distance([[0]]))               # [[inf]] — single cell is 0
+print(Solution().nearest_distance([[1,1],[1,1]]))       # [[0,0],[0,0]] — all 1s
+print(Solution().nearest_distance([[1,0],[0,0]]))       # [[0,1],[1,2]] — one source corner
+print(Solution().nearest_distance([[0,0],[0,1]]))       # [[2,1],[1,0]] — one source far corner
 ```
 
 ```java run
 import java.util.*;
 
 public class Main {
+    static class Cell {
+
+        int row;
+        int col;
+        int distance;
+
+        Cell(int row, int col, int distance) {
+            this.row = row;
+            this.col = col;
+            this.distance = distance;
+        }
+    }
+
     static class Solution {
-        static final int[][] DIRS = {{-1, 0}, {0, 1}, {1, 0}, {0, -1}};
+        private boolean isValidCell(int row, int col, int rows, int cols) {
+            return row >= 0 && row < rows && col >= 0 && col < cols;
+        }
 
         public int[][] nearestDistance(int[][] grid) {
-            int rows = grid.length, cols = grid[0].length;
+            int rows = grid.length;
+            int cols = grid[0].length;
+
+            // Create a result matrix to store the nearest distances
             int[][] result = new int[rows][cols];
-            for (int[] row : result) Arrays.fill(row, Integer.MAX_VALUE);
-            Queue<int[]> q = new ArrayDeque<>();
+            for (int row = 0; row < rows; row++) {
+                Arrays.fill(result[row], Integer.MAX_VALUE);
+            }
 
-            for (int r = 0; r < rows; r++)
-                for (int c = 0; c < cols; c++)
-                    if (grid[r][c] == 1) { result[r][c] = 0; q.offer(new int[]{r, c, 0}); }
+            // Create a queue for BFS traversal
+            Queue<Cell> queue = new LinkedList<>();
 
-            while (!q.isEmpty()) {
-                int[] cur = q.poll();
-                int r = cur[0], c = cur[1], d = cur[2];
-                for (int[] dir : DIRS) {
-                    int nr = r + dir[0], nc = c + dir[1];
-                    if (nr >= 0 && nr < rows && nc >= 0 && nc < cols && d + 1 < result[nr][nc]) {
-                        result[nr][nc] = d + 1;
-                        q.offer(new int[]{nr, nc, d + 1});
+            // Enqueue all the cells with value 1 and initialize their
+            // distance as 0
+            for (int row = 0; row < rows; row++) {
+                for (int col = 0; col < cols; col++) {
+                    if (grid[row][col] == 1) {
+                        queue.add(new Cell(row, col, 0));
+                        result[row][col] = 0;
                     }
                 }
             }
+
+            // Define the possible movements: up, right, down, left
+            int[][] directions = {
+                {-1, 0}, // up
+                {0, 1},  // right
+                {1, 0},  // down
+                {0, -1}  // left
+            };
+
+            while (!queue.isEmpty()) {
+                Cell currCell = queue.poll();
+
+                int currRow = currCell.row;
+                int currCol = currCell.col;
+                int currDistance = currCell.distance;
+
+                // Explore the neighbours
+                for (int[] dir : directions) {
+                    int newRow = currRow + dir[0];
+                    int newCol = currCol + dir[1];
+
+                    // Check if the new cell is within the grid boundaries 
+                    // and has a greater distance than the current distance
+                    if (isValidCell(newRow, newCol, rows, cols) &&
+                        currDistance + 1 < result[newRow][newCol]) {
+
+                        // Update the distance for the new cell
+                        result[newRow][newCol] = currDistance + 1;
+
+                        // Add the new cell to the queue
+                        queue.add(
+                            new Cell(newRow, newCol, currDistance + 1)
+                        );
+                    }
+                }
+            }
+
             return result;
         }
     }
 
     public static void main(String[] args) {
-        int[][] grid = {{0, 0, 0, 0}, {0, 0, 1, 0}, {0, 0, 0, 0}, {0, 0, 0, 0}};
-        for (int[] r : new Solution().nearestDistance(grid)) System.out.println(Arrays.toString(r));
+        Solution sol = new Solution();
+
+        // Examples from the problem statement
+        System.out.println(Arrays.deepToString(sol.nearestDistance(new int[][]{{0,0,0,0},{0,0,1,0},{0,0,0,0},{0,0,0,0}})));
+        // [[3,2,1,2],[2,1,0,1],[3,2,1,2],[4,3,2,3]]
+        System.out.println(Arrays.deepToString(sol.nearestDistance(new int[][]{{1,0,0},{0,1,0},{0,0,0}})));
+        // [[0,1,2],[1,0,1],[2,1,2]]
+
+        // Edge cases
+        System.out.println(Arrays.deepToString(sol.nearestDistance(new int[][]{{1}})));               // [[0]]
+        System.out.println(Arrays.deepToString(sol.nearestDistance(new int[][]{{1,1},{1,1}})));       // [[0,0],[0,0]]
+        System.out.println(Arrays.deepToString(sol.nearestDistance(new int[][]{{1,0},{0,0}})));       // [[0,1],[1,2]]
+        System.out.println(Arrays.deepToString(sol.nearestDistance(new int[][]{{0,0},{0,1}})));       // [[2,1],[1,0]]
     }
-}
-```
-
-```c run
-#include <stdio.h>
-#include <stdlib.h>
-#include <limits.h>
-
-static const int DIRS[4][2] = {{-1, 0}, {0, 1}, {1, 0}, {0, -1}};
-
-int** nearest_distance(int** grid, int rows, int cols) {
-    int** result = malloc(rows * sizeof(int*));
-    for (int i = 0; i < rows; i++) {
-        result[i] = malloc(cols * sizeof(int));
-        for (int j = 0; j < cols; j++) result[i][j] = INT_MAX;
-    }
-    int (*queue)[3] = malloc(rows * cols * 4 * sizeof(*queue));
-    int head = 0, tail = 0;
-    for (int r = 0; r < rows; r++)
-        for (int c = 0; c < cols; c++)
-            if (grid[r][c] == 1) {
-                result[r][c] = 0;
-                queue[tail][0] = r; queue[tail][1] = c; queue[tail][2] = 0; tail++;
-            }
-    while (head < tail) {
-        int r = queue[head][0], c = queue[head][1], d = queue[head][2]; head++;
-        for (int dd = 0; dd < 4; dd++) {
-            int nr = r + DIRS[dd][0], nc = c + DIRS[dd][1];
-            if (nr >= 0 && nr < rows && nc >= 0 && nc < cols && d + 1 < result[nr][nc]) {
-                result[nr][nc] = d + 1;
-                queue[tail][0] = nr; queue[tail][1] = nc; queue[tail][2] = d + 1; tail++;
-            }
-        }
-    }
-    free(queue);
-    return result;
-}
-
-int main() {
-    int data[4][4] = {{0, 0, 0, 0}, {0, 0, 1, 0}, {0, 0, 0, 0}, {0, 0, 0, 0}};
-    int* grid[4];
-    for (int i = 0; i < 4; i++) grid[i] = data[i];
-    int** r = nearest_distance(grid, 4, 4);
-    for (int i = 0; i < 4; i++) {
-        for (int j = 0; j < 4; j++) printf("%d ", r[i][j]);
-        printf("\n");
-        free(r[i]);
-    }
-    free(r);
-    return 0;
-}
-```
-
-```scala run
-import scala.collection.mutable
-
-object Main extends App {
-  val DIRS = Array((-1, 0), (0, 1), (1, 0), (0, -1))
-
-  class Solution {
-    def nearestDistance(grid: Array[Array[Int]]): Array[Array[Int]] = {
-      val rows = grid.length; val cols = grid(0).length
-      val result = Array.fill(rows, cols)(Int.MaxValue)
-      val q = mutable.Queue[(Int, Int, Int)]()
-      for (r <- 0 until rows; c <- 0 until cols if grid(r)(c) == 1) {
-        result(r)(c) = 0; q.enqueue((r, c, 0))
-      }
-      while (q.nonEmpty) {
-        val (r, c, d) = q.dequeue()
-        for ((dr, dc) <- DIRS) {
-          val nr = r + dr; val nc = c + dc
-          if (nr >= 0 && nr < rows && nc >= 0 && nc < cols && d + 1 < result(nr)(nc)) {
-            result(nr)(nc) = d + 1
-            q.enqueue((nr, nc, d + 1))
-          }
-        }
-      }
-      result
-    }
-  }
-
-  val grid = Array(Array(0, 0, 0, 0), Array(0, 0, 1, 0), Array(0, 0, 0, 0), Array(0, 0, 0, 0))
-  new Solution().nearestDistance(grid).foreach(r => println(r.mkString(" ")))
 }
 ```
 
 
 The multi-source pattern is **massively** more efficient than running BFS once per source (`O(K * R*C)` where K = number of sources). Multi-source BFS is `O(R*C)` regardless of how many sources you start with. Same algorithm, fundamentally better complexity.
+
+</details>
 
 ***
 
@@ -547,7 +589,9 @@ Input:  source = "hit", target = "cog", wordList = ["hot", "dot", "dog", "lot", 
 Output: 5  (hit → hot → dot → dog → cog)
 ```
 
-## Pattern Mapping
+<details>
+<summary><h2>Pattern Mapping</h2></summary>
+
 
 The graph is **implicit**:
 
@@ -563,64 +607,90 @@ The trick is generating neighbours efficiently. Two main approaches:
 
 We'll use approach 1 — simpler to code, still fast for typical inputs. The implementation builds the adjacency on the fly during BFS.
 
-## The Solution (per-position substitution)
+</details>
+<details>
+<summary><h2>The Solution (per-position substitution)</h2></summary>
 
 
-```pseudocode
-function shortestWordTransformation(source, target, wordList):
-    wordSet ← set of wordList
-    if target is not in wordSet: return 0
-    queue ← empty queue
-    enqueue (source, 1) to queue
-    visited ← empty set
-    add source to visited
-    while queue is not empty:
-        (word, level) ← dequeue from queue
-        if word = target: return level
-        for i from 0 to length(word)−1:
-            for each letter c in 'a' to 'z':
-                candidate ← word with position i replaced by c
-                if candidate is in wordSet AND candidate is not in visited:
-                    add candidate to visited
-                    enqueue (candidate, level+1) to queue
-    return 0
-```
 
 ```python run
-from typing import List
 from collections import deque
+from typing import List
 
 class Solution:
-    def shortest_word_transformation(self,
-                                      source: str,
-                                      target: str,
-                                      word_list: List[str]) -> int:
+    def shortest_word_transformation(
+        self, source: str, target: str, word_list: List[str]
+    ) -> int:
+
+        # Create a set to store the words for efficient lookup
         word_set = set(word_list)
+
+        # If the target word is not in the word set, return 0
         if target not in word_set:
             return 0
 
-        queue = deque([(source, 1)])     # (word, level)
-        visited = {source}
+        # Create a queue for BFS traversal
+        queue = deque([source])
+
+        # Create a visited set to keep track of visited words
+        visited = set([source])
+
+        # Starting level is 1 (source word is at level 1)
+        level = 1
 
         while queue:
-            word, level = queue.popleft()
-            if word == target:
-                return level
+            level_size = len(queue)
 
-            # Try every single-letter mutation.
-            for i in range(len(word)):
-                for ch in 'abcdefghijklmnopqrstuvwxyz':
-                    if ch == word[i]:
-                        continue
-                    candidate = word[:i] + ch + word[i+1:]
-                    if candidate in word_set and candidate not in visited:
-                        visited.add(candidate)
-                        queue.append((candidate, level + 1))
+            # Traverse all words at the current level
+            for _ in range(level_size):
+                current_word = queue.popleft()
+
+                # Check if the current word matches the target
+                if current_word == target:
+                    return level
+
+                # Generate all possible adjacent words
+                for j in range(len(current_word)):
+                    original_char = current_word[j]
+                    for ch in "abcdefghijklmnopqrstuvwxyz":
+
+                        # Skip if the character is the same as the
+                        # original
+                        if ch == original_char:
+                            continue
+
+                        # Change the character at position j
+                        new_word = (
+                            current_word[:j] + ch + current_word[j + 1:]
+                        )
+
+                        # Check if the new word is in the word set and
+                        # has not been visited
+                        if (
+                            new_word in word_set
+                            and new_word not in visited
+                        ):
+                            queue.append(new_word)
+                            visited.add(new_word)
+
+            # Increment the level after traversing all words at the
+            # current level
+            level += 1
+
+        # No transformation sequence exists, return 0
         return 0
 
 
-print(Solution().shortest_word_transformation("hit", "cog",
-                                              ["hot", "dot", "dog", "lot", "log", "cog"]))
+# Examples from the problem statement
+print(Solution().shortest_word_transformation("hit", "cog", ["hot","dot","dog","lot","log","cog"]))  # 5
+print(Solution().shortest_word_transformation("hit", "mad", ["hot","dot","dog","lot","log","cog"]))  # 0
+print(Solution().shortest_word_transformation("red", "tax", ["tan","apple","banana","blue","rose"]))  # 0
+
+# Edge cases
+print(Solution().shortest_word_transformation("hit", "hot", ["hot"]))                                # 2 — one step
+print(Solution().shortest_word_transformation("abc", "abc", ["abc"]))                                # 1 — source equals target
+print(Solution().shortest_word_transformation("hit", "cog", []))                                     # 0 — empty word list
+print(Solution().shortest_word_transformation("a", "c", ["b","c"]))                                  # 2 — single-char chain
 ```
 
 ```java run
@@ -628,136 +698,103 @@ import java.util.*;
 
 public class Main {
     static class Solution {
-        public int shortestWordTransformation(String source, String target, List<String> wordList) {
+        public int shortestWordTransformation(
+            String source,
+            String target,
+            List<String> wordList
+        ) {
+
+            // Create a set to store the words for efficient lookup
             Set<String> wordSet = new HashSet<>(wordList);
-            if (!wordSet.contains(target)) return 0;
-            Queue<String[]> q = new ArrayDeque<>();
-            q.offer(new String[]{source, "1"});
+
+            // If the target word is not in the word set, return 0
+            if (!wordSet.contains(target)) {
+                return 0;
+            }
+
+            // Create a queue for BFS traversal
+            Queue<String> queue = new LinkedList<>();
+            queue.add(source);
+
+            // Create a visited set to keep track of visited words
             Set<String> visited = new HashSet<>();
             visited.add(source);
-            while (!q.isEmpty()) {
-                String[] cur = q.poll();
-                String word = cur[0]; int level = Integer.parseInt(cur[1]);
-                if (word.equals(target)) return level;
-                char[] chars = word.toCharArray();
-                for (int i = 0; i < chars.length; i++) {
-                    char orig = chars[i];
-                    for (char c = 'a'; c <= 'z'; c++) {
-                        if (c == orig) continue;
-                        chars[i] = c;
-                        String cand = new String(chars);
-                        if (wordSet.contains(cand) && !visited.contains(cand)) {
-                            visited.add(cand);
-                            q.offer(new String[]{cand, Integer.toString(level + 1)});
+
+            // Starting level is 1 (source word is at level 1)
+            int level = 1;
+
+            while (!queue.isEmpty()) {
+                int levelSize = queue.size();
+
+                // Traverse all words at the current level
+                for (int i = 0; i < levelSize; i++) {
+                    String currentWord = queue.poll();
+
+                    // Check if the current word matches the target
+                    if (currentWord.equals(target)) {
+                        return level;
+                    }
+
+                    // Generate all possible adjacent words
+                    for (int j = 0; j < currentWord.length(); j++) {
+                        char originalChar = currentWord.charAt(j);
+
+                        for (char ch = 'a'; ch <= 'z'; ch++) {
+
+                            // Skip if the character is the same as the
+                            // original
+                            if (ch == originalChar) continue;
+
+                            // Change the character at position j
+                            String newWord =
+                                currentWord.substring(0, j) +
+                                ch +
+                                currentWord.substring(j + 1);
+
+                            // Check if the new word is in the word set and
+                            // has not been visited
+                            if (
+                                wordSet.contains(newWord) &&
+                                !visited.contains(newWord)
+                            ) {
+                                queue.add(newWord);
+                                visited.add(newWord);
+                            }
                         }
                     }
-                    chars[i] = orig;
                 }
+
+                // Increment the level after traversing all words at the
+                // current level
+                level++;
             }
+
+            // No transformation sequence exists, return 0
             return 0;
         }
     }
 
     public static void main(String[] args) {
-        System.out.println(new Solution().shortestWordTransformation(
-            "hit", "cog", List.of("hot", "dot", "dog", "lot", "log", "cog")));
+        Solution sol = new Solution();
+
+        // Examples from the problem statement
+        System.out.println(sol.shortestWordTransformation("hit", "cog", List.of("hot","dot","dog","lot","log","cog")));  // 5
+        System.out.println(sol.shortestWordTransformation("hit", "mad", List.of("hot","dot","dog","lot","log","cog")));  // 0
+        System.out.println(sol.shortestWordTransformation("red", "tax", List.of("tan","apple","banana","blue","rose")));  // 0
+
+        // Edge cases
+        System.out.println(sol.shortestWordTransformation("hit", "hot", List.of("hot")));         // 2
+        System.out.println(sol.shortestWordTransformation("abc", "abc", List.of("abc")));         // 1
+        System.out.println(sol.shortestWordTransformation("hit", "cog", new ArrayList<>()));      // 0
+        System.out.println(sol.shortestWordTransformation("a", "c", List.of("b","c")));           // 2
     }
 }
 ```
 
-```c run
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <stdbool.h>
+</details>
+<details>
+<summary><h2>Complexity Analysis</h2></summary>
 
-// Tiny linear scan word lookup — fine for small lists.
-static bool in_list(char* w, char** list, int n) {
-    for (int i = 0; i < n; i++) if (strcmp(w, list[i]) == 0) return true;
-    return false;
-}
-
-int shortest_word_transformation(const char* source, const char* target, char** word_list, int n) {
-    if (!in_list((char*)target, word_list, n)) return 0;
-    int len = strlen(source);
-    char** queue_words = malloc(10000 * sizeof(char*));
-    int* queue_levels = malloc(10000 * sizeof(int));
-    int head = 0, tail = 0;
-    queue_words[tail] = strdup(source); queue_levels[tail] = 1; tail++;
-    char** visited = malloc(10000 * sizeof(char*));
-    int v_count = 0;
-    visited[v_count++] = strdup(source);
-    int answer = 0;
-    while (head < tail) {
-        char* word = queue_words[head]; int level = queue_levels[head]; head++;
-        if (strcmp(word, target) == 0) { answer = level; break; }
-        char buf[64]; strcpy(buf, word);
-        for (int i = 0; i < len; i++) {
-            char orig = buf[i];
-            for (char c = 'a'; c <= 'z'; c++) {
-                if (c == orig) continue;
-                buf[i] = c;
-                if (in_list(buf, word_list, n)) {
-                    bool seen = false;
-                    for (int k = 0; k < v_count; k++)
-                        if (strcmp(visited[k], buf) == 0) { seen = true; break; }
-                    if (!seen) {
-                        visited[v_count++] = strdup(buf);
-                        queue_words[tail] = strdup(buf); queue_levels[tail] = level + 1; tail++;
-                    }
-                }
-            }
-            buf[i] = orig;
-        }
-    }
-    for (int i = 0; i < tail; i++) free(queue_words[i]);
-    for (int i = 0; i < v_count; i++) free(visited[i]);
-    free(queue_words); free(queue_levels); free(visited);
-    return answer;
-}
-
-int main() {
-    char* list[] = {"hot", "dot", "dog", "lot", "log", "cog"};
-    printf("%d\n", shortest_word_transformation("hit", "cog", list, 6));
-    return 0;
-}
-```
-
-```scala run
-import scala.collection.mutable
-
-object Main extends App {
-  class Solution {
-    def shortestWordTransformation(source: String, target: String, wordList: List[String]): Int = {
-      val wordSet = wordList.toSet
-      if (!wordSet.contains(target)) return 0
-      val q = mutable.Queue[(String, Int)]()
-      q.enqueue((source, 1))
-      val visited = mutable.Set(source)
-      while (q.nonEmpty) {
-        val (word, level) = q.dequeue()
-        if (word == target) return level
-        for (i <- word.indices) {
-          val orig = word(i)
-          for (c <- 'a' to 'z' if c != orig) {
-            val candidate = word.updated(i, c)
-            if (wordSet.contains(candidate) && !visited.contains(candidate)) {
-              visited.add(candidate); q.enqueue((candidate, level + 1))
-            }
-          }
-        }
-      }
-      0
-    }
-  }
-
-  println(new Solution().shortestWordTransformation(
-    "hit", "cog", List("hot", "dot", "dog", "lot", "log", "cog")))
-}
-```
-
-
-## Complexity Analysis
 
 | Problem | Time | Space |
 |---|---|---|
@@ -767,9 +804,264 @@ object Main extends App {
 
 Where N = words, L = word length. The word problem is dominated by the per-word neighbour generation (L positions × 26 letters).
 
----
+</details>
 
-## Final Takeaway
+# Problem: Minimum Steps in a Grid II
+
+## The Problem
+
+Given an **NxM** **grid** filled with values of either `0`, or `1` and a non-negative integer **k**, write a function to find and return the minimum number of steps required to reach the cell `(N-1, M-1)` from the cell `(0, 0)`. If there is no valid path, return `-1` instead.
+
+You can convert at most **k** non-walkable cells to walkable cells.
+
+> -   A value of `1` in a cell means it's walkable.
+> -   A value of `0` in a cell means it's a wall and not walkable.
+
+> You must abide by the following constraint:
+>
+> -   You can only move in the four cardinal directions, i.e., `up`, `right`, `down`, and `left`.
+
+```
+Input:  grid = [[1, 0, 1, 1], [0, 1, 1, 1], [0, 1, 0, 1]], k = 1
+Output: 5
+Input:  grid = [[1, 0, 0, 0], [0, 0, 0, 0], [0, 0, 0, 1]], k = 5
+Output: 5
+```
+
+<details>
+<summary><h2>Pattern Mapping</h2></summary>
+
+
+This is BFS shortest path with a state dimension bolted onto each node. A plain `visited[row][col]` is no longer enough: a cell reached with more wall-removals still in hand may open a shorter route than the same cell reached with none left. The fix is a 3D `visited[row][col][walls_left]` — the BFS state is `(row, col, walls_left)`, not just `(row, col)`.
+
+Moving onto a wall (`0`) costs one of the `k` removals; moving onto a `1` costs none. A neighbour is only enqueued when `walls_left` stays non-negative and that exact state hasn't been visited. Because every step still costs 1, the FIFO queue guarantees the first time the destination is dequeued is the minimum step count.
+
+</details>
+<details>
+<summary><h2>The Solution</h2></summary>
+
+
+
+```python run
+from typing import List, Tuple
+from queue import Queue
+
+class Cell:
+    def __init__(self, row: int, col: int, steps: int, walls_left: int):
+        self.row = row
+        self.col = col
+        self.steps = steps
+        self.walls_left = walls_left
+
+class Solution:
+    def is_valid_cell(
+        self, row: int, col: int, rows: int, cols: int
+    ) -> bool:
+        return 0 <= row < rows and 0 <= col < cols
+
+    def minimum_steps_in_a_grid_ii(
+        self, grid: List[List[int]], k: int
+    ) -> int:
+        rows = len(grid)
+        cols = len(grid[0])
+
+        # Create a visited grid to keep track of visited cells
+        visited = [
+            [[False] * (k + 1) for _ in range(cols)] for _ in range(rows)
+        ]
+
+        # Create a queue for BFS traversal
+        queue = Queue()
+        queue.put(Cell(0, 0, 0, k))
+        visited[0][0][k] = True
+
+        # Define the possible movements: up, right, down, left
+        directions: List[Tuple[int, int]] = [
+            (-1, 0),  # up
+            (0, 1),   # right
+            (1, 0),   # down
+            (0, -1)   # left
+        ]
+
+        while not queue.empty():
+            curr_cell = queue.get()
+
+            curr_row = curr_cell.row
+            curr_col = curr_cell.col
+            curr_steps = curr_cell.steps
+            curr_walls_left = curr_cell.walls_left
+
+            # Check if reached the destination
+            if curr_row == rows - 1 and curr_col == cols - 1:
+                return curr_steps
+
+            # Explore the neighbours
+            for dr, dc in directions:
+                new_row = curr_row + dr
+                new_col = curr_col + dc
+
+                # Check if the new cell is within the grid boundaries
+                if self.is_valid_cell(new_row, new_col, rows, cols):
+                    new_walls_left = curr_walls_left - (
+                        1 if grid[new_row][new_col] == 0 else 0
+                    )
+
+                    # If we have walls left to remove and haven't
+                    # visited this state
+                    if (
+                        new_walls_left >= 0
+                        and not visited[new_row][new_col][new_walls_left]
+                    ):
+                        
+                        # Add the new cell to the queue
+                        queue.put(
+                            Cell(
+                                new_row,
+                                new_col,
+                                curr_steps + 1,
+                                new_walls_left,
+                            )
+                        )
+
+                        # Mark the new cell as visited
+                        visited[new_row][new_col][new_walls_left] = True
+
+        # No path found
+        return -1
+
+
+# Examples from the problem statement
+print(Solution().minimum_steps_in_a_grid_ii([[1,0,1,1],[0,1,1,1],[0,1,0,1]], 1))  # 5
+print(Solution().minimum_steps_in_a_grid_ii([[1,0,0,0],[0,0,0,0],[0,0,0,1]], 5))  # 5
+
+# Edge cases
+print(Solution().minimum_steps_in_a_grid_ii([[1]], 0))                             # 0 — 1x1
+print(Solution().minimum_steps_in_a_grid_ii([[0]], 1))                             # 0 — 1x1 wall removed
+print(Solution().minimum_steps_in_a_grid_ii([[1,1],[1,1]], 0))                     # 2 — all passable
+print(Solution().minimum_steps_in_a_grid_ii([[1,0],[0,1]], 0))                     # -1 — no removals allowed
+print(Solution().minimum_steps_in_a_grid_ii([[1,0],[0,1]], 1))                     # 2 — one removal allowed
+print(Solution().minimum_steps_in_a_grid_ii([[1,0,0],[0,0,0],[0,0,1]], 0))         # -1 — need walls but k=0
+```
+
+```java run
+import java.util.*;
+
+public class Main {
+    static class Cell {
+
+        int row;
+        int col;
+        int steps;
+        int wallsLeft;
+
+        public Cell(int row, int col, int steps, int wallsLeft) {
+            this.row = row;
+            this.col = col;
+            this.steps = steps;
+            this.wallsLeft = wallsLeft;
+        }
+    }
+
+    static class Solution {
+        private boolean isValidCell(int row, int col, int rows, int cols) {
+            return row >= 0 && row < rows && col >= 0 && col < cols;
+        }
+
+        public int minimumStepsInAGridII(int[][] grid, int k) {
+            int rows = grid.length, cols = grid[0].length;
+
+            // Create a visited grid to keep track of visited cells
+            boolean[][][] visited = new boolean[rows][cols][k + 1];
+
+            // Create a queue for BFS traversal
+            Queue<Cell> queue = new LinkedList<>();
+            queue.add(new Cell(0, 0, 0, k));
+            visited[0][0][k] = true;
+
+            // Define the possible movements: up, right, down, left
+            int[][] directions = {
+                {-1, 0}, // up
+                {0, 1},  // right
+                {1, 0},  // down
+                {0, -1}  // left
+            };
+
+            while (!queue.isEmpty()) {
+                Cell currCell = queue.poll();
+
+                int currRow = currCell.row;
+                int currCol = currCell.col;
+                int currSteps = currCell.steps;
+                int currWallsLeft = currCell.wallsLeft;
+
+                // Check if reached the destination
+                if (currRow == rows - 1 && currCol == cols - 1) {
+                    return currSteps;
+                }
+
+                // Explore the neighbours
+                for (int[] dir : directions) {
+                    int newRow = currRow + dir[0];
+                    int newCol = currCol + dir[1];
+
+                    // Check if the new cell is within the grid boundaries
+                    if (isValidCell(newRow, newCol, rows, cols)) {
+                        int newWallsLeft =
+                            currWallsLeft -
+                            (grid[newRow][newCol] == 0 ? 1 : 0);
+
+                        // If we have walls left to remove and haven't
+                        // visited this state
+                        if (
+                            newWallsLeft >= 0 &&
+                            !visited[newRow][newCol][newWallsLeft]
+                        ) {
+
+                            // Add the new cell to the queue
+                            queue.add(
+                                new Cell(
+                                    newRow,
+                                    newCol,
+                                    currSteps + 1,
+                                    newWallsLeft
+                                )
+                            );
+
+                            // Mark the new cell as visited
+                            visited[newRow][newCol][newWallsLeft] = true;
+                        }
+                    }
+                }
+            }
+
+            // No path found
+            return -1;
+        }
+    }
+
+    public static void main(String[] args) {
+        Solution sol = new Solution();
+
+        // Examples from the problem statement
+        System.out.println(sol.minimumStepsInAGridII(new int[][]{{1,0,1,1},{0,1,1,1},{0,1,0,1}}, 1));  // 5
+        System.out.println(sol.minimumStepsInAGridII(new int[][]{{1,0,0,0},{0,0,0,0},{0,0,0,1}}, 5));  // 5
+
+        // Edge cases
+        System.out.println(sol.minimumStepsInAGridII(new int[][]{{1}}, 0));                             // 0
+        System.out.println(sol.minimumStepsInAGridII(new int[][]{{0}}, 1));                             // 0
+        System.out.println(sol.minimumStepsInAGridII(new int[][]{{1,1},{1,1}}, 0));                     // 2
+        System.out.println(sol.minimumStepsInAGridII(new int[][]{{1,0},{0,1}}, 0));                     // -1
+        System.out.println(sol.minimumStepsInAGridII(new int[][]{{1,0},{0,1}}, 1));                     // 2
+        System.out.println(sol.minimumStepsInAGridII(new int[][]{{1,0,0},{0,0,0},{0,0,1}}, 0));         // -1
+    }
+}
+```
+
+</details>
+
+<details>
+<summary><h2>Final Takeaway</h2></summary>
+
 
 BFS shortest path is the **simplest, most reliable, fastest** algorithm for *unweighted* shortest-path problems. The recipe is dead easy: queue with distance, mark on push, early exit at target. The two power-ups — **multi-source BFS** (seed every starting point at d=0) and **implicit graphs** (compute neighbours on the fly) — turn the same algorithm into a swiss-army knife for grid, word-ladder, and graph-shortest-path problems alike.
 
@@ -777,6 +1069,7 @@ When BFS isn't enough — when edges have varying weights — you upgrade to Dij
 
 > **Transfer challenge.** A virus enters a hospital ward modelled as a grid. Initially several rooms are infected. Each minute, the virus spreads to all empty 4-cardinal neighbours. Find the minimum minutes until every room is infected, or `-1` if some rooms can never be reached. *Hint: this is multi-source BFS in disguise.*
 
+</details>
 <details>
 <summary><strong>Sketch</strong></summary>
 

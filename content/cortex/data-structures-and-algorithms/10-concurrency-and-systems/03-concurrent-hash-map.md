@@ -114,22 +114,6 @@ For analytics use cases (count entries periodically), weakly consistent iteratio
 
 A simplified Java-style striped concurrent hash map in pseudocode and Java:
 
-```pseudocode
-class StripedConcurrentMap:
-    buckets ← array of N segments
-    each segment ← (lock, bucket_array)
-
-    function put(key, value):
-        seg ← buckets[hash(key) % N]
-        with seg.lock:
-            insert/replace in seg.bucket_array
-
-    function get(key):
-        seg ← buckets[hash(key) % N]
-        with seg.lock:                              # could be lock-free in modern designs
-            return lookup in seg.bucket_array
-```
-
 ```java run
 import java.util.concurrent.*;
 import java.util.concurrent.locks.*;
@@ -239,42 +223,36 @@ Click any question to reveal the answer.
 **A:** **Single global lock** (`synchronized HashMap`), **stripe / segment locks** (pre-Java-8 `ConcurrentHashMap`), **per-bucket locks with lock-free reads** (Java 8+ `ConcurrentHashMap`).
 
 </details>
-
 <details>
 <summary><strong>Q:</strong> Why is Java 8's <code>ConcurrentHashMap</code> faster than the segmented version?</summary>
 
 **A:** Reads need no lock at all (volatile read of the bucket head). Writes lock only the affected bucket. Finer granularity → less contention.
 
 </details>
-
 <details>
 <summary><strong>Q:</strong> What's "weakly consistent iteration"?</summary>
 
 **A:** Iteration over a concurrent map reflects "some recent state"; doesn't throw on modification but doesn't guarantee that all-or-none of in-flight changes are visible. Sufficient for analytics; insufficient for snapshot-isolation.
 
 </details>
-
 <details>
 <summary><strong>Q:</strong> Why is <code>if (map.containsKey(k)) map.put(k, v)</code> wrong under concurrency?</summary>
 
 **A:** Not atomic. Another thread could remove `k` between the check and the put. Use atomic `putIfAbsent`, `replace`, `compute`, or `merge` instead.
 
 </details>
-
 <details>
 <summary><strong>Q:</strong> Java <code>ConcurrentHashMap</code>'s defence against HashDoS?</summary>
 
 **A:** Once a bucket's collision chain exceeds a threshold (8 entries), it converts to a red-black tree. Keeps lookups `O(log n)` even under attack.
 
 </details>
-
 <details>
 <summary><strong>Q:</strong> Go's <code>sync.Map</code> — what's it optimised for?</summary>
 
 **A:** Read-heavy workloads with infrequent writes. Stores read-mostly entries in an immutable read-map; writes go to a mutable dirty-map. The default Go `map` is **not** concurrent-safe.
 
 </details>
-
 <details>
 <summary><strong>Q:</strong> Why is <code>size()</code> sometimes approximate on a concurrent map?</summary>
 

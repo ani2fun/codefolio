@@ -169,112 +169,81 @@ The cleanup loops are what separate simultaneous traversal from the two-pointer 
 ## The Template
 
 
-```pseudocode
-# Generic simultaneous-traversal template. Customise the two advance hooks per problem.
-function simultaneousTraversal(arr1, arr2):
-    index1 ← 0; index2 ← 0
-    while index1 < length(arr1) AND index2 < length(arr2):
-        if shouldAdvanceArr1(arr1[index1], arr2[index2]):
-            index1 ← index1 + 1
-        if shouldAdvanceArr2(arr1[index1], arr2[index2]):
-            index2 ← index2 + 1
-
-    # Drain leftover — at most one of these two loops actually runs.
-    while index1 < length(arr1): index1 ← index1 + 1
-    while index2 < length(arr2): index2 ← index2 + 1
-```
-
 ```python run
-from typing import List
-
-def should_advance_arr1(a: int, b: int) -> bool: return True
-def should_advance_arr2(a: int, b: int) -> bool: return True
 
 def simultaneous_traversal(arr1: List[int], arr2: List[int]) -> None:
-    index1, index2 = 0, 0
+    # Initialize index variables for two arrays
+    index1 = 0
+    index2 = 0
 
-    # Main loop — both arrays still have unprocessed elements.
+    # Traverse both arrays simultaneously until
+    # the end of any one array is reached
     while index1 < len(arr1) and index2 < len(arr2):
-        if should_advance_arr1(arr1[index1], arr2[index2]):
+
+        if should_move_first:  # Replace this with actual condition
+            # Process arr1[index1]
+            # .......
             index1 += 1
-        if should_advance_arr2(arr1[index1], arr2[index2]):
+
+        if should_move_second:  # Replace this with actual condition
+            # Process arr2[index2]
+            # .......
             index2 += 1
 
-    # Drain whichever array has leftovers — only one of these loops runs.
+    # Traverse the remaining elements of arr1
     while index1 < len(arr1):
+        # Process arr1[index1]
+        # .......
         index1 += 1
+
+    # Traverse the remaining elements of arr2
     while index2 < len(arr2):
+        # Process arr2[index2]
+        # .......
         index2 += 1
 ```
 
 ```java run
-public class Main {
-    static boolean shouldAdvanceArr1(int a, int b) { return true; }
-    static boolean shouldAdvanceArr2(int a, int b) { return true; }
+class SimultaneousTraversal {
 
-    static void simultaneousTraversal(int[] arr1, int[] arr2) {
-        int i1 = 0, i2 = 0;
-        while (i1 < arr1.length && i2 < arr2.length) {
-            if (shouldAdvanceArr1(arr1[i1], arr2[i2])) i1++;
-            if (i1 < arr1.length && i2 < arr2.length
-                && shouldAdvanceArr2(arr1[i1], arr2[i2])) i2++;
+    public void simultaneousTraversal(List<Integer> arr1, List<Integer> arr2) {
+        // Initialize index variables for two arrays
+        int index1 = 0, index2 = 0;
+
+        // Traverse both arrays simultaneously until
+        // the end of any one array is reached
+        while (index1 < arr1.size() && index2 < arr2.size()) {
+
+            if (shouldMoveFirst) { // Replace this with actual condition
+
+                // Process arr1[index1]
+                // ....
+
+                index1++;
+            }
+            if (shouldMoveSecond) { // Replace this with actual condition
+
+                // Process arr2[index2]
+                // ....
+
+                index2++;
+            }
         }
-        while (i1 < arr1.length) i1++;
-        while (i2 < arr2.length) i2++;
+
+        // Traverse the remaining elements of arr1
+        while (index1 < arr1.size()) {
+            // Process arr1[index1]
+            // .......
+            index1++;
+        }
+
+        // Traverse the remaining elements of arr2
+        while (index2 < arr2.size()) {
+            // Process arr2[index2]
+            // .......
+            index2++;
+        }
     }
-
-    public static void main(String[] args) {
-        simultaneousTraversal(new int[]{1, 2, 3}, new int[]{4, 5, 6});
-        System.out.println("Template ran (no output by design — fill in process steps).");
-    }
-}
-```
-
-```c run
-#include <stdio.h>
-#include <stdbool.h>
-
-static bool should_advance_arr1(int a, int b) { (void)a; (void)b; return true; }
-static bool should_advance_arr2(int a, int b) { (void)a; (void)b; return true; }
-
-void simultaneous_traversal(int* arr1, int n1, int* arr2, int n2) {
-    int i1 = 0, i2 = 0;
-    while (i1 < n1 && i2 < n2) {
-        if (should_advance_arr1(arr1[i1], arr2[i2])) i1++;
-        if (i1 < n1 && i2 < n2 && should_advance_arr2(arr1[i1], arr2[i2])) i2++;
-    }
-    while (i1 < n1) i1++;
-    while (i2 < n2) i2++;
-}
-
-int main() {
-    int a1[] = {1, 2, 3};
-    int a2[] = {4, 5, 6};
-    simultaneous_traversal(a1, 3, a2, 3);
-    printf("Template ran.\n");
-    return 0;
-}
-```
-
-```scala run
-object Main extends App {
-  def shouldAdvanceArr1(a: Int, b: Int): Boolean = true
-  def shouldAdvanceArr2(a: Int, b: Int): Boolean = true
-
-  def simultaneousTraversal(arr1: Array[Int], arr2: Array[Int]): Unit = {
-    var i1 = 0
-    var i2 = 0
-    while (i1 < arr1.length && i2 < arr2.length) {
-      if (shouldAdvanceArr1(arr1(i1), arr2(i2))) i1 += 1
-      if (i1 < arr1.length && i2 < arr2.length
-          && shouldAdvanceArr2(arr1(i1), arr2(i2))) i2 += 1
-    }
-    while (i1 < arr1.length) i1 += 1
-    while (i2 < arr2.length) i2 += 1
-  }
-
-  simultaneousTraversal(Array(1, 2, 3), Array(4, 5, 6))
-  println("Template ran.")
 }
 ```
 
@@ -485,21 +454,6 @@ flowchart TB
 <p align="center"><strong>Brute force — for each character of s, scan forward in t until found or t is exhausted. Correct, but the nested structure is error-prone.</strong></p>
 
 
-```pseudocode
-# Brute-force subsequence check via nested loops.
-function isSubsequenceBrute(s, t):
-    j ← 0
-    for i from 0 to length(s) − 1:
-        if j = length(t):
-            return false
-        while j < length(t):
-            if s[i] = t[j]:
-                j ← j + 1
-                break
-            j ← j + 1
-    return true
-```
-
 ```python run
 def is_subsequence_brute(s: str, t: str) -> bool:
     j = 0
@@ -535,53 +489,6 @@ public class Main {
         System.out.println(isSubsequenceBrute("ace", "abcde"));
         System.out.println(isSubsequenceBrute("aec", "abcde"));
     }
-}
-```
-
-```c run
-#include <stdio.h>
-#include <stdbool.h>
-#include <string.h>
-
-bool is_subsequence_brute(const char* s, const char* t) {
-    int j = 0;
-    int ns = (int)strlen(s), nt = (int)strlen(t);
-    for (int i = 0; i < ns; i++) {
-        if (j == nt) return false;
-        while (j < nt) {
-            if (s[i] == t[j]) { j++; break; }
-            j++;
-        }
-    }
-    return true;
-}
-
-int main() {
-    printf("%d\n", is_subsequence_brute("ace", "abcde"));
-    printf("%d\n", is_subsequence_brute("aec", "abcde"));
-    return 0;
-}
-```
-
-```scala run
-object Main extends App {
-  def isSubsequenceBrute(s: String, t: String): Boolean = {
-    var j = 0
-    var i = 0
-    while (i < s.length) {
-      if (j == t.length) return false
-      var matched = false
-      while (j < t.length && !matched) {
-        if (s(i) == t(j)) { j += 1; matched = true }
-        else              { j += 1 }
-      }
-      i += 1
-    }
-    true
-  }
-
-  println(isSubsequenceBrute("ace", "abcde"))
-  println(isSubsequenceBrute("aec", "abcde"))
 }
 ```
 
@@ -693,29 +600,6 @@ flowchart LR
 ```
 
 
-```pseudocode
-function subsequenceChecker(s, t):
-
-    # pointer for s
-    index1 ← 0
-
-    # pointer for t
-    index2 ← 0
-
-    while index1 < length(s) AND index2 < length(t):
-        if s[index1] = t[index2]:
-
-            # If the current character matches, move the pointer for s
-            index1 ← index1 + 1
-
-        # Move the pointer for t in every iteration
-        index2 ← index2 + 1
-
-    # If index1 reaches the end of s, it means all characters in s
-    # are found in t in the same order
-    return index1 = length(s)
-```
-
 ```python run
 class Solution:
     def subsequence_checker(self, s: str, t: str) -> bool:
@@ -739,128 +623,34 @@ class Solution:
         # If index1 reaches the end of s, it means all characters in s
         # are found in t in the same order
         return index1 == len(s)
-
-
-sol = Solution()
-print(sol.subsequence_checker("ace", "abcde"))   # True
-print(sol.subsequence_checker("aec", "abcde"))   # False
-print(sol.subsequence_checker("", "abcde"))      # True
-print(sol.subsequence_checker("abc", ""))        # False
 ```
 
 ```java run
-public class Main {
-    static class Solution {
-        public boolean subsequenceChecker(String s, String t) {
+class Solution {
+    public boolean subsequenceChecker(String s, String t) {
 
-            // pointer for s
-            int index1 = 0;
+        // pointer for s
+        int index1 = 0;
 
-            // pointer for t
-            int index2 = 0;
+        // pointer for t
+        int index2 = 0;
 
-            while (index1 < s.length() && index2 < t.length()) {
-                if (s.charAt(index1) == t.charAt(index2)) {
+        while (index1 < s.length() && index2 < t.length()) {
+            if (s.charAt(index1) == t.charAt(index2)) {
 
-                    // If the current character matches, move the pointer for
-                    // s
-                    index1++;
-                }
-
-                // Move the pointer for t in every iteration
-                index2++;
+                // If the current character matches, move the pointer for
+                // s
+                index1++;
             }
 
-            // If index1 reaches the end of s, it means all characters in s
-            // are found in t in the same order
-            return index1 == s.length();
-        }
-    }
-
-    public static void main(String[] args) {
-        Solution sol = new Solution();
-        System.out.println(sol.subsequenceChecker("ace", "abcde"));
-        System.out.println(sol.subsequenceChecker("aec", "abcde"));
-        System.out.println(sol.subsequenceChecker("", "abcde"));
-        System.out.println(sol.subsequenceChecker("abc", ""));
-    }
-}
-```
-
-```c run
-#include <stdio.h>
-#include <stdbool.h>
-#include <string.h>
-
-bool subsequence_checker(const char* s, const char* t) {
-
-    /* pointer for s */
-    int index1 = 0;
-
-    /* pointer for t */
-    int index2 = 0;
-
-    int ns = (int)strlen(s);
-    int nt = (int)strlen(t);
-
-    while (index1 < ns && index2 < nt) {
-        if (s[index1] == t[index2]) {
-
-            /* If the current character matches, move the pointer for s */
-            index1++;
+            // Move the pointer for t in every iteration
+            index2++;
         }
 
-        /* Move the pointer for t in every iteration */
-        index2++;
+        // If index1 reaches the end of s, it means all characters in s
+        // are found in t in the same order
+        return index1 == s.length();
     }
-
-    /* If index1 reaches the end of s, it means all characters in s
-     * are found in t in the same order */
-    return index1 == ns;
-}
-
-int main() {
-    printf("%d\n", subsequence_checker("ace", "abcde"));
-    printf("%d\n", subsequence_checker("aec", "abcde"));
-    printf("%d\n", subsequence_checker("", "abcde"));
-    printf("%d\n", subsequence_checker("abc", ""));
-    return 0;
-}
-```
-
-```scala run
-object Main extends App {
-  class Solution {
-    def subsequenceChecker(s: String, t: String): Boolean = {
-
-      // pointer for s
-      var index1 = 0
-
-      // pointer for t
-      var index2 = 0
-
-      while (index1 < s.length && index2 < t.length) {
-        if (s(index1) == t(index2)) {
-
-          // If the current character matches, move the pointer for s
-          index1 += 1
-        }
-
-        // Move the pointer for t in every iteration
-        index2 += 1
-      }
-
-      // If index1 reaches the end of s, it means all characters in s
-      // are found in t in the same order
-      index1 == s.length
-    }
-  }
-
-  val sol = new Solution
-  println(sol.subsequenceChecker("ace", "abcde"))
-  println(sol.subsequenceChecker("aec", "abcde"))
-  println(sol.subsequenceChecker("", "abcde"))
-  println(sol.subsequenceChecker("abc", ""))
 }
 ```
 
@@ -924,9 +714,12 @@ s = "",     t = "abc"    →  True   (empty string is always a subsequence of an
 s = "abc",  t = ""       →  False  (non-empty s cannot match inside an empty t)
 ```
 
+
 ---
 
-## Intuition
+<details>
+<summary><h2>Intuition</h2></summary>
+
 
 Imagine `t` as a long river and `s` as a treasure map with a sequence of landmarks you need to visit in order. You paddle down the river from left to right — you can't go back upstream. Each time you reach a landmark that matches the next one on your map, you check it off. If you check off every landmark before reaching the end of the river, the journey was valid.
 
@@ -938,18 +731,20 @@ This is a simultaneous traversal problem because you can't answer the question b
 
 If `s`'s pointer reaches the end of `s`, all characters were matched in order — return `True`. If `t`'s pointer reaches the end of `t` first, `s` still has unmatched characters — return `False`.
 
----
+</details>
+<details>
+<summary><h2>Key Observations</h2></summary>
 
-## Key Observations
 
 1. **`t`'s pointer always advances.** You scan every character of `t` exactly once, whether or not it matches.
 2. **`s`'s pointer only advances on a match.** This enforces the ordering constraint: you can only check off a character once you actually find it at or after the current position in `t`.
 3. **No backtracking.** Once you move past a position in `t`, you never revisit it. This is what gives the O(N + M) time complexity.
 4. **Order matters, gaps don't.** `s = "ace"` succeeds even though positions 1 and 3 (`b` and `d`) are skipped. But `s = "aec"` fails because `e` cannot appear before `c` in the subsequence.
 
----
+</details>
+<details>
+<summary><h2>Approach</h2></summary>
 
-## Approach
 
 ```mermaid
 ---
@@ -991,32 +786,11 @@ flowchart TB
 3. If no match, `t[index2]` is not the character we need right now — advance only `index2` to check the next character in `t`.
 4. When the loop exits (one of the strings is exhausted), check if `index1 == len(s)`. If yes, every character in `s` was matched in order — `True`. Otherwise, `s` still has unmatched characters — `False`.
 
----
+</details>
+<details>
+<summary><h2>Solution</h2></summary>
 
-## Solution
 
-
-```pseudocode
-function subsequenceChecker(s, t):
-    # pointer for s
-    index1 ← 0
-
-    # pointer for t
-    index2 ← 0
-
-    while index1 < length(s) AND index2 < length(t):
-        if s[index1] = t[index2]:
-
-            # If the current character matches, move the pointer for s
-            index1 ← index1 + 1
-
-        # Move the pointer for t in every iteration
-        index2 ← index2 + 1
-
-    # If index1 reaches the end of s, it means all characters in s
-    # are found in t in the same order
-    return index1 = length(s)
-```
 
 ```python run
 class Solution:
@@ -1043,12 +817,17 @@ class Solution:
         return index1 == len(s)
 
 
-sol = Solution()
-print(sol.subsequence_checker("ace", "abcde"))   # True
-print(sol.subsequence_checker("aec", "abcde"))   # False
-print(sol.subsequence_checker("", "abc"))        # True
-print(sol.subsequence_checker("abc", ""))        # False
-print(sol.subsequence_checker("abc", "abc"))     # True
+# Examples from the problem statement
+print(Solution().subsequence_checker("abc", "ahbgdc"))      # True
+print(Solution().subsequence_checker("coin", "codeintuition"))  # True
+print(Solution().subsequence_checker("abc", "defghi"))      # False
+
+# Edge cases
+print(Solution().subsequence_checker("", "hello"))          # True — empty s is always subsequence
+print(Solution().subsequence_checker("a", "a"))             # True — single char match
+print(Solution().subsequence_checker("a", "b"))             # False — single char mismatch
+print(Solution().subsequence_checker("abc", "abc"))         # True — identical strings
+print(Solution().subsequence_checker("axc", "ahbgdc"))      # False — out-of-order chars
 ```
 
 ```java run
@@ -1081,99 +860,25 @@ public class Main {
     }
 
     public static void main(String[] args) {
-        Solution sol = new Solution();
-        System.out.println(sol.subsequenceChecker("ace", "abcde"));   // true
-        System.out.println(sol.subsequenceChecker("aec", "abcde"));   // false
-        System.out.println(sol.subsequenceChecker("", "abc"));        // true
-        System.out.println(sol.subsequenceChecker("abc", ""));        // false
-        System.out.println(sol.subsequenceChecker("abc", "abc"));     // true
+        // Examples from the problem statement
+        System.out.println(new Solution().subsequenceChecker("abc", "ahbgdc"));       // true
+        System.out.println(new Solution().subsequenceChecker("coin", "codeintuition")); // true
+        System.out.println(new Solution().subsequenceChecker("abc", "defghi"));       // false
+
+        // Edge cases
+        System.out.println(new Solution().subsequenceChecker("", "hello"));           // true — empty s is always subsequence
+        System.out.println(new Solution().subsequenceChecker("a", "a"));              // true — single char match
+        System.out.println(new Solution().subsequenceChecker("a", "b"));              // false — single char mismatch
+        System.out.println(new Solution().subsequenceChecker("abc", "abc"));          // true — identical strings
+        System.out.println(new Solution().subsequenceChecker("axc", "ahbgdc"));       // false — out-of-order chars
     }
 }
 ```
 
-```c run
-#include <stdio.h>
-#include <stdbool.h>
-#include <string.h>
+</details>
+<details>
+<summary><h2>Trace</h2></summary>
 
-bool subsequence_checker(const char* s, const char* t) {
-
-    /* pointer for s */
-    int index1 = 0;
-
-    /* pointer for t */
-    int index2 = 0;
-
-    int ns = (int)strlen(s);
-    int nt = (int)strlen(t);
-
-    while (index1 < ns && index2 < nt) {
-        if (s[index1] == t[index2]) {
-
-            /* If the current character matches, move the pointer for s */
-            index1++;
-        }
-
-        /* Move the pointer for t in every iteration */
-        index2++;
-    }
-
-    /* If index1 reaches the end of s, it means all characters in s
-     * are found in t in the same order */
-    return index1 == ns;
-}
-
-int main() {
-    printf("%d\n", subsequence_checker("ace", "abcde"));    /* 1 */
-    printf("%d\n", subsequence_checker("aec", "abcde"));    /* 0 */
-    printf("%d\n", subsequence_checker("", "abc"));         /* 1 */
-    printf("%d\n", subsequence_checker("abc", ""));         /* 0 */
-    printf("%d\n", subsequence_checker("abc", "abc"));      /* 1 */
-    return 0;
-}
-```
-
-```scala run
-object Main extends App {
-  class Solution {
-    def subsequenceChecker(s: String, t: String): Boolean = {
-
-      // pointer for s
-      var index1 = 0
-
-      // pointer for t
-      var index2 = 0
-
-      while (index1 < s.length && index2 < t.length) {
-        if (s(index1) == t(index2)) {
-
-          // If the current character matches, move the pointer for s
-          index1 += 1
-        }
-
-        // Move the pointer for t in every iteration
-        index2 += 1
-      }
-
-      // If index1 reaches the end of s, it means all characters in s
-      // are found in t in the same order
-      index1 == s.length
-    }
-  }
-
-  val sol = new Solution
-  println(sol.subsequenceChecker("ace", "abcde"))   // true
-  println(sol.subsequenceChecker("aec", "abcde"))   // false
-  println(sol.subsequenceChecker("", "abc"))        // true
-  println(sol.subsequenceChecker("abc", ""))        // false
-  println(sol.subsequenceChecker("abc", "abc"))     // true
-}
-```
-
-
----
-
-## Trace
 
 <details>
 <summary><strong>Trace — s = "ace", t = "abcde"</strong></summary>
@@ -1195,7 +900,6 @@ The three skipped characters ('b', 'd') in t were irrelevant to the match.
 ```
 
 </details>
-
 <details>
 <summary><strong>Trace — s = "aec", t = "abcde"  (failure case)</strong></summary>
 
@@ -1218,9 +922,11 @@ passed at index2=2, before 'e' was found. The ordering is violated.
 
 </details>
 
----
+</details>
+<details>
+<summary><h2>Solution &amp; Analysis</h2></summary>
 
-## Complexity
+### Complexity
 
 | | Time | Space |
 |---|---|---|
@@ -1230,9 +936,7 @@ passed at index2=2, before 'e' was found. The ordering is violated.
 
 **Space:** Only two integer pointers — no auxiliary data structures needed.
 
----
-
-## Edge Cases
+### Edge Cases
 
 | Case | Example | Expected | Reasoning |
 |---|---|---|---|
@@ -1244,11 +948,14 @@ passed at index2=2, before 'e' was found. The ordering is violated.
 | All characters same | `s="aaa"`, `t="aaaa"` | `True` | Three matches found before t is exhausted |
 | Single character miss | `s="z"`, `t="abcde"` | `False` | 'z' never appears in t; t exhausts with index1=0 |
 
----
+</details>
+<details>
+<summary><h2>Key Takeaway</h2></summary>
 
-## Key Takeaway
 
 Use simultaneous traversal when one string's pointer always advances and the other only advances on a match — the answer is whether the conditional pointer exhausts its sequence first. Remember: `index2` (for `t`) is the engine that drives the loop; `index1` (for `s`) is the progress meter.
+
+</details>
 
 ***
 
@@ -1273,7 +980,9 @@ Output: [1]
 
 ---
 
-## What Makes Merging In-Place Tricky?
+<details>
+<summary><h2>What Makes Merging In-Place Tricky?</h2></summary>
+
 
 Your first instinct is to merge from the front: compare `arr1[0]` and `arr2[0]`, place the smaller one at position 0, then move forward. Clean logic — but there's a fatal problem.
 
@@ -1313,9 +1022,10 @@ good_arrow -> good.b4
 
 The fix is to flip the direction entirely. The last `n` positions of `arr1` are zeros — free space nobody has touched. The largest element belongs there. Fill from the back, largest-first. The write pointer never catches up to the read pointers until every element has been consumed.
 
----
+</details>
+<details>
+<summary><h2>Applying the Diagnostic Questions</h2></summary>
 
-## Applying the Diagnostic Questions
 
 | Question | Answer |
 |---|---|
@@ -1351,9 +1061,10 @@ The fix is to flip the direction entirely. The last `n` positions of `arr1` are 
 
 **What would break this:** If the arrays weren't sorted, you couldn't pick the global maximum by only looking at `arr1[i1]` and `arr2[i2]`. You'd need to scan the rest of each array — pushing complexity to O(M × N).
 
----
+</details>
+<details>
+<summary><h2>The Backward Fill Strategy (Visualised)</h2></summary>
 
-## The Backward Fill Strategy (Visualised)
 
 ```mermaid
 ---
@@ -1409,47 +1120,11 @@ flowchart TB
 
 **After the loop:** If `arr2` still has elements (`i2 >= 0`), copy them straight into `arr1` — they're all smaller than everything already placed, so no comparison needed. If `arr1` still has elements, they're already sitting in the right positions — no action needed.
 
----
+</details>
+<details>
+<summary><h2>Solution &amp; Analysis</h2></summary>
 
-## The Solution
-
-
-```pseudocode
-function mergeSortedArrays(arr1, m, arr2, n):
-
-    # last index of non-zero elements in arr1
-    index1 ← m − 1
-
-    # last index of elements in arr2
-    index2 ← n − 1
-
-    # last index of arr1
-    index3 ← m + n − 1
-
-    # merging arr1 and arr2 from the rightmost end of the arrays
-    while index1 ≥ 0 AND index2 ≥ 0:
-
-        # if the element in arr1 is greater than the element in arr2
-        # then place the element from arr1 to the last index of arr1
-        # and decrement the index of arr1
-        if arr1[index1] > arr2[index2]:
-            arr1[index3] ← arr1[index1]
-            index1 ← index1 − 1
-
-        # if the element in arr2 is greater than the element in arr1
-        # then place the element from arr2 to the last index of arr1
-        # and decrement the index of arr2
-        else:
-            arr1[index3] ← arr2[index2]
-            index2 ← index2 − 1
-        index3 ← index3 − 1
-
-    # if there are still remaining elements in arr2
-    while index2 ≥ 0:
-        arr1[index3] ← arr2[index2]
-        index2 ← index2 − 1
-        index3 ← index3 − 1
-```
+### The Solution
 
 ```python run
 from typing import List
@@ -1493,12 +1168,25 @@ class Solution:
             index3 -= 1
 
 
-sol = Solution()
+# Examples from the problem statement
+a1 = [1, 2, 3, 0, 0]
+Solution().merge_sorted_arrays(a1, 3, [4, 5], 2); print(a1)  # [1, 2, 3, 4, 5]
 
-arr_1 = [1, 2, 3, 0, 0]; sol.merge_sorted_arrays(arr_1, 3, [4, 5], 2); print(arr_1)   # [1, 2, 3, 4, 5]
-arr_1 = [1, 2, 5, 0, 0]; sol.merge_sorted_arrays(arr_1, 3, [3, 4], 2); print(arr_1)   # [1, 2, 3, 4, 5]
-arr_1 = [1];             sol.merge_sorted_arrays(arr_1, 1, [], 0);     print(arr_1)   # [1]
-arr_1 = [0];             sol.merge_sorted_arrays(arr_1, 0, [1], 1);    print(arr_1)   # [1]
+a2 = [1, 2, 5, 0, 0]
+Solution().merge_sorted_arrays(a2, 3, [3, 4], 2); print(a2)  # [1, 2, 3, 4, 5]
+
+a3 = [1]
+Solution().merge_sorted_arrays(a3, 1, [], 0); print(a3)       # [1]
+
+# Edge cases
+a4 = [0]
+Solution().merge_sorted_arrays(a4, 0, [5], 1); print(a4)      # [5] — arr1 empty, arr2 has one
+
+a5 = [2, 0]
+Solution().merge_sorted_arrays(a5, 1, [1], 1); print(a5)      # [1, 2] — two elements, swap needed
+
+a6 = [1, 3, 5, 0, 0, 0]
+Solution().merge_sorted_arrays(a6, 3, [2, 4, 6], 3); print(a6) # [1, 2, 3, 4, 5, 6]
 ```
 
 ```java run
@@ -1543,136 +1231,32 @@ public class Main {
     }
 
     public static void main(String[] args) {
-        Solution sol = new Solution();
+        // Examples from the problem statement
+        int[] a1 = {1,2,3,0,0};
+        new Solution().mergeSortedArrays(a1, 3, new int[]{4,5}, 2);
+        System.out.println(Arrays.toString(a1));  // [1, 2, 3, 4, 5]
 
-        int[] a1 = {1, 2, 3, 0, 0};
-        sol.mergeSortedArrays(a1, 3, new int[]{4, 5}, 2);
-        System.out.println(Arrays.toString(a1));                    // [1, 2, 3, 4, 5]
-
-        int[] a2 = {1, 2, 5, 0, 0};
-        sol.mergeSortedArrays(a2, 3, new int[]{3, 4}, 2);
-        System.out.println(Arrays.toString(a2));                    // [1, 2, 3, 4, 5]
+        int[] a2 = {1,2,5,0,0};
+        new Solution().mergeSortedArrays(a2, 3, new int[]{3,4}, 2);
+        System.out.println(Arrays.toString(a2));  // [1, 2, 3, 4, 5]
 
         int[] a3 = {1};
-        sol.mergeSortedArrays(a3, 1, new int[]{}, 0);
-        System.out.println(Arrays.toString(a3));                    // [1]
+        new Solution().mergeSortedArrays(a3, 1, new int[]{}, 0);
+        System.out.println(Arrays.toString(a3));  // [1]
 
+        // Edge cases
         int[] a4 = {0};
-        sol.mergeSortedArrays(a4, 0, new int[]{1}, 1);
-        System.out.println(Arrays.toString(a4));                    // [1]
+        new Solution().mergeSortedArrays(a4, 0, new int[]{5}, 1);
+        System.out.println(Arrays.toString(a4));  // [5] — arr1 empty, arr2 has one
+
+        int[] a5 = {2, 0};
+        new Solution().mergeSortedArrays(a5, 1, new int[]{1}, 1);
+        System.out.println(Arrays.toString(a5));  // [1, 2] — two elements, swap needed
+
+        int[] a6 = {1,3,5,0,0,0};
+        new Solution().mergeSortedArrays(a6, 3, new int[]{2,4,6}, 3);
+        System.out.println(Arrays.toString(a6));  // [1, 2, 3, 4, 5, 6]
     }
-}
-```
-
-```c run
-#include <stdio.h>
-
-void merge_sorted_arrays(int* arr_1, int m, int* arr_2, int n) {
-
-    /* last index of non-zero elements in arr_1 */
-    int index1 = m - 1;
-
-    /* last index of elements in arr_2 */
-    int index2 = n - 1;
-
-    /* last index of arr_1 */
-    int index3 = m + n - 1;
-
-    /* merging arr_1 and arr_2 from the rightmost end of the arrays */
-    while (index1 >= 0 && index2 >= 0) {
-
-        /* if the element in arr_1 is greater than the element in arr_2
-         * then place the element from arr_1 to the last index of arr_1
-         * and decrement the index of arr_1 */
-        if (arr_1[index1] > arr_2[index2]) {
-            arr_1[index3--] = arr_1[index1--];
-        }
-
-        /* if the element in arr_2 is greater than the element in arr_1
-         * then place the element from arr_2 to the last index of arr_1
-         * and decrement the index of arr_2 */
-        else {
-            arr_1[index3--] = arr_2[index2--];
-        }
-    }
-
-    /* if there are still remaining elements in arr_2 */
-    while (index2 >= 0) {
-        arr_1[index3--] = arr_2[index2--];
-    }
-}
-
-static void print_arr(int* arr, int n) {
-    printf("[");
-    for (int i = 0; i < n; i++) printf("%d%s", arr[i], i + 1 < n ? ", " : "");
-    printf("]\n");
-}
-
-int main() {
-    int a1[] = {1, 2, 3, 0, 0}; int b1[] = {4, 5};
-    merge_sorted_arrays(a1, 3, b1, 2); print_arr(a1, 5);    /* [1, 2, 3, 4, 5] */
-
-    int a2[] = {1, 2, 5, 0, 0}; int b2[] = {3, 4};
-    merge_sorted_arrays(a2, 3, b2, 2); print_arr(a2, 5);    /* [1, 2, 3, 4, 5] */
-
-    int a3[] = {1};
-    merge_sorted_arrays(a3, 1, NULL, 0); print_arr(a3, 1);  /* [1] */
-
-    int a4[] = {0}; int b4[] = {1};
-    merge_sorted_arrays(a4, 0, b4, 1); print_arr(a4, 1);    /* [1] */
-    return 0;
-}
-```
-
-```scala run
-object Main extends App {
-  class Solution {
-    def mergeSortedArrays(arr1: Array[Int], m: Int, arr2: Array[Int], n: Int): Unit = {
-
-      // last index of non-zero elements in arr1
-      var index1 = m - 1
-
-      // last index of elements in arr2
-      var index2 = n - 1
-
-      // last index of arr1
-      var index3 = m + n - 1
-
-      // merging arr1 and arr2 from the rightmost end of the arrays
-      while (index1 >= 0 && index2 >= 0) {
-
-        // if the element in arr1 is greater than the element in arr2
-        // then place the element from arr1 to the last index of arr1
-        // and decrement the index of arr1
-        if (arr1(index1) > arr2(index2)) {
-          arr1(index3) = arr1(index1)
-          index1 -= 1
-        }
-        // if the element in arr2 is greater than the element in arr1
-        // then place the element from arr2 to the last index of arr1
-        // and decrement the index of arr2
-        else {
-          arr1(index3) = arr2(index2)
-          index2 -= 1
-        }
-        index3 -= 1
-      }
-
-      // if there are still remaining elements in arr2
-      while (index2 >= 0) {
-        arr1(index3) = arr2(index2)
-        index2 -= 1
-        index3 -= 1
-      }
-    }
-  }
-
-  val sol = new Solution
-
-  val a1 = Array(1, 2, 3, 0, 0); sol.mergeSortedArrays(a1, 3, Array(4, 5), 2); println(a1.mkString(", "))            // 1, 2, 3, 4, 5
-  val a2 = Array(1, 2, 5, 0, 0); sol.mergeSortedArrays(a2, 3, Array(3, 4), 2); println(a2.mkString(", "))            // 1, 2, 3, 4, 5
-  val a3 = Array(1);             sol.mergeSortedArrays(a3, 1, Array.empty[Int], 0); println(a3.mkString(", "))       // 1
-  val a4 = Array(0);             sol.mergeSortedArrays(a4, 0, Array(1), 1);    println(a4.mkString(", "))            // 1
 }
 ```
 
@@ -1698,7 +1282,6 @@ it started — it never caught up to i1, so no element was overwritten before be
 ```
 
 </details>
-
 <details>
 <summary><strong>Trace — arr1 = [3, 4, 0, 0], m = 2, arr2 = [1, 2], n = 2  (arr1 exhausts first, leftover-copy runs)</strong></summary>
 
@@ -1722,18 +1305,14 @@ than anything already placed — no comparison needed, just copy in order.
 
 </details>
 
----
-
-## Complexity Analysis
+### Complexity Analysis
 
 | | Complexity | Reason |
 |---|---|---|
 | **Time** | O(M + N) | Each element is read once (by `i1` or `i2`) and written once (by `i3`) — M + N operations total |
 | **Space** | O(1) | Only three integer pointers; the pre-allocated zeros in `arr1` serve as the output buffer |
 
----
-
-## Edge Cases
+### Edge Cases
 
 | Case | Example | Expected | Reasoning |
 |---|---|---|---|
@@ -1744,11 +1323,14 @@ than anything already placed — no comparison needed, just copy in order.
 | Arrays perfectly interleave | `arr1=[1,3,0,0]`, `arr2=[2,4]` | `[1,2,3,4]` | Each comparison alternates winner between `i1` and `i2` |
 | Tie (equal elements) | `arr1=[2,3,0]`, `arr2=[2]` | `[2,2,3]` | `else` branch fires on ties, placing `arr2[i2]` first — both orderings are valid for equal elements |
 
----
+</details>
+<details>
+<summary><h2>Final Takeaway</h2></summary>
 
-## Final Takeaway
 
 Merge from the back when the destination array has pre-allocated empty space at the end — it lets the write pointer fill free slots without ever stomping on unread values. The three-pointer setup (`i1` reads `arr1`, `i2` reads `arr2`, `i3` writes into `arr1`) is simultaneous traversal running in reverse: two read pointers compete to supply the largest element, one write pointer claims the result. Always handle the leftover `arr2` copy pass — leftover `arr1` elements are already in place and need no action.
+
+</details>
 
 ***
 
@@ -1767,7 +1349,9 @@ arr1 = [1, 2, 3, 4, 5],   arr2 = [1, 3, 5, 7]   →  [1, 3, 5]
 
 ---
 
-## Examples
+<details>
+<summary><h2>Examples</h2></summary>
+
 
 **Example 1**
 ```
@@ -1791,9 +1375,11 @@ Output: [2]
 Explanation: 2 is common, but unique intersections means it appears once.
 ```
 
----
+</details>
+<details>
+<summary><h2>Intuition &amp; Brute Force</h2></summary>
 
-## Intuition
+### Intuition
 
 The brute force way is to check every element of `arr1` against every element of `arr2` — that's O(N × M). But if both arrays are sorted, you can do something much smarter: walk both simultaneously.
 
@@ -1833,24 +1419,7 @@ flowchart TB
 
 <p align="center"><strong>Unique Intersections — sort both, then walk with two pointers. On a match, record only if the value is new. On a mismatch, advance the smaller pointer.</strong></p>
 
----
-
-## Brute Force: Nested Loops, O(N × M)
-
-
-```pseudocode
-# Brute-force unique intersections — O(n × m) nested loops + Set for de-duplication.
-function uniqueIntersectionsBrute(arr1, arr2):
-    seen ← empty Set
-    result ← empty list
-    for each x in arr1:
-        for each y in arr2:
-            if x = y AND x is not in seen:
-                append x to result
-                add x to seen
-                break
-    return result
-```
+### Brute Force: Nested Loops, O(N × M)
 
 ```python run
 from typing import List
@@ -1894,97 +1463,14 @@ public class Main {
 }
 ```
 
-```c run
-#include <stdio.h>
-#include <stdbool.h>
-
-int main() {
-    int arr1[] = {1, 2, 2, 3, 4};
-    int arr2[] = {2, 2, 3, 5};
-    int n1 = 5, n2 = 4;
-
-    int seen[100] = {0};   /* boolean flags for small ints in this demo */
-    printf("[");
-    int first = 1;
-    for (int i = 0; i < n1; i++) {
-        for (int j = 0; j < n2; j++) {
-            if (arr1[i] == arr2[j] && !seen[arr1[i]]) {
-                if (!first) printf(", ");
-                printf("%d", arr1[i]);
-                seen[arr1[i]] = 1;
-                first = 0;
-                break;
-            }
-        }
-    }
-    printf("]\n");
-    return 0;
-}
-```
-
-```scala run
-object Main extends App {
-  def uniqueIntersectionsBrute(arr1: Array[Int], arr2: Array[Int]): List[Int] = {
-    val seen = scala.collection.mutable.Set[Int]()
-    val result = scala.collection.mutable.ListBuffer.empty[Int]
-    for (x <- arr1) {
-      var found = false
-      for (y <- arr2 if !found) {
-        if (x == y && !seen.contains(x)) {
-          result += x
-          seen += x
-          found = true
-        }
-      }
-    }
-    result.toList
-  }
-
-  println(uniqueIntersectionsBrute(Array(1, 2, 2, 3, 4), Array(2, 2, 3, 5)))
-}
-```
-
 
 Works, but rescans `arr2` for every element in `arr1` — O(N × M) and easy to get wrong with the duplicate-tracking logic.
 
----
+</details>
+<details>
+<summary><h2>Solution &amp; Analysis</h2></summary>
 
-## Solution
-
-
-```pseudocode
-function uniqueIntersections(arr1, arr2):
-    result ← empty list
-
-    # Sorting the two input arrays
-    sort arr1 in place
-    sort arr2 in place
-
-    # Two pointers to traverse both arrays
-    index1 ← 0
-    index2 ← 0
-
-    # Traverse both arrays until one pointer reaches the end
-    while index1 < length(arr1) AND index2 < length(arr2):
-
-        # If there's an intersection
-        if arr1[index1] = arr2[index2]:
-
-            # Adding only unique elements
-            if result is empty OR last(result) ≠ arr1[index1]:
-                append arr1[index1] to result
-            index1 ← index1 + 1
-            index2 ← index2 + 1
-
-        # If the element in the first array is smaller
-        else if arr1[index1] < arr2[index2]:
-            index1 ← index1 + 1
-
-        # If the element in the second array is smaller
-        else:
-            index2 ← index2 + 1
-    return result
-```
+### Solution
 
 ```python run
 from typing import List
@@ -2025,12 +1511,17 @@ class Solution:
         return result
 
 
-sol = Solution()
-print(sol.unique_intersections([1, 2, 2, 1], [2, 2]))             # [2]
-print(sol.unique_intersections([4, 9, 5], [9, 4, 9, 8, 4]))       # [4, 9]
-print(sol.unique_intersections([4, 9, 5], [1, 2]))                # []
-print(sol.unique_intersections([1, 2, 3, 4, 5], [1, 3, 5, 7]))    # [1, 3, 5]
-print(sol.unique_intersections([], [1, 2, 3]))                    # []
+# Examples from the problem statement
+print(Solution().unique_intersections([1, 2, 2, 1], [2, 2]))              # [2]
+print(Solution().unique_intersections([4, 9, 5], [9, 4, 9, 8, 4]))        # [4, 9]
+print(Solution().unique_intersections([4, 9, 5], [1, 2]))                  # []
+
+# Edge cases
+print(Solution().unique_intersections([], [1, 2]))                         # []
+print(Solution().unique_intersections([1], [1]))                           # [1] — single element match
+print(Solution().unique_intersections([1], [2]))                           # [] — single element miss
+print(Solution().unique_intersections([1, 1, 1], [1, 1, 1]))              # [1] — all duplicates
+print(Solution().unique_intersections([1, 2, 3], [3, 4, 5]))              # [3] — one common element
 ```
 
 ```java run
@@ -2081,128 +1572,22 @@ public class Main {
     }
 
     public static void main(String[] args) {
-        Solution sol = new Solution();
-        System.out.println(sol.uniqueIntersections(new int[]{1, 2, 2, 1}, new int[]{2, 2}));             // [2]
-        System.out.println(sol.uniqueIntersections(new int[]{4, 9, 5}, new int[]{9, 4, 9, 8, 4}));       // [4, 9]
-        System.out.println(sol.uniqueIntersections(new int[]{4, 9, 5}, new int[]{1, 2}));                // []
-        System.out.println(sol.uniqueIntersections(new int[]{1, 2, 3, 4, 5}, new int[]{1, 3, 5, 7}));    // [1, 3, 5]
-        System.out.println(sol.uniqueIntersections(new int[]{}, new int[]{1, 2, 3}));                    // []
+        // Examples from the problem statement
+        System.out.println(new Solution().uniqueIntersections(new int[]{1,2,2,1}, new int[]{2,2}));          // [2]
+        System.out.println(new Solution().uniqueIntersections(new int[]{4,9,5}, new int[]{9,4,9,8,4}));      // [4, 9]
+        System.out.println(new Solution().uniqueIntersections(new int[]{4,9,5}, new int[]{1,2}));             // []
+
+        // Edge cases
+        System.out.println(new Solution().uniqueIntersections(new int[]{}, new int[]{1,2}));                  // []
+        System.out.println(new Solution().uniqueIntersections(new int[]{1}, new int[]{1}));                   // [1] — single element match
+        System.out.println(new Solution().uniqueIntersections(new int[]{1}, new int[]{2}));                   // [] — single element miss
+        System.out.println(new Solution().uniqueIntersections(new int[]{1,1,1}, new int[]{1,1,1}));           // [1] — all duplicates
+        System.out.println(new Solution().uniqueIntersections(new int[]{1,2,3}, new int[]{3,4,5}));           // [3] — one common element
     }
 }
 ```
 
-```c run
-#include <stdio.h>
-#include <stdlib.h>
-
-static int cmp(const void* a, const void* b) { return (*(int*)a) - (*(int*)b); }
-
-void unique_intersections(int* arr_1, int n1, int* arr_2, int n2) {
-
-    /* Sorting the two input arrays */
-    qsort(arr_1, n1, sizeof(int), cmp);
-    qsort(arr_2, n2, sizeof(int), cmp);
-
-    /* Two pointers to traverse both arrays */
-    int index1 = 0;
-    int index2 = 0;
-
-    int last = 0, has_last = 0, first = 1;
-    printf("[");
-
-    /* Traverse both arrays until one pointer reaches the end */
-    while (index1 < n1 && index2 < n2) {
-
-        /* If there's an intersection */
-        if (arr_1[index1] == arr_2[index2]) {
-
-            /* Adding only unique elements */
-            if (!has_last || last != arr_1[index1]) {
-                if (!first) printf(", ");
-                printf("%d", arr_1[index1]);
-                last = arr_1[index1];
-                has_last = 1;
-                first = 0;
-            }
-            index1++;
-            index2++;
-        }
-
-        /* If the element in the first array is smaller */
-        else if (arr_1[index1] < arr_2[index2]) {
-            index1++;
-        }
-
-        /* If the element in the second array is smaller */
-        else {
-            index2++;
-        }
-    }
-    printf("]\n");
-}
-
-int main() {
-    int a1[] = {1, 2, 2, 1}; int b1[] = {2, 2};          unique_intersections(a1, 4, b1, 2);  /* [2] */
-    int a2[] = {4, 9, 5};    int b2[] = {9, 4, 9, 8, 4}; unique_intersections(a2, 3, b2, 5);  /* [4, 9] */
-    int a3[] = {4, 9, 5};    int b3[] = {1, 2};          unique_intersections(a3, 3, b3, 2);  /* [] */
-    int a4[] = {1, 2, 3, 4, 5}; int b4[] = {1, 3, 5, 7}; unique_intersections(a4, 5, b4, 4);  /* [1, 3, 5] */
-    return 0;
-}
-```
-
-```scala run
-object Main extends App {
-  class Solution {
-    def uniqueIntersections(arr1: Array[Int], arr2: Array[Int]): List[Int] = {
-      val result = scala.collection.mutable.ListBuffer.empty[Int]
-
-      // Sorting the two input arrays
-      val sorted1 = arr1.sorted
-      val sorted2 = arr2.sorted
-
-      // Two pointers to traverse both arrays
-      var index1 = 0
-      var index2 = 0
-
-      // Traverse both arrays until one pointer reaches the end
-      while (index1 < sorted1.length && index2 < sorted2.length) {
-
-        // If there's an intersection
-        if (sorted1(index1) == sorted2(index2)) {
-
-          // Adding only unique elements
-          if (result.isEmpty || result.last != sorted1(index1)) {
-            result += sorted1(index1)
-          }
-          index1 += 1
-          index2 += 1
-        }
-        // If the element in the first array is smaller
-        else if (sorted1(index1) < sorted2(index2)) {
-          index1 += 1
-        }
-        // If the element in the second array is smaller
-        else {
-          index2 += 1
-        }
-      }
-      result.toList
-    }
-  }
-
-  val sol = new Solution
-  println(sol.uniqueIntersections(Array(1, 2, 2, 1), Array(2, 2)))             // List(2)
-  println(sol.uniqueIntersections(Array(4, 9, 5), Array(9, 4, 9, 8, 4)))       // List(4, 9)
-  println(sol.uniqueIntersections(Array(4, 9, 5), Array(1, 2)))                // List()
-  println(sol.uniqueIntersections(Array(1, 2, 3, 4, 5), Array(1, 3, 5, 7)))    // List(1, 3, 5)
-  println(sol.uniqueIntersections(Array.empty[Int], Array(1, 2, 3)))           // List()
-}
-```
-
-
----
-
-## Dry Run — Example 1
+### Dry Run — Example 1
 
 `arr1 = [1, 2, 2, 3, 4]`, `arr2 = [2, 2, 3, 5]` (both already sorted)
 
@@ -2229,9 +1614,10 @@ duplicates of that value appear consecutively and are caught immediately.
 
 </details>
 
----
+</details>
+<details>
+<summary><h2>Why Sort First?</h2></summary>
 
-## Why Sort First?
 
 Without sorting, you can't use the directional "advance the smaller" rule — you don't know which pointer to move when there's no match. The sort gives you the guarantee that:
 
@@ -2240,9 +1626,11 @@ Without sorting, you can't use the directional "advance the smaller" rule — yo
 
 After sorting, the advance condition is always decisive. Without sorting, you'd need an inner scan — and that's O(N × M) again.
 
----
+</details>
+<details>
+<summary><h2>Solution &amp; Analysis</h2></summary>
 
-## Complexity Analysis
+### Complexity Analysis
 
 | | Complexity | Reasoning |
 |---|---|---|
@@ -2251,9 +1639,7 @@ After sorting, the advance condition is always decisive. Without sorting, you'd 
 
 If both arrays arrive pre-sorted, the time is O(N + M).
 
----
-
-## Edge Cases
+### Edge Cases
 
 | Scenario | Input | Output | Note |
 |---|---|---|---|
@@ -2263,11 +1649,14 @@ If both arrays arrive pre-sorted, the time is O(N + M).
 | All duplicates | `[2,2,2]`, `[2,2]` | `[2]` | Duplicate check fires after first match |
 | Single common element | `[1,5,9]`, `[3,5,7]` | `[5]` | One match in the middle |
 
----
+</details>
+<details>
+<summary><h2>Key Takeaway</h2></summary>
 
-## Key Takeaway
 
 Unique Intersections = merge pattern + match-only recording + duplicate suppression. Sort both arrays once, then use a single simultaneous pass. The `result[-1] != arr1[i]` guard is the whole difference between this problem and Repeated Intersections — one line is all it takes to enforce uniqueness when the array is sorted.
+
+</details>
 
 ***
 
@@ -2286,7 +1675,9 @@ arr1 = [1, 2, 3],     arr2 = [1, 2, 3]       →  [1, 2, 3]
 
 ---
 
-## Examples
+<details>
+<summary><h2>Examples</h2></summary>
+
 
 **Example 1**
 ```
@@ -2310,9 +1701,10 @@ Output: []
 Explanation: No common values exist.
 ```
 
----
+</details>
+<details>
+<summary><h2>Intuition</h2></summary>
 
-## Intuition
 
 This is nearly identical to Unique Intersections — but with one critical difference: every matching pair is recorded, not just the first one.
 
@@ -2350,37 +1742,11 @@ flowchart TB
 
 <p align="center"><strong>Repeated Intersections — identical to Unique Intersections but every match is recorded unconditionally. The min(p, q) rule emerges naturally from both pointers advancing on each match.</strong></p>
 
----
+</details>
+<details>
+<summary><h2>Solution &amp; Analysis</h2></summary>
 
-## Solution
-
-
-```pseudocode
-function repeatedIntersections(arr1, arr2):
-    result ← empty list
-    sort arr1 in place
-    sort arr2 in place
-    index1 ← 0
-    index2 ← 0
-    while index1 < length(arr1) AND index2 < length(arr2):
-
-        # If there's an intersection
-        if arr1[index1] = arr2[index2]:
-
-            # if elements are equal, add to result and move both pointers
-            append arr1[index1] to result
-            index1 ← index1 + 1
-            index2 ← index2 + 1
-
-        # If the element in the first array is smaller
-        else if arr1[index1] < arr2[index2]:
-            index1 ← index1 + 1
-
-        # If the element in the second array is smaller
-        else:
-            index2 ← index2 + 1
-    return result
-```
+### Solution
 
 ```python run
 from typing import List
@@ -2415,12 +1781,17 @@ class Solution:
         return result
 
 
-sol = Solution()
-print(sol.repeated_intersections([1, 2, 2, 1], [2, 2]))             # [2, 2]
-print(sol.repeated_intersections([4, 9, 5], [9, 4, 9, 8, 4]))       # [4, 9]
-print(sol.repeated_intersections([4, 9, 5], [1, 2]))                # []
-print(sol.repeated_intersections([1, 2, 3], [1, 2, 3]))             # [1, 2, 3]
-print(sol.repeated_intersections([], [1, 2]))                       # []
+# Examples from the problem statement
+print(Solution().repeated_intersections([1, 2, 2, 1], [2, 2]))            # [2, 2]
+print(Solution().repeated_intersections([4, 9, 5], [9, 4, 9, 8, 4]))      # [4, 9]
+print(Solution().repeated_intersections([4, 9, 5], [1, 2]))                # []
+
+# Edge cases
+print(Solution().repeated_intersections([], [1, 2]))                       # []
+print(Solution().repeated_intersections([1], [1]))                         # [1] — single element match
+print(Solution().repeated_intersections([1], [2]))                         # [] — single element miss
+print(Solution().repeated_intersections([1, 2, 2, 2], [2, 2]))            # [2, 2] — count limited by shorter
+print(Solution().repeated_intersections([1, 2, 3], [1, 2, 3]))            # [1, 2, 3] — identical arrays
 ```
 
 ```java run
@@ -2461,111 +1832,22 @@ public class Main {
     }
 
     public static void main(String[] args) {
-        Solution sol = new Solution();
-        System.out.println(sol.repeatedIntersections(new int[]{1, 2, 2, 1}, new int[]{2, 2}));             // [2, 2]
-        System.out.println(sol.repeatedIntersections(new int[]{4, 9, 5}, new int[]{9, 4, 9, 8, 4}));       // [4, 9]
-        System.out.println(sol.repeatedIntersections(new int[]{4, 9, 5}, new int[]{1, 2}));                // []
-        System.out.println(sol.repeatedIntersections(new int[]{1, 2, 3}, new int[]{1, 2, 3}));             // [1, 2, 3]
-        System.out.println(sol.repeatedIntersections(new int[]{}, new int[]{1, 2}));                       // []
+        // Examples from the problem statement
+        System.out.println(new Solution().repeatedIntersections(new int[]{1,2,2,1}, new int[]{2,2}));        // [2, 2]
+        System.out.println(new Solution().repeatedIntersections(new int[]{4,9,5}, new int[]{9,4,9,8,4}));    // [4, 9]
+        System.out.println(new Solution().repeatedIntersections(new int[]{4,9,5}, new int[]{1,2}));           // []
+
+        // Edge cases
+        System.out.println(new Solution().repeatedIntersections(new int[]{}, new int[]{1,2}));                // []
+        System.out.println(new Solution().repeatedIntersections(new int[]{1}, new int[]{1}));                 // [1] — single element match
+        System.out.println(new Solution().repeatedIntersections(new int[]{1}, new int[]{2}));                 // [] — single element miss
+        System.out.println(new Solution().repeatedIntersections(new int[]{1,2,2,2}, new int[]{2,2}));         // [2, 2] — count limited by shorter
+        System.out.println(new Solution().repeatedIntersections(new int[]{1,2,3}, new int[]{1,2,3}));         // [1, 2, 3] — identical arrays
     }
 }
 ```
 
-```c run
-#include <stdio.h>
-#include <stdlib.h>
-
-static int cmp(const void* a, const void* b) { return (*(int*)a) - (*(int*)b); }
-
-void repeated_intersections(int* arr_1, int n1, int* arr_2, int n2) {
-    qsort(arr_1, n1, sizeof(int), cmp);
-    qsort(arr_2, n2, sizeof(int), cmp);
-
-    int index1 = 0;
-    int index2 = 0;
-    int first  = 1;
-    printf("[");
-
-    while (index1 < n1 && index2 < n2) {
-
-        /* If there's an intersection */
-        if (arr_1[index1] == arr_2[index2]) {
-
-            /* if elements are equal, add to result and move both pointers */
-            if (!first) printf(", ");
-            printf("%d", arr_1[index1]);
-            first = 0;
-            index1++;
-            index2++;
-        }
-
-        /* If the element in the first array is smaller */
-        else if (arr_1[index1] < arr_2[index2]) {
-            index1++;
-        }
-
-        /* If the element in the second array is smaller */
-        else {
-            index2++;
-        }
-    }
-    printf("]\n");
-}
-
-int main() {
-    int a1[] = {1, 2, 2, 1}; int b1[] = {2, 2};          repeated_intersections(a1, 4, b1, 2);  /* [2, 2] */
-    int a2[] = {4, 9, 5};    int b2[] = {9, 4, 9, 8, 4}; repeated_intersections(a2, 3, b2, 5);  /* [4, 9] */
-    int a3[] = {4, 9, 5};    int b3[] = {1, 2};          repeated_intersections(a3, 3, b3, 2);  /* [] */
-    int a4[] = {1, 2, 3};    int b4[] = {1, 2, 3};       repeated_intersections(a4, 3, b4, 3);  /* [1, 2, 3] */
-    return 0;
-}
-```
-
-```scala run
-object Main extends App {
-  class Solution {
-    def repeatedIntersections(arr1: Array[Int], arr2: Array[Int]): List[Int] = {
-      val result  = scala.collection.mutable.ListBuffer.empty[Int]
-      val sorted1 = arr1.sorted
-      val sorted2 = arr2.sorted
-      var index1 = 0
-      var index2 = 0
-      while (index1 < sorted1.length && index2 < sorted2.length) {
-
-        // If there's an intersection
-        if (sorted1(index1) == sorted2(index2)) {
-
-          // if elements are equal, add to result and move both pointers
-          result += sorted1(index1)
-          index1 += 1
-          index2 += 1
-        }
-        // If the element in the first array is smaller
-        else if (sorted1(index1) < sorted2(index2)) {
-          index1 += 1
-        }
-        // If the element in the second array is smaller
-        else {
-          index2 += 1
-        }
-      }
-      result.toList
-    }
-  }
-
-  val sol = new Solution
-  println(sol.repeatedIntersections(Array(1, 2, 2, 1), Array(2, 2)))             // List(2, 2)
-  println(sol.repeatedIntersections(Array(4, 9, 5), Array(9, 4, 9, 8, 4)))       // List(4, 9)
-  println(sol.repeatedIntersections(Array(4, 9, 5), Array(1, 2)))                // List()
-  println(sol.repeatedIntersections(Array(1, 2, 3), Array(1, 2, 3)))             // List(1, 2, 3)
-  println(sol.repeatedIntersections(Array.empty[Int], Array(1, 2)))              // List()
-}
-```
-
-
----
-
-## Dry Run — Example 1
+### Dry Run — Example 1
 
 `arr1 = [1, 2, 2, 3]`, `arr2 = [2, 2, 3, 3]` (both already sorted)
 
@@ -2591,9 +1873,10 @@ That single difference is the entire distinction between the two problems.
 
 </details>
 
----
+</details>
+<details>
+<summary><h2>Why min(p, q) Falls Out Naturally</h2></summary>
 
-## Why min(p, q) Falls Out Naturally
 
 You don't need to count occurrences of each value. The simultaneous pointer movement handles it automatically:
 
@@ -2606,9 +1889,10 @@ For `arr1 = [2, 2, 2]` and `arr2 = [2, 2]`:
 - Match at i=1, j=1 → record, i=2, j=2
 - j=2 == len(arr2) → loop exits. Two matches recorded = min(3, 2) = 2 ✓
 
----
+</details>
+<details>
+<summary><h2>Unique vs Repeated — The One-Line Difference</h2></summary>
 
-## Unique vs Repeated — The One-Line Difference
 
 | | Unique Intersections | Repeated Intersections |
 |---|---|---|
@@ -2619,18 +1903,18 @@ For `arr1 = [2, 2, 2]` and `arr2 = [2, 2]`:
 
 The only structural difference is the guard condition on the append. Remove it, and Unique Intersections becomes Repeated Intersections.
 
----
+</details>
+<details>
+<summary><h2>Solution &amp; Analysis</h2></summary>
 
-## Complexity Analysis
+### Complexity Analysis
 
 | | Complexity | Reasoning |
 |---|---|---|
 | **Time** | O(N log N + M log M) | Two sorts dominate; traversal is O(N + M) |
 | **Space** | O(k) | k = total number of matches = sum of min(count_in_arr1, count_in_arr2) across all values |
 
----
-
-## Edge Cases
+### Edge Cases
 
 | Scenario | Input | Output | Note |
 |---|---|---|---|
@@ -2640,8 +1924,11 @@ The only structural difference is the guard condition on the append. Remove it, 
 | One array is a subset | `[2,3]`, `[1,2,3,4]` | `[2,3]` | Every element of the smaller array matches |
 | All duplicates | `[3,3,3]`, `[3,3]` | `[3,3]` | min(3,2)=2 matches |
 
----
+</details>
+<details>
+<summary><h2>Key Takeaway</h2></summary>
 
-## Key Takeaway
 
 Repeated Intersections is Unique Intersections without the duplicate guard — one line removed, and the semantics shift from set intersection to multiset intersection. The `min(p, q)` count falls out naturally from two pointers advancing together: each match consumes one copy from each side, and the smaller side dictates how many total matches occur.
+
+</details>

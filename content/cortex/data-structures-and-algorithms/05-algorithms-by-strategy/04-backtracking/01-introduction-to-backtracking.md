@@ -447,118 +447,48 @@ function crack(state):
 
 The "backtrack" step is invisible — it's the implicit return from the recursive call. When `crack(new_state)` returns, the *current* function's local variable `state` is still the partial guess from before the call. The `for` loop's next iteration tries a different choice automatically.
 
-Here's the full implementation across all 10 languages of this course.
+Here's the full implementation in Python and Java.
 
-
-```pseudocode
-PASSWORD ← "0101"
-
-function crackPassword(state):
-    if length(state) = 4:                   # leaf — complete candidate
-        if state = PASSWORD:
-            print "Password cracked:", state
-        return                              # this leaf is done either way
-
-    for digit from 0 to 1:                  # binary PIN — two choices per slot
-        newState ← state + digit
-        crackPassword(newState)             # implicit backtrack on return
-```
 
 ```python run
-class Solution:
-    PASSWORD: str = "0101"
+PASSWORD = "0101"
 
-    def crack_password(self, state: str) -> None:
-        # Leaf reached: validate the complete candidate
-        if len(state) == 4:
-            if state == self.PASSWORD:
-                print("Password cracked:", state)
-            return                              # whether or not it matched, this leaf is done
+def crack_password(state):
+    if len(state) == 4 and state == PASSWORD:
+        print("Password cracked")
 
-        # Internal node: try every available next digit
-        for digit in (0, 1):                    # binary PIN, two choices per slot
-            new_state = state + str(digit)      # make a choice (extend the partial guess)
-            self.crack_password(new_state)      # recurse — implicit backtrack on return
+    if len(state) == 4:
+        return
 
+    for i in range(2):
+        new_state = state + chr(ord('0') + i)
+        crack_password(new_state)
 
-if __name__ == "__main__":
-    Solution().crack_password("")               # start at the root: empty state
+crack_password("")
 ```
 
 ```java run
-public class Main {
-    static class Solution {
-        private static final String PASSWORD = "0101";
+public class CrackPassword {
+    private static final String PASSWORD = "0101";
 
-        public void crackPassword(String state) {
-            if (state.length() == 4) {
-                if (state.equals(PASSWORD)) {
-                    System.out.println("Password cracked: " + state);
-                }
-                return;                              // leaf reached, this branch is done
-            }
+    public static void crackPassword(String state) {
+        if (state.length() == 4 && state.equals(PASSWORD)) {
+            System.out.println("Password cracked");
+        }
 
-            for (int digit = 0; digit <= 1; digit++) {
-                String newState = state + digit;     // append the choice
-                crackPassword(newState);             // recurse — implicit backtrack on return
-            }
+        if (state.length() == 4) {
+            return;
+        }
+
+        for (int i = 0; i <= 1; i++) {
+            String newState = state + (char)('0' + i);
+            crackPassword(newState);
         }
     }
 
     public static void main(String[] args) {
-        new Solution().crackPassword("");
+        crackPassword("");
     }
-}
-```
-
-```c run
-#include <stdio.h>
-#include <string.h>
-
-static const char *PASSWORD = "0101";
-
-void crack_password(char *state, int depth) {
-    if (depth == 4) {
-        state[depth] = '\0';
-        if (strcmp(state, PASSWORD) == 0) {
-            printf("Password cracked: %s\n", state);
-        }
-        return;
-    }
-
-    for (int digit = 0; digit <= 1; digit++) {
-        state[depth] = (char)('0' + digit);     /* append the choice */
-        crack_password(state, depth + 1);       /* recurse */
-        /* Backtrack is implicit — next loop iteration overwrites state[depth] */
-    }
-}
-
-int main(void) {
-    char state[5] = "";
-    crack_password(state, 0);
-    return 0;
-}
-```
-
-```scala run
-object Main extends App {
-  class Solution {
-    private val PASSWORD = "0101"
-
-    def crackPassword(state: String): Unit = {
-      if (state.length == 4) {
-        if (state == PASSWORD) println(s"Password cracked: $state")
-        return
-      }
-
-      for (digit <- 0 to 1) {
-        val newState = state + digit.toString
-        crackPassword(newState)
-      }
-    }
-  }
-
-  new Solution().crackPassword("")
 }
 ```
 
@@ -730,6 +660,6 @@ The state space tree has `2³ = 8` leaves — one per subset (including the empt
                 {}    {3}   {2}    {2,3}    {1}    {1,3}  {1,2}  {1,2,3}
 ```
 
-This is the canonical "subsets" state space tree. **You just sketched the first problem of the Unconditional Enumeration lesson.** The next lesson's first worked example formalises this, including the 10-language code.
+This is the canonical "subsets" state space tree. **You just sketched the first problem of the Unconditional Enumeration lesson.** The next lesson's first worked example formalises this, including the code.
 
 </details>

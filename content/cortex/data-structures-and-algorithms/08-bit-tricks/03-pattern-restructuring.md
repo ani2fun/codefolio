@@ -31,7 +31,9 @@ Input:  num = 3415
 Output: 3937402880
 ```
 
-## The Recurrence — LSB Extract, Append
+<details>
+<summary><h2>The Recurrence — LSB Extract, Append</h2></summary>
+
 
 Build the reversed integer one bit at a time. For 32 iterations:
 1. Shift `result` left by 1 — make room for one more bit at the bottom.
@@ -66,88 +68,92 @@ flowchart LR
 
 Because the integer has 32 bits — every position must be processed for the reversal to land bits at the correct *symmetric* positions. Stopping at, say, 16 iterations would only reverse the lower half and leave the upper half zero. The loop count is bound to the bit-width, not to `num`'s actual content.
 
-## The Solution
+</details>
+<details>
+<summary><h2>Solution &amp; Analysis</h2></summary>
 
-
-```pseudocode
-# Reverse the 32-bit representation of num.
-function reverseBits(num):
-    result ← 0
-    repeat 32 times:
-        result ← (result shifted left by 1) bitwise OR (num bitwise AND 1)   # append num's LSB
-        num ← num shifted right by 1                                          # discard consumed LSB
-    return result bitwise AND 0xFFFFFFFF          # mask to 32 bits
-```
+### The Solution
 
 ```python run
 class Solution:
     def reverse_bits(self, num: int) -> int:
-        result = 0
+
+        # Initialize the variable to store the reversed bits
+        result: int = 0
+
         for _ in range(32):
-            result = (result << 1) | (num & 1)     # Append num's LSB to result
-            num >>= 1                              # Discard the consumed LSB
-        return result & 0xFFFFFFFF                 # Mask to 32 bits (Python ints are unbounded)
+
+            # Left shift the result by 1 to make room for the next bit
+            result = result << 1
+
+            # Get the least significant bit of num using bitwise AND with
+            # 1
+            bit: int = num & 1
+
+            # Add the bit to the result
+            result = result + bit
+
+            # Right shift num by 1 to discard the least significant bit
+            num = num >> 1
+
+        # Return the reversed bits
+        return result
 
 
-if __name__ == "__main__":
-    sol = Solution()
-    print(sol.reverse_bits(28))     # 939524096
-    print(sol.reverse_bits(1))      # 2147483648
+# Examples from the problem statement
+print(Solution().reverse_bits(28))      # 939524096
+print(Solution().reverse_bits(3415))    # 3937402880
+print(Solution().reverse_bits(1))       # 2147483648
+
+# Edge cases
+print(Solution().reverse_bits(0))       # 0
+print(Solution().reverse_bits(2))       # 1073741824
+print(Solution().reverse_bits(4))       # 536870912
+print(Solution().reverse_bits(2147483648))  # 1
 ```
 
 ```java run
 public class Main {
     static class Solution {
         public int reverseBits(int num) {
+
+            // Initialize the variable to store the reversed bits
             int result = 0;
+
             for (int i = 0; i < 32; i++) {
-                result = (result << 1) | (num & 1);
-                num >>>= 1;                            // Logical right-shift; ignore sign bit
+
+                // Left shift the result by 1 to make room for the next bit
+                result = result << 1;
+
+                // Get the least significant bit of num using bitwise AND
+                // with 1
+                int bit = num & 1;
+
+                // Add the bit to the result
+                result = result + bit;
+
+                // Right shift num by 1 to discard the least significant bit
+                num = num >> 1;
             }
+
+            // Return the reversed bits
             return result;
         }
     }
 
     public static void main(String[] args) {
-        System.out.println(new Solution().reverseBits(28));   // 939524096
+        // Examples from the problem statement
+        // Note: Java int is signed; we print as unsigned long for clarity
+        System.out.println(Integer.toUnsignedLong(new Solution().reverseBits(28)));     // 939524096
+        System.out.println(Integer.toUnsignedLong(new Solution().reverseBits(3415)));   // 3937402880
+        System.out.println(Integer.toUnsignedLong(new Solution().reverseBits(1)));      // 2147483648
+
+        // Edge cases
+        System.out.println(Integer.toUnsignedLong(new Solution().reverseBits(0)));              // 0
+        System.out.println(Integer.toUnsignedLong(new Solution().reverseBits(2)));              // 1073741824
+        System.out.println(Integer.toUnsignedLong(new Solution().reverseBits(4)));              // 536870912
+        System.out.println(Integer.toUnsignedLong(new Solution().reverseBits(-2147483648)));     // 1
     }
-}
-```
-
-```c run
-#include <stdio.h>
-#include <stdint.h>
-
-uint32_t reverse_bits(uint32_t num) {
-    uint32_t result = 0;
-    for (int i = 0; i < 32; i++) {
-        result = (result << 1) | (num & 1);
-        num >>= 1;
-    }
-    return result;
-}
-
-int main(void) {
-    printf("%u\n", reverse_bits(28));   /* 939524096 */
-    return 0;
-}
-```
-
-```scala run
-object Main extends App {
-  class Solution {
-    def reverseBits(num: Int): Int = {
-      var result = 0
-      var n = num
-      for (_ <- 0 until 32) {
-        result = (result << 1) | (n & 1)
-        n = n >>> 1                                   // Unsigned right-shift in Scala
-      }
-      result
-    }
-  }
-
-  println(new Solution().reverseBits(28))   // 939524096
 }
 ```
 
@@ -174,14 +180,17 @@ After iteration 31:
 
 </details>
 
-## Complexity
+### Complexity
 
 | Aspect | Cost |
 |---|---|
 | Time | `O(32) = O(1)` — fixed bit-width loop |
 | Space | `O(1)` |
 
-## Faster Alternative — Divide and Conquer
+</details>
+<details>
+<summary><h2>Faster Alternative — Divide and Conquer</h2></summary>
+
 
 For hot loops, the divide-and-conquer approach uses 5 swap stages with magic masks:
 1. Swap adjacent bits with masks `0x55555555` and `0xAAAAAAAA`.
@@ -191,6 +200,8 @@ For hot loops, the divide-and-conquer approach uses 5 swap stages with magic mas
 5. Swap halves.
 
 5 ops total, no loop, ~6× faster on most CPUs. Beyond this lesson but worth knowing.
+
+</details>
 
 ***
 
@@ -210,7 +221,9 @@ Input:  num = 1, k = 1, rotateLeft = false
 Output: 2147483648            Bit 1 wraps around to bit 32
 ```
 
-## The Recurrence — Two Shifts ORed Together
+<details>
+<summary><h2>The Recurrence — Two Shifts ORed Together</h2></summary>
+
 
 Standard left/right shift loses bits that fall off the edge. To wrap them, take *both* shifts and combine:
 
@@ -243,97 +256,92 @@ flowchart LR
 
 <p align="center"><strong>Left rotation: combine the leftshift (which drops top bits) with a rightshift of <em>complementary</em> distance (which extracts those same top bits and lands them at the bottom). OR the two together for a lossless rotate.</strong></p>
 
-> *Pause. Why does <code>k mod 32</code> matter? Predict the failure for <code>k = 32</code> or <code>k = 64</code>.*
+> *Pause. Why do we need the <code>0xFFFFFFFF</code> mask (Python) or the unsigned right shift <code>&gt;&gt;&gt;</code> (Java)? Predict what goes wrong without them.*
 
-Rotating by 32 is the identity (every bit returns to its original position). Rotating by 64 is the same as rotating by 0. Most CPUs implement shifts with a `k mod 32` mask anyway, but `num >> (32 - k)` becomes `num >> 0 = num` when `k = 32`, which corrupts the OR. The robust implementation always reduces `k` modulo 32 first: `k %= 32`. After that, `k` is in `[0, 32)` and both shifts behave correctly.
+Python's integers are arbitrary-precision and *signed*, so `num >> k` propagates sign bits indefinitely and `num << k` can grow beyond 32 bits — both corrupt the OR. Masking with `0xFFFFFFFF` (`mask_int`) clamps the result back to 32 bits, recovering the rotation semantics. Java has a fixed-width `int`, but its `>>` is *arithmetic* (sign-extending); the unsigned form `>>>` zero-fills the high bits, which is what rotation needs.
 
-## The Solution
+</details>
+<details>
+<summary><h2>Solution &amp; Analysis</h2></summary>
 
-
-```pseudocode
-# Treat num as a 32-bit unsigned value and rotate by k bits (left or right).
-function circularShiftBits(num, k, rotateLeft):
-    SIZE ← 32
-    k ← k mod SIZE                                 # rotating by SIZE is a no-op
-    num ← num bitwise AND 0xFFFFFFFF
-    if rotateLeft:
-        return ((num shifted left by k) bitwise OR (num shifted right by (SIZE − k))) bitwise AND 0xFFFFFFFF
-    return ((num shifted right by k) bitwise OR (num shifted left by (SIZE − k))) bitwise AND 0xFFFFFFFF
-```
+### The Solution
 
 ```python run
 class Solution:
-    def circular_shift_bits(self, num: int, k: int, rotate_left: bool) -> int:
-        size = 32
-        k %= size                                  # Rotating by 32 is no-op; reduce k
-        num &= 0xFFFFFFFF                          # Treat num as unsigned 32-bit
+
+    # Assuming a 32-bit integer
+    size_int: int = 32
+
+    # Mask to ensure the result is a 32-bit integer
+    mask_int: int = 0xFFFFFFFF
+
+    def circular_shift_bits(
+        self, num: int, k: int, rotate_left: bool
+    ) -> int:
         if rotate_left:
-            return ((num << k) | (num >> (size - k))) & 0xFFFFFFFF
-        return ((num >> k) | (num << (size - k))) & 0xFFFFFFFF
+            return (
+                num << k | num >> (self.size_int - k)
+            ) & self.mask_int
+
+        # Perform circular right shift, and apply the mask after OR
+        # operation
+        return (num >> k | num << (self.size_int - k)) & self.mask_int
 
 
-if __name__ == "__main__":
-    sol = Solution()
-    print(sol.circular_shift_bits(28, 2, True))    # 112
-    print(sol.circular_shift_bits(1, 1, False))    # 2147483648
+# Examples from the problem statement
+print(Solution().circular_shift_bits(28, 2, True))             # 112
+print(Solution().circular_shift_bits(1234567890, 8, True))     # 2516767305
+print(Solution().circular_shift_bits(1, 1, False))             # 2147483648
+
+# Edge cases
+print(Solution().circular_shift_bits(0, 4, True))              # 0
+print(Solution().circular_shift_bits(1, 1, True))              # 2
+print(Solution().circular_shift_bits(2, 1, False))             # 1
+print(Solution().circular_shift_bits(28, 2, False))            # 7
 ```
 
 ```java run
 public class Main {
     static class Solution {
+
+        // Number of bits in an integer
+        private int sizeInt = Integer.SIZE;
+
         public int circularShiftBits(int num, int k, boolean rotateLeft) {
-            k %= 32;
-            if (rotateLeft) return (num << k) | (num >>> (32 - k));
-            return (num >>> k) | (num << (32 - k));
+            if (rotateLeft) {
+
+                // Perform circular left shift
+                return (num << k) | (num >>> (sizeInt - k));
+            }
+
+            // Perform circular right shift
+            return (num >>> k) | (num << (sizeInt - k));
         }
     }
 
     public static void main(String[] args) {
-        System.out.println(new Solution().circularShiftBits(28, 2, true));   // 112
+        // Examples from the problem statement
+        System.out.println(Integer.toUnsignedLong(new Solution().circularShiftBits(28, 2, true)));             // 112
+        System.out.println(Integer.toUnsignedLong(new Solution().circularShiftBits(1234567890, 8, true)));     // 2516767305
+        System.out.println(Integer.toUnsignedLong(new Solution().circularShiftBits(1, 1, false)));             // 2147483648
+
+        // Edge cases
+        System.out.println(Integer.toUnsignedLong(new Solution().circularShiftBits(0, 4, true)));              // 0
+        System.out.println(Integer.toUnsignedLong(new Solution().circularShiftBits(1, 1, true)));              // 2
+        System.out.println(Integer.toUnsignedLong(new Solution().circularShiftBits(2, 1, false)));             // 1
+        System.out.println(Integer.toUnsignedLong(new Solution().circularShiftBits(28, 2, false)));            // 7
     }
 }
 ```
 
-```c run
-#include <stdio.h>
-#include <stdint.h>
-#include <stdbool.h>
-
-uint32_t circular_shift_bits(uint32_t num, int k, bool rotate_left) {
-    k %= 32;
-    if (k == 0) return num;
-    if (rotate_left) return (num << k) | (num >> (32 - k));
-    return (num >> k) | (num << (32 - k));
-}
-
-int main(void) {
-    printf("%u\n", circular_shift_bits(28, 2, true));    /* 112 */
-    return 0;
-}
-```
-
-```scala run
-object Main extends App {
-  class Solution {
-    def circularShiftBits(num: Int, k: Int, rotateLeft: Boolean): Int = {
-      val kk = k % 32
-      if (kk == 0) num
-      else if (rotateLeft) (num << kk) | (num >>> (32 - kk))
-      else (num >>> kk) | (num << (32 - kk))
-    }
-  }
-
-  println(new Solution().circularShiftBits(28, 2, true))   // 112
-}
-```
-
-
-## Complexity
+### Complexity
 
 | Aspect | Cost |
 |---|---|
 | Time | `O(1)` — two shifts and an OR |
 | Space | `O(1)` |
+
+</details>
 
 ***
 

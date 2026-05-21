@@ -193,7 +193,9 @@ flowchart TB
 
 <p align="center"><strong>The top-down recursion. Three short-circuits (boundary, cache, match) before the recursive case. Each <code>(i, j)</code> pair fills exactly one memo slot.</strong></p>
 
-## Algorithm
+<details>
+<summary><h2>Algorithm</h2></summary>
+
 
 > **lcs(i, j, s1, s2, memo):**
 >
@@ -203,57 +205,65 @@ flowchart TB
 > 4. Else set `memo[i][j] = max(lcs(i-1, j, ...), lcs(i, j-1, ...))`.
 > 5. Return `memo[i][j]`.
 
-## The Solution
+</details>
+<details>
+<summary><h2>Solution &amp; Analysis</h2></summary>
 
-
-```pseudocode
-# Top-down memoized.
-function longestCommonSubsequence(s1, s2):
-    m ← length(s1); n ← length(s2)
-    if m = 0 OR n = 0: return 0
-    memo ← m × n grid filled with −1
-    return lcs(m − 1, n − 1, s1, s2, memo)
-
-function lcs(i, j, s1, s2, memo):
-    if i < 0 OR j < 0:                              # one prefix exhausted
-        return 0
-    if memo[i][j] ≠ −1:
-        return memo[i][j]
-    if s1[i] = s2[j]:                               # match — extend the diagonal
-        memo[i][j] ← 1 + lcs(i − 1, j − 1, s1, s2, memo)
-    else:                                           # mismatch — drop one side, take the better
-        memo[i][j] ← max(lcs(i − 1, j, s1, s2, memo), lcs(i, j − 1, s1, s2, memo))
-    return memo[i][j]
-```
+### The Solution
 
 ```python run
 from typing import List
 
 class Solution:
-    def longest_common_subsequence(self, s1: str, s2: str) -> int:
-        m, n = len(s1), len(s2)
-        if m == 0 or n == 0:
-            return 0
-        memo: List[List[int]] = [[-1] * n for _ in range(m)]
-        return self._lcs(m - 1, n - 1, s1, s2, memo)
+    # Recursive helper to compute LCS length for prefixes:
+    # s1[0..i] and s2[0..j]
+    def lcs(
+        self,
+        i: int,
+        j: int,
+        s1: str,
+        s2: str,
+        memo: List[List[int]]
+    ) -> int:
 
-    def _lcs(self, i: int, j: int, s1: str, s2: str, memo: List[List[int]]) -> int:
-        if i < 0 or j < 0:                       # Either prefix is empty
+        # Base case: if either index goes out of bounds,
+        # one string is empty → LCS length = 0
+        if i < 0 or j < 0:
             return 0
-        if memo[i][j] != -1:                     # Already computed
+
+        # Return cached result if already computed
+        if memo[i][j] != -1:
             return memo[i][j]
-        if s1[i] == s2[j]:                       # Match — extend the diagonal
-            memo[i][j] = 1 + self._lcs(i - 1, j - 1, s1, s2, memo)
-        else:                                    # Mismatch — take the best of dropping each side
-            memo[i][j] = max(
-                self._lcs(i - 1, j, s1, s2, memo),
-                self._lcs(i, j - 1, s1, s2, memo)
-            )
+
+        # If current characters match,
+        # include this character in the LCS
+        if s1[i] == s2[j]:
+            memo[i][j] = 1 + self.lcs(i - 1, j - 1, s1, s2, memo)
+            return memo[i][j]
+
+        # Otherwise, skip one character from either string
+        # and take the best possible LCS
+        memo[i][j] = max(
+            self.lcs(i - 1, j, s1, s2, memo),  # skip character from s1
+            self.lcs(i, j - 1, s1, s2, memo)   # skip character from s2
+        )
+
         return memo[i][j]
+
+    def longestCommonSubsequence(self, s1: str, s2: str) -> int:
+        m: int = len(s1)
+        n: int = len(s2)
+
+        # memo[i][j] stores the LCS length for s1[0..i] and s2[0..j]
+        # initialized to -1 to indicate "not yet computed"
+        memo: List[List[int]] = [[-1] * n for _ in range(m)]
+
+        # Start recursion from the last characters of both strings
+        return self.lcs(m - 1, n - 1, s1, s2, memo)
 
 
 if __name__ == "__main__":
-    print(Solution().longest_common_subsequence("abcdefgh", "bxclf"))   # 3
+    print(Solution().longestCommonSubsequence("abcdefgh", "bxclf"))   # 3
 ```
 
 ```java run
@@ -261,23 +271,55 @@ import java.util.Arrays;
 
 public class Main {
     static class Solution {
-        public int longestCommonSubsequence(String s1, String s2) {
-            int m = s1.length(), n = s2.length();
-            if (m == 0 || n == 0) return 0;
-            int[][] memo = new int[m][n];
-            for (int[] row : memo) Arrays.fill(row, -1);
-            return lcs(m - 1, n - 1, s1, s2, memo);
-        }
 
-        private int lcs(int i, int j, String s1, String s2, int[][] memo) {
+        // Recursive helper to compute LCS length for prefixes:
+        // s1[0..i] and s2[0..j]
+        private int lcs(int i,
+                        int j,
+                        String s1,
+                        String s2,
+                        int[][] memo) {
+
+            // Base case: if either index goes out of bounds,
+            // one string is empty → LCS length = 0
             if (i < 0 || j < 0) return 0;
-            if (memo[i][j] != -1) return memo[i][j];
+
+            // Return cached result if already computed
+            if (memo[i][j] != -1) {
+                return memo[i][j];
+            }
+
+            // If current characters match,
+            // include this character in the LCS
             if (s1.charAt(i) == s2.charAt(j)) {
                 memo[i][j] = 1 + lcs(i - 1, j - 1, s1, s2, memo);
-            } else {
-                memo[i][j] = Math.max(lcs(i - 1, j, s1, s2, memo), lcs(i, j - 1, s1, s2, memo));
+                return memo[i][j];
             }
+
+            // Otherwise, skip one character from either string
+            // and take the best possible LCS
+            memo[i][j] = Math.max(
+                lcs(i - 1, j, s1, s2, memo), // skip character from s1
+                lcs(i, j - 1, s1, s2, memo)  // skip character from s2
+            );
+
             return memo[i][j];
+        }
+
+        public int longestCommonSubsequence(String s1, String s2) {
+
+            int m = s1.length();
+            int n = s2.length();
+
+            // memo[i][j] stores the LCS length for s1[0..i] and s2[0..j]
+            // initialized to -1 to indicate "not yet computed"
+            int[][] memo = new int[m][n];
+            for (int[] row : memo) {
+                Arrays.fill(row, -1);
+            }
+
+            // Start recursion from the last characters of both strings
+            return lcs(m - 1, n - 1, s1, s2, memo);
         }
     }
 
@@ -287,71 +329,14 @@ public class Main {
 }
 ```
 
-```c run
-#include <stdio.h>
-#include <string.h>
-
-int memo[1000][1000];
-
-int lcs(int i, int j, const char *s1, const char *s2) {
-    if (i < 0 || j < 0) return 0;
-    if (memo[i][j] != -1) return memo[i][j];
-    if (s1[i] == s2[j]) {
-        memo[i][j] = 1 + lcs(i - 1, j - 1, s1, s2);
-    } else {
-        int a = lcs(i - 1, j, s1, s2);
-        int b = lcs(i, j - 1, s1, s2);
-        memo[i][j] = a > b ? a : b;
-    }
-    return memo[i][j];
-}
-
-int longest_common_subsequence(const char *s1, const char *s2) {
-    int m = (int) strlen(s1), n = (int) strlen(s2);
-    if (m == 0 || n == 0) return 0;
-    for (int i = 0; i < m; i++) for (int j = 0; j < n; j++) memo[i][j] = -1;
-    return lcs(m - 1, n - 1, s1, s2);
-}
-
-int main(void) {
-    printf("%d\n", longest_common_subsequence("abcdefgh", "bxclf"));   // 3
-    return 0;
-}
-```
-
-```scala run
-object Main extends App {
-  class Solution {
-    def longestCommonSubsequence(s1: String, s2: String): Int = {
-      val (m, n) = (s1.length, s2.length)
-      if (m == 0 || n == 0) return 0
-      val memo = Array.fill(m, n)(-1)
-      lcs(m - 1, n - 1, s1, s2, memo)
-    }
-
-    private def lcs(i: Int, j: Int, s1: String, s2: String, memo: Array[Array[Int]]): Int = {
-      if (i < 0 || j < 0) return 0
-      if (memo(i)(j) != -1) return memo(i)(j)
-      memo(i)(j) =
-        if (s1(i) == s2(j)) 1 + lcs(i - 1, j - 1, s1, s2, memo)
-        else math.max(lcs(i - 1, j, s1, s2, memo), lcs(i, j - 1, s1, s2, memo))
-      memo(i)(j)
-    }
-  }
-
-  println(new Solution().longestCommonSubsequence("abcdefgh", "bxclf"))   // 3
-}
-```
-
-
----
-
-## Complexity Analysis
+### Complexity Analysis
 
 | Aspect | Cost | Why |
 |---|---|---|
 | Time | `O(m × n)` worst case, `O(min(m, n))` best | Worst: every `(i, j)` cell gets computed when no characters match. Best: every character matches and the recursion walks the diagonal. The memo *allocation* alone is `O(m × n)`, so that's the floor. |
 | Space | `O(m × n)` | Memo table + recursion stack (up to `m + n` frames). |
+
+</details>
 
 ***
 
@@ -432,7 +417,9 @@ Output: 0                No characters in common
 
 ---
 
-## Applying the Diagnostic Questions
+<details>
+<summary><h2>Applying the Diagnostic Questions</h2></summary>
+
 
 | # | Question | Answer |
 |---|---|---|
@@ -464,115 +451,103 @@ Output: 0                No characters in common
 
 **What breaks otherwise.** Two different `(i, j)` pairs are genuinely different subproblems (even if `i + j` is the same), so collapsing to a single index would conflate them.
 
----
+</details>
+<details>
+<summary><h2>The Solution (Bottom-Up)</h2></summary>
 
-## The Solution (Bottom-Up)
 
-
-```pseudocode
-# Bottom-up tabulation. dp[i][j] = LCS length of s1[0..i−1] and s2[0..j−1].
-# Row 0 and column 0 are zero (empty prefix on one side).
-function longestCommonSubsequence(s1, s2):
-    m ← length(s1); n ← length(s2)
-    if m = 0 OR n = 0: return 0
-    dp ← (m + 1) × (n + 1) grid of zeros
-    for i from 1 to m:
-        for j from 1 to n:
-            if s1[i − 1] = s2[j − 1]:
-                dp[i][j] ← dp[i − 1][j − 1] + 1
-            else:
-                dp[i][j] ← max(dp[i − 1][j], dp[i][j − 1])
-    return dp[m][n]
-```
 
 ```python run
 from typing import List
 
 class Solution:
     def longest_common_subsequence(self, s1: str, s2: str) -> int:
-        m, n = len(s1), len(s2)
-        if m == 0 or n == 0:
-            return 0
-        # dp[i][j] = LCS length of s1[0..i-1] and s2[0..j-1].
-        # Row 0 and column 0 are zero (empty prefix on one side).
-        dp: List[List[int]] = [[0] * (n + 1) for _ in range(m + 1)]
-        for i in range(1, m + 1):
-            for j in range(1, n + 1):
-                if s1[i - 1] == s2[j - 1]:           # Last chars of considered prefixes match
+        n: int = len(s1)
+        m: int = len(s2)
+
+        # Create a 2D list to store the dynamic programming table
+        dp: List[List[int]] = [[0] * (m + 1) for _ in range(n + 1)]
+
+        # Fill in the dp table
+        for i in range(1, n + 1):
+            for j in range(1, m + 1):
+                if s1[i - 1] == s2[j - 1]:
+
+                    # If the characters at current indices match, add 1
+                    # to the previous diagonal cell value
                     dp[i][j] = dp[i - 1][j - 1] + 1
                 else:
+
+                    # If the characters at current indices don't match,
+                    # take the maximum of the previous row or previous
+                    # column cell
                     dp[i][j] = max(dp[i - 1][j], dp[i][j - 1])
-        return dp[m][n]
+
+        # Return the length of the longest common subsequence
+        return dp[n][m]
 
 
-if __name__ == "__main__":
-    print(Solution().longest_common_subsequence("abcdefgh", "bxclf"))   # 3
+# Examples from the problem statement
+print(Solution().longest_common_subsequence("abcdefgh", "bxclf"))  # 3
+print(Solution().longest_common_subsequence("xyzabc", "xzlfcb"))   # 3
+print(Solution().longest_common_subsequence("abc", "def"))         # 0
+
+# Edge cases
+print(Solution().longest_common_subsequence("", ""))               # 0
+print(Solution().longest_common_subsequence("abc", ""))            # 0
+print(Solution().longest_common_subsequence("", "abc"))            # 0
+print(Solution().longest_common_subsequence("abc", "abc"))         # 3
+print(Solution().longest_common_subsequence("a", "a"))             # 1
+print(Solution().longest_common_subsequence("a", "b"))             # 0
 ```
 
 ```java run
 public class Main {
     static class Solution {
         public int longestCommonSubsequence(String s1, String s2) {
-            int m = s1.length(), n = s2.length();
-            if (m == 0 || n == 0) return 0;
-            int[][] dp = new int[m + 1][n + 1];
-            for (int i = 1; i <= m; i++) {
-                for (int j = 1; j <= n; j++) {
-                    if (s1.charAt(i - 1) == s2.charAt(j - 1)) dp[i][j] = dp[i - 1][j - 1] + 1;
-                    else dp[i][j] = Math.max(dp[i - 1][j], dp[i][j - 1]);
+            int n = s1.length();
+            int m = s2.length();
+
+            // Create a 2D array to store the dynamic programming table
+            int[][] dp = new int[n + 1][m + 1];
+
+            // Fill in the dp table
+            for (int i = 1; i <= n; i++) {
+                for (int j = 1; j <= m; j++) {
+                    if (s1.charAt(i - 1) == s2.charAt(j - 1)) {
+
+                        // If the characters at current indices match, add 1
+                        // to the previous diagonal cell value
+                        dp[i][j] = dp[i - 1][j - 1] + 1;
+                    } else {
+
+                        // If the characters at current indices don't match,
+                        // take the maximum of the previous row or previous
+                        // column cell
+                        dp[i][j] = Math.max(dp[i - 1][j], dp[i][j - 1]);
+                    }
                 }
             }
-            return dp[m][n];
+
+            // Return the length of the longest common subsequence
+            return dp[n][m];
         }
     }
 
     public static void main(String[] args) {
-        System.out.println(new Solution().longestCommonSubsequence("abcdefgh", "bxclf"));
+        // Examples from the problem statement
+        System.out.println(new Solution().longestCommonSubsequence("abcdefgh", "bxclf"));  // 3
+        System.out.println(new Solution().longestCommonSubsequence("xyzabc", "xzlfcb"));   // 3
+        System.out.println(new Solution().longestCommonSubsequence("abc", "def"));         // 0
+
+        // Edge cases
+        System.out.println(new Solution().longestCommonSubsequence("", ""));               // 0
+        System.out.println(new Solution().longestCommonSubsequence("abc", ""));            // 0
+        System.out.println(new Solution().longestCommonSubsequence("", "abc"));            // 0
+        System.out.println(new Solution().longestCommonSubsequence("abc", "abc"));         // 3
+        System.out.println(new Solution().longestCommonSubsequence("a", "a"));             // 1
+        System.out.println(new Solution().longestCommonSubsequence("a", "b"));             // 0
     }
-}
-```
-
-```c run
-#include <stdio.h>
-#include <string.h>
-
-int dp[1001][1001];
-
-int longest_common_subsequence(const char *s1, const char *s2) {
-    int m = (int) strlen(s1), n = (int) strlen(s2);
-    if (m == 0 || n == 0) return 0;
-    for (int i = 0; i <= m; i++) for (int j = 0; j <= n; j++) dp[i][j] = 0;
-    for (int i = 1; i <= m; i++) {
-        for (int j = 1; j <= n; j++) {
-            if (s1[i - 1] == s2[j - 1]) dp[i][j] = dp[i - 1][j - 1] + 1;
-            else { int a = dp[i - 1][j], b = dp[i][j - 1]; dp[i][j] = a > b ? a : b; }
-        }
-    }
-    return dp[m][n];
-}
-
-int main(void) {
-    printf("%d\n", longest_common_subsequence("abcdefgh", "bxclf"));   // 3
-    return 0;
-}
-```
-
-```scala run
-object Main extends App {
-  class Solution {
-    def longestCommonSubsequence(s1: String, s2: String): Int = {
-      val (m, n) = (s1.length, s2.length)
-      if (m == 0 || n == 0) return 0
-      val dp = Array.fill(m + 1, n + 1)(0)
-      for (i <- 1 to m; j <- 1 to n) {
-        if (s1(i - 1) == s2(j - 1)) dp(i)(j) = dp(i - 1)(j - 1) + 1
-        else dp(i)(j) = math.max(dp(i - 1)(j), dp(i)(j - 1))
-      }
-      dp(m)(n)
-    }
-  }
-
-  println(new Solution().longestCommonSubsequence("abcdefgh", "bxclf"))   // 3
 }
 ```
 
@@ -608,18 +583,18 @@ dp[2][3] = 2 ✓ (LCS = "ab")
 
 </details>
 
----
+</details>
+<details>
+<summary><h2>Solution &amp; Analysis</h2></summary>
 
-## Complexity Analysis
+### Complexity Analysis
 
 | Aspect | Cost | Why |
 |---|---|---|
 | Time | `O(m × n)` | One pass through the table; constant work per cell. |
 | Space | `O(m × n)` | The DP table. Reducible to `O(min(m, n))` by keeping only the previous row. |
 
----
-
-## Edge Cases
+### Edge Cases
 
 | Case | Example | Expected | Reasoning |
 |---|---|---|---|
@@ -629,11 +604,14 @@ dp[2][3] = 2 ✓ (LCS = "ab")
 | One string is a subsequence of the other | `s1 = "abc"`, `s2 = "axbycz"` | `3` | LCS is `s1` itself. |
 | Repeated characters | `s1 = "aaa"`, `s2 = "aa"` | `2` | The shorter string aligns entirely. |
 
----
+</details>
+<details>
+<summary><h2>Final Takeaway</h2></summary>
 
-## Final Takeaway
 
 LCS is the canonical 2D-state DP: prefix length on one axis, prefix length on the other. The recurrence has two branches — match (extend the diagonal predecessor) or mismatch (take the better of the two predecessors). The pattern recurs for every "compare two sequences" DP problem in the rest of this section.
+
+</details>
 
 ***
 
@@ -660,7 +638,9 @@ Output: []
 
 ---
 
-## Backtracking Through the DP Table
+<details>
+<summary><h2>Backtracking Through the DP Table</h2></summary>
+
 
 After the DP table is built, walk from `dp[m][n]` toward `dp[0][0]`, making decisions based on the cell values:
 
@@ -691,83 +671,101 @@ flowchart TB
 
 <p align="center"><strong>Backtracking decisions. Match → take char; mismatch → walk toward larger predecessor; tie → branch into both.</strong></p>
 
-## The Solution
+</details>
+<details>
+<summary><h2>Solution &amp; Analysis</h2></summary>
 
-
-```pseudocode
-# Build the dp table, then backtrack from dp[m][n] collecting every distinct LCS string.
-function allLongestCommonSubsequences(s1, s2):
-    m ← length(s1); n ← length(s2)
-    if m = 0 OR n = 0: return empty list
-
-    dp ← (m + 1) × (n + 1) grid of zeros
-    for i from 1 to m:
-        for j from 1 to n:
-            if s1[i − 1] = s2[j − 1]:
-                dp[i][j] ← dp[i − 1][j − 1] + 1
-            else:
-                dp[i][j] ← max(dp[i − 1][j], dp[i][j − 1])
-
-    results ← empty Set
-    backtrack(dp, s1, s2, m, n, empty list, results)
-    return list of results
-
-function backtrack(dp, s1, s2, i, j, current, results):
-    if i = 0 OR j = 0:                              # boundary — flush the path as one LCS
-        add reverse(current) joined to a string into results
-        return
-    if s1[i − 1] = s2[j − 1]:                       # match — take the char, go diagonally
-        append s1[i − 1] to current
-        backtrack(dp, s1, s2, i − 1, j − 1, current, results)
-        remove last element of current
-    else:                                           # mismatch — recurse toward each predecessor that ties the maximum
-        if dp[i − 1][j] ≥ dp[i][j − 1]:
-            backtrack(dp, s1, s2, i − 1, j, current, results)
-        if dp[i][j − 1] ≥ dp[i − 1][j]:
-            backtrack(dp, s1, s2, i, j − 1, current, results)
-```
+### The Solution
 
 ```python run
 from typing import List, Set
 
 class Solution:
-    def all_longest_common_subsequences(self, s1: str, s2: str) -> List[str]:
-        m, n = len(s1), len(s2)
-        if m == 0 or n == 0:
-            return []
-        # Build the DP table.
-        dp: List[List[int]] = [[0] * (n + 1) for _ in range(m + 1)]
-        for i in range(1, m + 1):
-            for j in range(1, n + 1):
+    def backtrack(
+        self,
+        dp: List[List[int]],
+        s1: str,
+        s2: str,
+        i: int,
+        j: int,
+        current: str,
+        result: Set[str],
+    ) -> None:
+        if i == 0 or j == 0:
+
+            # Reached the end of one of the strings, add the current LCS
+            # to the result Reverse the current LCS
+            result.add(current[::-1])
+            return
+
+        if s1[i - 1] == s2[j - 1]:
+
+            # Characters match, include it in the current LCS and move
+            # diagonally
+            self.backtrack(
+                dp, s1, s2, i - 1, j - 1, s1[i - 1] + current, result
+            )
+        else:
+
+            # Characters don't match, move in the direction of the
+            # larger LCS
+            moved_up, moved_left = False, False
+
+            # Move upwards
+            if dp[i - 1][j] > dp[i][j - 1]:
+                moved_up = True
+                self.backtrack(dp, s1, s2, i - 1, j, current, result)
+
+            # Move to the left
+            if dp[i][j - 1] > dp[i - 1][j]:
+                moved_left = True
+                self.backtrack(dp, s1, s2, i, j - 1, current, result)
+
+            # If both paths are the same, only move once per state
+            if not moved_up and not moved_left:
+                self.backtrack(dp, s1, s2, i - 1, j, current, result)
+                self.backtrack(dp, s1, s2, i, j - 1, current, result)
+
+    def longest_common_subsequence_ii(
+        self, s1: str, s2: str
+    ) -> List[str]:
+        n, m = len(s1), len(s2)
+
+        # Create a 2D DP table
+        dp = [[0] * (m + 1) for _ in range(n + 1)]
+
+        for i in range(1, n + 1):
+            for j in range(1, m + 1):
+
+                # Characters match, increment the LCS length
                 if s1[i - 1] == s2[j - 1]:
                     dp[i][j] = dp[i - 1][j - 1] + 1
+
+                # Characters don't match, take the maximum LCS length
                 else:
                     dp[i][j] = max(dp[i - 1][j], dp[i][j - 1])
-        # Backtrack to collect all LCS strings.
-        results: Set[str] = set()
-        self._backtrack(dp, s1, s2, m, n, [], results)
-        return list(results)
 
-    def _backtrack(
-        self, dp: List[List[int]], s1: str, s2: str,
-        i: int, j: int, current: List[str], results: Set[str]
-    ) -> None:
-        if i == 0 or j == 0:                         # Reached the boundary
-            results.add("".join(reversed(current)))
-            return
-        if s1[i - 1] == s2[j - 1]:                   # Match: take this char, go diagonally
-            current.append(s1[i - 1])
-            self._backtrack(dp, s1, s2, i - 1, j - 1, current, results)
-            current.pop()
-        else:                                        # Mismatch: walk toward the bigger predecessor(s)
-            if dp[i - 1][j] >= dp[i][j - 1]:
-                self._backtrack(dp, s1, s2, i - 1, j, current, results)
-            if dp[i][j - 1] >= dp[i - 1][j]:
-                self._backtrack(dp, s1, s2, i, j - 1, current, results)
+        # Store all possible LCSs, using set to avoid duplicates
+        unique_results: Set[str] = set()
+
+        # Call the backtrack function to find all LCSs
+        self.backtrack(dp, s1, s2, n, m, "", unique_results)
+
+        # Convert set to list and return
+        return list(unique_results)
 
 
-if __name__ == "__main__":
-    print(sorted(Solution().all_longest_common_subsequences("xyzabc", "xzlfcb")))   # ['xzb', 'xzc']
+# Examples from the problem statement
+print(sorted(Solution().longest_common_subsequence_ii("abcdefgh", "bxclf")))  # ['bcf']
+print(sorted(Solution().longest_common_subsequence_ii("xyzabc", "xzlfcb")))   # ['xzb', 'xzc']
+print(sorted(Solution().longest_common_subsequence_ii("abc", "def")))         # []
+
+# Edge cases
+print(sorted(Solution().longest_common_subsequence_ii("", "")))               # []
+print(sorted(Solution().longest_common_subsequence_ii("abc", "")))            # []
+print(sorted(Solution().longest_common_subsequence_ii("abc", "abc")))         # ['abc']
+print(sorted(Solution().longest_common_subsequence_ii("a", "a")))             # ['a']
+print(sorted(Solution().longest_common_subsequence_ii("a", "b")))             # []
 ```
 
 ```java run
@@ -775,118 +773,148 @@ import java.util.*;
 
 public class Main {
     static class Solution {
-        public List<String> allLongestCommonSubsequences(String s1, String s2) {
-            int m = s1.length(), n = s2.length();
-            if (m == 0 || n == 0) return new ArrayList<>();
-            int[][] dp = new int[m + 1][n + 1];
-            for (int i = 1; i <= m; i++) {
-                for (int j = 1; j <= n; j++) {
-                    if (s1.charAt(i - 1) == s2.charAt(j - 1)) dp[i][j] = dp[i - 1][j - 1] + 1;
-                    else dp[i][j] = Math.max(dp[i - 1][j], dp[i][j - 1]);
+        private void backtrack(
+            int[][] dp,
+            String s1,
+            String s2,
+            int i,
+            int j,
+            StringBuilder current,
+            Set<String> result
+        ) {
+
+            // Reached the end of one of the strings, add the current LCS
+            // to the result Reverse the current LCS
+            if (i == 0 || j == 0) {
+                result.add(current.reverse().toString());
+
+                // Reverse the current LCS back to its original order
+                current.reverse();
+                return;
+            }
+
+            // Characters match, include it in the current LCS and move
+            // diagonally
+            if (s1.charAt(i - 1) == s2.charAt(j - 1)) {
+                current.append(s1.charAt(i - 1));
+                backtrack(dp, s1, s2, i - 1, j - 1, current, result);
+
+                // Remove the last character for backtracking
+                current.deleteCharAt(current.length() - 1);
+            }
+
+            // Characters don't match, move in the direction of the
+            // larger LCS
+            else {
+                boolean movedUp = false, movedLeft = false;
+
+                // Move upwards
+                if (dp[i - 1][j] > dp[i][j - 1]) {
+                    movedUp = true;
+                    backtrack(dp, s1, s2, i - 1, j, current, result);
+                }
+
+                // Move to the left
+                if (dp[i][j - 1] > dp[i - 1][j]) {
+                    movedLeft = true;
+                    backtrack(dp, s1, s2, i, j - 1, current, result);
+                }
+
+                // If both paths are the same, only move once per state
+                if (!movedUp && !movedLeft) {
+                    backtrack(dp, s1, s2, i - 1, j, current, result);
+                    backtrack(dp, s1, s2, i, j - 1, current, result);
                 }
             }
-            Set<String> results = new HashSet<>();
-            StringBuilder current = new StringBuilder();
-            backtrack(dp, s1, s2, m, n, current, results);
-            return new ArrayList<>(results);
         }
 
-        private void backtrack(int[][] dp, String s1, String s2, int i, int j, StringBuilder cur, Set<String> res) {
-            if (i == 0 || j == 0) { res.add(cur.reverse().toString()); cur.reverse(); return; }
-            if (s1.charAt(i - 1) == s2.charAt(j - 1)) {
-                cur.append(s1.charAt(i - 1));
-                backtrack(dp, s1, s2, i - 1, j - 1, cur, res);
-                cur.deleteCharAt(cur.length() - 1);
-            } else {
-                if (dp[i - 1][j] >= dp[i][j - 1]) backtrack(dp, s1, s2, i - 1, j, cur, res);
-                if (dp[i][j - 1] >= dp[i - 1][j]) backtrack(dp, s1, s2, i, j - 1, cur, res);
+        public List<String> longestCommonSubsequenceII(
+            String s1,
+            String s2
+        ) {
+            int n = s1.length();
+            int m = s2.length();
+
+            // Create a 2D DP table
+            int[][] dp = new int[n + 1][m + 1];
+
+            for (int i = 1; i <= n; i++) {
+                for (int j = 1; j <= m; j++) {
+
+                    // Characters match, increment the LCS length
+                    if (s1.charAt(i - 1) == s2.charAt(j - 1)) {
+                        dp[i][j] = dp[i - 1][j - 1] + 1;
+                    }
+
+                    // Characters don't match, take the maximum LCS
+                    // length
+                    else {
+                        dp[i][j] = Math.max(dp[i - 1][j], dp[i][j - 1]);
+                    }
+                }
             }
+
+            // Store all possible LCSs, using set to avoid duplicates
+            Set<String> uniqueResults = new HashSet<>();
+
+            // Store the current LCS
+            StringBuilder current = new StringBuilder();
+
+            // Call the backtrack function to find all LCSs
+            backtrack(dp, s1, s2, n, m, current, uniqueResults);
+
+            // Convert set to list and return
+            return new ArrayList<>(uniqueResults);
         }
     }
 
     public static void main(String[] args) {
-        List<String> r = new Solution().allLongestCommonSubsequences("xyzabc", "xzlfcb");
-        Collections.sort(r);
-        System.out.println(r);   // [xzb, xzc]
+        // Examples from the problem statement
+        List<String> r1 = new Solution().longestCommonSubsequenceII("abcdefgh", "bxclf");
+        Collections.sort(r1); System.out.println(r1);   // [bcf]
+
+        List<String> r2 = new Solution().longestCommonSubsequenceII("xyzabc", "xzlfcb");
+        Collections.sort(r2); System.out.println(r2);   // [xzb, xzc]
+
+        List<String> r3 = new Solution().longestCommonSubsequenceII("abc", "def");
+        Collections.sort(r3); System.out.println(r3);   // []
+
+        // Edge cases
+        List<String> r4 = new Solution().longestCommonSubsequenceII("", "");
+        Collections.sort(r4); System.out.println(r4);   // []
+
+        List<String> r5 = new Solution().longestCommonSubsequenceII("abc", "");
+        Collections.sort(r5); System.out.println(r5);   // []
+
+        List<String> r6 = new Solution().longestCommonSubsequenceII("abc", "abc");
+        Collections.sort(r6); System.out.println(r6);   // [abc]
+
+        List<String> r7 = new Solution().longestCommonSubsequenceII("a", "a");
+        Collections.sort(r7); System.out.println(r7);   // [a]
+
+        List<String> r8 = new Solution().longestCommonSubsequenceII("a", "b");
+        Collections.sort(r8); System.out.println(r8);   // []
     }
 }
 ```
 
-```c run
-#include <stdio.h>
-#include <string.h>
-
-int dp[51][51];
-char results[1024][51];
-int result_count = 0;
-
-void add_result(const char *s, int len) {
-    char buf[51];
-    for (int k = 0; k < len; k++) buf[k] = s[len - 1 - k];
-    buf[len] = 0;
-    for (int k = 0; k < result_count; k++) if (strcmp(results[k], buf) == 0) return;
-    strcpy(results[result_count++], buf);
-}
-
-void backtrack(const char *s1, const char *s2, int i, int j, char *cur, int len) {
-    if (i == 0 || j == 0) { add_result(cur, len); return; }
-    if (s1[i - 1] == s2[j - 1]) {
-        cur[len] = s1[i - 1];
-        backtrack(s1, s2, i - 1, j - 1, cur, len + 1);
-    } else {
-        if (dp[i - 1][j] >= dp[i][j - 1]) backtrack(s1, s2, i - 1, j, cur, len);
-        if (dp[i][j - 1] >= dp[i - 1][j]) backtrack(s1, s2, i, j - 1, cur, len);
-    }
-}
-```
-
-```scala run
-object Main extends App {
-  class Solution {
-    def allLongestCommonSubsequences(s1: String, s2: String): List[String] = {
-      val (m, n) = (s1.length, s2.length)
-      if (m == 0 || n == 0) return Nil
-      val dp = Array.fill(m + 1, n + 1)(0)
-      for (i <- 1 to m; j <- 1 to n) {
-        dp(i)(j) = if (s1(i - 1) == s2(j - 1)) dp(i - 1)(j - 1) + 1
-                   else math.max(dp(i - 1)(j), dp(i)(j - 1))
-      }
-      val results = scala.collection.mutable.HashSet[String]()
-      def backtrack(i: Int, j: Int, cur: String): Unit = {
-        if (i == 0 || j == 0) { results += cur.reverse; return }
-        if (s1(i - 1) == s2(j - 1)) backtrack(i - 1, j - 1, cur + s1(i - 1))
-        else {
-          if (dp(i - 1)(j) >= dp(i)(j - 1)) backtrack(i - 1, j, cur)
-          if (dp(i)(j - 1) >= dp(i - 1)(j)) backtrack(i, j - 1, cur)
-        }
-      }
-      backtrack(m, n, "")
-      results.toList
-    }
-  }
-
-  println(new Solution().allLongestCommonSubsequences("xyzabc", "xzlfcb").sorted)   // List(xzb, xzc)
-}
-```
-
-
----
-
-## Complexity Analysis
+### Complexity Analysis
 
 | Aspect | Cost | Why |
 |---|---|---|
 | Time | `O(m × n + k × L)` | DP build: `O(m × n)`. Backtrack visits at most `k` distinct LCSs of length `L` each. In the worst case (highly ambiguous matches) `k` can be exponential, but for typical inputs it's small. |
 | Space | `O(m × n + k × L)` | DP table + storage for the LCS set. |
 
----
+</details>
+<details>
+<summary><h2>Final Takeaway</h2></summary>
 
-## Final Takeaway
 
 When the DP gives a *count* but you want the *witness*, backtrack through the table following the choices that produced each cell's value. Ties become branches; matched cells force a step; the set of reached endpoints is the answer set. This pattern recurs throughout the section — **the table itself encodes the structure of every optimal solution; reading it backward materialises them.**
 
 > *Transfer challenge for the next lesson:* LCS allows skipping characters arbitrarily — the matched characters needn't be adjacent in either string. What changes if we *require* adjacency on both sides (a *common substring*)? Predict whether the recurrence stays the same or breaks.
 
+</details>
 <details>
 <summary><strong>Answer</strong></summary>
 

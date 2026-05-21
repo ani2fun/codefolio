@@ -16,14 +16,46 @@ object CodeExecutorSpec extends ZIOSpecDefault:
   )
 
   override def spec: Spec[Any, Any] = suite("CodeExecutor")(
-    test("initial sets Idle, no result, no error") {
+    test("initial sets Idle, ReadOnly, no result, no error") {
       val s = CodeExecutor.initial("print(1)")
       assertTrue(
         s.code == "print(1)",
         s.runState == CodeExecutor.RunState.Idle,
+        s.editMode == CodeExecutor.EditMode.ReadOnly,
         s.result.isEmpty,
         s.error.isEmpty
       )
+    },
+    test("enterEdit flips editMode to Editing, leaving everything else") {
+      val s0 = CodeExecutor.initial("x")
+      val s1 = CodeExecutor.enterEdit(s0)
+      assertTrue(
+        s1.editMode == CodeExecutor.EditMode.Editing,
+        s1.code == s0.code,
+        s1.runState == s0.runState,
+        s1.runId == s0.runId
+      )
+    },
+    test("cancelEdit reverts code to source and returns to ReadOnly") {
+      val edited = CodeExecutor.setCode(CodeExecutor.enterEdit(CodeExecutor.initial("orig")), "tweaked")
+      val s      = CodeExecutor.cancelEdit(edited, "orig")
+      assertTrue(
+        s.code == "orig",
+        s.editMode == CodeExecutor.EditMode.ReadOnly
+      )
+    },
+    test("cancelEdit keeps a prior result intact") {
+      val done = CodeExecutor.completed(
+        CodeExecutor.started(CodeExecutor.enterEdit(CodeExecutor.initial("orig"))),
+        CodeExecutor.started(CodeExecutor.enterEdit(CodeExecutor.initial("orig"))).runId,
+        sample
+      )
+      val s = CodeExecutor.cancelEdit(done, "orig")
+      assertTrue(s.result == Some(sample), s.editMode == CodeExecutor.EditMode.ReadOnly)
+    },
+    test("changedLineCount counts only the differing lines") {
+      val s = CodeExecutor.setCode(CodeExecutor.initial("a\nb\nc"), "a\nB\nc\nd")
+      assertTrue(CodeExecutor.changedLineCount(s, "a\nb\nc") == 2)
     },
     test("started clears result + error and issues a fresh handle") {
       val running = CodeExecutor.started(CodeExecutor.initial("x"))

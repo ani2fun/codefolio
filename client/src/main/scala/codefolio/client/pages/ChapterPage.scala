@@ -127,6 +127,7 @@ object ChapterPage:
           )
         ),
         <.h1(
+          ^.id        := "chapter-top",
           ^.className := "cortex-reader-prose__title",
           payload.frontmatter.title
         ),

@@ -218,19 +218,30 @@ Output: 1   (0! is 1 by convention)
 
 ---
 
-## Step 1 — Define the Subproblem
+<details>
+<summary><h2>Step 1 — Define the Subproblem</h2></summary>
+
 
 `dp[i]` = factorial of `i`. That's it. The subproblem at index `i` is "what's `i!`?".
 
-## Step 2 — Write the Recurrence
+</details>
+<details>
+<summary><h2>Step 2 — Write the Recurrence</h2></summary>
+
 
 `i! = i × (i-1)!` for `i ≥ 1`. In DP terms: `dp[i] = i × dp[i-1]`.
 
-## Step 3 — Initialise the Base Cases
+</details>
+<details>
+<summary><h2>Step 3 — Initialise the Base Cases</h2></summary>
+
 
 `0! = 1`, so `dp[0] = 1`. That's the only base case we need; from there every `dp[i]` follows from the recurrence.
 
-## Step 4 — Fill the Table
+</details>
+<details>
+<summary><h2>Step 4 — Fill the Table</h2></summary>
+
 
 ```d2
 direction: right
@@ -255,84 +266,85 @@ grid: "Filling dp for n = 5" {
 
 <p align="center"><strong>The dp array for <code>n = 5</code>, filled left to right. <code>dp[0]</code> is the base. Each later cell is <code>i × dp[i-1]</code>.</strong></p>
 
-## The Solution
+</details>
+<details>
+<summary><h2>Solution &amp; Analysis</h2></summary>
 
-
-```pseudocode
-function calculateFactorial(n):
-    dp ← list of (n + 1) zeros          # dp[i] = i!
-    dp[0] ← 1                            # base case: 0! = 1
-    for i from 1 to n:
-        dp[i] ← i × dp[i − 1]            # recurrence: i! = i · (i−1)!
-    return dp[n]
-```
+### The Solution
 
 ```python run
 from typing import List
 
 class Solution:
     def calculate_factorial(self, n: int) -> int:
-        # dp[i] = i!. We need indices 0..n, so allocate n+1 cells.
+
+        # Create a list to store intermediate results of
+        # calculate_factorial calculation
         dp: List[int] = [0] * (n + 1)
-        dp[0] = 1                                # Base case: 0! = 1
+
+        # Initialize the first element of the list as 1, since 0! is 1
+        dp[0] = 1
+
         for i in range(1, n + 1):
-            dp[i] = i * dp[i - 1]                # Recurrence: i! = i × (i-1)!
-        return dp[n]                             # Answer lives at dp[n]
+
+            # Calculate calculate_factorial of i by multiplying i with
+            # calculate_factorial of (i-1)
+            dp[i] = i * dp[i - 1]
+
+        # Return the calculate_factorial of n
+        return dp[n]
 
 
-if __name__ == "__main__":
-    print(Solution().calculate_factorial(7))     # 5040
+# Examples from the problem statement
+print(Solution().calculate_factorial(7))   # 5040
+print(Solution().calculate_factorial(5))   # 120
+print(Solution().calculate_factorial(0))   # 1
+
+# Edge cases
+print(Solution().calculate_factorial(1))   # 1
+print(Solution().calculate_factorial(2))   # 2
+print(Solution().calculate_factorial(3))   # 6
+print(Solution().calculate_factorial(4))   # 24
+print(Solution().calculate_factorial(10))  # 3628800
 ```
 
 ```java run
 public class Main {
     static class Solution {
-        public long calculateFactorial(int n) {
-            long[] dp = new long[n + 1];             // dp[i] = i!
-            dp[0] = 1;                               // Base case
+        public int calculateFactorial(int n) {
+
+            // Create an array to store intermediate results of
+            // calculateFactorial calculation
+            int[] dp = new int[n + 1];
+
+            // Initialize the first element of the array as 1, since 0! is 1
+            dp[0] = 1;
+
             for (int i = 1; i <= n; i++) {
-                dp[i] = i * dp[i - 1];               // Recurrence
+
+                // Calculate calculateFactorial of i by multiplying i with
+                // calculateFactorial of (i-1)
+                dp[i] = i * dp[i - 1];
             }
+
+            // Return the calculateFactorial of n
             return dp[n];
         }
     }
 
     public static void main(String[] args) {
+        // Examples from the problem statement
         System.out.println(new Solution().calculateFactorial(7));   // 5040
+        System.out.println(new Solution().calculateFactorial(5));   // 120
+        System.out.println(new Solution().calculateFactorial(0));   // 1
+
+        // Edge cases
+        System.out.println(new Solution().calculateFactorial(1));   // 1
+        System.out.println(new Solution().calculateFactorial(2));   // 2
+        System.out.println(new Solution().calculateFactorial(3));   // 6
+        System.out.println(new Solution().calculateFactorial(4));   // 24
+        System.out.println(new Solution().calculateFactorial(10));  // 3628800
     }
-}
-```
-
-```c run
-#include <stdio.h>
-
-long long calculate_factorial(int n) {
-    long long dp[64];                            // n! grows fast; 64 cells is more than enough for any int n
-    dp[0] = 1;
-    for (int i = 1; i <= n; i++) {
-        dp[i] = (long long) i * dp[i - 1];
-    }
-    return dp[n];
-}
-
-int main(void) {
-    printf("%lld\n", calculate_factorial(7));    // 5040
-    return 0;
-}
-```
-
-```scala run
-object Main extends App {
-  class Solution {
-    def calculateFactorial(n: Int): Long = {
-      val dp = Array.fill(n + 1)(0L)
-      dp(0) = 1
-      for (i <- 1 to n) dp(i) = i.toLong * dp(i - 1)
-      dp(n)
-    }
-  }
-
-  println(new Solution().calculateFactorial(7))  // 5040
 }
 ```
 
@@ -341,7 +353,7 @@ object Main extends App {
 <summary><strong>Trace — n = 5</strong></summary>
 
 ```
-dp[0] = 1                       (base case)
+dp[0] = 1                            (base)
 dp[1] = 1 × dp[0] = 1 × 1 = 1
 dp[2] = 2 × dp[1] = 2 × 1 = 2
 dp[3] = 3 × dp[2] = 3 × 2 = 6
@@ -350,35 +362,32 @@ dp[5] = 5 × dp[4] = 5 × 24 = 120
 Return dp[5] = 120  ✓
 ```
 
-The trace shows each cell computed once, in left-to-right order, depending only on the cell directly to its left. That single-cell dependency is what makes this *linear* DP.
+Each cell is `i` times the cell immediately before it. The dependency is single-step — every `dp[i]` only needs `dp[i-1]` — which is what makes this the *linear* DP shape.
 
 </details>
 
----
-
-## Complexity Analysis
+### Complexity Analysis
 
 | Aspect | Cost | Why |
 |---|---|---|
-| Time | `O(n)` | One pass; each cell is one multiplication. |
-| Space | `O(n)` | The `dp` array. (Reducible to `O(1)` since each cell only needs the previous one — see Space Optimisation below.) |
+| Time | `O(n)` | One multiplication per cell; `n` iterations of the loop. |
+| Space | `O(n)` | The `dp` array holds `n + 1` cells. (Reducible to `O(1)` since each step only needs the previous answer — see Space Optimisation below.) |
 
----
-
-## Edge Cases
+### Edge Cases
 
 | Case | Example | Expected | Reasoning |
 |---|---|---|---|
-| `n = 0` | — | `1` | `0! = 1` by convention. The base case directly returns this. |
-| `n = 1` | — | `1` | The loop runs once: `dp[1] = 1 × dp[0] = 1`. |
+| `n = 0` | — | `1` | `0! = 1` by convention. `dp[0]` is initialised to `1`; the loop body never runs and `dp[0]` is returned. |
+| `n = 1` | — | `1` | One loop iteration: `dp[1] = 1 × dp[0] = 1 × 1 = 1`. |
 | Large `n` | `n = 20` | `2_432_902_008_176_640_000` | Exceeds 32-bit signed range; need 64-bit (or BigInt in JS/TS) to avoid overflow. |
-| Very large `n` | `n = 100` | A 158-digit number | Even 64-bit overflows. The Python and JS/TS implementations handle this with arbitrary precision; the others would need an explicit big-integer library. |
+| Very large `n` | `n = 100` | A 158-digit number | Even 64-bit overflows. The Python implementation handles this with arbitrary precision; the Java version overflows and would need `BigInteger`. |
 
 The overflow story is the most interesting edge case. Factorial grows faster than exponential; `21!` already overflows 64-bit signed integers. **Production code that computes factorial usually returns the result modulo a large prime** (often `10^9 + 7`) — exactly the convention the next problem uses.
 
----
+</details>
+<details>
+<summary><h2>Final Takeaway</h2></summary>
 
-## Final Takeaway
 
 Factorial is the simplest possible DP: 1D table, each cell from one previous cell, no overlap to even motivate caching — but the *shape* of the solution is the same shape every later DP lesson uses. **You're not learning factorial; you're learning the recipe.**
 
@@ -399,6 +408,8 @@ class Solution:
 ```
 
 The modulo lets us return a meaningful answer even when the true factorial is astronomical. Without it, `n = 100` overflows every fixed-width integer; with it, every `dp[i]` stays in `[0, 10^9 + 6]`. **The Fibonacci problem next uses exactly this convention** — and so does most competitive-programming code.
+
+</details>
 
 </details>
 
@@ -425,19 +436,30 @@ Output: 0
 
 ---
 
-## Step 1 — Define the Subproblem
+<details>
+<summary><h2>Step 1 — Define the Subproblem</h2></summary>
+
 
 `dp[i]` = the i-th Fibonacci number, mod `10^9 + 7`.
 
-## Step 2 — Write the Recurrence
+</details>
+<details>
+<summary><h2>Step 2 — Write the Recurrence</h2></summary>
+
 
 `dp[i] = (dp[i-1] + dp[i-2]) mod (10^9 + 7)` for `i ≥ 2`.
 
-## Step 3 — Initialise the Base Cases
+</details>
+<details>
+<summary><h2>Step 3 — Initialise the Base Cases</h2></summary>
+
 
 `dp[0] = 0`, `dp[1] = 1`. **Two** base cases this time, because the recurrence reaches back two steps.
 
-## Step 4 — Fill the Table
+</details>
+<details>
+<summary><h2>Step 4 — Fill the Table</h2></summary>
+
 
 ```d2
 direction: right
@@ -464,97 +486,89 @@ grid: "Filling dp for n = 6" {
 
 <p align="center"><strong>The dp array for <code>n = 6</code>. <code>dp[0]</code> and <code>dp[1]</code> are the bases. Every later cell is the sum of the two previous cells.</strong></p>
 
-## The Solution
+</details>
+<details>
+<summary><h2>Solution &amp; Analysis</h2></summary>
 
-
-```pseudocode
-# Bottom-up tabulation. O(n) time, O(n) space.
-function nthFibonacci(n):
-    if n < 2: return n
-    MOD ← 10⁹ + 7
-    dp ← list of (n + 1) zeros
-    dp[0] ← 0; dp[1] ← 1                 # two base cases
-    for i from 2 to n:
-        dp[i] ← (dp[i − 1] + dp[i − 2]) mod MOD
-    return dp[n]
-```
+### The Solution
 
 ```python run
 from typing import List
 
 class Solution:
-    def nth_fibonacci(self, n: int) -> int:
-        if n < 2:                                # Handle the two base cases up front
-            return n
-        MOD = 1_000_000_007
-        dp: List[int] = [0] * (n + 1)
-        dp[0], dp[1] = 0, 1                      # Two base cases
+    def nth_fibonnaci_number(self, n: int) -> int:
+
+        # Create a list to store Fibonacci numbers
+        dp: List[int] = [0] * (n + 2)
+
+        # Base cases
+        dp[0] = 0
+        dp[1] = 1
+
+        # Fill in the list with Fibonacci numbers
         for i in range(2, n + 1):
-            dp[i] = (dp[i - 1] + dp[i - 2]) % MOD
+
+            # Calculate the Fibonacci number using the formula:
+            # F(n) = F(n-1) + F(n-2)
+            # Take modulo 1000000007 to prevent overflow
+            dp[i] = (dp[i - 1] + dp[i - 2]) % 1000000007
+
+        # Return the Fibonacci number at position n
         return dp[n]
 
 
-if __name__ == "__main__":
-    print(Solution().nth_fibonacci(6))           # 8
-    print(Solution().nth_fibonacci(50))          # 12586269025 % MOD = 586268941
+# Examples from the problem statement
+print(Solution().nth_fibonnaci_number(3))   # 2
+print(Solution().nth_fibonnaci_number(2))   # 1
+print(Solution().nth_fibonnaci_number(0))   # 0
+
+# Edge cases
+print(Solution().nth_fibonnaci_number(1))   # 1
+print(Solution().nth_fibonnaci_number(4))   # 3
+print(Solution().nth_fibonnaci_number(5))   # 5
+print(Solution().nth_fibonnaci_number(10))  # 55
+print(Solution().nth_fibonnaci_number(20))  # 6765
 ```
 
 ```java run
 public class Main {
     static class Solution {
-        public int nthFibonacci(int n) {
-            if (n < 2) return n;
-            final int MOD = 1_000_000_007;
-            long[] dp = new long[n + 1];
-            dp[0] = 0; dp[1] = 1;
+        public int nthFibonnaciNumber(int n) {
+
+            // Create an array to store Fibonacci numbers
+            int[] dp = new int[n + 2];
+
+            // Base cases
+            dp[0] = 0;
+            dp[1] = 1;
+
+            // Fill in the array with Fibonacci numbers
             for (int i = 2; i <= n; i++) {
-                dp[i] = (dp[i - 1] + dp[i - 2]) % MOD;
+
+                // Calculate the Fibonacci number using the formula:
+                // F(n) = F(n-1) + F(n-2)
+                // Take modulo 1000000007 to prevent overflow
+                dp[i] = (dp[i - 1] + dp[i - 2]) % 1000000007;
             }
-            return (int) dp[n];
+
+            // Return the Fibonacci number at position n
+            return dp[n];
         }
     }
 
     public static void main(String[] args) {
-        System.out.println(new Solution().nthFibonacci(6));    // 8
+        // Examples from the problem statement
+        System.out.println(new Solution().nthFibonnaciNumber(3));   // 2
+        System.out.println(new Solution().nthFibonnaciNumber(2));   // 1
+        System.out.println(new Solution().nthFibonnaciNumber(0));   // 0
+
+        // Edge cases
+        System.out.println(new Solution().nthFibonnaciNumber(1));   // 1
+        System.out.println(new Solution().nthFibonnaciNumber(4));   // 3
+        System.out.println(new Solution().nthFibonnaciNumber(5));   // 5
+        System.out.println(new Solution().nthFibonnaciNumber(10));  // 55
+        System.out.println(new Solution().nthFibonnaciNumber(20));  // 6765
     }
-}
-```
-
-```c run
-#include <stdio.h>
-
-#define MOD 1000000007
-
-long long nth_fibonacci(int n) {
-    if (n < 2) return n;
-    long long dp[100001];                        // Large enough for typical contest constraints
-    dp[0] = 0; dp[1] = 1;
-    for (int i = 2; i <= n; i++) {
-        dp[i] = (dp[i - 1] + dp[i - 2]) % MOD;
-    }
-    return dp[n];
-}
-
-int main(void) {
-    printf("%lld\n", nth_fibonacci(6));          // 8
-    return 0;
-}
-```
-
-```scala run
-object Main extends App {
-  class Solution {
-    def nthFibonacci(n: Int): Int = {
-      if (n < 2) return n
-      val MOD = 1000000007L
-      val dp = Array.fill(n + 1)(0L)
-      dp(0) = 0; dp(1) = 1
-      for (i <- 2 to n) dp(i) = (dp(i - 1) + dp(i - 2)) % MOD
-      dp(n).toInt
-    }
-  }
-
-  println(new Solution().nthFibonacci(6))   // 8
 }
 ```
 
@@ -577,9 +591,7 @@ Each cell is the sum of the two cells immediately before it. The mod doesn't kic
 
 </details>
 
----
-
-## Complexity Analysis
+### Complexity Analysis
 
 | Aspect | Cost | Why |
 |---|---|---|
@@ -588,25 +600,26 @@ Each cell is the sum of the two cells immediately before it. The mod doesn't kic
 
 Compare to the recursive version's `O(2^n)` time. For `n = 50`: recursive ≈ 1.1 trillion calls; DP = 50 iterations. **A 22 billion times speedup, with the same correctness, from one observation: solve each subproblem once.**
 
----
-
-## Edge Cases
+### Edge Cases
 
 | Case | Example | Expected | Reasoning |
 |---|---|---|---|
-| `n = 0` | — | `0` | Base case — handled by the early `if n < 2: return n`. |
-| `n = 1` | — | `1` | Base case — handled by the same early return. |
+| `n = 0` | — | `0` | The loop body (`range(2, n + 1)`) never executes; `dp[0]` is still its initial base value `0` and is returned. |
+| `n = 1` | — | `1` | Same as above — the loop doesn't run; `dp[1] = 1` from the base-case assignment is returned. |
 | `n = 2` | — | `1` | Smallest case where the loop executes; `dp[2] = dp[1] + dp[0] = 1`. |
 | Large `n` | `n = 1000000` | Some value mod `10^9+7` | The mod keeps every cell in 32-bit range; the loop runs in milliseconds. |
-| `n < 0` | `n = -1` | Undefined | The problem statement says non-negative; defensive code might `assert n >= 0` or throw. |
+| `n < 0` | `n = -1` | Undefined | The problem statement says non-negative; the code would allocate a length-1 array and skip the loop, returning 0 — but a defensive version should `assert n >= 0` or throw. |
 
----
+</details>
+<details>
+<summary><h2>Final Takeaway</h2></summary>
 
-## Final Takeaway
 
 Recursive Fibonacci was exponential because of duplicate subproblems. DP Fibonacci is linear because we solve every subproblem once. The transformation is mechanical — and it's the *same* transformation we'll apply to every problem in this section. **You just learned the technique that powers every later DP lesson.**
 
 > *Transfer challenge:* The Fibonacci recurrence depends on only the *two* most recent entries. Do we actually need to store the entire `dp` array? What's the smallest amount of state we can get away with? Sketch the algorithm before reading on.
+
+</details>
 
 ***
 
@@ -644,20 +657,6 @@ flowchart LR
 
 ## Top-Down Fibonacci
 
-
-```pseudocode
-# Top-down: recursion + memoization. Each subproblem solved once.
-function fibTopDown(n):
-    memo ← empty Map: Integer → Integer
-    return fib(n, memo)
-
-function fib(n, memo):
-    if n < 2: return n
-    if n is in memo:                     # cache hit — already solved
-        return memo[n]
-    memo[n] ← (fib(n − 1, memo) + fib(n − 2, memo)) mod (10⁹ + 7)
-    return memo[n]
-```
 
 ```python run
 from typing import Dict
@@ -701,47 +700,6 @@ public class Main {
     public static void main(String[] args) {
         System.out.println(new Solution().fibTopDown(6));   // 8
     }
-}
-```
-
-```c run
-#include <stdio.h>
-#include <string.h>
-
-#define MOD 1000000007
-#define MAX_N 100001
-
-long long memo[MAX_N];
-
-long long fib_top_down(int n) {
-    if (n < 2) return n;
-    if (memo[n] != -1) return memo[n];
-    memo[n] = (fib_top_down(n - 1) + fib_top_down(n - 2)) % MOD;
-    return memo[n];
-}
-
-int main(void) {
-    memset(memo, -1, sizeof(memo));              // Sentinel: -1 means "not yet computed"
-    printf("%lld\n", fib_top_down(6));           // 8
-    return 0;
-}
-```
-
-```scala run
-import scala.collection.mutable
-
-object Main extends App {
-  class Solution {
-    private val memo = mutable.Map[Int, Long]()
-    private val MOD = 1000000007L
-
-    def fibTopDown(n: Int): Int = {
-      if (n < 2) return n
-      memo.getOrElseUpdate(n, (fibTopDown(n - 1) + fibTopDown(n - 2)) % MOD).toInt
-    }
-  }
-
-  println(new Solution().fibTopDown(6))    // 8
 }
 ```
 
@@ -789,19 +747,6 @@ optim: "Space-optimised Fibonacci" {
 ## The Optimised Solution
 
 
-```pseudocode
-# Space-optimized: keep only the last two values. O(n) time, O(1) space.
-function fibOptimised(n):
-    if n < 2: return n
-    MOD ← 10⁹ + 7
-    prev2 ← 0; prev1 ← 1
-    for i from 2 to n:
-        curr ← (prev1 + prev2) mod MOD
-        prev2 ← prev1
-        prev1 ← curr                     # slide the window forward by one
-    return prev1
-```
-
 ```python run
 class Solution:
     def fib_optimised(self, n: int) -> int:
@@ -839,47 +784,6 @@ public class Main {
     public static void main(String[] args) {
         System.out.println(new Solution().fibOptimised(50));   // Some value mod 1e9+7
     }
-}
-```
-
-```c run
-#include <stdio.h>
-
-#define MOD 1000000007
-
-long long fib_optimised(int n) {
-    if (n < 2) return n;
-    long long prev2 = 0, prev1 = 1, curr = 0;
-    for (int i = 2; i <= n; i++) {
-        curr = (prev1 + prev2) % MOD;
-        prev2 = prev1;
-        prev1 = curr;
-    }
-    return prev1;
-}
-
-int main(void) {
-    printf("%lld\n", fib_optimised(50));         // Some value mod 1e9+7
-    return 0;
-}
-```
-
-```scala run
-object Main extends App {
-  class Solution {
-    def fibOptimised(n: Int): Int = {
-      if (n < 2) return n
-      val MOD = 1000000007L
-      var prev2 = 0L; var prev1 = 1L
-      for (_ <- 2 to n) {
-        val curr = (prev1 + prev2) % MOD
-        prev2 = prev1; prev1 = curr
-      }
-      prev1.toInt
-    }
-  }
-
-  println(new Solution().fibOptimised(50))   // Some value mod 1e9+7
 }
 ```
 

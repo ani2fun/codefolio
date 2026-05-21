@@ -396,7 +396,9 @@ A linked list is the most basic but also the most important data structure. Almo
 
 A **node** is the fundamental building block of a linked list. It holds the actual data item and information of the next node. Multiple nodes, when chained together, make up a single linked list. All the operations on a linked list are performed by manipulating individual nodes and their links. Inserting, deleting, or updating data items in a list are all performed using the list's nodes.
 
-## Structure of a node
+<details>
+<summary><h2>Structure of a node</h2></summary>
+
 
 A singly linked list node has two sections.
 
@@ -440,92 +442,33 @@ node.next -> nullnode {style.stroke-dash: 4}
 
 <p align="center"><strong>A singly linked list node stores two fields: <code>val</code> (the data) and <code>next</code> (the address of the following node, or <code>null</code> if it is the last).</strong></p>
 
-## Implementing a node
+</details>
+<details>
+<summary><h2>Implementing a node</h2></summary>
+
 
 To define a node in code, we create a Node class that encapsulates the information a singly linked list node must have: **data** and a reference to the next node. Our class should also have a constructor to initialize the values in nodes at the time of its creation. We can pass in a data value stored in the node and the reference to the next node. We are responsible for linking it to any other node when we see fit.
 
 
-```pseudocode
-class ListNode:
-    field val                                          # the data this node holds
-    field next                                         # reference to the next node; null if tail
-
-node1 ← new ListNode(5)
-node2 ← new ListNode(7)
-node1.next ← node2                                     # link node1 → node2
-print node1.val, "->", node2.val
-```
-
 ```python run
+
 class ListNode:
     def __init__(self, val):
         self.val = val
         self.next = None
-
-
-# Usage
-node1 = ListNode(5)
-node2 = ListNode(7)
-node1.next = node2  # Link node1 → node2
-print(node1.val, "->", node2.val)  # 5 -> 7
 ```
 
 ```java run
-public class Main {
-    static class ListNode {
-        int val;
-        ListNode next;
 
-        ListNode() {}                          // Default: val=0, next=null
-        ListNode(int val) { this.val = val; }  // next stays null until linked
-    }
-
-    public static void main(String[] args) {
-        ListNode node1 = new ListNode(5);
-        ListNode node2 = new ListNode(7);
-        node1.next = node2;  // Link node1 → node2
-        System.out.println(node1.val + " -> " + node2.val);  // 5 -> 7
-    }
-}
-```
-
-```c run
-#include <stdio.h>
-#include <stdlib.h>
-
-typedef struct ListNode {
+class ListNode {
     int val;
-    struct ListNode *next;  // Pointer to the next node; NULL if tail
-} ListNode;
-
-ListNode* newNode(int val) {
-    ListNode *node = (ListNode*)malloc(sizeof(ListNode));
-    node->val  = val;
-    node->next = NULL;  // Newly created nodes start disconnected
-    return node;
-}
-
-int main() {
-    ListNode *node1 = newNode(5);
-    ListNode *node2 = newNode(7);
-    node1->next = node2;  // Link node1 → node2
-    printf("%d -> %d\n", node1->val, node2->val);  // 5 -> 7
-    free(node1);
-    free(node2);
-    return 0;
+    ListNode next;
+    ListNode() {}
+    ListNode(int val) { this.val = val; }
 }
 ```
 
-```scala run
-class ListNode(var v: Int = 0, var next: ListNode = null)
-
-object Main extends App {
-  val node1 = new ListNode(5)
-  val node2 = new ListNode(7)
-  node1.next = node2  // Link node1 → node2
-  println(s"${node1.v} -> ${node2.v}")  // 5 -> 7
-}
-```
+</details>
 
 
 ***
@@ -778,7 +721,9 @@ Output: none
 
 ---
 
-## What Makes a Node a "Boundary"?
+<details>
+<summary><h2>What Makes a Node a "Boundary"?</h2></summary>
+
 
 A linked list has exactly two structural landmarks: the **head** (entry point, nothing points *to* it) and the **tail** (exit point, nothing points *from* it — its `next` is `null`). Every other node is interior — reachable through its predecessor and pointing to a successor. The entire problem reduces to answering **two yes/no questions** about the given node:
 
@@ -834,40 +779,40 @@ The truth table writes itself:
 
 Because the tail is the *only* node whose `next` is `null`. The given node itself carries that information — we don't have to find the tail, we just ask "is your `next` null?" and believe the answer. That's the whole trick, and it's a preview of a powerful lesson: **a linked list node is a self-describing object**. Most questions about a single node can be answered locally, without traversal.
 
----
+</details>
+<details>
+<summary><h2>Solution &amp; Analysis</h2></summary>
 
-## The Solution
-
-
-```pseudocode
-function boundaryNode(head, node):
-    # If either head or node is null, return "none"
-    if head is null OR node is null:
-        return "none"
-
-    # If head and node are the same, and node has no next node, return "both"
-    else if node = head AND node.next is null:
-        return "both"
-
-    # If head and node are the same, but node has a next node, return "first"
-    else if node = head:
-        return "first"
-
-    # If node is the last node (i.e., it has no next node), return "last"
-    else if node.next is null:
-        return "last"
-
-    # If none of the above conditions are met, return "none"
-    return "none"
-```
+### The Solution
 
 ```python run
 from typing import Optional
 
+
 class ListNode:
-    def __init__(self, val):
+    def __init__(self, val=0, nxt=None):
         self.val = val
-        self.next = None
+        self.next = nxt
+
+
+def from_list(values):
+    if not values:
+        return None
+    head = ListNode(values[0])
+    cur = head
+    for v in values[1:]:
+        cur.next = ListNode(v)
+        cur = cur.next
+    return head
+
+
+def to_list(head):
+    out = []
+    while head is not None:
+        out.append(head.val)
+        head = head.next
+    return out
+
 
 class Solution:
     def boundary_node(
@@ -897,22 +842,27 @@ class Solution:
         return "none"
 
 
-# --- test ---
-def build(vals):
-    dummy = ListNode(0)
-    cur = dummy
-    nodes = []
-    for v in vals:
-        cur.next = ListNode(v)
-        cur = cur.next
-        nodes.append(cur)
-    return dummy.next, nodes
+# Examples from the problem statement
+h1 = from_list([5, 7, 3, 10])
+print(Solution().boundary_node(h1, h1))                     # first
 
-sol = Solution()
-head, nodes = build([5, 7, 3, 10])
-print(sol.boundary_node(head, nodes[0]))   # first
-print(sol.boundary_node(head, nodes[3]))   # last
-print(sol.boundary_node(head, nodes[2]))   # none
+h2 = from_list([5, 7, 3, 10])
+last = h2.next.next.next
+print(Solution().boundary_node(h2, last))                   # last
+
+h3 = from_list([5])
+print(Solution().boundary_node(h3, h3))                     # both
+
+h4 = from_list([5, 7, 3, 10])
+mid = h4.next.next                                          # node with val 3
+print(Solution().boundary_node(h4, mid))                    # none
+
+# Edge cases
+print(Solution().boundary_node(None, None))                 # none
+
+h5 = from_list([1, 2])
+print(Solution().boundary_node(h5, h5))                     # first
+print(Solution().boundary_node(h5, h5.next))                # last
 ```
 
 ```java run
@@ -920,9 +870,26 @@ public class Main {
     static class ListNode {
         int val;
         ListNode next;
-
         ListNode() {}
         ListNode(int val) { this.val = val; }
+        ListNode(int val, ListNode next) { this.val = val; this.next = next; }
+    }
+
+    static ListNode fromList(int... values) {
+        if (values.length == 0) return null;
+        ListNode head = new ListNode(values[0]);
+        ListNode cur = head;
+        for (int i = 1; i < values.length; i++) {
+            cur.next = new ListNode(values[i]);
+            cur = cur.next;
+        }
+        return head;
+    }
+
+    static java.util.List<Integer> toList(ListNode head) {
+        java.util.List<Integer> out = new java.util.ArrayList<>();
+        while (head != null) { out.add(head.val); head = head.next; }
+        return out;
     }
 
     static class Solution {
@@ -957,112 +924,28 @@ public class Main {
     }
 
     public static void main(String[] args) {
-        ListNode n1 = new ListNode(5), n2 = new ListNode(7),
-                 n3 = new ListNode(3), n4 = new ListNode(10);
-        n1.next = n2; n2.next = n3; n3.next = n4;
+        // Examples from the problem statement
+        ListNode h1 = fromList(5, 7, 3, 10);
+        System.out.println(new Solution().boundaryNode(h1, h1));                 // first
 
-        Solution sol = new Solution();
-        System.out.println(sol.boundaryNode(n1, n1));   // first
-        System.out.println(sol.boundaryNode(n1, n4));   // last
-        System.out.println(sol.boundaryNode(n1, n3));   // none
+        ListNode h2 = fromList(5, 7, 3, 10);
+        ListNode last = h2.next.next.next;
+        System.out.println(new Solution().boundaryNode(h2, last));               // last
+
+        ListNode h3 = fromList(5);
+        System.out.println(new Solution().boundaryNode(h3, h3));                 // both
+
+        ListNode h4 = fromList(5, 7, 3, 10);
+        ListNode mid = h4.next.next;                                             // node with val 3
+        System.out.println(new Solution().boundaryNode(h4, mid));                // none
+
+        // Edge cases
+        System.out.println(new Solution().boundaryNode(null, null));             // none
+
+        ListNode h5 = fromList(1, 2);
+        System.out.println(new Solution().boundaryNode(h5, h5));                 // first
+        System.out.println(new Solution().boundaryNode(h5, h5.next));            // last
     }
-}
-```
-
-```c run
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-
-typedef struct ListNode { int val; struct ListNode *next; } ListNode;
-
-ListNode* newNode(int v) {
-    ListNode *n = malloc(sizeof(ListNode));
-    n->val = v; n->next = NULL;
-    return n;
-}
-
-const char* boundaryNode(ListNode *head, ListNode *node) {
-
-    /* If either head or node is NULL, return "none" */
-    if (!head || !node) {
-        return "none";
-    }
-
-    /* If head and node are the same, and node has no next node,
-       return "both" */
-    else if (node == head && node->next == NULL) {
-        return "both";
-    }
-
-    /* If head and node are the same, but node has a next node,
-       return "first" */
-    else if (node == head) {
-        return "first";
-    }
-
-    /* If node is the last node (i.e., it has no next node),
-       return "last" */
-    else if (node->next == NULL) {
-        return "last";
-    }
-
-    /* If none of the above conditions are met, return "none" */
-    return "none";
-}
-
-int main() {
-    ListNode *n1 = newNode(5), *n2 = newNode(7),
-             *n3 = newNode(3), *n4 = newNode(10);
-    n1->next = n2; n2->next = n3; n3->next = n4;
-
-    printf("%s\n", boundaryNode(n1, n1));  /* first */
-    printf("%s\n", boundaryNode(n1, n4));  /* last  */
-    printf("%s\n", boundaryNode(n1, n3));  /* none  */
-    return 0;
-}
-```
-
-```scala run
-class ListNode(var v: Int, var next: ListNode = null)
-
-object Main extends App {
-  class Solution {
-    def boundaryNode(head: ListNode, node: ListNode): String = {
-
-      // If either head or node is null, return "none"
-      if (head == null || node == null) {
-        "none"
-      }
-      // If head and node are the same, and node has no next node,
-      // return "both"
-      else if ((node eq head) && node.next == null) {
-        "both"
-      }
-      // If head and node are the same, but node has a next node,
-      // return "first"
-      else if (node eq head) {
-        "first"
-      }
-      // If node is the last node (i.e., it has no next node), return "last"
-      else if (node.next == null) {
-        "last"
-      }
-      // If none of the above conditions are met, return "none"
-      else {
-        "none"
-      }
-    }
-  }
-
-  val n1 = new ListNode(5); val n2 = new ListNode(7)
-  val n3 = new ListNode(3); val n4 = new ListNode(10)
-  n1.next = n2; n2.next = n3; n3.next = n4
-
-  val sol = new Solution
-  println(sol.boundaryNode(n1, n1))   // first
-  println(sol.boundaryNode(n1, n4))   // last
-  println(sol.boundaryNode(n1, n3))   // none
 }
 ```
 
@@ -1078,7 +961,6 @@ Step 4: node.next == null?      →  10's next is null             →  true  �
 ```
 
 </details>
-
 <details>
 <summary><strong>Trace — head = [5], node = the only node</strong></summary>
 
@@ -1093,9 +975,7 @@ fires when both conditions hold in the same elif arm.
 
 </details>
 
----
-
-## Complexity Analysis
+### Complexity Analysis
 
 | | Complexity | Reasoning |
 |---|---|---|
@@ -1104,9 +984,7 @@ fires when both conditions hold in the same elif arm.
 
 The entire point of the problem is to prove the O(1) bound. Any solution that walks the list (to, say, find the tail by counting) already misses the lesson.
 
----
-
-## Edge Cases
+### Edge Cases
 
 | Case | Example | Expected | Reasoning |
 |---|---|---|---|
@@ -1118,9 +996,10 @@ The entire point of the problem is to prove the O(1) bound. Any solution that wa
 | Interior node | `[5, 7, 3]`, node=7 | `none` | Neither Q1 nor Q2 fires |
 | Two-node list, node is middle | impossible | — | In a 2-node list there is no middle — every node is a boundary |
 
----
+</details>
+<details>
+<summary><h2>Final Takeaway</h2></summary>
 
-## Final Takeaway
 
 Every linked-list problem you'll ever solve starts with one of two questions: *"is this the head?"* or *"does this node have a successor?"* You just wrote the answer to both. Memorise the pattern — **`node == head`** is pointer identity, **`node.next == null`** is tail detection — because these two checks will reappear in every insertion, deletion, reversal, and traversal problem to come. Notice something deeper: we didn't actually need the *value* stored in the node. Linked-list problems are almost always about **structure**, not data.
 
@@ -1131,3 +1010,5 @@ Every linked-list problem you'll ever solve starts with one of two questions: *"
 > One pass suffices. Walk from the head, incrementing an index counter. When you hit the target node, remember its index and whether it was the head (index 0) — but keep walking to see if it's also the tail (its `next` was null when you hit it). Return `-2` if index was 0 and it was the tail, `0` if index was 0 and there's more list after it, `-1` if it was the tail but not the head, otherwise the positive index.
 >
 > </details>
+
+</details>

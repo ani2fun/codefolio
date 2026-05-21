@@ -104,112 +104,80 @@ Note the ordering: *add first, then check size, then process*. This guarantees t
 The generic skeleton — every problem in this lesson is a one-line change to step 2.3 ("process the map").
 
 
-```pseudocode
-function fixed_sliding_window(arr, k):
-    freq ← empty Map; start ← 0
-    for end from 0 to length(arr) − 1:
-        freq[arr[end]] ← freq[arr[end]] + 1
-        if end − start + 1 > k:
-            freq[arr[start]] ← freq[arr[start]] − 1
-            if freq[arr[start]] = 0: remove arr[start] from freq
-            start ← start + 1
-        if end − start + 1 = k:
-            # process this window
-            pass
-```
-
 ```python run
-from collections import defaultdict
-
-def fixed_sliding_window(arr, k):
+def fixed_size_sliding_window(arr: List[str], k: int) -> None:
+    # Initialize start and end to 0
     start, end = 0, 0
-    freq = defaultdict(int)
+
+    # Initialize frequency dictionary to count character occurrences
+    frequency: dict[str, int] = defaultdict(int)
+
+    # Move the window one step to the right until
+    # it reaches the end of the array
     while end < len(arr):
-        freq[arr[end]] += 1                                 # add right edge
-        if end - start + 1 > k:                             # window too big?
-            freq[arr[start]] -= 1                           #   drop left edge
-            if freq[arr[start]] == 0: del freq[arr[start]]
+        # Add contribution of arr[end] to the frequency map
+        frequency[arr[end]] = frequency.get(arr[end], 0) + 1
+
+        # Check if window size is greater than k
+        if end - start + 1 > k:
+            # Remove contribution of arr[start] from frequency map
+            frequency[arr[start]] -= 1
+            # Remove arr[start] from frequency if its count is 0
+            if frequency[arr[start]] == 0:
+                del frequency[arr[start]]
+            # Increment start to contract the window from start
             start += 1
+
+        # Check if window size equals k
         if end - start + 1 == k:
-            # ── process this window ──
+            # Process the values in frequency map
+            # (Additional processing logic would go here)
             pass
+
+        # Increment end to expand the window from end
         end += 1
 
-# Demo — uncomment a print inside the process block to see windows
-fixed_sliding_window(['a','b','a','c','b','d','a'], 4)
+    return
 ```
 
 ```java run
-import java.util.*;
+public class FixedSizeSlidingWindow {
 
-public class Main {
-    static void fixedSlidingWindow(char[] arr, int k) {
+    public void fixedSizeSlidingWindow(char[] arr, int k) {
+        // Initialize start and end to 0
         int start = 0, end = 0;
-        Map<Character, Integer> freq = new HashMap<>();
+
+        // Initialize hash map to map characters to integer values
+        HashMap<Character, Integer> frequency = new HashMap<>();
+
+        // Move the window one step to the right until
+        // it reaches the end of the array
         while (end < arr.length) {
-            freq.merge(arr[end], 1, Integer::sum);
+            // Add contribution of arr[end] to the frequency map
+            frequency.put(arr[end], frequency.getOrDefault(arr[end], 0) + 1);
+
+            // Check if window size is greater than k
             if (end - start + 1 > k) {
-                freq.merge(arr[start], -1, Integer::sum);
-                if (freq.get(arr[start]) == 0) freq.remove(arr[start]);
+                // Remove contribution of arr[start] from frequency map
+                frequency.put(arr[start], frequency.get(arr[start]) - 1);
+                if (frequency.get(arr[start]) == 0) {
+                    frequency.remove(arr[start]); // Remove key if count is 0
+                }
+                // Increment start to contract the window from start
                 start++;
             }
+
+            // Check if window size equals k
             if (end - start + 1 == k) {
-                // ── process this window ──
+                // Process the values in frequency map
             }
+
+            // Increment end to expand the window from end
             end++;
         }
+
+        return;
     }
-    public static void main(String[] args) {
-        fixedSlidingWindow(new char[]{'a','b','a','c','b','d','a'}, 4);
-        System.out.println("done");
-    }
-}
-```
-
-```c run
-#include <stdio.h>
-
-void fixed_sliding_window(const char *arr, int n, int k) {
-    int freq[128] = {0};
-    int start = 0;
-    for (int end = 0; end < n; end++) {
-        freq[(unsigned char)arr[end]]++;
-        if (end - start + 1 > k) { freq[(unsigned char)arr[start]]--; start++; }
-        if (end - start + 1 == k) {
-            // ── process this window ──
-        }
-    }
-}
-
-int main() {
-    const char *arr = "abacbda";
-    fixed_sliding_window(arr, 7, 4);
-    printf("done\n");
-}
-```
-
-```scala run
-import scala.collection.mutable
-
-def fixedSlidingWindow(arr: Array[Char], k: Int): Unit = {
-  val freq = mutable.Map[Char, Int]().withDefaultValue(0)
-  var start = 0
-  for (end <- arr.indices) {
-    freq(arr(end)) += 1
-    if (end - start + 1 > k) {
-      freq(arr(start)) -= 1
-      if (freq(arr(start)) == 0) freq -= arr(start)
-      start += 1
-    }
-    if (end - start + 1 == k) {
-      // ── process this window ──
-    }
-  }
-}
-
-object Main extends App {
-  fixedSlidingWindow(Array('a','b','a','c','b','d','a'), 4)
-  println("done")
 }
 ```
 
@@ -263,127 +231,142 @@ Given an integer array `arr` and a positive integer `k`, return `true` if any su
 ### Example 3
 > -   **Input:** `arr = [1, 2, 3, 4], k = 2` → **Output:** `false`
 
-## Approach
+<details>
+<summary><h2>Approach</h2></summary>
+
 
 Slide a window of size `k`; maintain frequencies. The instant any frequency exceeds 1 inside a `k`-window, we have a duplicate — return `true`.
 
 > *Mental shortcut* — duplicate-in-window is "is the size of the window's distinct-set less than k?". Equivalently, "did any insert push a frequency above 1?". The hash map gives both views in O(1).
 
-## Solution
+</details>
+<details>
+<summary><h2>Solution</h2></summary>
 
 
-```pseudocode
-function duplicate_detection(arr, k):
-    freq ← empty Map; start ← 0
-    for end from 0 to length(arr) − 1:
-        freq[arr[end]] ← freq[arr[end]] + 1
-        if end − start + 1 > k:
-            freq[arr[start]] ← freq[arr[start]] − 1
-            if freq[arr[start]] = 0: remove arr[start] from freq
-            start ← start + 1
-        if freq[arr[end]] > 1: return true
-    return false
-```
 
 ```python run
 from collections import defaultdict
+from typing import List
 
-def duplicate_detection(arr, k):
-    freq = defaultdict(int); start = 0
-    for end in range(len(arr)):
-        freq[arr[end]] += 1
-        # Contract first so the window is at most k wide
-        if end - start + 1 > k:
-            freq[arr[start]] -= 1
-            if freq[arr[start]] == 0: del freq[arr[start]]
-            start += 1
-        # If the just-added element repeats, the window has a duplicate
-        if freq[arr[end]] > 1: return True
-    return False
+class Solution:
+    def duplicate_detection(self, arr: List[int], k: int) -> bool:
 
-print(duplicate_detection([2,1,2,3,2,1,4,5], 5))   # True
-print(duplicate_detection([1,1,2,4], 3))           # True
-print(duplicate_detection([1,2,3,4], 2))           # False
+        # Map to store elements within the window and their counts
+        frequency = defaultdict(int)
+
+        # The start and end pointers for the window
+        start, end = 0, 0
+
+        while end < len(arr):
+
+            # Add the current element to the window
+            end_element = arr[end]
+            frequency[end_element] += 1
+
+            # Adjust the window size if it exceeds k
+            if end - start >= k:
+                start_element = arr[start]
+                frequency[start_element] -= 1
+
+                # Erase the current element from the window if its
+                # frequency becomes 0
+                if frequency[start_element] == 0:
+                    del frequency[start_element]
+                start += 1
+
+            # Check if there's a duplicate in the window
+            if frequency[end_element] > 1:
+                return True
+
+            # Move the end pointer to expand the window
+            end += 1
+
+        return False
+
+
+# Examples from the problem statement
+print(Solution().duplicate_detection([2, 1, 2, 3, 2, 1, 4, 5], 5))  # True
+print(Solution().duplicate_detection([1, 1, 2, 4], 3))               # True
+print(Solution().duplicate_detection([1, 2, 3, 4], 2))               # False
+
+# Edge cases
+print(Solution().duplicate_detection([], 3))                          # False
+print(Solution().duplicate_detection([1], 1))                         # False
+print(Solution().duplicate_detection([1, 2], 1))                      # False
+print(Solution().duplicate_detection([1, 1], 2))                      # True
+print(Solution().duplicate_detection([1, 2, 1], 5))                   # True
 ```
 
 ```java run
 import java.util.*;
 
 public class Main {
-    static boolean duplicateDetection(int[] arr, int k) {
-        Map<Integer, Integer> freq = new HashMap<>();
-        int start = 0;
-        for (int end = 0; end < arr.length; end++) {
-            freq.merge(arr[end], 1, Integer::sum);
-            if (end - start + 1 > k) {
-                freq.merge(arr[start], -1, Integer::sum);
-                if (freq.get(arr[start]) == 0) freq.remove(arr[start]);
-                start++;
+    static class Solution {
+        public boolean duplicateDetection(int[] arr, int k) {
+
+            // Map to store elements within the window and their counts
+            Map<Integer, Integer> frequency = new HashMap<>();
+
+            // The start and end pointers for the window
+            int start = 0;
+            int end = 0;
+
+            while (end < arr.length) {
+
+                // Add the current element to the window
+                int endElement = arr[end];
+                frequency.put(
+                    endElement,
+                    frequency.getOrDefault(endElement, 0) + 1
+                );
+
+                // Adjust the window size if it exceeds k
+                if (end - start >= k) {
+                    int startElement = arr[start];
+                    frequency.put(
+                        startElement,
+                        frequency.get(startElement) - 1
+                    );
+
+                    // Erase the current element from the window if its
+                    // frequency becomes 0
+                    if (frequency.get(startElement) == 0) {
+                        frequency.remove(startElement);
+                    }
+                    start++;
+                }
+
+                // Check if there's a duplicate in the window
+                if (frequency.get(endElement) > 1) {
+                    return true;
+                }
+
+                // Move the end pointer to expand the window
+                end++;
             }
-            if (freq.get(arr[end]) > 1) return true;
+
+            return false;
         }
-        return false;
     }
+
     public static void main(String[] args) {
-        System.out.println(duplicateDetection(new int[]{2,1,2,3,2,1,4,5}, 5));
-        System.out.println(duplicateDetection(new int[]{1,1,2,4}, 3));
-        System.out.println(duplicateDetection(new int[]{1,2,3,4}, 2));
+        // Examples from the problem statement
+        System.out.println(new Solution().duplicateDetection(new int[]{2, 1, 2, 3, 2, 1, 4, 5}, 5)); // true
+        System.out.println(new Solution().duplicateDetection(new int[]{1, 1, 2, 4}, 3));              // true
+        System.out.println(new Solution().duplicateDetection(new int[]{1, 2, 3, 4}, 2));              // false
+
+        // Edge cases
+        System.out.println(new Solution().duplicateDetection(new int[]{}, 3));                        // false
+        System.out.println(new Solution().duplicateDetection(new int[]{1}, 1));                       // false
+        System.out.println(new Solution().duplicateDetection(new int[]{1, 2}, 1));                    // false
+        System.out.println(new Solution().duplicateDetection(new int[]{1, 1}, 2));                    // true
+        System.out.println(new Solution().duplicateDetection(new int[]{1, 2, 1}, 5));                 // true
     }
 }
 ```
 
-```c run
-#include <stdio.h>
-#include <stdbool.h>
-#include <stdlib.h>
-
-// For small int ranges, a fixed-size array is the fastest "hash map".
-// For arbitrary ints, use open-addressing or stdlib equivalents.
-bool duplicate_detection(int *arr, int n, int k) {
-    // Map from value to count; we use a small array assuming values in [0, 1000)
-    int freq[1001] = {0};
-    int start = 0;
-    for (int end = 0; end < n; end++) {
-        freq[arr[end]]++;
-        if (end - start + 1 > k) { freq[arr[start]]--; start++; }
-        if (freq[arr[end]] > 1) return true;
-    }
-    return false;
-}
-
-int main() {
-    int a1[] = {2,1,2,3,2,1,4,5}, a2[] = {1,1,2,4}, a3[] = {1,2,3,4};
-    printf("%d %d %d\n",
-        duplicate_detection(a1, 8, 5),
-        duplicate_detection(a2, 4, 3),
-        duplicate_detection(a3, 4, 2));
-}
-```
-
-```scala run
-import scala.collection.mutable
-
-def duplicateDetection(arr: Array[Int], k: Int): Boolean = {
-  val freq = mutable.Map[Int, Int]().withDefaultValue(0)
-  var start = 0
-  for (end <- arr.indices) {
-    freq(arr(end)) += 1
-    if (end - start + 1 > k) {
-      freq(arr(start)) -= 1
-      if (freq(arr(start)) == 0) freq -= arr(start)
-      start += 1
-    }
-    if (freq(arr(end)) > 1) return true
-  }
-  false
-}
-
-object Main extends App {
-  println(duplicateDetection(Array(2,1,2,3,2,1,4,5), 5))
-  println(duplicateDetection(Array(1,1,2,4), 3))
-  println(duplicateDetection(Array(1,2,3,4), 2))
-}
-```
+</details>
 
 
 ***
@@ -403,7 +386,9 @@ Given `arr` and a positive integer `k`, return an array containing the count of 
 ### Example 3
 > -   **Input:** `arr = [1,2,3,4], k = 1` → **Output:** `[1, 1, 1, 1]`
 
-## Approach
+<details>
+<summary><h2>Approach</h2></summary>
+
 
 The number of *distinct* elements in the window is exactly `len(freq_map)` — the number of keys with non-zero count. The trick: when a frequency drops to zero on contraction, **delete the key** from the map so the size reflects only currently-present elements.
 
@@ -436,117 +421,138 @@ m -> d
 
 <p align="center"><strong>Distinct count via map size — every distinct element is one key in the map. Maintain the map's invariant that "count is non-zero" by deleting zero-count keys on contraction, and <code>len(map)</code> is your answer.</strong></p>
 
-## Solution
+</details>
+<details>
+<summary><h2>Solution</h2></summary>
 
 
-```pseudocode
-function subarray_distinctness(arr, k):
-    freq ← empty Map; start ← 0; result ← empty list
-    for end from 0 to length(arr) − 1:
-        freq[arr[end]] ← freq[arr[end]] + 1
-        if end − start + 1 = k:
-            append size(freq) to result
-            freq[arr[start]] ← freq[arr[start]] − 1
-            if freq[arr[start]] = 0: remove arr[start] from freq
-            start ← start + 1
-    return result
-```
 
 ```python run
 from collections import defaultdict
+from typing import List
 
-def subarray_distinctness(arr, k):
-    freq = defaultdict(int); start = 0; result = []
-    for end in range(len(arr)):
-        freq[arr[end]] += 1
-        if end - start + 1 == k:
-            result.append(len(freq))            # distinct count for this window
-            freq[arr[start]] -= 1               # then contract for next window
-            if freq[arr[start]] == 0: del freq[arr[start]]
-            start += 1
-    return result
+class Solution:
+    def subarray_distinctness(self, arr: List[int], k: int) -> List[int]:
 
-print(subarray_distinctness([2,1,2,3,2,1,4,5], 5))   # [3, 3, 4, 5]
-print(subarray_distinctness([1,1,2,4], 3))           # [2, 3]
-print(subarray_distinctness([1,2,3,4], 1))           # [1, 1, 1, 1]
+        # Initialize a dictionary to keep track of the count of elements
+        # in the current window
+        frequency = defaultdict(int)
+
+        # Initialize the start and end indices of the window
+        start, end = 0, 0
+
+        # Initialize the result list to hold the count of distinct
+        # elements in every subarray
+        result = []
+
+        # Loop through the array
+        while end < len(arr):
+
+            # Add the current element to the count dictionary
+            frequency[arr[end]] += 1
+
+            # If the current window size is equal to k, calculate the
+            # count of distinct elements
+            if end - start + 1 == k:
+                result.append(len(frequency))
+
+                # Remove the leftmost element from the count dictionary
+                frequency[arr[start]] -= 1
+                if frequency[arr[start]] == 0:
+                    del frequency[arr[start]]
+
+                # Contract the window
+                start += 1
+
+            # Expand the window to the right
+            end += 1
+
+        return result
+
+
+# Examples from the problem statement
+print(Solution().subarray_distinctness([2, 1, 2, 3, 2, 1, 4, 5], 5))  # [3, 3, 4, 5]
+print(Solution().subarray_distinctness([1, 1, 2, 4], 3))               # [2, 3]
+print(Solution().subarray_distinctness([1, 2, 3, 4], 1))               # [1, 1, 1, 1]
+
+# Edge cases
+print(Solution().subarray_distinctness([1], 1))                         # [1]
+print(Solution().subarray_distinctness([1, 1, 1, 1], 2))               # [1, 1, 1]
+print(Solution().subarray_distinctness([1, 2, 3, 4], 4))               # [4]
+print(Solution().subarray_distinctness([5, 5, 5], 3))                  # [1]
 ```
 
 ```java run
 import java.util.*;
 
 public class Main {
-    static List<Integer> subarrayDistinctness(int[] arr, int k) {
-        Map<Integer, Integer> freq = new HashMap<>();
-        List<Integer> result = new ArrayList<>();
-        int start = 0;
-        for (int end = 0; end < arr.length; end++) {
-            freq.merge(arr[end], 1, Integer::sum);
-            if (end - start + 1 == k) {
-                result.add(freq.size());
-                freq.merge(arr[start], -1, Integer::sum);
-                if (freq.get(arr[start]) == 0) freq.remove(arr[start]);
-                start++;
+    static class Solution {
+        public List<Integer> subarrayDistinctness(int[] arr, int k) {
+
+            // Initialize a map to keep track of the count of elements in the
+            // current window
+            Map<Integer, Integer> frequency = new HashMap<>();
+
+            // Initialize the start and end indices of the window
+            int start = 0;
+            int end = 0;
+
+            // Initialize the result list to hold the count of distinct
+            // elements in every subarray
+            List<Integer> result = new ArrayList<>();
+
+            // Loop through the array
+            while (end < arr.length) {
+
+                // Add the current element to the count map
+                frequency.put(
+                    arr[end],
+                    frequency.getOrDefault(arr[end], 0) + 1
+                );
+
+                // If the current window size is equal to k, calculate the
+                // count of distinct elements
+                if (end - start + 1 == k) {
+                    result.add(frequency.size());
+
+                    // Remove the leftmost element from the count map
+                    int startElement = arr[start];
+                    frequency.put(
+                        startElement,
+                        frequency.get(startElement) - 1
+                    );
+                    if (frequency.get(startElement) == 0) {
+                        frequency.remove(startElement);
+                    }
+
+                    // Contract the window
+                    start++;
+                }
+
+                // Expand the window to the right
+                end++;
             }
+
+            return result;
         }
-        return result;
     }
+
     public static void main(String[] args) {
-        System.out.println(subarrayDistinctness(new int[]{2,1,2,3,2,1,4,5}, 5));
-        System.out.println(subarrayDistinctness(new int[]{1,1,2,4}, 3));
-        System.out.println(subarrayDistinctness(new int[]{1,2,3,4}, 1));
+        // Examples from the problem statement
+        System.out.println(new Solution().subarrayDistinctness(new int[]{2, 1, 2, 3, 2, 1, 4, 5}, 5)); // [3, 3, 4, 5]
+        System.out.println(new Solution().subarrayDistinctness(new int[]{1, 1, 2, 4}, 3));              // [2, 3]
+        System.out.println(new Solution().subarrayDistinctness(new int[]{1, 2, 3, 4}, 1));              // [1, 1, 1, 1]
+
+        // Edge cases
+        System.out.println(new Solution().subarrayDistinctness(new int[]{1}, 1));                       // [1]
+        System.out.println(new Solution().subarrayDistinctness(new int[]{1, 1, 1, 1}, 2));              // [1, 1, 1]
+        System.out.println(new Solution().subarrayDistinctness(new int[]{1, 2, 3, 4}, 4));              // [4]
+        System.out.println(new Solution().subarrayDistinctness(new int[]{5, 5, 5}, 3));                 // [1]
     }
 }
 ```
 
-```c run
-#include <stdio.h>
-
-void subarray_distinctness(int *arr, int n, int k) {
-    int freq[1001] = {0}; int distinct = 0; int start = 0;
-    for (int end = 0; end < n; end++) {
-        if (freq[arr[end]]++ == 0) distinct++;     // new key entered
-        if (end - start + 1 == k) {
-            printf("%d ", distinct);
-            if (--freq[arr[start]] == 0) distinct--;
-            start++;
-        }
-    }
-    printf("\n");
-}
-
-int main() {
-    int a1[] = {2,1,2,3,2,1,4,5}, a2[] = {1,1,2,4}, a3[] = {1,2,3,4};
-    subarray_distinctness(a1, 8, 5);
-    subarray_distinctness(a2, 4, 3);
-    subarray_distinctness(a3, 4, 1);
-}
-```
-
-```scala run
-import scala.collection.mutable
-
-def subarrayDistinctness(arr: Array[Int], k: Int): List[Int] = {
-  val freq = mutable.Map[Int, Int]().withDefaultValue(0)
-  val result = mutable.ArrayBuffer[Int]()
-  var start = 0
-  for (end <- arr.indices) {
-    freq(arr(end)) += 1
-    if (end - start + 1 == k) {
-      result += freq.size
-      freq(arr(start)) -= 1
-      if (freq(arr(start)) == 0) freq -= arr(start)
-      start += 1
-    }
-  }
-  result.toList
-}
-
-object Main extends App {
-  println(subarrayDistinctness(Array(2,1,2,3,2,1,4,5), 5))
-  println(subarrayDistinctness(Array(1,1,2,4), 3))
-  println(subarrayDistinctness(Array(1,2,3,4), 1))
-}
-```
+</details>
 
 
 ***
@@ -566,140 +572,155 @@ Given two strings `s1` and `s2`, return `true` if `s2` contains a permutation of
 ### Example 3
 > -   **Input:** `s1 = "abc", s2 = "defghiab"` → **Output:** `false`
 
-## Approach
+<details>
+<summary><h2>Approach</h2></summary>
+
 
 The window size is fixed: `len(s1)`. A window is a permutation of `s1` iff the window's frequency map equals `s1`'s frequency map. Slide the window over `s2`; compare the maps each time the window is the right size.
 
 To avoid O(K) map comparisons every step, you can maintain a counter `matches` of how many distinct characters have *exactly* the right count. We use the simpler `map == map` here for clarity; the optimisation matters only for large K.
 
-## Solution
+</details>
+<details>
+<summary><h2>Solution</h2></summary>
 
 
-```pseudocode
-function contains_variation(s1, s2):
-    if length(s1) > length(s2): return false
-    target ← count_frequency(s1)
-    window ← empty Map; start ← 0
-    for end from 0 to length(s2) − 1:
-        window[s2[end]] ← window[s2[end]] + 1
-        if end − start + 1 = length(s1):
-            if window matches target: return true
-            window[s2[start]] ← window[s2[start]] − 1
-            if window[s2[start]] = 0: remove s2[start] from window
-            start ← start + 1
-    return false
-```
 
 ```python run
-from collections import Counter, defaultdict
+from collections import defaultdict
+from typing import Dict
 
-def contains_variation(s1, s2):
-    if len(s1) > len(s2): return False
-    target = Counter(s1)
-    window = defaultdict(int); start = 0
-    for end in range(len(s2)):
-        window[s2[end]] += 1
-        if end - start + 1 == len(s1):
-            # Permutation iff the window's frequency map matches target's
-            if all(window.get(ch, 0) == target[ch] for ch in target):
-                return True
-            window[s2[start]] -= 1
-            if window[s2[start]] == 0: del window[s2[start]]
-            start += 1
-    return False
+class Solution:
+    def count_frequency(self, s: str) -> Dict[str, int]:
+        frequency = defaultdict(int)
+        for ch in s:
+            frequency[ch] += 1
 
-print(contains_variation("abc", "edbaclm"))    # True
-print(contains_variation("cod", "intdoce"))    # True
-print(contains_variation("abc", "defghiab"))   # False
+        return frequency
+
+    def contains_variation(self, s1: str, s2: str) -> bool:
+
+        # Frequency map for s1
+        s1_frequency = self.count_frequency(s1)
+
+        # Frequency maps for characters in sliding window in s2
+        frequency = defaultdict(int)
+
+        # The start and end pointers for the window
+        start, end = 0, 0
+
+        while end < len(s2):
+
+            # Add the current character to the window
+            char_end = s2[end]
+            frequency[char_end] += 1
+
+            # If the window size matches s1's length, check for a match
+            if end - start + 1 == len(s1):
+                if frequency == s1_frequency:
+                    return True
+
+                # Shrink the window from the left
+                char_start = s2[start]
+                frequency[char_start] -= 1
+                if frequency[char_start] == 0:
+                    del frequency[char_start]
+                start += 1
+
+            # Expand the window to the right
+            end += 1
+
+        return False
+
+
+# Examples from the problem statement
+print(Solution().contains_variation("abc", "edbaclm"))   # True
+print(Solution().contains_variation("cod", "intdoce"))   # True
+print(Solution().contains_variation("abc", "defghiab"))  # False
+
+# Edge cases
+print(Solution().contains_variation("a", "a"))           # True
+print(Solution().contains_variation("ab", "ba"))         # True
+print(Solution().contains_variation("abc", "abc"))       # True
+print(Solution().contains_variation("abc", "ab"))        # False
+print(Solution().contains_variation("aa", "aab"))        # True
 ```
 
 ```java run
 import java.util.*;
 
 public class Main {
-    static boolean containsVariation(String s1, String s2) {
-        if (s1.length() > s2.length()) return false;
-        Map<Character, Integer> target = new HashMap<>();
-        for (char c : s1.toCharArray()) target.merge(c, 1, Integer::sum);
-        Map<Character, Integer> w = new HashMap<>();
-        int start = 0;
-        for (int end = 0; end < s2.length(); end++) {
-            w.merge(s2.charAt(end), 1, Integer::sum);
-            if (end - start + 1 == s1.length()) {
-                if (w.equals(target)) return true;
-                w.merge(s2.charAt(start), -1, Integer::sum);
-                if (w.get(s2.charAt(start)) == 0) w.remove(s2.charAt(start));
-                start++;
+    static class Solution {
+        private Map<Character, Integer> countFrequency(String s) {
+            Map<Character, Integer> frequency = new HashMap<>();
+            for (char ch : s.toCharArray()) {
+                frequency.put(ch, frequency.getOrDefault(ch, 0) + 1);
             }
+
+            return frequency;
         }
-        return false;
+
+        public boolean containsVariation(String s1, String s2) {
+
+            // Frequency map for s1
+            Map<Character, Integer> s1Frequency = countFrequency(s1);
+
+            // Frequency maps for characters in sliding window in s2
+            Map<Character, Integer> frequency = new HashMap<>();
+
+            // The start and end pointers for the window
+            int start = 0;
+            int end = 0;
+
+            while (end < s2.length()) {
+
+                // Add the current character to the window
+                char endChar = s2.charAt(end);
+                frequency.put(
+                    endChar,
+                    frequency.getOrDefault(endChar, 0) + 1
+                );
+
+                // If the window size matches s1's length, check for a match
+                if (end - start + 1 == s1.length()) {
+                    if (frequency.equals(s1Frequency)) {
+                        return true;
+                    }
+
+                    // Shrink the window from the left
+                    char startChar = s2.charAt(start);
+                    frequency.put(startChar, frequency.get(startChar) - 1);
+                    if (frequency.get(startChar) == 0) {
+                        frequency.remove(startChar);
+                    }
+                    start++;
+                }
+
+                // Expand the window to the right
+                end++;
+            }
+
+            return false;
+        }
     }
+
     public static void main(String[] args) {
-        System.out.println(containsVariation("abc", "edbaclm"));
-        System.out.println(containsVariation("cod", "intdoce"));
-        System.out.println(containsVariation("abc", "defghiab"));
+        // Examples from the problem statement
+        System.out.println(new Solution().containsVariation("abc", "edbaclm"));   // true
+        System.out.println(new Solution().containsVariation("cod", "intdoce"));   // true
+        System.out.println(new Solution().containsVariation("abc", "defghiab"));  // false
+
+        // Edge cases
+        System.out.println(new Solution().containsVariation("a", "a"));           // true
+        System.out.println(new Solution().containsVariation("ab", "ba"));         // true
+        System.out.println(new Solution().containsVariation("abc", "abc"));       // true
+        System.out.println(new Solution().containsVariation("abc", "ab"));        // false
+        System.out.println(new Solution().containsVariation("aa", "aab"));        // true
     }
 }
 ```
 
-```c run
-#include <stdio.h>
-#include <string.h>
-#include <stdbool.h>
-
-bool contains_variation(const char *s1, const char *s2) {
-    int n1 = (int)strlen(s1), n2 = (int)strlen(s2);
-    if (n1 > n2) return false;
-    int target[128] = {0}, win[128] = {0};
-    for (const char *p = s1; *p; p++) target[(unsigned char)*p]++;
-    int start = 0;
-    for (int end = 0; end < n2; end++) {
-        win[(unsigned char)s2[end]]++;
-        if (end - start + 1 == n1) {
-            // Compare frequency vectors
-            int match = 1;
-            for (int i = 0; i < 128; i++) if (target[i] != win[i]) { match = 0; break; }
-            if (match) return true;
-            win[(unsigned char)s2[start]]--; start++;
-        }
-    }
-    return false;
-}
-
-int main() {
-    printf("%d %d %d\n",
-        contains_variation("abc", "edbaclm"),
-        contains_variation("cod", "intdoce"),
-        contains_variation("abc", "defghiab"));
-}
-```
-
-```scala run
-import scala.collection.mutable
-
-def containsVariation(s1: String, s2: String): Boolean = {
-  if (s1.length > s2.length) return false
-  val target = s1.groupBy(identity).view.mapValues(_.length).toMap
-  val w = mutable.Map[Char, Int]().withDefaultValue(0)
-  var start = 0
-  for (end <- s2.indices) {
-    w(s2(end)) += 1
-    if (end - start + 1 == s1.length) {
-      if (target.forall { case (k, v) => w(k) == v }) return true
-      w(s2(start)) -= 1
-      if (w(s2(start)) == 0) w -= s2(start)
-      start += 1
-    }
-  }
-  false
-}
-
-object Main extends App {
-  println(containsVariation("abc","edbaclm"))
-  println(containsVariation("cod","intdoce"))
-  println(containsVariation("abc","defghiab"))
-}
-```
+</details>
 
 
 ***
@@ -721,9 +742,13 @@ Given strings `s` and `p`, return all the start indices in `s` of substrings tha
 ### Example 3
 > -   **Input:** `s = "abcdef", p = "gh"` → **Output:** `[]`
 
-## Approach
+<details>
+<summary><h2>Approach</h2></summary>
 
-`Contains variation` returns the *first* match; `Anagram finder` returns *all* matches. Same scanning pattern, same window size (`len(p)`), same comparison — but instead of returning on the first match, append the start index to the result list and keep going.
+
+`Contains variation` returns the *first* match; `Anagram finder` returns *all* matches. Same scanning pattern, same window size (`len(p)`) — but instead of returning on the first match, append the start index to the result list and keep going.
+
+Rather than comparing two frequency maps each step, this solution keeps a single running counter, `count`, of how many characters from `p` are still *needed* in the current window. It starts at `len(p)`. When the right pointer brings in a character that the window still needs (`frequency[char] > 0`), `count` drops by one; the character's required count in `frequency` is then decremented (and may go negative, recording a surplus). When the left pointer drops a character that was genuinely part of `p`'s demand (`frequency[char] >= 0` after restoring it), `count` goes back up. Whenever `count` hits `0`, every character of `p` is accounted for inside the window — `start` is a valid anagram index.
 
 ```mermaid
 ---
@@ -753,140 +778,181 @@ flowchart LR
 
 <p align="center"><strong>Anagram finder — slide a window of size <code>len(p)</code> across <code>s</code>, recording start indices wherever the window's frequency map matches <code>p</code>'s. Same skeleton as <code>Contains variation</code>, just append-don't-return.</strong></p>
 
-## Solution
+</details>
+<details>
+<summary><h2>Solution</h2></summary>
 
 
-```pseudocode
-function anagram_finder(s, p):
-    if length(p) > length(s): return empty list
-    target ← count_frequency(p)
-    window ← empty Map; out ← empty list; start ← 0
-    for end from 0 to length(s) − 1:
-        window[s[end]] ← window[s[end]] + 1
-        if end − start + 1 = length(p):
-            if window matches target: append start to out
-            window[s[start]] ← window[s[start]] − 1
-            if window[s[start]] = 0: remove s[start] from window
-            start ← start + 1
-    return out
-```
 
 ```python run
-from collections import Counter, defaultdict
+from collections import defaultdict
+from typing import List, Dict
 
-def anagram_finder(s, p):
-    if len(p) > len(s): return []
-    target = Counter(p); window = defaultdict(int)
-    out = []; start = 0
-    for end in range(len(s)):
-        window[s[end]] += 1
-        if end - start + 1 == len(p):
-            # Compare multisets — match means anagram
-            if all(window.get(c, 0) == target[c] for c in target):
-                out.append(start)
-            window[s[start]] -= 1
-            if window[s[start]] == 0: del window[s[start]]
-            start += 1
-    return out
+class Solution:
+    def count_frequency(self, s: str) -> Dict[str, int]:
+        frequency = defaultdict(int)
+        for ch in s:
+            frequency[ch] += 1
+        return frequency
 
-print(anagram_finder("bacdefecab", "abc"))   # [0, 7]
-print(anagram_finder("fdef", "def"))         # [0, 1]
-print(anagram_finder("abcdef", "gh"))        # []
+    def find_anagrams_in_window(
+        self, s: str, frequency: Dict[str, int], k: int
+    ) -> List[int]:
+        start = 0
+        end = 0
+        count = k
+        result = []
+
+        # Traverse the string using two pointers
+        while end < len(s):
+            char_end = s[end]
+
+            # If the character is in the pattern, update the frequency
+            # map
+            if char_end in frequency:
+                if frequency[char_end] > 0:
+                    count -= 1
+                frequency[char_end] -= 1
+
+            # If all characters in the pattern are found, add start index
+            # to result
+            if count == 0:
+                result.append(start)
+
+            # Shrink the window from the left if the window size is equal
+            # to p's size
+            if end - start + 1 == k:
+                char_start = s[start]
+                if char_start in frequency:
+                    if frequency[char_start] >= 0:
+                        count += 1
+                    frequency[char_start] += 1
+                start += 1
+
+            end += 1
+
+        return result
+
+    def anagram_finder(self, s: str, p: str) -> List[int]:
+        if not s or not p or len(s) < len(p):
+            return []
+
+        # Create a frequency map for characters in the pattern
+        p_frequency = self.count_frequency(p)
+
+        # Use sliding window approach to find anagrams of p in s
+        return self.find_anagrams_in_window(s, p_frequency, len(p))
+
+
+# Examples from the problem statement
+print(Solution().anagram_finder("bacdefecab", "abc"))  # [0, 7]
+print(Solution().anagram_finder("fdef", "def"))        # [0, 1]
+print(Solution().anagram_finder("abcdef", "gh"))       # []
+
+# Edge cases
+print(Solution().anagram_finder("", "a"))              # []
+print(Solution().anagram_finder("a", ""))              # []
+print(Solution().anagram_finder("aaa", "aa"))          # [0, 1]
+print(Solution().anagram_finder("abc", "abc"))         # [0]
+print(Solution().anagram_finder("cbaebabacd", "abc"))  # [0, 6]
 ```
 
 ```java run
 import java.util.*;
 
 public class Main {
-    static List<Integer> anagramFinder(String s, String p) {
-        List<Integer> out = new ArrayList<>();
-        if (p.length() > s.length()) return out;
-        Map<Character, Integer> target = new HashMap<>();
-        for (char c : p.toCharArray()) target.merge(c, 1, Integer::sum);
-        Map<Character, Integer> w = new HashMap<>();
-        int start = 0;
-        for (int end = 0; end < s.length(); end++) {
-            w.merge(s.charAt(end), 1, Integer::sum);
-            if (end - start + 1 == p.length()) {
-                if (w.equals(target)) out.add(start);
-                w.merge(s.charAt(start), -1, Integer::sum);
-                if (w.get(s.charAt(start)) == 0) w.remove(s.charAt(start));
-                start++;
+    static class Solution {
+        private Map<Character, Integer> countFrequency(String s) {
+            Map<Character, Integer> frequency = new HashMap<>();
+            for (char ch : s.toCharArray()) {
+                frequency.put(ch, frequency.getOrDefault(ch, 0) + 1);
             }
+            return frequency;
         }
-        return out;
+
+        private List<Integer> findAnagramsInWindow(
+            String s,
+            Map<Character, Integer> frequency,
+            int K
+        ) {
+            int start = 0;
+            int end = 0;
+            int count = K;
+            List<Integer> result = new ArrayList<>();
+
+            // Traverse the string using two pointers
+            while (end < s.length()) {
+                char endChar = s.charAt(end);
+
+                // If the character is in the pattern, update the frequency
+                // map
+                if (frequency.containsKey(endChar)) {
+                    if (frequency.get(endChar) > 0) {
+                        count--;
+                    }
+                    frequency.put(endChar, frequency.get(endChar) - 1);
+                }
+
+                // If all characters in the pattern are found, add start
+                // index to result
+                if (count == 0) {
+                    result.add(start);
+                }
+
+                // Shrink the window from the left if the window size is
+                // equal to p's size
+                if (end - start + 1 == K) {
+                    char startChar = s.charAt(start);
+                    if (frequency.containsKey(startChar)) {
+                        if (frequency.get(startChar) >= 0) {
+                            count++;
+                        }
+                        frequency.put(
+                            startChar,
+                            frequency.get(startChar) + 1
+                        );
+                    }
+                    start++;
+                }
+                end++;
+            }
+
+            return result;
+        }
+
+        public List<Integer> anagramFinder(String s, String p) {
+            if (s.isEmpty() || p.isEmpty() || s.length() < p.length()) {
+                return new ArrayList<>();
+            }
+
+            // Create a frequency map for characters in the pattern
+            Map<Character, Integer> pFrequency = countFrequency(p);
+
+            // Use sliding window approach to find anagrams of p in s
+            return findAnagramsInWindow(s, pFrequency, p.length());
+        }
     }
+
     public static void main(String[] args) {
-        System.out.println(anagramFinder("bacdefecab", "abc"));
-        System.out.println(anagramFinder("fdef", "def"));
-        System.out.println(anagramFinder("abcdef", "gh"));
+        // Examples from the problem statement
+        System.out.println(new Solution().anagramFinder("bacdefecab", "abc")); // [0, 7]
+        System.out.println(new Solution().anagramFinder("fdef", "def"));       // [0, 1]
+        System.out.println(new Solution().anagramFinder("abcdef", "gh"));      // []
+
+        // Edge cases
+        System.out.println(new Solution().anagramFinder("", "a"));             // []
+        System.out.println(new Solution().anagramFinder("a", ""));             // []
+        System.out.println(new Solution().anagramFinder("aaa", "aa"));         // [0, 1]
+        System.out.println(new Solution().anagramFinder("abc", "abc"));        // [0]
+        System.out.println(new Solution().anagramFinder("cbaebabacd", "abc")); // [0, 6]
     }
 }
 ```
 
-```c run
-#include <stdio.h>
-#include <string.h>
+</details>
+<details>
+<summary><h2>Final Takeaway</h2></summary>
 
-void anagram_finder(const char *s, const char *p) {
-    int ns = (int)strlen(s), np = (int)strlen(p);
-    if (np > ns) { printf("[]\n"); return; }
-    int t[128] = {0}, w[128] = {0};
-    for (int i = 0; i < np; i++) t[(unsigned char)p[i]]++;
-    int start = 0;
-    printf("[");
-    int first = 1;
-    for (int end = 0; end < ns; end++) {
-        w[(unsigned char)s[end]]++;
-        if (end - start + 1 == np) {
-            int match = 1;
-            for (int i = 0; i < 128; i++) if (t[i] != w[i]) { match = 0; break; }
-            if (match) { printf("%s%d", first ? "" : ", ", start); first = 0; }
-            w[(unsigned char)s[start]]--; start++;
-        }
-    }
-    printf("]\n");
-}
-
-int main() {
-    anagram_finder("bacdefecab", "abc");   // [0, 7]
-    anagram_finder("fdef", "def");         // [0, 1]
-    anagram_finder("abcdef", "gh");        // []
-}
-```
-
-```scala run
-import scala.collection.mutable
-
-def anagramFinder(s: String, p: String): List[Int] = {
-  if (p.length > s.length) return Nil
-  val target = p.groupBy(identity).view.mapValues(_.length).toMap
-  val w = mutable.Map[Char, Int]().withDefaultValue(0)
-  val out = mutable.ArrayBuffer[Int]()
-  var start = 0
-  for (end <- s.indices) {
-    w(s(end)) += 1
-    if (end - start + 1 == p.length) {
-      if (target.forall { case (k, v) => w(k) == v }) out += start
-      w(s(start)) -= 1
-      if (w(s(start)) == 0) w -= s(start)
-      start += 1
-    }
-  }
-  out.toList
-}
-
-object Main extends App {
-  println(anagramFinder("bacdefecab", "abc"))
-  println(anagramFinder("fdef", "def"))
-  println(anagramFinder("abcdef", "gh"))
-}
-```
-
-
-***
-
-## Final Takeaway
 
 The fixed-sized sliding window is the **moving** version of the counting pattern. The hash map keeps a running summary of the window's contents; the window's size never changes, so the map's overall workload is O(1) per shift. Three lessons worth memorising:
 
@@ -895,3 +961,5 @@ The fixed-sized sliding window is the **moving** version of the counting pattern
 3. **Window-size = len(pattern).** When a problem says "find any anagram of p in s" or "any permutation of p", the window size is *given to you* by the second string. The hardest part is recognising it.
 
 > *Coming up — what if the window can grow and shrink based on a *condition* rather than a fixed size? That's the **variable-sized sliding window**, and it solves a different family of problems: "longest substring with at most K distinct chars", "smallest subarray with sum ≥ S", "longest substring without repeating characters". Same hash-map summary, but the window flexes — and that flexibility unlocks a much wider class of problems.*
+
+</details>

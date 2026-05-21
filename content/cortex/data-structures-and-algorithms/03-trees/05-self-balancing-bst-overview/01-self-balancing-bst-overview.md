@@ -243,63 +243,54 @@ Click any question to reveal the answer.
 **A:** Sorted-input insertion degenerates a plain BST into a linked list. Operations go from `O(log n)` to `O(n)` — a 10⁵× slowdown on a 10⁶-element tree.
 
 </details>
-
 <details>
 <summary><strong>Q:</strong> Worst-case height bounds for AVL, RB-tree, B-tree?</summary>
 
 **A:** AVL: `1.44 log₂ n`. RB-tree: `2 log₂(n+1)`. B-tree of order `m`: `log_(m/2) n` — typically 4-5 levels for billions of keys.
 
 </details>
-
 <details>
 <summary><strong>Q:</strong> Per-node memory overhead — AVL vs RB-tree?</summary>
 
 **A:** AVL: 4 bytes (height or balance factor). RB-tree: 1 bit (colour), often packed into a parent pointer's low bit — *zero* extra bytes.
 
 </details>
-
 <details>
 <summary><strong>Q:</strong> Why does most production code use RB-tree, not AVL?</summary>
 
 **A:** Constant-bounded rotation count on insert (≤2) and delete (≤3) beats AVL's `O(log n)` rotations on heavy-write workloads. Slightly taller height is offset by cheaper writes.
 
 </details>
-
 <details>
 <summary><strong>Q:</strong> When does AVL beat RB-tree?</summary>
 
 **A:** Read-heavy workloads. AVL is ~30% shallower, so lookups walk fewer levels. Rotation cost on writes doesn't dominate when writes are rare.
 
 </details>
-
 <details>
 <summary><strong>Q:</strong> Why do disk-resident indexes use B-trees, not AVL/RB?</summary>
 
 **A:** Disk seeks cost millions of cycles; high fanout (200-1000 children per node) keeps the tree 4-5 levels tall. AVL/RB at 30 levels would do 30 seeks per query — 10× slower.
 
 </details>
-
 <details>
 <summary><strong>Q:</strong> Splay tree complexity — amortized vs worst-case?</summary>
 
 **A:** Amortized `O(log n)`; worst-case `O(n)`. Bad for real-time / latency-sensitive systems; good for batch processing with locality.
 
 </details>
-
 <details>
 <summary><strong>Q:</strong> Why does Linux's CFS scheduler use RB-tree, not splay?</summary>
 
 **A:** CFS needs a per-decision worst-case bound. Splay's `O(n)` worst case would let one bad scheduling decision stall a CPU. RB-tree's `O(log n)` worst case is tight enough.
 
 </details>
-
 <details>
 <summary><strong>Q:</strong> What does <code>rb_root_cached</code> do that <code>rb_root</code> doesn't?</summary>
 
 **A:** Caches a pointer to the leftmost node. Lookup of "smallest key" goes from `O(log n)` to `O(1)` — what makes CFS's `pick_next_task` constant-time.
 
 </details>
-
 <details>
 <summary><strong>Q:</strong> Default for "I need a sorted in-memory map" vs "I need a sorted on-disk index"?</summary>
 

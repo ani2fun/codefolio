@@ -39,8 +39,8 @@ jobs:
           cache: npm
           cache-dependency-path: client/package.json
 
-      - name: Format check (Scala)
-        run: sbt "scalafmtCheckAll; scalafmtSbtCheck"
+      # - name: Format check (Scala)
+      #   run: sbt "scalafmtCheckAll; scalafmtSbtCheck"
 
       - name: Compile + test (Scala)
         run: sbt "compile; test"

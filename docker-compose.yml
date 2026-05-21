@@ -63,6 +63,24 @@ services:
     ports:
       - "127.0.0.1:8090:8080"
 
+  # Keycloak — OIDC provider for the Cortex code-edit auth gate (ADR-0013).
+  # Dev mode: in-memory H2, HTTP only, realm imported on first boot from
+  # docker/keycloak/import/. Admin console: http://localhost:8081 (admin/
+  # admin). The imported `codefolio` realm ships a public PKCE client
+  # `codefolio-web` and a local `tester` / `tester` user, so the whole
+  # sign-in flow can be exercised without a GitHub OAuth app. Production
+  # points at the homelab Keycloak instead (application.conf `auth` defaults).
+  keycloak:
+    image: quay.io/keycloak/keycloak:26.0
+    command: ["start-dev", "--import-realm"]
+    environment:
+      KC_BOOTSTRAP_ADMIN_USERNAME: admin
+      KC_BOOTSTRAP_ADMIN_PASSWORD: admin
+    volumes:
+      - ./docker/keycloak/import:/opt/keycloak/data/import:ro
+    ports:
+      - "8081:8080"
+
   app:
     build: .
     depends_on:
@@ -71,6 +89,7 @@ services:
       mongo: { condition: service_healthy }
       code-runner: { condition: service_started }
       likec4: { condition: service_started }
+      keycloak: { condition: service_started }
     environment:
       DB_URL:      jdbc:postgresql://db:5432/codefolio
       DB_USER:     codefolio
@@ -88,6 +107,18 @@ services:
       # Reach the likec4 nginx via docker compose DNS on its container port.
       # bin/dev (JVM on host) overrides to http://localhost:8090.
       LIKEC4_URL:              http://likec4:8080
+      # Auth gate (ADR-0013). Off by default for the full-docker stack:
+      # browser-side OIDC needs Keycloak reachable at the SAME origin the
+      # browser uses (http://localhost:8081) while the in-container server
+      # would reach it at http://keycloak:8080 — the token `iss` then can't
+      # satisfy both. The supported + tested local auth path is `bin/dev`
+      # (server on the host; Keycloak at localhost:8081 for browser AND
+      # server alike). To force auth on in full-docker you must also pin
+      # Keycloak's hostname so issuer + JWKS host agree.
+      AUTH_ENABLED:            ${AUTH_ENABLED:-false}
+      KEYCLOAK_ISSUER_URL:     ${KEYCLOAK_ISSUER_URL:-http://keycloak:8080/realms/codefolio}
+      KEYCLOAK_REALM:          ${KEYCLOAK_REALM:-codefolio}
+      KEYCLOAK_CLIENT_ID:      ${KEYCLOAK_CLIENT_ID:-codefolio-web}
     ports:
       - "8080:8080"
 

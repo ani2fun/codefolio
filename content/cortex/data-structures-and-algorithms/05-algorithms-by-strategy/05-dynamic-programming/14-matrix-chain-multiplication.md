@@ -171,7 +171,9 @@ Output: 12000                    Only one order possible: A · B
 
 ---
 
-## Applying the Diagnostic Questions
+<details>
+<summary><h2>Applying the Diagnostic Questions</h2></summary>
+
 
 | # | Question | Answer |
 |---|---|---|
@@ -204,143 +206,140 @@ We need to remember *which* subchain we're solving — its left endpoint `i` and
 
 The problem says "minimum cost." Each split point gives a candidate cost; the optimum is the smallest across splits. (If we summed instead, we'd be counting parenthesisations — that's boolean parenthesisation, not matrix chain.)
 
----
+</details>
+<details>
+<summary><h2>The Solution</h2></summary>
 
-## The Solution
 
 Bottom-up tabulation, length-first. The dimensions array is 1-indexed in spirit (matrix `i` has shape `dimensions[i-1] × dimensions[i]`); we keep that convention so the recurrence reads cleanly.
 
 
-```pseudocode
-# Classic interval DP. n matrices have dimensions[0..n] (length n + 1).
-# dp[i][j] = minimum scalar multiplications for the chain from matrix i to matrix j (1-indexed).
-# Try every split point k inside [i, j − 1].
-function matrixChainMultiplication(dimensions):
-    n ← length(dimensions) − 1
-    dp ← (n + 1) × (n + 1) grid of zeros          # single matrix has zero cost
-    for length from 2 to n:                       # smallest chains first
-        for i from 1 to n − length + 1:
-            j ← i + length − 1
-            dp[i][j] ← +∞
-            for k from i to j − 1:
-                cost ← dp[i][k] + dp[k + 1][j] + dimensions[i − 1] × dimensions[k] × dimensions[j]
-                if cost < dp[i][j]:
-                    dp[i][j] ← cost
-    return dp[1][n]
-```
-
 ```python run
 from typing import List
-import math
+import sys
 
 class Solution:
     def matrix_chain_multiplication(self, dimensions: List[int]) -> int:
-        # n = number of matrices.  dimensions has length n + 1.
-        n = len(dimensions) - 1
-        # dp[i][j] for 1 ≤ i ≤ j ≤ n; dp[i][i] = 0 already (single matrix has no cost).
+        n: int = len(dimensions) - 1
+
+        # Create a 2D list dp to store the minimum costs of multiplying
+        # matrices
         dp: List[List[int]] = [[0] * (n + 1) for _ in range(n + 1)]
-        # Iterate by chain length, smallest first.
-        for length in range(2, n + 1):
-            for i in range(1, n - length + 2):
-                j = i + length - 1
-                dp[i][j] = math.inf
-                # Try every split point k inside [i, j-1].
+
+        # Loop over the chain length l (number of matrices in the chain)
+        for l in range(2, n + 1):
+
+            # Loop over the starting index i of the chain
+            for i in range(1, n - l + 2):
+
+                # Calculate the ending index j of the chain
+                j: int = i + l - 1
+
+                # Set the initial value of dp[i][j] to infinity
+                dp[i][j] = sys.maxsize
+
+                # Loop over the possible partition positions k within the
+                # chain
                 for k in range(i, j):
-                    cost = dp[i][k] + dp[k + 1][j] + dimensions[i - 1] * dimensions[k] * dimensions[j]
+
+                    # Calculate the cost of multiplying matrices from i
+                    # to k and from k+1 to j, as well as the cost of
+                    # multiplying the resulting matrices
+                    cost = (
+                        dp[i][k]
+                        + dp[k + 1][j]
+                        + dimensions[i - 1]
+                        * dimensions[k]
+                        * dimensions[j]
+                    )
+
+                    # Update the minimum cost if the calculated cost is
+                    # smaller
                     if cost < dp[i][j]:
                         dp[i][j] = cost
+
+        # Return the minimum cost of multiplying the matrices from the
+        # first to the last
         return dp[1][n]
 
 
-if __name__ == "__main__":
-    sol = Solution()
-    print(sol.matrix_chain_multiplication([4, 5, 3, 2]))     # 70
-    print(sol.matrix_chain_multiplication([10, 30, 5, 60]))  # 4500
-    print(sol.matrix_chain_multiplication([10, 30, 40]))     # 12000
+# Examples from the problem statement
+print(Solution().matrix_chain_multiplication([4, 5, 3, 2]))      # 70
+print(Solution().matrix_chain_multiplication([10, 30, 5, 60]))   # 4500
+print(Solution().matrix_chain_multiplication([10, 30, 40]))      # 12000
+
+# Edge cases
+print(Solution().matrix_chain_multiplication([2, 3]))            # 0  — single matrix
+print(Solution().matrix_chain_multiplication([1, 2, 3, 4]))      # 18 — small chain
+print(Solution().matrix_chain_multiplication([5, 10, 3, 12, 5, 50, 6]))  # 2010
 ```
 
 ```java run
+import java.util.*;
+
 public class Main {
     static class Solution {
         public int matrixChainMultiplication(int[] dimensions) {
             int n = dimensions.length - 1;
+
+            // Create a 2D array dp to store the minimum costs of multiplying
+            // matrices
             int[][] dp = new int[n + 1][n + 1];
-            for (int len = 2; len <= n; len++) {
-                for (int i = 1; i <= n - len + 1; i++) {
-                    int j = i + len - 1;
+
+            // Loop over the chain length l (number of matrices in the chain)
+            for (int l = 2; l <= n; ++l) {
+
+                // Loop over the starting index i of the chain
+                for (int i = 1; i <= n - l + 1; i++) {
+
+                    // Calculate the ending index j of the chain
+                    int j = i + l - 1;
+
+                    // Set the initial value of dp[i][j] to infinity
                     dp[i][j] = Integer.MAX_VALUE;
+
+                    // Loop over the possible partition positions k within
+                    // the chain
                     for (int k = i; k <= j - 1; k++) {
-                        int cost = dp[i][k] + dp[k + 1][j] + dimensions[i - 1] * dimensions[k] * dimensions[j];
+
+                        // Calculate the cost of multiplying matrices from i
+                        // to k and from k+1 to j, as well as the cost of
+                        // multiplying the resulting matrices
+                        int cost =
+                            dp[i][k] +
+                            dp[k + 1][j] +
+                            dimensions[i - 1] *
+                            dimensions[k] *
+                            dimensions[j];
+
+                        // Update the minimum cost if the calculated cost is
+                        // smaller
                         if (cost < dp[i][j]) dp[i][j] = cost;
                     }
                 }
             }
+
+            // Return the minimum cost of multiplying the matrices from the
+            // first to the last
             return dp[1][n];
         }
     }
 
     public static void main(String[] args) {
-        Solution sol = new Solution();
-        System.out.println(sol.matrixChainMultiplication(new int[]{4, 5, 3, 2}));     // 70
-        System.out.println(sol.matrixChainMultiplication(new int[]{10, 30, 5, 60}));  // 4500
+        // Examples from the problem statement
+        System.out.println(new Solution().matrixChainMultiplication(new int[]{4, 5, 3, 2}));      // 70
+        System.out.println(new Solution().matrixChainMultiplication(new int[]{10, 30, 5, 60}));   // 4500
+        System.out.println(new Solution().matrixChainMultiplication(new int[]{10, 30, 40}));      // 12000
+
+        // Edge cases
+        System.out.println(new Solution().matrixChainMultiplication(new int[]{2, 3}));            // 0  — single matrix
+        System.out.println(new Solution().matrixChainMultiplication(new int[]{1, 2, 3, 4}));      // 18
+        System.out.println(new Solution().matrixChainMultiplication(new int[]{5, 10, 3, 12, 5, 50, 6}));  // 2010
     }
 }
 ```
 
-```c run
-#include <stdio.h>
-#include <limits.h>
-
-int dp[201][201];
-
-int matrix_chain_multiplication(const int *dimensions, int dim_len) {
-    int n = dim_len - 1;
-    for (int i = 0; i <= n; i++) for (int j = 0; j <= n; j++) dp[i][j] = 0;
-    for (int len = 2; len <= n; len++) {
-        for (int i = 1; i <= n - len + 1; i++) {
-            int j = i + len - 1;
-            dp[i][j] = INT_MAX;
-            for (int k = i; k <= j - 1; k++) {
-                int cost = dp[i][k] + dp[k + 1][j] + dimensions[i - 1] * dimensions[k] * dimensions[j];
-                if (cost < dp[i][j]) dp[i][j] = cost;
-            }
-        }
-    }
-    return dp[1][n];
-}
-
-int main(void) {
-    int d[] = {4, 5, 3, 2};
-    printf("%d\n", matrix_chain_multiplication(d, 4));   /* 70 */
-    return 0;
-}
-```
-
-```scala run
-object Main extends App {
-  class Solution {
-    def matrixChainMultiplication(dimensions: Array[Int]): Int = {
-      val n = dimensions.length - 1
-      val dp = Array.fill(n + 1, n + 1)(0)
-      for (len <- 2 to n) {
-        for (i <- 1 to n - len + 1) {
-          val j = i + len - 1
-          dp(i)(j) = Int.MaxValue
-          for (k <- i until j) {
-            val cost = dp(i)(k) + dp(k + 1)(j) + dimensions(i - 1) * dimensions(k) * dimensions(j)
-            if (cost < dp(i)(j)) dp(i)(j) = cost
-          }
-        }
-      }
-      dp(1)(n)
-    }
-  }
-
-  println(new Solution().matrixChainMultiplication(Array(4, 5, 3, 2)))    // 70
-}
-```
-
-
+</details>
 <details>
 <summary><strong>Trace — dimensions = [4, 5, 3, 2]</strong></summary>
 
@@ -362,10 +361,10 @@ Length 3:
 ```
 
 </details>
+<details>
+<summary><h2>Solution &amp; Analysis</h2></summary>
 
----
-
-## Complexity Analysis
+### Complexity Analysis
 
 | Aspect | Cost | Why |
 |---|---|---|
@@ -374,9 +373,7 @@ Length 3:
 
 There exists an `O(n log n)` algorithm by Hu and Shing (1982) — beautiful but rarely needed in practice; `O(n³)` handles `n ≤ 1000` easily, well past where chains of matrices arise in real systems.
 
----
-
-## Edge Cases
+### Edge Cases
 
 | Case | Example | Expected | Reasoning |
 |---|---|---|---|
@@ -385,9 +382,10 @@ There exists an `O(n log n)` algorithm by Hu and Shing (1982) — beautiful but 
 | Square matrices | `dimensions = [n, n, n, n, ...]` | depends on `n` | Cost grows quadratically with chain length even when shapes match. |
 | Skewed dimensions | `dimensions = [1000, 2, 1000, 2, 1000]` | small total | Skinny middle dimensions make most products cheap; ordering matters. |
 
----
+</details>
+<details>
+<summary><h2>Final Takeaway</h2></summary>
 
-## Final Takeaway
 
 Matrix chain multiplication is the canonical **split-point interval DP for minimisation**. The pattern:
 
@@ -401,6 +399,7 @@ Matrix chain multiplication is the canonical **split-point interval DP for minim
 
 > *Transfer challenge for the next lesson:* Edit distance from earlier in this section was a 2D DP on prefixes — different state shape from interval DP. The next lesson is a *generalisation* of edit distance: the recurrence template behind multiple distance-style problems (longest common subsequence, longest common substring, edit distance itself) gets a name. Predict what general pattern those three problems share.
 
+</details>
 <details>
 <summary><strong>Answer</strong></summary>
 

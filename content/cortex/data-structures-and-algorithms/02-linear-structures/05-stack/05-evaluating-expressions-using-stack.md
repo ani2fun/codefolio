@@ -95,139 +95,121 @@ The input is the postfix form of `(2 + 3*1) - 9 = -4`. Walk it:
 ## Implementation
 
 
-```pseudocode
-function perform(a, b, op):
-    if op = '+': return a + b
-    if op = '−': return a − b
-    if op = '*': return a * b
-    if op = '/': return a / b
-
-function evaluatePostfix(postfix):
-    stack ← empty stack
-    for each ch in postfix:
-        if ch is digit: push float(ch)
-        else:
-            b ← pop()   # right operand
-            a ← pop()   # left operand
-            push perform(a, b, ch)
-    return top of stack
-```
-
 ```python run
-def perform(a: float, b: float, op: str) -> float:
-    if op == '+': return a + b
-    if op == '-': return a - b
-    if op == '*': return a * b
-    if op == '/': return a / b
-    return 0.0
+from typing import List
 
-def evaluate_postfix(postfix: str) -> float:
-    stack = []
-    for ch in postfix:
-        if ch.isdigit():
-            stack.append(float(ch))
+class Solution:
+
+    # Function to perform arithmetic operations
+    def perform_operation(
+        self, operand1: float, operand2: float, operation: str
+    ) -> float:
+        if operation == "+":
+            return operand1 + operand2
+        elif operation == "-":
+            return operand1 - operand2
+        elif operation == "*":
+            return operand1 * operand2
+        elif operation == "/":
+            return operand1 / operand2
         else:
-            b = stack.pop()                    # popped first → right operand
-            a = stack.pop()                    # popped second → left operand
-            stack.append(perform(a, b, ch))
-    return stack[-1]
+            return 0
 
-print(evaluate_postfix("231*+9-"))    # -4.0
-print(evaluate_postfix("23*"))        # 6.0
-print(evaluate_postfix("234*+"))      # 14.0  (== 2 + 3*4)
+    def evaluate_a_postfix_expression(self, postfix: str) -> float:
+
+        # Stack to store operands
+        stack: List[float] = []
+
+        # Iterate through each character in the postfix expression
+        for ch in postfix:
+
+            # If the character is an operand (a digit)
+            if ch.isdigit():
+
+                # Convert it to a float and push it onto the stack
+                stack.append(float(ch))
+
+            # If the character is an operator (an arithmetic symbol)
+            # perform the operation on the top two operands in the stack
+            # and push the result back onto the stack
+            else:
+
+                # Get the top operand from the stack
+                operand2 = stack.pop()
+
+                # Get the second top operand from the stack
+                operand1 = stack.pop()
+
+                # Apply the arithmetic operation and push the result back
+                # to the stack
+                stack.append(
+                    self.perform_operation(operand1, operand2, ch)
+                )
+
+        # Return the final result
+        return stack[-1]
 ```
 
 ```java run
 import java.util.*;
 
-public class Main {
-    static float perform(float a, float b, char op) {
-        switch (op) {
-            case '+': return a + b;
-            case '-': return a - b;
-            case '*': return a * b;
-            case '/': return a / b;
-            default:  return 0;
+class Solution {
+
+    // Function to perform arithmetic operations
+    public float performOperation(
+        float operand1,
+        float operand2,
+        char operation
+    ) {
+        switch (operation) {
+            case '+':
+                return operand1 + operand2;
+            case '-':
+                return operand1 - operand2;
+            case '*':
+                return operand1 * operand2;
+            case '/':
+                return operand1 / operand2;
+            default:
+                return 0;
         }
     }
-    static float evaluatePostfix(String postfix) {
-        Deque<Float> st = new ArrayDeque<>();
+
+    public float evaluateAPostfixExpression(String postfix) {
+
+        // Stack to store operands
+        Stack<Float> stack = new Stack<>();
+
+        // Iterate through each character in the postfix expression
         for (char ch : postfix.toCharArray()) {
-            if (Character.isDigit(ch)) st.push((float)(ch - '0'));
+
+            // If the character is an operand (a digit)
+            if (Character.isDigit(ch)) {
+
+                // Convert it to a float and push it onto the stack
+                stack.push((float) (ch - '0'));
+            }
+
+            // If the character is an operator (an arithmetic symbol)
+            // perform the operation on the top two operands in the stack
+            // and push the result back onto the stack
             else {
-                float b = st.pop(), a = st.pop();
-                st.push(perform(a, b, ch));
+
+                // Get the top operand from the stack
+                float operand2 = stack.pop();
+
+                // Get the second top operand from the stack
+                float operand1 = stack.pop();
+
+                // Apply the arithmetic operation and push the result
+                // back to the stack
+                stack.push(performOperation(operand1, operand2, ch));
             }
         }
-        return st.peek();
+
+        // Return the final result
+        return stack.peek();
     }
-    public static void main(String[] args) {
-        System.out.println(evaluatePostfix("231*+9-"));   // -4.0
-        System.out.println(evaluatePostfix("23*"));       // 6.0
-        System.out.println(evaluatePostfix("234*+"));     // 14.0
-    }
-}
-```
-
-```c run
-#include <stdio.h>
-#include <ctype.h>
-#include <string.h>
-
-static float perform_op(float a, float b, char op) {
-    switch (op) {
-        case '+': return a + b;
-        case '-': return a - b;
-        case '*': return a * b;
-        case '/': return a / b;
-        default:  return 0;
-    }
-}
-
-float evaluate_postfix(const char *postfix) {
-    float stack[256]; int top = -1;
-    for (const char *p = postfix; *p; p++) {
-        if (isdigit((unsigned char)*p)) stack[++top] = (float)(*p - '0');
-        else {
-            float b = stack[top--];
-            float a = stack[top--];
-            stack[++top] = perform_op(a, b, *p);
-        }
-    }
-    return stack[top];
-}
-
-int main() {
-    printf("%.1f\n", evaluate_postfix("231*+9-"));   // -4.0
-    printf("%.1f\n", evaluate_postfix("23*"));       // 6.0
-    printf("%.1f\n", evaluate_postfix("234*+"));     // 14.0
-}
-```
-
-```scala run
-import scala.collection.mutable
-
-def perform(a: Float, b: Float, op: Char): Float = op match {
-  case '+' => a + b; case '-' => a - b
-  case '*' => a * b; case '/' => a / b
-  case _   => 0.0f
-}
-def evaluatePostfix(postfix: String): Float = {
-  val st = mutable.Stack[Float]()
-  for (ch <- postfix) {
-    if (ch.isDigit) st.push((ch - '0').toFloat)
-    else {
-      val b = st.pop(); val a = st.pop()
-      st.push(perform(a, b, ch))
-    }
-  }
-  st.top
-}
-
-object Main extends App {
-  println(evaluatePostfix("231*+9-"))
-  println(evaluatePostfix("23*"))
-  println(evaluatePostfix("234*+"))
 }
 ```
 
@@ -252,107 +234,161 @@ Given a string `postfix` representing a postfix expression with single-digit ope
 > -   **Output:** `-4.000`
 > -   **Explanation:** Equivalent infix is `(2 + 3*1) - 9 = -4`.
 
-## Solution
+<details>
+<summary><h2>Solution</h2></summary>
+
 
 The full evaluator from above, written compactly. Same code, just packaged as the answer to the problem.
 
 
-```pseudocode
-function evaluatePostfix(postfix):
-    ops ← { '+': add, '−': sub, '*': mul, '/': div }
-    stack ← empty stack
-    for each ch in postfix:
-        if ch is digit: push float(ch)
-        else:
-            b ← pop(); a ← pop()
-            push ops[ch](a, b)
-    return top of stack
-```
-
 ```python run
-def evaluate_postfix(postfix: str) -> float:
-    OPS = { '+': lambda a, b: a + b,
-            '-': lambda a, b: a - b,
-            '*': lambda a, b: a * b,
-            '/': lambda a, b: a / b }
-    stack = []
-    for ch in postfix:
-        if ch.isdigit(): stack.append(float(ch))
-        else:
-            b = stack.pop(); a = stack.pop()
-            stack.append(OPS[ch](a, b))
-    return stack[-1]
+from typing import List
 
-print(evaluate_postfix("231*+9-"))   # -4.0
+class Solution:
+
+    # Function to perform arithmetic operations
+    def perform_operation(
+        self, operand1: float, operand2: float, operation: str
+    ) -> float:
+        if operation == "+":
+            return operand1 + operand2
+        elif operation == "-":
+            return operand1 - operand2
+        elif operation == "*":
+            return operand1 * operand2
+        elif operation == "/":
+            return operand1 / operand2
+        else:
+            return 0
+
+    def evaluate_a_postfix_expression(self, postfix: str) -> float:
+
+        # Stack to store operands
+        stack: List[float] = []
+
+        # Iterate through each character in the postfix expression
+        for ch in postfix:
+
+            # If the character is an operand (a digit)
+            if ch.isdigit():
+
+                # Convert it to a float and push it onto the stack
+                stack.append(float(ch))
+
+            # If the character is an operator (an arithmetic symbol)
+            # perform the operation on the top two operands in the stack
+            # and push the result back onto the stack
+            else:
+
+                # Get the top operand from the stack
+                operand2 = stack.pop()
+
+                # Get the second top operand from the stack
+                operand1 = stack.pop()
+
+                # Apply the arithmetic operation and push the result back
+                # to the stack
+                stack.append(
+                    self.perform_operation(operand1, operand2, ch)
+                )
+
+        # Return the final result
+        return stack[-1]
+
+
+# Example from the problem statement
+print(Solution().evaluate_a_postfix_expression("231*+9-"))   # -4.0
+
+# Edge cases
+print(Solution().evaluate_a_postfix_expression("23+"))       # 5.0 — simple addition
+print(Solution().evaluate_a_postfix_expression("92-"))       # 7.0 — simple subtraction
+print(Solution().evaluate_a_postfix_expression("82*"))       # 16.0 — multiplication
+print(Solution().evaluate_a_postfix_expression("84/"))       # 2.0 — division
+print(Solution().evaluate_a_postfix_expression("5"))         # 5.0 — single operand
+print(Solution().evaluate_a_postfix_expression("34+2*"))     # 14.0 — (3+4)*2
+print(Solution().evaluate_a_postfix_expression("72+3*"))     # 27.0 — (7+2)*3
 ```
 
 ```java run
+import java.util.*;
+
 public class Main {
-    static float evaluatePostfix(String postfix) {
-        java.util.Deque<Float> st = new java.util.ArrayDeque<>();
-        for (char ch : postfix.toCharArray()) {
-            if (Character.isDigit(ch)) st.push((float)(ch - '0'));
-            else {
-                float b = st.pop(), a = st.pop();
-                st.push(switch (ch) {
-                    case '+' -> a + b; case '-' -> a - b;
-                    case '*' -> a * b; case '/' -> a / b;
-                    default  -> 0;
-                });
+    static class Solution {
+
+        // Function to perform arithmetic operations
+        private float performOperation(
+            float operand1,
+            float operand2,
+            char operation
+        ) {
+            switch (operation) {
+                case '+':
+                    return operand1 + operand2;
+                case '-':
+                    return operand1 - operand2;
+                case '*':
+                    return operand1 * operand2;
+                case '/':
+                    return operand1 / operand2;
+                default:
+                    return 0;
             }
         }
-        return st.peek();
+
+        public float evaluateAPostfixExpression(String postfix) {
+
+            // Stack to store operands
+            Stack<Float> stack = new Stack<>();
+
+            // Iterate through each character in the postfix expression
+            for (char ch : postfix.toCharArray()) {
+
+                // If the character is an operand (a digit)
+                if (Character.isDigit(ch)) {
+
+                    // Convert it to a float and push it onto the stack
+                    stack.push((float) (ch - '0'));
+                }
+
+                // If the character is an operator (an arithmetic symbol)
+                // perform the operation on the top two operands in the stack
+                // and push the result back onto the stack
+                else {
+
+                    // Get the top operand from the stack
+                    float operand2 = stack.pop();
+
+                    // Get the second top operand from the stack
+                    float operand1 = stack.pop();
+
+                    // Apply the arithmetic operation and push the result
+                    // back to the stack
+                    stack.push(performOperation(operand1, operand2, ch));
+                }
+            }
+
+            // Return the final result
+            return stack.peek();
+        }
     }
+
     public static void main(String[] args) {
-        System.out.println(evaluatePostfix("231*+9-"));
+        // Example from the problem statement
+        System.out.println(new Solution().evaluateAPostfixExpression("231*+9-"));  // -4.0
+
+        // Edge cases
+        System.out.println(new Solution().evaluateAPostfixExpression("23+"));      // 5.0
+        System.out.println(new Solution().evaluateAPostfixExpression("92-"));      // 7.0
+        System.out.println(new Solution().evaluateAPostfixExpression("82*"));      // 16.0
+        System.out.println(new Solution().evaluateAPostfixExpression("84/"));      // 2.0
+        System.out.println(new Solution().evaluateAPostfixExpression("5"));        // 5.0 — single operand
+        System.out.println(new Solution().evaluateAPostfixExpression("34+2*"));    // 14.0
+        System.out.println(new Solution().evaluateAPostfixExpression("72+3*"));    // 27.0
     }
 }
 ```
 
-```c run
-#include <stdio.h>
-#include <ctype.h>
-
-float evaluate_postfix(const char *postfix) {
-    float st[256]; int top = -1;
-    for (const char *p = postfix; *p; p++) {
-        if (isdigit((unsigned char)*p)) st[++top] = (float)(*p - '0');
-        else {
-            float b = st[top--], a = st[top--];
-            switch (*p) {
-                case '+': st[++top] = a + b; break;
-                case '-': st[++top] = a - b; break;
-                case '*': st[++top] = a * b; break;
-                case '/': st[++top] = a / b; break;
-            }
-        }
-    }
-    return st[top];
-}
-
-int main() { printf("%.3f\n", evaluate_postfix("231*+9-")); }
-```
-
-```scala run
-import scala.collection.mutable
-
-def evaluatePostfix(postfix: String): Float = {
-  val st = mutable.Stack[Float]()
-  for (ch <- postfix) {
-    if (ch.isDigit) st.push((ch - '0').toFloat)
-    else {
-      val b = st.pop(); val a = st.pop()
-      st.push(ch match {
-        case '+' => a + b; case '-' => a - b
-        case '*' => a * b; case '/' => a / b
-      })
-    }
-  }
-  st.top
-}
-
-object Main extends App { println(evaluatePostfix("231*+9-")) }
-```
+</details>
 
 
 ***
@@ -417,128 +453,168 @@ Given a string `prefix` (single-digit operands, operators `+`, `-`, `*`, `/`), e
 > -   **Output:** `8.000`
 > -   **Explanation:** Equivalent infix is `(8 + 6/3) - 2 = 8`.
 
-## Solution
+<details>
+<summary><h2>Solution &amp; Analysis</h2></summary>
 
-
-```pseudocode
-function evaluatePrefix(prefix):
-    stack ← empty stack
-    for each ch in prefix scanned right to left:
-        if ch is digit: push float(ch)
-        else:
-            a ← pop()   # LEFT operand (first pop under R→L scan)
-            b ← pop()   # RIGHT operand
-            push perform(a, b, ch)
-    return top of stack
-```
+### Solution
 
 ```python run
-def perform(a: float, b: float, op: str) -> float:
-    if op == '+': return a + b
-    if op == '-': return a - b
-    if op == '*': return a * b
-    if op == '/': return a / b
-    return 0.0
+from typing import List
 
-def evaluate_prefix(prefix: str) -> float:
-    stack = []
-    for ch in reversed(prefix):                # scan right → left
-        if ch.isdigit():
-            stack.append(float(ch))
+class Solution:
+
+    # Function to perform arithmetic operations
+    def perform_operation(
+        self, operand1: float, operand2: float, operation: str
+    ) -> float:
+        if operation == "+":
+            return operand1 + operand2
+        elif operation == "-":
+            return operand1 - operand2
+        elif operation == "*":
+            return operand1 * operand2
+        elif operation == "/":
+            return operand1 / operand2
         else:
-            a = stack.pop()                    # popped first → LEFT operand
-            b = stack.pop()                    # popped second → RIGHT operand
-            stack.append(perform(a, b, ch))
-    return stack[-1]
+            return 0
 
-print(evaluate_prefix("-+8/632"))    # 8.0
-print(evaluate_prefix("+23"))        # 5.0
-print(evaluate_prefix("*+23-41"))    # 15.0  (== (2+3) * (4-1))
+    def evaluate_a_prefix_expression(self, prefix: str) -> float:
+
+        # Initialize an empty stack to store operands
+        stack: List[float] = []
+
+        # Reverse the prefix expression
+        reversed_prefix = prefix[::-1]
+
+        # Iterate through each character in the reversed prefix
+        # expression
+        for ch in reversed_prefix:
+
+            # If the character is an operand (a digit)
+            if ch.isdigit():
+
+                # Convert it to a float and push it onto the stack
+                stack.append(float(ch))
+
+            # If the character is an operator (an arithmetic symbol)
+            # perform the operation on the top two operands in the stack
+            # and push the result back onto the stack
+            else:
+
+                # Pop the top element from the stack as the first operand
+                operand1 = stack.pop()
+
+                # Pop the top element from the stack as the second
+                # operand
+                operand2 = stack.pop()
+
+                # Apply the arithmetic operation and push the result back
+                # to the stack
+                stack.append(
+                    self.perform_operation(operand1, operand2, ch)
+                )
+
+        # Return the final result
+        return stack.pop()
+
+
+# Example from the problem statement
+print(Solution().evaluate_a_prefix_expression("-+8/632"))   # 8.0
+
+# Edge cases
+print(Solution().evaluate_a_prefix_expression("+23"))       # 5.0 — simple addition
+print(Solution().evaluate_a_prefix_expression("-92"))       # 7.0 — subtraction
+print(Solution().evaluate_a_prefix_expression("*82"))       # 16.0 — multiplication
+print(Solution().evaluate_a_prefix_expression("/84"))       # 2.0 — division
+print(Solution().evaluate_a_prefix_expression("5"))         # 5.0 — single operand
+print(Solution().evaluate_a_prefix_expression("*+342"))     # 14.0 — (3+4)*2
+print(Solution().evaluate_a_prefix_expression("*+723"))     # 27.0 — (7+2)*3
 ```
 
 ```java run
+import java.util.*;
+
 public class Main {
-    static float perform(float a, float b, char op) {
-        switch (op) {
-            case '+': return a + b; case '-': return a - b;
-            case '*': return a * b; case '/': return a / b;
-            default:  return 0;
-        }
-    }
-    static float evaluatePrefix(String prefix) {
-        java.util.Deque<Float> st = new java.util.ArrayDeque<>();
-        for (int i = prefix.length() - 1; i >= 0; i--) {
-            char ch = prefix.charAt(i);
-            if (Character.isDigit(ch)) st.push((float)(ch - '0'));
-            else {
-                float a = st.pop();    // LEFT operand
-                float b = st.pop();    // RIGHT operand
-                st.push(perform(a, b, ch));
+    static class Solution {
+
+        // Function to perform arithmetic operations
+        private float performOperation(
+            float operand1,
+            float operand2,
+            char operation
+        ) {
+            switch (operation) {
+                case '+':
+                    return operand1 + operand2;
+                case '-':
+                    return operand1 - operand2;
+                case '*':
+                    return operand1 * operand2;
+                case '/':
+                    return operand1 / operand2;
+                default:
+                    return 0;
             }
         }
-        return st.peek();
-    }
-    public static void main(String[] args) {
-        System.out.println(evaluatePrefix("-+8/632"));
-        System.out.println(evaluatePrefix("+23"));
-        System.out.println(evaluatePrefix("*+23-41"));
-    }
-}
-```
 
-```c run
-#include <stdio.h>
-#include <ctype.h>
-#include <string.h>
+        public float evaluateAPrefixExpression(String prefix) {
 
-static float perform_op(float a, float b, char op) {
-    switch (op) { case '+': return a+b; case '-': return a-b;
-                  case '*': return a*b; case '/': return a/b; default: return 0; }
-}
+            // Initialize an empty stack to store operands
+            Stack<Float> stack = new Stack<>();
 
-float evaluate_prefix(const char *prefix) {
-    float st[256]; int top = -1;
-    int n = (int)strlen(prefix);
-    for (int i = n - 1; i >= 0; i--) {
-        char ch = prefix[i];
-        if (isdigit((unsigned char)ch)) st[++top] = (float)(ch - '0');
-        else {
-            float a = st[top--];   // LEFT
-            float b = st[top--];   // RIGHT
-            st[++top] = perform_op(a, b, ch);
+            // Reverse the prefix expression
+            String reversedPrefix = new StringBuilder(prefix)
+                .reverse()
+                .toString();
+
+            // Iterate through each character in the reversed prefix
+            // expression
+            for (char ch : reversedPrefix.toCharArray()) {
+
+                // If the character is an operand (a digit)
+                if (Character.isDigit(ch)) {
+
+                    // Convert it to a float and push it onto the stack
+                    stack.push((float) (ch - '0'));
+                }
+
+                // If the character is an operator (an arithmetic symbol)
+                // perform the operation on the top two operands in the stack
+                // and push the result back onto the stack
+                else {
+
+                    // Pop the top element from the stack as the first
+                    // operand
+                    float operand1 = stack.pop();
+
+                    // Pop the top element from the stack as the second
+                    // operand
+                    float operand2 = stack.pop();
+
+                    // Apply the arithmetic operation and push the result
+                    // back to the stack
+                    stack.push(performOperation(operand1, operand2, ch));
+                }
+            }
+
+            // Return the final result
+            return stack.pop();
         }
     }
-    return st[top];
-}
 
-int main() {
-    printf("%.3f\n", evaluate_prefix("-+8/632"));
-    printf("%.3f\n", evaluate_prefix("+23"));
-    printf("%.3f\n", evaluate_prefix("*+23-41"));
-}
-```
+    public static void main(String[] args) {
+        // Example from the problem statement
+        System.out.println(new Solution().evaluateAPrefixExpression("-+8/632"));  // 8.0
 
-```scala run
-import scala.collection.mutable
-
-def perform(a: Float, b: Float, op: Char): Float = op match {
-  case '+' => a + b; case '-' => a - b
-  case '*' => a * b; case '/' => a / b
-  case _   => 0f
-}
-def evaluatePrefix(prefix: String): Float = {
-  val st = mutable.Stack[Float]()
-  for (ch <- prefix.reverse) {
-    if (ch.isDigit) st.push((ch - '0').toFloat)
-    else { val a = st.pop(); val b = st.pop(); st.push(perform(a, b, ch)) }
-  }
-  st.top
-}
-
-object Main extends App {
-  println(evaluatePrefix("-+8/632"))
-  println(evaluatePrefix("+23"))
-  println(evaluatePrefix("*+23-41"))
+        // Edge cases
+        System.out.println(new Solution().evaluateAPrefixExpression("+23"));      // 5.0
+        System.out.println(new Solution().evaluateAPrefixExpression("-92"));      // 7.0
+        System.out.println(new Solution().evaluateAPrefixExpression("*82"));      // 16.0
+        System.out.println(new Solution().evaluateAPrefixExpression("/84"));      // 2.0
+        System.out.println(new Solution().evaluateAPrefixExpression("5"));        // 5.0 — single operand
+        System.out.println(new Solution().evaluateAPrefixExpression("*+342"));    // 14.0
+        System.out.println(new Solution().evaluateAPrefixExpression("*+723"));    // 27.0
+    }
 }
 ```
 
@@ -551,9 +627,11 @@ object Main extends App {
 >     -   **2.2** Else: `op1 = stack.pop()` (LEFT), `op2 = stack.pop()` (RIGHT), push `apply(op1, ch, op2)`.
 > -   **Step 3:** Return `stack.top()`.
 
-## Complexity Analysis
+### Complexity Analysis
 
 > **All cases** — Time: **O(N)** | Space: **O(N)**
+
+</details>
 
 ***
 
@@ -568,7 +646,9 @@ Given an infix expression like `(1+2)*(3/4)`, evaluate it and return the result.
 > -   **Input:** `infix = "(1+2)*(3/4)"`
 > -   **Output:** `2.250`
 
-## Approach
+<details>
+<summary><h2>Approach</h2></summary>
+
 
 The trick: **don't evaluate infix directly** — *convert it to postfix* (using the algorithm in the next lesson, which uses one stack), and then evaluate the postfix (using the algorithm we just built, which uses one stack). Two passes; two stacks; same overall O(N).
 
@@ -594,218 +674,346 @@ flowchart LR
 
 <p align="center"><strong>Infix evaluator — convert first (lesson 6 covers the converter), then evaluate. Each stage is a simple single-stack algorithm; combined, they handle parentheses, precedence, and associativity in two linear passes.</strong></p>
 
-## Solution
+</details>
+<details>
+<summary><h2>Solution</h2></summary>
 
 
-```pseudocode
-function evaluateInfix(infix):
-    return evaluatePostfix(infixToPostfix(infix))
-
-function infixToPostfix(infix):
-    ops ← empty stack; out ← empty list
-    for each ch in infix:
-        if ch is alnum: append ch to out
-        else if ch = '(': push ch
-        else if ch = ')':
-            while top ≠ '(': append pop() to out
-            pop '('
-        else: # operator
-            while ops not empty AND top ≠ '(' AND prec(top) ≥ prec(ch):
-                append pop() to out
-            push ch
-    while ops not empty: append pop() to out
-    return join(out)
-```
 
 ```python run
-PREC = {'^': 3, '*': 2, '/': 2, '+': 1, '-': 1}
+from typing import List
 
-def is_op(ch): return ch in PREC
+class Solution:
 
-def infix_to_postfix(infix: str) -> str:
-    st, out = [], []
-    for ch in infix:
-        if ch.isalnum():            out.append(ch)
-        elif ch == '(':              st.append(ch)
-        elif ch == ')':
-            while st and st[-1] != '(': out.append(st.pop())
-            if st and st[-1] == '(':    st.pop()
-        elif is_op(ch):
-            while st and st[-1] != '(' and PREC.get(st[-1], 0) >= PREC[ch]:
-                out.append(st.pop())
-            st.append(ch)
-    while st: out.append(st.pop())
-    return ''.join(out)
+    # Function to check if the character is an operator
+    def is_operator(self, ch: str) -> bool:
+        return not ch.isalpha() and not ch.isdigit()
 
-def perform(a, b, op):
-    if op == '+': return a + b
-    if op == '-': return a - b
-    if op == '*': return a * b
-    if op == '/': return a / b
-    return 0.0
+    # Function to get the priority of operators
+    def get_precedence(self, operator: str) -> int:
 
-def evaluate_postfix(postfix: str) -> float:
-    st = []
-    for ch in postfix:
-        if ch.isdigit(): st.append(float(ch))
+        # Assign precedence values to different operators
+        if operator == "^":
+            return 3
+        elif operator == "*" or operator == "/":
+            return 2
+        elif operator == "+" or operator == "-":
+            return 1
+
+        # Default value for unknown operators
+        return -1
+
+    # Function to convert infix expression to postfix expression
+    def convert_infix_to_postfix(self, infix: str) -> str:
+
+        # Stack to hold operators and parentheses
+        stack: List[str] = []
+
+        # Final postfix expression
+        postfix: str = ""
+
+        for ch in infix:
+
+            # If the character is not an operator or parentheses, add
+            # it to the postfix string
+            if not self.is_operator(ch) and ch != "(" and ch != ")":
+                postfix += ch
+
+            # If the character is an opening parentheses, push it
+            # onto the stack
+            elif ch == "(":
+                stack.append(ch)
+
+            # If the character is a closing parentheses, pop operators
+            # from the stack and add them to the postfix string until an
+            # opening parentheses is encountered
+            elif ch == ")":
+                while stack and stack[-1] != "(":
+                    postfix += stack.pop()
+
+                # Remove the opening parentheses from the stack
+                if stack and stack[-1] == "(":
+                    stack.pop()
+
+            # If the character is an operator, compare its precedence
+            # with the top of the stack and add higher or equal
+            # precedence operators to the postfix string
+            else:
+                while stack and self.get_precedence(
+                    ch
+                ) <= self.get_precedence(stack[-1]):
+                    if stack[-1] != "(":
+                        postfix += stack.pop()
+
+                # Push the current operator onto the stack
+                stack.append(ch)
+
+        # Pop any remaining operators from the stack and add them to the
+        # postfix string
+        while stack:
+            postfix += stack.pop()
+
+        return postfix
+
+    # Function to perform arithmetic operations
+    def perform_operation(
+        self, operand1: float, operand2: float, operation: str
+    ) -> float:
+        if operation == "+":
+            return operand1 + operand2
+        elif operation == "-":
+            return operand1 - operand2
+        elif operation == "*":
+            return operand1 * operand2
+        elif operation == "/":
+            return operand1 / operand2
         else:
-            b = st.pop(); a = st.pop()
-            st.append(perform(a, b, ch))
-    return st[-1]
+            return 0
 
-def evaluate_infix(infix: str) -> float:
-    return evaluate_postfix(infix_to_postfix(infix))
+    # Function to evaluate a postfix expression
+    def evaluate_a_postfix_expression(self, postfix: str) -> float:
 
-print(evaluate_infix("(1+2)*(3/4)"))   # 2.25
-print(evaluate_infix("2+3*4"))         # 14.0
-print(evaluate_infix("(2+3)*4"))       # 20.0
+        # Stack to store operands
+        stack: List[float] = []
+
+        # Iterate through each character in the postfix expression
+        for ch in postfix:
+
+            # If the character is an operand (a digit)
+            if ch.isdigit():
+
+                # Convert it to a float and push it onto the stack
+                stack.append(float(ch))
+
+            # If the character is an operator (an arithmetic symbol)
+            # perform the operation on the top two operands in the stack
+            # and push the result back onto the stack
+            else:
+
+                # Pop the top element from the stack as the second
+                # operand
+                operand2 = stack.pop()
+
+                # Pop the top element from the stack as the first
+                # operand
+                operand1 = stack.pop()
+
+                # Apply the arithmetic operation and push the result back
+                # to the stack
+                stack.append(
+                    self.perform_operation(operand1, operand2, ch)
+                )
+
+        # Return the final result
+        return stack[-1]
+
+    def evaluate_an_infix_expression(self, infix: str) -> float:
+
+        # Convert the infix expression to postfix notation
+        postfix: str = self.convert_infix_to_postfix(infix)
+
+        # Evaluate the postfix expression and return the result
+        return self.evaluate_a_postfix_expression(postfix)
+
+
+# Example from the problem statement
+print(Solution().evaluate_an_infix_expression("(1+2)*(3/4)"))   # 2.25
+
+# Edge cases
+print(Solution().evaluate_an_infix_expression("2+3"))           # 5.0 — no parentheses
+print(Solution().evaluate_an_infix_expression("(2+3)"))         # 5.0 — simple grouped
+print(Solution().evaluate_an_infix_expression("8-2"))           # 6.0 — subtraction
+print(Solution().evaluate_an_infix_expression("4*2"))           # 8.0 — multiplication
+print(Solution().evaluate_an_infix_expression("9/3"))           # 3.0 — division
+print(Solution().evaluate_an_infix_expression("2+3*4"))         # 14.0 — precedence
+print(Solution().evaluate_an_infix_expression("(2+3)*4"))       # 20.0 — parens override precedence
 ```
 
 ```java run
 import java.util.*;
 
 public class Main {
-    static int prec(char op) {
-        switch (op) { case '^': return 3; case '*': case '/': return 2;
-                      case '+': case '-': return 1; default: return 0; }
-    }
-    static boolean isOp(char ch) { return "+-*/^".indexOf(ch) >= 0; }
+    static class Solution {
 
-    static String infixToPostfix(String infix) {
-        Deque<Character> st = new ArrayDeque<>();
-        StringBuilder out = new StringBuilder();
-        for (char ch : infix.toCharArray()) {
-            if (Character.isLetterOrDigit(ch)) out.append(ch);
-            else if (ch == '(') st.push(ch);
-            else if (ch == ')') {
-                while (!st.isEmpty() && st.peek() != '(') out.append(st.pop());
-                if (!st.isEmpty()) st.pop();
-            } else if (isOp(ch)) {
-                while (!st.isEmpty() && st.peek() != '(' && prec(st.peek()) >= prec(ch))
-                    out.append(st.pop());
-                st.push(ch);
+        // Function to check if the character is an operator
+        private boolean isOperator(char ch) {
+            return (!Character.isLetter(ch) && !Character.isDigit(ch));
+        }
+
+        // Function to get the priority of operators
+        private int getPrecedence(char operator) {
+
+            // Assign precedence values to different operators
+            if (operator == '^') {
+                return 3;
+            } else if (operator == '*' || operator == '/') {
+                return 2;
+            } else if (operator == '+' || operator == '-') {
+                return 1;
+            }
+
+            // Default value for unknown operators
+            return -1;
+        }
+
+        // Function to convert infix expression to postfix expression
+        private String convertInfixToPostfix(String infix) {
+
+            // Stack to hold operators and parentheses
+            Stack<Character> stack = new Stack<>();
+
+            // Final postfix expression
+            StringBuilder postfix = new StringBuilder();
+
+            for (char ch : infix.toCharArray()) {
+
+                // If the character is not an operator or parentheses,
+                // add it to the postfix string
+                if (!isOperator(ch) && ch != '(' && ch != ')') {
+                    postfix.append(ch);
+                }
+
+                // If the character is an opening parentheses, push it
+                // onto the stack
+                else if (ch == '(') {
+                    stack.push(ch);
+                }
+
+                // If the character is a closing parentheses, pop
+                // operators from the stack and add them to the postfix
+                // string until an opening parentheses is encountered
+                else if (ch == ')') {
+                    while (!stack.empty() && stack.peek() != '(') {
+                        postfix.append(stack.peek());
+                        stack.pop();
+                    }
+
+                    // Remove the opening parentheses from the stack
+                    if (!stack.empty() && stack.peek() == '(') {
+                        stack.pop();
+                    }
+                }
+
+                // If the character is an operator, compare its
+                // precedence with the top of the stack and add higher or
+                // equal precedence operators to the postfix string
+                else {
+                    while (
+                        !stack.empty() &&
+                        getPrecedence(ch) <= getPrecedence(stack.peek())
+                    ) {
+                        if (stack.peek() != '(') {
+                            postfix.append(stack.peek());
+                        }
+                        stack.pop();
+                    }
+
+                    // Push the current operator onto the stack
+                    stack.push(ch);
+                }
+            }
+
+            // Pop any remaining operators from the stack and add them to the
+            // postfix string
+            while (!stack.empty()) {
+                postfix.append(stack.peek());
+                stack.pop();
+            }
+
+            return postfix.toString();
+        }
+
+        // Function to perform arithmetic operations
+        private float performOperation(
+            float operand1,
+            float operand2,
+            char operation
+        ) {
+            switch (operation) {
+                case '+':
+                    return operand1 + operand2;
+                case '-':
+                    return operand1 - operand2;
+                case '*':
+                    return operand1 * operand2;
+                case '/':
+                    return operand1 / operand2;
+                default:
+                    return 0;
             }
         }
-        while (!st.isEmpty()) out.append(st.pop());
-        return out.toString();
-    }
 
-    static float perform(float a, float b, char op) {
-        switch (op) { case '+': return a+b; case '-': return a-b;
-                      case '*': return a*b; case '/': return a/b; default: return 0; }
-    }
-    static float evaluatePostfix(String postfix) {
-        Deque<Float> st = new ArrayDeque<>();
-        for (char ch : postfix.toCharArray()) {
-            if (Character.isDigit(ch)) st.push((float)(ch - '0'));
-            else { float b = st.pop(), a = st.pop(); st.push(perform(a, b, ch)); }
+        // Function to evaluate a postfix expression
+        private float evaluateAPostfixExpression(String postfix) {
+
+            // Stack to store operands
+            Stack<Float> stack = new Stack<>();
+
+            // Iterate through each character in the postfix expression
+            for (char ch : postfix.toCharArray()) {
+
+                // If the character is an operand (a digit)
+                if (Character.isDigit(ch)) {
+
+                    // Convert it to a float and push it onto the stack
+                    stack.push((float) (ch - '0'));
+                }
+
+                // If the character is an operator (an arithmetic symbol)
+                // perform the operation on the top two operands in the stack
+                // and push the result back onto the stack
+                else {
+
+                    // Pop the top element from the stack as the second
+                    // operand
+                    float operand2 = stack.peek();
+                    stack.pop();
+
+                    // Pop the top element from the stack as the first
+                    // operand
+                    float operand1 = stack.peek();
+                    stack.pop();
+
+                    // Apply the arithmetic operation and push the result
+                    // back to the stack
+                    stack.push(performOperation(operand1, operand2, ch));
+                }
+            }
+
+            // Return the final result
+            return stack.peek();
         }
-        return st.peek();
-    }
 
-    static float evaluateInfix(String infix) { return evaluatePostfix(infixToPostfix(infix)); }
+        public float evaluateAnInfixExpression(String infix) {
+
+            // Convert the infix expression to postfix notation
+            String postfix = convertInfixToPostfix(infix);
+
+            // Evaluate the postfix expression and return the result
+            return evaluateAPostfixExpression(postfix);
+        }
+    }
 
     public static void main(String[] args) {
-        System.out.println(evaluateInfix("(1+2)*(3/4)"));
-        System.out.println(evaluateInfix("2+3*4"));
-        System.out.println(evaluateInfix("(2+3)*4"));
+        // Example from the problem statement
+        System.out.println(new Solution().evaluateAnInfixExpression("(1+2)*(3/4)"));  // 2.25
+
+        // Edge cases
+        System.out.println(new Solution().evaluateAnInfixExpression("2+3"));          // 5.0
+        System.out.println(new Solution().evaluateAnInfixExpression("(2+3)"));        // 5.0
+        System.out.println(new Solution().evaluateAnInfixExpression("8-2"));          // 6.0
+        System.out.println(new Solution().evaluateAnInfixExpression("4*2"));          // 8.0
+        System.out.println(new Solution().evaluateAnInfixExpression("9/3"));          // 3.0
+        System.out.println(new Solution().evaluateAnInfixExpression("2+3*4"));        // 14.0
+        System.out.println(new Solution().evaluateAnInfixExpression("(2+3)*4"));      // 20.0
     }
 }
 ```
 
-```c run
-#include <stdio.h>
-#include <string.h>
-#include <ctype.h>
+</details>
+<details>
+<summary><h2>Final Takeaway</h2></summary>
 
-int prec(char op) { switch(op){case '^':return 3;case '*':case '/':return 2;case '+':case '-':return 1;default:return 0;} }
-int is_op(char c) { return c == '+'||c == '-'||c == '*'||c == '/'||c == '^'; }
-
-void infix_to_postfix(const char *infix, char *out) {
-    char st[256]; int top = -1; int o = 0;
-    for (const char *p = infix; *p; p++) {
-        char c = *p;
-        if (isalnum((unsigned char)c)) out[o++] = c;
-        else if (c == '(') st[++top] = c;
-        else if (c == ')') {
-            while (top >= 0 && st[top] != '(') out[o++] = st[top--];
-            if (top >= 0) top--;
-        } else if (is_op(c)) {
-            while (top >= 0 && st[top] != '(' && prec(st[top]) >= prec(c)) out[o++] = st[top--];
-            st[++top] = c;
-        }
-    }
-    while (top >= 0) out[o++] = st[top--];
-    out[o] = 0;
-}
-
-float perform_op(float a, float b, char op) { switch(op){case '+':return a+b;case '-':return a-b;case '*':return a*b;case '/':return a/b;default:return 0;} }
-
-float evaluate_postfix(const char *postfix) {
-    float st[256]; int top = -1;
-    for (const char *p = postfix; *p; p++) {
-        if (isdigit((unsigned char)*p)) st[++top] = (float)(*p - '0');
-        else { float b = st[top--], a = st[top--]; st[++top] = perform_op(a, b, *p); }
-    }
-    return st[top];
-}
-
-float evaluate_infix(const char *infix) { char buf[256]; infix_to_postfix(infix, buf); return evaluate_postfix(buf); }
-
-int main() {
-    printf("%.3f\n", evaluate_infix("(1+2)*(3/4)"));
-    printf("%.3f\n", evaluate_infix("2+3*4"));
-    printf("%.3f\n", evaluate_infix("(2+3)*4"));
-}
-```
-
-```scala run
-import scala.collection.mutable
-
-def prec(op: Char): Int = op match { case '^' => 3; case '*' | '/' => 2; case '+' | '-' => 1; case _ => 0 }
-def isOp(c: Char): Boolean = "+-*/^".contains(c)
-
-def infixToPostfix(infix: String): String = {
-  val st = mutable.Stack[Char](); val out = new StringBuilder
-  for (c <- infix) {
-    if (c.isLetterOrDigit) out.append(c)
-    else if (c == '(') st.push(c)
-    else if (c == ')') {
-      while (st.nonEmpty && st.top != '(') out.append(st.pop())
-      if (st.nonEmpty) st.pop()
-    } else if (isOp(c)) {
-      while (st.nonEmpty && st.top != '(' && prec(st.top) >= prec(c)) out.append(st.pop())
-      st.push(c)
-    }
-  }
-  while (st.nonEmpty) out.append(st.pop())
-  out.toString
-}
-
-def perform(a: Float, b: Float, op: Char): Float = op match { case '+' => a+b; case '-' => a-b; case '*' => a*b; case '/' => a/b; case _ => 0 }
-
-def evaluatePostfix(postfix: String): Float = {
-  val st = mutable.Stack[Float]()
-  for (c <- postfix) {
-    if (c.isDigit) st.push((c - '0').toFloat)
-    else { val b = st.pop(); val a = st.pop(); st.push(perform(a, b, c)) }
-  }
-  st.top
-}
-
-def evaluateInfix(infix: String): Float = evaluatePostfix(infixToPostfix(infix))
-
-object Main extends App {
-  println(evaluateInfix("(1+2)*(3/4)"))
-  println(evaluateInfix("2+3*4"))
-  println(evaluateInfix("(2+3)*4"))
-}
-```
-
-
-***
-
-## Final Takeaway
 
 Three evaluators, one architecture: **a stack of operands plus a left-to-right or right-to-left scan**. The differences between the three notations collapse to a few lines of code.
 
@@ -816,3 +1024,5 @@ Three lessons:
 3. **Infix is a wrapper, not a primitive.** Real infix evaluators don't try to evaluate infix directly — they convert to postfix (or to an AST, which is just a tree-shaped postfix) and evaluate that. Two simple stages compose into a calculator that handles arbitrary precedence and parentheses.
 
 > *Coming up — the **infix-to-postfix converter** that this lesson skipped over. Lesson 6 is the formal Shunting-Yard algorithm: one stack of operators, one output buffer, careful precedence comparisons, parentheses handling. It's the algorithm Edsger Dijkstra invented in 1961 and that every serious calculator and parser still uses today. Once you have it, you have a complete arithmetic evaluator.*
+
+</details>

@@ -1,11 +1,12 @@
 package codefolio.server
 
+import codefolio.server.auth.Auth
 import codefolio.server.blogPipeline.BlogPipeline
 import codefolio.server.codeRunPipeline.CodeRunPipeline
 import codefolio.server.config.AppConfig
 import codefolio.server.cortexPipeline.CortexPipeline
 import codefolio.server.helloPipeline.HelloPipeline
-import codefolio.server.http.{ApiRoutes, CortexAssetRoutes, LikeC4ProxyRoutes, StaticRoutes}
+import codefolio.server.http.{ApiRoutes, CortexAssetRoutes, LikeC4ProxyRoutes, RateLimiter, StaticRoutes}
 import zio.*
 import zio.http.*
 
@@ -22,21 +23,25 @@ trait HttpApp:
 object HttpApp:
 
   val live: ZLayer[
-    AppConfig & HelloPipeline & CodeRunPipeline & CortexPipeline & BlogPipeline,
+    AppConfig & HelloPipeline & CodeRunPipeline & CortexPipeline & BlogPipeline & Auth & RateLimiter,
     Nothing,
     HttpApp
   ] =
-    ZLayer.fromFunction(HttpAppLive(_, _, _, _, _))
+    ZLayer.fromFunction(HttpAppLive(_, _, _, _, _, _, _))
 
 final private class HttpAppLive(
     cfg: AppConfig,
     helloPipeline: HelloPipeline,
     codeRun: CodeRunPipeline,
     cortex: CortexPipeline,
-    blog: BlogPipeline
+    blog: BlogPipeline,
+    auth: Auth,
+    rateLimiter: RateLimiter
 ) extends HttpApp:
 
-  private val apiRoutes         = ApiRoutes.routes(helloPipeline, codeRun, cortex, blog)
+  private val apiRoutes =
+    ApiRoutes.routes(cfg, helloPipeline, codeRun, cortex, blog, auth, rateLimiter)
+
   private val cortexAssetRoutes = CortexAssetRoutes.from(cfg.cortex.root)
   private val likec4Routes      = LikeC4ProxyRoutes.from(cfg.likec4.upstreamUrl)
   private val staticRoutes      = StaticRoutes.from(cfg.staticDir)

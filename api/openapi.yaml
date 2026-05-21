@@ -148,6 +148,43 @@ paths:
         '500':
           $ref: '#/components/responses/InternalServerError'
 
+  /api/auth/config:
+    get:
+      operationId: getAuthConfig
+      summary: |
+        Public boot-time config for the SPA's Keycloak client. Returns the
+        coordinates `keycloak-js` needs to initialise (issuer URL, realm,
+        client id). When `enabled=false` (dev mode), the optional fields
+        are absent and the frontend skips initialising keycloak-js
+        entirely — every visitor is treated as anonymous with full edit
+        access.
+      responses:
+        '200':
+          description: Auth config payload
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuthConfig'
+
+  /api/me:
+    get:
+      operationId: getMe
+      summary: |
+        Identity claims for the bearer-token holder, plus the user's
+        current /api/run quota for this hour. Surfaced verbatim from the
+        validated JWT — codefolio does not persist a users table.
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: User info + quota
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserInfo'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
   /api/run:
     post:
       operationId: runCode
@@ -155,6 +192,20 @@ paths:
         Execute a code snippet via Piston (production) or the local Code
         Runner container (dev). Validates language + payload size, then
         proxies to whichever backend is configured.
+
+        Authentication is **optional**: anonymous calls go through a
+        per-IP token bucket (5/min, burst 10); calls with a valid
+        bearer token go through a per-user hourly bucket (100/hour).
+        Either bucket can return 429 with a `Retry-After` header.
+
+        A malformed or expired bearer token returns 401 even though
+        anonymous is allowed — sending garbage is not the same as
+        sending nothing. (No `security` field declared on this
+        operation: the codegen renders that as a required bearer
+        scheme, which would break anonymous callers. The optional
+        scheme is wired into the server's endpoint definition
+        manually; clients that want to authenticate just send an
+        `Authorization: Bearer …` header.)
       requestBody:
         required: true
         content:
@@ -170,14 +221,28 @@ paths:
                 $ref: '#/components/schemas/RunResponse'
         '400':
           $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
         '413':
           $ref: '#/components/responses/PayloadTooLarge'
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
         '502':
           $ref: '#/components/responses/BadGateway'
         '503':
           $ref: '#/components/responses/ServiceUnavailable'
 
 components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+      description: |
+        OIDC access token issued by Keycloak (realm `apps-prod`, public
+        client `codefolio-web`, GitHub IdP). Validated server-side
+        against the JWK set fetched from the issuer URL.
+
   responses:
     BadRequest:
       description: Request could not be processed by the server.
@@ -185,8 +250,26 @@ components:
         application/json:
           schema:
             $ref: '#/components/schemas/ApiError'
+    Unauthorized:
+      description: |
+        Bearer token is missing, malformed, signature-invalid, or expired.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ApiError'
     PayloadTooLarge:
       description: Request payload exceeds a server-side limit.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ApiError'
+    TooManyRequests:
+      description: |
+        Caller has exceeded the per-IP (anonymous) or per-user
+        (authenticated) rate-limit bucket for /api/run. The response
+        carries a `Retry-After: <seconds>` header indicating when the
+        current window resets (added by the server, not declared in the
+        codegen-friendly schema — see `RateLimiter.scala`).
       content:
         application/json:
           schema:
@@ -597,3 +680,93 @@ components:
         nextSlug:
           type: string
           nullable: true
+
+    AuthConfig:
+      type: object
+      required: [enabled]
+      description: |
+        Boot-time auth configuration consumed by the SPA. When `enabled`
+        is false (dev convenience), the optional Keycloak coordinates are
+        absent and the frontend treats every visitor as an anonymous user
+        with full edit access (the rate limiter is also bypassed
+        server-side). When `enabled` is true, all three optional fields
+        are present and `keycloak-js` initialises with them.
+      properties:
+        enabled:
+          type: boolean
+          description: True when the server is enforcing auth.
+          example: true
+        issuerUrl:
+          type: string
+          nullable: true
+          description: |
+            Full OIDC issuer URL — typically
+            `<keycloak-base>/realms/<realm>`. Used to derive the JWKS URL
+            and as the public-facing token issuer the SPA hands to
+            keycloak-js.
+          example: "https://keycloak.kakde.eu/realms/apps-prod"
+        realm:
+          type: string
+          nullable: true
+          description: Keycloak realm name.
+          example: "apps-prod"
+        clientId:
+          type: string
+          nullable: true
+          description: Public Keycloak client id for the SPA.
+          example: "codefolio-web"
+
+    Quota:
+      type: object
+      required: [used, limit, windowSeconds, resetEpochMs]
+      description: |
+        Per-user (or per-IP) /api/run rate-limit snapshot. `used` is the
+        number of requests consumed in the current window; `limit` is
+        the cap; `windowSeconds` is the bucket size (60 anon, 3600
+        authed); `resetEpochMs` is when the current window flips, in
+        milliseconds since epoch.
+      properties:
+        used:
+          type: integer
+          format: int32
+          example: 8
+        limit:
+          type: integer
+          format: int32
+          example: 100
+        windowSeconds:
+          type: integer
+          format: int32
+          example: 3600
+        resetEpochMs:
+          type: integer
+          format: int64
+          example: 1779097200000
+
+    UserInfo:
+      type: object
+      required: [sub, preferredUsername, quota]
+      description: |
+        Public projection of the validated JWT claims for the caller,
+        plus their current rate-limit snapshot. `sub` is the stable
+        Keycloak subject id; `preferredUsername` is typically the GitHub
+        login (the GitHub IdP populates it from the user's GitHub
+        handle); `name` and `email` are best-effort (GitHub doesn't
+        always release them).
+      properties:
+        sub:
+          type: string
+          example: "f1c2c3d4-aaaa-bbbb-cccc-1234567890ab"
+        preferredUsername:
+          type: string
+          example: "ani2fun"
+        name:
+          type: string
+          nullable: true
+          example: "Aniket Kakde"
+        email:
+          type: string
+          nullable: true
+          example: "a.r.kakde@gmail.com"
+        quota:
+          $ref: '#/components/schemas/Quota'

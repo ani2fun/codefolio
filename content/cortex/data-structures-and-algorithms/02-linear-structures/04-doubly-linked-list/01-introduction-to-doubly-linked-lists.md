@@ -282,7 +282,9 @@ Doubly linked lists are very efficient for certain use cases but also have some 
 
 Like singly linked lists, a **node** in a doubly linked list is its fundamental building block. Multiple nodes, when chained together, make up a doubly linked list. All operations performed on the list — inserting, deleting, or updating data items — are performed by manipulating individual nodes and their links.
 
-## Structure of a node
+<details>
+<summary><h2>Structure of a node</h2></summary>
+
 
 The node of a doubly linked list is a simple yet highly effective extension of the node of a singly linked list. It just has an extra pointer — `prev` — that stores the reference to the node **before** it in the list. This way, we can move **forward** and **backward** from any node, and operations involving reference manipulation become much easier. A doubly linked list node has three sections:
 
@@ -331,107 +333,38 @@ node.next -> next_target: "points to"
 
 <p align="center"><strong>A doubly linked list node has three fields: <code>prev</code> (address of the predecessor), <code>val</code> (the data), and <code>next</code> (address of the successor). The <code>prev</code> field is the only structural difference from a singly linked node — and it is what unlocks O(1) bidirectional operations.</strong></p>
 
-## Implementing a node
+</details>
+<details>
+<summary><h2>Implementing a node</h2></summary>
+
 
 As we already learned, the node of a doubly linked list is just an extension of a singly linked list node. We can implement a doubly linked list node by adding a new pointer to the implementation of a singly linked list node.
 
 
-```pseudocode
-class ListNode:
-    field val
-    field prev                                         # null if head
-    field next                                         # null if tail
-
-a ← new ListNode(5)
-b ← new ListNode(7)
-a.next ← b                                              # forward link a → b
-b.prev ← a                                              # MUST mirror the forward link
-```
-
 ```python run
-class ListNode:
-    def __init__(self, val=0, prev=None, next=None):
-        self.val  = val   # The data this node holds
-        self.prev = prev  # Reference to the previous node; None if this is the head
-        self.next = next  # Reference to the next node;     None if this is the tail
 
-# Usage — wire two nodes together both ways
-a = ListNode(5)
-b = ListNode(7)
-a.next = b   # Forward link a → b
-b.prev = a   # Backward link a ← b  (must mirror the forward link!)
-print(a.val, "<->", b.val)  # 5 <-> 7
+class ListNode:
+    def __init__(self, val):
+        self.val = val
+        self.prev = None
+        self.next = None
 ```
 
 ```java run
-public class Main {
-    static class ListNode {
-        int      val;
-        ListNode prev;   // Predecessor pointer; null if head
-        ListNode next;   // Successor   pointer; null if tail
 
-        ListNode() {}                          // Default: val=0, both pointers null
-        ListNode(int val) { this.val = val; }  // Pointers stay null until linked
-    }
-
-    public static void main(String[] args) {
-        ListNode a = new ListNode(5);
-        ListNode b = new ListNode(7);
-        a.next = b;   // Forward link a → b
-        b.prev = a;   // Backward link a ← b — must mirror!
-        System.out.println(a.val + " <-> " + b.val);  // 5 <-> 7
-    }
-}
-```
-
-```c run
-#include <stdio.h>
-#include <stdlib.h>
-
-typedef struct ListNode {
-    int               val;
-    struct ListNode  *prev;   // Predecessor; NULL if head
-    struct ListNode  *next;   // Successor;   NULL if tail
-} ListNode;
-
-ListNode* newNode(int val) {
-    ListNode *node = (ListNode*)malloc(sizeof(ListNode));
-    node->val  = val;
-    node->prev = NULL;   // Newly allocated nodes start disconnected on both sides
-    node->next = NULL;
-    return node;
-}
-
-int main() {
-    ListNode *a = newNode(5);
-    ListNode *b = newNode(7);
-    a->next = b;   // Forward link
-    b->prev = a;   // Backward link — keep both sides in sync
-    printf("%d <-> %d\n", a->val, b->val);   // 5 <-> 7
-    free(a);
-    free(b);
-    return 0;
-}
-```
-
-```scala run
-class ListNode(
-  var v:    Int      = 0,
-  var prev: ListNode = null,   // Predecessor pointer; null if head
-  var next: ListNode = null    // Successor   pointer; null if tail
-)
-
-object Main extends App {
-  val a = new ListNode(5)
-  val b = new ListNode(7)
-  a.next = b   // Forward
-  b.prev = a   // Backward — must be set explicitly to mirror `next`
-  println(s"${a.v} <-> ${b.v}")  // 5 <-> 7
+class ListNode {
+	int val;
+	ListNode prev;
+	ListNode next;
+	ListNode() {}
+	ListNode(int val) { this.val = val; }
 }
 ```
 
 
 > *Notice the recurring pattern in every language above: setting `a.next = b` is **not** enough on its own — we must also set `b.prev = a`. **Every link in a doubly linked list is two pointers, not one.** Forgetting the mirror update is the single most common bug in DLL code, and we'll see why it matters the moment we start inserting and deleting in the next lessons.*
+
+</details>
 
 ***
 

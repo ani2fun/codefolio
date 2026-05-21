@@ -25,11 +25,11 @@ prereqs: []
 <2-3 sentences. What topology does it draw? What operations does it animate?
 What modes are supported? Be concrete.>
 
-> **Source spec**: [`docs/migration/widget-specs/<widget-name>.md`](../../../docs/migration/widget-specs/<widget-name>.md)
+> **Source spec**: `docs/migration/widget-specs/<widget-name>.md`
 >
 > **Scala module**: `client/src/main/scala/codefolio/client/components/cortex/widgets/<WidgetName>.scala`
 >
-> **ADR**: [`docs/adr/00XX-<widget-name>-widget.md`](../../../docs/adr/00XX-<widget-name>-widget.md)
+> **ADR**: `docs/adr/00XX-<widget-name>-widget.md`
 
 ## Payload schema (reference card)
 
@@ -117,7 +117,7 @@ Example: source 14-frame diagram → 6-8 widget steps.
 ## Browser verification
 
 Open this chapter at
-`http://localhost:5173/cortex/dsa-widget-catalog/<widget-name>` and:
+`http://localhost:5173/cortex/data-structures-and-algorithms/appendix-widget-catalog-<widget-name>` and:
 
 1. Exercise step controls on each payload (next, prev, jump to end).
 2. Verify no `.d3-widget__error` divs render.

@@ -3,6 +3,7 @@ package codefolio.client.components.cortex
 import codefolio.client.api.ApiClient
 import codefolio.client.components.icons.LucideIcons
 import codefolio.shared.api.Endpoints.RunRequest
+import codefolio.shared.viz.*
 import japgolly.scalajs.react.*
 import japgolly.scalajs.react.vdom.html_<^.*
 import org.scalajs.dom
@@ -11,15 +12,16 @@ import scala.concurrent.ExecutionContext
 import scala.scalajs.concurrent.JSExecutionContext
 import scala.scalajs.js
 import scala.scalajs.js.annotation.JSImport
-import scala.util.{Failure, Success, Try}
+import scala.util.{Failure, Success}
 
 /**
- * Step-through visualisation of a Python source. The server-side `/api/run` is unchanged — the client wraps
- * the user source in a `sys.settrace` harness, posts the wrapped program, then parses the captured trace out
- * of stdout and renders code + locals panel + step controls.
+ * Step-through visualisation of a Python source. The server-side `/api/run` is unchanged — the shared
+ * [[PythonTracer]] wraps the user source in a `sys.settrace` harness, the client posts the wrapped program,
+ * then [[PythonTracer.parse]] splits the captured trace out of stdout and this component renders code +
+ * locals panel + step controls.
  *
- * The wrapper is delimited by `__CFTRACE_BEGIN__` / `__CFTRACE_END__` markers so the user's real `print()`
- * output (if any) survives the parse and shows up in a "Program output" tab.
+ * The harness is delimited by markers so the user's real `print()` output (if any) survives the parse and
+ * shows up in a "Program output" panel.
  *
  * **Collapsed by default.** The header is always visible (so the chapter shows that an interactive tracer is
  * available); the body — source, locals, caption, program output — only appears once the reader clicks
@@ -37,124 +39,11 @@ object TracedCodeBlock:
   final case class Props(language: String, source: String)
 
   // ---------------------------------------------------------------------------
-  // Trace data + parsing
+  // Trace data — the heap-snapshot trace comes from the shared PythonTracer.
   // ---------------------------------------------------------------------------
 
-  /**
-   * One captured step. `line` is 1-based in the user's source; `event` is `line | call | return`; `locals` is
-   * a flat `name → repr(value)` map. `fn` is the function name the frame was executing in (`<module>` for
-   * top-level).
-   */
-  final private case class Frame(line: Int, event: String, fn: String, locals: List[(String, String)])
-
-  final private case class Trace(frames: List[Frame], programStdout: String, programStderr: String)
-
-  private val BeginMarker = "__CFTRACE_BEGIN__"
-  private val EndMarker   = "__CFTRACE_END__"
-
-  /**
-   * Extract the trace JSON appended to stdout by the harness. Anything before `__CFTRACE_BEGIN__` is the
-   * user's program output; the JSON between the markers is the trace; anything after `__CFTRACE_END__` is
-   * harness noise that we throw away.
-   *
-   * If the markers are missing the program never made it through the trace harness (compile error, fatal
-   * exception inside the harness itself, …) — we return the raw stdout as program output with no trace.
-   */
-  private def extractTrace(stdout: String, stderr: String): Trace =
-    val beginIdx = stdout.lastIndexOf(BeginMarker)
-    if beginIdx < 0 then Trace(Nil, stdout, stderr)
-    else
-      val afterBegin = stdout.substring(beginIdx + BeginMarker.length)
-      val endIdx     = afterBegin.indexOf(EndMarker)
-      val jsonRaw =
-        if endIdx < 0 then afterBegin else afterBegin.substring(0, endIdx)
-      val programOut =
-        stdout
-          .substring(0, beginIdx)
-          .stripSuffix("\n")
-      val frames = Try {
-        val arr = js.JSON.parse(jsonRaw.trim).asInstanceOf[js.Array[js.Dynamic]]
-        arr.toList.map { f =>
-          val locals = f.locals.asInstanceOf[js.UndefOr[js.Dynamic]].toOption
-            .map { obj =>
-              val keys = js.Object.keys(obj.asInstanceOf[js.Object])
-              keys.toList.map { k =>
-                k -> obj.selectDynamic(k).asInstanceOf[String]
-              }
-            }
-            .getOrElse(Nil)
-          Frame(
-            line = f.line.asInstanceOf[Int],
-            event = f.event.asInstanceOf[String],
-            fn = f.fn.asInstanceOf[js.UndefOr[String]].toOption.getOrElse("<module>"),
-            locals = locals
-          )
-        }
-      } match
-        case Success(v) => v
-        case Failure(_) => Nil
-      Trace(frames, programOut, stderr)
-
-  // ---------------------------------------------------------------------------
-  // Python harness — wraps user source in a sys.settrace tracer that emits the
-  // step list as JSON between the marker pair.
-  // ---------------------------------------------------------------------------
-
-  private def base64Encode(s: String): String =
-    js.Dynamic.global.btoa(js.Dynamic.global.unescape(js.Dynamic.global.encodeURIComponent(s))).asInstanceOf[
-      String
-    ]
-
-  private def wrapPython(userSource: String): String =
-    val encoded = base64Encode(userSource)
-    s"""import sys, json, base64
-       |
-       |_cf_source = base64.b64decode("$encoded").decode("utf-8")
-       |_cf_trace = []
-       |_cf_step_limit = 2000
-       |
-       |def _cf_repr(v):
-       |    try:
-       |        r = repr(v)
-       |    except Exception:
-       |        return "<unrepresentable>"
-       |    return r if len(r) < 120 else r[:120] + "\\u2026"
-       |
-       |def _cf_tracer(frame, event, arg):
-       |    if event in ("line", "call", "return") and frame.f_code.co_filename == "<traced>":
-       |        # sys.settrace fires `call` at lineno=0 for the module body before any code executes;
-       |        # surface only frames pointing at a real source line so the first step the reader sees
-       |        # is meaningful.
-       |        if frame.f_lineno <= 0:
-       |            return _cf_tracer
-       |        locs = {}
-       |        for k, v in list(frame.f_locals.items()):
-       |            if k.startswith("_cf_") or k.startswith("__"):
-       |                continue
-       |            locs[k] = _cf_repr(v)
-       |        _cf_trace.append({
-       |            "line": frame.f_lineno,
-       |            "event": event,
-       |            "fn": frame.f_code.co_name,
-       |            "locals": locs,
-       |        })
-       |        if len(_cf_trace) >= _cf_step_limit:
-       |            sys.settrace(None)
-       |    return _cf_tracer
-       |
-       |try:
-       |    _cf_compiled = compile(_cf_source, "<traced>", "exec")
-       |    _cf_ns = {"__name__": "__main__"}
-       |    sys.settrace(_cf_tracer)
-       |    try:
-       |        exec(_cf_compiled, _cf_ns)
-       |    finally:
-       |        sys.settrace(None)
-       |finally:
-       |    sys.stdout.write("\\n$BeginMarker")
-       |    sys.stdout.write(json.dumps(_cf_trace))
-       |    sys.stdout.write("$EndMarker\\n")
-       |""".stripMargin
+  /** A ready trace: the decoded heap-snapshot steps plus the user program's own stdout. */
+  final private case class Trace(steps: List[HeapStep], programStdout: String)
 
   // ---------------------------------------------------------------------------
   // UI state machine
@@ -183,11 +72,11 @@ object TracedCodeBlock:
       .useState(false)
       .useRefBy(_ => Option.empty[Int])
       // depsBy returns a primitive tuple so we don't need a `Reusability[Phase]`. The effect only cares
-      // about the auto-advance loop: (playing, idx, totalFrames). Idle / Running / Failed collapse to
+      // about the auto-advance loop: (playing, idx, totalSteps). Idle / Running / Failed collapse to
       // (false, -1, 0) — guaranteed to differ from any Ready trigger, so the cancel-then-install loop runs.
       .useEffectWithDepsBy { (_, phaseS, _, _) =>
         phaseS.value match
-          case Ready(t, i, p) => (p, i, t.frames.length)
+          case Ready(t, i, p) => (p, i, t.steps.length)
           case _              => (false, -1, 0)
       } { (_, phaseS, _, timeoutRef) => (playing, idx, total) =>
         Callback {
@@ -199,9 +88,9 @@ object TracedCodeBlock:
                 () =>
                   phaseS
                     .modState {
-                      case Ready(t, i, true) if i < t.frames.length - 1 => Ready(t, i + 1, true)
-                      case Ready(t, i, _)                               => Ready(t, i, false)
-                      case other                                        => other
+                      case Ready(t, i, true) if i < t.steps.length - 1 => Ready(t, i + 1, true)
+                      case Ready(t, i, _)                              => Ready(t, i, false)
+                      case other                                       => other
                     }
                     .runNow(),
                 StepDelayMs.toDouble
@@ -228,14 +117,15 @@ object TracedCodeBlock:
         else
           val runTrace: Callback =
             visibleS.setState(true) >> phaseS.setState(Running) >> Callback {
-              val wrapped = wrapPython(props.source)
+              val wrapped = PythonTracer.wrap(props.source)
               val req     = RunRequest(language = "python", source = wrapped, stdin = None)
               ApiClient.runCode(req).onComplete {
                 case Success(resp) =>
-                  val r     = resp.result
-                  val ok    = r.statusId == 3
-                  val trace = extractTrace(Option(r.stdout).getOrElse(""), Option(r.stderr).getOrElse(""))
-                  if !ok && trace.frames.isEmpty then
+                  val r      = resp.result
+                  val ok     = r.statusId == 3
+                  val parsed = PythonTracer.parse(Option(r.stdout).getOrElse(""))
+                  val trace  = Trace(parsed.trace.steps, parsed.programStdout)
+                  if !ok && trace.steps.isEmpty then
                     val errMsg =
                       Seq(
                         Option(r.statusDescription).filter(_.nonEmpty),
@@ -250,8 +140,8 @@ object TracedCodeBlock:
             }
 
           val visible = visibleS.value
-          // Hiding while auto-playing would advance frames invisibly; pause as part of the hide step so
-          // re-showing leaves the reader on a deterministic frame. `visible` is captured at render time,
+          // Hiding while auto-playing would advance steps invisibly; pause as part of the hide step so
+          // re-showing leaves the reader on a deterministic step. `visible` is captured at render time,
           // so we know whether this toggle is a hide-action (and need to pause) or a show-action (no-op).
           val toggleVisible: Callback =
             if visible then
@@ -289,7 +179,7 @@ object TracedCodeBlock:
             case Ready(trace, idx, playing) =>
               val ctrls = readyControls(
                 idx,
-                trace.frames.length,
+                trace.steps.length,
                 playing,
                 visible,
                 onPrev = phaseS.modState {
@@ -297,7 +187,7 @@ object TracedCodeBlock:
                   case other          => other
                 },
                 onNext = phaseS.modState {
-                  case Ready(t, i, _) => Ready(t, math.min(t.frames.length - 1, i + 1), false)
+                  case Ready(t, i, _) => Ready(t, math.min(t.steps.length - 1, i + 1), false)
                   case other          => other
                 },
                 onReset = phaseS.modState {
@@ -306,7 +196,7 @@ object TracedCodeBlock:
                 },
                 onTogglePlay = phaseS.modState {
                   case Ready(t, i, p) =>
-                    if !p && i >= t.frames.length - 1 then Ready(t, 0, true)
+                    if !p && i >= t.steps.length - 1 then Ready(t, 0, true)
                     else Ready(t, i, !p)
                   case other => other
                 },
@@ -346,17 +236,18 @@ object TracedCodeBlock:
         React.Fragment(
           <.div(
             ^.className := "traced-code__body",
-            renderSource(props.source, readyState.map { case (t, i) => t.frames(i).line }),
+            renderSource(props.source, readyState.map { case (t, i) => t.steps(i).line }),
             readyState match
-              case Some((trace, idx)) => renderLocalsPanel(trace.frames(idx))
+              case Some((trace, idx)) => renderLocalsPanel(trace.steps(idx))
               case None               => EmptyVdom
           ),
           readyState match
             case Some((trace, idx)) =>
+              val step = trace.steps(idx)
               <.p(
                 ^.className := "traced-code__caption",
                 ^.aria.live := "polite",
-                s"${trace.frames(idx).event} in ${trace.frames(idx).fn}() — line ${trace.frames(idx).line}"
+                s"${step.event} in ${step.fn}() — line ${step.line}"
               )
             case None => EmptyVdom,
           readyState match
@@ -392,26 +283,42 @@ object TracedCodeBlock:
       }
     )
 
-  private def renderLocalsPanel(frame: Frame): VdomElement =
+  private def renderLocalsPanel(step: HeapStep): VdomElement =
     <.div(
       ^.className := "traced-code__locals",
-      <.p(^.className := "traced-code__locals-title", s"Locals — ${frame.fn}()"),
-      if frame.locals.isEmpty then
+      <.p(^.className := "traced-code__locals-title", s"Locals — ${step.fn}()"),
+      if step.locals.isEmpty then
         <.p(^.className := "traced-code__locals-empty", "(no locals yet)"): VdomNode
       else
         <.table(
           ^.className := "traced-code__locals-table",
           <.tbody(
-            frame.locals.toVdomArray { case (k, v) =>
+            step.locals.toVdomArray { case (k, v) =>
               <.tr(
                 ^.key := k,
                 <.td(^.className := "traced-code__locals-name", k),
-                <.td(^.className := "traced-code__locals-value", v)
+                <.td(^.className := "traced-code__locals-value", displayValue(v, step.heap))
               )
             }
           )
         )
     )
+
+  /** Render a captured local for the locals table: scalars inline, objects as a compact type tag. */
+  private def displayValue(v: HeapValue, heap: Map[String, HeapObject]): String =
+    v match
+      case HeapValue.Scalar(HeapScalar.I(n)) => n.toString
+      case HeapValue.Scalar(HeapScalar.D(d)) => d.toString
+      case HeapValue.Scalar(HeapScalar.B(b)) => if b then "True" else "False"
+      case HeapValue.Scalar(HeapScalar.S(s)) => "\"" + s + "\""
+      case HeapValue.Scalar(HeapScalar.Null) => "None"
+      case HeapValue.Ref(id) =>
+        heap.get(id) match
+          case Some(HeapObject.Instance(cls, _))        => cls
+          case Some(HeapObject.Arr(ArrKind.Lst, items)) => s"list[${items.size}]"
+          case Some(HeapObject.Arr(ArrKind.Tup, items)) => s"tuple[${items.size}]"
+          case Some(HeapObject.Dict(entries))           => s"dict[${entries.size}]"
+          case None                                     => "<ref>"
 
   // Eye-icon toggle for show/hide. Lives in the header alongside other controls; label flips with state.
   private def visibilityToggle(visible: Boolean, onToggle: Callback): VdomElement =
@@ -498,7 +405,7 @@ object TracedCodeBlock:
             ^.tpe := "button",
             ^.onClick --> onPrev,
             ^.disabled   := atStart,
-            ^.aria.label := "Previous frame",
+            ^.aria.label := "Previous step",
             ^.className  := "traced-code__button",
             LucideIcons.ArrowLeft(LucideIcons.withClass("traced-code__button-icon")),
             "Prev"
@@ -516,7 +423,7 @@ object TracedCodeBlock:
             ^.tpe := "button",
             ^.onClick --> onNext,
             ^.disabled   := atEnd,
-            ^.aria.label := "Next frame",
+            ^.aria.label := "Next step",
             ^.className  := "traced-code__button",
             "Next",
             LucideIcons.ArrowRight(LucideIcons.withClass("traced-code__button-icon"))
@@ -531,7 +438,7 @@ object TracedCodeBlock:
           ),
           <.span(
             ^.className := "traced-code__progress",
-            s"Frame ${idx + 1} / $total"
+            s"Step ${idx + 1} / $total"
           ),
           <.button(
             ^.tpe := "button",
@@ -544,7 +451,7 @@ object TracedCodeBlock:
       else
         <.span(
           ^.className := "traced-code__progress",
-          s"trace ready · ${total} frame${if total == 1 then "" else "s"}"
+          s"trace ready · ${total} step${if total == 1 then "" else "s"}"
         )
       ,
       visibilityToggle(visible, onToggleVisible)

@@ -208,24 +208,22 @@ Two versions: the basic implementation (always runs `n - 1` passes) and the opti
 ## Basic Implementation
 
 
-```pseudocode
-function bubbleSort(arr):
-    n ← length(arr)
-    for i from 0 to n − 2:                  # n − 1 passes
-        for j from 0 to n − i − 2:          # walk the unsorted prefix
-            if arr[j] > arr[j + 1]:         # strict > keeps it stable
-                swap arr[j] and arr[j + 1]
-```
-
 ```python run
 from typing import List
 
 class Solution:
     def bubble_sort(self, arr: List[int]) -> None:
-        n = len(arr)
-        for i in range(n - 1):                     # n-1 passes
-            for j in range(n - i - 1):             # walk unsorted prefix
-                if arr[j] > arr[j + 1]:            # strict > keeps it stable
+        n: int = len(arr)
+
+        # Iterate through each element in the array
+        for i in range(n - 1):
+
+            # Compare adjacent elements and swap them if they are in the
+            # wrong order
+            for j in range(n - i - 1):
+                if arr[j] > arr[j + 1]:
+
+                    # Swap arr[j] and arr[j + 1]
                     arr[j], arr[j + 1] = arr[j + 1], arr[j]
 
 
@@ -240,12 +238,19 @@ public class Main {
     static class Solution {
         public void bubbleSort(int[] arr) {
             int n = arr.length;
+
+            // Iterate through each element in the array
             for (int i = 0; i < n - 1; i++) {
+
+                // Compare adjacent elements and swap them if they are in the
+                // wrong order
                 for (int j = 0; j < n - i - 1; j++) {
                     if (arr[j] > arr[j + 1]) {
-                        int tmp = arr[j];
+
+                        // Swap arr[j] and arr[j + 1]
+                        int temp = arr[j];
                         arr[j] = arr[j + 1];
-                        arr[j + 1] = tmp;
+                        arr[j + 1] = temp;
                     }
                 }
             }
@@ -258,52 +263,6 @@ public class Main {
         for (int x : arr) System.out.print(x + " ");
         System.out.println();
     }
-}
-```
-
-```c run
-#include <stdio.h>
-
-void bubble_sort(int *arr, int n) {
-    for (int i = 0; i < n - 1; i++) {
-        for (int j = 0; j < n - i - 1; j++) {
-            if (arr[j] > arr[j + 1]) {
-                int tmp = arr[j];
-                arr[j] = arr[j + 1];
-                arr[j + 1] = tmp;
-            }
-        }
-    }
-}
-
-int main(void) {
-    int arr[] = {5, 3, 8, 1, 4};
-    int n = 5;
-    bubble_sort(arr, n);
-    for (int i = 0; i < n; i++) printf("%d ", arr[i]);
-    printf("\n");
-    return 0;
-}
-```
-
-```scala run
-object Main extends App {
-  class Solution {
-    def bubbleSort(arr: Array[Int]): Unit = {
-      val n = arr.length
-      for (i <- 0 until n - 1) {
-        for (j <- 0 until n - i - 1) {
-          if (arr(j) > arr(j + 1)) {
-            val tmp = arr(j); arr(j) = arr(j + 1); arr(j + 1) = tmp
-          }
-        }
-      }
-    }
-  }
-
-  val arr = Array(5, 3, 8, 1, 4)
-  new Solution().bubbleSort(arr)
-  println(arr.mkString(" "))
 }
 ```
 
@@ -365,7 +324,7 @@ if __name__ == "__main__":
     print(sorted_arr)
 ```
 
-The same `swapped` flag pattern translates one-to-one to all 10 languages above; we omit the repetition.
+The same `swapped` flag pattern translates one-to-one to both languages above; we omit the repetition.
 
 ***
 
@@ -437,132 +396,121 @@ Output: [1, 2, 3, 4, 5, 6]   (already sorted)
 
 ---
 
-## The Solution
+<details>
+<summary><h2>Solution &amp; Analysis</h2></summary>
 
-The implementation is identical to the optimised version above. Including all 10 languages here so the file is self-contained.
+### The Solution
 
+The canonical bubble sort: two nested loops, swap adjacent pairs on a strict `>`. Run against a spread of inputs — duplicates, reverse-sorted, already-sorted, empty, single-element — to confirm it sorts every case in place.
 
-```pseudocode
-function bubbleSort(arr):
-    n ← length(arr)
-    for i from 0 to n − 2:
-        swapped ← false
-        for j from 0 to n − i − 2:
-            if arr[j] > arr[j + 1]:
-                swap arr[j] and arr[j + 1]
-                swapped ← true
-        if NOT swapped:                     # already sorted — exit early (best case O(n))
-            break
-```
 
 ```python run
 from typing import List
 
 class Solution:
     def bubble_sort(self, arr: List[int]) -> None:
-        n = len(arr)
+        n: int = len(arr)
+
+        # Iterate through each element in the array
         for i in range(n - 1):
-            swapped = False
+
+            # Compare adjacent elements and swap them if they are in the
+            # wrong order
             for j in range(n - i - 1):
                 if arr[j] > arr[j + 1]:
+
+                    # Swap arr[j] and arr[j + 1]
                     arr[j], arr[j + 1] = arr[j + 1], arr[j]
-                    swapped = True
-            if not swapped:
-                break
 
 
-if __name__ == "__main__":
-    arr = [2, 3, 2, 1, 5, 6]
-    Solution().bubble_sort(arr)
-    print(arr)
+a1 = [2, 3, 2, 1, 5, 6]
+Solution().bubble_sort(a1); print(a1)              # [1, 2, 2, 3, 5, 6]
+
+a2 = [6, 5, 4, 4, 4, 3, 2, 1]
+Solution().bubble_sort(a2); print(a2)              # [1, 2, 3, 4, 4, 4, 5, 6]
+
+a3 = [1, 2, 3, 4, 5, 6]
+Solution().bubble_sort(a3); print(a3)              # [1, 2, 3, 4, 5, 6]
+
+a4: List[int] = []
+Solution().bubble_sort(a4); print(a4)              # []
+
+a5 = [42]
+Solution().bubble_sort(a5); print(a5)              # [42]
+
+a6 = [2, 1]
+Solution().bubble_sort(a6); print(a6)              # [1, 2]
+
+a7 = [3, 3, 3]
+Solution().bubble_sort(a7); print(a7)              # [3, 3, 3]
+
+a8 = [5, 2, 8, 1, 9]
+Solution().bubble_sort(a8); print(a8)              # [1, 2, 5, 8, 9]
 ```
 
 ```java run
+import java.util.Arrays;
+
 public class Main {
     static class Solution {
         public void bubbleSort(int[] arr) {
             int n = arr.length;
+
+            // Iterate through each element in the array
             for (int i = 0; i < n - 1; i++) {
-                boolean swapped = false;
+
+                // Compare adjacent elements and swap them if they are in the
+                // wrong order
                 for (int j = 0; j < n - i - 1; j++) {
                     if (arr[j] > arr[j + 1]) {
-                        int tmp = arr[j];
+
+                        // Swap arr[j] and arr[j + 1]
+                        int temp = arr[j];
                         arr[j] = arr[j + 1];
-                        arr[j + 1] = tmp;
-                        swapped = true;
+                        arr[j + 1] = temp;
                     }
                 }
-                if (!swapped) break;
             }
         }
     }
 
     public static void main(String[] args) {
-        int[] arr = {2, 3, 2, 1, 5, 6};
-        new Solution().bubbleSort(arr);
-        for (int x : arr) System.out.print(x + " ");
-        System.out.println();
+        int[] a1 = {2, 3, 2, 1, 5, 6};
+        new Solution().bubbleSort(a1);
+        System.out.println(Arrays.toString(a1));   // [1, 2, 2, 3, 5, 6]
+
+        int[] a2 = {6, 5, 4, 4, 4, 3, 2, 1};
+        new Solution().bubbleSort(a2);
+        System.out.println(Arrays.toString(a2));   // [1, 2, 3, 4, 4, 4, 5, 6]
+
+        int[] a3 = {1, 2, 3, 4, 5, 6};
+        new Solution().bubbleSort(a3);
+        System.out.println(Arrays.toString(a3));   // [1, 2, 3, 4, 5, 6]
+
+        int[] a4 = {};
+        new Solution().bubbleSort(a4);
+        System.out.println(Arrays.toString(a4));   // []
+
+        int[] a5 = {42};
+        new Solution().bubbleSort(a5);
+        System.out.println(Arrays.toString(a5));   // [42]
+
+        int[] a6 = {2, 1};
+        new Solution().bubbleSort(a6);
+        System.out.println(Arrays.toString(a6));   // [1, 2]
+
+        int[] a7 = {3, 3, 3};
+        new Solution().bubbleSort(a7);
+        System.out.println(Arrays.toString(a7));   // [3, 3, 3]
+
+        int[] a8 = {5, 2, 8, 1, 9};
+        new Solution().bubbleSort(a8);
+        System.out.println(Arrays.toString(a8));   // [1, 2, 5, 8, 9]
     }
 }
 ```
 
-```c run
-#include <stdio.h>
-#include <stdbool.h>
-
-void bubble_sort(int *arr, int n) {
-    for (int i = 0; i < n - 1; i++) {
-        bool swapped = false;
-        for (int j = 0; j < n - i - 1; j++) {
-            if (arr[j] > arr[j + 1]) {
-                int tmp = arr[j]; arr[j] = arr[j + 1]; arr[j + 1] = tmp;
-                swapped = true;
-            }
-        }
-        if (!swapped) break;
-    }
-}
-
-int main(void) {
-    int arr[] = {2, 3, 2, 1, 5, 6};
-    int n = 6;
-    bubble_sort(arr, n);
-    for (int i = 0; i < n; i++) printf("%d ", arr[i]);
-    printf("\n");
-    return 0;
-}
-```
-
-```scala run
-object Main extends App {
-  class Solution {
-    def bubbleSort(arr: Array[Int]): Unit = {
-      val n = arr.length
-      var i = 0
-      while (i < n - 1) {
-        var swapped = false
-        for (j <- 0 until n - i - 1) {
-          if (arr(j) > arr(j + 1)) {
-            val tmp = arr(j); arr(j) = arr(j + 1); arr(j + 1) = tmp
-            swapped = true
-          }
-        }
-        if (!swapped) return
-        i += 1
-      }
-    }
-  }
-
-  val arr = Array(2, 3, 2, 1, 5, 6)
-  new Solution().bubbleSort(arr)
-  println(arr.mkString(" "))
-}
-```
-
-
----
-
-## Edge Cases
+### Edge Cases
 
 | Case | Example | Expected |
 |---|---|---|
@@ -573,9 +521,10 @@ object Main extends App {
 | All equal | `[3, 3, 3]` | `[3, 3, 3]` (no swaps; one pass with optimisation). |
 | Two elements | `[2, 1]` | `[1, 2]`. |
 
----
+</details>
+<details>
+<summary><h2>Final Takeaway</h2></summary>
 
-## Final Takeaway
 
 Bubble sort is the simplest sort and the slowest. It's the algorithm you write to verify you understand the *idea* of sorting; you don't ship it. Stable, in-place, adaptive (with the swap flag), but `O(n²)` makes it impractical past a few thousand elements.
 
@@ -583,6 +532,7 @@ The next algorithm — selection sort — fixes one specific weakness of bubble 
 
 **Transfer challenge — try before the Selection Sort lesson:** Modify bubble sort to sort in *descending* order. (Hint: only one character of the algorithm changes.) Then think: is the descending sort still stable?
 
+</details>
 <details>
 <summary><strong>Answer — open after you've written it</strong></summary>
 

@@ -1,0 +1,120 @@
+@layer components {
+    /* The Visualise modal (ADR-0018) — opened from a runnable Python code
+       block's "Visualise" button. Chrome mirrors .diagram-modal; adds a title
+       strip and a two-pane card (code on the left, diagram on the right).
+       It always sits on a dark overlay, so the toolbar uses fixed light values
+       rather than theme tokens. Block: .viz-modal */
+
+    .viz-modal {
+        @apply fixed inset-0 z-[60] flex flex-col;
+        background: rgba(17, 15, 13, 0.82);
+        backdrop-filter: blur(2px);
+    }
+
+    /* ─── toolbar ─────────────────────────────────────────────────── */
+    .viz-modal__toolbar {
+        @apply flex items-center gap-2 p-3 border-b;
+        border-color: rgba(255, 255, 255, 0.1);
+    }
+    .viz-modal__title {
+        @apply inline-flex items-baseline gap-2.5 mr-auto pl-1;
+    }
+    .viz-modal__title-eyebrow {
+        @apply text-[10.5px] uppercase;
+        font-family: var(--font-mono, ui-monospace, monospace);
+        letter-spacing: 0.16em;
+        color: rgba(239, 232, 216, 0.6);
+    }
+    .viz-modal__title-name {
+        @apply italic text-[17px];
+        font-family: var(--font-display, "Instrument Serif", Georgia, serif);
+        color: #efe8d8;
+    }
+    .viz-modal__button {
+        @apply inline-flex items-center gap-1.5 rounded-md p-2 text-xs font-semibold;
+        border: 1px solid rgba(255, 255, 255, 0.16);
+        background: rgba(251, 249, 243, 0.05);
+        color: #efe8d8;
+    }
+    .viz-modal__button:hover {
+        background: rgba(251, 249, 243, 0.14);
+    }
+    .viz-modal__button-icon {
+        @apply h-4 w-4;
+    }
+    .viz-modal__zoom-readout {
+        @apply text-xs tabular-nums w-12 text-center;
+        color: rgba(239, 232, 216, 0.7);
+    }
+
+    /* ─── viewport + card ─────────────────────────────────────────── */
+    .viz-modal__viewport {
+        @apply flex-1 overflow-auto flex p-6;
+    }
+    .viz-modal__card {
+        /* `m-auto` centers when there's free space, keeps symmetric overflow
+           when there isn't. Width/height are set inline from the zoom state. */
+        @apply m-auto shrink-0 flex overflow-hidden rounded-xl bg-white
+               transition-[width,height] duration-150 ease-out;
+        box-shadow: 0 24px 56px -16px rgba(0, 0, 0, 0.45);
+    }
+
+    /* ─── two panes: code + diagram ───────────────────────────────── */
+    .viz-modal__panes {
+        @apply flex h-full w-full;
+    }
+    .viz-modal__code {
+        @apply h-full w-[42%] shrink-0 overflow-auto border-r;
+        border-color: #e8e1d5;
+        background: #fbf9f3;
+    }
+    .viz-modal__diagram {
+        @apply h-full flex-1 overflow-auto flex items-center justify-center p-4;
+        background: #ffffff;
+    }
+    /* The renderer mounts a full .viz-graph card inside the host — drop its
+       outer margin so it sits flush in the modal pane. */
+    .viz-modal__host .viz-graph {
+        @apply my-0;
+    }
+
+    /* ─── code pane ───────────────────────────────────────────────── */
+    .viz-modal__source {
+        @apply m-0 p-3 text-[12.5px] leading-relaxed;
+        font-family: var(--font-mono, ui-monospace, monospace);
+    }
+    .viz-modal__line {
+        @apply flex;
+    }
+    .viz-modal__line--current {
+        background: rgba(200, 105, 62, 0.16);
+        box-shadow: inset 2px 0 0 0 var(--color-primary, #c8693e);
+    }
+    .viz-modal__line-number {
+        @apply shrink-0 pr-3 text-right tabular-nums select-none whitespace-pre;
+        color: #a59b8c;
+    }
+    .viz-modal__line-code {
+        @apply flex-1 whitespace-pre;
+    }
+
+    /* ─── status (tracing / failed) ───────────────────────────────── */
+    .viz-modal__status {
+        @apply m-auto flex flex-col items-center gap-3 p-8 text-center text-sm;
+        color: #696057;
+    }
+    .viz-modal__status-icon {
+        @apply h-6 w-6 animate-spin;
+        color: var(--color-primary, #c8693e);
+    }
+    .viz-modal__status--error {
+        color: #b91c1c;
+    }
+    .viz-modal__status-title {
+        @apply m-0 font-semibold;
+    }
+    .viz-modal__status-detail {
+        @apply m-0 max-w-[60ch] whitespace-pre-wrap text-left text-xs;
+        color: #696057;
+    }
+}

@@ -130,7 +130,9 @@ Match → extend the diagonal predecessor. Mismatch → reset to 0. Answer = max
 
 The recursive function returns the LCSubstr ending at `(i, j)`. Because the answer might end anywhere, the caller iterates over all `(i, j)` and takes the max.
 
-## Algorithm
+<details>
+<summary><h2>Algorithm</h2></summary>
+
 
 > **lcs(i, j, s1, s2, memo):**
 >
@@ -146,63 +148,65 @@ The recursive function returns the LCSubstr ending at `(i, j)`. Because the answ
 > 3. For each `(i, j)`: `result = max(result, lcs(i, j, ...))`.
 > 4. Return `result`.
 
-## The Solution
+</details>
+<details>
+<summary><h2>Solution &amp; Analysis</h2></summary>
 
-
-```pseudocode
-# Top-down memoized. lcs(i, j) = length of common SUFFIX of s1[..i] and s2[..j].
-# A common substring is any matching suffix → answer is the max over all (i, j).
-function longestCommonSubstringLength(s1, s2):
-    m ← length(s1); n ← length(s2)
-    if m = 0 OR n = 0: return 0
-    memo ← m × n grid filled with −1
-    result ← 0
-    for i from 0 to m − 1:
-        for j from 0 to n − 1:
-            result ← max(result, lcs(i, j, s1, s2, memo))
-    return result
-
-function lcs(i, j, s1, s2, memo):
-    if i < 0 OR j < 0:
-        return 0
-    if memo[i][j] ≠ −1:
-        return memo[i][j]
-    if s1[i] ≠ s2[j]:
-        memo[i][j] ← 0                          # mismatch resets — no fallback to max!
-    else:
-        memo[i][j] ← 1 + lcs(i − 1, j − 1, s1, s2, memo)
-    return memo[i][j]
-```
+### The Solution
 
 ```python run
 from typing import List
 
 class Solution:
-    def longest_common_substring_length(self, s1: str, s2: str) -> int:
-        m, n = len(s1), len(s2)
-        if m == 0 or n == 0:
-            return 0
-        memo: List[List[int]] = [[-1] * n for _ in range(m)]
-        result = 0
-        for i in range(m):
-            for j in range(n):
-                result = max(result, self._lcs(i, j, s1, s2, memo))
-        return result
+    def lcs(self, i: int, j: int, s1: str, s2: str, memo: List[List[int]]) -> int:
+        # Returns the length of the longest common substring
+        # ending at s1[i] and s2[j]
 
-    def _lcs(self, i: int, j: int, s1: str, s2: str, memo: List[List[int]]) -> int:
+        # If either index goes out of bounds,
+        # no substring can exist
         if i < 0 or j < 0:
             return 0
+
+        # Return cached result if already computed
         if memo[i][j] != -1:
             return memo[i][j]
-        if s1[i] != s2[j]:                       # Mismatch resets — no fallback to max
+
+        # If characters don't match, the common substring
+        # ending at these indices breaks
+        if s1[i] != s2[j]:
             memo[i][j] = 0
-        else:
-            memo[i][j] = 1 + self._lcs(i - 1, j - 1, s1, s2, memo)
+            return 0
+
+        # If characters match, extend the substring
+        # by checking the previous characters
+        memo[i][j] = 1 + self.lcs(i - 1, j - 1, s1, s2, memo)
         return memo[i][j]
+
+    def longest_common_substring(self, s1: str, s2: str) -> int:
+        m: int = len(s1)
+        n: int = len(s2)
+
+        # If either string is empty, result is 0
+        if m == 0 or n == 0:
+            return 0
+
+        # memo[i][j] stores the length of the longest common substring
+        # ending at s1[i] and s2[j]
+        memo: List[List[int]] = [[-1] * n for _ in range(m)]
+
+        result: int = 0
+
+        # Try every pair of indices as potential substring endings
+        for i in range(m):
+            for j in range(n):
+                result = max(result, self.lcs(i, j, s1, s2, memo))
+
+        # Return the maximum substring length found
+        return result
 
 
 if __name__ == "__main__":
-    print(Solution().longest_common_substring_length("abcdefgh", "bxcdelx"))   # 3 ("cde")
+    print(Solution().longest_common_substring("abcdefgh", "bxcdelx"))   # 3 ("cde")
 ```
 
 ```java run
@@ -210,93 +214,75 @@ import java.util.Arrays;
 
 public class Main {
     static class Solution {
-        public int longestCommonSubstringLength(String s1, String s2) {
-            int m = s1.length(), n = s2.length();
-            if (m == 0 || n == 0) return 0;
-            int[][] memo = new int[m][n];
-            for (int[] row : memo) Arrays.fill(row, -1);
-            int best = 0;
-            for (int i = 0; i < m; i++)
-                for (int j = 0; j < n; j++)
-                    best = Math.max(best, lcs(i, j, s1, s2, memo));
-            return best;
+        // Returns the length of the longest common substring
+        // ending at s1[i] and s2[j]
+        private int lcs(int i, int j, String s1, String s2, int[][] memo) {
+
+            // If either index goes out of bounds,
+            // no substring can exist
+            if (i < 0 || j < 0) return 0;
+
+            // Return cached result if already computed
+            if (memo[i][j] != -1) {
+                return memo[i][j];
+            }
+
+            // If characters don't match, the common substring
+            // ending at these indices breaks
+            if (s1.charAt(i) != s2.charAt(j)) {
+                memo[i][j] = 0;
+                return 0;
+            }
+
+            // If characters match, extend the substring
+            // by checking the previous characters
+            memo[i][j] = 1 + lcs(i - 1, j - 1, s1, s2, memo);
+            return memo[i][j];
         }
 
-        private int lcs(int i, int j, String s1, String s2, int[][] memo) {
-            if (i < 0 || j < 0) return 0;
-            if (memo[i][j] != -1) return memo[i][j];
-            memo[i][j] = (s1.charAt(i) != s2.charAt(j)) ? 0 : 1 + lcs(i - 1, j - 1, s1, s2, memo);
-            return memo[i][j];
+        public int longestCommonSubstring(String s1, String s2) {
+
+            int m = s1.length();
+            int n = s2.length();
+
+            // If either string is empty, result is 0
+            if (m == 0 || n == 0) return 0;
+
+            // memo[i][j] stores the length of the longest common substring
+            // ending at s1[i] and s2[j]
+            int[][] memo = new int[m][n];
+            for (int[] row : memo) {
+                Arrays.fill(row, -1);
+            }
+
+            int result = 0;
+
+            // Try every pair of indices as potential substring endings
+            for (int i = 0; i < m; i++) {
+                for (int j = 0; j < n; j++) {
+                    result = Math.max(result, lcs(i, j, s1, s2, memo));
+                }
+            }
+
+            // Return the maximum substring length found
+            return result;
         }
     }
 
     public static void main(String[] args) {
-        System.out.println(new Solution().longestCommonSubstringLength("abcdefgh", "bxcdelx"));   // 3
+        System.out.println(new Solution().longestCommonSubstring("abcdefgh", "bxcdelx"));   // 3
     }
 }
 ```
 
-```c run
-#include <stdio.h>
-#include <string.h>
-
-int memo[1001][1001];
-
-int lcs_top(int i, int j, const char *s1, const char *s2) {
-    if (i < 0 || j < 0) return 0;
-    if (memo[i][j] != -1) return memo[i][j];
-    memo[i][j] = (s1[i] != s2[j]) ? 0 : 1 + lcs_top(i - 1, j - 1, s1, s2);
-    return memo[i][j];
-}
-
-int longest_common_substring_length(const char *s1, const char *s2) {
-    int m = (int) strlen(s1), n = (int) strlen(s2);
-    if (m == 0 || n == 0) return 0;
-    for (int i = 0; i < m; i++) for (int j = 0; j < n; j++) memo[i][j] = -1;
-    int best = 0;
-    for (int i = 0; i < m; i++) for (int j = 0; j < n; j++) {
-        int v = lcs_top(i, j, s1, s2);
-        if (v > best) best = v;
-    }
-    return best;
-}
-
-int main(void) {
-    printf("%d\n", longest_common_substring_length("abcdefgh", "bxcdelx"));   // 3
-    return 0;
-}
-```
-
-```scala run
-object Main extends App {
-  class Solution {
-    def longestCommonSubstringLength(s1: String, s2: String): Int = {
-      val (m, n) = (s1.length, s2.length)
-      if (m == 0 || n == 0) return 0
-      val memo = Array.fill(m, n)(-1)
-      def lcs(i: Int, j: Int): Int = {
-        if (i < 0 || j < 0) return 0
-        if (memo(i)(j) != -1) return memo(i)(j)
-        memo(i)(j) = if (s1(i) != s2(j)) 0 else 1 + lcs(i - 1, j - 1)
-        memo(i)(j)
-      }
-      var best = 0
-      for (i <- 0 until m; j <- 0 until n) best = math.max(best, lcs(i, j))
-      best
-    }
-  }
-
-  println(new Solution().longestCommonSubstringLength("abcdefgh", "bxcdelx"))   // 3
-}
-```
-
-
-## Complexity
+### Complexity
 
 | Aspect | Cost | Why |
 |---|---|---|
 | Time | `O(m × n)` | Each cell computed once. |
 | Space | `O(m × n)` | Memo table + recursion stack. |
+
+</details>
 
 ***
 
@@ -340,115 +326,86 @@ table: "dp for s1 = 'aba', s2 = 'adab'" {
 
 <p align="center"><strong>The DP table for <code>s1 = "aba"</code>, <code>s2 = "ada"</code>. Note how mismatches reset cells to 0 — values don't propagate downward or rightward through them. Multiple cells reach the maximum value 1 (single-character matches "a"); the answer is <code>max = 1</code>.</strong></p>
 
-## The Solution
+<details>
+<summary><h2>The Solution</h2></summary>
 
 
-```pseudocode
-# Bottom-up. dp[i][j] = length of longest common suffix ending at (i−1, j−1).
-function longestCommonSubstringLength(s1, s2):
-    m ← length(s1); n ← length(s2)
-    if m = 0 OR n = 0: return 0
-    dp ← (m + 1) × (n + 1) grid of zeros
-    result ← 0
-    for i from 1 to m:
-        for j from 1 to n:
-            if s1[i − 1] = s2[j − 1]:
-                dp[i][j] ← dp[i − 1][j − 1] + 1
-                result ← max(result, dp[i][j])
-            # else: dp[i][j] remains 0 (mismatch resets)
-    return result
-```
 
 ```python run
 from typing import List
 
 class Solution:
-    def longest_common_substring_length(self, s1: str, s2: str) -> int:
-        m, n = len(s1), len(s2)
+    def longest_common_substring(self, s1: str, s2: str) -> int:
+
+        m: int = len(s1)
+        n: int = len(s2)
         if m == 0 or n == 0:
             return 0
-        dp: List[List[int]] = [[0] * (n + 1) for _ in range(m + 1)]
-        result = 0
+
+        # lcs[i][j] stores the length of the longest common substring
+        # that ends at the last character of the length-i prefix of s1
+        # and the length-j prefix of s2
+        lcs: List[List[int]] = [[0] * (n + 1) for _ in range(m + 1)]
+
+        # Initialize the result variable to track
+        # the length of the longest common substring
+        result: int = 0
+
+        # Fill the table
         for i in range(1, m + 1):
             for j in range(1, n + 1):
                 if s1[i - 1] == s2[j - 1]:
-                    dp[i][j] = dp[i - 1][j - 1] + 1
-                    if dp[i][j] > result:
-                        result = dp[i][j]                    # No need for max(...) helper — direct compare
-                # else: dp[i][j] stays 0 (default)
+                    lcs[i][j] = lcs[i - 1][j - 1] + 1
+
+                result = max(result, lcs[i][j])
+
         return result
 
 
 if __name__ == "__main__":
-    print(Solution().longest_common_substring_length("abcdefgh", "bxcdelx"))   # 3
+    print(Solution().longest_common_substring("abcdefgh", "bxcdelx"))   # 3
 ```
 
 ```java run
 public class Main {
     static class Solution {
-        public int longestCommonSubstringLength(String s1, String s2) {
-            int m = s1.length(), n = s2.length();
+        public int longestCommonSubstring(String s1, String s2) {
+
+            int m = s1.length();
+            int n = s2.length();
             if (m == 0 || n == 0) return 0;
-            int[][] dp = new int[m + 1][n + 1];
-            int best = 0;
-            for (int i = 1; i <= m; i++)
-                for (int j = 1; j <= n; j++)
+
+            // lcs[i][j] stores the length of the longest common substring
+            // that ends at the last character of the length-i prefix of s1
+            // and the length-j prefix of s2
+            int[][] lcs = new int[m + 1][n + 1];
+
+            // Initialize the result variable to track
+            // the length of the longest common substring
+            int result = 0;
+
+            // Fill the table
+            for (int i = 1; i <= m; i++) {
+                for (int j = 1; j <= n; j++) {
                     if (s1.charAt(i - 1) == s2.charAt(j - 1)) {
-                        dp[i][j] = dp[i - 1][j - 1] + 1;
-                        if (dp[i][j] > best) best = dp[i][j];
+                        lcs[i][j] = lcs[i - 1][j - 1] + 1;
                     }
-            return best;
+
+                    result = Math.max(result, lcs[i][j]);
+                }
+            }
+
+            return result;
         }
     }
 
     public static void main(String[] args) {
-        System.out.println(new Solution().longestCommonSubstringLength("abcdefgh", "bxcdelx"));   // 3
+        System.out.println(new Solution().longestCommonSubstring("abcdefgh", "bxcdelx"));   // 3
     }
 }
 ```
 
-```c run
-#include <stdio.h>
-#include <string.h>
-
-int dp[1001][1001];
-
-int longest_common_substring_length(const char *s1, const char *s2) {
-    int m = (int) strlen(s1), n = (int) strlen(s2);
-    if (m == 0 || n == 0) return 0;
-    for (int i = 0; i <= m; i++) for (int j = 0; j <= n; j++) dp[i][j] = 0;
-    int best = 0;
-    for (int i = 1; i <= m; i++)
-        for (int j = 1; j <= n; j++)
-            if (s1[i - 1] == s2[j - 1]) {
-                dp[i][j] = dp[i - 1][j - 1] + 1;
-                if (dp[i][j] > best) best = dp[i][j];
-            }
-    return best;
-}
-```
-
-```scala run
-object Main extends App {
-  class Solution {
-    def longestCommonSubstringLength(s1: String, s2: String): Int = {
-      val (m, n) = (s1.length, s2.length)
-      if (m == 0 || n == 0) return 0
-      val dp = Array.fill(m + 1, n + 1)(0)
-      var best = 0
-      for (i <- 1 to m; j <- 1 to n) {
-        if (s1(i - 1) == s2(j - 1)) {
-          dp(i)(j) = dp(i - 1)(j - 1) + 1
-          if (dp(i)(j) > best) best = dp(i)(j)
-        }
-      }
-      best
-    }
-  }
-
-  println(new Solution().longestCommonSubstringLength("abcdefgh", "bxcdelx"))   // 3
-}
-```
+</details>
 
 
 ***
@@ -474,7 +431,9 @@ Output: "lx"
 
 ---
 
-## Applying the Diagnostic Questions
+<details>
+<summary><h2>Applying the Diagnostic Questions</h2></summary>
+
 
 | # | Question | Answer |
 |---|---|---|
@@ -491,135 +450,144 @@ Output: "lx"
 
 **What breaks otherwise.** Reading just `dp[m][n]` gives the LCSubstr ending at *the very end of both strings*, not the global longest. Wrong answer for any input where the match doesn't extend to both ends.
 
----
+</details>
+<details>
+<summary><h2>Solution &amp; Analysis</h2></summary>
 
-## The Solution
+### The Solution
 
-We add two trackers: `best_length` and `best_end_index` (an index in `s1`). After the table is full, slice `s1[best_end_index - best_length + 1 .. best_end_index + 1]`.
+We add two trackers: `max_length` and `end_index` (an index in `s1`). After the table is full, slice `s1[end_index - max_length + 1 .. end_index + 1]`.
 
-
-```pseudocode
-# Same DP as above, plus tracking where the longest run ended in s1 so we can slice it out.
-function longestCommonSubstring(s1, s2):
-    m ← length(s1); n ← length(s2)
-    if m = 0 OR n = 0: return ""
-    dp ← (m + 1) × (n + 1) grid of zeros
-    bestLength ← 0
-    bestEndInS1 ← 0                              # 0-indexed end of the best run in s1
-    for i from 1 to m:
-        for j from 1 to n:
-            if s1[i − 1] = s2[j − 1]:
-                dp[i][j] ← dp[i − 1][j − 1] + 1
-                if dp[i][j] > bestLength:
-                    bestLength ← dp[i][j]
-                    bestEndInS1 ← i − 1
-    if bestLength = 0:
-        return ""
-    return substring of s1 from (bestEndInS1 − bestLength + 1) to bestEndInS1
-```
 
 ```python run
 from typing import List
 
 class Solution:
     def longest_common_substring(self, s1: str, s2: str) -> str:
-        m, n = len(s1), len(s2)
-        if m == 0 or n == 0:
-            return ""
-        dp: List[List[int]] = [[0] * (n + 1) for _ in range(m + 1)]
-        best_length = 0
-        best_end_in_s1 = 0                       # 0-indexed position in s1 where the best run ended
-        for i in range(1, m + 1):
-            for j in range(1, n + 1):
+        n: int = len(s1)
+        m: int = len(s2)
+
+        # Create a 2D list to store the lengths of common substrings
+        dp: List[List[int]] = [[0] * (m + 1) for _ in range(n + 1)]
+
+        # Initialize variables to store the maximum length and end index
+        # of the common substring
+        max_length: int = 0
+        end_index: int = 0
+
+        # Iterate through each character of s1
+        for i in range(1, n + 1):
+
+            # Iterate through each character of s2
+            for j in range(1, m + 1):
+
+                # If the characters at the current positions match
                 if s1[i - 1] == s2[j - 1]:
+
+                    # Update the length of the common substring by adding
+                    # 1 to the length of the substring
+                    # ending at the previous positions
                     dp[i][j] = dp[i - 1][j - 1] + 1
-                    if dp[i][j] > best_length:
-                        best_length = dp[i][j]
-                        best_end_in_s1 = i - 1   # The matched char is at index i-1 in s1
-        if best_length == 0:
+
+                    # Check if the current substring length is greater
+                    # than the maximum length seen so far
+                    if dp[i][j] > max_length:
+
+                        # Update the maximum length and the end index of
+                        # the common substring
+                        max_length = dp[i][j]
+                        end_index = i - 1
+
+        # If no common substring is found, return an empty string
+        if max_length == 0:
             return ""
-        return s1[best_end_in_s1 - best_length + 1 : best_end_in_s1 + 1]
+
+        # Extract the longest common substring from s1 using the end
+        # index and the maximum length
+        return s1[end_index - max_length + 1: end_index + 1]
 
 
-if __name__ == "__main__":
-    print(Solution().longest_common_substring("abcdefgh", "bxcdelx"))   # "cde"
+# Examples from the problem statement
+print(Solution().longest_common_substring("abcdefgh", "bxcdelx"))  # cde
+print(Solution().longest_common_substring("xyzabc", "xzalfbc"))    # za (or bc)
+print(Solution().longest_common_substring("lx", "lx"))             # lx
+
+# Edge cases
+print(Solution().longest_common_substring("", ""))                  # ''
+print(Solution().longest_common_substring("abc", ""))               # ''
+print(Solution().longest_common_substring("", "abc"))               # ''
+print(Solution().longest_common_substring("abc", "xyz"))            # ''
+print(Solution().longest_common_substring("abc", "abc"))            # abc
+print(Solution().longest_common_substring("a", "a"))                # a
 ```
 
 ```java run
 public class Main {
     static class Solution {
         public String longestCommonSubstring(String s1, String s2) {
-            int m = s1.length(), n = s2.length();
-            if (m == 0 || n == 0) return "";
-            int[][] dp = new int[m + 1][n + 1];
-            int bestLen = 0, bestEnd = 0;
-            for (int i = 1; i <= m; i++)
-                for (int j = 1; j <= n; j++)
+            int n = s1.length();
+            int m = s2.length();
+
+            // Create a 2D array to store the lengths of common substrings
+            int[][] dp = new int[n + 1][m + 1];
+
+            // Initialize variables to store the maximum length and end index
+            // of the common substring
+            int maxLength = 0;
+            int endIndex = 0;
+
+            // Iterate through each character of s1
+            for (int i = 1; i <= n; i++) {
+
+                // Iterate through each character of s2
+                for (int j = 1; j <= m; j++) {
+
+                    // If the characters at the current positions match
                     if (s1.charAt(i - 1) == s2.charAt(j - 1)) {
+
+                        // Update the length of the common substring by
+                        // adding 1 to the length of the substring ending at
+                        // the previous positions
                         dp[i][j] = dp[i - 1][j - 1] + 1;
-                        if (dp[i][j] > bestLen) { bestLen = dp[i][j]; bestEnd = i - 1; }
+
+                        // Check if the current substring length is greater
+                        // than the maximum length seen so far
+                        if (dp[i][j] > maxLength) {
+
+                            // Update the maximum length and the end index of
+                            // the common substring
+                            maxLength = dp[i][j];
+                            endIndex = i - 1;
+                        }
                     }
-            if (bestLen == 0) return "";
-            return s1.substring(bestEnd - bestLen + 1, bestEnd + 1);
+                }
+            }
+
+            // If no common substring is found, return an empty string
+            if (maxLength == 0) {
+                return "";
+            }
+
+            // Extract the longest common substring from s1 using the end
+            // index and the maximum length
+            return s1.substring(endIndex - maxLength + 1, endIndex + 1);
         }
     }
 
     public static void main(String[] args) {
-        System.out.println(new Solution().longestCommonSubstring("abcdefgh", "bxcdelx"));   // cde
+        // Examples from the problem statement
+        System.out.println(new Solution().longestCommonSubstring("abcdefgh", "bxcdelx"));  // cde
+        System.out.println(new Solution().longestCommonSubstring("xyzabc", "xzalfbc"));    // za (or bc)
+        System.out.println(new Solution().longestCommonSubstring("lx", "lx"));             // lx
+
+        // Edge cases
+        System.out.println(new Solution().longestCommonSubstring("", ""));                  // ''
+        System.out.println(new Solution().longestCommonSubstring("abc", ""));               // ''
+        System.out.println(new Solution().longestCommonSubstring("", "abc"));               // ''
+        System.out.println(new Solution().longestCommonSubstring("abc", "xyz"));            // ''
+        System.out.println(new Solution().longestCommonSubstring("abc", "abc"));            // abc
+        System.out.println(new Solution().longestCommonSubstring("a", "a"));                // a
     }
-}
-```
-
-```c run
-#include <stdio.h>
-#include <string.h>
-
-int dp[1001][1001];
-char out_buf[1001];
-
-const char *longest_common_substring(const char *s1, const char *s2) {
-    int m = (int) strlen(s1), n = (int) strlen(s2);
-    if (m == 0 || n == 0) return "";
-    for (int i = 0; i <= m; i++) for (int j = 0; j <= n; j++) dp[i][j] = 0;
-    int best_len = 0, best_end = 0;
-    for (int i = 1; i <= m; i++)
-        for (int j = 1; j <= n; j++)
-            if (s1[i - 1] == s2[j - 1]) {
-                dp[i][j] = dp[i - 1][j - 1] + 1;
-                if (dp[i][j] > best_len) { best_len = dp[i][j]; best_end = i - 1; }
-            }
-    if (best_len == 0) return "";
-    int start = best_end - best_len + 1;
-    memcpy(out_buf, s1 + start, best_len);
-    out_buf[best_len] = 0;
-    return out_buf;
-}
-
-int main(void) {
-    printf("%s\n", longest_common_substring("abcdefgh", "bxcdelx"));   // cde
-    return 0;
-}
-```
-
-```scala run
-object Main extends App {
-  class Solution {
-    def longestCommonSubstring(s1: String, s2: String): String = {
-      val (m, n) = (s1.length, s2.length)
-      if (m == 0 || n == 0) return ""
-      val dp = Array.fill(m + 1, n + 1)(0)
-      var bestLen = 0; var bestEnd = 0
-      for (i <- 1 to m; j <- 1 to n) {
-        if (s1(i - 1) == s2(j - 1)) {
-          dp(i)(j) = dp(i - 1)(j - 1) + 1
-          if (dp(i)(j) > bestLen) { bestLen = dp(i)(j); bestEnd = i - 1 }
-        }
-      }
-      if (bestLen == 0) "" else s1.substring(bestEnd - bestLen + 1, bestEnd + 1)
-    }
-  }
-
-  println(new Solution().longestCommonSubstring("abcdefgh", "bxcdelx"))   // cde
 }
 ```
 
@@ -630,41 +598,38 @@ object Main extends App {
 ```
 Build dp (9 × 8). Highlighted cells = matching characters; non-highlighted = 0.
 dp[2][1] = 1 ('b' = 'b')
-dp[3][3] = 1 ('c' = 'c')                              best_len=1, best_end=2
-dp[4][4] = 2 (extends [3][3]: 'd' = 'd')              best_len=2, best_end=3
-dp[5][5] = 3 (extends [4][4]: 'e' = 'e')              best_len=3, best_end=4
+dp[3][3] = 1 ('c' = 'c')                              max_length=1, end_index=2
+dp[4][4] = 2 (extends [3][3]: 'd' = 'd')              max_length=2, end_index=3
+dp[5][5] = 3 (extends [4][4]: 'e' = 'e')              max_length=3, end_index=4
 ... mismatches set the rest to 0 ...
 
-best_len=3, best_end=4 → s1[2..4] = "cde" ✓
+max_length=3, end_index=4 → s1[2..4] = "cde" ✓
 ```
 
 </details>
 
----
-
-## Complexity Analysis
+### Complexity Analysis
 
 | Aspect | Cost | Why |
 |---|---|---|
 | Time | `O(m × n)` | Fill the table; constant work per cell. |
 | Space | `O(m × n)` | DP table. Reducible to `O(min(m, n))` (rolling row), but reconstruction needs the index trackers. |
 
----
-
-## Edge Cases
+### Edge Cases
 
 | Case | Example | Expected | Reasoning |
 |---|---|---|---|
 | Either empty | `s1 = ""` | `""` | Guard returns empty. |
-| No shared character | `"abc", "xyz"` | `""` | Every cell stays 0; `best_len = 0` triggers the empty-result branch. |
+| No shared character | `"abc", "xyz"` | `""` | Every cell stays 0; `max_length == 0` triggers the empty-result branch. |
 | Identical strings | `"abc", "abc"` | `"abc"` | Diagonal matches every step; `dp[m][n] = m`. |
 | Substring at start | `"abcXY", "abcZZ"` | `"abc"` | Match accumulates at top-left of table; ends mid-table. |
 | Substring at end | `"YYabc", "ZZabc"` | `"abc"` | Match accumulates at bottom-right; ends at `dp[m][n]`. |
 | Multiple LCSubstrs of equal length | `"xyzabc", "xzalfbc"` | `"za"` or `"bc"` | First-found wins because `>` is strict; `>=` would prefer later matches. |
 
----
+</details>
+<details>
+<summary><h2>Final Takeaway</h2></summary>
 
-## Final Takeaway
 
 LCSubstr is LCS with one structural change: mismatches reset to 0, and the answer is the global table maximum, not the corner. The code change is two characters and a tracker variable — **but the conceptual change (contiguity vs gap-allowed) is everything**.
 
@@ -674,5 +639,7 @@ LCSubstr is LCS with one structural change: mismatches reset to 0, and the answe
 <summary><strong>Answer</strong></summary>
 
 The three cases all decrement the cost by 1 from a different predecessor: `dp[i-1][j-1] + 1` (substitute), `dp[i-1][j] + 1` (delete from `s1`), `dp[i][j-1] + 1` (insert into `s1`). On match the cost stays the same: `dp[i][j] = dp[i-1][j-1]`. The next lesson formalises this.
+
+</details>
 
 </details>

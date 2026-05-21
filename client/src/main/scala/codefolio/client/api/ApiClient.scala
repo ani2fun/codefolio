@@ -1,7 +1,9 @@
 package codefolio.client.api
 
+import codefolio.client.auth.AuthStore
 import codefolio.shared.api.Endpoints
 import codefolio.shared.api.Endpoints.{
+  AuthConfig,
   BlogIndex,
   BlogPostPayload,
   ChapterPayload,
@@ -9,7 +11,8 @@ import codefolio.shared.api.Endpoints.{
   Greeting,
   RecentCalls,
   RunRequest,
-  RunResponse
+  RunResponse,
+  UserInfo
 }
 import sttp.client3.{FetchBackend, SttpBackend}
 import sttp.model.{StatusCode, Uri}
@@ -77,7 +80,19 @@ object ApiClient:
 
   private val helloCall  = callable(Endpoints.getHello, statusOnly)(_ => "Failed to fetch greeting")
   private val recentCall = callable(Endpoints.getRecent, statusOnly)(_ => "Failed to fetch recent calls")
-  private val runCall    = callable(Endpoints.runCode, apiError)(_ => "Run failed")
+
+  private val authConfigCall =
+    callable(Endpoints.getAuthConfig, statusOnly)(_ => "Failed to fetch auth config")
+
+  // /api/run is built directly (not via `callable`) so an `Authorization: Bearer` header can be attached
+  // per-call when the user is signed in. The server treats the header as optional — anonymous callers just
+  // omit it and fall into the per-IP rate-limit bucket.
+  private val runRequestFn =
+    SttpClientInterpreter().toRequestThrowDecodeFailures(Endpoints.runCode, baseUri)
+
+  // /api/me is a secured endpoint — the bearer token is its security input.
+  private val meRequestFn =
+    SttpClientInterpreter().toSecureRequestThrowDecodeFailures(Endpoints.getMe, baseUri)
 
   private val cortexIndexCall =
     callable(Endpoints.getCortexIndex, apiError)(_ => "Failed to fetch Cortex index")
@@ -101,7 +116,34 @@ object ApiClient:
 
   // ---- Code execution ------------------------------------------------------
 
-  def runCode(req: RunRequest): Future[RunResponse] = runCall(req)
+  /**
+   * Execute a snippet. When the visitor is signed in, the access token rides along as a Bearer header so the
+   * server meters the call against the per-user (rather than per-IP) rate-limit bucket.
+   */
+  def runCode(req: RunRequest): Future[RunResponse] =
+    val base = runRequestFn(req)
+    val request = AuthStore.current.status match
+      case AuthStore.Status.Authed(_, token) => base.header("Authorization", s"Bearer $token")
+      case _                                 => base
+    backend.send(request).flatMap { res =>
+      res.body match
+        case Right(value) => Future.successful(value)
+        case Left(error)  => Future.failed(RuntimeException(apiError("Run failed")(res.code, error)))
+    }
+
+  // ---- Auth ----------------------------------------------------------------
+
+  /** Public boot-time config — tells the SPA whether (and how) to initialise keycloak-js. */
+  def getAuthConfig: Future[AuthConfig] = authConfigCall(())
+
+  /** Identity claims + current run quota for the bearer-token holder. Requires a valid token. */
+  def getMe(token: String): Future[UserInfo] =
+    backend.send(meRequestFn(token)(())).flatMap { res =>
+      res.body match
+        case Right(value) => Future.successful(value)
+        case Left(error) =>
+          Future.failed(RuntimeException(apiError("Failed to fetch /api/me")(res.code, error)))
+    }
 
   // ---- Cortex --------------------------------------------------------------
 

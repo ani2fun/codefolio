@@ -201,29 +201,29 @@ The loop bounds — `i < n - 1` and `j ∈ [i + 1, n - 1]` — are exactly what'
 # Implementation
 
 
-```pseudocode
-function selectionSort(arr):
-    n ← length(arr)
-    for i from 0 to n − 2:
-        minIndex ← i                              # assume current is the minimum
-        for j from i + 1 to n − 1:
-            if arr[j] < arr[minIndex]:
-                minIndex ← j
-        swap arr[i] and arr[minIndex]             # one swap per pass — selection sort's signature
-```
-
 ```python run
 from typing import List
 
 class Solution:
     def selection_sort(self, arr: List[int]) -> None:
-        n = len(arr)
+        n: int = len(arr)
+
+        # Iterate over each element except the last one
         for i in range(n - 1):
-            min_index = i                              # assume current is min
+
+            # Assume the current element is the smallest
+            min_index: int = i
+
+            # Find the index of the smallest element in the remaining
+            # unsorted portion
             for j in range(i + 1, n):
-                if arr[j] < arr[min_index]:           # found a smaller candidate
+                if arr[j] < arr[min_index]:
+
+                    # Update the index of the smallest element
                     min_index = j
-            arr[i], arr[min_index] = arr[min_index], arr[i]   # one swap per pass
+
+            # Swap the current element with the smallest element found
+            arr[i], arr[min_index] = arr[min_index], arr[i]
 
 
 if __name__ == "__main__":
@@ -237,16 +237,27 @@ public class Main {
     static class Solution {
         public void selectionSort(int[] arr) {
             int n = arr.length;
+
+            // Iterate over each element except the last one
             for (int i = 0; i < n - 1; i++) {
+
+                // Assume the current element is the smallest
                 int minIndex = i;
+
+                // Find the index of the smallest element in the remaining
+                // unsorted portion
                 for (int j = i + 1; j < n; j++) {
                     if (arr[j] < arr[minIndex]) {
+
+                        // Update the index of the smallest element
                         minIndex = j;
                     }
                 }
-                int tmp = arr[i];
+
+                // Swap the current element with the smallest element found
+                int temp = arr[i];
                 arr[i] = arr[minIndex];
-                arr[minIndex] = tmp;
+                arr[minIndex] = temp;
             }
         }
     }
@@ -257,52 +268,6 @@ public class Main {
         for (int x : arr) System.out.print(x + " ");
         System.out.println();
     }
-}
-```
-
-```c run
-#include <stdio.h>
-
-void selection_sort(int *arr, int n) {
-    for (int i = 0; i < n - 1; i++) {
-        int min_index = i;
-        for (int j = i + 1; j < n; j++) {
-            if (arr[j] < arr[min_index]) {
-                min_index = j;
-            }
-        }
-        int tmp = arr[i]; arr[i] = arr[min_index]; arr[min_index] = tmp;
-    }
-}
-
-int main(void) {
-    int arr[] = {5, 3, 8, 1, 4};
-    int n = 5;
-    selection_sort(arr, n);
-    for (int i = 0; i < n; i++) printf("%d ", arr[i]);
-    printf("\n");
-    return 0;
-}
-```
-
-```scala run
-object Main extends App {
-  class Solution {
-    def selectionSort(arr: Array[Int]): Unit = {
-      val n = arr.length
-      for (i <- 0 until n - 1) {
-        var minIndex = i
-        for (j <- i + 1 until n) {
-          if (arr(j) < arr(minIndex)) minIndex = j
-        }
-        val tmp = arr(i); arr(i) = arr(minIndex); arr(minIndex) = tmp
-      }
-    }
-  }
-
-  val arr = Array(5, 3, 8, 1, 4)
-  new Solution().selectionSort(arr)
-  println(arr.mkString(" "))
 }
 ```
 
@@ -485,114 +450,133 @@ Output: [1, 2, 3, 4, 5, 6]   (already sorted, but selection sort still runs all 
 
 ---
 
-## The Solution
+<details>
+<summary><h2>Solution &amp; Analysis</h2></summary>
 
-The implementation is identical to the version above. Reproducing in all 9 languages so this section is self-contained.
+### The Solution
 
+The implementation is identical to the version above. Run it against a spread of inputs — duplicates, reverse-sorted, already-sorted, empty, single-element — to confirm it sorts every case in place.
 
-```pseudocode
-function selectionSort(arr):
-    n ← length(arr)
-    for i from 0 to n − 2:
-        minIndex ← i
-        for j from i + 1 to n − 1:
-            if arr[j] < arr[minIndex]:
-                minIndex ← j
-        swap arr[i] and arr[minIndex]
-```
 
 ```python run
 from typing import List
 
 class Solution:
     def selection_sort(self, arr: List[int]) -> None:
-        n = len(arr)
+        n: int = len(arr)
+
+        # Iterate over each element except the last one
         for i in range(n - 1):
-            min_index = i
+
+            # Assume the current element is the smallest
+            min_index: int = i
+
+            # Find the index of the smallest element in the remaining
+            # unsorted portion
             for j in range(i + 1, n):
                 if arr[j] < arr[min_index]:
+
+                    # Update the index of the smallest element
                     min_index = j
+
+            # Swap the current element with the smallest element found
             arr[i], arr[min_index] = arr[min_index], arr[i]
 
 
-if __name__ == "__main__":
-    arr = [2, 3, 2, 1, 5, 6]
-    Solution().selection_sort(arr)
-    print(arr)
+a1 = [2, 3, 2, 1, 5, 6]
+Solution().selection_sort(a1); print(a1)           # [1, 2, 2, 3, 5, 6]
+
+a2 = [6, 5, 4, 4, 4, 3, 2, 1]
+Solution().selection_sort(a2); print(a2)           # [1, 2, 3, 4, 4, 4, 5, 6]
+
+a3 = [1, 2, 3, 4, 5, 6]
+Solution().selection_sort(a3); print(a3)           # [1, 2, 3, 4, 5, 6]
+
+a4: List[int] = []
+Solution().selection_sort(a4); print(a4)           # []
+
+a5 = [42]
+Solution().selection_sort(a5); print(a5)           # [42]
+
+a6 = [2, 1]
+Solution().selection_sort(a6); print(a6)           # [1, 2]
+
+a7 = [3, 3, 3]
+Solution().selection_sort(a7); print(a7)           # [3, 3, 3]
+
+a8 = [5, 2, 8, 1, 9]
+Solution().selection_sort(a8); print(a8)           # [1, 2, 5, 8, 9]
 ```
 
 ```java run
+import java.util.Arrays;
+
 public class Main {
     static class Solution {
         public void selectionSort(int[] arr) {
             int n = arr.length;
+
+            // Iterate over each element except the last one
             for (int i = 0; i < n - 1; i++) {
+
+                // Assume the current element is the smallest
                 int minIndex = i;
+
+                // Find the index of the smallest element in the remaining
+                // unsorted portion
                 for (int j = i + 1; j < n; j++) {
-                    if (arr[j] < arr[minIndex]) minIndex = j;
+                    if (arr[j] < arr[minIndex]) {
+
+                        // Update the index of the smallest element
+                        minIndex = j;
+                    }
                 }
-                int tmp = arr[i]; arr[i] = arr[minIndex]; arr[minIndex] = tmp;
+
+                // Swap the current element with the smallest element found
+                int temp = arr[i];
+                arr[i] = arr[minIndex];
+                arr[minIndex] = temp;
             }
         }
     }
 
     public static void main(String[] args) {
-        int[] arr = {2, 3, 2, 1, 5, 6};
-        new Solution().selectionSort(arr);
-        for (int x : arr) System.out.print(x + " ");
-        System.out.println();
+        int[] a1 = {2, 3, 2, 1, 5, 6};
+        new Solution().selectionSort(a1);
+        System.out.println(Arrays.toString(a1));   // [1, 2, 2, 3, 5, 6]
+
+        int[] a2 = {6, 5, 4, 4, 4, 3, 2, 1};
+        new Solution().selectionSort(a2);
+        System.out.println(Arrays.toString(a2));   // [1, 2, 3, 4, 4, 4, 5, 6]
+
+        int[] a3 = {1, 2, 3, 4, 5, 6};
+        new Solution().selectionSort(a3);
+        System.out.println(Arrays.toString(a3));   // [1, 2, 3, 4, 5, 6]
+
+        int[] a4 = {};
+        new Solution().selectionSort(a4);
+        System.out.println(Arrays.toString(a4));   // []
+
+        int[] a5 = {42};
+        new Solution().selectionSort(a5);
+        System.out.println(Arrays.toString(a5));   // [42]
+
+        int[] a6 = {2, 1};
+        new Solution().selectionSort(a6);
+        System.out.println(Arrays.toString(a6));   // [1, 2]
+
+        int[] a7 = {3, 3, 3};
+        new Solution().selectionSort(a7);
+        System.out.println(Arrays.toString(a7));   // [3, 3, 3]
+
+        int[] a8 = {5, 2, 8, 1, 9};
+        new Solution().selectionSort(a8);
+        System.out.println(Arrays.toString(a8));   // [1, 2, 5, 8, 9]
     }
 }
 ```
 
-```c run
-#include <stdio.h>
-
-void selection_sort(int *arr, int n) {
-    for (int i = 0; i < n - 1; i++) {
-        int min_index = i;
-        for (int j = i + 1; j < n; j++) {
-            if (arr[j] < arr[min_index]) min_index = j;
-        }
-        int tmp = arr[i]; arr[i] = arr[min_index]; arr[min_index] = tmp;
-    }
-}
-
-int main(void) {
-    int arr[] = {2, 3, 2, 1, 5, 6};
-    int n = 6;
-    selection_sort(arr, n);
-    for (int i = 0; i < n; i++) printf("%d ", arr[i]);
-    printf("\n");
-    return 0;
-}
-```
-
-```scala run
-object Main extends App {
-  class Solution {
-    def selectionSort(arr: Array[Int]): Unit = {
-      val n = arr.length
-      for (i <- 0 until n - 1) {
-        var minIndex = i
-        for (j <- i + 1 until n) {
-          if (arr(j) < arr(minIndex)) minIndex = j
-        }
-        val tmp = arr(i); arr(i) = arr(minIndex); arr(minIndex) = tmp
-      }
-    }
-  }
-
-  val arr = Array(2, 3, 2, 1, 5, 6)
-  new Solution().selectionSort(arr)
-  println(arr.mkString(" "))
-}
-```
-
-
----
-
-## Edge Cases
+### Edge Cases
 
 | Case | Example | Expected |
 |---|---|---|
@@ -604,9 +588,10 @@ object Main extends App {
 | Two elements | `[2, 1]` | `[1, 2]`. |
 | Duplicates | `[2, 1, 2]` | `[1, 2, 2]` (correct, but original duplicates' order may flip). |
 
----
+</details>
+<details>
+<summary><h2>Final Takeaway</h2></summary>
 
-## Final Takeaway
 
 Selection sort is bubble sort's write-conscious cousin. Same `O(n²)` comparisons; `O(n)` swaps. Not stable, not adaptive — but the minimum-swap guarantee makes it the right choice in narrow but real contexts. The next algorithm — insertion sort — improves on both bubble and selection by being adaptive *and* keeping the swap count low when the input is mostly sorted.
 
@@ -614,6 +599,7 @@ You came in with bubble sort as your only sorting tool. You're leaving with two 
 
 **Transfer challenge — try before the Insertion Sort lesson:** Write a *partial* selection sort that finds the K smallest elements of an array (and leaves the rest unsorted). What's the time complexity? How does this compare with sorting and then taking the first K?
 
+</details>
 <details>
 <summary><strong>Answer — open after you've written it</strong></summary>
 

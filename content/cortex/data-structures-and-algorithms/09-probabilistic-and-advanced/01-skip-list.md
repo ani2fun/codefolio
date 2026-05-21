@@ -72,17 +72,6 @@ flowchart LR
 
 # Search
 
-```pseudocode
-function search(list, key):
-    x ← list.head
-    for level from list.maxLevel down to 0:
-        while x.forward[level] ≠ nil AND x.forward[level].key < key:
-            x ← x.forward[level]
-    x ← x.forward[0]                                   # the candidate at level 0
-    if x ≠ nil AND x.key = key: return x
-    return nil
-```
-
 Walk right at the highest level until the next node would overshoot, drop a level, repeat. `O(log n)` expected — each level halves the remaining range.
 
 ***
@@ -96,28 +85,6 @@ To insert key `k`:
 3. Insert into every level up to the new node's height, splicing into each level's linked list using the predecessors recorded in step 1.
 
 Delete is symmetric: find the predecessors at every level, splice out the node from each level it appears in.
-
-```pseudocode
-function insert(list, key, value):
-    update ← array of predecessors per level
-    x ← list.head
-    for level from list.maxLevel down to 0:
-        while x.forward[level] ≠ nil AND x.forward[level].key < key:
-            x ← x.forward[level]
-        update[level] ← x
-
-    new_height ← randomHeight()
-    new_node ← Node(key, value, height=new_height)
-    for level from 0 to new_height - 1:
-        new_node.forward[level] ← update[level].forward[level]
-        update[level].forward[level] ← new_node
-
-function randomHeight():
-    h ← 1
-    while random() < 0.5 AND h < MAX_LEVEL:
-        h ← h + 1
-    return h
-```
 
 ***
 
@@ -268,114 +235,6 @@ public class Main {
 }
 ```
 
-```c run
-#include <stdio.h>
-#include <stdlib.h>
-
-#define MAX_LEVEL 16
-
-typedef struct Node {
-    int key;
-    int value;
-    struct Node *forward[MAX_LEVEL];
-} Node;
-
-Node *head;
-int level = 0;
-
-int random_height() {
-    int h = 1;
-    while ((rand() & 1) && h < MAX_LEVEL) h++;
-    return h;
-}
-
-int search(int key) {
-    Node *x = head;
-    for (int lvl = level; lvl >= 0; lvl--)
-        while (x->forward[lvl] && x->forward[lvl]->key < key) x = x->forward[lvl];
-    x = x->forward[0];
-    if (x && x->key == key) return x->value;
-    return -1;
-}
-
-void insert(int key, int value) {
-    Node *update[MAX_LEVEL];
-    Node *x = head;
-    for (int lvl = level; lvl >= 0; lvl--) {
-        while (x->forward[lvl] && x->forward[lvl]->key < key) x = x->forward[lvl];
-        update[lvl] = x;
-    }
-    int h = random_height();
-    if (h > level + 1) { for (int i = level + 1; i < h; i++) update[i] = head; level = h - 1; }
-    Node *nn = calloc(1, sizeof(Node));
-    nn->key = key; nn->value = value;
-    for (int i = 0; i < h; i++) {
-        nn->forward[i] = update[i]->forward[i];
-        update[i]->forward[i] = nn;
-    }
-}
-
-int main(void) {
-    head = calloc(1, sizeof(Node));
-    int keys[] = {3, 1, 4, 1, 5, 9, 2, 6, 5, 3, 5, 8, 9, 7};
-    for (int i = 0; i < 14; i++) insert(keys[i], keys[i] * 10);
-    for (int k : (int[]){4, 7, 0, 9, 10}) printf("search(%d) -> %d\n", k, search(k));
-    return 0;
-}
-```
-
-```scala run
-import scala.util.Random
-
-object Main extends App {
-  val MaxLevel = 16
-  class Node(val key: Int, var value: String, height: Int) {
-    val forward: Array[Node] = new Array[Node](height)
-  }
-
-  val head = new Node(Int.MinValue, null, MaxLevel)
-  var level = 0
-  private val rng = new Random()
-
-  private def randomHeight(): Int = {
-    var h = 1
-    while (rng.nextDouble() < 0.5 && h < MaxLevel) h += 1
-    h
-  }
-
-  def search(key: Int): Option[String] = {
-    var x = head
-    for (lvl <- level to 0 by -1)
-      while (x.forward(lvl) != null && x.forward(lvl).key < key) x = x.forward(lvl)
-    val cand = x.forward(0)
-    if (cand != null && cand.key == key) Some(cand.value) else None
-  }
-
-  def insert(key: Int, value: String): Unit = {
-    val update = Array.fill(MaxLevel)(head)
-    var x = head
-    for (lvl <- level to 0 by -1) {
-      while (x.forward(lvl) != null && x.forward(lvl).key < key) x = x.forward(lvl)
-      update(lvl) = x
-    }
-    val cand = x.forward(0)
-    if (cand != null && cand.key == key) { cand.value = value; return }
-
-    val h = randomHeight()
-    if (h > level + 1) { for (i <- level + 1 until h) update(i) = head; level = h - 1 }
-    val nn = new Node(key, value, h)
-    for (i <- 0 until h) {
-      nn.forward(i) = update(i).forward(i)
-      update(i).forward(i) = nn
-    }
-  }
-
-  val keys = Array(3, 1, 4, 1, 5, 9, 2, 6, 5, 3, 5, 8, 9, 7)
-  for (k <- keys) insert(k, s"v$k")
-  for (k <- Array(4, 7, 0, 9, 10)) println(s"search($k) -> ${search(k)}")
-}
-```
-
 ***
 
 # Why expected `O(log n)`
@@ -443,42 +302,36 @@ Click any question to reveal the answer.
 **A:** All `O(log n)` expected. Worst case is `O(n)` but exponentially unlikely.
 
 </details>
-
 <details>
 <summary><strong>Q:</strong> How is each new node's height chosen?</summary>
 
 **A:** Coin flips: 50% chance of height ≥ 1, 25% of ≥ 2, 12.5% of ≥ 3, …, capped at `MAX_LEVEL`.
 
 </details>
-
 <details>
 <summary><strong>Q:</strong> Why does the geometric height distribution give `O(log n)` expected?</summary>
 
 **A:** Expected height is `log₂ n`; expected lateral moves per level are constant (geometric). Total: `O(log n × constant)`.
 
 </details>
-
 <details>
 <summary><strong>Q:</strong> Where do skip lists ship in production?</summary>
 
 **A:** **Redis sorted sets** (`zset`), **LevelDB / RocksDB memtables**, **Java `ConcurrentSkipListMap`**.
 
 </details>
-
 <details>
 <summary><strong>Q:</strong> Why skip list over RB-tree for concurrent contexts?</summary>
 
 **A:** Lock-free skip list is well-understood; lock-free RB-tree is research-level. Each node only points to its successor, not to a parent — simpler synchronisation.
 
 </details>
-
 <details>
 <summary><strong>Q:</strong> Memory overhead?</summary>
 
 **A:** Average ~2 forward pointers per node (geometric series sums to 2). Comparable to an RB-tree's three pointers (left, right, parent).
 
 </details>
-
 <details>
 <summary><strong>Q:</strong> Implementation length compared to RB-tree?</summary>
 

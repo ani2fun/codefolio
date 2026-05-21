@@ -297,55 +297,60 @@ Lomuto's partition: scan with two pointers, swap smaller-than-pivot elements lef
 Two functions: `partition` (the rearrangement step) and `quicksort` (the recursive driver). We'll use Lomuto's partition with a random pivot.
 
 
-```pseudocode
-function quickSort(arr):
-    sort(arr, 0, length(arr) − 1)
-
-function sort(arr, left, right):
-    if left < right:
-        p ← partition(arr, left, right)
-        sort(arr, left, p − 1)                # sort the left region
-        sort(arr, p + 1, right)               # sort the right region
-
-function partition(arr, left, right):
-    pivotIdx ← random integer in [left, right]   # random pivot defeats adversarial inputs
-    pivotVal ← arr[pivotIdx]
-    swap arr[pivotIdx] and arr[right]            # park pivot at the right end
-
-    boundary ← left                              # everything < boundary is in the "small" region
-    for i from left to right − 1:
-        if arr[i] < pivotVal:
-            swap arr[boundary] and arr[i]
-            boundary ← boundary + 1
-    swap arr[boundary] and arr[right]            # drop pivot into its final slot
-    return boundary
-```
-
 ```python run
 import random
 from typing import List
 
 class Solution:
-    def quick_sort(self, arr: List[int]) -> None:
-        self._sort(arr, 0, len(arr) - 1)
+    def partition(self, arr: List[int], left: int, right: int) -> int:
 
-    def _sort(self, arr: List[int], left: int, right: int) -> None:
-        if left < right:
-            p = self._partition(arr, left, right)
-            self._sort(arr, left, p - 1)
-            self._sort(arr, p + 1, right)
+        # Randomly select a pivot index between left and right
+        pivot = left + random.randint(0, right - left)
 
-    def _partition(self, arr: List[int], left: int, right: int) -> int:
-        pivot_idx = random.randint(left, right)         # pick random pivot
-        pivot_val = arr[pivot_idx]
-        arr[pivot_idx], arr[right] = arr[right], arr[pivot_idx]   # park pivot at right
-        boundary = left
+        # Get the pivot value
+        pivot_val = arr[pivot]
+
+        # Move the pivot to the end
+        arr[pivot], arr[right] = arr[right], arr[pivot]
+
+        # Index of smaller element
+        next_smaller_index: int = left
+
         for i in range(left, right):
             if arr[i] < pivot_val:
-                arr[boundary], arr[i] = arr[i], arr[boundary]     # move into left region
-                boundary += 1
-        arr[boundary], arr[right] = arr[right], arr[boundary]     # park pivot at boundary
-        return boundary
+
+                # Swap elements
+                arr[next_smaller_index], arr[i] = (
+                    arr[i],
+                    arr[next_smaller_index],
+                )
+                next_smaller_index += 1
+
+        # Swap pivot to its correct position
+        arr[next_smaller_index], arr[right] = (
+            arr[right],
+            arr[next_smaller_index],
+        )
+
+        # Return the pivot index
+        return next_smaller_index
+
+    def quicksort(self, arr: List[int], left: int, right: int) -> None:
+        if left < right:
+
+            # Partition the array
+            pivot: int = self.partition(arr, left, right)
+
+            # Recursively sort the left subarray
+            self.quicksort(arr, left, pivot - 1)
+
+            # Recursively sort the right subarray
+            self.quicksort(arr, pivot + 1, right)
+
+    def quick_sort(self, arr: List[int]) -> None:
+
+        # Call Quicksort function
+        self.quicksort(arr, 0, len(arr) - 1)
 
 
 if __name__ == "__main__":
@@ -355,41 +360,68 @@ if __name__ == "__main__":
 ```
 
 ```java run
-import java.util.Random;
+import java.util.*;
 
 public class Main {
     static class Solution {
-        private final Random rand = new Random();
 
-        public void quickSort(int[] arr) {
-            sort(arr, 0, arr.length - 1);
-        }
-
-        private void sort(int[] arr, int left, int right) {
-            if (left < right) {
-                int p = partition(arr, left, right);
-                sort(arr, left, p - 1);
-                sort(arr, p + 1, right);
-            }
+        // Helper method to swap elements in the array
+        private void swap(int[] arr, int i, int j) {
+            int temp = arr[i];
+            arr[i] = arr[j];
+            arr[j] = temp;
         }
 
         private int partition(int[] arr, int left, int right) {
-            int pivotIdx = left + rand.nextInt(right - left + 1);
-            int pivotVal = arr[pivotIdx];
-            swap(arr, pivotIdx, right);
-            int boundary = left;
+
+            // Randomly select a pivot index between left and right
+            Random rand = new Random();
+            int pivot = left + rand.nextInt(right - left + 1);
+
+            // Get the pivot value
+            int pivotVal = arr[pivot];
+
+            // Move the pivot to the end
+            swap(arr, pivot, right);
+
+            // Index of smaller element
+            int nextSmallerIndex = left;
+
             for (int i = left; i < right; i++) {
                 if (arr[i] < pivotVal) {
-                    swap(arr, boundary, i);
-                    boundary++;
+
+                    // Swap elements
+                    swap(arr, nextSmallerIndex, i);
+                    nextSmallerIndex++;
                 }
             }
-            swap(arr, boundary, right);
-            return boundary;
+
+            // Swap pivot to its correct position
+            swap(arr, nextSmallerIndex, right);
+
+            // Return the pivot index
+            return nextSmallerIndex;
         }
 
-        private void swap(int[] arr, int i, int j) {
-            int tmp = arr[i]; arr[i] = arr[j]; arr[j] = tmp;
+        private void quicksort(int[] arr, int left, int right) {
+            if (left < right) {
+
+                // Partition the array
+                int pivot = partition(arr, left, right);
+
+                // Recursively sort the left subarray
+                quicksort(arr, left, pivot - 1);
+
+                // Recursively sort the right subarray
+                quicksort(arr, pivot + 1, right);
+            }
+        }
+
+        public void quickSort(int[] arr) {
+            int n = arr.length;
+
+            // Call Quicksort function
+            quicksort(arr, 0, n - 1);
         }
     }
 
@@ -402,92 +434,6 @@ public class Main {
 }
 ```
 
-```c run
-#include <stdio.h>
-#include <stdlib.h>
-
-void swap(int *a, int *b) { int t = *a; *a = *b; *b = t; }
-
-int partition(int *arr, int left, int right) {
-    int pivot_idx = left + rand() % (right - left + 1);
-    int pivot_val = arr[pivot_idx];
-    swap(&arr[pivot_idx], &arr[right]);
-    int boundary = left;
-    for (int i = left; i < right; i++) {
-        if (arr[i] < pivot_val) {
-            swap(&arr[boundary], &arr[i]);
-            boundary++;
-        }
-    }
-    swap(&arr[boundary], &arr[right]);
-    return boundary;
-}
-
-void quick_sort_helper(int *arr, int left, int right) {
-    if (left < right) {
-        int p = partition(arr, left, right);
-        quick_sort_helper(arr, left, p - 1);
-        quick_sort_helper(arr, p + 1, right);
-    }
-}
-
-void quick_sort(int *arr, int n) {
-    quick_sort_helper(arr, 0, n - 1);
-}
-
-int main(void) {
-    int arr[] = {7, 2, 5, 1, 8, 4};
-    int n = 6;
-    quick_sort(arr, n);
-    for (int i = 0; i < n; i++) printf("%d ", arr[i]);
-    printf("\n");
-    return 0;
-}
-```
-
-```scala run
-import scala.util.Random
-
-object Main extends App {
-  class Solution {
-    def quickSort(arr: Array[Int]): Unit = {
-      sort(arr, 0, arr.length - 1)
-    }
-
-    private def sort(arr: Array[Int], left: Int, right: Int): Unit = {
-      if (left < right) {
-        val p = partition(arr, left, right)
-        sort(arr, left, p - 1)
-        sort(arr, p + 1, right)
-      }
-    }
-
-    private def partition(arr: Array[Int], left: Int, right: Int): Int = {
-      val pivotIdx = left + Random.nextInt(right - left + 1)
-      val pivotVal = arr(pivotIdx)
-      swap(arr, pivotIdx, right)
-      var boundary = left
-      for (i <- left until right) {
-        if (arr(i) < pivotVal) {
-          swap(arr, boundary, i)
-          boundary += 1
-        }
-      }
-      swap(arr, boundary, right)
-      boundary
-    }
-
-    private def swap(arr: Array[Int], i: Int, j: Int): Unit = {
-      val t = arr(i); arr(i) = arr(j); arr(j) = t
-    }
-  }
-
-  val arr = Array(7, 2, 5, 1, 8, 4)
-  new Solution().quickSort(arr)
-  println(arr.mkString(" "))
-}
-```
-
 
 <details>
 <summary><strong>Trace — arr = [7, 2, 5, 1, 8, 4], pivot is 4 (last element)</strong></summary>
@@ -497,15 +443,15 @@ Initial: [7, 2, 5, 1, 8, 4], left=0, right=5
 Suppose random pivot picks index 5 (value 4). After swap: [7, 2, 5, 1, 8, 4] (no-op).
 
 Partition (Lomuto):
-  boundary=0
+  next_smaller_index=0
   i=0: arr[0]=7, 7<4? no
-  i=1: arr[1]=2, 2<4? yes, swap arr[0]↔arr[1] → [2, 7, 5, 1, 8, 4], boundary=1
+  i=1: arr[1]=2, 2<4? yes, swap arr[0]↔arr[1] → [2, 7, 5, 1, 8, 4], next_smaller_index=1
   i=2: arr[2]=5, 5<4? no
-  i=3: arr[3]=1, 1<4? yes, swap arr[1]↔arr[3] → [2, 1, 5, 7, 8, 4], boundary=2
+  i=3: arr[3]=1, 1<4? yes, swap arr[1]↔arr[3] → [2, 1, 5, 7, 8, 4], next_smaller_index=2
   i=4: arr[4]=8, 8<4? no
 
 Final swap: arr[2]↔arr[5] → [2, 1, 4, 7, 8, 5]
-Return boundary=2. Pivot 4 is now in position 2 (final sorted position).
+Return next_smaller_index=2. Pivot 4 is now in position 2 (final sorted position).
 
 Recurse left: sort [2, 1] (positions 0–1) → [1, 2]
 Recurse right: sort [7, 8, 5] (positions 3–5) → eventually [5, 7, 8]
@@ -585,48 +531,197 @@ Output: [1, 2, 3, 4, 5, 6]   (already sorted; random pivot prevents worst case)
 
 ---
 
-## The Solution
+<details>
+<summary><h2>Solution &amp; Analysis</h2></summary>
 
-The implementation is identical to the version above. Reproduced in compact form for completeness.
+### The Solution
+
+The implementation is identical to the version above. Run it against a spread of inputs — duplicates, reverse-sorted, already-sorted, empty, single-element — to confirm it sorts every case in place.
 
 ```python run
 import random
 from typing import List
 
 class Solution:
+    def partition(self, arr: List[int], left: int, right: int) -> int:
+
+        # Randomly select a pivot index between left and right
+        pivot = left + random.randint(0, right - left)
+
+        # Get the pivot value
+        pivot_val = arr[pivot]
+
+        # Move the pivot to the end
+        arr[pivot], arr[right] = arr[right], arr[pivot]
+
+        # Index of smaller element
+        next_smaller_index: int = left
+
+        for i in range(left, right):
+            if arr[i] < pivot_val:
+
+                # Swap elements
+                arr[next_smaller_index], arr[i] = (
+                    arr[i],
+                    arr[next_smaller_index],
+                )
+                next_smaller_index += 1
+
+        # Swap pivot to its correct position
+        arr[next_smaller_index], arr[right] = (
+            arr[right],
+            arr[next_smaller_index],
+        )
+
+        # Return the pivot index
+        return next_smaller_index
+
+    def quicksort(self, arr: List[int], left: int, right: int) -> None:
+        if left < right:
+
+            # Partition the array
+            pivot: int = self.partition(arr, left, right)
+
+            # Recursively sort the left subarray
+            self.quicksort(arr, left, pivot - 1)
+
+            # Recursively sort the right subarray
+            self.quicksort(arr, pivot + 1, right)
+
     def quick_sort(self, arr: List[int]) -> None:
-        def sort(left, right):
-            if left < right:
-                p = partition(left, right)
-                sort(left, p - 1)
-                sort(p + 1, right)
 
-        def partition(left, right):
-            pivot_idx = random.randint(left, right)
-            pivot_val = arr[pivot_idx]
-            arr[pivot_idx], arr[right] = arr[right], arr[pivot_idx]
-            boundary = left
-            for i in range(left, right):
-                if arr[i] < pivot_val:
-                    arr[boundary], arr[i] = arr[i], arr[boundary]
-                    boundary += 1
-            arr[boundary], arr[right] = arr[right], arr[boundary]
-            return boundary
-
-        sort(0, len(arr) - 1)
+        # Call Quicksort function
+        self.quicksort(arr, 0, len(arr) - 1)
 
 
-if __name__ == "__main__":
-    arr = [2, 3, 2, 1, 5, 6]
-    Solution().quick_sort(arr)
-    print(arr)
+a1 = [2, 3, 2, 1, 5, 6]
+Solution().quick_sort(a1); print(a1)               # [1, 2, 2, 3, 5, 6]
+
+a2 = [6, 5, 4, 4, 4, 3, 2, 1]
+Solution().quick_sort(a2); print(a2)               # [1, 2, 3, 4, 4, 4, 5, 6]
+
+a3 = [1, 2, 3, 4, 5, 6]
+Solution().quick_sort(a3); print(a3)               # [1, 2, 3, 4, 5, 6]
+
+a4: List[int] = []
+Solution().quick_sort(a4); print(a4)               # []
+
+a5 = [42]
+Solution().quick_sort(a5); print(a5)               # [42]
+
+a6 = [2, 1]
+Solution().quick_sort(a6); print(a6)               # [1, 2]
+
+a7 = [3, 3, 3]
+Solution().quick_sort(a7); print(a7)               # [3, 3, 3]
+
+a8 = [5, 2, 8, 1, 9]
+Solution().quick_sort(a8); print(a8)               # [1, 2, 5, 8, 9]
 ```
 
-For implementations in the other 9 languages, see the full [Implementation](#implementation) section above.
+```java run
+import java.util.*;
 
----
+public class Main {
+    static class Solution {
 
-## Edge Cases
+        // Helper method to swap elements in the array
+        private void swap(int[] arr, int i, int j) {
+            int temp = arr[i];
+            arr[i] = arr[j];
+            arr[j] = temp;
+        }
+
+        private int partition(int[] arr, int left, int right) {
+
+            // Randomly select a pivot index between left and right
+            Random rand = new Random();
+            int pivot = left + rand.nextInt(right - left + 1);
+
+            // Get the pivot value
+            int pivotVal = arr[pivot];
+
+            // Move the pivot to the end
+            swap(arr, pivot, right);
+
+            // Index of smaller element
+            int nextSmallerIndex = left;
+
+            for (int i = left; i < right; i++) {
+                if (arr[i] < pivotVal) {
+
+                    // Swap elements
+                    swap(arr, nextSmallerIndex, i);
+                    nextSmallerIndex++;
+                }
+            }
+
+            // Swap pivot to its correct position
+            swap(arr, nextSmallerIndex, right);
+
+            // Return the pivot index
+            return nextSmallerIndex;
+        }
+
+        private void quicksort(int[] arr, int left, int right) {
+            if (left < right) {
+
+                // Partition the array
+                int pivot = partition(arr, left, right);
+
+                // Recursively sort the left subarray
+                quicksort(arr, left, pivot - 1);
+
+                // Recursively sort the right subarray
+                quicksort(arr, pivot + 1, right);
+            }
+        }
+
+        public void quickSort(int[] arr) {
+            int n = arr.length;
+
+            // Call Quicksort function
+            quicksort(arr, 0, n - 1);
+        }
+    }
+
+    public static void main(String[] args) {
+        int[] a1 = {2, 3, 2, 1, 5, 6};
+        new Solution().quickSort(a1);
+        System.out.println(Arrays.toString(a1));   // [1, 2, 2, 3, 5, 6]
+
+        int[] a2 = {6, 5, 4, 4, 4, 3, 2, 1};
+        new Solution().quickSort(a2);
+        System.out.println(Arrays.toString(a2));   // [1, 2, 3, 4, 4, 4, 5, 6]
+
+        int[] a3 = {1, 2, 3, 4, 5, 6};
+        new Solution().quickSort(a3);
+        System.out.println(Arrays.toString(a3));   // [1, 2, 3, 4, 5, 6]
+
+        int[] a4 = {};
+        new Solution().quickSort(a4);
+        System.out.println(Arrays.toString(a4));   // []
+
+        int[] a5 = {42};
+        new Solution().quickSort(a5);
+        System.out.println(Arrays.toString(a5));   // [42]
+
+        int[] a6 = {2, 1};
+        new Solution().quickSort(a6);
+        System.out.println(Arrays.toString(a6));   // [1, 2]
+
+        int[] a7 = {3, 3, 3};
+        new Solution().quickSort(a7);
+        System.out.println(Arrays.toString(a7));   // [3, 3, 3]
+
+        int[] a8 = {5, 2, 8, 1, 9};
+        new Solution().quickSort(a8);
+        System.out.println(Arrays.toString(a8));   // [1, 2, 5, 8, 9]
+    }
+}
+```
+
+### Edge Cases
 
 | Case | Example | Expected |
 |---|---|---|
@@ -641,9 +736,10 @@ For implementations in the other 9 languages, see the full [Implementation](#imp
 
 When all elements equal the pivot, the `<` comparison is never true (the duplicates aren't strictly less than the pivot). The partition produces a maximally unbalanced split — `0` elements on the left, `n - 1` on the right. Recursion depth becomes `n`. **The fix is the Dutch National Flag partition (the Dutch National Flag Sort lesson) and three-way quicksort (the Three-Way Quicksort lesson), which handle equal elements as their own group.**
 
----
+</details>
+<details>
+<summary><h2>Final Takeaway</h2></summary>
 
-## Final Takeaway
 
 Quicksort is the production workhorse: `O(n log n)` average, in-place, fast constant factor. It's the algorithm `std::sort` uses by default in most languages. Random pivots and tail-call elimination defang the worst case in practice.
 
@@ -653,12 +749,13 @@ After that, **merge sort** (the Merge Sort lesson) gives us a stable `O(n log n)
 
 **Transfer challenge — try before the Dutch National Flag Sort lesson:** What happens if you run quicksort on an array of 100,000 identical elements `[5, 5, 5, ..., 5]`? Sketch the recursion tree. Why is this `O(n²)`?
 
+</details>
 <details>
 <summary><strong>Answer — open after you've sketched it</strong></summary>
 
-With Lomuto's partition and the comparison `arr[i] < pivot_val`, equal elements never satisfy the condition. So no elements ever swap into the "less-than-pivot" region; `boundary` stays at `left`. The final swap places the pivot at position `left`, and the recursion calls:
-- `sort(left, left - 1)` — empty, returns immediately.
-- `sort(left + 1, right)` — `n - 1` elements.
+With Lomuto's partition and the comparison `arr[i] < pivot_val`, equal elements never satisfy the condition. So no elements ever swap into the "less-than-pivot" region; `next_smaller_index` stays at `left`. The final swap places the pivot at position `left`, and the recursion calls:
+- `quicksort(arr, left, left - 1)` — empty, returns immediately.
+- `quicksort(arr, left + 1, right)` — `n - 1` elements.
 
 So each partition only "pays off" with one element placed; recursion depth becomes `n`. Each level does `O(n)` work. Total: `O(n²)` — exactly the worst case we tried to avoid.
 

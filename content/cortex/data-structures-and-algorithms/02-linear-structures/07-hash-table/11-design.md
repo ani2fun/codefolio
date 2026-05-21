@@ -55,7 +55,9 @@ cons: Constraints {
 > | `get(1)` | `[(1,10), (3,30)]` | `10` |
 > | `get(2)` | unchanged (2 was evicted) | `-1` |
 
-## Approach
+<details>
+<summary><h2>Approach</h2></summary>
+
 
 The two requirements pull in opposite directions:
 - **O(1) get/put by key** demands a **hash map**.
@@ -98,251 +100,241 @@ The four operations needed:
 
 Every step above is O(1). The doubly-linked list is essential — a singly-linked list would make "remove arbitrary node by reference" O(N) (you'd need the predecessor).
 
-## Solution
+</details>
+<details>
+<summary><h2>Solution</h2></summary>
 
 
-```pseudocode
-class Node: key, val, prev, next
-
-class LRUCache(capacity):
-    map ← empty Map: Int → Node   # key → node
-    head, tail ← sentinel nodes; head.next ← tail; tail.prev ← head
-
-    function _remove(node):
-        node.prev.next ← node.next; node.next.prev ← node.prev
-
-    function _add_front(node):
-        node.prev ← head; node.next ← head.next
-        head.next.prev ← node; head.next ← node
-
-    function get(key):
-        if key is not in map: return −1
-        _remove(map[key]); _add_front(map[key])   # promote to MRU
-        return map[key].val
-
-    function put(key, value):
-        if key is in map:
-            map[key].val ← value
-            _remove(map[key]); _add_front(map[key]); return
-        if size(map) = capacity:
-            lru ← tail.prev          # least-recently-used = just before tail
-            _remove(lru); remove lru.key from map
-        node ← new Node(key, value)
-        _add_front(node); map[key] ← node
-```
 
 ```python run
-class _Node:
-    __slots__ = ('key', 'val', 'prev', 'next')
-    def __init__(self, key, val):
-        self.key, self.val, self.prev, self.next = key, val, None, None
+from typing import Dict, Optional
+
+# Define a class for the nodes in the doubly linked list
+class Node:
+    def __init__(self, key: int, val: int) -> None:
+        self.key: int = key
+        self.value: int = val
+        self.prev: Optional['Node'] = None
+        self.next: Optional['Node'] = None
 
 class LRUCache:
-    def __init__(self, capacity: int):
-        self.capacity = capacity
-        self.map = {}                            # key → node
-        self.head = _Node(0, 0)                  # sentinel front
-        self.tail = _Node(0, 0)                  # sentinel back
-        self.head.next, self.tail.prev = self.tail, self.head
+    def __init__(self, capacity: int) -> None:
 
-    def _remove(self, node):
-        # Unlink node from the list (it must currently be in the list)
-        node.prev.next, node.next.prev = node.next, node.prev
+        # Member variables for the cache capacity, the doubly linked
+        # list, and the map of keys to nodes
+        self.capacity: int = capacity
+        self.key_address_map: Dict[int, Node] = {}
 
-    def _add_front(self, node):
-        # Insert node just after head (most-recently-used end)
-        node.prev, node.next = self.head, self.head.next
-        self.head.next.prev, self.head.next = node, node
+        # Sentinel head and tail nodes simplify insert/remove at boundaries
+        self.head: Node = Node(-1, -1)  # most-recently-used end
+        self.tail: Node = Node(-1, -1)  # least-recently-used end
+        self.head.next = self.tail
+        self.tail.prev = self.head
+
+    def _remove(self, node: Node) -> None:
+        node.prev.next = node.next
+        node.next.prev = node.prev
+
+    def _add_front(self, node: Node) -> None:
+        node.next = self.head.next
+        node.prev = self.head
+        self.head.next.prev = node
+        self.head.next = node
 
     def get(self, key: int) -> int:
-        if key not in self.map: return -1
-        node = self.map[key]
-        self._remove(node); self._add_front(node)   # promote to MRU
-        return node.val
+
+        # Check if the key exists in the map
+        if key in self.key_address_map:
+
+            # Move the corresponding node to the front of the list
+            node: Node = self.key_address_map[key]
+            self._remove(node)
+            self._add_front(node)
+
+            # Return the value of the node
+            return node.value
+
+        # If the key does not exist, return -1
+        return -1
 
     def put(self, key: int, value: int) -> None:
-        if key in self.map:
-            node = self.map[key]
-            node.val = value
-            self._remove(node); self._add_front(node)
-            return
-        if len(self.map) == self.capacity:
-            lru = self.tail.prev          # least-recently-used = back of list
-            self._remove(lru); del self.map[lru.key]
-        node = _Node(key, value)
-        self._add_front(node); self.map[key] = node
 
-# Boss-fight demo
-c = LRUCache(2)
-c.put(1, 10); c.put(2, 20)
-print(c.get(1))     # 10  (1 promoted)
-c.put(3, 30)        # evicts 2
-print(c.get(1))     # 10
-print(c.get(2))     # -1
+        # If the key already exists in the cache, update its value
+        if key in self.key_address_map:
+
+            # Get the node associated with the key
+            node: Node = self.key_address_map[key]
+
+            # Update the value of the node
+            node.value = value
+
+            # Move the corresponding node to the front of the list
+            self._remove(node)
+            self._add_front(node)
+
+        # If the key does not exist in the cache, add it to the
+        # front of the list.
+        else:
+
+            # If the cache is full, remove the least recently used node
+            # from the back of the list
+            if len(self.key_address_map) == self.capacity:
+
+                # Remove the least recently used node (the node before tail)
+                lru_node: Node = self.tail.prev
+                self._remove(lru_node)
+
+                # Remove the corresponding key from the map
+                del self.key_address_map[lru_node.key]
+
+            # Create a new Node for the key-value pair
+            new_node = Node(key, value)
+
+            # Add it to the front of the list
+            self._add_front(new_node)
+
+            # Map the key to the new node
+            self.key_address_map[key] = new_node
+
+
+# Example from the problem statement
+c1 = LRUCache(2)
+c1.put(1, 10)
+c1.put(2, 20)
+print(c1.get(1))                # 10
+c1.put(3, 30)                   # evicts key 2
+print(c1.get(1))                # 10
+print(c1.get(2))                # -1 — evicted
+
+# Edge cases
+c2 = LRUCache(1)
+print(c2.get(5))                # -1 — empty cache
+c2.put(1, 100)
+print(c2.get(1))                # 100
+c2.put(2, 200)                  # evicts key 1
+print(c2.get(1))                # -1 — evicted
+print(c2.get(2))                # 200
+
+c3 = LRUCache(3)
+c3.put(1, 1)
+c3.put(2, 2)
+c3.put(3, 3)
+c3.put(1, 10)                   # update existing key — moves to front
+print(c3.get(1))                # 10
+c3.put(4, 4)                    # evicts LRU which is key 2
+print(c3.get(2))                # -1 — evicted
 ```
 
 ```java run
 import java.util.*;
 
 public class Main {
+
+    // Define a Node class for the doubly linked list
     static class Node {
-        int key, val; Node prev, next;
-        Node(int key, int val) { this.key = key; this.val = val; }
+
+        int key;
+        int val;
+
+        Node(int key, int val) {
+            this.key = key;
+            this.val = val;
+        }
     }
 
     static class LRUCache {
-        private final int                 capacity;
-        private final Map<Integer, Node>  map = new HashMap<>();
-        private final Node                head = new Node(0, 0);   // sentinels
-        private final Node                tail = new Node(0, 0);
 
-        LRUCache(int capacity) {
+        // Member variables for the cache capacity, the doubly linked
+        // list, and the map of keys to nodes
+        private int capacity;
+        private LinkedList<Node> cache;
+        private Map<Integer, Node> keyAddressMap;
+
+        public LRUCache(int capacity) {
             this.capacity = capacity;
-            head.next = tail; tail.prev = head;
-        }
-        private void remove(Node n) {
-            n.prev.next = n.next; n.next.prev = n.prev;
-        }
-        private void addFront(Node n) {
-            n.prev = head; n.next = head.next;
-            head.next.prev = n; head.next = n;
+            this.cache = new LinkedList<>();
+            this.keyAddressMap = new HashMap<>();
         }
 
-        int get(int key) {
-            Node n = map.get(key);
-            if (n == null) return -1;
-            remove(n); addFront(n);
-            return n.val;
-        }
-        void put(int key, int value) {
-            Node n = map.get(key);
-            if (n != null) { n.val = value; remove(n); addFront(n); return; }
-            if (map.size() == capacity) {
-                Node lru = tail.prev;
-                remove(lru); map.remove(lru.key);
+        public int get(int key) {
+
+            // Check if the key exists in the map
+            if (keyAddressMap.containsKey(key)) {
+
+                // Move the corresponding node to the front of the list
+                Node node = keyAddressMap.get(key);
+                cache.remove(node);
+                cache.addFirst(node);
+
+                // Return the value of the node
+                return node.val;
             }
-            Node fresh = new Node(key, value);
-            addFront(fresh); map.put(key, fresh);
+
+            // If the key does not exist, return -1
+            return -1;
+        }
+
+        public void put(int key, int value) {
+
+            // If the key already exists in the cache, update its value
+            if (keyAddressMap.containsKey(key)) {
+                Node node = keyAddressMap.get(key);
+                node.val = value;
+                cache.remove(node);
+                cache.addFirst(node);
+            }
+
+            // If the key does not exist in the cache, add it to the
+            // front of the list.
+            else {
+
+                // If the cache is full, remove the least recently used node
+                // from the back of the list
+                if (cache.size() == capacity) {
+                    Node lastNode = cache.getLast();
+                    keyAddressMap.remove(lastNode.key);
+                    cache.remove(lastNode);
+                }
+
+                // Create a new node for the key-value pair and add it to the
+                // front of the list
+                Node node = new Node(key, value);
+                cache.addFirst(node);
+
+                // Map the key to the node in the cache
+                keyAddressMap.put(key, node);
+            }
         }
     }
 
     public static void main(String[] args) {
-        LRUCache c = new LRUCache(2);
-        c.put(1, 10); c.put(2, 20);
-        System.out.println(c.get(1));   // 10
-        c.put(3, 30);
-        System.out.println(c.get(1));   // 10
-        System.out.println(c.get(2));   // -1
+        // Example from the problem statement
+        LRUCache c1 = new LRUCache(2);
+        c1.put(1, 10);
+        c1.put(2, 20);
+        System.out.println(c1.get(1));              // 10
+        c1.put(3, 30);                              // evicts key 2
+        System.out.println(c1.get(1));              // 10
+        System.out.println(c1.get(2));              // -1 — evicted
+
+        // Edge cases
+        LRUCache c2 = new LRUCache(1);
+        System.out.println(c2.get(5));              // -1 — empty cache
+        c2.put(1, 100);
+        System.out.println(c2.get(1));              // 100
+        c2.put(2, 200);                             // evicts key 1
+        System.out.println(c2.get(1));              // -1 — evicted
+        System.out.println(c2.get(2));              // 200
+
+        LRUCache c3 = new LRUCache(3);
+        c3.put(1, 1);
+        c3.put(2, 2);
+        c3.put(3, 3);
+        c3.put(1, 10);                              // update existing key — moves to front
+        System.out.println(c3.get(1));              // 10
+        c3.put(4, 4);                               // evicts LRU which is key 2
+        System.out.println(c3.get(2));              // -1 — evicted
     }
-}
-```
-
-```c run
-#include <stdio.h>
-#include <stdlib.h>
-
-typedef struct Node {
-    int key, val;
-    struct Node *prev, *next;
-} Node;
-
-#define CAP 1024
-typedef struct { int key; Node *node; int used; } Slot;
-
-typedef struct {
-    int capacity, size;
-    Node head, tail;
-    Slot map[CAP];
-} LRUCache;
-
-unsigned hash_int(int k) { return (unsigned)k * 2654435761u; }
-
-LRUCache* lru_create(int capacity) {
-    LRUCache *c = calloc(1, sizeof(LRUCache));
-    c->capacity = capacity;
-    c->head.next = &c->tail; c->tail.prev = &c->head;
-    return c;
-}
-void lru_remove_list(Node *n) { n->prev->next = n->next; n->next->prev = n->prev; }
-void lru_add_front(LRUCache *c, Node *n) {
-    n->prev = &c->head; n->next = c->head.next;
-    c->head.next->prev = n; c->head.next = n;
-}
-Node* map_get(LRUCache *c, int key) {
-    unsigned i = hash_int(key) & (CAP - 1);
-    while (c->map[i].used) {
-        if (c->map[i].key == key) return c->map[i].node;
-        i = (i + 1) & (CAP - 1);
-    }
-    return NULL;
-}
-void map_put(LRUCache *c, int key, Node *n) {
-    unsigned i = hash_int(key) & (CAP - 1);
-    while (c->map[i].used && c->map[i].key != key) i = (i + 1) & (CAP - 1);
-    c->map[i].used = 1; c->map[i].key = key; c->map[i].node = n;
-}
-void map_del(LRUCache *c, int key) {
-    unsigned i = hash_int(key) & (CAP - 1);
-    while (c->map[i].used) {
-        if (c->map[i].key == key) { c->map[i].used = 0; return; }
-        i = (i + 1) & (CAP - 1);
-    }
-}
-
-int lru_get(LRUCache *c, int key) {
-    Node *n = map_get(c, key); if (!n) return -1;
-    lru_remove_list(n); lru_add_front(c, n);
-    return n->val;
-}
-void lru_put(LRUCache *c, int key, int val) {
-    Node *n = map_get(c, key);
-    if (n) { n->val = val; lru_remove_list(n); lru_add_front(c, n); return; }
-    if (c->size == c->capacity) {
-        Node *lru = c->tail.prev;
-        lru_remove_list(lru); map_del(c, lru->key); free(lru); c->size--;
-    }
-    Node *fresh = malloc(sizeof(Node));
-    fresh->key = key; fresh->val = val;
-    lru_add_front(c, fresh); map_put(c, key, fresh); c->size++;
-}
-
-int main() {
-    LRUCache *c = lru_create(2);
-    lru_put(c, 1, 10); lru_put(c, 2, 20);
-    printf("%d\n", lru_get(c, 1));   // 10
-    lru_put(c, 3, 30);
-    printf("%d\n", lru_get(c, 1));   // 10
-    printf("%d\n", lru_get(c, 2));   // -1
-}
-```
-
-```scala run
-import scala.collection.mutable
-
-object Main extends App {
-  class LRUCache(capacity: Int) {
-    // LinkedHashMap preserves insertion order; we re-insert on every access.
-    private val map = mutable.LinkedHashMap[Int, Int]()
-
-    def get(key: Int): Int = {
-      map.remove(key) match {
-        case Some(v) => map.put(key, v); v
-        case None    => -1
-      }
-    }
-    def put(key: Int, value: Int): Unit = {
-      map.remove(key)             // re-insertion bumps recency
-      if (map.size == capacity) map.remove(map.head._1)
-      map.put(key, value)
-    }
-  }
-
-  val c = new LRUCache(2)
-  c.put(1, 10); c.put(2, 20)
-  println(c.get(1))   // 10
-  c.put(3, 30)
-  println(c.get(1))   // 10
-  println(c.get(2))   // -1
 }
 ```
 
@@ -350,6 +342,8 @@ object Main extends App {
 > **Why a *doubly* linked list (not singly)?**
 >
 > The crucial operation is `remove(node)` — given a reference to a node, splice it out of the list in O(1). With a singly linked list, you'd need the *predecessor* to fix its `next` pointer; that's another O(N) walk to find. The `prev` pointer makes both ends of the splice O(1), and that's the whole reason this design hits its O(1) targets.
+
+</details>
 
 ***
 
@@ -370,7 +364,9 @@ Implement a set that supports `insert`, `remove`, and `getRandom` — **all in O
 >
 > -   **Output:** `[null, true, true, true, true, 4 or 6]`
 
-## Approach
+<details>
+<summary><h2>Approach</h2></summary>
+
 
 Three operations all in O(1) — easy to do **two of three**, hard to do **three of three**:
 
@@ -408,213 +404,200 @@ before -> swap -> after
 
 <p align="center"><strong>RandomisedSet remove — swap target with tail (O(1)), pop tail (O(1)), update the swapped element's index in the map (O(1)). The set's contents are correct; the order changed, but the set didn't care about order anyway.</strong></p>
 
-## Solution
+</details>
+<details>
+<summary><h2>Solution</h2></summary>
 
 
-```pseudocode
-class RandomisedSet:
-    values ← empty list       # contiguous array of values
-    index  ← empty Map        # value → its position in values
-
-    function insert(val):
-        if val is in index: return false
-        index[val] ← length(values); append val to values
-        return true
-
-    function remove(val):
-        if val is not in index: return false
-        i ← index[val]; last ← values[length(values) − 1]
-        values[i] ← last; index[last] ← i   # fill gap with last element
-        remove last element from values; remove val from index
-        return true
-
-    function getRandom():
-        return values[random integer in [0, length(values) − 1)]
-```
 
 ```python run
 import random
+from typing import Dict, List
 
 class RandomisedSet:
-    def __init__(self):
-        self.values = []          # contiguous array of values
-        self.index  = {}          # value → its index in `values`
+    def __init__(self) -> None:
+
+        # list to store values
+        self.values: List[int] = []
+
+        # hash map to store value and its index
+        self.hash_map: Dict[int, int] = {}
 
     def insert(self, val: int) -> bool:
-        if val in self.index: return False
-        self.index[val] = len(self.values)
+
+        # If value already exists in the set
+        if val in self.hash_map:
+            return False
+
+        # Add value to the end of list
         self.values.append(val)
+
+        # Store the value and its index in hash map
+        self.hash_map[val] = len(self.values) - 1
         return True
 
     def remove(self, val: int) -> bool:
-        if val not in self.index: return False
-        # Swap val's slot with the last element to avoid an O(N) shift.
-        i = self.index[val]
+
+        # If value does not exist in the set
+        if val not in self.hash_map:
+            return False
+
+        # Get the index of value in the list
+        index = self.hash_map[val]
+
+        # Get the last value in the list
         last = self.values[-1]
-        self.values[i] = last; self.index[last] = i
+
+        # Overwrite the value to be removed with last value
+        self.values[index] = last
+
+        # Update the index of last value in hash map
+        self.hash_map[last] = index
+
+        # Remove last value from list
         self.values.pop()
-        del self.index[val]
+
+        # Remove value from hash map
+        del self.hash_map[val]
         return True
 
     def getRandom(self) -> int:
-        return self.values[random.randrange(len(self.values))]
+        return random.choice(self.values)
 
-# Boss-fight demo
-s = RandomisedSet()
-print(s.insert(2), s.insert(4), s.insert(6))   # True True True
-print(s.remove(2))                              # True
-print(s.getRandom() in (4, 6))                  # True
+
+# Example from the problem statement
+s1 = RandomisedSet()
+print(s1.insert(2))             # True
+print(s1.insert(4))             # True
+print(s1.insert(6))             # True
+print(s1.remove(2))             # True
+print(s1.getRandom() in [4, 6]) # True — returns 4 or 6
+
+# Edge cases
+s2 = RandomisedSet()
+print(s2.insert(1))             # True
+print(s2.insert(1))             # False — duplicate
+print(s2.remove(99))            # False — not present
+print(s2.remove(1))             # True
+print(s2.insert(1))             # True — re-insert after removal
+
+s3 = RandomisedSet()
+s3.insert(10)
+print(s3.getRandom())           # 10 — only element
+print(s3.insert(10))            # False — already present
+s3.insert(20)
+s3.insert(30)
+print(s3.remove(20))            # True — removes middle element (swap with last)
+print(20 not in s3.hash_map)    # True — 20 is gone
 ```
 
 ```java run
 import java.util.*;
 
 public class Main {
-    static class RandomisedSet {
-        private final List<Integer>          values = new ArrayList<>();
-        private final Map<Integer, Integer>  index  = new HashMap<>();
-        private final Random                 rnd    = new Random();
 
-        boolean insert(int val) {
-            if (index.containsKey(val)) return false;
-            index.put(val, values.size()); values.add(val);
+    static class RandomisedSet {
+        private List<Integer> values;
+        private Map<Integer, Integer> hashMap;
+
+        public RandomisedSet() {
+            values = new ArrayList<>();
+            hashMap = new HashMap<>();
+        }
+
+        public boolean insert(int val) {
+
+            // If value already exists in the set
+            if (hashMap.containsKey(val)) {
+                return false;
+            }
+
+            // Add value to the end of list
+            values.add(val);
+
+            // Store the value and its index in hash map
+            hashMap.put(val, values.size() - 1);
             return true;
         }
-        boolean remove(int val) {
-            Integer i = index.get(val);
-            if (i == null) return false;
+
+        public boolean remove(int val) {
+
+            // If value does not exist in the set
+            if (!hashMap.containsKey(val)) {
+                return false;
+            }
+
+            // Get the index of value in the list
+            int index = hashMap.get(val);
+
+            // Get the last value in the list
             int last = values.get(values.size() - 1);
-            values.set(i, last); index.put(last, i);
-            values.remove(values.size() - 1); index.remove(val);
+
+            // Replace the value to remove with the last value in the list
+            values.set(index, last);
+
+            // Update the index of the last value in the hash map
+            hashMap.put(last, index);
+
+            // Remove the last value from the list
+            values.remove(values.size() - 1);
+
+            // Remove the value from the hash map
+            hashMap.remove(val);
             return true;
         }
-        int getRandom() { return values.get(rnd.nextInt(values.size())); }
+
+        public int getRandom() {
+
+            // Generate a random index in the range [0, size-1]
+            int index = (int) (Math.random() * values.size());
+
+            // Return the value at the random index
+            return values.get(index);
+        }
     }
 
     public static void main(String[] args) {
-        RandomisedSet s = new RandomisedSet();
-        System.out.println(s.insert(2));
-        System.out.println(s.insert(4));
-        System.out.println(s.insert(6));
-        System.out.println(s.remove(2));
-        int r = s.getRandom();
-        System.out.println(r == 4 || r == 6);
+        // Example from the problem statement
+        RandomisedSet s1 = new RandomisedSet();
+        System.out.println(s1.insert(2));                      // true
+        System.out.println(s1.insert(4));                      // true
+        System.out.println(s1.insert(6));                      // true
+        System.out.println(s1.remove(2));                      // true
+        int r = s1.getRandom();
+        System.out.println(r == 4 || r == 6);                  // true — returns 4 or 6
+
+        // Edge cases
+        RandomisedSet s2 = new RandomisedSet();
+        System.out.println(s2.insert(1));                      // true
+        System.out.println(s2.insert(1));                      // false — duplicate
+        System.out.println(s2.remove(99));                     // false — not present
+        System.out.println(s2.remove(1));                      // true
+        System.out.println(s2.insert(1));                      // true — re-insert after removal
+
+        RandomisedSet s3 = new RandomisedSet();
+        s3.insert(10);
+        System.out.println(s3.getRandom());                    // 10 — only element
+        System.out.println(s3.insert(10));                     // false — already present
+        s3.insert(20);
+        s3.insert(30);
+        System.out.println(s3.remove(20));                     // true — removes middle element
+        System.out.println(!s3.hashMap.containsKey(20));       // true — 20 is gone
     }
-}
-```
-
-```c run
-#include <stdio.h>
-#include <stdlib.h>
-#include <stdbool.h>
-#include <time.h>
-
-#define CAP 4096
-
-typedef struct { int key, val_index; int used; } Slot;
-
-typedef struct {
-    int *values; int n_values, cap;
-    Slot map[CAP];
-} RandomisedSet;
-
-unsigned hash_int(int k) { return (unsigned)k * 2654435761u; }
-
-int map_find(RandomisedSet *s, int key) {
-    unsigned i = hash_int(key) & (CAP - 1);
-    while (s->map[i].used) {
-        if (s->map[i].key == key) return (int)i;
-        i = (i + 1) & (CAP - 1);
-    }
-    return -1;
-}
-void map_set(RandomisedSet *s, int key, int idx) {
-    unsigned i = hash_int(key) & (CAP - 1);
-    while (s->map[i].used && s->map[i].key != key) i = (i + 1) & (CAP - 1);
-    s->map[i].used = 1; s->map[i].key = key; s->map[i].val_index = idx;
-}
-void map_del(RandomisedSet *s, int key) {
-    unsigned i = hash_int(key) & (CAP - 1);
-    while (s->map[i].used) {
-        if (s->map[i].key == key) { s->map[i].used = 0; return; }
-        i = (i + 1) & (CAP - 1);
-    }
-}
-
-RandomisedSet* rs_new(void) {
-    RandomisedSet *s = calloc(1, sizeof(*s));
-    s->cap = 16; s->values = malloc(sizeof(int) * s->cap);
-    return s;
-}
-bool rs_insert(RandomisedSet *s, int val) {
-    if (map_find(s, val) != -1) return false;
-    if (s->n_values == s->cap) { s->cap *= 2; s->values = realloc(s->values, sizeof(int) * s->cap); }
-    map_set(s, val, s->n_values);
-    s->values[s->n_values++] = val;
-    return true;
-}
-bool rs_remove(RandomisedSet *s, int val) {
-    int slot = map_find(s, val); if (slot == -1) return false;
-    int i = s->map[slot].val_index;
-    int last = s->values[s->n_values - 1];
-    s->values[i] = last; map_set(s, last, i);
-    s->n_values--; map_del(s, val);
-    return true;
-}
-int rs_get_random(RandomisedSet *s) { return s->values[rand() % s->n_values]; }
-
-int main() {
-    srand((unsigned)time(NULL));
-    RandomisedSet *s = rs_new();
-    printf("%d %d %d\n", rs_insert(s, 2), rs_insert(s, 4), rs_insert(s, 6));
-    printf("%d\n", rs_remove(s, 2));
-    int r = rs_get_random(s);
-    printf("%d (4 or 6)\n", r);
-}
-```
-
-```scala run
-import scala.collection.mutable
-import scala.util.Random
-
-object Main extends App {
-  class RandomisedSet {
-    private val values = mutable.ArrayBuffer[Int]()
-    private val index  = mutable.Map[Int, Int]()
-
-    def insert(v: Int): Boolean = {
-      if (index.contains(v)) false
-      else { index(v) = values.length; values += v; true }
-    }
-    def remove(v: Int): Boolean = index.get(v) match {
-      case None => false
-      case Some(i) =>
-        val last = values.last
-        values(i) = last; index(last) = i
-        values.trimEnd(1); index -= v
-        true
-    }
-    def getRandom(): Int = values(Random.nextInt(values.length))
-  }
-
-  val s = new RandomisedSet
-  println(s.insert(2)); println(s.insert(4)); println(s.insert(6))
-  println(s.remove(2))
-  val r = s.getRandom()
-  println(s"$r (4 or 6)")
 }
 ```
 
 
 > **Why does the swap-with-last trick work?**
 >
-> The set's contract is *unordered* — `{2, 4, 6}` and `{6, 4}` are equivalent, regardless of internal layout. So when we remove `2`, we don't actually need to preserve `[2, 4, 6] → [4, 6]`. We can rearrange to `[6, 4]` (swap-with-last) and still have a valid representation of the set `{4, 6}`. The hash map's `index` field is the secret that makes this safe — we only have to update *one* entry (the swapped value's new position), not shift N entries.
+> The set's contract is *unordered* — `{2, 4, 6}` and `{6, 4}` are equivalent, regardless of internal layout. So when we remove `2`, we don't actually need to preserve `[2, 4, 6] → [4, 6]`. We can rearrange to `[6, 4]` (swap-with-last) and still have a valid representation of the set `{4, 6}`. The `hash_map` storing each value's index is the secret that makes this safe — we only have to update *one* entry (the swapped value's new position), not shift N entries.
 >
 > If the set were *ordered*, this trick would fail and we'd be back to O(N). The unordered nature of a set is precisely what enables O(1) deletion here.
 
-***
+</details>
+<details>
+<summary><h2>Final Takeaway</h2></summary>
 
-## Final Takeaway
 
 You've now seen the full hash-table toolkit assembled, and the design lesson tied it off with two architectural patterns that recur in production code everywhere:
 
@@ -642,3 +625,5 @@ Once you see this composition pattern, it shows up everywhere: LinkedHashMap, Or
 > | 11 — Design | Composing hash with list/array | Production data structures |
 >
 > You came in knowing a hash map was a `dict`. You leave knowing it's the universal adapter that turns "search again and again" into "calculate where, look once". Carry the toolkit. The interview problems and the systems code will both come for it.
+
+</details>

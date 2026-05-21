@@ -730,6 +730,16 @@
         .cortex-reader-sidebar__toggle-kbd {
         max-width: 0;
         opacity: 0;
+        /* Collapse the kbd chip's box to a true zero. `max-width: 0` alone is
+           not enough: under `box-sizing: border-box` it cannot shrink a box
+           below its own border + padding, so the `[`-key chip kept ~10px of
+           width (1px border ×2 + 4px padding ×2) and — sitting after the
+           chevron in the flex row — pushed the chevron left of centre. Margin,
+           padding and border must all be zeroed for the row to centre on the
+           chevron alone. */
+        margin: 0;
+        padding: 0;
+        border-width: 0;
     }
     /* Peek state — small PEEK badge appears on the pill so the user knows the
        expanded view is temporary. */
@@ -751,7 +761,14 @@
         @apply flex flex-col gap-5 px-6 pt-9 pb-12;
         transition: opacity 180ms ease;
     }
+    /* Scoped to `__desktop`: the mobile drawer reuses the same `__expanded`
+       class, and the whole reader (drawer included) sits inside
+       `[data-side="collapsed"]` once the viewport is below the auto-collapse
+       breakpoint — i.e. always on phones. Without this scope the rule would
+       collapse the drawer's content to height:0/visibility:hidden, leaving
+       the opened drawer blank. */
     .cortex-reader-layout[data-side="collapsed"]:not([data-peek="on"])
+        .cortex-reader-sidebar__desktop
         .cortex-reader-sidebar__expanded {
         opacity: 0;
         visibility: hidden;
@@ -1212,12 +1229,31 @@
         height: 2px;
         background-color: hsl(var(--border));
         border-radius: 1px;
-        transition: width 140ms ease, background-color 140ms ease;
+        transition: width 140ms ease, background-color 140ms ease, opacity 140ms ease;
+    }
+    /* Depth differentiation: h1 widest + boldest, h3 narrowest. The base rule above
+       is the h2 default; --level-1 / --level-3 modifiers override it. */
+    .cortex-reader-minimap__tick--level-1::before {
+        width: 22px;
+        background-color: hsl(var(--muted-foreground));
+    }
+    .cortex-reader-minimap__tick--level-3::before {
+        width: 12px;
+        opacity: 0.75;
     }
     .cortex-reader-minimap__tick:hover::before,
     .cortex-reader-minimap__tick--active::before {
         width: 22px;
         background-color: hsl(var(--foreground));
+        opacity: 1;
+    }
+    .cortex-reader-minimap__tick--level-1:hover::before,
+    .cortex-reader-minimap__tick--level-1.cortex-reader-minimap__tick--active::before {
+        width: 28px;
+    }
+    .cortex-reader-minimap__tick--level-3:hover::before,
+    .cortex-reader-minimap__tick--level-3.cortex-reader-minimap__tick--active::before {
+        width: 18px;
     }
     .cortex-reader-minimap__tick--active::before {
         background-color: hsl(var(--primary));
@@ -1849,4 +1885,18 @@
     /* The legend lives inside `.cortex-reader-sidebar__expanded`, which the
        collapsed-rail rules at line ~754 already hide; no separate hide rule
        needed here. */
+
+    /* ─── Mobile: dock the in-page TOC FAB on the bottom line ─────────
+       Below `lg` the left "chapters" FAB sits at bottom-left (bottom-5 = 20px).
+       Pull the in-page TOC FAB down to the bottom-right corner so the two read
+       as a matched pair on one line. The back-to-top button (the only other
+       right-edge FAB shown at this width — the type + focus FABs are
+       `display:none` here) and the TOC popover shift up one 56px slot so
+       nothing overlaps. This block sits last in the file so it wins on source
+       order over every FAB base rule above. */
+    @media (max-width: 1023.98px) {
+        .cortex-reader-toc-float { bottom: 20px; }
+        .cortex-reader-toc-pop   { bottom: 76px; }
+        .scroll-to-top           { bottom: 76px; }
+    }
 }

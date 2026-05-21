@@ -218,7 +218,7 @@ Unlike a real graph, a grid has **edges of the world**. From `(0, 0)` the "up" n
 
 If you forget, you get `IndexError` (Python), `ArrayIndexOutOfBoundsException` (Java), or — worst — a silent crash because of negative indexing wrapping around in some languages.
 
-A clean pattern: a tiny `is_valid(r, c)` helper that bundles bounds + walkable into one check.
+A clean pattern: a tiny `is_valid_cell(grid, r, c)` helper that bundles bounds + walkable into one check.
 
 > *Before reading on — for a 5×5 grid, how many of the 4 neighbours are valid for cell (0, 0)? For (2, 2)? For (4, 4)? Predict before scrolling.*
 
@@ -228,80 +228,113 @@ Cell `(0,0)`: only `(0,1)` and `(1,0)` are in bounds — 2 valid. Cell `(2,2)`: 
 
 # DFS Implementation
 
-The full algorithm in 10 languages.
+The full algorithm in Python and Java.
 
-
-```pseudocode
-function isValid(grid, r, c):
-    return r ≥ 0 AND r < rows AND c ≥ 0 AND c < cols AND grid[r][c] = 1
-
-function dfs(grid, r, c, visited, result):
-    visited[r][c] ← true
-    append (r, c) to result
-    for each (dr, dc) in DIRS:   # DIRS = [(-1,0),(0,1),(1,0),(0,-1)]
-        nr, nc ← r+dr, c+dc
-        if isValid(grid, nr, nc) AND NOT visited[nr][nc]:
-            dfs(grid, nr, nc, visited, result)
-
-function depthFirstTraversalGrid(grid):
-    visited ← rows×cols matrix of false
-    result ← empty list
-    for r from 0 to rows−1:
-        for c from 0 to cols−1:
-            if grid[r][c] = 1 AND NOT visited[r][c]:
-                dfs(grid, r, c, visited, result)
-    return result
-```
 
 ```python run
 from typing import List, Tuple
 
-# Direction deltas: up, right, down, left.
-DIRS = [(-1, 0), (0, 1), (1, 0), (0, -1)]
-
 class Solution:
-    def is_valid(self, grid: List[List[int]], r: int, c: int) -> bool:
-        rows, cols = len(grid), len(grid[0])
-        # Bounds check AND walkable check in one helper — keeps dfs uncluttered.
-        return 0 <= r < rows and 0 <= c < cols and grid[r][c] == 1
+    def is_valid_cell(
+        self, grid: List[List[int]], row: int, col: int
+    ) -> bool:
 
-    def dfs(self,
-            grid: List[List[int]],
-            r: int, c: int,
-            visited: List[List[bool]],
-            result: List[Tuple[int, int]]) -> None:
-        visited[r][c] = True
-        result.append((r, c))
+        # Check if a cell is valid and belongs to a region of 1's, also
+        # check that the cell is not water
+        return (
+            row >= 0
+            and row < len(grid)
+            and col >= 0
+            and col < len(grid[0])
+            and grid[row][col] == 1
+        )
 
-        for dr, dc in DIRS:
-            nr, nc = r + dr, c + dc
-            # is_valid covers bounds + walkable; the 'not visited' check handles cycles
-            # (loops back through cardinal neighbours create implicit cycles in the graph).
-            if self.is_valid(grid, nr, nc) and not visited[nr][nc]:
-                self.dfs(grid, nr, nc, visited, result)
+    def dfs(
+        self,
+        grid: List[List[int]],
+        row: int,
+        col: int,
+        visited: List[List[bool]],
+        result: List[Tuple[int, int]],
+    ) -> None:
 
-    def depth_first_traversal_grid(self, grid: List[List[int]]) -> List[Tuple[int, int]]:
-        if not grid or not grid[0]:
+        # Mark the current cell as visited
+        visited[row][col] = True
+
+        # Add the current cell to the result
+        result.append((row, col))
+
+        # Define the possible movements: all 8 directions (up, right, 
+        # down, left, and diagonals)
+        directions: List[Tuple[int, int]] = [
+            (-1, 0),  # up
+            (0, 1),   # right
+            (1, 0),   # down
+            (0, -1)   # left
+        ]
+
+        for dr, dc in directions:
+            new_row = row + dr
+            new_col = col + dc
+
+            # If the neighbour is not visited, recursively call the DFS
+            # function on the neighbour
+            if (
+                self.is_valid_cell(grid, new_row, new_col)
+                and not visited[new_row][new_col]
+            ):
+                self.dfs(grid, new_row, new_col, visited, result)
+
+    def depth_first_traversal_on_a_grid(
+        self, grid: List[List[int]]
+    ) -> List[Tuple[int, int]]:
+        rows = len(grid)
+
+        # If the grid is empty, return an empty result
+        if rows == 0:
             return []
-        rows, cols = len(grid), len(grid[0])
-        visited = [[False] * cols for _ in range(rows)]
+
+        cols = len(grid[0])
+
+        # Initialize a list to store the result of the DFS
+        # which will contain the coordinates of the cells visited
+        # during the DFS traversal
         result: List[Tuple[int, int]] = []
 
-        # Outer scan — every component (= each island of 1s) gets its own DFS root.
-        for r in range(rows):
-            for c in range(cols):
-                if grid[r][c] == 1 and not visited[r][c]:
-                    self.dfs(grid, r, c, visited, result)
+        # Initialize visited array
+        visited = [[False] * cols for _ in range(rows)]
+
+        # Traverse each cell of the grid
+        for row in range(rows):
+            for col in range(cols):
+
+                # If the cells is not visitable or is already visited,
+                # continue to the next cell
+                if grid[row][col] == 0 or visited[row][col]:
+                    continue
+
+                # Perform DFS on this new cell to visit all the cells
+                # connected to it.
+                self.dfs(grid, row, col, visited, result)
+
         return result
 
 
-grid = [
-    [1, 1, 0, 1, 0],
-    [1, 1, 0, 0, 0],
-    [0, 0, 0, 1, 1],
-    [0, 0, 1, 1, 0],
-]
-print(Solution().depth_first_traversal_grid(grid))
+# Examples from the problem statement
+print(Solution().depth_first_traversal_on_a_grid(
+    [[1,1,0,0],[0,0,1,1],[1,0,1,1],[1,0,0,0]]))
+# [(0, 0), (0, 1), (1, 2), (1, 3), (2, 3), (2, 2), (2, 0), (3, 0)]
+
+print(Solution().depth_first_traversal_on_a_grid(
+    [[1,0,0,1],[0,0,0,0],[1,1,1,1],[0,0,0,1]]))
+# [(0, 0), (0, 3), (2, 0), (2, 1), (2, 2), (2, 3), (3, 3)]
+
+# Edge cases
+print(Solution().depth_first_traversal_on_a_grid([]))                  # []
+print(Solution().depth_first_traversal_on_a_grid([[0]]))               # []
+print(Solution().depth_first_traversal_on_a_grid([[1]]))               # [(0, 0)]
+print(Solution().depth_first_traversal_on_a_grid([[1, 1]]))            # [(0, 0), (0, 1)]
+print(Solution().depth_first_traversal_on_a_grid([[0, 0], [0, 0]]))   # []
 ```
 
 ```java run
@@ -309,121 +342,110 @@ import java.util.*;
 
 public class Main {
     static class Solution {
-        // up, right, down, left
-        static final int[][] DIRS = {{-1, 0}, {0, 1}, {1, 0}, {0, -1}};
+        private boolean isValidCell(int[][] grid, int row, int col) {
 
-        boolean isValid(int[][] grid, int r, int c) {
-            return r >= 0 && r < grid.length && c >= 0 && c < grid[0].length && grid[r][c] == 1;
+            // Check if a cell is valid and belongs to a region of 1's, also
+            // check that the cell is not water
+            return (
+                row >= 0 &&
+                row < grid.length &&
+                col >= 0 &&
+                col < grid[0].length &&
+                grid[row][col] == 1
+            );
         }
 
-        void dfs(int[][] grid, int r, int c, boolean[][] visited, List<int[]> result) {
-            visited[r][c] = true;
-            result.add(new int[]{r, c});
-            for (int[] d : DIRS) {
-                int nr = r + d[0], nc = c + d[1];
-                if (isValid(grid, nr, nc) && !visited[nr][nc])
-                    dfs(grid, nr, nc, visited, result);
+        private void dfs(
+            int[][] grid,
+            int row,
+            int col,
+            boolean[][] visited,
+            List<List<Integer>> result
+        ) {
+
+            // Mark the current cell as visited
+            visited[row][col] = true;
+
+            // Add the current cell to the result
+            result.add(List.of(row, col));
+
+            // Define the possible movements: up, right, down, left
+            int[][] directions = {
+                {-1, 0}, // up
+                {0, 1},  // right
+                {1, 0},  // down
+                {0, -1}  // left
+            };
+
+            for (int[] dir : directions) {
+                int newRow = row + dir[0];
+                int newCol = col + dir[1];
+
+                // If the neighbour is not visited, recursively call the DFS
+                // function on the neighbour
+                if (
+                    isValidCell(grid, newRow, newCol) &&
+                    !visited[newRow][newCol]
+                ) {
+                    dfs(grid, newRow, newCol, visited, result);
+                }
             }
         }
 
-        List<int[]> depthFirstTraversalGrid(int[][] grid) {
-            if (grid.length == 0) return new ArrayList<>();
-            int rows = grid.length, cols = grid[0].length;
+        public List<List<Integer>> depthFirstTraversalOnAGrid(int[][] grid) {
+            int rows = grid.length;
+
+            // If the grid is empty, return an empty result
+            if (rows == 0) {
+                return new ArrayList<>();
+            }
+
+            int cols = grid[0].length;
+
+            // Initialize a list to store the result of the DFS
+            // which will contain the coordinates of the cells visited
+            // during the DFS traversal
+            List<List<Integer>> result = new ArrayList<>();
+
+            // Initialize visited array
             boolean[][] visited = new boolean[rows][cols];
-            List<int[]> result = new ArrayList<>();
-            for (int r = 0; r < rows; r++)
-                for (int c = 0; c < cols; c++)
-                    if (grid[r][c] == 1 && !visited[r][c])
-                        dfs(grid, r, c, visited, result);
+
+            // Traverse each cell of the grid
+            for (int row = 0; row < rows; row++) {
+                for (int col = 0; col < cols; col++) {
+
+                    // If the cells is not visitable or is already visited,
+                    // continue to the next cell
+                    if (grid[row][col] == 0 || visited[row][col]) {
+                        continue;
+                    }
+
+                    // Perform DFS on this new cell to visit all the cells
+                    // connected to it.
+                    dfs(grid, row, col, visited, result);
+                }
+            }
+
             return result;
         }
     }
 
     public static void main(String[] args) {
-        int[][] grid = {{1,1,0,1,0},{1,1,0,0,0},{0,0,0,1,1},{0,0,1,1,0}};
-        for (int[] cell : new Solution().depthFirstTraversalGrid(grid))
-            System.out.print(Arrays.toString(cell) + " ");
-        System.out.println();
+        // Examples from the problem statement
+        System.out.println(new Solution().depthFirstTraversalOnAGrid(
+            new int[][]{{1,1,0,0},{0,0,1,1},{1,0,1,1},{1,0,0,0}}));
+        // [[0, 0], [0, 1], [1, 2], [1, 3], [2, 3], [2, 2], [2, 0], [3, 0]]
+
+        System.out.println(new Solution().depthFirstTraversalOnAGrid(
+            new int[][]{{1,0,0,1},{0,0,0,0},{1,1,1,1},{0,0,0,1}}));
+        // [[0, 0], [0, 3], [2, 0], [2, 1], [2, 2], [2, 3], [3, 3]]
+
+        // Edge cases
+        System.out.println(new Solution().depthFirstTraversalOnAGrid(new int[][]{{0}}));   // []
+        System.out.println(new Solution().depthFirstTraversalOnAGrid(new int[][]{{1}}));   // [[0, 0]]
+        System.out.println(new Solution().depthFirstTraversalOnAGrid(new int[][]{{1,1}})); // [[0, 0], [0, 1]]
+        System.out.println(new Solution().depthFirstTraversalOnAGrid(new int[][]{{0,0},{0,0}}));  // []
     }
-}
-```
-
-```c run
-#include <stdio.h>
-#include <stdlib.h>
-#include <stdbool.h>
-
-static const int DIRS[4][2] = {{-1, 0}, {0, 1}, {1, 0}, {0, -1}};
-
-static bool is_valid(int** grid, int rows, int cols, int r, int c) {
-    return r >= 0 && r < rows && c >= 0 && c < cols && grid[r][c] == 1;
-}
-
-static void dfs(int** grid, int rows, int cols, int r, int c,
-                bool** visited, int* result, int* idx) {
-    visited[r][c] = true;
-    result[(*idx)++] = r * cols + c;   // pack (r, c) into one int for printing
-    for (int d = 0; d < 4; d++) {
-        int nr = r + DIRS[d][0], nc = c + DIRS[d][1];
-        if (is_valid(grid, rows, cols, nr, nc) && !visited[nr][nc])
-            dfs(grid, rows, cols, nr, nc, visited, result, idx);
-    }
-}
-
-int main() {
-    int data[4][5] = {{1,1,0,1,0},{1,1,0,0,0},{0,0,0,1,1},{0,0,1,1,0}};
-    int* grid[4];
-    bool* visited[4];
-    for (int i = 0; i < 4; i++) {
-        grid[i] = data[i];
-        visited[i] = calloc(5, sizeof(bool));
-    }
-    int result[20], idx = 0;
-    for (int r = 0; r < 4; r++)
-        for (int c = 0; c < 5; c++)
-            if (grid[r][c] == 1 && !visited[r][c])
-                dfs(grid, 4, 5, r, c, visited, result, &idx);
-    for (int i = 0; i < idx; i++) printf("(%d,%d) ", result[i] / 5, result[i] % 5);
-    printf("\n");
-    for (int i = 0; i < 4; i++) free(visited[i]);
-    return 0;
-}
-```
-
-```scala run
-import scala.collection.mutable.ArrayBuffer
-
-object Main extends App {
-  val DIRS = Array((-1, 0), (0, 1), (1, 0), (0, -1))
-
-  class Solution {
-    def isValid(grid: Array[Array[Int]], r: Int, c: Int): Boolean =
-      r >= 0 && r < grid.length && c >= 0 && c < grid(0).length && grid(r)(c) == 1
-
-    def dfs(grid: Array[Array[Int]], r: Int, c: Int,
-            visited: Array[Array[Boolean]],
-            result: ArrayBuffer[(Int, Int)]): Unit = {
-      visited(r)(c) = true
-      result.append((r, c))
-      for ((dr, dc) <- DIRS) {
-        val nr = r + dr; val nc = c + dc
-        if (isValid(grid, nr, nc) && !visited(nr)(nc)) dfs(grid, nr, nc, visited, result)
-      }
-    }
-
-    def depthFirstTraversalGrid(grid: Array[Array[Int]]): ArrayBuffer[(Int, Int)] = {
-      if (grid.isEmpty) return ArrayBuffer.empty
-      val rows = grid.length; val cols = grid(0).length
-      val visited = Array.ofDim[Boolean](rows, cols)
-      val result = ArrayBuffer.empty[(Int, Int)]
-      for (r <- 0 until rows; c <- 0 until cols
-           if grid(r)(c) == 1 && !visited(r)(c)) dfs(grid, r, c, visited, result)
-      result
-    }
-  }
-
-  val grid = Array(Array(1,1,0,1,0), Array(1,1,0,0,0), Array(0,0,0,1,1), Array(0,0,1,1,0))
-  println(new Solution().depthFirstTraversalGrid(grid).mkString(", "))
 }
 ```
 
@@ -484,7 +506,7 @@ bfs(start_r, start_c):
                 queue.push_back((nr, nc))
 ```
 
-Notice the `visited[nr][nc] = true` happens at **push**, not pop. Same rule as graph-BFS, same reason: a cell could otherwise be queued multiple times by different parents, leading to bugs and bloat.
+Notice the `visited[new_row][new_col] = true` happens at **push**, not pop. Same rule as graph-BFS, same reason: a cell could otherwise be queued multiple times by different parents, leading to bugs and bloat.
 
 > *Before reading on — for the same example grid, predict the BFS visit order from cell (0, 0). Then check the trace.*
 
@@ -516,79 +538,125 @@ flowchart LR
 # BFS Implementation
 
 
-```pseudocode
-function bfs(grid, startR, startC, visited, result):
-    queue ← empty queue
-    enqueue (startR, startC) to queue
-    visited[startR][startC] ← true   # mark at push
-    while queue is not empty:
-        (r, c) ← dequeue from queue
-        append (r, c) to result
-        for each (dr, dc) in DIRS:
-            nr, nc ← r+dr, c+dc
-            if isValid(grid, nr, nc) AND NOT visited[nr][nc]:
-                visited[nr][nc] ← true
-                enqueue (nr, nc) to queue
-
-function breadthFirstTraversalGrid(grid):
-    visited ← rows×cols matrix of false
-    result ← empty list
-    for r from 0 to rows−1:
-        for c from 0 to cols−1:
-            if grid[r][c] = 1 AND NOT visited[r][c]:
-                bfs(grid, r, c, visited, result)
-    return result
-```
-
 ```python run
 from typing import List, Tuple
-from collections import deque
-
-DIRS = [(-1, 0), (0, 1), (1, 0), (0, -1)]
+from queue import Queue
 
 class Solution:
-    def is_valid(self, grid: List[List[int]], r: int, c: int) -> bool:
-        rows, cols = len(grid), len(grid[0])
-        return 0 <= r < rows and 0 <= c < cols and grid[r][c] == 1
+    def is_valid_cell(
+        self, grid: List[List[int]], row: int, col: int
+    ) -> bool:
 
-    def bfs(self,
-            grid: List[List[int]],
-            start_r: int, start_c: int,
-            visited: List[List[bool]],
-            result: List[Tuple[int, int]]) -> None:
-        queue = deque([(start_r, start_c)])
-        # Mark at PUSH so a cell never enters the queue twice.
-        visited[start_r][start_c] = True
+        # Check if a cell is valid and belongs to a region of 1's, also
+        # check that the cell is not water
+        return (
+            row >= 0
+            and row < len(grid)
+            and col >= 0
+            and col < len(grid[0])
+            and grid[row][col] == 1
+        )
 
-        while queue:
-            r, c = queue.popleft()
-            result.append((r, c))
-            for dr, dc in DIRS:
-                nr, nc = r + dr, c + dc
-                if self.is_valid(grid, nr, nc) and not visited[nr][nc]:
-                    visited[nr][nc] = True
-                    queue.append((nr, nc))
+    def bfs(
+        self,
+        grid: List[List[int]],
+        row: int,
+        col: int,
+        visited: List[List[bool]],
+        result: List[Tuple[int, int]],
+    ) -> None:
 
-    def breadth_first_traversal_grid(self, grid: List[List[int]]) -> List[Tuple[int, int]]:
-        if not grid or not grid[0]:
+        # Create a queue to perform breadth-first search
+        queue: Queue[Tuple[int, int]] = Queue()
+
+        # Add the current cell to the queue
+        queue.put((row, col))
+
+        # Mark the current cell as visited
+        visited[row][col] = True
+
+        # Define the possible movements: up, down, left, right
+        directions: List[Tuple[int, int]] = [
+            (-1, 0),  # up
+            (0, 1),   # right
+            (1, 0),   # down
+            (0, -1)   # left
+        ]
+
+        while not queue.empty():
+
+            # Get the front cell from the queue
+            curr_row, curr_col = queue.get()
+
+            # Add the current cell to the result
+            result.append((curr_row, curr_col))
+
+            for dr, dc in directions:
+                new_row = curr_row + dr
+                new_col = curr_col + dc
+
+                # If the neighbour is not visited, add it to the queue
+                if (
+                    self.is_valid_cell(grid, new_row, new_col)
+                    and not visited[new_row][new_col]
+                ):
+
+                    # Add the new cell to the result
+                    queue.put((new_row, new_col))
+
+                    # Mark the new cell as visited
+                    visited[new_row][new_col] = True
+
+    def breadth_first_traversal_on_a_grid(
+        self, grid: List[List[int]]
+    ) -> List[Tuple[int, int]]:
+        rows = len(grid)
+
+        # Check if the grid is empty
+        if rows == 0:
             return []
-        rows, cols = len(grid), len(grid[0])
-        visited = [[False] * cols for _ in range(rows)]
+
+        cols = len(grid[0])
+
+        # Initialize a list to store the result of the BFS
+        # which will contain the coordinates of the cells visited
+        # during the BFS traversal
         result: List[Tuple[int, int]] = []
-        for r in range(rows):
-            for c in range(cols):
-                if grid[r][c] == 1 and not visited[r][c]:
-                    self.bfs(grid, r, c, visited, result)
+
+        # Initialize visited array
+        visited = [[False] * cols for _ in range(rows)]
+
+        # Traverse each cell of the grid
+        for row in range(rows):
+            for col in range(cols):
+
+                # If the cells is not visitable or is already visited,
+                # continue to the next cell
+                if grid[row][col] == 0 or visited[row][col]:
+                    continue
+
+                # Perform BFS on this new cell to visit all the cells
+                # connected to it.
+                self.bfs(grid, row, col, visited, result)
+
         return result
 
 
-grid = [
-    [1, 1, 0, 1, 0],
-    [1, 1, 0, 0, 0],
-    [0, 0, 0, 1, 1],
-    [0, 0, 1, 1, 0],
-]
-print(Solution().breadth_first_traversal_grid(grid))
+# Examples from the problem statement
+print(Solution().breadth_first_traversal_on_a_grid(
+    [[1,1,0,0],[0,0,1,1],[1,0,1,1],[1,0,0,0]]))
+# [(0, 0), (0, 1), (1, 2), (1, 3), (2, 2), (2, 3), (2, 0), (3, 0)]
+
+print(Solution().breadth_first_traversal_on_a_grid(
+    [[1,0,0,1],[0,0,0,0],[1,1,1,1],[0,0,0,1]]))
+# [(0, 0), (0, 3), (2, 0), (2, 1), (2, 2), (2, 3), (3, 3)]
+
+# Edge cases
+print(Solution().breadth_first_traversal_on_a_grid([]))                # []
+print(Solution().breadth_first_traversal_on_a_grid([[0]]))             # []
+print(Solution().breadth_first_traversal_on_a_grid([[1]]))             # [(0, 0)]
+print(Solution().breadth_first_traversal_on_a_grid([[1, 1]]))          # [(0, 0), (0, 1)]
+print(Solution().breadth_first_traversal_on_a_grid([[0, 0], [0, 0]])) # []
 ```
 
 ```java run
@@ -596,143 +664,132 @@ import java.util.*;
 
 public class Main {
     static class Solution {
-        static final int[][] DIRS = {{-1, 0}, {0, 1}, {1, 0}, {0, -1}};
+        private boolean isValidCell(int[][] grid, int row, int col) {
 
-        boolean isValid(int[][] grid, int r, int c) {
-            return r >= 0 && r < grid.length && c >= 0 && c < grid[0].length && grid[r][c] == 1;
+            // Check if a cell is valid and belongs to a region of 1's, also
+            // check that the cell is not water
+            return (
+                row >= 0 &&
+                row < grid.length &&
+                col >= 0 &&
+                col < grid[0].length &&
+                grid[row][col] == 1
+            );
         }
 
-        void bfs(int[][] grid, int sr, int sc, boolean[][] visited, List<int[]> result) {
-            Queue<int[]> queue = new ArrayDeque<>();
-            queue.add(new int[]{sr, sc});
-            visited[sr][sc] = true;
+        private void bfs(
+            int[][] grid,
+            int row,
+            int col,
+            boolean[][] visited,
+            List<List<Integer>> result
+        ) {
+
+            // Create a queue to perform breadth-first search
+            Queue<int[]> queue = new LinkedList<>();
+
+            // Add the current cell to the queue
+            queue.add(new int[] { row, col });
+
+            // Mark the current cell as visited
+            visited[row][col] = true;
+
+            // Define the possible movements: up, right, down, left
+            int[][] directions = {
+                {-1, 0}, // up
+                {0, 1},  // right
+                {1, 0},  // down
+                {0, -1}  // left
+            };
+
+            // Perform BFS
             while (!queue.isEmpty()) {
-                int[] cur = queue.poll();
-                result.add(cur);
-                for (int[] d : DIRS) {
-                    int nr = cur[0] + d[0], nc = cur[1] + d[1];
-                    if (isValid(grid, nr, nc) && !visited[nr][nc]) {
-                        visited[nr][nc] = true;
-                        queue.add(new int[]{nr, nc});
+
+                // Get the front cell from the queue
+                int[] current = queue.poll();
+                row = current[0];
+                col = current[1];
+
+                // Add the current cell to the result
+                result.add(List.of(row, col));
+
+                // Explore all possible movements
+                for (int[] dir : directions) {
+                    int newRow = row + dir[0];
+                    int newCol = col + dir[1];
+
+                    // If the neighbour is not visited, add it to the queue
+                    if (
+                        isValidCell(grid, newRow, newCol) &&
+                        !visited[newRow][newCol]
+                    ) {
+
+                        // Add the new cell to the queue
+                        queue.add(new int[] { newRow, newCol });
+
+                        // Mark the new cell as visited
+                        visited[newRow][newCol] = true;
                     }
                 }
             }
         }
 
-        List<int[]> breadthFirstTraversalGrid(int[][] grid) {
-            if (grid.length == 0) return new ArrayList<>();
-            int rows = grid.length, cols = grid[0].length;
+        public List<List<Integer>> breadthFirstTraversalOnAGrid(
+            int[][] grid
+        ) {
+            int rows = grid.length;
+
+            // Check if the grid is empty
+            if (rows == 0) {
+                return new ArrayList<>();
+            }
+
+            int cols = grid[0].length;
+
+            // Initialize a list to store the result of the BFS
+            // which will contain the coordinates of the cells visited
+            // during the BFS traversal
+            List<List<Integer>> result = new ArrayList<>();
+
+            // Initialize visited array
             boolean[][] visited = new boolean[rows][cols];
-            List<int[]> result = new ArrayList<>();
-            for (int r = 0; r < rows; r++)
-                for (int c = 0; c < cols; c++)
-                    if (grid[r][c] == 1 && !visited[r][c])
-                        bfs(grid, r, c, visited, result);
+
+            // Traverse each cell of the grid
+            for (int row = 0; row < rows; row++) {
+                for (int col = 0; col < cols; col++) {
+
+                    // If the cells is not visitable or is already visited,
+                    // continue to the next cell
+                    if (grid[row][col] == 0 || visited[row][col]) {
+                        continue;
+                    }
+
+                    // Perform BFS on this new cell to visit all the cells
+                    // connected to it.
+                    bfs(grid, row, col, visited, result);
+                }
+            }
+
             return result;
         }
     }
 
     public static void main(String[] args) {
-        int[][] grid = {{1,1,0,1,0},{1,1,0,0,0},{0,0,0,1,1},{0,0,1,1,0}};
-        for (int[] cell : new Solution().breadthFirstTraversalGrid(grid))
-            System.out.print(Arrays.toString(cell) + " ");
-        System.out.println();
+        // Examples from the problem statement
+        System.out.println(new Solution().breadthFirstTraversalOnAGrid(
+            new int[][]{{1,1,0,0},{0,0,1,1},{1,0,1,1},{1,0,0,0}}));
+        // [[0, 0], [0, 1], [1, 2], [1, 3], [2, 2], [2, 3], [2, 0], [3, 0]]
+
+        System.out.println(new Solution().breadthFirstTraversalOnAGrid(
+            new int[][]{{1,0,0,1},{0,0,0,0},{1,1,1,1},{0,0,0,1}}));
+        // [[0, 0], [0, 3], [2, 0], [2, 1], [2, 2], [2, 3], [3, 3]]
+
+        // Edge cases
+        System.out.println(new Solution().breadthFirstTraversalOnAGrid(new int[][]{{0}}));   // []
+        System.out.println(new Solution().breadthFirstTraversalOnAGrid(new int[][]{{1}}));   // [[0, 0]]
+        System.out.println(new Solution().breadthFirstTraversalOnAGrid(new int[][]{{1,1}})); // [[0, 0], [0, 1]]
+        System.out.println(new Solution().breadthFirstTraversalOnAGrid(new int[][]{{0,0},{0,0}}));  // []
     }
-}
-```
-
-```c run
-#include <stdio.h>
-#include <stdlib.h>
-#include <stdbool.h>
-
-static const int DIRS[4][2] = {{-1, 0}, {0, 1}, {1, 0}, {0, -1}};
-
-static bool is_valid(int** grid, int rows, int cols, int r, int c) {
-    return r >= 0 && r < rows && c >= 0 && c < cols && grid[r][c] == 1;
-}
-
-static void bfs(int** grid, int rows, int cols, int sr, int sc,
-                bool** visited, int* result, int* idx) {
-    int (*q)[2] = malloc(rows * cols * sizeof(*q));
-    int head = 0, tail = 0;
-    q[tail][0] = sr; q[tail][1] = sc; tail++;
-    visited[sr][sc] = true;
-    while (head < tail) {
-        int r = q[head][0], c = q[head][1]; head++;
-        result[(*idx)++] = r * cols + c;
-        for (int d = 0; d < 4; d++) {
-            int nr = r + DIRS[d][0], nc = c + DIRS[d][1];
-            if (is_valid(grid, rows, cols, nr, nc) && !visited[nr][nc]) {
-                visited[nr][nc] = true;
-                q[tail][0] = nr; q[tail][1] = nc; tail++;
-            }
-        }
-    }
-    free(q);
-}
-
-int main() {
-    int data[4][5] = {{1,1,0,1,0},{1,1,0,0,0},{0,0,0,1,1},{0,0,1,1,0}};
-    int* grid[4];
-    bool* visited[4];
-    for (int i = 0; i < 4; i++) {
-        grid[i] = data[i];
-        visited[i] = calloc(5, sizeof(bool));
-    }
-    int result[20], idx = 0;
-    for (int r = 0; r < 4; r++)
-        for (int c = 0; c < 5; c++)
-            if (grid[r][c] == 1 && !visited[r][c])
-                bfs(grid, 4, 5, r, c, visited, result, &idx);
-    for (int i = 0; i < idx; i++) printf("(%d,%d) ", result[i] / 5, result[i] % 5);
-    printf("\n");
-    for (int i = 0; i < 4; i++) free(visited[i]);
-    return 0;
-}
-```
-
-```scala run
-import scala.collection.mutable.{ArrayBuffer, Queue}
-
-object Main extends App {
-  val DIRS = Array((-1, 0), (0, 1), (1, 0), (0, -1))
-
-  class Solution {
-    def isValid(grid: Array[Array[Int]], r: Int, c: Int): Boolean =
-      r >= 0 && r < grid.length && c >= 0 && c < grid(0).length && grid(r)(c) == 1
-
-    def bfs(grid: Array[Array[Int]], sr: Int, sc: Int,
-            visited: Array[Array[Boolean]],
-            result: ArrayBuffer[(Int, Int)]): Unit = {
-      val queue = Queue[(Int, Int)]((sr, sc))
-      visited(sr)(sc) = true
-      while (queue.nonEmpty) {
-        val (r, c) = queue.dequeue()
-        result.append((r, c))
-        for ((dr, dc) <- DIRS) {
-          val nr = r + dr; val nc = c + dc
-          if (isValid(grid, nr, nc) && !visited(nr)(nc)) {
-            visited(nr)(nc) = true
-            queue.enqueue((nr, nc))
-          }
-        }
-      }
-    }
-
-    def breadthFirstTraversalGrid(grid: Array[Array[Int]]): ArrayBuffer[(Int, Int)] = {
-      if (grid.isEmpty) return ArrayBuffer.empty
-      val rows = grid.length; val cols = grid(0).length
-      val visited = Array.ofDim[Boolean](rows, cols)
-      val result = ArrayBuffer.empty[(Int, Int)]
-      for (r <- 0 until rows; c <- 0 until cols
-           if grid(r)(c) == 1 && !visited(r)(c)) bfs(grid, r, c, visited, result)
-      result
-    }
-  }
-
-  val grid = Array(Array(1,1,0,1,0), Array(1,1,0,0,0), Array(0,0,0,1,1), Array(0,0,1,1,0))
-  println(new Solution().breadthFirstTraversalGrid(grid).mkString(", "))
 }
 ```
 
@@ -778,7 +835,7 @@ Grids are graphs — period. Once you see the equivalence:
 
 Every grid problem you encounter reduces to "DFS or BFS the implicit graph". The DSA challenge then becomes deciding **which** of the two, and **what to record at each cell** (a count, a colour, a distance, a parent pointer). The structure stays the same.
 
-Memorise the four-direction array. Memorise the `is_valid` helper. Memorise the "mark on push" rule. With those three habits, you'll write grid traversal correctly on the first try, every time.
+Memorise the four-direction array. Memorise the `is_valid_cell` helper. Memorise the "mark on push" rule. With those three habits, you'll write grid traversal correctly on the first try, every time.
 
 The next set of lessons starts piling actual *questions* on top of these traversals — *is there a cycle?*, *what's the topological order?*, *what's the shortest path?* — but each of them is a small mutation of the bones you just laid.
 

@@ -11,24 +11,6 @@ prereqs:
 
 Here are two C functions. Both sum every element of an `n × n` matrix. Both visit every element exactly once. Both are `Θ(n²)`.
 
-```c
-double sum_row_major(double *m, int n) {
-    double s = 0;
-    for (int i = 0; i < n; i++)
-        for (int j = 0; j < n; j++)
-            s += m[i * n + j];                    // m[i][j]
-    return s;
-}
-
-double sum_col_major(double *m, int n) {
-    double s = 0;
-    for (int j = 0; j < n; j++)
-        for (int i = 0; i < n; i++)
-            s += m[i * n + j];                    // m[i][j]
-    return s;
-}
-```
-
 The only difference: which loop is on the outside. The inner loop steps through *consecutive* memory addresses in the first version, and through addresses *`n` apart* in the second. For a 4096×4096 matrix of doubles, the row-major version runs in about 60 ms on a typical laptop. The column-major version runs in about **600 ms**. Same `Θ(n²)`. Same number of memory reads. **Ten times slower.**
 
 The gap is not in the algorithm. The gap is in the *memory hierarchy* — the layered cache between the CPU and RAM that you don't see in the code, you don't see in the algorithm, you don't see in Big-O. But it's the thing that decides, in practice, whether your `Θ(n²)` runs in 60 ms or 600 ms.
@@ -238,22 +220,6 @@ flowchart TB
 
 The code below benchmarks the row-major vs column-major sum on matrices of growing size. Run it. The gap should be clear well before the matrix exceeds L2 cache; the gap *widens* once the matrix exceeds L3 cache.
 
-```pseudocode
-function sumRowMajor(M, n):                          # m[i][j] = M[i*n + j]
-    s ← 0
-    for i from 0 to n − 1:
-        for j from 0 to n − 1:
-            s ← s + M[i*n + j]
-    return s
-
-function sumColMajor(M, n):
-    s ← 0
-    for j from 0 to n − 1:
-        for i from 0 to n − 1:
-            s ← s + M[i*n + j]
-    return s
-```
-
 ```python run
 import time, array, sys
 
@@ -325,94 +291,6 @@ public class Main {
 }
 ```
 
-```c run
-#include <stdio.h>
-#include <stdlib.h>
-#include <time.h>
-
-static double sum_row_major(const double *m, int n) {
-    double s = 0;
-    for (int i = 0; i < n; i++) {
-        const double *row = m + i * n;
-        for (int j = 0; j < n; j++) s += row[j];
-    }
-    return s;
-}
-
-static double sum_col_major(const double *m, int n) {
-    double s = 0;
-    for (int j = 0; j < n; j++)
-        for (int i = 0; i < n; i++) s += m[i * n + j];
-    return s;
-}
-
-static double ms_since(struct timespec a) {
-    struct timespec b; clock_gettime(CLOCK_MONOTONIC, &b);
-    return (b.tv_sec - a.tv_sec) * 1000.0 + (b.tv_nsec - a.tv_nsec) / 1e6;
-}
-
-int main(void) {
-    int sizes[] = {128, 256, 512, 1024, 2048};
-    printf("%6s %12s %12s %12s %10s\n", "n", "matrix MB", "row (ms)", "col (ms)", "col/row");
-    for (int s = 0; s < 5; s++) {
-        int n = sizes[s];
-        double *m = malloc((long)n * n * sizeof(double));
-        for (long i = 0; i < (long)n * n; i++) m[i] = 1.0;
-        struct timespec t0;
-        clock_gettime(CLOCK_MONOTONIC, &t0);
-        volatile double r = sum_row_major(m, n); (void)r;
-        double row_ms = ms_since(t0);
-        clock_gettime(CLOCK_MONOTONIC, &t0);
-        volatile double c = sum_col_major(m, n); (void)c;
-        double col_ms = ms_since(t0);
-        double size_mb = (double)n * n * 8 / (1024.0 * 1024.0);
-        printf("%6d %12.1f %12.2f %12.2f %9.1fx\n", n, size_mb, row_ms, col_ms, col_ms / row_ms);
-        free(m);
-    }
-    return 0;
-}
-```
-
-```scala run
-object Main extends App {
-  def sumRowMajor(m: Array[Double], n: Int): Double = {
-    var s = 0.0; var i = 0
-    while (i < n) {
-      val base = i * n
-      var j = 0
-      while (j < n) { s += m(base + j); j += 1 }
-      i += 1
-    }
-    s
-  }
-
-  def sumColMajor(m: Array[Double], n: Int): Double = {
-    var s = 0.0; var j = 0
-    while (j < n) {
-      var i = 0
-      while (i < n) { s += m(i * n + j); i += 1 }
-      j += 1
-    }
-    s
-  }
-
-  val sizes = Array(128, 256, 512, 1024)
-  println(f"${"n"}%6s ${"matrix MB"}%12s ${"row (ms)"}%12s ${"col (ms)"}%12s ${"col/row"}%10s")
-  for (n <- sizes) {
-    val m = Array.fill(n * n)(1.0)
-    sumRowMajor(m, n); sumColMajor(m, n)                 // warmup
-    var t0 = System.nanoTime()
-    sumRowMajor(m, n)
-    val rowMs = (System.nanoTime() - t0) / 1e6
-    t0 = System.nanoTime()
-    sumColMajor(m, n)
-    val colMs = (System.nanoTime() - t0) / 1e6
-    val sizeMb = m.length * 8 / (1024.0 * 1024.0)
-    println(f"$n%6d $sizeMb%12.1f $rowMs%12.2f $colMs%12.2f ${colMs / rowMs}%9.1fx")
-  }
-}
-```
-
 What you should see: the `col / row` ratio starts near 1× for tiny matrices (everything fits in L1 either way), grows to 3-5× as the matrix grows past L1, and pushes 10× or more once the matrix exceeds L3.
 
 ***
@@ -460,28 +338,9 @@ A handful of recurring patterns make code cache-friendly:
    > *Hint:* the gap is *larger* for the bigger matrix. The 256×256 matrix fits in L3 either way; both versions ultimately load every cache line once. The 4096×4096 matrix exceeds L3, so column-major *re-loads* lines that would have stayed in cache for the row-major version. The bigger the working set relative to cache, the more the access pattern matters.
 
 2. **Identify the cache-friendly version.** Which of these traverses an array of structs more cache-friendly-ly?
-   ```c
-   struct Point { double x, y, z; };
-   Point arr[N];
-
-   // Version A
-   for (int i = 0; i < N; i++) sum += arr[i].x + arr[i].y + arr[i].z;
-
-   // Version B
-   for (int i = 0; i < N; i++) sum += arr[i].x;
-   for (int i = 0; i < N; i++) sum += arr[i].y;
-   for (int i = 0; i < N; i++) sum += arr[i].z;
-   ```
    > *Hint:* Version A. It touches all three fields of each struct *while the struct is hot in L1*. Version B walks the entire array *three times* — if the array exceeds L1, each pass has to reload from L2/L3. Version A touches each cache line once; Version B touches each line three times.
 
 3. **Spot the false-sharing bug.** Two threads work on a counter:
-   ```c
-   struct Counters { volatile long thread1_count, thread2_count; };
-   Counters c = {0, 0};
-
-   // Thread 1: while running, increments c.thread1_count
-   // Thread 2: while running, increments c.thread2_count
-   ```
    Why does this not scale linearly with the number of threads?
    > *Hint:* both fields are on the same cache line (16 bytes total, well under 64 bytes). Each thread's write invalidates the other's cache copy, forcing a cross-core cache-line transfer per increment. The fix: pad each counter to a full cache line.
 
@@ -507,63 +366,54 @@ Click any question to reveal the answer.
 **A:** L1 ≈ 4 cycles, L3 ≈ 40 cycles, DRAM ≈ 200 cycles, SSD ≈ 50,000 cycles, HDD ≈ 10,000,000 cycles. Each step roughly 5–10× slower than the one above.
 
 </details>
-
 <details>
 <summary><strong>Q:</strong> Standard cache line size on modern x86 / ARM?</summary>
 
 **A:** 64 bytes. The granularity at which the CPU loads from memory; one access pulls 8 doubles or 16 ints "for free".
 
 </details>
-
 <details>
 <summary><strong>Q:</strong> Spatial vs temporal locality — define both.</summary>
 
 **A:** **Spatial:** if you've accessed `X`, you'll likely access addresses near `X` soon. **Temporal:** if you've accessed `X`, you'll likely access `X` again soon.
 
 </details>
-
 <details>
 <summary><strong>Q:</strong> Why is row-major matrix traversal 10× faster than column-major at <code>n = 1024</code>, despite identical Big-O?</summary>
 
 **A:** Row-major reuses each cache line (8 doubles per fetch); column-major touches a fresh line per access, wasting 56 bytes. The prefetcher helps row-major, can't help column-major.
 
 </details>
-
 <details>
 <summary><strong>Q:</strong> What is false sharing?</summary>
 
 **A:** Two threads writing to *different* variables on the *same* cache line cause the line to ping-pong between cores' caches. Fix: pad hot variables to cache-line boundaries.
 
 </details>
-
 <details>
 <summary><strong>Q:</strong> Array vs linked list — why does the array win at "the same Big-O" of operations?</summary>
 
 **A:** Arrays are contiguous; the prefetcher streams ahead. Linked-list nodes are scattered across the heap; each pointer chase can miss. Array beats list by 5–10× wall-clock for traversal.
 
 </details>
-
 <details>
 <summary><strong>Q:</strong> Struct-of-arrays vs array-of-structs — when does each win?</summary>
 
 **A:** **Struct-of-arrays** wins when most operations touch only a few fields (cache lines aren't wasted on unused fields). **Array-of-structs** wins when every operation touches every field (locality across fields).
 
 </details>
-
 <details>
 <summary><strong>Q:</strong> What does loop blocking (tiling) do?</summary>
 
 **A:** Process `B × B` tiles where `B` fits in L1. Same total work; far fewer cache misses. BLAS implementations rely on this for matrix multiply.
 
 </details>
-
 <details>
 <summary><strong>Q:</strong> What does NumPy <code>arr.T</code> (transpose) do to memory?</summary>
 
 **A:** Nothing! It just swaps the strides. Both `arr` and `arr.T` share the same memory; iterating one is cache-friendly, the other is cache-hostile.
 
 </details>
-
 <details>
 <summary><strong>Q:</strong> What's the TLB and when does it matter?</summary>
 

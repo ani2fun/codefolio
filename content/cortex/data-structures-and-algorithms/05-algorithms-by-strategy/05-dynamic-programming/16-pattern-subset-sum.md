@@ -79,7 +79,9 @@ Input:  arr = [1, 2]
 Output: false                      Total = 3 — odd; no equal split possible
 ```
 
-## The Reduction
+<details>
+<summary><h2>The Reduction</h2></summary>
+
 
 If the array can be partitioned into two equal-sum subsets, each subset sums to `total / 2`. So the problem reduces to: "is there a subset summing to exactly `total / 2`?" — pure subset sum.
 
@@ -114,149 +116,146 @@ flowchart LR
 
 Yes — `{4, 5}` sums to 9, leaving `{3, 3, 3}` summing to 9. So partition is possible. (Also `{3, 3, 3} ∪ {4, 5}` are the two subsets.)
 
-## The Solution
+</details>
+<details>
+<summary><h2>Solution &amp; Analysis</h2></summary>
 
-
-```pseudocode
-# Equal-sum partition reduces to subset-sum with target = sum(arr) / 2.
-function partitionEqualSum(arr):
-    total ← sum(arr)
-    if total mod 2 ≠ 0: return false              # odd totals can't split evenly
-    target ← total ÷ 2
-    n ← length(arr)
-    dp ← (n + 1) × (target + 1) grid of false
-    for i from 0 to n: dp[i][0] ← true            # empty subset hits sum 0
-    for i from 1 to n:
-        ai ← arr[i − 1]
-        for s from 1 to target:
-            dp[i][s] ← dp[i − 1][s]               # exclude arr[i−1]
-            if ai ≤ s AND dp[i − 1][s − ai]:
-                dp[i][s] ← true                   # include arr[i−1]
-    return dp[n][target]
-```
+### The Solution
 
 ```python run
 from typing import List
 
 class Solution:
-    def partition_equal_sum(self, arr: List[int]) -> bool:
-        total = sum(arr)
-        if total % 2 != 0:
-            return False                            # Odd total can't split evenly
-        target = total // 2
-        n = len(arr)
-        # dp[i][s] = True iff some subset of the first i elements sums to s.
-        dp: List[List[bool]] = [[False] * (target + 1) for _ in range(n + 1)]
+    def partition_with_equal_sum(self, arr: List[int]) -> bool:
+        total_sum: int = sum(arr)
+
+        # If total sum is odd, it can't be divided into two equal subsets
+        if total_sum % 2 != 0:
+            return False
+
+        target: int = total_sum // 2
+        n: int = len(arr)
+
+        # Create a 2D DP array to store the subset sum results
+        dp: List[List[bool]] = [
+            [False] * (target + 1) for _ in range(n + 1)
+        ]
+
+        # Base cases
         for i in range(n + 1):
-            dp[i][0] = True                         # Empty subset always sums to 0
+
+            # An empty subset can always have a sum of 0
+            dp[i][0] = True
+
         for i in range(1, n + 1):
-            ai = arr[i - 1]
-            for s in range(1, target + 1):
-                dp[i][s] = dp[i - 1][s]             # Exclude arr[i-1]
-                if ai <= s and dp[i - 1][s - ai]:
-                    dp[i][s] = True                 # Include arr[i-1]
+            for j in range(1, target + 1):
+                if j >= arr[i - 1]:
+
+                    # If the current element can be included, check if
+                    # there is a subset in the previous elements that has
+                    # a sum equal to j or j minus the current element's
+                    # value
+                    dp[i][j] = dp[i - 1][j] or dp[i - 1][j - arr[i - 1]]
+                else:
+
+                    # If the current element is too large to be included,
+                    # inherit the value from the previous elements
+                    # without including it
+                    dp[i][j] = dp[i - 1][j]
+
         return dp[n][target]
 
 
-if __name__ == "__main__":
-    sol = Solution()
-    print(sol.partition_equal_sum([1, 5, 4, 10]))     # True
-    print(sol.partition_equal_sum([1, 2, 3, 4, 6]))   # True
-    print(sol.partition_equal_sum([1, 2]))            # False
+# Examples from the problem statement
+print(Solution().partition_with_equal_sum([1, 5, 4, 10]))   # True
+print(Solution().partition_with_equal_sum([1, 2, 3, 4, 6])) # True
+print(Solution().partition_with_equal_sum([1, 2]))           # False
+
+# Edge cases
+print(Solution().partition_with_equal_sum([1]))              # False — single element, odd
+print(Solution().partition_with_equal_sum([2, 2]))           # True  — two equal elements
+print(Solution().partition_with_equal_sum([1, 1, 1, 1]))     # True  — all same
+print(Solution().partition_with_equal_sum([3, 1, 1, 2, 2, 1])) # True
+print(Solution().partition_with_equal_sum([1, 3, 5]))        # False — odd total
 ```
 
 ```java run
+import java.util.*;
+
 public class Main {
     static class Solution {
-        public boolean partitionEqualSum(int[] arr) {
-            int total = 0;
-            for (int x : arr) total += x;
-            if (total % 2 != 0) return false;
-            int target = total / 2;
+        public boolean partitionWithEqualSum(int[] arr) {
+            int totalSum = 0;
+            for (int num : arr) {
+                totalSum += num;
+            }
+
+            // If total sum is odd, it can't be divided into two equal
+            // subsets
+            if (totalSum % 2 != 0) {
+                return false;
+            }
+
+            int target = totalSum / 2;
             int n = arr.length;
+
+            // Create a 2D DP array to store the subset sum results
             boolean[][] dp = new boolean[n + 1][target + 1];
-            for (int i = 0; i <= n; i++) dp[i][0] = true;
+
+            // Base cases
+            for (int i = 0; i <= n; i++) {
+
+                // An empty subset can always have a sum of 0
+                dp[i][0] = true;
+            }
+
             for (int i = 1; i <= n; i++) {
-                int ai = arr[i - 1];
-                for (int s = 1; s <= target; s++) {
-                    dp[i][s] = dp[i - 1][s];
-                    if (ai <= s && dp[i - 1][s - ai]) dp[i][s] = true;
+                for (int j = 1; j <= target; j++) {
+                    if (j >= arr[i - 1]) {
+
+                        // If the current element can be included, check if
+                        // there is a subset in the previous elements that
+                        // has a sum equal to j or j minus the current
+                        // element's value
+                        dp[i][j] = dp[i - 1][j] || dp[i - 1][j - arr[i - 1]];
+                    } else {
+
+                        // If the current element is too large to be
+                        // included, inherit the value from the previous
+                        // elements without including it
+                        dp[i][j] = dp[i - 1][j];
+                    }
                 }
             }
+
             return dp[n][target];
         }
     }
 
     public static void main(String[] args) {
-        Solution sol = new Solution();
-        System.out.println(sol.partitionEqualSum(new int[]{1, 5, 4, 10}));     // true
-        System.out.println(sol.partitionEqualSum(new int[]{1, 2}));            // false
+        // Examples from the problem statement
+        System.out.println(new Solution().partitionWithEqualSum(new int[]{1, 5, 4, 10}));   // true
+        System.out.println(new Solution().partitionWithEqualSum(new int[]{1, 2, 3, 4, 6})); // true
+        System.out.println(new Solution().partitionWithEqualSum(new int[]{1, 2}));           // false
+
+        // Edge cases
+        System.out.println(new Solution().partitionWithEqualSum(new int[]{1}));              // false
+        System.out.println(new Solution().partitionWithEqualSum(new int[]{2, 2}));           // true
+        System.out.println(new Solution().partitionWithEqualSum(new int[]{1, 1, 1, 1}));     // true
+        System.out.println(new Solution().partitionWithEqualSum(new int[]{3, 1, 1, 2, 2, 1})); // true
+        System.out.println(new Solution().partitionWithEqualSum(new int[]{1, 3, 5}));        // false
     }
 }
 ```
 
-```c run
-#include <stdio.h>
-#include <stdbool.h>
-
-bool dp[1001][50001];
-
-bool partition_equal_sum(const int *arr, int n) {
-    int total = 0;
-    for (int i = 0; i < n; i++) total += arr[i];
-    if (total % 2 != 0) return false;
-    int target = total / 2;
-    for (int i = 0; i <= n; i++) for (int s = 0; s <= target; s++) dp[i][s] = false;
-    for (int i = 0; i <= n; i++) dp[i][0] = true;
-    for (int i = 1; i <= n; i++) {
-        int ai = arr[i - 1];
-        for (int s = 1; s <= target; s++) {
-            dp[i][s] = dp[i - 1][s];
-            if (ai <= s && dp[i - 1][s - ai]) dp[i][s] = true;
-        }
-    }
-    return dp[n][target];
-}
-
-int main(void) {
-    int a[] = {1, 5, 4, 10};
-    printf("%d\n", partition_equal_sum(a, 4));   /* 1 */
-    return 0;
-}
-```
-
-```scala run
-object Main extends App {
-  class Solution {
-    def partitionEqualSum(arr: Array[Int]): Boolean = {
-      val total = arr.sum
-      if (total % 2 != 0) return false
-      val target = total / 2
-      val n = arr.length
-      val dp = Array.fill(n + 1, target + 1)(false)
-      for (i <- 0 to n) dp(i)(0) = true
-      for (i <- 1 to n) {
-        val ai = arr(i - 1)
-        for (s <- 1 to target) {
-          dp(i)(s) = dp(i - 1)(s)
-          if (ai <= s && dp(i - 1)(s - ai)) dp(i)(s) = true
-        }
-      }
-      dp(n)(target)
-    }
-  }
-
-  println(new Solution().partitionEqualSum(Array(1, 5, 4, 10)))   // true
-}
-```
-
-
-## Complexity
+### Complexity
 
 | Aspect | Cost |
 |---|---|
 | Time | `O(n × total)` |
 | Space | `O(n × total)` (reducible to `O(total)` with downward 1D iteration) |
+
+</details>
 
 ***
 
@@ -277,7 +276,9 @@ Input:  arr = [1, 1]
 Output: 0                          Both [1] subsets → diff 0
 ```
 
-## The Reduction
+<details>
+<summary><h2>The Reduction</h2></summary>
+
 
 If one subset sums to `s`, the other sums to `total − s`. The difference is `total − 2s`. To minimise the difference (with `s ≤ total / 2` to keep it non-negative), maximise `s`.
 
@@ -314,158 +315,157 @@ flow: "Discrepancy via subset sum" {
 
 Because we want the *largest* feasible `s ≤ total / 2`. Scanning down hits it first; we break and return. Scanning up would force us to walk all the way to `total / 2` and remember the largest hit — same final answer, but uglier code.
 
-## The Solution
+</details>
+<details>
+<summary><h2>Solution &amp; Analysis</h2></summary>
 
-
-```pseudocode
-# Find the partition into two subsets that minimises |sum1 − sum2|.
-# Reduce to: find largest reachable subset sum s ≤ total / 2, then answer is total − 2s.
-function smallestDiscrepancy(arr):
-    n ← length(arr)
-    total ← sum(arr)
-    dp ← (n + 1) × (total + 1) grid of false
-    for i from 0 to n: dp[i][0] ← true
-    for i from 1 to n:
-        ai ← arr[i − 1]
-        for s from 1 to total:
-            dp[i][s] ← dp[i − 1][s]
-            if ai ≤ s AND dp[i − 1][s − ai]:
-                dp[i][s] ← true
-
-    # Scan downward — first reachable s ≤ total/2 gives the smallest discrepancy.
-    for s from (total ÷ 2) down to 0:
-        if dp[n][s]:
-            return total − 2 × s
-    return total                                  # fallback (s = 0 always reachable)
-```
+### The Solution
 
 ```python run
 from typing import List
+import sys
 
 class Solution:
-    def smallest_discrepancy(self, arr: List[int]) -> int:
-        n = len(arr)
-        total = sum(arr)
-        # dp[i][s] = True iff some subset of the first i elements sums to s.
-        dp: List[List[bool]] = [[False] * (total + 1) for _ in range(n + 1)]
+    def sets_with_smallest_discrepancy(self, arr: List[int]) -> int:
+        n: int = len(arr)
+        total_sum: int = sum(arr)
+
+        # Initialize the dp array
+        dp: List[List[bool]] = [
+            [False] * (total_sum + 1) for _ in range(n + 1)
+        ]
+
+        # Base cases
+        # If the sum is 0, we can always achieve it by not selecting any
+        # element
         for i in range(n + 1):
             dp[i][0] = True
+
+        # Fill the dp array
         for i in range(1, n + 1):
-            ai = arr[i - 1]
-            for s in range(1, total + 1):
-                dp[i][s] = dp[i - 1][s]
-                if ai <= s and dp[i - 1][s - ai]:
-                    dp[i][s] = True
-        # Scan downward to find the largest reachable sum ≤ total / 2.
-        for s in range(total // 2, -1, -1):
-            if dp[n][s]:
-                return total - 2 * s
-        return total                                # Fallback (shouldn't trigger; s = 0 always works)
+            for j in range(1, total_sum + 1):
+
+                # If we can achieve the sum without including the current
+                # element
+                dp[i][j] = dp[i - 1][j]
+
+                # If the current element is smaller than or equal to the
+                # required sum, we can either include it or exclude it
+                if arr[i - 1] <= j:
+                    dp[i][j] = dp[i][j] or dp[i - 1][j - arr[i - 1]]
+
+        min_diff: int = sys.maxsize
+
+        # Find the minimum difference between two subsets
+        # Start from total_sum/2 and go downwards to find the maximum
+        # possible sum that can be achieved by one subset
+        for j in range(total_sum // 2, -1, -1):
+            if dp[n][j]:
+
+                # If the current sum is achievable, calculate the
+                # difference between the total sum and the sum of the
+                # current subset
+                min_diff = total_sum - 2 * j
+                break
+
+        return min_diff
 
 
-if __name__ == "__main__":
-    sol = Solution()
-    print(sol.smallest_discrepancy([1, 5, 3, 10]))     # 1
-    print(sol.smallest_discrepancy([1, 2, 3, 4, 5]))   # 1
-    print(sol.smallest_discrepancy([1, 1]))            # 0
+# Examples from the problem statement
+print(Solution().sets_with_smallest_discrepancy([1, 5, 3, 10]))   # 1
+print(Solution().sets_with_smallest_discrepancy([1, 2, 3, 4, 5])) # 1
+print(Solution().sets_with_smallest_discrepancy([1, 1]))           # 0
+
+# Edge cases
+print(Solution().sets_with_smallest_discrepancy([1]))              # 1  — single element
+print(Solution().sets_with_smallest_discrepancy([5, 5]))           # 0  — two equal
+print(Solution().sets_with_smallest_discrepancy([1, 2, 3]))        # 0  — [3] vs [1,2]
+print(Solution().sets_with_smallest_discrepancy([10, 1, 1, 1]))    # 7  — 13 total
 ```
 
 ```java run
+import java.util.*;
+
 public class Main {
     static class Solution {
-        public int smallestDiscrepancy(int[] arr) {
-            int n = arr.length, total = 0;
-            for (int x : arr) total += x;
-            boolean[][] dp = new boolean[n + 1][total + 1];
-            for (int i = 0; i <= n; i++) dp[i][0] = true;
+        public int setsWithSmallestDiscrepancy(int[] arr) {
+            int n = arr.length;
+            int totalSum = 0;
+
+            // Calculating the total sum of all elements in the array
+            for (int i = 0; i < n; i++) {
+                totalSum += arr[i];
+            }
+
+            // Initialize the dp array
+            boolean[][] dp = new boolean[n + 1][totalSum + 1];
+
+            // Base cases
+            // If the sum is 0, we can always achieve it by not selecting any
+            // element
+            for (int i = 0; i <= n; i++) {
+                dp[i][0] = true;
+            }
+
+            // Fill the dp array
             for (int i = 1; i <= n; i++) {
-                int ai = arr[i - 1];
-                for (int s = 1; s <= total; s++) {
-                    dp[i][s] = dp[i - 1][s];
-                    if (ai <= s && dp[i - 1][s - ai]) dp[i][s] = true;
+                for (int j = 1; j <= totalSum; j++) {
+
+                    // If we can achieve the sum without including the
+                    // current element
+                    dp[i][j] = dp[i - 1][j];
+
+                    // If the current element is smaller than or equal to the
+                    // required sum, we can either include it or exclude it
+                    if (arr[i - 1] <= j) {
+                        dp[i][j] = dp[i][j] || dp[i - 1][j - arr[i - 1]];
+                    }
                 }
             }
-            for (int s = total / 2; s >= 0; s--) {
-                if (dp[n][s]) return total - 2 * s;
+
+            int minDiff = Integer.MAX_VALUE;
+
+            // Find the minimum difference between two subsets
+            // Start from totalSum/2 and go downwards to find the maximum
+            // possible sum that can be achieved by one subset
+            for (int j = totalSum / 2; j >= 0; j--) {
+                if (dp[n][j]) {
+
+                    // If the current sum is achievable, calculate the
+                    // difference between the total sum and the sum of the
+                    // current subset
+                    minDiff = totalSum - 2 * j;
+                    break;
+                }
             }
-            return total;
+
+            return minDiff;
         }
     }
 
     public static void main(String[] args) {
-        Solution sol = new Solution();
-        System.out.println(sol.smallestDiscrepancy(new int[]{1, 5, 3, 10}));    // 1
+        // Examples from the problem statement
+        System.out.println(new Solution().setsWithSmallestDiscrepancy(new int[]{1, 5, 3, 10}));   // 1
+        System.out.println(new Solution().setsWithSmallestDiscrepancy(new int[]{1, 2, 3, 4, 5})); // 1
+        System.out.println(new Solution().setsWithSmallestDiscrepancy(new int[]{1, 1}));           // 0
+
+        // Edge cases
+        System.out.println(new Solution().setsWithSmallestDiscrepancy(new int[]{1}));              // 1
+        System.out.println(new Solution().setsWithSmallestDiscrepancy(new int[]{5, 5}));           // 0
+        System.out.println(new Solution().setsWithSmallestDiscrepancy(new int[]{1, 2, 3}));        // 0
+        System.out.println(new Solution().setsWithSmallestDiscrepancy(new int[]{10, 1, 1, 1}));    // 7
     }
 }
 ```
 
-```c run
-#include <stdio.h>
-#include <stdbool.h>
-
-bool dp[1001][50001];
-
-int smallest_discrepancy(const int *arr, int n) {
-    int total = 0;
-    for (int i = 0; i < n; i++) total += arr[i];
-    for (int i = 0; i <= n; i++) for (int s = 0; s <= total; s++) dp[i][s] = false;
-    for (int i = 0; i <= n; i++) dp[i][0] = true;
-    for (int i = 1; i <= n; i++) {
-        int ai = arr[i - 1];
-        for (int s = 1; s <= total; s++) {
-            dp[i][s] = dp[i - 1][s];
-            if (ai <= s && dp[i - 1][s - ai]) dp[i][s] = true;
-        }
-    }
-    for (int s = total / 2; s >= 0; s--) {
-        if (dp[n][s]) return total - 2 * s;
-    }
-    return total;
-}
-
-int main(void) {
-    int a[] = {1, 5, 3, 10};
-    printf("%d\n", smallest_discrepancy(a, 4));    /* 1 */
-    return 0;
-}
-```
-
-```scala run
-object Main extends App {
-  class Solution {
-    def smallestDiscrepancy(arr: Array[Int]): Int = {
-      val n = arr.length; val total = arr.sum
-      val dp = Array.fill(n + 1, total + 1)(false)
-      for (i <- 0 to n) dp(i)(0) = true
-      for (i <- 1 to n) {
-        val ai = arr(i - 1)
-        for (s <- 1 to total) {
-          dp(i)(s) = dp(i - 1)(s)
-          if (ai <= s && dp(i - 1)(s - ai)) dp(i)(s) = true
-        }
-      }
-      var s = total / 2
-      while (s >= 0) {
-        if (dp(n)(s)) return total - 2 * s
-        s -= 1
-      }
-      total
-    }
-  }
-
-  println(new Solution().smallestDiscrepancy(Array(1, 5, 3, 10)))    // 1
-}
-```
-
-
-## Complexity
+### Complexity
 
 | Aspect | Cost |
 |---|---|
 | Time | `O(n × total)` for the DP + `O(total)` for the scan |
 | Space | `O(n × total)` |
 
-## Edge Cases
+### Edge Cases
 
 | Case | Example | Expected | Reasoning |
 |---|---|---|---|
@@ -474,6 +474,8 @@ object Main extends App {
 | Two equal | `[5, 5]` | `0` | Each subset gets one. |
 | Large outlier | `[1, 1, 1, 100]` | `97` | Best is `{1, 1, 1}` (sum 3) and `{100}` (sum 100) → diff 97. |
 | Already balanced | `[1, 2, 3, 4, 5, 5, 4, 3, 2, 1]` | `0` | Total 30, half 15; reachable. |
+
+</details>
 
 ***
 

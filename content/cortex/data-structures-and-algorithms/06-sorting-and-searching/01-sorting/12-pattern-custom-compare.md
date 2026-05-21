@@ -260,112 +260,142 @@ Output: [1, 2, 4, 8, 16]   (each has exactly 1 bit; sort by value)
 
 ---
 
-## The Custom Compare
+<details>
+<summary><h2>The Custom Compare</h2></summary>
+
 
 Transform: `t(n) = (popcount(n), n)`. Sort by `t` ascending.
 
 `popcount(n)` is the number of set bits — many languages have a built-in (`__builtin_popcount` in C/C++, `Integer.bitCount` in Java, `bin(n).count("1")` in Python).
 
----
+</details>
+<details>
+<summary><h2>The Solution</h2></summary>
 
-## The Solution
 
-
-```pseudocode
-# Sort by popcount (number of 1-bits) ascending; tie-break by numeric value.
-function bitwiseSort(arr):
-    sort arr using compare(a, b):
-        bitsA ← popcount(a)
-        bitsB ← popcount(b)
-        if bitsA ≠ bitsB:
-            return bitsA − bitsB            # fewer bits first
-        return a − b                        # tie-break: smaller value first
-```
 
 ```python run
 from typing import List
 
 class Solution:
     def bitwise_sort(self, arr: List[int]) -> None:
-        arr.sort(key=lambda n: (bin(n).count("1"), n))
+
+        # Sort the array using custom key
+        arr.sort(
+            key=lambda num: (
+
+                # Count set bits in 'num' using built-in function
+                bin(num).count("1"),
+
+                # If set bits are equal, sort by the actual number
+                num,
+            )
+        )
 
 
-if __name__ == "__main__":
-    arr = [7, 10, 12, 18, 26]
-    Solution().bitwise_sort(arr)
-    print(arr)   # [10, 12, 18, 7, 26]
+# Examples from the problem statement
+a1 = [7, 10, 12, 18, 26]
+Solution().bitwise_sort(a1); print(a1)            # [10, 12, 18, 7, 26]
+
+a2 = [3, 7, 10, 18, 2, 9, 15, 31]
+Solution().bitwise_sort(a2); print(a2)            # [2, 3, 9, 10, 18, 7, 15, 31]
+
+a3 = [1, 2, 4, 8, 16]
+Solution().bitwise_sort(a3); print(a3)            # [1, 2, 4, 8, 16]
+
+# Edge cases
+a4: List[int] = []                                # empty array
+Solution().bitwise_sort(a4); print(a4)            # []
+
+a5 = [5]                                          # single element
+Solution().bitwise_sort(a5); print(a5)            # [5]
+
+a6 = [3, 1]                                       # two elements
+Solution().bitwise_sort(a6); print(a6)            # [1, 3]
+
+a7 = [7, 7, 7]                                    # all duplicates
+Solution().bitwise_sort(a7); print(a7)            # [7, 7, 7]
+
+a8 = [0, 1, 2, 3]                                 # includes zero
+Solution().bitwise_sort(a8); print(a8)            # [0, 1, 2, 3]
 ```
 
 ```java run
-import java.util.Arrays;
+import java.util.*;
 
 public class Main {
     static class Solution {
         public void bitwiseSort(int[] arr) {
-            Integer[] boxed = Arrays.stream(arr).boxed().toArray(Integer[]::new);
-            Arrays.sort(boxed, (a, b) -> {
-                int bitsA = Integer.bitCount(a), bitsB = Integer.bitCount(b);
-                if (bitsA != bitsB) return bitsA - bitsB;
-                return a - b;
+
+            // Convert array to a list for sorting
+            List<Integer> list = new ArrayList<>();
+            for (int num : arr) {
+                list.add(num);
+            }
+
+            // Sort using a lambda comparator
+            list.sort((num1, num2) -> {
+
+                // Count set bits in 'a' using Integer.bitCount()
+                int setBitCountNum1 = Integer.bitCount(num1);
+
+                // Count set bits in 'b' using Integer.bitCount()
+                int setBitCountNum2 = Integer.bitCount(num2);
+
+                // Sort based on set bit count, then numerically if equal
+                if (setBitCountNum1 == setBitCountNum2) {
+                    return num1 - num2;
+                }
+
+                return setBitCountNum1 - setBitCountNum2;
             });
-            for (int i = 0; i < arr.length; i++) arr[i] = boxed[i];
+
+            // Copy sorted values back into the array
+            for (int i = 0; i < arr.length; i++) {
+                arr[i] = list.get(i);
+            }
         }
     }
 
     public static void main(String[] args) {
-        int[] arr = {7, 10, 12, 18, 26};
-        new Solution().bitwiseSort(arr);
-        for (int x : arr) System.out.print(x + " ");
-        System.out.println();
+        // Examples from the problem statement
+        int[] a1 = {7, 10, 12, 18, 26};
+        new Solution().bitwiseSort(a1);
+        System.out.println(Arrays.toString(a1));  // [10, 12, 18, 7, 26]
+
+        int[] a2 = {3, 7, 10, 18, 2, 9, 15, 31};
+        new Solution().bitwiseSort(a2);
+        System.out.println(Arrays.toString(a2));  // [2, 3, 9, 10, 18, 7, 15, 31]
+
+        int[] a3 = {1, 2, 4, 8, 16};
+        new Solution().bitwiseSort(a3);
+        System.out.println(Arrays.toString(a3));  // [1, 2, 4, 8, 16]
+
+        // Edge cases
+        int[] a4 = {};                            // empty array
+        new Solution().bitwiseSort(a4);
+        System.out.println(Arrays.toString(a4));  // []
+
+        int[] a5 = {5};                           // single element
+        new Solution().bitwiseSort(a5);
+        System.out.println(Arrays.toString(a5));  // [5]
+
+        int[] a6 = {3, 1};                        // two elements
+        new Solution().bitwiseSort(a6);
+        System.out.println(Arrays.toString(a6));  // [1, 3]
+
+        int[] a7 = {7, 7, 7};                     // all duplicates
+        new Solution().bitwiseSort(a7);
+        System.out.println(Arrays.toString(a7));  // [7, 7, 7]
+
+        int[] a8 = {0, 1, 2, 3};                  // includes zero
+        new Solution().bitwiseSort(a8);
+        System.out.println(Arrays.toString(a8));  // [0, 1, 2, 3]
     }
 }
 ```
 
-```c run
-#include <stdio.h>
-#include <stdlib.h>
-
-int popcount(int n) {
-    int c = 0;
-    while (n) { c += n & 1; n >>= 1; }
-    return c;
-}
-
-int cmp(const void *a, const void *b) {
-    int x = *(const int *) a, y = *(const int *) b;
-    int pa = popcount(x), pb = popcount(y);
-    if (pa != pb) return pa - pb;
-    return x - y;
-}
-
-void bitwise_sort(int *arr, int n) {
-    qsort(arr, n, sizeof(int), cmp);
-}
-
-int main(void) {
-    int arr[] = {7, 10, 12, 18, 26};
-    int n = 5;
-    bitwise_sort(arr, n);
-    for (int i = 0; i < n; i++) printf("%d ", arr[i]);
-    printf("\n");
-    return 0;
-}
-```
-
-```scala run
-object Main extends App {
-  class Solution {
-    def bitwiseSort(arr: Array[Int]): Unit = {
-      val sorted = arr.sortBy(n => (Integer.bitCount(n), n))
-      System.arraycopy(sorted, 0, arr, 0, arr.length)
-    }
-  }
-
-  val arr = Array(7, 10, 12, 18, 26)
-  new Solution().bitwiseSort(arr)
-  println(arr.mkString(" "))
-}
-```
+</details>
 
 
 ***
@@ -393,29 +423,126 @@ Output: "zzzxxyyb"
 
 ---
 
-## The Custom Compare
+<details>
+<summary><h2>The Custom Compare</h2></summary>
+
 
 Transform: `t(c) = (-frequency[c], c)`. The negative sign reverses the order on frequency (we want descending). The tuple's second element gives lex tiebreaks ascending.
 
----
+</details>
+<details>
+<summary><h2>The Solution</h2></summary>
 
-## The Solution
 
 ```python run
 from collections import Counter
 
 class Solution:
     def sort_characters_by_frequency(self, s: str) -> str:
-        freq = Counter(s)
-        # Sort each character by (-freq, char), then concatenate freq[c] copies
-        return "".join(c * freq[c] for c in sorted(freq, key=lambda c: (-freq[c], c)))
+
+        # Create a Counter to store the frequency of characters
+        frequency = Counter(s)
+
+        # Convert frequency items into a list of tuples (character,
+        # frequency)
+        char_freq = list(frequency.items())
+
+        # Sort the list using a lambda function
+        char_freq.sort(key=lambda x: (-x[1], x[0]))
+
+        # Explanation:
+        # -x[1] => sort by frequency descending
+        # x[0]  => sort by character ascending for ties
+
+        # Build the final string by repeating each character by its frequency
+        # and joining them all together
+        return "".join([ch * freq for ch, freq in char_freq])
 
 
-if __name__ == "__main__":
-    print(Solution().sort_characters_by_frequency("eeeaaabc"))   # aaaeeebc
+# Examples from the problem statement
+print(Solution().sort_characters_by_frequency("eeeaaabc"))    # aaaeeebc
+print(Solution().sort_characters_by_frequency("zzzxxyyyb"))   # yyyzzzxxb
+print(Solution().sort_characters_by_frequency("zzzxxyyb"))    # zzzxxyyb
+
+# Edge cases
+print(Solution().sort_characters_by_frequency("a"))           # a
+print(Solution().sort_characters_by_frequency("aa"))          # aa
+print(Solution().sort_characters_by_frequency("ab"))          # ab
+print(Solution().sort_characters_by_frequency("aabb"))        # aabb
+print(Solution().sort_characters_by_frequency("ccbbaa"))      # aabbcc
 ```
 
-The full 10-language implementations follow the same pattern: build a frequency map, sort the keys (or pairs) by `(-freq, char)`, then expand. The exact comparator syntax differs per language (lambda, comparator class, etc.) but the transform `(-freq, char)` is universal.
+```java run
+import java.util.*;
+
+public class Main {
+    static class Solution {
+        public String sortCharactersByFrequency(String s) {
+
+            // Create a map to store the frequency of characters
+            Map<Character, Integer> frequency = new HashMap<>();
+
+            // Count the frequencies of each character in the input string
+            for (char ch : s.toCharArray()) {
+                frequency.put(ch, frequency.getOrDefault(ch, 0) + 1);
+            }
+
+            // Convert the frequency map into a list of Map.Entry<Character,
+            // Integer>
+            List<Map.Entry<Character, Integer>> charFreq = new ArrayList<>(
+                frequency.entrySet()
+            );
+
+            // Sort the list using a lambda comparator
+            charFreq.sort((a, b) -> {
+
+                // Compare the frequencies of characters 'a' and 'b'
+                // If the frequency of 'a' is greater than the frequency of
+                // 'b', or if the frequencies are equal but 'a' comes before
+                // 'b' in lexicographical order, then 'a' should come before
+                // 'b' in the sorted string.
+                if (a.getValue().equals(b.getValue())) {
+
+                    // lexicographical order
+                    return a.getKey() - b.getKey();
+                }
+
+                // Otherwise, sort by frequency in descending order
+                return b.getValue() - a.getValue();
+            });
+
+            // Build the sorted string by repeating each character by its
+            // frequency and appending them all together
+            StringBuilder result = new StringBuilder();
+            for (Map.Entry<Character, Integer> entry : charFreq) {
+                for (int i = 0; i < entry.getValue(); i++) {
+                    result.append(entry.getKey());
+                }
+            }
+
+            return result.toString();
+        }
+    }
+
+    public static void main(String[] args) {
+        // Examples from the problem statement
+        System.out.println(new Solution().sortCharactersByFrequency("eeeaaabc"));   // aaaeeebc
+        System.out.println(new Solution().sortCharactersByFrequency("zzzxxyyyb"));  // yyyzzzxxb
+        System.out.println(new Solution().sortCharactersByFrequency("zzzxxyyb"));   // zzzxxyyb
+
+        // Edge cases
+        System.out.println(new Solution().sortCharactersByFrequency("a"));          // a
+        System.out.println(new Solution().sortCharactersByFrequency("aa"));         // aa
+        System.out.println(new Solution().sortCharactersByFrequency("ab"));         // ab
+        System.out.println(new Solution().sortCharactersByFrequency("aabb"));       // aabb
+        System.out.println(new Solution().sortCharactersByFrequency("ccbbaa"));     // aabbcc
+    }
+}
+```
+
+The Python and Java implementations follow the same pattern: build a frequency map, sort the keys (or pairs) by `(-freq, char)`, then expand. The exact comparator syntax differs per language (lambda, comparator class, etc.) but the transform `(-freq, char)` is universal.
+
+</details>
 
 ***
 
@@ -442,7 +569,9 @@ Output: "5502010"
 
 ---
 
-## The Custom Compare
+<details>
+<summary><h2>The Custom Compare</h2></summary>
+
 
 The non-obvious insight: to maximise the concatenation `a + b` vs `b + a`, compare the two string concatenations directly.
 
@@ -454,37 +583,109 @@ cmp(a, b) = +1 if str(a)+str(b) < str(b)+str(a)    # b should come first
 
 This pairwise greedy is correct because of a (non-trivial) transitivity argument: if `(a+b) > (b+a)` and `(b+c) > (c+b)`, then `(a+c) > (c+a)`. We won't prove it here; the result is that this comparator works.
 
----
+</details>
+<details>
+<summary><h2>The Solution</h2></summary>
 
-## The Solution
 
 ```python run
-from functools import cmp_to_key
 from typing import List
 
 class Solution:
     def largest_number(self, arr: List[int]) -> str:
-        def cmp(a: str, b: str) -> int:
-            if a + b > b + a: return -1                # a comes first (larger overall)
-            if a + b < b + a: return 1                 # b comes first
-            return 0
-        sorted_arr = sorted(map(str, arr), key=cmp_to_key(cmp))
-        result = "".join(sorted_arr)
-        return "0" if result[0] == "0" else result      # special case: all zeros
+
+        # Sort the numbers using the custom comparator
+        arr.sort(key=lambda x: str(x) * 10, reverse=True)
+
+        # Edge case: If the largest number is '0', return "0"
+        # (e.g., [0, 0])
+        if arr[0] == 0:
+            return "0"
+
+        # Concatenate the sorted numbers
+        return "".join(map(str, arr))
 
 
-if __name__ == "__main__":
-    print(Solution().largest_number([200, 8, 1, 3]))   # 832001
-    print(Solution().largest_number([0, 0]))           # 0
+# Examples from the problem statement
+print(Solution().largest_number([200, 3]))          # 3200
+print(Solution().largest_number([200, 8, 1, 3]))    # 832001
+print(Solution().largest_number([50, 20, 10, 5]))   # 5502010
+
+# Edge cases
+print(Solution().largest_number([0, 0]))            # 0
+print(Solution().largest_number([0]))               # 0
+print(Solution().largest_number([1]))               # 1
+print(Solution().largest_number([9, 1]))            # 91
+print(Solution().largest_number([10, 2]))           # 210
 ```
 
-The 10-language implementations all follow this pattern: convert numbers to strings, sort with a comparator that compares `a+b` vs `b+a`, concatenate, handle the all-zeros edge case.
+```java run
+import java.util.*;
 
----
+public class Main {
+    static class Solution {
+        public String largestNumber(int[] arr) {
 
-## Why the Edge Case?
+            // Convert int[] to Integer[] for lambda comparator
+            Integer[] nums = Arrays
+                .stream(arr)
+                .boxed()
+                .toArray(Integer[]::new);
+
+            // Sort the numbers using a lambda comparator
+            Arrays.sort(
+                nums,
+                (num1, num2) -> {
+                    String num1Str = String.valueOf(num1);
+                    String num2Str = String.valueOf(num2);
+
+                    // Larger concatenation comes first
+                    return (num2Str + num1Str).compareTo(num1Str + num2Str);
+                }
+            );
+
+            // Edge case: If the largest number is '0', return "0"
+            // (e.g., [0, 0])
+            if (nums[0] == 0) {
+                return "0";
+            }
+
+            // Concatenate the sorted numbers
+            StringBuilder result = new StringBuilder();
+            for (int num : nums) {
+                result.append(num);
+            }
+
+            return result.toString();
+        }
+    }
+
+    public static void main(String[] args) {
+        // Examples from the problem statement
+        System.out.println(new Solution().largestNumber(new int[]{200, 3}));         // 3200
+        System.out.println(new Solution().largestNumber(new int[]{200, 8, 1, 3}));   // 832001
+        System.out.println(new Solution().largestNumber(new int[]{50, 20, 10, 5}));  // 5502010
+
+        // Edge cases
+        System.out.println(new Solution().largestNumber(new int[]{0, 0}));           // 0
+        System.out.println(new Solution().largestNumber(new int[]{0}));              // 0
+        System.out.println(new Solution().largestNumber(new int[]{1}));              // 1
+        System.out.println(new Solution().largestNumber(new int[]{9, 1}));           // 91
+        System.out.println(new Solution().largestNumber(new int[]{10, 2}));          // 210
+    }
+}
+```
+
+Both implementations follow this pattern: convert numbers to strings, sort with a comparator that compares `a+b` vs `b+a`, concatenate, handle the all-zeros edge case.
+
+</details>
+<details>
+<summary><h2>Why the Edge Case?</h2></summary>
+
 
 If `arr = [0, 0]`, the sorted concatenation is `"00"` — but the largest number formable is `"0"`, not `"00"`. The check `if result[0] == "0"` catches this.
+
+</details>
 
 ***
 
@@ -508,45 +709,134 @@ Output: [[5, 0], [4, 1], [3, 2], [2, 3], [1, 4]]
 
 ---
 
-## The Two-Step Algorithm
+<details>
+<summary><h2>The Two-Step Algorithm</h2></summary>
+
 
 **Step 1 — sort.** Sort `people` by height descending, breaking ties by `k` ascending. After this, the tallest people are first; among same-height people, the one with smaller `k` is first.
 
 **Step 2 — reconstruct.** Insert each person from the sorted list into a result array at index `k`. Because we process tallest first, by the time person `i` is inserted, exactly `k_i` people of `≥ height` are already in the result — they're the only ones we've inserted, and there's exactly `k_i` of them in front of position `k_i`.
 
----
+</details>
+<details>
+<summary><h2>Solution &amp; Analysis</h2></summary>
 
-## The Solution
+### The Solution
 
 ```python run
 from typing import List
 
 class Solution:
-    def sort_people_by_height(self, people: List[List[int]]) -> List[List[int]]:
-        # Step 1: sort by height descending, then k ascending
-        people.sort(key=lambda p: (-p[0], p[1]))
-        # Step 2: insert each at index k
-        result: List[List[int]] = []
-        for p in people:
-            result.insert(p[1], p)
+    def sort_people_by_height(
+        self, people: list[list[int]]
+    ) -> list[list[int]]:
+
+        # Step 1: Sort the people array using a custom lambda comparator
+        # Sort by height descending, then k ascending
+        people.sort(key=lambda x: (-x[0], x[1]))
+
+        # Step 2: Reconstruct the queue by inserting people at their
+        # respective positions
+        result = []
+        for person in people:
+
+            # Insert at index person[1]
+            result.insert(person[1], person)
+
         return result
 
 
-if __name__ == "__main__":
-    print(Solution().sort_people_by_height([[1, 4], [2, 3], [3, 2], [4, 1], [5, 0]]))
-    # [[5, 0], [4, 1], [3, 2], [2, 3], [1, 4]]
+# Examples from the problem statement
+print(Solution().sort_people_by_height([[5, 1], [5, 0]]))                              # [[5, 0], [5, 1]]
+print(Solution().sort_people_by_height([[1, 4], [2, 3], [3, 2], [4, 1], [5, 0]]))     # [[5, 0], [4, 1], [3, 2], [2, 3], [1, 4]]
+print(Solution().sort_people_by_height([[5, 0], [4, 1], [3, 2], [2, 3], [1, 4]]))     # [[5, 0], [4, 1], [3, 2], [2, 3], [1, 4]]
+
+# Edge cases
+print(Solution().sort_people_by_height([[1, 0]]))                                      # [[1, 0]]
+print(Solution().sort_people_by_height([[7, 0], [4, 4], [7, 1], [5, 0], [6, 1], [5, 2]]))  # [[7, 0], [7, 1], [6, 1], [5, 0], [5, 2], [4, 4]]
 ```
 
-The custom compare is the `(-height, k)` sort key. The reconstruction is the second clever step. The 10-language implementations follow the same recipe.
+```java run
+import java.util.*;
 
----
+public class Main {
+    static class Solution {
+        public int[][] sortPeopleByHeight(int[][] people) {
 
-## Complexity
+            // Step 1: Sort the people array
+            // Sort by height in descending order,
+            // if heights are equal, sort by 'number of people in front' in
+            // ascending order
+            Arrays.sort(
+                people,
+                (person1, person2) -> {
+                    if (person1[0] != person2[0]) {
+
+                        // Descending order by height
+                        return person2[0] - person1[0];
+                    } else {
+
+                        // Ascending order by k
+                        return person1[1] - person2[1];
+                    }
+                }
+            );
+
+            // Step 2: Reconstruct the queue
+            // Insert each person at the index equal to 'number of people in
+            // front'
+            int[][] result = new int[people.length][2];
+
+            // current size of the result array
+            int size = 0;
+
+            for (int[] person : people) {
+
+                // Shift elements to make space for insertion at person[1]
+                for (int j = size; j > person[1]; j--) {
+                    result[j] = result[j - 1];
+                }
+
+                // Insert the person at index person[1]
+                result[person[1]] = person;
+                size++;
+            }
+
+            return result;
+        }
+    }
+
+    public static void main(String[] args) {
+        // Examples from the problem statement
+        int[][] r1 = new Solution().sortPeopleByHeight(new int[][]{{5, 1}, {5, 0}});
+        System.out.println(Arrays.deepToString(r1));  // [[5, 0], [5, 1]]
+
+        int[][] r2 = new Solution().sortPeopleByHeight(new int[][]{{1, 4}, {2, 3}, {3, 2}, {4, 1}, {5, 0}});
+        System.out.println(Arrays.deepToString(r2));  // [[5, 0], [4, 1], [3, 2], [2, 3], [1, 4]]
+
+        int[][] r3 = new Solution().sortPeopleByHeight(new int[][]{{5, 0}, {4, 1}, {3, 2}, {2, 3}, {1, 4}});
+        System.out.println(Arrays.deepToString(r3));  // [[5, 0], [4, 1], [3, 2], [2, 3], [1, 4]]
+
+        // Edge cases
+        int[][] r4 = new Solution().sortPeopleByHeight(new int[][]{{1, 0}});
+        System.out.println(Arrays.deepToString(r4));  // [[1, 0]]
+
+        int[][] r5 = new Solution().sortPeopleByHeight(new int[][]{{7, 0}, {4, 4}, {7, 1}, {5, 0}, {6, 1}, {5, 2}});
+        System.out.println(Arrays.deepToString(r5));  // [[7, 0], [7, 1], [6, 1], [5, 0], [5, 2], [4, 4]]
+    }
+}
+```
+
+The custom compare is the `(-height, k)` sort key. The reconstruction is the second clever step. The Python and Java implementations follow the same recipe.
+
+### Complexity
 
 - Step 1 (sort): `O(n log n)`.
 - Step 2 (reconstruct): `O(n²)` worst case because each `insert` at an arbitrary index is `O(n)`.
 
 Total: `O(n²)`. Better data structures (Fenwick tree, balanced BST) can reduce step 2 to `O(n log n)`.
+
+</details>
 
 ***
 

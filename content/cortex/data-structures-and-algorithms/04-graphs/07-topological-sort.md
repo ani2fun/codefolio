@@ -225,56 +225,72 @@ Starting at 4 first: DFS(4) → DFS(1) → finish 1 → finish 4. List = `[1, 4]
 We assume the input is a DAG; if you can't make that assumption, jump to the next section.
 
 
-```pseudocode
-function dfs(graph, node, visited, result):
-    add node to visited
-    for neighbor in graph[node]:
-        if neighbor is not in visited:
-            dfs(graph, neighbor, visited, result)
-    append node to result   # append on EXIT → builds reverse topo order
-
-function topologicalSort(graph):
-    visited ← empty set
-    result ← empty list
-    for node from 0 to N−1:
-        if node is not in visited:
-            dfs(graph, node, visited, result)
-    reverse result
-    return result
-```
-
 ```python run
 from typing import List, Set
 
 class Solution:
-    def dfs(self,
-            graph: List[List[int]],
-            node: int,
-            visited: Set[int],
-            result: List[int]) -> None:
+    def dfs(
+        self,
+        graph: List[List[int]],
+        node: int,
+        visited: Set[int],
+        result: List[int],
+    ) -> None:
+
+        # Mark the current node as visited in the graph to avoid
+        # visiting it again
         visited.add(node)
+
+        # Recursively visit all the adjacent nodes
         for neighbour in graph[node]:
+
+            # If the neighbour node is not visited, visit it recursively
             if neighbour not in visited:
                 self.dfs(graph, neighbour, visited, result)
-        # CRITICAL: append on EXIT, not on enter. This builds reverse-topo order.
+
+        # Push the current node to the result after all its neighbours
+        # have been visited
         result.append(node)
 
     def topological_sort(self, graph: List[List[int]]) -> List[int]:
+
+        # Number of nodes in the graph
         n = len(graph)
+
+        # If the graph is empty, return an empty list
         if n == 0:
             return []
+
+        # Set to keep track of visited nodes
         visited: Set[int] = set()
+
+        # Keep track of the topological sort ordering
         result: List[int] = []
-        # Outer loop covers disconnected components.
+
+        # Perform DFS on each unvisited node
         for node in range(n):
             if node not in visited:
+
+                # If a node is not visited, start DFS on it to visit all
+                # the nodes connected to it.
                 self.dfs(graph, node, visited, result)
-        result.reverse()    # exit order is reverse-topo; reverse to fix.
+
+        # Reverse the result to get the topological sort in correct
+        # order
+        result.reverse()
         return result
 
 
-graph = [[1], [], [3], [], [1]]
-print(Solution().topological_sort(graph))   # one valid output: [4, 2, 3, 0, 1]
+# Examples from the problem statement
+print(Solution().topological_sort([[1],[],[3],[],[1]]))      # [4, 2, 3, 0, 1]
+print(Solution().topological_sort([[],[4],[0,1,3],[],[]]))  # [2, 3, 1, 4, 0]
+
+# Edge cases
+print(Solution().topological_sort([]))                      # []
+print(Solution().topological_sort([[]])  )                  # [0]
+print(Solution().topological_sort([[1],[]]))                # [0, 1]
+print(Solution().topological_sort([[], [], []]))            # [2, 1, 0] or similar valid order
+print(Solution().topological_sort([[1, 2], [], []]))        # [0, 2, 1] or similar valid order
 ```
 
 ```java run
@@ -282,101 +298,83 @@ import java.util.*;
 
 public class Main {
     static class Solution {
-        public void dfs(List<List<Integer>> graph, int node,
-                        Set<Integer> visited, List<Integer> result) {
+        private void dfs(
+            List<List<Integer>> graph,
+            int node,
+            Set<Integer> visited,
+            List<Integer> result
+        ) {
+
+            // Mark the current node as visited in the graph to avoid
+            // visiting it again
             visited.add(node);
+
+            // Recursively visit all the adjacent nodes
             for (int neighbour : graph.get(node)) {
-                if (!visited.contains(neighbour)) dfs(graph, neighbour, visited, result);
+
+                // If the neighbour node is not visited, visit it recursively
+                if (!visited.contains(neighbour)) {
+                    dfs(graph, neighbour, visited, result);
+                }
             }
-            result.add(node);   // append on exit
+
+            // Push the current node to the result after all its neighbours
+            // have been visited
+            result.add(node);
         }
 
         public List<Integer> topologicalSort(List<List<Integer>> graph) {
-            int n = graph.size();
-            if (n == 0) return new ArrayList<>();
-            Set<Integer> visited = new HashSet<>();
-            List<Integer> result = new ArrayList<>();
-            for (int node = 0; node < n; node++) {
-                if (!visited.contains(node)) dfs(graph, node, visited, result);
+
+            // Number of nodes in the graph
+            int N = graph.size();
+
+            // If the graph is empty, return an empty list
+            if (N == 0) {
+                return new ArrayList<>();
             }
+
+            // Set to keep track of visited nodes
+            Set<Integer> visited = new HashSet<>();
+
+            // Keep track of the topological sort ordering
+            List<Integer> result = new ArrayList<>();
+
+            // Perform DFS on each unvisited node
+            for (int node = 0; node < N; node++) {
+                if (!visited.contains(node)) {
+
+                    // If a node is not visited, start DFS on it to visit all
+                    // the nodes connected to it.
+                    dfs(graph, node, visited, result);
+                }
+            }
+
+            // Reverse the result to get the topological sort in correct
+            // order
             Collections.reverse(result);
             return result;
         }
     }
 
     public static void main(String[] args) {
-        List<List<Integer>> graph = List.of(
-            List.of(1), List.of(), List.of(3), List.of(), List.of(1));
-        System.out.println(new Solution().topologicalSort(graph));
+        // Examples from the problem statement
+        System.out.println(new Solution().topologicalSort(
+            List.of(List.of(1),new ArrayList<>(),List.of(3),new ArrayList<>(),List.of(1))));
+        // [4, 2, 3, 0, 1]
+
+        System.out.println(new Solution().topologicalSort(
+            List.of(new ArrayList<>(),List.of(4),List.of(0,1,3),new ArrayList<>(),new ArrayList<>())));
+        // [2, 3, 1, 4, 0]
+
+        // Edge cases
+        System.out.println(new Solution().topologicalSort(new ArrayList<>()));  // []
+        System.out.println(new Solution().topologicalSort(List.of(new ArrayList<>())));  // [0]
+        System.out.println(new Solution().topologicalSort(List.of(List.of(1),new ArrayList<>())));  // [0, 1]
+        System.out.println(new Solution().topologicalSort(
+            List.of(new ArrayList<>(),new ArrayList<>(),new ArrayList<>())));  // valid topo order
+        System.out.println(new Solution().topologicalSort(
+            List.of(List.of(1,2),new ArrayList<>(),new ArrayList<>())));  // [0, 2, 1] or similar
     }
-}
-```
-
-```c run
-#include <stdio.h>
-#include <stdlib.h>
-#include <stdbool.h>
-
-typedef struct { int* data; int size; } AdjList;
-
-static void dfs(AdjList* graph, int node, bool* visited, int* result, int* idx) {
-    visited[node] = true;
-    for (int i = 0; i < graph[node].size; i++) {
-        int n = graph[node].data[i];
-        if (!visited[n]) dfs(graph, n, visited, result, idx);
-    }
-    result[(*idx)++] = node;     // append on exit
-}
-
-void topological_sort(AdjList* graph, int n, int* result, int* result_size) {
-    bool* visited = calloc(n, sizeof(bool));
-    int idx = 0;
-    for (int node = 0; node < n; node++) {
-        if (!visited[node]) dfs(graph, node, visited, result, &idx);
-    }
-    // Reverse in place.
-    for (int i = 0, j = idx - 1; i < j; i++, j--) {
-        int tmp = result[i]; result[i] = result[j]; result[j] = tmp;
-    }
-    *result_size = idx;
-    free(visited);
-}
-
-int main() {
-    int n0[] = {1}, n1[] = {0}, n2[] = {3}, n3[] = {0}, n4[] = {1};
-    AdjList g[] = {{n0, 1}, {NULL, 0}, {n2, 1}, {NULL, 0}, {n4, 1}};
-    int result[5], size;
-    topological_sort(g, 5, result, &size);
-    for (int i = 0; i < size; i++) printf("%d ", result[i]);
-    printf("\n");
-    return 0;
-}
-```
-
-```scala run
-import scala.collection.mutable.{ArrayBuffer, HashSet}
-
-object Main extends App {
-  class Solution {
-    def dfs(graph: Array[Array[Int]], node: Int,
-            visited: HashSet[Int], result: ArrayBuffer[Int]): Unit = {
-      visited.add(node)
-      for (neighbour <- graph(node) if !visited.contains(neighbour))
-        dfs(graph, neighbour, visited, result)
-      result.append(node)
-    }
-
-    def topologicalSort(graph: Array[Array[Int]]): ArrayBuffer[Int] = {
-      val visited = HashSet.empty[Int]
-      val result = ArrayBuffer.empty[Int]
-      for (node <- graph.indices if !visited.contains(node))
-        dfs(graph, node, visited, result)
-      result.reverse
-    }
-  }
-
-  val graph = Array(Array(1), Array.empty[Int], Array(3), Array.empty[Int], Array(1))
-  println(new Solution().topologicalSort(graph).mkString(", "))
 }
 ```
 
@@ -436,71 +434,98 @@ The fix is mechanical: **fuse last lesson's directed-cycle check into the DFS**.
 The integration is clean: the same single DFS does both jobs in one pass — detects the cycle *and* builds the (potential) topological order. If a cycle is found, throw the partial result away.
 
 
-```pseudocode
-function dfsSafe(graph, node, visited, inPath, result):
-    add node to visited
-    add node to inPath
-    for neighbor in graph[node]:
-        if neighbor is in inPath:
-            return true   # cycle found
-        if neighbor is not in visited:
-            if dfsSafe(graph, neighbor, visited, inPath, result):
-                return true
-    remove node from inPath
-    append node to result   # append on exit, same as cycle-free version
-    return false
-
-function topologicalSortSafe(graph):
-    visited ← empty set
-    inPath ← empty set
-    result ← empty list
-    for node from 0 to N−1:
-        if node is not in visited:
-            if dfsSafe(graph, node, visited, inPath, result):
-                return empty list   # cycle detected
-    reverse result
-    return result
-```
-
 ```python run
 from typing import List, Set
 
 class Solution:
-    def has_cycle(self,
-                  graph: List[List[int]],
-                  node: int,
-                  visited: Set[int],
-                  in_path: Set[int],
-                  result: List[int]) -> bool:
+    def has_cycle(
+        self,
+        graph: List[List[int]],
+        node: int,
+        visited: Set[int],
+        nodes_in_path: Set[int],
+        result: List[int],
+    ) -> bool:
+
+        # Mark the current node as visited in the graph to avoid
+        # visiting it again
         visited.add(node)
-        in_path.add(node)
+
+        # Insert the current node into the set of nodes in the current
+        # path to detect cycles
+        nodes_in_path.add(node)
+
+        # Recursively visit all the adjacent nodes
         for neighbour in graph[node]:
-            if neighbour in in_path:
-                return True
+
+            # If the neighbour node is not visited, visit it recursively
             if neighbour not in visited:
-                if self.has_cycle(graph, neighbour, visited, in_path, result):
+                if self.has_cycle(
+                    graph, neighbour, visited, nodes_in_path, result
+                ):
                     return True
-        in_path.discard(node)
-        result.append(node)        # append on exit, just like the cycle-free version.
+
+            # If the neighbour node is already visited and present in
+            # the current path, a cycle is detected
+            elif neighbour in nodes_in_path:
+                return True
+
+        # Remove the current node from the current path as we are done
+        # exploring it
+        nodes_in_path.remove(node)
+
+        # Push the current node to the result after all its neighbours
+        # have been visited
+        result.append(node)
+
+        # No cycle detected
         return False
 
-    def topological_sort_safe(self, graph: List[List[int]]) -> List[int]:
+    def topological_sort_ii(self, graph: List[List[int]]) -> List[int]:
+
+        # Number of nodes in the graph
         n = len(graph)
+
+        # If the graph is empty, return an empty list
         if n == 0:
             return []
+
+        # Set to keep track of visited nodes
         visited: Set[int] = set()
-        in_path: Set[int] = set()
+
+        # Set to keep track of nodes in the current path
+        nodes_in_path: Set[int] = set()
+
+        # Keep track of the topological sort ordering
         result: List[int] = []
+
+        # Perform DFS on each unvisited node
         for node in range(n):
             if node not in visited:
-                if self.has_cycle(graph, node, visited, in_path, result):
-                    return []      # cycle detected — no valid order
+
+                # If a cycle is detected, topological sort is not
+                # possible
+                if self.has_cycle(
+                    graph, node, visited, nodes_in_path, result
+                ):
+                    return []
+
+        # Reverse the result to get the topological sort in correct
+        # order
         result.reverse()
         return result
 
 
-print(Solution().topological_sort_safe([[1], [], [3], [], [1]]))    # [4, 2, 3, 0, 1]
-print(Solution().topological_sort_safe([[1], [2], [0, 3], [], [1]])) # [] — cycle!
+# Examples from the problem statement
+print(Solution().topological_sort_ii([[1], [], [3], [], [1]]))      # [4, 2, 3, 0, 1]
+print(Solution().topological_sort_ii([[1], [2], [0, 3], [], [1]])) # []
+
+# Edge cases
+print(Solution().topological_sort_ii([]))                           # []
+print(Solution().topological_sort_ii([[]])  )                       # [0]
+print(Solution().topological_sort_ii([[], []]))                     # [1, 0] or [0, 1]
+print(Solution().topological_sort_ii([[1], []]))                    # [0, 1]
+print(Solution().topological_sort_ii([[1, 2], [3], [3], []]))       # [0, 2, 1, 3]
 ```
 
 ```java run
@@ -508,133 +533,129 @@ import java.util.*;
 
 public class Main {
     static class Solution {
-        public boolean hasCycle(List<List<Integer>> graph, int node,
-                                Set<Integer> visited, Set<Integer> inPath, List<Integer> result) {
-            visited.add(node); inPath.add(node);
+        private boolean hasCycle(
+            List<List<Integer>> graph,
+            int node,
+            Set<Integer> visited,
+            Set<Integer> nodesInPath,
+            List<Integer> result
+        ) {
+
+            // Mark the current node as visited in the graph to avoid
+            // visiting it again
+            visited.add(node);
+
+            // Insert the current node into the set of nodes in the current
+            // path to detect cycles
+            nodesInPath.add(node);
+
+            // Recursively visit all the adjacent nodes
             for (int neighbour : graph.get(node)) {
-                if (inPath.contains(neighbour)) return true;
+
+                // If the neighbour node is not visited, visit it recursively
                 if (!visited.contains(neighbour)) {
-                    if (hasCycle(graph, neighbour, visited, inPath, result)) return true;
+                    if (
+                        hasCycle(
+                            graph,
+                            neighbour,
+                            visited,
+                            nodesInPath,
+                            result
+                        )
+                    ) {
+                        return true;
+                    }
+                }
+
+                // If the neighbour node is already visited and present in
+                // the current path, a cycle is detected
+                else if (nodesInPath.contains(neighbour)) {
+                    return true;
                 }
             }
-            inPath.remove(node);
+
+            // Remove the current node from the current path as we are done
+            // exploring it
+            nodesInPath.remove(node);
+
+            // Push the current node to the result after all its neighbours
+            // have been visited
             result.add(node);
+
+            // No cycle detected
             return false;
         }
 
-        public List<Integer> topologicalSortSafe(List<List<Integer>> graph) {
-            int n = graph.size();
-            if (n == 0) return new ArrayList<>();
+        public List<Integer> topologicalSortII(List<List<Integer>> graph) {
+
+            // Number of nodes in the graph
+            int N = graph.size();
+
+            // If the graph is empty, return an empty list
+            if (N == 0) {
+                return new ArrayList<>();
+            }
+
+            // Set to keep track of visited nodes
             Set<Integer> visited = new HashSet<>();
-            Set<Integer> inPath  = new HashSet<>();
+
+            // Set to keep track of nodes in the current path
+            Set<Integer> nodesInPath = new HashSet<>();
+
+            // Keep track of the topological sort ordering
             List<Integer> result = new ArrayList<>();
-            for (int node = 0; node < n; node++) {
+
+            // Perform DFS on each unvisited node
+            for (int node = 0; node < N; node++) {
                 if (!visited.contains(node)) {
-                    if (hasCycle(graph, node, visited, inPath, result))
+
+                    // If a cycle is detected, topological sort is not
+                    // possible
+                    if (
+                        hasCycle(graph, node, visited, nodesInPath, result)
+                    ) {
                         return new ArrayList<>();
+                    }
                 }
             }
+
+            // Reverse the result to get the topological sort in correct
+            // order
             Collections.reverse(result);
             return result;
         }
     }
 
-    public static void main(String[] args) {
-        var dag = List.of(List.of(1), List.<Integer>of(), List.of(3), List.<Integer>of(), List.of(1));
-        var cyc = List.of(List.of(1), List.of(2), List.of(0, 3), List.<Integer>of(), List.of(1));
-        System.out.println(new Solution().topologicalSortSafe(dag));
-        System.out.println(new Solution().topologicalSortSafe(cyc));
-    }
-}
-```
-
-```c run
-#include <stdio.h>
-#include <stdlib.h>
-#include <stdbool.h>
-
-typedef struct { int* data; int size; } AdjList;
-
-static bool has_cycle(AdjList* graph, int node, bool* visited, bool* in_path,
-                      int* result, int* idx) {
-    visited[node] = true; in_path[node] = true;
-    for (int i = 0; i < graph[node].size; i++) {
-        int n = graph[node].data[i];
-        if (in_path[n]) return true;
-        if (!visited[n] && has_cycle(graph, n, visited, in_path, result, idx)) return true;
-    }
-    in_path[node] = false;
-    result[(*idx)++] = node;
-    return false;
-}
-
-int topological_sort_safe(AdjList* graph, int n, int* result) {
-    bool* visited = calloc(n, sizeof(bool));
-    bool* in_path = calloc(n, sizeof(bool));
-    int idx = 0;
-    bool cyclic = false;
-    for (int node = 0; node < n; node++) {
-        if (!visited[node]) {
-            if (has_cycle(graph, node, visited, in_path, result, &idx)) {
-                cyclic = true; break;
-            }
+    static List<List<Integer>> g(int[]... edges) {
+        int n = edges.length;
+        List<List<Integer>> graph = new ArrayList<>();
+        for (int[] row : edges) {
+            List<Integer> adj = new ArrayList<>();
+            for (int v : row) adj.add(v);
+            graph.add(adj);
         }
-    }
-    free(visited); free(in_path);
-    if (cyclic) return 0;
-    for (int i = 0, j = idx - 1; i < j; i++, j--) {
-        int tmp = result[i]; result[i] = result[j]; result[j] = tmp;
-    }
-    return idx;
-}
-
-int main() {
-    int n0[]={1}, n2[]={3}, n4[]={1};
-    AdjList g[]={{n0,1},{NULL,0},{n2,1},{NULL,0},{n4,1}};
-    int result[5];
-    int len = topological_sort_safe(g, 5, result);
-    for (int i = 0; i < len; i++) printf("%d ", result[i]); printf("\n");
-    return 0;
-}
-```
-
-```scala run
-import scala.collection.mutable.{ArrayBuffer, HashSet}
-
-object Main extends App {
-  class Solution {
-    def hasCycle(graph: Array[Array[Int]], node: Int,
-                 visited: HashSet[Int], inPath: HashSet[Int],
-                 result: ArrayBuffer[Int]): Boolean = {
-      visited.add(node); inPath.add(node)
-      for (neighbour <- graph(node)) {
-        if (inPath.contains(neighbour)) return true
-        if (!visited.contains(neighbour) && hasCycle(graph, neighbour, visited, inPath, result))
-          return true
-      }
-      inPath.remove(node)
-      result.append(node)
-      false
+        return graph;
     }
 
-    def topologicalSortSafe(graph: Array[Array[Int]]): ArrayBuffer[Int] = {
-      val visited = HashSet.empty[Int]; val inPath = HashSet.empty[Int]
-      val result = ArrayBuffer.empty[Int]
-      for (node <- graph.indices if !visited.contains(node))
-        if (hasCycle(graph, node, visited, inPath, result)) return ArrayBuffer.empty
-      result.reverse
-    }
-  }
+    public static void main(String[] args) {
+        Solution sol = new Solution();
 
-  val dag = Array(Array(1), Array.empty[Int], Array(3), Array.empty[Int], Array(1))
-  val cyc = Array(Array(1), Array(2), Array(0, 3), Array.empty[Int], Array(1))
-  println(new Solution().topologicalSortSafe(dag))
-  println(new Solution().topologicalSortSafe(cyc))
+        // Examples from the problem statement
+        System.out.println(sol.topologicalSortII(g(new int[]{1}, new int[]{}, new int[]{3}, new int[]{}, new int[]{1})));  // [4, 2, 3, 0, 1]
+        System.out.println(sol.topologicalSortII(g(new int[]{1}, new int[]{2}, new int[]{0, 3}, new int[]{}, new int[]{1}))); // []
+
+        // Edge cases
+        System.out.println(sol.topologicalSortII(new ArrayList<>()));  // []
+        System.out.println(sol.topologicalSortII(g(new int[]{})));     // [0]
+        System.out.println(sol.topologicalSortII(g(new int[]{}, new int[]{}))); // [1, 0] or [0, 1]
+        System.out.println(sol.topologicalSortII(g(new int[]{1}, new int[]{}))); // [0, 1]
+        System.out.println(sol.topologicalSortII(g(new int[]{1, 2}, new int[]{3}, new int[]{3}, new int[]{}))); // [0, 2, 1, 3]
+    }
 }
 ```
 
 
-Both versions share the same Big-O of O(N + E). The cycle-aware version costs an extra `inPath` set but never re-traverses anything, so the complexity is unchanged.
+Both versions share the same Big-O of O(N + E). The cycle-aware version costs an extra `nodesInPath` set but never re-traverses anything, so the complexity is unchanged.
 
 ---
 

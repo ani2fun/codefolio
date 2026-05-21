@@ -71,121 +71,156 @@ Input:  recoveryCodes = [1, 2, 3], attempts = [5, 6]
 Output: false
 ```
 
-## The Solution
+<details>
+<summary><h2>Solution &amp; Analysis</h2></summary>
+
+### The Solution
 
 Linear scan over `attempts`; binary-search each one against `recoveryCodes`. Total: `O(N log M)`. Stop on first match.
 
-
-```pseudocode
-function recoveryValidation(recoveryCodes, attempts):
-    for each attempt in attempts:
-        if binarySearch(recoveryCodes, attempt) ≠ −1:
-            return true                         # any single match unlocks
-    return false
-
-function binarySearch(arr, target):
-    low ← 0; high ← length(arr) − 1
-    while low ≤ high:
-        mid ← low + (high − low) ÷ 2
-        if arr[mid] = target: return mid
-        if arr[mid] < target: low ← mid + 1
-        else: high ← mid − 1
-    return −1
-```
 
 ```python run
 from typing import List
 
 class Solution:
-    def recovery_validation(self, recovery_codes: List[int], attempts: List[int]) -> bool:
-        for attempt in attempts:
-            if self._binary_search(recovery_codes, attempt) != -1:
-                return True
-        return False
+    def binary_search(self, arr: List[int], target: int) -> int:
 
-    def _binary_search(self, arr: List[int], target: int) -> int:
-        low, high = 0, len(arr) - 1
+        # Starting index of the search range
+        low: int = 0
+
+        # Ending index of the search range
+        high: int = len(arr) - 1
+
         while low <= high:
-            mid = low + (high - low) // 2
-            if arr[mid] == target: return mid
-            if arr[mid] < target: low = mid + 1
-            else: high = mid - 1
+
+            # Calculate the middle index
+            mid: int = (low + high) // 2
+
+            # Found the target, return the index
+            if arr[mid] == target:
+                return mid
+
+            # If the arr[mid] is less than the target, adjust the search
+            # range to the right half
+            if arr[mid] < target:
+                low = mid + 1
+
+            # Else if the arr[mid] is greater than the target, adjust
+            # the search range to the left half
+            else:
+                high = mid - 1
+
+        # Target not found in the array
         return -1
 
+    def recovery_validation(
+        self, recovery_codes: List[int], attempts: List[int]
+    ) -> bool:
 
-if __name__ == "__main__":
-    print(Solution().recovery_validation([1, 4, 7], [2, 4]))   # True
+        # Iterate through each attempted recovery code
+        for attempt in attempts:
+
+            # If the recovery code is acceptable, return true
+            if self.binary_search(recovery_codes, attempt) != -1:
+                return True
+
+        # No acceptable recovery code found, return false
+        return False
+
+
+# Examples from the problem statement
+print(Solution().recovery_validation([1, 4, 7], [2, 4]))         # True
+print(Solution().recovery_validation([5, 9, 11, 12], [2, 9, 12]))  # True
+print(Solution().recovery_validation([1, 2, 3], [5, 6]))         # False
+
+# Edge cases
+print(Solution().recovery_validation([1, 2, 3], []))              # False — no attempts
+print(Solution().recovery_validation([5], [5]))                   # True  — single code match
+print(Solution().recovery_validation([5], [6]))                   # False — single code miss
+print(Solution().recovery_validation([1, 3, 5, 7], [2, 4, 6]))   # False — all misses
+print(Solution().recovery_validation([10], [10, 20, 30]))         # True  — first attempt matches
 ```
 
 ```java run
+import java.util.*;
+
 public class Main {
     static class Solution {
-        public boolean recoveryValidation(int[] recoveryCodes, int[] attempts) {
-            for (int a : attempts) if (binarySearch(recoveryCodes, a) != -1) return true;
-            return false;
-        }
         private int binarySearch(int[] arr, int target) {
-            int low = 0, high = arr.length - 1;
+
+            // Starting index of the search range
+            int low = 0;
+
+            // Ending index of the search range
+            int high = arr.length - 1;
+
             while (low <= high) {
-                int mid = low + (high - low) / 2;
-                if (arr[mid] == target) return mid;
-                if (arr[mid] < target) low = mid + 1; else high = mid - 1;
+
+                // Calculate the middle index
+                int mid = (low + high) / 2;
+
+                // Found the target, return the index
+                if (arr[mid] == target) {
+                    return mid;
+                }
+
+                // If the arr[mid] is less than the target, adjust the search
+                // range to the right half
+                else if (arr[mid] < target) {
+                    low = mid + 1;
+                }
+
+                // Else if the arr[mid] is greater than the target, adjust
+                // the search range to the left half
+                else {
+                    high = mid - 1;
+                }
             }
+
+            // Target not found in the array
             return -1;
+        }
+
+        public boolean recoveryValidation(
+            int[] recoveryCodes,
+            int[] attempts
+        ) {
+
+            // Iterate through each attempted recovery code
+            for (int attempt : attempts) {
+
+                // If the recovery code is acceptable, return true
+                if (binarySearch(recoveryCodes, attempt) != -1) {
+                    return true;
+                }
+            }
+
+            // No acceptable recovery code found, return false
+            return false;
         }
     }
 
     public static void main(String[] args) {
-        System.out.println(new Solution().recoveryValidation(new int[]{1, 4, 7}, new int[]{2, 4}));   // true
+        // Examples from the problem statement
+        System.out.println(new Solution().recoveryValidation(new int[]{1, 4, 7}, new int[]{2, 4}));           // true
+        System.out.println(new Solution().recoveryValidation(new int[]{5, 9, 11, 12}, new int[]{2, 9, 12}));  // true
+        System.out.println(new Solution().recoveryValidation(new int[]{1, 2, 3}, new int[]{5, 6}));           // false
+
+        // Edge cases
+        System.out.println(new Solution().recoveryValidation(new int[]{1, 2, 3}, new int[]{}));               // false — no attempts
+        System.out.println(new Solution().recoveryValidation(new int[]{5}, new int[]{5}));                    // true  — single code match
+        System.out.println(new Solution().recoveryValidation(new int[]{5}, new int[]{6}));                    // false — single code miss
+        System.out.println(new Solution().recoveryValidation(new int[]{1, 3, 5, 7}, new int[]{2, 4, 6}));    // false — all misses
+        System.out.println(new Solution().recoveryValidation(new int[]{10}, new int[]{10, 20, 30}));          // true  — first attempt matches
     }
 }
 ```
 
-```c run
-#include <stdio.h>
-#include <stdbool.h>
-
-int binary_search(int *arr, int n, int target) {
-    int low = 0, high = n - 1;
-    while (low <= high) {
-        int mid = low + (high - low) / 2;
-        if (arr[mid] == target) return mid;
-        if (arr[mid] < target) low = mid + 1; else high = mid - 1;
-    }
-    return -1;
-}
-
-bool recovery_validation(int *codes, int nc, int *attempts, int na) {
-    for (int i = 0; i < na; i++) if (binary_search(codes, nc, attempts[i]) != -1) return true;
-    return false;
-}
-```
-
-```scala run
-object Main extends App {
-  class Solution {
-    def recoveryValidation(codes: Array[Int], attempts: Array[Int]): Boolean = {
-      attempts.exists(a => binarySearch(codes, a) != -1)
-    }
-    private def binarySearch(arr: Array[Int], target: Int): Int = {
-      var low = 0; var high = arr.length - 1
-      while (low <= high) {
-        val mid = low + (high - low) / 2
-        if (arr(mid) == target) return mid
-        if (arr(mid) < target) low = mid + 1 else high = mid - 1
-      }
-      -1
-    }
-  }
-
-  println(new Solution().recoveryValidation(Array(1, 4, 7), Array(2, 4)))   // true
-}
-```
-
-
-## Complexity
+### Complexity
 
 `O(N log M)` time where `N = len(attempts)`, `M = len(recoveryCodes)`. `O(1)` space.
+
+</details>
 
 ***
 
@@ -208,99 +243,126 @@ Input:  arr = [6, 5, 4, 3, 2, 1], target = 10
 Output: -1
 ```
 
-## The Solution
+<details>
+<summary><h2>Solution &amp; Analysis</h2></summary>
+
+### The Solution
 
 The skeleton is identical to plain binary search — only the comparison logic flips. In ascending order: `arr[mid] < target` means "look right." In descending order: `arr[mid] < target` means "look *left*" (because larger values are on the left).
 
-
-```pseudocode
-# Binary search on a descending array — flip the comparisons.
-function reverseBinarySearch(arr, target):
-    low ← 0; high ← length(arr) − 1
-    while low ≤ high:
-        mid ← low + (high − low) ÷ 2
-        if arr[mid] = target: return mid
-        if arr[mid] < target: high ← mid − 1   # smaller value → larger ones lie LEFT
-        else: low ← mid + 1                     # larger value → smaller ones lie RIGHT
-    return −1
-```
 
 ```python run
 from typing import List
 
 class Solution:
     def reverse_binary_search(self, arr: List[int], target: int) -> int:
-        low, high = 0, len(arr) - 1
+
+        # Starting index of the search range (leftmost element)
+        low = 0
+
+        # Ending index of the search range (rightmost element)
+        high = len(arr) - 1
+
         while low <= high:
+
+            # Calculate the middle index to avoid potential overflow
             mid = low + (high - low) // 2
-            if arr[mid] == target: return mid
-            if arr[mid] < target: high = mid - 1            # smaller → larger is to the left
-            else: low = mid + 1                              # larger → smaller is to the right
+
+            # Found the target, return the index
+            if arr[mid] == target:
+                return mid
+
+            # Since the array is sorted in descending order:
+            # If arr[mid] is smaller than the target,
+            # move to the left half (where larger elements are)
+            elif arr[mid] < target:
+                high = mid - 1
+
+            # Else if arr[mid] is greater than the target,
+            # move to the right half (where smaller elements are)
+            else:
+                low = mid + 1
+
+        # Target not found in the array
         return -1
 
 
-if __name__ == "__main__":
-    print(Solution().reverse_binary_search([6, 5, 4, 3, 2, 1], 3))   # 3
+# Examples from the problem statement
+print(Solution().reverse_binary_search([6, 5, 4, 3, 2, 1], 3))   # 3
+print(Solution().reverse_binary_search([6, 5, 4, 3, 2, 1], 6))   # 0
+print(Solution().reverse_binary_search([6, 5, 4, 3, 2, 1], 10))  # -1
+
+# Edge cases
+print(Solution().reverse_binary_search([], 3))                    # -1 — empty array
+print(Solution().reverse_binary_search([5], 5))                   # 0  — single element present
+print(Solution().reverse_binary_search([5], 3))                   # -1 — single element absent
+print(Solution().reverse_binary_search([6, 5, 4, 3, 2, 1], 1))   # 5  — target at last index
+print(Solution().reverse_binary_search([5, 3], 3))                # 1  — two elements, last
 ```
 
 ```java run
+import java.util.*;
+
 public class Main {
     static class Solution {
         public int reverseBinarySearch(int[] arr, int target) {
-            int low = 0, high = arr.length - 1;
+
+            // Starting index of the search range (leftmost element)
+            int low = 0;
+
+            // Ending index of the search range (rightmost element)
+            int high = arr.length - 1;
+
             while (low <= high) {
+
+                // Calculate the middle index to avoid potential overflow
                 int mid = low + (high - low) / 2;
-                if (arr[mid] == target) return mid;
-                if (arr[mid] < target) high = mid - 1;
-                else low = mid + 1;
+
+                // Found the target, return the index
+                if (arr[mid] == target) {
+                    return mid;
+                }
+
+                // Since the array is sorted in descending order:
+                // If arr[mid] is smaller than the target,
+                // move to the left half (where larger elements are)
+                else if (arr[mid] < target) {
+                    high = mid - 1;
+                }
+
+                // Else if arr[mid] is greater than the target,
+                // move to the right half (where smaller elements are)
+                else {
+                    low = mid + 1;
+                }
             }
+
+            // Target not found in the array
             return -1;
         }
     }
 
     public static void main(String[] args) {
+        // Examples from the problem statement
         System.out.println(new Solution().reverseBinarySearch(new int[]{6, 5, 4, 3, 2, 1}, 3));   // 3
+        System.out.println(new Solution().reverseBinarySearch(new int[]{6, 5, 4, 3, 2, 1}, 6));   // 0
+        System.out.println(new Solution().reverseBinarySearch(new int[]{6, 5, 4, 3, 2, 1}, 10));  // -1
+
+        // Edge cases
+        System.out.println(new Solution().reverseBinarySearch(new int[]{}, 3));                    // -1 — empty array
+        System.out.println(new Solution().reverseBinarySearch(new int[]{5}, 5));                   // 0  — single element present
+        System.out.println(new Solution().reverseBinarySearch(new int[]{5}, 3));                   // -1 — single element absent
+        System.out.println(new Solution().reverseBinarySearch(new int[]{6, 5, 4, 3, 2, 1}, 1));   // 5  — target at last index
+        System.out.println(new Solution().reverseBinarySearch(new int[]{5, 3}, 3));                // 1  — two elements, last
     }
 }
 ```
 
-```c run
-#include <stdio.h>
-
-int reverse_binary_search(int *arr, int n, int target) {
-    int low = 0, high = n - 1;
-    while (low <= high) {
-        int mid = low + (high - low) / 2;
-        if (arr[mid] == target) return mid;
-        if (arr[mid] < target) high = mid - 1;
-        else low = mid + 1;
-    }
-    return -1;
-}
-```
-
-```scala run
-object Main extends App {
-  class Solution {
-    def reverseBinarySearch(arr: Array[Int], target: Int): Int = {
-      var low = 0; var high = arr.length - 1
-      while (low <= high) {
-        val mid = low + (high - low) / 2
-        if (arr(mid) == target) return mid
-        if (arr(mid) < target) high = mid - 1 else low = mid + 1
-      }
-      -1
-    }
-  }
-
-  println(new Solution().reverseBinarySearch(Array(6, 5, 4, 3, 2, 1), 3))   // 3
-}
-```
-
-
-## Complexity
+### Complexity
 
 `O(log n)` time, `O(1)` space.
+
+</details>
 
 ***
 
@@ -323,135 +385,194 @@ Input:  matrix = [[1, 2, 3], [4, 5, 6], [7, 8, 9]]
 Output: -1   (no shared element)
 ```
 
-## The Solution
+<details>
+<summary><h2>Solution &amp; Analysis</h2></summary>
+
+### The Solution
 
 Iterate over the elements of the first row (left to right, ascending). For each, binary-search every other row. The first element that's found in all rows is the answer (smallest because the first row is sorted).
 
-
-```pseudocode
-# For each candidate from the first row (in ascending order), binary-search every other row.
-function minimumSharedElement(matrix):
-    if matrix is empty:
-        return −1
-    for each target in matrix[0]:
-        if every row in matrix[1..end] contains target (via binarySearch):
-            return target                       # first row is sorted → first match is the smallest
-    return −1
-```
 
 ```python run
 from typing import List
 
 class Solution:
-    def minimum_shared_element(self, matrix: List[List[int]]) -> int:
-        if not matrix: return -1
-        for target in matrix[0]:
-            if all(self._binary_search(row, target) != -1 for row in matrix[1:]):
-                return target
-        return -1
+    def binary_search(self, arr: List[int], target: int) -> int:
 
-    def _binary_search(self, arr, target):
-        low, high = 0, len(arr) - 1
+        # Starting index of the search range
+        low: int = 0
+
+        # Ending index of the search range
+        high: int = len(arr) - 1
+
         while low <= high:
-            mid = low + (high - low) // 2
-            if arr[mid] == target: return mid
-            if arr[mid] < target: low = mid + 1
-            else: high = mid - 1
+
+            # Calculate the middle index
+            mid: int = (low + high) // 2
+
+            # Found the target, return the index
+            if arr[mid] == target:
+                return mid
+
+            # If the arr[mid] is less than the target, adjust the search
+            # range to the right half
+            if arr[mid] < target:
+                low = mid + 1
+
+            # Else if the arr[mid] is greater than the target, adjust
+            # the search range to the left half
+            else:
+                high = mid - 1
+
+        # Target not found in the array
+        return -1
+
+    def minimum_shared_element(self, matrix: List[List[int]]) -> int:
+        rows: int = len(matrix)
+
+        # If the matrix has no rows, return -1
+        if rows == 0:
+            return -1
+
+        cols: int = len(matrix[0])
+
+        # Iterate through the columns of the matrix
+        for col in range(cols):
+            target: int = matrix[0][col]
+            found: bool = True
+
+            # Check if the target element is present in all rows
+            for row in range(1, rows):
+
+                # Use binary search to check if target is present in this
+                # row
+                if self.binary_search(matrix[row], target) == -1:
+
+                    # Target not found in this row, break out of the loop
+                    found = False
+                    break
+
+            # If target is found in all rows, it is the smallest common
+            # element
+            if found:
+                return target
+
+        # No common element found in all rows
         return -1
 
 
-if __name__ == "__main__":
-    print(Solution().minimum_shared_element([[2, 3, 4], [1, 3, 5], [1, 2, 3]]))   # 3
+# Examples from the problem statement
+print(Solution().minimum_shared_element([[1, 2, 3]]))                         # 1
+print(Solution().minimum_shared_element([[2, 3, 4], [1, 3, 5], [1, 2, 3]]))  # 3
+print(Solution().minimum_shared_element([[1, 2, 3], [4, 5, 6], [7, 8, 9]]))  # -1
+
+# Edge cases
+print(Solution().minimum_shared_element([[]]))                                # -1 — empty row
+print(Solution().minimum_shared_element([[5], [5], [5]]))                     # 5  — single-col all same
+print(Solution().minimum_shared_element([[5], [6]]))                          # -1 — single-col no match
+print(Solution().minimum_shared_element([[1, 2, 3], [1, 2, 3]]))              # 1  — identical rows
 ```
 
 ```java run
+import java.util.*;
+
 public class Main {
     static class Solution {
-        public int minimumSharedElement(int[][] matrix) {
-            if (matrix.length == 0) return -1;
-            for (int target : matrix[0]) {
-                boolean ok = true;
-                for (int r = 1; r < matrix.length; r++) {
-                    if (binarySearch(matrix[r], target) == -1) { ok = false; break; }
+        private int binarySearch(int[] arr, int target) {
+
+            // Starting index of the search range
+            int low = 0;
+
+            // Ending index of the search range
+            int high = arr.length - 1;
+
+            while (low <= high) {
+
+                // Calculate the middle index
+                int mid = (low + high) / 2;
+
+                // Found the target, return the index
+                if (arr[mid] == target) {
+                    return mid;
                 }
-                if (ok) return target;
+
+                // If the arr[mid] is less than the target, adjust the search
+                // range to the right half
+                else if (arr[mid] < target) {
+                    low = mid + 1;
+                }
+
+                // Else if the arr[mid] is greater than the target, adjust
+                // the search range to the left half
+                else {
+                    high = mid - 1;
+                }
             }
+
+            // Target not found in the array
             return -1;
         }
-        private int binarySearch(int[] arr, int target) {
-            int low = 0, high = arr.length - 1;
-            while (low <= high) {
-                int mid = low + (high - low) / 2;
-                if (arr[mid] == target) return mid;
-                if (arr[mid] < target) low = mid + 1; else high = mid - 1;
+
+        public int minimumSharedElement(int[][] matrix) {
+            int rows = matrix.length;
+
+            // If the matrix has no rows, return -1
+            if (rows == 0) {
+                return -1;
             }
+
+            int cols = matrix[0].length;
+
+            // Iterate through the columns of the matrix
+            for (int col = 0; col < cols; col++) {
+                int target = matrix[0][col];
+                boolean found = true;
+
+                // Check if the target element is present in all rows
+                for (int row = 1; row < rows; row++) {
+
+                    // Use binary search to check if target is present in
+                    // this row
+                    if (binarySearch(matrix[row], target) == -1) {
+
+                        // Target not found in this row, break out of the
+                        // loop
+                        found = false;
+                        break;
+                    }
+                }
+
+                // If target is found in all rows, it is the smallest common
+                // element
+                if (found) {
+                    return target;
+                }
+            }
+
+            // No common element found in all rows
             return -1;
         }
     }
 
     public static void main(String[] args) {
-        int[][] m = {{2, 3, 4}, {1, 3, 5}, {1, 2, 3}};
-        System.out.println(new Solution().minimumSharedElement(m));   // 3
+        // Examples from the problem statement
+        System.out.println(new Solution().minimumSharedElement(new int[][]{{1, 2, 3}}));                               // 1
+        System.out.println(new Solution().minimumSharedElement(new int[][]{{2, 3, 4}, {1, 3, 5}, {1, 2, 3}}));        // 3
+        System.out.println(new Solution().minimumSharedElement(new int[][]{{1, 2, 3}, {4, 5, 6}, {7, 8, 9}}));        // -1
+
+        // Edge cases
+        System.out.println(new Solution().minimumSharedElement(new int[][]{{5}, {5}, {5}}));                           // 5  — single-col all same
+        System.out.println(new Solution().minimumSharedElement(new int[][]{{5}, {6}}));                                // -1 — single-col no match
+        System.out.println(new Solution().minimumSharedElement(new int[][]{{1, 2, 3}, {1, 2, 3}}));                    // 1  — identical rows
     }
 }
 ```
 
-```c run
-#include <stdio.h>
-
-int binary_search(int *arr, int n, int target) {
-    int low = 0, high = n - 1;
-    while (low <= high) {
-        int mid = low + (high - low) / 2;
-        if (arr[mid] == target) return mid;
-        if (arr[mid] < target) low = mid + 1; else high = mid - 1;
-    }
-    return -1;
-}
-
-int minimum_shared_element(int rows, int cols, int matrix[rows][cols]) {
-    for (int c = 0; c < cols; c++) {
-        int target = matrix[0][c];
-        int ok = 1;
-        for (int r = 1; r < rows; r++) {
-            if (binary_search(matrix[r], cols, target) == -1) { ok = 0; break; }
-        }
-        if (ok) return target;
-    }
-    return -1;
-}
-```
-
-```scala run
-object Main extends App {
-  class Solution {
-    def minimumSharedElement(matrix: Array[Array[Int]]): Int = {
-      if (matrix.isEmpty) return -1
-      for (target <- matrix(0)) {
-        if (matrix.tail.forall(row => binarySearch(row, target) != -1)) return target
-      }
-      -1
-    }
-    private def binarySearch(arr: Array[Int], target: Int): Int = {
-      var low = 0; var high = arr.length - 1
-      while (low <= high) {
-        val mid = low + (high - low) / 2
-        if (arr(mid) == target) return mid
-        if (arr(mid) < target) low = mid + 1 else high = mid - 1
-      }
-      -1
-    }
-  }
-
-  val m = Array(Array(2, 3, 4), Array(1, 3, 5), Array(1, 2, 3))
-  println(new Solution().minimumSharedElement(m))   // 3
-}
-```
-
-
-## Complexity
+### Complexity
 
 `O(M · N · log M)` where `N = rows`, `M = cols`. The outer loop iterates over the first row (`M` elements); for each, we binary-search the remaining `N - 1` rows in `O(log M)` each.
+
+</details>
 
 ***
 
@@ -474,46 +595,94 @@ Input:  matrix = [[1, 2, 3, 4], [0, 1, 4, 5], [6, 7, 8]]
 Output: []
 ```
 
-## The Solution
+<details>
+<summary><h2>Solution &amp; Analysis</h2></summary>
+
+### The Solution
 
 Same as the previous problem but accumulate matches into a result list instead of returning the first.
 
-
-```pseudocode
-function intersectingElements(matrix):
-    if matrix is empty:
-        return empty list
-    result ← empty list
-    for each target in matrix[0]:
-        if every row in matrix[1..end] contains target (via binarySearch):
-            append target to result
-    return result
-```
 
 ```python run
 from typing import List
 
 class Solution:
-    def intersecting_elements(self, matrix: List[List[int]]) -> List[int]:
-        if not matrix: return []
-        result: List[int] = []
-        for target in matrix[0]:
-            if all(self._binary_search(row, target) != -1 for row in matrix[1:]):
-                result.append(target)
-        return result
+    def binary_search(self, arr: List[int], target: int) -> int:
 
-    def _binary_search(self, arr, target):
-        low, high = 0, len(arr) - 1
+        # Starting index of the search range
+        low: int = 0
+
+        # Ending index of the search range
+        high: int = len(arr) - 1
+
         while low <= high:
-            mid = low + (high - low) // 2
-            if arr[mid] == target: return mid
-            if arr[mid] < target: low = mid + 1
-            else: high = mid - 1
+
+            # Calculate the middle index
+            mid: int = (low + high) // 2
+
+            # Found the target, return the index
+            if arr[mid] == target:
+                return mid
+
+            # If the arr[mid] is less than the target, adjust the search
+            # range to the right half
+            if arr[mid] < target:
+                low = mid + 1
+
+            # Else if the arr[mid] is greater than the target, adjust
+            # the search range to the left half
+            else:
+                high = mid - 1
+
+        # Target not found in the array
         return -1
 
+    def intersecting_elements(
+        self, matrix: List[List[int]]
+    ) -> List[int]:
+        rows: int = len(matrix)
 
-if __name__ == "__main__":
-    print(Solution().intersecting_elements([[1, 2, 3, 4], [0, 1, 4, 5]]))   # [1, 4]
+        # If the matrix has no rows, return an empty result
+        if rows == 0:
+            return []
+
+        cols: int = len(matrix[0])
+        result: List[int] = []
+
+        # Iterate through the columns of the matrix
+        for col in range(cols):
+            target: int = matrix[0][col]
+            found: bool = True
+
+            # Check if the target element is present in all rows
+            for row in range(1, rows):
+
+                # Use binary search to check if target is present in this
+                # row
+                if self.binary_search(matrix[row], target) == -1:
+
+                    # Target not found in this row, break out of the loop
+                    found = False
+                    break
+
+            # If target is found in all rows, add it to the result
+            if found:
+                result.append(target)
+
+        # Return the intersection of elements present in all rows
+        return result
+
+
+# Examples from the problem statement
+print(Solution().intersecting_elements([[1, 2, 3, 4], [0, 1, 4, 5]]))           # [1, 4]
+print(Solution().intersecting_elements([[5, 9, 11], [1, 4, 5], [2, 5, 9]]))     # [5]
+print(Solution().intersecting_elements([[1, 2, 3, 4], [0, 1, 4, 5], [6, 7, 8]]))  # []
+
+# Edge cases
+print(Solution().intersecting_elements([[1, 2, 3]]))                              # [1, 2, 3] — single row
+print(Solution().intersecting_elements([[5], [5], [5]]))                          # [5] — single-col match
+print(Solution().intersecting_elements([[5], [6]]))                               # [] — single-col no match
+print(Solution().intersecting_elements([[1, 2, 3], [1, 2, 3]]))                   # [1, 2, 3] — identical rows
 ```
 
 ```java run
@@ -521,100 +690,110 @@ import java.util.*;
 
 public class Main {
     static class Solution {
-        public List<Integer> intersectingElements(int[][] matrix) {
-            List<Integer> result = new ArrayList<>();
-            if (matrix.length == 0) return result;
-            for (int target : matrix[0]) {
-                boolean ok = true;
-                for (int r = 1; r < matrix.length; r++) {
-                    if (binarySearch(matrix[r], target) == -1) { ok = false; break; }
-                }
-                if (ok) result.add(target);
-            }
-            return result;
-        }
         private int binarySearch(int[] arr, int target) {
-            int low = 0, high = arr.length - 1;
+
+            // Starting index of the search range
+            int low = 0;
+
+            // Ending index of the search range
+            int high = arr.length - 1;
+
             while (low <= high) {
-                int mid = low + (high - low) / 2;
-                if (arr[mid] == target) return mid;
-                if (arr[mid] < target) low = mid + 1; else high = mid - 1;
+
+                // Calculate the middle index
+                int mid = (low + high) / 2;
+
+                // Found the target, return the index
+                if (arr[mid] == target) {
+                    return mid;
+                }
+
+                // If the arr[mid] is less than the target, adjust the search
+                // range to the right half
+                else if (arr[mid] < target) {
+                    low = mid + 1;
+                }
+
+                // Else if the arr[mid] is greater than the target, adjust
+                // the search range to the left half
+                else {
+                    high = mid - 1;
+                }
             }
+
+            // Target not found in the array
             return -1;
+        }
+
+        public List<Integer> intersectingElements(int[][] matrix) {
+            int rows = matrix.length;
+
+            // If the matrix has no rows, return an empty result
+            if (rows == 0) {
+                return new ArrayList<>();
+            }
+
+            int cols = matrix[0].length;
+            List<Integer> result = new ArrayList<>();
+
+            // Iterate through the columns of the matrix
+            for (int col = 0; col < cols; col++) {
+                int target = matrix[0][col];
+                boolean found = true;
+
+                // Check if the target element is present in all rows
+                for (int row = 1; row < rows; row++) {
+
+                    // Use binary search to check if target is present in
+                    // this row
+                    if (binarySearch(matrix[row], target) == -1) {
+
+                        // Target not found in this row, break out of the
+                        // loop
+                        found = false;
+                        break;
+                    }
+                }
+
+                // If target is found in all rows, add it to the result
+                if (found) {
+                    result.add(target);
+                }
+            }
+
+            // Return the intersection of elements present in all rows
+            return result;
         }
     }
 
     public static void main(String[] args) {
-        int[][] m = {{1, 2, 3, 4}, {0, 1, 4, 5}};
-        System.out.println(new Solution().intersectingElements(m));   // [1, 4]
+        // Examples from the problem statement
+        System.out.println(new Solution().intersectingElements(new int[][]{{1, 2, 3, 4}, {0, 1, 4, 5}}));           // [1, 4]
+        System.out.println(new Solution().intersectingElements(new int[][]{{5, 9, 11}, {1, 4, 5}, {2, 5, 9}}));     // [5]
+        System.out.println(new Solution().intersectingElements(new int[][]{{1, 2, 3, 4}, {0, 1, 4, 5}, {6, 7, 8}}));  // []
+
+        // Edge cases
+        System.out.println(new Solution().intersectingElements(new int[][]{{1, 2, 3}}));                              // [1, 2, 3] — single row
+        System.out.println(new Solution().intersectingElements(new int[][]{{5}, {5}, {5}}));                          // [5] — single-col match
+        System.out.println(new Solution().intersectingElements(new int[][]{{5}, {6}}));                               // [] — single-col no match
+        System.out.println(new Solution().intersectingElements(new int[][]{{1, 2, 3}, {1, 2, 3}}));                   // [1, 2, 3] — identical rows
     }
 }
 ```
 
-```c run
-#include <stdio.h>
-#include <stdlib.h>
-
-int binary_search(int *arr, int n, int target) {
-    int low = 0, high = n - 1;
-    while (low <= high) {
-        int mid = low + (high - low) / 2;
-        if (arr[mid] == target) return mid;
-        if (arr[mid] < target) low = mid + 1; else high = mid - 1;
-    }
-    return -1;
-}
-
-int *intersecting_elements(int rows, int cols, int matrix[rows][cols], int *outLen) {
-    int *result = (int *) malloc(cols * sizeof(int));
-    int n = 0;
-    for (int c = 0; c < cols; c++) {
-        int target = matrix[0][c];
-        int ok = 1;
-        for (int r = 1; r < rows; r++) {
-            if (binary_search(matrix[r], cols, target) == -1) { ok = 0; break; }
-        }
-        if (ok) result[n++] = target;
-    }
-    *outLen = n;
-    return result;
-}
-```
-
-```scala run
-object Main extends App {
-  class Solution {
-    def intersectingElements(matrix: Array[Array[Int]]): List[Int] = {
-      if (matrix.isEmpty) return List.empty
-      matrix(0).filter(target => matrix.tail.forall(row => binarySearch(row, target) != -1)).toList
-    }
-    private def binarySearch(arr: Array[Int], target: Int): Int = {
-      var low = 0; var high = arr.length - 1
-      while (low <= high) {
-        val mid = low + (high - low) / 2
-        if (arr(mid) == target) return mid
-        if (arr(mid) < target) low = mid + 1 else high = mid - 1
-      }
-      -1
-    }
-  }
-
-  val m = Array(Array(1, 2, 3, 4), Array(0, 1, 4, 5))
-  println(new Solution().intersectingElements(m))   // List(1, 4)
-}
-```
-
-
-## Complexity
+### Complexity
 
 Same as the previous problem: `O(M · N · log M)` time, `O(M)` space for the result.
 
-***
+</details>
+<details>
+<summary><h2>Final Takeaway</h2></summary>
 
-## Final Takeaway
 
 The binary search pattern: when the input is sorted (in any monotone direction), `O(log n)` lookup beats linear scan. Recognise it by the sorted structure plus a "find this thing" question. The four problems show four flavours: single-array lookup, descending sort, multi-row matrix membership, and intersection extraction — all using binary search as the inner primitive.
 
 The next lesson lifts the lookup to **lower bound** problems — same pattern, but the question is "where does this go?" rather than "is it there?" That's the right tool for insertion-position queries, "first occurrence of," and many real-world database operations.
 
 **Transfer challenge — try before the Lower Bound Pattern lesson:** Given two sorted arrays `A` and `B`, return their intersection (elements in both). Use binary search to make it `O(min(N, M) · log max(N, M))`. Hint: iterate over the shorter, binary-search in the longer.
+
+</details>

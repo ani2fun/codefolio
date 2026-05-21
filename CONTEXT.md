@@ -138,7 +138,7 @@ _Avoid_: Diagram, Picture, Chart.
 The uniform JSON payload returned to clients on any handler failure — `{ message, details? }` plus an HTTP status code.
 
 **Handler Failure**:
-Any error a pipeline can produce; converted to an API Error + status by a single mapper. Implemented as a Scala 3 union type `HandlerFailure = RunFailure | CortexFailure | HelloFailure | BlogFailure` in `ApiErrors`, with one `toHttp` method dispatching across all variants. Each variant lives in its own pipeline package (`codeRunPipeline.RunFailure`, `cortexPipeline.CortexFailure`, `helloPipeline.HelloFailure`, `blogPipeline.BlogFailure`). New pipeline error types extend the union and add a case to the match.
+Any error the HTTP layer must turn into an API Error + status. Implemented as a Scala 3 union type `HandlerFailure = RunFailure | CortexFailure | HelloFailure | BlogFailure | AuthFailure | RateLimitFailure` in `ApiErrors`, with one `toHttp` method dispatching across all variants. Each pipeline variant lives in its own package (`codeRunPipeline.RunFailure`, `cortexPipeline.CortexFailure`, `helloPipeline.HelloFailure`, `blogPipeline.BlogFailure`); the two cross-cutting variants — `auth.AuthFailure` (401 / 503) and `http.RateLimitFailure` (429) — come from the **Auth Gate**, not a pipeline. New error types extend the union and add a case to the match.
 
 **Handler Endpoint**:
 The server-side wiring helper `ApiRoutes.handlerEndpoint` — bundles the `(StatusCode, ApiError)` error output and the `HandlerFailure → toHttp` mapping so every fallible endpoint is wired the same way and can't ship without its error plumbing. The client mirror is `ApiClient.callable`. See ADR-0012.
@@ -151,6 +151,33 @@ _Avoid_: File Handler, Asset Server (Asset is overloaded — `CortexAssetRoutes`
 A top-level route the single-page app owns — `AppRoutes.SpaRoute(segment, hasNestedRoutes)`. `AppRoutes.SpaRoutes` is the single source of truth for the SPA route topology: the client `Router` builds its rules from it and the production server derives its `index.html` fallback list from it. See ADR-0009.
 _Avoid_: Page (overloaded — see Flagged ambiguities; **SPA Route** is the *server-visible topology*, **Page** is the client routing ADT).
 
+### Authentication
+
+**Anonymous Visitor**:
+Someone interacting with codefolio without a verified identity. Can read all Cortex / Blog content and Run any code block (the canonical source executes); `/api/run` calls are rate-limited per IP. Cannot edit code.
+_Avoid_: Guest, Unauthenticated user.
+
+**Signed-in User**:
+Someone holding a valid Bearer token issued by the `apps-prod` Keycloak realm via the GitHub identity provider. Can edit and re-run code blocks; runs are rate-limited per user. Identified by the stable `sub` claim; not persisted server-side.
+_Avoid_: Account, Member, Logged-in user.
+
+**Verified Claims**:
+The decoded, signature-validated JWT payload for one request — `sub`, `preferredUsername`, `name`, `email`. An internal `server/auth` type; never serialised to the wire. The wire projection is `UserInfo`, which also carries the caller's run **Quota**.
+
+**Auth Gate**:
+The HTTP-layer decision — taken *before* a request reaches a pipeline — of "pass through", "401 Unauthorized", or "429 Too Many Requests". Implemented by the `withOptionalAuth` / `authedEndpoint` wrappers in `ApiRoutes` over the `Auth` verifier (Keycloak JWT validation) and the `RateLimiter` (Redis fixed-window counter). Pipelines stay identity-agnostic. See ADR-0013.
+_Avoid_: Auth middleware, Security filter.
+
+**Sandbox**:
+The user-facing name for the code-execution path (`/api/run` → `CodeRunPipeline` → a **Code Execution Backend**). "kakde.eu sandbox" is the phrase shown in run-output captions; which backend actually ran the code is an implementation detail the term deliberately hides.
+_Avoid_: Runner (overloaded — **Code Runner** is one specific backend).
+
+**Identity Chip**:
+The avatar + `@handle` + sign-out pill shown in a **Runnable Code Block**'s header once a user is signed in.
+
+**Quota Notice**:
+The advisory panel that appears at the foot of a **Runnable Code Block** when a **Signed-in User** has spent ≥ 70% of their hourly run budget.
+
 ## Relationships
 
 - A **Book** contains zero or more **Sections** and one or more **Chapters**.
@@ -159,6 +186,7 @@ _Avoid_: Page (overloaded — see Flagged ambiguities; **SPA Route** is the *ser
 - A `/api/hello` request reads a **Cached Greeting** (Redis) → falls back to **Visit Count** (Postgres) → always appends a **Hello Event** (Mongo).
 - **Degraded** = a non-critical store failed; Greeting still returned.
 - A **Runnable Code Block** in a **Chapter** calls a **Code Execution Backend** via the runner endpoint.
+- A **Runnable Code Block**'s editor is behind the **Auth Gate**: an **Anonymous Visitor** gets a read-only view, a **Signed-in User** an editable one. `/api/run` works for both — rate-limited per IP for anonymous, per user (with a **Quota Notice** as the budget runs low) for signed-in.
 - The markdown pipeline emits a placeholder `<div>` per **Block**; the client decodes them into a typed `Block` ADT and mounts a Scala.js component for each.
 - A **Chapter** may embed a **C4 View** via an `<iframe>` whose `src` (`/c4/view/<name>`) resolves through the **LikeC4 Proxy** to the in-cluster `likec4` Service.
 - The **LikeC4 Proxy** is a passthrough — single fixed upstream, no port, no alternate adapter — contrast with the **Code Execution Backend** which is a typed multi-adapter seam.

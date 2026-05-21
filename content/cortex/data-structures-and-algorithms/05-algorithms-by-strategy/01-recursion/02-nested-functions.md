@@ -122,89 +122,40 @@ A frame is not abstract — it's a fixed block of bytes with a fixed layout. Eve
 Let's run a four-function program through the stack and watch the frames grow and shrink. The program is deliberately trivial — one call per function, no logic — so we can focus on the *stack behaviour* without the algorithm getting in the way.
 
 
-```pseudocode
-function functionC():
-    return                       # empty — we trace the stack, not the code
-
-function functionB():
-    functionC()                  # B's frame stays alive while C runs
-
-function functionA():
-    functionB()                  # A's frame stays alive while B + C run
-
-function main():
-    functionA()                  # main's frame stays alive while A + B + C run
-
-main()
-```
-
 ```python run
-def function_c() -> None:
-    pass                # Empty body — we care about the call stack, not the code
+def function_c():
+    # Some code
+    pass
 
-def function_b() -> None:
-    function_c()        # Calls C; B's frame stays alive while C runs
+def function_b():
+    function_c()
 
-def function_a() -> None:
-    function_b()        # Calls B; A's frame stays alive while B and C run
+def function_a():
+    function_b()
 
-def main() -> None:
-    function_a()        # Calls A; main's frame stays alive while A, B, C run
+def main():
+    function_a()
 
 main()
 ```
 
 ```java run
-public class Main {
-    static class Solution {
-        static void functionC() {
-            // Empty — we're tracing the call stack, not the logic
-        }
+class Main {
+    static void functionC() {
+        // Some code
+    }
 
-        static void functionB() {
-            functionC();
-        }
+    static void functionB() {
+        functionC();
+    }
 
-        static void functionA() {
-            functionB();
-        }
+    static void functionA() {
+        functionB();
     }
 
     public static void main(String[] args) {
-        Solution.functionA();
+        functionA();
     }
-}
-```
-
-```c run
-#include <stdio.h>
-
-void function_c(void) { /* empty */ }
-
-void function_b(void) {
-    function_c();
-}
-
-void function_a(void) {
-    function_b();
-}
-
-int main(void) {
-    function_a();
-    return 0;
-}
-```
-
-```scala run
-object Main extends App {
-  object Solution {
-    def functionC(): Unit = ()        // Empty — focus on the stack
-
-    def functionB(): Unit = functionC()
-    def functionA(): Unit = functionB()
-  }
-
-  Solution.functionA()
 }
 ```
 
@@ -285,7 +236,7 @@ There are three ways to overflow the stack, and they fail very differently. Know
 
 ## Failure Mode 1 — Too Many Nested Calls
 
-The classic stack overflow. Each call adds a frame; if the program goes too deep, the stack runs out of room. The frames don't have to be big — they just have to be many. Unbounded recursion is the canonical example.
+The classic stack overflow. Each call adds a frame; if the program goes too deep, the stack runs out of room. The frames don't have to be big — they just have to be many. The chain below — `main → function_a → function_b → function_c → function_d` — is harmless at depth four, but the same shape with the chain extended far enough, or with a function that calls itself without a base case, eventually exhausts the stack.
 
 ```mermaid
 ---
@@ -306,76 +257,47 @@ flowchart LR
 <p align="center"><strong>Each frame is small, but a million of them adds up. The crash happens at the very next call after stack space runs out.</strong></p>
 
 
-```pseudocode
-function deep(n):
-    if n = 0:
-        return 0
-    return deep(n − 1) + 1       # one new stack frame per call — overflows past ~10⁴–10⁵
-
-deep(10000)                      # exhausts the call stack on every mainstream runtime
-```
-
 ```python run
-# Python: deep nesting hits the recursion limit (default ~1000) first,
-# raising RecursionError. Beyond that limit you'd get a real C-level
-# segfault from the CPython interpreter's stack.
-import sys
+def function_d():
+    # some logic
+    pass
 
-def deep(n: int) -> int:
-    if n == 0:
-        return 0
-    return deep(n - 1) + 1   # One frame per call
+def function_c():
+    function_d()
 
-# Try this — uncomment to see the failure
-# sys.setrecursionlimit(10_000)
-# print(deep(10_000))         # Likely RecursionError or segfault
+def function_b():
+    function_c()
+
+def function_a():
+    function_b()
+
+def main():
+    function_a()
+
+main()
 ```
 
 ```java run
-public class Main {
-    static class Solution {
-        static int deep(int n) {
-            if (n == 0) return 0;
-            return deep(n - 1) + 1;     // Each call adds one JVM stack frame
-        }
+class Main {
+    static void functionD() {
+        // some logic
+    }
+
+    static void functionC() {
+        functionD();
+    }
+
+    static void functionB() {
+        functionC();
+    }
+
+    static void functionA() {
+        functionB();
     }
 
     public static void main(String[] args) {
-        // Default JVM stack ~512 KB; ~10K-30K calls before StackOverflowError.
-        System.out.println(Solution.deep(10_000));
+        functionA();
     }
-}
-```
-
-```c run
-#include <stdio.h>
-
-int deep(int n) {
-    if (n == 0) return 0;
-    return deep(n - 1) + 1;        /* One frame per call, ~32-64 bytes each */
-}
-
-int main(void) {
-    /* On Linux with default 8 MB stack, ~100K-300K calls before SIGSEGV.
-     * Try increasing n until your program crashes. */
-    printf("%d\n", deep(100000));
-    return 0;
-}
-```
-
-```scala run
-// Scala on the JVM. WITHOUT @tailrec the JVM will not optimise this,
-// so each call costs a real frame. Try `import scala.annotation.tailrec`
-// and adding @tailrec — Scala will rewrite tail-recursive calls into a loop.
-object Main extends App {
-  object Solution {
-    def deep(n: Int): Int = {
-      if (n == 0) 0
-      else deep(n - 1) + 1   // NOT tail-recursive (we add 1 *after* the call)
-    }
-  }
-
-  println(Solution.deep(10_000))
 }
 ```
 
@@ -408,70 +330,24 @@ The classic offender is a giant fixed-size local array. C, C++, and Rust will ha
 The huge-frame case typically crashes immediately on the first call's entry; the deep-nesting case runs for milliseconds before tripping over its own pile of small frames. Both end with the same kernel signal, but the timing differs by orders of magnitude.
 
 
-```pseudocode
-function bigLocal():
-    arr ← list of 1_000_000_000 zeros   # heap allocation — fails with MemoryError, not StackOverflow
-    return length(arr)
-
-bigLocal()
-```
-
 ```python run
-# Python lists are heap-allocated; you can't easily make a stack-sized
-# local explode the stack. Instead you'd hit MemoryError on the heap.
-def big_local() -> int:
-    arr = [0] * 1_000_000_000   # Heap allocation — MemoryError if RAM runs out
-    return len(arr)
+def main():
 
-# print(big_local())            # Probably crashes the kernel before stack
+    # Huge local list, may cause
+    # MemoryError
+    arr = [0] * 100_000_000
+
+main()
 ```
 
 ```java run
-public class Main {
-    static class Solution {
-        static void bigLocal() {
-            // Java arrays are objects — they live on the heap.
-            // A huge array hits OutOfMemoryError, not StackOverflow.
-            int[] arr = new int[1_000_000_000];
-            System.out.println(arr.length);
-        }
-    }
-
+class Main {
     public static void main(String[] args) {
-        Solution.bigLocal();
+
+        // Huge array allocated on the heap, may cause
+        // OutOfMemoryError
+        int[] arr = new int[100_000_000];
     }
-}
-```
-
-```c run
-#include <stdio.h>
-
-void big_local(void) {
-    /* C arrays declared inside a function go on the STACK by default.
-     * 1 billion ints × 4 bytes = 4 GB — far larger than the 8 MB stack.
-     * Crash is immediate on entry, before any code in the function runs. */
-    int arr[1000000000];
-    arr[0] = 42;
-    printf("%d\n", arr[0]);
-}
-
-int main(void) {
-    big_local();
-    return 0;
-}
-```
-
-```scala run
-// Scala arrays are heap-allocated (JVM Array). OOM rather than stack overflow.
-object Main extends App {
-  object Solution {
-    def bigLocal(): Unit = {
-      val arr = new Array[Int](1000000000)   // Heap; expect OOM
-      println(arr.length)
-    }
-  }
-
-  Solution.bigLocal()
 }
 ```
 
@@ -537,72 +413,45 @@ proc: "Reality — production crash" {
 In well-tested code, this is the most common cause of real-world stack overflow. It often appears not as an immediate crash but only when edge-case inputs push the depth or local-size beyond a threshold. The crash is intermittent. The frames look "fine." The fix is to either move data off the stack (heap allocation) or to flatten the recursion (iteration with an explicit stack data structure).
 
 
-```pseudocode
-function chain(n):
-    work ← list of 10000 zeros          # heap pressure
-    if n = 0:
-        return 0
-    return chain(n − 1) + work[0]       # also stack-deep — both regions stressed at once
-
-chain(10000)                            # in C this overflows the stack via giant locals
-```
-
 ```python run
-# Python: combined depth + heap allocation. Lists are heap, so big_local
-# allocations don't grow Python frames much. The depth-limit error comes first.
-def chain(n: int) -> int:
-    work = [0] * 10_000   # Heap allocation — pressures GC, not stack
-    if n == 0:
-        return 0
-    return chain(n - 1) + work[0]
+def function_c():
+    arr = [0] * 10_000
+    # some code
+
+def function_b():
+    arr = [0] * 40_000
+    function_c()
+
+def function_a():
+    arr = [0] * 10_000
+    function_b()
+
+def main():
+    function_a()
+
+main()
 ```
 
 ```java run
-public class Main {
-    static class Solution {
-        static int chain(int n) {
-            int[] work = new int[10_000];   // Heap (Java arrays are objects)
-            if (n == 0) return 0;
-            return chain(n - 1) + work[0];  // Frames stay small; heap pressure rises
-        }
+class Main {
+    static void functionC() {
+        int[] arr = new int[10_000];
+        // some code
+    }
+
+    static void functionB() {
+        int[] arr = new int[40_000];
+        functionC();
+    }
+
+    static void functionA() {
+        int[] arr = new int[10_000];
+        functionB();
     }
 
     public static void main(String[] args) {
-        System.out.println(Solution.chain(10_000));
+        functionA();
     }
-}
-```
-
-```c run
-#include <stdio.h>
-
-/* C is the language where this combination bites hardest:
- * each frame really IS bigger because of the stack array. */
-int chain(int n) {
-    int work[10000];                   /* 40 KB per frame on the stack */
-    work[0] = n;
-    if (n == 0) return 0;
-    return chain(n - 1) + work[0];
-}
-
-int main(void) {
-    /* 8 MB / 40 KB ≈ 200 calls before crash — far less than empty recursion */
-    printf("%d\n", chain(200));
-    return 0;
-}
-```
-
-```scala run
-object Main extends App {
-  object Solution {
-    def chain(n: Int): Int = {
-      val work = new Array[Int](10000)   // Heap — JVM arrays
-      if (n == 0) 0
-      else chain(n - 1) + work(0)
-    }
-  }
-
-  println(Solution.chain(10_000))
 }
 ```
 
@@ -611,7 +460,7 @@ object Main extends App {
 
 ## Per-Language Stack-Overflow Behaviour
 
-How a stack overflow surfaces depends on the runtime. This expanded table covers all 10 languages of this course.
+How a stack overflow surfaces depends on the runtime. This expanded table covers a range of mainstream languages.
 
 | Language | Default stack size | Error / signal | Notes |
 |---|---|---|---|
@@ -681,19 +530,6 @@ Functions calling functions. Frames pushing on top of frames. The stack region h
 You came in with a hazy sense of "the stack is where calls live." You're leaving with three concrete failure modes, an exact picture of what's inside one frame, and the understanding that recursion is *just* the LIFO model applied self-similarly. Next: how to recognise problems that have this self-similar structure and turn them into clean recursive code.
 
 **Transfer challenge — try before the Recursion lesson:** Trace the stack for the function below, called as `count_down(5)`, frame by frame. How many frames are alive at the deepest point? In what order do they return?
-
-```c run
-#include <stdio.h>
-void count_down(int n) {
-    if (n == 0) return;     /* Base case */
-    printf("frame n=%d\n", n);
-    count_down(n - 1);
-}
-int main(void) {
-    count_down(5);
-    return 0;
-}
-```
 
 <details>
 <summary><strong>Answer — open after you've sketched it</strong></summary>

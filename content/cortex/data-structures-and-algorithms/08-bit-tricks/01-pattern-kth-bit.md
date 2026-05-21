@@ -90,7 +90,9 @@ Input:  num = 2, k = 1
 Output: false                 Binary 0010 — bit 1 is unset
 ```
 
-## The Recurrence
+<details>
+<summary><h2>The Recurrence</h2></summary>
+
 
 Build mask `1 << (k - 1)` (only bit k is 1). AND with `num` zeroes out every bit *except* bit k. The result is non-zero iff bit k was 1.
 
@@ -102,83 +104,77 @@ result = (num & (1 << (k - 1))) != 0
 
 Because `num & mask` keeps bit k *in its original position*, not at bit 1. For `k = 3` the result is either `0` or `4` — never `1`. Comparing against `1` would falsely return `false` whenever bit k > 1. The non-zero check works for every `k`.
 
-## The Solution
+</details>
+<details>
+<summary><h2>Solution &amp; Analysis</h2></summary>
 
-
-```pseudocode
-function kthBitCheck(num, k):
-    # Build a mask with only bit k set, then AND with num.
-    mask ← 1 shifted left by (k − 1)
-    return (num bitwise AND mask) ≠ 0
-```
+### The Solution
 
 ```python run
 class Solution:
     def kth_bit_check(self, num: int, k: int) -> bool:
-        # Build a mask with only bit k set, then AND with num.
-        # Non-zero result ⇒ bit k was originally 1.
+
+        # To check if the Kth bit is set in a number, we can use bitwise
+        # AND operation. We create a mask by left-shifting 1 by (k-1)
+        # positions. Then, we perform bitwise AND between the given
+        # number and the mask. If the result is not zero, it means the
+        # Kth bit is set.
+
         return (num & (1 << (k - 1))) != 0
 
 
-if __name__ == "__main__":
-    sol = Solution()
-    print(sol.kth_bit_check(1, 1))   # True
-    print(sol.kth_bit_check(3, 2))   # True
-    print(sol.kth_bit_check(2, 1))   # False
+# Examples from the problem statement
+print(Solution().kth_bit_check(1, 1))    # True
+print(Solution().kth_bit_check(3, 2))    # True
+print(Solution().kth_bit_check(2, 1))    # False
+
+# Edge cases
+print(Solution().kth_bit_check(0, 1))    # False
+print(Solution().kth_bit_check(1, 2))    # False
+print(Solution().kth_bit_check(4, 3))    # True
+print(Solution().kth_bit_check(7, 3))    # True
+print(Solution().kth_bit_check(8, 4))    # True
 ```
 
 ```java run
 public class Main {
     static class Solution {
         public boolean kthBitCheck(int num, int k) {
+
+            // To check if the Kth bit is set in a number, we can use bitwise
+            // AND operation. We create a mask by left-shifting 1 by (k-1)
+            // positions. Then, we perform bitwise AND between the given
+            // number and the mask. If the result is not zero, it means the
+            // Kth bit is set.
+
             return (num & (1 << (k - 1))) != 0;
         }
     }
 
     public static void main(String[] args) {
-        Solution sol = new Solution();
-        System.out.println(sol.kthBitCheck(1, 1));   // true
-        System.out.println(sol.kthBitCheck(3, 2));   // true
-        System.out.println(sol.kthBitCheck(2, 1));   // false
+        // Examples from the problem statement
+        System.out.println(new Solution().kthBitCheck(1, 1));    // true
+        System.out.println(new Solution().kthBitCheck(3, 2));    // true
+        System.out.println(new Solution().kthBitCheck(2, 1));    // false
+
+        // Edge cases
+        System.out.println(new Solution().kthBitCheck(0, 1));    // false
+        System.out.println(new Solution().kthBitCheck(1, 2));    // false
+        System.out.println(new Solution().kthBitCheck(4, 3));    // true
+        System.out.println(new Solution().kthBitCheck(7, 3));    // true
+        System.out.println(new Solution().kthBitCheck(8, 4));    // true
     }
 }
 ```
 
-```c run
-#include <stdio.h>
-#include <stdbool.h>
-
-bool kth_bit_check(int num, int k) {
-    return (num & (1 << (k - 1))) != 0;
-}
-
-int main(void) {
-    printf("%d\n", kth_bit_check(1, 1));   /* 1 */
-    printf("%d\n", kth_bit_check(3, 2));   /* 1 */
-    printf("%d\n", kth_bit_check(2, 1));   /* 0 */
-    return 0;
-}
-```
-
-```scala run
-object Main extends App {
-  class Solution {
-    def kthBitCheck(num: Int, k: Int): Boolean = (num & (1 << (k - 1))) != 0
-  }
-
-  val sol = new Solution()
-  println(sol.kthBitCheck(1, 1))   // true
-  println(sol.kthBitCheck(3, 2))   // true
-}
-```
-
-
-## Complexity
+### Complexity
 
 | Aspect | Cost |
 |---|---|
 | Time | `O(1)` — three operations: shift, AND, compare |
 | Space | `O(1)` |
+
+</details>
 
 ***
 
@@ -199,7 +195,9 @@ Input:  num = 2, k = 1
 Output: 3                        0010 → 0011
 ```
 
-## The Recurrence
+<details>
+<summary><h2>The Recurrence</h2></summary>
+
 
 Build mask `1 << (k - 1)`. OR with `num`: every bit of `num` is preserved except bit k, which becomes 1 (because `1 OR anything = 1`).
 
@@ -211,69 +209,67 @@ result = num | (1 << (k - 1))
 
 OR's truth table: `0 OR 0 = 0`, `1 OR 0 = 1`, `0 OR 1 = 1`, `1 OR 1 = 1`. ORing with 0 (every bit of the mask except bit k) leaves the original bit untouched. ORing with 1 (only bit k of the mask) forces that bit to 1 regardless of its prior value. Surgical edit.
 
-## The Solution
+</details>
+<details>
+<summary><h2>The Solution</h2></summary>
 
 
-```pseudocode
-function setKthBit(num, k):
-    # OR with mask forces bit k to 1; other bits unchanged.
-    return num bitwise OR (1 shifted left by (k − 1))
-```
 
 ```python run
 class Solution:
     def set_kth_bit(self, num: int, k: int) -> int:
-        # OR with mask forces bit k to 1; other bits unchanged.
+
+        # To turn on the Kth bit of a number, we can use bitwise OR
+        # operation. We create a mask by left-shifting 1 by (k-1)
+        # positions. Then, we perform bitwise OR between the given number
+        # and the mask to turn on the Kth bit.
         return num | (1 << (k - 1))
 
 
-if __name__ == "__main__":
-    sol = Solution()
-    print(sol.set_kth_bit(0, 1))   # 1
-    print(sol.set_kth_bit(2, 2))   # 2
-    print(sol.set_kth_bit(2, 1))   # 3
+# Examples from the problem statement
+print(Solution().set_kth_bit(0, 1))     # 1
+print(Solution().set_kth_bit(2, 2))     # 2
+print(Solution().set_kth_bit(2, 1))     # 3
+
+# Edge cases
+print(Solution().set_kth_bit(0, 4))     # 8
+print(Solution().set_kth_bit(7, 1))     # 7
+print(Solution().set_kth_bit(7, 4))     # 15
+print(Solution().set_kth_bit(16, 1))    # 17
+print(Solution().set_kth_bit(1, 1))     # 1
 ```
 
 ```java run
 public class Main {
     static class Solution {
         public int setKthBit(int num, int k) {
+
+            // To turn on the Kth bit of a number, we can use bitwise OR
+            // operation. We create a mask by left-shifting 1 by (k-1)
+            // positions. Then, we perform bitwise OR between the given
+            // number and the mask to turn on the Kth bit.
+
             return num | (1 << (k - 1));
         }
     }
 
     public static void main(String[] args) {
-        Solution sol = new Solution();
-        System.out.println(sol.setKthBit(0, 1));   // 1
-        System.out.println(sol.setKthBit(2, 2));   // 2
-        System.out.println(sol.setKthBit(2, 1));   // 3
+        // Examples from the problem statement
+        System.out.println(new Solution().setKthBit(0, 1));     // 1
+        System.out.println(new Solution().setKthBit(2, 2));     // 2
+        System.out.println(new Solution().setKthBit(2, 1));     // 3
+
+        // Edge cases
+        System.out.println(new Solution().setKthBit(0, 4));     // 8
+        System.out.println(new Solution().setKthBit(7, 1));     // 7
+        System.out.println(new Solution().setKthBit(7, 4));     // 15
+        System.out.println(new Solution().setKthBit(16, 1));    // 17
+        System.out.println(new Solution().setKthBit(1, 1));     // 1
     }
 }
 ```
 
-```c run
-#include <stdio.h>
-
-int set_kth_bit(int num, int k) {
-    return num | (1 << (k - 1));
-}
-
-int main(void) {
-    printf("%d\n", set_kth_bit(0, 1));   /* 1 */
-    printf("%d\n", set_kth_bit(2, 1));   /* 3 */
-    return 0;
-}
-```
-
-```scala run
-object Main extends App {
-  class Solution {
-    def setKthBit(num: Int, k: Int): Int = num | (1 << (k - 1))
-  }
-
-  println(new Solution().setKthBit(2, 1))   // 3
-}
-```
+</details>
 
 
 ***
@@ -295,7 +291,9 @@ Input:  num = 3, k = 1
 Output: 2                        0011 → 0010
 ```
 
-## The Recurrence
+<details>
+<summary><h2>The Recurrence</h2></summary>
+
 
 Build mask `1 << (k - 1)`. **Invert** it with `~` so every bit is 1 *except* bit k. AND with `num`: every bit of `num` survives except bit k, which is forced to 0 (because `0 AND anything = 0`).
 
@@ -307,69 +305,69 @@ result = num & ~(1 << (k - 1))
 
 Without the `~`, you'd be ANDing `num` against a mask that's 0 everywhere except bit k. That zeros out *every* bit except bit k — exact opposite of what you want. The `~` flips every bit so the AND now preserves *all* bits except the one you want to clear.
 
-## The Solution
+</details>
+<details>
+<summary><h2>The Solution</h2></summary>
 
 
-```pseudocode
-function unsetKthBit(num, k):
-    # ~mask has all 1s except bit k; AND clears bit k, preserves others.
-    mask ← 1 shifted left by (k − 1)
-    return num bitwise AND (bitwise NOT mask)
-```
 
 ```python run
 class Solution:
     def unset_kth_bit(self, num: int, k: int) -> int:
-        # ~mask has all 1s except bit k; AND clears bit k, preserves others.
+
+        # To turn off the Kth bit of a number, we can use bitwise
+        # manipulation. We create a mask by left-shifting 1 by (k-1)
+        # positions and then taking its bitwise complement. Then, we
+        # perform bitwise AND between the given number and the mask to
+        # turn off the Kth bit.
         return num & ~(1 << (k - 1))
 
 
-if __name__ == "__main__":
-    sol = Solution()
-    print(sol.unset_kth_bit(1, 1))   # 0
-    print(sol.unset_kth_bit(2, 1))   # 2
-    print(sol.unset_kth_bit(3, 1))   # 2
+# Examples from the problem statement
+print(Solution().unset_kth_bit(1, 1))    # 0
+print(Solution().unset_kth_bit(2, 1))    # 2
+print(Solution().unset_kth_bit(3, 1))    # 2
+
+# Edge cases
+print(Solution().unset_kth_bit(0, 1))    # 0
+print(Solution().unset_kth_bit(7, 2))    # 5
+print(Solution().unset_kth_bit(7, 3))    # 3
+print(Solution().unset_kth_bit(15, 4))   # 7
+print(Solution().unset_kth_bit(8, 4))    # 0
 ```
 
 ```java run
 public class Main {
     static class Solution {
         public int unsetKthBit(int num, int k) {
+
+            // To turn off the Kth bit of a number, we can use bitwise
+            // manipulation. We create a mask by left-shifting 1 by (k-1)
+            // positions and then taking its bitwise complement. Then, we
+            // perform bitwise AND between the given number and the mask to
+            // turn off the Kth bit.
+
             return num & ~(1 << (k - 1));
         }
     }
 
     public static void main(String[] args) {
-        Solution sol = new Solution();
-        System.out.println(sol.unsetKthBit(1, 1));   // 0
-        System.out.println(sol.unsetKthBit(2, 1));   // 2
-        System.out.println(sol.unsetKthBit(3, 1));   // 2
+        // Examples from the problem statement
+        System.out.println(new Solution().unsetKthBit(1, 1));    // 0
+        System.out.println(new Solution().unsetKthBit(2, 1));    // 2
+        System.out.println(new Solution().unsetKthBit(3, 1));    // 2
+
+        // Edge cases
+        System.out.println(new Solution().unsetKthBit(0, 1));    // 0
+        System.out.println(new Solution().unsetKthBit(7, 2));    // 5
+        System.out.println(new Solution().unsetKthBit(7, 3));    // 3
+        System.out.println(new Solution().unsetKthBit(15, 4));   // 7
+        System.out.println(new Solution().unsetKthBit(8, 4));    // 0
     }
 }
 ```
 
-```c run
-#include <stdio.h>
-
-int unset_kth_bit(int num, int k) {
-    return num & ~(1 << (k - 1));
-}
-
-int main(void) {
-    printf("%d\n", unset_kth_bit(3, 1));   /* 2 */
-    return 0;
-}
-```
-
-```scala run
-object Main extends App {
-  class Solution {
-    def unsetKthBit(num: Int, k: Int): Int = num & ~(1 << (k - 1))
-  }
-
-  println(new Solution().unsetKthBit(3, 1))   // 2
-}
-```
+</details>
 
 
 ***
@@ -391,7 +389,9 @@ Input:  num = 3, k = 2
 Output: 1                        0011 → 0001
 ```
 
-## The Recurrence
+<details>
+<summary><h2>The Recurrence</h2></summary>
+
 
 Build mask `1 << (k - 1)`. XOR with `num`: every bit of `num` is preserved except bit k, which is flipped.
 
@@ -403,68 +403,68 @@ result = num ^ (1 << (k - 1))
 
 XOR's truth table: `0 ^ 0 = 0`, `1 ^ 0 = 1`, `0 ^ 1 = 1`, `1 ^ 1 = 0`. XORing with 0 (every mask bit except bit k) leaves the original bit untouched. XORing with 1 (only bit k of the mask) flips that bit. The "preserve under XOR with 0, flip under XOR with 1" property is the engine behind every XOR-based algorithm in this section.
 
-## The Solution
+</details>
+<details>
+<summary><h2>The Solution</h2></summary>
 
 
-```pseudocode
-function toggleKthBit(num, k):
-    # XOR with mask flips bit k; other bits unchanged.
-    return num bitwise XOR (1 shifted left by (k − 1))
-```
 
 ```python run
 class Solution:
     def toggle_kth_bit(self, num: int, k: int) -> int:
-        # XOR with mask flips bit k; other bits unchanged.
+
+        # To toggle the Kth bit of a number, we can use bitwise XOR
+        # operation. We create a mask by left-shifting 1 by (k-1)
+        # positions. Then, we perform bitwise XOR between the given
+        # number and the mask to toggle the Kth bit.
+
         return num ^ (1 << (k - 1))
 
 
-if __name__ == "__main__":
-    sol = Solution()
-    print(sol.toggle_kth_bit(1, 1))   # 0
-    print(sol.toggle_kth_bit(3, 1))   # 2
-    print(sol.toggle_kth_bit(3, 2))   # 1
+# Examples from the problem statement
+print(Solution().toggle_kth_bit(1, 1))    # 0
+print(Solution().toggle_kth_bit(3, 1))    # 2
+print(Solution().toggle_kth_bit(3, 2))    # 1
+
+# Edge cases
+print(Solution().toggle_kth_bit(0, 1))    # 1
+print(Solution().toggle_kth_bit(0, 3))    # 4
+print(Solution().toggle_kth_bit(7, 1))    # 6
+print(Solution().toggle_kth_bit(7, 3))    # 3
+print(Solution().toggle_kth_bit(8, 4))    # 0
 ```
 
 ```java run
 public class Main {
     static class Solution {
         public int toggleKthBit(int num, int k) {
+
+            // To toggle the Kth bit of a number, we can use bitwise XOR
+            // operation. We create a mask by left-shifting 1 by (k-1)
+            // positions. Then, we perform bitwise XOR between the given
+            // number and the mask to toggle the Kth bit.
+
             return num ^ (1 << (k - 1));
         }
     }
 
     public static void main(String[] args) {
-        Solution sol = new Solution();
-        System.out.println(sol.toggleKthBit(1, 1));   // 0
-        System.out.println(sol.toggleKthBit(3, 1));   // 2
-        System.out.println(sol.toggleKthBit(3, 2));   // 1
+        // Examples from the problem statement
+        System.out.println(new Solution().toggleKthBit(1, 1));    // 0
+        System.out.println(new Solution().toggleKthBit(3, 1));    // 2
+        System.out.println(new Solution().toggleKthBit(3, 2));    // 1
+
+        // Edge cases
+        System.out.println(new Solution().toggleKthBit(0, 1));    // 1
+        System.out.println(new Solution().toggleKthBit(0, 3));    // 4
+        System.out.println(new Solution().toggleKthBit(7, 1));    // 6
+        System.out.println(new Solution().toggleKthBit(7, 3));    // 3
+        System.out.println(new Solution().toggleKthBit(8, 4));    // 0
     }
 }
 ```
 
-```c run
-#include <stdio.h>
-
-int toggle_kth_bit(int num, int k) {
-    return num ^ (1 << (k - 1));
-}
-
-int main(void) {
-    printf("%d\n", toggle_kth_bit(3, 2));   /* 1 */
-    return 0;
-}
-```
-
-```scala run
-object Main extends App {
-  class Solution {
-    def toggleKthBit(num: Int, k: Int): Int = num ^ (1 << (k - 1))
-  }
-
-  println(new Solution().toggleKthBit(3, 2))   // 1
-}
-```
+</details>
 
 
 ***

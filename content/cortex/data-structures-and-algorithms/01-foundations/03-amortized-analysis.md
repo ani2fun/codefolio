@@ -107,7 +107,7 @@ If `Φ(D₀) = 0` and `Φ(D_n) ≥ 0`, the amortized cost is an upper bound on t
 
 For dynamic-array push: define `Φ(D) = 2 · (size − capacity/2)` (twice the number of elements past the halfway mark). Cheap push: `c_i = 1`, `ΔΦ = 2`, amortized = `3`. Resize push at size `k`: `c_i = k`, `ΔΦ = 2 - k`, amortized = `2`. Either way, `O(1)` amortized.
 
-The potential method is the most powerful and the most opaque. The "right" potential function isn't obvious; it's what cleverness looks like in algorithm analysis. We'll see it again in the [Self-Balancing BST](/cortex/data-structures-and-algorithms/trees-self-balancing-bst-overview) chapter, where splay-tree analyses use a logarithmic potential function.
+The potential method is the most powerful and the most opaque. The "right" potential function isn't obvious; it's what cleverness looks like in algorithm analysis. We'll see it again in the [Self-Balancing BST](/cortex/data-structures-and-algorithms/trees-self-balancing-bst-overview-self-balancing-bst-overview) chapter, where splay-tree analyses use a logarithmic potential function.
 
 ```mermaid
 ---
@@ -245,18 +245,6 @@ The intuition: a 1-bit transition is cheap (cost 1). Long carry chains are expen
 
 The code below implements a dynamic array with growth factor 2, pushes a million items, and measures both per-push cost and total cost. The graph the data tells: a few catastrophically expensive pushes, the rest near-instant, and the average per push converging to constant.
 
-```pseudocode
-function dynamicArrayPush(arr, x):
-    if size(arr) = capacity(arr):
-        newCapacity ← 2 × capacity(arr)
-        newBuf ← allocate(newCapacity)
-        copy arr.buf → newBuf
-        arr.buf ← newBuf
-        arr.capacity ← newCapacity
-    arr.buf[size(arr)] ← x
-    size(arr) ← size(arr) + 1
-```
-
 ```python run
 import time
 
@@ -341,85 +329,6 @@ public class Main {
 }
 ```
 
-```c run
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <time.h>
-
-typedef struct { int *buf; int size; int cap; } DynArray;
-
-static void da_push(DynArray *a, int x) {
-    if (a->size == a->cap) {
-        int new_cap = a->cap * 2;
-        int *new_buf = malloc(new_cap * sizeof(int));
-        memcpy(new_buf, a->buf, a->size * sizeof(int));
-        free(a->buf);
-        a->buf = new_buf;
-        a->cap = new_cap;
-    }
-    a->buf[a->size++] = x;
-}
-
-static double ms(struct timespec a, struct timespec b) {
-    return (b.tv_sec - a.tv_sec) * 1000.0 + (b.tv_nsec - a.tv_nsec) / 1e6;
-}
-
-int main(void) {
-    DynArray a = { malloc(sizeof(int)), 0, 1 };
-    int n = 1000000;
-    struct timespec t0, t1;
-    clock_gettime(CLOCK_MONOTONIC, &t0);
-    for (int i = 0; i < n; i++) da_push(&a, i);
-    clock_gettime(CLOCK_MONOTONIC, &t1);
-    double total = ms(t0, t1);
-    printf("Pushed %d items in %.0f ms\n", n, total);
-    printf("Average per push: %.3f µs (amortized constant)\n", total * 1000 / n);
-    free(a.buf);
-    return 0;
-}
-```
-
-```scala run
-object Main extends App {
-  class DynArray {
-    var buf: Array[Int] = new Array[Int](1)
-    var size: Int = 0
-    var cap: Int = 1
-
-    def push(x: Int): Unit = {
-      if (size == cap) {
-        val newCap = cap * 2
-        val newBuf = new Array[Int](newCap)
-        System.arraycopy(buf, 0, newBuf, 0, size)
-        buf = newBuf
-        cap = newCap
-      }
-      buf(size) = x
-      size += 1
-    }
-  }
-
-  val a = new DynArray
-  val n = 1_000_000
-  val times = new Array[Long](n)
-  val t0 = System.nanoTime()
-  for (i <- 0 until n) {
-    val s = System.nanoTime()
-    a.push(i)
-    times(i) = System.nanoTime() - s
-  }
-  val total = System.nanoTime() - t0
-  val maxNs = times.max
-  java.util.Arrays.sort(times)
-  val p99 = times((n * 0.99).toInt)
-  println(f"Pushed $n%,d items in ${total / 1e6}%.0f ms")
-  println(f"Average per push: ${total / 1e3 / n}%.3f µs (amortized constant)")
-  println(f"99th percentile:  ${p99 / 1e3}%.3f µs")
-  println(f"Max single push:  ${maxNs / 1000} µs (the worst resize)")
-}
-```
-
 What you should see: total time around 50-150 ms (varies by language and hardware) for a million pushes. Average per push around 0.05–0.15 µs. The 99th percentile is similar — most pushes are uniformly fast. The *max* single push is hundreds of microseconds — that's the final resize, copying half a million elements. The average doesn't notice.
 
 ***
@@ -498,63 +407,54 @@ Click any question to reveal the answer.
 **A:** Total cost of any sequence of `n` operations, divided by `n`, in the worst case over all sequences. *Not* an average over inputs — it's an average over operations on one structure.
 
 </details>
-
 <details>
 <summary><strong>Q:</strong> Three methods to prove amortized cost claims?</summary>
 
 **A:** **Aggregate** (total over `n` ops, divide by `n`). **Accounting** (charge ops more than actual cost; bank credits). **Potential** (`amortized = actual + ΔΦ` where `Φ` is a potential function).
 
 </details>
-
 <details>
 <summary><strong>Q:</strong> Amortized cost of dynamic-array push (growth factor 2)?</summary>
 
 **A:** `O(1)`. Total cost of `n` pushes ≤ `3n` (n pushes + ≤ 2n copy work from geometric resize series).
 
 </details>
-
 <details>
 <summary><strong>Q:</strong> Why does growth factor 2 give amortized `O(1)` but constant `+k` growth give amortized `O(n)`?</summary>
 
 **A:** Geometric series sums to `O(n)` total resize work. Arithmetic series sums to `O(n²)`. The constant factor must be `>1` strictly, not additive.
 
 </details>
-
 <details>
 <summary><strong>Q:</strong> Why must dynamic-array shrink only at quarter-full, not half-full?</summary>
 
 **A:** Half-full triggers oscillation: pop-shrink-push-resize repeatedly, each `O(n)`. Quarter-full guarantees enough work between shrinks to amortise the resize.
 
 </details>
-
 <details>
 <summary><strong>Q:</strong> Amortized cost of binary-counter increment (cost = bits flipped)?</summary>
 
 **A:** `O(1)`. Total flips over `n` increments ≤ `2n` (geometric series: bit `i` flips every `2^i` increments).
 
 </details>
-
 <details>
 <summary><strong>Q:</strong> Splay-tree access — amortized vs worst-case?</summary>
 
 **A:** Amortized `O(log n)`; worst-case `O(n)`. Excellent for batch processing; bad for latency-sensitive systems.
 
 </details>
-
 <details>
 <summary><strong>Q:</strong> When is amortized analysis the wrong tool?</summary>
 
 **A:** Real-time / latency-bounded systems. Amortized averages over a sequence; one operation can still be `O(n)`. Use worst-case-bounded structures (RB-tree over splay) for hard deadlines.
 
 </details>
-
 <details>
 <summary><strong>Q:</strong> Why does Linux's CFS scheduler use RB-tree instead of splay tree, despite splay being amortized `O(log n)`?</summary>
 
 **A:** Per-decision worst-case bound matters more than throughput average. Splay's `O(n)` worst case is unacceptable in a scheduler; RB-tree's `O(log n)` worst case isn't.
 
 </details>
-
 <details>
 <summary><strong>Q:</strong> Hash-table insert: average vs amortized?</summary>
 
@@ -603,7 +503,7 @@ def aggregate_cost(n):
 
 - **Prerequisite:** [Asymptotic Analysis](/cortex/data-structures-and-algorithms/foundations-asymptotic-analysis), [Recurrence Relations](/cortex/data-structures-and-algorithms/foundations-recurrence-relations-and-master-theorem).
 - **Cited from:** [Arrays](/cortex/data-structures-and-algorithms/linear-structures-arrays-introduction) — the dynamic-array push complexity claim. [Hash Table](/cortex/data-structures-and-algorithms/linear-structures-hash-table-introduction-to-hash-tables) — the hash-table resize claim.
-- **Used by:** [Self-Balancing BSTs](/cortex/data-structures-and-algorithms/trees-self-balancing-bst-overview) — *stub* — splay-tree and AVL-tree amortized analyses. [Heap](/cortex/data-structures-and-algorithms/trees-heap-introduction-to-heaps) — heap-construction is `O(n)` despite naive sum suggesting `O(n log n)`.
+- **Used by:** [Self-Balancing BSTs](/cortex/data-structures-and-algorithms/trees-self-balancing-bst-overview-self-balancing-bst-overview) — *stub* — splay-tree and AVL-tree amortized analyses. [Heap](/cortex/data-structures-and-algorithms/trees-heap-introduction-to-heaps) — heap-construction is `O(n)` despite naive sum suggesting `O(n log n)`.
 
 ***
 

@@ -66,29 +66,6 @@ Industry-standard "HyperLogLog++" uses `m = 16384` (2^14) buckets, 6-bit counter
 
 # The HLL algorithm
 
-```pseudocode
-constants:
-    m ← 2^p     (number of buckets, usually p = 14 → m = 16384)
-    α_m ≈ 0.7213 / (1 + 1.079/m)
-
-state:
-    R ← array of m counters, all 0
-
-function add(x):
-    h ← hash64(x)
-    j ← top p bits of h           # bucket index
-    w ← remaining bits of h
-    R[j] ← max(R[j], leadingZeros(w) + 1)
-
-function estimate():
-    Z ← 1 / (Σ over j of 2^(-R[j]))
-    E ← α_m · m² · Z
-    # Bias corrections for small / large E
-    if E ≤ 5m/2: …
-    if E > 2³² / 30: …
-    return E
-```
-
 The Z-formula is the harmonic mean of `2^R[j]` — gives lower variance than arithmetic mean. The bias corrections are small adjustments for extreme cardinalities.
 
 ***
@@ -230,49 +207,42 @@ Click any question to reveal the answer.
 **A:** Cardinality (number of distinct items) of a stream, regardless of stream size.
 
 </details>
-
 <details>
 <summary><strong>Q:</strong> Memory at <code>p = 14</code> (industry standard)?</summary>
 
 **A:** ~12 KB (16384 buckets × 6 bits). Standard error ~0.81%.
 
 </details>
-
 <details>
 <summary><strong>Q:</strong> Core trick?</summary>
 
 **A:** Hash each item to a uniform 64-bit value. Track the *maximum number of leading zeros* per bucket. By chance, max leading zeros ≈ log₂(distinct items).
 
 </details>
-
 <details>
 <summary><strong>Q:</strong> Why bucket?</summary>
 
 **A:** A single counter has huge variance. `m` buckets reduce standard error to `1.04 / √m`.
 
 </details>
-
 <details>
 <summary><strong>Q:</strong> What's the harmonic mean for and why?</summary>
 
 **A:** `n ≈ α · m² / Σ 2^(-R[j])`. Harmonic mean of `2^R[j]` reduces variance vs arithmetic mean.
 
 </details>
-
 <details>
 <summary><strong>Q:</strong> Are HLLs mergeable?</summary>
 
 **A:** Yes! Take per-bucket max across two HLLs to get the union's HLL. Critical for distributed analytics.
 
 </details>
-
 <details>
 <summary><strong>Q:</strong> Tradeoff space — error vs memory at p?</summary>
 
 **A:** `p = 12`: 1.625% error, 3 KB. `p = 14`: 0.81%, 12 KB. `p = 16`: 0.41%, 48 KB. `p = 18`: 0.20%, 192 KB.
 
 </details>
-
 <details>
 <summary><strong>Q:</strong> Where does HLL ship in production?</summary>
 

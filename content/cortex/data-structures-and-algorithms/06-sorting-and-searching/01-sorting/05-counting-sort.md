@@ -358,55 +358,40 @@ This makes stable sorts (counting sort, merge sort, insertion sort, optimised bu
 
 ## Key Takeaway
 
-Counting sort is stable because phase 3 walks the input in reverse and uses post-decrement on the cumulative count. The reverse walk is *deliberate*; flipping it to forward breaks stability. Now we'll write the implementation in all 10 languages.
+Counting sort is stable because phase 3 walks the input in reverse and uses post-decrement on the cumulative count. The reverse walk is *deliberate*; flipping it to forward breaks stability. Now we'll write the implementation in Python and Java.
 
 ***
 
 # Implementation
 
 
-```pseudocode
-function countingSort(arr, k):                # k is the max value (range 0..k)
-    n ← length(arr)
-
-    # Phase 1 — count occurrences of each value.
-    count ← list of (k + 1) zeros
-    for each v in arr:
-        count[v] ← count[v] + 1
-
-    # Phase 2 — cumulative sum: count[v] = number of elements ≤ v.
-    for i from 1 to k:
-        count[i] ← count[i] + count[i − 1]
-
-    # Phase 3 — place elements into result, scanning arr right-to-left for stability.
-    result ← list of n zeros
-    for i from n − 1 down to 0:
-        count[arr[i]] ← count[arr[i]] − 1
-        result[count[arr[i]]] ← arr[i]
-    return result
-```
-
 ```python run
 from typing import List
 
 class Solution:
     def counting_sort(self, arr: List[int], k: int) -> List[int]:
-        n = len(arr)
+        n: int = len(arr)
 
-        # Phase 1: count occurrences of each value
-        count = [0] * (k + 1)
-        for v in arr:
-            count[v] += 1
+        # Create a count array to store the frequency of each key
+        count: List[int] = [0] * (k + 1)
 
-        # Phase 2: cumulative sum — count[v] = number of elements ≤ v
+        # Store the frequency of each key in the count array
+        for i in range(n):
+            count[arr[i]] += 1
+
+        # Modify the count array to store the actual position of each key
+        # in the sorted array
         for i in range(1, k + 1):
             count[i] += count[i - 1]
 
-        # Phase 3: place elements in reverse for stability
+        # Create a temporary array to store the sorted result
         result = [0] * n
+
+        # Build the sorted result array
         for i in range(n - 1, -1, -1):
-            count[arr[i]] -= 1                   # equivalent to "decrement after lookup"
-            result[count[arr[i]]] = arr[i]
+            result[count[arr[i]] - 1] = arr[i]
+            count[arr[i]] -= 1
+
         return result
 
 
@@ -419,15 +404,30 @@ public class Main {
     static class Solution {
         public int[] countingSort(int[] arr, int k) {
             int n = arr.length;
-            int[] count = new int[k + 1];
-            for (int v : arr) count[v]++;
-            for (int i = 1; i <= k; i++) count[i] += count[i - 1];
 
-            int[] result = new int[n];
-            for (int i = n - 1; i >= 0; i--) {
-                count[arr[i]]--;
-                result[count[arr[i]]] = arr[i];
+            // Create a count array to store the frequency of each key
+            int[] count = new int[k + 1];
+
+            // Store the frequency of each key in the count array
+            for (int i = 0; i < n; i++) {
+                count[arr[i]]++;
             }
+
+            // Modify the count array to store the actual position of each
+            // key in the sorted array
+            for (int i = 1; i <= k; i++) {
+                count[i] += count[i - 1];
+            }
+
+            // Create a temporary array to store the sorted result
+            int[] result = new int[n];
+
+            // Build the sorted result array
+            for (int i = n - 1; i >= 0; i--) {
+                result[count[arr[i]] - 1] = arr[i];
+                count[arr[i]]--;
+            }
+
             return result;
         }
     }
@@ -437,58 +437,6 @@ public class Main {
         for (int x : r) System.out.print(x + " ");
         System.out.println();
     }
-}
-```
-
-```c run
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-
-int *counting_sort(int *arr, int n, int k) {
-    int *count = (int *) calloc(k + 1, sizeof(int));
-    for (int i = 0; i < n; i++) count[arr[i]]++;
-    for (int i = 1; i <= k; i++) count[i] += count[i - 1];
-
-    int *result = (int *) malloc(n * sizeof(int));
-    for (int i = n - 1; i >= 0; i--) {
-        count[arr[i]]--;
-        result[count[arr[i]]] = arr[i];
-    }
-    free(count);
-    return result;
-}
-
-int main(void) {
-    int arr[] = {2, 5, 3, 0, 2, 3, 0, 3};
-    int n = 8;
-    int *r = counting_sort(arr, n, 5);
-    for (int i = 0; i < n; i++) printf("%d ", r[i]);
-    printf("\n");
-    free(r);
-    return 0;
-}
-```
-
-```scala run
-object Main extends App {
-  class Solution {
-    def countingSort(arr: Array[Int], k: Int): Array[Int] = {
-      val n = arr.length
-      val count = Array.fill(k + 1)(0)
-      for (v <- arr) count(v) += 1
-      for (i <- 1 to k) count(i) += count(i - 1)
-
-      val result = new Array[Int](n)
-      for (i <- (n - 1) to 0 by -1) {
-        count(arr(i)) -= 1
-        result(count(arr(i))) = arr(i)
-      }
-      result
-    }
-  }
-
-  println(new Solution().countingSort(Array(2, 5, 3, 0, 2, 3, 0, 3), 5).mkString(" "))
 }
 ```
 
@@ -507,14 +455,14 @@ Phase 2 — cumulative sum
 Phase 3 — place in reverse
   result = [_, _, _, _, _, _, _, _]   (n = 8)
 
-  i=7: arr[7]=3, count[3]=7 → count[3]=6, result[6]=3
-  i=6: arr[6]=0, count[0]=2 → count[0]=1, result[1]=0
-  i=5: arr[5]=3, count[3]=6 → count[3]=5, result[5]=3
-  i=4: arr[4]=2, count[2]=4 → count[2]=3, result[3]=2
-  i=3: arr[3]=0, count[0]=1 → count[0]=0, result[0]=0
-  i=2: arr[2]=3, count[3]=5 → count[3]=4, result[4]=3
-  i=1: arr[1]=5, count[5]=8 → count[5]=7, result[7]=5
-  i=0: arr[0]=2, count[2]=3 → count[2]=2, result[2]=2
+  i=7: arr[7]=3, count[3]=7 → result[6]=3, count[3]=6
+  i=6: arr[6]=0, count[0]=2 → result[1]=0, count[0]=1
+  i=5: arr[5]=3, count[3]=6 → result[5]=3, count[3]=5
+  i=4: arr[4]=2, count[2]=4 → result[3]=2, count[2]=3
+  i=3: arr[3]=0, count[0]=1 → result[0]=0, count[0]=0
+  i=2: arr[2]=3, count[3]=5 → result[4]=3, count[3]=4
+  i=1: arr[1]=5, count[5]=8 → result[7]=5, count[5]=7
+  i=0: arr[0]=2, count[2]=3 → result[2]=2, count[2]=2
 
   result = [0, 0, 2, 2, 3, 3, 3, 5] ✓
 ```
@@ -591,13 +539,14 @@ Output: [1, 2, 3, 4, 5, 6]
 
 ---
 
-## The Solution
+<details>
+<summary><h2>Solution &amp; Analysis</h2></summary>
 
-Implementation matches the version above (10 languages already shown in the [Implementation](#implementation) section).
+### The Solution
 
----
+Implementation matches the version above (already shown in the [Implementation](#implementation) section).
 
-## Edge Cases
+### Edge Cases
 
 | Case | Example | Expected |
 |---|---|---|
@@ -607,9 +556,10 @@ Implementation matches the version above (10 languages already shown in the [Imp
 | Already sorted | `[1, 2, 3]` | `[1, 2, 3]` (still does full `O(n + k)` work) |
 | `k` much larger than `n` | `arr = [0, 1, 2], k = 1000000` | `[0, 1, 2]` (works but wastes memory on a 1M-cell count array) |
 
----
+</details>
+<details>
+<summary><h2>Final Takeaway</h2></summary>
 
-## Final Takeaway
 
 Counting sort is the first algorithm in this section that breaks the `O(n log n)` lower bound. By trading memory for speed and limiting itself to small integer ranges, it achieves linear time. The price: `O(k)` extra memory, integers only, not in-place.
 
@@ -617,6 +567,7 @@ The next algorithm — quicksort — returns to the comparison-sort family but g
 
 **Transfer challenge — try before the Quicksort lesson:** Modify counting sort to handle arrays with negative integers in a known range `[min_val, max_val]`. (Hint: shift all values to be non-negative, sort, then shift back.) What happens to the time and space complexity?
 
+</details>
 <details>
 <summary><strong>Answer — open after you've thought about it</strong></summary>
 

@@ -162,66 +162,93 @@ Input:  graph = [[4], [0, 3], [0, 4], [2, 4], []]
 Output: [[0, 4]]
 ```
 
-## Pattern Mapping
+<details>
+<summary><h2>Pattern Mapping</h2></summary>
+
 
 - `f`: append node to current path list.
 - `g`: append a copy of the current path to `paths` when destination reached.
 - `f⁻¹`: pop last element from current path list on exit.
 
-## The Solution
+</details>
+<details>
+<summary><h2>The Solution</h2></summary>
 
 
-```pseudocode
-function dfs(graph, node, path, paths, inPath):
-    add node to inPath
-    append node to path
-    if node = last node in graph:
-        append copy of path to paths   # reached destination
-    else:
-        for neighbor in graph[node]:
-            if neighbor is not in inPath:
-                dfs(graph, neighbor, path, paths, inPath)
-    pop from path
-    remove node from inPath
-
-function sourceToTargetPaths(graph):
-    paths ← empty list
-    dfs(graph, 0, empty list, paths, empty set)
-    return paths
-```
 
 ```python run
 from typing import List, Set
 
 class Solution:
-    def dfs(self,
-            graph: List[List[int]],
-            node: int,
-            path: List[int],
-            paths: List[List[int]],
-            in_path: Set[int]) -> None:
-        in_path.add(node)
-        path.append(node)                      # f: enter
+    def dfs(
+        self,
+        graph: List[List[int]],
+        node: int,
+        path: List[int],
+        paths: List[List[int]],
+        nodes_in_path: Set[int],
+    ) -> None:
 
+        # Insert the current node into the set of nodes in the current
+        # path to avoid cycles
+        nodes_in_path.add(node)
+
+        # Add the current node to the path
+        path.append(node)
+
+        # If the current node is the destination node, add the current
+        # path to the paths list
         if node == len(graph) - 1:
-            paths.append(path.copy())          # g: record a snapshot of the path
+            paths.append(path.copy())
+
+        # Else, recursively explore all the neighbours of the current
+        # node
         else:
             for neighbour in graph[node]:
-                if neighbour not in in_path:
-                    self.dfs(graph, neighbour, path, paths, in_path)
 
-        path.pop()                             # f⁻¹: leave
-        in_path.discard(node)
+                # Perform DFS on the neighbour node if it is not already
+                # in the current path to avoid cycles
+                if neighbour not in nodes_in_path:
+                    self.dfs(
+                        graph, neighbour, path, paths, nodes_in_path
+                    )
 
-    def source_to_target_paths(self, graph: List[List[int]]) -> List[List[int]]:
+        # Remove the current node from the path as we are done exploring
+        path.pop()
+
+        # Remove the current node from the set of nodes in the current
+        # path to allow it to be visited again in other paths
+        nodes_in_path.remove(node)
+
+    def source_to_target_paths(
+        self, graph: List[List[int]]
+    ) -> List[List[int]]:
+
+        # Result list to store all the paths
         paths: List[List[int]] = []
+
+        # List to store the current path
         path: List[int] = []
-        in_path: Set[int] = set()
-        self.dfs(graph, 0, path, paths, in_path)
+
+        # Set to keep track of nodes in the current path
+        nodes_in_path: Set[int] = set()
+
+        # Perform DFS starting from node 0
+        self.dfs(graph, 0, path, paths, nodes_in_path)
+
+        # Return the list of paths
         return paths
 
 
-print(Solution().source_to_target_paths([[1, 2], [4], [3, 4], [4], []]))
+# Examples from the problem statement
+print(Solution().source_to_target_paths([[1,2],[4],[3,4],[4],[0]]))   # [[0,1,4],[0,2,3,4],[0,2,4]]
+print(Solution().source_to_target_paths([[4],[0,3],[0,4],[2,4],[1]])) # [[0,4]]
+
+# Edge cases
+print(Solution().source_to_target_paths([[0]]))          # [[0]] — single node, src==dst
+print(Solution().source_to_target_paths([[1], []]))      # [[0, 1]]
+print(Solution().source_to_target_paths([[], [0]]))      # [] — no path from 0 to 1
+print(Solution().source_to_target_paths([[1,2],[2],[]]))  # [[0,1,2],[0,2]]
 ```
 
 ```java run
@@ -229,106 +256,87 @@ import java.util.*;
 
 public class Main {
     static class Solution {
-        public void dfs(List<List<Integer>> graph, int node, List<Integer> path,
-                        List<List<Integer>> paths, Set<Integer> inPath) {
-            inPath.add(node);
+        private void dfs(
+            List<List<Integer>> graph,
+            int node,
+            List<Integer> path,
+            List<List<Integer>> paths,
+            Set<Integer> nodesInPath
+        ) {
+
+            // Insert the current node into the set of nodes in the current
+            // path to avoid cycles
+            nodesInPath.add(node);
+
+            // Add the current node to the path
             path.add(node);
-            if (node == graph.size() - 1) paths.add(new ArrayList<>(path));
-            else for (int n : graph.get(node))
-                if (!inPath.contains(n)) dfs(graph, n, path, paths, inPath);
+
+            // If the current node is the destination node, add the current
+            // path to the paths list
+            if (node == graph.size() - 1) {
+                paths.add(new ArrayList<>(path));
+            }
+
+            // Else, recursively explore all the neighbours of the current
+            // node
+            else {
+                for (int neighbour : graph.get(node)) {
+
+                    // Perform DFS on the neighbour node if it is not already
+                    // in the current path to avoid cycles
+                    if (!nodesInPath.contains(neighbour)) {
+                        dfs(graph, neighbour, path, paths, nodesInPath);
+                    }
+                }
+            }
+
+            // Remove the current node from the path as we are done exploring
+            // it
             path.remove(path.size() - 1);
-            inPath.remove(node);
+
+            // Remove the current node from the set of nodes in the current
+            // path to allow it to be visited again in other paths
+            nodesInPath.remove(node);
         }
 
-        public List<List<Integer>> sourceToTargetPaths(List<List<Integer>> graph) {
+        public List<List<Integer>> sourceToTargetPaths(
+            List<List<Integer>> graph
+        ) {
+
+            // Result list to store all the paths
             List<List<Integer>> paths = new ArrayList<>();
-            dfs(graph, 0, new ArrayList<>(), paths, new HashSet<>());
+
+            // List to store the current path
+            List<Integer> path = new ArrayList<>();
+
+            // Set to keep track of nodes in the current path
+            Set<Integer> nodesInPath = new HashSet<>();
+
+            // Perform DFS starting from node 0
+            dfs(graph, 0, path, paths, nodesInPath);
+
+            // Return the list of paths
             return paths;
         }
     }
 
     public static void main(String[] args) {
-        var g = List.of(List.of(1, 2), List.of(4), List.of(3, 4), List.of(4), List.<Integer>of());
-        System.out.println(new Solution().sourceToTargetPaths(g));
+        Solution sol = new Solution();
+
+        // Examples from the problem statement
+        System.out.println(sol.sourceToTargetPaths(List.of(List.of(1,2),List.of(4),List.of(3,4),List.of(4),List.of(0))));  // [[0,1,4],[0,2,3,4],[0,2,4]]
+        System.out.println(sol.sourceToTargetPaths(List.of(List.of(4),List.of(0,3),List.of(0,4),List.of(2,4),List.of(1))));  // [[0,4]]
+
+        // Edge cases
+        System.out.println(sol.sourceToTargetPaths(List.of(List.of(0))));  // [[0]] — single node, src==dst
+        System.out.println(sol.sourceToTargetPaths(List.of(List.of(1), new ArrayList<>())));  // [[0, 1]]
+        System.out.println(sol.sourceToTargetPaths(List.of(new ArrayList<>(), List.of(0))));  // [] — no path from 0 to 1
+        System.out.println(sol.sourceToTargetPaths(List.of(List.of(1,2), List.of(2), new ArrayList<>())));  // [[0,1,2],[0,2]]
     }
 }
 ```
 
-```c run
-#include <stdio.h>
-#include <stdlib.h>
-#include <stdbool.h>
-
-typedef struct { int* data; int size; } AdjList;
-
-static int** all_paths;
-static int* all_path_lengths;
-static int total_paths;
-
-static void dfs(AdjList* graph, int n, int node, int* path, int path_size, bool* in_path) {
-    in_path[node] = true;
-    path[path_size++] = node;
-    if (node == n - 1) {
-        all_paths = realloc(all_paths, (total_paths + 1) * sizeof(int*));
-        all_path_lengths = realloc(all_path_lengths, (total_paths + 1) * sizeof(int));
-        all_paths[total_paths] = malloc(path_size * sizeof(int));
-        for (int i = 0; i < path_size; i++) all_paths[total_paths][i] = path[i];
-        all_path_lengths[total_paths] = path_size;
-        total_paths++;
-    } else {
-        for (int i = 0; i < graph[node].size; i++) {
-            int neighbour = graph[node].data[i];
-            if (!in_path[neighbour]) dfs(graph, n, neighbour, path, path_size, in_path);
-        }
-    }
-    in_path[node] = false;
-}
-
-int main() {
-    int g0[]={1,2}, g1[]={4}, g2[]={3,4}, g3[]={4};
-    AdjList g[]={{g0,2},{g1,1},{g2,2},{g3,1},{NULL,0}};
-    int path[10];
-    bool in_path[5] = {false};
-    all_paths = NULL; all_path_lengths = NULL; total_paths = 0;
-    dfs(g, 5, 0, path, 0, in_path);
-    for (int i = 0; i < total_paths; i++) {
-        printf("[");
-        for (int j = 0; j < all_path_lengths[i]; j++) printf("%d ", all_paths[i][j]);
-        printf("]\n");
-        free(all_paths[i]);
-    }
-    free(all_paths); free(all_path_lengths);
-    return 0;
-}
-```
-
-```scala run
-import scala.collection.mutable
-
-object Main extends App {
-  class Solution {
-    def dfs(graph: Array[Array[Int]], node: Int,
-            path: mutable.ArrayBuffer[Int],
-            paths: mutable.ArrayBuffer[Seq[Int]],
-            inPath: mutable.Set[Int]): Unit = {
-      inPath.add(node); path.append(node)
-      if (node == graph.length - 1) paths.append(path.toSeq)
-      else for (n <- graph(node) if !inPath.contains(n)) dfs(graph, n, path, paths, inPath)
-      path.remove(path.length - 1)
-      inPath.remove(node)
-    }
-
-    def sourceToTargetPaths(graph: Array[Array[Int]]): Seq[Seq[Int]] = {
-      val paths = mutable.ArrayBuffer.empty[Seq[Int]]
-      dfs(graph, 0, mutable.ArrayBuffer.empty, paths, mutable.Set.empty)
-      paths.toSeq
-    }
-  }
-
-  val g = Array(Array(1, 2), Array(4), Array(3, 4), Array(4), Array.empty[Int])
-  println(new Solution().sourceToTargetPaths(g))
-}
-```
+</details>
 
 
 ***
@@ -345,7 +353,9 @@ Input:  graph = [[(1,2),(3,5)], [(4,2)], [(4,1)], [(2,2)], [(3,1)]],
 Output: [[0,1,4,3], [0,3]]
 ```
 
-## Pattern Mapping
+<details>
+<summary><h2>Pattern Mapping</h2></summary>
+
 
 - `f`: append node to path list AND add edge weight to running sum.
 - `g`: append the path *only if* the running sum equals target.
@@ -353,66 +363,113 @@ Output: [[0,1,4,3], [0,3]]
 
 The only twist from the previous problem is the running edge-weight sum carried alongside the path.
 
-## The Solution
+</details>
+<details>
+<summary><h2>The Solution</h2></summary>
 
 
-```pseudocode
-function dfs(graph, node, dest, curSum, target, path, paths, inPath):
-    add node to inPath
-    append node to path
-    if node = dest AND curSum = target:
-        append copy of path to paths   # sum-matching path found
-    else:
-        for (neighbor, weight) in graph[node]:
-            if neighbor is not in inPath:
-                dfs(graph, neighbor, dest, curSum+weight, target, path, paths, inPath)
-    pop from path
-    remove node from inPath
-
-function targetPaths(graph, source, dest, target):
-    paths ← empty list
-    dfs(graph, source, dest, 0, target, empty list, paths, empty set)
-    return paths
-```
 
 ```python run
-from typing import List, Tuple, Set
+from typing import List, Set, Tuple
 
 class Solution:
-    def dfs(self,
-            graph: List[List[Tuple[int, int]]],
-            node: int,
-            destination: int,
-            current_sum: int,
-            target: int,
-            path: List[int],
-            paths: List[List[int]],
-            in_path: Set[int]) -> None:
-        in_path.add(node)
+    def dfs(
+        self,
+        graph: List[List[Tuple[int, int]]],
+        node: int,
+        destination: int,
+        current_sum: int,
+        target: int,
+        path: List[int],
+        paths: List[List[int]],
+        nodes_in_path: Set[int],
+    ) -> None:
+
+        # Insert the current node into the set of nodes in the current
+        # path to avoid revisiting the same node
+        nodes_in_path.add(node)
+
+        # Add the current node to the path
         path.append(node)
 
-        # Check at the destination — only the sum-equals-target paths qualify.
+        # If the current node is the destination and the path sum equals
+        # the target sum, store the current path
         if node == destination and current_sum == target:
             paths.append(path.copy())
+
+        # Else, explore all the neighbours of the current node
         else:
             for neighbour, weight in graph[node]:
-                if neighbour not in in_path:
-                    self.dfs(graph, neighbour, destination, current_sum + weight,
-                             target, path, paths, in_path)
 
+                # Perform DFS on the neighbour node if it is not already
+                # in the current path to avoid cycles
+                if neighbour not in nodes_in_path:
+
+                    # Explore neighbour and add its edge weight to the
+                    # current sum
+                    self.dfs(
+                        graph,
+                        neighbour,
+                        destination,
+                        current_sum + weight,
+                        target,
+                        path,
+                        paths,
+                        nodes_in_path,
+                    )
+
+        # Remove the current node from the path as we are done exploring
+        # it
         path.pop()
-        in_path.discard(node)
 
-    def target_paths(self,
-                     graph: List[List[Tuple[int, int]]],
-                     source: int, destination: int, target: int) -> List[List[int]]:
+        # Remove the current node from the set of nodes in the current
+        # path to allow it to be visited again in other paths
+        nodes_in_path.remove(node)
+
+    def target_paths(
+        self,
+        graph: List[List[Tuple[int, int]]],
+        source: int,
+        destination: int,
+        target: int,
+    ) -> List[List[int]]:
+
+        # Result list to store all the Hamiltonian paths
         paths: List[List[int]] = []
-        self.dfs(graph, source, destination, 0, target, [], paths, set())
+
+        # List to store the current path being explored
+        path: List[int] = []
+
+        # Set to keep track of nodes currently in the path
+        nodes_in_path: Set[int] = set()
+
+        # Perform DFS starting from the source node with an initial sum
+        # of 0
+        self.dfs(
+            graph,
+            source,
+            destination,
+            0,
+            target,
+            path,
+            paths,
+            nodes_in_path,
+        )
+
+        # Return the list of valid paths with the given sum
         return paths
 
 
-graph = [[(1, 2), (3, 5)], [(4, 2)], [(4, 1)], [(2, 2)], [(3, 1)]]
-print(Solution().target_paths(graph, 0, 3, 5))   # [[0,1,4,3], [0,3]]
+# Examples from the problem statement
+print(Solution().target_paths([[[1,2],[3,5]],[[4,2]],[[4,1]],[[2,2]],[[3,1]]], 0, 3, 5))  # [[0,1,4,3],[0,3]]
+print(Solution().target_paths([[[4,2]],[[3,3],[0,4]],[[4,3],[0,1]],[[2,1],[4,4]],[[1,5]]], 3, 4, 4))  # [[3,2,4],[3,2,0,4],[3,4]]
+
+# Edge cases
+print(Solution().target_paths([], 0, 0, 0))                           # []
+print(Solution().target_paths([[]], 0, 0, 0))                         # [[0]]
+print(Solution().target_paths([[[1,3]],[]], 0, 1, 3))                 # [[0,1]]
+print(Solution().target_paths([[[1,3]],[]], 0, 1, 5))                 # [] — wrong weight
+print(Solution().target_paths([[[1,2],[2,3]],[[2,1]],[]], 0, 2, 3))   # [[0,2],[0,1,2]]
 ```
 
 ```java run
@@ -420,111 +477,116 @@ import java.util.*;
 
 public class Main {
     static class Solution {
-        public void dfs(List<List<int[]>> graph, int node, int dest, int curSum, int target,
-                        List<Integer> path, List<List<Integer>> paths, Set<Integer> inPath) {
-            inPath.add(node);
+        private void dfs(
+            List<List<List<Integer>>> graph,
+            int node,
+            int destination,
+            int currentSum,
+            int target,
+            List<Integer> path,
+            List<List<Integer>> paths,
+            Set<Integer> nodesInPath
+        ) {
+
+            // Insert the current node into the set of nodes in the current
+            // path to avoid revisiting the same node
+            nodesInPath.add(node);
+
+            // Add the current node to the path
             path.add(node);
-            if (node == dest && curSum == target) paths.add(new ArrayList<>(path));
-            else {
-                for (int[] e : graph.get(node))
-                    if (!inPath.contains(e[0]))
-                        dfs(graph, e[0], dest, curSum + e[1], target, path, paths, inPath);
+
+            // If the current node is the destination and the path sum equals
+            // the target sum, store the current path
+            if (node == destination && currentSum == target) {
+                paths.add(new ArrayList<>(path));
             }
+
+            // Else, explore all the neighbours of the current node
+            else {
+                for (List<Integer> edge : graph.get(node)) {
+                    int neighbour = edge.get(0);
+                    int weight = edge.get(1);
+
+                    // Perform DFS on the neighbour node if it is not already
+                    // in the current path to avoid cycles
+                    if (!nodesInPath.contains(neighbour)) {
+
+                        // Explore neighbour and add its edge weight to the
+                        // current sum
+                        dfs(
+                            graph,
+                            neighbour,
+                            destination,
+                            currentSum + weight,
+                            target,
+                            path,
+                            paths,
+                            nodesInPath
+                        );
+                    }
+                }
+            }
+
+            // Remove the current node from the path as we are done exploring
+            // it
             path.remove(path.size() - 1);
-            inPath.remove(node);
+
+            // Remove the current node from the set of nodes in the current
+            // path to allow it to be visited again in other paths
+            nodesInPath.remove(node);
         }
 
-        public List<List<Integer>> targetPaths(List<List<int[]>> graph, int source, int dest, int target) {
+        public List<List<Integer>> targetPaths(
+            List<List<List<Integer>>> graph,
+            int source,
+            int destination,
+            int target
+        ) {
+
+            // Result list to store all the Hamiltonian paths
             List<List<Integer>> paths = new ArrayList<>();
-            dfs(graph, source, dest, 0, target, new ArrayList<>(), paths, new HashSet<>());
+
+            // List to store the current path being explored
+            List<Integer> path = new ArrayList<>();
+
+            // Set to keep track of nodes currently in the path
+            Set<Integer> nodesInPath = new HashSet<>();
+
+            // Perform DFS starting from the source node with an initial sum
+            // of 0
+            dfs(
+                graph,
+                source,
+                destination,
+                0,
+                target,
+                path,
+                paths,
+                nodesInPath
+            );
+
+            // Return the list of valid paths with the given sum
             return paths;
         }
     }
 
     public static void main(String[] args) {
-        var g = List.of(
-            List.of(new int[]{1, 2}, new int[]{3, 5}),
-            List.of(new int[]{4, 2}),
-            List.of(new int[]{4, 1}),
-            List.of(new int[]{2, 2}),
-            List.of(new int[]{3, 1}));
-        System.out.println(new Solution().targetPaths(g, 0, 3, 5));
+        Solution sol = new Solution();
+
+        // Examples from the problem statement
+        System.out.println(sol.targetPaths(List.of(List.of(List.of(1,2),List.of(3,5)),List.of(List.of(4,2)),List.of(List.of(4,1)),List.of(List.of(2,2)),List.of(List.of(3,1))), 0, 3, 5));  // [[0,1,4,3],[0,3]]
+        System.out.println(sol.targetPaths(List.of(List.of(List.of(4,2)),List.of(List.of(3,3),List.of(0,4)),List.of(List.of(4,3),List.of(0,1)),List.of(List.of(2,1),List.of(4,4)),List.of(List.of(1,5))), 3, 4, 4));  // [[3,2,4],[3,2,0,4],[3,4]]
+
+        // Edge cases
+        System.out.println(sol.targetPaths(List.of(new ArrayList<>()), 0, 0, 0));  // [[0]]
+        System.out.println(sol.targetPaths(List.of(List.of(List.of(1,3)), new ArrayList<>()), 0, 1, 3));  // [[0,1]]
+        System.out.println(sol.targetPaths(List.of(List.of(List.of(1,3)), new ArrayList<>()), 0, 1, 5));  // []
+        System.out.println(sol.targetPaths(List.of(List.of(List.of(1,2),List.of(2,3)),List.of(List.of(2,1)),new ArrayList<>()), 0, 2, 3));  // [[0,2],[0,1,2]]
     }
 }
 ```
 
-```c run
-#include <stdio.h>
-#include <stdlib.h>
-#include <stdbool.h>
-
-typedef struct { int to, w; } Edge;
-typedef struct { Edge* data; int size; } AdjList;
-
-static int** result; static int* result_lens; static int result_n;
-
-static void dfs(AdjList* g, int node, int dest, int sum, int target,
-                int* path, int len, bool* in_path) {
-    in_path[node] = true;
-    path[len++] = node;
-    if (node == dest && sum == target) {
-        result = realloc(result, (result_n + 1) * sizeof(int*));
-        result_lens = realloc(result_lens, (result_n + 1) * sizeof(int));
-        result[result_n] = malloc(len * sizeof(int));
-        for (int i = 0; i < len; i++) result[result_n][i] = path[i];
-        result_lens[result_n++] = len;
-    } else {
-        for (int i = 0; i < g[node].size; i++) {
-            Edge e = g[node].data[i];
-            if (!in_path[e.to]) dfs(g, e.to, dest, sum + e.w, target, path, len, in_path);
-        }
-    }
-    in_path[node] = false;
-}
-
-int main() {
-    Edge e0[]={{1,2},{3,5}}, e1[]={{4,2}}, e2[]={{4,1}}, e3[]={{2,2}}, e4[]={{3,1}};
-    AdjList g[]={{e0,2},{e1,1},{e2,1},{e3,1},{e4,1}};
-    int path[10]; bool ip[5]={false};
-    result=NULL; result_lens=NULL; result_n=0;
-    dfs(g, 0, 3, 0, 5, path, 0, ip);
-    for (int i = 0; i < result_n; i++) {
-        for (int j = 0; j < result_lens[i]; j++) printf("%d ", result[i][j]);
-        printf("\n"); free(result[i]);
-    }
-    free(result); free(result_lens);
-    return 0;
-}
-```
-
-```scala run
-import scala.collection.mutable
-
-object Main extends App {
-  class Solution {
-    def dfs(graph: Array[Array[(Int, Int)]], node: Int, dest: Int, curSum: Int, target: Int,
-            path: mutable.ArrayBuffer[Int], paths: mutable.ArrayBuffer[Seq[Int]],
-            inPath: mutable.Set[Int]): Unit = {
-      inPath.add(node); path.append(node)
-      if (node == dest && curSum == target) paths.append(path.toSeq)
-      else for ((n, w) <- graph(node) if !inPath.contains(n))
-        dfs(graph, n, dest, curSum + w, target, path, paths, inPath)
-      path.remove(path.length - 1)
-      inPath.remove(node)
-    }
-
-    def targetPaths(graph: Array[Array[(Int, Int)]], source: Int, dest: Int, target: Int): Seq[Seq[Int]] = {
-      val paths = mutable.ArrayBuffer.empty[Seq[Int]]
-      dfs(graph, source, dest, 0, target, mutable.ArrayBuffer.empty, paths, mutable.Set.empty)
-      paths.toSeq
-    }
-  }
-
-  val g = Array(
-    Array((1, 2), (3, 5)), Array((4, 2)), Array((4, 1)), Array((2, 2)), Array((3, 1)))
-  println(new Solution().targetPaths(g, 0, 3, 5))
-}
-```
+</details>
 
 
 ***
@@ -540,7 +602,9 @@ Input:  graph = [[1, 2], [0, 2, 3], [0, 1, 3], [1, 2]], source = 0, destination 
 Output: [[0, 1, 2, 3], [0, 2, 1, 3]]
 ```
 
-## Pattern Mapping
+<details>
+<summary><h2>Pattern Mapping</h2></summary>
+
 
 - `f`: same as before (append to path).
 - `g`: record the path *only if* destination is reached **and** every node has been visited.
@@ -552,61 +616,96 @@ The only twist: the destination check now requires `path.length == N`.
 
 It's tractable because we're enumerating, not deciding existence faster than brute force. DFS with the "in_path" pruning has worst case O(N!) in pathological cases — but for typical small graphs (N ≤ ~20) it's fast enough. The intractability shows up when N gets larger; below that, DFS is the only sane approach.
 
-## The Solution
+</details>
+<details>
+<summary><h2>The Solution</h2></summary>
 
 
-```pseudocode
-function dfs(graph, node, dest, path, paths, inPath):
-    add node to inPath
-    append node to path
-    if node = dest AND length of inPath = N:
-        append copy of path to paths   # every vertex visited → Hamiltonian path
-    else:
-        for neighbor in graph[node]:
-            if neighbor is not in inPath:
-                dfs(graph, neighbor, dest, path, paths, inPath)
-    pop from path
-    remove node from inPath
-
-function hamiltonianPaths(graph, source, dest):
-    paths ← empty list
-    dfs(graph, source, dest, empty list, paths, empty set)
-    return paths
-```
 
 ```python run
 from typing import List, Set
 
 class Solution:
-    def dfs(self,
-            graph: List[List[int]],
-            node: int,
-            destination: int,
-            path: List[int],
-            paths: List[List[int]],
-            in_path: Set[int]) -> None:
-        in_path.add(node)
+    def dfs(
+        self,
+        graph: List[List[int]],
+        node: int,
+        destination: int,
+        path: List[int],
+        paths: List[List[int]],
+        nodes_in_path: Set[int],
+    ) -> None:
+
+        # Insert the current node into the set of nodes in the current
+        # path to avoid revisiting the same node
+        nodes_in_path.add(node)
+
+        # Add the current node to the path
         path.append(node)
-        # Hamiltonian = destination reached AND every vertex visited.
-        if node == destination and len(in_path) == len(graph):
+
+        # If the current node is the destination node and all nodes
+        # have been visited, we have found a valid Hamiltonian Path
+        if node == destination and len(nodes_in_path) == len(graph):
             paths.append(path.copy())
+
+        # Else, recursively explore all the neighbours of the current
+        # node
         else:
             for neighbour in graph[node]:
-                if neighbour not in in_path:
-                    self.dfs(graph, neighbour, destination, path, paths, in_path)
-        path.pop()
-        in_path.discard(node)
 
-    def hamiltonian_paths(self,
-                          graph: List[List[int]],
-                          source: int, destination: int) -> List[List[int]]:
+                # Perform DFS on the neighbour node if it is not already
+                # in the current path to avoid cycles
+                if neighbour not in nodes_in_path:
+                    self.dfs(
+                        graph,
+                        neighbour,
+                        destination,
+                        path,
+                        paths,
+                        nodes_in_path,
+                    )
+
+        # Remove the current node from the path as we are done exploring
+        # it
+        path.pop()
+
+        # Remove the current node from the set of nodes in the current
+        # path to allow it to be visited again in other possible paths
+        nodes_in_path.remove(node)
+
+    def hamiltonian_paths(
+        self, graph: List[List[int]], source: int, destination: int
+    ) -> List[List[int]]:
+
+        # Result list to store all the Hamiltonian paths
         paths: List[List[int]] = []
-        self.dfs(graph, source, destination, [], paths, set())
+
+        # List to store the current path being explored
+        path: List[int] = []
+
+        # Set to keep track of nodes currently in the path
+        nodes_in_path: Set[int] = set()
+
+        # Perform DFS starting from the source node
+        self.dfs(graph, source, destination, path, paths, nodes_in_path)
+
+        # Return the list of all valid Hamiltonian paths
         return paths
 
 
-graph = [[1, 2], [0, 2, 3], [0, 1, 3], [1, 2]]
-print(Solution().hamiltonian_paths(graph, 0, 3))
+# Examples from the problem statement
+print(Solution().hamiltonian_paths([[1,2],[0,2,3],[0,1,3],[1,2]], 0, 3))  # [[0,1,2,3],[0,2,1,3]]
+print(Solution().hamiltonian_paths([[1],[0,2],[1,3],[2]], 0, 3))           # [[0,1,2,3]]
+
+# Edge cases
+print(Solution().hamiltonian_paths([[]], 0, 0))                            # [[0]] — single node
+print(Solution().hamiltonian_paths([[1],[]], 0, 1))                        # [[0,1]]
+# No Hamiltonian path (missing edges to visit all)
+print(Solution().hamiltonian_paths([[1],[2],[]], 0, 2))                    # [[0,1,2]]
+# Disconnected — no path
+print(Solution().hamiltonian_paths([[],[2],[]], 0, 2))                     # []
+# src == dst but must visit all
+print(Solution().hamiltonian_paths([[1],[0]], 0, 0))                       # [[0,1,0]] — visits all
 ```
 
 ```java run
@@ -614,100 +713,98 @@ import java.util.*;
 
 public class Main {
     static class Solution {
-        public void dfs(List<List<Integer>> graph, int node, int dest,
-                        List<Integer> path, List<List<Integer>> paths, Set<Integer> inPath) {
-            inPath.add(node);
+        private void dfs(
+            List<List<Integer>> graph,
+            int node,
+            int destination,
+            List<Integer> path,
+            List<List<Integer>> paths,
+            Set<Integer> nodesInPath
+        ) {
+
+            // Insert the current node into the set of nodes in the current
+            // path to avoid revisiting the same node
+            nodesInPath.add(node);
+
+            // Add the current node to the path
             path.add(node);
-            if (node == dest && inPath.size() == graph.size()) paths.add(new ArrayList<>(path));
-            else for (int n : graph.get(node))
-                if (!inPath.contains(n)) dfs(graph, n, dest, path, paths, inPath);
+
+            // If the current node is the destination node and all nodes
+            // have been visited, we have found a valid Hamiltonian Path
+            if (node == destination && nodesInPath.size() == graph.size()) {
+                paths.add(new ArrayList<>(path));
+            }
+
+            // Else, recursively explore all the neighbours of the current
+            // node
+            else {
+                for (int neighbour : graph.get(node)) {
+
+                    // Perform DFS on the neighbour node if it is not already
+                    // in the current path to avoid cycles
+                    if (!nodesInPath.contains(neighbour)) {
+                        dfs(
+                            graph,
+                            neighbour,
+                            destination,
+                            path,
+                            paths,
+                            nodesInPath
+                        );
+                    }
+                }
+            }
+
+            // Remove the current node from the path as we are done exploring
+            // it
             path.remove(path.size() - 1);
-            inPath.remove(node);
+
+            // Remove the current node from the set of nodes in the current
+            // path to allow it to be visited again in other possible paths
+            nodesInPath.remove(node);
         }
 
-        public List<List<Integer>> hamiltonianPaths(List<List<Integer>> graph, int source, int dest) {
+        public List<List<Integer>> hamiltonianPaths(
+            List<List<Integer>> graph,
+            int source,
+            int destination
+        ) {
+
+            // Result list to store all the Hamiltonian paths
             List<List<Integer>> paths = new ArrayList<>();
-            dfs(graph, source, dest, new ArrayList<>(), paths, new HashSet<>());
+
+            // List to store the current path being explored
+            List<Integer> path = new ArrayList<>();
+
+            // Set to keep track of nodes currently in the path
+            Set<Integer> nodesInPath = new HashSet<>();
+
+            // Perform DFS starting from the source node
+            dfs(graph, source, destination, path, paths, nodesInPath);
+
+            // Return the list of all valid Hamiltonian paths
             return paths;
         }
     }
 
     public static void main(String[] args) {
-        var g = List.of(List.of(1, 2), List.of(0, 2, 3), List.of(0, 1, 3), List.of(1, 2));
-        System.out.println(new Solution().hamiltonianPaths(g, 0, 3));
+        Solution sol = new Solution();
+
+        // Examples from the problem statement
+        System.out.println(sol.hamiltonianPaths(List.of(List.of(1,2),List.of(0,2,3),List.of(0,1,3),List.of(1,2)), 0, 3));  // [[0,1,2,3],[0,2,1,3]]
+        System.out.println(sol.hamiltonianPaths(List.of(List.of(1),List.of(0,2),List.of(1,3),List.of(2)), 0, 3));            // [[0,1,2,3]]
+
+        // Edge cases
+        System.out.println(sol.hamiltonianPaths(List.of(new ArrayList<>()), 0, 0));  // [[0]]
+        System.out.println(sol.hamiltonianPaths(List.of(List.of(1), new ArrayList<>()), 0, 1));  // [[0,1]]
+        System.out.println(sol.hamiltonianPaths(List.of(List.of(1), List.of(2), new ArrayList<>()), 0, 2));  // [[0,1,2]]
+        System.out.println(sol.hamiltonianPaths(List.of(new ArrayList<>(), List.of(2), new ArrayList<>()), 0, 2));  // []
+        System.out.println(sol.hamiltonianPaths(List.of(List.of(1), List.of(0)), 0, 0));  // [[0,1,0]]
     }
 }
 ```
 
-```c run
-#include <stdio.h>
-#include <stdlib.h>
-#include <stdbool.h>
-
-typedef struct { int* data; int size; } AdjList;
-static int** out; static int* out_lens; static int out_n;
-
-static void dfs(AdjList* g, int n, int node, int dest, int* path, int len,
-                bool* in_path, int visited_count) {
-    in_path[node] = true;
-    path[len++] = node;
-    visited_count++;
-    if (node == dest && visited_count == n) {
-        out = realloc(out, (out_n + 1) * sizeof(int*));
-        out_lens = realloc(out_lens, (out_n + 1) * sizeof(int));
-        out[out_n] = malloc(len * sizeof(int));
-        for (int i = 0; i < len; i++) out[out_n][i] = path[i];
-        out_lens[out_n++] = len;
-    } else {
-        for (int i = 0; i < g[node].size; i++) {
-            int nb = g[node].data[i];
-            if (!in_path[nb]) dfs(g, n, nb, dest, path, len, in_path, visited_count);
-        }
-    }
-    in_path[node] = false;
-}
-
-int main() {
-    int g0[]={1,2}, g1[]={0,2,3}, g2[]={0,1,3}, g3[]={1,2};
-    AdjList g[]={{g0,2},{g1,3},{g2,3},{g3,2}};
-    int path[10]; bool ip[4]={false};
-    out=NULL; out_lens=NULL; out_n=0;
-    dfs(g, 4, 0, 3, path, 0, ip, 0);
-    for (int i = 0; i < out_n; i++) {
-        for (int j = 0; j < out_lens[i]; j++) printf("%d ", out[i][j]);
-        printf("\n"); free(out[i]);
-    }
-    free(out); free(out_lens);
-    return 0;
-}
-```
-
-```scala run
-import scala.collection.mutable
-
-object Main extends App {
-  class Solution {
-    def dfs(graph: Array[Array[Int]], node: Int, dest: Int,
-            path: mutable.ArrayBuffer[Int], paths: mutable.ArrayBuffer[Seq[Int]],
-            inPath: mutable.Set[Int]): Unit = {
-      inPath.add(node); path.append(node)
-      if (node == dest && inPath.size == graph.length) paths.append(path.toSeq)
-      else for (n <- graph(node) if !inPath.contains(n)) dfs(graph, n, dest, path, paths, inPath)
-      path.remove(path.length - 1)
-      inPath.remove(node)
-    }
-
-    def hamiltonianPaths(graph: Array[Array[Int]], source: Int, dest: Int): Seq[Seq[Int]] = {
-      val paths = mutable.ArrayBuffer.empty[Seq[Int]]
-      dfs(graph, source, dest, mutable.ArrayBuffer.empty, paths, mutable.Set.empty)
-      paths.toSeq
-    }
-  }
-
-  val g = Array(Array(1, 2), Array(0, 2, 3), Array(0, 1, 3), Array(1, 2))
-  println(new Solution().hamiltonianPaths(g, 0, 3))
-}
-```
+</details>
 
 
 ***
@@ -724,7 +821,9 @@ Output: 2
 Explanation: Cycles 0 → 1 → 3 → 2 → 0 and 0 → 2 → 3 → 1 → 0 both start/end at 0 and pass through 3.
 ```
 
-## Pattern Mapping
+<details>
+<summary><h2>Pattern Mapping</h2></summary>
+
 
 - `f`: same in_path tracking.
 - The loop check at each step: if a neighbour is the *source* AND the path has length ≥ 3 (a cycle needs at least 3 nodes) AND the destination has been visited along the way → count one cycle.
@@ -732,58 +831,80 @@ Explanation: Cycles 0 → 1 → 3 → 2 → 0 and 0 → 2 → 3 → 1 → 0 both
 
 The only structural difference from previous problems: there's no explicit "destination reached → record" branch. Instead, the cycle-completion check is *inline* with the neighbour iteration — when we find a neighbour that's the source and the path qualifies, we increment the counter.
 
-## The Solution
+</details>
+<details>
+<summary><h2>Solution &amp; Analysis</h2></summary>
 
-
-```pseudocode
-function dfs(graph, node, source, dest, inPath, cycleCount):
-    add node to inPath
-    for neighbor in graph[node]:
-        if neighbor is not in inPath:
-            dfs(graph, neighbor, source, dest, inPath, cycleCount)
-        else if neighbor = source AND length of inPath > 2 AND dest is in inPath:
-            cycleCount ← cycleCount + 1   # closed a valid cycle through dest
-    remove node from inPath
-
-function simpleCycles(graph, source, dest):
-    cycles ← 0
-    dfs(graph, source, source, dest, empty set, cycles)
-    return cycles
-```
+### The Solution
 
 ```python run
 from typing import List, Set
 
 class Solution:
-    def __init__(self):
-        self.cycles = 0
+    def __init__(self) -> None:
 
-    def dfs(self,
-            graph: List[List[int]],
-            node: int,
-            source: int,
-            destination: int,
-            in_path: Set[int]) -> None:
-        in_path.add(node)
-        for neighbour in graph[node]:
-            if neighbour not in in_path:
-                self.dfs(graph, neighbour, source, destination, in_path)
-            elif (neighbour == source
-                  and len(in_path) > 2                    # need ≥ 3 nodes for a cycle
-                  and destination in in_path):            # destination on the loop
+        # Counter to store total simple cycles
+        self.cycles: int = 0
+
+    def dfs(
+        self,
+        graph: List[List[int]],
+        node: int,
+        source: int,
+        destination: int,
+        nodes_in_path: Set[int],
+    ) -> None:
+
+        # Insert the current node into the set of nodes in the current
+        # path to detect cycles
+        nodes_in_path.add(node)
+
+        # Explore all neighbors of the current node
+        for neighbor in graph[node]:
+
+            # Case 1: Neighbor is not visited yet, continue DFS
+            if neighbor not in nodes_in_path:
+                self.dfs(
+                    graph, neighbor, source, destination, nodes_in_path
+                )
+
+            # Case 2: Neighbor is the starting node and forms a valid cycle
+            # Path must have at least 3 nodes and include the destination
+            elif (
+                neighbor == source
+                and len(nodes_in_path) > 2
+                and destination in nodes_in_path
+            ):
                 self.cycles += 1
-        in_path.discard(node)
 
-    def simple_cycles(self,
-                      graph: List[List[int]],
-                      source: int, destination: int) -> int:
-        self.cycles = 0
-        self.dfs(graph, source, source, destination, set())
+        # Remove the current node from the current path as we are done
+        # exploring it
+        nodes_in_path.remove(node)
+
+    def simple_cycles(
+        self, graph: List[List[int]], source: int, destination: int
+    ) -> int:
+
+        # Set to keep track of nodes in the current path
+        nodes_in_path: Set[int] = set()
+
+        # Perform DFS starting from the source node
+        self.dfs(graph, source, source, destination, nodes_in_path)
+
+        # Return total cycles found
         return self.cycles
 
 
-graph = [[1, 2], [0, 2, 3], [0, 1, 3], [1, 2]]
-print(Solution().simple_cycles(graph, 0, 3))   # 2
+# Examples from the problem statement
+print(Solution().simple_cycles([[1,2],[0,2,3],[0,1,3],[1,2]], 0, 3))  # 2
+print(Solution().simple_cycles([[1],[0,2],[1,3],[2]], 0, 3))           # 0
+
+# Edge cases
+print(Solution().simple_cycles([[0]], 0, 0))                           # 0 — self-loop, not 3+ nodes
+print(Solution().simple_cycles([[1],[0]], 0, 0))                       # 0 — cycle length 2, no dest!=src
+print(Solution().simple_cycles([[1,2],[2,0],[0,1]], 0, 1))             # 1
+# Source == destination: any cycle through it counts
+print(Solution().simple_cycles([[1,2],[2,0],[0,1]], 0, 0))             # 0 — src==dst, must pass through dst
 ```
 
 ```java run
@@ -791,92 +912,78 @@ import java.util.*;
 
 public class Main {
     static class Solution {
-        int cycles = 0;
-        public void dfs(List<List<Integer>> graph, int node, int source, int dest, Set<Integer> inPath) {
-            inPath.add(node);
-            for (int n : graph.get(node)) {
-                if (!inPath.contains(n)) dfs(graph, n, source, dest, inPath);
-                else if (n == source && inPath.size() > 2 && inPath.contains(dest)) cycles++;
+
+        // Counter to store total simple cycles
+        private int cycles = 0;
+
+        private void dfs(
+            List<List<Integer>> graph,
+            int node,
+            int source,
+            int destination,
+            Set<Integer> nodesInPath
+        ) {
+
+            // Insert the current node into the set of nodes in the current
+            // path to detect cycles
+            nodesInPath.add(node);
+
+            // Explore all neighbors of the current node
+            for (int neighbor : graph.get(node)) {
+
+                // Case 1: Neighbor is not visited yet, continue DFS
+                if (!nodesInPath.contains(neighbor)) {
+                    dfs(graph, neighbor, source, destination, nodesInPath);
+                }
+
+                // Case 2: Neighbor is the starting node and forms a valid
+                // cycle Path must have at least 3 nodes and include the
+                // destination
+                else if (
+                    neighbor == source &&
+                    nodesInPath.size() > 2 &&
+                    nodesInPath.contains(destination)
+                ) {
+                    cycles++;
+                }
             }
-            inPath.remove(node);
+
+            // Remove the current node from the current path as we are done
+            // exploring it
+            nodesInPath.remove(node);
         }
 
-        public int simpleCycles(List<List<Integer>> graph, int source, int dest) {
-            cycles = 0;
-            dfs(graph, source, source, dest, new HashSet<>());
+        public int simpleCycles(
+            List<List<Integer>> graph,
+            int source,
+            int destination
+        ) {
+
+            // Set to keep track of nodes in the current path
+            Set<Integer> nodesInPath = new HashSet<>();
+
+            // Perform DFS starting from the source node
+            dfs(graph, source, source, destination, nodesInPath);
+
+            // Return total cycles found
             return cycles;
         }
     }
 
     public static void main(String[] args) {
-        var g = List.of(List.of(1, 2), List.of(0, 2, 3), List.of(0, 1, 3), List.of(1, 2));
-        System.out.println(new Solution().simpleCycles(g, 0, 3));
+        // Examples from the problem statement
+        System.out.println(new Solution().simpleCycles(List.of(List.of(1,2),List.of(0,2,3),List.of(0,1,3),List.of(1,2)), 0, 3));  // 2
+        System.out.println(new Solution().simpleCycles(List.of(List.of(1),List.of(0,2),List.of(1,3),List.of(2)), 0, 3));           // 0
+
+        // Edge cases
+        System.out.println(new Solution().simpleCycles(List.of(List.of(0)), 0, 0));  // 0
+        System.out.println(new Solution().simpleCycles(List.of(List.of(1), List.of(0)), 0, 0));  // 0
+        System.out.println(new Solution().simpleCycles(List.of(List.of(1,2), List.of(2,0), List.of(0,1)), 0, 1));  // 1
     }
 }
 ```
 
-```c run
-#include <stdio.h>
-#include <stdlib.h>
-#include <stdbool.h>
-
-typedef struct { int* data; int size; } AdjList;
-static int cycles_count = 0;
-
-static void dfs(AdjList* g, int node, int source, int dest, bool* in_path,
-                int path_size, bool dest_in_path) {
-    in_path[node] = true;
-    path_size++;
-    bool now_dest = dest_in_path || (node == dest);
-    for (int i = 0; i < g[node].size; i++) {
-        int n = g[node].data[i];
-        if (!in_path[n]) dfs(g, n, source, dest, in_path, path_size, now_dest);
-        else if (n == source && path_size > 2 && now_dest) cycles_count++;
-    }
-    in_path[node] = false;
-}
-
-int main() {
-    int g0[]={1,2}, g1[]={0,2,3}, g2[]={0,1,3}, g3[]={1,2};
-    AdjList g[]={{g0,2},{g1,3},{g2,3},{g3,2}};
-    bool ip[4]={false};
-    cycles_count = 0;
-    dfs(g, 0, 0, 3, ip, 0, false);
-    printf("%d\n", cycles_count);
-    return 0;
-}
-```
-
-```scala run
-import scala.collection.mutable
-
-object Main extends App {
-  class Solution {
-    var cycles = 0
-    def dfs(graph: Array[Array[Int]], node: Int, source: Int, dest: Int,
-            inPath: mutable.Set[Int]): Unit = {
-      inPath.add(node)
-      for (n <- graph(node)) {
-        if (!inPath.contains(n)) dfs(graph, n, source, dest, inPath)
-        else if (n == source && inPath.size > 2 && inPath.contains(dest)) cycles += 1
-      }
-      inPath.remove(node)
-    }
-
-    def simpleCycles(graph: Array[Array[Int]], source: Int, dest: Int): Int = {
-      cycles = 0
-      dfs(graph, source, source, dest, mutable.Set.empty)
-      cycles
-    }
-  }
-
-  val g = Array(Array(1, 2), Array(0, 2, 3), Array(0, 1, 3), Array(1, 2))
-  println(new Solution().simpleCycles(g, 0, 3))
-}
-```
-
-
-## Complexity Analysis
+### Complexity Analysis
 
 | | Complexity | Reasoning |
 |---|---|---|
@@ -885,9 +992,10 @@ object Main extends App {
 
 This is the price of enumeration — exponential in the worst case. The `in_path` constraint prunes heavily on most real inputs.
 
----
+</details>
+<details>
+<summary><h2>Final Takeaway</h2></summary>
 
-## Final Takeaway
 
 The DFS pattern is **the** tool when you need to *enumerate, score, or filter* paths through a graph. Once you internalise the four-step recipe — *enter, check destination, recurse, leave* — the rest is choosing what `f` and `g` should compute.
 
@@ -897,6 +1005,7 @@ The next pattern lessons explore three other DFS-flavoured problem families: **c
 
 > **Transfer challenge.** A delivery-robot pathfinding system needs to count the number of distinct valid routes from a warehouse to a destination, with the constraint that the route cost (sum of edge weights) is below a budget. Sketch the f and g you'd use.
 
+</details>
 <details>
 <summary><strong>Sketch</strong></summary>
 

@@ -334,31 +334,6 @@ The serious tool for irregular recurrences is the **Akra-Bazzi theorem** — a s
 
 The code below implements three recursive algorithms and times them as `n` grows. Run it; the columns should match the closed-form complexities the Master theorem predicts.
 
-```pseudocode
-function mergeSort(arr):                          # T(n) = 2T(n/2) + n  →  Θ(n log n)
-    if length(arr) ≤ 1:
-        return arr
-    mid ← length(arr) / 2
-    left  ← mergeSort(arr[0..mid])
-    right ← mergeSort(arr[mid..length(arr)])
-    return merge(left, right)
-
-function binarySearch(arr, target):               # T(n) = T(n/2) + 1   →  Θ(log n)
-    lo ← 0; hi ← length(arr) − 1
-    while lo ≤ hi:
-        mid ← lo + (hi − lo) / 2
-        if arr[mid] = target: return mid
-        else if arr[mid] < target: lo ← mid + 1
-        else: hi ← mid − 1
-    return −1
-
-function maxOneSided(arr, lo, hi):                # T(n) = T(n/2) + n   →  Θ(n)
-    if lo = hi: return arr[lo]
-    best ← arr[lo]
-    for i from lo+1 to hi: if arr[i] > best: best ← arr[i]
-    return max(best, maxOneSided(arr, lo, (lo + hi) / 2))
-```
-
 ```python run
 import time, random
 
@@ -449,105 +424,6 @@ public class Main {
 }
 ```
 
-```c run
-#include <stdio.h>
-#include <stdlib.h>
-#include <time.h>
-
-static void merge_sort_inplace(int *a, int *buf, int lo, int hi) {
-    if (hi - lo <= 1) return;
-    int mid = lo + (hi - lo) / 2;
-    merge_sort_inplace(a, buf, lo, mid);
-    merge_sort_inplace(a, buf, mid, hi);
-    int i = lo, j = mid, k = lo;
-    while (i < mid && j < hi) buf[k++] = (a[i] <= a[j]) ? a[i++] : a[j++];
-    while (i < mid) buf[k++] = a[i++];
-    while (j < hi)  buf[k++] = a[j++];
-    for (int t = lo; t < hi; t++) a[t] = buf[t];
-}
-
-static int binary_search(const int *a, int n, int target) {
-    int lo = 0, hi = n - 1;
-    while (lo <= hi) {
-        int mid = lo + (hi - lo) / 2;
-        if (a[mid] == target) return mid;
-        if (a[mid] < target) lo = mid + 1;
-        else hi = mid - 1;
-    }
-    return -1;
-}
-
-int main(void) {
-    int sizes[] = {10000, 100000, 1000000};
-    srand(42);
-    printf("%10s %18s %22s\n", "n", "merge_sort (ms)", "binary_search (us)");
-    for (int s = 0; s < 3; s++) {
-        int n = sizes[s];
-        int *a = malloc(n * sizeof(int));
-        int *buf = malloc(n * sizeof(int));
-        for (int i = 0; i < n; i++) a[i] = rand() % 1000000000;
-        clock_t t0 = clock();
-        merge_sort_inplace(a, buf, 0, n);
-        double ms = (double)(clock() - t0) * 1000.0 / CLOCKS_PER_SEC;
-        t0 = clock();
-        int step = n / 100; if (step < 1) step = 1;
-        for (int i = 0; i < n; i += step) binary_search(a, n, a[i]);
-        double us = (double)(clock() - t0) * 1000000.0 / CLOCKS_PER_SEC;
-        printf("%10d %18.1f %22.1f\n", n, ms, us);
-        free(a); free(buf);
-    }
-    return 0;
-}
-```
-
-```scala run
-import scala.util.Random
-
-object Main extends App {
-  def mergeSort(a: Array[Int]): Array[Int] = {
-    if (a.length <= 1) return a
-    val mid = a.length / 2
-    val left = mergeSort(a.slice(0, mid))
-    val right = mergeSort(a.slice(mid, a.length))
-    val out = new Array[Int](a.length)
-    var i = 0; var j = 0; var k = 0
-    while (i < left.length && j < right.length) {
-      if (left(i) <= right(j)) { out(k) = left(i); i += 1 } else { out(k) = right(j); j += 1 }
-      k += 1
-    }
-    while (i < left.length) { out(k) = left(i); i += 1; k += 1 }
-    while (j < right.length) { out(k) = right(j); j += 1; k += 1 }
-    out
-  }
-
-  def binarySearch(a: Array[Int], target: Int): Int = {
-    var lo = 0; var hi = a.length - 1
-    while (lo <= hi) {
-      val mid = lo + (hi - lo) / 2
-      if (a(mid) == target) return mid
-      else if (a(mid) < target) lo = mid + 1
-      else hi = mid - 1
-    }
-    -1
-  }
-
-  val sizes = Array(10000, 100000, 1000000)
-  val rng = new Random(42)
-  println(f"${"n"}%10s ${"merge_sort (ms)"}%18s ${"binary_search (µs)"}%22s")
-  for (n <- sizes) {
-    val a = Array.fill(n)(rng.nextInt(1000000000))
-    var t0 = System.nanoTime()
-    val sorted = mergeSort(a)
-    val ms = (System.nanoTime() - t0) / 1e6
-    t0 = System.nanoTime()
-    val step = math.max(1, n / 100)
-    for (i <- 0 until n by step) binarySearch(sorted, sorted(i))
-    val us = (System.nanoTime() - t0) / 1e3
-    println(f"$n%10d $ms%18.1f $us%22.1f")
-  }
-}
-```
-
 The merge-sort column should grow roughly as `n log n` (going `n × 10` should go runtime `× 11` or so). The binary-search column should grow logarithmically with the array size — almost constant per lookup.
 
 ***
@@ -608,63 +484,54 @@ Click any question to reveal the answer.
 **A:** `T(n) = a · T(n/b) + f(n)`. `a` recursive calls, each on size `n/b`, plus `f(n)` non-recursive work.
 
 </details>
-
 <details>
 <summary><strong>Q:</strong> The Master theorem's three cases — what determines which?</summary>
 
 **A:** Compare `f(n)` to the threshold `n^(log_b a)`. Case 1: `f` is asymptotically *smaller* → leaves dominate, `Θ(n^(log_b a))`. Case 2: `f` *equals* the threshold → balanced, `Θ(n^(log_b a) · log n)`. Case 3: `f` is asymptotically *larger* → root dominates, `Θ(f(n))`.
 
 </details>
-
 <details>
 <summary><strong>Q:</strong> Closed form for <code>T(n) = 2T(n/2) + n</code> (merge sort, balanced quicksort)?</summary>
 
 **A:** `Θ(n log n)`. Master theorem case 2 (`a=2, b=2`, threshold `n^1 = n`, equals `f(n)`).
 
 </details>
-
 <details>
 <summary><strong>Q:</strong> Closed form for <code>T(n) = T(n/2) + 1</code> (binary search)?</summary>
 
 **A:** `Θ(log n)`. Master theorem case 2 (`a=1, b=2`, threshold `n^0 = 1`, equals `f(n)`).
 
 </details>
-
 <details>
 <summary><strong>Q:</strong> Closed form for <code>T(n) = 3T(n/2) + n</code> (Karatsuba multiplication)?</summary>
 
 **A:** `Θ(n^(log₂ 3)) ≈ Θ(n^1.585)`. Master theorem case 1 — leaves dominate.
 
 </details>
-
 <details>
 <summary><strong>Q:</strong> Closed form for <code>T(n) = T(n-1) + n</code> (worst-case quicksort)?</summary>
 
 **A:** `Θ(n²)`. Master theorem doesn't apply (subtractive recurrence). Recursion-tree sum: `n + (n-1) + … + 1 = n(n+1)/2`.
 
 </details>
-
 <details>
 <summary><strong>Q:</strong> Closed form for <code>T(n) = 2T(n-1) + 1</code> (Tower of Hanoi)?</summary>
 
 **A:** `Θ(2ⁿ)`. Substitution method: `2^n − 1` exact moves.
 
 </details>
-
 <details>
 <summary><strong>Q:</strong> When does the Master theorem <em>not</em> apply?</summary>
 
 **A:** Subtractive recurrences (`T(n-1)`), uneven splits (`T(n/3) + T(2n/3)`), polylog gaps (`f(n) = n log n` against `n` threshold), non-constant `a` or `b`. Use recursion-tree, substitution, or Akra-Bazzi.
 
 </details>
-
 <details>
 <summary><strong>Q:</strong> Three methods for solving recurrences?</summary>
 
 **A:** **Recursion tree** (intuition; sum work per level). **Substitution** (guess and prove by induction). **Master theorem** (closed-form for standard divide-and-conquer).
 
 </details>
-
 <details>
 <summary><strong>Q:</strong> Closed form for <code>T(n) = 2T(n/2) + n log n</code>?</summary>
 

@@ -12,7 +12,7 @@ Trees are not linear. At every internal node, the algorithm hits a fork — visi
 
 The miraculous thing? *All three traversals are written as the same three-line recursive function*. Only the **order** of those three lines changes — visit, recurse-left, recurse-right — and that single line-shuffle changes the entire output and entire use case. Three patterns hiding inside a single recursive shape.
 
-This lesson walks through all three, in order, with mermaid diagrams of the traversal path, the recursive algorithm in plain language, and a clean implementation in ten languages. By the end you should be able to write any of the three from memory in any language — which you'll be doing constantly for the rest of the chapter.
+This lesson walks through all three, in order, with mermaid diagrams of the traversal path, the recursive algorithm in plain language, and a clean implementation in Python and Java. By the end you should be able to write any of the three from memory in either language — which you'll be doing constantly for the rest of the chapter.
 
 ---
 
@@ -83,7 +83,9 @@ preorder(node):
   preorder(right)    # ← R
 ```
 
-## Walking through it
+<details>
+<summary><h2>Walking through it</h2></summary>
+
 
 Take this tree:
 
@@ -154,7 +156,10 @@ flowchart TB
 
 <p align="center"><strong>Preorder visit sequence on the example tree — <strong><code>1 → 2 → 4 → 3 → 7</code></strong>. The root is always visited <em>first</em> for any subtree; that's where the name comes from.</strong></p>
 
-## Why preorder?
+</details>
+<details>
+<summary><h2>Why preorder?</h2></summary>
+
 
 Preorder shows up wherever you need to *emit a parent before its children*:
 
@@ -162,135 +167,185 @@ Preorder shows up wherever you need to *emit a parent before its children*:
 - **Prefix expression notation.** `(3 + 4) * 5` becomes `* + 3 4 5` in prefix — exactly the preorder traversal of its expression tree.
 - **File-system copying.** Visit the directory before its contents, so the destination directory exists before you try to populate it.
 
-## Implementation
+</details>
+<details>
+<summary><h2>Solution &amp; Analysis</h2></summary>
 
-Three lines, mirroring the algorithm.
+### Implementation
 
+A three-line recursive helper (`preorder`) does the work — visit, recurse-left, recurse-right — and a thin wrapper (`recursive_preorder_traversal`) seeds the `result` list and kicks it off.
 
-```pseudocode
-function preorder(root):
-    out ← empty list
-    function walk(node):
-        if node = null: return
-        append node.val to out       # V
-        walk(node.left)              # L
-        walk(node.right)             # R
-    walk(root)
-    return out
-```
 
 ```python run
 from typing import List, Optional
 
+
 class TreeNode:
     def __init__(self, val=0, left=None, right=None):
-        self.val, self.left, self.right = val, left, right
+        self.val = val
+        self.left = left
+        self.right = right
 
-def preorder(root: Optional[TreeNode]) -> List[int]:
-    out: List[int] = []
-    def walk(node: Optional[TreeNode]):
-        if node is None: return
-        out.append(node.val)         # V
-        walk(node.left)              # L
-        walk(node.right)             # R
-    walk(root)
-    return out
 
-# tree:    1
-#         / \
-#        2   3
-#       /     \
-#      4       7
-root = TreeNode(1, TreeNode(2, TreeNode(4)), TreeNode(3, None, TreeNode(7)))
-print(preorder(root))                # [1, 2, 4, 3, 7]
+def from_level_order(values):
+    """Build tree from list like [1, 2, 3, None, 4]. None means missing child."""
+    if not values:
+        return None
+    root = TreeNode(values[0])
+    queue = [root]
+    i = 1
+    while queue and i < len(values):
+        node = queue.pop(0)
+        if i < len(values) and values[i] is not None:
+            node.left = TreeNode(values[i])
+            queue.append(node.left)
+        i += 1
+        if i < len(values) and values[i] is not None:
+            node.right = TreeNode(values[i])
+            queue.append(node.right)
+        i += 1
+    return root
+
+
+class Solution:
+    def preorder(
+        self, root: Optional[TreeNode], result: List[int]
+    ) -> None:
+
+        # Base case: If the current node is None (empty), return.
+        if root is None:
+            return
+
+        # Step 1: Visit the current node and store its value in the
+        # 'result' list
+        result.append(root.val)
+
+        # Step 2: Recursively traverse the left subtree
+        self.preorder(root.left, result)
+
+        # Step 3: Recursively traverse the right subtree
+        self.preorder(root.right, result)
+
+    def recursive_preorder_traversal(
+        self, root: Optional[TreeNode]
+    ) -> List[int]:
+
+        # Create an empty list to store the preorder traversal result.
+        result: List[int] = []
+
+        # Start the recursive preorder traversal from the 'root' node.
+        self.preorder(root, result)
+
+        # Return the final result containing the preorder traversal of
+        # the binary tree.
+        return result
+
+
+# Examples from the problem statement
+print(Solution().recursive_preorder_traversal(from_level_order([1, 2, 3, 4, None, None, 7])))  # [1, 2, 4, 3, 7]
+print(Solution().recursive_preorder_traversal(from_level_order([1, 8, 4, None, None, 2, 7])))  # [1, 8, 4, 2, 7]
+
+# Edge cases
+print(Solution().recursive_preorder_traversal(None))                                           # []
+print(Solution().recursive_preorder_traversal(from_level_order([1])))                          # [1]
+print(Solution().recursive_preorder_traversal(from_level_order([1, 2, None, 3, None, 4])))    # [1, 2, 3, 4]
+print(Solution().recursive_preorder_traversal(from_level_order([1, None, 2, None, 3])))       # [1, 2, 3]
+print(Solution().recursive_preorder_traversal(from_level_order([1, 2, 3, 4, 5, 6, 7])))      # [1, 2, 4, 5, 3, 6, 7]
+print(Solution().recursive_preorder_traversal(from_level_order([5, 5, 5, 5, 5])))             # [5, 5, 5, 5, 5]
 ```
 
 ```java run
 import java.util.*;
+
 public class Main {
     static class TreeNode {
         int val;
-        TreeNode left, right;
-        TreeNode(int v) { val = v; }
-        TreeNode(int v, TreeNode l, TreeNode r) { val = v; left = l; right = r; }
+        TreeNode left;
+        TreeNode right;
+        TreeNode() {}
+        TreeNode(int val) { this.val = val; }
     }
-    static void walk(TreeNode n, List<Integer> out) {
-        if (n == null) return;
-        out.add(n.val);
-        walk(n.left,  out);
-        walk(n.right, out);
+
+    static TreeNode fromLevelOrder(Integer... values) {
+        if (values.length == 0 || values[0] == null) return null;
+        TreeNode root = new TreeNode(values[0]);
+        java.util.Deque<TreeNode> queue = new java.util.ArrayDeque<>();
+        queue.add(root);
+        int i = 1;
+        while (!queue.isEmpty() && i < values.length) {
+            TreeNode node = queue.poll();
+            if (i < values.length && values[i] != null) {
+                node.left = new TreeNode(values[i]);
+                queue.add(node.left);
+            }
+            i++;
+            if (i < values.length && values[i] != null) {
+                node.right = new TreeNode(values[i]);
+                queue.add(node.right);
+            }
+            i++;
+        }
+        return root;
     }
-    public static List<Integer> preorder(TreeNode root) {
-        List<Integer> out = new ArrayList<>();
-        walk(root, out);
-        return out;
+
+    static class Solution {
+        private void preorder(TreeNode root, List<Integer> result) {
+
+            // Base case: If the current node is null (empty), return.
+            if (root == null) {
+                return;
+            }
+
+            // Step 1: Visit the current node and store its value in the
+            // 'result' list
+            result.add(root.val);
+
+            // Step 2: Recursively traverse the left subtree
+            preorder(root.left, result);
+
+            // Step 3: Recursively traverse the right subtree
+            preorder(root.right, result);
+        }
+
+        public List<Integer> recursivePreorderTraversal(TreeNode root) {
+
+            // Create an empty list to store the preorder traversal result.
+            List<Integer> result = new ArrayList<>();
+
+            // Start the recursive preorder traversal from the 'root' node.
+            preorder(root, result);
+
+            // Return the final result containing the preorder traversal of
+            // the binary tree.
+            return result;
+        }
     }
+
     public static void main(String[] args) {
-        TreeNode root = new TreeNode(1,
-            new TreeNode(2, new TreeNode(4), null),
-            new TreeNode(3, null, new TreeNode(7)));
-        System.out.println(preorder(root));
+        // Examples from the problem statement
+        System.out.println(new Solution().recursivePreorderTraversal(fromLevelOrder(1, 2, 3, 4, null, null, 7)));  // [1, 2, 4, 3, 7]
+        System.out.println(new Solution().recursivePreorderTraversal(fromLevelOrder(1, 8, 4, null, null, 2, 7)));  // [1, 8, 4, 2, 7]
+
+        // Edge cases
+        System.out.println(new Solution().recursivePreorderTraversal(null));                                        // []
+        System.out.println(new Solution().recursivePreorderTraversal(fromLevelOrder(1)));                           // [1]
+        System.out.println(new Solution().recursivePreorderTraversal(fromLevelOrder(1, 2, null, 3, null, 4)));     // [1, 2, 3, 4]
+        System.out.println(new Solution().recursivePreorderTraversal(fromLevelOrder(1, null, 2, null, 3)));        // [1, 2, 3]
+        System.out.println(new Solution().recursivePreorderTraversal(fromLevelOrder(1, 2, 3, 4, 5, 6, 7)));       // [1, 2, 4, 5, 3, 6, 7]
+        System.out.println(new Solution().recursivePreorderTraversal(fromLevelOrder(5, 5, 5, 5, 5)));              // [5, 5, 5, 5, 5]
     }
 }
 ```
 
-```c run
-#include <stdio.h>
-#include <stdlib.h>
-
-typedef struct TreeNode { int val; struct TreeNode *left, *right; } TreeNode;
-
-static TreeNode* mk(int v, TreeNode *l, TreeNode *r) {
-    TreeNode *n = malloc(sizeof(*n)); n->val = v; n->left = l; n->right = r; return n;
-}
-
-static void walk(TreeNode *n, int *out, int *k) {
-    if (!n) return;
-    out[(*k)++] = n->val;
-    walk(n->left,  out, k);
-    walk(n->right, out, k);
-}
-
-int main() {
-    TreeNode *root = mk(1, mk(2, mk(4, NULL, NULL), NULL), mk(3, NULL, mk(7, NULL, NULL)));
-    int out[16], k = 0;
-    walk(root, out, &k);
-    for (int i = 0; i < k; i++) printf("%d ", out[i]);
-    printf("\n");
-}
-```
-
-```scala run
-class TreeNode(var value: Int, var left: TreeNode = null, var right: TreeNode = null)
-
-object Main extends App {
-  class Solution {
-    def preorder(root: TreeNode): List[Int] = {
-      val buf = scala.collection.mutable.ListBuffer[Int]()
-      def walk(n: TreeNode): Unit = {
-        if (n == null) return
-        buf += n.value
-        walk(n.left)
-        walk(n.right)
-      }
-      walk(root)
-      buf.toList
-    }
-  }
-
-  val root = new TreeNode(1, new TreeNode(2, new TreeNode(4)), new TreeNode(3, null, new TreeNode(7)))
-  println(new Solution().preorder(root))
-}
-```
-
-
-## Complexity
+### Complexity
 
 Each node is visited exactly once → **O(N) time**. The recursion uses one stack frame per active call, and the maximum depth equals the tree's height → **O(h) space** for the call stack.
 
 > **Best case** — balanced tree, `h = log N`:  Time **O(N)**, Space **O(log N)**.
 >
 > **Worst case** — skew tree, `h = N`: Time **O(N)**, Space **O(N)**.
+
+</details>
 
 ***
 
@@ -306,7 +361,9 @@ inorder(node):
   inorder(right)     # ← R
 ```
 
-## Walking through it
+<details>
+<summary><h2>Walking through it</h2></summary>
+
 
 Same tree:
 
@@ -343,7 +400,10 @@ flowchart TB
 
 The recursion goes *all the way down the left spine* before producing any output. For the example, it descends `1 → 2 → 4`, hits a `null` left of `4`, visits `4`, returns, visits `2`, descends `2`'s right (which is `null`), returns, visits `1`, descends right into `3`, finds `null` left of `3`, visits `3`, descends right into `7`, visits `7`.
 
-## Why inorder?
+</details>
+<details>
+<summary><h2>Why inorder?</h2></summary>
+
 
 The killer application: **inorder traversal of a binary search tree visits the values in sorted ascending order**. This is the property that makes BSTs useful as ordered iterators — every database index, every `std::map`, every `TreeMap`, every BST in any language standard library uses inorder for its iterator. We'll prove this when we get to BSTs in the next chapter.
 
@@ -351,84 +411,180 @@ Inorder also shows up in:
 - **Infix expression** — `3 + 4 * 5` is the inorder traversal of its expression tree.
 - **Predecessor / successor lookups** in BSTs (find the previous and next value in sorted order).
 
-## Implementation
+</details>
+<details>
+<summary><h2>Solution &amp; Analysis</h2></summary>
+
+### Implementation
 
 Same shape as preorder; only the order of `visit` and the left recursion swap.
 
 
-```pseudocode
-function inorder(root):
-    out ← empty list
-    function walk(n):
-        if n = null: return
-        walk(n.left)             # L
-        append n.val to out      # V
-        walk(n.right)            # R
-    walk(root)
-    return out
-```
-
 ```python run
-def inorder(root):
-    out = []
-    def walk(n):
-        if n is None: return
-        walk(n.left)             # L
-        out.append(n.val)        # V
-        walk(n.right)            # R
-    walk(root)
-    return out
+from typing import List, Optional
+
+
+class TreeNode:
+    def __init__(self, val=0, left=None, right=None):
+        self.val = val
+        self.left = left
+        self.right = right
+
+
+def from_level_order(values):
+    """Build tree from list like [1, 2, 3, None, 4]. None means missing child."""
+    if not values:
+        return None
+    root = TreeNode(values[0])
+    queue = [root]
+    i = 1
+    while queue and i < len(values):
+        node = queue.pop(0)
+        if i < len(values) and values[i] is not None:
+            node.left = TreeNode(values[i])
+            queue.append(node.left)
+        i += 1
+        if i < len(values) and values[i] is not None:
+            node.right = TreeNode(values[i])
+            queue.append(node.right)
+        i += 1
+    return root
+
+
+class Solution:
+    def inorder(
+        self, root: Optional[TreeNode], result: List[int]
+    ) -> None:
+
+        # Base case: If the current node is None (empty), return.
+        if root is None:
+            return
+
+        # Step 1: Recursively traverse the left subtree.
+        self.inorder(root.left, result)
+
+        # Step 2: Visit the current node and store its value in 'result'.
+        result.append(root.val)
+
+        # Step 3: Recursively traverse the right subtree.
+        self.inorder(root.right, result)
+
+    def recursive_inorder_traversal(
+        self, root: Optional[TreeNode]
+    ) -> List[int]:
+
+        # Create an empty list to store the inorder traversal result.
+        result: List[int] = []
+
+        # Start the recursive inorder traversal from the 'root' node.
+        self.inorder(root, result)
+
+        # Return the final result containing the inorder traversal of the
+        # binary tree.
+        return result
+
+
+# Examples from the problem statement
+print(Solution().recursive_inorder_traversal(from_level_order([1, 2, 3, 4, None, None, 7])))  # [4, 2, 1, 3, 7]
+print(Solution().recursive_inorder_traversal(from_level_order([1, 8, 4, None, None, 2, 7])))  # [8, 1, 2, 4, 7]
+
+# Edge cases
+print(Solution().recursive_inorder_traversal(None))                                            # []
+print(Solution().recursive_inorder_traversal(from_level_order([1])))                           # [1]
+print(Solution().recursive_inorder_traversal(from_level_order([1, 2, None, 3, None, 4])))     # [4, 3, 2, 1]
+print(Solution().recursive_inorder_traversal(from_level_order([1, None, 2, None, 3])))        # [1, 2, 3]
+print(Solution().recursive_inorder_traversal(from_level_order([1, 2, 3, 4, 5, 6, 7])))       # [4, 2, 5, 1, 6, 3, 7]
+print(Solution().recursive_inorder_traversal(from_level_order([5, 5, 5, 5, 5])))              # [5, 5, 5, 5, 5]
 ```
 
 ```java run
-static void walk(TreeNode n, List<Integer> out) {
-    if (n == null) return;
-    walk(n.left,  out);
-    out.add(n.val);
-    walk(n.right, out);
-}
-public static List<Integer> inorder(TreeNode root) {
-    List<Integer> out = new ArrayList<>();
-    walk(root, out);
-    return out;
-}
-```
+import java.util.*;
 
-```c run
-static void walk(TreeNode *n, int *out, int *k) {
-    if (!n) return;
-    walk(n->left,  out, k);
-    out[(*k)++] = n->val;
-    walk(n->right, out, k);
-}
-```
-
-```scala run
-class TreeNode(var value: Int, var left: TreeNode = null, var right: TreeNode = null)
-
-object Main extends App {
-  class Solution {
-    def inorder(root: TreeNode): List[Int] = {
-      val buf = scala.collection.mutable.ListBuffer[Int]()
-      def walk(n: TreeNode): Unit = {
-        if (n == null) return
-        walk(n.left)
-        buf += n.value
-        walk(n.right)
-      }
-      walk(root); buf.toList
+public class Main {
+    static class TreeNode {
+        int val;
+        TreeNode left;
+        TreeNode right;
+        TreeNode() {}
+        TreeNode(int val) { this.val = val; }
     }
-  }
 
-  val root = new TreeNode(1, new TreeNode(2, new TreeNode(4)), new TreeNode(3, null, new TreeNode(7)))
-  println(new Solution().inorder(root))
+    static TreeNode fromLevelOrder(Integer... values) {
+        if (values.length == 0 || values[0] == null) return null;
+        TreeNode root = new TreeNode(values[0]);
+        java.util.Deque<TreeNode> queue = new java.util.ArrayDeque<>();
+        queue.add(root);
+        int i = 1;
+        while (!queue.isEmpty() && i < values.length) {
+            TreeNode node = queue.poll();
+            if (i < values.length && values[i] != null) {
+                node.left = new TreeNode(values[i]);
+                queue.add(node.left);
+            }
+            i++;
+            if (i < values.length && values[i] != null) {
+                node.right = new TreeNode(values[i]);
+                queue.add(node.right);
+            }
+            i++;
+        }
+        return root;
+    }
+
+    static class Solution {
+        private void inorder(TreeNode root, List<Integer> result) {
+
+            // Base case: If the current node is null, return.
+            if (root == null) {
+                return;
+            }
+
+            // Step 1: Recursively traverse the left subtree.
+            inorder(root.left, result);
+
+            // Step 2: Visit the current node and store its value in
+            // 'result'.
+            result.add(root.val);
+
+            // Step 3: Recursively traverse the right subtree.
+            inorder(root.right, result);
+        }
+
+        public List<Integer> recursiveInorderTraversal(TreeNode root) {
+
+            // Create an empty list to store the inorder traversal result.
+            List<Integer> result = new ArrayList<>();
+
+            // Start the recursive inorder traversal from the 'root' node.
+            inorder(root, result);
+
+            // Return the final result containing the inorder traversal of
+            // the binary tree.
+            return result;
+        }
+    }
+
+    public static void main(String[] args) {
+        // Examples from the problem statement
+        System.out.println(new Solution().recursiveInorderTraversal(fromLevelOrder(1, 2, 3, 4, null, null, 7)));  // [4, 2, 1, 3, 7]
+        System.out.println(new Solution().recursiveInorderTraversal(fromLevelOrder(1, 8, 4, null, null, 2, 7)));  // [8, 1, 2, 4, 7]
+
+        // Edge cases
+        System.out.println(new Solution().recursiveInorderTraversal(null));                                        // []
+        System.out.println(new Solution().recursiveInorderTraversal(fromLevelOrder(1)));                           // [1]
+        System.out.println(new Solution().recursiveInorderTraversal(fromLevelOrder(1, 2, null, 3, null, 4)));     // [4, 3, 2, 1]
+        System.out.println(new Solution().recursiveInorderTraversal(fromLevelOrder(1, null, 2, null, 3)));        // [1, 2, 3]
+        System.out.println(new Solution().recursiveInorderTraversal(fromLevelOrder(1, 2, 3, 4, 5, 6, 7)));       // [4, 2, 5, 1, 6, 3, 7]
+        System.out.println(new Solution().recursiveInorderTraversal(fromLevelOrder(5, 5, 5, 5, 5)));              // [5, 5, 5, 5, 5]
+    }
 }
 ```
 
-
-## Complexity
+### Complexity
 
 Same as preorder: **O(N) time, O(h) space**.
+
+</details>
 
 ***
 
@@ -444,7 +600,9 @@ postorder(node):
   visit(node)        # ← V
 ```
 
-## Walking through it
+<details>
+<summary><h2>Walking through it</h2></summary>
+
 
 Same tree, third order:
 
@@ -481,7 +639,10 @@ flowchart TB
 
 The recursion goes deep into the left subtree, then deep into the right subtree, *and only then* visits the current node. For the example: descend `1 → 2 → 4`, visit `4`, return, visit `2`, return, descend `1 → 3 → 7`, visit `7`, return, visit `3`, return, finally visit `1`.
 
-## Why postorder?
+</details>
+<details>
+<summary><h2>Why postorder?</h2></summary>
+
 
 Postorder is what you use whenever a node's *result depends on its children's results*:
 
@@ -490,82 +651,175 @@ Postorder is what you use whenever a node's *result depends on its children's re
 - **Expression evaluation.** `(3 + 4) * 5` becomes `3 4 + 5 *` in postfix (RPN). Evaluate left-to-right with a stack — exactly how postfix calculators and JVM bytecode work.
 - **Build systems / dependency resolution.** A target depends on its dependencies; you build the dependencies first (postorder over the dependency graph), then the target. `make`, Bazel, npm install — all do postorder traversal of the dependency DAG.
 
-## Implementation
+</details>
+<details>
+<summary><h2>Solution &amp; Analysis</h2></summary>
 
-
-```pseudocode
-function postorder(root):
-    out ← empty list
-    function walk(n):
-        if n = null: return
-        walk(n.left)             # L
-        walk(n.right)            # R
-        append n.val to out      # V
-    walk(root)
-    return out
-```
+### Implementation
 
 ```python run
-def postorder(root):
-    out = []
-    def walk(n):
-        if n is None: return
-        walk(n.left)             # L
-        walk(n.right)            # R
-        out.append(n.val)        # V
-    walk(root)
-    return out
+from typing import List, Optional
+
+
+class TreeNode:
+    def __init__(self, val=0, left=None, right=None):
+        self.val = val
+        self.left = left
+        self.right = right
+
+
+def from_level_order(values):
+    """Build tree from list like [1, 2, 3, None, 4]. None means missing child."""
+    if not values:
+        return None
+    root = TreeNode(values[0])
+    queue = [root]
+    i = 1
+    while queue and i < len(values):
+        node = queue.pop(0)
+        if i < len(values) and values[i] is not None:
+            node.left = TreeNode(values[i])
+            queue.append(node.left)
+        i += 1
+        if i < len(values) and values[i] is not None:
+            node.right = TreeNode(values[i])
+            queue.append(node.right)
+        i += 1
+    return root
+
+
+class Solution:
+    def postorder(self, root: Optional[TreeNode], result: List[int]):
+
+        # Base case: If the current node is None (empty), return.
+        if root is None:
+            return
+
+        # Step 1: Recursively traverse the left subtree.
+        self.postorder(root.left, result)
+
+        # Step 2: Recursively traverse the right subtree.
+        self.postorder(root.right, result)
+
+        # Step 3: Visit the current node and store its value in 'result'.
+        result.append(root.val)
+
+    def recursive_postorder_traversal(
+        self, root: Optional[TreeNode]
+    ) -> List[int]:
+
+        # Create an empty list to store the postorder traversal result.
+        result: List[int] = []
+
+        # Start the recursive postorder traversal from the 'root' node.
+        self.postorder(root, result)
+
+        # Return the final result containing the postorder traversal of
+        # the binary tree.
+        return result
+
+
+# Examples from the problem statement
+print(Solution().recursive_postorder_traversal(from_level_order([1, 2, 3, 4, None, None, 7])))  # [4, 2, 7, 3, 1]
+print(Solution().recursive_postorder_traversal(from_level_order([1, 8, 4, None, None, 2, 7])))  # [8, 2, 7, 4, 1]
+
+# Edge cases
+print(Solution().recursive_postorder_traversal(None))                                            # []
+print(Solution().recursive_postorder_traversal(from_level_order([1])))                           # [1]
+print(Solution().recursive_postorder_traversal(from_level_order([1, 2, None, 3, None, 4])))     # [4, 3, 2, 1]
+print(Solution().recursive_postorder_traversal(from_level_order([1, None, 2, None, 3])))        # [3, 2, 1]
+print(Solution().recursive_postorder_traversal(from_level_order([1, 2, 3, 4, 5, 6, 7])))       # [4, 5, 2, 6, 7, 3, 1]
+print(Solution().recursive_postorder_traversal(from_level_order([5, 5, 5, 5, 5])))              # [5, 5, 5, 5, 5]
 ```
 
 ```java run
-static void walk(TreeNode n, List<Integer> out) {
-    if (n == null) return;
-    walk(n.left,  out);
-    walk(n.right, out);
-    out.add(n.val);
-}
-public static List<Integer> postorder(TreeNode root) {
-    List<Integer> out = new ArrayList<>();
-    walk(root, out);
-    return out;
-}
-```
+import java.util.*;
 
-```c run
-static void walk(TreeNode *n, int *out, int *k) {
-    if (!n) return;
-    walk(n->left,  out, k);
-    walk(n->right, out, k);
-    out[(*k)++] = n->val;
-}
-```
-
-```scala run
-class TreeNode(var value: Int, var left: TreeNode = null, var right: TreeNode = null)
-
-object Main extends App {
-  class Solution {
-    def postorder(root: TreeNode): List[Int] = {
-      val buf = scala.collection.mutable.ListBuffer[Int]()
-      def walk(n: TreeNode): Unit = {
-        if (n == null) return
-        walk(n.left)
-        walk(n.right)
-        buf += n.value
-      }
-      walk(root); buf.toList
+public class Main {
+    static class TreeNode {
+        int val;
+        TreeNode left;
+        TreeNode right;
+        TreeNode() {}
+        TreeNode(int val) { this.val = val; }
     }
-  }
 
-  val root = new TreeNode(1, new TreeNode(2, new TreeNode(4)), new TreeNode(3, null, new TreeNode(7)))
-  println(new Solution().postorder(root))
+    static TreeNode fromLevelOrder(Integer... values) {
+        if (values.length == 0 || values[0] == null) return null;
+        TreeNode root = new TreeNode(values[0]);
+        java.util.Deque<TreeNode> queue = new java.util.ArrayDeque<>();
+        queue.add(root);
+        int i = 1;
+        while (!queue.isEmpty() && i < values.length) {
+            TreeNode node = queue.poll();
+            if (i < values.length && values[i] != null) {
+                node.left = new TreeNode(values[i]);
+                queue.add(node.left);
+            }
+            i++;
+            if (i < values.length && values[i] != null) {
+                node.right = new TreeNode(values[i]);
+                queue.add(node.right);
+            }
+            i++;
+        }
+        return root;
+    }
+
+    static class Solution {
+        private void postorder(TreeNode root, List<Integer> result) {
+
+            // Base case: If the current node is null (empty), return.
+            if (root == null) {
+                return;
+            }
+
+            // Step 1: Recursively traverse the left subtree.
+            postorder(root.left, result);
+
+            // Step 2: Recursively traverse the right subtree.
+            postorder(root.right, result);
+
+            // Step 3: Visit the current node and store its value in
+            // 'result'.
+            result.add(root.val);
+        }
+
+        public List<Integer> recursivePostorderTraversal(TreeNode root) {
+
+            // Create an empty list to store the postorder traversal result.
+            List<Integer> result = new ArrayList<>();
+
+            // Start the recursive postorder traversal from the 'root' node.
+            postorder(root, result);
+
+            // Return the final result containing the postorder traversal of
+            // the binary tree.
+            return result;
+        }
+    }
+
+    public static void main(String[] args) {
+        // Examples from the problem statement
+        System.out.println(new Solution().recursivePostorderTraversal(fromLevelOrder(1, 2, 3, 4, null, null, 7)));  // [4, 2, 7, 3, 1]
+        System.out.println(new Solution().recursivePostorderTraversal(fromLevelOrder(1, 8, 4, null, null, 2, 7)));  // [8, 2, 7, 4, 1]
+
+        // Edge cases
+        System.out.println(new Solution().recursivePostorderTraversal(null));                                        // []
+        System.out.println(new Solution().recursivePostorderTraversal(fromLevelOrder(1)));                           // [1]
+        System.out.println(new Solution().recursivePostorderTraversal(fromLevelOrder(1, 2, null, 3, null, 4)));     // [4, 3, 2, 1]
+        System.out.println(new Solution().recursivePostorderTraversal(fromLevelOrder(1, null, 2, null, 3)));        // [3, 2, 1]
+        System.out.println(new Solution().recursivePostorderTraversal(fromLevelOrder(1, 2, 3, 4, 5, 6, 7)));       // [4, 5, 2, 6, 7, 3, 1]
+        System.out.println(new Solution().recursivePostorderTraversal(fromLevelOrder(5, 5, 5, 5, 5)));              // [5, 5, 5, 5, 5]
+    }
 }
 ```
 
-
-## Complexity
+### Complexity
 
 Same as the others: **O(N) time, O(h) space**.
+
+</details>
 
 ***
 

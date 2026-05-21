@@ -167,7 +167,9 @@ Output: 1               No element is greater than any earlier one
 
 ---
 
-## Applying the Diagnostic Questions
+<details>
+<summary><h2>Applying the Diagnostic Questions</h2></summary>
+
 
 | # | Question | Answer |
 |---|---|---|
@@ -206,9 +208,10 @@ Output: 1               No element is greater than any earlier one
 
 **What breaks otherwise.** If the state needed two indices (e.g., end-index *and* a constraint on the previous element's value), we'd need `dp[i][j]` — a 2D array. We see exactly that in LCS (the next lesson).
 
----
+</details>
+<details>
+<summary><h2>The DP Strategy (Visualised)</h2></summary>
 
-## The DP Strategy (Visualised)
 
 ```d2
 direction: right
@@ -242,110 +245,108 @@ grid: "dp for arr = [9, 5, 10, 6, 9, 7, 8]" {
 
 <p align="center"><strong>Top row: the array. Middle row: <code>dp[i]</code> = LIS ending at index <code>i</code>. Bottom row: indices. The maximum entry in the middle row (<code>dp[6] = 4</code>) is the answer.</strong></p>
 
-## The Solution
+</details>
+<details>
+<summary><h2>Solution &amp; Analysis</h2></summary>
 
-
-```pseudocode
-# dp[i] = length of LIS ending at index i. Answer = max(dp).
-function longestIncreasingSubsequence(arr):
-    n ← length(arr)
-    if n = 0: return 0
-    dp ← list of n ones                          # every element alone is a length-1 LIS
-    for i from 1 to n − 1:
-        for j from 0 to i − 1:
-            if arr[j] < arr[i]:                  # arr[j] is a valid predecessor
-                dp[i] ← max(dp[i], dp[j] + 1)
-    return max(dp)                                # LIS may end anywhere
-```
+### The Solution
 
 ```python run
 from typing import List
 
 class Solution:
     def longest_increasing_subsequence(self, arr: List[int]) -> int:
-        n = len(arr)
+        n: int = len(arr)
         if n == 0:
             return 0
-        dp = [1] * n                             # dp[i] = LIS ending at i; minimum is 1 (the element alone)
+
+        # Create a list to store the lengths of increasing subsequences
+        dp: List[int] = [1] * n
+
+        # Compute the lengths of increasing subsequences ending at each
+        # position
         for i in range(1, n):
             for j in range(i):
-                if arr[j] < arr[i]:              # arr[j] is a valid predecessor for arr[i]
+
+                # If the current element is greater than the previous
+                # element, update the length of the increasing
+                # subsequence
+                if arr[i] > arr[j]:
                     dp[i] = max(dp[i], dp[j] + 1)
-        return max(dp)                           # LIS could end anywhere — take the max
+
+        # Find the maximum length of the increasing subsequence
+        max_lis_length: int = dp[0]
+        for i in range(1, n):
+            if dp[i] > max_lis_length:
+                max_lis_length = dp[i]
+
+        return max_lis_length
 
 
-if __name__ == "__main__":
-    print(Solution().longest_increasing_subsequence([9, 5, 10, 6, 9, 7, 8]))   # 4
+# Examples from the problem statement
+print(Solution().longest_increasing_subsequence([9, 5, 10, 6, 9, 7, 8]))  # 4
+print(Solution().longest_increasing_subsequence([5, 6, 1, 4, 3, 8, 2]))   # 3
+print(Solution().longest_increasing_subsequence([9, 5, 4, 3]))             # 1
+
+# Edge cases
+print(Solution().longest_increasing_subsequence([]))                       # 0
+print(Solution().longest_increasing_subsequence([7]))                      # 1
+print(Solution().longest_increasing_subsequence([1, 2]))                   # 2
+print(Solution().longest_increasing_subsequence([1, 2, 3, 4, 5]))         # 5
+print(Solution().longest_increasing_subsequence([5, 4, 3, 2, 1]))         # 1
 ```
 
 ```java run
+import java.util.*;
+
 public class Main {
     static class Solution {
         public int longestIncreasingSubsequence(int[] arr) {
             int n = arr.length;
-            if (n == 0) return 0;
+            if (n == 0) {
+                return 0;
+            }
+
+            // Create an array to store the lengths of increasing
+            // subsequences
             int[] dp = new int[n];
-            java.util.Arrays.fill(dp, 1);
-            int best = 1;
+            Arrays.fill(dp, 1);
+
+            // Compute the lengths of increasing subsequences ending at each
+            // position
             for (int i = 1; i < n; i++) {
                 for (int j = 0; j < i; j++) {
-                    if (arr[j] < arr[i]) dp[i] = Math.max(dp[i], dp[j] + 1);
+
+                    // If the current element is greater than the previous
+                    // element, update the length of the increasing
+                    // subsequence
+                    if (arr[i] > arr[j]) dp[i] = Math.max(dp[i], dp[j] + 1);
                 }
-                best = Math.max(best, dp[i]);
             }
-            return best;
+
+            // Find the maximum length of the increasing subsequence
+            int maxLISLength = dp[0];
+            for (int i = 1; i < n; i++) {
+                if (dp[i] > maxLISLength) maxLISLength = dp[i];
+            }
+
+            return maxLISLength;
         }
     }
 
     public static void main(String[] args) {
-        System.out.println(new Solution().longestIncreasingSubsequence(new int[]{9, 5, 10, 6, 9, 7, 8}));
+        // Examples from the problem statement
+        System.out.println(new Solution().longestIncreasingSubsequence(new int[]{9, 5, 10, 6, 9, 7, 8}));  // 4
+        System.out.println(new Solution().longestIncreasingSubsequence(new int[]{5, 6, 1, 4, 3, 8, 2}));   // 3
+        System.out.println(new Solution().longestIncreasingSubsequence(new int[]{9, 5, 4, 3}));             // 1
+
+        // Edge cases
+        System.out.println(new Solution().longestIncreasingSubsequence(new int[]{}));                       // 0
+        System.out.println(new Solution().longestIncreasingSubsequence(new int[]{7}));                      // 1
+        System.out.println(new Solution().longestIncreasingSubsequence(new int[]{1, 2}));                   // 2
+        System.out.println(new Solution().longestIncreasingSubsequence(new int[]{1, 2, 3, 4, 5}));         // 5
+        System.out.println(new Solution().longestIncreasingSubsequence(new int[]{5, 4, 3, 2, 1}));         // 1
     }
-}
-```
-
-```c run
-#include <stdio.h>
-
-int longest_increasing_subsequence(int *arr, int n) {
-    if (n == 0) return 0;
-    int dp[1000];
-    for (int i = 0; i < n; i++) dp[i] = 1;
-    int best = 1;
-    for (int i = 1; i < n; i++) {
-        for (int j = 0; j < i; j++) {
-            if (arr[j] < arr[i] && dp[j] + 1 > dp[i]) dp[i] = dp[j] + 1;
-        }
-        if (dp[i] > best) best = dp[i];
-    }
-    return best;
-}
-
-int main(void) {
-    int arr[] = {9, 5, 10, 6, 9, 7, 8};
-    printf("%d\n", longest_increasing_subsequence(arr, 7));   // 4
-    return 0;
-}
-```
-
-```scala run
-object Main extends App {
-  class Solution {
-    def longestIncreasingSubsequence(arr: Array[Int]): Int = {
-      val n = arr.length
-      if (n == 0) return 0
-      val dp = Array.fill(n)(1)
-      var best = 1
-      for (i <- 1 until n) {
-        for (j <- 0 until i) {
-          if (arr(j) < arr(i)) dp(i) = math.max(dp(i), dp(j) + 1)
-        }
-        best = math.max(best, dp(i))
-      }
-      best
-    }
-  }
-
-  println(new Solution().longestIncreasingSubsequence(Array(9, 5, 10, 6, 9, 7, 8)))   // 4
 }
 ```
 
@@ -401,9 +402,7 @@ max(dp) = 4 ✓
 
 </details>
 
----
-
-## Complexity Analysis
+### Complexity Analysis
 
 | Aspect | Cost | Why |
 |---|---|---|
@@ -412,9 +411,7 @@ max(dp) = 4 ✓
 
 **A faster `O(n log n)` algorithm exists** using patience sorting (or a binary-search trick on a "tails" array), but it's a different algorithm — not a DP optimisation. The `O(n²)` DP is what generalises to the problem variants in the rest of this section.
 
----
-
-## Edge Cases
+### Edge Cases
 
 | Case | Example | Expected | Reasoning |
 |---|---|---|---|
@@ -425,9 +422,10 @@ max(dp) = 4 ✓
 | All equal | `[5, 5, 5]` | `1` | Strict `<` means no element is a valid predecessor of a duplicate. |
 | Negative numbers | `[-3, -1, -2, 0]` | `3` | LIS: `[-3, -1, 0]`. The recurrence works on any totally ordered values. |
 
----
+</details>
+<details>
+<summary><h2>Final Takeaway</h2></summary>
 
-## Final Takeaway
 
 LIS is the canonical 1D-state DP with a "look at all earlier indices" recurrence. Define `dp[i]` as the LIS ending at `i`, scan all earlier `j` with `arr[j] < arr[i]`, take the max + 1. Total `O(n²)`.
 
@@ -437,6 +435,8 @@ LIS is the canonical 1D-state DP with a "look at all earlier indices" recurrence
 <summary><strong>Answer</strong></summary>
 
 Track `prev[i]` = the index `j` that produced `dp[i]`'s maximum (or `-1` if `arr[i]` started a new LIS). When the loop ends, find the index with the maximum `dp` value, then walk backward through `prev` to reconstruct. The next problem (Largest Sum Ascending Subsequence) does exactly this.
+
+</details>
 
 </details>
 
@@ -466,7 +466,9 @@ Output: [9]
 
 ---
 
-## What Changes from LIS
+<details>
+<summary><h2>What Changes from LIS</h2></summary>
+
 
 Two changes:
 
@@ -515,160 +517,180 @@ grid: "Reconstruction via prev[]" {
 
 <p align="center"><strong>Top: array. Middle: <code>dp[i]</code> = max sum ending at <code>i</code>. Bottom: <code>prev[i]</code> = predecessor index. Best ends at <code>i = 4</code> (sum 18). Walk back: 4 → 3 → 2 → 0. Reverse to get <code>[1, 3, 5, 9]</code>.</strong></p>
 
-## The Solution
+</details>
+<details>
+<summary><h2>Solution &amp; Analysis</h2></summary>
 
-
-```pseudocode
-# Same shape as LIS, but dp[i] is the maximum *sum* of an ascending subsequence ending at i.
-# `prev` records the predecessor so we can reconstruct the subsequence at the end.
-function largestSumAscending(arr):
-    n ← length(arr)
-    if n = 0: return empty list
-    dp ← copy of arr                              # dp[i] starts as arr[i] (element alone)
-    prev ← list of n entries, each set to −1
-    endIndex ← 0
-    for i from 0 to n − 1:
-        for j from 0 to i − 1:
-            if arr[j] < arr[i] AND dp[j] + arr[i] > dp[i]:
-                dp[i] ← dp[j] + arr[i]
-                prev[i] ← j
-        if dp[i] > dp[endIndex]:
-            endIndex ← i                          # track the index of the global max sum
-
-    # Reconstruct the subsequence by walking prev backwards.
-    result ← empty list
-    while endIndex ≠ −1:
-        prepend arr[endIndex] to result
-        endIndex ← prev[endIndex]
-    return result
-```
+### The Solution
 
 ```python run
 from typing import List
 
 class Solution:
-    def largest_sum_ascending(self, arr: List[int]) -> List[int]:
-        n = len(arr)
-        if n == 0:
-            return []
-        dp = list(arr)                           # dp[i] starts as arr[i] — the element alone
-        prev = [-1] * n                          # prev[i] = j that produced dp[i]'s max, or -1
-        end_index = 0
+    def largest_sum_ascending_subsequence(
+        self, arr: List[int]
+    ) -> List[int]:
+        n: int = len(arr)
+
+        # List to store the maximum sum subsequence ending at index i
+        dp: List[int] = [0] * n
+
+        # List to store the previous index of each element in the maximum
+        # sum subsequence
+        prev_index: List[int] = [-1] * n
+
+        # Variable to track the maximum sum
+        max_sum: int = 0
+
+        # Variable to track the index of the last element in the maximum
+        # sum subsequence
+        end_index: int = 0
+
         for i in range(n):
+
+            # Initialize the maximum sum subsequence at index i with the
+            # element itself
+            dp[i] = arr[i]
+
+            # Initialize the previous index as -1 (indicating no previous
+            # element)
+            prev_index[i] = -1
+
             for j in range(i):
                 if arr[j] < arr[i] and dp[j] + arr[i] > dp[i]:
+
+                    # If element at j is less than element at i and
+                    # adding element at i with maximum sum subsequence
+                    # ending at j gives a larger sum, update the maximum
+                    # sum subsequence ending at i and store the previous
+                    # index as j
                     dp[i] = dp[j] + arr[i]
-                    prev[i] = j                  # Record the predecessor for path reconstruction
-            if dp[i] > dp[end_index]:
-                end_index = i                    # Track which index holds the global max
-        result: List[int] = []
+                    prev_index[i] = j
+
+            if dp[i] > max_sum:
+
+                # If the maximum sum subsequence ending at i is greater
+                # than the current maximum sum, update the maximum sum
+                # and the index of the last element in the subsequence
+                max_sum = dp[i]
+                end_index = i
+
+        subsequence: List[int] = []
         while end_index != -1:
-            result.append(arr[end_index])
-            end_index = prev[end_index]
-        result.reverse()
-        return result
+
+            # Reconstruct the maximum sum subsequence by starting from
+            # the last element and following the previous index
+            subsequence.append(arr[end_index])
+            end_index = prev_index[end_index]
+
+        # Reverse the subsequence to get the correct order
+        subsequence.reverse()
+        return subsequence
 
 
-if __name__ == "__main__":
-    print(Solution().largest_sum_ascending([1, 7, 3, 5, 9, 8, 6]))   # [1, 3, 5, 9]
+# Examples from the problem statement
+print(Solution().largest_sum_ascending_subsequence([1, 7, 3, 5, 9, 8, 6]))  # [1, 3, 5, 9]
+print(Solution().largest_sum_ascending_subsequence([9, 8, 7, 6]))            # [9]
+print(Solution().largest_sum_ascending_subsequence([9, 1, 2, 3]))            # [9]
+
+# Edge cases
+print(Solution().largest_sum_ascending_subsequence([5]))                     # [5]
+print(Solution().largest_sum_ascending_subsequence([1, 2]))                  # [1, 2]
+print(Solution().largest_sum_ascending_subsequence([2, 1]))                  # [2]
+print(Solution().largest_sum_ascending_subsequence([1, 2, 3, 4, 5]))        # [1, 2, 3, 4, 5]
+print(Solution().largest_sum_ascending_subsequence([3, 1, 4, 1, 5, 9]))     # [1, 4, 5, 9]
 ```
 
 ```java run
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
+import java.util.*;
 
 public class Main {
     static class Solution {
-        public List<Integer> largestSumAscending(int[] arr) {
+        public int[] largestSumAscendingSubsequence(int[] arr) {
             int n = arr.length;
-            List<Integer> result = new ArrayList<>();
-            if (n == 0) return result;
-            int[] dp = arr.clone();
-            int[] prev = new int[n];
-            java.util.Arrays.fill(prev, -1);
+
+            // Array to store the maximum sum subsequence ending at index i
+            int[] dp = new int[n];
+
+            // Array to store the previous index of each element in the
+            // maximum sum subsequence
+            int[] prevIndex = new int[n];
+
+            // Variable to track the maximum sum
+            int maxSum = 0;
+
+            // Variable to track the index of the last element in the maximum
+            // sum subsequence
             int endIndex = 0;
+
             for (int i = 0; i < n; i++) {
+
+                // Initialize the maximum sum subsequence at index i with the
+                // element itself
+                dp[i] = arr[i];
+
+                // Initialize the previous index as -1 (indicating no
+                // previous element)
+                prevIndex[i] = -1;
+
                 for (int j = 0; j < i; j++) {
                     if (arr[j] < arr[i] && dp[j] + arr[i] > dp[i]) {
+
+                        // If element at j is less than element at i and
+                        // adding element at i with maximum sum subsequence
+                        // ending at j gives a larger sum, update the maximum
+                        // sum subsequence ending at i and store the previous
+                        // index as j
                         dp[i] = dp[j] + arr[i];
-                        prev[i] = j;
+                        prevIndex[i] = j;
                     }
                 }
-                if (dp[i] > dp[endIndex]) endIndex = i;
+
+                if (dp[i] > maxSum) {
+
+                    // If the maximum sum subsequence ending at i is greater
+                    // than the current maximum sum, update the maximum sum
+                    // and the index of the last element in the subsequence
+                    maxSum = dp[i];
+                    endIndex = i;
+                }
             }
+
+            List<Integer> subsequence = new ArrayList<>();
             while (endIndex != -1) {
-                result.add(arr[endIndex]);
-                endIndex = prev[endIndex];
+
+                // Reconstruct the maximum sum subsequence by starting from
+                // the last element and following the previous index
+                subsequence.add(arr[endIndex]);
+                endIndex = prevIndex[endIndex];
             }
-            Collections.reverse(result);
+
+            // Reverse the subsequence to get the correct order
+            Collections.reverse(subsequence);
+
+            // Convert the List<Integer> to int[]
+            int[] result = new int[subsequence.size()];
+            for (int i = 0; i < subsequence.size(); i++) {
+                result[i] = subsequence.get(i);
+            }
+
             return result;
         }
     }
 
     public static void main(String[] args) {
-        System.out.println(new Solution().largestSumAscending(new int[]{1, 7, 3, 5, 9, 8, 6}));
+        // Examples from the problem statement
+        System.out.println(Arrays.toString(new Solution().largestSumAscendingSubsequence(new int[]{1, 7, 3, 5, 9, 8, 6})));  // [1, 3, 5, 9]
+        System.out.println(Arrays.toString(new Solution().largestSumAscendingSubsequence(new int[]{9, 8, 7, 6})));            // [9]
+        System.out.println(Arrays.toString(new Solution().largestSumAscendingSubsequence(new int[]{9, 1, 2, 3})));            // [9]
+
+        // Edge cases
+        System.out.println(Arrays.toString(new Solution().largestSumAscendingSubsequence(new int[]{5})));                     // [5]
+        System.out.println(Arrays.toString(new Solution().largestSumAscendingSubsequence(new int[]{1, 2})));                  // [1, 2]
+        System.out.println(Arrays.toString(new Solution().largestSumAscendingSubsequence(new int[]{2, 1})));                  // [2]
+        System.out.println(Arrays.toString(new Solution().largestSumAscendingSubsequence(new int[]{1, 2, 3, 4, 5})));        // [1, 2, 3, 4, 5]
+        System.out.println(Arrays.toString(new Solution().largestSumAscendingSubsequence(new int[]{3, 1, 4, 1, 5, 9})));     // [1, 4, 5, 9]
     }
-}
-```
-
-```c run
-#include <stdio.h>
-
-int dp[1000], prev_idx[1000], result[1000];
-
-int largest_sum_ascending(int *arr, int n, int *out) {
-    for (int i = 0; i < n; i++) { dp[i] = arr[i]; prev_idx[i] = -1; }
-    int end_index = 0;
-    for (int i = 0; i < n; i++) {
-        for (int j = 0; j < i; j++) {
-            if (arr[j] < arr[i] && dp[j] + arr[i] > dp[i]) {
-                dp[i] = dp[j] + arr[i];
-                prev_idx[i] = j;
-            }
-        }
-        if (dp[i] > dp[end_index]) end_index = i;
-    }
-    int len = 0;
-    while (end_index != -1) { out[len++] = arr[end_index]; end_index = prev_idx[end_index]; }
-    for (int i = 0; i < len / 2; i++) { int t = out[i]; out[i] = out[len-1-i]; out[len-1-i] = t; }
-    return len;
-}
-
-int main(void) {
-    int arr[] = {1, 7, 3, 5, 9, 8, 6};
-    int len = largest_sum_ascending(arr, 7, result);
-    for (int i = 0; i < len; i++) printf("%d ", result[i]);
-    printf("\n");
-    return 0;
-}
-```
-
-```scala run
-object Main extends App {
-  class Solution {
-    def largestSumAscending(arr: Array[Int]): List[Int] = {
-      val n = arr.length
-      if (n == 0) return Nil
-      val dp = arr.clone()
-      val prev = Array.fill(n)(-1)
-      var endIndex = 0
-      for (i <- 0 until n) {
-        for (j <- 0 until i) {
-          if (arr(j) < arr(i) && dp(j) + arr(i) > dp(i)) {
-            dp(i) = dp(j) + arr(i); prev(i) = j
-          }
-        }
-        if (dp(i) > dp(endIndex)) endIndex = i
-      }
-      val buf = scala.collection.mutable.ListBuffer[Int]()
-      var k = endIndex
-      while (k != -1) { buf.prepend(arr(k)); k = prev(k) }
-      buf.toList
-    }
-  }
-
-  println(new Solution().largestSumAscending(Array(1, 7, 3, 5, 9, 8, 6)))   // List(1, 3, 5, 9)
 }
 ```
 
@@ -703,29 +725,27 @@ Reverse: [arr[0], arr[2], arr[3], arr[4]] = [1, 3, 5, 9]  ✓
 
 </details>
 
----
-
-## Complexity Analysis
+### Complexity Analysis
 
 | Aspect | Cost | Why |
 |---|---|---|
 | Time | `O(n²)` | Same nested loops as LIS. |
 | Space | `O(n)` | `dp` + `prev`. The reconstruction adds `O(n)` for the result. |
 
----
-
-## Edge Cases
+### Edge Cases
 
 | Case | Example | Expected | Reasoning |
 |---|---|---|---|
 | Strictly decreasing | `[9, 8, 7, 6]` | `[9]` | Each `dp[i] = arr[i]`; max is `dp[0] = 9`. |
 | Single element | `[5]` | `[5]` | `endIndex = 0`, walk back yields `[5]`. |
 | All equal | `[3, 3, 3]` | `[3]` | Strict `<` blocks all extensions; max `dp` is the element value. |
-| Negatives + positives | `[-1, 2, -3, 4]` | `[-1, 2, 4]` | Sum 5; `[2, 4]` has sum 6 — actually, that's the right answer if we're maximising sum, but `-1` is `< 2 < 4` so the chain `-1, 2, 4` sums to 5. The right answer is `[2, 4]` with sum 6. The algorithm finds it: `dp[1]=2, dp[3]=max(4, dp[1]+4=6)=6`. |
+| Negatives + positives | `[-1, 2, -3, 4]` | `[2, 4]` | `dp[1] = 2` (extending `[-1]` would give sum 1, smaller than 2 alone); `dp[3] = dp[1] + 4 = 6`. The max sum is 6 with `endIndex = 3`, `prev[3] = 1`, `prev[1] = -1` — reconstruction yields `[2, 4]`. |
+| All negative | `[-3, -1, -2]` | `[-3]` | Every `dp[i]` is negative, so the `dp[i] > max_sum` guard (with `max_sum` initialised to `0`) never fires. `end_index` stays at its default `0`, and reconstruction returns just `[arr[0]] = [-3]`. **Watch out:** the `max_sum = 0` initialisation is a latent bug for all-negative inputs — defensive code should initialise it to `arr[0]` (or `-∞`) so the true maximum is tracked. |
 
----
+</details>
+<details>
+<summary><h2>Final Takeaway</h2></summary>
 
-## Final Takeaway
 
 Largest-sum-ascending is LIS with the count-1 swapped for the value, plus a `prev` array for reconstruction. The pattern — predecessor chains stored alongside the DP — recurs throughout this section whenever you need the *path*, not just the *length*.
 
@@ -735,5 +755,7 @@ Largest-sum-ascending is LIS with the count-1 swapped for the value, plus a `pre
 <summary><strong>Answer</strong></summary>
 
 The natural state is `dp[i][j]` = LCS of `arr1[0..i]` and `arr2[0..j]`. We've moved from a 1D state to a 2D one. The next lesson formalises this as **Longest Common Subsequence**.
+
+</details>
 
 </details>

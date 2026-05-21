@@ -72,28 +72,6 @@ Subtract the leaving character (multiplied by `b^(m-1)` to align), shift left by
 
 # The Rabin-Karp algorithm
 
-```pseudocode
-function rabinKarp(T, P):
-    n ← length(T); m ← length(P)
-    if m > n: return []
-    b ← 257; p ← 10^9 + 7
-    pHash ← 0; tHash ← 0; bm ← 1
-    for i from 0 to m − 1:
-        pHash ← (pHash · b + P[i]) mod p
-        tHash ← (tHash · b + T[i]) mod p
-        if i < m − 1: bm ← (bm · b) mod p              # b^(m-1) mod p
-
-    matches ← []
-    for i from 0 to n − m:
-        if pHash = tHash:
-            if T[i..i + m − 1] = P:                    # verify against false collision
-                matches.append(i)
-        if i < n − m:
-            tHash ← ((tHash − T[i] · bm) · b + T[i + m]) mod p
-            if tHash < 0: tHash ← tHash + p
-    return matches
-```
-
 **Average cost.** `O(n + m)`. **Worst case.** `O(nm)` (every hash collides; verify always runs). In practice with a 10⁹ prime, false collisions are vanishingly rare.
 
 ***
@@ -176,67 +154,6 @@ public class Main {
 }
 ```
 
-```c run
-#include <stdio.h>
-#include <string.h>
-
-void rabin_karp(const char *T, const char *P) {
-    int n = strlen(T), m = strlen(P);
-    if (m > n) return;
-    long long b = 257, mod = 1000000007LL;
-    long long p_hash = 0, t_hash = 0, bm = 1;
-    for (int i = 0; i < m; i++) {
-        p_hash = (p_hash * b + P[i]) % mod;
-        t_hash = (t_hash * b + T[i]) % mod;
-        if (i < m - 1) bm = (bm * b) % mod;
-    }
-    for (int i = 0; i <= n - m; i++) {
-        if (p_hash == t_hash && memcmp(T + i, P, m) == 0) printf("%d ", i);
-        if (i < n - m) {
-            t_hash = ((t_hash - T[i] * bm) * b + T[i + m]) % mod;
-            if (t_hash < 0) t_hash += mod;
-        }
-    }
-    printf("\n");
-}
-
-int main(void) {
-    rabin_karp("ababcababcabcabc", "abc");
-    return 0;
-}
-```
-
-```scala run
-object Main extends App {
-  def rabinKarp(T: String, P: String): List[Int] = {
-    val n = T.length; val m = P.length
-    if (m > n) return Nil
-    val b = 257L; val mod = 1000000007L
-    var pHash = 0L; var tHash = 0L; var bm = 1L
-    for (i <- 0 until m) {
-      pHash = (pHash * b + T(0)) % mod                                                          // initialised below
-    }
-    pHash = 0; tHash = 0
-    for (i <- 0 until m) {
-      pHash = (pHash * b + P(i).toLong) % mod
-      tHash = (tHash * b + T(i).toLong) % mod
-      if (i < m - 1) bm = (bm * b) % mod
-    }
-    val matches = scala.collection.mutable.ListBuffer.empty[Int]
-    for (i <- 0 to n - m) {
-      if (pHash == tHash && T.substring(i, i + m) == P) matches += i
-      if (i < n - m) {
-        tHash = ((tHash - T(i).toLong * bm) * b + T(i + m).toLong) % mod
-        if (tHash < 0) tHash += mod
-      }
-    }
-    matches.toList
-  }
-
-  println(rabinKarp("ababcababcabcabc", "abc"))
-}
-```
-
 ***
 
 # Edge cases and pitfalls
@@ -294,49 +211,42 @@ Click any question to reveal the answer.
 **A:** Average `O(n + m)` for random text. Worst case `O(nm)` (every hash collides), same as naive — but exponentially unlikely with a large prime.
 
 </details>
-
 <details>
 <summary><strong>Q:</strong> Rolling-hash recurrence for window shift?</summary>
 
 **A:** `h_{i+1} = (h_i − leave · b^(m-1)) · b + enter mod p`. `O(1)` per shift after initial setup.
 
 </details>
-
 <details>
 <summary><strong>Q:</strong> Why do you still verify after a hash match?</summary>
 
 **A:** Hash collisions exist. A "candidate match" must be confirmed byte-by-byte to avoid false positives.
 
 </details>
-
 <details>
 <summary><strong>Q:</strong> Standard prime and base for polynomial hashing?</summary>
 
 **A:** Prime: `10⁹ + 7` or `10⁹ + 9`. Base: `31`, `53`, or `257` (just larger than the alphabet). For adversarial security, use double hashing (two `(b, p)` pairs).
 
 </details>
-
 <details>
 <summary><strong>Q:</strong> Why is single hashing insecure for adversarial input?</summary>
 
 **A:** With a known fixed prime, an attacker can engineer collisions. Mitigation: random seed (HashDoS defence) or double hashing (collision probability `(m/p)²` instead of `m/p`).
 
 </details>
-
 <details>
 <summary><strong>Q:</strong> Modular subtraction gotcha?</summary>
 
 **A:** `(h - x * b_pow) mod p` can go negative. Add `p` after the subtraction to renormalise into `[0, p)`.
 
 </details>
-
 <details>
 <summary><strong>Q:</strong> Where does rolling hash beat KMP / Z?</summary>
 
 **A:** **Multiple patterns at once** (compute candidate hashes, check against a hash set). **Document fingerprinting** (set of rolling hashes is the document's signature).
 
 </details>
-
 <details>
 <summary><strong>Q:</strong> Production application — Git's content-defined chunking?</summary>
 

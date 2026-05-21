@@ -24,7 +24,9 @@ object Blocks:
       language: Option[String],
       languageLabel: Option[String],
       source: Option[String],
-      runnable: Option[Boolean]
+      runnable: Option[Boolean],
+      viz: Option[String] = None,
+      vizRoot: Option[String] = None
   )
 
   /**
@@ -36,12 +38,20 @@ object Blocks:
   def decodeRunnableCode(
       language: Option[String],
       source: Option[String],
-      languageLabel: Option[String]
+      languageLabel: Option[String],
+      viz: Option[String] = None,
+      vizRoot: Option[String] = None
   ): Either[BlockDecodeError, Block.RunnableCode] =
     for
       lang <- language.toRight(BlockDecodeError.MissingAttribute("runnable-code", "data-lang"))
       src  <- source.toRight(BlockDecodeError.MissingAttribute("runnable-code", "data-source"))
-    yield Block.RunnableCode(lang, src, languageLabel.filter(_.nonEmpty))
+    yield Block.RunnableCode(
+      lang,
+      src,
+      languageLabel.filter(_.nonEmpty),
+      viz.filter(_.nonEmpty),
+      vizRoot.filter(_.nonEmpty)
+    )
 
   /**
    * Decode a `runnable-group` placeholder. Empty `tabs` is treated as a "skip me" signal — the markdown
@@ -64,7 +74,14 @@ object Blocks:
             lang  <- raw.language.toRight(BlockDecodeError.MalformedTab(i, "language"))
             label <- raw.languageLabel.toRight(BlockDecodeError.MalformedTab(i, "languageLabel"))
             src   <- raw.source.toRight(BlockDecodeError.MalformedTab(i, "source"))
-          yield acc :+ Block.Tab(lang, label, src, raw.runnable.getOrElse(true))
+          yield acc :+ Block.Tab(
+            lang,
+            label,
+            src,
+            raw.runnable.getOrElse(true),
+            raw.viz.filter(_.nonEmpty),
+            raw.vizRoot.filter(_.nonEmpty)
+          )
       }
       converted.map(Block.RunnableGroup(_))
 
@@ -159,14 +176,18 @@ object Block:
   final case class RunnableCode(
       language: String,
       source: String,
-      languageLabel: Option[String]
+      languageLabel: Option[String],
+      viz: Option[String] = None,
+      vizRoot: Option[String] = None
   ) extends Block
 
   final case class Tab(
       language: String,
       languageLabel: String,
       source: String,
-      runnable: Boolean
+      runnable: Boolean,
+      viz: Option[String] = None,
+      vizRoot: Option[String] = None
   )
 
   final case class RunnableGroup(tabs: List[Tab]) extends Block

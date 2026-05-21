@@ -90,19 +90,6 @@ A hazard pointer is a per-thread *publication* of "the address I'm currently rea
 
 When a writer wants to free a node, it scans the hazard-pointer table. If any thread's slot equals the node's address, the writer can't free yet — instead, it queues the node for delayed reclamation. Periodically, threads scan the queue and free nodes whose addresses are no longer hazardous.
 
-```pseudocode
-# Reader
-hp[thread_id] ← node           # publish hazard
-read node->data
-hp[thread_id] ← NULL           # release hazard
-
-# Writer
-unlink(node)
-old_hp ← snapshot of all hp slots
-queue_for_reclamation(node)
-periodically: free nodes whose address isn't in any hp slot
-```
-
 ***
 
 # Comparison
@@ -123,26 +110,6 @@ The Linux kernel uses RCU because the cost of waiting for a grace period is amor
 # Implementation sketch
 
 A hazard-pointer-protected lock-free stack pop in C-style pseudocode:
-
-```pseudocode
-function pop(stack, hp):
-    do:
-        old_top ← stack.top
-        if old_top = NULL: return NULL
-        hp.write(old_top)                    # publish hazard
-        if old_top ≠ stack.top:              # changed before we published?
-            continue                          # retry
-    while !CAS(&stack.top, old_top, old_top.next)
-    hp.clear()                                # release hazard
-    queue_for_reclamation(old_top)            # don't free yet
-    return old_top.data
-
-function reclaim_periodically():
-    for node in reclamation_queue:
-        if node.address not in any hp:
-            free(node)
-            remove from queue
-```
 
 The crucial step is the *re-check* after publishing the hazard pointer. Without it, the writer might have freed the node between our `top` read and our hp write.
 
@@ -186,49 +153,42 @@ Click any question to reveal the answer.
 **A:** Safe memory reclamation in lock-free contexts. When a writer wants to free a node, *some reader might still be reading it*. Both strategies defer the free.
 
 </details>
-
 <details>
 <summary><strong>Q:</strong> One-sentence definition of RCU?</summary>
 
 **A:** Defer freeing until every reader has passed a *quiescent point* (e.g., context-switched). The wait window is called a *grace period*.
 
 </details>
-
 <details>
 <summary><strong>Q:</strong> One-sentence definition of hazard pointers?</summary>
 
 **A:** Each reader publishes "I'm reading this address" in a per-thread slot. Writers scan all slots before freeing; if the address appears, defer.
 
 </details>
-
 <details>
 <summary><strong>Q:</strong> RCU vs hazard pointers — read cost?</summary>
 
 **A:** **RCU**: zero (no atomic op per read). **Hazard pointers**: one atomic write per pointer dereference.
 
 </details>
-
 <details>
 <summary><strong>Q:</strong> Best workload shape for RCU?</summary>
 
 **A:** **Read-mostly** with rare writes. Readers are essentially free; writers pay the grace-period wait.
 
 </details>
-
 <details>
 <summary><strong>Q:</strong> Why doesn't Java need RCU or hazard pointers?</summary>
 
 **A:** The garbage collector won't free a node while any thread holds a reference. Lock-free reclamation comes "for free" with the JVM.
 
 </details>
-
 <details>
 <summary><strong>Q:</strong> Where does Linux use RCU?</summary>
 
 **A:** Routing tables (`net/ipv4/route.c`), file-descriptor tables, dcache, namespace lookups, lockdep. The `Documentation/RCU/` directory in the kernel source is a master class.
 
 </details>
-
 <details>
 <summary><strong>Q:</strong> Third major reclamation strategy in user-space?</summary>
 

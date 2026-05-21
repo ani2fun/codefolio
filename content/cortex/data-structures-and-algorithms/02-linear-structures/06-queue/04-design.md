@@ -10,7 +10,7 @@ The reverse direction — stack out of queues — is uglier but the same *idea*:
 
 These three constructions — **queue from two stacks**, **stack from two queues**, **stack from one queue** — show up in interview cycles year after year. They test whether you really understand FIFO and LIFO as *contracts*, and whether you can reason about composing data structures without reaching for new primitives.
 
-This lesson builds all three end-to-end in 10 languages.
+This lesson builds all three end-to-end in Python and Java.
 
 ---
 
@@ -46,7 +46,9 @@ Implement a `Queue` class using **at most two stacks** as the only internal stor
 >
 > Output: `[null, true, 2, true, 2, false, 2, 3, true, false, false]`
 
-## The Idea — pour-and-reverse
+<details>
+<summary><h2>The Idea — pour-and-reverse</h2></summary>
+
 
 A stack reverses the insertion order: push 1, 2, 3 → pop returns 3, 2, 1. That's *one* reversal. If you reverse *twice*, you're back to the original order — which is exactly what a queue wants. **Reverse twice = identity = FIFO.**
 
@@ -89,243 +91,322 @@ flowchart TB
 
 <p align="center"><strong>Pour-and-reverse — inStack's bottom (oldest) becomes outStack's top after the transfer. From then on, dequeue is O(1) for as long as outStack still has items. Only when outStack drains again does another batch transfer happen.</strong></p>
 
-## Why amortised O(1) per dequeue
+</details>
+<details>
+<summary><h2>Why amortised O(1) per dequeue</h2></summary>
+
 
 A worst-case dequeue costs O(N) (the transfer). But every item is moved *at most twice* during its lifetime in the queue: **once** into `inStack` (during enqueue) and **once** from `inStack` to `outStack` (during the lazy transfer). Spread the transfer cost across all the dequeues that the transfer enables, and the **amortised cost is O(1) per dequeue**.
 
 This is the same accounting trick that makes dynamic-array `push_back` amortised O(1) despite occasional O(N) resizes.
 
-## A subtle bit — `back()`
+</details>
+<details>
+<summary><h2>A subtle bit — `back()`</h2></summary>
 
-The back of the queue is the most-recent enqueue, which is the *top of inStack* — *except* if inStack is empty, in which case the most-recent enqueue is currently sitting at the *bottom of outStack*. Reaching it would be O(N).
 
-The cleanest fix is to **maintain a separate `backVal` field** that is overwritten on every successful enqueue. Then `back()` is O(1) regardless of which stack the most-recent item lives in. This is the version we'll implement.
+The back of the queue is the most-recent enqueue, which is the *top of inStack* — *except* if inStack is empty, in which case the most-recent enqueue is currently sitting at the *bottom of outStack*. Reaching it is the awkward case.
 
-> *Predict before reading on — without the `backVal` cache, what's the worst-case cost of <code>back()</code>?*
+The implementation below handles that case by **pouring outStack back into inStack** when inStack is empty: every element is popped off outStack and pushed onto inStack, which re-reverses the order so the most-recent enqueue lands back on top of inStack. Then `back()` just reads `inStack`'s top. The trade-off is honest — `back()` is O(1) in the common case (inStack non-empty) but O(N) in the worst case (outStack holds everything and we have to pour it all back).
+
+> *Predict before reading on — how could you make <code>back()</code> O(1) in every case?*
 >
-> O(N) — you'd have to either pour outStack back into inStack (and then back again to preserve dequeue order) or peek at outStack's bottom by popping everything off into a temporary stack. The single-integer cache sidesteps that whole problem.
+> Maintain a separate `backVal` field that is overwritten on every successful enqueue. Then `back()` is just a field read regardless of which stack the most-recent item lives in. We don't take that shortcut here — the pour-back keeps the implementation honest to "use at most two stacks, nothing else" — but the single-integer cache is the standard production optimisation, and it sidesteps the O(N) corner.
 
-## Solution
+</details>
+<details>
+<summary><h2>Solution &amp; Analysis</h2></summary>
 
-
-```pseudocode
-function Queue(capacity):
-    inStack ← empty stack; outStack ← empty stack
-    backVal ← −1; cap ← capacity
-
-function size(queue):    return size(inStack) + size(outStack)
-function empty(queue):   return size(queue) = 0
-function back(queue):    if empty(queue): return −1  else return queue.backVal
-function front(queue):
-    if empty(queue): return −1
-    if outStack empty:
-        while inStack not empty: push outStack, pop inStack  # pour reverses order
-    return top of outStack
-
-function enqueue(queue, val):
-    if size(queue) = cap: return false
-    push inStack, val; backVal ← val; return true
-
-function dequeue(queue):
-    if empty(queue): return −1
-    if outStack empty:
-        while inStack not empty: push outStack, pop inStack
-    return pop outStack
-```
+### Solution
 
 ```python run
+from typing import List
+
 class Queue:
-    def __init__(self, capacity: int):
-        self.capacity = capacity
-        self.in_stack  = []   # push end
-        self.out_stack = []   # pop end
-        self.back_val  = -1   # cache of the most recent enqueue
+    def __init__(self, capacity):
 
-    def size(self):  return len(self.in_stack) + len(self.out_stack)
-    def empty(self): return self.size() == 0
-    def back(self):  return -1 if self.empty() else self.back_val
+        # Stack for enqueue operation
+        self.in_stack: List[int] = []
+
+        # Stack for dequeue operation
+        self.out_stack: List[int] = []
+
+        # Maximum capacity of the queue
+        self.max_size: int = capacity
+
+    def size(self):
+
+        # Size of the queue is the sum of elements in both stacks
+        return len(self.in_stack) + len(self.out_stack)
+
+    def empty(self):
+
+        # Queue is empty if both stacks are empty
+        return len(self.in_stack) == 0 and len(self.out_stack) == 0
+
     def front(self):
-        if self.empty(): return -1
-        if not self.out_stack:
-            while self.in_stack:
-                self.out_stack.append(self.in_stack.pop())
-        return self.out_stack[-1]
-    def enqueue(self, v):
-        if self.size() == self.capacity: return False
-        self.in_stack.append(v)
-        self.back_val = v
-        return True
-    def dequeue(self):
-        if self.empty(): return -1
-        if not self.out_stack:
-            while self.in_stack:
-                self.out_stack.append(self.in_stack.pop())
-        return self.out_stack.pop()
+        if self.empty():
 
-# Boss-fight demo
+            # If the queue is empty, return -1 (indicating no element)
+            return -1
+
+        if len(self.out_stack) == 0:
+
+            # If the out_stack is empty, transfer elements from in_stack
+            # to out_stack to reverse their order
+            while len(self.in_stack) != 0:
+
+                # Move the top element from in_stack to out_stack
+                self.out_stack.append(self.in_stack.pop())
+
+        # Return the top element of out_stack, which is the front of the
+        # queue
+        return self.out_stack[-1]
+
+    def back(self) -> int:
+        if self.empty():
+
+            # If the queue is empty, return -1 (indicating no element)
+            return -1
+
+        # The most recently added element is at the top of in_stack
+        if self.in_stack:
+            return self.in_stack[-1]
+
+        # If in_stack is empty, we have transferred everything to
+        # out_stack. The back element is the bottom-most element of
+        # out_stack
+        else:
+            while self.out_stack:
+                self.in_stack.append(self.out_stack.pop())
+
+            # Return true to indicate successful enqueue operation
+            return self.in_stack[-1]
+
+    def enqueue(self, val):
+        if self.size() == self.max_size:
+
+            # If the queue is already at maximum capacity, return False
+            # (enqueue failed)
+            return False
+
+        # Push the new element into in_stack
+        self.in_stack.append(val)
+
+        # Return True to indicate successful enqueue
+        return True
+
+    def dequeue(self):
+        if self.empty():
+
+            # If the queue is empty, return -1 (indicating no element to
+            # dequeue)
+            return -1
+
+        if len(self.out_stack) == 0:
+
+            # If the out_stack is empty, transfer elements from in_stack
+            # to out_stack to reverse their order
+            while len(self.in_stack) != 0:
+
+                # Move the top element from in_stack to out_stack
+                self.out_stack.append(self.in_stack.pop())
+
+        # Get the top element of out_stack, which is the front of the
+        # queue
+        front_element: int = self.out_stack.pop()
+
+        # Return the front element
+        return front_element
+
+
+# Example from the problem statement
 q = Queue(2)
-print(q.enqueue(2), q.back())     # True 2
-print(q.enqueue(3), q.front())    # True 2
-print(q.empty())                  # False
-print(q.dequeue(), q.front())     # 2 3
-print(q.enqueue(8), q.enqueue(9)) # True False
-print(q.empty())                  # False
+print(q.enqueue(2))   # True
+print(q.back())       # 2
+print(q.enqueue(3))   # True
+print(q.front())      # 2
+print(q.empty())      # False
+print(q.dequeue())    # 2
+print(q.front())      # 3
+print(q.enqueue(8))   # True
+print(q.enqueue(9))   # False — full
+print(q.empty())      # False
+
+# Edge cases
+q2 = Queue(1)
+print(q2.front())     # -1 — empty queue
+print(q2.dequeue())   # -1 — dequeue empty
+q2.enqueue(5)
+print(q2.size())      # 1
+print(q2.dequeue())   # 5
+print(q2.enqueue(7))  # True — enqueue after full drain
 ```
 
 ```java run
 import java.util.*;
+
 public class Main {
     static class Queue {
-        private final Deque<Integer> inStack  = new ArrayDeque<>();
-        private final Deque<Integer> outStack = new ArrayDeque<>();
-        private int backVal  = -1;
-        private int capacity;
-        Queue(int capacity) { this.capacity = capacity; }
 
-        int     size()  { return inStack.size() + outStack.size(); }
-        boolean empty() { return size() == 0; }
-        int     back()  { return empty() ? -1 : backVal; }
-        int     front() {
-            if (empty()) return -1;
-            if (outStack.isEmpty())
-                while (!inStack.isEmpty()) outStack.push(inStack.pop());
+        // Stack for enqueue operation
+        private Stack<Integer> inStack;
+
+        // Stack for dequeue operation
+        private Stack<Integer> outStack;
+
+        // Maximum capacity of the queue
+        private int maxSize;
+
+        public Queue(int capacity) {
+            maxSize = capacity;
+            inStack = new Stack<>();
+            outStack = new Stack<>();
+        }
+
+        public int size() {
+
+            // Size of the queue is the sum of elements in both stacks
+            return inStack.size() + outStack.size();
+        }
+
+        public boolean empty() {
+
+            // Queue is empty if both stacks are empty
+            return inStack.empty() && outStack.empty();
+        }
+
+        public int front() {
+            if (empty()) {
+
+                // If the queue is empty, return -1 (indicating no element)
+                return -1;
+            }
+
+            if (outStack.empty()) {
+
+                // If the outStack is empty, transfer elements from inStack
+                // to outStack to reverse their order
+                while (!inStack.empty()) {
+
+                    // Move the top element from inStack to outStack
+                    outStack.push(inStack.pop());
+                }
+            }
+
+            // Return the top element of outStack, which is the front of the
+            // queue
             return outStack.peek();
         }
-        boolean enqueue(int v) {
-            if (size() == capacity) return false;
-            inStack.push(v);
-            backVal = v;
+
+        int back() {
+            if (empty()) {
+
+                // If the queue is empty, return -1 (indicating no element)
+                return -1;
+            }
+
+            // The most recently added element is at the top of inStack
+            if (!inStack.empty()) {
+                return inStack.peek();
+            }
+
+            // If inStack is empty, we have transferred everything to
+            // outStack. The back element is the bottom-most element of
+            // outStack
+            else {
+                while (!outStack.empty()) {
+                    inStack.push(outStack.peek());
+                    outStack.pop();
+                }
+
+                // The last inserted element
+                return inStack.peek();
+            }
+        }
+
+        public boolean enqueue(int val) {
+            if (size() == maxSize) {
+
+                // If the queue is already at maximum capacity, return false
+                // (enqueue failed)
+                return false;
+            }
+
+            // Push the new element into inStack
+            inStack.push(val);
+
+            // Return true to indicate successful enqueue
             return true;
         }
-        int dequeue() {
-            if (empty()) return -1;
-            if (outStack.isEmpty())
-                while (!inStack.isEmpty()) outStack.push(inStack.pop());
-            return outStack.pop();
+
+        public int dequeue() {
+            if (empty()) {
+
+                // If the queue is empty, return -1 (indicating no element to
+                // dequeue)
+                return -1;
+            }
+
+            if (outStack.empty()) {
+
+                // If the outStack is empty, transfer elements from inStack
+                // to outStack to reverse their order
+                while (!inStack.empty()) {
+
+                    // Move the top element from inStack to outStack
+                    outStack.push(inStack.pop());
+                }
+            }
+
+            // Get the top element of outStack, which is the front of the
+            // queue
+            int frontElement = outStack.pop();
+
+            // Return the front element
+            return frontElement;
         }
     }
+
     public static void main(String[] args) {
+        // Example from the problem statement
         Queue q = new Queue(2);
-        System.out.println(q.enqueue(2) + " " + q.back());
-        System.out.println(q.enqueue(3) + " " + q.front());
-        System.out.println(q.empty());
-        System.out.println(q.dequeue() + " " + q.front());
-        System.out.println(q.enqueue(8) + " " + q.enqueue(9));
-        System.out.println(q.empty());
+        System.out.println(q.enqueue(2));   // true
+        System.out.println(q.back());       // 2
+        System.out.println(q.enqueue(3));   // true
+        System.out.println(q.front());      // 2
+        System.out.println(q.empty());      // false
+        System.out.println(q.dequeue());    // 2
+        System.out.println(q.front());      // 3
+        System.out.println(q.enqueue(8));   // true
+        System.out.println(q.enqueue(9));   // false — full
+        System.out.println(q.empty());      // false
+
+        // Edge cases
+        Queue q2 = new Queue(1);
+        System.out.println(q2.front());     // -1 — empty queue
+        System.out.println(q2.dequeue());   // -1 — dequeue empty
+        q2.enqueue(5);
+        System.out.println(q2.size());      // 1
+        System.out.println(q2.dequeue());   // 5
+        System.out.println(q2.enqueue(7));  // true — enqueue after full drain
     }
 }
 ```
 
-```c run
-#include <stdio.h>
-#include <stdlib.h>
-#include <stdbool.h>
-
-typedef struct { int *arr; int top, cap; } Stack;
-static Stack* stk_new(int c)        { Stack *s = malloc(sizeof(*s)); s->arr = malloc(sizeof(int)*c); s->top=-1; s->cap=c; return s; }
-static int    stk_size(Stack *s)    { return s->top + 1; }
-static bool   stk_empty(Stack *s)   { return s->top == -1; }
-static int    stk_peek(Stack *s)    { return s->arr[s->top]; }
-static void   stk_push(Stack *s, int v) { s->arr[++s->top] = v; }
-static int    stk_pop(Stack *s)     { return s->arr[s->top--]; }
-
-typedef struct {
-    Stack *in, *out;
-    int    capacity, backVal;
-} Queue;
-
-Queue* queue_create(int c) {
-    Queue *q = malloc(sizeof(*q));
-    q->in  = stk_new(c);
-    q->out = stk_new(c);
-    q->capacity = c; q->backVal = -1;
-    return q;
-}
-int  queue_size (Queue *q){ return stk_size(q->in) + stk_size(q->out); }
-bool queue_empty(Queue *q){ return queue_size(q) == 0; }
-int  queue_back (Queue *q){ return queue_empty(q) ? -1 : q->backVal; }
-int  queue_front(Queue *q){
-    if (queue_empty(q)) return -1;
-    if (stk_empty(q->out))
-        while (!stk_empty(q->in)) stk_push(q->out, stk_pop(q->in));
-    return stk_peek(q->out);
-}
-bool queue_enqueue(Queue *q, int v) {
-    if (queue_size(q) == q->capacity) return false;
-    stk_push(q->in, v);
-    q->backVal = v;
-    return true;
-}
-int  queue_dequeue(Queue *q){
-    if (queue_empty(q)) return -1;
-    if (stk_empty(q->out))
-        while (!stk_empty(q->in)) stk_push(q->out, stk_pop(q->in));
-    return stk_pop(q->out);
-}
-
-int main() {
-    Queue *q = queue_create(2);
-    printf("%d %d\n", queue_enqueue(q,2), queue_back(q));
-    printf("%d %d\n", queue_enqueue(q,3), queue_front(q));
-    printf("%d\n",    queue_empty(q));
-    printf("%d %d\n", queue_dequeue(q),   queue_front(q));
-    printf("%d %d\n", queue_enqueue(q,8), queue_enqueue(q,9));
-    printf("%d\n",    queue_empty(q));
-}
-```
-
-```scala run
-import scala.collection.mutable
-
-object Main extends App {
-  class Queue(val capacity: Int) {
-    private val inStack  = mutable.Stack[Int]()
-    private val outStack = mutable.Stack[Int]()
-    private var backVal  = -1
-
-    def size:  Int     = inStack.size + outStack.size
-    def empty: Boolean = size == 0
-    def back:  Int     = if (empty) -1 else backVal
-    def front: Int = {
-      if (empty) return -1
-      if (outStack.isEmpty)
-        while (inStack.nonEmpty) outStack.push(inStack.pop())
-      outStack.top
-    }
-    def enqueue(v: Int): Boolean = {
-      if (size == capacity) return false
-      inStack.push(v); backVal = v; true
-    }
-    def dequeue: Int = {
-      if (empty) return -1
-      if (outStack.isEmpty)
-        while (inStack.nonEmpty) outStack.push(inStack.pop())
-      outStack.pop()
-    }
-  }
-
-  val q = new Queue(2)
-  println(s"${q.enqueue(2)} ${q.back}")
-  println(s"${q.enqueue(3)} ${q.front}")
-  println(q.empty)
-  println(s"${q.dequeue} ${q.front}")
-  println(s"${q.enqueue(8)} ${q.enqueue(9)}")
-  println(q.empty)
-}
-```
-
-
-## Complexity Analysis
+### Complexity Analysis
 
 | Operation | Worst Case | Amortised |
 |---|---|---|
 | `enqueue`  | O(1) | O(1) |
 | `dequeue`  | O(N) (transfer) | **O(1)** |
 | `front`    | O(N) (transfer) | **O(1)** |
-| `back`     | O(1) | O(1) |
+| `back`     | O(N) (pour-back when inStack is empty) | O(1) (common case: inStack non-empty) |
 | `size`, `empty` | O(1) | O(1) |
 
-Each item is moved through the system at most twice (in → in, then in → out), so the *total* work over N operations is O(N), giving O(1) amortised per operation.
+For a workload that mixes enqueues and dequeues without interleaved `back()` calls, every item moves at most twice through the system (push to inStack, then transfer to outStack), so the *total* work over N operations is O(N), giving O(1) amortised per operation. If `back()` is called after items have been transferred to outStack, the pour-back undoes that work and can be repeated, so the amortised guarantee no longer holds for `back`-heavy workloads — the `backVal` cache from the previous section is the fix when that matters.
+
+</details>
 
 ***
 
@@ -351,7 +432,9 @@ Implement a `Stack` class using **at most two queues** as the only internal stor
 >
 > Output: `[null, true, true, 3, false, 3, 2, true, false, false]`
 
-## The Idea — make every push land at the front
+<details>
+<summary><h2>The Idea — make every push land at the front</h2></summary>
+
 
 A queue dequeues from the *front*. A stack pops from the *top*. So the construction we want is: **after every push, the most recently pushed element is at the front of the queue**. Then `pop` is just `dequeue`, and `top` is `front` — both O(1).
 
@@ -395,196 +478,231 @@ flowchart TB
 >
 > Yes — the "lazy" mirror works too. Push by simple enqueue (O(1)). To pop, rotate all but the last element from `q1` into `q2`, then dequeue the lone remaining element from `q1` (that's the most recent push), then swap. Both designs are correct; you choose based on which operation you expect to dominate. We pick *push-heavy O(N)* here because it makes `top()` also cheap.
 
-## Solution
+</details>
+<details>
+<summary><h2>Solution &amp; Analysis</h2></summary>
 
-
-```pseudocode
-function Stack(capacity):
-    q1 ← empty queue; q2 ← empty queue; currSize ← 0; cap ← capacity
-
-function size(stack):    return stack.currSize
-function empty(stack):   return stack.currSize = 0
-function top(stack):     if empty(stack): return −1  else return front of q1
-
-function push(stack, val):
-    if stack.currSize = cap: return false
-    enqueue q2, val                          # new item lands at back of q2
-    while q1 not empty: enqueue q2, dequeue q1   # move old items behind it
-    swap q1 and q2                           # q1 now has newest item at front
-    stack.currSize ← stack.currSize + 1
-    return true
-
-function pop(stack):
-    if empty(stack): return −1
-    stack.currSize ← stack.currSize − 1
-    return dequeue q1
-```
+### Solution
 
 ```python run
-from collections import deque
+from queue import Queue
 
 class Stack:
     def __init__(self, capacity: int):
-        self.capacity   = capacity
-        self.q1         = deque()      # active queue
-        self.q2         = deque()      # scratch
-        self.curr_size  = 0
 
-    def size(self):  return self.curr_size
-    def empty(self): return self.curr_size == 0
-    def top(self):   return -1 if self.empty() else self.q1[0]
-    def push(self, v):
-        if self.curr_size == self.capacity: return False
-        self.q2.append(v)
-        while self.q1: self.q2.append(self.q1.popleft())
-        self.q1, self.q2 = self.q2, self.q1
+        # Two queues to simulate the stack
+        # First queue
+        self.queue_1: Queue[int] = Queue()
+
+        # Second queue
+        self.queue_2: Queue[int] = Queue()
+
+        # Maximum capacity of the stack
+        self.capacity: int = capacity
+
+        # Current size of the stack
+        self.curr_size: int = 0
+
+    def size(self) -> int:
+
+        # Return the current size of the stack
+        return self.curr_size
+
+    def empty(self) -> bool:
+
+        # Return True if the stack is empty (current size is 0),
+        # otherwise False
+        return self.curr_size == 0
+
+    def top(self) -> int:
+
+        # Stack is empty, return -1 as an error value
+        if self.empty():
+            return -1
+
+        # Return the first element in queue_1 (top of the stack)
+        return self.queue_1.queue[0]
+
+    def push(self, val: int) -> bool:
+
+        # Stack is full, cannot push more elements
+        if self.curr_size == self.capacity:
+            return False
+
+        # Push the new element to queue_2
+        self.queue_2.put(val)
+
+        # Move elements from queue_1 to queue_2
+        while not self.queue_1.empty():
+
+            # Push the element from queue_1 to queue_2
+            self.queue_2.put(self.queue_1.get())
+
+        # Swap queue_1 and queue_2
+        self.queue_1, self.queue_2 = self.queue_2, self.queue_1
+
+        # Increment the size of the stack
         self.curr_size += 1
         return True
-    def pop(self):
-        if self.empty(): return -1
-        self.curr_size -= 1
-        return self.q1.popleft()
 
-# Boss-fight demo
+    def pop(self) -> int:
+
+        # Stack is empty, return -1 as an error value
+        if self.empty():
+            return -1
+
+        # Remove and return the first element in queue_1 (top of the
+        # stack)
+        top_element = self.queue_1.get()
+
+        # Decrement the size of the stack
+        self.curr_size -= 1
+
+        # Return the top element
+        return top_element
+
+
+# Example from the problem statement
 s = Stack(2)
-print(s.push(2), s.push(3))     # True True
-print(s.top())                  # 3
-print(s.empty())                # False
-print(s.pop(), s.top())         # 3 2
-print(s.push(8), s.push(9))     # True False (full)
-print(s.empty())                # False
+print(s.push(2))    # True
+print(s.push(3))    # True
+print(s.top())      # 3
+print(s.empty())    # False
+print(s.pop())      # 3
+print(s.top())      # 2
+print(s.push(8))    # True
+print(s.push(9))    # False — full
+print(s.empty())    # False
+
+# Edge cases
+s2 = Stack(1)
+print(s2.top())     # -1 — empty stack
+print(s2.pop())     # -1 — pop empty
+s2.push(5)
+print(s2.size())    # 1
+print(s2.pop())     # 5
+print(s2.empty())   # True
 ```
 
 ```java run
 import java.util.*;
+
 public class Main {
     static class Stack {
-        private Queue<Integer> q1 = new ArrayDeque<>();
-        private Queue<Integer> q2 = new ArrayDeque<>();
-        private int currSize = 0, capacity;
-        Stack(int capacity) { this.capacity = capacity; }
 
-        int     size()  { return currSize; }
-        boolean empty() { return currSize == 0; }
-        int     top()   { return empty() ? -1 : q1.peek(); }
-        boolean push(int v) {
-            if (currSize == capacity) return false;
-            q2.offer(v);
-            while (!q1.isEmpty()) q2.offer(q1.poll());
-            Queue<Integer> tmp = q1; q1 = q2; q2 = tmp;
+        // Two queues to simulate the stack
+        private Queue<Integer> queue1, queue2;
+
+        // Maximum capacity of the stack
+        private int capacity;
+
+        // Current size of the stack
+        private int currSize;
+
+        public Stack(int capacity) {
+            this.capacity = capacity;
+            currSize = 0;
+            queue1 = new LinkedList<>();
+            queue2 = new LinkedList<>();
+        }
+
+        public int size() {
+
+            // Return the current size of the stack
+            return currSize;
+        }
+
+        public boolean empty() {
+
+            // Return true if the stack is empty (current size is 0),
+            // otherwise false
+            return currSize == 0;
+        }
+
+        public int top() {
+
+            // Stack is empty, return -1 as an error value
+            if (empty()) {
+                return -1;
+            }
+
+            // Return the front element of queue1 (top of the stack)
+            return queue1.peek();
+        }
+
+        public boolean push(int val) {
+
+            // Stack is full, cannot push more elements
+            if (currSize == capacity) {
+                return false;
+            }
+
+            // Push the new element to queue2
+            queue2.add(val);
+
+            // Move elements from queue1 to queue2
+            while (!queue1.isEmpty()) {
+
+                // Push the front element of queue1 to queue2 and remove it
+                // from queue1
+                queue2.add(queue1.poll());
+            }
+
+            // Swap queue1 and queue2 using a temporary variable
+            Queue<Integer> temp = queue1;
+            queue1 = queue2;
+            queue2 = temp;
+
+            // Increment the size of the stack
             currSize++;
             return true;
         }
-        int pop() {
-            if (empty()) return -1;
+
+        public int pop() {
+
+            // Stack is empty, return -1 as an error value
+            if (empty()) {
+                return -1;
+            }
+
+            // Remove and return the front element of queue1 (top of the
+            // stack)
+            int topElement = queue1.poll();
+
+            // Decrement the size of the stack
             currSize--;
-            return q1.poll();
+
+            // Return the top element
+            return topElement;
         }
     }
+
     public static void main(String[] args) {
+        // Example from the problem statement
         Stack s = new Stack(2);
-        System.out.println(s.push(2) + " " + s.push(3));
-        System.out.println(s.top());
-        System.out.println(s.empty());
-        System.out.println(s.pop() + " " + s.top());
-        System.out.println(s.push(8) + " " + s.push(9));
-        System.out.println(s.empty());
+        System.out.println(s.push(2));    // true
+        System.out.println(s.push(3));    // true
+        System.out.println(s.top());      // 3
+        System.out.println(s.empty());    // false
+        System.out.println(s.pop());      // 3
+        System.out.println(s.top());      // 2
+        System.out.println(s.push(8));    // true
+        System.out.println(s.push(9));    // false — full
+        System.out.println(s.empty());    // false
+
+        // Edge cases
+        Stack s2 = new Stack(1);
+        System.out.println(s2.top());     // -1 — empty stack
+        System.out.println(s2.pop());     // -1 — pop empty
+        s2.push(5);
+        System.out.println(s2.size());    // 1
+        System.out.println(s2.pop());     // 5
+        System.out.println(s2.empty());   // true
     }
 }
 ```
 
-```c run
-#include <stdio.h>
-#include <stdlib.h>
-#include <stdbool.h>
-
-// Minimal int queue (fixed-size circular buffer)
-typedef struct { int *arr; int front, back, size, cap; } Q;
-static Q*   q_new(int c)     { Q *q = malloc(sizeof(*q)); q->arr=malloc(sizeof(int)*c); q->front=0; q->back=-1; q->size=0; q->cap=c; return q; }
-static int  q_size(Q *q)     { return q->size; }
-static bool q_empty(Q *q)    { return q->size == 0; }
-static int  q_front(Q *q)    { return q->arr[q->front]; }
-static void q_enq(Q *q, int v){ q->back = (q->back + 1) % q->cap; q->arr[q->back] = v; q->size++; }
-static int  q_deq(Q *q)      { int v = q->arr[q->front]; q->front = (q->front + 1) % q->cap; q->size--; return v; }
-
-typedef struct {
-    Q *q1, *q2;
-    int capacity, currSize;
-} Stack;
-
-Stack* stack_create(int c) {
-    Stack *s = malloc(sizeof(*s));
-    s->q1 = q_new(c); s->q2 = q_new(c);
-    s->capacity = c; s->currSize = 0;
-    return s;
-}
-int  stack_size (Stack *s){ return s->currSize; }
-bool stack_empty(Stack *s){ return s->currSize == 0; }
-int  stack_top  (Stack *s){ return stack_empty(s) ? -1 : q_front(s->q1); }
-bool stack_push (Stack *s, int v) {
-    if (s->currSize == s->capacity) return false;
-    q_enq(s->q2, v);
-    while (!q_empty(s->q1)) q_enq(s->q2, q_deq(s->q1));
-    Q *t = s->q1; s->q1 = s->q2; s->q2 = t;
-    s->currSize++;
-    return true;
-}
-int  stack_pop  (Stack *s){
-    if (stack_empty(s)) return -1;
-    s->currSize--;
-    return q_deq(s->q1);
-}
-
-int main() {
-    Stack *s = stack_create(2);
-    printf("%d %d\n", stack_push(s,2), stack_push(s,3));
-    printf("%d\n",    stack_top(s));
-    printf("%d\n",    stack_empty(s));
-    printf("%d %d\n", stack_pop(s), stack_top(s));
-    printf("%d %d\n", stack_push(s,8), stack_push(s,9));
-    printf("%d\n",    stack_empty(s));
-}
-```
-
-```scala run
-import scala.collection.mutable
-
-object Main extends App {
-  class Stack(val capacity: Int) {
-    private var q1 = mutable.Queue[Int]()
-    private var q2 = mutable.Queue[Int]()
-    private var n  = 0
-
-    def size:  Int     = n
-    def empty: Boolean = n == 0
-    def top:   Int     = if (empty) -1 else q1.head
-    def push(v: Int): Boolean = {
-      if (n == capacity) return false
-      q2.enqueue(v)
-      while (q1.nonEmpty) q2.enqueue(q1.dequeue())
-      val t = q1; q1 = q2; q2 = t
-      n += 1
-      true
-    }
-    def pop: Int = {
-      if (empty) return -1
-      n -= 1
-      q1.dequeue()
-    }
-  }
-
-  val s = new Stack(2)
-  println(s"${s.push(2)} ${s.push(3)}")
-  println(s.top)
-  println(s.empty)
-  println(s"${s.pop} ${s.top}")
-  println(s"${s.push(8)} ${s.push(9)}")
-  println(s.empty)
-}
-```
-
-
-## Complexity Analysis
+### Complexity Analysis
 
 | Operation | Time |
 |---|---|
@@ -592,6 +710,8 @@ object Main extends App {
 | `pop`, `top`, `size`, `empty` | **O(1)** |
 
 Push is genuinely O(N) here — there's no amortisation, because every push relocates *every* element. This is why two-stacks-as-queue is the more common interview answer (better amortised cost) — but two-queues-as-stack is still useful when push is rare and pop/top are hot.
+
+</details>
 
 ***
 
@@ -606,7 +726,9 @@ Same interface as above, but with **only one queue** internally.
 
 > **Constraint:** Use **exactly one** queue internally. No second queue, no auxiliary stack.
 
-## The Idea — rotate after every push
+<details>
+<summary><h2>The Idea — rotate after every push</h2></summary>
+
 
 The two-queue solution moved data between containers to keep "newest at front". With only one queue, we use the *same* container as both source and destination — by rotating.
 
@@ -644,166 +766,229 @@ flowchart TB
 
 > **Why size − 1, not size?** After enqueueing `v`, the queue has `size` items, with `v` at the back and the rest in their old order ahead of it. Rotating `size − 1` times moves the `size − 1` *non-v* items to behind `v`, leaving `v` at the front. Rotate `size` times and you've gone all the way around — `v` is back at the back, defeating the purpose.
 
-## Solution
+</details>
+<details>
+<summary><h2>Solution &amp; Analysis</h2></summary>
 
-
-```pseudocode
-function Stack(capacity):
-    q ← empty queue; cap ← capacity
-
-function size(stack):    return size(q)
-function empty(stack):   return q is empty
-function top(stack):     if empty(stack): return −1  else return front of q
-
-function push(stack, val):
-    if size(q) = cap: return false
-    enqueue q, val                               # val lands at back
-    for i from 1 to size(q) − 1:
-        enqueue q, dequeue q                     # rotate: val moves to front
-    return true
-
-function pop(stack):
-    if empty(stack): return −1
-    return dequeue q
-```
+### Solution
 
 ```python run
-from collections import deque
+from queue import Queue
 
 class Stack:
     def __init__(self, capacity: int):
-        self.capacity = capacity
-        self.q        = deque()
 
-    def size(self):  return len(self.q)
-    def empty(self): return not self.q
-    def top(self):   return -1 if self.empty() else self.q[0]
-    def push(self, v):
-        if len(self.q) == self.capacity: return False
-        self.q.append(v)
-        for _ in range(len(self.q) - 1):
-            self.q.append(self.q.popleft())   # rotate v to the front
+        # Queue to store the elements of the stack
+        self.queue: Queue[int] = Queue()
+
+        # Maximum capacity of the stack
+        self.capacity: int = capacity
+
+    def size(self) -> int:
+
+        # Returns the number of elements in the stack
+        return self.queue.qsize()
+
+    def empty(self) -> bool:
+
+        # Return True if the stack is empty (current size is 0),
+        # otherwise False
+        return self.queue.empty()
+
+    def top(self) -> int:
+
+        # If stack is empty, return -1
+        if self.queue.empty():
+            return -1
+
+        size: int = self.queue.qsize()
+        for _ in range(size - 1):
+
+            # Move the front element to the back of the queue (rotating
+            # the elements)
+            self.queue.put(self.queue.get())
+
+        # The front element is now the top element
+        top: int = self.queue.queue[0]
+
+        # Push it back to maintain the original order
+        self.queue.put(top)
+
+        # Remove the duplicated element from the front
+        self.queue.get()
+
+        return top
+
+    def push(self, val: int) -> bool:
+
+        # Stack is full, unable to push
+        if self.queue.qsize() == self.capacity:
+            return False
+
+        self.queue.put(val)
+
+        # Element pushed successfully
         return True
-    def pop(self):
-        if self.empty(): return -1
-        return self.q.popleft()
 
-# Boss-fight demo
+    def pop(self) -> int:
+
+        # Stack is empty, no element to pop
+        if self.queue.empty():
+            return -1
+
+        size: int = self.queue.qsize()
+        for _ in range(size - 1):
+
+            # Move the front element to the back of the queue (rotating
+            # the elements)
+            self.queue.put(self.queue.get())
+
+        # The front element is now the top element to be popped
+        popped_element: int = self.queue.get()
+        return popped_element
+
+
+# Example from the problem statement
 s = Stack(2)
-print(s.push(2), s.push(3))     # True True
-print(s.top())                  # 3
-print(s.empty())                # False
-print(s.pop(), s.top())         # 3 2
-print(s.push(8), s.push(9))     # True False
-print(s.empty())                # False
+print(s.push(2))    # True
+print(s.push(3))    # True
+print(s.top())      # 3
+print(s.empty())    # False
+print(s.pop())      # 3
+print(s.top())      # 2
+print(s.push(8))    # True
+print(s.push(9))    # False — full
+print(s.empty())    # False
+
+# Edge cases
+s2 = Stack(1)
+print(s2.top())     # -1 — empty stack
+print(s2.pop())     # -1 — pop empty
+s2.push(5)
+print(s2.size())    # 1
+print(s2.pop())     # 5
+print(s2.empty())   # True
 ```
 
 ```java run
 import java.util.*;
+
 public class Main {
     static class Stack {
-        private final Queue<Integer> q = new ArrayDeque<>();
-        private final int capacity;
-        Stack(int capacity) { this.capacity = capacity; }
 
-        int     size()  { return q.size(); }
-        boolean empty() { return q.isEmpty(); }
-        int     top()   { return empty() ? -1 : q.peek(); }
-        boolean push(int v) {
-            if (q.size() == capacity) return false;
-            q.offer(v);
-            for (int i = 0; i < q.size() - 1; i++) q.offer(q.poll());
+        // Queue to store the elements of the stack
+        private Queue<Integer> queue;
+
+        // Maximum capacity of the stack
+        private int capacity;
+
+        public Stack(int capacity) {
+            this.capacity = capacity;
+            this.queue = new LinkedList<>();
+        }
+
+        public int size() {
+
+            // Returns the number of elements in the stack
+            return queue.size();
+        }
+
+        public boolean empty() {
+
+            // Return true if the stack is empty (current size is 0),
+            // otherwise false
+            return queue.isEmpty();
+        }
+
+        public int top() {
+
+            // If stack is empty, return -1
+            if (queue.isEmpty()) {
+                return -1;
+            }
+
+            int size = queue.size();
+            while (size > 1) {
+
+                // Move the front element to the back of the queue (rotating
+                // the elements)
+                queue.add(queue.poll());
+                size--;
+            }
+
+            // The front element is now the top element
+            int top = queue.peek();
+
+            // Push it back to maintain the original order
+            queue.add(top);
+
+            // Remove the duplicated element from the front
+            queue.poll();
+
+            return top;
+        }
+
+        public boolean push(int val) {
+
+            // Stack is full, unable to push
+            if (queue.size() == capacity) {
+                return false;
+            }
+
+            queue.add(val);
+
+            // Element pushed successfully
             return true;
         }
-        int pop() { return empty() ? -1 : q.poll(); }
+
+        public int pop() {
+
+            // Stack is empty, no element to pop
+            if (queue.isEmpty()) {
+                return -1;
+            }
+
+            int size = queue.size();
+            while (size > 1) {
+
+                // Move the front element to the back of the queue (rotating
+                // the elements)
+                queue.add(queue.poll());
+                size--;
+            }
+
+            // The front element is now the top element to be popped
+            int poppedElement = queue.poll();
+            return poppedElement;
+        }
     }
+
     public static void main(String[] args) {
+        // Example from the problem statement
         Stack s = new Stack(2);
-        System.out.println(s.push(2) + " " + s.push(3));
-        System.out.println(s.top());
-        System.out.println(s.empty());
-        System.out.println(s.pop() + " " + s.top());
-        System.out.println(s.push(8) + " " + s.push(9));
-        System.out.println(s.empty());
+        System.out.println(s.push(2));    // true
+        System.out.println(s.push(3));    // true
+        System.out.println(s.top());      // 3
+        System.out.println(s.empty());    // false
+        System.out.println(s.pop());      // 3
+        System.out.println(s.top());      // 2
+        System.out.println(s.push(8));    // true
+        System.out.println(s.push(9));    // false — full
+        System.out.println(s.empty());    // false
+
+        // Edge cases
+        Stack s2 = new Stack(1);
+        System.out.println(s2.top());     // -1 — empty stack
+        System.out.println(s2.pop());     // -1 — pop empty
+        s2.push(5);
+        System.out.println(s2.size());    // 1
+        System.out.println(s2.pop());     // 5
+        System.out.println(s2.empty());   // true
     }
 }
 ```
 
-```c run
-#include <stdio.h>
-#include <stdlib.h>
-#include <stdbool.h>
-
-typedef struct { int *arr; int front, back, size, cap; } Q;
-static Q*   q_new(int c)        { Q *q = malloc(sizeof(*q)); q->arr=malloc(sizeof(int)*c); q->front=0; q->back=-1; q->size=0; q->cap=c; return q; }
-static int  q_size(Q *q)        { return q->size; }
-static bool q_empty(Q *q)       { return q->size == 0; }
-static int  q_front(Q *q)       { return q->arr[q->front]; }
-static void q_enq(Q *q, int v)  { q->back = (q->back + 1) % q->cap; q->arr[q->back] = v; q->size++; }
-static int  q_deq(Q *q)         { int v = q->arr[q->front]; q->front = (q->front + 1) % q->cap; q->size--; return v; }
-
-typedef struct { Q *q; int capacity; } Stack;
-
-Stack* stack_create(int c) {
-    Stack *s = malloc(sizeof(*s));
-    s->q = q_new(c); s->capacity = c;
-    return s;
-}
-int  stack_size (Stack *s){ return q_size(s->q); }
-bool stack_empty(Stack *s){ return q_empty(s->q); }
-int  stack_top  (Stack *s){ return stack_empty(s) ? -1 : q_front(s->q); }
-bool stack_push (Stack *s, int v) {
-    if (q_size(s->q) == s->capacity) return false;
-    q_enq(s->q, v);
-    int n = q_size(s->q) - 1;
-    for (int i = 0; i < n; i++) q_enq(s->q, q_deq(s->q));
-    return true;
-}
-int  stack_pop  (Stack *s){ return stack_empty(s) ? -1 : q_deq(s->q); }
-
-int main() {
-    Stack *s = stack_create(2);
-    printf("%d %d\n", stack_push(s,2), stack_push(s,3));
-    printf("%d\n",    stack_top(s));
-    printf("%d\n",    stack_empty(s));
-    printf("%d %d\n", stack_pop(s), stack_top(s));
-    printf("%d %d\n", stack_push(s,8), stack_push(s,9));
-    printf("%d\n",    stack_empty(s));
-}
-```
-
-```scala run
-import scala.collection.mutable
-
-object Main extends App {
-  class Stack(val capacity: Int) {
-    private val q = mutable.Queue[Int]()
-
-    def size:  Int     = q.size
-    def empty: Boolean = q.isEmpty
-    def top:   Int     = if (empty) -1 else q.head
-    def push(v: Int): Boolean = {
-      if (q.size == capacity) return false
-      q.enqueue(v)
-      val n = q.size - 1
-      for (_ <- 0 until n) q.enqueue(q.dequeue())
-      true
-    }
-    def pop: Int = if (empty) -1 else q.dequeue()
-  }
-
-  val s = new Stack(2)
-  println(s"${s.push(2)} ${s.push(3)}")
-  println(s.top)
-  println(s.empty)
-  println(s"${s.pop} ${s.top}")
-  println(s"${s.push(8)} ${s.push(9)}")
-  println(s.empty)
-}
-```
-
-
-## Complexity Analysis
+### Complexity Analysis
 
 | Operation | Time |
 |---|---|
@@ -812,9 +997,10 @@ object Main extends App {
 
 Same shape as the two-queue version — push pays for the abstraction; everything else is free. The single-queue version uses *less memory* (only one underlying queue) and is arguably the more elegant of the two.
 
-***
+</details>
+<details>
+<summary><h2>Final Takeaway</h2></summary>
 
-## Final Takeaway
 
 The three problems in this lesson all answer the same question: *can you simulate one access discipline using primitives that only support the opposite discipline?* The answer in each case is yes — but you pay for it.
 
@@ -823,3 +1009,5 @@ The three problems in this lesson all answer the same question: *can you simulat
 3. **The structures are duals, not equivalents.** Stacks and queues can simulate each other, but never for free. The asymmetry of cost — amortised O(1) one way, worst-case O(N) the other — reflects the fact that LIFO and FIFO are genuinely different access disciplines, and one of them has to do extra work to mimic the other. Picking the right primitive *first* is always cheaper than retrofitting.
 
 > *Up next — the queue chapter ends here. The next chapter introduces the **binary tree** — a fundamentally different shape of data, where each node has multiple children and "first" and "last" stop being meaningful in the linear sense. The queue we just built will resurface there as the engine of breadth-first traversal — yet another reason FIFO sits at the heart of so much algorithmic work.*
+
+</details>

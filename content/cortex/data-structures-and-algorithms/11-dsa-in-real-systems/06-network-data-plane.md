@@ -93,21 +93,6 @@ The kernel adapts `b` per node based on the density of prefixes in that subtree.
 
 The kernel's structure in `net/ipv4/fib_trie.c`:
 
-```c
-struct key_vector {
-    t_key key;
-    unsigned char pos;       // bit position within the key
-    unsigned char bits;      // number of bits this node tests (the "b")
-    unsigned char slen;      // (used in the LC-trie variant)
-    union {
-        struct hlist_head leaf;
-        struct {
-            struct key_vector __rcu *tnode[0];   // child pointers, length 2^bits
-        };
-    };
-};
-```
-
 The `tnode[0]` is a "flexible array member" — the kernel allocates the `key_vector` struct plus `2^bits` pointers contiguously, in a single allocation. Cache-line-friendly.
 
 ***
@@ -125,23 +110,6 @@ The `__rcu` annotation on `tnode[]` tells the compiler (and Linux's `sparse` sta
 # The fast path
 
 The "fast path" is the lookup function called per packet. In `net/ipv4/fib_trie.c`:
-
-```c
-int fib_table_lookup(struct fib_table *tb, const struct flowi4 *flp,
-                     struct fib_result *res, int fib_flags) {
-    struct key_vector *cn, *n, *pn;
-    // ... several local variables, all stack-allocated; no heap allocations.
-
-    pn = tb->tb_root;
-    cn = pn->tnode[0];
-
-    while (cn) {
-        // ... level-compressed descent
-        cn = rcu_dereference(cn->tnode[index]);
-    }
-    // ... longest-prefix match wraps it up
-}
-```
 
 Crucial properties:
 
@@ -179,49 +147,42 @@ Click any question to reveal the answer.
 **A:** **Longest-prefix match**: find the routing entry whose prefix matches the destination IP, picking the *longest* such prefix.
 
 </details>
-
 <details>
 <summary><strong>Q:</strong> Why not a binary trie of 32-bit IP addresses?</summary>
 
 **A:** Up to 32 levels deep. Linux uses a level-compressed (LC) trie: each node tests `b` bits at a time, branching `2^b` ways. Depth `~8` for IPv4.
 
 </details>
-
 <details>
 <summary><strong>Q:</strong> Typical lookup latency for the Linux fib_trie?</summary>
 
 **A:** 50-100 ns per packet on modern hardware. At 1 Gbps line rate (1M packets/sec), the trie uses 5-10% of the per-packet budget.
 
 </details>
-
 <details>
 <summary><strong>Q:</strong> Why is the trie structure read-mostly?</summary>
 
 **A:** Routing-table updates (adding/removing routes) are rare; lookups happen per packet. The kernel uses RCU to make reads lock-free.
 
 </details>
-
 <details>
 <summary><strong>Q:</strong> What synchronisation does the lookup path use?</summary>
 
 **A:** **None for reads** — RCU lets readers traverse without locks. **Writers acquire `rtnl_lock`** (the global routing-table lock; rare path).
 
 </details>
-
 <details>
 <summary><strong>Q:</strong> Why no heap allocations in the fast path?</summary>
 
 **A:** The fib_trie lookup is per-packet hot path; allocation cost would dominate. All lookup state is on the stack.
 
 </details>
-
 <details>
 <summary><strong>Q:</strong> What's a TCAM and why does hardware use one instead of fib_trie?</summary>
 
 **A:** **Ternary Content-Addressable Memory** does longest-prefix match in *one cycle* via parallel bit-comparison. Used by switch/router silicon; software-defined routers use fib_trie.
 
 </details>
-
 <details>
 <summary><strong>Q:</strong> What does "VRF" mean and how does it affect the trie?</summary>
 
